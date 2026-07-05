@@ -9,6 +9,9 @@ backend/src/api/generic/generic.controller.ts
 backend/src/api/generic/generic.service.ts
 backend/src/api/generic/generic-read.service.ts
 backend/src/api/generic/generic-mutation.service.ts
+backend/src/api/generic/generic-change-log.service.ts
+backend/src/api/generic/generic-update-conflict.service.ts
+backend/src/api/generic/generic-open-task-events.service.ts
 backend/src/api/generic/generic-query.service.ts
 backend/src/api/generic/generic-filter.service.ts
 backend/src/api/generic/generic-payload.service.ts

@@ -8,8 +8,6 @@ import { EntityManager } from '@mikro-orm/core';
 import { TemplateService } from '../template/template.service';
 import { EntityItem } from '../../entity/EntityItem';
 import { PersonItem } from '../../entity/PersonItem';
-import { ChangeLogItem } from '../../entity/ChangeLogItem';
-import { ChangeLogDetailItem } from '../../entity/ChangeLogDetailItem';
 import { EntityTemplateDto } from '../template/dto/entity-template.dto';
 import { performance } from 'perf_hooks';
 import { ScriptMethods } from '../script/script.service';
@@ -25,12 +23,7 @@ import { GenericRelationService } from './generic-relation.service';
 import { GenericReferenceService } from './generic-reference.service';
 import { GenericSanitizerService } from './generic-sanitizer.service';
 import { GenericCustomFieldService } from './generic-custom-field.service';
-import { ChangeLogActionItem } from '../../entity/ChangeLogActionItem';
-import { EventItem } from '../../entity/EventItem';
-import { OpenTaskEventsService } from '../current/open-task-events.service';
-import { EffortEstimateItem } from '../../entity/EffortEstimateItem';
-import { SalesOpportunityItem } from '../../entity/SalesOpportunityItem';
-import { TicketItem } from '../../entity/TicketItem';
+import { GenericOpenTaskEventsService } from './generic-open-task-events.service';
 import {
   GenericTimelineService,
   TimelineDescriptorDataset,
@@ -42,77 +35,22 @@ import {
   extractImportHandle,
   getImportErrorMessage,
   hasImportableRowValues,
-  normalizeBoolean,
   normalizeImportRow,
 } from './generic-import.util';
+import { GenericChangeLogService } from './generic-change-log.service';
 import {
-  areUpdateConflictValuesEqual,
-  asChangeLogRecord,
-  buildChangeLogDetails,
-  extractChangeLogReference,
-  mergeChangeLogPayloadShape,
-  normalizeChangeLogPayload,
-  normalizeChangeLogValue,
-  normalizeConcurrencyBasePayload,
-  normalizeConcurrencyTimestamp,
-  normalizeUpdateConflictValue,
-  projectChangeLogPayload,
-  type ChangeLogAction,
-  type ChangeLogPayload,
-} from './generic-change-log.util';
+  GenericUpdateConflictService,
+  type GenericUpdateConcurrencyOptions,
+} from './generic-update-conflict.service';
 import type {
   GenericImportResponse,
   GenericImportRowResult,
 } from './generic-import.util';
 export type { GenericImportResponse } from './generic-import.util';
-
-type GenericUpdateConcurrencyResolution = 'detect' | 'merge' | 'overwrite';
-export type GenericUpdateConcurrencyOptions = {
-  expectedUpdatedAt?: string | Date | null;
-  basePayload?: Record<string, unknown> | null;
-  resolution?: GenericUpdateConcurrencyResolution;
-  merge?: boolean;
-};
-type NormalizedUpdateConcurrencyMetadata = {
-  expectedUpdatedAt?: string | null;
-  basePayload?: ChangeLogPayload;
-  resolution?: GenericUpdateConcurrencyResolution;
-};
-type UpdateConflictField = {
-  property: string;
-  baseValue: unknown;
-  currentValue: unknown;
-  attemptedValue: unknown;
-  changedInCurrent: boolean;
-  changedInAttempt: boolean;
-  conflict: boolean;
-};
-type UpdateConflictEvaluation = {
-  stale: boolean;
-  expectedUpdatedAt: string | null;
-  currentUpdatedAt: string | null;
-  basePayload: ChangeLogPayload;
-  currentPayload: ChangeLogPayload;
-  attemptedPayload: ChangeLogPayload;
-  fields: UpdateConflictField[];
-  conflictingProperties: string[];
-  mergeableProperties: string[];
-};
+export type { GenericUpdateConcurrencyOptions } from './generic-update-conflict.service';
 type RelationMutationContext = Awaited<
   ReturnType<GenericRelationService['addReferenceAndFlush']>
 >;
-const GENERIC_CONCURRENCY_METADATA_KEY = '_saplingConcurrency';
-const UPDATE_CONFLICT_IGNORED_FIELDS = new Set([
-  'createdAt',
-  'updatedAt',
-  GENERIC_CONCURRENCY_METADATA_KEY,
-]);
-const OPEN_TASK_ENTITY_HANDLES = new Set([
-  'ticket',
-  'event',
-  'salesOpportunity',
-  'effortEstimate',
-]);
 
 /**
  * @class
@@ -173,7 +111,9 @@ export class GenericService {
     private readonly genericReferenceService: GenericReferenceService,
     private readonly genericSanitizerService: GenericSanitizerService,
     private readonly genericTimelineService: GenericTimelineService,
-    private readonly openTaskEventsService: OpenTaskEventsService,
+    private readonly genericOpenTaskEventsService: GenericOpenTaskEventsService,
+    private readonly genericChangeLogService: GenericChangeLogService,
+    private readonly genericUpdateConflictService: GenericUpdateConflictService,
     private readonly genericCustomFieldService: GenericCustomFieldService = {
       applyCustomFieldFilters: (
         _entityHandle: string,
@@ -567,44 +507,10 @@ export class GenericService {
       entityHandle,
       handle,
     );
-
-    const items = await this.em.find(
-      ChangeLogItem,
-      {
-        entity: { handle: entityHandle },
-        reference: String(normalizedHandle),
-      },
-      {
-        populate: ['action', 'entity', 'person', 'details'],
-        orderBy: { createdAt: 'DESC', handle: 'DESC' },
-      },
+    return this.genericChangeLogService.getRecordChangeLog(
+      entityHandle,
+      normalizedHandle,
     );
-
-    return items.map((item) => {
-      const response = new ChangeLogResponseDto();
-      response.handle = item.handle ?? 0;
-      response.action = item.action.handle as ChangeLogAction;
-      response.reference = item.reference;
-      response.entity = {
-        handle: item.entity.handle,
-        icon: item.entity.icon ?? null,
-      };
-      response.person = this.genericSanitizerService.sanitizeEntityResult(
-        'person',
-        item.person,
-      ) as ChangeLogResponseDto['person'];
-      response.oldPayload = normalizeChangeLogPayload(item.oldPayload);
-      response.newPayload = normalizeChangeLogPayload(item.newPayload);
-      response.details = [...item.details]
-        .sort((left, right) => (left.handle ?? 0) - (right.handle ?? 0))
-        .map((detail) => ({
-          property: detail.property,
-          oldValue: normalizeChangeLogValue(detail.oldValue),
-          newValue: normalizeChangeLogValue(detail.newValue),
-        }));
-      response.createdAt = item.createdAt ?? new Date();
-      return response;
-    });
   }
   // #endregion
 
@@ -629,10 +535,11 @@ export class GenericService {
       entityHandle,
       splitPayload.customFields,
     );
-    const submittedSnapshot = this.captureSubmittedChangeLogPayload(
-      template,
-      data,
-    );
+    const submittedSnapshot =
+      this.genericChangeLogService.captureSubmittedChangeLogPayload(
+        template,
+        data,
+      );
 
     this.genericPermissionService.checkTopLevelPermission(
       entityHandle,
@@ -690,7 +597,7 @@ export class GenericService {
     }
 
     this.scheduleBackgroundTask('changeLog', () =>
-      this.safeStoreChangeLog(
+      this.genericChangeLogService.safeStoreChangeLog(
         'create',
         entity,
         currentUser,
@@ -700,7 +607,7 @@ export class GenericService {
     );
 
     this.scheduleBackgroundTask('openTaskCountChanges', () =>
-      this.emitOpenTaskCountChangesForHandle(
+      this.genericOpenTaskEventsService.emitCountChangesForHandle(
         entityHandle,
         this.extractEntityHandle(newData),
       ),
@@ -744,26 +651,29 @@ export class GenericService {
     scriptContext: ScriptServerContext = {},
     concurrencyOptions: GenericUpdateConcurrencyOptions = {},
   ): Promise<object> {
-    const updatePayload = this.extractUpdateConcurrencyMetadata(
-      data,
-      concurrencyOptions,
-    );
+    const updatePayload =
+      this.genericUpdateConflictService.extractConcurrencyMetadata(
+        data,
+        concurrencyOptions,
+      );
     data = updatePayload.data;
     const splitPayload = this.genericCustomFieldService.splitPayload(data);
     data = splitPayload.data;
     const concurrency = updatePayload.concurrency;
-    const previousOpenTaskUserHandles = await this.loadOpenTaskUserHandles(
-      entityHandle,
-      handle,
-    );
+    const previousOpenTaskUserHandles =
+      await this.genericOpenTaskEventsService.loadUserHandles(
+        entityHandle,
+        handle,
+      );
 
     const entityClass = this.genericQueryService.getEntityClass(entityHandle);
     const entity = await this.em.findOne(EntityItem, { handle: entityHandle });
     const template = this.templateService.getEntityTemplate(entityHandle);
-    let submittedSnapshot = this.captureSubmittedChangeLogPayload(
-      template,
-      data,
-    );
+    let submittedSnapshot =
+      this.genericChangeLogService.captureSubmittedChangeLogPayload(
+        template,
+        data,
+      );
     const populate = this.genericQueryService.buildPopulate(
       relations,
       template,
@@ -788,12 +698,13 @@ export class GenericService {
       throw new NotFoundException(`global.entityNotFound`);
     }
 
-    const oldSnapshot = this.captureEntityChangeLogPayload(
-      entityHandle,
-      item,
-      template,
-      submittedSnapshot,
-    );
+    const oldSnapshot =
+      this.genericChangeLogService.captureEntityChangeLogPayload(
+        entityHandle,
+        item,
+        template,
+        submittedSnapshot,
+      );
 
     this.genericPermissionService.checkTopLevelPermission(
       entityHandle,
@@ -802,7 +713,7 @@ export class GenericService {
       'allowUpdateStage',
     );
 
-    const conflict = this.evaluateUpdateConflict(
+    const conflict = this.genericUpdateConflictService.evaluate(
       entityHandle,
       item,
       template,
@@ -819,14 +730,18 @@ export class GenericService {
         concurrency.resolution === 'merge' &&
         conflict.conflictingProperties.length === 0
       ) {
-        data = this.buildAutomaticMergePayload(data, conflict);
-        submittedSnapshot = this.captureSubmittedChangeLogPayload(
-          template,
+        data = this.genericUpdateConflictService.buildAutomaticMergePayload(
           data,
+          conflict,
         );
+        submittedSnapshot =
+          this.genericChangeLogService.captureSubmittedChangeLogPayload(
+            template,
+            data,
+          );
       } else {
         throw new ConflictException(
-          await this.buildUpdateConflictExceptionBody(
+          await this.genericUpdateConflictService.buildExceptionBody(
             entityHandle,
             handle,
             conflict,
@@ -880,7 +795,7 @@ export class GenericService {
     }
 
     this.scheduleBackgroundTask('changeLog', () =>
-      this.safeStoreChangeLog(
+      this.genericChangeLogService.safeStoreChangeLog(
         'update',
         entity,
         currentUser,
@@ -890,7 +805,7 @@ export class GenericService {
     );
 
     this.scheduleBackgroundTask('openTaskCountChanges', () =>
-      this.emitOpenTaskCountChangesForHandle(
+      this.genericOpenTaskEventsService.emitCountChangesForHandle(
         entityHandle,
         handle,
         previousOpenTaskUserHandles,
@@ -930,10 +845,11 @@ export class GenericService {
     currentUser: PersonItem,
     scriptContext: ScriptServerContext = {},
   ): Promise<void> {
-    const previousOpenTaskUserHandles = await this.loadOpenTaskUserHandles(
-      entityHandle,
-      handle,
-    );
+    const previousOpenTaskUserHandles =
+      await this.genericOpenTaskEventsService.loadUserHandles(
+        entityHandle,
+        handle,
+      );
 
     const entityClass = this.genericQueryService.getEntityClass(entityHandle);
     const template = this.templateService.getEntityTemplate(entityHandle);
@@ -954,11 +870,12 @@ export class GenericService {
       throw new NotFoundException(`global.entityNotFound`);
     }
 
-    const oldSnapshot = this.captureEntityChangeLogPayload(
-      entityHandle,
-      item,
-      template,
-    );
+    const oldSnapshot =
+      this.genericChangeLogService.captureEntityChangeLogPayload(
+        entityHandle,
+        item,
+        template,
+      );
 
     this.genericPermissionService.checkTopLevelPermission(
       entityHandle,
@@ -996,13 +913,20 @@ export class GenericService {
     }
 
     this.scheduleBackgroundTask('changeLog', () =>
-      this.safeStoreChangeLog('delete', entity, currentUser, oldSnapshot, null),
+      this.genericChangeLogService.safeStoreChangeLog(
+        'delete',
+        entity,
+        currentUser,
+        oldSnapshot,
+        null,
+      ),
     );
 
-    this.scheduleBackgroundTask('openTaskCountChanges', () => {
-      this.openTaskEventsService.notifyUsers(previousOpenTaskUserHandles);
-      return Promise.resolve();
-    });
+    this.scheduleBackgroundTask('openTaskCountChanges', () =>
+      this.genericOpenTaskEventsService.notifyUsers(
+        previousOpenTaskUserHandles,
+      ),
+    );
   }
 
   // #endregion
@@ -1026,7 +950,7 @@ export class GenericService {
     scriptContext: ScriptServerContext = {},
   ): Promise<object> {
     const previousOpenTaskUserHandles =
-      await this.loadReferenceOpenTaskUserHandles(
+      await this.genericOpenTaskEventsService.loadReferenceUserHandles(
         entityHandle,
         referenceName,
         entityHandleValue,
@@ -1077,7 +1001,7 @@ export class GenericService {
       newData = ownerUpdate.item;
     }
 
-    await this.emitReferenceOpenTaskCountChanges(
+    await this.genericOpenTaskEventsService.emitReferenceCountChanges(
       entityHandle,
       referenceName,
       entityHandleValue,
@@ -1109,7 +1033,7 @@ export class GenericService {
     scriptContext: ScriptServerContext = {},
   ): Promise<object> {
     const previousOpenTaskUserHandles =
-      await this.loadReferenceOpenTaskUserHandles(
+      await this.genericOpenTaskEventsService.loadReferenceUserHandles(
         entityHandle,
         referenceName,
         entityHandleValue,
@@ -1160,7 +1084,7 @@ export class GenericService {
       newData = ownerUpdate.item;
     }
 
-    await this.emitReferenceOpenTaskCountChanges(
+    await this.genericOpenTaskEventsService.emitReferenceCountChanges(
       entityHandle,
       referenceName,
       entityHandleValue,
@@ -1276,262 +1200,6 @@ export class GenericService {
     };
   }
 
-  private async emitOpenTaskCountChangesForHandle(
-    entityHandle: string,
-    handle: string | number | null,
-    previousUserHandles: ReadonlySet<number> = new Set<number>(),
-  ): Promise<void> {
-    if (handle == null) {
-      this.openTaskEventsService.notifyUsers(previousUserHandles);
-      return;
-    }
-
-    const nextUserHandles = await this.loadOpenTaskUserHandles(
-      entityHandle,
-      handle,
-    );
-    this.openTaskEventsService.notifyUsers(
-      this.mergeUserHandles(previousUserHandles, nextUserHandles),
-    );
-  }
-
-  private async emitReferenceOpenTaskCountChanges(
-    entityHandle: string,
-    referenceName: string,
-    handle: string | number,
-    previousUserHandles: ReadonlySet<number>,
-  ): Promise<void> {
-    const nextUserHandles = await this.loadReferenceOpenTaskUserHandles(
-      entityHandle,
-      referenceName,
-      handle,
-    );
-
-    this.openTaskEventsService.notifyUsers(
-      this.mergeUserHandles(previousUserHandles, nextUserHandles),
-    );
-  }
-
-  private async loadReferenceOpenTaskUserHandles(
-    entityHandle: string,
-    referenceName: string,
-    handle: string | number,
-  ): Promise<Set<number>> {
-    if (entityHandle !== 'event' || referenceName !== 'participants') {
-      return new Set<number>();
-    }
-
-    return this.loadOpenTaskUserHandles(entityHandle, handle);
-  }
-
-  private async loadOpenTaskUserHandles(
-    entityHandle: string,
-    handle: string | number,
-  ): Promise<Set<number>> {
-    if (!OPEN_TASK_ENTITY_HANDLES.has(entityHandle)) {
-      return new Set<number>();
-    }
-
-    switch (entityHandle) {
-      case 'ticket':
-        return this.loadTicketOpenTaskUserHandles(handle);
-      case 'event':
-        return this.loadEventOpenTaskUserHandles(handle);
-      case 'salesOpportunity':
-        return this.loadSalesOpportunityOpenTaskUserHandles(handle);
-      case 'effortEstimate':
-        return this.loadEffortEstimateOpenTaskUserHandles(handle);
-      default:
-        return new Set<number>();
-    }
-  }
-
-  private async loadTicketOpenTaskUserHandles(
-    handle: string | number,
-  ): Promise<Set<number>> {
-    const normalizedHandle = this.normalizeNumericOpenTaskHandle(
-      'ticket',
-      handle,
-    );
-    if (normalizedHandle == null) {
-      return new Set<number>();
-    }
-
-    const ticket = await this.em.findOne(
-      TicketItem,
-      { handle: normalizedHandle },
-      {
-        populate: ['assigneePerson', 'status'],
-      },
-    );
-
-    if (!ticket) {
-      return new Set<number>();
-    }
-
-    const assigneeHandle = this.extractOpenTaskReferenceHandle(
-      ticket.assigneePerson,
-    );
-    const statusHandle = this.extractOpenTaskReferenceHandle(ticket.status);
-
-    if (typeof assigneeHandle !== 'number' || statusHandle === 'closed') {
-      return new Set<number>();
-    }
-
-    return new Set<number>([assigneeHandle]);
-  }
-
-  private async loadEventOpenTaskUserHandles(
-    handle: string | number,
-  ): Promise<Set<number>> {
-    const normalizedHandle = this.normalizeNumericOpenTaskHandle(
-      'event',
-      handle,
-    );
-    if (normalizedHandle == null) {
-      return new Set<number>();
-    }
-
-    const event = await this.em.findOne(
-      EventItem,
-      { handle: normalizedHandle },
-      {
-        populate: ['participants', 'status', 'creatorPerson'],
-      },
-    );
-
-    if (!event) {
-      return new Set<number>();
-    }
-
-    const statusHandle = this.extractOpenTaskReferenceHandle(event.status);
-    if (statusHandle === 'canceled' || statusHandle === 'completed') {
-      return new Set<number>();
-    }
-
-    if (event.isPrivate === true) {
-      const ownerHandle = this.extractOpenTaskReferenceHandle(
-        event.creatorPerson,
-      );
-      return typeof ownerHandle === 'number'
-        ? new Set<number>([ownerHandle])
-        : new Set<number>();
-    }
-
-    return new Set<number>(
-      event.participants
-        .getItems()
-        .map((participant) => participant.handle)
-        .filter(
-          (participantHandle): participantHandle is number =>
-            typeof participantHandle === 'number',
-        ),
-    );
-  }
-
-  private async loadSalesOpportunityOpenTaskUserHandles(
-    handle: string | number,
-  ): Promise<Set<number>> {
-    const normalizedHandle = this.normalizeNumericOpenTaskHandle(
-      'salesOpportunity',
-      handle,
-    );
-    if (normalizedHandle == null) {
-      return new Set<number>();
-    }
-
-    const salesOpportunity = await this.em.findOne(
-      SalesOpportunityItem,
-      { handle: normalizedHandle },
-      {
-        populate: ['assigneePerson'],
-      },
-    );
-
-    if (!salesOpportunity || salesOpportunity.isActive !== true) {
-      return new Set<number>();
-    }
-
-    const assigneeHandle = this.extractOpenTaskReferenceHandle(
-      salesOpportunity.assigneePerson,
-    );
-
-    if (typeof assigneeHandle !== 'number') {
-      return new Set<number>();
-    }
-
-    return new Set<number>([assigneeHandle]);
-  }
-
-  private async loadEffortEstimateOpenTaskUserHandles(
-    handle: string | number,
-  ): Promise<Set<number>> {
-    const normalizedHandle = this.normalizeNumericOpenTaskHandle(
-      'effortEstimate',
-      handle,
-    );
-    if (normalizedHandle == null) {
-      return new Set<number>();
-    }
-
-    const effortEstimate = await this.em.findOne(
-      EffortEstimateItem,
-      { handle: normalizedHandle },
-      {
-        populate: ['assigneePerson', 'status'],
-      },
-    );
-
-    if (!effortEstimate || effortEstimate.isActive !== true) {
-      return new Set<number>();
-    }
-
-    const statusHandle = this.extractOpenTaskReferenceHandle(
-      effortEstimate.status,
-    );
-    if (statusHandle === 'completed' || statusHandle === 'cancelled') {
-      return new Set<number>();
-    }
-
-    const assigneeHandle = this.extractOpenTaskReferenceHandle(
-      effortEstimate.assigneePerson,
-    );
-    if (typeof assigneeHandle !== 'number') {
-      return new Set<number>();
-    }
-
-    return new Set<number>([assigneeHandle]);
-  }
-
-  private mergeUserHandles(
-    ...userHandleCollections: Iterable<number>[]
-  ): Set<number> {
-    const mergedUserHandles = new Set<number>();
-
-    for (const userHandleCollection of userHandleCollections) {
-      for (const userHandle of userHandleCollection) {
-        mergedUserHandles.add(userHandle);
-      }
-    }
-
-    return mergedUserHandles;
-  }
-
-  private extractOpenTaskReferenceHandle(
-    reference: unknown,
-  ): string | number | undefined {
-    if (!reference || typeof reference !== 'object') {
-      return undefined;
-    }
-
-    const handle = (reference as { handle?: unknown }).handle;
-    if (typeof handle === 'string' || typeof handle === 'number') {
-      return handle;
-    }
-
-    return undefined;
-  }
-
   private extractEntityHandle(item: object): string | number | null {
     const handle = (item as { handle?: unknown }).handle;
 
@@ -1563,18 +1231,6 @@ export class GenericService {
         ([key]) => !key.startsWith('customFields.'),
       ),
     );
-  }
-
-  private normalizeNumericOpenTaskHandle(
-    entityHandle: 'ticket' | 'event' | 'salesOpportunity' | 'effortEstimate',
-    handle: string | number,
-  ): number | null {
-    const normalizedHandle = this.genericReferenceService.normalizeHandleValue(
-      entityHandle,
-      handle,
-    );
-
-    return typeof normalizedHandle === 'number' ? normalizedHandle : null;
   }
 
   private async findTimelineRecord(
@@ -1677,460 +1333,5 @@ export class GenericService {
     );
   }
 
-  private extractUpdateConcurrencyMetadata(
-    data: { createdAt?: Date; updatedAt?: Date; [key: string]: any },
-    options: GenericUpdateConcurrencyOptions = {},
-  ): {
-    data: { createdAt?: Date; updatedAt?: Date; [key: string]: any };
-    concurrency: NormalizedUpdateConcurrencyMetadata;
-  } {
-    const nextData = { ...data };
-    const rawMetadata = this.asUnknownRecord(
-      nextData[GENERIC_CONCURRENCY_METADATA_KEY],
-    );
-    delete nextData[GENERIC_CONCURRENCY_METADATA_KEY];
-
-    const metadata: Record<string, unknown> = {
-      ...(rawMetadata ?? {}),
-    };
-
-    if (metadata.expectedUpdatedAt == null && metadata.baseUpdatedAt != null) {
-      metadata.expectedUpdatedAt = metadata.baseUpdatedAt;
-    }
-
-    if (metadata.expectedUpdatedAt == null && nextData.updatedAt != null) {
-      metadata.expectedUpdatedAt = nextData.updatedAt;
-    }
-    delete nextData.updatedAt;
-
-    if (options.expectedUpdatedAt !== undefined) {
-      metadata.expectedUpdatedAt = options.expectedUpdatedAt;
-    }
-
-    if (options.basePayload !== undefined) {
-      metadata.basePayload = options.basePayload;
-    }
-
-    if (options.resolution) {
-      metadata.resolution = options.resolution;
-    }
-
-    if (options.merge === true) {
-      metadata.resolution = 'merge';
-    }
-
-    const mergeRequested = normalizeBoolean(metadata.merge);
-    const forceRequested = normalizeBoolean(metadata.force);
-    const resolution =
-      forceRequested === true
-        ? 'overwrite'
-        : mergeRequested === true
-          ? 'merge'
-          : this.normalizeConcurrencyResolution(metadata.resolution);
-
-    return {
-      data: nextData,
-      concurrency: {
-        expectedUpdatedAt: normalizeConcurrencyTimestamp(
-          metadata.expectedUpdatedAt,
-        ),
-        basePayload: normalizeConcurrencyBasePayload(metadata.basePayload),
-        resolution,
-      },
-    };
-  }
-
-  private evaluateUpdateConflict(
-    entityHandle: string,
-    item: object,
-    template: EntityTemplateDto[],
-    attemptedPayload: ChangeLogPayload,
-    concurrency: NormalizedUpdateConcurrencyMetadata,
-  ): UpdateConflictEvaluation {
-    const expectedUpdatedAt = concurrency.expectedUpdatedAt ?? null;
-    const currentUpdatedAt = normalizeConcurrencyTimestamp(
-      (item as { updatedAt?: unknown }).updatedAt,
-    );
-    const basePayload = this.projectUpdateConflictPayload(
-      template,
-      concurrency.basePayload ?? null,
-    );
-    const attemptedConflictPayload = this.projectUpdateConflictPayload(
-      template,
-      attemptedPayload,
-    );
-    const comparisonShape = mergeChangeLogPayloadShape(
-      basePayload,
-      attemptedConflictPayload,
-    );
-    const currentPayload = comparisonShape
-      ? this.captureEntityChangeLogPayload(
-          entityHandle,
-          item,
-          template,
-          comparisonShape,
-        )
-      : null;
-    const stale =
-      expectedUpdatedAt != null &&
-      currentUpdatedAt != null &&
-      expectedUpdatedAt !== currentUpdatedAt;
-    const fields = stale
-      ? this.buildUpdateConflictFields(
-          basePayload,
-          currentPayload,
-          attemptedConflictPayload,
-        )
-      : [];
-    const conflictingProperties = fields
-      .filter((field) => field.conflict)
-      .map((field) => field.property);
-    const mergeableProperties = fields
-      .filter((field) => field.changedInAttempt && !field.conflict)
-      .map((field) => field.property);
-
-    return {
-      stale,
-      expectedUpdatedAt,
-      currentUpdatedAt,
-      basePayload,
-      currentPayload,
-      attemptedPayload: attemptedConflictPayload,
-      fields,
-      conflictingProperties,
-      mergeableProperties,
-    };
-  }
-
-  private buildUpdateConflictFields(
-    basePayload: ChangeLogPayload,
-    currentPayload: ChangeLogPayload,
-    attemptedPayload: ChangeLogPayload,
-  ): UpdateConflictField[] {
-    const baseRecord = asChangeLogRecord(basePayload);
-    const currentRecord = asChangeLogRecord(currentPayload);
-    const attemptedRecord = asChangeLogRecord(attemptedPayload);
-    const hasBasePayload = basePayload != null;
-    const propertyNames = new Set([
-      ...Object.keys(baseRecord),
-      ...Object.keys(attemptedRecord),
-    ]);
-
-    return [...propertyNames]
-      .filter((property) => !UPDATE_CONFLICT_IGNORED_FIELDS.has(property))
-      .sort((left, right) => left.localeCompare(right))
-      .map((property) => {
-        const attemptedHasProperty = this.hasOwnRecordProperty(
-          attemptedRecord,
-          property,
-        );
-        const baseValue = normalizeUpdateConflictValue(baseRecord[property]);
-        const currentValue = normalizeUpdateConflictValue(
-          currentRecord[property],
-        );
-        const attemptedValue = attemptedHasProperty
-          ? normalizeUpdateConflictValue(attemptedRecord[property])
-          : baseValue;
-        const changedInAttempt = hasBasePayload
-          ? !areUpdateConflictValuesEqual(baseValue, attemptedValue)
-          : attemptedHasProperty;
-        const changedInCurrent = hasBasePayload
-          ? !areUpdateConflictValuesEqual(baseValue, currentValue)
-          : !areUpdateConflictValuesEqual(currentValue, attemptedValue);
-        const conflict =
-          changedInAttempt &&
-          changedInCurrent &&
-          !areUpdateConflictValuesEqual(currentValue, attemptedValue);
-
-        return {
-          property,
-          baseValue,
-          currentValue,
-          attemptedValue,
-          changedInCurrent,
-          changedInAttempt,
-          conflict,
-        };
-      })
-      .filter(
-        (field) =>
-          field.changedInCurrent || field.changedInAttempt || field.conflict,
-      );
-  }
-
-  private projectUpdateConflictPayload(
-    template: EntityTemplateDto[],
-    payload: ChangeLogPayload,
-  ): ChangeLogPayload {
-    if (!payload) {
-      return null;
-    }
-
-    const comparableTemplate = template.filter((field) =>
-      this.isUpdateConflictComparableField(field),
-    );
-    const comparableFieldNames = new Set(
-      comparableTemplate
-        .map((field) => field.name)
-        .filter((name): name is string => typeof name === 'string'),
-    );
-    const sourceRecord = asChangeLogRecord(payload);
-    const comparablePayload = Object.fromEntries(
-      Object.entries(sourceRecord).filter(([key]) =>
-        comparableFieldNames.has(key),
-      ),
-    );
-
-    if (Object.keys(comparablePayload).length === 0) {
-      return null;
-    }
-
-    return projectChangeLogPayload(comparableTemplate, comparablePayload);
-  }
-
-  private isUpdateConflictComparableField(field: EntityTemplateDto): boolean {
-    if (!field.name || field.isPersistent === false) {
-      return false;
-    }
-
-    if (field.kind === 'm:1') {
-      return true;
-    }
-
-    if (field.isReference) {
-      return false;
-    }
-
-    return !['1:m', 'm:n', 'n:m', '1:1'].includes(field.kind ?? '');
-  }
-
-  private buildAutomaticMergePayload(
-    data: { createdAt?: Date; updatedAt?: Date; [key: string]: any },
-    conflict: UpdateConflictEvaluation,
-  ): { createdAt?: Date; updatedAt?: Date; [key: string]: any } {
-    const mergeableProperties = new Set(conflict.mergeableProperties);
-    const mergedData = Object.fromEntries(
-      Object.entries(data).filter(([key]) => mergeableProperties.has(key)),
-    ) as { createdAt?: Date; updatedAt?: Date } & Record<string, unknown>;
-    const dataRecord = data as Record<string, unknown>;
-
-    if (
-      !this.hasOwnRecordProperty(mergedData, 'handle') &&
-      this.hasOwnRecordProperty(dataRecord, 'handle')
-    ) {
-      mergedData.handle = dataRecord.handle;
-    }
-
-    return mergedData;
-  }
-
-  private async buildUpdateConflictExceptionBody(
-    entityHandle: string,
-    handle: string | number,
-    conflict: UpdateConflictEvaluation,
-  ): Promise<Record<string, unknown>> {
-    const normalizedHandle = this.genericReferenceService.normalizeHandleValue(
-      entityHandle,
-      handle,
-    );
-    const current = {
-      ...asChangeLogRecord(conflict.currentPayload),
-      handle: normalizedHandle,
-      updatedAt: conflict.currentUpdatedAt,
-    };
-
-    return {
-      message: 'exception.concurrentUpdate',
-      error: 'Der Datensatz wurde seit dem Oeffnen geaendert.',
-      details: {
-        summary:
-          'Der Datensatz wurde inzwischen von einer anderen Person geaendert. Bitte pruefe die Aenderungen und fuehre sie zusammen.',
-        reason: 'staleRecord',
-        entityHandle,
-        handle: normalizedHandle,
-        expectedUpdatedAt: conflict.expectedUpdatedAt,
-        currentUpdatedAt: conflict.currentUpdatedAt,
-        autoMergeable: conflict.conflictingProperties.length === 0,
-        conflictingProperties: conflict.conflictingProperties,
-        mergeableProperties: conflict.mergeableProperties,
-        base: conflict.basePayload,
-        current,
-        attempted: conflict.attemptedPayload,
-        fields: conflict.fields,
-        latestChange: await this.findLatestConflictChange(
-          entityHandle,
-          normalizedHandle,
-        ),
-      },
-      technical: {
-        operation: 'generic.update',
-        entityHandle,
-        handle: normalizedHandle,
-        expectedUpdatedAt: conflict.expectedUpdatedAt,
-        currentUpdatedAt: conflict.currentUpdatedAt,
-      },
-    };
-  }
-
-  private async findLatestConflictChange(
-    entityHandle: string,
-    handle: string | number,
-  ): Promise<Record<string, unknown> | null> {
-    try {
-      const latestChange = await this.em.findOne(
-        ChangeLogItem,
-        {
-          entity: { handle: entityHandle },
-          reference: String(handle),
-        },
-        {
-          populate: ['action', 'entity', 'person'],
-          orderBy: { createdAt: 'DESC', handle: 'DESC' },
-        },
-      );
-
-      if (!latestChange) {
-        return null;
-      }
-
-      return {
-        handle: latestChange.handle ?? null,
-        action: latestChange.action?.handle ?? null,
-        createdAt: latestChange.createdAt ?? null,
-        person: this.genericSanitizerService.sanitizeEntityResult(
-          'person',
-          latestChange.person,
-        ),
-      };
-    } catch (error) {
-      global.log?.warn?.('updateConflict.latestChange:', error);
-      return null;
-    }
-  }
-
-  private normalizeConcurrencyResolution(
-    value: unknown,
-  ): GenericUpdateConcurrencyResolution | undefined {
-    return value === 'merge' || value === 'overwrite' || value === 'detect'
-      ? value
-      : undefined;
-  }
-
-  private asUnknownRecord(value: unknown): Record<string, unknown> | null {
-    return value && typeof value === 'object' && !Array.isArray(value)
-      ? (value as Record<string, unknown>)
-      : null;
-  }
-
-  private hasOwnRecordProperty(record: object, property: PropertyKey): boolean {
-    return Object.prototype.hasOwnProperty.call(record, property) === true;
-  }
-
-  private async safeStoreChangeLog(
-    action: ChangeLogAction,
-    entity: EntityItem | null,
-    currentUser: PersonItem,
-    oldPayload: ChangeLogPayload,
-    newPayload: ChangeLogPayload,
-  ): Promise<void> {
-    try {
-      await this.storeChangeLog(
-        action,
-        entity,
-        currentUser,
-        oldPayload,
-        newPayload,
-      );
-    } catch (error) {
-      global.log?.error?.('changeLog:', error);
-    }
-  }
-
-  private async storeChangeLog(
-    action: ChangeLogAction,
-    entity: EntityItem | null,
-    currentUser: PersonItem,
-    oldPayload: ChangeLogPayload,
-    newPayload: ChangeLogPayload,
-  ): Promise<void> {
-    if (
-      !entity ||
-      entity.handle == null ||
-      currentUser.handle == null ||
-      typeof this.em.create !== 'function' ||
-      typeof this.em.flush !== 'function'
-    ) {
-      return;
-    }
-
-    const reference = extractChangeLogReference(newPayload ?? oldPayload);
-    if (reference == null) {
-      return;
-    }
-
-    const logEm = typeof this.em.fork === 'function' ? this.em.fork() : this.em;
-
-    const actionEntity = await logEm.findOne(ChangeLogActionItem, {
-      handle: action,
-    });
-    if (!actionEntity) {
-      return;
-    }
-
-    const log = logEm.create(ChangeLogItem, {
-      action: actionEntity.handle,
-      reference: String(reference),
-      entity: entity.handle,
-      person: currentUser.handle,
-      oldPayload,
-      newPayload,
-    } as any);
-    const details = buildChangeLogDetails(action, oldPayload, newPayload);
-
-    for (const detail of details) {
-      log.details.add(
-        logEm.create(ChangeLogDetailItem, {
-          log,
-          property: detail.property,
-          oldValue: detail.oldValue,
-          newValue: detail.newValue,
-        }),
-      );
-    }
-
-    await logEm.flush();
-  }
-
-  private captureEntityChangeLogPayload(
-    entityHandle: string,
-    value: object,
-    template: EntityTemplateDto[],
-    shapeSource?: ChangeLogPayload,
-  ): ChangeLogPayload {
-    const sanitized = normalizeChangeLogPayload(
-      this.genericSanitizerService.sanitizeEntityResult(
-        entityHandle,
-        value,
-        template,
-      ) as Record<string, unknown>,
-    );
-
-    return projectChangeLogPayload(template, sanitized, shapeSource);
-  }
-
-  private captureSubmittedChangeLogPayload(
-    template: EntityTemplateDto[],
-    payload: Record<string, unknown> | null | undefined,
-  ): ChangeLogPayload {
-    if (!payload) {
-      return null;
-    }
-
-    const normalized = normalizeChangeLogPayload({
-      ...payload,
-    });
-
-    return projectChangeLogPayload(template, normalized);
-  }
   // #endregion
 }

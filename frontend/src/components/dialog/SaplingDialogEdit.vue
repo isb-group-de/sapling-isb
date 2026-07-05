@@ -11,77 +11,21 @@
         class="sapling-stack-xl sapling-record-dialog-shell sapling-dialog-edit-shell"
         @keydown="onShellKeydown"
       >
-        <v-card-title class="sapling-record-dialog-header sapling-dialog-edit-header">
-          <SaplingDialogEditHero :loading="isLoading" :eyebrow="entityLabel" :title="dialogTitle">
-            <template #timestamps>
-              <v-chip
-                v-if="createdAtLabel"
-                size="small"
-                color="primary"
-                variant="tonal"
-                prepend-icon="mdi-calendar-plus-outline"
-              >
-                {{ createdAtTitle }}: {{ createdAtLabel }}
-              </v-chip>
-              <v-chip
-                v-if="updatedAtLabel"
-                size="small"
-                color="primary"
-                variant="tonal"
-                prepend-icon="mdi-calendar-edit-outline"
-              >
-                {{ updatedAtTitle }}: {{ updatedAtLabel }}
-              </v-chip>
-              <v-chip
-                v-if="selectedFormConfigChipLabel"
-                size="small"
-                color="primary"
-                variant="tonal"
-                prepend-icon="mdi-table-cog"
-              >
-                {{ selectedFormConfigChipLabel }}
-              </v-chip>
-              <v-chip
-                v-if="isDirty && mode !== 'readonly'"
-                size="small"
-                color="warning"
-                variant="tonal"
-                prepend-icon="mdi-pencil"
-              >
-                {{ dirtySummaryLabel }}
-              </v-chip>
-            </template>
-
-            <template #actions>
-              <v-btn
-                v-if="canOpenFormConfigEditor && $vuetify.display.mdAndUp"
-                size="small"
-                color="primary"
-                variant="tonal"
-                prepend-icon="mdi-table-cog"
-                :aria-label="$t('formConfig.openForEntity')"
-                :title="$t('formConfig.openForEntity')"
-                @click="openFormConfigEditor"
-              >
-                {{ $t('formConfig.configure') }}
-              </v-btn>
-              <v-btn
-                v-else-if="canOpenFormConfigEditor"
-                class="sapling-dialog-hero__close"
-                size="small"
-                color="primary"
-                variant="tonal"
-                density="comfortable"
-                icon
-                :aria-label="$t('formConfig.openForEntity')"
-                :title="$t('formConfig.openForEntity')"
-                @click="openFormConfigEditor"
-              >
-                <v-icon icon="mdi-table-cog" />
-              </v-btn>
-            </template>
-          </SaplingDialogEditHero>
-        </v-card-title>
+        <SaplingDialogEditHeader
+          :loading="isLoading"
+          :eyebrow="entityLabel"
+          :title="dialogTitle"
+          :created-at-title="createdAtTitle"
+          :created-at-label="createdAtLabel"
+          :updated-at-title="updatedAtTitle"
+          :updated-at-label="updatedAtLabel"
+          :selected-form-config-chip-label="selectedFormConfigChipLabel"
+          :is-dirty="isDirty"
+          :dirty-summary-label="dirtySummaryLabel"
+          :mode="mode"
+          :can-open-form-config-editor="canOpenFormConfigEditor"
+          @open-form-config="openFormConfigEditor"
+        />
         <v-card-text class="sapling-record-dialog-content sapling-dialog-edit-content">
           <template v-if="isLoading">
             <div class="sapling-stack-xl sapling-record-dialog-loading sapling-dialog-edit-loading">
@@ -133,99 +77,28 @@
                       @submit.prevent="save"
                     >
                       <v-defaults-provider :defaults="dialogFieldDefaults">
-                        <div
-                          class="sapling-stack-lg sapling-record-dialog-form-layout sapling-dialog-edit-form-layout"
-                        >
-                          <section
-                            v-for="group in visibleTemplateGroups"
-                            :key="group.id"
-                            class="sapling-section-panel sapling-record-section sapling-dialog-edit-section"
-                            :class="{
-                              'sapling-dialog-edit-section--collapsed':
-                                group.label && !isGroupExpanded(group.id),
-                              'sapling-record-section--dirty':
-                                mode !== 'readonly' && isGroupDirty(group.templates),
-                              'sapling-dialog-edit-section--dirty':
-                                mode !== 'readonly' && isGroupDirty(group.templates),
-                            }"
-                          >
-                            <div
-                              v-if="group.label"
-                              class="sapling-section-header sapling-record-section__header sapling-dialog-edit-section__header"
-                            >
-                              <button
-                                type="button"
-                                class="sapling-row-between-md sapling-record-section__toggle sapling-dialog-edit-section__toggle"
-                                :aria-expanded="isGroupExpanded(group.id)"
-                                @click="toggleGroup(group.id)"
-                              >
-                                <h3
-                                  class="sapling-section-title sapling-record-section__title sapling-dialog-edit-section__title"
-                                >
-                                  {{ $t(group.label) }}
-                                </h3>
-                                <v-icon
-                                  :icon="
-                                    isGroupExpanded(group.id)
-                                      ? 'mdi-chevron-up'
-                                      : 'mdi-chevron-down'
-                                  "
-                                  size="20"
-                                />
-                              </button>
-                            </div>
-                            <v-expand-transition>
-                              <div
-                                v-show="!group.label || isGroupExpanded(group.id)"
-                                class="sapling-record-section__body sapling-dialog-edit-section__body"
-                              >
-                                <v-row
-                                  density="comfortable"
-                                  class="sapling-record-form-grid sapling-dialog-edit-grid"
-                                >
-                                  <v-col
-                                    v-for="template in group.templates"
-                                    :key="template.name"
-                                    v-bind="getTemplateColumnProps(template)"
-                                    class="sapling-record-form-grid__column sapling-dialog-edit-grid__column"
-                                  >
-                                    <div
-                                      class="sapling-record-field-shell sapling-dialog-edit-field-shell"
-                                      :class="{
-                                        'sapling-record-field-shell--dirty':
-                                          mode !== 'readonly' && isTemplateDirty(template),
-                                        'sapling-dialog-edit-field-shell--dirty':
-                                          mode !== 'readonly' && isTemplateDirty(template),
-                                      }"
-                                    >
-                                      <SaplingDialogEditFieldRenderer
-                                        :template="template"
-                                        :entity-handle="entity?.handle ?? ''"
-                                        :item-handle="item?.handle ?? undefined"
-                                        :mode="mode"
-                                        :form-values="form"
-                                        :visible-templates="visibleTemplates"
-                                        :permissions="permissions"
-                                        :icon-names="iconNames"
-                                        :is-reference-visible="isReferenceVisible"
-                                        :rules="getRules(template)"
-                                        :field-disabled="isFieldDisabled(template)"
-                                        :reference-field-disabled="isReferenceFieldDisabled(template)"
-                                        :reference-parent-filter="
-                                          template.referenceDependency
-                                            ? getReferenceParentFilter(template)
-                                            : undefined
-                                        "
-                                        @update-field="updateFormField"
-                                        @select-record="onDuplicateSelect"
-                                      />
-                                    </div>
-                                  </v-col>
-                                </v-row>
-                              </div>
-                            </v-expand-transition>
-                          </section>
-                        </div>
+                        <SaplingDialogEditFormSections
+                          :groups="visibleTemplateGroups"
+                          :mode="mode"
+                          :entity-handle="entityHandle"
+                          :item-handle="itemHandle"
+                          :form-values="form"
+                          :visible-templates="visibleTemplates"
+                          :permissions="permissions"
+                          :icon-names="iconNames"
+                          :is-reference-visible="isReferenceVisible"
+                          :is-group-expanded="isGroupExpanded"
+                          :is-group-dirty="isGroupDirty"
+                          :is-template-dirty="isTemplateDirty"
+                          :get-template-column-props="getTemplateColumnProps"
+                          :get-rules="getRules"
+                          :is-field-disabled="isFieldDisabled"
+                          :is-reference-field-disabled="isReferenceFieldDisabled"
+                          :get-reference-parent-filter="getReferenceParentFilter"
+                          @toggle-group="toggleGroup"
+                          @update-field="updateFormField"
+                          @select-record="onDuplicateSelect"
+                        />
                       </v-defaults-provider>
                     </v-form>
                   </div>
@@ -304,40 +177,19 @@
     </SaplingDialogCard>
   </v-dialog>
 
-  <SaplingDialogDelete
-    persistent
-    :model-value="recordDeleteDialog"
-    :item="item"
-    @update:model-value="recordDeleteDialog = $event"
-    @confirm="confirmRecordDelete"
-    @cancel="closeRecordDeleteDialog"
-  />
-
-  <SaplingTableRowUpload
-    v-if="showUploadDialog"
-    :show="showUploadDialog"
-    :item="item"
-    :entityHandle="entityHandle"
-    @close="closeUploadDialog"
-    @uploaded="closeUploadDialog"
-  />
-
-  <SaplingTableRowInformation
-    v-if="showInformationDialog"
-    :show="showInformationDialog"
-    :item="item"
-    :entityHandle="entityHandle"
-    @close="closeInformationDialog"
-    @saved="closeInformationDialog"
-  />
-
-  <SaplingExternalRecordLinksDialog
-    v-if="showExternalRecordLinksDialog"
-    :show="showExternalRecordLinksDialog"
+  <SaplingDialogRecordActionDialogs
+    :record-delete-dialog="recordDeleteDialog"
+    :show-upload-dialog="showUploadDialog"
+    :show-information-dialog="showInformationDialog"
+    :show-external-record-links-dialog="showExternalRecordLinksDialog"
     :item="item"
     :entity-handle="entityHandle"
-    @update:show="(value) => !value && closeExternalRecordLinksDialog()"
-    @close="closeExternalRecordLinksDialog"
+    @set-record-delete-dialog="recordDeleteDialog = $event"
+    @confirm-delete="confirmRecordDelete"
+    @cancel-delete="closeRecordDeleteDialog"
+    @close-upload="closeUploadDialog"
+    @close-information="closeInformationDialog"
+    @close-external-record-links="closeExternalRecordLinksDialog"
   />
 
   <SaplingDialogUnsavedChanges
@@ -354,52 +206,24 @@
 // #region Imports
 import { computed, nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
 import type {
-  AccumulatedPermission,
   DialogSaveAction,
   DialogSaveContext,
   DialogState,
   EntityTemplate,
 } from '@/entity/structure'
-import {
-  DEFAULT_ENTITY_ITEMS_COUNT,
-  DEFAULT_PAGE_SIZE_SMALL,
-  NAVIGATION_URL,
-} from '@/constants/project.constants'
+import { DEFAULT_PAGE_SIZE_SMALL } from '@/constants/project.constants'
 import { SAPLING_DIALOG_MAX_WIDTH, SAPLING_DIALOG_HEIGHT } from '@/constants/dialog.constants'
-import type { EntityItem, SaplingGenericItem, ScriptButtonItem } from '@/entity/entity'
+import type { EntityItem, SaplingGenericItem } from '@/entity/entity'
 import { useSaplingDialogEdit } from '@/composables/dialog/useSaplingDialogEdit'
-import {
-  getSaplingContextMenuTableItems,
-  type SaplingContextMenuTableMenuEntry,
-  type SaplingContextMenuTableMenuItem,
-} from '@/composables/context/useSaplingContextMenuTable'
-import { useSaplingMessageCenter } from '@/composables/system/useSaplingMessageCenter'
-import { useSaplingMailDialog } from '@/composables/dialog/useSaplingMailDialog'
-import { buildMailMenuActions } from '@/utils/saplingMailMenuUtil'
-import SaplingDialogEditHero from '@/components/common/SaplingDialogEditHero.vue'
+import { useSaplingDialogRecordActions } from '@/composables/dialog/useSaplingDialogRecordActions'
 import SaplingDialogCard from '@/components/dialog/SaplingDialogCard.vue'
-import SaplingDialogDelete from '@/components/dialog/SaplingDialogDelete.vue'
 import SaplingDialogEditActions from '@/components/dialog/SaplingDialogEditActions.vue'
+import SaplingDialogEditFormSections from '@/components/dialog/SaplingDialogEditFormSections.vue'
+import SaplingDialogEditHeader from '@/components/dialog/SaplingDialogEditHeader.vue'
+import SaplingDialogRecordActionDialogs from '@/components/dialog/SaplingDialogRecordActionDialogs.vue'
 import SaplingDialogUnsavedChanges from '@/components/dialog/SaplingDialogUnsavedChanges.vue'
-import SaplingDialogEditFieldRenderer from './SaplingDialogEditFieldRenderer.vue'
 import SaplingDialogEditRelationTab from './SaplingDialogEditRelationTab.vue'
-import SaplingExternalRecordLinksDialog from '@/components/import/SaplingExternalRecordLinksDialog.vue'
-import SaplingTableRowInformation from '@/components/table/SaplingTableRowInformation.vue'
-import SaplingTableRowUpload from '@/components/table/SaplingTableRowUpload.vue'
-import ApiGenericService from '@/services/api.generic.service'
-import ApiScriptService from '@/services/api.script.service'
-import { useCurrentPersonStore } from '@/stores/currentPersonStore'
-import { useTimelineDialogStore } from '@/stores/timelineDialogStore'
-import { useChangeLogDialogStore } from '@/stores/changeLogDialogStore'
-import { buildTableOrderBy } from '@/utils/saplingTableUtil'
-import {
-  buildScriptButtonExecutionKey,
-  handleScriptResultClient,
-  pushScriptButtonAlreadyRunningMessage,
-  pushScriptButtonStartedMessage,
-} from '@/utils/saplingScriptResultUtil'
 // #endregion
 
 // #region Props & Emits
@@ -429,12 +253,6 @@ const emit = defineEmits<{
 // #endregion
 
 const { t, d, te } = useI18n()
-const router = useRouter()
-const { pushMessage } = useSaplingMessageCenter()
-const currentPersonStore = useCurrentPersonStore()
-const timelineDialogStore = useTimelineDialogStore()
-const changeLogDialogStore = useChangeLogDialogStore()
-const { openMailDialog } = useSaplingMailDialog()
 
 const dialogFieldDefaults = {
   VAutocomplete: {
@@ -515,6 +333,38 @@ const {
   ),
 })
 
+const formSurfaceRef = ref<HTMLElement | null>(null)
+
+const {
+  canDeleteRecord,
+  canOpenFormConfigEditor,
+  editMobileSecondaryActionsDisabled,
+  hasReadonlyMobileActionMenu,
+  mobileRecordActionMenuGroups,
+  recordActionButtonsDisabled,
+  recordActionMenuItems,
+  recordDeleteDialog,
+  showExternalRecordLinksDialog,
+  showInformationDialog,
+  showUploadDialog,
+  closeExternalRecordLinksDialog,
+  closeInformationDialog,
+  closeRecordDeleteDialog,
+  closeUploadDialog,
+  confirmRecordDelete,
+  handleRecordAction,
+  openFormConfigEditor,
+  openRecordDeleteDialog,
+} = useSaplingDialogRecordActions(props, emit, {
+  activeTab,
+  form,
+  formConfigMenuItems,
+  isDirty,
+  isSaving,
+  permissions,
+  selectFormConfig,
+})
+
 function onShellKeydown(event: KeyboardEvent) {
   // Keyboard shortcuts inside the edit dialog:
   //   Ctrl/Cmd + S        -> save (keep dialog open)
@@ -543,15 +393,6 @@ function onShellKeydown(event: KeyboardEvent) {
   }
 }
 
-async function openFormConfigEditor(): Promise<void> {
-  const targetEntityHandle = props.entity?.handle
-  if (!targetEntityHandle) {
-    return
-  }
-
-  await router.push({ name: 'formConfig', query: { entity: targetEntityHandle } })
-}
-
 const entityLabel = computed(() =>
   props.entity?.handle ? t(`navigation.${props.entity.handle}`) : '',
 )
@@ -571,98 +412,12 @@ const dialogTitle = computed(() => {
 
 const entityHandle = computed(() => props.entity?.handle ?? '')
 
-const entityPermission = computed<AccumulatedPermission | null>(() => {
-  if (!props.entity?.handle) {
-    return null
-  }
-
-  return {
-    entityHandle: props.entity.handle,
-    allowRead: props.entity.canRead === true,
-    allowInsert: props.entity.canInsert === true,
-    allowUpdate: props.entity.canUpdate === true,
-    allowDelete: props.entity.canDelete === true,
-    allowShow: props.entity.canShow === true,
-  }
-})
-
 const itemHandle = computed<string | number | null>(() => {
   const handle = props.item?.handle
   return typeof handle === 'string' || typeof handle === 'number' ? handle : null
 })
 
-const hasPersistedItem = computed(() => itemHandle.value != null)
-
-const canNavigate = computed(() =>
-  props.templates.some((template) => template.options?.includes('isNavigation')),
-)
-
-const canShowInformation = computed(
-  () =>
-    permissions.value?.some(
-      (permission) => permission.entityHandle === 'information' && permission.allowRead,
-    ) ?? false,
-)
-
-const canDeleteRecord = computed(
-  () => hasPersistedItem.value && Boolean(entityPermission.value?.allowDelete),
-)
-
-const recordDeleteDialog = ref(false)
-const showUploadDialog = ref(false)
-const showInformationDialog = ref(false)
-const showExternalRecordLinksDialog = ref(false)
-const loadedScriptButtons = ref<ScriptButtonItem[]>([])
-const runningScriptActionCount = ref(0)
-const formSurfaceRef = ref<HTMLElement | null>(null)
-
-let scriptButtonsRequestId = 0
-const runningScriptButtonKeys = new Set<string>()
-
-const isScriptActionRunning = computed(() => runningScriptActionCount.value > 0)
-
-const recordActionButtonsDisabled = computed(
-  () => isSaving.value || isScriptActionRunning.value || (props.mode === 'edit' && isDirty.value),
-)
-
-const recordActionMenuItems = computed<SaplingContextMenuTableMenuEntry[]>(() => {
-  const groups: SaplingContextMenuTableMenuEntry[] =
-    !hasPersistedItem.value || props.mode === 'create'
-      ? []
-      : getSaplingContextMenuTableItems({
-          canChangeLog: hasPersistedItem.value,
-          canShowInformation: canShowInformation.value,
-          entityPermission: entityPermission.value,
-          canNavigate: canNavigate.value,
-          canTimeline: true,
-          canShowExternalRecordLinks: true,
-          scriptButtons: loadedScriptButtons.value,
-          mailActions: buildMailMenuActions(props.templates, form.value),
-          mailToLabel: t('global.mailTo'),
-          showEdit: false,
-        })
-          .map((group) =>
-            (Array.isArray(group) ? group : [group]).filter(
-              (menuItem) => !['edit', 'show', 'delete'].includes(menuItem.type),
-            ),
-          )
-          .filter((group) => group.length > 0)
-
-  if (formConfigMenuItems.value.length > 0) {
-    groups.push(
-      formConfigMenuItems.value.map((item) => ({
-        type: 'formConfig',
-        icon: item.active ? 'mdi-check-circle-outline' : item.icon,
-        title: item.title,
-        formConfigHandle: item.handle,
-      })),
-    )
-  }
-
-  return groups
-})
-
-function getTimestampTitle(field: 'createdAt' | 'updatedAt', fallback: string): string {
+function getTimestampTitle(field: 'createdAt' | 'updatedAt'): string {
   const entityHandle = props.entity?.handle
   const entityKey = entityHandle ? `${entityHandle}.${field}` : ''
 
@@ -670,7 +425,7 @@ function getTimestampTitle(field: 'createdAt' | 'updatedAt', fallback: string): 
     return t(entityKey)
   }
 
-  return t(fallback)
+  return t(`global.${field}`)
 }
 
 function formatTimestamp(value: unknown): string {
@@ -682,8 +437,8 @@ function formatTimestamp(value: unknown): string {
   return Number.isNaN(date.getTime()) ? '' : d(date)
 }
 
-const createdAtTitle = computed(() => getTimestampTitle('createdAt', 'global.createdAt'))
-const updatedAtTitle = computed(() => getTimestampTitle('updatedAt', 'global.updatedAt'))
+const createdAtTitle = computed(() => getTimestampTitle('createdAt'))
+const updatedAtTitle = computed(() => getTimestampTitle('updatedAt'))
 const createdAtLabel = computed(() => formatTimestamp(props.item?.createdAt))
 const updatedAtLabel = computed(() => formatTimestamp(props.item?.updatedAt))
 const selectedFormConfigChipLabel = computed(() =>
@@ -691,30 +446,8 @@ const selectedFormConfigChipLabel = computed(() =>
     ? `${t('formConfig.currentView')}: ${selectedFormConfigLabel.value}`
     : '',
 )
-const canOpenFormConfigEditor = computed(
-  () => currentPersonStore.isAdministrator && Boolean(props.entity?.handle),
-)
 
 const resetButtonLabel = computed(() => t('filter.reset'))
-
-const mobileRecordActionMenuGroups = computed<SaplingContextMenuTableMenuItem[][]>(() =>
-  recordActionMenuItems.value
-    .map((group) => (Array.isArray(group) ? group : [group]))
-    .filter((group) => group.length > 0),
-)
-
-const hasReadonlyMobileActionMenu = computed(
-  () => mobileRecordActionMenuGroups.value.length > 0 || canDeleteRecord.value,
-)
-
-const editMobileSecondaryActionsDisabled = computed(() => {
-  const hasDirtyActions = isDirty.value && !isSaving.value
-  const hasPersistedActions =
-    !recordActionButtonsDisabled.value &&
-    (canDeleteRecord.value || mobileRecordActionMenuGroups.value.length > 0)
-
-  return !hasDirtyActions && !hasPersistedActions
-})
 
 const dirtySummaryLabel = computed(() => {
   if (dirtyFieldCount.value <= 0) {
@@ -806,281 +539,6 @@ function updateSelectedRelationTableItems(items: SaplingGenericItem[]): void {
   selectedItems.value = items
 }
 
-function closeUploadDialog(): void {
-  showUploadDialog.value = false
-}
-
-function closeInformationDialog(): void {
-  showInformationDialog.value = false
-}
-
-function closeExternalRecordLinksDialog(): void {
-  showExternalRecordLinksDialog.value = false
-}
-
-function openRecordDeleteDialog(): void {
-  if (!canDeleteRecord.value) {
-    return
-  }
-
-  recordDeleteDialog.value = true
-}
-
-function closeRecordDeleteDialog(): void {
-  recordDeleteDialog.value = false
-}
-
-function openCopyDialogFromRecord(): void {
-  if (!props.item || !entityPermission.value?.allowInsert) {
-    return
-  }
-
-  const copiedItem = { ...props.item }
-
-  props.templates
-    .filter((template) => template.name === 'handle' || template.isUnique)
-    .forEach((template) => {
-      delete copiedItem[template.name]
-    })
-
-  activeTab.value = 0
-  emit('update:item', copiedItem)
-  emit('update:mode', 'create')
-}
-
-function openTimelineFromRecord(): void {
-  if (!entityHandle.value || itemHandle.value == null) {
-    return
-  }
-
-  timelineDialogStore.openTimeline(entityHandle.value, itemHandle.value)
-}
-
-function openChangeLogFromRecord(): void {
-  if (!entityHandle.value || itemHandle.value == null) {
-    return
-  }
-
-  changeLogDialogStore.openChangeLog(entityHandle.value, itemHandle.value)
-}
-
-function navigateToAddress(): void {
-  if (!props.item || !canNavigate.value) {
-    return
-  }
-
-  const address = props.templates
-    .filter((template) => template.options?.includes('isNavigation'))
-    .map((template) => props.item?.[template.name || ''])
-    .filter(Boolean)
-    .join(' ')
-
-  if (!address) {
-    return
-  }
-
-  window.open(`${NAVIGATION_URL}${encodeURIComponent(address)}`, '_blank')
-}
-
-function navigateToDocuments(): void {
-  if (!entityHandle.value || itemHandle.value == null) {
-    return
-  }
-
-  const url = `/file/document?filter={"reference":"${String(itemHandle.value)}","entity":"${entityHandle.value}"}`
-  window.open(url, '_blank')
-}
-
-function openUploadDialog(): void {
-  if (!hasPersistedItem.value || !entityPermission.value?.allowInsert) {
-    return
-  }
-
-  showUploadDialog.value = true
-}
-
-function openInformationDialog(): void {
-  if (!hasPersistedItem.value || !canShowInformation.value) {
-    return
-  }
-
-  showInformationDialog.value = true
-}
-
-function openExternalRecordLinksDialog(): void {
-  if (!hasPersistedItem.value) {
-    return
-  }
-
-  showExternalRecordLinksDialog.value = true
-}
-
-async function reloadDialogItem(): Promise<void> {
-  if (!entityHandle.value || itemHandle.value == null) {
-    return
-  }
-
-  const result = await ApiGenericService.find<SaplingGenericItem>(entityHandle.value, {
-    filter: { handle: itemHandle.value },
-    limit: 1,
-    relations: ['m:1'],
-  })
-
-  emit('update:item', result.data[0] ?? props.item)
-}
-
-async function runScriptButtonFromRecord(scriptButton: ScriptButtonItem): Promise<void> {
-  if (!props.entity || !props.item) {
-    return
-  }
-
-  const executionKey = buildScriptButtonExecutionKey(scriptButton, [props.item])
-  const scriptEntity = entityHandle.value || props.entity?.handle || 'script'
-  if (runningScriptButtonKeys.has(executionKey)) {
-    pushScriptButtonAlreadyRunningMessage({
-      button: scriptButton,
-      entity: scriptEntity,
-      pushMessage,
-      translate: t,
-      hasTranslation: te,
-    })
-    return
-  }
-
-  runningScriptButtonKeys.add(executionKey)
-  runningScriptActionCount.value = runningScriptButtonKeys.size
-  pushScriptButtonStartedMessage({
-    button: scriptButton,
-    entity: scriptEntity,
-    itemCount: 1,
-    pushMessage,
-    translate: t,
-    hasTranslation: te,
-  })
-
-  try {
-    await currentPersonStore.fetchCurrentPerson()
-    if (!currentPersonStore.person) {
-      return
-    }
-
-    const result = await ApiScriptService.runClient(
-      [props.item],
-      props.entity,
-      currentPersonStore.person,
-      scriptButton.name,
-      scriptButton.parameter,
-    )
-
-    await handleScriptResultClient(result, {
-      entity: scriptEntity,
-      pushMessage,
-      onItemData: (item) => emit('update:item', item as SaplingGenericItem),
-    })
-
-    if (result.isSuccess !== false) {
-      await reloadDialogItem()
-    }
-  } catch {
-    // API errors are already routed through the shared message center.
-  } finally {
-    runningScriptButtonKeys.delete(executionKey)
-    runningScriptActionCount.value = runningScriptButtonKeys.size
-  }
-}
-
-async function handleRecordAction(menuItem: SaplingContextMenuTableMenuItem): Promise<void> {
-  switch (menuItem.type) {
-    case 'copy':
-      openCopyDialogFromRecord()
-      break
-    case 'changeLog':
-      openChangeLogFromRecord()
-      break
-    case 'timeline':
-      openTimelineFromRecord()
-      break
-    case 'navigate':
-      navigateToAddress()
-      break
-    case 'uploadDocument':
-      openUploadDialog()
-      break
-    case 'showDocuments':
-      navigateToDocuments()
-      break
-    case 'showInformation':
-      openInformationDialog()
-      break
-    case 'showExternalRecordLinks':
-      openExternalRecordLinksDialog()
-      break
-    case 'mail':
-      if (menuItem.mailAction?.email && entityHandle.value) {
-        openMailDialog({
-          entityHandle: entityHandle.value,
-          itemHandle: itemHandle.value ?? undefined,
-          draftValues: form.value,
-          initialTo: [menuItem.mailAction.email],
-        })
-      }
-      break
-    case 'script':
-      if (menuItem.scriptButton) {
-        await runScriptButtonFromRecord(menuItem.scriptButton)
-      }
-      break
-    case 'formConfig':
-      selectFormConfig(menuItem.formConfigHandle ?? null)
-      break
-    default:
-      break
-  }
-}
-
-async function loadScriptButtons(): Promise<void> {
-  if (!entityHandle.value || !hasPersistedItem.value || props.mode === 'create') {
-    loadedScriptButtons.value = []
-    return
-  }
-
-  const currentRequestId = ++scriptButtonsRequestId
-  const result = await ApiGenericService.find<ScriptButtonItem>('scriptButton', {
-    filter: { entity: { handle: entityHandle.value } },
-    orderBy: buildTableOrderBy([{ key: 'title', order: 'asc' }]),
-    limit: DEFAULT_ENTITY_ITEMS_COUNT,
-    relations: ['m:1'],
-  })
-
-  if (currentRequestId !== scriptButtonsRequestId) {
-    return
-  }
-
-  loadedScriptButtons.value = result.data
-}
-
-async function confirmRecordDelete(): Promise<void> {
-  if (!entityHandle.value || itemHandle.value == null) {
-    return
-  }
-
-  try {
-    await ApiGenericService.delete(entityHandle.value, itemHandle.value)
-    closeRecordDeleteDialog()
-    pushMessage(
-      'success',
-      t('global.recordDeleted'),
-      t('global.recordDeletedDescription'),
-      entityHandle.value,
-    )
-    emit('deleted', props.item)
-    emit('update:modelValue', false)
-    emit('cancel')
-  } catch {
-    // API errors are already routed through the shared message center.
-  }
-}
-
 function onRelationSearch(templateName: string, search: string): void {
   relationTableSearch.value[templateName] = search
   relationTablePage.value[templateName] = 1
@@ -1088,22 +546,6 @@ function onRelationSearch(templateName: string, search: string): void {
 }
 
 watch(visibleTemplateGroups, () => syncExpandedGroups(), { immediate: true })
-
-watch(
-  () => [props.modelValue, entityHandle.value, itemHandle.value, props.mode] as const,
-  ([isOpen]) => {
-    if (!isOpen) {
-      loadedScriptButtons.value = []
-      closeRecordDeleteDialog()
-      closeUploadDialog()
-      closeInformationDialog()
-      return
-    }
-
-    void loadScriptButtons()
-  },
-  { immediate: true },
-)
 
 watch(
   () => props.modelValue,

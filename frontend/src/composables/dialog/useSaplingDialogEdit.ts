@@ -225,13 +225,13 @@ export function useSaplingDialogEdit(
   function translateDialogGroupLabel(groupKey: string): string {
     const normalizedGroupKey = groupKey.trim()
     const entityHandle = props.entity?.handle?.trim() ?? ''
-
     const translationKey = entityHandle
       ? [
           `${entityHandle}.dialogGroup.${normalizedGroupKey}`,
           `${entityHandle}.${normalizedGroupKey}`,
+          `global.dialogGroup.${normalizedGroupKey}`,
         ].find((key) => te(key))
-      : null
+      : [`global.dialogGroup.${normalizedGroupKey}`].find((key) => te(key))
 
     return translationKey ? t(translationKey) : normalizedGroupKey
   }

@@ -1,8 +1,10 @@
 import { Module } from '@nestjs/common';
 import { GenericController } from './generic.controller';
 import { GenericFilterService } from './generic-filter.service';
+import { GenericChangeLogService } from './generic-change-log.service';
 import { GenericCustomFieldService } from './generic-custom-field.service';
 import { GenericMutationService } from './generic-mutation.service';
+import { GenericOpenTaskEventsService } from './generic-open-task-events.service';
 import { GenericPayloadService } from './generic-payload.service';
 import { GenericPermissionService } from './generic-permission.service';
 import { GenericQueryService } from './generic-query.service';
@@ -12,6 +14,7 @@ import { GenericReferenceService } from './generic-reference.service';
 import { GenericSanitizerService } from './generic-sanitizer.service';
 import { GenericService } from './generic.service';
 import { GenericTimelineService } from './generic-timeline.service';
+import { GenericUpdateConflictService } from './generic-update-conflict.service';
 import { TemplateModule } from '../template/template.module';
 import { ScriptModule } from '../script/script.module';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
@@ -45,9 +48,11 @@ import { AuthModule } from '../../auth/auth.module';
   controllers: [GenericController],
   providers: [
     GenericService,
+    GenericChangeLogService,
     GenericCustomFieldService,
     GenericFilterService,
     GenericMutationService,
+    GenericOpenTaskEventsService,
     GenericPayloadService,
     GenericQueryService,
     GenericReadService,
@@ -56,6 +61,7 @@ import { AuthModule } from '../../auth/auth.module';
     GenericReferenceService,
     GenericSanitizerService,
     GenericTimelineService,
+    GenericUpdateConflictService,
   ],
   exports: [
     GenericService,

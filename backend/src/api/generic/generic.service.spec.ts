@@ -71,6 +71,9 @@ import { GenericRelationService } from './generic-relation.service';
 import { GenericReferenceService } from './generic-reference.service';
 import { GenericSanitizerService } from './generic-sanitizer.service';
 import { GenericTimelineService } from './generic-timeline.service';
+import { GenericChangeLogService } from './generic-change-log.service';
+import { GenericOpenTaskEventsService } from './generic-open-task-events.service';
+import { GenericUpdateConflictService } from './generic-update-conflict.service';
 
 const createTemplateField = (
   overrides: Partial<EntityTemplateDto>,
@@ -172,6 +175,19 @@ const createGenericService = ({
       templateService as never,
       currentService as never,
     );
+    const changeLogService = new GenericChangeLogService(
+      em as never,
+      sanitizerService,
+    );
+    const openTaskEventService = new GenericOpenTaskEventsService(
+      em as never,
+      referenceService,
+      openTaskEventsService as never,
+    );
+    const updateConflictService = new GenericUpdateConflictService(
+      changeLogService,
+      referenceService,
+    );
 
     return new GenericService(
       em as never,
@@ -185,7 +201,9 @@ const createGenericService = ({
       referenceService,
       sanitizerService,
       timelineService,
-      openTaskEventsService as never,
+      openTaskEventService,
+      changeLogService,
+      updateConflictService,
     );
   })();
 
