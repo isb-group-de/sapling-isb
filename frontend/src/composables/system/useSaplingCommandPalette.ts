@@ -7,7 +7,6 @@ import ApiSearchService, {
 } from '@/services/api.search.service'
 import { useCurrentPersonStore } from '@/stores/currentPersonStore'
 import { useCurrentPermissionStore } from '@/stores/currentPermissionStore'
-import { useRecordDialogStore } from '@/stores/recordDialogStore'
 import { buildFavoritePath } from '@/utils/saplingFavoriteNavigation'
 import { useSaplingPreferences } from '@/composables/system/useSaplingPreferences'
 import { useSaplingAccount } from '@/composables/account/useSaplingAccount'
@@ -32,7 +31,6 @@ export function useSaplingCommandPalette() {
   const { t, te } = useI18n()
   const currentPersonStore = useCurrentPersonStore()
   const currentPermissionStore = useCurrentPermissionStore()
-  const recordDialogStore = useRecordDialogStore()
   const {
     toggleTheme,
     setLanguage,
@@ -487,9 +485,6 @@ export function useSaplingCommandPalette() {
         haystack: `${label} ${entityLabel} ${preview} ${result.entityHandle}`.toLowerCase(),
         path: result.path ?? '',
         flatIndex: index,
-        run: () => {
-          recordDialogStore.openRecord(result.entityHandle, result.recordHandle)
-        },
       }
     }),
   )

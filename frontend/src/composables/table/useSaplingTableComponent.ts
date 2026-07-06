@@ -13,6 +13,7 @@ import type { EntityItem, ScriptButtonItem } from '@/entity/entity'
 import type { FilterQuery } from '@/services/api.generic.service'
 import { useCurrentPermissionStore } from '@/stores/currentPermissionStore'
 import { useGenericStore } from '@/stores/genericStore'
+import { getItemHandle } from '@/composables/table/saplingTableAction.utils'
 import {
   canReadReferenceTemplate,
   filterTableHeadersByReferencePermission,
@@ -51,6 +52,7 @@ export interface UseSaplingTableProps {
   scriptButtons?: ScriptButtonItem[]
   selected?: SaplingGenericItem[]
   isOpenEditDialog?: boolean
+  openEditHandle?: string | number | null
 }
 
 export type UseSaplingTableEmit = {
@@ -166,6 +168,7 @@ export function useSaplingTableComponent(props: UseSaplingTableProps, emit: UseS
     clearSelection,
   })
   const initialEditDialogShown = ref(false)
+  const lastAutoOpenedEditKey = ref<string | null>(null)
   const tableContainerRef = ref<HTMLElement | null>(null)
   const containerWidth = ref(0)
   const windowWidth = ref(
@@ -279,8 +282,26 @@ export function useSaplingTableComponent(props: UseSaplingTableProps, emit: UseS
 
   // #region Watchers
   watch(
-    () => [props.items, props.isOpenEditDialog] as const,
-    ([items, isOpenEditDialog]) => {
+    () => [props.items, props.isOpenEditDialog, props.openEditHandle, props.entityHandle] as const,
+    ([items, isOpenEditDialog, openEditHandle, entityHandle]) => {
+      const requestedHandle = normalizeOpenEditHandle(openEditHandle)
+      if (requestedHandle && Array.isArray(items) && items.length > 0) {
+        const autoOpenKey = `${entityHandle}:${requestedHandle}`
+        if (lastAutoOpenedEditKey.value !== autoOpenKey) {
+          const matchingItem =
+            items.find((item) => String(getItemHandle(item) ?? '') === requestedHandle) ??
+            (items.length === 1 ? items[0] : null)
+
+          if (matchingItem) {
+            lastAutoOpenedEditKey.value = autoOpenKey
+            void openEditDialog(matchingItem)
+          }
+        }
+
+        initialEditDialogShown.value = true
+        return
+      }
+
       if (
         isOpenEditDialog &&
         Array.isArray(items) &&
@@ -288,12 +309,16 @@ export function useSaplingTableComponent(props: UseSaplingTableProps, emit: UseS
         !editDialog.value.visible &&
         !initialEditDialogShown.value
       ) {
-        editDialog.value = { visible: true, mode: 'edit', item: items[0] ?? null }
+        const firstItem = items[0]
+        if (firstItem) {
+          void openEditDialog(firstItem)
+        }
         initialEditDialogShown.value = true
       }
 
-      if (!isOpenEditDialog) {
+      if (!isOpenEditDialog && !requestedHandle) {
         initialEditDialogShown.value = false
+        lastAutoOpenedEditKey.value = null
       }
     },
     { immediate: true },
@@ -482,4 +507,17 @@ function withCellClass(header: SaplingTableHeaderItem, className: string): Sapli
       class: [existingClass, className].filter(Boolean).join(' '),
     },
   }
+}
+
+function normalizeOpenEditHandle(value: string | number | null | undefined): string | null {
+  if (typeof value === 'number') {
+    return Number.isFinite(value) ? String(value) : null
+  }
+
+  if (typeof value !== 'string') {
+    return null
+  }
+
+  const normalized = value.trim()
+  return normalized.length > 0 ? normalized : null
 }

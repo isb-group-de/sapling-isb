@@ -18,6 +18,7 @@
     :form-config-menu-items="formConfigMenuItems"
     :selected-form-config-label="selectedFormConfigLabel"
     :is-loading-form-configs="isLoadingFormConfigs"
+    :open-edit-handle="openEditHandle"
     :show-actions="true"
     :multi-select="true"
     :show-favorite="true"
@@ -34,7 +35,8 @@
 </template>
 
 <script lang="ts" setup>
-import { toRef } from 'vue'
+import { computed, toRef } from 'vue'
+import { useRoute } from 'vue-router'
 import SaplingTable from '@/components/table/SaplingTable.vue'
 import { useSaplingTable } from '@/composables/table/useSaplingTable'
 import { DEFAULT_PAGE_SIZE_MEDIUM } from '@/constants/project.constants'
@@ -44,6 +46,11 @@ const props = defineProps<{
 }>()
 
 const entityHandle = toRef(props, 'entityHandle')
+const route = useRoute()
+const openEditHandle = computed(() => {
+  const value = Array.isArray(route.query.open) ? route.query.open[0] : route.query.open
+  return typeof value === 'string' && value.trim().length > 0 ? value : null
+})
 
 const {
   items,

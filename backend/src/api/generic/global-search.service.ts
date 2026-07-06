@@ -434,8 +434,9 @@ export class GlobalSearchService {
       ? `/${route.route.replace(/^\/+/, '')}`
       : `/table/${entity.handle}`;
     const filter = encodeURIComponent(JSON.stringify({ handle: recordHandle }));
+    const open = encodeURIComponent(String(recordHandle));
 
-    return `${routePath}?filter=${filter}`;
+    return `${routePath}?filter=${filter}&open=${open}`;
   }
 
   private getRoutes(entity: SearchableEntity): EntityRouteItem[] {

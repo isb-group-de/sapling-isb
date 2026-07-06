@@ -152,7 +152,7 @@ describe('GlobalSearchService', () => {
         recordHandle: 12,
         label: 'Standardfirma GmbH',
         icon: 'mdi-domain',
-        path: '/table/company?filter=%7B%22handle%22%3A12%7D',
+        path: '/table/company?filter=%7B%22handle%22%3A12%7D&open=12',
       }),
     ]);
   });
