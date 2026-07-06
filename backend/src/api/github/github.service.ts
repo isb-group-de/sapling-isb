@@ -122,7 +122,7 @@ export class GithubService {
    * @param {string} status Issue status requested by the client
    * @returns {string} Repository-relative issue endpoint suffix
    */
-  private buildIssuesPath(status: string): string {
+  private buildIssuesPath(status: GithubIssueStatus): string {
     const params = new URLSearchParams({
       state: status,
       per_page: '25',
@@ -334,7 +334,9 @@ export class GithubService {
    * @param {string} status Issue status (e.g., open, closed, all)
    * @returns {Promise<GithubIssueDto[]>} Array of issue objects
    */
-  async getIssues(status: string = 'open'): Promise<GithubIssueDto[]> {
+  async getIssues(
+    status: GithubIssueStatus = GithubIssueStatus.OPEN,
+  ): Promise<GithubIssueDto[]> {
     const recentlyClosedCutoff =
       status === GithubIssueStatus.CLOSED
         ? this.getRecentlyClosedCutoffDate()

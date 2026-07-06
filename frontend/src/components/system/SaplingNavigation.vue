@@ -422,7 +422,7 @@ const {
 const { hasFavoritesAccess } = useSaplingFavoritesAccess()
 const route = useRoute()
 const router = useRouter()
-const { mdAndUp, width: viewportWidth, xlAndUp } = useDisplay()
+const { width: viewportWidth, xlAndUp } = useDisplay()
 const activePanel = ref<'navigation' | 'favorites'>('navigation')
 const navigationShell = ref<HTMLElement | null>(null)
 const navigationBaseWidth = 430

@@ -55,8 +55,9 @@ export class GenericOpenTaskEventsService {
     );
   }
 
-  async notifyUsers(userHandles: ReadonlySet<number>): Promise<void> {
+  notifyUsers(userHandles: ReadonlySet<number>): Promise<void> {
     this.openTaskEventsService.notifyUsers(userHandles);
+    return Promise.resolve();
   }
 
   async loadReferenceUserHandles(

@@ -3,7 +3,6 @@ import type { ComponentPublicInstance, CSSProperties } from 'vue'
 import { useRoute } from 'vue-router'
 import ApiGenericService, {
   getGenericUpdateConflict,
-  type FilterQuery,
   type GenericUpdateConflictDetails,
 } from '@/services/api.generic.service'
 import type {

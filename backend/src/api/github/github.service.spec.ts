@@ -24,10 +24,12 @@ jest.mock('../../constants/project.constants', () => ({
 
 import axios from 'axios';
 import { GithubService } from './github.service';
+import { GithubIssueStatus } from './dto/github.dto';
 
-const axiosGet = axios.get as unknown as jest.Mock<
-  (...args: unknown[]) => Promise<{ data: unknown }>
->;
+const mockedAxios = axios as unknown as {
+  get: jest.Mock<(...args: unknown[]) => Promise<{ data: unknown }>>;
+};
+const axiosGet = mockedAxios.get;
 
 describe('GithubService', () => {
   beforeEach(() => {
@@ -108,7 +110,7 @@ describe('GithubService', () => {
 
     const service = new GithubService();
 
-    await expect(service.getIssues('closed')).resolves.toEqual([
+    await expect(service.getIssues(GithubIssueStatus.CLOSED)).resolves.toEqual([
       expect.objectContaining({
         number: 7,
         comments: [

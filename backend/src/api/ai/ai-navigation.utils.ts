@@ -431,8 +431,10 @@ function deduplicateHandles(
 }
 
 function buildListLabel(
-  _entityHandle: string,
-  _handles: Array<string | number>,
+  entityHandle: string,
+  handles: Array<string | number>,
 ): string | undefined {
+  void entityHandle;
+  void handles;
   return undefined;
 }

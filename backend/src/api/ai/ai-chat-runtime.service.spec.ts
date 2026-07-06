@@ -185,15 +185,16 @@ describe('AiChatRuntimeService', () => {
       onDelta,
       true,
       null,
-      async (_entry, args) => ({
-        serverHandle: 0,
-        serverName: 'sapling',
-        toolName: 'generic_list',
-        arguments: args,
-        content: JSON.stringify(repairPayload),
-        modelResult: repairPayload,
-        rawResult: repairPayload,
-      }),
+      (_entry, args) =>
+        Promise.resolve({
+          serverHandle: 0,
+          serverName: 'sapling',
+          toolName: 'generic_list',
+          arguments: args,
+          content: JSON.stringify(repairPayload),
+          modelResult: repairPayload,
+          rawResult: repairPayload,
+        }),
     );
 
     expect(result.toolCalls).toHaveLength(1);

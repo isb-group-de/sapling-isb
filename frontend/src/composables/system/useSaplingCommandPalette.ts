@@ -237,11 +237,11 @@ export function useSaplingCommandPalette() {
   function getEntityLabelByHandle(entityHandle: string): string {
     const entity = entities.value.find((entry) => entry.handle === entityHandle)
     if (entity) {
-      return getEntityLabel(entity) || entityHandle
+      return getEntityLabel(entity)
     }
 
     const key = `navigation.${entityHandle}`
-    return te(key) ? t(key) : entityHandle
+    return te(key) ? t(key) : ''
   }
 
   function getRouteLabel(entity: EntityItem, route: EntityRouteItem) {

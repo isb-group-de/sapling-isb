@@ -156,7 +156,7 @@ describe('SaplingFieldSelect', () => {
     await wrapper.findComponent(SaplingTableStub).vm.$emit('update:selected', [filteredBatch])
     await nextTick()
 
-    let modelValueEvents = wrapper.emitted('update:modelValue') ?? []
+    const modelValueEvents = wrapper.emitted('update:modelValue') ?? []
     expect(modelValueEvents[modelValueEvents.length - 1]?.[0]).toEqual([
       existingBatch,
       filteredBatch,

@@ -142,10 +142,10 @@ describe('SaplingFieldTeamsRecipient', () => {
       { label: 'Participants', value: 'participants' },
       { label: 'Responsible person', value: 'assigneePerson' },
       {
-        label: 'Sales opportunity -> Opportunity owner',
+        label: 'Sales opportunity / Opportunity owner',
         value: 'salesOpportunity.assigneePerson',
       },
-      { label: 'Ticket -> Ticket owner', value: 'ticket.assigneePerson' },
+      { label: 'Ticket / Ticket owner', value: 'ticket.assigneePerson' },
     ])
   })
 
@@ -168,10 +168,10 @@ describe('SaplingFieldTeamsRecipient', () => {
     expect(wrapper.findComponent(VSelectStub).props('items')).toEqual([
       { label: 'Responsible person', value: 'assigneePerson' },
       {
-        label: 'Sales opportunity -> Opportunity owner',
+        label: 'Sales opportunity / Opportunity owner',
         value: 'salesOpportunity.assigneePerson',
       },
-      { label: 'Ticket -> Ticket owner', value: 'ticket.assigneePerson' },
+      { label: 'Ticket / Ticket owner', value: 'ticket.assigneePerson' },
     ])
   })
 })

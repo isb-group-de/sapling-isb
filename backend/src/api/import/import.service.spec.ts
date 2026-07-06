@@ -300,7 +300,7 @@ describe('ImportService', () => {
 
   it('can append the external key to duplicate unique values during validation', async () => {
     const service = createService({
-      find: jest.fn((_, criteria) =>
+      find: jest.fn((_, criteria: { name?: string }) =>
         Promise.resolve(criteria.name === 'Leibniz' ? [{ handle: 5 }] : []),
       ),
     });

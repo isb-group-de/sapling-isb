@@ -47,10 +47,12 @@ describe('AzureCalendarService Outlook import privacy', () => {
   it('imports private Outlook sensitivity as a private Sapling event', async () => {
     const persisted: unknown[] = [];
     const emFork = {
-      findOne: jest.fn<(...args: unknown[]) => Promise<unknown>>(
-        async () => null,
+      findOne: jest.fn<(...args: unknown[]) => Promise<unknown>>(() =>
+        Promise.resolve(null),
       ),
-      find: jest.fn<(...args: unknown[]) => Promise<unknown[]>>(async () => []),
+      find: jest.fn<(...args: unknown[]) => Promise<unknown[]>>(() =>
+        Promise.resolve([]),
+      ),
       persist: jest.fn((item: unknown) => {
         persisted.push(item);
       }),
@@ -65,9 +67,7 @@ describe('AzureCalendarService Outlook import privacy', () => {
       ),
     ).resolves.toBe('created');
 
-    const event = persisted.find((item) => item instanceof EventItem) as
-      | EventItem
-      | undefined;
+    const event = persisted.find((item) => item instanceof EventItem);
     expect(event?.isPrivate).toBe(true);
     expect(event?.title).toBe('Planning');
     expect(event?.description).toBe('Details');
@@ -79,11 +79,11 @@ describe('AzureCalendarService Outlook import privacy', () => {
     for (const sensitivity of ['normal', undefined, 'confidential']) {
       const persisted: unknown[] = [];
       const emFork = {
-        findOne: jest.fn<(...args: unknown[]) => Promise<unknown>>(
-          async () => null,
+        findOne: jest.fn<(...args: unknown[]) => Promise<unknown>>(() =>
+          Promise.resolve(null),
         ),
-        find: jest.fn<(...args: unknown[]) => Promise<unknown[]>>(
-          async () => [],
+        find: jest.fn<(...args: unknown[]) => Promise<unknown[]>>(() =>
+          Promise.resolve([]),
         ),
         persist: jest.fn((item: unknown) => {
           persisted.push(item);
@@ -101,9 +101,7 @@ describe('AzureCalendarService Outlook import privacy', () => {
         ),
       ).resolves.toBe('created');
 
-      const event = persisted.find((item) => item instanceof EventItem) as
-        | EventItem
-        | undefined;
+      const event = persisted.find((item) => item instanceof EventItem);
       expect(event?.isPrivate).toBe(false);
     }
   });
@@ -113,10 +111,14 @@ describe('AzureCalendarService Outlook import privacy', () => {
     existingEvent.title = 'Old title';
     existingEvent.isPrivate = false;
     const emFork = {
-      findOne: jest.fn<(...args: unknown[]) => Promise<unknown>>(async () => ({
-        event: existingEvent,
-      })),
-      find: jest.fn<(...args: unknown[]) => Promise<unknown[]>>(async () => []),
+      findOne: jest.fn<(...args: unknown[]) => Promise<unknown>>(() =>
+        Promise.resolve({
+          event: existingEvent,
+        }),
+      ),
+      find: jest.fn<(...args: unknown[]) => Promise<unknown[]>>(() =>
+        Promise.resolve([]),
+      ),
       persist: jest.fn(),
     };
     const service = createService();

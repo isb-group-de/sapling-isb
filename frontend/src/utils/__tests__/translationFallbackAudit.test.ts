@@ -32,8 +32,8 @@ describe('translation fallback audit', () => {
 
     for (const file of files) {
       const source = readSource(file)
-      expect(source, file).not.toMatch(/humanize(?:Handle|EntityHandle)\s*\(/)
-      expect(source, file).not.toMatch(
+      expect(source).not.toMatch(/humanize(?:Handle|EntityHandle)\s*\(/)
+      expect(source).not.toMatch(
         /\?\s*t\([^:\n]+:\s*(fieldName|entityHandle|template\.name|action\.status|route\.navigation|key|message)\b/,
       )
     }
@@ -49,9 +49,9 @@ describe('translation fallback audit', () => {
 
     for (const file of files) {
       const source = readSource(file)
-      expect(source, file).not.toMatch(/isLoading\s*\?\s*['"`]\.\.\.['"`]/)
-      expect(source, file).not.toMatch(/return\s+['"`]\.\.\.['"`]/)
-      expect(source, file).toContain('v-skeleton-loader')
+      expect(source).not.toMatch(/isLoading\s*\?\s*['"`]\.\.\.['"`]/)
+      expect(source).not.toMatch(/return\s+['"`]\.\.\.['"`]/)
+      expect(source).toContain('v-skeleton-loader')
     }
   })
 })

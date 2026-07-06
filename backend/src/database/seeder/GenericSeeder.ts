@@ -187,7 +187,7 @@ export class GenericSeeder extends Seeder {
 
     const existing = await em.findOne(entityClass, {
       handle: seedItem.handle,
-    } as never);
+    });
 
     if (!existing) {
       return false;

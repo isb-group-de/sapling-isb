@@ -10,7 +10,7 @@ describe('GlobalSearchService', () => {
       whitelist: true,
     });
 
-    const result = await pipe.transform(
+    const result = (await pipe.transform(
       {
         query: 'Dirk',
         limit: '10',
@@ -20,7 +20,7 @@ describe('GlobalSearchService', () => {
         type: 'query',
         metatype: GlobalSearchQueryDto,
       },
-    );
+    )) as GlobalSearchQueryDto;
 
     expect(result).toEqual({
       query: 'Dirk',

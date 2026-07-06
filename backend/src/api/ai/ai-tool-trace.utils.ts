@@ -74,7 +74,7 @@ export function resolveAiToolCallStatus(
   }
 
   if (record?.ok === false) {
-    const errorText = String(record.error ?? record.message ?? '');
+    const errorText = stringifyTraceValue(record.error ?? record.message);
     return /permission|notallowed|not_allowed|readonly|readOnly|requiresConfirmation|requires_confirmation/i.test(
       errorText,
     )
@@ -191,4 +191,32 @@ function asRecord(value: unknown): Record<string, unknown> | null {
   return value && typeof value === 'object' && !Array.isArray(value)
     ? (value as Record<string, unknown>)
     : null;
+}
+
+function stringifyTraceValue(value: unknown): string {
+  if (value == null) {
+    return '';
+  }
+
+  if (typeof value === 'string') {
+    return value;
+  }
+
+  if (
+    typeof value === 'number' ||
+    typeof value === 'boolean' ||
+    typeof value === 'bigint'
+  ) {
+    return value.toString();
+  }
+
+  if (value instanceof Error) {
+    return value.message;
+  }
+
+  try {
+    return JSON.stringify(value) ?? '';
+  } catch {
+    return '';
+  }
 }

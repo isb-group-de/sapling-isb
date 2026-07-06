@@ -293,7 +293,6 @@ import {
   type UseSaplingTableProps,
 } from '@/composables/table/useSaplingTableComponent'
 import { useCurrentPersonStore } from '@/stores/currentPersonStore'
-import { useCurrentPermissionStore } from '@/stores/currentPermissionStore'
 import type {
   FormConfigMenuItem,
   FormConfigSelectionHandle,
@@ -335,7 +334,6 @@ const { t } = useI18n()
 const router = useRouter()
 const { isLoading: isHeaderTranslationLoading } = useTranslationLoader(props.entityHandle)
 const currentPersonStore = useCurrentPersonStore()
-const currentPermissionStore = useCurrentPermissionStore()
 
 const hasCompletedInitialLoad = ref(!props.isLoading)
 const importInputRef = ref<HTMLInputElement | null>(null)

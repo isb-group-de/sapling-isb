@@ -15,9 +15,9 @@ type MockEntityManager = {
 function createStore(record: MockSessionRecord | null) {
   const em: MockEntityManager = {
     findOne: jest.fn<(...args: unknown[]) => Promise<MockSessionRecord | null>>(
-      async () => record,
+      () => Promise.resolve(record),
     ),
-    flush: jest.fn<() => Promise<void>>(async () => undefined),
+    flush: jest.fn<() => Promise<void>>(() => Promise.resolve()),
   };
 
   const rootEm = {
@@ -38,7 +38,9 @@ function touchAsync(
   return new Promise((resolve, reject) => {
     store.touch(sid, sessionData as never, (error?: unknown) => {
       if (error) {
-        reject(error);
+        reject(
+          error instanceof Error ? error : new Error('Session touch failed'),
+        );
         return;
       }
 

@@ -415,7 +415,19 @@ export class GlobalSearchService {
       return '';
     }
 
-    return String(value).trim();
+    if (typeof value === 'string') {
+      return value.trim();
+    }
+
+    if (
+      typeof value === 'number' ||
+      typeof value === 'boolean' ||
+      typeof value === 'bigint'
+    ) {
+      return value.toString().trim();
+    }
+
+    return '';
   }
 
   private getNestedValue(
