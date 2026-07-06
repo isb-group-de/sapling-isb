@@ -252,6 +252,102 @@ describe('GlobalSearchService', () => {
     ]);
   });
 
+  it('prefers calendar and partner workspaces for record paths', async () => {
+    const eventEntity = Object.assign(new EntityItem(), {
+      handle: 'event',
+      icon: 'mdi-calendar',
+      canShow: true,
+      routes: {
+        getItems: () => [{ route: 'partner/event' }, { route: 'event', navigation: 'calendar' }],
+      },
+    });
+    const ticketEntity = Object.assign(new EntityItem(), {
+      handle: 'ticket',
+      icon: 'mdi-ticket',
+      canShow: true,
+      routes: {
+        getItems: () => [{ route: 'partner/ticket' }],
+      },
+    });
+    const em = {
+      find: jest.fn().mockResolvedValue([eventEntity, ticketEntity]),
+    };
+    const currentUser = { handle: 1 };
+    const currentService = {
+      getPerson: jest.fn().mockResolvedValue(currentUser),
+      getAllEntityPermissions: jest.fn().mockReturnValue([
+        {
+          entityHandle: 'event',
+          allowRead: true,
+          allowShow: true,
+        },
+        {
+          entityHandle: 'ticket',
+          allowRead: true,
+          allowShow: true,
+        },
+      ]),
+    };
+    const genericService = {
+      findAndCount: jest.fn((entityHandle: string) =>
+        Promise.resolve({
+          data: [
+            entityHandle === 'event'
+              ? {
+                  handle: 34,
+                  title: 'Standardtermin',
+                }
+              : {
+                  handle: 56,
+                  title: 'Standardticket',
+                },
+          ],
+          meta: {
+            total: 1,
+            page: 1,
+            limit: 3,
+            totalPages: 1,
+            executionTime: 0,
+          },
+        }),
+      ),
+    };
+    const templateService = {
+      getEntityTemplate: jest.fn().mockReturnValue([
+        {
+          name: 'title',
+          type: 'string',
+          isPersistent: true,
+          isReference: false,
+          options: ['isValue'],
+        },
+      ]),
+    };
+    const service = new GlobalSearchService(
+      em as never,
+      currentService as never,
+      genericService as never,
+      templateService as never,
+    );
+
+    const result = await service.search(currentUser as never, {
+      query: 'standard',
+    });
+
+    expect(result.items).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          entityHandle: 'event',
+          path: '/event?filter=%7B%22handle%22%3A34%7D&open=34',
+        }),
+        expect.objectContaining({
+          entityHandle: 'ticket',
+          path: '/partner/ticket?filter=%7B%22handle%22%3A56%7D&open=56',
+        }),
+      ]),
+    );
+  });
+
   it('does not search entities explicitly disabled for reads', async () => {
     const disabledEntity = Object.assign(new EntityItem(), {
       handle: 'internalThing',

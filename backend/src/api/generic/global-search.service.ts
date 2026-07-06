@@ -428,6 +428,10 @@ export class GlobalSearchService {
   ): string {
     const routes = this.getRoutes(entity);
     const route =
+      (entity.handle === 'event'
+        ? routes.find((entry) => entry.route === 'event')
+        : undefined) ??
+      routes.find((entry) => entry.route?.startsWith('partner/')) ??
       routes.find((entry) => entry.route?.startsWith('table/')) ??
       routes.find((entry) => Boolean(entry.route));
     const routePath = route?.route

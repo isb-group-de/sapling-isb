@@ -1,4 +1,5 @@
 import { computed, ref, watch, type Ref } from 'vue'
+import { useRoute } from 'vue-router'
 import type { ColumnFilterItem, EntityTemplate } from '@/entity/structure'
 import { useSaplingTable } from '@/composables/table/useSaplingTable'
 import { useSaplingChipFilters } from '@/composables/filter/useSaplingChipFilters'
@@ -21,8 +22,10 @@ const EMPTY_CHIP_FILTER_SENTINEL = '__sapling_empty_chip_filter__'
  */
 export function useSaplingPartner(entityHandle: Ref<string>) {
   //#region State
+  const route = useRoute()
   const currentPersonStore = useCurrentPersonStore()
   const selectedPeopleHandles = ref<PartnerHandle[]>([])
+  const restoredParentFilter = ref<Record<string, unknown>>({})
   let isSyncingChipColumnFilters = false
 
   const {
@@ -71,6 +74,7 @@ export function useSaplingPartner(entityHandle: Ref<string>) {
   //#region Lifecycle
   watch(entityHandle, () => {
     selectedPeopleHandles.value = []
+    restoredParentFilter.value = {}
     clearChipFilters()
     applyPartnerFilter()
   })
@@ -146,8 +150,11 @@ export function useSaplingPartner(entityHandle: Ref<string>) {
    */
   async function prepareInitialPartnerFilter() {
     await currentPersonStore.fetchCurrentPerson()
+    restoredParentFilter.value = cloneFilter(parentFilter.value)
     selectedPeopleHandles.value =
-      currentPersonStore.person?.handle != null ? [currentPersonStore.person.handle] : []
+      hasOpenHandleQuery() || currentPersonStore.person?.handle == null
+        ? []
+        : [currentPersonStore.person.handle]
 
     hydratePartnerSelectionFromRestoredFilter()
     applyPartnerFilter()
@@ -159,18 +166,26 @@ export function useSaplingPartner(entityHandle: Ref<string>) {
    * partner drawer all share one state.
    */
   function applyPartnerFilter() {
-    parentFilter.value = buildPartnerFilter(selectedPeopleHandles.value, partnerTemplates.value)
+    parentFilter.value = combineFilters(
+      restoredParentFilter.value,
+      buildPartnerFilter(selectedPeopleHandles.value, partnerTemplates.value),
+    )
   }
 
   function hydratePartnerSelectionFromRestoredFilter() {
     const restoredPeopleHandles = extractPartnerHandlesFromFilter(
-      parentFilter.value,
+      restoredParentFilter.value,
       partnerTemplates.value,
     )
 
     if (restoredPeopleHandles.length > 0) {
       selectedPeopleHandles.value = restoredPeopleHandles
     }
+  }
+
+  function hasOpenHandleQuery(): boolean {
+    const value = Array.isArray(route.query.open) ? route.query.open[0] : route.query.open
+    return typeof value === 'string' && value.trim().length > 0
   }
 
   function syncSelectedChipFiltersFromColumnFilters() {
@@ -284,6 +299,24 @@ function buildPartnerFilter(
     .filter((filter): filter is PartnerFilterClause => filter !== null)
 
   return orFilters.length > 0 ? { $or: orFilters } : {}
+}
+
+function combineFilters(
+  restoredFilter: Record<string, unknown>,
+  partnerFilter: Record<string, unknown>,
+): Record<string, unknown> {
+  const hasRestoredFilter = Object.keys(restoredFilter).length > 0
+  const hasPartnerFilter = Object.keys(partnerFilter).length > 0
+
+  if (hasRestoredFilter && hasPartnerFilter) {
+    return { $and: [restoredFilter, partnerFilter] }
+  }
+
+  return hasRestoredFilter ? restoredFilter : partnerFilter
+}
+
+function cloneFilter(filter: Record<string, unknown>): Record<string, unknown> {
+  return JSON.parse(JSON.stringify(filter)) as Record<string, unknown>
 }
 
 export function buildChipColumnFilterFromSelection(

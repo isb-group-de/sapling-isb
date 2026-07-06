@@ -1,5 +1,6 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import type { ComponentPublicInstance, CSSProperties } from 'vue'
+import { useRoute } from 'vue-router'
 import ApiGenericService, {
   getGenericUpdateConflict,
   type FilterQuery,
@@ -174,6 +175,7 @@ const MONTH_NAMES = [
  */
 export function useSaplingEvent() {
   //#region State
+  const route = useRoute()
   const { isLoading: isTranslationLoading, loadTranslations } = useTranslationLoader(
     'navigation',
     'calendar',
@@ -272,6 +274,7 @@ export function useSaplingEvent() {
   let stopWindowWatcher: (() => void) | null = null
   let scrollTimeoutId: number | null = null
   let scriptButtonsRequestId = 0
+  let lastAutoOpenedEventHandle: string | null = null
   const runningScriptButtonKeys = new Set<string>()
 
   const calendarDisplayType = computed(() =>
@@ -528,7 +531,10 @@ export function useSaplingEvent() {
       isCalendarInitializing.value = false
     }
 
-    queueScrollToCurrentTime()
+    const didOpenEvent = await openEventFromRoute()
+    if (!didOpenEvent) {
+      queueScrollToCurrentTime()
+    }
   })
 
   onBeforeUnmount(() => {
@@ -565,6 +571,17 @@ export function useSaplingEvent() {
       await refreshVisibleEvents()
     },
     { deep: true },
+  )
+
+  watch(
+    () => route.query.open,
+    () => {
+      if (isCalendarInitializing.value) {
+        return
+      }
+
+      void openEventFromRoute()
+    },
   )
   //#endregion
 
@@ -1178,6 +1195,39 @@ export function useSaplingEvent() {
     forceEditDialogDirtyFields.value = []
     dragSnapshot.value = null
     showEditDialog.value = true
+  }
+
+  async function openEventFromRoute(): Promise<boolean> {
+    const handle = getOpenEventHandleFromRoute()
+    if (handle == null) {
+      lastAutoOpenedEventHandle = null
+      return false
+    }
+
+    const autoOpenKey = String(handle)
+    if (lastAutoOpenedEventHandle === autoOpenKey) {
+      return false
+    }
+
+    const persistedEvent = await loadPersistedEvent(handle)
+    if (!persistedEvent) {
+      return false
+    }
+
+    lastAutoOpenedEventHandle = autoOpenKey
+
+    if (persistedEvent.startDate) {
+      goToDate(persistedEvent.startDate)
+    }
+
+    editEvent.value = toCalendarEvent(persistedEvent)
+    applyCalendarEventDateParts(editEvent.value)
+    forceEditDialogDirtyFields.value = []
+    dragSnapshot.value = null
+    suppressNextEventClick.value = false
+    showEditDialog.value = true
+    queueScrollToCurrentTime()
+    return true
   }
 
   /**
@@ -1807,6 +1857,16 @@ export function useSaplingEvent() {
     })
 
     return result.data[0] ?? null
+  }
+
+  function getOpenEventHandleFromRoute(): number | null {
+    const value = Array.isArray(route.query.open) ? route.query.open[0] : route.query.open
+    if (typeof value !== 'string' || value.trim().length === 0) {
+      return null
+    }
+
+    const parsed = Number.parseInt(value, 10)
+    return Number.isFinite(parsed) ? parsed : null
   }
 
   /**

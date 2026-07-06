@@ -34,6 +34,7 @@
                 :show-side-panel-toggle="true"
                 :side-panel-visible="isFilterPanelVisible"
                 :side-panel-toggle-label="filterPanelToggleLabel"
+                :open-edit-handle="openEditHandle"
                 side-panel-toggle-icon="mdi-account-group-outline"
                 :parent-filter="parentFilter"
                 :table-key="tableKey"
@@ -97,6 +98,7 @@
 import { computed, defineAsyncComponent, ref, toRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useDisplay } from 'vuetify'
+import { useRoute } from 'vue-router'
 import SaplingWorkFilterPanel from '@/components/filter/SaplingWorkFilterPanel.vue'
 import SaplingDialogCard from '@/components/dialog/SaplingDialogCard.vue'
 import { useSaplingPartner } from '@/composables/partner/useSaplingPartner'
@@ -109,6 +111,7 @@ const PARTNER_FILTER_DIALOG_BREAKPOINT = 1080
 // #region Props
 const props = defineProps<{ entityHandle: string }>()
 const entityHandleRef = toRef(props, 'entityHandle')
+const route = useRoute()
 // #endregion
 
 const { t } = useI18n()
@@ -125,6 +128,10 @@ const showDesktopFilterPanel = computed(
 const isFilterPanelVisible = computed(() =>
   isMobileFilterLayout.value ? mobileFilterDialogVisible.value : desktopFilterPanelVisible.value,
 )
+const openEditHandle = computed(() => {
+  const value = Array.isArray(route.query.open) ? route.query.open[0] : route.query.open
+  return typeof value === 'string' && value.trim().length > 0 ? value : null
+})
 
 const filterPanelLabel = computed(() => {
   const labels = [t('navigation.person'), t('navigation.company')]
