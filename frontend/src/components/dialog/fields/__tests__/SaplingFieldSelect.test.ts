@@ -1,7 +1,8 @@
 import { mount } from '@vue/test-utils'
-import { defineComponent, nextTick } from 'vue'
+import { computed, defineComponent, nextTick } from 'vue'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import SaplingFieldSelect from '../SaplingFieldSelect.vue'
+import { saplingTableDisplayContextKey } from '@/components/table/saplingTableDisplayContext'
 
 const { loadDataMock, onSearchUpdateMock, tableState } = vi.hoisted(() => {
   const makeRef = <T>(value: T) => ({ value })
@@ -76,11 +77,17 @@ const VAutocompleteStub = defineComponent({
 
 const SaplingTableStub = defineComponent({
   name: 'SaplingTable',
+  props: {
+    disableMobileView: Boolean,
+  },
   emits: ['update:selected'],
   template: '<div />',
 })
 
-function mountSelectField(modelValue: Array<Record<string, unknown>> = []) {
+function mountSelectField(
+  modelValue: Array<Record<string, unknown>> = [],
+  options: { parentIsMobileTable?: boolean } = {},
+) {
   return mount(SaplingFieldSelect, {
     props: {
       label: 'Batches',
@@ -93,6 +100,14 @@ function mountSelectField(modelValue: Array<Record<string, unknown>> = []) {
         'v-autocomplete': VAutocompleteStub,
         SaplingTable: SaplingTableStub,
       },
+      provide:
+        options.parentIsMobileTable === undefined
+          ? {}
+          : {
+              [saplingTableDisplayContextKey as symbol]: {
+                isMobileTable: computed(() => options.parentIsMobileTable === true),
+              },
+            },
     },
   })
 }
@@ -146,5 +161,13 @@ describe('SaplingFieldSelect', () => {
       existingBatch,
       filteredBatch,
     ])
+  })
+
+  it('keeps the dropdown table in desktop mode while the parent table is desktop', async () => {
+    const wrapper = mountSelectField([], { parentIsMobileTable: false })
+
+    await wrapper.findComponent(VAutocompleteStub).vm.$emit('focus')
+
+    expect(wrapper.findComponent(SaplingTableStub).props('disableMobileView')).toBe(true)
   })
 })

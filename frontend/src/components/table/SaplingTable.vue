@@ -274,7 +274,7 @@
 
 <script lang="ts" setup>
 // #region Imports
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, provide, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import SaplingSearch from '@/components/system/SaplingSearch.vue'
@@ -298,6 +298,7 @@ import type {
   FormConfigMenuItem,
   FormConfigSelectionHandle,
 } from '@/composables/dialog/saplingDialogEdit.utils'
+import { saplingTableDisplayContextKey } from './saplingTableDisplayContext'
 // #endregion
 
 // #region Props and Emits
@@ -488,6 +489,10 @@ const {
   openDeleteDialog,
   closeDeleteDialog,
 } = useSaplingTableComponent(props, emit)
+
+provide(saplingTableDisplayContextKey, {
+  isMobileTable,
+})
 
 const { openMailDialog } = useSaplingMailDialog()
 

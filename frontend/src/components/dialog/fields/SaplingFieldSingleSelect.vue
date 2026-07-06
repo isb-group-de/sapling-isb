@@ -53,6 +53,7 @@
         :show-actions="false"
         :show-search="false"
         :multi-select="false"
+        :disable-mobile-view="disableDropdownMobileView"
         :table-key="entityHandle"
         :selected="selectedItem ? [selectedItem] : []"
         @update:page="onPageUpdate"
@@ -72,13 +73,14 @@
 import SaplingTable from '@/components/table/SaplingTable.vue'
 import type { SaplingGenericItem } from '@/entity/entity'
 import { useSaplingTable } from '@/composables/table/useSaplingTable'
-import { ref, watch } from 'vue'
+import { computed, inject, ref, watch } from 'vue'
 import { getEntityValueLabel } from '@/utils/saplingTableUtil'
 import { useSaplingSingleSelectField } from '@/composables/fields/useSaplingSingleSelectField'
 import { useSaplingReferenceFilter } from '@/composables/fields/useSaplingReferenceFilter'
 import { DEFAULT_PAGE_SIZE_SMALL } from '@/constants/project.constants'
 import ApiGenericService, { type FilterQuery } from '@/services/api.generic.service'
 import { useGenericStore } from '@/stores/genericStore'
+import { saplingTableDisplayContextKey } from '@/components/table/saplingTableDisplayContext'
 // #endregion
 
 // #region Props and Emits
@@ -131,6 +133,10 @@ const { combineFilters, normalizeFilter, areFiltersEqual } = useSaplingReference
 const fieldSearch = ref('')
 const autocompleteItems = ref<SaplingGenericItem[]>([])
 const genericStore = useGenericStore()
+const tableDisplayContext = inject(saplingTableDisplayContextKey, null)
+const disableDropdownMobileView = computed(
+  () => tableDisplayContext?.isMobileTable.value === false,
+)
 // #endregion
 
 // #region Selection State
