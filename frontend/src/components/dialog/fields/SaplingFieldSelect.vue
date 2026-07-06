@@ -49,6 +49,7 @@
         :items-per-page="itemsPerPage"
         :total-items="totalItems"
         :is-loading="isLoading"
+        :is-initialized="isInitialized"
         :sort-by="sortBy"
         :column-filters="columnFilters"
         :active-filter="activeFilter"

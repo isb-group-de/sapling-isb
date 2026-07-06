@@ -66,6 +66,7 @@ export function useSaplingTable(
   const parentFilter = ref<Record<string, unknown>>({})
   const isResettingEntityState = ref(false)
   const isInitialized = ref(false)
+  const isDataLoading = ref(false)
   const systemTemplates = ref<EntityTemplate[]>([])
   const formConfigs = ref<SaplingFormConfigItem[]>([])
   const selectedFormConfigHandle = ref<FormConfigSelectionHandle>(null)
@@ -102,7 +103,9 @@ export function useSaplingTable(
   const entityTemplates = computed(() =>
     applyFormConfigOverlay(baseTemplates.value, selectedFormConfig.value?.config ?? null),
   )
-  const isLoading = computed(() => genericStore.getState(entityHandle.value).isLoading)
+  const isLoading = computed(
+    () => genericStore.getState(entityHandle.value).isLoading || isDataLoading.value,
+  )
   const formConfigMenuItems = computed<FormConfigMenuItem[]>(() => {
     const selectableConfigs = formConfigs.value.filter(
       (config) => config.isActive !== false && typeof config.handle === 'number',
@@ -285,6 +288,7 @@ export function useSaplingTable(
     const loadController = new AbortController()
     activeLoadController = loadController
     const requestId = ++latestLoadRequestId
+    isDataLoading.value = true
 
     try {
       const result = await ApiGenericService.find<SaplingGenericItem>(currentEntityHandle, {
@@ -318,6 +322,7 @@ export function useSaplingTable(
     } finally {
       if (activeLoadController === loadController) {
         activeLoadController = null
+        isDataLoading.value = false
       }
     }
   }
@@ -491,6 +496,7 @@ export function useSaplingTable(
     activeLoadController?.abort()
     activeLoadController = null
     latestLoadRequestId += 1
+    isDataLoading.value = false
     resetEntityState()
     if (typeof options?.initialSearch === 'string') {
       search.value = options.initialSearch

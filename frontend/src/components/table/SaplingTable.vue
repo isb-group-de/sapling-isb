@@ -359,13 +359,11 @@ watch(
 const hasTableStructure = computed(
   () =>
     (props.headers?.length ?? 0) > 0 ||
-    (props.entityTemplates.length > 0 &&
-      props.entityPermission !== null &&
-      currentPermissionStore.loaded),
+    (props.entityTemplates.length > 0 && props.entityPermission !== null),
 )
 const showInitialSkeleton = computed(
   () =>
-    props.isInitialized === false ||
+    (props.isInitialized === false && !hasTableStructure.value) ||
     (!hasCompletedInitialLoad.value && !hasTableStructure.value),
 )
 const refreshButtonLabel = computed(() => t('global.refresh'))
