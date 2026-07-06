@@ -1,10 +1,11 @@
-export type CommandPaletteGroupKey = 'favorite' | 'entity' | 'action'
+export type CommandPaletteGroupKey = 'record' | 'favorite' | 'entity' | 'action'
 
 export interface CommandPaletteItem {
   id: string
   group: CommandPaletteGroupKey
   label: string
   hint?: string
+  context?: string
   icon: string
   haystack: string
   path: string

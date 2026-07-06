@@ -41,6 +41,7 @@ export class CompanyRelationshipItem {
    * @type {string}
    */
   @ApiPropertyOptional()
+  @Sapling(['isValue'])
   @SaplingForm({
     order: 100,
     group: 'companyRelationship.groupContent',

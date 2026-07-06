@@ -29,9 +29,14 @@
           <v-icon size="20" class="sapling-command-palette__item-icon">
             {{ item.icon }}
           </v-icon>
-          <span class="sapling-command-palette__item-label">{{ item.label }}</span>
-          <span v-if="item.hint" class="sapling-command-palette__item-hint">
-            {{ item.hint }}
+          <span class="sapling-command-palette__item-content">
+            <span class="sapling-command-palette__item-label">{{ item.label }}</span>
+            <span v-if="item.hint" class="sapling-command-palette__item-hint">
+              {{ item.hint }}
+            </span>
+          </span>
+          <span v-if="item.context" class="sapling-command-palette__item-context">
+            {{ item.context }}
           </span>
         </button>
         <v-divider

@@ -23,6 +23,10 @@ frontend/src/components/table/SaplingTableFavoriteDialog.vue
 frontend/src/composables/dialog/useSaplingDialogFavorite.ts
 frontend/src/composables/dashboard/useSaplingFavorites.ts
 frontend/src/components/dashboard/SaplingFavorites.vue
+frontend/src/composables/system/useSaplingCommandPalette.ts
+frontend/src/services/api.search.service.ts
+backend/src/api/generic/global-search.controller.ts
+backend/src/api/generic/global-search.service.ts
 ```
 
 Seed files:
@@ -105,6 +109,32 @@ The frontend builds filters from:
 `saplingTableUtil.ts` turns user-visible filter choices into backend where clauses. Column filter components choose the input shape by field type: single value, relation selection, ranges, boolean values, and icon values.
 
 Free-text search builds an `$or` across searchable/value fields from the entity template.
+
+## Command Palette Record Search
+
+The command palette includes a global record search backed by:
+
+```text
+GET /api/command-palette/records?query=<term>
+```
+
+This search is separate from AI vectorization. It is a classic, permission-filtered
+text search intended for fast navigation and opening records from `Ctrl/⌘+K`.
+The backend derives searchable fields from entity metadata:
+
+- only entities the current user may read and show are searched
+- visible entities are included unless `EntityItem.canRead` is explicitly `false`
+- string-like, persistent, non-security, non-system fields are searched
+- fields marked with `isValue` are preferred for labels and ranking
+- multi-word queries are matched both as a full phrase and as terms across fields
+
+Results return entity handle, record handle, label, icon, a compact preview, and
+a fallback table path. The frontend renders them in the `Datensätze` / `Records`
+group and opens the matching record through the global generic record dialog.
+
+Use AI semantic search instead when the user asks natural-language questions
+over long text such as ticket problems, solutions, knowledge articles, effort
+estimate requirements, or sales opportunity pain points.
 
 ## Saved Views
 

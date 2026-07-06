@@ -1,9 +1,13 @@
-import { computed, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import ApiGenericService from '@/services/api.generic.service'
+import ApiSearchService, {
+  type GlobalSearchResultItem,
+} from '@/services/api.search.service'
 import { useCurrentPersonStore } from '@/stores/currentPersonStore'
 import { useCurrentPermissionStore } from '@/stores/currentPermissionStore'
+import { useRecordDialogStore } from '@/stores/recordDialogStore'
 import { buildFavoritePath } from '@/utils/saplingFavoriteNavigation'
 import { useSaplingPreferences } from '@/composables/system/useSaplingPreferences'
 import { useSaplingAccount } from '@/composables/account/useSaplingAccount'
@@ -19,11 +23,16 @@ import type {
   CommandPaletteItem,
 } from '@/components/system/command-palette/commandPalette.types'
 
+const RECORD_SEARCH_DEBOUNCE_MS = 250
+const RECORD_SEARCH_LIMIT = 10
+const RECORD_SEARCH_MIN_LENGTH = 2
+
 export function useSaplingCommandPalette() {
   const router = useRouter()
   const { t, te } = useI18n()
   const currentPersonStore = useCurrentPersonStore()
   const currentPermissionStore = useCurrentPermissionStore()
+  const recordDialogStore = useRecordDialogStore()
   const {
     toggleTheme,
     setLanguage,
@@ -47,10 +56,16 @@ export function useSaplingCommandPalette() {
 
   const entities = ref<EntityItem[]>([])
   const favorites = ref<FavoriteItem[]>([])
+  const recordResults = ref<GlobalSearchResultItem[]>([])
+  const isRecordSearchLoading = ref(false)
+  let recordSearchTimeout: ReturnType<typeof setTimeout> | null = null
+  let recordSearchController: AbortController | null = null
+  let recordSearchRequestId = 0
 
   async function openPalette() {
     isOpen.value = true
     query.value = ''
+    recordResults.value = []
     activeIndex.value = 0
     if (!isLoaded.value) {
       void loadData()
@@ -59,6 +74,7 @@ export function useSaplingCommandPalette() {
 
   function closePalette() {
     isOpen.value = false
+    cancelRecordSearch()
   }
 
   function onDialogToggle(value: boolean) {
@@ -118,9 +134,118 @@ export function useSaplingCommandPalette() {
     favorites.value = response.data ?? []
   }
 
+  function cancelRecordSearch() {
+    if (recordSearchTimeout) {
+      clearTimeout(recordSearchTimeout)
+      recordSearchTimeout = null
+    }
+
+    recordSearchController?.abort()
+    recordSearchController = null
+    isRecordSearchLoading.value = false
+  }
+
+  function scheduleRecordSearch(rawQuery: string) {
+    if (recordSearchTimeout) {
+      clearTimeout(recordSearchTimeout)
+      recordSearchTimeout = null
+    }
+
+    const scope = getRecordSearchScope(rawQuery)
+    if (!scope) {
+      recordSearchController?.abort()
+      recordSearchController = null
+      recordResults.value = []
+      isRecordSearchLoading.value = false
+      return
+    }
+
+    recordSearchTimeout = setTimeout(() => {
+      recordSearchTimeout = null
+      void runRecordSearch(scope)
+    }, RECORD_SEARCH_DEBOUNCE_MS)
+  }
+
+  function getRecordSearchScope(
+    rawQuery: string,
+  ): { query: string; entityHandles?: string[] } | null {
+    const value = rawQuery.trim()
+    if (value.length < RECORD_SEARCH_MIN_LENGTH || value.endsWith(':')) {
+      return null
+    }
+
+    const colonIdx = value.indexOf(':')
+    if (colonIdx > 1 && colonIdx < value.length - 1) {
+      const entityPart = value.slice(0, colonIdx).trim().toLowerCase()
+      const searchPart = value.slice(colonIdx + 1).trim()
+
+      if (searchPart.length < RECORD_SEARCH_MIN_LENGTH) {
+        return null
+      }
+
+      const matchingEntities = entities.value.filter(
+        (entity) =>
+          entity.handle.toLowerCase().startsWith(entityPart) ||
+          getEntityLabel(entity).toLowerCase().startsWith(entityPart),
+      )
+
+      if (matchingEntities.length === 0) {
+        return null
+      }
+
+      return {
+        query: searchPart,
+        entityHandles: matchingEntities.map((entity) => entity.handle),
+      }
+    }
+
+    return { query: value }
+  }
+
+  async function runRecordSearch(scope: { query: string; entityHandles?: string[] }) {
+    recordSearchController?.abort()
+    const controller = new AbortController()
+    recordSearchController = controller
+    isRecordSearchLoading.value = true
+    const requestId = ++recordSearchRequestId
+
+    try {
+      const response = await ApiSearchService.global(scope.query, {
+        limit: RECORD_SEARCH_LIMIT,
+        entityHandles: scope.entityHandles,
+        signal: controller.signal,
+      })
+
+      if (requestId !== recordSearchRequestId || recordSearchController !== controller) {
+        return
+      }
+
+      recordResults.value = response.items ?? []
+    } catch (error) {
+      if (!isRequestCanceled(error) && requestId === recordSearchRequestId) {
+        recordResults.value = []
+      }
+    } finally {
+      if (recordSearchController === controller) {
+        recordSearchController = null
+        isRecordSearchLoading.value = false
+      }
+    }
+  }
+
   function getEntityLabel(entity: EntityItem) {
     const key = `navigation.${entity.handle}`
     return te(key) ? t(key) : ''
+  }
+
+  function getEntityLabelByHandle(entityHandle: string): string {
+    const entity = entities.value.find((entry) => entry.handle === entityHandle)
+    if (entity) {
+      return getEntityLabel(entity) || entityHandle
+    }
+
+    const key = `navigation.${entityHandle}`
+    return te(key) ? t(key) : entityHandle
   }
 
   function getRouteLabel(entity: EntityItem, route: EntityRouteItem) {
@@ -347,6 +472,37 @@ export function useSaplingCommandPalette() {
     return items.map((item, index) => ({ ...item, flatIndex: index }))
   })
 
+  const recordItems = computed<CommandPaletteItem[]>(() =>
+    recordResults.value.map((result, index) => {
+      const entityLabel = getEntityLabelByHandle(result.entityHandle)
+      const label = result.label || String(result.recordHandle)
+      const preview = result.preview && result.preview !== label ? result.preview : ''
+      return {
+        id: `record:${result.entityHandle}:${String(result.recordHandle)}`,
+        group: 'record' as CommandPaletteGroupKey,
+        label,
+        hint: preview || undefined,
+        context: entityLabel,
+        icon: result.icon || 'mdi-file-document-outline',
+        haystack: `${label} ${entityLabel} ${preview} ${result.entityHandle}`.toLowerCase(),
+        path: result.path ?? '',
+        flatIndex: index,
+        run: () => {
+          recordDialogStore.openRecord(result.entityHandle, result.recordHandle)
+        },
+      }
+    }),
+  )
+
+  function withRecordResults(items: CommandPaletteItem[]): CommandPaletteItem[] {
+    const records = recordItems.value
+    if (records.length === 0) {
+      return items.slice(0, 50)
+    }
+
+    return [...items.slice(0, Math.max(50 - records.length, 0)), ...records].slice(0, 50)
+  }
+
   const filteredResults = computed<CommandPaletteItem[]>(() => {
     const needle = query.value.trim().toLowerCase()
     if (!needle) {
@@ -355,7 +511,7 @@ export function useSaplingCommandPalette() {
 
     if (needle.endsWith(':') && needle.length > 1) {
       const prefix = needle.slice(0, -1)
-      return allItems.value.filter((item) => item.haystack.includes(prefix)).slice(0, 50)
+      return withRecordResults(allItems.value.filter((item) => item.haystack.includes(prefix)))
     }
 
     const colonIdx = needle.indexOf(':')
@@ -388,16 +544,16 @@ export function useSaplingCommandPalette() {
             flatIndex: idx,
           } satisfies CommandPaletteItem
         })
-        return [
+        return withRecordResults([
           ...searchItems,
           ...allItems.value
             .filter((item) => item.haystack.includes(entityPart))
             .slice(0, 50 - searchItems.length),
-        ]
+        ])
       }
     }
 
-    return allItems.value.filter((item) => item.haystack.includes(needle)).slice(0, 50)
+    return withRecordResults(allItems.value.filter((item) => item.haystack.includes(needle)))
   })
 
   const groupedResults = computed<CommandPaletteGroup[]>(() => {
@@ -405,6 +561,7 @@ export function useSaplingCommandPalette() {
     const favoriteGroup = reindexed.filter((item) => item.group === 'favorite')
     const entityGroup = reindexed.filter((item) => item.group === 'entity')
     const actionGroup = reindexed.filter((item) => item.group === 'action')
+    const recordGroup = reindexed.filter((item) => item.group === 'record')
     const groups: CommandPaletteGroup[] = []
     if (favoriteGroup.length > 0) {
       groups.push({
@@ -427,11 +584,22 @@ export function useSaplingCommandPalette() {
         items: actionGroup,
       })
     }
+    if (recordGroup.length > 0) {
+      groups.push({
+        key: 'record',
+        label: t('global.commandPalette.records'),
+        items: recordGroup,
+      })
+    }
     return groups
   })
 
   watch(filteredResults, () => {
     activeIndex.value = 0
+  })
+
+  watch(query, (value) => {
+    scheduleRecordSearch(value)
   })
 
   function moveActive(delta: number) {
@@ -465,9 +633,21 @@ export function useSaplingCommandPalette() {
     await runItem(target)
   }
 
+  const isPaletteLoading = computed(
+    () =>
+      isLoading.value ||
+      (isRecordSearchLoading.value &&
+        query.value.trim().length >= RECORD_SEARCH_MIN_LENGTH &&
+        groupedResults.value.length === 0),
+  )
+
+  onBeforeUnmount(() => {
+    cancelRecordSearch()
+  })
+
   return {
     isOpen,
-    isLoading,
+    isLoading: isPaletteLoading,
     query,
     activeIndex,
     groupedResults,
@@ -478,4 +658,13 @@ export function useSaplingCommandPalette() {
     runItem,
     activateCurrent,
   }
+}
+
+function isRequestCanceled(error: unknown): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    (error as { code?: string }).code === 'ERR_CANCELED'
+  )
 }

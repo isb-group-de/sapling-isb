@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import { GenericController } from './generic.controller';
+import { GlobalSearchController } from './global-search.controller';
+import { GlobalSearchService } from './global-search.service';
 import { GenericFilterService } from './generic-filter.service';
 import { GenericChangeLogService } from './generic-change-log.service';
 import { GenericCustomFieldService } from './generic-custom-field.service';
@@ -45,9 +47,10 @@ import { AuthModule } from '../../auth/auth.module';
     CurrentModule,
     OpenTaskEventsModule,
   ],
-  controllers: [GenericController],
+  controllers: [GenericController, GlobalSearchController],
   providers: [
     GenericService,
+    GlobalSearchService,
     GenericChangeLogService,
     GenericCustomFieldService,
     GenericFilterService,
