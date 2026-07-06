@@ -222,18 +222,46 @@ export function useSaplingDialogEdit(
     ),
   )
 
+  function formatDialogGroupFallback(groupKey: string): string {
+    const normalizedGroupKey = groupKey.trim()
+    const lastSegment = normalizedGroupKey.split('.').filter(Boolean).pop() ?? normalizedGroupKey
+    const withoutPrefix = lastSegment.replace(/^group/, '')
+    const spaced = withoutPrefix
+      .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+      .replace(/[_-]+/g, ' ')
+      .trim()
+
+    if (!spaced) {
+      return normalizedGroupKey
+    }
+
+    return spaced.charAt(0).toUpperCase() + spaced.slice(1)
+  }
+
   function translateDialogGroupLabel(groupKey: string): string {
     const normalizedGroupKey = groupKey.trim()
     const entityHandle = props.entity?.handle?.trim() ?? ''
+    const unscopedGroupKey =
+      entityHandle && normalizedGroupKey.startsWith(`${entityHandle}.`)
+        ? normalizedGroupKey.slice(entityHandle.length + 1)
+        : normalizedGroupKey
     const translationKey = entityHandle
       ? [
+          normalizedGroupKey,
+          `${entityHandle}.dialogGroup.${unscopedGroupKey}`,
+          `${entityHandle}.${unscopedGroupKey}`,
           `${entityHandle}.dialogGroup.${normalizedGroupKey}`,
           `${entityHandle}.${normalizedGroupKey}`,
-          `global.dialogGroup.${normalizedGroupKey}`,
+          `global.dialogGroup.${unscopedGroupKey}`,
+          `global.${unscopedGroupKey}`,
         ].find((key) => te(key))
-      : [`global.dialogGroup.${normalizedGroupKey}`].find((key) => te(key))
+      : [
+          normalizedGroupKey,
+          `global.dialogGroup.${unscopedGroupKey}`,
+          `global.${unscopedGroupKey}`,
+        ].find((key) => te(key))
 
-    return translationKey ? t(translationKey) : normalizedGroupKey
+    return translationKey ? t(translationKey) : formatDialogGroupFallback(normalizedGroupKey)
   }
 
   const visibleTemplateGroups = computed(() =>

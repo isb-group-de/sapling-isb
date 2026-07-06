@@ -1,11 +1,13 @@
 <template>
-  <v-row density="comfortable">
+  <v-row density="comfortable" class="sapling-field-date-time">
     <v-col :cols="8">
       <v-date-input
         :label="computedLabel"
         :model-value="dateValue"
         :disabled="isDisabled"
         :rules="rules"
+        density="compact"
+        hide-details="auto"
         prepend-icon=""
         prepend-inner-icon="mdi-calendar"
         @update:model-value="updateDate"
@@ -14,10 +16,13 @@
     <v-col :cols="4">
       <v-text-field
         type="time"
-        :label="computedLabel"
+        label=""
+        :aria-label="`${computedLabel} time`"
         :model-value="timeValue"
         :disabled="isDisabled"
         :rules="rules"
+        density="compact"
+        hide-details="auto"
         @update:model-value="updateTime"
         autocomplete="off"
       />

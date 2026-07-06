@@ -82,6 +82,15 @@
           @normalize-generic-reference-key-columns="normalizeGenericReferenceKeyColumns"
         />
 
+        <section
+          v-if="!batch"
+          class="sapling-import__empty sapling-empty-state-panel sapling-empty-state-panel--compact"
+        >
+          <v-icon size="40" color="primary">mdi-file-delimited-outline</v-icon>
+          <h2 class="sapling-empty-state-panel__title">{{ t('import.selectFile') }}</h2>
+          <p class="sapling-empty-state-panel__text">{{ t('import.fileRequired') }}</p>
+        </section>
+
         <SaplingImportMappingEditor
           :has-batch="Boolean(batch)"
           :fields="importableFields"

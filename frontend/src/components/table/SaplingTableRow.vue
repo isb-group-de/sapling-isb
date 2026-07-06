@@ -7,6 +7,7 @@
       'multi-selected-row': props.multiSelect && props.isSelected,
     }"
     tabindex="0"
+    :aria-label="rowLabel"
     @mousedown="onRowMouseDown($event, index)"
     @dblclick="onRowDoubleClick($event)"
     @keydown="onRowKeydown($event, index)"
@@ -198,6 +199,7 @@
 
 <script lang="ts" setup>
 // #region Imports
+import { computed } from 'vue'
 import type { SaplingContextMenuTableMenuItem } from '@/composables/context/useSaplingContextMenuTable'
 import SaplingRecordActionMenuList from '@/components/common/SaplingRecordActionMenuList.vue'
 import SaplingDialogEdit from '@/components/dialog/SaplingDialogEdit.vue'
@@ -273,6 +275,14 @@ const {
   formatLink,
 } = useSaplingTableRow(props, emit)
 const { formatPhoneNumber } = useSaplingPhoneNumber()
+
+const rowLabel = computed(() => {
+  const firstReadableColumn = props.columns.find(
+    (column) => column.key && column.key !== '__actions' && column.key !== '__select',
+  )
+  const value = firstReadableColumn?.key ? props.item[firstReadableColumn.key] : undefined
+  return value == null || value === '' ? String(props.index + 1) : String(value)
+})
 
 function onMenuItemClick(menuItem: SaplingContextMenuTableMenuItem) {
   switch (menuItem.type) {

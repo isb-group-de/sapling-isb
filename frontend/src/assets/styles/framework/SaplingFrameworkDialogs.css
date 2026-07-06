@@ -85,11 +85,14 @@
 }
 
 .sapling-account-dialog {
+  --sapling-account-dialog-stable-height: min(760px, calc(100dvh - 32px));
   display: flex;
+  flex: 0 0 var(--sapling-account-dialog-stable-height);
   flex-direction: column;
   width: 100%;
-  min-height: min(72vh, 760px, calc(100dvh - 32px));
-  max-height: min(var(--sapling-dialog-account-max-height), calc(100dvh - 32px));
+  height: var(--sapling-account-dialog-stable-height);
+  min-height: var(--sapling-account-dialog-stable-height);
+  max-height: var(--sapling-account-dialog-stable-height);
   overflow: hidden;
 }
 
@@ -103,8 +106,11 @@
 
 .sapling-account-dialog__body {
   display: flex;
+  flex: 1 1 auto;
   flex-direction: column;
   min-width: 0;
+  min-height: 0;
+  overflow: hidden;
   overscroll-behavior: contain;
 }
 
@@ -115,6 +121,7 @@
 
 .sapling-account-dialog__content {
   display: flex;
+  flex: 1 1 auto;
   flex-direction: column;
   gap: var(--sapling-gap-md);
   width: 100%;
@@ -124,7 +131,7 @@
 
 .sapling-account-dialog__summary-grid {
   display: grid;
-  grid-template-columns: 350px repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+  grid-template-columns: minmax(18rem, 0.82fr) minmax(24rem, 1.18fr);
   gap: var(--sapling-gap-xl);
   width: 100%;
   min-width: 0;
@@ -133,10 +140,12 @@
 
 .sapling-account-center {
   display: grid;
+  flex: 1 1 auto;
   grid-template-columns: 220px minmax(0, 1fr);
   gap: var(--sapling-gap-xl);
   width: 100%;
   min-width: 0;
+  min-height: 0;
 }
 
 .sapling-account-center__tabs {
@@ -167,8 +176,24 @@
 }
 
 .sapling-account-center__panels {
+  display: flex;
+  min-height: 0;
   min-width: 0;
   width: 100%;
+}
+
+.sapling-account-center__panels .v-window__container,
+.sapling-account-center__panel {
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+
+.sapling-account-center__panel {
+  overflow-y: auto;
+  padding-right: var(--sapling-gap-xs);
+  overscroll-behavior: contain;
 }
 
 .sapling-account-dialog__details,
@@ -202,7 +227,12 @@
 .sapling-account-dialog__panel-stack {
   display: grid;
   gap: var(--sapling-gap-lg);
+  align-content: start;
   min-width: 0;
+}
+
+.sapling-account-dialog__profile-edit {
+  grid-column: 1 / -1;
 }
 
 .sapling-account-dialog__section-heading {
@@ -225,8 +255,12 @@
 .sapling-account-dialog__notification-grid,
 .sapling-account-dialog__quiet-hours-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
   gap: var(--sapling-gap-md);
+  min-width: 0;
+}
+
+.sapling-account-dialog__profile-grid > * {
   min-width: 0;
 }
 
@@ -850,8 +884,10 @@
   }
 
   .sapling-account-dialog {
-    min-height: min(90vh, 760px, calc(100dvh - 24px));
-    max-height: calc(100dvh - 24px);
+    --sapling-account-dialog-stable-height: min(
+      var(--sapling-dialog-account-mobile-min-height),
+      calc(100dvh - 24px)
+    );
   }
 
   .sapling-account-dialog__body {

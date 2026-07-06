@@ -2,13 +2,22 @@
   <div class="messageCenter">
     <Teleport to="body">
       <!-- Floating Meldungen -->
-      <transition-group name="messages-fade" tag="div" class="messages-float">
+      <transition-group
+        name="messages-fade"
+        tag="div"
+        class="messages-float"
+        role="status"
+        aria-live="polite"
+        aria-atomic="false"
+      >
         <div
           v-for="message in visibleMessages"
           :key="message.id"
           class="message"
           role="button"
           tabindex="0"
+          :aria-label="`${formatMessageLabel(message)} ${$t('global.close')}`"
+          :title="$t('global.close')"
           @click="hideMessage(message.id)"
           @keydown.enter.prevent="hideMessage(message.id)"
           @keydown.space.prevent="hideMessage(message.id)"
@@ -66,8 +75,16 @@
                   <v-icon icon="mdi-bell-check-outline" size="40" />
                 </div>
                 <h3 class="sapling-empty-state-panel__title">
-                  {{ $t('global.messageCenter') }}
+                  {{ translateWithFallback('messageCenter.emptyTitle', 'Keine Meldungen') }}
                 </h3>
+                <p class="sapling-empty-state-panel__text">
+                  {{
+                    translateWithFallback(
+                      'messageCenter.emptyText',
+                      'Sobald Aktionen, Fehler oder Hinweise auftreten, erscheinen sie hier.',
+                    )
+                  }}
+                </p>
               </SaplingSurface>
 
               <v-list
@@ -110,6 +127,8 @@
                       @click="removeMessage(message.id)"
                       variant="text"
                       size="small"
+                      :aria-label="$t('global.close')"
+                      :title="$t('global.close')"
                     />
                   </template>
                 </v-list-item>
@@ -153,6 +172,7 @@ const { isLoading: isTranslationLoading } = useTranslationLoader(
   'ai',
   'aiEntityGeneration',
   'providerUserImport',
+  'messageCenter',
 )
 
 const {
@@ -200,6 +220,10 @@ function getEntityLabel(entity: string) {
 
 function formatMessageDescription(description: string) {
   return te(description) ? t(description) : description
+}
+
+function translateWithFallback(key: string, fallback: string) {
+  return te(key) ? t(key) : fallback
 }
 
 function formatTimestamp(timestamp: Date) {

@@ -110,6 +110,15 @@
           </tr>
         </tbody>
       </v-table>
+
+      <section
+        v-else
+        class="sapling-import__empty sapling-empty-state-panel sapling-empty-state-panel--compact"
+      >
+        <v-icon size="40" color="primary">mdi-table-eye-off</v-icon>
+        <h2 class="sapling-empty-state-panel__title">{{ t('import.saplingPreview') }}</h2>
+        <p class="sapling-empty-state-panel__text">{{ t('import.fileRequired') }}</p>
+      </section>
     </div>
   </SaplingSurface>
 </template>

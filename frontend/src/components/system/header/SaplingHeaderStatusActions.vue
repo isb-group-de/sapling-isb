@@ -10,7 +10,13 @@
   </v-btn>
 
   <div class="sapling-header__inbox-slot">
-    <v-btn class="sapling-header__desktop-action text-none" stacked @click="emit('openInbox')">
+    <v-btn
+      class="sapling-header__desktop-action text-none"
+      stacked
+      :aria-label="inboxActionLabel"
+      :title="inboxActionLabel"
+      @click="emit('openInbox')"
+    >
       <v-badge
         location="top right"
         :color="inboxBadgeColor"
@@ -25,6 +31,8 @@
   <v-btn
     class="sapling-header__desktop-action text-none"
     stacked
+    :aria-label="messageCenterActionLabel"
+    :title="messageCenterActionLabel"
     @click="emit('openMessageCenter')"
   >
     <v-badge
@@ -87,10 +95,11 @@
 </template>
 
 <script lang="ts" setup>
+import { computed } from 'vue'
 import { VList } from 'vuetify/components'
 import SaplingSurface from '@/components/common/SaplingSurface.vue'
 
-defineProps<{
+const props = defineProps<{
   inboxCount: number
   inboxBadgeColor: string
   messageCount: number
@@ -100,6 +109,11 @@ defineProps<{
   messageCenterLabel: string
   helpLabel: string
 }>()
+
+const inboxActionLabel = computed(() => `${props.inboxLabel}: ${props.inboxCount}`)
+const messageCenterActionLabel = computed(
+  () => `${props.messageCenterLabel}: ${props.messageCount}`,
+)
 
 const emit = defineEmits<{
   openContextHelp: []

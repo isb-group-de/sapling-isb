@@ -1,12 +1,19 @@
 import { computed, ref, watch, type Ref } from 'vue'
-import type { EntityTemplate } from '@/entity/structure'
+import type { ColumnFilterItem, EntityTemplate } from '@/entity/structure'
 import { useSaplingTable } from '@/composables/table/useSaplingTable'
 import { useSaplingChipFilters } from '@/composables/filter/useSaplingChipFilters'
-import type { SaplingChipFilterSelection } from '@/components/filter/saplingWorkFilter.types'
+import type {
+  SaplingChipFilterGroup,
+  SaplingChipFilterSelection,
+  SaplingFilterHandle,
+} from '@/components/filter/saplingWorkFilter.types'
 import { useCurrentPersonStore } from '@/stores/currentPersonStore'
 
 type PartnerHandle = number
 type PartnerFilterClause = Record<string, { $in: PartnerHandle[] }>
+type ScalarFilterValue = string | number | boolean
+
+const EMPTY_CHIP_FILTER_SENTINEL = '__sapling_empty_chip_filter__'
 
 /**
  * Centralizes table state and partner-specific filter logic for the partner screen.
@@ -17,6 +24,7 @@ export function useSaplingPartner(entityHandle: Ref<string>) {
   //#region State
   const currentPersonStore = useCurrentPersonStore()
   const selectedPeopleHandles = ref<PartnerHandle[]>([])
+  let isSyncingChipColumnFilters = false
 
   const {
     items,
@@ -55,7 +63,6 @@ export function useSaplingPartner(entityHandle: Ref<string>) {
     loadChipFilters,
     clearChipFilters,
     onSelectedChipFiltersUpdate: updateSelectedChipFilters,
-    buildChipFilterClauses,
   } = useSaplingChipFilters({
     entityHandle,
     entityTemplates,
@@ -77,6 +84,7 @@ export function useSaplingPartner(entityHandle: Ref<string>) {
       }
 
       await loadChipFilters()
+      syncSelectedChipFiltersFromColumnFilters()
       applyPartnerFilter()
     },
     { deep: true },
@@ -85,7 +93,20 @@ export function useSaplingPartner(entityHandle: Ref<string>) {
   watch(
     selectedChipFilters,
     () => {
+      syncColumnFiltersFromSelectedChipFilters()
       applyPartnerFilter()
+    },
+    { deep: true },
+  )
+
+  watch(
+    columnFilters,
+    () => {
+      if (isSyncingChipColumnFilters) {
+        return
+      }
+
+      syncSelectedChipFiltersFromColumnFilters()
     },
     { deep: true },
   )
@@ -116,17 +137,79 @@ export function useSaplingPartner(entityHandle: Ref<string>) {
       currentPersonStore.person?.handle != null ? [currentPersonStore.person.handle] : []
 
     await loadChipFilters()
+    hydratePartnerSelectionFromRestoredFilter()
+    syncSelectedChipFiltersFromColumnFilters()
     applyPartnerFilter()
   }
 
   /**
-   * Rebuilds the table parent filter so partner fields and configured chips may match.
+   * Rebuilds the table parent filter so partner fields may match.
+   * Chip filters are kept in table columnFilters so the header badges, URL and
+   * partner drawer all share one state.
    */
   function applyPartnerFilter() {
-    parentFilter.value = buildCombinedPartnerFilter(
-      buildPartnerFilter(selectedPeopleHandles.value, partnerTemplates.value),
-      buildChipFilterClauses(),
+    parentFilter.value = buildPartnerFilter(selectedPeopleHandles.value, partnerTemplates.value)
+  }
+
+  function hydratePartnerSelectionFromRestoredFilter() {
+    const restoredPeopleHandles = extractPartnerHandlesFromFilter(
+      parentFilter.value,
+      partnerTemplates.value,
     )
+
+    if (restoredPeopleHandles.length > 0) {
+      selectedPeopleHandles.value = restoredPeopleHandles
+    }
+  }
+
+  function syncSelectedChipFiltersFromColumnFilters() {
+    if (chipFilters.value.length === 0) {
+      return
+    }
+
+    const nextSelection = Object.fromEntries(
+      chipFilters.value.map((filter) => [
+        filter.key,
+        getChipSelectionFromColumnFilter(filter, columnFilters.value[filter.key]),
+      ]),
+    )
+
+    if (areSelectionsEqual(selectedChipFilters.value, nextSelection)) {
+      return
+    }
+
+    updateSelectedChipFilters(nextSelection)
+  }
+
+  function syncColumnFiltersFromSelectedChipFilters() {
+    if (chipFilters.value.length === 0) {
+      return
+    }
+
+    const nextColumnFilters = { ...columnFilters.value }
+
+    chipFilters.value.forEach((filter) => {
+      const nextColumnFilter = buildChipColumnFilterFromSelection(
+        filter,
+        selectedChipFilters.value[filter.key] ?? [],
+      )
+
+      if (nextColumnFilter) {
+        nextColumnFilters[filter.key] = nextColumnFilter
+        return
+      }
+
+      delete nextColumnFilters[filter.key]
+    })
+
+    if (areColumnFiltersEqual(columnFilters.value, nextColumnFilters)) {
+      return
+    }
+
+    isSyncingChipColumnFilters = true
+    columnFilters.value = nextColumnFilters
+    page.value = 1
+    isSyncingChipColumnFilters = false
   }
   //#endregion
 
@@ -145,6 +228,7 @@ export function useSaplingPartner(entityHandle: Ref<string>) {
     entity,
     entityPermission,
     parentFilter,
+    selectedPeopleHandles,
     tableKey,
     filterDrawerKey,
     chipFilters,
@@ -190,18 +274,198 @@ function buildPartnerFilter(
   return orFilters.length > 0 ? { $or: orFilters } : {}
 }
 
-function buildCombinedPartnerFilter(
-  partnerFilter: Record<string, unknown>,
-  chipFilterClauses: Record<string, unknown>[],
-): Record<string, unknown> {
-  const clauses = [
-    ...(Object.keys(partnerFilter).length > 0 ? [partnerFilter] : []),
-    ...chipFilterClauses,
-  ]
+export function buildChipColumnFilterFromSelection(
+  filter: SaplingChipFilterGroup,
+  selectedHandles: SaplingFilterHandle[],
+): ColumnFilterItem | null {
+  const allHandles = filter.options.map((option) => option.handle)
+  const validHandles = selectedHandles.filter((handle) => allHandles.includes(handle))
 
-  if (clauses.length === 0) {
-    return {}
+  if (isFullChipFilterSelection(validHandles, allHandles)) {
+    return null
   }
 
-  return clauses.length === 1 ? clauses[0] : { $and: clauses }
+  const handles = validHandles.length > 0 ? validHandles : [EMPTY_CHIP_FILTER_SENTINEL]
+
+  return {
+    operator: 'eq',
+    value: '',
+    relationItems: handles.map((handle) => ({
+      [filter.identifierKey]: handle,
+    })),
+  }
+}
+
+export function getChipSelectionFromColumnFilter(
+  filter: SaplingChipFilterGroup,
+  columnFilter?: ColumnFilterItem,
+): SaplingFilterHandle[] {
+  const allHandles = filter.options.map((option) => option.handle)
+
+  if (!columnFilter?.relationItems?.length) {
+    return allHandles
+  }
+
+  const relationHandles = columnFilter.relationItems
+    .map((item) => item?.[filter.identifierKey])
+    .filter((handle): handle is SaplingFilterHandle => isSaplingFilterHandle(handle))
+
+  if (columnFilter.operator === 'nin') {
+    return allHandles.filter((handle) => !relationHandles.includes(handle))
+  }
+
+  return relationHandles.filter((handle) => allHandles.includes(handle))
+}
+
+export function extractPartnerHandlesFromFilter(
+  filter: Record<string, unknown>,
+  templates: EntityTemplate[],
+): PartnerHandle[] {
+  const partnerFieldNames = templates
+    .map((template) => template.name?.trim())
+    .filter((name): name is string => Boolean(name))
+
+  if (partnerFieldNames.length === 0) {
+    return []
+  }
+
+  const handles = collectPartnerHandles(filter, new Set(partnerFieldNames))
+  return Array.from(new Set(handles)).sort((left, right) => left - right)
+}
+
+function collectPartnerHandles(filter: unknown, partnerFieldNames: Set<string>): PartnerHandle[] {
+  if (!filter || typeof filter !== 'object' || Array.isArray(filter)) {
+    return []
+  }
+
+  const filterNode = filter as Record<string, unknown>
+  const handles: PartnerHandle[] = []
+
+  if (Array.isArray(filterNode.$and)) {
+    filterNode.$and.forEach((clause) => {
+      handles.push(...collectPartnerHandles(clause, partnerFieldNames))
+    })
+  }
+
+  if (Array.isArray(filterNode.$or)) {
+    const orHandles = collectPartnerHandlesFromOrClause(filterNode.$or, partnerFieldNames)
+    if (orHandles.length > 0) {
+      handles.push(...orHandles)
+    }
+  }
+
+  Object.entries(filterNode).forEach(([key, value]) => {
+    if (key.startsWith('$') || !partnerFieldNames.has(key)) {
+      return
+    }
+
+    handles.push(...extractNumericHandles(value))
+  })
+
+  return handles
+}
+
+function collectPartnerHandlesFromOrClause(
+  clauses: unknown[],
+  partnerFieldNames: Set<string>,
+): PartnerHandle[] {
+  const handles: PartnerHandle[] = []
+
+  for (const clause of clauses) {
+    if (!clause || typeof clause !== 'object' || Array.isArray(clause)) {
+      return []
+    }
+
+    const entries = Object.entries(clause as Record<string, unknown>).filter(
+      ([key]) => !key.startsWith('$'),
+    )
+
+    if (entries.length !== 1 || !partnerFieldNames.has(entries[0][0])) {
+      return []
+    }
+
+    handles.push(...extractNumericHandles(entries[0][1]))
+  }
+
+  return handles
+}
+
+function extractNumericHandles(value: unknown): PartnerHandle[] {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return [value]
+  }
+
+  if (typeof value === 'string') {
+    const parsedValue = Number.parseInt(value, 10)
+    return Number.isNaN(parsedValue) ? [] : [parsedValue]
+  }
+
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return []
+  }
+
+  const valueNode = value as Record<string, unknown>
+  const directHandle = valueNode.handle
+  if (typeof directHandle === 'number' || typeof directHandle === 'string') {
+    return extractNumericHandles(directHandle)
+  }
+
+  const inValues = Array.isArray(valueNode.$in)
+    ? valueNode.$in
+    : isNestedInHandleFilter(valueNode)
+      ? (valueNode.handle as Record<string, unknown>).$in
+      : []
+
+  return (inValues as unknown[]).flatMap(extractNumericHandles)
+}
+
+function isNestedInHandleFilter(value: Record<string, unknown>) {
+  return (
+    value.handle != null &&
+    typeof value.handle === 'object' &&
+    !Array.isArray(value.handle) &&
+    Array.isArray((value.handle as Record<string, unknown>).$in)
+  )
+}
+
+function isFullChipFilterSelection(
+  selectedHandles: SaplingFilterHandle[],
+  allHandles: SaplingFilterHandle[],
+): boolean {
+  if (selectedHandles.length !== allHandles.length) {
+    return false
+  }
+
+  return allHandles.every((handle) => selectedHandles.includes(handle))
+}
+
+function isSaplingFilterHandle(value: unknown): value is SaplingFilterHandle {
+  return typeof value === 'string' || typeof value === 'number'
+}
+
+function areSelectionsEqual(
+  left: SaplingChipFilterSelection,
+  right: SaplingChipFilterSelection,
+): boolean {
+  return JSON.stringify(normalizeSelectionForComparison(left)) === JSON.stringify(right)
+}
+
+function normalizeSelectionForComparison(selection: SaplingChipFilterSelection) {
+  return Object.fromEntries(
+    Object.entries(selection).map(([key, values]) => [
+      key,
+      values.filter((value): value is ScalarFilterValue => isScalarFilterValue(value)),
+    ]),
+  )
+}
+
+function isScalarFilterValue(value: unknown): value is ScalarFilterValue {
+  return typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean'
+}
+
+function areColumnFiltersEqual(
+  left: Record<string, ColumnFilterItem>,
+  right: Record<string, ColumnFilterItem>,
+): boolean {
+  return JSON.stringify(left) === JSON.stringify(right)
 }

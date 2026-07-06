@@ -28,6 +28,7 @@
                 :class="{ 'sapling-upload-dropzone--active': isDragActive }"
                 role="button"
                 tabindex="0"
+                :aria-label="$t('document.selectDocuments')"
                 @click="openFilePicker"
                 @keydown.enter.prevent="openFilePicker"
                 @keydown.space.prevent="openFilePicker"
@@ -41,6 +42,7 @@
                   class="sapling-upload-native-input"
                   type="file"
                   multiple
+                  :aria-label="$t('document.selectDocuments')"
                   @change="onNativeFileInputChange"
                 />
 

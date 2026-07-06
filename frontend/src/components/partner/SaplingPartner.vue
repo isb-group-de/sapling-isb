@@ -55,6 +55,7 @@
         v-show="showDesktopFilterPanel"
         class="sapling-partner-filter-panel"
         :chip-filters="chipFilters"
+        :selected-peoples="selectedPeopleHandles"
         :selected-chip-filters="selectedChipFilters"
         @update:selected-peoples="onSelectedPeoplesUpdate"
         @update:selected-chip-filters="onSelectedChipFiltersUpdate"
@@ -78,6 +79,7 @@
             :show-close-action="true"
             :close-action-label="filterDialogCloseLabel"
             :chip-filters="chipFilters"
+            :selected-peoples="selectedPeopleHandles"
             :selected-chip-filters="selectedChipFilters"
             @close="mobileFilterDialogVisible = false"
             @update:selected-peoples="onSelectedPeoplesUpdate"
@@ -175,6 +177,7 @@ const {
   onColumnFiltersUpdate,
   onSortByUpdate,
   parentFilter,
+  selectedPeopleHandles,
   tableKey,
   filterDrawerKey,
   chipFilters,

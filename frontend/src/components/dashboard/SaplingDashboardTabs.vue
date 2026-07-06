@@ -21,6 +21,8 @@
               variant="text"
               size="x-small"
               class="sapling-dashboard__tab-remove"
+              :aria-label="`${$t('global.delete')}: ${dashboard.name}`"
+              :title="`${$t('global.delete')}: ${dashboard.name}`"
               @click.stop="emit('removeDashboard', dashboard.handle)"
             >
               <v-icon size="x-small">mdi-close</v-icon>

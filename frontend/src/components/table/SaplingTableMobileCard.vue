@@ -11,6 +11,7 @@
       'sapling-table-mobile-card--with-actions': hasRowActions,
     }"
     tabindex="0"
+    :aria-label="cardLabel"
     @click="handleCardClick"
     @dblclick="onRowDoubleClick($event)"
     @keydown="onRowKeydown($event, index)"
@@ -318,6 +319,12 @@ const hasRowActions = computed(() => props.showActions && hasActionMenuItems.val
 const hasHeaderControls = computed(() => props.multiSelect || hasRowActions.value)
 
 const isSelected = computed(() => Boolean(props.isSelected))
+
+const cardLabel = computed(() => {
+  const firstReadableColumn = displayColumns.value[0]
+  const value = firstReadableColumn?.key ? props.item[firstReadableColumn.key] : undefined
+  return value == null || value === '' ? String(props.index + 1) : String(value)
+})
 
 function handleCardClick() {
   if (props.rowInteraction === false) {

@@ -189,6 +189,43 @@
   line-height: 1.2;
 }
 
+.sapling-field-date-time {
+  --v-gutter-x: var(--sapling-gap-sm);
+  --v-gutter-y: 0;
+  align-items: flex-start;
+  margin: 0;
+}
+
+.sapling-field-date-time > .v-col {
+  display: flex;
+  min-width: 0;
+  padding-block: 0;
+}
+
+.sapling-field-date-time .v-input {
+  width: 100%;
+}
+
+.sapling-field-date-time .v-field {
+  height: var(--sapling-control-height-compact);
+  min-height: var(--sapling-control-height-compact);
+}
+
+.sapling-field-date-time .v-field__field,
+.sapling-field-date-time .v-field__input {
+  height: 100%;
+  min-height: 0;
+}
+
+.sapling-field-date-time .v-field__input {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.sapling-field-date-time input[type='time'] {
+  min-width: 0;
+}
+
 .sapling-record-relation-header {
   align-items: flex-start;
   gap: var(--sapling-gap-md);

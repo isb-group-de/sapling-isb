@@ -217,6 +217,28 @@
   z-index: 1;
   padding-inline: var(--sapling-gap-sm) !important;
   background: color-mix(in srgb, var(--sapling-surface-fill) 94%, transparent);
+  box-shadow: -12px 0 18px -18px rgba(0, 0, 0, 0.85);
+}
+
+.sapling-table-row__actions-cell::before {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(var(--sapling-gap-md) * -1);
+  width: var(--sapling-gap-md);
+  pointer-events: none;
+  content: '';
+  background: linear-gradient(90deg, transparent, var(--sapling-surface-fill) 88%);
+}
+
+.sapling-table__cell--data {
+  max-width: clamp(
+    var(--sapling-table-data-column-min-width),
+    18vw,
+    var(--sapling-panel-width-md)
+  );
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .sapling-table-row__actions-button.v-btn {
@@ -333,6 +355,16 @@
 
 .sapling-table tbody tr:hover {
   background: var(--sapling-interactive-hover-fill);
+}
+
+.sapling-table tbody tr:focus-visible {
+  outline: 2px solid rgb(var(--v-theme-primary));
+  outline-offset: -2px;
+  background: var(--sapling-interactive-hover-fill);
+}
+
+.sapling-table tbody tr:focus-visible td {
+  background: var(--sapling-interactive-hover-fill) !important;
 }
 
 .sapling-table tbody tr:hover td {
@@ -463,6 +495,12 @@
 
 .sapling-table-mobile-card {
   --sapling-table-mobile-card-control-space: 0px;
+}
+
+.sapling-table-mobile-card:focus-visible {
+  outline: 2px solid rgb(var(--v-theme-primary));
+  outline-offset: 2px;
+  box-shadow: var(--sapling-shadow-soft);
 }
 
 .sapling-table-mobile-card--with-select {

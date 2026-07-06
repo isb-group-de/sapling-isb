@@ -154,7 +154,7 @@
 
 <script setup lang="ts">
 // #region Imports
-import { computed } from 'vue'
+import { computed, toRef } from 'vue'
 import SaplingFilterMe from '@/components/filter/SaplingFilterMe.vue'
 import SaplingFilterEmployee from '@/components/filter/SaplingFilterEmployee.vue'
 import SaplingFilterPerson from '@/components/filter/SaplingFilterPerson.vue'
@@ -173,6 +173,8 @@ const props = defineProps<{
   closeActionLabel?: string
   chipFilters?: SaplingChipFilterGroup[]
   selectedChipFilters?: SaplingChipFilterSelection
+  selectedPeoples?: Array<number | string>
+  selectedCompanies?: Array<number | string>
 }>()
 // #endregion
 
@@ -209,6 +211,8 @@ const {
   companiesSearch,
   expandedPanels,
 } = useSaplingFilterWork({
+  selectedPeoples: toRef(props, 'selectedPeoples'),
+  selectedCompanies: toRef(props, 'selectedCompanies'),
   onSelectedPeoplesChange: (values) => emit('update:selectedPeoples', values.map(String)),
   onSelectedCompaniesChange: (values) => emit('update:selectedCompanies', values.map(String)),
 })

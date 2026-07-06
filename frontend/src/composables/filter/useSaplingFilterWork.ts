@@ -1,4 +1,4 @@
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch, type Ref } from 'vue'
 import type { CompanyItem, PersonItem } from '@/entity/entity'
 import type { PaginatedResponse } from '@/entity/structure'
 import { useCurrentPersonStore } from '@/stores/currentPersonStore'
@@ -8,6 +8,8 @@ import { useTranslationLoader } from '@/composables/generic/useTranslationLoader
 import { i18n } from '@/i18n'
 
 export type UseSaplingFilterWorkOptions = {
+  selectedPeoples?: Readonly<Ref<Array<number | string> | undefined>>
+  selectedCompanies?: Readonly<Ref<Array<number | string> | undefined>>
   onSelectedPeoplesChange?: (values: number[]) => void
   onSelectedCompaniesChange?: (values: number[]) => void
 }
@@ -43,12 +45,56 @@ export function useSaplingFilterWork(options: UseSaplingFilterWorkOptions = {}) 
   })
 
   watch(selectedPeoples, (values) => {
+    if (
+      typeof options.selectedPeoples?.value !== 'undefined' &&
+      areHandleArraysEqual(values, normalizeControlledHandles(options.selectedPeoples.value))
+    ) {
+      return
+    }
+
     options.onSelectedPeoplesChange?.([...values])
   })
 
   watch(selectedCompanies, (values) => {
+    if (
+      typeof options.selectedCompanies?.value !== 'undefined' &&
+      areHandleArraysEqual(values, normalizeControlledHandles(options.selectedCompanies.value))
+    ) {
+      return
+    }
+
     options.onSelectedCompaniesChange?.([...values])
   })
+
+  watch(
+    () => options.selectedPeoples?.value,
+    (values) => {
+      if (typeof values === 'undefined') {
+        return
+      }
+
+      const nextValues = normalizeControlledHandles(values)
+      if (!areHandleArraysEqual(selectedPeoples.value, nextValues)) {
+        selectedPeoples.value = nextValues
+      }
+    },
+    { immediate: true },
+  )
+
+  watch(
+    () => options.selectedCompanies?.value,
+    (values) => {
+      if (typeof values === 'undefined') {
+        return
+      }
+
+      const nextValues = normalizeControlledHandles(values)
+      if (!areHandleArraysEqual(selectedCompanies.value, nextValues)) {
+        selectedCompanies.value = nextValues
+      }
+    },
+    { immediate: true },
+  )
   //#endregion
 
   //#region State Helpers
@@ -148,6 +194,12 @@ export function useSaplingFilterWork(options: UseSaplingFilterWorkOptions = {}) 
   async function setOwnPerson() {
     await currentPersonStore.fetchCurrentPerson()
     ownPerson.value = currentPersonStore.person
+
+    if (typeof options.selectedPeoples?.value !== 'undefined') {
+      selectedPeoples.value = normalizeControlledHandles(options.selectedPeoples.value)
+      return
+    }
+
     selectedPeoples.value = ownPerson.value?.handle != null ? [ownPerson.value.handle] : []
   }
 
@@ -394,4 +446,22 @@ export function useSaplingFilterWork(options: UseSaplingFilterWorkOptions = {}) 
     peopleMap,
   }
   //#endregion
+}
+
+function normalizeControlledHandles(values: Array<number | string>): number[] {
+  return Array.from(
+    new Set(
+      values
+        .map((value) => (typeof value === 'number' ? value : Number.parseInt(value, 10)))
+        .filter((value) => Number.isFinite(value)),
+    ),
+  )
+}
+
+function areHandleArraysEqual(left: number[], right: number[]): boolean {
+  if (left.length !== right.length) {
+    return false
+  }
+
+  return left.every((value, index) => value === right[index])
 }

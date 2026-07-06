@@ -70,7 +70,7 @@
               </v-tabs>
 
               <v-window v-model="activeAccountTab" class="sapling-account-center__panels">
-                <v-window-item value="profile">
+                <v-window-item value="profile" class="sapling-account-center__panel">
                   <div class="sapling-account-dialog__summary-grid">
                     <section class="sapling-account-dialog__details">
                       <v-list density="comfortable">
@@ -135,7 +135,9 @@
                         </tbody>
                       </v-table>
                     </section>
-                    <section class="sapling-account-dialog__panel-stack">
+                    <section
+                      class="sapling-account-dialog__panel-stack sapling-account-dialog__profile-edit"
+                    >
                       <div class="sapling-account-dialog__section-heading">
                         <v-icon color="primary">mdi-account-edit-outline</v-icon>
                         <span>{{ $t('account.editProfile') }}</span>
@@ -196,7 +198,7 @@
                   </div>
                 </v-window-item>
 
-                <v-window-item value="notifications">
+                <v-window-item value="notifications" class="sapling-account-center__panel">
                   <section class="sapling-account-dialog__panel-stack">
                     <div class="sapling-account-dialog__section-heading">
                       <v-icon color="primary">mdi-bell-outline</v-icon>
@@ -272,7 +274,7 @@
                   </section>
                 </v-window-item>
 
-                <v-window-item value="sync">
+                <v-window-item value="sync" class="sapling-account-center__panel">
                   <section v-if="calendarSync" class="sapling-account-dialog__calendar-sync">
                     <div class="sapling-account-dialog__section-heading">
                       <v-icon color="primary">mdi-calendar-sync-outline</v-icon>
@@ -324,7 +326,7 @@
                   </section>
                 </v-window-item>
 
-                <v-window-item value="security">
+                <v-window-item value="security" class="sapling-account-center__panel">
                   <section class="sapling-account-dialog__panel-stack">
                     <SaplingPasskeyManager v-if="isSaplingAccount" />
                     <v-btn
@@ -338,7 +340,7 @@
                   </section>
                 </v-window-item>
 
-                <v-window-item value="sessions">
+                <v-window-item value="sessions" class="sapling-account-center__panel">
                   <section class="sapling-account-dialog__panel-stack">
                     <div class="sapling-account-dialog__section-heading">
                       <v-icon color="primary">mdi-devices</v-icon>
@@ -409,7 +411,7 @@
                   </section>
                 </v-window-item>
 
-                <v-window-item value="preferences">
+                <v-window-item value="preferences" class="sapling-account-center__panel">
                   <section class="sapling-account-dialog__panel-stack">
                     <div class="sapling-account-dialog__section-heading">
                       <v-icon color="primary">mdi-translate</v-icon>
@@ -460,7 +462,7 @@
                   </section>
                 </v-window-item>
 
-                <v-window-item value="songbird">
+                <v-window-item value="songbird" class="sapling-account-center__panel">
                   <section class="sapling-account-dialog__panel-stack">
                     <div class="sapling-account-dialog__section-heading">
                       <v-icon color="primary">mdi-creation-outline</v-icon>

@@ -7,6 +7,8 @@
           class="sapling-table-filter-trigger"
           :class="{ 'sapling-table-filter-trigger--active': hasValue }"
           type="button"
+          :aria-label="filterTriggerLabel"
+          :title="filterTriggerLabel"
           @click.stop
         >
           <span class="sapling-row-xs sapling-table-filter-trigger__title">
@@ -58,7 +60,14 @@
               </div>
               <div class="sapling-table-filter-menu__title">{{ title }}</div>
             </div>
-            <v-btn icon variant="text" size="small" @click.stop="clearFilter">
+            <v-btn
+              icon
+              variant="text"
+              size="small"
+              :aria-label="$t('filter.reset')"
+              :title="$t('filter.reset')"
+              @click.stop="clearFilter"
+            >
               <v-icon size="small">mdi-filter-off-outline</v-icon>
             </v-btn>
           </div>
@@ -143,6 +152,8 @@
       variant="text"
       size="x-small"
       class="sapling-table-filter-sort"
+      :aria-label="sortButtonLabel"
+      :title="sortButtonLabel"
       @click.stop="emit('sort')"
     >
       <v-icon size="small">{{ sortIcon }}</v-icon>
@@ -151,6 +162,8 @@
 </template>
 
 <script lang="ts" setup>
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { VCard } from 'vuetify/components'
 import SaplingSurface from '@/components/common/SaplingSurface.vue'
 import { useSaplingTableColumnFilter } from '@/composables/table/useSaplingTableColumnFilter'
@@ -163,6 +176,8 @@ import type { ColumnFilterItem } from '@/entity/structure'
 import type { SaplingTableColumnFilterProps } from '@/composables/table/useSaplingTableColumnFilter'
 
 const props = defineProps<SaplingTableColumnFilterProps>()
+const { t } = useI18n()
+const title = computed(() => props.title)
 
 const emit = defineEmits<{
   'update:filter': [value: ColumnFilterItem | null]
@@ -199,4 +214,18 @@ const {
   updateRelationItems,
   updateSingleValue,
 } = useSaplingTableColumnFilter(props, emit)
+
+const filterTriggerLabel = computed(() => {
+  if (isComponentLoading.value) {
+    return `${title.value || ''} ${t('filter.filter')}`.trim()
+  }
+
+  if (!hasValue.value) {
+    return `${title.value}: ${t('filter.noFilter')}`
+  }
+
+  return `${title.value}: ${filterSummary.value}`
+})
+
+const sortButtonLabel = computed(() => `${t('filter.sort')}: ${title.value || props.title}`)
 </script>

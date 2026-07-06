@@ -692,8 +692,14 @@
 .sapling-import__toolbar,
 .sapling-import__settings {
   display: grid;
-  grid-template-columns: repeat(3, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
   gap: 12px;
+}
+
+.sapling-import__empty {
+  flex: 1 1 auto;
+  min-height: 240px;
+  align-self: stretch;
 }
 
 .sapling-import__mapping {

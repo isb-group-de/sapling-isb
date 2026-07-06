@@ -1,7 +1,11 @@
 <template>
   <v-app-bar :elevation="2" class="sapling-header">
     <template #prepend>
-      <v-app-bar-nav-icon @click="toggleNavigation" />
+      <v-app-bar-nav-icon
+        :aria-label="props.modelValue ? $t('global.closeDrawer') : $t('global.navigation')"
+        :title="props.modelValue ? $t('global.closeDrawer') : $t('global.navigation')"
+        @click="toggleNavigation"
+      />
     </template>
 
     <v-app-bar-title>

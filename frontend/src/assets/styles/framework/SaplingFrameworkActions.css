@@ -59,6 +59,23 @@
   width: 100%;
 }
 
+.sapling-action-cluster > .v-btn.v-btn--variant-plain {
+  border: 1px solid
+    color-mix(in srgb, rgb(var(--v-theme-primary)) 32%, var(--sapling-surface-border-muted));
+  border-radius: var(--sapling-radius-pill);
+  background: color-mix(in srgb, rgb(var(--v-theme-primary)) 14%, var(--sapling-surface-fill-soft));
+  color: color-mix(in srgb, rgb(var(--v-theme-primary)) 82%, white) !important;
+  opacity: 1;
+}
+
+.sapling-action-cluster > .v-btn.v-btn--variant-plain:hover {
+  background: color-mix(in srgb, rgb(var(--v-theme-primary)) 22%, var(--sapling-surface-fill-soft));
+}
+
+.sapling-action-cluster > .v-btn.v-btn--disabled {
+  opacity: var(--sapling-opacity-disabled);
+}
+
 .sapling-split-toolbar {
   display: flex;
   flex-wrap: wrap;
