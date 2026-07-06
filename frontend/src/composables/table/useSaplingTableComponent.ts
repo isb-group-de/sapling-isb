@@ -66,6 +66,7 @@ export type UseSaplingTableEmit = {
 const MOBILE_TABLE_BREAKPOINT = DEFAULT_SMALL_WINDOW_WIDTH
 const COMPACT_TOOLBAR_BREAKPOINT = 760
 const PRELOAD_REFERENCE_KINDS = ['m:1', '1:1']
+const REFERENCE_PRELOAD_DELAY_MS = 150
 
 /**
  * Encapsulates the local UI workflow for the shared data table.
@@ -172,6 +173,7 @@ export function useSaplingTableComponent(props: UseSaplingTableProps, emit: UseS
   )
 
   let resizeObserver: ResizeObserver | null = null
+  let referencePreloadTimeout: ReturnType<typeof setTimeout> | null = null
 
   const handleWindowResize = () => {
     windowWidth.value = window.innerWidth
@@ -219,6 +221,7 @@ export function useSaplingTableComponent(props: UseSaplingTableProps, emit: UseS
 
   onBeforeUnmount(() => {
     window.removeEventListener('resize', handleWindowResize)
+    cancelReferencePreload()
 
     if (resizeObserver && tableContainerRef.value) {
       resizeObserver.unobserve(tableContainerRef.value)
@@ -257,6 +260,21 @@ export function useSaplingTableComponent(props: UseSaplingTableProps, emit: UseS
       })),
     )
   }
+
+  function cancelReferencePreload() {
+    if (referencePreloadTimeout) {
+      clearTimeout(referencePreloadTimeout)
+      referencePreloadTimeout = null
+    }
+  }
+
+  function scheduleReferencePreload() {
+    cancelReferencePreload()
+    referencePreloadTimeout = setTimeout(() => {
+      referencePreloadTimeout = null
+      void preloadReferenceData()
+    }, REFERENCE_PRELOAD_DELAY_MS)
+  }
   // #endregion
 
   // #region Watchers
@@ -287,7 +305,7 @@ export function useSaplingTableComponent(props: UseSaplingTableProps, emit: UseS
         .map((template) => `${template.referenceName ?? ''}:${template.kind ?? ''}`)
         .join('|'),
     () => {
-      void preloadReferenceData()
+      scheduleReferencePreload()
     },
     { immediate: true },
   )

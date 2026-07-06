@@ -26,6 +26,7 @@
                 :entity="entity"
                 :entity-permission="entityPermission"
                 :entity-templates="entityTemplates || []"
+                :is-initialized="isInitialized"
                 :show-actions="true"
                 :multi-select="true"
                 :show-favorite="true"
@@ -170,6 +171,7 @@ const {
   entityTemplates,
   entity,
   entityPermission,
+  isInitialized,
   loadData,
   onSearchUpdate,
   onPageUpdate,

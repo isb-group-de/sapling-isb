@@ -14,6 +14,7 @@
     :entity-templates="entityTemplates"
     :entity="entity"
     :entity-permission="entityPermission"
+    :is-initialized="isInitialized"
     :form-config-menu-items="formConfigMenuItems"
     :selected-form-config-label="selectedFormConfigLabel"
     :is-loading-form-configs="isLoadingFormConfigs"
@@ -57,6 +58,7 @@ const {
   entityTemplates,
   entity,
   entityPermission,
+  isInitialized,
   formConfigMenuItems,
   selectedFormConfigLabel,
   isLoadingFormConfigs,

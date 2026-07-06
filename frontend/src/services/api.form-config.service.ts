@@ -3,6 +3,9 @@ import { buildApiUrl } from '@/services/api.client'
 import { pushApiErrorMessage } from '@/services/api.error.service'
 import type { EntityTemplate, SaplingFormConfigPayload } from '@/entity/structure'
 
+const effectiveTemplateCache = new Map<string, Promise<EntityTemplate[]>>()
+const formConfigListCache = new Map<string, Promise<SaplingFormConfigItem[]>>()
+
 export interface SaplingFormConfigItem {
   handle?: number
   name: string
@@ -37,25 +40,69 @@ export interface SaplingFormConfigValidationResult {
 }
 
 class ApiFormConfigService {
-  static async getEffectiveTemplate(entityHandle: string): Promise<EntityTemplate[]> {
+  static async getEffectiveTemplate(entityHandle: string, force = false): Promise<EntityTemplate[]> {
+    const normalizedEntityHandle = entityHandle.trim()
+
+    if (!force) {
+      const cachedPromise = effectiveTemplateCache.get(normalizedEntityHandle)
+      if (cachedPromise) {
+        return cachedPromise
+      }
+    }
+
+    const promise = this.fetchEffectiveTemplate(normalizedEntityHandle)
+    effectiveTemplateCache.set(normalizedEntityHandle, promise)
+    return promise
+  }
+
+  static async list(entityHandle: string, force = false): Promise<SaplingFormConfigItem[]> {
+    const normalizedEntityHandle = entityHandle.trim()
+
+    if (!force) {
+      const cachedPromise = formConfigListCache.get(normalizedEntityHandle)
+      if (cachedPromise) {
+        return cachedPromise
+      }
+    }
+
+    const promise = this.fetchList(normalizedEntityHandle)
+    formConfigListCache.set(normalizedEntityHandle, promise)
+    return promise
+  }
+
+  static invalidate(entityHandle?: string): void {
+    if (entityHandle?.trim()) {
+      const normalizedEntityHandle = entityHandle.trim()
+      effectiveTemplateCache.delete(normalizedEntityHandle)
+      formConfigListCache.delete(normalizedEntityHandle)
+      return
+    }
+
+    effectiveTemplateCache.clear()
+    formConfigListCache.clear()
+  }
+
+  private static async fetchEffectiveTemplate(entityHandle: string): Promise<EntityTemplate[]> {
     try {
       const response = await axios.get<{ entityTemplates: EntityTemplate[] }>(
         buildApiUrl(`form-config/${entityHandle}/effective-template`),
       )
       return response.data.entityTemplates
     } catch (error: unknown) {
+      effectiveTemplateCache.delete(entityHandle)
       pushApiErrorMessage(error, 'exception.unknownError', entityHandle)
       throw error
     }
   }
 
-  static async list(entityHandle: string): Promise<SaplingFormConfigItem[]> {
+  private static async fetchList(entityHandle: string): Promise<SaplingFormConfigItem[]> {
     try {
       const response = await axios.get<SaplingFormConfigItem[]>(
         buildApiUrl(`form-config/${entityHandle}`),
       )
       return response.data
     } catch (error: unknown) {
+      formConfigListCache.delete(entityHandle)
       pushApiErrorMessage(error, 'exception.unknownError', entityHandle)
       throw error
     }
@@ -98,6 +145,7 @@ class ApiFormConfigService {
         buildApiUrl(`form-config/${entityHandle}`),
         payload,
       )
+      this.invalidate(entityHandle)
       return response.data
     } catch (error: unknown) {
       pushApiErrorMessage(error, 'exception.unknownError', entityHandle)
@@ -115,6 +163,7 @@ class ApiFormConfigService {
         buildApiUrl(`form-config/${entityHandle}/${handle}`),
         payload,
       )
+      this.invalidate(entityHandle)
       return response.data
     } catch (error: unknown) {
       pushApiErrorMessage(error, 'exception.unknownError', entityHandle)
@@ -131,6 +180,7 @@ class ApiFormConfigService {
         buildApiUrl(`form-config/${entityHandle}/import`),
         payload,
       )
+      this.invalidate(entityHandle)
       return response.data
     } catch (error: unknown) {
       pushApiErrorMessage(error, 'exception.unknownError', entityHandle)

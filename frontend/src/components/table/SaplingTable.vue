@@ -293,6 +293,7 @@ import {
   type UseSaplingTableProps,
 } from '@/composables/table/useSaplingTableComponent'
 import { useCurrentPersonStore } from '@/stores/currentPersonStore'
+import { useCurrentPermissionStore } from '@/stores/currentPermissionStore'
 import type {
   FormConfigMenuItem,
   FormConfigSelectionHandle,
@@ -307,6 +308,7 @@ type SaplingTableProps = UseSaplingTableProps & {
   showSearch?: boolean
   showFormConfig?: boolean
   showToolbar?: boolean
+  isInitialized?: boolean
   rowInteraction?: boolean
   showSidePanelToggle?: boolean
   sidePanelVisible?: boolean
@@ -332,6 +334,7 @@ const { t } = useI18n()
 const router = useRouter()
 const { isLoading: isHeaderTranslationLoading } = useTranslationLoader(props.entityHandle)
 const currentPersonStore = useCurrentPersonStore()
+const currentPermissionStore = useCurrentPermissionStore()
 
 const hasCompletedInitialLoad = ref(!props.isLoading)
 const importInputRef = ref<HTMLInputElement | null>(null)
@@ -353,7 +356,18 @@ watch(
   },
 )
 
-const showInitialSkeleton = computed(() => !hasCompletedInitialLoad.value)
+const hasTableStructure = computed(
+  () =>
+    (props.headers?.length ?? 0) > 0 ||
+    (props.entityTemplates.length > 0 &&
+      props.entityPermission !== null &&
+      currentPermissionStore.loaded),
+)
+const showInitialSkeleton = computed(
+  () =>
+    props.isInitialized === false ||
+    (!hasCompletedInitialLoad.value && !hasTableStructure.value),
+)
 const refreshButtonLabel = computed(() => t('global.refresh'))
 const showFavoriteButton = computed(() => props.showFavorite !== false)
 const showAddButton = computed(

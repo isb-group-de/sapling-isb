@@ -1,4 +1,5 @@
 .sapling-table-filter-cell {
+  width: 100%;
   min-width: 0;
 }
 
@@ -6,8 +7,10 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  justify-content: center;
   min-width: 0;
   width: 100%;
+  min-height: var(--sapling-control-size-2xl);
   padding-top: var(--sapling-gap-xs);
   padding-bottom: var(--sapling-gap-xs);
   padding-left: var(--sapling-gap-md);
@@ -25,7 +28,11 @@
 }
 
 .sapling-table-filter-trigger__title {
+  display: inline-flex;
+  align-items: center;
+  width: 100%;
   min-width: 0;
+  min-height: 1.1rem;
   font-size: var(--sapling-text-label-size-lg);
   font-weight: 600;
 }
@@ -48,17 +55,19 @@
 .sapling-table-filter-trigger__summary,
 .sapling-table-filter-trigger__placeholder {
   display: inline-flex;
+  align-items: center;
   min-width: 0;
+  min-height: 1.15rem;
   margin-top: var(--sapling-gap-xs);
   font-size: var(--sapling-text-label-size-sm);
 }
 
 .sapling-table-filter-trigger__placeholder {
+  width: min(4.5rem, 100%);
   opacity: var(--sapling-opacity-muted);
 }
 
 .sapling-table-filter-trigger__placeholder--loading {
-  width: 4.5rem;
   opacity: 1;
 }
 

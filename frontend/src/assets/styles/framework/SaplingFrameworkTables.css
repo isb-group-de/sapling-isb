@@ -28,6 +28,7 @@
     var(--sapling-table-actions-column-width-wide) + var(--sapling-gap-md)
   );
   --sapling-table-data-column-min-width: var(--sapling-table-data-column-min-width-lg);
+  --sapling-table-header-row-height: calc(var(--sapling-control-size-2xl) + var(--sapling-gap-sm));
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
@@ -201,7 +202,22 @@
 
 .sapling-table-header-cell--data,
 .sapling-table__cell--data {
+  width: var(--sapling-table-data-column-min-width);
   min-width: var(--sapling-table-data-column-min-width);
+}
+
+.sapling-table-header-cell--select,
+.sapling-table-row__select-cell {
+  width: var(--sapling-table-select-column-width);
+  min-width: var(--sapling-table-select-column-width);
+  max-width: var(--sapling-table-select-column-width);
+}
+
+.sapling-table-header-cell--actions,
+.sapling-table-row__actions-cell {
+  width: var(--sapling-table-actions-column-width);
+  min-width: var(--sapling-table-actions-column-width);
+  max-width: var(--sapling-table-actions-column-width);
 }
 
 .sapling-table-row__select-cell {
@@ -266,14 +282,20 @@
   position: sticky;
   top: 0;
   z-index: 13;
+  height: var(--sapling-table-header-row-height) !important;
+  min-height: var(--sapling-table-header-row-height);
+  max-height: var(--sapling-table-header-row-height);
   border-bottom-color: var(--sapling-surface-border-muted);
   background: color-mix(in srgb, var(--sapling-surface-fill) 86%, transparent);
+  vertical-align: middle;
 }
 
 .sapling-table-header-button {
   display: inline-flex;
   align-items: center;
   gap: var(--sapling-gap-xs);
+  min-height: var(--sapling-control-size-2xl);
+  max-width: 100%;
   padding: 0;
   border: 0;
   background: transparent;
@@ -310,6 +332,8 @@
 .sapling-table-filter-shell {
   display: flex;
   align-items: center;
+  width: 100%;
+  min-height: var(--sapling-control-size-2xl);
   min-width: 0;
 }
 

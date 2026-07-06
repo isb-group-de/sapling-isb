@@ -29,13 +29,13 @@ import {
 } from '@/utils/saplingTableUtil'
 import {
   applyFormConfigOverlay,
-  getDefaultFormConfigHandle,
   type FormConfigMenuItem,
   type FormConfigSelectionHandle,
 } from '@/composables/dialog/saplingDialogEdit.utils'
 // #endregion
 
 const TABLE_LOAD_DEBOUNCE_MS = 250
+const TABLE_FORM_CONFIG_CONTEXT_DELAY_MS = 100
 
 type InitializeEntityStateOptions = {
   initialSearch?: string
@@ -76,8 +76,10 @@ export function useSaplingTable(
   const genericStore = useGenericStore()
   let activeLoadController: AbortController | null = null
   let scheduledLoadTimeout: ReturnType<typeof setTimeout> | null = null
+  let scheduledFormConfigContextTimeout: ReturnType<typeof setTimeout> | null = null
   let latestLoadRequestId = 0
   let latestInitializationId = 0
+  let latestFormConfigContextRequestId = 0
   // #endregion
 
   // #region Entity Metadata
@@ -86,7 +88,7 @@ export function useSaplingTable(
     () => genericStore.getState(entityHandle.value).entityPermission,
   )
   const baseTemplates = computed(() =>
-    systemTemplates.value.length > 0
+    selectedFormConfigHandle.value !== null && systemTemplates.value.length > 0
       ? systemTemplates.value
       : genericStore.getState(entityHandle.value).entityTemplates,
   )
@@ -327,6 +329,13 @@ export function useSaplingTable(
     }
   }
 
+  function cancelScheduledFormConfigContextLoad() {
+    if (scheduledFormConfigContextTimeout) {
+      clearTimeout(scheduledFormConfigContextTimeout)
+      scheduledFormConfigContextTimeout = null
+    }
+  }
+
   function scheduleLoadData() {
     cancelScheduledLoad()
     scheduledLoadTimeout = setTimeout(() => {
@@ -360,6 +369,15 @@ export function useSaplingTable(
     columnFilters.value = {}
   }
 
+  function resetFormConfigContext() {
+    cancelScheduledFormConfigContextLoad()
+    latestFormConfigContextRequestId += 1
+    systemTemplates.value = []
+    formConfigs.value = []
+    selectedFormConfigHandle.value = null
+    isLoadingFormConfigs.value = false
+  }
+
   function restoreQueryFilterState(nextEntityTemplates: EntityTemplate[]) {
     const urlFilter = getUrlFilterParam()
     columnFilters.value = extractColumnFiltersFromFilterQuery(nextEntityTemplates, urlFilter)
@@ -391,10 +409,13 @@ export function useSaplingTable(
   }
 
   function selectDefaultFormConfig(): void {
-    selectedFormConfigHandle.value = getDefaultFormConfigHandle(formConfigs.value)
+    selectedFormConfigHandle.value = null
   }
 
-  async function loadFormConfigContext(nextEntityHandle: string): Promise<void> {
+  async function loadFormConfigContext(
+    nextEntityHandle: string,
+    options: { initializationId?: number; requestId?: number } = {},
+  ): Promise<void> {
     if (!nextEntityHandle) {
       systemTemplates.value = []
       formConfigs.value = []
@@ -402,6 +423,7 @@ export function useSaplingTable(
       return
     }
 
+    const requestId = options.requestId ?? ++latestFormConfigContextRequestId
     isLoadingFormConfigs.value = true
 
     try {
@@ -409,16 +431,45 @@ export function useSaplingTable(
         ApiTemplateService.getEntityTemplate(nextEntityHandle),
         ApiFormConfigService.list(nextEntityHandle),
       ])
+
+      if (
+        requestId !== latestFormConfigContextRequestId ||
+        (typeof options.initializationId === 'number' &&
+          options.initializationId !== latestInitializationId) ||
+        entityHandle.value !== nextEntityHandle
+      ) {
+        return
+      }
+
       systemTemplates.value = templates
       formConfigs.value = configs
       selectDefaultFormConfig()
     } catch {
-      systemTemplates.value = []
-      formConfigs.value = []
-      selectedFormConfigHandle.value = null
+      if (
+        requestId === latestFormConfigContextRequestId &&
+        (typeof options.initializationId !== 'number' ||
+          options.initializationId === latestInitializationId) &&
+        entityHandle.value === nextEntityHandle
+      ) {
+        systemTemplates.value = []
+        formConfigs.value = []
+        selectedFormConfigHandle.value = null
+      }
     } finally {
-      isLoadingFormConfigs.value = false
+      if (requestId === latestFormConfigContextRequestId) {
+        isLoadingFormConfigs.value = false
+      }
     }
+  }
+
+  function scheduleFormConfigContextLoad(nextEntityHandle: string, initializationId: number): void {
+    cancelScheduledFormConfigContextLoad()
+    const requestId = ++latestFormConfigContextRequestId
+
+    scheduledFormConfigContextTimeout = setTimeout(() => {
+      scheduledFormConfigContextTimeout = null
+      void loadFormConfigContext(nextEntityHandle, { initializationId, requestId })
+    }, TABLE_FORM_CONFIG_CONTEXT_DELAY_MS)
   }
 
   function selectFormConfig(handle: FormConfigSelectionHandle): void {
@@ -436,6 +487,7 @@ export function useSaplingTable(
     isInitialized.value = false
     isResettingEntityState.value = true
     cancelScheduledLoad()
+    resetFormConfigContext()
     activeLoadController?.abort()
     activeLoadController = null
     latestLoadRequestId += 1
@@ -448,7 +500,6 @@ export function useSaplingTable(
       await Promise.all([
         genericStore.loadGeneric(currentEntityHandle, 'global', 'filter', 'exception'),
         currentPermissionStore.fetchCurrentPermission(),
-        loadFormConfigContext(currentEntityHandle),
       ])
 
       if (
@@ -487,6 +538,7 @@ export function useSaplingTable(
     }
 
     isInitialized.value = true
+    scheduleFormConfigContextLoad(currentEntityHandle, initializationId)
   }
   // #endregion
 
@@ -501,6 +553,7 @@ export function useSaplingTable(
 
   onBeforeUnmount(() => {
     cancelScheduledLoad()
+    cancelScheduledFormConfigContextLoad()
     activeLoadController?.abort()
     activeLoadController = null
   })

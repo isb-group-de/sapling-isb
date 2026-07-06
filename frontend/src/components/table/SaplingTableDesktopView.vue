@@ -174,6 +174,8 @@ function getHeaderCellClasses(column: Record<string, unknown> & { key?: string |
 
   return [
     'sapling-table-header-cell',
+    key === '__select' ? 'sapling-table-header-cell--select' : '',
+    key === '__actions' ? 'sapling-table-header-cell--actions' : '',
     key !== '__select' && key !== '__actions' ? 'sapling-table-header-cell--data' : '',
   ].filter(Boolean)
 }

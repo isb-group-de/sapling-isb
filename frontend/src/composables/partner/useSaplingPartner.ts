@@ -11,7 +11,6 @@ import { useCurrentPersonStore } from '@/stores/currentPersonStore'
 
 type PartnerHandle = number
 type PartnerFilterClause = Record<string, { $in: PartnerHandle[] }>
-type ScalarFilterValue = string | number | boolean
 
 const EMPTY_CHIP_FILTER_SENTINEL = '__sapling_empty_chip_filter__'
 
@@ -91,6 +90,20 @@ export function useSaplingPartner(entityHandle: Ref<string>) {
   )
 
   watch(
+    isInitialized,
+    async (nextIsInitialized) => {
+      if (!nextIsInitialized) {
+        return
+      }
+
+      await loadChipFilters()
+      syncSelectedChipFiltersFromColumnFilters()
+      applyPartnerFilter()
+    },
+    { immediate: true },
+  )
+
+  watch(
     selectedChipFilters,
     () => {
       syncColumnFiltersFromSelectedChipFilters()
@@ -136,9 +149,7 @@ export function useSaplingPartner(entityHandle: Ref<string>) {
     selectedPeopleHandles.value =
       currentPersonStore.person?.handle != null ? [currentPersonStore.person.handle] : []
 
-    await loadChipFilters()
     hydratePartnerSelectionFromRestoredFilter()
-    syncSelectedChipFiltersFromColumnFilters()
     applyPartnerFilter()
   }
 
@@ -227,6 +238,7 @@ export function useSaplingPartner(entityHandle: Ref<string>) {
     entityTemplates,
     entity,
     entityPermission,
+    isInitialized,
     parentFilter,
     selectedPeopleHandles,
     tableKey,
@@ -454,13 +466,9 @@ function normalizeSelectionForComparison(selection: SaplingChipFilterSelection) 
   return Object.fromEntries(
     Object.entries(selection).map(([key, values]) => [
       key,
-      values.filter((value): value is ScalarFilterValue => isScalarFilterValue(value)),
+      values.filter((value): value is SaplingFilterHandle => isSaplingFilterHandle(value)),
     ]),
   )
-}
-
-function isScalarFilterValue(value: unknown): value is ScalarFilterValue {
-  return typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean'
 }
 
 function areColumnFiltersEqual(

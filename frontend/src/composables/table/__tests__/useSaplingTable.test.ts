@@ -415,6 +415,28 @@ describe('useSaplingTable', () => {
     )
   })
 
+  it('loads the first table page before delayed form config context', async () => {
+    vi.useFakeTimers()
+    loadGenericMock.mockResolvedValue(undefined)
+    apiFindMock.mockResolvedValue({
+      data: [{ handle: 1, name: 'Ada Lovelace' }],
+      meta: { total: 1 },
+    })
+
+    mountTestHost(ref('partner'))
+    await flushPromises()
+
+    expect(apiFindMock).toHaveBeenCalledTimes(1)
+    expect(getEntityTemplateMock).not.toHaveBeenCalled()
+    expect(listFormConfigsMock).not.toHaveBeenCalled()
+
+    await vi.advanceTimersByTimeAsync(100)
+    await flushPromises()
+
+    expect(getEntityTemplateMock).toHaveBeenCalledWith('partner')
+    expect(listFormConfigsMock).toHaveBeenCalledWith('partner')
+  })
+
   it('applies default open filters for chip references with isOpen values', async () => {
     loadGenericMock.mockResolvedValue(undefined)
     apiFindMock.mockImplementation((entityHandle: string) => {
