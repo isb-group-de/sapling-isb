@@ -771,7 +771,7 @@ export interface PersonItem extends SaplingGenericItem {
   /** Unique identifier for the person */
   handle: number | null
   /** First name */
-  firstName: string
+  firstName?: string | null
   /** Last name */
   lastName: string
   /** Login name */

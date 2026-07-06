@@ -72,21 +72,25 @@ export class GlobalSearchService {
     const perEntityLimit = Math.max(3, Math.min(10, limit));
 
     const resultSets = await this.runWithConcurrency(
-      entities.map((entity) => async () =>
-        this.searchEntitySafely({
-          entity,
-          query,
-          terms,
-          perEntityLimit,
-          currentUser: hydratedUser,
-        }),
+      entities.map(
+        (entity) => async () =>
+          this.searchEntitySafely({
+            entity,
+            query,
+            terms,
+            perEntityLimit,
+            currentUser: hydratedUser,
+          }),
       ),
       ENTITY_SEARCH_CONCURRENCY,
     );
 
     const items = resultSets
       .flat()
-      .sort((left, right) => right.score - left.score || left.label.localeCompare(right.label))
+      .sort(
+        (left, right) =>
+          right.score - left.score || left.label.localeCompare(right.label),
+      )
       .slice(0, limit);
 
     return { query, items };
@@ -143,7 +147,8 @@ export class GlobalSearchService {
     currentUser: PersonItem,
     requestedHandles: string[],
   ): Promise<SearchableEntity[]> {
-    const permissions = this.currentService.getAllEntityPermissions(currentUser);
+    const permissions =
+      this.currentService.getAllEntityPermissions(currentUser);
     const readableHandles = new Set(
       permissions
         .filter((permission) => permission.allowRead && permission.allowShow)
@@ -190,9 +195,16 @@ export class GlobalSearchService {
       });
     }
 
-    const handleField = context.template.find((field) => field.name === 'handle');
-    if (handleField && this.isExactHandleCandidate(handleField, context.query)) {
-      clauses.push({ handle: this.normalizeHandleQuery(handleField, context.query) });
+    const handleField = context.template.find(
+      (field) => field.name === 'handle',
+    );
+    if (
+      handleField &&
+      this.isExactHandleCandidate(handleField, context.query)
+    ) {
+      clauses.push({
+        handle: this.normalizeHandleQuery(handleField, context.query),
+      });
     }
 
     return clauses.length === 1 ? clauses[0] : { $or: clauses };
@@ -216,7 +228,8 @@ export class GlobalSearchService {
       this.getDisplayValue(record, context.valueFields) || String(recordHandle);
     const matches = this.getMatches(record, context.fields, context.query);
     const preview =
-      matches.find((match) => match.value !== label)?.value ?? matches[0]?.value;
+      matches.find((match) => match.value !== label)?.value ??
+      matches[0]?.value;
 
     return {
       entityHandle: context.entity.handle,
@@ -242,7 +255,9 @@ export class GlobalSearchService {
       'subject',
       'description',
     ]);
-    const candidates = template.filter((field) => this.isSearchableTextField(field));
+    const candidates = template.filter((field) =>
+      this.isSearchableTextField(field),
+    );
     const valueFields = candidates
       .filter((field) => field.options?.includes('isValue'))
       .map((field) => field.name);
@@ -403,7 +418,10 @@ export class GlobalSearchService {
     return String(value).trim();
   }
 
-  private getNestedValue(record: Record<string, unknown>, path: string): unknown {
+  private getNestedValue(
+    record: Record<string, unknown>,
+    path: string,
+  ): unknown {
     return path.split('.').reduce<unknown>((current, segment) => {
       if (!current || typeof current !== 'object') {
         return undefined;

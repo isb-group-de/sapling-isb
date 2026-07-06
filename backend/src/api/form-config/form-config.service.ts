@@ -354,9 +354,16 @@ export class FormConfigService {
       ...(template.formConfig ?? {}),
       ...fieldConfig,
     };
+    const isBooleanTemplate =
+      template.type === 'boolean' ||
+      template.formConfig?.renderer === 'boolean' ||
+      fieldConfig.renderer === 'boolean';
 
     if (fieldConfig.label == null && template.formConfig?.label) {
       mergedFormConfig.label = template.formConfig.label;
+    }
+    if (isBooleanTemplate) {
+      mergedFormConfig.required = false;
     }
 
     const nextTemplate = {
@@ -390,6 +397,10 @@ export class FormConfigService {
     }
     if (Object.prototype.hasOwnProperty.call(fieldConfig, 'mobileVisible')) {
       nextTemplate.mobileVisible = fieldConfig.mobileVisible ?? null;
+    }
+    if (isBooleanTemplate) {
+      nextTemplate.isRequired = false;
+      return nextTemplate;
     }
     if (fieldConfig.required === true) {
       nextTemplate.isRequired = true;

@@ -2,9 +2,7 @@ import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import ApiGenericService from '@/services/api.generic.service'
-import ApiSearchService, {
-  type GlobalSearchResultItem,
-} from '@/services/api.search.service'
+import ApiSearchService, { type GlobalSearchResultItem } from '@/services/api.search.service'
 import { useCurrentPersonStore } from '@/stores/currentPersonStore'
 import { useCurrentPermissionStore } from '@/stores/currentPermissionStore'
 import { buildFavoritePath } from '@/utils/saplingFavoriteNavigation'

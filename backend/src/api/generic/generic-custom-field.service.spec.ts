@@ -113,4 +113,28 @@ describe('GenericCustomFieldService', () => {
       }),
     ).resolves.toEqual(['customFields.segment', 'customFields.rating']);
   });
+
+  it('keeps boolean custom fields optional with a false default', async () => {
+    const service = createService([
+      createDefinition('approved', 'boolean', { isRequired: true }),
+    ]);
+
+    await expect(
+      service.getMissingRequiredFieldNames('company', {}),
+    ).resolves.toEqual([]);
+
+    const templates = await service.appendCustomFieldTemplates('company', []);
+
+    expect(templates[0]).toMatchObject({
+      name: 'customFields.approved',
+      type: 'boolean',
+      default: false,
+      isRequired: false,
+      nullable: true,
+      formConfig: expect.objectContaining({
+        required: false,
+        renderer: 'boolean',
+      }),
+    });
+  });
 });

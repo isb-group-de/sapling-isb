@@ -201,7 +201,7 @@ const profileName = computed(() => {
     return 'Sapling'
   }
 
-  return `${person.firstName} ${person.lastName}`.trim() || 'Sapling'
+  return [person.firstName, person.lastName].filter(Boolean).join(' ').trim() || 'Sapling'
 })
 
 const profileMeta = computed(() => {
@@ -218,7 +218,7 @@ const profileInitials = computed(() => {
   }
 
   const initials = [person.firstName, person.lastName]
-    .filter(Boolean)
+    .filter((value): value is string => typeof value === 'string' && value.trim().length > 0)
     .map((value) => value.trim().charAt(0).toUpperCase())
     .join('')
 

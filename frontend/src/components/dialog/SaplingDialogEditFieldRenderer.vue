@@ -389,6 +389,10 @@ const { t } = useI18n()
 
 const configuredRenderer = computed(() => props.template.formConfig?.renderer ?? null)
 const isRequired = computed(() => {
+  if (props.template.type === 'boolean' || configuredRenderer.value === 'boolean') {
+    return false
+  }
+
   if (props.template.formConfig?.required === true) {
     return true
   }

@@ -58,6 +58,7 @@ export class TemplateService {
         prop.name,
       );
       const isCollectionRelation = ['m:n', '1:m'].includes(prop.kind ?? '');
+      const isBooleanField = prop.type === 'boolean';
 
       const entityHandleFromType =
         Object.keys(entityMap).find((key) => {
@@ -75,7 +76,7 @@ export class TemplateService {
         referenceName: entityHandleFromType ?? '',
         length: prop.length ?? null,
         nullable: prop.nullable ?? true,
-        default: prop.default ?? null,
+        default: prop.default ?? (isBooleanField ? false : null),
         defaultRaw: prop.defaultRaw
           ? String(prop.defaultRaw).replace(/^['"]|['"]$/g, '')
           : null,
@@ -89,6 +90,7 @@ export class TemplateService {
         isPersistent: prop.persist ?? true,
         isReference: ['m:n', '1:m', '1:1', 'm:1'].includes(prop.kind ?? ''),
         isRequired:
+          !isBooleanField &&
           !(prop.nullable ?? true) &&
           !(prop.primary ?? false) &&
           !(prop.autoincrement ?? false) &&

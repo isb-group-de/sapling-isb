@@ -258,7 +258,10 @@ describe('GlobalSearchService', () => {
       icon: 'mdi-calendar',
       canShow: true,
       routes: {
-        getItems: () => [{ route: 'partner/event' }, { route: 'event', navigation: 'calendar' }],
+        getItems: () => [
+          { route: 'partner/event' },
+          { route: 'event', navigation: 'calendar' },
+        ],
       },
     });
     const ticketEntity = Object.assign(new EntityItem(), {

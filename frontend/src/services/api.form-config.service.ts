@@ -40,7 +40,10 @@ export interface SaplingFormConfigValidationResult {
 }
 
 class ApiFormConfigService {
-  static async getEffectiveTemplate(entityHandle: string, force = false): Promise<EntityTemplate[]> {
+  static async getEffectiveTemplate(
+    entityHandle: string,
+    force = false,
+  ): Promise<EntityTemplate[]> {
     const normalizedEntityHandle = entityHandle.trim()
 
     if (!force) {

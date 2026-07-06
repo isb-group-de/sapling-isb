@@ -401,6 +401,10 @@ export function useSaplingDialogEdit(
     v !== null && v !== undefined && v !== '' ? true : `${label} ${t('global.isRequired')}`
 
   function isTemplateRequired(template: EntityTemplate): boolean {
+    if (template.type === 'boolean' || template.formConfig?.renderer === 'boolean') {
+      return false
+    }
+
     if (template.formConfig?.required === true) {
       return true
     }

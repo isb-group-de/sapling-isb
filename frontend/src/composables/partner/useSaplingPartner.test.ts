@@ -18,7 +18,12 @@ describe('useSaplingPartner filter synchronization helpers', () => {
     })
 
     expect(
-      buildChipColumnFilterFromSelection(statusFilter, ['closed', 'in_progress', 'open', 'waiting']),
+      buildChipColumnFilterFromSelection(statusFilter, [
+        'closed',
+        'in_progress',
+        'open',
+        'waiting',
+      ]),
     ).toBeNull()
   })
 

@@ -248,11 +248,7 @@
 }
 
 .sapling-table__cell--data {
-  max-width: clamp(
-    var(--sapling-table-data-column-min-width),
-    18vw,
-    var(--sapling-panel-width-md)
-  );
+  max-width: clamp(var(--sapling-table-data-column-min-width), 18vw, var(--sapling-panel-width-md));
   overflow: hidden;
   text-overflow: ellipsis;
 }

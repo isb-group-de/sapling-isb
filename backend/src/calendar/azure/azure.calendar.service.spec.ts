@@ -93,7 +93,10 @@ describe('AzureCalendarService Outlook import privacy', () => {
       await expect(
         service.upsertImportedEvent(
           emFork,
-          createGraphEvent({ id: `outlook-${String(sensitivity)}`, sensitivity }),
+          createGraphEvent({
+            id: `outlook-${String(sensitivity)}`,
+            sensitivity,
+          }),
           defaults,
         ),
       ).resolves.toBe('created');
@@ -110,9 +113,9 @@ describe('AzureCalendarService Outlook import privacy', () => {
     existingEvent.title = 'Old title';
     existingEvent.isPrivate = false;
     const emFork = {
-      findOne: jest.fn<(...args: unknown[]) => Promise<unknown>>(
-        async () => ({ event: existingEvent }),
-      ),
+      findOne: jest.fn<(...args: unknown[]) => Promise<unknown>>(async () => ({
+        event: existingEvent,
+      })),
       find: jest.fn<(...args: unknown[]) => Promise<unknown[]>>(async () => []),
       persist: jest.fn(),
     };

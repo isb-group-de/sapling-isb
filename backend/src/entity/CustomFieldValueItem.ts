@@ -72,9 +72,9 @@ export class CustomFieldValueItem {
   @Property({ type: 'float', nullable: true })
   valueNumber?: number | null;
 
-  @ApiPropertyOptional()
-  @Property({ nullable: true })
-  valueBoolean?: boolean | null;
+  @ApiPropertyOptional({ default: false })
+  @Property({ nullable: true, default: false })
+  valueBoolean?: boolean | null = false;
 
   @ApiPropertyOptional({ type: 'string', format: 'date' })
   @Property({ nullable: true, type: 'date' })

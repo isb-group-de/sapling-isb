@@ -125,13 +125,16 @@ export class GenericCustomFieldService {
   ): Promise<string[]> {
     const definitions = await this.getActiveDefinitions(entityHandle);
     return definitions
-      .filter(
-        (definition) =>
+      .filter((definition) => {
+        const fieldType = this.getDefinitionFieldType(definition);
+        return (
+          fieldType !== 'boolean' &&
           definition.isRequired &&
           !this.hasCustomFieldValue(
             this.normalizeValue(definition, customFields[definition.fieldKey]),
-          ),
-      )
+          )
+        );
+      })
       .map(
         (definition) => `${CUSTOM_FIELD_TEMPLATE_PREFIX}${definition.fieldKey}`,
       );
@@ -392,11 +395,12 @@ export class GenericCustomFieldService {
     const template = new EntityTemplateDto();
     const fieldType = this.getDefinitionFieldType(definition);
     const type = this.getTemplateType(fieldType);
+    const isRequired = fieldType !== 'boolean' && definition.isRequired;
 
     template.name = `${CUSTOM_FIELD_TEMPLATE_PREFIX}${definition.fieldKey}`;
     template.type = type;
     template.length = fieldType === 'text' ? 255 : null;
-    template.default = null;
+    template.default = fieldType === 'boolean' ? false : null;
     template.isPrimaryKey = false;
     template.isAutoIncrement = false;
     template.kind = null;
@@ -405,8 +409,8 @@ export class GenericCustomFieldService {
     template.isUnique = false;
     template.referenceName = '';
     template.isReference = false;
-    template.isRequired = definition.isRequired;
-    template.nullable = !definition.isRequired;
+    template.isRequired = isRequired;
+    template.nullable = !isRequired;
     template.isPersistent = true;
     template.referencedPks = [];
     template.options = fieldType === 'longText' ? ['isMarkdown'] : [];
@@ -421,7 +425,7 @@ export class GenericCustomFieldService {
     template.mobileVisible = definition.mobileVisible;
     template.formConfig = {
       label: definition.label,
-      required: definition.isRequired,
+      required: isRequired,
       renderer: this.getRenderer(fieldType),
       metadata: {
         customField: {

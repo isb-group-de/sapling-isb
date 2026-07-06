@@ -141,10 +141,7 @@ export class GithubService {
    * @param {Date} cutoff Oldest accepted close date
    * @returns {boolean} Whether the issue was closed recently enough
    */
-  private wasClosedSince(
-    issue: GithubIssueApiResponse,
-    cutoff: Date,
-  ): boolean {
+  private wasClosedSince(issue: GithubIssueApiResponse, cutoff: Date): boolean {
     if (!issue.closed_at) {
       return false;
     }
@@ -183,9 +180,7 @@ export class GithubService {
     issueNumber: number,
   ): Promise<GithubIssueCommentDto[]> {
     const { data } = await axios.get<GithubIssueCommentApiResponse[]>(
-      this.buildRepositoryUrl(
-        `/issues/${issueNumber}/comments?per_page=100`,
-      ),
+      this.buildRepositoryUrl(`/issues/${issueNumber}/comments?per_page=100`),
       {
         headers: this.headers,
       },

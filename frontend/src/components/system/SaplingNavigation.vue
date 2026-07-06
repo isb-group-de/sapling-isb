@@ -458,9 +458,7 @@ const selectedNavigationGroup = computed(() => {
     : null
 
   return (
-    selectedGroup ??
-    filteredGroups.value.find((group) => group.isActive) ??
-    filteredGroups.value[0]
+    selectedGroup ?? filteredGroups.value.find((group) => group.isActive) ?? filteredGroups.value[0]
   )
 })
 const selectedNavigationColumns = computed(() => {

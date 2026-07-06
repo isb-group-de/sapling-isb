@@ -105,4 +105,48 @@ describe('FormConfigService', () => {
       }),
     });
   });
+
+  it('keeps boolean fields optional when form config marks them required', async () => {
+    const em = {
+      find: jest.fn<() => Promise<object[]>>().mockResolvedValue([
+        {
+          handle: 1,
+          scope: 'global',
+          isActive: true,
+          isDefault: true,
+          config: {
+            schema: SAPLING_FORM_CONFIG_SCHEMA,
+            entityHandle: 'ticket',
+            fields: {
+              isActive: {
+                required: true,
+              },
+            },
+          },
+        },
+      ]),
+    };
+    const service = new FormConfigService(em as never);
+
+    const [template] = await service.getEffectiveTemplate(
+      'ticket',
+      [
+        createTemplate({
+          name: 'isActive',
+          type: 'boolean',
+          isRequired: true,
+          nullable: false,
+        }),
+      ],
+      null,
+    );
+
+    expect(template).toMatchObject({
+      isRequired: false,
+      nullable: false,
+      formConfig: expect.objectContaining({
+        required: false,
+      }),
+    });
+  });
 });

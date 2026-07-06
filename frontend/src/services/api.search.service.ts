@@ -47,14 +47,17 @@ class ApiSearchService {
     }
 
     try {
-      const response = await axios.get<GlobalSearchResponse>(buildApiUrl('command-palette/records'), {
-        params,
-        headers: {
-          'Cache-Control': 'no-cache',
-          Pragma: 'no-cache',
+      const response = await axios.get<GlobalSearchResponse>(
+        buildApiUrl('command-palette/records'),
+        {
+          params,
+          headers: {
+            'Cache-Control': 'no-cache',
+            Pragma: 'no-cache',
+          },
+          signal,
         },
-        signal,
-      })
+      )
       return response.data
     } catch (error: unknown) {
       if (isRequestCanceled(error)) {

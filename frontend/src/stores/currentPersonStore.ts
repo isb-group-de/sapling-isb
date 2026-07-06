@@ -6,7 +6,7 @@ import type { PersonItem } from '../entity/entity'
 
 export interface ImpersonatorInfo {
   handle: number
-  firstName: string
+  firstName?: string | null
   lastName: string
 }
 

@@ -52,7 +52,7 @@ import { SharedMailboxGroupItem } from './SharedMailboxGroupItem';
  * @description Contains personal details, authentication, and relations to companies, roles, tickets, notes, dashboards, favorites, and sessions. Used to manage users and their access in the system.
  *
  * @property {number} handle - Unique identifier for the person (primary key).
- * @property {string} firstName - First name of the person.
+ * @property {string} [firstName] - First name of the person.
  * @property {string} lastName - Last name of the person.
  * @property {string} [loginName] - Unique login name for authentication (optional).
  * @property {string} [loginPassword] - Hashed login password (optional).
@@ -98,7 +98,7 @@ export class PersonItem {
   /**
    * First name of the person.
    */
-  @ApiProperty()
+  @ApiPropertyOptional()
   @Sapling(['isValue', 'isOrderASC', 'isDuplicateCheck'])
   @SaplingForm({
     order: 100,
@@ -111,8 +111,8 @@ export class PersonItem {
     mobileOrder: 100,
     mobileVisible: true,
   })
-  @Property({ length: 64, nullable: false })
-  firstName!: string;
+  @Property({ length: 64, nullable: true })
+  firstName?: string | null;
 
   /**
    * Last name of the person.

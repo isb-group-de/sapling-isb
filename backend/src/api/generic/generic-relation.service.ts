@@ -178,10 +178,7 @@ export class GenericRelationService {
       currentUser,
       entityHandle,
     );
-    const item = await this.em.findOne(
-      entityClass,
-      entityFilter,
-    );
+    const item = await this.em.findOne(entityClass, entityFilter);
 
     if (!item || !field) {
       throw new NotFoundException(`global.entityNotFound`);

@@ -5,7 +5,7 @@ import { buildApiUrl } from '@/services/api.client'
 import { pushApiErrorMessage } from '@/services/api.error.service'
 
 export interface CurrentProfileUpdatePayload {
-  firstName: string
+  firstName?: string | null
   lastName: string
   phone?: string | null
   mobile?: string | null

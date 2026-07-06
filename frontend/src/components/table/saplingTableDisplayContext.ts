@@ -4,5 +4,6 @@ export interface SaplingTableDisplayContext {
   isMobileTable: ComputedRef<boolean>
 }
 
-export const saplingTableDisplayContextKey: InjectionKey<SaplingTableDisplayContext> =
-  Symbol('sapling-table-display-context')
+export const saplingTableDisplayContextKey: InjectionKey<SaplingTableDisplayContext> = Symbol(
+  'sapling-table-display-context',
+)

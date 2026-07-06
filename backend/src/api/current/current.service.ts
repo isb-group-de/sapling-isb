@@ -236,9 +236,10 @@ export class CurrentService {
       throw new Error('login.userNotFound');
     }
 
-    const firstName = this.normalizeRequiredText(
+    const firstName = this.normalizeNullableText(
       dto.firstName,
       person.firstName,
+      64,
     );
     const lastName = this.normalizeRequiredText(dto.lastName, person.lastName);
 
@@ -526,6 +527,19 @@ export class CurrentService {
 
     const normalizedValue = value.trim().slice(0, 64);
     return normalizedValue || fallback;
+  }
+
+  private normalizeNullableText(
+    value: unknown,
+    fallback: string | null | undefined,
+    maxLength: number,
+  ): string | null {
+    if (typeof value !== 'string') {
+      return fallback ?? null;
+    }
+
+    const normalizedValue = value.trim().slice(0, maxLength);
+    return normalizedValue || null;
   }
 
   private normalizeOptionalText(

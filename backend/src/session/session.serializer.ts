@@ -16,7 +16,7 @@ export interface SessionUserPayload {
 
 export interface ImpersonatorInfo {
   handle: number;
-  firstName: string;
+  firstName?: string | null;
   lastName: string;
 }
 

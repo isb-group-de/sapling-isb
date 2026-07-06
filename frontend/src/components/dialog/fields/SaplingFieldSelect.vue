@@ -140,9 +140,7 @@ const autocompleteItems = ref<SaplingGenericItem[]>([])
 const genericStore = useGenericStore()
 const suppressNextSelectedItemSearch = ref(false)
 const tableDisplayContext = inject(saplingTableDisplayContextKey, null)
-const disableDropdownMobileView = computed(
-  () => tableDisplayContext?.isMobileTable.value === false,
-)
+const disableDropdownMobileView = computed(() => tableDisplayContext?.isMobileTable.value === false)
 // #endregion
 
 // #region Selection State

@@ -3,7 +3,8 @@ import { IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 
 export class GlobalSearchQueryDto {
   @ApiProperty({
-    description: 'Free-text query used for metadata-driven global record search.',
+    description:
+      'Free-text query used for metadata-driven global record search.',
     example: 'Müller',
   })
   @IsString()
@@ -44,19 +45,26 @@ export class GlobalSearchResultDto {
   @ApiProperty({ description: 'Source entity handle.' })
   entityHandle!: string;
 
-  @ApiProperty({ description: 'Source record handle.', oneOf: [{ type: 'string' }, { type: 'number' }] })
+  @ApiProperty({
+    description: 'Source record handle.',
+    oneOf: [{ type: 'string' }, { type: 'number' }],
+  })
   recordHandle!: string | number;
 
   @ApiProperty({ description: 'Human-readable record label.' })
   label!: string;
 
-  @ApiPropertyOptional({ description: 'Short preview of the matching content.' })
+  @ApiPropertyOptional({
+    description: 'Short preview of the matching content.',
+  })
   preview?: string;
 
   @ApiPropertyOptional({ description: 'Entity icon used by the frontend.' })
   icon?: string | null;
 
-  @ApiPropertyOptional({ description: 'Fallback frontend path for the record.' })
+  @ApiPropertyOptional({
+    description: 'Fallback frontend path for the record.',
+  })
   path?: string;
 
   @ApiProperty({

@@ -54,6 +54,10 @@ export function applyFormConfigOverlay(
     if (!fieldConfig) {
       return template
     }
+    const isBooleanTemplate =
+      template.type === 'boolean' ||
+      template.formConfig?.renderer === 'boolean' ||
+      fieldConfig.renderer === 'boolean'
     const mergedFormConfig = {
       ...(template.formConfig ?? {}),
       ...fieldConfig,
@@ -61,6 +65,9 @@ export function applyFormConfigOverlay(
 
     if (fieldConfig.label == null && template.formConfig?.label) {
       mergedFormConfig.label = template.formConfig.label
+    }
+    if (isBooleanTemplate) {
+      mergedFormConfig.required = false
     }
 
     return {
@@ -74,7 +81,7 @@ export function applyFormConfigOverlay(
       tableVisible: fieldConfig.tableVisible ?? template.tableVisible,
       mobileOrder: fieldConfig.mobileOrder ?? template.mobileOrder,
       mobileVisible: fieldConfig.mobileVisible ?? template.mobileVisible,
-      isRequired: fieldConfig.required ?? template.isRequired,
+      isRequired: isBooleanTemplate ? false : (fieldConfig.required ?? template.isRequired),
       formConfig: mergedFormConfig,
     }
   })
