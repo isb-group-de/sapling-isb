@@ -70,7 +70,7 @@ type MailDeliveryTestDouble = {
       handle: string;
     };
     session: {
-      accessToken: string;
+      accessToken?: string;
       refreshToken: string;
     };
   };
@@ -266,6 +266,114 @@ describe('MailService', () => {
     expect(result.provider).toBe('azure');
     expect(result.senders.map((sender) => sender.email)).toEqual([
       'martin.rosbund@example.com',
+      'fallback@example.com',
+    ]);
+  });
+
+  it('refreshes azure sender lookup after token expiry before resolving senders', async () => {
+    graphApiGet.mockReset();
+    graphApiGet
+      .mockRejectedValueOnce(
+        new Error('Lifetime validation failed, the token is expired.'),
+      )
+      .mockResolvedValueOnce({
+        displayName: 'ISB - Martin Rosbund',
+        mail: 'martin.rosbund@example.com',
+      });
+
+    const session = {
+      accessToken: 'stale-token',
+      refreshToken: 'refresh',
+    };
+    const em = {
+      findOne: jest
+        .fn<(...args: unknown[]) => Promise<unknown>>()
+        .mockResolvedValueOnce({
+          handle: 1,
+          firstName: 'Martin',
+          lastName: 'Rosbund',
+          email: 'fallback@example.com',
+          type: { handle: 'azure' },
+          sharedMailboxGroups: [],
+          session,
+        })
+        .mockResolvedValue(undefined),
+    };
+
+    const service = new MailService(
+      em as never,
+      { getEntityTemplate: jest.fn(() => []) } as never,
+      createMessageTemplateServiceMock() as never,
+      { add: jest.fn() } as never,
+    );
+    const refreshProviderAccessToken =
+      jest.fn<(...args: any[]) => Promise<string | null>>();
+    refreshProviderAccessToken.mockImplementation(
+      async (_provider: string, currentSession: typeof session) => {
+        currentSession.accessToken = 'fresh-token';
+        return 'fresh-token';
+      },
+    );
+    (
+      service as never as {
+        refreshProviderAccessToken: typeof refreshProviderAccessToken;
+      }
+    ).refreshProviderAccessToken = refreshProviderAccessToken;
+
+    const result = await service.listSenderOptions({ handle: 1 } as never);
+
+    expect(refreshProviderAccessToken).toHaveBeenCalledTimes(1);
+    expect(graphApiGet).toHaveBeenCalledTimes(2);
+    expect(result.senders.map((sender) => sender.email)).toEqual([
+      'martin.rosbund@example.com',
+      'fallback@example.com',
+    ]);
+  });
+
+  it('falls back for sender lookup auth failures when refresh does not recover', async () => {
+    graphApiGet.mockReset();
+    graphApiGet.mockRejectedValue(
+      new Error('Lifetime validation failed, the token is expired.'),
+    );
+
+    const session = {
+      accessToken: 'stale-token',
+      refreshToken: 'refresh',
+    };
+    const em = {
+      findOne: jest
+        .fn<(...args: unknown[]) => Promise<unknown>>()
+        .mockResolvedValueOnce({
+          handle: 1,
+          firstName: 'Martin',
+          lastName: 'Rosbund',
+          email: 'fallback@example.com',
+          type: { handle: 'azure' },
+          sharedMailboxGroups: [],
+          session,
+        })
+        .mockResolvedValue(undefined),
+    };
+
+    const service = new MailService(
+      em as never,
+      { getEntityTemplate: jest.fn(() => []) } as never,
+      createMessageTemplateServiceMock() as never,
+      { add: jest.fn() } as never,
+    );
+    const refreshProviderAccessToken =
+      jest.fn<(...args: any[]) => Promise<string | null>>();
+    refreshProviderAccessToken.mockResolvedValue(null);
+    (
+      service as never as {
+        refreshProviderAccessToken: typeof refreshProviderAccessToken;
+      }
+    ).refreshProviderAccessToken = refreshProviderAccessToken;
+
+    const result = await service.listSenderOptions({ handle: 1 } as never);
+
+    expect(refreshProviderAccessToken).toHaveBeenCalledTimes(1);
+    expect(result.senders.map((sender) => sender.email)).toEqual([
       'fallback@example.com',
     ]);
   });
@@ -541,6 +649,128 @@ describe('MailService', () => {
     );
     expect(sendWithProviderAccessToken).toHaveBeenNthCalledWith(
       2,
+      'azure',
+      delivery,
+      delivery.createdBy.session,
+      'fresh-token',
+      [],
+      undefined,
+    );
+    expect(result).toEqual({ responseStatusCode: 202 });
+  });
+
+  it('retries mail delivery after provider token expiry messages', async () => {
+    const service = new MailService(
+      {} as never,
+      { getEntityTemplate: jest.fn(() => []) } as never,
+      createMessageTemplateServiceMock() as never,
+      { add: jest.fn() } as never,
+    );
+
+    const delivery: MailDeliveryTestDouble = {
+      provider: 'azure',
+      createdBy: {
+        session: {
+          accessToken: 'stale-token',
+          refreshToken: 'refresh-token',
+        },
+      },
+    };
+    const authError = new Error(
+      'Lifetime validation failed, the token is expired.',
+    );
+    const sendWithProviderAccessToken =
+      jest.fn<(...args: any[]) => Promise<unknown>>();
+    sendWithProviderAccessToken
+      .mockRejectedValueOnce(authError)
+      .mockResolvedValueOnce({ responseStatusCode: 202 });
+    const refreshProviderAccessToken =
+      jest.fn<(...args: any[]) => Promise<string | null>>();
+    refreshProviderAccessToken.mockResolvedValue('fresh-token');
+
+    (
+      service as never as {
+        sendWithProviderAccessToken: typeof sendWithProviderAccessToken;
+        refreshProviderAccessToken: typeof refreshProviderAccessToken;
+      }
+    ).sendWithProviderAccessToken = sendWithProviderAccessToken;
+    (
+      service as never as {
+        refreshProviderAccessToken: typeof refreshProviderAccessToken;
+      }
+    ).refreshProviderAccessToken = refreshProviderAccessToken;
+
+    const result = await (
+      service as never as {
+        sendWithProvider: (
+          delivery: unknown,
+          attachments: unknown[],
+          em: unknown,
+        ) => Promise<unknown>;
+      }
+    ).sendWithProvider(delivery, [], {});
+
+    expect(refreshProviderAccessToken).toHaveBeenCalledTimes(1);
+    expect(sendWithProviderAccessToken).toHaveBeenNthCalledWith(
+      2,
+      'azure',
+      delivery,
+      delivery.createdBy.session,
+      'fresh-token',
+      [],
+      undefined,
+    );
+    expect(result).toEqual({ responseStatusCode: 202 });
+  });
+
+  it('refreshes mail delivery before sending when only a refresh token is stored', async () => {
+    const service = new MailService(
+      {} as never,
+      { getEntityTemplate: jest.fn(() => []) } as never,
+      createMessageTemplateServiceMock() as never,
+      { add: jest.fn() } as never,
+    );
+
+    const delivery: MailDeliveryTestDouble = {
+      provider: 'azure',
+      createdBy: {
+        session: {
+          refreshToken: 'refresh-token',
+        },
+      },
+    };
+    const sendWithProviderAccessToken =
+      jest.fn<(...args: any[]) => Promise<unknown>>();
+    sendWithProviderAccessToken.mockResolvedValue({ responseStatusCode: 202 });
+    const refreshProviderAccessToken =
+      jest.fn<(...args: any[]) => Promise<string | null>>();
+    refreshProviderAccessToken.mockResolvedValue('fresh-token');
+
+    (
+      service as never as {
+        sendWithProviderAccessToken: typeof sendWithProviderAccessToken;
+        refreshProviderAccessToken: typeof refreshProviderAccessToken;
+      }
+    ).sendWithProviderAccessToken = sendWithProviderAccessToken;
+    (
+      service as never as {
+        refreshProviderAccessToken: typeof refreshProviderAccessToken;
+      }
+    ).refreshProviderAccessToken = refreshProviderAccessToken;
+
+    const result = await (
+      service as never as {
+        sendWithProvider: (
+          delivery: unknown,
+          attachments: unknown[],
+          em: unknown,
+        ) => Promise<unknown>;
+      }
+    ).sendWithProvider(delivery, [], {});
+
+    expect(refreshProviderAccessToken).toHaveBeenCalledTimes(1);
+    expect(sendWithProviderAccessToken).toHaveBeenCalledTimes(1);
+    expect(sendWithProviderAccessToken).toHaveBeenCalledWith(
       'azure',
       delivery,
       delivery.createdBy.session,

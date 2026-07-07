@@ -727,7 +727,12 @@ export class MailService {
     }
 
     const senderEmail = this.getRequestedSenderEmail(delivery);
-    const initialAccessToken = session.accessToken;
+    const initialAccessToken =
+      session.accessToken?.trim() ||
+      (await this.refreshProviderAccessToken(provider, session, em));
+    if (!initialAccessToken) {
+      throw new BadRequestException('mail.sessionNotFound');
+    }
 
     try {
       return await this.sendWithProviderAccessToken(
@@ -929,19 +934,44 @@ export class MailService {
       provider,
     );
 
-    if (provider === 'azure') {
-      const discoveredSenders = await this.listAzureSenderOptions(
-        person,
+    const discoverSenders = async (): Promise<MailSenderOption[]> => {
+      if (provider === 'azure') {
+        return this.listAzureSenderOptions(person, session);
+      }
+
+      return this.listGoogleSenderOptions(person, session);
+    };
+
+    const initialAccessToken = session.accessToken?.trim();
+
+    try {
+      const discoveredSenders = await discoverSenders();
+      return mergeSenderOptions(discoveredSenders, assignedSharedMailboxes);
+    } catch (error) {
+      if (!isAuthenticationProviderError(error)) {
+        throw error;
+      }
+
+      const refreshedToken = await this.refreshProviderAccessToken(
+        provider,
         session,
       );
-      return mergeSenderOptions(discoveredSenders, assignedSharedMailboxes);
-    }
+      if (refreshedToken && refreshedToken !== initialAccessToken) {
+        try {
+          const discoveredSenders = await discoverSenders();
+          return mergeSenderOptions(discoveredSenders, assignedSharedMailboxes);
+        } catch (retryError) {
+          if (!isAuthenticationProviderError(retryError)) {
+            throw retryError;
+          }
+        }
+      }
 
-    const discoveredSenders = await this.listGoogleSenderOptions(
-      person,
-      session,
-    );
-    return mergeSenderOptions(discoveredSenders, assignedSharedMailboxes);
+      this.logger.warn(
+        `Refreshing ${provider} access token for sender lookup failed, using fallback sender options.`,
+      );
+      return assignedSharedMailboxes;
+    }
   }
 
   private async resolveRequestedSender(

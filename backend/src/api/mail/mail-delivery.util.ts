@@ -116,6 +116,40 @@ function extractProviderErrorCode(body: unknown): string | undefined {
   return undefined;
 }
 
+function collectProviderErrorMessages(error: ProviderErrorShape): string[] {
+  const messages: string[] = [];
+
+  if (error.message) {
+    messages.push(error.message);
+  }
+
+  if (isRecord(error.body)) {
+    if (typeof error.body.message === 'string') {
+      messages.push(error.body.message);
+    }
+
+    if (typeof error.body.error_description === 'string') {
+      messages.push(error.body.error_description);
+    }
+
+    if (typeof error.body.error === 'string') {
+      messages.push(error.body.error);
+    }
+
+    if (isRecord(error.body.error)) {
+      if (typeof error.body.error.message === 'string') {
+        messages.push(error.body.error.message);
+      }
+
+      if (typeof error.body.error.error_description === 'string') {
+        messages.push(error.body.error.error_description);
+      }
+    }
+  }
+
+  return messages;
+}
+
 export function isAuthenticationProviderError(error: unknown): boolean {
   const providerError = getMailProviderErrorShape(error);
   if (providerError.statusCode === 401 || providerError.statusCode === 403) {
@@ -123,14 +157,27 @@ export function isAuthenticationProviderError(error: unknown): boolean {
   }
 
   const errorCode = extractProviderErrorCode(providerError.body)?.toLowerCase();
-  return Boolean(
+  if (
     errorCode &&
     (errorCode.includes('token') ||
       errorCode.includes('auth') ||
       errorCode.includes('unauthorized') ||
       errorCode.includes('forbidden') ||
-      errorCode.includes('invalid_grant')),
-  );
+      errorCode.includes('invalid_grant'))
+  ) {
+    return true;
+  }
+
+  return collectProviderErrorMessages(providerError).some((message) => {
+    const normalized = message.toLowerCase();
+    return (
+      normalized.includes('lifetime validation failed') ||
+      normalized.includes('token is expired') ||
+      normalized.includes('expired token') ||
+      normalized.includes('access token has expired') ||
+      normalized.includes('invalid authentication token')
+    );
+  });
 }
 
 export function normalizeEmailAddress(
