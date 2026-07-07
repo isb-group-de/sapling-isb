@@ -122,5 +122,8 @@ export function formatSaplingPhoneNumber(
   const formatter = candidate.startsWith('+') ? new AsYouType() : new AsYouType(countryCode)
   const formattedValue = formatter.input(candidate)
 
-  return formatWithSaplingGrouping(candidate, options) ?? sanitizeFormattedPhone(formattedValue || candidate)
+  return (
+    formatWithSaplingGrouping(candidate, options) ??
+    sanitizeFormattedPhone(formattedValue || candidate)
+  )
 }

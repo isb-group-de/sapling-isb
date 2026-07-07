@@ -16,7 +16,7 @@ export interface CompanyItem extends SaplingGenericItem {
   /** Name of the company */
   name: string
   /** Street address */
-  street: string
+  street?: string | null
   /** ZIP code */
   zip?: string | null
   /** City */

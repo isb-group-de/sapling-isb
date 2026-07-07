@@ -98,7 +98,7 @@ export class CompanyItem {
    * Street address of the company.
    * @type {string}
    */
-  @ApiProperty()
+  @ApiPropertyOptional()
   @Sapling(['isNavigation'])
   @SaplingForm({
     order: 100,
@@ -111,8 +111,8 @@ export class CompanyItem {
     mobileOrder: 100,
     mobileVisible: false,
   })
-  @Property({ length: 128, nullable: false })
-  street!: string;
+  @Property({ length: 128, nullable: true })
+  street?: string;
 
   /**
    * ZIP or postal code.

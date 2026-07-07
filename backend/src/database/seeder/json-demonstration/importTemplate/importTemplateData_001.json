@@ -59,7 +59,7 @@
       ],
       "fieldDefaults": [
         {
-          "value": "leer",
+          "value": "",
           "targetField": "street"
         }
       ],
@@ -124,7 +124,7 @@
       ],
       "fieldDefaults": [
         {
-          "value": "leer",
+          "value": "",
           "targetField": "firstName"
         },
         {
