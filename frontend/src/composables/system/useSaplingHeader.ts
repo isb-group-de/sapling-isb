@@ -102,7 +102,8 @@ export function useSaplingHeader() {
       snapshot.tickets.length +
       snapshot.tasks.length +
       snapshot.salesOpportunities.length +
-      snapshot.effortEstimates.length
+      snapshot.effortEstimates.length +
+      (snapshot.internalCases?.length ?? 0)
     const notificationCount = snapshot.notifications.length
 
     inboxCount.value = preferences.badgeChannelEnabled

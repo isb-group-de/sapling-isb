@@ -2,6 +2,7 @@ import type {
   EffortEstimateItem,
   EventItem,
   InboxNotificationItem,
+  InternalCaseItem,
   SalesOpportunityItem,
   TicketItem,
 } from '@/entity/entity'
@@ -39,6 +40,15 @@ export function getEffortEstimateInboxRoute(estimate: EffortEstimateItem): Route
     path: '/table/effortEstimate',
     query: {
       filter: JSON.stringify({ handle: estimate.handle }),
+    },
+  }
+}
+
+export function getInternalCaseInboxRoute(internalCase: InternalCaseItem): RouteLocationRaw {
+  return {
+    path: '/table/internalCase',
+    query: {
+      filter: JSON.stringify({ handle: internalCase.handle }),
     },
   }
 }

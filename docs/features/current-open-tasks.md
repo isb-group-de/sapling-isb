@@ -58,6 +58,7 @@ This makes first login setup data-driven through role seed files rather than har
 | `tasks` | Participating events with status not `canceled` or `completed` |
 | `salesOpportunities` | Assigned active sales opportunities |
 | `effortEstimates` | Assigned active effort estimates with status not `completed` or `cancelled` |
+| `internalCases` | Responsible person's open internal cases where the status is marked open |
 | `notifications` | Unread inbox notifications |
 | `count` | Sum of all snapshot collections |
 
@@ -68,6 +69,7 @@ buildOpenTicketWhere()
 buildOpenEventWhere()
 buildOpenSalesOpportunityWhere()
 buildOpenEffortEstimateWhere()
+buildOpenInternalCaseWhere()
 ```
 
 When onboarding a new open-task entity, update both backend snapshot composition and frontend stream item mapping.
@@ -109,6 +111,7 @@ The SSE stream is process-local. In multi-instance deployments, open-task notifi
 | `event` | `getTaskInboxRoute()` |
 | `salesOpportunity` | `getSalesOpportunityInboxRoute()` |
 | `effortEstimate` | `getEffortEstimateInboxRoute()` |
+| `internalCase` | `getInternalCaseInboxRoute()` |
 | `notification` | `getNotificationInboxRoute()` |
 
 ## Extension Checklist

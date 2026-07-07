@@ -1371,6 +1371,80 @@ export interface KnowledgeArticleCategoryItem extends SaplingGenericItem {
 }
 
 /**
+ * Represents an internal office case.
+ */
+export interface InternalCaseItem extends SaplingGenericItem {
+  /** Unique identifier for the internal case */
+  handle?: number | null
+  /** Generated visible case number */
+  number?: string | null
+  /** Short title */
+  title: string
+  /** Current status */
+  status: InternalCaseStatusItem | string
+  /** Case category */
+  category: InternalCaseCategoryItem | string
+  /** Request content */
+  requestMarkdown?: string | null
+  /** Internal notes and background information */
+  internalInformationMarkdown?: string | null
+  /** Customer company */
+  customerCompany?: CompanyItem | number | null
+  /** Customer person */
+  customerPerson?: PersonItem | number | null
+  /** Responsible company */
+  responsibleCompany?: CompanyItem | number | null
+  /** Responsible person */
+  responsiblePerson?: PersonItem | number | null
+  /** Creation date */
+  createdAt?: Date | null
+  /** Last update date */
+  updatedAt?: Date | null
+}
+
+/**
+ * Represents an internal office case status.
+ */
+export interface InternalCaseStatusItem extends SaplingGenericItem {
+  /** Unique status handle */
+  handle: string
+  /** Display label */
+  description: string
+  /** UI color */
+  color: string
+  /** UI icon */
+  icon?: string | null
+  /** Whether cases in this status are open tasks */
+  isOpen?: boolean | null
+  /** Cases using this status */
+  internalCases?: InternalCaseItem[]
+  /** Creation date */
+  createdAt?: Date | null
+  /** Last update date */
+  updatedAt?: Date | null
+}
+
+/**
+ * Represents an internal office case category.
+ */
+export interface InternalCaseCategoryItem extends SaplingGenericItem {
+  /** Unique category handle */
+  handle: string
+  /** Display title */
+  title: string
+  /** UI icon */
+  icon?: string | null
+  /** UI color */
+  color?: string | null
+  /** Cases using this category */
+  internalCases?: InternalCaseItem[]
+  /** Creation date */
+  createdAt?: Date | null
+  /** Last update date */
+  updatedAt?: Date | null
+}
+
+/**
  * Represents a ticket entity.
  */
 export interface TicketItem extends SaplingGenericItem {

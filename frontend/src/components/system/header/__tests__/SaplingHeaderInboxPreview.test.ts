@@ -46,4 +46,29 @@ describe('SaplingHeaderInboxPreview', () => {
 
     expect(wrapper.emitted('open')).toEqual([[preview]])
   })
+
+  it('renders the internal case kind label', () => {
+    const preview: SaplingHeaderInboxPreviewItem = {
+      ...createPreview(),
+      id: 'internalCase:7',
+      kind: 'internalCase',
+      title: 'Office request',
+      icon: 'mdi-clipboard-text-outline',
+      route: '/table/internalCase',
+    }
+    const wrapper = mount(SaplingHeaderInboxPreview, {
+      props: {
+        preview,
+      },
+      global: {
+        stubs: {
+          VIcon: true,
+          Teleport: true,
+          Transition: false,
+        },
+      },
+    })
+
+    expect(wrapper.text()).toContain('navigation.internalCase')
+  })
 })

@@ -1,0 +1,30 @@
+[
+  {
+    "handle": "internalCase",
+    "canShow": true,
+    "icon": "mdi-clipboard-text-outline",
+    "group": "internalCase",
+    "order": 10,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "internalCaseStatus",
+    "canShow": true,
+    "icon": "mdi-progress-check",
+    "group": "internalCase",
+    "order": 20,
+    "canUpdate": true
+  },
+  {
+    "handle": "internalCaseCategory",
+    "canShow": true,
+    "icon": "mdi-shape-outline",
+    "group": "internalCase",
+    "order": 30,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  }
+]

@@ -1,0 +1,15 @@
+[
+  {
+    "handle": "office",
+    "icon": "mdi-briefcase-outline",
+    "isExpanded": false,
+    "sortOrder": 35
+  },
+  {
+    "handle": "internalCase",
+    "icon": "mdi-clipboard-text-outline",
+    "isExpanded": false,
+    "sortOrder": 10,
+    "parent": "office"
+  }
+]

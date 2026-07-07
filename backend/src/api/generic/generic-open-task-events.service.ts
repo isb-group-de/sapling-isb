@@ -5,6 +5,7 @@ import { EventItem } from '../../entity/EventItem';
 import { EffortEstimateItem } from '../../entity/EffortEstimateItem';
 import { SalesOpportunityItem } from '../../entity/SalesOpportunityItem';
 import { TicketItem } from '../../entity/TicketItem';
+import { InternalCaseItem } from '../../entity/InternalCaseItem';
 import { GenericReferenceService } from './generic-reference.service';
 
 const OPEN_TASK_ENTITY_HANDLES = new Set([
@@ -12,6 +13,7 @@ const OPEN_TASK_ENTITY_HANDLES = new Set([
   'event',
   'salesOpportunity',
   'effortEstimate',
+  'internalCase',
 ]);
 
 @Injectable()
@@ -89,6 +91,8 @@ export class GenericOpenTaskEventsService {
         return this.loadSalesOpportunityUserHandles(handle);
       case 'effortEstimate':
         return this.loadEffortEstimateUserHandles(handle);
+      case 'internalCase':
+        return this.loadInternalCaseUserHandles(handle);
       default:
         return new Set<number>();
     }
@@ -245,6 +249,46 @@ export class GenericOpenTaskEventsService {
     return new Set<number>([assigneeHandle]);
   }
 
+  private async loadInternalCaseUserHandles(
+    handle: string | number,
+  ): Promise<Set<number>> {
+    const normalizedHandle = this.normalizeNumericOpenTaskHandle(
+      'internalCase',
+      handle,
+    );
+    if (normalizedHandle == null) {
+      return new Set<number>();
+    }
+
+    const internalCase = await this.em.findOne(
+      InternalCaseItem,
+      { handle: normalizedHandle },
+      {
+        populate: ['responsiblePerson', 'status'],
+      },
+    );
+
+    if (!internalCase) {
+      return new Set<number>();
+    }
+
+    const statusIsOpen =
+      typeof internalCase.status === 'object' &&
+      internalCase.status?.isOpen === true;
+    if (!statusIsOpen) {
+      return new Set<number>();
+    }
+
+    const responsibleHandle = this.extractReferenceHandle(
+      internalCase.responsiblePerson,
+    );
+    if (typeof responsibleHandle !== 'number') {
+      return new Set<number>();
+    }
+
+    return new Set<number>([responsibleHandle]);
+  }
+
   private mergeUserHandles(
     ...userHandleCollections: Iterable<number>[]
   ): Set<number> {
@@ -275,7 +319,12 @@ export class GenericOpenTaskEventsService {
   }
 
   private normalizeNumericOpenTaskHandle(
-    entityHandle: 'ticket' | 'event' | 'salesOpportunity' | 'effortEstimate',
+    entityHandle:
+      | 'ticket'
+      | 'event'
+      | 'salesOpportunity'
+      | 'effortEstimate'
+      | 'internalCase',
     handle: string | number,
   ): number | null {
     const normalizedHandle = this.genericReferenceService.normalizeHandleValue(

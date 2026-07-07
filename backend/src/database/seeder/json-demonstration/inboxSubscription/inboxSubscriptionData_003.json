@@ -1,0 +1,18 @@
+[
+  {
+    "description": "Benachrichtigt die verantwortliche Person über neue interne Vorgänge.",
+    "recipientField": "responsiblePerson",
+    "isActive": true,
+    "entity": "internalCase",
+    "type": "afterInsert",
+    "template": 9
+  },
+  {
+    "description": "Benachrichtigt die verantwortliche Person über Änderungen an internen Vorgängen.",
+    "recipientField": "responsiblePerson",
+    "isActive": true,
+    "entity": "internalCase",
+    "type": "afterUpdate",
+    "template": 10
+  }
+]

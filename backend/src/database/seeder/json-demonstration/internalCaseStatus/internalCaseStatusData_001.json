@@ -1,0 +1,8 @@
+[
+  { "handle": "open", "description": "Offen", "color": "#f44336", "icon": "mdi-new-box", "isOpen": true },
+  { "handle": "waiting", "description": "Wartend", "color": "#ff9800", "icon": "mdi-pause", "isOpen": true },
+  { "handle": "in_progress", "description": "In Bearbeitung", "color": "#2196f3", "icon": "mdi-play", "isOpen": true },
+  { "handle": "clarification", "description": "In Klärung", "color": "#7e57c2", "icon": "mdi-chat-question-outline", "isOpen": true },
+  { "handle": "completed", "description": "Abgeschlossen", "color": "#4caf50", "icon": "mdi-check-circle-outline", "isOpen": false },
+  { "handle": "cancelled", "description": "Abgebrochen", "color": "#9e9e9e", "icon": "mdi-cancel", "isOpen": false }
+]

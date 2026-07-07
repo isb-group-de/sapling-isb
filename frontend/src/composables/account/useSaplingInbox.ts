@@ -5,6 +5,7 @@ import type {
   EffortEstimateItem,
   EventItem,
   InboxNotificationItem,
+  InternalCaseItem,
   SalesOpportunityItem,
   TicketItem,
 } from '@/entity/entity'
@@ -13,6 +14,7 @@ import { formatDate, formatDateFromTo, formatDateTimeValue } from '@/utils/sapli
 import { useRouter, type RouteLocationRaw } from 'vue-router'
 import {
   getEffortEstimateInboxRoute,
+  getInternalCaseInboxRoute,
   getNotificationInboxRoute,
   getSalesOpportunityInboxRoute,
   getTaskInboxRoute,
@@ -30,6 +32,7 @@ export type InboxEntryKind =
   | 'event'
   | 'salesOpportunity'
   | 'effortEstimate'
+  | 'internalCase'
   | 'notification'
 export type InboxSectionKey = 'overdue' | 'today' | 'upcoming' | 'later' | 'unplanned'
 
@@ -43,6 +46,7 @@ export interface InboxEntry {
     | 'navigation.event'
     | 'navigation.salesOpportunity'
     | 'navigation.effortEstimate'
+    | 'navigation.internalCase'
     | 'navigation.inboxNotification'
   title: string
   description: string
@@ -100,6 +104,7 @@ export function useSaplingInbox(emit: CloseEmitter) {
   const tasks = ref<EventItem[]>([])
   const salesOpportunities = ref<SalesOpportunityItem[]>([])
   const effortEstimates = ref<EffortEstimateItem[]>([])
+  const internalCases = ref<InternalCaseItem[]>([])
   const notifications = ref<InboxNotificationItem[]>([])
   const router = useRouter()
   const isLoading = computed(() => isTranslationLoading.value || isDataLoading.value)
@@ -195,6 +200,7 @@ export function useSaplingInbox(emit: CloseEmitter) {
     tasks.value = snapshot.tasks
     salesOpportunities.value = snapshot.salesOpportunities
     effortEstimates.value = snapshot.effortEstimates ?? []
+    internalCases.value = snapshot.internalCases ?? []
     notifications.value = snapshot.notifications
     isDataLoading.value = false
   }
@@ -206,11 +212,13 @@ export function useSaplingInbox(emit: CloseEmitter) {
         tasks.value.length +
         salesOpportunities.value.length +
         effortEstimates.value.length +
+        internalCases.value.length +
         notifications.value.length,
       tickets: [...tickets.value],
       tasks: [...tasks.value],
       salesOpportunities: [...salesOpportunities.value],
       effortEstimates: [...effortEstimates.value],
+      internalCases: [...internalCases.value],
       notifications: [...notifications.value],
     })
   }
@@ -316,6 +324,40 @@ export function useSaplingInbox(emit: CloseEmitter) {
     }
   }
 
+  function createInternalCaseEntry(internalCase: InternalCaseItem): InboxEntry {
+    const status = typeof internalCase.status === 'object' ? internalCase.status : null
+    const category = typeof internalCase.category === 'object' ? internalCase.category : null
+    const customerCompany =
+      typeof internalCase.customerCompany === 'object' ? internalCase.customerCompany : null
+    const customerPerson =
+      typeof internalCase.customerPerson === 'object' ? internalCase.customerPerson : null
+    const supportLabels = [
+      customerCompany?.name ?? '',
+      customerPerson
+        ? `${customerPerson.firstName ?? ''} ${customerPerson.lastName ?? ''}`.trim()
+        : '',
+      internalCase.number ?? '',
+    ].filter((label) => label.length > 0)
+
+    return {
+      id: `internal-case-${internalCase.handle ?? internalCase.title}`,
+      kind: 'internalCase',
+      kindLabelKey: 'navigation.internalCase',
+      title: internalCase.title,
+      description: internalCase.requestMarkdown ?? '',
+      dateText: internalCase.createdAt ? formatDateTimeValue(internalCase.createdAt) : '',
+      dateValue: null,
+      icon: category?.icon || 'mdi-clipboard-text-outline',
+      accentColor: category?.color ?? status?.color,
+      contextLabel: category?.title,
+      contextColor: category?.color,
+      statusLabel: status?.description,
+      statusColor: status?.color,
+      supportLabels,
+      route: getInternalCaseInboxRoute(internalCase),
+    }
+  }
+
   function createNotificationEntry(notification: InboxNotificationItem): InboxEntry {
     const dateValue = toDate(notification.createdAt)
     const entityHandle =
@@ -372,6 +414,7 @@ export function useSaplingInbox(emit: CloseEmitter) {
     salesOpportunities.value.map(createSalesOpportunityEntry),
   )
   const effortEstimateEntries = computed(() => effortEstimates.value.map(createEffortEstimateEntry))
+  const internalCaseEntries = computed(() => internalCases.value.map(createInternalCaseEntry))
   const notificationEntries = computed(() => notifications.value.map(createNotificationEntry))
   const actionableEntries = computed(() =>
     [
@@ -379,6 +422,7 @@ export function useSaplingInbox(emit: CloseEmitter) {
       ...taskEntries.value,
       ...salesOpportunityEntries.value,
       ...effortEstimateEntries.value,
+      ...internalCaseEntries.value,
     ].sort(compareEntriesByDate),
   )
   const allEntries = computed(() =>
@@ -511,6 +555,7 @@ export function useSaplingInbox(emit: CloseEmitter) {
     taskEntries,
     salesOpportunityEntries,
     effortEstimateEntries,
+    internalCaseEntries,
     totalEntries,
     hasInboxItems,
     summaryCards,

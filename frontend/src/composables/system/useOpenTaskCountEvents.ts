@@ -4,6 +4,7 @@ import type {
   EffortEstimateItem,
   EventItem,
   InboxNotificationItem,
+  InternalCaseItem,
   SalesOpportunityItem,
   TicketItem,
 } from '@/entity/entity'
@@ -11,6 +12,7 @@ import type { RouteLocationRaw } from 'vue-router'
 import {
   getNotificationInboxRoute,
   getEffortEstimateInboxRoute,
+  getInternalCaseInboxRoute,
   getSalesOpportunityInboxRoute,
   getTaskInboxRoute,
   getTicketInboxRoute,
@@ -24,6 +26,7 @@ export interface OpenTaskSnapshot {
   tasks: EventItem[]
   salesOpportunities: SalesOpportunityItem[]
   effortEstimates: EffortEstimateItem[]
+  internalCases: InternalCaseItem[]
   notifications: InboxNotificationItem[]
 }
 
@@ -32,6 +35,7 @@ export type OpenTaskStreamItemKind =
   | 'event'
   | 'salesOpportunity'
   | 'effortEstimate'
+  | 'internalCase'
   | 'notification'
 
 export interface OpenTaskStreamItem {
@@ -138,6 +142,25 @@ function createEffortEstimateStreamItem(estimate: EffortEstimateItem): OpenTaskS
   }
 }
 
+function createInternalCaseStreamItem(internalCase: InternalCaseItem): OpenTaskStreamItem {
+  return {
+    id: createItemId('internalCase', [
+      internalCase.handle,
+      internalCase.createdAt,
+      internalCase.title,
+    ]),
+    kind: 'internalCase',
+    title: toTitle(internalCase.title),
+    bodyText: toTitle(internalCase.requestMarkdown),
+    icon:
+      typeof internalCase.category === 'object'
+        ? (internalCase.category.icon ?? 'mdi-clipboard-text-outline')
+        : 'mdi-clipboard-text-outline',
+    timestamp: toTimestamp(internalCase.createdAt),
+    route: getInternalCaseInboxRoute(internalCase),
+  }
+}
+
 function createNotificationStreamItem(notification: InboxNotificationItem): OpenTaskStreamItem {
   return {
     id: createItemId('notification', [
@@ -165,6 +188,7 @@ function collectSnapshotItems(snapshot: OpenTaskSnapshot): OpenTaskStreamItem[] 
     ...snapshot.tasks.map(createTaskStreamItem),
     ...snapshot.salesOpportunities.map(createSalesOpportunityStreamItem),
     ...(snapshot.effortEstimates ?? []).map(createEffortEstimateStreamItem),
+    ...(snapshot.internalCases ?? []).map(createInternalCaseStreamItem),
   ]
 }
 

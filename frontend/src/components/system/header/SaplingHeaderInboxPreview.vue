@@ -72,6 +72,10 @@ const kindLabel = computed(() => {
       return t('navigation.event')
     case 'salesOpportunity':
       return t('navigation.salesOpportunity')
+    case 'effortEstimate':
+      return t('navigation.effortEstimate')
+    case 'internalCase':
+      return t('navigation.internalCase')
     case 'notification':
     default:
       return t('navigation.inboxNotification')

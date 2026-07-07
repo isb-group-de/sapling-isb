@@ -120,6 +120,9 @@ import { TeamsDeliveryStatusItem } from '../TeamsDeliveryStatusItem';
 import { InboxTemplateItem } from '../InboxTemplateItem';
 import { InboxSubscriptionItem } from '../InboxSubscriptionItem';
 import { InboxNotificationItem } from '../InboxNotificationItem';
+import { InternalCaseItem } from '../InternalCaseItem';
+import { InternalCaseCategoryItem } from '../InternalCaseCategoryItem';
+import { InternalCaseStatusItem } from '../InternalCaseStatusItem';
 import { HolidayItem } from '../HolidayItem';
 import { HolidayGroupItem } from '../HolidayGroupItem';
 import { SharedMailboxGroupItem } from '../SharedMailboxGroupItem';
@@ -267,6 +270,9 @@ const ENTITY_REGISTRY_ENTRIES: { name: string; class: any }[] = [
   { name: 'inboxTemplate', class: InboxTemplateItem },
   { name: 'inboxSubscription', class: InboxSubscriptionItem },
   { name: 'inboxNotification', class: InboxNotificationItem },
+  { name: 'internalCase', class: InternalCaseItem },
+  { name: 'internalCaseCategory', class: InternalCaseCategoryItem },
+  { name: 'internalCaseStatus', class: InternalCaseStatusItem },
   { name: 'aiAgent', class: AiAgentItem },
   { name: 'aiAgentVersion', class: AiAgentVersionItem },
   { name: 'aiAgentRun', class: AiAgentRunItem },

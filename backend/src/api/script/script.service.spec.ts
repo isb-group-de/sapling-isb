@@ -1,5 +1,8 @@
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
-import { ScriptResultServer } from '../../script/core/script.result.server';
+import {
+  ScriptResultServer,
+  ScriptResultServerMethods,
+} from '../../script/core/script.result.server';
 import { ScriptMethods, ScriptService } from './script.service';
 
 const createDeferred = <T>() => {
@@ -181,6 +184,54 @@ describe('ScriptService', () => {
         clientLocale: 'de-DE',
         clientTimeZone: 'Europe/Berlin',
       },
+    );
+  });
+
+  it('runs teams and inbox subscriptions with after-script overwrite payloads', async () => {
+    const payload = {
+      handle: 12,
+      number: null as string | null,
+    };
+    const service = new ScriptService(
+      { findAll: jest.fn() } as never,
+      { querySubscription: jest.fn() } as never,
+      {} as never,
+      {} as never,
+      {} as never,
+      {} as never,
+      {} as never,
+      {} as never,
+    );
+
+    jest.spyOn(service, 'runServerMethod').mockImplementation(async () => {
+      payload.number = 'IC-2026-00012';
+      return new ScriptResultServer(
+        [payload],
+        ScriptResultServerMethods.overwrite,
+      );
+    });
+    const runSubscription = jest
+      .spyOn(service, 'runSubscription')
+      .mockResolvedValue(true);
+
+    await service.runServer(
+      ScriptMethods.afterInsert,
+      payload,
+      { handle: 'internalCase' } as never,
+      { handle: 9 } as never,
+    );
+
+    expect(runSubscription).toHaveBeenCalledWith(
+      ScriptMethods.afterInsert,
+      [
+        expect.objectContaining({
+          handle: 12,
+          number: 'IC-2026-00012',
+        }),
+      ],
+      expect.objectContaining({ handle: 'internalCase' }),
+      expect.objectContaining({ handle: 9 }),
+      undefined,
     );
   });
 });

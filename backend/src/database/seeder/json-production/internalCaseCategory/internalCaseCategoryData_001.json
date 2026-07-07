@@ -1,0 +1,10 @@
+[
+  { "handle": "internalRequest", "title": "Interne Anfrage", "icon": "mdi-message-text-outline", "color": "#5C6BC0" },
+  { "handle": "officeAdministration", "title": "Office Administration", "icon": "mdi-briefcase-outline", "color": "#26A69A" },
+  { "handle": "procurement", "title": "Beschaffung", "icon": "mdi-cart-outline", "color": "#42A5F5" },
+  { "handle": "facility", "title": "Facility", "icon": "mdi-home-city-outline", "color": "#66BB6A" },
+  { "handle": "hrAdministration", "title": "HR Administration", "icon": "mdi-account-group-outline", "color": "#AB47BC" },
+  { "handle": "financeAdministration", "title": "Finanzadministration", "icon": "mdi-cash-register", "color": "#FFA726" },
+  { "handle": "documentRequest", "title": "Dokumentenanforderung", "icon": "mdi-file-document-edit-outline", "color": "#78909C" },
+  { "handle": "meetingPreparation", "title": "Meeting-Vorbereitung", "icon": "mdi-calendar-edit", "color": "#EC407A" }
+]

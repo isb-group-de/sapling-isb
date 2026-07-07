@@ -5,6 +5,7 @@ import { TicketItem } from '../../entity/TicketItem';
 import { EventItem } from '../../entity/EventItem';
 import { SalesOpportunityItem } from '../../entity/SalesOpportunityItem';
 import { EffortEstimateItem } from '../../entity/EffortEstimateItem';
+import { InternalCaseItem } from '../../entity/InternalCaseItem';
 import { ENTITY_HANDLES } from '../../entity/global/entity.registry';
 import { WorkHourWeekItem } from '../../entity/WorkHourWeekItem';
 import { DashboardItem } from '../../entity/DashboardItem';
@@ -27,6 +28,7 @@ export interface OpenTaskSnapshot {
   tasks: EventItem[];
   salesOpportunities: SalesOpportunityItem[];
   effortEstimates: EffortEstimateItem[];
+  internalCases: InternalCaseItem[];
   notifications: InboxNotificationItem[];
 }
 
@@ -380,15 +382,40 @@ export class CurrentService {
     return items || [];
   }
 
+  async getOpenInternalCases(user: PersonItem): Promise<InternalCaseItem[]> {
+    const items = await this.em.find(
+      InternalCaseItem,
+      this.buildOpenInternalCaseWhere(user),
+      {
+        populate: [
+          'status',
+          'category',
+          'customerCompany',
+          'customerPerson',
+          'responsibleCompany',
+          'responsiblePerson',
+        ],
+      },
+    );
+    return items || [];
+  }
+
   async getOpenTaskSnapshot(user: PersonItem): Promise<OpenTaskSnapshot> {
-    const [tickets, tasks, salesOpportunities, effortEstimates, notifications] =
-      await Promise.all([
-        this.getOpenTickets(user),
-        this.getOpenEvents(user),
-        this.getOpenSalesOpportunities(user),
-        this.getOpenEffortEstimates(user),
-        this.inboxService.getUnreadNotifications(user),
-      ]);
+    const [
+      tickets,
+      tasks,
+      salesOpportunities,
+      effortEstimates,
+      internalCases,
+      notifications,
+    ] = await Promise.all([
+      this.getOpenTickets(user),
+      this.getOpenEvents(user),
+      this.getOpenSalesOpportunities(user),
+      this.getOpenEffortEstimates(user),
+      this.getOpenInternalCases(user),
+      this.inboxService.getUnreadNotifications(user),
+    ]);
 
     return {
       count:
@@ -396,11 +423,13 @@ export class CurrentService {
         tasks.length +
         salesOpportunities.length +
         effortEstimates.length +
+        internalCases.length +
         notifications.length,
       tickets,
       tasks,
       salesOpportunities,
       effortEstimates,
+      internalCases,
       notifications,
     };
   }
@@ -447,6 +476,13 @@ export class CurrentService {
       assigneePerson: { handle: user?.handle },
       isActive: true,
       status: { handle: { $nin: ['completed', 'cancelled'] } },
+    };
+  }
+
+  private buildOpenInternalCaseWhere(user: PersonItem): object {
+    return {
+      responsiblePerson: { handle: user?.handle },
+      status: { isOpen: true },
     };
   }
 

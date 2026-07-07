@@ -354,13 +354,33 @@ export class ScriptService {
   ): Promise<ScriptResultServer> {
     this.scheduleWebhookSubscriptions(method, items, entity, user);
 
-    if (!(await this.runSubscription(method, items, entity, user, context))) {
+    const result = await this.runServerMethod(
+      method,
+      items,
+      entity,
+      user,
+      context,
+    );
+    const subscriptionItems =
+      Array.isArray(result.items) && result.items.length > 0
+        ? result.items
+        : items;
+
+    if (
+      !(await this.runSubscription(
+        method,
+        subscriptionItems,
+        entity,
+        user,
+        context,
+      ))
+    ) {
       global.log.warn(
         `scriptService - runServer - ${entity.handle} - ${ScriptMethods[method]} - subscription failed`,
       );
     }
 
-    return await this.runServerMethod(method, items, entity, user, context);
+    return result;
   }
 
   /**

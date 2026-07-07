@@ -177,6 +177,9 @@ frontend/src/composables/account/useSaplingInbox.ts
 ```
 
 Navigation from a notification is built through `frontend/src/utils/inboxRoute.util.ts`, using `entity` and `referenceHandle`.
+Open-task entities with dedicated snapshot entries, including tickets, events,
+sales opportunities, effort estimates, and internal cases, also define explicit
+route helpers for their header preview entries.
 
 ## Adding A New Entity To Inbox
 

@@ -97,6 +97,9 @@ import { EffortEstimateItem } from '../../entity/EffortEstimateItem';
 import { EffortEstimatePositionItem } from '../../entity/EffortEstimatePositionItem';
 import { EffortEstimatePositionTemplateItem } from '../../entity/EffortEstimatePositionTemplateItem';
 import { EffortEstimateStatusItem } from '../../entity/EffortEstimateStatusItem';
+import { InternalCaseItem } from '../../entity/InternalCaseItem';
+import { InternalCaseCategoryItem } from '../../entity/InternalCaseCategoryItem';
+import { InternalCaseStatusItem } from '../../entity/InternalCaseStatusItem';
 import { KnowledgeArticleItem } from '../../entity/KnowledgeArticleItem';
 import { KnowledgeArticleCategoryItem } from '../../entity/KnowledgeArticleCategoryItem';
 import { KnowledgeArticleStatusItem } from '../../entity/KnowledgeArticleStatusItem';
@@ -209,6 +212,9 @@ const SEED_ORDER: Array<EntityName<object> | (new () => Seeder)> = [
   EffortEstimatePositionTemplateItem,
   EffortEstimateItem,
   EffortEstimatePositionItem,
+  InternalCaseStatusItem,
+  InternalCaseCategoryItem,
+  InternalCaseItem,
   KnowledgeArticleStatusItem,
   KnowledgeArticleVisibilityItem,
   KnowledgeArticleCategoryItem,
