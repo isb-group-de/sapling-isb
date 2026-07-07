@@ -290,8 +290,10 @@ describe('saplingTableUtil', () => {
     const timeTemplate = createTemplate({ name: 'startTime', type: 'Time' })
     const numericTemplate = createTemplate({ name: 'amount', type: 'Decimal' })
     const iconTemplate = createTemplate({ name: 'icon', options: ['isIcon'] })
+    const longTextTemplate = createTemplate({ name: 'value', length: 1024 })
 
     expect(isFilterableTableColumn(relationTemplate)).toBe(true)
+    expect(isFilterableTableColumn(longTextTemplate)).toBe(true)
     expect(isFilterableTableColumn(computedTemplate)).toBe(false)
     expect(isFilterableTableColumn(createTemplate({ key: '__actions' }))).toBe(false)
     expect(isManyToOneTemplate(relationTemplate)).toBe(true)
@@ -328,14 +330,29 @@ describe('saplingTableUtil', () => {
       search: 'Alice',
       entityTemplates: [
         createTemplate({ name: 'title' }),
+        createTemplate({ name: 'value', length: 1024 }),
         createTemplate({ name: 'creatorPersonEmail', isPersistent: false }),
         createTemplate({ name: 'amount', type: 'Decimal' }),
       ],
     })
 
     expect(filter).toEqual({
-      $or: [{ title: { $ilike: '%Alice%' } }],
+      $or: [{ title: { $ilike: '%Alice%' } }, { value: { $ilike: '%Alice%' } }],
     })
+  })
+
+  it('builds text filters for long varchar columns such as translation values', () => {
+    expect(
+      buildTableFilter({
+        columnFilters: {
+          value: {
+            operator: 'like',
+            value: 'Speichern',
+          },
+        },
+        entityTemplates: [createTemplate({ name: 'value', length: 1024 })],
+      }),
+    ).toEqual({ value: { $ilike: '%Speichern%' } })
   })
 
   it('builds numeric, relation, and date range filters', () => {

@@ -275,7 +275,6 @@ export function isFilterableTableColumn(
     !template.options?.includes('isSystem') &&
     (isManyToOneTemplate(template) ||
       (!template.isReference && !['1:m', 'm:n', 'n:m', '1:1'].includes(template.kind ?? ''))) &&
-    !((template.length ?? 0) > 256) &&
     template.type !== 'JsonType'
   )
 }
