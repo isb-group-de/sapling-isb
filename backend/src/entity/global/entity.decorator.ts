@@ -5,6 +5,7 @@ const SAPLING_REFERENCE_DEPENDENCY_METADATA_KEY = 'sapling:referenceDependency';
 const SAPLING_FORM_LAYOUT_METADATA_KEY = 'sapling:formLayout';
 const SAPLING_GENERIC_REFERENCE_METADATA_KEY = 'sapling:genericReference';
 const SAPLING_REFERENCE_TEMPLATE_METADATA_KEY = 'sapling:referenceTemplate';
+const SAPLING_INLINE_COLLECTION_METADATA_KEY = 'sapling:inlineCollection';
 
 /**
  * @file entity.decorator.ts
@@ -130,6 +131,13 @@ export interface SaplingReferenceTemplateMapping {
 
 export interface SaplingReferenceTemplateMetadata {
   mappings: SaplingReferenceTemplateMapping[];
+}
+
+export type SaplingInlineCollectionRenderer = 'conditionBuilder';
+
+export interface SaplingInlineCollectionMetadata {
+  renderer: SaplingInlineCollectionRenderer;
+  sourceEntityField?: string;
 }
 
 const DEFAULT_SAPLING_FORM_LAYOUT: SaplingFormLayoutMetadata = {
@@ -355,6 +363,22 @@ export function SaplingReferenceTemplate(
   };
 }
 
+export function SaplingInlineCollection(
+  metadata: SaplingInlineCollectionMetadata,
+) {
+  return function (target: object, propertyKey: string | symbol) {
+    Reflect.defineMetadata(
+      SAPLING_INLINE_COLLECTION_METADATA_KEY,
+      {
+        renderer: metadata.renderer,
+        sourceEntityField: metadata.sourceEntityField?.trim() || undefined,
+      } satisfies SaplingInlineCollectionMetadata,
+      target,
+      propertyKey,
+    );
+  };
+}
+
 /**
  * Checks if a specific Sapling option is present on a property.
  *
@@ -505,4 +529,27 @@ export function getSaplingReferenceTemplate(
     .filter((mapping) => mapping.sourceField && mapping.targetField);
 
   return mappings.length > 0 ? { mappings } : null;
+}
+
+export function getSaplingInlineCollection(
+  target: object,
+  propertyKey: string | symbol,
+): SaplingInlineCollectionMetadata | null {
+  const metadata = Reflect.getMetadata(
+    SAPLING_INLINE_COLLECTION_METADATA_KEY,
+    target,
+    propertyKey,
+  ) as Partial<SaplingInlineCollectionMetadata> | null;
+
+  if (!metadata || metadata.renderer !== 'conditionBuilder') {
+    return null;
+  }
+
+  return {
+    renderer: metadata.renderer,
+    sourceEntityField:
+      typeof metadata.sourceEntityField === 'string'
+        ? metadata.sourceEntityField.trim()
+        : undefined,
+  };
 }

@@ -169,6 +169,23 @@ Example use case:
 - copies `offerTextMarkdown`
 - optionally copies `estimatedHours`
 
+### `@SaplingInlineCollection(...)`
+
+Marks a collection relation that should be edited inside the main dialog
+instead of being shown as a separate relation tab.
+
+Current use:
+
+- `EmailSubscriptionItem.conditions`
+- renderer: `conditionBuilder`
+- source entity field: `entity`
+
+Inline collections must be explicit because normal `1:m` relations are
+derived from the owning side and are otherwise managed in relation tabs. The
+generic mutation path synchronizes only decorated inline collections: submitted
+rows with handles are updated, new rows are inserted, and omitted existing rows
+are deleted.
+
 ## TemplateService
 
 `backend/src/api/template/template.service.ts` reads MikroORM metadata and Sapling decorator metadata.
@@ -184,6 +201,7 @@ It returns `EntityTemplateDto[]` with:
 - dependency metadata
 - generic reference metadata
 - reference template metadata
+- inline collection metadata
 
 The frontend should rely on template metadata instead of duplicating backend rules.
 

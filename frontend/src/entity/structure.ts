@@ -133,6 +133,11 @@ export interface EntityTemplateReferenceTemplate {
   mappings: EntityTemplateReferenceTemplateMapping[]
 }
 
+export interface EntityTemplateInlineCollection {
+  renderer: 'conditionBuilder'
+  sourceEntityField?: string
+}
+
 export interface EntityTemplateCustomField {
   key: string
   type: 'text' | 'longText' | 'number' | 'boolean' | 'date' | 'dateTime' | 'select' | 'multiSelect'
@@ -220,6 +225,8 @@ export interface EntityTemplate {
   genericReference?: EntityTemplateGenericReference | null
   /** Declarative metadata for applying values from selected reference records */
   referenceTemplate?: EntityTemplateReferenceTemplate | null
+  /** Declarative metadata for inline collection rendering and sync */
+  inlineCollection?: EntityTemplateInlineCollection | null
   /** Dynamic custom field metadata */
   customField?: EntityTemplateCustomField | null
 }

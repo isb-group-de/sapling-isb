@@ -85,6 +85,8 @@ import { ServerLandscapeTypeUsageItem } from '../ServerLandscapeTypeUsageItem';
 import { SocialMediaItem } from '../SocialMediaItem';
 import { SocialMediaTypeItem } from '../SocialMediaTypeItem';
 import { EmailTemplateItem } from '../EmailTemplateItem';
+import { EmailSubscriptionConditionItem } from '../EmailSubscriptionConditionItem';
+import { EmailSubscriptionItem } from '../EmailSubscriptionItem';
 import { EmailDeliveryItem } from '../EmailDeliveryItem';
 import { EmailDeliveryStatusItem } from '../EmailDeliveryStatusItem';
 import { PhoneCallItem } from '../PhoneCallItem';
@@ -242,6 +244,8 @@ const ENTITY_REGISTRY_ENTRIES: { name: string; class: any }[] = [
   { name: 'socialMediaType', class: SocialMediaTypeItem },
   { name: 'socialMedia', class: SocialMediaItem },
   { name: 'emailTemplate', class: EmailTemplateItem },
+  { name: 'emailSubscription', class: EmailSubscriptionItem },
+  { name: 'emailSubscriptionCondition', class: EmailSubscriptionConditionItem },
   { name: 'emailDelivery', class: EmailDeliveryItem },
   { name: 'emailDeliveryStatus', class: EmailDeliveryStatusItem },
   { name: 'emailList', class: EMailListItem },

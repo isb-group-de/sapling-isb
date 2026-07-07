@@ -24,6 +24,7 @@ import { ENTITY_REGISTRY } from '../../entity/global/entity.registry';
 import { CurrentModule } from '../current/current.module';
 import { OpenTaskEventsModule } from '../current/open-task-events.module';
 import { AuthModule } from '../../auth/auth.module';
+import { MailModule } from '../mail/mail.module';
 
 /**
  * @class
@@ -46,6 +47,7 @@ import { AuthModule } from '../../auth/auth.module';
     ScriptModule,
     CurrentModule,
     OpenTaskEventsModule,
+    MailModule,
   ],
   controllers: [GenericController, GlobalSearchController],
   providers: [

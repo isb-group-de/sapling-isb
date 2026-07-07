@@ -1,5 +1,17 @@
 <template>
-  <template v-if="template.genericReference">
+  <template v-if="template.inlineCollection?.renderer === 'conditionBuilder'">
+    <SaplingFieldEmailSubscriptionConditions
+      :model-value="formValues[template.name]"
+      :disabled="fieldDisabled"
+      :source-entity-reference="
+        template.inlineCollection.sourceEntityField
+          ? formValues[template.inlineCollection.sourceEntityField]
+          : null
+      "
+      @update:model-value="(val) => updateField(template.name, val)"
+    />
+  </template>
+  <template v-else-if="template.genericReference">
     <SaplingFieldGenericReference :item="formValues" :template="template" :label="plainLabel" />
   </template>
   <template v-else-if="template.isReference && isReferenceVisible">
@@ -10,7 +22,7 @@
       :model-value="formValues[template.name]"
       :rules="rules"
       :disabled="referenceFieldDisabled"
-      :parent-filter="referenceParentFilter"
+      :parent-filter="effectiveReferenceParentFilter"
       :placeholder="defaultRawPlaceholder"
       density="compact"
       @update:model-value="(val: unknown) => updateField(template.name, val)"
@@ -58,7 +70,7 @@
     />
     <SaplingFieldTeamsRecipient
       v-else-if="
-        ['teamsSubscription', 'inboxSubscription'].includes(entityHandle) &&
+        ['teamsSubscription', 'inboxSubscription', 'emailSubscription'].includes(entityHandle) &&
         template.name === 'recipientField'
       "
       :label="requiredLabel"
@@ -354,6 +366,9 @@ const SaplingFieldTeamsRecipient = defineAsyncComponent(
 const SaplingFieldEventRecurrence = defineAsyncComponent(
   () => import('@/components/dialog/fields/SaplingFieldEventRecurrence.vue'),
 )
+const SaplingFieldEmailSubscriptionConditions = defineAsyncComponent(
+  () => import('@/components/dialog/fields/SaplingFieldEmailSubscriptionConditions.vue'),
+)
 const SaplingFieldGenericReference = defineAsyncComponent(
   () => import('@/components/dialog/fields/SaplingFieldGenericReference.vue'),
 )
@@ -440,6 +455,24 @@ const canReadReference = computed(
 const jsonValue = computed(() => props.formValues[props.template.name])
 const customFieldOptions = computed(() => props.template.customField?.options ?? [])
 const numberStep = computed(() => (props.template.options?.includes('isNumeric') ? 1 : undefined))
+const senderPersonFilter: FilterQuery = {
+  isActive: true,
+  session: {
+    handle: {
+      $ne: null,
+    },
+  },
+  type: {
+    handle: {
+      $in: ['azure', 'google'],
+    },
+  },
+}
+const effectiveReferenceParentFilter = computed(() =>
+  props.entityHandle === 'emailSubscription' && props.template.name === 'senderPerson'
+    ? senderPersonFilter
+    : props.referenceParentFilter,
+)
 
 function stringValue(fieldName: string): string {
   const value = props.formValues[fieldName]

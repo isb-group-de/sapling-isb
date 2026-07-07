@@ -55,6 +55,7 @@ export function useSaplingDialogEditRelations(options: UseSaplingDialogEditRelat
       options.templates.value.filter(
         (template) =>
           ['1:m', 'm:n', 'n:m'].includes(template.kind || '') &&
+          !template.inlineCollection &&
           !template.options?.includes('isHideAsReference') &&
           options.permissions.value?.find(
             (permission) => permission.entityHandle === template.referenceName,

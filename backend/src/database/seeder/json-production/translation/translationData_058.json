@@ -1,0 +1,122 @@
+[
+  {
+    "entity": "navigation",
+    "property": "emailSubscription",
+    "de": "E-Mail-Automatisierungen",
+    "en": "Email Automations"
+  },
+  {
+    "entity": "emailSubscription",
+    "property": "description",
+    "de": "Beschreibung",
+    "en": "Description"
+  },
+  {
+    "entity": "emailSubscription",
+    "property": "recipientField",
+    "de": "Empfängerfeld",
+    "en": "Recipient field"
+  },
+  {
+    "entity": "emailSubscription",
+    "property": "conditionField",
+    "de": "Beobachtetes Feld",
+    "en": "Observed field"
+  },
+  {
+    "entity": "emailSubscription",
+    "property": "conditions",
+    "de": "Bedingungen",
+    "en": "Conditions"
+  },
+  {
+    "entity": "emailSubscription",
+    "property": "oldValue",
+    "de": "Alter Wert",
+    "en": "Old value"
+  },
+  {
+    "entity": "emailSubscription",
+    "property": "newValue",
+    "de": "Neuer Wert",
+    "en": "New value"
+  },
+  {
+    "entity": "emailSubscription",
+    "property": "senderPerson",
+    "de": "Absenderbenutzer",
+    "en": "Sender user"
+  },
+  {
+    "entity": "emailSubscription",
+    "property": "isActive",
+    "de": "Aktiv",
+    "en": "Active"
+  },
+  {
+    "entity": "emailSubscription",
+    "property": "entity",
+    "de": "Seite",
+    "en": "Page"
+  },
+  {
+    "entity": "emailSubscription",
+    "property": "type",
+    "de": "Auslöser",
+    "en": "Trigger"
+  },
+  {
+    "entity": "emailSubscription",
+    "property": "template",
+    "de": "E-Mail-Vorlage",
+    "en": "Email template"
+  },
+  {
+    "entity": "emailSubscription",
+    "property": "createdAt",
+    "de": "Erstellt am",
+    "en": "Created at"
+  },
+  {
+    "entity": "emailSubscription",
+    "property": "updatedAt",
+    "de": "Aktualisiert am",
+    "en": "Updated at"
+  },
+  {
+    "entity": "emailSubscription",
+    "property": "groupContent",
+    "de": "Inhalt",
+    "en": "Content"
+  },
+  {
+    "entity": "emailSubscription",
+    "property": "groupCondition",
+    "de": "Bedingung",
+    "en": "Condition"
+  },
+  {
+    "entity": "emailSubscription",
+    "property": "addCondition",
+    "de": "Bedingung hinzufügen",
+    "en": "Add condition"
+  },
+  {
+    "entity": "emailSubscription",
+    "property": "removeCondition",
+    "de": "Bedingung entfernen",
+    "en": "Remove condition"
+  },
+  {
+    "entity": "emailSubscription",
+    "property": "groupConfiguration",
+    "de": "Konfiguration",
+    "en": "Configuration"
+  },
+  {
+    "entity": "emailSubscription",
+    "property": "groupReference",
+    "de": "Referenzen",
+    "en": "References"
+  }
+]

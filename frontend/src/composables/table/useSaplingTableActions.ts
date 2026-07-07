@@ -528,7 +528,7 @@ export function useSaplingTableActions({
         openChangeLog(item)
         break
       case 'show':
-        openShowDialog(item)
+        void openShowDialog(item)
         break
       case 'delete':
         openDeleteDialog(item)
@@ -585,8 +585,9 @@ export function useSaplingTableActions({
     editDialog.value = { visible: true, mode: 'edit', item: dialogItem }
   }
 
-  function openShowDialog(item: SaplingGenericItem) {
-    editDialog.value = { visible: true, mode: 'readonly', item }
+  async function openShowDialog(item: SaplingGenericItem) {
+    const dialogItem = await loadDialogItem(item)
+    editDialog.value = { visible: true, mode: 'readonly', item: dialogItem }
   }
 
   function openCopyDialog(item: SaplingGenericItem) {
@@ -614,10 +615,19 @@ export function useSaplingTableActions({
     const result = await ApiGenericService.find<SaplingGenericItem>(props.entityHandle, {
       filter: { handle },
       limit: 1,
-      relations: ['m:1'],
+      relations: getDialogItemRelations(),
     })
 
     return result.data[0] ?? item
+  }
+
+  function getDialogItemRelations(): string[] {
+    return [
+      'm:1',
+      ...props.entityTemplates
+        .filter((template) => template.inlineCollection && template.name)
+        .map((template) => template.name),
+    ]
   }
 
   function patchVisibleTableItem(item: SaplingGenericItem | null | undefined): void {

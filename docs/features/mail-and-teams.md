@@ -14,6 +14,7 @@ backend/src/api/teams/teams.service.ts
 backend/src/api/teams/teams.processor.ts
 backend/src/api/template/message-template.service.ts
 backend/src/entity/EmailTemplateItem.ts
+backend/src/entity/EmailSubscriptionItem.ts
 backend/src/entity/EmailDeliveryItem.ts
 backend/src/entity/EmailDeliveryStatusItem.ts
 backend/src/entity/EMailListItem.ts
@@ -95,6 +96,20 @@ Markdown is rendered to HTML by the shared renderer. Mail additionally creates a
 | `providerMessageId` | External message id when available |
 | `attemptCount`, `nextRetryAt`, `completedAt` | Delivery lifecycle fields |
 
+`EmailSubscriptionItem` configures automatic email delivery for generic entity
+mutations.
+
+| Field | Meaning |
+| --- | --- |
+| `description` | Human-readable rule name |
+| `entity` | Page/entity being observed |
+| `type` | Lifecycle trigger, usually `afterInsert` or `afterUpdate` |
+| `recipientField` | Context path resolving a `PersonItem` or email address |
+| `senderPerson` | Sapling user whose Azure/Google session sends the email |
+| `template` | Entity-dependent email template |
+| `conditions` | Optional list of observed fields with old/new value constraints |
+| `isActive` | Enables/disables the rule |
+
 ## Email Flow
 
 Manual email sending goes through `MailController`.
@@ -115,6 +130,14 @@ Provider dispatch supports:
 | Google | Sends through Gmail API |
 
 After successful dispatch, Sapling creates a completed `EventItem` of type `mail` as a communication follow-up. Failures are persisted on the delivery record.
+
+Automatic email subscriptions are executed by the generic create/update flow
+after a record was saved. A rule without conditions always sends when its
+lifecycle trigger matches, which is useful for create confirmations. Rules with
+conditions require every configured condition to match. On updates, each
+condition also requires the observed field to have changed. For example, a
+ticket rule can require both `solutionDescription` to change and `status` to
+change to `closed`.
 
 ## Sender Resolution
 
@@ -190,6 +213,16 @@ When adding a new mail template:
 3. Keep subject short and body markdown readable without HTML.
 4. Use `{{currentUser...}}` and entity paths intentionally.
 5. Preview in the UI before relying on send behavior.
+
+When adding a new automatic email subscription:
+
+1. Reuse an active `EmailTemplateItem` for the target entity.
+2. Add an `EmailSubscriptionItem` with `entity`, `type`, `recipientField`, `senderPerson`, and `template`.
+3. Choose a sender person with an Azure or Google person type and a usable provider session.
+4. Add zero or more conditions. Zero conditions means the rule always sends for the matching trigger.
+5. For update notifications, each condition observes one field; optionally set `oldValue` and/or `newValue`.
+6. Use relation handles for value constraints, for example `closed` for a status handle.
+7. Make sure the recipient path resolves to a person with an email address or directly to an email string.
 
 When adding a new Teams subscription:
 

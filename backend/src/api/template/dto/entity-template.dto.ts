@@ -3,6 +3,7 @@ import {
   SaplingOption,
   type SaplingFormWidthSpan,
   type SaplingGenericReferenceMetadata,
+  type SaplingInlineCollectionMetadata,
   type SaplingReferenceTemplateMetadata,
   type SaplingReferenceDependency,
 } from '../../../entity/global/entity.decorator';
@@ -44,6 +45,7 @@ import type { SaplingFormFieldConfig } from '../../form-config/form-config.types
  * @property        referenceDependency Declarative parent-child dependency metadata for reference fields
  * @property        genericReference    Declarative metadata for generic entity+handle record references
  * @property        referenceTemplate   Declarative metadata for copying values from a selected reference record
+ * @property        inlineCollection    Declarative metadata for rendering a collection inline in edit dialogs
  */
 export class EntityTemplateDto {
   @ApiProperty({
@@ -255,6 +257,15 @@ export class EntityTemplateDto {
     type: Object,
   })
   referenceTemplate?: SaplingReferenceTemplateMetadata | null;
+
+  @ApiProperty({
+    description:
+      'Declarative metadata for rendering and synchronizing a collection inline in generated edit dialogs.',
+    nullable: true,
+    required: false,
+    type: Object,
+  })
+  inlineCollection?: SaplingInlineCollectionMetadata | null;
 
   @ApiProperty({
     description:

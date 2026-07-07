@@ -1,0 +1,6 @@
+[
+  {
+    "entity": "emailSubscription",
+    "route": "table/emailSubscription"
+  }
+]

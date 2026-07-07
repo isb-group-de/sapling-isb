@@ -5,6 +5,7 @@ import { EntityTemplateDto } from './dto/entity-template.dto';
 import {
   getSaplingFormLayout,
   getSaplingGenericReference,
+  getSaplingInlineCollection,
   getSaplingReferenceTemplate,
   getSaplingReferenceDependency,
   getSaplingOptions,
@@ -115,6 +116,10 @@ export class TemplateService {
           prop.name,
         ),
         referenceTemplate: getSaplingReferenceTemplate(
+          entityClass.prototype as object,
+          prop.name,
+        ),
+        inlineCollection: getSaplingInlineCollection(
           entityClass.prototype as object,
           prop.name,
         ),

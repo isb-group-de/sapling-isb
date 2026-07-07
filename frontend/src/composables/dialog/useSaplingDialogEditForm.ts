@@ -77,6 +77,12 @@ export function useSaplingDialogEditForm(options: UseSaplingDialogEditFormOption
     options.form.value = {}
 
     options.templates.value.forEach((template) => {
+      if (template.inlineCollection) {
+        const value = options.item.value?.[template.name]
+        options.form.value[template.name] = Array.isArray(value) ? value : []
+        return
+      }
+
       if (template.isReference) {
         if (options.item.value) {
           const value = options.item.value[template.name]

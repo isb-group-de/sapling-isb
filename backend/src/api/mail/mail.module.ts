@@ -11,12 +11,15 @@ import {
 } from '../../constants/project.constants';
 import { EmailDeliveryItem } from '../../entity/EmailDeliveryItem';
 import { EmailDeliveryStatusItem } from '../../entity/EmailDeliveryStatusItem';
+import { EmailSubscriptionConditionItem } from '../../entity/EmailSubscriptionConditionItem';
+import { EmailSubscriptionItem } from '../../entity/EmailSubscriptionItem';
 import { EmailTemplateItem } from '../../entity/EmailTemplateItem';
 import { DocumentItem } from '../../entity/DocumentItem';
 import { EntityItem } from '../../entity/EntityItem';
 import { MailController } from './mail.controller';
 import { MailProcessor } from './mail.processor';
 import { MailService } from './mail.service';
+import { EmailAutomationService } from './email-automation.service';
 import { TemplateModule } from '../template/template.module';
 import { AuthModule } from '../../auth/auth.module';
 
@@ -35,6 +38,8 @@ const MockQueue = {
     MikroOrmModule.forFeature([
       EmailDeliveryItem,
       EmailDeliveryStatusItem,
+      EmailSubscriptionConditionItem,
+      EmailSubscriptionItem,
       EmailTemplateItem,
       DocumentItem,
       EntityItem,
@@ -60,6 +65,7 @@ const MockQueue = {
   controllers: [MailController],
   providers: [
     MailService,
+    EmailAutomationService,
     ...(REDIS_ENABLED ? [MailProcessor] : []),
     ...(REDIS_ENABLED
       ? []
@@ -70,6 +76,6 @@ const MockQueue = {
           },
         ]),
   ],
-  exports: [MailService],
+  exports: [MailService, EmailAutomationService],
 })
 export class MailModule {}

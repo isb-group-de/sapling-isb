@@ -84,9 +84,11 @@ Main files:
 
 ```text
 backend/src/api/mail/mail.service.ts
+backend/src/api/mail/email-automation.service.ts
 backend/src/api/mail/mail.processor.ts
 backend/src/api/mail/mail.controller.ts
 backend/src/entity/EmailTemplateItem.ts
+backend/src/entity/EmailSubscriptionItem.ts
 backend/src/entity/EmailDeliveryItem.ts
 backend/src/entity/EmailDeliveryStatusItem.ts
 ```
@@ -94,6 +96,7 @@ backend/src/entity/EmailDeliveryStatusItem.ts
 Mail supports:
 
 - template preview
+- generic create/update subscriptions
 - markdown rendering
 - Azure/Microsoft Graph senders
 - Google senders
@@ -112,6 +115,13 @@ The processor calls:
 ```ts
 mailService.dispatchDelivery(deliveryId)
 ```
+
+Automatic email subscriptions are evaluated after generic entity create/update
+mutations. A subscription without conditions always sends when the lifecycle
+trigger matches. A subscription with conditions requires every condition to
+match; for updates, every observed field must also have changed. Delivery uses
+the configured sender person, so that user must have an Azure or Google person
+type and a usable provider session.
 
 ## Teams Deliveries
 

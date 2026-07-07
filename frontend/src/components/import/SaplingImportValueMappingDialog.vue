@@ -1,77 +1,89 @@
 <template>
-  <v-dialog v-model="visibleModel" max-width="900">
+  <v-dialog v-model="visibleModel" class="sapling-dialog-large" max-width="960">
     <SaplingDialogCard
       v-if="valueMapping && field"
       class="sapling-import__value-mapping-dialog"
+      :tilt="false"
       :close="() => emit('close')"
     >
-      <v-card-title class="sapling-section-header">
-        <div>
-          <p class="sapling-eyebrow">{{ t('import.valueMapping') }}</p>
-          <h2 class="sapling-section-title">{{ fieldLabel(field.name) }}</h2>
-        </div>
-        <v-spacer />
-        <v-btn
-          variant="text"
-          size="small"
-          density="comfortable"
-          icon="mdi-close"
-          :aria-label="t('global.close')"
-          :title="t('global.close')"
-          @click="emit('close')"
-        />
-      </v-card-title>
-      <v-card-text class="sapling-import__value-mapping-body">
-        <v-select
-          :model-value="valueMapping.fallback"
-          :items="valueMappingFallbackOptions"
-          item-title="title"
-          item-value="value"
-          density="comfortable"
-          prepend-inner-icon="mdi-call-split"
-          :label="t('import.valueMappingFallback')"
-          autocomplete="off"
-          @update:model-value="updateFallback"
-        />
+      <SaplingDialogShell
+        body-class="sapling-dialog-fill-body sapling-import__value-mapping-body"
+        :show-divider="false"
+      >
+        <template #hero>
+          <SaplingDialogHero :eyebrow="t('import.valueMapping')" :title="fieldLabel(field.name)" />
+        </template>
 
-        <v-table density="compact" class="sapling-import__table">
-          <thead>
-            <tr>
-              <th>{{ t('import.sourceValue') }}</th>
-              <th>{{ t('import.targetValue') }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="sourceValue in sourceValues" :key="sourceValue">
-              <td>{{ sourceValue }}</td>
-              <td>
-                <SaplingImportTemplateValueField
-                  :model-value="valueMapping.values[sourceValue]"
-                  :template="field"
-                  :entity-handle="selectedEntityHandle ?? ''"
-                  :visible-templates="visibleTemplates"
-                  :permissions="permissions"
-                  :reference-items="referenceItems"
-                  @update:model-value="updateMappedValue(sourceValue, $event)"
-                />
-              </td>
-            </tr>
-          </tbody>
-        </v-table>
+        <template #body>
+          <div class="sapling-dialog-fill-content sapling-stack-md">
+            <v-select
+              :model-value="valueMapping.fallback"
+              :items="valueMappingFallbackOptions"
+              item-title="title"
+              item-value="value"
+              density="comfortable"
+              prepend-inner-icon="mdi-call-split"
+              :label="t('import.valueMappingFallback')"
+              autocomplete="off"
+              hide-details
+              @update:model-value="updateFallback"
+            />
 
-        <p v-if="sourceValues.length === 0" class="sapling-muted-text">
-          {{ t('import.valueMappingNoValues') }}
-        </p>
-      </v-card-text>
-      <v-card-actions>
-        <v-btn variant="text" prepend-icon="mdi-delete-outline" @click="emit('clear')">
-          {{ t('import.clearValueMapping') }}
-        </v-btn>
-        <v-spacer />
-        <v-btn color="primary" variant="flat" @click="emit('close')">
-          {{ t('global.close') }}
-        </v-btn>
-      </v-card-actions>
+            <div
+              v-if="sourceValues.length > 0"
+              class="sapling-import__value-mapping-table-region sapling-scrollable"
+            >
+              <v-table
+                density="compact"
+                class="sapling-import__table sapling-import__value-mapping-table"
+              >
+                <thead>
+                  <tr>
+                    <th>{{ t('import.sourceValue') }}</th>
+                    <th>{{ t('import.targetValue') }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="sourceValue in sourceValues" :key="sourceValue">
+                    <td>{{ sourceValue }}</td>
+                    <td>
+                      <SaplingImportTemplateValueField
+                        :model-value="valueMapping.values[sourceValue]"
+                        :template="field"
+                        :entity-handle="selectedEntityHandle ?? ''"
+                        :visible-templates="visibleTemplates"
+                        :permissions="permissions"
+                        :reference-items="referenceItems"
+                        @update:model-value="updateMappedValue(sourceValue, $event)"
+                      />
+                    </td>
+                  </tr>
+                </tbody>
+              </v-table>
+            </div>
+
+            <p v-else class="sapling-muted-text">
+              {{ t('import.valueMappingNoValues') }}
+            </p>
+          </div>
+        </template>
+
+        <template #actions>
+          <SaplingActionBar>
+            <template #leading>
+              <v-btn variant="text" prepend-icon="mdi-delete-outline" @click="emit('clear')">
+                {{ t('import.clearValueMapping') }}
+              </v-btn>
+            </template>
+
+            <template #trailing>
+              <v-btn color="primary" variant="flat" prepend-icon="mdi-close" @click="emit('close')">
+                {{ t('global.close') }}
+              </v-btn>
+            </template>
+          </SaplingActionBar>
+        </template>
+      </SaplingDialogShell>
     </SaplingDialogCard>
   </v-dialog>
 </template>
@@ -80,6 +92,9 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import SaplingImportTemplateValueField from '@/components/import/SaplingImportTemplateValueField.vue'
+import SaplingActionBar from '@/components/actions/SaplingActionBar.vue'
+import SaplingDialogHero from '@/components/common/SaplingDialogHero.vue'
+import SaplingDialogShell from '@/components/common/SaplingDialogShell.vue'
 import SaplingDialogCard from '@/components/dialog/SaplingDialogCard.vue'
 import type { ImportValueMappingFallback } from '@/services/api.import.service'
 import type { SaplingGenericItem } from '@/entity/entity'
@@ -140,3 +155,48 @@ function updateMappedValue(sourceValue: string, value: unknown): void {
   emit('updateMappedValue', sourceValue, value)
 }
 </script>
+
+<style scoped>
+.sapling-import__value-mapping-dialog {
+  max-height: calc(100dvh - 48px);
+}
+
+.sapling-import__value-mapping-body {
+  overflow: hidden;
+}
+
+.sapling-import__value-mapping-table-region {
+  border: 1px solid rgba(var(--v-border-color), 0.18);
+  border-radius: 8px;
+  max-height: min(52vh, 560px);
+}
+
+.sapling-import__value-mapping-table {
+  background: transparent;
+}
+
+.sapling-import__value-mapping-table :deep(.v-table__wrapper) {
+  overflow: visible;
+}
+
+.sapling-import__value-mapping-table :deep(thead th) {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.sapling-import__value-mapping-table :deep(td:first-child) {
+  max-width: 0;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 640px) {
+  .sapling-import__value-mapping-dialog {
+    max-height: calc(100dvh - 24px);
+  }
+
+  .sapling-import__value-mapping-table-region {
+    max-height: 46vh;
+  }
+}
+</style>

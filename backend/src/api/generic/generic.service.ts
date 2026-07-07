@@ -42,6 +42,7 @@ import {
   GenericUpdateConflictService,
   type GenericUpdateConcurrencyOptions,
 } from './generic-update-conflict.service';
+import { EmailAutomationService } from '../mail/email-automation.service';
 import type {
   GenericImportResponse,
   GenericImportRowResult,
@@ -51,6 +52,10 @@ export type { GenericUpdateConcurrencyOptions } from './generic-update-conflict.
 type RelationMutationContext = Awaited<
   ReturnType<GenericRelationService['addReferenceAndFlush']>
 >;
+type InlineCollectionMutation = {
+  field: EntityTemplateDto;
+  items: Record<string, unknown>[];
+};
 
 /**
  * @class
@@ -114,6 +119,10 @@ export class GenericService {
     private readonly genericOpenTaskEventsService: GenericOpenTaskEventsService,
     private readonly genericChangeLogService: GenericChangeLogService,
     private readonly genericUpdateConflictService: GenericUpdateConflictService,
+    private readonly emailAutomationService: EmailAutomationService = {
+      handleAfterInsert: (): Promise<void> => Promise.resolve(),
+      handleAfterUpdate: (): Promise<void> => Promise.resolve(),
+    } as unknown as EmailAutomationService,
     private readonly genericCustomFieldService: GenericCustomFieldService = {
       applyCustomFieldFilters: (
         _entityHandle: string,
@@ -535,6 +544,10 @@ export class GenericService {
       entityHandle,
       splitPayload.customFields,
     );
+    const inlineCollections = this.extractInlineCollectionPayload(
+      template,
+      data,
+    );
     const submittedSnapshot =
       this.genericChangeLogService.captureSubmittedChangeLogPayload(
         template,
@@ -596,6 +609,13 @@ export class GenericService {
       }
     }
 
+    await this.syncInlineCollections(
+      entityHandle,
+      newData,
+      inlineCollections,
+      currentUser,
+    );
+
     this.scheduleBackgroundTask('changeLog', () =>
       this.genericChangeLogService.safeStoreChangeLog(
         'create',
@@ -617,6 +637,14 @@ export class GenericService {
       entityHandle,
       this.extractEntityHandle(newData),
       splitPayload.customFields,
+    );
+
+    this.scheduleBackgroundTask('emailAutomation', () =>
+      this.emailAutomationService.handleAfterInsert(
+        entityHandle,
+        newData,
+        currentUser,
+      ),
     );
 
     const sanitized = this.genericSanitizerService.sanitizeEntityResult(
@@ -669,6 +697,10 @@ export class GenericService {
     const entityClass = this.genericQueryService.getEntityClass(entityHandle);
     const entity = await this.em.findOne(EntityItem, { handle: entityHandle });
     const template = this.templateService.getEntityTemplate(entityHandle);
+    const inlineCollections = this.extractInlineCollectionPayload(
+      template,
+      data,
+    );
     let submittedSnapshot =
       this.genericChangeLogService.captureSubmittedChangeLogPayload(
         template,
@@ -794,6 +826,13 @@ export class GenericService {
       }
     }
 
+    await this.syncInlineCollections(
+      entityHandle,
+      newData,
+      inlineCollections,
+      currentUser,
+    );
+
     this.scheduleBackgroundTask('changeLog', () =>
       this.genericChangeLogService.safeStoreChangeLog(
         'update',
@@ -816,6 +855,24 @@ export class GenericService {
       entityHandle,
       handle,
       splitPayload.customFields,
+    );
+
+    const newSnapshot =
+      this.genericChangeLogService.captureEntityChangeLogPayload(
+        entityHandle,
+        newData,
+        template,
+        submittedSnapshot,
+      );
+
+    this.scheduleBackgroundTask('emailAutomation', () =>
+      this.emailAutomationService.handleAfterUpdate(
+        entityHandle,
+        handle,
+        oldSnapshot,
+        newSnapshot,
+        currentUser,
+      ),
     );
 
     const sanitized = this.genericSanitizerService.sanitizeEntityResult(
@@ -1198,6 +1255,187 @@ export class GenericService {
         mutation.referenceEntityHandle,
       ),
     };
+  }
+
+  private extractInlineCollectionPayload(
+    template: EntityTemplateDto[],
+    data: Record<string, unknown>,
+  ): InlineCollectionMutation[] {
+    return template
+      .filter((field) => field.inlineCollection)
+      .map((field) => {
+        if (!Object.prototype.hasOwnProperty.call(data, field.name)) {
+          return null;
+        }
+
+        const value = data[field.name];
+        delete data[field.name];
+
+        if (!Array.isArray(value)) {
+          throw new BadRequestException('global.invalidPayload');
+        }
+
+        return {
+          field,
+          items: value.filter(this.isPlainRecord),
+        } satisfies InlineCollectionMutation;
+      })
+      .filter(
+        (mutation): mutation is InlineCollectionMutation => mutation !== null,
+      );
+  }
+
+  private async syncInlineCollections(
+    entityHandle: string,
+    owner: object,
+    mutations: InlineCollectionMutation[],
+    currentUser: PersonItem,
+  ): Promise<void> {
+    if (mutations.length === 0) {
+      return;
+    }
+
+    const ownerHandle = this.extractEntityHandle(owner);
+    if (ownerHandle == null) {
+      throw new BadRequestException('global.invalidPayload');
+    }
+
+    for (const mutation of mutations) {
+      await this.syncInlineCollection(
+        entityHandle,
+        ownerHandle,
+        mutation,
+        currentUser,
+      );
+    }
+
+    await this.em.flush();
+  }
+
+  private async syncInlineCollection(
+    entityHandle: string,
+    ownerHandle: string | number,
+    mutation: InlineCollectionMutation,
+    currentUser: PersonItem,
+  ): Promise<void> {
+    const field = mutation.field;
+    const referenceEntityHandle = field.referenceName;
+    const mappedBy = field.mappedBy;
+
+    if (!referenceEntityHandle || !mappedBy || field.kind !== '1:m') {
+      throw new BadRequestException(
+        `Inline collection ${entityHandle}.${field.name} must be a 1:m relation with mappedBy metadata.`,
+      );
+    }
+
+    const referenceClass = this.genericQueryService.getEntityClass(
+      referenceEntityHandle,
+    );
+    const referenceTemplate = this.templateService.getEntityTemplate(
+      referenceEntityHandle,
+    );
+    const existingItems = await this.em.find(referenceClass, {
+      [mappedBy]: ownerHandle,
+    } as never);
+    const existingByHandle = new Map(
+      existingItems
+        .map((item) => [this.extractEntityHandle(item), item] as const)
+        .filter(([handle]) => handle != null)
+        .map(([handle, item]) => [String(handle), item] as const),
+    );
+    const touchedHandles = new Set<string>();
+
+    mutation.items.forEach((item, index) => {
+      const handle = this.extractEntityHandle(item);
+      const normalizedHandle =
+        handle == null
+          ? null
+          : this.genericReferenceService.normalizeHandleValue(
+              referenceEntityHandle,
+              handle,
+            );
+      const existing =
+        normalizedHandle == null
+          ? null
+          : existingByHandle.get(String(normalizedHandle));
+      const payload = this.buildInlineCollectionItemPayload(
+        referenceTemplate,
+        mappedBy,
+        ownerHandle,
+        item,
+        index,
+      );
+
+      if (existing) {
+        touchedHandles.add(String(normalizedHandle));
+        this.genericPermissionService.checkTopLevelPermission(
+          referenceEntityHandle,
+          { ...(existing as Record<string, unknown>), ...payload },
+          currentUser,
+          'allowUpdateStage',
+        );
+        this.em.assign(
+          existing,
+          this.genericPayloadService.prepareUpdatePayload(
+            referenceTemplate,
+            payload,
+          ) as never,
+        );
+        return;
+      }
+
+      this.genericPermissionService.checkTopLevelPermission(
+        referenceEntityHandle,
+        payload,
+        currentUser,
+        'allowInsertStage',
+      );
+      this.em.create(
+        referenceClass,
+        this.genericPayloadService.prepareCreatePayload(
+          referenceTemplate,
+          payload,
+        ) as never,
+      );
+    });
+
+    existingByHandle.forEach((item, handle) => {
+      if (touchedHandles.has(handle)) {
+        return;
+      }
+
+      this.genericPermissionService.checkTopLevelPermission(
+        referenceEntityHandle,
+        item,
+        currentUser,
+        'allowDeleteStage',
+      );
+      this.em.remove(item);
+    });
+  }
+
+  private buildInlineCollectionItemPayload(
+    referenceTemplate: EntityTemplateDto[],
+    mappedBy: string,
+    ownerHandle: string | number,
+    item: Record<string, unknown>,
+    index: number,
+  ): Record<string, unknown> {
+    const payload = { ...item, [mappedBy]: ownerHandle };
+    delete payload.handle;
+
+    if (
+      referenceTemplate.some((field) => field.name === 'sortOrder') &&
+      payload.sortOrder == null
+    ) {
+      payload.sortOrder = index;
+    }
+
+    return payload;
+  }
+
+  private isPlainRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null && !Array.isArray(value);
   }
 
   private extractEntityHandle(item: object): string | number | null {

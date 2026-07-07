@@ -103,6 +103,7 @@ Selection examples:
 | --- | --- |
 | relation field | single-select reference |
 | `genericReference` | generic reference selector |
+| `inlineCollection.renderer === "conditionBuilder"` | inline condition builder |
 | `isMarkdown` | markdown editor/preview |
 | `isMoney` | money field |
 | `isPercent` | percent field |
@@ -118,6 +119,13 @@ Selection examples:
 | JSON type | JSON field |
 
 If a new field behavior is generally useful, add a Sapling option and renderer branch rather than special-casing one entity.
+
+Collection relations normally render as relation tabs after the parent record
+exists. A backend field decorated with `@SaplingInlineCollection(...)` is the
+exception: it stays in the main form and is saved as a structured child-entity
+collection. The first implementation is the email-subscription condition
+builder, which loads the selected source entity metadata and renders the
+condition value editor according to the observed field type.
 
 ### Reference Field Components
 
