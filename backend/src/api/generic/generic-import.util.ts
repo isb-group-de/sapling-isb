@@ -1,4 +1,5 @@
 import { EntityTemplateDto } from '../template/dto/entity-template.dto';
+import { formatSaplingPhoneNumber } from '../common/sapling-phone.util';
 
 export type GenericImportAction = 'created' | 'updated' | 'failed' | 'skipped';
 
@@ -119,6 +120,10 @@ function normalizeImportValue(
 
   if (field.type === 'boolean') {
     return normalizeBoolean(trimmedValue) ?? trimmedValue;
+  }
+
+  if (field.options?.includes('isPhone')) {
+    return formatSaplingPhoneNumber(trimmedValue);
   }
 
   if (isImportNumberField(field)) {

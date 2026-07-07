@@ -1,13 +1,25 @@
 <template>
-  <v-btn
-    class="sapling-header__desktop-action text-none"
-    stacked
-    :aria-label="helpLabel"
-    :title="helpLabel"
-    @click="emit('openContextHelp')"
-  >
-    <v-icon icon="mdi-help-circle-outline" />
-  </v-btn>
+  <div class="sapling-header__compact-actions">
+    <v-btn
+      class="sapling-header__desktop-action sapling-header__compact-action text-none"
+      stacked
+      :aria-label="searchLabel"
+      :title="searchLabel"
+      @click="emit('openSearch')"
+    >
+      <v-icon icon="mdi-magnify" />
+    </v-btn>
+
+    <v-btn
+      class="sapling-header__desktop-action sapling-header__compact-action text-none"
+      stacked
+      :aria-label="helpLabel"
+      :title="helpLabel"
+      @click="emit('openContextHelp')"
+    >
+      <v-icon icon="mdi-help-circle-outline" />
+    </v-btn>
+  </div>
 
   <div class="sapling-header__inbox-slot">
     <v-btn
@@ -85,6 +97,12 @@
         </template>
       </v-list-item>
 
+      <v-list-item :title="searchLabel" @click="emit('openSearch')">
+        <template #prepend>
+          <v-icon icon="mdi-magnify" />
+        </template>
+      </v-list-item>
+
       <v-list-item :title="helpLabel" @click="emit('openContextHelp')">
         <template #prepend>
           <v-icon icon="mdi-help-circle-outline" />
@@ -108,6 +126,7 @@ const props = defineProps<{
   inboxLabel: string
   messageCenterLabel: string
   helpLabel: string
+  searchLabel: string
 }>()
 
 const inboxActionLabel = computed(() => `${props.inboxLabel}: ${props.inboxCount}`)
@@ -117,6 +136,7 @@ const messageCenterActionLabel = computed(
 
 const emit = defineEmits<{
   openContextHelp: []
+  openSearch: []
   openInbox: []
   openMessageCenter: []
 }>()

@@ -4,9 +4,11 @@ import type { EntityName } from '@mikro-orm/core';
 import { Seeder } from '@mikro-orm/seeder';
 import { EntityRouteItem } from '../../entity/EntityRouteItem';
 import { ENTITY_REGISTRY } from '../../entity/global/entity.registry';
+import { getSaplingOptions } from '../../entity/global/entity.decorator';
 import { SeedScriptItem } from '../../entity/SeedScriptItem';
 import { DB_DATA_SEEDER } from '../../constants/project.constants';
 import { getErrorMessage } from '../../common/error.utils';
+import { formatSaplingPhoneNumber } from '../../api/common/sapling-phone.util';
 import fs from 'fs';
 import path from 'path';
 
@@ -137,17 +139,19 @@ export class GenericSeeder extends Seeder {
     item: object,
     em: EntityManager,
   ): Promise<object> {
+    const normalizedItem = this.normalizePhoneSeedFields(item);
+
     if (entityHandle !== 'favorite' && entityHandle !== 'favoriteTemplate') {
-      return item;
+      return normalizedItem;
     }
 
-    const seedItem = item as {
+    const seedItem = normalizedItem as {
       entity?: string | { handle?: string };
       entityRoute?: number | null;
     };
 
     if (seedItem.entityRoute != null) {
-      return item;
+      return normalizedItem;
     }
 
     const relatedEntityHandle =
@@ -165,13 +169,41 @@ export class GenericSeeder extends Seeder {
     });
 
     if (!entityRoute?.handle) {
-      return item;
+      return normalizedItem;
     }
 
     return {
       ...seedItem,
       entityRoute: entityRoute.handle,
     };
+  }
+
+  private normalizePhoneSeedFields(item: object): object {
+    const entityClass = (this.constructor as typeof GenericSeeder)
+      .entityClass as { prototype?: object };
+
+    if (!entityClass?.prototype || !this.isPlainRecord(item)) {
+      return item;
+    }
+
+    const seedItem = { ...item };
+
+    for (const [propertyName, value] of Object.entries(seedItem)) {
+      if (
+        typeof value === 'string' &&
+        getSaplingOptions(entityClass.prototype, propertyName).includes(
+          'isPhone',
+        )
+      ) {
+        seedItem[propertyName] = formatSaplingPhoneNumber(value);
+      }
+    }
+
+    return seedItem;
+  }
+
+  private isPlainRecord(value: unknown): value is Record<string, unknown> {
+    return !!value && typeof value === 'object' && !Array.isArray(value);
   }
 
   private async updateExistingSeedItemByHandle(

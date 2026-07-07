@@ -1,5 +1,6 @@
 import { describe, expect, it } from '@jest/globals';
-import { extractImportHandle } from './generic-import.util';
+import type { EntityTemplateDto } from '../template/dto/entity-template.dto';
+import { extractImportHandle, normalizeImportRow } from './generic-import.util';
 
 describe('generic-import.util', () => {
   it('extracts every non-empty string or numeric import handle', () => {
@@ -12,5 +13,25 @@ describe('generic-import.util', () => {
     expect(extractImportHandle({ handle: '' })).toBeNull();
     expect(extractImportHandle({ handle: '   ' })).toBeNull();
     expect(extractImportHandle({ handle: null })).toBeNull();
+  });
+
+  it('normalizes phone fields while importing rows', () => {
+    const template = [
+      {
+        name: 'phone',
+        type: 'string',
+        options: ['isPhone'],
+      },
+    ] as EntityTemplateDto[];
+
+    expect(normalizeImportRow(template, { phone: '0170 / 1234567' })).toEqual({
+      phone: '+49 170 123 456 7',
+    });
+    expect(normalizeImportRow(template, { phone: '491701234567' })).toEqual({
+      phone: '+49 170 123 456 7',
+    });
+    expect(normalizeImportRow(template, { phone: '+49 1234567891' })).toEqual({
+      phone: '+49 123 456 789 1',
+    });
   });
 });

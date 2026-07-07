@@ -260,6 +260,20 @@ export const SAPLING_SECRET: string | null = process.env.SAPLING_SECRET || null;
 export const SAPLING_FRONTEND_URL: string =
   process.env.SAPLING_FRONTEND_URL || '';
 
+/**
+ * @constant {string} SAPLING_DEFAULT_PHONE_COUNTRY
+ * ISO 3166-1 alpha-2 country used for local phone number normalization.
+ */
+export const SAPLING_DEFAULT_PHONE_COUNTRY: string =
+  process.env.SAPLING_DEFAULT_PHONE_COUNTRY || 'DE';
+
+/**
+ * @constant {string} SAPLING_DEFAULT_PHONE_DIALING_CODE
+ * International dialing code used for local phone number normalization.
+ */
+export const SAPLING_DEFAULT_PHONE_DIALING_CODE: string =
+  process.env.SAPLING_DEFAULT_PHONE_DIALING_CODE || '49';
+
 const sessionCookieSameSite =
   process.env.SESSION_COOKIE_SAME_SITE?.trim().toLowerCase();
 

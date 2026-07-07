@@ -120,6 +120,12 @@ Selection examples:
 
 If a new field behavior is generally useful, add a Sapling option and renderer branch rather than special-casing one entity.
 
+Phone fields use the current person's company country when available. If that
+country is missing, the frontend falls back to
+`VITE_SAPLING_DEFAULT_PHONE_COUNTRY` / `VITE_SAPLING_DEFAULT_PHONE_DIALING_CODE`;
+the backend uses the matching `SAPLING_DEFAULT_PHONE_*` variables for generic
+API and import normalization.
+
 Collection relations normally render as relation tabs after the parent record
 exists. A backend field decorated with `@SaplingInlineCollection(...)` is the
 exception: it stays in the main form and is saved as a structured child-entity

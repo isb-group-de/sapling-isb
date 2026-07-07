@@ -24,7 +24,9 @@
         :inbox-label="$t('global.inbox')"
         :message-center-label="$t('global.messageCenter')"
         :help-label="$t('global.contextualHelp')"
+        :search-label="$t('global.search')"
         @open-context-help="openContextHelp"
+        @open-search="openSearch"
         @open-inbox="openInbox"
         @open-message-center="openMessageCenter"
       />
@@ -86,6 +88,7 @@ import {
   type SaplingAccountDialogTab,
   type SaplingOpenAccountDialogDetail,
 } from '@/services/account-dialog.service'
+import { openSaplingCommandPalette } from '@/services/command-palette.service'
 import type { SaplingProfileAction } from '@/components/system/header/header.types'
 
 const router = useRouter()
@@ -158,6 +161,10 @@ function toggleNavigation() {
 
 function openMessageCenter() {
   openGlobalMessageCenter()
+}
+
+function openSearch() {
+  openSaplingCommandPalette()
 }
 
 async function openContextHelp() {

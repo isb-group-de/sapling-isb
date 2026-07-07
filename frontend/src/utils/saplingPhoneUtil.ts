@@ -57,6 +57,27 @@ function sanitizeFormattedPhone(value: string): string {
   return sanitizedValue.replace(/\s+/g, ' ').trim()
 }
 
+function groupNationalDigits(value: string): string {
+  return value.match(/.{1,3}/g)?.join(' ') ?? ''
+}
+
+function formatWithSaplingGrouping(
+  candidate: string,
+  options: SaplingPhoneFormatOptions,
+): string | null {
+  if (!candidate.startsWith('+')) {
+    return null
+  }
+
+  const dialingCode = resolveDialingCode(options)
+  if (!dialingCode || !candidate.startsWith(`+${dialingCode}`)) {
+    return null
+  }
+
+  const nationalDigits = candidate.slice(dialingCode.length + 1)
+  return nationalDigits ? `+${dialingCode} ${groupNationalDigits(nationalDigits)}` : candidate
+}
+
 function buildFormattingCandidate(value: string, options: SaplingPhoneFormatOptions): string {
   const { hasLeadingPlus, digits } = extractPhoneInput(value)
   if (!digits) {
@@ -71,11 +92,13 @@ function buildFormattingCandidate(value: string, options: SaplingPhoneFormatOpti
     return `+${digits.slice(2)}`
   }
 
-  if (digits.startsWith('0')) {
-    const dialingCode = resolveDialingCode(options)
-    if (dialingCode) {
-      return `+${dialingCode}${digits.slice(1)}`
-    }
+  const dialingCode = resolveDialingCode(options)
+  if (digits.startsWith('0') && dialingCode) {
+    return `+${dialingCode}${digits.slice(1)}`
+  }
+
+  if (dialingCode && digits.startsWith(dialingCode)) {
+    return `+${digits}`
   }
 
   return digits
@@ -99,5 +122,5 @@ export function formatSaplingPhoneNumber(
   const formatter = candidate.startsWith('+') ? new AsYouType() : new AsYouType(countryCode)
   const formattedValue = formatter.input(candidate)
 
-  return sanitizeFormattedPhone(formattedValue || candidate)
+  return formatWithSaplingGrouping(candidate, options) ?? sanitizeFormattedPhone(formattedValue || candidate)
 }

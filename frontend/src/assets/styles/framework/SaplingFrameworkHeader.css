@@ -6,6 +6,18 @@
   display: inline-flex;
 }
 
+.sapling-header__compact-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  margin-right: var(--sapling-space-xs);
+}
+
+.sapling-header__compact-action {
+  min-width: var(--sapling-control-size-md) !important;
+  padding-inline: var(--sapling-space-xs) !important;
+}
+
 .sapling-header__inbox-slot {
   position: relative;
   display: inline-flex;
@@ -87,6 +99,10 @@
 
 @media (max-width: 760px) {
   .sapling-header__desktop-action {
+    display: none;
+  }
+
+  .sapling-header__compact-actions {
     display: none;
   }
 

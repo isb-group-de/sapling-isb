@@ -9,7 +9,7 @@ describe('formatSaplingPhoneNumber', () => {
 
   it('formats local numbers with a default country', () => {
     expect(formatSaplingPhoneNumber('0170 1234567', { defaultCountry: 'de' })).toBe(
-      '+49 170 1234567',
+      '+49 170 123 456 7',
     )
   })
 
@@ -23,6 +23,24 @@ describe('formatSaplingPhoneNumber', () => {
         defaultCountry: 'DE',
         defaultDialingCode: '+41',
       }),
-    ).toBe('+41 79 123 45 67')
+    ).toBe('+41 791 234 567')
+  })
+
+  it('normalizes numbers that already start with the default dialing code', () => {
+    expect(
+      formatSaplingPhoneNumber('491701234567', {
+        defaultCountry: 'DE',
+        defaultDialingCode: '49',
+      }),
+    ).toBe('+49 170 123 456 7')
+  })
+
+  it('groups national digits in triples after the dialing code', () => {
+    expect(
+      formatSaplingPhoneNumber('+49 1234567891', {
+        defaultCountry: 'DE',
+        defaultDialingCode: '49',
+      }),
+    ).toBe('+49 123 456 789 1')
   })
 })

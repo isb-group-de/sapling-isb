@@ -16,6 +16,7 @@ import {
   buildErrorDiagnostics,
   buildForeignKeyViolationDiagnostics,
 } from '../common/error-diagnostics.util';
+import { normalizeSaplingPhonePayload } from '../common/sapling-phone.util';
 
 @Injectable()
 export class GenericMutationService {
@@ -93,7 +94,10 @@ export class GenericMutationService {
   ): Promise<object> {
     return this.runPersistence(entityHandle, 'create', async () => {
       const normalizedData = this.genericFilterService.normalizeDatePayload(
-        await this.applyDefaultFavoriteRoute(entityHandle, data),
+        normalizeSaplingPhonePayload(
+          template,
+          await this.applyDefaultFavoriteRoute(entityHandle, data),
+        ),
         template,
       );
       const created = this.em.create(
@@ -113,7 +117,10 @@ export class GenericMutationService {
   ): Promise<object> {
     return this.runPersistence(entityHandle, 'update', async () => {
       const normalizedData = this.genericFilterService.normalizeDatePayload(
-        await this.applyDefaultFavoriteRoute(entityHandle, data),
+        normalizeSaplingPhonePayload(
+          template,
+          await this.applyDefaultFavoriteRoute(entityHandle, data),
+        ),
         template,
       );
       const updated = this.em.assign(item, normalizedData as never);

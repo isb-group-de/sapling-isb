@@ -143,9 +143,9 @@
 .sapling-command-palette {
   display: flex;
   flex-direction: column;
-  width: var(--sapling-command-palette-width, 640px);
+  width: var(--sapling-command-palette-width, 780px);
   max-width: 100%;
-  max-height: min(560px, 80vh);
+  max-height: min(720px, 86vh);
   overflow: hidden;
 }
 

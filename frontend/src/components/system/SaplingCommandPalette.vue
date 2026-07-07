@@ -1,8 +1,8 @@
 <template>
   <v-dialog
     v-model="isOpen"
-    width="640"
-    max-width="640"
+    width="780"
+    max-width="780"
     transition="dialog-top-transition"
     scrollable
     content-class="sapling-overlay-content--top"
@@ -63,6 +63,7 @@ import SaplingDialogCard from '@/components/dialog/SaplingDialogCard.vue'
 import SaplingCommandPaletteFooter from '@/components/system/command-palette/SaplingCommandPaletteFooter.vue'
 import SaplingCommandPaletteResults from '@/components/system/command-palette/SaplingCommandPaletteResults.vue'
 import { useSaplingCommandPalette } from '@/composables/system/useSaplingCommandPalette'
+import { SAPLING_OPEN_COMMAND_PALETTE_EVENT } from '@/services/command-palette.service'
 
 const { t } = useI18n()
 const {
@@ -128,9 +129,11 @@ function onSearchKeydown(event: KeyboardEvent) {
 
 onMounted(() => {
   window.addEventListener('keydown', onKeyDown)
+  window.addEventListener(SAPLING_OPEN_COMMAND_PALETTE_EVENT, openPaletteAndFocus)
 })
 
 onBeforeUnmount(() => {
   window.removeEventListener('keydown', onKeyDown)
+  window.removeEventListener(SAPLING_OPEN_COMMAND_PALETTE_EVENT, openPaletteAndFocus)
 })
 </script>

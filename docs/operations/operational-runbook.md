@@ -68,11 +68,15 @@ Minimum backend values to verify:
 - `SESSION_TRUST_PROXY`
 - `REDIS_ENABLED`
 - `LOG_*`
+- `SAPLING_DEFAULT_PHONE_COUNTRY` and `SAPLING_DEFAULT_PHONE_DIALING_CODE` for
+  phone number normalization when a user/company country is unavailable
 
 Minimum frontend values to verify:
 
 - `VITE_BACKEND_URL`
 - `VITE_PORT`
+- `VITE_SAPLING_DEFAULT_PHONE_COUNTRY` and
+  `VITE_SAPLING_DEFAULT_PHONE_DIALING_CODE` for phone field formatting
 - login visibility flags for Azure/Google if relevant
 
 Never place secrets in `frontend/.env`; Vite exposes `VITE_*` values to the browser bundle.
@@ -332,4 +336,3 @@ After applying it:
 - inspect failed delivery records
 - verify user-facing flows
 - record any manual intervention
-

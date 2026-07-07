@@ -34,3 +34,7 @@ export const IS_LOGIN_WITH_GOOGLE_ENABLED: boolean =
   import.meta.env.VITE_IS_LOGIN_WITH_GOOGLE_ENABLED === 'true'
 export const NAVIGATION_URL: string =
   import.meta.env.VITE_NAVIGATION_URL || 'https://www.google.com/maps/dir/?api=1&destination='
+export const SAPLING_DEFAULT_PHONE_COUNTRY: string =
+  import.meta.env.VITE_SAPLING_DEFAULT_PHONE_COUNTRY || 'DE'
+export const SAPLING_DEFAULT_PHONE_DIALING_CODE: string =
+  import.meta.env.VITE_SAPLING_DEFAULT_PHONE_DIALING_CODE || '49'

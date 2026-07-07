@@ -43,6 +43,7 @@ import {
   type GenericUpdateConcurrencyOptions,
 } from './generic-update-conflict.service';
 import { EmailAutomationService } from '../mail/email-automation.service';
+import { normalizeSaplingPhonePayload } from '../common/sapling-phone.util';
 import type {
   GenericImportResponse,
   GenericImportRowResult,
@@ -538,6 +539,7 @@ export class GenericService {
     scriptContext: ScriptServerContext = {},
   ): Promise<object> {
     const template = this.templateService.getEntityTemplate(entityHandle);
+    data = normalizeSaplingPhonePayload(template, data);
     const splitPayload = this.genericCustomFieldService.splitPayload(data);
     data = splitPayload.data;
     await this.genericCustomFieldService.assertRequiredFields(
@@ -685,6 +687,8 @@ export class GenericService {
         concurrencyOptions,
       );
     data = updatePayload.data;
+    const template = this.templateService.getEntityTemplate(entityHandle);
+    data = normalizeSaplingPhonePayload(template, data);
     const splitPayload = this.genericCustomFieldService.splitPayload(data);
     data = splitPayload.data;
     const concurrency = updatePayload.concurrency;
@@ -696,7 +700,6 @@ export class GenericService {
 
     const entityClass = this.genericQueryService.getEntityClass(entityHandle);
     const entity = await this.em.findOne(EntityItem, { handle: entityHandle });
-    const template = this.templateService.getEntityTemplate(entityHandle);
     const inlineCollections = this.extractInlineCollectionPayload(
       template,
       data,
