@@ -11,39 +11,13 @@
             v-if="isLoading"
             class="sapling-inbox-dialog__hero"
             loading
-            :loading-stats-count="1"
-            :stats-columns="1"
-            stats-layout="compact"
           />
           <SaplingDialogHero
             v-else
             class="sapling-inbox-dialog__hero"
             :eyebrow="$t('navigation.inbox')"
             :title="$t('inbox.heroTitle')"
-            :stats-columns="1"
-            stats-layout="compact"
-          >
-            <template #stats>
-              <div class="sapling-inbox-hero-summary">
-                <div class="sapling-inbox-hero-summary__total">
-                  <span class="sapling-dialog-hero__stat-label">{{ $t('system.total') }}</span>
-                  <strong class="sapling-dialog-hero__stat-value">{{ overviewCount }}</strong>
-                </div>
-                <div class="sapling-inbox-hero-summary__types">
-                  <span
-                    v-for="stat in heroStats"
-                    :key="stat.label"
-                    class="sapling-inbox-hero-summary__type"
-                    :title="stat.label"
-                    :aria-label="`${stat.label}: ${stat.value}`"
-                  >
-                    <v-icon size="17">{{ stat.icon }}</v-icon>
-                    <strong>{{ stat.value }}</strong>
-                  </span>
-                </div>
-              </div>
-            </template>
-          </SaplingDialogHero>
+          />
         </template>
 
         <template #body>
@@ -230,7 +204,6 @@
 <script setup lang="ts">
 //#region Import
 import { computed, ref } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { useSaplingInbox, type InboxEntry } from '@/composables/account/useSaplingInbox'
 import SaplingActionClose from '@/components/actions/SaplingActionClose.vue'
 import SaplingDialogCard from '@/components/dialog/SaplingDialogCard.vue'
@@ -246,7 +219,6 @@ const emit = defineEmits<{
   (event: 'close'): void
 }>()
 
-const { t } = useI18n()
 const activeView = ref<'overview' | 'notifications'>('overview')
 
 const {
@@ -288,82 +260,5 @@ const sortedNotificationEntries = computed<InboxEntry[]>(() =>
   }),
 )
 const hasNotificationItems = computed(() => sortedNotificationEntries.value.length > 0)
-
-const heroStats = computed(() => [
-  {
-    label: t('navigation.effortEstimate'),
-    value: effortEstimateEntries.value.length,
-    icon: 'mdi-clipboard-text-clock-outline',
-  },
-  { label: t('navigation.ticket'), value: ticketEntries.value.length, icon: 'mdi-ticket-outline' },
-  { label: t('navigation.event'), value: taskEntries.value.length, icon: 'mdi-calendar-star' },
-  {
-    label: t('navigation.salesOpportunity'),
-    value: salesOpportunityEntries.value.length,
-    icon: 'mdi-cash-multiple',
-  },
-  {
-    label: t('navigation.internalCase'),
-    value: internalCaseEntries.value.length,
-    icon: 'mdi-clipboard-text-outline',
-  },
-])
 //#endregion
 </script>
-
-<style scoped>
-.sapling-inbox-dialog__hero :deep(.sapling-dialog-hero__stats) {
-  grid-template-columns: minmax(0, 1fr);
-  min-width: min(420px, 100%);
-}
-
-.sapling-inbox-hero-summary {
-  display: flex;
-  align-items: stretch;
-  gap: var(--sapling-gap-sm);
-  min-width: 0;
-}
-
-.sapling-inbox-hero-summary__total,
-.sapling-inbox-hero-summary__type {
-  border: 1px solid var(--sapling-surface-border);
-  border-radius: var(--sapling-radius-sm);
-  background: rgba(var(--v-theme-surface), 0.18);
-  box-shadow: var(--sapling-inset-highlight);
-}
-
-.sapling-inbox-hero-summary__total {
-  display: flex;
-  min-width: 92px;
-  flex-direction: column;
-  justify-content: center;
-  gap: var(--sapling-gap-xs);
-  padding: var(--sapling-gap-sm) var(--sapling-gap-md);
-}
-
-.sapling-inbox-hero-summary__types {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(42px, 1fr));
-  gap: var(--sapling-gap-xs);
-  min-width: 0;
-}
-
-.sapling-inbox-hero-summary__type {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--sapling-gap-xs);
-  min-height: var(--sapling-panel-min-height-sm);
-  padding: var(--sapling-gap-xs) var(--sapling-gap-sm);
-}
-
-.sapling-inbox-hero-summary__type strong {
-  line-height: 1;
-}
-
-@media (max-width: 640px) {
-  .sapling-inbox-dialog__hero :deep(.sapling-dialog-hero__stats) {
-    display: none;
-  }
-}
-</style>

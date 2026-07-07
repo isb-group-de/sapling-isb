@@ -87,8 +87,13 @@ export interface InboxSection {
 }
 
 export interface InboxSummaryCard {
-  key: 'total' | 'overdue' | 'today' | 'upcoming' | 'later'
-  labelKey: 'navigation.inbox' | 'inbox.overdue' | 'inbox.today' | 'inbox.upcoming' | 'inbox.later'
+  key: 'effortEstimate' | 'ticket' | 'event' | 'salesOpportunity' | 'internalCase'
+  labelKey:
+    | 'navigation.effortEstimate'
+    | 'navigation.ticket'
+    | 'navigation.event'
+    | 'navigation.salesOpportunity'
+    | 'navigation.internalCase'
   icon: string
   count: number
   tone: 'primary' | 'warning' | 'info' | 'success'
@@ -444,39 +449,39 @@ export function useSaplingInbox(emit: CloseEmitter) {
 
   const summaryCards = computed<InboxSummaryCard[]>(() => [
     {
-      key: 'total',
-      labelKey: 'navigation.inbox',
-      icon: 'mdi-briefcase-clock-outline',
-      count: totalEntries.value,
-      tone: 'primary',
-    },
-    {
-      key: 'overdue',
-      labelKey: 'inbox.overdue',
-      icon: 'mdi-alert-circle-outline',
-      count: overdueEntries.value.length,
-      tone: 'warning',
-    },
-    {
-      key: 'today',
-      labelKey: 'inbox.today',
-      icon: 'mdi-calendar-today',
-      count: todayEntries.value.length,
-      tone: 'info',
-    },
-    {
-      key: 'upcoming',
-      labelKey: 'inbox.upcoming',
-      icon: 'mdi-calendar-clock-outline',
-      count: upcomingEntries.value.length,
+      key: 'effortEstimate',
+      labelKey: 'navigation.effortEstimate',
+      icon: 'mdi-clipboard-text-clock-outline',
+      count: effortEstimateEntries.value.length,
       tone: 'success',
     },
     {
-      key: 'later',
-      labelKey: 'inbox.later',
-      icon: 'mdi-timeline-clock-outline',
-      count: laterEntries.value.length,
+      key: 'ticket',
+      labelKey: 'navigation.ticket',
+      icon: 'mdi-ticket-outline',
+      count: ticketEntries.value.length,
+      tone: 'info',
+    },
+    {
+      key: 'event',
+      labelKey: 'navigation.event',
+      icon: 'mdi-calendar-star',
+      count: taskEntries.value.length,
       tone: 'primary',
+    },
+    {
+      key: 'salesOpportunity',
+      labelKey: 'navigation.salesOpportunity',
+      icon: 'mdi-cash-multiple',
+      count: salesOpportunityEntries.value.length,
+      tone: 'success',
+    },
+    {
+      key: 'internalCase',
+      labelKey: 'navigation.internalCase',
+      icon: 'mdi-clipboard-text-outline',
+      count: internalCaseEntries.value.length,
+      tone: 'warning',
     },
   ])
 
