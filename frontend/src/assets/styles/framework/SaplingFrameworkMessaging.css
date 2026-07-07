@@ -10,12 +10,14 @@
 }
 
 .sapling-ai-chat-fab {
+  --sapling-ai-chat-fab-size: calc(var(--sapling-control-size-2xl) * 0.8);
   position: fixed !important;
-  top: calc(var(--v-layout-top, 0px) + 4px);
+  top: calc(var(--v-layout-top, 0px) + 10px);
   left: 50%;
   z-index: 12990;
-  width: var(--sapling-control-size-2xl) !important;
-  height: var(--sapling-control-size-2xl) !important;
+  width: var(--sapling-ai-chat-fab-size) !important;
+  min-width: var(--sapling-ai-chat-fab-size) !important;
+  height: var(--sapling-ai-chat-fab-size) !important;
   background: var(--sapling-ai-fab-gradient) !important;
   color: var(--sapling-ai-fab-icon-color) !important;
   box-shadow: var(--sapling-ai-fab-shadow);
@@ -31,7 +33,7 @@
 }
 
 .sapling-ai-chat-fab__icon {
-  font-size: 2rem;
+  font-size: 1.6rem;
 }
 
 .sapling-ai-chat__eyebrow {

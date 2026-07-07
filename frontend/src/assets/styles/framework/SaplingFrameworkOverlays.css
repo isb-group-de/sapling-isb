@@ -140,12 +140,19 @@
   border-top: 1px solid var(--sapling-surface-border);
 }
 
+.sapling-command-palette-overlay {
+  width: min(780px, calc(100vw - var(--sapling-space-2xl)));
+  height: min(720px, 86vh);
+  max-height: min(720px, 86vh);
+}
+
 .sapling-command-palette {
   display: flex;
   flex-direction: column;
-  width: var(--sapling-command-palette-width, 780px);
+  width: 100%;
   max-width: 100%;
-  max-height: min(720px, 86vh);
+  height: 100%;
+  max-height: 100%;
   overflow: hidden;
 }
 
@@ -257,6 +264,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  min-height: 100%;
   padding: var(--sapling-space-2xl) var(--sapling-space-lg);
   opacity: 0.7;
 }

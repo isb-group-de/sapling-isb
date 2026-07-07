@@ -3,9 +3,10 @@
     v-model="isOpen"
     width="780"
     max-width="780"
+    height="min(720px, 86vh)"
     transition="dialog-top-transition"
     scrollable
-    content-class="sapling-overlay-content--top"
+    content-class="sapling-overlay-content--top sapling-command-palette-overlay"
     @update:model-value="onDialogToggle"
   >
     <SaplingDialogCard
