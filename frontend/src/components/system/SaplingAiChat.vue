@@ -2,7 +2,7 @@
   <Teleport to="body">
     <div class="sapling-overlay-shell sapling-ai-chat-shell">
       <v-btn
-        v-if="hasSaplingAiChatAccess && !isOpen"
+        v-if="hasSaplingAiChatAccess && !isOpen && !isGhostEasterEggActive"
         class="sapling-ai-chat-fab"
         color="primary"
         :icon="true"
@@ -14,6 +14,11 @@
       >
         <SaplingSongbirdIcon class="sapling-ai-chat-fab__icon" />
       </v-btn>
+      <GhostEasterEgg
+        v-else-if="hasSaplingAiChatAccess && !isOpen"
+        placement="ai-fab"
+        @activate="openChatFromGhost"
+      />
 
       <v-dialog
         :model-value="isDialogOpen"
@@ -132,6 +137,7 @@ import type {
 } from '@/entity/entity'
 import SaplingSurface from '@/components/common/SaplingSurface.vue'
 import SaplingSongbirdIcon from '@/components/common/SaplingSongbirdIcon.vue'
+import GhostEasterEgg from '@/components/easter-egg/GhostEasterEgg.vue'
 import SaplingAiChatConversation from '@/components/system/ai-chat/SaplingAiChatConversation.vue'
 import SaplingAiChatHeader from '@/components/system/ai-chat/SaplingAiChatHeader.vue'
 import SaplingAiChatLoadingState from '@/components/system/ai-chat/SaplingAiChatLoadingState.vue'
@@ -147,6 +153,7 @@ import { useSaplingAiChatVoiceInput } from '@/components/system/ai-chat/useSapli
 import { useTranslationLoader } from '@/composables/generic/useTranslationLoader'
 import ApiAiService, { type AiChatStreamEvent } from '@/services/api.ai.service'
 import type { AiChatAttachmentUploadResponse } from '@/services/api.ai.service'
+import { useGhostEasterEgg } from '@/composables/easter-egg/useGhostEasterEgg'
 import { useSaplingAiChat } from '@/composables/system/useSaplingAiChat'
 import { useCurrentPersonStore } from '@/stores/currentPersonStore'
 import { useSaplingMessageCenter } from '@/composables/system/useSaplingMessageCenter'
@@ -203,7 +210,9 @@ const {
   ensureSaplingAiChatAccess,
   closeSaplingAiChat,
   toggleSaplingAiChat,
+  openSaplingAiChat,
 } = useSaplingAiChat()
+const { isActive: isGhostEasterEggActive } = useGhostEasterEgg()
 const includeArchived = ref(false)
 const isLoadingProviders = ref(false)
 const isLoadingModels = ref(false)
@@ -531,6 +540,10 @@ function closePanel() {
   cancelVoiceInput()
   stopSpeechPlayback()
   closeSaplingAiChat()
+}
+
+async function openChatFromGhost() {
+  await openSaplingAiChat()
 }
 
 function openAccountSettings() {

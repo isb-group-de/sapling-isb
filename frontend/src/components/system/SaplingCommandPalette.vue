@@ -63,6 +63,7 @@ import { useI18n } from 'vue-i18n'
 import SaplingDialogCard from '@/components/dialog/SaplingDialogCard.vue'
 import SaplingCommandPaletteFooter from '@/components/system/command-palette/SaplingCommandPaletteFooter.vue'
 import SaplingCommandPaletteResults from '@/components/system/command-palette/SaplingCommandPaletteResults.vue'
+import { useKonamiInCommandPalette } from '@/composables/easter-egg/useKonamiInCommandPalette'
 import { useSaplingCommandPalette } from '@/composables/system/useSaplingCommandPalette'
 import { SAPLING_OPEN_COMMAND_PALETTE_EVENT } from '@/services/command-palette.service'
 
@@ -80,6 +81,7 @@ const {
   runItem,
   activateCurrent,
 } = useSaplingCommandPalette()
+const { handleCommandPaletteKeydown, resetKonamiProgress } = useKonamiInCommandPalette()
 
 const searchInputRef = ref<{ focus?: () => void } | null>(null)
 
@@ -113,6 +115,12 @@ async function openPaletteAndFocus() {
 }
 
 function onSearchKeydown(event: KeyboardEvent) {
+  if (handleCommandPaletteKeydown(event)) {
+    event.preventDefault()
+    event.stopPropagation()
+    return
+  }
+
   if (event.key === 'ArrowDown') {
     event.preventDefault()
     moveActive(1)
@@ -124,6 +132,7 @@ function onSearchKeydown(event: KeyboardEvent) {
     void activateCurrent()
   } else if (event.key === 'Escape') {
     event.preventDefault()
+    resetKonamiProgress()
     closePalette()
   }
 }
