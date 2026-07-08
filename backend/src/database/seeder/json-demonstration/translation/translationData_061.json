@@ -1,0 +1,5 @@
+[
+  { "entity": "entityRoute", "property": "group", "de": "Menügruppe", "en": "Menu group" },
+  { "entity": "navigationGroup", "property": "salesCalendar", "de": "Kalender", "en": "Calendar" },
+  { "entity": "navigationGroup", "property": "officeCalendar", "de": "Kalender", "en": "Calendar" }
+]

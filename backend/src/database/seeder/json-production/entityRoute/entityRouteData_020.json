@@ -1,0 +1,23 @@
+[
+  { "entity": "event", "route": "event", "navigation": "calendar", "group": "salesCalendar" },
+  { "entity": "event", "route": "partner/event", "group": "salesCalendar" },
+  { "entity": "holidayGroup", "route": "table/holidayGroup", "group": "salesCalendar" },
+  { "entity": "holiday", "route": "table/holiday", "group": "salesCalendar" },
+  { "entity": "eventStatus", "route": "table/eventStatus", "group": "salesCalendar" },
+  { "entity": "eventType", "route": "table/eventType", "group": "salesCalendar" },
+  { "entity": "eventDelivery", "route": "table/eventDelivery", "group": "salesCalendar" },
+  { "entity": "eventDeliveryStatus", "route": "table/eventDeliveryStatus", "group": "salesCalendar" },
+  { "entity": "eventAzure", "route": "table/eventAzure", "group": "salesCalendar" },
+  { "entity": "eventGoogle", "route": "table/eventGoogle", "group": "salesCalendar" },
+
+  { "entity": "event", "route": "event", "navigation": "calendar", "group": "officeCalendar" },
+  { "entity": "event", "route": "partner/event", "group": "officeCalendar" },
+  { "entity": "holidayGroup", "route": "table/holidayGroup", "group": "officeCalendar" },
+  { "entity": "holiday", "route": "table/holiday", "group": "officeCalendar" },
+  { "entity": "eventStatus", "route": "table/eventStatus", "group": "officeCalendar" },
+  { "entity": "eventType", "route": "table/eventType", "group": "officeCalendar" },
+  { "entity": "eventDelivery", "route": "table/eventDelivery", "group": "officeCalendar" },
+  { "entity": "eventDeliveryStatus", "route": "table/eventDeliveryStatus", "group": "officeCalendar" },
+  { "entity": "eventAzure", "route": "table/eventAzure", "group": "officeCalendar" },
+  { "entity": "eventGoogle", "route": "table/eventGoogle", "group": "officeCalendar" }
+]

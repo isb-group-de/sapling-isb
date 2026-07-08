@@ -6,6 +6,7 @@ import {
   Property,
 } from '@mikro-orm/decorators/legacy';
 import { EntityItem } from './EntityItem';
+import { EntityGroupItem } from './EntityGroupItem';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Sapling, SaplingForm } from './global/entity.decorator';
 import { FavoriteItem } from './FavoriteItem';
@@ -21,6 +22,7 @@ import { FavoriteTemplateItem } from './FavoriteTemplateItem';
  * @property        {string}            route       Route string associated with the entity
  * @property        {string}            navigation  Navigation string (optional)
  * @property        {EntityItem}        entity      The entity this route belongs to (optional)
+ * @property        {EntityGroupItem}   group       Optional navigation group override
  * @property        {Date}              createdAt   Date and time when the entity route was created
  * @property        {Date}              updatedAt   Date and time when the entity route was last updated
  */
@@ -95,6 +97,25 @@ export class EntityRouteItem {
   })
   @ManyToOne(() => EntityItem, { nullable: true })
   entity!: Rel<EntityItem>;
+
+  /**
+   * Optional navigation group override for this route.
+   * @type {EntityGroupItem}
+   */
+  @ApiPropertyOptional({ type: () => EntityGroupItem })
+  @SaplingForm({
+    order: 200,
+    group: 'entityRoute.groupReference',
+    groupOrder: 200,
+    width: 2,
+    visible: true,
+    tableOrder: 200,
+    tableVisible: true,
+    mobileOrder: 200,
+    mobileVisible: false,
+  })
+  @ManyToOne(() => EntityGroupItem, { nullable: true })
+  group?: Rel<EntityGroupItem> | null;
 
   @ApiPropertyOptional({ type: () => FavoriteItem, isArray: true })
   @OneToMany(() => FavoriteItem, (favorite) => favorite.entityRoute)

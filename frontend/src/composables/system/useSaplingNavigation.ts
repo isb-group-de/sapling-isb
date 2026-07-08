@@ -256,7 +256,7 @@ export function useSaplingNavigation(props: SaplingNavigationProps, emit: Saplin
     entities.value = (
       await ApiGenericService.find<EntityItem>('entity', {
         filter: { canShow: true },
-        relations: ['routes', 'group', 'group.parent'],
+        relations: ['routes', 'routes.group', 'group', 'group.parent'],
       })
     ).data
 
@@ -370,7 +370,7 @@ export function useSaplingNavigation(props: SaplingNavigationProps, emit: Saplin
 
   function buildEntityEntries(groupHandle: string): NavigationEntityEntry[] {
     return entities.value
-      .filter((entity) => getEntityGroupHandle(entity) === groupHandle)
+      .filter((entity) => getEntityRoutesForGroup(entity, groupHandle).length > 0)
       .sort((left, right) => {
         const sortOrderDifference = getEntitySortOrder(left) - getEntitySortOrder(right)
         if (sortOrderDifference !== 0) {
@@ -380,7 +380,7 @@ export function useSaplingNavigation(props: SaplingNavigationProps, emit: Saplin
         return getEntityLabel(left.handle).localeCompare(getEntityLabel(right.handle))
       })
       .map((entity) => {
-        const routes = getFilterableRoutes(entity)
+        const routes = getEntityRoutesForGroup(entity, groupHandle)
           .map((item) => buildRouteEntry(entity, item))
           .filter((entry): entry is NavigationRouteEntry => entry !== null)
 
@@ -492,12 +492,14 @@ export function useSaplingNavigation(props: SaplingNavigationProps, emit: Saplin
     const visibleHandles = new Set<string>()
 
     nextEntities.forEach((entity) => {
-      let nextHandle = getEntityGroupHandle(entity)
+      getEntityNavigationGroupHandles(entity).forEach((groupHandle) => {
+        let nextHandle: string | null = groupHandle
 
-      while (nextHandle) {
-        visibleHandles.add(nextHandle)
-        nextHandle = getGroupParentHandle(groupMap.get(nextHandle))
-      }
+        while (nextHandle) {
+          visibleHandles.add(nextHandle)
+          nextHandle = getGroupParentHandle(groupMap.get(nextHandle))
+        }
+      })
     })
 
     return visibleHandles
@@ -590,6 +592,36 @@ export function useSaplingNavigation(props: SaplingNavigationProps, emit: Saplin
     }
 
     return null
+  }
+
+  function getRouteGroupHandle(route: EntityRouteItem) {
+    if (typeof route.group === 'string') {
+      return route.group
+    }
+
+    if (route.group && typeof route.group === 'object' && 'handle' in route.group) {
+      return route.group.handle
+    }
+
+    return null
+  }
+
+  function getEffectiveRouteGroupHandle(entity: EntityItem, route: EntityRouteItem) {
+    return getRouteGroupHandle(route) ?? getEntityGroupHandle(entity)
+  }
+
+  function getEntityRoutesForGroup(entity: EntityItem, groupHandle: string) {
+    return getFilterableRoutes(entity).filter((route) => {
+      return getEffectiveRouteGroupHandle(entity, route) === groupHandle
+    })
+  }
+
+  function getEntityNavigationGroupHandles(entity: EntityItem) {
+    return new Set(
+      getFilterableRoutes(entity)
+        .map((route) => getEffectiveRouteGroupHandle(entity, route))
+        .filter((handle): handle is string => Boolean(handle)),
+    )
   }
 
   function getEntitySortOrder(entity: EntityItem) {

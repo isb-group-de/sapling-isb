@@ -442,13 +442,14 @@ export function useSaplingCommandPalette() {
 
     for (const entity of entities.value) {
       const entityLabel = getEntityLabel(entity)
-      const routes = (entity.routes ?? []).filter((route) => Boolean(route.route))
+      const routes = getUniqueEntityRoutes(entity.routes ?? [])
       if (routes.length === 0) {
         continue
       }
       for (const route of routes) {
         const label = getRouteLabel(entity, route)
         const sameLabel = label === entityLabel
+        const path = normalizeRoutePath(route.route)
         items.push({
           id: `entity:${entity.handle}:${route.handle ?? route.route}`,
           group: 'entity',
@@ -456,7 +457,7 @@ export function useSaplingCommandPalette() {
           hint: sameLabel ? undefined : entityLabel,
           icon: entity.icon || 'mdi-square-rounded',
           haystack: `${label} ${entityLabel} ${entity.handle}`.toLowerCase(),
-          path: `/${(route.route ?? '').replace(/^\/+/, '')}`,
+          path: `/${path}`,
         })
       }
     }
@@ -518,14 +519,12 @@ export function useSaplingCommandPalette() {
       )
       if (matchingEntities.length > 0 && searchPart.length > 0) {
         const searchItems = matchingEntities.map((entity, idx) => {
-          const routes = entity.routes ?? []
+          const routes = getUniqueEntityRoutes(entity.routes ?? [])
           let listRoute = routes.find((route) => route.route && route.route.includes('list'))
           if (!listRoute && routes.length > 0) {
             listRoute = routes[0]
           }
-          const routePath = listRoute
-            ? `/${(listRoute.route ?? '').replace(/^\/+/, '')}`
-            : `/${entity.handle}`
+          const routePath = listRoute ? `/${normalizeRoutePath(listRoute.route)}` : `/${entity.handle}`
           return {
             id: `entitysearch:${entity.handle}:${searchPart}`,
             group: 'entity' as CommandPaletteGroupKey,
@@ -660,4 +659,22 @@ function isRequestCanceled(error: unknown): boolean {
     'code' in error &&
     (error as { code?: string }).code === 'ERR_CANCELED'
   )
+}
+
+function getUniqueEntityRoutes(routes: EntityRouteItem[]): EntityRouteItem[] {
+  const seenPaths = new Set<string>()
+
+  return routes.filter((route) => {
+    const path = normalizeRoutePath(route.route)
+    if (!path || seenPaths.has(path)) {
+      return false
+    }
+
+    seenPaths.add(path)
+    return true
+  })
+}
+
+function normalizeRoutePath(route: EntityRouteItem['route']): string {
+  return (route ?? '').replace(/^\/+/, '')
 }

@@ -287,9 +287,10 @@ For "where is this in Sapling?" questions:
 
 1. Use `entity_catalog` or `entity_search`.
 2. Inspect `entity`, `entityGroup`, and `entityRoute`.
-3. Treat `entity.group` as the menu group.
-4. Treat `entityGroup.parent` as optional hierarchy.
-5. Treat `entityRoute.route` as the frontend route.
+3. Treat `entityRoute.group` as an optional per-route menu group override.
+4. Treat `entity.group` as the fallback menu group when the route has no group.
+5. Treat `entityGroup.parent` as optional hierarchy.
+6. Treat `entityRoute.route` as the frontend route.
 
 ## Timeline And History Questions
 

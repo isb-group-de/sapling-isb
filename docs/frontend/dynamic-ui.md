@@ -282,6 +282,10 @@ Backend/seed requirements:
 5. Translations exist.
 6. Permissions allow show/read for relevant roles.
 
+`entityRoute.group` can override the entity's default navigation group for a
+single route entry. Leave it empty to render the route under `entity.group`; set
+it when the same entity route should appear in additional menu areas.
+
 Frontend changes are needed only when:
 
 - the entity needs a custom workflow view

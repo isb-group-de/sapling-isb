@@ -1,0 +1,16 @@
+[
+  {
+    "handle": "salesCalendar",
+    "icon": "mdi-calendar-star",
+    "isExpanded": false,
+    "sortOrder": 25,
+    "parent": "salesArea"
+  },
+  {
+    "handle": "officeCalendar",
+    "icon": "mdi-calendar-star",
+    "isExpanded": false,
+    "sortOrder": 20,
+    "parent": "office"
+  }
+]

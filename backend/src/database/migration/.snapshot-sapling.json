@@ -13203,6 +13203,23 @@
           "enumItems": [],
           "mappedType": "string"
         },
+        "group_handle": {
+          "name": "group_handle",
+          "type": "varchar(64)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": 64,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
         "handle": {
           "name": "handle",
           "type": "int",
@@ -13297,6 +13314,18 @@
             "handle"
           ],
           "referencedTableName": "public.entity_item",
+          "deleteRule": "set null"
+        },
+        "entity_route_item_group_handle_foreign": {
+          "columnNames": [
+            "group_handle"
+          ],
+          "constraintName": "entity_route_item_group_handle_foreign",
+          "localTableName": "public.entity_route_item",
+          "referencedColumnNames": [
+            "handle"
+          ],
+          "referencedTableName": "public.entity_group_item",
           "deleteRule": "set null"
         }
       },
