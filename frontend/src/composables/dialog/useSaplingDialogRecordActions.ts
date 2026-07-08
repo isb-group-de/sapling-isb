@@ -24,6 +24,7 @@ import {
   pushScriptButtonStartedMessage,
 } from '@/utils/saplingScriptResultUtil'
 import { buildTableOrderBy } from '@/utils/saplingTableUtil'
+import { openDocumentView, openDvelopUploadDialog } from '@/utils/saplingDocumentActionUtil'
 import type { FormConfigMenuItem, FormConfigSelectionHandle } from './saplingDialogEdit.utils'
 
 interface UseSaplingDialogRecordActionsProps {
@@ -265,17 +266,34 @@ export function useSaplingDialogRecordActions(
     window.open(`${NAVIGATION_URL}${encodeURIComponent(address)}`, '_blank')
   }
 
-  function navigateToDocuments(): void {
+  async function navigateToDocuments(): Promise<void> {
     if (!entityHandle.value || itemHandle.value == null) {
       return
     }
 
-    const url = `/file/document?filter={"reference":"${String(itemHandle.value)}","entity":"${entityHandle.value}"}`
-    window.open(url, '_blank')
+    const reference = String(itemHandle.value)
+
+    try {
+      await openDocumentView(entityHandle.value, reference)
+    } catch {
+      return
+    }
   }
 
-  function openUploadDialog(): void {
+  async function openUploadDialog(): Promise<void> {
     if (!hasPersistedItem.value || !entityPermission.value?.allowInsert) {
+      return
+    }
+
+    let openedInDvelop = false
+
+    try {
+      openedInDvelop = await openDvelopUploadDialog(entityHandle.value, String(itemHandle.value))
+    } catch {
+      return
+    }
+
+    if (openedInDvelop) {
       return
     }
 
@@ -387,10 +405,10 @@ export function useSaplingDialogRecordActions(
         navigateToAddress()
         break
       case 'uploadDocument':
-        openUploadDialog()
+        void openUploadDialog()
         break
       case 'showDocuments':
-        navigateToDocuments()
+        void navigateToDocuments()
         break
       case 'showInformation':
         openInformationDialog()

@@ -56,6 +56,7 @@ import {
   pushScriptButtonAlreadyRunningMessage,
   pushScriptButtonStartedMessage,
 } from '@/utils/saplingScriptResultUtil'
+import { openDocumentView, openDvelopUploadDialog } from '@/utils/saplingDocumentActionUtil'
 import {
   formatLocalDate,
   getWeekNumber,
@@ -1626,8 +1627,28 @@ export function useSaplingEvent() {
     window.open(`${NAVIGATION_URL}${encodeURIComponent(address)}`, '_blank')
   }
 
-  function openUploadDialogFromContextMenu() {
+  async function openUploadDialogFromContextMenu() {
     if (!eventContextMenu.value.item || eventEntityPermission.value?.allowInsert !== true) {
+      return
+    }
+
+    const itemHandle = eventContextMenu.value.item.handle
+    if (itemHandle == null) {
+      return
+    }
+
+    let openedInDvelop = false
+
+    try {
+      openedInDvelop = await openDvelopUploadDialog(
+        entityEvent.value?.handle ?? 'event',
+        String(itemHandle),
+      )
+    } catch {
+      return
+    }
+
+    if (openedInDvelop) {
       return
     }
 
@@ -1635,16 +1656,20 @@ export function useSaplingEvent() {
     showUploadDialog.value = true
   }
 
-  function navigateToDocumentsFromContextMenu() {
+  async function navigateToDocumentsFromContextMenu() {
     const itemHandle = eventContextMenu.value.item?.handle
     if (itemHandle == null) {
       return
     }
 
-    window.open(
-      `/file/document?filter={"reference":"${String(itemHandle)}","entity":"event"}`,
-      '_blank',
-    )
+    const entityHandle = entityEvent.value?.handle ?? 'event'
+    const reference = String(itemHandle)
+
+    try {
+      await openDocumentView(entityHandle, reference)
+    } catch {
+      return
+    }
   }
 
   function openInformationDialogFromContextMenu() {
@@ -1730,10 +1755,10 @@ export function useSaplingEvent() {
         navigateToAddressFromContextMenu()
         break
       case 'uploadDocument':
-        openUploadDialogFromContextMenu()
+        void openUploadDialogFromContextMenu()
         break
       case 'showDocuments':
-        navigateToDocumentsFromContextMenu()
+        void navigateToDocumentsFromContextMenu()
         break
       case 'showInformation':
         openInformationDialogFromContextMenu()

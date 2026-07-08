@@ -35,6 +35,8 @@ surface components before adding local CSS.
   panels, and admin configuration controls
 - `SaplingFrameworkDialogs.css`: dialog shells, dialog cards, widths, account,
   help, delete, json, template, and access-pending dialogs
+- `SaplingFrameworkDvelop.css`: d.velop Cloud configuration workspace, sync
+  controls, metadata metrics, and preview tables
 - `SaplingFrameworkFiles.css`: document headers, file mail summaries, attachment
   chips, and document body layouts
 - `SaplingFrameworkForms.css`: upload controls, field controls, select fields,
@@ -130,6 +132,8 @@ Use these shared patterns before creating a new class family:
   `sapling-record-timeline__timeline`, `sapling-record-change-log`
 - Admin and system areas: `sapling-admin-layout`, `sapling-admin-sidebar`,
   `sapling-system-metrics`, `sapling-system-layout`, `sapling-system-gauge`
+- d.velop Cloud: `sapling-dvelop-cloud`,
+  `sapling-dvelop-cloud__control-band`, `sapling-dvelop-cloud__table`
 - Partner workspaces: `sapling-partner-layout`,
   `sapling-partner-table-scroll`, `sapling-partner-filter-panel`
 - Attention queues: `sapling-attention-content`,

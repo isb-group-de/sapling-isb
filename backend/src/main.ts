@@ -16,6 +16,7 @@ import {
   API_CONTACT_NAME,
   API_CONTACT_URL,
   API_DESCRIPTION,
+  API_REQUEST_BODY_LIMIT,
   API_TITLE,
   API_VERSION,
   LOG_BACKUP_FILES,
@@ -57,10 +58,13 @@ async function bootstrap() {
   getSaplingSecretOrThrow();
 
   // Create the NestJS application
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { bodyParser: false });
 
-  // Enable URL-encoded request parsing
-  app.use(express.urlencoded({ extended: true }));
+  // Enable request parsing with a Sapling-specific payload limit.
+  app.use(express.json({ limit: API_REQUEST_BODY_LIMIT }));
+  app.use(
+    express.urlencoded({ extended: true, limit: API_REQUEST_BODY_LIMIT }),
+  );
 
   // Configure session management
   const httpAdapterInstance = app

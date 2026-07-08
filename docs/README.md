@@ -25,6 +25,7 @@ The documentation should stay close to the code, but not duplicate every class o
 - [Search, Filters, And Saved Views](features/search-filter-saved-views.md)
 - [Entity Onboarding Cookbook](development/entity-onboarding-cookbook.md)
 - [File Upload And Document Handling](features/file-upload-documents.md)
+- [d.velop Cloud Document Integration](integrations/dvelop-cloud.md)
 - [Current User And Open Tasks](features/current-open-tasks.md)
 - [Webhook System](integrations/webhooks.md)
 - [Authentication, Sessions, And Providers](security/auth-sessions-providers.md)

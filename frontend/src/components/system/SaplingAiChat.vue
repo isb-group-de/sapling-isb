@@ -1,6 +1,6 @@
 <template>
   <Teleport to="body">
-    <div class="sapling-overlay-shell">
+    <div class="sapling-overlay-shell sapling-ai-chat-shell">
       <v-btn
         v-if="hasSaplingAiChatAccess && !isOpen"
         class="sapling-ai-chat-fab"
@@ -15,16 +15,16 @@
         <SaplingSongbirdIcon class="sapling-ai-chat-fab__icon" />
       </v-btn>
 
-      <div
-        v-if="isOpen && hasSaplingAiChatAccess"
-        class="sapling-overlay-backdrop"
-        @click="closePanel"
-      ></div>
-
-      <transition name="sapling-floating-panel">
+      <v-dialog
+        :model-value="isDialogOpen"
+        class="sapling-ai-chat-dialog"
+        content-class="sapling-ai-chat-dialog__content"
+        scrim="transparent"
+        :z-index="SAPLING_AI_CHAT_OVERLAY_Z_INDEX"
+        @update:model-value="handleDialogModelUpdate"
+      >
         <SaplingSurface
           as="section"
-          v-if="isOpen && hasSaplingAiChatAccess"
           class="sapling-floating-panel sapling-floating-panel--top-center sapling-floating-panel--mobile-sheet sapling-ai-chat"
           @click.stop
         >
@@ -113,7 +113,7 @@
             </div>
           </template>
         </SaplingSurface>
-      </transition>
+      </v-dialog>
     </div>
   </Teleport>
 </template>
@@ -193,6 +193,7 @@ const { isLoading: isTranslationLoading, loadTranslations } = useTranslationLoad
 const assistantName = 'Songbird'
 const TITLE_PREVIEW_LIMIT = 30
 const MESSAGE_PAGE_SIZE = 100
+const SAPLING_AI_CHAT_OVERLAY_Z_INDEX = 13000
 const isCompactHeaderActions = mdAndDown
 const isMobileLayout = computed(() => mdAndDown.value)
 
@@ -275,6 +276,7 @@ const isBusy = computed(
     isLoadingMessages.value ||
     isSending.value,
 )
+const isDialogOpen = computed(() => isOpen.value && hasSaplingAiChatAccess.value)
 
 const currentPersonDisplayName = computed(() => {
   const person = currentPersonStore.person
@@ -489,6 +491,12 @@ function handleAiPreferencesUpdated(event: CustomEvent<SaplingAiPreferences>) {
   syncSelectedRuntimeTarget()
   syncSelectedTranscriptionTarget()
   syncSelectedSpeechTarget()
+}
+
+function handleDialogModelUpdate(nextIsOpen: boolean) {
+  if (!nextIsOpen) {
+    closePanel()
+  }
 }
 
 async function openPromptFromScriptButton(detail?: SaplingAiChatPromptEventDetail) {

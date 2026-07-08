@@ -1,0 +1,35 @@
+[
+  {
+    "entity": "dvelopConnection",
+    "route": "dvelop-cloud",
+    "navigation": "dvelopCloudConfiguration"
+  },
+  {
+    "entity": "dvelopConnection",
+    "route": "table/dvelopConnection"
+  },
+  {
+    "entity": "dvelopRepository",
+    "route": "table/dvelopRepository"
+  },
+  {
+    "entity": "dvelopObjectDefinition",
+    "route": "table/dvelopObjectDefinition"
+  },
+  {
+    "entity": "dvelopProperty",
+    "route": "table/dvelopProperty"
+  },
+  {
+    "entity": "dvelopEntityMapping",
+    "route": "table/dvelopEntityMapping"
+  },
+  {
+    "entity": "dvelopEntityMappingSearchCategory",
+    "route": "table/dvelopEntityMappingSearchCategory"
+  },
+  {
+    "entity": "dvelopEntityMappingProperty",
+    "route": "table/dvelopEntityMappingProperty"
+  }
+]

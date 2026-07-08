@@ -63,6 +63,13 @@ import { EventGoogleItem } from '../EventGoogleItem';
 import { EventAzureItem } from '../EventAzureItem';
 import { DocumentItem } from '../DocumentItem';
 import { DocumentTypeItem } from '../DocumentTypeItem';
+import { DvelopConnectionItem } from '../DvelopConnectionItem';
+import { DvelopEntityMappingItem } from '../DvelopEntityMappingItem';
+import { DvelopEntityMappingPropertyItem } from '../DvelopEntityMappingPropertyItem';
+import { DvelopEntityMappingSearchCategoryItem } from '../DvelopEntityMappingSearchCategoryItem';
+import { DvelopObjectDefinitionItem } from '../DvelopObjectDefinitionItem';
+import { DvelopPropertyItem } from '../DvelopPropertyItem';
+import { DvelopRepositoryItem } from '../DvelopRepositoryItem';
 import { InformationItem } from '../InformationItem';
 import { WebhookAuthenticationBasicItem } from '../WebhookAuthenticationBasicItem';
 import { WebhookSubscriptionPayloadType } from '../WebhookSubscriptionPayloadType';
@@ -225,6 +232,19 @@ const ENTITY_REGISTRY_ENTRIES: { name: string; class: any }[] = [
   { name: 'scriptButton', class: ScriptButtonItem },
   { name: 'document', class: DocumentItem },
   { name: 'documentType', class: DocumentTypeItem },
+  { name: 'dvelopConnection', class: DvelopConnectionItem },
+  { name: 'dvelopEntityMapping', class: DvelopEntityMappingItem },
+  {
+    name: 'dvelopEntityMappingProperty',
+    class: DvelopEntityMappingPropertyItem,
+  },
+  {
+    name: 'dvelopEntityMappingSearchCategory',
+    class: DvelopEntityMappingSearchCategoryItem,
+  },
+  { name: 'dvelopObjectDefinition', class: DvelopObjectDefinitionItem },
+  { name: 'dvelopProperty', class: DvelopPropertyItem },
+  { name: 'dvelopRepository', class: DvelopRepositoryItem },
   { name: 'information', class: InformationItem },
   { name: 'kpiAggregation', class: KpiAggregationItem },
   { name: 'kpiTimeframe', class: KpiTimeframeItem },

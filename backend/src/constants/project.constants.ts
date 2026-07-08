@@ -261,6 +261,13 @@ export const SAPLING_FRONTEND_URL: string =
   process.env.SAPLING_FRONTEND_URL || '';
 
 /**
+ * @constant {string} API_REQUEST_BODY_LIMIT
+ * Maximum JSON and URL-encoded request body size parsed by Express.
+ */
+export const API_REQUEST_BODY_LIMIT: string =
+  process.env.API_REQUEST_BODY_LIMIT || '2mb';
+
+/**
  * @constant {string} SAPLING_DEFAULT_PHONE_COUNTRY
  * ISO 3166-1 alpha-2 country used for local phone number normalization.
  */

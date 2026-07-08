@@ -9,12 +9,32 @@
   );
 }
 
+.sapling-ai-chat-shell {
+  --sapling-overlay-shell-z-index: 13000;
+  --sapling-ai-chat-fab-z-index: 13001;
+}
+
+.sapling-ai-chat-dialog__content {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  max-width: 100vw !important;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  margin: 0 !important;
+  pointer-events: none;
+}
+
+.sapling-ai-chat-dialog__content .sapling-ai-chat {
+  pointer-events: auto;
+}
+
 .sapling-ai-chat-fab {
   --sapling-ai-chat-fab-size: calc(var(--sapling-control-size-2xl) * 0.8);
   position: fixed !important;
   top: calc(var(--v-layout-top, 0px) + 10px);
   left: 50%;
-  z-index: 12990;
+  z-index: var(--sapling-ai-chat-fab-z-index, 13001);
   width: var(--sapling-ai-chat-fab-size) !important;
   min-width: var(--sapling-ai-chat-fab-size) !important;
   height: var(--sapling-ai-chat-fab-size) !important;

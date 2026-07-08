@@ -50,6 +50,7 @@ import {
   isSupportedCsvFile,
   normalizeConcurrencyTimestamp,
 } from '@/composables/table/saplingTableAction.utils'
+import { openDocumentView, openDvelopUploadDialog } from '@/utils/saplingDocumentActionUtil'
 
 interface FavoriteDialogState {
   visible: boolean
@@ -436,7 +437,23 @@ export function useSaplingTableActions({
     }
   }
 
-  function openUploadDialog(item: SaplingGenericItem) {
+  async function openUploadDialog(item: SaplingGenericItem) {
+    if (item.handle == null) {
+      return
+    }
+
+    let openedInDvelop = false
+
+    try {
+      openedInDvelop = await openDvelopUploadDialog(props.entityHandle, String(item.handle))
+    } catch {
+      return
+    }
+
+    if (openedInDvelop) {
+      return
+    }
+
     uploadDialogItem.value = item
     showUploadDialog.value = true
   }
@@ -505,13 +522,18 @@ export function useSaplingTableActions({
     changeLogDialogStore.openChangeLog(props.entityHandle, String(item.handle))
   }
 
-  function navigateToDocuments(item: SaplingGenericItem) {
+  async function navigateToDocuments(item: SaplingGenericItem) {
     if (item.handle == null) {
       return
     }
 
-    const url = `/file/document?filter={"reference":"${String(item.handle)}","entity":"${props.entityHandle}"}`
-    window.open(url, '_blank')
+    const reference = String(item.handle)
+
+    try {
+      await openDocumentView(props.entityHandle, reference)
+    } catch {
+      return
+    }
   }
 
   function onContextMenuAction({
@@ -543,10 +565,10 @@ export function useSaplingTableActions({
         openTimeline(item)
         break
       case 'uploadDocument':
-        openUploadDialog(item)
+        void openUploadDialog(item)
         break
       case 'showDocuments':
-        navigateToDocuments(item)
+        void navigateToDocuments(item)
         break
       case 'showInformation':
         openInformationDialog(item)

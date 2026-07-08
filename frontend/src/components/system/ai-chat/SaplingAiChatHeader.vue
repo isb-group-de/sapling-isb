@@ -60,7 +60,14 @@
       >
         {{ t('aiChat.newChat') }}
       </v-btn>
-      <v-btn icon="mdi-close" variant="text" size="small" @click="emit('close')" />
+      <v-btn
+        icon="mdi-close"
+        variant="text"
+        size="small"
+        :aria-label="t('global.close')"
+        :title="t('global.close')"
+        @click="emit('close')"
+      />
     </div>
   </div>
 </template>

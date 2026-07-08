@@ -304,6 +304,126 @@ describe('DocumentController', () => {
     expect(res.sendFile).toHaveBeenCalledWith('/tmp/document.pdf');
   });
 
+  it('resolves d.velop Cloud document view URLs', async () => {
+    const documentService = {
+      uploadDocument: jest.fn(),
+      downloadDocument: jest.fn(),
+    };
+    const dvelopResponse = {
+      isActive: true,
+      mode: 'dvelopCloud',
+      url: 'https://example.d-velop.cloud/dms/r/repository/sr',
+    };
+    const dvelopDocumentService = {
+      buildDocumentsUrl: jest.fn(async () => dvelopResponse),
+      buildUploadDialogUrl: jest.fn(),
+    };
+    const controller = new DocumentController(
+      documentService as never,
+      dvelopDocumentService as never,
+    );
+
+    await expect(
+      controller.resolveDvelopDocumentsUrl('ticket', '1'),
+    ).resolves.toBe(dvelopResponse);
+    expect(
+      asMock(dvelopDocumentService.buildDocumentsUrl),
+    ).toHaveBeenCalledWith('ticket', '1');
+  });
+
+  it('resolves d.velop Cloud upload dialog URLs', async () => {
+    const documentService = {
+      uploadDocument: jest.fn(),
+      downloadDocument: jest.fn(),
+    };
+    const dvelopResponse = {
+      isActive: true,
+      mode: 'dvelopCloud',
+      url: 'https://example.d-velop.cloud/dms/new',
+    };
+    const dvelopDocumentService = {
+      buildDocumentsUrl: jest.fn(),
+      buildUploadDialogUrl: jest.fn(async () => dvelopResponse),
+    };
+    const controller = new DocumentController(
+      documentService as never,
+      dvelopDocumentService as never,
+    );
+
+    await expect(
+      controller.resolveDvelopUploadDialogUrl('ticket', '1'),
+    ).resolves.toBe(dvelopResponse);
+    expect(
+      asMock(dvelopDocumentService.buildUploadDialogUrl),
+    ).toHaveBeenCalledWith('ticket', '1');
+  });
+
+  it('imports d.velop Cloud configuration metadata', async () => {
+    const documentService = {
+      uploadDocument: jest.fn(),
+      downloadDocument: jest.fn(),
+    };
+    const importPayload = {
+      repositories: [{ dvelopId: 'repository', title: 'Repository' }],
+      objectDefinitions: [{ dvelopId: 'invoice', title: 'Invoice' }],
+      properties: [{ dvelopId: 'record-id', title: 'Record ID' }],
+    };
+    const importResponse = {
+      repositories: { total: 1, created: 1, updated: 0, skipped: 0 },
+      objectDefinitions: { total: 1, created: 1, updated: 0, skipped: 0 },
+      properties: { total: 1, created: 1, updated: 0, skipped: 0 },
+    };
+    const dvelopConfigurationService = {
+      importConfiguration: jest.fn(async () => importResponse),
+      syncConfiguration: jest.fn(),
+    };
+    const controller = new DocumentController(
+      documentService as never,
+      undefined,
+      dvelopConfigurationService as never,
+    );
+
+    await expect(
+      controller.importDvelopConfiguration('7', importPayload),
+    ).resolves.toBe(importResponse);
+    expect(
+      asMock(dvelopConfigurationService.importConfiguration),
+    ).toHaveBeenCalledWith(7, importPayload);
+  });
+
+  it('synchronizes d.velop Cloud configuration metadata', async () => {
+    const documentService = {
+      uploadDocument: jest.fn(),
+      downloadDocument: jest.fn(),
+    };
+    const syncPayload = {
+      repositories: true,
+      objectDefinitions: true,
+      properties: false,
+    };
+    const syncResponse = {
+      repositories: { total: 1, created: 0, updated: 1, skipped: 0 },
+      objectDefinitions: { total: 2, created: 1, updated: 1, skipped: 0 },
+      properties: { total: 0, created: 0, updated: 0, skipped: 0 },
+    };
+    const dvelopConfigurationService = {
+      importConfiguration: jest.fn(),
+      syncConfiguration: jest.fn(async () => syncResponse),
+    };
+    const controller = new DocumentController(
+      documentService as never,
+      undefined,
+      dvelopConfigurationService as never,
+    );
+
+    await expect(
+      controller.syncDvelopConfiguration('7', syncPayload),
+    ).resolves.toBe(syncResponse);
+    expect(
+      asMock(dvelopConfigurationService.syncConfiguration),
+    ).toHaveBeenCalledWith(7, syncPayload);
+  });
+
   it('previews PDF documents inline', async () => {
     const documentService = {
       uploadDocument: jest.fn(),

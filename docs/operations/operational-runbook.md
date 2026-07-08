@@ -62,6 +62,7 @@ Minimum backend values to verify:
 
 - `SAPLING_SECRET`
 - `SAPLING_FRONTEND_URL`
+- `API_REQUEST_BODY_LIMIT` for JSON/form requests such as script-button and AI contexts
 - `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`
 - `DB_DATA_SEEDER`
 - `SESSION_COOKIE_SECURE`

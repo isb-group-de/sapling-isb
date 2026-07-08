@@ -1,0 +1,72 @@
+[
+  {
+    "handle": "dvelopConnection",
+    "canShow": true,
+    "icon": "mdi-cloud-outline",
+    "group": "dvelopCloud",
+    "order": 10,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "dvelopRepository",
+    "canShow": true,
+    "icon": "mdi-database-outline",
+    "group": "dvelopCloud",
+    "order": 20,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "dvelopObjectDefinition",
+    "canShow": true,
+    "icon": "mdi-shape-outline",
+    "group": "dvelopCloud",
+    "order": 30,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "dvelopProperty",
+    "canShow": true,
+    "icon": "mdi-tag-multiple-outline",
+    "group": "dvelopCloud",
+    "order": 40,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "dvelopEntityMapping",
+    "canShow": true,
+    "icon": "mdi-file-tree-outline",
+    "group": "dvelopCloud",
+    "order": 50,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "dvelopEntityMappingSearchCategory",
+    "canShow": true,
+    "icon": "mdi-file-search-outline",
+    "group": "dvelopCloud",
+    "order": 60,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "dvelopEntityMappingProperty",
+    "canShow": true,
+    "icon": "mdi-vector-link",
+    "group": "dvelopCloud",
+    "order": 70,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  }
+]

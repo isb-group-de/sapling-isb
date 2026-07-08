@@ -83,6 +83,11 @@ const router = createRouter({
           name: 'aiAgents',
           component: () => import('@/views/AiAgentBuilderView.vue'),
         },
+        {
+          path: 'dvelop-cloud',
+          name: 'dvelopCloud',
+          component: () => import('@/views/DvelopCloudView.vue'),
+        },
         // Issue view (lazy loaded)
         { path: 'issue', name: 'issue', component: () => import('@/views/IssueView.vue') },
         // Right view (lazy loaded)

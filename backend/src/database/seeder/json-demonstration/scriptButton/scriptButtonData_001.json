@@ -61,5 +61,29 @@
     "title": "ticket.scriptAiFindTicketReferences",
     "entity": "ticket",
     "isMultiSelect": false
+  },
+  {
+    "name": "syncRepositories",
+    "title": "dvelopConnection.scriptSyncRepositories",
+    "entity": "dvelopConnection",
+    "isMultiSelect": false
+  },
+  {
+    "name": "syncObjectDefinitions",
+    "title": "dvelopConnection.scriptSyncObjectDefinitions",
+    "entity": "dvelopConnection",
+    "isMultiSelect": false
+  },
+  {
+    "name": "syncProperties",
+    "title": "dvelopConnection.scriptSyncProperties",
+    "entity": "dvelopConnection",
+    "isMultiSelect": false
+  },
+  {
+    "name": "aiCreatePropertyMappings",
+    "title": "dvelopEntityMapping.scriptAiCreatePropertyMappings",
+    "entity": "dvelopEntityMapping",
+    "isMultiSelect": false
   }
 ]

@@ -1,0 +1,866 @@
+[
+  {
+    "entity": "navigationGroup",
+    "property": "dvelopCloud",
+    "de": "d.velop Cloud",
+    "en": "d.velop Cloud"
+  },
+  {
+    "entity": "navigation",
+    "property": "dvelopCloudConfiguration",
+    "de": "d.velop Cloud-Konfiguration",
+    "en": "d.velop Cloud Configuration"
+  },
+  {
+    "entity": "navigation",
+    "property": "dvelopConnection",
+    "de": "d.velop Cloud-Verbindungen",
+    "en": "d.velop Cloud Connections"
+  },
+  {
+    "entity": "navigation",
+    "property": "dvelopRepository",
+    "de": "d.velop Cloud-Repositorys",
+    "en": "d.velop Cloud Repositories"
+  },
+  {
+    "entity": "navigation",
+    "property": "dvelopObjectDefinition",
+    "de": "d.velop Cloud-Kategorien",
+    "en": "d.velop Cloud Categories"
+  },
+  {
+    "entity": "navigation",
+    "property": "dvelopProperty",
+    "de": "d.velop Cloud-Eigenschaften",
+    "en": "d.velop Cloud Properties"
+  },
+  {
+    "entity": "navigation",
+    "property": "dvelopEntityMapping",
+    "de": "d.velop Cloud-Zuordnungen",
+    "en": "d.velop Cloud Mappings"
+  },
+  {
+    "entity": "navigation",
+    "property": "dvelopEntityMappingSearchCategory",
+    "de": "d.velop Cloud-Suchkategorien",
+    "en": "d.velop Cloud Search Categories"
+  },
+  {
+    "entity": "navigation",
+    "property": "dvelopEntityMappingProperty",
+    "de": "d.velop Cloud-Eigenschaftszuordnungen",
+    "en": "d.velop Cloud Property Mappings"
+  },
+  {
+    "entity": "dvelopCloud",
+    "property": "title",
+    "de": "d.velop Cloud-Konfiguration",
+    "en": "d.velop Cloud Configuration"
+  },
+  {
+    "entity": "dvelopCloud",
+    "property": "subtitle",
+    "de": "Verbindungen, Kategorien, Eigenschaften und Zuordnungen",
+    "en": "Connections, categories, properties, and mappings"
+  },
+  {
+    "entity": "dvelopCloud",
+    "property": "openConnections",
+    "de": "Verbindungen öffnen",
+    "en": "Open connections"
+  },
+  {
+    "entity": "dvelopCloud",
+    "property": "openMappings",
+    "de": "Zuordnungen öffnen",
+    "en": "Open mappings"
+  },
+  {
+    "entity": "dvelopCloud",
+    "property": "openRepositories",
+    "de": "Repositorytabelle öffnen",
+    "en": "Open repository table"
+  },
+  {
+    "entity": "dvelopCloud",
+    "property": "connection",
+    "de": "Verbindung",
+    "en": "Connection"
+  },
+  {
+    "entity": "dvelopCloud",
+    "property": "syncAll",
+    "de": "Alles synchronisieren",
+    "en": "Sync all"
+  },
+  {
+    "entity": "dvelopCloud",
+    "property": "syncObjectDefinitions",
+    "de": "Kategorien laden",
+    "en": "Load categories"
+  },
+  {
+    "entity": "dvelopCloud",
+    "property": "syncProperties",
+    "de": "Eigenschaften laden",
+    "en": "Load properties"
+  },
+  {
+    "entity": "dvelopCloud",
+    "property": "repositories",
+    "de": "Repositorys",
+    "en": "Repositories"
+  },
+  {
+    "entity": "dvelopCloud",
+    "property": "repositoryList",
+    "de": "Repository-Auswahl",
+    "en": "Repository selection"
+  },
+  {
+    "entity": "dvelopCloud",
+    "property": "objectDefinitions",
+    "de": "Kategorien",
+    "en": "Categories"
+  },
+  {
+    "entity": "dvelopCloud",
+    "property": "properties",
+    "de": "Eigenschaften",
+    "en": "Properties"
+  },
+  {
+    "entity": "dvelopCloud",
+    "property": "lastSync",
+    "de": "Letzte Synchronisierung",
+    "en": "Last sync"
+  },
+  {
+    "entity": "dvelopCloud",
+    "property": "categories",
+    "de": "Ablagekategorien",
+    "en": "Storage categories"
+  },
+  {
+    "entity": "dvelopCloud",
+    "property": "fields",
+    "de": "Felder",
+    "en": "Fields"
+  },
+  {
+    "entity": "dvelopCloud",
+    "property": "openObjectDefinitions",
+    "de": "Kategorietabelle öffnen",
+    "en": "Open category table"
+  },
+  {
+    "entity": "dvelopCloud",
+    "property": "openProperties",
+    "de": "Eigenschaftstabelle öffnen",
+    "en": "Open property table"
+  },
+  {
+    "entity": "dvelopCloud",
+    "property": "connectionLoadFailed",
+    "de": "Die d.velop Cloud-Verbindungen konnten nicht geladen werden.",
+    "en": "The d.velop Cloud connections could not be loaded."
+  },
+  {
+    "entity": "dvelopCloud",
+    "property": "metadataLoadFailed",
+    "de": "Die gespeicherten d.velop Cloud-Metadaten konnten nicht geladen werden.",
+    "en": "The stored d.velop Cloud metadata could not be loaded."
+  },
+  {
+    "entity": "dvelopCloud",
+    "property": "syncCompleted",
+    "de": "d.velop Cloud-Metadaten synchronisiert",
+    "en": "d.velop Cloud metadata synchronized"
+  },
+  {
+    "entity": "dvelopCloud",
+    "property": "repositoriesSynced",
+    "de": "d.velop Cloud-Repositorys synchronisiert",
+    "en": "d.velop Cloud repositories synchronized"
+  },
+  {
+    "entity": "dvelopCloud",
+    "property": "objectDefinitionsSynced",
+    "de": "d.velop Cloud-Kategorien synchronisiert",
+    "en": "d.velop Cloud categories synchronized"
+  },
+  {
+    "entity": "dvelopCloud",
+    "property": "propertiesSynced",
+    "de": "d.velop Cloud-Eigenschaften synchronisiert",
+    "en": "d.velop Cloud properties synchronized"
+  },
+  {
+    "entity": "dvelopCloud",
+    "property": "syncFailed",
+    "de": "Die d.velop Cloud-Synchronisierung ist fehlgeschlagen.",
+    "en": "The d.velop Cloud sync failed."
+  },
+  {
+    "entity": "dvelopCloud",
+    "property": "syncSummary",
+    "de": "{total} gelesen, {created} neu, {updated} aktualisiert, {skipped} übersprungen",
+    "en": "{total} read, {created} created, {updated} updated, {skipped} skipped"
+  },
+  {
+    "entity": "dvelopConnection",
+    "property": "handle",
+    "de": "ID",
+    "en": "ID"
+  },
+  {
+    "entity": "dvelopConnection",
+    "property": "title",
+    "de": "Bezeichnung",
+    "en": "Title"
+  },
+  {
+    "entity": "dvelopConnection",
+    "property": "baseUrl",
+    "de": "Cloud-Basis-URL",
+    "en": "Cloud base URL"
+  },
+  {
+    "entity": "dvelopConnection",
+    "property": "repository",
+    "de": "Repository",
+    "en": "Repository"
+  },
+  {
+    "entity": "dvelopConnection",
+    "property": "apiKey",
+    "de": "API-Key",
+    "en": "API key"
+  },
+  {
+    "entity": "dvelopConnection",
+    "property": "defaultObjectDefinition",
+    "de": "Standard-Kategorie",
+    "en": "Default category"
+  },
+  {
+    "entity": "dvelopConnection",
+    "property": "repositories",
+    "de": "Repositorys",
+    "en": "Repositories"
+  },
+  {
+    "entity": "dvelopConnection",
+    "property": "objectDefinitions",
+    "de": "Kategorien",
+    "en": "Categories"
+  },
+  {
+    "entity": "dvelopConnection",
+    "property": "properties",
+    "de": "Eigenschaften",
+    "en": "Properties"
+  },
+  {
+    "entity": "dvelopConnection",
+    "property": "isActive",
+    "de": "Aktiv",
+    "en": "Active"
+  },
+  {
+    "entity": "dvelopConnection",
+    "property": "mappings",
+    "de": "Zuordnungen",
+    "en": "Mappings"
+  },
+  {
+    "entity": "dvelopConnection",
+    "property": "createdAt",
+    "de": "Erstellt am",
+    "en": "Created at"
+  },
+  {
+    "entity": "dvelopConnection",
+    "property": "updatedAt",
+    "de": "Aktualisiert am",
+    "en": "Updated at"
+  },
+  {
+    "entity": "dvelopConnection",
+    "property": "groupBasics",
+    "de": "Grunddaten",
+    "en": "Basics"
+  },
+  {
+    "entity": "dvelopConnection",
+    "property": "groupCloud",
+    "de": "d.velop Cloud",
+    "en": "d.velop Cloud"
+  },
+  {
+    "entity": "dvelopConnection",
+    "property": "groupStatus",
+    "de": "Status",
+    "en": "Status"
+  },
+  {
+    "entity": "dvelopConnection",
+    "property": "scriptSyncRepositories",
+    "de": "Repository synchronisieren",
+    "en": "Synchronize repository"
+  },
+  {
+    "entity": "dvelopConnection",
+    "property": "scriptSyncObjectDefinitions",
+    "de": "Kategorien synchronisieren",
+    "en": "Synchronize categories"
+  },
+  {
+    "entity": "dvelopConnection",
+    "property": "scriptSyncProperties",
+    "de": "Felder synchronisieren",
+    "en": "Synchronize fields"
+  },
+  {
+    "entity": "dvelopRepository",
+    "property": "handle",
+    "de": "ID",
+    "en": "ID"
+  },
+  {
+    "entity": "dvelopRepository",
+    "property": "connection",
+    "de": "d.velop Cloud-Verbindung",
+    "en": "d.velop Cloud connection"
+  },
+  {
+    "entity": "dvelopRepository",
+    "property": "title",
+    "de": "Bezeichnung",
+    "en": "Title"
+  },
+  {
+    "entity": "dvelopRepository",
+    "property": "dvelopId",
+    "de": "Repository-ID",
+    "en": "Repository ID"
+  },
+  {
+    "entity": "dvelopRepository",
+    "property": "version",
+    "de": "Version",
+    "en": "Version"
+  },
+  {
+    "entity": "dvelopRepository",
+    "property": "isDefault",
+    "de": "Standard",
+    "en": "Default"
+  },
+  {
+    "entity": "dvelopRepository",
+    "property": "isAvailable",
+    "de": "Verfügbar",
+    "en": "Available"
+  },
+  {
+    "entity": "dvelopRepository",
+    "property": "lastSyncedAt",
+    "de": "Zuletzt synchronisiert",
+    "en": "Last synchronized"
+  },
+  {
+    "entity": "dvelopRepository",
+    "property": "selectedConnections",
+    "de": "Ausgewählte Verbindungen",
+    "en": "Selected connections"
+  },
+  {
+    "entity": "dvelopRepository",
+    "property": "createdAt",
+    "de": "Erstellt am",
+    "en": "Created at"
+  },
+  {
+    "entity": "dvelopRepository",
+    "property": "updatedAt",
+    "de": "Aktualisiert am",
+    "en": "Updated at"
+  },
+  {
+    "entity": "dvelopRepository",
+    "property": "groupBasics",
+    "de": "Grunddaten",
+    "en": "Basics"
+  },
+  {
+    "entity": "dvelopRepository",
+    "property": "groupReference",
+    "de": "Referenz",
+    "en": "Reference"
+  },
+  {
+    "entity": "dvelopRepository",
+    "property": "groupStatus",
+    "de": "Status",
+    "en": "Status"
+  },
+  {
+    "entity": "dvelopObjectDefinition",
+    "property": "handle",
+    "de": "ID",
+    "en": "ID"
+  },
+  {
+    "entity": "dvelopObjectDefinition",
+    "property": "connection",
+    "de": "d.velop Cloud-Verbindung",
+    "en": "d.velop Cloud connection"
+  },
+  {
+    "entity": "dvelopObjectDefinition",
+    "property": "title",
+    "de": "Bezeichnung",
+    "en": "Title"
+  },
+  {
+    "entity": "dvelopObjectDefinition",
+    "property": "dvelopId",
+    "de": "d.velop ID",
+    "en": "d.velop ID"
+  },
+  {
+    "entity": "dvelopObjectDefinition",
+    "property": "description",
+    "de": "Beschreibung",
+    "en": "Description"
+  },
+  {
+    "entity": "dvelopObjectDefinition",
+    "property": "isActive",
+    "de": "Aktiv",
+    "en": "Active"
+  },
+  {
+    "entity": "dvelopObjectDefinition",
+    "property": "lastSyncedAt",
+    "de": "Zuletzt synchronisiert",
+    "en": "Last synchronized"
+  },
+  {
+    "entity": "dvelopObjectDefinition",
+    "property": "mappings",
+    "de": "Zuordnungen",
+    "en": "Mappings"
+  },
+  {
+    "entity": "dvelopObjectDefinition",
+    "property": "searchCategoryMappings",
+    "de": "Suchkategorie-Zuordnungen",
+    "en": "Search category mappings"
+  },
+  {
+    "entity": "dvelopObjectDefinition",
+    "property": "createdAt",
+    "de": "Erstellt am",
+    "en": "Created at"
+  },
+  {
+    "entity": "dvelopObjectDefinition",
+    "property": "updatedAt",
+    "de": "Aktualisiert am",
+    "en": "Updated at"
+  },
+  {
+    "entity": "dvelopObjectDefinition",
+    "property": "groupBasics",
+    "de": "Grunddaten",
+    "en": "Basics"
+  },
+  {
+    "entity": "dvelopObjectDefinition",
+    "property": "groupReference",
+    "de": "Referenz",
+    "en": "Reference"
+  },
+  {
+    "entity": "dvelopObjectDefinition",
+    "property": "groupDvelop",
+    "de": "d.velop Cloud",
+    "en": "d.velop Cloud"
+  },
+  {
+    "entity": "dvelopObjectDefinition",
+    "property": "groupStatus",
+    "de": "Status",
+    "en": "Status"
+  },
+  {
+    "entity": "dvelopProperty",
+    "property": "handle",
+    "de": "ID",
+    "en": "ID"
+  },
+  {
+    "entity": "dvelopProperty",
+    "property": "connection",
+    "de": "d.velop Cloud-Verbindung",
+    "en": "d.velop Cloud connection"
+  },
+  {
+    "entity": "dvelopProperty",
+    "property": "title",
+    "de": "Bezeichnung",
+    "en": "Title"
+  },
+  {
+    "entity": "dvelopProperty",
+    "property": "dvelopId",
+    "de": "d.velop ID",
+    "en": "d.velop ID"
+  },
+  {
+    "entity": "dvelopProperty",
+    "property": "dataType",
+    "de": "Datentyp",
+    "en": "Data type"
+  },
+  {
+    "entity": "dvelopProperty",
+    "property": "description",
+    "de": "Beschreibung",
+    "en": "Description"
+  },
+  {
+    "entity": "dvelopProperty",
+    "property": "isRequired",
+    "de": "Pflichtfeld",
+    "en": "Required"
+  },
+  {
+    "entity": "dvelopProperty",
+    "property": "isMultiValue",
+    "de": "Mehrfachwert",
+    "en": "Multi value"
+  },
+  {
+    "entity": "dvelopProperty",
+    "property": "isActive",
+    "de": "Aktiv",
+    "en": "Active"
+  },
+  {
+    "entity": "dvelopProperty",
+    "property": "lastSyncedAt",
+    "de": "Zuletzt synchronisiert",
+    "en": "Last synchronized"
+  },
+  {
+    "entity": "dvelopProperty",
+    "property": "mappingProperties",
+    "de": "Eigenschaftszuordnungen",
+    "en": "Property mappings"
+  },
+  {
+    "entity": "dvelopProperty",
+    "property": "createdAt",
+    "de": "Erstellt am",
+    "en": "Created at"
+  },
+  {
+    "entity": "dvelopProperty",
+    "property": "updatedAt",
+    "de": "Aktualisiert am",
+    "en": "Updated at"
+  },
+  {
+    "entity": "dvelopProperty",
+    "property": "groupBasics",
+    "de": "Grunddaten",
+    "en": "Basics"
+  },
+  {
+    "entity": "dvelopProperty",
+    "property": "groupReference",
+    "de": "Referenz",
+    "en": "Reference"
+  },
+  {
+    "entity": "dvelopProperty",
+    "property": "groupDvelop",
+    "de": "d.velop Cloud",
+    "en": "d.velop Cloud"
+  },
+  {
+    "entity": "dvelopProperty",
+    "property": "groupBehavior",
+    "de": "Verhalten",
+    "en": "Behavior"
+  },
+  {
+    "entity": "dvelopProperty",
+    "property": "groupStatus",
+    "de": "Status",
+    "en": "Status"
+  },
+  {
+    "entity": "dvelopEntityMapping",
+    "property": "handle",
+    "de": "ID",
+    "en": "ID"
+  },
+  {
+    "entity": "dvelopEntityMapping",
+    "property": "connection",
+    "de": "d.velop Cloud-Verbindung",
+    "en": "d.velop Cloud connection"
+  },
+  {
+    "entity": "dvelopEntityMapping",
+    "property": "entity",
+    "de": "Sapling-Entität",
+    "en": "Sapling entity"
+  },
+  {
+    "entity": "dvelopEntityMapping",
+    "property": "objectDefinition",
+    "de": "Ablagekategorie",
+    "en": "Storage category"
+  },
+  {
+    "entity": "dvelopEntityMapping",
+    "property": "searchCategories",
+    "de": "Suchkategorien",
+    "en": "Search categories"
+  },
+  {
+    "entity": "dvelopEntityMapping",
+    "property": "propertyMappings",
+    "de": "Eigenschaftszuordnungen",
+    "en": "Property mappings"
+  },
+  {
+    "entity": "dvelopEntityMapping",
+    "property": "isActive",
+    "de": "Aktiv",
+    "en": "Active"
+  },
+  {
+    "entity": "dvelopEntityMapping",
+    "property": "createdAt",
+    "de": "Erstellt am",
+    "en": "Created at"
+  },
+  {
+    "entity": "dvelopEntityMapping",
+    "property": "updatedAt",
+    "de": "Aktualisiert am",
+    "en": "Updated at"
+  },
+  {
+    "entity": "dvelopEntityMapping",
+    "property": "groupReference",
+    "de": "Referenz",
+    "en": "Reference"
+  },
+  {
+    "entity": "dvelopEntityMapping",
+    "property": "groupDvelop",
+    "de": "d.velop Cloud",
+    "en": "d.velop Cloud"
+  },
+  {
+    "entity": "dvelopEntityMapping",
+    "property": "groupMapping",
+    "de": "Zuordnung",
+    "en": "Mapping"
+  },
+  {
+    "entity": "dvelopEntityMapping",
+    "property": "groupStatus",
+    "de": "Status",
+    "en": "Status"
+  },
+  {
+    "entity": "dvelopEntityMapping",
+    "property": "scriptAiCreatePropertyMappings",
+    "de": "Eigenschaftszuordnung mit AI erstellen",
+    "en": "Create property mapping with AI"
+  },
+  {
+    "entity": "dvelopEntityMappingSearchCategory",
+    "property": "handle",
+    "de": "ID",
+    "en": "ID"
+  },
+  {
+    "entity": "dvelopEntityMappingSearchCategory",
+    "property": "mapping",
+    "de": "Zuordnung",
+    "en": "Mapping"
+  },
+  {
+    "entity": "dvelopEntityMappingSearchCategory",
+    "property": "objectDefinition",
+    "de": "Suchkategorie",
+    "en": "Search category"
+  },
+  {
+    "entity": "dvelopEntityMappingSearchCategory",
+    "property": "sortOrder",
+    "de": "Sortierung",
+    "en": "Sort order"
+  },
+  {
+    "entity": "dvelopEntityMappingSearchCategory",
+    "property": "isActive",
+    "de": "Aktiv",
+    "en": "Active"
+  },
+  {
+    "entity": "dvelopEntityMappingSearchCategory",
+    "property": "createdAt",
+    "de": "Erstellt am",
+    "en": "Created at"
+  },
+  {
+    "entity": "dvelopEntityMappingSearchCategory",
+    "property": "updatedAt",
+    "de": "Aktualisiert am",
+    "en": "Updated at"
+  },
+  {
+    "entity": "dvelopEntityMappingSearchCategory",
+    "property": "groupReference",
+    "de": "Referenz",
+    "en": "Reference"
+  },
+  {
+    "entity": "dvelopEntityMappingSearchCategory",
+    "property": "groupBehavior",
+    "de": "Verhalten",
+    "en": "Behavior"
+  },
+  {
+    "entity": "dvelopEntityMappingSearchCategory",
+    "property": "groupStatus",
+    "de": "Status",
+    "en": "Status"
+  },
+  {
+    "entity": "dvelopEntityMappingProperty",
+    "property": "handle",
+    "de": "ID",
+    "en": "ID"
+  },
+  {
+    "entity": "dvelopEntityMappingProperty",
+    "property": "mapping",
+    "de": "Zuordnung",
+    "en": "Mapping"
+  },
+  {
+    "entity": "dvelopEntityMappingProperty",
+    "property": "property",
+    "de": "d.velop Eigenschaft",
+    "en": "d.velop property"
+  },
+  {
+    "entity": "dvelopEntityMappingProperty",
+    "property": "sourceField",
+    "de": "Sapling-Quellfeld",
+    "en": "Sapling source field"
+  },
+  {
+    "entity": "dvelopEntityMappingProperty",
+    "property": "staticValue",
+    "de": "Fester Wert",
+    "en": "Static value"
+  },
+  {
+    "entity": "dvelopEntityMappingProperty",
+    "property": "sortOrder",
+    "de": "Sortierung",
+    "en": "Sort order"
+  },
+  {
+    "entity": "dvelopEntityMappingProperty",
+    "property": "isActive",
+    "de": "Aktiv",
+    "en": "Active"
+  },
+  {
+    "entity": "dvelopEntityMappingProperty",
+    "property": "createdAt",
+    "de": "Erstellt am",
+    "en": "Created at"
+  },
+  {
+    "entity": "dvelopEntityMappingProperty",
+    "property": "updatedAt",
+    "de": "Aktualisiert am",
+    "en": "Updated at"
+  },
+  {
+    "entity": "dvelopEntityMappingProperty",
+    "property": "groupReference",
+    "de": "Referenz",
+    "en": "Reference"
+  },
+  {
+    "entity": "dvelopEntityMappingProperty",
+    "property": "groupValue",
+    "de": "Wert",
+    "en": "Value"
+  },
+  {
+    "entity": "dvelopEntityMappingProperty",
+    "property": "groupBehavior",
+    "de": "Verhalten",
+    "en": "Behavior"
+  },
+  {
+    "entity": "dvelopEntityMappingProperty",
+    "property": "groupStatus",
+    "de": "Status",
+    "en": "Status"
+  },
+  {
+    "entity": "document",
+    "property": "dvelopPropertyMappingMissing",
+    "de": "Die aktive d.velop Cloud-Zuordnung enthält keine verwendbare Eigenschaftszuordnung.",
+    "en": "The active d.velop Cloud mapping does not contain a usable property mapping."
+  },
+  {
+    "entity": "document",
+    "property": "dvelopBaseUrlInvalid",
+    "de": "Die d.velop Cloud-Basis-URL ist ungültig.",
+    "en": "The d.velop Cloud base URL is invalid."
+  },
+  {
+    "entity": "document",
+    "property": "dvelopRepositoryMissing",
+    "de": "Das d.velop Cloud-Repository fehlt.",
+    "en": "The d.velop Cloud repository is missing."
+  },
+  {
+    "entity": "document",
+    "property": "dvelopApiKeyMissing",
+    "de": "Der d.velop Cloud-API-Key fehlt.",
+    "en": "The d.velop Cloud API key is missing."
+  },
+  {
+    "entity": "document",
+    "property": "dvelopConnectionNotFound",
+    "de": "Die d.velop Cloud-Verbindung wurde nicht gefunden.",
+    "en": "The d.velop Cloud connection was not found."
+  },
+  {
+    "entity": "document",
+    "property": "dvelopServiceNotAvailable",
+    "de": "Der d.velop Cloud-Dokumentdienst ist nicht verfügbar.",
+    "en": "The d.velop Cloud document service is not available."
+  }
+]

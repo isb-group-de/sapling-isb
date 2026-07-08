@@ -1,0 +1,9 @@
+[
+  {
+    "handle": "dvelopCloud",
+    "icon": "mdi-cloud-outline",
+    "isExpanded": false,
+    "sortOrder": 40,
+    "parent": "knowledgePool"
+  }
+]
