@@ -8,49 +8,43 @@ import type {
 } from '@/entity/entity'
 import type { RouteLocationRaw } from 'vue-router'
 
-export function getTicketInboxRoute(ticket: TicketItem): RouteLocationRaw {
+function getRecordInboxRoute(
+  entityHandle: string,
+  recordHandle: string | number | null | undefined,
+): RouteLocationRaw {
+  if (recordHandle == null || String(recordHandle).trim().length === 0) {
+    return {
+      path: `/table/${entityHandle}`,
+    }
+  }
+
   return {
-    path: '/table/ticket',
+    path: `/table/${entityHandle}`,
     query: {
-      filter: JSON.stringify({ handle: ticket.handle }),
+      filter: JSON.stringify({ handle: recordHandle }),
+      open: String(recordHandle),
     },
   }
+}
+
+export function getTicketInboxRoute(ticket: TicketItem): RouteLocationRaw {
+  return getRecordInboxRoute('ticket', ticket.handle)
 }
 
 export function getTaskInboxRoute(task: EventItem): RouteLocationRaw {
-  return {
-    path: '/table/event',
-    query: {
-      filter: JSON.stringify({ handle: task.handle }),
-    },
-  }
+  return getRecordInboxRoute('event', task.handle)
 }
 
 export function getSalesOpportunityInboxRoute(opportunity: SalesOpportunityItem): RouteLocationRaw {
-  return {
-    path: '/table/salesOpportunity',
-    query: {
-      filter: JSON.stringify({ handle: opportunity.handle }),
-    },
-  }
+  return getRecordInboxRoute('salesOpportunity', opportunity.handle)
 }
 
 export function getEffortEstimateInboxRoute(estimate: EffortEstimateItem): RouteLocationRaw {
-  return {
-    path: '/table/effortEstimate',
-    query: {
-      filter: JSON.stringify({ handle: estimate.handle }),
-    },
-  }
+  return getRecordInboxRoute('effortEstimate', estimate.handle)
 }
 
 export function getInternalCaseInboxRoute(internalCase: InternalCaseItem): RouteLocationRaw {
-  return {
-    path: '/table/internalCase',
-    query: {
-      filter: JSON.stringify({ handle: internalCase.handle }),
-    },
-  }
+  return getRecordInboxRoute('internalCase', internalCase.handle)
 }
 
 export function getNotificationInboxRoute(notification: InboxNotificationItem): RouteLocationRaw {
@@ -61,18 +55,8 @@ export function getNotificationInboxRoute(notification: InboxNotificationItem): 
   const referenceHandle = notification.referenceHandle?.trim()
 
   if (entityHandle && referenceHandle) {
-    return {
-      path: `/table/${entityHandle}`,
-      query: {
-        filter: JSON.stringify({ handle: referenceHandle }),
-      },
-    }
+    return getRecordInboxRoute(entityHandle, referenceHandle)
   }
 
-  return {
-    path: '/table/inboxNotification',
-    query: {
-      filter: JSON.stringify({ handle: notification.handle }),
-    },
-  }
+  return getRecordInboxRoute('inboxNotification', notification.handle)
 }
