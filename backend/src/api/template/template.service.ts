@@ -6,6 +6,7 @@ import {
   getSaplingFormLayout,
   getSaplingGenericReference,
   getSaplingInlineCollection,
+  getSaplingKanban,
   getSaplingReferenceTemplate,
   getSaplingReferenceDependency,
   getSaplingOptions,
@@ -123,6 +124,7 @@ export class TemplateService {
           entityClass.prototype as object,
           prop.name,
         ),
+        kanban: getSaplingKanban(entityClass.prototype as object, prop.name),
       };
     });
   }

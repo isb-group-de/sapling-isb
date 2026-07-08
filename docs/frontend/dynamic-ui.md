@@ -27,9 +27,13 @@ The router defines generic entity routes:
 /table/:entity
 /partner/:entity
 /file/:entity
+/kanban/:entity
 ```
 
 These routes use the entity handle from the URL and load data/templates/translations dynamically.
+The Kanban route additionally requires entity template metadata from
+`@SaplingKanban(...)`; it groups records by the configured status/stage relation
+and updates that relation through the generic API when a card is moved.
 
 Specialized views exist for workflows that are not pure CRUD:
 
@@ -291,6 +295,11 @@ Frontend changes are needed only when:
 - the entity needs a custom workflow view
 - a new field option/renderer is required
 - an existing table/dialog behavior does not support the desired relation or field type
+
+For generic Kanban boards, seed an `entityRoute` such as
+`kanban/ticket` and add `@SaplingKanban(...)` to the entity. The configured
+`columnField` should point to a reference entity that exposes value, color, icon,
+and optional open/closed metadata.
 
 ## Design Guidance
 

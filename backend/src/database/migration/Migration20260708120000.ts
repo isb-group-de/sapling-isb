@@ -14,8 +14,6 @@ export class Migration20260708120000 extends Migration {
     this.addSql(
       `alter table "entity_route_item" drop constraint "entity_route_item_group_handle_foreign";`,
     );
-    this.addSql(
-      `alter table "entity_route_item" drop column "group_handle";`,
-    );
+    this.addSql(`alter table "entity_route_item" drop column "group_handle";`);
   }
 }

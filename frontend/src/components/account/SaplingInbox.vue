@@ -7,11 +7,7 @@
         :show-divider="false"
       >
         <template #hero>
-          <SaplingDialogHero
-            v-if="isLoading"
-            class="sapling-inbox-dialog__hero"
-            loading
-          />
+          <SaplingDialogHero v-if="isLoading" class="sapling-inbox-dialog__hero" loading />
           <SaplingDialogHero
             v-else
             class="sapling-inbox-dialog__hero"

@@ -49,11 +49,6 @@ const router = createRouter({
         // Calendar view (lazy loaded)
         { path: 'event', name: 'calendar', component: () => import('@/views/EventView.vue') },
         {
-          path: 'sales-pipeline',
-          name: 'salesPipeline',
-          component: () => import('@/views/SalesPipelineView.vue'),
-        },
-        {
           path: 'crm-workspace',
           name: 'crmWorkspace',
           component: () => import('@/views/CrmWorkspaceView.vue'),
@@ -98,6 +93,12 @@ const router = createRouter({
         },
         // Dynamic entity view (lazy loaded)
         { path: 'table/:entity', name: 'table', component: () => import('@/views/TableView.vue') },
+        // Dynamic Kanban entity view (lazy loaded)
+        {
+          path: 'kanban/:entity',
+          name: 'kanban',
+          component: () => import('@/views/KanbanView.vue'),
+        },
         // Dynamic entity view (lazy loaded)
         {
           path: 'partner/:entity',

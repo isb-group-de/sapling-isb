@@ -186,6 +186,30 @@ generic mutation path synchronizes only decorated inline collections: submitted
 rows with handles are updated, new rows are inserted, and omitted existing rows
 are deleted.
 
+### `@SaplingKanban(...)`
+
+Marks an entity as renderable in the generic `/kanban/:entity` board.
+Place the decorator on one stable field, usually an `isValue` field, and point
+`columnField` at the many-to-one reference that forms board columns.
+
+Example:
+
+```ts
+@SaplingKanban({
+  columnField: 'status',
+  scopeOpenField: 'isOpen',
+  scopeOpenValue: true,
+  cardSubtitleFields: ['assigneeCompany'],
+  cardMetaFields: ['priority'],
+  cardFooterFields: ['assigneePerson', 'deadlineDate'],
+})
+```
+
+The frontend loads the column reference entity, groups records by that relation,
+and updates the configured field through the generic PATCH API on drag-and-drop.
+`scopeOpenField` is read from the column record; `recordScopeOpenField` can be
+used when the row itself also has an open/active flag.
+
 ## TemplateService
 
 `backend/src/api/template/template.service.ts` reads MikroORM metadata and Sapling decorator metadata.
@@ -202,6 +226,7 @@ It returns `EntityTemplateDto[]` with:
 - generic reference metadata
 - reference template metadata
 - inline collection metadata
+- Kanban board metadata
 
 The frontend should rely on template metadata instead of duplicating backend rules.
 

@@ -17,6 +17,7 @@ import {
   Sapling,
   SaplingDependsOn,
   SaplingForm,
+  SaplingKanban,
 } from './global/entity.decorator';
 import { SalesOpportunityForecastItem } from './SalesOpportunityForecastItem';
 import { SalesOpportunitySourceItem } from './SalesOpportunitySourceItem';
@@ -65,6 +66,17 @@ export class SalesOpportunityItem {
    */
   @ApiProperty()
   @Sapling(['isValue', 'isOrderASC'])
+  @SaplingKanban({
+    columnField: 'type',
+    scopeOpenField: 'isClosed',
+    scopeOpenValue: false,
+    recordScopeOpenField: 'isActive',
+    recordScopeOpenValue: true,
+    cardSubtitleFields: ['assigneeCompany', 'creatorCompany'],
+    cardMetaFields: ['expectedRevenue', 'probability'],
+    cardFooterFields: ['assigneePerson', 'creatorPerson', 'closeDate'],
+    columnDescriptionField: 'defaultProbability',
+  })
   @SaplingForm({
     order: 100,
     group: 'salesOpportunity.groupBasics',

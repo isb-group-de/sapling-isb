@@ -13,6 +13,7 @@ import {
   Sapling,
   SaplingDependsOn,
   SaplingForm,
+  SaplingKanban,
 } from './global/entity.decorator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { EventItem } from './EventItem';
@@ -62,6 +63,14 @@ export class TicketItem {
    */
   @ApiPropertyOptional()
   @Sapling(['isValue', 'isReadOnly', 'isDuplicateCheck'])
+  @SaplingKanban({
+    columnField: 'status',
+    scopeOpenField: 'isOpen',
+    scopeOpenValue: true,
+    cardSubtitleFields: ['assigneeCompany', 'creatorCompany'],
+    cardMetaFields: ['priority', 'type'],
+    cardFooterFields: ['assigneePerson', 'creatorPerson', 'deadlineDate'],
+  })
   @SaplingForm({
     order: 100,
     group: 'ticket.groupBasics',

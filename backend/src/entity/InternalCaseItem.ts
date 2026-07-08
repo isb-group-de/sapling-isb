@@ -9,12 +9,21 @@ import {
   Sapling,
   SaplingDependsOn,
   SaplingForm,
+  SaplingKanban,
 } from './global/entity.decorator';
 
 @Entity()
 export class InternalCaseItem {
   @ApiPropertyOptional()
   @Sapling(['isValue', 'isReadOnly', 'isDuplicateCheck'])
+  @SaplingKanban({
+    columnField: 'status',
+    scopeOpenField: 'isOpen',
+    scopeOpenValue: true,
+    cardSubtitleFields: ['customerCompany', 'responsibleCompany'],
+    cardMetaFields: ['category'],
+    cardFooterFields: ['customerPerson', 'responsiblePerson', 'updatedAt'],
+  })
   @SaplingForm({
     order: 100,
     group: 'internalCase.groupBasics',

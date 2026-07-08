@@ -10,6 +10,13 @@ export function resolveRouteContextHelpKey(route: RouteLocationNormalizedLoaded)
       : null
   }
 
+  if (route.name === 'kanban') {
+    const entityHandle = route.params.entity
+    return typeof entityHandle === 'string' && entityHandle.trim()
+      ? `app.kanban.${entityHandle.trim()}`
+      : null
+  }
+
   const routeContextKeys: Record<string, string> = {
     aiAgents: 'app.aiAgents',
     calendar: 'app.calendar',
@@ -22,7 +29,6 @@ export function resolveRouteContextHelpKey(route: RouteLocationNormalizedLoaded)
     note: 'app.notes',
     playground: 'app.playground',
     right: 'app.permissions',
-    salesPipeline: 'app.salesPipeline',
     system: 'app.system',
   }
 

@@ -138,6 +138,18 @@ export interface EntityTemplateInlineCollection {
   sourceEntityField?: string
 }
 
+export interface EntityTemplateKanban {
+  columnField: string
+  scopeOpenField?: string
+  scopeOpenValue?: boolean
+  recordScopeOpenField?: string
+  recordScopeOpenValue?: boolean
+  cardSubtitleFields?: string[]
+  cardMetaFields?: string[]
+  cardFooterFields?: string[]
+  columnDescriptionField?: string
+}
+
 export interface EntityTemplateCustomField {
   key: string
   type: 'text' | 'longText' | 'number' | 'boolean' | 'date' | 'dateTime' | 'select' | 'multiSelect'
@@ -227,6 +239,8 @@ export interface EntityTemplate {
   referenceTemplate?: EntityTemplateReferenceTemplate | null
   /** Declarative metadata for inline collection rendering and sync */
   inlineCollection?: EntityTemplateInlineCollection | null
+  /** Declarative metadata for generic Kanban rendering */
+  kanban?: EntityTemplateKanban | null
   /** Dynamic custom field metadata */
   customField?: EntityTemplateCustomField | null
 }

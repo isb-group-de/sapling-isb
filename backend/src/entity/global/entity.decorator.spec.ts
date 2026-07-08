@@ -4,9 +4,11 @@ import {
   Sapling,
   SaplingForm,
   SaplingGenericReference,
+  SaplingKanban,
   SaplingReferenceTemplate,
   getSaplingFormLayout,
   getSaplingGenericReference,
+  getSaplingKanban,
   getSaplingOptions,
   getSaplingReferenceTemplate,
 } from './entity.decorator';
@@ -50,6 +52,19 @@ describe('entity.decorator', () => {
       },
     ])
     template!: string;
+
+    @SaplingKanban({
+      columnField: ' status ',
+      scopeOpenField: ' isOpen ',
+      scopeOpenValue: true,
+      recordScopeOpenField: ' isActive ',
+      recordScopeOpenValue: true,
+      cardSubtitleFields: [' customer ', ' ', 'assignee'],
+      cardMetaFields: [' priority '],
+      cardFooterFields: [' owner ', ' deadline '],
+      columnDescriptionField: ' description ',
+    })
+    kanban!: string;
   }
 
   it('stores normalized form layout metadata without affecting sapling options', () => {
@@ -146,5 +161,21 @@ describe('entity.decorator', () => {
     expect(
       getSaplingReferenceTemplate(ExampleEntity.prototype, 'missing'),
     ).toBeNull();
+  });
+
+  it('stores normalized kanban metadata', () => {
+    expect(getSaplingKanban(ExampleEntity.prototype, 'kanban')).toEqual({
+      columnField: 'status',
+      scopeOpenField: 'isOpen',
+      scopeOpenValue: true,
+      recordScopeOpenField: 'isActive',
+      recordScopeOpenValue: true,
+      cardSubtitleFields: ['customer', 'assignee'],
+      cardMetaFields: ['priority'],
+      cardFooterFields: ['owner', 'deadline'],
+      columnDescriptionField: 'description',
+    });
+
+    expect(getSaplingKanban(ExampleEntity.prototype, 'missing')).toBeNull();
   });
 });

@@ -4,6 +4,7 @@ import {
   type SaplingFormWidthSpan,
   type SaplingGenericReferenceMetadata,
   type SaplingInlineCollectionMetadata,
+  type SaplingKanbanMetadata,
   type SaplingReferenceTemplateMetadata,
   type SaplingReferenceDependency,
 } from '../../../entity/global/entity.decorator';
@@ -46,6 +47,7 @@ import type { SaplingFormFieldConfig } from '../../form-config/form-config.types
  * @property        genericReference    Declarative metadata for generic entity+handle record references
  * @property        referenceTemplate   Declarative metadata for copying values from a selected reference record
  * @property        inlineCollection    Declarative metadata for rendering a collection inline in edit dialogs
+ * @property        kanban              Declarative metadata for rendering an entity as a Kanban board
  */
 export class EntityTemplateDto {
   @ApiProperty({
@@ -266,6 +268,15 @@ export class EntityTemplateDto {
     type: Object,
   })
   inlineCollection?: SaplingInlineCollectionMetadata | null;
+
+  @ApiProperty({
+    description:
+      'Declarative metadata for rendering this entity in a generic Kanban board.',
+    nullable: true,
+    required: false,
+    type: Object,
+  })
+  kanban?: SaplingKanbanMetadata | null;
 
   @ApiProperty({
     description:

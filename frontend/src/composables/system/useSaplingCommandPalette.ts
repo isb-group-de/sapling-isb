@@ -524,7 +524,9 @@ export function useSaplingCommandPalette() {
           if (!listRoute && routes.length > 0) {
             listRoute = routes[0]
           }
-          const routePath = listRoute ? `/${normalizeRoutePath(listRoute.route)}` : `/${entity.handle}`
+          const routePath = listRoute
+            ? `/${normalizeRoutePath(listRoute.route)}`
+            : `/${entity.handle}`
           return {
             id: `entitysearch:${entity.handle}:${searchPart}`,
             group: 'entity' as CommandPaletteGroupKey,
