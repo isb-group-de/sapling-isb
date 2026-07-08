@@ -504,6 +504,11 @@ export function useSaplingDialogEdit(
 
     await ensureRelationTableItems(activeRelationTemplate.name)
   }
+
+  function initializeFormWithParentContext(): void {
+    initializeForm()
+    syncParentReferences()
+  }
   // #endregion
 
   // #region Lifecycle
@@ -647,7 +652,7 @@ export function useSaplingDialogEdit(
     (visible) => {
       if (visible) {
         selectDefaultFormConfig()
-        initializeForm()
+        initializeFormWithParentContext()
         return
       }
 
@@ -807,7 +812,7 @@ export function useSaplingDialogEdit(
 
     resetRelationSelections()
     activeTab.value = 0
-    initializeForm()
+    initializeFormWithParentContext()
 
     void nextTick(() => {
       formRef.value?.resetValidation?.()

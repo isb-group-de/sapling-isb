@@ -12,6 +12,7 @@ const {
   listFormConfigsMock,
   findAllMock,
   initializeFormMock,
+  syncParentReferencesMock,
 } = vi.hoisted(() => ({
   fetchCurrentPersonMock: vi.fn(),
   fetchCurrentPermissionMock: vi.fn(),
@@ -19,6 +20,7 @@ const {
   listFormConfigsMock: vi.fn(),
   findAllMock: vi.fn(),
   initializeFormMock: vi.fn(),
+  syncParentReferencesMock: vi.fn(),
 }))
 
 vi.mock('vue-i18n', () => ({
@@ -130,12 +132,21 @@ vi.mock('../useSaplingDialogEditForm', () => ({
   useSaplingDialogEditForm: (options: { item: { value: SaplingGenericItem | null } }) => ({
     applyCurrentDefaults: vi.fn(),
     initializeForm: () => initializeFormMock(options.item.value),
-    syncParentReferences: vi.fn(),
+    syncParentReferences: syncParentReferencesMock,
     buildSavePayload: buildSavePayloadMock,
   }),
 }))
 
 import { useSaplingDialogEdit } from '../useSaplingDialogEdit'
+
+function createEntity(handle: string): EntityItem {
+  return {
+    handle,
+    icon: '',
+    canRead: true,
+    createdAt: new Date(0),
+  } as EntityItem
+}
 
 const TestHost = defineComponent({
   props: {
@@ -151,6 +162,22 @@ const TestHost = defineComponent({
       type: Object as PropType<SaplingGenericItem | null>,
       default: () => ({ handle: 42, title: 'Calendar event' }),
     },
+    mode: {
+      type: String as PropType<DialogState>,
+      default: 'edit',
+    },
+    parent: {
+      type: Object as PropType<SaplingGenericItem | null>,
+      default: null,
+    },
+    parentEntity: {
+      type: Object as PropType<EntityItem | null>,
+      default: null,
+    },
+    entity: {
+      type: Object as PropType<EntityItem | null>,
+      default: () => createEntity('event'),
+    },
   },
   emits: ['update:modelValue', 'save', 'cancel', 'update:mode', 'update:item'],
   setup(props, { emit }) {
@@ -164,11 +191,21 @@ const TestHost = defineComponent({
         get modelValue() {
           return props.modelValue
         },
-        mode: 'edit' as DialogState,
+        get mode() {
+          return props.mode
+        },
         get item() {
           return props.item
         },
-        entity: { handle: 'event' } as EntityItem,
+        get parent() {
+          return props.parent
+        },
+        get parentEntity() {
+          return props.parentEntity
+        },
+        get entity() {
+          return props.entity
+        },
         get templates() {
           return props.templates
         },
@@ -203,6 +240,7 @@ describe('useSaplingDialogEdit', () => {
     listFormConfigsMock.mockReset()
     findAllMock.mockReset()
     initializeFormMock.mockReset()
+    syncParentReferencesMock.mockReset()
     fetchCurrentPersonMock.mockResolvedValue(undefined)
     fetchCurrentPermissionMock.mockResolvedValue(undefined)
     listFormConfigsMock.mockResolvedValue([])
@@ -468,6 +506,32 @@ describe('useSaplingDialogEdit', () => {
     expect(initializeFormMock).toHaveBeenCalled()
     expect(initializeFormMock.mock.calls[initializeFormMock.mock.calls.length - 1]?.[0]).toEqual(
       currentItem,
+    )
+  })
+
+  it('reapplies parent references when a create dialog is reopened from a relation table', async () => {
+    const wrapper = mount(TestHost, {
+      props: {
+        modelValue: false,
+        mode: 'create',
+        item: null,
+        parent: { handle: 7, name: 'Muster GmbH' },
+        parentEntity: createEntity('company'),
+        entity: createEntity('person'),
+      },
+    })
+    await flushPromises()
+
+    initializeFormMock.mockClear()
+    syncParentReferencesMock.mockClear()
+
+    await wrapper.setProps({ modelValue: true })
+    await nextTick()
+
+    expect(initializeFormMock).toHaveBeenCalled()
+    expect(syncParentReferencesMock).toHaveBeenCalled()
+    expect(syncParentReferencesMock.mock.invocationCallOrder[0]).toBeGreaterThan(
+      initializeFormMock.mock.invocationCallOrder[0] ?? 0,
     )
   })
 })
