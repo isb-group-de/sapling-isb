@@ -530,20 +530,20 @@
         },
         "rating": {
           "name": "rating",
-          "type": "int",
+          "type": "varchar(255)",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": true,
           "unique": false,
-          "length": null,
+          "length": 255,
           "precision": null,
           "scale": null,
           "default": null,
           "comment": null,
           "collation": null,
           "enumItems": [],
-          "mappedType": "integer"
+          "mappedType": "string"
         },
         "status": {
           "name": "status",
@@ -655,9 +655,7 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.ai_agent_item",
-          "updateRule": "cascade",
-          "deleteRule": "cascade"
+          "referencedTableName": "public.ai_agent_item"
         },
         "ai_agent_evaluation_item_agent_version_handle_foreign": {
           "columnNames": [
@@ -669,7 +667,6 @@
             "handle"
           ],
           "referencedTableName": "public.ai_agent_version_item",
-          "updateRule": "cascade",
           "deleteRule": "set null"
         }
       },
@@ -1045,7 +1042,6 @@
             "handle"
           ],
           "referencedTableName": "public.ai_provider_model_item",
-          "updateRule": "cascade",
           "deleteRule": "set null"
         },
         "ai_agent_item_provider_handle_foreign": {
@@ -1058,7 +1054,6 @@
             "handle"
           ],
           "referencedTableName": "public.ai_provider_type_item",
-          "updateRule": "cascade",
           "deleteRule": "set null"
         }
       },
@@ -1347,9 +1342,7 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.ai_agent_item",
-          "updateRule": "cascade",
-          "deleteRule": "cascade"
+          "referencedTableName": "public.ai_agent_item"
         }
       },
       "comment": null
@@ -1409,11 +1402,11 @@
       "checks": [],
       "triggers": [],
       "foreignKeys": {
-        "ai_agent_memory_item_roles_memory_foreign": {
+        "ai_agent_memory_item_roles_ai_agent_memory_item_handle_foreign": {
           "columnNames": [
             "ai_agent_memory_item_handle"
           ],
-          "constraintName": "ai_agent_memory_item_roles_memory_foreign",
+          "constraintName": "ai_agent_memory_item_roles_ai_agent_memory_item_handle_foreign",
           "localTableName": "public.ai_agent_memory_item_roles",
           "referencedColumnNames": [
             "handle"
@@ -1422,11 +1415,11 @@
           "updateRule": "cascade",
           "deleteRule": "cascade"
         },
-        "ai_agent_memory_item_roles_role_foreign": {
+        "ai_agent_memory_item_roles_role_item_handle_foreign": {
           "columnNames": [
             "role_item_handle"
           ],
-          "constraintName": "ai_agent_memory_item_roles_role_foreign",
+          "constraintName": "ai_agent_memory_item_roles_role_item_handle_foreign",
           "localTableName": "public.ai_agent_memory_item_roles",
           "referencedColumnNames": [
             "handle"
@@ -1654,9 +1647,7 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.ai_agent_item",
-          "updateRule": "cascade",
-          "deleteRule": "cascade"
+          "referencedTableName": "public.ai_agent_item"
         }
       },
       "comment": null
@@ -1752,20 +1743,20 @@
         },
         "duration_ms": {
           "name": "duration_ms",
-          "type": "int",
+          "type": "varchar(255)",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": true,
           "unique": false,
-          "length": null,
+          "length": 255,
           "precision": null,
           "scale": null,
           "default": null,
           "comment": null,
           "collation": null,
           "enumItems": [],
-          "mappedType": "integer"
+          "mappedType": "string"
         },
         "error_payload": {
           "name": "error_payload",
@@ -2043,17 +2034,6 @@
       "indexes": [
         {
           "columnNames": [
-            "agent_handle",
-            "started_at"
-          ],
-          "composite": true,
-          "constraint": false,
-          "keyName": "ai_agent_run_item_agent_started_index",
-          "primary": false,
-          "unique": false
-        },
-        {
-          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -2076,7 +2056,6 @@
             "handle"
           ],
           "referencedTableName": "public.ai_agent_item",
-          "updateRule": "cascade",
           "deleteRule": "set null"
         },
         "ai_agent_run_item_agent_version_handle_foreign": {
@@ -2089,7 +2068,6 @@
             "handle"
           ],
           "referencedTableName": "public.ai_agent_version_item",
-          "updateRule": "cascade",
           "deleteRule": "set null"
         },
         "ai_agent_run_item_message_handle_foreign": {
@@ -2102,7 +2080,6 @@
             "handle"
           ],
           "referencedTableName": "public.ai_chat_message_item",
-          "updateRule": "cascade",
           "deleteRule": "set null"
         },
         "ai_agent_run_item_person_handle_foreign": {
@@ -2114,8 +2091,7 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.person_item",
-          "updateRule": "cascade"
+          "referencedTableName": "public.person_item"
         },
         "ai_agent_run_item_playbook_handle_foreign": {
           "columnNames": [
@@ -2127,7 +2103,6 @@
             "handle"
           ],
           "referencedTableName": "public.ai_agent_playbook_item",
-          "updateRule": "cascade",
           "deleteRule": "set null"
         },
         "ai_agent_run_item_session_handle_foreign": {
@@ -2140,7 +2115,6 @@
             "handle"
           ],
           "referencedTableName": "public.ai_chat_session_item",
-          "updateRule": "cascade",
           "deleteRule": "set null"
         }
       },
@@ -2409,17 +2383,6 @@
       "indexes": [
         {
           "columnNames": [
-            "agent_handle",
-            "status"
-          ],
-          "composite": true,
-          "constraint": false,
-          "keyName": "ai_agent_version_item_agent_status_index",
-          "primary": false,
-          "unique": false
-        },
-        {
-          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -2441,9 +2404,7 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.ai_agent_item",
-          "updateRule": "cascade",
-          "deleteRule": "cascade"
+          "referencedTableName": "public.ai_agent_item"
         },
         "ai_agent_version_item_model_handle_foreign": {
           "columnNames": [
@@ -2455,7 +2416,6 @@
             "handle"
           ],
           "referencedTableName": "public.ai_provider_model_item",
-          "updateRule": "cascade",
           "deleteRule": "set null"
         },
         "ai_agent_version_item_provider_handle_foreign": {
@@ -2468,7 +2428,6 @@
             "handle"
           ],
           "referencedTableName": "public.ai_provider_type_item",
-          "updateRule": "cascade",
           "deleteRule": "set null"
         }
       },
@@ -2480,20 +2439,20 @@
       "columns": {
         "byte_length": {
           "name": "byte_length",
-          "type": "int",
+          "type": "varchar(255)",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": true,
           "unique": false,
-          "length": null,
+          "length": 255,
           "precision": null,
           "scale": null,
           "default": null,
           "comment": null,
           "collation": null,
           "enumItems": [],
-          "mappedType": "integer"
+          "mappedType": "string"
         },
         "created_at": {
           "name": "created_at",
@@ -2737,17 +2696,6 @@
       "indexes": [
         {
           "columnNames": [
-            "person_handle",
-            "session_handle"
-          ],
-          "composite": true,
-          "constraint": false,
-          "keyName": "ai_chat_attachment_item_person_session_index",
-          "primary": false,
-          "unique": false
-        },
-        {
-          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -2769,8 +2717,7 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.document_item",
-          "updateRule": "cascade"
+          "referencedTableName": "public.document_item"
         },
         "ai_chat_attachment_item_import_batch_handle_foreign": {
           "columnNames": [
@@ -2782,7 +2729,6 @@
             "handle"
           ],
           "referencedTableName": "public.import_batch_item",
-          "updateRule": "cascade",
           "deleteRule": "set null"
         },
         "ai_chat_attachment_item_message_handle_foreign": {
@@ -2795,7 +2741,6 @@
             "handle"
           ],
           "referencedTableName": "public.ai_chat_message_item",
-          "updateRule": "cascade",
           "deleteRule": "set null"
         },
         "ai_chat_attachment_item_person_handle_foreign": {
@@ -2807,8 +2752,7 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.person_item",
-          "updateRule": "cascade"
+          "referencedTableName": "public.person_item"
         },
         "ai_chat_attachment_item_session_handle_foreign": {
           "columnNames": [
@@ -2820,7 +2764,6 @@
             "handle"
           ],
           "referencedTableName": "public.ai_chat_session_item",
-          "updateRule": "cascade",
           "deleteRule": "set null"
         }
       },
@@ -3445,7 +3388,6 @@
             "handle"
           ],
           "referencedTableName": "public.ai_agent_item",
-          "updateRule": "cascade",
           "deleteRule": "set null"
         },
         "ai_chat_session_item_agent_version_handle_foreign": {
@@ -3458,7 +3400,6 @@
             "handle"
           ],
           "referencedTableName": "public.ai_agent_version_item",
-          "updateRule": "cascade",
           "deleteRule": "set null"
         },
         "ai_chat_session_item_model_handle_foreign": {
@@ -3494,7 +3435,6 @@
             "handle"
           ],
           "referencedTableName": "public.ai_agent_playbook_item",
-          "updateRule": "cascade",
           "deleteRule": "set null"
         },
         "ai_chat_session_item_provider_handle_foreign": {
@@ -3782,17 +3722,6 @@
           "keyName": "ai_chat_tool_action_item_pkey",
           "primary": true,
           "unique": true
-        },
-        {
-          "columnNames": [
-            "session_handle",
-            "status"
-          ],
-          "composite": true,
-          "constraint": false,
-          "keyName": "ai_chat_tool_action_item_session_status_index",
-          "primary": false,
-          "unique": false
         }
       ],
       "checks": [],
@@ -3808,7 +3737,6 @@
             "handle"
           ],
           "referencedTableName": "public.ai_agent_item",
-          "updateRule": "cascade",
           "deleteRule": "set null"
         },
         "ai_chat_tool_action_item_message_handle_foreign": {
@@ -3821,7 +3749,6 @@
             "handle"
           ],
           "referencedTableName": "public.ai_chat_message_item",
-          "updateRule": "cascade",
           "deleteRule": "set null"
         },
         "ai_chat_tool_action_item_person_handle_foreign": {
@@ -3833,8 +3760,7 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.person_item",
-          "updateRule": "cascade"
+          "referencedTableName": "public.person_item"
         },
         "ai_chat_tool_action_item_session_handle_foreign": {
           "columnNames": [
@@ -3845,9 +3771,7 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.ai_chat_session_item",
-          "updateRule": "cascade",
-          "deleteRule": "cascade"
+          "referencedTableName": "public.ai_chat_session_item"
         }
       },
       "comment": null
@@ -4573,18 +4497,6 @@
           "keyName": "ai_entity_generation_template_item_pkey",
           "primary": true,
           "unique": true
-        },
-        {
-          "columnNames": [
-            "source_entity_handle",
-            "action_name",
-            "is_active"
-          ],
-          "composite": true,
-          "constraint": false,
-          "keyName": "ai_entity_generation_template_source_action_idx",
-          "primary": false,
-          "unique": false
         }
       ],
       "checks": [],
@@ -5908,8 +5820,7 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.person_item",
-          "deleteRule": "cascade"
+          "referencedTableName": "public.person_item"
         }
       },
       "comment": null
@@ -9122,8 +9033,8 @@
             "field_key"
           ],
           "composite": true,
-          "constraint": false,
-          "keyName": "custom_field_definition_item_entity_field_key_unique",
+          "constraint": true,
+          "keyName": "custom_field_definition_item_entity_handle_field_key_unique",
           "primary": false,
           "unique": true
         },
@@ -9150,8 +9061,7 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.entity_item",
-          "updateRule": "cascade"
+          "referencedTableName": "public.entity_item"
         },
         "custom_field_definition_item_field_type_handle_foreign": {
           "columnNames": [
@@ -9162,8 +9072,7 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.custom_field_type_item",
-          "updateRule": "cascade"
+          "referencedTableName": "public.custom_field_type_item"
         }
       },
       "comment": null
@@ -9485,7 +9394,7 @@
         },
         "value_number": {
           "name": "value_number",
-          "type": "double precision",
+          "type": "real",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
@@ -9498,7 +9407,7 @@
           "comment": null,
           "collation": null,
           "enumItems": [],
-          "mappedType": "double"
+          "mappedType": "float"
         },
         "value_string": {
           "name": "value_string",
@@ -9521,68 +9430,13 @@
       "indexes": [
         {
           "columnNames": [
-            "definition_handle",
-            "value_boolean"
-          ],
-          "composite": true,
-          "constraint": false,
-          "keyName": "custom_field_value_item_definition_value_boolean_index",
-          "primary": false,
-          "unique": false
-        },
-        {
-          "columnNames": [
-            "definition_handle",
-            "value_date"
-          ],
-          "composite": true,
-          "constraint": false,
-          "keyName": "custom_field_value_item_definition_value_date_index",
-          "primary": false,
-          "unique": false
-        },
-        {
-          "columnNames": [
-            "definition_handle",
-            "value_date_time"
-          ],
-          "composite": true,
-          "constraint": false,
-          "keyName": "custom_field_value_item_definition_value_date_time_index",
-          "primary": false,
-          "unique": false
-        },
-        {
-          "columnNames": [
-            "definition_handle",
-            "value_number"
-          ],
-          "composite": true,
-          "constraint": false,
-          "keyName": "custom_field_value_item_definition_value_number_index",
-          "primary": false,
-          "unique": false
-        },
-        {
-          "columnNames": [
-            "definition_handle",
-            "value_string"
-          ],
-          "composite": true,
-          "constraint": false,
-          "keyName": "custom_field_value_item_definition_value_string_index",
-          "primary": false,
-          "unique": false
-        },
-        {
-          "columnNames": [
             "entity_handle",
             "record_reference",
             "definition_handle"
           ],
           "composite": true,
-          "constraint": false,
-          "keyName": "custom_field_value_item_entity_record_definition_unique",
+          "constraint": true,
+          "keyName": "custom_field_value_item_entity_handle_record_refe_5605f_unique",
           "primary": false,
           "unique": true
         },
@@ -9609,9 +9463,7 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.custom_field_definition_item",
-          "updateRule": "cascade",
-          "deleteRule": "cascade"
+          "referencedTableName": "public.custom_field_definition_item"
         },
         "custom_field_value_item_entity_handle_foreign": {
           "columnNames": [
@@ -9622,8 +9474,7 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.entity_item",
-          "updateRule": "cascade"
+          "referencedTableName": "public.entity_item"
         }
       },
       "comment": null
@@ -10995,8 +10846,7 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.effort_estimate_item",
-          "deleteRule": "cascade"
+          "referencedTableName": "public.effort_estimate_item"
         },
         "effort_estimate_position_item_template_handle_foreign": {
           "columnNames": [
@@ -11573,6 +11423,23 @@
         },
         "response_body": {
           "name": "response_body",
+          "type": "jsonb",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "json"
+        },
+        "response_headers": {
+          "name": "response_headers",
           "type": "jsonb",
           "unsigned": false,
           "autoincrement": false,
@@ -12318,16 +12185,6 @@
           "keyName": "email_subscription_condition_item_pkey",
           "primary": true,
           "unique": true
-        },
-        {
-          "columnNames": [
-            "subscription_handle"
-          ],
-          "composite": false,
-          "constraint": false,
-          "keyName": "email_subscription_condition_item_subscription_handle_index",
-          "primary": false,
-          "unique": false
         }
       ],
       "checks": [],
@@ -14878,17 +14735,6 @@
       "indexes": [
         {
           "columnNames": [
-            "entity_handle",
-            "reference"
-          ],
-          "composite": true,
-          "constraint": false,
-          "keyName": "external_record_link_item_entity_reference_index",
-          "primary": false,
-          "unique": false
-        },
-        {
-          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -14904,8 +14750,8 @@
             "external_key_hash"
           ],
           "composite": true,
-          "constraint": false,
-          "keyName": "external_record_link_item_source_entity_hash_unique",
+          "constraint": true,
+          "keyName": "external_record_link_item_source_handle_entity_ha_fcda9_unique",
           "primary": false,
           "unique": true
         }
@@ -14922,8 +14768,7 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.entity_item",
-          "updateRule": "cascade"
+          "referencedTableName": "public.entity_item"
         },
         "external_record_link_item_first_import_batch_handle_foreign": {
           "columnNames": [
@@ -14935,7 +14780,6 @@
             "handle"
           ],
           "referencedTableName": "public.import_batch_item",
-          "updateRule": "cascade",
           "deleteRule": "set null"
         },
         "external_record_link_item_last_import_batch_handle_foreign": {
@@ -14948,7 +14792,6 @@
             "handle"
           ],
           "referencedTableName": "public.import_batch_item",
-          "updateRule": "cascade",
           "deleteRule": "set null"
         },
         "external_record_link_item_source_handle_foreign": {
@@ -14960,8 +14803,7 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.import_source_item",
-          "updateRule": "cascade"
+          "referencedTableName": "public.import_source_item"
         }
       },
       "comment": null
@@ -16259,8 +16101,7 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.person_item",
-          "updateRule": "cascade"
+          "referencedTableName": "public.person_item"
         },
         "import_batch_item_import_template_handle_foreign": {
           "columnNames": [
@@ -16272,7 +16113,6 @@
             "handle"
           ],
           "referencedTableName": "public.import_template_item",
-          "updateRule": "cascade",
           "deleteRule": "set null"
         },
         "import_batch_item_source_handle_foreign": {
@@ -16285,7 +16125,6 @@
             "handle"
           ],
           "referencedTableName": "public.import_source_item",
-          "updateRule": "cascade",
           "deleteRule": "set null"
         },
         "import_batch_item_target_entity_handle_foreign": {
@@ -16298,7 +16137,6 @@
             "handle"
           ],
           "referencedTableName": "public.entity_item",
-          "updateRule": "cascade",
           "deleteRule": "set null"
         }
       },
@@ -16533,16 +16371,6 @@
       "indexes": [
         {
           "columnNames": [
-            "batch_handle"
-          ],
-          "composite": false,
-          "constraint": false,
-          "keyName": "import_batch_row_item_batch_handle_index",
-          "primary": false,
-          "unique": false
-        },
-        {
-          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -16564,9 +16392,7 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.import_batch_item",
-          "updateRule": "cascade",
-          "deleteRule": "cascade"
+          "referencedTableName": "public.import_batch_item"
         }
       },
       "comment": null
@@ -16825,7 +16651,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "unique": true,
+          "unique": false,
           "length": 64,
           "precision": null,
           "scale": null,
@@ -16897,18 +16723,6 @@
           "keyName": "import_template_item_pkey",
           "primary": true,
           "unique": true
-        },
-        {
-          "columnNames": [
-            "source_handle",
-            "target_entity_handle",
-            "title"
-          ],
-          "composite": true,
-          "constraint": false,
-          "keyName": "import_template_item_source_entity_title_unique",
-          "primary": false,
-          "unique": true
         }
       ],
       "checks": [],
@@ -16923,8 +16737,7 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.import_source_item",
-          "updateRule": "cascade"
+          "referencedTableName": "public.import_source_item"
         },
         "import_template_item_target_entity_handle_foreign": {
           "columnNames": [
@@ -16935,8 +16748,7 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.entity_item",
-          "updateRule": "cascade"
+          "referencedTableName": "public.entity_item"
         }
       },
       "comment": null
@@ -17003,7 +16815,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "unique": true,
+          "unique": false,
           "length": null,
           "precision": null,
           "scale": null,
@@ -17092,35 +16904,21 @@
           "keyName": "import_template_value_mapping_item_pkey",
           "primary": true,
           "unique": true
-        },
-        {
-          "columnNames": [
-            "import_template_handle",
-            "target_field",
-            "source_value"
-          ],
-          "composite": true,
-          "constraint": false,
-          "keyName": "import_template_value_mapping_item_template_field_source_unique",
-          "primary": false,
-          "unique": true
         }
       ],
       "checks": [],
       "triggers": [],
       "foreignKeys": {
-        "import_template_value_mapping_item_import_template_handle_forei": {
+        "import_template_value_mapping_item_import_templa_39513_foreign": {
           "columnNames": [
             "import_template_handle"
           ],
-          "constraintName": "import_template_value_mapping_item_import_template_handle_forei",
+          "constraintName": "import_template_value_mapping_item_import_templa_39513_foreign",
           "localTableName": "public.import_template_value_mapping_item",
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.import_template_item",
-          "updateRule": "cascade",
-          "deleteRule": "cascade"
+          "referencedTableName": "public.import_template_item"
         }
       },
       "comment": null
@@ -25541,11 +25339,11 @@
       "checks": [],
       "triggers": [],
       "foreignKeys": {
-        "sales_opportunity_item_competitors_company_foreign": {
+        "sales_opportunity_item_competitors_company_item_handle_foreign": {
           "columnNames": [
             "company_item_handle"
           ],
-          "constraintName": "sales_opportunity_item_competitors_company_foreign",
+          "constraintName": "sales_opportunity_item_competitors_company_item_handle_foreign",
           "localTableName": "public.sales_opportunity_item_competitors",
           "referencedColumnNames": [
             "handle"
@@ -25554,11 +25352,11 @@
           "updateRule": "cascade",
           "deleteRule": "cascade"
         },
-        "sales_opportunity_item_competitors_opportunity_foreign": {
+        "sales_opportunity_item_competitors_sales_opportu_fbc76_foreign": {
           "columnNames": [
             "sales_opportunity_item_handle"
           ],
-          "constraintName": "sales_opportunity_item_competitors_opportunity_foreign",
+          "constraintName": "sales_opportunity_item_competitors_sales_opportu_fbc76_foreign",
           "localTableName": "public.sales_opportunity_item_competitors",
           "referencedColumnNames": [
             "handle"
@@ -26448,18 +26246,6 @@
       "indexes": [
         {
           "columnNames": [
-            "entity_handle",
-            "scope",
-            "scope_handle"
-          ],
-          "composite": true,
-          "constraint": false,
-          "keyName": "sapling_form_config_item_entity_scope_index",
-          "primary": false,
-          "unique": false
-        },
-        {
-          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -26481,8 +26267,7 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.entity_item",
-          "updateRule": "cascade"
+          "referencedTableName": "public.entity_item"
         },
         "sapling_form_config_item_person_handle_foreign": {
           "columnNames": [
@@ -26494,7 +26279,6 @@
             "handle"
           ],
           "referencedTableName": "public.person_item",
-          "updateRule": "cascade",
           "deleteRule": "set null"
         }
       },

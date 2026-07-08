@@ -1,8 +1,0 @@
-[
-  {
-    "name": "aiFindTicketReferences",
-    "title": "ticket.scriptAiFindTicketReferences",
-    "entity": "ticket",
-    "isMultiSelect": false
-  }
-]

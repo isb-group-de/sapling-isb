@@ -1,33 +1,254 @@
 [
-  { "handle": "workspace", "icon": "mdi-view-grid-outline", "isExpanded": false, "sortOrder": 10 },
-  { "handle": "operations", "icon": "mdi-briefcase-clock-outline", "isExpanded": true, "sortOrder": 20 },
-  { "handle": "insights", "icon": "mdi-chart-timeline-variant", "isExpanded": false, "sortOrder": 30 },
-  { "handle": "ai", "icon": "mdi-robot-industrial", "isExpanded": false, "sortOrder": 40 },
-  { "handle": "platform", "icon": "mdi-layers-triple-outline", "isExpanded": false, "sortOrder": 50 },
-
-  { "handle": "person", "icon": "mdi-folder", "isExpanded": false, "sortOrder": 10, "parent": "workspace" },
-  { "handle": "company", "icon": "mdi-office-building-marker", "isExpanded": false, "sortOrder": 10, "parent": "workspace" },
-  { "handle": "relationship", "icon": "mdi-family-tree", "isExpanded": false, "sortOrder": 20, "parent": "workspace" },
-  { "handle": "contract", "icon": "mdi-file-sign", "isExpanded": false, "sortOrder": 30, "parent": "workspace" },
-  { "handle": "landscape", "icon": "mdi-server-network", "isExpanded": false, "sortOrder": 40, "parent": "workspace" },
-  { "handle": "document", "icon": "mdi-file-document-multiple", "isExpanded": false, "sortOrder": 50, "parent": "workspace" },
-  { "handle": "note", "icon": "mdi-note", "isExpanded": false, "sortOrder": 60, "parent": "workspace" },
-
-  { "handle": "event", "icon": "mdi-calendar-star", "isExpanded": false, "sortOrder": 10, "parent": "operations" },
-  { "handle": "ticket", "icon": "mdi-ticket", "isExpanded": false, "sortOrder": 20, "parent": "operations" },
-  { "handle": "support", "icon": "mdi-ticket", "isExpanded": false, "sortOrder": 20, "parent": "operations" },
-  { "handle": "sales", "icon": "mdi-cash-multiple", "isExpanded": false, "sortOrder": 30, "parent": "operations" },
-  { "handle": "mails", "icon": "mdi-email", "isExpanded": false, "sortOrder": 40, "parent": "operations" },
-  { "handle": "teams", "icon": "mdi-microsoft-teams", "isExpanded": false, "sortOrder": 50, "parent": "operations" },
-
-  { "handle": "kpi", "icon": "mdi-chart-bar", "isExpanded": false, "sortOrder": 10, "parent": "insights" },
-
-  { "handle": "administration", "icon": "mdi-shield-crown", "isExpanded": false, "sortOrder": 10, "parent": "platform" },
-  { "handle": "localisation", "icon": "mdi-translate-variant", "isExpanded": false, "sortOrder": 20, "parent": "platform" },
-  { "handle": "webhook", "icon": "mdi-webhook", "isExpanded": false, "sortOrder": 30, "parent": "platform" },
-  { "handle": "authentication", "icon": "mdi-book-lock", "isExpanded": false, "sortOrder": 40, "parent": "platform" },
-  { "handle": "system", "icon": "mdi-wrench-cog", "isExpanded": false, "sortOrder": 50, "parent": "platform" },
-
-  { "handle": "chat", "icon": "mdi-forum", "isExpanded": false, "sortOrder": 10, "parent": "ai" },
-  { "handle": "mcp", "icon": "mdi-wrench-cog", "isExpanded": false, "sortOrder": 20, "parent": "ai" }
+  {
+    "handle": "workspace",
+    "icon": "mdi-database-outline",
+    "isExpanded": false,
+    "sortOrder": 10
+  },
+  {
+    "handle": "operations",
+    "icon": "mdi-lifebuoy",
+    "isExpanded": false,
+    "sortOrder": 20
+  },
+  {
+    "handle": "insights",
+    "icon": "mdi-chart-timeline-variant",
+    "isExpanded": false,
+    "sortOrder": 60
+  },
+  {
+    "handle": "ai",
+    "icon": "mdi-robot-industrial",
+    "isExpanded": false,
+    "sortOrder": 70
+  },
+  {
+    "handle": "platform",
+    "icon": "mdi-layers-triple-outline",
+    "isExpanded": false,
+    "sortOrder": 100
+  },
+  {
+    "handle": "person",
+    "icon": "mdi-card-account-details-outline",
+    "isExpanded": false,
+    "sortOrder": 20
+  },
+  {
+    "handle": "company",
+    "icon": "mdi-domain",
+    "isExpanded": false,
+    "sortOrder": 10
+  },
+  {
+    "handle": "relationship",
+    "icon": "mdi-family-tree",
+    "isExpanded": false,
+    "sortOrder": 30
+  },
+  {
+    "handle": "contract",
+    "icon": "mdi-file-sign",
+    "isExpanded": false,
+    "sortOrder": 30
+  },
+  {
+    "handle": "landscape",
+    "icon": "mdi-server-network",
+    "isExpanded": false,
+    "sortOrder": 40
+  },
+  {
+    "handle": "document",
+    "icon": "mdi-file-document-multiple",
+    "isExpanded": false,
+    "sortOrder": 20
+  },
+  {
+    "handle": "note",
+    "icon": "mdi-note",
+    "isExpanded": false,
+    "sortOrder": 30
+  },
+  {
+    "handle": "event",
+    "icon": "mdi-calendar-star",
+    "isExpanded": false,
+    "sortOrder": 30
+  },
+  {
+    "handle": "ticket",
+    "icon": "mdi-ticket",
+    "isExpanded": false,
+    "sortOrder": 10
+  },
+  {
+    "handle": "support",
+    "icon": "mdi-ticket",
+    "isExpanded": false,
+    "sortOrder": 20
+  },
+  {
+    "handle": "sales",
+    "icon": "mdi-cash-multiple",
+    "isExpanded": false,
+    "sortOrder": 10
+  },
+  {
+    "handle": "mails",
+    "icon": "mdi-email",
+    "isExpanded": false,
+    "sortOrder": 20
+  },
+  {
+    "handle": "teams",
+    "icon": "mdi-microsoft-teams",
+    "isExpanded": false,
+    "sortOrder": 10
+  },
+  {
+    "handle": "kpi",
+    "icon": "mdi-chart-bar",
+    "isExpanded": false,
+    "sortOrder": 10
+  },
+  {
+    "handle": "administration",
+    "icon": "mdi-shield-crown",
+    "isExpanded": false,
+    "sortOrder": 10
+  },
+  {
+    "handle": "localisation",
+    "icon": "mdi-translate-variant",
+    "isExpanded": false,
+    "sortOrder": 30
+  },
+  {
+    "handle": "webhook",
+    "icon": "mdi-webhook",
+    "isExpanded": false,
+    "sortOrder": 40
+  },
+  {
+    "handle": "authentication",
+    "icon": "mdi-book-lock",
+    "isExpanded": false,
+    "sortOrder": 20
+  },
+  {
+    "handle": "system",
+    "icon": "mdi-wrench-cog",
+    "isExpanded": false,
+    "sortOrder": 30
+  },
+  {
+    "handle": "chat",
+    "icon": "mdi-forum",
+    "isExpanded": false,
+    "sortOrder": 20
+  },
+  {
+    "handle": "mcp",
+    "icon": "mdi-wrench-cog",
+    "isExpanded": false,
+    "sortOrder": 30
+  },
+  {
+    "handle": "inbox",
+    "icon": "mdi-inbox",
+    "isExpanded": false,
+    "sortOrder": 30
+  },
+  {
+    "handle": "effortEstimate",
+    "icon": "mdi-clipboard-text-clock-outline",
+    "isExpanded": false,
+    "sortOrder": 20
+  },
+  {
+    "handle": "knowledge",
+    "icon": "mdi-lightbulb-on-outline",
+    "isExpanded": false,
+    "sortOrder": 10
+  },
+  {
+    "handle": "import",
+    "icon": "mdi-database-import-outline",
+    "isExpanded": false,
+    "sortOrder": 20
+  },
+  {
+    "handle": "salesArea",
+    "icon": "mdi-cash-multiple",
+    "isExpanded": false,
+    "sortOrder": 30
+  },
+  {
+    "handle": "communication",
+    "icon": "mdi-message-text-outline",
+    "isExpanded": false,
+    "sortOrder": 40
+  },
+  {
+    "handle": "knowledgePool",
+    "icon": "mdi-lightbulb-on-outline",
+    "isExpanded": false,
+    "sortOrder": 50
+  },
+  {
+    "handle": "rightsManagement",
+    "icon": "mdi-shield-account-outline",
+    "isExpanded": false,
+    "sortOrder": 80
+  },
+  {
+    "handle": "systemOperations",
+    "icon": "mdi-cog-outline",
+    "isExpanded": false,
+    "sortOrder": 90
+  },
+  {
+    "handle": "auditTrail",
+    "icon": "mdi-history",
+    "isExpanded": false,
+    "sortOrder": 10
+  },
+  {
+    "handle": "metadata",
+    "icon": "mdi-cube-outline",
+    "isExpanded": false,
+    "sortOrder": 10
+  },
+  {
+    "handle": "workspaceTools",
+    "icon": "mdi-view-dashboard-outline",
+    "isExpanded": false,
+    "sortOrder": 20
+  },
+  {
+    "handle": "office",
+    "icon": "mdi-briefcase-outline",
+    "isExpanded": false,
+    "sortOrder": 35
+  },
+  {
+    "handle": "internalCase",
+    "icon": "mdi-clipboard-text-outline",
+    "isExpanded": false,
+    "sortOrder": 10
+  },
+  {
+    "handle": "salesCalendar",
+    "icon": "mdi-calendar-star",
+    "isExpanded": false,
+    "sortOrder": 25
+  },
+  {
+    "handle": "officeCalendar",
+    "icon": "mdi-calendar-star",
+    "isExpanded": false,
+    "sortOrder": 20
+  }
 ]

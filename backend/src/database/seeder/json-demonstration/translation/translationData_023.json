@@ -1,5 +1,0 @@
-[
-  { "entity": "knowledgeArticle", "property": "product", "de": "Produkt", "en": "Product" },
-  { "entity": "knowledgeBase", "property": "allProducts", "de": "Alle Produkte", "en": "All products" },
-  { "entity": "aiEntityGenerationTemplate", "property": "sourceFieldMapping", "de": "Quellfeld-Zuordnung", "en": "Source field mapping" }
-]

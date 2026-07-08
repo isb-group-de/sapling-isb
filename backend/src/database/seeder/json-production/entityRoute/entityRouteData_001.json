@@ -1,108 +1,755 @@
-[ 
-  { "entity": "company", "route": "table/company" },
-  { "entity": "address", "route": "table/address" },
-  { "entity": "addressType", "route": "table/addressType" },
-  { "entity": "companyRelationship", "route": "table/companyRelationship" },
-  { "entity": "companyRelationshipType", "route": "table/companyRelationshipType" },
-  { "entity": "person", "route": "table/person" },
-  { "entity": "socialMedia", "route": "table/socialMedia" },
-  { "entity": "socialMediaType", "route": "table/socialMediaType" },
-  { "entity": "contract", "route": "table/contract" },
-  { "entity": "contractService", "route": "table/contractService" },
-  { "entity": "serverLandscape", "route": "table/serverLandscape" },
-  { "entity": "serverLandscapeType", "route": "table/serverLandscapeType" },
-  { "entity": "serverLandscapeTypeUsage", "route": "table/serverLandscapeTypeUsage" },
-  { "entity": "product", "route": "table/product" },
-  { "entity": "workHour", "route": "table/workHour" },
-  { "entity": "workHourWeek", "route": "table/workHourWeek" },
-  { "entity": "phoneCall", "route": "partner/phoneCall" },
-  { "entity": "event", "route": "event", "navigation": "calendar" },
-  { "entity": "event", "route": "partner/event" },
-  { "entity": "holidayGroup", "route": "table/holidayGroup" },
-  { "entity": "holiday", "route": "table/holiday" },
-  { "entity": "eventStatus", "route": "table/eventStatus" },
-  { "entity": "eventType", "route": "table/eventType" },
-  { "entity": "eventDelivery", "route": "table/eventDelivery" },
-  { "entity": "eventDeliveryStatus", "route": "table/eventDeliveryStatus" },
-  { "entity": "ticket", "route": "partner/ticket" },
-  { "entity": "ticketTimeTracking", "route": "partner/ticketTimeTracking" },
-  { "entity": "ticketPriority", "route": "table/ticketPriority" },
-  { "entity": "ticketStatus", "route": "table/ticketStatus" },
-  { "entity": "ticketType", "route": "table/ticketType" },
-  { "entity": "ticketCategory", "route": "table/ticketCategory" },
-  { "entity": "ticketSource", "route": "table/ticketSource" },
-  { "entity": "supportTeam", "route": "table/supportTeam" },
-  { "entity": "supportQueue", "route": "table/supportQueue" },
-  { "entity": "slaPolicy", "route": "table/slaPolicy" },
-  
-  { "entity": "note", "route": "note" },
-  { "entity": "noteGroup", "route": "table/noteGroup" },
-
-  { "entity": "language", "route": "table/language" },
-  { "entity": "country", "route": "table/country" },
-  { "entity": "money", "route": "table/money" },
-  { "entity": "translation", "route": "table/translation" },
-
-  { "entity": "role", "route": "table/role" },
-  { "entity": "permission", "route": "permission", "navigation": "right" },
-  { "entity": "permission", "route": "table/permission" },
-  { "entity": "entity", "route": "table/entity" },
-  { "entity": "entityRoute", "route": "table/entityRoute" },
-  { "entity": "entityGroup", "route": "table/entityGroup" },
-  { "entity": "dashboard", "route": "partner/dashboard" },
-  { "entity": "dashboardTemplate", "route": "table/dashboardTemplate" },
-  { "entity": "favorite", "route": "partner/favorite" },
-  { "entity": "favoriteTemplate", "route": "table/favoriteTemplate" },
-
-  { "entity": "webhookSubscription", "route": "table/webhookSubscription" },
-  { "entity": "webhookSubscriptionType", "route": "table/webhookSubscriptionType" },
-  { "entity": "webhookSubscriptionPayloadType", "route": "table/webhookSubscriptionPayloadType" },
-  { "entity": "webhookSubscriptionMethod", "route": "table/webhookSubscriptionMethod" },
-  { "entity": "webhookAuthenticationType", "route": "table/webhookAuthenticationType" },
-  { "entity": "personApiToken", "route": "table/personApiToken" },
-  { "entity": "webhookAuthenticationBasic", "route": "table/webhookAuthenticationBasic" },
-  { "entity": "webhookAuthenticationApiKey", "route": "table/webhookAuthenticationApiKey" },
-  { "entity": "webhookAuthenticationOAuth2", "route": "table/webhookAuthenticationOAuth2" },
-  { "entity": "webhookDelivery", "route": "table/webhookDelivery" },
-  { "entity": "webhookDeliveryStatus", "route": "table/webhookDeliveryStatus" },
-
-  { "entity": "salesOpportunity", "route": "partner/salesOpportunity" },
-  { "entity": "salesOpportunityStage", "route": "table/salesOpportunityStage" },
-  { "entity": "salesOpportunityForecast", "route": "table/salesOpportunityForecast" },
-  { "entity": "salesOpportunitySource", "route": "table/salesOpportunitySource" },
-
-  { "entity": "kpi", "route": "table/kpi" },
-  { "entity": "kpiType", "route": "table/kpiType" },
-  { "entity": "kpiAggregation", "route": "table/kpiAggregation" },
-  { "entity": "kpiTimeframe", "route": "table/kpiTimeframe" },
-
-  { "entity": "document", "route": "file/document" },
-  { "entity": "documentType", "route": "table/documentType" },
-  { "entity": "information", "route": "table/information" },
-
-  { "entity": "emailTemplate", "route": "table/emailTemplate" },
-  { "entity": "emailDelivery", "route": "table/emailDelivery" },
-  { "entity": "emailDeliveryStatus", "route": "table/emailDeliveryStatus" },
-  { "entity": "emailList", "route": "table/emailList" },
-  { "entity": "sharedMailboxGroup", "route": "table/sharedMailboxGroup" },
-  { "entity": "sharedMailbox", "route": "table/sharedMailbox" },
-  { "entity": "teamsTemplate", "route": "table/teamsTemplate" },
-  { "entity": "teamsSubscription", "route": "table/teamsSubscription" },
-  { "entity": "teamsDelivery", "route": "table/teamsDelivery" },
-  { "entity": "teamsDeliveryStatus", "route": "table/teamsDeliveryStatus" },
-
-  { "entity": "seedScript", "route": "table/seedScript" },
-  { "entity": "scriptButton", "route": "table/scriptButton" },
-  { "entity": "roleStage", "route": "table/roleStage" },
-  { "entity": "personDepartment", "route": "table/personDepartment" },
-  { "entity": "personType", "route": "table/personType" },
-  { "entity": "personSession", "route": "table/personSession" },
-  { "entity": "sessionStore", "route": "table/sessionStore" },
-  
-  { "entity": "aiChatSession", "route": "table/aiChatSession" },
-  { "entity": "aiChatMessage", "route": "table/aiChatMessage" },
-  { "entity": "aiProviderType", "route": "table/aiProviderType" },
-  { "entity": "aiProviderModel", "route": "table/aiProviderModel" },
-  { "entity": "aiChatTranscription", "route": "table/aiChatTranscription" },
-  { "entity": "mcpServerConfig", "route": "table/mcpServerConfig" }
+[
+  {
+    "entity": "company",
+    "route": "table/company"
+  },
+  {
+    "entity": "address",
+    "route": "table/address"
+  },
+  {
+    "entity": "addressType",
+    "route": "table/addressType"
+  },
+  {
+    "entity": "companyRelationship",
+    "route": "table/companyRelationship"
+  },
+  {
+    "entity": "companyRelationshipType",
+    "route": "table/companyRelationshipType"
+  },
+  {
+    "entity": "person",
+    "route": "table/person"
+  },
+  {
+    "entity": "socialMedia",
+    "route": "table/socialMedia"
+  },
+  {
+    "entity": "socialMediaType",
+    "route": "table/socialMediaType"
+  },
+  {
+    "entity": "contract",
+    "route": "table/contract"
+  },
+  {
+    "entity": "contractService",
+    "route": "table/contractService"
+  },
+  {
+    "entity": "serverLandscape",
+    "route": "table/serverLandscape"
+  },
+  {
+    "entity": "serverLandscapeType",
+    "route": "table/serverLandscapeType"
+  },
+  {
+    "entity": "serverLandscapeTypeUsage",
+    "route": "table/serverLandscapeTypeUsage"
+  },
+  {
+    "entity": "product",
+    "route": "table/product"
+  },
+  {
+    "entity": "workHour",
+    "route": "table/workHour"
+  },
+  {
+    "entity": "workHourWeek",
+    "route": "table/workHourWeek"
+  },
+  {
+    "entity": "phoneCall",
+    "route": "partner/phoneCall"
+  },
+  {
+    "entity": "event",
+    "route": "event",
+    "navigation": "calendar"
+  },
+  {
+    "entity": "event",
+    "route": "partner/event"
+  },
+  {
+    "entity": "holidayGroup",
+    "route": "table/holidayGroup"
+  },
+  {
+    "entity": "holiday",
+    "route": "table/holiday"
+  },
+  {
+    "entity": "eventStatus",
+    "route": "table/eventStatus"
+  },
+  {
+    "entity": "eventType",
+    "route": "table/eventType"
+  },
+  {
+    "entity": "eventDelivery",
+    "route": "table/eventDelivery"
+  },
+  {
+    "entity": "eventDeliveryStatus",
+    "route": "table/eventDeliveryStatus"
+  },
+  {
+    "entity": "ticket",
+    "route": "partner/ticket"
+  },
+  {
+    "entity": "ticketTimeTracking",
+    "route": "partner/ticketTimeTracking"
+  },
+  {
+    "entity": "ticketPriority",
+    "route": "table/ticketPriority"
+  },
+  {
+    "entity": "ticketStatus",
+    "route": "table/ticketStatus"
+  },
+  {
+    "entity": "ticketType",
+    "route": "table/ticketType"
+  },
+  {
+    "entity": "ticketCategory",
+    "route": "table/ticketCategory"
+  },
+  {
+    "entity": "ticketSource",
+    "route": "table/ticketSource"
+  },
+  {
+    "entity": "supportTeam",
+    "route": "table/supportTeam"
+  },
+  {
+    "entity": "supportQueue",
+    "route": "table/supportQueue"
+  },
+  {
+    "entity": "slaPolicy",
+    "route": "table/slaPolicy"
+  },
+  {
+    "entity": "note",
+    "route": "note"
+  },
+  {
+    "entity": "noteGroup",
+    "route": "table/noteGroup"
+  },
+  {
+    "entity": "language",
+    "route": "table/language"
+  },
+  {
+    "entity": "country",
+    "route": "table/country"
+  },
+  {
+    "entity": "money",
+    "route": "table/money"
+  },
+  {
+    "entity": "translation",
+    "route": "table/translation"
+  },
+  {
+    "entity": "role",
+    "route": "table/role"
+  },
+  {
+    "entity": "permission",
+    "route": "permission",
+    "navigation": "right"
+  },
+  {
+    "entity": "permission",
+    "route": "table/permission"
+  },
+  {
+    "entity": "entity",
+    "route": "table/entity"
+  },
+  {
+    "entity": "entityRoute",
+    "route": "table/entityRoute"
+  },
+  {
+    "entity": "entityGroup",
+    "route": "table/entityGroup"
+  },
+  {
+    "entity": "dashboard",
+    "route": "partner/dashboard"
+  },
+  {
+    "entity": "dashboardTemplate",
+    "route": "table/dashboardTemplate"
+  },
+  {
+    "entity": "favorite",
+    "route": "partner/favorite"
+  },
+  {
+    "entity": "favoriteTemplate",
+    "route": "table/favoriteTemplate"
+  },
+  {
+    "entity": "webhookSubscription",
+    "route": "table/webhookSubscription"
+  },
+  {
+    "entity": "webhookSubscriptionType",
+    "route": "table/webhookSubscriptionType"
+  },
+  {
+    "entity": "webhookSubscriptionPayloadType",
+    "route": "table/webhookSubscriptionPayloadType"
+  },
+  {
+    "entity": "webhookSubscriptionMethod",
+    "route": "table/webhookSubscriptionMethod"
+  },
+  {
+    "entity": "webhookAuthenticationType",
+    "route": "table/webhookAuthenticationType"
+  },
+  {
+    "entity": "personApiToken",
+    "route": "table/personApiToken"
+  },
+  {
+    "entity": "webhookAuthenticationBasic",
+    "route": "table/webhookAuthenticationBasic"
+  },
+  {
+    "entity": "webhookAuthenticationApiKey",
+    "route": "table/webhookAuthenticationApiKey"
+  },
+  {
+    "entity": "webhookAuthenticationOAuth2",
+    "route": "table/webhookAuthenticationOAuth2"
+  },
+  {
+    "entity": "webhookDelivery",
+    "route": "table/webhookDelivery"
+  },
+  {
+    "entity": "webhookDeliveryStatus",
+    "route": "table/webhookDeliveryStatus"
+  },
+  {
+    "entity": "salesOpportunity",
+    "route": "partner/salesOpportunity"
+  },
+  {
+    "entity": "salesOpportunityStage",
+    "route": "table/salesOpportunityStage"
+  },
+  {
+    "entity": "salesOpportunityForecast",
+    "route": "table/salesOpportunityForecast"
+  },
+  {
+    "entity": "salesOpportunitySource",
+    "route": "table/salesOpportunitySource"
+  },
+  {
+    "entity": "kpi",
+    "route": "table/kpi"
+  },
+  {
+    "entity": "kpiType",
+    "route": "table/kpiType"
+  },
+  {
+    "entity": "kpiAggregation",
+    "route": "table/kpiAggregation"
+  },
+  {
+    "entity": "kpiTimeframe",
+    "route": "table/kpiTimeframe"
+  },
+  {
+    "entity": "document",
+    "route": "file/document"
+  },
+  {
+    "entity": "documentType",
+    "route": "table/documentType"
+  },
+  {
+    "entity": "information",
+    "route": "table/information"
+  },
+  {
+    "entity": "emailTemplate",
+    "route": "table/emailTemplate"
+  },
+  {
+    "entity": "emailDelivery",
+    "route": "table/emailDelivery"
+  },
+  {
+    "entity": "emailDeliveryStatus",
+    "route": "table/emailDeliveryStatus"
+  },
+  {
+    "entity": "emailList",
+    "route": "table/emailList"
+  },
+  {
+    "entity": "sharedMailboxGroup",
+    "route": "table/sharedMailboxGroup"
+  },
+  {
+    "entity": "sharedMailbox",
+    "route": "table/sharedMailbox"
+  },
+  {
+    "entity": "teamsTemplate",
+    "route": "table/teamsTemplate"
+  },
+  {
+    "entity": "teamsSubscription",
+    "route": "table/teamsSubscription"
+  },
+  {
+    "entity": "teamsDelivery",
+    "route": "table/teamsDelivery"
+  },
+  {
+    "entity": "teamsDeliveryStatus",
+    "route": "table/teamsDeliveryStatus"
+  },
+  {
+    "entity": "seedScript",
+    "route": "table/seedScript"
+  },
+  {
+    "entity": "scriptButton",
+    "route": "table/scriptButton"
+  },
+  {
+    "entity": "roleStage",
+    "route": "table/roleStage"
+  },
+  {
+    "entity": "personDepartment",
+    "route": "table/personDepartment"
+  },
+  {
+    "entity": "personType",
+    "route": "table/personType"
+  },
+  {
+    "entity": "personSession",
+    "route": "table/personSession"
+  },
+  {
+    "entity": "sessionStore",
+    "route": "table/sessionStore"
+  },
+  {
+    "entity": "aiChatSession",
+    "route": "table/aiChatSession"
+  },
+  {
+    "entity": "aiChatMessage",
+    "route": "table/aiChatMessage"
+  },
+  {
+    "entity": "aiProviderType",
+    "route": "table/aiProviderType"
+  },
+  {
+    "entity": "aiProviderModel",
+    "route": "table/aiProviderModel"
+  },
+  {
+    "entity": "aiChatTranscription",
+    "route": "table/aiChatTranscription"
+  },
+  {
+    "entity": "mcpServerConfig",
+    "route": "table/mcpServerConfig"
+  },
+  {
+    "entity": "changeLog",
+    "route": "table/changeLog"
+  },
+  {
+    "entity": "changeLogDetail",
+    "route": "table/changeLogDetail"
+  },
+  {
+    "entity": "changeLogAction",
+    "route": "table/changeLogAction"
+  },
+  {
+    "entity": "inboxTemplate",
+    "route": "table/inboxTemplate"
+  },
+  {
+    "entity": "inboxSubscription",
+    "route": "table/inboxSubscription"
+  },
+  {
+    "entity": "inboxNotification",
+    "route": "table/inboxNotification"
+  },
+  {
+    "entity": "eventAzure",
+    "route": "table/eventAzure"
+  },
+  {
+    "entity": "eventGoogle",
+    "route": "table/eventGoogle"
+  },
+  {
+    "entity": "saplingFormConfig",
+    "route": "form-config",
+    "navigation": "formEditor"
+  },
+  {
+    "entity": "saplingFormConfig",
+    "route": "table/saplingFormConfig"
+  },
+  {
+    "entity": "effortEstimate",
+    "route": "partner/effortEstimate"
+  },
+  {
+    "entity": "effortEstimateStatus",
+    "route": "table/effortEstimateStatus"
+  },
+  {
+    "entity": "effortEstimatePosition",
+    "route": "table/effortEstimatePosition"
+  },
+  {
+    "entity": "effortEstimatePositionTemplate",
+    "route": "table/effortEstimatePositionTemplate"
+  },
+  {
+    "entity": "personPasskey",
+    "route": "table/personPasskey"
+  },
+  {
+    "entity": "knowledgeArticle",
+    "route": "table/knowledgeArticle"
+  },
+  {
+    "entity": "knowledgeArticleCategory",
+    "route": "table/knowledgeArticleCategory"
+  },
+  {
+    "entity": "knowledgeArticleStatus",
+    "route": "table/knowledgeArticleStatus"
+  },
+  {
+    "entity": "knowledgeArticleVisibility",
+    "route": "table/knowledgeArticleVisibility"
+  },
+  {
+    "entity": "aiEntityGenerationTemplate",
+    "route": "table/aiEntityGenerationTemplate"
+  },
+  {
+    "entity": "knowledgeArticle",
+    "route": "knowledge",
+    "navigation": "knowledgeBase"
+  },
+  {
+    "entity": "calendarSyncSubscription",
+    "route": "table/calendarSyncSubscription"
+  },
+  {
+    "entity": "companyIndustry",
+    "route": "table/companyIndustry"
+  },
+  {
+    "entity": "companySegment",
+    "route": "table/companySegment"
+  },
+  {
+    "entity": "companySize",
+    "route": "table/companySize"
+  },
+  {
+    "entity": "companyAnnualRevenueClass",
+    "route": "table/companyAnnualRevenueClass"
+  },
+  {
+    "entity": "companyChurnRiskReason",
+    "route": "table/companyChurnRiskReason"
+  },
+  {
+    "entity": "personSalutation",
+    "route": "table/personSalutation"
+  },
+  {
+    "entity": "personTitle",
+    "route": "table/personTitle"
+  },
+  {
+    "entity": "personJobTitle",
+    "route": "table/personJobTitle"
+  },
+  {
+    "entity": "personFunction",
+    "route": "table/personFunction"
+  },
+  {
+    "entity": "personDecisionRole",
+    "route": "table/personDecisionRole"
+  },
+  {
+    "entity": "salesOpportunityResultStatus",
+    "route": "table/salesOpportunityResultStatus"
+  },
+  {
+    "entity": "salesOpportunityLossReason",
+    "route": "table/salesOpportunityLossReason"
+  },
+  {
+    "entity": "marketingCampaign",
+    "route": "table/marketingCampaign"
+  },
+  {
+    "entity": "marketingCampaignStatus",
+    "route": "table/marketingCampaignStatus"
+  },
+  {
+    "entity": "marketingCampaignType",
+    "route": "table/marketingCampaignType"
+  },
+  {
+    "entity": "salesOpportunity",
+    "route": "crm-workspace",
+    "navigation": "crmWorkspace"
+  },
+  {
+    "entity": "importBatch",
+    "route": "import",
+    "navigation": "import"
+  },
+  {
+    "entity": "importSource",
+    "route": "table/importSource"
+  },
+  {
+    "entity": "importTemplate",
+    "route": "table/importTemplate"
+  },
+  {
+    "entity": "importTemplateValueMapping",
+    "route": "table/importTemplateValueMapping"
+  },
+  {
+    "entity": "importBatch",
+    "route": "table/importBatch"
+  },
+  {
+    "entity": "importBatchRow",
+    "route": "table/importBatchRow"
+  },
+  {
+    "entity": "externalRecordLink",
+    "route": "table/externalRecordLink"
+  },
+  {
+    "entity": "aiAgent",
+    "route": "ai-agents",
+    "navigation": "aiAgents"
+  },
+  {
+    "entity": "aiAgent",
+    "route": "table/aiAgent"
+  },
+  {
+    "entity": "aiAgentVersion",
+    "route": "table/aiAgentVersion"
+  },
+  {
+    "entity": "aiAgentPlaybook",
+    "route": "table/aiAgentPlaybook"
+  },
+  {
+    "entity": "aiAgentMemory",
+    "route": "table/aiAgentMemory"
+  },
+  {
+    "entity": "aiAgentRun",
+    "route": "table/aiAgentRun"
+  },
+  {
+    "entity": "aiAgentEvaluation",
+    "route": "table/aiAgentEvaluation"
+  },
+  {
+    "entity": "aiChatToolAction",
+    "route": "table/aiChatToolAction"
+  },
+  {
+    "entity": "customFieldDefinition",
+    "route": "table/customFieldDefinition"
+  },
+  {
+    "entity": "customFieldType",
+    "route": "table/customFieldType"
+  },
+  {
+    "entity": "customFieldValue",
+    "route": "table/customFieldValue"
+  },
+  {
+    "entity": "emailSubscription",
+    "route": "table/emailSubscription"
+  },
+  {
+    "entity": "internalCase",
+    "route": "table/internalCase"
+  },
+  {
+    "entity": "internalCase",
+    "route": "partner/internalCase"
+  },
+  {
+    "entity": "internalCaseStatus",
+    "route": "table/internalCaseStatus"
+  },
+  {
+    "entity": "internalCaseCategory",
+    "route": "table/internalCaseCategory"
+  },
+  {
+    "entity": "event",
+    "route": "event",
+    "navigation": "calendar",
+    "group": "salesCalendar"
+  },
+  {
+    "entity": "event",
+    "route": "partner/event",
+    "group": "salesCalendar"
+  },
+  {
+    "entity": "holidayGroup",
+    "route": "table/holidayGroup",
+    "group": "salesCalendar"
+  },
+  {
+    "entity": "holiday",
+    "route": "table/holiday",
+    "group": "salesCalendar"
+  },
+  {
+    "entity": "eventStatus",
+    "route": "table/eventStatus",
+    "group": "salesCalendar"
+  },
+  {
+    "entity": "eventType",
+    "route": "table/eventType",
+    "group": "salesCalendar"
+  },
+  {
+    "entity": "eventDelivery",
+    "route": "table/eventDelivery",
+    "group": "salesCalendar"
+  },
+  {
+    "entity": "eventDeliveryStatus",
+    "route": "table/eventDeliveryStatus",
+    "group": "salesCalendar"
+  },
+  {
+    "entity": "eventAzure",
+    "route": "table/eventAzure",
+    "group": "salesCalendar"
+  },
+  {
+    "entity": "eventGoogle",
+    "route": "table/eventGoogle",
+    "group": "salesCalendar"
+  },
+  {
+    "entity": "event",
+    "route": "event",
+    "navigation": "calendar",
+    "group": "officeCalendar"
+  },
+  {
+    "entity": "event",
+    "route": "partner/event",
+    "group": "officeCalendar"
+  },
+  {
+    "entity": "holidayGroup",
+    "route": "table/holidayGroup",
+    "group": "officeCalendar"
+  },
+  {
+    "entity": "holiday",
+    "route": "table/holiday",
+    "group": "officeCalendar"
+  },
+  {
+    "entity": "eventStatus",
+    "route": "table/eventStatus",
+    "group": "officeCalendar"
+  },
+  {
+    "entity": "eventType",
+    "route": "table/eventType",
+    "group": "officeCalendar"
+  },
+  {
+    "entity": "eventDelivery",
+    "route": "table/eventDelivery",
+    "group": "officeCalendar"
+  },
+  {
+    "entity": "eventDeliveryStatus",
+    "route": "table/eventDeliveryStatus",
+    "group": "officeCalendar"
+  },
+  {
+    "entity": "eventAzure",
+    "route": "table/eventAzure",
+    "group": "officeCalendar"
+  },
+  {
+    "entity": "eventGoogle",
+    "route": "table/eventGoogle",
+    "group": "officeCalendar"
+  },
+  {
+    "entity": "salesOpportunity",
+    "route": "kanban/salesOpportunity",
+    "navigation": "salesOpportunityKanban"
+  },
+  {
+    "entity": "ticket",
+    "route": "kanban/ticket",
+    "navigation": "ticketKanban"
+  },
+  {
+    "entity": "internalCase",
+    "route": "kanban/internalCase",
+    "navigation": "internalCaseKanban",
+    "group": "internalCase"
+  }
 ]

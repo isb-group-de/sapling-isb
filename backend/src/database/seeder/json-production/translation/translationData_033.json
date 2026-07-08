@@ -1,8 +1,0 @@
-[
-  {
-    "entity": "ticket",
-    "property": "scriptAiFindTicketReferences",
-    "de": "Passende Fälle mit AI finden",
-    "en": "Find matching cases with AI"
-  }
-]

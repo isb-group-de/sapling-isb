@@ -1,4 +1,0 @@
-[
-  { "entity": "saplingFormConfig", "route": "form-config", "navigation": "formEditor" },
-  { "entity": "saplingFormConfig", "route": "table/saplingFormConfig" } 
-]

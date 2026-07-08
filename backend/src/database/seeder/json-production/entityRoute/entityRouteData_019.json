@@ -1,6 +1,0 @@
-[
-  { "entity": "internalCase", "route": "table/internalCase" },
-  { "entity": "internalCase", "route": "partner/internalCase" },
-  { "entity": "internalCaseStatus", "route": "table/internalCaseStatus" },
-  { "entity": "internalCaseCategory", "route": "table/internalCaseCategory" }
-]

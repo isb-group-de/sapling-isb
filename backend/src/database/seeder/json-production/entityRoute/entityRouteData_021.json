@@ -1,5 +1,0 @@
-[
-  { "entity": "salesOpportunity", "route": "kanban/salesOpportunity", "navigation": "salesOpportunityKanban" },
-  { "entity": "ticket", "route": "kanban/ticket", "navigation": "ticketKanban" },
-  { "entity": "internalCase", "route": "kanban/internalCase", "navigation": "internalCaseKanban", "group": "internalCase" }
-]

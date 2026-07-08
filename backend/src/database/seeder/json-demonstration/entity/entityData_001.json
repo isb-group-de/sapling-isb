@@ -1,119 +1,1445 @@
-[ 
-  { "handle": "company", "canShow": true, "icon": "mdi-office-building-marker", "group": "company", "order": 10, "canInsert": true, "canUpdate": true, "canDelete": true },
-  { "handle": "address", "canShow": true, "icon": "mdi-map-marker", "group": "company", "order": 20, "canInsert": true, "canUpdate": true, "canDelete": true },
-  { "handle": "addressType", "canShow": true, "icon": "mdi-map-marker-radius", "group": "company", "order": 30, "canInsert": true, "canUpdate": true, "canDelete": true },
-
-  { "handle": "person", "canShow": true, "icon": "mdi-account", "group": "person", "order": 10, "canInsert": true, "canUpdate": true, "canDelete": true},
-  { "handle": "personDepartment", "canShow": true, "icon": "mdi-office-building", "group": "person", "order": 20, "canInsert": true, "canUpdate": true, "canDelete": true },
-  { "handle": "socialMedia", "canShow": true, "icon": "mdi-web", "group": "person", "order": 30, "canInsert": true, "canUpdate": true, "canDelete": true},
-  { "handle": "socialMediaType", "canShow": true, "icon": "mdi-at", "group": "person", "order": 40, "canInsert": true, "canUpdate": true, "canDelete": true},
-  { "handle": "workHour", "canShow": true, "icon": "mdi-clock", "group": "person", "order": 50, "canInsert": true, "canUpdate": true, "canDelete": true},
-  { "handle": "workHourWeek", "canShow": true, "icon": "mdi-calendar-week", "group": "person", "order": 60, "canInsert": true, "canUpdate": true, "canDelete": true},
-
-  { "handle": "product", "canShow": true, "icon": "mdi-tools", "group": "contract", "order": 10, "canInsert": true, "canUpdate": true, "canDelete": true},
-  { "handle": "contract", "canShow": true, "icon": "mdi-file-sign", "group": "contract", "order": 20, "canInsert": true, "canUpdate": true, "canDelete": true },
-  { "handle": "contractService", "canShow": true, "icon": "mdi-shield-check", "group": "contract", "order": 30, "canInsert": true, "canUpdate": true, "canDelete": true },
-
-  { "handle": "serverLandscape", "canShow": true, "icon": "mdi-server-network", "group": "landscape", "order": 10, "canInsert": true, "canUpdate": true, "canDelete": true },
-  { "handle": "serverLandscapeType", "canShow": true, "icon": "mdi-server", "group": "landscape", "order": 20, "canInsert": true, "canUpdate": true, "canDelete": true },
-  { "handle": "serverLandscapeTypeUsage", "canShow": true, "icon": "mdi-shape", "group": "landscape", "order": 30, "canInsert": true, "canUpdate": true, "canDelete": true },
-  
-  { "handle": "event", "icon": "mdi-calendar-star", "canShow": true, "group": "event", "order": 10, "canInsert": true, "canUpdate": true, "canDelete": true},
-  { "handle": "eventStatus", "icon": "mdi-calendar-check", "canShow": true, "group": "event", "order": 20, "canUpdate": true},
-  { "handle": "eventType", "icon": "mdi-calendar-check", "canShow": true, "group": "event", "order": 30, "canUpdate": true},
-  { "handle": "eventDelivery", "icon": "mdi-calendar-export", "canShow": true, "group": "event", "order": 40},
-  { "handle": "eventAzure", "icon": "mdi-calendar-export", "canShow": true, "group": "event", "order": 50, "canRead": false},
-  { "handle": "eventGoogle", "icon": "mdi-calendar-export", "canShow": true, "group": "event", "order": 60, "canRead": false},
-  { "handle": "eventDeliveryStatus", "icon": "mdi-calendar-export", "canShow": true, "group": "event", "order": 70, "canUpdate": true},
-  { "handle": "holiday", "icon": "mdi-calendar-alert", "canShow": true, "group": "event", "order": 12, "canInsert": true, "canUpdate": true, "canDelete": true},
-  { "handle": "holidayGroup", "icon": "mdi-calendar-multiple-check", "canShow": true, "group": "event", "order": 15, "canInsert": true, "canUpdate": true, "canDelete": true},
-
-  { "handle": "ticket", "canShow": true, "icon": "mdi-ticket", "group": "ticket", "order": 10, "canInsert": true, "canUpdate": true, "canDelete": true},
-  { "handle": "ticketTimeTracking", "canShow": true, "icon": "mdi-timer", "group": "ticket", "order": 20, "canInsert": true, "canUpdate": true, "canDelete": true},
-  { "handle": "ticketPriority", "icon": "mdi-flag", "canShow": true, "group": "ticket", "order": 30, "canUpdate": true},
-  { "handle": "ticketStatus", "icon": "mdi-progress-check", "canShow": true, "group": "ticket", "order": 40, "canUpdate": true},
-  { "handle": "ticketType", "canShow": true, "icon": "mdi-alert-circle-outline", "group": "ticket", "order": 50, "canInsert": true, "canUpdate": true, "canDelete": true },
-  { "handle": "ticketCategory", "canShow": true, "icon": "mdi-shape-outline", "group": "ticket", "order": 60, "canInsert": true, "canUpdate": true, "canDelete": true },
-  { "handle": "ticketSource", "canShow": true, "icon": "mdi-email-outline", "group": "ticket", "order": 70, "canInsert": true, "canUpdate": true, "canDelete": true },
-
-  { "handle": "supportTeam", "canShow": true, "icon": "mdi-account-group-outline", "group": "support", "order": 10, "canInsert": true, "canUpdate": true, "canDelete": true },
-  { "handle": "supportQueue", "canShow": true, "icon": "mdi-inbox-arrow-down-outline", "group": "support", "order": 20, "canInsert": true, "canUpdate": true, "canDelete": true },
-  { "handle": "slaPolicy", "canShow": true, "icon": "mdi-timer-sand", "group": "support", "order": 30, "canInsert": true, "canUpdate": true, "canDelete": true },
-
-  { "handle": "emailTemplate", "icon": "mdi-email-edit", "canShow": true, "group": "mails", "order": 10, "canInsert": true, "canUpdate": true, "canDelete": true },
-  { "handle": "emailDelivery", "icon": "mdi-email-fast", "canShow": true, "group": "mails", "order": 20 },
-  { "handle": "emailDeliveryStatus", "icon": "mdi-email-check", "canShow": true, "group": "mails", "order": 30, "canUpdate": true },
-  { "handle": "emailList", "canShow": true, "icon": "mdi-email-multiple", "group": "mails", "order": 40, "canInsert": true, "canUpdate": true, "canDelete": true },
-  { "handle": "sharedMailboxGroup", "canShow": true, "icon": "mdi-folder-lock-outline", "group": "mails", "order": 50, "canInsert": true, "canUpdate": true, "canDelete": true },
-  { "handle": "sharedMailbox", "canShow": true, "icon": "mdi-email-lock-outline", "group": "mails", "order": 60, "canInsert": true, "canUpdate": true, "canDelete": true },
-  
-  { "handle": "teamsTemplate", "canShow": true, "icon": "mdi-microsoft-teams", "group": "teams", "order": 50, "canInsert": true, "canUpdate": true, "canDelete": true },
-  { "handle": "teamsSubscription", "canShow": true, "icon": "mdi-microsoft-teams", "group": "teams", "order": 60, "canInsert": true, "canUpdate": true, "canDelete": true },
-  { "handle": "teamsDelivery", "canShow": true, "icon": "mdi-microsoft-teams", "group": "teams", "order": 70 },
-  { "handle": "teamsDeliveryStatus", "icon": "mdi-microsoft-teams", "canShow": true, "group": "teams", "order": 80, "canUpdate": true },
-
-  { "handle": "companyRelationship", "canShow": true, "icon": "mdi-family-tree", "group": "relationship", "order": 10, "canInsert": true, "canUpdate": true, "canDelete": true },
-  { "handle": "companyRelationshipType", "canShow": true, "icon": "mdi-shape", "group": "relationship", "order": 20, "canInsert": true, "canUpdate": true, "canDelete": true },
-  
-  { "handle": "note", "canShow": true, "icon": "mdi-note", "group": "note", "order": 10, "canInsert": true, "canUpdate": true, "canDelete": true},
-  { "handle": "noteGroup", "icon": "mdi-note", "canShow": true, "group": "note", "order": 20, "canInsert": true, "canUpdate": true, "canDelete": true},
-  { "handle": "phoneCall", "icon": "mdi-phone-log", "canShow": true, "group": "note", "order": 30, "canInsert": true, "canUpdate": true, "canDelete": true},
-
-  { "handle": "language", "icon": "mdi-translate-variant", "canShow": true, "group": "localisation", "order": 10, "canRead": false},
-  { "handle": "country", "icon": "mdi-flag", "canShow": true, "group": "localisation", "order": 20, "canRead": false},
-  { "handle": "money", "icon": "mdi-currency-eur", "canShow": true, "group": "localisation", "order": 30, "canRead": false},
-  { "handle": "translation", "canShow": true, "icon": "mdi-translate", "group": "localisation", "order": 40, "canInsert": true, "canUpdate": true, "canDelete": true, "canRead": false },
-
-  { "handle": "role", "icon": "mdi-account-key", "canShow": true, "group": "administration", "order": 10, "canInsert": true, "canUpdate": true, "canDelete": true},
-  { "handle": "permission", "icon": "mdi-lock-check", "canShow": true, "group": "administration", "order": 20, "canInsert": true, "canUpdate": true, "canDelete": true},
-  { "handle": "entity", "canShow": true, "icon": "mdi-cube", "group": "administration", "order": 30, "canRead": false},
-  { "handle": "entityRoute", "canShow": true, "icon": "mdi-cube", "group": "administration", "order": 40, "canRead": false},
-  { "handle": "entityGroup", "icon": "mdi-folder-account", "canShow": true, "group": "administration", "order": 50, "canUpdate": true, "canRead": false},
-  { "handle": "dashboard", "icon": "mdi-view-dashboard", "canShow": true, "group": "administration", "order": 60, "canRead": false, "canInsert": true, "canUpdate": true, "canDelete": true},
-  { "handle": "dashboardTemplate", "icon": "mdi-view-dashboard-edit-outline", "canShow": true, "group": "administration", "order": 70, "canRead": false, "canInsert": true, "canUpdate": true, "canDelete": true},
-  { "handle": "favorite", "icon": "mdi-bookmark", "canShow": true, "group": "administration", "order": 80, "canRead": false, "canInsert": true, "canUpdate": true, "canDelete": true},
-  { "handle": "favoriteTemplate", "icon": "mdi-view-list-outline", "canShow": true, "group": "administration", "order": 90, "canRead": false, "canInsert": true, "canUpdate": true, "canDelete": true},
-
-  { "handle": "webhookSubscription", "canShow": true, "icon": "mdi-webhook", "group": "webhook", "order": 10, "canInsert": true, "canUpdate": true, "canDelete": true },
-  { "handle": "webhookSubscriptionType", "icon": "mdi-webhook", "canShow": true, "group": "webhook", "order": 20, "canUpdate": true},
-  { "handle": "webhookSubscriptionPayloadType", "icon": "mdi-webhook", "canShow": true, "group": "webhook", "order": 30, "canUpdate": true},
-  { "handle": "webhookSubscriptionMethod", "icon": "mdi-webhook", "canShow": true, "group": "webhook", "order": 40, "canUpdate": true},
-  { "handle": "webhookDelivery", "icon": "mdi-webhook", "canShow": true, "group": "webhook", "order": 50},
-  { "handle": "webhookDeliveryStatus", "icon": "mdi-webhook", "canShow": true, "group": "webhook", "order": 60, "canUpdate": true},
-  
-  { "handle": "webhookAuthenticationType", "icon": "mdi-webhook", "canShow": true, "group": "authentication", "order": 10, "canUpdate": true},
-  { "handle": "personApiToken", "canShow": true, "icon": "mdi-key-chain", "group": "authentication", "order": 20, "canInsert": true, "canUpdate": true, "canDelete": true },
-  { "handle": "webhookAuthenticationBasic", "canShow": true, "icon": "mdi-webhook", "group": "authentication", "order": 30, "canInsert": true, "canUpdate": true, "canDelete": true },
-  { "handle": "webhookAuthenticationApiKey", "canShow": true, "icon": "mdi-webhook", "group": "authentication", "order": 40, "canInsert": true, "canUpdate": true, "canDelete": true },
-  { "handle": "webhookAuthenticationOAuth2", "canShow": true, "icon": "mdi-webhook", "group": "authentication", "order": 50, "canInsert": true, "canUpdate": true, "canDelete": true },
-
-  { "handle": "salesOpportunity", "canShow": true, "icon": "mdi-cash-multiple", "group": "sales", "order": 10, "canInsert": true, "canUpdate": true, "canDelete": true },
-  { "handle": "salesOpportunityStage", "icon": "mdi-cash-multiple", "canShow": true, "group": "sales", "order": 20, "canInsert": true, "canUpdate": true, "canDelete": true },
-  { "handle": "salesOpportunityForecast", "icon": "mdi-cash-multiple", "canShow": true, "group": "sales", "order": 30, "canInsert": true, "canUpdate": true, "canDelete": true },
-  { "handle": "salesOpportunitySource", "icon": "mdi-cash-multiple", "canShow": true, "group": "sales", "order": 40, "canInsert": true, "canUpdate": true, "canDelete": true },
-
-  { "handle": "document", "canShow": true, "icon": "mdi-file-document-multiple", "group": "document", "order": 10, "canUpdate": true, "canDelete": true },
-  { "handle": "documentType", "icon": "mdi-file-document", "canShow": true, "group": "document", "order": 20, "canInsert": true, "canUpdate": true, "canDelete": true },
-  { "handle": "information", "icon": "mdi-text-box-edit", "canShow": true, "group": "document", "order": 30, "canInsert": true, "canUpdate": true, "canDelete": true },
-  
-  { "handle": "kpi", "icon": "mdi-chart-bar", "canShow": true, "group": "kpi", "order": 10, "canRead": false, "canInsert": true, "canUpdate": true, "canDelete": true},
-  { "handle": "kpiType", "icon": "mdi-chart-bar", "canShow": true, "group": "kpi", "order": 20, "canRead": false},
-  { "handle": "kpiAggregation", "icon": "mdi-chart-bar", "canShow": true, "group": "kpi", "order": 30, "canRead": false},
-  { "handle": "kpiTimeframe", "icon": "mdi-chart-bar", "canShow": true, "group": "kpi", "order": 40, "canRead": false},
-
-  { "handle": "seedScript", "canShow": true, "icon": "mdi-seed", "group": "system", "order": 10 },
-  { "handle": "roleStage", "icon": "mdi-timeline-check", "canShow": true, "group": "system", "order": 20 },
-  { "handle": "personType", "icon": "mdi-account-network", "canShow": true, "group": "system", "order": 30 },
-  { "handle": "personSession", "icon": "mdi-key", "canShow": true, "group": "system", "order": 40 },
-  { "handle": "scriptButton", "icon": "mdi-script-text-key", "canShow": true, "group": "system", "order": 50, "canRead": false},
-  { "handle": "sessionStore", "canShow": true, "icon": "mdi-database", "group": "system", "order": 60},
-
-  { "handle": "aiProviderType", "canShow": true, "icon": "mdi-forum", "group": "ai", "order": 10, "canRead": true, "canInsert": true, "canUpdate": true, "canDelete": true},
-  { "handle": "aiProviderModel", "canShow": true, "icon": "mdi-forum", "group": "ai", "order": 20, "canRead": true, "canInsert": true, "canUpdate": true, "canDelete": true},
-
-  { "handle": "aiChatSession", "canShow": true, "icon": "mdi-forum", "group": "chat", "order": 10, "canRead": true, "canInsert": false, "canUpdate": false, "canDelete": true},
-  { "handle": "aiChatMessage", "canShow": true, "icon": "mdi-forum", "group": "chat", "order": 20, "canRead": true, "canInsert": false, "canUpdate": false, "canDelete": true},
-  { "handle": "aiChatTranscription", "canShow": true, "icon": "mdi-microphone-message", "group": "chat", "order": 30, "canRead": true, "canInsert": false, "canUpdate": false, "canDelete": true},
-
-  { "handle": "mcpServerConfig", "canShow": true, "icon": "mdi-wrench-cog", "group": "mcp", "order": 10, "canRead": true, "canInsert": true, "canUpdate": true, "canDelete": true}
+[
+  {
+    "handle": "company",
+    "canShow": true,
+    "icon": "mdi-office-building-marker",
+    "group": "company",
+    "order": 10,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "address",
+    "canShow": true,
+    "icon": "mdi-map-marker",
+    "group": "company",
+    "order": 20,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "addressType",
+    "canShow": true,
+    "icon": "mdi-map-marker-radius",
+    "group": "company",
+    "order": 30,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "person",
+    "canShow": true,
+    "icon": "mdi-account",
+    "group": "person",
+    "order": 10,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "personDepartment",
+    "canShow": true,
+    "icon": "mdi-office-building",
+    "group": "person",
+    "order": 20,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "socialMedia",
+    "canShow": true,
+    "icon": "mdi-web",
+    "group": "person",
+    "order": 30,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "socialMediaType",
+    "canShow": true,
+    "icon": "mdi-at",
+    "group": "person",
+    "order": 40,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "workHour",
+    "canShow": true,
+    "icon": "mdi-clock",
+    "group": "person",
+    "order": 50,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "workHourWeek",
+    "canShow": true,
+    "icon": "mdi-calendar-week",
+    "group": "person",
+    "order": 60,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "product",
+    "canShow": true,
+    "icon": "mdi-tools",
+    "group": "contract",
+    "order": 10,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "contract",
+    "canShow": true,
+    "icon": "mdi-file-sign",
+    "group": "contract",
+    "order": 20,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "contractService",
+    "canShow": true,
+    "icon": "mdi-shield-check",
+    "group": "contract",
+    "order": 30,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "serverLandscape",
+    "canShow": true,
+    "icon": "mdi-server-network",
+    "group": "landscape",
+    "order": 10,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "serverLandscapeType",
+    "canShow": true,
+    "icon": "mdi-server",
+    "group": "landscape",
+    "order": 20,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "serverLandscapeTypeUsage",
+    "canShow": true,
+    "icon": "mdi-shape",
+    "group": "landscape",
+    "order": 30,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "event",
+    "icon": "mdi-calendar-star",
+    "canShow": true,
+    "group": "event",
+    "order": 10,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "eventStatus",
+    "icon": "mdi-calendar-check",
+    "canShow": true,
+    "group": "event",
+    "order": 20,
+    "canUpdate": true
+  },
+  {
+    "handle": "eventType",
+    "icon": "mdi-calendar-check",
+    "canShow": true,
+    "group": "event",
+    "order": 30,
+    "canUpdate": true
+  },
+  {
+    "handle": "eventDelivery",
+    "icon": "mdi-calendar-export",
+    "canShow": true,
+    "group": "event",
+    "order": 40
+  },
+  {
+    "handle": "eventAzure",
+    "icon": "mdi-calendar-export",
+    "canShow": true,
+    "group": "event",
+    "order": 50,
+    "canRead": false
+  },
+  {
+    "handle": "eventGoogle",
+    "icon": "mdi-calendar-export",
+    "canShow": true,
+    "group": "event",
+    "order": 60,
+    "canRead": false
+  },
+  {
+    "handle": "eventDeliveryStatus",
+    "icon": "mdi-calendar-export",
+    "canShow": true,
+    "group": "event",
+    "order": 70,
+    "canUpdate": true
+  },
+  {
+    "handle": "holiday",
+    "icon": "mdi-calendar-alert",
+    "canShow": true,
+    "group": "event",
+    "order": 12,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "holidayGroup",
+    "icon": "mdi-calendar-multiple-check",
+    "canShow": true,
+    "group": "event",
+    "order": 15,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "ticket",
+    "canShow": true,
+    "icon": "mdi-ticket",
+    "group": "ticket",
+    "order": 10,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "ticketTimeTracking",
+    "canShow": true,
+    "icon": "mdi-timer",
+    "group": "ticket",
+    "order": 20,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "ticketPriority",
+    "icon": "mdi-flag",
+    "canShow": true,
+    "group": "ticket",
+    "order": 30,
+    "canUpdate": true
+  },
+  {
+    "handle": "ticketStatus",
+    "icon": "mdi-progress-check",
+    "canShow": true,
+    "group": "ticket",
+    "order": 40,
+    "canUpdate": true
+  },
+  {
+    "handle": "ticketType",
+    "canShow": true,
+    "icon": "mdi-alert-circle-outline",
+    "group": "ticket",
+    "order": 50,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "ticketCategory",
+    "canShow": true,
+    "icon": "mdi-shape-outline",
+    "group": "ticket",
+    "order": 60,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "ticketSource",
+    "canShow": true,
+    "icon": "mdi-email-outline",
+    "group": "ticket",
+    "order": 70,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "supportTeam",
+    "canShow": true,
+    "icon": "mdi-account-group-outline",
+    "group": "support",
+    "order": 10,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "supportQueue",
+    "canShow": true,
+    "icon": "mdi-inbox-arrow-down-outline",
+    "group": "support",
+    "order": 20,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "slaPolicy",
+    "canShow": true,
+    "icon": "mdi-timer-sand",
+    "group": "support",
+    "order": 30,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "emailTemplate",
+    "icon": "mdi-email-edit",
+    "canShow": true,
+    "group": "mails",
+    "order": 10,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "emailDelivery",
+    "icon": "mdi-email-fast",
+    "canShow": true,
+    "group": "mails",
+    "order": 20
+  },
+  {
+    "handle": "emailDeliveryStatus",
+    "icon": "mdi-email-check",
+    "canShow": true,
+    "group": "mails",
+    "order": 30,
+    "canUpdate": true
+  },
+  {
+    "handle": "emailList",
+    "canShow": true,
+    "icon": "mdi-email-multiple",
+    "group": "mails",
+    "order": 40,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "sharedMailboxGroup",
+    "canShow": true,
+    "icon": "mdi-folder-lock-outline",
+    "group": "mails",
+    "order": 50,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "sharedMailbox",
+    "canShow": true,
+    "icon": "mdi-email-lock-outline",
+    "group": "mails",
+    "order": 60,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "teamsTemplate",
+    "canShow": true,
+    "icon": "mdi-microsoft-teams",
+    "group": "teams",
+    "order": 50,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "teamsSubscription",
+    "canShow": true,
+    "icon": "mdi-microsoft-teams",
+    "group": "teams",
+    "order": 60,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "teamsDelivery",
+    "canShow": true,
+    "icon": "mdi-microsoft-teams",
+    "group": "teams",
+    "order": 70
+  },
+  {
+    "handle": "teamsDeliveryStatus",
+    "icon": "mdi-microsoft-teams",
+    "canShow": true,
+    "group": "teams",
+    "order": 80,
+    "canUpdate": true
+  },
+  {
+    "handle": "companyRelationship",
+    "canShow": true,
+    "icon": "mdi-family-tree",
+    "group": "relationship",
+    "order": 10,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "companyRelationshipType",
+    "canShow": true,
+    "icon": "mdi-shape",
+    "group": "relationship",
+    "order": 20,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "note",
+    "canShow": true,
+    "icon": "mdi-note",
+    "group": "note",
+    "order": 10,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "noteGroup",
+    "icon": "mdi-note",
+    "canShow": true,
+    "group": "note",
+    "order": 20,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "phoneCall",
+    "icon": "mdi-phone-log",
+    "canShow": true,
+    "group": "note",
+    "order": 30,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "language",
+    "icon": "mdi-translate-variant",
+    "canShow": true,
+    "group": "localisation",
+    "order": 10,
+    "canRead": false
+  },
+  {
+    "handle": "country",
+    "icon": "mdi-flag",
+    "canShow": true,
+    "group": "localisation",
+    "order": 20,
+    "canRead": false
+  },
+  {
+    "handle": "money",
+    "icon": "mdi-currency-eur",
+    "canShow": true,
+    "group": "localisation",
+    "order": 30,
+    "canRead": false
+  },
+  {
+    "handle": "translation",
+    "canShow": true,
+    "icon": "mdi-translate",
+    "group": "localisation",
+    "order": 40,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true,
+    "canRead": false
+  },
+  {
+    "handle": "role",
+    "icon": "mdi-account-key",
+    "canShow": true,
+    "group": "administration",
+    "order": 10,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "permission",
+    "icon": "mdi-lock-check",
+    "canShow": true,
+    "group": "administration",
+    "order": 20,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "entity",
+    "canShow": true,
+    "icon": "mdi-cube",
+    "group": "metadata",
+    "order": 10,
+    "canRead": false
+  },
+  {
+    "handle": "entityRoute",
+    "canShow": true,
+    "icon": "mdi-cube",
+    "group": "metadata",
+    "order": 20,
+    "canRead": false
+  },
+  {
+    "handle": "entityGroup",
+    "icon": "mdi-folder-account",
+    "canShow": true,
+    "group": "metadata",
+    "order": 30,
+    "canUpdate": true,
+    "canRead": false
+  },
+  {
+    "handle": "dashboard",
+    "icon": "mdi-view-dashboard",
+    "canShow": true,
+    "group": "workspaceTools",
+    "order": 10,
+    "canRead": false,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "dashboardTemplate",
+    "icon": "mdi-view-dashboard-edit-outline",
+    "canShow": true,
+    "group": "workspaceTools",
+    "order": 20,
+    "canRead": false,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "favorite",
+    "icon": "mdi-bookmark",
+    "canShow": true,
+    "group": "workspaceTools",
+    "order": 30,
+    "canRead": false,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "favoriteTemplate",
+    "icon": "mdi-view-list-outline",
+    "canShow": true,
+    "group": "workspaceTools",
+    "order": 40,
+    "canRead": false,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "webhookSubscription",
+    "canShow": true,
+    "icon": "mdi-webhook",
+    "group": "webhook",
+    "order": 10,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "webhookSubscriptionType",
+    "icon": "mdi-webhook",
+    "canShow": true,
+    "group": "webhook",
+    "order": 20,
+    "canUpdate": true
+  },
+  {
+    "handle": "webhookSubscriptionPayloadType",
+    "icon": "mdi-webhook",
+    "canShow": true,
+    "group": "webhook",
+    "order": 30,
+    "canUpdate": true
+  },
+  {
+    "handle": "webhookSubscriptionMethod",
+    "icon": "mdi-webhook",
+    "canShow": true,
+    "group": "webhook",
+    "order": 40,
+    "canUpdate": true
+  },
+  {
+    "handle": "webhookDelivery",
+    "icon": "mdi-webhook",
+    "canShow": true,
+    "group": "webhook",
+    "order": 50
+  },
+  {
+    "handle": "webhookDeliveryStatus",
+    "icon": "mdi-webhook",
+    "canShow": true,
+    "group": "webhook",
+    "order": 60,
+    "canUpdate": true
+  },
+  {
+    "handle": "webhookAuthenticationType",
+    "icon": "mdi-webhook",
+    "canShow": true,
+    "group": "authentication",
+    "order": 10,
+    "canUpdate": true
+  },
+  {
+    "handle": "personApiToken",
+    "canShow": true,
+    "icon": "mdi-key-chain",
+    "group": "authentication",
+    "order": 20,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "webhookAuthenticationBasic",
+    "canShow": true,
+    "icon": "mdi-webhook",
+    "group": "authentication",
+    "order": 30,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "webhookAuthenticationApiKey",
+    "canShow": true,
+    "icon": "mdi-webhook",
+    "group": "authentication",
+    "order": 40,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "webhookAuthenticationOAuth2",
+    "canShow": true,
+    "icon": "mdi-webhook",
+    "group": "authentication",
+    "order": 50,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "salesOpportunity",
+    "canShow": true,
+    "icon": "mdi-cash-multiple",
+    "group": "sales",
+    "order": 10,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "salesOpportunityStage",
+    "icon": "mdi-cash-multiple",
+    "canShow": true,
+    "group": "sales",
+    "order": 20,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "salesOpportunityForecast",
+    "icon": "mdi-cash-multiple",
+    "canShow": true,
+    "group": "sales",
+    "order": 30,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "salesOpportunitySource",
+    "icon": "mdi-cash-multiple",
+    "canShow": true,
+    "group": "sales",
+    "order": 40,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "document",
+    "canShow": true,
+    "icon": "mdi-file-document-multiple",
+    "group": "document",
+    "order": 10,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "documentType",
+    "icon": "mdi-file-document",
+    "canShow": true,
+    "group": "document",
+    "order": 20,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "information",
+    "icon": "mdi-text-box-edit",
+    "canShow": true,
+    "group": "document",
+    "order": 30,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "kpi",
+    "icon": "mdi-chart-bar",
+    "canShow": true,
+    "group": "kpi",
+    "order": 10,
+    "canRead": false,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "kpiType",
+    "icon": "mdi-chart-bar",
+    "canShow": true,
+    "group": "kpi",
+    "order": 20,
+    "canRead": false
+  },
+  {
+    "handle": "kpiAggregation",
+    "icon": "mdi-chart-bar",
+    "canShow": true,
+    "group": "kpi",
+    "order": 30,
+    "canRead": false
+  },
+  {
+    "handle": "kpiTimeframe",
+    "icon": "mdi-chart-bar",
+    "canShow": true,
+    "group": "kpi",
+    "order": 40,
+    "canRead": false
+  },
+  {
+    "handle": "seedScript",
+    "canShow": true,
+    "icon": "mdi-seed",
+    "group": "system",
+    "order": 10
+  },
+  {
+    "handle": "roleStage",
+    "icon": "mdi-timeline-check",
+    "canShow": true,
+    "group": "system",
+    "order": 20
+  },
+  {
+    "handle": "personType",
+    "icon": "mdi-account-network",
+    "canShow": true,
+    "group": "system",
+    "order": 30
+  },
+  {
+    "handle": "personSession",
+    "icon": "mdi-key",
+    "canShow": true,
+    "group": "system",
+    "order": 40
+  },
+  {
+    "handle": "scriptButton",
+    "icon": "mdi-script-text-key",
+    "canShow": true,
+    "group": "system",
+    "order": 50,
+    "canRead": false
+  },
+  {
+    "handle": "sessionStore",
+    "canShow": true,
+    "icon": "mdi-database",
+    "group": "system",
+    "order": 60
+  },
+  {
+    "handle": "aiProviderType",
+    "canShow": true,
+    "icon": "mdi-forum",
+    "group": "ai",
+    "order": 10,
+    "canRead": true,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "aiProviderModel",
+    "canShow": true,
+    "icon": "mdi-forum",
+    "group": "ai",
+    "order": 20,
+    "canRead": true,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "aiChatSession",
+    "canShow": true,
+    "icon": "mdi-forum",
+    "group": "chat",
+    "order": 10,
+    "canRead": true,
+    "canInsert": false,
+    "canUpdate": false,
+    "canDelete": true
+  },
+  {
+    "handle": "aiChatMessage",
+    "canShow": true,
+    "icon": "mdi-forum",
+    "group": "chat",
+    "order": 20,
+    "canRead": true,
+    "canInsert": false,
+    "canUpdate": false,
+    "canDelete": true
+  },
+  {
+    "handle": "aiChatTranscription",
+    "canShow": true,
+    "icon": "mdi-microphone-message",
+    "group": "chat",
+    "order": 30,
+    "canRead": true,
+    "canInsert": false,
+    "canUpdate": false,
+    "canDelete": true
+  },
+  {
+    "handle": "mcpServerConfig",
+    "canShow": true,
+    "icon": "mdi-wrench-cog",
+    "group": "mcp",
+    "order": 10,
+    "canRead": true,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "changeLog",
+    "canShow": true,
+    "icon": "mdi-history",
+    "group": "auditTrail",
+    "order": 10
+  },
+  {
+    "handle": "changeLogDetail",
+    "canShow": true,
+    "icon": "mdi-format-list-bulleted-square",
+    "group": "auditTrail",
+    "order": 20
+  },
+  {
+    "handle": "changeLogAction",
+    "canShow": true,
+    "icon": "mdi-history",
+    "group": "auditTrail",
+    "order": 30,
+    "canUpdate": true
+  },
+  {
+    "handle": "inboxTemplate",
+    "canShow": true,
+    "icon": "mdi-bell-cog-outline",
+    "group": "inbox",
+    "order": 90,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "inboxSubscription",
+    "canShow": true,
+    "icon": "mdi-bell-badge-outline",
+    "group": "inbox",
+    "order": 100,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "inboxNotification",
+    "canShow": true,
+    "icon": "mdi-bell-outline",
+    "group": "inbox",
+    "order": 110,
+    "canUpdate": true
+  },
+  {
+    "handle": "saplingFormConfig",
+    "canShow": true,
+    "icon": "mdi-table-cog",
+    "group": "metadata",
+    "order": 40,
+    "canRead": true,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "effortEstimate",
+    "canShow": true,
+    "icon": "mdi-clipboard-text-clock-outline",
+    "group": "effortEstimate",
+    "order": 40,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "effortEstimateStatus",
+    "canShow": true,
+    "icon": "mdi-progress-check",
+    "group": "effortEstimate",
+    "order": 42,
+    "canUpdate": true
+  },
+  {
+    "handle": "effortEstimatePosition",
+    "canShow": true,
+    "icon": "mdi-format-list-numbered",
+    "group": "effortEstimate",
+    "order": 45,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "effortEstimatePositionTemplate",
+    "canShow": true,
+    "icon": "mdi-file-document-edit-outline",
+    "group": "effortEstimate",
+    "order": 50,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "personPasskey",
+    "canShow": true,
+    "icon": "mdi-key-variant",
+    "group": "authentication",
+    "order": 25,
+    "canInsert": false,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "knowledgeArticle",
+    "canShow": true,
+    "icon": "mdi-lightbulb-on-outline",
+    "group": "knowledge",
+    "order": 10,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "knowledgeArticleCategory",
+    "canShow": true,
+    "icon": "mdi-shape-outline",
+    "group": "knowledge",
+    "order": 20,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "knowledgeArticleStatus",
+    "canShow": true,
+    "icon": "mdi-progress-check",
+    "group": "knowledge",
+    "order": 30,
+    "canUpdate": true
+  },
+  {
+    "handle": "knowledgeArticleVisibility",
+    "canShow": true,
+    "icon": "mdi-eye-outline",
+    "group": "knowledge",
+    "order": 40,
+    "canUpdate": true
+  },
+  {
+    "handle": "aiEntityGenerationTemplate",
+    "canShow": true,
+    "icon": "mdi-creation",
+    "group": "ai",
+    "order": 30,
+    "canRead": true,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "calendarSyncSubscription",
+    "canShow": true,
+    "icon": "mdi-calendar-sync-outline",
+    "group": "event",
+    "order": 80,
+    "canRead": true,
+    "canInsert": false,
+    "canUpdate": true,
+    "canDelete": false
+  },
+  {
+    "handle": "companyIndustry",
+    "canShow": true,
+    "icon": "mdi-factory",
+    "group": "company",
+    "order": 31,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "companySegment",
+    "canShow": true,
+    "icon": "mdi-account-group-outline",
+    "group": "company",
+    "order": 32,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "companySize",
+    "canShow": true,
+    "icon": "mdi-office-building",
+    "group": "company",
+    "order": 33,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "companyAnnualRevenueClass",
+    "canShow": true,
+    "icon": "mdi-cash-multiple",
+    "group": "company",
+    "order": 34,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "companyChurnRiskReason",
+    "canShow": true,
+    "icon": "mdi-alert-outline",
+    "group": "company",
+    "order": 35,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "personSalutation",
+    "canShow": true,
+    "icon": "mdi-card-account-details-outline",
+    "group": "person",
+    "order": 70,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "personTitle",
+    "canShow": true,
+    "icon": "mdi-school-outline",
+    "group": "person",
+    "order": 80,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "personJobTitle",
+    "canShow": true,
+    "icon": "mdi-briefcase-account-outline",
+    "group": "person",
+    "order": 90,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "personFunction",
+    "canShow": true,
+    "icon": "mdi-account-tie-outline",
+    "group": "person",
+    "order": 100,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "personDecisionRole",
+    "canShow": true,
+    "icon": "mdi-account-check-outline",
+    "group": "person",
+    "order": 110,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "salesOpportunityResultStatus",
+    "canShow": true,
+    "icon": "mdi-circle-outline",
+    "group": "sales",
+    "order": 50,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "salesOpportunityLossReason",
+    "canShow": true,
+    "icon": "mdi-close-circle-outline",
+    "group": "sales",
+    "order": 60,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "marketingCampaign",
+    "canShow": true,
+    "icon": "mdi-bullhorn-outline",
+    "group": "mails",
+    "order": 45,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "marketingCampaignStatus",
+    "canShow": true,
+    "icon": "mdi-calendar-clock",
+    "group": "mails",
+    "order": 46,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "marketingCampaignType",
+    "canShow": true,
+    "icon": "mdi-bullhorn",
+    "group": "mails",
+    "order": 47,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "importSource",
+    "canShow": true,
+    "icon": "mdi-database-import-outline",
+    "group": "import",
+    "order": 70,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "importTemplate",
+    "canShow": true,
+    "icon": "mdi-table-cog",
+    "group": "import",
+    "order": 75,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "importTemplateValueMapping",
+    "canShow": true,
+    "icon": "mdi-swap-horizontal",
+    "group": "import",
+    "order": 76,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "importBatch",
+    "canShow": true,
+    "icon": "mdi-table-arrow-up",
+    "group": "import",
+    "order": 80,
+    "canInsert": false,
+    "canUpdate": false,
+    "canDelete": true
+  },
+  {
+    "handle": "importBatchRow",
+    "canShow": true,
+    "icon": "mdi-table-row",
+    "group": "import",
+    "order": 81,
+    "canInsert": false,
+    "canUpdate": false,
+    "canDelete": true
+  },
+  {
+    "handle": "externalRecordLink",
+    "canShow": true,
+    "icon": "mdi-link-variant",
+    "group": "import",
+    "order": 90,
+    "canInsert": false,
+    "canUpdate": false,
+    "canDelete": false
+  },
+  {
+    "handle": "aiAgent",
+    "canShow": true,
+    "icon": "mdi-creation",
+    "group": "ai",
+    "order": 25,
+    "canRead": true,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "aiChatToolAction",
+    "canShow": true,
+    "icon": "mdi-check-decagram-outline",
+    "group": "chat",
+    "order": 40,
+    "canRead": true,
+    "canInsert": false,
+    "canUpdate": false,
+    "canDelete": false
+  },
+  {
+    "handle": "aiAgentVersion",
+    "canShow": true,
+    "icon": "mdi-source-branch",
+    "group": "ai",
+    "order": 26,
+    "canRead": true,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "aiAgentPlaybook",
+    "canShow": true,
+    "icon": "mdi-format-list-checks",
+    "group": "ai",
+    "order": 27,
+    "canRead": true,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "aiAgentMemory",
+    "canShow": true,
+    "icon": "mdi-brain",
+    "group": "ai",
+    "order": 28,
+    "canRead": true,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "aiAgentRun",
+    "canShow": true,
+    "icon": "mdi-chart-timeline-variant",
+    "group": "ai",
+    "order": 29,
+    "canRead": true,
+    "canInsert": false,
+    "canUpdate": false,
+    "canDelete": false
+  },
+  {
+    "handle": "aiAgentEvaluation",
+    "canShow": true,
+    "icon": "mdi-clipboard-check-outline",
+    "group": "ai",
+    "order": 30,
+    "canRead": true,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "aiChatAttachment",
+    "canShow": false,
+    "icon": "mdi-paperclip",
+    "group": "chat",
+    "order": 45,
+    "canRead": true,
+    "canInsert": false,
+    "canUpdate": false,
+    "canDelete": false
+  },
+  {
+    "handle": "customFieldDefinition",
+    "canShow": true,
+    "icon": "mdi-form-textbox",
+    "group": "system",
+    "order": 80,
+    "canRead": true,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "customFieldType",
+    "canShow": true,
+    "icon": "mdi-form-select",
+    "group": "system",
+    "order": 81,
+    "canRead": true,
+    "canInsert": false,
+    "canUpdate": true,
+    "canDelete": false
+  },
+  {
+    "handle": "customFieldValue",
+    "canShow": false,
+    "icon": "mdi-form-textbox-lock",
+    "group": "system",
+    "order": 82,
+    "canRead": true,
+    "canInsert": false,
+    "canUpdate": false,
+    "canDelete": false
+  },
+  {
+    "handle": "emailSubscription",
+    "icon": "mdi-email-sync-outline",
+    "canShow": true,
+    "group": "mails",
+    "order": 15,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "emailSubscriptionCondition",
+    "icon": "mdi-filter-cog-outline",
+    "canShow": false,
+    "group": "mails",
+    "order": 16,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "internalCase",
+    "canShow": true,
+    "icon": "mdi-clipboard-text-outline",
+    "group": "internalCase",
+    "order": 10,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "internalCaseStatus",
+    "canShow": true,
+    "icon": "mdi-progress-check",
+    "group": "internalCase",
+    "order": 20,
+    "canUpdate": true
+  },
+  {
+    "handle": "internalCaseCategory",
+    "canShow": true,
+    "icon": "mdi-shape-outline",
+    "group": "internalCase",
+    "order": 30,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  }
 ]

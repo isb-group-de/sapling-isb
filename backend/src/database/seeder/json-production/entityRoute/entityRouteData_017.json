@@ -1,5 +1,0 @@
-[
-  { "entity": "customFieldDefinition", "route": "table/customFieldDefinition" },
-  { "entity": "customFieldType", "route": "table/customFieldType" },
-  { "entity": "customFieldValue", "route": "table/customFieldValue" }
-]

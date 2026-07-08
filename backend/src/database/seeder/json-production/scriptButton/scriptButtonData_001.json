@@ -34,5 +34,32 @@
     "title": "teamsDelivery.scriptRepeatDelivery",
     "entity": "teamsDelivery",
     "isMultiSelect": false
+  },
+  {
+    "name": "aiCreateKnowledgeArticle",
+    "title": "ticket.scriptAiCreateKnowledgeArticle",
+    "entity": "ticket",
+    "parameter": {
+      "template": "ticketKnowledgeArticle"
+    },
+    "isMultiSelect": false
+  },
+  {
+    "name": "aiSuggestSimilarEstimates",
+    "title": "effortEstimate.scriptAiSuggestSimilarEstimates",
+    "entity": "effortEstimate",
+    "isMultiSelect": false
+  },
+  {
+    "name": "aiFindOpportunityReferences",
+    "title": "salesOpportunity.scriptAiFindOpportunityReferences",
+    "entity": "salesOpportunity",
+    "isMultiSelect": false
+  },
+  {
+    "name": "aiFindTicketReferences",
+    "title": "ticket.scriptAiFindTicketReferences",
+    "entity": "ticket",
+    "isMultiSelect": false
   }
 ]

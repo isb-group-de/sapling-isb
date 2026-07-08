@@ -1,4 +1,0 @@
-[
-  { "entity": "eventAzure", "route": "table/eventAzure" },
-  { "entity": "eventGoogle", "route": "table/eventGoogle" }
-]

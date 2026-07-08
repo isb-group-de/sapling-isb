@@ -1,3 +1,126 @@
 [
-  { "handle": "inbox", "icon": "mdi-inbox", "isExpanded": false, "sortOrder": 50, "parent": "operations" }
+  {
+    "handle": "person",
+    "parent": "workspace"
+  },
+  {
+    "handle": "company",
+    "parent": "workspace"
+  },
+  {
+    "handle": "relationship",
+    "parent": "workspace"
+  },
+  {
+    "handle": "contract",
+    "parent": "salesArea"
+  },
+  {
+    "handle": "landscape",
+    "parent": "workspace"
+  },
+  {
+    "handle": "document",
+    "parent": "knowledgePool"
+  },
+  {
+    "handle": "note",
+    "parent": "knowledgePool"
+  },
+  {
+    "handle": "event",
+    "parent": "operations"
+  },
+  {
+    "handle": "ticket",
+    "parent": "operations"
+  },
+  {
+    "handle": "support",
+    "parent": "operations"
+  },
+  {
+    "handle": "sales",
+    "parent": "salesArea"
+  },
+  {
+    "handle": "mails",
+    "parent": "communication"
+  },
+  {
+    "handle": "teams",
+    "parent": "communication"
+  },
+  {
+    "handle": "kpi",
+    "parent": "insights"
+  },
+  {
+    "handle": "administration",
+    "parent": "rightsManagement"
+  },
+  {
+    "handle": "localisation",
+    "parent": "platform"
+  },
+  {
+    "handle": "webhook",
+    "parent": "systemOperations"
+  },
+  {
+    "handle": "authentication",
+    "parent": "rightsManagement"
+  },
+  {
+    "handle": "system",
+    "parent": "systemOperations"
+  },
+  {
+    "handle": "chat",
+    "parent": "ai"
+  },
+  {
+    "handle": "mcp",
+    "parent": "ai"
+  },
+  {
+    "handle": "inbox",
+    "parent": "communication"
+  },
+  {
+    "handle": "effortEstimate",
+    "parent": "salesArea"
+  },
+  {
+    "handle": "knowledge",
+    "parent": "knowledgePool"
+  },
+  {
+    "handle": "import",
+    "parent": "systemOperations"
+  },
+  {
+    "handle": "auditTrail",
+    "parent": "systemOperations"
+  },
+  {
+    "handle": "metadata",
+    "parent": "platform"
+  },
+  {
+    "handle": "workspaceTools",
+    "parent": "platform"
+  },
+  {
+    "handle": "internalCase",
+    "parent": "office"
+  },
+  {
+    "handle": "salesCalendar",
+    "parent": "salesArea"
+  },
+  {
+    "handle": "officeCalendar",
+    "parent": "office"
+  }
 ]

@@ -1,4 +1,0 @@
-[
-  { "entity": "changeLog", "route": "table/changeLog" },
-  { "entity": "changeLogDetail", "route": "table/changeLogDetail" }
-]
