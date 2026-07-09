@@ -680,6 +680,11 @@
     "entity": "eventGoogle",
     "route": "table/eventGoogle",
     "group": "salesCalendar"
+  },  
+  {
+    "entity": "calendarSyncSubscription",
+    "route": "table/calendarSyncSubscription",
+    "group": "salesCalendar"
   },
   {
     "entity": "event",
@@ -730,6 +735,11 @@
   {
     "entity": "eventGoogle",
     "route": "table/eventGoogle",
+    "group": "officeCalendar"
+  },
+  {
+    "entity": "calendarSyncSubscription",
+    "route": "table/calendarSyncSubscription",
     "group": "officeCalendar"
   },
   {

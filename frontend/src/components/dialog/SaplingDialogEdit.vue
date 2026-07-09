@@ -334,6 +334,7 @@ const {
 })
 
 const formSurfaceRef = ref<HTMLElement | null>(null)
+const hasFocusedCurrentOpenDialog = ref(false)
 
 const {
   canDeleteRecord,
@@ -562,10 +563,11 @@ watch(
  * data and matches typical CRUD UX conventions.
  */
 async function focusFirstField(): Promise<void> {
-  if (props.mode === 'readonly') {
+  if (props.mode === 'readonly' || hasFocusedCurrentOpenDialog.value) {
     return
   }
 
+  hasFocusedCurrentOpenDialog.value = true
   await nextTick()
   const surface = formSurfaceRef.value
   if (!surface) {
@@ -594,6 +596,11 @@ async function focusFirstField(): Promise<void> {
 watch(
   () => [props.modelValue, isLoading.value, props.mode] as const,
   ([isOpen, loading]) => {
+    if (!isOpen) {
+      hasFocusedCurrentOpenDialog.value = false
+      return
+    }
+
     if (isOpen && !loading) {
       void focusFirstField()
     }
