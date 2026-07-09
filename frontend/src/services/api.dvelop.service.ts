@@ -21,6 +21,7 @@ export interface DvelopImportedRepository {
 
 export interface DvelopImportedProperty {
   dvelopId: string
+  objectDefinitionId?: string | null
   title: string
   dataType?: string | null
   description?: string | null
@@ -55,6 +56,29 @@ export interface DvelopConfigurationImportResponse {
   properties: DvelopConfigurationImportSummary
 }
 
+export type DvelopHealthCheckStatus = 'success' | 'warning' | 'error'
+
+export type DvelopHealthCheckCapabilityKey =
+  | 'apiKey'
+  | 'repositories'
+  | 'objectDefinitions'
+  | 'properties'
+
+export interface DvelopHealthCheckCapability {
+  key: DvelopHealthCheckCapabilityKey
+  status: DvelopHealthCheckStatus
+  message: string
+  count?: number
+}
+
+export interface DvelopHealthCheckResponse {
+  status: DvelopHealthCheckStatus
+  checkedAt: string
+  connectionHandle: number
+  repositoryId?: string | null
+  capabilities: DvelopHealthCheckCapability[]
+}
+
 class ApiDvelopService {
   static async importConfiguration(
     connectionHandle: number,
@@ -80,6 +104,20 @@ class ApiDvelopService {
       const response = await axios.post<DvelopConfigurationImportResponse>(
         buildApiUrl(`document/dvelop/config/${connectionHandle}/sync`),
         payload,
+      )
+      return response.data
+    } catch (error: unknown) {
+      pushApiErrorMessage(error, 'exception.unknownError', 'dvelopCloud')
+      throw error
+    }
+  }
+
+  static async healthCheckConfiguration(
+    connectionHandle: number,
+  ): Promise<DvelopHealthCheckResponse> {
+    try {
+      const response = await axios.post<DvelopHealthCheckResponse>(
+        buildApiUrl(`document/dvelop/config/${connectionHandle}/health`),
       )
       return response.data
     } catch (error: unknown) {

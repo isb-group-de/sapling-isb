@@ -33,13 +33,16 @@ export class Migration20260708153000 extends Migration {
     );
 
     this.addSql(
-      `create table "dvelop_property_item" ("handle" serial primary key, "connection_handle" int not null, "title" varchar(256) not null, "dvelop_id" varchar(128) not null, "data_type" varchar(64) null, "description" text null, "is_required" boolean not null default false, "is_multi_value" boolean not null default false, "is_active" boolean not null default true, "last_synced_at" timestamptz null, "created_at" timestamptz not null, "updated_at" timestamptz not null);`,
+      `create table "dvelop_property_item" ("handle" serial primary key, "connection_handle" int not null, "object_definition_handle" int null, "title" varchar(256) not null, "dvelop_id" varchar(128) not null, "data_type" varchar(64) null, "description" text null, "is_required" boolean not null default false, "is_multi_value" boolean not null default false, "is_active" boolean not null default true, "last_synced_at" timestamptz null, "created_at" timestamptz not null, "updated_at" timestamptz not null);`,
     );
     this.addSql(
       `create index "dvelop_property_item_connection_handle_index" on "dvelop_property_item" ("connection_handle");`,
     );
     this.addSql(
-      `alter table "dvelop_property_item" add constraint "dvelop_property_item_connection_handle_dvelop_id_unique" unique ("connection_handle", "dvelop_id");`,
+      `create index "dvelop_property_item_object_definition_handle_index" on "dvelop_property_item" ("object_definition_handle");`,
+    );
+    this.addSql(
+      `alter table "dvelop_property_item" add constraint "dvelop_property_item_connection_handle_object_definition_handle_dvelop_id_unique" unique ("connection_handle", "object_definition_handle", "dvelop_id");`,
     );
 
     this.addSql(
@@ -98,6 +101,9 @@ export class Migration20260708153000 extends Migration {
     this.addSql(
       `alter table "dvelop_property_item" add constraint "dvelop_property_item_connection_handle_foreign" foreign key ("connection_handle") references "dvelop_connection_item" ("handle") on update cascade;`,
     );
+    this.addSql(
+      `alter table "dvelop_property_item" add constraint "dvelop_property_item_object_definition_handle_foreign" foreign key ("object_definition_handle") references "dvelop_object_definition_item" ("handle") on update cascade on delete set null;`,
+    );
 
     this.addSql(
       `alter table "dvelop_entity_mapping_item" add constraint "dvelop_entity_mapping_item_connection_handle_foreign" foreign key ("connection_handle") references "dvelop_connection_item" ("handle") on update cascade;`,
@@ -137,6 +143,9 @@ export class Migration20260708153000 extends Migration {
     );
     this.addSql(
       `alter table "dvelop_property_item" drop constraint "dvelop_property_item_connection_handle_foreign";`,
+    );
+    this.addSql(
+      `alter table "dvelop_property_item" drop constraint "dvelop_property_item_object_definition_handle_foreign";`,
     );
     this.addSql(
       `alter table "dvelop_entity_mapping_item" drop constraint "dvelop_entity_mapping_item_connection_handle_foreign";`,

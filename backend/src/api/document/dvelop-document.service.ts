@@ -12,6 +12,11 @@ import { ENTITY_MAP } from '../../entity/global/entity.registry';
 
 type SaplingRecord = Record<string, unknown>;
 
+const DVELOP_STORAGE_DIALOG_EXCLUDED_PROPERTY_IDS = new Set([
+  'property_caption',
+  'property_remark',
+]);
+
 export interface DvelopDocumentActionResponse {
   isActive: boolean;
   mode: 'dvelopCloud' | 'local';
@@ -26,6 +31,7 @@ interface ResolvedDvelopContext {
   connection: DvelopConnectionItem;
   record: SaplingRecord;
   properties: Record<string, string>;
+  storageObjectDefinitionId: string | null;
 }
 
 @Injectable()
@@ -90,13 +96,11 @@ export class DvelopDocumentService {
       this.requireConnectionRepositoryId(context.connection),
     );
 
-    const objectDefinitionId =
-      this.getObjectDefinitionDvelopId(context.mapping.objectDefinition) ??
-      this.getObjectDefinitionDvelopId(
-        context.connection.defaultObjectDefinition,
+    if (context.storageObjectDefinitionId) {
+      url.searchParams.set(
+        'objectdefinitionid',
+        context.storageObjectDefinitionId,
       );
-    if (objectDefinitionId) {
-      url.searchParams.set('objectdefinitionid', objectDefinitionId);
     }
 
     url.searchParams.set('properties', JSON.stringify(context.properties));
@@ -123,6 +127,7 @@ export class DvelopDocumentService {
           'entity',
           'objectDefinition',
           'propertyMappings.property',
+          'propertyMappings.property.objectDefinition',
           'searchCategories.objectDefinition',
         ],
         orderBy: { handle: 'ASC' },
@@ -149,22 +154,51 @@ export class DvelopDocumentService {
       throw new NotFoundException('global.recordNotFound');
     }
 
-    const properties = this.resolveProperties(mapping, record);
+    const storageObjectDefinitionId = this.getStorageObjectDefinitionId(
+      mapping,
+      connection,
+    );
+    const properties = this.resolveProperties(
+      mapping,
+      record,
+      storageObjectDefinitionId,
+    );
 
-    return { mapping, connection, record, properties };
+    return {
+      mapping,
+      connection,
+      record,
+      properties,
+      storageObjectDefinitionId,
+    };
   }
 
   private resolveProperties(
     mapping: DvelopEntityMappingItem,
     record: SaplingRecord,
+    storageObjectDefinitionId: string | null,
   ): Record<string, string> {
     const properties: Record<string, string> = {};
 
     const propertyMappings = this.getActivePropertyMappings(mapping);
     for (const propertyMapping of propertyMappings) {
+      if (
+        !this.propertyMatchesObjectDefinition(
+          propertyMapping,
+          storageObjectDefinitionId,
+        )
+      ) {
+        continue;
+      }
+
       const dvelopProperty = this.getPropertyDvelopId(propertyMapping)?.trim();
 
-      if (!dvelopProperty) {
+      if (
+        !dvelopProperty ||
+        DVELOP_STORAGE_DIALOG_EXCLUDED_PROPERTY_IDS.has(
+          dvelopProperty.toLowerCase(),
+        )
+      ) {
         continue;
       }
 
@@ -265,6 +299,16 @@ export class DvelopDocumentService {
     return objectDefinitionId ? [objectDefinitionId] : [];
   }
 
+  private getStorageObjectDefinitionId(
+    mapping: DvelopEntityMappingItem,
+    connection: DvelopConnectionItem,
+  ): string | null {
+    return (
+      this.getObjectDefinitionDvelopId(mapping.objectDefinition) ??
+      this.getObjectDefinitionDvelopId(connection.defaultObjectDefinition)
+    );
+  }
+
   private getActivePropertyMappings(
     mapping: DvelopEntityMappingItem,
   ): DvelopEntityMappingPropertyItem[] {
@@ -299,6 +343,29 @@ export class DvelopDocumentService {
     }
 
     return null;
+  }
+
+  private propertyMatchesObjectDefinition(
+    propertyMapping: DvelopEntityMappingPropertyItem,
+    storageObjectDefinitionId: string | null,
+  ): boolean {
+    const property = propertyMapping.property;
+    if (
+      !property ||
+      typeof property !== 'object' ||
+      !('objectDefinition' in property)
+    ) {
+      return true;
+    }
+
+    const propertyObjectDefinitionId = this.getObjectDefinitionDvelopId(
+      property.objectDefinition ?? undefined,
+    );
+    if (!propertyObjectDefinitionId) {
+      return true;
+    }
+
+    return propertyObjectDefinitionId === storageObjectDefinitionId;
   }
 
   private async findRecord(

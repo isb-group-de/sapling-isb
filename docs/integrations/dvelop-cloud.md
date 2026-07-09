@@ -27,7 +27,7 @@ Official references:
 
 `DvelopObjectDefinitionItem` stores synchronized d.velop Cloud categories for one connection. Sapling keeps the d.velop category key in `dvelopId` and uses the record relation wherever a category must be selected.
 
-`DvelopPropertyItem` stores synchronized d.velop Cloud properties for one connection. Sapling keeps the d.velop property key in `dvelopId` and uses it for search and storage dialog prefill values.
+`DvelopPropertyItem` stores synchronized d.velop Cloud properties for one connection and, when known, one d.velop storage category. Sapling keeps the d.velop property key in `dvelopId` and uses it for search and storage dialog prefill values. Category-specific properties must match the storage category selected on the entity mapping; global properties without a category remain usable as fallback fields.
 
 `DvelopEntityMappingItem` maps a Sapling entity to d.velop Cloud:
 
@@ -52,7 +52,15 @@ configured AI agent confirmation mode and generic permissions.
 
 The custom d.velop Cloud configuration page (`/dvelop-cloud`) asks the Sapling backend to load repositories, categories, and properties from the configured d.velop Cloud instance. Sapling sends the configured API key as an `Authorization: Bearer ...` header, normalizes the returned metadata, and stores it in the dedicated d.velop entities.
 
-Repository synchronization reads `/dms/r`. For category synchronization Sapling first reads d.velop object definitions from `/dms/r/{repositoryId}/objdef` and falls back to `/dmsconfig/r/{repositoryId}/objectmanagement/categories/` plus older configuration endpoint variants. Properties are primarily derived from the object definition `propertyFields`; if a category does not include those fields, Sapling loads the category detail from `/dmsconfig/r/{repositoryId}/objectmanagement/categories/{categoryId}` and extracts the embedded properties.
+Repository synchronization reads `/dms/r`. For category synchronization Sapling first reads d.velop object definitions from `/dms/r/{repositoryId}/objdef` and falls back to `/dmsconfig/r/{repositoryId}/objectmanagement/categories/` plus older configuration endpoint variants. Properties are primarily derived from the object definition `propertyFields`; if a category does not include those fields, Sapling loads the category detail from `/dmsconfig/r/{repositoryId}/objectmanagement/categories/{categoryId}` and extracts the embedded properties. In both cases Sapling stores the originating category on the property record so mapping and upload prefill cannot accidentally send fields from a different d.velop category.
+
+The sync endpoint automatically includes prerequisites for explicit sync actions:
+
+- `repositories`: loads only repositories and selects the default/first repository when none is configured yet.
+- `objectDefinitions`: loads repositories first when the connection has no repository, then loads categories.
+- `properties`: loads repositories when needed, always refreshes categories, then loads properties.
+
+The d.velop Cloud workspace also exposes a healthcheck for the configured API key. It does not persist metadata. Instead, it executes the same capability checks Sapling needs at runtime: local API key/base URL validation, repository access, category/object definition access, and property access. The result is reported per capability with success, warning, or error status.
 
 ## Runtime Flow
 
@@ -64,6 +72,8 @@ The frontend never switches directly to d.velop Cloud by hard-coded client logic
 | Upload document | `GET /api/document/dvelop/upload-dialog/:entityHandle/:reference` | Opens d.velop Cloud storage dialog | Opens local Sapling upload dialog |
 
 The browser user session is responsible for d.velop Cloud authentication. Sapling does not upload the selected binary file to d.velop Cloud in this flow; it opens the official d.velop Cloud storage dialog with prefilled properties.
+
+d.velop exposes some system-like properties through metadata that are not accepted by the storage dialog as URL prefill properties. Sapling keeps those properties synchronized for transparency, but excludes `property_caption` and `property_remark` from storage dialog prefill values.
 
 ## d.velop Cloud Dialog URLs
 

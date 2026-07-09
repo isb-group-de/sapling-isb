@@ -42,6 +42,7 @@ import { DvelopConfigurationService } from './dvelop-configuration.service';
 import type {
   DvelopConfigurationImportPayload,
   DvelopConfigurationImportResponse,
+  DvelopHealthCheckResponse,
   DvelopConfigurationSyncPayload,
 } from './dvelop-configuration.service';
 
@@ -320,6 +321,33 @@ export class DocumentController {
     return this.getDvelopConfigurationService().syncConfiguration(
       Number(connectionHandle),
       payload,
+    );
+  }
+
+  @Post('dvelop/config/:connectionHandle/health')
+  @ApiOperation({
+    summary: 'Check d.velop Cloud configuration API access',
+    description:
+      'Checks whether the configured API key can access repositories, object definitions, and properties required by Sapling.',
+  })
+  @ApiParam({
+    name: 'connectionHandle',
+    type: 'number',
+    description: 'Numeric handle of the d.velop Cloud connection.',
+  })
+  @ApiResponse({
+    status: 201,
+    description:
+      'Healthcheck result for the configured d.velop Cloud API capabilities.',
+  })
+  @UseGuards(GenericPermissionGuard)
+  @GenericPermissionEntity('dvelopConnection')
+  @GenericPermission('allowUpdate')
+  async healthCheckDvelopConfiguration(
+    @Param('connectionHandle') connectionHandle: string,
+  ): Promise<DvelopHealthCheckResponse> {
+    return this.getDvelopConfigurationService().healthCheckConfiguration(
+      Number(connectionHandle),
     );
   }
 

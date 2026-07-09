@@ -94,14 +94,48 @@
             </strong>
           </div>
         </div>
+
+        <div class="sapling-dvelop-cloud__health-strip">
+          <div class="sapling-dvelop-cloud__health-summary">
+            <span class="sapling-label">{{ $t('dvelopCloud.healthStatus') }}</span>
+            <v-chip
+              :color="healthOptionalStatusColor(healthCheckResult?.status)"
+              size="small"
+              variant="tonal"
+            >
+              {{ formatOptionalHealthStatus(healthCheckResult?.status) }}
+            </v-chip>
+          </div>
+          <div class="sapling-dvelop-cloud__health-capabilities">
+            <v-chip
+              v-for="capability in healthCapabilityRows"
+              :key="capability.key"
+              :color="healthOptionalStatusColor(capability.status)"
+              :prepend-icon="healthStatusIcon(capability.status)"
+              size="small"
+              variant="tonal"
+            >
+              {{ formatCompactCapability(capability) }}
+            </v-chip>
+          </div>
+        </div>
       </div>
 
       <div class="sapling-action-cluster sapling-dvelop-cloud__sync-actions">
         <v-btn
+          variant="tonal"
+          prepend-icon="mdi-shield-check-outline"
+          :disabled="!selectedConnection || isAnySyncing"
+          :loading="isCheckingHealth"
+          @click="runHealthCheck"
+        >
+          {{ $t('dvelopCloud.healthCheck') }}
+        </v-btn>
+        <v-btn
           color="primary"
           variant="flat"
           prepend-icon="mdi-download"
-          :disabled="!selectedConnection"
+          :disabled="!selectedConnection || isCheckingHealth"
           :loading="isSyncingAll"
           @click="syncAll"
         >
@@ -109,8 +143,17 @@
         </v-btn>
         <v-btn
           variant="tonal"
+          prepend-icon="mdi-database-sync-outline"
+          :disabled="!selectedConnection || isAnySyncing || isCheckingHealth"
+          :loading="isSyncingRepositories"
+          @click="syncRepositories"
+        >
+          {{ $t('dvelopCloud.syncRepositories') }}
+        </v-btn>
+        <v-btn
+          variant="tonal"
           prepend-icon="mdi-shape-outline"
-          :disabled="!selectedConnection || isAnySyncing"
+          :disabled="!selectedConnection || isAnySyncing || isCheckingHealth"
           :loading="isSyncingObjectDefinitions"
           @click="syncObjectDefinitions"
         >
@@ -119,13 +162,14 @@
         <v-btn
           variant="tonal"
           prepend-icon="mdi-tag-multiple-outline"
-          :disabled="!selectedConnection || isAnySyncing"
+          :disabled="!selectedConnection || isAnySyncing || isCheckingHealth"
           :loading="isSyncingProperties"
           @click="syncProperties"
         >
           {{ $t('dvelopCloud.syncProperties') }}
         </v-btn>
       </div>
+
     </SaplingSurface>
 
     <section
@@ -281,6 +325,7 @@
           <thead>
             <tr>
               <th>{{ $t('dvelopProperty.title') }}</th>
+              <th>{{ $t('dvelopProperty.objectDefinition') }}</th>
               <th>{{ $t('dvelopProperty.dvelopId') }}</th>
               <th>{{ $t('dvelopProperty.dataType') }}</th>
             </tr>
@@ -288,11 +333,12 @@
           <tbody>
             <tr v-for="item in properties" :key="item.handle ?? item.dvelopId">
               <td>{{ item.title }}</td>
+              <td>{{ formatReference(item.objectDefinition) }}</td>
               <td>{{ item.dvelopId }}</td>
               <td>{{ item.dataType || $t('global.notAvailable') }}</td>
             </tr>
             <tr v-if="properties.length === 0">
-              <td colspan="3">
+              <td colspan="4">
                 <div class="sapling-inline-empty">{{ emptyStateLabel }}</div>
               </td>
             </tr>
@@ -313,7 +359,11 @@ import SaplingSurface from '@/components/common/SaplingSurface.vue'
 import { useTranslationLoader } from '@/composables/generic/useTranslationLoader'
 import { useSaplingMessageCenter } from '@/composables/system/useSaplingMessageCenter'
 import type { SaplingGenericItem } from '@/entity/entity'
-import ApiDvelopService from '@/services/api.dvelop.service'
+import ApiDvelopService, {
+  type DvelopHealthCheckCapabilityKey,
+  type DvelopHealthCheckResponse,
+  type DvelopHealthCheckStatus,
+} from '@/services/api.dvelop.service'
 import ApiGenericService from '@/services/api.generic.service'
 // #endregion
 
@@ -343,11 +393,24 @@ interface DvelopPropertyItem extends SaplingGenericItem {
   handle?: number | null
   title: string
   dvelopId: string
+  objectDefinition?: SaplingGenericItem | string | number | null
   dataType?: string | null
   lastSyncedAt?: string | Date | null
 }
 
+interface HealthCapabilityRow {
+  key: DvelopHealthCheckCapabilityKey
+  status?: DvelopHealthCheckStatus
+  count?: number
+}
+
 const GENERIC_PAGE_LIMIT = 200
+const HEALTH_CAPABILITY_KEYS: DvelopHealthCheckCapabilityKey[] = [
+  'apiKey',
+  'repositories',
+  'objectDefinitions',
+  'properties',
+]
 
 // #region Composables
 useTranslationLoader(
@@ -376,6 +439,8 @@ const isLoadingSyncedData = ref(false)
 const isSyncingRepositories = ref(false)
 const isSyncingObjectDefinitions = ref(false)
 const isSyncingProperties = ref(false)
+const isCheckingHealth = ref(false)
+const healthCheckResult = ref<DvelopHealthCheckResponse | null>(null)
 // #endregion
 
 // #region Computed
@@ -426,6 +491,21 @@ const lastSyncDisplay = computed(() => {
     .sort((left, right) => right.getTime() - left.getTime())
 
   return dates.length > 0 ? formatDateTime(dates[0]) : t('global.notAvailable')
+})
+
+const healthCapabilityRows = computed<HealthCapabilityRow[]>(() => {
+  const capabilities = new Map(
+    healthCheckResult.value?.capabilities.map((capability) => [capability.key, capability]) ?? [],
+  )
+
+  return HEALTH_CAPABILITY_KEYS.map((key) => {
+    const capability = capabilities.get(key)
+    return {
+      key,
+      status: capability?.status,
+      count: capability?.count,
+    }
+  })
 })
 // #endregion
 
@@ -524,6 +604,52 @@ async function syncAll() {
   }
 }
 
+async function runHealthCheck() {
+  if (!selectedConnection.value) {
+    return
+  }
+
+  isCheckingHealth.value = true
+
+  try {
+    healthCheckResult.value = await ApiDvelopService.healthCheckConfiguration(
+      selectedConnection.value.handle,
+    )
+    messageCenter.pushMessage(
+      healthCheckResult.value.status === 'error' ? 'warning' : 'success',
+      t('dvelopCloud.healthCheckCompleted'),
+      formatHealthStatus(healthCheckResult.value.status),
+      'dvelopCloud',
+      healthCheckResult.value,
+    )
+  } catch (error) {
+    handleError(error, t('dvelopCloud.healthCheckFailed'))
+  } finally {
+    isCheckingHealth.value = false
+  }
+}
+
+async function syncRepositories() {
+  if (!selectedConnection.value) {
+    return
+  }
+
+  isSyncingRepositories.value = true
+
+  try {
+    const result = await ApiDvelopService.syncConfiguration(selectedConnection.value.handle, {
+      repositories: true,
+    })
+    pushSyncSuccess(t('dvelopCloud.repositoriesSynced'), formatSummary(result.repositories))
+    await loadConnections()
+    await loadSyncedData()
+  } catch (error) {
+    handleError(error, t('dvelopCloud.syncFailed'))
+  } finally {
+    isSyncingRepositories.value = false
+  }
+}
+
 async function syncObjectDefinitions() {
   if (!selectedConnection.value) {
     return
@@ -537,8 +663,9 @@ async function syncObjectDefinitions() {
     })
     pushSyncSuccess(
       t('dvelopCloud.objectDefinitionsSynced'),
-      formatSummary(result.objectDefinitions),
+      `${formatSummary(result.repositories)} / ${formatSummary(result.objectDefinitions)}`,
     )
+    await loadConnections()
     await loadSyncedData()
   } catch (error) {
     handleError(error, t('dvelopCloud.syncFailed'))
@@ -558,7 +685,11 @@ async function syncProperties() {
     const result = await ApiDvelopService.syncConfiguration(selectedConnection.value.handle, {
       properties: true,
     })
-    pushSyncSuccess(t('dvelopCloud.propertiesSynced'), formatSummary(result.properties))
+    pushSyncSuccess(
+      t('dvelopCloud.propertiesSynced'),
+      `${formatSummary(result.repositories)} / ${formatSummary(result.objectDefinitions)} / ${formatSummary(result.properties)}`,
+    )
+    await loadConnections()
     await loadSyncedData()
   } catch (error) {
     handleError(error, t('dvelopCloud.syncFailed'))
@@ -620,6 +751,72 @@ function resolveRepository(value: DvelopConnectionItem['repository']): DvelopRep
   }
 
   return repositories.value.find((repository) => Number(repository.handle) === handle) ?? null
+}
+
+function formatReference(value: SaplingGenericItem | string | number | null | undefined): string {
+  if (!value) {
+    return t('global.notAvailable')
+  }
+
+  if (typeof value !== 'object') {
+    return String(value)
+  }
+
+  const title = typeof value.title === 'string' ? value.title : null
+  const dvelopId = typeof value.dvelopId === 'string' ? value.dvelopId : null
+  if (title && dvelopId && title !== dvelopId) {
+    return `${title} (${dvelopId})`
+  }
+
+  return title ?? dvelopId ?? String(value.handle ?? t('global.notAvailable'))
+}
+
+function formatHealthStatus(status: DvelopHealthCheckStatus): string {
+  return t(`dvelopCloud.healthStatus${capitalizeStatus(status)}`)
+}
+
+function formatOptionalHealthStatus(status: DvelopHealthCheckStatus | undefined): string {
+  return status ? formatHealthStatus(status) : t('global.notAvailable')
+}
+
+function healthStatusColor(status: DvelopHealthCheckStatus): string {
+  if (status === 'success') {
+    return 'success'
+  }
+
+  return status === 'warning' ? 'warning' : 'error'
+}
+
+function healthOptionalStatusColor(status: DvelopHealthCheckStatus | undefined): string {
+  return status ? healthStatusColor(status) : 'default'
+}
+
+function healthStatusIcon(status: DvelopHealthCheckStatus | undefined): string {
+  if (status === 'success') {
+    return 'mdi-check-circle-outline'
+  }
+
+  if (status === 'warning') {
+    return 'mdi-alert-circle-outline'
+  }
+
+  return status === 'error' ? 'mdi-close-circle-outline' : 'mdi-circle-outline'
+}
+
+function formatCapabilityLabel(key: DvelopHealthCheckCapabilityKey): string {
+  return t(`dvelopCloud.healthCapability${capitalizeCapability(key)}`)
+}
+
+function formatCompactCapability(capability: HealthCapabilityRow): string {
+  return `${formatCapabilityLabel(capability.key)}: ${formatOptionalHealthStatus(capability.status)}`
+}
+
+function capitalizeStatus(status: DvelopHealthCheckStatus): string {
+  return status.charAt(0).toUpperCase() + status.slice(1)
+}
+
+function capitalizeCapability(key: DvelopHealthCheckCapabilityKey): string {
+  return key.charAt(0).toUpperCase() + key.slice(1)
 }
 
 function pushSyncSuccess(message: string, description: string) {

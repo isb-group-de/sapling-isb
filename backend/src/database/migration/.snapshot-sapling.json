@@ -10474,16 +10474,6 @@
         },
         {
           "columnNames": [
-            "repository_handle"
-          ],
-          "composite": false,
-          "constraint": false,
-          "keyName": "dvelop_connection_item_repository_handle_index",
-          "primary": false,
-          "unique": false
-        },
-        {
-          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -10491,6 +10481,16 @@
           "keyName": "dvelop_connection_item_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "repository_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "dvelop_connection_item_repository_handle_index",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
@@ -10521,232 +10521,6 @@
           "referencedTableName": "public.dvelop_repository_item",
           "updateRule": "cascade",
           "deleteRule": "set null"
-        }
-      },
-      "comment": null
-    },
-    {
-      "name": "dvelop_repository_item",
-      "schema": "public",
-      "columns": {
-        "connection_handle": {
-          "name": "connection_handle",
-          "type": "int",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "unique": true,
-          "length": null,
-          "precision": null,
-          "scale": null,
-          "default": null,
-          "comment": null,
-          "collation": null,
-          "enumItems": [],
-          "mappedType": "integer"
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamptz(6)",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "unique": false,
-          "length": 6,
-          "precision": null,
-          "scale": null,
-          "default": null,
-          "comment": null,
-          "collation": null,
-          "enumItems": [],
-          "mappedType": "datetime"
-        },
-        "dvelop_id": {
-          "name": "dvelop_id",
-          "type": "varchar(128)",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "unique": false,
-          "length": 128,
-          "precision": null,
-          "scale": null,
-          "default": null,
-          "comment": null,
-          "collation": null,
-          "enumItems": [],
-          "mappedType": "string"
-        },
-        "handle": {
-          "name": "handle",
-          "type": "int",
-          "unsigned": false,
-          "autoincrement": true,
-          "primary": true,
-          "nullable": false,
-          "unique": false,
-          "length": null,
-          "precision": null,
-          "scale": null,
-          "default": null,
-          "comment": null,
-          "collation": null,
-          "enumItems": [],
-          "mappedType": "integer"
-        },
-        "is_available": {
-          "name": "is_available",
-          "type": "boolean",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "unique": false,
-          "length": null,
-          "precision": null,
-          "scale": null,
-          "default": "true",
-          "comment": null,
-          "collation": null,
-          "enumItems": [],
-          "mappedType": "boolean"
-        },
-        "is_default": {
-          "name": "is_default",
-          "type": "boolean",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "unique": false,
-          "length": null,
-          "precision": null,
-          "scale": null,
-          "default": "false",
-          "comment": null,
-          "collation": null,
-          "enumItems": [],
-          "mappedType": "boolean"
-        },
-        "last_synced_at": {
-          "name": "last_synced_at",
-          "type": "timestamptz(6)",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": true,
-          "unique": false,
-          "length": 6,
-          "precision": null,
-          "scale": null,
-          "default": null,
-          "comment": null,
-          "collation": null,
-          "enumItems": [],
-          "mappedType": "datetime"
-        },
-        "title": {
-          "name": "title",
-          "type": "varchar(256)",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "unique": false,
-          "length": 256,
-          "precision": null,
-          "scale": null,
-          "default": null,
-          "comment": null,
-          "collation": null,
-          "enumItems": [],
-          "mappedType": "string"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamptz(6)",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "unique": false,
-          "length": 6,
-          "precision": null,
-          "scale": null,
-          "default": null,
-          "comment": null,
-          "collation": null,
-          "enumItems": [],
-          "mappedType": "datetime"
-        },
-        "version": {
-          "name": "version",
-          "type": "varchar(64)",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": true,
-          "unique": false,
-          "length": 64,
-          "precision": null,
-          "scale": null,
-          "default": null,
-          "comment": null,
-          "collation": null,
-          "enumItems": [],
-          "mappedType": "string"
-        }
-      },
-      "indexes": [
-        {
-          "columnNames": [
-            "connection_handle",
-            "dvelop_id"
-          ],
-          "composite": true,
-          "constraint": true,
-          "keyName": "dvelop_repository_item_connection_handle_dvelop_id_unique",
-          "primary": false,
-          "unique": true
-        },
-        {
-          "columnNames": [
-            "connection_handle"
-          ],
-          "composite": false,
-          "constraint": false,
-          "keyName": "dvelop_repository_item_connection_handle_index",
-          "primary": false,
-          "unique": false
-        },
-        {
-          "columnNames": [
-            "handle"
-          ],
-          "composite": false,
-          "constraint": true,
-          "keyName": "dvelop_repository_item_pkey",
-          "primary": true,
-          "unique": true
-        }
-      ],
-      "checks": [],
-      "triggers": [],
-      "foreignKeys": {
-        "dvelop_repository_item_connection_handle_foreign": {
-          "columnNames": [
-            "connection_handle"
-          ],
-          "constraintName": "dvelop_repository_item_connection_handle_foreign",
-          "localTableName": "public.dvelop_repository_item",
-          "referencedColumnNames": [
-            "handle"
-          ],
-          "referencedTableName": "public.dvelop_connection_item",
-          "updateRule": "cascade"
         }
       },
       "comment": null
@@ -11773,6 +11547,23 @@
           "enumItems": [],
           "mappedType": "datetime"
         },
+        "object_definition_handle": {
+          "name": "object_definition_handle",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
         "title": {
           "name": "title",
           "type": "varchar(256)",
@@ -11811,22 +11602,33 @@
       "indexes": [
         {
           "columnNames": [
-            "connection_handle",
-            "dvelop_id"
-          ],
-          "composite": true,
-          "constraint": true,
-          "keyName": "dvelop_property_item_connection_handle_dvelop_id_unique",
-          "primary": false,
-          "unique": true
-        },
-        {
-          "columnNames": [
             "connection_handle"
           ],
           "composite": false,
           "constraint": false,
           "keyName": "dvelop_property_item_connection_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "connection_handle",
+            "object_definition_handle",
+            "dvelop_id"
+          ],
+          "composite": true,
+          "constraint": true,
+          "keyName": "dvelop_property_item_connection_handle_object_definition_handle",
+          "primary": false,
+          "unique": true
+        },
+        {
+          "columnNames": [
+            "object_definition_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "dvelop_property_item_object_definition_handle_index",
           "primary": false,
           "unique": false
         },
@@ -11850,6 +11652,245 @@
           ],
           "constraintName": "dvelop_property_item_connection_handle_foreign",
           "localTableName": "public.dvelop_property_item",
+          "referencedColumnNames": [
+            "handle"
+          ],
+          "referencedTableName": "public.dvelop_connection_item",
+          "updateRule": "cascade"
+        },
+        "dvelop_property_item_object_definition_handle_foreign": {
+          "columnNames": [
+            "object_definition_handle"
+          ],
+          "constraintName": "dvelop_property_item_object_definition_handle_foreign",
+          "localTableName": "public.dvelop_property_item",
+          "referencedColumnNames": [
+            "handle"
+          ],
+          "referencedTableName": "public.dvelop_object_definition_item",
+          "updateRule": "cascade",
+          "deleteRule": "set null"
+        }
+      },
+      "comment": null
+    },
+    {
+      "name": "dvelop_repository_item",
+      "schema": "public",
+      "columns": {
+        "connection_handle": {
+          "name": "connection_handle",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": true,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamptz(6)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
+        "dvelop_id": {
+          "name": "dvelop_id",
+          "type": "varchar(128)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 128,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "handle": {
+          "name": "handle",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": true,
+          "primary": true,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
+        "is_available": {
+          "name": "is_available",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": "true",
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "boolean"
+        },
+        "is_default": {
+          "name": "is_default",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": "false",
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "boolean"
+        },
+        "last_synced_at": {
+          "name": "last_synced_at",
+          "type": "timestamptz(6)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
+        "title": {
+          "name": "title",
+          "type": "varchar(256)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 256,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamptz(6)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
+        "version": {
+          "name": "version",
+          "type": "varchar(64)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": 64,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        }
+      },
+      "indexes": [
+        {
+          "columnNames": [
+            "connection_handle",
+            "dvelop_id"
+          ],
+          "composite": true,
+          "constraint": true,
+          "keyName": "dvelop_repository_item_connection_handle_dvelop_id_unique",
+          "primary": false,
+          "unique": true
+        },
+        {
+          "columnNames": [
+            "connection_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "dvelop_repository_item_connection_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "handle"
+          ],
+          "composite": false,
+          "constraint": true,
+          "keyName": "dvelop_repository_item_pkey",
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "triggers": [],
+      "foreignKeys": {
+        "dvelop_repository_item_connection_handle_foreign": {
+          "columnNames": [
+            "connection_handle"
+          ],
+          "constraintName": "dvelop_repository_item_connection_handle_foreign",
+          "localTableName": "public.dvelop_repository_item",
           "referencedColumnNames": [
             "handle"
           ],

@@ -10,6 +10,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { DvelopConnectionItem } from './DvelopConnectionItem';
 import { DvelopEntityMappingItem } from './DvelopEntityMappingItem';
 import { DvelopEntityMappingSearchCategoryItem } from './DvelopEntityMappingSearchCategoryItem';
+import { DvelopPropertyItem } from './DvelopPropertyItem';
 import { Sapling, SaplingForm } from './global/entity.decorator';
 
 @Entity()
@@ -135,6 +136,18 @@ export class DvelopObjectDefinitionItem {
   searchCategoryMappings: Collection<
     Rel<DvelopEntityMappingSearchCategoryItem>
   > = new Collection<Rel<DvelopEntityMappingSearchCategoryItem>>(this);
+
+  @ApiPropertyOptional({
+    type: () => DvelopPropertyItem,
+    isArray: true,
+  })
+  @OneToMany(
+    () => DvelopPropertyItem,
+    (property) => property.objectDefinition,
+  )
+  properties: Collection<Rel<DvelopPropertyItem>> = new Collection<
+    Rel<DvelopPropertyItem>
+  >(this);
 
   @ApiPropertyOptional({ type: 'string', format: 'date-time' })
   @Sapling(['isReadOnly', 'isSystem'])

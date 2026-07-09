@@ -74,6 +74,13 @@ const PROPERTY_ID_KEYS = [
   'uniqueId',
   'name',
 ];
+const PROPERTY_OBJECT_DEFINITION_ID_KEYS = [
+  'objectDefinitionId',
+  'objectdefinitionid',
+  'objectDefinition',
+  'categoryId',
+  'category',
+];
 const TITLE_KEYS = [
   'displayName',
   'caption',
@@ -122,6 +129,7 @@ export interface DvelopImportedRepository {
 
 export interface DvelopImportedProperty {
   dvelopId?: string | null;
+  objectDefinitionId?: string | null;
   title?: string | null;
   dataType?: string | null;
   description?: string | null;
@@ -148,6 +156,29 @@ export interface DvelopConfigurationImportResponse {
   properties: SyncSummary;
 }
 
+export type DvelopHealthCheckCapabilityKey =
+  | 'apiKey'
+  | 'repositories'
+  | 'objectDefinitions'
+  | 'properties';
+
+export type DvelopHealthCheckStatus = 'success' | 'warning' | 'error';
+
+export interface DvelopHealthCheckCapability {
+  key: DvelopHealthCheckCapabilityKey;
+  status: DvelopHealthCheckStatus;
+  message: string;
+  count?: number;
+}
+
+export interface DvelopHealthCheckResponse {
+  status: DvelopHealthCheckStatus;
+  checkedAt: string;
+  connectionHandle: number;
+  repositoryId?: string | null;
+  capabilities: DvelopHealthCheckCapability[];
+}
+
 @Injectable()
 export class DvelopConfigurationService {
   constructor(private readonly em: EntityManager) {}
@@ -170,11 +201,14 @@ export class DvelopConfigurationService {
       payload.repositories === true ||
       payload.objectDefinitions === true ||
       payload.properties === true;
+    const needsRepository =
+      payload.objectDefinitions === true || payload.properties === true;
     const includeRepositories = hasExplicitSelection
-      ? payload.repositories === true
+      ? payload.repositories === true ||
+        (needsRepository && !this.getConnectionRepositoryId(connection))
       : true;
     const includeObjectDefinitions = hasExplicitSelection
-      ? payload.objectDefinitions === true
+      ? payload.objectDefinitions === true || payload.properties === true
       : true;
     const includeProperties = hasExplicitSelection
       ? payload.properties === true
@@ -237,6 +271,75 @@ export class DvelopConfigurationService {
     };
   }
 
+  async healthCheckConfiguration(
+    connectionHandle: number,
+  ): Promise<DvelopHealthCheckResponse> {
+    const connection = await this.findConnection(connectionHandle);
+    const capabilities: DvelopHealthCheckCapability[] = [];
+    let healthConnection = connection;
+    let objectDefinitionRecords: CloudRecord[] = [];
+
+    capabilities.push(this.checkLocalConfiguration(connection));
+
+    const repositoryCapability =
+      await this.checkCloudCapability<DvelopImportedRepository[]>(
+        'repositories',
+        async () => this.fetchCloudRepositories(connection),
+      );
+    capabilities.push(repositoryCapability.capability);
+
+    if (repositoryCapability.result) {
+      const repository = this.resolveHealthRepository(
+        connection,
+        repositoryCapability.result,
+      );
+      if (repository) {
+        healthConnection = {
+          ...connection,
+          repository,
+        } as DvelopConnectionItem;
+      }
+    }
+
+    const objectDefinitionCapability =
+      await this.checkCloudCapability<CloudRecord[]>(
+        'objectDefinitions',
+        async () => {
+          const payload =
+            await this.fetchCloudObjectDefinitionPayload(healthConnection);
+          objectDefinitionRecords =
+            this.extractDocumentObjectDefinitionRecords(payload);
+          return objectDefinitionRecords;
+        },
+      );
+    capabilities.push(objectDefinitionCapability.capability);
+
+    const propertiesCapability =
+      await this.checkCloudCapability<DvelopImportedProperty[]>(
+        'properties',
+        async () => {
+          const records =
+            objectDefinitionRecords.length > 0
+              ? objectDefinitionRecords
+              : this.extractDocumentObjectDefinitionRecords(
+                  await this.fetchCloudObjectDefinitionPayload(
+                    healthConnection,
+                  ),
+                );
+          return this.fetchCloudProperties(healthConnection, records);
+        },
+      );
+    capabilities.push(propertiesCapability.capability);
+
+    return {
+      status: this.resolveHealthStatus(capabilities),
+      checkedAt: new Date().toISOString(),
+      connectionHandle,
+      repositoryId: this.getConnectionRepositoryId(healthConnection),
+      capabilities,
+    };
+  }
+
   private async importConfigurationForConnection(
     connection: DvelopConnectionItem,
     payload: DvelopConfigurationImportPayload,
@@ -283,6 +386,103 @@ export class DvelopConfigurationService {
     }
 
     return connection;
+  }
+
+  private checkLocalConfiguration(
+    connection: DvelopConnectionItem,
+  ): DvelopHealthCheckCapability {
+    try {
+      this.buildDvelopAuthHeaders(connection);
+      this.buildDvelopRepositoryUrl(connection, REPOSITORY_ENDPOINTS[0]);
+
+      return {
+        key: 'apiKey',
+        status: 'success',
+        message: 'document.dvelopHealthApiKeyConfigured',
+      };
+    } catch (error) {
+      return {
+        key: 'apiKey',
+        status: 'error',
+        message: this.getHealthErrorMessage(error),
+      };
+    }
+  }
+
+  private async checkCloudCapability<T extends unknown[]>(
+    key: DvelopHealthCheckCapabilityKey,
+    run: () => Promise<T>,
+  ): Promise<{ capability: DvelopHealthCheckCapability; result: T | null }> {
+    try {
+      const result = await run();
+      const count = result.length;
+
+      return {
+        result,
+        capability: {
+          key,
+          status: count > 0 ? 'success' : 'warning',
+          count,
+          message:
+            count > 0
+              ? 'document.dvelopHealthCapabilityAvailable'
+              : 'document.dvelopHealthCapabilityEmpty',
+        },
+      };
+    } catch (error) {
+      return {
+        result: null,
+        capability: {
+          key,
+          status: 'error',
+          message: this.getHealthErrorMessage(error),
+        },
+      };
+    }
+  }
+
+  private resolveHealthRepository(
+    connection: DvelopConnectionItem,
+    repositories: DvelopImportedRepository[],
+  ): DvelopRepositoryItem | null {
+    const currentRepositoryId = this.getConnectionRepositoryId(connection);
+    const selected =
+      repositories.find(
+        (repository) => repository.dvelopId === currentRepositoryId,
+      ) ??
+      repositories.find((repository) => repository.isDefault === true) ??
+      repositories[0];
+
+    if (!selected?.dvelopId) {
+      return null;
+    }
+
+    return {
+      dvelopId: selected.dvelopId,
+      title: selected.title ?? selected.dvelopId,
+    } as DvelopRepositoryItem;
+  }
+
+  private resolveHealthStatus(
+    capabilities: DvelopHealthCheckCapability[],
+  ): DvelopHealthCheckStatus {
+    if (capabilities.some((capability) => capability.status === 'error')) {
+      return 'error';
+    }
+
+    if (capabilities.some((capability) => capability.status === 'warning')) {
+      return 'warning';
+    }
+
+    return 'success';
+  }
+
+  private getHealthErrorMessage(error: unknown): string {
+    if (error instanceof Error && error.message.trim()) {
+      return error.message;
+    }
+
+    return this.getCloudErrorMessage(error);
   }
 
   private async fetchCloudObjectDefinitionPayload(
@@ -681,6 +881,10 @@ export class DvelopConfigurationService {
 
     return {
       dvelopId,
+      objectDefinitionId: this.readFirstString(
+        record,
+        PROPERTY_OBJECT_DEFINITION_ID_KEYS,
+      ),
       title: this.readFirstString(record, TITLE_KEYS) ?? dvelopId,
       dataType: this.readFirstString(record, DATA_TYPE_KEYS),
       description: this.readFirstString(record, DESCRIPTION_KEYS),
@@ -794,12 +998,21 @@ export class DvelopConfigurationService {
       }
 
       const title = this.normalizeString(item.title) ?? dvelopId;
+      const objectDefinitionId = this.normalizeString(item.objectDefinitionId);
+      const objectDefinition = objectDefinitionId
+        ? await this.em.findOne(DvelopObjectDefinitionItem, {
+            connection,
+            dvelopId: objectDefinitionId,
+          })
+        : null;
       const existing = await this.em.findOne(DvelopPropertyItem, {
         connection,
+        objectDefinition,
         dvelopId,
       });
       const values = {
         connection,
+        objectDefinition,
         dvelopId,
         title,
         dataType: this.normalizeString(item.dataType),
@@ -918,8 +1131,11 @@ export class DvelopConfigurationService {
 
     for (const item of items) {
       const dvelopId = this.normalizeString(item.dvelopId);
-      if (dvelopId && !map.has(dvelopId)) {
-        map.set(dvelopId, item);
+      const objectDefinitionId =
+        this.normalizeString(item.objectDefinitionId) ?? '';
+      const key = `${objectDefinitionId}:${dvelopId ?? ''}`;
+      if (dvelopId && !map.has(key)) {
+        map.set(key, item);
       }
     }
 

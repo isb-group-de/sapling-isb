@@ -97,6 +97,12 @@
   },
   {
     "entity": "dvelopCloud",
+    "property": "syncRepositories",
+    "de": "Repositorys laden",
+    "en": "Load repositories"
+  },
+  {
+    "entity": "dvelopCloud",
     "property": "syncObjectDefinitions",
     "de": "Kategorien laden",
     "en": "Load categories"
@@ -106,6 +112,72 @@
     "property": "syncProperties",
     "de": "Eigenschaften laden",
     "en": "Load properties"
+  },
+  {
+    "entity": "dvelopCloud",
+    "property": "healthCheck",
+    "de": "API-Key prüfen",
+    "en": "Check API key"
+  },
+  {
+    "entity": "dvelopCloud",
+    "property": "healthStatus",
+    "de": "API-Zugriff",
+    "en": "API access"
+  },
+  {
+    "entity": "dvelopCloud",
+    "property": "healthCheckCompleted",
+    "de": "d.velop Cloud-Healthcheck abgeschlossen",
+    "en": "d.velop Cloud health check completed"
+  },
+  {
+    "entity": "dvelopCloud",
+    "property": "healthCheckFailed",
+    "de": "d.velop Cloud-Healthcheck fehlgeschlagen",
+    "en": "d.velop Cloud health check failed"
+  },
+  {
+    "entity": "dvelopCloud",
+    "property": "healthStatusSuccess",
+    "de": "OK",
+    "en": "OK"
+  },
+  {
+    "entity": "dvelopCloud",
+    "property": "healthStatusWarning",
+    "de": "Warnung",
+    "en": "Warning"
+  },
+  {
+    "entity": "dvelopCloud",
+    "property": "healthStatusError",
+    "de": "Fehler",
+    "en": "Error"
+  },
+  {
+    "entity": "dvelopCloud",
+    "property": "healthCapabilityApiKey",
+    "de": "API-Key und Basis-URL",
+    "en": "API key and base URL"
+  },
+  {
+    "entity": "dvelopCloud",
+    "property": "healthCapabilityRepositories",
+    "de": "Repositorys",
+    "en": "Repositories"
+  },
+  {
+    "entity": "dvelopCloud",
+    "property": "healthCapabilityObjectDefinitions",
+    "de": "Kategorien",
+    "en": "Categories"
+  },
+  {
+    "entity": "dvelopCloud",
+    "property": "healthCapabilityProperties",
+    "de": "Eigenschaften",
+    "en": "Properties"
   },
   {
     "entity": "dvelopCloud",
@@ -511,6 +583,12 @@
   },
   {
     "entity": "dvelopProperty",
+    "property": "objectDefinition",
+    "de": "Ablagekategorie",
+    "en": "Storage category"
+  },
+  {
+    "entity": "dvelopProperty",
     "property": "title",
     "de": "Bezeichnung",
     "en": "Title"
@@ -862,5 +940,23 @@
     "property": "dvelopServiceNotAvailable",
     "de": "Der d.velop Cloud-Dokumentdienst ist nicht verfügbar.",
     "en": "The d.velop Cloud document service is not available."
+  },
+  {
+    "entity": "document",
+    "property": "dvelopHealthApiKeyConfigured",
+    "de": "API-Key und Basis-URL sind konfiguriert.",
+    "en": "API key and base URL are configured."
+  },
+  {
+    "entity": "document",
+    "property": "dvelopHealthCapabilityAvailable",
+    "de": "Zugriff erfolgreich.",
+    "en": "Access successful."
+  },
+  {
+    "entity": "document",
+    "property": "dvelopHealthCapabilityEmpty",
+    "de": "Zugriff erfolgreich, aber keine Daten gefunden.",
+    "en": "Access successful, but no data was found."
   }
 ]

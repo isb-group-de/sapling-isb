@@ -68,6 +68,35 @@
   justify-content: flex-start;
 }
 
+.sapling-dvelop-cloud__health-strip {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  min-height: 32px;
+  padding: 0 var(--sapling-gap-xs);
+  gap: var(--sapling-gap-sm);
+  overflow: hidden;
+}
+
+.sapling-dvelop-cloud__health-summary {
+  display: inline-flex;
+  align-items: center;
+  min-width: max-content;
+  gap: var(--sapling-gap-sm);
+}
+
+.sapling-dvelop-cloud__health-capabilities {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: var(--sapling-gap-xs);
+  overflow: hidden;
+}
+
+.sapling-dvelop-cloud__health-capabilities .v-chip {
+  max-width: 100%;
+}
+
 .sapling-dvelop-cloud__metrics {
   --sapling-responsive-grid-min: 220px;
 }
@@ -134,6 +163,18 @@
     justify-content: flex-start;
     width: min(320px, 100%);
     max-width: 100%;
+  }
+
+  .sapling-dvelop-cloud__health-strip {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sapling-dvelop-cloud__health-summary {
+    min-width: 0;
+  }
+
+  .sapling-dvelop-cloud__health-capabilities {
+    flex-wrap: wrap;
   }
 }
 

@@ -9,10 +9,11 @@ import {
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { DvelopConnectionItem } from './DvelopConnectionItem';
 import { DvelopEntityMappingPropertyItem } from './DvelopEntityMappingPropertyItem';
+import { DvelopObjectDefinitionItem } from './DvelopObjectDefinitionItem';
 import { Sapling, SaplingForm } from './global/entity.decorator';
 
 @Entity()
-@Unique({ properties: ['connection', 'dvelopId'] })
+@Unique({ properties: ['connection', 'objectDefinition', 'dvelopId'] })
 export class DvelopPropertyItem {
   @ApiProperty()
   @Property({ primary: true, autoincrement: true })
@@ -32,6 +33,24 @@ export class DvelopPropertyItem {
   })
   @ManyToOne(() => DvelopConnectionItem, { nullable: false })
   connection!: Rel<DvelopConnectionItem>;
+
+  @ApiPropertyOptional({ type: () => DvelopObjectDefinitionItem })
+  @SaplingForm({
+    order: 150,
+    group: 'dvelopProperty.groupReference',
+    groupOrder: 100,
+    width: 2,
+    visible: true,
+    tableOrder: 150,
+    tableVisible: true,
+    mobileOrder: 150,
+    mobileVisible: false,
+  })
+  @ManyToOne(() => DvelopObjectDefinitionItem, {
+    nullable: true,
+    deleteRule: 'set null',
+  })
+  objectDefinition?: Rel<DvelopObjectDefinitionItem> | null;
 
   @ApiProperty()
   @Sapling(['isValue', 'isOrderASC'])
