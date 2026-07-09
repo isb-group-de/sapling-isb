@@ -169,7 +169,6 @@
           {{ $t('dvelopCloud.syncProperties') }}
         </v-btn>
       </div>
-
     </SaplingSurface>
 
     <section

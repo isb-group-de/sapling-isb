@@ -104,6 +104,29 @@
   box-shadow: inset 3px 0 0 rgb(var(--v-theme-primary));
 }
 
+.sapling-record-dialog-nav-item--record {
+  border-color: rgba(var(--v-theme-primary), 0.32);
+  background:
+    linear-gradient(135deg, rgba(var(--v-theme-primary), 0.16), rgba(var(--v-theme-primary), 0.06)),
+    var(--sapling-surface-fill-soft);
+  color: rgb(var(--v-theme-primary));
+}
+
+.sapling-record-dialog-nav-item--record:hover,
+.sapling-record-dialog-nav-item--record:focus-visible {
+  border-color: rgba(var(--v-theme-primary), 0.55);
+  background:
+    linear-gradient(135deg, rgba(var(--v-theme-primary), 0.2), rgba(var(--v-theme-primary), 0.08)),
+    var(--sapling-interactive-hover-fill);
+}
+
+.sapling-record-dialog-nav-item--record.sapling-record-dialog-nav-item--active {
+  border-color: rgba(var(--v-theme-primary), 0.72);
+  background:
+    linear-gradient(135deg, rgba(var(--v-theme-primary), 0.24), rgba(var(--v-theme-primary), 0.1)),
+    var(--sapling-interactive-selected-fill-strong);
+}
+
 .sapling-record-dialog-nav-item__icon {
   justify-self: center;
   color: rgb(var(--v-theme-primary));

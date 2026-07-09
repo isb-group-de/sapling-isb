@@ -141,10 +141,7 @@ export class DvelopObjectDefinitionItem {
     type: () => DvelopPropertyItem,
     isArray: true,
   })
-  @OneToMany(
-    () => DvelopPropertyItem,
-    (property) => property.objectDefinition,
-  )
+  @OneToMany(() => DvelopPropertyItem, (property) => property.objectDefinition)
   properties: Collection<Rel<DvelopPropertyItem>> = new Collection<
     Rel<DvelopPropertyItem>
   >(this);

@@ -281,11 +281,9 @@ export class DvelopConfigurationService {
 
     capabilities.push(this.checkLocalConfiguration(connection));
 
-    const repositoryCapability =
-      await this.checkCloudCapability<DvelopImportedRepository[]>(
-        'repositories',
-        async () => this.fetchCloudRepositories(connection),
-      );
+    const repositoryCapability = await this.checkCloudCapability<
+      DvelopImportedRepository[]
+    >('repositories', async () => this.fetchCloudRepositories(connection));
     capabilities.push(repositoryCapability.capability);
 
     if (repositoryCapability.result) {
@@ -301,34 +299,28 @@ export class DvelopConfigurationService {
       }
     }
 
-    const objectDefinitionCapability =
-      await this.checkCloudCapability<CloudRecord[]>(
-        'objectDefinitions',
-        async () => {
-          const payload =
-            await this.fetchCloudObjectDefinitionPayload(healthConnection);
-          objectDefinitionRecords =
-            this.extractDocumentObjectDefinitionRecords(payload);
-          return objectDefinitionRecords;
-        },
-      );
+    const objectDefinitionCapability = await this.checkCloudCapability<
+      CloudRecord[]
+    >('objectDefinitions', async () => {
+      const payload =
+        await this.fetchCloudObjectDefinitionPayload(healthConnection);
+      objectDefinitionRecords =
+        this.extractDocumentObjectDefinitionRecords(payload);
+      return objectDefinitionRecords;
+    });
     capabilities.push(objectDefinitionCapability.capability);
 
-    const propertiesCapability =
-      await this.checkCloudCapability<DvelopImportedProperty[]>(
-        'properties',
-        async () => {
-          const records =
-            objectDefinitionRecords.length > 0
-              ? objectDefinitionRecords
-              : this.extractDocumentObjectDefinitionRecords(
-                  await this.fetchCloudObjectDefinitionPayload(
-                    healthConnection,
-                  ),
-                );
-          return this.fetchCloudProperties(healthConnection, records);
-        },
-      );
+    const propertiesCapability = await this.checkCloudCapability<
+      DvelopImportedProperty[]
+    >('properties', async () => {
+      const records =
+        objectDefinitionRecords.length > 0
+          ? objectDefinitionRecords
+          : this.extractDocumentObjectDefinitionRecords(
+              await this.fetchCloudObjectDefinitionPayload(healthConnection),
+            );
+      return this.fetchCloudProperties(healthConnection, records);
+    });
     capabilities.push(propertiesCapability.capability);
 
     return {

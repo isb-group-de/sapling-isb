@@ -151,6 +151,7 @@ export class CustomFieldDefinitionItem {
     type: () => CustomFieldValueItem,
     isArray: true,
   })
+  @Sapling(['isHideAsReference'])
   @OneToMany(() => CustomFieldValueItem, (value) => value.definition)
   values: Collection<CustomFieldValueItem> =
     new Collection<CustomFieldValueItem>(this);

@@ -89,6 +89,7 @@ export class CustomFieldTypeItem {
     type: () => CustomFieldDefinitionItem,
     isArray: true,
   })
+  @Sapling(['isHideAsReference'])
   @OneToMany(
     () => CustomFieldDefinitionItem,
     (definition) => definition.fieldType,

@@ -49,7 +49,10 @@
               >
                 <button
                   class="sapling-record-dialog-nav-item sapling-dialog-edit-nav-item"
-                  :class="{ 'sapling-record-dialog-nav-item--active': activeTab === 0 }"
+                  :class="{
+                    'sapling-record-dialog-nav-item--active': activeTab === 0,
+                    'sapling-record-dialog-nav-item--record': true,
+                  }"
                   type="button"
                   :aria-current="activeTab === 0 ? 'page' : undefined"
                   @click="activeTab = 0"

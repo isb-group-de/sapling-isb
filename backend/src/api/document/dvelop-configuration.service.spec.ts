@@ -43,10 +43,7 @@ const createEntityManager = (
   const objectDefinitions = new Map<string, unknown>(
     existingObjectDefinitions
       .filter((objectDefinition) => Boolean(objectDefinition.dvelopId))
-      .map((objectDefinition) => [
-        objectDefinition.dvelopId,
-        objectDefinition,
-      ]),
+      .map((objectDefinition) => [objectDefinition.dvelopId, objectDefinition]),
   );
   const em = {
     findOne: jest.fn(async (...args: unknown[]) => {
