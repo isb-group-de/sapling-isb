@@ -14,7 +14,7 @@
   },
   "scripts": {
     "clean": "rimraf dist tsconfig.build.tsbuildinfo",
-    "build": "npm run clean && nest build",
+    "build": "npm run clean && cross-env NODE_OPTIONS=--max-old-space-size=4096 nest build",
     "format": "prettier --write --no-error-on-unmatched-pattern \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "npm run clean && nest start",
     "start:dev": "npm run clean && cross-env NODE_OPTIONS=--max-old-space-size=4096 nest start --watch",
