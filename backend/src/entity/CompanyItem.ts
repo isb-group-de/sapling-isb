@@ -49,10 +49,12 @@ import { EMailListItem } from './EMailListItem';
  * @property        {Collection<ContractItem>} contracts        Contracts associated with this company
  * @property        {Collection<ServerLandscapeItem>} serverLandscapes Server landscapes associated with this company
  * @property        {Collection<AddressItem>} addresses          Addresses associated with this company
- * @property        {Collection<SalesOpportunityItem>} salesOpportunities Sales opportunities associated with this company
  * @property        {WorkHourWeekItem}      workWeek            The work hour week this company uses (optional)
  * @property        {Collection<CompanyRelationshipItem>} outgoingRelationships Outgoing company relationships starting from this company
  * @property        {Collection<CompanyRelationshipItem>} incomingRelationships Incoming company relationships pointing to this company
+ * @property        {Collection<SalesOpportunityItem>} assignedSalesOpportunities Sales opportunities assigned to this company
+ * @property        {Collection<SalesOpportunityItem>} createdSalesOpportunities Sales opportunities created by this company
+ * @property        {Collection<SalesOpportunityItem>} competitorSalesOpportunities Sales opportunities listing this company as a competitor
  * @property        {Collection<CompanyItem>} serviceCustomer   Companies that are customers of this company as a service provider
  * @property        {CompanyItem}           serviceProvider     The service provider company associated with this company (optional)
  * @property        {Collection<TicketItem>} assignedTickets     Tickets assigned to this company
@@ -638,6 +640,18 @@ export class CompanyItem {
   @ApiPropertyOptional({ type: () => SalesOpportunityItem, isArray: true })
   @OneToMany(() => SalesOpportunityItem, (x) => x.creatorCompany)
   createdSalesOpportunities: Collection<SalesOpportunityItem> =
+    new Collection<SalesOpportunityItem>(this);
+
+  /**
+   * Sales opportunities that list this company as a competitor.
+   */
+  @ApiPropertyOptional({ type: () => SalesOpportunityItem, isArray: true })
+  @Sapling(['isHideAsReference'])
+  @ManyToMany(
+    () => SalesOpportunityItem,
+    (salesOpportunity) => salesOpportunity.competitors,
+  )
+  competitorSalesOpportunities: Collection<SalesOpportunityItem> =
     new Collection<SalesOpportunityItem>(this);
 
   /**

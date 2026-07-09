@@ -42,115 +42,146 @@
             </div>
           </template>
           <template v-else>
-            <div class="sapling-dialog-edit-tabs-shell">
-              <v-tabs v-model="activeTab" class="sapling-record-dialog-tabs" grow>
-                <v-tab class="sapling-record-dialog-tab sapling-dialog-edit-tab">
-                  {{ entityLabel }}
-                </v-tab>
-                <template v-if="mode !== 'create'">
-                  <v-tab
-                    v-for="template in relationTemplates"
-                    :key="template.name"
-                    class="sapling-record-dialog-tab sapling-dialog-edit-tab"
-                  >
-                    {{ $t(`${entity?.handle}.${template.name}`) }}
-                  </v-tab>
-                </template>
-              </v-tabs>
-            </div>
-            <v-window
-              v-model="activeTab"
-              class="sapling-record-dialog-window sapling-dialog-edit-window"
-            >
-              <v-window-item
-                :value="0"
-                class="sapling-record-dialog-window-item sapling-dialog-edit-window-item"
+            <div class="sapling-record-dialog-body sapling-dialog-edit-body">
+              <nav
+                class="sapling-record-dialog-nav sapling-dialog-edit-nav"
+                :aria-label="entityLabel"
               >
-                <div class="sapling-record-dialog-tab-scroll sapling-dialog-edit-tab-scroll">
-                  <div
-                    ref="formSurfaceRef"
-                    class="sapling-stack-lg sapling-record-dialog-surface sapling-dialog-edit-form-surface"
+                <button
+                  class="sapling-record-dialog-nav-item sapling-dialog-edit-nav-item"
+                  :class="{ 'sapling-record-dialog-nav-item--active': activeTab === 0 }"
+                  type="button"
+                  :aria-current="activeTab === 0 ? 'page' : undefined"
+                  @click="activeTab = 0"
+                >
+                  <v-icon class="sapling-record-dialog-nav-item__icon" size="18">
+                    mdi-file-document-edit-outline
+                  </v-icon>
+                  <span class="sapling-record-dialog-nav-item__label">{{ entityLabel }}</span>
+                </button>
+                <template v-if="mode !== 'create'">
+                  <button
+                    v-for="(template, idx) in relationTemplates"
+                    :key="template.name"
+                    class="sapling-record-dialog-nav-item sapling-dialog-edit-nav-item"
+                    :class="{
+                      'sapling-record-dialog-nav-item--active': activeTab === idx + 1,
+                    }"
+                    type="button"
+                    :aria-current="activeTab === idx + 1 ? 'page' : undefined"
+                    @click="activeTab = idx + 1"
                   >
-                    <v-form
-                      ref="formRef"
-                      class="sapling-record-dialog-form sapling-dialog-edit-form"
-                      @submit.prevent="save"
-                    >
-                      <v-defaults-provider :defaults="dialogFieldDefaults">
-                        <SaplingDialogEditFormSections
-                          :groups="visibleTemplateGroups"
-                          :mode="mode"
-                          :entity-handle="entityHandle"
-                          :item-handle="itemHandle"
-                          :form-values="form"
-                          :visible-templates="visibleTemplates"
-                          :permissions="permissions"
-                          :icon-names="iconNames"
-                          :is-reference-visible="isReferenceVisible"
-                          :is-group-expanded="isGroupExpanded"
-                          :is-group-dirty="isGroupDirty"
-                          :is-template-dirty="isTemplateDirty"
-                          :get-template-column-props="getTemplateColumnProps"
-                          :get-rules="getRules"
-                          :is-field-disabled="isFieldDisabled"
-                          :is-reference-field-disabled="isReferenceFieldDisabled"
-                          :get-reference-parent-filter="getReferenceParentFilter"
-                          @toggle-group="toggleGroup"
-                          @update-field="updateFormField"
-                          @select-record="onDuplicateSelect"
-                        />
-                      </v-defaults-provider>
-                    </v-form>
-                  </div>
-                </div>
-              </v-window-item>
-              <v-window-item
-                v-for="(template, idx) in relationTemplates"
-                :key="template.name"
-                :value="idx + 1"
-                class="sapling-record-dialog-window-item sapling-dialog-edit-window-item"
+                    <v-icon class="sapling-record-dialog-nav-item__icon" size="18">
+                      mdi-link-variant
+                    </v-icon>
+                    <span class="sapling-record-dialog-nav-item__label">
+                      {{ $t(`${entity?.handle}.${template.name}`) }}
+                    </span>
+                  </button>
+                </template>
+              </nav>
+              <v-window
+                v-model="activeTab"
+                class="sapling-record-dialog-window sapling-dialog-edit-window"
                 :transition="false"
                 :reverse-transition="false"
               >
-                <SaplingDialogEditRelationTab
-                  v-if="activeTab === idx + 1"
-                  :template="template"
-                  :mode="mode"
-                  :entity-handle="entity?.handle ?? ''"
-                  :entity-label="entityLabel"
-                  :item="item"
-                  :entity="entity"
-                  :headers="relationTableHeaders[template.name] ?? []"
-                  :items="relationTableItems[template.name] ?? []"
-                  :search="relationTableSearch[template.name] || ''"
-                  :page="relationTablePage[template.name] || 1"
-                  :items-per-page="
-                    relationTableItemsPerPage[template.name] || DEFAULT_PAGE_SIZE_SMALL
-                  "
-                  :total-items="relationTableTotal[template.name] ?? 0"
-                  :is-loading="relationTableState[template.name]?.isLoading ?? false"
-                  :sort-by="relationTableSortBy[template.name] || []"
-                  :column-filters="relationTableColumnFilters[template.name] || {}"
-                  :entity-templates="relationTableState[template.name]?.entityTemplates ?? []"
-                  :relation-entity="relationTableState[template.name]?.entity ?? null"
-                  :entity-permission="relationTableState[template.name]?.entityPermission ?? null"
-                  :selected-relations="selectedRelations[template.name] ?? []"
-                  :selected-items="selectedItems ?? []"
-                  @update:selected-relations="
-                    (val) => updateSelectedRelationItems(template.name, val)
-                  "
-                  @update:selected-items="updateSelectedRelationTableItems"
-                  @add-relation="addRelation(template)"
-                  @remove-relation="removeRelation(template, selectedItems)"
-                  @update:search="(val) => onRelationSearch(template.name, val)"
-                  @update:page="(val) => onRelationTablePage(template.name, val)"
-                  @update:items-per-page="(val) => onRelationTableItemsPerPage(template.name, val)"
-                  @update:sort-by="(val) => onRelationTableSort(template.name, val)"
-                  @update:column-filters="(val) => onRelationTableColumnFilters(template.name, val)"
-                  @reload="onRelationTableReload(template.name)"
-                />
-              </v-window-item>
-            </v-window>
+                <v-window-item
+                  :value="0"
+                  class="sapling-record-dialog-window-item sapling-dialog-edit-window-item"
+                  :transition="false"
+                  :reverse-transition="false"
+                >
+                  <div class="sapling-record-dialog-tab-scroll sapling-dialog-edit-tab-scroll">
+                    <div
+                      ref="formSurfaceRef"
+                      class="sapling-stack-lg sapling-record-dialog-surface sapling-dialog-edit-form-surface"
+                    >
+                      <v-form
+                        ref="formRef"
+                        class="sapling-record-dialog-form sapling-dialog-edit-form"
+                        @submit.prevent="save"
+                      >
+                        <v-defaults-provider :defaults="dialogFieldDefaults">
+                          <SaplingDialogEditFormSections
+                            :groups="visibleTemplateGroups"
+                            :mode="mode"
+                            :entity-handle="entityHandle"
+                            :item-handle="itemHandle"
+                            :form-values="form"
+                            :visible-templates="visibleTemplates"
+                            :permissions="permissions"
+                            :icon-names="iconNames"
+                            :is-reference-visible="isReferenceVisible"
+                            :is-group-expanded="isGroupExpanded"
+                            :is-group-dirty="isGroupDirty"
+                            :is-template-dirty="isTemplateDirty"
+                            :get-template-column-props="getTemplateColumnProps"
+                            :get-rules="getRules"
+                            :is-field-disabled="isFieldDisabled"
+                            :is-reference-field-disabled="isReferenceFieldDisabled"
+                            :get-reference-parent-filter="getReferenceParentFilter"
+                            @toggle-group="toggleGroup"
+                            @update-field="updateFormField"
+                            @select-record="onDuplicateSelect"
+                          />
+                        </v-defaults-provider>
+                      </v-form>
+                    </div>
+                  </div>
+                </v-window-item>
+                <v-window-item
+                  v-for="(template, idx) in relationTemplates"
+                  :key="template.name"
+                  :value="idx + 1"
+                  class="sapling-record-dialog-window-item sapling-dialog-edit-window-item"
+                  :transition="false"
+                  :reverse-transition="false"
+                >
+                  <SaplingDialogEditRelationTab
+                    v-if="activeTab === idx + 1"
+                    :template="template"
+                    :mode="mode"
+                    :entity-handle="entity?.handle ?? ''"
+                    :entity-label="entityLabel"
+                    :item="item"
+                    :entity="entity"
+                    :headers="relationTableHeaders[template.name] ?? []"
+                    :items="relationTableItems[template.name] ?? []"
+                    :search="relationTableSearch[template.name] || ''"
+                    :page="relationTablePage[template.name] || 1"
+                    :items-per-page="
+                      relationTableItemsPerPage[template.name] || DEFAULT_PAGE_SIZE_SMALL
+                    "
+                    :total-items="relationTableTotal[template.name] ?? 0"
+                    :is-loading="relationTableState[template.name]?.isLoading ?? false"
+                    :sort-by="relationTableSortBy[template.name] || []"
+                    :column-filters="relationTableColumnFilters[template.name] || {}"
+                    :entity-templates="relationTableState[template.name]?.entityTemplates ?? []"
+                    :relation-entity="relationTableState[template.name]?.entity ?? null"
+                    :entity-permission="relationTableState[template.name]?.entityPermission ?? null"
+                    :selected-relations="selectedRelations[template.name] ?? []"
+                    :selected-items="selectedItems ?? []"
+                    @update:selected-relations="
+                      (val) => updateSelectedRelationItems(template.name, val)
+                    "
+                    @update:selected-items="updateSelectedRelationTableItems"
+                    @add-relation="addRelation(template)"
+                    @remove-relation="removeRelation(template, selectedItems)"
+                    @update:search="(val) => onRelationSearch(template.name, val)"
+                    @update:page="(val) => onRelationTablePage(template.name, val)"
+                    @update:items-per-page="
+                      (val) => onRelationTableItemsPerPage(template.name, val)
+                    "
+                    @update:sort-by="(val) => onRelationTableSort(template.name, val)"
+                    @update:column-filters="
+                      (val) => onRelationTableColumnFilters(template.name, val)
+                    "
+                    @reload="onRelationTableReload(template.name)"
+                  />
+                </v-window-item>
+              </v-window>
+            </div>
           </template>
         </v-card-text>
         <SaplingDialogEditActions
