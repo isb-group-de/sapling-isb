@@ -374,8 +374,28 @@
     overflow: visible;
   }
 
-  .sapling-kanban-workspace {
+  .sapling-kanban-layout {
+    flex: 0 0 auto;
+    grid-auto-rows: auto;
+    align-items: start;
+  }
+
+  .sapling-kanban-main,
+  .sapling-kanban-context {
+    height: auto;
+  }
+
+  .sapling-kanban-main {
     min-height: min(720px, 70dvh);
+  }
+
+  .sapling-kanban-workspace {
+    height: min(720px, 70dvh);
+    min-height: 0;
+  }
+
+  .sapling-kanban-context {
+    min-height: min(620px, 80dvh);
   }
 }
 
@@ -403,6 +423,10 @@
     height: auto;
     min-height: 0;
     overflow: visible;
+  }
+
+  .sapling-kanban-main {
+    min-height: 0;
   }
 
   .sapling-kanban-stat-grid {
@@ -470,6 +494,7 @@
 
   .sapling-kanban-context {
     order: 2;
+    min-height: 0;
   }
 
   .sapling-kanban-filter {

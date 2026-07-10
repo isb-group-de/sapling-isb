@@ -195,6 +195,10 @@
   max-height: var(--sapling-tab-strip-height) !important;
 }
 
+.sapling-note-tabs .v-tab {
+  min-width: 10rem;
+}
+
 .sapling-note-tabs-skeleton {
   margin-bottom: var(--sapling-gap-xs);
 }
@@ -206,7 +210,8 @@
 }
 
 .sapling-add-note-card {
-  height: 100% !important;
+  height: auto !important;
+  min-height: var(--sapling-empty-state-min-height-sm);
   border-style: dashed;
   cursor: pointer;
   transition:

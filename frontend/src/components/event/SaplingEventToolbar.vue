@@ -3,8 +3,20 @@
     <div class="sapling-toolbar-group sapling-event-toolbar__primary">
       <div class="sapling-toolbar-nav-group sapling-event-toolbar__nav-group">
         <v-btn-group class="sapling-event-toolbar__nav" density="comfortable">
-          <v-btn variant="tonal" icon="mdi-chevron-left" @click="emit('previous')" />
-          <v-btn prepend-icon="mdi-calendar-today" variant="tonal" @click="emit('today')">
+          <v-btn
+            variant="tonal"
+            icon="mdi-chevron-left"
+            :title="$t('global.previous')"
+            :aria-label="$t('global.previous')"
+            @click="emit('previous')"
+          />
+          <v-btn
+            prepend-icon="mdi-calendar-today"
+            variant="tonal"
+            :title="$t('event.today')"
+            :aria-label="$t('event.today')"
+            @click="emit('today')"
+          >
             <template v-if="$vuetify.display.mdAndUp"> {{ $t('event.today') }}</template>
           </v-btn>
           <v-menu
@@ -19,6 +31,8 @@
                 class="sapling-button-truncate sapling-event-toolbar__picker-trigger"
                 prepend-icon="mdi-calendar-search"
                 variant="tonal"
+                :title="$t('calendar.selectDate')"
+                :aria-label="$t('calendar.selectDate')"
               >
                 <template v-if="$vuetify.display.mdAndUp">
                   {{ $t('calendar.selectDate') }}</template
@@ -49,7 +63,13 @@
               />
             </SaplingSurface>
           </v-menu>
-          <v-btn variant="tonal" icon="mdi-chevron-right" @click="emit('next')" />
+          <v-btn
+            variant="tonal"
+            icon="mdi-chevron-right"
+            :title="$t('global.next')"
+            :aria-label="$t('global.next')"
+            @click="emit('next')"
+          />
         </v-btn-group>
       </div>
 
@@ -103,7 +123,13 @@
         <div class="sapling-event-toolbar__overflow d-flex d-md-none">
           <v-menu offset-y>
             <template #activator="{ props }">
-              <v-btn v-bind="props" icon="mdi-tune" variant="tonal" />
+              <v-btn
+                v-bind="props"
+                icon="mdi-tune"
+                variant="tonal"
+                :title="$t('global.more')"
+                :aria-label="$t('global.more')"
+              />
             </template>
 
             <SaplingSurface :as="VList">

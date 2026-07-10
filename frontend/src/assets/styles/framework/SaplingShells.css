@@ -151,9 +151,14 @@
 .sapling-content--app > *,
 .sapling-content--public > * {
   flex: 1 1 auto;
-  height: 100%;
-  min-height: 0;
+  height: auto;
+  min-height: 100%;
   min-width: 0;
+}
+
+.sapling-content--app > .sapling-page-shell:not(.sapling-page-shell--fill),
+.sapling-content--public > .sapling-page-shell:not(.sapling-page-shell--fill) {
+  flex: 0 0 auto;
 }
 
 .sapling-fill-shell {
@@ -194,6 +199,7 @@
 
 .sapling-page-shell--fill {
   height: 100%;
+  min-height: 0;
 }
 
 .sapling-page-shell--panel {
@@ -227,6 +233,16 @@
   overscroll-behavior: contain;
 }
 
+.sapling-route-loading {
+  overflow: hidden;
+}
+
+.sapling-route-loading__surface {
+  flex: 1 1 auto;
+  min-height: 0;
+  border-radius: var(--sapling-radius-sm);
+}
+
 .sapling-login-shell {
   display: flex;
   flex: 1 1 auto;
@@ -237,11 +253,17 @@
 
 @media (max-width: 760px) {
   .sapling-page-shell {
+    --sapling-page-shell-padding-block-end-current: var(--sapling-space-panel-md);
     gap: var(--sapling-gap-md);
-    padding-bottom: var(--sapling-space-panel-md);
   }
 
   .sapling-page-shell--panel {
     --sapling-page-shell-padding-inline-current: var(--sapling-page-shell-padding-inline-mobile);
+  }
+
+  .sapling-page-shell--uniform-inset {
+    --sapling-page-shell-padding-block-end-current: var(
+      --sapling-page-shell-padding-inline-current
+    );
   }
 }

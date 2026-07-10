@@ -178,6 +178,8 @@
             v-bind="menuProps"
             icon="mdi-dots-vertical"
             size="small"
+            :title="$t('global.more')"
+            :aria-label="$t('global.more')"
             @click.stop
             :rounded="false"
             :max-height="32"

@@ -5,21 +5,21 @@
 .sapling-table-row__select-cell {
   width: var(--sapling-table-select-column-width);
   max-width: var(--sapling-table-select-column-width);
-  background: var(--sapling-tilt-drawer-bg) !important;
-  backdrop-filter: blur(var(--sapling-blur-sm)) !important;
   text-align: center;
 }
 
 .sapling-table-row__actions-cell {
   width: var(--sapling-table-actions-column-width);
   max-width: var(--sapling-table-actions-column-width);
-  background: var(--sapling-tilt-drawer-bg) !important;
-  backdrop-filter: blur(var(--sapling-blur-sm)) !important;
   overflow: hidden;
 }
 
 .actions-cell {
   text-align: right;
+}
+
+.sapling-table-page {
+  overflow: hidden;
 }
 
 .sapling-table-root {
@@ -224,7 +224,9 @@
   position: sticky;
   left: 0;
   z-index: 1;
-  background: color-mix(in srgb, var(--sapling-surface-fill) 94%, transparent);
+  background: color-mix(in srgb, var(--sapling-surface-fill) 94%, transparent) !important;
+  backdrop-filter: blur(var(--sapling-blur-sm));
+  -webkit-backdrop-filter: blur(var(--sapling-blur-sm));
 }
 
 .sapling-table-row__actions-cell {
@@ -232,7 +234,9 @@
   right: 0;
   z-index: 1;
   padding-inline: var(--sapling-gap-sm) !important;
-  background: color-mix(in srgb, var(--sapling-surface-fill) 94%, transparent);
+  background: color-mix(in srgb, var(--sapling-surface-fill) 94%, transparent) !important;
+  backdrop-filter: blur(var(--sapling-blur-sm));
+  -webkit-backdrop-filter: blur(var(--sapling-blur-sm));
   box-shadow: -12px 0 18px -18px rgba(0, 0, 0, 0.85);
 }
 

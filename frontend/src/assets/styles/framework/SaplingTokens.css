@@ -5,7 +5,7 @@
   --sapling-radius-xs: 8px;
   --sapling-radius-sm: var(--sapling-panel-radius-compact);
   --sapling-radius-md: var(--sapling-panel-radius);
-  --sapling-radius-lg: 12px;
+  --sapling-radius-lg: var(--sapling-radius-card-xl);
   --sapling-radius-card: 16px;
   --sapling-radius-card-lg: 20px;
   --sapling-radius-card-xl: 24px;
@@ -61,10 +61,10 @@
   --sapling-gap-xs: var(--sapling-space-2xs);
   --sapling-gap-sm: var(--sapling-space-xs);
   --sapling-gap-sm-plus: var(--sapling-space-sm-plus);
-  --sapling-gap-md: var(--sapling-space-sm);
+  --sapling-gap-md: var(--sapling-space-md);
   --sapling-gap-md-plus: var(--sapling-space-md-plus);
   --sapling-gap-lg: var(--sapling-space-lg);
-  --sapling-gap-xl: var(--sapling-space-md);
+  --sapling-gap-xl: var(--sapling-space-xl);
   --sapling-gap-xl-plus: var(--sapling-space-lg-plus);
   --sapling-space-panel-xs: var(--sapling-space-lg);
   --sapling-space-panel-md: var(--sapling-space-xl);

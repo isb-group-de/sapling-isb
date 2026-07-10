@@ -11,7 +11,21 @@
         <div
           class="sapling-app-layout__content sapling-content sapling-content--app sapling-auth-layout__content"
         >
-          <RouterView />
+          <RouterView v-slot="{ Component }">
+            <Suspense>
+              <component :is="Component" />
+              <template #fallback>
+                <div
+                  class="sapling-page-shell sapling-page-shell--fill sapling-page-shell--uniform-inset sapling-route-loading"
+                >
+                  <v-skeleton-loader
+                    class="sapling-route-loading__surface"
+                    type="article, actions, table"
+                  />
+                </div>
+              </template>
+            </Suspense>
+          </RouterView>
         </div>
       </div>
 

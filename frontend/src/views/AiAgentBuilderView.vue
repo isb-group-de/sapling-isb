@@ -3,460 +3,474 @@
     class="sapling-page-shell sapling-page-shell--panel sapling-page-shell--uniform-inset sapling-config-page sapling-ai-agent-builder"
     fluid
   >
-    <SaplingPageHero
-      class="sapling-config-hero sapling-ai-agent-builder__hero"
-      variant="system"
-      :eyebrow="t('aiAgentBuilder.eyebrow')"
-      :title="t('aiAgentBuilder.title')"
-      :subtitle="t('aiAgentBuilder.subtitle')"
-    >
-      <template #meta>
-        <v-chip size="small" color="primary" variant="tonal" prepend-icon="mdi-creation">
-          {{ agents.length }} {{ t('aiAgentBuilder.agentCount') }}
-        </v-chip>
-        <v-chip size="small" variant="outlined" prepend-icon="mdi-check-circle-outline">
-          {{ activeAgentCount }} {{ t('aiAgentBuilder.activeAgents') }}
-        </v-chip>
-      </template>
+    <v-skeleton-loader
+      v-if="isPageLoading"
+      class="sapling-ai-agent-builder__page-skeleton"
+      type="article, actions, list-item-three-line, list-item-three-line, article"
+    />
 
-      <template #side>
-        <div class="sapling-action-cluster sapling-ai-agent-builder__hero-actions">
-          <v-btn color="primary" prepend-icon="mdi-plus" @click="startNewAgent">
-            {{ t('aiAgentBuilder.newAgent') }}
-          </v-btn>
-        </div>
-      </template>
-    </SaplingPageHero>
-
-    <section class="sapling-config-workspace sapling-ai-agent-builder__workspace">
-      <SaplingSurface
-        class="sapling-panel-shell sapling-section-panel sapling-config-panel sapling-config-panel--blurred sapling-ai-agent-builder__rail"
+    <template v-else>
+      <SaplingPageHero
+        class="sapling-config-hero sapling-ai-agent-builder__hero"
+        variant="system"
+        :eyebrow="t('aiAgentBuilder.eyebrow')"
+        :title="t('aiAgentBuilder.title')"
+        :subtitle="t('aiAgentBuilder.subtitle')"
       >
-        <div class="sapling-ai-agent-builder__rail-header">
-          <span>{{ t('aiAgentBuilder.agentList') }}</span>
-          <v-btn
-            icon="mdi-plus"
-            variant="tonal"
-            size="small"
-            :title="t('aiAgentBuilder.newAgent')"
-            @click="startNewAgent"
-          />
-        </div>
+        <template #meta>
+          <v-chip size="small" color="primary" variant="tonal" prepend-icon="mdi-creation">
+            {{ agents.length }} {{ t('aiAgentBuilder.agentCount') }}
+          </v-chip>
+          <v-chip size="small" variant="outlined" prepend-icon="mdi-check-circle-outline">
+            {{ activeAgentCount }} {{ t('aiAgentBuilder.activeAgents') }}
+          </v-chip>
+        </template>
 
-        <v-list class="sapling-ai-agent-builder__list" density="comfortable" nav>
-          <v-list-item
-            v-for="agent in agents"
-            :key="agent.handle"
-            :active="agent.handle === selectedAgent?.handle"
-            :prepend-icon="agent.icon || 'mdi-creation'"
-            :title="agent.title"
-            :subtitle="getAgentSubtitle(agent)"
-            rounded="lg"
-            @click="selectAgent(agent)"
-          />
-        </v-list>
-      </SaplingSurface>
+        <template #side>
+          <div class="sapling-action-cluster sapling-ai-agent-builder__hero-actions">
+            <v-btn color="primary" prepend-icon="mdi-plus" @click="startNewAgent">
+              {{ t('aiAgentBuilder.newAgent') }}
+            </v-btn>
+          </div>
+        </template>
+      </SaplingPageHero>
 
-      <SaplingSurface
-        class="sapling-panel-shell sapling-section-panel sapling-config-panel sapling-config-panel--blurred sapling-ai-agent-builder__editor"
-      >
-        <v-tabs
-          v-model="activeTab"
-          class="sapling-ai-agent-builder__tabs"
-          density="comfortable"
-          show-arrows
+      <section class="sapling-config-workspace sapling-ai-agent-builder__workspace">
+        <SaplingSurface
+          class="sapling-panel-shell sapling-section-panel sapling-config-panel sapling-config-panel--blurred sapling-ai-agent-builder__rail"
         >
-          <v-tab value="profile">{{ t('aiAgentBuilder.tabProfile') }}</v-tab>
-          <v-tab value="prompt">{{ t('aiAgentBuilder.tabPrompt') }}</v-tab>
-          <v-tab value="data">{{ t('aiAgentBuilder.tabData') }}</v-tab>
-          <v-tab value="tools">{{ t('aiAgentBuilder.tabTools') }}</v-tab>
-          <v-tab value="runtime">{{ t('aiAgentBuilder.tabRuntime') }}</v-tab>
-          <v-tab value="release">{{ t('aiAgentBuilder.tabRelease') }}</v-tab>
-          <v-tab value="versions">{{ t('aiAgentBuilder.tabVersions') }}</v-tab>
-          <v-tab value="test">{{ t('aiAgentBuilder.tabTestRuns') }}</v-tab>
-          <v-tab value="memory">{{ t('aiAgentBuilder.tabMemory') }}</v-tab>
-          <v-tab value="quality">{{ t('aiAgentBuilder.tabQuality') }}</v-tab>
-          <v-tab value="usage">{{ t('aiAgentBuilder.tabUsage') }}</v-tab>
-        </v-tabs>
+          <div class="sapling-ai-agent-builder__rail-header">
+            <span>{{ t('aiAgentBuilder.agentList') }}</span>
+            <v-btn
+              icon="mdi-plus"
+              variant="tonal"
+              size="small"
+              :title="t('aiAgentBuilder.newAgent')"
+              @click="startNewAgent"
+            />
+          </div>
 
-        <v-window v-model="activeTab" class="sapling-ai-agent-builder__window">
-          <v-window-item value="profile">
-            <div class="sapling-ai-agent-builder__grid">
-              <v-text-field
-                v-model="draft.handle"
-                :disabled="isEditingExisting"
-                :label="t('aiAgentBuilder.fieldHandle')"
-                required
-              />
-              <v-text-field
-                v-model="draft.title"
-                :label="t('aiAgentBuilder.fieldTitle')"
-                required
-              />
-              <v-text-field v-model="draft.icon" :label="t('aiAgentBuilder.fieldIcon')" />
-              <v-text-field v-model="draft.color" :label="t('aiAgentBuilder.fieldColor')" />
-              <v-textarea
-                v-model="draft.description"
-                class="sapling-ai-agent-builder__wide"
-                :label="t('aiAgentBuilder.fieldDescription')"
-                rows="3"
-              />
-              <v-combobox
-                v-model="draft.conversationStarters"
-                class="sapling-ai-agent-builder__wide"
-                chips
-                multiple
-                :label="t('aiAgentBuilder.fieldStarters')"
-              />
-            </div>
-          </v-window-item>
+          <v-list class="sapling-ai-agent-builder__list" density="comfortable" nav>
+            <v-list-item
+              v-for="agent in agents"
+              :key="agent.handle"
+              :active="agent.handle === selectedAgent?.handle"
+              :prepend-icon="agent.icon || 'mdi-creation'"
+              :title="agent.title"
+              :subtitle="getAgentSubtitle(agent)"
+              rounded="lg"
+              @click="selectAgent(agent)"
+            />
+          </v-list>
+        </SaplingSurface>
 
-          <v-window-item value="prompt">
-            <div class="sapling-ai-agent-builder__grid">
-              <v-textarea
-                v-model="draft.promptMarkdown"
-                class="sapling-ai-agent-builder__wide"
-                :label="t('aiAgentBuilder.fieldPrompt')"
-                rows="12"
-                required
-              />
-              <v-textarea
-                v-model="draft.welcomeMessage"
-                class="sapling-ai-agent-builder__wide"
-                :label="t('aiAgentBuilder.fieldWelcome')"
-                rows="4"
-              />
-            </div>
-          </v-window-item>
+        <SaplingSurface
+          class="sapling-panel-shell sapling-section-panel sapling-config-panel sapling-config-panel--blurred sapling-ai-agent-builder__editor"
+        >
+          <v-tabs
+            v-model="activeTab"
+            class="sapling-ai-agent-builder__tabs"
+            density="comfortable"
+            show-arrows
+          >
+            <v-tab value="profile">{{ t('aiAgentBuilder.tabProfile') }}</v-tab>
+            <v-tab value="prompt">{{ t('aiAgentBuilder.tabPrompt') }}</v-tab>
+            <v-tab value="data">{{ t('aiAgentBuilder.tabData') }}</v-tab>
+            <v-tab value="tools">{{ t('aiAgentBuilder.tabTools') }}</v-tab>
+            <v-tab value="runtime">{{ t('aiAgentBuilder.tabRuntime') }}</v-tab>
+            <v-tab value="release">{{ t('aiAgentBuilder.tabRelease') }}</v-tab>
+            <v-tab value="versions">{{ t('aiAgentBuilder.tabVersions') }}</v-tab>
+            <v-tab value="test">{{ t('aiAgentBuilder.tabTestRuns') }}</v-tab>
+            <v-tab value="memory">{{ t('aiAgentBuilder.tabMemory') }}</v-tab>
+            <v-tab value="quality">{{ t('aiAgentBuilder.tabQuality') }}</v-tab>
+            <v-tab value="usage">{{ t('aiAgentBuilder.tabUsage') }}</v-tab>
+          </v-tabs>
 
-          <v-window-item value="data">
-            <div class="sapling-ai-agent-builder__grid">
-              <SaplingFieldSelect
-                v-model="selectedAllowedEntities"
-                class="sapling-ai-agent-builder__wide"
-                entity-handle="entity"
-                :label="t('aiAgentBuilder.fieldEntities')"
-                density="comfortable"
-                hide-details
-              />
-              <SaplingFieldSelect
-                v-model="selectedAllowedKnowledgeEntities"
-                class="sapling-ai-agent-builder__wide"
-                entity-handle="entity"
-                :parent-filter="knowledgeEntityFilter"
-                :label="t('aiAgentBuilder.fieldKnowledge')"
-                density="comfortable"
-                hide-details
-              />
-            </div>
-          </v-window-item>
+          <v-window v-model="activeTab" class="sapling-ai-agent-builder__window">
+            <v-window-item value="profile">
+              <div class="sapling-ai-agent-builder__grid">
+                <v-text-field
+                  v-model="draft.handle"
+                  :disabled="isEditingExisting"
+                  :label="t('aiAgentBuilder.fieldHandle')"
+                  required
+                />
+                <v-text-field
+                  v-model="draft.title"
+                  :label="t('aiAgentBuilder.fieldTitle')"
+                  required
+                />
+                <v-text-field v-model="draft.icon" :label="t('aiAgentBuilder.fieldIcon')" />
+                <v-text-field v-model="draft.color" :label="t('aiAgentBuilder.fieldColor')" />
+                <v-textarea
+                  v-model="draft.description"
+                  class="sapling-ai-agent-builder__wide"
+                  :label="t('aiAgentBuilder.fieldDescription')"
+                  rows="3"
+                />
+                <v-combobox
+                  v-model="draft.conversationStarters"
+                  class="sapling-ai-agent-builder__wide"
+                  chips
+                  multiple
+                  :label="t('aiAgentBuilder.fieldStarters')"
+                />
+              </div>
+            </v-window-item>
 
-          <v-window-item value="tools">
-            <div class="sapling-ai-agent-builder__grid">
-              <v-select
-                v-model="draft.allowedInternalTools"
-                class="sapling-ai-agent-builder__wide"
-                chips
-                multiple
-                :items="internalToolOptions"
-                :label="t('aiAgentBuilder.fieldInternalTools')"
-              />
-              <v-select
-                v-model="draft.allowedExternalTools"
-                class="sapling-ai-agent-builder__wide"
-                chips
-                multiple
-                :items="externalToolOptions"
-                :label="t('aiAgentBuilder.fieldExternalTools')"
-              />
-            </div>
-          </v-window-item>
+            <v-window-item value="prompt">
+              <div class="sapling-ai-agent-builder__grid">
+                <v-textarea
+                  v-model="draft.promptMarkdown"
+                  class="sapling-ai-agent-builder__wide"
+                  :label="t('aiAgentBuilder.fieldPrompt')"
+                  rows="12"
+                  required
+                />
+                <v-textarea
+                  v-model="draft.welcomeMessage"
+                  class="sapling-ai-agent-builder__wide"
+                  :label="t('aiAgentBuilder.fieldWelcome')"
+                  rows="4"
+                />
+              </div>
+            </v-window-item>
 
-          <v-window-item value="runtime">
-            <div class="sapling-ai-agent-builder__grid">
-              <v-select
-                v-model="draft.provider"
-                item-title="title"
-                item-value="handle"
-                :items="providers"
-                :label="t('aiAgentBuilder.fieldProvider')"
-                clearable
-              />
-              <v-select
-                v-model="draft.model"
-                item-title="title"
-                item-value="handle"
-                :items="filteredModels"
-                :label="t('aiAgentBuilder.fieldModel')"
-                clearable
-              />
-              <v-select
-                v-model="draft.mutationMode"
-                :items="mutationModeOptions"
-                :label="t('aiAgentBuilder.fieldMutationMode')"
-              />
-            </div>
-          </v-window-item>
+            <v-window-item value="data">
+              <div class="sapling-ai-agent-builder__grid">
+                <SaplingFieldSelect
+                  v-model="selectedAllowedEntities"
+                  class="sapling-ai-agent-builder__wide"
+                  entity-handle="entity"
+                  :label="t('aiAgentBuilder.fieldEntities')"
+                  density="comfortable"
+                  hide-details
+                />
+                <SaplingFieldSelect
+                  v-model="selectedAllowedKnowledgeEntities"
+                  class="sapling-ai-agent-builder__wide"
+                  entity-handle="entity"
+                  :parent-filter="knowledgeEntityFilter"
+                  :label="t('aiAgentBuilder.fieldKnowledge')"
+                  density="comfortable"
+                  hide-details
+                />
+              </div>
+            </v-window-item>
 
-          <v-window-item value="release">
-            <div class="sapling-ai-agent-builder__grid">
-              <SaplingFieldSelect
-                v-model="selectedRoles"
-                class="sapling-ai-agent-builder__wide"
-                entity-handle="role"
-                :label="t('aiAgentBuilder.fieldRoles')"
-                density="comfortable"
-                hide-details
-              />
-              <v-switch v-model="draft.isActive" :label="t('aiAgentBuilder.fieldActive')" />
-              <v-switch v-model="draft.isDefault" :label="t('aiAgentBuilder.fieldDefault')" />
-              <v-text-field
-                v-model.number="draft.sortOrder"
-                type="number"
-                :label="t('aiAgentBuilder.fieldSortOrder')"
-              />
-            </div>
-          </v-window-item>
+            <v-window-item value="tools">
+              <div class="sapling-ai-agent-builder__grid">
+                <v-select
+                  v-model="draft.allowedInternalTools"
+                  class="sapling-ai-agent-builder__wide"
+                  chips
+                  multiple
+                  :items="internalToolOptions"
+                  :label="t('aiAgentBuilder.fieldInternalTools')"
+                />
+                <v-select
+                  v-model="draft.allowedExternalTools"
+                  class="sapling-ai-agent-builder__wide"
+                  chips
+                  multiple
+                  :items="externalToolOptions"
+                  :label="t('aiAgentBuilder.fieldExternalTools')"
+                />
+              </div>
+            </v-window-item>
 
-          <v-window-item value="versions">
-            <div class="sapling-ai-agent-builder__panel-stack">
-              <div class="sapling-row-between-xs">
-                <div>
-                  <strong>{{ t('aiAgentBuilder.versionsTitle') }}</strong>
-                  <p>
-                    {{ t('aiAgentBuilder.versionsSubtitle') }}
-                  </p>
+            <v-window-item value="runtime">
+              <div class="sapling-ai-agent-builder__grid">
+                <v-select
+                  v-model="draft.provider"
+                  item-title="title"
+                  item-value="handle"
+                  :items="providers"
+                  :label="t('aiAgentBuilder.fieldProvider')"
+                  clearable
+                />
+                <v-select
+                  v-model="draft.model"
+                  item-title="title"
+                  item-value="handle"
+                  :items="filteredModels"
+                  :label="t('aiAgentBuilder.fieldModel')"
+                  clearable
+                />
+                <v-select
+                  v-model="draft.mutationMode"
+                  :items="mutationModeOptions"
+                  :label="t('aiAgentBuilder.fieldMutationMode')"
+                />
+              </div>
+            </v-window-item>
+
+            <v-window-item value="release">
+              <div class="sapling-ai-agent-builder__grid">
+                <SaplingFieldSelect
+                  v-model="selectedRoles"
+                  class="sapling-ai-agent-builder__wide"
+                  entity-handle="role"
+                  :label="t('aiAgentBuilder.fieldRoles')"
+                  density="comfortable"
+                  hide-details
+                />
+                <v-switch v-model="draft.isActive" :label="t('aiAgentBuilder.fieldActive')" />
+                <v-switch v-model="draft.isDefault" :label="t('aiAgentBuilder.fieldDefault')" />
+                <v-text-field
+                  v-model.number="draft.sortOrder"
+                  type="number"
+                  :label="t('aiAgentBuilder.fieldSortOrder')"
+                />
+              </div>
+            </v-window-item>
+
+            <v-window-item value="versions">
+              <div class="sapling-ai-agent-builder__panel-stack">
+                <div class="sapling-row-between-xs">
+                  <div>
+                    <strong>{{ t('aiAgentBuilder.versionsTitle') }}</strong>
+                    <p>
+                      {{ t('aiAgentBuilder.versionsSubtitle') }}
+                    </p>
+                  </div>
+                  <v-btn
+                    color="primary"
+                    variant="tonal"
+                    prepend-icon="mdi-source-branch-plus"
+                    :disabled="!selectedAgent"
+                    @click="createVersionFromDraft"
+                  >
+                    {{ t('aiAgentBuilder.createVersion') }}
+                  </v-btn>
+                </div>
+                <v-table density="comfortable">
+                  <thead>
+                    <tr>
+                      <th>{{ t('global.version') }}</th>
+                      <th>{{ t('global.status') }}</th>
+                      <th>{{ t('aiAgentBuilder.fieldProvider') }}</th>
+                      <th>{{ t('aiAgentBuilder.fieldModel') }}</th>
+                      <th>{{ t('aiAgentBuilder.updatedAt') }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      v-for="version in workbenchVersions"
+                      :key="version.handle ?? version.version"
+                    >
+                      <td>v{{ version.version }}</td>
+                      <td>
+                        <v-chip size="small" variant="tonal">{{ version.status }}</v-chip>
+                      </td>
+                      <td>{{ getProviderHandle(version.provider) || t('global.notAvailable') }}</td>
+                      <td>{{ getModelHandle(version.model) || t('global.notAvailable') }}</td>
+                      <td>{{ formatDate(version.updatedAt) }}</td>
+                    </tr>
+                  </tbody>
+                </v-table>
+              </div>
+            </v-window-item>
+
+            <v-window-item value="test">
+              <div class="sapling-ai-agent-builder__panel-stack">
+                <v-textarea v-model="testPrompt" :label="t('aiAgentBuilder.testPrompt')" rows="5" />
+                <div class="sapling-row-md">
+                  <v-select
+                    v-model="selectedTestVersionHandle"
+                    :items="versionOptions"
+                    item-title="title"
+                    item-value="value"
+                    clearable
+                    :label="t('aiAgentBuilder.testVersion')"
+                  />
+                  <v-select
+                    v-model="selectedTestPlaybookHandle"
+                    :items="playbookOptions"
+                    item-title="title"
+                    item-value="value"
+                    clearable
+                    :label="t('aiAgentBuilder.testPlaybook')"
+                  />
+                  <v-btn
+                    color="primary"
+                    prepend-icon="mdi-play-circle-outline"
+                    :disabled="!selectedAgent || !testPrompt.trim()"
+                    :loading="isRunningTest"
+                    @click="runAgentTest"
+                  >
+                    {{ t('aiAgentBuilder.runTest') }}
+                  </v-btn>
+                </div>
+                <v-alert v-if="latestTestRun" type="info" variant="tonal">
+                  {{ latestTestRun.status }} - {{ latestTestRun.durationMs ?? '-' }} ms
+                </v-alert>
+              </div>
+            </v-window-item>
+
+            <v-window-item value="memory">
+              <div class="sapling-ai-agent-builder__panel-stack">
+                <strong>{{ t('aiAgentBuilder.memoryTitle') }}</strong>
+                <article
+                  v-for="playbook in workbenchPlaybooks"
+                  :key="playbook.handle"
+                  class="sapling-section-panel sapling-ai-agent-builder__mini-card"
+                >
+                  <div class="sapling-row-between-xs">
+                    <strong>{{ playbook.title }}</strong>
+                    <v-chip
+                      size="small"
+                      variant="tonal"
+                      :color="playbook.isActive ? 'success' : undefined"
+                    >
+                      {{ playbook.isActive ? t('global.active') : t('global.inactive') }}
+                    </v-chip>
+                  </div>
+                  <p v-if="playbook.description">{{ playbook.description }}</p>
+                  <div v-if="playbook.triggerEntityHandles?.length" class="sapling-row-xs">
+                    <v-chip
+                      v-for="entityHandle in playbook.triggerEntityHandles"
+                      :key="entityHandle"
+                      size="small"
+                      variant="outlined"
+                    >
+                      {{ entityHandle }}
+                    </v-chip>
+                  </div>
+                  <ol v-if="playbook.steps?.length" class="sapling-stack-xs">
+                    <li
+                      v-for="(step, stepIndex) in playbook.steps"
+                      :key="`${playbook.handle}-${stepIndex}`"
+                    >
+                      {{ step }}
+                    </li>
+                  </ol>
+                  <p v-if="playbook.expectedOutput">{{ playbook.expectedOutput }}</p>
+                </article>
+                <v-alert v-if="workbenchPlaybooks.length === 0" type="info" variant="tonal">
+                  {{ t('aiAgentBuilder.noPlaybooks') }}
+                </v-alert>
+                <article
+                  v-for="memory in workbenchMemories"
+                  :key="memory.handle ?? memory.title"
+                  class="sapling-section-panel sapling-ai-agent-builder__mini-card"
+                >
+                  <div class="sapling-row-between-xs">
+                    <strong>{{ memory.title }}</strong>
+                    <v-chip size="small" variant="tonal">{{ memory.type }}</v-chip>
+                  </div>
+                  <p>{{ memory.contentMarkdown }}</p>
+                </article>
+                <v-alert v-if="workbenchMemories.length === 0" type="info" variant="tonal">
+                  {{ t('aiAgentBuilder.noMemory') }}
+                </v-alert>
+              </div>
+            </v-window-item>
+
+            <v-window-item value="quality">
+              <div class="sapling-ai-agent-builder__panel-stack">
+                <div class="sapling-ai-agent-builder__grid">
+                  <v-text-field
+                    v-model="evaluationDraft.title"
+                    :label="t('aiAgentBuilder.evaluationTitle')"
+                  />
+                  <v-select
+                    v-model="evaluationDraft.agentVersionHandle"
+                    :items="versionOptions"
+                    item-title="title"
+                    item-value="value"
+                    clearable
+                    :label="t('aiAgentBuilder.testVersion')"
+                  />
+                  <v-textarea
+                    v-model="evaluationDraft.prompt"
+                    class="sapling-ai-agent-builder__wide"
+                    :label="t('aiAgentBuilder.testPrompt')"
+                    rows="4"
+                  />
+                  <v-textarea
+                    v-model="evaluationDraft.expectedCriteria"
+                    class="sapling-ai-agent-builder__wide"
+                    :label="t('aiAgentBuilder.expectedCriteria')"
+                    rows="3"
+                  />
                 </div>
                 <v-btn
                   color="primary"
                   variant="tonal"
-                  prepend-icon="mdi-source-branch-plus"
-                  :disabled="!selectedAgent"
-                  @click="createVersionFromDraft"
+                  prepend-icon="mdi-clipboard-check-outline"
+                  :disabled="
+                    !selectedAgent ||
+                    !evaluationDraft.title.trim() ||
+                    !evaluationDraft.prompt.trim()
+                  "
+                  @click="createEvaluation"
                 >
-                  {{ t('aiAgentBuilder.createVersion') }}
+                  {{ t('aiAgentBuilder.createEvaluation') }}
                 </v-btn>
+                <v-table density="comfortable">
+                  <thead>
+                    <tr>
+                      <th>{{ t('aiAgentBuilder.evaluationTitle') }}</th>
+                      <th>{{ t('global.status') }}</th>
+                      <th>{{ t('aiAgentBuilder.updatedAt') }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      v-for="evaluation in workbenchEvaluations"
+                      :key="evaluation.handle ?? evaluation.title"
+                    >
+                      <td>{{ evaluation.title }}</td>
+                      <td>
+                        <v-chip size="small" variant="tonal">{{ evaluation.status }}</v-chip>
+                      </td>
+                      <td>{{ formatDate(evaluation.updatedAt) }}</td>
+                    </tr>
+                  </tbody>
+                </v-table>
               </div>
-              <v-table density="comfortable">
-                <thead>
-                  <tr>
-                    <th>{{ t('global.version') }}</th>
-                    <th>{{ t('global.status') }}</th>
-                    <th>{{ t('aiAgentBuilder.fieldProvider') }}</th>
-                    <th>{{ t('aiAgentBuilder.fieldModel') }}</th>
-                    <th>{{ t('aiAgentBuilder.updatedAt') }}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="version in workbenchVersions" :key="version.handle ?? version.version">
-                    <td>v{{ version.version }}</td>
-                    <td>
-                      <v-chip size="small" variant="tonal">{{ version.status }}</v-chip>
-                    </td>
-                    <td>{{ getProviderHandle(version.provider) || t('global.notAvailable') }}</td>
-                    <td>{{ getModelHandle(version.model) || t('global.notAvailable') }}</td>
-                    <td>{{ formatDate(version.updatedAt) }}</td>
-                  </tr>
-                </tbody>
-              </v-table>
-            </div>
-          </v-window-item>
+            </v-window-item>
 
-          <v-window-item value="test">
-            <div class="sapling-ai-agent-builder__panel-stack">
-              <v-textarea v-model="testPrompt" :label="t('aiAgentBuilder.testPrompt')" rows="5" />
-              <div class="sapling-row-md">
-                <v-select
-                  v-model="selectedTestVersionHandle"
-                  :items="versionOptions"
-                  item-title="title"
-                  item-value="value"
-                  clearable
-                  :label="t('aiAgentBuilder.testVersion')"
-                />
-                <v-select
-                  v-model="selectedTestPlaybookHandle"
-                  :items="playbookOptions"
-                  item-title="title"
-                  item-value="value"
-                  clearable
-                  :label="t('aiAgentBuilder.testPlaybook')"
-                />
-                <v-btn
-                  color="primary"
-                  prepend-icon="mdi-play-circle-outline"
-                  :disabled="!selectedAgent || !testPrompt.trim()"
-                  :loading="isRunningTest"
-                  @click="runAgentTest"
-                >
-                  {{ t('aiAgentBuilder.runTest') }}
-                </v-btn>
-              </div>
-              <v-alert v-if="latestTestRun" type="info" variant="tonal">
-                {{ latestTestRun.status }} - {{ latestTestRun.durationMs ?? '-' }} ms
-              </v-alert>
-            </div>
-          </v-window-item>
-
-          <v-window-item value="memory">
-            <div class="sapling-ai-agent-builder__panel-stack">
-              <strong>{{ t('aiAgentBuilder.memoryTitle') }}</strong>
-              <article
-                v-for="playbook in workbenchPlaybooks"
-                :key="playbook.handle"
-                class="sapling-section-panel sapling-ai-agent-builder__mini-card"
-              >
-                <div class="sapling-row-between-xs">
-                  <strong>{{ playbook.title }}</strong>
-                  <v-chip
-                    size="small"
-                    variant="tonal"
-                    :color="playbook.isActive ? 'success' : undefined"
+            <v-window-item value="usage">
+              <div class="sapling-ai-agent-builder__panel-stack">
+                <div class="sapling-ai-agent-builder__stats">
+                  <v-chip color="primary" variant="tonal"
+                    >{{ workbenchStats.runsTotal ?? 0 }} {{ t('aiAgentBuilder.runs') }}</v-chip
                   >
-                    {{ playbook.isActive ? t('global.active') : t('global.inactive') }}
+                  <v-chip variant="tonal"
+                    >{{ workbenchStats.failedRuns ?? 0 }}
+                    {{ t('aiAgentBuilder.failedRuns') }}</v-chip
+                  >
+                  <v-chip variant="tonal"
+                    >{{ workbenchStats.pendingActions ?? 0 }}
+                    {{ t('aiAgentBuilder.actions') }}</v-chip
+                  >
+                  <v-chip variant="tonal">
+                    {{ workbenchStats.evaluationPassRate ?? t('global.notAvailable') }}%
+                    {{ t('aiAgentBuilder.tabQuality') }}
                   </v-chip>
                 </div>
-                <p v-if="playbook.description">{{ playbook.description }}</p>
-                <div v-if="playbook.triggerEntityHandles?.length" class="sapling-row-xs">
-                  <v-chip
-                    v-for="entityHandle in playbook.triggerEntityHandles"
-                    :key="entityHandle"
-                    size="small"
-                    variant="outlined"
-                  >
-                    {{ entityHandle }}
-                  </v-chip>
-                </div>
-                <ol v-if="playbook.steps?.length" class="sapling-stack-xs">
-                  <li
-                    v-for="(step, stepIndex) in playbook.steps"
-                    :key="`${playbook.handle}-${stepIndex}`"
-                  >
-                    {{ step }}
-                  </li>
-                </ol>
-                <p v-if="playbook.expectedOutput">{{ playbook.expectedOutput }}</p>
-              </article>
-              <v-alert v-if="workbenchPlaybooks.length === 0" type="info" variant="tonal">
-                {{ t('aiAgentBuilder.noPlaybooks') }}
-              </v-alert>
-              <article
-                v-for="memory in workbenchMemories"
-                :key="memory.handle ?? memory.title"
-                class="sapling-section-panel sapling-ai-agent-builder__mini-card"
-              >
-                <div class="sapling-row-between-xs">
-                  <strong>{{ memory.title }}</strong>
-                  <v-chip size="small" variant="tonal">{{ memory.type }}</v-chip>
-                </div>
-                <p>{{ memory.contentMarkdown }}</p>
-              </article>
-              <v-alert v-if="workbenchMemories.length === 0" type="info" variant="tonal">
-                {{ t('aiAgentBuilder.noMemory') }}
-              </v-alert>
-            </div>
-          </v-window-item>
-
-          <v-window-item value="quality">
-            <div class="sapling-ai-agent-builder__panel-stack">
-              <div class="sapling-ai-agent-builder__grid">
-                <v-text-field
-                  v-model="evaluationDraft.title"
-                  :label="t('aiAgentBuilder.evaluationTitle')"
-                />
-                <v-select
-                  v-model="evaluationDraft.agentVersionHandle"
-                  :items="versionOptions"
-                  item-title="title"
-                  item-value="value"
-                  clearable
-                  :label="t('aiAgentBuilder.testVersion')"
-                />
-                <v-textarea
-                  v-model="evaluationDraft.prompt"
-                  class="sapling-ai-agent-builder__wide"
-                  :label="t('aiAgentBuilder.testPrompt')"
-                  rows="4"
-                />
-                <v-textarea
-                  v-model="evaluationDraft.expectedCriteria"
-                  class="sapling-ai-agent-builder__wide"
-                  :label="t('aiAgentBuilder.expectedCriteria')"
-                  rows="3"
-                />
+                <AiAgentRunTraceList :runs="workbenchRuns" />
               </div>
-              <v-btn
-                color="primary"
-                variant="tonal"
-                prepend-icon="mdi-clipboard-check-outline"
-                :disabled="
-                  !selectedAgent || !evaluationDraft.title.trim() || !evaluationDraft.prompt.trim()
-                "
-                @click="createEvaluation"
-              >
-                {{ t('aiAgentBuilder.createEvaluation') }}
-              </v-btn>
-              <v-table density="comfortable">
-                <thead>
-                  <tr>
-                    <th>{{ t('aiAgentBuilder.evaluationTitle') }}</th>
-                    <th>{{ t('global.status') }}</th>
-                    <th>{{ t('aiAgentBuilder.updatedAt') }}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr
-                    v-for="evaluation in workbenchEvaluations"
-                    :key="evaluation.handle ?? evaluation.title"
-                  >
-                    <td>{{ evaluation.title }}</td>
-                    <td>
-                      <v-chip size="small" variant="tonal">{{ evaluation.status }}</v-chip>
-                    </td>
-                    <td>{{ formatDate(evaluation.updatedAt) }}</td>
-                  </tr>
-                </tbody>
-              </v-table>
-            </div>
-          </v-window-item>
+            </v-window-item>
+          </v-window>
 
-          <v-window-item value="usage">
-            <div class="sapling-ai-agent-builder__panel-stack">
-              <div class="sapling-ai-agent-builder__stats">
-                <v-chip color="primary" variant="tonal"
-                  >{{ workbenchStats.runsTotal ?? 0 }} {{ t('aiAgentBuilder.runs') }}</v-chip
-                >
-                <v-chip variant="tonal"
-                  >{{ workbenchStats.failedRuns ?? 0 }} {{ t('aiAgentBuilder.failedRuns') }}</v-chip
-                >
-                <v-chip variant="tonal"
-                  >{{ workbenchStats.pendingActions ?? 0 }}
-                  {{ t('aiAgentBuilder.actions') }}</v-chip
-                >
-                <v-chip variant="tonal">
-                  {{ workbenchStats.evaluationPassRate ?? t('global.notAvailable') }}%
-                  {{ t('aiAgentBuilder.tabQuality') }}
-                </v-chip>
-              </div>
-              <AiAgentRunTraceList :runs="workbenchRuns" />
-            </div>
-          </v-window-item>
-        </v-window>
-
-        <div class="sapling-ai-agent-builder__actions">
-          <v-btn variant="text" @click="resetDraft">{{ t('global.cancel') }}</v-btn>
-          <v-btn
-            color="primary"
-            prepend-icon="mdi-content-save"
-            :disabled="!canSaveAgent"
-            :loading="isSaving"
-            @click="saveAgent"
-          >
-            {{ t('global.save') }}
-          </v-btn>
-        </div>
-      </SaplingSurface>
-    </section>
+          <div class="sapling-ai-agent-builder__actions">
+            <v-btn variant="text" @click="resetDraft">{{ t('global.cancel') }}</v-btn>
+            <v-btn
+              color="primary"
+              prepend-icon="mdi-content-save"
+              :disabled="!canSaveAgent"
+              :loading="isSaving"
+              @click="saveAgent"
+            >
+              {{ t('global.save') }}
+            </v-btn>
+          </div>
+        </SaplingSurface>
+      </section>
+    </template>
   </v-container>
 </template>
 
@@ -531,6 +545,7 @@ const workbenchEvaluations = ref<AiAgentEvaluationItem[]>([])
 const workbenchStats = ref<Record<string, number | null | undefined>>({})
 const isSaving = ref(false)
 const isRunningTest = ref(false)
+const isPageLoading = ref(true)
 const translationService = new TranslationService()
 const draft = ref(createEmptyDraft())
 const testPrompt = ref('')
@@ -609,18 +624,22 @@ const mutationModeOptions = computed(() => [
 ])
 
 onMounted(async () => {
-  await Promise.all([
-    translationService.prepare(
-      'aiAgentBuilder',
-      'aiAgent',
-      'aiChatToolAction',
-      'navigation',
-      'global',
-    ),
-    loadAgents(),
-    loadReferenceData(),
-  ])
-  selectAgent(agents.value.find((agent) => agent.isDefault) ?? agents.value[0] ?? null)
+  try {
+    await Promise.all([
+      translationService.prepare(
+        'aiAgentBuilder',
+        'aiAgent',
+        'aiChatToolAction',
+        'navigation',
+        'global',
+      ),
+      loadAgents(),
+      loadReferenceData(),
+    ])
+    selectAgent(agents.value.find((agent) => agent.isDefault) ?? agents.value[0] ?? null)
+  } finally {
+    isPageLoading.value = false
+  }
 })
 
 async function loadAgents() {

@@ -193,7 +193,17 @@
   color: rgb(var(--v-theme-primary));
 }
 
+.sapling-dashboard-favorite-button.v-btn .v-btn__content {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  justify-content: flex-start;
+  overflow: hidden;
+}
+
 .sapling-dashboard-favorite-button__label {
+  flex: 1 1 auto;
+  max-width: 100%;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -725,6 +735,7 @@
 
 @media (max-width: 1440px) {
   .sapling-dashboard-page--flow-xl {
+    flex: 0 0 auto;
     height: auto;
     min-height: 100%;
     overflow: visible;
@@ -756,6 +767,7 @@
   .sapling-dashboard__actions-skeleton,
   .sapling-dashboard__hero .sapling-action-stack {
     width: 100%;
+    max-width: 100%;
     align-items: flex-start;
     justify-content: flex-start;
     margin-left: 0;
@@ -766,10 +778,21 @@
     align-items: flex-start;
     justify-content: flex-start;
   }
+
+  .sapling-dashboard__hero .sapling-action-stack,
+  .sapling-dashboard__hero .sapling-action-cluster {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .sapling-dashboard__hero .sapling-action-cluster > .v-btn {
+    justify-content: flex-start;
+  }
 }
 
 @media (max-width: 1080px) {
   .sapling-dashboard-page--flow-lg {
+    flex: 0 0 auto;
     height: auto;
     min-height: 100%;
     overflow: visible;
@@ -927,7 +950,7 @@
   --crm-panel: rgba(15, 22, 38, 0.68);
   --crm-panel-strong: rgba(17, 24, 39, 0.82);
   --crm-soft: rgba(255, 255, 255, 0.065);
-  gap: 14px;
+  gap: var(--sapling-gap-md-plus);
 }
 
 .sapling-crm-workspace__hero {
@@ -936,7 +959,7 @@
 
 .sapling-crm-workspace__hero .sapling-page-hero__content {
   min-height: 190px;
-  padding-block: 22px;
+  padding-block: var(--sapling-space-xl);
 }
 
 .sapling-crm-workspace__hero .sapling-page-hero__title {
@@ -945,7 +968,7 @@
 }
 
 .sapling-crm-workspace__hero .sapling-page-hero__eyebrow {
-  margin-bottom: 8px;
+  margin-bottom: var(--sapling-gap-sm);
 }
 
 .sapling-crm-workspace__subtitle {
@@ -957,17 +980,17 @@
 .sapling-crm-workspace__hero-side {
   display: grid;
   grid-template-columns: repeat(2, minmax(130px, 1fr));
-  gap: 10px;
+  gap: var(--sapling-gap-sm-plus);
   min-width: min(420px, 100%);
 }
 
 .sapling-crm-workspace-metric {
   display: grid;
-  gap: 4px;
+  gap: var(--sapling-gap-xs);
   min-height: 68px;
-  padding: 12px 14px;
+  padding: var(--sapling-space-md) var(--sapling-space-md-plus);
   border: 1px solid var(--crm-border);
-  border-radius: 8px;
+  border-radius: var(--sapling-radius-sm);
   background: rgba(255, 255, 255, 0.055);
 }
 
@@ -988,11 +1011,11 @@
 
 .sapling-crm-workspace__toolbar {
   display: flex;
-  gap: 16px;
+  gap: var(--sapling-gap-lg);
   align-items: center;
   justify-content: space-between;
-  padding: 12px;
-  border-radius: 8px;
+  padding: var(--sapling-space-md);
+  border-radius: var(--sapling-radius-sm);
   background: var(--crm-panel-strong);
 }
 
@@ -1013,51 +1036,57 @@
 .sapling-crm-workspace__toolbar-fields {
   display: grid;
   grid-template-columns: minmax(220px, 1fr) minmax(220px, 280px) minmax(170px, 210px);
-  gap: 12px;
+  gap: var(--sapling-gap-md);
   align-items: center;
   width: min(880px, 100%);
 }
 
 .sapling-crm-workspace__progress {
-  margin-block: 12px;
-  border-radius: 999px;
+  margin-block: var(--sapling-space-md);
+  border-radius: var(--sapling-radius-pill);
 }
 
 .sapling-crm-workspace__loading-grid,
 .sapling-crm-workspace__layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
-  gap: 18px;
+  gap: var(--sapling-gap-xl-plus);
 }
 
 .sapling-crm-workspace__loading-grid {
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
 }
 
+.sapling-crm-workspace__loading-grid--page {
+  flex: 1 1 auto;
+  min-height: min(760px, calc(100dvh - 96px));
+  align-content: stretch;
+}
+
 .sapling-crm-workspace__main,
 .sapling-crm-workspace__side {
   display: grid;
-  gap: 18px;
+  gap: var(--sapling-gap-xl-plus);
   align-content: start;
 }
 
 .sapling-crm-workspace-panel {
   display: grid;
-  gap: 16px;
-  padding: 18px;
-  border-radius: 8px;
+  gap: var(--sapling-gap-lg);
+  padding: var(--sapling-space-lg-plus);
+  border-radius: var(--sapling-radius-sm);
   background: var(--crm-panel);
 }
 
 .sapling-crm-workspace-panel--compact {
-  gap: 12px;
+  gap: var(--sapling-gap-md);
 }
 
 .sapling-crm-workspace-panel__header {
   display: flex;
   align-items: start;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--sapling-gap-md);
 }
 
 .sapling-crm-workspace-panel__header h2 {
@@ -1069,7 +1098,7 @@
 .sapling-crm-workspace__stage-grid,
 .sapling-crm-account-grid {
   display: grid;
-  gap: 12px;
+  gap: var(--sapling-gap-md);
 }
 
 .sapling-crm-workspace__stage-grid {
@@ -1084,15 +1113,15 @@
 .sapling-crm-account-card,
 .sapling-crm-signal {
   border: 1px solid var(--crm-border);
-  border-radius: 8px;
+  border-radius: var(--sapling-radius-sm);
   background: rgba(255, 255, 255, 0.055);
 }
 
 .sapling-crm-stage {
   position: relative;
   display: grid;
-  gap: 5px;
-  padding: 14px;
+  gap: var(--sapling-gap-xs);
+  padding: var(--sapling-space-md-plus);
   overflow: hidden;
   color: inherit;
   font: inherit;
@@ -1120,10 +1149,10 @@
 .sapling-crm-account-card {
   display: grid;
   grid-template-rows: auto auto 1fr auto;
-  gap: 10px;
+  gap: var(--sapling-gap-sm-plus);
   width: 100%;
   min-height: 148px;
-  padding: 16px;
+  padding: var(--sapling-space-lg);
   color: inherit;
   text-align: left;
   cursor: pointer;
@@ -1149,7 +1178,7 @@
 
 .sapling-crm-account-card__owner {
   display: inline-flex;
-  gap: 6px;
+  gap: var(--sapling-gap-xs);
   align-items: center;
   color: rgba(229, 236, 255, 0.82);
   font-size: 0.82rem;
@@ -1160,7 +1189,7 @@
 .sapling-crm-account-card__footer {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 8px;
+  gap: var(--sapling-gap-sm);
   align-items: end;
 }
 
@@ -1170,8 +1199,8 @@
   width: fit-content;
   max-width: 100%;
   min-height: 22px;
-  padding: 3px 8px;
-  border-radius: 999px;
+  padding: var(--sapling-space-3xs) var(--sapling-space-sm);
+  border-radius: var(--sapling-radius-pill);
   background: rgba(var(--v-theme-primary), 0.16);
   color: rgb(var(--v-theme-primary));
   font-size: 0.74rem;
@@ -1186,15 +1215,15 @@
 
 .sapling-crm-signal-list {
   display: grid;
-  gap: 8px;
+  gap: var(--sapling-gap-sm);
 }
 
 .sapling-crm-signal {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
-  gap: 10px;
+  gap: var(--sapling-gap-sm-plus);
   align-items: center;
-  padding: 10px 12px;
+  padding: var(--sapling-space-sm-plus) var(--sapling-space-md);
   color: inherit;
   font: inherit;
   text-align: left;
@@ -1211,9 +1240,9 @@
   --crm-list-panel: rgba(15, 22, 38, 0.64);
 
   display: grid;
-  gap: 14px;
-  padding: 16px;
-  border-radius: 8px;
+  gap: var(--sapling-gap-md-plus);
+  padding: var(--sapling-space-lg);
+  border-radius: var(--sapling-radius-sm);
   background: var(--crm-list-panel);
 }
 
@@ -1221,7 +1250,7 @@
   display: flex;
   align-items: start;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--sapling-gap-md);
 }
 
 .sapling-crm-workspace-list__header h3 {
@@ -1236,8 +1265,8 @@
   justify-content: center;
   min-width: 28px;
   height: 28px;
-  padding-inline: 8px;
-  border-radius: 999px;
+  padding-inline: var(--sapling-space-sm);
+  border-radius: var(--sapling-radius-pill);
   background: rgba(var(--v-theme-primary), 0.16);
   color: rgb(var(--v-theme-primary));
   font-weight: 700;
@@ -1245,19 +1274,19 @@
 
 .sapling-crm-workspace-list__items {
   display: grid;
-  gap: 10px;
+  gap: var(--sapling-gap-sm-plus);
 }
 
 .sapling-crm-workspace-list-card {
   display: grid;
   grid-template-columns: 34px minmax(0, 1fr) minmax(96px, auto);
-  gap: 12px;
+  gap: var(--sapling-gap-md);
   align-items: center;
   width: 100%;
   min-height: 64px;
-  padding: 10px 12px;
+  padding: var(--sapling-space-sm-plus) var(--sapling-space-md);
   border: 1px solid var(--crm-list-border);
-  border-radius: 8px;
+  border-radius: var(--sapling-radius-sm);
   background: rgba(255, 255, 255, 0.055);
   color: inherit;
   text-align: left;
@@ -1275,14 +1304,14 @@
   justify-content: center;
   width: 34px;
   height: 34px;
-  border-radius: 8px;
+  border-radius: var(--sapling-radius-sm);
   background: rgba(255, 255, 255, 0.08);
   color: rgba(229, 236, 255, 0.9);
 }
 
 .sapling-crm-workspace-list-card__copy {
   display: grid;
-  gap: 3px;
+  gap: var(--sapling-gap-2xs);
   min-width: 0;
 }
 
@@ -1301,7 +1330,7 @@
 
 .sapling-crm-workspace-list-card__owner {
   display: inline-flex;
-  gap: 5px;
+  gap: var(--sapling-gap-xs);
   align-items: center;
   color: rgba(229, 236, 255, 0.82);
   font-size: 0.78rem;
@@ -1309,7 +1338,7 @@
 
 .sapling-crm-workspace-list-card__meta {
   display: grid;
-  gap: 4px;
+  gap: var(--sapling-gap-xs);
   justify-items: end;
   min-width: 0;
 }
@@ -1351,10 +1380,25 @@
 .sapling-crm-workspace-list__empty {
   display: grid;
   justify-items: center;
-  gap: 8px;
-  padding: 28px 12px;
+  gap: var(--sapling-gap-sm);
+  padding: var(--sapling-space-2xl-plus) var(--sapling-space-md);
   color: var(--crm-list-muted);
   text-align: center;
+}
+
+@media (max-width: 1280px) {
+  .sapling-crm-workspace__toolbar {
+    display: grid;
+  }
+
+  .sapling-crm-workspace__tabs,
+  .sapling-crm-workspace__toolbar-fields {
+    width: 100%;
+  }
+
+  .sapling-crm-workspace__tabs {
+    overflow-x: auto;
+  }
 }
 
 @media (max-width: 1200px) {

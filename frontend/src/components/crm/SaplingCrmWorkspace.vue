@@ -3,61 +3,10 @@
     class="sapling-page-shell sapling-page-shell--panel sapling-page-shell--fill sapling-page-shell--uniform-inset sapling-crm-workspace"
     fluid
   >
-    <SaplingPageHero
-      class="sapling-crm-workspace__hero"
-      variant="workspace"
-      :eyebrow="t('navigation.crmWorkspace')"
-      :title="t('crmWorkspace.title')"
+    <section
+      v-if="isPreparing"
+      class="sapling-crm-workspace__loading-grid sapling-crm-workspace__loading-grid--page"
     >
-      <template #title-prefix>
-        <v-icon size="30">mdi-view-dashboard-variant-outline</v-icon>
-      </template>
-
-      <p class="sapling-crm-workspace__subtitle">
-        {{ t('crmWorkspace.subtitle') }}
-      </p>
-
-      <template #side>
-        <div class="sapling-crm-workspace__hero-side">
-          <article
-            v-for="metric in heroMetrics"
-            :key="metric.key"
-            class="sapling-crm-workspace-metric"
-          >
-            <span>{{ metric.label }}</span>
-            <strong>{{ metric.value }}</strong>
-          </article>
-
-          <v-btn
-            class="sapling-crm-workspace__refresh"
-            prepend-icon="mdi-refresh"
-            variant="text"
-            :disabled="isLoading"
-            @click="loadData"
-          >
-            {{ t('global.refresh') }}
-          </v-btn>
-        </div>
-      </template>
-    </SaplingPageHero>
-
-    <SaplingCrmWorkspaceToolbar
-      v-model:active-cockpit="activeCockpit"
-      v-model:search="search"
-      v-model:selected-responsible-handle="selectedResponsibleHandle"
-      v-model:contact-threshold-days="contactThresholdDays"
-      :responsible-person-options="responsiblePersonOptions"
-      :contact-threshold-options="contactThresholdOptions"
-    />
-
-    <v-progress-linear
-      v-if="isLoading && hasLoadedOnce"
-      class="sapling-crm-workspace__progress"
-      color="primary"
-      indeterminate
-    />
-
-    <section v-if="isBootstrapping" class="sapling-crm-workspace__loading-grid">
       <v-skeleton-loader
         v-for="item in 6"
         :key="item"
@@ -66,155 +15,211 @@
       />
     </section>
 
-    <section v-else class="sapling-crm-workspace__layout">
-      <main class="sapling-crm-workspace__main">
-        <section v-if="activeCockpit === 'sales'" class="sapling-crm-workspace-panel glass-panel">
-          <header class="sapling-crm-workspace-panel__header">
-            <div>
-              <p class="sapling-eyebrow">{{ t('crmWorkspace.salesCockpit') }}</p>
-              <h2>{{ t('crmWorkspace.salesFocus') }}</h2>
-            </div>
-            <v-chip variant="tonal" color="primary">
-              {{ filteredOpenOpportunities.length }}
-            </v-chip>
-          </header>
+    <template v-else>
+      <SaplingPageHero
+        class="sapling-crm-workspace__hero"
+        variant="workspace"
+        :eyebrow="t('navigation.crmWorkspace')"
+        :title="t('crmWorkspace.title')"
+      >
+        <template #title-prefix>
+          <v-icon size="30">mdi-view-dashboard-variant-outline</v-icon>
+        </template>
 
-          <div class="sapling-crm-workspace__stage-grid">
-            <button
-              v-for="stage in salesStageBreakdown"
-              :key="stage.key"
-              class="sapling-crm-stage"
-              type="button"
-              :style="{ '--sapling-crm-stage-color': stage.color }"
-              @click="openOpportunityStage(stage)"
+        <p class="sapling-crm-workspace__subtitle">
+          {{ t('crmWorkspace.subtitle') }}
+        </p>
+
+        <template #side>
+          <div class="sapling-crm-workspace__hero-side">
+            <article
+              v-for="metric in heroMetrics"
+              :key="metric.key"
+              class="sapling-crm-workspace-metric"
             >
-              <div class="sapling-crm-stage__bar" />
-              <span>{{ stage.label }}</span>
-              <strong>{{ stage.count }}</strong>
-              <small>{{ formatMoney(stage.value) }}</small>
-            </button>
+              <span>{{ metric.label }}</span>
+              <strong>{{ metric.value }}</strong>
+            </article>
+
+            <v-btn
+              class="sapling-crm-workspace__refresh"
+              prepend-icon="mdi-refresh"
+              variant="text"
+              :disabled="isLoading"
+              @click="loadData"
+            >
+              {{ t('global.refresh') }}
+            </v-btn>
           </div>
+        </template>
+      </SaplingPageHero>
 
-          <SaplingCrmWorkspaceList
-            :title="t('crmWorkspace.opportunitiesWithoutNextActivity')"
-            :items="opportunitiesWithoutNextActivityItems"
-            empty-icon="mdi-calendar-check-outline"
-            :empty-text="t('crmWorkspace.noOpenOpportunityGaps')"
-            @open="openWorkspaceItem"
-          />
-        </section>
+      <SaplingCrmWorkspaceToolbar
+        v-model:active-cockpit="activeCockpit"
+        v-model:search="search"
+        v-model:selected-responsible-handle="selectedResponsibleHandle"
+        v-model:contact-threshold-days="contactThresholdDays"
+        :responsible-person-options="responsiblePersonOptions"
+        :contact-threshold-options="contactThresholdOptions"
+      />
 
-        <section
-          v-else-if="activeCockpit === 'account'"
-          class="sapling-crm-workspace-panel glass-panel"
-        >
-          <header class="sapling-crm-workspace-panel__header">
-            <div>
-              <p class="sapling-eyebrow">{{ t('crmWorkspace.accountCockpit') }}</p>
-              <h2>{{ t('crmWorkspace.accountFocus') }}</h2>
+      <v-progress-linear
+        v-if="isLoading && hasLoadedOnce"
+        class="sapling-crm-workspace__progress"
+        color="primary"
+        indeterminate
+      />
+
+      <section class="sapling-crm-workspace__layout">
+        <main class="sapling-crm-workspace__main">
+          <section v-if="activeCockpit === 'sales'" class="sapling-crm-workspace-panel glass-panel">
+            <header class="sapling-crm-workspace-panel__header">
+              <div>
+                <p class="sapling-eyebrow">{{ t('crmWorkspace.salesCockpit') }}</p>
+                <h2>{{ t('crmWorkspace.salesFocus') }}</h2>
+              </div>
+              <v-chip variant="tonal" color="primary">
+                {{ filteredOpenOpportunities.length }}
+              </v-chip>
+            </header>
+
+            <div class="sapling-crm-workspace__stage-grid">
+              <button
+                v-for="stage in salesStageBreakdown"
+                :key="stage.key"
+                class="sapling-crm-stage"
+                type="button"
+                :style="{ '--sapling-crm-stage-color': stage.color }"
+                @click="openOpportunityStage(stage)"
+              >
+                <div class="sapling-crm-stage__bar" />
+                <span>{{ stage.label }}</span>
+                <strong>{{ stage.count }}</strong>
+                <small>{{ formatMoney(stage.value) }}</small>
+              </button>
             </div>
-            <v-chip variant="tonal" color="info">
-              {{ filteredCompanies.length }}
-            </v-chip>
-          </header>
 
-          <div class="sapling-crm-account-grid">
-            <button
-              v-for="company in topAccountItems"
-              :key="company.id"
-              class="sapling-crm-account-card"
-              type="button"
-              @click="openWorkspaceItem(company)"
-            >
-              <span class="sapling-crm-account-card__title">{{ company.title }}</span>
-              <span class="sapling-crm-account-card__meta">{{ company.subtitle }}</span>
-              <span v-if="company.owner" class="sapling-crm-account-card__owner">
-                <v-icon icon="mdi-account-tie-outline" size="14" />
-                {{ company.owner }}
-              </span>
-              <span class="sapling-crm-account-card__footer">
-                <span class="sapling-crm-account-card__badge">
-                  {{ company.badge }}
+            <SaplingCrmWorkspaceList
+              :title="t('crmWorkspace.opportunitiesWithoutNextActivity')"
+              :items="opportunitiesWithoutNextActivityItems"
+              empty-icon="mdi-calendar-check-outline"
+              :empty-text="t('crmWorkspace.noOpenOpportunityGaps')"
+              @open="openWorkspaceItem"
+            />
+          </section>
+
+          <section
+            v-else-if="activeCockpit === 'account'"
+            class="sapling-crm-workspace-panel glass-panel"
+          >
+            <header class="sapling-crm-workspace-panel__header">
+              <div>
+                <p class="sapling-eyebrow">{{ t('crmWorkspace.accountCockpit') }}</p>
+                <h2>{{ t('crmWorkspace.accountFocus') }}</h2>
+              </div>
+              <v-chip variant="tonal" color="info">
+                {{ filteredCompanies.length }}
+              </v-chip>
+            </header>
+
+            <div class="sapling-crm-account-grid">
+              <button
+                v-for="company in topAccountItems"
+                :key="company.id"
+                class="sapling-crm-account-card"
+                type="button"
+                @click="openWorkspaceItem(company)"
+              >
+                <span class="sapling-crm-account-card__title">{{ company.title }}</span>
+                <span class="sapling-crm-account-card__meta">{{ company.subtitle }}</span>
+                <span v-if="company.owner" class="sapling-crm-account-card__owner">
+                  <v-icon icon="mdi-account-tie-outline" size="14" />
+                  {{ company.owner }}
                 </span>
-                <strong>{{ company.value }}</strong>
-              </span>
-            </button>
-          </div>
-
-          <SaplingCrmWorkspaceList
-            :title="t('crmWorkspace.customersWithoutContact')"
-            :items="customersWithoutContactItems"
-            empty-icon="mdi-account-check-outline"
-            :empty-text="t('crmWorkspace.noCustomerContactGaps')"
-            @open="openWorkspaceItem"
-          />
-        </section>
-
-        <section v-else class="sapling-crm-workspace-panel glass-panel">
-          <header class="sapling-crm-workspace-panel__header">
-            <div>
-              <p class="sapling-eyebrow">{{ t('crmWorkspace.customerSuccessCockpit') }}</p>
-              <h2>{{ t('crmWorkspace.customerSuccessFocus') }}</h2>
+                <span class="sapling-crm-account-card__footer">
+                  <span class="sapling-crm-account-card__badge">
+                    {{ company.badge }}
+                  </span>
+                  <strong>{{ company.value }}</strong>
+                </span>
+              </button>
             </div>
-            <v-chip variant="tonal" color="warning">
-              {{ atRiskCustomerItems.length }}
-            </v-chip>
-          </header>
 
+            <SaplingCrmWorkspaceList
+              :title="t('crmWorkspace.customersWithoutContact')"
+              :items="customersWithoutContactItems"
+              empty-icon="mdi-account-check-outline"
+              :empty-text="t('crmWorkspace.noCustomerContactGaps')"
+              @open="openWorkspaceItem"
+            />
+          </section>
+
+          <section v-else class="sapling-crm-workspace-panel glass-panel">
+            <header class="sapling-crm-workspace-panel__header">
+              <div>
+                <p class="sapling-eyebrow">{{ t('crmWorkspace.customerSuccessCockpit') }}</p>
+                <h2>{{ t('crmWorkspace.customerSuccessFocus') }}</h2>
+              </div>
+              <v-chip variant="tonal" color="warning">
+                {{ atRiskCustomerItems.length }}
+              </v-chip>
+            </header>
+
+            <SaplingCrmWorkspaceList
+              :title="t('crmWorkspace.atRiskCustomers')"
+              :items="atRiskCustomerItems"
+              empty-icon="mdi-shield-check-outline"
+              :empty-text="t('crmWorkspace.noCustomerRisks')"
+              @open="openWorkspaceItem"
+            />
+
+            <SaplingCrmWorkspaceList
+              :title="t('crmWorkspace.customersWithoutContact')"
+              :items="customersWithoutContactItems"
+              empty-icon="mdi-account-check-outline"
+              :empty-text="t('crmWorkspace.noCustomerContactGaps')"
+              @open="openWorkspaceItem"
+            />
+          </section>
+        </main>
+
+        <aside class="sapling-crm-workspace__side">
           <SaplingCrmWorkspaceList
-            :title="t('crmWorkspace.atRiskCustomers')"
-            :items="atRiskCustomerItems"
-            empty-icon="mdi-shield-check-outline"
-            :empty-text="t('crmWorkspace.noCustomerRisks')"
+            class="sapling-crm-workspace__priority-list"
+            :title="t('crmWorkspace.contactToday')"
+            :items="todayContactItems"
+            empty-icon="mdi-phone-check-outline"
+            :empty-text="t('crmWorkspace.noContactToday')"
             @open="openWorkspaceItem"
           />
 
-          <SaplingCrmWorkspaceList
-            :title="t('crmWorkspace.customersWithoutContact')"
-            :items="customersWithoutContactItems"
-            empty-icon="mdi-account-check-outline"
-            :empty-text="t('crmWorkspace.noCustomerContactGaps')"
-            @open="openWorkspaceItem"
-          />
-        </section>
-      </main>
+          <section
+            class="sapling-crm-workspace-panel sapling-crm-workspace-panel--compact glass-panel"
+          >
+            <header class="sapling-crm-workspace-panel__header">
+              <div>
+                <p class="sapling-eyebrow">{{ t('crmWorkspace.signalOverview') }}</p>
+                <h2>{{ t('crmWorkspace.pipelineHealth') }}</h2>
+              </div>
+            </header>
 
-      <aside class="sapling-crm-workspace__side">
-        <SaplingCrmWorkspaceList
-          class="sapling-crm-workspace__priority-list"
-          :title="t('crmWorkspace.contactToday')"
-          :items="todayContactItems"
-          empty-icon="mdi-phone-check-outline"
-          :empty-text="t('crmWorkspace.noContactToday')"
-          @open="openWorkspaceItem"
-        />
-
-        <section
-          class="sapling-crm-workspace-panel sapling-crm-workspace-panel--compact glass-panel"
-        >
-          <header class="sapling-crm-workspace-panel__header">
-            <div>
-              <p class="sapling-eyebrow">{{ t('crmWorkspace.signalOverview') }}</p>
-              <h2>{{ t('crmWorkspace.pipelineHealth') }}</h2>
+            <div class="sapling-crm-signal-list">
+              <button
+                v-for="signal in signals"
+                :key="signal.key"
+                class="sapling-crm-signal"
+                type="button"
+                @click="openSignal(signal)"
+              >
+                <v-icon :icon="signal.icon" size="18" />
+                <span>{{ signal.label }}</span>
+                <strong>{{ signal.value }}</strong>
+              </button>
             </div>
-          </header>
-
-          <div class="sapling-crm-signal-list">
-            <button
-              v-for="signal in signals"
-              :key="signal.key"
-              class="sapling-crm-signal"
-              type="button"
-              @click="openSignal(signal)"
-            >
-              <v-icon :icon="signal.icon" size="18" />
-              <span>{{ signal.label }}</span>
-              <strong>{{ signal.value }}</strong>
-            </button>
-          </div>
-        </section>
-      </aside>
-    </section>
+          </section>
+        </aside>
+      </section>
+    </template>
   </v-container>
 </template>
 
@@ -375,6 +380,7 @@ const events = ref<CrmEvent[]>([])
 const phoneCalls = ref<PhoneCallItem[]>([])
 const isLoading = ref(false)
 const hasLoadedOnce = ref(false)
+const isPreparing = ref(true)
 
 const contactThresholdOptions = computed(() => [
   { title: t('crmWorkspace.days30'), value: 30 },
@@ -392,7 +398,6 @@ const responsiblePersonOptions = computed(() =>
     .sort((left, right) => left.title.localeCompare(right.title)),
 )
 
-const isBootstrapping = computed(() => isLoading.value && !hasLoadedOnce.value)
 const normalizedSearch = computed(() => normalizeText(search.value))
 
 const companyByHandle = computed(
@@ -676,16 +681,20 @@ const signals = computed<CrmSignal[]>(() => [
 ])
 
 onMounted(async () => {
-  await Promise.all([
-    genericStore.loadGenericMany([
-      { entityHandle: COMPANY_ENTITY, namespaces: ['global', 'navigation', 'crmWorkspace'] },
-      { entityHandle: PERSON_ENTITY, namespaces: ['global', 'navigation', 'crmWorkspace'] },
-      { entityHandle: OPPORTUNITY_ENTITY, namespaces: ['global', 'navigation', 'crmWorkspace'] },
-    ]),
-    currentPersonStore.fetchCurrentPerson(),
-  ])
-  applyDefaultResponsibleFilter()
-  await loadData()
+  try {
+    await Promise.all([
+      genericStore.loadGenericMany([
+        { entityHandle: COMPANY_ENTITY, namespaces: ['global', 'navigation', 'crmWorkspace'] },
+        { entityHandle: PERSON_ENTITY, namespaces: ['global', 'navigation', 'crmWorkspace'] },
+        { entityHandle: OPPORTUNITY_ENTITY, namespaces: ['global', 'navigation', 'crmWorkspace'] },
+      ]),
+      currentPersonStore.fetchCurrentPerson(),
+    ])
+    applyDefaultResponsibleFilter()
+    await loadData()
+  } finally {
+    isPreparing.value = false
+  }
 })
 
 async function loadData(): Promise<void> {

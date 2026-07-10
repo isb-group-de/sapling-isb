@@ -60,8 +60,12 @@
 }
 
 .sapling-config-switches {
-  gap: var(--sapling-gap-md);
+  gap: var(--sapling-gap-lg);
   justify-content: flex-end;
+}
+
+.sapling-config-switches > * {
+  flex: 0 0 auto;
 }
 
 .sapling-form-config__summary {
@@ -407,6 +411,12 @@
   gap: var(--sapling-gap-lg);
   align-items: stretch;
   height: max(1200px, calc(100vh - 320px));
+}
+
+.sapling-ai-agent-builder__page-skeleton {
+  flex: 1 1 auto;
+  min-height: min(760px, calc(100dvh - 96px));
+  border-radius: var(--sapling-radius-sm);
 }
 
 .sapling-ai-agent-builder__hero {

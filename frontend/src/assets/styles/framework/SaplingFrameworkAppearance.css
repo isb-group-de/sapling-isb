@@ -298,16 +298,16 @@ body {
   opacity: 0.3;
 }
 
-.v-list,
-.v-card,
-.v-expansion-panel,
-.v-skeleton-loader,
+.v-list:not(.sapling-surface),
+.v-card:not(.sapling-surface),
+.v-expansion-panel:not(.sapling-surface),
+.v-skeleton-loader:not(.sapling-surface),
 .v-menu,
 .transparent {
   background-color: transparent;
 }
 
-.v-sheet,
+.v-sheet:not(.sapling-surface),
 .glass-panel {
   border: 1px solid var(--glass-border);
   background: var(--glass-bg) !important;
@@ -320,7 +320,7 @@ body {
     box-shadow 0.3s ease;
 }
 
-:root[data-sapling-glass='off'] .v-sheet,
+:root[data-sapling-glass='off'] .v-sheet:not(.sapling-surface),
 :root[data-sapling-glass='off'] .glass-panel {
   border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity)) !important;
   background: rgb(var(--v-theme-surface)) !important;
@@ -329,9 +329,9 @@ body {
   -webkit-backdrop-filter: none;
 }
 
-:root[data-sapling-glass='off'] .v-sheet,
+:root[data-sapling-glass='off'] .v-sheet:not(.sapling-surface),
 :root[data-sapling-glass='off'] .glass-panel,
-:root[data-sapling-performance='reduced'] .v-sheet,
+:root[data-sapling-performance='reduced'] .v-sheet:not(.sapling-surface),
 :root[data-sapling-performance='reduced'] .glass-panel {
   transition: none !important;
 }

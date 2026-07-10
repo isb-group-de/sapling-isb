@@ -1,7 +1,11 @@
 <template>
-  <SaplingEntityAccessGate :entity-handle="entityHandle">
-    <SaplingTableWorkspace :entity-handle="entityHandle" />
-  </SaplingEntityAccessGate>
+  <div
+    class="sapling-page-shell sapling-page-shell--fill sapling-page-shell--uniform-inset sapling-table-page"
+  >
+    <SaplingEntityAccessGate :entity-handle="entityHandle">
+      <SaplingTableWorkspace :entity-handle="entityHandle" />
+    </SaplingEntityAccessGate>
+  </div>
 </template>
 
 <script lang="ts" setup>

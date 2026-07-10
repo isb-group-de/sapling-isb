@@ -21,7 +21,8 @@
           <v-tabs
             v-model="selectedTab"
             class="sapling-note-tabs"
-            grow
+            align-tabs="start"
+            show-arrows
             background-color="primary"
             dark
             height="44"

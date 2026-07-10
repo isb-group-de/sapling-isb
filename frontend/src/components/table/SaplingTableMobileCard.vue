@@ -69,6 +69,8 @@
                   icon="mdi-dots-horizontal"
                   variant="text"
                   size="small"
+                  :title="$t('global.more')"
+                  :aria-label="$t('global.more')"
                   @click.stop
                 />
               </template>
