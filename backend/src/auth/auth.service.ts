@@ -33,6 +33,8 @@ import {
   ApiTokenSecretResponseDto,
 } from './dto/api-token-response.dto';
 
+const API_TOKEN_LAST_USED_WRITE_INTERVAL_MS = 5 * 60 * 1000;
+
 @Injectable()
 export class AuthService {
   /**
@@ -61,7 +63,8 @@ export class AuthService {
     if (loginPassword && loginName) {
       const person = await this.findPersonByLoginName(loginName);
       if (person?.comparePassword(loginPassword)) {
-        const hydratedPerson = await this.currentService.getPerson(person);
+        const hydratedPerson =
+          await this.currentService.getPersonWithStarterWorkspace(person);
         if (hydratedPerson) {
           return hydratedPerson;
         }
@@ -169,7 +172,7 @@ export class AuthService {
       return null;
     }
 
-    return await this.currentService.getPerson(person);
+    return await this.currentService.getPersonWithStarterWorkspace(person);
   }
 
   async validateApiToken(
@@ -207,8 +210,19 @@ export class AuthService {
       return null;
     }
 
-    token.lastUsedAt = new Date();
-    await this.em.flush();
+    const now = new Date();
+    if (
+      token.handle != null &&
+      (!token.lastUsedAt ||
+        now.getTime() - token.lastUsedAt.getTime() >=
+          API_TOKEN_LAST_USED_WRITE_INTERVAL_MS)
+    ) {
+      await em.nativeUpdate(
+        PersonApiTokenItem,
+        { handle: token.handle },
+        { lastUsedAt: now },
+      );
+    }
 
     return user;
   }

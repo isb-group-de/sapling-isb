@@ -82,6 +82,11 @@ GET /api/auth/isAuthenticated
 
 `AuthController.completeLogin()` regenerates the session before logging in the user. Local login sets session max age based on `rememberMe`.
 
+Role-based starter dashboards and favorites are provisioned during successful
+login and when the explicit current-person profile is loaded. Session
+deserialization deliberately skips this provisioning so ordinary API requests
+only reload the user relations required for authorization.
+
 Local passkeys:
 
 ```text
@@ -172,7 +177,8 @@ Bearer validation:
 3. Reject expired tokens.
 4. Load active owner as the request user.
 5. Enforce `allowedIps` when configured.
-6. Update `lastUsedAt`.
+6. Update `lastUsedAt` at most once per five-minute activity window to avoid a
+   database write on every bearer-authenticated request.
 
 ## Session Or Bearer Guard
 
@@ -212,6 +218,11 @@ Rules:
 - current user responses include `_impersonator` so the frontend can show the return action
 
 The frontend hard-reloads after start/stop to rebuild stores, SSE connections, route guards, and cached permissions under the correct identity.
+
+The database session store keeps session expiry sliding, but throttles expiry
+updates while the persisted expiry is still fresh. This avoids a session-row
+read and write on every authenticated request without changing the configured
+session lifetime.
 
 ## Frontend Routing
 

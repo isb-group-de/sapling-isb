@@ -258,7 +258,7 @@ describe('CurrentController', () => {
       username: 'hydrated',
     } as unknown as PersonItem;
     const currentService = {
-      getPerson: jest.fn(async () => hydratedUser),
+      getPersonWithStarterWorkspace: jest.fn(async () => hydratedUser),
     };
     const controller = new CurrentController(
       currentService as never,
@@ -270,12 +270,14 @@ describe('CurrentController', () => {
     await expect(controller.getPerson(req as never)).resolves.toBe(
       hydratedUser,
     );
-    expect(asMock(currentService.getPerson)).toHaveBeenCalledWith(req.user);
+    expect(
+      asMock(currentService.getPersonWithStarterWorkspace),
+    ).toHaveBeenCalledWith(req.user);
   });
 
   it('falls back to the request user when no hydrated current person exists', async () => {
     const currentService = {
-      getPerson: jest.fn(async () => null),
+      getPersonWithStarterWorkspace: jest.fn(async () => null),
     };
     const controller = new CurrentController(
       currentService as never,
@@ -372,9 +374,7 @@ describe('CurrentController', () => {
 
   it('returns all entity permissions for the current user', async () => {
     const permissions = [{ entityHandle: 'ticket' }];
-    const hydratedUser = { handle: 7, roles: [] };
     const currentService = {
-      getPerson: jest.fn(async () => hydratedUser),
       getAllEntityPermissions: jest.fn(() => permissions),
     };
     const controller = new CurrentController(
@@ -387,17 +387,14 @@ describe('CurrentController', () => {
     await expect(
       controller.getAllEntityPermissions(req as never),
     ).resolves.toBe(permissions);
-    expect(asMock(currentService.getPerson)).toHaveBeenCalledWith(req.user);
     expect(asMock(currentService.getAllEntityPermissions)).toHaveBeenCalledWith(
-      hydratedUser,
+      req.user,
     );
   });
 
   it('returns permissions for a specific entity', async () => {
     const permission = { entityHandle: 'ticket' };
-    const hydratedUser = { handle: 7, roles: [] };
     const currentService = {
-      getPerson: jest.fn(async () => hydratedUser),
       getEntityPermissions: jest.fn(() => permission),
     };
     const controller = new CurrentController(
@@ -410,9 +407,8 @@ describe('CurrentController', () => {
     await expect(
       controller.getEntityPermission(req as never, 'ticket'),
     ).resolves.toBe(permission);
-    expect(asMock(currentService.getPerson)).toHaveBeenCalledWith(req.user);
     expect(asMock(currentService.getEntityPermissions)).toHaveBeenCalledWith(
-      hydratedUser,
+      req.user,
       'ticket',
     );
   });

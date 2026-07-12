@@ -10,6 +10,7 @@ type MockSessionRecord = {
 type MockEntityManager = {
   findOne: jest.Mock<(...args: unknown[]) => Promise<MockSessionRecord | null>>;
   flush: jest.Mock<() => Promise<void>>;
+  nativeUpdate: jest.Mock<(...args: unknown[]) => Promise<number>>;
 };
 
 function createStore(record: MockSessionRecord | null) {
@@ -18,6 +19,9 @@ function createStore(record: MockSessionRecord | null) {
       () => Promise.resolve(record),
     ),
     flush: jest.fn<() => Promise<void>>(() => Promise.resolve()),
+    nativeUpdate: jest.fn<(...args: unknown[]) => Promise<number>>(() =>
+      Promise.resolve(record ? 1 : 0),
+    ),
   };
 
   const rootEm = {
@@ -69,7 +73,29 @@ describe('DatabaseSessionStore', () => {
     await touchAsync(store, 'session-1', staleRequestPayload);
 
     expect(record.payload).toBe(impersonatedPayload);
-    expect(record.expiresAt.getTime()).toBeGreaterThan(Date.now());
-    expect(em.flush).toHaveBeenCalledTimes(1);
+    expect(em.nativeUpdate).toHaveBeenCalledWith(
+      expect.anything(),
+      { handle: 'session-1' },
+      { expiresAt: expect.any(Date) },
+    );
+    expect(em.flush).not.toHaveBeenCalled();
+  });
+
+  it('skips a database touch while the stored expiry is still fresh', async () => {
+    const record: MockSessionRecord = {
+      handle: 'session-1',
+      payload: JSON.stringify({ cookie: { maxAge: 60_000 } }),
+      expiresAt: new Date(Date.now() + 60_000),
+    };
+    const { em, store } = createStore(record);
+
+    await new Promise<void>((resolve, reject) => {
+      store.get('session-1', (error) => (error ? reject(error) : resolve()));
+    });
+    await touchAsync(store, 'session-1', {
+      cookie: { maxAge: 60_000 },
+    });
+
+    expect(em.nativeUpdate).not.toHaveBeenCalled();
   });
 });

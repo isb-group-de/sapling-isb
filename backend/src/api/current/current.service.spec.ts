@@ -50,6 +50,30 @@ jest.mock('../../entity/WorkHourWeekItem', () => ({
 import { CurrentService } from './current.service';
 
 describe('CurrentService', () => {
+  it('loads authorization relations without provisioning starter content', async () => {
+    const person = { handle: 7, roles: [], loginPassword: 'secret' };
+    const findOne = jest
+      .fn<(...args: unknown[]) => Promise<unknown>>()
+      .mockResolvedValue(person);
+    const count = jest.fn<(...args: unknown[]) => Promise<number>>();
+    const persist = jest.fn();
+    const service = new CurrentService(
+      {
+        fork: jest.fn(() => ({ findOne, count, persist })),
+      } as never,
+      {} as never,
+    );
+
+    await expect(service.getPerson({ handle: 7 })).resolves.toEqual({
+      handle: 7,
+      roles: [],
+    });
+
+    expect(findOne).toHaveBeenCalledTimes(1);
+    expect(count).not.toHaveBeenCalled();
+    expect(persist).not.toHaveBeenCalled();
+  });
+
   it('provisions starter dashboards and favorites from role templates when none exist', async () => {
     const flush = jest.fn();
     const persist = jest.fn();
@@ -99,7 +123,7 @@ describe('CurrentService', () => {
     };
     const service = new CurrentService(em as never, {} as never);
 
-    const result = await service.getPerson({ handle: 7 });
+    const result = await service.getPersonWithStarterWorkspace({ handle: 7 });
 
     expect(count).toHaveBeenCalledWith(expect.anything(), {
       person: { handle: 7 },
@@ -140,13 +164,15 @@ describe('CurrentService', () => {
     const event = { handle: 2 };
     const salesOpportunity = { handle: 3 };
     const effortEstimate = { handle: 4 };
-    const notification = { handle: 5 };
+    const internalCase = { handle: 5 };
+    const notification = { handle: 6 };
     const find = jest
       .fn<(...args: unknown[]) => Promise<unknown[]>>()
       .mockResolvedValueOnce([ticket])
       .mockResolvedValueOnce([event])
       .mockResolvedValueOnce([salesOpportunity])
-      .mockResolvedValueOnce([effortEstimate]);
+      .mockResolvedValueOnce([effortEstimate])
+      .mockResolvedValueOnce([internalCase]);
     const em = {
       find,
     };
@@ -162,14 +188,15 @@ describe('CurrentService', () => {
     } as never);
 
     expect(result).toEqual({
-      count: 5,
+      count: 6,
       tickets: [ticket],
       tasks: [event],
       salesOpportunities: [salesOpportunity],
       effortEstimates: [effortEstimate],
+      internalCases: [internalCase],
       notifications: [notification],
     });
-    expect(find).toHaveBeenCalledTimes(4);
+    expect(find).toHaveBeenCalledTimes(5);
     expect(find.mock.calls[0]?.[1]).toEqual(
       expect.objectContaining({
         assigneePerson: { handle: 7 },
@@ -202,6 +229,12 @@ describe('CurrentService', () => {
         assigneePerson: { handle: 7 },
         isActive: true,
         status: { handle: { $nin: ['completed', 'cancelled'] } },
+      }),
+    );
+    expect(find.mock.calls[4]?.[1]).toEqual(
+      expect.objectContaining({
+        responsiblePerson: { handle: 7 },
+        status: { isOpen: true },
       }),
     );
     expect(inboxService.getUnreadNotifications).toHaveBeenCalledWith({

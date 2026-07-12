@@ -107,11 +107,33 @@ export class CurrentService {
     }
 
     const em = this.forkEntityManager();
-    await this.ensureStarterWorkspace(em, user.handle);
+    return this.loadPerson(em, user.handle);
+  }
 
+  /**
+   * Provisions role-based starter content before loading the full profile.
+   * This is intentionally reserved for login/profile flows and must not be
+   * used by per-request session deserialization.
+   */
+  async getPersonWithStarterWorkspace(
+    user: Pick<PersonItem, 'handle'>,
+  ): Promise<PersonItem | null> {
+    if (user.handle == null) {
+      return null;
+    }
+
+    const em = this.forkEntityManager();
+    await this.ensureStarterWorkspace(em, user.handle);
+    return this.loadPerson(em, user.handle);
+  }
+
+  private async loadPerson(
+    em: EntityManager,
+    personHandle: number,
+  ): Promise<PersonItem | null> {
     const person = await em.findOne(
       PersonItem,
-      { handle: user.handle },
+      { handle: personHandle },
       {
         populate: [
           'company',

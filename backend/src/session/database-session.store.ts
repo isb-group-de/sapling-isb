@@ -13,11 +13,18 @@ type SessionGetCallback = (
  * Durable database-backed express-session store.
  */
 export class DatabaseSessionStore extends session.Store {
+  private readonly knownExpiryBySession = new Map<string, number>();
+  private readonly touchIntervalMs: number;
+
   constructor(
     private readonly entityManager: EntityManager,
     private readonly defaultTtlMs: number,
   ) {
     super();
+    this.touchIntervalMs = Math.min(
+      5 * 60 * 1000,
+      Math.max(1000, Math.floor(defaultTtlMs / 4)),
+    );
   }
 
   override get(sid: string, callback: SessionGetCallback): void {
@@ -26,14 +33,17 @@ export class DatabaseSessionStore extends session.Store {
       const record = await em.findOne(SessionStoreItem, { handle: sid });
 
       if (!record) {
+        this.knownExpiryBySession.delete(sid);
         return null;
       }
 
       if (record.expiresAt <= new Date()) {
+        this.knownExpiryBySession.delete(sid);
         await em.nativeDelete(SessionStoreItem, { handle: sid });
         return null;
       }
 
+      this.knownExpiryBySession.set(sid, record.expiresAt.getTime());
       return this.deserialize(record.payload);
     });
   }
@@ -61,6 +71,7 @@ export class DatabaseSessionStore extends session.Store {
       }
 
       await em.flush();
+      this.knownExpiryBySession.set(sid, expiresAt.getTime());
     });
   }
 
@@ -70,15 +81,27 @@ export class DatabaseSessionStore extends session.Store {
     callback: SessionErrorCallback = () => undefined,
   ): void {
     void this.run(callback, async () => {
-      const em = this.entityManager.fork();
-      const record = await em.findOne(SessionStoreItem, { handle: sid });
+      const expiresAt = this.resolveExpiry(sessionData);
+      const knownExpiry = this.knownExpiryBySession.get(sid);
 
-      if (!record) {
+      if (
+        typeof knownExpiry === 'number' &&
+        expiresAt.getTime() - knownExpiry < this.touchIntervalMs
+      ) {
         return;
       }
 
-      record.expiresAt = this.resolveExpiry(sessionData);
-      await em.flush();
+      const em = this.entityManager.fork();
+      const updated = await em.nativeUpdate(
+        SessionStoreItem,
+        { handle: sid },
+        { expiresAt },
+      );
+      if (updated > 0) {
+        this.knownExpiryBySession.set(sid, expiresAt.getTime());
+      } else {
+        this.knownExpiryBySession.delete(sid);
+      }
     });
   }
 
@@ -89,6 +112,7 @@ export class DatabaseSessionStore extends session.Store {
     void this.run(callback, async () => {
       const em = this.entityManager.fork();
       await em.nativeDelete(SessionStoreItem, { handle: sid });
+      this.knownExpiryBySession.delete(sid);
     });
   }
 

@@ -1,16 +1,11 @@
 import { CurrentMetadataService } from './current-metadata.service';
 
 describe('CurrentMetadataService', () => {
-  it('hydrates the current user before resolving form config and permissions', async () => {
+  it('reuses the authenticated user when resolving form config and permissions', async () => {
     const requestUser = {
       handle: 1,
-      get roles(): never {
-        throw new Error(
-          'Collection<RoleItem> of entity PersonItem[1] not initialized',
-        );
-      },
+      roles: [],
     };
-    const hydratedUser = { handle: 1, roles: [] };
     const entity = { handle: 'importBatchRow' };
     const baseTemplates = [{ name: 'rowNumber' }];
     const effectiveTemplates = [{ name: 'rowNumber', formVisible: true }];
@@ -27,7 +22,6 @@ describe('CurrentMetadataService', () => {
         getEntityTemplate: jest.fn(() => baseTemplates),
       } as never,
       {
-        getPerson: jest.fn(() => Promise.resolve(hydratedUser)),
         getEntityPermissions: jest.fn(() => entityPermission),
       } as never,
       {

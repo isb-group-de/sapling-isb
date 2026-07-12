@@ -104,7 +104,8 @@ export class CurrentController {
   })
   async getPerson(@Req() req: Request): Promise<PersonItem> {
     const user = req.user as PersonItem;
-    const reloaded = (await this.currentService.getPerson(user)) ?? user;
+    const reloaded =
+      (await this.currentService.getPersonWithStarterWorkspace(user)) ?? user;
 
     // Preserve impersonation context attached by the session serializer so the
     // frontend can render the "viewing as" banner and stop-button. Dynamic
@@ -314,8 +315,7 @@ export class CurrentController {
     @Req() req: Request,
   ): Promise<AccumulatedPermissionDto[]> {
     const user = req.user as PersonItem;
-    const hydratedUser = (await this.currentService.getPerson(user)) ?? user;
-    return this.currentService.getAllEntityPermissions(hydratedUser);
+    return this.currentService.getAllEntityPermissions(user);
   }
 
   /**
@@ -400,8 +400,7 @@ export class CurrentController {
     if (!entityHandle) {
       throw new BadRequestException('global.entityHandleRequired');
     }
-    const hydratedUser = (await this.currentService.getPerson(user)) ?? user;
-    return this.currentService.getEntityPermissions(hydratedUser, entityHandle);
+    return this.currentService.getEntityPermissions(user, entityHandle);
   }
 
   /**
