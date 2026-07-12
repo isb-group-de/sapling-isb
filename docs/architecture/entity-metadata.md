@@ -230,6 +230,14 @@ It returns `EntityTemplateDto[]` with:
 
 The frontend should rely on template metadata instead of duplicating backend rules.
 
+Static MikroORM and Sapling-decorator templates are calculated once per entity
+handle and reused across requests. Callers receive a separate array so local
+array operations do not alter the cached template. Derived custom-field
+templates use a separate shared cache because their definitions are stored in
+the database; successful generic mutations of `customFieldDefinition` or
+`customFieldType` invalidate that dynamic cache. The direct template endpoint
+also emits a private ETag and supports conditional `If-None-Match` requests.
+
 ## Frontend Field Rendering
 
 `frontend/src/components/dialog/SaplingDialogEditFieldRenderer.vue` selects field components from template metadata.

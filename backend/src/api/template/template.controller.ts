@@ -1,4 +1,12 @@
-import { Controller, Get, Param, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  HttpStatus,
+  Param,
+  Req,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiResponse,
@@ -15,6 +23,8 @@ import { GenericPermissionGuard } from '../../auth/guard/generic-permission.guar
 import { TemplateService } from './template.service';
 import { SessionOrBearerAuthGuard } from '../../auth/guard/session-or-token-auth.guard';
 import { GenericCustomFieldService } from '../generic/generic-custom-field.service';
+import type { Request, Response } from 'express';
+import { createHash } from 'crypto';
 
 /**
  * @class
@@ -71,14 +81,34 @@ export class TemplateController {
     type: EntityTemplateDto,
     isArray: true,
   })
+  @ApiResponse({
+    status: 304,
+    description: 'Template metadata has not changed since the supplied ETag.',
+  })
   @UseGuards(GenericPermissionGuard)
   @GenericPermission('allowRead')
   async getEntityTemplate(
     @Param('entityHandle') entityHandle: string,
-  ): Promise<EntityTemplateDto[]> {
-    return this.genericCustomFieldService.appendCustomFieldTemplates(
-      entityHandle,
-      this.templateService.getEntityTemplate(entityHandle),
-    );
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<EntityTemplateDto[] | undefined> {
+    const templates =
+      await this.genericCustomFieldService.appendCustomFieldTemplates(
+        entityHandle,
+        this.templateService.getEntityTemplate(entityHandle),
+      );
+    const etag = `"${createHash('sha256')
+      .update(JSON.stringify(templates))
+      .digest('base64url')}"`;
+
+    res.setHeader('Cache-Control', 'private, no-cache');
+    res.setHeader('ETag', etag);
+
+    if (req.headers['if-none-match'] === etag) {
+      res.status(HttpStatus.NOT_MODIFIED);
+      return undefined;
+    }
+
+    return templates;
   }
 }

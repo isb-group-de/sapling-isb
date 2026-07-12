@@ -137,6 +137,7 @@ export class GenericService {
       }),
       assertRequiredFields: (): Promise<void> => Promise.resolve(),
       upsertCustomFieldValues: (): Promise<void> => Promise.resolve(),
+      invalidateTemplateCache: (): void => undefined,
     } as unknown as GenericCustomFieldService,
   ) {}
   // #endregion
@@ -590,6 +591,7 @@ export class GenericService {
       data,
       template,
     );
+    this.invalidateTemplateMetadataAfterMutation(entityHandle);
 
     if (entity) {
       const overwrittenData =
@@ -808,6 +810,7 @@ export class GenericService {
       data,
       template,
     );
+    this.invalidateTemplateMetadataAfterMutation(entityHandle);
 
     if (entity && newData) {
       const overwrittenData =
@@ -961,6 +964,7 @@ export class GenericService {
     if (affectedRows === 0) {
       throw new NotFoundException(`global.entityNotFound`);
     }
+    this.invalidateTemplateMetadataAfterMutation(entityHandle);
 
     if (entity) {
       await this.genericMutationService.applyAfterScript(
@@ -1449,6 +1453,15 @@ export class GenericService {
     }
 
     return null;
+  }
+
+  private invalidateTemplateMetadataAfterMutation(entityHandle: string): void {
+    if (
+      entityHandle === 'customFieldDefinition' ||
+      entityHandle === 'customFieldType'
+    ) {
+      this.genericCustomFieldService.invalidateTemplateCache();
+    }
   }
 
   private scheduleBackgroundTask(

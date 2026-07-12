@@ -449,10 +449,18 @@ describe('TemplateController', () => {
       getEntityTemplate: jest.fn(() => template),
     };
     const controller = new TemplateController(templateService as never);
+    const response = {
+      setHeader: jest.fn(),
+      status: jest.fn(),
+    };
 
-    await expect(controller.getEntityTemplate('ticket')).resolves.toBe(
-      template,
-    );
+    await expect(
+      controller.getEntityTemplate(
+        'ticket',
+        { headers: {} } as never,
+        response as never,
+      ),
+    ).resolves.toBe(template);
     expect(asMock(templateService.getEntityTemplate)).toHaveBeenCalledWith(
       'ticket',
     );

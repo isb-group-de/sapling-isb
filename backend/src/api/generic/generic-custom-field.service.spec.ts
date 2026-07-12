@@ -33,6 +33,31 @@ const createService = (definitions: CustomFieldDefinitionItem[] = []) => {
 };
 
 describe('GenericCustomFieldService', () => {
+  it('caches derived custom-field templates across service instances', async () => {
+    const definition = createDefinition('region', 'text');
+    const firstService = createService([definition]);
+    const secondService = createService([definition]);
+    firstService.invalidateTemplateCache('cacheEntity');
+
+    await Promise.all([
+      firstService.appendCustomFieldTemplates('cacheEntity', []),
+      secondService.appendCustomFieldTemplates('cacheEntity', []),
+    ]);
+
+    const firstEntityManager = (
+      firstService as unknown as { em: { find: jest.Mock } }
+    ).em;
+    const secondEntityManager = (
+      secondService as unknown as { em: { find: jest.Mock } }
+    ).em;
+    expect(firstEntityManager.find).toHaveBeenCalledTimes(1);
+    expect(secondEntityManager.find).not.toHaveBeenCalled();
+
+    secondService.invalidateTemplateCache('cacheEntity');
+    await secondService.appendCustomFieldTemplates('cacheEntity', []);
+    expect(secondEntityManager.find).toHaveBeenCalledTimes(1);
+  });
+
   it('splits nested and flat custom fields out of mutation payloads', () => {
     const service = createService();
 

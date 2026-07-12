@@ -15,6 +15,12 @@ import {
 
 // Mapping of entity handles to their classes
 const entityMap = ENTITY_MAP;
+const entityHandleByTypeName = new Map<string, string>(
+  Object.entries(entityMap).flatMap(([entityHandle, entityClass]) => {
+    const typeName = (entityClass as { name?: string } | undefined)?.name;
+    return typeName ? [[typeName, entityHandle]] : [];
+  }),
+);
 
 function isGeneratedInverseRelation(prop: {
   kind?: string | null;
@@ -40,6 +46,11 @@ function isGeneratedInverseRelation(prop: {
  */
 @Injectable()
 export class TemplateService {
+  private static readonly templateCache = new Map<
+    string,
+    EntityTemplateDto[]
+  >();
+
   /**
    * Injects the MikroORM EntityManager for metadata access.
    * @param em EntityManager instance
@@ -52,6 +63,11 @@ export class TemplateService {
    * @returns Array of EntityTemplateDto objects describing the entity's properties
    */
   getEntityTemplate(entityHandle: string): EntityTemplateDto[] {
+    const cachedTemplate = TemplateService.templateCache.get(entityHandle);
+    if (cachedTemplate) {
+      return [...cachedTemplate];
+    }
+
     // Ensure entityMap[entityHandle] is defined and is a class constructor
     const entityClass = entityMap[entityHandle] as
       | { name?: string }
@@ -61,7 +77,7 @@ export class TemplateService {
     }
     const meta = this.em.getMetadata().get(entityClass);
 
-    return Object.values(meta.properties)
+    const template = Object.values(meta.properties)
       .filter((prop) => !isGeneratedInverseRelation(prop))
       .map((prop) => {
         const isReadOnly = hasSaplingOption(
@@ -77,14 +93,7 @@ export class TemplateService {
         const isBooleanField = prop.type === 'boolean';
 
         const entityHandleFromType =
-          Object.keys(entityMap).find((key) => {
-            const mapEntry = entityMap[key] as { name?: string };
-            return (
-              mapEntry &&
-              typeof mapEntry.name === 'string' &&
-              mapEntry.name === prop.type
-            );
-          }) ?? null;
+          entityHandleByTypeName.get(prop.type) ?? null;
 
         return {
           name: prop.name,
@@ -144,5 +153,8 @@ export class TemplateService {
           kanban: getSaplingKanban(entityClass.prototype as object, prop.name),
         };
       });
+
+    TemplateService.templateCache.set(entityHandle, template);
+    return [...template];
   }
 }

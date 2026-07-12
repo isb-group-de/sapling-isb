@@ -21,6 +21,11 @@ type SplitPayload<T extends Record<string, unknown>> = {
 
 @Injectable()
 export class GenericCustomFieldService {
+  private static readonly customFieldTemplateCache = new Map<
+    string,
+    Promise<EntityTemplateDto[]>
+  >();
+
   constructor(private readonly em: EntityManager) {}
 
   async getActiveDefinitions(
@@ -40,17 +45,41 @@ export class GenericCustomFieldService {
     entityHandle: string,
     templates: EntityTemplateDto[],
   ): Promise<EntityTemplateDto[]> {
-    const definitions = await this.getActiveDefinitions(entityHandle);
-    if (definitions.length === 0) {
-      return templates;
+    let cachedTemplates =
+      GenericCustomFieldService.customFieldTemplateCache.get(entityHandle);
+    if (!cachedTemplates) {
+      cachedTemplates = this.getActiveDefinitions(entityHandle).then(
+        (definitions) =>
+          definitions.map((definition) =>
+            this.createTemplateFromDefinition(definition),
+          ),
+      );
+      GenericCustomFieldService.customFieldTemplateCache.set(
+        entityHandle,
+        cachedTemplates,
+      );
     }
 
-    return [
-      ...templates,
-      ...definitions.map((definition) =>
-        this.createTemplateFromDefinition(definition),
-      ),
-    ];
+    try {
+      return [...templates, ...(await cachedTemplates)];
+    } catch (error) {
+      if (
+        GenericCustomFieldService.customFieldTemplateCache.get(entityHandle) ===
+        cachedTemplates
+      ) {
+        GenericCustomFieldService.customFieldTemplateCache.delete(entityHandle);
+      }
+      throw error;
+    }
+  }
+
+  invalidateTemplateCache(entityHandle?: string): void {
+    if (entityHandle) {
+      GenericCustomFieldService.customFieldTemplateCache.delete(entityHandle);
+      return;
+    }
+
+    GenericCustomFieldService.customFieldTemplateCache.clear();
   }
 
   splitPayload<T extends Record<string, unknown>>(payload: T): SplitPayload<T> {
