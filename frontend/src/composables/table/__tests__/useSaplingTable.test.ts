@@ -743,6 +743,8 @@ function createTemplate(
     options: overrides.options ?? [],
     isAutoIncrement: false,
     isPersistent: true,
+    tableVisible: overrides.tableVisible ?? true,
+    mobileVisible: overrides.mobileVisible ?? false,
     isReference: overrides.isReference ?? false,
     referencedPks: overrides.referencedPks ?? [],
     referenceName: overrides.referenceName,

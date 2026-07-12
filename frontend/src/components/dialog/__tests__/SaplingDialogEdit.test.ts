@@ -135,8 +135,8 @@ describe('SaplingDialogEdit', () => {
           modelValue: true,
           mode: 'edit',
           item: { handle: 1, title: 'Existing' },
-          templates: [{ name: 'title', type: 'string' }],
-          entity: { handle: 'ticket' },
+          templates: [{ key: 'title', name: 'title', type: 'string' }],
+          entity: { handle: 'ticket' } as never,
         },
         global: {
           stubs: {
@@ -144,6 +144,7 @@ describe('SaplingDialogEdit', () => {
             VCardText: { template: '<div><slot /></div>' },
             VDefaultsProvider: { template: '<div><slot /></div>' },
             VForm: { template: '<form><slot /></form>' },
+            VIcon: { template: '<span><slot /></span>' },
             VSkeletonLoader: { template: '<div />' },
             VTab: { template: '<button><slot /></button>' },
             VTabs: { template: '<div><slot /></div>' },
@@ -177,7 +178,7 @@ describe('SaplingDialogEdit', () => {
       if (offsetParentDescriptor) {
         Object.defineProperty(HTMLElement.prototype, 'offsetParent', offsetParentDescriptor)
       } else {
-        delete (HTMLElement.prototype as Partial<HTMLElement>).offsetParent
+        Reflect.deleteProperty(HTMLElement.prototype, 'offsetParent')
       }
     }
   })

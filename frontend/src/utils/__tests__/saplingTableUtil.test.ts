@@ -14,6 +14,7 @@ import {
   getEditDialogHeaders,
   getGenericReferenceEntityHandle,
   getGenericReferenceHandle,
+  getListProjectionFieldNames,
   getMobileTableHeaders,
   getReadableReferenceRelationNames,
   getRelationTableHeaders,
@@ -144,6 +145,22 @@ describe('saplingTableUtil', () => {
         (header) => header.key,
       ),
     ).toEqual(['title', 'longNotes'])
+  })
+
+  it('projects only list-visible, mobile, value, and primary fields', () => {
+    const templates = [
+      createTemplate({ name: 'handle', isPrimaryKey: true, tableVisible: false }),
+      createTemplate({ name: 'title', options: ['isValue'], tableVisible: true }),
+      createTemplate({ name: 'mobileSummary', tableVisible: false, mobileVisible: true }),
+      createTemplate({ name: 'description', tableVisible: false, mobileVisible: false }),
+      createTemplate({
+        name: 'password',
+        options: ['isSecurity'],
+        tableVisible: true,
+      }),
+    ]
+
+    expect(getListProjectionFieldNames(templates)).toEqual(['handle', 'title', 'mobileSummary'])
   })
 
   it('keeps early entity groups ahead of later groups when sorting table columns', () => {

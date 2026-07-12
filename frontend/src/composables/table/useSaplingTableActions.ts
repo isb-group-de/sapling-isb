@@ -416,15 +416,16 @@ export function useSaplingTableActions({
     )
   }
 
-  function openContextMenu({ item, x, y }: SaplingTableRowContextMenuOpenPayload) {
+  async function openContextMenu({ item, x, y }: SaplingTableRowContextMenuOpenPayload) {
     // Kontextmenü nur öffnen, wenn showActions true ist
     if (props.showActions === false) {
       contextMenu.value = { ...contextMenu.value, visible: false }
       return
     }
+    const contextItem = await loadDialogItem(item)
     contextMenu.value = {
       visible: true,
-      item,
+      item: contextItem,
       x,
       y,
     }

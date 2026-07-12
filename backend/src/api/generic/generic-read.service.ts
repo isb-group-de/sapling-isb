@@ -95,6 +95,7 @@ export class GenericReadService {
       offset?: number;
       orderBy?: object;
       populate?: any[];
+      fields?: any[];
     } = {},
   ): Promise<{ entity: EntityItem | null; items: object[]; total: number }> {
     const prepared = await this.prepareWhere(

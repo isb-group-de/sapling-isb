@@ -50,7 +50,9 @@ export function filterTableHeadersByReferencePermission<T extends Partial<Entity
 export function getReadableReferenceRelationNames(
   entityTemplates: EntityTemplate[],
   permissions: AccumulatedPermission[] = [],
+  projectedFields?: string[],
 ): string[] {
+  const projectedFieldSet = projectedFields ? new Set(projectedFields) : null
   return [
     ...new Set(
       entityTemplates
@@ -59,9 +61,32 @@ export function getReadableReferenceRelationNames(
             TABLE_REFERENCE_PERMISSION_KINDS.includes(template.kind ?? '') &&
             Boolean(template.name) &&
             Boolean(template.referenceName) &&
+            (!projectedFieldSet || projectedFieldSet.has(template.name)) &&
             canReadReferenceTemplate(template, permissions),
         )
         .map((template) => template.name),
+    ),
+  ]
+}
+
+export function getListProjectionFieldNames(
+  entityTemplates: EntityTemplate[],
+  permissions: AccumulatedPermission[] = [],
+): string[] {
+  return [
+    ...new Set(
+      entityTemplates
+        .filter(
+          (template) =>
+            template.isPrimaryKey ||
+            (template.isPersistent !== false &&
+              isSupportedTableTemplate(template, permissions) &&
+              (getTemplateConfiguredBoolean(template, 'tableVisible') === true ||
+                getTemplateConfiguredBoolean(template, 'mobileVisible') === true ||
+                template.options?.includes('isValue'))),
+        )
+        .map((template) => template.name)
+        .filter(Boolean),
     ),
   ]
 }

@@ -1,4 +1,5 @@
 import { describe, expect, it, jest } from '@jest/globals';
+import { BadRequestException } from '@nestjs/common';
 import { EntityTemplateDto } from '../template/dto/entity-template.dto';
 import { GenericQueryService } from './generic-query.service';
 
@@ -25,6 +26,39 @@ const createTemplateField = (
 });
 
 describe('GenericQueryService', () => {
+  it('builds safe list projections with primary keys and populated relations', () => {
+    const service = new GenericQueryService({} as never);
+    const template = [
+      createTemplateField({
+        name: 'handle',
+        type: 'number',
+        isPrimaryKey: true,
+      }),
+      createTemplateField({ name: 'title' }),
+      createTemplateField({ name: 'description' }),
+      createTemplateField({
+        name: 'status',
+        isReference: true,
+        kind: 'm:1',
+        referenceName: 'ticketStatus',
+      }),
+      createTemplateField({
+        name: 'computedEmail',
+        isPersistent: false,
+      }),
+    ];
+
+    expect(service.buildFields(['title'], template, ['status'])).toEqual([
+      'handle',
+      'title',
+      'status',
+    ]);
+    expect(service.buildFields([], template)).toBeUndefined();
+    expect(() => service.buildFields(['computedEmail'], template)).toThrow(
+      BadRequestException,
+    );
+  });
+
   it('reuses cached template field maps across repeated query normalization work', () => {
     const templatesByEntity: Record<string, EntityTemplateDto[]> = {
       ticket: [

@@ -24,6 +24,7 @@ import {
 import {
   buildTableFilter,
   buildTableOrderBy,
+  getListProjectionFieldNames,
   getReadableReferenceRelationNames,
   getTableHeaders,
 } from '@/utils/saplingTableUtil'
@@ -131,10 +132,17 @@ export function useSaplingTable(
     ]
   })
   const selectedFormConfigLabel = computed(() => selectedFormConfig.value?.name ?? '')
+  const listProjectionFields = computed(() =>
+    getListProjectionFieldNames(
+      entityTemplates.value,
+      currentPermissionStore.accumulatedPermission ?? [],
+    ),
+  )
   const readableReferenceRelations = computed(() =>
     getReadableReferenceRelationNames(
       entityTemplates.value,
       currentPermissionStore.accumulatedPermission ?? [],
+      listProjectionFields.value,
     ),
   )
   // #endregion
@@ -297,6 +305,7 @@ export function useSaplingTable(
         page: page.value,
         limit: itemsPerPage.value,
         relations: readableReferenceRelations.value,
+        fields: listProjectionFields.value,
         signal: loadController.signal,
       })
 

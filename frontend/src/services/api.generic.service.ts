@@ -73,6 +73,7 @@ interface FindOptions {
   page?: number
   limit?: number
   relations?: string[]
+  fields?: string[]
   signal?: AbortSignal
 }
 
@@ -118,7 +119,7 @@ class ApiGenericService {
 
   static async find<T>(
     entityHandle: string,
-    { filter, orderBy, page, limit, relations, signal }: FindOptions = {},
+    { filter, orderBy, page, limit, relations, fields, signal }: FindOptions = {},
   ): Promise<PaginatedResponse<T>> {
     const params: Record<string, unknown> = {}
     if (typeof page === 'number') params.page = page
@@ -131,6 +132,9 @@ class ApiGenericService {
     }
     if (relations && relations.length > 0) {
       params.relations = JSON.stringify(relations)
+    }
+    if (fields && fields.length > 0) {
+      params.fields = JSON.stringify(fields)
     }
 
     try {

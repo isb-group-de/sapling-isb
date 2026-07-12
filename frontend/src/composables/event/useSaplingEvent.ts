@@ -152,6 +152,44 @@ export interface SelectedPersonPreviewItem {
 
 type CalendarScrollContainerRef = HTMLElement | ComponentPublicInstance | null
 const CALENDAR_TYPE_OPTIONS: CalendarType[] = ['day', 'workweek', 'week', 'month']
+const EVENT_CALENDAR_FIELDS = [
+  'handle',
+  'title',
+  'description',
+  'startDate',
+  'endDate',
+  'isAllDay',
+  'isPrivate',
+  'recurrenceRule',
+  'type',
+  'participants',
+  'status',
+  'assigneeCompany',
+  'assigneePerson',
+  'creatorCompany',
+  'creatorPerson',
+  'updatedAt',
+]
+const EVENT_CALENDAR_RELATIONS = [
+  'participants',
+  'type',
+  'status',
+  'assigneeCompany',
+  'assigneePerson',
+  'creatorCompany',
+  'creatorPerson',
+]
+const HOLIDAY_CALENDAR_FIELDS = [
+  'handle',
+  'title',
+  'description',
+  'group',
+  'startDate',
+  'endDate',
+  'isAllDay',
+  'icon',
+  'color',
+]
 const WORKWEEK_DAYS = [1, 2, 3, 4, 5]
 const MONTH_NAMES = [
   'january',
@@ -966,7 +1004,8 @@ export function useSaplingEvent() {
 
     const [response, holidayResponse] = await Promise.all([
       ApiGenericService.find<EventItem>('event', {
-        relations: ['participants', 'm:1'],
+        relations: EVENT_CALENDAR_RELATIONS,
+        fields: EVENT_CALENDAR_FIELDS,
         filter: {
           $and: [
             { participants: selectedPeoples.value },
@@ -990,6 +1029,7 @@ export function useSaplingEvent() {
       holidayGroupHandles.length > 0
         ? ApiGenericService.find<HolidayItem>('holiday', {
             relations: ['group'],
+            fields: HOLIDAY_CALENDAR_FIELDS,
             filter: {
               $and: [
                 { group: { $in: holidayGroupHandles } },
@@ -1151,14 +1191,15 @@ export function useSaplingEvent() {
       showEditDialog.value = true
       suppressNextEventClick.value = true
     } else if (wasDragged || wasResized) {
-      editEvent.value = dragEvent.value ?? createEvent.value
-      applyCalendarEventDateParts(editEvent.value)
-      forceEditDialogDirtyFields.value = getCalendarInteractionForcedDirtyFields({
+      const draggedEvent = dragEvent.value ?? createEvent.value
+      const forcedDirtyFields = getCalendarInteractionForcedDirtyFields({
         isNewDraft,
         wasDragged,
         wasResized,
       })
-      showEditDialog.value = editEvent.value != null
+      if (draggedEvent) {
+        void openPersistedEventEditor(draggedEvent, forcedDirtyFields)
+      }
       suppressNextEventClick.value = true
     }
     // Else: pure click on an existing event. Leave dialog handling to the
@@ -1174,7 +1215,7 @@ export function useSaplingEvent() {
   /**
    * Opens an existing event directly in the shared edit dialog.
    */
-  function openEventEditor(event: CalendarEvent) {
+  async function openEventEditor(event: CalendarEvent) {
     if (!event || isReadonlyCalendarEvent(event)) {
       return
     }
@@ -1187,14 +1228,7 @@ export function useSaplingEvent() {
       return
     }
 
-    editEvent.value =
-      isRecurringCalendarEvent(event) && event.event
-        ? toCalendarEvent(event.event as EventItem)
-        : event
-    applyCalendarEventDateParts(editEvent.value)
-    forceEditDialogDirtyFields.value = []
-    dragSnapshot.value = null
-    showEditDialog.value = true
+    await openPersistedEventEditor(event, [])
   }
 
   async function openEventFromRoute(): Promise<boolean> {
@@ -1544,14 +1578,15 @@ export function useSaplingEvent() {
     eventContextMenu.value.visible = false
   }
 
-  function openEventContextMenu(mouseEvent: MouseEvent, calendarEvent: CalendarEvent) {
+  async function openEventContextMenu(mouseEvent: MouseEvent, calendarEvent: CalendarEvent) {
     const targetItem = toPersistedEventItem(calendarEvent)
     if (!targetItem) {
       return
     }
 
+    const persistedItem = await loadPersistedEvent(targetItem.handle)
     eventContextMenu.value.visible = false
-    eventContextMenu.value.item = targetItem
+    eventContextMenu.value.item = persistedItem ?? targetItem
     eventContextMenu.value.x = mouseEvent.clientX
     eventContextMenu.value.y = mouseEvent.clientY
 
@@ -1881,6 +1916,31 @@ export function useSaplingEvent() {
     })
 
     return result.data[0] ?? null
+  }
+
+  async function openPersistedEventEditor(
+    calendarEvent: CalendarEvent,
+    forcedDirtyFields: string[],
+  ) {
+    const handle = getCalendarEventHandle(calendarEvent)
+    const persistedEvent = handle == null ? null : await loadPersistedEvent(handle)
+    const baseEvent = persistedEvent
+      ? toCalendarEvent(persistedEvent)
+      : isRecurringCalendarEvent(calendarEvent) && calendarEvent.event
+        ? toCalendarEvent(calendarEvent.event as EventItem)
+        : calendarEvent
+
+    editEvent.value = {
+      ...baseEvent,
+      start: calendarEvent.start,
+      end: calendarEvent.end,
+    }
+    applyCalendarEventDateParts(editEvent.value)
+    forceEditDialogDirtyFields.value = forcedDirtyFields
+    if (forcedDirtyFields.length === 0) {
+      dragSnapshot.value = null
+    }
+    showEditDialog.value = true
   }
 
   function getOpenEventHandleFromRoute(): number | null {

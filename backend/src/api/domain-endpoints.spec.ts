@@ -80,6 +80,7 @@ describe('GenericController', () => {
       filter: { active: true },
       orderBy: { name: 'ASC' },
       relations: ['person'],
+      fields: ['handle', 'name'],
     };
 
     await expect(
@@ -93,6 +94,7 @@ describe('GenericController', () => {
       query.orderBy,
       req.user,
       query.relations,
+      query.fields,
     );
   });
 

@@ -14,7 +14,7 @@ import {
 } from '../../entity/global/entity.decorator';
 
 // Mapping of entity handles to their classes
-const entityMap = ENTITY_MAP;
+const entityMap = ENTITY_MAP ?? {};
 const entityHandleByTypeName = new Map<string, string>(
   Object.entries(entityMap).flatMap(([entityHandle, entityClass]) => {
     const typeName = (entityClass as { name?: string } | undefined)?.name;

@@ -162,6 +162,7 @@ export class GenericService {
     orderBy: object = {},
     currentUser: PersonItem,
     relations: string[] = [],
+    fields: string[] = [],
   ): Promise<{
     data: object[];
     meta: {
@@ -205,6 +206,11 @@ export class GenericService {
       ],
       template,
     );
+    const selectedFields = this.genericQueryService.buildFields(
+      fields,
+      template,
+      populate,
+    );
     const result = await this.genericReadService.findAndCount(
       entityHandle,
       entityClass,
@@ -216,6 +222,7 @@ export class GenericService {
         offset,
         orderBy,
         populate: populate as any[],
+        fields: selectedFields as any[] | undefined,
       },
     );
 

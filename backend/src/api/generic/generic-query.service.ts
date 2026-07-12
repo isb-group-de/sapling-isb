@@ -76,6 +76,57 @@ export class GenericQueryService {
     return [...new Set(populate)];
   }
 
+  buildFields(
+    requestedFields: string[],
+    template: EntityTemplateDto[],
+    populate: string[] = [],
+  ): string[] | undefined {
+    if (requestedFields.length === 0) {
+      return undefined;
+    }
+
+    const fieldsByName = new Map(template.map((field) => [field.name, field]));
+    const selectedFields = new Set(
+      template
+        .filter((field) => field.isPrimaryKey && field.isPersistent !== false)
+        .map((field) => field.name),
+    );
+
+    for (const requestedField of requestedFields) {
+      const fieldName = requestedField.trim();
+      if (!fieldName || fieldName.startsWith('customFields.')) {
+        continue;
+      }
+
+      const field = fieldsByName.get(fieldName);
+      if (
+        !field ||
+        field.isPersistent === false ||
+        ['1:m', 'm:n', 'n:m'].includes(field.kind ?? '') ||
+        field.options?.includes('isSecurity')
+      ) {
+        throw new BadRequestException(
+          'exception.badRequest',
+          `Invalid projection field "${fieldName}"`,
+        );
+      }
+
+      selectedFields.add(fieldName);
+    }
+
+    for (const relation of populate) {
+      const rootFieldName = relation.split('.')[0]?.trim();
+      const rootField = rootFieldName
+        ? fieldsByName.get(rootFieldName)
+        : undefined;
+      if (rootField?.isReference && rootField.isPersistent !== false) {
+        selectedFields.add(rootField.name);
+      }
+    }
+
+    return [...selectedFields];
+  }
+
   normalizeQueryCriteria(
     entityHandle: string,
     criteria: object,

@@ -198,6 +198,13 @@ export class GenericController {
     type: String,
   })
   @ApiQuery({
+    name: 'fields',
+    required: false,
+    description:
+      'A JSON list of persistent fields to return. Primary keys are included automatically.',
+    type: String,
+  })
+  @ApiQuery({
     name: 'page',
     required: false,
     description: 'Page number of results (default: 1)',
@@ -220,7 +227,7 @@ export class GenericController {
     @Param('entityHandle') entityHandle: string,
     @Query() query: PaginatedQueryDto,
   ): Promise<PaginatedResponseDto> {
-    const { page, limit, filter, orderBy, relations } = query;
+    const { page, limit, filter, orderBy, relations, fields } = query;
     return this.genericService.findAndCount(
       entityHandle,
       filter,
@@ -229,6 +236,7 @@ export class GenericController {
       orderBy,
       req.user,
       relations,
+      fields ?? [],
     );
   }
   // #endregion

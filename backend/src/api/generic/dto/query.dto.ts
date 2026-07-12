@@ -156,6 +156,10 @@ export class PaginatedQueryDto {
   relations: string[] = []; // relations to load
 
   @IsOptional()
+  @Transform(({ value }) => parseStringArrayQuery(value, 'fields'))
+  fields?: string[] = []; // fields to select for list projections
+
+  @IsOptional()
   @Transform(({ value }) => parseJsonObjectQuery(value, 'orderBy'))
   orderBy: object = {}; // ordering
 }

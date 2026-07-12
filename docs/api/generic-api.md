@@ -59,6 +59,7 @@ Common query parameters:
 | `filter` | JSON object encoded as string |
 | `orderBy` | JSON object encoded as string |
 | `relations` | JSON list encoded as string |
+| `fields` | Optional JSON list of persistent response fields; primary keys are always included |
 | `page` | 1-based page number |
 | `limit` | page size |
 
@@ -117,6 +118,12 @@ Example:
 ```
 
 Avoid broad relation loading in high-volume lists. Request only what the UI or integration needs.
+
+List consumers can also request a narrow response projection with `fields`.
+Projection fields are validated against template metadata; collection,
+non-persistent, and security fields are rejected, while custom-field paths are
+hydrated separately. Omit `fields` for complete records, such as the detail
+reload performed before opening an edit dialog.
 
 ## Create
 
