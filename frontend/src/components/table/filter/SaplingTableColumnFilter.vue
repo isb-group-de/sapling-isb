@@ -43,7 +43,7 @@
 
       <SaplingSurface
         :as="VCard"
-        class="sapling-stack-md sapling-table-filter-menu"
+        class="sapling-stack-md sapling-table-filter-menu glass-panel"
         variant="subtle"
         :elevation="10"
       >

@@ -1,0 +1,48 @@
+[
+  {
+    "handle": "openai-gpt-5_6-sol",
+    "title": "GPT-5.6 Sol",
+    "description": "OpenAI flagship frontier model for complex reasoning, coding, and professional work.",
+    "provider": "openai",
+    "providerModel": "gpt-5.6-sol",
+    "supportsStreaming": true,
+    "supportsTools": true,
+    "supportsEmbeddings": false,
+    "isDefault": true,
+    "isActive": true,
+    "sortOrder": 1,
+    "maxToolCallIterations": 100
+  },
+  {
+    "handle": "openai-gpt-5_6-terra",
+    "title": "GPT-5.6 Terra",
+    "description": "OpenAI GPT-5.6 model balancing intelligence and cost for broad production use.",
+    "provider": "openai",
+    "providerModel": "gpt-5.6-terra",
+    "supportsStreaming": true,
+    "supportsTools": true,
+    "supportsEmbeddings": false,
+    "isDefault": false,
+    "isActive": true,
+    "sortOrder": 2,
+    "maxToolCallIterations": 100
+  },
+  {
+    "handle": "openai-gpt-5_6-luna",
+    "title": "GPT-5.6 Luna",
+    "description": "Cost-efficient OpenAI GPT-5.6 model for high-volume workloads.",
+    "provider": "openai",
+    "providerModel": "gpt-5.6-luna",
+    "supportsStreaming": true,
+    "supportsTools": true,
+    "supportsEmbeddings": false,
+    "isDefault": false,
+    "isActive": true,
+    "sortOrder": 3,
+    "maxToolCallIterations": 100
+  },
+  {
+    "handle": "openai-gpt-5_5",
+    "isDefault": false
+  }
+]
