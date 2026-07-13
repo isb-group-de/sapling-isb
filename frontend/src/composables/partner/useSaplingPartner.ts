@@ -1,4 +1,4 @@
-import { computed, ref, watch, type Ref } from 'vue'
+import { computed, nextTick, ref, watch, type Ref } from 'vue'
 import { useRoute } from 'vue-router'
 import type { ColumnFilterItem, EntityTemplate } from '@/entity/structure'
 import { useSaplingTable } from '@/composables/table/useSaplingTable'
@@ -27,6 +27,7 @@ export function useSaplingPartner(entityHandle: Ref<string>) {
   const selectedPeopleHandles = ref<PartnerHandle[]>([])
   const restoredParentFilter = ref<Record<string, unknown>>({})
   let isSyncingChipColumnFilters = false
+  let isHydratingChipFilters = false
 
   const {
     items,
@@ -86,9 +87,7 @@ export function useSaplingPartner(entityHandle: Ref<string>) {
         return
       }
 
-      await loadChipFilters()
-      syncSelectedChipFiltersFromColumnFilters()
-      applyPartnerFilter()
+      await hydrateChipFiltersFromTableState()
     },
     { deep: true },
   )
@@ -100,9 +99,7 @@ export function useSaplingPartner(entityHandle: Ref<string>) {
         return
       }
 
-      await loadChipFilters()
-      syncSelectedChipFiltersFromColumnFilters()
-      applyPartnerFilter()
+      await hydrateChipFiltersFromTableState()
     },
     { immediate: true },
   )
@@ -110,6 +107,10 @@ export function useSaplingPartner(entityHandle: Ref<string>) {
   watch(
     selectedChipFilters,
     () => {
+      if (isHydratingChipFilters) {
+        return
+      }
+
       syncColumnFiltersFromSelectedChipFilters()
       applyPartnerFilter()
     },
@@ -145,6 +146,19 @@ export function useSaplingPartner(entityHandle: Ref<string>) {
     updateSelectedChipFilters(values)
   }
 
+  async function hydrateChipFiltersFromTableState() {
+    isHydratingChipFilters = true
+
+    try {
+      await loadChipFilters()
+      syncSelectedChipFiltersFromColumnFilters()
+      applyPartnerFilter()
+      await nextTick()
+    } finally {
+      isHydratingChipFilters = false
+    }
+  }
+
   /**
    * Prepares the default partner filter before the first table query is sent.
    */
@@ -166,7 +180,7 @@ export function useSaplingPartner(entityHandle: Ref<string>) {
    * partner drawer all share one state.
    */
   function applyPartnerFilter() {
-    parentFilter.value = combineFilters(
+    parentFilter.value = combinePartnerFilters(
       restoredParentFilter.value,
       buildPartnerFilter(selectedPeopleHandles.value, partnerTemplates.value),
     )
@@ -228,7 +242,7 @@ export function useSaplingPartner(entityHandle: Ref<string>) {
       delete nextColumnFilters[filter.key]
     })
 
-    if (areColumnFiltersEqual(columnFilters.value, nextColumnFilters)) {
+    if (arePartnerColumnFiltersEqual(columnFilters.value, nextColumnFilters)) {
       return
     }
 
@@ -301,12 +315,16 @@ function buildPartnerFilter(
   return orFilters.length > 0 ? { $or: orFilters } : {}
 }
 
-function combineFilters(
+export function combinePartnerFilters(
   restoredFilter: Record<string, unknown>,
   partnerFilter: Record<string, unknown>,
 ): Record<string, unknown> {
   const hasRestoredFilter = Object.keys(restoredFilter).length > 0
   const hasPartnerFilter = Object.keys(partnerFilter).length > 0
+
+  if (hasRestoredFilter && hasPartnerFilter && areFiltersEqual(restoredFilter, partnerFilter)) {
+    return restoredFilter
+  }
 
   if (hasRestoredFilter && hasPartnerFilter) {
     return { $and: [restoredFilter, partnerFilter] }
@@ -492,21 +510,55 @@ function areSelectionsEqual(
   left: SaplingChipFilterSelection,
   right: SaplingChipFilterSelection,
 ): boolean {
-  return JSON.stringify(normalizeSelectionForComparison(left)) === JSON.stringify(right)
+  return (
+    JSON.stringify(normalizeSelectionForComparison(left)) ===
+    JSON.stringify(normalizeSelectionForComparison(right))
+  )
 }
 
 function normalizeSelectionForComparison(selection: SaplingChipFilterSelection) {
   return Object.fromEntries(
     Object.entries(selection).map(([key, values]) => [
       key,
-      values.filter((value): value is SaplingFilterHandle => isSaplingFilterHandle(value)),
+      values
+        .filter((value): value is SaplingFilterHandle => isSaplingFilterHandle(value))
+        .sort(compareFilterHandles),
     ]),
   )
 }
 
-function areColumnFiltersEqual(
+export function arePartnerColumnFiltersEqual(
   left: Record<string, ColumnFilterItem>,
   right: Record<string, ColumnFilterItem>,
 ): boolean {
+  return (
+    JSON.stringify(normalizeColumnFiltersForComparison(left)) ===
+    JSON.stringify(normalizeColumnFiltersForComparison(right))
+  )
+}
+
+function areFiltersEqual(left: Record<string, unknown>, right: Record<string, unknown>): boolean {
   return JSON.stringify(left) === JSON.stringify(right)
+}
+
+function normalizeColumnFiltersForComparison(filters: Record<string, ColumnFilterItem>) {
+  return Object.fromEntries(
+    Object.entries(filters)
+      .sort(([leftKey], [rightKey]) => leftKey.localeCompare(rightKey))
+      .map(([key, filter]) => [
+        key,
+        {
+          ...filter,
+          relationItems: filter.relationItems
+            ?.map((item) => ({ ...item }))
+            .sort((leftItem, rightItem) =>
+              JSON.stringify(leftItem).localeCompare(JSON.stringify(rightItem)),
+            ),
+        },
+      ]),
+  )
+}
+
+function compareFilterHandles(left: SaplingFilterHandle, right: SaplingFilterHandle): number {
+  return String(left).localeCompare(String(right))
 }

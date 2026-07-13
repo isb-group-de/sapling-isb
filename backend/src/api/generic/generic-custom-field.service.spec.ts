@@ -3,6 +3,7 @@ import { BadRequestException } from '@nestjs/common';
 
 import { GenericCustomFieldService } from './generic-custom-field.service';
 import type { CustomFieldDefinitionItem } from '../../entity/CustomFieldDefinitionItem';
+import { CustomFieldValueItem } from '../../entity/CustomFieldValueItem';
 import type { CustomFieldType } from '../../entity/CustomFieldTypeItem';
 
 const createDefinition = (
@@ -27,6 +28,9 @@ const createService = (definitions: CustomFieldDefinitionItem[] = []) => {
     find: jest
       .fn<() => Promise<CustomFieldDefinitionItem[]>>()
       .mockResolvedValue(definitions),
+    count: jest
+      .fn<() => Promise<number>>()
+      .mockResolvedValue(definitions.length),
   };
 
   return new GenericCustomFieldService(em as never);
@@ -161,5 +165,76 @@ describe('GenericCustomFieldService', () => {
         renderer: 'boolean',
       }),
     });
+  });
+
+  it('skips value hydration for entities without active custom fields', async () => {
+    const service = createService();
+    service.invalidateTemplateCache('emptyEntity');
+    const entityManager = (
+      service as unknown as { em: { count: jest.Mock; find: jest.Mock } }
+    ).em;
+    const records = [{ handle: 'customer-1', title: 'Customer' }];
+
+    await service.hydrateRecords('emptyEntity', records);
+    await service.hydrateRecords('emptyEntity', [
+      { handle: 'customer-2', title: 'Other customer' },
+    ]);
+
+    expect(entityManager.count).toHaveBeenCalledTimes(1);
+    expect(entityManager.find).not.toHaveBeenCalledWith(
+      CustomFieldValueItem,
+      expect.anything(),
+      expect.anything(),
+    );
+    expect(records[0]).toEqual({
+      handle: 'customer-1',
+      title: 'Customer',
+      customFields: {},
+    });
+  });
+
+  it('hydrates values when active custom fields exist', async () => {
+    const definition = createDefinition('region', 'text', { handle: 42 });
+    const values = [
+      {
+        recordReference: 'customer-1',
+        definition,
+        valueString: 'EMEA',
+      },
+    ];
+    const em = {
+      count: jest.fn<() => Promise<number>>().mockResolvedValue(1),
+      find: jest
+        .fn<
+          (
+            entity: unknown,
+            criteria?: unknown,
+            options?: unknown,
+          ) => Promise<typeof values>
+        >()
+        .mockResolvedValue(values),
+    };
+    const service = new GenericCustomFieldService(em as never);
+    service.invalidateTemplateCache('fieldEntity');
+    const records = [{ handle: 'customer-1' }, { handle: 'customer-2' }];
+
+    await service.hydrateRecords('fieldEntity', records);
+
+    expect(em.find).toHaveBeenCalledWith(
+      CustomFieldValueItem,
+      {
+        entity: { handle: 'fieldEntity' },
+        recordReference: { $in: ['customer-1', 'customer-2'] },
+      },
+      { populate: ['definition'] },
+    );
+    expect(records).toEqual([
+      {
+        handle: 'customer-1',
+        customFields: { region: 'EMEA' },
+        'customFields.region': 'EMEA',
+      },
+      { handle: 'customer-2', customFields: {} },
+    ]);
   });
 });

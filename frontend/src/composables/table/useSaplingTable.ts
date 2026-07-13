@@ -82,6 +82,7 @@ export function useSaplingTable(
   let latestLoadRequestId = 0
   let latestInitializationId = 0
   let latestFormConfigContextRequestId = 0
+  let latestLoadedTableQuerySignature = ''
   // #endregion
 
   // #region Entity Metadata
@@ -253,6 +254,20 @@ export function useSaplingTable(
     return sortBy.value.filter((sortItem) => validTemplateKeys.has(sortItem.key))
   })
 
+  // Stable serialization of the dynamic query inputs. Watching this avoids
+  // `deep: true` traversal on every keystroke and only fires the reload when
+  // the effective filter/sort/pagination payload truly changes.
+  const tableQuerySignature = computed(() =>
+    JSON.stringify({
+      entityHandle: entityHandle.value,
+      search: search.value,
+      page: page.value,
+      itemsPerPage: itemsPerPage.value,
+      sortBy: validSortBy.value,
+      filter: activeFilter.value,
+    }),
+  )
+
   /**
    * Applies the first template-defined default ordering to the server query.
    */
@@ -292,6 +307,7 @@ export function useSaplingTable(
       return
     }
 
+    const currentTableQuerySignature = tableQuerySignature.value
     activeLoadController?.abort()
     const loadController = new AbortController()
     activeLoadController = loadController
@@ -322,6 +338,7 @@ export function useSaplingTable(
 
       items.value = result.data
       totalItems.value = result.meta.total
+      latestLoadedTableQuerySignature = currentTableQuerySignature
     } catch (error) {
       if (isAbortError(error)) {
         return
@@ -505,6 +522,7 @@ export function useSaplingTable(
     activeLoadController?.abort()
     activeLoadController = null
     latestLoadRequestId += 1
+    latestLoadedTableQuerySignature = ''
     isDataLoading.value = false
     resetEntityState()
     if (typeof options?.initialSearch === 'string') {
@@ -573,21 +591,12 @@ export function useSaplingTable(
     activeLoadController = null
   })
 
-  // Stable serialization of the dynamic query inputs. Watching this avoids
-  // `deep: true` traversal on every keystroke and only fires the reload when
-  // the effective filter/sort/pagination payload truly changes.
-  const tableQuerySignature = computed(() =>
-    JSON.stringify({
-      search: search.value,
-      page: page.value,
-      itemsPerPage: itemsPerPage.value,
-      sortBy: validSortBy.value,
-      filter: activeFilter.value,
-    }),
-  )
-
-  watch(tableQuerySignature, () => {
+  watch(tableQuerySignature, (nextSignature) => {
     if (isResettingEntityState.value || !isInitialized.value) {
+      return
+    }
+
+    if (nextSignature === latestLoadedTableQuerySignature) {
       return
     }
 

@@ -1,6 +1,8 @@
 import {
   Controller,
+  Body,
   Get,
+  Post,
   NotFoundException,
   Param,
   Req,
@@ -17,6 +19,8 @@ import {
   ApiResponse,
 } from '@nestjs/swagger';
 import { KpiResponseDto } from './dto/kpi-response.dto';
+import { KpiBatchRequestDto } from './dto/kpi-batch-request.dto';
+import { KpiBatchResponseDto } from './dto/kpi-batch-response.dto';
 import type { Request } from 'express';
 import { SessionOrBearerAuthGuard } from '../../auth/guard/session-or-token-auth.guard';
 import {
@@ -66,6 +70,29 @@ export class KpiController {
    * @param {KpiService} kpiService Service for KPI logic
    */
   constructor(private readonly kpiService: KpiService) {}
+
+  @Post('execute-batch')
+  @ApiOperation({
+    summary: 'Execute multiple KPIs',
+    description:
+      'Executes multiple KPI definitions in one request and returns their computed results in request order.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Computed KPI results for the requested handles.',
+    type: KpiBatchResponseDto,
+  })
+  async executeKPIBatch(
+    @Body() body: KpiBatchRequestDto,
+    @Req() req: Request,
+  ): Promise<KpiBatchResponseDto> {
+    const items = await this.kpiService.executeKPIBatch(
+      body.handles,
+      (req.user as import('../../entity/PersonItem').PersonItem) ?? null,
+    );
+
+    return { items };
+  }
 
   /**
    * Executes a KPI by its ID and returns the result.

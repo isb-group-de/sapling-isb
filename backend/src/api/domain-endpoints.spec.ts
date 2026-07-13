@@ -549,6 +549,7 @@ describe('KpiController', () => {
     const result = { value: 42 };
     const kpiService = {
       executeKPIById: jest.fn(async () => result),
+      executeKPIBatch: jest.fn(),
     };
     const controller = new KpiController(kpiService as never);
 
@@ -557,6 +558,25 @@ describe('KpiController', () => {
     ).resolves.toBe(result);
     expect(asMock(kpiService.executeKPIById)).toHaveBeenCalledWith(
       7,
+      expect.objectContaining({ handle: 1 }),
+    );
+  });
+
+  it('executes KPI handles as a batch', async () => {
+    const result = [{ value: 42 }, { value: 7 }];
+    const kpiService = {
+      executeKPIById: jest.fn(),
+      executeKPIBatch: jest.fn(async () => result),
+    };
+    const controller = new KpiController(kpiService as never);
+
+    await expect(
+      controller.executeKPIBatch({ handles: [7, 8] }, {
+        user: createMockUser(),
+      } as never),
+    ).resolves.toEqual({ items: result });
+    expect(asMock(kpiService.executeKPIBatch)).toHaveBeenCalledWith(
+      [7, 8],
       expect.objectContaining({ handle: 1 }),
     );
   });

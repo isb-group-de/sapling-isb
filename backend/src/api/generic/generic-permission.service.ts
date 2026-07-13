@@ -60,6 +60,24 @@ export class GenericPermissionService {
     }
   }
 
+  checkTopLevelReadPermission(
+    entityHandle: string,
+    currentUser: PersonItem | null | undefined,
+  ): void {
+    if (!currentUser) {
+      throw new ForbiddenException('global.permissionDenied');
+    }
+
+    const permission = this.currentService.getEntityPermissions(
+      currentUser,
+      entityHandle,
+    );
+
+    if (!permission.allowRead) {
+      throw new ForbiddenException('global.permissionDenied');
+    }
+  }
+
   setTopLevelFilter(
     where: object,
     currentUser: PersonItem,

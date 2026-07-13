@@ -448,6 +448,103 @@ describe('GenericService', () => {
     ]);
   });
 
+  it('keeps top-level rows complete when nested circular references create handle fallbacks', async () => {
+    (hasSaplingOption as jest.Mock).mockImplementation(() => false);
+
+    const accountManager = {
+      handle: 5,
+      firstName: 'Julia',
+      lastName: 'Demo',
+    } as Record<string, unknown>;
+    const laterCompany = {
+      handle: 2,
+      name: 'Later GmbH',
+      accountManager,
+    };
+    accountManager.company = laterCompany;
+    const firstCompany = {
+      handle: 1,
+      name: 'First GmbH',
+      accountManager,
+    };
+    const findOne = jest
+      .fn<() => Promise<object | null>>()
+      .mockResolvedValue(null);
+    const findAndCount = jest.fn(
+      () => [[firstCompany, laterCompany], 2] as [object[], number],
+    );
+    const em = {
+      findOne,
+      findAndCount,
+    };
+    const templateService = {
+      getEntityTemplate: jest.fn((entityHandle: string) => {
+        switch (entityHandle) {
+          case 'company':
+            return [
+              createTemplateField({ name: 'handle', type: 'number' }),
+              createTemplateField({ name: 'name' }),
+              createTemplateField({
+                name: 'accountManager',
+                isReference: true,
+                kind: 'm:1',
+                referenceName: 'person',
+                referencedPks: ['handle'],
+              }),
+            ];
+          case 'person':
+            return [
+              createTemplateField({ name: 'handle', type: 'number' }),
+              createTemplateField({ name: 'firstName' }),
+              createTemplateField({ name: 'lastName' }),
+              createTemplateField({
+                name: 'company',
+                isReference: true,
+                kind: 'm:1',
+                referenceName: 'company',
+                referencedPks: ['handle'],
+              }),
+            ];
+          default:
+            return [];
+        }
+      }),
+    };
+    const currentService = {
+      getEntityPermissions: jest.fn(() => ({
+        allowReadStage: 'global',
+      })),
+      getAllEntityPermissions: jest.fn(() => []),
+    };
+    const service = createGenericService({
+      em,
+      templateService,
+      currentService,
+    });
+
+    const result = await service.findAndCount(
+      'company',
+      {},
+      1,
+      25,
+      {},
+      { handle: 1 } as never,
+      ['accountManager'],
+    );
+    const rows = result.data as Array<{
+      accountManager?: Record<string, unknown>;
+    }>;
+
+    expect(rows[1]?.accountManager).toEqual({
+      handle: 5,
+      firstName: 'Julia',
+      lastName: 'Demo',
+      company: {
+        handle: 2,
+      },
+    });
+  });
+
   it('keeps computed getter fields and shared reference objects during sanitization', async () => {
     (hasSaplingOption as jest.Mock).mockImplementation(() => false);
 

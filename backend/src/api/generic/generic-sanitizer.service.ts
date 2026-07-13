@@ -50,13 +50,18 @@ export class GenericSanitizerService {
       active.add(value);
       try {
         value.forEach((item) => {
+          const itemVisited = new WeakMap<object, unknown>([
+            [value, sanitizedArray],
+          ]);
+          const itemActive = new WeakSet<object>([value]);
+
           sanitizedArray.push(
             this.sanitizeEntityResult(
               entityHandle,
               item,
               sanitizerMetadata.template,
-              visited,
-              active,
+              itemVisited,
+              itemActive,
               sanitizerMetadataCache,
             ),
           );

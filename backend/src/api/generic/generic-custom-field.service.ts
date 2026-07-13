@@ -25,13 +25,17 @@ export class GenericCustomFieldService {
     string,
     Promise<EntityTemplateDto[]>
   >();
+  private static readonly hasActiveDefinitionCache = new Map<
+    string,
+    Promise<boolean>
+  >();
 
   constructor(private readonly em: EntityManager) {}
 
   async getActiveDefinitions(
     entityHandle: string,
   ): Promise<CustomFieldDefinitionItem[]> {
-    return this.em.find(
+    const definitions = await this.em.find(
       CustomFieldDefinitionItem,
       { entity: { handle: entityHandle }, isActive: true },
       {
@@ -39,6 +43,8 @@ export class GenericCustomFieldService {
         populate: ['fieldType'],
       },
     );
+    this.rememberHasActiveDefinitions(entityHandle, definitions.length > 0);
+    return definitions;
   }
 
   async appendCustomFieldTemplates(
@@ -76,10 +82,12 @@ export class GenericCustomFieldService {
   invalidateTemplateCache(entityHandle?: string): void {
     if (entityHandle) {
       GenericCustomFieldService.customFieldTemplateCache.delete(entityHandle);
+      GenericCustomFieldService.hasActiveDefinitionCache.delete(entityHandle);
       return;
     }
 
     GenericCustomFieldService.customFieldTemplateCache.clear();
+    GenericCustomFieldService.hasActiveDefinitionCache.clear();
   }
 
   splitPayload<T extends Record<string, unknown>>(payload: T): SplitPayload<T> {
@@ -245,6 +253,13 @@ export class GenericCustomFieldService {
       .map((handle) => String(handle));
 
     if (references.length === 0) {
+      return input;
+    }
+
+    if (!(await this.hasActiveDefinitions(entityHandle))) {
+      plainRecords.forEach((record) => {
+        record[CUSTOM_FIELD_PAYLOAD_KEY] = {};
+      });
       return input;
     }
 
@@ -518,6 +533,46 @@ export class GenericCustomFieldService {
 
   private normalizePayloadRecord(value: unknown): CustomFieldPayload {
     return this.isPlainRecord(value) ? { ...value } : {};
+  }
+
+  private async hasActiveDefinitions(entityHandle: string): Promise<boolean> {
+    let cached =
+      GenericCustomFieldService.hasActiveDefinitionCache.get(entityHandle);
+
+    if (!cached) {
+      cached = this.em
+        .count(CustomFieldDefinitionItem, {
+          entity: { handle: entityHandle },
+          isActive: true,
+        })
+        .then((count) => count > 0);
+      GenericCustomFieldService.hasActiveDefinitionCache.set(
+        entityHandle,
+        cached,
+      );
+    }
+
+    try {
+      return await cached;
+    } catch (error) {
+      if (
+        GenericCustomFieldService.hasActiveDefinitionCache.get(entityHandle) ===
+        cached
+      ) {
+        GenericCustomFieldService.hasActiveDefinitionCache.delete(entityHandle);
+      }
+      throw error;
+    }
+  }
+
+  private rememberHasActiveDefinitions(
+    entityHandle: string,
+    hasDefinitions: boolean,
+  ): void {
+    GenericCustomFieldService.hasActiveDefinitionCache.set(
+      entityHandle,
+      Promise.resolve(hasDefinitions),
+    );
   }
 
   private normalizeValue(

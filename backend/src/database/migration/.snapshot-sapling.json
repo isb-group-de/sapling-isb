@@ -233,6 +233,27 @@
       "indexes": [
         {
           "columnNames": [
+            "company_handle",
+            "type_handle"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "address_item_company_handle_type_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "country_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "address_item_country_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -240,6 +261,16 @@
           "keyName": "address_item_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "type_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "address_item_type_handle_index",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
@@ -634,6 +665,26 @@
       "indexes": [
         {
           "columnNames": [
+            "agent_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "ai_agent_evaluation_item_agent_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "agent_version_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "ai_agent_evaluation_item_agent_version_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -1020,6 +1071,16 @@
       "indexes": [
         {
           "columnNames": [
+            "model_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "ai_agent_item_model_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -1027,6 +1088,16 @@
           "keyName": "ai_agent_item_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "provider_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "ai_agent_item_provider_handle_index",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
@@ -1109,6 +1180,16 @@
           "keyName": "ai_agent_item_roles_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "role_item_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "ai_agent_item_roles_role_item_handle_index",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
@@ -1321,6 +1402,16 @@
       "indexes": [
         {
           "columnNames": [
+            "agent_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "ai_agent_memory_item_agent_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -1397,6 +1488,16 @@
           "keyName": "ai_agent_memory_item_roles_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "role_item_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "ai_agent_memory_item_roles_role_item_handle_index",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
@@ -1624,6 +1725,16 @@
         }
       },
       "indexes": [
+        {
+          "columnNames": [
+            "agent_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "ai_agent_playbook_item_agent_handle_index",
+          "primary": false,
+          "unique": false
+        },
         {
           "columnNames": [
             "handle"
@@ -2034,6 +2145,47 @@
       "indexes": [
         {
           "columnNames": [
+            "agent_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "ai_agent_run_item_agent_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "agent_version_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "ai_agent_run_item_agent_version_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "message_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "ai_agent_run_item_message_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "person_handle",
+            "started_at"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "ai_agent_run_item_person_handle_started_at_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -2041,6 +2193,27 @@
           "keyName": "ai_agent_run_item_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "playbook_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "ai_agent_run_item_playbook_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "session_handle",
+            "started_at"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "ai_agent_run_item_session_handle_started_at_index",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
@@ -2383,6 +2556,26 @@
       "indexes": [
         {
           "columnNames": [
+            "agent_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "ai_agent_version_item_agent_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "model_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "ai_agent_version_item_model_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -2390,6 +2583,16 @@
           "keyName": "ai_agent_version_item_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "provider_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "ai_agent_version_item_provider_handle_index",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
@@ -2696,6 +2899,46 @@
       "indexes": [
         {
           "columnNames": [
+            "document_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "ai_chat_attachment_item_document_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "import_batch_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "ai_chat_attachment_item_import_batch_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "message_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "ai_chat_attachment_item_message_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "person_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "ai_chat_attachment_item_person_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -2703,6 +2946,17 @@
           "keyName": "ai_chat_attachment_item_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "session_handle",
+            "handle"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "ai_chat_attachment_item_session_handle_handle_index",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
@@ -3083,6 +3337,16 @@
       "indexes": [
         {
           "columnNames": [
+            "person_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "ai_chat_message_item_person_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -3090,6 +3354,17 @@
           "keyName": "ai_chat_message_item_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "session_handle",
+            "sequence"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "ai_chat_message_item_session_handle_sequence_index",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
@@ -3366,6 +3641,48 @@
       "indexes": [
         {
           "columnNames": [
+            "context_entity_handle",
+            "context_record_handle",
+            "updated_at"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "ai_chat_session_context_entity_context_record_updated_at_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "agent_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "ai_chat_session_item_agent_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "agent_version_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "ai_chat_session_item_agent_version_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "model_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "ai_chat_session_item_model_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -3373,6 +3690,38 @@
           "keyName": "ai_chat_session_item_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "playbook_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "ai_chat_session_item_playbook_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "provider_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "ai_chat_session_item_provider_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "person_handle",
+            "is_archived",
+            "updated_at"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "ai_chat_session_prs_is_archived_updated_at_index",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
@@ -3715,6 +4064,36 @@
       "indexes": [
         {
           "columnNames": [
+            "agent_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "ai_chat_tool_action_item_agent_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "message_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "ai_chat_tool_action_item_message_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "person_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "ai_chat_tool_action_item_person_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -3722,6 +4101,17 @@
           "keyName": "ai_chat_tool_action_item_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "session_handle",
+            "created_at"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "ai_chat_tool_action_item_session_handle_created_at_index",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
@@ -4090,6 +4480,46 @@
       "indexes": [
         {
           "columnNames": [
+            "document_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "ai_chat_transcription_item_document_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "message_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "ai_chat_transcription_item_message_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "model_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "ai_chat_transcription_item_model_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "person_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "ai_chat_transcription_item_person_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -4097,6 +4527,26 @@
           "keyName": "ai_chat_transcription_item_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "provider_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "ai_chat_transcription_item_provider_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "session_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "ai_chat_transcription_item_session_handle_index",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
@@ -4490,6 +4940,16 @@
       "indexes": [
         {
           "columnNames": [
+            "model_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "ai_entity_generation_template_item_model_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -4497,6 +4957,36 @@
           "keyName": "ai_entity_generation_template_item_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "provider_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "ai_entity_generation_template_item_provider_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "source_entity_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "ai_entity_generation_template_item_source_entity_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "target_entity_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "ai_entity_generation_template_item_target_entity_handle_index",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
@@ -5025,6 +5515,16 @@
           "keyName": "ai_provider_model_item_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "provider_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "ai_provider_model_item_provider_handle_index",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
@@ -5502,6 +6002,30 @@
           "keyName": "ai_vector_document_item_source_entity_handle_sour_09f0c_unique",
           "primary": false,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "provider_handle",
+            "model_handle",
+            "updated_at"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "ai_vector_document_provider_model_updated_at_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "source_entity_handle",
+            "source_record_handle",
+            "updated_at"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "ai_vector_document_source_entity_source_record_updated_idx",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
@@ -5787,6 +6311,17 @@
         }
       },
       "indexes": [
+        {
+          "columnNames": [
+            "is_active",
+            "last_run_at"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "calendar_sync_subscription_item_is_active_last_run_at_index",
+          "primary": false,
+          "unique": false
+        },
         {
           "columnNames": [
             "person_handle"
@@ -6093,6 +6628,16 @@
       "indexes": [
         {
           "columnNames": [
+            "log_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "change_log_detail_item_log_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -6278,6 +6823,40 @@
         }
       },
       "indexes": [
+        {
+          "columnNames": [
+            "entity_handle",
+            "reference",
+            "created_at",
+            "handle"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "change_log_entity_reference_created_at_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "action_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "change_log_item_action_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "person_handle",
+            "created_at"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "change_log_item_person_handle_created_at_index",
+          "primary": false,
+          "unique": false
+        },
         {
           "columnNames": [
             "handle"
@@ -7286,6 +7865,78 @@
       "indexes": [
         {
           "columnNames": [
+            "account_manager_handle",
+            "updated_at"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "company_item_account_manager_handle_updated_at_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "annual_revenue_class_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "company_item_annual_revenue_class_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "churn_risk_reason_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "company_item_churn_risk_reason_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "country_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "company_item_country_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "customer_success_manager_handle",
+            "updated_at"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "company_item_customer_success_manager_handle_updated_at_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "holiday_group_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "company_item_holiday_group_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "industry_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "company_item_industry_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "name"
           ],
           "composite": false,
@@ -7303,6 +7954,46 @@
           "keyName": "company_item_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "segment_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "company_item_segment_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "service_provider_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "company_item_service_provider_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "size_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "company_item_size_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "work_week_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "company_item_work_week_handle_index",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
@@ -7590,6 +8281,26 @@
           "keyName": "company_relationship_item_source_company_handle_t_92c05_unique",
           "primary": false,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "target_company_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "company_relationship_item_target_company_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "type_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "company_relationship_item_type_handle_index",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
@@ -8334,6 +9045,37 @@
       "indexes": [
         {
           "columnNames": [
+            "company_handle",
+            "end_date"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "contract_item_company_handle_end_date_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "default_support_queue_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "contract_item_default_support_queue_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "default_support_team_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "contract_item_default_support_team_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -8341,6 +9083,26 @@
           "keyName": "contract_item_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "service_level_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "contract_item_service_level_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "sla_policy_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "contract_item_sla_policy_handle_index",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
@@ -8459,6 +9221,16 @@
           "keyName": "contract_item_products_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "product_item_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "contract_item_products_product_item_handle_index",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
@@ -8742,6 +9514,26 @@
         }
       },
       "indexes": [
+        {
+          "columnNames": [
+            "language_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "country_item_language_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "money_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "country_item_money_handle_index",
+          "primary": false,
+          "unique": false
+        },
         {
           "columnNames": [
             "handle"
@@ -9030,6 +9822,19 @@
         {
           "columnNames": [
             "entity_handle",
+            "is_active",
+            "field_order",
+            "field_key"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "custom_field_definition_entity_active_order_key_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "entity_handle",
             "field_key"
           ],
           "composite": true,
@@ -9037,6 +9842,16 @@
           "keyName": "custom_field_definition_item_entity_handle_field_key_unique",
           "primary": false,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "field_type_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "custom_field_definition_item_field_type_handle_index",
+          "primary": false,
+          "unique": false
         },
         {
           "columnNames": [
@@ -9430,6 +10245,53 @@
       "indexes": [
         {
           "columnNames": [
+            "definition_handle",
+            "record_reference"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "custom_field_value_definition_record_reference_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "entity_handle",
+            "definition_handle",
+            "value_boolean"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "custom_field_value_item_boolean_filter_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "entity_handle",
+            "definition_handle",
+            "value_date"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "custom_field_value_item_date_filter_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "entity_handle",
+            "definition_handle",
+            "value_date_time"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "custom_field_value_item_datetime_filter_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "entity_handle",
             "record_reference",
             "definition_handle"
@@ -9442,6 +10304,18 @@
         },
         {
           "columnNames": [
+            "entity_handle",
+            "definition_handle",
+            "value_number"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "custom_field_value_item_number_filter_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -9449,6 +10323,18 @@
           "keyName": "custom_field_value_item_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "entity_handle",
+            "definition_handle",
+            "value_string"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "custom_field_value_item_string_filter_index",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
@@ -9572,6 +10458,17 @@
       "indexes": [
         {
           "columnNames": [
+            "person_handle",
+            "updated_at"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "dashboard_item_person_handle_updated_at_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -9648,6 +10545,17 @@
           "keyName": "dashboard_item_kpis_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "kpi_item_handle",
+            "dashboard_item_handle"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "dashboard_kpis_kpi_dashboard_index",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
@@ -9809,6 +10717,16 @@
       "indexes": [
         {
           "columnNames": [
+            "person_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "dashboard_template_item_person_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -9885,6 +10803,17 @@
           "keyName": "dashboard_template_item_kpis_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "kpi_item_handle",
+            "dashboard_template_item_handle"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "dashboard_tpl_kpis_kpi_dashboard_tpl_index",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
@@ -10131,6 +11060,28 @@
       "indexes": [
         {
           "columnNames": [
+            "entity_handle",
+            "reference",
+            "created_at"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "document_item_entity_handle_reference_created_at_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "person_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "document_item_person_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -10138,6 +11089,16 @@
           "keyName": "document_item_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "type_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "document_item_type_handle_index",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
@@ -12146,6 +13107,48 @@
       "indexes": [
         {
           "columnNames": [
+            "assignee_person_handle",
+            "is_active",
+            "status_handle"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "effort_est_assignee_prs_is_active_status_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "assignee_company_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "effort_estimate_item_assignee_company_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "creator_company_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "effort_estimate_item_creator_company_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "creator_person_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "effort_estimate_item_creator_person_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -12153,6 +13156,38 @@
           "keyName": "effort_estimate_item_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "sales_opportunity_handle",
+            "updated_at"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "effort_estimate_item_sales_opportunity_handle_updated_at_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "status_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "effort_estimate_item_status_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "ticket_handle",
+            "updated_at"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "effort_estimate_item_ticket_handle_updated_at_index",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
@@ -12422,6 +13457,16 @@
       "indexes": [
         {
           "columnNames": [
+            "estimate_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "effort_estimate_position_item_estimate_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -12429,6 +13474,16 @@
           "keyName": "effort_estimate_position_item_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "template_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "effort_estimate_position_item_template_handle_index",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
@@ -13158,6 +14213,26 @@
       "indexes": [
         {
           "columnNames": [
+            "created_by_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "email_delivery_item_created_by_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "entity_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "email_delivery_item_entity_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -13165,6 +14240,27 @@
           "keyName": "email_delivery_item_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "status_handle",
+            "next_retry_at"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "email_delivery_item_status_handle_next_retry_at_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "template_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "email_delivery_item_template_handle_index",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
@@ -13436,6 +14532,16 @@
       "indexes": [
         {
           "columnNames": [
+            "mail_template_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "email_list_item_mail_template_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -13503,6 +14609,16 @@
         }
       },
       "indexes": [
+        {
+          "columnNames": [
+            "company_item_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "email_list_item_companies_company_item_handle_index",
+          "primary": false,
+          "unique": false
+        },
         {
           "columnNames": [
             "email_list_item_handle",
@@ -13587,6 +14703,16 @@
         }
       },
       "indexes": [
+        {
+          "columnNames": [
+            "person_item_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "email_list_item_persons_person_item_handle_index",
+          "primary": false,
+          "unique": false
+        },
         {
           "columnNames": [
             "email_list_item_handle",
@@ -13782,6 +14908,16 @@
           "keyName": "email_subscription_condition_item_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "subscription_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "email_subscription_condition_item_subscription_handle_index",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
@@ -13980,6 +15116,16 @@
       "indexes": [
         {
           "columnNames": [
+            "entity_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "email_subscription_item_entity_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -13987,6 +15133,36 @@
           "keyName": "email_subscription_item_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "sender_person_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "email_subscription_item_sender_person_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "template_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "email_subscription_item_template_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "type_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "email_subscription_item_type_handle_index",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
@@ -14217,6 +15393,16 @@
       "indexes": [
         {
           "columnNames": [
+            "entity_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "email_template_item_entity_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -14368,6 +15554,16 @@
         }
       },
       "indexes": [
+        {
+          "columnNames": [
+            "parent_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "entity_group_item_parent_handle_index",
+          "primary": false,
+          "unique": false
+        },
         {
           "columnNames": [
             "handle"
@@ -14592,6 +15788,18 @@
       "indexes": [
         {
           "columnNames": [
+            "group_handle",
+            "sort_order",
+            "handle"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "entity_item_group_handle_sort_order_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -14744,6 +15952,27 @@
         }
       },
       "indexes": [
+        {
+          "columnNames": [
+            "entity_handle",
+            "route"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "entity_route_item_entity_handle_route_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "group_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "entity_route_item_group_handle_index",
+          "primary": false,
+          "unique": false
+        },
         {
           "columnNames": [
             "handle"
@@ -15143,6 +16372,16 @@
       "indexes": [
         {
           "columnNames": [
+            "event_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "event_delivery_item_event_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -15150,6 +16389,17 @@
           "keyName": "event_delivery_item_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "status_handle",
+            "event_handle"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "event_delivery_item_status_handle_event_handle_index",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
@@ -15765,6 +17015,68 @@
       "indexes": [
         {
           "columnNames": [
+            "assignee_person_handle",
+            "status_handle",
+            "start_date"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "event_assignee_prs_status_start_date_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "assignee_company_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "event_item_assignee_company_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "created_at"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "event_item_created_at_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "creator_company_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "event_item_creator_company_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "creator_person_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "event_item_creator_person_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "end_date"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "event_item_end_date_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -15772,6 +17084,81 @@
           "keyName": "event_item_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "is_private",
+            "creator_person_handle"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "event_item_private_creator_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "sales_opportunity_handle",
+            "start_date"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "event_item_sales_opportunity_handle_start_date_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "start_date"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "event_item_start_date_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "status_handle",
+            "start_date",
+            "end_date"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "event_item_status_handle_start_date_end_date_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "ticket_handle",
+            "start_date"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "event_item_ticket_handle_start_date_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "type_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "event_item_type_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "updated_at"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "event_item_updated_at_index",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
@@ -16332,6 +17719,48 @@
       "indexes": [
         {
           "columnNames": [
+            "entity_handle",
+            "external_key_hash"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "external_record_link_entity_external_key_hash_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "entity_handle",
+            "reference"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "external_record_link_item_entity_reference_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "first_import_batch_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "external_record_link_item_first_import_batch_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "last_import_batch_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "external_record_link_item_last_import_batch_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -16583,6 +18012,37 @@
       "indexes": [
         {
           "columnNames": [
+            "entity_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "favorite_item_entity_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "entity_route_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "favorite_item_entity_route_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "person_handle",
+            "entity_handle"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "favorite_item_person_handle_entity_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -16774,6 +18234,26 @@
         }
       },
       "indexes": [
+        {
+          "columnNames": [
+            "entity_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "favorite_template_item_entity_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "entity_route_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "favorite_template_item_entity_route_handle_index",
+          "primary": false,
+          "unique": false
+        },
         {
           "columnNames": [
             "handle"
@@ -17097,6 +18577,16 @@
         }
       },
       "indexes": [
+        {
+          "columnNames": [
+            "group_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "holiday_item_group_handle_index",
+          "primary": false,
+          "unique": false
+        },
         {
           "columnNames": [
             "handle"
@@ -17677,6 +19167,26 @@
       "indexes": [
         {
           "columnNames": [
+            "created_by_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "import_batch_item_created_by_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "import_template_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "import_batch_item_import_template_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -17684,6 +19194,27 @@
           "keyName": "import_batch_item_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "source_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "import_batch_item_source_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "target_entity_handle",
+            "updated_at"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "import_batch_item_target_entity_handle_updated_at_index",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
@@ -17966,6 +19497,28 @@
         }
       },
       "indexes": [
+        {
+          "columnNames": [
+            "batch_handle",
+            "row_number"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "import_batch_row_item_batch_handle_row_number_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "batch_handle",
+            "status"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "import_batch_row_item_batch_handle_status_index",
+          "primary": false,
+          "unique": false
+        },
         {
           "columnNames": [
             "handle"
@@ -18320,6 +19873,26 @@
           "keyName": "import_template_item_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "source_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "import_template_item_source_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "target_entity_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "import_template_item_target_entity_handle_index",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
@@ -18492,6 +20065,16 @@
         }
       },
       "indexes": [
+        {
+          "columnNames": [
+            "import_template_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "import_template_value_mapping_item_import_template_handle_index",
+          "primary": false,
+          "unique": false
+        },
         {
           "columnNames": [
             "handle"
@@ -18783,6 +20366,40 @@
       "indexes": [
         {
           "columnNames": [
+            "recipient_person_handle",
+            "is_read",
+            "created_at",
+            "handle"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "inbox_notif_recipient_prs_is_read_created_at_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "created_by_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "inbox_notification_item_created_by_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "entity_handle",
+            "reference_handle"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "inbox_notification_item_entity_handle_reference_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -18790,6 +20407,26 @@
           "keyName": "inbox_notification_item_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "subscription_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "inbox_notification_item_subscription_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "template_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "inbox_notification_item_template_handle_index",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
@@ -19015,6 +20652,16 @@
       "indexes": [
         {
           "columnNames": [
+            "entity_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "inbox_subscription_item_entity_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -19022,6 +20669,26 @@
           "keyName": "inbox_subscription_item_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "template_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "inbox_subscription_item_template_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "type_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "inbox_subscription_item_type_handle_index",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
@@ -19241,6 +20908,16 @@
       "indexes": [
         {
           "columnNames": [
+            "entity_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "inbox_template_item_entity_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -19402,6 +21079,16 @@
           "keyName": "information_item_entity_handle_reference_unique",
           "primary": false,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "person_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "information_item_person_handle_index",
+          "primary": false,
+          "unique": false
         },
         {
           "columnNames": [
@@ -19795,6 +21482,38 @@
       "indexes": [
         {
           "columnNames": [
+            "category_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "internal_case_item_category_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "customer_company_handle",
+            "updated_at"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "internal_case_item_customer_company_handle_updated_at_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "customer_person_handle",
+            "updated_at"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "internal_case_item_customer_person_handle_updated_at_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -19802,6 +21521,37 @@
           "keyName": "internal_case_item_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "responsible_company_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "internal_case_item_responsible_company_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "status_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "internal_case_item_status_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "responsible_person_handle",
+            "status_handle"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "internal_case_responsible_prs_status_index",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
@@ -20578,6 +22328,26 @@
       "indexes": [
         {
           "columnNames": [
+            "author_person_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "knowledge_article_item_author_person_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "category_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "knowledge_article_item_category_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -20585,6 +22355,78 @@
           "keyName": "knowledge_article_item_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "product_handle",
+            "updated_at"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "knowledge_article_item_product_handle_updated_at_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "reviewer_person_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "knowledge_article_item_reviewer_person_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "source_effort_estimate_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "knowledge_article_item_source_effort_estimate_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "source_sales_opportunity_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "knowledge_article_item_source_sales_opportunity_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "source_ticket_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "knowledge_article_item_source_ticket_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "status_handle",
+            "updated_at"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "knowledge_article_item_status_handle_updated_at_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "visibility_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "knowledge_article_item_visibility_handle_index",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
@@ -21368,6 +23210,16 @@
       "indexes": [
         {
           "columnNames": [
+            "aggregation_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "kpi_item_aggregation_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -21375,6 +23227,58 @@
           "keyName": "kpi_item_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "relation_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "kpi_item_relation_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "target_entity_handle",
+            "type_handle"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "kpi_item_target_entity_handle_type_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "timeframe_handle",
+            "timeframe_interval_handle"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "kpi_item_timeframe_handle_timeframe_interval_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "timeframe_interval_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "kpi_item_timeframe_interval_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "type_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "kpi_item_type_handle_index",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
@@ -21945,6 +23849,26 @@
       "indexes": [
         {
           "columnNames": [
+            "email_template_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "marketing_campaign_item_email_template_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "opportunity_source_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "marketing_campaign_item_opportunity_source_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -21952,6 +23876,47 @@
           "keyName": "marketing_campaign_item_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "status_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "marketing_campaign_item_status_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "target_list_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "marketing_campaign_item_target_list_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "type_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "marketing_campaign_item_type_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "owner_person_handle",
+            "status_handle"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "marketing_campaign_owner_prs_status_index",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
@@ -22940,6 +24905,27 @@
       "indexes": [
         {
           "columnNames": [
+            "group_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "note_item_group_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "person_handle",
+            "updated_at"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "note_item_person_handle_updated_at_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -23175,6 +25161,16 @@
           "keyName": "permission_item_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "role_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "permission_item_role_handle_index",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
@@ -23398,6 +25394,16 @@
         }
       },
       "indexes": [
+        {
+          "columnNames": [
+            "person_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "person_api_token_item_person_handle_index",
+          "primary": false,
+          "unique": false
+        },
         {
           "columnNames": [
             "handle"
@@ -24292,6 +26298,77 @@
       "indexes": [
         {
           "columnNames": [
+            "company_handle",
+            "updated_at"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "person_item_company_handle_updated_at_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "decision_role_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "person_item_decision_role_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "department_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "person_item_department_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "holiday_group_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "person_item_holiday_group_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "job_function_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "person_item_job_function_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "job_title_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "person_item_job_title_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "language_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "person_item_language_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "login_name"
           ],
           "composite": false,
@@ -24309,6 +26386,46 @@
           "keyName": "person_item_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "salutation_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "person_item_salutation_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "title_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "person_item_title_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "type_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "person_item_type_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "work_week_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "person_item_work_week_handle_index",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
@@ -24492,6 +26609,16 @@
       "indexes": [
         {
           "columnNames": [
+            "event_item_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "person_item_events_event_item_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "person_item_handle",
             "event_item_handle"
           ],
@@ -24584,6 +26711,17 @@
           "keyName": "person_item_roles_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "role_item_handle",
+            "person_item_handle"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "person_item_roles_role_item_handle_person_item_handle_index",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
@@ -24981,6 +27119,16 @@
         },
         {
           "columnNames": [
+            "person_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "person_passkey_item_person_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -25282,6 +27430,17 @@
           "keyName": "person_session_item_person_handle_unique",
           "primary": false,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "person_handle",
+            "updated_at"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "person_session_item_person_handle_updated_at_index",
+          "primary": false,
+          "unique": false
         },
         {
           "columnNames": [
@@ -25720,6 +27879,28 @@
       "indexes": [
         {
           "columnNames": [
+            "entity_handle",
+            "reference",
+            "created_at"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "phone_call_item_entity_handle_reference_created_at_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "person_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "phone_call_item_person_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -26015,6 +28196,16 @@
           "keyName": "role_item_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "stage_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "role_item_stage_handle_index",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
@@ -26084,6 +28275,17 @@
           "keyName": "role_item_starter_dashboard_templates_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "dashboard_template_item_handle",
+            "role_item_handle"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "role_starter_dashboard_tpls_dashboard_tpl_role_index",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
@@ -26168,6 +28370,17 @@
           "keyName": "role_item_starter_favorite_templates_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "favorite_template_item_handle",
+            "role_item_handle"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "role_starter_favorite_tpls_favorite_tpl_role_index",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
@@ -26764,6 +28977,99 @@
       "indexes": [
         {
           "columnNames": [
+            "assignee_person_handle",
+            "is_active",
+            "type_handle"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "sales_opp_assignee_prs_is_active_type_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "assignee_company_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "sales_opportunity_item_assignee_company_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "close_date"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "sales_opportunity_item_close_date_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "created_at"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "sales_opportunity_item_created_at_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "creator_company_handle",
+            "updated_at"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "sales_opportunity_item_creator_company_handle_updated_at_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "creator_person_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "sales_opportunity_item_creator_person_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "forecast_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "sales_opportunity_item_forecast_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "is_active"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "sales_opportunity_item_is_active_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "loss_reason_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "sales_opportunity_item_loss_reason_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -26771,6 +29077,46 @@
           "keyName": "sales_opportunity_item_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "result_status_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "sales_opportunity_item_result_status_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "source_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "sales_opportunity_item_source_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "type_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "sales_opportunity_item_type_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "updated_at"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "sales_opportunity_item_updated_at_index",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
@@ -26921,6 +29267,16 @@
         }
       },
       "indexes": [
+        {
+          "columnNames": [
+            "company_item_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "sales_opportunity_item_competitors_company_item_handle_index",
+          "primary": false,
+          "unique": false
+        },
         {
           "columnNames": [
             "sales_opportunity_item_handle",
@@ -27843,6 +30199,29 @@
       "indexes": [
         {
           "columnNames": [
+            "entity_handle",
+            "person_handle",
+            "scope",
+            "is_default"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "sapling_form_config_entity_prs_scope_is_default_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "person_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "sapling_form_config_item_person_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -28023,6 +30402,16 @@
         }
       },
       "indexes": [
+        {
+          "columnNames": [
+            "entity_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "script_button_item_entity_handle_index",
+          "primary": false,
+          "unique": false
+        },
         {
           "columnNames": [
             "handle"
@@ -28370,6 +30759,16 @@
       "indexes": [
         {
           "columnNames": [
+            "company_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "server_landscape_item_company_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -28377,6 +30776,26 @@
           "keyName": "server_landscape_item_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "type_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "server_landscape_item_type_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "usage_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "server_landscape_item_usage_handle_index",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
@@ -28776,6 +31195,16 @@
           "keyName": "session_store_item_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "updated_at"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "session_store_item_updated_at_index",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
@@ -28983,6 +31412,16 @@
       "indexes": [
         {
           "columnNames": [
+            "person_item_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "shared_mailbox_group_item_persons_person_item_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "shared_mailbox_group_item_handle",
             "person_item_handle"
           ],
@@ -29186,6 +31625,16 @@
       "indexes": [
         {
           "columnNames": [
+            "group_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "shared_mailbox_item_group_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -29193,6 +31642,16 @@
           "keyName": "shared_mailbox_item_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "provider_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "shared_mailbox_item_provider_handle_index",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
@@ -29628,6 +32087,16 @@
       "indexes": [
         {
           "columnNames": [
+            "person_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "social_media_item_person_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -29635,6 +32104,16 @@
           "keyName": "social_media_item_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "type_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "social_media_item_type_handle_index",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
@@ -29967,6 +32446,16 @@
       "indexes": [
         {
           "columnNames": [
+            "default_sla_policy_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "support_queue_item_default_sla_policy_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -29974,6 +32463,16 @@
           "keyName": "support_queue_item_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "team_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "support_queue_item_team_handle_index",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
@@ -30511,6 +33010,26 @@
       "indexes": [
         {
           "columnNames": [
+            "created_by_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "teams_delivery_item_created_by_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "entity_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "teams_delivery_item_entity_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -30518,6 +33037,47 @@
           "keyName": "teams_delivery_item_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "recipient_person_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "teams_delivery_item_recipient_person_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "status_handle",
+            "next_retry_at"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "teams_delivery_item_status_handle_next_retry_at_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "subscription_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "teams_delivery_item_subscription_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "template_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "teams_delivery_item_template_handle_index",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
@@ -30880,6 +33440,16 @@
       "indexes": [
         {
           "columnNames": [
+            "entity_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "teams_subscription_item_entity_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -30887,6 +33457,26 @@
           "keyName": "teams_subscription_item_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "template_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "teams_subscription_item_template_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "type_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "teams_subscription_item_type_handle_index",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
@@ -31089,6 +33679,16 @@
       "indexes": [
         {
           "columnNames": [
+            "entity_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "teams_template_item_entity_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -31249,6 +33849,16 @@
           "keyName": "ticket_category_item_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "type_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "ticket_category_item_type_handle_index",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
@@ -31770,6 +34380,100 @@
       "indexes": [
         {
           "columnNames": [
+            "assignee_person_handle",
+            "status_handle",
+            "deadline_date"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "ticket_assignee_prs_status_deadline_date_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "assignee_company_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "ticket_item_assignee_company_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "category_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "ticket_item_category_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "contract_handle",
+            "updated_at"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "ticket_item_contract_handle_updated_at_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "created_at"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "ticket_item_created_at_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "creator_company_handle",
+            "updated_at"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "ticket_item_creator_company_handle_updated_at_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "creator_person_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "ticket_item_creator_person_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "deadline_date"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "ticket_item_deadline_date_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "end_date"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "ticket_item_end_date_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -31777,6 +34481,107 @@
           "keyName": "ticket_item_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "priority_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "ticket_item_priority_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "sales_opportunity_handle",
+            "updated_at"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "ticket_item_sales_opportunity_handle_updated_at_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "sla_policy_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "ticket_item_sla_policy_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "source_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "ticket_item_source_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "start_date"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "ticket_item_start_date_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "status_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "ticket_item_status_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "support_queue_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "ticket_item_support_queue_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "support_team_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "ticket_item_support_team_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "type_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "ticket_item_type_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "updated_at"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "ticket_item_updated_at_index",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
@@ -32497,6 +35302,16 @@
       "indexes": [
         {
           "columnNames": [
+            "person_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "ticket_time_tracking_item_person_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -32504,6 +35319,17 @@
           "keyName": "ticket_time_tracking_item_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "ticket_handle",
+            "created_at"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "ticket_time_tracking_item_ticket_handle_created_at_index",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
@@ -32794,6 +35620,18 @@
           "keyName": "translation_item_entity_property_language_handle_unique",
           "primary": false,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "language_handle",
+            "entity",
+            "property"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "translation_item_language_handle_entity_property_index",
+          "primary": false,
+          "unique": false
         },
         {
           "columnNames": [
@@ -33640,6 +36478,27 @@
           "keyName": "webhook_delivery_item_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "status_handle",
+            "next_retry_at"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "webhook_delivery_item_status_handle_next_retry_at_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "subscription_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "webhook_delivery_item_subscription_handle_index",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
@@ -34109,6 +36968,76 @@
       "indexes": [
         {
           "columnNames": [
+            "authentication_api_key_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "webhook_subscription_item_authentication_api_key_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "authentication_basic_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "webhook_subscription_item_authentication_basic_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "authentication_oauth2_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "webhook_subscription_item_authentication_oauth2_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "authentication_type_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "webhook_subscription_item_authentication_type_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "entity_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "webhook_subscription_item_entity_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "method_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "webhook_subscription_item_method_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "payload_type_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "webhook_subscription_item_payload_type_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -34116,6 +37045,16 @@
           "keyName": "webhook_subscription_item_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "type_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "webhook_subscription_item_type_handle_index",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
@@ -34907,6 +37846,26 @@
       "indexes": [
         {
           "columnNames": [
+            "friday_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "work_hour_week_item_friday_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "monday_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "work_hour_week_item_monday_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -34914,6 +37873,56 @@
           "keyName": "work_hour_week_item_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "saturday_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "work_hour_week_item_saturday_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "sunday_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "work_hour_week_item_sunday_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "thursday_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "work_hour_week_item_thursday_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "tuesday_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "work_hour_week_item_tuesday_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "wednesday_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "work_hour_week_item_wednesday_handle_index",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],

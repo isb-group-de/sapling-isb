@@ -1,6 +1,7 @@
 import { computed } from 'vue'
 import type { SaplingGenericItem } from '@/entity/entity'
 import type { EntityTemplate } from '@/entity/structure'
+import { resolveSaplingSoftBadgeStyle } from '@/utils/saplingColorUtil'
 import { getEntityValueLabel } from '@/utils/saplingTableUtil'
 
 type ReferenceValue = Record<string, unknown>
@@ -58,6 +59,7 @@ export function useSaplingTableChip(props: UseSaplingTableChipProps) {
     return String(value[iconField])
   })
 
+  const chipStyle = computed(() => resolveSaplingSoftBadgeStyle(chipColor.value))
   const hasChipIcon = computed(() => chipIcon.value.length > 0)
   const showChip = computed(() => chipLabel.value.length > 0)
   const isLoading = computed(() => !props.referenceTemplates)
@@ -66,6 +68,7 @@ export function useSaplingTableChip(props: UseSaplingTableChipProps) {
     chipColor,
     chipIcon,
     chipLabel,
+    chipStyle,
     hasChipIcon,
     showChip,
     isLoading,

@@ -1,11 +1,64 @@
-import { describe, expect, it } from 'vitest'
-import type { EntityTemplate } from '@/entity/structure'
-import type { SaplingChipFilterGroup } from '@/components/filter/saplingWorkFilter.types'
+import { flushPromises, mount } from '@vue/test-utils'
+import { defineComponent, nextTick, ref, type Ref } from 'vue'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import type { ColumnFilterItem, EntityTemplate } from '@/entity/structure'
+import type {
+  SaplingChipFilterGroup,
+  SaplingFilterHandle,
+} from '@/components/filter/saplingWorkFilter.types'
+
+const mocks = vi.hoisted(() => ({
+  tableReturn: undefined as unknown,
+  chipReturn: undefined as unknown,
+}))
+
+vi.mock('vue-router', () => ({
+  useRoute: () => ({ query: {} }),
+}))
+
+vi.mock('@/stores/currentPersonStore', () => ({
+  useCurrentPersonStore: () => ({
+    person: { handle: 1 },
+    fetchCurrentPerson: vi.fn().mockResolvedValue(undefined),
+  }),
+}))
+
+vi.mock('@/composables/table/useSaplingTable', () => ({
+  useSaplingTable: () => mocks.tableReturn,
+}))
+
+vi.mock('@/composables/filter/useSaplingChipFilters', () => ({
+  useSaplingChipFilters: () => mocks.chipReturn,
+}))
+
 import {
+  arePartnerColumnFiltersEqual,
   buildChipColumnFilterFromSelection,
+  combinePartnerFilters,
   extractPartnerHandlesFromFilter,
   getChipSelectionFromColumnFilter,
+  useSaplingPartner,
 } from './useSaplingPartner'
+
+type MockTableReturn = {
+  columnFilters: Ref<Record<string, ColumnFilterItem>>
+  isInitialized: Ref<boolean>
+}
+
+type MockChipReturn = {
+  chipFilters: Ref<SaplingChipFilterGroup[]>
+  selectedChipFilters: Ref<Record<string, SaplingFilterHandle[]>>
+}
+
+let tableReturn: MockTableReturn
+let chipReturn: MockChipReturn
+
+beforeEach(() => {
+  tableReturn = createMockTableReturn()
+  chipReturn = createMockChipReturn()
+  mocks.tableReturn = tableReturn
+  mocks.chipReturn = chipReturn
+})
 
 describe('useSaplingPartner filter synchronization helpers', () => {
   it('stores partial chip selections as table column filters and treats full selections as unfiltered', () => {
@@ -70,6 +123,60 @@ describe('useSaplingPartner filter synchronization helpers', () => {
       ),
     ).toEqual([1, 2])
   })
+
+  it('does not duplicate an already restored partner filter', () => {
+    const restoredFilter = {
+      $or: [{ assigneePerson: { $in: [1] } }, { creatorPerson: { $in: [1] } }],
+    }
+
+    expect(combinePartnerFilters(restoredFilter, { ...restoredFilter })).toEqual(restoredFilter)
+  })
+
+  it('treats chip column filters with the same relation handles as equal', () => {
+    expect(
+      arePartnerColumnFiltersEqual(
+        {
+          status: {
+            operator: 'eq',
+            value: '',
+            relationItems: [{ handle: 'open' }, { handle: 'waiting' }],
+          },
+        },
+        {
+          status: {
+            operator: 'eq',
+            value: '',
+            relationItems: [{ handle: 'waiting' }, { handle: 'open' }],
+          },
+        },
+      ),
+    ).toBe(true)
+  })
+})
+
+describe('useSaplingPartner chip filter hydration', () => {
+  it('keeps url-restored chip column filters when chip filter defaults load', async () => {
+    mount(
+      defineComponent({
+        setup() {
+          return useSaplingPartner(ref('ticket'))
+        },
+        template: '<div />',
+      }),
+    )
+
+    tableReturn.isInitialized.value = true
+    await nextTick()
+    await flushPromises()
+    await nextTick()
+
+    expect(tableReturn.columnFilters.value.priority).toEqual({
+      operator: 'eq',
+      value: '',
+      relationItems: [{ handle: 'high' }],
+    })
+    expect(chipReturn.selectedChipFilters.value.priority).toEqual(['high'])
+  })
 })
 
 function createChipFilter(): SaplingChipFilterGroup {
@@ -102,4 +209,89 @@ function createPartnerTemplate(name: string): EntityTemplate {
     referencedPks: ['handle'],
     referenceName: 'person',
   } as EntityTemplate
+}
+
+function createPriorityTemplate(): EntityTemplate {
+  return {
+    name: 'priority',
+    key: 'priority',
+    title: 'priority',
+    type: 'string',
+    kind: 'm:1',
+    options: ['isChip'],
+    isAutoIncrement: false,
+    isPersistent: true,
+    isReference: true,
+    referencedPks: ['handle'],
+    referenceName: 'ticketPriority',
+  } as EntityTemplate
+}
+
+function createPriorityChipFilter(): SaplingChipFilterGroup {
+  return {
+    key: 'priority',
+    fieldName: 'priority',
+    referenceName: 'ticketPriority',
+    identifierKey: 'handle',
+    label: 'Priority',
+    options: [
+      { handle: 'low', label: 'Low' },
+      { handle: 'medium', label: 'Medium' },
+      { handle: 'high', label: 'High' },
+    ],
+  }
+}
+
+function createMockTableReturn() {
+  const columnFilters = ref<Record<string, ColumnFilterItem>>({
+    priority: {
+      operator: 'eq',
+      value: '',
+      relationItems: [{ handle: 'high' }],
+    },
+  })
+
+  return {
+    items: ref([]),
+    search: ref(''),
+    page: ref(1),
+    itemsPerPage: ref(25),
+    totalItems: ref(0),
+    isLoading: ref(false),
+    sortBy: ref([]),
+    columnFilters,
+    activeFilter: ref({}),
+    entityTemplates: ref([createPriorityTemplate()]),
+    entity: ref(null),
+    entityPermission: ref(null),
+    parentFilter: ref({}),
+    isInitialized: ref(false),
+    loadData: vi.fn(),
+    onSearchUpdate: vi.fn(),
+    onPageUpdate: vi.fn(),
+    onItemsPerPageUpdate: vi.fn(),
+    onColumnFiltersUpdate: vi.fn(),
+    onSortByUpdate: vi.fn(),
+  }
+}
+
+function createMockChipReturn() {
+  const chipFilters = ref<SaplingChipFilterGroup[]>([])
+  const selectedChipFilters = ref<Record<string, Array<string | number>>>({})
+
+  return {
+    chipFilters,
+    selectedChipFilters,
+    selectedChipFilterCount: ref(0),
+    loadChipFilters: vi.fn(async () => {
+      chipFilters.value = [createPriorityChipFilter()]
+      selectedChipFilters.value = {
+        priority: ['low', 'medium', 'high'],
+      }
+    }),
+    clearChipFilters: vi.fn(),
+    onSelectedChipFiltersUpdate: vi.fn((values: Record<string, Array<string | number>>) => {
+      selectedChipFilters.value = values
+    }),
+  }
 }

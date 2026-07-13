@@ -175,12 +175,10 @@ export class KPIExecutor {
         ]);
         qb.groupBy(groupByFields);
         qb.where(where);
-        global.log.info(qb.getQuery());
         result = await qb.execute();
       } else {
         qb.select([raw(`${aggregation}(${selectField}) as value`)]);
         qb.where(where);
-        global.log.info(qb.getQuery());
         result = await qb.execute();
         result =
           Array.isArray(result) && result.length > 0 && 'value' in result[0]
@@ -199,12 +197,10 @@ export class KPIExecutor {
         ]);
         qb.groupBy(groupFields.map((groupField) => groupField.groupBy));
         qb.where(where);
-        global.log.info(qb.getQuery());
         result = await qb.execute();
       } else {
         qb.select([raw(`${aggregation}(e.${field}) as value`)]);
         qb.where(where);
-        global.log.info(qb.getQuery());
         result = await qb.execute();
         result =
           Array.isArray(result) && result.length > 0 && 'value' in result[0]
@@ -427,20 +423,147 @@ export class KPIExecutor {
     const interval = this.kpi.timeframeInterval?.handle;
     const timeframeField = this.kpi.timeframeField || 'created_at';
     const buckets = this.getSparklineBuckets(timeframe, interval, new Date());
-    const points: SparklinePointDto[] = [];
 
-    for (const bucket of buckets) {
-      const where = this.combineWhere(baseWhere, {
-        [timeframeField]: {
-          $gte: bucket.start,
-          $lte: bucket.end,
-        },
-      });
-      const value = await this.aggregate(where, groupBy);
-      points.push(bucket.createPoint(value as number | object | null));
+    if (buckets.length === 0) {
+      return [];
     }
 
-    return points;
+    const entityClass = ENTITY_MAP[
+      this.kpi.targetEntity?.handle || ''
+    ] as import('@mikro-orm/core').EntityName<any>;
+    const meta = this.em.getMetadata().get(entityClass);
+    const qb = this.em.createQueryBuilder(entityClass, 'e');
+    const joinAliases = new Map<string, string>();
+    const ensureJoin = (relationPath: string) => {
+      const existingAlias = joinAliases.get(relationPath);
+      if (existingAlias) {
+        return existingAlias;
+      }
+
+      const alias = joinAliases.size === 0 ? 'r' : `r${joinAliases.size + 1}`;
+      qb.leftJoin(`e.${relationPath}`, alias);
+      joinAliases.set(relationPath, alias);
+      return alias;
+    };
+    const resolveField = (fieldPath: string, alias?: string) => {
+      const propertyMeta = meta.properties[fieldPath];
+
+      if (fieldPath.includes('.')) {
+        const [rel, relField] = fieldPath.split('.');
+        const expression = `${ensureJoin(rel)}.${relField}`;
+
+        return {
+          expression,
+          groupBy: expression,
+          select: alias
+            ? raw<RawQueryFragment>(`${expression} as ${alias}`)
+            : expression,
+        };
+      }
+
+      if (
+        propertyMeta &&
+        ['m:1', '1:1'].includes(propertyMeta.kind ?? '') &&
+        propertyMeta.fieldNames?.[0]
+      ) {
+        const expression = `e.${propertyMeta.fieldNames[0]}`;
+
+        return {
+          expression,
+          groupBy: expression,
+          select: raw<RawQueryFragment>(
+            `${expression} as ${alias || fieldPath}`,
+          ),
+        };
+      }
+
+      const expression = `e.${fieldPath}`;
+
+      return {
+        expression,
+        groupBy: expression,
+        select: alias
+          ? raw<RawQueryFragment>(`${expression} as ${alias}`)
+          : expression,
+      };
+    };
+    const field = this.kpi.field;
+    const aggregation = this.kpi.aggregation.handle.toUpperCase();
+    const aggregateField = field.includes('.')
+      ? (() => {
+          const [relation, relationField] = field.split('.');
+          return `${ensureJoin(relation)}.${relationField}`;
+        })()
+      : `e.${field}`;
+    const bucketExpression = this.buildBucketExpression(
+      `e.${timeframeField}`,
+      buckets,
+    );
+    const groupFields =
+      groupBy?.map((gb) =>
+        resolveField(gb, gb.includes('.') ? gb.split('.')[1] : gb),
+      ) ?? [];
+    const where = this.combineWhere(baseWhere, {
+      [timeframeField]: {
+        $gte: buckets[0].start,
+        $lte: buckets[buckets.length - 1].end,
+      },
+    });
+
+    qb.select([
+      raw<RawQueryFragment>(`${bucketExpression} as bucket_index`),
+      ...groupFields.map((groupField) => groupField.select),
+      raw<RawQueryFragment>(`${aggregation}(${aggregateField}) as value`),
+    ]);
+    qb.where(where);
+    qb.groupBy([
+      raw<RawQueryFragment>(bucketExpression),
+      ...groupFields.map((groupField) => groupField.groupBy),
+    ]);
+
+    const rows = (await qb.execute()) as Array<
+      Record<string, unknown> & { bucket_index?: string | number }
+    >;
+    const rowsByBucket = new Map<number, Array<Record<string, unknown>>>();
+
+    for (const row of rows) {
+      const bucketIndex = Number(row.bucket_index);
+      if (!Number.isInteger(bucketIndex)) {
+        continue;
+      }
+
+      const rowWithoutBucket = { ...row };
+      delete rowWithoutBucket.bucket_index;
+      rowsByBucket.set(bucketIndex, [
+        ...(rowsByBucket.get(bucketIndex) ?? []),
+        rowWithoutBucket,
+      ]);
+    }
+
+    return buckets.map((bucket, index) => {
+      const bucketRows = rowsByBucket.get(index) ?? [];
+      const value =
+        groupFields.length > 0
+          ? bucketRows
+          : ((bucketRows[0]?.value as number | object | null | undefined) ??
+            null);
+
+      return bucket.createPoint(value as number | object | null);
+    });
+  }
+
+  private buildBucketExpression(
+    fieldExpression: string,
+    buckets: SparklineBucket[],
+  ): string {
+    const conditions = buckets
+      .map(
+        (bucket, index) =>
+          `when ${fieldExpression} >= '${bucket.start.toISOString()}'::timestamptz and ${fieldExpression} <= '${bucket.end.toISOString()}'::timestamptz then ${index}`,
+      )
+      .join(' ');
+
+    return `case ${conditions} end`;
   }
 
   private getSparklineBuckets(

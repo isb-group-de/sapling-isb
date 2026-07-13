@@ -54,7 +54,6 @@ export class KpiService {
     id: number,
     currentUser?: PersonItem | null,
   ): Promise<KpiResponseDto> {
-    // Load KPI entity by handle
     const kpi = await this.em.findOne(
       KpiItem,
       { handle: id },
@@ -70,6 +69,66 @@ export class KpiService {
       },
     );
     if (!kpi) throw new NotFoundException(`global.notFound`);
+
+    return this.executeKPI(kpi, currentUser);
+  }
+
+  async executeKPIBatch(
+    handles: Array<number | string>,
+    currentUser?: PersonItem | null,
+  ): Promise<KpiResponseDto[]> {
+    const normalizedHandles = [
+      ...new Set(
+        handles
+          .map((handle) => Number(handle))
+          .filter((handle) => Number.isInteger(handle) && handle > 0),
+      ),
+    ];
+
+    if (normalizedHandles.length === 0) {
+      return [];
+    }
+
+    const kpis = await this.em.find(
+      KpiItem,
+      { handle: { $in: normalizedHandles } },
+      {
+        populate: [
+          'aggregation',
+          'type',
+          'timeframe',
+          'timeframeInterval',
+          'targetEntity',
+          'relation',
+        ],
+      },
+    );
+    const kpisByHandle = new Map(kpis.map((kpi) => [kpi.handle, kpi]));
+    const orderedKpis = normalizedHandles.map((handle) => {
+      const kpi = kpisByHandle.get(handle);
+      if (!kpi) {
+        throw new NotFoundException(`global.notFound`);
+      }
+
+      return kpi;
+    });
+
+    return Promise.all(
+      orderedKpis.map((kpi) => {
+        const entityHandle = kpi.targetEntity?.handle ?? '';
+        this.genericPermissionService.checkTopLevelReadPermission(
+          entityHandle,
+          currentUser,
+        );
+        return this.executeKPI(kpi, currentUser);
+      }),
+    );
+  }
+
+  private async executeKPI(
+    kpi: KpiItem,
+    currentUser?: PersonItem | null,
+  ): Promise<KpiResponseDto> {
     // Resolve target entity class from registry
     const entityClass = ENTITY_MAP[kpi.targetEntity?.handle || ''] as unknown;
     if (!entityClass) {
