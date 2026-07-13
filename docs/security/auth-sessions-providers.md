@@ -116,7 +116,7 @@ If a user loses all passkeys, an administrator can delete the user's `personPass
 - optional `session`
 - related `passkeys`
 
-`PersonSessionItem` stores provider access and refresh tokens for Azure/Google integrations. Mail, Teams, and calendar services use these tokens for provider APIs and refresh them when possible.
+`PersonSessionItem` stores provider access and refresh tokens for Azure/Google integrations. Outgoing and incoming mail, Teams, and calendar services use these tokens for provider APIs and refresh them when possible.
 
 `PersonPasskeyItem` stores WebAuthn credentials for local logins:
 
@@ -142,6 +142,15 @@ Provider directory requirements:
 
 - Azure imports call Microsoft Graph `/users` and require directory-read scopes such as `User.ReadBasic.All` or `User.Read.All` in `AZURE_AD_SCOPE`.
 - Google imports call Google Workspace Admin SDK Directory `users.list` with `customer=my_customer` and require a scope such as `https://www.googleapis.com/auth/admin.directory.user.readonly` in `GOOGLE_SCOPE`. The signed-in Google account must have enough Workspace directory permission.
+
+Inbound mailbox requirements:
+
+- Azure personal inboxes require delegated `Mail.Read`; shared mailboxes also
+  require `Mail.Read.Shared` in `AZURE_AD_SCOPE`.
+- Google inboxes require
+  `https://www.googleapis.com/auth/gmail.readonly` in `GOOGLE_SCOPE`.
+- Existing sessions do not gain newly configured scopes automatically. The
+  executing user must sign in again, and Azure may require tenant consent.
 
 ## Bearer API Tokens
 

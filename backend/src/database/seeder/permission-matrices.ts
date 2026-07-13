@@ -88,6 +88,11 @@ export const supportPermissionsInput: PermissionMatrixInput = {
     'emailSubscription',
     'emailSubscriptionCondition',
     'emailDelivery',
+    'sharedMailbox',
+    'emailInboxSubscription',
+    'emailInboxProcessingMode',
+    'inboundEmailStatus',
+    'inboundEmail',
     'emailList',
     'marketingCampaign',
     'marketingCampaignStatus',
@@ -365,6 +370,8 @@ export const supportPermissionsInput: PermissionMatrixInput = {
     'favoriteTemplate',
     'customFieldDefinition',
     'customFieldType',
+    'inboundEmailStatus',
+    'inboundEmail',
   ],
 };
 
@@ -411,6 +418,11 @@ export const salesPermissionsInput: PermissionMatrixInput = {
     'emailSubscription',
     'emailSubscriptionCondition',
     'emailDelivery',
+    'sharedMailbox',
+    'emailInboxSubscription',
+    'emailInboxProcessingMode',
+    'inboundEmailStatus',
+    'inboundEmail',
     'emailList',
     'marketingCampaign',
     'marketingCampaignStatus',
@@ -688,6 +700,8 @@ export const salesPermissionsInput: PermissionMatrixInput = {
     'aiChatToolAction',
     'aiChatAttachment',
     'favoriteTemplate',
+    'inboundEmailStatus',
+    'inboundEmail',
   ],
 };
 

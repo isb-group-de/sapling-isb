@@ -50,7 +50,8 @@ Every entity script extends `ScriptClass`. The base class provides:
 - `entity`: current `EntityItem`
 - `user`: current `PersonItem`
 - `em`: MikroORM `EntityManager`
-- optional services for Azure/Google calendar, mail, webhooks, event delivery, and Teams
+- optional services for Azure/Google calendar, mail, inbound-email processing,
+  webhooks, event delivery, and Teams
 - default no-op implementations for all lifecycle methods
 - structured logging helpers
 

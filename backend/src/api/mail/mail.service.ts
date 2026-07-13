@@ -116,6 +116,42 @@ export class MailService {
     };
   }
 
+  /**
+   * Resolves the existing Sapling OAuth session for background mail work.
+   * Inbound synchronization deliberately shares the same provider/session and
+   * refresh-token path as outgoing mail instead of introducing credentials of
+   * its own.
+   */
+  async resolveAuthenticatedMailSession(
+    currentUser: PersonItem,
+    expectedProvider?: SupportedMailProvider,
+    forceRefresh = false,
+  ): Promise<{
+    person: PersonItem;
+    session: PersonSessionItem;
+    provider: SupportedMailProvider;
+    accessToken: string;
+  }> {
+    const person = await this.loadCurrentMailPerson(currentUser);
+    if (!person || !person.session) {
+      throw new BadRequestException('mail.providerSessionRequired');
+    }
+
+    const provider = parseSupportedProvider(extractProviderHandle(person));
+    if (!provider || (expectedProvider && provider !== expectedProvider)) {
+      throw new BadRequestException('mail.providerMismatch');
+    }
+
+    const accessToken = forceRefresh
+      ? await this.refreshProviderAccessToken(provider, person.session)
+      : await this.resolveActiveAccessToken(provider, person.session);
+    if (!accessToken) {
+      throw new BadRequestException('mail.providerAuthenticationRequired');
+    }
+
+    return { person, session: person.session, provider, accessToken };
+  }
+
   async previewEmail(
     previewDto: MailPreviewDto,
     currentUser: PersonItem,

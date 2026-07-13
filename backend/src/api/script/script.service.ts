@@ -8,6 +8,7 @@ import { PersonItem } from '../../entity/PersonItem.js';
 import { ScriptClass } from '../../script/core/script.class.js';
 import { EntityManager } from '@mikro-orm/core';
 import { Injectable } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import type { ScriptServerContext } from '../../script/core/script.interface';
 import { AzureCalendarService } from '../../calendar/azure/azure.calendar.service';
 import { GoogleCalendarService } from '../../calendar/google/google.calendar.service';
@@ -20,6 +21,8 @@ import { TeamsSubscriptionItem } from '../../entity/TeamsSubscriptionItem.js';
 import { InboxService } from '../inbox/inbox.service.js';
 import { InboxSubscriptionItem } from '../../entity/InboxSubscriptionItem.js';
 import { AiEntityGenerationService } from './ai-entity-generation.service';
+import type { EmailInboxSyncService } from '../mail/email-inbox-sync.service';
+import { EMAIL_INBOX_SYNC_SERVICE_TOKEN } from '../mail/email-inbox-sync.token';
 
 // #region Enum
 /**
@@ -66,6 +69,7 @@ type ScriptControllerClass = {
     eventDeliveryService?: EventDeliveryService,
     teamsService?: TeamsService,
     aiEntityGenerationService?: AiEntityGenerationService,
+    emailInboxSyncService?: EmailInboxSyncService,
   ): ScriptClass;
 };
 
@@ -109,6 +113,7 @@ export class ScriptService {
     private readonly teamsService: TeamsService,
     private readonly inboxService: InboxService,
     private readonly aiEntityGenerationService?: AiEntityGenerationService,
+    private readonly moduleRef?: ModuleRef,
   ) {}
   // #endregion
 
@@ -139,6 +144,7 @@ export class ScriptService {
     eventDeliveryService?: EventDeliveryService,
     teamsService?: TeamsService,
     aiEntityGenerationService?: AiEntityGenerationService,
+    emailInboxSyncService?: EmailInboxSyncService,
   ): Promise<ScriptClass | null> {
     const ControllerClass = await this.getControllerClass(entity.handle);
     if (!ControllerClass) {
@@ -156,6 +162,7 @@ export class ScriptService {
       eventDeliveryService,
       teamsService,
       aiEntityGenerationService,
+      emailInboxSyncService,
     );
   }
   // #endregion
@@ -227,6 +234,7 @@ export class ScriptService {
         this.eventDeliveryService,
         this.teamsService,
         this.aiEntityGenerationService,
+        this.resolveEmailInboxSyncService(),
       );
 
       if (entityClass) {
@@ -281,6 +289,21 @@ export class ScriptService {
     }
 
     return exists;
+  }
+
+  private resolveEmailInboxSyncService(): EmailInboxSyncService | undefined {
+    if (!this.moduleRef) {
+      return undefined;
+    }
+
+    try {
+      return this.moduleRef.get<EmailInboxSyncService>(
+        EMAIL_INBOX_SYNC_SERVICE_TOKEN,
+        { strict: false },
+      );
+    } catch {
+      return undefined;
+    }
   }
 
   private static async getControllerClass(

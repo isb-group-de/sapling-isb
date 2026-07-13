@@ -211,7 +211,29 @@ export class AiAgentPolicyService {
     return roles.some((role) => role.isAdministrator === true);
   }
 
-  private normalizeStringArray(value: string[] | null | undefined): string[] {
-    return (value ?? []).map((item) => item.trim()).filter(Boolean);
+  private normalizeStringArray(value: unknown): string[] {
+    const entries = this.readStringArrayEntries(value);
+
+    return entries
+      .filter((item): item is string => typeof item === 'string')
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+
+  private readStringArrayEntries(value: unknown): unknown[] {
+    if (Array.isArray(value)) {
+      return value;
+    }
+
+    if (typeof value !== 'string' || !value.trim()) {
+      return [];
+    }
+
+    try {
+      const parsed = JSON.parse(value) as unknown;
+      return Array.isArray(parsed) ? parsed : [parsed];
+    } catch {
+      return value.split(/[;,]/);
+    }
   }
 }

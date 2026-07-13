@@ -87,6 +87,8 @@ backend/src/api/mail/mail.service.ts
 backend/src/api/mail/email-automation.service.ts
 backend/src/api/mail/mail.processor.ts
 backend/src/api/mail/mail.controller.ts
+backend/src/api/mail/email-inbox-sync.service.ts
+backend/src/api/mail/email-inbox-sync.processor.ts
 backend/src/entity/EmailTemplateItem.ts
 backend/src/entity/EmailSubscriptionItem.ts
 backend/src/entity/EmailDeliveryItem.ts
@@ -122,6 +124,13 @@ trigger matches. A subscription with conditions requires every condition to
 match; for updates, every observed field must also have changed. Delivery uses
 the configured sender person, so that user must have an Azure or Google person
 type and a usable provider session.
+
+Inbound email uses a related import pattern: an `EmailInboxSubscriptionItem`
+queues provider polling, each unique provider message becomes an
+`InboundEmailItem`, and the complete RFC 822 source is stored as a
+`DocumentItem`. Optional AI processing prepares a permission-checked mutation;
+the importer automatically confirms only one action for the configured ticket,
+opportunity, or office-task target. See `docs/features/inbound-email.md`.
 
 ## Teams Deliveries
 

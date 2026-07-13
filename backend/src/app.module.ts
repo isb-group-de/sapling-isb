@@ -26,6 +26,7 @@ import { AzureCalendarModule } from './calendar/azure/azure.calendar.module';
 
 import { DocumentModule } from './api/document/document.module';
 import { MailModule } from './api/mail/mail.module';
+import { EmailInboxSyncModule } from './api/mail/email-inbox-sync.module';
 import { AiModule } from './api/ai/ai.module';
 import { TeamsModule } from './api/teams/teams.module';
 import { InboxModule } from './api/inbox/inbox.module';
@@ -87,6 +88,7 @@ import { ImportModule } from './api/import/import.module';
     GithubModule,
     DocumentModule,
     MailModule,
+    EmailInboxSyncModule,
     TeamsModule,
     InboxModule,
     AiModule,

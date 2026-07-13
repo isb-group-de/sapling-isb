@@ -118,6 +118,8 @@ import { AiAgentMemoryItem } from '../../entity/AiAgentMemoryItem';
 import { AiAgentPlaybookItem } from '../../entity/AiAgentPlaybookItem';
 import { AiAgentVersionItem } from '../../entity/AiAgentVersionItem';
 import { CustomFieldTypeItem } from '../../entity/CustomFieldTypeItem';
+import { EmailInboxProcessingModeItem } from '../../entity/EmailInboxProcessingModeItem';
+import { InboundEmailStatusItem } from '../../entity/InboundEmailStatusItem';
 
 /**
  * Declarative seed order.
@@ -220,6 +222,8 @@ const SEED_ORDER: Array<EntityName<object> | (new () => Seeder)> = [
   KnowledgeArticleCategoryItem,
   KnowledgeArticleItem,
   DocumentTypeItem,
+  EmailInboxProcessingModeItem,
+  InboundEmailStatusItem,
   EmailTemplateItem,
   EMailListItem,
   MarketingCampaignStatusItem,

@@ -138,6 +138,11 @@ When `REDIS_ENABLED=true`, verify:
 
 Queue-backed areas include mail, Teams, calendar/event delivery, webhooks, and AI/vectorization-style background processing depending on the feature path.
 
+Inbound mailbox polling uses queue `email-inbox-sync`. Active inbox
+subscriptions are checked once per minute; each subscription controls its own
+polling interval. Recurring polling is disabled when `REDIS_ENABLED=false`,
+although administrators can still run the synchronous manual endpoints.
+
 ## Storage Operations
 
 Uploaded documents are stored below:
@@ -283,6 +288,11 @@ Check:
 - Redis credentials
 - backend logs for BullMQ connection errors
 - delivery records for pending/failed status
+
+For inbound mail, also check `emailInboxSubscription.lastError`, provider OAuth
+scopes/session refresh, shared-mailbox group assignment, and `inboundEmail`
+records in `manualReview` or `failed`. A successful import must also have a
+`sourceDocument` whose stored MIME type is `message/rfc822`.
 
 ### Semantic Search Is Empty
 

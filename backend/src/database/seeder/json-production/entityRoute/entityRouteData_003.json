@@ -1,0 +1,18 @@
+[
+  {
+    "entity": "emailInboxSubscription",
+    "route": "table/emailInboxSubscription"
+  },
+  {
+    "entity": "emailInboxProcessingMode",
+    "route": "table/emailInboxProcessingMode"
+  },
+  {
+    "entity": "inboundEmailStatus",
+    "route": "table/inboundEmailStatus"
+  },
+  {
+    "entity": "inboundEmail",
+    "route": "table/inboundEmail"
+  }
+]

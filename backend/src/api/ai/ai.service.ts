@@ -1808,8 +1808,26 @@ export class AiService {
     };
   }
 
-  private normalizeStringArray(value: string[] | null | undefined): string[] {
-    return (value ?? []).map((item) => item.trim()).filter(Boolean);
+  private normalizeStringArray(value: unknown): string[] {
+    let entries: unknown[];
+
+    if (Array.isArray(value)) {
+      entries = value;
+    } else if (typeof value === 'string' && value.trim()) {
+      try {
+        const parsed = JSON.parse(value) as unknown;
+        entries = Array.isArray(parsed) ? parsed : [parsed];
+      } catch {
+        entries = value.split(/[;,]/);
+      }
+    } else {
+      entries = [];
+    }
+
+    return entries
+      .filter((item): item is string => typeof item === 'string')
+      .map((item) => item.trim())
+      .filter(Boolean);
   }
 
   private async executePolicyAwareToolCall(

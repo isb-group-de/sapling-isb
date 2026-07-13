@@ -97,6 +97,51 @@ describe('AiChatRuntimeService', () => {
     expect(onDelta).toHaveBeenCalledWith('Hallo lokal.');
   });
 
+  it('disables reasoning for GPT-5.6 Chat Completions tool calls', async () => {
+    const createCompletion = jest
+      .fn<(payload: unknown) => Promise<unknown>>()
+      .mockResolvedValue({
+        choices: [{ message: { content: 'Erledigt.' } }],
+      });
+    asMock(createOpenAiClient).mockReturnValue({
+      chat: { completions: { create: createCompletion } },
+    });
+    const service = new AiChatRuntimeService({} as never);
+
+    await service.streamOpenAi(
+      [
+        {
+          role: 'user',
+          status: 'persisted',
+          content: 'Lege ein Ticket an.',
+          contextPayload: null,
+        },
+      ] as never,
+      { handle: 'openai' } as never,
+      'gpt-5.6-sol',
+      [
+        {
+          serverName: 'sapling',
+          toolName: 'generic_create',
+          description: 'Create a record.',
+          inputSchema: { type: 'object', properties: {} },
+        },
+      ] as never,
+      { handle: 1 } as never,
+      1,
+      undefined,
+      jest.fn<(delta: string) => Promise<void>>().mockResolvedValue(undefined),
+      true,
+    );
+
+    expect(createCompletion).toHaveBeenCalledWith(
+      expect.objectContaining({
+        reasoning_effort: 'none',
+        tool_choice: 'auto',
+      }),
+    );
+  });
+
   it('classifies schema repair tool responses without treating them as tool errors', async () => {
     const createCompletion = jest
       .fn<(payload: unknown) => Promise<unknown>>()

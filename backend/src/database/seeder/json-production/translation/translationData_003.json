@@ -1,0 +1,524 @@
+[
+  {
+    "entity": "navigation",
+    "property": "emailInboxSubscription",
+    "de": "E-Mail-Posteingänge",
+    "en": "Email Inboxes"
+  },
+  {
+    "entity": "navigation",
+    "property": "emailInboxProcessingMode",
+    "de": "E-Mail-Verarbeitungsziele",
+    "en": "Email Processing Targets"
+  },
+  {
+    "entity": "navigation",
+    "property": "inboundEmailStatus",
+    "de": "E-Mail-Verarbeitungsstatus",
+    "en": "Inbound Email Statuses"
+  },
+  {
+    "entity": "navigation",
+    "property": "inboundEmail",
+    "de": "Eingegangene E-Mails",
+    "en": "Inbound Emails"
+  },
+
+  {
+    "entity": "emailInboxSubscription",
+    "property": "emailInboxSubscription",
+    "de": "Posteingangs-Automatisierung",
+    "en": "Inbox Automation"
+  },
+  {
+    "entity": "emailInboxSubscription",
+    "property": "handle",
+    "de": "ID",
+    "en": "ID"
+  },
+  {
+    "entity": "emailInboxSubscription",
+    "property": "description",
+    "de": "Bezeichnung",
+    "en": "Description"
+  },
+  {
+    "entity": "emailInboxSubscription",
+    "property": "mailbox",
+    "de": "Postfach",
+    "en": "Mailbox"
+  },
+  {
+    "entity": "emailInboxSubscription",
+    "property": "processingPerson",
+    "de": "Ausführender Benutzer",
+    "en": "Executing User"
+  },
+  {
+    "entity": "emailInboxSubscription",
+    "property": "agent",
+    "de": "KI-Agent",
+    "en": "AI Agent"
+  },
+  {
+    "entity": "emailInboxSubscription",
+    "property": "processingMode",
+    "de": "Verarbeitungsziel",
+    "en": "Processing Target"
+  },
+  {
+    "entity": "emailInboxSubscription",
+    "property": "contextMarkdown",
+    "de": "Postfach-Kontext für die KI",
+    "en": "Mailbox Context for AI"
+  },
+  {
+    "entity": "emailInboxSubscription",
+    "property": "automaticProcessing",
+    "de": "KI-Aktionen automatisch ausführen",
+    "en": "Execute AI Actions Automatically"
+  },
+  {
+    "entity": "emailInboxSubscription",
+    "property": "isActive",
+    "de": "Automatisch abrufen",
+    "en": "Fetch Automatically"
+  },
+  {
+    "entity": "emailInboxSubscription",
+    "property": "intervalMinutes",
+    "de": "Abrufintervall in Minuten",
+    "en": "Polling Interval in Minutes"
+  },
+  {
+    "entity": "emailInboxSubscription",
+    "property": "importExistingOnFirstRun",
+    "de": "E-Mails der letzten 24 Stunden beim ersten Lauf importieren",
+    "en": "Import the Last 24 Hours on First Run"
+  },
+  {
+    "entity": "emailInboxSubscription",
+    "property": "lastRunAt",
+    "de": "Letzter Lauf",
+    "en": "Last Run"
+  },
+  {
+    "entity": "emailInboxSubscription",
+    "property": "lastSuccessAt",
+    "de": "Letzter Erfolg",
+    "en": "Last Success"
+  },
+  {
+    "entity": "emailInboxSubscription",
+    "property": "lastReceivedAt",
+    "de": "Letzte eingegangene E-Mail",
+    "en": "Last Inbound Email"
+  },
+  {
+    "entity": "emailInboxSubscription",
+    "property": "lastError",
+    "de": "Letzter Fehler",
+    "en": "Last Error"
+  },
+  {
+    "entity": "emailInboxSubscription",
+    "property": "importedCount",
+    "de": "Importierte E-Mails",
+    "en": "Imported Emails"
+  },
+  {
+    "entity": "emailInboxSubscription",
+    "property": "processedCount",
+    "de": "Automatisch verarbeitet",
+    "en": "Automatically Processed"
+  },
+  {
+    "entity": "emailInboxSubscription",
+    "property": "manualReviewCount",
+    "de": "Manuell zu prüfen",
+    "en": "Manual Review"
+  },
+  {
+    "entity": "emailInboxSubscription",
+    "property": "createdAt",
+    "de": "Erstellt am",
+    "en": "Created At"
+  },
+  {
+    "entity": "emailInboxSubscription",
+    "property": "updatedAt",
+    "de": "Aktualisiert am",
+    "en": "Updated At"
+  },
+  {
+    "entity": "emailInboxSubscription",
+    "property": "groupBasics",
+    "de": "Grunddaten",
+    "en": "Basics"
+  },
+  {
+    "entity": "emailInboxSubscription",
+    "property": "groupReference",
+    "de": "Postfach und Ausführung",
+    "en": "Mailbox and Execution"
+  },
+  {
+    "entity": "emailInboxSubscription",
+    "property": "groupProcessing",
+    "de": "KI-Verarbeitung",
+    "en": "AI Processing"
+  },
+  {
+    "entity": "emailInboxSubscription",
+    "property": "groupSchedule",
+    "de": "Abruf und Status",
+    "en": "Schedule and Status"
+  },
+
+  {
+    "entity": "inboundEmail",
+    "property": "scriptReprocess",
+    "de": "Verarbeitung wiederholen",
+    "en": "Retry Processing"
+  },
+  {
+    "entity": "inboundEmail",
+    "property": "notRetryable",
+    "de": "Nur fehlgeschlagene oder manuell zu prüfende E-Mails können erneut verarbeitet werden.",
+    "en": "Only failed emails or emails awaiting manual review can be processed again."
+  },
+  {
+    "entity": "inboundEmail",
+    "property": "inboundEmail",
+    "de": "Eingegangene E-Mail",
+    "en": "Inbound Email"
+  },
+  { "entity": "inboundEmail", "property": "handle", "de": "ID", "en": "ID" },
+  {
+    "entity": "inboundEmail",
+    "property": "status",
+    "de": "Verarbeitungsstatus",
+    "en": "Processing Status"
+  },
+  {
+    "entity": "inboundEmail",
+    "property": "subject",
+    "de": "Betreff",
+    "en": "Subject"
+  },
+  {
+    "entity": "inboundEmail",
+    "property": "fromAddress",
+    "de": "Absenderadresse",
+    "en": "Sender Address"
+  },
+  {
+    "entity": "inboundEmail",
+    "property": "fromName",
+    "de": "Absendername",
+    "en": "Sender Name"
+  },
+  {
+    "entity": "inboundEmail",
+    "property": "toRecipients",
+    "de": "Empfänger",
+    "en": "Recipients"
+  },
+  {
+    "entity": "inboundEmail",
+    "property": "ccRecipients",
+    "de": "CC",
+    "en": "CC"
+  },
+  {
+    "entity": "inboundEmail",
+    "property": "bodyText",
+    "de": "Nachrichtentext",
+    "en": "Message Text"
+  },
+  {
+    "entity": "inboundEmail",
+    "property": "bodyHtml",
+    "de": "HTML-Inhalt",
+    "en": "HTML Content"
+  },
+  {
+    "entity": "inboundEmail",
+    "property": "mailbox",
+    "de": "Postfach",
+    "en": "Mailbox"
+  },
+  {
+    "entity": "inboundEmail",
+    "property": "subscription",
+    "de": "Posteingangs-Automatisierung",
+    "en": "Inbox Automation"
+  },
+  {
+    "entity": "inboundEmail",
+    "property": "person",
+    "de": "Zugeordnete Person",
+    "en": "Matched Person"
+  },
+  {
+    "entity": "inboundEmail",
+    "property": "company",
+    "de": "Zugeordnetes Unternehmen",
+    "en": "Matched Company"
+  },
+  {
+    "entity": "inboundEmail",
+    "property": "ticket",
+    "de": "Ticket",
+    "en": "Ticket"
+  },
+  {
+    "entity": "inboundEmail",
+    "property": "salesOpportunity",
+    "de": "Verkaufschance",
+    "en": "Sales Opportunity"
+  },
+  {
+    "entity": "inboundEmail",
+    "property": "officeTask",
+    "de": "Office-Aufgabe",
+    "en": "Office Task"
+  },
+  {
+    "entity": "inboundEmail",
+    "property": "sourceDocument",
+    "de": "Original-E-Mail (.eml)",
+    "en": "Original Email (.eml)"
+  },
+  {
+    "entity": "inboundEmail",
+    "property": "provider",
+    "de": "Anbieter",
+    "en": "Provider"
+  },
+  {
+    "entity": "inboundEmail",
+    "property": "providerMessageId",
+    "de": "Provider-Nachrichten-ID",
+    "en": "Provider Message ID"
+  },
+  {
+    "entity": "inboundEmail",
+    "property": "internetMessageId",
+    "de": "Internet-Message-ID",
+    "en": "Internet Message ID"
+  },
+  {
+    "entity": "inboundEmail",
+    "property": "conversationId",
+    "de": "Konversations-ID",
+    "en": "Conversation ID"
+  },
+  {
+    "entity": "inboundEmail",
+    "property": "inReplyTo",
+    "de": "Antwort auf",
+    "en": "In Reply To"
+  },
+  {
+    "entity": "inboundEmail",
+    "property": "references",
+    "de": "Nachrichtenreferenzen",
+    "en": "Message References"
+  },
+  {
+    "entity": "inboundEmail",
+    "property": "headers",
+    "de": "E-Mail-Header",
+    "en": "Email Headers"
+  },
+  {
+    "entity": "inboundEmail",
+    "property": "receivedAt",
+    "de": "Empfangen am",
+    "en": "Received At"
+  },
+  {
+    "entity": "inboundEmail",
+    "property": "processingAttempts",
+    "de": "Verarbeitungsversuche",
+    "en": "Processing Attempts"
+  },
+  {
+    "entity": "inboundEmail",
+    "property": "processingMessage",
+    "de": "Verarbeitungsergebnis",
+    "en": "Processing Result"
+  },
+  {
+    "entity": "inboundEmail",
+    "property": "processingLog",
+    "de": "Verarbeitungsprotokoll",
+    "en": "Processing Log"
+  },
+  {
+    "entity": "inboundEmail",
+    "property": "agent",
+    "de": "KI-Agent",
+    "en": "AI Agent"
+  },
+  {
+    "entity": "inboundEmail",
+    "property": "aiSession",
+    "de": "KI-Sitzung",
+    "en": "AI Session"
+  },
+  {
+    "entity": "inboundEmail",
+    "property": "aiMessage",
+    "de": "KI-Antwort",
+    "en": "AI Message"
+  },
+  {
+    "entity": "inboundEmail",
+    "property": "processedAt",
+    "de": "Verarbeitet am",
+    "en": "Processed At"
+  },
+  {
+    "entity": "inboundEmail",
+    "property": "createdAt",
+    "de": "Importiert am",
+    "en": "Imported At"
+  },
+  {
+    "entity": "inboundEmail",
+    "property": "updatedAt",
+    "de": "Aktualisiert am",
+    "en": "Updated At"
+  },
+  {
+    "entity": "inboundEmail",
+    "property": "groupStatus",
+    "de": "Status",
+    "en": "Status"
+  },
+  {
+    "entity": "inboundEmail",
+    "property": "groupContent",
+    "de": "E-Mail-Inhalt",
+    "en": "Email Content"
+  },
+  {
+    "entity": "inboundEmail",
+    "property": "groupReference",
+    "de": "CRM-Zuordnung",
+    "en": "CRM Assignment"
+  },
+  {
+    "entity": "inboundEmail",
+    "property": "groupSchedule",
+    "de": "Zeitlicher Verlauf",
+    "en": "Timeline"
+  },
+  {
+    "entity": "inboundEmail",
+    "property": "groupProcessing",
+    "de": "KI-Verarbeitung und Protokoll",
+    "en": "AI Processing and Log"
+  },
+
+  {
+    "entity": "inboundEmailStatus",
+    "property": "inboundEmailStatus",
+    "de": "E-Mail-Verarbeitungsstatus",
+    "en": "Inbound Email Status"
+  },
+  {
+    "entity": "inboundEmailStatus",
+    "property": "handle",
+    "de": "Schlüssel",
+    "en": "Key"
+  },
+  {
+    "entity": "inboundEmailStatus",
+    "property": "description",
+    "de": "Bezeichnung",
+    "en": "Description"
+  },
+  {
+    "entity": "inboundEmailStatus",
+    "property": "icon",
+    "de": "Symbol",
+    "en": "Icon"
+  },
+  {
+    "entity": "inboundEmailStatus",
+    "property": "color",
+    "de": "Farbe",
+    "en": "Color"
+  },
+  {
+    "entity": "inboundEmailStatus",
+    "property": "groupContent",
+    "de": "Inhalt",
+    "en": "Content"
+  },
+  {
+    "entity": "inboundEmailStatus",
+    "property": "groupAppearance",
+    "de": "Darstellung",
+    "en": "Appearance"
+  },
+
+  {
+    "entity": "emailInboxProcessingMode",
+    "property": "emailInboxProcessingMode",
+    "de": "Posteingangs-Verarbeitungsziel",
+    "en": "Inbox Processing Target"
+  },
+  {
+    "entity": "emailInboxProcessingMode",
+    "property": "handle",
+    "de": "Schlüssel",
+    "en": "Key"
+  },
+  {
+    "entity": "emailInboxProcessingMode",
+    "property": "description",
+    "de": "Bezeichnung",
+    "en": "Description"
+  },
+  {
+    "entity": "emailInboxProcessingMode",
+    "property": "icon",
+    "de": "Symbol",
+    "en": "Icon"
+  },
+  {
+    "entity": "emailInboxProcessingMode",
+    "property": "color",
+    "de": "Farbe",
+    "en": "Color"
+  },
+  {
+    "entity": "emailInboxProcessingMode",
+    "property": "groupContent",
+    "de": "Inhalt",
+    "en": "Content"
+  },
+
+  {
+    "entity": "mail",
+    "property": "providerSessionRequired",
+    "de": "Für den Postfachabruf ist eine aktive Azure- oder Google-Anmeldung erforderlich.",
+    "en": "An active Azure or Google sign-in is required to read the mailbox."
+  },
+  {
+    "entity": "mail",
+    "property": "providerMismatch",
+    "de": "Postfach und ausführender Benutzer verwenden unterschiedliche Anbieter.",
+    "en": "The mailbox and executing user use different providers."
+  },
+  {
+    "entity": "mail",
+    "property": "providerAuthenticationRequired",
+    "de": "Die Azure- oder Google-Anmeldung muss erneuert werden.",
+    "en": "The Azure or Google sign-in must be renewed."
+  }
+]

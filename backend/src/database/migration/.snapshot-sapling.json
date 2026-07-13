@@ -14440,6 +14440,573 @@
       "comment": null
     },
     {
+      "name": "email_inbox_processing_mode_item",
+      "schema": "public",
+      "columns": {
+        "color": {
+          "name": "color",
+          "type": "varchar(32)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 32,
+          "precision": null,
+          "scale": null,
+          "default": "'#1976D2'",
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamptz(6)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
+        "description": {
+          "name": "description",
+          "type": "varchar(128)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 128,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "handle": {
+          "name": "handle",
+          "type": "varchar(64)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": true,
+          "nullable": false,
+          "unique": false,
+          "length": 64,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "icon": {
+          "name": "icon",
+          "type": "varchar(64)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 64,
+          "precision": null,
+          "scale": null,
+          "default": "'mdi-email-outline'",
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamptz(6)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        }
+      },
+      "indexes": [
+        {
+          "columnNames": [
+            "handle"
+          ],
+          "composite": false,
+          "constraint": true,
+          "keyName": "email_inbox_processing_mode_item_pkey",
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "triggers": [],
+      "foreignKeys": {},
+      "comment": null
+    },
+    {
+      "name": "email_inbox_subscription_item",
+      "schema": "public",
+      "columns": {
+        "agent_handle": {
+          "name": "agent_handle",
+          "type": "varchar(64)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": 64,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "automatic_processing": {
+          "name": "automatic_processing",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": "true",
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "boolean"
+        },
+        "context_markdown": {
+          "name": "context_markdown",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "text"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamptz(6)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
+        "description": {
+          "name": "description",
+          "type": "varchar(128)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 128,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "handle": {
+          "name": "handle",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": true,
+          "primary": true,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
+        "import_existing_on_first_run": {
+          "name": "import_existing_on_first_run",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": "false",
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "boolean"
+        },
+        "imported_count": {
+          "name": "imported_count",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": "0",
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
+        "interval_minutes": {
+          "name": "interval_minutes",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": "1",
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
+        "is_active": {
+          "name": "is_active",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": "true",
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "boolean"
+        },
+        "last_error": {
+          "name": "last_error",
+          "type": "varchar(1024)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": 1024,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "last_received_at": {
+          "name": "last_received_at",
+          "type": "timestamptz(6)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
+        "last_run_at": {
+          "name": "last_run_at",
+          "type": "timestamptz(6)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
+        "last_success_at": {
+          "name": "last_success_at",
+          "type": "timestamptz(6)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
+        "mailbox_handle": {
+          "name": "mailbox_handle",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
+        "manual_review_count": {
+          "name": "manual_review_count",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": "0",
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
+        "processed_count": {
+          "name": "processed_count",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": "0",
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
+        "processing_mode_handle": {
+          "name": "processing_mode_handle",
+          "type": "varchar(64)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 64,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "processing_person_handle": {
+          "name": "processing_person_handle",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamptz(6)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        }
+      },
+      "indexes": [
+        {
+          "columnNames": [
+            "is_active",
+            "last_run_at"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "email_inbox_subscription_due_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "handle"
+          ],
+          "composite": false,
+          "constraint": true,
+          "keyName": "email_inbox_subscription_item_pkey",
+          "primary": true,
+          "unique": true
+        },
+        {
+          "columnNames": [
+            "mailbox_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "email_inbox_subscription_mailbox_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "processing_person_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "email_inbox_subscription_person_index",
+          "primary": false,
+          "unique": false
+        }
+      ],
+      "checks": [],
+      "triggers": [],
+      "foreignKeys": {
+        "email_inbox_subscription_agent_foreign": {
+          "columnNames": [
+            "agent_handle"
+          ],
+          "constraintName": "email_inbox_subscription_agent_foreign",
+          "localTableName": "public.email_inbox_subscription_item",
+          "referencedColumnNames": [
+            "handle"
+          ],
+          "referencedTableName": "public.ai_agent_item",
+          "updateRule": "cascade",
+          "deleteRule": "set null"
+        },
+        "email_inbox_subscription_mailbox_foreign": {
+          "columnNames": [
+            "mailbox_handle"
+          ],
+          "constraintName": "email_inbox_subscription_mailbox_foreign",
+          "localTableName": "public.email_inbox_subscription_item",
+          "referencedColumnNames": [
+            "handle"
+          ],
+          "referencedTableName": "public.shared_mailbox_item",
+          "updateRule": "cascade"
+        },
+        "email_inbox_subscription_person_foreign": {
+          "columnNames": [
+            "processing_person_handle"
+          ],
+          "constraintName": "email_inbox_subscription_person_foreign",
+          "localTableName": "public.email_inbox_subscription_item",
+          "referencedColumnNames": [
+            "handle"
+          ],
+          "referencedTableName": "public.person_item",
+          "updateRule": "cascade"
+        },
+        "email_inbox_subscription_processing_mode_foreign": {
+          "columnNames": [
+            "processing_mode_handle"
+          ],
+          "constraintName": "email_inbox_subscription_processing_mode_foreign",
+          "localTableName": "public.email_inbox_subscription_item",
+          "referencedColumnNames": [
+            "handle"
+          ],
+          "referencedTableName": "public.email_inbox_processing_mode_item",
+          "updateRule": "cascade"
+        }
+      },
+      "comment": null
+    },
+    {
       "name": "email_list_item",
       "schema": "public",
       "columns": {
@@ -20101,6 +20668,993 @@
           "referencedTableName": "public.import_template_item"
         }
       },
+      "comment": null
+    },
+    {
+      "name": "inbound_email_item",
+      "schema": "public",
+      "columns": {
+        "agent_handle": {
+          "name": "agent_handle",
+          "type": "varchar(64)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": 64,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "ai_message_handle": {
+          "name": "ai_message_handle",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
+        "ai_session_handle": {
+          "name": "ai_session_handle",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
+        "body_html": {
+          "name": "body_html",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "text"
+        },
+        "body_text": {
+          "name": "body_text",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "text"
+        },
+        "cc_recipients": {
+          "name": "cc_recipients",
+          "type": "jsonb",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "json"
+        },
+        "company_handle": {
+          "name": "company_handle",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
+        "conversation_id": {
+          "name": "conversation_id",
+          "type": "varchar(512)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": 512,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamptz(6)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
+        "from_address": {
+          "name": "from_address",
+          "type": "varchar(320)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 320,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "from_name": {
+          "name": "from_name",
+          "type": "varchar(256)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": 256,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "handle": {
+          "name": "handle",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": true,
+          "primary": true,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
+        "headers": {
+          "name": "headers",
+          "type": "jsonb",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "json"
+        },
+        "in_reply_to": {
+          "name": "in_reply_to",
+          "type": "varchar(512)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": 512,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "internet_message_id": {
+          "name": "internet_message_id",
+          "type": "varchar(512)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": 512,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "mailbox_handle": {
+          "name": "mailbox_handle",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": true,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
+        "office_task_handle": {
+          "name": "office_task_handle",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
+        "person_handle": {
+          "name": "person_handle",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
+        "processed_at": {
+          "name": "processed_at",
+          "type": "timestamptz(6)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
+        "processing_attempts": {
+          "name": "processing_attempts",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": "0",
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
+        "processing_log": {
+          "name": "processing_log",
+          "type": "jsonb",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "json"
+        },
+        "processing_message": {
+          "name": "processing_message",
+          "type": "varchar(1024)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": 1024,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "provider": {
+          "name": "provider",
+          "type": "varchar(32)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 32,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "provider_message_id": {
+          "name": "provider_message_id",
+          "type": "varchar(512)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 512,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "received_at": {
+          "name": "received_at",
+          "type": "timestamptz(6)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
+        "references": {
+          "name": "references",
+          "type": "jsonb",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "json"
+        },
+        "sales_opportunity_handle": {
+          "name": "sales_opportunity_handle",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
+        "source_document_handle": {
+          "name": "source_document_handle",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": true,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
+        "status_handle": {
+          "name": "status_handle",
+          "type": "varchar(64)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 64,
+          "precision": null,
+          "scale": null,
+          "default": "'pending'",
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "subject": {
+          "name": "subject",
+          "type": "varchar(512)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 512,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "subscription_handle": {
+          "name": "subscription_handle",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
+        "ticket_handle": {
+          "name": "ticket_handle",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
+        "to_recipients": {
+          "name": "to_recipients",
+          "type": "jsonb",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "json"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamptz(6)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        }
+      },
+      "indexes": [
+        {
+          "columnNames": [
+            "company_handle",
+            "received_at"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "inbound_email_company_received_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "provider",
+            "conversation_id"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "inbound_email_conversation_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "mailbox_handle",
+            "provider_message_id"
+          ],
+          "composite": true,
+          "constraint": true,
+          "keyName": "inbound_email_item_mailbox_provider_message_unique",
+          "primary": false,
+          "unique": true
+        },
+        {
+          "columnNames": [
+            "handle"
+          ],
+          "composite": false,
+          "constraint": true,
+          "keyName": "inbound_email_item_pkey",
+          "primary": true,
+          "unique": true
+        },
+        {
+          "columnNames": [
+            "source_document_handle"
+          ],
+          "composite": false,
+          "constraint": true,
+          "keyName": "inbound_email_item_source_document_unique",
+          "primary": false,
+          "unique": true
+        },
+        {
+          "columnNames": [
+            "office_task_handle",
+            "received_at"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "inbound_email_office_task_received_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "person_handle",
+            "received_at"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "inbound_email_person_received_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "sales_opportunity_handle",
+            "received_at"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "inbound_email_sales_opportunity_received_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "status_handle",
+            "received_at"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "inbound_email_status_received_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "subscription_handle",
+            "received_at"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "inbound_email_subscription_received_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "ticket_handle",
+            "received_at"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "inbound_email_ticket_received_index",
+          "primary": false,
+          "unique": false
+        }
+      ],
+      "checks": [],
+      "triggers": [],
+      "foreignKeys": {
+        "inbound_email_agent_foreign": {
+          "columnNames": [
+            "agent_handle"
+          ],
+          "constraintName": "inbound_email_agent_foreign",
+          "localTableName": "public.inbound_email_item",
+          "referencedColumnNames": [
+            "handle"
+          ],
+          "referencedTableName": "public.ai_agent_item",
+          "updateRule": "cascade",
+          "deleteRule": "set null"
+        },
+        "inbound_email_ai_message_foreign": {
+          "columnNames": [
+            "ai_message_handle"
+          ],
+          "constraintName": "inbound_email_ai_message_foreign",
+          "localTableName": "public.inbound_email_item",
+          "referencedColumnNames": [
+            "handle"
+          ],
+          "referencedTableName": "public.ai_chat_message_item",
+          "updateRule": "cascade",
+          "deleteRule": "set null"
+        },
+        "inbound_email_ai_session_foreign": {
+          "columnNames": [
+            "ai_session_handle"
+          ],
+          "constraintName": "inbound_email_ai_session_foreign",
+          "localTableName": "public.inbound_email_item",
+          "referencedColumnNames": [
+            "handle"
+          ],
+          "referencedTableName": "public.ai_chat_session_item",
+          "updateRule": "cascade",
+          "deleteRule": "set null"
+        },
+        "inbound_email_company_foreign": {
+          "columnNames": [
+            "company_handle"
+          ],
+          "constraintName": "inbound_email_company_foreign",
+          "localTableName": "public.inbound_email_item",
+          "referencedColumnNames": [
+            "handle"
+          ],
+          "referencedTableName": "public.company_item",
+          "updateRule": "cascade",
+          "deleteRule": "set null"
+        },
+        "inbound_email_mailbox_foreign": {
+          "columnNames": [
+            "mailbox_handle"
+          ],
+          "constraintName": "inbound_email_mailbox_foreign",
+          "localTableName": "public.inbound_email_item",
+          "referencedColumnNames": [
+            "handle"
+          ],
+          "referencedTableName": "public.shared_mailbox_item",
+          "updateRule": "cascade"
+        },
+        "inbound_email_office_task_foreign": {
+          "columnNames": [
+            "office_task_handle"
+          ],
+          "constraintName": "inbound_email_office_task_foreign",
+          "localTableName": "public.inbound_email_item",
+          "referencedColumnNames": [
+            "handle"
+          ],
+          "referencedTableName": "public.event_item",
+          "updateRule": "cascade",
+          "deleteRule": "set null"
+        },
+        "inbound_email_person_foreign": {
+          "columnNames": [
+            "person_handle"
+          ],
+          "constraintName": "inbound_email_person_foreign",
+          "localTableName": "public.inbound_email_item",
+          "referencedColumnNames": [
+            "handle"
+          ],
+          "referencedTableName": "public.person_item",
+          "updateRule": "cascade",
+          "deleteRule": "set null"
+        },
+        "inbound_email_sales_opportunity_foreign": {
+          "columnNames": [
+            "sales_opportunity_handle"
+          ],
+          "constraintName": "inbound_email_sales_opportunity_foreign",
+          "localTableName": "public.inbound_email_item",
+          "referencedColumnNames": [
+            "handle"
+          ],
+          "referencedTableName": "public.sales_opportunity_item",
+          "updateRule": "cascade",
+          "deleteRule": "set null"
+        },
+        "inbound_email_source_document_foreign": {
+          "columnNames": [
+            "source_document_handle"
+          ],
+          "constraintName": "inbound_email_source_document_foreign",
+          "localTableName": "public.inbound_email_item",
+          "referencedColumnNames": [
+            "handle"
+          ],
+          "referencedTableName": "public.document_item",
+          "updateRule": "cascade",
+          "deleteRule": "set null"
+        },
+        "inbound_email_status_foreign": {
+          "columnNames": [
+            "status_handle"
+          ],
+          "constraintName": "inbound_email_status_foreign",
+          "localTableName": "public.inbound_email_item",
+          "referencedColumnNames": [
+            "handle"
+          ],
+          "referencedTableName": "public.inbound_email_status_item",
+          "updateRule": "cascade"
+        },
+        "inbound_email_subscription_foreign": {
+          "columnNames": [
+            "subscription_handle"
+          ],
+          "constraintName": "inbound_email_subscription_foreign",
+          "localTableName": "public.inbound_email_item",
+          "referencedColumnNames": [
+            "handle"
+          ],
+          "referencedTableName": "public.email_inbox_subscription_item",
+          "updateRule": "cascade"
+        },
+        "inbound_email_ticket_foreign": {
+          "columnNames": [
+            "ticket_handle"
+          ],
+          "constraintName": "inbound_email_ticket_foreign",
+          "localTableName": "public.inbound_email_item",
+          "referencedColumnNames": [
+            "handle"
+          ],
+          "referencedTableName": "public.ticket_item",
+          "updateRule": "cascade",
+          "deleteRule": "set null"
+        }
+      },
+      "comment": null
+    },
+    {
+      "name": "inbound_email_status_item",
+      "schema": "public",
+      "columns": {
+        "color": {
+          "name": "color",
+          "type": "varchar(32)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 32,
+          "precision": null,
+          "scale": null,
+          "default": "'#607D8B'",
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamptz(6)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
+        "description": {
+          "name": "description",
+          "type": "varchar(128)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 128,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "handle": {
+          "name": "handle",
+          "type": "varchar(64)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": true,
+          "nullable": false,
+          "unique": false,
+          "length": 64,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "icon": {
+          "name": "icon",
+          "type": "varchar(64)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 64,
+          "precision": null,
+          "scale": null,
+          "default": "'mdi-email-outline'",
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamptz(6)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        }
+      },
+      "indexes": [
+        {
+          "columnNames": [
+            "handle"
+          ],
+          "composite": false,
+          "constraint": true,
+          "keyName": "inbound_email_status_item_pkey",
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "triggers": [],
+      "foreignKeys": {},
       "comment": null
     },
     {

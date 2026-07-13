@@ -1,0 +1,32 @@
+[
+  {
+    "handle": "pending",
+    "description": "Pending",
+    "icon": "mdi-clock-outline",
+    "color": "#607D8B"
+  },
+  {
+    "handle": "processing",
+    "description": "Processing",
+    "icon": "mdi-robot-outline",
+    "color": "#1976D2"
+  },
+  {
+    "handle": "processed",
+    "description": "Processed",
+    "icon": "mdi-check-circle-outline",
+    "color": "#2E7D32"
+  },
+  {
+    "handle": "manualReview",
+    "description": "Manual review",
+    "icon": "mdi-account-alert-outline",
+    "color": "#EF6C00"
+  },
+  {
+    "handle": "failed",
+    "description": "Failed",
+    "icon": "mdi-alert-circle-outline",
+    "color": "#C62828"
+  }
+]

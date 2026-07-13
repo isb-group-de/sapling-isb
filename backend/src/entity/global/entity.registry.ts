@@ -134,6 +134,10 @@ import { HolidayItem } from '../HolidayItem';
 import { HolidayGroupItem } from '../HolidayGroupItem';
 import { SharedMailboxGroupItem } from '../SharedMailboxGroupItem';
 import { SharedMailboxItem } from '../SharedMailboxItem';
+import { EmailInboxSubscriptionItem } from '../EmailInboxSubscriptionItem';
+import { EmailInboxProcessingModeItem } from '../EmailInboxProcessingModeItem';
+import { InboundEmailItem } from '../InboundEmailItem';
+import { InboundEmailStatusItem } from '../InboundEmailStatusItem';
 import { SaplingFormConfigItem } from '../SaplingFormConfigItem';
 import { EffortEstimateItem } from '../EffortEstimateItem';
 import { EffortEstimatePositionItem } from '../EffortEstimatePositionItem';
@@ -283,6 +287,10 @@ const ENTITY_REGISTRY_ENTRIES: { name: string; class: any }[] = [
   { name: 'marketingCampaignType', class: MarketingCampaignTypeItem },
   { name: 'sharedMailboxGroup', class: SharedMailboxGroupItem },
   { name: 'sharedMailbox', class: SharedMailboxItem },
+  { name: 'emailInboxSubscription', class: EmailInboxSubscriptionItem },
+  { name: 'emailInboxProcessingMode', class: EmailInboxProcessingModeItem },
+  { name: 'inboundEmailStatus', class: InboundEmailStatusItem },
+  { name: 'inboundEmail', class: InboundEmailItem },
   { name: 'teamsTemplate', class: TeamsTemplateItem },
   { name: 'teamsSubscription', class: TeamsSubscriptionItem },
   { name: 'teamsDelivery', class: TeamsDeliveryItem },

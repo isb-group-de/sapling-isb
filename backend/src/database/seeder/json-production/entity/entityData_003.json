@@ -1,0 +1,42 @@
+[
+  {
+    "handle": "emailInboxSubscription",
+    "canShow": true,
+    "icon": "mdi-email-sync-outline",
+    "group": "mails",
+    "order": 65,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  },
+  {
+    "handle": "inboundEmailStatus",
+    "canShow": true,
+    "icon": "mdi-list-status",
+    "group": "mails",
+    "order": 67,
+    "canInsert": false,
+    "canUpdate": false,
+    "canDelete": false
+  },
+  {
+    "handle": "emailInboxProcessingMode",
+    "canShow": true,
+    "icon": "mdi-tune-variant",
+    "group": "mails",
+    "order": 66,
+    "canInsert": false,
+    "canUpdate": false,
+    "canDelete": false
+  },
+  {
+    "handle": "inboundEmail",
+    "canShow": true,
+    "icon": "mdi-inbox-arrow-down-outline",
+    "group": "mails",
+    "order": 68,
+    "canInsert": false,
+    "canUpdate": false,
+    "canDelete": false
+  }
+]

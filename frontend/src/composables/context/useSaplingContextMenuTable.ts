@@ -128,18 +128,18 @@ export function getSaplingContextMenuTableItems(
 
   const group3: SaplingContextMenuTableMenuItem[] = []
   if (options.entityPermission?.allowInsert) {
-    group3.push(
-      {
-        type: 'uploadDocument',
-        icon: 'mdi-file-document-arrow-right',
-        titleKey: 'global.uploadDocument',
-      },
-      {
-        type: 'showDocuments',
-        icon: 'mdi-file-document-multiple',
-        titleKey: 'global.showDocuments',
-      },
-    )
+    group3.push({
+      type: 'uploadDocument',
+      icon: 'mdi-file-document-arrow-right',
+      titleKey: 'global.uploadDocument',
+    })
+  }
+  if (options.canChangeLog) {
+    group3.push({
+      type: 'showDocuments',
+      icon: 'mdi-file-document-multiple',
+      titleKey: 'global.showDocuments',
+    })
   }
   if (options.canShowInformation) {
     group3.push({

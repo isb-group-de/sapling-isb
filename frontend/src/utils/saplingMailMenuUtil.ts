@@ -22,11 +22,11 @@ function readStringField(values: Record<string, unknown> | null | undefined, key
   }
 
   const raw = values[key]
-  if (raw == null) {
+  if (typeof raw !== 'string') {
     return ''
   }
 
-  return String(raw).trim()
+  return raw.trim()
 }
 
 /**

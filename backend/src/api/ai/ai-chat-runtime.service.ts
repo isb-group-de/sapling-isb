@@ -70,6 +70,10 @@ export class AiChatRuntimeService {
       agentInstruction,
     );
     const executedToolCalls: AiExecutedToolCall[] = [];
+    const disableReasoningForTools =
+      toolRegistry.length > 0 &&
+      provider.handle === 'openai' &&
+      /^gpt-5\.6(?:-|$)/i.test(model);
 
     for (let iteration = 0; iteration < maxToolCallIterations; iteration += 1) {
       const response = await createOpenAiClient(
@@ -81,6 +85,9 @@ export class AiChatRuntimeService {
           ? {
               tools: buildOpenAiTools(toolRegistry),
               tool_choice: 'auto' as const,
+              ...(disableReasoningForTools
+                ? { reasoning_effort: 'none' as const }
+                : {}),
             }
           : {}),
       });

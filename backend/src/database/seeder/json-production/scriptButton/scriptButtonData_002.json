@@ -1,0 +1,8 @@
+[
+  {
+    "name": "reprocessInboundEmail",
+    "title": "inboundEmail.scriptReprocess",
+    "entity": "inboundEmail",
+    "isMultiSelect": false
+  }
+]

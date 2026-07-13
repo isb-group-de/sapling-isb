@@ -90,6 +90,7 @@ jest.mock('./ai-vector.service', () => ({ AiVectorService: class {} }));
 jest.mock('../import/import.service', () => ({ ImportService: class {} }));
 
 import { AiService } from './ai.service';
+import { AiAgentPolicyService } from './ai-agent-policy.service';
 import { AiChatRuntimeService } from './ai-chat-runtime.service';
 import {
   alignAssistantContentWithNavigationLinks,
@@ -156,6 +157,42 @@ describe('AiService', () => {
 
   afterEach(() => {
     jest.useRealTimers();
+  });
+
+  it('normalizes scalar and serialized string-list values from dynamic forms', () => {
+    const service = createService();
+    const normalize = (
+      service as never as {
+        normalizeStringArray: (value: unknown) => string[];
+      }
+    ).normalizeStringArray.bind(service);
+
+    expect(normalize('')).toEqual([]);
+    expect(normalize('generic_create')).toEqual(['generic_create']);
+    expect(normalize('["generic_create", " generic_update "]')).toEqual([
+      'generic_create',
+      'generic_update',
+    ]);
+    expect(normalize({ unexpected: true })).toEqual([]);
+  });
+
+  it('builds an agent policy when an empty JSON field was saved as a string', () => {
+    const policyService = new AiAgentPolicyService({} as never);
+
+    const policy = policyService.buildToolPolicy({
+      allowedEntityHandles: 'ticket',
+      allowedKnowledgeEntityHandles: '["ticket", " knowledgeArticle "]',
+      allowedInternalTools: [' generic_create ', ''],
+      allowedExternalTools: '',
+    } as never);
+
+    expect(policy).toEqual({
+      allowedEntityHandles: ['ticket'],
+      allowedKnowledgeEntityHandles: ['ticket', 'knowledgeArticle'],
+      allowedInternalTools: ['generic_create'],
+      allowedExternalTools: [],
+      blockMutatingTools: true,
+    });
   });
 
   it('includes the current server date in the system instruction', () => {

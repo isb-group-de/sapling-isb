@@ -209,6 +209,15 @@ export function normalizeEmailAddress(
   return normalized;
 }
 
+export function emailAddressesEqual(
+  left: string | null | undefined,
+  right: string | null | undefined,
+): boolean {
+  const normalizedLeft = normalizeEmailAddress(left)?.toLowerCase();
+  const normalizedRight = normalizeEmailAddress(right)?.toLowerCase();
+  return !!normalizedLeft && normalizedLeft === normalizedRight;
+}
+
 export function normalizeDisplayName(
   value: string | null | undefined,
 ): string | undefined {

@@ -1,6 +1,6 @@
 # Mail And Teams Communication
 
-Sapling communication is built around message templates, rendered entity context, persisted delivery records, and provider-specific dispatch. Email can be manually previewed and sent from the UI; Teams messages are subscription-driven lifecycle notifications.
+Sapling communication is built around message templates, rendered entity context, persisted delivery records, provider-specific dispatch, and inbound mailbox synchronization. Email can be manually previewed and sent from the UI; incoming mail can be archived and processed by Songbird; Teams messages are subscription-driven lifecycle notifications.
 
 ## Main Files
 
@@ -30,6 +30,10 @@ frontend/src/composables/dialog/useSaplingMailDialog.ts
 frontend/src/services/api.mail.service.ts
 frontend/src/components/dialog/fields/SaplingFieldTeamsRecipient.vue
 ```
+
+Incoming Azure/Google synchronization and AI-driven ticket, opportunity, or
+office-task processing are documented separately in
+`docs/features/inbound-email.md`.
 
 Seed files:
 
@@ -238,6 +242,7 @@ Useful targeted commands:
 
 ```powershell
 npm test --prefix backend -- mail.service.spec.ts teams.service.spec.ts --runInBand
+npm test --prefix backend -- email-inbox-sync.service.spec.ts email-inbox-provider.service.spec.ts --runInBand
 npm test --prefix backend -- TeamsDeliveryController.spec.ts EmailDeliveryController.spec.ts --runInBand
 npm run type-check:backend
 npm run type-check:frontend
