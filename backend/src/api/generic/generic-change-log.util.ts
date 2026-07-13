@@ -100,7 +100,56 @@ export function areChangeLogValuesEqual(
   left: unknown,
   right: unknown,
 ): boolean {
-  return JSON.stringify(left) === JSON.stringify(right);
+  return (
+    JSON.stringify(normalizeChangeLogComparisonValue(left)) ===
+    JSON.stringify(normalizeChangeLogComparisonValue(right))
+  );
+}
+
+function normalizeChangeLogComparisonValue(
+  value: unknown,
+  visited = new WeakMap<object, unknown>(),
+): unknown {
+  if (value == null) {
+    return null;
+  }
+
+  if (typeof value === 'string') {
+    return value.trim().length === 0 ? null : value;
+  }
+
+  if (value instanceof Date) {
+    return value.toISOString();
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((entry) =>
+      normalizeChangeLogComparisonValue(entry, visited),
+    );
+  }
+
+  if (typeof value !== 'object') {
+    return value;
+  }
+
+  const cached = visited.get(value);
+  if (typeof cached !== 'undefined') {
+    return cached;
+  }
+
+  const normalizedRecord: Record<string, unknown> = {};
+  visited.set(value, normalizedRecord);
+
+  Object.keys(value)
+    .sort((leftKey, rightKey) => leftKey.localeCompare(rightKey))
+    .forEach((key) => {
+      normalizedRecord[key] = normalizeChangeLogComparisonValue(
+        (value as Record<string, unknown>)[key],
+        visited,
+      );
+    });
+
+  return normalizedRecord;
 }
 
 export function areUpdateConflictValuesEqual(
