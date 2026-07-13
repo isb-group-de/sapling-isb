@@ -43,6 +43,12 @@ describe('GenericQueryService', () => {
         referenceName: 'ticketStatus',
       }),
       createTemplateField({
+        name: 'participants',
+        isReference: true,
+        kind: 'm:n',
+        referenceName: 'person',
+      }),
+      createTemplateField({
         name: 'computedEmail',
         isPersistent: false,
       }),
@@ -53,6 +59,14 @@ describe('GenericQueryService', () => {
       'title',
       'status',
     ]);
+    expect(
+      service.buildFields(['title', 'participants'], template, [
+        'participants',
+      ]),
+    ).toEqual(['handle', 'title', 'participants']);
+    expect(() => service.buildFields(['participants'], template)).toThrow(
+      BadRequestException,
+    );
     expect(service.buildFields([], template)).toBeUndefined();
     expect(() => service.buildFields(['computedEmail'], template)).toThrow(
       BadRequestException,

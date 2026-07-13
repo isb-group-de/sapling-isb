@@ -99,10 +99,22 @@ export class GenericQueryService {
       }
 
       const field = fieldsByName.get(fieldName);
+      const isCollectionRelation = ['1:m', 'm:n', 'n:m'].includes(
+        field?.kind ?? '',
+      );
+      const isPopulatedRelation = populate.some((relation) => {
+        const rootFieldName = relation.split('.')[0]?.trim();
+        return rootFieldName === fieldName;
+      });
+
+      if (field?.isReference && isCollectionRelation && isPopulatedRelation) {
+        continue;
+      }
+
       if (
         !field ||
         field.isPersistent === false ||
-        ['1:m', 'm:n', 'n:m'].includes(field.kind ?? '') ||
+        isCollectionRelation ||
         field.options?.includes('isSecurity')
       ) {
         throw new BadRequestException(
