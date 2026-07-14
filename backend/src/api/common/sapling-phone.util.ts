@@ -158,7 +158,7 @@ export function normalizeSaplingPhonePayload<T extends Record<string, any>>(
   payload: T,
   options: SaplingPhoneFormatOptions = getDefaultSaplingPhoneOptions(),
 ): T {
-  const writablePayload = payload as Record<string, any>;
+  const writablePayload = payload as Record<string, unknown>;
 
   for (const field of template) {
     if (!field.name || !field.options?.includes('isPhone')) {

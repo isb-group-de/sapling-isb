@@ -90,7 +90,15 @@ describe('DatabaseSessionStore', () => {
     const { em, store } = createStore(record);
 
     await new Promise<void>((resolve, reject) => {
-      store.get('session-1', (error) => (error ? reject(error) : resolve()));
+      store.get('session-1', (error: unknown) =>
+        error
+          ? reject(
+              error instanceof Error
+                ? error
+                : new Error('Session lookup failed'),
+            )
+          : resolve(),
+      );
     });
     await touchAsync(store, 'session-1', {
       cookie: { maxAge: 60_000 },

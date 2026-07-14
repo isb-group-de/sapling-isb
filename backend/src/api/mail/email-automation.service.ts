@@ -20,6 +20,30 @@ type EmailSubscriptionConditionConfig = {
   newValue?: string | null;
 };
 
+function normalizeConditionValue(value: unknown): string | null {
+  if (value == null) {
+    return null;
+  }
+
+  if (typeof value === 'string') {
+    return value;
+  }
+
+  if (
+    typeof value === 'number' ||
+    typeof value === 'boolean' ||
+    typeof value === 'bigint'
+  ) {
+    return String(value);
+  }
+
+  try {
+    return JSON.stringify(value) ?? null;
+  } catch {
+    return null;
+  }
+}
+
 function isRecord(value: unknown): value is JsonRecord {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
@@ -282,18 +306,8 @@ export class EmailAutomationService {
 
     return {
       observedField,
-      oldValue:
-        typeof condition.oldValue === 'string'
-          ? condition.oldValue
-          : condition.oldValue == null
-            ? null
-            : String(condition.oldValue),
-      newValue:
-        typeof condition.newValue === 'string'
-          ? condition.newValue
-          : condition.newValue == null
-            ? null
-            : String(condition.newValue),
+      oldValue: normalizeConditionValue(condition.oldValue),
+      newValue: normalizeConditionValue(condition.newValue),
     };
   }
 

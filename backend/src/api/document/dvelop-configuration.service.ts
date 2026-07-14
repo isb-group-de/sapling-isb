@@ -234,7 +234,7 @@ export class DvelopConfigurationService {
       await this.em.flush();
     }
 
-    let objectDefinitionPayload: unknown | null = null;
+    let objectDefinitionPayload: unknown = null;
     if (includeObjectDefinitions || includeProperties) {
       try {
         objectDefinitionPayload =
@@ -295,7 +295,7 @@ export class DvelopConfigurationService {
         healthConnection = {
           ...connection,
           repository,
-        } as DvelopConnectionItem;
+        };
       }
     }
 
@@ -640,7 +640,7 @@ export class DvelopConfigurationService {
     connection: DvelopConnectionItem,
     endpoints: DvelopRepositoryEndpoint[],
     throwOnFailure = true,
-  ): Promise<unknown | null> {
+  ): Promise<unknown> {
     const authHeaders = this.buildDvelopAuthHeaders(connection);
     const urls = endpoints.map((endpoint) =>
       this.buildDvelopRepositoryUrl(connection, endpoint),
@@ -1168,7 +1168,7 @@ export class DvelopConfigurationService {
     return null;
   }
 
-  private isRecord(value: unknown): value is CloudRecord {
+  private isRecord(this: void, value: unknown): value is CloudRecord {
     return typeof value === 'object' && value !== null && !Array.isArray(value);
   }
 

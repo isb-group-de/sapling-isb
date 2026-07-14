@@ -480,7 +480,7 @@ export class SaplingMcpService {
         isAutoIncrement: field.isAutoIncrement,
         isRequired: field.isRequired,
         nullable: field.nullable,
-        default: field.default ?? null,
+        default: (field.default as unknown) ?? null,
         defaultRaw: field.defaultRaw ?? null,
         options: [...field.options],
         mappedBy: field.mappedBy,

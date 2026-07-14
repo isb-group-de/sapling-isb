@@ -311,11 +311,11 @@ export class CurrentController {
       'Resolved permissions for all entities available to the authenticated user.',
     type: [AccumulatedPermissionDto],
   })
-  async getAllEntityPermissions(
+  getAllEntityPermissions(
     @Req() req: Request,
   ): Promise<AccumulatedPermissionDto[]> {
     const user = req.user as PersonItem;
-    return this.currentService.getAllEntityPermissions(user);
+    return Promise.resolve(this.currentService.getAllEntityPermissions(user));
   }
 
   /**
@@ -392,15 +392,19 @@ export class CurrentController {
     status: 400,
     description: 'The entityHandle path parameter is missing or invalid.',
   })
-  async getEntityPermission(
+  getEntityPermission(
     @Req() req: Request,
     @Param('entityHandle') entityHandle: string,
   ): Promise<AccumulatedPermissionDto> {
     const user = req.user as PersonItem;
     if (!entityHandle) {
-      throw new BadRequestException('global.entityHandleRequired');
+      return Promise.reject(
+        new BadRequestException('global.entityHandleRequired'),
+      );
     }
-    return this.currentService.getEntityPermissions(user, entityHandle);
+    return Promise.resolve(
+      this.currentService.getEntityPermissions(user, entityHandle),
+    );
   }
 
   /**

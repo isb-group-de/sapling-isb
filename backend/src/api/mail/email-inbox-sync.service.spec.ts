@@ -5,7 +5,9 @@ import { PersonItem } from '../../entity/PersonItem';
 import { AiChatToolActionItem } from '../../entity/AiChatToolActionItem';
 
 jest.mock('../../constants/project.constants', () => ({
-  ...jest.requireActual('../../constants/project.constants'),
+  ...jest.requireActual<typeof import('../../constants/project.constants')>(
+    '../../constants/project.constants',
+  ),
   REDIS_ENABLED: true,
   REDIS_REMOVE_ON_COMPLETE: true,
   REDIS_REMOVE_ON_FAIL: 100,
@@ -369,7 +371,7 @@ describe('EmailInboxSyncService helpers', () => {
       'import-email-inbox',
       expect.objectContaining({ subscriptionHandle: 3, manual: true }),
       expect.objectContaining({
-        jobId: expect.stringMatching(/^email-inbox-3-manual-/),
+        jobId: expect.stringMatching(/^email-inbox-3-manual-/) as unknown,
       }),
     );
   });
@@ -457,7 +459,7 @@ describe('EmailInboxSyncService helpers', () => {
     let persistedEmail: InboundEmailItem | undefined;
     const em = {
       fork: jest.fn(),
-      findOne: jest.fn(async (entity: unknown) => {
+      findOne: jest.fn((entity: unknown) => {
         if (entity === EmailInboxSubscriptionItem) return subscription;
         if (entity === InboundEmailItem) return null;
         if (entity === PersonItem) return matchedPerson;
@@ -579,7 +581,7 @@ describe('EmailInboxSyncService helpers', () => {
     };
     const em = {
       fork: jest.fn(),
-      findOne: jest.fn(async (entity: unknown) =>
+      findOne: jest.fn((entity: unknown) =>
         entity === EmailInboxSubscriptionItem ? subscription : existing,
       ),
       create: jest.fn(),
@@ -686,7 +688,7 @@ describe('EmailInboxSyncService helpers', () => {
             'subscription.processingPerson.roles.stage',
             'subscription.processingPerson.roles.permissions',
             'subscription.processingPerson.roles.permissions.entity',
-          ]),
+          ]) as unknown,
         }),
       );
       expect(aiService.confirmToolAction).toHaveBeenCalledWith(
@@ -779,8 +781,10 @@ describe('EmailInboxSyncService helpers', () => {
         sessionHandle: 10,
         content: expect.stringContaining(
           'Do not answer with analysis or prose only',
-        ),
-        contextPayload: expect.objectContaining({ phase: 'actionRepair' }),
+        ) as unknown,
+        contextPayload: expect.objectContaining({
+          phase: 'actionRepair',
+        }) as unknown,
       }),
       subscription.processingPerson,
       expect.any(Function),
@@ -1022,7 +1026,9 @@ describe('EmailInboxSyncService helpers', () => {
       'process-inbound-email',
       { inboundEmailHandle: 42 },
       expect.objectContaining({
-        jobId: expect.stringMatching(/^process-inbound-email-42-manual-\d+$/),
+        jobId: expect.stringMatching(
+          /^process-inbound-email-42-manual-\d+$/,
+        ) as unknown,
       }),
     );
   });

@@ -161,11 +161,12 @@ describe('AiService', () => {
 
   it('normalizes scalar and serialized string-list values from dynamic forms', () => {
     const service = createService();
-    const normalize = (
-      service as never as {
-        normalizeStringArray: (value: unknown) => string[];
-      }
-    ).normalizeStringArray.bind(service);
+    const normalize = (value: unknown) =>
+      (
+        service as unknown as {
+          normalizeStringArray: (input: unknown) => string[];
+        }
+      ).normalizeStringArray(value);
 
     expect(normalize('')).toEqual([]);
     expect(normalize('generic_create')).toEqual(['generic_create']);

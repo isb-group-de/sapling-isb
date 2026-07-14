@@ -309,9 +309,9 @@ describe('MailService', () => {
     const refreshProviderAccessToken =
       jest.fn<(...args: any[]) => Promise<string | null>>();
     refreshProviderAccessToken.mockImplementation(
-      async (_provider: string, currentSession: typeof session) => {
+      (_provider: string, currentSession: typeof session) => {
         currentSession.accessToken = 'fresh-token';
-        return 'fresh-token';
+        return Promise.resolve('fresh-token');
       },
     );
     (

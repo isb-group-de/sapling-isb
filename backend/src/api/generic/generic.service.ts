@@ -1350,7 +1350,7 @@ export class GenericService {
     );
     const existingItems = await this.em.find(referenceClass, {
       [mappedBy]: ownerHandle,
-    } as never);
+    });
     const existingByHandle = new Map(
       existingItems
         .map((item) => [this.extractEntityHandle(item), item] as const)
@@ -1448,7 +1448,10 @@ export class GenericService {
     return payload;
   }
 
-  private isPlainRecord(value: unknown): value is Record<string, unknown> {
+  private isPlainRecord(
+    this: void,
+    value: unknown,
+  ): value is Record<string, unknown> {
     return typeof value === 'object' && value !== null && !Array.isArray(value);
   }
 

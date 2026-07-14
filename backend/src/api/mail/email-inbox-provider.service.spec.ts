@@ -54,8 +54,8 @@ describe('EmailInboxProviderService', () => {
             },
           ],
         },
-      } as never)
-      .mockResolvedValueOnce({ data: Buffer.from('raw email') } as never);
+      })
+      .mockResolvedValueOnce({ data: Buffer.from('raw email') });
 
     const service = new EmailInboxProviderService(mailService as never);
     const result = await service.fetchMessages(
@@ -85,7 +85,7 @@ describe('EmailInboxProviderService', () => {
         accessToken: 'access-token',
       }),
     };
-    mockedAxios.get.mockResolvedValueOnce({ data: { value: [] } } as never);
+    mockedAxios.get.mockResolvedValueOnce({ data: { value: [] } });
 
     const service = new EmailInboxProviderService(mailService as never);
     await service.fetchMessages(

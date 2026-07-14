@@ -383,7 +383,7 @@ function parseAddress(value?: string | null): {
   const source = value?.trim() ?? '';
   const match = source.match(/^(.*?)<([^>]+)>$/);
   const address = normalizeEmailAddress(match?.[2] ?? source) ?? '';
-  const name = match?.[1]?.replace(/^['\"]|['\"]$/g, '').trim() || null;
+  const name = match?.[1]?.replace(/^['"]|['"]$/g, '').trim() || null;
   return { address, name };
 }
 

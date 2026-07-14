@@ -35,16 +35,16 @@ const DVELOP_SYNC_ACTIONS: Record<string, DvelopSyncAction> = {
 };
 
 export class DvelopConnectionController extends ScriptClass {
-  async beforeUpdate(
-    items: DvelopConnectionItem[],
-  ): Promise<ScriptResultServer> {
+  beforeUpdate(items: DvelopConnectionItem[]): Promise<ScriptResultServer> {
     for (const item of items) {
       if (item.apiKey == null || item.apiKey.trim() === '') {
         delete item.apiKey;
       }
     }
 
-    return new ScriptResultServer(items, ScriptResultServerMethods.overwrite);
+    return Promise.resolve(
+      new ScriptResultServer(items, ScriptResultServerMethods.overwrite),
+    );
   }
 
   async execute(items: object[], name: string): Promise<ScriptResultClient> {

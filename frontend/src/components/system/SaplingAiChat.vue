@@ -1291,7 +1291,7 @@ function markActiveSendAttemptAsStarted() {
 }
 
 function handleChatRequestFailure(error: unknown, reportToMessageCenter = true) {
-  const messageKey = normalizeChatErrorMessage(error)
+  const messageKey = normalizeAiChatErrorMessage(error)
 
   if (reportToMessageCenter) {
     messageCenter.pushMessage('error', messageKey, '', 'aiChat')

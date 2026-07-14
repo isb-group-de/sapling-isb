@@ -10,9 +10,7 @@ import {
 } from './core/script.result.server.js';
 
 export class SalesOpportunityController extends ScriptClass {
-  async afterInsert(
-    items: SalesOpportunityItem[],
-  ): Promise<ScriptResultServer> {
+  afterInsert(items: SalesOpportunityItem[]): Promise<ScriptResultServer> {
     for (const opportunity of items ?? []) {
       const year =
         opportunity.createdAt?.getFullYear() ?? new Date().getFullYear();
@@ -20,7 +18,9 @@ export class SalesOpportunityController extends ScriptClass {
         `SO-${year}-` + (opportunity.handle ?? 0).toString().padStart(5, '0');
     }
 
-    return new ScriptResultServer(items, ScriptResultServerMethods.overwrite);
+    return Promise.resolve(
+      new ScriptResultServer(items, ScriptResultServerMethods.overwrite),
+    );
   }
 
   async execute(

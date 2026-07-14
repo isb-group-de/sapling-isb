@@ -381,9 +381,9 @@ export class DvelopDocumentService {
         ? Number(reference)
         : reference;
 
-    return (await this.em.findOne(entityClass, {
+    return await this.em.findOne(entityClass, {
       handle: typedReference,
-    } as never)) as SaplingRecord | null;
+    });
   }
 
   private assertConnection(connection: DvelopConnectionItem): void {

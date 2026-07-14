@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/unbound-method */
 import { jest, describe, beforeEach, expect, it } from '@jest/globals';
 import axios from 'axios';
 import { EntityManager } from '@mikro-orm/core';
@@ -46,7 +45,7 @@ const createEntityManager = (
       .map((objectDefinition) => [objectDefinition.dvelopId, objectDefinition]),
   );
   const em = {
-    findOne: jest.fn(async (...args: unknown[]) => {
+    findOne: jest.fn((...args: unknown[]) => {
       if (args[0] === DvelopConnectionItem) {
         return connection;
       }
@@ -77,7 +76,7 @@ const createEntityManager = (
       }
     }),
     assign: jest.fn(),
-    flush: jest.fn(async () => undefined),
+    flush: jest.fn<() => Promise<void>>().mockResolvedValue(undefined),
   };
 
   return em as unknown as EntityManager & typeof em;

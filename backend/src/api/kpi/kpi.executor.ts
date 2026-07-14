@@ -521,9 +521,13 @@ export class KPIExecutor {
       ...groupFields.map((groupField) => groupField.groupBy),
     ]);
 
-    const rows = (await qb.execute()) as Array<
-      Record<string, unknown> & { bucket_index?: string | number }
-    >;
+    const queryResult: unknown = await qb.execute();
+    const rows = Array.isArray(queryResult)
+      ? (queryResult as unknown[]).filter(
+          (row): row is Record<string, unknown> =>
+            typeof row === 'object' && row !== null && !Array.isArray(row),
+        )
+      : [];
     const rowsByBucket = new Map<number, Array<Record<string, unknown>>>();
 
     for (const row of rows) {
@@ -548,7 +552,7 @@ export class KPIExecutor {
           : ((bucketRows[0]?.value as number | object | null | undefined) ??
             null);
 
-      return bucket.createPoint(value as number | object | null);
+      return bucket.createPoint(value);
     });
   }
 

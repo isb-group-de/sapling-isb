@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/unbound-method */
 import { EntityManager } from '@mikro-orm/core';
 import { jest, describe, expect, it } from '@jest/globals';
 import { DvelopDocumentService } from './dvelop-document.service';
@@ -95,7 +94,7 @@ describe('DvelopDocumentService', () => {
     } as unknown as DvelopEntityMappingItem;
     const record = { handle: 42, title: 'Slow article search' };
     const em = {
-      findOne: jest.fn(async (entity: unknown) =>
+      findOne: jest.fn((entity: unknown) =>
         entity === DvelopEntityMappingItem ? mapping : record,
       ),
       getMetadata: () => ({

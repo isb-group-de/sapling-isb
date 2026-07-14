@@ -203,11 +203,10 @@ describe('ScriptService', () => {
       {} as never,
     );
 
-    jest.spyOn(service, 'runServerMethod').mockImplementation(async () => {
+    jest.spyOn(service, 'runServerMethod').mockImplementation(() => {
       payload.number = 'IC-2026-00012';
-      return new ScriptResultServer(
-        [payload],
-        ScriptResultServerMethods.overwrite,
+      return Promise.resolve(
+        new ScriptResultServer([payload], ScriptResultServerMethods.overwrite),
       );
     });
     const runSubscription = jest
