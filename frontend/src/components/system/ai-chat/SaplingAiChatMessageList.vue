@@ -280,6 +280,7 @@ import SaplingDialogHero from '@/components/common/SaplingDialogHero.vue'
 import SaplingMarkdownContent from '@/components/common/SaplingMarkdownContent.vue'
 import SaplingDialogCard from '@/components/dialog/SaplingDialogCard.vue'
 import type { AiChatMessageItem, AiChatToolActionItem } from '@/entity/entity'
+import { normalizeAiChatErrorMessage } from '@/utils/aiChatError'
 
 interface ChatNavigationLink {
   path: string
@@ -930,7 +931,8 @@ function getFailedMessageDetail(message: AiChatMessageItem) {
       : null
   const rawError =
     responsePayload && typeof responsePayload.error === 'string' ? responsePayload.error : ''
-  const errorLabel = rawError && te(rawError) ? t(rawError) : ''
+  const errorKey = normalizeAiChatErrorMessage(rawError)
+  const errorLabel = rawError && te(errorKey) ? t(errorKey) : ''
 
   if (rawError === 'ai.providerNotConfigured') {
     return [errorLabel || t('aiChat.noConfiguredProviders'), t('aiChat.contactAdministrator')]

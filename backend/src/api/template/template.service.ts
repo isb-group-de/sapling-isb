@@ -91,6 +91,8 @@ export class TemplateService {
         );
         const isCollectionRelation = ['m:n', '1:m'].includes(prop.kind ?? '');
         const isBooleanField = prop.type === 'boolean';
+        const hasExplicitDefault =
+          prop.default !== undefined || prop.defaultRaw != null;
 
         const entityHandleFromType =
           entityHandleByTypeName.get(prop.type) ?? null;
@@ -120,7 +122,8 @@ export class TemplateService {
             !(prop.primary ?? false) &&
             !(prop.autoincrement ?? false) &&
             !isReadOnly &&
-            !isCollectionRelation,
+            !isCollectionRelation &&
+            !hasExplicitDefault,
           options: getSaplingOptions(
             entityClass.prototype as object,
             prop.name,

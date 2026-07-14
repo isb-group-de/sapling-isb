@@ -211,6 +211,33 @@ export class GenericSeeder extends Seeder {
     item: object,
     em: EntityManager,
   ): Promise<boolean> {
+    if (entityClass === EntityRouteItem) {
+      const entityRoute = item as {
+        entity?: string | { handle?: string };
+        route?: unknown;
+      };
+      const relatedEntityHandle =
+        typeof entityRoute.entity === 'string'
+          ? entityRoute.entity
+          : entityRoute.entity?.handle;
+
+      if (
+        relatedEntityHandle &&
+        typeof entityRoute.route === 'string' &&
+        entityRoute.route.trim()
+      ) {
+        const existing = await em.findOne(EntityRouteItem, {
+          entity: { handle: relatedEntityHandle },
+          route: entityRoute.route,
+        });
+
+        if (existing) {
+          em.assign(existing, item as never);
+          return true;
+        }
+      }
+    }
+
     const seedItem = item as { handle?: unknown };
 
     if (typeof seedItem.handle !== 'string' || !seedItem.handle.trim()) {

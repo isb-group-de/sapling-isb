@@ -1,0 +1,30 @@
+[
+  {
+    "handle": "emailInbound",
+    "icon": "mdi-email-arrow-left-outline",
+    "isExpanded": false,
+    "sortOrder": 20,
+    "parent": "communication"
+  },
+  {
+    "handle": "emailCampaigns",
+    "icon": "mdi-bullhorn-outline",
+    "isExpanded": false,
+    "sortOrder": 21,
+    "parent": "communication"
+  },
+  {
+    "handle": "emailSharedAccounts",
+    "icon": "mdi-account-multiple-outline",
+    "isExpanded": false,
+    "sortOrder": 22,
+    "parent": "communication"
+  },
+  {
+    "handle": "emailOutbound",
+    "icon": "mdi-email-arrow-right-outline",
+    "isExpanded": false,
+    "sortOrder": 23,
+    "parent": "communication"
+  }
+]

@@ -1,18 +1,72 @@
 [
   {
     "entity": "emailInboxSubscription",
-    "route": "table/emailInboxSubscription"
+    "route": "table/emailInboxSubscription",
+    "group": "emailOutbound"
   },
   {
     "entity": "emailInboxProcessingMode",
-    "route": "table/emailInboxProcessingMode"
+    "route": "table/emailInboxProcessingMode",
+    "group": "emailOutbound"
   },
   {
     "entity": "inboundEmailStatus",
-    "route": "table/inboundEmailStatus"
+    "route": "table/inboundEmailStatus",
+    "group": "emailOutbound"
   },
   {
     "entity": "inboundEmail",
-    "route": "table/inboundEmail"
+    "route": "table/inboundEmail",
+    "group": "emailOutbound"
+  },
+  {
+    "entity": "emailTemplate",
+    "route": "table/emailTemplate",
+    "group": "emailInbound"
+  },
+  {
+    "entity": "emailSubscription",
+    "route": "table/emailSubscription",
+    "group": "emailInbound"
+  },
+  {
+    "entity": "emailDelivery",
+    "route": "table/emailDelivery",
+    "group": "emailInbound"
+  },
+  {
+    "entity": "emailDeliveryStatus",
+    "route": "table/emailDeliveryStatus",
+    "group": "emailInbound"
+  },
+  {
+    "entity": "emailList",
+    "route": "table/emailList",
+    "group": "emailInbound"
+  },
+  {
+    "entity": "marketingCampaign",
+    "route": "table/marketingCampaign",
+    "group": "emailCampaigns"
+  },
+  {
+    "entity": "marketingCampaignStatus",
+    "route": "table/marketingCampaignStatus",
+    "group": "emailCampaigns"
+  },
+  {
+    "entity": "marketingCampaignType",
+    "route": "table/marketingCampaignType",
+    "group": "emailCampaigns"
+  },
+  {
+    "entity": "sharedMailboxGroup",
+    "route": "table/sharedMailboxGroup",
+    "group": "emailSharedAccounts"
+  },
+  {
+    "entity": "sharedMailbox",
+    "route": "table/sharedMailbox",
+    "group": "emailSharedAccounts"
   }
 ]

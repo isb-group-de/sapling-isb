@@ -151,7 +151,6 @@
               >
                 {{ $t('providerUserImport.loadMore') }}
               </v-btn>
-
             </div>
           </div>
         </template>
@@ -436,7 +435,6 @@ function isAbortError(error: unknown): boolean {
     record.message === 'canceled'
   )
 }
-
 </script>
 
 <style scoped>

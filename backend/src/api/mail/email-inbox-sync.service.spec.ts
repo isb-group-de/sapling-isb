@@ -17,7 +17,9 @@ jest.mock('../document/document.service', () => ({
 }));
 
 import {
+  applyInboundActionDefaults,
   bindInboundSenderCustomer,
+  buildInboundEmailActionRepairPrompt,
   buildInboundEmailAgentPrompt,
   EmailInboxSyncService,
   isEmailInboxSubscriptionDue,
@@ -186,8 +188,77 @@ describe('EmailInboxSyncService helpers', () => {
       );
       expect(prompt).toContain('inspect the subject before the body');
       expect(prompt).toContain('never create a duplicate');
+      expect(prompt).toContain('Do not finish with prose only');
     },
   );
+
+  it('builds one bounded corrective mutation instruction with the sender customer', () => {
+    const prompt = buildInboundEmailActionRepairPrompt(
+      {
+        person: { handle: 102 },
+        company: { handle: 27 },
+      } as unknown as InboundEmailItem,
+      {
+        processingMode: { handle: 'ticket' },
+      } as unknown as EmailInboxSubscriptionItem,
+    );
+
+    expect(prompt).toContain(
+      'generic_create or generic_update for entity "ticket"',
+    );
+    expect(prompt).toContain('person=102 and company=27');
+    expect(prompt).toContain('Do not answer with analysis or prose only');
+    expect(prompt).toContain('This is the only correction attempt');
+    expect(prompt).toContain('server-side defaults status="open"');
+    expect(prompt).toContain('priority="normal"');
+    expect(prompt).toContain('type="incident"');
+    expect(prompt).toContain('source="email"');
+    expect(prompt).toContain('omit them');
+  });
+
+  it('fills missing required ticket references with deterministic defaults', () => {
+    const action = {
+      toolName: 'generic_create',
+      arguments: {
+        entityHandle: 'ticket',
+        data: { title: 'Request', priority: 'high' },
+      },
+    } as unknown as AiChatToolActionItem;
+
+    applyInboundActionDefaults('ticket', action);
+
+    expect(action.arguments?.data).toEqual({
+      title: 'Request',
+      status: 'open',
+      priority: 'high',
+      type: 'incident',
+      source: 'email',
+    });
+  });
+
+  it('does not add ticket creation defaults to updates or another target', () => {
+    const update = {
+      toolName: 'generic_update',
+      arguments: {
+        entityHandle: 'ticket',
+        handle: 42,
+        data: { title: 'Reply' },
+      },
+    } as unknown as AiChatToolActionItem;
+    const salesOpportunity = {
+      toolName: 'generic_create',
+      arguments: {
+        entityHandle: 'salesOpportunity',
+        data: { title: 'Lead' },
+      },
+    } as unknown as AiChatToolActionItem;
+
+    applyInboundActionDefaults('ticket', update);
+    applyInboundActionDefaults('salesOpportunity', salesOpportunity);
+
+    expect(update.arguments?.data).toEqual({ title: 'Reply' });
+    expect(salesOpportunity.arguments?.data).toEqual({ title: 'Lead' });
+  });
 
   it('overwrites a new record customer with the deterministic sender match', () => {
     const email = {
@@ -330,9 +401,7 @@ describe('EmailInboxSyncService helpers', () => {
       },
     } as unknown as AiChatToolActionItem;
 
-    expect(
-      bindInboundSenderCustomer({} as InboundEmailItem, action),
-    ).toEqual({
+    expect(bindInboundSenderCustomer({} as InboundEmailItem, action)).toEqual({
       prepared: false,
       personHandle: null,
       companyHandle: null,
@@ -639,6 +708,108 @@ describe('EmailInboxSyncService helpers', () => {
     },
   );
 
+  it('uses one corrective AI turn when the first response contains no mutation', async () => {
+    const subscription = {
+      automaticProcessing: true,
+      agent: { handle: 'ticketSupportAgent' },
+      processingMode: { handle: 'ticket' },
+      processingPerson: { handle: 5, roles: [] },
+      processedCount: 0,
+      manualReviewCount: 0,
+    } as unknown as EmailInboxSubscriptionItem;
+    const email = {
+      handle: 42,
+      status: { handle: 'pending' },
+      subscription,
+      subject: 'Sage 100 Buchungsfehler',
+      bodyText: 'Beim Buchen erscheint ein Fehler.',
+      fromAddress: 'customer@example.com',
+      toRecipients: ['support@example.com'],
+      ccRecipients: [],
+      receivedAt: new Date('2026-07-14T11:46:37.000Z'),
+      person: { handle: 102 },
+      company: { handle: 27 },
+      processingAttempts: 0,
+      processingLog: [],
+    } as unknown as InboundEmailItem;
+    const action = {
+      handle: 17,
+      toolName: 'generic_create',
+      arguments: { entityHandle: 'ticket', data: {} },
+      status: 'pending',
+    } as unknown as AiChatToolActionItem;
+    const em = {
+      fork: jest.fn(),
+      findOne: jest.fn().mockResolvedValue(email),
+      find: jest.fn().mockResolvedValueOnce([]).mockResolvedValueOnce([action]),
+      flush: jest.fn().mockResolvedValue(undefined),
+      getReference: jest.fn((_entity: unknown, handle: string) => ({ handle })),
+    };
+    em.fork.mockReturnValue(em);
+    const aiService = {
+      streamChatMessage: jest
+        .fn()
+        .mockResolvedValueOnce({
+          session: { handle: 10, provider: 'openai', model: 'gpt-5' },
+          assistantMessage: { handle: 11 },
+        })
+        .mockResolvedValueOnce({
+          session: { handle: 10, provider: 'openai', model: 'gpt-5' },
+          assistantMessage: { handle: 12 },
+        }),
+      confirmToolAction: jest.fn().mockResolvedValue({
+        status: 'executed',
+        resultPayload: { modelResult: { handle: 123 } },
+      }),
+    };
+    const service = new EmailInboxSyncService(
+      em as never,
+      {} as never,
+      {} as never,
+      aiService as never,
+      { add: jest.fn() } as never,
+    );
+
+    await service.processInboundEmail(42);
+
+    expect(aiService.streamChatMessage).toHaveBeenCalledTimes(2);
+    expect(aiService.streamChatMessage).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        sessionHandle: 10,
+        content: expect.stringContaining(
+          'Do not answer with analysis or prose only',
+        ),
+        contextPayload: expect.objectContaining({ phase: 'actionRepair' }),
+      }),
+      subscription.processingPerson,
+      expect.any(Function),
+    );
+    expect(action.arguments?.data).toEqual({
+      creatorPerson: 102,
+      creatorCompany: 27,
+      status: 'open',
+      priority: 'normal',
+      type: 'incident',
+      source: 'email',
+    });
+    expect(aiService.confirmToolAction).toHaveBeenCalledWith(
+      17,
+      subscription.processingPerson,
+    );
+    expect(email.status).toEqual({ handle: 'processed' });
+    expect(email.aiMessage).toEqual({ handle: 12 });
+    expect(email.processingLog?.map((entry) => entry.code)).toEqual([
+      'ai.started',
+      'ai.completed',
+      'ai.actionRepairStarted',
+      'ai.actionRepairCompleted',
+      'ai.actionExecuted',
+    ]);
+    expect(subscription.processedCount).toBe(1);
+    expect(subscription.manualReviewCount).toBe(0);
+  });
+
   it('records an AI failure once and waits for an explicit manual retry', async () => {
     const subscription = {
       automaticProcessing: true,
@@ -689,6 +860,67 @@ describe('EmailInboxSyncService helpers', () => {
     expect(email.processingLog?.at(-1)).toMatchObject({
       level: 'error',
       code: 'ai.failed',
+    });
+    expect(subscription.manualReviewCount).toBe(1);
+  });
+
+  it('records an actionable provider authorization failure for a 401', async () => {
+    const subscription = {
+      automaticProcessing: true,
+      agent: { handle: 'ticketSupportAgent' },
+      processingMode: { handle: 'ticket' },
+      processingPerson: { handle: 5, roles: [] },
+      processedCount: 0,
+      manualReviewCount: 0,
+    } as unknown as EmailInboxSubscriptionItem;
+    const email = {
+      handle: 42,
+      status: { handle: 'pending' },
+      subscription,
+      subject: 'Sage 100 Buchungsfehler',
+      fromAddress: 'customer@example.com',
+      toRecipients: [],
+      ccRecipients: [],
+      receivedAt: new Date('2026-07-14T11:46:37.000Z'),
+      processingAttempts: 0,
+      processingLog: [],
+    } as unknown as InboundEmailItem;
+    const em = {
+      fork: jest.fn(),
+      findOne: jest.fn().mockResolvedValue(email),
+      flush: jest.fn().mockResolvedValue(undefined),
+      getReference: jest.fn((_entity: unknown, handle: string) => ({ handle })),
+    };
+    em.fork.mockReturnValue(em);
+    const providerError = Object.assign(
+      new Error('401 You have insufficient permissions for this operation.'),
+      { status: 401 },
+    );
+    const aiService = {
+      streamChatMessage: jest.fn().mockRejectedValue(providerError),
+    };
+    const service = new EmailInboxSyncService(
+      em as never,
+      {} as never,
+      {} as never,
+      aiService as never,
+      { add: jest.fn() } as never,
+    );
+
+    await expect(service.processInboundEmail(42)).resolves.toBeUndefined();
+
+    expect(email.status).toEqual({ handle: 'failed' });
+    expect(email.processingMessage).toContain(
+      'AI provider authorization failed (401)',
+    );
+    expect(email.processingLog?.at(-1)).toMatchObject({
+      level: 'error',
+      code: 'ai.providerAuthorizationFailed',
+      details: {
+        statusCode: 401,
+        agentHandle: 'ticketSupportAgent',
+        error: '401 You have insufficient permissions for this operation.',
+      },
     });
     expect(subscription.manualReviewCount).toBe(1);
   });

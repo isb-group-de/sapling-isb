@@ -449,6 +449,8 @@ export class SaplingMcpService {
       isAutoIncrement: boolean;
       isRequired: boolean;
       nullable: boolean;
+      default: unknown;
+      defaultRaw: string | null;
       options: string[];
       mappedBy?: string | null;
       inversedBy?: string | null;
@@ -478,6 +480,8 @@ export class SaplingMcpService {
         isAutoIncrement: field.isAutoIncrement,
         isRequired: field.isRequired,
         nullable: field.nullable,
+        default: field.default ?? null,
+        defaultRaw: field.defaultRaw ?? null,
         options: [...field.options],
         mappedBy: field.mappedBy,
         inversedBy: field.inversedBy,

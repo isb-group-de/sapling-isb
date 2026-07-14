@@ -44,6 +44,13 @@ describe('TemplateService', () => {
           type: 'TicketStatusItem',
           kind: 'm:1',
           referencedPKs: ['handle'],
+          nullable: false,
+          default: 'open',
+        },
+        title: {
+          name: 'title',
+          type: 'string',
+          nullable: false,
         },
       },
     }));
@@ -56,11 +63,20 @@ describe('TemplateService', () => {
     const second = service.getEntityTemplate('ticket');
 
     expect(get).toHaveBeenCalledTimes(1);
-    expect(second).toHaveLength(2);
+    expect(second).toHaveLength(3);
     expect(second[1]).toMatchObject({
       name: 'status',
       referenceName: 'ticketStatus',
       isReference: true,
+      nullable: false,
+      default: 'open',
+      isRequired: false,
+    });
+    expect(second[2]).toMatchObject({
+      name: 'title',
+      nullable: false,
+      default: null,
+      isRequired: true,
     });
     expect(second).not.toBe(first);
   });

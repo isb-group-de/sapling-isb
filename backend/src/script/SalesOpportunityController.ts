@@ -14,7 +14,8 @@ export class SalesOpportunityController extends ScriptClass {
     items: SalesOpportunityItem[],
   ): Promise<ScriptResultServer> {
     for (const opportunity of items ?? []) {
-      const year = opportunity.createdAt?.getFullYear() ?? new Date().getFullYear();
+      const year =
+        opportunity.createdAt?.getFullYear() ?? new Date().getFullYear();
       opportunity.number =
         `SO-${year}-` + (opportunity.handle ?? 0).toString().padStart(5, '0');
     }

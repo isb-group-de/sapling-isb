@@ -538,5 +538,35 @@
     "property": "manualSynchronizationRequested",
     "de": "Der manuelle Postfachabruf wurde gestartet.",
     "en": "The manual mailbox fetch was started."
+  },
+  {
+    "entity": "navigationGroup",
+    "property": "emailInbound",
+    "de": "E-Mail Eingang",
+    "en": "Email inbox"
+  },
+  {
+    "entity": "navigationGroup",
+    "property": "emailCampaigns",
+    "de": "E-Mail Kampagnen",
+    "en": "Email campaigns"
+  },
+  {
+    "entity": "navigationGroup",
+    "property": "emailSharedAccounts",
+    "de": "E-Mail Geteilte Konten",
+    "en": "Email shared accounts"
+  },
+  {
+    "entity": "navigationGroup",
+    "property": "emailOutbound",
+    "de": "E-Mail Ausgang",
+    "en": "Email outbox"
+  },
+  {
+    "entity": "ai",
+    "property": "providerAuthorizationFailed",
+    "de": "Der KI-Anbieter hat die Anfrage abgelehnt (401). Bitte API-Schlüssel, Projektmitgliedschaft, Schreibberechtigung für Chat Completions und Modellzugriff prüfen.",
+    "en": "The AI provider rejected the request (401). Check the API key, project membership, Chat Completions write permission, and model access."
   }
 ]

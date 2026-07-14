@@ -76,6 +76,14 @@ export class EntityTemplateDto {
   })
   default?: any;
 
+  @ApiProperty({
+    description:
+      'The raw database default expression, if the default is defined by SQL.',
+    nullable: true,
+    required: false,
+  })
+  defaultRaw?: string | null;
+
   @ApiProperty({ description: 'True if the property is a primary key column.' })
   isPrimaryKey: boolean = false;
 

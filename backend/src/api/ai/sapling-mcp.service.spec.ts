@@ -141,6 +141,54 @@ describe('SaplingMcpService', () => {
     ).toEqual(['firstName']);
   });
 
+  it('exposes non-null defaults without requiring callers to supply them', async () => {
+    const templateService = {
+      getEntityTemplate: jest.fn().mockReturnValue([
+        createTemplateField({
+          name: 'title',
+          isRequired: true,
+          nullable: false,
+          default: null,
+        }),
+        createTemplateField({
+          name: 'status',
+          kind: 'm:1',
+          isReference: true,
+          referenceName: 'ticketStatus',
+          isRequired: false,
+          nullable: false,
+          default: 'open',
+        }),
+      ]),
+    };
+    const service = createService({ templateService });
+
+    const result = await service.executeTool(
+      'entity_schema',
+      { entityHandle: 'ticket' },
+      { handle: 1 } as never,
+    );
+
+    expect(result.rawResult).toMatchObject({
+      entityHandle: 'ticket',
+      requiredFieldNames: ['title'],
+      fields: [
+        expect.objectContaining({
+          name: 'title',
+          isRequired: true,
+          nullable: false,
+          default: null,
+        }),
+        expect.objectContaining({
+          name: 'status',
+          isRequired: false,
+          nullable: false,
+          default: 'open',
+        }),
+      ],
+    });
+  });
+
   it('drops security fields before generic person updates', async () => {
     const genericService = {
       create: jest.fn(),

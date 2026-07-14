@@ -19,10 +19,19 @@ describe('InboundEmailController', () => {
       emailInboxSyncService as never,
     );
 
-    await controller.execute([{ handle: 12 }, { handle: '13' }], 'reprocessInboundEmail');
+    await controller.execute(
+      [{ handle: 12 }, { handle: '13' }],
+      'reprocessInboundEmail',
+    );
 
-    expect(emailInboxSyncService.reprocessInboundEmail).toHaveBeenNthCalledWith(1, 12);
-    expect(emailInboxSyncService.reprocessInboundEmail).toHaveBeenNthCalledWith(2, 13);
+    expect(emailInboxSyncService.reprocessInboundEmail).toHaveBeenNthCalledWith(
+      1,
+      12,
+    );
+    expect(emailInboxSyncService.reprocessInboundEmail).toHaveBeenNthCalledWith(
+      2,
+      13,
+    );
   });
 
   it('delegates unrelated actions without starting a retry', async () => {

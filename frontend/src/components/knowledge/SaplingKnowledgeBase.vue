@@ -1,6 +1,6 @@
 <template>
   <section
-    class="sapling-page-shell sapling-page-shell--panel sapling-page-shell--scroll sapling-page-shell--uniform-inset sapling-knowledge-page"
+    class="sapling-page-shell sapling-page-shell--panel sapling-page-shell--fill sapling-page-shell--scroll sapling-page-shell--uniform-inset sapling-knowledge-page"
   >
     <div v-if="isPageLoading" class="sapling-knowledge-notebook">
       <SaplingSurface as="aside" class="sapling-knowledge-sidebar">

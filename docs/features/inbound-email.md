@@ -104,9 +104,11 @@ but automatic confirmation accepts only one pending `generic_create` or
 
 Normal agent scopes, entity permissions, security filters, and the executing
 user's permissions still apply. Delete actions, unrelated entities, multiple
-actions, missing actions, and failed actions are not automatically executed.
-The inbound message links to the created or updated record, so it participates
-in record-centric CRM timelines.
+actions, and failed actions are not automatically executed. When an agent
+finishes with prose but no mutation, the workflow sends exactly one corrective
+request in the same AI session. Only if that bounded repair still yields no
+action does the email enter manual review. The inbound message links to the
+created or updated record, so it participates in record-centric CRM timelines.
 
 Before creating a record, the agent checks the subject before the body for an
 exact ticket number/external number, office-task reference or event handle, or
@@ -115,6 +117,15 @@ duplicate. Sales opportunities use their own prefixed number range
 (`SO-YYYY-00001`), generated from the independent opportunity handle sequence.
 This keeps them visibly distinct from ticket numbers and follows the existing
 prefixed internal-case pattern (`IC-YYYY-00001`).
+
+Entity schemas distinguish database non-nullability from caller input. A field
+with an ORM or database default is returned to AI tools with `nullable=false`,
+its `default`/`defaultRaw` metadata, and `isRequired=false`; it therefore does
+not appear in `requiredFieldNames`. For new tickets this applies to
+`status=open`, `priority=normal`, `type=incident`, and `source=email`. The
+inbound workflow also fills these four missing values immediately before
+confirmation as a deterministic safety net, without replacing valid values
+chosen by the agent.
 
 ## Status And Manual Recovery
 
@@ -128,6 +139,10 @@ prefixed internal-case pattern (`IC-YYYY-00001`).
 
 Missing agents, disabled automatic processing, ambiguous agent results, and
 permission failures are visible in `processingMessage` and `processingLog`.
+AI-provider authorization failures are logged separately as
+`ai.providerAuthorizationFailed`; the message points administrators to the
+configured credential, project membership, Chat Completions write permission,
+and model access without exposing the secret itself.
 An AI/provider failure is persisted once as `failed` and is not retried in an
 unbounded background loop. It remains visible for manual review until an
 administrator explicitly reprocesses it; that request receives a fresh queue

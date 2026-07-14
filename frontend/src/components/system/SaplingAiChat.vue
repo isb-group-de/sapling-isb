@@ -157,6 +157,7 @@ import { useGhostEasterEgg } from '@/composables/easter-egg/useGhostEasterEgg'
 import { useSaplingAiChat } from '@/composables/system/useSaplingAiChat'
 import { useCurrentPersonStore } from '@/stores/currentPersonStore'
 import { useSaplingMessageCenter } from '@/composables/system/useSaplingMessageCenter'
+import { normalizeAiChatErrorMessage } from '@/utils/aiChatError'
 import { SAPLING_AI_CHAT_PROMPT_EVENT } from '@/utils/saplingScriptResultUtil'
 import {
   SAPLING_AI_PREFERENCES_UPDATED_EVENT,
@@ -1307,28 +1308,5 @@ function handleChatRequestFailure(error: unknown, reportToMessageCenter = true) 
     personHandle: currentPersonStore.person?.handle ?? 0,
     sessionHandle: activeSession.value?.handle ?? 0,
   })
-}
-
-function normalizeChatErrorMessage(error: unknown) {
-  const rawMessage =
-    typeof error === 'string'
-      ? error
-      : error instanceof Error
-        ? error.message
-        : 'ai.chat.streamFailed'
-
-  const trimmedMessage = rawMessage.trim()
-
-  if (!trimmedMessage) {
-    return 'ai.chat.streamFailed'
-  }
-
-  if (trimmedMessage.startsWith('ai.chat.streamFailed')) {
-    return 'ai.chat.streamFailed'
-  }
-
-  return /^[a-z]+(?:\.[a-zA-Z0-9_-]+)+$/.test(trimmedMessage)
-    ? trimmedMessage
-    : 'ai.chat.streamFailed'
 }
 </script>
