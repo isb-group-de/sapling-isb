@@ -3,8 +3,25 @@ import {
   ScriptResultClientMethods,
 } from './core/script.result.client.js';
 import { ScriptClass } from './core/script.class.js';
+import { SalesOpportunityItem } from '../entity/SalesOpportunityItem.js';
+import {
+  ScriptResultServer,
+  ScriptResultServerMethods,
+} from './core/script.result.server.js';
 
 export class SalesOpportunityController extends ScriptClass {
+  async afterInsert(
+    items: SalesOpportunityItem[],
+  ): Promise<ScriptResultServer> {
+    for (const opportunity of items ?? []) {
+      const year = opportunity.createdAt?.getFullYear() ?? new Date().getFullYear();
+      opportunity.number =
+        `SO-${year}-` + (opportunity.handle ?? 0).toString().padStart(5, '0');
+    }
+
+    return new ScriptResultServer(items, ScriptResultServerMethods.overwrite);
+  }
+
   async execute(
     items: object[],
     name: string,
@@ -56,6 +73,7 @@ function buildSalesOpportunityPrompt(
   handle: string | number,
   item: Record<string, unknown>,
 ): string {
+  const number = normalizeString(item.number);
   const title = normalizeString(item.title);
   const description = normalizeString(item.description);
   const painPoints = normalizeString(item.painPoints);
@@ -63,7 +81,7 @@ function buildSalesOpportunityPrompt(
   return [
     'Bitte analysiere diese Sapling-Verkaufschance und finde nutzbare Referenzen.',
     '',
-    `Aktuelle Verkaufschance: ${String(handle)}${title ? ` - ${title}` : ''}`,
+    `Aktuelle Verkaufschance: ${number || String(handle)}${title ? ` - ${title}` : ''}`,
     description ? `Bekannte Beschreibung aus der Liste: ${description}` : null,
     painPoints ? `Bekannte Pain Points aus der Liste: ${painPoints}` : null,
     '',

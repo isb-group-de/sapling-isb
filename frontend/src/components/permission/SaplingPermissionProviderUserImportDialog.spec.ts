@@ -7,6 +7,7 @@ import { i18n } from '@/i18n'
 import SaplingPermissionProviderUserImportDialog from './SaplingPermissionProviderUserImportDialog.vue'
 import ApiProviderUsersService from '@/services/api.provider-users.service'
 import type { RoleItem, SaplingGenericItem } from '@/entity/entity'
+import { useSaplingMessageCenter } from '@/composables/system/useSaplingMessageCenter'
 
 vi.mock('@/stores/currentPersonStore', () => ({
   useCurrentPersonStore: () => ({
@@ -65,6 +66,12 @@ describe('SaplingPermissionProviderUserImportDialog', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    useSaplingMessageCenter().clearAll()
+    i18n.global.mergeLocaleMessage(i18n.global.locale.value, {
+      providerUserImport: {
+        result: '{created} created, {updated} updated, {failed} failed',
+      },
+    })
     vi.mocked(ApiProviderUsersService.list).mockResolvedValue({
       users: [
         {
@@ -155,5 +162,13 @@ describe('SaplingPermissionProviderUserImportDialog', () => {
       companyHandle: null,
     })
     expect(wrapper.emitted('imported')).toBeTruthy()
+    expect(useSaplingMessageCenter().messages.value).toEqual([
+      expect.objectContaining({
+        type: 'success',
+        message: '1 created, 0 updated, 0 failed',
+        entity: 'providerUserImport',
+      }),
+    ])
+    expect(wrapper.find('.v-alert').exists()).toBe(false)
   })
 })

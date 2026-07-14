@@ -33,6 +33,7 @@ import { SalesOpportunityResultStatusItem } from './SalesOpportunityResultStatus
  * @description Contains details, type, status, and relations to company, person, ticket, calendar, forecast, and source. Used to manage sales opportunities in the system.
  *
  * @property {number} handle - Unique identifier for the sales opportunity (primary key).
+ * @property {string} [number] - Automatically generated sales opportunity number.
  * @property {string} title - Title or name of the sales opportunity.
  * @property {string} [description] - Detailed description of the sales opportunity.
  * @property {number} [expectedRevenue] - Expected revenue for the sales opportunity.
@@ -60,6 +61,25 @@ export class SalesOpportunityItem {
   @ApiProperty()
   @Property({ primary: true, autoincrement: true })
   handle?: number;
+
+  /**
+   * Automatically generated sales opportunity number.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isValue', 'isReadOnly', 'isDuplicateCheck'])
+  @SaplingForm({
+    order: 50,
+    group: 'salesOpportunity.groupBasics',
+    groupOrder: 100,
+    width: 1,
+    visible: true,
+    tableOrder: 50,
+    tableVisible: true,
+    mobileOrder: 50,
+    mobileVisible: true,
+  })
+  @Property({ length: 32, nullable: true })
+  number?: string | null;
 
   /**
    * Title or name of the sales opportunity.

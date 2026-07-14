@@ -33,6 +33,7 @@ export class EmailInboxSyncProcessor extends WorkerHost {
         await this.service.synchronizeSubscription(
           job.data.subscriptionHandle,
           job.data.since ? new Date(job.data.since) : undefined,
+          job.data.manual === true,
         );
         return;
       case 'process-inbound-email':

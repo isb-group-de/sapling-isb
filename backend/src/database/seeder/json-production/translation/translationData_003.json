@@ -520,5 +520,23 @@
     "property": "providerAuthenticationRequired",
     "de": "Die Azure- oder Google-Anmeldung muss erneuert werden.",
     "en": "The Azure or Google sign-in must be renewed."
+  },
+  {
+    "entity": "salesOpportunity",
+    "property": "number",
+    "de": "Verkaufschancennummer",
+    "en": "Sales opportunity number"
+  },
+  {
+    "entity": "emailInboxSubscription",
+    "property": "scriptSynchronize",
+    "de": "Postfach jetzt abrufen",
+    "en": "Fetch mailbox now"
+  },
+  {
+    "entity": "emailInboxSubscription",
+    "property": "manualSynchronizationRequested",
+    "de": "Der manuelle Postfachabruf wurde gestartet.",
+    "en": "The manual mailbox fetch was started."
   }
 ]

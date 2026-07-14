@@ -3,6 +3,13 @@ import { Migration } from '@mikro-orm/migrations';
 export class Migration20260713180000 extends Migration {
   override up(): void {
     this.addSql(
+      `alter table "sales_opportunity_item" add column "number" varchar(32) null;`,
+    );
+    this.addSql(
+      `update "sales_opportunity_item" set "number" = 'SO-' || extract(year from "created_at")::int::text || '-' || lpad("handle"::text, 5, '0') where "number" is null;`,
+    );
+
+    this.addSql(
       `create table "inbound_email_status_item" ("handle" varchar(64) not null, "description" varchar(128) not null, "icon" varchar(64) not null default 'mdi-email-outline', "color" varchar(32) not null default '#607D8B', "created_at" timestamptz not null, "updated_at" timestamptz not null, constraint "inbound_email_status_item_pkey" primary key ("handle"));`,
     );
     this.addSql(
@@ -110,5 +117,8 @@ export class Migration20260713180000 extends Migration {
       `drop table if exists "email_inbox_processing_mode_item" cascade;`,
     );
     this.addSql(`drop table if exists "inbound_email_status_item" cascade;`);
+    this.addSql(
+      `alter table "sales_opportunity_item" drop column if exists "number";`,
+    );
   }
 }

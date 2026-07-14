@@ -82,6 +82,13 @@ The original `.eml` is the immutable source and contains the complete MIME
 message, including attachments. Provider secrets and access tokens are never
 written to the message or log.
 
+Customer assignment is sender-driven. For new tickets, opportunities, and
+office tasks, `creatorPerson` and `creatorCompany` are taken only from the
+case-insensitive match of the RFC 822 `From` address. Recipients, the mailbox,
+and the executing user must never become the customer. If the sender cannot be
+resolved unambiguously to both a person and company, automatic creation stops
+in manual review. Updates preserve the existing record's customer assignment.
+
 ## AI Safety And Linking
 
 The email body is explicitly delimited as untrusted data in the agent prompt.
@@ -100,6 +107,14 @@ user's permissions still apply. Delete actions, unrelated entities, multiple
 actions, missing actions, and failed actions are not automatically executed.
 The inbound message links to the created or updated record, so it participates
 in record-centric CRM timelines.
+
+Before creating a record, the agent checks the subject before the body for an
+exact ticket number/external number, office-task reference or event handle, or
+sales-opportunity number. An exact match must be updated instead of creating a
+duplicate. Sales opportunities use their own prefixed number range
+(`SO-YYYY-00001`), generated from the independent opportunity handle sequence.
+This keeps them visibly distinct from ticket numbers and follows the existing
+prefixed internal-case pattern (`IC-YYYY-00001`).
 
 ## Status And Manual Recovery
 
@@ -123,6 +138,10 @@ Administrators can trigger immediate polling or retry one message:
 POST /api/email-inbox/subscriptions/:handle/synchronize
 POST /api/email-inbox/messages/:handle/reprocess
 ```
+
+The subscription table also exposes **Fetch mailbox now** in its record action
+menu. A manual fetch runs exactly once even when automatic polling is disabled;
+the scheduler continues to ignore disabled subscriptions.
 
 The same reprocessing operation is available as **Retry Processing** in an
 inbound email record's dynamic action menu. Viewing linked documents is also

@@ -78,16 +78,6 @@
               />
             </div>
 
-            <v-alert
-              v-if="loadError"
-              type="error"
-              variant="tonal"
-              density="comfortable"
-              class="sapling-permission-provider-dialog__alert"
-            >
-              {{ loadError }}
-            </v-alert>
-
             <div class="sapling-permission-provider-dialog__list sapling-scrollable">
               <v-progress-linear v-if="isLoading" indeterminate color="primary" />
 
@@ -162,21 +152,6 @@
                 {{ $t('providerUserImport.loadMore') }}
               </v-btn>
 
-              <v-alert
-                v-if="importResult"
-                type="success"
-                variant="tonal"
-                density="compact"
-                class="sapling-permission-provider-dialog__result"
-              >
-                {{
-                  $t('providerUserImport.result', {
-                    created: importResult.created,
-                    updated: importResult.updated,
-                    failed: importResult.failed,
-                  })
-                }}
-              </v-alert>
             </div>
           </div>
         </template>
@@ -211,6 +186,7 @@ import ApiProviderUsersService, {
   type ProviderUserProvider,
 } from '@/services/api.provider-users.service'
 import { i18n } from '@/i18n'
+import { useSaplingMessageCenter } from '@/composables/system/useSaplingMessageCenter'
 
 const props = defineProps<{
   modelValue: boolean
@@ -224,6 +200,7 @@ const emit = defineEmits<{
 }>()
 
 const currentPersonStore = useCurrentPersonStore()
+const messageCenter = useSaplingMessageCenter()
 const provider = ref<ProviderUserProvider>('azure')
 const search = ref('')
 const users = ref<ProviderUser[]>([])
@@ -234,8 +211,6 @@ const nextPageToken = ref<string | null>(null)
 const isLoading = ref(false)
 const isLoadingMore = ref(false)
 const isSaving = ref(false)
-const loadError = ref<string | null>(null)
-const importResult = ref<ProviderUserImportResponse | null>(null)
 let searchDebounceTimeout: ReturnType<typeof setTimeout> | null = null
 let activeLoadController: AbortController | null = null
 let latestLoadRequestId = 0
@@ -283,7 +258,6 @@ watch(
     selectedRoles.value = props.selectedRole ? [props.selectedRole as SaplingGenericItem] : []
     selectedCompany.value = null
     selectedUserIds.value = []
-    importResult.value = null
     void reloadUsers()
   },
   { immediate: true },
@@ -292,7 +266,6 @@ watch(
 watch(provider, () => {
   if (props.modelValue) {
     selectedUserIds.value = []
-    importResult.value = null
     reloadUsersImmediately()
   }
 })
@@ -334,7 +307,6 @@ async function reloadUsers() {
   const requestId = ++latestLoadRequestId
 
   isLoading.value = true
-  loadError.value = null
   nextPageToken.value = null
   try {
     const response = await ApiProviderUsersService.list({
@@ -352,7 +324,6 @@ async function reloadUsers() {
       return
     }
     users.value = []
-    loadError.value = getErrorMessage(error)
   } finally {
     if (activeLoadController === loadController) {
       activeLoadController = null
@@ -367,7 +338,6 @@ async function loadMoreUsers() {
   }
 
   isLoadingMore.value = true
-  loadError.value = null
   try {
     const response = await ApiProviderUsersService.list({
       provider: provider.value,
@@ -377,8 +347,8 @@ async function loadMoreUsers() {
     const knownIds = new Set(users.value.map((user) => user.id))
     users.value = [...users.value, ...response.users.filter((user) => !knownIds.has(user.id))]
     nextPageToken.value = response.nextPageToken ?? null
-  } catch (error: unknown) {
-    loadError.value = getErrorMessage(error)
+  } catch {
+    // API errors are reported by the provider-user service through the message center.
   } finally {
     isLoadingMore.value = false
   }
@@ -413,7 +383,6 @@ async function saveImport() {
   }
 
   isSaving.value = true
-  loadError.value = null
   try {
     const result = await ApiProviderUsersService.importUsers({
       provider: provider.value,
@@ -421,11 +390,20 @@ async function saveImport() {
       roleHandles: selectedRoleHandles.value,
       companyHandle: getNumericHandle(selectedCompany.value),
     })
-    importResult.value = result
+    messageCenter.pushMessage(
+      'success',
+      i18n.global.t('providerUserImport.result', {
+        created: result.created,
+        updated: result.updated,
+        failed: result.failed,
+      }),
+      '',
+      'providerUserImport',
+    )
     emit('imported', result)
     selectedUserIds.value = []
-  } catch (error: unknown) {
-    loadError.value = getErrorMessage(error)
+  } catch {
+    // API errors are reported by the provider-user service through the message center.
   } finally {
     isSaving.value = false
   }
@@ -459,26 +437,6 @@ function isAbortError(error: unknown): boolean {
   )
 }
 
-function getErrorMessage(error: unknown): string {
-  let message = ''
-  if (
-    typeof error === 'object' &&
-    error !== null &&
-    'response' in error &&
-    typeof (error as { response?: { data?: { message?: unknown } } }).response?.data?.message ===
-      'string'
-  ) {
-    message = String((error as { response: { data: { message: string } } }).response.data.message)
-  } else if (error instanceof Error) {
-    message = error.message
-  }
-
-  if (message) {
-    return i18n.global.te(message) ? i18n.global.t(message) : message
-  }
-
-  return i18n.global.t('exception.unknownError')
-}
 </script>
 
 <style scoped>
@@ -609,10 +567,6 @@ function getErrorMessage(error: unknown): string {
 .sapling-permission-provider-dialog__footer {
   flex: 0 0 auto;
   gap: var(--sapling-gap-md);
-}
-
-.sapling-permission-provider-dialog__result {
-  max-width: min(100%, 520px);
 }
 
 @media (max-width: 900px) {

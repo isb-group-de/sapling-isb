@@ -2,6 +2,7 @@ import { EmailInboxSubscriptionItem } from '../../entity/EmailInboxSubscriptionI
 import { InboundEmailItem } from '../../entity/InboundEmailItem';
 import { CompanyItem } from '../../entity/CompanyItem';
 import { PersonItem } from '../../entity/PersonItem';
+import { AiChatToolActionItem } from '../../entity/AiChatToolActionItem';
 
 jest.mock('../../constants/project.constants', () => ({
   ...jest.requireActual('../../constants/project.constants'),
@@ -16,6 +17,7 @@ jest.mock('../document/document.service', () => ({
 }));
 
 import {
+  bindInboundSenderCustomer,
   buildInboundEmailAgentPrompt,
   EmailInboxSyncService,
   isEmailInboxSubscriptionDue,
@@ -176,8 +178,170 @@ describe('EmailInboxSyncService helpers', () => {
       expect(prompt).toContain('--- BEGIN UNTRUSTED EMAIL ---');
       expect(prompt).toContain('person=7, company=8');
       expect(prompt).toContain('Original document=9');
+      expect(prompt).toContain(
+        'customer must be resolved exclusively from the sender address',
+      );
+      expect(prompt).toContain(
+        'Never use a To/Cc recipient, the mailbox address, or the processing user',
+      );
+      expect(prompt).toContain('inspect the subject before the body');
+      expect(prompt).toContain('never create a duplicate');
     },
   );
+
+  it('overwrites a new record customer with the deterministic sender match', () => {
+    const email = {
+      person: { handle: 7 },
+      company: { handle: 8 },
+    } as unknown as InboundEmailItem;
+    const action = {
+      toolName: 'generic_create',
+      arguments: {
+        entityHandle: 'ticket',
+        data: { creatorPerson: 99, creatorCompany: 98, title: 'Request' },
+      },
+    } as unknown as AiChatToolActionItem;
+
+    expect(bindInboundSenderCustomer(email, action)).toEqual({
+      prepared: true,
+      personHandle: 7,
+      companyHandle: 8,
+    });
+    expect(action.arguments?.data).toEqual({
+      creatorPerson: 7,
+      creatorCompany: 8,
+      title: 'Request',
+    });
+  });
+
+  it('allows one explicit synchronization while automatic polling is disabled', async () => {
+    const subscription = {
+      handle: 3,
+      isActive: false,
+      mailbox: {
+        handle: 4,
+        email: 'support@example.com',
+        provider: { handle: 'azure' },
+      },
+      processingPerson: {
+        handle: 5,
+        email: 'support@example.com',
+        type: { handle: 'azure' },
+      },
+      intervalMinutes: 1,
+      importedCount: 0,
+      processedCount: 0,
+      manualReviewCount: 0,
+    } as unknown as EmailInboxSubscriptionItem;
+    const em = {
+      fork: jest.fn(),
+      findOne: jest.fn().mockResolvedValue(subscription),
+      flush: jest.fn().mockResolvedValue(undefined),
+    };
+    em.fork.mockReturnValue(em);
+    const providerService = {
+      fetchMessages: jest.fn().mockResolvedValue([]),
+    };
+    const service = new EmailInboxSyncService(
+      em as never,
+      providerService as never,
+      {} as never,
+      {} as never,
+      { add: jest.fn() } as never,
+    );
+
+    await expect(service.synchronizeSubscription(3)).resolves.toEqual({
+      imported: 0,
+      skipped: 0,
+    });
+    expect(providerService.fetchMessages).not.toHaveBeenCalled();
+
+    await expect(
+      service.synchronizeSubscription(
+        3,
+        new Date('2026-07-14T08:00:00.000Z'),
+        true,
+      ),
+    ).resolves.toEqual({ imported: 0, skipped: 0 });
+    expect(providerService.fetchMessages).toHaveBeenCalledWith(
+      subscription.mailbox,
+      subscription.processingPerson,
+      new Date('2026-07-14T08:00:00.000Z'),
+    );
+    expect(subscription.lastSuccessAt).toBeInstanceOf(Date);
+  });
+
+  it('marks an immediate subscription job as a manual run', async () => {
+    const subscription = {
+      handle: 3,
+      isActive: false,
+      intervalMinutes: 1,
+      lastRunAt: new Date('2026-07-14T07:55:00.000Z'),
+    } as EmailInboxSubscriptionItem;
+    const em = {
+      fork: jest.fn(),
+      findOne: jest.fn().mockResolvedValue(subscription),
+    };
+    em.fork.mockReturnValue(em);
+    const queue = { add: jest.fn().mockResolvedValue(undefined) };
+    const service = new EmailInboxSyncService(
+      em as never,
+      {} as never,
+      {} as never,
+      {} as never,
+      queue as never,
+    );
+
+    await service.enqueueSubscriptionNow(3);
+
+    expect(queue.add).toHaveBeenCalledWith(
+      'import-email-inbox',
+      expect.objectContaining({ subscriptionHandle: 3, manual: true }),
+      expect.objectContaining({
+        jobId: expect.stringMatching(/^email-inbox-3-manual-/),
+      }),
+    );
+  });
+
+  it('preserves the existing customer when updating a matched record', () => {
+    const email = {
+      person: { handle: 7 },
+      company: { handle: 8 },
+    } as unknown as InboundEmailItem;
+    const action = {
+      toolName: 'generic_update',
+      arguments: {
+        entityHandle: 'ticket',
+        handle: 42,
+        data: { creatorPerson: 99, creatorCompany: 98, title: 'Reply' },
+      },
+    } as unknown as AiChatToolActionItem;
+
+    expect(bindInboundSenderCustomer(email, action).prepared).toBe(true);
+    expect(action.arguments?.data).toEqual({ title: 'Reply' });
+  });
+
+  it('requires review instead of assigning a recipient when the sender is unresolved', () => {
+    const action = {
+      toolName: 'generic_create',
+      arguments: {
+        entityHandle: 'ticket',
+        data: { creatorPerson: 99, creatorCompany: 98 },
+      },
+    } as unknown as AiChatToolActionItem;
+
+    expect(
+      bindInboundSenderCustomer({} as InboundEmailItem, action),
+    ).toEqual({
+      prepared: false,
+      personHandle: null,
+      companyHandle: null,
+    });
+    expect(action.arguments?.data).toEqual({
+      creatorPerson: 99,
+      creatorCompany: 98,
+    });
+  });
 
   it('persists an inbound message, matches its sender and stores the complete source document', async () => {
     const subscription = {
@@ -402,6 +566,8 @@ describe('EmailInboxSyncService helpers', () => {
         toRecipients: ['support@example.com'],
         ccRecipients: [],
         receivedAt: new Date('2026-07-13T12:00:00.000Z'),
+        person: { handle: 7 },
+        company: { handle: 8 },
         processingAttempts: 0,
         processingLog: [],
       } as unknown as InboundEmailItem;

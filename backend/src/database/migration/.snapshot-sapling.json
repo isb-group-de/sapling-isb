@@ -30408,6 +30408,23 @@
           "enumItems": [],
           "mappedType": "string"
         },
+        "number": {
+          "name": "number",
+          "type": "varchar(32)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": 32,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
         "pain_points": {
           "name": "pain_points",
           "type": "text",
