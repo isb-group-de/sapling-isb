@@ -7,6 +7,10 @@ import { EntityManager } from '@mikro-orm/core';
 import { EntityItem } from '../../entity/EntityItem';
 import { DocumentTypeItem } from '../../entity/DocumentTypeItem';
 import { PersonItem } from '../../entity/PersonItem';
+import {
+  resolveUploadedDocumentFilename,
+  resolveUploadedDocumentMimeType,
+} from './document-mime.util';
 
 /**
  * @class
@@ -63,8 +67,11 @@ export class DocumentService {
     const document = new DocumentItem();
     document.reference = reference;
     document.path = guid;
-    document.filename = file.originalname;
-    document.mimetype = file.mimetype;
+    document.filename = resolveUploadedDocumentFilename(file.originalname);
+    document.mimetype = resolveUploadedDocumentMimeType(
+      document.filename,
+      file.mimetype,
+    );
     document.length = file.size;
     document.description = description;
     document.entity = entity;

@@ -53,6 +53,7 @@ export function useSaplingTable(
   isUseQueryParameter?: boolean,
   autoInitialize = true,
   getInitializeEntityStateOptions: () => InitializeEntityStateOptions = () => ({}),
+  additionalListProjectionFields: string[] = [],
 ) {
   // #region State
   const items = ref<SaplingGenericItem[]>([])
@@ -133,12 +134,15 @@ export function useSaplingTable(
     ]
   })
   const selectedFormConfigLabel = computed(() => selectedFormConfig.value?.name ?? '')
-  const listProjectionFields = computed(() =>
-    getListProjectionFieldNames(
-      entityTemplates.value,
-      currentPermissionStore.accumulatedPermission ?? [],
-    ),
-  )
+  const listProjectionFields = computed(() => [
+    ...new Set([
+      ...getListProjectionFieldNames(
+        entityTemplates.value,
+        currentPermissionStore.accumulatedPermission ?? [],
+      ),
+      ...additionalListProjectionFields,
+    ]),
+  ])
   const readableReferenceRelations = computed(() =>
     getReadableReferenceRelationNames(
       entityTemplates.value,

@@ -158,6 +158,25 @@ function createManualTestHost(entityHandle: Ref<string>) {
   })
 }
 
+function createAdditionalProjectionTestHost(
+  entityHandle: Ref<string>,
+  additionalListProjectionFields: string[],
+) {
+  return defineComponent({
+    setup() {
+      return useSaplingTable(
+        entityHandle,
+        25,
+        false,
+        true,
+        undefined,
+        additionalListProjectionFields,
+      )
+    },
+    template: '<div />',
+  })
+}
+
 function createBeforeInitialLoadTestHost(
   entityHandle: Ref<string>,
   beforeInitialLoad: (table: ReturnType<typeof useSaplingTable>) => Promise<void> | void,
@@ -190,6 +209,17 @@ function mountQueryEnabledTestHost(entityHandle: Ref<string>) {
 
 function mountManualTestHost(entityHandle: Ref<string>) {
   const wrapper = mount(createManualTestHost(entityHandle))
+  mountedWrappers.push(wrapper)
+  return wrapper
+}
+
+function mountAdditionalProjectionTestHost(
+  entityHandle: Ref<string>,
+  additionalListProjectionFields: string[],
+) {
+  const wrapper = mount(
+    createAdditionalProjectionTestHost(entityHandle, additionalListProjectionFields),
+  )
   mountedWrappers.push(wrapper)
   return wrapper
 }
@@ -386,6 +416,24 @@ describe('useSaplingTable', () => {
       }),
     )
     expect(wrapper.vm.search).toBe('Ada')
+  })
+
+  it('includes view-required fields that are hidden from the table projection', async () => {
+    loadGenericMock.mockResolvedValue(undefined)
+    apiFindMock.mockResolvedValue({ data: [], meta: { total: 0 } })
+
+    mountAdditionalProjectionTestHost(ref('partner'), ['filename', 'mimetype', 'filename'])
+    await flushPromises()
+
+    expect(apiFindMock).toHaveBeenCalledWith(
+      'partner',
+      expect.objectContaining({
+        fields: expect.arrayContaining(['filename', 'mimetype']),
+      }),
+    )
+
+    const fields = apiFindMock.mock.calls[0]?.[1]?.fields as string[]
+    expect(fields.filter((field) => field === 'filename')).toHaveLength(1)
   })
 
   it('runs the initial load hook before the first request', async () => {

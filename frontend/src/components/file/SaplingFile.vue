@@ -136,7 +136,14 @@ const {
   onColumnFiltersUpdate,
   onSortByUpdate,
   parentFilter,
-} = useSaplingTable(entityHandleRef, DEFAULT_PAGE_SIZE_SMALL, true)
+} = useSaplingTable(
+  entityHandleRef,
+  DEFAULT_PAGE_SIZE_SMALL,
+  true,
+  true,
+  undefined,
+  ['filename', 'mimetype'],
+)
 
 const selectedHandle = ref('')
 
@@ -164,7 +171,7 @@ function onSelectedDocument(val: SaplingGenericItem[]) {
   const nextItem = val[0] ?? null
   selectedHandle.value = getSelectedDocumentHandle(nextItem ?? undefined)
   selectedMimeType.value = nextItem?.mimetype || ''
-  selectedFilename.value = nextItem?.filename || ''
+  selectedFilename.value = normalizeStoredFilename(nextItem?.filename || '')
 }
 
 function clearSelection() {
@@ -195,7 +202,7 @@ const previewComponent = computed(() => {
   if (previewType.value === 'audio') return SaplingFileAudio
   if (previewType.value === 'video') return SaplingFileVideo
   if (previewType.value === 'json') return SaplingFileJSON
-  if (previewType.value === 'eml') return SaplingFileMail
+  if (previewType.value === 'mail') return SaplingFileMail
   return SaplingFileNoPreview
 })
 
@@ -228,10 +235,11 @@ const previewProps = computed(() => {
       fileName: selectedFilename.value,
     }
   }
-  if (previewType.value === 'eml') {
+  if (previewType.value === 'mail') {
     return {
       mailUrl: url,
       fileName: selectedFilename.value,
+      mimeType: selectedMimeType.value,
     }
   }
 
@@ -248,12 +256,32 @@ function getPreviewType(mimetype: string, filename: string) {
   if (isAudioFile(normalizedMimeType, normalizedFilename)) return 'audio'
   if (isVideoFile(normalizedMimeType, normalizedFilename)) return 'video'
   if (normalizedMimeType === 'application/json') return 'json'
-  if (isEmlFile(normalizedMimeType, normalizedFilename)) return 'eml'
+  if (isMailFile(normalizedMimeType, normalizedFilename)) return 'mail'
   return 'none'
 }
 
-function isEmlFile(mimetype: string, filename: string) {
-  return mimetype === 'message/rfc822' || filename.endsWith('.eml')
+function isMailFile(mimetype: string, filename: string) {
+  return (
+    mimetype === 'message/rfc822' ||
+    mimetype === 'application/vnd.ms-outlook' ||
+    mimetype === 'application/x-msg' ||
+    filename.endsWith('.eml') ||
+    filename.endsWith('.msg')
+  )
+}
+
+function normalizeStoredFilename(filename: string) {
+  if (!filename || [...filename].some((character) => character.charCodeAt(0) > 0xff)) {
+    return filename
+  }
+
+  const bytes = Uint8Array.from(filename, (character) => character.charCodeAt(0))
+
+  try {
+    return new TextDecoder('utf-8', { fatal: true }).decode(bytes)
+  } catch {
+    return filename
+  }
 }
 
 function isAudioFile(mimetype: string, filename: string) {

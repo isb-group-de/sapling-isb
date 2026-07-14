@@ -42,6 +42,12 @@ backend/src/database/seeder/json-demonstration/documentType/
 
 `reference` uses `@SaplingGenericReference({ entityField: 'entity', handleField: 'reference' })`, so it can point to different entity types without a concrete foreign key.
 
+Upload MIME metadata is normalized per file. In particular, `.eml` is stored as
+`message/rfc822` and `.msg` as `application/vnd.ms-outlook`, even when the
+browser reports an empty or generic binary MIME type during a multi-file upload.
+Multipart filenames that arrive as reversible UTF-8/Latin-1 mojibake are also
+decoded before storage, so names containing umlauts remain intact after upload.
+
 `DocumentTypeItem` is reference data for classifying documents. Use stable handles such as `document`, `offer`, or `contract` rather than changing them after seed data is in use.
 
 ## d.velop Cloud Overlay
@@ -96,6 +102,12 @@ All document endpoints require `SessionOrBearerAuthGuard`.
 | `POST /api/document/dvelop/config/:connectionHandle/import`       | `allowUpdate` on `dvelopConnection`         | Imports normalized d.velop Cloud repositories, categories, and properties |
 | `GET /api/document/download/:handle`                              | `allowRead` on the document's target entity | Downloads original file as attachment                         |
 | `GET /api/document/preview/:handle`                               | `allowRead` on the document's target entity | Previews PDFs inline, other files as attachment               |
+
+The frontend file browser also previews EML and Outlook MSG mail files. It
+loads the protected download response with the current session, parses the mail
+locally, sanitizes HTML, resolves embedded CID images, and exposes non-inline
+mail attachments as download chips. Attachment bytes remain local to the
+browser and retain their filename and MIME type when downloaded.
 
 Upload expects multipart form data:
 
@@ -152,4 +164,7 @@ npm run type-check:frontend
 npm test --prefix backend -- generic-permission.guard.spec.ts --runInBand
 ```
 
-For UI changes, manually verify upload from a table context menu, preview a PDF, download a non-PDF file, and send an email with an attached document in a test environment.
+For UI changes, manually verify upload from a table context menu, preview a PDF,
+preview both EML and MSG files, download an attachment from each mail preview,
+download a non-PDF file, and send an email with an attached document in a test
+environment.

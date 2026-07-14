@@ -276,7 +276,8 @@ Check:
 - referenced entity and record still exist
 - file exists under `backend/storage`
 - backend process can read the file
-- MIME type is previewable; inline preview is PDF-focused
+- MIME type or filename is previewable; PDFs, images, media, JSON, EML, and MSG
+  have dedicated frontend viewers
 - proxy `client_max_body_size` and frontend upload limit
 
 ### Queue Jobs Do Not Run

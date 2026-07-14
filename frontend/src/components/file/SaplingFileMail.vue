@@ -1,6 +1,6 @@
 <template>
   <div
-    class="sapling-file-preview sapling-file-mail sapling-file-viewer sapling-file-preview-fullheight"
+    class="sapling-file-preview sapling-file-mail sapling-preview-viewer sapling-file-viewer sapling-preview-fullheight sapling-file-preview-fullheight"
   >
     <div v-if="isLoading" class="sapling-file-mail-layout">
       <div class="sapling-file-mail-summary sapling-preview-panel">
@@ -30,7 +30,7 @@
               {{ mailPreview.subject || fallbackSubject }}
             </div>
           </div>
-          <v-chip color="primary" size="small" variant="tonal">EML</v-chip>
+          <v-chip color="primary" size="small" variant="tonal">{{ mailFormatLabel }}</v-chip>
         </div>
 
         <div class="sapling-file-mail-meta-grid">
@@ -48,12 +48,17 @@
           <div class="sapling-file-mail-label">{{ $t('document.attachments') }}</div>
           <div class="sapling-file-mail-chip-list">
             <v-chip
-              v-for="attachment in mailPreview.attachments"
-              :key="attachment"
+              v-for="(attachment, index) in mailPreview.attachments"
+              :key="`${attachment.filename}-${index}`"
+              :aria-label="`${$t('global.download')}: ${attachment.filename}`"
+              :download="attachment.filename"
+              :href="attachment.downloadUrl"
+              prepend-icon="mdi-download"
               size="small"
+              tag="a"
               variant="outlined"
             >
-              {{ attachment }}
+              {{ attachment.filename }}
             </v-chip>
           </div>
         </div>
@@ -79,10 +84,18 @@
 <script lang="ts" setup>
 import DOMPurify from 'dompurify'
 import PostalMime, { type Address, type Email } from 'postal-mime'
-import { computed, ref, watch } from 'vue'
+import type { FieldsData } from '@kenjiuno/msgreader'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { i18n } from '@/i18n'
 import saplingFileMailPreviewStylesHref from '@/assets/styles/components/SaplingFileMailPreview.css?url'
+
+type MailAttachmentData = {
+  filename: string
+  mimeType: string
+  content: ArrayBuffer
+  downloadUrl?: string
+}
 
 type MailPreviewData = {
   subject: string
@@ -93,12 +106,13 @@ type MailPreviewData = {
   date: string
   bodyHtml: string
   bodyText: string
-  attachments: string[]
+  attachments: MailAttachmentData[]
 }
 
 const props = defineProps<{
   mailUrl: string
   fileName?: string
+  mimeType?: string
 }>()
 
 const { locale, t } = useI18n()
@@ -119,6 +133,7 @@ const mailPreview = ref<MailPreviewData>({
 })
 
 const fallbackSubject = computed(() => props.fileName || t('document.untitledMessage'))
+const mailFormatLabel = computed(() => (isMsgFile(props.mimeType, props.fileName) ? 'MSG' : 'EML'))
 
 const metadataEntries = computed(() => {
   const entries = [
@@ -149,6 +164,7 @@ watch(
 )
 
 function resetPreview() {
+  releaseAttachmentUrls()
   errorMessage.value = ''
   mailPreview.value = {
     subject: '',
@@ -162,6 +178,8 @@ function resetPreview() {
     attachments: [],
   }
 }
+
+onBeforeUnmount(releaseAttachmentUrls)
 
 async function loadPreview() {
   const currentToken = ++requestToken
@@ -185,18 +203,32 @@ async function loadPreview() {
     }
 
     const buffer = await response.arrayBuffer()
-    const nextPreview = await parseEml(buffer)
+    const nextPreview = isMsgFile(props.mimeType, props.fileName)
+      ? await parseMsg(buffer)
+      : await parseEml(buffer)
 
     if (currentToken !== requestToken) {
       return
     }
 
-    mailPreview.value = nextPreview
-  } catch {
+    releaseAttachmentUrls()
+    mailPreview.value = {
+      ...nextPreview,
+      attachments: nextPreview.attachments.map((attachment) => ({
+        ...attachment,
+        downloadUrl: URL.createObjectURL(
+          new Blob([attachment.content], {
+            type: attachment.mimeType || 'application/octet-stream',
+          }),
+        ),
+      })),
+    }
+  } catch (error) {
     if (currentToken !== requestToken) {
       return
     }
 
+    console.error('Failed to parse mail preview', error)
     resetPreview()
     errorMessage.value = i18n.global.t('document.noPreviewAvailable')
   } finally {
@@ -221,12 +253,7 @@ async function parseEml(buffer: ArrayBuffer): Promise<MailPreviewData> {
     }
   }
 
-  // Ersetze <img src="cid:..."> durch data-URLs
-  let html = email.html || ''
-  html = html.replace(/<img([^>]+)src=["']cid:([^"'>]+)["']/gi, (match, pre, cid) => {
-    const dataUrl = cidMap[cid] || `cid:${cid}`
-    return `<img${pre}src="${dataUrl}"`
-  })
+  const html = replaceCidSources(email.html || '', cidMap)
 
   return {
     subject: email.subject || '',
@@ -237,7 +264,77 @@ async function parseEml(buffer: ArrayBuffer): Promise<MailPreviewData> {
     date: formatDateValue(email.date),
     bodyHtml: sanitizeHtml(html),
     bodyText: normalizeBodyText(email.text || ''),
-    attachments: email.attachments.map(getAttachmentLabel).filter(Boolean),
+    attachments: email.attachments
+      .filter((attachment) => attachment.disposition !== 'inline' && Boolean(attachment.content))
+      .map((attachment) => ({
+        filename: getAttachmentLabel(attachment),
+        mimeType: attachment.mimeType || 'application/octet-stream',
+        content: toArrayBuffer(attachment.content as ArrayBuffer),
+      })),
+  }
+}
+
+async function parseMsg(buffer: ArrayBuffer): Promise<MailPreviewData> {
+  type MsgReaderConstructor = typeof import('@kenjiuno/msgreader')['default']
+  const msgReaderModule = await import('@kenjiuno/msgreader')
+  const defaultExport = msgReaderModule.default as
+    | MsgReaderConstructor
+    | { default: MsgReaderConstructor }
+  const MsgReaderClass =
+    typeof defaultExport === 'function' ? defaultExport : defaultExport.default
+  const reader = new MsgReaderClass(buffer)
+  const message = reader.getFileData()
+
+  if (message.error) {
+    throw new Error(message.error)
+  }
+
+  const cidMap: Record<string, string> = {}
+  const attachments: MailAttachmentData[] = []
+
+  for (const attachmentInfo of message.attachments ?? []) {
+    const attachment = reader.getAttachment(attachmentInfo)
+    const content = toArrayBuffer(attachment.content)
+    const mimeType = getMsgAttachmentMimeType(attachmentInfo)
+
+    if (attachmentInfo.pidContentId) {
+      cidMap[attachmentInfo.pidContentId.replace(/[<>]/g, '')] = arrayBufferToDataUrl(
+        content,
+        mimeType,
+      )
+    }
+
+    if (!attachmentInfo.attachmentHidden) {
+      attachments.push({
+        filename:
+          attachment.fileName ||
+          attachmentInfo.fileName ||
+          attachmentInfo.fileNameShort ||
+          i18n.global.t('document.unnamedAttachment'),
+        mimeType,
+        content,
+      })
+    }
+  }
+
+  return {
+    subject: message.subject || '',
+    from: formatMailbox({
+      name: message.senderName || '',
+      address:
+        message.senderSmtpAddress ||
+        message.sentRepresentingSmtpAddress ||
+        message.senderEmail,
+    }),
+    to: formatMsgRecipients(message.recipients, 'to'),
+    cc: formatMsgRecipients(message.recipients, 'cc'),
+    bcc: formatMsgRecipients(message.recipients, 'bcc'),
+    date: formatDateValue(
+      message.clientSubmitTime || message.messageDeliveryTime || message.creationTime,
+    ),
+    bodyHtml: sanitizeHtml(replaceCidSources(decodeMsgHtml(message), cidMap)),
+    bodyText: normalizeBodyText(message.body || ''),
+    attachments,
   }
 }
 
@@ -249,6 +346,104 @@ function arrayBufferToBase64(buffer: ArrayBuffer): string {
     binary += String.fromCharCode(bytes[i])
   }
   return btoa(binary)
+}
+
+function arrayBufferToDataUrl(buffer: ArrayBuffer, mimeType: string): string {
+  return `data:${mimeType};base64,${arrayBufferToBase64(buffer)}`
+}
+
+function toArrayBuffer(content: ArrayBuffer | Uint8Array): ArrayBuffer {
+  const bytes = content instanceof Uint8Array ? content : new Uint8Array(content)
+  const copy = new Uint8Array(bytes.byteLength)
+  copy.set(bytes)
+  return copy.buffer
+}
+
+function isMsgFile(mimeType?: string, fileName?: string): boolean {
+  const normalizedMimeType = (mimeType || '').toLowerCase()
+  const normalizedFileName = (fileName || '').toLowerCase()
+
+  return (
+    normalizedMimeType === 'application/vnd.ms-outlook' ||
+    normalizedMimeType === 'application/x-msg' ||
+    normalizedFileName.endsWith('.msg')
+  )
+}
+
+function decodeMsgHtml(message: FieldsData): string {
+  if (message.bodyHtml) {
+    return message.bodyHtml
+  }
+
+  if (!message.html?.byteLength) {
+    return ''
+  }
+
+  const isUtf16Le = message.html[0] === 0xff && message.html[1] === 0xfe
+  const isUtf16Be = message.html[0] === 0xfe && message.html[1] === 0xff
+  if (isUtf16Le || isUtf16Be) {
+    return new TextDecoder(isUtf16Le ? 'utf-16le' : 'utf-16be')
+      .decode(message.html)
+      .replace(/^\uFEFF/, '')
+  }
+
+  try {
+    return new TextDecoder('utf-8', { fatal: true }).decode(message.html)
+  } catch {
+    return new TextDecoder('windows-1252').decode(message.html)
+  }
+}
+
+function formatMsgRecipients(
+  recipients: FieldsData[] | undefined,
+  recipientType: 'to' | 'cc' | 'bcc',
+): string {
+  return (recipients ?? [])
+    .filter((recipient) => recipient.recipType === recipientType)
+    .map((recipient) =>
+      formatMailbox({
+        name: recipient.name || '',
+        address: recipient.smtpAddress || recipient.email,
+      }),
+    )
+    .filter(Boolean)
+    .join(', ')
+}
+
+function getMsgAttachmentMimeType(attachment: FieldsData): string {
+  if (attachment.attachMimeTag) {
+    return attachment.attachMimeTag
+  }
+
+  const extension = (attachment.extension || attachment.fileName || '').toLowerCase()
+  if (extension.endsWith('.png')) return 'image/png'
+  if (extension.endsWith('.jpg') || extension.endsWith('.jpeg')) return 'image/jpeg'
+  if (extension.endsWith('.gif')) return 'image/gif'
+  if (extension.endsWith('.pdf')) return 'application/pdf'
+  if (extension.endsWith('.eml')) return 'message/rfc822'
+  if (extension.endsWith('.msg')) return 'application/vnd.ms-outlook'
+
+  return 'application/octet-stream'
+}
+
+function replaceCidSources(html: string, cidMap: Record<string, string>): string {
+  return html.replace(/(<(?:img|source)\b[^>]*\bsrc=["'])cid:([^"'>]+)(["'])/gi, (
+    match,
+    prefix,
+    cid,
+    suffix,
+  ) => {
+    const dataUrl = cidMap[String(cid).replace(/[<>]/g, '')]
+    return dataUrl ? `${prefix}${dataUrl}${suffix}` : match
+  })
+}
+
+function releaseAttachmentUrls() {
+  for (const attachment of mailPreview.value.attachments) {
+    if (attachment.downloadUrl) {
+      URL.revokeObjectURL(attachment.downloadUrl)
+    }
+  }
 }
 
 function formatSingleAddress(address?: Address): string {

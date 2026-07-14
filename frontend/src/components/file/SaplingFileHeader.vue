@@ -68,6 +68,10 @@ const previewBadge = computed(() => {
     return i18n.global.t('document.file')
   }
 
+  if (props.previewType === 'mail') {
+    return props.selectedFilename.toLowerCase().endsWith('.msg') ? 'MSG' : 'EML'
+  }
+
   return props.previewType.toUpperCase()
 })
 
@@ -76,7 +80,7 @@ const headerIcon = computed(() => {
     return 'mdi-file-search-outline'
   }
 
-  if (props.previewType === 'eml') {
+  if (props.previewType === 'mail') {
     return 'mdi-email-outline'
   }
 
