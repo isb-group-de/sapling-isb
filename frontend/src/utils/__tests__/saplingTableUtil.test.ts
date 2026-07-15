@@ -276,6 +276,18 @@ describe('saplingTableUtil', () => {
     ).toEqual([expect.objectContaining({ name: 'company' })])
   })
 
+  it('keeps a configured handle visible when it is the only dialog field', () => {
+    const handleTemplate = createTemplate({
+      name: 'handle',
+      isPrimaryKey: true,
+      options: ['isValue'],
+      formVisible: true,
+    })
+
+    expect(getEditDialogHeaders([handleTemplate], 'edit', true)).toEqual([handleTemplate])
+    expect(getEditDialogHeaders([handleTemplate], 'readonly', true)).toEqual([handleTemplate])
+  })
+
   it('keeps generic reference templates visible despite system metadata', () => {
     const template = createTemplate({
       name: 'reference',

@@ -264,15 +264,20 @@ export function getEditDialogHeaders(
   showReference: boolean,
   permissions: AccumulatedPermission[] = [],
 ) {
-  return entityTemplates.filter(
+  const visibleTemplates = entityTemplates.filter(
     (x) =>
       getTemplateConfiguredFormVisible(x) === true &&
       !x.isAutoIncrement &&
       (x.inlineCollection || !['1:m', 'm:n', 'n:m', '1:1'].includes(x.kind ?? '')) &&
-      (x.name !== 'handle' || mode === 'create') &&
       (!x.isReference || showReference) &&
       (!x.referenceName || permissions?.find((p) => p.entityHandle === x.referenceName)?.allowRead),
   )
+
+  if (mode === 'create' || !visibleTemplates.some((template) => template.name !== 'handle')) {
+    return visibleTemplates
+  }
+
+  return visibleTemplates.filter((template) => template.name !== 'handle')
 }
 // Helper function for generating table headers for a single entity
 export function getTableHeaders(

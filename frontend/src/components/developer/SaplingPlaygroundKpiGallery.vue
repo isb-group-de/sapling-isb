@@ -7,7 +7,7 @@
         class="fill-height glass-panel"
         type="paragraph"
       />
-      <SaplingKpiCard v-else :kpi="card.kpi" :kpi-idx="card.index" />
+      <SaplingKpiCard v-else :kpi="card.kpi" :kpi-idx="card.index" :tilt="false" />
     </v-col>
   </v-row>
 </template>

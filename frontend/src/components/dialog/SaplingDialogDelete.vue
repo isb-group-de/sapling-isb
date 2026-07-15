@@ -7,6 +7,7 @@
     :eyebrow="$t('global.confirmDelete')"
     :title="$t('global.confirmDelete')"
     :subtitle="$t('global.confirmDeleteQuestion')"
+    :tilt="tilt"
     card-class="sapling-dialog-delete-card"
     persistent
     @update:model-value="handleDialogUpdate"
@@ -31,6 +32,7 @@ import SaplingDialogConfirm from '@/components/dialog/SaplingDialogConfirm.vue'
 defineProps<{
   modelValue: boolean
   item: unknown | null
+  tilt?: boolean
 }>()
 
 const emit = defineEmits<{

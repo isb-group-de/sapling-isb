@@ -1,5 +1,5 @@
 <template>
-  <SaplingSurface :as="VCard" outlined class="sapling-kpi-card" tilt>
+  <SaplingSurface :as="VCard" outlined class="sapling-kpi-card" :tilt="tilt">
     <div class="sapling-section-header sapling-kpi-card__header">
       <div class="sapling-kpi-card__headline">
         <div class="sapling-chip-row sapling-kpi-card__meta-row">
@@ -100,12 +100,15 @@ import type { KPIItem } from '@/entity/entity'
 export interface SaplingKpiCardProps {
   kpi: KPIItem | null
   kpiIdx: number
+  tilt?: boolean
   onDelete?: (idx: number) => void
   onRefresh?: (idx: number) => void
 }
 
 // #region Props & Composable
-const props = defineProps<SaplingKpiCardProps>()
+const props = withDefaults(defineProps<SaplingKpiCardProps>(), {
+  tilt: true,
+})
 
 const {
   setRef,

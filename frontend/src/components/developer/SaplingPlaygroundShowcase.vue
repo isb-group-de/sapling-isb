@@ -61,7 +61,6 @@
       <v-card
         elevation="1"
         class="mb-6 glass-panel sapling-showcase__section-card sapling-playground__showcase-card"
-        v-tilt="TILT_SOFT_OPTIONS"
       >
         <v-card-text class="sapling-showcase__section-body sapling-playground__showcase-body">
           <div class="sapling-showcase__section-header sapling-playground__showcase-header">
@@ -113,7 +112,6 @@
       <v-card
         elevation="1"
         class="mb-6 glass-panel sapling-showcase__section-card sapling-playground__showcase-card"
-        v-tilt="TILT_SOFT_OPTIONS"
       >
         <v-card-text class="sapling-showcase__section-body sapling-playground__showcase-body">
           <div
@@ -183,7 +181,6 @@
 
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import { TILT_SOFT_OPTIONS } from '@/constants/tilt.constants'
 import type {
   PlaygroundActionCard,
   PlaygroundDialogLauncher,

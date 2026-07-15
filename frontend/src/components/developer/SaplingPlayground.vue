@@ -1,6 +1,6 @@
 <template>
   <v-container
-    class="sapling-page-shell sapling-page-shell--panel sapling-page-shell--scroll sapling-page-shell--uniform-inset sapling-showcase sapling-playground"
+    class="sapling-page-shell sapling-page-shell--panel sapling-page-shell--fill sapling-page-shell--scroll sapling-page-shell--uniform-inset sapling-showcase sapling-playground"
     fluid
   >
     <SaplingPlaygroundShowcase
@@ -60,6 +60,7 @@
     <SaplingDialogDelete
       :model-value="deleteDialogModel"
       :item="deleteDialogItem"
+      :tilt="false"
       @update:model-value="deleteDialogModel = $event"
       @confirm="handleDeleteConfirm"
       @cancel="handleDeleteCancel"
@@ -69,6 +70,7 @@
       :add-kpi-dialog="kpiDialogModel"
       :selected-kpi="selectedKpi"
       :available-kpis="availableKpiOptions"
+      :tilt="false"
       :validate-and-add-kpi="handleKpiAdd"
       :close-dialog="closeKpiDialog"
       @update:add-kpi-dialog="kpiDialogModel = $event"

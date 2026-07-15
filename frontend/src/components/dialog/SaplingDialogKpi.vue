@@ -6,7 +6,7 @@
     :max-width="SAPLING_DIALOG_MAX_WIDTH.sm"
     class="sapling-add-kpi-dialog"
   >
-    <SaplingDialogCard class="sapling-dialog-compact-card" :close="handleCancel">
+    <SaplingDialogCard class="sapling-dialog-compact-card" :close="handleCancel" :tilt="tilt">
       <div class="sapling-dialog-shell">
         <template v-if="isTranslationLoading">
           <SaplingDialogHero loading />
@@ -64,6 +64,7 @@ const props = defineProps<{
   availableKpis: KPIItem[]
   validateAndAddKpi: () => void | Promise<void>
   closeDialog: () => void
+  tilt?: boolean
 }>()
 
 const emit = defineEmits<{
