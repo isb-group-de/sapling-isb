@@ -14,9 +14,18 @@ backend/src/entity/InboundEmailItem.ts
 backend/src/entity/InboundEmailStatusItem.ts
 backend/src/api/mail/email-inbox-provider.service.ts
 backend/src/api/mail/email-inbox-sync.service.ts
+backend/src/api/mail/email-inbox-processing.service.ts
+backend/src/api/mail/email-inbox-sync.utils.ts
 backend/src/api/mail/email-inbox-sync.processor.ts
 backend/src/api/mail/email-inbox-sync.controller.ts
 ```
+
+`EmailInboxSyncService` owns scheduling, provider import, idempotent
+persistence, source-document storage, and manual retry orchestration.
+`EmailInboxProcessingService` owns the AI lifecycle and confirm-first mutation
+flow. Shared prompt, customer-binding, status, logging, and target-linking rules
+live in `email-inbox-sync.utils.ts`; callers continue to use the stable sync
+service facade.
 
 ## Configuration Model
 
@@ -180,7 +189,7 @@ Monitor:
 ## Verification
 
 ```powershell
-npm test --prefix backend -- email-inbox-sync.service.spec.ts email-inbox-provider.service.spec.ts --runInBand
+npm test --prefix backend -- email-inbox-sync.service.spec.ts email-inbox-processing.service.spec.ts email-inbox-sync.utils.spec.ts email-inbox-provider.service.spec.ts --runInBand
 npm run type-check:backend
 npm run type-check:frontend
 ```

@@ -7,6 +7,10 @@ Sapling communication is built around message templates, rendered entity context
 ```text
 backend/src/api/mail/mail.controller.ts
 backend/src/api/mail/mail.service.ts
+backend/src/api/mail/mail-rendering.service.ts
+backend/src/api/mail/mail-provider-session.service.ts
+backend/src/api/mail/mail-provider-transport.service.ts
+backend/src/api/mail/mail-follow-up.service.ts
 backend/src/api/mail/mail.processor.ts
 backend/src/api/mail/dto/mail.dto.ts
 backend/src/api/mail/markdown.util.ts
@@ -72,66 +76,79 @@ Markdown is rendered to HTML by the shared renderer. Mail additionally creates a
 
 `EmailTemplateItem` defines reusable email content.
 
-| Field | Meaning |
-| --- | --- |
-| `name` | Template name |
-| `description` | Optional explanation |
-| `subjectTemplate` | Placeholder-enabled subject |
-| `bodyMarkdown` | Placeholder-enabled markdown body |
-| `isDefault` | Candidate default template |
-| `isActive` | Allows disabling without deleting |
-| `entity` | Entity context for the template |
+| Field             | Meaning                           |
+| ----------------- | --------------------------------- |
+| `name`            | Template name                     |
+| `description`     | Optional explanation              |
+| `subjectTemplate` | Placeholder-enabled subject       |
+| `bodyMarkdown`    | Placeholder-enabled markdown body |
+| `isDefault`       | Candidate default template        |
+| `isActive`        | Allows disabling without deleting |
+| `entity`          | Entity context for the template   |
 
 `EmailDeliveryItem` is the persisted dispatch record.
 
-| Field | Meaning |
-| --- | --- |
-| `status` | Pending, success, failed |
-| `template` | Optional source template |
-| `entity` | Target entity |
-| `createdBy` | Sending user |
-| `referenceHandle` | Target record handle as string |
-| `provider` | User/provider handle such as `azure` or `google` |
-| `toRecipients`, `ccRecipients`, `bccRecipients` | Resolved recipients |
-| `subject`, `bodyMarkdown`, `bodyHtml` | Rendered message |
-| `attachmentHandles` | Document handles attached to the message |
-| `requestPayload` | Provider-independent audit payload |
-| `responseStatusCode`, `responseBody`, `responseHeaders` | Provider result |
-| `providerMessageId` | External message id when available |
-| `attemptCount`, `nextRetryAt`, `completedAt` | Delivery lifecycle fields |
+| Field                                                   | Meaning                                          |
+| ------------------------------------------------------- | ------------------------------------------------ |
+| `status`                                                | Pending, success, failed                         |
+| `template`                                              | Optional source template                         |
+| `entity`                                                | Target entity                                    |
+| `createdBy`                                             | Sending user                                     |
+| `referenceHandle`                                       | Target record handle as string                   |
+| `provider`                                              | User/provider handle such as `azure` or `google` |
+| `toRecipients`, `ccRecipients`, `bccRecipients`         | Resolved recipients                              |
+| `subject`, `bodyMarkdown`, `bodyHtml`                   | Rendered message                                 |
+| `attachmentHandles`                                     | Document handles attached to the message         |
+| `requestPayload`                                        | Provider-independent audit payload               |
+| `responseStatusCode`, `responseBody`, `responseHeaders` | Provider result                                  |
+| `providerMessageId`                                     | External message id when available               |
+| `attemptCount`, `nextRetryAt`, `completedAt`            | Delivery lifecycle fields                        |
 
 `EmailSubscriptionItem` configures automatic email delivery for generic entity
 mutations.
 
-| Field | Meaning |
-| --- | --- |
-| `description` | Human-readable rule name |
-| `entity` | Page/entity being observed |
-| `type` | Lifecycle trigger, usually `afterInsert` or `afterUpdate` |
-| `recipientField` | Context path resolving a `PersonItem` or email address |
-| `senderPerson` | Sapling user whose Azure/Google session sends the email |
-| `template` | Entity-dependent email template |
-| `conditions` | Optional list of observed fields with old/new value constraints |
-| `isActive` | Enables/disables the rule |
+| Field            | Meaning                                                         |
+| ---------------- | --------------------------------------------------------------- |
+| `description`    | Human-readable rule name                                        |
+| `entity`         | Page/entity being observed                                      |
+| `type`           | Lifecycle trigger, usually `afterInsert` or `afterUpdate`       |
+| `recipientField` | Context path resolving a `PersonItem` or email address          |
+| `senderPerson`   | Sapling user whose Azure/Google session sends the email         |
+| `template`       | Entity-dependent email template                                 |
+| `conditions`     | Optional list of observed fields with old/new value constraints |
+| `isActive`       | Enables/disables the rule                                       |
 
 ## Email Flow
 
 Manual email sending goes through `MailController`.
 
-| Endpoint | Permission | Purpose |
-| --- | --- | --- |
-| `GET /api/mail/senders` | Authenticated user | Lists available sender addresses |
-| `POST /api/mail/preview` | `allowRead` on `entityHandle` | Resolves recipients, subject, markdown, HTML, and attachments |
-| `POST /api/mail/send` | `allowUpdate` on `entityHandle` | Persists and queues/sends an email delivery |
+| Endpoint                 | Permission                      | Purpose                                                       |
+| ------------------------ | ------------------------------- | ------------------------------------------------------------- |
+| `GET /api/mail/senders`  | Authenticated user              | Lists available sender addresses                              |
+| `POST /api/mail/preview` | `allowRead` on `entityHandle`   | Resolves recipients, subject, markdown, HTML, and attachments |
+| `POST /api/mail/send`    | `allowUpdate` on `entityHandle` | Persists and queues/sends an email delivery                   |
 
 `MailService.sendEmail()` always renders through preview first. It then persists an `EmailDeliveryItem` with pending status. If Redis is enabled, a BullMQ `emails` job is queued. If Redis is disabled, dispatch runs immediately.
 
+`MailService` is the stable orchestration facade used by controllers,
+processors, and inbound synchronization. Its collaborators own one boundary
+each:
+
+- `MailRenderingService` builds template context and renders recipients,
+  subject, markdown, and HTML.
+- `MailProviderSessionService` loads the current mail person, discovers allowed
+  senders, and owns Azure/Google token refresh.
+- `MailProviderTransportService` loads attachments and sends provider-specific
+  Graph or Gmail payloads, including one authentication retry.
+- `MailFollowUpService` creates the completed communication event without
+  allowing event failures to change a successful delivery result.
+
 Provider dispatch supports:
 
-| Provider | Behavior |
-| --- | --- |
-| Azure | Sends through Microsoft Graph |
-| Google | Sends through Gmail API |
+| Provider | Behavior                      |
+| -------- | ----------------------------- |
+| Azure    | Sends through Microsoft Graph |
+| Google   | Sends through Gmail API       |
 
 After successful dispatch, Sapling creates a completed `EventItem` of type `mail` as a communication follow-up. Failures are persisted on the delivery record.
 
@@ -161,29 +178,29 @@ When a sender email is requested explicitly, it must match an available sender o
 
 `TeamsSubscriptionItem` decides when a Teams message is created.
 
-| Field | Meaning |
-| --- | --- |
-| `description` | Human-readable subscription name |
-| `recipientField` | Context path resolving a recipient person |
-| `isActive` | Enables/disables the subscription |
-| `entity` | Entity being observed |
-| `type` | Lifecycle event, for example `afterInsert` |
-| `template` | Entity-dependent Teams template |
+| Field            | Meaning                                    |
+| ---------------- | ------------------------------------------ |
+| `description`    | Human-readable subscription name           |
+| `recipientField` | Context path resolving a recipient person  |
+| `isActive`       | Enables/disables the subscription          |
+| `entity`         | Entity being observed                      |
+| `type`           | Lifecycle event, for example `afterInsert` |
+| `template`       | Entity-dependent Teams template            |
 
 `TeamsDeliveryItem` stores one outgoing Teams message.
 
-| Field | Meaning |
-| --- | --- |
-| `status` | Pending, success, failed |
-| `subscription`, `template`, `entity` | Source configuration |
-| `createdBy` | Sender |
-| `recipientPerson` | Resolved recipient |
-| `referenceHandle` | Source record handle |
-| `provider` | Currently `azure` |
-| `bodyMarkdown`, `bodyHtml` | Rendered content |
-| `requestPayload` | Audit/debug payload |
-| `responseStatusCode`, `responseBody` | Provider result |
-| `providerMessageId` | Microsoft Graph message id |
+| Field                                | Meaning                    |
+| ------------------------------------ | -------------------------- |
+| `status`                             | Pending, success, failed   |
+| `subscription`, `template`, `entity` | Source configuration       |
+| `createdBy`                          | Sender                     |
+| `recipientPerson`                    | Resolved recipient         |
+| `referenceHandle`                    | Source record handle       |
+| `provider`                           | Currently `azure`          |
+| `bodyMarkdown`, `bodyHtml`           | Rendered content           |
+| `requestPayload`                     | Audit/debug payload        |
+| `responseStatusCode`, `responseBody` | Provider result            |
+| `providerMessageId`                  | Microsoft Graph message id |
 
 ## Teams Flow
 

@@ -17,11 +17,42 @@ backend/src/entity/AiAgentPlaybookItem.ts
 backend/src/entity/AiAgentMemoryItem.ts
 backend/src/entity/AiChatToolActionItem.ts
 backend/src/api/ai/ai-agent-policy.service.ts
+backend/src/api/ai/ai-agent-context.service.ts
+backend/src/api/ai/ai-agent-workbench.service.ts
+backend/src/api/ai/ai-chat-tool-action.service.ts
+backend/src/api/ai/ai-chat-stream.service.ts
 backend/src/api/ai/ai.service.ts
 backend/src/api/ai/mcp.service.ts
 frontend/src/views/AiAgentBuilderView.vue
+frontend/src/components/ai/AiAgentConfigurationPanels.vue
+frontend/src/components/ai/AiAgentWorkbenchPanels.vue
+frontend/src/components/ai/aiAgentBuilder.types.ts
+frontend/src/components/ai/aiAgentBuilder.utils.ts
+frontend/src/composables/ai/useAiAgentBuilder.ts
 frontend/src/components/system/SaplingAiChat.vue
+frontend/src/components/system/ai-chat/SaplingAiChatMessageList.vue
+frontend/src/components/system/ai-chat/SaplingAiChatToolActions.vue
+frontend/src/components/system/ai-chat/useSaplingAiChatRuntimeCatalog.ts
+frontend/src/components/system/ai-chat/useSaplingAiChatSessions.ts
+frontend/src/components/system/ai-chat/useSaplingAiChatAttachments.ts
+frontend/src/components/system/ai-chat/useSaplingAiChatStream.ts
 ```
+
+## Frontend Chat Boundaries
+
+`SaplingAiChat.vue` is the overlay and lifecycle orchestrator. Reusable chat
+behavior is divided by responsibility:
+
+- `useSaplingAiChatRuntimeCatalog` loads providers, models, agents, and voice
+  targets and keeps runtime selection consistent with sessions/preferences.
+- `useSaplingAiChatSessions` owns session lists, message paging, rename/archive
+  persistence, and deterministic session ordering.
+- `useSaplingAiChatAttachments` owns import-analysis upload state.
+- `useSaplingAiChatStream` owns request context, streaming events, local failure
+  projection, and confirm/reject tool-action updates.
+- `SaplingAiChatMessageList` renders message history while
+  `SaplingAiChatToolActions` owns the reusable confirm-first action card and
+  technical-details dialog. Shared navigation parsing remains UI-independent.
 
 ## Agent Model
 
@@ -100,6 +131,14 @@ POST /api/ai/chat/sessions/:handle/playbook
 
 Admins can create version snapshots, run test prompts, inspect recent runs,
 maintain quality test cases, and review memory/playbooks from the same surface.
+
+The route-level builder is a composition shell. Profile, prompt, data, tool,
+runtime, and release controls live in `AiAgentConfigurationPanels`; version,
+test-run, memory/playbook, evaluation, usage, and trace presentation live in
+`AiAgentWorkbenchPanels`. `useAiAgentBuilder` owns loading and commands, while
+the type and utility modules own reusable draft/evaluation contracts and pure
+API mapping. New workbench sections should extend the matching panel or add a
+focused sibling rather than returning workflow logic to the route component.
 
 ## Extension Notes
 

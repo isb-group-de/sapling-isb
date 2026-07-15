@@ -9,8 +9,20 @@ import { AiService } from './ai.service';
 import { AiChatRuntimeService } from './ai-chat-runtime.service';
 import { AiAgentRunLifecycleService } from './ai-agent-run-lifecycle.service';
 import { AiAgentPolicyService } from './ai-agent-policy.service';
+import { AiAgentContextService } from './ai-agent-context.service';
+import { AiAgentWorkbenchService } from './ai-agent-workbench.service';
+import { AiChatPersistenceService } from './ai-chat-persistence.service';
+import { AiChatSessionService } from './ai-chat-session.service';
+import { AiChatMessageService } from './ai-chat-message.service';
+import { AiChatToolActionService } from './ai-chat-tool-action.service';
+import { AiChatStreamService } from './ai-chat-stream.service';
+import { AiChatMediaService } from './ai-chat-media.service';
 import { AiProviderRegistryService } from './ai-provider-registry.service';
 import { AiVectorService } from './ai-vector.service';
+import { AiVectorDocumentBuilderService } from './ai-vector-document-builder.service';
+import { AiVectorEmbeddingService } from './ai-vector-embedding.service';
+import { AiVectorIndexService } from './ai-vector-index.service';
+import { AiVectorSearchService } from './ai-vector-search.service';
 import { AiController } from './ai.controller';
 import { AiAgentItem } from '../../entity/AiAgentItem';
 import { AiChatSessionItem } from '../../entity/AiChatSessionItem';
@@ -26,6 +38,13 @@ import { SaplingMcpService } from './sapling-mcp.service';
 import { SaplingMcpCriteriaService } from './sapling-mcp-criteria.service';
 import { SaplingMcpPermissionService } from './sapling-mcp-permission.service';
 import { SaplingMcpResultFormatterService } from './sapling-mcp-result-formatter.service';
+import { SaplingMcpValueService } from './sapling-mcp-value.service';
+import { SaplingMcpMetadataService } from './sapling-mcp-metadata.service';
+import { SaplingMcpGenericToolService } from './sapling-mcp-generic-tool.service';
+import { SaplingMcpSearchToolService } from './sapling-mcp-search-tool.service';
+import { SaplingMcpImportToolService } from './sapling-mcp-import-tool.service';
+import { SaplingMcpExecutionService } from './sapling-mcp-execution.service';
+import { SaplingMcpTransportService } from './sapling-mcp-transport.service';
 import { AiAgentEvaluationItem } from '../../entity/AiAgentEvaluationItem';
 import { AiAgentMemoryItem } from '../../entity/AiAgentMemoryItem';
 import { AiAgentPlaybookItem } from '../../entity/AiAgentPlaybookItem';
@@ -74,13 +93,32 @@ import { ImportModule } from '../import/import.module';
     AiChatRuntimeService,
     AiAgentRunLifecycleService,
     AiAgentPolicyService,
+    AiAgentContextService,
+    AiAgentWorkbenchService,
+    AiChatPersistenceService,
+    AiChatSessionService,
+    AiChatMessageService,
+    AiChatToolActionService,
+    AiChatStreamService,
+    AiChatMediaService,
     AiProviderRegistryService,
+    AiVectorDocumentBuilderService,
+    AiVectorEmbeddingService,
+    AiVectorIndexService,
+    AiVectorSearchService,
     AiVectorService,
     McpService,
     SaplingMcpService,
     SaplingMcpCriteriaService,
     SaplingMcpPermissionService,
     SaplingMcpResultFormatterService,
+    SaplingMcpValueService,
+    SaplingMcpMetadataService,
+    SaplingMcpGenericToolService,
+    SaplingMcpSearchToolService,
+    SaplingMcpImportToolService,
+    SaplingMcpExecutionService,
+    SaplingMcpTransportService,
   ],
   controllers: [AiController],
   exports: [

@@ -13,6 +13,18 @@ and can link Sapling records back to stable keys from external systems.
 
 ```text
 backend/src/api/import/
+backend/src/api/import/import-ai-suggestion.service.ts
+backend/src/api/import/import-ai-suggestion.prompts.ts
+backend/src/api/import/import-template.service.ts
+backend/src/api/import/import-matching.service.ts
+backend/src/api/import/import-field-validation.service.ts
+backend/src/api/import/import-execution.service.ts
+backend/src/api/import/import-payload.service.ts
+backend/src/api/import/import-reference-resolver.service.ts
+backend/src/api/import/import-unique-conflict.service.ts
+backend/src/api/import/import-batch-presenter.service.ts
+backend/src/api/import/import-batch-query.service.ts
+backend/src/api/import/import-validation.service.ts
 backend/src/entity/ImportSourceItem.ts
 backend/src/entity/ImportTemplateItem.ts
 backend/src/entity/ImportTemplateValueMappingItem.ts
@@ -20,6 +32,15 @@ backend/src/entity/ImportBatchItem.ts
 backend/src/entity/ImportBatchRowItem.ts
 backend/src/entity/ExternalRecordLinkItem.ts
 frontend/src/components/import/SaplingImportWorkspace.vue
+frontend/src/composables/import/useSaplingImportValueMappings.ts
+frontend/src/composables/import/useSaplingImportTemplates.ts
+frontend/src/composables/import/useSaplingImportAiSuggestions.ts
+frontend/src/composables/import/useSaplingImportMappingConfiguration.ts
+frontend/src/composables/import/useSaplingImportBatchSession.ts
+frontend/src/composables/import/useSaplingImportCommands.ts
+frontend/src/composables/import/useSaplingImportPresentation.ts
+frontend/src/composables/import/useSaplingImportConfigurationSession.ts
+frontend/src/composables/import/useSaplingImportEntityCatalog.ts
 frontend/src/services/api.import.service.ts
 frontend/src/views/ImportView.vue
 backend/src/api/ai/sapling-mcp.service.ts
@@ -110,7 +131,7 @@ then displays source system, external key parts, import batches, and timestamps.
 11. Optionally configure relation mappings by handle, by displayed value, or
     by external key links from previous imports.
 12. Optionally configure a generic target reference for entities such as
-   `information` that use `entity + reference`.
+    `information` that use `entity + reference`.
 13. Validate the batch. Validation is queued as a background job, so the
     workspace can be left while row payloads, required fields, reference
     mappings, and planned actions are checked.
@@ -158,6 +179,11 @@ issues. A unique external record link is the strongest update signal. Fuzzy
 value matches can suggest candidates, but ambiguous candidates do not trigger
 automatic merging.
 
+`ImportMatchingService` owns source/target search-field selection, candidate
+queries, confidence scoring, display labels, and row-level recommendations. The
+import facade resolves existing external links because that lookup is shared
+with execution, then delegates the remaining matching workflow.
+
 Import batches and import batch rows are intentionally deletable through the
 generic entity UI in non-production setup workflows. Deleting a batch cascades
 its row records; external record links keep their business reference and only
@@ -181,6 +207,45 @@ Import templates are created through `POST /api/import/templates` and updated
 through `PATCH /api/import/templates/:handle`. Re-saving an existing template
 must keep using its returned handle so the backend updates instead of trying to
 insert another row with the same source/entity/title uniqueness key.
+
+`ImportTemplateService` owns template filtering, persistence, title-conflict
+checks, serial-sequence maintenance, value-mapping rows, and summary mapping.
+`ImportService` keeps thin delegating methods because controllers and AI tools
+use the existing import API facade.
+
+`ImportFieldValidationService` owns configured/default metadata values,
+current-person defaults, date and boolean validation, and required-field
+diagnostics. `ImportValidationService` owns the queued validation worker,
+permission-aware import-user hydration, row state transitions, planned actions,
+progress/failure state, and composes payload, reference, custom-field, and
+unique-conflict validation.
+
+`ImportExecutionService` owns the queued execution worker, execution counters,
+row create/update/skip/failure transitions, and external-record-link upserts.
+`ImportService` validates whether a batch may be queued and delegates the actual
+background execution by batch and user handle.
+
+`ImportPayloadService` owns source-to-target value mappings, payload
+normalization, metadata/default application, and final custom-field collection.
+`ImportReferenceResolverService` owns relation mapping modes, generic-reference
+mapping, metadata value-field lookup, external-key construction, and external
+record-link resolution. The validation worker composes both services instead of
+implementing those responsibilities in the import facade.
+
+`ImportUniqueConflictService` owns unique-field eligibility, database and
+in-batch claims, append-external-key behavior, length-aware suffixes, and
+structured conflict messages. `ImportBatchPresenterService` maps persisted
+batches and rows into API summaries without adding projection logic to the
+orchestrator. `ImportBatchQueryService` owns canonical batch lookup, batch/error
+summaries, distinct source-value queries, and the open-batch read model.
+`ImportService` remains the stable controller and AI-tool facade for batch
+configuration, job dispatch, matching, suggestions, and delegation to these
+focused services.
+
+On the frontend, `useSaplingImportTemplates` owns the selected template session,
+race-safe loading, source/entity scope application, save/update selection, and
+template-related capability state. The workspace supplies callbacks for applying
+mapping configuration and loading entity metadata.
 
 ## AI Chat Import Agent
 
@@ -216,6 +281,33 @@ The endpoint returns structured proposals for:
 - detected reference fields
 - conservative value mapping candidates
 - confidence and short reasoning per proposal
+
+`ImportAiSuggestionService` owns AI context construction, provider execution,
+reference candidates, and response normalization. Prompt construction remains a
+pure module in `import-ai-suggestion.prompts.ts`; `ImportService` only validates
+the batch/source/entity context and delegates the suggestion request.
+
+`useSaplingImportAiSuggestions` owns the frontend suggestion request lifecycle,
+field confidence metadata, validation against available headers and fields,
+external-key application, value-mapping proposals, and reset behavior.
+
+The import workspace delegates value-mapping dialog state, source-value caches,
+reference hydration, and source-column usage helpers to
+`useSaplingImportValueMappings`. `useSaplingImportMappingConfiguration` owns
+mapping-state initialization, stored-configuration application, column/default
+normalization, relation and unique-conflict strategies, and serialization back
+to the import API shape. `useSaplingImportBatchSession` owns source/entity/template
+selection synchronization, open-batch loading, state hydration, polling restart,
+and cleanup when a tracked batch disappears. Validation/execution commands and
+error-report creation are delegated to `useSaplingImportCommands`, which owns
+their request lifecycle flags, tracking/polling restart, and notifications.
+`useSaplingImportPresentation` owns preview/error rows, progress and execution
+state, entity/field labels, and structured row-message translation.
+`useSaplingImportConfigurationSession` composes mapping resets, template
+application, external/generic key normalization, and save-payload construction.
+`useSaplingImportEntityCatalog` owns available entities, selected metadata and
+permissions, importable-field filtering, and selector filters/options. The
+workspace is now a sub-600-line composition shell.
 
 The UI applies the proposal to the same editable mapping state used for manual
 configuration. Users can correct fields, open the value mapping dialog, save

@@ -7,6 +7,11 @@ export interface CalendarDateItem {
   minute: number
 }
 
+export interface CalendarDatePair {
+  start: CalendarDateItem
+  end: CalendarDateItem
+}
+
 export interface EventDateParts {
   iso: string
   date: string

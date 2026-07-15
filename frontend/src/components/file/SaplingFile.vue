@@ -136,14 +136,10 @@ const {
   onColumnFiltersUpdate,
   onSortByUpdate,
   parentFilter,
-} = useSaplingTable(
-  entityHandleRef,
-  DEFAULT_PAGE_SIZE_SMALL,
-  true,
-  true,
-  undefined,
-  ['filename', 'mimetype'],
-)
+} = useSaplingTable(entityHandleRef, DEFAULT_PAGE_SIZE_SMALL, true, true, undefined, [
+  'filename',
+  'mimetype',
+])
 
 const selectedHandle = ref('')
 

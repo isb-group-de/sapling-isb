@@ -44,7 +44,7 @@
 
 <script lang="ts" setup>
 import SaplingSurface from '@/components/common/SaplingSurface.vue'
-import type { SelectedPersonPreviewItem } from '@/composables/event/useSaplingEvent'
+import type { SelectedPersonPreviewItem } from '@/composables/event/useSaplingEventPresentation'
 
 defineProps<{
   selectedPeoples: number[]

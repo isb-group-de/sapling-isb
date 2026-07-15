@@ -14,6 +14,7 @@ import { AuthModule } from '../../auth/auth.module';
 import { AiModule } from '../ai/ai.module';
 import { DocumentModule } from '../document/document.module';
 import { MailModule } from './mail.module';
+import { EmailInboxProcessingService } from './email-inbox-processing.service';
 import { EmailInboxProviderService } from './email-inbox-provider.service';
 import { EmailInboxSyncController } from './email-inbox-sync.controller';
 import { EmailInboxSyncProcessor } from './email-inbox-sync.processor';
@@ -53,6 +54,7 @@ const MockQueue = {
   controllers: [EmailInboxSyncController],
   providers: [
     EmailInboxProviderService,
+    EmailInboxProcessingService,
     EmailInboxSyncService,
     {
       provide: EMAIL_INBOX_SYNC_SERVICE_TOKEN,

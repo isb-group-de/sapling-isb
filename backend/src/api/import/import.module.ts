@@ -22,8 +22,19 @@ import { AiModule } from '../ai/ai.module';
 import { GenericModule } from '../generic/generic.module';
 import { TemplateModule } from '../template/template.module';
 import { ImportController } from './import.controller';
+import { ImportAiSuggestionService } from './import-ai-suggestion.service';
+import { ImportBatchQueryService } from './import-batch-query.service';
+import { ImportBatchPresenterService } from './import-batch-presenter.service';
+import { ImportFieldValidationService } from './import-field-validation.service';
+import { ImportExecutionService } from './import-execution.service';
+import { ImportMatchingService } from './import-matching.service';
+import { ImportPayloadService } from './import-payload.service';
 import { ImportProcessor } from './import.processor';
+import { ImportReferenceResolverService } from './import-reference-resolver.service';
 import { ImportService } from './import.service';
+import { ImportTemplateService } from './import-template.service';
+import { ImportUniqueConflictService } from './import-unique-conflict.service';
+import { ImportValidationService } from './import-validation.service';
 
 const MockQueue = {
   add: (name: string, data: unknown) => {
@@ -70,6 +81,17 @@ const MockQueue = {
   controllers: [ImportController],
   providers: [
     ImportService,
+    ImportAiSuggestionService,
+    ImportBatchQueryService,
+    ImportBatchPresenterService,
+    ImportExecutionService,
+    ImportFieldValidationService,
+    ImportMatchingService,
+    ImportPayloadService,
+    ImportReferenceResolverService,
+    ImportTemplateService,
+    ImportUniqueConflictService,
+    ImportValidationService,
     ...(REDIS_ENABLED ? [ImportProcessor] : []),
     ...(REDIS_ENABLED
       ? []

@@ -275,13 +275,12 @@ async function parseEml(buffer: ArrayBuffer): Promise<MailPreviewData> {
 }
 
 async function parseMsg(buffer: ArrayBuffer): Promise<MailPreviewData> {
-  type MsgReaderConstructor = typeof import('@kenjiuno/msgreader')['default']
+  type MsgReaderConstructor = (typeof import('@kenjiuno/msgreader'))['default']
   const msgReaderModule = await import('@kenjiuno/msgreader')
   const defaultExport = msgReaderModule.default as
     | MsgReaderConstructor
     | { default: MsgReaderConstructor }
-  const MsgReaderClass =
-    typeof defaultExport === 'function' ? defaultExport : defaultExport.default
+  const MsgReaderClass = typeof defaultExport === 'function' ? defaultExport : defaultExport.default
   const reader = new MsgReaderClass(buffer)
   const message = reader.getFileData()
 
@@ -322,9 +321,7 @@ async function parseMsg(buffer: ArrayBuffer): Promise<MailPreviewData> {
     from: formatMailbox({
       name: message.senderName || '',
       address:
-        message.senderSmtpAddress ||
-        message.sentRepresentingSmtpAddress ||
-        message.senderEmail,
+        message.senderSmtpAddress || message.sentRepresentingSmtpAddress || message.senderEmail,
     }),
     to: formatMsgRecipients(message.recipients, 'to'),
     cc: formatMsgRecipients(message.recipients, 'cc'),
@@ -427,15 +424,13 @@ function getMsgAttachmentMimeType(attachment: FieldsData): string {
 }
 
 function replaceCidSources(html: string, cidMap: Record<string, string>): string {
-  return html.replace(/(<(?:img|source)\b[^>]*\bsrc=["'])cid:([^"'>]+)(["'])/gi, (
-    match,
-    prefix,
-    cid,
-    suffix,
-  ) => {
-    const dataUrl = cidMap[String(cid).replace(/[<>]/g, '')]
-    return dataUrl ? `${prefix}${dataUrl}${suffix}` : match
-  })
+  return html.replace(
+    /(<(?:img|source)\b[^>]*\bsrc=["'])cid:([^"'>]+)(["'])/gi,
+    (match, prefix, cid, suffix) => {
+      const dataUrl = cidMap[String(cid).replace(/[<>]/g, '')]
+      return dataUrl ? `${prefix}${dataUrl}${suffix}` : match
+    },
+  )
 }
 
 function releaseAttachmentUrls() {

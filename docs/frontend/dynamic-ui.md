@@ -35,6 +35,14 @@ The Kanban route additionally requires entity template metadata from
 `@SaplingKanban(...)`; it groups records by the configured status/stage relation
 and updates that relation through the generic API when a card is moved.
 
+The generic board keeps responsibilities separated: `SaplingKanbanBoard`
+composes the page, filters, and edit dialog; `SaplingKanbanColumns` renders
+reusable columns, cards, and drop previews; `useSaplingKanbanBoard` owns
+metadata/data projection and persistence; `useSaplingKanbanDrag` owns the drag
+image and drop lifecycle. Shared board contracts and pure ordering, scope,
+relation, and display rules live in `kanbanBoard.types.ts` and
+`kanbanBoard.utils.ts`.
+
 Specialized views exist for workflows that are not pure CRUD:
 
 ```text
@@ -45,6 +53,25 @@ Specialized views exist for workflows that are not pure CRUD:
 /system
 /playground
 ```
+
+The CRM workspace follows the same composition rule for custom workflow views:
+`SaplingCrmWorkspace.vue` assembles reusable sales, account,
+customer-success, signal, list, and toolbar components. Generic CRM reads live
+in `useSaplingCrmWorkspaceData`, while workspace projections and navigation
+live in `useSaplingCrmWorkspace`. Shared CRM contracts and pure transformation
+rules stay in `crmWorkspace.types.ts` and `crmWorkspace.utils.ts`, so panels do
+not duplicate entity-shape or formatting assumptions.
+
+The Developer Playground is also a composition shell. Its action/dialog
+catalog is rendered by `SaplingPlaygroundShowcase`, field examples by
+`SaplingPlaygroundFieldGallery`, KPI examples by
+`SaplingPlaygroundKpiGallery`, and repeated demo surfaces by
+`SaplingPlaygroundCard`. Field state, KPI loading, and showcase/dialog state
+stay in separate developer composables. Shared Playground contracts and pure
+KPI/metric projections live in `playground.types.ts` and
+`playground.utils.ts`. Add new examples to the matching gallery or catalog
+instead of rebuilding cards, KPI loading, or dialog feedback in the route
+component.
 
 ## Data Sources
 
@@ -86,7 +113,7 @@ Components should load the namespaces they render.
 Examples:
 
 ```ts
-useTranslationLoader('global', 'ticket', 'company')
+useTranslationLoader("global", "ticket", "company");
 ```
 
 Avoid hard-coded labels when translations exist.
@@ -103,24 +130,24 @@ frontend/src/components/dialog/SaplingDialogEditFieldRenderer.vue
 
 Selection examples:
 
-| Backend metadata | Frontend field |
-| --- | --- |
-| relation field | single-select reference |
-| `genericReference` | generic reference selector |
-| `inlineCollection.renderer === "conditionBuilder"` | inline condition builder |
-| `isMarkdown` | markdown editor/preview |
-| `isMoney` | money field |
-| `isPercent` | percent field |
-| `isNumeric` | numeric stepper |
-| `isPhone` | phone field |
-| `isMail` | mail field |
-| `isLink` | link field |
-| `isColor` | color picker |
-| `isIcon` | icon picker |
-| `isSecurity` | password/security field |
-| boolean type | boolean field |
-| date/datetime type | date/time field |
-| JSON type | JSON field |
+| Backend metadata                                   | Frontend field             |
+| -------------------------------------------------- | -------------------------- |
+| relation field                                     | single-select reference    |
+| `genericReference`                                 | generic reference selector |
+| `inlineCollection.renderer === "conditionBuilder"` | inline condition builder   |
+| `isMarkdown`                                       | markdown editor/preview    |
+| `isMoney`                                          | money field                |
+| `isPercent`                                        | percent field              |
+| `isNumeric`                                        | numeric stepper            |
+| `isPhone`                                          | phone field                |
+| `isMail`                                           | mail field                 |
+| `isLink`                                           | link field                 |
+| `isColor`                                          | color picker               |
+| `isIcon`                                           | icon picker                |
+| `isSecurity`                                       | password/security field    |
+| boolean type                                       | boolean field              |
+| date/datetime type                                 | date/time field            |
+| JSON type                                          | JSON field                 |
 
 If a new field behavior is generally useful, add a Sapling option and renderer branch rather than special-casing one entity.
 
@@ -141,11 +168,11 @@ condition value editor according to the observed field type.
 
 Reference fields should use the existing Sapling field components instead of raw Vuetify selects:
 
-| Use case | Component |
-| --- | --- |
-| one related record | `frontend/src/components/dialog/fields/SaplingFieldSingleSelect.vue` |
-| multiple related records | `frontend/src/components/dialog/fields/SaplingFieldSelect.vue` |
-| select and add to a collection | `SaplingFieldSingleSelectAdd.vue` or `SaplingFieldSelectAdd.vue` |
+| Use case                       | Component                                                            |
+| ------------------------------ | -------------------------------------------------------------------- |
+| one related record             | `frontend/src/components/dialog/fields/SaplingFieldSingleSelect.vue` |
+| multiple related records       | `frontend/src/components/dialog/fields/SaplingFieldSelect.vue`       |
+| select and add to a collection | `SaplingFieldSingleSelectAdd.vue` or `SaplingFieldSelectAdd.vue`     |
 
 These components open a Sapling table inside the menu and derive display labels from the target entity's `isValue` templates. Do not guess label fields such as `title`, `name`, or `displayName` in custom code. If a selected reference value displays only its handle, the target entity metadata has not been loaded early enough; fix the field/component lifecycle so the metadata loads, then let `getEntityValueLabel()` use the templates.
 
@@ -233,15 +260,15 @@ Custom dialogs should follow the shared shell pattern:
 
 Do not hand-roll dialog footers with ad hoc `<div class="sapling-dialog-actions">` blocks. Use the action components so spacing, mobile behavior, icons, and button ordering stay consistent:
 
-| Dialog action pattern | Component |
-| --- | --- |
-| close only | `SaplingActionClose` |
-| cancel + save | `SaplingActionSave` |
-| account/preferences save | `SaplingActionAccount` |
-| password change | `SaplingActionChangePassword` |
-| delete confirmation | `SaplingActionDelete` |
-| upload | `SaplingActionUpload` |
-| custom action grouping | `SaplingActionBar` with leading/trailing slots |
+| Dialog action pattern    | Component                                      |
+| ------------------------ | ---------------------------------------------- |
+| close only               | `SaplingActionClose`                           |
+| cancel + save            | `SaplingActionSave`                            |
+| account/preferences save | `SaplingActionAccount`                         |
+| password change          | `SaplingActionChangePassword`                  |
+| delete confirmation      | `SaplingActionDelete`                          |
+| upload                   | `SaplingActionUpload`                          |
+| custom action grouping   | `SaplingActionBar` with leading/trailing slots |
 
 If none of the existing action components fit, add or extend an action component first and then use it from the dialog. This keeps footer behavior centralized instead of duplicating button layout in each custom dialog.
 

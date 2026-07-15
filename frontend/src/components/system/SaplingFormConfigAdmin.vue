@@ -202,10 +202,8 @@ import ApiTemplateService from '@/services/api.template.service'
 import type { EntityItem, SaplingGenericItem } from '@/entity/entity'
 import type {
   EntityTemplate,
-  EntityTemplateFormWidth,
   SaplingFormConfigPayload,
   SaplingFormFieldConfig,
-  SaplingFormRenderer,
 } from '@/entity/structure'
 import SaplingPageHero from '@/components/common/SaplingPageHero.vue'
 import SaplingSurface from '@/components/common/SaplingSurface.vue'
@@ -213,11 +211,16 @@ import SaplingFieldSingleSelect from '@/components/dialog/fields/SaplingFieldSin
 import SaplingFormConfigFieldList from '@/components/system/form-config/SaplingFormConfigFieldList.vue'
 import SaplingFormConfigPreviewPanel from '@/components/system/form-config/SaplingFormConfigPreviewPanel.vue'
 import SaplingFormConfigSummary from '@/components/system/form-config/SaplingFormConfigSummary.vue'
-import type {
-  FieldDraft,
-  PreviewMode,
-  StaticOption,
-} from '@/components/system/form-config/formConfigAdmin.types'
+import type { FieldDraft, PreviewMode } from '@/components/system/form-config/formConfigAdmin.types'
+import {
+  FORM_CONFIG_RENDERER_OPTIONS,
+  FORM_CONFIG_WIDTH_OPTIONS,
+} from '@/components/system/form-config/formConfigAdmin.options'
+import {
+  applyFormConfigDraftToTemplate,
+  buildFormConfigPayload,
+} from '@/components/system/form-config/formConfigDraft.utils'
+import { useSaplingFormConfigTransfer } from '@/composables/system/useSaplingFormConfigTransfer'
 import { getDialogTemplateWidth } from '@/utils/saplingDialogLayoutUtil'
 
 type ScopeValue = 'global' | 'role' | 'person'
@@ -242,39 +245,11 @@ const isLoadingEntities = ref(false)
 const isLoadingContext = ref(false)
 const isSaving = ref(false)
 const errorMessage = ref('')
-const fileInputRef = ref<HTMLInputElement | null>(null)
 const fieldRows = reactive<FieldDraft[]>([])
 const previewMode = ref<PreviewMode>('form')
 
-const widthOptions: StaticOption<EntityTemplateFormWidth>[] = [
-  { title: '25%', value: 1 },
-  { title: '50%', value: 2 },
-  { title: '75%', value: 3 },
-  { title: '100%', value: 4 },
-]
-
-const rendererOptions: StaticOption<SaplingFormRenderer>[] = [
-  { title: 'Auto', value: 'auto' },
-  { title: 'Text', value: 'shortText' },
-  { title: 'Long text', value: 'longText' },
-  { title: 'Number', value: 'number' },
-  { title: 'Boolean', value: 'boolean' },
-  { title: 'Date', value: 'date' },
-  { title: 'Date time', value: 'dateTime' },
-  { title: 'Time', value: 'time' },
-  { title: 'Markdown', value: 'markdown' },
-  { title: 'JSON', value: 'json' },
-  { title: 'Phone', value: 'phone' },
-  { title: 'Mail', value: 'mail' },
-  { title: 'Link', value: 'link' },
-  { title: 'Password', value: 'password' },
-  { title: 'Money', value: 'money' },
-  { title: 'Percent', value: 'percent' },
-  { title: 'Color', value: 'color' },
-  { title: 'Icon', value: 'icon' },
-  { title: 'Select', value: 'select' },
-  { title: 'Multi select', value: 'multiSelect' },
-]
+const widthOptions = FORM_CONFIG_WIDTH_OPTIONS
+const rendererOptions = FORM_CONFIG_RENDERER_OPTIONS
 
 const scopeOptions = computed(() => [
   { title: t('formConfig.scopeGlobal'), value: 'global' },
@@ -315,34 +290,29 @@ const canSave = computed(
   () => Boolean(selectedEntityHandle.value && configName.value.trim()) && !isLoadingContext.value,
 )
 
-const draftConfig = computed<SaplingFormConfigPayload>(() => ({
-  schema: 'sapling.form-config.v1',
-  entityHandle: selectedEntityHandle.value,
-  fields: Object.fromEntries(
-    fieldRows.map((field) => [
-      field.name,
-      {
-        visible: field.visible,
-        label: field.label.trim() || null,
-        group: field.group.trim() || null,
-        order: field.order,
-        width: field.width,
-        tableVisible: field.tableVisible,
-        tableOrder: field.tableOrder,
-        mobileVisible: field.mobileVisible,
-        mobileOrder: field.mobileOrder,
-        renderer: field.renderer,
-        placeholder: field.placeholder.trim() || null,
-        required: field.required,
-        readonly: field.readonly,
-      } satisfies SaplingFormFieldConfig,
-    ]),
-  ),
-}))
+const draftConfig = computed<SaplingFormConfigPayload>(() =>
+  buildFormConfigPayload(selectedEntityHandle.value, fieldRows),
+)
 
 const draftTemplates = computed(() =>
-  baseTemplates.value.map((template) => applyDraftToTemplate(template)),
+  baseTemplates.value.map((template) =>
+    applyFormConfigDraftToTemplate(
+      template,
+      fieldRows.find((field) => field.name === template.name),
+    ),
+  ),
 )
+
+const { fileInputRef, openImportFile, onImportFileChange, exportDraft } =
+  useSaplingFormConfigTransfer({
+    selectedEntityHandle,
+    selectedConfigHandle,
+    configName,
+    draftConfig,
+    errorMessage,
+    loadEntityContext,
+    applyFields: buildFieldRows,
+  })
 
 const formVisibleCount = computed(() => fieldRows.filter((field) => field.visible).length)
 const tableVisibleCount = computed(() => fieldRows.filter((field) => field.tableVisible).length)
@@ -535,41 +505,6 @@ function onScopeItemUpdate(item: SaplingGenericItem | null): void {
   scopeHandle.value = getRecordHandle(item)
 }
 
-function applyDraftToTemplate(template: EntityTemplate): EntityTemplate {
-  const field = fieldRows.find((entry) => entry.name === template.name)
-  if (!field) {
-    return template
-  }
-
-  return {
-    ...template,
-    formGroup: field.group || null,
-    formOrder: field.order,
-    formWidth: field.width,
-    formVisible: field.visible,
-    tableVisible: field.tableVisible,
-    tableOrder: field.tableOrder,
-    mobileVisible: field.mobileVisible,
-    mobileOrder: field.mobileOrder,
-    isRequired: field.required,
-    formConfig: {
-      visible: field.visible,
-      label: field.label || null,
-      group: field.group || null,
-      order: field.order,
-      width: field.width,
-      tableVisible: field.tableVisible,
-      tableOrder: field.tableOrder,
-      mobileVisible: field.mobileVisible,
-      mobileOrder: field.mobileOrder,
-      renderer: field.renderer,
-      placeholder: field.placeholder || null,
-      required: field.required,
-      readonly: field.readonly,
-    },
-  }
-}
-
 async function saveConfig(): Promise<void> {
   if (!canSave.value) {
     return
@@ -619,57 +554,6 @@ function showAllFields(): void {
     field.tableVisible = true
     field.mobileVisible = true
   })
-}
-
-function openImportFile(): void {
-  fileInputRef.value?.click()
-}
-
-async function onImportFileChange(event: Event): Promise<void> {
-  const input = event.target as HTMLInputElement
-  const file = input.files?.[0]
-  input.value = ''
-  if (!file) {
-    return
-  }
-
-  try {
-    const text = await file.text()
-    const parsed = JSON.parse(text) as SaplingFormConfigPayload
-    if (parsed.entityHandle && parsed.entityHandle !== selectedEntityHandle.value) {
-      selectedEntityHandle.value = parsed.entityHandle
-      await loadEntityContext()
-    }
-
-    configName.value = file.name.replace(/\.json$/i, '')
-    selectedConfigHandle.value = null
-    const validation = await ApiFormConfigService.validate(selectedEntityHandle.value, parsed)
-    if (!validation.isValid) {
-      errorMessage.value = t('formConfig.validationSummary', {
-        errors: validation.errors.length,
-        warnings: validation.warnings.length,
-      })
-      return
-    }
-
-    buildFieldRows(validation.normalizedConfig.fields ?? parsed.fields ?? {})
-  } catch {
-    errorMessage.value = t('formConfig.importFailed')
-  }
-}
-
-function exportDraft(): void {
-  const blob = new Blob([JSON.stringify(draftConfig.value, null, 2)], {
-    type: 'application/json',
-  })
-  const url = URL.createObjectURL(blob)
-  const anchor = document.createElement('a')
-  anchor.href = url
-  anchor.download = `${selectedEntityHandle.value || 'sapling'}-form-config.json`
-  document.body.appendChild(anchor)
-  anchor.click()
-  anchor.remove()
-  URL.revokeObjectURL(url)
 }
 
 function translateEntity(entityHandle: string): string {

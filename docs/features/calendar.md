@@ -20,6 +20,12 @@ backend/src/calendar/sync/
 backend/src/calendar/azure/
 backend/src/calendar/google/
 frontend/src/composables/event/useSaplingEvent.ts
+frontend/src/composables/event/useSaplingCalendarDrag.ts
+frontend/src/composables/event/useSaplingEventContextMenu.ts
+frontend/src/composables/event/useSaplingEventData.ts
+frontend/src/composables/event/useSaplingEventPresentation.ts
+frontend/src/composables/event/useSaplingCalendarNavigation.ts
+frontend/src/composables/event/useSaplingEventEditor.ts
 frontend/src/components/dialog/fields/SaplingFieldEventRecurrence.vue
 frontend/src/utils/eventRecurrence.ts
 frontend/src/utils/__tests__/eventRecurrence.test.ts
@@ -31,23 +37,23 @@ frontend/src/utils/__tests__/eventRecurrence.test.ts
 
 Important fields:
 
-| Field | Meaning |
-| --- | --- |
-| `title` | Display title and primary value |
-| `description` | Markdown description; also part of AI vectorization |
-| `startDate`, `endDate` | Event time range |
-| `isAllDay` | Marks all-day events |
-| `isPrivate` | Marks owner-only events, including Outlook events imported with private sensitivity |
-| `recurrenceRule` | Optional RRULE string for recurring events |
-| `onlineMeetingURL` | Optional meeting link |
-| `type` | Event category; controls default-calendar behavior |
-| `status` | Current event status; `EventStatusItem.isOpen` controls the default open-status calendar filter |
-| `assigneeCompany`, `assigneePerson` | Internal owner |
-| `creatorCompany`, `creatorPerson` | Creator context |
-| `ticket` | Optional ticket relation |
-| `salesOpportunity` | Optional sales opportunity relation |
-| `participants` | Person collection for attendees |
-| `azure`, `google` | External calendar projection records |
+| Field                               | Meaning                                                                                         |
+| ----------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `title`                             | Display title and primary value                                                                 |
+| `description`                       | Markdown description; also part of AI vectorization                                             |
+| `startDate`, `endDate`              | Event time range                                                                                |
+| `isAllDay`                          | Marks all-day events                                                                            |
+| `isPrivate`                         | Marks owner-only events, including Outlook events imported with private sensitivity             |
+| `recurrenceRule`                    | Optional RRULE string for recurring events                                                      |
+| `onlineMeetingURL`                  | Optional meeting link                                                                           |
+| `type`                              | Event category; controls default-calendar behavior                                              |
+| `status`                            | Current event status; `EventStatusItem.isOpen` controls the default open-status calendar filter |
+| `assigneeCompany`, `assigneePerson` | Internal owner                                                                                  |
+| `creatorCompany`, `creatorPerson`   | Creator context                                                                                 |
+| `ticket`                            | Optional ticket relation                                                                        |
+| `salesOpportunity`                  | Optional sales opportunity relation                                                             |
+| `participants`                      | Person collection for attendees                                                                 |
+| `azure`, `google`                   | External calendar projection records                                                            |
 
 `EventTypeItem.showInDefaultCalendar` is important for delivery. If it is `false`, the event stays in Sapling and is not queued for external default-calendar synchronization.
 
@@ -57,29 +63,29 @@ Sapling stores recurrence in `EventItem.recurrenceRule` as an RFC5545-like RRULE
 
 Supported RRULE parts:
 
-| Part | Supported values |
-| --- | --- |
-| `FREQ` | `DAILY`, `WEEKLY`, `MONTHLY`, `YEARLY` |
-| `INTERVAL` | Positive integer |
-| `BYDAY` | Weekday list using `MO`, `TU`, `WE`, `TH`, `FR`, `SA`, `SU` |
-| `COUNT` | Positive integer occurrence limit |
-| `UNTIL` | UTC end date in compact RRULE format |
+| Part       | Supported values                                            |
+| ---------- | ----------------------------------------------------------- |
+| `FREQ`     | `DAILY`, `WEEKLY`, `MONTHLY`, `YEARLY`                      |
+| `INTERVAL` | Positive integer                                            |
+| `BYDAY`    | Weekday list using `MO`, `TU`, `WE`, `TH`, `FR`, `SA`, `SU` |
+| `COUNT`    | Positive integer occurrence limit                           |
+| `UNTIL`    | UTC end date in compact RRULE format                        |
 
 External providers receive provider-specific forms:
 
-| Provider | Conversion |
-| --- | --- |
-| Google | `buildGoogleRecurrence()` returns `["RRULE:<rule>"]` |
-| Azure | `buildAzureRecurrence(startDate, rule)` returns a Microsoft Graph recurrence object |
+| Provider | Conversion                                                                          |
+| -------- | ----------------------------------------------------------------------------------- |
+| Google   | `buildGoogleRecurrence()` returns `["RRULE:<rule>"]`                                |
+| Azure    | `buildAzureRecurrence(startDate, rule)` returns a Microsoft Graph recurrence object |
 
 Azure conversion maps:
 
-| Frequency | Azure behavior |
-| --- | --- |
-| `DAILY` | `daily` pattern |
-| `WEEKLY` | `weekly` pattern with `daysOfWeek`; falls back to the start date weekday when `BYDAY` is missing |
-| `MONTHLY` | `absoluteMonthly` pattern on the start date day |
-| `YEARLY` | `absoluteYearly` pattern on the start date month/day |
+| Frequency | Azure behavior                                                                                   |
+| --------- | ------------------------------------------------------------------------------------------------ |
+| `DAILY`   | `daily` pattern                                                                                  |
+| `WEEKLY`  | `weekly` pattern with `daysOfWeek`; falls back to the start date weekday when `BYDAY` is missing |
+| `MONTHLY` | `absoluteMonthly` pattern on the start date day                                                  |
+| `YEARLY`  | `absoluteYearly` pattern on the start date month/day                                             |
 
 The frontend recurrence UI builds the same persisted RRULE string. Keep frontend and backend parsers aligned whenever recurrence semantics change.
 
@@ -130,14 +136,39 @@ Private Outlook events use the same automatic import path as manual imports, so 
 
 ## Frontend Behavior
 
-`useSaplingEvent.ts` owns the calendar view behavior:
+`useSaplingEvent.ts` composes the calendar view behavior:
 
 - Load events and recurring series for the visible range.
 - Expand recurring events for display.
-- Create, drag, resize, and update calendar events.
+- Create and update calendar events.
 - Manually fetch Azure or Google events for the visible range and refresh the calendar.
 - Skip external-calendar assumptions for event types where `showInDefaultCalendar` is `false`.
 - Keep non-recurring edits separate from recurring occurrence handling.
+
+`useSaplingCalendarDrag.ts` owns timed-event pointer interactions: new drafts,
+move/resize state, readonly guards, forced dirty fields, synthetic click
+suppression, translucent drag colors, cancellation, and rollback snapshots. It
+accepts calendar/dialog refs plus one persisted-editor callback, so the gesture
+logic can be reused independently of calendar loading and persistence.
+
+`useSaplingEventContextMenu.ts` owns the shared record-action projection,
+script-button loading/execution, permissions, positioning, and the copy,
+timeline, change-log, navigation, document, upload, information, and mail
+actions. Event loading and calendar refresh stay behind callbacks, so the menu
+workflow is separate from the calendar's query and persistence lifecycle.
+
+`useSaplingEventData.ts` owns visible-range queries, participant and chip
+filters, selected-person hydration, holiday loading, recurrence expansion, and
+the final calendar-mode/workweek filtering. `useSaplingEventPresentation.ts`
+projects that loaded state into range/month labels, agenda cards, hero stats,
+person columns, participant labels, holiday groups, and side-by-side drafts.
+
+`useSaplingCalendarNavigation.ts` owns the date anchor, day/week/month shifts,
+current-time scrolling, scroll cleanup, and work-hour overlays.
+`useSaplingEventEditor.ts` owns record hydration, create/update persistence,
+participant references, route-driven opening, drag rollback, optimistic local
+replacement, and update-conflict reload/merge behavior. `useSaplingEvent.ts`
+is now a sub-600-line composition shell for these focused workflows.
 
 `SaplingFieldEventRecurrence.vue` is the editable recurrence field used by generic dialogs. Shared parsing and expansion helpers live in `frontend/src/utils/eventRecurrence.ts`.
 

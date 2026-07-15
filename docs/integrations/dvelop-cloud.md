@@ -52,6 +52,19 @@ configured AI agent confirmation mode and generic permissions.
 
 The custom d.velop Cloud configuration page (`/dvelop-cloud`) asks the Sapling backend to load repositories, categories, and properties from the configured d.velop Cloud instance. Sapling sends the configured API key as an `Authorization: Bearer ...` header, normalizes the returned metadata, and stores it in the dedicated d.velop entities.
 
+The backend keeps these responsibilities separate:
+
+- `DvelopConfigurationService` selects and orchestrates synchronization and
+  reports health capabilities.
+- `DvelopCloudClientService` owns authentication, URL construction, Accept
+  header fallback, timeouts, and Cloud request errors.
+- `DvelopCloudMetadataService` traverses provider payloads and normalizes
+  repositories, categories, and properties.
+- `DvelopConfigurationImportService` persists normalized metadata and selects
+  the initial/default repository.
+- `dvelop-configuration.types.ts` contains the shared import, synchronization,
+  and health contracts.
+
 Repository synchronization reads `/dms/r`. For category synchronization Sapling first reads d.velop object definitions from `/dms/r/{repositoryId}/objdef` and falls back to `/dmsconfig/r/{repositoryId}/objectmanagement/categories/` plus older configuration endpoint variants. Properties are primarily derived from the object definition `propertyFields`; if a category does not include those fields, Sapling loads the category detail from `/dmsconfig/r/{repositoryId}/objectmanagement/categories/{categoryId}` and extracts the embedded properties. In both cases Sapling stores the originating category on the property record so mapping and upload prefill cannot accidentally send fields from a different d.velop category.
 
 The sync endpoint automatically includes prerequisites for explicit sync actions:

@@ -8,7 +8,7 @@ import { AuthModule } from '../../auth/auth.module';
 import { TemplateService } from '../template/template.service';
 import { InboxModule } from '../inbox/inbox.module';
 import { OpenTaskEventsModule } from './open-task-events.module';
-import { FormConfigService } from '../form-config/form-config.service';
+import { FormConfigCoreModule } from '../form-config/form-config-core.module';
 import { GenericCustomFieldService } from '../generic/generic-custom-field.service';
 import { CalendarSyncModule } from '../../calendar/sync/calendar-sync.module';
 
@@ -28,6 +28,7 @@ import { CalendarSyncModule } from '../../calendar/sync/calendar-sync.module';
     InboxModule,
     CalendarSyncModule,
     OpenTaskEventsModule,
+    FormConfigCoreModule,
     MikroOrmModule.forFeature(
       ENTITY_REGISTRY.map((e) => e.class as new () => any),
     ),
@@ -37,7 +38,6 @@ import { CalendarSyncModule } from '../../calendar/sync/calendar-sync.module';
     CurrentService,
     CurrentMetadataService,
     TemplateService,
-    FormConfigService,
     GenericCustomFieldService,
   ],
   exports: [CurrentService, OpenTaskEventsModule],

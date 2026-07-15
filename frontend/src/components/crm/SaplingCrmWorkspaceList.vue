@@ -46,18 +46,9 @@
 </template>
 
 <script setup lang="ts">
-export interface CrmWorkspaceItem {
-  id: string
-  entity: 'company' | 'person' | 'salesOpportunity'
-  handle: string | number | null | undefined
-  title: string
-  subtitle: string
-  value?: string
-  badge?: string
-  owner?: string
-  tone?: 'default' | 'info' | 'success' | 'warning' | 'error'
-  icon?: string
-}
+import type { CrmWorkspaceItem } from './crmWorkspace.types'
+
+export type { CrmWorkspaceItem } from './crmWorkspace.types'
 
 defineProps<{
   title: string

@@ -51,8 +51,9 @@
 
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
+import type { CrmCockpitKey } from './crmWorkspace.types'
 
-export type CrmCockpitKey = 'sales' | 'account' | 'customerSuccess'
+export type { CrmCockpitKey } from './crmWorkspace.types'
 
 type SelectOption<T> = {
   title: string

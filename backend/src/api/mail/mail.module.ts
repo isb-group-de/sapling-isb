@@ -19,6 +19,10 @@ import { EntityItem } from '../../entity/EntityItem';
 import { MailController } from './mail.controller';
 import { MailProcessor } from './mail.processor';
 import { MailService } from './mail.service';
+import { MailFollowUpService } from './mail-follow-up.service';
+import { MailProviderSessionService } from './mail-provider-session.service';
+import { MailProviderTransportService } from './mail-provider-transport.service';
+import { MailRenderingService } from './mail-rendering.service';
 import { EmailAutomationService } from './email-automation.service';
 import { TemplateModule } from '../template/template.module';
 import { AuthModule } from '../../auth/auth.module';
@@ -65,6 +69,10 @@ const MockQueue = {
   controllers: [MailController],
   providers: [
     MailService,
+    MailRenderingService,
+    MailFollowUpService,
+    MailProviderSessionService,
+    MailProviderTransportService,
     EmailAutomationService,
     ...(REDIS_ENABLED ? [MailProcessor] : []),
     ...(REDIS_ENABLED

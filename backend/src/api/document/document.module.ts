@@ -2,6 +2,9 @@ import { Module } from '@nestjs/common';
 import { DocumentController } from './document.controller';
 import { DocumentService } from './document.service';
 import { DvelopConfigurationService } from './dvelop-configuration.service';
+import { DvelopConfigurationImportService } from './dvelop-configuration-import.service';
+import { DvelopCloudClientService } from './dvelop-cloud-client.service';
+import { DvelopCloudMetadataService } from './dvelop-cloud-metadata.service';
 import { DvelopDocumentService } from './dvelop-document.service';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { ENTITY_REGISTRY } from '../../entity/global/entity.registry';
@@ -27,6 +30,9 @@ import { AuthModule } from '../../auth/auth.module';
   providers: [
     DocumentService,
     DvelopDocumentService,
+    DvelopCloudClientService,
+    DvelopCloudMetadataService,
+    DvelopConfigurationImportService,
     DvelopConfigurationService,
   ],
   exports: [DocumentService],

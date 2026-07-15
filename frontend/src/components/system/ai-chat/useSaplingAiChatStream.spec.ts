@@ -1,0 +1,136 @@
+import { ref } from 'vue'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import type { RouteLocationNormalizedLoaded } from 'vue-router'
+import type { AiChatMessageItem, AiChatSessionItem, AiChatToolActionItem } from '@/entity/entity'
+import { useSaplingAiChatStream } from './useSaplingAiChatStream'
+
+const api = vi.hoisted(() => ({
+  streamMessage: vi.fn(),
+  confirmToolAction: vi.fn(),
+  rejectToolAction: vi.fn(),
+}))
+
+vi.mock('@/services/api.ai.service', () => ({ default: api }))
+
+function setup() {
+  const activeSession = ref<AiChatSessionItem | null>(null)
+  const messages = ref<AiChatMessageItem[]>([])
+  const pendingAttachments = ref([
+    { handle: 17, filename: 'data.csv', rowCount: 2, headerCount: 3, status: 'analyzed' },
+  ])
+  const callbacks = {
+    reportMessage: vi.fn(),
+    upsertMessage: vi.fn((message: AiChatMessageItem) => messages.value.push(message)),
+    appendMessageDelta: vi.fn(),
+    appendLocalFailedExchange: vi.fn(),
+    replaceSession: vi.fn(),
+    loadMessages: vi.fn(async () => undefined),
+    autoPlayAssistantSpeech: vi.fn(async () => undefined),
+  }
+  const state = useSaplingAiChatStream({
+    route: {
+      name: 'tickets',
+      params: {},
+      query: { status: 'open' },
+      fullPath: '/tickets?status=open',
+    } as unknown as RouteLocationNormalizedLoaded,
+    isOpen: ref(false),
+    activeSession,
+    messages,
+    draftMessage: ref('Analyze this file'),
+    canSendMessage: ref(true),
+    selectedProviderHandle: ref('openai'),
+    selectedModelHandle: ref('gpt'),
+    selectedAgentHandle: ref('songbird'),
+    selectedPlaybookHandle: ref(null),
+    selectedContextEntityHandle: ref('ticket'),
+    selectedContextRecordHandle: ref('42'),
+    activeTranscriptionHandle: ref(9),
+    pendingAttachments,
+    defaultAttachmentPrompt: () => 'Analyze attachment',
+    currentPersonHandle: () => 5,
+    ...callbacks,
+  })
+  return { state, callbacks, activeSession, messages, pendingAttachments }
+}
+
+describe('useSaplingAiChatStream', () => {
+  beforeEach(() => vi.clearAllMocks())
+
+  it('streams the selected runtime/context and clears attachments after success', async () => {
+    const session = { handle: 22, title: 'Imported data' } as AiChatSessionItem
+    const assistantMessage = {
+      handle: 32,
+      role: 'assistant',
+      status: 'completed',
+      content: 'Done',
+    } as AiChatMessageItem
+    api.streamMessage.mockImplementation(
+      async (_payload: unknown, onEvent: (event: Record<string, unknown>) => void) => {
+        onEvent({ type: 'session.upsert', session })
+        onEvent({ type: 'message.completed', message: assistantMessage, session })
+      },
+    )
+    const testState = setup()
+
+    await testState.state.sendMessage()
+
+    expect(api.streamMessage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        content: 'Analyze this file',
+        providerHandle: 'openai',
+        modelHandle: 'gpt',
+        agentHandle: 'songbird',
+        contextEntityHandle: 'ticket',
+        contextRecordHandle: '42',
+        transcriptionHandle: 9,
+        attachmentHandles: [17],
+      }),
+      expect.any(Function),
+      expect.any(AbortSignal),
+    )
+    expect(testState.callbacks.replaceSession).toHaveBeenCalledWith(session)
+    expect(testState.callbacks.upsertMessage).toHaveBeenCalledWith(assistantMessage)
+    expect(testState.callbacks.autoPlayAssistantSpeech).toHaveBeenCalledWith(assistantMessage)
+    expect(testState.pendingAttachments.value).toEqual([])
+    expect(testState.state.isSending.value).toBe(false)
+  })
+
+  it('upserts confirmed actions and their follow-up action into the source message', async () => {
+    const initialAction = {
+      handle: 7,
+      message: 44,
+      serverName: 'sapling',
+      toolName: 'generic_create',
+      status: 'pending',
+    } as AiChatToolActionItem
+    const followUpAction = {
+      handle: 8,
+      message: 44,
+      serverName: 'sapling',
+      toolName: 'generic_update',
+      status: 'pending',
+    } as AiChatToolActionItem
+    const confirmedAction = {
+      ...initialAction,
+      status: 'executed',
+      resultPayload: { followUpToolAction: followUpAction },
+    } as AiChatToolActionItem
+    api.confirmToolAction.mockResolvedValue(confirmedAction)
+    const testState = setup()
+    testState.messages.value = [
+      {
+        handle: 44,
+        responsePayload: { pendingToolActions: [initialAction] },
+      } as AiChatMessageItem,
+    ]
+
+    await testState.state.confirmToolAction(initialAction)
+
+    expect(api.confirmToolAction).toHaveBeenCalledWith(7)
+    expect(testState.messages.value[0]?.responsePayload).toMatchObject({
+      pendingToolActions: [confirmedAction, followUpAction],
+    })
+    expect(testState.state.activeToolActionHandles.value).toEqual({})
+  })
+})

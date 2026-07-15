@@ -6,18 +6,64 @@ Sapling's AI system centers on Songbird, the internal assistant. Songbird can us
 
 ```text
 backend/src/api/ai/ai.service.ts
+backend/src/api/ai/ai-agent-context.service.ts
+backend/src/api/ai/ai-agent-workbench.service.ts
+backend/src/api/ai/ai-chat-persistence.service.ts
+backend/src/api/ai/ai-chat-session.service.ts
+backend/src/api/ai/ai-chat-message.service.ts
+backend/src/api/ai/ai-chat-media.service.ts
+backend/src/api/ai/ai-chat-stream.service.ts
+backend/src/api/ai/ai-chat-tool-action.service.ts
 backend/src/api/ai/ai-chat-runtime.service.ts
 backend/src/api/ai/ai.controller.ts
 backend/src/api/ai/mcp.service.ts
 backend/src/api/ai/sapling-mcp.service.ts
+backend/src/api/ai/sapling-mcp-transport.service.ts
+backend/src/api/ai/sapling-mcp-execution.service.ts
+backend/src/api/ai/sapling-mcp-metadata.service.ts
+backend/src/api/ai/sapling-mcp-generic-tool.service.ts
+backend/src/api/ai/sapling-mcp-search-tool.service.ts
+backend/src/api/ai/sapling-mcp-import-tool.service.ts
+backend/src/api/ai/sapling-mcp-value.service.ts
 backend/src/api/ai/sapling-mcp-tool-definitions.ts
 backend/src/api/ai/sapling-mcp-permission.service.ts
 backend/src/api/ai/ai-vector.service.ts
+backend/src/api/ai/ai-vector-index.service.ts
+backend/src/api/ai/ai-vector-search.service.ts
+backend/src/api/ai/ai-vector-document-builder.service.ts
+backend/src/api/ai/ai-vector-embedding.service.ts
+backend/src/api/ai/ai-vector-content.utils.ts
 backend/src/api/ai/ai-vector.utils.ts
 backend/src/api/ai/prompts/
 frontend/src/components/system/ai-chat/
 frontend/src/components/system/SaplingVectorizationDialog.vue
 ```
+
+## AI Service Boundaries
+
+`AiService` is the stable controller, mail-processing, and MCP-facing facade.
+The implementation is divided by lifecycle responsibility:
+
+- `AiAgentContextService` resolves agents, pinned versions, playbooks, scoped
+  memories, tool policies, and runtime instructions.
+- `AiAgentWorkbenchService` owns workbench reads, runs, evaluations, and
+  aggregate quality statistics.
+- `AiChatPersistenceService` owns user/record ownership checks, session
+  population, message paging/sequencing, and attachment/transcription links.
+- `AiChatSessionService` and `AiChatMessageService` own their respective CRUD
+  lifecycles while preserving the facade contract.
+- `AiChatMediaService` owns import attachments, transcription, speech
+  synthesis, and their persisted documents.
+- `AiChatToolActionService` keeps confirm-first mutation preflight,
+  persistence, confirmation/rejection, follow-up actions, and message payload
+  synchronization together as one security boundary.
+- `AiChatStreamService` orchestrates persisted messages, runtime selection,
+  MCP tool execution, streaming providers, run traces, sources, and navigation
+  links; provider-specific streaming remains in `AiChatRuntimeService`.
+
+All of these services are registered by `AiModule`; consumers should continue
+to depend on `AiService` unless they are implementing an internal AI lifecycle
+collaborator.
 
 ## Chat Model
 
@@ -137,6 +183,24 @@ It is also exposed over HTTP:
 /api/ai/mcp
 ```
 
+`SaplingMcpService` is the stable facade. Internal MCP responsibilities are
+split as follows:
+
+- `SaplingMcpTransportService` owns HTTP sessions and MCP server transport.
+- `SaplingMcpExecutionService` owns tool dispatch, result formatting, and
+  tool-boundary error handling.
+- Metadata/schema, generic CRUD/timeline, search, and import workflows live in
+  their respective focused tool services.
+- `SaplingMcpValueService` owns shared argument, policy, and payload
+  normalization.
+- Criteria construction, permission filtering, and result formatting remain
+  isolated in their existing focused services.
+- The public tool-definition aggregator composes catalog, search, import, and
+  mutation definition modules while preserving the existing export.
+
+Internal consumers should depend on `SaplingMcpService`; the collaborators are
+implementation boundaries registered by `AiModule`.
+
 See:
 
 ```text
@@ -178,12 +242,33 @@ Main files:
 
 ```text
 backend/src/api/ai/ai-vector.service.ts
+backend/src/api/ai/ai-vector-index.service.ts
+backend/src/api/ai/ai-vector-search.service.ts
+backend/src/api/ai/ai-vector-document-builder.service.ts
+backend/src/api/ai/ai-vector-embedding.service.ts
+backend/src/api/ai/ai-vector-content.utils.ts
 backend/src/api/ai/ai-vector.utils.ts
 backend/src/entity/AiVectorDocumentItem.ts
 frontend/src/components/system/SaplingVectorizationDialog.vue
 ```
 
 Vectorization builds chunks from selected entity records and stores embeddings in `AiVectorDocumentItem`.
+
+`AiVectorService` is the stable controller/AI facade. Internally:
+
+- `AiVectorDocumentBuilderService` loads supported source entities and creates
+  their section documents.
+- `ai-vector-content.utils.ts` contains pure entity-to-text and metadata
+  projection helpers.
+- `AiVectorEmbeddingService` batches provider calls and keeps OpenAI-compatible
+  and Gemini embedding execution behind one contract.
+- `AiVectorIndexService` computes document deltas and reconciles the persisted
+  index transactionally.
+- `AiVectorSearchService` embeds queries, groups matching chunks, and reloads
+  source records through `GenericService`, preserving entity permissions.
+
+Consumers should continue to depend on `AiVectorService`; the internal
+collaborators are registered by `AiModule`.
 
 Each vector document has:
 
@@ -216,14 +301,14 @@ knowledgeArticle
 
 Sections:
 
-| Entity | Sections |
-| --- | --- |
-| `ticket` | `overview`, `problem`, `solution` |
-| `event` | `overview`, `description` |
-| `salesOpportunity` | `overview`, `description`, `painPoints` |
-| `effortEstimate` | `overview`, `requirements` |
-| `effortEstimatePosition` | `overview`, `offerText` |
-| `knowledgeArticle` | `overview`, `problem`, `solution`, `documentation` |
+| Entity                   | Sections                                           |
+| ------------------------ | -------------------------------------------------- |
+| `ticket`                 | `overview`, `problem`, `solution`                  |
+| `event`                  | `overview`, `description`                          |
+| `salesOpportunity`       | `overview`, `description`, `painPoints`            |
+| `effortEstimate`         | `overview`, `requirements`                         |
+| `effortEstimatePosition` | `overview`, `offerText`                            |
+| `knowledgeArticle`       | `overview`, `problem`, `solution`, `documentation` |
 
 ## Running Vectorization
 

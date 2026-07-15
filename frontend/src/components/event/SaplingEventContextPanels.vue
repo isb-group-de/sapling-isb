@@ -82,7 +82,7 @@ import type {
 import type {
   EventAgendaItem,
   SelectedPersonPreviewItem,
-} from '@/composables/event/useSaplingEvent'
+} from '@/composables/event/useSaplingEventPresentation'
 
 const props = defineProps<{
   isMobileFilterLayout: boolean

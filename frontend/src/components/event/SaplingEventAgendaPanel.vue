@@ -81,7 +81,7 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
 import SaplingSurface from '@/components/common/SaplingSurface.vue'
-import type { EventAgendaItem } from '@/composables/event/useSaplingEvent'
+import type { EventAgendaItem } from '@/composables/event/useSaplingEventPresentation'
 import type { CalendarEvent } from 'vuetify/lib/components/VCalendar/types.mjs'
 
 defineProps<{

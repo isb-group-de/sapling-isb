@@ -9,7 +9,7 @@
     <SaplingDialogCard class="sapling-dialog-card--fill" :tilt="false" :close="cancel">
       <div
         class="sapling-stack-xl sapling-record-dialog-shell sapling-dialog-edit-shell"
-        @keydown="onShellKeydown"
+        @keydown="onDialogKeydown"
       >
         <SaplingDialogEditHeader
           :loading="isLoading"
@@ -43,46 +43,13 @@
           </template>
           <template v-else>
             <div class="sapling-record-dialog-body sapling-dialog-edit-body">
-              <nav
-                class="sapling-record-dialog-nav sapling-dialog-edit-nav"
-                :aria-label="entityLabel"
-              >
-                <button
-                  class="sapling-record-dialog-nav-item sapling-dialog-edit-nav-item"
-                  :class="{
-                    'sapling-record-dialog-nav-item--active': activeTab === 0,
-                    'sapling-record-dialog-nav-item--record': true,
-                  }"
-                  type="button"
-                  :aria-current="activeTab === 0 ? 'page' : undefined"
-                  @click="activeTab = 0"
-                >
-                  <v-icon class="sapling-record-dialog-nav-item__icon" size="18">
-                    mdi-file-document-edit-outline
-                  </v-icon>
-                  <span class="sapling-record-dialog-nav-item__label">{{ entityLabel }}</span>
-                </button>
-                <template v-if="mode !== 'create'">
-                  <button
-                    v-for="(template, idx) in relationTemplates"
-                    :key="template.name"
-                    class="sapling-record-dialog-nav-item sapling-dialog-edit-nav-item"
-                    :class="{
-                      'sapling-record-dialog-nav-item--active': activeTab === idx + 1,
-                    }"
-                    type="button"
-                    :aria-current="activeTab === idx + 1 ? 'page' : undefined"
-                    @click="activeTab = idx + 1"
-                  >
-                    <v-icon class="sapling-record-dialog-nav-item__icon" size="18">
-                      mdi-link-variant
-                    </v-icon>
-                    <span class="sapling-record-dialog-nav-item__label">
-                      {{ $t(`${entity?.handle}.${template.name}`) }}
-                    </span>
-                  </button>
-                </template>
-              </nav>
+              <SaplingDialogEditNavigation
+                v-model:active-tab="activeTab"
+                :entity-handle="entityHandle"
+                :entity-label="entityLabel"
+                :mode="mode"
+                :relation-templates="relationTemplates"
+              />
               <v-window
                 v-model="activeTab"
                 class="sapling-record-dialog-window sapling-dialog-edit-window"
@@ -250,11 +217,13 @@ import { DEFAULT_PAGE_SIZE_SMALL } from '@/constants/project.constants'
 import { SAPLING_DIALOG_MAX_WIDTH, SAPLING_DIALOG_HEIGHT } from '@/constants/dialog.constants'
 import type { EntityItem, SaplingGenericItem } from '@/entity/entity'
 import { useSaplingDialogEdit } from '@/composables/dialog/useSaplingDialogEdit'
+import { useSaplingDialogKeyboardShortcuts } from '@/composables/dialog/useSaplingDialogKeyboardShortcuts'
 import { useSaplingDialogRecordActions } from '@/composables/dialog/useSaplingDialogRecordActions'
 import SaplingDialogCard from '@/components/dialog/SaplingDialogCard.vue'
 import SaplingDialogEditActions from '@/components/dialog/SaplingDialogEditActions.vue'
 import SaplingDialogEditFormSections from '@/components/dialog/SaplingDialogEditFormSections.vue'
 import SaplingDialogEditHeader from '@/components/dialog/SaplingDialogEditHeader.vue'
+import SaplingDialogEditNavigation from '@/components/dialog/SaplingDialogEditNavigation.vue'
 import SaplingDialogRecordActionDialogs from '@/components/dialog/SaplingDialogRecordActionDialogs.vue'
 import SaplingDialogUnsavedChanges from '@/components/dialog/SaplingDialogUnsavedChanges.vue'
 import SaplingDialogEditRelationTab from './SaplingDialogEditRelationTab.vue'
@@ -400,33 +369,11 @@ const {
   selectFormConfig,
 })
 
-function onShellKeydown(event: KeyboardEvent) {
-  // Keyboard shortcuts inside the edit dialog:
-  //   Ctrl/Cmd + S        -> save (keep dialog open)
-  //   Ctrl/Cmd + Enter    -> save & close
-  //   Escape              -> cancel (uses unsaved-changes confirmation when dirty)
-  const isMod = event.ctrlKey || event.metaKey
-  if (event.repeat) {
-    return
-  }
-
-  if (isMod && !event.altKey && event.key.toLowerCase() === 's') {
-    event.preventDefault()
-    void save()
-    return
-  }
-
-  if (isMod && !event.altKey && event.key === 'Enter') {
-    event.preventDefault()
-    void saveAndClose()
-    return
-  }
-
-  if (event.key === 'Escape' && !isMod && !event.altKey) {
-    event.preventDefault()
-    cancel()
-  }
-}
+const { onDialogKeydown } = useSaplingDialogKeyboardShortcuts({
+  cancel,
+  save,
+  saveAndClose,
+})
 
 const entityLabel = computed(() =>
   props.entity?.handle ? t(`navigation.${props.entity.handle}`) : '',

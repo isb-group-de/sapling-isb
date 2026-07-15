@@ -1,23 +1,18 @@
-import { Module } from '@nestjs/common';
-import { MikroOrmModule } from '@mikro-orm/nestjs';
+import { Module, forwardRef } from '@nestjs/common';
 import { AuthModule } from '../../auth/auth.module';
-import { ENTITY_REGISTRY } from '../../entity/global/entity.registry';
 import { CurrentModule } from '../current/current.module';
 import { TemplateModule } from '../template/template.module';
 import { FormConfigController } from './form-config.controller';
-import { FormConfigService } from './form-config.service';
+import { FormConfigCoreModule } from './form-config-core.module';
 
 @Module({
   imports: [
-    AuthModule,
+    forwardRef(() => AuthModule),
     CurrentModule,
     TemplateModule,
-    MikroOrmModule.forFeature(
-      ENTITY_REGISTRY.map((entry) => entry.class as new () => any),
-    ),
+    FormConfigCoreModule,
   ],
   controllers: [FormConfigController],
-  providers: [FormConfigService],
-  exports: [FormConfigService],
+  exports: [FormConfigCoreModule],
 })
 export class FormConfigModule {}

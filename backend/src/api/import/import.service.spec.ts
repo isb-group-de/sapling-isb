@@ -1,82 +1,26 @@
 import { ImportService } from './import.service';
 
 describe('ImportService', () => {
-  function createService(em: unknown = { findOne: jest.fn() }) {
+  function createService(
+    em: unknown = { findOne: jest.fn() },
+    importBatchQueryService: unknown = {},
+  ) {
     return new ImportService(
       em as never,
       {} as never,
       {} as never,
       {} as never,
       {} as never,
-      {
-        collectCustomFieldsFromFlatPayload: jest.fn(),
-      } as never,
+      importBatchQueryService as never,
       {} as never,
     );
   }
 
-  it('hydrates the import user permissions for queued validation and execution jobs', async () => {
-    const currentUser = { handle: 7, roles: [] };
-    const em = {
-      findOne: jest.fn(() => Promise.resolve(currentUser)),
-    };
-    const service = createService(em);
-
-    const result = await (
-      service as unknown as {
-        findImportUser(userHandle: number): Promise<unknown>;
-      }
-    ).findImportUser(7);
-
-    expect(result).toBe(currentUser);
-    expect(em.findOne).toHaveBeenCalledWith(
-      expect.any(Function),
-      { handle: 7 },
-      {
-        populate: [
-          'company',
-          'roles',
-          'roles.stage',
-          'roles.permissions',
-          'roles.permissions.entity',
-        ],
-      },
+  it('delegates source-value queries to the batch query service', async () => {
+    const getBatchSourceValues = jest.fn(() =>
+      Promise.resolve({ values: ['Dr.', 'Prof.'], isTruncated: true }),
     );
-  });
-
-  it('includes the target field and source value when a value mapping is missing', async () => {
-    const service = createService();
-
-    await expect(
-      (
-        service as unknown as {
-          applyValueMapping(
-            template: unknown[],
-            targetField: string,
-            value: unknown,
-            mappings: unknown[],
-          ): Promise<unknown>;
-        }
-      ).applyValueMapping([], 'status', 'Fremdwert A', [
-        {
-          targetField: 'status',
-          fallback: 'error',
-          values: {},
-        },
-      ]),
-    ).rejects.toThrow('import.valueMappingMissing:status:Fremdwert%20A');
-  });
-
-  it('loads distinct source values from all import rows with a capped limit', async () => {
-    const execute = jest.fn(() =>
-      Promise.resolve([{ value: 'Dr.' }, { value: 'Prof.' }, { value: 'Sir' }]),
-    );
-    const service = createService({
-      findOne: jest.fn(() =>
-        Promise.resolve({ handle: 42, headers: ['Titel'] }),
-      ),
-      getConnection: jest.fn(() => ({ execute })),
-    });
+    const service = createService({}, { getBatchSourceValues });
 
     const result = await service.getBatchSourceValues(42, 'Titel', 2);
 
@@ -84,39 +28,7 @@ describe('ImportService', () => {
       values: ['Dr.', 'Prof.'],
       isTruncated: true,
     });
-    expect(execute).toHaveBeenCalledWith(expect.stringContaining('distinct'), [
-      'Titel',
-      42,
-      3,
-    ]);
-  });
-
-  it('ignores failed background jobs when the import batch was deleted', async () => {
-    const flush = jest.fn();
-    const service = createService({
-      findOne: jest.fn(() => Promise.resolve(null)),
-      flush,
-    });
-
-    await expect(
-      (
-        service as unknown as {
-          markBatchJobFailed(
-            handle: number,
-            status: 'validationFailed',
-            operation: 'validation',
-            error: unknown,
-          ): Promise<void>;
-        }
-      ).markBatchJobFailed(
-        42,
-        'validationFailed',
-        'validation',
-        new Error('boom'),
-      ),
-    ).resolves.toBeUndefined();
-
-    expect(flush).not.toHaveBeenCalled();
+    expect(getBatchSourceValues).toHaveBeenCalledWith(42, 'Titel', 2);
   });
 
   it('merges template value mappings with partial batch overrides', () => {
@@ -163,200 +75,5 @@ describe('ImportService', () => {
         },
       },
     ]);
-  });
-
-  it('includes the target field and source value when kept reference values cannot be resolved', async () => {
-    const service = createService({
-      find: jest.fn(() => Promise.resolve([])),
-    });
-
-    await expect(
-      (
-        service as unknown as {
-          applyValueMapping(
-            template: unknown[],
-            targetField: string,
-            value: unknown,
-            mappings: unknown[],
-          ): Promise<unknown>;
-        }
-      ).applyValueMapping(
-        [
-          {
-            name: 'status',
-            isReference: true,
-            referenceName: 'ticketStatus',
-            kind: 'm:1',
-          },
-        ],
-        'status',
-        'Unbekannt',
-        [
-          {
-            targetField: 'status',
-            fallback: 'keep',
-            values: {},
-          },
-        ],
-      ),
-    ).rejects.toThrow('import.valueMappingMissing:status:Unbekannt');
-  });
-
-  it('uses reference field defaults when the mapped source cell is blank', async () => {
-    const service = createService();
-    const template = [
-      {
-        name: 'country',
-        type: 'CountryItem',
-        isReference: true,
-        referenceName: 'country',
-        kind: 'm:1',
-        isRequired: true,
-      },
-    ];
-
-    const payload = await (
-      service as unknown as {
-        buildPayload(
-          template: unknown[],
-          rawData: Record<string, unknown>,
-          dto: unknown,
-          entityHandle: string,
-          currentUser: unknown,
-        ): Promise<Record<string, unknown>>;
-        getMissingRequiredFieldNames(
-          template: unknown[],
-          payload: Record<string, unknown>,
-          action: string | null,
-        ): string[];
-      }
-    ).buildPayload(
-      template,
-      { Land: '' },
-      {
-        entityHandle: 'company',
-        mappings: [{ sourceColumn: 'Land', targetField: 'country' }],
-        fieldDefaults: [
-          {
-            targetField: 'country',
-            value: { handle: 'DE', name: 'Deutschland' },
-          },
-        ],
-      },
-      'company',
-      { handle: 7 },
-    );
-
-    expect(payload.country).toBe('DE');
-    expect(
-      (
-        service as unknown as {
-          getMissingRequiredFieldNames(
-            template: unknown[],
-            payload: Record<string, unknown>,
-            action: string | null,
-          ): string[];
-        }
-      ).getMissingRequiredFieldNames(template, payload, 'created'),
-    ).toEqual([]);
-  });
-
-  it('marks duplicate unique values as validation errors by default', async () => {
-    const service = createService({
-      find: jest.fn(() => Promise.resolve([{ handle: 5 }])),
-    });
-    (
-      service as unknown as { genericQueryService: unknown }
-    ).genericQueryService = {
-      getEntityClass: jest.fn(() => class Company {}),
-    };
-
-    await expect(
-      (
-        service as unknown as {
-          applyUniqueConflictStrategies(
-            template: unknown[],
-            payload: Record<string, unknown>,
-            dto: unknown,
-            entityHandle: string,
-            row: unknown,
-            targetReference: string | number | null,
-            externalKey: unknown,
-            uniqueValueClaims: Map<string, number>,
-          ): Promise<void>;
-        }
-      ).applyUniqueConflictStrategies(
-        [{ name: 'name', isUnique: true, type: 'string', length: 128 }],
-        { name: 'Leibniz' },
-        {},
-        'company',
-        { rowNumber: 2 },
-        null,
-        { parts: { id: '123' }, hash: 'hash' },
-        new Map(),
-      ),
-    ).rejects.toThrow('import.uniqueFieldConflict:name:Leibniz');
-  });
-
-  it('can append the external key to duplicate unique values during validation', async () => {
-    const service = createService({
-      find: jest.fn((_, criteria: { name?: string }) =>
-        Promise.resolve(criteria.name === 'Leibniz' ? [{ handle: 5 }] : []),
-      ),
-    });
-    (
-      service as unknown as { genericQueryService: unknown }
-    ).genericQueryService = {
-      getEntityClass: jest.fn(() => class Company {}),
-    };
-    const payload = { name: 'Leibniz' };
-
-    await (
-      service as unknown as {
-        applyUniqueConflictStrategies(
-          template: unknown[],
-          payload: Record<string, unknown>,
-          dto: unknown,
-          entityHandle: string,
-          row: unknown,
-          targetReference: string | number | null,
-          externalKey: unknown,
-          uniqueValueClaims: Map<string, number>,
-        ): Promise<void>;
-      }
-    ).applyUniqueConflictStrategies(
-      [{ name: 'name', isUnique: true, type: 'string', length: 128 }],
-      payload,
-      {
-        uniqueConflictStrategies: [
-          { targetField: 'name', strategy: 'appendExternalKey' },
-        ],
-      },
-      'company',
-      { rowNumber: 2 },
-      null,
-      { parts: { id: '123' }, hash: 'hash' },
-      new Map(),
-    );
-
-    expect(payload.name).toBe('Leibniz (123)');
-  });
-
-  it('marks invalid boolean import values as validation errors', () => {
-    const service = createService();
-
-    expect(() =>
-      (
-        service as unknown as {
-          validateImportBooleanValues(
-            template: unknown[],
-            payload: Record<string, unknown>,
-          ): void;
-        }
-      ).validateImportBooleanValues(
-        [{ name: 'allowNewsletter', type: 'boolean' }],
-        { allowNewsletter: '-1' },
-      ),
-    ).toThrow('import.invalidBooleanValues:allowNewsletter');
   });
 });

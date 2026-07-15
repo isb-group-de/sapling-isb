@@ -16,6 +16,14 @@ import { GenericReferenceService } from './generic-reference.service';
 import { GenericSanitizerService } from './generic-sanitizer.service';
 import { GenericService } from './generic.service';
 import { GenericTimelineService } from './generic-timeline.service';
+import { GenericTimelineDateService } from './generic-timeline-date.service';
+import { GenericTimelineDescriptorService } from './generic-timeline-descriptor.service';
+import { GenericTimelineProjectionService } from './generic-timeline-projection.service';
+import { GenericTimelineQueryService } from './generic-timeline-query.service';
+import { GenericListQueryService } from './generic-list-query.service';
+import { GenericInlineCollectionService } from './generic-inline-collection.service';
+import { GenericRelationMutationService } from './generic-relation-mutation.service';
+import { GenericEntityMutationService } from './generic-entity-mutation.service';
 import { GenericUpdateConflictService } from './generic-update-conflict.service';
 import { TemplateModule } from '../template/template.module';
 import { ScriptModule } from '../script/script.module';
@@ -66,6 +74,14 @@ import { MailModule } from '../mail/mail.module';
     GenericReferenceService,
     GenericSanitizerService,
     GenericTimelineService,
+    GenericTimelineDateService,
+    GenericTimelineDescriptorService,
+    GenericTimelineProjectionService,
+    GenericTimelineQueryService,
+    GenericListQueryService,
+    GenericInlineCollectionService,
+    GenericRelationMutationService,
+    GenericEntityMutationService,
     GenericUpdateConflictService,
   ],
   exports: [
