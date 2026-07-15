@@ -14,6 +14,7 @@ import type { EntityTemplateDto } from '../template/dto/entity-template.dto';
 import {
   type NormalizedSaplingFormConfig,
   type SaplingFormFieldConfig,
+  type SaplingFormGroupConfig,
 } from './form-config.types';
 import type { SaveSaplingFormConfigDto } from './dto/form-config.dto';
 import {
@@ -194,14 +195,19 @@ export class FormConfigService {
   ): Promise<EntityTemplateDto[]> {
     const configs = await this.findApplicableConfigs(entityHandle, person);
     const mergedFields = this.mergeFieldConfigs(configs);
+    const mergedGroups = this.mergeGroupConfigs(configs);
 
     return templates.map((template) => {
       const fieldConfig = mergedFields[template.name];
-      if (!fieldConfig) {
-        return template;
-      }
+      const fieldTemplate = fieldConfig
+        ? this.applyFieldConfig(template, fieldConfig)
+        : template;
+      const groupKey = fieldTemplate.formGroup?.trim();
+      const groupConfig = groupKey ? mergedGroups[groupKey] : undefined;
 
-      return this.applyFieldConfig(template, fieldConfig);
+      return groupConfig
+        ? this.applyGroupConfig(fieldTemplate, groupConfig)
+        : fieldTemplate;
     });
   }
 
@@ -296,6 +302,45 @@ export class FormConfigService {
     }
 
     return merged;
+  }
+
+  private mergeGroupConfigs(
+    configs: NormalizedSaplingFormConfig[],
+  ): Record<string, SaplingFormGroupConfig> {
+    const merged: Record<string, SaplingFormGroupConfig> = {};
+
+    for (const config of configs) {
+      for (const [groupKey, groupConfig] of Object.entries(config.groups)) {
+        merged[groupKey] = {
+          ...(merged[groupKey] ?? {}),
+          ...groupConfig,
+        };
+      }
+    }
+
+    return merged;
+  }
+
+  private applyGroupConfig(
+    template: EntityTemplateDto,
+    groupConfig: SaplingFormGroupConfig,
+  ): EntityTemplateDto {
+    const nextTemplate: EntityTemplateDto = {
+      ...template,
+      formGroupConfig: {
+        ...(template.formGroupConfig ?? {}),
+        ...groupConfig,
+      },
+    };
+
+    if (Object.prototype.hasOwnProperty.call(groupConfig, 'order')) {
+      nextTemplate.formGroupOrder = groupConfig.order ?? null;
+    }
+    if (groupConfig.visible === false) {
+      nextTemplate.formVisible = false;
+    }
+
+    return nextTemplate;
   }
 
   private applyFieldConfig(

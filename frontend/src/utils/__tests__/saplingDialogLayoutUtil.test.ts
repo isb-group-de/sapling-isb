@@ -100,6 +100,21 @@ describe('saplingDialogLayoutUtil', () => {
     ])
   })
 
+  it('uses a configured group label before translations', () => {
+    const groups = groupDialogTemplates(
+      [
+        createTemplate({
+          name: 'title',
+          formGroup: 'basics',
+          formGroupConfig: { label: 'Custom basics' },
+        }),
+      ],
+      () => 'Translated basics',
+    )
+
+    expect(groups[0]?.label).toBe('Custom basics')
+  })
+
   it('maps dialog widths responsively and keeps sensible defaults', () => {
     expect(getDialogTemplateWidth(createTemplate({ formWidth: 1 }))).toBe(1)
     expect(getDialogTemplateColumns(createTemplate({ formWidth: 1 }))).toEqual({

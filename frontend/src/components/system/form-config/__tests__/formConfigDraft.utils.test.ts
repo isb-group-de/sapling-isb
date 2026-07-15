@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { EntityTemplate } from '@/entity/structure'
-import type { FieldDraft } from '../formConfigAdmin.types'
+import type { FieldDraft, GroupDraft } from '../formConfigAdmin.types'
 import { applyFormConfigDraftToTemplate, buildFormConfigPayload } from '../formConfigDraft.utils'
 
 const field: FieldDraft = {
@@ -21,9 +21,16 @@ const field: FieldDraft = {
   readonly: false,
 }
 
+const group: GroupDraft = {
+  key: 'Main',
+  label: 'Main fields',
+  visible: false,
+  order: 100,
+}
+
 describe('formConfigDraft utils', () => {
   it('builds a normalized persisted form-config payload', () => {
-    expect(buildFormConfigPayload('ticket', [field])).toEqual({
+    expect(buildFormConfigPayload('ticket', [field], [group])).toEqual({
       schema: 'sapling.form-config.v1',
       entityHandle: 'ticket',
       fields: {
@@ -43,6 +50,13 @@ describe('formConfigDraft utils', () => {
           readonly: false,
         },
       },
+      groups: {
+        Main: {
+          visible: false,
+          order: 100,
+          label: 'Main fields',
+        },
+      },
     })
   })
 
@@ -55,13 +69,19 @@ describe('formConfigDraft utils', () => {
       formWidth: null,
     } as EntityTemplate
 
-    const result = applyFormConfigDraftToTemplate(template, field)
+    const result = applyFormConfigDraftToTemplate(template, field, group)
 
     expect(result).toMatchObject({
       formGroup: '  Main  ',
+      formGroupOrder: 100,
+      formGroupConfig: {
+        visible: false,
+        order: 100,
+        label: 'Main fields',
+      },
       formOrder: 2,
       formWidth: 3,
-      formVisible: true,
+      formVisible: false,
       tableVisible: true,
       mobileVisible: false,
       isRequired: true,

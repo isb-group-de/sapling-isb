@@ -7,6 +7,13 @@ import { Sapling, SaplingForm } from './global/entity.decorator';
 
 export type SaplingFormConfigScope = 'global' | 'role' | 'person';
 
+export interface SaplingFormGroupConfigPayload {
+  visible?: boolean;
+  order?: number | null;
+  label?: string | null;
+  metadata?: Record<string, unknown> | null;
+}
+
 export interface SaplingFormConfigPayload {
   schema: 'sapling.form-config.v1';
   entityHandle: string;
@@ -35,7 +42,7 @@ export interface SaplingFormConfigPayload {
       metadata?: Record<string, unknown> | null;
     }
   >;
-  groups?: Record<string, unknown>;
+  groups?: Record<string, SaplingFormGroupConfigPayload>;
   layout?: Record<string, unknown>;
   metadata?: Record<string, unknown>;
 }

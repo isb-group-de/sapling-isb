@@ -20,6 +20,13 @@ export interface FieldDraft {
   readonly: boolean
 }
 
+export interface GroupDraft {
+  key: string
+  label: string
+  visible: boolean
+  order: number
+}
+
 export interface StaticOption<T> {
   title: string
   value: T

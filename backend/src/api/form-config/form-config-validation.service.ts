@@ -8,6 +8,7 @@ import {
   SAPLING_FORM_CONFIG_SCHEMA,
   type NormalizedSaplingFormConfig,
   type SaplingFormFieldConfig,
+  type SaplingFormGroupConfig,
   type SaplingFormFieldWidth,
   type SaplingFormRenderer,
 } from './form-config.types';
@@ -102,7 +103,7 @@ export class FormConfigValidationService {
       schema: SAPLING_FORM_CONFIG_SCHEMA,
       entityHandle: configEntityHandle,
       fields: this.normalizeFields(record.fields),
-      groups: this.normalizeRecord(record.groups),
+      groups: this.normalizeGroups(record.groups),
       layout: this.normalizeRecord(record.layout),
       metadata: this.normalizeRecord(record.metadata),
     };
@@ -129,6 +130,56 @@ export class FormConfigValidationService {
     }
 
     return fields;
+  }
+
+  private normalizeGroups(
+    value: unknown,
+  ): Record<string, SaplingFormGroupConfig> {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+      return {};
+    }
+
+    const groups: Record<string, SaplingFormGroupConfig> = {};
+    for (const [groupKey, groupValue] of Object.entries(
+      value as Record<string, unknown>,
+    )) {
+      const normalizedKey = groupKey.trim();
+      if (!normalizedKey) {
+        continue;
+      }
+
+      groups[normalizedKey] = this.normalizeGroupConfig(groupValue);
+    }
+
+    return groups;
+  }
+
+  private normalizeGroupConfig(value: unknown): SaplingFormGroupConfig {
+    if (!this.isPlainRecord(value)) {
+      return {};
+    }
+
+    const groupConfig: SaplingFormGroupConfig = {};
+    if (typeof value.visible === 'boolean') {
+      groupConfig.visible = value.visible;
+    }
+    if (Object.prototype.hasOwnProperty.call(value, 'order')) {
+      groupConfig.order =
+        typeof value.order === 'number' && Number.isFinite(value.order)
+          ? Math.trunc(value.order)
+          : null;
+    }
+    if (Object.prototype.hasOwnProperty.call(value, 'label')) {
+      groupConfig.label =
+        typeof value.label === 'string' && value.label.trim()
+          ? value.label.trim()
+          : null;
+    }
+    if (this.isPlainRecord(value.metadata) || value.metadata === null) {
+      groupConfig.metadata = value.metadata;
+    }
+
+    return groupConfig;
   }
 
   private normalizeFieldConfig(value: unknown): SaplingFormFieldConfig {

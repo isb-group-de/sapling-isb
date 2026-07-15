@@ -102,11 +102,18 @@ export interface SaplingFormFieldConfig {
   metadata?: Record<string, unknown> | null
 }
 
+export interface SaplingFormGroupConfig {
+  visible?: boolean
+  order?: number | null
+  label?: string | null
+  metadata?: Record<string, unknown> | null
+}
+
 export interface SaplingFormConfigPayload {
   schema: 'sapling.form-config.v1'
   entityHandle: string
   fields?: Record<string, SaplingFormFieldConfig>
-  groups?: Record<string, Record<string, unknown>>
+  groups?: Record<string, SaplingFormGroupConfig>
   layout?: Record<string, unknown>
   metadata?: Record<string, unknown>
 }
@@ -215,6 +222,8 @@ export interface EntityTemplate {
   formGroup?: string | null
   /** Optional display order for the enclosing form group */
   formGroupOrder?: number | null
+  /** Effective configuration for the enclosing form group */
+  formGroupConfig?: SaplingFormGroupConfig | null
   /** Optional display order for generated edit dialogs */
   formOrder?: number | null
   /** Optional width span (1-4) for generated edit dialogs */

@@ -2,12 +2,14 @@ import type {
   EntityTemplate,
   SaplingFormConfigPayload,
   SaplingFormFieldConfig,
+  SaplingFormGroupConfig,
 } from '@/entity/structure'
-import type { FieldDraft } from './formConfigAdmin.types'
+import type { FieldDraft, GroupDraft } from './formConfigAdmin.types'
 
 export function buildFormConfigPayload(
   entityHandle: string,
   fields: FieldDraft[],
+  groups: GroupDraft[] = [],
 ): SaplingFormConfigPayload {
   return {
     schema: 'sapling.form-config.v1',
@@ -32,12 +34,25 @@ export function buildFormConfigPayload(
         } satisfies SaplingFormFieldConfig,
       ]),
     ),
+    groups: Object.fromEntries(
+      groups
+        .filter((group) => group.key.trim())
+        .map((group) => [
+          group.key.trim(),
+          {
+            visible: group.visible,
+            order: group.order,
+            label: group.label.trim() || null,
+          } satisfies SaplingFormGroupConfig,
+        ]),
+    ),
   }
 }
 
 export function applyFormConfigDraftToTemplate(
   template: EntityTemplate,
   field: FieldDraft | undefined,
+  group?: GroupDraft,
 ): EntityTemplate {
   if (!field) {
     return template
@@ -46,9 +61,13 @@ export function applyFormConfigDraftToTemplate(
   return {
     ...template,
     formGroup: field.group || null,
+    formGroupOrder: group?.order ?? template.formGroupOrder,
+    formGroupConfig: group
+      ? { visible: group.visible, order: group.order, label: group.label.trim() || null }
+      : template.formGroupConfig,
     formOrder: field.order,
     formWidth: field.width,
-    formVisible: field.visible,
+    formVisible: field.visible && group?.visible !== false,
     tableVisible: field.tableVisible,
     tableOrder: field.tableOrder,
     mobileVisible: field.mobileVisible,

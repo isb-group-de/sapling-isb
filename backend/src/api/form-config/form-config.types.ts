@@ -26,6 +26,13 @@ export type SaplingFormRenderer =
 
 export type SaplingFormFieldWidth = 1 | 2 | 3 | 4;
 
+export interface SaplingFormGroupConfig {
+  visible?: boolean;
+  order?: number | null;
+  label?: string | null;
+  metadata?: Record<string, unknown> | null;
+}
+
 export interface SaplingFormFieldConfig {
   visible?: boolean;
   group?: string | null;
@@ -51,4 +58,5 @@ export interface SaplingFormFieldConfig {
 
 export type NormalizedSaplingFormConfig = SaplingFormConfigPayload & {
   fields: Record<string, SaplingFormFieldConfig>;
+  groups: Record<string, SaplingFormGroupConfig>;
 };

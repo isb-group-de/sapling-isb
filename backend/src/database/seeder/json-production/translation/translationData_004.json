@@ -1,0 +1,62 @@
+[
+  {
+    "entity": "formConfig",
+    "property": "groups",
+    "de": "Formulargruppen",
+    "en": "Form groups"
+  },
+  {
+    "entity": "formConfig",
+    "property": "newGroup",
+    "de": "Neue Gruppe",
+    "en": "New group"
+  },
+  {
+    "entity": "formConfig",
+    "property": "addGroup",
+    "de": "Gruppe hinzufügen",
+    "en": "Add group"
+  },
+  {
+    "entity": "formConfig",
+    "property": "groupLabel",
+    "de": "Gruppenname",
+    "en": "Group label"
+  },
+  {
+    "entity": "formConfig",
+    "property": "groupVisible",
+    "de": "Gruppe sichtbar",
+    "en": "Group visible"
+  },
+  {
+    "entity": "formConfig",
+    "property": "removeGroup",
+    "de": "Leere Gruppe entfernen",
+    "en": "Remove empty group"
+  },
+  {
+    "entity": "formConfig",
+    "property": "ungrouped",
+    "de": "Ohne Gruppe",
+    "en": "Ungrouped"
+  },
+  {
+    "entity": "formConfig",
+    "property": "dropFieldsHere",
+    "de": "Felder hier ablegen",
+    "en": "Drop fields here"
+  },
+  {
+    "entity": "formConfig",
+    "property": "dragGroup",
+    "de": "Gruppe verschieben",
+    "en": "Move group"
+  },
+  {
+    "entity": "formConfig",
+    "property": "dragField",
+    "de": "Feld verschieben",
+    "en": "Move field"
+  }
+]

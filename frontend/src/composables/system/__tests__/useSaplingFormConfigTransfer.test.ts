@@ -5,7 +5,7 @@ import type { SaplingFormConfigPayload } from '@/entity/structure'
 const mocks = vi.hoisted(() => ({
   validate: vi.fn(),
   loadEntityContext: vi.fn(),
-  applyFields: vi.fn(),
+  applyConfig: vi.fn(),
 }))
 
 vi.mock('vue-i18n', () => ({
@@ -49,7 +49,7 @@ function createSubject() {
       draftConfig,
       errorMessage,
       loadEntityContext: mocks.loadEntityContext,
-      applyFields: mocks.applyFields,
+      applyConfig: mocks.applyConfig,
     }),
   }
 }
@@ -87,7 +87,7 @@ describe('useSaplingFormConfigTransfer', () => {
     expect(state.selectedEntityHandle.value).toBe('person')
     expect(mocks.loadEntityContext).toHaveBeenCalledOnce()
     expect(mocks.validate).toHaveBeenCalledWith('person', importedConfig)
-    expect(mocks.applyFields).toHaveBeenCalledWith(importedConfig.fields)
+    expect(mocks.applyConfig).toHaveBeenCalledWith(importedConfig)
     expect(state.configName.value).toBe('person-layout')
     expect(state.selectedConfigHandle.value).toBeNull()
   })
@@ -103,7 +103,7 @@ describe('useSaplingFormConfigTransfer', () => {
 
     await state.subject.onImportFileChange(createFileEvent(importedConfig))
 
-    expect(mocks.applyFields).not.toHaveBeenCalled()
+    expect(mocks.applyConfig).not.toHaveBeenCalled()
     expect(state.errorMessage.value).toContain('formConfig.validationSummary')
     expect(state.errorMessage.value).toContain('"errors":1')
   })

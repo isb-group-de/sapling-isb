@@ -229,6 +229,15 @@ with `isValue`, but this is stored in the decorator and not inferred in the
 frontend. Hiding a field from the desktop table does not automatically hide a
 mobile-visible field.
 
+The Form Configuration administration groups form fields into draggable group
+containers. Group order and visibility are persisted centrally in
+`config.groups`; moving a field updates only its group membership and form
+order. The effective-template and edit-dialog overlays apply the same group
+rules, so the live preview and generated forms stay aligned.
+Its preview keeps form, desktop-table, and mobile-table tabs mounted through
+entity reloads, renders the configured form groups explicitly, and emphasizes
+translated field names plus renderer types instead of fabricated sample data.
+
 ## Dialogs
 
 Dialog files live under:

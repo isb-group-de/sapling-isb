@@ -45,46 +45,64 @@ export function applyFormConfigOverlay(
   sourceTemplates: EntityTemplate[],
   config: SaplingFormConfigPayload | null,
 ): EntityTemplate[] {
-  if (!config?.fields) {
+  if (!config?.fields && !config?.groups) {
     return sourceTemplates
   }
 
   return sourceTemplates.map((template) => {
     const fieldConfig = getFieldConfig(config.fields?.[template.name])
-    if (!fieldConfig) {
-      return template
-    }
-    const isBooleanTemplate =
-      template.type === 'boolean' ||
-      template.formConfig?.renderer === 'boolean' ||
-      fieldConfig.renderer === 'boolean'
-    const mergedFormConfig = {
-      ...(template.formConfig ?? {}),
-      ...fieldConfig,
-    }
+    const fieldTemplate = fieldConfig ? applyFieldConfig(template, fieldConfig) : template
+    const groupKey = fieldTemplate.formGroup?.trim()
+    const groupConfig = groupKey ? config.groups?.[groupKey] : undefined
 
-    if (fieldConfig.label == null && template.formConfig?.label) {
-      mergedFormConfig.label = template.formConfig.label
-    }
-    if (isBooleanTemplate) {
-      mergedFormConfig.required = false
-    }
+    if (!groupConfig) return fieldTemplate
 
     return {
-      ...template,
-      formGroup: fieldConfig.group ?? template.formGroup,
-      formGroupOrder: fieldConfig.groupOrder ?? template.formGroupOrder,
-      formOrder: fieldConfig.order ?? template.formOrder,
-      formWidth: fieldConfig.width ?? template.formWidth,
-      formVisible: fieldConfig.visible ?? template.formVisible,
-      tableOrder: fieldConfig.tableOrder ?? template.tableOrder,
-      tableVisible: fieldConfig.tableVisible ?? template.tableVisible,
-      mobileOrder: fieldConfig.mobileOrder ?? template.mobileOrder,
-      mobileVisible: fieldConfig.mobileVisible ?? template.mobileVisible,
-      isRequired: isBooleanTemplate ? false : (fieldConfig.required ?? template.isRequired),
-      formConfig: mergedFormConfig,
+      ...fieldTemplate,
+      formGroupOrder: groupConfig.order ?? fieldTemplate.formGroupOrder,
+      formVisible: groupConfig.visible === false ? false : fieldTemplate.formVisible,
+      formGroupConfig: {
+        ...(fieldTemplate.formGroupConfig ?? {}),
+        ...groupConfig,
+      },
     }
   })
+}
+
+function applyFieldConfig(
+  template: EntityTemplate,
+  fieldConfig: SaplingFormFieldConfig,
+): EntityTemplate {
+  const isBooleanTemplate =
+    template.type === 'boolean' ||
+    template.formConfig?.renderer === 'boolean' ||
+    fieldConfig.renderer === 'boolean'
+  const mergedFormConfig = {
+    ...(template.formConfig ?? {}),
+    ...fieldConfig,
+  }
+
+  if (fieldConfig.label == null && template.formConfig?.label) {
+    mergedFormConfig.label = template.formConfig.label
+  }
+  if (isBooleanTemplate) {
+    mergedFormConfig.required = false
+  }
+
+  return {
+    ...template,
+    formGroup: fieldConfig.group ?? template.formGroup,
+    formGroupOrder: fieldConfig.groupOrder ?? template.formGroupOrder,
+    formOrder: fieldConfig.order ?? template.formOrder,
+    formWidth: fieldConfig.width ?? template.formWidth,
+    formVisible: fieldConfig.visible ?? template.formVisible,
+    tableOrder: fieldConfig.tableOrder ?? template.tableOrder,
+    tableVisible: fieldConfig.tableVisible ?? template.tableVisible,
+    mobileOrder: fieldConfig.mobileOrder ?? template.mobileOrder,
+    mobileVisible: fieldConfig.mobileVisible ?? template.mobileVisible,
+    isRequired: isBooleanTemplate ? false : (fieldConfig.required ?? template.isRequired),
+    formConfig: mergedFormConfig,
+  }
 }
 
 export function getDefaultFormConfigHandle(

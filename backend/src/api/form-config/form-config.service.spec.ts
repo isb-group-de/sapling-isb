@@ -60,6 +60,27 @@ describe('FormConfigService', () => {
     });
   });
 
+  it('normalizes central group configuration', () => {
+    const service = new FormConfigService({} as never);
+    const result = service.validateConfig(
+      'ticket',
+      {
+        schema: SAPLING_FORM_CONFIG_SCHEMA,
+        entityHandle: 'ticket',
+        groups: {
+          basics: { visible: false, order: 20.8, label: '  Basics  ' },
+        },
+      },
+      [createTemplate({ name: 'title', formGroup: 'basics' })],
+    );
+
+    expect(result.normalizedConfig.groups.basics).toEqual({
+      visible: false,
+      order: 20,
+      label: 'Basics',
+    });
+  });
+
   it('applies table and mobile configuration to effective templates', async () => {
     const em = {
       find: jest.fn<() => Promise<object[]>>().mockResolvedValue([
@@ -147,6 +168,49 @@ describe('FormConfigService', () => {
       formConfig: expect.objectContaining({
         required: false,
       }),
+    });
+  });
+
+  it('applies group order, label, and visibility to effective templates', async () => {
+    const em = {
+      find: jest.fn<() => Promise<object[]>>().mockResolvedValue([
+        {
+          handle: 1,
+          scope: 'global',
+          isActive: true,
+          isDefault: true,
+          config: {
+            schema: SAPLING_FORM_CONFIG_SCHEMA,
+            entityHandle: 'ticket',
+            groups: {
+              basics: { visible: false, order: 10, label: 'Main data' },
+            },
+          },
+        },
+      ]),
+    };
+    const service = new FormConfigService(em as never);
+
+    const [template] = await service.getEffectiveTemplate(
+      'ticket',
+      [
+        createTemplate({
+          name: 'title',
+          formGroup: 'basics',
+          formVisible: true,
+        }),
+      ],
+      null,
+    );
+
+    expect(template).toMatchObject({
+      formVisible: false,
+      formGroupOrder: 10,
+      formGroupConfig: {
+        visible: false,
+        order: 10,
+        label: 'Main data',
+      },
     });
   });
 });

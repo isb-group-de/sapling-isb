@@ -116,10 +116,11 @@ export function groupDialogTemplates(
     const groupOrder = normalizeFormGroupOrder(template.formGroupOrder)
 
     if (!groups.has(groupId)) {
+      const configuredLabel = template.formGroupConfig?.label?.trim() || null
       groups.set(groupId, {
         id: groupId,
         key: groupKey,
-        label: groupKey ? (resolveGroupLabel?.(groupKey) ?? groupKey) : null,
+        label: groupKey ? (configuredLabel ?? resolveGroupLabel?.(groupKey) ?? groupKey) : null,
         templates: [],
         groupOrder,
         firstIndex: index,

@@ -30,30 +30,47 @@
       class="sapling-panel-shell sapling-stack-lg sapling-config-preview sapling-form-config-preview"
       aria-live="polite"
     >
-      <v-btn-toggle
-        v-model="previewModeModel"
+      <nav
         class="sapling-form-config-preview__mode-toggle"
-        mandatory
-        density="compact"
-        variant="tonal"
+        role="tablist"
+        :aria-label="t('formConfig.preview')"
       >
         <v-btn
           v-for="option in previewModeOptions"
           :key="option.value"
-          :value="option.value"
+          :data-preview-mode="option.value"
           :prepend-icon="option.icon"
+          :class="{
+            'sapling-form-config-preview__mode-button--active': previewModeModel === option.value,
+          }"
+          :aria-selected="previewModeModel === option.value"
+          role="tab"
+          density="compact"
+          variant="text"
+          @click="selectPreviewMode(option.value)"
         >
           {{ option.title }}
         </v-btn>
-      </v-btn-toggle>
+      </nav>
 
       <div v-if="previewModeModel === 'form'" class="sapling-form-config-preview__stage">
         <section
           v-for="group in previewGroups"
           :key="group.id"
-          class="sapling-stack-md sapling-config-preview__group sapling-form-config-preview__group"
+          class="sapling-panel-shell sapling-config-preview__group sapling-form-config-preview__group"
         >
-          <h3 v-if="group.label">{{ group.label }}</h3>
+          <header class="sapling-form-config-preview__group-header">
+            <div class="sapling-form-config-preview__group-title">
+              <v-icon icon="mdi-folder-outline" size="small" />
+              <div>
+                <h3>{{ group.label }}</h3>
+                <span v-if="group.key">{{ group.key }}</span>
+              </div>
+            </div>
+            <v-chip size="x-small" variant="tonal">
+              {{ group.templates.length }}
+            </v-chip>
+          </header>
           <div class="sapling-config-preview__grid sapling-form-config-preview__grid">
             <SaplingSurface
               v-for="field in group.templates"
@@ -61,9 +78,11 @@
               class="sapling-panel-shell sapling-config-preview__field sapling-form-config-preview__field"
               :class="`sapling-config-preview__field--w${getPreviewWidth(field)}`"
             >
-              <span>{{ getPreviewFieldLabel(field) }}</span>
-              <strong>{{ getPreviewRenderer(field) }}</strong>
-              <small>{{ getPreviewMeta(field) }}</small>
+              <strong>
+                {{ getPreviewFieldLabel(field) }}
+                <span>({{ getPreviewTypeLabel(field) }})</span>
+              </strong>
+              <small>{{ field.name }} · {{ getPreviewMeta(field) }}</small>
             </SaplingSurface>
           </div>
         </section>
@@ -80,24 +99,11 @@
               <thead>
                 <tr>
                   <th v-for="field in previewTableTemplates" :key="field.name">
-                    {{ getPreviewFieldLabel(field) }}
+                    <strong>{{ getPreviewFieldLabel(field) }}</strong>
+                    <small>{{ getPreviewTypeLabel(field) }}</small>
                   </th>
                 </tr>
               </thead>
-              <tbody>
-                <tr>
-                  <td v-for="field in previewTableTemplates" :key="field.name">
-                    <span :class="getPreviewValueClasses(field)">
-                      <v-icon
-                        v-if="field.options?.includes('isIcon')"
-                        icon="mdi-shape-outline"
-                        size="small"
-                      />
-                      {{ getPreviewSampleValue(field) }}
-                    </span>
-                  </td>
-                </tr>
-              </tbody>
             </table>
           </div>
         </div>
@@ -123,8 +129,9 @@
                   'sapling-form-config-preview-phone__field--primary': index === 0,
                 }"
               >
-                <span>{{ getPreviewFieldLabel(field) }}</span>
-                <strong>{{ getPreviewSampleValue(field) }}</strong>
+                <strong>{{ getPreviewFieldLabel(field) }}</strong>
+                <span>{{ getPreviewTypeLabel(field) }}</span>
+                <small>{{ field.name }}</small>
               </section>
             </div>
           </div>
@@ -192,7 +199,12 @@ const previewTemplates = computed(() =>
 )
 
 const previewGroups = computed(() =>
-  groupDialogTemplates(previewTemplates.value, (groupKey) => translateGroup(groupKey)),
+  groupDialogTemplates(previewTemplates.value, (groupKey) => translateGroup(groupKey)).map(
+    (group) => ({
+      ...group,
+      label: group.label || formConfigText('ungrouped', 'Ohne Gruppe'),
+    }),
+  ),
 )
 
 const previewTableTemplates = computed(() =>
@@ -237,11 +249,16 @@ const previewTitle = computed(() =>
 
 function translateEntity(entityHandle: string): string {
   const key = `navigation.${entityHandle}`
-  return te(key) ? t(key) : ''
+  return te(key) ? t(key) : entityHandle
 }
 
 function translateGroup(groupKey: string): string {
-  return te(groupKey) ? t(groupKey) : ''
+  if (te(groupKey)) return t(groupKey)
+
+  const unscopedKey = groupKey.startsWith(`${props.selectedEntityHandle}.`)
+    ? groupKey.slice(props.selectedEntityHandle.length + 1)
+    : groupKey
+  return formatMetadataName(unscopedKey.replace(/^group/, ''))
 }
 
 function isPreviewSupportedTableTemplate(template: EntityTemplate): boolean {
@@ -262,7 +279,7 @@ function getPreviewFieldLabel(template: EntityTemplate): string {
   }
 
   const key = `${props.selectedEntityHandle}.${template.name}`
-  return te(key) ? t(key) : ''
+  return te(key) ? t(key) : formatMetadataName(template.name)
 }
 
 function getPreviewRenderer(template: EntityTemplate): string {
@@ -271,7 +288,17 @@ function getPreviewRenderer(template: EntityTemplate): string {
     : inferRenderer(template)
 }
 
+function getPreviewTypeLabel(template: EntityTemplate): string {
+  const renderer = getPreviewRenderer(template)
+  if (renderer === 'select' && template.referenceName) {
+    return `${formatMetadataName(renderer)} · ${translateEntity(template.referenceName)}`
+  }
+
+  return formatMetadataName(renderer)
+}
+
 function inferRenderer(template: EntityTemplate): string {
+  if (template.isReference || template.referenceName) return 'select'
   if (template.options?.includes('isPhone')) return 'phone'
   if (template.options?.includes('isMail')) return 'mail'
   if (template.options?.includes('isLink')) return 'link'
@@ -279,42 +306,13 @@ function inferRenderer(template: EntityTemplate): string {
   if (template.options?.includes('isPercent')) return 'percent'
   if (template.options?.includes('isMarkdown')) return 'markdown'
   if (template.type === 'boolean') return 'boolean'
-  if (template.type === 'number') return 'number'
+  if (['number', 'integer', 'float', 'double', 'decimal'].includes(template.type.toLowerCase())) {
+    return 'number'
+  }
   if (template.type === 'datetime') return 'dateTime'
   if (template.type === 'DateType') return 'date'
   if (template.type === 'JsonType') return 'json'
   return (template.length ?? 0) > 128 ? 'longText' : 'shortText'
-}
-
-function getPreviewSampleValue(template: EntityTemplate): string {
-  if (template.referenceName) {
-    return translateEntity(template.referenceName)
-  }
-
-  if (template.options?.includes('isMail')) return 'kontakt@sapling.local'
-  if (template.options?.includes('isPhone')) return '+49 30 123456'
-  if (template.options?.includes('isLink')) return 'sapling.local'
-  if (template.options?.includes('isMoney')) return '1.240,00 EUR'
-  if (template.options?.includes('isPercent')) return '42 %'
-  if (template.options?.includes('isColor')) return '#3F7F72'
-  if (template.options?.includes('isIcon')) return 'mdi-shape-outline'
-  if (template.type === 'boolean') return 'true'
-  if (template.type === 'datetime') return '30.05.2026 09:30'
-  if (template.type === 'DateType') return '30.05.2026'
-  if (['number', 'integer', 'float', 'double', 'decimal'].includes(template.type.toLowerCase())) {
-    return '42'
-  }
-
-  return getPreviewFieldLabel(template)
-}
-
-function getPreviewValueClasses(template: EntityTemplate): string[] {
-  return [
-    'sapling-form-config-preview-table__value',
-    template.options?.includes('isChip') ? 'sapling-form-config-preview-table__value--chip' : '',
-    template.options?.includes('isColor') ? 'sapling-form-config-preview-table__value--color' : '',
-    template.options?.includes('isIcon') ? 'sapling-form-config-preview-table__value--icon' : '',
-  ].filter(Boolean)
 }
 
 function getPreviewMeta(template: EntityTemplate): string {
@@ -322,5 +320,23 @@ function getPreviewMeta(template: EntityTemplate): string {
   if (template.isRequired) parts.push(t('formConfig.required'))
   if (template.formConfig?.readonly) parts.push(t('formConfig.readonly'))
   return parts.join(' - ') || t('formConfig.optional')
+}
+
+function selectPreviewMode(mode: PreviewMode): void {
+  previewModeModel.value = mode
+}
+
+function formConfigText(key: string, fallback: string): string {
+  const translationKey = `formConfig.${key}`
+  return te(translationKey) ? t(translationKey) : fallback
+}
+
+function formatMetadataName(value: string): string {
+  const formatted = value
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .replace(/[_-]+/g, ' ')
+    .trim()
+
+  return formatted ? formatted.charAt(0).toUpperCase() + formatted.slice(1) : value
 }
 </script>

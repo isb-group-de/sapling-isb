@@ -136,6 +136,13 @@ values are explicit initial metadata on `SaplingForm`; saved form-configuration
 overlays can override them per entity, role, or person. The current mobile
 convention is to set `mobileVisible: true` only on `isValue` fields.
 
+Saved form configurations treat groups as first-class layout objects. A group
+entry under `config.groups` can set `order`, `visible`, and an optional custom
+`label` once for every field in that group. Field-level `groupOrder` values and
+the decorator metadata remain backward-compatible defaults, while the central
+group entry wins when an overlay is active. Setting a group to invisible hides
+all of its fields without rewriting each field configuration.
+
 ### `@SaplingDependsOn(...)`
 
 Defines dependent reference filtering.

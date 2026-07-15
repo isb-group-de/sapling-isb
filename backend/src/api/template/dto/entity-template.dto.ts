@@ -8,7 +8,10 @@ import {
   type SaplingReferenceTemplateMetadata,
   type SaplingReferenceDependency,
 } from '../../../entity/global/entity.decorator';
-import type { SaplingFormFieldConfig } from '../../form-config/form-config.types';
+import type {
+  SaplingFormFieldConfig,
+  SaplingFormGroupConfig,
+} from '../../form-config/form-config.types';
 
 /**
  * @class
@@ -169,6 +172,15 @@ export class EntityTemplateDto {
     type: Number,
   })
   formGroupOrder: number | null = null;
+
+  @ApiProperty({
+    description:
+      'Effective configuration for the enclosing form group, if any.',
+    nullable: true,
+    required: false,
+    type: Object,
+  })
+  formGroupConfig?: SaplingFormGroupConfig | null;
 
   @ApiProperty({
     description:

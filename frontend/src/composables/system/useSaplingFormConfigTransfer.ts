@@ -10,7 +10,7 @@ interface UseSaplingFormConfigTransferOptions {
   draftConfig: Ref<SaplingFormConfigPayload>
   errorMessage: Ref<string>
   loadEntityContext: () => Promise<void>
-  applyFields: (fields: SaplingFormConfigPayload['fields']) => void
+  applyConfig: (config: SaplingFormConfigPayload) => void
 }
 
 /** Handles JSON import, validation, and export for form-configuration editors. */
@@ -21,7 +21,7 @@ export function useSaplingFormConfigTransfer({
   draftConfig,
   errorMessage,
   loadEntityContext,
-  applyFields,
+  applyConfig,
 }: UseSaplingFormConfigTransferOptions) {
   const { t } = useI18n()
   const fileInputRef = ref<HTMLInputElement | null>(null)
@@ -56,7 +56,7 @@ export function useSaplingFormConfigTransfer({
         return
       }
 
-      applyFields(validation.normalizedConfig.fields ?? parsed.fields ?? {})
+      applyConfig(validation.normalizedConfig)
     } catch {
       errorMessage.value = t('formConfig.importFailed')
     }
