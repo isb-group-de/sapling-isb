@@ -6,7 +6,7 @@
     >
       <v-btn-toggle
         v-model="activePanel"
-        class="sapling-event-context__toggle"
+        class="sapling-segmented-toggle sapling-event-context__toggle"
         color="primary"
         density="comfortable"
         divided

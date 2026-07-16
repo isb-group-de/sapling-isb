@@ -130,7 +130,7 @@
 .sapling-soft-chip {
   display: inline-flex;
   align-items: center;
-  min-height: 24px;
+  min-height: var(--sapling-space-2xl);
   padding: 0 var(--sapling-space-sm-plus);
   border: 1px solid color-mix(in srgb, var(--sapling-surface-border) 88%, white);
   border-radius: var(--sapling-radius-pill);
@@ -189,10 +189,6 @@
 .sapling-interactive-list-item--active {
   border-color: var(--sapling-interactive-list-border-hover);
   box-shadow: var(--sapling-interactive-list-active-shadow);
-}
-
-.sapling-note-tabs {
-  max-height: var(--sapling-tab-strip-height) !important;
 }
 
 .sapling-note-tabs .v-tab {

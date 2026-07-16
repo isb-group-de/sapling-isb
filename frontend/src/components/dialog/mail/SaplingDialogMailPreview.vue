@@ -10,6 +10,7 @@
           }}</span>
           <v-btn-toggle
             :model-value="insertTarget"
+            class="sapling-segmented-toggle sapling-segmented-toggle--small"
             color="primary"
             density="compact"
             mandatory

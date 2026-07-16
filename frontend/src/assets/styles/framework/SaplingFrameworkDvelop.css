@@ -72,7 +72,7 @@
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
-  min-height: 32px;
+  min-height: var(--sapling-control-size-sm);
   padding: 0 var(--sapling-gap-xs);
   gap: var(--sapling-gap-sm);
   overflow: hidden;

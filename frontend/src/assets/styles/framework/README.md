@@ -46,6 +46,8 @@ surface components before adding local CSS.
 - `SaplingFrameworkHeroes.css`: page hero and hero media patterns
 - `SaplingFrameworkHistory.css`: change history, record timelines, and history
   detail cards
+- `SaplingFrameworkImports.css`: import workspaces, import status, mapping
+  tables, external-link dialogs, and provider-user import dialogs
 - `SaplingFrameworkKpis.css`: KPI surfaces, KPI cards, widget grids, and KPI
   dashboard layouts
 - `SaplingFrameworkLists.css`: list cards, stat cards, note cards, chip rows,
@@ -70,6 +72,8 @@ surface components before adding local CSS.
   filter-state layout
 - `SaplingFrameworkTables.css`: data tables, sticky table behavior, mobile table
   cards, table selection, and row states
+- `SaplingFrameworkTabs.css`: the shared horizontal-tab, vertical-tab, and
+  tab-like view-switch contract across workspaces and dialogs
 - `SaplingFrameworkWorkItems.css`: work-item dashboards, issue streams, work
   cards, filter panels, and compose surfaces
 - `SaplingFrameworkWorkspaces.css`: dashboard shells, page workspaces,
@@ -99,6 +103,11 @@ Use these shared patterns before creating a new class family:
   `sapling-soft-chip`
 - Actions: `sapling-action-bar`, `sapling-action-stack`,
   `sapling-action-cluster`
+- Tabs: feature tab classes compose the shared contract in
+  `SaplingFrameworkTabs.css`; horizontal and vertical variants use the same
+  height, gap, radius, selected fill, and active inset tokens
+- Segmented controls: `sapling-segmented-toggle` with `--small` or `--field`
+  only when the surrounding control height requires that documented modifier
 - Toolbars: `sapling-toolbar-shell`, `sapling-toolbar-controls`,
   `sapling-toolbar-slot`, `sapling-split-toolbar`, `sapling-toolbar-group`
 - Menus: `sapling-menu-panel`, `sapling-menu-section`,
@@ -167,6 +176,10 @@ Use these shared patterns before creating a new class family:
 7. Avoid restating spacing, borders, radii, label typography, detail grids,
    card surfaces, empty states, dialog chrome, and toolbar layout in feature
    CSS.
+8. Treat near-equal values as duplicates. Differences of a few pixels, small
+   alpha/percentage changes, and decimal-only color or size changes must use a
+   shared semantic token unless they represent a documented state or layout
+   constraint.
 
 ## Appearance Model
 
@@ -184,8 +197,8 @@ The active states are:
 
 ## Completion Status
 
-The framework migration is complete for app-level CSS. The style tree now has a
-single app entry point, framework-owned partials, and one intentional iframe
-preview stylesheet outside the framework.
-
-Vue components do not contain `<style>` blocks or component-local CSS imports.
+The framework migration is complete for app-level CSS. The style tree has a
+single app entry point, framework-owned partials, and two intentional isolated
+exceptions: the file-mail preview iframe stylesheet and the self-contained
+Ghost easter-egg animation. Application and dialog components do not own local
+visual CSS.

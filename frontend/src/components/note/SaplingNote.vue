@@ -18,15 +18,7 @@
           </v-row>
         </template>
         <template v-else>
-          <v-tabs
-            v-model="selectedTab"
-            class="sapling-note-tabs"
-            align-tabs="start"
-            show-arrows
-            background-color="primary"
-            dark
-            height="44"
-          >
+          <v-tabs v-model="selectedTab" class="sapling-note-tabs" align-tabs="start" show-arrows>
             <v-tab
               v-for="(group, groupIndex) in groups"
               :key="String(group.handle ?? groupIndex)"

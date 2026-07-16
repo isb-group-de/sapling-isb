@@ -105,7 +105,7 @@
 
             <v-btn-toggle
               v-model="draft.type"
-              class="sapling-work-compose__type-toggle sapling-issue-compose__type-toggle"
+              class="sapling-segmented-toggle sapling-work-compose__type-toggle sapling-issue-compose__type-toggle"
               color="primary"
               density="comfortable"
               divided

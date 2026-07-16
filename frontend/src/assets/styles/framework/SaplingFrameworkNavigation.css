@@ -282,7 +282,7 @@
   justify-content: space-between;
   gap: var(--sapling-gap-md);
   width: 100%;
-  min-height: 52px;
+  min-height: var(--sapling-icon-box-lg);
   padding: var(--sapling-space-sm) var(--sapling-space-md);
   border: 1px solid transparent;
   border-radius: var(--sapling-nav-radius);
@@ -405,7 +405,7 @@
 }
 
 .sapling-navigation-detail-group__header {
-  min-height: 46px;
+  min-height: var(--sapling-control-size-lg);
   padding: var(--sapling-space-sm) var(--sapling-space-md);
   border-bottom: 1px solid var(--sapling-surface-border-muted);
 }
@@ -444,7 +444,7 @@
 
 .sapling-navigation-detail-entry__single,
 .sapling-navigation-detail-entry__heading {
-  min-height: 40px;
+  min-height: var(--sapling-control-height-compact);
   padding: var(--sapling-space-xs) var(--sapling-space-sm);
   font-size: var(--sapling-text-body-size-xs);
   font-weight: 700;

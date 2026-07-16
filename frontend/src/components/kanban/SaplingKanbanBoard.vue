@@ -80,7 +80,7 @@
               />
               <v-btn-toggle
                 v-model="scope"
-                class="sapling-kanban-scope-toggle"
+                class="sapling-segmented-toggle sapling-segmented-toggle--field sapling-kanban-scope-toggle"
                 color="primary"
                 density="comfortable"
                 mandatory

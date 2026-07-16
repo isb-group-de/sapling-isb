@@ -22,6 +22,8 @@
   display: flex;
   align-items: center;
   gap: var(--sapling-gap-md);
+  min-width: 0;
+  min-height: var(--sapling-control-size-lg);
 }
 
 .sapling-action-bar__group {
@@ -191,10 +193,18 @@
 }
 
 @media (max-width: 640px) {
+  .sapling-dialog__footer,
+  .sapling-account-dialog__footer {
+    padding: var(--sapling-gap-md) var(--sapling-gap-md) 0;
+  }
+
   .sapling-action-bar__content {
     align-items: center;
     flex-direction: row;
     flex-wrap: nowrap;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scrollbar-width: thin;
   }
 
   .sapling-action-bar__group {

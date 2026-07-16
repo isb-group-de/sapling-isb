@@ -866,7 +866,7 @@
 
   .sapling-table-toolbar-selection {
     justify-content: space-between;
-    gap: 3px;
+    gap: var(--sapling-gap-xs);
   }
 
   .sapling-table-toolbar-selection-count {
@@ -931,7 +931,7 @@
   display: inline-flex;
   align-items: center;
   gap: var(--sapling-gap-sm);
-  min-height: 28px;
+  min-height: var(--sapling-space-2xl-plus);
   max-width: 100%;
   padding: var(--sapling-gap-xs);
   color: inherit;
@@ -950,5 +950,20 @@
 }
 
 .sapling-date-field--default {
+  color: inherit;
+}
+.sapling-table-chip {
+  --sapling-soft-badge-background: color-mix(in srgb, rgb(var(--v-theme-primary)) 20%, transparent);
+  --sapling-soft-badge-border: color-mix(in srgb, rgb(var(--v-theme-primary)) 36%, transparent);
+  --sapling-soft-badge-foreground: rgba(var(--v-theme-on-surface), var(--sapling-opacity-strong));
+
+  border: 1px solid var(--sapling-soft-badge-border) !important;
+  background: var(--sapling-soft-badge-background) !important;
+  color: var(--sapling-soft-badge-foreground) !important;
+  font-weight: var(--sapling-tab-font-weight);
+}
+
+.sapling-table-chip .v-chip__content,
+.sapling-table-chip .v-icon {
   color: inherit;
 }

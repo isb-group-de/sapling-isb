@@ -76,7 +76,7 @@
       <div class="sapling-toolbar-group sapling-event-toolbar__options">
         <v-btn-toggle
           v-model="calendarModeModel"
-          class="sapling-toolbar-toggle sapling-event-toolbar__mode-toggle"
+          class="sapling-segmented-toggle sapling-toolbar-toggle sapling-event-toolbar__mode-toggle"
           density="comfortable"
           mandatory
         >
@@ -108,7 +108,7 @@
         <v-btn-toggle
           v-if="!isNarrowScreen"
           v-model="calendarViewModeModel"
-          class="sapling-toolbar-toggle sapling-event-toolbar__view-toggle"
+          class="sapling-segmented-toggle sapling-toolbar-toggle sapling-event-toolbar__view-toggle"
           density="comfortable"
           mandatory
         >
@@ -148,7 +148,7 @@
       <div class="d-none d-md-flex sapling-event-toolbar__type-wrap">
         <v-btn-toggle
           v-model="calendarTypeModel"
-          class="sapling-toolbar-toggle sapling-event-toolbar__type-toggle"
+          class="sapling-segmented-toggle sapling-toolbar-toggle sapling-event-toolbar__type-toggle"
           density="comfortable"
           mandatory
         >

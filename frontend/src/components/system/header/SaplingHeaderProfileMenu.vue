@@ -130,7 +130,7 @@
             mandatory
             :model-value="currentLanguage"
             variant="text"
-            class="sapling-profile-menu__language-toggle"
+            class="sapling-segmented-toggle sapling-profile-menu__language-toggle"
           >
             <v-btn
               v-for="language in languageOptions"

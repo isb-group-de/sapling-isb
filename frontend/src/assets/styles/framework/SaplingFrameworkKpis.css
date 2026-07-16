@@ -205,7 +205,7 @@
 }
 
 .sapling-kpi-breakdown__summary-item {
-  gap: 2px;
+  gap: var(--sapling-gap-3xs);
   padding: var(--sapling-gap-sm) var(--sapling-gap-md);
 }
 

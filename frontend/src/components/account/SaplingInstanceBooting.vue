@@ -27,9 +27,3 @@ const hasBootingTranslations = computed(
   () => te('login.instanceBootingTitle') && te('login.instanceBootingDescription'),
 )
 </script>
-
-<style scoped>
-.sapling-instance-booting__skeleton {
-  width: min(280px, 80vw);
-}
-</style>

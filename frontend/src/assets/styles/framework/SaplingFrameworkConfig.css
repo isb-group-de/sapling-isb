@@ -285,31 +285,20 @@
 
 .sapling-form-config-preview__mode-toggle {
   display: inline-flex;
-  min-height: 40px;
-  height: 40px;
   align-self: flex-start;
   align-items: center;
-  gap: var(--sapling-gap-3xs);
   max-width: 100%;
   overflow-x: auto;
   overflow-y: hidden;
   padding: var(--sapling-space-3xs);
   border: 1px solid var(--sapling-surface-border-muted);
-  border-radius: var(--sapling-radius-sm);
   background: var(--sapling-surface-fill-soft);
   box-shadow: var(--sapling-inset-highlight);
   flex: 0 0 auto;
 }
 
 .sapling-form-config-preview__mode-toggle .v-btn {
-  min-height: 32px !important;
-  height: 32px !important;
   flex: 0 0 auto;
-}
-
-.sapling-form-config-preview__mode-button--active {
-  background: rgba(var(--v-theme-primary), 0.16);
-  color: rgb(var(--v-theme-primary));
 }
 
 .sapling-form-config-preview__stage {
@@ -528,7 +517,7 @@
   width: min(100%, 360px);
   padding: var(--sapling-space-sm-plus);
   border: 1px solid rgba(var(--v-theme-on-surface), 0.16);
-  border-radius: 28px;
+  border-radius: var(--sapling-device-preview-radius);
   background:
     linear-gradient(180deg, rgba(var(--v-theme-surface), 0.94), rgba(var(--v-theme-surface), 0.8)),
     var(--sapling-surface-fill-soft);
@@ -654,10 +643,6 @@
   min-height: 0;
   overflow: auto;
   background: transparent;
-}
-
-.sapling-ai-agent-builder__tabs {
-  flex: 0 0 auto;
 }
 
 .sapling-ai-agent-builder__window {

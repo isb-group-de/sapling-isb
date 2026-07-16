@@ -455,29 +455,3 @@ function isConditionFieldTemplate(template: EntityTemplate): boolean {
   return true
 }
 </script>
-
-<style scoped>
-.sapling-email-conditions {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  width: 100%;
-}
-
-.sapling-email-conditions__row {
-  display: grid;
-  grid-template-columns: minmax(220px, 1.2fr) minmax(160px, 1fr) minmax(160px, 1fr) auto;
-  gap: 12px;
-  align-items: center;
-}
-
-.sapling-email-conditions__add {
-  align-self: flex-start;
-}
-
-@media (max-width: 760px) {
-  .sapling-email-conditions__row {
-    grid-template-columns: 1fr;
-  }
-}
-</style>

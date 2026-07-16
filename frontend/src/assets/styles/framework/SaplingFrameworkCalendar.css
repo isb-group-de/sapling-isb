@@ -42,7 +42,7 @@
   position: absolute;
   left: -1px;
   right: 0;
-  height: 2px;
+  height: var(--sapling-space-3xs);
   background-color: var(--sapling-status-text-danger);
   pointer-events: none;
 }
@@ -112,7 +112,7 @@
   flex-wrap: nowrap;
   align-items: center;
   gap: var(--sapling-gap-md);
-  min-height: calc(40px + var(--sapling-gap-lg));
+  min-height: calc(var(--sapling-control-height-compact) + var(--sapling-gap-lg));
   padding-top: var(--sapling-gap-lg);
   padding-bottom: var(--sapling-gap-lg);
   border-bottom: 1px solid var(--sapling-surface-fill);
@@ -126,8 +126,8 @@
 }
 
 .sapling-event-toolbar .v-btn {
-  height: 40px;
-  min-height: 40px;
+  height: var(--sapling-control-height-compact);
+  min-height: var(--sapling-control-height-compact);
   font-weight: 550;
 }
 

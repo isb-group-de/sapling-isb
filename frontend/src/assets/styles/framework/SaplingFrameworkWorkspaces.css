@@ -81,7 +81,7 @@
 
 .sapling-dashboard__eyebrow-skeleton {
   width: min(190px, 34%);
-  height: 12px;
+  height: var(--sapling-space-md);
   margin-bottom: var(--sapling-space-xs);
 }
 
@@ -97,7 +97,7 @@
 
 .sapling-dashboard__subtitle-skeleton {
   width: min(460px, 64%);
-  height: 12px;
+  height: var(--sapling-space-md);
   margin-top: var(--sapling-space-xs);
 }
 
@@ -145,7 +145,7 @@
 
 .sapling-dashboard__action-line-skeleton {
   width: min(170px, 78%);
-  height: 12px;
+  height: var(--sapling-space-md);
 }
 
 .sapling-dashboard__favorites {
@@ -273,20 +273,8 @@
   box-sizing: border-box;
 }
 
-.sapling-dashboard__tabs .v-slide-group__content {
-  gap: var(--sapling-gap-xs);
-}
-
 .sapling-dashboard__tab {
   min-width: 190px;
-  border-top-left-radius: var(--sapling-radius-sm);
-  border-top-right-radius: var(--sapling-radius-sm);
-  text-transform: none;
-  letter-spacing: normal;
-}
-
-.sapling-dashboard__tab.v-tab--selected {
-  background: rgba(var(--v-theme-primary), 0.14);
 }
 
 .sapling-dashboard__tab .v-btn__content {
@@ -359,9 +347,9 @@
   align-content: center;
   gap: var(--sapling-space-3xs);
   min-width: 0;
-  min-height: 52px;
+  min-height: var(--sapling-tab-strip-height);
   padding: var(--sapling-space-xs) var(--sapling-space-panel-md);
-  border-radius: var(--sapling-radius-sm);
+  border-radius: var(--sapling-tab-radius);
   background: rgba(var(--v-theme-surface), 0.18);
 }
 
@@ -372,7 +360,7 @@
 
 .sapling-dashboard__tab-meta-skeleton {
   width: min(72px, 42%);
-  height: 10px;
+  height: var(--sapling-space-sm-plus);
 }
 
 .sapling-dashboard__kpi-skeleton-grid {
@@ -1023,16 +1011,6 @@
   flex: 0 0 auto;
 }
 
-.sapling-crm-workspace__tabs .v-btn {
-  min-height: 40px;
-  background: rgba(255, 255, 255, 0.04);
-  letter-spacing: 0;
-}
-
-.sapling-crm-workspace__tabs .v-btn--active {
-  background: rgba(var(--v-theme-primary), 0.92);
-}
-
 .sapling-crm-workspace__toolbar-fields {
   display: grid;
   grid-template-columns: minmax(220px, 1fr) minmax(220px, 280px) minmax(170px, 210px);
@@ -1264,7 +1242,7 @@
   align-items: center;
   justify-content: center;
   min-width: 28px;
-  height: 28px;
+  height: var(--sapling-space-2xl-plus);
   padding-inline: var(--sapling-space-sm);
   border-radius: var(--sapling-radius-pill);
   background: rgba(var(--v-theme-primary), 0.16);

@@ -18,6 +18,7 @@
 @import './SaplingFrameworkKnowledge.css';
 @import './SaplingFrameworkShowcase.css';
 @import './SaplingFrameworkForms.css';
+@import './SaplingFrameworkImports.css';
 @import './SaplingFrameworkConfig.css';
 @import './SaplingFrameworkDialogs.css';
 @import './SaplingFrameworkActions.css';
@@ -29,4 +30,5 @@
 @import './SaplingFrameworkKpis.css';
 @import './SaplingFrameworkHeroes.css';
 @import './SaplingFrameworkDvelop.css';
+@import './SaplingFrameworkTabs.css';
 @import './SaplingFrameworkAppearance.css';

@@ -59,7 +59,7 @@
 
             <v-btn-toggle
               v-model="selectedSources[field.property]"
-              class="sapling-update-conflict__toggle"
+              class="sapling-segmented-toggle sapling-update-conflict__toggle"
               color="primary"
               density="comfortable"
               divided

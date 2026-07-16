@@ -108,7 +108,7 @@
 
 .sapling-field-generic-reference__target {
   flex: 1 1 auto;
-  min-height: 40px;
+  min-height: var(--sapling-control-height-compact);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -591,5 +591,28 @@
   .sapling-field-event-recurrence__field-box {
     flex-basis: 100%;
     min-width: 100%;
+  }
+}
+.sapling-email-conditions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sapling-gap-md);
+  width: 100%;
+}
+
+.sapling-email-conditions__row {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.2fr) minmax(160px, 1fr) minmax(160px, 1fr) auto;
+  gap: var(--sapling-gap-md);
+  align-items: center;
+}
+
+.sapling-email-conditions__add {
+  align-self: flex-start;
+}
+
+@media (max-width: 760px) {
+  .sapling-email-conditions__row {
+    grid-template-columns: minmax(0, 1fr);
   }
 }

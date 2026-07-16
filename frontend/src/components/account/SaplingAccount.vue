@@ -362,7 +362,7 @@
                       mandatory
                       :model-value="currentLanguage"
                       variant="outlined"
-                      class="sapling-account-dialog__language-toggle"
+                      class="sapling-segmented-toggle sapling-account-dialog__language-toggle"
                     >
                       <v-btn
                         v-for="language in languageOptions"

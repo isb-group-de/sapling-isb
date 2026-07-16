@@ -1,6 +1,12 @@
 <template>
   <SaplingSurface :as="VFooter" class="sapling-footer">
-    <v-btn-toggle divided mandatory :model-value="currentLanguage" variant="text">
+    <v-btn-toggle
+      divided
+      mandatory
+      :model-value="currentLanguage"
+      variant="text"
+      class="sapling-segmented-toggle sapling-segmented-toggle--small"
+    >
       <v-btn
         v-for="language in languageOptions"
         :key="language.key"

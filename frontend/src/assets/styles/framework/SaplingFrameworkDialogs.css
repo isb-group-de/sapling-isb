@@ -32,6 +32,12 @@
   min-height: 0;
 }
 
+.sapling-dialog-compact-card {
+  max-height: calc(
+    100dvh - var(--sapling-dialog-viewport-inset) - var(--sapling-dialog-viewport-inset)
+  );
+}
+
 .sapling-dialog-form-body,
 .sapling-dialog-delete-body,
 .sapling-dialog-form,
@@ -41,6 +47,14 @@
   flex-direction: column;
   gap: var(--sapling-gap-md);
   padding: 0;
+}
+
+.sapling-dialog-compact-card .sapling-dialog-form-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: var(--sapling-space-3xs);
 }
 
 .sapling-dialog-json-body {
@@ -85,7 +99,10 @@
 }
 
 .sapling-account-dialog {
-  --sapling-account-dialog-stable-height: min(760px, calc(100dvh - 32px));
+  --sapling-account-dialog-stable-height: min(
+    760px,
+    calc(100dvh - var(--sapling-dialog-viewport-inset) - var(--sapling-dialog-viewport-inset))
+  );
   display: flex;
   flex: 0 0 var(--sapling-account-dialog-stable-height);
   flex-direction: column;
@@ -141,7 +158,6 @@
 .sapling-account-center {
   display: grid;
   flex: 1 1 auto;
-  grid-template-columns: 220px minmax(0, 1fr);
   gap: var(--sapling-gap-xl);
   width: 100%;
   min-width: 0;
@@ -149,9 +165,7 @@
 }
 
 .sapling-account-center__tabs {
-  align-self: start;
   min-width: 0;
-  border-right: 1px solid var(--sapling-surface-border-muted);
 }
 
 .sapling-account-center__tab {
@@ -585,8 +599,8 @@
   border-radius: var(--sapling-radius-xs);
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: var(--sapling-text-meta-size-sm);
-  line-height: 16px;
-  opacity: 0.85;
+  line-height: var(--sapling-code-line-height);
+  opacity: var(--sapling-opacity-strong);
   white-space: nowrap;
 }
 
@@ -829,14 +843,14 @@
 }
 
 .sapling-access-pending {
-  padding: 24px;
+  padding: var(--sapling-space-2xl);
 }
 
 .sapling-access-pending__card {
   display: grid;
   width: min(100%, 640px);
-  gap: 24px;
-  padding: 32px;
+  gap: var(--sapling-space-2xl);
+  padding: var(--sapling-space-3xl);
   text-align: center;
 }
 
@@ -847,13 +861,13 @@
 
 .sapling-access-pending__copy {
   display: grid;
-  gap: 12px;
+  gap: var(--sapling-gap-md);
 }
 
 .sapling-access-pending__eyebrow {
   margin: 0;
   color: rgb(var(--v-theme-primary));
-  font-size: 0.8rem;
+  font-size: var(--sapling-text-label-size);
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -867,8 +881,8 @@
 
 .sapling-access-pending__text {
   margin: 0;
-  color: rgba(var(--v-theme-on-surface), 0.8);
-  font-size: 1rem;
+  color: rgba(var(--v-theme-on-surface), var(--sapling-opacity-primary));
+  font-size: var(--sapling-text-body-size-lg);
   line-height: 1.6;
 }
 
@@ -886,7 +900,10 @@
   .sapling-account-dialog {
     --sapling-account-dialog-stable-height: min(
       var(--sapling-dialog-account-mobile-min-height),
-      calc(100dvh - 24px)
+      calc(
+        100dvh - var(--sapling-dialog-viewport-inset-mobile) -
+          var(--sapling-dialog-viewport-inset-mobile)
+      )
     );
   }
 
@@ -897,25 +914,6 @@
   .sapling-account-dialog__summary-grid {
     grid-template-columns: minmax(0, 1fr);
     gap: var(--sapling-gap-md);
-  }
-
-  .sapling-account-center {
-    grid-template-columns: minmax(0, 1fr);
-    gap: var(--sapling-gap-md);
-  }
-
-  .sapling-account-center__tabs {
-    border-right: 0;
-    border-bottom: 1px solid var(--sapling-surface-border-muted);
-  }
-
-  .sapling-account-center__tabs .v-slide-group__content {
-    flex-direction: row;
-    overflow-x: auto;
-  }
-
-  .sapling-account-center__tab {
-    width: auto;
   }
 
   .sapling-account-dialog__sync-controls {
@@ -945,6 +943,13 @@
 }
 
 @media (max-width: 640px) {
+  .sapling-dialog-compact-card {
+    max-height: calc(
+      100dvh - var(--sapling-dialog-viewport-inset-mobile) -
+        var(--sapling-dialog-viewport-inset-mobile)
+    );
+  }
+
   .sapling-dialog-shell,
   .sapling-inbox-shell {
     gap: var(--sapling-gap-md);
@@ -964,7 +969,7 @@
 
 @media (max-width: 600px) {
   .sapling-access-pending__card {
-    padding: 24px;
+    padding: var(--sapling-space-2xl);
   }
 }
 
@@ -981,4 +986,7 @@
     min-width: 0;
     flex: 1 1 0;
   }
+}
+.sapling-instance-booting__skeleton {
+  width: min(280px, 80vw);
 }

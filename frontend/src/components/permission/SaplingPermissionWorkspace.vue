@@ -32,6 +32,7 @@
 
         <v-btn-toggle
           v-model="permissionFilterModeModel"
+          class="sapling-segmented-toggle sapling-segmented-toggle--field"
           color="primary"
           density="comfortable"
           mandatory

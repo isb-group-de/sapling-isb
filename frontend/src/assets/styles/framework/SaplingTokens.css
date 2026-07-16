@@ -3,20 +3,28 @@
   --sapling-panel-radius: 20px;
   --sapling-panel-radius-compact: 16px;
   --sapling-radius-xs: 8px;
+  --sapling-radius-2xs: 4px;
   --sapling-radius-sm: var(--sapling-panel-radius-compact);
   --sapling-radius-md: var(--sapling-panel-radius);
   --sapling-radius-lg: var(--sapling-radius-card-xl);
-  --sapling-radius-card: 16px;
-  --sapling-radius-card-lg: 20px;
+  --sapling-radius-card: var(--sapling-radius-sm);
+  --sapling-radius-card-lg: var(--sapling-radius-md);
   --sapling-radius-card-xl: 24px;
   --sapling-radius-pill: 999px;
-  --sapling-panel-padding: 16px;
-  --sapling-panel-padding-compact: 12px;
+  --sapling-panel-padding: var(--sapling-space-lg);
+  --sapling-panel-padding-compact: var(--sapling-space-md);
   --sapling-panel-font: 400 0.95rem/1.6 'Segoe UI', sans-serif;
   --sapling-kpi-widget-min-height: 170px;
   --sapling-note-card-min-height: 230px;
   --sapling-note-card-min-height-compact: 210px;
   --sapling-tab-strip-height: 44px;
+  --sapling-tab-gap: var(--sapling-space-2xs);
+  --sapling-tab-radius: var(--sapling-radius-xs);
+  --sapling-tab-font-weight: 600;
+  --sapling-tab-selected-inset: 3px;
+  --sapling-vertical-tab-width: 220px;
+  --sapling-segmented-control-height: var(--sapling-control-height-compact);
+  --sapling-segmented-control-height-small: var(--sapling-control-size-sm);
   --sapling-footer-skeleton-size: 36px;
   --sapling-card-min-height: 320px;
   --sapling-card-min-height-sm: 112px;
@@ -31,8 +39,13 @@
   --sapling-dialog-panel-min-height: min(80vh, 880px);
   --sapling-dialog-panel-max-height: 86vh;
   --sapling-dialog-card-height: 90vh;
+  --sapling-dialog-viewport-inset: var(--sapling-space-2xl);
+  --sapling-dialog-viewport-inset-mobile: var(--sapling-space-md);
   --sapling-dialog-relation-fill: 95%;
-  --sapling-filter-menu-width: min(340px, calc(100vw - 32px));
+  --sapling-filter-menu-width: min(
+    var(--sapling-panel-width-md),
+    calc(100vw - var(--sapling-space-3xl))
+  );
   --sapling-empty-state-max-width: 420px;
   --sapling-empty-state-max-width-wide: 480px;
   --sapling-empty-state-icon-size: 72px;
@@ -84,11 +97,12 @@
   --sapling-dialog-width-sm: 400px;
   --sapling-dialog-width-md: 800px;
   --sapling-dialog-width-lg: 1200px;
-  --sapling-field-color-height: 40px;
+  --sapling-field-color-height: var(--sapling-control-height-compact);
+  --sapling-device-preview-radius: var(--sapling-space-2xl-plus);
   --sapling-field-color-min-width: 120px;
   --sapling-table-select-column-width: 40px;
   --sapling-table-actions-column-width: 75px;
-  --sapling-table-actions-column-width-wide: 76px;
+  --sapling-table-actions-column-width-wide: var(--sapling-table-actions-column-width);
   --sapling-table-data-column-min-width-lg: 180px;
   --sapling-cell-min-width: 80px;
   --sapling-cell-progress-min-width: 60px;
@@ -114,6 +128,8 @@
   --sapling-text-body-size-md: var(--sapling-text-body-size-lg);
   --sapling-text-title-size-sm: 1.1rem;
   --sapling-text-title-size-md: 1.35rem;
+  --sapling-shortcut-line-height: 14px;
+  --sapling-code-line-height: 16px;
   --sapling-letter-spacing-label: 0;
   --sapling-letter-spacing-eyebrow: 0;
   --sapling-surface-fill: rgba(255, 255, 255, 0.06);
@@ -165,6 +181,8 @@
     rgb(var(--v-theme-primary)) 20%,
     var(--sapling-surface-fill)
   );
+  --sapling-tab-selected-fill: var(--sapling-interactive-selected-fill);
+  --sapling-tab-selected-fill-strong: var(--sapling-interactive-selected-fill-strong);
   --sapling-status-text-danger: #d32f2f;
   --sapling-status-text-success: #388e3c;
   --sapling-inset-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.06);

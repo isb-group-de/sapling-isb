@@ -1,7 +1,7 @@
 <template>
   <section class="sapling-dashboard__board glass-panel">
     <div class="sapling-tabs-shell sapling-dashboard__tabs-shell">
-      <v-tabs v-model="activeTabModel" class="sapling-dashboard__tabs" height="52" show-arrows>
+      <v-tabs v-model="activeTabModel" class="sapling-dashboard__tabs" show-arrows>
         <v-tab
           v-for="(dashboard, dashboardIndex) in dashboards"
           :key="String(dashboard.handle ?? dashboardIndex)"

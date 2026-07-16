@@ -21,21 +21,3 @@ const props = defineProps<UseSaplingTableChipProps>()
 const { chipIcon, chipLabel, chipStyle, hasChipIcon, showChip, isLoading } =
   useSaplingTableChip(props)
 </script>
-
-<style scoped>
-.sapling-table-chip {
-  --sapling-soft-badge-background: color-mix(in srgb, rgb(var(--v-theme-primary)) 18%, transparent);
-  --sapling-soft-badge-border: color-mix(in srgb, rgb(var(--v-theme-primary)) 36%, transparent);
-  --sapling-soft-badge-foreground: rgba(var(--v-theme-on-surface), 0.88);
-
-  background: var(--sapling-soft-badge-background) !important;
-  border: 1px solid var(--sapling-soft-badge-border) !important;
-  color: var(--sapling-soft-badge-foreground) !important;
-  font-weight: 600;
-}
-
-.sapling-table-chip :deep(.v-chip__content),
-.sapling-table-chip :deep(.v-icon) {
-  color: inherit;
-}
-</style>

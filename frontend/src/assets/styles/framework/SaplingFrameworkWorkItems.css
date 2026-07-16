@@ -405,7 +405,7 @@
 .sapling-chip-filter__swatch {
   flex: 0 0 auto;
   width: 12px;
-  height: 12px;
+  height: var(--sapling-space-md);
   border-radius: 999px;
   border: 1px solid color-mix(in srgb, var(--sapling-surface-border) 70%, transparent);
   box-shadow: 0 0 0 2px color-mix(in srgb, currentColor 8%, transparent);

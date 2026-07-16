@@ -299,6 +299,25 @@ Do not hand-roll dialog footers with ad hoc `<div class="sapling-dialog-actions"
 
 If none of the existing action components fit, add or extend an action component first and then use it from the dialog. This keeps footer behavior centralized instead of duplicating button layout in each custom dialog.
 
+### Shared Tab And Dialog Navigation Contract
+
+Horizontal tabs, vertical dialog navigation, and tab-like view switches use
+the framework contract in `SaplingFrameworkTabs.css`. Feature classes such as
+dashboard, note, permission, AI-agent, account, inbox, and record-dialog tabs
+may add domain layout such as minimum label width, but they must not redefine
+the shared height, gap, radius, selected fill, typography, or active inset.
+Compact `v-btn-toggle` controls use `sapling-segmented-toggle`; only the shared
+`--small` and `--field` modifiers may change their height to match a compact
+helper row or a full-height form control.
+
+Values that are only nearly equal are duplicates too. A two-pixel height or
+radius difference, a small alpha/percentage variation, or a decimal-only color
+change is not a separate design unless the state or constraint is documented.
+Use the semantic tokens from `SaplingTokens.css` so desktop and responsive
+variants keep the same visual rhythm. Constrained dialogs keep the hero and
+action bar fixed while their body owns scrolling; compact dialogs use the same
+viewport inset tokens as large and special dialogs.
+
 ## Context Menus And Script Buttons
 
 Context and action components connect UI actions to generic records and backend script-button behavior.
