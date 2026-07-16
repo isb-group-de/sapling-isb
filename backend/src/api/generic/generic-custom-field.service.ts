@@ -167,6 +167,7 @@ export class GenericCustomFieldService {
         const fieldType = this.valueCodec.getDefinitionFieldType(definition);
         return (
           fieldType !== 'boolean' &&
+          !definition.isReadOnly &&
           definition.isRequired &&
           !this.valueCodec.hasCustomFieldValue(
             this.valueCodec.normalizeValue(
@@ -203,6 +204,9 @@ export class GenericCustomFieldService {
           'exception.badRequest',
           `Unknown custom field "${fieldKey}"`,
         );
+      }
+      if (definition.isReadOnly) {
+        continue;
       }
 
       const normalized = this.valueCodec.normalizeValue(definition, rawValue);

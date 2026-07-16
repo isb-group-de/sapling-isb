@@ -10,7 +10,8 @@ export function createCustomFieldTemplate(
   const template = new EntityTemplateDto();
   const fieldType = getDefinitionFieldType(definition);
   const type = getTemplateType(fieldType);
-  const isRequired = fieldType !== 'boolean' && definition.isRequired;
+  const isRequired =
+    !definition.isReadOnly && fieldType !== 'boolean' && definition.isRequired;
 
   template.name = `${CUSTOM_FIELD_TEMPLATE_PREFIX}${definition.fieldKey}`;
   template.type = type;
@@ -29,6 +30,9 @@ export function createCustomFieldTemplate(
   template.isPersistent = true;
   template.referencedPks = [];
   template.options = fieldType === 'longText' ? ['isMarkdown'] : [];
+  if (definition.isReadOnly) {
+    template.options.push('isReadOnly');
+  }
   template.formGroup = 'Custom fields';
   template.formGroupOrder = 900;
   template.formOrder = definition.fieldOrder;

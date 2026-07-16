@@ -101,7 +101,7 @@ export class CustomFieldDefinitionItem {
   @Property({ default: false })
   isRequired: boolean = false;
 
-  @ApiPropertyOptional({ default: true })
+  @ApiPropertyOptional({ default: false })
   @SaplingForm({
     order: 200,
     group: 'customFieldDefinition.groupBehavior',
@@ -111,6 +111,21 @@ export class CustomFieldDefinitionItem {
     tableOrder: 600,
     tableVisible: true,
     mobileOrder: 600,
+    mobileVisible: false,
+  })
+  @Property({ default: false })
+  isReadOnly: boolean = false;
+
+  @ApiPropertyOptional({ default: true })
+  @SaplingForm({
+    order: 300,
+    group: 'customFieldDefinition.groupBehavior',
+    groupOrder: 300,
+    width: 1,
+    visible: true,
+    tableOrder: 700,
+    tableVisible: true,
+    mobileOrder: 700,
     mobileVisible: false,
   })
   @Property({ default: true })
@@ -134,14 +149,14 @@ export class CustomFieldDefinitionItem {
 
   @ApiPropertyOptional()
   @SaplingForm({
-    order: 300,
+    order: 400,
     group: 'customFieldDefinition.groupBehavior',
     groupOrder: 300,
     width: 4,
     visible: true,
-    tableOrder: 700,
+    tableOrder: 800,
     tableVisible: false,
-    mobileOrder: 700,
+    mobileOrder: 800,
     mobileVisible: false,
   })
   @Property({ type: 'json', nullable: true })

@@ -54,14 +54,14 @@ GET /api/generic/:entityHandle
 
 Common query parameters:
 
-| Parameter | Meaning |
-| --- | --- |
-| `filter` | JSON object encoded as string |
-| `orderBy` | JSON object encoded as string |
-| `relations` | JSON list encoded as string |
-| `fields` | Optional JSON list of persistent response fields; primary keys are always included |
-| `page` | 1-based page number |
-| `limit` | page size |
+| Parameter   | Meaning                                                                            |
+| ----------- | ---------------------------------------------------------------------------------- |
+| `filter`    | JSON object encoded as string                                                      |
+| `orderBy`   | JSON object encoded as string                                                      |
+| `relations` | JSON list encoded as string                                                        |
+| `fields`    | Optional JSON list of persistent response fields; primary keys are always included |
+| `page`      | 1-based page number                                                                |
+| `limit`     | page size                                                                          |
 
 Example:
 
@@ -173,6 +173,10 @@ factory; type-aware normalization and value-column encoding/decoding live in
 `CustomFieldValueCodec`. Extend those focused collaborators when adding field
 types instead of growing the generic facade.
 
+Definitions can be marked as required, active, and read-only. Read-only custom
+fields remain visible according to their visibility settings, are disabled in
+generated forms, and are ignored by generic CRUD and import mutation payloads.
+
 Supported first-pass custom field types are seeded as reference records in
 `customFieldType`:
 
@@ -228,10 +232,10 @@ GET /api/generic/:entityHandle/:handle/timeline
 
 Query parameters:
 
-| Parameter | Meaning |
-| --- | --- |
-| `before` | month cursor in `YYYY-MM` format |
-| `months` | number of non-empty months to load |
+| Parameter | Meaning                            |
+| --------- | ---------------------------------- |
+| `before`  | month cursor in `YYYY-MM` format   |
+| `months`  | number of non-empty months to load |
 
 The timeline aggregates activity around a record and directly related entities.
 
@@ -254,11 +258,11 @@ Generic routes check:
 
 HTTP method to permission mapping:
 
-| Method | Permission |
-| --- | --- |
-| `GET` | `allowRead` |
-| `POST` | `allowInsert` |
-| `PATCH` | `allowUpdate` |
+| Method   | Permission    |
+| -------- | ------------- |
+| `GET`    | `allowRead`   |
+| `POST`   | `allowInsert` |
+| `PATCH`  | `allowUpdate` |
 | `DELETE` | `allowDelete` |
 
 Some public read entities are allowed without an authenticated user:

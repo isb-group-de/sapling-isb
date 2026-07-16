@@ -17,6 +17,7 @@ const createDefinition = (
     fieldType,
     label: fieldKey,
     isRequired: false,
+    isReadOnly: false,
     isActive: true,
     fieldOrder: 0,
     selectOptions: null,
@@ -31,6 +32,7 @@ const createService = (definitions: CustomFieldDefinitionItem[] = []) => {
     count: jest
       .fn<() => Promise<number>>()
       .mockResolvedValue(definitions.length),
+    flush: jest.fn<() => Promise<void>>().mockResolvedValue(),
   };
 
   return new GenericCustomFieldService(em as never);
@@ -149,10 +151,13 @@ describe('GenericCustomFieldService', () => {
     ]);
 
     await expect(
-      service.getMissingRequiredFieldNames('company', {}),
+      service.getMissingRequiredFieldNames('readonlyTemplateEntity', {}),
     ).resolves.toEqual([]);
 
-    const templates = await service.appendCustomFieldTemplates('company', []);
+    const templates = await service.appendCustomFieldTemplates(
+      'readonlyTemplateEntity',
+      [],
+    );
 
     expect(templates[0]).toMatchObject({
       name: 'customFields.approved',
@@ -165,6 +170,41 @@ describe('GenericCustomFieldService', () => {
         renderer: 'boolean',
       }),
     });
+  });
+
+  it('projects read-only custom fields as non-required read-only templates', async () => {
+    const service = createService([
+      createDefinition('externalScore', 'number', {
+        isRequired: true,
+        isReadOnly: true,
+      }),
+    ]);
+
+    await expect(
+      service.getMissingRequiredFieldNames('company', {}),
+    ).resolves.toEqual([]);
+
+    const templates = await service.appendCustomFieldTemplates('company', []);
+
+    expect(templates[0]).toMatchObject({
+      name: 'customFields.externalScore',
+      isRequired: false,
+      nullable: true,
+      options: ['isReadOnly'],
+      formConfig: expect.objectContaining({ required: false }),
+    });
+  });
+
+  it('ignores mutation values for read-only custom fields', async () => {
+    const service = createService([
+      createDefinition('externalScore', 'number', { isReadOnly: true }),
+    ]);
+
+    await expect(
+      service.upsertCustomFieldValues('readonlyMutationEntity', 42, {
+        externalScore: 99,
+      }),
+    ).resolves.toBeUndefined();
   });
 
   it('skips value hydration for entities without active custom fields', async () => {
