@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch, type Ref } from 'vue'
 import { useRoute } from 'vue-router'
 import ApiGenericService from '@/services/api.generic.service'
+import type { FilterQuery } from '@/services/api.generic.service'
 import { i18n } from '@/i18n'
 import type {
   ColumnFilterItem,
@@ -15,6 +16,7 @@ import { useCurrentPermissionStore } from '@/stores/currentPermissionStore'
 import { useGenericStore } from '@/stores/genericStore'
 import {
   extractColumnFiltersFromFilterQuery,
+  removeMatchingFilterFromFilterQuery,
   removeRestoredColumnFiltersFromFilterQuery,
 } from '@/composables/table/useSaplingTableFilterHelpers'
 import {
@@ -23,6 +25,8 @@ import {
   getListProjectionFieldNames,
   getReadableReferenceRelationNames,
   getTableHeaders,
+  isFilterableTableColumn,
+  isTextSearchableTemplate,
 } from '@/utils/saplingTableUtil'
 import { useSaplingTableFormConfig } from '@/composables/table/useSaplingTableFormConfig'
 import {
@@ -117,6 +121,13 @@ export function useSaplingTable(
   const activeFilter = computed(() =>
     buildTableFilter({
       search: search.value,
+      columnFilters: columnFilters.value,
+      entityTemplates: entityTemplates.value,
+      parentFilter: parentFilter.value,
+    }),
+  )
+  const urlFilter = computed(() =>
+    buildTableFilter({
       columnFilters: columnFilters.value,
       entityTemplates: entityTemplates.value,
       parentFilter: parentFilter.value,
@@ -268,10 +279,17 @@ export function useSaplingTable(
   }
 
   function restoreQueryFilterState(nextEntityTemplates: EntityTemplate[]) {
-    const urlFilter = getRouteState().filter
-    columnFilters.value = extractColumnFiltersFromFilterQuery(nextEntityTemplates, urlFilter)
+    const routeState = getRouteState()
+    const routeFilter = routeState.filter
+    const searchFilters = buildRouteSearchFilterCandidates(routeState.search, nextEntityTemplates)
+    const filterWithoutSearch = searchFilters.reduce<unknown>(
+      (filter, searchFilter) => removeMatchingFilterFromFilterQuery(filter, searchFilter),
+      routeFilter,
+    )
+
+    columnFilters.value = extractColumnFiltersFromFilterQuery(nextEntityTemplates, routeFilter)
     parentFilter.value =
-      removeRestoredColumnFiltersFromFilterQuery(nextEntityTemplates, urlFilter) ?? {}
+      removeRestoredColumnFiltersFromFilterQuery(nextEntityTemplates, filterWithoutSearch) ?? {}
   }
 
   async function applyDefaultOpenChipColumnFilters(nextEntityTemplates: EntityTemplate[]) {
@@ -436,7 +454,7 @@ export function useSaplingTable(
         itemsPerPage: itemsPerPage.value,
         defaultItemsPerPage: itemsPerPageDefault.value,
         sortBy: validSortBy.value,
-        filter: activeFilter.value,
+        filter: urlFilter.value,
       },
       Boolean(isUseQueryParameter),
     )
@@ -521,6 +539,30 @@ export function useSaplingTable(
     initialSort,
   }
   // #endregion
+}
+
+function buildRouteSearchFilterCandidates(
+  search: string,
+  entityTemplates: EntityTemplate[],
+): FilterQuery[] {
+  const normalizedSearch = search.trim()
+  if (!normalizedSearch) {
+    return []
+  }
+
+  const currentSearchFilter = buildTableFilter({ search, entityTemplates })
+  const searchableTemplates = entityTemplates
+    .filter(isFilterableTableColumn)
+    .filter(isTextSearchableTemplate)
+  const legacySearchFilter: FilterQuery = searchableTemplates.length
+    ? {
+        $or: searchableTemplates.map((template) => ({
+          [template.name]: { $ilike: `%${normalizedSearch}%` },
+        })),
+      }
+    : {}
+
+  return [currentSearchFilter, legacySearchFilter]
 }
 
 function isAbortError(error: unknown): boolean {

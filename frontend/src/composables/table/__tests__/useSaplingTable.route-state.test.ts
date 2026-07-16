@@ -140,6 +140,35 @@ describe('useSaplingTable filters and route state', () => {
     expect(apiFindMock).toHaveBeenCalledTimes(1)
   })
 
+  it('does not restore a serialized global search as an additional parent filter', async () => {
+    loadGenericMock.mockResolvedValue(undefined)
+    routeState.query = {
+      search: 'Ada Lovelace',
+      filter: JSON.stringify({
+        $or: [{ name: { $ilike: '%Ada Lovelace%' } }],
+      }),
+    }
+    apiFindMock.mockResolvedValue({
+      data: [],
+      meta: { total: 0 },
+    })
+
+    mountQueryEnabledTestHost(ref('partner'))
+    await flushPromises()
+
+    expect(apiFindMock).toHaveBeenCalledWith(
+      'partner',
+      expect.objectContaining({
+        filter: {
+          $and: [
+            { $or: [{ name: { $ilike: '%Ada%' } }] },
+            { $or: [{ name: { $ilike: '%Lovelace%' } }] },
+          ],
+        },
+      }),
+    )
+  })
+
   it('rehydrates the full url filter into table header filters without a leftover query filter', async () => {
     loadGenericMock.mockResolvedValue(undefined)
     routeState.query = {

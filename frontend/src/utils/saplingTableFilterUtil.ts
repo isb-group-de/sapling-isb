@@ -32,14 +32,16 @@ export function buildTableFilter({
   const clauses: FilterQuery[] = []
   const filterableTemplates = entityTemplates.filter(isFilterableTableColumn)
   const searchableTemplates = filterableTemplates.filter(isTextSearchableTemplate)
-  const normalizedSearch = search?.trim() ?? ''
+  const searchTerms = search?.trim().split(/\s+/).filter(Boolean) ?? []
 
-  if (normalizedSearch && searchableTemplates.length > 0) {
-    clauses.push({
-      $or: searchableTemplates.map((template) => ({
-        [template.name]: { $ilike: `%${normalizedSearch}%` },
+  if (searchTerms.length > 0 && searchableTemplates.length > 0) {
+    clauses.push(
+      ...searchTerms.map((searchTerm) => ({
+        $or: searchableTemplates.map((template) => ({
+          [template.name]: { $ilike: `%${searchTerm}%` },
+        })),
       })),
-    })
+    )
   }
 
   Object.entries(columnFilters).forEach(([key, value]) => {

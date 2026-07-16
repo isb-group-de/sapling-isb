@@ -370,6 +370,27 @@ describe('saplingTableUtil', () => {
     })
   })
 
+  it('matches every whitespace-separated search term across all searchable columns', () => {
+    const filter = buildTableFilter({
+      search: '  Anna   Beispiel  ',
+      entityTemplates: [
+        createTemplate({ name: 'firstName' }),
+        createTemplate({ name: 'lastName' }),
+      ],
+    })
+
+    expect(filter).toEqual({
+      $and: [
+        {
+          $or: [{ firstName: { $ilike: '%Anna%' } }, { lastName: { $ilike: '%Anna%' } }],
+        },
+        {
+          $or: [{ firstName: { $ilike: '%Beispiel%' } }, { lastName: { $ilike: '%Beispiel%' } }],
+        },
+      ],
+    })
+  })
+
   it('builds text filters for long varchar columns such as translation values', () => {
     expect(
       buildTableFilter({

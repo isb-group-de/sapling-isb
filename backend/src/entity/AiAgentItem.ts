@@ -26,7 +26,6 @@ import {
 @Entity()
 export class AiAgentItem {
   @ApiProperty()
-  @Sapling(['isValue', 'isOrderASC'])
   @SaplingForm({
     order: 100,
     group: 'aiAgent.groupBasics',
@@ -42,7 +41,7 @@ export class AiAgentItem {
   handle!: string;
 
   @ApiProperty()
-  @Sapling(['isValue'])
+  @Sapling(['isValue', 'isOrderASC'])
   @SaplingForm({
     order: 200,
     group: 'aiAgent.groupBasics',
