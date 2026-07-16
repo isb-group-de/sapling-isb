@@ -1,19 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { EntityManager } from '@mikro-orm/core';
 import { PersonItem } from '../../entity/PersonItem';
-import { TicketItem } from '../../entity/TicketItem';
-import { EventItem } from '../../entity/EventItem';
-import { SalesOpportunityItem } from '../../entity/SalesOpportunityItem';
-import { EffortEstimateItem } from '../../entity/EffortEstimateItem';
-import { InternalCaseItem } from '../../entity/InternalCaseItem';
+import type { TicketItem } from '../../entity/TicketItem';
+import type { EventItem } from '../../entity/EventItem';
+import type { SalesOpportunityItem } from '../../entity/SalesOpportunityItem';
+import type { EffortEstimateItem } from '../../entity/EffortEstimateItem';
+import type { InternalCaseItem } from '../../entity/InternalCaseItem';
 import { ENTITY_HANDLES } from '../../entity/global/entity.registry';
 import { WorkHourWeekItem } from '../../entity/WorkHourWeekItem';
-import { DashboardItem } from '../../entity/DashboardItem';
-import { DashboardTemplateItem } from '../../entity/DashboardTemplateItem';
-import { FavoriteItem } from '../../entity/FavoriteItem';
-import { FavoriteTemplateItem } from '../../entity/FavoriteTemplateItem';
-import { RoleItem } from '../../entity/RoleItem';
-import { KpiItem } from '../../entity/KpiItem';
 import { InboxService } from '../inbox/inbox.service';
 import { InboxNotificationItem } from '../../entity/InboxNotificationItem';
 import { SessionStoreItem } from '../../entity/SessionStoreItem';
@@ -21,16 +15,13 @@ import {
   AccumulatedPermissionDto,
   AccumulatedPermissionBufferDto,
 } from './dto/accumulated-permission.dto';
+import {
+  CurrentOpenTaskService,
+  type OpenTaskSnapshot,
+} from './current-open-task.service';
+import { CurrentStarterWorkspaceService } from './current-starter-workspace.service';
 
-export interface OpenTaskSnapshot {
-  count: number;
-  tickets: TicketItem[];
-  tasks: EventItem[];
-  salesOpportunities: SalesOpportunityItem[];
-  effortEstimates: EffortEstimateItem[];
-  internalCases: InternalCaseItem[];
-  notifications: InboxNotificationItem[];
-}
+export type { OpenTaskSnapshot } from './current-open-task.service';
 
 export interface CurrentProfileUpdateDto {
   firstName?: string | null;
@@ -77,6 +68,8 @@ interface StoredSessionPayload {
  */
 @Injectable()
 export class CurrentService {
+  private readonly openTasks: CurrentOpenTaskService;
+  private readonly starterWorkspace = new CurrentStarterWorkspaceService();
   /**
    * MikroORM EntityManager for database access
    * @type {EntityManager}
@@ -88,7 +81,9 @@ export class CurrentService {
   constructor(
     private readonly em: EntityManager,
     private readonly inboxService: InboxService,
-  ) {}
+  ) {
+    this.openTasks = new CurrentOpenTaskService(em, inboxService);
+  }
 
   private forkEntityManager(): EntityManager {
     return this.em.fork();
@@ -123,7 +118,7 @@ export class CurrentService {
     }
 
     const em = this.forkEntityManager();
-    await this.ensureStarterWorkspace(em, user.handle);
+    await this.starterWorkspace.ensure(em, user.handle);
     return this.loadPerson(em, user.handle);
   }
 
@@ -152,79 +147,6 @@ export class CurrentService {
 
     delete person?.loginPassword; // Remove password before returning
     return person || null;
-  }
-
-  private async ensureStarterWorkspace(
-    em: EntityManager,
-    personHandle: number,
-  ): Promise<void> {
-    const person = await em.findOne(
-      PersonItem,
-      { handle: personHandle },
-      {
-        populate: [
-          'roles',
-          'roles.starterDashboardTemplates',
-          'roles.starterDashboardTemplates.kpis',
-          'roles.starterFavoriteTemplates',
-          'roles.starterFavoriteTemplates.entity',
-          'roles.starterFavoriteTemplates.entityRoute',
-        ],
-      },
-    );
-
-    if (!person) {
-      return;
-    }
-
-    const starterDashboardTemplates =
-      this.collectStarterDashboardTemplates(person);
-    const starterFavoriteTemplates =
-      this.collectStarterFavoriteTemplates(person);
-
-    if (
-      starterDashboardTemplates.length === 0 &&
-      starterFavoriteTemplates.length === 0
-    ) {
-      return;
-    }
-
-    const [dashboardCount, favoriteCount] = await Promise.all([
-      starterDashboardTemplates.length > 0
-        ? em.count(DashboardItem, { person: { handle: personHandle } })
-        : Promise.resolve(0),
-      starterFavoriteTemplates.length > 0
-        ? em.count(FavoriteItem, { person: { handle: personHandle } })
-        : Promise.resolve(0),
-    ]);
-
-    const starterDashboards =
-      dashboardCount === 0
-        ? starterDashboardTemplates.map((template) =>
-            this.createDashboardFromTemplate(person, template),
-          )
-        : [];
-
-    const starterFavorites =
-      favoriteCount === 0
-        ? starterFavoriteTemplates.map((template) =>
-            this.createFavoriteFromTemplate(person, template),
-          )
-        : [];
-
-    if (starterDashboards.length === 0 && starterFavorites.length === 0) {
-      return;
-    }
-
-    for (const dashboard of starterDashboards) {
-      em.persist(dashboard);
-    }
-
-    for (const favorite of starterFavorites) {
-      em.persist(favorite);
-    }
-
-    await em.flush();
   }
 
   /**
@@ -333,179 +255,35 @@ export class CurrentService {
     };
   }
 
-  /**
-   * Returns all open tickets assigned to the user.
-   * @param user The user whose tickets are to be retrieved
-   * @returns Array of open tickets
-   */
-  async getOpenTickets(user: PersonItem): Promise<TicketItem[]> {
-    const items = await this.em.find(
-      TicketItem,
-      this.buildOpenTicketWhere(user),
-      {
-        populate: ['status', 'priority'],
-      },
-    );
-    return items || [];
+  getOpenTickets(user: PersonItem): Promise<TicketItem[]> {
+    return this.openTasks.getOpenTickets(user);
   }
 
-  /**
-   * Returns all open events assigned to the user.
-   * @param user The user whose events are to be retrieved
-   * @returns Array of open events
-   */
-  async getOpenEvents(user: PersonItem): Promise<EventItem[]> {
-    const items = await this.em.find(
-      EventItem,
-      this.buildOpenEventWhere(user),
-      {
-        populate: ['status', 'type'],
-      },
-    );
-    return items || [];
+  getOpenEvents(user: PersonItem): Promise<EventItem[]> {
+    return this.openTasks.getOpenEvents(user);
   }
 
-  /**
-   * Returns all open sales opportunities assigned to the user.
-   * @param user The user whose sales opportunities are to be retrieved
-   * @returns Array of open sales opportunities
-   */
-  async getOpenSalesOpportunities(
-    user: PersonItem,
-  ): Promise<SalesOpportunityItem[]> {
-    const items = await this.em.find(
-      SalesOpportunityItem,
-      this.buildOpenSalesOpportunityWhere(user),
-      {
-        populate: ['type', 'forecast', 'assigneeCompany', 'creatorCompany'],
-      },
-    );
-    return items || [];
+  getOpenSalesOpportunities(user: PersonItem): Promise<SalesOpportunityItem[]> {
+    return this.openTasks.getOpenSalesOpportunities(user);
   }
 
-  async getOpenEffortEstimates(
-    user: PersonItem,
-  ): Promise<EffortEstimateItem[]> {
-    const items = await this.em.find(
-      EffortEstimateItem,
-      this.buildOpenEffortEstimateWhere(user),
-      {
-        populate: [
-          'status',
-          'assigneeCompany',
-          'assigneePerson',
-          'creatorCompany',
-          'creatorPerson',
-          'salesOpportunity',
-          'ticket',
-        ],
-      },
-    );
-    return items || [];
+  getOpenEffortEstimates(user: PersonItem): Promise<EffortEstimateItem[]> {
+    return this.openTasks.getOpenEffortEstimates(user);
   }
 
-  async getOpenInternalCases(user: PersonItem): Promise<InternalCaseItem[]> {
-    const items = await this.em.find(
-      InternalCaseItem,
-      this.buildOpenInternalCaseWhere(user),
-      {
-        populate: [
-          'status',
-          'category',
-          'customerCompany',
-          'customerPerson',
-          'responsibleCompany',
-          'responsiblePerson',
-        ],
-      },
-    );
-    return items || [];
+  getOpenInternalCases(user: PersonItem): Promise<InternalCaseItem[]> {
+    return this.openTasks.getOpenInternalCases(user);
   }
 
-  async getOpenTaskSnapshot(user: PersonItem): Promise<OpenTaskSnapshot> {
-    const [
-      tickets,
-      tasks,
-      salesOpportunities,
-      effortEstimates,
-      internalCases,
-      notifications,
-    ] = await Promise.all([
-      this.getOpenTickets(user),
-      this.getOpenEvents(user),
-      this.getOpenSalesOpportunities(user),
-      this.getOpenEffortEstimates(user),
-      this.getOpenInternalCases(user),
-      this.inboxService.getUnreadNotifications(user),
-    ]);
-
-    return {
-      count:
-        tickets.length +
-        tasks.length +
-        salesOpportunities.length +
-        effortEstimates.length +
-        internalCases.length +
-        notifications.length,
-      tickets,
-      tasks,
-      salesOpportunities,
-      effortEstimates,
-      internalCases,
-      notifications,
-    };
+  getOpenTaskSnapshot(user: PersonItem): Promise<OpenTaskSnapshot> {
+    return this.openTasks.getSnapshot(user);
   }
 
-  async markInboxNotificationRead(
+  markInboxNotificationRead(
     handle: number,
     user: PersonItem,
   ): Promise<InboxNotificationItem> {
     return this.inboxService.markNotificationRead(handle, user);
-  }
-
-  private buildOpenTicketWhere(user: PersonItem): object {
-    return {
-      assigneePerson: { handle: user?.handle },
-      status: { handle: { $nin: ['closed'] } },
-    };
-  }
-
-  private buildOpenEventWhere(user: PersonItem): object {
-    return {
-      $or: [
-        {
-          isPrivate: false,
-          participants: { handle: user?.handle },
-        },
-        {
-          isPrivate: true,
-          creatorPerson: { handle: user?.handle },
-        },
-      ],
-      status: { handle: { $nin: ['canceled', 'completed'] } },
-    };
-  }
-
-  private buildOpenSalesOpportunityWhere(user: PersonItem): object {
-    return {
-      assigneePerson: { handle: user?.handle },
-      isActive: true,
-    };
-  }
-
-  private buildOpenEffortEstimateWhere(user: PersonItem): object {
-    return {
-      assigneePerson: { handle: user?.handle },
-      isActive: true,
-      status: { handle: { $nin: ['completed', 'cancelled'] } },
-    };
-  }
-
-  private buildOpenInternalCaseWhere(user: PersonItem): object {
-    return {
-      responsiblePerson: { handle: user?.handle },
-      status: { isOpen: true },
-    };
   }
 
   private async getCurrentSessionRecords(
@@ -778,109 +556,5 @@ export class CurrentService {
       );
     }
     return null;
-  }
-
-  private collectStarterDashboardTemplates(
-    person: PersonItem,
-  ): DashboardTemplateItem[] {
-    return this.getUniqueTemplates(
-      this.getCollectionItems<RoleItem>(person.roles).flatMap((role) =>
-        this.getCollectionItems(role.starterDashboardTemplates),
-      ),
-    );
-  }
-
-  private collectStarterFavoriteTemplates(
-    person: PersonItem,
-  ): FavoriteTemplateItem[] {
-    return this.getUniqueTemplates(
-      this.getCollectionItems<RoleItem>(person.roles).flatMap((role) =>
-        this.getCollectionItems(role.starterFavoriteTemplates),
-      ),
-    );
-  }
-
-  private createDashboardFromTemplate(
-    person: PersonItem,
-    template: DashboardTemplateItem,
-  ): DashboardItem {
-    const dashboard = new DashboardItem();
-    dashboard.name = template.name;
-    dashboard.person = person;
-
-    const starterKpis = this.getCollectionItems<KpiItem>(template.kpis);
-    if (starterKpis.length > 0) {
-      for (const starterKpi of starterKpis) {
-        dashboard.kpis.add(starterKpi);
-      }
-    }
-
-    return dashboard;
-  }
-
-  private createFavoriteFromTemplate(
-    person: PersonItem,
-    template: FavoriteTemplateItem,
-  ): FavoriteItem {
-    const favorite = new FavoriteItem();
-    favorite.title = template.name;
-    favorite.person = person;
-    favorite.entity = template.entity;
-    favorite.entityRoute = template.entityRoute;
-    favorite.filter = this.cloneJsonValue(template.filter);
-
-    return favorite;
-  }
-
-  private getCollectionItems<T>(value: unknown): T[] {
-    if (!value) {
-      return [];
-    }
-
-    if (Array.isArray(value)) {
-      return value as T[];
-    }
-
-    if (typeof value === 'object' && 'getItems' in value) {
-      const getItems = (value as { getItems?: () => unknown }).getItems;
-      if (typeof getItems === 'function') {
-        const items = getItems.call(value) as unknown;
-        return Array.isArray(items) ? (items as T[]) : [];
-      }
-    }
-
-    if (typeof (value as Iterable<T>)[Symbol.iterator] === 'function') {
-      return Array.from(value as Iterable<T>);
-    }
-
-    return [];
-  }
-
-  private getUniqueTemplates<T extends { handle?: number; name?: string }>(
-    templates: T[],
-  ): T[] {
-    const seenKeys = new Set<string>();
-
-    return templates.filter((template) => {
-      const templateKey =
-        template.handle != null
-          ? `handle:${template.handle}`
-          : `name:${template.name ?? ''}`;
-
-      if (seenKeys.has(templateKey)) {
-        return false;
-      }
-
-      seenKeys.add(templateKey);
-      return true;
-    });
-  }
-
-  private cloneJsonValue<T>(value: T): T {
-    if (value == null) {
-      return value;
-    }
-
-    return JSON.parse(JSON.stringify(value)) as T;
   }
 }

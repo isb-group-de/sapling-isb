@@ -2,7 +2,6 @@ import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import ApiGenericService from '@/services/api.generic.service'
-import ApiSearchService, { type GlobalSearchResultItem } from '@/services/api.search.service'
 import { useCurrentPersonStore } from '@/stores/currentPersonStore'
 import { useCurrentPermissionStore } from '@/stores/currentPermissionStore'
 import { buildFavoritePath } from '@/utils/saplingFavoriteNavigation'
@@ -19,10 +18,10 @@ import type {
   CommandPaletteGroupKey,
   CommandPaletteItem,
 } from '@/components/system/command-palette/commandPalette.types'
-
-const RECORD_SEARCH_DEBOUNCE_MS = 250
-const RECORD_SEARCH_LIMIT = 10
-const RECORD_SEARCH_MIN_LENGTH = 2
+import {
+  COMMAND_PALETTE_RECORD_SEARCH_MIN_LENGTH,
+  useSaplingCommandPaletteRecordSearch,
+} from './useSaplingCommandPaletteRecordSearch'
 
 export function useSaplingCommandPalette() {
   const router = useRouter()
@@ -52,11 +51,8 @@ export function useSaplingCommandPalette() {
 
   const entities = ref<EntityItem[]>([])
   const favorites = ref<FavoriteItem[]>([])
-  const recordResults = ref<GlobalSearchResultItem[]>([])
-  const isRecordSearchLoading = ref(false)
-  let recordSearchTimeout: ReturnType<typeof setTimeout> | null = null
-  let recordSearchController: AbortController | null = null
-  let recordSearchRequestId = 0
+  const { recordResults, isRecordSearchLoading, cancelRecordSearch, scheduleRecordSearch } =
+    useSaplingCommandPaletteRecordSearch(entities, getEntityLabel)
 
   async function openPalette() {
     isOpen.value = true
@@ -128,105 +124,6 @@ export function useSaplingCommandPalette() {
       relations: ['entity', 'entityRoute'],
     })
     favorites.value = response.data ?? []
-  }
-
-  function cancelRecordSearch() {
-    if (recordSearchTimeout) {
-      clearTimeout(recordSearchTimeout)
-      recordSearchTimeout = null
-    }
-
-    recordSearchController?.abort()
-    recordSearchController = null
-    isRecordSearchLoading.value = false
-  }
-
-  function scheduleRecordSearch(rawQuery: string) {
-    if (recordSearchTimeout) {
-      clearTimeout(recordSearchTimeout)
-      recordSearchTimeout = null
-    }
-
-    const scope = getRecordSearchScope(rawQuery)
-    if (!scope) {
-      recordSearchController?.abort()
-      recordSearchController = null
-      recordResults.value = []
-      isRecordSearchLoading.value = false
-      return
-    }
-
-    recordSearchTimeout = setTimeout(() => {
-      recordSearchTimeout = null
-      void runRecordSearch(scope)
-    }, RECORD_SEARCH_DEBOUNCE_MS)
-  }
-
-  function getRecordSearchScope(
-    rawQuery: string,
-  ): { query: string; entityHandles?: string[] } | null {
-    const value = rawQuery.trim()
-    if (value.length < RECORD_SEARCH_MIN_LENGTH || value.endsWith(':')) {
-      return null
-    }
-
-    const colonIdx = value.indexOf(':')
-    if (colonIdx > 1 && colonIdx < value.length - 1) {
-      const entityPart = value.slice(0, colonIdx).trim().toLowerCase()
-      const searchPart = value.slice(colonIdx + 1).trim()
-
-      if (searchPart.length < RECORD_SEARCH_MIN_LENGTH) {
-        return null
-      }
-
-      const matchingEntities = entities.value.filter(
-        (entity) =>
-          entity.handle.toLowerCase().startsWith(entityPart) ||
-          getEntityLabel(entity).toLowerCase().startsWith(entityPart),
-      )
-
-      if (matchingEntities.length === 0) {
-        return null
-      }
-
-      return {
-        query: searchPart,
-        entityHandles: matchingEntities.map((entity) => entity.handle),
-      }
-    }
-
-    return { query: value }
-  }
-
-  async function runRecordSearch(scope: { query: string; entityHandles?: string[] }) {
-    recordSearchController?.abort()
-    const controller = new AbortController()
-    recordSearchController = controller
-    isRecordSearchLoading.value = true
-    const requestId = ++recordSearchRequestId
-
-    try {
-      const response = await ApiSearchService.global(scope.query, {
-        limit: RECORD_SEARCH_LIMIT,
-        entityHandles: scope.entityHandles,
-        signal: controller.signal,
-      })
-
-      if (requestId !== recordSearchRequestId || recordSearchController !== controller) {
-        return
-      }
-
-      recordResults.value = response.items ?? []
-    } catch (error) {
-      if (!isRequestCanceled(error) && requestId === recordSearchRequestId) {
-        recordResults.value = []
-      }
-    } finally {
-      if (recordSearchController === controller) {
-        recordSearchController = null
-        isRecordSearchLoading.value = false
-      }
-    }
   }
 
   function getEntityLabel(entity: EntityItem) {
@@ -631,7 +528,7 @@ export function useSaplingCommandPalette() {
     () =>
       isLoading.value ||
       (isRecordSearchLoading.value &&
-        query.value.trim().length >= RECORD_SEARCH_MIN_LENGTH &&
+        query.value.trim().length >= COMMAND_PALETTE_RECORD_SEARCH_MIN_LENGTH &&
         groupedResults.value.length === 0),
   )
 
@@ -652,15 +549,6 @@ export function useSaplingCommandPalette() {
     runItem,
     activateCurrent,
   }
-}
-
-function isRequestCanceled(error: unknown): boolean {
-  return (
-    typeof error === 'object' &&
-    error !== null &&
-    'code' in error &&
-    (error as { code?: string }).code === 'ERR_CANCELED'
-  )
 }
 
 function getUniqueEntityRoutes(routes: EntityRouteItem[]): EntityRouteItem[] {

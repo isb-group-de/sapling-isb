@@ -24,6 +24,8 @@ import { AiVectorEmbeddingService } from './ai-vector-embedding.service';
 import { AiVectorIndexService } from './ai-vector-index.service';
 import { AiVectorSearchService } from './ai-vector-search.service';
 import { AiController } from './ai.controller';
+import { AiMediaController } from './ai-media.controller';
+import { AiAgentController } from './ai-agent.controller';
 import { AiAgentItem } from '../../entity/AiAgentItem';
 import { AiChatSessionItem } from '../../entity/AiChatSessionItem';
 import { AiChatMessageItem } from '../../entity/AiChatMessageItem';
@@ -120,7 +122,7 @@ import { ImportModule } from '../import/import.module';
     SaplingMcpExecutionService,
     SaplingMcpTransportService,
   ],
-  controllers: [AiController],
+  controllers: [AiController, AiMediaController, AiAgentController],
   exports: [
     AiService,
     AiProviderRegistryService,

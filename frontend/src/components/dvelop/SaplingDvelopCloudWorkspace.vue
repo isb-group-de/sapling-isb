@@ -10,7 +10,6 @@
       :title="$t('dvelopCloud.title')"
     >
       <p>{{ $t('dvelopCloud.subtitle') }}</p>
-
       <template #meta>
         <v-chip size="small" color="primary" variant="tonal" prepend-icon="mdi-cloud-outline">
           {{ connections.length }}
@@ -25,7 +24,6 @@
           {{ properties.length }}
         </v-chip>
       </template>
-
       <template #side>
         <div class="sapling-action-cluster sapling-dvelop-cloud__hero-actions">
           <v-btn
@@ -46,362 +44,70 @@
       </template>
     </SaplingPageHero>
 
-    <SaplingSurface
-      as="section"
-      class="sapling-panel-shell sapling-section-panel sapling-dvelop-cloud__control-band"
-    >
-      <div class="sapling-dvelop-cloud__connection-panel">
-        <v-select
-          v-model="selectedConnectionHandle"
-          class="sapling-dvelop-cloud__connection-field"
-          :items="connectionOptions"
-          :loading="isLoadingConnections"
-          item-title="title"
-          item-value="value"
-          prepend-inner-icon="mdi-cloud-outline"
-          variant="outlined"
-          density="comfortable"
-          hide-details="auto"
-          :label="$t('dvelopCloud.connection')"
-        />
+    <SaplingDvelopConnectionPanel
+      v-model="selectedConnectionHandle"
+      :connection-options="connectionOptions"
+      :connection="selectedConnection"
+      :repository-label="selectedRepositoryLabel"
+      :loading="isLoadingConnections"
+      :health-status="healthCheckResult?.status"
+      :health-capabilities="healthCapabilityRows"
+      :is-checking-health="isCheckingHealth"
+      :is-syncing-all="isSyncingAll"
+      :is-any-syncing="isAnySyncing"
+      :is-syncing-repositories="isSyncingRepositories"
+      :is-syncing-object-definitions="isSyncingObjectDefinitions"
+      :is-syncing-properties="isSyncingProperties"
+      @health-check="runHealthCheck"
+      @sync-all="syncAll"
+      @sync-repositories="syncRepositories"
+      @sync-object-definitions="syncObjectDefinitions"
+      @sync-properties="syncProperties"
+    />
 
-        <div
-          v-if="selectedConnection"
-          class="sapling-detail-grid sapling-dvelop-cloud__connection-meta"
-        >
-          <div class="sapling-detail-card">
-            <span>{{ $t('dvelopConnection.baseUrl') }}</span>
-            <strong class="sapling-dvelop-cloud__meta-value">{{
-              selectedConnection.baseUrl
-            }}</strong>
-          </div>
-          <div class="sapling-detail-card">
-            <span>{{ $t('dvelopConnection.repository') }}</span>
-            <strong class="sapling-dvelop-cloud__meta-value">
-              {{ selectedRepositoryLabel }}
-            </strong>
-          </div>
-          <div class="sapling-detail-card">
-            <span>{{ $t('dvelopConnection.isActive') }}</span>
-            <strong>
-              <v-chip
-                :color="selectedConnection.isActive ? 'success' : 'default'"
-                size="small"
-                variant="tonal"
-              >
-                {{ selectedConnection.isActive ? $t('global.yes') : $t('global.no') }}
-              </v-chip>
-            </strong>
-          </div>
-        </div>
+    <SaplingDvelopMetrics
+      :repository-count="repositories.length"
+      :object-definition-count="objectDefinitions.length"
+      :property-count="properties.length"
+      :repository-label="selectedRepositoryLabel"
+      :last-sync-display="lastSyncDisplay"
+      :connection-title="selectedConnection?.title"
+    />
 
-        <div class="sapling-dvelop-cloud__health-strip">
-          <div class="sapling-dvelop-cloud__health-summary">
-            <span class="sapling-label">{{ $t('dvelopCloud.healthStatus') }}</span>
-            <v-chip
-              :color="healthOptionalStatusColor(healthCheckResult?.status)"
-              size="small"
-              variant="tonal"
-            >
-              {{ formatOptionalHealthStatus(healthCheckResult?.status) }}
-            </v-chip>
-          </div>
-          <div class="sapling-dvelop-cloud__health-capabilities">
-            <v-chip
-              v-for="capability in healthCapabilityRows"
-              :key="capability.key"
-              :color="healthOptionalStatusColor(capability.status)"
-              :prepend-icon="healthStatusIcon(capability.status)"
-              size="small"
-              variant="tonal"
-            >
-              {{ formatCompactCapability(capability) }}
-            </v-chip>
-          </div>
-        </div>
-      </div>
-
-      <div class="sapling-action-cluster sapling-dvelop-cloud__sync-actions">
-        <v-btn
-          variant="tonal"
-          prepend-icon="mdi-shield-check-outline"
-          :disabled="!selectedConnection || isAnySyncing"
-          :loading="isCheckingHealth"
-          @click="runHealthCheck"
-        >
-          {{ $t('dvelopCloud.healthCheck') }}
-        </v-btn>
-        <v-btn
-          color="primary"
-          variant="flat"
-          prepend-icon="mdi-download"
-          :disabled="!selectedConnection || isCheckingHealth"
-          :loading="isSyncingAll"
-          @click="syncAll"
-        >
-          {{ $t('dvelopCloud.syncAll') }}
-        </v-btn>
-        <v-btn
-          variant="tonal"
-          prepend-icon="mdi-database-sync-outline"
-          :disabled="!selectedConnection || isAnySyncing || isCheckingHealth"
-          :loading="isSyncingRepositories"
-          @click="syncRepositories"
-        >
-          {{ $t('dvelopCloud.syncRepositories') }}
-        </v-btn>
-        <v-btn
-          variant="tonal"
-          prepend-icon="mdi-shape-outline"
-          :disabled="!selectedConnection || isAnySyncing || isCheckingHealth"
-          :loading="isSyncingObjectDefinitions"
-          @click="syncObjectDefinitions"
-        >
-          {{ $t('dvelopCloud.syncObjectDefinitions') }}
-        </v-btn>
-        <v-btn
-          variant="tonal"
-          prepend-icon="mdi-tag-multiple-outline"
-          :disabled="!selectedConnection || isAnySyncing || isCheckingHealth"
-          :loading="isSyncingProperties"
-          @click="syncProperties"
-        >
-          {{ $t('dvelopCloud.syncProperties') }}
-        </v-btn>
-      </div>
-    </SaplingSurface>
-
-    <section
-      class="sapling-responsive-grid sapling-responsive-grid--md sapling-dvelop-cloud__metrics"
-    >
-      <SaplingSurface as="article" class="sapling-metric-card sapling-dvelop-cloud__metric">
-        <div class="sapling-icon-tile sapling-icon-tile--primary-soft">
-          <v-icon icon="mdi-database-outline" />
-        </div>
-        <div class="sapling-metric-card__copy">
-          <p>{{ $t('dvelopCloud.repositories') }}</p>
-          <strong>{{ repositories.length }}</strong>
-          <span>{{ selectedRepositoryLabel }}</span>
-        </div>
-      </SaplingSurface>
-      <SaplingSurface as="article" class="sapling-metric-card sapling-dvelop-cloud__metric">
-        <div class="sapling-icon-tile sapling-icon-tile--info-soft">
-          <v-icon icon="mdi-shape-outline" />
-        </div>
-        <div class="sapling-metric-card__copy">
-          <p>{{ $t('dvelopCloud.objectDefinitions') }}</p>
-          <strong>{{ objectDefinitions.length }}</strong>
-          <span>{{ $t('dvelopCloud.categories') }}</span>
-        </div>
-      </SaplingSurface>
-      <SaplingSurface as="article" class="sapling-metric-card sapling-dvelop-cloud__metric">
-        <div class="sapling-icon-tile sapling-icon-tile--success-soft">
-          <v-icon icon="mdi-tag-multiple-outline" />
-        </div>
-        <div class="sapling-metric-card__copy">
-          <p>{{ $t('dvelopCloud.properties') }}</p>
-          <strong>{{ properties.length }}</strong>
-          <span>{{ $t('dvelopCloud.fields') }}</span>
-        </div>
-      </SaplingSurface>
-      <SaplingSurface as="article" class="sapling-metric-card sapling-dvelop-cloud__metric">
-        <div class="sapling-icon-tile sapling-icon-tile--warning-soft">
-          <v-icon icon="mdi-clock-outline" />
-        </div>
-        <div class="sapling-metric-card__copy">
-          <p>{{ $t('dvelopCloud.lastSync') }}</p>
-          <strong>{{ lastSyncDisplay }}</strong>
-          <span>{{ selectedConnection?.title || $t('dvelopCloud.connection') }}</span>
-        </div>
-      </SaplingSurface>
-    </section>
-
-    <section class="sapling-dvelop-cloud__tables">
-      <SaplingSurface
-        as="section"
-        class="sapling-panel-shell sapling-section-panel sapling-dvelop-cloud__table-panel"
-      >
-        <div class="sapling-section-header">
-          <div>
-            <span class="sapling-label">{{ $t('dvelopCloud.repositories') }}</span>
-            <h2 class="sapling-section-title">{{ $t('dvelopCloud.repositoryList') }}</h2>
-          </div>
-          <v-btn
-            icon="mdi-table"
-            size="small"
-            variant="text"
-            :title="$t('dvelopCloud.openRepositories')"
-            :aria-label="$t('dvelopCloud.openRepositories')"
-            @click="openRoute('/table/dvelopRepository')"
-          />
-        </div>
-
-        <v-table density="compact" class="sapling-table sapling-dvelop-cloud__table">
-          <thead>
-            <tr>
-              <th>{{ $t('dvelopRepository.title') }}</th>
-              <th>{{ $t('dvelopRepository.dvelopId') }}</th>
-              <th>{{ $t('dvelopRepository.lastSyncedAt') }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="item in repositories" :key="item.handle ?? item.dvelopId">
-              <td>{{ item.title }}</td>
-              <td>{{ item.dvelopId }}</td>
-              <td>{{ formatDateTime(item.lastSyncedAt) }}</td>
-            </tr>
-            <tr v-if="repositories.length === 0">
-              <td colspan="3">
-                <div class="sapling-inline-empty">{{ emptyStateLabel }}</div>
-              </td>
-            </tr>
-          </tbody>
-        </v-table>
-      </SaplingSurface>
-
-      <SaplingSurface
-        as="section"
-        class="sapling-panel-shell sapling-section-panel sapling-dvelop-cloud__table-panel"
-      >
-        <div class="sapling-section-header">
-          <div>
-            <span class="sapling-label">{{ $t('dvelopCloud.objectDefinitions') }}</span>
-            <h2 class="sapling-section-title">{{ $t('dvelopCloud.categories') }}</h2>
-          </div>
-          <v-btn
-            icon="mdi-table"
-            size="small"
-            variant="text"
-            :title="$t('dvelopCloud.openObjectDefinitions')"
-            :aria-label="$t('dvelopCloud.openObjectDefinitions')"
-            @click="openRoute('/table/dvelopObjectDefinition')"
-          />
-        </div>
-
-        <v-table density="compact" class="sapling-table sapling-dvelop-cloud__table">
-          <thead>
-            <tr>
-              <th>{{ $t('dvelopObjectDefinition.title') }}</th>
-              <th>{{ $t('dvelopObjectDefinition.dvelopId') }}</th>
-              <th>{{ $t('dvelopObjectDefinition.lastSyncedAt') }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="item in objectDefinitions" :key="item.handle ?? item.dvelopId">
-              <td>{{ item.title }}</td>
-              <td>{{ item.dvelopId }}</td>
-              <td>{{ formatDateTime(item.lastSyncedAt) }}</td>
-            </tr>
-            <tr v-if="objectDefinitions.length === 0">
-              <td colspan="3">
-                <div class="sapling-inline-empty">{{ emptyStateLabel }}</div>
-              </td>
-            </tr>
-          </tbody>
-        </v-table>
-      </SaplingSurface>
-
-      <SaplingSurface
-        as="section"
-        class="sapling-panel-shell sapling-section-panel sapling-dvelop-cloud__table-panel"
-      >
-        <div class="sapling-section-header">
-          <div>
-            <span class="sapling-label">{{ $t('dvelopCloud.properties') }}</span>
-            <h2 class="sapling-section-title">{{ $t('dvelopCloud.fields') }}</h2>
-          </div>
-          <v-btn
-            icon="mdi-table"
-            size="small"
-            variant="text"
-            :title="$t('dvelopCloud.openProperties')"
-            :aria-label="$t('dvelopCloud.openProperties')"
-            @click="openRoute('/table/dvelopProperty')"
-          />
-        </div>
-
-        <v-table density="compact" class="sapling-table sapling-dvelop-cloud__table">
-          <thead>
-            <tr>
-              <th>{{ $t('dvelopProperty.title') }}</th>
-              <th>{{ $t('dvelopProperty.objectDefinition') }}</th>
-              <th>{{ $t('dvelopProperty.dvelopId') }}</th>
-              <th>{{ $t('dvelopProperty.dataType') }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="item in properties" :key="item.handle ?? item.dvelopId">
-              <td>{{ item.title }}</td>
-              <td>{{ formatReference(item.objectDefinition) }}</td>
-              <td>{{ item.dvelopId }}</td>
-              <td>{{ item.dataType || $t('global.notAvailable') }}</td>
-            </tr>
-            <tr v-if="properties.length === 0">
-              <td colspan="4">
-                <div class="sapling-inline-empty">{{ emptyStateLabel }}</div>
-              </td>
-            </tr>
-          </tbody>
-        </v-table>
-      </SaplingSurface>
-    </section>
+    <SaplingDvelopMetadataTables
+      :repositories="repositories"
+      :object-definitions="objectDefinitions"
+      :properties="properties"
+      :empty-state-label="emptyStateLabel"
+      @open="openRoute"
+    />
   </v-container>
 </template>
-
 <script lang="ts" setup>
 // #region Imports
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import SaplingPageHero from '@/components/common/SaplingPageHero.vue'
-import SaplingSurface from '@/components/common/SaplingSurface.vue'
+import SaplingDvelopConnectionPanel from './SaplingDvelopConnectionPanel.vue'
+import SaplingDvelopMetadataTables from './SaplingDvelopMetadataTables.vue'
+import SaplingDvelopMetrics from './SaplingDvelopMetrics.vue'
 import { useTranslationLoader } from '@/composables/generic/useTranslationLoader'
 import { useSaplingMessageCenter } from '@/composables/system/useSaplingMessageCenter'
-import type { SaplingGenericItem } from '@/entity/entity'
 import ApiDvelopService, {
   type DvelopHealthCheckCapabilityKey,
   type DvelopHealthCheckResponse,
-  type DvelopHealthCheckStatus,
 } from '@/services/api.dvelop.service'
 import ApiGenericService from '@/services/api.generic.service'
+import type {
+  DvelopConnectionItem,
+  DvelopHealthCapabilityRow,
+  DvelopObjectDefinitionItem,
+  DvelopPropertyItem,
+  DvelopRepositoryItem,
+} from './dvelopCloudWorkspace.types'
+import { capitalizeDvelopKey, formatDvelopDateTime } from './dvelopCloudWorkspace.utils'
 // #endregion
-
-interface DvelopConnectionItem extends SaplingGenericItem {
-  handle: number
-  title: string
-  baseUrl: string
-  repository?: DvelopRepositoryItem | number | string | null
-  isActive: boolean
-}
-
-interface DvelopRepositoryItem extends SaplingGenericItem {
-  handle?: number | null
-  title: string
-  dvelopId: string
-  lastSyncedAt?: string | Date | null
-}
-
-interface DvelopObjectDefinitionItem extends SaplingGenericItem {
-  handle?: number | null
-  title: string
-  dvelopId: string
-  lastSyncedAt?: string | Date | null
-}
-
-interface DvelopPropertyItem extends SaplingGenericItem {
-  handle?: number | null
-  title: string
-  dvelopId: string
-  objectDefinition?: SaplingGenericItem | string | number | null
-  dataType?: string | null
-  lastSyncedAt?: string | Date | null
-}
-
-interface HealthCapabilityRow {
-  key: DvelopHealthCheckCapabilityKey
-  status?: DvelopHealthCheckStatus
-  count?: number
-}
 
 const GENERIC_PAGE_LIMIT = 200
 const HEALTH_CAPABILITY_KEYS: DvelopHealthCheckCapabilityKey[] = [
@@ -489,10 +195,12 @@ const lastSyncDisplay = computed(() => {
     .filter((value) => Number.isFinite(value.getTime()))
     .sort((left, right) => right.getTime() - left.getTime())
 
-  return dates.length > 0 ? formatDateTime(dates[0]) : t('global.notAvailable')
+  return dates.length > 0
+    ? formatDvelopDateTime(dates[0], t('global.notAvailable'))
+    : t('global.notAvailable')
 })
 
-const healthCapabilityRows = computed<HealthCapabilityRow[]>(() => {
+const healthCapabilityRows = computed<DvelopHealthCapabilityRow[]>(() => {
   const capabilities = new Map(
     healthCheckResult.value?.capabilities.map((capability) => [capability.key, capability]) ?? [],
   )
@@ -752,70 +460,8 @@ function resolveRepository(value: DvelopConnectionItem['repository']): DvelopRep
   return repositories.value.find((repository) => Number(repository.handle) === handle) ?? null
 }
 
-function formatReference(value: SaplingGenericItem | string | number | null | undefined): string {
-  if (!value) {
-    return t('global.notAvailable')
-  }
-
-  if (typeof value !== 'object') {
-    return String(value)
-  }
-
-  const title = typeof value.title === 'string' ? value.title : null
-  const dvelopId = typeof value.dvelopId === 'string' ? value.dvelopId : null
-  if (title && dvelopId && title !== dvelopId) {
-    return `${title} (${dvelopId})`
-  }
-
-  return title ?? dvelopId ?? String(value.handle ?? t('global.notAvailable'))
-}
-
-function formatHealthStatus(status: DvelopHealthCheckStatus): string {
-  return t(`dvelopCloud.healthStatus${capitalizeStatus(status)}`)
-}
-
-function formatOptionalHealthStatus(status: DvelopHealthCheckStatus | undefined): string {
-  return status ? formatHealthStatus(status) : t('global.notAvailable')
-}
-
-function healthStatusColor(status: DvelopHealthCheckStatus): string {
-  if (status === 'success') {
-    return 'success'
-  }
-
-  return status === 'warning' ? 'warning' : 'error'
-}
-
-function healthOptionalStatusColor(status: DvelopHealthCheckStatus | undefined): string {
-  return status ? healthStatusColor(status) : 'default'
-}
-
-function healthStatusIcon(status: DvelopHealthCheckStatus | undefined): string {
-  if (status === 'success') {
-    return 'mdi-check-circle-outline'
-  }
-
-  if (status === 'warning') {
-    return 'mdi-alert-circle-outline'
-  }
-
-  return status === 'error' ? 'mdi-close-circle-outline' : 'mdi-circle-outline'
-}
-
-function formatCapabilityLabel(key: DvelopHealthCheckCapabilityKey): string {
-  return t(`dvelopCloud.healthCapability${capitalizeCapability(key)}`)
-}
-
-function formatCompactCapability(capability: HealthCapabilityRow): string {
-  return `${formatCapabilityLabel(capability.key)}: ${formatOptionalHealthStatus(capability.status)}`
-}
-
-function capitalizeStatus(status: DvelopHealthCheckStatus): string {
-  return status.charAt(0).toUpperCase() + status.slice(1)
-}
-
-function capitalizeCapability(key: DvelopHealthCheckCapabilityKey): string {
-  return key.charAt(0).toUpperCase() + key.slice(1)
+function formatHealthStatus(status: DvelopHealthCheckResponse['status']): string {
+  return t(`dvelopCloud.healthStatus${capitalizeDvelopKey(status)}`)
 }
 
 function pushSyncSuccess(message: string, description: string) {
@@ -833,22 +479,6 @@ function getErrorMessage(error: unknown): string {
   }
 
   return typeof error === 'string' ? error : ''
-}
-
-function formatDateTime(value: string | Date | null | undefined): string {
-  if (!value) {
-    return t('global.notAvailable')
-  }
-
-  const date = value instanceof Date ? value : new Date(value)
-  if (!Number.isFinite(date.getTime())) {
-    return t('global.notAvailable')
-  }
-
-  return new Intl.DateTimeFormat(undefined, {
-    dateStyle: 'short',
-    timeStyle: 'short',
-  }).format(date)
 }
 
 function openRoute(path: string) {

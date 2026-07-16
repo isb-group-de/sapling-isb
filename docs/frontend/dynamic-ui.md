@@ -209,6 +209,10 @@ Table behavior is split across composables in:
 frontend/src/composables/table/
 ```
 
+Table orchestration regression coverage is split into a shared harness plus
+initialization/loading and route/filter suites; add scenarios to the matching
+suite rather than rebuilding the harness.
+
 Common responsibilities:
 
 - loading pages
@@ -221,6 +225,16 @@ Common responsibilities:
 - table component state
 
 Table columns are driven by template metadata and translations.
+`useSaplingTable` owns the entity lifecycle, paging, server loading, and event
+coordination. Form-configuration catalog loading, selection, and overlay state
+live in `useSaplingTableFormConfig`; parsing and replacing query-string state
+live in `saplingTableRouteState.ts`. Keep new form-view and URL rules in those
+focused modules instead of growing the table orchestrator.
+Column-filter cloning/template normalization, filter-tree restoration, and
+individual relation/range/date clause parsing live in the focused
+`saplingTableColumnFilterState`, `saplingTableFilterRestore`, and
+`saplingTableFilterClauseRestore` modules. The legacy helper path is a
+compatibility barrel.
 `SaplingForm` metadata carries explicit defaults for form, desktop table, and
 mobile table rendering. Desktop columns use `tableVisible` and `tableOrder`.
 Mobile table cards use separate `mobileVisible` and `mobileOrder` metadata.
@@ -234,6 +248,10 @@ containers. Group order and visibility are persisted centrally in
 `config.groups`; moving a field updates only its group membership and form
 order. The effective-template and edit-dialog overlays apply the same group
 rules, so the live preview and generated forms stay aligned.
+Entity/config/scope selection is rendered by
+`SaplingFormConfigContextControls`. Pure draft construction and group/field
+reordering live in `formConfigAdminDraft.utils.ts`, keeping the administration
+component focused on remote context, persistence, and composition.
 Its preview keeps form, desktop-table, and mobile-table tabs mounted through
 entity reloads, renders the configured form groups explicitly, and emphasizes
 translated field names plus renderer types instead of fabricated sample data.
@@ -297,6 +315,16 @@ backend/src/script/
 ## Permissions In UI
 
 Frontend permissions are loaded from current metadata and permission stores.
+The permission administration composable owns loading, selection, save state,
+and member mutations. Reusable permission-record projection, cloning, dirty
+state inputs, and role-membership transformations live in
+`saplingPermission.utils.ts`.
+
+The account dialog follows the same composition boundary: `SaplingAccount.vue`
+assembles account tabs, while active-session presentation and Songbird runtime
+preferences live in reusable account panel components. Account formatting,
+catalog options, and shared contracts live in `saplingAccount.utils.ts`; the
+account composable owns remote loading and mutations.
 
 Important files:
 

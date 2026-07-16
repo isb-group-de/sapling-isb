@@ -1,42 +1,18 @@
-import { BadGatewayException, ForbiddenException } from '@nestjs/common';
+import { ForbiddenException } from '@nestjs/common';
 import { AuthProviderUserImportService } from './auth-provider-user-import.service';
 import { CompanyItem } from '../entity/CompanyItem';
 import { PersonItem } from '../entity/PersonItem';
 import { PersonSessionItem } from '../entity/PersonSessionItem';
 import { PersonTypeItem } from '../entity/PersonTypeItem';
 import { RoleItem } from '../entity/RoleItem';
-import type {
-  ProviderUserDto,
-  ProviderUserListResponseDto,
-} from './dto/provider-user.dto';
+import type { ProviderUserDto } from './dto/provider-user.dto';
+import {
+  mapAzureUserToProviderUser,
+  mapGoogleUserToProviderUser,
+  providerUserMatchesSearch,
+} from './auth-provider-directory.utils';
 
 type EntityLookup = Record<string, unknown>;
-
-type TestableAuthProviderUserImportService = {
-  getAzureUserWithRetry(
-    session: PersonSessionItem,
-    userId: string,
-  ): Promise<ProviderUserDto>;
-  getGoogleUserWithRetry(
-    session: PersonSessionItem,
-    userId: string,
-  ): Promise<ProviderUserDto>;
-  listAzureUsers(
-    accessToken: string,
-    options: { search?: string; pageToken?: string },
-  ): Promise<ProviderUserListResponseDto>;
-  listAzureUsersWithRetry(
-    session: PersonSessionItem,
-    options: { search?: string; pageToken?: string },
-  ): Promise<ProviderUserListResponseDto>;
-  waitForProviderRetry(delayMs: number): Promise<void>;
-};
-
-function asTestableService(
-  service: AuthProviderUserImportService,
-): TestableAuthProviderUserImportService {
-  return service as unknown as TestableAuthProviderUserImportService;
-}
 
 function createRolesCollection(initial: RoleItem[] = []) {
   const items = [...initial];
@@ -61,21 +37,20 @@ function createService(overrides: Partial<Record<string, jest.Mock>> = {}) {
     ...overrides,
   };
 
+  const directory = {
+    getUser: jest.fn(),
+    listUsers: jest.fn(),
+  };
   return {
     em,
-    service: new AuthProviderUserImportService(em as never),
+    directory,
+    service: new AuthProviderUserImportService(em as never, directory as never),
   };
 }
 
 describe('AuthProviderUserImportService', () => {
   it('maps Azure users to provider users', () => {
-    const { service } = createService();
-
-    const result = (
-      service as unknown as {
-        mapAzureUserToProviderUser: (value: unknown) => unknown;
-      }
-    ).mapAzureUserToProviderUser({
+    const result = mapAzureUserToProviderUser({
       id: 'azure-1',
       displayName: 'Ada Lovelace',
       givenName: 'Ada',
@@ -96,13 +71,7 @@ describe('AuthProviderUserImportService', () => {
   });
 
   it('maps Google users to provider users', () => {
-    const { service } = createService();
-
-    const result = (
-      service as unknown as {
-        mapGoogleUserToProviderUser: (value: unknown) => unknown;
-      }
-    ).mapGoogleUserToProviderUser({
+    const result = mapGoogleUserToProviderUser({
       id: 'google-1',
       primaryEmail: 'grace@example.com',
       name: {
@@ -124,13 +93,7 @@ describe('AuthProviderUserImportService', () => {
   });
 
   it('matches provider users by substring across name and email fields', () => {
-    const { service } = createService();
-    const matchesSearch = (
-      service as unknown as {
-        providerUserMatchesSearch: (value: unknown, search?: string) => boolean;
-      }
-    ).providerUserMatchesSearch;
-    const user = {
+    const user: ProviderUserDto = {
       provider: 'azure',
       id: 'bc106372-6994-4987-a7cc-c6c9010ca5a7',
       displayName: 'ISB - Kasse',
@@ -140,13 +103,13 @@ describe('AuthProviderUserImportService', () => {
       userPrincipalName: 'kasse@isb-solutions.de',
     };
 
-    expect(matchesSearch(user, 'kasse')).toBe(true);
-    expect(matchesSearch(user, 'solutions')).toBe(true);
-    expect(matchesSearch(user, 'no-match')).toBe(false);
+    expect(providerUserMatchesSearch(user, 'kasse')).toBe(true);
+    expect(providerUserMatchesSearch(user, 'solutions')).toBe(true);
+    expect(providerUserMatchesSearch(user, 'no-match')).toBe(false);
   });
 
   it('creates provider people and assigns selected roles', async () => {
-    const { em, service } = createService();
+    const { em, directory, service } = createService();
     const session = { accessToken: 'token' };
     const personType = { handle: 'azure' } as PersonTypeItem;
     const role = { handle: 7, title: 'Support' } as RoleItem;
@@ -164,16 +127,14 @@ describe('AuthProviderUserImportService', () => {
     });
     em.find.mockResolvedValue([role]);
     em.create.mockReturnValue(createdPerson);
-    jest
-      .spyOn(asTestableService(service), 'getAzureUserWithRetry')
-      .mockResolvedValue({
-        provider: 'azure',
-        id: 'azure-1',
-        displayName: 'Ada Lovelace',
-        firstName: 'Ada',
-        lastName: 'Lovelace',
-        email: 'ada@example.com',
-      });
+    directory.getUser.mockResolvedValue({
+      provider: 'azure',
+      id: 'azure-1',
+      displayName: 'Ada Lovelace',
+      firstName: 'Ada',
+      lastName: 'Lovelace',
+      email: 'ada@example.com',
+    });
 
     const result = await service.importProviderUsers(
       { handle: 1, type: { handle: 'azure' } } as PersonItem,
@@ -198,7 +159,7 @@ describe('AuthProviderUserImportService', () => {
   });
 
   it('updates existing provider people and keeps existing roles', async () => {
-    const { em, service } = createService();
+    const { em, directory, service } = createService();
     const session = { accessToken: 'token' };
     const personType = { handle: 'google' } as PersonTypeItem;
     const existingRole = { handle: 3, title: 'Sales' } as RoleItem;
@@ -221,16 +182,14 @@ describe('AuthProviderUserImportService', () => {
       return Promise.resolve(null);
     });
     em.find.mockResolvedValue([existingRole, newRole]);
-    jest
-      .spyOn(asTestableService(service), 'getGoogleUserWithRetry')
-      .mockResolvedValue({
-        provider: 'google',
-        id: 'google-1',
-        displayName: 'Grace Hopper',
-        firstName: 'Grace',
-        lastName: 'Hopper',
-        email: 'grace@example.com',
-      });
+    directory.getUser.mockResolvedValue({
+      provider: 'google',
+      id: 'google-1',
+      displayName: 'Grace Hopper',
+      firstName: 'Grace',
+      lastName: 'Hopper',
+      email: 'grace@example.com',
+    });
 
     const result = await service.importProviderUsers(
       { handle: 1, type: { handle: 'google' } } as PersonItem,
@@ -248,7 +207,7 @@ describe('AuthProviderUserImportService', () => {
   });
 
   it('assigns the selected company to imported people', async () => {
-    const { em, service } = createService();
+    const { em, directory, service } = createService();
     const session = { accessToken: 'token' };
     const personType = { handle: 'azure' } as PersonTypeItem;
     const role = { handle: 7, title: 'Support' } as RoleItem;
@@ -269,16 +228,14 @@ describe('AuthProviderUserImportService', () => {
     });
     em.find.mockResolvedValue([role]);
     em.create.mockReturnValue(createdPerson);
-    jest
-      .spyOn(asTestableService(service), 'getAzureUserWithRetry')
-      .mockResolvedValue({
-        provider: 'azure',
-        id: 'azure-1',
-        displayName: 'Ada Lovelace',
-        firstName: 'Ada',
-        lastName: 'Lovelace',
-        email: 'ada@example.com',
-      });
+    directory.getUser.mockResolvedValue({
+      provider: 'azure',
+      id: 'azure-1',
+      displayName: 'Ada Lovelace',
+      firstName: 'Ada',
+      lastName: 'Lovelace',
+      email: 'ada@example.com',
+    });
 
     await service.importProviderUsers(
       { handle: 1, type: { handle: 'azure' } } as PersonItem,
@@ -307,55 +264,5 @@ describe('AuthProviderUserImportService', () => {
         'azure',
       ),
     ).rejects.toBeInstanceOf(ForbiddenException);
-  });
-
-  it('retries transient Azure directory failures', async () => {
-    const { service } = createService();
-    const testService = asTestableService(service);
-    const transientError = Object.assign(new Error('fetch failed'), {
-      code: 'TypeError',
-    });
-    const listAzureUsers = jest
-      .spyOn(testService, 'listAzureUsers')
-      .mockRejectedValueOnce(transientError)
-      .mockResolvedValueOnce({ users: [], nextPageToken: null });
-    jest
-      .spyOn(testService, 'waitForProviderRetry')
-      .mockResolvedValue(undefined);
-
-    const result = await testService.listAzureUsersWithRetry(
-      { accessToken: 'token' } as PersonSessionItem,
-      {},
-    );
-
-    expect(result).toEqual({ users: [], nextPageToken: null });
-    expect(listAzureUsers).toHaveBeenCalledTimes(2);
-  });
-
-  it('returns a translated provider error after repeated Azure directory failures', async () => {
-    const { service } = createService();
-    const testService = asTestableService(service);
-    const transientError = Object.assign(new Error('fetch failed'), {
-      code: 'TypeError',
-    });
-    jest.spyOn(testService, 'listAzureUsers').mockRejectedValue(transientError);
-    jest
-      .spyOn(testService, 'waitForProviderRetry')
-      .mockResolvedValue(undefined);
-
-    await expect(
-      testService.listAzureUsersWithRetry(
-        { accessToken: 'token' } as PersonSessionItem,
-        {},
-      ),
-    ).rejects.toMatchObject({
-      message: 'providerUserImport.azureDirectoryUnavailable',
-    });
-    await expect(
-      testService.listAzureUsersWithRetry(
-        { accessToken: 'token' } as PersonSessionItem,
-        {},
-      ),
-    ).rejects.toBeInstanceOf(BadGatewayException);
   });
 });

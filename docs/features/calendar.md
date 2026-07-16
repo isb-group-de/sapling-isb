@@ -113,6 +113,12 @@ POST /api/google/events/import
 
 The Azure endpoint uses the signed-in user's stored Microsoft session (`PersonSessionItem`) and Microsoft Graph calendar view. Returned Outlook items are matched by `EventAzureItem.referenceHandle`. The Google endpoint uses the signed-in user's stored Google session and Google Calendar events list. Returned Google items are matched by `EventGoogleItem.referenceHandle`.
 
+The provider services own network calls, token refresh, orchestration, and
+persistence. `azure-calendar.utils.ts` and `google-calendar.utils.ts` keep each
+provider's response normalization and outbound event mapping explicit and
+independently testable; they intentionally do not force unlike provider payloads
+through one shared abstraction.
+
 Existing Sapling events are updated and unknown provider items are created as internal scheduled events for the current user. Known attendee email addresses are linked as participants when matching `PersonItem` records exist. The current user is always added as a participant so imported events appear in their calendar filter.
 
 Outlook events whose Microsoft Graph `sensitivity` is `private` are imported with `EventItem.isPrivate = true`. Sapling still stores the full event details for the importing owner, but generic Event reads, exports, relation mutations, updates, deletes, KPIs, and timeline anchor loads must only expose private events when `creatorPerson` is the current user. Non-private events keep the normal Event permission behavior.

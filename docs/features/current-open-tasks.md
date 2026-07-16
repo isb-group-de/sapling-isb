@@ -7,6 +7,8 @@ The current-user layer provides the authenticated profile, resolved permissions,
 ```text
 backend/src/api/current/current.controller.ts
 backend/src/api/current/current.service.ts
+backend/src/api/current/current-open-task.service.ts
+backend/src/api/current/current-starter-workspace.service.ts
 backend/src/api/current/current-metadata.service.ts
 backend/src/api/current/open-task-events.service.ts
 backend/src/api/current/dto/
@@ -39,7 +41,9 @@ All `/api/current/*` endpoints require `SessionOrBearerAuthGuard`.
 
 ## Starter Workspace
 
-`CurrentService.getPerson()` calls `ensureStarterWorkspace()` before returning the profile.
+`CurrentService.getPersonWithStarterWorkspace()` delegates idempotent provisioning to
+`CurrentStarterWorkspaceService` before returning the profile. Plain `getPerson()` only
+reloads the current user and stays free of provisioning side effects.
 
 If the person has role starter templates and no personal data yet:
 
@@ -62,7 +66,8 @@ This makes first login setup data-driven through role seed files rather than har
 | `notifications` | Unread inbox notifications |
 | `count` | Sum of all snapshot collections |
 
-Current open filters are implemented in `CurrentService`:
+Current open queries, filters, and snapshot composition are implemented in
+`CurrentOpenTaskService`; `CurrentService` keeps compatibility delegates for its public API:
 
 ```text
 buildOpenTicketWhere()
@@ -118,7 +123,7 @@ The SSE stream is process-local. In multi-instance deployments, open-task notifi
 
 When adding an entity to open tasks:
 
-1. Add a query method to `CurrentService`.
+1. Add a query method to `CurrentOpenTaskService` and, when needed for compatibility, a delegate to `CurrentService`.
 2. Add the collection to `OpenTaskSnapshot`.
 3. Add it to `getOpenTaskSnapshot()` count calculation.
 4. Add frontend snapshot typing in `useOpenTaskCountEvents.ts`.

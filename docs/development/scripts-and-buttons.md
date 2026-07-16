@@ -37,6 +37,11 @@ Script buttons are loaded like normal generic data and displayed in table and ca
 
 `ScriptService` resolves entity scripts by convention:
 
+The facade owns dynamic controller discovery plus client/server lifecycle
+execution. `ScriptSubscriptionService` owns webhook, Teams, and inbox
+subscription delivery, including recipient population and detached webhook
+scheduling; lifecycle method names live in `script.types.ts`.
+
 ```text
 entity handle: ticket
 controller:    backend/src/script/TicketController.ts
@@ -166,6 +171,10 @@ Use this pattern when the action should stay reusable across entities:
 
 The generic runner checks source read permission and target insert permission.
 It deliberately removes obvious secret fields from the prompt payload.
+`AiEntityGenerationService` owns template lookup, permission checks, provider
+dispatch, and persistence. `AiEntityGenerationPayloadBuilder` owns the pure
+prompt/JSON/payload transformations so mappings and redaction can evolve without
+expanding the orchestration service.
 
 ## Adding A Server Hook
 

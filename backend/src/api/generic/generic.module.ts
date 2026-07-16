@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { GenericController } from './generic.controller';
+import { GenericImportController } from './generic-import.controller';
 import { GlobalSearchController } from './global-search.controller';
 import { GlobalSearchService } from './global-search.service';
 import { GenericFilterService } from './generic-filter.service';
@@ -57,7 +58,11 @@ import { MailModule } from '../mail/mail.module';
     OpenTaskEventsModule,
     MailModule,
   ],
-  controllers: [GenericController, GlobalSearchController],
+  controllers: [
+    GenericController,
+    GenericImportController,
+    GlobalSearchController,
+  ],
   providers: [
     GenericService,
     GlobalSearchService,

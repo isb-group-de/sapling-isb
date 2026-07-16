@@ -208,6 +208,10 @@ Teams messages are usually triggered by server scripts. `ScriptService.runSubscr
 
 `TeamsService` then:
 
+The service now owns subscription/template preparation and delivery queueing.
+`TeamsGraphDeliveryService` owns Graph chat/message transport, Azure access
+token refresh, authentication retry, and delivery status persistence.
+
 1. Loads the subscription, entity, type, and template.
 2. Builds message context for each payload item.
 3. Resolves `recipientField` to a `PersonItem`.

@@ -16,6 +16,8 @@ backend/src/api/ai/ai-chat-stream.service.ts
 backend/src/api/ai/ai-chat-tool-action.service.ts
 backend/src/api/ai/ai-chat-runtime.service.ts
 backend/src/api/ai/ai.controller.ts
+backend/src/api/ai/ai-media.controller.ts
+backend/src/api/ai/ai-agent.controller.ts
 backend/src/api/ai/mcp.service.ts
 backend/src/api/ai/sapling-mcp.service.ts
 backend/src/api/ai/sapling-mcp-transport.service.ts
@@ -36,6 +38,7 @@ backend/src/api/ai/ai-vector-content.utils.ts
 backend/src/api/ai/ai-vector.utils.ts
 backend/src/api/ai/prompts/
 frontend/src/components/system/ai-chat/
+frontend/src/services/api.ai.types.ts
 frontend/src/components/system/SaplingVectorizationDialog.vue
 ```
 

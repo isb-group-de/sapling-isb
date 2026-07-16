@@ -1,0 +1,154 @@
+import { computed, nextTick, ref, type ComputedRef, type Ref } from 'vue'
+import type { EntityItem, SaplingGenericItem } from '@/entity/entity'
+import type { DialogSaveAction, DialogState } from '@/entity/structure'
+import ApiGenericService from '@/services/api.generic.service'
+import { isFormValid } from './saplingDialogEdit.utils'
+import type { SaplingDialogEditEmit, VuetifyFormRef } from './saplingDialogEdit.types'
+
+export function useSaplingDialogEditActions({
+  mode,
+  entity,
+  isDirty,
+  formRef,
+  activeTab,
+  emit,
+  buildSavePayload,
+  syncInitialFormSnapshot,
+  resetRelationSelections,
+  initializeFormWithParentContext,
+}: {
+  mode: ComputedRef<DialogState>
+  entity: ComputedRef<EntityItem | null>
+  isDirty: ComputedRef<boolean>
+  formRef: Ref<VuetifyFormRef | null>
+  activeTab: Ref<number>
+  emit: SaplingDialogEditEmit
+  buildSavePayload: () => SaplingGenericItem
+  syncInitialFormSnapshot: () => void
+  resetRelationSelections: () => void
+  initializeFormWithParentContext: () => void
+}) {
+  const pendingSaveAction = ref<DialogSaveAction | null>(null)
+  const unsavedChangesDialog = ref(false)
+  const isSaving = computed(() => pendingSaveAction.value !== null)
+
+  function completeSave(action?: DialogSaveAction): void {
+    if (!action || pendingSaveAction.value === action) {
+      pendingSaveAction.value = null
+    }
+  }
+
+  async function waitForUiPaint(): Promise<void> {
+    await nextTick()
+    if (typeof window === 'undefined' || typeof window.requestAnimationFrame !== 'function') return
+
+    await new Promise<void>((resolve) => {
+      window.requestAnimationFrame(() => window.setTimeout(resolve, 0))
+    })
+  }
+
+  async function onDuplicateSelect(item: SaplingGenericItem): Promise<void> {
+    if (!item || item.handle == null) return
+
+    const fullItemResult = await ApiGenericService.find<SaplingGenericItem>(
+      entity.value?.handle ?? '',
+      {
+        filter: { handle: item.handle },
+        limit: 1,
+        relations: ['m:1'],
+      },
+    )
+    emit('update:mode', 'edit')
+    emit('update:modelValue', true)
+    emit('update:item', fullItemResult.data[0] ?? null)
+  }
+
+  async function prepareSubmit(action: DialogSaveAction): Promise<SaplingGenericItem | null> {
+    if (!isDirty.value || isSaving.value) return null
+
+    pendingSaveAction.value = action
+    await waitForUiPaint()
+    const result = await formRef.value?.validate()
+    if (!isFormValid(result)) {
+      completeSave(action)
+      return null
+    }
+    return buildSavePayload()
+  }
+
+  function emitSave(output: SaplingGenericItem, action: DialogSaveAction): void {
+    emit('save', output, action, {
+      complete: (didSave = true) => {
+        completeSave(action)
+        if (didSave) syncInitialFormSnapshot()
+      },
+    })
+  }
+
+  async function saveWithAction(action: DialogSaveAction): Promise<void> {
+    if (!isDirty.value) return
+    const output = await prepareSubmit(action)
+    if (output) emitSave(output, action)
+  }
+
+  function resetForm(): void {
+    if (!isDirty.value) return
+    resetRelationSelections()
+    activeTab.value = 0
+    initializeFormWithParentContext()
+    void nextTick(() => formRef.value?.resetValidation?.())
+  }
+
+  function closeDialog(): void {
+    pendingSaveAction.value = null
+    unsavedChangesDialog.value = false
+    emit('update:modelValue', false)
+    emit('cancel')
+  }
+
+  function cancel(): void {
+    if (mode.value !== 'readonly' && isDirty.value && !isSaving.value) {
+      unsavedChangesDialog.value = true
+      return
+    }
+    closeDialog()
+  }
+
+  function handleDialogUpdate(value: boolean): void {
+    if (value) {
+      emit('update:modelValue', true)
+      return
+    }
+    cancel()
+  }
+
+  function keepEditing(): void {
+    unsavedChangesDialog.value = false
+  }
+
+  function discardChanges(): void {
+    resetForm()
+    closeDialog()
+  }
+
+  async function saveChangesAndClose(): Promise<void> {
+    unsavedChangesDialog.value = false
+    await saveWithAction('saveAndClose')
+  }
+
+  return {
+    pendingSaveAction,
+    unsavedChangesDialog,
+    isSaving,
+    completeSave,
+    onDuplicateSelect,
+    handleDialogUpdate,
+    cancel,
+    keepEditing,
+    discardChanges,
+    saveChangesAndClose,
+    resetForm,
+    save: () => saveWithAction('save'),
+    saveAndClose: () => saveWithAction('saveAndClose'),
+  }
+}

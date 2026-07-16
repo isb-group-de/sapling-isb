@@ -7,7 +7,9 @@ import {
 import { PassportModule } from '@nestjs/passport';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthController } from './auth.controller';
+import { AuthAdministrationController } from './auth-administration.controller';
 import { AuthProviderUserImportService } from './auth-provider-user-import.service';
+import { AuthProviderDirectoryService } from './auth-provider-directory.service';
 import { AuthService } from './auth.service';
 import { AuthPasskeyService } from './auth-passkey.service';
 import { SessionSerializer } from '../session/session.serializer';
@@ -52,9 +54,10 @@ const loginLimiter = rateLimit({
       session: true,
     }),
   ],
-  controllers: [AuthController],
+  controllers: [AuthController, AuthAdministrationController],
   providers: [
     AuthService,
+    AuthProviderDirectoryService,
     AuthProviderUserImportService,
     AuthPasskeyService,
     LocalStrategy,

@@ -341,74 +341,14 @@
                 </v-window-item>
 
                 <v-window-item value="sessions" class="sapling-account-center__panel">
-                  <section class="sapling-account-dialog__panel-stack">
-                    <div class="sapling-account-dialog__section-heading">
-                      <v-icon color="primary">mdi-devices</v-icon>
-                      <span>{{ $t('account.activeSessions') }}</span>
-                    </div>
-                    <div class="sapling-account-dialog__session-actions">
-                      <v-btn
-                        color="primary"
-                        variant="tonal"
-                        prepend-icon="mdi-refresh"
-                        :loading="isSessionsLoading"
-                        @click="loadCurrentSessions"
-                      >
-                        {{ $t('global.refresh') }}
-                      </v-btn>
-                      <v-btn
-                        color="error"
-                        variant="tonal"
-                        prepend-icon="mdi-logout-variant"
-                        :loading="isSessionsTerminating"
-                        @click="terminateOtherSessions"
-                      >
-                        {{ $t('account.terminateOtherSessions') }}
-                      </v-btn>
-                    </div>
-                    <v-list
-                      v-if="currentSessions.length > 0"
-                      density="comfortable"
-                      class="sapling-account-dialog__session-list"
-                    >
-                      <v-list-item v-for="session in currentSessions" :key="session.id">
-                        <div class="sapling-account-dialog__session-row">
-                          <v-icon color="primary">mdi-web</v-icon>
-                          <div class="sapling-account-dialog__session-main">
-                            <div class="sapling-account-dialog__session-title">
-                              <span>{{ session.deviceLabel }}</span>
-                              <v-chip
-                                v-if="session.isCurrent"
-                                color="primary"
-                                size="small"
-                                variant="tonal"
-                              >
-                                {{ $t('account.currentSession') }}
-                              </v-chip>
-                            </div>
-                            <div class="sapling-account-dialog__session-meta">
-                              <span>{{ session.id }}</span>
-                              <span>
-                                {{ $t('account.signedInAt') }}:
-                                {{ formatDateTime(session.createdAt) }}
-                              </span>
-                              <span>
-                                {{ $t('account.lastActivityAt') }}:
-                                {{ formatDateTime(session.lastActivityAt) }}
-                              </span>
-                              <span>
-                                {{ $t('account.expiresAt') }}:
-                                {{ formatDateTime(session.expiresAt) }}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </v-list-item>
-                    </v-list>
-                    <div v-else class="sapling-account-dialog__sync-unavailable">
-                      {{ $t('account.noActiveSessions') }}
-                    </div>
-                  </section>
+                  <SaplingAccountSessionPanel
+                    :sessions="currentSessions"
+                    :loading="isSessionsLoading"
+                    :terminating="isSessionsTerminating"
+                    :format-date-time="formatDateTime"
+                    @refresh="loadCurrentSessions"
+                    @terminate="terminateOtherSessions"
+                  />
                 </v-window-item>
 
                 <v-window-item value="preferences" class="sapling-account-center__panel">
@@ -463,65 +403,24 @@
                 </v-window-item>
 
                 <v-window-item value="songbird" class="sapling-account-center__panel">
-                  <section class="sapling-account-dialog__panel-stack">
-                    <div class="sapling-account-dialog__section-heading">
-                      <v-icon color="primary">mdi-creation-outline</v-icon>
-                      <span>{{ $t('account.songbird') }}</span>
-                    </div>
-                    <div class="sapling-account-dialog__ai-grid">
-                      <SaplingStaticSelect
-                        :model-value="aiPreferences.chatProviderHandle"
-                        :loading="isAiPreferencesLoading"
-                        :items="aiProviderOptions"
-                        :label="$t('aiChat.provider')"
-                        @update:model-value="updateAiProvider"
-                      />
-                      <SaplingStaticSelect
-                        :model-value="aiPreferences.chatModelHandle"
-                        :loading="isAiPreferencesLoading"
-                        :items="aiModelOptions"
-                        :label="$t('aiChat.model')"
-                        @update:model-value="updateAiModel"
-                      />
-                      <SaplingStaticSelect
-                        :model-value="aiPreferences.transcriptionProviderHandle"
-                        :loading="isAiPreferencesLoading"
-                        :items="transcriptionProviderOptions"
-                        :label="$t('aiChat.voiceProvider')"
-                        @update:model-value="updateTranscriptionProvider"
-                      />
-                      <SaplingStaticSelect
-                        :model-value="aiPreferences.transcriptionModelHandle"
-                        :loading="isAiPreferencesLoading"
-                        :items="transcriptionModelOptions"
-                        :label="$t('aiChat.voiceModel')"
-                        @update:model-value="updateTranscriptionModel"
-                      />
-                      <SaplingStaticSelect
-                        :model-value="aiPreferences.speechProviderHandle"
-                        :loading="isAiPreferencesLoading"
-                        :items="speechProviderOptions"
-                        :label="$t('aiChat.voiceOutputProvider')"
-                        @update:model-value="updateSpeechProvider"
-                      />
-                      <SaplingStaticSelect
-                        :model-value="aiPreferences.speechModelHandle"
-                        :loading="isAiPreferencesLoading"
-                        :items="speechModelOptions"
-                        :label="$t('aiChat.voiceOutputModel')"
-                        @update:model-value="updateSpeechModel"
-                      />
-                    </div>
-                    <v-btn
-                      color="primary"
-                      variant="flat"
-                      prepend-icon="mdi-content-save-outline"
-                      :loading="isAiPreferencesSaving"
-                      @click="saveAiPreferenceSelection"
-                    >
-                      {{ $t('account.saveSongbird') }}
-                    </v-btn>
-                  </section>
+                  <SaplingAccountSongbirdPanel
+                    :preferences="aiPreferences"
+                    :loading="isAiPreferencesLoading"
+                    :saving="isAiPreferencesSaving"
+                    :ai-provider-options="aiProviderOptions"
+                    :ai-model-options="aiModelOptions"
+                    :transcription-provider-options="transcriptionProviderOptions"
+                    :transcription-model-options="transcriptionModelOptions"
+                    :speech-provider-options="speechProviderOptions"
+                    :speech-model-options="speechModelOptions"
+                    @update-ai-provider="updateAiProvider"
+                    @update-ai-model="updateAiModel"
+                    @update-transcription-provider="updateTranscriptionProvider"
+                    @update-transcription-model="updateTranscriptionModel"
+                    @update-speech-provider="updateSpeechProvider"
+                    @update-speech-model="updateSpeechModel"
+                    @save="saveAiPreferenceSelection"
+                  />
                 </v-window-item>
               </v-window>
             </div>
@@ -557,6 +456,8 @@ import { useSaplingAccount, type AccountTab } from '@/composables/account/useSap
 import { openContextHelpArticle } from '@/composables/knowledge/useSaplingContextHelp'
 import SaplingChangePassword from '@/components/account/SaplingChangePassword.vue'
 import SaplingPasskeyManager from '@/components/account/SaplingPasskeyManager.vue'
+import SaplingAccountSessionPanel from '@/components/account/SaplingAccountSessionPanel.vue'
+import SaplingAccountSongbirdPanel from '@/components/account/SaplingAccountSongbirdPanel.vue'
 import SaplingActionAccount from '@/components/actions/SaplingActionAccount.vue'
 import SaplingActionBarSkeleton from '@/components/actions/SaplingActionBarSkeleton.vue'
 import SaplingDialogCard from '@/components/dialog/SaplingDialogCard.vue'

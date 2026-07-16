@@ -167,6 +167,12 @@ appended to entity template metadata as fields named `customFields.<fieldKey>`,
 and read responses include both a nested `customFields` object and flattened
 preview values for generated tables.
 
+`GenericCustomFieldService` owns definition lookup, persistence, hydration, and
+filter orchestration. Template projection lives in the custom-field template
+factory; type-aware normalization and value-column encoding/decoding live in
+`CustomFieldValueCodec`. Extend those focused collaborators when adding field
+types instead of growing the generic facade.
+
 Supported first-pass custom field types are seeded as reference records in
 `customFieldType`:
 
@@ -232,6 +238,11 @@ The timeline aggregates activity around a record and directly related entities.
 ## Downloads
 
 The generic controller also supports downloads/exports where enabled by implementation and configuration. Respect `GENERIC_DOWNLOAD_LIMIT` from backend environment config.
+
+Parsed-row imports use the same `/api/generic/:entityHandle/import` route but
+live in `GenericImportController`. This keeps the admin permission boundary and
+import contract separate from the general CRUD/timeline controller while both
+continue to delegate entity behavior to `GenericService`.
 
 ## Permissions
 

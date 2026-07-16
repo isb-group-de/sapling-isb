@@ -3,7 +3,7 @@ import { useI18n } from 'vue-i18n'
 import { useTranslationLoader } from '@/composables/generic/useTranslationLoader'
 import type { SaplingGenericItem } from '@/entity/entity'
 import type { ColumnFilterItem, ColumnFilterOperator, EntityTemplate } from '@/entity/structure'
-import { normalizeTableColumnTemplate, type TableColumnLike } from './useSaplingTableFilterHelpers'
+import { normalizeTableColumnTemplate } from './useSaplingTableFilterHelpers'
 import { useGenericStore } from '@/stores/genericStore'
 import { getEntityValueLabel } from '@/utils/saplingTableUtil'
 import ApiGenericService from '@/services/api.generic.service'
@@ -15,36 +15,28 @@ import {
   isRangeTemplate,
   isTimeTemplate,
 } from '@/utils/saplingTableUtil'
+import type {
+  SaplingTableColumnFilterEmit,
+  SaplingTableColumnFilterProps,
+  SaplingTableFilterInputKind as InputKind,
+  SaplingTableFilterVariant as FilterVariant,
+} from './saplingTableColumnFilter.types'
+import {
+  buildReferenceLookupFilter,
+  createEmptyFilterState,
+  createFilterState,
+  formatFilterSummaryValue,
+  getDefaultRangeEndOperator,
+  getOperatorDescription,
+  getRelationLookupKey,
+  getTranslatedRelationIdentifier,
+  isAllowedOperator,
+  isTokenFilterValue,
+  isValueLessOperator,
+  shouldResolveRelationItem,
+} from './saplingTableColumnFilter.utils'
 
-type InputKind =
-  | 'boolean'
-  | 'color'
-  | 'icon'
-  | 'money'
-  | 'percent'
-  | 'phone'
-  | 'mail'
-  | 'link'
-  | 'date'
-  | 'datetime'
-  | 'time'
-  | 'number'
-  | 'text'
-
-type FilterVariant = 'boolean' | 'icon' | 'relation' | 'range' | 'single'
-
-export interface SaplingTableColumnFilterProps {
-  column: TableColumnLike
-  filterItem?: ColumnFilterItem | null
-  title: string
-  operatorOptions: Array<{ label: string; value: ColumnFilterOperator }>
-  sortIcon: unknown
-  loading?: boolean
-}
-
-type SaplingTableColumnFilterEmit = {
-  (event: 'update:filter', value: ColumnFilterItem | null): void
-}
+export type { SaplingTableColumnFilterProps } from './saplingTableColumnFilter.types'
 
 const TABLE_FILTER_INPUT_DEBOUNCE_MS = 250
 
@@ -585,293 +577,4 @@ export function useSaplingTableColumnFilter(
     updateRelationItems,
     updateSingleValue,
   }
-}
-
-function createFilterState(
-  filterItem: ColumnFilterItem | null | undefined,
-  fallbackOperator: ColumnFilterOperator,
-): ColumnFilterItem {
-  return {
-    operator: filterItem?.operator ?? fallbackOperator,
-    value: filterItem?.value ?? '',
-    rangeStart: filterItem?.rangeStart ?? '',
-    rangeEnd: filterItem?.rangeEnd ?? '',
-    rangeStartOperator: filterItem?.rangeStartOperator,
-    rangeEndOperator: filterItem?.rangeEndOperator,
-    relationItems: filterItem?.relationItems?.map((item) => ({ ...item })) ?? [],
-  }
-}
-
-function createEmptyFilterState(operator: ColumnFilterOperator): ColumnFilterItem {
-  return {
-    operator,
-    value: '',
-    rangeStart: '',
-    rangeEnd: '',
-    rangeStartOperator: undefined,
-    rangeEndOperator: undefined,
-    relationItems: [],
-  }
-}
-
-function getOperatorDescription(
-  operator: ColumnFilterOperator,
-  t: (key: string, values?: Record<string, unknown>) => string,
-) {
-  switch (operator) {
-    case 'like':
-      return t('filter.contains')
-    case 'startsWith':
-      return t('filter.startsWith')
-    case 'endsWith':
-      return t('filter.endsWith')
-    case 'eq':
-      return t('filter.isEqual')
-    case 'between':
-      return t('filter.isBetween')
-    case 'gt':
-      return t('filter.isGreaterThan')
-    case 'gte':
-      return t('filter.isGreaterThanOrEqualTo')
-    case 'lt':
-      return t('filter.isLessThan')
-    case 'lte':
-      return t('filter.isLessThanOrEqualTo')
-    case 'nin':
-      return t('filter.isNotIn')
-    case 'isSet':
-      return t('filter.hasValue')
-    case 'isEmpty':
-      return t('filter.isEmpty')
-    default:
-      return operator
-  }
-}
-
-function isAllowedOperator(
-  operatorOptions: Array<{ label: string; value: ColumnFilterOperator }>,
-  operator: ColumnFilterOperator,
-) {
-  return operatorOptions.some((option) => option.value === operator)
-}
-
-function formatFilterSummaryValue(
-  value: string,
-  t: (key: string, values?: Record<string, unknown>) => string,
-) {
-  const tokenPath = extractDynamicFilterTokenPath(value)
-  return tokenPath ? translateDynamicFilterTokenPath(tokenPath, t) : value
-}
-
-function isTokenFilterValue(value: string) {
-  return /^\{\{\s*[^}]+?\s*\}\}$/.test(value.trim())
-}
-
-function isValueLessOperator(operator: ColumnFilterOperator) {
-  return operator === 'isSet' || operator === 'isEmpty'
-}
-
-function getDefaultRangeEndOperator(inputKind: InputKind): 'lt' | 'lte' {
-  return ['date', 'datetime', 'time'].includes(inputKind) ? 'lt' : 'lte'
-}
-
-function extractDynamicFilterTokenPath(value: string) {
-  const tokenMatch = value.trim().match(/^\{\{\s*([^}]+?)\s*\}\}$/)
-  return tokenMatch?.[1]?.trim() ?? null
-}
-
-function translateDynamicFilterTokenPath(
-  tokenPath: string,
-  t: (key: string, values?: Record<string, unknown>) => string,
-) {
-  switch (tokenPath) {
-    case 'today.start':
-      return t('filter.todayStart')
-    case 'tomorrow.start':
-      return t('filter.tomorrowStart')
-    case 'dayAfterTomorrow.start':
-      return t('filter.dayAfterTomorrowStart')
-    case 'week.start':
-      return t('filter.weekStart')
-    case 'week.end':
-      return t('filter.weekEnd')
-    case 'month.start':
-      return t('filter.monthStart')
-    case 'month.end':
-      return t('filter.monthEnd')
-    case 'now':
-      return t('filter.now')
-    default:
-      return translateScopedDynamicFilterToken(tokenPath, t)
-  }
-}
-
-function translateScopedDynamicFilterToken(
-  tokenPath: string,
-  t: (key: string, values?: Record<string, unknown>) => string,
-) {
-  if (tokenPath.startsWith('currentUser.company.')) {
-    return formatScopedDynamicFilterToken(
-      'filter.currentCompany',
-      'company',
-      tokenPath.slice('currentUser.company.'.length),
-      t,
-    )
-  }
-
-  if (tokenPath.startsWith('currentCompany.')) {
-    return formatScopedDynamicFilterToken(
-      'filter.currentCompany',
-      'company',
-      tokenPath.slice('currentCompany.'.length),
-      t,
-    )
-  }
-
-  if (tokenPath.startsWith('currentUser.')) {
-    return formatScopedDynamicFilterToken(
-      'filter.currentUser',
-      'person',
-      tokenPath.slice('currentUser.'.length),
-      t,
-    )
-  }
-
-  if (tokenPath.startsWith('currentPerson.')) {
-    return formatScopedDynamicFilterToken(
-      'filter.currentUser',
-      'person',
-      tokenPath.slice('currentPerson.'.length),
-      t,
-    )
-  }
-
-  return tokenPath
-}
-
-function formatScopedDynamicFilterToken(
-  scopeKey: string,
-  entityKey: string,
-  propertyKey: string,
-  t: (key: string, values?: Record<string, unknown>) => string,
-) {
-  if (!propertyKey.trim()) {
-    return t(scopeKey)
-  }
-
-  return `${t(scopeKey)}: ${t(`${entityKey}.${propertyKey}`)}`
-}
-
-function getTranslatedRelationIdentifier(
-  item: SaplingGenericItem,
-  identifierKeys: string[],
-  t: (key: string, values?: Record<string, unknown>) => string,
-) {
-  const translatedValues = identifierKeys
-    .map((key) => item?.[key])
-    .filter((value): value is string => typeof value === 'string')
-    .map((value) => {
-      const tokenPath = extractDynamicFilterTokenPath(value)
-      return tokenPath ? translateDynamicFilterTokenPath(tokenPath, t) : ''
-    })
-    .filter(Boolean)
-
-  return translatedValues[0] ?? ''
-}
-
-function shouldResolveRelationItem(
-  item: SaplingGenericItem,
-  identifierKeys: string[],
-  referenceTemplates: EntityTemplate[],
-) {
-  const hasTranslatableValueField = referenceTemplates
-    .filter((template) => template.options?.includes('isValue'))
-    .some((template) => {
-      const value = item?.[template.name]
-      return (
-        (typeof value === 'string' && value.trim().length > 0) ||
-        typeof value === 'number' ||
-        typeof value === 'boolean'
-      )
-    })
-
-  if (hasTranslatableValueField) {
-    return false
-  }
-
-  return identifierKeys.some((key) => {
-    const value = item?.[key]
-    return (
-      (typeof value === 'string' && value.trim().length > 0 && !isTokenFilterValue(value)) ||
-      typeof value === 'number' ||
-      typeof value === 'boolean'
-    )
-  })
-}
-
-function buildReferenceLookupFilter(items: SaplingGenericItem[], identifierKeys: string[]) {
-  const relationIdentifiers = items
-    .map((item) => buildRelationIdentifier(item, identifierKeys))
-    .filter(
-      (identifier): identifier is Record<string, string | number | boolean> => identifier !== null,
-    )
-
-  if (relationIdentifiers.length === 0) {
-    return null
-  }
-
-  if (identifierKeys.length === 1) {
-    const identifierKey = identifierKeys[0]
-    const values = relationIdentifiers
-      .map((identifier) => identifier[identifierKey])
-      .filter((value): value is string | number | boolean => typeof value !== 'undefined')
-
-    if (values.length === 0) {
-      return null
-    }
-
-    if (values.length === 1) {
-      return { [identifierKey]: values[0] }
-    }
-
-    return { [identifierKey]: { $in: values } }
-  }
-
-  if (relationIdentifiers.length === 1) {
-    return relationIdentifiers[0]
-  }
-
-  return {
-    $or: relationIdentifiers,
-  }
-}
-
-function buildRelationIdentifier(item: SaplingGenericItem, identifierKeys: string[]) {
-  const identifier: Record<string, string | number | boolean> = {}
-
-  for (const key of identifierKeys) {
-    const value = item?.[key]
-    if (typeof value === 'string') {
-      if (!value.trim() || isTokenFilterValue(value)) {
-        return null
-      }
-
-      identifier[key] = value
-      continue
-    }
-
-    if (typeof value === 'number' || typeof value === 'boolean') {
-      identifier[key] = value
-      continue
-    }
-
-    return null
-  }
-
-  return identifier
-}
-
-function getRelationLookupKey(item: SaplingGenericItem, identifierKeys: string[]) {
-  const identifier = buildRelationIdentifier(item, identifierKeys)
-  return identifier ? JSON.stringify(identifier) : null
 }

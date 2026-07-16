@@ -1,5 +1,5 @@
 import { describe, expect, it, jest } from '@jest/globals';
-import { TeamsService } from './teams.service';
+import { TeamsGraphDeliveryService } from './teams-graph-delivery.service';
 
 type TeamsDeliveryTestDouble = {
   handle: number;
@@ -28,7 +28,7 @@ type TeamsDeliveryTestDouble = {
   providerMessageId?: string;
 };
 
-describe('TeamsService', () => {
+describe('TeamsGraphDeliveryService', () => {
   it('retries with a refreshed token after a graph authentication error', async () => {
     const flush = jest.fn<() => Promise<void>>().mockResolvedValue();
     const delivery: TeamsDeliveryTestDouble = {
@@ -56,11 +56,7 @@ describe('TeamsService', () => {
       fork: jest.fn(() => fork),
     };
 
-    const service = new TeamsService(
-      em as never,
-      {} as never,
-      { add: jest.fn() } as never,
-    );
+    const service = new TeamsGraphDeliveryService(em as never);
 
     const sendTeamsMessage = jest.fn<(...args: any[]) => Promise<unknown>>();
     sendTeamsMessage
@@ -157,11 +153,7 @@ describe('TeamsService', () => {
       fork: jest.fn(() => fork),
     };
 
-    const service = new TeamsService(
-      em as never,
-      {} as never,
-      { add: jest.fn() } as never,
-    );
+    const service = new TeamsGraphDeliveryService(em as never);
 
     const providerError = {
       statusCode: 500,

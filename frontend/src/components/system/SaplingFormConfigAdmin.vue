@@ -72,95 +72,23 @@
       <SaplingSurface
         class="sapling-panel-shell sapling-section-panel sapling-config-panel sapling-config-panel--blurred sapling-form-config__panel sapling-form-config__panel--editor"
       >
-        <div class="sapling-config-toolbar sapling-form-config__toolbar">
-          <v-autocomplete
-            v-model="selectedEntityHandle"
-            class="sapling-form-config__entity-select"
-            :items="entityOptions"
-            item-title="title"
-            item-value="value"
-            prepend-inner-icon="mdi-table"
-            density="comfortable"
-            hide-details
-            :label="$t('formConfig.entity')"
-            :loading="isLoadingEntities"
-          />
-          <v-select
-            v-model="selectedConfigHandle"
-            class="sapling-form-config__config-select"
-            :items="configOptions"
-            item-title="title"
-            item-value="value"
-            prepend-inner-icon="mdi-tune-variant"
-            density="comfortable"
-            hide-details
-            :label="$t('formConfig.configuration')"
-            :disabled="!selectedEntityHandle"
-          />
-          <v-btn
-            icon="mdi-plus"
-            variant="tonal"
-            :title="$t('formConfig.newConfig')"
-            :disabled="!selectedEntityHandle"
-            @click="startNewConfig"
-          />
-        </div>
-
-        <div class="sapling-config-settings sapling-form-config__settings">
-          <v-text-field
-            v-model="configName"
-            density="comfortable"
-            :label="$t('formConfig.name')"
-            prepend-inner-icon="mdi-label-outline"
-          />
-          <v-select
-            v-model="configScope"
-            density="comfortable"
-            :items="scopeOptions"
-            item-title="title"
-            item-value="value"
-            :label="$t('formConfig.scope')"
-            prepend-inner-icon="mdi-account-filter-outline"
-          />
-          <div class="sapling-form-config__scope-handle">
-            <SaplingFieldSingleSelect
-              v-if="scopeSelectEntityHandle"
-              :key="scopeSelectKey"
-              :model-value="selectedScopeItem"
-              :label="$t('formConfig.scopeHandle')"
-              :entity-handle="scopeSelectEntityHandle"
-              :placeholder="scopeHandle"
-              density="comfortable"
-              hide-details
-              @update:model-value="onScopeItemUpdate"
-            />
-            <v-text-field
-              v-else
-              v-model="scopeHandle"
-              density="comfortable"
-              hide-details
-              :label="$t('formConfig.scopeHandle')"
-              prepend-inner-icon="mdi-pound"
-              disabled
-            />
-          </div>
-          <div class="sapling-row-md sapling-config-switches sapling-form-config__switches">
-            <v-switch
-              v-model="isActive"
-              color="primary"
-              hide-details
-              density="compact"
-              :label="$t('formConfig.active')"
-            />
-            <v-switch
-              v-model="isDefault"
-              color="primary"
-              hide-details
-              density="compact"
-              :label="$t('formConfig.defaultConfig')"
-            />
-          </div>
-        </div>
+        <SaplingFormConfigContextControls
+          v-model:selected-entity-handle="selectedEntityHandle"
+          v-model:selected-config-handle="selectedConfigHandle"
+          v-model:config-name="configName"
+          v-model:config-scope="configScope"
+          v-model:scope-handle="scopeHandle"
+          v-model:selected-scope-item="selectedScopeItem"
+          v-model:is-active="isActive"
+          v-model:is-default="isDefault"
+          :entity-options="entityOptions"
+          :config-options="configOptions"
+          :scope-options="scopeOptions"
+          :scope-select-entity-handle="scopeSelectEntityHandle"
+          :scope-select-key="scopeSelectKey"
+          :loading-entities="isLoadingEntities"
+          @start-new="startNewConfig"
+        />
 
         <SaplingFormConfigSummary
           :form-visible-count="formVisibleCount"
@@ -207,14 +135,10 @@ import ApiGenericService from '@/services/api.generic.service'
 import ApiTemplateService from '@/services/api.template.service'
 import TranslationService from '@/services/translation.service'
 import type { EntityItem, SaplingGenericItem } from '@/entity/entity'
-import type {
-  EntityTemplate,
-  SaplingFormConfigPayload,
-  SaplingFormFieldConfig,
-} from '@/entity/structure'
+import type { EntityTemplate, SaplingFormConfigPayload } from '@/entity/structure'
 import SaplingPageHero from '@/components/common/SaplingPageHero.vue'
 import SaplingSurface from '@/components/common/SaplingSurface.vue'
-import SaplingFieldSingleSelect from '@/components/dialog/fields/SaplingFieldSingleSelect.vue'
+import SaplingFormConfigContextControls from '@/components/system/form-config/SaplingFormConfigContextControls.vue'
 import SaplingFormConfigFieldList from '@/components/system/form-config/SaplingFormConfigFieldList.vue'
 import SaplingFormConfigPreviewPanel from '@/components/system/form-config/SaplingFormConfigPreviewPanel.vue'
 import SaplingFormConfigSummary from '@/components/system/form-config/SaplingFormConfigSummary.vue'
@@ -232,11 +156,16 @@ import {
   buildFormConfigPayload,
 } from '@/components/system/form-config/formConfigDraft.utils'
 import { useSaplingFormConfigTransfer } from '@/composables/system/useSaplingFormConfigTransfer'
-import { getDialogTemplateWidth } from '@/utils/saplingDialogLayoutUtil'
+import {
+  buildFormConfigDraftRows,
+  createFormConfigGroup,
+  moveFormConfigField,
+  removeFormConfigGroup,
+  reorderFormConfigGroup,
+  showAllFormConfigFields,
+} from '@/components/system/form-config/formConfigAdminDraft.utils'
 
 type ScopeValue = 'global' | 'role' | 'person'
-
-const FORM_CONFIG_UNSUPPORTED_RELATION_KINDS = ['1:m', 'm:n', 'n:m', '1:1']
 
 const { t, te } = useI18n()
 const route = useRoute()
@@ -265,7 +194,7 @@ const rendererOptions = FORM_CONFIG_RENDERER_OPTIONS
 const translationService = new TranslationService()
 let entityContextRequestId = 0
 
-const scopeOptions = computed(() => [
+const scopeOptions = computed<Array<{ title: string; value: ScopeValue }>>(() => [
   { title: t('formConfig.scopeGlobal'), value: 'global' },
   { title: t('formConfig.scopeRole'), value: 'role' },
   { title: t('formConfig.scopePerson'), value: 'person' },
@@ -365,6 +294,10 @@ watch(configScope, (scope) => {
   if (scope === 'global') {
     scopeHandle.value = ''
   }
+})
+
+watch(selectedScopeItem, (item) => {
+  scopeHandle.value = getRecordHandle(item)
 })
 
 onMounted(async () => {
@@ -493,94 +426,19 @@ function buildFieldRows(
   configFields: SaplingFormConfigPayload['fields'],
   configGroups: SaplingFormConfigPayload['groups'] = {},
 ): void {
-  fieldRows.splice(0, fieldRows.length)
-  groupRows.splice(0, groupRows.length)
-
-  const observedGroups = new Map<string, { order: number; label: string; visible: boolean }>()
-
-  Object.entries(configGroups ?? {}).forEach(([groupKey, groupConfig], index) => {
-    const normalizedKey = groupKey.trim()
-    if (!normalizedKey) return
-    observedGroups.set(normalizedKey, {
-      order: groupConfig.order ?? (index + 1) * 100,
-      label: groupConfig.label ?? '',
-      visible: groupConfig.visible !== false,
-    })
-  })
-
-  baseTemplates.value
-    .filter((template) => !FORM_CONFIG_UNSUPPORTED_RELATION_KINDS.includes(template.kind ?? ''))
-    .forEach((template, index) => {
-      const fieldConfig = getFieldConfig(configFields?.[template.name])
-      const visible = fieldConfig.visible ?? template.formVisible ?? false
-      const group = fieldConfig.group ?? template.formGroup ?? ''
-      if (!observedGroups.has(group)) {
-        observedGroups.set(group, {
-          order:
-            fieldConfig.groupOrder ?? template.formGroupOrder ?? (observedGroups.size + 1) * 100,
-          label: template.formGroupConfig?.label ?? '',
-          visible: template.formGroupConfig?.visible !== false,
-        })
-      }
-      fieldRows.push({
-        name: template.name,
-        type: template.type,
-        visible,
-        label: fieldConfig.label ?? getTemplateDefaultLabel(template),
-        group,
-        order: fieldConfig.order ?? template.formOrder ?? index + 1,
-        width: fieldConfig.width ?? template.formWidth ?? getDialogTemplateWidth(template),
-        tableVisible: fieldConfig.tableVisible ?? template.tableVisible ?? visible,
-        tableOrder:
-          fieldConfig.tableOrder ?? template.tableOrder ?? template.formOrder ?? index + 1,
-        mobileVisible: fieldConfig.mobileVisible ?? template.mobileVisible ?? false,
-        mobileOrder:
-          fieldConfig.mobileOrder ??
-          template.mobileOrder ??
-          template.tableOrder ??
-          template.formOrder ??
-          index + 1,
-        renderer: fieldConfig.renderer ?? 'auto',
-        placeholder: fieldConfig.placeholder ?? '',
-        required: fieldConfig.required ?? template.isRequired === true,
-        readonly:
-          fieldConfig.readonly ??
-          (template.options?.includes('isReadOnly') === true ||
-            template.options?.includes('isSecurity') === true),
-      })
-    })
-  ;[...observedGroups.entries()]
-    .sort(([leftKey, left], [rightKey, right]) => {
-      if (!leftKey && rightKey) return 1
-      if (leftKey && !rightKey) return -1
-      return left.order - right.order
-    })
-    .forEach(([key, group], index) => {
-      groupRows.push({
-        key,
-        label: group.label,
-        visible: group.visible,
-        order: (index + 1) * 100,
-      })
-    })
-
-  normalizeFieldOrders()
-}
-
-function getFieldConfig(value: unknown): SaplingFormFieldConfig {
-  return value && typeof value === 'object' && !Array.isArray(value)
-    ? (value as SaplingFormFieldConfig)
-    : {}
+  const draft = buildFormConfigDraftRows(
+    baseTemplates.value,
+    configFields,
+    configGroups,
+    getTemplateDefaultLabel,
+  )
+  fieldRows.splice(0, fieldRows.length, ...draft.fields)
+  groupRows.splice(0, groupRows.length, ...draft.groups)
 }
 
 function getRecordHandle(item?: SaplingGenericItem | null): string {
   const handle = item?.handle
   return typeof handle === 'string' || typeof handle === 'number' ? String(handle) : ''
-}
-
-function onScopeItemUpdate(item: SaplingGenericItem | null): void {
-  selectedScopeItem.value = item
-  scopeHandle.value = getRecordHandle(item)
 }
 
 async function saveConfig(): Promise<void> {
@@ -627,85 +485,24 @@ function resetCurrentConfig(): void {
 }
 
 function showAllFields(): void {
-  groupRows.forEach((group) => {
-    group.visible = true
-  })
-  fieldRows.forEach((field) => {
-    field.visible = true
-    field.tableVisible = true
-    field.mobileVisible = true
-  })
+  showAllFormConfigFields(fieldRows, groupRows)
 }
 
 function addGroup(label: string): void {
-  const normalizedLabel = label.trim()
-  if (!normalizedLabel) return
-
-  let suffix = groupRows.length + 1
-  let key = `${selectedEntityHandle.value}.customGroup${suffix}`
-  while (groupRows.some((group) => group.key === key)) {
-    suffix += 1
-    key = `${selectedEntityHandle.value}.customGroup${suffix}`
-  }
-
-  groupRows.push({
-    key,
-    label: normalizedLabel,
-    visible: true,
-    order: (groupRows.length + 1) * 100,
-  })
+  const group = createFormConfigGroup(groupRows, selectedEntityHandle.value, label)
+  if (group) groupRows.push(group)
 }
 
 function removeGroup(groupKey: string): void {
-  if (!groupKey || fieldRows.some((field) => field.group === groupKey)) return
-  const index = groupRows.findIndex((group) => group.key === groupKey)
-  if (index >= 0) groupRows.splice(index, 1)
-  normalizeGroupOrders()
+  removeFormConfigGroup(fieldRows, groupRows, groupKey)
 }
 
 function reorderGroup(sourceKey: string, targetKey: string): void {
-  const sourceIndex = groupRows.findIndex((group) => group.key === sourceKey)
-  const targetIndex = groupRows.findIndex((group) => group.key === targetKey)
-  if (sourceIndex < 0 || targetIndex < 0 || sourceIndex === targetIndex) return
-
-  const sourceGroup = groupRows[sourceIndex]
-  const targetGroup = groupRows[targetIndex]
-  if (!sourceGroup || !targetGroup) return
-  groupRows.splice(sourceIndex, 1, targetGroup)
-  groupRows.splice(targetIndex, 1, sourceGroup)
-  normalizeGroupOrders()
+  reorderFormConfigGroup(groupRows, sourceKey, targetKey)
 }
 
 function moveField(fieldName: string, targetGroupKey: string, targetIndex: number): void {
-  const field = fieldRows.find((entry) => entry.name === fieldName)
-  if (!field || !groupRows.some((group) => group.key === targetGroupKey)) return
-
-  const targetFields = fieldRows
-    .filter((entry) => entry.group === targetGroupKey && entry.name !== fieldName)
-    .sort((left, right) => (left.order ?? 0) - (right.order ?? 0))
-  field.group = targetGroupKey
-  targetFields.splice(Math.max(0, Math.min(targetIndex, targetFields.length)), 0, field)
-  targetFields.forEach((entry, index) => {
-    entry.order = (index + 1) * 100
-  })
-  normalizeFieldOrders()
-}
-
-function normalizeGroupOrders(): void {
-  groupRows.forEach((group, index) => {
-    group.order = (index + 1) * 100
-  })
-}
-
-function normalizeFieldOrders(): void {
-  groupRows.forEach((group) => {
-    fieldRows
-      .filter((field) => field.group === group.key)
-      .sort((left, right) => (left.order ?? 0) - (right.order ?? 0))
-      .forEach((field, index) => {
-        field.order = (index + 1) * 100
-      })
-  })
+  moveFormConfigField(fieldRows, groupRows, fieldName, targetGroupKey, targetIndex)
 }
 
 function translateEntity(entityHandle: string): string {

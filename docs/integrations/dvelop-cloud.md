@@ -75,6 +75,14 @@ The sync endpoint automatically includes prerequisites for explicit sync actions
 
 The d.velop Cloud workspace also exposes a healthcheck for the configured API key. It does not persist metadata. Instead, it executes the same capability checks Sapling needs at runtime: local API key/base URL validation, repository access, category/object definition access, and property access. The result is reported per capability with success, warning, or error status.
 
+The frontend workspace is a composition shell. Connection selection, health,
+and synchronization actions live in `SaplingDvelopConnectionPanel`; metric
+cards live in `SaplingDvelopMetrics`; repository/category/property lists live in
+`SaplingDvelopMetadataTables`, with reusable table-header and empty-row
+components. Shared workspace contracts and pure status/reference/date
+presentation helpers live in `dvelopCloudWorkspace.types.ts` and
+`dvelopCloudWorkspace.utils.ts`.
+
 ## Runtime Flow
 
 The frontend never switches directly to d.velop Cloud by hard-coded client logic. It asks the backend first:

@@ -249,7 +249,7 @@ const previewTitle = computed(() =>
 
 function translateEntity(entityHandle: string): string {
   const key = `navigation.${entityHandle}`
-  return te(key) ? t(key) : entityHandle
+  return te(key) ? t(key) : ''
 }
 
 function translateGroup(groupKey: string): string {
@@ -279,7 +279,7 @@ function getPreviewFieldLabel(template: EntityTemplate): string {
   }
 
   const key = `${props.selectedEntityHandle}.${template.name}`
-  return te(key) ? t(key) : formatMetadataName(template.name)
+  return te(key) ? t(key) : ''
 }
 
 function getPreviewRenderer(template: EntityTemplate): string {

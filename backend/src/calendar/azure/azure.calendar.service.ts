@@ -32,7 +32,6 @@ import { EventDeliveryService } from '../event.delivery.service';
 import { PersonSessionItem } from '../../entity/PersonSessionItem';
 import { EntityManager } from '@mikro-orm/core';
 import { EventAzureItem } from '../../entity/EventAzureItem';
-import { buildAzureRecurrence } from '../calendar.recurrence';
 import { PersonItem } from '../../entity/PersonItem';
 import { EventTypeItem } from '../../entity/EventTypeItem';
 import { EventStatusItem } from '../../entity/EventStatusItem';
@@ -43,102 +42,16 @@ import {
   AZURE_AD_TENNANT_ID,
 } from '../../constants/project.constants';
 import { ImportAzureCalendarEventsResponseDto } from './dto/import-azure-calendar-events.dto';
-
-type ImportAzureCalendarEventsRange = {
-  startDateTime: Date;
-  endDateTime: Date;
-};
-
-type AzureGraphDateTime = {
-  dateTime?: string | null;
-  timeZone?: string | null;
-};
-
-type AzureGraphAttendee = {
-  emailAddress?: {
-    address?: string | null;
-    name?: string | null;
-  } | null;
-};
-
-type AzureGraphCalendarEvent = {
-  id?: string;
-  subject?: string | null;
-  bodyPreview?: string | null;
-  sensitivity?: string | null;
-  start?: AzureGraphDateTime | null;
-  end?: AzureGraphDateTime | null;
-  isAllDay?: boolean | null;
-  isCancelled?: boolean | null;
-  attendees?: AzureGraphAttendee[] | null;
-  onlineMeetingUrl?: string | null;
-  onlineMeeting?: {
-    joinUrl?: string | null;
-  } | null;
-};
-
-type AzureCalendarViewResponse = {
-  value?: AzureGraphCalendarEvent[];
-  '@odata.nextLink'?: string;
-};
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
-}
-
-function isAuthenticationProviderError(error: unknown): boolean {
-  if (!isRecord(error)) {
-    return false;
-  }
-
-  const status =
-    typeof error.statusCode === 'number'
-      ? error.statusCode
-      : isRecord(error.response) && typeof error.response.status === 'number'
-        ? error.response.status
-        : undefined;
-
-  if (status === 401 || status === 403) {
-    return true;
-  }
-
-  const message =
-    typeof error.message === 'string' ? error.message.toLowerCase() : '';
-  return (
-    message.includes('token') ||
-    message.includes('auth') ||
-    message.includes('unauthorized') ||
-    message.includes('forbidden')
-  );
-}
-
-function normalizeGraphDateTime(
-  value?: AzureGraphDateTime | null,
-): Date | null {
-  const rawDateTime = value?.dateTime?.trim();
-  if (!rawDateTime) {
-    return null;
-  }
-
-  const normalizedDateTime = /(?:z|[+-]\d{2}:\d{2})$/i.test(rawDateTime)
-    ? rawDateTime
-    : `${rawDateTime}Z`;
-  const date = new Date(normalizedDateTime);
-  return Number.isNaN(date.getTime()) ? null : date;
-}
-
-function truncate(value: string, maxLength: number): string {
-  return value.length <= maxLength
-    ? value
-    : value.slice(0, maxLength - 3) + '...';
-}
-
-function normalizeEmail(value: string | null | undefined): string | null {
-  const normalized = value?.trim().toLowerCase();
-  return normalized && /^[^@\s<>]+@[^@\s<>]+$/.test(normalized)
-    ? normalized
-    : null;
-}
+import {
+  type AzureCalendarViewResponse,
+  type AzureGraphCalendarEvent,
+  buildAzureCalendarEvent,
+  type ImportAzureCalendarEventsRange,
+  isAzureAuthenticationError,
+  normalizeAzureDateTime,
+  normalizeAzureEmail,
+  truncateAzureText,
+} from './azure-calendar.utils';
 
 /**
  * Service for managing calendar events in Microsoft Azure (Outlook) via Microsoft Graph API.
@@ -329,7 +242,7 @@ export class AzureCalendarService {
     try {
       return await this.fetchCalendarView(accessToken, range);
     } catch (error) {
-      if (!isAuthenticationProviderError(error)) {
+      if (!isAzureAuthenticationError(error)) {
         throw error;
       }
 
@@ -437,8 +350,8 @@ export class AzureCalendarService {
     },
   ): Promise<'created' | 'updated' | 'skipped'> {
     const referenceHandle = graphEvent.id?.trim();
-    const startDate = normalizeGraphDateTime(graphEvent.start);
-    const endDate = normalizeGraphDateTime(graphEvent.end);
+    const startDate = normalizeAzureDateTime(graphEvent.start);
+    const endDate = normalizeAzureDateTime(graphEvent.end);
 
     if (!referenceHandle || !startDate || !endDate) {
       return 'skipped';
@@ -506,7 +419,10 @@ export class AzureCalendarService {
       participants: PersonItem[];
     },
   ): void {
-    event.title = truncate(graphEvent.subject?.trim() || 'Outlook event', 128);
+    event.title = truncateAzureText(
+      graphEvent.subject?.trim() || 'Outlook event',
+      128,
+    );
     event.description = graphEvent.bodyPreview?.trim() || undefined;
     event.isPrivate = graphEvent.sensitivity === 'private';
     event.startDate = values.startDate;
@@ -544,7 +460,9 @@ export class AzureCalendarService {
     const attendeeEmails = Array.from(
       new Set(
         (graphEvent.attendees ?? [])
-          .map((attendee) => normalizeEmail(attendee.emailAddress?.address))
+          .map((attendee) =>
+            normalizeAzureEmail(attendee.emailAddress?.address),
+          )
           .filter((email): email is string => Boolean(email)),
       ),
     );
@@ -580,7 +498,7 @@ export class AzureCalendarService {
     event: EventItem,
     emFork: EntityManager,
   ): Promise<any> {
-    const eventResource = this.getAzureEvent(event);
+    const eventResource = buildAzureCalendarEvent(event);
 
     // Create event in Azure
     const created = (await client.api('/me/events').post(eventResource)) as {
@@ -615,7 +533,7 @@ export class AzureCalendarService {
     reference: EventAzureItem,
     emFork: EntityManager,
   ): Promise<any> {
-    const eventResource = this.getAzureEvent(event);
+    const eventResource = buildAzureCalendarEvent(event);
 
     // PATCH Event (without online meeting fields)
     const patchResult = (await client
@@ -649,38 +567,5 @@ export class AzureCalendarService {
     // Remove the EventAzureItem from the database
     await emFork.remove(reference).flush();
     return { success: true };
-  }
-
-  /**
-   * Maps EventItem to Azure Calendar event resource.
-   * @param {EventItem} event The event to map
-   * @returns {object} Azure Calendar event resource
-   */
-  private getAzureEvent(event: EventItem) {
-    const eventResource: Record<string, unknown> = {
-      subject: event.title,
-      start: { dateTime: event.startDate.toISOString(), timeZone: 'UTC' },
-      end: { dateTime: event.endDate.toISOString(), timeZone: 'UTC' },
-      recurrence: buildAzureRecurrence(event.startDate, event.recurrenceRule),
-      attendees: event.participants.map((x) => ({
-        emailAddress: {
-          address: x.email,
-          name: `${x.firstName} ${x.lastName}`,
-        },
-        type: 'required',
-      })),
-    };
-
-    if (event.type?.handle === 'online' && !event.onlineMeetingURL) {
-      eventResource['isOnlineMeeting'] = true;
-      eventResource['onlineMeetingProvider'] = 'teamsForBusiness';
-    } else if (event.type?.handle !== 'online') {
-      eventResource['body'] = {
-        contentType: 'HTML',
-        content: event.description,
-      };
-    }
-
-    return eventResource;
   }
 }

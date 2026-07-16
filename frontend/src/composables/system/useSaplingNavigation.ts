@@ -1,6 +1,20 @@
 import { computed, onMounted, ref, toRef, watch } from 'vue'
 import type { EntityGroupItem, EntityItem, EntityRouteItem } from '@/entity/entity'
 import type { AccumulatedPermission } from '@/entity/structure'
+import {
+  getEffectiveRouteGroupHandle,
+  getEntityNavigationGroupHandle as getEntityGroupHandle,
+  getEntityNavigationGroupHandles,
+  getEntityNavigationSortOrder as getEntitySortOrder,
+  getEntityRoutesForNavigationGroup as getEntityRoutesForGroup,
+  getFilterableEntityRoutes as getFilterableRoutes,
+  getNavigationGroupParentHandle as getGroupParentHandle,
+  getRouteNavigationGroupHandle as getRouteGroupHandle,
+  matchesNavigationSearch,
+  normalizeNavigationText as normalizeText,
+  sortNavigationGroups,
+  toggleNavigationHandle as toggleHandle,
+} from './saplingNavigation.utils'
 import ApiGenericService from '@/services/api.generic.service'
 import { useCurrentPermissionStore } from '@/stores/currentPermissionStore'
 import { useTranslationLoader } from '@/composables/generic/useTranslationLoader'
@@ -506,41 +520,11 @@ export function useSaplingNavigation(props: SaplingNavigationProps, emit: Saplin
   }
 
   function matchesSearch(...values: unknown[]) {
-    if (!normalizedSearch.value) {
-      return true
-    }
-
-    return values.some((value) => normalizeText(value).includes(normalizedSearch.value))
-  }
-
-  function normalizeText(value: unknown): string {
-    if (typeof value === 'string') {
-      return value.trim().toLocaleLowerCase()
-    }
-
-    if (typeof value === 'number' || typeof value === 'boolean' || typeof value === 'bigint') {
-      return String(value).toLocaleLowerCase()
-    }
-
-    if (Array.isArray(value)) {
-      return value
-        .map((item) => normalizeText(item))
-        .filter(Boolean)
-        .join(' ')
-    }
-
-    return ''
+    return matchesNavigationSearch(normalizedSearch.value, ...values)
   }
 
   function sortGroups(nextGroups: EntityGroupItem[]) {
-    return [...nextGroups].sort((left, right) => {
-      const sortOrderDifference = (left.sortOrder ?? 0) - (right.sortOrder ?? 0)
-      if (sortOrderDifference !== 0) {
-        return sortOrderDifference
-      }
-
-      return getGroupLabel(left.handle).localeCompare(getGroupLabel(right.handle))
-    })
+    return sortNavigationGroups(nextGroups, getGroupLabel)
   }
 
   function isPathActive(path: string) {
@@ -560,73 +544,6 @@ export function useSaplingNavigation(props: SaplingNavigationProps, emit: Saplin
     return fallback ?? ''
   }
 
-  function toggleHandle(currentHandles: string[], handle: string) {
-    return currentHandles.includes(handle)
-      ? currentHandles.filter((item) => item !== handle)
-      : [...currentHandles, handle]
-  }
-
-  function getGroupParentHandle(group?: EntityGroupItem | null) {
-    if (!group) {
-      return null
-    }
-
-    if (typeof group.parent === 'string') {
-      return group.parent
-    }
-
-    if (group.parent && typeof group.parent === 'object' && 'handle' in group.parent) {
-      return group.parent.handle
-    }
-
-    return null
-  }
-
-  function getEntityGroupHandle(entity: EntityItem) {
-    if (typeof entity.group === 'string') {
-      return entity.group
-    }
-
-    if (entity.group && typeof entity.group === 'object' && 'handle' in entity.group) {
-      return entity.group.handle
-    }
-
-    return null
-  }
-
-  function getRouteGroupHandle(route: EntityRouteItem) {
-    if (typeof route.group === 'string') {
-      return route.group
-    }
-
-    if (route.group && typeof route.group === 'object' && 'handle' in route.group) {
-      return route.group.handle
-    }
-
-    return null
-  }
-
-  function getEffectiveRouteGroupHandle(entity: EntityItem, route: EntityRouteItem) {
-    return getRouteGroupHandle(route) ?? getEntityGroupHandle(entity)
-  }
-
-  function getEntityRoutesForGroup(entity: EntityItem, groupHandle: string) {
-    return getFilterableRoutes(entity).filter((route) => {
-      return getEffectiveRouteGroupHandle(entity, route) === groupHandle
-    })
-  }
-
-  function getEntityNavigationGroupHandles(entity: EntityItem) {
-    return new Set(
-      getFilterableRoutes(entity)
-        .map((route) => getEffectiveRouteGroupHandle(entity, route))
-        .filter((handle): handle is string => Boolean(handle)),
-    )
-  }
-
-  function getEntitySortOrder(entity: EntityItem) {
-    return entity.order ?? 0
-  }
   //#endregion
 
   //#region Return

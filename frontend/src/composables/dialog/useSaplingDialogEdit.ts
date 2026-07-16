@@ -9,78 +9,32 @@ import {
   type ComputedRef,
   type Ref,
 } from 'vue'
-import type {
-  AccumulatedPermission,
-  DialogSaveAction,
-  DialogSaveContext,
-  DialogState,
-  EntityTemplate,
-} from '@/entity/structure'
-import ApiGenericService from '@/services/api.generic.service'
-import ApiFormConfigService, {
-  type SaplingFormConfigItem,
-} from '@/services/api.form-config.service'
-import ApiTemplateService from '@/services/api.template.service'
+import type { AccumulatedPermission, DialogState, EntityTemplate } from '@/entity/structure'
 import { useI18n } from 'vue-i18n'
 import type { EntityItem, SaplingGenericItem } from '@/entity/entity'
-import { getEditDialogHeaders } from '@/utils/saplingTableUtil'
-import {
-  getDialogTemplateColumns,
-  groupDialogTemplates,
-  sortDialogTemplates,
-} from '@/utils/saplingDialogLayoutUtil'
+import { getDialogTemplateColumns } from '@/utils/saplingDialogLayoutUtil'
 import { useCurrentPermissionStore } from '@/stores/currentPermissionStore'
 import { useCurrentPersonStore } from '@/stores/currentPersonStore'
 import { useSaplingDialogEditDirty } from './useSaplingDialogEditDirty'
 import { useSaplingDialogEditForm } from './useSaplingDialogEditForm'
 import { useSaplingDialogEditRelations } from './useSaplingDialogEditRelations'
 import { useSaplingDialogEditReferences } from './useSaplingDialogEditReferences'
+import { useSaplingDialogEditTemplates } from './useSaplingDialogEditTemplates'
+import { useSaplingDialogEditActions } from './useSaplingDialogEditActions'
 import {
-  applyFormConfigOverlay,
   formatLocalDate,
   formatLocalTime,
-  getDefaultFormConfigHandle,
   getItemHandle,
   getLocalDateTimeParts,
   hasFormValue,
-  isFormValid,
   isValidDate,
   toUtcIsoString,
-  type FormConfigMenuItem,
-  type FormConfigSelectionHandle,
-  type VuetifyFormValidationResult,
 } from './saplingDialogEdit.utils'
-// #endregion
-
-// #region Types
-type VuetifyFormRef = {
-  validate: () => Promise<VuetifyFormValidationResult>
-  resetValidation?: () => void
-}
-
-type SaplingDialogEditEmit = {
-  (event: 'update:modelValue', value: boolean): void
-  (
-    event: 'save',
-    value: SaplingGenericItem,
-    action: DialogSaveAction,
-    context: DialogSaveContext,
-  ): void
-  (event: 'cancel'): void
-  (event: 'update:mode', value: DialogState): void
-  (event: 'update:item', value: SaplingGenericItem | null): void
-}
-
-interface UseSaplingDialogEditProps {
-  modelValue: boolean
-  mode: DialogState
-  item: SaplingGenericItem | null
-  parent?: SaplingGenericItem | null
-  parentEntity?: EntityItem | null
-  entity: EntityItem | null
-  templates: EntityTemplate[]
-  showReference?: boolean
-}
+import type {
+  SaplingDialogEditEmit,
+  UseSaplingDialogEditProps,
+  VuetifyFormRef,
+} from './saplingDialogEdit.types'
 // #endregion
 
 /**
@@ -94,23 +48,6 @@ export function useSaplingDialogEdit(
 ) {
   // #region State
   const { t, te } = useI18n()
-  const systemTemplates = ref<EntityTemplate[]>([])
-  const baseTemplates = computed(() =>
-    systemTemplates.value.length > 0 ? systemTemplates.value : (props.templates ?? []),
-  )
-  const formConfigs = ref<SaplingFormConfigItem[]>([])
-  const selectedFormConfigHandle = ref<FormConfigSelectionHandle>(null)
-  const isLoadingFormConfigs = ref(false)
-  const selectedFormConfig = computed(
-    () =>
-      formConfigs.value.find(
-        (config) =>
-          typeof config.handle === 'number' && config.handle === selectedFormConfigHandle.value,
-      ) ?? null,
-  )
-  const templates = computed(() =>
-    applyFormConfigOverlay(baseTemplates.value, selectedFormConfig.value?.config ?? null),
-  )
   const showReference = computed(() => props.showReference !== false)
   const isLoading = ref(true)
   const form: Ref<SaplingGenericItem> = ref({})
@@ -118,166 +55,36 @@ export function useSaplingDialogEdit(
   const activeTab = ref(0)
   const permissions = ref<AccumulatedPermission[] | null>(null)
   const currentPersonStore = useCurrentPersonStore()
-  // Icon list (~340kB source) is loaded on demand when an icon template is
-  // present, so entities without icon fields never pull it into their bundle.
-  const iconNames = ref<Array<{ name: string; unicode?: string }>>([])
-  let iconsLoadPromise: Promise<void> | null = null
-  function ensureIconsLoaded() {
-    if (iconNames.value.length > 0 || iconsLoadPromise) {
-      return iconsLoadPromise
-    }
-    iconsLoadPromise = import('@/constants/mdi.icons').then((mod) => {
-      iconNames.value = mod.mdiIcons
-    })
-    return iconsLoadPromise
-  }
   const isHydratingForm = ref(false)
   const initialFormSnapshot = ref<Record<string, string>>({})
-  const pendingSaveAction = ref<DialogSaveAction | null>(null)
-  const unsavedChangesDialog = ref(false)
-  const isSaving = computed(() => pendingSaveAction.value !== null)
   // #endregion
 
   // #region Helpers
-  const formConfigMenuItems = computed<FormConfigMenuItem[]>(() => {
-    const selectableConfigs = formConfigs.value.filter(
-      (config) => config.isActive !== false && typeof config.handle === 'number',
-    )
-
-    if (selectableConfigs.length === 0) {
-      return []
-    }
-
-    return [
-      {
-        handle: null,
-        title: t('formConfig.defaultView'),
-        icon: 'mdi-view-dashboard-outline',
-        active: selectedFormConfigHandle.value === null,
-      },
-      ...selectableConfigs.map((config) => ({
-        handle: config.handle ?? null,
-        title: config.name,
-        icon: config.isDefault ? 'mdi-table-star' : 'mdi-table-cog',
-        active: selectedFormConfigHandle.value === config.handle,
-      })),
-    ]
+  const {
+    templates,
+    visibleTemplates,
+    visibleTemplateGroups,
+    formConfigMenuItems,
+    selectedFormConfigLabel,
+    isLoadingFormConfigs,
+    iconNames,
+    selectDefaultFormConfig,
+    selectFormConfig,
+    loadFormConfigs,
+    loadSystemTemplates,
+    resetTemplateSources,
+  } = useSaplingDialogEditTemplates({
+    entity: computed(() => props.entity),
+    mode: computed(() => props.mode),
+    providedTemplates: computed(() => props.templates ?? []),
+    showReference,
+    permissions,
+    activeTab,
+    t,
+    te,
   })
 
-  const selectedFormConfigLabel = computed(() => selectedFormConfig.value?.name ?? '')
-
-  function selectDefaultFormConfig(): void {
-    selectedFormConfigHandle.value = getDefaultFormConfigHandle(formConfigs.value)
-  }
-
-  async function loadFormConfigs(): Promise<void> {
-    const entityHandle = props.entity?.handle
-    if (!entityHandle) {
-      formConfigs.value = []
-      selectedFormConfigHandle.value = null
-      return
-    }
-
-    isLoadingFormConfigs.value = true
-
-    try {
-      formConfigs.value = await ApiFormConfigService.list(entityHandle)
-      selectDefaultFormConfig()
-    } catch {
-      formConfigs.value = []
-      selectedFormConfigHandle.value = null
-    } finally {
-      isLoadingFormConfigs.value = false
-    }
-  }
-
-  async function loadSystemTemplates(): Promise<void> {
-    const entityHandle = props.entity?.handle?.trim()
-    if (!entityHandle) {
-      systemTemplates.value = []
-      return
-    }
-
-    try {
-      systemTemplates.value = await ApiTemplateService.getEntityTemplate(entityHandle)
-    } catch {
-      systemTemplates.value = props.templates ?? []
-    }
-  }
-
-  function selectFormConfig(handle: FormConfigSelectionHandle): void {
-    selectedFormConfigHandle.value = handle
-    activeTab.value = 0
-  }
-
   // #region Templates
-  const visibleTemplates = computed(() =>
-    sortDialogTemplates(
-      getEditDialogHeaders(
-        templates.value,
-        props.mode,
-        showReference.value,
-        permissions.value || [],
-      ),
-    ),
-  )
-
-  function formatDialogGroupFallback(groupKey: string): string {
-    const normalizedGroupKey = groupKey.trim()
-    const lastSegment = normalizedGroupKey.split('.').filter(Boolean).pop() ?? normalizedGroupKey
-    const withoutPrefix = lastSegment.replace(/^group/, '')
-    const spaced = withoutPrefix
-      .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
-      .replace(/[_-]+/g, ' ')
-      .trim()
-
-    if (!spaced) {
-      return normalizedGroupKey
-    }
-
-    return spaced.charAt(0).toUpperCase() + spaced.slice(1)
-  }
-
-  function translateDialogGroupLabel(groupKey: string): string {
-    const normalizedGroupKey = groupKey.trim()
-    const entityHandle = props.entity?.handle?.trim() ?? ''
-    const unscopedGroupKey =
-      entityHandle && normalizedGroupKey.startsWith(`${entityHandle}.`)
-        ? normalizedGroupKey.slice(entityHandle.length + 1)
-        : normalizedGroupKey
-    const translationKey = entityHandle
-      ? [
-          normalizedGroupKey,
-          `${entityHandle}.dialogGroup.${unscopedGroupKey}`,
-          `${entityHandle}.${unscopedGroupKey}`,
-          `${entityHandle}.dialogGroup.${normalizedGroupKey}`,
-          `${entityHandle}.${normalizedGroupKey}`,
-          `global.dialogGroup.${unscopedGroupKey}`,
-          `global.${unscopedGroupKey}`,
-        ].find((key) => te(key))
-      : [
-          normalizedGroupKey,
-          `global.dialogGroup.${unscopedGroupKey}`,
-          `global.${unscopedGroupKey}`,
-        ].find((key) => te(key))
-
-    return translationKey ? t(translationKey) : formatDialogGroupFallback(normalizedGroupKey)
-  }
-
-  const visibleTemplateGroups = computed(() =>
-    groupDialogTemplates(visibleTemplates.value, translateDialogGroupLabel),
-  )
-
-  // Trigger lazy icon-list load as soon as the dialog actually exposes an icon field.
-  watch(
-    visibleTemplates,
-    (next) => {
-      if (next.some((template) => template.options?.includes('isIcon'))) {
-        void ensureIconsLoaded()
-      }
-    },
-    { immediate: true },
-  )
 
   const {
     relationTemplates,
@@ -369,6 +176,33 @@ export function useSaplingDialogEdit(
       getLocalDateTimeParts,
       toUtcIsoString,
     })
+
+  const {
+    pendingSaveAction,
+    unsavedChangesDialog,
+    isSaving,
+    completeSave,
+    onDuplicateSelect,
+    handleDialogUpdate,
+    cancel,
+    keepEditing,
+    discardChanges,
+    saveChangesAndClose,
+    resetForm,
+    save,
+    saveAndClose,
+  } = useSaplingDialogEditActions({
+    mode: computed(() => props.mode),
+    entity: computed(() => props.entity),
+    isDirty,
+    formRef,
+    activeTab,
+    emit,
+    buildSavePayload,
+    syncInitialFormSnapshot,
+    resetRelationSelections,
+    initializeFormWithParentContext,
+  })
   // #endregion
 
   function getTemplateColumnProps(template: EntityTemplate) {
@@ -438,58 +272,6 @@ export function useSaplingDialogEdit(
 
   function isReferenceFieldDisabled(template: EntityTemplate): boolean {
     return isFieldDisabled(template) || isReferenceDependencyBlocked(template)
-  }
-
-  /**
-   * Synchronizes the dialog visibility with the parent state.
-   */
-  function handleDialogUpdate(val: boolean): void {
-    if (val) {
-      emit('update:modelValue', true)
-      return
-    }
-
-    cancel()
-  }
-
-  function completeSave(action?: DialogSaveAction): void {
-    if (!action || pendingSaveAction.value === action) {
-      pendingSaveAction.value = null
-    }
-  }
-
-  async function waitForUiPaint(): Promise<void> {
-    await nextTick()
-
-    if (typeof window === 'undefined' || typeof window.requestAnimationFrame !== 'function') {
-      return
-    }
-
-    await new Promise<void>((resolve) => {
-      window.requestAnimationFrame(() => {
-        window.setTimeout(resolve, 0)
-      })
-    })
-  }
-
-  /**
-   * Loads the selected duplicate record with its references and reopens the dialog in edit mode.
-   */
-  async function onDuplicateSelect(item: SaplingGenericItem): Promise<void> {
-    if (!item || item.handle == null) {
-      return
-    }
-
-    const entityHandle = props.entity?.handle ?? ''
-    const fullItemResult = await ApiGenericService.find<SaplingGenericItem>(entityHandle, {
-      filter: { handle: item.handle },
-      limit: 1,
-      relations: ['m:1'],
-    })
-
-    emit('update:mode', 'edit')
-    emit('update:modelValue', true)
-    emit('update:item', fullItemResult.data[0] ?? null)
   }
 
   async function loadActiveRelationTableItems(): Promise<void> {
@@ -592,9 +374,7 @@ export function useSaplingDialogEdit(
   watch(
     () => props.entity?.handle ?? '',
     () => {
-      formConfigs.value = []
-      systemTemplates.value = []
-      selectedFormConfigHandle.value = null
+      resetTemplateSources()
     },
   )
 
@@ -668,197 +448,6 @@ export function useSaplingDialogEdit(
     permissions.value = currentPermissionStore.accumulatedPermission // Set the permissions
   }
   // #region
-
-  // #region Save
-  async function prepareSubmit(action: DialogSaveAction): Promise<SaplingGenericItem | null> {
-    if (!isDirty.value || isSaving.value) {
-      return null
-    }
-
-    pendingSaveAction.value = action
-    await waitForUiPaint()
-
-    const result = await formRef.value?.validate()
-    if (!isFormValid(result)) {
-      completeSave(action)
-      return null
-    }
-
-    return buildSavePayload()
-  }
-
-  function emitSave(output: SaplingGenericItem, action: DialogSaveAction): void {
-    emit('save', output, action, {
-      complete: (didSave = true) => {
-        completeSave(action)
-        if (!didSave) {
-          return
-        }
-
-        // After a successful save the current form values represent the new
-        // baseline. Re-sync the snapshot so previously edited fields are no
-        // longer reported as dirty.
-        syncInitialFormSnapshot()
-      },
-    })
-  }
-
-  /*
-
-    if (props.mode === 'edit') {
-      relationTemplates.value.forEach((t) => delete output[t.name])
-    }
-
-    // Dynamisch alle Datetime-Felder aus templates verarbeiten
-    props.templates
-      .filter((t) => t.type === 'datetime')
-      .forEach((t) => {
-        const key = t.name
-        const dateValue = output[`${key}_date`]
-        let date = ''
-        if (dateValue instanceof Date) {
-          date = formatLocalDate(dateValue)
-        } else if (typeof dateValue === 'string') {
-          date = dateValue
-        }
-        const time = output[`${key}_time`]
-
-        const normalizedDateTime = toUtcIsoString(date, time)
-        if (normalizedDateTime) {
-          output[key] = normalizedDateTime
-        }
-        delete output[`${key}_date`]
-        delete output[`${key}_time`]
-      })
-
-    // Anpassung für m:1-Relationen
-    props.templates
-      .filter((t) => ['m:1'].includes(t.kind ?? ''))
-      .forEach((t) => {
-        const val = form.value[t.name]
-        if (val && typeof val === 'object') {
-          const valObj = val as { [key: string]: unknown }
-          const pkValues =
-            t.referencedPks?.map((pk) => valObj[pk]).filter((v) => v !== undefined && v !== null) ??
-            []
-
-          if (pkValues.length === 1) {
-            output[t.name] = pkValues[0]
-          } else if (pkValues.length > 1) {
-            output[t.name] = pkValues
-          } else {
-            output[t.name] = null
-          }
-        } else {
-          output[t.name] = val ?? null
-        }
-      })
-
-    if (props.mode === 'create') {
-      props.templates
-        .filter((t) => ['m:n', 'n:m'].includes(t.kind ?? ''))
-        .forEach((t) => {
-          const val = form.value[t.name]
-          if (Array.isArray(val) && t.referencedPks) {
-            // Für jedes Element im Array eine Liste der referencedPks erstellen und flach zusammenführen
-            const pkValuesList = val
-              .map((item) => {
-                return t
-                  .referencedPks!.map((pk) => item[pk])
-                  .filter((v) => v !== undefined && v !== null)
-              })
-              .filter((arr) => arr.length > 0)
-            output[t.name] = pkValuesList.flat()
-          } else {
-            output[t.name] = val ?? null
-          }
-        })
-    }
-
-  */
-
-  async function save(): Promise<void> {
-    if (!isDirty.value) {
-      return
-    }
-
-    const output = await prepareSubmit('save')
-    if (!output) {
-      return
-    }
-
-    emitSave(output, 'save')
-  }
-
-  async function saveAndClose(): Promise<void> {
-    if (!isDirty.value) {
-      return
-    }
-
-    const output = await prepareSubmit('saveAndClose')
-    if (!output) {
-      return
-    }
-
-    emitSave(output, 'saveAndClose')
-  }
-  // #endregion
-
-  // #region Reset
-  function resetForm(): void {
-    if (!isDirty.value) {
-      return
-    }
-
-    resetRelationSelections()
-    activeTab.value = 0
-    initializeFormWithParentContext()
-
-    void nextTick(() => {
-      formRef.value?.resetValidation?.()
-    })
-  }
-  // #endregion
-
-  // #region Cancel
-  function closeDialog(): void {
-    pendingSaveAction.value = null
-    unsavedChangesDialog.value = false
-    emit('update:modelValue', false)
-    emit('cancel')
-  }
-
-  function shouldConfirmUnsavedChanges(): boolean {
-    return props.mode !== 'readonly' && isDirty.value && !isSaving.value
-  }
-
-  function cancel(): void {
-    if (shouldConfirmUnsavedChanges()) {
-      unsavedChangesDialog.value = true
-      return
-    }
-
-    closeDialog()
-  }
-
-  function keepEditing(): void {
-    unsavedChangesDialog.value = false
-  }
-
-  function discardChanges(): void {
-    // Roll the form back to its original snapshot before closing so callers
-    // that re-open the same record (without remounting the dialog) don't see
-    // the abandoned edits resurface. `resetForm` no-ops when nothing is
-    // dirty, so the extra call is safe for all paths.
-    resetForm()
-    closeDialog()
-  }
-
-  async function saveChangesAndClose(): Promise<void> {
-    unsavedChangesDialog.value = false
-    await saveAndClose()
-  }
-  // #endregion
 
   // #region Return
   return {

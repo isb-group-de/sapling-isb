@@ -48,6 +48,13 @@ backend/src/entity/EventItem.ts
 backend/src/entity/EffortEstimateItem.ts
 ```
 
+Keep a persisted entity's field declarations together when their MikroORM,
+Swagger, and Sapling UI decorators collectively define one inspectable schema.
+Large declarative models such as Company, Person, and Ticket are explicit
+cohesion exceptions to the normal 600-line review threshold. Extract services,
+orchestration, reusable metadata types, and unrelated behavior; do not scatter
+the actual fields across mixins or inheritance merely to reduce a line count.
+
 ## 2. Register The Entity
 
 Add the entity to:

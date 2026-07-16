@@ -6,8 +6,11 @@ Sapling supports session authentication for the browser, bearer-token authentica
 
 ```text
 backend/src/auth/auth.controller.ts
+backend/src/auth/auth-administration.controller.ts
 backend/src/auth/auth.service.ts
 backend/src/auth/auth-passkey.service.ts
+backend/src/auth/auth-provider-user-import.service.ts
+backend/src/auth/auth-provider-directory.service.ts
 backend/src/auth/local/local.strategy.ts
 backend/src/auth/azure/azure.strategy.ts
 backend/src/auth/google/google.strategy.ts
@@ -137,6 +140,13 @@ Credential IDs and public keys are marked as security fields and are stripped fr
 4. Return the current-user profile.
 
 Administrator provider import uses the current administrator's own Azure or Google session to read the provider directory. It creates or updates `PersonItem` records without storing provider tokens for imported people. The imported person's `loginName` is the external provider user ID, so a later OAuth login links back to the same Sapling person. Existing people are matched by provider ID first and email second; selected roles are added without removing existing roles. When a company is selected in the import dialog, Sapling assigns it to created people and updates existing imported people to that company.
+
+Provider import responsibilities are separated: `AuthProviderDirectoryService`
+owns Azure/Google directory paging, local search, provider mapping, access-token
+refresh, and transient retry handling. `AuthProviderUserImportService` validates
+the selected roles/company/person type and owns Sapling person persistence.
+Pure provider mapping and error classification live in
+`auth-provider-directory.utils.ts`.
 
 Provider directory requirements:
 

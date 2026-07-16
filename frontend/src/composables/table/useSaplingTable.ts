@@ -2,10 +2,6 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch, type Ref } from 'vue'
 import { useRoute } from 'vue-router'
 import ApiGenericService from '@/services/api.generic.service'
-import ApiFormConfigService, {
-  type SaplingFormConfigItem,
-} from '@/services/api.form-config.service'
-import ApiTemplateService from '@/services/api.template.service'
 import { i18n } from '@/i18n'
 import type {
   ColumnFilterItem,
@@ -28,15 +24,14 @@ import {
   getReadableReferenceRelationNames,
   getTableHeaders,
 } from '@/utils/saplingTableUtil'
+import { useSaplingTableFormConfig } from '@/composables/table/useSaplingTableFormConfig'
 import {
-  applyFormConfigOverlay,
-  type FormConfigMenuItem,
-  type FormConfigSelectionHandle,
-} from '@/composables/dialog/saplingDialogEdit.utils'
+  readSaplingTableRouteState,
+  replaceSaplingTableUrlState,
+} from '@/composables/table/saplingTableRouteState'
 // #endregion
 
 const TABLE_LOAD_DEBOUNCE_MS = 250
-const TABLE_FORM_CONFIG_CONTEXT_DELAY_MS = 100
 
 type InitializeEntityStateOptions = {
   initialSearch?: string
@@ -69,20 +64,13 @@ export function useSaplingTable(
   const isResettingEntityState = ref(false)
   const isInitialized = ref(false)
   const isDataLoading = ref(false)
-  const systemTemplates = ref<EntityTemplate[]>([])
-  const formConfigs = ref<SaplingFormConfigItem[]>([])
-  const selectedFormConfigHandle = ref<FormConfigSelectionHandle>(null)
-  const isLoadingFormConfigs = ref(false)
-
   const route = useRoute()
   const currentPermissionStore = useCurrentPermissionStore()
   const genericStore = useGenericStore()
   let activeLoadController: AbortController | null = null
   let scheduledLoadTimeout: ReturnType<typeof setTimeout> | null = null
-  let scheduledFormConfigContextTimeout: ReturnType<typeof setTimeout> | null = null
   let latestLoadRequestId = 0
   let latestInitializationId = 0
-  let latestFormConfigContextRequestId = 0
   let latestLoadedTableQuerySignature = ''
   // #endregion
 
@@ -91,49 +79,20 @@ export function useSaplingTable(
   const entityPermission = computed(
     () => genericStore.getState(entityHandle.value).entityPermission,
   )
-  const baseTemplates = computed(() =>
-    selectedFormConfigHandle.value !== null && systemTemplates.value.length > 0
-      ? systemTemplates.value
-      : genericStore.getState(entityHandle.value).entityTemplates,
+  const formConfigContext = useSaplingTableFormConfig(
+    entityHandle,
+    () => genericStore.getState(entityHandle.value).entityTemplates,
   )
-  const selectedFormConfig = computed(
-    () =>
-      formConfigs.value.find(
-        (config) =>
-          typeof config.handle === 'number' && config.handle === selectedFormConfigHandle.value,
-      ) ?? null,
-  )
-  const entityTemplates = computed(() =>
-    applyFormConfigOverlay(baseTemplates.value, selectedFormConfig.value?.config ?? null),
-  )
+  const {
+    entityTemplates,
+    menuItems: formConfigMenuItems,
+    selectedLabel: selectedFormConfigLabel,
+    selectedFormConfigHandle,
+    isLoadingFormConfigs,
+  } = formConfigContext
   const isLoading = computed(
     () => genericStore.getState(entityHandle.value).isLoading || isDataLoading.value,
   )
-  const formConfigMenuItems = computed<FormConfigMenuItem[]>(() => {
-    const selectableConfigs = formConfigs.value.filter(
-      (config) => config.isActive !== false && typeof config.handle === 'number',
-    )
-
-    if (selectableConfigs.length === 0) {
-      return []
-    }
-
-    return [
-      {
-        handle: null,
-        title: i18n.global.t('formConfig.defaultView'),
-        icon: 'mdi-view-dashboard-outline',
-        active: selectedFormConfigHandle.value === null,
-      },
-      ...selectableConfigs.map((config) => ({
-        handle: config.handle ?? null,
-        title: config.name,
-        icon: config.isDefault ? 'mdi-table-star' : 'mdi-table-cog',
-        active: selectedFormConfigHandle.value === config.handle,
-      })),
-    ]
-  })
-  const selectedFormConfigLabel = computed(() => selectedFormConfig.value?.name ?? '')
   const listProjectionFields = computed(() => [
     ...new Set([
       ...getListProjectionFieldNames(
@@ -153,96 +112,7 @@ export function useSaplingTable(
   // #endregion
 
   // #region Filters and Sorting
-  function getUrlFilterParam() {
-    if (!isUseQueryParameter) {
-      return null
-    }
-
-    const filterParam = Array.isArray(route.query.filter)
-      ? route.query.filter[0]
-      : route.query.filter
-
-    if (typeof filterParam !== 'string' || filterParam.length === 0) {
-      return null
-    }
-
-    try {
-      return JSON.parse(filterParam)
-    } catch {
-      return filterParam
-    }
-  }
-
-  function getUrlSearchParam(): string {
-    if (!isUseQueryParameter) {
-      return ''
-    }
-
-    const searchParam = Array.isArray(route.query.search)
-      ? route.query.search[0]
-      : route.query.search
-
-    return typeof searchParam === 'string' ? searchParam : ''
-  }
-
-  function getUrlSortByParam(): SortItem[] {
-    if (!isUseQueryParameter) {
-      return []
-    }
-
-    const sortByParam = Array.isArray(route.query.sortBy)
-      ? route.query.sortBy[0]
-      : route.query.sortBy
-
-    if (typeof sortByParam !== 'string' || sortByParam.length === 0) {
-      return []
-    }
-
-    try {
-      const parsedSortBy = JSON.parse(sortByParam)
-      if (!Array.isArray(parsedSortBy)) {
-        return []
-      }
-
-      return parsedSortBy
-        .filter(
-          (item): item is SortItem =>
-            item != null &&
-            typeof item === 'object' &&
-            'key' in item &&
-            typeof item.key === 'string' &&
-            item.key.length > 0,
-        )
-        .map((item) => ({
-          key: item.key,
-          order: item.order === 'desc' ? 'desc' : 'asc',
-        }))
-    } catch {
-      return []
-    }
-  }
-
-  function getUrlPageParam(): number {
-    if (!isUseQueryParameter) {
-      return 1
-    }
-
-    const value = Array.isArray(route.query.page) ? route.query.page[0] : route.query.page
-    const parsed = typeof value === 'string' ? Number.parseInt(value, 10) : NaN
-    return Number.isFinite(parsed) && parsed > 0 ? parsed : 1
-  }
-
-  function getUrlItemsPerPageParam(): number | null {
-    if (!isUseQueryParameter) {
-      return null
-    }
-
-    const value = Array.isArray(route.query.itemsPerPage)
-      ? route.query.itemsPerPage[0]
-      : route.query.itemsPerPage
-    const parsed = typeof value === 'string' ? Number.parseInt(value, 10) : NaN
-    return Number.isFinite(parsed) && parsed > 0 ? parsed : null
-  }
+  const getRouteState = () => readSaplingTableRouteState(route.query, Boolean(isUseQueryParameter))
 
   const activeFilter = computed(() =>
     buildTableFilter({
@@ -276,7 +146,7 @@ export function useSaplingTable(
    * Applies the first template-defined default ordering to the server query.
    */
   function initialSort(nextEntityTemplates = entityTemplates.value) {
-    const urlSortBy = getUrlSortByParam()
+    const urlSortBy = getRouteState().sortBy
     if (urlSortBy.length > 0) {
       sortBy.value = urlSortBy
       return
@@ -364,13 +234,6 @@ export function useSaplingTable(
     }
   }
 
-  function cancelScheduledFormConfigContextLoad() {
-    if (scheduledFormConfigContextTimeout) {
-      clearTimeout(scheduledFormConfigContextTimeout)
-      scheduledFormConfigContextTimeout = null
-    }
-  }
-
   function scheduleLoadData() {
     cancelScheduledLoad()
     scheduledLoadTimeout = setTimeout(() => {
@@ -391,30 +254,21 @@ export function useSaplingTable(
   }
 
   function resetEntityState() {
+    const routeState = getRouteState()
     items.value = []
     totalItems.value = 0
     headers.value = []
-    page.value = getUrlPageParam()
-    const urlItemsPerPage = getUrlItemsPerPageParam()
-    if (urlItemsPerPage !== null) {
-      itemsPerPage.value = urlItemsPerPage
+    page.value = routeState.page
+    if (routeState.itemsPerPage !== null) {
+      itemsPerPage.value = routeState.itemsPerPage
     }
-    search.value = getUrlSearchParam()
+    search.value = routeState.search
     sortBy.value = []
     columnFilters.value = {}
   }
 
-  function resetFormConfigContext() {
-    cancelScheduledFormConfigContextLoad()
-    latestFormConfigContextRequestId += 1
-    systemTemplates.value = []
-    formConfigs.value = []
-    selectedFormConfigHandle.value = null
-    isLoadingFormConfigs.value = false
-  }
-
   function restoreQueryFilterState(nextEntityTemplates: EntityTemplate[]) {
-    const urlFilter = getUrlFilterParam()
+    const urlFilter = getRouteState().filter
     columnFilters.value = extractColumnFiltersFromFilterQuery(nextEntityTemplates, urlFilter)
     parentFilter.value =
       removeRestoredColumnFiltersFromFilterQuery(nextEntityTemplates, urlFilter) ?? {}
@@ -443,74 +297,6 @@ export function useSaplingTable(
     })
   }
 
-  function selectDefaultFormConfig(): void {
-    selectedFormConfigHandle.value = null
-  }
-
-  async function loadFormConfigContext(
-    nextEntityHandle: string,
-    options: { initializationId?: number; requestId?: number } = {},
-  ): Promise<void> {
-    if (!nextEntityHandle) {
-      systemTemplates.value = []
-      formConfigs.value = []
-      selectedFormConfigHandle.value = null
-      return
-    }
-
-    const requestId = options.requestId ?? ++latestFormConfigContextRequestId
-    isLoadingFormConfigs.value = true
-
-    try {
-      const [templates, configs] = await Promise.all([
-        ApiTemplateService.getEntityTemplate(nextEntityHandle),
-        ApiFormConfigService.list(nextEntityHandle),
-      ])
-
-      if (
-        requestId !== latestFormConfigContextRequestId ||
-        (typeof options.initializationId === 'number' &&
-          options.initializationId !== latestInitializationId) ||
-        entityHandle.value !== nextEntityHandle
-      ) {
-        return
-      }
-
-      systemTemplates.value = templates
-      formConfigs.value = configs
-      selectDefaultFormConfig()
-    } catch {
-      if (
-        requestId === latestFormConfigContextRequestId &&
-        (typeof options.initializationId !== 'number' ||
-          options.initializationId === latestInitializationId) &&
-        entityHandle.value === nextEntityHandle
-      ) {
-        systemTemplates.value = []
-        formConfigs.value = []
-        selectedFormConfigHandle.value = null
-      }
-    } finally {
-      if (requestId === latestFormConfigContextRequestId) {
-        isLoadingFormConfigs.value = false
-      }
-    }
-  }
-
-  function scheduleFormConfigContextLoad(nextEntityHandle: string, initializationId: number): void {
-    cancelScheduledFormConfigContextLoad()
-    const requestId = ++latestFormConfigContextRequestId
-
-    scheduledFormConfigContextTimeout = setTimeout(() => {
-      scheduledFormConfigContextTimeout = null
-      void loadFormConfigContext(nextEntityHandle, { initializationId, requestId })
-    }, TABLE_FORM_CONFIG_CONTEXT_DELAY_MS)
-  }
-
-  function selectFormConfig(handle: FormConfigSelectionHandle): void {
-    selectedFormConfigHandle.value = handle
-  }
-
   async function initializeEntityState(options: InitializeEntityStateOptions = {}) {
     const currentEntityHandle = entityHandle.value
     const initializationId = ++latestInitializationId
@@ -522,7 +308,7 @@ export function useSaplingTable(
     isInitialized.value = false
     isResettingEntityState.value = true
     cancelScheduledLoad()
-    resetFormConfigContext()
+    formConfigContext.reset()
     activeLoadController?.abort()
     activeLoadController = null
     latestLoadRequestId += 1
@@ -575,7 +361,11 @@ export function useSaplingTable(
     }
 
     isInitialized.value = true
-    scheduleFormConfigContextLoad(currentEntityHandle, initializationId)
+    formConfigContext.scheduleLoad(
+      currentEntityHandle,
+      () =>
+        initializationId === latestInitializationId && entityHandle.value === currentEntityHandle,
+    )
   }
   // #endregion
 
@@ -590,7 +380,7 @@ export function useSaplingTable(
 
   onBeforeUnmount(() => {
     cancelScheduledLoad()
-    cancelScheduledFormConfigContextLoad()
+    formConfigContext.cancelScheduledLoad()
     activeLoadController?.abort()
     activeLoadController = null
   })
@@ -639,49 +429,17 @@ export function useSaplingTable(
    * still works because popstate updates `route.query` and re-runs the watcher.
    */
   function syncUrlState() {
-    if (!isUseQueryParameter || typeof window === 'undefined') {
-      return
-    }
-
-    const params = new URLSearchParams(window.location.search)
-
-    const searchValue = search.value.trim()
-    if (searchValue) {
-      params.set('search', searchValue)
-    } else {
-      params.delete('search')
-    }
-
-    if (page.value > 1) {
-      params.set('page', String(page.value))
-    } else {
-      params.delete('page')
-    }
-
-    if (itemsPerPage.value && itemsPerPage.value !== itemsPerPageDefault.value) {
-      params.set('itemsPerPage', String(itemsPerPage.value))
-    } else {
-      params.delete('itemsPerPage')
-    }
-
-    if (validSortBy.value.length > 0) {
-      params.set('sortBy', JSON.stringify(validSortBy.value))
-    } else {
-      params.delete('sortBy')
-    }
-
-    const filterPayload = activeFilter.value
-    if (filterPayload && Object.keys(filterPayload).length > 0) {
-      params.set('filter', JSON.stringify(filterPayload))
-    } else {
-      params.delete('filter')
-    }
-
-    const queryString = params.toString()
-    const nextUrl = `${window.location.pathname}${queryString ? `?${queryString}` : ''}${window.location.hash}`
-    if (nextUrl !== `${window.location.pathname}${window.location.search}${window.location.hash}`) {
-      window.history.replaceState(window.history.state, '', nextUrl)
-    }
+    replaceSaplingTableUrlState(
+      {
+        search: search.value,
+        page: page.value,
+        itemsPerPage: itemsPerPage.value,
+        defaultItemsPerPage: itemsPerPageDefault.value,
+        sortBy: validSortBy.value,
+        filter: activeFilter.value,
+      },
+      Boolean(isUseQueryParameter),
+    )
   }
   // #endregion
 
@@ -758,7 +516,7 @@ export function useSaplingTable(
     onItemsPerPageUpdate,
     onColumnFiltersUpdate,
     onSortByUpdate,
-    selectFormConfig,
+    selectFormConfig: formConfigContext.select,
     generateHeaders,
     initialSort,
   }

@@ -2,7 +2,7 @@
 
 This note tracks files that are healthy enough to leave as-is for now, but should be watched when nearby work happens. Prefer incremental extraction during feature work over broad refactors without a concrete change driver.
 
-Last reviewed: 2026-07-15
+Last reviewed: 2026-07-16
 
 ## Source File Size Policy
 
@@ -17,37 +17,36 @@ Last reviewed: 2026-07-15
   executed migrations are tracked separately. They are not split merely to meet
   the application-source limit.
 
-The refreshed 2026-07-15 inventory contains 35 TypeScript, JavaScript, and Vue
+The refreshed 2026-07-16 inventory contains 5 TypeScript, JavaScript, and Vue
 files above 600 lines under `backend/src` and `frontend/src`. Two are the
-generated/immutable exceptions above, leaving 33 actionable source and test
-files. The inventory is regenerated after each wave rather than inferred from
-the previous count.
+generated/immutable exceptions above. The other three are the declarative
+`CompanyItem`, `PersonItem`, and `TicketItem` persisted schemas documented as
+cohesion exceptions below. No actionable source or test file remains above the
+policy limit. The inventory is regenerated after each wave rather than inferred
+from the previous count.
 
 ## Prioritized Refactoring Waves
 
-1. Backend generic Swagger generation (`generic-entity-swagger.ts`, 985 lines):
-   separate schema, route/operation, and reusable decorator construction.
-2. Frontend table utilities (`saplingTableUtil.ts`, 968 lines): separate value
-   projection/formatting from filter, sorting, and table-state helpers.
-3. Backend message templates (`message-template.service.ts`, 937 lines):
-   separate rendering/context construction from template lookup and persistence.
-4. Frontend edit-dialog orchestration (`useSaplingDialogEdit.ts`, 921 lines):
-   separate draft/field state from persistence and relation coordination.
+No further size-driven wave is queued. New work should keep the zero-actionable
+baseline and use normal responsibility reviews rather than extracting code only
+to change a line count.
 
 ## Resume Point
 
-- No extraction is left half-finished. The Developer Playground wave is fully
-  typechecked, linted, tested, built, inventoried, and documented.
-- The next session can start with either priority 1 (backend) or priority 2
-  (frontend) without depending on unverified Playground work.
+- No extraction is left half-finished. The final metadata/permission wave is
+  focused-tested, typechecked, inventoried, and documented.
+- All remaining oversized files have an explicit generated, immutable, or
+  persisted-schema cohesion classification.
 - Form Config administration remains below the limit. Extract entity/scope
   selection only when that workflow changes.
 
 ## Keep An Eye On
 
-| File                                                             | Why it is on the list                                                                | Next useful extraction                                                       |
-| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------- |
-| `frontend/src/components/dvelop/SaplingDvelopCloudWorkspace.vue` | The 858-line workflow still combines connection state, import controls, and results. | Extract connection/import panels when d.velop UI work next touches the page. |
+| File | Why it is on the list | Next useful extraction |
+| --- | --- | --- |
+| `backend/src/entity/CompanyItem.ts` | Explicit cohesion exception: all persisted/scalar/relation fields plus their ORM, Swagger, and dynamic-form metadata define one company schema. | Retain fields together; extract only future behavior or metadata genuinely reused by another model. |
+| `backend/src/entity/PersonItem.ts` | Explicit cohesion exception: the declarative person/security/relation schema must remain inspectable as one ORM model. Its two password lifecycle methods enforce invariants on that model. | Move new orchestration out immediately; keep field decorators and password invariants colocated. |
+| `backend/src/entity/TicketItem.ts` | Explicit cohesion exception: ticket workflow, SLA, assignment, relation, and UI metadata collectively define one persisted ticket schema. | Extract new behavior into services; do not scatter field declarations across mixins or inheritance solely for size. |
 
 ## Rule Of Thumb
 
@@ -528,3 +527,274 @@ the previous count.
   production build are green. The refreshed inventory is now 35 files above
   600 lines in total, including the two generated/immutable exceptions,
   leaving 33 actionable files.
+
+## Completed Thirtieth Wave
+
+- `backend/src/swagger/generic-entity-swagger.ts`: separated OpenAPI contracts,
+  entity example construction, generic operation patching, and Swagger UI
+  synchronization into four focused modules. The stable public entry point is
+  now 62 lines; the extracted modules range from 78 to 371 lines.
+- `frontend/src/utils/saplingTableUtil.ts`: separated template/header
+  projection, filter/order construction, and entity/reference value projection
+  into three reusable utility modules. The compatibility barrel is now three
+  lines; the extracted modules are 378, 362, and 94 lines.
+- The focused Swagger suite (3 tests), table utility suite (18 tests), backend
+  and frontend typechecks, formatting, and diff checks are green. The refreshed
+  inventory is now 34 files above 600 lines in total, including the two
+  generated/immutable exceptions, leaving 32 actionable files.
+
+## Completed Thirty-First Wave
+
+- `backend/src/api/template/message-template.service.ts`: separated Markdown
+  rendering/plain-text conversion, cached template metadata traversal, and
+  placeholder/context rendering into focused collaborators behind the stable
+  Nest service. The facade decreased from 937 to 116 lines; the new modules
+  range from 23 to 372 lines.
+- `frontend/src/composables/dialog/useSaplingDialogEdit.ts`: extracted template
+  and form-config catalog state, translated grouping, lazy icon loading, and the
+  complete save/reset/cancel state machine into two composables with shared
+  contracts. The orchestrator decreased from 921 to 510 lines; the extracted
+  modules are 208, 154, and 37 lines. Obsolete commented save logic was removed.
+- The focused message-template suite (6 tests), edit-dialog suite (9 tests),
+  backend and frontend typechecks, full production build, formatting, and diff
+  checks are green. The refreshed inventory is now 32 files above 600 lines in
+  total, including the two generated/immutable exceptions, leaving 30
+  actionable files.
+
+## Completed Thirty-Second Wave
+
+- `backend/src/api/kpi/kpi.executor.ts`: extracted current/previous time-range
+  calculation, sparkline bucket construction, point projection, date labels,
+  and bucket SQL expressions into `KpiTimeframePlanner`. The database executor
+  decreased from 930 to 558 lines; the planner is 370 lines.
+- Added three focused planner tests for current/previous month ranges, rolling
+  yearly month buckets, point projection, and unsupported combinations.
+- `frontend/src/composables/table/useSaplingTableColumnFilter.ts`: extracted
+  filter-state normalization, operator descriptions, dynamic-token labels, and
+  relation lookup/filter construction into pure utilities with a separate
+  public contract module. The composable decreased from 877 to 580 lines; the
+  utility and type modules are 203 and 32 lines.
+- The new KPI planner suite (3 tests), existing column-filter suite (4 tests),
+  backend and frontend typechecks, full production build, formatting, and diff
+  checks are green. The refreshed inventory is now 30 files above 600 lines in
+  total, including the two generated/immutable exceptions, leaving 28
+  actionable files.
+
+## Completed Thirty-Third Wave
+
+- `backend/src/auth/auth-provider-user-import.service.ts`: separated external
+  Azure/Google directory access, mapping, token refresh, paging/search, and
+  retry classification from Sapling person/role/company persistence. The
+  import facade decreased from 921 to 292 lines; the injected directory service
+  is 424 lines and pure mapping/error utilities are 181 lines.
+- Provider import tests now target the persistence facade and directory retry
+  boundary independently. All nine preserved tests pass without coupling the
+  persistence service to private provider-client methods.
+- `frontend/src/components/dvelop/SaplingDvelopCloudWorkspace.vue`: extracted
+  connection/health/sync controls, metric cards, metadata tables, table headers,
+  and empty rows into five reusable presentation components. Shared contracts
+  and pure status/reference/date helpers moved into focused modules. The route
+  workspace decreased from 858 to 488 lines; extracted files range from 11 to
+  166 lines.
+- Added three focused d.velop presentation utility tests. Backend and frontend
+  typechecks, the full production build, formatting, and diff checks are green.
+  The refreshed inventory is now 28 files above 600 lines in total, including
+  the two generated/immutable exceptions, leaving 26 actionable files.
+
+## Completed Thirty-Fourth Wave
+
+- `backend/src/api/current/current.service.ts`: separated open-task queries and
+  snapshot composition into `CurrentOpenTaskService`, and idempotent role-based
+  dashboard/favorite provisioning into `CurrentStarterWorkspaceService`. The
+  stable current-user/session/permission facade decreased from 886 to 560
+  lines; the collaborators are 151 and 139 lines.
+- `frontend/src/composables/table/useSaplingTable.ts`: separated form-config
+  loading, selection, overlay state, and request scheduling into
+  `useSaplingTableFormConfig`, and query-string parsing/replacement into
+  `saplingTableRouteState.ts`. The table orchestrator decreased from 835 to 595
+  lines; the new modules are 143 and 127 lines.
+- The focused Current suite (3 tests), generic-table suite (12 tests), backend
+  and frontend typechecks, and formatting are green. The refreshed inventory is
+  now 26 files above 600 lines in total, including the two generated/immutable
+  exceptions, leaving 24 actionable files.
+
+## Completed Thirty-Fifth Wave
+
+- `backend/src/api/ai/ai.controller.ts`: separated transcription/speech
+  catalogs, audio transcription, import attachments, and generated message
+  speech into `AiMediaController`; administrative workbench, runs, and
+  evaluations moved into `AiAgentController`. All controllers retain the
+  existing `api/ai` routes, authentication guard, and service boundaries. The
+  original controller decreased from 852 to 505 lines; the new controllers are
+  315 and 107 lines.
+- `frontend/src/composables/table/useSaplingTableFilterHelpers.ts`: replaced the
+  800-line mixed helper with a two-line compatibility barrel. Filter-state and
+  column-template normalization, filter-tree traversal/pruning, and scalar,
+  range, date, and relation-clause restoration now live in three focused
+  modules of 112, 243, and 460 lines.
+- The filter roundtrip suite (5 tests), backend and frontend typechecks, and the
+  full production build are green. The refreshed inventory is now 24 files
+  above 600 lines in total, including the two generated/immutable exceptions,
+  leaving 22 actionable files.
+
+## Completed Thirty-Sixth Wave
+
+- `backend/src/auth/auth.controller.ts`: moved provider-directory imports,
+  impersonation lifecycle, and personal API-token routes into the focused
+  `AuthAdministrationController`. Public login/logout/passkey behavior remains
+  in the original controller, whose constructor stays source-compatible for
+  existing tests. The original decreased from 905 to 568 lines; the
+  administrative controller is 370 lines.
+- `frontend/src/composables/account/useSaplingPermission.ts`: extracted
+  permission capability/state projection, record lookup/cloning, role-member
+  updates, and mutation helpers into `saplingPermission.utils.ts`. The stateful
+  permission workflow decreased from 797 to 598 lines; the utility module is
+  235 lines.
+- Added three direct utility tests for entity capabilities, nested role cloning,
+  and membership updates. The existing Auth controller suite (17 tests), new
+  utility suite (3 tests), backend/frontend typechecks, and full production
+  build are green. The refreshed inventory is now 22 files above 600 lines in
+  total, including the two generated/immutable exceptions, leaving 20
+  actionable files.
+
+## Completed Thirty-Seventh Wave
+
+- `backend/src/api/generic/generic-custom-field.service.ts`: separated entity
+  template construction into `generic-custom-field-template.factory.ts` and
+  payload/value normalization, typed-column assignment, and extraction into
+  `CustomFieldValueCodec`. Shared payload/template contracts moved into a small
+  contract module. The persistence/filter facade decreased from 836 to 487
+  lines; collaborators are 102, 274, and 4 lines.
+- `frontend/src/composables/account/useSaplingAccount.ts`: extracted account
+  contracts, date/calendar formatting, catalog option mapping, and handle
+  normalization into `saplingAccount.utils.ts`. The composable decreased from
+  697 to 580 lines; utilities are 145 lines.
+- `frontend/src/components/account/SaplingAccount.vue`: extracted reusable
+  active-session and Songbird preference panels. The composition shell
+  decreased from 676 to 577 lines; panels are 71 and 128 lines.
+- Custom-field regression coverage (8 tests), account/permission utility suites
+  (6 tests), backend/frontend typechecks, and the full production build are
+  green. The refreshed inventory is now 19 files above 600 lines in total,
+  including the two generated/immutable exceptions, leaving 17 actionable
+  files.
+
+## Completed Thirty-Eighth Wave
+
+- `backend/src/api/script/script.service.ts`: separated webhook, Teams, and
+  inbox subscription lookup/delivery, recipient population, payload snapshots,
+  and background scheduling into `ScriptSubscriptionService`. Lifecycle names
+  moved into `script.types.ts` and remain re-exported by the stable facade. The
+  script loader/runner decreased from 774 to 517 lines; collaborators are 289
+  and 12 lines.
+- `frontend/src/components/system/SaplingFormConfigAdmin.vue`: extracted the
+  entity/config/scope settings toolbar into the reusable
+  `SaplingFormConfigContextControls` component, and template-to-draft building,
+  group creation/removal/reordering, field moves, visibility, and order
+  normalization into pure utilities. The administration shell decreased from
+  751 to 548 lines; collaborators are 120 and 174 lines.
+- Added three draft utility regression tests; together with the existing draft
+  suite, six focused cases are green. The Script suite (3 tests), backend and
+  frontend typechecks, and full production build are green. The refreshed
+  inventory is now 17 files above 600 lines in total, including the two
+  generated/immutable exceptions, leaving 15 actionable files.
+
+## Completed Thirty-Ninth Wave
+
+- `backend/src/api/teams/teams.service.ts`: separated Microsoft Graph chat
+  creation/message delivery, Azure token refresh, authentication-error retry,
+  and delivery status persistence into `TeamsGraphDeliveryService`. The
+  subscription/template facade decreased from 735 to 349 lines; the Graph
+  delivery collaborator is 393 lines.
+- Existing Teams tests now target the Graph delivery boundary directly. Both
+  token-refresh and non-authentication failure cases remain green without
+  patching private methods on the orchestration facade.
+- `frontend/src/services/api.ai.service.ts`: extracted all public chat,
+  attachment, transcription, vectorization, MCP, and agent workbench contracts
+  into `api.ai.types.ts`, with compatibility re-exports from the stable service
+  path. The HTTP client decreased from 731 to 571 lines; contracts are 193
+  lines.
+- Teams tests (2), backend/frontend typechecks, and the full production build
+  are green. The refreshed inventory is now 15 files above 600 lines in total,
+  including the two generated/immutable exceptions, leaving 13 actionable
+  files.
+
+## Completed Fortieth Wave
+
+- Split the 813-line `useSaplingTable.test.ts` into a 267-line shared harness,
+  a 251-line initialization/loading suite, and a 286-line route/filter suite.
+  All 12 original scenarios remain intact.
+- `useSaplingCommandPalette.ts`: extracted debounced, abortable global record
+  search and entity-prefixed query parsing into
+  `useSaplingCommandPaletteRecordSearch`. The palette decreased from 682 to 567
+  lines; its collaborator is 110 lines.
+- `useSaplingNavigation.ts`: extracted text normalization/search matching,
+  group sorting, expansion toggles, parent/group resolution, route grouping,
+  and entity ordering into `saplingNavigation.utils.ts`. The composable
+  decreased from 649 to 566 lines; utilities are 81 lines.
+- Added four navigation utility tests. Together with the split table suites,
+  16 focused tests, the frontend typecheck, and the full production build are
+  green. The refreshed inventory is now 12 files above 600 lines in total,
+  including the two generated/immutable exceptions, leaving 10 actionable
+  files.
+
+## Completed Forty-First Wave
+
+- `ai-entity-generation.service.ts`: extracted deterministic prompt assembly,
+  response parsing, sensitive-value pruning, field mapping, and target payload
+  construction into the focused `AiEntityGenerationPayloadBuilder`. The
+  orchestration service decreased from 674 to 385 lines; its builder is 284
+  lines, and the service constructor/API remained stable.
+- `generic.controller.ts`: moved the admin-only parsed-row import route into
+  `GenericImportController` while retaining the exact `api/generic/:entityHandle/import`
+  route and guard stack. The generic CRUD/timeline controller decreased from
+  642 to 592 lines; the import controller is 67 lines and is registered in the
+  generic module.
+- The AI generation and domain endpoint suites cover 35 passing tests, and the
+  backend typecheck is green. The refreshed inventory is now 10 files above 600
+  lines in total, including the two generated/immutable exceptions, leaving 8
+  actionable files.
+
+## Completed Forty-Second Wave
+
+- Azure calendar delivery/import: extracted Graph response contracts,
+  authentication-error classification, date/email/text normalization, and
+  outbound event mapping into `azure-calendar.utils.ts`. The service decreased
+  from 686 to 571 lines; the provider-specific utility module is 123 lines.
+- Google calendar delivery/import: extracted the corresponding Google-specific
+  normalization and outbound mapping into `google-calendar.utils.ts`. The
+  service decreased from 612 to 533 lines; the utility module is 84 lines.
+  Provider semantics remain separate instead of being hidden behind a leaky
+  shared abstraction.
+- Split the generic controller contract scenarios out of
+  `domain-endpoints.spec.ts`: the remaining multi-domain suite is 464 lines and
+  `generic.controller.spec.ts` is 190 lines, with all seven original generic
+  scenarios preserved.
+- Added four focused provider utility scenarios. Across the affected suites, 41
+  tests and the backend typecheck are green. The refreshed inventory is now 7
+  files above 600 lines in total, including two generated/immutable exceptions,
+  leaving 5 files for extraction or explicit cohesion review.
+
+## Completed Forty-Third Wave
+
+- `entity.decorator.ts`: extracted its public metadata option and shape
+  contracts into `entity-metadata.types.ts` while preserving compatibility
+  re-exports. The runtime decorator module decreased from 654 to 580 lines; the
+  type module is 99 lines. Fifteen focused decorator/template tests and the
+  backend typecheck are green.
+- `permission-matrices.ts`: extracted the distinct 348-line support-role dataset
+  into `permission-matrix-support.ts` behind the existing named export. The
+  remaining shared types/helper plus sales/customer/contractor matrices are 482
+  lines; the support data module is 349 lines. The backend typecheck is green.
+- Audited `CompanyItem` (760), `PersonItem` (751), and `TicketItem` (699). They
+  are declarative persisted schemas with field-level ORM, API, and generated-UI
+  metadata rather than mixed orchestration. Splitting their fields into mixins,
+  fragments, or inherited classes would obscure the actual database model and
+  decorator order, so all three are explicit logical-cohesion exceptions.
+- The final inventory contains exactly five files above 600 lines: the generated
+  icon catalog, one already-executed migration, and the three persisted-schema
+  cohesion exceptions. Zero actionable source/test files remain above the
+  policy threshold.
+- The final full verification is green: backend 121 suites / 470 tests,
+  frontend 89 files / 303 tests, both typechecks, the combined production build,
+  and `git diff --check`. The full frontend audit also caught and removed a
+  technical entity/field-handle fallback from the extracted Form Config preview.

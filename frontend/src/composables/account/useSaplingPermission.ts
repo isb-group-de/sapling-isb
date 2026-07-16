@@ -1,28 +1,36 @@
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import ApiGenericService from '../../services/api.generic.service'
-import type {
-  EntityItem,
-  PermissionItem,
-  PersonItem,
-  RoleItem,
-  RoleStageItem,
-} from '../../entity/entity'
+import type { EntityItem, PermissionItem, PersonItem, RoleItem } from '../../entity/entity'
 import { i18n } from '@/i18n'
 import { useGenericStore } from '@/stores/genericStore'
 import { useSaplingMessageCenter } from '@/composables/system/useSaplingMessageCenter'
-
-type PermissionType = 'allowInsert' | 'allowRead' | 'allowUpdate' | 'allowDelete' | 'allowShow'
-type PermissionFilterMode = 'all' | 'enabled' | 'disabled'
-type PermissionSaveState = 'idle' | 'dirty' | 'saving' | 'saved' | 'error'
-type PermissionStateSnapshot = Record<PermissionType, boolean>
-
-const PERMISSION_FIELDS: PermissionType[] = [
-  'allowShow',
-  'allowRead',
-  'allowInsert',
-  'allowUpdate',
-  'allowDelete',
-]
+import {
+  PERMISSION_FIELDS,
+  assignPermissionResponse,
+  clonePerson,
+  clonePermission,
+  cloneRoles,
+  ensurePermissionRecord,
+  getEnabledPermissionCount,
+  getEntityGroupHandle,
+  getPermissionEntityHandle,
+  getPermission,
+  getPermissionMutationKey,
+  getPermissionRecord,
+  getPermissionRecordHandle,
+  getPermissionState,
+  getPermissionTypesForEntity,
+  getRoleByHandle,
+  getRoleMemberCount,
+  getStageTitle,
+  hasAnyEnabledPermission,
+  isPermissionRecordEnabled,
+  isPermissionStateEnabled,
+  updateRoleMembership,
+  type PermissionFilterMode,
+  type PermissionSaveState,
+  type PermissionType,
+} from './saplingPermission.utils'
 
 /**
  * Provides dashboard-oriented state and actions for the permission management screen.
@@ -290,43 +298,6 @@ export function useSaplingPermission() {
     selectedGroup.value = group
   }
 
-  function getEntityGroupHandle(entity: EntityItem): string | null {
-    if (typeof entity.group === 'string') {
-      return entity.group || null
-    }
-
-    if (
-      entity.group &&
-      typeof entity.group === 'object' &&
-      typeof entity.group.handle === 'string'
-    ) {
-      return entity.group.handle
-    }
-
-    return null
-  }
-
-  function getPermissionTypesForEntity(entity: EntityItem): PermissionType[] {
-    return PERMISSION_FIELDS.filter((permissionType) => {
-      switch (permissionType) {
-        case 'allowShow':
-          return entity.canShow === true
-        case 'allowRead':
-          return entity.canRead === true
-        case 'allowInsert':
-          return entity.canInsert === true
-        case 'allowUpdate':
-          return entity.canUpdate === true
-        case 'allowDelete':
-          return entity.canDelete === true
-      }
-    })
-  }
-
-  function getPermission(role: RoleItem, item: EntityItem, type: PermissionType): boolean {
-    return getPermissionState(getPermissionRecord(role, item.handle))[type]
-  }
-
   function setPermission(role: RoleItem, item: EntityItem, type: PermissionType, value: boolean) {
     const permission = ensurePermissionRecord(role, item)
     permission[type] = value
@@ -454,13 +425,6 @@ export function useSaplingPermission() {
     }
   }
 
-  const getStageTitle = (stage: RoleStageItem | string): string => {
-    if (!stage) return 'global'
-    if (typeof stage === 'string') return stage
-    if (typeof stage === 'object' && 'title' in stage) return stage.title
-    return 'global'
-  }
-
   function isRoleDirty(role: RoleItem): boolean {
     return entities.value.some((entity) => isPermissionDirty(role, entity))
   }
@@ -476,25 +440,8 @@ export function useSaplingPermission() {
     return Boolean(pendingPermissionKeys[getPermissionMutationKey(role.handle, entity.handle)])
   }
 
-  function getRoleMemberCount(role: RoleItem): number {
-    return role.persons?.length || 0
-  }
-
-  function getEnabledPermissionCount(role: RoleItem): number {
-    return (role.permissions || []).reduce(
-      (total, permission) =>
-        total + PERMISSION_FIELDS.filter((field) => permission[field] === true).length,
-      0,
-    )
-  }
-
   function getDirtyEntityCount(role: RoleItem): number {
     return entities.value.filter((entity) => isPermissionDirty(role, entity)).length
-  }
-
-  function hasAnyEnabledPermission(role: RoleItem, entity: EntityItem): boolean {
-    const permissionState = getPermissionState(getPermissionRecord(role, entity.handle))
-    return PERMISSION_FIELDS.some((field) => permissionState[field])
   }
 
   function applyMembershipChange(person: PersonItem, role: RoleItem, shouldAdd: boolean) {
@@ -594,49 +541,6 @@ export function useSaplingPermission() {
     }
   }
 
-  function assignPermissionResponse(
-    role: RoleItem,
-    entityHandle: string,
-    permission: PermissionItem,
-  ) {
-    const existingPermission = getPermissionRecord(role, entityHandle)
-    if (existingPermission) {
-      Object.assign(existingPermission, clonePermission(permission))
-      return
-    }
-
-    if (!role.permissions) {
-      role.permissions = []
-    }
-
-    role.permissions.push(clonePermission(permission))
-  }
-
-  function ensurePermissionRecord(role: RoleItem, entity: EntityItem): PermissionItem {
-    const existingPermission = getPermissionRecord(role, entity.handle)
-    if (existingPermission) {
-      return existingPermission
-    }
-
-    const createdPermission: PermissionItem = {
-      entity: entity.handle,
-      roles: role.handle != null ? [role.handle] : [],
-      allowRead: false,
-      allowInsert: false,
-      allowUpdate: false,
-      allowDelete: false,
-      allowShow: false,
-      createdAt: new Date(),
-    }
-
-    if (!role.permissions) {
-      role.permissions = []
-    }
-
-    role.permissions.push(createdPermission)
-    return createdPermission
-  }
-
   function getBaselinePermission(
     roleHandle: number | null,
     entityHandle: string,
@@ -645,109 +549,6 @@ export function useSaplingPermission() {
     return baselineRole ? getPermissionRecord(baselineRole, entityHandle) : undefined
   }
 
-  function getPermissionRecord(role: RoleItem, entityHandle: string): PermissionItem | undefined {
-    return role.permissions?.find(
-      (permission) => getPermissionEntityHandle(permission) === entityHandle,
-    )
-  }
-
-  function getPermissionEntityHandle(permission: PermissionItem): string {
-    return typeof permission.entity === 'object'
-      ? permission.entity.handle
-      : String(permission.entity)
-  }
-
-  function getPermissionRecordHandle(permission?: PermissionItem): number | string | null {
-    if (!permission || typeof permission !== 'object') {
-      return null
-    }
-
-    return 'handle' in permission
-      ? ((permission.handle as number | string | null | undefined) ?? null)
-      : null
-  }
-
-  function getPermissionState(permission?: PermissionItem): PermissionStateSnapshot {
-    return {
-      allowShow: permission?.allowShow === true,
-      allowRead: permission?.allowRead === true,
-      allowInsert: permission?.allowInsert === true,
-      allowUpdate: permission?.allowUpdate === true,
-      allowDelete: permission?.allowDelete === true,
-    }
-  }
-
-  function isPermissionRecordEnabled(permission: PermissionItem): boolean {
-    return isPermissionStateEnabled(getPermissionState(permission))
-  }
-
-  function isPermissionStateEnabled(permissionState: PermissionStateSnapshot): boolean {
-    return PERMISSION_FIELDS.some((field) => permissionState[field])
-  }
-
-  function getPermissionMutationKey(roleHandle: number | null, entityHandle: string): string {
-    return `${String(roleHandle)}:${entityHandle}`
-  }
-
-  function getRoleByHandle(roleList: RoleItem[], roleHandle: number | null): RoleItem | undefined {
-    return roleList.find((role) => role.handle === roleHandle)
-  }
-
-  function cloneRoles(roleList: RoleItem[]): RoleItem[] {
-    return roleList.map(cloneRole)
-  }
-
-  function cloneRole(role: RoleItem): RoleItem {
-    return {
-      ...role,
-      persons: (role.persons || []).map(clonePerson),
-      permissions: (role.permissions || []).map(clonePermission),
-    }
-  }
-
-  function clonePerson(person: PersonItem): PersonItem {
-    return {
-      ...person,
-      roles: [...(person.roles || [])],
-    }
-  }
-
-  function clonePermission(permission: PermissionItem): PermissionItem {
-    return {
-      ...permission,
-      roles: [...(permission.roles || [])],
-      entity: typeof permission.entity === 'object' ? { ...permission.entity } : permission.entity,
-    }
-  }
-
-  function updateRoleMembership(
-    role: RoleItem,
-    targetRoleHandle: number | null,
-    person: PersonItem,
-    shouldAdd: boolean,
-  ): RoleItem {
-    if (role.handle !== targetRoleHandle) {
-      return role
-    }
-
-    const personsForRole = [...(role.persons || [])]
-
-    if (shouldAdd) {
-      if (!personsForRole.some((entry) => entry.handle === person.handle)) {
-        personsForRole.push(clonePerson(person))
-      }
-
-      return {
-        ...role,
-        persons: personsForRole,
-      }
-    }
-
-    return {
-      ...role,
-      persons: personsForRole.filter((entry) => entry.handle !== person.handle),
-    }
-  }
   //#endregion
 
   //#region Return

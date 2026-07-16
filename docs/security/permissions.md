@@ -117,7 +117,13 @@ Permission matrices:
 
 ```text
 backend/src/database/seeder/permission-matrices.ts
+backend/src/database/seeder/permission-matrix-support.ts
 ```
+
+`permission-matrices.ts` owns the shared matrix contract/conversion plus the
+sales, customer, and contractor role data. The larger support-role dataset is a
+separate module and is compatibility-re-exported from `permission-matrices.ts`,
+so existing seeder imports remain stable.
 
 The seeder creates missing permissions for every entity/role combination. It does not update existing permissions.
 
