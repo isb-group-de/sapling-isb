@@ -20,7 +20,13 @@
       <v-icon size="20">mdi-repeat</v-icon>
     </button>
 
-    <v-dialog v-if="dialog" v-model="dialog" class="sapling-dialog-medium" persistent>
+    <v-dialog
+      v-if="dialog"
+      v-model="dialog"
+      class="sapling-dialog-medium"
+      persistent
+      @keydown.esc.stop.prevent="closeDialog"
+    >
       <SaplingDialogCard
         class="sapling-account-dialog sapling-field-event-recurrence__dialog"
         :close="closeDialog"

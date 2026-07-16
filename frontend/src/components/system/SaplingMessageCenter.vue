@@ -42,7 +42,13 @@
       </transition-group>
     </Teleport>
     <!-- Dialog for all Meldungen -->
-    <v-dialog v-if="dialog" v-model="dialog" persistent class="sapling-dialog-large">
+    <v-dialog
+      v-if="dialog"
+      v-model="dialog"
+      persistent
+      class="sapling-dialog-large"
+      @keydown.esc.stop.prevent="closeDialog"
+    >
       <template v-slot:activator="{ props }">
         <slot name="activator" v-bind="props" />
       </template>

@@ -5,6 +5,7 @@
     :height="SAPLING_DIALOG_HEIGHT.xl"
     persistent
     @update:model-value="handleVisibilityChange"
+    @keydown.esc.stop.prevent="closeMailDialog"
   >
     <SaplingDialogCard
       class="sapling-message-dialog sapling-mail-dialog"

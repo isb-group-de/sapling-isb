@@ -1,5 +1,11 @@
 <template>
-  <v-dialog v-if="dialog" v-model="dialog" :persistent="isBusy" class="sapling-dialog-large">
+  <v-dialog
+    v-if="dialog"
+    v-model="dialog"
+    :persistent="isBusy"
+    class="sapling-dialog-large"
+    @keydown.esc.stop.prevent="isBusy ? undefined : closeDialog()"
+  >
     <SaplingDialogCard
       class="sapling-permission-provider-dialog"
       :tilt="false"

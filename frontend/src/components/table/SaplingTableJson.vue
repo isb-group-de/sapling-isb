@@ -15,6 +15,7 @@
       :max-width="SAPLING_DIALOG_MAX_WIDTH.xxl"
       :height="SAPLING_DIALOG_HEIGHT.xl"
       persistent
+      @keydown.esc.stop.prevent="closeJsonDialog"
     >
       <SaplingDialogCard
         class="sapling-dialog-json-card sapling-dialog-card--fullscreen"

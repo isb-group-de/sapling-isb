@@ -1,5 +1,11 @@
 <template>
-  <v-dialog v-if="dialog" v-model="dialog" :persistent="busy" class="sapling-dialog-medium">
+  <v-dialog
+    v-if="dialog"
+    v-model="dialog"
+    :persistent="busy"
+    class="sapling-dialog-medium"
+    @keydown.esc.stop.prevent="busy ? undefined : handleClose()"
+  >
     <SaplingDialogCard
       class="sapling-account-dialog sapling-dashboard-template-dialog"
       :close="handleClose"

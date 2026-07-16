@@ -1,5 +1,10 @@
 <template>
-  <v-dialog v-model="dialogModel" persistent class="sapling-dialog-large">
+  <v-dialog
+    v-model="dialogModel"
+    persistent
+    class="sapling-dialog-large"
+    @keydown.esc.stop.prevent="closeDialog"
+  >
     <SaplingDialogCard
       class="sapling-external-record-links-dialog"
       :tilt="false"

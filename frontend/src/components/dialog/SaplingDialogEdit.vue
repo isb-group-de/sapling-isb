@@ -5,6 +5,7 @@
     :max-width="SAPLING_DIALOG_MAX_WIDTH['3xl']"
     :height="SAPLING_DIALOG_HEIGHT.xl"
     persistent
+    @keydown.esc.stop.prevent="cancel"
   >
     <SaplingDialogCard class="sapling-dialog-card--fill" :tilt="false" :close="cancel">
       <div

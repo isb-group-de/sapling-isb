@@ -25,6 +25,7 @@ export function useSaplingDialogKeyboardShortcuts(actions: SaplingDialogKeyboard
 
     if (event.key === 'Escape' && !isModifierPressed && !event.altKey) {
       event.preventDefault()
+      event.stopPropagation()
       actions.cancel()
     }
   }

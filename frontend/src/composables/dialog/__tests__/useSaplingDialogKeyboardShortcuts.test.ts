@@ -23,11 +23,13 @@ describe('useSaplingDialogKeyboardShortcuts', () => {
     }
     const { onDialogKeydown } = useSaplingDialogKeyboardShortcuts(actions)
     const event = createKeyboardEvent(key, options)
+    const stopPropagation = vi.spyOn(event, 'stopPropagation')
 
     onDialogKeydown(event)
 
     expect(actions[actionName]).toHaveBeenCalledOnce()
     expect(event.defaultPrevented).toBe(true)
+    expect(stopPropagation).toHaveBeenCalledTimes(actionName === 'cancel' ? 1 : 0)
   })
 
   it('ignores repeated and alt-modified shortcuts', () => {

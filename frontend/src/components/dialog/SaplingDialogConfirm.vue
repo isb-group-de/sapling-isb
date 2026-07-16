@@ -9,6 +9,7 @@
     :class="dialogClass"
     :persistent="persistent"
     @update:model-value="handleDialogUpdate"
+    @keydown.esc.stop.prevent="handleEscape"
   >
     <SaplingDialogCard
       :tilt="tilt"
@@ -93,8 +94,16 @@ function handleDialogUpdate(value: boolean): void {
   emit('update:modelValue', value)
 }
 
-function handleCloseButton(): void {
+function handleEscape(): void {
+  if (props.closeDisabled) {
+    return
+  }
+
   emit('escape')
+}
+
+function handleCloseButton(): void {
+  handleEscape()
 }
 
 /**
@@ -116,11 +125,6 @@ function onShellKeydown(event: KeyboardEvent): void {
     event.preventDefault()
     emit('enter')
     return
-  }
-
-  if (event.key === 'Escape' && !event.altKey) {
-    event.preventDefault()
-    emit('escape')
   }
 }
 // #endregion

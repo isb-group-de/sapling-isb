@@ -1,5 +1,11 @@
 <template>
-  <v-dialog v-if="dialog" v-model="dialog" persistent class="sapling-dialog-large">
+  <v-dialog
+    v-if="dialog"
+    v-model="dialog"
+    persistent
+    class="sapling-dialog-large"
+    @keydown.esc.stop.prevent="closeDialog"
+  >
     <SaplingDialogCard class="sapling-inbox-dialog" :tilt="false" :close="closeDialog">
       <SaplingDialogShell
         fill-shell

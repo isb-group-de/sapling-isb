@@ -106,6 +106,43 @@ function createDialogState() {
   }
 }
 
+function mountDialog() {
+  return mount(SaplingDialogEdit, {
+    props: {
+      modelValue: true,
+      mode: 'edit',
+      item: { handle: 1, title: 'Existing' },
+      templates: [{ key: 'title', name: 'title', type: 'string' }],
+      entity: { handle: 'ticket' } as never,
+    },
+    global: {
+      stubs: {
+        VDialog: {
+          name: 'VDialog',
+          props: ['modelValue'],
+          template: '<div v-if="modelValue"><slot /></div>',
+        },
+        VCardText: { template: '<div><slot /></div>' },
+        VDefaultsProvider: { template: '<div><slot /></div>' },
+        VForm: { template: '<form><slot /></form>' },
+        VIcon: { template: '<span><slot /></span>' },
+        VSkeletonLoader: { template: '<div />' },
+        VTab: { template: '<button><slot /></button>' },
+        VTabs: { template: '<div><slot /></div>' },
+        VWindow: { template: '<div><slot /></div>' },
+        VWindowItem: { template: '<div><slot /></div>' },
+        SaplingDialogCard: { template: '<div><slot /></div>' },
+        SaplingDialogEditActions: { template: '<div />' },
+        SaplingDialogEditFormSections: { template: '<input data-test="first-field" />' },
+        SaplingDialogEditHeader: { template: '<div />' },
+        SaplingDialogEditRelationTab: { template: '<div />' },
+        SaplingDialogRecordActionDialogs: { template: '<div />' },
+        SaplingDialogUnsavedChanges: { template: '<div />' },
+      },
+    },
+  })
+}
+
 async function settleFocus() {
   await nextTick()
   await nextTick()
@@ -130,36 +167,7 @@ describe('SaplingDialogEdit', () => {
     const focusSpy = vi.spyOn(HTMLInputElement.prototype, 'focus')
 
     try {
-      mount(SaplingDialogEdit, {
-        props: {
-          modelValue: true,
-          mode: 'edit',
-          item: { handle: 1, title: 'Existing' },
-          templates: [{ key: 'title', name: 'title', type: 'string' }],
-          entity: { handle: 'ticket' } as never,
-        },
-        global: {
-          stubs: {
-            VDialog: { props: ['modelValue'], template: '<div v-if="modelValue"><slot /></div>' },
-            VCardText: { template: '<div><slot /></div>' },
-            VDefaultsProvider: { template: '<div><slot /></div>' },
-            VForm: { template: '<form><slot /></form>' },
-            VIcon: { template: '<span><slot /></span>' },
-            VSkeletonLoader: { template: '<div />' },
-            VTab: { template: '<button><slot /></button>' },
-            VTabs: { template: '<div><slot /></div>' },
-            VWindow: { template: '<div><slot /></div>' },
-            VWindowItem: { template: '<div><slot /></div>' },
-            SaplingDialogCard: { template: '<div><slot /></div>' },
-            SaplingDialogEditActions: { template: '<div />' },
-            SaplingDialogEditFormSections: { template: '<input data-test="first-field" />' },
-            SaplingDialogEditHeader: { template: '<div />' },
-            SaplingDialogEditRelationTab: { template: '<div />' },
-            SaplingDialogRecordActionDialogs: { template: '<div />' },
-            SaplingDialogUnsavedChanges: { template: '<div />' },
-          },
-        },
-      })
+      mountDialog()
 
       const state = dialogHarness.state as ReturnType<typeof createDialogState>
       state.isLoading.value = false
@@ -181,5 +189,14 @@ describe('SaplingDialogEdit', () => {
         Reflect.deleteProperty(HTMLElement.prototype, 'offsetParent')
       }
     }
+  })
+
+  it('cancels from Escape on the dialog root', async () => {
+    const wrapper = mountDialog()
+    const state = dialogHarness.state as ReturnType<typeof createDialogState>
+
+    await wrapper.getComponent({ name: 'VDialog' }).trigger('keydown', { key: 'Escape' })
+
+    expect(state.cancel).toHaveBeenCalledOnce()
   })
 })
