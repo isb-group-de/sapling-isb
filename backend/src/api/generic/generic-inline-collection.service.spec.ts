@@ -25,7 +25,13 @@ function inlineField(
   } as EntityTemplateDto;
 }
 
-function createSubject(existingItems: object[] = []) {
+function createSubject(
+  existingItems: object[] = [],
+  fieldPermissions = {
+    getTemplates: jest.fn(() => Promise.resolve([])),
+    assertPayloadAccess: jest.fn((..._args: unknown[]) => Promise.resolve()),
+  },
+) {
   const em = {
     find: jest.fn(() => Promise.resolve(existingItems)),
     assign: jest.fn(),
@@ -68,9 +74,11 @@ function createSubject(existingItems: object[] = []) {
       genericReferenceService as never,
       genericPermissionService as never,
       genericPayloadService as never,
+      fieldPermissions as never,
     ),
     em,
     genericPermissionService,
+    fieldPermissions,
   };
 }
 
@@ -141,5 +149,41 @@ describe('GenericInlineCollectionService', () => {
       'allowDeleteStage',
     );
     expect(em.flush).toHaveBeenCalledTimes(1);
+  });
+
+  it('checks submitted child fields with update and insert permissions', async () => {
+    const existing = { handle: 1, title: 'Old', ticket: 7 };
+    const { service, fieldPermissions } = createSubject([existing]);
+
+    await service.sync(
+      'ticket',
+      { handle: 7 },
+      [
+        {
+          field: inlineField(),
+          items: [{ handle: 1, title: 'Updated' }, { title: 'Created' }],
+        },
+      ],
+      { handle: 9 } as never,
+    );
+
+    expect(fieldPermissions.assertPayloadAccess).toHaveBeenNthCalledWith(
+      1,
+      { handle: 9 },
+      'ticketLine',
+      { title: 'Updated' },
+      'update',
+      { handle: 1, ticket: 7, title: 'Updated' },
+      [],
+    );
+    expect(fieldPermissions.assertPayloadAccess).toHaveBeenNthCalledWith(
+      2,
+      { handle: 9 },
+      'ticketLine',
+      { title: 'Created' },
+      'insert',
+      { title: 'Created' },
+      [],
+    );
   });
 });

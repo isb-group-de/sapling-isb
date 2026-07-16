@@ -8,7 +8,9 @@ import { EntityItem } from './EntityItem';
 import { RoleItem } from './RoleItem';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Sapling, SaplingForm } from './global/entity.decorator';
-import { type Rel } from '@mikro-orm/core';
+import { Collection, type Rel } from '@mikro-orm/core';
+import { OneToMany } from '@mikro-orm/decorators/legacy';
+import { FieldPermissionItem } from './FieldPermissionItem';
 
 /**
  * @class PermissionItem
@@ -169,6 +171,12 @@ export class PermissionItem {
   })
   @ManyToOne(() => RoleItem)
   role!: Rel<RoleItem>;
+
+  @ApiPropertyOptional({ type: () => FieldPermissionItem, isArray: true })
+  @Sapling(['isHideAsReference'])
+  @OneToMany(() => FieldPermissionItem, (x) => x.permission)
+  fieldPermissions: Collection<FieldPermissionItem> =
+    new Collection<FieldPermissionItem>(this);
   //#endregion
 
   //#region Properties: System

@@ -17,6 +17,7 @@ backend/src/api/generic/generic-filter.service.ts
 backend/src/api/generic/generic-payload.service.ts
 backend/src/api/generic/generic-permission.service.ts
 backend/src/api/generic/generic-sanitizer.service.ts
+backend/src/api/current/field-permission.service.ts
 backend/src/api/generic/generic-timeline.service.ts
 backend/src/entity/global/entity.registry.ts
 ```
@@ -54,14 +55,14 @@ GET /api/generic/:entityHandle
 
 Common query parameters:
 
-| Parameter   | Meaning                                                                            |
-| ----------- | ---------------------------------------------------------------------------------- |
-| `filter`    | JSON object encoded as string                                                      |
-| `orderBy`   | JSON object encoded as string                                                      |
-| `relations` | JSON list encoded as string                                                        |
-| `fields`    | Optional JSON list of persistent response fields; primary keys are always included |
-| `page`      | 1-based page number                                                                |
-| `limit`     | page size                                                                          |
+| Parameter   | Meaning                                                   |
+| ----------- | --------------------------------------------------------- |
+| `filter`    | JSON object encoded as string                             |
+| `orderBy`   | JSON object encoded as string                             |
+| `relations` | JSON list encoded as string                               |
+| `fields`    | Optional JSON list of readable persistent response fields |
+| `page`      | 1-based page number                                       |
+| `limit`     | page size                                                 |
 
 Example:
 
@@ -93,6 +94,11 @@ $or
 ```
 
 Nested relation filters are supported when relation names match entity metadata.
+
+Every explicit filter, order, relation, and projection path is checked
+recursively against field permissions, including dotted relation and
+`customFields.<key>` paths. A forbidden path returns
+`403 global.fieldPermissionDenied` before it can affect result count or order.
 
 Example:
 
@@ -141,6 +147,8 @@ Rules:
 - Custom fields can be sent in a nested `customFields` object, for example
   `{ "customFields": { "externalCompanyName": "Acme GmbH" } }`.
 - Security/system/read-only fields may be ignored or rejected depending on metadata.
+- A client-supplied field without `allowInsert` rejects the complete request;
+  trusted server scripts can still add system-managed fields later.
 
 ## Update
 
@@ -159,6 +167,10 @@ The generic mutation service handles:
 - special payload normalization
 - change log creation
 
+A client-supplied field without `allowUpdate` rejects the complete request.
+Relation add/remove uses the update permission of the relation field. Mutation
+responses are projected with the same read policy.
+
 ## Custom Fields
 
 Sapling supports generic custom fields through `customFieldDefinition`,
@@ -174,8 +186,9 @@ factory; type-aware normalization and value-column encoding/decoding live in
 types instead of growing the generic facade.
 
 Definitions can be marked as required, active, and read-only. Read-only custom
-fields remain visible according to their visibility settings, are disabled in
-generated forms, and are ignored by generic CRUD and import mutation payloads.
+fields remain visible according to their visibility settings and are disabled
+in generated forms. Client attempts to write structurally or
+permission-denied custom fields fail instead of being silently stripped.
 
 Supported first-pass custom field types are seeded as reference records in
 `customFieldType`:
@@ -238,6 +251,18 @@ Query parameters:
 | `months`  | number of non-empty months to load |
 
 The timeline aggregates activity around a record and directly related entities.
+
+Only universally readable relation, date, grouping, and amount fields
+participate. Change-log payloads and detail properties are filtered against the
+source entity and property name.
+
+## Cross-cutting Projection
+
+Authenticated specialized controllers are covered by the global
+`FieldPermissionProjectionInterceptor`. Registered entity instances inside
+plain response objects are projected through `GenericSanitizerService`; generic
+responses that are already plain and projected are left unchanged. Internal
+scripts and background jobs remain trusted system contexts.
 
 ## Downloads
 

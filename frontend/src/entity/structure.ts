@@ -252,6 +252,15 @@ export interface EntityTemplate {
   kanban?: EntityTemplateKanban | null
   /** Dynamic custom field metadata */
   customField?: EntityTemplateCustomField | null
+  /** Effective read/create/update access for the current user */
+  fieldAccess?: {
+    allowRead: boolean
+    allowInsert: boolean
+    allowUpdate: boolean
+    allowReadStage?: string
+    allowInsertStage?: string
+    allowUpdateStage?: string
+  } | null
 }
 
 export type AccumulatedPermission = {

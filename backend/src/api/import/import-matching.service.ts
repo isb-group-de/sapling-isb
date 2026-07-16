@@ -1,10 +1,15 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
 import { EntityManager, wrap } from '@mikro-orm/core';
 import { ImportBatchItem } from '../../entity/ImportBatchItem';
 import { ImportBatchRowItem } from '../../entity/ImportBatchRowItem';
 import { PersonItem } from '../../entity/PersonItem';
 import { GenericService } from '../generic/generic.service';
 import { TemplateService } from '../template/template.service';
+import { FieldPermissionService } from '../current/field-permission.service';
 import type {
   ImportFieldMappingDto,
   ImportMatchCandidateDto,
@@ -23,6 +28,11 @@ export class ImportMatchingService {
     private readonly em: EntityManager,
     private readonly genericService: GenericService,
     private readonly templateService: TemplateService,
+    private readonly fieldPermissions: FieldPermissionService = {
+      getTemplates: (entityHandle: string) =>
+        Promise.resolve(this.templateService.getEntityTemplate(entityHandle)),
+      assertReadableFields: () => Promise.resolve(),
+    } as unknown as FieldPermissionService,
   ) {}
 
   async matchBatch(
@@ -33,9 +43,10 @@ export class ImportMatchingService {
   ): Promise<ImportMatchResponseDto> {
     const entityHandle = this.normalizeRequiredString(dto.entityHandle);
     const sourceColumns = this.resolveSourceColumns(batch, dto.sourceColumns);
-    const targetFields = this.resolveTargetFields(
+    const targetFields = await this.resolveTargetFields(
       entityHandle,
       dto.targetFields,
+      currentUser,
     );
     if (targetFields.length === 0) {
       throw new BadRequestException('import.matchNoSearchableFields');
@@ -164,11 +175,12 @@ export class ImportMatchingService {
       : headers;
   }
 
-  private resolveTargetFields(
+  private async resolveTargetFields(
     entityHandle: string,
     requestedFields: string[] | undefined,
-  ): string[] {
-    const template = this.templateService.getEntityTemplate(entityHandle);
+    currentUser: PersonItem,
+  ): Promise<string[]> {
+    const template = await this.fieldPermissions.getTemplates(entityHandle);
     const persistentScalarFields = template
       .filter(
         (field) =>
@@ -179,9 +191,15 @@ export class ImportMatchingService {
       .map((field) => field.name);
     const requested = this.normalizeColumns(requestedFields ?? []);
     if (requested.length > 0) {
-      return requested.filter((field) =>
+      const knownRequested = requested.filter((field) =>
         persistentScalarFields.includes(field),
       );
+      await this.fieldPermissions.assertReadableFields(
+        currentUser,
+        entityHandle,
+        knownRequested,
+      );
+      return knownRequested;
     }
 
     const preferredNames = new Set([
@@ -195,7 +213,7 @@ export class ImportMatchingService {
       'firstName',
       'lastName',
     ]);
-    return template
+    const candidates = template
       .filter(
         (field) =>
           field.name &&
@@ -204,6 +222,20 @@ export class ImportMatchingService {
             preferredNames.has(field.name)),
       )
       .map((field) => field.name);
+    const readable: string[] = [];
+    for (const fieldName of candidates) {
+      try {
+        await this.fieldPermissions.assertReadableFields(
+          currentUser,
+          entityHandle,
+          [fieldName],
+        );
+        readable.push(fieldName);
+      } catch (error) {
+        if (!(error instanceof ForbiddenException)) throw error;
+      }
+    }
+    return readable;
   }
 
   private async findCandidatesForRow(

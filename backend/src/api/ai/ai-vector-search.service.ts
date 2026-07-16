@@ -1,7 +1,12 @@
 import { EntityManager } from '@mikro-orm/core';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
 import { PersonItem } from '../../entity/PersonItem';
 import { GenericService } from '../generic/generic.service';
+import { FieldPermissionService } from '../current/field-permission.service';
 import { AiVectorIndexRow } from './ai.types';
 import { extractRecordHandle } from './ai-navigation.utils';
 import { AiProviderRegistryService } from './ai-provider-registry.service';
@@ -12,6 +17,7 @@ import {
   buildVectorExcerpt,
   coerceVectorRecordHandle,
   getVectorSearchRelations,
+  getVectorSectionFieldPaths,
   getVectorSearchUsageHints,
   getVectorSearchableSections,
   resolveVectorSearchCandidateMultiplier,
@@ -46,6 +52,9 @@ export class AiVectorSearchService {
     private readonly genericService: GenericService,
     private readonly providerRegistry: AiProviderRegistryService,
     private readonly embeddingService: AiVectorEmbeddingService,
+    private readonly fieldPermissions: FieldPermissionService = {
+      assertReadableFields: () => Promise.resolve(),
+    } as unknown as FieldPermissionService,
   ) {}
 
   async searchVectorDocuments(
@@ -80,6 +89,23 @@ export class AiVectorSearchService {
       index.provider_handle,
       index.model_handle,
     );
+    const readableSections = await this.getReadableSections(
+      normalizedEntityHandle,
+      user,
+    );
+    if (readableSections.length === 0) {
+      return {
+        entityHandle: normalizedEntityHandle,
+        query: normalizedQuery,
+        indexed: true,
+        providerHandle: embeddingTarget.provider.handle,
+        modelHandle: embeddingTarget.model.handle,
+        indexedDocumentCount: Number(index.document_count) || 0,
+        searchableSections: [],
+        results: [],
+        usageHints: getVectorSearchUsageHints(normalizedEntityHandle),
+      };
+    }
     const [queryEmbedding] = await this.embeddingService.embedTexts(
       [normalizedQuery],
       embeddingTarget,
@@ -96,9 +122,16 @@ export class AiVectorSearchService {
               1 - ("embedding" <=> ?::vector) as "similarity"
        from "ai_vector_document_item"
        where "source_entity_handle" = ?
+         and "source_section" in (${readableSections.map(() => '?').join(', ')})
        order by "embedding" <=> ?::vector asc
        limit ?`,
-      [vectorLiteral, normalizedEntityHandle, vectorLiteral, candidateLimit],
+      [
+        vectorLiteral,
+        normalizedEntityHandle,
+        ...readableSections,
+        vectorLiteral,
+        candidateLimit,
+      ],
     )) as VectorSearchRow[];
 
     const groupedRows = new Map<
@@ -186,10 +219,31 @@ export class AiVectorSearchService {
       providerHandle: embeddingTarget.provider.handle,
       modelHandle: embeddingTarget.model.handle,
       indexedDocumentCount: Number(index.document_count) || 0,
-      searchableSections: getVectorSearchableSections(normalizedEntityHandle),
+      searchableSections: readableSections,
       results,
       usageHints: getVectorSearchUsageHints(normalizedEntityHandle),
     };
+  }
+
+  private async getReadableSections(
+    entityHandle: string,
+    user: PersonItem,
+  ): Promise<string[]> {
+    const readable: string[] = [];
+    for (const section of getVectorSearchableSections(entityHandle)) {
+      try {
+        await this.fieldPermissions.assertReadableFields(
+          user,
+          entityHandle,
+          getVectorSectionFieldPaths(entityHandle, section),
+        );
+        readable.push(section);
+      } catch (error) {
+        if (!(error instanceof ForbiddenException)) throw error;
+        // A section is excluded before ranking if any source field is hidden.
+      }
+    }
+    return readable;
   }
 
   private async getVectorIndex(

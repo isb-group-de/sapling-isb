@@ -8,6 +8,7 @@ import { GenericCustomFieldService } from './generic-custom-field.service';
 import { GenericQueryService } from './generic-query.service';
 import { GenericReadService } from './generic-read.service';
 import { GenericSanitizerService } from './generic-sanitizer.service';
+import { FieldPermissionService } from '../current/field-permission.service';
 
 export interface GenericListResult {
   data: object[];
@@ -29,6 +30,12 @@ export class GenericListQueryService {
     private readonly genericReadService: GenericReadService,
     private readonly genericSanitizerService: GenericSanitizerService,
     private readonly genericCustomFieldService: GenericCustomFieldService,
+    private readonly fieldPermissions: FieldPermissionService = {
+      getTemplates: (entityHandle: string) =>
+        Promise.resolve(this.templateService.getEntityTemplate(entityHandle)),
+      assertReadableQuery: () => Promise.resolve(),
+      assertReadableFields: () => Promise.resolve(),
+    } as unknown as FieldPermissionService,
   ) {}
 
   async findAndCount(
@@ -44,7 +51,23 @@ export class GenericListQueryService {
     const startTime = performance.now();
     const entityClass = this.genericQueryService.getEntityClass(entityHandle);
     const offset = (page - 1) * limit;
-    const template = this.templateService.getEntityTemplate(entityHandle);
+    const template = await this.fieldPermissions.getTemplates(entityHandle);
+    await Promise.all([
+      this.fieldPermissions.assertReadableQuery(
+        currentUser,
+        entityHandle,
+        where,
+      ),
+      this.fieldPermissions.assertReadableQuery(
+        currentUser,
+        entityHandle,
+        orderBy,
+      ),
+      this.fieldPermissions.assertReadableFields(currentUser, entityHandle, [
+        ...fields,
+        ...relations,
+      ]),
+    ]);
     const normalizedWhere = this.genericQueryService.normalizeQueryCriteria(
       entityHandle,
       await this.genericCustomFieldService.applyCustomFieldFilters(
@@ -97,14 +120,15 @@ export class GenericListQueryService {
       result.entity,
       currentUser,
     );
-    items = this.genericSanitizerService.sanitizeEntityResult(
-      entityHandle,
-      items,
-      template,
-    );
     items = await this.genericCustomFieldService.hydrateRecords(
       entityHandle,
       items,
+    );
+    items = this.genericSanitizerService.projectEntityResult(
+      entityHandle,
+      items,
+      currentUser,
+      template,
     );
 
     return {
@@ -127,7 +151,24 @@ export class GenericListQueryService {
     relations: string[],
   ): Promise<string> {
     const entityClass = this.genericQueryService.getEntityClass(entityHandle);
-    const template = this.templateService.getEntityTemplate(entityHandle);
+    const template = await this.fieldPermissions.getTemplates(entityHandle);
+    await Promise.all([
+      this.fieldPermissions.assertReadableQuery(
+        currentUser,
+        entityHandle,
+        where,
+      ),
+      this.fieldPermissions.assertReadableQuery(
+        currentUser,
+        entityHandle,
+        orderBy,
+      ),
+      this.fieldPermissions.assertReadableFields(
+        currentUser,
+        entityHandle,
+        relations,
+      ),
+    ]);
     const normalizedWhere = this.genericQueryService.normalizeQueryCriteria(
       entityHandle,
       await this.genericCustomFieldService.applyCustomFieldFilters(
@@ -166,16 +207,17 @@ export class GenericListQueryService {
       throw new BadRequestException('exception.exportLimitExceeded');
     }
 
-    const sanitized = this.genericSanitizerService.sanitizeEntityResult(
-      entityHandle,
-      result.items,
-      template,
-    );
     const hydrated = await this.genericCustomFieldService.hydrateRecords(
       entityHandle,
-      sanitized,
+      result.items,
     );
-    return JSON.stringify(hydrated, null, 2);
+    const projected = this.genericSanitizerService.projectEntityResult(
+      entityHandle,
+      hydrated,
+      currentUser,
+      template,
+    );
+    return JSON.stringify(projected, null, 2);
   }
 
   private buildPopulate(

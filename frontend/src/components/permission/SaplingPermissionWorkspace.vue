@@ -116,6 +116,13 @@
                 <v-btn size="x-small" variant="text" @click="emit('clearEntityAccess', item)">{{
                   $t('right.none')
                 }}</v-btn>
+                <v-btn
+                  size="x-small"
+                  variant="tonal"
+                  prepend-icon="mdi-form-textbox-lock"
+                  @click="emit('editFieldPermissions', item)"
+                  >{{ $t('permission.fields') }} · {{ getRestrictedFieldCount(item) }}</v-btn
+                >
               </div>
             </td>
           </tr>
@@ -147,6 +154,9 @@
             <v-btn size="x-small" variant="text" @click="emit('clearEntityAccess', item)">{{
               $t('right.none')
             }}</v-btn>
+            <v-btn size="x-small" variant="tonal" @click="emit('editFieldPermissions', item)"
+              >{{ $t('permission.fields') }} · {{ getRestrictedFieldCount(item) }}</v-btn
+            >
           </div>
         </div>
 
@@ -208,6 +218,7 @@ const props = defineProps<{
   getPermission: (role: RoleItem, item: EntityItem, permissionType: PermissionColumnKey) => boolean
   isPermissionDirty: (role: RoleItem, item: EntityItem) => boolean
   isPermissionPending: (role: RoleItem, item: EntityItem) => boolean
+  getRestrictedFieldCount: (item: EntityItem) => number
 }>()
 
 const emit = defineEmits<{
@@ -222,6 +233,7 @@ const emit = defineEmits<{
   ): void
   (event: 'grantEntityAccess', item: EntityItem): void
   (event: 'clearEntityAccess', item: EntityItem): void
+  (event: 'editFieldPermissions', item: EntityItem): void
 }>()
 
 const { lgAndUp } = useDisplay()

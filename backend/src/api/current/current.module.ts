@@ -11,6 +11,9 @@ import { OpenTaskEventsModule } from './open-task-events.module';
 import { FormConfigCoreModule } from '../form-config/form-config-core.module';
 import { GenericCustomFieldService } from '../generic/generic-custom-field.service';
 import { CalendarSyncModule } from '../../calendar/sync/calendar-sync.module';
+import { FieldPermissionService } from './field-permission.service';
+import { PermissionAdminController } from './permission-admin.controller';
+import { GenericSanitizerService } from '../generic/generic-sanitizer.service';
 
 /**
  * @class
@@ -33,14 +36,21 @@ import { CalendarSyncModule } from '../../calendar/sync/calendar-sync.module';
       ENTITY_REGISTRY.map((e) => e.class as new () => any),
     ),
   ],
-  controllers: [CurrentController],
+  controllers: [CurrentController, PermissionAdminController],
   providers: [
     CurrentService,
     CurrentMetadataService,
     TemplateService,
     GenericCustomFieldService,
+    FieldPermissionService,
+    GenericSanitizerService,
   ],
-  exports: [CurrentService, OpenTaskEventsModule],
+  exports: [
+    CurrentService,
+    FieldPermissionService,
+    GenericSanitizerService,
+    OpenTaskEventsModule,
+  ],
 })
 /**
  * Module class for current user feature.

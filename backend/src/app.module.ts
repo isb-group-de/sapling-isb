@@ -32,6 +32,8 @@ import { TeamsModule } from './api/teams/teams.module';
 import { InboxModule } from './api/inbox/inbox.module';
 import { FormConfigModule } from './api/form-config/form-config.module';
 import { ImportModule } from './api/import/import.module';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { FieldPermissionProjectionInterceptor } from './security/field-permission-projection.interceptor';
 
 /**
  * @class AppModule
@@ -96,7 +98,13 @@ import { ImportModule } from './api/import/import.module';
     ImportModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: FieldPermissionProjectionInterceptor,
+    },
+  ],
 })
 
 /**

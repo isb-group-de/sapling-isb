@@ -53,13 +53,13 @@ export class SaplingMcpExecutionService {
           payload = await this.metadata.executeCurrentPerson(user);
           break;
         case 'entity_catalog':
-          payload = this.metadata.executeEntityCatalog(policy);
+          payload = this.metadata.executeEntityCatalog(policy, user);
           break;
         case 'entity_schema':
-          payload = this.metadata.executeEntitySchema(args, policy);
+          payload = await this.metadata.executeEntitySchema(args, policy, user);
           break;
         case 'entity_search':
-          payload = this.metadata.executeEntitySearch(args, policy);
+          payload = this.metadata.executeEntitySearch(args, policy, user);
           break;
         case 'generic_list':
           payload = await this.genericTools.executeGenericList(

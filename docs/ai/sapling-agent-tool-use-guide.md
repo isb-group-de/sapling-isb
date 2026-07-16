@@ -13,6 +13,7 @@ backend/src/api/ai/sapling-mcp-permission.service.ts
 backend/src/api/ai/ai.service.ts
 backend/src/api/generic/generic.service.ts
 backend/src/api/template/template.service.ts
+backend/src/api/current/field-permission.service.ts
 backend/src/entity/global/entity.registry.ts
 ```
 
@@ -38,6 +39,8 @@ docs/security/permissions.md
 8. Mutate only when the user clearly asked for a change.
 9. Respect the selected chat agent's data and tool scope.
 10. For confirm-gated agents, treat create/update/delete tool calls as prepared actions until the user confirms them in Sapling.
+11. Treat the user-filtered schema as authoritative: absent fields must not be
+    inferred, queried, sorted, grouped, or written.
 
 ## Authenticated Browser Checks
 
@@ -64,27 +67,27 @@ Recommended workflow:
 
 The internal server currently registers these tools:
 
-| Tool | Use |
-| --- | --- |
-| `current_person` | Safe context about the authenticated user. |
-| `entity_catalog` | List registered entity handles. |
-| `entity_search` | Discover likely entity handles by term, field, or relation. |
-| `entity_schema` | Inspect fields, relations, required flags, options, and operators. |
-| `generic_list` | List records with filters, sorting, pagination, and optional relations. |
-| `generic_get` | Load one record by handle. |
-| `generic_timeline` | Load record-centric related activity by month. |
-| `ticket_search` | Keyword search across ticket text fields. |
-| `semantic_search` | Vector search across indexed long-text entities. |
-| `knowledge_search` | Combined semantic knowledge search across articles, tickets, estimates, estimate positions, and opportunities. |
-| `import_get_batch` | Inspect an analyzed import batch, including headers, sample rows, mapping, counters, and row previews. |
-| `import_list_templates` | List reusable import templates for a target entity and optional source. |
-| `import_suggest_mapping` | Create a structured mapping proposal for an analyzed import batch. |
-| `import_match_existing_records` | Check sampled import row values against existing readable Sapling records. |
-| `import_configure_batch` | Configure and validate an import batch; confirm-gated. |
-| `import_execute_batch` | Execute a validated import batch; confirm-gated. |
-| `generic_create` | Create a generic record. |
-| `generic_update` | Update a generic record. |
-| `generic_delete` | Delete a generic record. |
+| Tool                            | Use                                                                                                            |
+| ------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `current_person`                | Safe context about the authenticated user.                                                                     |
+| `entity_catalog`                | List registered entity handles.                                                                                |
+| `entity_search`                 | Discover likely entity handles by term, field, or relation.                                                    |
+| `entity_schema`                 | Inspect fields, relations, required flags, options, and operators.                                             |
+| `generic_list`                  | List records with filters, sorting, pagination, and optional relations.                                        |
+| `generic_get`                   | Load one record by handle.                                                                                     |
+| `generic_timeline`              | Load record-centric related activity by month.                                                                 |
+| `ticket_search`                 | Keyword search across ticket text fields.                                                                      |
+| `semantic_search`               | Vector search across indexed long-text entities.                                                               |
+| `knowledge_search`              | Combined semantic knowledge search across articles, tickets, estimates, estimate positions, and opportunities. |
+| `import_get_batch`              | Inspect an analyzed import batch, including headers, sample rows, mapping, counters, and row previews.         |
+| `import_list_templates`         | List reusable import templates for a target entity and optional source.                                        |
+| `import_suggest_mapping`        | Create a structured mapping proposal for an analyzed import batch.                                             |
+| `import_match_existing_records` | Check sampled import row values against existing readable Sapling records.                                     |
+| `import_configure_batch`        | Configure and validate an import batch; confirm-gated.                                                         |
+| `import_execute_batch`          | Execute a validated import batch; confirm-gated.                                                               |
+| `generic_create`                | Create a generic record.                                                                                       |
+| `generic_update`                | Update a generic record.                                                                                       |
+| `generic_delete`                | Delete a generic record.                                                                                       |
 
 The HTTP MCP endpoint exposes the same tool surface through streamable HTTP sessions.
 
@@ -118,6 +121,11 @@ Use `semantic_search` when:
 - the user describes a problem in natural language
 - wording may differ from stored records
 - the relevant content is in long markdown/text fields
+
+Vector matches are restricted before ranking. A `sourceSection` is eligible
+only when every source and relation field used to build that section is
+readable across the user's accessible stage scope. Match excerpts and metadata
+therefore cannot reveal content from a hidden source field.
 
 Use `knowledge_search` when:
 
@@ -165,6 +173,13 @@ the user confirms the action in Sapling.
 ## Working With Schemas
 
 Always inspect `entity_schema` before composing filters or mutation payloads for an entity you do not know.
+
+`entity_schema` and `entity_search` are user-specific. They omit fields that
+have no permitted action and never expose security fields. Generic MCP list,
+get, create, update, relation, timeline, and import paths reuse the same query,
+payload, and response checks as the HTTP generic API. An explicit forbidden
+field fails with `global.fieldPermissionDenied`; tools must not retry by
+guessing alternate hidden fields.
 
 Important schema fields:
 

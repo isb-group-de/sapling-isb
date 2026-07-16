@@ -83,6 +83,12 @@ The dynamic UI depends on:
 - current user and permission metadata
 - entity/navigation seed data
 
+Authenticated templates include a per-field `fieldAccess` object with read,
+create, and update flags plus effective stages. Completely inaccessible fields
+are absent from normal templates. A write-only field remains in edit metadata
+but is initialized empty and omitted from an update payload until the user
+actually enters a new value.
+
 ## Generic Store And Services
 
 Important files:
@@ -193,6 +199,22 @@ pipeline and saves them back as a nested `customFields` payload. The definition
 itself selects its type through the `customFieldType` reference entity, so users
 choose from seeded type records instead of entering raw type strings. Generic
 table rows receive flattened hydrated values for display.
+
+## Field Permission UI
+
+The role/entity permission matrix exposes a **Fields** action and the number of
+restricted fields. Its detail dialog loads the atomic permission-admin catalog,
+groups and searches static and custom fields, supports per-column all/none and
+inheritance reset, and warns for primary, display, required, reference,
+security, system, and read-only fields. Stale overrides are diagnosed rather
+than treated as active fields.
+
+All dynamic consumers use `fieldAccess`: desktop/mobile columns and filter
+catalogs require read access; create/edit dialogs use the matching write action;
+relation tabs become read-only without update access. Primary keys are not a
+projection exception. If a saved route or favorite contains fields no longer
+readable, only those clauses are removed from the active view and an
+informational message is shown; the saved favorite itself remains unchanged.
 
 Markdown fields can reference stored Sapling documents without new upload logic.
 Use `sapling-document:<handle>` as a normal markdown link or image URL, or embed

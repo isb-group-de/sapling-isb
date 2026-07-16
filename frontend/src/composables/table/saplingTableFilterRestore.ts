@@ -85,6 +85,53 @@ export function removeMatchingFilterFromFilterQuery(
   return { $and: remainingClauses }
 }
 
+export function removeUnavailableFieldFilters(
+  filterQuery: unknown,
+  entityTemplates: EntityTemplate[],
+): { filter: FilterQuery | null; removed: boolean } {
+  if (!filterQuery || typeof filterQuery !== 'object' || Array.isArray(filterQuery)) {
+    return { filter: null, removed: false }
+  }
+  const availableFields = new Set(
+    entityTemplates
+      .filter((template) => template.fieldAccess?.allowRead !== false)
+      .map((template) => template.name),
+  )
+  let removed = false
+
+  function prune(node: FilterQuery): FilterQuery | null {
+    const result: FilterQuery = {}
+    for (const [key, value] of Object.entries(node)) {
+      if (key === '$and' || key === '$or') {
+        const clauses = Array.isArray(value)
+          ? value
+              .map((entry) =>
+                entry && typeof entry === 'object' && !Array.isArray(entry)
+                  ? prune(entry as FilterQuery)
+                  : null,
+              )
+              .filter((entry): entry is FilterQuery => entry !== null)
+          : []
+        if (clauses.length > 0) result[key] = clauses
+        else if (Array.isArray(value) && value.length > 0) removed = true
+        continue
+      }
+      if (key.startsWith('$')) {
+        result[key] = value
+        continue
+      }
+      if (!availableFields.has(key)) {
+        removed = true
+        continue
+      }
+      result[key] = value
+    }
+    return Object.keys(result).length > 0 ? result : null
+  }
+
+  return { filter: prune(filterQuery as FilterQuery), removed }
+}
+
 function getConjunctiveClauses(filterQuery: FilterQuery): FilterQuery[] {
   if (Object.keys(filterQuery).length === 1 && Array.isArray(filterQuery.$and)) {
     return filterQuery.$and.filter(

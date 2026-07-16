@@ -35,6 +35,7 @@ import { ImportService } from './import.service';
 import { ImportTemplateService } from './import-template.service';
 import { ImportUniqueConflictService } from './import-unique-conflict.service';
 import { ImportValidationService } from './import-validation.service';
+import { CurrentModule } from '../current/current.module';
 
 const MockQueue = {
   add: (name: string, data: unknown) => {
@@ -51,6 +52,7 @@ const MockQueue = {
     AuthModule,
     GenericModule,
     TemplateModule,
+    CurrentModule,
     ...(REDIS_ENABLED
       ? [
           BullModule.registerQueue({

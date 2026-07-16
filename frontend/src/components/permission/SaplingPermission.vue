@@ -179,9 +179,11 @@
           :get-permission="getPermission"
           :is-permission-dirty="isPermissionDirty"
           :is-permission-pending="isPermissionPending"
+          :get-restricted-field-count="getRestrictedFieldCount"
           @toggle-permission="onPermissionToggle"
           @grant-entity-access="grantEntityAccess"
           @clear-entity-access="clearEntityAccess"
+          @edit-field-permissions="openFieldPermissions"
         />
 
         <section
@@ -209,6 +211,13 @@
       :selected-role="selectedRole"
       @imported="onProviderUsersImported"
     />
+    <SaplingFieldPermissionDialog
+      v-if="selectedRole && selectedFieldPermissionEntity"
+      v-model="fieldPermissionDialogVisible"
+      :role="selectedRole"
+      :entity="selectedFieldPermissionEntity"
+      @saved="onFieldPermissionsSaved"
+    />
 
     <SaplingDialogDelete
       v-if="deleteDialog.visible"
@@ -230,6 +239,7 @@ import SaplingPermissionOverview from '@/components/permission/SaplingPermission
 import SaplingPermissionProviderUserImportDialog from '@/components/permission/SaplingPermissionProviderUserImportDialog.vue'
 import SaplingPermissionRoleSidebar from '@/components/permission/SaplingPermissionRoleSidebar.vue'
 import SaplingPermissionWorkspace from '@/components/permission/SaplingPermissionWorkspace.vue'
+import SaplingFieldPermissionDialog from '@/components/permission/SaplingFieldPermissionDialog.vue'
 import { ref } from 'vue'
 import type { EntityItem, PersonItem } from '@/entity/entity'
 
@@ -277,6 +287,54 @@ const {
 } = useSaplingPermission()
 
 const providerImportDialogVisible = ref(false)
+const fieldPermissionDialogVisible = ref(false)
+const selectedFieldPermissionEntity = ref<EntityItem | null>(null)
+const fieldPermissionCountOverrides = ref<Record<string, number>>({})
+
+function openFieldPermissions(item: EntityItem) {
+  selectedFieldPermissionEntity.value = item
+  fieldPermissionDialogVisible.value = true
+}
+
+function fieldPermissionCountKey(roleHandle: unknown, entityHandle: string) {
+  return `${String(roleHandle ?? '')}:${entityHandle}`
+}
+
+function getRestrictedFieldCount(item: EntityItem): number {
+  if (!selectedRole.value) return 0
+  const key = fieldPermissionCountKey(selectedRole.value.handle, item.handle)
+  if (key in fieldPermissionCountOverrides.value) {
+    return fieldPermissionCountOverrides.value[key] ?? 0
+  }
+  const role = selectedRole.value as unknown as {
+    permissions?: Array<{
+      entity?: EntityItem | string
+      fieldPermissions?: Array<{
+        allowRead?: boolean
+        allowInsert?: boolean
+        allowUpdate?: boolean
+      }>
+    }>
+  }
+  const permission = role.permissions?.find((entry) =>
+    typeof entry.entity === 'string'
+      ? entry.entity === item.handle
+      : entry.entity?.handle === item.handle,
+  )
+  return (permission?.fieldPermissions ?? []).filter(
+    (entry) =>
+      entry.allowRead === false || entry.allowInsert === false || entry.allowUpdate === false,
+  ).length
+}
+
+function onFieldPermissionsSaved(restrictedCount: number) {
+  if (!selectedRole.value || !selectedFieldPermissionEntity.value) return
+  const key = fieldPermissionCountKey(
+    selectedRole.value.handle,
+    selectedFieldPermissionEntity.value.handle,
+  )
+  fieldPermissionCountOverrides.value[key] = restrictedCount
+}
 
 function canUsePermission(item: EntityItem, permissionType: PermissionColumnKey) {
   switch (permissionType) {

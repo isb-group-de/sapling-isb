@@ -4,6 +4,7 @@ import { KpiService } from './kpi.service';
 import { AuthModule } from '../../auth/auth.module';
 import { GenericModule } from '../generic/generic.module';
 import { TemplateModule } from '../template/template.module';
+import { CurrentModule } from '../current/current.module';
 
 /**
  * @class KpiModule
@@ -15,7 +16,7 @@ import { TemplateModule } from '../template/template.module';
  * @property        {KpiController}  KpiController  Controller for KPI endpoints
  */
 @Module({
-  imports: [AuthModule, GenericModule, TemplateModule],
+  imports: [AuthModule, GenericModule, TemplateModule, CurrentModule],
   controllers: [KpiController],
   providers: [KpiService],
 })

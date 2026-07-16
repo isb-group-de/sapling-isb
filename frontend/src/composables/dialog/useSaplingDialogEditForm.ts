@@ -77,6 +77,20 @@ export function useSaplingDialogEditForm(options: UseSaplingDialogEditFormOption
     options.form.value = {}
 
     options.templates.value.forEach((template) => {
+      if (isWriteOnlyEditField(template)) {
+        if (template.type === 'datetime') {
+          options.form.value[`${template.name}_date`] = ''
+          options.form.value[`${template.name}_time`] = ''
+        } else if (template.inlineCollection || ['m:n', 'n:m'].includes(template.kind ?? '')) {
+          options.form.value[template.name] = []
+        } else if (template.isReference) {
+          options.form.value[template.name] = null
+        } else {
+          options.form.value[template.name] = ''
+        }
+        return
+      }
+
       if (template.inlineCollection) {
         const value = options.item.value?.[template.name]
         options.form.value[template.name] = Array.isArray(value) ? value : []
@@ -196,6 +210,25 @@ export function useSaplingDialogEditForm(options: UseSaplingDialogEditFormOption
   function buildSavePayload(): SaplingGenericItem {
     const output = { ...options.form.value }
     const customFields: Record<string, unknown> = {}
+    const unchangedWriteOnlyFields = new Set(
+      options.templates.value
+        .filter((template) => isWriteOnlyEditField(template))
+        .filter((template) => {
+          if (template.type === 'datetime') {
+            return (
+              options.form.value[`${template.name}_date`] ===
+                options.initialFormSnapshot.value[`${template.name}_date`] &&
+              options.form.value[`${template.name}_time`] ===
+                options.initialFormSnapshot.value[`${template.name}_time`]
+            )
+          }
+          return valuesEqual(
+            options.form.value[template.name],
+            options.initialFormSnapshot.value[template.name],
+          )
+        })
+        .map((template) => template.name),
+    )
 
     if (options.mode.value === 'edit') {
       options.relationTemplates.value.forEach((template) => delete output[template.name])
@@ -250,15 +283,38 @@ export function useSaplingDialogEditForm(options: UseSaplingDialogEditFormOption
           return
         }
 
-        customFields[fieldKey] = output[template.name]
+        if (!unchangedWriteOnlyFields.has(template.name)) {
+          customFields[fieldKey] = output[template.name]
+        }
         delete output[template.name]
       })
+
+    for (const fieldName of unchangedWriteOnlyFields) {
+      delete output[fieldName]
+    }
 
     if (Object.keys(customFields).length > 0) {
       output.customFields = customFields
     }
 
     return output
+  }
+
+  function isWriteOnlyEditField(template: EntityTemplate): boolean {
+    return (
+      options.mode.value === 'edit' &&
+      template.fieldAccess?.allowRead === false &&
+      template.fieldAccess?.allowUpdate === true
+    )
+  }
+
+  function valuesEqual(left: unknown, right: unknown): boolean {
+    if (left === right) return true
+    try {
+      return JSON.stringify(left) === JSON.stringify(right)
+    } catch {
+      return false
+    }
   }
 
   function normalizeSingleReferenceValue(value: unknown, template: EntityTemplate): unknown {

@@ -14,6 +14,7 @@ import { SparklineWeekPointDto } from './dto/sparkline-week-point.dto';
 import { GenericFilterService } from '../generic/generic-filter.service';
 import { GenericPermissionService } from '../generic/generic-permission.service';
 import { TemplateService } from '../template/template.service';
+import { FieldPermissionService } from '../current/field-permission.service';
 
 /**
  * @class KpiService
@@ -33,6 +34,10 @@ export class KpiService {
     private readonly templateService: TemplateService,
     private readonly genericFilterService: GenericFilterService,
     private readonly genericPermissionService: GenericPermissionService,
+    private readonly fieldPermissions: FieldPermissionService = {
+      assertReadableFields: () => Promise.resolve(),
+      assertReadableQuery: () => Promise.resolve(),
+    } as unknown as FieldPermissionService,
   ) {}
 
   /**
@@ -144,6 +149,18 @@ export class KpiService {
     // powers generic reads, then layer the user's entity scope on top.
     const rawFilter =
       kpi.filter && typeof kpi.filter === 'object' ? { ...kpi.filter } : {};
+    if (currentUser && entityHandle) {
+      await this.fieldPermissions.assertReadableFields(
+        currentUser,
+        entityHandle,
+        this.getKpiFieldPaths(kpi),
+      );
+      await this.fieldPermissions.assertReadableQuery(
+        currentUser,
+        entityHandle,
+        this.normalizePermissionCriteria(rawFilter),
+      );
+    }
     const resolvedFilter = this.genericFilterService.prepareReadCriteria(
       rawFilter,
       template,
@@ -199,5 +216,50 @@ export class KpiService {
 
     // Return both the KPI entity and the computed value
     return { kpi, value, drilldown };
+  }
+
+  private getKpiFieldPaths(kpi: KpiItem): string[] {
+    const paths = [
+      kpi.field,
+      kpi.timeframeField,
+      ...(Array.isArray(kpi.groupBy) ? kpi.groupBy : []),
+    ]
+      .filter((value): value is string => !!value?.trim())
+      .map((value) => this.normalizePermissionPath(value));
+    const relationName = kpi.field?.includes('.')
+      ? kpi.field.split('.')[0]
+      : null;
+    if (relationName && kpi.relationField?.trim()) {
+      paths.push(
+        this.normalizePermissionPath(
+          `${relationName}.${kpi.relationField.trim()}`,
+        ),
+      );
+    }
+    return [...new Set(paths)];
+  }
+
+  private normalizePermissionCriteria(value: unknown): unknown {
+    if (Array.isArray(value)) {
+      return value.map((entry) => this.normalizePermissionCriteria(entry));
+    }
+    if (!value || typeof value !== 'object') return value;
+    return Object.fromEntries(
+      Object.entries(value as Record<string, unknown>).map(([key, entry]) => [
+        key.startsWith('$') ? key : this.normalizePermissionPath(key),
+        this.normalizePermissionCriteria(entry),
+      ]),
+    );
+  }
+
+  private normalizePermissionPath(value: string): string {
+    return value
+      .split('.')
+      .map((segment) =>
+        segment.replace(/_([a-z])/g, (_match, character: string) =>
+          character.toUpperCase(),
+        ),
+      )
+      .join('.');
   }
 }

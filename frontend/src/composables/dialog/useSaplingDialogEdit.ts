@@ -264,6 +264,11 @@ export function useSaplingDialogEdit(
   function isFieldDisabled(template: EntityTemplate): boolean {
     return (
       (template.name === 'handle' && props.mode === 'edit') ||
+      (props.mode === 'create'
+        ? template.fieldAccess?.allowInsert === false
+        : props.mode === 'edit'
+          ? template.fieldAccess?.allowUpdate === false
+          : template.fieldAccess?.allowRead === false) ||
       template.options?.includes('isReadOnly') ||
       template.formConfig?.readonly === true ||
       props.mode === 'readonly'

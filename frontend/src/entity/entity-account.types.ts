@@ -170,9 +170,22 @@ export interface PermissionItem extends SaplingGenericItem {
   entity: EntityItem | string
   /** Associated roles */
   roles?: (RoleItem | number)[]
+  /** Optional per-field restrictions */
+  fieldPermissions?: FieldPermissionItem[]
   /** Creation date */
   createdAt: Date | null
   /** Last update date */
+  updatedAt?: Date | null
+}
+
+export interface FieldPermissionItem extends SaplingGenericItem {
+  handle?: number | null
+  permission: PermissionItem | number
+  fieldName: string
+  allowRead: boolean
+  allowInsert: boolean
+  allowUpdate: boolean
+  createdAt?: Date | null
   updatedAt?: Date | null
 }
 

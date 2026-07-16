@@ -5,6 +5,7 @@ import { ImportBatchItem } from '../../entity/ImportBatchItem';
 import { ImportBatchRowItem } from '../../entity/ImportBatchRowItem';
 import { ImportSourceItem } from '../../entity/ImportSourceItem';
 import { PersonItem } from '../../entity/PersonItem';
+import { FieldPermissionService } from '../current/field-permission.service';
 import { GenericCustomFieldService } from '../generic/generic-custom-field.service';
 import {
   extractImportHandle,
@@ -44,6 +45,10 @@ export class ImportValidationService {
     private readonly importUniqueConflictService: ImportUniqueConflictService,
     private readonly importFieldValidationService: ImportFieldValidationService,
     private readonly importBatchQueryService: ImportBatchQueryService,
+    private readonly fieldPermissions: FieldPermissionService = {
+      applyTemplateAccess: (_user, _entityHandle, templates) => templates,
+      assertPayloadAccess: () => Promise.resolve(),
+    } as unknown as FieldPermissionService,
   ) {}
 
   async processQueuedValidation(
@@ -93,11 +98,14 @@ export class ImportValidationService {
       { batch: { handle: batch.handle } },
       { orderBy: { rowNumber: 'ASC' } },
     );
-    const template =
+    const template = this.fieldPermissions.applyTemplateAccess(
+      currentUser,
+      entityHandle,
       await this.genericCustomFieldService.appendCustomFieldTemplates(
         entityHandle,
         this.templateService.getEntityTemplate(entityHandle),
-      );
+      ),
+    );
     const duplicateKeys = new Set<string>();
     const uniqueValueClaims = new Map<string, number>();
     let readyCount = 0;
@@ -158,6 +166,12 @@ export class ImportValidationService {
           plannedAction.targetReference,
           externalKey,
           uniqueValueClaims,
+        );
+        await this.fieldPermissions.assertPayloadAccess(
+          currentUser,
+          entityHandle,
+          payload,
+          plannedAction.action === 'updated' ? 'update' : 'insert',
         );
 
         const missingRequiredFields =
@@ -231,6 +245,7 @@ export class ImportValidationService {
           'roles.stage',
           'roles.permissions',
           'roles.permissions.entity',
+          'roles.permissions.fieldPermissions',
         ],
       },
     );

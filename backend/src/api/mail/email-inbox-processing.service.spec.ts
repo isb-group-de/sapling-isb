@@ -103,6 +103,7 @@ describe('EmailInboxProcessingService', () => {
             'subscription.processingPerson.roles.stage',
             'subscription.processingPerson.roles.permissions',
             'subscription.processingPerson.roles.permissions.entity',
+            'subscription.processingPerson.roles.permissions.fieldPermissions',
           ]) as unknown,
         }),
       );

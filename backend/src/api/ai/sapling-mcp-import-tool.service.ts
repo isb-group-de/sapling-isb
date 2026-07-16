@@ -91,7 +91,7 @@ export class SaplingMcpImportToolService {
       maxSampleRows: this.values.asPositiveNumber(args.maxSampleRows),
     };
 
-    return this.importService.suggestBatchConfiguration(batchHandle, dto);
+    return this.importService.suggestBatchConfiguration(batchHandle, dto, user);
   }
 
   async executeImportConfigureBatch(

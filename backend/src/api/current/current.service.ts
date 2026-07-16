@@ -141,6 +141,7 @@ export class CurrentService {
           'roles.stage',
           'roles.permissions',
           'roles.permissions.entity',
+          'roles.permissions.fieldPermissions',
         ],
       },
     );

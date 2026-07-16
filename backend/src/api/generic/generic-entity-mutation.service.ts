@@ -25,6 +25,7 @@ import {
   GenericUpdateConflictService,
   type GenericUpdateConcurrencyOptions,
 } from './generic-update-conflict.service';
+import { FieldPermissionService } from '../current/field-permission.service';
 
 type GenericMutationPayload = {
   createdAt?: Date;
@@ -50,6 +51,13 @@ export class GenericEntityMutationService {
     private readonly emailAutomationService: EmailAutomationService,
     private readonly genericCustomFieldService: GenericCustomFieldService,
     private readonly genericInlineCollectionService: GenericInlineCollectionService,
+    private readonly fieldPermissions: FieldPermissionService = {
+      getTemplates: (entityHandle: string) =>
+        Promise.resolve(this.templateService.getEntityTemplate(entityHandle)),
+      assertPayloadAccess: () => Promise.resolve(),
+      renameFieldOverrides: () => Promise.resolve(),
+      deleteFieldOverrides: () => Promise.resolve(),
+    } as unknown as FieldPermissionService,
   ) {}
 
   async create(
@@ -59,7 +67,17 @@ export class GenericEntityMutationService {
     scriptContext: ScriptServerContext,
   ): Promise<object> {
     const template = this.templateService.getEntityTemplate(entityHandle);
+    const permissionTemplate =
+      await this.fieldPermissions.getTemplates(entityHandle);
     data = normalizeSaplingPhonePayload(template, data);
+    await this.fieldPermissions.assertPayloadAccess(
+      currentUser,
+      entityHandle,
+      data,
+      'insert',
+      data,
+      permissionTemplate,
+    );
     const splitPayload = this.genericCustomFieldService.splitPayload(data);
     data = splitPayload.data;
     await this.genericCustomFieldService.assertRequiredFields(
@@ -160,14 +178,15 @@ export class GenericEntityMutationService {
       ),
     );
 
-    const sanitized = this.genericSanitizerService.sanitizeEntityResult(
+    const hydrated = await this.genericCustomFieldService.hydrateRecords(
       entityHandle,
       newData,
-      template,
     );
-    return this.genericCustomFieldService.hydrateRecords(
+    return this.genericSanitizerService.projectEntityResult(
       entityHandle,
-      sanitized,
+      hydrated,
+      currentUser,
+      permissionTemplate,
     );
   }
 
@@ -186,7 +205,10 @@ export class GenericEntityMutationService {
         concurrencyOptions,
       );
     data = updatePayload.data;
+    const submittedPermissionPayload = { ...data };
     const template = this.templateService.getEntityTemplate(entityHandle);
+    const permissionTemplate =
+      await this.fieldPermissions.getTemplates(entityHandle);
     data = normalizeSaplingPhonePayload(template, data);
     const splitPayload = this.genericCustomFieldService.splitPayload(data);
     data = splitPayload.data;
@@ -226,6 +248,21 @@ export class GenericEntityMutationService {
     if (!item) {
       throw new NotFoundException(`global.entityNotFound`);
     }
+
+    const customFieldOverrideRename = this.getCustomFieldOverrideChange(
+      entityHandle,
+      item as Record<string, unknown>,
+      submittedPermissionPayload.fieldKey,
+    );
+
+    await this.fieldPermissions.assertPayloadAccess(
+      currentUser,
+      entityHandle,
+      submittedPermissionPayload,
+      'update',
+      { ...(item as Record<string, unknown>), ...submittedPermissionPayload },
+      permissionTemplate,
+    );
 
     const oldSnapshot =
       this.genericChangeLogService.captureEntityChangeLogPayload(
@@ -363,14 +400,22 @@ export class GenericEntityMutationService {
       ),
     );
 
-    const sanitized = this.genericSanitizerService.sanitizeEntityResult(
+    const hydrated = await this.genericCustomFieldService.hydrateRecords(
       entityHandle,
       newData,
-      template,
     );
-    return this.genericCustomFieldService.hydrateRecords(
+    if (customFieldOverrideRename) {
+      await this.fieldPermissions.renameFieldOverrides(
+        customFieldOverrideRename.entityHandle,
+        customFieldOverrideRename.oldFieldName,
+        customFieldOverrideRename.newFieldName,
+      );
+    }
+    return this.genericSanitizerService.projectEntityResult(
       entityHandle,
-      sanitized,
+      hydrated,
+      currentUser,
+      permissionTemplate,
     );
   }
 
@@ -404,6 +449,11 @@ export class GenericEntityMutationService {
       throw new NotFoundException(`global.entityNotFound`);
     }
 
+    const customFieldOverrideDelete = this.getCustomFieldOverrideChange(
+      entityHandle,
+      item as Record<string, unknown>,
+    );
+
     const oldSnapshot =
       this.genericChangeLogService.captureEntityChangeLogPayload(
         entityHandle,
@@ -431,6 +481,12 @@ export class GenericEntityMutationService {
     );
     if (affectedRows === 0) {
       throw new NotFoundException(`global.entityNotFound`);
+    }
+    if (customFieldOverrideDelete) {
+      await this.fieldPermissions.deleteFieldOverrides(
+        customFieldOverrideDelete.entityHandle,
+        customFieldOverrideDelete.oldFieldName,
+      );
     }
     this.invalidateTemplateMetadataAfterMutation(entityHandle);
 
@@ -464,6 +520,41 @@ export class GenericEntityMutationService {
     return typeof handle === 'string' || typeof handle === 'number'
       ? handle
       : null;
+  }
+
+  private getCustomFieldOverrideChange(
+    entityHandle: string,
+    item: Record<string, unknown>,
+    nextFieldKey?: unknown,
+  ): {
+    entityHandle: string;
+    oldFieldName: string;
+    newFieldName: string;
+  } | null {
+    if (entityHandle !== 'customFieldDefinition') return null;
+    const targetEntity = item.entity;
+    const targetEntityHandle =
+      typeof targetEntity === 'string'
+        ? targetEntity
+        : targetEntity && typeof targetEntity === 'object'
+          ? (targetEntity as { handle?: unknown }).handle
+          : null;
+    const oldFieldKey = item.fieldKey;
+    if (
+      typeof targetEntityHandle !== 'string' ||
+      typeof oldFieldKey !== 'string'
+    ) {
+      return null;
+    }
+    const normalizedNextFieldKey =
+      typeof nextFieldKey === 'string' && nextFieldKey.trim()
+        ? nextFieldKey.trim()
+        : oldFieldKey;
+    return {
+      entityHandle: targetEntityHandle,
+      oldFieldName: `customFields.${oldFieldKey}`,
+      newFieldName: `customFields.${normalizedNextFieldKey}`,
+    };
   }
 
   private invalidateTemplateMetadataAfterMutation(entityHandle: string): void {

@@ -1,0 +1,134 @@
+[
+  {
+    "entity": "navigation",
+    "property": "fieldPermission",
+    "de": "Feldberechtigungen",
+    "en": "Field permissions"
+  },
+  {
+    "entity": "fieldPermission",
+    "property": "handle",
+    "de": "Kennung",
+    "en": "Handle"
+  },
+  {
+    "entity": "fieldPermission",
+    "property": "permission",
+    "de": "Berechtigung",
+    "en": "Permission"
+  },
+  {
+    "entity": "fieldPermission",
+    "property": "fieldName",
+    "de": "Feld",
+    "en": "Field"
+  },
+  {
+    "entity": "fieldPermission",
+    "property": "allowRead",
+    "de": "Lesen",
+    "en": "Read"
+  },
+  {
+    "entity": "fieldPermission",
+    "property": "allowInsert",
+    "de": "Anlegen",
+    "en": "Create"
+  },
+  {
+    "entity": "fieldPermission",
+    "property": "allowUpdate",
+    "de": "Ändern",
+    "en": "Update"
+  },
+  {
+    "entity": "fieldPermission",
+    "property": "createdAt",
+    "de": "Erstellt am",
+    "en": "Created at"
+  },
+  {
+    "entity": "fieldPermission",
+    "property": "updatedAt",
+    "de": "Aktualisiert am",
+    "en": "Updated at"
+  },
+  {
+    "entity": "fieldPermission",
+    "property": "groupField",
+    "de": "Feld",
+    "en": "Field"
+  },
+  {
+    "entity": "fieldPermission",
+    "property": "groupAccess",
+    "de": "Zugriff",
+    "en": "Access"
+  },
+  {
+    "entity": "permission",
+    "property": "fields",
+    "de": "Felder",
+    "en": "Fields"
+  },
+  {
+    "entity": "permission",
+    "property": "fieldPermissions",
+    "de": "Feldberechtigungen",
+    "en": "Field permissions"
+  },
+  {
+    "entity": "permission",
+    "property": "restrictedFields",
+    "de": "eingeschränkt",
+    "en": "restricted"
+  },
+  {
+    "entity": "permission",
+    "property": "inherit",
+    "de": "Vererbung",
+    "en": "Inheritance"
+  },
+  {
+    "entity": "permission",
+    "property": "fieldPermissionWarning",
+    "de": "Diese Einschränkung betrifft ein Primär-, Anzeige-, Pflicht- oder Referenzfeld und kann Tabellen, Formulare oder Relationen unbenutzbar machen.",
+    "en": "This restriction affects a primary, display, required, or reference field and can make tables, forms, or relations unusable."
+  },
+  {
+    "entity": "permission",
+    "property": "staleFieldPermissions",
+    "de": "Veraltete Feldregeln",
+    "en": "Stale field rules"
+  },
+  {
+    "entity": "global",
+    "property": "fieldPermissionDenied",
+    "de": "Für dieses Feld fehlt die erforderliche Berechtigung.",
+    "en": "The required permission for this field is missing."
+  },
+  {
+    "entity": "global",
+    "property": "invalidFieldPermission",
+    "de": "Die Feldberechtigung ist ungültig.",
+    "en": "The field permission is invalid."
+  },
+  {
+    "entity": "global",
+    "property": "permissionNotFound",
+    "de": "Die Entitätsberechtigung wurde nicht gefunden.",
+    "en": "The entity permission was not found."
+  },
+  {
+    "entity": "permission",
+    "property": "filterAdjusted",
+    "de": "Filter angepasst",
+    "en": "Filter adjusted"
+  },
+  {
+    "entity": "permission",
+    "property": "filterAdjustedDescription",
+    "de": "Nicht mehr lesbare Feldklauseln wurden nur aus der aktuellen Ansicht entfernt. Die gespeicherte Konfiguration bleibt erhalten.",
+    "en": "Field clauses that are no longer readable were removed from the current view only. The saved configuration remains unchanged."
+  }
+]

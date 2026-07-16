@@ -41,6 +41,7 @@ describe('ImportValidationService', () => {
           'roles.stage',
           'roles.permissions',
           'roles.permissions.entity',
+          'roles.permissions.fieldPermissions',
         ],
       },
     );

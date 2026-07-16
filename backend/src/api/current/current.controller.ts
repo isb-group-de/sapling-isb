@@ -45,6 +45,8 @@ import type {
   CurrentProfileUpdateDto,
   CurrentSessionDto,
 } from './current.service';
+import { FieldPermissionService } from './field-permission.service';
+import { GenericSanitizerService } from '../generic/generic-sanitizer.service';
 
 /**
  * @class
@@ -84,6 +86,13 @@ export class CurrentController {
     private readonly openTaskEventsService: OpenTaskEventsService,
     @Optional()
     private readonly calendarSyncSubscriptionService?: CalendarSyncSubscriptionService,
+    private readonly fieldPermissions: FieldPermissionService = {
+      getTemplates: () => Promise.resolve([]),
+      assertPayloadAccess: () => Promise.resolve(),
+    } as unknown as FieldPermissionService,
+    private readonly sanitizer: GenericSanitizerService = {
+      projectEntityResult: (_entityHandle, value) => value,
+    } as unknown as GenericSanitizerService,
   ) {}
 
   /**
@@ -113,11 +122,18 @@ export class CurrentController {
     // so we roundtrip through JSON before merging the marker.
     const impersonator = (user as PersonItem & { _impersonator?: unknown })
       ._impersonator;
+    const template = await this.fieldPermissions.getTemplates('person');
+    const projected = this.sanitizer.projectEntityResult(
+      'person',
+      reloaded,
+      user,
+      template,
+    );
     if (!impersonator) {
-      return reloaded;
+      return projected;
     }
 
-    const plain = JSON.parse(JSON.stringify(reloaded)) as PersonItem & {
+    const plain = JSON.parse(JSON.stringify(projected)) as PersonItem & {
       _impersonator?: unknown;
     };
     plain._impersonator = impersonator;
@@ -202,7 +218,22 @@ export class CurrentController {
     @Body() dto: CurrentProfileUpdateDto,
   ): Promise<PersonItem> {
     const user = req.user as PersonItem;
-    return this.currentService.updateProfile(user, dto);
+    const template = await this.fieldPermissions.getTemplates('person');
+    await this.fieldPermissions.assertPayloadAccess(
+      user,
+      'person',
+      dto as Record<string, unknown>,
+      'update',
+      user as unknown as Record<string, unknown>,
+      template,
+    );
+    const updated = await this.currentService.updateProfile(user, dto);
+    return this.sanitizer.projectEntityResult(
+      'person',
+      updated,
+      user,
+      template,
+    );
   }
 
   @Get('sessions')

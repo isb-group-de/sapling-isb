@@ -8,6 +8,7 @@ import { ChangeLogActionItem } from '../../entity/ChangeLogActionItem';
 import { EntityTemplateDto } from '../template/dto/entity-template.dto';
 import { ChangeLogResponseDto } from './dto/change-log-response.dto';
 import { GenericSanitizerService } from './generic-sanitizer.service';
+import { FieldPermissionService } from '../current/field-permission.service';
 import {
   buildChangeLogDetails,
   extractChangeLogReference,
@@ -23,11 +24,16 @@ export class GenericChangeLogService {
   constructor(
     private readonly em: EntityManager,
     private readonly genericSanitizerService: GenericSanitizerService,
+    private readonly fieldPermissions: FieldPermissionService = {
+      getTemplates: () => Promise.resolve([]),
+      canAccessField: () => true,
+    } as unknown as FieldPermissionService,
   ) {}
 
   async getRecordChangeLog(
     entityHandle: string,
     handle: string | number,
+    currentUser?: PersonItem,
   ): Promise<ChangeLogResponseDto[]> {
     const items = await this.em.find(
       ChangeLogItem,
@@ -41,6 +47,11 @@ export class GenericChangeLogService {
       },
     );
 
+    const templates = currentUser
+      ? await this.fieldPermissions.getTemplates(entityHandle)
+      : [];
+    const fieldsByName = new Map(templates.map((field) => [field.name, field]));
+
     return items.map((item) => {
       const response = new ChangeLogResponseDto();
       response.handle = item.handle ?? 0;
@@ -50,14 +61,57 @@ export class GenericChangeLogService {
         handle: item.entity.handle,
         icon: item.entity.icon ?? null,
       };
-      response.person = this.genericSanitizerService.sanitizeEntityResult(
-        'person',
-        item.person,
+      response.person = (
+        currentUser
+          ? this.genericSanitizerService.projectEntityResult(
+              'person',
+              item.person,
+              currentUser,
+            )
+          : this.genericSanitizerService.sanitizeEntityResult(
+              'person',
+              item.person,
+            )
       ) as ChangeLogResponseDto['person'];
-      response.oldPayload = normalizeChangeLogPayload(item.oldPayload);
-      response.newPayload = normalizeChangeLogPayload(item.newPayload);
+      const oldPayload = normalizeChangeLogPayload(item.oldPayload);
+      const newPayload = normalizeChangeLogPayload(item.newPayload);
+      response.oldPayload = currentUser
+        ? normalizeChangeLogPayload(
+            this.genericSanitizerService.projectEntityResult(
+              entityHandle,
+              oldPayload,
+              currentUser,
+              templates,
+            ),
+          )
+        : oldPayload;
+      response.newPayload = currentUser
+        ? normalizeChangeLogPayload(
+            this.genericSanitizerService.projectEntityResult(
+              entityHandle,
+              newPayload,
+              currentUser,
+              templates,
+            ),
+          )
+        : newPayload;
       response.details = [...item.details]
         .sort((left, right) => (left.handle ?? 0) - (right.handle ?? 0))
+        .filter((detail) => {
+          if (!currentUser) return true;
+          const field = fieldsByName.get(detail.property);
+          return (
+            !!field &&
+            this.fieldPermissions.canAccessField(
+              currentUser,
+              entityHandle,
+              field,
+              'read',
+              (newPayload ?? oldPayload) as Record<string, unknown> | null,
+              templates,
+            )
+          );
+        })
         .map((detail) => ({
           property: detail.property,
           oldValue: normalizeChangeLogValue(detail.oldValue),

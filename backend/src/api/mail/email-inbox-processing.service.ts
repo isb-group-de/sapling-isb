@@ -43,6 +43,7 @@ export class EmailInboxProcessingService {
           'subscription.processingPerson.roles.stage',
           'subscription.processingPerson.roles.permissions',
           'subscription.processingPerson.roles.permissions.entity',
+          'subscription.processingPerson.roles.permissions.fieldPermissions',
           'mailbox',
           'person',
           'company',

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { PersonItem } from '../../entity/PersonItem';
 import { ENTITY_HANDLES } from '../../entity/global/entity.registry';
 import { CurrentService } from '../current/current.service';
@@ -8,6 +8,7 @@ import type { McpToolPolicy } from './mcp-policy.types';
 import { SaplingMcpCriteriaService } from './sapling-mcp-criteria.service';
 import { SaplingMcpValueService } from './sapling-mcp-value.service';
 import { SAPLING_MCP_USAGE_HINTS } from './prompts/sapling-mcp.prompts';
+import { FieldPermissionService } from '../current/field-permission.service';
 @Injectable()
 export class SaplingMcpMetadataService {
   constructor(
@@ -15,6 +16,15 @@ export class SaplingMcpMetadataService {
     private readonly templateService: TemplateService,
     private readonly criteriaService: SaplingMcpCriteriaService,
     private readonly values: SaplingMcpValueService,
+    private readonly fieldPermissions: FieldPermissionService = {
+      applyTemplateAccess: (_user, _entityHandle, templates) => templates,
+      getTemplates: (entityHandle) =>
+        Promise.resolve(
+          this.templateService
+            .getEntityTemplate(entityHandle)
+            .filter((field) => !field.options?.includes('isSecurity')),
+        ),
+    } as unknown as FieldPermissionService,
   ) {}
   async executeCurrentPerson(user: PersonItem): Promise<unknown> {
     const person = (await this.currentService.getPerson(user)) ?? user;
@@ -28,85 +38,115 @@ export class SaplingMcpMetadataService {
       .asCollectionRecords(personRecord.roles)
       .map((role) => {
         const stage = this.values.asEntityRecord(role.stage);
-
-        return {
-          handle: this.values.asPrimitive(role.handle),
-          title: this.values.asPrimitive(role.title),
-          stage: stage
-            ? {
-                handle: this.values.asPrimitive(stage.handle),
-                title: this.values.asPrimitive(stage.title),
-              }
-            : null,
-        };
+        const projectedRole = this.projectMcpRelation(user, 'role', role, [
+          'handle',
+          'title',
+        ]);
+        if (this.getReadableFieldNames(user, 'role').has('stage')) {
+          projectedRole.stage = stage
+            ? this.projectMcpRelation(user, 'roleStage', stage, [
+                'handle',
+                'title',
+              ])
+            : null;
+        }
+        return projectedRole;
       });
+
+    const readable = this.getReadableFieldNames(user, 'person');
+    const personPayload: Record<string, unknown> = {};
+    if (readable.has('handle')) personPayload.handle = person.handle ?? null;
+    if (readable.has('firstName') || readable.has('lastName')) {
+      personPayload.fullName =
+        `${person.firstName ?? ''} ${person.lastName ?? ''}`.trim();
+    }
+    for (const fieldName of [
+      'firstName',
+      'lastName',
+      'loginName',
+      'email',
+      'phone',
+      'mobile',
+      'isActive',
+      'requirePasswordChange',
+    ] as const) {
+      if (readable.has(fieldName))
+        personPayload[fieldName] = person[fieldName] ?? null;
+    }
+    if (readable.has('company')) {
+      personPayload.company = company
+        ? this.projectMcpRelation(user, 'company', company, [
+            'handle',
+            'name',
+            'city',
+            'email',
+          ])
+        : null;
+    }
+    if (readable.has('department')) {
+      personPayload.department = department
+        ? this.projectMcpRelation(user, 'personDepartment', department, [
+            'handle',
+            'description',
+            'title',
+          ])
+        : null;
+    }
+    if (readable.has('language')) {
+      personPayload.language = language
+        ? this.projectMcpRelation(user, 'language', language, [
+            'handle',
+            'name',
+          ])
+        : null;
+    }
+    if (readable.has('type')) {
+      personPayload.type = type
+        ? this.projectMcpRelation(user, 'personType', type, [
+            'handle',
+            'description',
+            'title',
+          ])
+        : null;
+    }
+    if (readable.has('workWeek')) {
+      personPayload.workWeek = workWeek
+        ? this.projectMcpRelation(user, 'workHourWeek', workWeek, [
+            'handle',
+            'title',
+          ])
+        : null;
+    }
+    if (readable.has('roles')) personPayload.roles = roles;
 
     return {
       person: {
-        handle: person.handle ?? null,
-        fullName: `${person.firstName ?? ''} ${person.lastName ?? ''}`.trim(),
-        firstName: person.firstName ?? null,
-        lastName: person.lastName ?? null,
-        loginName: person.loginName ?? null,
-        email: person.email ?? null,
-        phone: person.phone ?? null,
-        mobile: person.mobile ?? null,
-        isActive: person.isActive ?? null,
-        requirePasswordChange: person.requirePasswordChange ?? null,
-        company: company
-          ? {
-              handle: this.values.asPrimitive(company.handle),
-              name: this.values.asPrimitive(company.name),
-              city: this.values.asPrimitive(company.city),
-              email: this.values.asPrimitive(company.email),
-            }
-          : null,
-        department: department
-          ? {
-              handle: this.values.asPrimitive(department.handle),
-              description:
-                this.values.asPrimitive(department.description) ??
-                this.values.asPrimitive(department.title),
-            }
-          : null,
-        language: language
-          ? {
-              handle: this.values.asPrimitive(language.handle),
-              name: this.values.asPrimitive(language.name),
-            }
-          : null,
-        type: type
-          ? {
-              handle: this.values.asPrimitive(type.handle),
-              description:
-                this.values.asPrimitive(type.description) ??
-                this.values.asPrimitive(type.title),
-            }
-          : null,
-        workWeek: workWeek
-          ? {
-              handle: this.values.asPrimitive(workWeek.handle),
-              title: this.values.asPrimitive(workWeek.title),
-            }
-          : null,
-        roles,
+        ...personPayload,
       },
       usageHints: [...SAPLING_MCP_USAGE_HINTS.currentPerson],
     };
   }
 
-  executeEntityCatalog(policy?: McpToolPolicy): { entities: string[] } {
+  executeEntityCatalog(
+    policy?: McpToolPolicy,
+    user?: PersonItem,
+  ): { entities: string[] } {
     return {
       entities: this.values
         .filterPolicyEntityHandles([...ENTITY_HANDLES], policy)
+        .filter(
+          (entityHandle) =>
+            !user || this.getUserEntityTemplate(entityHandle, user).length > 0,
+        )
         .sort((left, right) => left.localeCompare(right)),
     };
   }
 
-  executeEntitySchema(
+  async executeEntitySchema(
     args: Record<string, unknown>,
     policy?: McpToolPolicy,
-  ): {
+    user?: PersonItem,
+  ): Promise<{
     entityHandle: string;
     fields: Array<{
       name: string;
@@ -124,18 +164,25 @@ export class SaplingMcpMetadataService {
       mappedBy?: string | null;
       inversedBy?: string | null;
       referenceDependency?: Record<string, unknown> | null;
+      fieldAccess?: EntityTemplateDto['fieldAccess'];
     }>;
     relationNames: string[];
     requiredFieldNames: string[];
     filterOperators: string[];
     usageHints: string[];
-  } {
+  }> {
     const entityHandle = this.values.requireStringArg(
       args.entityHandle,
       'entityHandle',
     );
     this.values.assertEntityAllowed(entityHandle, policy);
-    const template = this.getEntityTemplate(entityHandle);
+    const template = await this.getUserEntityTemplateWithCustomFields(
+      entityHandle,
+      user,
+    );
+    if (user && template.length === 0) {
+      throw new ForbiddenException('global.fieldPermissionDenied');
+    }
 
     return {
       entityHandle,
@@ -157,6 +204,7 @@ export class SaplingMcpMetadataService {
         referenceDependency: field.referenceDependency
           ? { ...field.referenceDependency }
           : null,
+        fieldAccess: field.fieldAccess ? { ...field.fieldAccess } : undefined,
       })),
       relationNames: template
         .filter((field) => field.isReference)
@@ -172,6 +220,7 @@ export class SaplingMcpMetadataService {
   executeEntitySearch(
     args: Record<string, unknown>,
     policy?: McpToolPolicy,
+    user?: PersonItem,
   ): {
     query: string;
     matches: Array<{
@@ -191,7 +240,8 @@ export class SaplingMcpMetadataService {
     const matches = this.values
       .filterPolicyEntityHandles([...ENTITY_HANDLES], policy)
       .map((entityHandle) => {
-        const template = this.getEntityTemplate(entityHandle);
+        const template = this.getUserEntityTemplate(entityHandle, user);
+        if (user && template.length === 0) return null;
         const matchedOn = new Set<string>();
         let score = 0;
 
@@ -309,6 +359,63 @@ export class SaplingMcpMetadataService {
     return this.getRawEntityTemplate(entityHandle).filter(
       (field) => !field.options?.includes('isSecurity'),
     );
+  }
+
+  private getUserEntityTemplate(
+    entityHandle: string,
+    user?: PersonItem,
+  ): EntityTemplateDto[] {
+    const template = this.getEntityTemplate(entityHandle);
+    return user
+      ? this.fieldPermissions.applyTemplateAccess(user, entityHandle, template)
+      : template;
+  }
+
+  private async getUserEntityTemplateWithCustomFields(
+    entityHandle: string,
+    user?: PersonItem,
+  ): Promise<EntityTemplateDto[]> {
+    const template = (
+      await this.fieldPermissions.getTemplates(entityHandle)
+    ).filter((field) => !field.options?.includes('isSecurity'));
+    return user
+      ? this.fieldPermissions.applyTemplateAccess(user, entityHandle, template)
+      : template;
+  }
+
+  private getReadableFieldNames(
+    user: PersonItem,
+    entityHandle: string,
+  ): Set<string> {
+    return new Set(
+      this.getUserEntityTemplate(entityHandle, user)
+        .filter((field) => field.fieldAccess?.allowRead !== false)
+        .map((field) => field.name),
+    );
+  }
+
+  private projectMcpRelation(
+    user: PersonItem,
+    entityHandle: string,
+    record: Record<string, unknown>,
+    fieldNames: string[],
+  ): Record<string, unknown> {
+    const readable = this.getReadableFieldNames(user, entityHandle);
+    const projected: Record<string, unknown> = {};
+    for (const fieldName of fieldNames) {
+      if (readable.has(fieldName)) {
+        projected[fieldName] = this.values.asPrimitive(record[fieldName]);
+      }
+    }
+    if (
+      projected.description == null &&
+      readable.has('description') &&
+      readable.has('title')
+    ) {
+      projected.description = this.values.asPrimitive(record.title);
+      delete projected.title;
+    }
+    return projected;
   }
 
   private getRawEntityTemplate(entityHandle: string): EntityTemplateDto[] {

@@ -4,6 +4,7 @@ import { MessageTemplateService } from './message-template.service';
 import { TemplateService } from './template.service';
 import { AuthModule } from '../../auth/auth.module';
 import { GenericCustomFieldService } from '../generic/generic-custom-field.service';
+import { FieldPermissionService } from '../current/field-permission.service';
 
 /**
  * @class
@@ -23,6 +24,7 @@ import { GenericCustomFieldService } from '../generic/generic-custom-field.servi
     TemplateService,
     MessageTemplateService,
     GenericCustomFieldService,
+    FieldPermissionService,
   ],
   exports: [TemplateService, MessageTemplateService],
 })

@@ -1,0 +1,13 @@
+[
+  {
+    "handle": "fieldPermission",
+    "icon": "mdi-form-textbox-lock",
+    "canShow": true,
+    "group": "administration",
+    "order": 25,
+    "canRead": true,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  }
+]

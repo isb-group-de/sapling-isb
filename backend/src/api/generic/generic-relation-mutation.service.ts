@@ -10,6 +10,7 @@ import { GenericMutationService } from './generic-mutation.service';
 import { GenericOpenTaskEventsService } from './generic-open-task-events.service';
 import { GenericRelationService } from './generic-relation.service';
 import { GenericSanitizerService } from './generic-sanitizer.service';
+import { FieldPermissionService } from '../current/field-permission.service';
 
 type RelationMutationContext = Awaited<
   ReturnType<GenericRelationService['addReferenceAndFlush']>
@@ -27,6 +28,11 @@ export class GenericRelationMutationService {
     private readonly genericMutationService: GenericMutationService,
     private readonly genericOpenTaskEventsService: GenericOpenTaskEventsService,
     private readonly genericSanitizerService: GenericSanitizerService,
+    private readonly fieldPermissions: FieldPermissionService = {
+      getTemplates: (entityHandle: string) =>
+        Promise.resolve(this.templateService.getEntityTemplate(entityHandle)),
+      assertPayloadAccess: () => Promise.resolve(),
+    } as unknown as FieldPermissionService,
   ) {}
 
   createReference(
@@ -76,6 +82,16 @@ export class GenericRelationMutationService {
     currentUser: PersonItem,
     scriptContext: ScriptServerContext,
   ): Promise<object> {
+    const permissionTemplate =
+      await this.fieldPermissions.getTemplates(entityHandle);
+    await this.fieldPermissions.assertPayloadAccess(
+      currentUser,
+      entityHandle,
+      { [referenceName]: referenceHandleValue },
+      'update',
+      undefined,
+      permissionTemplate,
+    );
     const previousOpenTaskUserHandles =
       await this.genericOpenTaskEventsService.loadReferenceUserHandles(
         entityHandle,
@@ -137,10 +153,11 @@ export class GenericRelationMutationService {
       previousOpenTaskUserHandles,
     );
 
-    return this.genericSanitizerService.sanitizeEntityResult(
+    return this.genericSanitizerService.projectEntityResult(
       entityHandle,
       newData,
-      mutation.template,
+      currentUser,
+      permissionTemplate,
     );
   }
 

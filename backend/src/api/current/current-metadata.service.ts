@@ -7,6 +7,7 @@ import { CurrentService } from './current.service';
 import { CurrentEntityMetadataDto } from './dto/current-entity-metadata.dto';
 import { FormConfigService } from '../form-config/form-config.service';
 import { GenericCustomFieldService } from '../generic/generic-custom-field.service';
+import { FieldPermissionService } from './field-permission.service';
 
 /**
  * Loads batched entity metadata required by generic frontend workspaces.
@@ -20,6 +21,9 @@ export class CurrentMetadataService {
     private readonly currentService: CurrentService,
     private readonly formConfigService: FormConfigService,
     private readonly genericCustomFieldService: GenericCustomFieldService,
+    private readonly fieldPermissionService: FieldPermissionService = {
+      applyTemplateAccess: (_person, _entityHandle, templates) => templates,
+    } as FieldPermissionService,
   ) {}
   //#endregion
 
@@ -52,10 +56,16 @@ export class CurrentMetadataService {
         this.templateService.getEntityTemplate(entityHandle),
       ),
     ]);
-    const entityTemplates = await this.formConfigService.getEffectiveTemplate(
-      entityHandle,
-      baseTemplates,
+    const configuredTemplates =
+      await this.formConfigService.getEffectiveTemplate(
+        entityHandle,
+        baseTemplates,
+        person,
+      );
+    const entityTemplates = this.fieldPermissionService.applyTemplateAccess(
       person,
+      entityHandle,
+      configuredTemplates,
     );
 
     return {

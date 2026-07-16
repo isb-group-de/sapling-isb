@@ -289,7 +289,8 @@ export class ImportService {
 
   async suggestBatchConfiguration(
     handle: number,
-    dto: ImportAiSuggestDto = {},
+    dto: ImportAiSuggestDto,
+    currentUser: PersonItem,
   ): Promise<ImportAiSuggestionDto> {
     const batch = await this.findBatch(handle);
     const entityHandle =
@@ -336,6 +337,7 @@ export class ImportService {
           entityHandle,
           sourceHandle ?? undefined,
         ),
+        currentUser,
       },
       dto,
     );

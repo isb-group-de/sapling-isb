@@ -137,10 +137,15 @@ export class ImportController {
 
   @Post('batches/:handle/suggest')
   async suggestBatchConfiguration(
+    @Req() req: Request & { user: PersonItem },
     @Param('handle') handle: number,
     @Body() body: ImportAiSuggestDto = {},
   ): Promise<ImportAiSuggestionDto> {
-    return this.importService.suggestBatchConfiguration(Number(handle), body);
+    return this.importService.suggestBatchConfiguration(
+      Number(handle),
+      body,
+      req.user,
+    );
   }
 
   @Post('batches/:handle/execute')

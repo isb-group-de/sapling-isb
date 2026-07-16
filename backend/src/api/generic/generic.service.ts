@@ -40,6 +40,7 @@ import type {
   GenericImportResponse,
   GenericImportRowResult,
 } from './generic-import.util';
+import { FieldPermissionService } from '../current/field-permission.service';
 export type { GenericImportResponse } from './generic-import.util';
 export type { GenericUpdateConcurrencyOptions } from './generic-update-conflict.service';
 
@@ -171,6 +172,11 @@ export class GenericService {
       genericCustomFieldService,
       genericInlineCollectionService,
     ),
+    private readonly fieldPermissions: FieldPermissionService = {
+      getTemplates: (entityHandle: string) =>
+        Promise.resolve(this.templateService.getEntityTemplate(entityHandle)),
+      assertPayloadAccess: () => Promise.resolve(),
+    } as unknown as FieldPermissionService,
   ) {}
   // #endregion
 
@@ -248,7 +254,7 @@ export class GenericService {
       throw new BadRequestException('global.invalidPayload');
     }
 
-    const template = this.templateService.getEntityTemplate(entityHandle);
+    const template = await this.fieldPermissions.getTemplates(entityHandle);
     const results: GenericImportRowResult[] = [];
 
     for (const [index, row] of rows.entries()) {
@@ -259,10 +265,19 @@ export class GenericService {
         continue;
       }
 
-      const payload = normalizeImportRow(template, row);
-      const handle = extractImportHandle(payload);
+      let handle: string | number | null = extractImportHandle(row);
 
       try {
+        await this.fieldPermissions.assertPayloadAccess(
+          currentUser,
+          entityHandle,
+          row,
+          handle == null ? 'insert' : 'update',
+          undefined,
+          template,
+        );
+        const payload = normalizeImportRow(template, row);
+        handle = extractImportHandle(payload);
         if (handle == null) {
           const created = await this.create(
             entityHandle,
@@ -334,10 +349,8 @@ export class GenericService {
   async getRecordChangeLog(
     entityHandle: string,
     handle: string | number,
-    _currentUser: PersonItem,
+    currentUser: PersonItem,
   ): Promise<ChangeLogResponseDto[]> {
-    void _currentUser;
-
     const normalizedHandle = this.genericReferenceService.normalizeHandleValue(
       entityHandle,
       handle,
@@ -345,6 +358,7 @@ export class GenericService {
     return this.genericChangeLogService.getRecordChangeLog(
       entityHandle,
       normalizedHandle,
+      currentUser,
     );
   }
   // #endregion

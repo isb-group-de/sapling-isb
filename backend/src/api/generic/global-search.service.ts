@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { EntityManager } from '@mikro-orm/core';
 import { EntityItem } from '../../entity/EntityItem';
 import { EntityRouteItem } from '../../entity/EntityRouteItem';
@@ -7,6 +7,7 @@ import { TemplateService } from '../template/template.service';
 import { CurrentService } from '../current/current.service';
 import { GenericService } from './generic.service';
 import { EntityTemplateDto } from '../template/dto/entity-template.dto';
+import { FieldPermissionService } from '../current/field-permission.service';
 import {
   GlobalSearchQueryDto,
   GlobalSearchResponseDto,
@@ -46,6 +47,12 @@ export class GlobalSearchService {
     private readonly currentService: CurrentService,
     private readonly genericService: GenericService,
     private readonly templateService: TemplateService,
+    private readonly fieldPermissions: FieldPermissionService = {
+      getTemplates: (entityHandle: string) =>
+        Promise.resolve(this.templateService.getEntityTemplate(entityHandle)),
+      applyTemplateAccess: (_user, _entityHandle, templates) => templates,
+      assertReadableFields: () => Promise.resolve(),
+    } as unknown as FieldPermissionService,
   ) {}
 
   async search(
@@ -100,7 +107,8 @@ export class GlobalSearchService {
     context: Omit<EntitySearchContext, 'template' | 'fields' | 'valueFields'>,
   ): Promise<GlobalSearchResultDto[]> {
     try {
-      const template = this.templateService.getEntityTemplate(
+      const template = await this.getUniversallyReadableTemplate(
+        context.currentUser,
         context.entity.handle,
       );
       const fields = this.getSearchableFields(template);
@@ -141,6 +149,33 @@ export class GlobalSearchService {
       );
       return [];
     }
+  }
+
+  private async getUniversallyReadableTemplate(
+    currentUser: PersonItem,
+    entityHandle: string,
+  ): Promise<EntityTemplateDto[]> {
+    const template = this.fieldPermissions
+      .applyTemplateAccess(
+        currentUser,
+        entityHandle,
+        await this.fieldPermissions.getTemplates(entityHandle),
+      )
+      .filter((field) => field.fieldAccess?.allowRead !== false);
+    const readable: EntityTemplateDto[] = [];
+    for (const field of template) {
+      try {
+        await this.fieldPermissions.assertReadableFields(
+          currentUser,
+          entityHandle,
+          [field.name],
+        );
+        readable.push(field);
+      } catch (error) {
+        if (!(error instanceof ForbiddenException)) throw error;
+      }
+    }
+    return readable;
   }
 
   private async getSearchableEntities(

@@ -25,6 +25,8 @@ import { SessionOrBearerAuthGuard } from '../../auth/guard/session-or-token-auth
 import { GenericCustomFieldService } from '../generic/generic-custom-field.service';
 import type { Request, Response } from 'express';
 import { createHash } from 'crypto';
+import { PersonItem } from '../../entity/PersonItem';
+import { FieldPermissionService } from '../current/field-permission.service';
 
 /**
  * @class
@@ -52,6 +54,9 @@ export class TemplateController {
         templates: EntityTemplateDto[],
       ): Promise<EntityTemplateDto[]> => Promise.resolve(templates),
     } as unknown as GenericCustomFieldService,
+    private readonly fieldPermissionService: FieldPermissionService = {
+      applyTemplateAccess: (_person, _entityHandle, templates) => templates,
+    } as FieldPermissionService,
   ) {}
 
   /**
@@ -89,14 +94,19 @@ export class TemplateController {
   @GenericPermission('allowRead')
   async getEntityTemplate(
     @Param('entityHandle') entityHandle: string,
-    @Req() req: Request,
+    @Req() req: Request & { user: PersonItem },
     @Res({ passthrough: true }) res: Response,
   ): Promise<EntityTemplateDto[] | undefined> {
-    const templates =
+    const rawTemplates =
       await this.genericCustomFieldService.appendCustomFieldTemplates(
         entityHandle,
         this.templateService.getEntityTemplate(entityHandle),
       );
+    const templates = this.fieldPermissionService.applyTemplateAccess(
+      req.user,
+      entityHandle,
+      rawTemplates,
+    );
     const etag = `"${createHash('sha256')
       .update(JSON.stringify(templates))
       .digest('base64url')}"`;

@@ -7,6 +7,7 @@ import { GenericPayloadService } from './generic-payload.service';
 import { GenericPermissionService } from './generic-permission.service';
 import { GenericQueryService } from './generic-query.service';
 import { GenericReferenceService } from './generic-reference.service';
+import { FieldPermissionService } from '../current/field-permission.service';
 
 export interface InlineCollectionMutation {
   field: EntityTemplateDto;
@@ -23,6 +24,11 @@ export class GenericInlineCollectionService {
     private readonly genericReferenceService: GenericReferenceService,
     private readonly genericPermissionService: GenericPermissionService,
     private readonly genericPayloadService: GenericPayloadService,
+    private readonly fieldPermissions: FieldPermissionService = {
+      getTemplates: (entityHandle: string) =>
+        Promise.resolve(this.templateService.getEntityTemplate(entityHandle)),
+      assertPayloadAccess: () => Promise.resolve(),
+    } as unknown as FieldPermissionService,
   ) {}
 
   extractPayload(
@@ -102,6 +108,8 @@ export class GenericInlineCollectionService {
     const referenceTemplate = this.templateService.getEntityTemplate(
       referenceEntityHandle,
     );
+    const referencePermissionTemplate =
+      await this.fieldPermissions.getTemplates(referenceEntityHandle);
     const existingItems = await this.em.find(referenceClass, {
       [mappedBy]: ownerHandle,
     });
@@ -113,7 +121,7 @@ export class GenericInlineCollectionService {
     );
     const touchedHandles = new Set<string>();
 
-    mutation.items.forEach((item, index) => {
+    for (const [index, item] of mutation.items.entries()) {
       const handle = this.extractEntityHandle(item);
       const normalizedHandle =
         handle == null
@@ -133,8 +141,18 @@ export class GenericInlineCollectionService {
         item,
         index,
       );
+      const submittedPayload = { ...item };
+      delete submittedPayload.handle;
 
       if (existing) {
+        await this.fieldPermissions.assertPayloadAccess(
+          currentUser,
+          referenceEntityHandle,
+          submittedPayload,
+          'update',
+          { ...(existing as Record<string, unknown>), ...submittedPayload },
+          referencePermissionTemplate,
+        );
         touchedHandles.add(String(normalizedHandle));
         this.genericPermissionService.checkTopLevelPermission(
           referenceEntityHandle,
@@ -149,9 +167,17 @@ export class GenericInlineCollectionService {
             payload,
           ) as never,
         );
-        return;
+        continue;
       }
 
+      await this.fieldPermissions.assertPayloadAccess(
+        currentUser,
+        referenceEntityHandle,
+        submittedPayload,
+        'insert',
+        submittedPayload,
+        referencePermissionTemplate,
+      );
       this.genericPermissionService.checkTopLevelPermission(
         referenceEntityHandle,
         payload,
@@ -165,7 +191,7 @@ export class GenericInlineCollectionService {
           payload,
         ) as never,
       );
-    });
+    }
 
     existingByHandle.forEach((item, handle) => {
       if (touchedHandles.has(handle)) {

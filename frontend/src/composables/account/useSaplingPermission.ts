@@ -269,7 +269,7 @@ export function useSaplingPermission() {
 
   async function refreshRoles() {
     const response = await ApiGenericService.find<RoleItem>('role', {
-      relations: ['m:1', 'permissions', 'persons'],
+      relations: ['m:1', 'permissions', 'permissions.fieldPermissions', 'persons'],
     })
     roles.value = cloneRoles(response.data)
     originalRoles.value = cloneRoles(response.data)

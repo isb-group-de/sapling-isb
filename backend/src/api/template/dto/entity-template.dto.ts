@@ -306,4 +306,20 @@ export class EntityTemplateDto {
     type: Object,
   })
   customField?: Record<string, unknown> | null;
+
+  @ApiProperty({
+    description:
+      'Effective field access for the authenticated user. Omitted on raw server-side templates.',
+    nullable: true,
+    required: false,
+    type: Object,
+  })
+  fieldAccess?: {
+    allowRead: boolean;
+    allowInsert: boolean;
+    allowUpdate: boolean;
+    allowReadStage?: string;
+    allowInsertStage?: string;
+    allowUpdateStage?: string;
+  } | null;
 }

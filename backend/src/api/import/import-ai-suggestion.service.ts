@@ -7,6 +7,9 @@ import { GenericCustomFieldService } from '../generic/generic-custom-field.servi
 import { GenericQueryService } from '../generic/generic-query.service';
 import type { EntityTemplateDto } from '../template/dto/entity-template.dto';
 import { TemplateService } from '../template/template.service';
+import { FieldPermissionService } from '../current/field-permission.service';
+import { GenericService } from '../generic/generic.service';
+import type { PersonItem } from '../../entity/PersonItem';
 import {
   buildImportAiSuggestionSystemPrompt,
   buildImportAiSuggestionUserPrompt,
@@ -60,6 +63,7 @@ export type ImportAiSuggestionRequest = {
   headers: string[];
   sampleRows: Record<string, unknown>[];
   templates: ImportTemplateSummaryDto[];
+  currentUser: PersonItem;
 };
 
 @Injectable()
@@ -70,17 +74,35 @@ export class ImportAiSuggestionService {
     private readonly genericQueryService: GenericQueryService,
     private readonly templateService: TemplateService,
     private readonly genericCustomFieldService: GenericCustomFieldService,
+    private readonly fieldPermissions: FieldPermissionService = {
+      getTemplates: (entityHandle: string) =>
+        Promise.resolve(this.templateService.getEntityTemplate(entityHandle)),
+      applyTemplateAccess: (_user, _entityHandle, templates) => templates,
+    } as unknown as FieldPermissionService,
+    private readonly genericService: GenericService = {
+      findAndCount: () =>
+        Promise.resolve({
+          data: [],
+          meta: {
+            total: 0,
+            page: 1,
+            limit: 0,
+            totalPages: 0,
+            executionTime: 0,
+          },
+        }),
+    } as unknown as GenericService,
   ) {}
 
   async suggestConfiguration(
     request: ImportAiSuggestionRequest,
     dto: ImportAiSuggestDto,
   ): Promise<ImportAiSuggestionDto> {
-    const template =
-      await this.genericCustomFieldService.appendCustomFieldTemplates(
-        request.entityHandle,
-        this.templateService.getEntityTemplate(request.entityHandle),
-      );
+    const template = this.fieldPermissions.applyTemplateAccess(
+      request.currentUser,
+      request.entityHandle,
+      await this.fieldPermissions.getTemplates(request.entityHandle),
+    );
     const importableFields = this.getImportableFields(template);
     const context: ImportAiSuggestionContext = {
       entityHandle: request.entityHandle,
@@ -97,8 +119,10 @@ export class ImportAiSuggestionService {
         options: field.options ?? [],
         genericReference: field.genericReference ?? null,
       })),
-      referenceCandidates:
-        await this.buildImportReferenceCandidates(importableFields),
+      referenceCandidates: await this.buildImportReferenceCandidates(
+        importableFields,
+        request.currentUser,
+      ),
       templates: request.templates.slice(0, AI_TEMPLATE_CONTEXT_LIMIT),
     };
     const generation = await this.generateSuggestion(context, dto);
@@ -399,6 +423,7 @@ export class ImportAiSuggestionService {
 
   private async buildImportReferenceCandidates(
     fields: EntityTemplateDto[],
+    currentUser: PersonItem,
   ): Promise<ImportReferenceCandidate[]> {
     const candidates: ImportReferenceCandidate[] = [];
 
@@ -407,28 +432,35 @@ export class ImportAiSuggestionService {
         continue;
       }
 
-      const referenceTemplate = this.templateService.getEntityTemplate(
-        field.referenceName,
+      const referenceTemplate = this.fieldPermissions
+        .applyTemplateAccess(
+          currentUser,
+          field.referenceName,
+          await this.fieldPermissions.getTemplates(field.referenceName),
+        )
+        .filter((entry) => entry.fieldAccess?.allowRead !== false);
+      const handleField = referenceTemplate.find(
+        (entry) => entry.name === 'handle',
       );
       const valueField =
         referenceTemplate.find((entry) => entry.options?.includes('isValue')) ??
-        referenceTemplate.find((entry) => entry.name === 'handle');
-      const entityClass = this.genericQueryService.getEntityClass(
+        handleField;
+      if (!handleField || !valueField) continue;
+      const result = await this.genericService.findAndCount(
         field.referenceName,
-      );
-      const records = await this.em.find(
-        entityClass,
         {},
-        {
-          orderBy: { handle: 'ASC' } as never,
-          limit: AI_REFERENCE_CANDIDATE_LIMIT,
-        },
+        1,
+        AI_REFERENCE_CANDIDATE_LIMIT,
+        { handle: 'ASC' },
+        currentUser,
+        [],
+        [...new Set(['handle', valueField.name])],
       );
 
       candidates.push({
         targetField: field.name,
         referenceName: field.referenceName,
-        values: records
+        values: result.data
           .map((record) => this.toPlainRecord(record))
           .map((record) => ({
             handle: record.handle,
@@ -455,12 +487,21 @@ export class ImportAiSuggestionService {
         return false;
       }
       if (field.name === 'handle') {
-        return true;
+        return !(
+          field.fieldAccess?.allowInsert === false &&
+          field.fieldAccess?.allowUpdate === false
+        );
       }
       if (
         field.isPersistent === false ||
         field.options?.includes('isReadOnly') ||
         field.options?.includes('isSecurity')
+      ) {
+        return false;
+      }
+      if (
+        field.fieldAccess?.allowInsert === false &&
+        field.fieldAccess?.allowUpdate === false
       ) {
         return false;
       }

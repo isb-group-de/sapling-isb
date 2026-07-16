@@ -18,6 +18,7 @@ import {
   extractColumnFiltersFromFilterQuery,
   removeMatchingFilterFromFilterQuery,
   removeRestoredColumnFiltersFromFilterQuery,
+  removeUnavailableFieldFilters,
 } from '@/composables/table/useSaplingTableFilterHelpers'
 import {
   buildTableFilter,
@@ -33,6 +34,7 @@ import {
   readSaplingTableRouteState,
   replaceSaplingTableUrlState,
 } from '@/composables/table/saplingTableRouteState'
+import { useSaplingMessageCenter } from '@/composables/system/useSaplingMessageCenter'
 // #endregion
 
 const TABLE_LOAD_DEBOUNCE_MS = 250
@@ -71,6 +73,7 @@ export function useSaplingTable(
   const route = useRoute()
   const currentPermissionStore = useCurrentPermissionStore()
   const genericStore = useGenericStore()
+  const { pushMessage } = useSaplingMessageCenter()
   let activeLoadController: AbortController | null = null
   let scheduledLoadTimeout: ReturnType<typeof setTimeout> | null = null
   let latestLoadRequestId = 0
@@ -103,7 +106,11 @@ export function useSaplingTable(
         entityTemplates.value,
         currentPermissionStore.accumulatedPermission ?? [],
       ),
-      ...additionalListProjectionFields,
+      ...additionalListProjectionFields.filter((fieldName) =>
+        entityTemplates.value.some(
+          (template) => template.name === fieldName && template.fieldAccess?.allowRead !== false,
+        ),
+      ),
     ]),
   ])
   const readableReferenceRelations = computed(() =>
@@ -135,7 +142,11 @@ export function useSaplingTable(
   )
 
   const validSortBy = computed(() => {
-    const validTemplateKeys = new Set(entityTemplates.value.map((template) => template.name))
+    const validTemplateKeys = new Set(
+      entityTemplates.value
+        .filter((template) => template.fieldAccess?.allowRead !== false)
+        .map((template) => template.name),
+    )
     return sortBy.value.filter((sortItem) => validTemplateKeys.has(sortItem.key))
   })
 
@@ -165,6 +176,7 @@ export function useSaplingTable(
 
     const orderColumn = nextEntityTemplates.find(
       (template) =>
+        template.fieldAccess?.allowRead !== false &&
         Array.isArray(template.options) &&
         (template.options.includes('isOrderASC') || template.options.includes('isOrderDESC')),
     )
@@ -280,7 +292,19 @@ export function useSaplingTable(
 
   function restoreQueryFilterState(nextEntityTemplates: EntityTemplate[]) {
     const routeState = getRouteState()
-    const routeFilter = routeState.filter
+    const sanitizedRouteFilter = removeUnavailableFieldFilters(
+      routeState.filter,
+      nextEntityTemplates,
+    )
+    const routeFilter = sanitizedRouteFilter.filter ?? {}
+    if (sanitizedRouteFilter.removed) {
+      pushMessage(
+        'info',
+        i18n.global.t('permission.filterAdjusted'),
+        i18n.global.t('permission.filterAdjustedDescription'),
+        entityHandle.value,
+      )
+    }
     const searchFilters = buildRouteSearchFilterCandidates(routeState.search, nextEntityTemplates)
     const filterWithoutSearch = searchFilters.reduce<unknown>(
       (filter, searchFilter) => removeMatchingFilterFromFilterQuery(filter, searchFilter),

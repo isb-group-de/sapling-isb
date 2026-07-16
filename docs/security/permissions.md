@@ -12,6 +12,9 @@ backend/src/auth/guard/admin-permission.guard.ts
 backend/src/auth/guard/impersonation-read-only.guard.ts
 backend/src/entity/RoleItem.ts
 backend/src/entity/PermissionItem.ts
+backend/src/entity/FieldPermissionItem.ts
+backend/src/api/current/field-permission.service.ts
+backend/src/api/current/permission-admin.controller.ts
 backend/src/entity/EntityItem.ts
 backend/src/database/seeder/PermissionSeeder.ts
 backend/src/database/seeder/permission-matrices.ts
@@ -69,14 +72,49 @@ allowShow
 
 Generic API method mapping:
 
-| HTTP method | Permission |
-| --- | --- |
-| `GET` | `allowRead` |
-| `POST` | `allowInsert` |
-| `PATCH` | `allowUpdate` |
-| `DELETE` | `allowDelete` |
+| HTTP method | Permission    |
+| ----------- | ------------- |
+| `GET`       | `allowRead`   |
+| `POST`      | `allowInsert` |
+| `PATCH`     | `allowUpdate` |
+| `DELETE`    | `allowDelete` |
 
 `allowShow` controls whether the entity should appear in navigation/UI contexts.
+
+## Field Permissions
+
+`FieldPermissionItem` stores deviations for one `PermissionItem` and field name.
+The supported actions are `allowRead`, `allowInsert`, and `allowUpdate`;
+`allowShow` and `allowDelete` remain entity-level capabilities. If no field row
+exists, the matching entity permission is inherited. A row whose three flags
+are all `true` is removed again, so an empty override table preserves the
+historic behavior exactly.
+
+Effective access is resolved by `FieldPermissionService`:
+
+- each role grants only when its entity action and field action both allow it;
+- grants are OR-combined across roles;
+- the granting role's `global`, `company`, or `person` stage is checked against
+  the concrete record;
+- field rules can restrict but never expand structural or entity restrictions;
+- administrator status permits managing the matrix but is not a data-access
+  bypass.
+
+Unrequested unreadable fields are omitted from responses. Explicit use in
+projections, filters, sorting, relation paths, imports, or mutation payloads
+fails with `403 global.fieldPermissionDenied`. Filters and sorting require a
+field to be readable across the user's complete entity-stage scope.
+
+Administrators manage the complete catalog atomically through:
+
+```text
+GET /api/permission-admin/roles/:roleHandle/entities/:entityHandle/fields
+PUT /api/permission-admin/roles/:roleHandle/entities/:entityHandle/fields
+```
+
+The catalog includes structural limits, inheritance, overrides, effective
+stages, dynamic fields, and stale diagnostics. Custom-field key renames move
+overrides; definition deletion removes them.
 
 ## GenericPermissionGuard
 
@@ -157,6 +195,9 @@ frontend/src/components/permission/
 
 Frontend checks are for UX only. Backend guards remain authoritative.
 
+User templates expose `fieldAccess`. Fields with no allowed action are removed;
+write-only fields remain for create/edit but are never prefilled.
+
 ## Provider User Import
 
 The permission management page can import Azure or Google directory users into Sapling persons.
@@ -179,6 +220,7 @@ Implications:
 - A product integration should use a dedicated Sapling service user.
 - Assign only the roles needed by that product.
 - Generic MCP tools cannot bypass entity permissions.
+- MCP schemas, queries, payloads, and results apply the same field policy.
 - Semantic search filters vector results through generic record loading, so users only receive records they can read.
 - Private Event records remain owner-only when accessed through generic MCP tools because those tools use the same generic read filters.
 

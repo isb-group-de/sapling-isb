@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PersonItem } from '../../entity/PersonItem';
 import { TemplateService } from '../template/template.service';
 import { EntityTemplateDto } from '../template/dto/entity-template.dto';
@@ -13,6 +17,7 @@ import {
   TimelineRecordResult,
   TimelineRelationDescriptor,
 } from './generic-timeline.service';
+import { FieldPermissionService } from '../current/field-permission.service';
 
 /** Loads permission-filtered timeline records and composes the paged response. */
 @Injectable()
@@ -24,6 +29,12 @@ export class GenericTimelineQueryService {
     private readonly genericReferenceService: GenericReferenceService,
     private readonly genericSanitizerService: GenericSanitizerService,
     private readonly genericTimelineService: GenericTimelineService,
+    private readonly fieldPermissions: FieldPermissionService = {
+      getTemplates: (entityHandle: string) =>
+        Promise.resolve(this.templateService.getEntityTemplate(entityHandle)),
+      applyTemplateAccess: (_user, _entityHandle, templates) => templates,
+      assertReadableFields: () => Promise.resolve(),
+    } as unknown as FieldPermissionService,
   ) {}
 
   async getRecordTimeline(
@@ -40,7 +51,11 @@ export class GenericTimelineQueryService {
     const normalizedMonths = Number.isFinite(months)
       ? Math.max(1, Math.min(12, Number(months)))
       : 6;
-    const mainTemplate = this.templateService.getEntityTemplate(entityHandle);
+    const mainTemplate = this.getReadableTemplate(
+      currentUser,
+      entityHandle,
+      await this.fieldPermissions.getTemplates(entityHandle),
+    );
     const mainDateFields =
       this.genericTimelineService.getTimelineDateFieldConfig(mainTemplate);
     const mainRecord = await this.findTimelineRecord(
@@ -67,11 +82,15 @@ export class GenericTimelineQueryService {
     const cursorMonth =
       this.genericTimelineService.parseTimelineCursor(before) ??
       this.genericTimelineService.addMonths(new Date(), 1);
-    const descriptors =
+    const rawDescriptors =
       this.genericTimelineService.getTimelineRelationDescriptors(
         entityHandle,
         currentUser,
       );
+    const descriptors = await this.prepareDescriptors(
+      rawDescriptors,
+      currentUser,
+    );
     const datasets = await this.loadTimelineDescriptorDatasets(
       descriptors,
       normalizedHandle,
@@ -130,9 +149,10 @@ export class GenericTimelineQueryService {
     );
 
     return result.item
-      ? this.genericSanitizerService.sanitizeEntityResult(
+      ? this.genericSanitizerService.projectEntityResult(
           entityHandle,
           result.item,
+          currentUser,
           template,
         )
       : null;
@@ -195,10 +215,75 @@ export class GenericTimelineQueryService {
       },
     );
 
-    return this.genericSanitizerService.sanitizeEntityResult(
+    return this.genericSanitizerService.projectEntityResult(
       entityHandle,
       result.items as TimelineRecordResult[],
+      currentUser,
       template,
     );
+  }
+
+  private async prepareDescriptors(
+    descriptors: TimelineRelationDescriptor[],
+    currentUser: PersonItem,
+  ): Promise<TimelineRelationDescriptor[]> {
+    const prepared: TimelineRelationDescriptor[] = [];
+    for (const descriptor of descriptors) {
+      const requiredFields = [
+        ...descriptor.relationFields.map((field) => field.name),
+        descriptor.dateFields.startFieldName,
+        descriptor.dateFields.endFieldName,
+        ...descriptor.chipFields.map((field) => field.name),
+        ...descriptor.booleanFields.map((field) => field.name),
+        ...(descriptor.moneyField ? [descriptor.moneyField.name] : []),
+      ];
+      try {
+        await this.fieldPermissions.assertReadableFields(
+          currentUser,
+          descriptor.entityHandle,
+          requiredFields,
+        );
+      } catch (error) {
+        if (!(error instanceof ForbiddenException)) throw error;
+        continue;
+      }
+      const template = this.getReadableTemplate(
+        currentUser,
+        descriptor.entityHandle,
+        await this.fieldPermissions.getTemplates(descriptor.entityHandle),
+      );
+      const fieldsByName = new Map(
+        template.map((field) => [field.name, field]),
+      );
+      const relationFields = descriptor.relationFields
+        .map((field) => fieldsByName.get(field.name))
+        .filter((field): field is EntityTemplateDto => !!field);
+      if (relationFields.length === 0) continue;
+      prepared.push({
+        ...descriptor,
+        template,
+        relationFields,
+        chipFields: descriptor.chipFields
+          .map((field) => fieldsByName.get(field.name))
+          .filter((field): field is EntityTemplateDto => !!field),
+        booleanFields: descriptor.booleanFields
+          .map((field) => fieldsByName.get(field.name))
+          .filter((field): field is EntityTemplateDto => !!field),
+        moneyField: descriptor.moneyField
+          ? (fieldsByName.get(descriptor.moneyField.name) ?? null)
+          : null,
+      });
+    }
+    return prepared;
+  }
+
+  private getReadableTemplate(
+    currentUser: PersonItem,
+    entityHandle: string,
+    template: EntityTemplateDto[],
+  ): EntityTemplateDto[] {
+    return this.fieldPermissions
+      .applyTemplateAccess(currentUser, entityHandle, template)
+      .filter((field) => field.fieldAccess?.allowRead !== false);
   }
 }

@@ -23,6 +23,9 @@ export function canReadReferenceTemplate(
   template?: Partial<EntityTemplate>,
   permissions: AccumulatedPermission[] = [],
 ): boolean {
+  if (template?.fieldAccess?.allowRead === false) {
+    return false
+  }
   if (!template?.referenceName) {
     return true
   }
@@ -57,6 +60,7 @@ export function getReadableReferenceRelationNames(
             TABLE_REFERENCE_PERMISSION_KINDS.includes(template.kind ?? '') &&
             Boolean(template.name) &&
             Boolean(template.referenceName) &&
+            template.fieldAccess?.allowRead !== false &&
             (!projectedFieldSet || projectedFieldSet.has(template.name)) &&
             canReadReferenceTemplate(template, permissions),
         )
@@ -74,12 +78,13 @@ export function getListProjectionFieldNames(
       entityTemplates
         .filter(
           (template) =>
-            template.isPrimaryKey ||
-            (template.isPersistent !== false &&
-              isSupportedTableTemplate(template, permissions) &&
-              (getTemplateConfiguredBoolean(template, 'tableVisible') === true ||
-                getTemplateConfiguredBoolean(template, 'mobileVisible') === true ||
-                template.options?.includes('isValue'))),
+            template.fieldAccess?.allowRead !== false &&
+            (template.isPrimaryKey ||
+              (template.isPersistent !== false &&
+                isSupportedTableTemplate(template, permissions) &&
+                (getTemplateConfiguredBoolean(template, 'tableVisible') === true ||
+                  getTemplateConfiguredBoolean(template, 'mobileVisible') === true ||
+                  template.options?.includes('isValue')))),
         )
         .map((template) => template.name)
         .filter(Boolean),
@@ -131,6 +136,7 @@ export function isSupportedTableTemplate(
   permissions: AccumulatedPermission[] = [],
 ): boolean {
   return (
+    template.fieldAccess?.allowRead !== false &&
     !template.options?.includes('isSecurity') &&
     !TABLE_UNSUPPORTED_RELATION_KINDS.includes(template.kind ?? '') &&
     canReadReferenceTemplate(template, permissions)
@@ -249,6 +255,12 @@ export function getEditDialogHeaders(
 ) {
   const visibleTemplates = entityTemplates.filter(
     (template) =>
+      (mode === 'create'
+        ? template.fieldAccess?.allowInsert !== false
+        : mode === 'readonly'
+          ? template.fieldAccess?.allowRead !== false
+          : template.fieldAccess?.allowRead !== false ||
+            template.fieldAccess?.allowUpdate === true) &&
       getTemplateConfiguredFormVisible(template) === true &&
       !template.isAutoIncrement &&
       (template.inlineCollection || !['1:m', 'm:n', 'n:m', '1:1'].includes(template.kind ?? '')) &&
@@ -271,8 +283,9 @@ export function getTableHeaders(
   t: (key: string) => string,
   permissions: AccumulatedPermission[] = [],
 ) {
-  return getSupportedTableHeaders(entityTemplates, entity, t, permissions).filter((template) =>
-    isVisibleTableTemplate(template, permissions),
+  return getSupportedTableHeaders(entityTemplates, entity, t, permissions).filter(
+    (template) =>
+      template.fieldAccess?.allowRead !== false && isVisibleTableTemplate(template, permissions),
   )
 }
 
@@ -284,6 +297,7 @@ export function isFilterableTableColumn(
     Boolean(columnKey) &&
     !['__select', '__actions'].includes(columnKey ?? '') &&
     template.isPersistent !== false &&
+    template.fieldAccess?.allowRead !== false &&
     !template.options?.includes('isSecurity') &&
     !template.options?.includes('isSystem') &&
     (isManyToOneTemplate(template) ||

@@ -16,6 +16,7 @@ import { NoteItem } from '../NoteItem';
 import { EntityItem } from '../EntityItem';
 import { RoleItem } from '../RoleItem';
 import { PermissionItem } from '../PermissionItem';
+import { FieldPermissionItem } from '../FieldPermissionItem';
 import { TicketItem } from '../TicketItem';
 import { TicketPriorityItem } from '../TicketPriorityItem';
 import { TicketStatusItem } from '../TicketStatusItem';
@@ -257,6 +258,7 @@ const ENTITY_REGISTRY_ENTRIES: { name: string; class: any }[] = [
   { name: 'note', class: NoteItem },
   { name: 'phoneCall', class: PhoneCallItem },
   { name: 'permission', class: PermissionItem },
+  { name: 'fieldPermission', class: FieldPermissionItem },
   { name: 'personDepartment', class: PersonDepartmentItem },
   { name: 'personDecisionRole', class: PersonDecisionRoleItem },
   { name: 'personFunction', class: PersonFunctionItem },

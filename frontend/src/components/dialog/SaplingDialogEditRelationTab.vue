@@ -114,7 +114,10 @@ const props = defineProps<{
 }>()
 
 const isReadOnlyRelation = computed(
-  () => props.mode !== 'edit' || (props.template.options?.includes('isReadOnly') ?? false),
+  () =>
+    props.mode !== 'edit' ||
+    props.template.fieldAccess?.allowUpdate === false ||
+    (props.template.options?.includes('isReadOnly') ?? false),
 )
 
 const emit = defineEmits<{
