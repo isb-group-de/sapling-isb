@@ -70,6 +70,12 @@ describe('GenericService update workflows', () => {
     };
     const templateService = {
       getEntityTemplate: jest.fn(() => [
+        createTemplateField({
+          name: 'handle',
+          type: 'number',
+          isPrimaryKey: true,
+          isAutoIncrement: true,
+        }),
         createTemplateField({ name: 'title' }),
       ]),
     };
@@ -89,7 +95,7 @@ describe('GenericService update workflows', () => {
     const result = await service.update(
       'ticket',
       7,
-      { title: 'Input' },
+      { handle: 7, title: 'Input' },
       { handle: 1 } as never,
       [],
     );

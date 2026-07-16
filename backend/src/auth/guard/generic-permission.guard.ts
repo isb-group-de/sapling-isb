@@ -15,6 +15,7 @@ import {
   GENERIC_PERMISSION_RESOLVE_KEY,
   GenericPermissionAction,
 } from '../../api/generic/generic.decorator';
+import { isPublicGenericReadEntity } from '../public-generic-read-entities';
 
 type ResolvedGenericPermission = {
   entityHandle?: string;
@@ -30,8 +31,6 @@ type GenericPermissionResolverFn = (
   | null
   | undefined
   | Promise<string | ResolvedGenericPermission | null | undefined>;
-
-const PUBLIC_GENERIC_READ_ENTITIES = ['translation', 'entity', 'entityGroup'];
 
 export type GenericPermissionGuardRequest = Pick<
   Request,
@@ -107,10 +106,7 @@ export class GenericPermissionGuard implements CanActivate {
       options?.entityHandle ??
       req.params?.entityHandle;
 
-    if (
-      method === 'GET' &&
-      PUBLIC_GENERIC_READ_ENTITIES.includes(entityHandle ?? '')
-    ) {
+    if (method === 'GET' && isPublicGenericReadEntity(entityHandle ?? '')) {
       return;
     }
 

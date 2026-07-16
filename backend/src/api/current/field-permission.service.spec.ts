@@ -190,4 +190,23 @@ describe('FieldPermissionService', () => {
       ),
     ).toBe(false);
   });
+
+  it('keeps public bootstrap entities readable without user field permissions', async () => {
+    await expect(
+      service.assertReadableQuery(undefined, 'translation', {
+        entity: { $in: ['login'] },
+        language: 'de',
+      }),
+    ).resolves.toBeUndefined();
+
+    expect(
+      service.canAccessField(user([]), 'translation', field('value'), 'read'),
+    ).toBe(true);
+  });
+
+  it('fails closed for anonymous reads of non-public entities', async () => {
+    await expect(
+      service.assertReadableFields(undefined, 'ticket', ['title']),
+    ).rejects.toBeInstanceOf(ForbiddenException);
+  });
 });

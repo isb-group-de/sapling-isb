@@ -5,6 +5,7 @@ import { PersonItem } from '../../entity/PersonItem';
 import { CurrentService } from '../current/current.service';
 import { TemplateService } from '../template/template.service';
 import { EntityTemplateDto } from '../template/dto/entity-template.dto';
+import { isPublicGenericReadEntity } from '../../auth/public-generic-read-entities';
 
 const entityMap = ENTITY_MAP;
 
@@ -80,9 +81,15 @@ export class GenericPermissionService {
 
   setTopLevelFilter(
     where: object,
-    currentUser: PersonItem,
+    currentUser: PersonItem | null | undefined,
     entityHandle: string,
   ): object {
+    if (!currentUser) {
+      if (isPublicGenericReadEntity(entityHandle)) {
+        return where;
+      }
+      throw new ForbiddenException('global.permissionDenied');
+    }
     const permission = this.currentService.getEntityPermissions(
       currentUser,
       entityHandle,

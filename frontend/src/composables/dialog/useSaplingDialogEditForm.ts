@@ -209,9 +209,13 @@ export function useSaplingDialogEditForm(options: UseSaplingDialogEditFormOption
 
   function buildSavePayload(): SaplingGenericItem {
     const output = { ...options.form.value }
+    const writableTemplates = options.templates.value.filter(isWritableForCurrentMode)
+    const nonWritableTemplates = options.templates.value.filter(
+      (template) => !isWritableForCurrentMode(template),
+    )
     const customFields: Record<string, unknown> = {}
     const unchangedWriteOnlyFields = new Set(
-      options.templates.value
+      writableTemplates
         .filter((template) => isWriteOnlyEditField(template))
         .filter((template) => {
           if (template.type === 'datetime') {
@@ -230,11 +234,19 @@ export function useSaplingDialogEditForm(options: UseSaplingDialogEditFormOption
         .map((template) => template.name),
     )
 
+    nonWritableTemplates.forEach((template) => {
+      delete output[template.name]
+      if (template.type === 'datetime') {
+        delete output[`${template.name}_date`]
+        delete output[`${template.name}_time`]
+      }
+    })
+
     if (options.mode.value === 'edit') {
       options.relationTemplates.value.forEach((template) => delete output[template.name])
     }
 
-    options.templates.value
+    writableTemplates
       .filter((template) => template.type === 'datetime')
       .forEach((template) => {
         const key = template.name
@@ -255,7 +267,7 @@ export function useSaplingDialogEditForm(options: UseSaplingDialogEditFormOption
         delete output[`${key}_time`]
       })
 
-    options.templates.value
+    writableTemplates
       .filter((template) => template.kind === 'm:1')
       .forEach((template) => {
         output[template.name] = normalizeSingleReferenceValue(
@@ -265,7 +277,7 @@ export function useSaplingDialogEditForm(options: UseSaplingDialogEditFormOption
       })
 
     if (options.mode.value === 'create') {
-      options.templates.value
+      writableTemplates
         .filter((template) => ['m:n', 'n:m'].includes(template.kind ?? ''))
         .forEach((template) => {
           output[template.name] = normalizeCollectionReferenceValue(
@@ -275,7 +287,7 @@ export function useSaplingDialogEditForm(options: UseSaplingDialogEditFormOption
         })
     }
 
-    options.templates.value
+    writableTemplates
       .filter((template) => template.customField?.key || template.name.startsWith('customFields.'))
       .forEach((template) => {
         const fieldKey = template.customField?.key ?? template.name.slice('customFields.'.length)
@@ -298,6 +310,16 @@ export function useSaplingDialogEditForm(options: UseSaplingDialogEditFormOption
     }
 
     return output
+  }
+
+  function isWritableForCurrentMode(template: EntityTemplate): boolean {
+    if (options.mode.value === 'create') {
+      return template.fieldAccess?.allowInsert !== false
+    }
+    if (options.mode.value === 'edit') {
+      return template.fieldAccess?.allowUpdate !== false
+    }
+    return false
   }
 
   function isWriteOnlyEditField(template: EntityTemplate): boolean {

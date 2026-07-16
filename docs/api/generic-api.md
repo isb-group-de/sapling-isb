@@ -171,6 +171,12 @@ A client-supplied field without `allowUpdate` rejects the complete request.
 Relation add/remove uses the update permission of the relation field. Mutation
 responses are projected with the same read policy.
 
+Full-record clients may echo `handle` in a PATCH body. When it matches the
+request's target handle, the backend treats it purely as record identity and
+removes it before field-permission checks, change logging, scripts, and ORM
+assignment. A different handle remains an explicit field update and is checked
+normally.
+
 ## Custom Fields
 
 Sapling supports generic custom fields through `customFieldDefinition`,

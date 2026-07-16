@@ -12,6 +12,7 @@ import type { RoleItem } from '../../entity/RoleItem';
 import { TemplateService } from '../template/template.service';
 import { EntityTemplateDto } from '../template/dto/entity-template.dto';
 import { GenericCustomFieldService } from '../generic/generic-custom-field.service';
+import { isPublicGenericReadEntity } from '../../auth/public-generic-read-entities';
 
 export type FieldPermissionAction = 'read' | 'insert' | 'update';
 
@@ -144,10 +145,16 @@ export class FieldPermissionService {
   }
 
   async assertReadableQuery(
-    user: PersonItem,
+    user: PersonItem | null | undefined,
     entityHandle: string,
     criteria: unknown,
   ): Promise<void> {
+    if (isPublicGenericReadEntity(entityHandle)) {
+      return;
+    }
+    if (!user) {
+      this.throwDenied(entityHandle, '*', 'read');
+    }
     if (!criteria || typeof criteria !== 'object') {
       return;
     }
@@ -163,10 +170,16 @@ export class FieldPermissionService {
   }
 
   async assertReadableFields(
-    user: PersonItem,
+    user: PersonItem | null | undefined,
     entityHandle: string,
     fieldNames: string[],
   ): Promise<void> {
+    if (isPublicGenericReadEntity(entityHandle)) {
+      return;
+    }
+    if (!user) {
+      this.throwDenied(entityHandle, '*', 'read');
+    }
     if (fieldNames.length === 0) {
       return;
     }
@@ -440,6 +453,9 @@ export class FieldPermissionService {
     if (!structuralAllowed) {
       return [];
     }
+    if (action === 'read' && isPublicGenericReadEntity(entityHandle)) {
+      return [{ stage: 'global' }];
+    }
 
     const permissionKey = this.toAllowKey(action) as EntityActionKey;
     const grants: Array<{ stage: string }> = [];
@@ -613,6 +629,9 @@ export class FieldPermissionService {
   }
 
   private getEntityReadStages(user: PersonItem, entityHandle: string) {
+    if (isPublicGenericReadEntity(entityHandle)) {
+      return ['global'];
+    }
     const stages: string[] = [];
     for (const role of this.toArray(user.roles)) {
       const permission = this.toArray(role.permissions).find(

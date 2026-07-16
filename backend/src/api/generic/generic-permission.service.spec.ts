@@ -72,6 +72,32 @@ const createTemplateField = (
 });
 
 describe('GenericPermissionService', () => {
+  it('does not apply user scope filters to anonymous public bootstrap reads', () => {
+    const currentService = {
+      getEntityPermissions: jest.fn(),
+      getAllEntityPermissions: jest.fn(),
+    };
+    const templateService = { getEntityTemplate: jest.fn() };
+    const service = new GenericPermissionService(
+      currentService as never,
+      templateService as never,
+    );
+    const where = { entity: { $in: ['login'] }, language: 'de' };
+
+    expect(service.setTopLevelFilter(where, undefined, 'translation')).toBe(
+      where,
+    );
+    expect(currentService.getEntityPermissions).not.toHaveBeenCalled();
+  });
+
+  it('rejects anonymous scope filtering for non-public entities', () => {
+    const service = new GenericPermissionService({} as never, {} as never);
+
+    expect(() => service.setTopLevelFilter({}, undefined, 'ticket')).toThrow(
+      'global.permissionDenied',
+    );
+  });
+
   it('keeps private events visible only for the event creator even with global read permission', () => {
     const currentService = {
       getEntityPermissions: jest.fn(() => ({

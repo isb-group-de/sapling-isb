@@ -6,8 +6,7 @@ import {
 } from '@nestjs/common';
 import type { Request } from 'express';
 import { AuthService } from '../auth.service';
-
-const PUBLIC_GENERIC_READ_ENTITIES = ['translation', 'entity', 'entityGroup'];
+import { isPublicGenericReadEntity } from '../public-generic-read-entities';
 
 @Injectable()
 export class SessionOrBearerAuthGuard implements CanActivate {
@@ -22,7 +21,7 @@ export class SessionOrBearerAuthGuard implements CanActivate {
 
     if (
       req.method === 'GET' &&
-      PUBLIC_GENERIC_READ_ENTITIES.includes(req.params.entityHandle ?? '')
+      isPublicGenericReadEntity(req.params.entityHandle ?? '')
     ) {
       return true;
     }

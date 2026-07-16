@@ -9,6 +9,7 @@ import { PersonItem } from '../../entity/PersonItem';
 import type { ScriptServerContext } from '../../script/core/script.interface';
 import { ScriptMethods } from '../script/script.service';
 import { TemplateService } from '../template/template.service';
+import { EntityTemplateDto } from '../template/dto/entity-template.dto';
 import { EmailAutomationService } from '../mail/email-automation.service';
 import { normalizeSaplingPhonePayload } from '../common/sapling-phone.util';
 import { GenericChangeLogService } from './generic-change-log.service';
@@ -205,8 +206,9 @@ export class GenericEntityMutationService {
         concurrencyOptions,
       );
     data = updatePayload.data;
-    const submittedPermissionPayload = { ...data };
     const template = this.templateService.getEntityTemplate(entityHandle);
+    data = this.removeMatchingHandleEcho(template, data, handle);
+    const submittedPermissionPayload = { ...data };
     const permissionTemplate =
       await this.fieldPermissions.getTemplates(entityHandle);
     data = normalizeSaplingPhonePayload(template, data);
@@ -555,6 +557,33 @@ export class GenericEntityMutationService {
       oldFieldName: `customFields.${oldFieldKey}`,
       newFieldName: `customFields.${normalizedNextFieldKey}`,
     };
+  }
+
+  /**
+   * Full-record clients commonly echo the primary handle in PATCH payloads.
+   * When it identifies the same record as the request parameter, it is not an
+   * attempted field change and must not be checked or assigned as one.
+   */
+  private removeMatchingHandleEcho(
+    template: EntityTemplateDto[],
+    data: GenericMutationPayload,
+    targetHandle: string | number,
+  ): GenericMutationPayload {
+    const handleField = template.find(
+      (field) => field.name === 'handle' && field.isPrimaryKey === true,
+    );
+    if (
+      !handleField ||
+      !Object.prototype.hasOwnProperty.call(data, 'handle') ||
+      data.handle == null ||
+      String(data.handle) !== String(targetHandle)
+    ) {
+      return data;
+    }
+
+    const nextData = { ...data };
+    delete nextData.handle;
+    return nextData;
   }
 
   private invalidateTemplateMetadataAfterMutation(entityHandle: string): void {
