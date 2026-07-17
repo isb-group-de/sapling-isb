@@ -195,6 +195,12 @@ frontend/src/components/permission/
 
 Frontend checks are for UX only. Backend guards remain authoritative.
 
+During user impersonation, the global `ImpersonationReadOnlyGuard` rejects
+non-read HTTP methods by default. A handler that uses `POST` only to perform a
+query can opt in with `@ImpersonationReadOnly()` after verifying that it does
+not mutate application or external state. KPI batch execution uses this narrow
+exception; ordinary write routes remain blocked.
+
 User templates expose `fieldAccess`. Fields with no allowed action are removed;
 write-only fields remain for create/edit but are never prefilled.
 

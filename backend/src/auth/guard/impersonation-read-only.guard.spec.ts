@@ -1,15 +1,29 @@
 import { describe, expect, it } from '@jest/globals';
 import { ForbiddenException } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
+import { ImpersonationReadOnly } from '../impersonation-read-only';
 import { ImpersonationReadOnlyGuard } from './impersonation-read-only.guard';
 
-const createContext = (req: unknown) =>
+class TestController {
+  @ImpersonationReadOnly()
+  readOnlyPost() {}
+
+  writePost() {}
+}
+
+const createContext = (
+  req: unknown,
+  handler: () => void = TestController.prototype.writePost,
+) =>
   ({
     getType: () => 'http' as const,
+    getHandler: () => handler,
+    getClass: () => TestController,
     switchToHttp: () => ({ getRequest: () => req }),
   }) as never;
 
 describe('ImpersonationReadOnlyGuard', () => {
-  const guard = new ImpersonationReadOnlyGuard();
+  const guard = new ImpersonationReadOnlyGuard(new Reflector());
 
   it('allows requests without a user', () => {
     expect(
@@ -70,6 +84,21 @@ describe('ImpersonationReadOnlyGuard', () => {
           path: '/api/auth/logout',
           user: { handle: 7, _impersonator: { handle: 1 } },
         }),
+      ),
+    ).toBe(true);
+  });
+
+  it('allows explicitly read-only POST routes while impersonating', () => {
+    expect(
+      guard.canActivate(
+        createContext(
+          {
+            method: 'POST',
+            path: '/api/kpi/execute-batch',
+            user: { handle: 7, _impersonator: { handle: 1 } },
+          },
+          TestController.prototype.readOnlyPost,
+        ),
       ),
     ).toBe(true);
   });

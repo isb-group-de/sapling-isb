@@ -29,6 +29,7 @@ import {
 } from '../generic/generic.decorator';
 import { GenericPermissionGuard } from '../../auth/guard/generic-permission.guard';
 import { KpiItem } from '../../entity/KpiItem';
+import { ImpersonationReadOnly } from '../../auth/impersonation-read-only';
 
 const resolveKpiEntityPermission = async (
   req: Request<{ handle?: string }>,
@@ -72,6 +73,7 @@ export class KpiController {
   constructor(private readonly kpiService: KpiService) {}
 
   @Post('execute-batch')
+  @ImpersonationReadOnly()
   @ApiOperation({
     summary: 'Execute multiple KPIs',
     description:

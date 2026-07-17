@@ -4,8 +4,10 @@ import {
   ForbiddenException,
   Injectable,
 } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
 import type { Request } from 'express';
 import { PersonItem } from '../../entity/PersonItem';
+import { IMPERSONATION_READ_ONLY_KEY } from '../impersonation-read-only';
 
 /**
  * Enforces a read-only policy while a session is impersonating another user.
@@ -29,6 +31,8 @@ export class ImpersonationReadOnlyGuard implements CanActivate {
     '/auth/logout',
   ];
 
+  constructor(private readonly reflector: Reflector) {}
+
   canActivate(context: ExecutionContext): boolean {
     if (context.getType() !== 'http') {
       return true;
@@ -45,6 +49,15 @@ export class ImpersonationReadOnlyGuard implements CanActivate {
 
     const method = (req.method ?? 'GET').toUpperCase();
     if (ImpersonationReadOnlyGuard.READ_METHODS.has(method)) {
+      return true;
+    }
+
+    const isReadOnlyRoute =
+      this.reflector.getAllAndOverride<boolean>(IMPERSONATION_READ_ONLY_KEY, [
+        context.getHandler(),
+        context.getClass(),
+      ]) ?? false;
+    if (isReadOnlyRoute) {
       return true;
     }
 

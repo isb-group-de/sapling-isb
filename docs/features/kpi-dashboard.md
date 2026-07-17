@@ -32,21 +32,21 @@ backend/src/database/seeder/json-demonstration/kpi/
 
 Important fields:
 
-| Field | Meaning |
-| --- | --- |
-| `name` | Human-readable KPI name |
-| `description` | Optional explanatory text |
-| `targetEntity` | `EntityItem` that resolves through `ENTITY_MAP` |
-| `aggregation` | Aggregation handle such as `COUNT`, `SUM`, `AVG`, `MIN`, `MAX` |
-| `field` | Field path to aggregate; relation paths such as `type.handle` are supported |
-| `type` | Rendering/execution shape such as `ITEM`, `LIST`, `BREAKDOWN`, `TREND`, `COMPARISON`, `SPARKLINE` |
-| `timeframeField` | Date field for time-based KPIs; defaults to `created_at` in executor logic |
-| `timeframe` | Current period such as `DAY`, `WEEK`, `MONTH`, `QUARTER`, `YEAR` |
-| `timeframeInterval` | Sparkline bucket interval, for example `MONTH` within `YEAR` |
-| `filter` | Persisted generic filter JSON |
-| `groupBy` | Optional list of field paths used for grouped output |
-| `relation` | Optional relation entity context |
-| `relationField` | Field used for relation drilldowns/grouping |
+| Field               | Meaning                                                                                           |
+| ------------------- | ------------------------------------------------------------------------------------------------- |
+| `name`              | Human-readable KPI name                                                                           |
+| `description`       | Optional explanatory text                                                                         |
+| `targetEntity`      | `EntityItem` that resolves through `ENTITY_MAP`                                                   |
+| `aggregation`       | Aggregation handle such as `COUNT`, `SUM`, `AVG`, `MIN`, `MAX`                                    |
+| `field`             | Field path to aggregate; relation paths such as `type.handle` are supported                       |
+| `type`              | Rendering/execution shape such as `ITEM`, `LIST`, `BREAKDOWN`, `TREND`, `COMPARISON`, `SPARKLINE` |
+| `timeframeField`    | Date field for time-based KPIs; defaults to `created_at` in executor logic                        |
+| `timeframe`         | Current period such as `DAY`, `WEEK`, `MONTH`, `QUARTER`, `YEAR`                                  |
+| `timeframeInterval` | Sparkline bucket interval, for example `MONTH` within `YEAR`                                      |
+| `filter`            | Persisted generic filter JSON                                                                     |
+| `groupBy`           | Optional list of field paths used for grouped output                                              |
+| `relation`          | Optional relation entity context                                                                  |
+| `relationField`     | Field used for relation drilldowns/grouping                                                       |
 
 Reference handles are seeded in:
 
@@ -62,6 +62,11 @@ The demonstration seed files can add richer examples, but the reference handles 
 
 KPI execution starts in `KpiService.executeKPIById(id, currentUser)`.
 
+The batch endpoint `POST /api/kpi/execute-batch` is also a query-only operation.
+It is explicitly marked with `@ImpersonationReadOnly()`, so dashboards continue
+to load while an administrator views the application as another user. The
+batch service still applies each target entity's read permission and scope.
+
 1. The KPI is loaded with `aggregation`, `type`, `timeframe`, `timeframeInterval`, `targetEntity`, and `relation`.
 2. `targetEntity.handle` is resolved against `ENTITY_MAP`.
 3. The persisted filter is prepared through `GenericFilterService.prepareReadCriteria()`.
@@ -74,14 +79,14 @@ This means KPI results are not a bypass around normal entity permissions. If a u
 
 ## KPI Types
 
-| Type | Runtime method | Typical frontend component |
-| --- | --- | --- |
-| `ITEM` | `executeItemOrList()` | `SaplingKpiItem.vue` |
-| `LIST` | `executeItemOrList()` | `SaplingKpiList.vue` |
-| `BREAKDOWN` | `executeItemOrList()` with grouping | `SaplingKpiBreakdown.vue` |
-| `TREND` | `executeTrend()` | `SaplingKpiTrend.vue` |
-| `COMPARISON` | `executeTrend()` | `SaplingKpiComparison.vue` |
-| `SPARKLINE` | `executeSparkline()` | `SaplingKpiSparkline.vue` |
+| Type         | Runtime method                      | Typical frontend component |
+| ------------ | ----------------------------------- | -------------------------- |
+| `ITEM`       | `executeItemOrList()`               | `SaplingKpiItem.vue`       |
+| `LIST`       | `executeItemOrList()`               | `SaplingKpiList.vue`       |
+| `BREAKDOWN`  | `executeItemOrList()` with grouping | `SaplingKpiBreakdown.vue`  |
+| `TREND`      | `executeTrend()`                    | `SaplingKpiTrend.vue`      |
+| `COMPARISON` | `executeTrend()`                    | `SaplingKpiComparison.vue` |
+| `SPARKLINE`  | `executeSparkline()`                | `SaplingKpiSparkline.vue`  |
 
 `TREND` and `COMPARISON` compare the current timeframe with the previous equivalent timeframe. `SPARKLINE` creates bucketed values inside a timeframe, for example months within a year or days within a month.
 
@@ -118,11 +123,11 @@ KPI responses include drilldown context so cards can open the underlying generic
 
 The service builds different drilldown variants:
 
-| KPI shape | Drilldown behavior |
-| --- | --- |
-| Item/list/breakdown | Base entity filter |
-| Trend/comparison | Current and previous period filters |
-| Sparkline | Bucket-level filters |
+| KPI shape           | Drilldown behavior                  |
+| ------------------- | ----------------------------------- |
+| Item/list/breakdown | Base entity filter                  |
+| Trend/comparison    | Current and previous period filters |
+| Sparkline           | Bucket-level filters                |
 
 Drilldowns should always carry enough context to reproduce the KPI subset in the generic table without leaking records outside the user's permission scope.
 
@@ -134,29 +139,29 @@ Drilldowns should always carry enough context to reproduce the KPI subset in the
 
 `FavoriteItem` stores person-owned saved generic views:
 
-| Field | Meaning |
-| --- | --- |
-| `title` | Visible favorite name |
-| `search` | Optional persisted free-text search |
-| `sortBy` | Optional persisted sorting |
-| `filter` | Generic filter JSON |
-| `person` | Owner |
-| `entity` | Target entity |
-| `entityRoute` | Optional route configuration |
+| Field         | Meaning                             |
+| ------------- | ----------------------------------- |
+| `title`       | Visible favorite name               |
+| `search`      | Optional persisted free-text search |
+| `sortBy`      | Optional persisted sorting          |
+| `filter`      | Generic filter JSON                 |
+| `person`      | Owner                               |
+| `entity`      | Target entity                       |
+| `entityRoute` | Optional route configuration        |
 
 `FavoriteTemplateItem` stores reusable favorite definitions. Starter data can assign dashboard/favorite templates to roles so new users get a useful workspace without manual setup.
 
 Frontend dashboard components:
 
-| Component | Responsibility |
-| --- | --- |
-| `SaplingDashboard.vue` | Main dashboard surface |
-| `SaplingDashboardTabs.vue` | Dashboard tab switching |
-| `SaplingKpis.vue` | KPI collection renderer |
-| `SaplingFavorites.vue` | Favorite list renderer |
-| `SaplingDashboardTemplateLoadDialog.vue` | Load dashboard templates |
-| `SaplingFavoriteTemplateLoadDialog.vue` | Load favorite templates |
-| `SaplingDashboardRecommendedFavorites.vue` | Suggested favorites |
+| Component                                  | Responsibility           |
+| ------------------------------------------ | ------------------------ |
+| `SaplingDashboard.vue`                     | Main dashboard surface   |
+| `SaplingDashboardTabs.vue`                 | Dashboard tab switching  |
+| `SaplingKpis.vue`                          | KPI collection renderer  |
+| `SaplingFavorites.vue`                     | Favorite list renderer   |
+| `SaplingDashboardTemplateLoadDialog.vue`   | Load dashboard templates |
+| `SaplingFavoriteTemplateLoadDialog.vue`    | Load favorite templates  |
+| `SaplingDashboardRecommendedFavorites.vue` | Suggested favorites      |
 
 ## Extension Checklist
 
