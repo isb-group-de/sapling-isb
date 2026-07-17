@@ -20,6 +20,8 @@ export function useSaplingAiChatRuntimeCatalog(
   const transcriptionModelConfigs = ref<AiProviderModelItem[]>([])
   const speechProviderConfigs = ref<AiProviderTypeItem[]>([])
   const speechModelConfigs = ref<AiProviderModelItem[]>([])
+  const preferredChatProviderHandle = ref<string | null>(preferences.chatProviderHandle)
+  const preferredChatModelHandle = ref<string | null>(preferences.chatModelHandle)
   const selectedProviderHandle = ref<string | null>(preferences.chatProviderHandle)
   const selectedModelHandle = ref<string | null>(preferences.chatModelHandle)
   const selectedAgentHandle = ref<string | null>(null)
@@ -63,6 +65,14 @@ export function useSaplingAiChatRuntimeCatalog(
   )
   const selectedAgentConfig = computed(
     () => agentConfigs.value.find((agent) => agent.handle === selectedAgentHandle.value) ?? null,
+  )
+  const selectedProviderConfig = computed(
+    () =>
+      providerConfigs.value.find((provider) => provider.handle === selectedProviderHandle.value) ??
+      null,
+  )
+  const selectedModelConfig = computed(
+    () => modelConfigs.value.find((model) => model.handle === selectedModelHandle.value) ?? null,
   )
   const playbookOptions = computed(() =>
     (selectedAgentConfig.value?.playbooks ?? []).map((playbook) => ({
@@ -139,6 +149,8 @@ export function useSaplingAiChatRuntimeCatalog(
   }
 
   function applyPreferences(nextPreferences: SaplingAiPreferences) {
+    preferredChatProviderHandle.value = nextPreferences.chatProviderHandle
+    preferredChatModelHandle.value = nextPreferences.chatModelHandle
     selectedProviderHandle.value = nextPreferences.chatProviderHandle
     selectedModelHandle.value = nextPreferences.chatModelHandle
     selectedTranscriptionProviderHandle.value = nextPreferences.transcriptionProviderHandle
@@ -188,15 +200,25 @@ export function useSaplingAiChatRuntimeCatalog(
     const selectedAgent = agentConfigs.value.find(
       (agent) => agent.handle === selectedAgentHandle.value,
     )
+    const sessionProviderHandle = getProviderHandle(activeSession.value?.provider)
+    const sessionModelHandle = getModelHandle(activeSession.value?.model)
+    const preferredProviderHandle = activeSession.value ? null : preferredChatProviderHandle.value
+    const preferredModelHandle = activeSession.value ? null : preferredChatModelHandle.value
+    const hasPreferredRuntime =
+      hasAvailableProvider(preferredProviderHandle, providerConfigs.value) ||
+      hasAvailableModel(preferredModelHandle, modelConfigs.value)
     const target = resolveRuntimeTarget({
       providerConfigs: providerConfigs.value,
       modelConfigs: modelConfigs.value,
       requestedProviderHandle:
-        getProviderHandle(activeSession.value?.provider) ??
-        getProviderHandle(selectedAgent?.provider),
+        sessionProviderHandle ??
+        (hasPreferredRuntime
+          ? preferredProviderHandle
+          : getProviderHandle(selectedAgent?.provider)),
       requestedModelHandle:
-        getModelHandle(activeSession.value?.model) ?? getModelHandle(selectedAgent?.model),
-      preferredModelHandle: selectedModelHandle.value,
+        sessionModelHandle ??
+        (hasPreferredRuntime ? preferredModelHandle : getModelHandle(selectedAgent?.model)),
+      preferredModelHandle: preferredModelHandle ?? selectedModelHandle.value,
     })
     selectedProviderHandle.value = target.providerHandle
     selectedModelHandle.value = target.modelHandle
@@ -251,6 +273,9 @@ export function useSaplingAiChatRuntimeCatalog(
     agentOptions,
     playbookOptions,
     speechModelConfigs,
+    selectedAgentConfig,
+    selectedProviderConfig,
+    selectedModelConfig,
     selectedProviderHandle,
     selectedModelHandle,
     selectedAgentHandle,
@@ -284,4 +309,18 @@ function getAgentHandle(agent?: AiAgentItem | string | null) {
 
 function getPlaybookHandle(playbook?: { handle?: string | null } | string | null) {
   return playbook ? (typeof playbook === 'string' ? playbook : (playbook.handle ?? null)) : null
+}
+
+function hasAvailableProvider(
+  providerHandle: string | null | undefined,
+  providerConfigs: AiProviderTypeItem[],
+) {
+  return !!providerHandle && providerConfigs.some((provider) => provider.handle === providerHandle)
+}
+
+function hasAvailableModel(
+  modelHandle: string | null | undefined,
+  modelConfigs: AiProviderModelItem[],
+) {
+  return !!modelHandle && modelConfigs.some((model) => model.handle === modelHandle)
 }

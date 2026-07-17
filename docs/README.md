@@ -13,6 +13,7 @@ The documentation should stay close to the code, but not duplicate every class o
 - [Frontend Dynamic UI](frontend/dynamic-ui.md)
 - [Permissions And Roles](security/permissions.md)
 - [AI, MCP, And Vectorization](ai/ai-mcp-vectorization.md)
+- [Local AI Provider Setup](ai/local-ai-provider-setup.md)
 - [Inbox And Open Task Notifications](features/inbox-notifications.md)
 - [Integrations And Deliveries](integrations/deliveries.md)
 - [Testing And Verification](development/testing.md)

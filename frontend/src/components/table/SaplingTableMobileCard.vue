@@ -111,6 +111,7 @@
               <v-btn
                 size="small"
                 @click.stop="openDialogForCol(col.key || '')"
+                :loading="isDialogLoadingForCol(col.key || '')"
                 :rounded="false"
                 :max-height="32"
                 class="glass-panel sapling-button-truncate"
@@ -126,11 +127,18 @@
               <SaplingDialogEdit
                 v-if="isDialogOpenForCol(col.key || '')"
                 :model-value="isDialogOpenForCol(col.key || '')"
-                mode="readonly"
-                :item="item[col.key || '']"
+                :mode="getReferenceDialogMode(col.referenceName)"
+                :item="getDialogItemForCol(col.key || '')"
                 :entity="getReferenceEntity(col.referenceName)"
                 :templates="getReferenceTemplates(col.referenceName)"
+                :show-reference="true"
                 @update:model-value="closeDialogForCol(col.key || '')"
+                @save="
+                  (value, action, context) =>
+                    saveDialogForCol(col.key || '', value, action, context)
+                "
+                @update:item="onDialogItemUpdate(col.key || '', $event)"
+                @deleted="onDialogRecordDeleted(col.key || '')"
               />
             </template>
             <template v-else-if="!isReferenceLoading(col)">
@@ -272,6 +280,12 @@ const {
   openDialogForCol,
   closeDialogForCol,
   isDialogOpenForCol,
+  getDialogItemForCol,
+  isDialogLoadingForCol,
+  getReferenceDialogMode,
+  saveDialogForCol,
+  onDialogItemUpdate,
+  onDialogRecordDeleted,
   closeMenu,
   requestEdit,
   requestChangeLog,

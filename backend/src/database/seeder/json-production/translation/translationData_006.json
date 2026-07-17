@@ -1,0 +1,32 @@
+[
+  {
+    "entity": "aiChat",
+    "property": "writing",
+    "de": "Antwort wird geschrieben",
+    "en": "Writing response"
+  },
+  {
+    "entity": "aiChat",
+    "property": "duration",
+    "de": "Dauer",
+    "en": "Duration"
+  },
+  {
+    "entity": "aiChat",
+    "property": "tokensUsed",
+    "de": "Token",
+    "en": "Tokens"
+  },
+  {
+    "entity": "aiChat",
+    "property": "inputTokens",
+    "de": "Input",
+    "en": "Input"
+  },
+  {
+    "entity": "aiChat",
+    "property": "outputTokens",
+    "de": "Output",
+    "en": "Output"
+  }
+]

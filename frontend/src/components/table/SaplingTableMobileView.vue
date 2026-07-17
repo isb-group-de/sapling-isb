@@ -137,6 +137,7 @@
         @show-documents="emit('show-documents', $event)"
         @show-information="emit('show-information', $event)"
         @show-external-record-links="emit('show-external-record-links', $event)"
+        @reload="emit('reload')"
       />
     </div>
     <div v-else-if="isLoading" class="sapling-scroll-list sapling-table-mobile-list">

@@ -43,11 +43,16 @@
         </span>
       </div>
       <div class="sapling-chat-message__content sapling-ai-chat__message-content">
-        <v-skeleton-loader
+        <div
           v-if="isMessageContentLoading(message)"
-          type="paragraph"
-          class="sapling-ai-chat__message-content-skeleton"
-        />
+          class="sapling-chat-message__typing sapling-ai-chat__message-typing"
+          role="status"
+          :aria-label="getTranslationLabel('writing', 'Antwort wird geschrieben')"
+        >
+          <span class="sapling-chat-message__typing-dot" aria-hidden="true" />
+          <span class="sapling-chat-message__typing-dot" aria-hidden="true" />
+          <span class="sapling-chat-message__typing-dot" aria-hidden="true" />
+        </div>
         <SaplingMarkdownContent v-else :source="getMessageDisplayContent(message)" />
       </div>
       <div
@@ -222,11 +227,16 @@ function getTransparencyChips(message: AiChatMessageItem): string[] {
   const agentVersion = asRecord(payload.agentVersion)
   const playbook = asRecord(payload.playbook)
   const attachmentCount = getMessageImportAttachments(message).length
+  const durationMs = getMessageDurationMs(message, payload)
 
   return [
     toolResults.length > 0 ? `${toolResults.length} ${t('aiChat.toolsUsed')}` : null,
     sources.length > 0 ? `${sources.length} ${t('aiChat.sourcesUsed')}` : null,
     attachmentCount > 0 ? `${attachmentCount} ${t('aiChat.attachmentsUsed')}` : null,
+    durationMs != null
+      ? `${getTranslationLabel('duration', 'Dauer')}: ${formatDurationMs(durationMs)}`
+      : null,
+    ...getUsageChips(payload),
     typeof agentVersion?.version === 'number' ? `v${agentVersion.version}` : null,
     typeof playbook?.title === 'string' ? playbook.title : null,
   ].filter((chip): chip is string => !!chip)
@@ -310,6 +320,114 @@ function getMessageStatusLabel(message: AiChatMessageItem) {
   const seconds =
     message.handle == null ? 0 : (props.streamingDurationByHandle[message.handle] ?? 0)
   return t('aiChat.streamingDuration', { seconds })
+}
+
+function getMessageDurationMs(
+  message: AiChatMessageItem,
+  payload: Record<string, unknown>,
+): number | null {
+  const agentRun = asRecord(payload.agentRun)
+  return (
+    getFiniteNumber(payload.durationMs) ??
+    getFiniteNumber(agentRun?.durationMs) ??
+    getDurationBetweenDates(message.createdAt, getString(payload.completedAt) ?? message.updatedAt)
+  )
+}
+
+function getUsageChips(payload: Record<string, unknown>): string[] {
+  const agentRun = asRecord(payload.agentRun)
+  const usagePayload = asRecord(payload.usagePayload) ?? asRecord(agentRun?.usagePayload)
+
+  if (!usagePayload) {
+    return []
+  }
+
+  const totalTokens = getFirstFiniteNumber(usagePayload, [
+    'totalTokens',
+    'totalTokenCount',
+    'total_tokens',
+  ])
+  const inputTokens = getFirstFiniteNumber(usagePayload, [
+    'inputTokens',
+    'promptTokens',
+    'promptTokenCount',
+    'prompt_tokens',
+  ])
+  const outputTokens = getFirstFiniteNumber(usagePayload, [
+    'outputTokens',
+    'completionTokens',
+    'candidatesTokenCount',
+    'completion_tokens',
+  ])
+
+  return [
+    totalTokens != null
+      ? `${getTranslationLabel('tokensUsed', 'Token')}: ${formatInteger(totalTokens)}`
+      : null,
+    inputTokens != null
+      ? `${getTranslationLabel('inputTokens', 'Input')}: ${formatInteger(inputTokens)}`
+      : null,
+    outputTokens != null
+      ? `${getTranslationLabel('outputTokens', 'Output')}: ${formatInteger(outputTokens)}`
+      : null,
+  ].filter((chip): chip is string => !!chip)
+}
+
+function getTranslationLabel(property: string, fallback: string) {
+  const key = `aiChat.${property}`
+  return te(key) ? t(key) : fallback
+}
+
+function formatDurationMs(durationMs: number) {
+  const seconds = durationMs / 1000
+  return `${new Intl.NumberFormat(undefined, {
+    maximumFractionDigits: seconds < 10 ? 1 : 0,
+    minimumFractionDigits: seconds < 1 ? 1 : 0,
+  }).format(seconds)} s`
+}
+
+function formatInteger(value: number) {
+  return new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 }).format(value)
+}
+
+function getFirstFiniteNumber(
+  payload: Record<string, unknown>,
+  keys: readonly string[],
+): number | null {
+  for (const key of keys) {
+    const value = getFiniteNumber(payload[key])
+    if (value != null) {
+      return value
+    }
+  }
+
+  return null
+}
+
+function getFiniteNumber(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null
+}
+
+function getString(value: unknown): string | null {
+  return typeof value === 'string' && value.trim().length > 0 ? value : null
+}
+
+function getDurationBetweenDates(startValue: unknown, endValue: unknown): number | null {
+  const start = getDateTime(startValue)
+  const end = getDateTime(endValue)
+
+  return start != null && end != null && end >= start ? end - start : null
+}
+
+function getDateTime(value: unknown): number | null {
+  const timestamp =
+    value instanceof Date
+      ? value.getTime()
+      : typeof value === 'string'
+        ? new Date(value).getTime()
+        : null
+
+  return typeof timestamp === 'number' && Number.isFinite(timestamp) ? timestamp : null
 }
 
 function getFailedMessageContent(message: AiChatMessageItem) {

@@ -5,12 +5,22 @@ import { useCurrentPermissionStore } from '@/stores/currentPermissionStore'
 import type { EntityItem, SaplingGenericItem, ScriptButtonItem } from '@/entity/entity'
 import type {
   AccumulatedPermission,
+  DialogSaveAction,
+  DialogSaveContext,
+  DialogState,
   EntityTemplate,
   SaplingTableHeaderItem,
 } from '@/entity/structure'
 import { canReadReferenceTemplate, getEntityValueLabel } from '@/utils/saplingTableUtil'
 import { buildMailMenuActions } from '@/utils/saplingMailMenuUtil'
 import { useSaplingMailDialog } from '@/composables/dialog/useSaplingMailDialog'
+import { useSaplingMessageCenter } from '@/composables/system/useSaplingMessageCenter'
+import ApiGenericService from '@/services/api.generic.service'
+import { getDialogRecordRelations } from '@/composables/dialog/saplingDialogRecordLoader'
+import {
+  buildConcurrencyOptions,
+  getItemHandle,
+} from '@/composables/table/saplingTableAction.utils'
 import { useI18n } from 'vue-i18n'
 import {
   getSaplingContextMenuTableItems,
@@ -59,6 +69,7 @@ export type UseSaplingTableRowEmit = {
   (event: 'show-information', value: SaplingGenericItem): void
   (event: 'show-external-record-links', value: SaplingGenericItem): void
   (event: 'open-context-menu', value: SaplingTableRowContextMenuOpenPayload): void
+  (event: 'reload'): void
 }
 
 const INTERACTIVE_ROW_SELECTOR = [
@@ -86,8 +97,11 @@ export function useSaplingTableRow(props: UseSaplingTableRowProps, emit: UseSapl
   const currentPermissionStore = useCurrentPermissionStore()
   const { t } = useI18n()
   const { openMailDialog } = useSaplingMailDialog()
+  const { pushMessage } = useSaplingMessageCenter()
   const menuActive = ref(false)
   const showDialogMap = ref<Record<string, boolean>>({})
+  const dialogItemMap = ref<Record<string, SaplingGenericItem | null>>({})
+  const dialogLoadingMap = ref<Record<string, boolean>>({})
 
   const hasActionsColumn = computed(() =>
     props.columns.some((column) => column.key === '__actions'),
@@ -204,8 +218,40 @@ export function useSaplingTableRow(props: UseSaplingTableRowProps, emit: UseSapl
   // #endregion
 
   // #region Row Dialogs
-  function openDialogForCol(columnKey: string) {
-    showDialogMap.value[columnKey] = true
+  async function openDialogForCol(columnKey: string) {
+    if (dialogLoadingMap.value[columnKey]) {
+      return
+    }
+
+    const column = props.columns.find((entry) => entry.key === columnKey)
+    const referenceName = column?.referenceName
+    const referenceValue = props.item[columnKey]
+    const identifier = getReferenceIdentifier(column, referenceValue)
+
+    if (!referenceName || !identifier) {
+      return
+    }
+
+    dialogLoadingMap.value[columnKey] = true
+
+    try {
+      await genericStore.loadGeneric(referenceName, 'global')
+
+      const dialogItem = await loadReferenceDialogItem(
+        referenceName,
+        { [identifier.key]: identifier.value },
+        null,
+      )
+
+      if (!dialogItem) {
+        return
+      }
+
+      dialogItemMap.value[columnKey] = dialogItem
+      showDialogMap.value[columnKey] = true
+    } finally {
+      dialogLoadingMap.value[columnKey] = false
+    }
   }
 
   function closeDialogForCol(columnKey: string) {
@@ -214,6 +260,119 @@ export function useSaplingTableRow(props: UseSaplingTableRowProps, emit: UseSapl
 
   function isDialogOpenForCol(columnKey: string) {
     return Boolean(showDialogMap.value[columnKey])
+  }
+
+  function getDialogItemForCol(columnKey: string) {
+    return dialogItemMap.value[columnKey] ?? null
+  }
+
+  function isDialogLoadingForCol(columnKey: string) {
+    return Boolean(dialogLoadingMap.value[columnKey])
+  }
+
+  function getReferenceDialogMode(referenceName?: string): DialogState {
+    return getReferenceState(referenceName)?.entityPermission?.allowUpdate ? 'edit' : 'readonly'
+  }
+
+  async function loadReferenceDialogItem(
+    referenceName: string,
+    filter: Record<string, unknown>,
+    fallback: SaplingGenericItem | null,
+  ): Promise<SaplingGenericItem | null> {
+    const result = await ApiGenericService.find<SaplingGenericItem>(referenceName, {
+      filter,
+      limit: 1,
+      relations: getDialogRecordRelations(getReferenceTemplates(referenceName)),
+    })
+
+    return result.data[0] ?? fallback
+  }
+
+  async function saveDialogForCol(
+    columnKey: string,
+    item: SaplingGenericItem,
+    action: DialogSaveAction,
+    context: DialogSaveContext,
+  ): Promise<void> {
+    const column = props.columns.find((entry) => entry.key === columnKey)
+    const referenceName = column?.referenceName
+    const currentDialogItem = getDialogItemForCol(columnKey)
+    const handle = getItemHandle(currentDialogItem)
+    let didSave = false
+
+    if (!referenceName || handle == null || !currentDialogItem) {
+      context.complete(false)
+      return
+    }
+
+    try {
+      const updatedItem = await ApiGenericService.update<SaplingGenericItem>(
+        referenceName,
+        handle,
+        item,
+        {
+          relations: getDialogRecordRelations(getReferenceTemplates(referenceName)),
+          concurrency: buildConcurrencyOptions(
+            getReferenceTemplates(referenceName),
+            currentDialogItem,
+          ),
+        },
+      )
+      const reloadedItem = await loadReferenceDialogItem(referenceName, { handle }, updatedItem)
+
+      dialogItemMap.value[columnKey] = reloadedItem
+      didSave = true
+      emit('reload')
+      pushMessage(
+        'success',
+        t('global.recordSaved'),
+        t('global.recordSavedDescription'),
+        referenceName,
+      )
+
+      if (action === 'saveAndClose') {
+        closeDialogForCol(columnKey)
+      }
+    } finally {
+      context.complete(didSave)
+    }
+  }
+
+  function onDialogItemUpdate(columnKey: string, item: SaplingGenericItem | null): void {
+    dialogItemMap.value[columnKey] = item
+  }
+
+  function onDialogRecordDeleted(columnKey: string): void {
+    closeDialogForCol(columnKey)
+    dialogItemMap.value[columnKey] = null
+    emit('reload')
+  }
+
+  function getReferenceIdentifier(
+    column: EntityTemplate | undefined,
+    value: unknown,
+  ): { key: string; value: string | number } | null {
+    const identifierKeys = [...(column?.referencedPks ?? []), 'handle', 'id'].filter(
+      (key, index, keys) => Boolean(key) && keys.indexOf(key) === index,
+    )
+
+    if (typeof value === 'string' || typeof value === 'number') {
+      return { key: identifierKeys[0] ?? 'handle', value }
+    }
+
+    if (!value || typeof value !== 'object') {
+      return null
+    }
+
+    const referenceItem = value as SaplingGenericItem
+    for (const key of identifierKeys) {
+      const identifierValue = referenceItem[key]
+      if (typeof identifierValue === 'string' || typeof identifierValue === 'number') {
+        return { key, value: identifierValue }
+      }
+    }
+
+    return null
   }
 
   // #endregion
@@ -445,6 +604,12 @@ export function useSaplingTableRow(props: UseSaplingTableRowProps, emit: UseSapl
     openDialogForCol,
     closeDialogForCol,
     isDialogOpenForCol,
+    getDialogItemForCol,
+    isDialogLoadingForCol,
+    getReferenceDialogMode,
+    saveDialogForCol,
+    onDialogItemUpdate,
+    onDialogRecordDeleted,
     closeMenu,
     requestEdit,
     requestChangeLog,

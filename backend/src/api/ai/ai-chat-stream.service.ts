@@ -249,22 +249,30 @@ export class AiChatStreamService {
       assistantMessage.content = inlineToolExecution.content;
       assistantMessage.status = 'completed';
       assistantMessage.toolCalls = [inlineToolTrace];
-      assistantMessage.responsePayload = {
-        source: 'mcp-inline-tool',
-        provider: runtimeTarget.provider.handle,
-        model: runtimeTarget.model.providerModel,
-        rawResult: inlineToolExecution.rawResult,
-        navigationLinks,
-        sources,
-        agentRun: sanitizeAgentRun(run),
-      };
+      const usagePayload = buildChatUsagePayload(
+        runtimeTarget.provider.handle,
+        runtimeTarget.model.providerModel,
+      );
       this.agentRunLifecycle.completeRun(run, {
         status: 'completed',
         responseText: assistantMessage.content,
         toolCalls: assistantMessage.toolCalls as Record<string, unknown>[],
         sources,
         pendingActions: [],
+        usagePayload,
       });
+      assistantMessage.responsePayload = {
+        source: 'mcp-inline-tool',
+        provider: runtimeTarget.provider.handle,
+        model: runtimeTarget.model.providerModel,
+        completedAt: run.completedAt?.toISOString() ?? new Date().toISOString(),
+        durationMs: run.durationMs ?? null,
+        usagePayload,
+        rawResult: inlineToolExecution.rawResult,
+        navigationLinks,
+        sources,
+        agentRun: sanitizeAgentRun(run),
+      };
       await this.em.flush();
       await onEvent({
         type: 'message.completed',
@@ -379,10 +387,27 @@ export class AiChatStreamService {
         navigationLinks,
         dto.url ?? null,
       );
+      const usagePayload = buildChatUsagePayload(
+        runtimeTarget.provider.handle,
+        runtimeTarget.model.providerModel,
+        streamResult.usagePayload,
+      );
+      this.agentRunLifecycle.completeRun(run, {
+        status: 'completed',
+        responseText: assistantMessage.content,
+        toolCalls: assistantMessage.toolCalls as Record<string, unknown>[],
+        sources,
+        pendingActions: pendingToolActions.map((action) =>
+          sanitizeToolAction(action),
+        ) as unknown as Record<string, unknown>[],
+        usagePayload,
+      });
       assistantMessage.responsePayload = {
         provider: runtimeTarget.provider.handle,
         model: runtimeTarget.model.providerModel,
-        completedAt: new Date().toISOString(),
+        completedAt: run.completedAt?.toISOString() ?? new Date().toISOString(),
+        durationMs: run.durationMs ?? null,
+        usagePayload,
         navigationLinks,
         toolResults: streamResult.toolCalls.map((toolCall) => ({
           ...toAiToolCallRunTrace(toolCall),
@@ -400,19 +425,6 @@ export class AiChatStreamService {
           : null,
         sources,
       };
-      this.agentRunLifecycle.completeRun(run, {
-        status: 'completed',
-        responseText: assistantMessage.content,
-        toolCalls: assistantMessage.toolCalls as Record<string, unknown>[],
-        sources,
-        pendingActions: pendingToolActions.map((action) =>
-          sanitizeToolAction(action),
-        ) as unknown as Record<string, unknown>[],
-        usagePayload: {
-          provider: runtimeTarget.provider.handle,
-          model: runtimeTarget.model.providerModel,
-        },
-      });
       await this.em.flush();
 
       await onEvent({
@@ -423,20 +435,33 @@ export class AiChatStreamService {
       return { session, userMessage, assistantMessage };
     } catch (error) {
       assistantMessage.status = 'failed';
-      assistantMessage.responsePayload = {
-        provider: runtimeTarget.provider.handle,
-        model: runtimeTarget.model.providerModel,
-        error: error instanceof Error ? error.message : 'ai.unknownError',
-        agentRun: sanitizeAgentRun(run),
-      };
       this.agentRunLifecycle.completeRun(run, {
         status: 'failed',
         errorPayload: {
           error: error instanceof Error ? error.message : 'ai.unknownError',
         },
       });
+      assistantMessage.responsePayload = {
+        provider: runtimeTarget.provider.handle,
+        model: runtimeTarget.model.providerModel,
+        durationMs: run.durationMs ?? null,
+        error: error instanceof Error ? error.message : 'ai.unknownError',
+        agentRun: sanitizeAgentRun(run),
+      };
       await this.em.flush();
       throw error;
     }
   }
+}
+
+function buildChatUsagePayload(
+  provider: string,
+  model: string,
+  usagePayload?: Record<string, unknown> | null,
+): Record<string, unknown> {
+  return {
+    ...(usagePayload ?? {}),
+    provider,
+    model,
+  };
 }

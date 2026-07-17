@@ -38,6 +38,7 @@ export type AiChatNavigationLink = {
 
 export type AiStreamResult = {
   toolCalls: AiExecutedToolCall[];
+  usagePayload?: Record<string, unknown> | null;
 };
 
 export type AiToolRegistryEntry = {

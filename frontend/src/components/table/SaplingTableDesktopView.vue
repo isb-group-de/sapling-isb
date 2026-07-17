@@ -104,6 +104,7 @@
         @show-information="emit('show-information', $event)"
         @show-external-record-links="emit('show-external-record-links', $event)"
         @open-context-menu="emit('open-context-menu', $event)"
+        @reload="emit('reload')"
       />
     </template>
   </v-data-table-server>

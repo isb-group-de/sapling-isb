@@ -70,6 +70,7 @@ export class AiChatRuntimeService {
       agentInstruction,
     );
     const executedToolCalls: AiExecutedToolCall[] = [];
+    const usageEntries: Record<string, unknown>[] = [];
     const disableReasoningForTools =
       toolRegistry.length > 0 &&
       provider.handle === 'openai' &&
@@ -91,6 +92,7 @@ export class AiChatRuntimeService {
             }
           : {}),
       });
+      appendUsageEntry(usageEntries, response.usage);
 
       const assistantMessage = response.choices[0]?.message;
 
@@ -103,7 +105,10 @@ export class AiChatRuntimeService {
       if (toolCalls.length === 0) {
         const content = assistantMessage.content ?? '';
         await onDelta(content);
-        return { toolCalls: executedToolCalls };
+        return {
+          toolCalls: executedToolCalls,
+          usagePayload: buildUsagePayload(usageEntries),
+        };
       }
 
       messages.push({
@@ -300,7 +305,9 @@ export class AiChatRuntimeService {
     const executedToolCalls: AiExecutedToolCall[] = [];
     const repeatedCallCounts = new Map<string, number>();
     let consecutiveToolErrorIterations = 0;
+    const usageEntries: Record<string, unknown>[] = [];
     let result = await chat.sendMessage(currentTurnParts);
+    appendUsageEntry(usageEntries, getGeminiUsageMetadata(result));
 
     for (let iteration = 0; iteration < maxToolCallIterations; iteration += 1) {
       const functionCalls = result.response.functionCalls() ?? [];
@@ -308,7 +315,10 @@ export class AiChatRuntimeService {
       if (functionCalls.length === 0) {
         const content = result.response.text();
         await onDelta(content);
-        return { toolCalls: executedToolCalls };
+        return {
+          toolCalls: executedToolCalls,
+          usagePayload: buildUsagePayload(usageEntries),
+        };
       }
 
       const functionResponses: Part[] = [];
@@ -327,7 +337,10 @@ export class AiChatRuntimeService {
 
         if (repeatedCallCount > 2) {
           await onDelta(AI_GEMINI_REPEATED_TOOL_CALL_ABORT_MESSAGE);
-          return { toolCalls: executedToolCalls };
+          return {
+            toolCalls: executedToolCalls,
+            usagePayload: buildUsagePayload(usageEntries),
+          };
         }
 
         const registryEntry = resolveToolRegistryEntry(
@@ -379,14 +392,21 @@ export class AiChatRuntimeService {
 
       if (consecutiveToolErrorIterations >= 2) {
         await onDelta(buildToolFailureAssistantMessage(toolErrors));
-        return { toolCalls: executedToolCalls };
+        return {
+          toolCalls: executedToolCalls,
+          usagePayload: buildUsagePayload(usageEntries),
+        };
       }
 
       result = await chat.sendMessage(functionResponses);
+      appendUsageEntry(usageEntries, getGeminiUsageMetadata(result));
     }
 
     await onDelta(AI_GEMINI_TOOL_CALL_LIMIT_MESSAGE);
-    return { toolCalls: executedToolCalls };
+    return {
+      toolCalls: executedToolCalls,
+      usagePayload: buildUsagePayload(usageEntries),
+    };
   }
 
   private async streamGeminiWithoutTools(
@@ -411,7 +431,12 @@ export class AiChatRuntimeService {
     const chat = generativeModel.startChat({ history: conversation });
     const result = await chat.sendMessage(currentTurnParts);
     await onDelta(result.response.text());
-    return { toolCalls: [] };
+    return {
+      toolCalls: [],
+      usagePayload: buildUsagePayload(
+        [getGeminiUsageMetadata(result)].filter(isRecord),
+      ),
+    };
   }
 
   private logGeminiToolModeError(
@@ -501,4 +526,86 @@ export class AiChatRuntimeService {
 
     return `${message.content}${contextPrefix}`;
   }
+}
+
+function appendUsageEntry(
+  usageEntries: Record<string, unknown>[],
+  usage: unknown,
+): void {
+  if (isRecord(usage)) {
+    usageEntries.push({ ...usage });
+  }
+}
+
+function buildUsagePayload(
+  usageEntries: Record<string, unknown>[],
+): Record<string, unknown> | null {
+  if (usageEntries.length === 0) {
+    return null;
+  }
+
+  const inputTokens = sumUsageFields(usageEntries, [
+    'inputTokens',
+    'promptTokens',
+    'promptTokenCount',
+    'prompt_tokens',
+  ]);
+  const outputTokens = sumUsageFields(usageEntries, [
+    'outputTokens',
+    'completionTokens',
+    'candidatesTokenCount',
+    'completion_tokens',
+  ]);
+  const totalTokens = sumUsageFields(usageEntries, [
+    'totalTokens',
+    'totalTokenCount',
+    'total_tokens',
+  ]);
+
+  return {
+    entries: usageEntries,
+    ...(inputTokens != null ? { inputTokens } : {}),
+    ...(outputTokens != null ? { outputTokens } : {}),
+    ...(totalTokens != null ? { totalTokens } : {}),
+  };
+}
+
+function sumUsageFields(
+  usageEntries: Record<string, unknown>[],
+  keys: string[],
+): number | null {
+  let total = 0;
+  let hasValue = false;
+
+  for (const entry of usageEntries) {
+    for (const key of keys) {
+      const value = entry[key];
+      if (typeof value === 'number' && Number.isFinite(value)) {
+        total += value;
+        hasValue = true;
+        break;
+      }
+    }
+  }
+
+  return hasValue ? total : null;
+}
+
+function getGeminiUsageMetadata(
+  result: unknown,
+): Record<string, unknown> | null {
+  if (!isRecord(result)) {
+    return null;
+  }
+
+  const response = result.response;
+  if (!isRecord(response)) {
+    return null;
+  }
+
+  return isRecord(response.usageMetadata) ? response.usageMetadata : null;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return !!value && typeof value === 'object' && !Array.isArray(value);
 }

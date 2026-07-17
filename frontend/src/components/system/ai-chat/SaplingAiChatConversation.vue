@@ -3,6 +3,7 @@
     <div class="sapling-chat-conversation__header">
       <SaplingAiChatConversationTitle
         :title="activeConversationTitle"
+        :runtime-summary="activeRuntimeSummary"
         :title-preview-limit="titlePreviewLimit"
       />
       <v-select
@@ -158,6 +159,7 @@ type PendingImportAttachment = {
 const props = withDefaults(
   defineProps<{
     activeConversationTitle: string
+    activeRuntimeSummary: string
     agentOptions: SelectOption[]
     selectedAgentHandle: string | null
     playbookOptions: SelectOption[]

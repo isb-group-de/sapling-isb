@@ -19,6 +19,17 @@
         <span>{{ title }}</span>
       </v-tooltip>
     </div>
+    <div
+      v-if="runtimeSummary"
+      class="sapling-chat-conversation__runtime sapling-ai-chat__runtime-summary"
+    >
+      <v-icon
+        icon="mdi-robot-outline"
+        class="sapling-chat-conversation__runtime-icon"
+        size="small"
+      />
+      <span class="sapling-chat-conversation__runtime-text">{{ runtimeSummary }}</span>
+    </div>
   </div>
 </template>
 
@@ -28,6 +39,7 @@ import { computed } from 'vue'
 const props = withDefaults(
   defineProps<{
     title: string
+    runtimeSummary?: string
     titlePreviewLimit?: number
   }>(),
   {

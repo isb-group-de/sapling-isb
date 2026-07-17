@@ -168,6 +168,7 @@
         @show-documents="navigateToDocuments"
         @show-information="openInformationDialog"
         @show-external-record-links="openExternalRecordLinksDialog"
+        @reload="refreshTable"
       />
       <SaplingTableDesktopView
         v-else
@@ -213,6 +214,7 @@
         @show-information="openInformationDialog"
         @show-external-record-links="openExternalRecordLinksDialog"
         @open-context-menu="openContextMenu"
+        @reload="refreshTable"
       />
     </div>
 

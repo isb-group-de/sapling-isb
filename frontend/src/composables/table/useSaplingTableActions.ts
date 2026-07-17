@@ -28,6 +28,7 @@ import { useSaplingTableTransferActions } from '@/composables/table/useSaplingTa
 import { useSaplingTableDeleteActions } from '@/composables/table/useSaplingTableDeleteActions'
 import { useSaplingTableScripts } from '@/composables/table/useSaplingTableScripts'
 import { useSaplingTableContextActions } from '@/composables/table/useSaplingTableContextActions'
+import { getDialogRecordRelations } from '@/composables/dialog/saplingDialogRecordLoader'
 
 export interface UpdateConflictDialogState {
   visible: boolean
@@ -209,19 +210,10 @@ export function useSaplingTableActions({
     const result = await ApiGenericService.find<SaplingGenericItem>(props.entityHandle, {
       filter: { handle },
       limit: 1,
-      relations: getDialogItemRelations(),
+      relations: getDialogRecordRelations(props.entityTemplates),
     })
 
     return result.data[0] ?? item
-  }
-
-  function getDialogItemRelations(): string[] {
-    return [
-      'm:1',
-      ...props.entityTemplates
-        .filter((template) => template.inlineCollection && template.name)
-        .map((template) => template.name),
-    ]
   }
 
   function patchVisibleTableItem(item: SaplingGenericItem | null | undefined): void {

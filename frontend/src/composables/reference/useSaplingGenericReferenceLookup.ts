@@ -2,6 +2,7 @@ import { reactive } from 'vue'
 import type { SaplingGenericItem } from '@/entity/entity'
 import ApiGenericService from '@/services/api.generic.service'
 import { useGenericStore } from '@/stores/genericStore'
+import { getDialogRecordRelations } from '@/composables/dialog/saplingDialogRecordLoader'
 
 type GenericReferenceCacheStatus = 'idle' | 'loading' | 'loaded' | 'missing' | 'error'
 
@@ -72,7 +73,9 @@ async function fetchGenericReferenceRecords(
               $or: normalizedHandles.map((handle) => ({ handle })),
             },
       limit: normalizedHandles.length,
-      relations: ['m:1'],
+      relations: getDialogRecordRelations(
+        genericStore.getState(normalizedEntityHandle).entityTemplates,
+      ),
     })
 
     const foundHandles = new Set<string>()

@@ -133,6 +133,9 @@ Ollama model seed records are inactive by default because local installations
 may not have the example models pulled yet. Pull the model in Ollama, update
 `providerModel` if needed, then activate the matching `AiProviderModelItem`.
 
+For setup steps, smoke tests, and troubleshooting, see
+`docs/ai/local-ai-provider-setup.md`.
+
 ## Songbird System Prompt
 
 Songbird's base behavior and tool guidance live in:

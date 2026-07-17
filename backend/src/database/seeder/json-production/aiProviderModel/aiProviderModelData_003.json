@@ -1,0 +1,58 @@
+[
+  {
+    "handle": "ollama-gemma4-e4b",
+    "title": "Gemma 4 E4B",
+    "description": "Local Ollama chat model exposed through the OpenAI-compatible API.",
+    "provider": "ollama",
+    "providerModel": "gemma4:e4b",
+    "supportsStreaming": true,
+    "supportsTools": true,
+    "supportsEmbeddings": false,
+    "isDefault": false,
+    "isActive": true,
+    "sortOrder": 20,
+    "maxToolCallIterations": 100
+  },
+  {
+    "handle": "ollama-qwen3_6-35b",
+    "title": "Qwen 3.6 35B",
+    "description": "Local Ollama chat model exposed through the OpenAI-compatible API.",
+    "provider": "ollama",
+    "providerModel": "qwen3.6:35b",
+    "supportsStreaming": true,
+    "supportsTools": true,
+    "supportsEmbeddings": false,
+    "isDefault": false,
+    "isActive": true,
+    "sortOrder": 30,
+    "maxToolCallIterations": 100
+  },
+  {
+    "handle": "ollama-ornith-35b",
+    "title": "Ornith 35B",
+    "description": "Local Ollama chat model exposed through the OpenAI-compatible API.",
+    "provider": "ollama",
+    "providerModel": "ornith:35b",
+    "supportsStreaming": true,
+    "supportsTools": true,
+    "supportsEmbeddings": false,
+    "isDefault": false,
+    "isActive": true,
+    "sortOrder": 40,
+    "maxToolCallIterations": 100
+  },
+  {
+    "handle": "ollama-gemma4-31b",
+    "title": "Gemma 4 31B",
+    "description": "Local Ollama chat model exposed through the OpenAI-compatible API.",
+    "provider": "ollama",
+    "providerModel": "gemma4:31b",
+    "supportsStreaming": true,
+    "supportsTools": true,
+    "supportsEmbeddings": false,
+    "isDefault": false,
+    "isActive": true,
+    "sortOrder": 50,
+    "maxToolCallIterations": 100
+  }
+]

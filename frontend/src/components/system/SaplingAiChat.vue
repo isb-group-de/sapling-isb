@@ -76,6 +76,7 @@
 
               <SaplingAiChatConversation
                 :active-conversation-title="activeConversationTitle"
+                :active-runtime-summary="activeRuntimeSummary"
                 :agent-options="agentOptions"
                 :selected-agent-handle="selectedAgentHandle"
                 :playbook-options="playbookOptions"
@@ -218,6 +219,9 @@ const {
   agentOptions,
   playbookOptions,
   speechModelConfigs,
+  selectedAgentConfig,
+  selectedProviderConfig,
+  selectedModelConfig,
   selectedProviderHandle,
   selectedModelHandle,
   selectedAgentHandle,
@@ -365,6 +369,15 @@ const isBusy = computed(
 const isDialogOpen = computed(() => isOpen.value && hasSaplingAiChatAccess.value)
 const activeConversationTitle = computed(
   () => activeSession.value?.title || t('aiChat.draftConversation'),
+)
+const activeRuntimeSummary = computed(() =>
+  [
+    selectedAgentConfig.value?.title ?? selectedAgentHandle.value,
+    selectedProviderConfig.value?.title ?? selectedProviderHandle.value,
+    selectedModelConfig.value?.title ?? selectedModelHandle.value,
+  ]
+    .filter((part): part is string => typeof part === 'string' && part.trim().length > 0)
+    .join(' / '),
 )
 const currentPersonDisplayName = computed(() => {
   const person = currentPersonStore.person
