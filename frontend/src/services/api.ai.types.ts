@@ -9,8 +9,6 @@ import type {
   AiChatMessageItem,
   AiChatSessionItem,
   AiChatToolActionItem,
-  AiProviderModelItem,
-  AiProviderTypeItem,
 } from '@/entity/entity'
 
 export interface CreateAiChatSessionPayload {

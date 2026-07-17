@@ -42,6 +42,9 @@ function createSubject(
     sanitizeEntityResult: jest.fn(
       (_entityHandle: string, items: object[]) => items,
     ),
+    projectEntityResult: jest.fn(
+      <T>(_entityHandle: string, items: T): T => items,
+    ),
   };
   const genericCustomFieldService = {
     applyCustomFieldFilters: jest.fn((_entityHandle: string, where: object) =>

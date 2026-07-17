@@ -12,7 +12,7 @@ import {
 } from 'class-validator';
 
 export class GenericBulkUpdateTargetDto {
-  @Transform(({ value }) =>
+  @Transform(({ value }: { value: unknown }): unknown =>
     typeof value === 'string' || typeof value === 'number'
       ? String(value).trim()
       : value,

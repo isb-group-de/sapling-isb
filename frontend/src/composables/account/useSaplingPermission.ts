@@ -8,7 +8,6 @@ import {
   PERMISSION_FIELDS,
   assignPermissionResponse,
   clonePerson,
-  clonePermission,
   cloneRoles,
   ensurePermissionRecord,
   getEnabledPermissionCount,

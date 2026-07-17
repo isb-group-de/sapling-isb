@@ -10,7 +10,10 @@ describe('KpiController', () => {
     expect(
       reflector.get<boolean>(
         IMPERSONATION_READ_ONLY_KEY,
-        KpiController.prototype.executeKPIBatch,
+        Reflect.get(
+          KpiController.prototype,
+          'executeKPIBatch',
+        ) as () => unknown,
       ),
     ).toBe(true);
   });

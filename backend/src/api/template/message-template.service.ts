@@ -1,6 +1,5 @@
 import { EntityManager, type EntityName } from '@mikro-orm/core';
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PersonItem } from '../../entity/PersonItem';
 import { ENTITY_MAP } from '../../entity/global/entity.registry';
 import {
   messageHtmlToPlainText,

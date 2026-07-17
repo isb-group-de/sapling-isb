@@ -91,7 +91,7 @@ export class CurrentController {
       assertPayloadAccess: () => Promise.resolve(),
     } as unknown as FieldPermissionService,
     private readonly sanitizer: GenericSanitizerService = {
-      projectEntityResult: (_entityHandle, value) => value,
+      projectEntityResult: <T>(_entityHandle: string, value: T): T => value,
     } as unknown as GenericSanitizerService,
   ) {}
 

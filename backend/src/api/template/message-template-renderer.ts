@@ -77,9 +77,9 @@ export class MessageTemplateRenderer {
   getContextValue(context: JsonRecord, expression: string): unknown {
     return expression.split('.').reduce<unknown>((current, key) => {
       if (Array.isArray(current)) {
-        return current.flatMap((entry) => {
+        return (current as unknown[]).flatMap((entry): unknown[] => {
           const value = this.resolveContextSegment(entry, key);
-          if (Array.isArray(value)) return value;
+          if (Array.isArray(value)) return value as unknown[];
           return value === undefined || value === null ? [] : [value];
         });
       }
@@ -96,9 +96,9 @@ export class MessageTemplateRenderer {
   private resolveContextSegment(current: unknown, key: string): unknown {
     const normalizedCurrent = this.normalizeContextValue(current);
     if (Array.isArray(normalizedCurrent)) {
-      return normalizedCurrent.flatMap((entry) => {
+      return (normalizedCurrent as unknown[]).flatMap((entry): unknown[] => {
         const value = this.resolveContextSegment(entry, key);
-        if (Array.isArray(value)) return value;
+        if (Array.isArray(value)) return value as unknown[];
         return value === undefined || value === null ? [] : [value];
       });
     }

@@ -457,7 +457,7 @@ export class FieldPermissionService {
       return [{ stage: 'global' }];
     }
 
-    const permissionKey = this.toAllowKey(action) as EntityActionKey;
+    const permissionKey = this.toAllowKey(action);
     const grants: Array<{ stage: string }> = [];
     for (const role of this.toArray(user.roles)) {
       const permission = this.toArray(role.permissions).find(
@@ -469,7 +469,7 @@ export class FieldPermissionService {
       const override = this.toArray(permission.fieldPermissions).find(
         (entry) => entry.fieldName === field.name,
       );
-      if (!override || override[permissionKey as FieldActionKey] === true) {
+      if (!override || override[permissionKey] === true) {
         grants.push({ stage: role.stage?.handle ?? '' });
       }
     }
@@ -542,9 +542,7 @@ export class FieldPermissionService {
         typeof value === 'object' &&
         !Array.isArray(value)
       ) {
-        for (const customFieldName of Object.keys(
-          value as Record<string, unknown>,
-        )) {
+        for (const customFieldName of Object.keys(value)) {
           await this.assertReadablePath(
             user,
             entityHandle,
@@ -660,7 +658,7 @@ export class FieldPermissionService {
     const result: string[] = [];
     for (const [key, value] of Object.entries(payload)) {
       if (key === 'customFields' && value && typeof value === 'object') {
-        for (const customKey of Object.keys(value as Record<string, unknown>)) {
+        for (const customKey of Object.keys(value)) {
           result.push(`customFields.${customKey}`);
         }
       } else if (!key.startsWith('__')) {

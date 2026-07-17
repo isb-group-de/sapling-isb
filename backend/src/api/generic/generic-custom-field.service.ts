@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { EntityManager, wrap } from '@mikro-orm/core';
+import { EntityManager } from '@mikro-orm/core';
 import { CustomFieldDefinitionItem } from '../../entity/CustomFieldDefinitionItem';
 import { CustomFieldValueItem } from '../../entity/CustomFieldValueItem';
 import { EntityItem } from '../../entity/EntityItem';

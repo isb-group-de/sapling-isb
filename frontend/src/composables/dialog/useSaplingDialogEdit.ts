@@ -9,9 +9,9 @@ import {
   type ComputedRef,
   type Ref,
 } from 'vue'
-import type { AccumulatedPermission, DialogState, EntityTemplate } from '@/entity/structure'
+import type { AccumulatedPermission, EntityTemplate } from '@/entity/structure'
 import { useI18n } from 'vue-i18n'
-import type { EntityItem, SaplingGenericItem } from '@/entity/entity'
+import type { SaplingGenericItem } from '@/entity/entity'
 import { getDialogTemplateColumns } from '@/utils/saplingDialogLayoutUtil'
 import { useCurrentPermissionStore } from '@/stores/currentPermissionStore'
 import { useCurrentPersonStore } from '@/stores/currentPersonStore'

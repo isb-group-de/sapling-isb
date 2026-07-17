@@ -107,7 +107,7 @@ export class GenericChangeLogService {
               entityHandle,
               field,
               'read',
-              (newPayload ?? oldPayload) as Record<string, unknown> | null,
+              newPayload ?? oldPayload,
               templates,
             )
           );

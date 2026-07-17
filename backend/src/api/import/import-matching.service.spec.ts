@@ -29,7 +29,7 @@ describe('ImportMatchingService', () => {
       } as never,
       { entityHandle: 'company' },
       {} as never,
-      async () => '42',
+      () => Promise.resolve('42'),
     );
 
     expect(result.rows).toEqual([
@@ -77,7 +77,7 @@ describe('ImportMatchingService', () => {
       } as never,
       { entityHandle: 'company' },
       {} as never,
-      async () => null,
+      () => Promise.resolve(null),
     );
 
     expect(genericService.findAndCount).toHaveBeenCalledWith(

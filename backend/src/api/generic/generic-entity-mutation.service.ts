@@ -263,7 +263,7 @@ export class GenericEntityMutationService {
 
     const customFieldOverrideRename = this.getCustomFieldOverrideChange(
       entityHandle,
-      item as Record<string, unknown>,
+      item,
       submittedPermissionPayload.fieldKey,
     );
 
@@ -463,7 +463,7 @@ export class GenericEntityMutationService {
 
     const customFieldOverrideDelete = this.getCustomFieldOverrideChange(
       entityHandle,
-      item as Record<string, unknown>,
+      item,
     );
 
     const oldSnapshot =

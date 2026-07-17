@@ -2,11 +2,7 @@ import axios from 'axios'
 import type {
   AiAgentItem,
   AiAgentEvaluationItem,
-  AiAgentMemoryItem,
-  AiAgentPlaybookItem,
   AiAgentRunItem,
-  AiAgentVersionItem,
-  AiChatAttachmentItem,
   AiChatMessageItem,
   AiChatSessionItem,
   AiChatToolActionItem,

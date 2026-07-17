@@ -17,8 +17,12 @@ export class SaplingMcpMetadataService {
     private readonly criteriaService: SaplingMcpCriteriaService,
     private readonly values: SaplingMcpValueService,
     private readonly fieldPermissions: FieldPermissionService = {
-      applyTemplateAccess: (_user, _entityHandle, templates) => templates,
-      getTemplates: (entityHandle) =>
+      applyTemplateAccess: (
+        _user: PersonItem,
+        _entityHandle: string,
+        templates: EntityTemplateDto[],
+      ): EntityTemplateDto[] => templates,
+      getTemplates: (entityHandle: string) =>
         Promise.resolve(
           this.templateService
             .getEntityTemplate(entityHandle)

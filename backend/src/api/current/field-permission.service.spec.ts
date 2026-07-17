@@ -67,7 +67,10 @@ describe('FieldPermissionService', () => {
       getEntityTemplate: () => templates,
     } as unknown as TemplateService,
     {
-      appendCustomFieldTemplates: async (_entityHandle, base) => base,
+      appendCustomFieldTemplates: (
+        _entityHandle: string,
+        base: EntityTemplateDto[],
+      ) => Promise.resolve(base),
     } as unknown as GenericCustomFieldService,
   );
 

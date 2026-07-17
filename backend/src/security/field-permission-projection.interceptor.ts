@@ -14,8 +14,8 @@ import { GenericSanitizerService } from '../api/generic/generic-sanitizer.servic
 /** Projects registered entity instances returned by authenticated controllers. */
 @Injectable()
 export class FieldPermissionProjectionInterceptor implements NestInterceptor {
-  private readonly entityHandleByClass = new Map<Function, string>(
-    ENTITY_REGISTRY.map((entry) => [entry.class as Function, entry.name]),
+  private readonly entityHandleByClass = new Map<object, string>(
+    ENTITY_REGISTRY.map((entry) => [entry.class, entry.name]),
   );
 
   constructor(

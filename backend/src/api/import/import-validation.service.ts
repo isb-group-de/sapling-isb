@@ -12,6 +12,7 @@ import {
   getImportErrorMessage,
 } from '../generic/generic-import.util';
 import { TemplateService } from '../template/template.service';
+import type { EntityTemplateDto } from '../template/dto/entity-template.dto';
 import type {
   ConfigureImportBatchDto,
   ImportFieldDefaultDto,
@@ -46,7 +47,11 @@ export class ImportValidationService {
     private readonly importFieldValidationService: ImportFieldValidationService,
     private readonly importBatchQueryService: ImportBatchQueryService,
     private readonly fieldPermissions: FieldPermissionService = {
-      applyTemplateAccess: (_user, _entityHandle, templates) => templates,
+      applyTemplateAccess: (
+        _user: PersonItem,
+        _entityHandle: string,
+        templates: EntityTemplateDto[],
+      ): EntityTemplateDto[] => templates,
       assertPayloadAccess: () => Promise.resolve(),
     } as unknown as FieldPermissionService,
   ) {}

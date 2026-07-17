@@ -9,14 +9,11 @@ import {
   Query,
   Req,
   Res,
-  UploadedFile,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiBody,
-  ApiConsumes,
   ApiOperation,
   ApiParam,
   ApiProduces,
@@ -24,7 +21,6 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { FileInterceptor } from '@nestjs/platform-express';
 import type { Request, Response } from 'express';
 import { AiService } from './ai.service';
 import { McpService, type McpToolDescriptor } from './mcp.service';
@@ -37,16 +33,11 @@ import { AiAgentItem } from '../../entity/AiAgentItem';
 import { AiChatSessionItem } from '../../entity/AiChatSessionItem';
 import { AiChatMessageItem } from '../../entity/AiChatMessageItem';
 import { AiChatToolActionItem } from '../../entity/AiChatToolActionItem';
-import { AiAgentEvaluationItem } from '../../entity/AiAgentEvaluationItem';
-import { AiAgentRunItem } from '../../entity/AiAgentRunItem';
 import { AiProviderTypeItem } from '../../entity/AiProviderTypeItem';
 import { AiProviderModelItem } from '../../entity/AiProviderModelItem';
 import {
   AiChatMessageListResponseDto,
   ApplyAiChatSessionPlaybookDto,
-  CreateAiAgentEvaluationDto,
-  CreateAiAgentTestRunDto,
-  CreateAiChatMessageSpeechDto,
   CreateAiChatMessageDto,
   CreateAiChatSessionDto,
   ListAiChatMessagesQueryDto,
@@ -56,10 +47,6 @@ import {
   VectorizeEntityDto,
   VectorizeEntityResponseDto,
 } from './dto/vectorization.dto';
-import {
-  AiChatTranscriptionResponseDto,
-  CreateAiChatTranscriptionDto,
-} from './dto/transcription.dto';
 
 /**
  * @class

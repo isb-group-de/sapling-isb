@@ -2,14 +2,10 @@ import { computed, onMounted, ref, toRef, watch } from 'vue'
 import type { EntityGroupItem, EntityItem, EntityRouteItem } from '@/entity/entity'
 import type { AccumulatedPermission } from '@/entity/structure'
 import {
-  getEffectiveRouteGroupHandle,
-  getEntityNavigationGroupHandle as getEntityGroupHandle,
   getEntityNavigationGroupHandles,
   getEntityNavigationSortOrder as getEntitySortOrder,
   getEntityRoutesForNavigationGroup as getEntityRoutesForGroup,
-  getFilterableEntityRoutes as getFilterableRoutes,
   getNavigationGroupParentHandle as getGroupParentHandle,
-  getRouteNavigationGroupHandle as getRouteGroupHandle,
   matchesNavigationSearch,
   normalizeNavigationText as normalizeText,
   sortNavigationGroups,
@@ -495,10 +491,6 @@ export function useSaplingNavigation(props: SaplingNavigationProps, emit: Saplin
       routes,
       isActive: routes.some((routeEntry) => routeEntry.isActive),
     }
-  }
-
-  function getFilterableRoutes(entity: EntityItem) {
-    return [...(entity.routes ?? [])].filter((route) => Boolean(route.route))
   }
 
   function collectVisibleGroupHandles(nextGroups: EntityGroupItem[], nextEntities: EntityItem[]) {

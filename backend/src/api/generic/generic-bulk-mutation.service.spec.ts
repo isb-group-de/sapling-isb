@@ -13,22 +13,20 @@ describe('GenericBulkMutationService', () => {
     updateImplementation?: (...args: any[]) => Promise<object>,
   ) {
     const em = {
-      transactional: jest.fn(async (callback: () => Promise<void>) =>
-        callback(),
-      ),
+      transactional: jest.fn((callback: () => Promise<void>) => callback()),
     } as unknown as EntityManager;
     const mutationService = {
       update: jest.fn(
         updateImplementation ??
-          (async (...args: any[]) => {
+          ((...args: any[]) => {
             const lifecycle = args[7] as {
               postCommitTasks: GenericPostCommitTask[];
             };
             lifecycle.postCommitTasks.push({
               label: 'changeLog',
-              operation: async () => undefined,
+              operation: () => Promise.resolve(),
             });
-            return { handle: args[1] };
+            return Promise.resolve({ handle: String(args[1]) });
           }),
       ),
       schedulePostCommitTasks: jest.fn(),
@@ -57,10 +55,9 @@ describe('GenericBulkMutationService', () => {
 
     expect(em.transactional).toHaveBeenCalledTimes(1);
     expect(mutationService.update).toHaveBeenCalledTimes(2);
-    expect(mutationService.update.mock.calls.map((call) => call[1])).toEqual([
-      '2',
-      '10',
-    ]);
+    expect(
+      mutationService.update.mock.calls.map((call) => String(call[1])),
+    ).toEqual(['2', '10']);
     expect(mutationService.schedulePostCommitTasks).toHaveBeenCalledWith(
       expect.arrayContaining([expect.objectContaining({ label: 'changeLog' })]),
     );

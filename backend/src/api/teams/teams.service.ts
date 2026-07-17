@@ -1,10 +1,6 @@
 import { InjectQueue } from '@nestjs/bullmq';
 import { EntityManager } from '@mikro-orm/core';
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Queue } from 'bullmq';
 import { REDIS_ENABLED } from '../../constants/project.constants';
 import { MessageTemplateService } from '../template/message-template.service';

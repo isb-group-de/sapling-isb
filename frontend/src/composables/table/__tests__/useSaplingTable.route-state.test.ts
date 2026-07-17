@@ -1,16 +1,11 @@
 import { flushPromises } from '@vue/test-utils'
-import { nextTick, ref } from 'vue'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import type { ColumnFilterItem } from '@/entity/structure'
+import { ref } from 'vue'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import {
   apiFindMock,
   cleanupTableTestWrappers,
-  fetchCurrentPermissionMock,
   formatLocalDateTimeInput,
   loadGenericMock,
-  mountAdditionalProjectionTestHost,
-  mountBeforeInitialLoadTestHost,
-  mountManualTestHost,
   mountQueryEnabledTestHost,
   mountTestHost,
   resetTableTestMocks,

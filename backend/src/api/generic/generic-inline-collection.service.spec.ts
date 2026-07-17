@@ -29,7 +29,10 @@ function createSubject(
   existingItems: object[] = [],
   fieldPermissions = {
     getTemplates: jest.fn(() => Promise.resolve([])),
-    assertPayloadAccess: jest.fn((..._args: unknown[]) => Promise.resolve()),
+    assertPayloadAccess: jest.fn((...args: unknown[]) => {
+      void args;
+      return Promise.resolve();
+    }),
   },
 ) {
   const em = {

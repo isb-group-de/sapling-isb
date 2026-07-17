@@ -7,17 +7,14 @@ import {
   apiFindMock,
   cleanupTableTestWrappers,
   createDeferred,
-  fetchCurrentPermissionMock,
   getEntityTemplateMock,
   listFormConfigsMock,
   loadGenericMock,
   mountAdditionalProjectionTestHost,
   mountBeforeInitialLoadTestHost,
   mountManualTestHost,
-  mountQueryEnabledTestHost,
   mountTestHost,
   resetTableTestMocks,
-  routeState,
 } from './useSaplingTable.test-support'
 
 describe('useSaplingTable initialization and loading', () => {
@@ -190,11 +187,11 @@ describe('useSaplingTable initialization and loading', () => {
     loadGenericMock.mockResolvedValue(undefined)
     apiFindMock.mockResolvedValue({ data: [], meta: { total: 0 } })
 
-    mountAdditionalProjectionTestHost(ref('partner'), ['filename', 'mimetype', 'filename'])
+    mountAdditionalProjectionTestHost(ref('document'), ['filename', 'mimetype', 'filename'])
     await flushPromises()
 
     expect(apiFindMock).toHaveBeenCalledWith(
-      'partner',
+      'document',
       expect.objectContaining({
         fields: expect.arrayContaining(['filename', 'mimetype']),
       }),

@@ -39,7 +39,6 @@ import {
   mapProviderOptions,
   normalizeHandle,
   type AccountDetailItem,
-  type AccountSelectOption,
   type AccountTab,
   type AccountTabItem,
   type CalendarSyncOption,

@@ -1,8 +1,8 @@
-import { flushPromises, mount } from '@vue/test-utils'
-import { defineComponent, nextTick, reactive, ref, type Ref } from 'vue'
+import { mount } from '@vue/test-utils'
+import { defineComponent, reactive, type Ref } from 'vue'
 import { vi } from 'vitest'
 
-import type { ColumnFilterItem, EntityTemplate } from '@/entity/structure'
+import type { EntityTemplate } from '@/entity/structure'
 
 const {
   apiFindMock,
@@ -80,6 +80,23 @@ const entityStates = reactive<Record<string, ReturnType<typeof createEntityState
     createTemplate({
       name: 'amount',
       type: 'number',
+    }),
+  ]),
+  document: createEntityState([
+    createTemplate({
+      name: 'title',
+      type: 'string',
+      options: ['isOrderASC'],
+    }),
+    createTemplate({
+      name: 'filename',
+      type: 'string',
+      tableVisible: false,
+    }),
+    createTemplate({
+      name: 'mimetype',
+      type: 'string',
+      tableVisible: false,
     }),
   ]),
   contract: createEntityState([

@@ -11,10 +11,13 @@ class TestController {
   writePost() {}
 }
 
-const createContext = (
-  req: unknown,
-  handler: () => void = TestController.prototype.writePost,
-) =>
+const writePostHandler = Reflect.get(TestController.prototype, 'writePost');
+const readOnlyPostHandler = Reflect.get(
+  TestController.prototype,
+  'readOnlyPost',
+);
+
+const createContext = (req: unknown, handler: () => void = writePostHandler) =>
   ({
     getType: () => 'http' as const,
     getHandler: () => handler,
@@ -97,7 +100,7 @@ describe('ImpersonationReadOnlyGuard', () => {
             path: '/api/kpi/execute-batch',
             user: { handle: 7, _impersonator: { handle: 1 } },
           },
-          TestController.prototype.readOnlyPost,
+          readOnlyPostHandler,
         ),
       ),
     ).toBe(true);

@@ -77,7 +77,11 @@ export class ImportAiSuggestionService {
     private readonly fieldPermissions: FieldPermissionService = {
       getTemplates: (entityHandle: string) =>
         Promise.resolve(this.templateService.getEntityTemplate(entityHandle)),
-      applyTemplateAccess: (_user, _entityHandle, templates) => templates,
+      applyTemplateAccess: (
+        _user: PersonItem,
+        _entityHandle: string,
+        templates: EntityTemplateDto[],
+      ): EntityTemplateDto[] => templates,
     } as unknown as FieldPermissionService,
     private readonly genericService: GenericService = {
       findAndCount: () =>
