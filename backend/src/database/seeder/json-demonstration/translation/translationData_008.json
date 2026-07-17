@@ -1,0 +1,128 @@
+[
+  {
+    "entity": "aiAgentBuilder",
+    "property": "recentRunsTitle",
+    "de": "Letzte Läufe",
+    "en": "Recent runs"
+  },
+  {
+    "entity": "aiAgentBuilder",
+    "property": "recentRunsSubtitle",
+    "de": "Neueste zuerst. Öffne einen Lauf für Tools, Quellen, Antwort und Fehlerdetails.",
+    "en": "Newest first. Open a run to inspect tools, sources, response, and errors."
+  },
+  {
+    "entity": "aiAgentBuilder",
+    "property": "toolCalls",
+    "de": "Tool-Aufrufe",
+    "en": "Tool calls"
+  },
+  {
+    "entity": "aiAgentBuilder",
+    "property": "sources",
+    "de": "Quellen und Navigation",
+    "en": "Sources and navigation"
+  },
+  {
+    "entity": "aiAgentBuilder",
+    "property": "tokenUsage",
+    "de": "Token-Nutzung",
+    "en": "Token usage"
+  },
+  {
+    "entity": "aiAgentBuilder",
+    "property": "totalTokens",
+    "de": "Gesamt",
+    "en": "Total"
+  },
+  {
+    "entity": "aiAgentBuilder",
+    "property": "inputTokens",
+    "de": "Eingabe",
+    "en": "Input"
+  },
+  {
+    "entity": "aiAgentBuilder",
+    "property": "outputTokens",
+    "de": "Ausgabe",
+    "en": "Output"
+  },
+  {
+    "entity": "aiAgentBuilder",
+    "property": "results",
+    "de": "Treffer",
+    "en": "results"
+  },
+  {
+    "entity": "aiAgentBuilder",
+    "property": "pendingActions",
+    "de": "Vorbereitete Aktionen",
+    "en": "Prepared actions"
+  },
+  {
+    "entity": "aiAgentBuilder",
+    "property": "response",
+    "de": "Antwort",
+    "en": "Response"
+  },
+  {
+    "entity": "aiAgentBuilder",
+    "property": "errorDetails",
+    "de": "Fehlerdetails",
+    "en": "Error details"
+  },
+  {
+    "entity": "aiAgentBuilder",
+    "property": "noRunDetails",
+    "de": "Für diesen Lauf wurden keine weiteren Details aufgezeichnet.",
+    "en": "No additional details were recorded for this run."
+  },
+  {
+    "entity": "aiAgentBuilder",
+    "property": "noRuns",
+    "de": "Für diesen Agent sind noch keine Läufe vorhanden.",
+    "en": "No runs are available for this agent yet."
+  },
+  {
+    "entity": "aiAgentBuilder",
+    "property": "statusCompleted",
+    "de": "Abgeschlossen",
+    "en": "Completed"
+  },
+  {
+    "entity": "aiAgentBuilder",
+    "property": "statusFailed",
+    "de": "Fehlgeschlagen",
+    "en": "Failed"
+  },
+  {
+    "entity": "aiAgentBuilder",
+    "property": "statusRunning",
+    "de": "Läuft",
+    "en": "Running"
+  },
+  {
+    "entity": "aiAgentBuilder",
+    "property": "statusSuccess",
+    "de": "Erfolgreich",
+    "en": "Successful"
+  },
+  {
+    "entity": "aiAgentBuilder",
+    "property": "statusRepair",
+    "de": "Korrektur nötig",
+    "en": "Repair needed"
+  },
+  {
+    "entity": "aiAgentBuilder",
+    "property": "statusBlocked",
+    "de": "Bestätigung nötig",
+    "en": "Confirmation required"
+  },
+  {
+    "entity": "aiAgentBuilder",
+    "property": "statusError",
+    "de": "Fehler",
+    "en": "Error"
+  }
+]

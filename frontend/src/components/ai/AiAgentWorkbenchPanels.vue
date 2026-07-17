@@ -190,21 +190,36 @@
   </v-window-item>
 
   <v-window-item value="usage">
-    <div class="sapling-ai-agent-builder__panel-stack">
-      <div class="sapling-ai-agent-builder__stats">
-        <v-chip color="primary" variant="tonal">
-          {{ stats.runsTotal ?? 0 }} {{ t('aiAgentBuilder.runs') }}
-        </v-chip>
-        <v-chip variant="tonal">
-          {{ stats.failedRuns ?? 0 }} {{ t('aiAgentBuilder.failedRuns') }}
-        </v-chip>
-        <v-chip variant="tonal">
-          {{ stats.pendingActions ?? 0 }} {{ t('aiAgentBuilder.actions') }}
-        </v-chip>
-        <v-chip variant="tonal">
-          {{ stats.evaluationPassRate ?? t('global.notAvailable') }}%
-          {{ t('aiAgentBuilder.tabQuality') }}
-        </v-chip>
+    <div class="sapling-ai-agent-builder__panel-stack sapling-ai-agent-builder__panel-stack--usage">
+      <div class="sapling-ai-agent-builder__usage-metrics">
+        <article class="sapling-ai-agent-builder__usage-metric">
+          <v-icon color="primary" icon="mdi-history" size="20" />
+          <div>
+            <span>{{ t('aiAgentBuilder.runs') }}</span>
+            <strong>{{ stats.runsTotal ?? 0 }}</strong>
+          </div>
+        </article>
+        <article class="sapling-ai-agent-builder__usage-metric">
+          <v-icon color="error" icon="mdi-alert-circle-outline" size="20" />
+          <div>
+            <span>{{ t('aiAgentBuilder.failedRuns') }}</span>
+            <strong>{{ stats.failedRuns ?? 0 }}</strong>
+          </div>
+        </article>
+        <article class="sapling-ai-agent-builder__usage-metric">
+          <v-icon color="info" icon="mdi-shield-lock-outline" size="20" />
+          <div>
+            <span>{{ t('aiAgentBuilder.actions') }}</span>
+            <strong>{{ stats.pendingActions ?? 0 }}</strong>
+          </div>
+        </article>
+        <article class="sapling-ai-agent-builder__usage-metric">
+          <v-icon color="success" icon="mdi-clipboard-check-outline" size="20" />
+          <div>
+            <span>{{ t('aiAgentBuilder.tabQuality') }}</span>
+            <strong>{{ formatPercentage(stats.evaluationPassRate) }}</strong>
+          </div>
+        </article>
       </div>
       <AiAgentRunTraceList :runs="runs" />
     </div>
@@ -260,4 +275,8 @@ const emit = defineEmits<{
   createEvaluation: []
 }>()
 const { t } = useI18n()
+
+function formatPercentage(value: number | null | undefined): string {
+  return value == null ? t('global.notAvailable') : `${value}%`
+}
 </script>

@@ -132,6 +132,16 @@ POST /api/ai/chat/sessions/:handle/playbook
 Admins can create version snapshots, run test prompts, inspect recent runs,
 maintain quality test cases, and review memory/playbooks from the same surface.
 
+On desktop, the builder is a viewport-height workspace: the agent rail and the
+active editor panel scroll independently while tabs and save actions remain
+visible. The usage panel summarizes the current 25-run workbench window and
+renders runs newest-first as expandable trace cards. A collapsed card keeps
+status, model, start time, duration, tool/source counts, pending actions, and
+context scannable. Expanding it groups token usage, tool arguments and results,
+sources/navigation, prepared actions, response text, and error details. Keep
+long trace values bounded and wrapping so a provider payload or encoded route
+cannot introduce horizontal page scrolling.
+
 The route-level builder is a composition shell. Profile, prompt, data, tool,
 runtime, and release controls live in `AiAgentConfigurationPanels`; version,
 test-run, memory/playbook, evaluation, usage, and trace presentation live in
