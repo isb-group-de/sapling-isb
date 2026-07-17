@@ -70,8 +70,7 @@ export class TemplateService {
 
     // Ensure entityMap[entityHandle] is defined and is a class constructor
     const entityClass = entityMap[entityHandle] as
-      | { name?: string }
-      | undefined;
+      { name?: string } | undefined;
     if (!entityClass || typeof entityClass !== 'function') {
       throw new Error('global.entityNotFound');
     }

@@ -481,11 +481,7 @@ export class CurrentService {
    */
   private getBestPermission(
     key:
-      | 'allowDelete'
-      | 'allowShow'
-      | 'allowInsert'
-      | 'allowUpdate'
-      | 'allowRead',
+      'allowDelete' | 'allowShow' | 'allowInsert' | 'allowUpdate' | 'allowRead',
     permissions: AccumulatedPermissionBufferDto[],
     stageOrder: string[],
   ): { value: boolean; stage: string } {

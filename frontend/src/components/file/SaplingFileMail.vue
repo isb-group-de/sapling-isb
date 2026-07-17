@@ -278,8 +278,7 @@ async function parseMsg(buffer: ArrayBuffer): Promise<MailPreviewData> {
   type MsgReaderConstructor = (typeof import('@kenjiuno/msgreader'))['default']
   const msgReaderModule = await import('@kenjiuno/msgreader')
   const defaultExport = msgReaderModule.default as
-    | MsgReaderConstructor
-    | { default: MsgReaderConstructor }
+    MsgReaderConstructor | { default: MsgReaderConstructor }
   const MsgReaderClass = typeof defaultExport === 'function' ? defaultExport : defaultExport.default
   const reader = new MsgReaderClass(buffer)
   const message = reader.getFileData()

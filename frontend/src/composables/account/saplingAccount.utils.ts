@@ -10,13 +10,7 @@ export interface AccountDetailItem {
 }
 
 export type WorkHourDayKey =
-  | 'monday'
-  | 'tuesday'
-  | 'wednesday'
-  | 'thursday'
-  | 'friday'
-  | 'saturday'
-  | 'sunday'
+  'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday'
 
 export interface WorkHourRow {
   key: WorkHourDayKey
@@ -32,13 +26,7 @@ export interface CalendarSyncOption<T> {
 }
 
 export type AccountTab =
-  | 'profile'
-  | 'notifications'
-  | 'sync'
-  | 'security'
-  | 'sessions'
-  | 'preferences'
-  | 'songbird'
+  'profile' | 'notifications' | 'sync' | 'security' | 'sessions' | 'preferences' | 'songbird'
 
 export interface AccountTabItem {
   key: AccountTab

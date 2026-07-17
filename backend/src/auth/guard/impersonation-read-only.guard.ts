@@ -40,8 +40,7 @@ export class ImpersonationReadOnlyGuard implements CanActivate {
 
     const req = context.switchToHttp().getRequest<Request>();
     const user = req.user as
-      | (PersonItem & { _impersonator?: unknown })
-      | undefined;
+      (PersonItem & { _impersonator?: unknown }) | undefined;
 
     if (!user || !user._impersonator) {
       return true;

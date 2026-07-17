@@ -13,10 +13,7 @@ import {
 } from './kpi-timeframe-planner';
 
 type KpiAggregateValue =
-  | number
-  | object
-  | Array<Record<string, unknown>>
-  | null;
+  number | object | Array<Record<string, unknown>> | null;
 
 type KpiWhere = Record<string, unknown>;
 

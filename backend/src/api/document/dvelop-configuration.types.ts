@@ -59,10 +59,7 @@ export interface DvelopConfigurationImportResponse {
 }
 
 export type DvelopHealthCheckCapabilityKey =
-  | 'apiKey'
-  | 'repositories'
-  | 'objectDefinitions'
-  | 'properties';
+  'apiKey' | 'repositories' | 'objectDefinitions' | 'properties';
 
 export type DvelopHealthCheckStatus = 'success' | 'warning' | 'error';
 

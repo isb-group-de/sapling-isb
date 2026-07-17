@@ -187,8 +187,7 @@ function pushGithubError(
 function extractApiError(error: unknown, fallbackMessage: string) {
   if (axios.isAxiosError(error)) {
     const responseData = error.response?.data as
-      | { message?: string | string[]; error?: string }
-      | undefined
+      { message?: string | string[]; error?: string } | undefined
 
     const message = Array.isArray(responseData?.message)
       ? responseData?.message[0]

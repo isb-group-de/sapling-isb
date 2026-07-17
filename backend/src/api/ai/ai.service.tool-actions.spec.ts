@@ -251,8 +251,7 @@ describe('AiService tool actions', () => {
 
     const result = await service.confirmToolAction(4, { handle: 9 } as never);
     const followUpToolAction = result.resultPayload?.followUpToolAction as
-      | Record<string, unknown>
-      | undefined;
+      Record<string, unknown> | undefined;
 
     expect(result.status).toBe('executed');
     expect(followUpToolAction).toMatchObject({

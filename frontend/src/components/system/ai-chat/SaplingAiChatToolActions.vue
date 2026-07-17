@@ -135,8 +135,7 @@
                 <v-expansion-panel-text>
                   <pre
                     class="sapling-ai-chat__tool-action-arguments sapling-ai-chat__tool-action-arguments--dialog"
-                    >{{ formatToolActionTechnicalDetails(activeToolActionDetails) }}</pre
-                  >
+                    >{{ formatToolActionTechnicalDetails(activeToolActionDetails) }}</pre>
                 </v-expansion-panel-text>
               </v-expansion-panel>
             </v-expansion-panels>

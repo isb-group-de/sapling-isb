@@ -185,10 +185,7 @@ export type ImportBatchResultSummaryDto = {
 };
 
 export type ImportMatchRecommendedAction =
-  | 'create'
-  | 'update'
-  | 'ambiguous'
-  | 'error';
+  'create' | 'update' | 'ambiguous' | 'error';
 
 export type ImportMatchCandidateDto = {
   reference: string;

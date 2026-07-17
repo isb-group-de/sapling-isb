@@ -19,10 +19,7 @@ export const GENERIC_PERMISSION_ENTITY_KEY = 'generic:permission:entity';
 export const GENERIC_PERMISSION_RESOLVE_KEY = 'generic:permission:resolve';
 
 export type GenericPermissionAction =
-  | 'allowRead'
-  | 'allowInsert'
-  | 'allowUpdate'
-  | 'allowDelete';
+  'allowRead' | 'allowInsert' | 'allowUpdate' | 'allowDelete';
 
 export type GenericPermissionResolution =
   | string

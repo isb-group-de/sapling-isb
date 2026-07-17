@@ -7,12 +7,7 @@ import { ghostActivationMessage, ghostMessages } from '@/config/easter-egg/ghost
 import type { GhostPose } from '@/config/easter-egg/ghostSprites'
 
 export type GhostEasterEggStatus =
-  | 'inactive'
-  | 'appearing'
-  | 'active'
-  | 'jumping'
-  | 'disappearing'
-  | 'hidden'
+  'inactive' | 'appearing' | 'active' | 'jumping' | 'disappearing' | 'hidden'
 
 const STORAGE_KEY = 'sapling.ghostEasterEgg.active'
 const APPEARANCE_MS = 420

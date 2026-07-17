@@ -47,10 +47,7 @@ export type AiToolRegistryEntry = {
 };
 
 export type AiProviderCapability =
-  | 'chat'
-  | 'embedding'
-  | 'transcription'
-  | 'speech';
+  'chat' | 'embedding' | 'transcription' | 'speech';
 
 export type AiProviderKind = 'openai' | 'gemini' | 'openaiCompatible';
 

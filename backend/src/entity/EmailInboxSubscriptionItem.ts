@@ -8,9 +8,7 @@ import { SharedMailboxItem } from './SharedMailboxItem';
 import { Sapling, SaplingForm } from './global/entity.decorator';
 
 export type EmailInboxProcessingMode =
-  | 'ticket'
-  | 'salesOpportunity'
-  | 'officeTask';
+  'ticket' | 'salesOpportunity' | 'officeTask';
 
 @Entity()
 export class EmailInboxSubscriptionItem {

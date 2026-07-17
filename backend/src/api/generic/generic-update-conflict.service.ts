@@ -21,9 +21,7 @@ type GenericUpdatePayload = {
 };
 
 export type GenericUpdateConcurrencyResolution =
-  | 'detect'
-  | 'merge'
-  | 'overwrite';
+  'detect' | 'merge' | 'overwrite';
 
 export type GenericUpdateConcurrencyOptions = {
   expectedUpdatedAt?: string | Date | null;

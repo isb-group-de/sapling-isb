@@ -103,8 +103,7 @@ describe('generic entity swagger', () => {
       document.paths?.['/api/generic/{entityHandle}']?.post?.requestBody
         ?.content?.['application/json']?.examples;
     const companyExample = createExamples?.company?.value as
-      | Record<string, unknown>
-      | undefined;
+      Record<string, unknown> | undefined;
 
     expect(companyExample).toBeDefined();
     expect(companyExample?.address).toBe('AddressItem');

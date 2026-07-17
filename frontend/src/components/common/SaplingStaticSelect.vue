@@ -28,13 +28,7 @@ withDefaults(
     hideDetails?: boolean | 'auto'
     density?: 'default' | 'comfortable' | 'compact'
     variant?:
-      | 'outlined'
-      | 'plain'
-      | 'underlined'
-      | 'filled'
-      | 'solo'
-      | 'solo-inverted'
-      | 'solo-filled'
+      'outlined' | 'plain' | 'underlined' | 'filled' | 'solo' | 'solo-inverted' | 'solo-filled'
   }>(),
   {
     label: '',

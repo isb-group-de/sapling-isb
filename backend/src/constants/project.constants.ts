@@ -164,10 +164,7 @@ export const AZURE_AD_CLIENT_SECRET: string =
  */
 export const AZURE_AD_RESPONSE_TYPE: string =
   (process.env.AZURE_AD_RESPONSE_TYPE as
-    | 'code'
-    | 'code id_token'
-    | 'id_token code'
-    | 'id_token') || 'code';
+    'code' | 'code id_token' | 'id_token code' | 'id_token') || 'code';
 
 /**
  * @constant {string} AZURE_AD_RESPONSE_MODE

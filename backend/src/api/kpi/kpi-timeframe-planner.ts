@@ -3,9 +3,7 @@ import { SparklineMonthPointDto } from './dto/sparkline-month-point.dto';
 import { SparklineWeekPointDto } from './dto/sparkline-week-point.dto';
 
 export type SparklinePointDto =
-  | SparklineMonthPointDto
-  | SparklineDayPointDto
-  | SparklineWeekPointDto;
+  SparklineMonthPointDto | SparklineDayPointDto | SparklineWeekPointDto;
 
 export type SparklineBucket = {
   key: string;

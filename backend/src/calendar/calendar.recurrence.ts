@@ -1,13 +1,7 @@
 export type RecurrenceFrequency = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
 
 export type RecurrenceWeekdayCode =
-  | 'MO'
-  | 'TU'
-  | 'WE'
-  | 'TH'
-  | 'FR'
-  | 'SA'
-  | 'SU';
+  'MO' | 'TU' | 'WE' | 'TH' | 'FR' | 'SA' | 'SU';
 
 export interface ParsedRecurrenceRule {
   raw: string;
@@ -77,8 +71,7 @@ export function parseRecurrenceRule(
   }
 
   const frequencyValue = values.get('FREQ')?.toUpperCase() as
-    | RecurrenceFrequency
-    | undefined;
+    RecurrenceFrequency | undefined;
   if (!frequencyValue || !RECURRENCE_FREQUENCIES.has(frequencyValue)) {
     return null;
   }

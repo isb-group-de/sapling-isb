@@ -56,8 +56,7 @@ export interface SaplingContextMenuTableMenuItem {
 
 export type SaplingContextMenuTableMenuGroup = SaplingContextMenuTableMenuItem[]
 export type SaplingContextMenuTableMenuEntry =
-  | SaplingContextMenuTableMenuItem
-  | SaplingContextMenuTableMenuGroup
+  SaplingContextMenuTableMenuItem | SaplingContextMenuTableMenuGroup
 
 export interface SaplingContextMenuTableMenuOptions {
   canChangeLog: boolean

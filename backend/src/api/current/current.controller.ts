@@ -292,13 +292,11 @@ export class CurrentController {
     const user = req.user as PersonItem;
     return this.openTaskEventsService.streamForUser(user?.handle).pipe(
       concatMap(() => from(this.currentService.getOpenTaskSnapshot(user))),
-      map(
-        (snapshot): MessageEvent => ({
-          type: 'open-task-snapshot',
-          retry: 5000,
-          data: snapshot,
-        }),
-      ),
+      map((snapshot): MessageEvent => ({
+        type: 'open-task-snapshot',
+        retry: 5000,
+        data: snapshot,
+      })),
     );
   }
 

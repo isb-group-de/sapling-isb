@@ -31,12 +31,7 @@ export interface OpenTaskSnapshot {
 }
 
 export type OpenTaskStreamItemKind =
-  | 'ticket'
-  | 'event'
-  | 'salesOpportunity'
-  | 'effortEstimate'
-  | 'internalCase'
-  | 'notification'
+  'ticket' | 'event' | 'salesOpportunity' | 'effortEstimate' | 'internalCase' | 'notification'
 
 export interface OpenTaskStreamItem {
   id: string

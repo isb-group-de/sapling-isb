@@ -7,11 +7,7 @@ import type {
 } from '../../entity/entity'
 
 export type PermissionType =
-  | 'allowInsert'
-  | 'allowRead'
-  | 'allowUpdate'
-  | 'allowDelete'
-  | 'allowShow'
+  'allowInsert' | 'allowRead' | 'allowUpdate' | 'allowDelete' | 'allowShow'
 export type PermissionFilterMode = 'all' | 'enabled' | 'disabled'
 export type PermissionSaveState = 'idle' | 'dirty' | 'saving' | 'saved' | 'error'
 export type PermissionStateSnapshot = Record<PermissionType, boolean>

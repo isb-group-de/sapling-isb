@@ -28,12 +28,7 @@ import {
 
 type CloseEmitter = (event: 'close') => void
 export type InboxEntryKind =
-  | 'ticket'
-  | 'event'
-  | 'salesOpportunity'
-  | 'effortEstimate'
-  | 'internalCase'
-  | 'notification'
+  'ticket' | 'event' | 'salesOpportunity' | 'effortEstimate' | 'internalCase' | 'notification'
 export type InboxSectionKey = 'overdue' | 'today' | 'upcoming' | 'later' | 'unplanned'
 
 const UPCOMING_DAY_RANGE = 7

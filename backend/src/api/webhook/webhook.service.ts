@@ -196,8 +196,7 @@ export class WebhookService {
 
     try {
       const entityClass = ENTITY_MAP[entityHandle] as
-        | { prototype?: object }
-        | undefined;
+        { prototype?: object } | undefined;
 
       if (!entityClass) {
         return item;

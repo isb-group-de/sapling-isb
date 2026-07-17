@@ -307,8 +307,7 @@ export class AiEntityGenerationService {
 
   private getEntityClass(entityHandle: string): EntityName<object> {
     const entityClass = ENTITY_MAP[entityHandle] as
-      | EntityName<object>
-      | undefined;
+      EntityName<object> | undefined;
 
     if (!entityClass) {
       throw new NotFoundException('global.entityNotFound');

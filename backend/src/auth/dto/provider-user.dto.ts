@@ -12,10 +12,7 @@ import {
 
 export type ProviderUserProvider = 'azure' | 'google';
 export type ProviderUserImportAction =
-  | 'created'
-  | 'updated'
-  | 'skipped'
-  | 'failed';
+  'created' | 'updated' | 'skipped' | 'failed';
 
 export class ProviderUserDto {
   @ApiProperty({ enum: ['azure', 'google'] })

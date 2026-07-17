@@ -347,8 +347,7 @@ export abstract class ScriptClass implements ScriptInterface {
     context?: Record<string, unknown>,
   ) {
     const logger = global.log as
-      | Partial<Record<ScriptLogLevel, (value: string) => void>>
-      | undefined;
+      Partial<Record<ScriptLogLevel, (value: string) => void>> | undefined;
     const target = logger?.[level];
 
     if (typeof target !== 'function') {
