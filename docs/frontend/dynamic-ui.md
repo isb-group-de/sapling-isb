@@ -277,6 +277,12 @@ component focused on remote context, persistence, and composition.
 Its preview keeps form, desktop-table, and mobile-table tabs mounted through
 entity reloads, renders the configured form groups explicitly, and emphasizes
 translated field names plus renderer types instead of fabricated sample data.
+The compact form preview is also the primary ordering surface: fields and
+groups expose drag handles, render an insertion preview at the exact target,
+and use proportional edge scrolling while a drag is active. Ordering is
+available exclusively in that preview; the detailed editor remains focused on
+visibility and field options. A hidden field can be shown temporarily when it
+needs to be repositioned and hidden again afterward.
 
 ## Dialogs
 

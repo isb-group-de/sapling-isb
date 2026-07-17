@@ -108,8 +108,6 @@
           @reset="resetCurrentConfig"
           @add-group="addGroup"
           @remove-group="removeGroup"
-          @move-field="moveField"
-          @reorder-group="reorderGroup"
         />
       </SaplingSurface>
 
@@ -119,6 +117,8 @@
         :draft-templates="draftTemplates"
         :reload-disabled="!selectedEntityHandle"
         @reload="loadEntityContext"
+        @move-field="moveFieldBefore"
+        @reorder-group="reorderGroup"
       />
     </section>
   </v-container>
@@ -497,12 +497,30 @@ function removeGroup(groupKey: string): void {
   removeFormConfigGroup(fieldRows, groupRows, groupKey)
 }
 
-function reorderGroup(sourceKey: string, targetKey: string): void {
-  reorderFormConfigGroup(groupRows, sourceKey, targetKey)
+function reorderGroup(
+  sourceKey: string,
+  targetKey: string,
+  placement: 'swap' | 'before' | 'after' = 'swap',
+): void {
+  reorderFormConfigGroup(groupRows, sourceKey, targetKey, placement)
 }
 
 function moveField(fieldName: string, targetGroupKey: string, targetIndex: number): void {
   moveFormConfigField(fieldRows, groupRows, fieldName, targetGroupKey, targetIndex)
+}
+
+function moveFieldBefore(
+  fieldName: string,
+  targetGroupKey: string,
+  beforeFieldName: string | null,
+): void {
+  const targetFields = fieldRows
+    .filter((field) => field.group === targetGroupKey && field.name !== fieldName)
+    .sort((left, right) => (left.order ?? 0) - (right.order ?? 0))
+  const targetIndex = beforeFieldName
+    ? targetFields.findIndex((field) => field.name === beforeFieldName)
+    : targetFields.length
+  moveField(fieldName, targetGroupKey, targetIndex < 0 ? targetFields.length : targetIndex)
 }
 
 function translateEntity(entityHandle: string): string {

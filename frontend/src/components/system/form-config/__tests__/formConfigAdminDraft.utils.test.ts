@@ -55,4 +55,19 @@ describe('formConfigAdminDraft utils', () => {
       { name: 'b', group: 'two', order: 200 },
     ])
   })
+
+  it('inserts groups before and after exact preview targets', () => {
+    const groups = [
+      { key: 'one', label: '', visible: true, order: 100 },
+      { key: 'two', label: '', visible: true, order: 200 },
+      { key: 'three', label: '', visible: true, order: 300 },
+    ]
+
+    reorderFormConfigGroup(groups, 'three', 'one', 'before')
+    expect(groups.map((group) => group.key)).toEqual(['three', 'one', 'two'])
+
+    reorderFormConfigGroup(groups, 'three', 'two', 'after')
+    expect(groups.map((group) => group.key)).toEqual(['one', 'two', 'three'])
+    expect(groups.map((group) => group.order)).toEqual([100, 200, 300])
+  })
 })

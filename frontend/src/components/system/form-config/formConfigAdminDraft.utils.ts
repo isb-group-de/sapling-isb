@@ -127,11 +127,24 @@ export function reorderFormConfigGroup(
   groups: GroupDraft[],
   sourceKey: string,
   targetKey: string,
+  placement: 'swap' | 'before' | 'after' = 'swap',
 ): void {
   const sourceIndex = groups.findIndex((group) => group.key === sourceKey)
   const targetIndex = groups.findIndex((group) => group.key === targetKey)
   if (sourceIndex < 0 || targetIndex < 0 || sourceIndex === targetIndex) return
-  ;[groups[sourceIndex], groups[targetIndex]] = [groups[targetIndex], groups[sourceIndex]]
+
+  if (placement === 'swap') {
+    ;[groups[sourceIndex], groups[targetIndex]] = [groups[targetIndex], groups[sourceIndex]]
+    normalizeGroupOrders(groups)
+    return
+  }
+
+  const [source] = groups.splice(sourceIndex, 1)
+  if (!source) return
+
+  const nextTargetIndex = groups.findIndex((group) => group.key === targetKey)
+  const insertionIndex = placement === 'after' ? nextTargetIndex + 1 : nextTargetIndex
+  groups.splice(insertionIndex, 0, source)
   normalizeGroupOrders(groups)
 }
 

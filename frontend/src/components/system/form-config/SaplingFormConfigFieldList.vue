@@ -52,24 +52,10 @@
       class="sapling-panel-shell sapling-form-config-group"
       :class="{
         'sapling-form-config-group--hidden': !group.visible,
-        'sapling-form-config-group--drag-over': dragOverGroupKey === group.key,
       }"
       role="listitem"
-      @dragover.prevent="onGroupDragOver(group.key)"
-      @dragleave="clearGroupDragOver(group.key)"
-      @drop.prevent="dropOnGroup(group.key)"
     >
       <header class="sapling-form-config-group__header">
-        <v-btn
-          class="sapling-form-config-drag-handle"
-          icon="mdi-drag-vertical"
-          variant="text"
-          size="small"
-          draggable="true"
-          :title="formConfigText('dragGroup', 'Gruppe verschieben')"
-          @dragstart.stop="startGroupDrag($event, group.key)"
-          @dragend="endDrag"
-        />
         <div class="sapling-form-config-group__identity">
           <strong>{{ resolveGroupLabel(group) }}</strong>
           <span>{{ group.key || formConfigText('ungrouped', 'Ohne Gruppe') }}</span>
@@ -109,33 +95,14 @@
         :class="{
           'sapling-form-config-group__fields--empty': getGroupFields(group.key).length === 0,
         }"
-        @dragover.prevent.stop="onFieldDragOver(group.key)"
-        @drop.prevent.stop="dropFieldAtEnd(group.key)"
       >
         <SaplingSurface
-          v-for="(field, fieldIndex) in getGroupFields(group.key)"
+          v-for="field in getGroupFields(group.key)"
           :key="field.name"
           as="article"
           class="sapling-panel-shell sapling-stack-md sapling-config-field sapling-form-config-field"
-          :class="{
-            'sapling-form-config-field--dragging': draggedFieldName === field.name,
-            'sapling-form-config-field--drop-before': dropBeforeFieldName === field.name,
-          }"
-          @dragover.prevent.stop="onFieldDragOver(group.key, field.name)"
-          @dragleave.stop="clearFieldDragOver(field.name)"
-          @drop.prevent.stop="dropFieldBefore(group.key, fieldIndex)"
         >
           <div class="sapling-row-md sapling-config-field__main sapling-form-config-field__main">
-            <v-btn
-              class="sapling-form-config-drag-handle"
-              icon="mdi-drag"
-              variant="text"
-              size="small"
-              draggable="true"
-              :title="formConfigText('dragField', 'Feld verschieben')"
-              @dragstart.stop="startFieldDrag($event, field.name)"
-              @dragend="endDrag"
-            />
             <v-switch
               v-model="field.visible"
               color="primary"
@@ -226,8 +193,8 @@
         </SaplingSurface>
 
         <div v-if="getGroupFields(group.key).length === 0" class="sapling-form-config-group__empty">
-          <v-icon icon="mdi-tray-arrow-down" />
-          <span>{{ formConfigText('dropFieldsHere', 'Felder hier ablegen') }}</span>
+          <v-icon icon="mdi-folder-outline" />
+          <span>{{ formConfigText('emptyGroup', 'Leere Gruppe') }}</span>
         </div>
       </div>
     </SaplingSurface>
@@ -256,17 +223,11 @@ const emit = defineEmits<{
   (event: 'reset'): void
   (event: 'addGroup', label: string): void
   (event: 'removeGroup', groupKey: string): void
-  (event: 'moveField', fieldName: string, targetGroupKey: string, targetIndex: number): void
-  (event: 'reorderGroup', sourceKey: string, targetKey: string): void
 }>()
 
 const { t, te } = useI18n()
 const fieldSearch = ref('')
 const newGroupLabel = ref('')
-const draggedFieldName = ref('')
-const draggedGroupKey = ref<string | null>(null)
-const dragOverGroupKey = ref<string | null>(null)
-const dropBeforeFieldName = ref('')
 
 const filteredGroups = computed(() => {
   const query = fieldSearch.value.trim().toLowerCase()
@@ -304,74 +265,6 @@ function addGroup(): void {
   if (!label) return
   emit('addGroup', label)
   newGroupLabel.value = ''
-}
-
-function startFieldDrag(event: DragEvent, fieldName: string): void {
-  draggedFieldName.value = fieldName
-  draggedGroupKey.value = null
-  if (event.dataTransfer) {
-    event.dataTransfer.effectAllowed = 'move'
-    event.dataTransfer.setData('text/plain', `field:${fieldName}`)
-  }
-}
-
-function startGroupDrag(event: DragEvent, groupKey: string): void {
-  draggedGroupKey.value = groupKey
-  draggedFieldName.value = ''
-  if (event.dataTransfer) {
-    event.dataTransfer.effectAllowed = 'move'
-    event.dataTransfer.setData('text/plain', `group:${groupKey}`)
-  }
-}
-
-function onGroupDragOver(groupKey: string): void {
-  if (draggedGroupKey.value !== null || draggedFieldName.value) {
-    dragOverGroupKey.value = groupKey
-  }
-}
-
-function clearGroupDragOver(groupKey: string): void {
-  if (dragOverGroupKey.value === groupKey) dragOverGroupKey.value = null
-}
-
-function onFieldDragOver(groupKey: string, fieldName = ''): void {
-  if (!draggedFieldName.value) return
-  dragOverGroupKey.value = groupKey
-  dropBeforeFieldName.value = fieldName
-}
-
-function clearFieldDragOver(fieldName: string): void {
-  if (dropBeforeFieldName.value === fieldName) dropBeforeFieldName.value = ''
-}
-
-function dropOnGroup(groupKey: string): void {
-  if (draggedGroupKey.value !== null) {
-    emit('reorderGroup', draggedGroupKey.value, groupKey)
-  } else if (draggedFieldName.value) {
-    emit('moveField', draggedFieldName.value, groupKey, getGroupFields(groupKey).length)
-  }
-  endDrag()
-}
-
-function dropFieldBefore(groupKey: string, targetIndex: number): void {
-  if (draggedFieldName.value) {
-    emit('moveField', draggedFieldName.value, groupKey, targetIndex)
-  }
-  endDrag()
-}
-
-function dropFieldAtEnd(groupKey: string): void {
-  if (draggedFieldName.value) {
-    emit('moveField', draggedFieldName.value, groupKey, getGroupFields(groupKey).length)
-  }
-  endDrag()
-}
-
-function endDrag(): void {
-  draggedFieldName.value = ''
-  draggedGroupKey.value = null
-  dragOverGroupKey.value = null
-  dropBeforeFieldName.value = ''
 }
 
 function getFieldLabel(fieldName: string): string {

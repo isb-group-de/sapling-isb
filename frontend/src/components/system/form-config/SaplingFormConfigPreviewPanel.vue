@@ -27,6 +27,7 @@
     </div>
 
     <SaplingSurface
+      ref="previewSurfaceRef"
       class="sapling-panel-shell sapling-stack-lg sapling-config-preview sapling-form-config-preview"
       aria-live="polite"
     >
@@ -54,38 +55,138 @@
       </nav>
 
       <div v-if="previewModeModel === 'form'" class="sapling-form-config-preview__stage">
-        <section
-          v-for="group in previewGroups"
-          :key="group.id"
-          class="sapling-panel-shell sapling-config-preview__group sapling-form-config-preview__group"
-        >
-          <header class="sapling-form-config-preview__group-header">
-            <div class="sapling-form-config-preview__group-title">
-              <v-icon icon="mdi-folder-outline" size="small" />
-              <div>
-                <h3>{{ group.label }}</h3>
-                <span v-if="group.key">{{ group.key }}</span>
+        <div class="sapling-form-config-preview__drag-hint">
+          <v-icon icon="mdi-drag-variant" size="small" />
+          <span>
+            {{
+              formConfigText(
+                'dragPreviewHint',
+                'Felder und Gruppen direkt in der Vorschau verschieben',
+              )
+            }}
+          </span>
+        </div>
+
+        <template v-for="group in previewGroups" :key="group.id">
+          <div
+            v-if="shouldShowGroupDropBefore(group.key)"
+            class="sapling-form-config-preview__group-drop-preview"
+            role="status"
+            @dragover.prevent="onDropPreviewDragOver"
+            @drop.prevent="dropOnGroup(group.key)"
+          >
+            <v-icon icon="mdi-tray-arrow-down" size="small" />
+            <span>{{ formConfigText('dropGroupHere', 'Gruppe hier ablegen') }}</span>
+          </div>
+
+          <section
+            class="sapling-panel-shell sapling-config-preview__group sapling-form-config-preview__group"
+            :class="{
+              'sapling-form-config-preview__group--drag-source': draggedGroupKey === group.key,
+              'sapling-form-config-preview__group--layout-hidden':
+                dragLayoutActive && draggedGroupKey === group.key,
+              'sapling-form-config-preview__group--field-target':
+                draggedFieldName && fieldDropTarget?.groupKey === normalizeGroupKey(group.key),
+            }"
+            :data-preview-group="normalizeGroupKey(group.key)"
+            @dragover.prevent="onGroupDragOver($event, group.key)"
+            @drop.prevent="dropOnGroup(group.key)"
+          >
+            <header class="sapling-form-config-preview__group-header">
+              <div class="sapling-form-config-preview__group-title">
+                <v-btn
+                  v-if="group.key"
+                  class="sapling-form-config-preview__drag-handle"
+                  icon="mdi-drag-vertical"
+                  variant="text"
+                  size="x-small"
+                  draggable="true"
+                  :title="formConfigText('dragGroup', 'Gruppe verschieben')"
+                  :aria-label="formConfigText('dragGroup', 'Gruppe verschieben')"
+                  @dragstart.stop="startGroupDrag($event, group.key)"
+                  @dragend="endDrag"
+                />
+                <v-icon v-else icon="mdi-folder-outline" size="small" />
+                <div>
+                  <h3>{{ group.label }}</h3>
+                  <span v-if="group.key">{{ group.key }}</span>
+                </div>
+              </div>
+              <v-chip size="x-small" variant="tonal">
+                {{ group.templates.length }}
+              </v-chip>
+            </header>
+            <div
+              class="sapling-config-preview__grid sapling-form-config-preview__grid"
+              @dragover.prevent.stop="onFieldGridDragOver($event, group.key)"
+              @drop.prevent.stop="dropField"
+            >
+              <template v-for="(field, fieldIndex) in group.templates" :key="field.name">
+                <div
+                  v-if="shouldShowFieldDropBefore(group.key, field.name)"
+                  class="sapling-form-config-preview__field-drop-preview"
+                  :class="`sapling-config-preview__field--w${draggedFieldWidth}`"
+                  role="status"
+                  @dragover.prevent.stop="onDropPreviewDragOver"
+                  @drop.prevent.stop="dropField"
+                >
+                  <v-icon icon="mdi-tray-arrow-down" size="small" />
+                  <span>{{ formConfigText('dropFieldHere', 'Feld hier ablegen') }}</span>
+                </div>
+
+                <SaplingSurface
+                  class="sapling-panel-shell sapling-config-preview__field sapling-form-config-preview__field"
+                  :class="[
+                    `sapling-config-preview__field--w${getPreviewWidth(field)}`,
+                    {
+                      'sapling-form-config-preview__field--drag-source':
+                        draggedFieldName === field.name,
+                      'sapling-form-config-preview__field--layout-hidden':
+                        dragLayoutActive && draggedFieldName === field.name,
+                    },
+                  ]"
+                  :data-preview-field="field.name"
+                  draggable="true"
+                  :title="formConfigText('dragField', 'Feld verschieben')"
+                  @dragstart.stop="startFieldDrag($event, field)"
+                  @dragend="endDrag"
+                  @dragover.prevent.stop="onFieldDragOver($event, group, fieldIndex)"
+                  @drop.prevent.stop="dropField"
+                >
+                  <strong>
+                    <v-icon icon="mdi-drag" size="x-small" />
+                    {{ getPreviewFieldLabel(field) }}
+                    <span>({{ getPreviewTypeLabel(field) }})</span>
+                  </strong>
+                  <small>{{ field.name }} · {{ getPreviewMeta(field) }}</small>
+                </SaplingSurface>
+              </template>
+
+              <div
+                v-if="shouldShowFieldDropAtEnd(group.key)"
+                class="sapling-form-config-preview__field-drop-preview"
+                :class="`sapling-config-preview__field--w${draggedFieldWidth}`"
+                role="status"
+                @dragover.prevent.stop="onDropPreviewDragOver"
+                @drop.prevent.stop="dropField"
+              >
+                <v-icon icon="mdi-tray-arrow-down" size="small" />
+                <span>{{ formConfigText('dropFieldHere', 'Feld hier ablegen') }}</span>
               </div>
             </div>
-            <v-chip size="x-small" variant="tonal">
-              {{ group.templates.length }}
-            </v-chip>
-          </header>
-          <div class="sapling-config-preview__grid sapling-form-config-preview__grid">
-            <SaplingSurface
-              v-for="field in group.templates"
-              :key="field.name"
-              class="sapling-panel-shell sapling-config-preview__field sapling-form-config-preview__field"
-              :class="`sapling-config-preview__field--w${getPreviewWidth(field)}`"
-            >
-              <strong>
-                {{ getPreviewFieldLabel(field) }}
-                <span>({{ getPreviewTypeLabel(field) }})</span>
-              </strong>
-              <small>{{ field.name }} · {{ getPreviewMeta(field) }}</small>
-            </SaplingSurface>
-          </div>
-        </section>
+          </section>
+        </template>
+
+        <div
+          v-if="shouldShowGroupDropAtEnd"
+          class="sapling-form-config-preview__group-drop-preview"
+          role="status"
+          @dragover.prevent="onDropPreviewDragOver"
+          @drop.prevent="dropOnGroup(null)"
+        >
+          <v-icon icon="mdi-tray-arrow-down" size="small" />
+          <span>{{ formConfigText('dropGroupHere', 'Gruppe hier ablegen') }}</span>
+        </div>
         <div v-if="previewGroups.length === 0" class="sapling-form-config-preview__empty">
           <v-icon icon="mdi-eye-off-outline" />
           <span>{{ t('formConfig.noPreviewFields') }}</span>
@@ -156,6 +257,7 @@ import {
   sortDialogTemplates,
 } from '@/utils/saplingDialogLayoutUtil'
 import { getMobileTableHeaders, sortTableHeaders } from '@/utils/saplingTableUtil'
+import { useSaplingFormConfigPreviewDrag } from '@/composables/system/useSaplingFormConfigPreviewDrag'
 
 type PreviewMode = 'form' | 'table' | 'mobile'
 
@@ -172,6 +274,13 @@ const props = defineProps<{
 const emit = defineEmits<{
   (event: 'update:previewMode', value: PreviewMode): void
   (event: 'reload'): void
+  (
+    event: 'moveField',
+    fieldName: string,
+    targetGroupKey: string,
+    beforeFieldName: string | null,
+  ): void
+  (event: 'reorderGroup', sourceKey: string, targetKey: string, placement: 'before' | 'after'): void
 }>()
 
 const { t, te } = useI18n()
@@ -206,6 +315,37 @@ const previewGroups = computed(() =>
     }),
   ),
 )
+
+const {
+  draggedFieldName,
+  draggedFieldWidth,
+  draggedGroupKey,
+  dragLayoutActive,
+  dropField,
+  dropOnGroup,
+  endDrag,
+  fieldDropTarget,
+  normalizeGroupKey,
+  onFieldDragOver,
+  onFieldGridDragOver,
+  onGroupDragOver,
+  onDropPreviewDragOver,
+  previewSurfaceRef,
+  shouldShowFieldDropAtEnd,
+  shouldShowFieldDropBefore,
+  shouldShowGroupDropAtEnd,
+  shouldShowGroupDropBefore,
+  startFieldDrag,
+  startGroupDrag,
+} = useSaplingFormConfigPreviewDrag({
+  draftTemplates: () => props.draftTemplates,
+  previewGroups,
+  getPreviewWidth,
+  moveField: (fieldName, targetGroupKey, beforeFieldName) =>
+    emit('moveField', fieldName, targetGroupKey, beforeFieldName),
+  reorderGroup: (sourceKey, targetKey, placement) =>
+    emit('reorderGroup', sourceKey, targetKey, placement),
+})
 
 const previewTableTemplates = computed(() =>
   sortTableHeaders(

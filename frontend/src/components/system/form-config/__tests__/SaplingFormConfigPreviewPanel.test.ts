@@ -37,7 +37,28 @@ const templates = [
     mobileOrder: 100,
     isRequired: true,
   },
+  {
+    key: 'description',
+    name: 'description',
+    type: 'string',
+    formGroup: 'company.groupDetails',
+    formGroupOrder: 200,
+    formOrder: 100,
+    formWidth: 4,
+    formVisible: true,
+    tableVisible: false,
+    mobileVisible: false,
+  },
 ] satisfies EntityTemplate[]
+
+function createDataTransfer() {
+  return {
+    effectAllowed: 'none',
+    dropEffect: 'none',
+    setData: vi.fn(),
+    setDragImage: vi.fn(),
+  }
+}
 
 function mountPreview(previewMode: 'form' | 'table' | 'mobile') {
   return mount(SaplingFormConfigPreviewPanel, {
@@ -84,6 +105,51 @@ describe('SaplingFormConfigPreviewPanel', () => {
     expect(wrapper.text()).toContain('company.groupBasics')
     expect(wrapper.text()).toContain('Name (Short Text)')
     expect(wrapper.text()).toContain('name · Required')
+  })
+
+  it('shows an exact field drop preview and emits the target group', async () => {
+    const wrapper = mountPreview('form')
+    const dataTransfer = createDataTransfer()
+    const field = wrapper.get('[data-preview-field="name"]')
+    const targetGrid = wrapper
+      .get('[data-preview-group="company.groupDetails"]')
+      .get('.sapling-form-config-preview__grid')
+
+    await field.trigger('dragstart', { dataTransfer })
+    await new Promise<void>((resolve) => window.requestAnimationFrame(() => resolve()))
+    await wrapper.vm.$nextTick()
+    expect(field.classes()).toContain('sapling-form-config-preview__field--layout-hidden')
+
+    const previewScroller = wrapper.get('.sapling-form-config-preview').element as HTMLElement
+    window.dispatchEvent(new WheelEvent('wheel', { cancelable: true, deltaY: 80 }))
+    expect(previewScroller.scrollTop).toBe(80)
+
+    await targetGrid.trigger('dragover', { dataTransfer })
+
+    const dropPreview = wrapper.get('.sapling-form-config-preview__field-drop-preview')
+    await dropPreview.trigger('dragover', { dataTransfer })
+
+    await dropPreview.trigger('drop', { dataTransfer })
+    expect(wrapper.emitted('moveField')).toEqual([['name', 'company.groupDetails', null]])
+  })
+
+  it('previews and emits group insertion positions', async () => {
+    const wrapper = mountPreview('form')
+    const dataTransfer = createDataTransfer()
+    const sourceGroup = wrapper.get('[data-preview-group="company.groupBasics"]')
+    const targetGroup = wrapper.get('[data-preview-group="company.groupDetails"]')
+
+    await sourceGroup.get('.sapling-form-config-preview__drag-handle').trigger('dragstart', {
+      dataTransfer,
+    })
+    await targetGroup.trigger('dragover', { dataTransfer, clientY: -1 })
+
+    expect(wrapper.find('.sapling-form-config-preview__group-drop-preview').exists()).toBe(true)
+
+    await targetGroup.trigger('drop', { dataTransfer })
+    expect(wrapper.emitted('reorderGroup')).toEqual([
+      ['company.groupBasics', 'company.groupDetails', 'before'],
+    ])
   })
 
   it('shows field structure without sample values in table and mobile modes', () => {
