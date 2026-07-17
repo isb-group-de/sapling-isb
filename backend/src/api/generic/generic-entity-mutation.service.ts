@@ -34,6 +34,15 @@ type GenericMutationPayload = {
   [key: string]: any;
 };
 
+export type GenericPostCommitTask = {
+  label: string;
+  operation: () => Promise<void>;
+};
+
+export type GenericMutationLifecycleOptions = {
+  postCommitTasks?: GenericPostCommitTask[];
+};
+
 /** Executes complete create, update, and delete entity lifecycles. */
 @Injectable()
 export class GenericEntityMutationService {
@@ -199,6 +208,7 @@ export class GenericEntityMutationService {
     relations: string[],
     scriptContext: ScriptServerContext,
     concurrencyOptions: GenericUpdateConcurrencyOptions,
+    lifecycleOptions: GenericMutationLifecycleOptions = {},
   ): Promise<object> {
     const updatePayload =
       this.genericUpdateConflictService.extractConcurrencyMetadata(
@@ -364,7 +374,7 @@ export class GenericEntityMutationService {
       inlineCollections,
       currentUser,
     );
-    this.scheduleBackgroundTask('changeLog', () =>
+    this.queueBackgroundTask(lifecycleOptions, 'changeLog', () =>
       this.genericChangeLogService.safeStoreChangeLog(
         'update',
         entity,
@@ -373,7 +383,7 @@ export class GenericEntityMutationService {
         submittedSnapshot,
       ),
     );
-    this.scheduleBackgroundTask('openTaskCountChanges', () =>
+    this.queueBackgroundTask(lifecycleOptions, 'openTaskCountChanges', () =>
       this.genericOpenTaskEventsService.emitCountChangesForHandle(
         entityHandle,
         handle,
@@ -392,7 +402,7 @@ export class GenericEntityMutationService {
         template,
         submittedSnapshot,
       );
-    this.scheduleBackgroundTask('emailAutomation', () =>
+    this.queueBackgroundTask(lifecycleOptions, 'emailAutomation', () =>
       this.emailAutomationService.handleAfterUpdate(
         entityHandle,
         handle,
@@ -604,5 +614,24 @@ export class GenericEntityMutationService {
         global.log?.error?.(`${label}:`, error);
       });
     });
+  }
+
+  schedulePostCommitTasks(tasks: GenericPostCommitTask[]): void {
+    for (const task of tasks) {
+      this.scheduleBackgroundTask(task.label, task.operation);
+    }
+  }
+
+  private queueBackgroundTask(
+    lifecycleOptions: GenericMutationLifecycleOptions,
+    label: string,
+    operation: () => Promise<void>,
+  ): void {
+    if (lifecycleOptions.postCommitTasks) {
+      lifecycleOptions.postCommitTasks.push({ label, operation });
+      return;
+    }
+
+    this.scheduleBackgroundTask(label, operation);
   }
 }

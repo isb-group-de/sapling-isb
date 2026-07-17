@@ -41,6 +41,11 @@ import type {
   GenericImportRowResult,
 } from './generic-import.util';
 import { FieldPermissionService } from '../current/field-permission.service';
+import { GenericBulkMutationService } from './generic-bulk-mutation.service';
+import type {
+  GenericBulkUpdateDto,
+  GenericBulkUpdateResponseDto,
+} from './dto/bulk-update.dto';
 export type { GenericImportResponse } from './generic-import.util';
 export type { GenericUpdateConcurrencyOptions } from './generic-update-conflict.service';
 
@@ -177,6 +182,10 @@ export class GenericService {
         Promise.resolve(this.templateService.getEntityTemplate(entityHandle)),
       assertPayloadAccess: () => Promise.resolve(),
     } as unknown as FieldPermissionService,
+    private readonly genericBulkMutationService: GenericBulkMutationService = new GenericBulkMutationService(
+      em,
+      genericEntityMutationService,
+    ),
   ) {}
   // #endregion
 
@@ -414,6 +423,20 @@ export class GenericService {
       relations,
       scriptContext,
       concurrencyOptions,
+    );
+  }
+
+  async bulkUpdate(
+    entityHandle: string,
+    request: GenericBulkUpdateDto,
+    currentUser: PersonItem,
+    scriptContext: ScriptServerContext = {},
+  ): Promise<GenericBulkUpdateResponseDto> {
+    return this.genericBulkMutationService.updateMany(
+      entityHandle,
+      request,
+      currentUser,
+      scriptContext,
     );
   }
 

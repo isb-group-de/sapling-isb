@@ -3,6 +3,8 @@
     :label="label"
     :model-value="modelValue"
     :disabled="disabled"
+    density="compact"
+    hide-details
     @update:model-value="(val) => emit('update:modelValue', val)"
   />
 </template>

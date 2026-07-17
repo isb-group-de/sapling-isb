@@ -265,6 +265,32 @@ with `isValue`, but this is stored in the decorator and not inferred in the
 frontend. Hiding a field from the desktop table does not automatically hide a
 mobile-visible field.
 
+### Selection Bulk Update
+
+When at least one row is selected and update access is effective, the selection
+action menu exposes **Change data**. The bulk-update dialog uses the complete
+template catalog, independent of current form or table visibility, and filters
+it to persistent writable scalar, custom-field, and readable many-to-one
+reference values. Primary keys, auto-increment, read-only, system, security,
+non-persistent, collection, inline-collection, one-to-one, and generic-reference
+templates are excluded. Unique fields are always excluded because a shared
+value would violate their uniqueness contract as soon as multiple records are
+targeted.
+
+Each draft field explicitly chooses **Set value** or **Clear value**. Clear is
+available only for nullable/non-required fields and serializes to `null`;
+`false`, `0`, and empty multi-select values remain valid set values. Dependent
+references use the parent value from another field in the same draft for their
+existing reference filter. The parent must be set before a dependent reference
+can be set, while clearing the dependent reference needs no parent value.
+
+`SaplingTemplateValueField.vue` is the neutral value-editor adapter shared by
+bulk update and import strategies. It delegates rendering to
+`SaplingDialogEditFieldRenderer`, resolves reference display values, and owns
+boolean/date/time/API normalization plus the formatted value used in summaries.
+After a successful bulk request the dialog closes, selection clears, and the
+table reloads. An error retains both dialog draft and selection.
+
 The Form Configuration administration groups form fields into draggable group
 containers. Group order and visibility are persisted centrally in
 `config.groups`; moving a field updates only its group membership and form

@@ -1,0 +1,104 @@
+[
+  {
+    "entity": "global",
+    "property": "bulkUpdateAction",
+    "de": "Daten ändern",
+    "en": "Change data"
+  },
+  {
+    "entity": "global",
+    "property": "bulkUpdateTitle",
+    "de": "Daten für Auswahl ändern",
+    "en": "Change data for selection"
+  },
+  {
+    "entity": "global",
+    "property": "addField",
+    "de": "Feld hinzufügen",
+    "en": "Add field"
+  },
+  {
+    "entity": "global",
+    "property": "removeField",
+    "de": "Feld entfernen",
+    "en": "Remove field"
+  },
+  {
+    "entity": "global",
+    "property": "setValue",
+    "de": "Wert setzen",
+    "en": "Set value"
+  },
+  {
+    "entity": "global",
+    "property": "clearValue",
+    "de": "Wert leeren",
+    "en": "Clear value"
+  },
+  {
+    "entity": "global",
+    "property": "applyChanges",
+    "de": "Änderungen anwenden",
+    "en": "Apply changes"
+  },
+  {
+    "entity": "global",
+    "property": "bulkUpdateEmptyHint",
+    "de": "Fügen Sie mindestens ein Feld hinzu, das für alle ausgewählten Datensätze geändert werden soll.",
+    "en": "Add at least one field to change for all selected records."
+  },
+  {
+    "entity": "global",
+    "property": "bulkUpdateSummary",
+    "de": "Zusammenfassung der Änderungen",
+    "en": "Change summary"
+  },
+  {
+    "entity": "global",
+    "property": "bulkUpdateUniqueHint",
+    "de": "Eindeutige Felder können nur für einen einzelnen Datensatz geändert werden.",
+    "en": "Unique fields can only be changed for a single record."
+  },
+  {
+    "entity": "global",
+    "property": "bulkUpdateDependencyHint",
+    "de": "Wählen Sie zuerst das übergeordnete Feld „{field}“ in dieser Massenänderung aus.",
+    "en": "Select the parent field “{field}” in this bulk change first."
+  },
+  {
+    "entity": "global",
+    "property": "bulkUpdateSuccess",
+    "de": "Daten geändert",
+    "en": "Data changed"
+  },
+  {
+    "entity": "global",
+    "property": "bulkUpdateSuccessDescription",
+    "de": "{count} Datensätze wurden erfolgreich aktualisiert.",
+    "en": "{count} records were updated successfully."
+  },
+  {
+    "entity": "global",
+    "property": "bulkUpdateChangesRequired",
+    "de": "Es muss mindestens ein Feld geändert werden.",
+    "en": "At least one field must be changed."
+  },
+  {
+    "entity": "global",
+    "property": "bulkUpdateDuplicateTargets",
+    "de": "Die Auswahl enthält doppelte Datensätze.",
+    "en": "The selection contains duplicate records."
+  },
+  {
+    "entity": "global",
+    "property": "fields",
+    "de": "Felder",
+    "en": "Fields"
+  },
+  {
+    "entity": "global",
+    "property": "reference",
+    "de": "Referenz",
+    "en": "Reference"
+  }
+]

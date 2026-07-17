@@ -57,7 +57,7 @@
         </template>
       </v-select>
 
-      <SaplingImportTemplateValueField
+      <SaplingTemplateValueField
         :model-value="fieldDefaults[field.name]"
         :template="field"
         :entity-handle="selectedEntityHandle ?? ''"
@@ -137,7 +137,7 @@
 
 <script lang="ts" setup>
 import { useI18n } from 'vue-i18n'
-import SaplingImportTemplateValueField from '@/components/import/SaplingImportTemplateValueField.vue'
+import SaplingTemplateValueField from '@/components/dialog/SaplingTemplateValueField.vue'
 import type {
   ImportRelationMappingMode,
   ImportUniqueConflictStrategyMode,

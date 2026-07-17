@@ -26,6 +26,7 @@ import { GenericInlineCollectionService } from './generic-inline-collection.serv
 import { GenericRelationMutationService } from './generic-relation-mutation.service';
 import { GenericEntityMutationService } from './generic-entity-mutation.service';
 import { GenericUpdateConflictService } from './generic-update-conflict.service';
+import { GenericBulkMutationService } from './generic-bulk-mutation.service';
 import { TemplateModule } from '../template/template.module';
 import { ScriptModule } from '../script/script.module';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
@@ -88,6 +89,7 @@ import { MailModule } from '../mail/mail.module';
     GenericRelationMutationService,
     GenericEntityMutationService,
     GenericUpdateConflictService,
+    GenericBulkMutationService,
   ],
   exports: [
     GenericService,

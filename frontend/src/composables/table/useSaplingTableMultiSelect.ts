@@ -2,6 +2,7 @@ import { computed } from 'vue'
 import type { EntityItem, SaplingGenericItem, ScriptButtonItem } from '@/entity/entity'
 import type { AccumulatedPermission, EntityTemplate } from '@/entity/structure'
 import { buildBulkMailActions, type SaplingBulkMailAction } from '@/utils/saplingMailMenuUtil'
+import { isBulkUpdateTemplateEligible } from '@/utils/saplingBulkUpdateUtil'
 
 export interface UseSaplingTableMultiSelectProps {
   multiSelect: boolean
@@ -21,6 +22,7 @@ export type UseSaplingTableMultiSelectEmit = {
   (event: 'runScriptButton', value: ScriptButtonItem): void
   (event: 'selectAll'): void
   (event: 'mailToSelected', value: SaplingBulkMailAction): void
+  (event: 'bulkUpdateSelected'): void
 }
 
 /**
@@ -46,6 +48,14 @@ export function useSaplingTableMultiSelect(
       props.entity?.canDelete &&
       props.entityPermission?.allowDelete,
   )
+  const canBulkUpdateSelection = computed(
+    () =>
+      canClearSelection.value &&
+      props.showActions &&
+      props.entity?.canUpdate &&
+      props.entityPermission?.allowUpdate &&
+      props.entityTemplates?.some((template) => isBulkUpdateTemplateEligible(template)),
+  )
   const bulkMailActions = computed<SaplingBulkMailAction[]>(() =>
     canClearSelection.value ? buildBulkMailActions(props.entityTemplates, props.selectedItems) : [],
   )
@@ -57,6 +67,7 @@ export function useSaplingTableMultiSelect(
       canSelectAll.value ||
       canRunScriptButtons.value ||
       canDeleteSelection.value ||
+      canBulkUpdateSelection.value ||
       canMailSelection.value,
   )
   // #endregion
@@ -85,6 +96,10 @@ export function useSaplingTableMultiSelect(
   function mailToSelected(action: SaplingBulkMailAction) {
     emit('mailToSelected', action)
   }
+
+  function bulkUpdateSelected() {
+    emit('bulkUpdateSelected')
+  }
   // #endregion
 
   // #region Return
@@ -96,6 +111,7 @@ export function useSaplingTableMultiSelect(
     canSelectAll,
     canRunScriptButtons,
     canDeleteSelection,
+    canBulkUpdateSelection,
     canMailSelection,
     bulkMailActions,
     scriptButtons,
@@ -105,6 +121,7 @@ export function useSaplingTableMultiSelect(
     runScriptButton,
     selectAll,
     mailToSelected,
+    bulkUpdateSelected,
   }
   // #endregion
 }

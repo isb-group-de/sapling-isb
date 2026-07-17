@@ -40,6 +40,10 @@
             <v-icon start>mdi-delete</v-icon>
             <span>{{ $t('global.deleteSelected') }}</span>
           </v-list-item>
+          <v-list-item v-if="canBulkUpdateSelection" @click="bulkUpdateSelected">
+            <v-icon start>mdi-database-edit-outline</v-icon>
+            <span>{{ $t('global.bulkUpdateAction') }}</span>
+          </v-list-item>
           <template v-if="canMailSelection">
             <v-list-item
               v-for="mailAction in bulkMailActions"
@@ -90,6 +94,7 @@ const {
   canSelectAll,
   canRunScriptButtons,
   canDeleteSelection,
+  canBulkUpdateSelection,
   canMailSelection,
   bulkMailActions,
   scriptButtons,
@@ -99,6 +104,7 @@ const {
   runScriptButton,
   selectAll,
   mailToSelected,
+  bulkUpdateSelected,
 } = useSaplingTableMultiSelect(props, emit)
 
 function resolveScriptButtonTitle(title: string) {

@@ -47,7 +47,7 @@
                   <tr v-for="sourceValue in sourceValues" :key="sourceValue">
                     <td>{{ sourceValue }}</td>
                     <td>
-                      <SaplingImportTemplateValueField
+                      <SaplingTemplateValueField
                         :model-value="valueMapping.values[sourceValue]"
                         :template="field"
                         :entity-handle="selectedEntityHandle ?? ''"
@@ -91,7 +91,7 @@
 <script lang="ts" setup>
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import SaplingImportTemplateValueField from '@/components/import/SaplingImportTemplateValueField.vue'
+import SaplingTemplateValueField from '@/components/dialog/SaplingTemplateValueField.vue'
 import SaplingActionBar from '@/components/actions/SaplingActionBar.vue'
 import SaplingDialogHero from '@/components/common/SaplingDialogHero.vue'
 import SaplingDialogShell from '@/components/common/SaplingDialogShell.vue'

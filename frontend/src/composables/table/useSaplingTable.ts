@@ -106,6 +106,14 @@ export function useSaplingTable(
         entityTemplates.value,
         currentPermissionStore.accumulatedPermission ?? [],
       ),
+      ...entityTemplates.value
+        .filter(
+          (template) =>
+            template.name === 'updatedAt' &&
+            template.isPersistent !== false &&
+            template.fieldAccess?.allowRead !== false,
+        )
+        .map((template) => template.name),
       ...additionalListProjectionFields.filter((fieldName) =>
         entityTemplates.value.some(
           (template) => template.name === fieldName && template.fieldAccess?.allowRead !== false,

@@ -128,6 +128,27 @@ describe('GenericController', () => {
     );
   });
 
+  it('bulk updates selected entity entries', async () => {
+    const expected = { updatedCount: 2, handles: ['3', '4'] };
+    const genericService = { bulkUpdate: jest.fn(async () => expected) };
+    const controller = new GenericController(genericService as never);
+    const req = { user: createMockUser() };
+    const payload = {
+      targets: [{ handle: '3' }, { handle: '4' }],
+      changes: { isActive: false },
+    };
+
+    await expect(
+      controller.bulkUpdate(req as never, 'company', payload),
+    ).resolves.toBe(expected);
+    expect(asMock(genericService.bulkUpdate)).toHaveBeenCalledWith(
+      'company',
+      payload,
+      req.user,
+      {},
+    );
+  });
+
   it('deletes an entity entry', async () => {
     const genericService = { delete: jest.fn(async () => undefined) };
     const controller = new GenericController(genericService as never);

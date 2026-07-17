@@ -40,6 +40,10 @@ import { PersonItem } from '../../entity/PersonItem';
 import type { Request, Response } from 'express';
 import { SessionOrBearerAuthGuard } from '../../auth/guard/session-or-token-auth.guard';
 import { extractClientFormattingContextFromRequest } from '../common/client-formatting-context.util';
+import {
+  GenericBulkUpdateDto,
+  GenericBulkUpdateResponseDto,
+} from './dto/bulk-update.dto';
 
 /**
  * @class
@@ -346,6 +350,33 @@ export class GenericController {
   // #endregion
 
   // #region Update
+  @UseGuards(GenericPermissionGuard)
+  @Patch(':entityHandle/bulk')
+  @GenericPermission('allowUpdate')
+  @ApiOperation({
+    summary: 'Bulk update entity entries',
+    description:
+      'Applies one shared change set to up to 200 entity entries in one database transaction.',
+  })
+  @ApiBody({ type: GenericBulkUpdateDto })
+  @ApiResponse({
+    status: 200,
+    description: 'All selected records were updated successfully.',
+    type: GenericBulkUpdateResponseDto,
+  })
+  async bulkUpdate(
+    @Req() req: Request & { user: PersonItem },
+    @Param('entityHandle') entityHandle: string,
+    @Body() request: GenericBulkUpdateDto,
+  ): Promise<GenericBulkUpdateResponseDto> {
+    return this.genericService.bulkUpdate(
+      entityHandle,
+      request,
+      req.user,
+      extractClientFormattingContextFromRequest(req),
+    );
+  }
+
   /**
    * Updates an entry by its handle.
    * @param {Request & { user: PersonItem }} req Express request object with authenticated user

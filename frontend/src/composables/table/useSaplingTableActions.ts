@@ -29,6 +29,7 @@ import { useSaplingTableDeleteActions } from '@/composables/table/useSaplingTabl
 import { useSaplingTableScripts } from '@/composables/table/useSaplingTableScripts'
 import { useSaplingTableContextActions } from '@/composables/table/useSaplingTableContextActions'
 import { getDialogRecordRelations } from '@/composables/dialog/saplingDialogRecordLoader'
+import { useSaplingTableBulkUpdate } from '@/composables/table/useSaplingTableBulkUpdate'
 
 export interface UpdateConflictDialogState {
   visible: boolean
@@ -126,6 +127,13 @@ export function useSaplingTableActions({
     clearSelection,
     reload: () => emit('reload'),
   })
+  const { bulkUpdateDialog, openBulkUpdateDialog, closeBulkUpdateDialog, applyBulkUpdate } =
+    useSaplingTableBulkUpdate({
+      entityHandle: () => props.entityHandle,
+      selectedItems,
+      clearSelection,
+      reload: () => emit('reload'),
+    })
   const {
     scriptButtons,
     multiSelectScriptButtons,
@@ -415,6 +423,7 @@ export function useSaplingTableActions({
     editDialog,
     deleteDialog,
     bulkDeleteDialog,
+    bulkUpdateDialog,
     updateConflictDialog,
     showUploadDialog,
     uploadDialogItem,
@@ -469,6 +478,9 @@ export function useSaplingTableActions({
     deleteAllSelected,
     confirmBulkDelete,
     closeBulkDeleteDialog,
+    openBulkUpdateDialog,
+    closeBulkUpdateDialog,
+    applyBulkUpdate,
     runSelectionScriptButton,
     runRowScriptButton,
   }

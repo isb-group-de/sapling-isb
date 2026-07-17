@@ -1,5 +1,5 @@
 <template>
-  <div class="sapling-import-template-value-field">
+  <div class="sapling-template-value-field">
     <SaplingDialogEditFieldRenderer
       :template="template"
       :entity-handle="entityHandle"
@@ -9,9 +9,10 @@
       :permissions="permissions"
       :icon-names="iconNames"
       :is-reference-visible="true"
-      :rules="[]"
+      :rules="rules"
       :field-disabled="disabled"
-      :reference-field-disabled="disabled"
+      :reference-field-disabled="disabled || referenceDisabled"
+      :reference-parent-filter="referenceParentFilter"
       :show-label="showLabel"
       @update-field="updateField"
     />
@@ -20,11 +21,14 @@
 
 <script lang="ts" setup>
 import { onMounted, reactive, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import type { AccumulatedPermission, EntityTemplate } from '@/entity/structure'
 import type { SaplingGenericItem } from '@/entity/entity'
+import type { FilterQuery } from '@/services/api.generic.service'
 import ApiGenericService from '@/services/api.generic.service'
 import SaplingDialogEditFieldRenderer from '@/components/dialog/SaplingDialogEditFieldRenderer.vue'
 import { getLocalDateTimeParts, toUtcIsoString } from '@/composables/dialog/saplingDialogEdit.utils'
+import { useGenericStore } from '@/stores/genericStore'
 
 const props = withDefaults(
   defineProps<{
@@ -34,19 +38,27 @@ const props = withDefaults(
     visibleTemplates: EntityTemplate[]
     permissions: AccumulatedPermission[] | null
     referenceItems?: Record<string, SaplingGenericItem | null | undefined>
+    referenceParentFilter?: FilterQuery
+    rules?: Array<(value: unknown) => true | string>
     disabled?: boolean
+    referenceDisabled?: boolean
     showLabel?: boolean
   }>(),
   {
+    rules: () => [],
     disabled: false,
+    referenceDisabled: false,
     showLabel: false,
   },
 )
 
 const emit = defineEmits<{
   (event: 'update:modelValue', value: unknown): void
+  (event: 'update:displayValue', value: string): void
 }>()
 
+const { t, locale } = useI18n()
+const genericStore = useGenericStore()
 const formValues = reactive<SaplingGenericItem>({})
 const iconNames = ref<Array<{ name: string; unicode?: string }>>([])
 const REFERENCE_BATCH_DELAY_MS = 20
@@ -84,15 +96,20 @@ async function syncFormValue(value: unknown): Promise<void> {
   try {
     if (isDateTimeTemplate(props.template)) {
       syncDateTimeValue(value)
+      emitDisplayValue(value)
       return
     }
 
     if (props.template.isReference && props.template.referenceName) {
-      formValues[props.template.name] = await resolveReferenceValue(value)
+      const resolvedValue = await resolveReferenceValue(value)
+      formValues[props.template.name] = resolvedValue
+      emitDisplayValue(resolvedValue ?? value)
       return
     }
 
-    formValues[props.template.name] = normalizeInputValue(value)
+    const normalizedValue = normalizeInputValue(value)
+    formValues[props.template.name] = normalizedValue
+    emitDisplayValue(normalizedValue)
   } finally {
     isSyncingFromModel = false
   }
@@ -261,6 +278,7 @@ function updateField(key: string, value: unknown): void {
   }
 
   emit('update:modelValue', normalizeOutputValue(value))
+  emitDisplayValue(value)
 }
 
 function emitDateTimeValue(): void {
@@ -269,10 +287,13 @@ function emitDateTimeValue(): void {
 
   if (!dateValue) {
     emit('update:modelValue', null)
+    emitDisplayValue(null)
     return
   }
 
-  emit('update:modelValue', toUtcIsoString(String(dateValue), String(timeValue || '00:00')))
+  const value = toUtcIsoString(String(dateValue), String(timeValue || '00:00'))
+  emit('update:modelValue', value)
+  emitDisplayValue(value)
 }
 
 function normalizeOutputValue(value: unknown): unknown {
@@ -281,6 +302,67 @@ function normalizeOutputValue(value: unknown): unknown {
   }
 
   return value
+}
+
+function emitDisplayValue(value: unknown): void {
+  emit('update:displayValue', formatDisplayValue(value))
+}
+
+function formatDisplayValue(value: unknown): string {
+  if (value === null || value === undefined || value === '') {
+    return ''
+  }
+
+  if (typeof value === 'boolean') {
+    return t(value ? 'global.yes' : 'global.no')
+  }
+
+  if (props.template.isReference && typeof value === 'object' && !Array.isArray(value)) {
+    return formatReferenceDisplayValue(value as SaplingGenericItem)
+  }
+
+  const customOptions = props.template.customField?.options ?? []
+  if (Array.isArray(value)) {
+    return value
+      .map(
+        (entry) => customOptions.find((option) => option.value === entry)?.label ?? String(entry),
+      )
+      .join(', ')
+  }
+
+  const customOption = customOptions.find((option) => option.value === value)
+  if (customOption) {
+    return customOption.label
+  }
+
+  if (isDateTimeTemplate(props.template) && typeof value === 'string') {
+    const date = new Date(value)
+    if (!Number.isNaN(date.getTime())) {
+      return new Intl.DateTimeFormat(locale.value, {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+      }).format(date)
+    }
+  }
+
+  if (typeof value === 'object') {
+    return JSON.stringify(value)
+  }
+
+  return String(value)
+}
+
+function formatReferenceDisplayValue(item: SaplingGenericItem): string {
+  const templates = props.template.referenceName
+    ? genericStore.getState(props.template.referenceName).entityTemplates
+    : []
+  const values = templates
+    .filter((template) => template.options?.includes('isValue'))
+    .map((template) => item[template.name])
+    .filter((value) => value !== null && value !== undefined && value !== '')
+    .map(String)
+
+  return values.length > 0 ? values.join(' · ') : String(item.handle ?? '')
 }
 
 function isDateTimeTemplate(template: EntityTemplate): boolean {

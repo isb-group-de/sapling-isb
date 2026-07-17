@@ -8,6 +8,17 @@
     @cancel="emit('close-delete')"
   />
 
+  <SaplingDialogBulkUpdate
+    :model-value="bulkUpdateDialog.visible"
+    :entity-handle="entityHandle"
+    :templates="entityTemplates"
+    :permissions="currentPermissions"
+    :selected-count="bulkUpdateDialog.items.length"
+    :saving="bulkUpdateDialog.isSaving"
+    @update:model-value="emit('update:bulk-update-visible', $event)"
+    @apply="emit('apply-bulk-update', $event)"
+  />
+
   <SaplingDialogDelete
     persistent
     :model-value="bulkDeleteDialog.visible"
@@ -89,6 +100,7 @@
 </template>
 
 <script lang="ts" setup>
+import { computed } from 'vue'
 import type {
   EditDialogOptions,
   DialogSaveAction,
@@ -98,6 +110,8 @@ import type {
 } from '@/entity/structure'
 import type { EntityItem, SaplingGenericItem, ScriptButtonItem } from '@/entity/entity'
 import type { UpdateConflictDialogState } from '@/composables/table/useSaplingTableActions'
+import type { BulkUpdateDialogState } from '@/composables/table/useSaplingTableBulkUpdate'
+import { useCurrentPermissionStore } from '@/stores/currentPermissionStore'
 import type {
   SaplingContextMenuTableActionPayload,
   SaplingMailMenuAction,
@@ -106,6 +120,7 @@ import SaplingContextMenuTable from '@/components/context/SaplingContextMenuTabl
 import SaplingDialogDelete from '@/components/dialog/SaplingDialogDelete.vue'
 import SaplingDialogEdit from '@/components/dialog/SaplingDialogEdit.vue'
 import SaplingDialogUpdateConflict from '@/components/dialog/SaplingDialogUpdateConflict.vue'
+import SaplingDialogBulkUpdate from '@/components/dialog/SaplingDialogBulkUpdate.vue'
 import SaplingExternalRecordLinksDialog from '@/components/import/SaplingExternalRecordLinksDialog.vue'
 import SaplingTableRowInformation from './SaplingTableRowInformation.vue'
 import SaplingTableRowUpload from './SaplingTableRowUpload.vue'
@@ -140,6 +155,7 @@ defineProps<{
   editDialog: EditDialogOptions
   deleteDialog: DeleteDialogState
   bulkDeleteDialog: BulkDeleteDialogState
+  bulkUpdateDialog: BulkUpdateDialogState
   updateConflictDialog: UpdateConflictDialogState
   contextMenu: TableContextMenuState
   showUploadDialog: boolean
@@ -158,6 +174,9 @@ const emit = defineEmits<{
   (event: 'update:bulk-delete-visible', value: boolean): void
   (event: 'confirm-bulk-delete'): void
   (event: 'close-bulk-delete'): void
+  (event: 'update:bulk-update-visible', value: boolean): void
+  (event: 'apply-bulk-update', value: Record<string, unknown>): void
+  (event: 'close-bulk-update'): void
   (event: 'update:edit-visible', value: boolean): void
   (
     event: 'save-dialog',
@@ -179,6 +198,9 @@ const emit = defineEmits<{
   (event: 'close-information'): void
   (event: 'close-external-record-links'): void
 }>()
+
+const currentPermissionStore = useCurrentPermissionStore()
+const currentPermissions = computed(() => currentPermissionStore.accumulatedPermission ?? [])
 
 function handleUpdateConflictVisibility(value: boolean): void {
   if (!value) {

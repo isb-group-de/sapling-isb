@@ -39,6 +39,7 @@
             @runScriptButton="runSelectionScriptButton"
             @selectAll="selectAllRows"
             @mailToSelected="onMailToSelected"
+            @bulkUpdateSelected="openBulkUpdateDialog"
           />
         </div>
 
@@ -231,6 +232,7 @@
       :edit-dialog="editDialog"
       :delete-dialog="deleteDialog"
       :bulk-delete-dialog="bulkDeleteDialog"
+      :bulk-update-dialog="bulkUpdateDialog"
       :update-conflict-dialog="updateConflictDialog"
       :context-menu="{ ...contextMenu, visible: showActions && contextMenu.visible }"
       :context-menu-mail-actions="contextMenuMailActions"
@@ -246,6 +248,9 @@
       @update:bulk-delete-visible="(value) => (bulkDeleteDialog.visible = value)"
       @confirm-bulk-delete="confirmBulkDelete"
       @close-bulk-delete="closeBulkDeleteDialog"
+      @update:bulk-update-visible="(value) => (bulkUpdateDialog.visible = value)"
+      @apply-bulk-update="applyBulkUpdate"
+      @close-bulk-update="closeBulkUpdateDialog"
       @update:edit-visible="(value) => (editDialog.visible = value)"
       @save-dialog="saveDialog"
       @close-dialog="closeDialog"
@@ -415,6 +420,7 @@ const {
   editDialog,
   deleteDialog,
   bulkDeleteDialog,
+  bulkUpdateDialog,
   updateConflictDialog,
   showUploadDialog,
   uploadDialogItem,
@@ -459,6 +465,9 @@ const {
   deleteAllSelected,
   confirmBulkDelete,
   closeBulkDeleteDialog,
+  openBulkUpdateDialog,
+  closeBulkUpdateDialog,
+  applyBulkUpdate,
   runSelectionScriptButton,
   runRowScriptButton,
   navigateToAddress,

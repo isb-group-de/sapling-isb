@@ -177,6 +177,57 @@ removes it before field-permission checks, change logging, scripts, and ORM
 assignment. A different handle remains an explicit field update and is checked
 normally.
 
+### Atomic Bulk Update
+
+```text
+PATCH /api/generic/:entityHandle/bulk
+```
+
+The endpoint applies the normal generic update lifecycle to 1 through 200
+unique targets inside one MikroORM transaction. Targets are processed in a
+deterministic handle order. Visibility filters, entity and field permissions,
+payload normalization, custom fields, reference dependencies, server scripts,
+optimistic concurrency checks, and change logs therefore behave like an
+individual PATCH. A failure rolls back every database change and the error
+response includes `failedHandle` and `updatedCount: 0`.
+
+```json
+{
+  "targets": [
+    {
+      "handle": "123",
+      "expectedUpdatedAt": "2026-07-17T08:00:00.000Z"
+    }
+  ],
+  "changes": {
+    "isActive": false,
+    "accountManager": 42,
+    "customFields.customerClass": "gold"
+  }
+}
+```
+
+`changes` must contain at least one field and uses the same flat field names as
+the regular PATCH contract. `null` explicitly clears an optional field; values
+such as `false`, `0`, and empty arrays are retained. When `updatedAt` is
+available, clients should include it as `expectedUpdatedAt` so one concurrent
+change aborts the complete request with a conflict.
+
+Successful requests return the number and requested handles:
+
+```json
+{
+  "updatedCount": 3,
+  "handles": ["123", "456", "789"]
+}
+```
+
+The route requires entity `allowUpdate`; every supplied field also requires
+effective update access. Built-in asynchronous follow-up work is collected
+during the transaction and scheduled only after commit. External effects
+triggered directly by custom server scripts cannot be rolled back by the
+database transaction.
+
 ## Custom Fields
 
 Sapling supports generic custom fields through `customFieldDefinition`,

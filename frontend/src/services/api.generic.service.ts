@@ -25,6 +25,21 @@ export interface GenericImportResponse {
   rows: GenericImportRowResult[]
 }
 
+export interface GenericBulkUpdateTarget {
+  handle: EntityHandleValue
+  expectedUpdatedAt?: string | null
+}
+
+export interface GenericBulkUpdateRequest {
+  targets: GenericBulkUpdateTarget[]
+  changes: Record<string, unknown>
+}
+
+export interface GenericBulkUpdateResponse {
+  updatedCount: number
+  handles: string[]
+}
+
 export interface GenericUpdateConcurrency {
   expectedUpdatedAt?: string | Date | null
   basePayload?: Record<string, unknown> | null
@@ -263,6 +278,22 @@ class ApiGenericService {
       if (!(suppressConflictMessage && getGenericUpdateConflict(error))) {
         pushApiErrorMessage(error, 'exception.unknownError', entityHandle)
       }
+      throw error
+    }
+  }
+
+  static async bulkUpdate(
+    entityHandle: string,
+    request: GenericBulkUpdateRequest,
+  ): Promise<GenericBulkUpdateResponse> {
+    try {
+      const response = await axios.patch<GenericBulkUpdateResponse>(
+        buildApiUrl(`generic/${entityHandle}/bulk`),
+        request,
+      )
+      return response.data
+    } catch (error: unknown) {
+      pushApiErrorMessage(error, 'exception.unknownError', entityHandle)
       throw error
     }
   }
