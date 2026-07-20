@@ -1,6 +1,6 @@
 <template>
   <v-container
-    class="sapling-page-shell sapling-page-shell--panel sapling-page-shell--uniform-inset sapling-import"
+    class="sapling-page-shell sapling-page-shell--panel sapling-page-shell--fill sapling-page-shell--uniform-inset sapling-dashboard-page sapling-dashboard-page--flow-xl sapling-import"
     fluid
   >
     <SaplingPageHero
@@ -47,7 +47,7 @@
       </template>
     </SaplingPageHero>
 
-    <section class="sapling-import__workspace">
+    <section class="sapling-page-workspace sapling-import__workspace">
       <SaplingSurface class="sapling-panel-shell sapling-section-panel sapling-import__panel">
         <SaplingImportSetupPanel
           v-model:selected-file="selectedFile"
