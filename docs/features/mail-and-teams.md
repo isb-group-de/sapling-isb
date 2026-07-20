@@ -113,7 +113,8 @@ mutations.
 | `entity`         | Page/entity being observed                                      |
 | `type`           | Lifecycle trigger, usually `afterInsert` or `afterUpdate`       |
 | `recipientField` | Context path resolving a `PersonItem` or email address          |
-| `senderPerson`   | Sapling user whose Azure/Google session sends the email         |
+| `senderPerson`   | Sapling user whose Azure/Google session authenticates the send  |
+| `senderMailbox`  | Optional assigned shared mailbox used as the visible sender     |
 | `template`       | Entity-dependent email template                                 |
 | `conditions`     | Optional list of observed fields with old/new value constraints |
 | `isActive`       | Enables/disables the rule                                       |
@@ -160,6 +161,14 @@ condition also requires the observed field to have changed. For example, a
 ticket rule can require both `solutionDescription` to change and `status` to
 change to `closed`.
 
+For automatic shared-mailbox delivery, `senderPerson` remains the OAuth
+authentication identity and `senderMailbox` supplies the visible From address.
+The mailbox must be active, use the same provider, and belong to an active
+shared-mailbox group assigned to the sender person. Sender resolution applies
+the same allow-list validation as manual delivery. Existing subscriptions
+without `senderMailbox` continue to send from the sender person's default
+address.
+
 ## Sender Resolution
 
 Sender options are resolved from the current person:
@@ -171,6 +180,13 @@ Sender options are resolved from the current person:
 5. Fallback to the user's profile email when provider lookup is not available.
 
 When a sender email is requested explicitly, it must match an available sender option. Otherwise `mail.senderNotAllowed` is raised.
+
+Azure shared-mailbox sending additionally requires delegated
+`Mail.Send.Shared` in `AZURE_AD_SCOPE` and Exchange `Send As` permission from
+the selected mailbox to the authentication user. After either permission or
+the configured OAuth scopes change, the user must sign in again so the stored
+session contains the new grant. Google sender mailboxes must be configured as
+send-as aliases for the authenticated Google account.
 
 ## Teams Model
 
@@ -244,10 +260,11 @@ When adding a new automatic email subscription:
 1. Reuse an active `EmailTemplateItem` for the target entity.
 2. Add an `EmailSubscriptionItem` with `entity`, `type`, `recipientField`, `senderPerson`, and `template`.
 3. Choose a sender person with an Azure or Google person type and a usable provider session.
-4. Add zero or more conditions. Zero conditions means the rule always sends for the matching trigger.
-5. For update notifications, each condition observes one field; optionally set `oldValue` and/or `newValue`.
-6. Use relation handles for value constraints, for example `closed` for a status handle.
-7. Make sure the recipient path resolves to a person with an email address or directly to an email string.
+4. To send from a shared address, select an optional `senderMailbox` assigned to that sender person and provider.
+5. Add zero or more conditions. Zero conditions means the rule always sends for the matching trigger.
+6. For update notifications, each condition observes one field; optionally set `oldValue` and/or `newValue`.
+7. Use relation handles for value constraints, for example `closed` for a status handle.
+8. Make sure the recipient path resolves to a person with an email address or directly to an email string.
 
 When adding a new Teams subscription:
 

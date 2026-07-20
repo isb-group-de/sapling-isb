@@ -89,7 +89,14 @@ describe('EmailAutomationService', () => {
         type: { handle: 'afterInsert' },
       },
       {
-        populate: ['entity', 'type', 'template', 'senderPerson', 'conditions'],
+        populate: [
+          'entity',
+          'type',
+          'template',
+          'senderPerson',
+          'senderMailbox',
+          'conditions',
+        ],
       },
     );
     expect(messageTemplateService.getContextValue).toHaveBeenCalledWith(
@@ -102,6 +109,31 @@ describe('EmailAutomationService', () => {
         itemHandle: 101,
         templateHandle: 3,
         to: ['ada@example.test'],
+      }),
+      expect.objectContaining({ handle: 42 }),
+    );
+  });
+
+  it('sends from the configured shared mailbox using the sender person session', async () => {
+    const subscription = createSubscription({
+      senderMailbox: {
+        handle: 9,
+        email: 'support@example.test',
+      },
+    });
+    const { mailService, service } = createService({
+      subscriptions: [subscription],
+    });
+
+    await service.handleAfterInsert(
+      'ticket',
+      { handle: 101, creatorPerson: { handle: 7 } },
+      { handle: 1 } as never,
+    );
+
+    expect(mailService.sendEmail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        senderEmail: 'support@example.test',
       }),
       expect.objectContaining({ handle: 42 }),
     );

@@ -14694,6 +14694,23 @@
           "enumItems": [],
           "mappedType": "string"
         },
+        "sender_mailbox_handle": {
+          "name": "sender_mailbox_handle",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
         "sender_person_handle": {
           "name": "sender_person_handle",
           "type": "int",
@@ -14781,6 +14798,14 @@
           "unique": true
         },
         {
+          "columnNames": ["sender_mailbox_handle"],
+          "composite": false,
+          "constraint": false,
+          "keyName": "email_subscription_item_sender_mailbox_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
           "columnNames": ["sender_person_handle"],
           "composite": false,
           "constraint": false,
@@ -14814,6 +14839,13 @@
           "localTableName": "public.email_subscription_item",
           "referencedColumnNames": ["handle"],
           "referencedTableName": "public.entity_item"
+        },
+        "email_subscription_item_sender_mailbox_handle_foreign": {
+          "columnNames": ["sender_mailbox_handle"],
+          "constraintName": "email_subscription_item_sender_mailbox_handle_foreign",
+          "localTableName": "public.email_subscription_item",
+          "referencedColumnNames": ["handle"],
+          "referencedTableName": "public.shared_mailbox_item"
         },
         "email_subscription_item_sender_person_handle_foreign": {
           "columnNames": ["sender_person_handle"],

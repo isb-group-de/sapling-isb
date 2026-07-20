@@ -1,0 +1,14 @@
+[
+  {
+    "entity": "emailSubscription",
+    "property": "senderPerson",
+    "de": "Authentifizierungsbenutzer",
+    "en": "Authentication user"
+  },
+  {
+    "entity": "emailSubscription",
+    "property": "senderMailbox",
+    "de": "Absenderpostfach",
+    "en": "Sender mailbox"
+  }
+]

@@ -10,6 +10,7 @@ import { EntityItem } from './EntityItem';
 import { EmailSubscriptionConditionItem } from './EmailSubscriptionConditionItem';
 import { EmailTemplateItem } from './EmailTemplateItem';
 import { PersonItem } from './PersonItem';
+import { SharedMailboxItem } from './SharedMailboxItem';
 import { WebhookSubscriptionTypeItem } from './WebhookSubscriptionTypeItem';
 import {
   Sapling,
@@ -70,6 +71,21 @@ export class EmailSubscriptionItem {
   })
   @ManyToOne(() => PersonItem, { nullable: false })
   senderPerson!: Rel<PersonItem>;
+
+  @ApiPropertyOptional({ type: () => SharedMailboxItem })
+  @SaplingForm({
+    order: 400,
+    group: 'emailSubscription.groupContent',
+    groupOrder: 100,
+    width: 2,
+    visible: true,
+    tableOrder: 400,
+    tableVisible: false,
+    mobileOrder: 400,
+    mobileVisible: false,
+  })
+  @ManyToOne(() => SharedMailboxItem, { nullable: true })
+  senderMailbox?: Rel<SharedMailboxItem>;
 
   @ApiPropertyOptional({
     type: () => EmailSubscriptionConditionItem,

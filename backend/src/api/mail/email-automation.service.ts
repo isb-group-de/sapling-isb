@@ -117,7 +117,14 @@ export class EmailAutomationService {
         type: { handle: options.trigger },
       },
       {
-        populate: ['entity', 'type', 'template', 'senderPerson', 'conditions'],
+        populate: [
+          'entity',
+          'type',
+          'template',
+          'senderPerson',
+          'senderMailbox',
+          'conditions',
+        ],
       },
     );
 
@@ -211,6 +218,7 @@ export class EmailAutomationService {
         entityHandle: options.entityHandle,
         itemHandle: options.referenceHandle,
         templateHandle,
+        senderEmail: subscription.senderMailbox?.email,
         to,
         draftValues: {
           emailSubscription: {
