@@ -41,16 +41,6 @@ export function getMessageNavigationLinks(message: AiChatMessageItem): ChatNavig
     : []
 }
 
-export function getPrimaryRouteNavigationLink(
-  message: AiChatMessageItem,
-): ChatNavigationLink | null {
-  return (
-    getMessageNavigationLinks(message).find(
-      (link) => link.kind === 'route' && link.isPrimary !== false,
-    ) ?? null
-  )
-}
-
 export function getToolActionNavigationLinks(action: AiChatToolActionItem): ChatNavigationLink[] {
   if (
     action.status !== 'executed' ||

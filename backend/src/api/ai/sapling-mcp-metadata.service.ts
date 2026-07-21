@@ -157,6 +157,8 @@ export class SaplingMcpMetadataService {
       type: string;
       kind: string | null | undefined;
       referenceName: string;
+      referencedPks: string[];
+      referencePrimaryKeys: Array<{ name: string; type: string }>;
       isReference: boolean;
       isPrimaryKey: boolean;
       isAutoIncrement: boolean;
@@ -195,6 +197,10 @@ export class SaplingMcpMetadataService {
         type: field.type,
         kind: field.kind,
         referenceName: field.referenceName,
+        referencedPks: [...field.referencedPks],
+        referencePrimaryKeys: field.isReference
+          ? this.getReferencePrimaryKeys(field)
+          : [],
         isReference: field.isReference,
         isPrimaryKey: field.isPrimaryKey,
         isAutoIncrement: field.isAutoIncrement,
@@ -363,6 +369,30 @@ export class SaplingMcpMetadataService {
     return this.getRawEntityTemplate(entityHandle).filter(
       (field) => !field.options?.includes('isSecurity'),
     );
+  }
+
+  private getReferencePrimaryKeys(
+    field: EntityTemplateDto,
+  ): Array<{ name: string; type: string }> {
+    if (!field.referenceName) {
+      return [];
+    }
+
+    const referenceTemplate = this.getEntityTemplate(field.referenceName);
+    const referencedPks =
+      field.referencedPks.length > 0
+        ? field.referencedPks
+        : referenceTemplate
+            .filter((referenceField) => referenceField.isPrimaryKey)
+            .map((referenceField) => referenceField.name);
+    const effectivePks = referencedPks.length > 0 ? referencedPks : ['handle'];
+
+    return effectivePks.map((name) => ({
+      name,
+      type:
+        referenceTemplate.find((referenceField) => referenceField.name === name)
+          ?.type ?? 'unknown',
+    }));
   }
 
   private getUserEntityTemplate(

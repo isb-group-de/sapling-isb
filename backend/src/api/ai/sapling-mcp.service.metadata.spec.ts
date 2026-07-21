@@ -95,6 +95,56 @@ describe('SaplingMcpService metadata and payload security', () => {
     });
   });
 
+  it('exposes reference primary keys so mutation tools do not use display labels', async () => {
+    const templateService = {
+      getEntityTemplate: jest.fn((entityHandle: string) => {
+        if (entityHandle === 'person') {
+          return [
+            createTemplateField({
+              name: 'workWeek',
+              kind: 'm:1',
+              isReference: true,
+              referenceName: 'workHourWeek',
+              referencedPks: ['handle'],
+            }),
+          ];
+        }
+
+        if (entityHandle === 'workHourWeek') {
+          return [
+            createTemplateField({
+              name: 'handle',
+              type: 'number',
+              isPrimaryKey: true,
+              isAutoIncrement: true,
+            }),
+            createTemplateField({ name: 'title', options: ['isValue'] }),
+          ];
+        }
+
+        return [];
+      }),
+    };
+    const service = createService({ templateService });
+
+    const result = await service.executeTool(
+      'entity_schema',
+      { entityHandle: 'person' },
+      { handle: 1 } as never,
+    );
+
+    expect(result.rawResult).toMatchObject({
+      fields: [
+        expect.objectContaining({
+          name: 'workWeek',
+          referenceName: 'workHourWeek',
+          referencedPks: ['handle'],
+          referencePrimaryKeys: [{ name: 'handle', type: 'number' }],
+        }),
+      ],
+    });
+  });
+
   it('drops security fields before generic person updates', async () => {
     const genericService = {
       create: jest.fn(),
@@ -141,6 +191,63 @@ describe('SaplingMcpService metadata and payload security', () => {
       user,
       [],
     );
+  });
+
+  it('rejects display labels for numeric reference fields before updating', async () => {
+    const genericService = {
+      create: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+      getRecordTimeline: jest.fn(),
+      findAndCount: jest.fn(),
+    };
+    const templateService = {
+      getEntityTemplate: jest.fn((entityHandle: string) => {
+        if (entityHandle === 'person') {
+          return [
+            createTemplateField({
+              name: 'workWeek',
+              kind: 'm:1',
+              isReference: true,
+              referenceName: 'workHourWeek',
+              referencedPks: ['handle'],
+            }),
+          ];
+        }
+
+        if (entityHandle === 'workHourWeek') {
+          return [
+            createTemplateField({
+              name: 'handle',
+              type: 'number',
+              isPrimaryKey: true,
+            }),
+          ];
+        }
+
+        return [];
+      }),
+    };
+    const service = createService({ genericService, templateService });
+
+    const result = await service.executeTool(
+      'generic_update',
+      {
+        entityHandle: 'person',
+        handle: 7,
+        data: { workWeek: 'Wochenende' },
+      },
+      { handle: 1 } as never,
+    );
+
+    expect(genericService.update).not.toHaveBeenCalled();
+    expect(result.rawResult).toMatchObject({
+      ok: false,
+      toolName: 'generic_update',
+      error: expect.stringContaining(
+        'Reference field "workWeek" on "person" requires the workHourWeek.handle primary-key value',
+      ),
+    });
   });
 
   it('adds current reference defaults before generic ticket creates', async () => {

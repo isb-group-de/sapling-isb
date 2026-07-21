@@ -1,5 +1,7 @@
 import type { AiChatSessionItem } from '@/entity/entity'
 
+export type AiChatSessionActivity = 'responding' | 'unread'
+
 type RuntimeReference =
   AiChatSessionItem['agent'] | AiChatSessionItem['provider'] | AiChatSessionItem['model']
 
@@ -8,6 +10,36 @@ export function formatSessionRuntimeSummary(session: AiChatSessionItem): string 
     .map(getRuntimeReferenceLabel)
     .filter((part) => part.length > 0)
     .join(' / ')
+}
+
+export type SessionDateGroup = 'today' | 'yesterday' | 'lastSevenDays' | 'older'
+
+export function getSessionDateGroup(
+  session: AiChatSessionItem,
+  now: Date = new Date(),
+): SessionDateGroup {
+  const timestamp = getSessionDate(session)?.getTime() ?? 0
+  const startOfToday = new Date(now)
+  startOfToday.setHours(0, 0, 0, 0)
+
+  const startOfYesterday = new Date(startOfToday)
+  startOfYesterday.setDate(startOfYesterday.getDate() - 1)
+
+  const startOfLastSevenDays = new Date(startOfToday)
+  startOfLastSevenDays.setDate(startOfLastSevenDays.getDate() - 7)
+
+  if (timestamp >= startOfToday.getTime()) return 'today'
+  if (timestamp >= startOfYesterday.getTime()) return 'yesterday'
+  if (timestamp >= startOfLastSevenDays.getTime()) return 'lastSevenDays'
+  return 'older'
+}
+
+export function getSessionDate(session: AiChatSessionItem): Date | null {
+  const value = session.lastMessageAt || session.updatedAt || session.createdAt
+  if (!value) return null
+
+  const date = value instanceof Date ? value : new Date(value)
+  return Number.isFinite(date.getTime()) ? date : null
 }
 
 function getRuntimeReferenceLabel(reference: RuntimeReference): string {

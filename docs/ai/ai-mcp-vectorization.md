@@ -376,6 +376,8 @@ Songbird stores tool transparency separately from chat navigation.
   review.
 - `navigationLinks` records deliberate UI actions such as opening a route, a
   specific record, or a filtered table of actual returned records.
+- Navigation links are always user-triggered buttons. Loading an answer or
+  selecting a chat session must never open a route automatically.
 - No navigation link should be emitted for empty results, schema-repair
   responses, failed tool calls, read-only blocks, or confirm-gated pending
   actions.

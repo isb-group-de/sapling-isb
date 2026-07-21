@@ -242,6 +242,152 @@ export class SaplingMcpGenericToolService {
     );
   }
 
+  private normalizeMutationReferences(
+    entityHandle: string,
+    data: Record<string, unknown>,
+  ): Record<string, unknown> {
+    const normalizedData = { ...data };
+    const referenceFields = this.metadata
+      .getEntityTemplate(entityHandle)
+      .filter(
+        (field) =>
+          field.isReference &&
+          !!field.referenceName &&
+          (field.kind === 'm:1' || field.kind === '1:1'),
+      );
+
+    for (const field of referenceFields) {
+      if (!Object.prototype.hasOwnProperty.call(normalizedData, field.name)) {
+        continue;
+      }
+
+      const value = normalizedData[field.name];
+      if (value == null) {
+        continue;
+      }
+
+      const referenceTemplate = this.metadata.getEntityTemplate(
+        field.referenceName,
+      );
+      const referencedPks =
+        field.referencedPks.length > 0
+          ? field.referencedPks
+          : referenceTemplate
+              .filter((referenceField) => referenceField.isPrimaryKey)
+              .map((referenceField) => referenceField.name);
+      const effectivePks =
+        referencedPks.length > 0 ? referencedPks : ['handle'];
+
+      if (effectivePks.length !== 1) {
+        this.assertCompositeReferenceValue(
+          entityHandle,
+          field,
+          value,
+          effectivePks,
+          referenceTemplate,
+        );
+        continue;
+      }
+
+      const referencedPk = effectivePks[0];
+      const submittedValue =
+        value && typeof value === 'object' && !Array.isArray(value)
+          ? (value as Record<string, unknown>)[referencedPk]
+          : value;
+      normalizedData[field.name] = this.normalizeReferencePrimaryKeyValue(
+        entityHandle,
+        field,
+        referencedPk,
+        submittedValue,
+        referenceTemplate,
+      );
+    }
+
+    return normalizedData;
+  }
+
+  private assertCompositeReferenceValue(
+    entityHandle: string,
+    field: EntityTemplateDto,
+    value: unknown,
+    referencedPks: string[],
+    referenceTemplate: EntityTemplateDto[],
+  ): void {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+      this.throwReferencePrimaryKeyRequired(
+        entityHandle,
+        field,
+        referencedPks.join(', '),
+      );
+    }
+
+    const record = value as Record<string, unknown>;
+    for (const referencedPk of referencedPks) {
+      this.normalizeReferencePrimaryKeyValue(
+        entityHandle,
+        field,
+        referencedPk,
+        record[referencedPk],
+        referenceTemplate,
+      );
+    }
+  }
+
+  private normalizeReferencePrimaryKeyValue(
+    entityHandle: string,
+    field: EntityTemplateDto,
+    referencedPk: string,
+    value: unknown,
+    referenceTemplate: EntityTemplateDto[],
+  ): string | number {
+    const primaryKeyType = referenceTemplate.find(
+      (referenceField) => referenceField.name === referencedPk,
+    )?.type;
+    const numericTypes = new Set([
+      'number',
+      'float',
+      'double',
+      'decimal',
+      'real',
+      'int',
+      'integer',
+      'smallint',
+      'bigint',
+    ]);
+
+    if (numericTypes.has(String(primaryKeyType).toLowerCase())) {
+      const numericValue =
+        typeof value === 'number'
+          ? value
+          : typeof value === 'string' && value.trim()
+            ? Number(value)
+            : Number.NaN;
+      if (Number.isFinite(numericValue)) {
+        return numericValue;
+      }
+      this.throwReferencePrimaryKeyRequired(entityHandle, field, referencedPk);
+    }
+
+    if (
+      (typeof value === 'string' && value.trim()) ||
+      (typeof value === 'number' && Number.isFinite(value))
+    ) {
+      return typeof value === 'string' ? value.trim() : value;
+    }
+
+    this.throwReferencePrimaryKeyRequired(entityHandle, field, referencedPk);
+  }
+
+  private throwReferencePrimaryKeyRequired(
+    entityHandle: string,
+    field: EntityTemplateDto,
+    referencedPk: string,
+  ): never {
+    throw new BadRequestException(
+      `Reference field "${field.name}" on "${entityHandle}" requires the ${field.referenceName}.${referencedPk} primary-key value. Do not send a display label; look up the referenced record with generic_list first.`,
+    );
+  }
+
   async executeGenericCreate(
     args: Record<string, unknown>,
     user: PersonItem,
@@ -266,7 +412,11 @@ export class SaplingMcpGenericToolService {
       data,
       user,
     );
-    return this.genericService.create(entityHandle, defaultedData, user);
+    const normalizedData = this.normalizeMutationReferences(
+      entityHandle,
+      defaultedData,
+    );
+    return this.genericService.create(entityHandle, normalizedData, user);
   }
 
   async executeGenericUpdate(
@@ -289,12 +439,13 @@ export class SaplingMcpGenericToolService {
       entityHandle,
       this.values.asRecord(args.data),
     );
+    const normalizedData = this.normalizeMutationReferences(entityHandle, data);
     const relations = this.values.asStringArray(args.relations);
 
     return this.genericService.update(
       entityHandle,
       handle,
-      data,
+      normalizedData,
       user,
       relations,
     );

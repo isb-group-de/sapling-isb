@@ -54,6 +54,31 @@ behavior is divided by responsibility:
   `SaplingAiChatToolActions` owns the reusable confirm-first action card and
   technical-details dialog. Shared navigation parsing remains UI-independent.
 
+The new-chat state uses the selected agent's `welcomeMessage` and
+`conversationStarters` as its onboarding surface. Existing sessions present
+their pinned agent/provider/model as compact context rather than as disabled
+configuration controls. The session rail supports title/runtime search and
+groups conversations by recency; enabling archived sessions adds them to the
+active list instead of replacing it.
+
+Chat provider/model catalogs load atomically and retry one transient empty or
+failed first response. Optional transcription or speech catalogs do not block
+the core chat runtime. Until the core catalog has settled, the chat renders a
+loading state rather than claiming that no provider is configured; an actual
+failure or empty result remains recoverable through the in-chat retry action.
+Every catalog request has a bounded client-side wait so a request that never
+settles transitions to that recoverable state instead of leaving the chat in
+an endless loading state. Optional voice catalogs do not drive the main chat
+progress indicator.
+An already-open chat initializes immediately when its component mounts, which
+also repairs state after a development hot reload. The loading presentation is
+driven only by active provider/model requests; an idle, not-yet-loaded state is
+shown as recoverable instead of being mislabeled as an endless load.
+
+The session rail keeps response activity in memory only. Running responses are
+marked as responding; when a response completes outside the visible session,
+that session is marked as new until it is opened. No read state is persisted.
+
 ## Agent Model
 
 `AiAgentItem` stores:

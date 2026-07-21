@@ -43,6 +43,25 @@
       </v-switch>
     </div>
 
+    <v-text-field
+      v-if="!isCollapsed && sessions.length > 0"
+      v-model="searchQuery"
+      class="sapling-chat-rail__search sapling-ai-chat__session-search"
+      density="compact"
+      hide-details
+      single-line
+      clearable
+      prepend-inner-icon="mdi-magnify"
+      type="search"
+      name="sapling-ai-chat-session-search"
+      autocomplete="off"
+      autocapitalize="none"
+      autocorrect="off"
+      :spellcheck="false"
+      :placeholder="getTranslationLabel('searchSessions', 'Chats durchsuchen')"
+      :aria-label="getTranslationLabel('searchSessions', 'Chats durchsuchen')"
+    />
+
     <div
       v-if="!isCollapsed && sessions.length === 0"
       class="sapling-empty-state-panel sapling-empty-state-panel--compact sapling-chat-empty-state sapling-ai-chat__empty-state"
@@ -51,109 +70,176 @@
     </div>
 
     <div
+      v-else-if="!isCollapsed && sessionGroups.length === 0"
+      class="sapling-empty-state-panel sapling-empty-state-panel--compact sapling-chat-empty-state sapling-ai-chat__empty-state"
+    >
+      {{ getTranslationLabel('noMatchingSessions', 'Keine passenden Chats gefunden.') }}
+    </div>
+
+    <div
       v-else-if="!isCollapsed"
       class="sapling-scroll-list sapling-chat-rail__list sapling-ai-chat__session-list"
     >
-      <button
-        v-for="session in sessions"
-        :key="session.handle ?? session.title"
-        type="button"
-        class="sapling-interactive-list-item sapling-chat-rail__item sapling-ai-chat__session-item"
-        :class="{
-          'sapling-interactive-list-item--active': session.handle === activeSessionHandle,
-          'sapling-ai-chat__session-item--active': session.handle === activeSessionHandle,
-          'sapling-chat-rail__item--active': session.handle === activeSessionHandle,
-        }"
-        @click="emit('select', session)"
+      <section
+        v-for="group in sessionGroups"
+        :key="group.key"
+        class="sapling-chat-rail__group sapling-ai-chat__session-group"
       >
-        <div
-          class="sapling-interactive-list-item__row sapling-chat-rail__item-row sapling-ai-chat__session-top"
-        >
-          <div class="sapling-chat-rail__item-details sapling-ai-chat__session-details">
-            <div
-              v-if="formatSessionRuntimeSummary(session)"
-              class="sapling-chat-rail__item-runtime sapling-ai-chat__session-runtime"
-              :title="formatSessionRuntimeSummary(session)"
-            >
-              <v-icon icon="mdi-robot-outline" size="x-small" />
-              <span>{{ formatSessionRuntimeSummary(session) }}</span>
-            </div>
-            <div class="sapling-chat-rail__item-meta sapling-ai-chat__session-meta">
-              {{ formatSessionMeta(session) }}
-            </div>
-          </div>
-
-          <div
-            class="sapling-row-xs sapling-chat-rail__item-actions sapling-ai-chat__session-actions"
-          >
-            <v-btn
-              v-if="editingSessionHandle === session.handle"
-              icon="mdi-check"
-              size="x-small"
-              variant="text"
-              @click.stop="emit('saveTitle', session)"
-            />
-            <v-btn
-              v-else
-              icon="mdi-pencil-outline"
-              size="x-small"
-              variant="text"
-              @click.stop="emit('beginRename', session)"
-            />
-            <v-btn
-              icon="mdi-archive-outline"
-              size="x-small"
-              variant="text"
-              @click.stop="emit('toggleArchive', session)"
-            />
-          </div>
+        <div class="sapling-chat-rail__group-label sapling-ai-chat__session-group-label">
+          {{ getSessionGroupLabel(group.key) }}
         </div>
 
-        <div class="sapling-chat-rail__item-main sapling-ai-chat__session-main">
-          <template v-if="editingSessionHandle === session.handle">
-            <v-text-field
-              v-model="editingSessionTitleModel"
-              density="compact"
-              hide-details
-              autocomplete="off"
-              autofocus
-              @click.stop
-              @keyup.enter="emit('saveTitle', session)"
-            />
-          </template>
-          <template v-else>
-            <div
-              class="sapling-row-xs sapling-chat-rail__item-title-row sapling-ai-chat__session-title-row"
-            >
-              <div class="sapling-chat-rail__item-title sapling-ai-chat__session-title">
-                {{ getTruncatedTitle(session.title) }}
+        <div class="sapling-chat-rail__group-items">
+          <article
+            v-for="session in group.sessions"
+            :key="session.handle ?? session.title"
+            class="sapling-interactive-list-item sapling-chat-rail__item sapling-ai-chat__session-item"
+            :class="{
+              'sapling-interactive-list-item--active': session.handle === activeSessionHandle,
+              'sapling-ai-chat__session-item--active': session.handle === activeSessionHandle,
+              'sapling-chat-rail__item--active': session.handle === activeSessionHandle,
+            }"
+          >
+            <template v-if="editingSessionHandle === session.handle">
+              <v-text-field
+                v-model="editingSessionTitleModel"
+                density="compact"
+                hide-details
+                autocomplete="off"
+                autofocus
+                @keyup.enter="emit('saveTitle', session)"
+                @keyup.esc="emit('cancelRename')"
+              />
+              <div class="sapling-row-xs sapling-chat-rail__rename-actions">
+                <v-btn
+                  icon="mdi-check"
+                  size="x-small"
+                  variant="tonal"
+                  :aria-label="t('global.save')"
+                  :title="t('global.save')"
+                  @click="emit('saveTitle', session)"
+                />
+                <v-btn
+                  icon="mdi-close"
+                  size="x-small"
+                  variant="text"
+                  :aria-label="t('global.cancel')"
+                  :title="t('global.cancel')"
+                  @click="emit('cancelRename')"
+                />
               </div>
-              <v-tooltip v-if="isTitleTruncated(session.title)" location="top" max-width="400">
-                <template #activator="{ props: tooltipProps }">
+            </template>
+
+            <template v-else>
+              <button
+                type="button"
+                class="sapling-chat-rail__item-primary sapling-ai-chat__session-primary"
+                @click="emit('select', session)"
+              >
+                <span class="sapling-row-xs sapling-chat-rail__item-title-row">
+                  <span class="sapling-chat-rail__item-title sapling-ai-chat__session-title">
+                    {{ getTruncatedTitle(session.title) }}
+                  </span>
                   <v-icon
-                    v-bind="tooltipProps"
-                    icon="mdi-information-outline"
-                    class="sapling-chat-conversation__title-info sapling-ai-chat__title-info"
-                    size="small"
-                    @click.stop
+                    v-if="session.isArchived"
+                    icon="mdi-archive-outline"
+                    size="x-small"
+                    :title="t('aiChat.archived')"
+                  />
+                  <v-tooltip v-if="isTitleTruncated(session.title)" location="top" max-width="400">
+                    <template #activator="{ props: tooltipProps }">
+                      <v-icon
+                        v-bind="tooltipProps"
+                        icon="mdi-information-outline"
+                        class="sapling-chat-conversation__title-info sapling-ai-chat__title-info"
+                        size="small"
+                      />
+                    </template>
+                    <span>{{ session.title }}</span>
+                  </v-tooltip>
+                </span>
+
+                <span
+                  v-if="formatSessionRuntimeSummary(session)"
+                  class="sapling-chat-rail__item-runtime sapling-ai-chat__session-runtime"
+                  :title="formatSessionRuntimeSummary(session)"
+                >
+                  <v-icon icon="mdi-robot-outline" size="x-small" />
+                  <span>{{ formatSessionRuntimeSummary(session) }}</span>
+                </span>
+
+                <span class="sapling-chat-rail__item-footer">
+                  <span class="sapling-chat-rail__item-meta sapling-ai-chat__session-meta">
+                    {{ formatSessionMeta(session) }}
+                  </span>
+                  <span
+                    v-if="getSessionActivity(session)"
+                    class="sapling-chat-rail__item-activity"
+                    :class="`sapling-chat-rail__item-activity--${getSessionActivity(session)}`"
+                    role="status"
+                  >
+                    <v-progress-circular
+                      v-if="getSessionActivity(session) === 'responding'"
+                      indeterminate
+                      size="12"
+                      width="2"
+                    />
+                    <v-icon v-else icon="mdi-circle" size="8" />
+                    <span>{{ getSessionActivityLabel(session) }}</span>
+                  </span>
+                </span>
+              </button>
+
+              <v-menu location="bottom end">
+                <template #activator="{ props: menuProps }">
+                  <v-btn
+                    v-bind="menuProps"
+                    class="sapling-chat-rail__item-menu sapling-ai-chat__session-menu"
+                    icon="mdi-dots-vertical"
+                    size="x-small"
+                    variant="text"
+                    :aria-label="getTranslationLabel('sessionActions', 'Chat-Aktionen')"
+                    :title="getTranslationLabel('sessionActions', 'Chat-Aktionen')"
                   />
                 </template>
-
-                <span>{{ session.title }}</span>
-              </v-tooltip>
-            </div>
-          </template>
+                <v-list density="compact" nav>
+                  <v-list-item
+                    prepend-icon="mdi-pencil-outline"
+                    :title="getTranslationLabel('renameSession', 'Chat umbenennen')"
+                    @click="emit('beginRename', session)"
+                  />
+                  <v-list-item
+                    :prepend-icon="
+                      session.isArchived ? 'mdi-archive-arrow-up-outline' : 'mdi-archive-outline'
+                    "
+                    :title="
+                      session.isArchived
+                        ? getTranslationLabel('unarchiveSession', 'Chat wiederherstellen')
+                        : getTranslationLabel('archiveSession', 'Chat archivieren')
+                    "
+                    @click="emit('toggleArchive', session)"
+                  />
+                </v-list>
+              </v-menu>
+            </template>
+          </article>
         </div>
-      </button>
+      </section>
     </div>
   </aside>
 </template>
 
 <script lang="ts" setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { AiChatSessionItem } from '@/entity/entity'
-import { formatSessionRuntimeSummary } from './aiChatSessionPresentation'
+import {
+  formatSessionRuntimeSummary,
+  getSessionDate,
+  getSessionDateGroup,
+  type AiChatSessionActivity,
+  type SessionDateGroup,
+} from './aiChatSessionPresentation'
 
 const props = withDefaults(
   defineProps<{
@@ -163,12 +249,14 @@ const props = withDefaults(
     includeArchived: boolean
     editingSessionHandle: number | null
     editingSessionTitle: string
+    sessionActivityByHandle?: Partial<Record<number, AiChatSessionActivity>>
     isCollapsible?: boolean
     isCollapsed?: boolean
     titlePreviewLimit?: number
   }>(),
   {
     activeSessionTitle: '',
+    sessionActivityByHandle: () => ({}),
     isCollapsible: false,
     isCollapsed: false,
     titlePreviewLimit: 30,
@@ -181,22 +269,45 @@ const emit = defineEmits<{
   (event: 'toggleCollapse'): void
   (event: 'select', session: AiChatSessionItem): void
   (event: 'beginRename', session: AiChatSessionItem): void
+  (event: 'cancelRename'): void
   (event: 'saveTitle', session: AiChatSessionItem): void
   (event: 'toggleArchive', session: AiChatSessionItem): void
 }>()
 
-const { t } = useI18n()
+const { t, te } = useI18n()
+const searchQuery = ref('')
+const groupOrder: SessionDateGroup[] = ['today', 'yesterday', 'lastSevenDays', 'older']
 
 const sessionRailSummary = computed(() => {
-  if (props.activeSessionTitle?.trim()) {
-    return getTruncatedTitle(props.activeSessionTitle)
-  }
-
-  if (props.sessions.length === 0) {
-    return t('aiChat.noSessions')
-  }
-
+  if (props.activeSessionTitle?.trim()) return getTruncatedTitle(props.activeSessionTitle)
+  if (props.sessions.length === 0) return t('aiChat.noSessions')
   return String(props.sessions.length)
+})
+
+const normalizedSearchQuery = computed(() => searchQuery.value.trim().toLocaleLowerCase())
+
+const filteredSessions = computed(() => {
+  if (!normalizedSearchQuery.value) return props.sessions
+
+  return props.sessions.filter((session) =>
+    [session.title, formatSessionRuntimeSummary(session)]
+      .join(' ')
+      .toLocaleLowerCase()
+      .includes(normalizedSearchQuery.value),
+  )
+})
+
+const sessionGroups = computed(() => {
+  const grouped = new Map<SessionDateGroup, AiChatSessionItem[]>()
+
+  for (const session of filteredSessions.value) {
+    const key = getSessionDateGroup(session)
+    grouped.set(key, [...(grouped.get(key) ?? []), session])
+  }
+
+  return groupOrder
+    .map((key) => ({ key, sessions: grouped.get(key) ?? [] }))
+    .filter((group) => group.sessions.length > 0)
 })
 
 const editingSessionTitleModel = computed({
@@ -213,24 +324,42 @@ function isTitleTruncated(value?: string | null) {
 }
 
 function getTruncatedTitle(value?: string | null) {
-  if (!value) {
-    return ''
-  }
-
-  if (!isTitleTruncated(value)) {
-    return value
-  }
-
-  return `${value.slice(0, props.titlePreviewLimit)}...`
+  if (!value) return ''
+  return isTitleTruncated(value) ? `${value.slice(0, props.titlePreviewLimit)}...` : value
 }
 
 function formatSessionMeta(session: AiChatSessionItem) {
-  const date = session.lastMessageAt || session.updatedAt || session.createdAt
+  const date = getSessionDate(session)
+  if (!date) return session.isArchived ? t('aiChat.archived') : t('aiChat.active')
 
-  if (!date) {
-    return session.isArchived ? t('aiChat.archived') : t('aiChat.active')
+  return new Intl.DateTimeFormat(undefined, {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  }).format(date)
+}
+
+function getSessionActivity(session: AiChatSessionItem) {
+  return session.handle == null ? undefined : props.sessionActivityByHandle[session.handle]
+}
+
+function getSessionActivityLabel(session: AiChatSessionItem) {
+  return getSessionActivity(session) === 'responding'
+    ? getTranslationLabel('sessionResponding', 'Antwortet …')
+    : getTranslationLabel('sessionUnread', 'Neu')
+}
+
+function getTranslationLabel(property: string, fallback: string) {
+  const key = `aiChat.${property}`
+  return te(key) ? t(key) : fallback
+}
+
+function getSessionGroupLabel(group: SessionDateGroup) {
+  const fallbacks: Record<SessionDateGroup, string> = {
+    today: 'Heute',
+    yesterday: 'Gestern',
+    lastSevenDays: 'Letzte 7 Tage',
+    older: 'Älter',
   }
-
-  return `${new Date(date).toLocaleString()}`
+  return getTranslationLabel(`sessionGroup.${group}`, fallbacks[group])
 }
 </script>

@@ -5,7 +5,6 @@ import {
   extractResultRecordHandle,
   getMessageNavigationLinks,
   getMessageToolActions,
-  getPrimaryRouteNavigationLink,
   getToolActionNavigationLinks,
 } from './aiChatNavigation'
 
@@ -53,7 +52,6 @@ describe('aiChatNavigation', () => {
       '/one',
       '/two',
     ])
-    expect(getPrimaryRouteNavigationLink(chatMessage)?.path).toBe('/route/primary')
   })
 
   it('builds mutation-result navigation from nested tool results', () => {

@@ -49,6 +49,7 @@ describe('AiService tool actions', () => {
       updatedAt: new Date('2026-04-20T08:15:30.000Z'),
     };
     const em = {
+      clear: jest.fn(),
       findOne: jest
         .fn<() => Promise<typeof action | null>>()
         .mockResolvedValue(action),
@@ -94,6 +95,7 @@ describe('AiService tool actions', () => {
       ],
     });
     expect(em.flush).toHaveBeenCalled();
+    expect(em.clear).toHaveBeenCalled();
   });
 
   it('returns an already completed tool action instead of failing a duplicate confirm', async () => {

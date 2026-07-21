@@ -71,17 +71,21 @@ export class AiChatToolActionService {
       const failureMessage = this.getConfirmedToolExecutionFailure(result);
 
       if (failureMessage) {
-        action.status = 'failed';
-        action.resultPayload = {
+        const failedAction = await this.reloadAfterFailedToolExecution(
+          action,
+          user,
+        );
+        failedAction.status = 'failed';
+        failedAction.resultPayload = {
           content: result.content,
           modelResult: result.modelResult,
           rawResult: result.rawResult,
         };
-        action.errorPayload = { error: failureMessage };
-        action.executedAt = new Date();
-        this.syncToolActionIntoMessagePayload(action);
+        failedAction.errorPayload = { error: failureMessage };
+        failedAction.executedAt = new Date();
+        this.syncToolActionIntoMessagePayload(failedAction);
         await this.em.flush();
-        return sanitizeToolAction(action);
+        return sanitizeToolAction(failedAction);
       }
 
       const followUpAction =
@@ -101,15 +105,35 @@ export class AiChatToolActionService {
       await this.em.flush();
       return sanitizeToolAction(action);
     } catch (error) {
-      action.status = 'failed';
-      action.errorPayload = {
+      const failedAction = await this.reloadAfterFailedToolExecution(
+        action,
+        user,
+      );
+      failedAction.status = 'failed';
+      failedAction.errorPayload = {
         error: error instanceof Error ? error.message : String(error),
       };
-      action.executedAt = new Date();
-      this.syncToolActionIntoMessagePayload(action);
+      failedAction.executedAt = new Date();
+      this.syncToolActionIntoMessagePayload(failedAction);
       await this.em.flush();
-      return sanitizeToolAction(action);
+      return sanitizeToolAction(failedAction);
     }
+  }
+
+  private async reloadAfterFailedToolExecution(
+    action: AiChatToolActionItem,
+    user: PersonItem,
+  ): Promise<AiChatToolActionItem> {
+    if (action.handle == null) {
+      return action;
+    }
+
+    // A failed ORM flush leaves the attempted business entity dirty in the
+    // request EntityManager. Clear that unit of work before persisting the
+    // failure state, otherwise the same invalid update is flushed again and
+    // turns a controlled tool failure into an HTTP 500 response.
+    this.em.clear();
+    return this.findOwnedToolAction(action.handle, user);
   }
 
   async rejectToolAction(

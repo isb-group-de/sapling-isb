@@ -40,6 +40,8 @@ interface SaplingAiChatStreamOptions {
   replaceSession: (session: AiChatSessionItem) => void
   loadMessages: (sessionHandle?: number | null) => Promise<void>
   autoPlayAssistantSpeech: (message: AiChatMessageItem) => Promise<void>
+  onSessionResponseStarted: (sessionHandle: number) => void
+  onSessionResponseFinished: (sessionHandle: number) => void
 }
 
 export function useSaplingAiChatStream(options: SaplingAiChatStreamOptions) {
@@ -50,6 +52,7 @@ export function useSaplingAiChatStream(options: SaplingAiChatStreamOptions) {
     content: string
     receivedServerEvents: boolean
     shouldAutoPlaySpeech: boolean
+    sessionHandle: number | null
   } | null>(null)
 
   async function sendMessage() {
@@ -77,6 +80,10 @@ export function useSaplingAiChatStream(options: SaplingAiChatStreamOptions) {
       content,
       receivedServerEvents: false,
       shouldAutoPlaySpeech: options.activeTranscriptionHandle.value != null,
+      sessionHandle: options.activeSession.value?.handle ?? null,
+    }
+    if (activeSendAttempt.value.sessionHandle != null) {
+      options.onSessionResponseStarted(activeSendAttempt.value.sessionHandle)
     }
     options.draftMessage.value = ''
     const attachmentHandles = options.pendingAttachments.value.map(
@@ -119,6 +126,9 @@ export function useSaplingAiChatStream(options: SaplingAiChatStreamOptions) {
         handleChatRequestFailure(error, reportToMessageCenter)
       }
     } finally {
+      if (activeSendAttempt.value?.sessionHandle != null) {
+        options.onSessionResponseFinished(activeSendAttempt.value.sessionHandle)
+      }
       isSending.value = false
       activeSendAttempt.value = null
       options.activeTranscriptionHandle.value = null
@@ -136,25 +146,32 @@ export function useSaplingAiChatStream(options: SaplingAiChatStreamOptions) {
       case 'message.assistant':
       case 'message.completed':
         markActiveSendAttemptAsStarted()
+        updateSession(event.session)
         if (event.message) {
-          options.upsertMessage(event.message)
+          if (isStreamSessionVisible(event.message)) options.upsertMessage(event.message)
           const attempt = activeSendAttempt.value
           if (
             event.type === 'message.completed' &&
             event.message.role === 'assistant' &&
-            attempt?.shouldAutoPlaySpeech
+            attempt?.shouldAutoPlaySpeech &&
+            isStreamSessionVisible(event.message)
           ) {
             activeSendAttempt.value = { ...attempt, shouldAutoPlaySpeech: false }
             void options.autoPlayAssistantSpeech(event.message)
           }
+          if (event.type === 'message.completed' && event.message.role === 'assistant') {
+            const sessionHandle = getMessageSessionHandle(event.message) ?? attempt?.sessionHandle
+            if (sessionHandle != null) options.onSessionResponseFinished(sessionHandle)
+          }
         }
-        updateSession(event.session)
         break
       case 'message.delta':
-        if (event.handle != null) options.appendMessageDelta(event.handle, event.delta ?? '')
+        if (event.handle != null && isStreamSessionVisible()) {
+          options.appendMessageDelta(event.handle, event.delta ?? '')
+        }
         break
       case 'tool.action.pending':
-        if (event.action) upsertToolAction(event.action)
+        if (event.action && isStreamSessionVisible()) upsertToolAction(event.action)
         break
       case 'error':
         handleChatRequestFailure(event.messageText ?? event.type)
@@ -164,16 +181,37 @@ export function useSaplingAiChatStream(options: SaplingAiChatStreamOptions) {
 
   function updateSession(session?: AiChatSessionItem) {
     if (!session) return
+    const activeHandle = options.activeSession.value?.handle ?? null
+    const previousAttemptHandle = activeSendAttempt.value?.sessionHandle ?? null
+    if (session.handle != null && activeSendAttempt.value && previousAttemptHandle == null) {
+      activeSendAttempt.value.sessionHandle = session.handle
+      options.onSessionResponseStarted(session.handle)
+    }
     options.replaceSession(session)
-    options.activeSession.value = session
+    if (
+      session.handle != null &&
+      (activeHandle === session.handle || (activeHandle == null && previousAttemptHandle == null))
+    ) {
+      options.activeSession.value = session
+    }
+  }
+
+  function isStreamSessionVisible(message?: AiChatMessageItem) {
+    const sessionHandle = getMessageSessionHandle(message) ?? activeSendAttempt.value?.sessionHandle
+    return sessionHandle == null || options.activeSession.value?.handle === sessionHandle
+  }
+
+  function getMessageSessionHandle(message?: AiChatMessageItem) {
+    if (!message) return null
+    return typeof message.session === 'number' ? message.session : (message.session?.handle ?? null)
   }
 
   async function confirmToolAction(action: AiChatToolActionItem) {
-    await submitToolAction(action, ApiAiService.confirmToolAction, true)
+    await submitToolAction(action, (handle) => ApiAiService.confirmToolAction(handle), true)
   }
 
   async function rejectToolAction(action: AiChatToolActionItem) {
-    await submitToolAction(action, ApiAiService.rejectToolAction, false)
+    await submitToolAction(action, (handle) => ApiAiService.rejectToolAction(handle), false)
   }
 
   async function submitToolAction(
@@ -189,6 +227,10 @@ export function useSaplingAiChatStream(options: SaplingAiChatStreamOptions) {
       const updatedAction = await submit(handle)
       upsertToolAction(updatedAction)
       if (includeFollowUp) upsertFollowUpToolAction(updatedAction)
+    } catch {
+      // The API service already reports the localized request error. Keep the
+      // component event handler settled so Vue does not emit an unhandled
+      // promise warning and the user can retry or reject the pending action.
     } finally {
       const remainingActions = { ...activeToolActionHandles.value }
       delete remainingActions[handle]
@@ -240,17 +282,27 @@ export function useSaplingAiChatStream(options: SaplingAiChatStreamOptions) {
     const messageKey = normalizeAiChatErrorMessage(error)
     if (reportToMessageCenter) options.reportMessage('error', messageKey, '', 'aiChat')
 
-    if (activeSendAttempt.value?.receivedServerEvents && options.activeSession.value?.handle) {
-      void options.loadMessages(options.activeSession.value.handle).catch(() => undefined)
+    const attemptSessionHandle = activeSendAttempt.value?.sessionHandle ?? null
+    if (
+      activeSendAttempt.value?.receivedServerEvents &&
+      attemptSessionHandle != null &&
+      options.activeSession.value?.handle === attemptSessionHandle
+    ) {
+      void options.loadMessages(attemptSessionHandle).catch(() => undefined)
       return
     }
 
-    options.appendLocalFailedExchange({
-      content: activeSendAttempt.value?.content ?? '',
-      errorMessage: messageKey,
-      personHandle: options.currentPersonHandle(),
-      sessionHandle: options.activeSession.value?.handle ?? 0,
-    })
+    if (
+      attemptSessionHandle == null ||
+      options.activeSession.value?.handle === attemptSessionHandle
+    ) {
+      options.appendLocalFailedExchange({
+        content: activeSendAttempt.value?.content ?? '',
+        errorMessage: messageKey,
+        personHandle: options.currentPersonHandle(),
+        sessionHandle: attemptSessionHandle ?? 0,
+      })
+    }
   }
 
   function abortStream() {

@@ -1,5 +1,5 @@
 import { ref } from 'vue'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type {
   AiAgentItem,
   AiChatSessionItem,
@@ -77,6 +77,8 @@ describe('useSaplingAiChatRuntimeCatalog', () => {
     api.listSpeechModels.mockResolvedValue([])
   })
 
+  afterEach(() => vi.useRealTimers())
+
   it('prefers the saved chat runtime over the default agent runtime for new chats', async () => {
     const runtime = useSaplingAiChatRuntimeCatalog(
       ref(null),
@@ -129,5 +131,57 @@ describe('useSaplingAiChatRuntimeCatalog', () => {
 
     expect(runtime.selectedProviderHandle.value).toBe('lm-studio')
     expect(runtime.selectedModelHandle.value).toBe('lm-studio-gpt-oss-20b')
+  })
+
+  it('retries an initially empty chat catalog before reporting no configuration', async () => {
+    api.listProviders.mockResolvedValueOnce([]).mockResolvedValue(providers)
+    api.listModels.mockResolvedValueOnce([]).mockResolvedValue(models)
+    const runtime = useSaplingAiChatRuntimeCatalog(ref(null), createPreferences())
+
+    await runtime.loadRuntimeCatalogs()
+
+    expect(api.listProviders).toHaveBeenCalledTimes(2)
+    expect(api.listModels).toHaveBeenCalledTimes(2)
+    expect(runtime.hasConfiguredProviders.value).toBe(true)
+    expect(runtime.hasLoadedRuntimeCatalog.value).toBe(true)
+    expect(runtime.hasRuntimeCatalogLoadError.value).toBe(false)
+  })
+
+  it('keeps chat available when an optional speech catalog fails', async () => {
+    api.listSpeechProviders.mockRejectedValue(new Error('temporary speech failure'))
+    const runtime = useSaplingAiChatRuntimeCatalog(ref(null), createPreferences())
+
+    await runtime.loadRuntimeCatalogs()
+
+    expect(runtime.hasConfiguredProviders.value).toBe(true)
+    expect(runtime.hasLoadedRuntimeCatalog.value).toBe(true)
+    expect(runtime.hasRuntimeCatalogLoadError.value).toBe(false)
+  })
+
+  it('exposes a recoverable load error after both core catalog attempts fail', async () => {
+    api.listProviders.mockRejectedValue(new Error('temporary provider failure'))
+    const runtime = useSaplingAiChatRuntimeCatalog(ref(null), createPreferences())
+
+    await runtime.loadRuntimeCatalogs()
+
+    expect(api.listProviders).toHaveBeenCalledTimes(2)
+    expect(runtime.hasConfiguredProviders.value).toBe(false)
+    expect(runtime.hasLoadedRuntimeCatalog.value).toBe(true)
+    expect(runtime.hasRuntimeCatalogLoadError.value).toBe(true)
+  })
+
+  it('leaves the loading state when a core catalog request never settles', async () => {
+    vi.useFakeTimers()
+    api.listProviders.mockImplementation(() => new Promise(() => undefined))
+    const runtime = useSaplingAiChatRuntimeCatalog(ref(null), createPreferences())
+
+    const loading = runtime.loadRuntimeCatalogs()
+    await vi.advanceTimersByTimeAsync(13_000)
+    await loading
+
+    expect(api.listProviders).toHaveBeenCalledTimes(2)
+    expect(runtime.isLoadingChatRuntimeCatalog.value).toBe(false)
+    expect(runtime.hasLoadedRuntimeCatalog.value).toBe(true)
+    expect(runtime.hasRuntimeCatalogLoadError.value).toBe(true)
   })
 })

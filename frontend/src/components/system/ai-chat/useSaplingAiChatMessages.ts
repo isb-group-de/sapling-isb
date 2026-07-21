@@ -93,7 +93,7 @@ export function useSaplingAiChatMessages() {
       session: sessionHandle,
       person: personHandle,
       role: 'user',
-      status: 'failed',
+      status: 'completed',
       sequence: nextSequence,
       content: trimmedContent,
       createdAt: timestamp,

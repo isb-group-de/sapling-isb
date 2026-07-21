@@ -1,0 +1,116 @@
+[
+  {
+    "entity": "aiChat",
+    "property": "conversationStarters",
+    "de": "Vorschläge",
+    "en": "Suggested prompts"
+  },
+  {
+    "entity": "aiChat",
+    "property": "composerHint",
+    "de": "Enter senden · Shift+Enter Zeilenumbruch",
+    "en": "Enter to send · Shift+Enter for a new line"
+  },
+  {
+    "entity": "aiChat",
+    "property": "searchSessions",
+    "de": "Chats durchsuchen",
+    "en": "Search chats"
+  },
+  {
+    "entity": "aiChat",
+    "property": "noMatchingSessions",
+    "de": "Keine passenden Chats gefunden.",
+    "en": "No matching chats found."
+  },
+  {
+    "entity": "aiChat",
+    "property": "sessionGroup.today",
+    "de": "Heute",
+    "en": "Today"
+  },
+  {
+    "entity": "aiChat",
+    "property": "sessionGroup.yesterday",
+    "de": "Gestern",
+    "en": "Yesterday"
+  },
+  {
+    "entity": "aiChat",
+    "property": "sessionGroup.lastSevenDays",
+    "de": "Letzte 7 Tage",
+    "en": "Last 7 days"
+  },
+  {
+    "entity": "aiChat",
+    "property": "sessionGroup.older",
+    "de": "Älter",
+    "en": "Older"
+  },
+  {
+    "entity": "aiChat",
+    "property": "sessionActions",
+    "de": "Chat-Aktionen",
+    "en": "Chat actions"
+  },
+  {
+    "entity": "aiChat",
+    "property": "renameSession",
+    "de": "Chat umbenennen",
+    "en": "Rename chat"
+  },
+  {
+    "entity": "aiChat",
+    "property": "archiveSession",
+    "de": "Chat archivieren",
+    "en": "Archive chat"
+  },
+  {
+    "entity": "aiChat",
+    "property": "unarchiveSession",
+    "de": "Chat wiederherstellen",
+    "en": "Unarchive chat"
+  },
+  {
+    "entity": "aiChat",
+    "property": "copyMessage",
+    "de": "Nachricht kopieren",
+    "en": "Copy message"
+  },
+  {
+    "entity": "aiChat",
+    "property": "messageCopied",
+    "de": "Nachricht kopiert",
+    "en": "Message copied"
+  },
+  {
+    "entity": "aiChat",
+    "property": "loadingConfiguration",
+    "de": "KI-Konfiguration wird geladen …",
+    "en": "Loading AI configuration …"
+  },
+  {
+    "entity": "aiChat",
+    "property": "configurationLoadFailed",
+    "de": "Die KI-Konfiguration konnte nicht geladen werden.",
+    "en": "The AI configuration could not be loaded."
+  },
+  {
+    "entity": "aiChat",
+    "property": "retryConfiguration",
+    "de": "Erneut laden",
+    "en": "Try again"
+  },
+  {
+    "entity": "aiChat",
+    "property": "sessionResponding",
+    "de": "Antwortet …",
+    "en": "Responding …"
+  },
+  {
+    "entity": "aiChat",
+    "property": "sessionUnread",
+    "de": "Neu",
+    "en": "New"
+  }
+]

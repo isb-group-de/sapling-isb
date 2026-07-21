@@ -2,6 +2,7 @@
   <div
     ref="messageContainer"
     class="sapling-scroll-list sapling-chat-message-list sapling-ai-chat__messages"
+    @scroll="handleMessageScroll"
   >
     <div v-if="hasMoreMessages" class="sapling-ai-chat__history-loader">
       <v-btn
@@ -16,9 +17,79 @@
 
     <div
       v-if="messages.length === 0"
-      class="sapling-empty-state-panel sapling-empty-state-panel--compact sapling-chat-empty-state sapling-ai-chat__empty-state"
+      class="sapling-empty-state-panel sapling-chat-empty-state sapling-chat-welcome sapling-ai-chat__empty-state"
     >
-      {{ hasConfiguredProviders ? t('aiChat.noMessages') : t('aiChat.noConfiguredProviders') }}
+      <template v-if="isLoadingRuntimeCatalog">
+        <div class="sapling-chat-welcome__icon" aria-hidden="true">
+          <v-progress-circular indeterminate color="primary" size="28" width="3" />
+        </div>
+        <div class="sapling-chat-welcome__copy">
+          <div class="sapling-section-title sapling-chat-welcome__title">
+            {{ getTranslationLabel('loadingConfiguration', 'KI-Konfiguration wird geladen …') }}
+          </div>
+        </div>
+      </template>
+      <template v-else-if="!hasLoadedRuntimeCatalog || runtimeCatalogLoadFailed">
+        <div class="sapling-chat-welcome__icon" aria-hidden="true">
+          <v-icon icon="mdi-cloud-alert-outline" size="large" />
+        </div>
+        <div class="sapling-chat-welcome__copy">
+          <div class="sapling-section-title sapling-chat-welcome__title">
+            {{
+              getTranslationLabel(
+                'configurationLoadFailed',
+                'Die KI-Konfiguration konnte nicht geladen werden.',
+              )
+            }}
+          </div>
+          <v-btn variant="tonal" prepend-icon="mdi-refresh" @click="emit('retry-runtime-catalog')">
+            {{ getTranslationLabel('retryConfiguration', 'Erneut laden') }}
+          </v-btn>
+        </div>
+      </template>
+      <template v-else-if="hasConfiguredProviders">
+        <div class="sapling-chat-welcome__icon" aria-hidden="true">
+          <v-icon :icon="agentIcon || 'mdi-creation'" size="large" />
+        </div>
+        <div class="sapling-chat-welcome__copy">
+          <div class="sapling-section-title sapling-chat-welcome__title">{{ agentTitle }}</div>
+          <SaplingMarkdownContent
+            v-if="welcomeMessage"
+            class="sapling-chat-welcome__message"
+            :source="welcomeMessage"
+          />
+          <p v-else class="sapling-chat-welcome__message">{{ t('aiChat.noMessages') }}</p>
+        </div>
+        <div
+          v-if="conversationStarters.length > 0"
+          class="sapling-chat-welcome__starters"
+          :aria-label="getTranslationLabel('conversationStarters', 'Vorschläge')"
+        >
+          <v-btn
+            v-for="starter in conversationStarters"
+            :key="starter"
+            class="sapling-chat-welcome__starter"
+            variant="tonal"
+            append-icon="mdi-arrow-right"
+            @click="emit('select-starter', starter)"
+          >
+            {{ starter }}
+          </v-btn>
+        </div>
+      </template>
+      <template v-else>
+        <div class="sapling-chat-welcome__icon" aria-hidden="true">
+          <v-icon icon="mdi-cloud-alert-outline" size="large" />
+        </div>
+        <div class="sapling-chat-welcome__copy">
+          <div class="sapling-section-title sapling-chat-welcome__title">
+            {{ t('aiChat.noConfiguredProviders') }}
+          </div>
+          <v-btn variant="tonal" prepend-icon="mdi-refresh" @click="emit('retry-runtime-catalog')">
+            {{ getTranslationLabel('retryConfiguration', 'Erneut laden') }}
+          </v-btn>
+        </div>
+      </template>
     </div>
 
     <div
@@ -30,17 +101,45 @@
         'sapling-ai-chat__message--assistant': message.role === 'assistant',
         'sapling-ai-chat__message--failed': message.status === 'failed',
         'sapling-chat-message--user': message.role === 'user',
+        'sapling-chat-message--assistant': message.role === 'assistant',
         'sapling-chat-message--failed': message.status === 'failed',
       }"
     >
-      <div class="sapling-chat-message__role sapling-ai-chat__message-role">
-        {{ getMessageRoleLabel(message) }}
-        <span
-          v-if="message.status === 'streaming' || message.status === 'failed'"
-          class="sapling-chat-message__status sapling-ai-chat__message-status"
-        >
-          {{ getMessageStatusLabel(message) }}
-        </span>
+      <div class="sapling-chat-message__role-row">
+        <div class="sapling-chat-message__role sapling-ai-chat__message-role">
+          {{ getMessageRoleLabel(message) }}
+          <span
+            v-if="message.status === 'streaming' || message.status === 'failed'"
+            class="sapling-chat-message__status sapling-ai-chat__message-status"
+          >
+            {{ getMessageStatusLabel(message) }}
+          </span>
+          <time
+            v-if="message.createdAt"
+            class="sapling-chat-message__time"
+            :datetime="toDateTimeAttribute(message.createdAt)"
+          >
+            {{ formatMessageTime(message.createdAt) }}
+          </time>
+        </div>
+        <v-btn
+          v-if="canCopyMessage(message)"
+          class="sapling-chat-message__copy"
+          :icon="copiedMessageKey === getMessageKey(message) ? 'mdi-check' : 'mdi-content-copy'"
+          size="x-small"
+          variant="text"
+          :aria-label="
+            copiedMessageKey === getMessageKey(message)
+              ? getTranslationLabel('messageCopied', 'Nachricht kopiert')
+              : getTranslationLabel('copyMessage', 'Nachricht kopieren')
+          "
+          :title="
+            copiedMessageKey === getMessageKey(message)
+              ? getTranslationLabel('messageCopied', 'Nachricht kopiert')
+              : getTranslationLabel('copyMessage', 'Nachricht kopieren')
+          "
+          @click="copyMessage(message)"
+        />
       </div>
       <div class="sapling-chat-message__content sapling-ai-chat__message-content">
         <div
@@ -120,17 +219,13 @@
 </template>
 
 <script lang="ts" setup>
-import { nextTick, ref, watch } from 'vue'
+import { nextTick, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import SaplingMarkdownContent from '@/components/common/SaplingMarkdownContent.vue'
 import type { AiChatMessageItem, AiChatToolActionItem } from '@/entity/entity'
 import { normalizeAiChatErrorMessage } from '@/utils/aiChatError'
 import SaplingAiChatToolActions from './SaplingAiChatToolActions.vue'
-import {
-  getMessageNavigationLinks,
-  getMessageToolActions,
-  getPrimaryRouteNavigationLink,
-} from './aiChatNavigation'
+import { getMessageNavigationLinks, getMessageToolActions } from './aiChatNavigation'
 import { useSaplingAiChatNavigation } from './useSaplingAiChatNavigation'
 
 interface ChatImportAttachment {
@@ -146,7 +241,14 @@ interface ChatImportAttachment {
 
 const props = defineProps<{
   messages: AiChatMessageItem[]
+  agentTitle: string
+  agentIcon?: string | null
+  welcomeMessage?: string | null
+  conversationStarters: string[]
   hasConfiguredProviders: boolean
+  isLoadingRuntimeCatalog: boolean
+  hasLoadedRuntimeCatalog: boolean
+  runtimeCatalogLoadFailed: boolean
   hasMoreMessages: boolean
   isLoadingOlderMessages: boolean
   isVoiceOutputAvailable: boolean
@@ -159,6 +261,8 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (event: 'close'): void
+  (event: 'select-starter', starter: string): void
+  (event: 'retry-runtime-catalog'): void
   (event: 'load-older-messages'): void
   (event: 'toggle-message-speech', message: AiChatMessageItem): void
   (event: 'confirm-tool-action', action: AiChatToolActionItem): void
@@ -170,10 +274,33 @@ const { getNavigationLinkLabel, openNavigationLink } = useSaplingAiChatNavigatio
   onNavigated: () => emit('close'),
 })
 const messageContainer = ref<HTMLElement | null>(null)
-const autoOpenedNavigationKeys = new Set<string>()
+const isNearMessageListBottom = ref(true)
+const copiedMessageKey = ref<string | null>(null)
+let copiedMessageTimer: number | null = null
+
+onUnmounted(() => {
+  if (copiedMessageTimer != null) window.clearTimeout(copiedMessageTimer)
+})
 
 function getLastItem<T>(items: readonly T[]): T | undefined {
   return items.length > 0 ? items[items.length - 1] : undefined
+}
+
+watch(
+  () => getMessageSessionKey(props.messages[0]),
+  async () => {
+    isNearMessageListBottom.value = true
+    await nextTick()
+    if (messageContainer.value) {
+      messageContainer.value.scrollTop = messageContainer.value.scrollHeight
+    }
+  },
+)
+
+function getMessageSessionKey(message?: AiChatMessageItem) {
+  const session = message?.session
+  if (typeof session === 'number') return session
+  return session?.handle ?? null
 }
 
 function shouldShowMessageActions(message: AiChatMessageItem) {
@@ -276,31 +403,49 @@ watch(
   },
   async () => {
     await nextTick()
-    if (messageContainer.value)
+    if (messageContainer.value && isNearMessageListBottom.value)
       messageContainer.value.scrollTop = messageContainer.value.scrollHeight
   },
 )
 
-watch(
-  () => {
-    const lastMessage = getLastItem(props.messages)
-    const link = lastMessage ? getPrimaryRouteNavigationLink(lastMessage) : null
-    return {
-      handle: lastMessage?.handle ?? null,
-      status: lastMessage?.status ?? null,
-      role: lastMessage?.role ?? null,
-      path: link?.path ?? null,
-      kind: link?.kind ?? null,
-    }
-  },
-  async ({ handle, status, role, path, kind }) => {
-    if (role !== 'assistant' || status !== 'completed' || kind !== 'route' || !path) return
-    const navigationKey = `${handle ?? 'pending'}:${path}`
-    if (autoOpenedNavigationKeys.has(navigationKey)) return
-    autoOpenedNavigationKeys.add(navigationKey)
-    await openNavigationLink(path)
-  },
-)
+function handleMessageScroll() {
+  const container = messageContainer.value
+  if (!container) return
+  isNearMessageListBottom.value =
+    container.scrollHeight - container.scrollTop - container.clientHeight < 96
+}
+
+function canCopyMessage(message: AiChatMessageItem) {
+  return message.status !== 'streaming' && !!message.content?.trim()
+}
+
+function getMessageKey(message: AiChatMessageItem) {
+  return String(message.handle ?? `${message.sequence}-${message.role}`)
+}
+
+async function copyMessage(message: AiChatMessageItem) {
+  if (!canCopyMessage(message) || !navigator.clipboard) return
+
+  try {
+    await navigator.clipboard.writeText(message.content)
+    copiedMessageKey.value = getMessageKey(message)
+    if (copiedMessageTimer != null) window.clearTimeout(copiedMessageTimer)
+    copiedMessageTimer = window.setTimeout(() => (copiedMessageKey.value = null), 1800)
+  } catch {
+    // Clipboard permissions remain controlled by the browser.
+  }
+}
+
+function formatMessageTime(value: Date | string) {
+  const date = value instanceof Date ? value : new Date(value)
+  if (!Number.isFinite(date.getTime())) return ''
+  return new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit' }).format(date)
+}
+
+function toDateTimeAttribute(value: Date | string) {
+  const date = value instanceof Date ? value : new Date(value)
+  return Number.isFinite(date.getTime()) ? date.toISOString() : ''
+}
 
 function getMessageRoleLabel(message: AiChatMessageItem) {
   return message.role === 'assistant' ? props.assistantName : props.currentPersonDisplayName

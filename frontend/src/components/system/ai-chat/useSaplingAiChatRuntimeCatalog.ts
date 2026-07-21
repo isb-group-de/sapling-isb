@@ -9,6 +9,9 @@ import ApiAiService from '@/services/api.ai.service'
 import type { SaplingAiPreferences } from '@/services/ai-preferences.service'
 import { getModelHandle, getProviderHandle, resolveRuntimeTarget } from './aiChatRuntimeTargets'
 
+const RUNTIME_CATALOG_RETRY_DELAY_MS = 200
+const RUNTIME_CATALOG_REQUEST_TIMEOUT_MS = 6000
+
 export function useSaplingAiChatRuntimeCatalog(
   activeSession: Ref<AiChatSessionItem | null>,
   preferences: SaplingAiPreferences,
@@ -41,8 +44,14 @@ export function useSaplingAiChatRuntimeCatalog(
     speechProviders: false,
     speechModels: false,
   })
+  const hasLoadedRuntimeCatalog = ref(false)
+  const hasRuntimeCatalogLoadError = ref(false)
+  let runtimeCatalogPromise: Promise<void> | null = null
 
   const isLoadingRuntimeCatalog = computed(() => Object.values(loading.value).some(Boolean))
+  const isLoadingChatRuntimeCatalog = computed(
+    () => loading.value.providers || loading.value.models,
+  )
   const hasConfiguredProviders = computed(
     () => providerConfigs.value.length > 0 && modelConfigs.value.length > 0,
   )
@@ -92,15 +101,21 @@ export function useSaplingAiChatRuntimeCatalog(
     ),
   )
 
-  async function loadRuntimeCatalogs() {
-    await Promise.all([
-      loadCatalog(
-        'providers',
-        ApiAiService.listProviders,
-        providerConfigs,
-        syncSelectedRuntimeTarget,
-      ),
-      loadCatalog('models', ApiAiService.listModels, modelConfigs, syncSelectedRuntimeTarget),
+  function loadRuntimeCatalogs(): Promise<void> {
+    if (runtimeCatalogPromise) return runtimeCatalogPromise
+
+    const request = runRuntimeCatalogLoad()
+    runtimeCatalogPromise = request
+    void request.finally(() => {
+      if (runtimeCatalogPromise === request) runtimeCatalogPromise = null
+    })
+    return request
+  }
+
+  async function runRuntimeCatalogLoad() {
+    hasRuntimeCatalogLoadError.value = false
+
+    const supplementalCatalogs = Promise.allSettled([
       loadCatalog('agents', ApiAiService.listAgents, agentConfigs, () => {
         syncSelectedAgent()
         syncSelectedPlaybook()
@@ -131,6 +146,52 @@ export function useSaplingAiChatRuntimeCatalog(
         syncSelectedSpeechTarget,
       ),
     ])
+    const [chatCatalogResult] = await Promise.allSettled([loadChatRuntimeCatalog()])
+
+    hasRuntimeCatalogLoadError.value = chatCatalogResult.status === 'rejected'
+    hasLoadedRuntimeCatalog.value = true
+    await supplementalCatalogs
+  }
+
+  async function loadChatRuntimeCatalog() {
+    setLoading('providers', true)
+    setLoading('models', true)
+
+    try {
+      let lastError: unknown = null
+
+      for (let attempt = 0; attempt < 2; attempt += 1) {
+        try {
+          const [providers, models] = await Promise.all([
+            withRuntimeCatalogTimeout(
+              ApiAiService.listProviders({ suppressErrorMessage: attempt === 0 }),
+            ),
+            withRuntimeCatalogTimeout(
+              ApiAiService.listModels(undefined, { suppressErrorMessage: attempt === 0 }),
+            ),
+          ])
+          const shouldRetryEmptyCatalog =
+            attempt === 0 && (providers.length === 0 || models.length === 0)
+
+          if (!shouldRetryEmptyCatalog) {
+            providerConfigs.value = providers
+            modelConfigs.value = models
+            syncSelectedRuntimeTarget()
+            return
+          }
+        } catch (error) {
+          lastError = error
+          if (attempt === 1) throw error
+        }
+
+        await waitForRuntimeCatalogRetry()
+      }
+
+      if (lastError) throw lastError
+    } finally {
+      setLoading('providers', false)
+      setLoading('models', false)
+    }
   }
 
   async function loadCatalog<T>(
@@ -139,13 +200,17 @@ export function useSaplingAiChatRuntimeCatalog(
     target: Ref<T[]>,
     synchronize: () => void,
   ) {
-    loading.value = { ...loading.value, [key]: true }
+    setLoading(key, true)
     try {
-      target.value = await loader()
+      target.value = await withRuntimeCatalogTimeout(loader())
       synchronize()
     } finally {
-      loading.value = { ...loading.value, [key]: false }
+      setLoading(key, false)
     }
+  }
+
+  function setLoading(key: keyof typeof loading.value, value: boolean) {
+    loading.value = { ...loading.value, [key]: value }
   }
 
   function applyPreferences(nextPreferences: SaplingAiPreferences) {
@@ -285,6 +350,9 @@ export function useSaplingAiChatRuntimeCatalog(
     selectedSpeechProviderHandle,
     selectedSpeechModelHandle,
     isLoadingRuntimeCatalog,
+    isLoadingChatRuntimeCatalog,
+    hasLoadedRuntimeCatalog,
+    hasRuntimeCatalogLoadError,
     hasConfiguredProviders,
     hasConfiguredTranscriptionProviders,
     canSendMessage,
@@ -301,6 +369,24 @@ export function useSaplingAiChatRuntimeCatalog(
     getAgentHandle,
     getPlaybookHandle,
   }
+}
+
+function waitForRuntimeCatalogRetry() {
+  return new Promise<void>((resolve) => window.setTimeout(resolve, RUNTIME_CATALOG_RETRY_DELAY_MS))
+}
+
+function withRuntimeCatalogTimeout<T>(request: Promise<T>) {
+  let timeoutHandle: number | null = null
+  const timeout = new Promise<never>((_resolve, reject) => {
+    timeoutHandle = window.setTimeout(
+      () => reject(new Error('ai.chat.runtimeCatalogTimeout')),
+      RUNTIME_CATALOG_REQUEST_TIMEOUT_MS,
+    )
+  })
+
+  return Promise.race([request, timeout]).finally(() => {
+    if (timeoutHandle != null) window.clearTimeout(timeoutHandle)
+  })
 }
 
 function getAgentHandle(agent?: AiAgentItem | string | null) {

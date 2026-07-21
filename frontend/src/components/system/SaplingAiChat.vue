@@ -42,7 +42,7 @@
               @close="closePanel"
               @new-chat="startNewChat"
               @open-account-settings="openAccountSettings"
-              @refresh="reloadSessions"
+              @refresh="refreshChat"
             />
 
             <div class="sapling-floating-panel__progress-slot sapling-ai-chat__progress-slot">
@@ -62,6 +62,7 @@
                 :include-archived="includeArchived"
                 :editing-session-handle="editingSessionHandle"
                 :editing-session-title="editingSessionTitle"
+                :session-activity-by-handle="sessionActivityByHandle"
                 :is-collapsible="isMobileLayout"
                 :is-collapsed="isSessionRailCollapsed"
                 :title-preview-limit="TITLE_PREVIEW_LIMIT"
@@ -70,6 +71,7 @@
                 @update:editing-session-title="editingSessionTitle = $event"
                 @select="selectSession"
                 @begin-rename="beginRename"
+                @cancel-rename="cancelRename"
                 @save-title="saveSessionTitle"
                 @toggle-archive="toggleArchive"
               />
@@ -78,11 +80,15 @@
                 :active-conversation-title="activeConversationTitle"
                 :active-runtime-summary="activeRuntimeSummary"
                 :agent-options="agentOptions"
+                :selected-agent-config="selectedAgentConfig"
                 :selected-agent-handle="selectedAgentHandle"
                 :playbook-options="playbookOptions"
                 :selected-playbook-handle="selectedPlaybookHandle"
                 :is-agent-locked="!!activeSession?.handle"
                 :has-configured-providers="hasConfiguredProviders"
+                :is-loading-runtime-catalog="isLoadingChatRuntimeCatalog"
+                :has-loaded-runtime-catalog="hasLoadedRuntimeCatalog"
+                :runtime-catalog-load-failed="hasRuntimeCatalogLoadError"
                 :has-configured-transcription-providers="hasConfiguredTranscriptionProviders"
                 :can-send-message="canSendMessage"
                 :is-sending="isSending"
@@ -115,6 +121,7 @@
                 @upload-import-attachment="uploadImportAttachment"
                 @remove-import-attachment="removeImportAttachment"
                 @send="sendMessage"
+                @retry-runtime-catalog="loadRuntimeCatalogs"
               />
             </div>
           </template>
@@ -137,6 +144,7 @@ import SaplingAiChatConversation from '@/components/system/ai-chat/SaplingAiChat
 import SaplingAiChatHeader from '@/components/system/ai-chat/SaplingAiChatHeader.vue'
 import SaplingAiChatLoadingState from '@/components/system/ai-chat/SaplingAiChatLoadingState.vue'
 import SaplingAiChatSessions from '@/components/system/ai-chat/SaplingAiChatSessions.vue'
+import type { AiChatSessionActivity } from '@/components/system/ai-chat/aiChatSessionPresentation'
 import { useSaplingAiChatAttachments } from '@/components/system/ai-chat/useSaplingAiChatAttachments'
 import { useSaplingAiChatMessages } from '@/components/system/ai-chat/useSaplingAiChatMessages'
 import { useSaplingAiChatRuntimeCatalog } from '@/components/system/ai-chat/useSaplingAiChatRuntimeCatalog'
@@ -174,7 +182,7 @@ const route = useRoute()
 const currentPersonStore = useCurrentPersonStore()
 const messageCenter = useSaplingMessageCenter()
 const { t } = useI18n()
-const { mdAndDown } = useDisplay()
+const { mdAndDown, smAndDown } = useDisplay()
 const { isLoading: isTranslationLoading, loadTranslations } = useTranslationLoader(
   'aiChat',
   'ai',
@@ -183,12 +191,13 @@ const { isLoading: isTranslationLoading, loadTranslations } = useTranslationLoad
   'global',
 )
 const isCompactHeaderActions = mdAndDown
-const isMobileLayout = computed(() => mdAndDown.value)
+const isMobileLayout = computed(() => smAndDown.value)
 const activeSession = ref<AiChatSessionItem | null>(null)
 const draftMessage = ref('')
 const selectedContextEntityHandle = ref<string | null>(null)
 const selectedContextRecordHandle = ref<string | null>(null)
 const isSessionRailCollapsed = ref(false)
+const sessionActivityByHandle = ref<Record<number, AiChatSessionActivity>>({})
 const hasInitialized = ref(false)
 let initializationPromise: Promise<void> | null = null
 let streamingClockTimer: number | null = null
@@ -230,7 +239,9 @@ const {
   selectedTranscriptionModelHandle,
   selectedSpeechProviderHandle,
   selectedSpeechModelHandle,
-  isLoadingRuntimeCatalog,
+  isLoadingChatRuntimeCatalog,
+  hasLoadedRuntimeCatalog,
+  hasRuntimeCatalogLoadError,
   hasConfiguredProviders,
   hasConfiguredTranscriptionProviders,
   canSendMessage,
@@ -273,6 +284,7 @@ const {
   loadOlderMessages,
   updateIncludeArchived,
   beginRename,
+  cancelRename,
   saveSessionTitle,
   toggleArchive,
   replaceSession,
@@ -357,11 +369,13 @@ const {
   replaceSession,
   loadMessages,
   autoPlayAssistantSpeech,
+  onSessionResponseStarted: markSessionResponseStarted,
+  onSessionResponseFinished: markSessionResponseFinished,
 })
 
 const isBusy = computed(
   () =>
-    isLoadingRuntimeCatalog.value ||
+    isLoadingChatRuntimeCatalog.value ||
     isLoadingSessions.value ||
     isLoadingMessages.value ||
     isSending.value,
@@ -401,6 +415,7 @@ watch(
   () => isOpen.value,
   async (nextIsOpen) => {
     if (!nextIsOpen) return
+    markSessionRead(activeSession.value?.handle)
     if (!(await ensureSaplingAiChatAccess())) {
       closePanel()
       return
@@ -411,6 +426,7 @@ watch(
       // Underlying services already report initialization failures.
     }
   },
+  { immediate: true },
 )
 watch(hasSaplingAiChatAccess, (hasAccess) => {
   if (!hasAccess && isOpen.value) closePanel()
@@ -477,7 +493,7 @@ async function openPromptFromScriptButton(detail?: SaplingAiChatPromptEventDetai
 }
 
 async function ensureChatInitialized() {
-  if (hasInitialized.value) return
+  if (hasInitialized.value && hasLoadedRuntimeCatalog.value) return
   if (initializationPromise) return initializationPromise
 
   initializationPromise = (async () => {
@@ -497,10 +513,15 @@ async function ensureChatInitialized() {
   }
 }
 
+async function refreshChat() {
+  await Promise.all([loadRuntimeCatalogs(), reloadSessions()])
+}
+
 async function selectSession(session: AiChatSessionItem) {
   cancelVoiceInput()
   stopSpeechPlayback()
   activeSession.value = session
+  markSessionRead(session.handle)
   selectedAgentHandle.value = getAgentHandle(session.agent)
   selectedPlaybookHandle.value = getPlaybookHandle(session.playbook)
   activeTranscriptionHandle.value = null
@@ -543,6 +564,36 @@ function updateDraftMessage(value: string) {
 
 function toggleSessionRail() {
   if (isMobileLayout.value) isSessionRailCollapsed.value = !isSessionRailCollapsed.value
+}
+
+function markSessionResponseStarted(sessionHandle: number) {
+  sessionActivityByHandle.value = {
+    ...sessionActivityByHandle.value,
+    [sessionHandle]: 'responding',
+  }
+}
+
+function markSessionResponseFinished(sessionHandle: number) {
+  if (isOpen.value && activeSession.value?.handle === sessionHandle) {
+    clearSessionActivity(sessionHandle)
+    return
+  }
+
+  sessionActivityByHandle.value = {
+    ...sessionActivityByHandle.value,
+    [sessionHandle]: 'unread',
+  }
+}
+
+function markSessionRead(sessionHandle?: number | null) {
+  if (sessionHandle == null || sessionActivityByHandle.value[sessionHandle] !== 'unread') return
+  clearSessionActivity(sessionHandle)
+}
+
+function clearSessionActivity(sessionHandle: number) {
+  const nextActivity = { ...sessionActivityByHandle.value }
+  delete nextActivity[sessionHandle]
+  sessionActivityByHandle.value = nextActivity
 }
 
 function closePanel() {

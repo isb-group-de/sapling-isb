@@ -32,17 +32,22 @@ import type {
 export * from '@/services/api.ai.types'
 
 class ApiAiService {
-  static async listProviders(): Promise<AiProviderTypeItem[]> {
+  static async listProviders(options?: {
+    suppressErrorMessage?: boolean
+  }): Promise<AiProviderTypeItem[]> {
     try {
       const response = await axios.get<AiProviderTypeItem[]>(buildApiUrl('ai/chat/providers'))
       return response.data
     } catch (error: unknown) {
-      this.handleError(error, 'ai.chat.providerListFailed')
+      if (!options?.suppressErrorMessage) this.handleError(error, 'ai.chat.providerListFailed')
       throw error
     }
   }
 
-  static async listModels(providerHandle?: string): Promise<AiProviderModelItem[]> {
+  static async listModels(
+    providerHandle?: string,
+    options?: { suppressErrorMessage?: boolean },
+  ): Promise<AiProviderModelItem[]> {
     try {
       const response = await axios.get<AiProviderModelItem[]>(buildApiUrl('ai/chat/models'), {
         params: {
@@ -52,7 +57,7 @@ class ApiAiService {
 
       return response.data
     } catch (error: unknown) {
-      this.handleError(error, 'ai.chat.modelListFailed')
+      if (!options?.suppressErrorMessage) this.handleError(error, 'ai.chat.modelListFailed')
       throw error
     }
   }

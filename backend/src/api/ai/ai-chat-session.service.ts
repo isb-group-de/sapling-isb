@@ -34,7 +34,10 @@ export class AiChatSessionService {
     const userHandle = this.chatPersistence.requireUserHandle(user);
     const sessions = await this.em.find(
       AiChatSessionItem,
-      { person: { handle: userHandle }, isArchived: includeArchived },
+      {
+        person: { handle: userHandle },
+        ...(includeArchived ? {} : { isArchived: false }),
+      },
       {
         populate: [
           'provider',

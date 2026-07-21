@@ -186,6 +186,8 @@ Important schema fields:
 - `name`: payload and filter field name
 - `kind`: relation kind such as `m:1` or `1:m`
 - `referenceName`: target entity handle
+- `referencedPks`: target primary-key fields that a mutation must submit
+- `referencePrimaryKeys`: target primary-key names and value types
 - `isRequired`: required create/update context
 - `options`: Sapling decorators such as `isValue`, `isMarkdown`, `isChip`, `isMoney`, `isDateStart`, `isSecurity`
 - `relationNames`: valid relations for population
@@ -220,7 +222,10 @@ Before creating:
 
 1. Inspect `entity_schema`.
 2. Identify required fields.
-3. Resolve references by handle with `generic_list` or `generic_get`.
+3. For every reference field, query the entity named by `referenceName` with
+   `generic_list` or `generic_get`, then submit the key value(s) named by
+   `referencedPks` (normally `handle`). Never submit `displayValue`, a title,
+   or another display label as the stored reference value.
 4. Do not send generated primary keys or read-only fields.
 5. Send only meaningful business fields.
 
@@ -229,8 +234,10 @@ Before updating:
 1. Load the current record with `generic_get`.
 2. Confirm the field exists and is not security-only.
 3. Send a small partial payload.
-4. Request relations only if the response needs them.
-5. Explain the business change, not the raw mutation response.
+4. Resolve changed references through `referenceName` and submit their
+   `referencedPks` values, not their display labels.
+5. Request relations only if the response needs them.
+6. Explain the business change, not the raw mutation response.
 
 Before deleting:
 

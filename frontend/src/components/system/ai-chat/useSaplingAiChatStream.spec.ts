@@ -26,6 +26,8 @@ function setup() {
     replaceSession: vi.fn(),
     loadMessages: vi.fn(async () => undefined),
     autoPlayAssistantSpeech: vi.fn(async () => undefined),
+    onSessionResponseStarted: vi.fn(),
+    onSessionResponseFinished: vi.fn(),
   }
   const state = useSaplingAiChatStream({
     route: {
@@ -90,10 +92,41 @@ describe('useSaplingAiChatStream', () => {
       expect.any(AbortSignal),
     )
     expect(testState.callbacks.replaceSession).toHaveBeenCalledWith(session)
+    expect(testState.callbacks.onSessionResponseStarted).toHaveBeenCalledWith(22)
+    expect(testState.callbacks.onSessionResponseFinished).toHaveBeenCalledWith(22)
     expect(testState.callbacks.upsertMessage).toHaveBeenCalledWith(assistantMessage)
     expect(testState.callbacks.autoPlayAssistantSpeech).toHaveBeenCalledWith(assistantMessage)
     expect(testState.pendingAttachments.value).toEqual([])
     expect(testState.state.isSending.value).toBe(false)
+  })
+
+  it('keeps streaming activity in its source session when another chat is selected', async () => {
+    const sourceSession = { handle: 22, title: 'Long answer' } as AiChatSessionItem
+    const otherSession = { handle: 23, title: 'Other chat' } as AiChatSessionItem
+    const assistantMessage = {
+      handle: 32,
+      session: 22,
+      role: 'assistant',
+      status: 'completed',
+      content: 'Done',
+    } as AiChatMessageItem
+    const testState = setup()
+    api.streamMessage.mockImplementation(
+      async (_payload: unknown, onEvent: (event: Record<string, unknown>) => void) => {
+        onEvent({ type: 'session.upsert', session: sourceSession })
+        testState.activeSession.value = otherSession
+        onEvent({ type: 'message.delta', handle: 32, delta: 'Done' })
+        onEvent({ type: 'message.completed', message: assistantMessage, session: sourceSession })
+      },
+    )
+
+    await testState.state.sendMessage()
+
+    expect(testState.activeSession.value).toEqual(otherSession)
+    expect(testState.callbacks.appendMessageDelta).not.toHaveBeenCalled()
+    expect(testState.callbacks.upsertMessage).not.toHaveBeenCalled()
+    expect(testState.callbacks.onSessionResponseStarted).toHaveBeenCalledWith(22)
+    expect(testState.callbacks.onSessionResponseFinished).toHaveBeenCalledWith(22)
   })
 
   it('upserts confirmed actions and their follow-up action into the source message', async () => {
@@ -131,6 +164,23 @@ describe('useSaplingAiChatStream', () => {
     expect(testState.messages.value[0]?.responsePayload).toMatchObject({
       pendingToolActions: [confirmedAction, followUpAction],
     })
+    expect(testState.state.activeToolActionHandles.value).toEqual({})
+  })
+
+  it('settles failed tool-action requests and clears their loading state', async () => {
+    const action = {
+      handle: 7,
+      message: 44,
+      serverName: 'sapling',
+      toolName: 'generic_update',
+      status: 'pending',
+    } as AiChatToolActionItem
+    api.confirmToolAction.mockRejectedValue(new Error('request failed'))
+    const testState = setup()
+
+    await expect(testState.state.confirmToolAction(action)).resolves.toBeUndefined()
+
+    expect(api.confirmToolAction).toHaveBeenCalledWith(7)
     expect(testState.state.activeToolActionHandles.value).toEqual({})
   })
 })

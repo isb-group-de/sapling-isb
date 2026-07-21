@@ -116,6 +116,11 @@ export function useSaplingAiChatSessions(options: SaplingAiChatSessionOptions) {
     editingSessionTitle.value = session.title
   }
 
+  function cancelRename() {
+    editingSessionHandle.value = null
+    editingSessionTitle.value = ''
+  }
+
   async function saveSessionTitle(session: AiChatSessionItem) {
     const nextTitle = editingSessionTitle.value.trim()
 
@@ -174,6 +179,7 @@ export function useSaplingAiChatSessions(options: SaplingAiChatSessionOptions) {
     loadOlderMessages,
     updateIncludeArchived,
     beginRename,
+    cancelRename,
     saveSessionTitle,
     toggleArchive,
     replaceSession,
