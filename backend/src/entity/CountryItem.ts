@@ -133,6 +133,7 @@ export class CountryItem {
    */
   @ApiProperty({ type: () => AddressItem, isArray: true })
   @OneToMany(() => AddressItem, (x) => x.country)
+  @Sapling(['isHideAsReference'])
   addresses: Collection<AddressItem> = new Collection<AddressItem>(this);
   // #endregion
 
