@@ -325,6 +325,7 @@ export class AiAgentItem {
   sortOrder = 100;
 
   @ApiPropertyOptional({ type: () => AiChatSessionItem, isArray: true })
+  @Sapling(['isHideAsReference'])
   @OneToMany(() => AiChatSessionItem, (session) => session.agent)
   sessions: Collection<AiChatSessionItem> = new Collection<AiChatSessionItem>(
     this,
