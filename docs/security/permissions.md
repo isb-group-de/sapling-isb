@@ -163,7 +163,10 @@ sales, customer, and contractor role data. The larger support-role dataset is a
 separate module and is compatibility-re-exported from `permission-matrices.ts`,
 so existing seeder imports remain stable.
 
-The seeder creates missing permissions for every entity/role combination. It does not update existing permissions.
+The seeder creates missing permissions for every entity/role combination. It
+preserves existing permissions for normal roles. Existing administrator
+permissions are synchronized with the entity capability flags so newly enabled
+entity operations become available after deployment.
 
 Known role handles live in:
 

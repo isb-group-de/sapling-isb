@@ -109,6 +109,10 @@ export class GoogleCalendarService {
       throw new Error('calendar.eventNotFound');
     }
 
+    if (!event.status) {
+      return null;
+    }
+
     const reference = await emFork.findOne(EventGoogleItem, {
       event: event.handle as never,
     });
@@ -192,7 +196,7 @@ export class GoogleCalendarService {
       throw new ForbiddenException('calendar.googleUserRequired');
     }
 
-    if (!user.company || !type || !scheduledStatus || !canceledStatus) {
+    if (!user.company) {
       throw new BadRequestException('calendar.importDefaultsMissing');
     }
 
@@ -202,6 +206,11 @@ export class GoogleCalendarService {
       updated: 0,
       skipped: 0,
     };
+
+    if (!type || !scheduledStatus || !canceledStatus) {
+      result.skipped = graphEvents.length;
+      return result;
+    }
 
     for (const graphEvent of graphEvents) {
       const saved = await this.upsertImportedEvent(emFork, graphEvent, {

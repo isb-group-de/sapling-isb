@@ -108,14 +108,13 @@ describe('email inbox synchronization rules', () => {
     expect(prompt).toContain('person=102 and company=27');
     expect(prompt).toContain('Do not answer with analysis or prose only');
     expect(prompt).toContain('This is the only correction attempt');
-    expect(prompt).toContain('server-side defaults status="open"');
-    expect(prompt).toContain('priority="normal"');
+    expect(prompt).toContain('Status and priority are optional catalogs');
     expect(prompt).toContain('type="incident"');
     expect(prompt).toContain('source="email"');
     expect(prompt).toContain('omit them');
   });
 
-  it('fills missing required ticket references with deterministic defaults', () => {
+  it('fills only the still-required ticket references with deterministic defaults', () => {
     const action = {
       toolName: 'generic_create',
       arguments: {
@@ -128,7 +127,6 @@ describe('email inbox synchronization rules', () => {
 
     expect(action.arguments?.data).toEqual({
       title: 'Request',
-      status: 'open',
       priority: 'high',
       type: 'incident',
       source: 'email',

@@ -40,7 +40,7 @@ export class EffortEstimateItem {
   @Property({ length: 128, nullable: false })
   title!: string;
 
-  @ApiProperty({ type: () => EffortEstimateStatusItem, default: 'new' })
+  @ApiPropertyOptional({ type: () => EffortEstimateStatusItem })
   @Sapling(['isChip', 'isValue'])
   @SaplingForm({
     order: 200,
@@ -54,10 +54,10 @@ export class EffortEstimateItem {
     mobileVisible: true,
   })
   @ManyToOne(() => EffortEstimateStatusItem, {
-    default: 'new',
-    nullable: false,
+    nullable: true,
+    deleteRule: 'set null',
   })
-  status!: Rel<EffortEstimateStatusItem>;
+  status?: Rel<EffortEstimateStatusItem> | null;
 
   @ApiPropertyOptional({ type: 'string', format: 'date' })
   @Sapling(['isOrderASC', 'isDeadline'])

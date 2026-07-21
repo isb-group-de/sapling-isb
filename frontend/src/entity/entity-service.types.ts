@@ -16,9 +16,9 @@ export interface KnowledgeArticleItem extends SaplingGenericItem {
   /** Article title */
   title: string
   /** Current lifecycle status */
-  status: KnowledgeArticleStatusItem | string
+  status?: KnowledgeArticleStatusItem | string | null
   /** Intended article visibility */
-  visibility: KnowledgeArticleVisibilityItem | string
+  visibility?: KnowledgeArticleVisibilityItem | string | null
   /** Optional category */
   category?: KnowledgeArticleCategoryItem | string | null
   /** Optional product */
@@ -142,7 +142,7 @@ export interface InternalCaseItem extends SaplingGenericItem {
   /** Short title */
   title: string
   /** Current status */
-  status: InternalCaseStatusItem | string
+  status?: InternalCaseStatusItem | string | null
   /** Case category */
   category: InternalCaseCategoryItem | string
   /** Request content */
@@ -228,9 +228,9 @@ export interface TicketItem extends SaplingGenericItem {
   /** Person who created the ticket */
   creator?: PersonItem
   /** Status of the ticket */
-  status: TicketStatusItem
+  status?: TicketStatusItem | null
   /** Priority of the ticket */
-  priority?: TicketPriorityItem
+  priority?: TicketPriorityItem | null
   /** Related effort estimates */
   effortEstimates?: EffortEstimateItem[]
   /** Creation date */

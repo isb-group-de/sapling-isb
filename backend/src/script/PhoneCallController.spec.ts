@@ -35,8 +35,8 @@ describe('PhoneCallController', () => {
     const assigneePersonRef = { kind: 'assigneePersonRef' };
     const creatorCompanyRef = { kind: 'creatorCompanyRef' };
     const creatorPersonRef = { kind: 'creatorPersonRef' };
-    const eventTypeRef = { kind: 'eventTypeRef' };
-    const eventStatusRef = { kind: 'eventStatusRef' };
+    const eventType = { kind: 'eventType' };
+    const eventStatus = { kind: 'eventStatus' };
     const getReference = jest.fn((entity: unknown, handle: unknown) => {
       if (entity === CompanyItem && handle === 11) {
         return assigneeCompanyRef;
@@ -50,18 +50,16 @@ describe('PhoneCallController', () => {
       if (entity === PersonEntity && handle === 33) {
         return creatorPersonRef;
       }
-      if (entity === EventTypeItem && handle === 'call') {
-        return eventTypeRef;
-      }
-      if (entity === EventStatusItem && handle === 'completed') {
-        return eventStatusRef;
-      }
-
       return { entity, handle };
     });
     const em = {
       create,
       getReference,
+      findOne: jest.fn((entity: unknown) => {
+        if (entity === EventTypeItem) return Promise.resolve(eventType);
+        if (entity === EventStatusItem) return Promise.resolve(eventStatus);
+        return Promise.resolve(null);
+      }),
       persist: jest.fn(),
       flush: jest.fn(() => Promise.resolve(undefined)),
     };
@@ -98,8 +96,8 @@ describe('PhoneCallController', () => {
         endDate: new Date('2026-04-19T10:30:00.000Z'),
         isAllDay: false,
         onlineMeetingURL: '',
-        type: eventTypeRef,
-        status: eventStatusRef,
+        type: eventType,
+        status: eventStatus,
         assigneeCompany: assigneeCompanyRef,
         assigneePerson: assigneePersonRef,
         creatorCompany: creatorCompanyRef,
@@ -110,11 +108,6 @@ describe('PhoneCallController', () => {
     expect(asMock(getReference)).toHaveBeenCalledWith(CompanyItem, 12);
     expect(asMock(getReference)).toHaveBeenCalledWith(PersonEntity, 22);
     expect(asMock(getReference)).toHaveBeenCalledWith(PersonEntity, 33);
-    expect(asMock(getReference)).toHaveBeenCalledWith(EventTypeItem, 'call');
-    expect(asMock(getReference)).toHaveBeenCalledWith(
-      EventStatusItem,
-      'completed',
-    );
     expect(asMock(participants.add)).toHaveBeenCalledWith(assigneePersonRef);
     expect(asMock(em.persist)).toHaveBeenCalledWith(createdEvent);
     expect(asMock(em.flush)).toHaveBeenCalled();
@@ -128,8 +121,8 @@ describe('PhoneCallController', () => {
     const assigneePersonRef = { kind: 'assigneePersonRef' };
     const creatorCompanyRef = { kind: 'creatorCompanyRef' };
     const creatorPersonRef = { kind: 'creatorPersonRef' };
-    const eventTypeRef = { kind: 'eventTypeRef' };
-    const eventStatusRef = { kind: 'eventStatusRef' };
+    const eventType = { kind: 'eventType' };
+    const eventStatus = { kind: 'eventStatus' };
     const getReference = jest.fn((entity: unknown, handle: unknown) => {
       if (entity === CompanyItem && handle === 11) {
         return assigneeCompanyRef;
@@ -143,13 +136,6 @@ describe('PhoneCallController', () => {
       if (entity === PersonEntity && handle === 33) {
         return creatorPersonRef;
       }
-      if (entity === EventTypeItem && handle === 'call') {
-        return eventTypeRef;
-      }
-      if (entity === EventStatusItem && handle === 'completed') {
-        return eventStatusRef;
-      }
-
       return { entity, handle };
     });
     const loadedPhoneCall = {
@@ -168,6 +154,12 @@ describe('PhoneCallController', () => {
       persist: jest.fn(),
       flush: jest.fn(() => Promise.resolve(undefined)),
       findOne: jest.fn((entity: unknown, where: { handle: number }) => {
+        if (entity === EventTypeItem) {
+          return Promise.resolve(eventType);
+        }
+        if (entity === EventStatusItem) {
+          return Promise.resolve(eventStatus);
+        }
         if (entity === PhoneCallItem && where.handle === 44) {
           return Promise.resolve(loadedPhoneCall);
         }
@@ -200,13 +192,13 @@ describe('PhoneCallController', () => {
     await controller.afterInsert([phoneCall]);
 
     expect(asMock(em.findOne)).toHaveBeenNthCalledWith(
-      1,
+      3,
       PersonEntity,
       { handle: 33 },
       { populate: ['company'] },
     );
     expect(asMock(em.findOne)).toHaveBeenNthCalledWith(
-      2,
+      4,
       PhoneCallItem,
       { handle: 44 },
       { populate: ['person', 'person.company', 'entity'] },
@@ -222,5 +214,30 @@ describe('PhoneCallController', () => {
     );
     expect(asMock(participants.add)).toHaveBeenCalledWith(assigneePersonRef);
     expect(asMock(em.flush)).toHaveBeenCalled();
+  });
+
+  it('skips event creation when the configured call event type is missing', async () => {
+    const em = {
+      findOne: jest.fn((entity: unknown) =>
+        Promise.resolve(
+          entity === EventStatusItem ? { handle: 'completed' } : null,
+        ),
+      ),
+      create: jest.fn(),
+      persist: jest.fn(),
+      flush: jest.fn(() => Promise.resolve(undefined)),
+    };
+    const phoneCall = { handle: 44 } as PhoneCallItem;
+    const controller = new PhoneCallController(
+      { handle: 'phoneCall' } as never,
+      { handle: 33 } as PersonItem,
+      em as never,
+    );
+
+    await controller.afterInsert([phoneCall]);
+
+    expect(asMock(em.create)).not.toHaveBeenCalled();
+    expect(asMock(em.persist)).not.toHaveBeenCalled();
+    expect(asMock(em.flush)).not.toHaveBeenCalled();
   });
 });

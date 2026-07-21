@@ -95,7 +95,7 @@ export function buildInboundEmailActionRepairPrompt(
     'Reuse the inbound email and all search results already present in this chat session. If an exact business identifier resolves to an existing target, update that record. Otherwise create the configured target now.',
     'The inbound email is sufficient for creation. Use its subject as the title or summary and its readable body as the description or task content. Inspect the entity schema when needed, provide required fields, omit unknown optional fields, and use valid active/default references for required relations.',
     processingMode === 'ticket'
-      ? 'A new ticket already receives the server-side defaults status="open", priority="normal", type="incident", and source="email". Do not stop because these fields are non-null: omit them when no verified alternative is required by the configured mailbox context.'
+      ? 'A new ticket already receives the server-side defaults type="incident" and source="email". Status and priority are optional catalogs; use only verified values and omit them when no configured value is available.'
       : null,
     `For a new record, the customer is fixed to sender person=${getRelationHandle(email.person) ?? 'none'} and company=${getRelationHandle(email.company) ?? 'none'}. Never substitute a recipient, mailbox, or processing user. For an update, preserve the existing customer.`,
     'Never delete records and never mutate a different entity. This is the only correction attempt.',
@@ -119,8 +119,6 @@ export function applyInboundActionDefaults(
   const actionArguments = { ...(action.arguments ?? {}) };
   const data = { ...asRecord(actionArguments.data) };
   const defaults: Record<string, string> = {
-    status: 'open',
-    priority: 'normal',
     type: 'incident',
     source: 'email',
   };

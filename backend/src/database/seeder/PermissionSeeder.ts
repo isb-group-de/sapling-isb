@@ -54,10 +54,13 @@ export class PermissionSeeder extends Seeder {
       populate: ['entity', 'role'],
     });
 
-    const existingKeys = new Set(
+    const existingByKey = new Map<string, PermissionItem>(
       existingPermissions.map(
         (permission) =>
-          `${permission.entity.handle}|${permission.role.handle ?? ''}`,
+          [
+            `${permission.entity.handle}|${permission.role.handle ?? ''}`,
+            permission,
+          ] as const,
       ),
     );
 
@@ -66,14 +69,22 @@ export class PermissionSeeder extends Seeder {
     for (const entity of entities) {
       for (const role of roles) {
         const key = `${entity.handle}|${role.handle ?? ''}`;
-        if (existingKeys.has(key)) {
-          continue;
-        }
-
+        const existingPermission = existingByKey.get(key);
         const nextPermission = this.getPermissionsForRole(
           entity,
           role.handle ?? 0,
         );
+
+        if (existingPermission) {
+          if (
+            role.handle === ROLE_HANDLE.ADMIN &&
+            this.permissionChanged(existingPermission, nextPermission)
+          ) {
+            em.assign(existingPermission, nextPermission);
+            hasChanges = true;
+          }
+          continue;
+        }
 
         em.create(PermissionItem, {
           ...nextPermission,
@@ -87,6 +98,15 @@ export class PermissionSeeder extends Seeder {
     if (hasChanges) {
       await em.flush();
     }
+  }
+
+  private permissionChanged(
+    existing: PermissionItem,
+    next: PermissionGrant,
+  ): boolean {
+    return (Object.keys(next) as Array<keyof PermissionGrant>).some(
+      (property) => existing[property] !== next[property],
+    );
   }
 
   /**

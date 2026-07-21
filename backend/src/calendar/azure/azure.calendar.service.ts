@@ -113,6 +113,10 @@ export class AzureCalendarService {
       throw new Error('calendar.eventNotFound');
     }
 
+    if (!event.status) {
+      return null;
+    }
+
     const reference = await emFork.findOne(EventAzureItem, {
       event: event.handle as never,
     });
@@ -186,7 +190,7 @@ export class AzureCalendarService {
       throw new ForbiddenException('calendar.azureUserRequired');
     }
 
-    if (!user.company || !type || !scheduledStatus || !canceledStatus) {
+    if (!user.company) {
       throw new BadRequestException('calendar.importDefaultsMissing');
     }
 
@@ -196,6 +200,11 @@ export class AzureCalendarService {
       updated: 0,
       skipped: 0,
     };
+
+    if (!type || !scheduledStatus || !canceledStatus) {
+      result.skipped = graphEvents.length;
+      return result;
+    }
 
     for (const graphEvent of graphEvents) {
       const saved = await this.upsertImportedEvent(emFork, graphEvent, {

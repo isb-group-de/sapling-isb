@@ -308,3 +308,12 @@ AI/MCP:
 - Editing old seed files when a new numbered seed file is expected.
 - Adding frontend-only field behavior instead of using Sapling metadata.
 - Forgetting that permissions are role/entity based and can block generic API and MCP tools.
+
+## Deletable Reference Catalogs
+
+User-managed status and badge catalogs must not leave business records behind
+with invalid foreign keys. When a catalog value may be deleted, model the
+owning many-to-one relation as nullable with `deleteRule: 'set null'`. Remove
+database and metadata defaults that point to a particular seeded handle; code
+that needs a conventional handle must load it explicitly and skip its optional
+side effect when the value is absent.

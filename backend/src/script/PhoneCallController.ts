@@ -40,6 +40,22 @@ export class PhoneCallController extends ScriptClass {
       return new ScriptResultServer(items);
     }
 
+    const [eventType, eventStatus] = await Promise.all([
+      this.em.findOne(EventTypeItem, { handle: 'call' }),
+      this.em.findOne(EventStatusItem, { handle: 'completed' }),
+    ]);
+    if (!eventType || !eventStatus) {
+      this.logWarn(
+        'afterInsert',
+        'Skipping phone call follow-up event creation because its event configuration is missing',
+        {
+          hasCallEventType: Boolean(eventType),
+          hasCompletedEventStatus: Boolean(eventStatus),
+        },
+      );
+      return new ScriptResultServer(items);
+    }
+
     const creatorUser = await this.loadCurrentUserWithCompany();
     this.logDebug('afterInsert', 'Resolved creator context for phone calls', {
       creatorHandle: creatorUser.handle,
@@ -114,12 +130,6 @@ export class PhoneCallController extends ScriptClass {
         PersonItem,
         creatorPersonHandle as never,
       );
-      const eventTypeRef = this.em.getReference(EventTypeItem, 'call' as never);
-      const eventStatusRef = this.em.getReference(
-        EventStatusItem,
-        'completed' as never,
-      );
-
       let resolvedCreatorCompanyRef = creatorCompanyRef;
       let resolvedCreatorPersonRef = creatorPersonRef;
       let sourcePersonRef: PersonItem | null = null;
@@ -214,8 +224,8 @@ export class PhoneCallController extends ScriptClass {
         endDate,
         isAllDay: false,
         onlineMeetingURL: '',
-        type: eventTypeRef,
-        status: eventStatusRef,
+        type: eventType,
+        status: eventStatus,
         assigneeCompany: assigneeCompanyRef,
         assigneePerson: assigneePersonRef,
         creatorCompany: resolvedCreatorCompanyRef,

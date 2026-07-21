@@ -13136,12 +13136,12 @@
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
-          "nullable": false,
+          "nullable": true,
           "unique": false,
           "length": 64,
           "precision": null,
           "scale": null,
-          "default": "'new'",
+          "default": null,
           "comment": null,
           "collation": null,
           "enumItems": [],
@@ -13357,7 +13357,8 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.effort_estimate_status_item"
+          "referencedTableName": "public.effort_estimate_status_item",
+          "deleteRule": "set null"
         },
         "effort_estimate_item_ticket_handle_foreign": {
           "columnNames": [
@@ -17632,12 +17633,12 @@
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
-          "nullable": false,
+          "nullable": true,
           "unique": false,
           "length": 64,
           "precision": null,
           "scale": null,
-          "default": "'scheduled'",
+          "default": null,
           "comment": null,
           "collation": null,
           "enumItems": [],
@@ -17683,12 +17684,12 @@
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
-          "nullable": false,
+          "nullable": true,
           "unique": false,
           "length": 64,
           "precision": null,
           "scale": null,
-          "default": "'internal'",
+          "default": null,
           "comment": null,
           "collation": null,
           "enumItems": [],
@@ -17931,7 +17932,8 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.event_status_item"
+          "referencedTableName": "public.event_status_item",
+          "deleteRule": "set null"
         },
         "event_item_ticket_handle_foreign": {
           "columnNames": [
@@ -17954,7 +17956,8 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.event_type_item"
+          "referencedTableName": "public.event_type_item",
+          "deleteRule": "set null"
         }
       },
       "comment": null
@@ -23312,12 +23315,12 @@
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
-          "nullable": false,
+          "nullable": true,
           "unique": false,
           "length": 64,
           "precision": null,
           "scale": null,
-          "default": "'open'",
+          "default": null,
           "comment": null,
           "collation": null,
           "enumItems": [],
@@ -23504,7 +23507,8 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.internal_case_status_item"
+          "referencedTableName": "public.internal_case_status_item",
+          "deleteRule": "set null"
         }
       },
       "comment": null
@@ -24090,12 +24094,12 @@
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
-          "nullable": false,
+          "nullable": true,
           "unique": false,
           "length": 64,
           "precision": null,
           "scale": null,
-          "default": "'draft'",
+          "default": null,
           "comment": null,
           "collation": null,
           "enumItems": [],
@@ -24192,12 +24196,12 @@
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
-          "nullable": false,
+          "nullable": true,
           "unique": false,
           "length": 64,
           "precision": null,
           "scale": null,
-          "default": "'internal'",
+          "default": null,
           "comment": null,
           "collation": null,
           "enumItems": [],
@@ -24404,7 +24408,8 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.knowledge_article_status_item"
+          "referencedTableName": "public.knowledge_article_status_item",
+          "deleteRule": "set null"
         },
         "knowledge_article_item_visibility_handle_foreign": {
           "columnNames": [
@@ -24415,7 +24420,8 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.knowledge_article_visibility_item"
+          "referencedTableName": "public.knowledge_article_visibility_item",
+          "deleteRule": "set null"
         }
       },
       "comment": null
@@ -36023,12 +36029,12 @@
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
-          "nullable": false,
+          "nullable": true,
           "unique": false,
           "length": 64,
           "precision": null,
           "scale": null,
-          "default": "'normal'",
+          "default": null,
           "comment": null,
           "collation": null,
           "enumItems": [],
@@ -36176,12 +36182,12 @@
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
-          "nullable": false,
+          "nullable": true,
           "unique": false,
           "length": 64,
           "precision": null,
           "scale": null,
-          "default": "'open'",
+          "default": null,
           "comment": null,
           "collation": null,
           "enumItems": [],
@@ -36562,7 +36568,8 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.ticket_priority_item"
+          "referencedTableName": "public.ticket_priority_item",
+          "deleteRule": "set null"
         },
         "ticket_item_sales_opportunity_handle_foreign": {
           "columnNames": [
@@ -36608,7 +36615,8 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.ticket_status_item"
+          "referencedTableName": "public.ticket_status_item",
+          "deleteRule": "set null"
         },
         "ticket_item_support_queue_handle_foreign": {
           "columnNames": [

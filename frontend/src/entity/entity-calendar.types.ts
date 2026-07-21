@@ -113,13 +113,13 @@ export interface EventItem extends SaplingGenericItem {
   /** URL for the online meeting (optional) */
   onlineMeetingURL?: string
   /** The type/category of the event */
-  type: EventTypeItem
+  type?: EventTypeItem | null
   /** The ticket associated with this event (optional) */
   ticket?: TicketItem
   /** Persons participating in this event */
   participants?: PersonItem[]
   /** The current status of the event */
-  status: EventStatusItem
+  status?: EventStatusItem | null
   /** The Azure calendar item associated with this event (optional) */
   azure?: EventAzureItem
   /** The Google calendar item associated with this event (optional) */

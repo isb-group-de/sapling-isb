@@ -33,7 +33,7 @@ export class KnowledgeArticleItem {
   @Property({ length: 160, nullable: false })
   title!: string;
 
-  @ApiProperty({ type: () => KnowledgeArticleStatusItem, default: 'draft' })
+  @ApiPropertyOptional({ type: () => KnowledgeArticleStatusItem })
   @Sapling(['isChip', 'isValue'])
   @SaplingForm({
     order: 200,
@@ -47,14 +47,13 @@ export class KnowledgeArticleItem {
     mobileVisible: true,
   })
   @ManyToOne(() => KnowledgeArticleStatusItem, {
-    default: 'draft',
-    nullable: false,
+    nullable: true,
+    deleteRule: 'set null',
   })
-  status!: Rel<KnowledgeArticleStatusItem>;
+  status?: Rel<KnowledgeArticleStatusItem> | null;
 
   @ApiPropertyOptional({
     type: () => KnowledgeArticleVisibilityItem,
-    default: 'internal',
   })
   @Sapling(['isChip'])
   @SaplingForm({
@@ -69,10 +68,10 @@ export class KnowledgeArticleItem {
     mobileVisible: false,
   })
   @ManyToOne(() => KnowledgeArticleVisibilityItem, {
-    default: 'internal',
-    nullable: false,
+    nullable: true,
+    deleteRule: 'set null',
   })
-  visibility!: Rel<KnowledgeArticleVisibilityItem>;
+  visibility?: Rel<KnowledgeArticleVisibilityItem> | null;
 
   @ApiPropertyOptional({ type: () => KnowledgeArticleCategoryItem })
   @Sapling(['isChip'])

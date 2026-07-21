@@ -258,7 +258,7 @@ export interface EffortEstimateItem extends SaplingGenericItem {
   /** Title of the estimate */
   title: string
   /** Current estimate status */
-  status: EffortEstimateStatusItem | string
+  status?: EffortEstimateStatusItem | string | null
   /** Expected date for finishing the estimate */
   expectedCompletionDate?: Date | null
   /** Requirements written in markdown */

@@ -138,6 +138,12 @@ backend/src/database/seeder/role-handles.ts
 
 The permission seeder creates missing `PermissionItem` rows for every role/entity combination. It does not rewrite existing permissions.
 
+The administrator role is the deliberate exception: its existing permission
+row is synchronized with the current entity capability flags on every seed
+run. This makes a later handle-keyed entity seed that enables insert, update,
+or delete effective for administrators without overwriting configured
+permissions of business roles.
+
 When adding a new entity:
 
 1. Ensure the entity is seeded in `entityData_XXX.json`.

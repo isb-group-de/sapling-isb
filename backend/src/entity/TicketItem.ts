@@ -109,7 +109,7 @@ export class TicketItem {
    * The current status of the ticket.
    * @type {TicketStatusItem}
    */
-  @ApiProperty({ type: () => TicketStatusItem, default: 'open' })
+  @ApiPropertyOptional({ type: () => TicketStatusItem })
   @Sapling(['isChip', 'isValue'])
   @SaplingForm({
     order: 400,
@@ -122,14 +122,17 @@ export class TicketItem {
     mobileOrder: 400,
     mobileVisible: true,
   })
-  @ManyToOne(() => TicketStatusItem, { default: 'open', nullable: false })
-  status!: TicketStatusItem;
+  @ManyToOne(() => TicketStatusItem, {
+    nullable: true,
+    deleteRule: 'set null',
+  })
+  status?: TicketStatusItem | null;
 
   /**
    * The priority assigned to the ticket.
    * @type {TicketPriorityItem}
    */
-  @ApiPropertyOptional({ type: () => TicketPriorityItem, default: 'normal' })
+  @ApiPropertyOptional({ type: () => TicketPriorityItem })
   @Sapling(['isChip'])
   @SaplingForm({
     order: 500,
@@ -142,8 +145,11 @@ export class TicketItem {
     mobileOrder: 500,
     mobileVisible: false,
   })
-  @ManyToOne(() => TicketPriorityItem, { default: 'normal', nullable: false })
-  priority!: TicketPriorityItem;
+  @ManyToOne(() => TicketPriorityItem, {
+    nullable: true,
+    deleteRule: 'set null',
+  })
+  priority?: TicketPriorityItem | null;
 
   /**
    * External number or reference for the ticket (optional).

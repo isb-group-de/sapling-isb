@@ -54,7 +54,7 @@ export class InternalCaseItem {
   @Property({ length: 128, nullable: false })
   title!: string;
 
-  @ApiProperty({ type: () => InternalCaseStatusItem, default: 'open' })
+  @ApiPropertyOptional({ type: () => InternalCaseStatusItem })
   @Sapling(['isChip', 'isValue'])
   @SaplingForm({
     order: 300,
@@ -68,10 +68,10 @@ export class InternalCaseItem {
     mobileVisible: true,
   })
   @ManyToOne(() => InternalCaseStatusItem, {
-    default: 'open',
-    nullable: false,
+    nullable: true,
+    deleteRule: 'set null',
   })
-  status!: Rel<InternalCaseStatusItem>;
+  status?: Rel<InternalCaseStatusItem> | null;
 
   @ApiPropertyOptional({
     type: () => InternalCaseCategoryItem,

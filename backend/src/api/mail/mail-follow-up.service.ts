@@ -48,11 +48,16 @@ export class MailFollowUpService {
         return;
       }
 
-      const eventTypeRef = eventEm.getReference(EventTypeItem, 'mail' as never);
-      const eventStatusRef = eventEm.getReference(
-        EventStatusItem,
-        'completed' as never,
-      );
+      const [eventType, eventStatus] = await Promise.all([
+        eventEm.findOne(EventTypeItem, { handle: 'mail' }),
+        eventEm.findOne(EventStatusItem, { handle: 'completed' }),
+      ]);
+      if (!eventType || !eventStatus) {
+        this.logger.warn(
+          `mailFollowUpService - missing event configuration for delivery ${delivery.handle}`,
+        );
+        return;
+      }
       const startDate = delivery.completedAt ?? new Date();
       const endDate = new Date(startDate);
       endDate.setMinutes(endDate.getMinutes() + MAIL_EVENT_DURATION_MINUTES);
@@ -77,8 +82,8 @@ export class MailFollowUpService {
         endDate,
         isAllDay: false,
         onlineMeetingURL: '',
-        type: eventTypeRef,
-        status: eventStatusRef,
+        type: eventType,
+        status: eventStatus,
         assigneeCompany: creatorCompanyRef,
         assigneePerson: creatorPersonRef,
         creatorCompany: sourceRefs.creatorCompanyRef,

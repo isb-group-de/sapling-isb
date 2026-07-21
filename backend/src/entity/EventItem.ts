@@ -224,7 +224,7 @@ export class EventItem {
    * The type/category of the event.
    * @type {EventTypeItem}
    */
-  @ApiProperty({ type: () => EventTypeItem })
+  @ApiPropertyOptional({ type: () => EventTypeItem })
   @Sapling(['isChip'])
   @SaplingForm({
     order: 200,
@@ -237,8 +237,11 @@ export class EventItem {
     mobileOrder: 200,
     mobileVisible: false,
   })
-  @ManyToOne(() => EventTypeItem, { defaultRaw: `'internal'`, nullable: false })
-  type!: EventTypeItem;
+  @ManyToOne(() => EventTypeItem, {
+    nullable: true,
+    deleteRule: 'set null',
+  })
+  type?: EventTypeItem | null;
 
   /**
    * Email address of the person who created the ticket.
@@ -403,7 +406,7 @@ export class EventItem {
    * The current status of the event.
    * @type {EventStatusItem}
    */
-  @ApiProperty({ type: () => EventStatusItem })
+  @ApiPropertyOptional({ type: () => EventStatusItem })
   @Sapling(['isChip'])
   @SaplingForm({
     order: 300,
@@ -417,10 +420,10 @@ export class EventItem {
     mobileVisible: false,
   })
   @ManyToOne(() => EventStatusItem, {
-    defaultRaw: `'scheduled'`,
-    nullable: false,
+    nullable: true,
+    deleteRule: 'set null',
   })
-  status!: EventStatusItem;
+  status?: EventStatusItem | null;
 
   /**
    * The Azure calendar item associated with this event (optional).

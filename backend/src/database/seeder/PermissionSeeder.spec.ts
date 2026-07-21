@@ -1,0 +1,91 @@
+import { describe, expect, it, jest } from '@jest/globals';
+import type { EntityManager } from '@mikro-orm/core';
+import { EntityItem } from '../../entity/EntityItem';
+import { PermissionItem } from '../../entity/PermissionItem';
+import { RoleItem } from '../../entity/RoleItem';
+import { PermissionSeeder } from './PermissionSeeder';
+import { ROLE_HANDLE } from './role-handles';
+
+jest.mock('@mikro-orm/seeder', () => ({
+  Seeder: class {},
+}));
+
+describe('PermissionSeeder', () => {
+  it('synchronizes existing administrator permissions with entity capabilities', async () => {
+    const entity = {
+      handle: 'eventStatus',
+      canRead: true,
+      canInsert: true,
+      canUpdate: true,
+      canDelete: true,
+      canShow: true,
+    } as EntityItem;
+    const role = { handle: ROLE_HANDLE.ADMIN } as RoleItem;
+    const permission = {
+      entity,
+      role,
+      allowRead: true,
+      allowInsert: false,
+      allowUpdate: true,
+      allowDelete: false,
+      allowShow: true,
+    } as PermissionItem;
+    const em = {
+      findAll: jest.fn((entityClass: unknown) => {
+        if (entityClass === EntityItem) return Promise.resolve([entity]);
+        if (entityClass === RoleItem) return Promise.resolve([role]);
+        return Promise.resolve([permission]);
+      }),
+      assign: jest.fn(),
+      create: jest.fn(),
+      flush: jest.fn(() => Promise.resolve()),
+    };
+
+    await new PermissionSeeder().run(em as unknown as EntityManager);
+
+    expect(em.assign).toHaveBeenCalledWith(permission, {
+      allowRead: true,
+      allowInsert: true,
+      allowUpdate: true,
+      allowDelete: true,
+      allowShow: true,
+    });
+    expect(em.flush).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not overwrite an existing non-administrator permission', async () => {
+    const entity = {
+      handle: 'eventStatus',
+      canRead: true,
+      canInsert: true,
+      canUpdate: true,
+      canDelete: true,
+      canShow: true,
+    } as EntityItem;
+    const role = { handle: ROLE_HANDLE.SUPPORT } as RoleItem;
+    const permission = {
+      entity,
+      role,
+      allowRead: true,
+      allowInsert: false,
+      allowUpdate: false,
+      allowDelete: false,
+      allowShow: true,
+    } as PermissionItem;
+    const em = {
+      findAll: jest.fn((entityClass: unknown) => {
+        if (entityClass === EntityItem) return Promise.resolve([entity]);
+        if (entityClass === RoleItem) return Promise.resolve([role]);
+        return Promise.resolve([permission]);
+      }),
+      assign: jest.fn(),
+      create: jest.fn(),
+      flush: jest.fn(() => Promise.resolve()),
+    };
+
+    await new PermissionSeeder().run(em as unknown as EntityManager);
+
+    expect(em.assign).not.toHaveBeenCalled();
+    expect(em.flush).not.toHaveBeenCalled();
+  });
+});
