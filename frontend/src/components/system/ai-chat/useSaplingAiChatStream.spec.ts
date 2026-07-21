@@ -26,7 +26,6 @@ function setup() {
     replaceSession: vi.fn(),
     loadMessages: vi.fn(async () => undefined),
     autoPlayAssistantSpeech: vi.fn(async () => undefined),
-    onSessionResponseStarted: vi.fn(),
     onSessionResponseFinished: vi.fn(),
   }
   const state = useSaplingAiChatStream({
@@ -92,7 +91,6 @@ describe('useSaplingAiChatStream', () => {
       expect.any(AbortSignal),
     )
     expect(testState.callbacks.replaceSession).toHaveBeenCalledWith(session)
-    expect(testState.callbacks.onSessionResponseStarted).toHaveBeenCalledWith(22)
     expect(testState.callbacks.onSessionResponseFinished).toHaveBeenCalledWith(22)
     expect(testState.callbacks.upsertMessage).toHaveBeenCalledWith(assistantMessage)
     expect(testState.callbacks.autoPlayAssistantSpeech).toHaveBeenCalledWith(assistantMessage)
@@ -125,7 +123,6 @@ describe('useSaplingAiChatStream', () => {
     expect(testState.activeSession.value).toEqual(otherSession)
     expect(testState.callbacks.appendMessageDelta).not.toHaveBeenCalled()
     expect(testState.callbacks.upsertMessage).not.toHaveBeenCalled()
-    expect(testState.callbacks.onSessionResponseStarted).toHaveBeenCalledWith(22)
     expect(testState.callbacks.onSessionResponseFinished).toHaveBeenCalledWith(22)
   })
 

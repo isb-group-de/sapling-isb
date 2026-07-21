@@ -1,5 +1,7 @@
 import { EntityManager } from '@mikro-orm/core';
 import { Injectable } from '@nestjs/common';
+import { AI_CHAT_RESPONSE_STALE_AFTER_MS } from '../../constants/project.constants';
+import { AiChatMessageItem } from '../../entity/AiChatMessageItem';
 import { AiChatSessionItem } from '../../entity/AiChatSessionItem';
 import { PersonItem } from '../../entity/PersonItem';
 import { AiAgentContextService } from './ai-agent-context.service';
@@ -53,9 +55,36 @@ export class AiChatSessionService {
           'agentVersion.model.provider',
           'playbook',
         ],
-        orderBy: { updatedAt: 'DESC' },
+        orderBy: { lastMessageAt: 'DESC', createdAt: 'DESC' },
       },
     );
+
+    const staleSessions = sessions.filter((session) =>
+      this.isStaleResponse(session),
+    );
+    if (staleSessions.length > 0) {
+      const recoveredAt = new Date();
+      for (const session of staleSessions) {
+        session.responseStatus = 'idle';
+        session.responseActivityAt = recoveredAt;
+        session.lastResponseAt = recoveredAt;
+      }
+      await this.em.nativeUpdate(
+        AiChatMessageItem,
+        {
+          session: {
+            handle: {
+              $in: staleSessions
+                .map((session) => session.handle)
+                .filter((handle): handle is number => handle != null),
+            },
+          },
+          status: 'streaming',
+        },
+        { status: 'failed' },
+      );
+      await this.em.flush();
+    }
 
     return sessions.map((session) => sanitizeChatSession(session));
   }
@@ -113,6 +142,10 @@ export class AiChatSessionService {
           : null,
       person,
       lastMessageAt: null,
+      responseStatus: 'idle',
+      responseActivityAt: null,
+      lastResponseAt: null,
+      lastReadAt: new Date(),
     });
 
     this.em.persist(session);
@@ -229,6 +262,17 @@ export class AiChatSessionService {
     return sanitizeChatSession(session);
   }
 
+  async markChatSessionRead(
+    handle: number,
+    user: PersonItem,
+  ): Promise<AiChatSessionItem> {
+    const session = await this.chatPersistence.findOwnedSession(handle, user);
+    session.lastReadAt = new Date();
+    await this.em.flush();
+    await this.chatPersistence.populateChatSession(session);
+    return sanitizeChatSession(session);
+  }
+
   buildSessionTitle(content: string): string {
     const trimmedContent = content.trim();
 
@@ -239,5 +283,21 @@ export class AiChatSessionService {
     return trimmedContent.length > 80
       ? `${trimmedContent.slice(0, 77).trimEnd()}...`
       : trimmedContent;
+  }
+
+  private isStaleResponse(session: AiChatSessionItem): boolean {
+    if (
+      session.responseStatus !== 'responding' ||
+      !session.responseActivityAt ||
+      !Number.isFinite(AI_CHAT_RESPONSE_STALE_AFTER_MS) ||
+      AI_CHAT_RESPONSE_STALE_AFTER_MS <= 0
+    ) {
+      return false;
+    }
+
+    return (
+      Date.now() - session.responseActivityAt.getTime() >
+      AI_CHAT_RESPONSE_STALE_AFTER_MS
+    );
   }
 }

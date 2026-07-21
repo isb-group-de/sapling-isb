@@ -5,14 +5,13 @@
         v-if="hasSaplingAiChatAccess && !isOpen && !isGhostEasterEggActive"
         class="sapling-ai-chat-fab"
         color="primary"
-        :icon="true"
         size="large"
         variant="elevated"
         aria-label="Songbird"
+        icon="mdi-bird"
         title="Songbird"
         @click="toggleSaplingAiChat"
       >
-        <SaplingSongbirdIcon class="sapling-ai-chat-fab__icon" />
       </v-btn>
       <GhostEasterEgg
         v-else-if="hasSaplingAiChatAccess && !isOpen"
@@ -62,7 +61,6 @@
                 :include-archived="includeArchived"
                 :editing-session-handle="editingSessionHandle"
                 :editing-session-title="editingSessionTitle"
-                :session-activity-by-handle="sessionActivityByHandle"
                 :is-collapsible="isMobileLayout"
                 :is-collapsed="isSessionRailCollapsed"
                 :title-preview-limit="TITLE_PREVIEW_LIMIT"
@@ -138,13 +136,11 @@ import { useI18n } from 'vue-i18n'
 import { useDisplay } from 'vuetify'
 import type { AiChatSessionItem } from '@/entity/entity'
 import SaplingSurface from '@/components/common/SaplingSurface.vue'
-import SaplingSongbirdIcon from '@/components/common/SaplingSongbirdIcon.vue'
 import GhostEasterEgg from '@/components/easter-egg/GhostEasterEgg.vue'
 import SaplingAiChatConversation from '@/components/system/ai-chat/SaplingAiChatConversation.vue'
 import SaplingAiChatHeader from '@/components/system/ai-chat/SaplingAiChatHeader.vue'
 import SaplingAiChatLoadingState from '@/components/system/ai-chat/SaplingAiChatLoadingState.vue'
 import SaplingAiChatSessions from '@/components/system/ai-chat/SaplingAiChatSessions.vue'
-import type { AiChatSessionActivity } from '@/components/system/ai-chat/aiChatSessionPresentation'
 import { useSaplingAiChatAttachments } from '@/components/system/ai-chat/useSaplingAiChatAttachments'
 import { useSaplingAiChatMessages } from '@/components/system/ai-chat/useSaplingAiChatMessages'
 import { useSaplingAiChatRuntimeCatalog } from '@/components/system/ai-chat/useSaplingAiChatRuntimeCatalog'
@@ -197,10 +193,11 @@ const draftMessage = ref('')
 const selectedContextEntityHandle = ref<string | null>(null)
 const selectedContextRecordHandle = ref<string | null>(null)
 const isSessionRailCollapsed = ref(false)
-const sessionActivityByHandle = ref<Record<number, AiChatSessionActivity>>({})
 const hasInitialized = ref(false)
 let initializationPromise: Promise<void> | null = null
 let streamingClockTimer: number | null = null
+let persistedActivityTimer: number | null = null
+let persistedActivityRefresh: Promise<void> | null = null
 
 const {
   isOpen,
@@ -282,6 +279,8 @@ const {
   reloadSessions,
   loadMessages,
   loadOlderMessages,
+  refreshPersistedActivity,
+  markSessionRead,
   updateIncludeArchived,
   beginRename,
   cancelRename,
@@ -369,7 +368,6 @@ const {
   replaceSession,
   loadMessages,
   autoPlayAssistantSpeech,
-  onSessionResponseStarted: markSessionResponseStarted,
   onSessionResponseFinished: markSessionResponseFinished,
 })
 
@@ -415,13 +413,13 @@ watch(
   () => isOpen.value,
   async (nextIsOpen) => {
     if (!nextIsOpen) return
-    markSessionRead(activeSession.value?.handle)
     if (!(await ensureSaplingAiChatAccess())) {
       closePanel()
       return
     }
     try {
       await ensureChatInitialized()
+      await markSessionRead(activeSession.value?.handle)
     } catch {
       // Underlying services already report initialization failures.
     }
@@ -441,6 +439,7 @@ onMounted(() => {
     handleAiPreferencesUpdated as EventListener,
   )
   streamingClockTimer = window.setInterval(() => (streamingClock.value = Date.now()), 1000)
+  persistedActivityTimer = window.setInterval(pollPersistedChatActivity, 1250)
 })
 
 onUnmounted(() => {
@@ -455,6 +454,7 @@ onUnmounted(() => {
   stopSpeechPlayback()
   revokeSpeechObjectUrls()
   if (streamingClockTimer != null) window.clearInterval(streamingClockTimer)
+  if (persistedActivityTimer != null) window.clearInterval(persistedActivityTimer)
 })
 
 function handleKeydown(event: KeyboardEvent) {
@@ -521,14 +521,13 @@ async function selectSession(session: AiChatSessionItem) {
   cancelVoiceInput()
   stopSpeechPlayback()
   activeSession.value = session
-  markSessionRead(session.handle)
   selectedAgentHandle.value = getAgentHandle(session.agent)
   selectedPlaybookHandle.value = getPlaybookHandle(session.playbook)
   activeTranscriptionHandle.value = null
   resetImportAttachments()
   editingSessionHandle.value = null
   isOpen.value = true
-  await loadMessages(session.handle)
+  await Promise.all([loadMessages(session.handle), markSessionRead(session.handle)])
   if (isMobileLayout.value) isSessionRailCollapsed.value = true
 }
 
@@ -566,34 +565,30 @@ function toggleSessionRail() {
   if (isMobileLayout.value) isSessionRailCollapsed.value = !isSessionRailCollapsed.value
 }
 
-function markSessionResponseStarted(sessionHandle: number) {
-  sessionActivityByHandle.value = {
-    ...sessionActivityByHandle.value,
-    [sessionHandle]: 'responding',
-  }
+function markSessionResponseFinished(sessionHandle: number) {
+  if (!isOpen.value || activeSession.value?.handle !== sessionHandle) return
+  void markSessionRead(sessionHandle).catch(() => undefined)
 }
 
-function markSessionResponseFinished(sessionHandle: number) {
-  if (isOpen.value && activeSession.value?.handle === sessionHandle) {
-    clearSessionActivity(sessionHandle)
+function pollPersistedChatActivity() {
+  if (
+    persistedActivityRefresh ||
+    !isOpen.value ||
+    !sessions.value.some((session) => session.responseStatus === 'responding')
+  ) {
     return
   }
 
-  sessionActivityByHandle.value = {
-    ...sessionActivityByHandle.value,
-    [sessionHandle]: 'unread',
-  }
-}
-
-function markSessionRead(sessionHandle?: number | null) {
-  if (sessionHandle == null || sessionActivityByHandle.value[sessionHandle] !== 'unread') return
-  clearSessionActivity(sessionHandle)
-}
-
-function clearSessionActivity(sessionHandle: number) {
-  const nextActivity = { ...sessionActivityByHandle.value }
-  delete nextActivity[sessionHandle]
-  sessionActivityByHandle.value = nextActivity
+  persistedActivityRefresh = (async () => {
+    const activeResponseCompleted = await refreshPersistedActivity()
+    if (activeResponseCompleted && activeSession.value?.handle) {
+      await markSessionRead(activeSession.value.handle)
+    }
+  })()
+    .catch(() => undefined)
+    .finally(() => {
+      persistedActivityRefresh = null
+    })
 }
 
 function closePanel() {

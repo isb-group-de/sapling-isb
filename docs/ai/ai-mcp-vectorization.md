@@ -64,6 +64,13 @@ The implementation is divided by lifecycle responsibility:
   MCP tool execution, streaming providers, run traces, sources, and navigation
   links; provider-specific streaming remains in `AiChatRuntimeService`.
 
+Assistant responses are durable from the beginning of a run. The session stores
+its response lifecycle and read marker, while streamed message content is
+checkpointed at a bounded interval and before tool execution. Completion and
+failure are terminal persisted states. Session listing also recovers abandoned
+responses after the configured stale timeout, preventing permanent responding
+indicators after a process interruption.
+
 All of these services are registered by `AiModule`; consumers should continue
 to depend on `AiService` unless they are implementing an internal AI lifecycle
 collaborator.

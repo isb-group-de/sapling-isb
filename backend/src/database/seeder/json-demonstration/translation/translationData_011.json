@@ -1,0 +1,26 @@
+[
+  {
+    "entity": "aiChatSession",
+    "property": "responseStatus",
+    "de": "Antwortstatus",
+    "en": "Response status"
+  },
+  {
+    "entity": "aiChatSession",
+    "property": "responseActivityAt",
+    "de": "Letzte Antwortaktivität",
+    "en": "Last response activity"
+  },
+  {
+    "entity": "aiChatSession",
+    "property": "lastResponseAt",
+    "de": "Letzte Antwort",
+    "en": "Last response"
+  },
+  {
+    "entity": "aiChatSession",
+    "property": "lastReadAt",
+    "de": "Zuletzt gelesen",
+    "en": "Last read"
+  }
+]

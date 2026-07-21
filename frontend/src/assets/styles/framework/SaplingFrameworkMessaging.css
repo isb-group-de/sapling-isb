@@ -122,11 +122,34 @@
   font-size: var(--sapling-text-meta-size-sm);
 }
 
+.sapling-chat-rail__search {
+  width: 100%;
+  height: var(--sapling-control-height-compact);
+  min-height: var(--sapling-control-height-compact);
+  flex: 0 0 var(--sapling-control-height-compact);
+}
+
+.sapling-chat-rail__search .v-input__control,
+.sapling-chat-rail__search .v-field,
+.sapling-chat-rail__search .v-field__field,
+.sapling-chat-rail__search .v-field__input {
+  height: 100%;
+  min-height: 0;
+}
+
 .sapling-chat-rail__search .v-field__input {
   min-width: 0;
+  padding-top: 0;
+  padding-bottom: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.sapling-chat-rail__search .v-field__prepend-inner,
+.sapling-chat-rail__search .v-field__clearable {
+  align-items: center;
+  padding-top: 0;
 }
 
 .sapling-chat-rail__list {

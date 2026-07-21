@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import type { AiChatSessionItem } from '@/entity/entity'
-import { formatSessionRuntimeSummary, getSessionDateGroup } from './aiChatSessionPresentation'
+import {
+  formatSessionRuntimeSummary,
+  getPersistedSessionActivity,
+  getSessionDateGroup,
+} from './aiChatSessionPresentation'
 
 describe('formatSessionRuntimeSummary', () => {
   it('shows agent, provider, and model titles in the conversation header order', () => {
@@ -21,6 +25,34 @@ describe('formatSessionRuntimeSummary', () => {
     } as AiChatSessionItem
 
     expect(formatSessionRuntimeSummary(session)).toBe('research-agent / local-model')
+  })
+})
+
+describe('getPersistedSessionActivity', () => {
+  it('prefers the durable responding state', () => {
+    expect(
+      getPersistedSessionActivity({
+        responseStatus: 'responding',
+        lastResponseAt: new Date('2026-07-21T10:00:00Z'),
+        lastReadAt: new Date('2026-07-21T11:00:00Z'),
+      } as AiChatSessionItem),
+    ).toBe('responding')
+  })
+
+  it('derives unread state from persisted response and read timestamps', () => {
+    const session = {
+      responseStatus: 'idle',
+      lastResponseAt: new Date('2026-07-21T11:00:00Z'),
+      lastReadAt: new Date('2026-07-21T10:00:00Z'),
+    } as AiChatSessionItem
+
+    expect(getPersistedSessionActivity(session)).toBe('unread')
+    expect(
+      getPersistedSessionActivity({
+        ...session,
+        lastReadAt: new Date('2026-07-21T12:00:00Z'),
+      }),
+    ).toBeUndefined()
   })
 })
 

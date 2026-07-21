@@ -40,8 +40,7 @@ interface SaplingAiChatStreamOptions {
   replaceSession: (session: AiChatSessionItem) => void
   loadMessages: (sessionHandle?: number | null) => Promise<void>
   autoPlayAssistantSpeech: (message: AiChatMessageItem) => Promise<void>
-  onSessionResponseStarted: (sessionHandle: number) => void
-  onSessionResponseFinished: (sessionHandle: number) => void
+  onSessionResponseFinished: (sessionHandle: number) => Promise<void> | void
 }
 
 export function useSaplingAiChatStream(options: SaplingAiChatStreamOptions) {
@@ -81,9 +80,6 @@ export function useSaplingAiChatStream(options: SaplingAiChatStreamOptions) {
       receivedServerEvents: false,
       shouldAutoPlaySpeech: options.activeTranscriptionHandle.value != null,
       sessionHandle: options.activeSession.value?.handle ?? null,
-    }
-    if (activeSendAttempt.value.sessionHandle != null) {
-      options.onSessionResponseStarted(activeSendAttempt.value.sessionHandle)
     }
     options.draftMessage.value = ''
     const attachmentHandles = options.pendingAttachments.value.map(
@@ -126,9 +122,6 @@ export function useSaplingAiChatStream(options: SaplingAiChatStreamOptions) {
         handleChatRequestFailure(error, reportToMessageCenter)
       }
     } finally {
-      if (activeSendAttempt.value?.sessionHandle != null) {
-        options.onSessionResponseFinished(activeSendAttempt.value.sessionHandle)
-      }
       isSending.value = false
       activeSendAttempt.value = null
       options.activeTranscriptionHandle.value = null
@@ -185,7 +178,6 @@ export function useSaplingAiChatStream(options: SaplingAiChatStreamOptions) {
     const previousAttemptHandle = activeSendAttempt.value?.sessionHandle ?? null
     if (session.handle != null && activeSendAttempt.value && previousAttemptHandle == null) {
       activeSendAttempt.value.sessionHandle = session.handle
-      options.onSessionResponseStarted(session.handle)
     }
     options.replaceSession(session)
     if (

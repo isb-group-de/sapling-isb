@@ -154,6 +154,26 @@ export class AiChatSessionItem {
   @Property({ nullable: true, type: 'datetime' })
   lastMessageAt?: Date | null;
 
+  @ApiPropertyOptional({ default: 'idle' })
+  @Sapling(['isReadOnly', 'isSystem'])
+  @Property({ length: 32, nullable: false, default: 'idle' })
+  responseStatus = 'idle';
+
+  @ApiPropertyOptional({ type: 'string', format: 'date-time' })
+  @Sapling(['isReadOnly', 'isSystem'])
+  @Property({ nullable: true, type: 'datetime' })
+  responseActivityAt?: Date | null;
+
+  @ApiPropertyOptional({ type: 'string', format: 'date-time' })
+  @Sapling(['isReadOnly', 'isSystem'])
+  @Property({ nullable: true, type: 'datetime' })
+  lastResponseAt?: Date | null;
+
+  @ApiPropertyOptional({ type: 'string', format: 'date-time' })
+  @Sapling(['isReadOnly', 'isSystem'])
+  @Property({ nullable: true, type: 'datetime' })
+  lastReadAt?: Date | null;
+
   @ApiProperty({ type: () => PersonItem })
   @Sapling(['isPerson', 'isCurrentPerson'])
   @SaplingForm({

@@ -2,6 +2,16 @@ import type { AiChatSessionItem } from '@/entity/entity'
 
 export type AiChatSessionActivity = 'responding' | 'unread'
 
+export function getPersistedSessionActivity(
+  session: AiChatSessionItem,
+): AiChatSessionActivity | undefined {
+  if (session.responseStatus === 'responding') return 'responding'
+
+  const responseAt = toTimestamp(session.lastResponseAt)
+  const readAt = toTimestamp(session.lastReadAt)
+  return responseAt != null && (readAt == null || responseAt > readAt) ? 'unread' : undefined
+}
+
 type RuntimeReference =
   AiChatSessionItem['agent'] | AiChatSessionItem['provider'] | AiChatSessionItem['model']
 
@@ -52,4 +62,11 @@ function getRuntimeReferenceLabel(reference: RuntimeReference): string {
   }
 
   return reference.title?.trim() || String(reference.handle ?? '')
+}
+
+function toTimestamp(value?: Date | string | null): number | null {
+  if (!value) return null
+  const date = value instanceof Date ? value : new Date(value)
+  const timestamp = date.getTime()
+  return Number.isFinite(timestamp) ? timestamp : null
 }

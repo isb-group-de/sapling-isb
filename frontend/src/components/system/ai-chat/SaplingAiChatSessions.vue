@@ -202,7 +202,7 @@
                     :title="getTranslationLabel('sessionActions', 'Chat-Aktionen')"
                   />
                 </template>
-                <v-list density="compact" nav>
+                <v-list density="compact" class="glass-panel" nav>
                   <v-list-item
                     prepend-icon="mdi-pencil-outline"
                     :title="getTranslationLabel('renameSession', 'Chat umbenennen')"
@@ -235,9 +235,9 @@ import { useI18n } from 'vue-i18n'
 import type { AiChatSessionItem } from '@/entity/entity'
 import {
   formatSessionRuntimeSummary,
+  getPersistedSessionActivity,
   getSessionDate,
   getSessionDateGroup,
-  type AiChatSessionActivity,
   type SessionDateGroup,
 } from './aiChatSessionPresentation'
 
@@ -249,14 +249,12 @@ const props = withDefaults(
     includeArchived: boolean
     editingSessionHandle: number | null
     editingSessionTitle: string
-    sessionActivityByHandle?: Partial<Record<number, AiChatSessionActivity>>
     isCollapsible?: boolean
     isCollapsed?: boolean
     titlePreviewLimit?: number
   }>(),
   {
     activeSessionTitle: '',
-    sessionActivityByHandle: () => ({}),
     isCollapsible: false,
     isCollapsed: false,
     titlePreviewLimit: 30,
@@ -339,7 +337,7 @@ function formatSessionMeta(session: AiChatSessionItem) {
 }
 
 function getSessionActivity(session: AiChatSessionItem) {
-  return session.handle == null ? undefined : props.sessionActivityByHandle[session.handle]
+  return getPersistedSessionActivity(session)
 }
 
 function getSessionActivityLabel(session: AiChatSessionItem) {

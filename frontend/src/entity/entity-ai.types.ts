@@ -28,6 +28,14 @@ export interface AiChatSessionItem extends SaplingGenericItem {
   contextRecordHandle?: string | null
   /** Timestamp of the latest message */
   lastMessageAt?: Date | null
+  /** Persisted assistant response lifecycle */
+  responseStatus: 'idle' | 'responding' | string
+  /** Latest persisted response activity/checkpoint */
+  responseActivityAt?: Date | null
+  /** Timestamp of the latest terminal assistant response */
+  lastResponseAt?: Date | null
+  /** Timestamp at which the owner last viewed the conversation */
+  lastReadAt?: Date | null
   /** Owning person */
   person: PersonItem | number
   /** Optional loaded messages */

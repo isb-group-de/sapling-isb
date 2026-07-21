@@ -132,6 +132,8 @@ Im Repository gibt es aktuell zwei dokumentierte Runtime-Umgebungen:
 | `AI_CHAT_MESSAGE_PAGE_SIZE` | Standard-Seitengroesse für Chat-Historien. |
 | `AI_MAX_CHAT_MESSAGE_PAGE_SIZE` | Maximale Chat-Historien-Seitengroesse. |
 | `AI_STREAM_HISTORY_MESSAGE_LIMIT` | Anzahl vorheriger Nachrichten im Streaming-Kontext. |
+| `AI_CHAT_STREAM_CHECKPOINT_INTERVAL_MS` | Intervall für serverseitig persistierte Teilantworten. |
+| `AI_CHAT_RESPONSE_STALE_AFTER_MS` | Zeit bis verwaiste laufende Antworten als fehlgeschlagen wiederhergestellt werden. |
 | `GITHUB_REPO` / `GITHUB_API_URL` / `GITHUB_TOKEN` | GitHub-Integration. |
 | `API_TITLE` / `API_VERSION` / `API_DESCRIPTION` | Swagger-Metadaten. |
 | `API_CONTACT_NAME` / `API_CONTACT_URL` / `API_CONTACT_EMAIL` | Swagger-Kontaktdaten. |

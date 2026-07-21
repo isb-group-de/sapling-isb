@@ -58,7 +58,7 @@ export function useSaplingAiChatSessions(options: SaplingAiChatSessionOptions) {
 
   async function loadMessages(
     sessionHandle?: number | null,
-    requestOptions?: { beforeSequence?: number | null; prepend?: boolean },
+    requestOptions?: { beforeSequence?: number | null; prepend?: boolean; silent?: boolean },
   ) {
     if (!sessionHandle) {
       options.messages.value = []
@@ -67,8 +67,11 @@ export function useSaplingAiChatSessions(options: SaplingAiChatSessionOptions) {
     }
 
     const isPrepending = requestOptions?.prepend === true
-    if (isPrepending) isLoadingOlderMessages.value = true
-    else isLoadingMessages.value = true
+    const isSilent = requestOptions?.silent === true
+    if (!isSilent) {
+      if (isPrepending) isLoadingOlderMessages.value = true
+      else isLoadingMessages.value = true
+    }
 
     try {
       const response = await ApiAiService.listMessages(sessionHandle, {
@@ -81,8 +84,10 @@ export function useSaplingAiChatSessions(options: SaplingAiChatSessionOptions) {
       options.hasMoreMessages.value = response.meta.hasMore
       options.nextMessageBeforeSequence.value = response.meta.nextBeforeSequence
     } finally {
-      if (isPrepending) isLoadingOlderMessages.value = false
-      else isLoadingMessages.value = false
+      if (!isSilent) {
+        if (isPrepending) isLoadingOlderMessages.value = false
+        else isLoadingMessages.value = false
+      }
     }
   }
 
@@ -109,6 +114,38 @@ export function useSaplingAiChatSessions(options: SaplingAiChatSessionOptions) {
   async function updateIncludeArchived(value: boolean) {
     includeArchived.value = value
     await reloadSessions()
+  }
+
+  async function refreshPersistedActivity(): Promise<boolean> {
+    const activeHandle = options.activeSession.value?.handle ?? null
+    const wasResponding = options.activeSession.value?.responseStatus === 'responding'
+    const refreshedSessions = await ApiAiService.listSessions(includeArchived.value, {
+      suppressErrorMessage: true,
+    })
+    sessions.value = refreshedSessions
+
+    if (activeHandle == null) return false
+    const refreshedActiveSession = refreshedSessions.find(
+      (session) => session.handle === activeHandle,
+    )
+    if (!refreshedActiveSession) return false
+
+    options.activeSession.value = refreshedActiveSession
+    const isResponding = refreshedActiveSession.responseStatus === 'responding'
+    if (wasResponding || isResponding) {
+      await loadMessages(activeHandle, { silent: true })
+    }
+
+    return wasResponding && !isResponding
+  }
+
+  async function markSessionRead(sessionHandle?: number | null): Promise<void> {
+    if (!sessionHandle) return
+    const updatedSession = await ApiAiService.markSessionRead(sessionHandle)
+    replaceSession(updatedSession)
+    if (options.activeSession.value?.handle === sessionHandle) {
+      options.activeSession.value = updatedSession
+    }
   }
 
   function beginRename(session: AiChatSessionItem) {
@@ -177,6 +214,8 @@ export function useSaplingAiChatSessions(options: SaplingAiChatSessionOptions) {
     reloadSessions,
     loadMessages,
     loadOlderMessages,
+    refreshPersistedActivity,
+    markSessionRead,
     updateIncludeArchived,
     beginRename,
     cancelRename,

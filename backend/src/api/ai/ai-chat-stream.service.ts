@@ -1,5 +1,7 @@
 import { EntityManager } from '@mikro-orm/core';
 import { Inject, Injectable, forwardRef } from '@nestjs/common';
+import { AI_CHAT_STREAM_CHECKPOINT_INTERVAL_MS } from '../../constants/project.constants';
+import { AiAgentRunItem } from '../../entity/AiAgentRunItem';
 import { AiChatMessageItem } from '../../entity/AiChatMessageItem';
 import { AiChatSessionItem } from '../../entity/AiChatSessionItem';
 import { PersonItem } from '../../entity/PersonItem';
@@ -184,6 +186,8 @@ export class AiChatStreamService {
     session.contextRecordHandle =
       dto.contextRecordHandle ?? session.contextRecordHandle ?? null;
     session.lastMessageAt = new Date();
+    session.responseStatus = 'responding';
+    session.responseActivityAt = new Date();
     this.em.persist([userMessage, assistantMessage]);
     await this.em.flush();
     await this.chatPersistence.linkAttachmentsToMessage(
@@ -213,76 +217,100 @@ export class AiChatStreamService {
     });
     await onEvent({ type: 'mcp.tools', tools: availableTools });
 
-    const run = await this.agentRunLifecycle.createRun({
-      session,
-      message: assistantMessage,
-      person,
-      agent: runtimeContext.agent,
-      version: runtimeContext.version,
-      playbook: runtimeContext.playbook,
-      provider: runtimeTarget.provider.handle,
-      model: runtimeTarget.model.providerModel,
-      contextEntityHandle: session.contextEntityHandle ?? null,
-      contextRecordHandle: session.contextRecordHandle ?? null,
-    });
+    let run: AiAgentRunItem | null = null;
+    let lastCheckpointAt = Date.now();
+    const persistResponseCheckpoint = async (force = false): Promise<void> => {
+      const now = Date.now();
+      const checkpointInterval = Number.isFinite(
+        AI_CHAT_STREAM_CHECKPOINT_INTERVAL_MS,
+      )
+        ? Math.max(100, AI_CHAT_STREAM_CHECKPOINT_INTERVAL_MS)
+        : 750;
 
-    const inlineToolStartedAt = Date.now();
-    const inlineToolExecution =
-      await this.mcpService.tryExecuteInlineToolCommand(
-        dto.content,
-        user,
-        runtimeContext.toolPolicy,
-      );
+      if (!force && now - lastCheckpointAt < checkpointInterval) {
+        return;
+      }
 
-    if (inlineToolExecution) {
-      const inlineToolCall = buildAiExecutedToolCallTrace(inlineToolExecution, {
-        iteration: 1,
-        startedAt: inlineToolStartedAt,
-      });
-      const inlineToolTrace = toAiToolCallRunTrace(inlineToolCall);
-      const navigationLinks = buildNavigationLinks([inlineToolCall]);
-      const sources = this.agentRunLifecycle.buildSources(
-        [inlineToolCall],
-        navigationLinks,
-      );
-
-      assistantMessage.content = inlineToolExecution.content;
-      assistantMessage.status = 'completed';
-      assistantMessage.toolCalls = [inlineToolTrace];
-      const usagePayload = buildChatUsagePayload(
-        runtimeTarget.provider.handle,
-        runtimeTarget.model.providerModel,
-      );
-      this.agentRunLifecycle.completeRun(run, {
-        status: 'completed',
-        responseText: assistantMessage.content,
-        toolCalls: assistantMessage.toolCalls as Record<string, unknown>[],
-        sources,
-        pendingActions: [],
-        usagePayload,
-      });
-      assistantMessage.responsePayload = {
-        source: 'mcp-inline-tool',
-        provider: runtimeTarget.provider.handle,
-        model: runtimeTarget.model.providerModel,
-        completedAt: run.completedAt?.toISOString() ?? new Date().toISOString(),
-        durationMs: run.durationMs ?? null,
-        usagePayload,
-        rawResult: inlineToolExecution.rawResult,
-        navigationLinks,
-        sources,
-        agentRun: sanitizeAgentRun(run),
-      };
+      session.responseActivityAt = new Date(now);
       await this.em.flush();
-      await onEvent({
-        type: 'message.completed',
-        message: sanitizeChatMessage(assistantMessage),
-        session: sanitizeChatSession(session),
-      });
-      return { session, userMessage, assistantMessage };
-    }
+      lastCheckpointAt = now;
+    };
 
     try {
+      run = await this.agentRunLifecycle.createRun({
+        session,
+        message: assistantMessage,
+        person,
+        agent: runtimeContext.agent,
+        version: runtimeContext.version,
+        playbook: runtimeContext.playbook,
+        provider: runtimeTarget.provider.handle,
+        model: runtimeTarget.model.providerModel,
+        contextEntityHandle: session.contextEntityHandle ?? null,
+        contextRecordHandle: session.contextRecordHandle ?? null,
+      });
+
+      const inlineToolStartedAt = Date.now();
+      const inlineToolExecution =
+        await this.mcpService.tryExecuteInlineToolCommand(
+          dto.content,
+          user,
+          runtimeContext.toolPolicy,
+        );
+
+      if (inlineToolExecution) {
+        const inlineToolCall = buildAiExecutedToolCallTrace(
+          inlineToolExecution,
+          {
+            iteration: 1,
+            startedAt: inlineToolStartedAt,
+          },
+        );
+        const inlineToolTrace = toAiToolCallRunTrace(inlineToolCall);
+        const navigationLinks = buildNavigationLinks([inlineToolCall]);
+        const sources = this.agentRunLifecycle.buildSources(
+          [inlineToolCall],
+          navigationLinks,
+        );
+
+        assistantMessage.content = inlineToolExecution.content;
+        assistantMessage.status = 'completed';
+        this.completeSessionResponse(session);
+        assistantMessage.toolCalls = [inlineToolTrace];
+        const usagePayload = buildChatUsagePayload(
+          runtimeTarget.provider.handle,
+          runtimeTarget.model.providerModel,
+        );
+        this.agentRunLifecycle.completeRun(run, {
+          status: 'completed',
+          responseText: assistantMessage.content,
+          toolCalls: assistantMessage.toolCalls as Record<string, unknown>[],
+          sources,
+          pendingActions: [],
+          usagePayload,
+        });
+        assistantMessage.responsePayload = {
+          source: 'mcp-inline-tool',
+          provider: runtimeTarget.provider.handle,
+          model: runtimeTarget.model.providerModel,
+          completedAt:
+            run.completedAt?.toISOString() ?? new Date().toISOString(),
+          durationMs: run.durationMs ?? null,
+          usagePayload,
+          rawResult: inlineToolExecution.rawResult,
+          navigationLinks,
+          sources,
+          agentRun: sanitizeAgentRun(run),
+        };
+        await this.em.flush();
+        await onEvent({
+          type: 'message.completed',
+          message: sanitizeChatMessage(assistantMessage),
+          session: sanitizeChatSession(session),
+        });
+        return { session, userMessage, assistantMessage };
+      }
+
       const history = await this.chatPersistence.loadSessionHistory(
         session.handle ?? 0,
         this.chatPersistence.requireUserHandle(person),
@@ -308,6 +336,7 @@ export class AiChatStreamService {
             }
 
             assistantMessage.content += delta;
+            await persistResponseCheckpoint();
             await onEvent({
               type: 'message.delta',
               handle: assistantMessage.handle,
@@ -316,8 +345,9 @@ export class AiChatStreamService {
           },
           runtimeTarget.model.supportsTools,
           runtimeContext.instruction,
-          (entry, args) =>
-            this.toolActions.executePolicyAwareToolCall(
+          async (entry, args) => {
+            await persistResponseCheckpoint(true);
+            return this.toolActions.executePolicyAwareToolCall(
               entry,
               args,
               user,
@@ -327,7 +357,8 @@ export class AiChatStreamService {
               runtimeContext.agent,
               runtimeContext.toolPolicy,
               onEvent,
-            ),
+            );
+          },
         );
       } else {
         streamResult = await this.chatRuntime.streamOpenAi(
@@ -344,6 +375,7 @@ export class AiChatStreamService {
             }
 
             assistantMessage.content += delta;
+            await persistResponseCheckpoint();
             await onEvent({
               type: 'message.delta',
               handle: assistantMessage.handle,
@@ -352,8 +384,9 @@ export class AiChatStreamService {
           },
           runtimeTarget.model.supportsTools,
           runtimeContext.instruction,
-          (entry, args) =>
-            this.toolActions.executePolicyAwareToolCall(
+          async (entry, args) => {
+            await persistResponseCheckpoint(true);
+            return this.toolActions.executePolicyAwareToolCall(
               entry,
               args,
               user,
@@ -363,7 +396,8 @@ export class AiChatStreamService {
               runtimeContext.agent,
               runtimeContext.toolPolicy,
               onEvent,
-            ),
+            );
+          },
         );
       }
 
@@ -372,6 +406,7 @@ export class AiChatStreamService {
       );
 
       assistantMessage.status = 'completed';
+      this.completeSessionResponse(session);
       const navigationLinks = buildNavigationLinks(streamResult.toolCalls);
       const sources = this.agentRunLifecycle.buildSources(
         streamResult.toolCalls,
@@ -435,22 +470,37 @@ export class AiChatStreamService {
       return { session, userMessage, assistantMessage };
     } catch (error) {
       assistantMessage.status = 'failed';
-      this.agentRunLifecycle.completeRun(run, {
-        status: 'failed',
-        errorPayload: {
-          error: error instanceof Error ? error.message : 'ai.unknownError',
-        },
-      });
+      this.completeSessionResponse(session);
+      if (run) {
+        this.agentRunLifecycle.completeRun(run, {
+          status: 'failed',
+          errorPayload: {
+            error: error instanceof Error ? error.message : 'ai.unknownError',
+          },
+        });
+      }
       assistantMessage.responsePayload = {
         provider: runtimeTarget.provider.handle,
         model: runtimeTarget.model.providerModel,
-        durationMs: run.durationMs ?? null,
+        durationMs: run?.durationMs ?? null,
         error: error instanceof Error ? error.message : 'ai.unknownError',
-        agentRun: sanitizeAgentRun(run),
+        agentRun: run ? sanitizeAgentRun(run) : null,
       };
       await this.em.flush();
+      await onEvent({
+        type: 'message.completed',
+        message: sanitizeChatMessage(assistantMessage),
+        session: sanitizeChatSession(session),
+      });
       throw error;
     }
+  }
+
+  private completeSessionResponse(session: AiChatSessionItem): void {
+    const completedAt = new Date();
+    session.responseStatus = 'idle';
+    session.responseActivityAt = completedAt;
+    session.lastResponseAt = completedAt;
   }
 }
 

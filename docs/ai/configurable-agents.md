@@ -75,9 +75,12 @@ also repairs state after a development hot reload. The loading presentation is
 driven only by active provider/model requests; an idle, not-yet-loaded state is
 shown as recoverable instead of being mislabeled as an endless load.
 
-The session rail keeps response activity in memory only. Running responses are
-marked as responding; when a response completes outside the visible session,
-that session is marked as new until it is opened. No read state is persisted.
+The session rail derives response activity from persisted session lifecycle
+fields. Running responses remain marked as responding across reloads; completed
+responses remain new until the owning user opens the conversation and the
+explicit read endpoint advances its read marker. While a response is running,
+the frontend polls persisted activity and message checkpoints so a reloaded
+conversation continues to fill without depending on the original HTTP stream.
 
 ## Agent Model
 

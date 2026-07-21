@@ -323,6 +323,29 @@ export class AiController {
     return this.aiService.updateChatSession(handle, body, req.user);
   }
 
+  @Post('chat/sessions/:handle/read')
+  @ApiOperation({
+    summary: 'Mark a chat session as read',
+    description:
+      'Persists the authenticated user read marker used to derive the new-response state across reloads and devices.',
+  })
+  @ApiParam({
+    name: 'handle',
+    type: Number,
+    description: 'Numeric handle of the chat session to mark as read.',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Updated persisted chat session.',
+    type: AiChatSessionItem,
+  })
+  async markSessionRead(
+    @Req() req: Request & { user: PersonItem },
+    @Param('handle') handle: number,
+  ): Promise<AiChatSessionItem> {
+    return this.aiService.markChatSessionRead(Number(handle), req.user);
+  }
+
   @Get('chat/sessions/:handle/messages')
   @ApiOperation({
     summary: 'List chat messages for one session',
@@ -476,17 +499,24 @@ export class AiController {
     res.setHeader('Connection', 'keep-alive');
     res.setHeader('X-Accel-Buffering', 'no');
     res.flushHeaders?.();
+    const writeEvent = (event: Record<string, unknown>): void => {
+      if (res.destroyed || res.writableEnded) {
+        return;
+      }
+
+      res.write(`${JSON.stringify(event)}\n`);
+    };
 
     try {
-      await this.aiService.streamChatMessage(body, req.user, (event) => {
-        res.write(`${JSON.stringify(event)}\n`);
-      });
+      await this.aiService.streamChatMessage(body, req.user, writeEvent);
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'ai.streamFailed';
-      res.write(`${JSON.stringify({ type: 'error', messageText: message })}\n`);
+      writeEvent({ type: 'error', messageText: message });
     } finally {
-      res.end();
+      if (!res.destroyed && !res.writableEnded) {
+        res.end();
+      }
     }
   }
 }

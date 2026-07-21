@@ -248,14 +248,17 @@ class ApiAiService {
     }
   }
 
-  static async listSessions(includeArchived = false): Promise<AiChatSessionItem[]> {
+  static async listSessions(
+    includeArchived = false,
+    options?: { suppressErrorMessage?: boolean },
+  ): Promise<AiChatSessionItem[]> {
     try {
       const response = await axios.get<AiChatSessionItem[]>(buildApiUrl('ai/chat/sessions'), {
         params: { includeArchived },
       })
       return response.data
     } catch (error: unknown) {
-      this.handleError(error, 'ai.chat.sessionListFailed')
+      if (!options?.suppressErrorMessage) this.handleError(error, 'ai.chat.sessionListFailed')
       throw error
     }
   }
@@ -278,6 +281,18 @@ class ApiAiService {
       const response = await axios.patch<AiChatSessionItem>(
         buildApiUrl(`ai/chat/sessions/${handle}`),
         payload,
+      )
+      return response.data
+    } catch (error: unknown) {
+      this.handleError(error, 'ai.chat.sessionUpdateFailed')
+      throw error
+    }
+  }
+
+  static async markSessionRead(handle: number): Promise<AiChatSessionItem> {
+    try {
+      const response = await axios.post<AiChatSessionItem>(
+        buildApiUrl(`ai/chat/sessions/${handle}/read`),
       )
       return response.data
     } catch (error: unknown) {

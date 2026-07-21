@@ -448,6 +448,24 @@ export const AI_STREAM_HISTORY_MESSAGE_LIMIT: number = parseInt(
 );
 
 /**
+ * @constant {number} AI_CHAT_STREAM_CHECKPOINT_INTERVAL_MS
+ * Maximum interval between persisted partial assistant responses.
+ */
+export const AI_CHAT_STREAM_CHECKPOINT_INTERVAL_MS: number = parseInt(
+  process.env.AI_CHAT_STREAM_CHECKPOINT_INTERVAL_MS || '750',
+  10,
+);
+
+/**
+ * @constant {number} AI_CHAT_RESPONSE_STALE_AFTER_MS
+ * Time after which an abandoned response is recovered as failed.
+ */
+export const AI_CHAT_RESPONSE_STALE_AFTER_MS: number = parseInt(
+  process.env.AI_CHAT_RESPONSE_STALE_AFTER_MS || '1800000',
+  10,
+);
+
+/**
  * @constant {string} GITHUB_REPO
  * GitHub repository name. Defaults to empty string.
  */

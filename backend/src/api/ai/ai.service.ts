@@ -326,6 +326,13 @@ export class AiService {
     return this.chatSession.updateChatSession(handle, dto, user);
   }
 
+  async markChatSessionRead(
+    handle: number,
+    user: PersonItem,
+  ): Promise<AiChatSessionItem> {
+    return this.chatSession.markChatSessionRead(handle, user);
+  }
+
   async applyChatSessionPlaybook(
     handle: number,
     dto: ApplyAiChatSessionPlaybookDto,
