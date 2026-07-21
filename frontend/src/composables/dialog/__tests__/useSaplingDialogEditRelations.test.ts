@@ -9,14 +9,16 @@ import type {
 } from '@/entity/structure'
 import type { EntityItem, SaplingGenericItem } from '@/entity/entity'
 
-const { apiFindMock, loadGenericManyMock } = vi.hoisted(() => ({
+const { apiFindMock, apiUpdateMock, loadGenericManyMock } = vi.hoisted(() => ({
   apiFindMock: vi.fn(),
+  apiUpdateMock: vi.fn(),
   loadGenericManyMock: vi.fn(),
 }))
 
 vi.mock('@/services/api.generic.service', () => ({
   default: {
     find: apiFindMock,
+    update: apiUpdateMock,
   },
 }))
 
@@ -47,8 +49,10 @@ const entityStates = reactive<Record<string, EntityState>>({
 describe('useSaplingDialogEditRelations', () => {
   beforeEach(() => {
     apiFindMock.mockReset()
+    apiUpdateMock.mockReset()
     loadGenericManyMock.mockReset()
     loadGenericManyMock.mockResolvedValue(undefined)
+    apiUpdateMock.mockResolvedValue({})
     apiFindMock.mockResolvedValue({
       data: [{ handle: 1, title: 'First note' }],
       meta: { total: 1 },
@@ -113,6 +117,36 @@ describe('useSaplingDialogEditRelations', () => {
     expect(apiFindMock).not.toHaveBeenCalled()
     expect(relations.relationTableItems.value.notes).toEqual([])
     expect(relations.relationTableTotal.value.notes).toBe(0)
+  })
+
+  it('adds a 1:m relation with a minimal update payload', async () => {
+    const relations = createRelations()
+    const selected = {
+      handle: 7,
+      title: 'Existing note',
+      createdAt: '2026-07-21T06:36:53.771Z',
+    }
+    relations.selectedRelations.value.notes = [selected]
+
+    await relations.addRelation(relations.relationTemplates.value[0])
+
+    expect(apiUpdateMock).toHaveBeenCalledWith('note', 7, { ticket: 42 })
+    expect(selected).not.toHaveProperty('ticket')
+  })
+
+  it('removes a 1:m relation with a minimal update payload', async () => {
+    const relations = createRelations()
+    const selected = {
+      handle: 7,
+      title: 'Existing note',
+      ticket: 42,
+      createdAt: '2026-07-21T06:36:53.771Z',
+    }
+
+    await relations.removeRelation(relations.relationTemplates.value[0], [selected])
+
+    expect(apiUpdateMock).toHaveBeenCalledWith('note', 7, { ticket: null })
+    expect(selected.ticket).toBe(42)
   })
 
   it('ignores stale relation responses after item changes reset the table state', async () => {

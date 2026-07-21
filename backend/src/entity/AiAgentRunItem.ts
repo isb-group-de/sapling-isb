@@ -126,12 +126,19 @@ export class AiAgentRunItem {
   errorPayload?: Record<string, unknown> | null;
 
   @ApiPropertyOptional({ type: 'string', format: 'date-time' })
+  @Sapling(['isDateStart'])
   @Property({ nullable: false, type: 'datetime', onCreate: () => new Date() })
   startedAt?: Date = new Date();
 
   @ApiPropertyOptional({ type: 'string', format: 'date-time' })
+  @Sapling(['isDateEnd'])
   @Property({ nullable: true, type: 'datetime' })
   completedAt?: Date | null;
+
+  @ApiPropertyOptional({ type: 'string', format: 'date-time' })
+  @Sapling(['isReadOnly', 'isSystem'])
+  @Property({ nullable: false, type: 'datetime', onCreate: () => new Date() })
+  createdAt?: Date = new Date();
 
   @ApiPropertyOptional({ type: 'string', format: 'date-time' })
   @Sapling(['isReadOnly', 'isSystem'])

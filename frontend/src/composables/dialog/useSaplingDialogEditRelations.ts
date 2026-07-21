@@ -183,8 +183,9 @@ export function useSaplingDialogEditRelations(options: UseSaplingDialogEditRelat
         continue
       }
 
-      selected[mappedBy] = entityItemHandle
-      await ApiGenericService.update(template.referenceName ?? '', selectedHandle, selected)
+      await ApiGenericService.update(template.referenceName ?? '', selectedHandle, {
+        [mappedBy]: entityItemHandle,
+      })
     }
   }
 
@@ -203,8 +204,9 @@ export function useSaplingDialogEditRelations(options: UseSaplingDialogEditRelat
         continue
       }
 
-      selected[mappedBy] = null
-      await ApiGenericService.update(template.referenceName ?? '', selectedHandle, selected)
+      await ApiGenericService.update(template.referenceName ?? '', selectedHandle, {
+        [mappedBy]: null,
+      })
     }
 
     selectedItems.value = []

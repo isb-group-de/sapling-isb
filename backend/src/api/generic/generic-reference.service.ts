@@ -84,8 +84,10 @@ export class GenericReferenceService {
                       this.getReferencedValues(value, field.referencedPks);
                   }
                 }
-                isHandled = true;
               }
+              // An explicit null is a meaningful update for nullable owning
+              // references and must reach EntityManager.assign().
+              isHandled = true;
               break;
             case '1:m':
             case 'm:n':
