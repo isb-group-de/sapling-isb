@@ -1,86 +1,132 @@
 <template>
-  <v-menu
-    v-model="menuOpen"
-    max-width="600px"
-    :close-on-content-click="false"
-    :open-on-click="false"
-    scroll-strategy="block"
+  <div
+    class="sapling-field-single-select"
+    :class="{ 'sapling-field-single-select--with-open-action': props.showOpenAction }"
   >
-    <template #activator="{ props: activatorProps }">
-      <div v-bind="activatorProps" class="sapling-field-select__activator">
-        <v-autocomplete
-          :disabled="props.disabled"
-          :label="props.label"
-          :items="autocompleteItems"
-          :rules="props.rules"
-          :model-value="selectedItem"
-          :item-title="getAutocompleteItemTitle"
-          :search="fieldSearch"
-          :menu="false"
-          :density="props.density"
-          :hide-details="props.hideDetails"
-          return-object
-          clearable
-          hide-no-data
-          no-filter
-          autocomplete="off"
-          @focus="openMenu"
-          @mousedown:control="openMenu"
-          @click:clear="clearSelection"
-          @update:menu="closeAutocompleteMenu"
-          @update:model-value="onActivatorModelUpdate"
-          @update:search="onActivatorSearchUpdate"
+    <v-menu
+      v-model="menuOpen"
+      max-width="600px"
+      :close-on-content-click="false"
+      :open-on-click="false"
+      scroll-strategy="block"
+    >
+      <template #activator="{ props: activatorProps }">
+        <div v-bind="activatorProps" class="sapling-field-select__activator">
+          <v-autocomplete
+            :disabled="props.disabled"
+            :label="props.label"
+            :items="autocompleteItems"
+            :rules="props.rules"
+            :model-value="selectedItem"
+            :item-title="getAutocompleteItemTitle"
+            :search="fieldSearch"
+            :menu="false"
+            :density="props.density"
+            :hide-details="props.hideDetails"
+            return-object
+            clearable
+            hide-no-data
+            no-filter
+            autocomplete="off"
+            @focus="openMenu"
+            @mousedown:control="openMenu"
+            @click:clear="clearSelection"
+            @update:menu="closeAutocompleteMenu"
+            @update:model-value="onActivatorModelUpdate"
+            @update:search="onActivatorSearchUpdate"
+          />
+        </div>
+      </template>
+      <div class="glass-panel sapling-menu-surface sapling-menu-surface--field-table">
+        <sapling-table
+          v-if="menuOpen"
+          :entity-handle="entityHandle"
+          :items="items"
+          :search="search"
+          :page="page"
+          :items-per-page="itemsPerPage"
+          :total-items="totalItems"
+          :is-loading="isLoading"
+          :is-initialized="isInitialized"
+          :sort-by="sortBy"
+          :column-filters="columnFilters"
+          :active-filter="activeFilter"
+          :entity-templates="entityTemplates"
+          :entity="entity"
+          :entity-permission="entityPermission"
+          :show-actions="false"
+          :show-search="false"
+          :multi-select="false"
+          :disable-mobile-view="disableDropdownMobileView"
+          :table-key="entityHandle"
+          :selected="selectedItem ? [selectedItem] : []"
+          @update:page="onPageUpdate"
+          @update:items-per-page="onItemsPerPageUpdate"
+          @update:sort-by="onSortByUpdate"
+          @update:column-filters="onColumnFiltersUpdate"
+          @update:search="onSearchUpdate"
+          @reload="loadData"
+          @update:selected="onTableSelect"
         />
       </div>
-    </template>
-    <div class="glass-panel sapling-menu-surface sapling-menu-surface--field-table">
-      <sapling-table
-        v-if="menuOpen"
-        :entity-handle="entityHandle"
-        :items="items"
-        :search="search"
-        :page="page"
-        :items-per-page="itemsPerPage"
-        :total-items="totalItems"
-        :is-loading="isLoading"
-        :is-initialized="isInitialized"
-        :sort-by="sortBy"
-        :column-filters="columnFilters"
-        :active-filter="activeFilter"
-        :entity-templates="entityTemplates"
-        :entity="entity"
-        :entity-permission="entityPermission"
-        :show-actions="false"
-        :show-search="false"
-        :multi-select="false"
-        :disable-mobile-view="disableDropdownMobileView"
-        :table-key="entityHandle"
-        :selected="selectedItem ? [selectedItem] : []"
-        @update:page="onPageUpdate"
-        @update:items-per-page="onItemsPerPageUpdate"
-        @update:sort-by="onSortByUpdate"
-        @update:column-filters="onColumnFiltersUpdate"
-        @update:search="onSearchUpdate"
-        @reload="loadData"
-        @update:selected="onTableSelect"
-      />
-    </div>
-  </v-menu>
+    </v-menu>
+
+    <v-tooltip v-if="props.showOpenAction" location="top" :text="openActionLabel">
+      <template #activator="{ props: tooltipProps }">
+        <v-btn
+          v-bind="tooltipProps"
+          class="sapling-field-single-select__open-action"
+          data-test="open-reference-record"
+          icon="mdi-open-in-new"
+          variant="tonal"
+          size="small"
+          :aria-label="openActionLabel"
+          :disabled="!canOpenSelectedRecord"
+          :loading="isRecordDialogLoading"
+          @mousedown.stop
+          @click.stop="openSelectedRecord"
+        />
+      </template>
+    </v-tooltip>
+  </div>
+
+  <SaplingDialogEdit
+    v-if="recordDialogOpen && recordDialogItem && entity"
+    :model-value="recordDialogOpen"
+    :mode="recordDialogMode"
+    :item="recordDialogItem"
+    :entity="entity"
+    :templates="entityTemplates"
+    :show-reference="true"
+    @update:model-value="handleRecordDialogVisibility"
+    @update:item="recordDialogItem = $event"
+    @save="saveRecordDialog"
+    @deleted="handleRecordDeleted"
+  />
 </template>
 
 <script lang="ts" setup>
 // #region Imports
 import SaplingTable from '@/components/table/SaplingTable.vue'
+import SaplingDialogEdit from '@/components/dialog/SaplingDialogEdit.vue'
 import type { SaplingGenericItem } from '@/entity/entity'
 import { useSaplingTable } from '@/composables/table/useSaplingTable'
 import { computed, inject, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { getEntityValueLabel } from '@/utils/saplingTableUtil'
 import { useSaplingSingleSelectField } from '@/composables/fields/useSaplingSingleSelectField'
 import { useSaplingReferenceFilter } from '@/composables/fields/useSaplingReferenceFilter'
+import { getDialogRecordRelations } from '@/composables/dialog/saplingDialogRecordLoader'
+import {
+  buildConcurrencyOptions,
+  getItemHandle,
+} from '@/composables/table/saplingTableAction.utils'
 import { DEFAULT_PAGE_SIZE_SMALL } from '@/constants/project.constants'
 import ApiGenericService, { type FilterQuery } from '@/services/api.generic.service'
 import { useGenericStore } from '@/stores/genericStore'
 import { saplingTableDisplayContextKey } from '@/components/table/saplingTableDisplayContext'
+import { useSaplingMessageCenter } from '@/composables/system/useSaplingMessageCenter'
+import type { DialogSaveAction, DialogSaveContext, DialogState } from '@/entity/structure'
 // #endregion
 
 // #region Props and Emits
@@ -95,9 +141,13 @@ const props = withDefaults(
     parentFilter?: FilterQuery
     density?: 'default' | 'comfortable' | 'compact'
     hideDetails?: boolean | 'auto'
+    showOpenAction?: boolean
+    openActionLabel?: string
   }>(),
   {
     hideDetails: 'auto',
+    showOpenAction: false,
+    openActionLabel: '',
   },
 )
 const emit = defineEmits(['update:modelValue'])
@@ -135,6 +185,21 @@ const autocompleteItems = ref<SaplingGenericItem[]>([])
 const genericStore = useGenericStore()
 const tableDisplayContext = inject(saplingTableDisplayContextKey, null)
 const disableDropdownMobileView = computed(() => tableDisplayContext?.isMobileTable.value === false)
+const { t } = useI18n()
+const { pushMessage } = useSaplingMessageCenter()
+const recordDialogOpen = ref(false)
+const recordDialogItem = ref<SaplingGenericItem | null>(null)
+const isRecordDialogLoading = ref(false)
+const recordDialogMode = computed<DialogState>(() =>
+  entityPermission.value?.allowUpdate ? 'edit' : 'readonly',
+)
+const openActionLabel = computed(() => props.openActionLabel || t('global.editRecord'))
+const canOpenSelectedRecord = computed(
+  () =>
+    Boolean(props.entityHandle) &&
+    getItemHandle(selectedItem.value) != null &&
+    !isRecordDialogLoading.value,
+)
 // #endregion
 
 // #region Selection State
@@ -182,6 +247,92 @@ function onActivatorSearchUpdate(value: string) {
 function clearSelection() {
   selectedItem.value = null
   clearSearch()
+}
+
+async function openSelectedRecord() {
+  const handle = getItemHandle(selectedItem.value)
+  if (!props.entityHandle || handle == null || isRecordDialogLoading.value) {
+    return
+  }
+
+  menuOpen.value = false
+  isRecordDialogLoading.value = true
+
+  try {
+    await ensureEntityMetadataLoaded()
+    const response = await ApiGenericService.find<SaplingGenericItem>(props.entityHandle, {
+      filter: { handle },
+      limit: 1,
+      relations: getDialogRecordRelations(entityTemplates.value),
+    })
+    const resolvedItem = response.data[0] ?? null
+    if (!resolvedItem) {
+      return
+    }
+
+    recordDialogItem.value = resolvedItem
+    recordDialogOpen.value = true
+  } catch {
+    recordDialogItem.value = null
+  } finally {
+    isRecordDialogLoading.value = false
+  }
+}
+
+function handleRecordDialogVisibility(value: boolean) {
+  recordDialogOpen.value = value
+  if (!value) {
+    recordDialogItem.value = null
+  }
+}
+
+async function saveRecordDialog(
+  value: SaplingGenericItem,
+  action: DialogSaveAction,
+  context: DialogSaveContext,
+) {
+  const handle = getItemHandle(recordDialogItem.value)
+  if (!props.entityHandle || handle == null || recordDialogMode.value !== 'edit') {
+    context.complete(false)
+    return
+  }
+
+  let didSave = false
+  try {
+    const updatedItem = await ApiGenericService.update<SaplingGenericItem>(
+      props.entityHandle,
+      handle,
+      value,
+      {
+        relations: getDialogRecordRelations(entityTemplates.value),
+        concurrency: buildConcurrencyOptions(entityTemplates.value, recordDialogItem.value),
+      },
+    )
+
+    recordDialogItem.value = updatedItem
+    selectedItem.value = updatedItem
+    didSave = true
+
+    pushMessage(
+      'success',
+      t('global.recordSaved'),
+      t('global.recordSavedDescription'),
+      props.entityHandle,
+    )
+
+    if (action === 'saveAndClose') {
+      handleRecordDialogVisibility(false)
+    }
+  } catch {
+    // ApiGenericService already reports the error. Keep the nested draft open for retrying.
+  } finally {
+    context.complete(didSave)
+  }
+}
+
+function handleRecordDeleted() {
+  handleRecordDialogVisibility(false)
+  clearSelection()
 }
 
 function openMenu() {
@@ -246,6 +397,11 @@ watch(
     }
   },
   { immediate: true },
+)
+
+watch(
+  () => props.entityHandle,
+  () => handleRecordDialogVisibility(false),
 )
 
 watch(menuOpen, async (isOpen) => {

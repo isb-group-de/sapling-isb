@@ -83,6 +83,19 @@
   width: 100%;
 }
 
+.sapling-field-single-select--with-open-action {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--sapling-control-height-compact);
+  align-items: start;
+  gap: var(--sapling-gap-2xs);
+}
+
+.sapling-field-single-select__open-action {
+  width: var(--sapling-control-height-compact);
+  height: var(--sapling-control-height-compact) !important;
+  min-width: var(--sapling-control-height-compact);
+}
+
 .sapling-field-select__chip,
 .sapling-field-single-select__chip {
   margin: 0;

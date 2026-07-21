@@ -24,6 +24,8 @@
       :disabled="referenceFieldDisabled"
       :parent-filter="effectiveReferenceParentFilter"
       :placeholder="defaultRawPlaceholder"
+      :show-open-action="true"
+      :open-action-label="t('global.editRecord')"
       density="compact"
       @update:model-value="(val: unknown) => updateField(template.name, val)"
     />

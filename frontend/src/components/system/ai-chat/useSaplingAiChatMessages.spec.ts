@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import type { AiChatMessageItem } from '@/entity/entity'
 import { useSaplingAiChatMessages } from './useSaplingAiChatMessages'
 
 describe('useSaplingAiChatMessages', () => {
@@ -23,5 +24,46 @@ describe('useSaplingAiChatMessages', () => {
       status: 'failed',
       responsePayload: { error: 'ai.chat.streamFailed' },
     })
+  })
+
+  it('continues streaming duration from the persisted assistant timestamp after reload', () => {
+    const state = useSaplingAiChatMessages()
+    state.messages.value = [
+      {
+        handle: 12,
+        role: 'assistant',
+        status: 'streaming',
+        sequence: 2,
+        content: 'Partial answer',
+        createdAt: new Date('2026-07-21T10:00:05Z'),
+      } as AiChatMessageItem,
+    ]
+    state.streamingClock.value = new Date('2026-07-21T10:00:45Z').getTime()
+
+    expect(state.streamingDurationByHandle.value[12]).toBe(40)
+  })
+
+  it('falls back to the persisted question timestamp for legacy streaming messages', () => {
+    const state = useSaplingAiChatMessages()
+    state.messages.value = [
+      {
+        handle: 11,
+        role: 'user',
+        status: 'completed',
+        sequence: 1,
+        content: 'Question',
+        createdAt: new Date('2026-07-21T10:00:00Z'),
+      } as AiChatMessageItem,
+      {
+        handle: 12,
+        role: 'assistant',
+        status: 'streaming',
+        sequence: 2,
+        content: '',
+      } as AiChatMessageItem,
+    ]
+    state.streamingClock.value = new Date('2026-07-21T10:00:45Z').getTime()
+
+    expect(state.streamingDurationByHandle.value[12]).toBe(45)
   })
 })

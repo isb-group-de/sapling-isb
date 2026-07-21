@@ -136,13 +136,29 @@ export function useSaplingAiChatMessages() {
       return 0
     }
 
-    const startedAt = streamingMessageStartedAt.get(message.handle)
+    const startedAt =
+      getPersistedMessageTimestamp(message) ??
+      getPersistedQuestionTimestamp(message) ??
+      streamingMessageStartedAt.get(message.handle)
 
-    if (!startedAt) {
+    if (startedAt == null) {
       return 0
     }
 
     return Math.max(0, Math.floor((streamingClock.value - startedAt) / 1000))
+  }
+
+  function getPersistedQuestionTimestamp(message: AiChatMessageItem): number | null {
+    const question = messages.value.find(
+      (item) => item.role === 'user' && item.sequence === message.sequence - 1,
+    )
+    return question ? getPersistedMessageTimestamp(question) : null
+  }
+
+  function getPersistedMessageTimestamp(message: AiChatMessageItem): number | null {
+    if (!message.createdAt) return null
+    const timestamp = new Date(message.createdAt).getTime()
+    return Number.isFinite(timestamp) ? timestamp : null
   }
 
   return {
