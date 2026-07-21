@@ -39,6 +39,12 @@ describe('TemplateService', () => {
           primary: true,
           autoincrement: true,
         },
+        externalHandle: {
+          name: 'externalHandle',
+          type: 'string',
+          primary: true,
+          autoincrement: false,
+        },
         status: {
           name: 'status',
           type: 'TicketStatusItem',
@@ -63,8 +69,14 @@ describe('TemplateService', () => {
     const second = service.getEntityTemplate('ticket');
 
     expect(get).toHaveBeenCalledTimes(1);
-    expect(second).toHaveLength(3);
+    expect(second).toHaveLength(4);
     expect(second[1]).toMatchObject({
+      name: 'externalHandle',
+      isPrimaryKey: true,
+      isAutoIncrement: false,
+      isRequired: true,
+    });
+    expect(second[2]).toMatchObject({
       name: 'status',
       referenceName: 'ticketStatus',
       isReference: true,
@@ -72,7 +84,7 @@ describe('TemplateService', () => {
       default: 'open',
       isRequired: false,
     });
-    expect(second[2]).toMatchObject({
+    expect(second[3]).toMatchObject({
       name: 'title',
       nullable: false,
       default: null,

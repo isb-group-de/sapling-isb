@@ -62,6 +62,30 @@ describe('GenericPayloadService', () => {
     });
   });
 
+  it('rejects missing non-auto-increment primary keys on create payloads', () => {
+    const referenceService = {
+      reduceReferenceFields: jest.fn(
+        (_template: EntityTemplateDto[], data: object) => data,
+      ),
+    };
+    const service = new GenericPayloadService(
+      referenceService as unknown as GenericReferenceService,
+    );
+
+    expect(() =>
+      service.prepareCreatePayload(
+        [
+          createTemplateField({
+            name: 'handle',
+            isPrimaryKey: true,
+            isAutoIncrement: false,
+          }),
+        ],
+        { handle: '   ' },
+      ),
+    ).toThrow('global.requiredFieldsMissing');
+  });
+
   it('keeps non-readonly handles on update payloads while still removing readonly fields', () => {
     const referenceService = {
       reduceReferenceFields: jest.fn(

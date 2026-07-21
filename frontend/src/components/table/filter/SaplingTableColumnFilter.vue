@@ -60,16 +60,28 @@
               </div>
               <div class="sapling-table-filter-menu__title">{{ title }}</div>
             </div>
-            <v-btn
-              icon
-              variant="text"
-              size="small"
-              :aria-label="$t('filter.reset')"
-              :title="$t('filter.reset')"
-              @click.stop="clearFilter"
-            >
-              <v-icon size="small">mdi-filter-off-outline</v-icon>
-            </v-btn>
+            <div class="sapling-row-xs">
+              <v-btn
+                icon
+                variant="text"
+                size="small"
+                :aria-label="$t('filter.reset')"
+                :title="$t('filter.reset')"
+                @click.stop="clearFilter"
+              >
+                <v-icon size="small">mdi-filter-off-outline</v-icon>
+              </v-btn>
+              <v-btn
+                icon
+                variant="text"
+                size="small"
+                :aria-label="$t('global.close')"
+                :title="$t('global.close')"
+                @click.stop="menuOpen = false"
+              >
+                <v-icon size="small">mdi-check</v-icon>
+              </v-btn>
+            </div>
           </div>
 
           <v-select

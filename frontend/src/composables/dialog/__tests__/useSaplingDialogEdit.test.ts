@@ -226,6 +226,7 @@ const TestHost = defineComponent({
       formConfigMenuItems: dialog.formConfigMenuItems,
       selectedFormConfigLabel: dialog.selectedFormConfigLabel,
       visibleTemplates: dialog.visibleTemplates,
+      isFieldDisabled: dialog.isFieldDisabled,
       selectFormConfig: dialog.selectFormConfig,
     }
   },
@@ -249,6 +250,30 @@ describe('useSaplingDialogEdit', () => {
       handle: 42,
       title: 'Updated event',
     })
+  })
+
+  it('disables every primary key outside create mode', () => {
+    const manualPrimaryKey = {
+      name: 'externalId',
+      type: 'string',
+      isPrimaryKey: true,
+      isAutoIncrement: false,
+      fieldAccess: { allowRead: true, allowInsert: true, allowUpdate: true },
+    } as EntityTemplate
+
+    const editWrapper = mount(TestHost, { props: { mode: 'edit' } })
+    expect(
+      (
+        editWrapper.vm as { isFieldDisabled: (template: EntityTemplate) => boolean }
+      ).isFieldDisabled(manualPrimaryKey),
+    ).toBe(true)
+
+    const createWrapper = mount(TestHost, { props: { mode: 'create' } })
+    expect(
+      (
+        createWrapper.vm as { isFieldDisabled: (template: EntityTemplate) => boolean }
+      ).isFieldDisabled(manualPrimaryKey),
+    ).toBe(false)
   })
 
   it('emits saveAndClose without closing the dialog before the save handler runs', async () => {

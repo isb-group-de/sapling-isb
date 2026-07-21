@@ -69,8 +69,18 @@
         <div
           class="sapling-interactive-list-item__row sapling-chat-rail__item-row sapling-ai-chat__session-top"
         >
-          <div class="sapling-chat-rail__item-meta sapling-ai-chat__session-meta">
-            {{ formatSessionMeta(session) }}
+          <div class="sapling-chat-rail__item-details sapling-ai-chat__session-details">
+            <div
+              v-if="formatSessionRuntimeSummary(session)"
+              class="sapling-chat-rail__item-runtime sapling-ai-chat__session-runtime"
+              :title="formatSessionRuntimeSummary(session)"
+            >
+              <v-icon icon="mdi-robot-outline" size="x-small" />
+              <span>{{ formatSessionRuntimeSummary(session) }}</span>
+            </div>
+            <div class="sapling-chat-rail__item-meta sapling-ai-chat__session-meta">
+              {{ formatSessionMeta(session) }}
+            </div>
           </div>
 
           <div
@@ -143,6 +153,7 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { AiChatSessionItem } from '@/entity/entity'
+import { formatSessionRuntimeSummary } from './aiChatSessionPresentation'
 
 const props = withDefaults(
   defineProps<{

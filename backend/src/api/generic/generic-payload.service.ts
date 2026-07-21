@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { EntityTemplateDto } from '../template/dto/entity-template.dto';
 import { GenericReferenceService } from './generic-reference.service';
 
@@ -24,9 +24,12 @@ export class GenericPayloadService {
     template: EntityTemplateDto[] = [],
     data: Record<string, any>,
   ): Record<string, any> {
-    return this.preparePayload(template, data, {
+    const preparedPayload = this.preparePayload(template, data, {
       removeAutoIncrement: true,
     });
+
+    this.assertRequiredPrimaryKeys(template, preparedPayload);
+    return preparedPayload;
   }
 
   prepareUpdatePayload(
@@ -94,5 +97,40 @@ export class GenericPayloadService {
       field.isReference !== true &&
       GenericPayloadService.NULLABLE_NUMBER_TYPES.has(field.type)
     );
+  }
+
+  private assertRequiredPrimaryKeys(
+    template: EntityTemplateDto[],
+    data: Record<string, unknown>,
+  ): void {
+    const missingPrimaryKeys = template
+      .filter(
+        (field) =>
+          field.isPrimaryKey === true &&
+          field.isAutoIncrement !== true &&
+          field.default == null &&
+          field.defaultRaw == null,
+      )
+      .filter((field) => {
+        const value = data[field.name];
+        return (
+          value === null ||
+          value === undefined ||
+          (typeof value === 'string' && value.trim().length === 0)
+        );
+      })
+      .map((field) => field.name);
+
+    if (missingPrimaryKeys.length === 0) {
+      return;
+    }
+
+    throw new BadRequestException({
+      message: 'global.requiredFieldsMissing',
+      error: `Missing required primary key field(s): ${missingPrimaryKeys.join(', ')}`,
+      details: {
+        fields: missingPrimaryKeys,
+      },
+    });
   }
 }

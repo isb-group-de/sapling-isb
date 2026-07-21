@@ -82,13 +82,17 @@ export class AiProviderRegistryService {
       },
     );
 
+    const modelsWithUsableHandles = models.filter(
+      (model) =>
+        typeof model.handle === 'string' && model.handle.trim().length > 0,
+    );
     const visibleModels = configuredOnly
-      ? models.filter(
+      ? modelsWithUsableHandles.filter(
           (model) =>
             typeof model.provider !== 'string' &&
             hasUsableProviderCredentials(model.provider),
         )
-      : models;
+      : modelsWithUsableHandles;
 
     return visibleModels.map((model) => sanitizeModel(model));
   }

@@ -253,28 +253,27 @@ export function getEditDialogHeaders(
   showReference: boolean,
   permissions: AccumulatedPermission[] = [],
 ) {
-  const visibleTemplates = entityTemplates.filter(
-    (template) =>
+  const visibleTemplates = entityTemplates.filter((template) => {
+    const isManualPrimaryKey = template.isPrimaryKey === true && template.isAutoIncrement !== true
+
+    return (
       (mode === 'create'
         ? template.fieldAccess?.allowInsert !== false
         : mode === 'readonly'
           ? template.fieldAccess?.allowRead !== false
           : template.fieldAccess?.allowRead !== false ||
             template.fieldAccess?.allowUpdate === true) &&
-      getTemplateConfiguredFormVisible(template) === true &&
+      (getTemplateConfiguredFormVisible(template) === true || isManualPrimaryKey) &&
       !template.isAutoIncrement &&
       (template.inlineCollection || !['1:m', 'm:n', 'n:m', '1:1'].includes(template.kind ?? '')) &&
       (!template.isReference || showReference) &&
       (!template.referenceName ||
         permissions.find((permission) => permission.entityHandle === template.referenceName)
-          ?.allowRead),
-  )
+          ?.allowRead)
+    )
+  })
 
-  if (mode === 'create' || !visibleTemplates.some((template) => template.name !== 'handle')) {
-    return visibleTemplates
-  }
-
-  return visibleTemplates.filter((template) => template.name !== 'handle')
+  return visibleTemplates
 }
 
 export function getTableHeaders(

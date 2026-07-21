@@ -253,7 +253,11 @@ describe('saplingTableUtil', () => {
 
   it('filters edit dialog headers by mode, reference visibility, and permissions', () => {
     const templates = [
-      createTemplate({ name: 'handle' }),
+      createTemplate({
+        name: 'handle',
+        isPrimaryKey: true,
+        isAutoIncrement: false,
+      }),
       createTemplate({
         name: 'company',
         kind: 'm:1',
@@ -273,7 +277,35 @@ describe('saplingTableUtil', () => {
       getEditDialogHeaders(templates, 'edit' as DialogState, true, [
         { entityHandle: 'company', allowRead: true },
       ]),
-    ).toEqual([expect.objectContaining({ name: 'company' })])
+    ).toEqual([
+      expect.objectContaining({ name: 'handle' }),
+      expect.objectContaining({ name: 'company' }),
+    ])
+  })
+
+  it('shows manual primary keys in create and edit dialogs and hides auto-increment keys', () => {
+    const manualHandle = createTemplate({
+      name: 'handle',
+      isPrimaryKey: true,
+      isAutoIncrement: false,
+      formVisible: false,
+    })
+    const autoIncrementHandle = createTemplate({
+      name: 'id',
+      isPrimaryKey: true,
+      isAutoIncrement: true,
+      formVisible: true,
+    })
+    const title = createTemplate({ name: 'title', formVisible: true })
+
+    expect(
+      getEditDialogHeaders([manualHandle, autoIncrementHandle, title], 'create', true).map(
+        (template) => template.name,
+      ),
+    ).toEqual(['handle', 'title'])
+    expect(
+      getEditDialogHeaders([manualHandle, title], 'edit', true).map((template) => template.name),
+    ).toEqual(['handle', 'title'])
   })
 
   it('keeps a configured handle visible when it is the only dialog field', () => {

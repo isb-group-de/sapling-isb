@@ -121,4 +121,54 @@ describe('useSaplingDialogEditForm field permissions', () => {
 
     expect(helper.buildSavePayload()).toEqual({ name: 'Bauer IT Solutions 1' })
   })
+
+  it('omits manual primary keys from edit payloads even when update access is allowed', async () => {
+    const form = ref<Record<string, unknown>>({})
+    const initialFormSnapshot = ref<Record<string, string>>({})
+    const templates = computed(
+      () =>
+        [
+          {
+            name: 'handle',
+            type: 'string',
+            options: [],
+            isPrimaryKey: true,
+            isAutoIncrement: false,
+            fieldAccess: { allowRead: true, allowInsert: true, allowUpdate: true },
+          },
+          {
+            name: 'title',
+            type: 'string',
+            options: [],
+            fieldAccess: { allowRead: true, allowInsert: true, allowUpdate: true },
+          },
+        ] as unknown as EntityTemplate[],
+    )
+    const helper = useSaplingDialogEditForm({
+      form,
+      templates,
+      mode: computed(() => 'edit'),
+      item: computed(() => ({ handle: 'technical-id', title: 'Before' })),
+      parent: computed(() => null),
+      parentEntity: computed(() => null),
+      relationTemplates: computed(() => []),
+      currentPerson: computed(() => null),
+      isHydratingForm: ref(false),
+      isLoading: ref(false),
+      initialFormSnapshot,
+      hasFormValue: (value) => value != null && value !== '',
+      syncInitialFormSnapshot: () => undefined,
+      formatLocalDate: () => '',
+      formatLocalTime: () => '',
+      getLocalDateTimeParts: () => ({ date: '', time: '' }),
+      toUtcIsoString: () => null,
+    })
+
+    helper.initializeForm()
+    await nextTick()
+    form.value.handle = 'attempted-change'
+    form.value.title = 'After'
+
+    expect(helper.buildSavePayload()).toEqual({ title: 'After' })
+  })
 })

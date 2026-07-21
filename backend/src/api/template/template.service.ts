@@ -92,6 +92,8 @@ export class TemplateService {
         const isBooleanField = prop.type === 'boolean';
         const hasExplicitDefault =
           prop.default !== undefined || prop.defaultRaw != null;
+        const isRequiredPrimaryKey =
+          (prop.primary ?? false) && !(prop.autoincrement ?? false);
 
         const entityHandleFromType =
           entityHandleByTypeName.get(prop.type) ?? null;
@@ -117,12 +119,11 @@ export class TemplateService {
           isReference: ['m:n', '1:m', '1:1', 'm:1'].includes(prop.kind ?? ''),
           isRequired:
             !isBooleanField &&
-            !(prop.nullable ?? true) &&
-            !(prop.primary ?? false) &&
-            !(prop.autoincrement ?? false) &&
             !isReadOnly &&
             !isCollectionRelation &&
-            !hasExplicitDefault,
+            !hasExplicitDefault &&
+            (isRequiredPrimaryKey ||
+              (!(prop.nullable ?? true) && !(prop.autoincrement ?? false))),
           options: getSaplingOptions(
             entityClass.prototype as object,
             prop.name,

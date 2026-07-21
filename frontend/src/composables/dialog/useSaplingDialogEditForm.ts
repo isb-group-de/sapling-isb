@@ -317,7 +317,7 @@ export function useSaplingDialogEditForm(options: UseSaplingDialogEditFormOption
       return template.fieldAccess?.allowInsert !== false
     }
     if (options.mode.value === 'edit') {
-      return template.fieldAccess?.allowUpdate !== false
+      return template.isPrimaryKey !== true && template.fieldAccess?.allowUpdate !== false
     }
     return false
   }

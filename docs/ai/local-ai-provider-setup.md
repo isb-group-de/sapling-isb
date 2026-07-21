@@ -34,6 +34,11 @@ Model records live under:
 /table/aiProviderModel
 ```
 
+When a model is created through the generic table, its `handle` is mandatory.
+Use a stable technical value such as `ollama-gemma4-12b`; the provider-facing
+model name remains in `providerModel` (for example `gemma4:12b`). An empty
+handle cannot be persisted as a usable Songbird preference.
+
 Depending on the database state, these records may already exist from seed data.
 If they do not appear after running seeders, create or update them manually in
 the two tables above. Some environments may have already executed an older seed
@@ -301,6 +306,7 @@ For semantic search:
 
 ### Model Does Not Appear
 
+- The model has no non-empty technical `handle`.
 - Model record is inactive.
 - `supportsStreaming` is false for a chat model.
 - `supportsEmbeddings` is false for an embedding model.

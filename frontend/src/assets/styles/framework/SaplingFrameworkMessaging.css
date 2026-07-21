@@ -166,6 +166,35 @@
   opacity: var(--sapling-opacity-soft);
 }
 
+.sapling-chat-rail__item-details {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: var(--sapling-space-2xs);
+}
+
+.sapling-chat-rail__item-runtime {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: var(--sapling-gap-xs);
+  color: var(--sapling-surface-text-muted);
+  font-size: var(--sapling-text-label-size-xs);
+  line-height: 1.4;
+}
+
+.sapling-chat-rail__item-runtime .v-icon {
+  flex: 0 0 auto;
+}
+
+.sapling-chat-rail__item-runtime span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .sapling-chat-rail__item-actions {
   flex: 0 0 auto;
 }
