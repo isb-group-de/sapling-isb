@@ -72,8 +72,7 @@
             v-if="shouldShowGroupDropBefore(group.key)"
             class="sapling-form-config-preview__group-drop-preview"
             role="status"
-            @dragover.prevent="onDropPreviewDragOver"
-            @drop.prevent="dropOnGroup(group.key)"
+            @pointermove="onDropPreviewDragOver"
           >
             <v-icon icon="mdi-tray-arrow-down" size="small" />
             <span>{{ formConfigText('dropGroupHere', 'Gruppe hier ablegen') }}</span>
@@ -91,8 +90,7 @@
                 draggedFieldName && fieldDropTarget?.groupKey === normalizeGroupKey(group.key),
             }"
             :data-preview-group="normalizeGroupKey(group.key)"
-            @dragover.prevent="onGroupDragOver($event, group.key)"
-            @drop.prevent="dropOnGroup(group.key)"
+            @pointermove="onGroupDragOver($event, group.key)"
           >
             <header class="sapling-form-config-preview__group-header">
               <div class="sapling-form-config-preview__group-title">
@@ -102,11 +100,9 @@
                   icon="mdi-drag-vertical"
                   variant="text"
                   size="x-small"
-                  draggable="true"
                   :title="formConfigText('dragGroup', 'Gruppe verschieben')"
                   :aria-label="formConfigText('dragGroup', 'Gruppe verschieben')"
-                  @dragstart.stop="startGroupDrag($event, group.key)"
-                  @dragend="endDrag"
+                  @pointerdown.stop="startGroupDrag($event, group.key)"
                 />
                 <v-icon v-else icon="mdi-folder-outline" size="small" />
                 <div>
@@ -124,8 +120,7 @@
                 'sapling-form-config-preview__grid--empty-drag-target':
                   draggedFieldName && group.templates.length === 0,
               }"
-              @dragover.prevent.stop="onFieldGridDragOver($event, group.key)"
-              @drop.prevent.stop="dropField"
+              @pointermove.stop="onFieldGridDragOver($event, group.key)"
             >
               <template v-for="(field, fieldIndex) in group.templates" :key="field.name">
                 <div
@@ -133,8 +128,7 @@
                   class="sapling-form-config-preview__field-drop-preview"
                   :class="`sapling-config-preview__field--w${draggedFieldWidth}`"
                   role="status"
-                  @dragover.prevent.stop="onDropPreviewDragOver"
-                  @drop.prevent.stop="dropField"
+                  @pointermove.stop="onDropPreviewDragOver"
                 >
                   <v-icon icon="mdi-tray-arrow-down" size="small" />
                   <span>{{ formConfigText('dropFieldHere', 'Feld hier ablegen') }}</span>
@@ -152,12 +146,9 @@
                     },
                   ]"
                   :data-preview-field="field.name"
-                  draggable="true"
                   :title="formConfigText('dragField', 'Feld verschieben')"
-                  @dragstart.stop="startFieldDrag($event, field)"
-                  @dragend="endDrag"
-                  @dragover.prevent.stop="onFieldDragOver($event, group, fieldIndex)"
-                  @drop.prevent.stop="dropField"
+                  @pointerdown.stop="startFieldDrag($event, field)"
+                  @pointermove.stop="onFieldDragOver($event, group, fieldIndex)"
                 >
                   <strong>
                     <v-icon icon="mdi-drag" size="x-small" />
@@ -185,8 +176,7 @@
                 class="sapling-form-config-preview__field-drop-preview"
                 :class="`sapling-config-preview__field--w${draggedFieldWidth}`"
                 role="status"
-                @dragover.prevent.stop="onDropPreviewDragOver"
-                @drop.prevent.stop="dropField"
+                @pointermove.stop="onDropPreviewDragOver"
               >
                 <v-icon icon="mdi-tray-arrow-down" size="small" />
                 <span>{{ formConfigText('dropFieldHere', 'Feld hier ablegen') }}</span>
@@ -199,8 +189,7 @@
           v-if="shouldShowGroupDropAtEnd"
           class="sapling-form-config-preview__group-drop-preview"
           role="status"
-          @dragover.prevent="onDropPreviewDragOver"
-          @drop.prevent="dropOnGroup(null)"
+          @pointermove="onDropPreviewDragOver"
         >
           <v-icon icon="mdi-tray-arrow-down" size="small" />
           <span>{{ formConfigText('dropGroupHere', 'Gruppe hier ablegen') }}</span>
@@ -341,9 +330,6 @@ const {
   draggedFieldWidth,
   draggedGroupKey,
   dragLayoutActive,
-  dropField,
-  dropOnGroup,
-  endDrag,
   fieldDropTarget,
   normalizeGroupKey,
   onFieldDragOver,

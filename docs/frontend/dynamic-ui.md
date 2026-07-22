@@ -315,6 +315,9 @@ component focused on remote context, persistence, and composition.
 Its preview keeps form, desktop-table, and mobile-table tabs mounted through
 entity reloads, renders the configured form groups explicitly, and emphasizes
 translated field names plus renderer types instead of fabricated sample data.
+The administration uses a viewport-filling workspace without an outer page
+scrollbar. The editor and preview are independent scrolling panels; editor
+context controls scroll away while field search and group actions remain sticky.
 The compact form preview is also the primary ordering surface: fields and
 groups expose drag handles, render an insertion preview at the exact target,
 and use proportional edge scrolling while a drag is active. Ordering is

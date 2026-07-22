@@ -1,6 +1,6 @@
 <template>
   <v-container
-    class="sapling-page-shell sapling-page-shell--panel sapling-page-shell--uniform-inset sapling-config-page sapling-form-config"
+    class="sapling-page-shell sapling-page-shell--fill sapling-page-shell--panel sapling-page-shell--uniform-inset sapling-config-page sapling-form-config"
     fluid
   >
     <SaplingPageHero

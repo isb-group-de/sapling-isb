@@ -1,5 +1,5 @@
 <template>
-  <div class="sapling-config-field-tools sapling-form-config__field-tools">
+  <div class="sapling-config-field-tools sapling-form-config__field-tools glass-panel">
     <v-text-field
       v-model="fieldSearch"
       density="comfortable"
