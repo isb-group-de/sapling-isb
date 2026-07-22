@@ -326,6 +326,10 @@
     0 0 0 1px rgba(var(--v-theme-primary), 0.16);
 }
 
+.sapling-form-config-preview__group--empty-drag-target {
+  border-style: dashed;
+}
+
 .sapling-form-config-preview__group-drop-preview {
   display: flex;
   min-height: 3.25rem;
@@ -391,6 +395,25 @@
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: var(--sapling-gap-sm);
+}
+
+.sapling-form-config-preview__grid--empty-drag-target {
+  min-height: 68px;
+}
+
+.sapling-form-config-preview__empty-field-target {
+  display: flex;
+  grid-column: 1 / -1;
+  min-height: 68px;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sapling-gap-xs);
+  border: 1px dashed var(--sapling-surface-border-accent);
+  border-radius: var(--sapling-radius-sm);
+  color: rgba(var(--v-theme-on-surface), 0.64);
+  background: rgba(var(--v-theme-primary), 0.04);
+  font-size: var(--sapling-text-label-size);
+  font-weight: 700;
 }
 
 .sapling-config-preview__field {

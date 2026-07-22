@@ -115,6 +115,7 @@
         v-model:preview-mode="previewMode"
         :selected-entity-handle="selectedEntityHandle"
         :draft-templates="draftTemplates"
+        :groups="groupRows"
         :reload-disabled="!selectedEntityHandle"
         @reload="loadEntityContext"
         @move-field="moveFieldBefore"

@@ -67,7 +67,7 @@
           </span>
         </div>
 
-        <template v-for="group in previewGroups" :key="group.id">
+        <template v-for="group in displayedPreviewGroups" :key="group.id">
           <div
             v-if="shouldShowGroupDropBefore(group.key)"
             class="sapling-form-config-preview__group-drop-preview"
@@ -85,6 +85,8 @@
               'sapling-form-config-preview__group--drag-source': draggedGroupKey === group.key,
               'sapling-form-config-preview__group--layout-hidden':
                 dragLayoutActive && draggedGroupKey === group.key,
+              'sapling-form-config-preview__group--empty-drag-target':
+                draggedFieldName && group.templates.length === 0,
               'sapling-form-config-preview__group--field-target':
                 draggedFieldName && fieldDropTarget?.groupKey === normalizeGroupKey(group.key),
             }"
@@ -118,6 +120,10 @@
             </header>
             <div
               class="sapling-config-preview__grid sapling-form-config-preview__grid"
+              :class="{
+                'sapling-form-config-preview__grid--empty-drag-target':
+                  draggedFieldName && group.templates.length === 0,
+              }"
               @dragover.prevent.stop="onFieldGridDragOver($event, group.key)"
               @drop.prevent.stop="dropField"
             >
@@ -161,6 +167,18 @@
                   <small>{{ field.name }} · {{ getPreviewMeta(field) }}</small>
                 </SaplingSurface>
               </template>
+
+              <div
+                v-if="
+                  draggedFieldName &&
+                  group.templates.length === 0 &&
+                  !shouldShowFieldDropAtEnd(group.key)
+                "
+                class="sapling-form-config-preview__empty-field-target"
+              >
+                <v-icon icon="mdi-tray-arrow-down" size="small" />
+                <span>{{ formConfigText('dropFieldHere', 'Feld hier ablegen') }}</span>
+              </div>
 
               <div
                 v-if="shouldShowFieldDropAtEnd(group.key)"
@@ -250,6 +268,7 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { EntityTemplate, EntityTemplateFormWidth } from '@/entity/structure'
+import type { GroupDraft } from '@/components/system/form-config/formConfigAdmin.types'
 import SaplingSurface from '@/components/common/SaplingSurface.vue'
 import {
   getDialogTemplateWidth,
@@ -267,6 +286,7 @@ const PREVIEW_UNSUPPORTED_FORM_RELATION_KINDS = [...PREVIEW_UNSUPPORTED_RELATION
 const props = defineProps<{
   selectedEntityHandle: string
   draftTemplates: EntityTemplate[]
+  groups: GroupDraft[]
   previewMode: PreviewMode
   reloadDisabled: boolean
 }>()
@@ -347,6 +367,31 @@ const {
     emit('reorderGroup', sourceKey, targetKey, placement),
 })
 
+const displayedPreviewGroups = computed(() => {
+  if (!draggedFieldName.value) return previewGroups.value
+
+  const groupsByKey = new Map(
+    previewGroups.value.map((group) => [normalizeGroupKey(group.key), group]),
+  )
+  props.groups
+    .filter((group) => group.visible && group.key && !groupsByKey.has(group.key))
+    .forEach((group) => {
+      groupsByKey.set(group.key, {
+        id: group.key,
+        key: group.key,
+        label: group.label.trim() || translateGroup(group.key),
+        templates: [],
+      })
+    })
+
+  const groupOrder = new Map(props.groups.map((group) => [group.key, group.order]))
+  return [...groupsByKey.values()].sort((left, right) => {
+    const leftOrder = groupOrder.get(normalizeGroupKey(left.key)) ?? getPreviewGroupOrder(left)
+    const rightOrder = groupOrder.get(normalizeGroupKey(right.key)) ?? getPreviewGroupOrder(right)
+    return leftOrder - rightOrder
+  })
+})
+
 const previewTableTemplates = computed(() =>
   sortTableHeaders(
     props.draftTemplates
@@ -410,6 +455,10 @@ function isPreviewSupportedTableTemplate(template: EntityTemplate): boolean {
 
 function getPreviewWidth(template: EntityTemplate): EntityTemplateFormWidth {
   return getDialogTemplateWidth(template)
+}
+
+function getPreviewGroupOrder(group: (typeof previewGroups.value)[number]): number {
+  return group.templates[0]?.formGroupOrder ?? Number.MAX_SAFE_INTEGER
 }
 
 function getPreviewFieldLabel(template: EntityTemplate): string {

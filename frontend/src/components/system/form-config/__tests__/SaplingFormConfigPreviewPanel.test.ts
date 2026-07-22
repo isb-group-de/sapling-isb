@@ -51,6 +51,12 @@ const templates = [
   },
 ] satisfies EntityTemplate[]
 
+const groups = [
+  { key: 'company.groupBasics', label: 'Basics', visible: true, order: 100 },
+  { key: 'company.groupDetails', label: 'Details', visible: true, order: 200 },
+  { key: 'company.groupEmpty', label: 'Empty group', visible: true, order: 300 },
+]
+
 function createDataTransfer() {
   return {
     effectAllowed: 'none',
@@ -65,6 +71,7 @@ function mountPreview(previewMode: 'form' | 'table' | 'mobile') {
     props: {
       selectedEntityHandle: 'company',
       draftTemplates: templates,
+      groups,
       previewMode,
       reloadDisabled: false,
     },
@@ -131,6 +138,26 @@ describe('SaplingFormConfigPreviewPanel', () => {
 
     await dropPreview.trigger('drop', { dataTransfer })
     expect(wrapper.emitted('moveField')).toEqual([['name', 'company.groupDetails', null]])
+  })
+
+  it('shows empty groups only during a field drag and accepts them as drop targets', async () => {
+    const wrapper = mountPreview('form')
+    const dataTransfer = createDataTransfer()
+
+    expect(wrapper.find('[data-preview-group="company.groupEmpty"]').exists()).toBe(false)
+
+    await wrapper.get('[data-preview-field="name"]').trigger('dragstart', { dataTransfer })
+    await wrapper.vm.$nextTick()
+
+    const emptyGroup = wrapper.get('[data-preview-group="company.groupEmpty"]')
+    const targetGrid = emptyGroup.get('.sapling-form-config-preview__grid')
+    expect(emptyGroup.text()).toContain('Empty group')
+    expect(targetGrid.find('.sapling-form-config-preview__empty-field-target').exists()).toBe(true)
+
+    await targetGrid.trigger('dragover', { dataTransfer })
+    await targetGrid.trigger('drop', { dataTransfer })
+
+    expect(wrapper.emitted('moveField')).toEqual([['name', 'company.groupEmpty', null]])
   })
 
   it('previews and emits group insertion positions', async () => {
