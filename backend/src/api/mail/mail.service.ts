@@ -32,6 +32,7 @@ import { MailFollowUpService } from './mail-follow-up.service';
 import { MailProviderSessionService } from './mail-provider-session.service';
 import { MailProviderTransportService } from './mail-provider-transport.service';
 import { MailRenderingService } from './mail-rendering.service';
+import { CustomerAssociationResolverService } from './customer-association-resolver.service';
 
 /**
  * Stable orchestration facade for mail controllers, processors and inbound
@@ -44,16 +45,19 @@ export class MailService {
   private readonly followUpService: MailFollowUpService;
   private readonly providerSessionService: MailProviderSessionService;
   private readonly providerTransportService: MailProviderTransportService;
+  private readonly customerAssociationResolver: CustomerAssociationResolverService;
 
   constructor(
     private readonly em: EntityManager,
-    _templateService: TemplateService,
+    templateService: TemplateService,
     messageTemplateService: MessageTemplateService,
     @InjectQueue('emails') private readonly emailQueue: Queue,
     @Optional() renderingService?: MailRenderingService,
     @Optional() followUpService?: MailFollowUpService,
     @Optional() providerSessionService?: MailProviderSessionService,
     @Optional() providerTransportService?: MailProviderTransportService,
+    @Optional()
+    customerAssociationResolver?: CustomerAssociationResolverService,
   ) {
     this.renderingService =
       renderingService ?? new MailRenderingService(messageTemplateService);
@@ -66,6 +70,9 @@ export class MailService {
         messageTemplateService,
         this.providerSessionService,
       );
+    this.customerAssociationResolver =
+      customerAssociationResolver ??
+      new CustomerAssociationResolverService(templateService);
   }
 
   async listSenderOptions(
@@ -129,6 +136,13 @@ export class MailService {
       : undefined;
     delivery.referenceHandle =
       sendDto.itemHandle !== undefined ? String(sendDto.itemHandle) : undefined;
+    const customerAssociation = await this.customerAssociationResolver.resolve(
+      this.em,
+      sendDto.entityHandle,
+      sendDto.itemHandle,
+    );
+    delivery.customerCompany = customerAssociation.company;
+    delivery.customerPerson = customerAssociation.person;
     delivery.provider = currentUser.type?.handle ?? 'sapling';
     delivery.toRecipients = preview.to;
     delivery.ccRecipients = preview.cc;
@@ -178,6 +192,9 @@ export class MailService {
           'createdBy',
           'createdBy.type',
           'createdBy.session',
+          'customerCompany',
+          'customerPerson',
+          'customerPerson.company',
         ],
       },
     );

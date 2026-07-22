@@ -72,6 +72,21 @@ export function isOpportunityOpen(opportunity: CrmOpportunity): boolean {
   return relationObject(opportunity.type)?.isClosed !== true
 }
 
+export function isOpportunityWithinHorizon(
+  opportunity: CrmOpportunity,
+  horizonDays: number | null,
+  today = new Date(),
+): boolean {
+  if (!horizonDays) return true
+
+  const closeDate = parseDate(opportunity.closeDate)
+  if (!closeDate) return false
+
+  const horizon = startOfDay(today)
+  horizon.setDate(horizon.getDate() + horizonDays)
+  return startOfDay(closeDate) <= horizon
+}
+
 export function isCustomerCompany(company: CrmCompany): boolean {
   const segmentHandle = String(getRelationHandle(company.segment) ?? '')
   return ['customer', 'strategic_customer'].includes(segmentHandle)

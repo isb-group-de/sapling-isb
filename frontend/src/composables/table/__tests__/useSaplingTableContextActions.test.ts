@@ -7,6 +7,11 @@ const mocks = vi.hoisted(() => ({
   openMailDialog: vi.fn(),
   openDocumentView: vi.fn(),
   openDvelopUploadDialog: vi.fn(),
+  routerPush: vi.fn(),
+}))
+
+vi.mock('vue-router', () => ({
+  useRouter: () => ({ push: mocks.routerPush }),
 }))
 
 vi.mock('@/stores/currentPermissionStore', () => ({
@@ -34,7 +39,7 @@ vi.mock('@/utils/saplingDocumentActionUtil', () => ({
 
 import { useSaplingTableContextActions } from '../useSaplingTableContextActions'
 
-function createSubject(showActions = true) {
+function createSubject(showActions = true, entityHandle = 'ticket') {
   const callbacks = {
     loadItem: vi.fn(async (item) => ({ ...item, title: 'Loaded' })),
     editItem: vi.fn(),
@@ -44,7 +49,7 @@ function createSubject(showActions = true) {
     runScript: vi.fn(),
   }
   const props = reactive({
-    entityHandle: 'ticket',
+    entityHandle,
     entityTemplates: [],
     showActions,
   })
@@ -88,5 +93,16 @@ describe('useSaplingTableContextActions', () => {
 
     expect(callbacks.loadItem).not.toHaveBeenCalled()
     expect(subject.contextMenu.value.visible).toBe(false)
+  })
+
+  it('opens the Customer 360 route for company context actions', () => {
+    const { subject } = createSubject(true, 'company')
+
+    subject.onContextMenuAction({ type: 'customer360', item: { handle: 42 } })
+
+    expect(mocks.routerPush).toHaveBeenCalledWith({
+      name: 'customer360',
+      params: { entityHandle: 'company', handle: '42' },
+    })
   })
 })

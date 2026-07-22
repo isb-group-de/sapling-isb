@@ -28,14 +28,20 @@
         <p class="sapling-crm-workspace__subtitle">{{ t('crmWorkspace.subtitle') }}</p>
         <template #side>
           <div class="sapling-crm-workspace__hero-side">
-            <article
+            <button
               v-for="metric in heroMetrics"
               :key="metric.key"
+              type="button"
               class="sapling-crm-workspace-metric"
+              :class="{
+                'sapling-crm-workspace-metric--active': activeCockpit === metric.cockpit,
+              }"
+              :aria-pressed="activeCockpit === metric.cockpit"
+              @click="activeCockpit = metric.cockpit"
             >
               <span>{{ metric.label }}</span>
               <strong>{{ metric.value }}</strong>
-            </article>
+            </button>
             <v-btn
               class="sapling-crm-workspace__refresh"
               prepend-icon="mdi-refresh"
@@ -53,9 +59,16 @@
         v-model:active-cockpit="activeCockpit"
         v-model:search="search"
         v-model:selected-responsible-handle="selectedResponsibleHandle"
+        v-model:selected-segment-handle="selectedSegmentHandle"
         v-model:contact-threshold-days="contactThresholdDays"
+        v-model:opportunity-horizon-days="opportunityHorizonDays"
+        :active-filter-count="activeFilterCount"
+        :cockpit-counts="cockpitCounts"
         :responsible-person-options="responsiblePersonOptions"
+        :segment-options="segmentOptions"
         :contact-threshold-options="contactThresholdOptions"
+        :opportunity-horizon-options="opportunityHorizonOptions"
+        @reset-filters="resetFilters"
       />
       <v-progress-linear
         v-if="isLoading && hasLoadedOnce"
@@ -116,7 +129,7 @@
           />
           <SaplingCrmSignalsPanel
             :eyebrow="t('crmWorkspace.signalOverview')"
-            :title="t('crmWorkspace.pipelineHealth')"
+            :title="t('crmWorkspace.crmHealth')"
             :signals="signals"
             @open="openSignal"
           />
@@ -140,7 +153,9 @@ import { useSaplingCrmWorkspace } from '@/composables/crm/useSaplingCrmWorkspace
 const { t } = useI18n()
 const {
   activeCockpit,
+  activeFilterCount,
   atRiskCustomerItems,
+  cockpitCounts,
   contactThresholdDays,
   contactThresholdOptions,
   customersWithoutContactItems,
@@ -155,11 +170,16 @@ const {
   openOpportunityStage,
   openSignal,
   openWorkspaceItem,
+  opportunityHorizonDays,
+  opportunityHorizonOptions,
   opportunitiesWithoutNextActivityItems,
   responsiblePersonOptions,
+  resetFilters,
   salesStageBreakdown,
   search,
   selectedResponsibleHandle,
+  selectedSegmentHandle,
+  segmentOptions,
   signals,
   todayContactItems,
   topAccountItems,

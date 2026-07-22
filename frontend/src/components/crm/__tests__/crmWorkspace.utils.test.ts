@@ -7,6 +7,7 @@ import {
   getRelationHandle,
   isCustomerCompany,
   isOpportunityOpen,
+  isOpportunityWithinHorizon,
   normalizeMoney,
   normalizeProbability,
   parseDate,
@@ -27,6 +28,29 @@ describe('CRM workspace utilities', () => {
     expect(isOpportunityOpen({ type: { isClosed: false } } as CrmOpportunity)).toBe(true)
     expect(isOpportunityOpen({ resultStatus: { isClosed: true } } as CrmOpportunity)).toBe(false)
     expect(isOpportunityOpen({ type: { isClosed: true } } as CrmOpportunity)).toBe(false)
+  })
+
+  it('filters opportunities by their close-date horizon', () => {
+    const today = new Date('2026-07-22T10:00:00.000Z')
+
+    expect(
+      isOpportunityWithinHorizon(
+        { closeDate: '2026-08-15T00:00:00.000Z' } as CrmOpportunity,
+        30,
+        today,
+      ),
+    ).toBe(true)
+    expect(
+      isOpportunityWithinHorizon(
+        { closeDate: '2026-09-30T00:00:00.000Z' } as CrmOpportunity,
+        30,
+        today,
+      ),
+    ).toBe(false)
+    expect(isOpportunityWithinHorizon({ closeDate: null } as CrmOpportunity, 30, today)).toBe(false)
+    expect(isOpportunityWithinHorizon({ closeDate: null } as CrmOpportunity, null, today)).toBe(
+      true,
+    )
   })
 
   it('recognizes customer segments and prioritizes recurring account value', () => {

@@ -62,6 +62,7 @@
     :x="contextMenu.x"
     :y="contextMenu.y"
     :item="contextMenu.item"
+    :can-customer360="['company', 'person'].includes(entityHandle)"
     :entity-permission="entityPermission"
     :can-navigate="canNavigate"
     :can-show-information="canShowInformation"

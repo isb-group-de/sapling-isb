@@ -127,6 +127,7 @@ export function useSaplingDialogRecordActions(
         ? []
         : getSaplingContextMenuTableItems({
             canChangeLog: hasPersistedItem.value,
+            canCustomer360: ['company', 'person'].includes(entityHandle.value),
             canShowInformation: canShowInformation.value,
             entityPermission: entityPermission.value,
             canNavigate: canNavigate.value,
@@ -392,6 +393,14 @@ export function useSaplingDialogRecordActions(
 
   async function handleRecordAction(menuItem: SaplingContextMenuTableMenuItem): Promise<void> {
     switch (menuItem.type) {
+      case 'customer360':
+        if (entityHandle.value && itemHandle.value != null) {
+          await router.push({
+            name: 'customer360',
+            params: { entityHandle: entityHandle.value, handle: itemHandle.value },
+          })
+        }
+        break
       case 'copy':
         openCopyDialogFromRecord()
         break

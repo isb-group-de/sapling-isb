@@ -26,6 +26,7 @@ export type SaplingOption =
   | 'isDeadline'
   | 'isCurrentPerson'
   | 'isCurrentCompany'
+  | 'isCustomer'
   | 'isAutoKey'
   | 'isDateStart'
   | 'isDateEnd';

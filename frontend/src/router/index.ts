@@ -53,6 +53,11 @@ const router = createRouter({
           name: 'crmWorkspace',
           component: () => import('@/views/CrmWorkspaceView.vue'),
         },
+        {
+          path: 'customer-360/:entityHandle/:handle',
+          name: 'customer360',
+          component: () => import('@/views/Customer360View.vue'),
+        },
         // Note view (lazy loaded)
         { path: 'note', name: 'note', component: () => import('@/views/NoteView.vue') },
         // Playground view (lazy loaded)

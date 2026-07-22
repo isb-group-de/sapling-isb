@@ -69,11 +69,25 @@ export class MailFollowUpService {
         creator.handle != null
           ? eventEm.getReference(PersonItem, creator.handle as never)
           : undefined;
+      const customerCompanyRef =
+        delivery.customerCompany?.handle != null
+          ? eventEm.getReference(
+              CompanyItem,
+              delivery.customerCompany.handle as never,
+            )
+          : creatorCompanyRef;
+      const customerPersonRef =
+        delivery.customerPerson?.handle != null
+          ? eventEm.getReference(
+              PersonItem,
+              delivery.customerPerson.handle as never,
+            )
+          : creatorPersonRef;
       const sourceRefs = await this.resolveSourceRefs(
         eventEm,
         delivery,
-        creatorCompanyRef,
-        creatorPersonRef,
+        customerCompanyRef,
+        customerPersonRef,
       );
       const event = eventEm.create(EventItem, {
         title: buildMailEventTitle(delivery),

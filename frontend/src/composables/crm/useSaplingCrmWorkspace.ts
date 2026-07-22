@@ -25,6 +25,7 @@ import {
   getRelationHandle,
   isCustomerCompany,
   isOpportunityOpen,
+  isOpportunityWithinHorizon,
   normalizeMoney,
   normalizeProbability,
   normalizeText,
@@ -45,16 +46,26 @@ export function useSaplingCrmWorkspace() {
 
   const activeCockpit = ref<CrmCockpitKey>('sales')
   const contactThresholdDays = ref(45)
+  const opportunityHorizonDays = ref<number | null>(null)
   const search = ref('')
   const selectedResponsibleHandle = ref<string | null>(null)
+  const selectedSegmentHandle = ref<string | null>(null)
+  const defaultResponsibleHandle = ref<string | null>(null)
   const isPreparing = ref(true)
 
   const contactThresholdOptions = computed(() =>
-    [30, 45, 60, 90].map((days) => ({
+    [30, 45, 60, 90, 120].map((days) => ({
       title: t(`crmWorkspace.days${days}`),
       value: days,
     })),
   )
+  const opportunityHorizonOptions = computed(() => [
+    { title: t('crmWorkspace.allCloseDates'), value: null },
+    ...[30, 90, 180, 365].map((days) => ({
+      title: t(`crmWorkspace.days${days}`),
+      value: days,
+    })),
+  ])
   const companyByHandle = computed(
     () => new Map(data.companies.value.map((company) => [String(company.handle), company])),
   )
@@ -66,12 +77,27 @@ export function useSaplingCrmWorkspace() {
           .map((person) => [String(person.handle), person]),
       ),
   )
-  const responsiblePersonOptions = computed(() =>
-    data.people.value
+  const responsiblePersonOptions = computed(() => [
+    { title: t('crmWorkspace.allResponsible'), value: null },
+    ...data.people.value
       .filter((person) => person.handle != null)
       .map((person) => ({ title: personLabel(person), value: String(person.handle) }))
       .sort((left, right) => left.title.localeCompare(right.title)),
-  )
+  ])
+  const segmentOptions = computed(() => {
+    const values = new Map<string, string>()
+    data.companies.value.forEach((company) => {
+      const handle = getRelationHandle(company.segment)
+      if (handle == null) return
+      values.set(String(handle), relationLabel(company.segment) || String(handle))
+    })
+    return [
+      { title: t('crmWorkspace.allSegments'), value: null },
+      ...[...values.entries()]
+        .map(([value, title]) => ({ title, value }))
+        .sort((left, right) => left.title.localeCompare(right.title)),
+    ]
+  })
   const normalizedSearch = computed(() => normalizeText(search.value))
 
   function matchesSearch(...values: unknown[]): boolean {
@@ -88,6 +114,17 @@ export function useSaplingCrmWorkspace() {
       )
     )
   }
+  function matchesSegmentFilter(company: CrmCompany): boolean {
+    if (activeCockpit.value === 'sales') return true
+    return (
+      !selectedSegmentHandle.value ||
+      String(getRelationHandle(company.segment) ?? '') === selectedSegmentHandle.value
+    )
+  }
+  function matchesOpportunityHorizon(opportunity: CrmOpportunity): boolean {
+    if (activeCockpit.value !== 'sales') return true
+    return isOpportunityWithinHorizon(opportunity, opportunityHorizonDays.value)
+  }
 
   const filteredCompanies = computed(() =>
     data.companies.value.filter(
@@ -98,7 +135,9 @@ export function useSaplingCrmWorkspace() {
           relationLabel(company.industry),
           accountOwnerLabel(company),
           csOwnerLabel(company),
-        ) && matchesResponsibleFilter(company.accountManager, company.customerSuccessManager),
+        ) &&
+        matchesResponsibleFilter(company.accountManager, company.customerSuccessManager) &&
+        matchesSegmentFilter(company),
     ),
   )
   const filteredOpenOpportunities = computed(() =>
@@ -111,7 +150,9 @@ export function useSaplingCrmWorkspace() {
             opportunity.nextStep,
             companyLabel(opportunity.assigneeCompany ?? opportunity.creatorCompany),
             personLabel(opportunity.assigneePerson ?? opportunity.creatorPerson),
-          ) && matchesResponsibleFilter(opportunity.assigneePerson, opportunity.creatorPerson),
+          ) &&
+          matchesResponsibleFilter(opportunity.assigneePerson, opportunity.creatorPerson) &&
+          matchesOpportunityHorizon(opportunity),
       ),
   )
 
@@ -277,7 +318,9 @@ export function useSaplingCrmWorkspace() {
         entity: person?.handle ? CRM_PERSON_ENTITY : CRM_OPPORTUNITY_ENTITY,
         handle: person?.handle ?? item.handle,
         title: person ? personLabel(person) : item.title,
-        subtitle: companyLabel(item.assigneeCompany ?? item.creatorCompany),
+        subtitle: [companyLabel(item.assigneeCompany ?? item.creatorCompany), item.title]
+          .filter(Boolean)
+          .join(' · '),
         owner: opportunityOwnerLabel(item),
         value: formatMoney(item.expectedRevenue),
         badge: t('crmWorkspace.noNextActivity'),
@@ -346,20 +389,41 @@ export function useSaplingCrmWorkspace() {
         key: 'openPipeline',
         label: t('crmWorkspace.openPipeline'),
         value: formatMoney(openPipeline),
+        cockpit: 'sales' as const,
       },
       {
         key: 'weightedPipeline',
         label: t('crmWorkspace.weightedPipeline'),
         value: formatMoney(weightedPipeline),
+        cockpit: 'sales' as const,
       },
-      { key: 'totalArr', label: t('crmWorkspace.totalArr'), value: formatMoney(totalArr) },
+      {
+        key: 'totalArr',
+        label: t('crmWorkspace.totalArr'),
+        value: formatMoney(totalArr),
+        cockpit: 'account' as const,
+      },
       {
         key: 'contactToday',
         label: t('crmWorkspace.contactToday'),
         value: n(todayContactItems.value.length),
+        cockpit: 'customerSuccess' as const,
       },
     ]
   })
+  const cockpitCounts = computed<Record<CrmCockpitKey, number>>(() => ({
+    sales: filteredOpenOpportunities.value.length,
+    account: filteredCompanies.value.filter(isCustomerCompany).length,
+    customerSuccess: atRiskCustomerItems.value.length,
+  }))
+  const activeFilterCount = computed(
+    () =>
+      Number(Boolean(String(search.value ?? '').trim())) +
+      Number(selectedResponsibleHandle.value !== defaultResponsibleHandle.value) +
+      Number(activeCockpit.value !== 'sales' && Boolean(selectedSegmentHandle.value)) +
+      Number(activeCockpit.value === 'sales' && Boolean(opportunityHorizonDays.value)) +
+      Number(activeCockpit.value !== 'sales' && contactThresholdDays.value !== 45),
+  )
   const signals = computed<CrmSignal[]>(() => [
     signal(
       'noActivity',
@@ -445,7 +509,15 @@ export function useSaplingCrmWorkspace() {
     )
   }
   async function openWorkspaceItem(item: CrmWorkspaceItem): Promise<void> {
-    if (item.handle != null) await openFilteredEntity(item.entity, { handle: item.handle })
+    if (item.handle == null) return
+    if (item.entity === CRM_COMPANY_ENTITY || item.entity === CRM_PERSON_ENTITY) {
+      await router.push({
+        name: 'customer360',
+        params: { entityHandle: item.entity, handle: String(item.handle) },
+      })
+      return
+    }
+    await openFilteredEntity(item.entity, { handle: item.handle })
   }
   async function openOpportunityStage(stage: CrmStageBreakdown): Promise<void> {
     const opportunities = filteredOpenOpportunities.value.filter(
@@ -465,15 +537,21 @@ export function useSaplingCrmWorkspace() {
       await openFilteredEntity(CRM_OPPORTUNITY_ENTITY, { type: { handle: stage.key } })
     }
   }
-  async function openSignal(item: CrmSignal): Promise<void> {
-    const target =
+  function openSignal(item: CrmSignal): void {
+    activeCockpit.value =
       item.key === 'noActivity'
-        ? { cockpit: 'sales' as const, item: opportunitiesWithoutNextActivityItems.value[0] }
+        ? 'sales'
         : item.key === 'contactGaps'
-          ? { cockpit: 'account' as const, item: customersWithoutContactItems.value[0] }
-          : { cockpit: 'customerSuccess' as const, item: atRiskCustomerItems.value[0] }
-    activeCockpit.value = target.cockpit
-    if (target.item) await openWorkspaceItem(target.item)
+          ? 'account'
+          : 'customerSuccess'
+  }
+
+  function resetFilters(): void {
+    search.value = ''
+    selectedResponsibleHandle.value = defaultResponsibleHandle.value
+    selectedSegmentHandle.value = null
+    opportunityHorizonDays.value = null
+    contactThresholdDays.value = 45
   }
 
   onMounted(async () => {
@@ -493,7 +571,8 @@ export function useSaplingCrmWorkspace() {
         currentPersonStore.fetchCurrentPerson(),
       ])
       if (!selectedResponsibleHandle.value && currentPersonStore.person?.handle != null) {
-        selectedResponsibleHandle.value = String(currentPersonStore.person.handle)
+        defaultResponsibleHandle.value = String(currentPersonStore.person.handle)
+        selectedResponsibleHandle.value = defaultResponsibleHandle.value
       }
       await data.loadData()
     } finally {
@@ -503,7 +582,9 @@ export function useSaplingCrmWorkspace() {
 
   return {
     activeCockpit,
+    activeFilterCount,
     atRiskCustomerItems,
+    cockpitCounts,
     contactThresholdDays,
     contactThresholdOptions,
     customersWithoutContactItems,
@@ -518,11 +599,16 @@ export function useSaplingCrmWorkspace() {
     openOpportunityStage,
     openSignal,
     openWorkspaceItem,
+    opportunityHorizonDays,
+    opportunityHorizonOptions,
     opportunitiesWithoutNextActivityItems,
     responsiblePersonOptions,
+    resetFilters,
     salesStageBreakdown,
     search,
     selectedResponsibleHandle,
+    selectedSegmentHandle,
+    segmentOptions,
     signals,
     todayContactItems,
     topAccountItems,

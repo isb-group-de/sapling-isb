@@ -298,6 +298,7 @@ const {
   requestUploadDocument,
   requestShowDocuments,
   requestShowInformation,
+  requestCustomer360,
   requestMail,
   onRowDoubleClick,
   onRowKeydown,
@@ -370,6 +371,9 @@ function onMenuItemClick(menuItem: SaplingContextMenuTableMenuItem) {
       break
     case 'copy':
       requestCopy(props.item)
+      break
+    case 'customer360':
+      requestCustomer360(props.item)
       break
     case 'navigate':
       requestNavigate(props.item)

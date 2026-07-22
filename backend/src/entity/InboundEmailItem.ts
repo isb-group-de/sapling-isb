@@ -171,7 +171,7 @@ export class InboundEmailItem {
   subscription!: Rel<EmailInboxSubscriptionItem>;
 
   @ApiPropertyOptional({ type: () => PersonItem })
-  @Sapling(['isPerson'])
+  @Sapling(['isPerson', 'isCustomer'])
   @SaplingForm({
     order: 300,
     group: 'inboundEmail.groupReference',
@@ -187,7 +187,7 @@ export class InboundEmailItem {
   person?: Rel<PersonItem> | null;
 
   @ApiPropertyOptional({ type: () => CompanyItem })
-  @Sapling(['isCompany'])
+  @Sapling(['isCompany', 'isCustomer'])
   @SaplingForm({
     order: 400,
     group: 'inboundEmail.groupReference',

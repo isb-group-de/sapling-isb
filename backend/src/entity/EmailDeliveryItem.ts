@@ -5,6 +5,7 @@ import { EmailDeliveryStatusItem } from './EmailDeliveryStatusItem';
 import { EmailTemplateItem } from './EmailTemplateItem';
 import { EntityItem } from './EntityItem';
 import { PersonItem } from './PersonItem';
+import { CompanyItem } from './CompanyItem';
 import { Sapling, SaplingForm } from './global/entity.decorator';
 
 @Entity()
@@ -77,6 +78,46 @@ export class EmailDeliveryItem {
   })
   @ManyToOne(() => PersonItem, { nullable: false })
   createdBy!: Rel<PersonItem>;
+
+  @ApiPropertyOptional({ type: () => CompanyItem })
+  @Sapling(['isCompany', 'isCustomer', 'isReadOnly'])
+  @SaplingForm({
+    order: 400,
+    group: 'emailDelivery.groupReference',
+    groupOrder: 100,
+    width: 2,
+    visible: true,
+    tableOrder: 400,
+    tableVisible: false,
+    mobileOrder: 400,
+    mobileVisible: false,
+  })
+  @ManyToOne(() => CompanyItem, {
+    nullable: true,
+    deleteRule: 'set null',
+    index: true,
+  })
+  customerCompany?: Rel<CompanyItem> | null;
+
+  @ApiPropertyOptional({ type: () => PersonItem })
+  @Sapling(['isPerson', 'isCustomer', 'isReadOnly'])
+  @SaplingForm({
+    order: 500,
+    group: 'emailDelivery.groupReference',
+    groupOrder: 100,
+    width: 2,
+    visible: true,
+    tableOrder: 500,
+    tableVisible: false,
+    mobileOrder: 500,
+    mobileVisible: false,
+  })
+  @ManyToOne(() => PersonItem, {
+    nullable: true,
+    deleteRule: 'set null',
+    index: true,
+  })
+  customerPerson?: Rel<PersonItem> | null;
 
   @ApiProperty()
   @Property({ primary: true, autoincrement: true })

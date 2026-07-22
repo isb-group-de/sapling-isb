@@ -14067,6 +14067,40 @@
           "enumItems": [],
           "mappedType": "integer"
         },
+        "customer_company_handle": {
+          "name": "customer_company_handle",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
+        "customer_person_handle": {
+          "name": "customer_person_handle",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
         "entity_handle": {
           "name": "entity_handle",
           "type": "varchar(64)",
@@ -14336,6 +14370,26 @@
         },
         {
           "columnNames": [
+            "customer_company_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "email_delivery_item_customer_company_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "customer_person_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "email_delivery_item_customer_person_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "entity_handle"
           ],
           "composite": false,
@@ -14389,6 +14443,32 @@
             "handle"
           ],
           "referencedTableName": "public.person_item"
+        },
+        "email_delivery_item_customer_company_handle_foreign": {
+          "columnNames": [
+            "customer_company_handle"
+          ],
+          "constraintName": "email_delivery_item_customer_company_handle_foreign",
+          "localTableName": "public.email_delivery_item",
+          "referencedColumnNames": [
+            "handle"
+          ],
+          "referencedTableName": "public.company_item",
+          "updateRule": "cascade",
+          "deleteRule": "set null"
+        },
+        "email_delivery_item_customer_person_handle_foreign": {
+          "columnNames": [
+            "customer_person_handle"
+          ],
+          "constraintName": "email_delivery_item_customer_person_handle_foreign",
+          "localTableName": "public.email_delivery_item",
+          "referencedColumnNames": [
+            "handle"
+          ],
+          "referencedTableName": "public.person_item",
+          "updateRule": "cascade",
+          "deleteRule": "set null"
         },
         "email_delivery_item_entity_handle_foreign": {
           "columnNames": [

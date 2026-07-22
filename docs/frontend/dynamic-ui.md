@@ -60,7 +60,11 @@ customer-success, signal, list, and toolbar components. Generic CRM reads live
 in `useSaplingCrmWorkspaceData`, while workspace projections and navigation
 live in `useSaplingCrmWorkspace`. Shared CRM contracts and pure transformation
 rules stay in `crmWorkspace.types.ts` and `crmWorkspace.utils.ts`, so panels do
-not duplicate entity-shape or formatting assumptions.
+not duplicate entity-shape or formatting assumptions. The toolbar separates
+shared filters (search and responsibility) from cockpit-specific filters such
+as opportunity close horizon, customer segment, and contact-gap threshold.
+Cockpit counts and hero metrics are navigational summaries; health signals
+switch to the relevant cockpit and leave record drilldown to the result lists.
 
 The Developer Playground is also a composition shell. Its action/dialog
 catalog is rendered by `SaplingPlaygroundShowcase`, field examples by

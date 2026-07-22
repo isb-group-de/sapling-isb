@@ -22,6 +22,7 @@ import {
   getItemHandle,
 } from '@/composables/table/saplingTableAction.utils'
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 import {
   getSaplingContextMenuTableItems,
   type SaplingContextMenuTableMenuEntry,
@@ -96,6 +97,7 @@ export function useSaplingTableRow(props: UseSaplingTableRowProps, emit: UseSapl
   const genericStore = useGenericStore()
   const currentPermissionStore = useCurrentPermissionStore()
   const { t } = useI18n()
+  const router = useRouter()
   const { openMailDialog } = useSaplingMailDialog()
   const { pushMessage } = useSaplingMessageCenter()
   const menuActive = ref(false)
@@ -139,6 +141,8 @@ export function useSaplingTableRow(props: UseSaplingTableRowProps, emit: UseSapl
       ? []
       : getSaplingContextMenuTableItems({
           canChangeLog: props.item?.handle != null,
+          canCustomer360:
+            props.item?.handle != null && ['company', 'person'].includes(props.entityHandle),
           canShowInformation: props.canShowInformation,
           entityPermission: props.entityPermission,
           canNavigate: props.canNavigate,
@@ -527,6 +531,15 @@ export function useSaplingTableRow(props: UseSaplingTableRowProps, emit: UseSapl
     emit('show-external-record-links', item)
   }
 
+  function requestCustomer360(item: SaplingGenericItem) {
+    closeMenu()
+    if (item.handle == null || !['company', 'person'].includes(props.entityHandle)) return
+    void router.push({
+      name: 'customer360',
+      params: { entityHandle: props.entityHandle, handle: String(item.handle) },
+    })
+  }
+
   function requestMail(item: SaplingGenericItem, email: string) {
     closeMenu()
     if (!email) {
@@ -623,6 +636,7 @@ export function useSaplingTableRow(props: UseSaplingTableRowProps, emit: UseSapl
     requestShowDocuments,
     requestShowInformation,
     requestShowExternalRecordLinks,
+    requestCustomer360,
     requestMail,
     getReferenceTemplates,
     getReferenceEntity,

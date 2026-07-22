@@ -34,6 +34,7 @@ import { FormConfigModule } from './api/form-config/form-config.module';
 import { ImportModule } from './api/import/import.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { FieldPermissionProjectionInterceptor } from './security/field-permission-projection.interceptor';
+import { Customer360Module } from './api/customer-360/customer-360.module';
 
 /**
  * @class AppModule
@@ -96,6 +97,7 @@ import { FieldPermissionProjectionInterceptor } from './security/field-permissio
     AiModule,
     FormConfigModule,
     ImportModule,
+    Customer360Module,
   ],
   controllers: [AppController],
   providers: [

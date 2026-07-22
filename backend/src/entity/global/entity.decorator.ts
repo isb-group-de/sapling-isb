@@ -77,6 +77,7 @@ const SAPLING_KANBAN_METADATA_KEY = 'sapling:kanban';
  * @property isToday             Property is used for today's date filter
  * @property isDeadline          Property is used for deadline filter
  * @property isCurrentPerson       Property is used for current user filter
+ * @property isCustomer            Property represents the customer-side company or person relation
  * @property isAutoKey           Property uses an auto-generated key editor in dialogs
  */
 const DEFAULT_SAPLING_FORM_LAYOUT: SaplingFormLayoutMetadata = {

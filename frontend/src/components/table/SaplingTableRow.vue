@@ -274,6 +274,7 @@ const {
   requestShowDocuments,
   requestShowInformation,
   requestShowExternalRecordLinks,
+  requestCustomer360,
   requestMail,
   getReferenceTemplates,
   getReferenceEntity,
@@ -315,6 +316,9 @@ function onMenuItemClick(menuItem: SaplingContextMenuTableMenuItem) {
       break
     case 'copy':
       requestCopy(props.item)
+      break
+    case 'customer360':
+      requestCustomer360(props.item)
       break
     case 'navigate':
       requestNavigate(props.item)

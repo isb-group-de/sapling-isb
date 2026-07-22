@@ -1,0 +1,470 @@
+[
+  {
+    "entity": "global",
+    "property": "customer360",
+    "de": "360°-Ansicht",
+    "en": "360° view"
+  },
+  {
+    "entity": "customer360",
+    "property": "open",
+    "de": "360°-Ansicht",
+    "en": "360° view"
+  },
+  {
+    "entity": "customer360",
+    "property": "eyebrow",
+    "de": "Customer 360°",
+    "en": "Customer 360°"
+  },
+  {
+    "entity": "customer360",
+    "property": "loadError",
+    "de": "Die Customer-360°-Ansicht konnte nicht geladen werden.",
+    "en": "The Customer 360° view could not be loaded."
+  },
+  {
+    "entity": "customer360",
+    "property": "retry",
+    "de": "Erneut versuchen",
+    "en": "Try again"
+  },
+  {
+    "entity": "customer360",
+    "property": "unknownCompany",
+    "de": "Unbekannte Firma",
+    "en": "Unknown company"
+  },
+  {
+    "entity": "customer360",
+    "property": "unknownPerson",
+    "de": "Unbekannte Person",
+    "en": "Unknown person"
+  },
+  {
+    "entity": "customer360",
+    "property": "actionMail",
+    "de": "E-Mail",
+    "en": "Email"
+  },
+  {
+    "entity": "customer360",
+    "property": "actionCall",
+    "de": "Telefonat dokumentieren",
+    "en": "Log call"
+  },
+  {
+    "entity": "customer360",
+    "property": "moreActions",
+    "de": "Weitere Aktionen",
+    "en": "More actions"
+  },
+  {
+    "entity": "customer360",
+    "property": "actionAppointment",
+    "de": "Termin anlegen",
+    "en": "Create appointment"
+  },
+  {
+    "entity": "customer360",
+    "property": "actionTicket",
+    "de": "Ticket anlegen",
+    "en": "Create ticket"
+  },
+  {
+    "entity": "customer360",
+    "property": "actionOpportunity",
+    "de": "Verkaufschance anlegen",
+    "en": "Create opportunity"
+  },
+  {
+    "entity": "customer360",
+    "property": "actionEstimate",
+    "de": "Aufwandsschätzung anlegen",
+    "en": "Create effort estimate"
+  },
+  {
+    "entity": "customer360",
+    "property": "actionContract",
+    "de": "Vertrag anlegen",
+    "en": "Create contract"
+  },
+  {
+    "entity": "customer360",
+    "property": "tabOverview",
+    "de": "Überblick",
+    "en": "Overview"
+  },
+  {
+    "entity": "customer360",
+    "property": "tabActivity",
+    "de": "Aktivitäten",
+    "en": "Activity"
+  },
+  {
+    "entity": "customer360",
+    "property": "tabService",
+    "de": "Service",
+    "en": "Service"
+  },
+  {
+    "entity": "customer360",
+    "property": "tabSales",
+    "de": "Vertrieb",
+    "en": "Sales"
+  },
+  {
+    "entity": "customer360",
+    "property": "tabContracts",
+    "de": "Verträge",
+    "en": "Contracts"
+  },
+  {
+    "entity": "customer360",
+    "property": "tabContacts",
+    "de": "Kontakte & Beziehungen",
+    "en": "Contacts & relationships"
+  },
+  {
+    "entity": "customer360",
+    "property": "tabDocuments",
+    "de": "Dokumente & Kurzinfo",
+    "en": "Documents & brief"
+  },
+  {
+    "entity": "customer360",
+    "property": "recentActivity",
+    "de": "Letzte Kundenaktivitäten",
+    "en": "Recent customer activity"
+  },
+  {
+    "entity": "customer360",
+    "property": "showAll",
+    "de": "Alle Aktivitäten anzeigen",
+    "en": "Show all activity"
+  },
+  {
+    "entity": "customer360",
+    "property": "nextSteps",
+    "de": "Kontakt- und Vertragsstatus",
+    "en": "Contact and contract status"
+  },
+  {
+    "entity": "customer360",
+    "property": "lastContact",
+    "de": "Letzter Kundenkontakt",
+    "en": "Last customer contact"
+  },
+  {
+    "entity": "customer360",
+    "property": "nextAppointment",
+    "de": "Nächster Termin",
+    "en": "Next appointment"
+  },
+  {
+    "entity": "customer360",
+    "property": "nextContractEnd",
+    "de": "Nächstes Vertragsende",
+    "en": "Next contract end"
+  },
+  {
+    "entity": "customer360",
+    "property": "activity",
+    "de": "Chronologischer Verlauf",
+    "en": "Chronological activity"
+  },
+  {
+    "entity": "customer360",
+    "property": "loadMore",
+    "de": "Weitere laden",
+    "en": "Load more"
+  },
+  {
+    "entity": "customer360",
+    "property": "brief",
+    "de": "Interne Kunden-Kurzinfo",
+    "en": "Internal customer brief"
+  },
+  {
+    "entity": "customer360",
+    "property": "noEntries",
+    "de": "Keine Einträge vorhanden.",
+    "en": "No entries available."
+  },
+  {
+    "entity": "customer360",
+    "property": "kindEmailInbound",
+    "de": "E-Mail eingehend",
+    "en": "Inbound email"
+  },
+  {
+    "entity": "customer360",
+    "property": "kindEmailOutbound",
+    "de": "E-Mail ausgehend",
+    "en": "Outbound email"
+  },
+  {
+    "entity": "customer360",
+    "property": "kindCall",
+    "de": "Telefonate",
+    "en": "Calls"
+  },
+  {
+    "entity": "customer360",
+    "property": "kindAppointment",
+    "de": "Termine",
+    "en": "Appointments"
+  },
+  {
+    "entity": "customer360",
+    "property": "kindEvent",
+    "de": "Sonstige Aktivitäten",
+    "en": "Other activity"
+  },
+  {
+    "entity": "customer360",
+    "property": "openTickets",
+    "de": "Offene Tickets",
+    "en": "Open tickets"
+  },
+  {
+    "entity": "customer360",
+    "property": "slaCritical",
+    "de": "{count} SLA-kritisch",
+    "en": "{count} SLA critical"
+  },
+  {
+    "entity": "customer360",
+    "property": "weightedPipeline",
+    "de": "Gewichtete Pipeline",
+    "en": "Weighted pipeline"
+  },
+  {
+    "entity": "customer360",
+    "property": "openItems",
+    "de": "{count} offen",
+    "en": "{count} open"
+  },
+  {
+    "entity": "customer360",
+    "property": "estimates",
+    "de": "Aufwandsschätzungen",
+    "en": "Effort estimates"
+  },
+  {
+    "entity": "customer360",
+    "property": "activeItems",
+    "de": "{count} aktiv",
+    "en": "{count} active"
+  },
+  {
+    "entity": "customer360",
+    "property": "contracts",
+    "de": "Aktive Verträge",
+    "en": "Active contracts"
+  },
+  {
+    "entity": "customer360",
+    "property": "hours",
+    "de": "{count} Std.",
+    "en": "{count} hrs"
+  },
+  {
+    "entity": "customer360",
+    "property": "defaultCallTitle",
+    "de": "Telefonat mit {customer}",
+    "en": "Call with {customer}"
+  },
+  {
+    "entity": "customer360",
+    "property": "section.contacts",
+    "de": "Kontaktpersonen",
+    "en": "Contacts"
+  },
+  {
+    "entity": "customer360",
+    "property": "section.tickets",
+    "de": "Tickets",
+    "en": "Tickets"
+  },
+  {
+    "entity": "customer360",
+    "property": "section.opportunities",
+    "de": "Verkaufschancen",
+    "en": "Opportunities"
+  },
+  {
+    "entity": "customer360",
+    "property": "section.effortEstimates",
+    "de": "Aufwandsschätzungen",
+    "en": "Effort estimates"
+  },
+  {
+    "entity": "customer360",
+    "property": "section.contracts",
+    "de": "Verträge",
+    "en": "Contracts"
+  },
+  {
+    "entity": "customer360",
+    "property": "section.documents",
+    "de": "Dokumente",
+    "en": "Documents"
+  },
+  {
+    "entity": "customer360",
+    "property": "section.relationships",
+    "de": "Firmenbeziehungen",
+    "en": "Company relationships"
+  },
+  {
+    "entity": "customer360",
+    "property": "warning.churnRisk",
+    "de": "Churn-Risiko: {value}",
+    "en": "Churn risk: {value}"
+  },
+  {
+    "entity": "customer360",
+    "property": "warning.contactGap",
+    "de": "Seit längerer Zeit kein Kundenkontakt.",
+    "en": "No customer contact for an extended period."
+  },
+  {
+    "entity": "customer360",
+    "property": "warning.slaCritical",
+    "de": "Mindestens ein Ticket ist SLA-kritisch.",
+    "en": "At least one ticket is SLA critical."
+  },
+  {
+    "entity": "customer360",
+    "property": "warning.missingNextStep",
+    "de": "Eine offene Verkaufschance hat keinen nächsten Schritt.",
+    "en": "An open opportunity has no next step."
+  },
+  {
+    "entity": "customer360",
+    "property": "warning.contractEnding",
+    "de": "Ein Vertrag läuft in Kürze aus.",
+    "en": "A contract expires soon."
+  },
+  {
+    "entity": "emailDelivery",
+    "property": "customerCompany",
+    "de": "Kundenfirma",
+    "en": "Customer company"
+  },
+  {
+    "entity": "customer360",
+    "property": "directionAll",
+    "de": "Alle Richtungen",
+    "en": "All directions"
+  },
+  {
+    "entity": "customer360",
+    "property": "directionInbound",
+    "de": "Eingehend",
+    "en": "Inbound"
+  },
+  {
+    "entity": "customer360",
+    "property": "directionOutbound",
+    "de": "Ausgehend",
+    "en": "Outbound"
+  },
+  {
+    "entity": "customer360",
+    "property": "directionNone",
+    "de": "Ohne Richtung",
+    "en": "No direction"
+  },
+  {
+    "entity": "customer360",
+    "property": "periodAll",
+    "de": "Gesamter Zeitraum",
+    "en": "All time"
+  },
+  {
+    "entity": "customer360",
+    "property": "periodDays",
+    "de": "Letzte {count} Tage",
+    "en": "Last {count} days"
+  },
+  {
+    "entity": "emailDelivery",
+    "property": "customerPerson",
+    "de": "Kundenperson",
+    "en": "Customer person"
+  },
+  {
+    "entity": "global",
+    "property": "customer360",
+    "de": "360°-Ansicht",
+    "en": "360° view"
+  },
+  {
+    "entity": "crmWorkspace",
+    "property": "allResponsible",
+    "de": "Alle Verantwortlichen",
+    "en": "All owners"
+  },
+  {
+    "entity": "crmWorkspace",
+    "property": "customerSegment",
+    "de": "Kundensegment",
+    "en": "Customer segment"
+  },
+  {
+    "entity": "crmWorkspace",
+    "property": "allSegments",
+    "de": "Alle Segmente",
+    "en": "All segments"
+  },
+  {
+    "entity": "crmWorkspace",
+    "property": "closeHorizon",
+    "de": "Abschlusszeitraum",
+    "en": "Closing horizon"
+  },
+  {
+    "entity": "crmWorkspace",
+    "property": "allCloseDates",
+    "de": "Alle Abschlussdaten",
+    "en": "All closing dates"
+  },
+  {
+    "entity": "crmWorkspace",
+    "property": "days120",
+    "de": "120 Tage",
+    "en": "120 days"
+  },
+  {
+    "entity": "crmWorkspace",
+    "property": "days180",
+    "de": "180 Tage",
+    "en": "180 days"
+  },
+  {
+    "entity": "crmWorkspace",
+    "property": "days365",
+    "de": "365 Tage",
+    "en": "365 days"
+  },
+  {
+    "entity": "crmWorkspace",
+    "property": "activeFilters",
+    "de": "{count} Filter aktiv",
+    "en": "{count} active filters"
+  },
+  {
+    "entity": "crmWorkspace",
+    "property": "resetFilters",
+    "de": "Filter zurücksetzen",
+    "en": "Reset filters"
+  },
+  {
+    "entity": "crmWorkspace",
+    "property": "crmHealth",
+    "de": "CRM-Gesundheit",
+    "en": "CRM health"
+  }
+]

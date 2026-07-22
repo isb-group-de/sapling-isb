@@ -5,6 +5,7 @@ import type { AccumulatedPermission } from '@/entity/structure'
 export type SaplingContextMenuTableAction =
   | 'changeLog'
   | 'copy'
+  | 'customer360'
   | 'delete'
   | 'edit'
   | 'formConfig'
@@ -25,6 +26,7 @@ export interface SaplingMailMenuAction {
 }
 
 export interface SaplingContextMenuTableProps {
+  canCustomer360?: boolean
   canShowInformation: boolean
   entityPermission: AccumulatedPermission | null
   canNavigate: boolean
@@ -60,6 +62,7 @@ export type SaplingContextMenuTableMenuEntry =
 
 export interface SaplingContextMenuTableMenuOptions {
   canChangeLog: boolean
+  canCustomer360?: boolean
   canShowInformation: boolean
   entityPermission: AccumulatedPermission | null
   canNavigate: boolean
@@ -108,6 +111,13 @@ export function getSaplingContextMenuTableItems(
   }
 
   const group2: SaplingContextMenuTableMenuItem[] = []
+  if (options.canCustomer360) {
+    group2.push({
+      type: 'customer360',
+      icon: 'mdi-account-details-outline',
+      titleKey: 'global.customer360',
+    })
+  }
   if (options.canTimeline) {
     group2.push({ type: 'timeline', icon: 'mdi-timeline-outline', titleKey: 'global.timeline' })
   }
@@ -193,6 +203,7 @@ export function useSaplingContextMenuTable(
   const menuItems = computed<SaplingContextMenuTableMenuEntry[]>(() =>
     getSaplingContextMenuTableItems({
       canChangeLog: props.item?.handle != null,
+      canCustomer360: props.canCustomer360,
       canShowInformation: props.canShowInformation,
       entityPermission: props.entityPermission,
       canNavigate: props.canNavigate,

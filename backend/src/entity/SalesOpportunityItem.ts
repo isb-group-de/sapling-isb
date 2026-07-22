@@ -418,7 +418,7 @@ export class SalesOpportunityItem {
    * @type {CompanyItem}
    */
   @ApiPropertyOptional({ type: () => CompanyItem })
-  @Sapling(['isCompany', 'isCurrentCompany'])
+  @Sapling(['isCompany', 'isCurrentCompany', 'isCustomer'])
   @SaplingForm({
     order: 600,
     group: 'salesOpportunity.groupReference',
@@ -438,7 +438,7 @@ export class SalesOpportunityItem {
    * @type {PersonItem}
    */
   @ApiPropertyOptional({ type: () => PersonItem })
-  @Sapling(['isPerson', 'isPartner', 'isCurrentPerson'])
+  @Sapling(['isPerson', 'isPartner', 'isCurrentPerson', 'isCustomer'])
   @SaplingDependsOn({
     parentField: 'creatorCompany',
     targetField: 'company',

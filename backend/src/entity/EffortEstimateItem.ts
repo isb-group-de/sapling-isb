@@ -158,7 +158,7 @@ export class EffortEstimateItem {
   assigneePerson?: Rel<PersonItem>;
 
   @ApiPropertyOptional({ type: () => CompanyItem })
-  @Sapling(['isCompany', 'isCurrentCompany'])
+  @Sapling(['isCompany', 'isCurrentCompany', 'isCustomer'])
   @SaplingForm({
     order: 300,
     group: 'effortEstimate.groupReference',
@@ -174,7 +174,7 @@ export class EffortEstimateItem {
   creatorCompany?: Rel<CompanyItem>;
 
   @ApiPropertyOptional({ type: () => PersonItem })
-  @Sapling(['isPerson', 'isPartner', 'isCurrentPerson'])
+  @Sapling(['isPerson', 'isPartner', 'isCurrentPerson', 'isCustomer'])
   @SaplingDependsOn({
     parentField: 'creatorCompany',
     targetField: 'company',

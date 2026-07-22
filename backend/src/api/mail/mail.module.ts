@@ -26,6 +26,7 @@ import { MailRenderingService } from './mail-rendering.service';
 import { EmailAutomationService } from './email-automation.service';
 import { TemplateModule } from '../template/template.module';
 import { AuthModule } from '../../auth/auth.module';
+import { CustomerAssociationResolverService } from './customer-association-resolver.service';
 
 const MockQueue = {
   add: (name: string, data: unknown) => {
@@ -74,6 +75,7 @@ const MockQueue = {
     MailProviderSessionService,
     MailProviderTransportService,
     EmailAutomationService,
+    CustomerAssociationResolverService,
     ...(REDIS_ENABLED ? [MailProcessor] : []),
     ...(REDIS_ENABLED
       ? []
@@ -84,6 +86,10 @@ const MockQueue = {
           },
         ]),
   ],
-  exports: [MailService, EmailAutomationService],
+  exports: [
+    MailService,
+    EmailAutomationService,
+    CustomerAssociationResolverService,
+  ],
 })
 export class MailModule {}

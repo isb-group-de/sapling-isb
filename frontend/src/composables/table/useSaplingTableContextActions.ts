@@ -1,4 +1,5 @@
 import { computed, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import type { EntityTemplate } from '@/entity/structure'
 import type { SaplingGenericItem, ScriptButtonItem } from '@/entity/entity'
 import { NAVIGATION_URL } from '@/constants/project.constants'
@@ -45,6 +46,7 @@ export function useSaplingTableContextActions({
   runScript,
 }: UseSaplingTableContextActionsOptions) {
   const currentPermissionStore = useCurrentPermissionStore()
+  const router = useRouter()
   const timelineDialogStore = useTimelineDialogStore()
   const changeLogDialogStore = useChangeLogDialogStore()
   const { openMailDialog } = useSaplingMailDialog()
@@ -190,6 +192,14 @@ export function useSaplingTableContextActions({
       show: () => void showItem(item),
       delete: () => deleteItem(item),
       copy: () => copyItem(item),
+      customer360: () => {
+        if (item.handle != null && ['company', 'person'].includes(props.entityHandle)) {
+          void router.push({
+            name: 'customer360',
+            params: { entityHandle: props.entityHandle, handle: String(item.handle) },
+          })
+        }
+      },
       navigate: () => navigateToAddress(item),
       timeline: () => openTimeline(item),
       uploadDocument: () => void openUploadDialog(item),

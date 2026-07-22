@@ -229,7 +229,7 @@ export class ContractItem {
    * @type {CompanyItem}
    */
   @ApiPropertyOptional({ type: () => CompanyItem })
-  @Sapling(['isCompany', 'isValue'])
+  @Sapling(['isCompany', 'isValue', 'isCustomer'])
   @SaplingForm({
     order: 100,
     group: 'contract.groupReference',

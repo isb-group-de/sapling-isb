@@ -315,7 +315,7 @@ export class EventItem {
    * @type {CompanyItem}
    */
   @ApiPropertyOptional({ type: () => CompanyItem })
-  @Sapling(['isCompany', 'isCurrentCompany'])
+  @Sapling(['isCompany', 'isCurrentCompany', 'isCustomer'])
   @SaplingForm({
     order: 400,
     group: 'event.groupReference',
@@ -335,7 +335,7 @@ export class EventItem {
    * @type {PersonItem}
    */
   @ApiPropertyOptional({ type: () => PersonItem })
-  @Sapling(['isPerson', 'isPartner', 'isCurrentPerson'])
+  @Sapling(['isPerson', 'isPartner', 'isCurrentPerson', 'isCustomer'])
   @SaplingDependsOn({
     parentField: 'creatorCompany',
     targetField: 'company',

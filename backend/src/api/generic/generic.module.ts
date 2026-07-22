@@ -97,6 +97,8 @@ import { MailModule } from '../mail/mail.module';
     GenericFilterService,
     GenericQueryService,
     GenericCustomFieldService,
+    GenericReadService,
+    GenericSanitizerService,
   ],
 })
 export class GenericModule {}
