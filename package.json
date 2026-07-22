@@ -1,6 +1,6 @@
 {
 	"name": "sapling",
-	"version": "1.92.1265",
+	"version": "1.95.1281",
 	"scripts": {
 		"build:backend": "npm run build --prefix backend",
 		"build:frontend": "npm run build --prefix frontend",
