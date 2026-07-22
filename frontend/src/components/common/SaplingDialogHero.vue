@@ -25,7 +25,10 @@
     <div
       v-if="hasStats"
       class="sapling-dialog-hero__stats"
-      :class="{ 'sapling-dialog-hero__stats--compact': statsLayout === 'compact' }"
+      :class="{
+        'sapling-dialog-hero__stats--compact': statsLayout === 'compact',
+        'sapling-dialog-hero__stats--mobile-hidden': hideStatsOnMobile,
+      }"
       :style="{ '--sapling-dialog-hero-stats-columns': String(statsColumns) }"
     >
       <template v-if="loading">
@@ -88,6 +91,7 @@ const props = withDefaults(
     stats?: SaplingDialogHeroStat[]
     statsColumns?: number
     statsLayout?: 'default' | 'compact'
+    hideStatsOnMobile?: boolean
   }>(),
   {
     eyebrow: '',
@@ -100,6 +104,7 @@ const props = withDefaults(
     stats: () => [],
     statsColumns: 2,
     statsLayout: 'default',
+    hideStatsOnMobile: false,
   },
 )
 

@@ -76,9 +76,19 @@
   gap: var(--sapling-gap-md);
 }
 
+.sapling-record-timeline-month-card__month-title > div,
+.sapling-record-timeline-month-card__entity-heading > div {
+  min-width: 0;
+}
+
 .sapling-record-timeline-month-card__month-title h2,
 .sapling-record-timeline-month-card__entity-heading h3 {
   margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.sapling-record-timeline-month-card__entity-heading p {
+  overflow-wrap: anywhere;
 }
 
 .sapling-record-timeline-month-card__month-icon,
@@ -441,6 +451,35 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
+  .sapling-record-timeline__summary-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--sapling-gap-xs);
+  }
+
+  .sapling-record-timeline__summary-card {
+    min-height: 0;
+    padding: var(--sapling-gap-md);
+  }
+
+  .sapling-record-timeline__summary-card-header {
+    gap: var(--sapling-gap-xs);
+  }
+
+  .sapling-record-timeline__summary-card-header > .v-icon {
+    display: none;
+  }
+
+  .sapling-record-timeline__summary-card-label {
+    font-size: var(--sapling-text-label-size-xs);
+    line-height: 1.2;
+  }
+
+  .sapling-record-timeline__summary-card-value {
+    font-size: var(--sapling-text-body-size-sm);
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+  }
+
   .sapling-history-card {
     padding: var(--sapling-space-md-plus);
     border-radius: var(--sapling-radius-card);
@@ -481,5 +520,56 @@
 
   .sapling-record-timeline__timeline .v-timeline-item__body {
     padding-inline-start: var(--sapling-space-md-plus);
+  }
+}
+
+@media (max-width: 640px) {
+  .sapling-record-timeline__mobile-item {
+    display: block;
+  }
+
+  .sapling-record-timeline__mobile-divider {
+    display: none;
+  }
+
+  .sapling-record-timeline-month-card__entity-list,
+  .sapling-record-timeline-month-card__groups {
+    gap: var(--sapling-gap-md);
+  }
+
+  .sapling-record-timeline-month-card__chips {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--sapling-gap-sm);
+  }
+
+  .sapling-record-timeline-month-card__chip-button {
+    min-width: 0;
+    padding: var(--sapling-gap-sm);
+  }
+
+  .sapling-record-timeline-month-card__chip-action-icon {
+    display: none;
+  }
+
+  .sapling-record-timeline-month-card__chip-label-row {
+    min-width: 0;
+  }
+
+  .sapling-record-timeline-month-card__chip-label-row > span:last-child {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 360px) {
+  .sapling-record-timeline__summary-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sapling-record-timeline__summary-card {
+    padding: var(--sapling-gap-sm) var(--sapling-gap-md);
   }
 }

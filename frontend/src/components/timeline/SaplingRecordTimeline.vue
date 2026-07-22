@@ -23,6 +23,7 @@
             :loading-stats-count="4"
             :stats-columns="4"
             stats-layout="compact"
+            hide-stats-on-mobile
           />
           <SaplingDialogHero
             v-else
@@ -31,6 +32,7 @@
             :stats="heroStats"
             :stats-columns="4"
             stats-layout="compact"
+            hide-stats-on-mobile
           >
             <template #title-trailing>
               <v-tooltip location="bottom">
