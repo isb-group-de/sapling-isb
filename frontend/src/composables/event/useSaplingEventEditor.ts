@@ -5,7 +5,7 @@ import ApiGenericService, {
   getGenericUpdateConflict,
   type GenericUpdateConflictDetails,
 } from '@/services/api.generic.service'
-import type { EventItem, SaplingGenericItem } from '@/entity/entity'
+import type { EventItem, PersonItem, SaplingGenericItem } from '@/entity/entity'
 import type {
   DialogSaveAction,
   DialogSaveContext,
@@ -41,6 +41,7 @@ interface UseSaplingEventEditorOptions {
   events: Ref<SaplingCalendarEvent[]>
   templates: Ref<EntityTemplate[]>
   selectedPeople: Ref<number[]>
+  ownPerson: Ref<PersonItem | null>
   editEvent: Ref<CalendarEvent | null>
   showEditDialog: Ref<boolean>
   forceEditDialogDirtyFields: Ref<string[]>
@@ -112,12 +113,17 @@ export function useSaplingEventEditor(options: UseSaplingEventEditorOptions) {
     context?: DialogSaveContext,
   ) {
     const eventPayload: CalendarEvent = { ...updatedEvent }
-    const participantHandles = resolveDraftParticipants(updatedEvent, options.selectedPeople.value)
+    const isNewEvent = getCalendarEventHandle(eventPayload) == null
+    const participantHandles = resolveDraftParticipants(
+      updatedEvent,
+      options.selectedPeople.value,
+      isNewEvent ? options.ownPerson.value : null,
+    )
     let savedEvent: EventItem
     let didSave = false
 
     try {
-      if (getCalendarEventHandle(eventPayload) == null) {
+      if (isNewEvent) {
         eventPayload.participants = participantHandles
       }
       applyCalendarEventDateParts(eventPayload)

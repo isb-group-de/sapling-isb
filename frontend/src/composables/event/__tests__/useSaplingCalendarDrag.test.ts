@@ -1,7 +1,7 @@
 import { ref } from 'vue'
 import { describe, expect, it, vi } from 'vitest'
 import type { CalendarEvent } from 'vuetify/lib/components/VCalendar/types.mjs'
-import type { PersonItem } from '@/entity/entity'
+import type { EventStatusItem, EventTypeItem, PersonItem } from '@/entity/entity'
 import type { CalendarDateItem } from '../eventDate.utils'
 import type { SaplingCalendarEvent } from '../eventCalendar.utils'
 import { useSaplingCalendarDrag } from '../useSaplingCalendarDrag'
@@ -20,7 +20,15 @@ function createTimeSlot(hour: number, minute = 0): CalendarDateItem {
 function createHarness() {
   const events = ref<SaplingCalendarEvent[]>([])
   const selectedPeople = ref([7, 9])
-  const ownPerson = ref<PersonItem | null>(null)
+  const ownPerson = ref<PersonItem | null>({ handle: 5 } as PersonItem)
+  const defaultEventType = ref<EventTypeItem | null>({
+    handle: 'internal',
+    title: 'Interne Tätigkeit',
+  } as unknown as EventTypeItem)
+  const defaultEventStatus = ref<EventStatusItem | null>({
+    handle: 'scheduled',
+    description: 'Geplant',
+  } as unknown as EventStatusItem)
   const editEvent = ref<CalendarEvent | null>(null)
   const showEditDialog = ref(false)
   const forceEditDialogDirtyFields = ref<string[]>([])
@@ -29,6 +37,8 @@ function createHarness() {
     events,
     selectedPeople,
     ownPerson,
+    defaultEventType,
+    defaultEventStatus,
     editEvent,
     showEditDialog,
     forceEditDialogDirtyFields,
@@ -90,7 +100,7 @@ describe('useSaplingCalendarDrag', () => {
     expect(harness.drag.consumeSuppressedEventClick()).toBe(false)
   })
 
-  it('creates a clean draft with the selected participants', () => {
+  it('creates a clean draft with the current person and selected participants', () => {
     const harness = createHarness()
 
     harness.drag.startTime(new Event('mousedown'), createTimeSlot(9))
@@ -98,7 +108,15 @@ describe('useSaplingCalendarDrag', () => {
     harness.drag.endDrag()
 
     expect(harness.events.value).toHaveLength(1)
-    expect(harness.editEvent.value?.event?.participants).toEqual([7, 9])
+    expect(harness.editEvent.value?.event?.participants).toEqual([5, 7, 9])
+    expect(harness.editEvent.value?.event?.type).toEqual({
+      handle: 'internal',
+      title: 'Interne Tätigkeit',
+    })
+    expect(harness.editEvent.value?.event?.status).toEqual({
+      handle: 'scheduled',
+      description: 'Geplant',
+    })
     expect(harness.forceEditDialogDirtyFields.value).toEqual([])
     expect(harness.showEditDialog.value).toBe(true)
   })

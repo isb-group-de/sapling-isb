@@ -1,7 +1,13 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import ApiGenericService from '@/services/api.generic.service'
-import type { EntityItem, PersonItem, WorkHourWeekItem } from '@/entity/entity'
+import type {
+  EntityItem,
+  EventStatusItem,
+  EventTypeItem,
+  PersonItem,
+  WorkHourWeekItem,
+} from '@/entity/entity'
 import type { EntityTemplate } from '@/entity/structure'
 import { useTranslationLoader } from '@/composables/generic/useTranslationLoader'
 import ApiCalendarService, {
@@ -24,6 +30,8 @@ import {
   type CalendarType,
 } from '@/composables/event/eventDate.utils'
 import {
+  DEFAULT_EVENT_STATUS_HANDLE,
+  DEFAULT_EVENT_TYPE_HANDLE,
   type CalendarMode,
   type CalendarViewMode,
   type SaplingCalendarEvent,
@@ -63,6 +71,8 @@ export function useSaplingEvent() {
 
   const eventEntityHandle = ref('event')
   const ownPerson = ref<PersonItem | null>(null)
+  const defaultEventType = ref<EventTypeItem | null>(null)
+  const defaultEventStatus = ref<EventStatusItem | null>(null)
   const events = ref<SaplingCalendarEvent[]>([])
   const templates = ref<EntityTemplate[]>([])
   const {
@@ -115,6 +125,8 @@ export function useSaplingEvent() {
     events,
     selectedPeople: selectedPeoples,
     ownPerson,
+    defaultEventType,
+    defaultEventStatus,
     editEvent,
     showEditDialog,
     forceEditDialogDirtyFields,
@@ -185,6 +197,7 @@ export function useSaplingEvent() {
     events,
     templates,
     selectedPeople: selectedPeoples,
+    ownPerson,
     editEvent,
     showEditDialog,
     forceEditDialogDirtyFields,
@@ -291,6 +304,7 @@ export function useSaplingEvent() {
         loadTranslations(),
         currentPermissionStore.fetchCurrentPermission(),
         loadOwnPerson(),
+        loadEventDefaults(),
         loadEventEntity(),
         loadEventScriptButtons(),
         loadTemplates(),
@@ -371,6 +385,24 @@ export function useSaplingEvent() {
    */
   async function loadTemplates() {
     templates.value = await ApiTemplateService.getEntityTemplate('event')
+  }
+
+  async function loadEventDefaults() {
+    const [typeResponse, statusResponse] = await Promise.all([
+      ApiGenericService.find<EventTypeItem>('eventType', {
+        filter: { handle: DEFAULT_EVENT_TYPE_HANDLE },
+        limit: 1,
+        page: 1,
+      }),
+      ApiGenericService.find<EventStatusItem>('eventStatus', {
+        filter: { handle: DEFAULT_EVENT_STATUS_HANDLE },
+        limit: 1,
+        page: 1,
+      }),
+    ])
+
+    defaultEventType.value = typeResponse.data[0] ?? null
+    defaultEventStatus.value = statusResponse.data[0] ?? null
   }
 
   /**

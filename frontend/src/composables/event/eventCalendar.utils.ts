@@ -2,6 +2,8 @@ import type { CalendarEvent } from 'vuetify/lib/components/VCalendar/types.mjs'
 import type {
   CompanyItem,
   EventItem,
+  EventStatusItem,
+  EventTypeItem,
   HolidayGroupItem,
   HolidayItem,
   PersonItem,
@@ -44,6 +46,8 @@ export type EditableEventPayload = Omit<
 
 export const DEFAULT_EVENT_COLOR = '#2196F3'
 export const DEFAULT_HOLIDAY_COLOR = '#C62828'
+export const DEFAULT_EVENT_TYPE_HANDLE = 'internal'
+export const DEFAULT_EVENT_STATUS_HANDLE = 'scheduled'
 
 const WORKWEEK_DAYS = [1, 2, 3, 4, 5]
 
@@ -315,10 +319,12 @@ export function buildDraftEventPayload(
   event: CalendarEvent,
   ownPerson: PersonItem | null,
   selectedPeople: number[],
+  defaultType?: EventTypeItem | null,
+  defaultStatus?: EventStatusItem | null,
 ): EditableEventPayload {
   const startDateParts = getEventDateParts(event.start)
   const endDateParts = getEventDateParts(event.end)
-  const participants = resolveDraftParticipants(event, selectedPeople)
+  const participants = resolveDraftParticipants(event, selectedPeople, ownPerson)
 
   return {
     title: event.name,
@@ -329,6 +335,8 @@ export function buildDraftEventPayload(
     assigneePerson: ownPerson ?? undefined,
     assigneeCompany: ownPerson?.company ?? undefined,
     participants,
+    type: defaultType ?? undefined,
+    status: defaultStatus ?? undefined,
     startDate_date: startDateParts.date,
     startDate_time: startDateParts.time,
     endDate_date: endDateParts.date,
@@ -336,18 +344,36 @@ export function buildDraftEventPayload(
   }
 }
 
-export function resolveDraftParticipants(event: CalendarEvent, selectedPeople: number[]) {
+export function resolveDraftParticipants(
+  event: CalendarEvent,
+  selectedPeople: number[],
+  requiredParticipant?: CalendarParticipant | null,
+) {
+  const requiredParticipantHandle =
+    requiredParticipant == null ? null : resolveParticipantHandle(requiredParticipant)
   const explicitParticipants = normalizeParticipantHandles(event.participants)
   if (explicitParticipants.length > 0) {
-    return explicitParticipants
+    return mergeParticipantHandles(requiredParticipantHandle, explicitParticipants)
   }
 
   const nestedParticipants = normalizeParticipantHandles(event.event?.participants)
   if (nestedParticipants.length > 0) {
-    return nestedParticipants
+    return mergeParticipantHandles(requiredParticipantHandle, nestedParticipants)
   }
 
-  return [...selectedPeople]
+  return mergeParticipantHandles(requiredParticipantHandle, selectedPeople)
+}
+
+function mergeParticipantHandles(
+  requiredParticipantHandle: number | null,
+  participantHandles: number[],
+) {
+  return Array.from(
+    new Set([
+      ...(requiredParticipantHandle == null ? [] : [requiredParticipantHandle]),
+      ...participantHandles,
+    ]),
+  )
 }
 
 export function normalizeParticipantHandles(participants: unknown) {

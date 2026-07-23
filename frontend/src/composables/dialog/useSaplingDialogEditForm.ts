@@ -38,7 +38,7 @@ export function useSaplingDialogEditForm(options: UseSaplingDialogEditFormOption
   }
 
   function applyCurrentDefaults(): void {
-    if (options.mode.value !== 'create' || options.item.value || !options.currentPerson.value) {
+    if (options.mode.value !== 'create' || !options.currentPerson.value) {
       return
     }
 
@@ -98,16 +98,7 @@ export function useSaplingDialogEditForm(options: UseSaplingDialogEditFormOption
       }
 
       if (template.isReference) {
-        if (options.item.value) {
-          const value = options.item.value[template.name]
-          options.form.value[template.name] = value && typeof value === 'object' ? value : null
-        } else if (template.options?.includes('isCurrentPerson') && options.currentPerson.value) {
-          options.form.value[template.name] = options.currentPerson.value
-        } else if (template.options?.includes('isCurrentCompany') && currentCompany) {
-          options.form.value[template.name] = currentCompany
-        } else {
-          options.form.value[template.name] = null
-        }
+        initializeReferenceTemplate(template, currentCompany)
         return
       }
 
@@ -135,7 +126,7 @@ export function useSaplingDialogEditForm(options: UseSaplingDialogEditFormOption
       return
     }
 
-    const initialValue = options.item.value?.[template.name] ?? template.default
+    const initialValue = options.item.value?.[template.name] ?? getTemplateDefaultValue(template)
     const { date, time } = options.getLocalDateTimeParts(initialValue)
 
     if (date || time) {
@@ -144,7 +135,7 @@ export function useSaplingDialogEditForm(options: UseSaplingDialogEditFormOption
       return
     }
 
-    if (!options.item.value && template.options?.includes('isToday')) {
+    if (options.mode.value === 'create' && template.options?.includes('isToday')) {
       options.form.value[`${template.name}_date`] = options.formatLocalDate(now)
       options.form.value[`${template.name}_time`] = options.formatLocalTime(now)
       return
@@ -155,14 +146,15 @@ export function useSaplingDialogEditForm(options: UseSaplingDialogEditFormOption
   }
 
   function initializeScalarTemplate(template: EntityTemplate, now: Date): void {
+    const defaultValue = getTemplateDefaultValue(template)
+
     if (options.item.value) {
-      options.form.value[template.name] =
-        options.item.value[template.name] ?? template.default ?? ''
+      options.form.value[template.name] = options.item.value[template.name] ?? defaultValue ?? ''
       return
     }
 
-    if (template.default !== undefined && template.default !== null) {
-      options.form.value[template.name] = template.default
+    if (defaultValue !== undefined && defaultValue !== null) {
+      options.form.value[template.name] = defaultValue
       return
     }
 
@@ -177,6 +169,89 @@ export function useSaplingDialogEditForm(options: UseSaplingDialogEditFormOption
     }
 
     options.form.value[template.name] = template.type === 'boolean' ? false : ''
+  }
+
+  function initializeReferenceTemplate(
+    template: EntityTemplate,
+    currentCompany: SaplingGenericItem | null,
+  ): void {
+    const itemValue = options.item.value?.[template.name]
+    const normalizedItemValue = normalizeReferenceFormValue(itemValue, template)
+
+    if (normalizedItemValue != null) {
+      options.form.value[template.name] = normalizedItemValue
+      return
+    }
+
+    if (options.mode.value === 'create') {
+      const normalizedDefaultValue = normalizeReferenceFormValue(
+        getTemplateDefaultValue(template),
+        template,
+      )
+
+      if (normalizedDefaultValue != null) {
+        options.form.value[template.name] = normalizedDefaultValue
+        return
+      }
+
+      if (template.options?.includes('isCurrentPerson') && options.currentPerson.value) {
+        options.form.value[template.name] = options.currentPerson.value
+        return
+      }
+
+      if (template.options?.includes('isCurrentCompany') && currentCompany) {
+        options.form.value[template.name] = currentCompany
+        return
+      }
+    }
+
+    options.form.value[template.name] = null
+  }
+
+  function getTemplateDefaultValue(template: EntityTemplate): unknown {
+    if (
+      template.formConfig &&
+      Object.prototype.hasOwnProperty.call(template.formConfig, 'defaultValue')
+    ) {
+      return template.formConfig.defaultValue
+    }
+
+    return template.default
+  }
+
+  function normalizeReferenceFormValue(
+    value: unknown,
+    template: EntityTemplate,
+  ): SaplingGenericItem | SaplingGenericItem[] | null {
+    if (value === null || value === undefined || value === '') {
+      return null
+    }
+
+    if (Array.isArray(value)) {
+      const normalizedValues = value
+        .map((entry) => normalizeSingleReferenceFormValue(entry, template))
+        .filter((entry): entry is SaplingGenericItem => entry != null)
+
+      return normalizedValues.length > 0 ? normalizedValues : null
+    }
+
+    return normalizeSingleReferenceFormValue(value, template)
+  }
+
+  function normalizeSingleReferenceFormValue(
+    value: unknown,
+    template: EntityTemplate,
+  ): SaplingGenericItem | null {
+    if (value && typeof value === 'object') {
+      return value as SaplingGenericItem
+    }
+
+    if (typeof value !== 'string' && typeof value !== 'number') {
+      return null
+    }
+
+    const primaryKey = template.referencedPks?.length === 1 ? template.referencedPks[0] : 'handle'
+    return primaryKey ? { [primaryKey]: value } : null
   }
 
   function syncParentReferences(): void {
@@ -367,11 +442,19 @@ export function useSaplingDialogEditForm(options: UseSaplingDialogEditFormOption
     }
 
     return value
-      .map((entry) =>
-        template
-          .referencedPks!.map((primaryKey) => entry[primaryKey])
-          .filter((primaryKeyValue) => primaryKeyValue !== undefined && primaryKeyValue !== null),
-      )
+      .map((entry) => {
+        if (typeof entry === 'string' || typeof entry === 'number') {
+          return [entry]
+        }
+
+        if (!entry || typeof entry !== 'object') {
+          return []
+        }
+
+        return template
+          .referencedPks!.map((primaryKey) => (entry as Record<string, unknown>)[primaryKey])
+          .filter((primaryKeyValue) => primaryKeyValue !== undefined && primaryKeyValue !== null)
+      })
       .filter((entry) => entry.length > 0)
       .flat()
   }

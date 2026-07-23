@@ -191,9 +191,6 @@
 .sapling-segmented-toggle {
   min-height: var(--sapling-segmented-control-height);
   overflow: hidden;
-  border: 1px solid var(--sapling-surface-border-muted);
-  border-radius: var(--sapling-tab-radius);
-  background: var(--sapling-surface-fill-soft);
 }
 
 .sapling-segmented-toggle > .v-btn {
