@@ -50,6 +50,27 @@ const HOLIDAY_CALENDAR_FIELDS = [
   'icon',
   'color',
 ]
+const PERSON_CALENDAR_RELATIONS = [
+  'company',
+  'holidayGroup',
+  'company.holidayGroup',
+  'workWeek',
+  'workWeek.monday',
+  'workWeek.tuesday',
+  'workWeek.wednesday',
+  'workWeek.thursday',
+  'workWeek.friday',
+  'workWeek.saturday',
+  'workWeek.sunday',
+  'company.workWeek',
+  'company.workWeek.monday',
+  'company.workWeek.tuesday',
+  'company.workWeek.wednesday',
+  'company.workWeek.thursday',
+  'company.workWeek.friday',
+  'company.workWeek.saturday',
+  'company.workWeek.sunday',
+]
 
 interface UseSaplingEventDataOptions {
   events: Ref<SaplingCalendarEvent[]>
@@ -74,7 +95,7 @@ export function useSaplingEventData(options: UseSaplingEventDataOptions) {
 
     const response = await ApiGenericService.find<PersonItem>('person', {
       filter: { handle: { $in: selectedHandles } },
-      relations: ['company', 'holidayGroup', 'company.holidayGroup'],
+      relations: PERSON_CALENDAR_RELATIONS,
       limit: selectedHandles.length,
     })
 

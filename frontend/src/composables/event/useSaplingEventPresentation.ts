@@ -212,6 +212,11 @@ export function useSaplingEventPresentation(options: UseSaplingEventPresentation
 
   function getSideBySideEvents(personId: number) {
     const personEvents = getEventsForPerson(personId)
+    const activeDraft = options.createEvent.value
+    if (activeDraft && personEvents.includes(activeDraft as SaplingCalendarEvent)) {
+      return personEvents
+    }
+
     const draftEvent = getDraftEventForPerson(personId)
     return draftEvent ? [...personEvents, draftEvent] : personEvents
   }

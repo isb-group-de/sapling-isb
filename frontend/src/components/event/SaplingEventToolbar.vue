@@ -1,5 +1,5 @@
 <template>
-  <header class="sapling-split-toolbar sapling-event-toolbar">
+  <header ref="toolbarElement" class="sapling-split-toolbar sapling-event-toolbar">
     <div class="sapling-toolbar-group sapling-event-toolbar__primary">
       <div class="sapling-toolbar-nav-group sapling-event-toolbar__nav-group">
         <v-btn-group class="sapling-event-toolbar__nav" density="comfortable">
@@ -17,7 +17,9 @@
             :aria-label="$t('event.today')"
             @click="emit('today')"
           >
-            <template v-if="$vuetify.display.mdAndUp"> {{ $t('event.today') }}</template>
+            <template v-if="$vuetify.display.mdAndUp && !compactNavigation">
+              {{ $t('event.today') }}
+            </template>
           </v-btn>
           <v-menu
             v-model="pickerMenuOpen"
@@ -34,7 +36,7 @@
                 :title="$t('calendar.selectDate')"
                 :aria-label="$t('calendar.selectDate')"
               >
-                <template v-if="$vuetify.display.mdAndUp">
+                <template v-if="$vuetify.display.mdAndUp && !compactNavigation">
                   {{ $t('calendar.selectDate') }}</template
                 >
               </v-btn>
@@ -75,6 +77,7 @@
 
       <div class="sapling-toolbar-group sapling-event-toolbar__options">
         <v-btn-toggle
+          v-if="showModeInline"
           v-model="calendarModeModel"
           class="sapling-segmented-toggle sapling-toolbar-toggle sapling-event-toolbar__mode-toggle"
           density="comfortable"
@@ -88,7 +91,11 @@
           </v-btn>
         </v-btn-toggle>
 
-        <v-tooltip v-if="calendarSyncProvider" :text="calendarSyncDescription" location="bottom">
+        <v-tooltip
+          v-if="calendarSyncProvider && showSyncInline"
+          :text="calendarSyncDescription"
+          location="bottom"
+        >
           <template #activator="{ props: tooltipProps }">
             <v-btn
               v-bind="tooltipProps"
@@ -106,7 +113,7 @@
         </v-tooltip>
 
         <v-btn-toggle
-          v-if="!isNarrowScreen"
+          v-if="showViewInline"
           v-model="calendarViewModeModel"
           class="sapling-segmented-toggle sapling-toolbar-toggle sapling-event-toolbar__view-toggle"
           density="comfortable"
@@ -120,32 +127,89 @@
           </v-btn>
         </v-btn-toggle>
 
-        <div class="sapling-event-toolbar__overflow d-flex d-md-none">
-          <v-menu offset-y>
+        <div v-if="hasOverflowActions" class="sapling-event-toolbar__overflow">
+          <v-menu location="bottom end" offset="8">
             <template #activator="{ props }">
               <v-btn
                 v-bind="props"
-                icon="mdi-tune"
+                icon="mdi-dots-horizontal"
                 variant="tonal"
                 :title="$t('global.more')"
                 :aria-label="$t('global.more')"
               />
             </template>
 
-            <SaplingSurface :as="VList">
+            <SaplingSurface :as="VList" class="sapling-event-toolbar__overflow-menu">
+              <template v-if="!showModeInline">
+                <v-list-item
+                  prepend-icon="mdi-perspective-less"
+                  :active="calendarModeModel === 'default'"
+                  @click="calendarModeModel = 'default'"
+                >
+                  <v-list-item-title>{{ $t('calendar.standard') }}</v-list-item-title>
+                </v-list-item>
+                <v-list-item
+                  prepend-icon="mdi-perspective-more"
+                  :active="calendarModeModel === 'extended'"
+                  @click="calendarModeModel = 'extended'"
+                >
+                  <v-list-item-title>{{ $t('calendar.extended') }}</v-list-item-title>
+                </v-list-item>
+                <v-divider />
+              </template>
+
               <v-list-item
-                v-for="type in calendarTypeOptions"
-                :key="type"
-                @click="calendarTypeModel = type"
+                v-if="calendarSyncProvider && !showSyncInline"
+                :prepend-icon="calendarSyncIcon"
+                :disabled="isSyncingExternalCalendar"
+                @click="emit('syncCalendar')"
               >
-                <v-list-item-title>{{ $t(`calendar.${type}`) }}</v-list-item-title>
+                <v-list-item-title>{{ calendarSyncLabel }}</v-list-item-title>
               </v-list-item>
+
+              <template v-if="!isNarrowScreen && !showViewInline">
+                <v-list-item
+                  prepend-icon="mdi-call-merge"
+                  :active="calendarViewModeModel === 'single'"
+                  @click="calendarViewModeModel = 'single'"
+                >
+                  <v-list-item-title>{{ $t('calendar.combined') }}</v-list-item-title>
+                </v-list-item>
+                <v-list-item
+                  prepend-icon="mdi-call-split"
+                  :active="calendarViewModeModel === 'sidebyside'"
+                  @click="calendarViewModeModel = 'sidebyside'"
+                >
+                  <v-list-item-title>{{ $t('calendar.sideBySide') }}</v-list-item-title>
+                </v-list-item>
+              </template>
+
+              <v-divider
+                v-if="
+                  !showTypeInline &&
+                  (!showModeInline ||
+                    (calendarSyncProvider && !showSyncInline) ||
+                    (!isNarrowScreen && !showViewInline))
+                "
+              />
+
+              <template v-if="!showTypeInline">
+                <v-list-item
+                  v-for="type in calendarTypeOptions"
+                  :key="type"
+                  :prepend-icon="calendarTypeIcons[type]"
+                  :active="calendarTypeModel === type"
+                  @click="calendarTypeModel = type"
+                >
+                  <v-list-item-title>{{ $t(`calendar.${type}`) }}</v-list-item-title>
+                </v-list-item>
+              </template>
             </SaplingSurface>
           </v-menu>
         </div>
       </div>
 
-      <div class="d-none d-md-flex sapling-event-toolbar__type-wrap">
+      <div v-if="showTypeInline" class="sapling-event-toolbar__type-wrap">
         <v-btn-toggle
           v-model="calendarTypeModel"
           class="sapling-segmented-toggle sapling-toolbar-toggle sapling-event-toolbar__type-toggle"
@@ -163,7 +227,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { VList } from 'vuetify/components'
 import SaplingSurface from '@/components/common/SaplingSurface.vue'
@@ -172,6 +236,11 @@ type CalendarType = 'workweek' | 'month' | 'day' | 'week'
 type CalendarViewMode = 'single' | 'sidebyside'
 type CalendarMode = 'default' | 'extended'
 type CalendarSyncProvider = 'azure' | 'google'
+
+const TOOLBAR_TYPE_INLINE_MIN_WIDTH = 1460
+const TOOLBAR_VIEW_INLINE_MIN_WIDTH = 1140
+const TOOLBAR_SYNC_INLINE_MIN_WIDTH = 860
+const TOOLBAR_MODE_INLINE_MIN_WIDTH = 680
 
 const props = defineProps<{
   isNarrowScreen: boolean
@@ -212,8 +281,11 @@ const calendarModeModel = computed({
   set: (value: CalendarMode) => emit('update:calendarMode', value),
 })
 
+const toolbarElement = ref<HTMLElement | null>(null)
+const toolbarWidth = ref(Number.POSITIVE_INFINITY)
 const pickerMenuOpen = ref(false)
 const pickerYear = ref(resolvePickerDate(props.modelValue).getFullYear())
+let toolbarResizeObserver: ResizeObserver | null = null
 
 const pickerDateModel = computed(() => resolvePickerDate(props.modelValue))
 const pickerMonth = computed(() => pickerDateModel.value.getMonth())
@@ -230,6 +302,42 @@ const calendarSyncDescription = computed(() =>
 const calendarSyncIcon = computed(() =>
   props.calendarSyncProvider === 'google' ? 'mdi-google' : 'mdi-microsoft-outlook',
 )
+const compactNavigation = computed(() => toolbarWidth.value < TOOLBAR_MODE_INLINE_MIN_WIDTH)
+const showModeInline = computed(() => toolbarWidth.value >= TOOLBAR_MODE_INLINE_MIN_WIDTH)
+const showSyncInline = computed(() => toolbarWidth.value >= TOOLBAR_SYNC_INLINE_MIN_WIDTH)
+const showViewInline = computed(
+  () => !props.isNarrowScreen && toolbarWidth.value >= TOOLBAR_VIEW_INLINE_MIN_WIDTH,
+)
+const showTypeInline = computed(
+  () => !props.isNarrowScreen && toolbarWidth.value >= TOOLBAR_TYPE_INLINE_MIN_WIDTH,
+)
+const hasOverflowActions = computed(
+  () =>
+    !showModeInline.value ||
+    (props.calendarSyncProvider != null && !showSyncInline.value) ||
+    (!props.isNarrowScreen && !showViewInline.value) ||
+    !showTypeInline.value,
+)
+const calendarTypeIcons: Record<CalendarType, string> = {
+  day: 'mdi-calendar-today-outline',
+  workweek: 'mdi-calendar-week-outline',
+  week: 'mdi-calendar-range-outline',
+  month: 'mdi-calendar-month-outline',
+}
+
+onMounted(() => {
+  updateToolbarWidth()
+
+  if (typeof ResizeObserver !== 'undefined' && toolbarElement.value) {
+    toolbarResizeObserver = new ResizeObserver(updateToolbarWidth)
+    toolbarResizeObserver.observe(toolbarElement.value)
+  }
+})
+
+onBeforeUnmount(() => {
+  toolbarResizeObserver?.disconnect()
+  toolbarResizeObserver = null
+})
 
 watch(
   () => props.modelValue,
@@ -247,6 +355,13 @@ function onDatePicked(value: unknown) {
 
   emit('selectDate', formatLocalDate(selectedDate))
   pickerMenuOpen.value = false
+}
+
+function updateToolbarWidth() {
+  const nextWidth = toolbarElement.value?.getBoundingClientRect().width
+  if (nextWidth && nextWidth > 0) {
+    toolbarWidth.value = nextWidth
+  }
 }
 
 function onMonthPicked(value: unknown) {

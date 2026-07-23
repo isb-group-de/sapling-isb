@@ -105,7 +105,16 @@ describe('useSaplingEventData', () => {
     expect(harness.peopleMap.value[7]).toEqual(person)
     expect(mocks.find).toHaveBeenCalledWith(
       'person',
-      expect.objectContaining({ filter: { handle: { $in: [7] } }, limit: 1 }),
+      expect.objectContaining({
+        filter: { handle: { $in: [7] } },
+        limit: 1,
+        relations: expect.arrayContaining([
+          'workWeek.monday',
+          'workWeek.friday',
+          'company.workWeek.monday',
+          'company.workWeek.friday',
+        ]),
+      }),
     )
   })
 

@@ -164,11 +164,13 @@ import type {
   GenericUpdateConflictField,
 } from '@/services/api.generic.service'
 import { useTranslationLoader } from '@/composables/generic/useTranslationLoader'
+import {
+  buildUpdateConflictResolutionPayload,
+  type UpdateConflictSource,
+} from '@/components/dialog/saplingDialogUpdateConflict.utils'
 import SaplingActionBar from '@/components/actions/SaplingActionBar.vue'
 import SaplingChangeLogDetailValue from '@/components/changeLog/SaplingChangeLogDetailValue.vue'
 import SaplingDialogConfirm from '@/components/dialog/SaplingDialogConfirm.vue'
-
-type ConflictSource = 'current' | 'attempted'
 
 const props = withDefaults(
   defineProps<{
@@ -192,7 +194,7 @@ const emit = defineEmits<{
 
 const { t, d, te } = useI18n()
 const { isLoading: isTranslationLoading } = useTranslationLoader('global', 'updateConflict')
-const selectedSources = ref<Record<string, ConflictSource>>({})
+const selectedSources = ref<Record<string, UpdateConflictSource>>({})
 
 const visibleFields = computed<GenericUpdateConflictField[]>(() =>
   (props.conflict?.fields ?? []).filter(
@@ -227,7 +229,7 @@ const latestChangeLabel = computed(() => {
 watch(
   () => props.conflict,
   (conflict) => {
-    const nextSources: Record<string, ConflictSource> = {}
+    const nextSources: Record<string, UpdateConflictSource> = {}
     ;(conflict?.fields ?? []).forEach((field) => {
       nextSources[field.property] = field.changedInAttempt ? 'attempted' : 'current'
     })
@@ -283,16 +285,7 @@ function formatDate(value: unknown): string {
 }
 
 function buildMergedItem(): SaplingGenericItem {
-  const merged: SaplingGenericItem = {
-    ...(props.conflict?.current ?? {}),
-  }
-
-  visibleFields.value.forEach((field) => {
-    const source = selectedSources.value[field.property] ?? 'current'
-    merged[field.property] = source === 'attempted' ? field.attemptedValue : field.currentValue
-  })
-
-  return merged
+  return buildUpdateConflictResolutionPayload(visibleFields.value, selectedSources.value)
 }
 
 function handleDialogUpdate(value: boolean): void {

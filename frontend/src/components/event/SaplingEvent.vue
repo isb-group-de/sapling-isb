@@ -109,6 +109,7 @@
               :end-drag="endDrag"
               :extend-bottom="extendBottom"
               :get-person-name="getPersonName"
+              :get-person-work-hours="getPersonWorkHours"
               :get-side-by-side-events="getSideBySideEvents"
             />
           </div>
@@ -289,6 +290,7 @@ const {
   getEventColor,
   getEvents,
   getPersonName,
+  getPersonWorkHours,
   getSideBySideEvents,
   getWorkHourStyle,
   goToDate,

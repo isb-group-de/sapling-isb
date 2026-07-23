@@ -191,8 +191,11 @@ export function useSaplingCalendarNavigation(
     return element instanceof HTMLElement ? element : null
   }
 
-  function getWorkHourStyle(date: string): CSSProperties {
-    const weekDay = workHours.value ? getWorkHourForDate(workHours.value, date) : null
+  function getWorkHourStyle(
+    date: string,
+    calendarWorkHours: WorkHourWeekItem | null = workHours.value,
+  ): CSSProperties {
+    const weekDay = calendarWorkHours ? getWorkHourForDate(calendarWorkHours, date) : null
     if (!weekDay?.timeFrom || !weekDay?.timeTo) {
       return {}
     }

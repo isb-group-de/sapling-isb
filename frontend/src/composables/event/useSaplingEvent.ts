@@ -394,6 +394,29 @@ export function useSaplingEvent() {
     workHours.value = await ApiCurrentService.getWorkWeek()
   }
 
+  function getPersonWorkHours(personId: number): WorkHourWeekItem | null {
+    const ownPersonHandle = ownPerson.value?.handle
+    const person =
+      peopleMap.value[personId] ?? (personId === ownPersonHandle ? ownPerson.value : null)
+    const personWorkWeek =
+      typeof person?.workWeek === 'object' && person.workWeek ? person.workWeek : null
+
+    if (personWorkWeek) {
+      return personWorkWeek
+    }
+
+    const companyWorkWeek =
+      typeof person?.company?.workWeek === 'object' && person.company.workWeek
+        ? person.company.workWeek
+        : null
+
+    if (companyWorkWeek) {
+      return companyWorkWeek
+    }
+
+    return personId === ownPersonHandle ? workHours.value : null
+  }
+
   async function syncExternalCalendar() {
     if (
       !calendarDateRange.value ||
@@ -479,6 +502,7 @@ export function useSaplingEvent() {
     getEvents,
     getEventsForPerson,
     getPersonName,
+    getPersonWorkHours,
     getSideBySideEvents,
     getWorkHourStyle,
     goToDate,

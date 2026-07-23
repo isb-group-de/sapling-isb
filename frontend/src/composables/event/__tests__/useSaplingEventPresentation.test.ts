@@ -108,6 +108,21 @@ describe('useSaplingEventPresentation', () => {
     expect(harness.presentation.getSideBySideEvents(9)[0]?.event?.participants).toEqual([9])
   })
 
+  it('does not duplicate a draft that is already part of the loaded events', () => {
+    const harness = createHarness()
+    harness.calendarViewMode.value = 'sidebyside'
+    const draft = {
+      start: 1,
+      end: 2,
+      timed: true,
+      event: { participants: [9] },
+    } as unknown as SaplingCalendarEvent
+    harness.events.value = [draft]
+    harness.createEvent.value = draft
+
+    expect(harness.presentation.getSideBySideEvents(9)).toEqual([draft])
+  })
+
   it('collects effective holiday groups from own and loaded people', () => {
     const harness = createHarness()
     expect(harness.presentation.getSelectedHolidayGroupHandles()).toEqual([3, 5])

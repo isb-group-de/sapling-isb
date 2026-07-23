@@ -50,6 +50,21 @@ describe('useSaplingCalendarNavigation', () => {
     })
   })
 
+  it('projects an explicitly selected persons work week for a calendar column', () => {
+    const ownWorkHours = ref({
+      wednesday: { timeFrom: '08:00', timeTo: '17:00' },
+    } as unknown as WorkHourWeekItem)
+    const otherWorkHours = {
+      wednesday: { timeFrom: '10:00', timeTo: '14:00' },
+    } as unknown as WorkHourWeekItem
+    const navigation = useSaplingCalendarNavigation(ref('week'), ownWorkHours)
+
+    expect(navigation.getWorkHourStyle('2026-07-15', otherWorkHours)).toMatchObject({
+      top: `${(10 / 24) * 100}%`,
+      height: `${(4 / 24) * 100}%`,
+    })
+  })
+
   it('centers the current-time marker in the inner calendar scroll area', () => {
     const outer = document.createElement('div')
     outer.className = 'sapling-calendar-frame'

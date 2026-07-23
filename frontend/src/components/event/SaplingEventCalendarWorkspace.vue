@@ -45,10 +45,10 @@
               :calendar-display-type="calendarDisplayType"
               :calendar-weekdays="calendarWeekdays"
               :is-drag-active="isDragActive"
-              :work-hours="workHours"
+              :work-hours="getPersonWorkHours(personId)"
               :show-work-hour-background="showWorkHourBackground"
               calendar-class="sapling-event-vcalendar--column"
-              :get-work-hour-style="getWorkHourStyle"
+              :get-work-hour-style="(date) => getColumnWorkHourStyle(personId, date)"
               :get-event-color="getEventColor"
               :get-event-participants="getEventParticipants"
               :now-y="nowY"
@@ -104,7 +104,7 @@ const props = defineProps<{
   showWorkHourBackground: boolean
   selectedPeoples: number[]
   sideBySideGridStyle: CSSProperties
-  getWorkHourStyle: (date: string) => CSSProperties
+  getWorkHourStyle: (date: string, workHours?: WorkHourWeekItem | null) => CSSProperties
   getEventColor: (event: CalendarEvent) => string
   getEventParticipants: (event: CalendarEvent) => string[]
   nowY: () => string
@@ -118,6 +118,7 @@ const props = defineProps<{
   endDrag: () => void
   extendBottom: (event: CalendarEvent) => void
   getPersonName: (personId: number) => string
+  getPersonWorkHours: (personId: number) => WorkHourWeekItem | null
   getSideBySideEvents: (personId: number) => CalendarEvent[]
 }>()
 
@@ -129,4 +130,8 @@ const calendarValue = computed({
   get: () => props.modelValue,
   set: (value: string) => emit('update:modelValue', value),
 })
+
+function getColumnWorkHourStyle(personId: number, date: string) {
+  return props.getWorkHourStyle(date, props.getPersonWorkHours(personId))
+}
 </script>
