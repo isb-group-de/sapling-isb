@@ -334,6 +334,7 @@ describe('TicketController', () => {
     ] as unknown as TicketItem[]);
     const derivedTicket = result.items[0] as Record<string, unknown>;
 
+    expect(em.find).not.toHaveBeenCalled();
     expect(derivedTicket.contract).toBeNull();
     expect(derivedTicket).toMatchObject({
       supportQueue: 'platform_ops',
@@ -346,5 +347,85 @@ describe('TicketController', () => {
     expect(derivedTicket.resolutionDueAt).toEqual(
       new Date('2026-07-23T21:07:00.000Z'),
     );
+  });
+
+  it('keeps an explicitly cleared contract null during an update', async () => {
+    const unrelatedDefaultContract = {
+      handle: 23,
+      defaultSupportQueue: {
+        handle: 'internal',
+        team: { handle: 'internal-team' },
+        defaultSlaPolicy: {
+          handle: 'internal-sla',
+          firstResponseHours: 1,
+          resolutionHours: 4,
+        },
+      },
+      defaultSupportTeam: { handle: 'internal-team' },
+      slaPolicy: {
+        handle: 'internal-sla',
+        firstResponseHours: 1,
+        resolutionHours: 4,
+      },
+    };
+    const queue = {
+      handle: 'platform_ops',
+      team: { handle: 'platform' },
+      defaultSlaPolicy: {
+        handle: 'mission_critical',
+        firstResponseHours: 1,
+        resolutionHours: 8,
+      },
+    };
+    const em = {
+      find: jest
+        .fn<() => Promise<object[]>>()
+        .mockResolvedValue([unrelatedDefaultContract]),
+      findOne: jest
+        .fn<(entity: unknown) => Promise<object | null>>()
+        .mockImplementation(async (entity) =>
+          String(entity).includes('SupportQueueItem') ? queue : null,
+        ),
+    };
+    const controller = new TicketController(
+      { handle: 'ticket' } as never,
+      { handle: 99 } as never,
+      em as never,
+    );
+
+    const result = await controller.beforeUpdate(
+      [
+        {
+          creatorCompany: 30,
+          assigneeCompany: 1,
+          assigneePerson: 102,
+          contract: null,
+          supportTeam: 'platform',
+          supportQueue: 'platform_ops',
+          slaPolicy: 'mission_critical',
+          startDate: '2026-07-23T13:07:00.000Z',
+          status: 'open',
+        },
+      ] as unknown as TicketItem[],
+      {
+        currentItems: [
+          {
+            creatorCompany: { handle: 30 },
+            contract: null,
+            startDate: '2026-07-23T13:07:14.000Z',
+            status: { handle: 'open' },
+          },
+        ],
+      },
+    );
+    const derivedTicket = result.items[0] as Record<string, unknown>;
+
+    expect(em.find).not.toHaveBeenCalled();
+    expect(derivedTicket.contract).toBeNull();
+    expect(derivedTicket).toMatchObject({
+      supportTeam: 'platform',
+      supportQueue: 'platform_ops',
+      slaPolicy: 'mission_critical',
+    });
   });
 });

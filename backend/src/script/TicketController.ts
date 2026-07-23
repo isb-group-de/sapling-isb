@@ -164,15 +164,20 @@ export class TicketController extends ScriptClass {
     const explicitSlaPolicyHandle = this.normalizeStringHandle(
       this.extractHandleValue(mergedTicket.slaPolicy),
     );
-    const contract =
-      (explicitContractHandle != null
-        ? await this.findContractByHandle(explicitContractHandle)
-        : null) ??
-      (creatorCompanyHandle != null
-        ? await this.findDefaultContractForCompany(creatorCompanyHandle)
-        : null);
+    const explicitlyClearsContract =
+      Object.prototype.hasOwnProperty.call(data, 'contract') &&
+      data.contract == null;
+    const contract = explicitlyClearsContract
+      ? null
+      : ((explicitContractHandle != null
+          ? await this.findContractByHandle(explicitContractHandle)
+          : null) ??
+        (creatorCompanyHandle != null
+          ? await this.findDefaultContractForCompany(creatorCompanyHandle)
+          : null));
 
     if (
+      !explicitlyClearsContract &&
       explicitContractHandle == null &&
       currentTicket?.contract == null &&
       contract?.handle != null
