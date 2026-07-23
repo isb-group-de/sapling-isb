@@ -403,9 +403,32 @@
       in srgb,
       var(--sapling-calendar-event-card-color, #3b82f6) 34%,
       var(--sapling-surface-border) 66%
-    );
+  );
   box-shadow: var(--sapling-inset-highlight);
   cursor: pointer;
+  transition:
+    border-color var(--sapling-motion-fast) ease,
+    box-shadow var(--sapling-motion-fast) ease;
+}
+
+.sapling-calendar-event-card:hover,
+.sapling-calendar-event-card:focus-visible {
+  border-color: color-mix(
+    in srgb,
+    var(--sapling-calendar-event-card-color, #3b82f6) 52%,
+    white 48%
+  );
+  box-shadow:
+    var(--sapling-inset-highlight),
+    0 0 0 2px
+      color-mix(in srgb, var(--sapling-calendar-event-card-color, #3b82f6) 44%, white 56%),
+    0 6px 16px
+      color-mix(
+        in srgb,
+        var(--sapling-calendar-event-card-color, #3b82f6) 30%,
+        transparent
+      );
+  outline: none;
 }
 
 .sapling-calendar-event-card--readonly {
@@ -597,13 +620,6 @@
   min-height: var(--sapling-calendar-all-day-card-height);
 }
 
-.sapling-event-vcalendar .v-event:has(.sapling-calendar-event-tooltip-host:hover),
-.sapling-event-vcalendar .v-event:has(.sapling-calendar-event-tooltip-host:focus-within),
-.sapling-event-vcalendar .v-event-timed:has(.sapling-calendar-event-tooltip-host:hover),
-.sapling-event-vcalendar .v-event-timed:has(.sapling-calendar-event-tooltip-host:focus-within) {
-  z-index: 80 !important;
-}
-
 .sapling-calendar-event-tooltip-host {
   position: relative;
   z-index: 0;
@@ -611,11 +627,6 @@
   width: 100%;
   height: 100%;
   min-height: 100%;
-}
-
-.sapling-calendar-event-tooltip-host:hover,
-.sapling-calendar-event-tooltip-host:focus-within {
-  z-index: 80;
 }
 
 .sapling-calendar-event-tooltip-popover {
