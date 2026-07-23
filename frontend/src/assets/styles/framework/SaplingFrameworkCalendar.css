@@ -403,8 +403,9 @@
       in srgb,
       var(--sapling-calendar-event-card-color, #3b82f6) 34%,
       var(--sapling-surface-border) 66%
-  );
+    );
   box-shadow: var(--sapling-inset-highlight);
+  color: var(--sapling-surface-text);
   cursor: pointer;
   transition:
     border-color var(--sapling-motion-fast) ease,
