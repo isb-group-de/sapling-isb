@@ -25,19 +25,21 @@ function createService() {
 }
 
 function customerWhere(service: Customer360Service): CustomerWhere {
-  return (
+  const method = (
     service as unknown as {
       customerWhere: CustomerWhere;
     }
-  ).customerWhere.bind(service);
+  ).customerWhere;
+  return (entityHandle, scope) => method(entityHandle, scope);
 }
 
 function combineWhere(service: Customer360Service): CombineWhere {
-  return (
+  const method = (
     service as unknown as {
       combineWhere: CombineWhere;
     }
-  ).combineWhere.bind(service);
+  ).combineWhere;
+  return (scopeFilter, userFilter) => method(scopeFilter, userFilter);
 }
 
 describe('Customer360Service customer aggregation', () => {

@@ -8,9 +8,15 @@ describe('CustomerAssociationResolverService', () => {
     const company = Object.assign(new CompanyItem(), { handle: 10 });
     const person = Object.assign(new PersonItem(), { handle: 20, company });
     const em = {
-      findOne: jest.fn(
-        async (_entity: unknown, _where: unknown, _options?: unknown) => person,
-      ),
+      findOne: jest
+        .fn<
+          (
+            entity: unknown,
+            where: unknown,
+            options?: unknown,
+          ) => Promise<PersonItem>
+        >()
+        .mockResolvedValue(person),
     };
     const service = new CustomerAssociationResolverService({} as never);
 
@@ -41,13 +47,19 @@ describe('CustomerAssociationResolverService', () => {
       ]),
     };
     const em = {
-      findOne: jest.fn(
-        async (_entity: unknown, _where: unknown, _options?: unknown) => ({
+      findOne: jest
+        .fn<
+          (
+            entity: unknown,
+            where: unknown,
+            options?: unknown,
+          ) => Promise<Record<string, unknown>>
+        >()
+        .mockResolvedValue({
           assigneeCompany: internalCompany,
           creatorCompany: customerCompany,
           creatorPerson: customerPerson,
         }),
-      ),
     };
     const service = new CustomerAssociationResolverService(
       templateService as never,

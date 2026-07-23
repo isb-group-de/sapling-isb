@@ -52,7 +52,11 @@ export class CustomerAssociationResolverService {
     const customerFields = this.templateService
       .getEntityTemplate(entityHandle)
       .filter((field) =>
-        hasSaplingOption(entityClass.prototype, field.name, 'isCustomer'),
+        hasSaplingOption(
+          entityClass.prototype as object,
+          field.name,
+          'isCustomer',
+        ),
       );
     const companyField = customerFields.find(
       (field) => field.referenceName === 'company',
@@ -70,11 +74,11 @@ export class CustomerAssociationResolverService {
       return { company: null, person: null };
     }
 
-    const record = (await em.findOne(
+    const record = await em.findOne(
       entityClass as never,
-      { handle: referenceHandle } as never,
+      { handle: referenceHandle },
       { populate: populate as never[] },
-    )) as Record<string, unknown> | null;
+    );
     if (!record) {
       return { company: null, person: null };
     }

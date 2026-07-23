@@ -30,7 +30,7 @@ describe('AiProviderRegistryService', () => {
       },
     ] as AiProviderModelItem[];
     const em = {
-      find: jest.fn(async () => models),
+      find: jest.fn(() => Promise.resolve(models)),
     } as unknown as EntityManager;
     const service = new AiProviderRegistryService(em);
 

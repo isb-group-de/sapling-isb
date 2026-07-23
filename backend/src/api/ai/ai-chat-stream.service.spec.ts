@@ -46,7 +46,7 @@ describe('AiChatStreamService persistence lifecycle', () => {
     );
 
     const result = await fixture.service.streamChatMessage(
-      { sessionHandle: 7, content: 'Question' } as never,
+      { sessionHandle: 7, content: 'Question' },
       fixture.person as never,
       fixture.onEvent,
     );
@@ -83,7 +83,7 @@ describe('AiChatStreamService persistence lifecycle', () => {
 
     await expect(
       fixture.service.streamChatMessage(
-        { sessionHandle: 7, content: 'Question' } as never,
+        { sessionHandle: 7, content: 'Question' },
         fixture.person as never,
         fixture.onEvent,
       ),
@@ -136,12 +136,13 @@ function createFixture() {
       return item;
     }),
     persist: jest.fn(),
-    flush: jest.fn(async () => {
+    flush: jest.fn(() => {
       flushSnapshots.push({
         assistantContent: assistantMessage?.content,
         assistantStatus: assistantMessage?.status,
         responseStatus: session.responseStatus,
       });
+      return Promise.resolve();
     }),
   };
   const provider = {
@@ -161,8 +162,8 @@ function createFixture() {
     isActive: true,
   };
   const mcpService = {
-    listActiveTools: jest.fn(async () => []),
-    tryExecuteInlineToolCommand: jest.fn(async () => null),
+    listActiveTools: jest.fn(() => Promise.resolve([])),
+    tryExecuteInlineToolCommand: jest.fn(() => Promise.resolve(null)),
   };
   const chatRuntime = {
     streamOpenAi: jest.fn<(...args: unknown[]) => Promise<unknown>>(),
@@ -183,7 +184,7 @@ function createFixture() {
     completedAt: null as Date | null,
   };
   const agentRunLifecycle = {
-    createRun: jest.fn(async () => run),
+    createRun: jest.fn(() => Promise.resolve(run)),
     completeRun: jest.fn(
       (
         target: typeof run,
@@ -200,42 +201,48 @@ function createFixture() {
     buildSources: jest.fn(() => []),
   };
   const chatPersistence = {
-    requireManagedUser: jest.fn(async () => person),
-    findOwnedSession: jest.fn(async () => session),
-    getNextSequence: jest.fn(async () => 1),
-    resolveChatAttachmentsForMessage: jest.fn(async () => []),
+    requireManagedUser: jest.fn(() => Promise.resolve(person)),
+    findOwnedSession: jest.fn(() => Promise.resolve(session)),
+    getNextSequence: jest.fn(() => Promise.resolve(1)),
+    resolveChatAttachmentsForMessage: jest.fn(() => Promise.resolve([])),
     buildChatAttachmentContext: jest.fn(() => []),
     mergeMessageContextPayload: jest.fn((payload: unknown) => payload ?? null),
-    linkAttachmentsToMessage: jest.fn(async () => undefined),
-    linkTranscriptionToMessage: jest.fn(async () => undefined),
-    populateChatSession: jest.fn(async () => undefined),
-    loadSessionHistory: jest.fn(async () => []),
+    linkAttachmentsToMessage: jest.fn(() => Promise.resolve(undefined)),
+    linkTranscriptionToMessage: jest.fn(() => Promise.resolve(undefined)),
+    populateChatSession: jest.fn(() => Promise.resolve(undefined)),
+    loadSessionHistory: jest.fn(() => Promise.resolve([])),
     requireUserHandle: jest.fn(() => 42),
   };
   const service = new AiChatStreamService(
     em as never,
     mcpService as never,
     {
-      resolveRuntimeTarget: jest.fn(async () => ({
-        provider,
-        model,
-        providerKind: 'openai',
-      })),
+      resolveRuntimeTarget: jest.fn(() =>
+        Promise.resolve({
+          provider,
+          model,
+          providerKind: 'openai',
+        }),
+      ),
     } as never,
     chatRuntime as never,
     agentRunLifecycle as never,
     {
-      resolveAgentRuntimeContext: jest.fn(async () => ({
-        agent: null,
-        version: null,
-        playbook: null,
-        toolPolicy: {},
-        instruction: null,
-      })),
+      resolveAgentRuntimeContext: jest.fn(() =>
+        Promise.resolve({
+          agent: null,
+          version: null,
+          playbook: null,
+          toolPolicy: {},
+          instruction: null,
+        }),
+      ),
     } as never,
     chatPersistence as never,
     {} as never,
-    { loadPendingToolActionsForMessage: jest.fn(async () => []) } as never,
+    {
+      loadPendingToolActionsForMessage: jest.fn(() => Promise.resolve([])),
+    } as never,
   );
   const onEvent = jest.fn<(event: Record<string, unknown>) => void>();
 

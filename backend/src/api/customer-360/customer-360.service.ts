@@ -16,7 +16,7 @@ import {
   type Customer360Section,
 } from './customer-360.types';
 
-type GenericRecord = Record<string, any>;
+type GenericRecord = Record<string, unknown>;
 
 interface CustomerScope {
   anchor: Customer360Anchor;
@@ -669,7 +669,7 @@ export class Customer360Service {
     if (!this.hasPermission(currentUser, entityHandle, 'allowRead')) {
       return null;
     }
-    const entityClass = ENTITY_MAP[entityHandle];
+    const entityClass = ENTITY_MAP[entityHandle] as unknown;
     if (!entityClass) return null;
     const template = this.templateService.getEntityTemplate(entityHandle);
     const result = await this.genericReadService.findAndCount(
@@ -690,13 +690,11 @@ export class Customer360Service {
       result.entity,
       currentUser,
     )) as GenericRecord[];
-    const data = this.genericSanitizerService.projectEntityResult(
-      entityHandle,
-      afterRead,
-      currentUser,
-      template,
-    ) as GenericRecord[];
-    return { raw: result.items as GenericRecord[], data, total: result.total };
+    const data = this.genericSanitizerService.projectEntityResult<
+      GenericRecord[]
+    >(entityHandle, afterRead, currentUser, template);
+    const raw = result.items as unknown as GenericRecord[];
+    return { raw, data, total: result.total };
   }
 
   private hasPermission(
@@ -793,7 +791,12 @@ export class Customer360Service {
   }
 
   private mapEvent(item: GenericRecord): Customer360ActivityItem {
-    const typeHandle = this.stringValue(item.type?.handle ?? item.type);
+    const typeHandle = this.stringValue(
+      this.recordValue(item.type, 'handle') ?? item.type,
+    );
+    const recordHandle = this.referenceHandle(item.handle) ?? '';
+    const ticketHandle = this.referenceHandle(item.ticket);
+    const opportunityHandle = this.referenceHandle(item.salesOpportunity);
     const kind =
       typeHandle === 'call'
         ? 'call'
@@ -801,40 +804,45 @@ export class Customer360Service {
           ? 'appointment'
           : 'event';
     return {
-      id: `event:${item.handle}`,
+      id: `event:${recordHandle}`,
       kind,
       direction: 'none',
       occurredAt: this.isoValue(item.startDate ?? item.createdAt),
       entityHandle: 'event',
-      recordHandle: item.handle,
+      recordHandle,
       title: this.stringValue(item.title),
       summary: this.stringValue(item.description) || null,
       participants: this.collectionLabels(item.participants),
       status: item.status,
       attachmentHandles: [],
-      source: item.ticket
-        ? {
-            entityHandle: 'ticket',
-            recordHandle: item.ticket.handle ?? item.ticket,
-          }
-        : item.salesOpportunity
+      source:
+        ticketHandle != null
           ? {
-              entityHandle: 'salesOpportunity',
-              recordHandle:
-                item.salesOpportunity.handle ?? item.salesOpportunity,
+              entityHandle: 'ticket',
+              recordHandle: ticketHandle,
             }
-          : null,
+          : opportunityHandle != null
+            ? {
+                entityHandle: 'salesOpportunity',
+                recordHandle: opportunityHandle,
+              }
+            : null,
     };
   }
 
   private mapInboundEmail(item: GenericRecord): Customer360ActivityItem {
+    const recordHandle = this.referenceHandle(item.handle) ?? '';
+    const sourceDocumentHandle = this.handleValue(item.sourceDocument);
+    const ticketHandle = this.referenceHandle(item.ticket);
+    const opportunityHandle = this.referenceHandle(item.salesOpportunity);
+    const officeTaskHandle = this.referenceHandle(item.officeTask);
     return {
-      id: `inboundEmail:${item.handle}`,
+      id: `inboundEmail:${recordHandle}`,
       kind: 'emailInbound',
       direction: 'inbound',
       occurredAt: this.isoValue(item.receivedAt ?? item.createdAt),
       entityHandle: 'inboundEmail',
-      recordHandle: item.handle,
+      recordHandle,
       title: this.stringValue(item.subject),
       summary: this.stringValue(item.bodyText) || null,
       participants: [
@@ -843,38 +851,41 @@ export class Customer360Service {
         ...this.stringArray(item.toRecipients),
       ].filter(Boolean),
       status: item.status,
-      attachmentHandles: item.sourceDocument?.handle
-        ? [Number(item.sourceDocument.handle)]
-        : [],
-      source: item.ticket
-        ? {
-            entityHandle: 'ticket',
-            recordHandle: item.ticket.handle ?? item.ticket,
-          }
-        : item.salesOpportunity
+      attachmentHandles:
+        sourceDocumentHandle == null ? [] : [sourceDocumentHandle],
+      source:
+        ticketHandle != null
           ? {
-              entityHandle: 'salesOpportunity',
-              recordHandle:
-                item.salesOpportunity.handle ?? item.salesOpportunity,
+              entityHandle: 'ticket',
+              recordHandle: ticketHandle,
             }
-          : item.officeTask
+          : opportunityHandle != null
             ? {
-                entityHandle: 'event',
-                recordHandle: item.officeTask.handle ?? item.officeTask,
+                entityHandle: 'salesOpportunity',
+                recordHandle: opportunityHandle,
               }
-            : null,
+            : officeTaskHandle != null
+              ? {
+                  entityHandle: 'event',
+                  recordHandle: officeTaskHandle,
+                }
+              : null,
     };
   }
 
   private mapOutboundEmail(item: GenericRecord): Customer360ActivityItem {
-    const sourceEntity = this.stringValue(item.entity?.handle ?? item.entity);
+    const sourceEntity = this.stringValue(
+      this.recordValue(item.entity, 'handle') ?? item.entity,
+    );
+    const recordHandle = this.referenceHandle(item.handle) ?? '';
+    const referenceHandle = this.referenceHandle(item.referenceHandle);
     return {
-      id: `emailDelivery:${item.handle}`,
+      id: `emailDelivery:${recordHandle}`,
       kind: 'emailOutbound',
       direction: 'outbound',
       occurredAt: this.isoValue(item.completedAt ?? item.createdAt),
       entityHandle: 'emailDelivery',
-      recordHandle: item.handle,
+      recordHandle,
       title: this.stringValue(item.subject),
       summary: this.stringValue(item.bodyMarkdown) || null,
       participants: [
@@ -884,10 +895,10 @@ export class Customer360Service {
       status: item.status,
       attachmentHandles: this.numberArray(item.attachmentHandles),
       source:
-        sourceEntity && item.referenceHandle
+        sourceEntity && referenceHandle != null
           ? {
               entityHandle: sourceEntity,
-              recordHandle: item.referenceHandle,
+              recordHandle: referenceHandle,
             }
           : null,
     };
@@ -922,12 +933,25 @@ export class Customer360Service {
   }
 
   private handleValue(value: unknown): number | null {
-    const candidate =
-      value && typeof value === 'object'
-        ? (value as GenericRecord).handle
-        : value;
+    const candidate = this.recordValue(value, 'handle') ?? value;
+    if (typeof candidate !== 'string' && typeof candidate !== 'number') {
+      return null;
+    }
     const parsed = Number(candidate);
     return Number.isInteger(parsed) ? parsed : null;
+  }
+
+  private referenceHandle(value: unknown): string | number | null {
+    const candidate = this.recordValue(value, 'handle') ?? value;
+    return typeof candidate === 'string' || typeof candidate === 'number'
+      ? candidate
+      : null;
+  }
+
+  private recordValue(value: unknown, field: string): unknown {
+    return value && typeof value === 'object'
+      ? (value as GenericRecord)[field]
+      : undefined;
   }
 
   private relationLabel(value: unknown): string {
@@ -956,7 +980,14 @@ export class Customer360Service {
 
   private dateValue(value: unknown): Date | null {
     if (!value) return null;
-    const date = value instanceof Date ? value : new Date(String(value));
+    if (
+      !(value instanceof Date) &&
+      typeof value !== 'string' &&
+      typeof value !== 'number'
+    ) {
+      return null;
+    }
+    const date = value instanceof Date ? value : new Date(value);
     return Number.isNaN(date.getTime()) ? null : date;
   }
 

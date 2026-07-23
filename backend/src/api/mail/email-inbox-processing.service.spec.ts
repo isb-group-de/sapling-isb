@@ -172,8 +172,6 @@ describe('EmailInboxProcessingService', () => {
     expect(harness.action.arguments?.data).toEqual({
       creatorPerson: 102,
       creatorCompany: 27,
-      status: 'open',
-      priority: 'normal',
       type: 'incident',
       source: 'email',
     });
