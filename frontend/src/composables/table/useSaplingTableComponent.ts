@@ -174,68 +174,33 @@ export function useSaplingTableComponent(props: UseSaplingTableProps, emit: UseS
   const initialEditDialogShown = ref(false)
   const lastAutoOpenedEditKey = ref<string | null>(null)
   const tableContainerRef = ref<HTMLElement | null>(null)
-  const containerWidth = ref(0)
   const windowWidth = ref(
     typeof window === 'undefined' ? MOBILE_TABLE_BREAKPOINT : window.innerWidth,
   )
 
-  let resizeObserver: ResizeObserver | null = null
   let referencePreloadTimeout: ReturnType<typeof setTimeout> | null = null
 
   const handleWindowResize = () => {
     windowWidth.value = window.innerWidth
-
-    if (!tableContainerRef.value) {
-      containerWidth.value = window.innerWidth
-    }
   }
 
-  const responsiveWidth = computed(() => {
-    if (containerWidth.value > 0) {
-      return containerWidth.value
-    }
-
-    return windowWidth.value
-  })
   const isMobileTable = computed(
-    () => !props.disableMobileView && responsiveWidth.value < MOBILE_TABLE_BREAKPOINT,
+    () => !props.disableMobileView && windowWidth.value < MOBILE_TABLE_BREAKPOINT,
   )
-  const showToolbarActionsInline = computed(
-    () => responsiveWidth.value >= COMPACT_TOOLBAR_BREAKPOINT,
-  )
+  const showToolbarActionsInline = computed(() => windowWidth.value >= COMPACT_TOOLBAR_BREAKPOINT)
   const currentPermissions = computed(() => currentPermissionStore.accumulatedPermission ?? [])
   // #endregion
 
   // #region Lifecycle
   onMounted(() => {
     window.addEventListener('resize', handleWindowResize)
+    handleWindowResize()
     void currentPermissionStore.fetchCurrentPermission()
-
-    if (!tableContainerRef.value) {
-      containerWidth.value = window.innerWidth
-    } else {
-      resizeObserver = new ResizeObserver((entries) => {
-        const [entry] = entries
-        if (entry) {
-          containerWidth.value = entry.contentRect.width
-        }
-      })
-
-      resizeObserver.observe(tableContainerRef.value)
-      containerWidth.value = tableContainerRef.value.offsetWidth
-    }
   })
 
   onBeforeUnmount(() => {
     window.removeEventListener('resize', handleWindowResize)
     cancelReferencePreload()
-
-    if (resizeObserver && tableContainerRef.value) {
-      resizeObserver.unobserve(tableContainerRef.value)
-      resizeObserver.disconnect()
-    }
-
-    resizeObserver = null
   })
   // #endregion
 

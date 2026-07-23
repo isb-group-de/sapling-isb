@@ -40,7 +40,14 @@
           <div class="sapling-interactive-list-item__row sapling-event-agenda-item__row">
             <small>{{ item.timeLabel || item.dateLabel }}</small>
           </div>
-          <p>{{ item.description || item.dateLabel }}</p>
+
+          <div
+            v-if="item.onlineMeetingUrl"
+            class="sapling-event-agenda-item__meeting-action"
+            @click.stop
+          >
+            <SaplingEventOnlineMeetingLink :url="item.onlineMeetingUrl" />
+          </div>
 
           <div
             v-if="item.participantNames.length > 0"
@@ -81,6 +88,7 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
 import SaplingSurface from '@/components/common/SaplingSurface.vue'
+import SaplingEventOnlineMeetingLink from '@/components/event/SaplingEventOnlineMeetingLink.vue'
 import type { EventAgendaItem } from '@/composables/event/useSaplingEventPresentation'
 import type { CalendarEvent } from 'vuetify/lib/components/VCalendar/types.mjs'
 

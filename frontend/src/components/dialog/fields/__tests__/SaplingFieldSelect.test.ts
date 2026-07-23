@@ -71,8 +71,15 @@ const VAutocompleteStub = defineComponent({
   props: {
     search: String,
   },
-  emits: ['update:search', 'update:modelValue', 'focus', 'mousedown:control', 'click:clear'],
-  template: '<div />',
+  emits: [
+    'update:search',
+    'update:modelValue',
+    'focus',
+    'mousedown:control',
+    'click:clear',
+    'click:append-inner',
+  ],
+  template: '<div><slot name="append-inner" /></div>',
 })
 
 const SaplingTableStub = defineComponent({
@@ -98,6 +105,12 @@ function mountSelectField(
       stubs: {
         'v-menu': VMenuStub,
         'v-autocomplete': VAutocompleteStub,
+        'v-btn': {
+          template: '<button v-bind="$attrs"><slot /></button>',
+        },
+        'v-icon': {
+          template: '<span><slot /></span>',
+        },
         SaplingTable: SaplingTableStub,
       },
       provide:
@@ -169,5 +182,19 @@ describe('SaplingFieldSelect', () => {
     await wrapper.findComponent(VAutocompleteStub).vm.$emit('focus')
 
     expect(wrapper.findComponent(SaplingTableStub).props('disableMobileView')).toBe(true)
+  })
+
+  it('opens and closes the dropdown from the same toggle button', async () => {
+    const wrapper = mountSelectField()
+    const menu = wrapper.findComponent(VMenuStub)
+    const toggle = wrapper.get('[data-testid="toggle-reference-menu"]')
+
+    expect(menu.props('modelValue')).toBe(false)
+
+    await toggle.trigger('click')
+    expect(menu.props('modelValue')).toBe(true)
+
+    await toggle.trigger('click')
+    expect(menu.props('modelValue')).toBe(false)
   })
 })

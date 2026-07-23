@@ -137,6 +137,7 @@ export function useSaplingEvent() {
   const {
     currentDateRangeLabel,
     currentMonthLabel,
+    getCalendarEventParticipants,
     getEventsForPerson,
     getPersonName,
     getSelectedHolidayGroupHandles,
@@ -159,17 +160,27 @@ export function useSaplingEvent() {
     createEvent,
     getEventColor,
   })
-  const { getEvents, loadPersistedEvent, loadSelectedPeopleDetails, refreshVisibleEvents } =
-    useSaplingEventData({
-      events,
-      selectedPeople: selectedPeoples,
-      peopleMap,
-      calendarMode,
-      calendarType,
-      calendarDateRange,
-      buildChipFilterClauses,
-      getSelectedHolidayGroupHandles,
-    })
+  const {
+    getEvents: loadCalendarEvents,
+    loadPersistedEvent,
+    loadSelectedPeopleDetails,
+    refreshVisibleEvents,
+  } = useSaplingEventData({
+    events,
+    selectedPeople: selectedPeoples,
+    peopleMap,
+    calendarMode,
+    calendarType,
+    calendarDateRange,
+    buildChipFilterClauses,
+    getSelectedHolidayGroupHandles,
+  })
+
+  async function getEvents(nextRange: CalendarDatePair) {
+    await loadCalendarEvents(nextRange)
+    await nextTick()
+    queueScrollToCurrentTime(0)
+  }
   const eventEditor = useSaplingEventEditor({
     events,
     templates,
@@ -464,6 +475,7 @@ export function useSaplingEvent() {
     updateConflictDialog,
     events,
     getEventColor,
+    getCalendarEventParticipants,
     getEvents,
     getEventsForPerson,
     getPersonName,

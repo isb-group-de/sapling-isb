@@ -343,21 +343,23 @@
 }
 
 .sapling-event-agenda-item__row span,
-.sapling-event-agenda-item__content p,
 .sapling-event-agenda-item__content small {
   opacity: var(--sapling-opacity-secondary);
-}
-
-.sapling-event-agenda-item__content p {
-  margin: var(--sapling-gap-sm) 0 0;
-  font-size: var(--sapling-text-meta-size-sm);
-  line-height: 1.45;
 }
 
 .sapling-event-agenda-item__content small {
   display: inline-block;
   margin-top: var(--sapling-gap-md);
   font-size: var(--sapling-text-label-size-sm);
+}
+
+.sapling-event-agenda-item__meeting-action {
+  margin-top: var(--sapling-gap-md);
+}
+
+.sapling-event-agenda-item__meeting-action .sapling-event-online-meeting-link {
+  font-size: var(--sapling-text-label-size-sm);
+  white-space: nowrap;
 }
 
 .sapling-event-agenda-item__participants {
@@ -719,7 +721,7 @@
   padding: var(--sapling-gap-sm) var(--sapling-gap-sm) 0;
 }
 
-.sapling-calendar-event-tooltip-card__meeting-link {
+.sapling-event-online-meeting-link {
   display: inline-flex;
   width: 100%;
   min-height: 36px;
@@ -740,8 +742,8 @@
     transform var(--sapling-motion-fast) ease;
 }
 
-.sapling-calendar-event-tooltip-card__meeting-link:hover,
-.sapling-calendar-event-tooltip-card__meeting-link:focus-visible {
+.sapling-event-online-meeting-link:hover,
+.sapling-event-online-meeting-link:focus-visible {
   border-color: color-mix(in srgb, rgb(var(--v-theme-primary)) 68%, transparent);
   background: color-mix(in srgb, rgb(var(--v-theme-primary)) 26%, transparent);
   transform: translateY(-1px);

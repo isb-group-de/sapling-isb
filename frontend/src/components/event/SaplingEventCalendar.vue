@@ -3,6 +3,7 @@
     :as="VCalendar"
     v-model="calendarValue"
     class="sapling-event-vcalendar"
+    :glass="false"
     :class="[
       props.calendarClass,
       `sapling-event-vcalendar--${props.calendarDisplayType}`,
@@ -110,6 +111,7 @@
           class="glass-panel"
           :time-range="formatEventTimeRange(event)"
           :icon="getEventIcon(event)"
+          :participant-names="props.getEventParticipants(event)"
         />
       </v-menu>
     </template>
@@ -159,6 +161,7 @@ const props = withDefaults(
     showResizeHandle?: boolean
     getWorkHourStyle: (date: string) => CSSProperties
     getEventColor: (event: CalendarEvent) => string
+    getEventParticipants: (event: CalendarEvent) => string[]
     nowY: () => string
     getEvents: (value: CalendarDatePair) => void | Promise<void>
     openEvent: (event: CalendarEvent) => void

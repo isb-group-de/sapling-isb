@@ -71,6 +71,7 @@ describe('useSaplingDialogEditRelations', () => {
     expect(apiFindMock).not.toHaveBeenCalled()
     expect(relations.relationTableItems.value.notes).toEqual([])
     expect(relations.relationTableTotal.value.notes).toBe(0)
+    expect(relations.relationTableLoaded.value.notes).toBe(false)
   })
 
   it('loads a relation table once when that tab is requested', async () => {
@@ -90,6 +91,7 @@ describe('useSaplingDialogEditRelations', () => {
     )
     expect(relations.relationTableItems.value.notes).toEqual([{ handle: 1, title: 'First note' }])
     expect(relations.relationTableTotal.value.notes).toBe(1)
+    expect(relations.relationTableLoaded.value.notes).toBe(true)
   })
 
   it('loads relation table rows in readonly mode for persisted records', async () => {
@@ -106,6 +108,32 @@ describe('useSaplingDialogEditRelations', () => {
         page: 1,
       }),
     )
+  })
+
+  it('keeps the initialized layout visible while a loaded relation refreshes', async () => {
+    const relations = createRelations()
+    await relations.initializeRelationTables()
+    await relations.ensureRelationTableItems('notes')
+    const deferred = createDeferred<{
+      data: SaplingGenericItem[]
+      meta: { total: number }
+    }>()
+    apiFindMock.mockReturnValueOnce(deferred.promise)
+
+    const refreshPromise = relations.loadRelationTableItems(['notes'])
+
+    expect(relations.relationTableLoaded.value.notes).toBe(true)
+    expect(relations.relationTableState.value.notes?.isLoading).toBe(true)
+
+    deferred.resolve({
+      data: [{ handle: 2, title: 'Refreshed note' }],
+      meta: { total: 1 },
+    })
+    await refreshPromise
+
+    expect(relations.relationTableItems.value.notes).toEqual([
+      { handle: 2, title: 'Refreshed note' },
+    ])
   })
 
   it('does not load relation table rows while creating a new record', async () => {
@@ -147,6 +175,26 @@ describe('useSaplingDialogEditRelations', () => {
 
     expect(apiUpdateMock).toHaveBeenCalledWith('note', 7, { ticket: null })
     expect(selected.ticket).toBe(42)
+  })
+
+  it('keeps a relation mutation busy and ignores duplicate submissions', async () => {
+    const relations = createRelations()
+    const deferred = createDeferred<object>()
+    const template = relations.relationTemplates.value[0]
+    relations.selectedRelations.value.notes = [{ handle: 7, title: 'Existing note' }]
+    apiUpdateMock.mockReturnValueOnce(deferred.promise)
+
+    const firstSubmission = relations.addRelation(template)
+    const duplicateSubmission = relations.addRelation(template)
+
+    expect(relations.relationMutationState.value.notes).toBe(true)
+    expect(apiUpdateMock).toHaveBeenCalledTimes(1)
+
+    deferred.resolve({})
+    await Promise.all([firstSubmission, duplicateSubmission])
+
+    expect(relations.relationMutationState.value.notes).toBe(false)
+    expect(relations.selectedRelations.value.notes).toEqual([])
   })
 
   it('ignores stale relation responses after item changes reset the table state', async () => {

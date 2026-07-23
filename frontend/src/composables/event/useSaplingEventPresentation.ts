@@ -14,9 +14,9 @@ import {
 } from '@/composables/event/eventDate.utils'
 import {
   getCalendarEventAccentColor,
-  getCalendarEventDescription,
   getCalendarEventHandle,
   getCalendarEventIcon,
+  getCalendarEventOnlineMeetingUrl,
   getCalendarEventTitle,
   hasParticipant,
   isReadonlyCalendarEvent,
@@ -49,7 +49,7 @@ export interface EventAgendaItem {
   title: string
   dateLabel: string
   timeLabel: string
-  description: string
+  onlineMeetingUrl: string | null
   participantNames: string[]
   icon: string
   accentColor: string
@@ -163,7 +163,7 @@ export function useSaplingEventPresentation(options: UseSaplingEventPresentation
           timeLabel: event.timed
             ? `${formatTimeValue(startDate)} - ${formatTimeValue(endDate)}`
             : '',
-          description: getCalendarEventDescription(event),
+          onlineMeetingUrl: getCalendarEventOnlineMeetingUrl(event),
           participantNames: getCalendarEventParticipants(event),
           icon: getCalendarEventIcon(event),
           accentColor: getCalendarEventAccentColor(event, options.getEventColor(event)),

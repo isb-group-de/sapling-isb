@@ -5,6 +5,7 @@ import { useSaplingCalendarNavigation } from '../useSaplingCalendarNavigation'
 
 describe('useSaplingCalendarNavigation', () => {
   afterEach(() => {
+    document.body.innerHTML = ''
     vi.useRealTimers()
   })
 
@@ -47,5 +48,58 @@ describe('useSaplingCalendarNavigation', () => {
       position: 'absolute',
       pointerEvents: 'none',
     })
+  })
+
+  it('centers the current-time marker in the inner calendar scroll area', () => {
+    const outer = document.createElement('div')
+    outer.className = 'sapling-calendar-frame'
+    const container = document.createElement('div')
+    const marker = document.createElement('div')
+    container.className = 'v-calendar-daily__scroll-area'
+    marker.className = 'v-current-time'
+    container.append(marker)
+    outer.append(container)
+    document.body.append(outer)
+
+    Object.defineProperties(container, {
+      clientHeight: { configurable: true, value: 400 },
+      scrollHeight: { configurable: true, value: 1200 },
+    })
+    container.getBoundingClientRect = () => ({ top: 100, height: 400 }) as DOMRect
+    marker.getBoundingClientRect = () => ({ top: 580, height: 2 }) as DOMRect
+
+    const navigation = useSaplingCalendarNavigation(ref('week'), ref(null))
+    navigation.scrollToCurrentTime()
+
+    expect(container.scrollTop).toBe(281)
+  })
+
+  it('retries until the rendered calendar scroll area is available', () => {
+    vi.useFakeTimers()
+    const navigation = useSaplingCalendarNavigation(ref('week'), ref(null))
+
+    navigation.queueScrollToCurrentTime(0)
+    vi.advanceTimersByTime(0)
+
+    const outer = document.createElement('div')
+    const container = document.createElement('div')
+    const marker = document.createElement('div')
+    container.className = 'v-calendar-daily__scroll-area'
+    marker.className = 'v-current-time'
+    container.append(marker)
+    outer.append(container)
+    document.body.append(outer)
+    navigation.calendarScrollContainer.value = outer
+
+    Object.defineProperties(container, {
+      clientHeight: { configurable: true, value: 400 },
+      scrollHeight: { configurable: true, value: 1200 },
+    })
+    container.getBoundingClientRect = () => ({ top: 100, height: 400 }) as DOMRect
+    marker.getBoundingClientRect = () => ({ top: 580, height: 2 }) as DOMRect
+
+    vi.advanceTimersByTime(200)
+
+    expect(container.scrollTop).toBe(281)
   })
 })

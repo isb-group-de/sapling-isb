@@ -21,7 +21,7 @@
     >
       <div class="sapling-toolbar-controls sapling-table-toolbar-controls">
         <div
-          v-if="multiSelect"
+          v-if="multiSelect && showSelectionToolbar"
           class="sapling-toolbar-slot sapling-table-toolbar-slot sapling-table-toolbar-slot--selection"
         >
           <SaplingTableMultiSelect
@@ -315,6 +315,7 @@ type SaplingTableProps = UseSaplingTableProps & {
   showSearch?: boolean
   showFormConfig?: boolean
   showToolbar?: boolean
+  showSelectionToolbar?: boolean
   isInitialized?: boolean
   rowInteraction?: boolean
   showSidePanelToggle?: boolean
@@ -334,6 +335,7 @@ type SaplingTableEmit = UseSaplingTableEmit & {
 const props = withDefaults(defineProps<SaplingTableProps>(), {
   showSearch: true,
   showToolbar: true,
+  showSelectionToolbar: true,
   rowInteraction: true,
 })
 const emit = defineEmits<SaplingTableEmit>()
@@ -394,6 +396,7 @@ const showFormConfigButton = computed(
 )
 const showSearchField = computed(() => props.showSearch !== false)
 const showToolbar = computed(() => props.showToolbar !== false)
+const showSelectionToolbar = computed(() => props.showSelectionToolbar !== false)
 const showSidePanelToggleButton = computed(() => props.showSidePanelToggle === true)
 const sidePanelVisible = computed(() => props.sidePanelVisible === true)
 const sidePanelToggleLabel = computed(

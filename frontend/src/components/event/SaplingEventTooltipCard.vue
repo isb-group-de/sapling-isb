@@ -11,17 +11,7 @@
     </header>
 
     <div v-if="onlineMeetingUrl" class="sapling-calendar-event-tooltip-card__action">
-      <a
-        class="sapling-calendar-event-tooltip-card__meeting-link"
-        :href="onlineMeetingUrl"
-        target="_blank"
-        rel="noopener noreferrer"
-        @click.stop
-        @mousedown.stop
-      >
-        <v-icon size="16">mdi-video-outline</v-icon>
-        <span>{{ t('calendar.joinOnlineMeeting') }}</span>
-      </a>
+      <SaplingEventOnlineMeetingLink :url="onlineMeetingUrl" />
     </div>
 
     <div class="sapling-calendar-event-tooltip-card__sections">
@@ -86,7 +76,11 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { CalendarEvent } from 'vuetify/lib/components/VCalendar/types.mjs'
 import type { EventItem } from '@/entity/entity'
-import type { CalendarParticipant } from '@/composables/event/eventCalendar.utils'
+import SaplingEventOnlineMeetingLink from '@/components/event/SaplingEventOnlineMeetingLink.vue'
+import {
+  getCalendarEventOnlineMeetingUrl,
+  type CalendarParticipant,
+} from '@/composables/event/eventCalendar.utils'
 
 type TooltipRecord = Partial<EventItem> & {
   assigneeCompany?: TooltipRelation | null
@@ -115,6 +109,7 @@ const props = defineProps<{
   event: CalendarEvent
   timeRange: string
   icon: string
+  participantNames?: string[]
 }>()
 
 const { t } = useI18n()
@@ -128,18 +123,14 @@ const customerCompanyName = computed(() => resolveRelationName(record.value?.cre
 const customerPersonName = computed(() => resolveRelationName(record.value?.creatorPerson))
 const responsibleCompanyName = computed(() => resolveRelationName(record.value?.assigneeCompany))
 const responsiblePersonName = computed(() => resolveRelationName(record.value?.assigneePerson))
-const onlineMeetingUrl = computed(() =>
-  normalizeUrl(
-    record.value?.onlineMeetingURL ??
-      record.value?.onlineMeetingUrl ??
-      record.value?.online_meeting_url,
-  ),
-)
+const onlineMeetingUrl = computed(() => getCalendarEventOnlineMeetingUrl(props.event))
 
 const participantNames = computed(() =>
-  normalizeNames(
-    record.value?.participants?.map((participant) => resolveParticipantName(participant)),
-  ),
+  props.participantNames == null
+    ? normalizeNames(
+        record.value?.participants?.map((participant) => resolveParticipantName(participant)),
+      )
+    : normalizeNames(props.participantNames),
 )
 
 function resolveParticipantName(participant: CalendarParticipant | undefined) {
@@ -184,21 +175,5 @@ function normalizeNames(names: Array<string | null | undefined> | undefined) {
   return Array.from(
     new Set(names.map((name) => name?.trim()).filter((name): name is string => Boolean(name))),
   )
-}
-
-function normalizeUrl(url: string | null | undefined) {
-  const value = url?.trim()
-  if (!value) {
-    return null
-  }
-
-  try {
-    const parsedUrl = new URL(value)
-    return parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:'
-      ? parsedUrl.toString()
-      : null
-  } catch {
-    return null
-  }
 }
 </script>

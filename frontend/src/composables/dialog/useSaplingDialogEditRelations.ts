@@ -42,6 +42,7 @@ export function useSaplingDialogEditRelations(options: UseSaplingDialogEditRelat
   const relationTableColumnFilters = ref<Record<string, Record<string, ColumnFilterItem>>>({})
   const relationTableRequestId = ref<Record<string, number>>({})
   const relationTableLoaded = ref<Record<string, boolean>>({})
+  const relationMutationState = ref<Record<string, boolean>>({})
   const selectedRelations = ref<Record<string, SaplingGenericItem[]>>({})
   const relationTableState = ref<Record<string, EntityState>>({})
   const selectedItems = ref<SaplingGenericItem[]>([])
@@ -81,18 +82,28 @@ export function useSaplingDialogEditRelations(options: UseSaplingDialogEditRelat
       ? selectedRelations.value[template.name]
       : []
 
-    switch (template.kind) {
-      case '1:m':
-        await addRelation1M(template, items)
-        break
-      default:
-        await addRelationNM(template, items)
-        break
+    if (items.length === 0 || relationMutationState.value[template.name]) {
+      return
     }
 
-    selectedRelations.value[template.name] = []
-    selectedItems.value = []
-    await loadRelationTableItem(template)
+    relationMutationState.value[template.name] = true
+
+    try {
+      switch (template.kind) {
+        case '1:m':
+          await addRelation1M(template, items)
+          break
+        default:
+          await addRelationNM(template, items)
+          break
+      }
+
+      selectedRelations.value[template.name] = []
+      selectedItems.value = []
+      await loadRelationTableItem(template)
+    } finally {
+      relationMutationState.value[template.name] = false
+    }
   }
 
   async function addRelationNM(
@@ -126,13 +137,23 @@ export function useSaplingDialogEditRelations(options: UseSaplingDialogEditRelat
     template: EntityTemplate,
     itemsToRemove: SaplingGenericItem[],
   ): Promise<void> {
-    switch (template.kind) {
-      case '1:m':
-        await removeRelation1M(template, itemsToRemove)
-        break
-      default:
-        await removeRelationNM(template, itemsToRemove)
-        break
+    if (itemsToRemove.length === 0 || relationMutationState.value[template.name]) {
+      return
+    }
+
+    relationMutationState.value[template.name] = true
+
+    try {
+      switch (template.kind) {
+        case '1:m':
+          await removeRelation1M(template, itemsToRemove)
+          break
+        default:
+          await removeRelationNM(template, itemsToRemove)
+          break
+      }
+    } finally {
+      relationMutationState.value[template.name] = false
     }
   }
 
@@ -234,6 +255,7 @@ export function useSaplingDialogEditRelations(options: UseSaplingDialogEditRelat
     deleteKeysOutsideTemplateNames(relationTableColumnFilters, templateNames)
     deleteKeysOutsideTemplateNames(relationTableRequestId, templateNames)
     deleteKeysOutsideTemplateNames(relationTableLoaded, templateNames)
+    deleteKeysOutsideTemplateNames(relationMutationState, templateNames)
     deleteKeysOutsideTemplateNames(relationTableState, templateNames)
   }
 
@@ -257,6 +279,7 @@ export function useSaplingDialogEditRelations(options: UseSaplingDialogEditRelat
     relationTableColumnFilters.value[name] ??= {}
     relationTableRequestId.value[name] ??= 0
     relationTableLoaded.value[name] ??= false
+    relationMutationState.value[name] ??= false
     relationTableItems.value[name] ??= []
   }
 
@@ -286,7 +309,6 @@ export function useSaplingDialogEditRelations(options: UseSaplingDialogEditRelat
     const relState = getRelationTableState(template.name)
     const requestId = (relationTableRequestId.value[template.name] ?? 0) + 1
     relationTableRequestId.value[template.name] = requestId
-    relationTableLoaded.value[template.name] = false
     relState.isLoading = true
 
     try {
@@ -343,6 +365,7 @@ export function useSaplingDialogEditRelations(options: UseSaplingDialogEditRelat
       if (relationTableRequestId.value[template.name] === requestId) {
         relationTableItems.value[template.name] = []
         relationTableTotal.value[template.name] = 0
+        relationTableLoaded.value[template.name] = true
       }
       console.error(`Error loading relation table items for ${template.name}:`, error)
     } finally {
@@ -363,7 +386,7 @@ export function useSaplingDialogEditRelations(options: UseSaplingDialogEditRelat
   }
 
   async function ensureRelationTableItems(name: string): Promise<void> {
-    if (relationTableLoaded.value[name]) {
+    if (relationTableLoaded.value[name] || getRelationTableState(name).isLoading) {
       return
     }
 
@@ -440,6 +463,8 @@ export function useSaplingDialogEditRelations(options: UseSaplingDialogEditRelat
     relationTableItemsPerPage,
     relationTableSortBy,
     relationTableColumnFilters,
+    relationMutationState,
+    relationTableLoaded,
     selectedRelations,
     selectedItems,
     addRelation,

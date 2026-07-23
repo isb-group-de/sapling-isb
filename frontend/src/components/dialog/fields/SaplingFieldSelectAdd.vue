@@ -1,18 +1,28 @@
 <template>
-  <div class="sapling-inline-cluster">
+  <div class="sapling-inline-cluster sapling-field-select-add">
     <SaplingSelectField
-      v-bind="props"
+      class="sapling-field-select-add__field"
+      :label="props.label"
+      :entity-handle="props.entityHandle"
+      :rules="props.rules"
+      :placeholder="props.placeholder"
+      :disabled="props.disabled"
+      :parent-filter="props.parentFilter"
       v-model="selectedItems"
       @update:modelValue="onUpdateModelValue"
     />
-    <v-btn-group>
+    <v-btn-group class="sapling-field-select-add__actions">
       <v-btn
         color="primary"
-        :disabled="!selectedItems.length"
+        :disabled="props.disabled || !selectedItems.length"
+        :loading="props.loading"
         @click="emitAddSelected"
-        icon="mdi-plus"
-        :title="$t('global.addSelected')"
-      />
+        :icon="showActionLabel ? undefined : actionIcon"
+        :prepend-icon="showActionLabel ? actionIcon : undefined"
+        :title="resolvedActionLabel"
+      >
+        <span v-if="showActionLabel">{{ resolvedActionLabel }}</span>
+      </v-btn>
     </v-btn-group>
   </div>
 </template>
@@ -21,7 +31,8 @@
 import { useSaplingSelectAddField } from '@/composables/fields/useSaplingSelectAddField'
 import type { SaplingGenericItem } from '@/entity/entity'
 import type { FilterQuery } from '@/services/api.generic.service'
-import { defineAsyncComponent, watch } from 'vue'
+import { computed, defineAsyncComponent, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 const SaplingSelectField = defineAsyncComponent(() => import('./SaplingFieldSelect.vue'))
 
@@ -32,11 +43,18 @@ const props = defineProps<{
   rules?: Array<(v: unknown) => true | string>
   placeholder?: string
   disabled?: boolean
+  loading?: boolean
   parentFilter?: FilterQuery
+  actionLabel?: string
+  actionIcon?: string
+  showActionLabel?: boolean
 }>()
 const emit = defineEmits(['update:modelValue', 'add-selected'])
+const { t } = useI18n()
 
 const { selectedItems } = useSaplingSelectAddField(props)
+const actionIcon = computed(() => props.actionIcon?.trim() || 'mdi-plus')
+const resolvedActionLabel = computed(() => props.actionLabel?.trim() || t('global.addSelected'))
 
 function emitAddSelected() {
   if (selectedItems.value.length) {

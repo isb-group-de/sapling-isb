@@ -12,6 +12,7 @@
       :show-resize-handle="true"
       :get-work-hour-style="getWorkHourStyle"
       :get-event-color="getEventColor"
+      :get-event-participants="getEventParticipants"
       :now-y="nowY"
       :get-events="getEvents"
       :open-event="openEvent"
@@ -49,6 +50,7 @@
               calendar-class="sapling-event-vcalendar--column"
               :get-work-hour-style="getWorkHourStyle"
               :get-event-color="getEventColor"
+              :get-event-participants="getEventParticipants"
               :now-y="nowY"
               :get-events="getEvents"
               :open-event="openEvent"
@@ -104,6 +106,7 @@ const props = defineProps<{
   sideBySideGridStyle: CSSProperties
   getWorkHourStyle: (date: string) => CSSProperties
   getEventColor: (event: CalendarEvent) => string
+  getEventParticipants: (event: CalendarEvent) => string[]
   nowY: () => string
   getEvents: (value: CalendarDatePair) => void | Promise<void>
   openEvent: (event: CalendarEvent) => void

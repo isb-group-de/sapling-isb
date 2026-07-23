@@ -69,7 +69,9 @@ describe('useSaplingEventPresentation', () => {
         event: {
           handle: 42,
           title: 'Planning',
-          participants: [7, 9],
+          description: 'Microsoft Teams meeting with a long imported body',
+          onlineMeetingURL: 'https://teams.example.test/join',
+          participants: [7, { handle: 9, title: 'Doctor' }],
         },
       } as unknown as SaplingCalendarEvent,
     ]
@@ -84,6 +86,11 @@ describe('useSaplingEventPresentation', () => {
       'Ada Owner',
       'Grace Hopper',
     ])
+    expect(harness.presentation.upcomingEvents.value[0]).toMatchObject({
+      title: 'Planning',
+      onlineMeetingUrl: 'https://teams.example.test/join',
+    })
+    expect(harness.presentation.upcomingEvents.value[0]).not.toHaveProperty('description')
   })
 
   it('adds a draft only to matching side-by-side person columns', () => {

@@ -120,7 +120,12 @@ export function useSaplingCalendarDrag(options: UseSaplingCalendarDragOptions) {
       createEvent.value != null &&
       getCalendarEventHandle(createEvent.value) == null &&
       extendOriginal.value == null
-    const wasDragged = dragEvent.value != null && dragTime.value != null
+    const wasDragged =
+      dragEvent.value != null &&
+      dragTime.value != null &&
+      dragSnapshot.value != null &&
+      (dragEvent.value.start !== dragSnapshot.value.start ||
+        dragEvent.value.end !== dragSnapshot.value.end)
     const wasResized =
       extendOriginal.value != null &&
       createEvent.value != null &&

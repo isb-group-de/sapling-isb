@@ -17,6 +17,7 @@
           :item-title="getAutocompleteItemTitle"
           :search="fieldSearch"
           :menu="false"
+          menu-icon=""
           :density="props.density"
           :hide-details="props.hideDetails"
           return-object
@@ -33,7 +34,24 @@
           @update:menu="closeAutocompleteMenu"
           @update:model-value="onActivatorModelUpdate"
           @update:search="onActivatorSearchUpdate"
-        />
+        >
+          <template #append-inner>
+            <v-btn
+              class="sapling-field-select__menu-toggle"
+              data-testid="toggle-reference-menu"
+              icon
+              size="small"
+              variant="text"
+              :disabled="props.disabled"
+              :aria-label="props.label"
+              :title="props.label"
+              @mousedown.stop
+              @click.stop="toggleMenu"
+            >
+              <v-icon>{{ menuOpen ? 'mdi-menu-up' : 'mdi-menu-down' }}</v-icon>
+            </v-btn>
+          </template>
+        </v-autocomplete>
       </div>
     </template>
     <div
@@ -187,6 +205,12 @@ function clearSelection() {
 function openMenu() {
   if (!props.disabled) {
     menuOpen.value = true
+  }
+}
+
+function toggleMenu() {
+  if (!props.disabled) {
+    menuOpen.value = !menuOpen.value
   }
 }
 

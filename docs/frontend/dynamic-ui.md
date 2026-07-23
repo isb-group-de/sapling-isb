@@ -272,6 +272,10 @@ compatibility barrel.
 `SaplingForm` metadata carries explicit defaults for form, desktop table, and
 mobile table rendering. Desktop columns use `tableVisible` and `tableOrder`.
 Mobile table cards use separate `mobileVisible` and `mobileOrder` metadata.
+The switch between desktop rows and mobile cards follows the browser viewport
+width, not the width of the table's immediate container. Embedded tables
+therefore keep the desktop row layout on desktop screens even when they appear
+inside a narrow dialog or field menu.
 The current entity convention sets `mobileVisible: true` only for fields marked
 with `isValue`, but this is stored in the decorator and not inferred in the
 frontend. Hiding a field from the desktop table does not automatically hide a

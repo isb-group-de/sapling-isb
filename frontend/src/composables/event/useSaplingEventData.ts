@@ -20,6 +20,7 @@ const EVENT_CALENDAR_FIELDS = [
   'isAllDay',
   'isPrivate',
   'recurrenceRule',
+  'onlineMeetingURL',
   'type',
   'participants',
   'status',

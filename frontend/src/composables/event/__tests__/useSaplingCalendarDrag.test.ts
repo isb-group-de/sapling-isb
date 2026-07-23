@@ -83,6 +83,7 @@ describe('useSaplingCalendarDrag', () => {
     const event = createPersistedEvent()
 
     harness.drag.startDrag(new Event('mousedown'), { event, timed: true })
+    harness.drag.startTime(new Event('mousedown'), createTimeSlot(9, 30))
     harness.drag.endDrag()
 
     expect(harness.openPersistedEventEditor).not.toHaveBeenCalled()

@@ -17,6 +17,9 @@ import { getWorkHourForDate } from './eventCalendar.utils'
 
 type CalendarScrollContainerRef = HTMLElement | ComponentPublicInstance | null
 
+const CURRENT_TIME_SCROLL_RETRY_DELAY = 200
+const CURRENT_TIME_SCROLL_MAX_ATTEMPTS = 5
+
 /** Owns calendar date navigation, current-time scrolling, and work-hour overlays. */
 export function useSaplingCalendarNavigation(
   calendarType: Ref<CalendarType>,
@@ -89,11 +92,13 @@ export function useSaplingCalendarNavigation(
     value.value = formatLocalDate(normalizeDateForCalendarType(nextDate, calendarType.value))
   }
 
-  function scrollToCurrentTime() {
+  function scrollToCurrentTime(attempt = 0) {
     const outer =
       resolveScrollContainerElement(calendarScrollContainer.value) ||
+      document.querySelector('.sapling-calendar-frame') ||
       document.querySelector('.calendar-card-text')
     if (!outer) {
+      retryScrollToCurrentTime(attempt)
       return
     }
 
@@ -117,20 +122,12 @@ export function useSaplingCalendarNavigation(
         return
       }
 
-      container.style.scrollBehavior = 'smooth'
-      container.scrollTo({ top: targetOffset })
+      container.scrollTop = targetOffset
     })
 
     if (!hasMarkers) {
-      queueScrollToCurrentTime(200)
-      return
+      retryScrollToCurrentTime(attempt)
     }
-
-    window.setTimeout(() => {
-      resolvedContainers.forEach((container) => {
-        container.style.scrollBehavior = ''
-      })
-    }, 500)
   }
 
   function resolveCurrentTimeScrollOffset(container: HTMLElement, markers: HTMLElement[]) {
@@ -164,13 +161,21 @@ export function useSaplingCalendarNavigation(
     )
   }
 
-  function queueScrollToCurrentTime(delay = 300) {
+  function retryScrollToCurrentTime(attempt: number) {
+    if (attempt >= CURRENT_TIME_SCROLL_MAX_ATTEMPTS) {
+      return
+    }
+
+    queueScrollToCurrentTime(CURRENT_TIME_SCROLL_RETRY_DELAY, attempt + 1)
+  }
+
+  function queueScrollToCurrentTime(delay = 300, attempt = 0) {
     if (scrollTimeoutId !== null) {
       window.clearTimeout(scrollTimeoutId)
     }
     scrollTimeoutId = window.setTimeout(() => {
       scrollTimeoutId = null
-      scrollToCurrentTime()
+      scrollToCurrentTime(attempt)
     }, delay)
   }
 

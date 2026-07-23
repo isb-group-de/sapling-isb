@@ -74,6 +74,7 @@ describe('useSaplingEventData', () => {
       1,
       'event',
       expect.objectContaining({
+        fields: expect.arrayContaining(['onlineMeetingURL']),
         filter: expect.objectContaining({
           $and: expect.arrayContaining([
             { participants: [7] },

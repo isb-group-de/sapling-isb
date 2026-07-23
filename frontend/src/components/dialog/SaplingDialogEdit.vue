@@ -133,6 +133,8 @@
                     :entity-permission="relationTableState[template.name]?.entityPermission ?? null"
                     :selected-relations="selectedRelations[template.name] ?? []"
                     :selected-items="selectedItems ?? []"
+                    :is-mutating="relationMutationState[template.name] === true"
+                    :is-initial-loading="relationTableLoaded[template.name] !== true"
                     @update:selected-relations="
                       (val) => updateSelectedRelationItems(template.name, val)
                     "
@@ -296,6 +298,8 @@ const {
   relationTableItemsPerPage,
   relationTableSortBy,
   relationTableColumnFilters,
+  relationMutationState,
+  relationTableLoaded,
   permissions,
   iconNames,
   selectedItems,

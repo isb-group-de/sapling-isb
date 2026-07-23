@@ -97,6 +97,7 @@
               :side-by-side-grid-style="sideBySideGridStyle"
               :get-work-hour-style="getWorkHourStyle"
               :get-event-color="getEventColor"
+              :get-event-participants="getCalendarEventParticipants"
               :now-y="nowY"
               :get-events="getEvents"
               :open-event="openEventEditor"
@@ -284,6 +285,7 @@ const {
   entityEvent,
   chipFilters,
   events,
+  getCalendarEventParticipants,
   getEventColor,
   getEvents,
   getPersonName,

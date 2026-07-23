@@ -211,8 +211,33 @@ export function getCalendarEventTitle(event: CalendarEvent, fallbackLabel: strin
   return event.event?.title || event.name || fallbackLabel
 }
 
-export function getCalendarEventDescription(event: CalendarEvent): string {
-  return event.event?.description || ''
+export function getCalendarEventOnlineMeetingUrl(event: CalendarEvent): string | null {
+  const record = event.event as
+    | (Partial<EventItem> & {
+        onlineMeetingUrl?: string | null
+        online_meeting_url?: string | null
+      })
+    | undefined
+
+  return normalizeOnlineMeetingUrl(
+    record?.onlineMeetingURL ?? record?.onlineMeetingUrl ?? record?.online_meeting_url,
+  )
+}
+
+export function normalizeOnlineMeetingUrl(url: string | null | undefined): string | null {
+  const value = url?.trim()
+  if (!value) {
+    return null
+  }
+
+  try {
+    const parsedUrl = new URL(value)
+    return parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:'
+      ? parsedUrl.toString()
+      : null
+  } catch {
+    return null
+  }
 }
 
 export function getCalendarEventIcon(event: CalendarEvent) {
