@@ -26,6 +26,48 @@ const createTemplateField = (
 });
 
 describe('GenericPayloadService', () => {
+  it('removes client-managed timestamps and a null handle from mutation payloads', () => {
+    const referenceService = {
+      reduceReferenceFields: jest.fn(),
+    };
+    const service = new GenericPayloadService(
+      referenceService as unknown as GenericReferenceService,
+    );
+
+    expect(
+      service.sanitizeClientMutationPayload({
+        handle: null,
+        title: 'Open',
+        createdAt: '2026-07-20T09:17:59.247Z',
+        updatedAt: '2026-07-23T10:01:16.189Z',
+      }),
+    ).toEqual({
+      title: 'Open',
+    });
+  });
+
+  it.each([3, 'external-key', 0])(
+    'keeps an explicitly supplied non-null handle (%p)',
+    (handle) => {
+      const referenceService = {
+        reduceReferenceFields: jest.fn(),
+      };
+      const service = new GenericPayloadService(
+        referenceService as unknown as GenericReferenceService,
+      );
+
+      expect(
+        service.sanitizeClientMutationPayload({
+          handle,
+          createdAt: null,
+          updatedAt: null,
+        }),
+      ).toEqual({
+        handle,
+      });
+    },
+  );
+
   it('removes auto-increment and read-only fields on create payloads', () => {
     const referenceService = {
       reduceReferenceFields: jest.fn(

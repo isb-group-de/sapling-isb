@@ -142,6 +142,10 @@ Payload is the generic record data.
 Rules:
 
 - Do not send autoincrement primary keys.
+- For compatibility with full-record clients, top-level `createdAt` and
+  `updatedAt` values are always discarded. A top-level `handle: null` is treated
+  as if the property was omitted; non-null handles continue through normal
+  primary-key handling and validation.
 - Required fields come from template metadata.
 - Relation fields can usually be sent as handles or relation-like values accepted by the payload service.
 - Custom fields can be sent in a nested `customFields` object, for example
@@ -176,6 +180,12 @@ request's target handle, the backend treats it purely as record identity and
 removes it before field-permission checks, change logging, scripts, and ORM
 assignment. A different handle remains an explicit field update and is checked
 normally.
+
+Top-level `createdAt` and `updatedAt` values are discarded before permission
+checks and mutation processing, and `handle: null` is treated as an omitted
+field. Clients that need optimistic concurrency must use `expectedUpdatedAt` or
+the `_saplingConcurrency` metadata contract instead of the ordinary
+`updatedAt` property.
 
 ### Atomic Bulk Update
 

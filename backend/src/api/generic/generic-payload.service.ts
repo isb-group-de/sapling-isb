@@ -20,6 +20,21 @@ export class GenericPayloadService {
     private readonly genericReferenceService: GenericReferenceService,
   ) {}
 
+  sanitizeClientMutationPayload(
+    data: Record<string, any>,
+  ): Record<string, any> {
+    const sanitizedPayload = { ...data };
+
+    delete sanitizedPayload.createdAt;
+    delete sanitizedPayload.updatedAt;
+
+    if (sanitizedPayload.handle === null) {
+      delete sanitizedPayload.handle;
+    }
+
+    return sanitizedPayload;
+  }
+
   prepareCreatePayload(
     template: EntityTemplateDto[] = [],
     data: Record<string, any>,
