@@ -7,6 +7,7 @@ import { i18n } from '@/i18n'
 import type { EntityTemplate } from '@/entity/structure'
 import {
   applyFormConfigOverlay,
+  getDefaultFormConfigHandle,
   type FormConfigMenuItem,
   type FormConfigSelectionHandle,
 } from '@/composables/dialog/saplingDialogEdit.utils'
@@ -32,9 +33,7 @@ export function useSaplingTableFormConfig(
       ) ?? null,
   )
   const baseTemplates = computed(() =>
-    selectedFormConfigHandle.value !== null && systemTemplates.value.length > 0
-      ? systemTemplates.value
-      : getFallbackTemplates(),
+    systemTemplates.value.length > 0 ? systemTemplates.value : getFallbackTemplates(),
   )
   const entityTemplates = computed(() =>
     applyFormConfigOverlay(baseTemplates.value, selectedFormConfig.value?.config ?? null),
@@ -102,7 +101,7 @@ export function useSaplingTableFormConfig(
 
       systemTemplates.value = templates
       formConfigs.value = configs
-      selectedFormConfigHandle.value = null
+      selectedFormConfigHandle.value = getDefaultFormConfigHandle(configs)
     } catch {
       if (requestId === latestRequestId && isCurrent()) {
         systemTemplates.value = []

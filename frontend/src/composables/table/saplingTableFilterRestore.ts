@@ -1,7 +1,7 @@
 import type { ColumnFilterItem, EntityTemplate } from '@/entity/structure'
 import type { SaplingGenericItem } from '@/entity/entity'
 import type { FilterQuery } from '@/services/api.generic.service'
-import { isManyToOneTemplate } from '@/utils/saplingTableUtil'
+import { isFilterableTableColumn, isManyToOneTemplate } from '@/utils/saplingTableUtil'
 import { getColumnTemplate } from './saplingTableColumnFilterState'
 import {
   createRelationFilterItem,
@@ -23,7 +23,7 @@ export function extractColumnFiltersFromFilterQuery(
   return Object.fromEntries(
     Array.from(restoredFilters.entries()).flatMap(([key, filter]) => {
       const template = getColumnTemplate(entityTemplates, key)
-      if (!template) {
+      if (!template || !isFilterableTableColumn(template)) {
         return []
       }
 
@@ -191,7 +191,7 @@ function collectRestoredColumnFilters(
     }
 
     const template = getColumnTemplate(entityTemplates, key)
-    if (!template) {
+    if (!template || !isFilterableTableColumn(template)) {
       continue
     }
 
@@ -235,7 +235,11 @@ function pruneRestoredFilterNode(
     }
 
     const template = getColumnTemplate(entityTemplates, key)
-    if (template && restoreColumnFilterFromClause(template, value)) {
+    if (
+      template &&
+      isFilterableTableColumn(template) &&
+      restoreColumnFilterFromClause(template, value)
+    ) {
       return
     }
 
@@ -302,7 +306,7 @@ function tryCollectRelationOrClause(
 
     const [key, value] = entries[0]
     const template = getColumnTemplate(entityTemplates, key)
-    if (!template || !isManyToOneTemplate(template)) {
+    if (!template || !isFilterableTableColumn(template) || !isManyToOneTemplate(template)) {
       return false
     }
 

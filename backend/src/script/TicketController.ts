@@ -155,9 +155,6 @@ export class TicketController extends ScriptClass {
     const creatorCompanyHandle = this.normalizeNumericHandle(
       this.extractHandleValue(mergedTicket.creatorCompany),
     );
-    const assigneeCompanyHandle = this.normalizeNumericHandle(
-      this.extractHandleValue(mergedTicket.assigneeCompany),
-    );
     const explicitContractHandle = this.normalizeNumericHandle(
       this.extractHandleValue(mergedTicket.contract),
     );
@@ -173,9 +170,6 @@ export class TicketController extends ScriptClass {
         : null) ??
       (creatorCompanyHandle != null
         ? await this.findDefaultContractForCompany(creatorCompanyHandle)
-        : null) ??
-      (assigneeCompanyHandle != null
-        ? await this.findDefaultContractForCompany(assigneeCompanyHandle)
         : null);
 
     if (

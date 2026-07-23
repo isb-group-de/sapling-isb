@@ -1,7 +1,7 @@
 import { flushPromises } from '@vue/test-utils'
 import { nextTick, ref } from 'vue'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import type { ColumnFilterItem } from '@/entity/structure'
+import type { ColumnFilterItem, EntityTemplate } from '@/entity/structure'
 import type { SaplingTableTestState } from './useSaplingTable.test-support'
 import {
   apiFindMock,
@@ -248,5 +248,66 @@ describe('useSaplingTable initialization and loading', () => {
 
     expect(getEntityTemplateMock).toHaveBeenCalledWith('partner')
     expect(listFormConfigsMock).toHaveBeenCalledWith('partner')
+  })
+
+  it('selects the configured default view and keeps the standard view metadata-only', async () => {
+    vi.useFakeTimers()
+    loadGenericMock.mockResolvedValue(undefined)
+    apiFindMock.mockResolvedValue({ data: [], meta: { total: 0 } })
+    getEntityTemplateMock.mockResolvedValue([
+      {
+        name: 'name',
+        key: 'name',
+        title: 'Name',
+        type: 'string',
+        options: [],
+        isAutoIncrement: false,
+        isPersistent: true,
+        tableVisible: false,
+        mobileVisible: false,
+        isReference: false,
+        referencedPks: [],
+      } as EntityTemplate,
+    ])
+    listFormConfigsMock.mockResolvedValue([
+      {
+        handle: 7,
+        name: 'Tickets',
+        entity: 'partner',
+        scope: 'person',
+        scopeHandle: '1',
+        isActive: true,
+        isDefault: true,
+        version: 1,
+        config: {
+          schema: 'sapling.form-config.v1',
+          entityHandle: 'partner',
+          fields: {
+            name: {
+              tableVisible: true,
+            },
+          },
+        },
+      },
+    ])
+
+    const wrapper = mountTestHost(ref('partner'))
+    await flushPromises()
+    await vi.advanceTimersByTimeAsync(100)
+    await flushPromises()
+
+    expect(wrapper.vm.selectedFormConfigHandle).toBe(7)
+    expect(wrapper.vm.selectedFormConfigLabel).toBe('Tickets')
+    expect(
+      wrapper.vm.entityTemplates.find((template) => template.name === 'name')?.tableVisible,
+    ).toBe(true)
+
+    wrapper.vm.selectFormConfig(null)
+    await nextTick()
+
+    expect(wrapper.vm.selectedFormConfigHandle).toBeNull()
+    expect(
+      wrapper.vm.entityTemplates.find((template) => template.name === 'name')?.tableVisible,
+    ).toBe(false)
   })
 })

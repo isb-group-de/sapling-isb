@@ -230,4 +230,121 @@ describe('TicketController', () => {
       new Date('2026-04-27T08:00:00.000Z'),
     );
   });
+
+  it('does not use an assignee company contract when the customer has none', async () => {
+    const assigneeContract = {
+      handle: 23,
+      defaultSupportQueue: {
+        handle: 'internal',
+        team: { handle: 'internal-team' },
+        defaultSlaPolicy: {
+          handle: 'internal-sla',
+          firstResponseHours: 1,
+          resolutionHours: 4,
+        },
+      },
+      defaultSupportTeam: { handle: 'internal-team' },
+      slaPolicy: {
+        handle: 'internal-sla',
+        firstResponseHours: 1,
+        resolutionHours: 4,
+      },
+    };
+    const em = {
+      find: jest
+        .fn<
+          (
+            entity: unknown,
+            filter: object,
+            options: object,
+          ) => Promise<object[]>
+        >()
+        .mockImplementation(async (_entity, filter, _options) =>
+          (filter as { company?: { handle?: number } }).company?.handle === 10
+            ? [assigneeContract]
+            : [],
+        ),
+      findOne: jest.fn<() => Promise<object | null>>().mockResolvedValue(null),
+    };
+    const controller = new TicketController(
+      { handle: 'ticket' } as never,
+      { handle: 99 } as never,
+      em as never,
+    );
+
+    const result = await controller.beforeInsert([
+      {
+        creatorCompany: 30,
+        assigneeCompany: 10,
+        startDate: '2026-07-23T13:07:00.000Z',
+        status: 'open',
+      },
+    ] as unknown as TicketItem[]);
+    const derivedTicket = result.items[0] as Record<string, unknown>;
+
+    expect(em.find).toHaveBeenCalledTimes(1);
+    expect(em.find).toHaveBeenCalledWith(
+      expect.anything(),
+      {
+        company: { handle: 30 },
+        isActive: true,
+      },
+      expect.anything(),
+    );
+    expect(derivedTicket).not.toHaveProperty('contract');
+    expect(derivedTicket).not.toHaveProperty('supportQueue');
+    expect(derivedTicket).not.toHaveProperty('supportTeam');
+    expect(derivedTicket).not.toHaveProperty('slaPolicy');
+    expect(derivedTicket).not.toHaveProperty('firstResponseDueAt');
+    expect(derivedTicket).not.toHaveProperty('resolutionDueAt');
+  });
+
+  it('derives optional SLA deadlines from a queue without a contract', async () => {
+    const queue = {
+      handle: 'platform_ops',
+      team: { handle: 'platform' },
+      defaultSlaPolicy: {
+        handle: 'mission_critical',
+        firstResponseHours: 1,
+        resolutionHours: 8,
+      },
+    };
+    const em = {
+      find: jest.fn<() => Promise<object[]>>().mockResolvedValue([]),
+      findOne: jest
+        .fn<(entity: unknown) => Promise<object | null>>()
+        .mockImplementation(async (entity) =>
+          String(entity).includes('SupportQueueItem') ? queue : null,
+        ),
+    };
+    const controller = new TicketController(
+      { handle: 'ticket' } as never,
+      { handle: 99 } as never,
+      em as never,
+    );
+
+    const result = await controller.beforeInsert([
+      {
+        creatorCompany: 30,
+        contract: null,
+        supportQueue: 'platform_ops',
+        startDate: '2026-07-23T13:07:00.000Z',
+        status: 'open',
+      },
+    ] as unknown as TicketItem[]);
+    const derivedTicket = result.items[0] as Record<string, unknown>;
+
+    expect(derivedTicket.contract).toBeNull();
+    expect(derivedTicket).toMatchObject({
+      supportQueue: 'platform_ops',
+      supportTeam: 'platform',
+      slaPolicy: 'mission_critical',
+    });
+    expect(derivedTicket.firstResponseDueAt).toEqual(
+      new Date('2026-07-23T14:07:00.000Z'),
+    );
+    expect(derivedTicket.resolutionDueAt).toEqual(
+      new Date('2026-07-23T21:07:00.000Z'),
+    );
+  });
 });

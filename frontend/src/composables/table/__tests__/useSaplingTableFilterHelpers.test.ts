@@ -6,6 +6,7 @@ import {
   isEmptyColumnFilterItem,
   normalizeColumnFilterItem,
   normalizeTableColumnTemplate,
+  removeRestoredColumnFiltersFromFilterQuery,
 } from '../useSaplingTableFilterHelpers'
 
 describe('useSaplingTableFilterHelpers', () => {
@@ -163,6 +164,38 @@ describe('useSaplingTableFilterHelpers', () => {
         operator: 'gte',
         value: formatLocalDateTimeInput(monthStartUtc),
       },
+    })
+  })
+
+  it('keeps non-editable generic-reference url filters in the parent filter', () => {
+    const templates = [
+      createTemplate({
+        name: 'entity',
+        type: 'string',
+        kind: 'm:1',
+        referenceName: 'entity',
+        referencedPks: ['handle'],
+      }),
+      createTemplate({
+        name: 'reference',
+        type: 'string',
+        options: ['isSystem'],
+      }),
+    ]
+    const filterQuery = {
+      entity: 'company',
+      reference: '4',
+    }
+
+    expect(extractColumnFiltersFromFilterQuery(templates, filterQuery)).toEqual({
+      entity: {
+        operator: 'eq',
+        value: '',
+        relationItems: [{ handle: 'company' }],
+      },
+    })
+    expect(removeRestoredColumnFiltersFromFilterQuery(templates, filterQuery)).toEqual({
+      reference: '4',
     })
   })
 })
