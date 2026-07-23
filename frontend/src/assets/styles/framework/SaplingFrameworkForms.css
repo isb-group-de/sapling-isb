@@ -73,6 +73,66 @@
   min-width: var(--sapling-field-color-min-width);
 }
 
+.sapling-field-icon {
+  min-width: 0;
+}
+
+.sapling-field-icon__input .v-field,
+.sapling-field-icon__input .v-field__input,
+.sapling-field-icon__input .v-field__prepend-inner,
+.sapling-field-icon__input .v-field__append-inner {
+  cursor: pointer;
+}
+
+.sapling-field-icon__input--disabled .v-field,
+.sapling-field-icon__input--disabled .v-field__input,
+.sapling-field-icon__input--disabled .v-field__prepend-inner,
+.sapling-field-icon__input--disabled .v-field__append-inner {
+  cursor: not-allowed;
+}
+
+.sapling-field-icon__body,
+.sapling-field-icon__content {
+  overflow: hidden;
+}
+
+.sapling-field-icon__content {
+  padding-top: var(--sapling-space-sm);
+}
+
+.sapling-field-icon__search {
+  flex: 0 0 auto;
+}
+
+.sapling-field-icon__grid {
+  display: grid;
+  flex: 1 1 auto;
+  grid-template-columns: repeat(auto-fill, minmax(var(--sapling-control-size-xl), 1fr));
+  align-content: start;
+  gap: var(--sapling-gap-sm);
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--sapling-space-3xs);
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
+.sapling-field-icon__option {
+  width: 100%;
+  min-width: 0;
+  height: var(--sapling-control-size-xl) !important;
+  padding: 0 !important;
+}
+
+.sapling-field-icon__empty {
+  flex: 1 1 auto;
+  justify-content: center;
+}
+
+.sapling-field-icon__pagination {
+  flex: 0 0 auto;
+}
+
 .sapling-field-link--disabled .v-field,
 .sapling-field-mail--disabled .v-field,
 .sapling-field-phone--disabled .v-field {

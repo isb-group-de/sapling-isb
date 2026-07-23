@@ -161,6 +161,10 @@ Selection examples:
 
 If a new field behavior is generally useful, add a Sapling option and renderer branch rather than special-casing one entity.
 
+The shared icon picker renders `isIcon` fields as a searchable, paginated icon
+grid. Keep icon-selection behavior in `SaplingFieldIcon.vue` so every dynamic
+entity dialog receives the same visual picker.
+
 Phone fields use the current person's company country when available. If that
 country is missing, the frontend falls back to
 `VITE_SAPLING_DEFAULT_PHONE_COUNTRY` / `VITE_SAPLING_DEFAULT_PHONE_DIALING_CODE`;

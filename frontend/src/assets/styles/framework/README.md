@@ -128,7 +128,7 @@ Use these shared patterns before creating a new class family:
   `sapling-account-dialog__content`, `sapling-workhours-card`
 - Forms: `sapling-upload`, `sapling-upload-dropzone`,
   `sapling-field-color`, `sapling-field-select__activator`,
-  `sapling-field-generic-reference`
+  `sapling-field-generic-reference`, `sapling-field-icon`
 - Editors: `sapling-codemirror`, `sapling-markdown-content`,
   `sapling-markdown-workspace`, `sapling-markdown-pane`,
   `sapling-markdown-preview`

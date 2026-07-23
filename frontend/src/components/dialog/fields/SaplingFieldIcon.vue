@@ -1,19 +1,120 @@
 <template>
-  <v-select
-    :items="items"
-    :model-value="modelValueProxy"
-    item-title="name"
-    item-value="name"
-    :label="computedLabel"
-    :disabled="isDisabled"
-    :rules="rules"
-    hide-details="auto"
-    autocomplete="off"
-    @update:model-value="updateModelValue"
-  />
+  <div class="sapling-field-icon">
+    <v-text-field
+      data-testid="icon-picker-trigger"
+      class="sapling-field-icon__input"
+      :class="{ 'sapling-field-icon__input--disabled': isDisabled }"
+      :model-value="modelValueProxy"
+      :label="computedLabel"
+      :disabled="isDisabled"
+      :rules="rules"
+      :aria-expanded="dialog"
+      aria-haspopup="dialog"
+      append-inner-icon="mdi-view-grid-outline"
+      hide-details="auto"
+      autocomplete="off"
+      readonly
+      @click="openDialog"
+      @click:append-inner="openDialog"
+      @keydown.enter.prevent="openDialog"
+      @keydown.space.prevent="openDialog"
+    >
+      <template v-if="modelValueProxy" #prepend-inner>
+        <v-icon size="20">{{ modelValueProxy }}</v-icon>
+      </template>
+    </v-text-field>
+
+    <v-dialog
+      v-if="dialog"
+      v-model="dialog"
+      class="sapling-dialog-medium"
+      @keydown.esc.stop="closeDialog"
+    >
+      <SaplingDialogCard
+        class="sapling-account-dialog sapling-field-icon__dialog"
+        :close="closeDialog"
+      >
+        <SaplingDialogShell
+          fill-shell
+          body-class="sapling-account-dialog__body sapling-field-icon__body"
+          :show-divider="false"
+        >
+          <template #hero>
+            <SaplingDialogHero :eyebrow="t('global.select')" :title="computedLabel" />
+          </template>
+
+          <template #body>
+            <div class="sapling-account-dialog__content sapling-field-icon__content">
+              <v-text-field
+                data-testid="icon-picker-search"
+                class="sapling-field-icon__search"
+                :model-value="searchQuery"
+                :label="t('global.search')"
+                prepend-inner-icon="mdi-magnify"
+                density="compact"
+                hide-details
+                clearable
+                autofocus
+                @update:model-value="updateSearchQuery"
+              />
+
+              <div
+                v-if="pagedItems.length"
+                class="sapling-field-icon__grid"
+                role="group"
+                :aria-label="computedLabel"
+              >
+                <v-btn
+                  v-for="icon in pagedItems"
+                  :key="icon.name"
+                  class="sapling-field-icon__option"
+                  :class="{
+                    'sapling-field-icon__option--selected': icon.name === modelValueProxy,
+                  }"
+                  :data-icon-name="icon.name"
+                  :title="icon.name"
+                  :aria-label="icon.name"
+                  :aria-pressed="icon.name === modelValueProxy"
+                  :color="icon.name === modelValueProxy ? 'primary' : undefined"
+                  :variant="icon.name === modelValueProxy ? 'flat' : 'tonal'"
+                  @click="selectIcon(icon.name)"
+                >
+                  <v-icon size="26">{{ icon.name }}</v-icon>
+                </v-btn>
+              </div>
+
+              <div v-else class="sapling-inline-empty sapling-field-icon__empty" role="status">
+                <v-icon size="24">mdi-magnify-close</v-icon>
+                <span>{{ t('global.noData') }}</span>
+              </div>
+
+              <v-pagination
+                v-if="pageCount > 1"
+                v-model="page"
+                class="sapling-field-icon__pagination"
+                :length="pageCount"
+                :total-visible="7"
+                density="comfortable"
+                rounded
+              />
+            </div>
+          </template>
+
+          <template #actions>
+            <SaplingActionClose :close="closeDialog" />
+          </template>
+        </SaplingDialogShell>
+      </SaplingDialogCard>
+    </v-dialog>
+  </div>
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+import SaplingActionClose from '@/components/actions/SaplingActionClose.vue'
+import SaplingDialogHero from '@/components/common/SaplingDialogHero.vue'
+import SaplingDialogShell from '@/components/common/SaplingDialogShell.vue'
+import SaplingDialogCard from '@/components/dialog/SaplingDialogCard.vue'
 import { useSaplingIconField } from '@/composables/fields/useSaplingIconField'
 
 const props = defineProps<{
@@ -26,8 +127,20 @@ const props = defineProps<{
 }>()
 const emit = defineEmits(['update:modelValue'])
 
-const { computedLabel, isDisabled, modelValueProxy, updateModelValue } = useSaplingIconField(
-  props,
-  emit,
-)
+const { t } = useI18n()
+
+const {
+  closeDialog,
+  computedLabel,
+  dialog,
+  isDisabled,
+  modelValueProxy,
+  openDialog,
+  page,
+  pageCount,
+  pagedItems,
+  searchQuery,
+  selectIcon,
+  updateSearchQuery,
+} = useSaplingIconField(props, emit)
 </script>
