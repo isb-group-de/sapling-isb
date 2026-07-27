@@ -356,6 +356,7 @@ export function isTextSearchableTemplate(template?: Partial<EntityTemplate>): bo
     !isDateTemplate(template) &&
     !isTimeTemplate(template) &&
     !isNumericTemplate(template) &&
+    !hasTemplateOption(template, 'isSearchExcluded') &&
     !hasTemplateOption(template, 'isColor') &&
     !hasTemplateOption(template, 'isIcon')
   )

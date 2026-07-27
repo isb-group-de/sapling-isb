@@ -87,6 +87,7 @@ Common options:
 | --- | --- |
 | `isValue` | Primary human-readable value for lists/references |
 | `isSecurity` | Sensitive field; omitted from MCP schemas and handled as protected UI |
+| `isSearchExcluded` | Excludes a field from metadata-driven free-text searches while keeping it available for display and explicit column filters |
 | `isReadOnly` | Display-only/system-controlled field |
 | `isSystem` | System metadata such as timestamps |
 | `isMarkdown` | Markdown editor/preview field |

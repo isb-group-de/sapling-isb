@@ -49,12 +49,13 @@ const SAPLING_KANBAN_METADATA_KEY = 'sapling:kanban';
 /**
  * Enumeration of all Sapling metadata options.
  *
- * @typedef {('isCompany'|'isPerson'|'isEntity'|'isSecurity'|'isValue'|'isHideAsReference'|'isColor'|'isIcon'|'isChip'|'isReadOnly'|'isLink'|'isMail'|'isPhone'|'isOrderASC'|'isOrderDESC'|'isNavigation'|'isMarkdown'|'isSystem'|'isPercent'|'isMoney'|'isNumeric'|'isDuplicateCheck')} SaplingOption
+ * @typedef {('isCompany'|'isPerson'|'isEntity'|'isSecurity'|'isSearchExcluded'|'isValue'|'isHideAsReference'|'isColor'|'isIcon'|'isChip'|'isReadOnly'|'isLink'|'isMail'|'isPhone'|'isOrderASC'|'isOrderDESC'|'isNavigation'|'isMarkdown'|'isSystem'|'isPercent'|'isMoney'|'isNumeric'|'isDuplicateCheck')} SaplingOption
  *
  * @property isCompany           Marks property as company-related
  * @property isPerson            Marks property as person-related
  * @property isEntity            Marks property as entity-related
  * @property isSecurity          Marks property as security-related
+ * @property isSearchExcluded    Excludes property from metadata-driven free-text searches
  * @property isValue             Marks property as the primary human-readable value for the entity
  * @property isHideAsReference   Hide property when referenced
  * @property isColor             Property represents a color value

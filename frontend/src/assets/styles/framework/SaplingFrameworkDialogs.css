@@ -46,7 +46,12 @@
   display: flex;
   flex-direction: column;
   gap: var(--sapling-gap-md);
-  padding: 0;
+  padding: var(--sapling-dialog-field-label-clearance) 0 0;
+}
+
+.sapling-dialog-fill-body,
+.sapling-account-dialog__body {
+  padding-top: var(--sapling-dialog-field-label-clearance);
 }
 
 .sapling-dialog-compact-card .sapling-dialog-form-body {
@@ -748,7 +753,6 @@
 
 .sapling-bulk-update__picker {
   flex: 0 0 auto;
-  padding-top: var(--sapling-gap-md);
 }
 
 .sapling-bulk-update__scroll {

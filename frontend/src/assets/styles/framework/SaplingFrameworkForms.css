@@ -91,13 +91,8 @@
   cursor: not-allowed;
 }
 
-.sapling-field-icon__body,
-.sapling-field-icon__content {
+.sapling-field-icon__body {
   overflow: hidden;
-}
-
-.sapling-field-icon__content {
-  padding-top: var(--sapling-space-sm);
 }
 
 .sapling-field-icon__search {
@@ -156,6 +151,11 @@
   min-width: var(--sapling-control-height-compact);
 }
 
+.sapling-field-single-select--multiline .v-field__input {
+  min-height: var(--sapling-control-height-reference-multiline);
+  padding-block: var(--sapling-space-md-plus) var(--sapling-space-sm);
+}
+
 .sapling-field-select__chip,
 .sapling-field-single-select__chip {
   height: auto;
@@ -166,6 +166,7 @@
 .sapling-field-single-select__selection {
   display: flex;
   flex-direction: column;
+  gap: var(--sapling-gap-3xs);
   min-width: 0;
   line-height: 1.2;
 }

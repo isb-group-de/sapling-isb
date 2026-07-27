@@ -274,6 +274,44 @@ describe('SaplingFieldSingleSelect reference dialog', () => {
     expect(wrapper.emitted('update:modelValue')).toBeUndefined()
   })
 
+  it('marks nested value labels as multiline without changing single-line selections', async () => {
+    const singleLineWrapper = mountField({ handle: 'company-1', name: 'Sapling GmbH' })
+
+    expect(singleLineWrapper.get('.sapling-field-single-select').classes()).not.toContain(
+      'sapling-field-single-select--multiline',
+    )
+
+    tableState.entityTemplates.value = [
+      {
+        key: 'name',
+        name: 'name',
+        type: 'string',
+        isPersistent: true,
+        options: ['isValue'],
+      },
+      {
+        key: 'country',
+        name: 'country',
+        type: 'CountryItem',
+        isPersistent: true,
+        isReference: true,
+        kind: 'm:1',
+        referenceName: 'country',
+        options: ['isValue'],
+      },
+    ]
+    const multilineWrapper = mountField({
+      handle: 'company-2',
+      name: 'Sapling AG',
+      country: { handle: 'de', name: 'Germany' },
+    })
+    await flushPromises()
+
+    expect(multilineWrapper.get('.sapling-field-single-select').classes()).toContain(
+      'sapling-field-single-select--multiline',
+    )
+  })
+
   it('falls back to a read-only dialog without update permission', async () => {
     tableState.entityPermission.value = {
       entityHandle: 'company',

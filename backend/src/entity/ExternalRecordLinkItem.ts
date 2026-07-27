@@ -71,7 +71,7 @@ export class ExternalRecordLinkItem {
   reference!: string;
 
   @ApiProperty()
-  @Sapling(['isValue'])
+  @Sapling(['isValue', 'isSearchExcluded'])
   @SaplingForm({
     order: 100,
     group: 'externalRecordLink.groupExternalKey',

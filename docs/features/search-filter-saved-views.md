@@ -125,6 +125,8 @@ The backend derives searchable fields from entity metadata:
 - only entities the current user may read and show are searched
 - visible entities are included unless `EntityItem.canRead` is explicitly `false`
 - string-like, persistent, non-security, non-system fields are searched
+- fields marked with `isSearchExcluded` are omitted from metadata-driven
+  free-text search, including direct `isValue` fields of readable references
 - fields marked with `isValue` are preferred for labels and ranking
 - many-to-one and one-to-one references marked with `isValue` contribute the
   readable `isValue` fields of their target entity to search and labels
@@ -135,6 +137,10 @@ a fallback table path. The frontend renders them in the `Datensätze` / `Records
 group and opens the matching record through the global generic record dialog.
 Scalar value fields form the first label line; each value reference is rendered
 on its own following line.
+
+The same `isSearchExcluded` option is honored by generic table free-text search
+and reference selectors. It does not hide the field, remove it from record
+labels, or prevent users from applying an explicit column filter.
 
 Use AI semantic search instead when the user asks natural-language questions
 over long text such as ticket problems, solutions, knowledge articles, effort

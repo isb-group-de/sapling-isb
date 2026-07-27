@@ -93,6 +93,13 @@ describe('GlobalSearchService', () => {
           options: [],
         },
         {
+          name: 'externalKeyHash',
+          type: 'string',
+          isPersistent: true,
+          isReference: false,
+          options: ['isValue', 'isSearchExcluded'],
+        },
+        {
           name: 'loginPassword',
           type: 'string',
           isPersistent: true,

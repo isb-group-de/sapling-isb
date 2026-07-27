@@ -3,6 +3,7 @@ export type SaplingOption =
   | 'isPerson'
   | 'isEntity'
   | 'isSecurity'
+  | 'isSearchExcluded'
   | 'isValue'
   | 'isHideAsReference'
   | 'isColor'

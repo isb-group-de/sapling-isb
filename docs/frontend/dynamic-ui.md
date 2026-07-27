@@ -390,6 +390,11 @@ Custom dialogs should follow the shared shell pattern:
 5. Framework scroll classes for constrained content: `sapling-dialog-fill-body`, `sapling-dialog-fill-content`, and `sapling-scrollable`.
 6. Existing action components from `frontend/src/components/actions/` in the `#actions` slot.
 
+Shared dialog body classes reserve the framework's floating-label clearance above their content.
+Keep the first outlined field inside `sapling-dialog-form-body`,
+`sapling-dialog-fill-body`, or `sapling-account-dialog__body`; do not add
+feature-specific top padding to compensate for a clipped Vuetify field label.
+
 Do not hand-roll dialog footers with ad hoc `<div class="sapling-dialog-actions">` blocks. Use the action components so spacing, mobile behavior, icons, and button ordering stay consistent:
 
 | Dialog action pattern    | Component                                      |

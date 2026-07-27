@@ -394,6 +394,11 @@ describe('saplingTableUtil', () => {
     expect(isNumericTemplate(numericTemplate)).toBe(true)
     expect(isRangeTemplate(dateTemplate)).toBe(true)
     expect(isTextSearchableTemplate(createTemplate({ name: 'title' }))).toBe(true)
+    expect(
+      isTextSearchableTemplate(
+        createTemplate({ name: 'externalKeyHash', options: ['isSearchExcluded'] }),
+      ),
+    ).toBe(false)
     expect(isTextSearchableTemplate(iconTemplate)).toBe(false)
   })
 
@@ -422,6 +427,7 @@ describe('saplingTableUtil', () => {
       entityTemplates: [
         createTemplate({ name: 'title' }),
         createTemplate({ name: 'value', length: 1024 }),
+        createTemplate({ name: 'externalKeyHash', options: ['isSearchExcluded'] }),
         createTemplate({ name: 'creatorPersonEmail', isPersistent: false }),
         createTemplate({ name: 'amount', type: 'Decimal' }),
       ],
@@ -448,6 +454,10 @@ describe('saplingTableUtil', () => {
         accountManager: [
           createTemplate({ name: 'firstName', options: ['isValue'] }),
           createTemplate({ name: 'lastName', options: ['isValue'] }),
+          createTemplate({
+            name: 'externalKeyHash',
+            options: ['isValue', 'isSearchExcluded'],
+          }),
           createTemplate({ name: 'email' }),
           createTemplate({
             name: 'company',

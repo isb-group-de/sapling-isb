@@ -1,7 +1,10 @@
 <template>
   <div
     class="sapling-field-single-select"
-    :class="{ 'sapling-field-single-select--with-open-action': props.showOpenAction }"
+    :class="{
+      'sapling-field-single-select--with-open-action': props.showOpenAction,
+      'sapling-field-single-select--multiline': hasMultilineSelection,
+    }"
   >
     <v-menu
       v-model="menuOpen"
@@ -220,6 +223,9 @@ const displayedSelectedItem = computed(() =>
   getItemHandle(hydratedSelectedItem.value) === getItemHandle(selectedItem.value)
     ? hydratedSelectedItem.value
     : selectedItem.value,
+)
+const hasMultilineSelection = computed(
+  () => getValueLabelLines(displayedSelectedItem.value).length > 1,
 )
 const openActionLabel = computed(() => props.openActionLabel || t('global.editRecord'))
 const canOpenSelectedRecord = computed(
@@ -441,11 +447,7 @@ watch(
 
     const item = selectedItem.value
     const handle = getItemHandle(item)
-    if (
-      !item ||
-      handle == null ||
-      !hasIncompleteValueReference(item, entityTemplates.value)
-    ) {
+    if (!item || handle == null || !hasIncompleteValueReference(item, entityTemplates.value)) {
       return
     }
 

@@ -409,6 +409,7 @@ export class GlobalSearchService {
       field.isPersistent !== false &&
       !field.isReference &&
       !field.options?.includes('isSecurity') &&
+      !field.options?.includes('isSearchExcluded') &&
       !field.options?.includes('isSystem') &&
       this.isStringLikeField(field)
     );
