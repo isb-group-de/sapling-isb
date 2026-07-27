@@ -10,6 +10,7 @@ import {
   filterTableHeadersByReferencePermission,
   getAllowedColumnFilterOperators,
   getEntityValueLabel,
+  getEntityValueLabelLines,
   getDefaultColumnFilterOperatorForTemplate,
   getEditDialogHeaders,
   getGenericReferenceEntityHandle,
@@ -145,6 +146,35 @@ describe('saplingTableUtil', () => {
         (header) => header.key,
       ),
     ).toEqual(['title', 'longNotes'])
+  })
+
+  it('includes readable nested isValue relations for reference labels', () => {
+    const accountManager = createTemplate({
+      name: 'accountManager',
+      kind: 'm:1',
+      isReference: true,
+      referenceName: 'person',
+    })
+    const personCompany = createTemplate({
+      name: 'company',
+      kind: 'm:1',
+      isReference: true,
+      referenceName: 'company',
+      options: ['isValue'],
+    })
+    const permissions = [
+      { entityHandle: 'person', allowRead: true },
+      { entityHandle: 'company', allowRead: true },
+    ]
+
+    expect(
+      getReadableReferenceRelationNames(
+        [accountManager],
+        permissions,
+        ['accountManager'],
+        (referenceName) => (referenceName === 'person' ? [personCompany] : []),
+      ),
+    ).toEqual(['accountManager', 'accountManager.company'])
   })
 
   it('projects only list-visible, mobile, value, and primary fields', () => {
@@ -402,6 +432,43 @@ describe('saplingTableUtil', () => {
     })
   })
 
+  it('searches scalar isValue fields of direct references without following nested references', () => {
+    const filter = buildTableFilter({
+      search: 'Schneider',
+      entityTemplates: [
+        createTemplate({ name: 'name' }),
+        createTemplate({
+          name: 'accountManager',
+          kind: 'm:1',
+          referenceName: 'person',
+          referencedPks: ['id'],
+        }),
+      ],
+      referenceSearchTemplates: {
+        accountManager: [
+          createTemplate({ name: 'firstName', options: ['isValue'] }),
+          createTemplate({ name: 'lastName', options: ['isValue'] }),
+          createTemplate({ name: 'email' }),
+          createTemplate({
+            name: 'company',
+            kind: 'm:1',
+            referenceName: 'company',
+            referencedPks: ['id'],
+            options: ['isValue'],
+          }),
+        ],
+      },
+    })
+
+    expect(filter).toEqual({
+      $or: [
+        { name: { $ilike: '%Schneider%' } },
+        { accountManager: { firstName: { $ilike: '%Schneider%' } } },
+        { accountManager: { lastName: { $ilike: '%Schneider%' } } },
+      ],
+    })
+  })
+
   it('matches every whitespace-separated search term across all searchable columns', () => {
     const filter = buildTableFilter({
       search: '  Anna   Beispiel  ',
@@ -552,6 +619,38 @@ describe('saplingTableUtil', () => {
         [createTemplate({ name: 'customer', options: ['isValue'] })],
       ),
     ).toBe('2026#00015')
+  })
+
+  it('renders isValue references from their own value metadata on separate lines', () => {
+    const personTemplates = [
+      createTemplate({ name: 'firstName', options: ['isValue'] }),
+      createTemplate({ name: 'lastName', options: ['isValue'] }),
+      createTemplate({
+        name: 'company',
+        type: 'CompanyItem',
+        isReference: true,
+        kind: 'm:1',
+        referenceName: 'company',
+        options: ['isValue'],
+      }),
+    ]
+    const item = {
+      handle: 42,
+      firstName: 'Max',
+      lastName: 'Mustermann',
+      company: { handle: 7, name: 'Standardfirma GmbH' },
+    }
+    const referenceTemplates = {
+      company: [createTemplate({ name: 'name', options: ['isValue'] })],
+    }
+
+    expect(getEntityValueLabel(item, personTemplates, referenceTemplates)).toBe(
+      'Max Mustermann\nStandardfirma GmbH',
+    )
+    expect(getEntityValueLabelLines(item, personTemplates, referenceTemplates)).toEqual([
+      { value: 'Max Mustermann', isReference: false },
+      { value: 'Standardfirma GmbH', isReference: true },
+    ])
   })
 
   it('extracts entity and handle data for generic references', () => {

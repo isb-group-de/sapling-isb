@@ -6,6 +6,8 @@ const mocks = vi.hoisted(() => ({
   find: vi.fn(),
   update: vi.fn(),
   loadGeneric: vi.fn(),
+  permissions: [] as Array<{ entityHandle: string; allowRead: boolean }>,
+  referenceStates: {} as Record<string, Record<string, unknown>>,
   referenceState: {
     isLoading: false,
     entity: { handle: 'country' },
@@ -21,12 +23,12 @@ vi.mock('@/services/api.generic.service', () => ({
 vi.mock('@/stores/genericStore', () => ({
   useGenericStore: () => ({
     loadGeneric: mocks.loadGeneric,
-    getState: () => mocks.referenceState,
+    getState: (key: string) => mocks.referenceStates[key] ?? mocks.referenceState,
   }),
 }))
 
 vi.mock('@/stores/currentPermissionStore', () => ({
-  useCurrentPermissionStore: () => ({ accumulatedPermission: [] }),
+  useCurrentPermissionStore: () => ({ accumulatedPermission: mocks.permissions }),
 }))
 
 vi.mock('vue-i18n', () => ({
@@ -60,6 +62,8 @@ function createRow(column: SaplingTableHeaderItem, referenceValue: SaplingGeneri
 describe('useSaplingTableRow relation dialogs', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mocks.permissions = []
+    mocks.referenceStates = {}
     mocks.referenceState.entityTemplates = [
       { key: 'name', name: 'name', type: 'string' } as EntityTemplate,
       {
@@ -77,6 +81,90 @@ describe('useSaplingTableRow relation dialogs', () => {
         referenceName: 'countryProfile',
       } as EntityTemplate,
     ]
+  })
+
+  it('resolves a circular value reference from the current table record', () => {
+    mocks.permissions = [
+      { entityHandle: 'person', allowRead: true },
+      { entityHandle: 'company', allowRead: true },
+    ]
+    mocks.referenceStates.person = {
+      isLoading: false,
+      entity: { handle: 'person' },
+      entityPermission: { allowUpdate: true },
+      entityTemplates: [
+        {
+          key: 'firstName',
+          name: 'firstName',
+          type: 'string',
+          options: ['isValue'],
+        },
+        {
+          key: 'lastName',
+          name: 'lastName',
+          type: 'string',
+          options: ['isValue'],
+        },
+        {
+          key: 'company',
+          name: 'company',
+          type: 'CompanyItem',
+          kind: 'm:1',
+          isReference: true,
+          referenceName: 'company',
+          options: ['isValue'],
+        },
+      ],
+    }
+    mocks.referenceStates.company = {
+      isLoading: false,
+      entity: { handle: 'company' },
+      entityPermission: { allowUpdate: true },
+      entityTemplates: [
+        {
+          key: 'name',
+          name: 'name',
+          type: 'string',
+          options: ['isValue'],
+        },
+      ],
+    }
+    const emit = vi.fn()
+    const props: UseSaplingTableRowProps = {
+      item: {
+        handle: 4,
+        name: 'Bauer IT Solutions',
+        accountManager: {
+          handle: 7,
+          firstName: 'Tom',
+          lastName: 'Schneider',
+          company: { handle: 4 },
+        },
+      },
+      columns: [
+        {
+          key: 'accountManager',
+          name: 'accountManager',
+          kind: 'm:1',
+          referenceName: 'person',
+        } as SaplingTableHeaderItem,
+      ],
+      index: 0,
+      entityHandle: 'company',
+      entity: null,
+      entityPermission: null,
+      entityTemplates: [],
+      canNavigate: false,
+      canShowInformation: false,
+      showActions: false,
+    }
+
+    const row = useSaplingTableRow(props, emit)
+
+    expect(row.getCompactPanelTitleLines('accountManager')).toEqual([
+      { value: 'Tom Schneider', isReference: false },
+      { value: 'Bauer IT Solutions', isReference: true },
+    ])
   })
 
   it('loads the complete referenced record before opening the edit dialog', async () => {

@@ -118,10 +118,19 @@
               >
                 <v-icon class="pr-3" left>mdi-eye</v-icon>
                 <span
-                  v-if="getCompactPanelTitle(col.key || '')"
-                  class="sapling-inline-pre sapling-text-truncate sapling-button-truncate__label"
+                  v-if="getCompactPanelTitleLines(col.key || '').length > 0"
+                  class="sapling-table-reference-label sapling-button-truncate__label"
                 >
-                  {{ getCompactPanelTitle(col.key || '') }}
+                  <span
+                    v-for="line in getCompactPanelTitleLines(col.key || '')"
+                    :key="`${line.isReference}:${line.value}`"
+                    class="sapling-table-reference-label__line"
+                    :class="{
+                      'sapling-table-reference-label__line--reference': line.isReference,
+                    }"
+                  >
+                    {{ line.value }}
+                  </span>
                 </span>
               </v-btn>
               <SaplingDialogEdit
@@ -308,7 +317,7 @@ const {
   isReferenceColumn,
   canReadReferenceColumn,
   isReferenceLoading,
-  getCompactPanelTitle,
+  getCompactPanelTitleLines,
   isDateTimeColumn,
   isDateColumn,
   isTimeColumn,

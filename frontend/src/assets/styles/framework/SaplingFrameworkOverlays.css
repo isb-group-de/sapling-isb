@@ -222,11 +222,19 @@
   gap: var(--sapling-gap-2xs);
 }
 
-.sapling-command-palette__item-label,
 .sapling-command-palette__item-context {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.sapling-command-palette__item-label {
+  display: -webkit-box;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .sapling-command-palette__item-hint {

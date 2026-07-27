@@ -23,6 +23,7 @@ import {
 import {
   buildTableFilter,
   buildTableOrderBy,
+  canReadReferenceTemplate,
   getListProjectionFieldNames,
   getReadableReferenceRelationNames,
   getTableHeaders,
@@ -38,6 +39,7 @@ import { useSaplingMessageCenter } from '@/composables/system/useSaplingMessageC
 // #endregion
 
 const TABLE_LOAD_DEBOUNCE_MS = 250
+const TABLE_VALUE_REFERENCE_KINDS = ['m:1', '1:1']
 
 type InitializeEntityStateOptions = {
   initialSearch?: string
@@ -126,6 +128,26 @@ export function useSaplingTable(
       entityTemplates.value,
       currentPermissionStore.accumulatedPermission ?? [],
       listProjectionFields.value,
+      (referenceName) => genericStore.getState(referenceName).entityTemplates,
+    ),
+  )
+  const referenceSearchTemplates = computed(() =>
+    Object.fromEntries(
+      readableReferenceRelations.value
+        .filter((relationName) => !relationName.includes('.'))
+        .map((relationName) => {
+          const referenceName = entityTemplates.value.find(
+            (template) => template.name === relationName,
+          )?.referenceName
+
+          return referenceName
+            ? [relationName, genericStore.getState(referenceName).entityTemplates]
+            : null
+        })
+        .filter(
+          (entry): entry is [string, EntityTemplate[]] =>
+            entry !== null && entry[1].length > 0,
+        ),
     ),
   )
   // #endregion
@@ -138,6 +160,7 @@ export function useSaplingTable(
       search: search.value,
       columnFilters: columnFilters.value,
       entityTemplates: entityTemplates.value,
+      referenceSearchTemplates: referenceSearchTemplates.value,
       parentFilter: parentFilter.value,
     }),
   )
@@ -347,6 +370,54 @@ export function useSaplingTable(
     })
   }
 
+  async function preloadValueReferenceMetadata(nextEntityTemplates: EntityTemplate[]) {
+    const permissions = currentPermissionStore.accumulatedPermission ?? []
+    const projectedFields = getListProjectionFieldNames(nextEntityTemplates, permissions)
+    const rootRelations = getReadableReferenceRelationNames(
+      nextEntityTemplates,
+      permissions,
+      projectedFields,
+    )
+    const rootRelationSet = new Set(rootRelations)
+    const rootReferenceNames = [
+      ...new Set(
+        nextEntityTemplates
+          .filter(
+            (template) => rootRelationSet.has(template.name) && Boolean(template.referenceName),
+          )
+          .map((template) => template.referenceName as string),
+      ),
+    ]
+
+    await Promise.all(
+      rootReferenceNames.map((referenceName) => genericStore.loadGeneric(referenceName, 'global')),
+    )
+
+    const nestedValueReferenceNames = [
+      ...new Set(
+        rootReferenceNames.flatMap((referenceName) =>
+          genericStore
+            .getState(referenceName)
+            .entityTemplates.filter(
+              (template) =>
+                TABLE_VALUE_REFERENCE_KINDS.includes(template.kind ?? '') &&
+                template.options?.includes('isValue') &&
+                template.fieldAccess?.allowRead !== false &&
+                canReadReferenceTemplate(template, permissions) &&
+                Boolean(template.referenceName),
+            )
+            .map((template) => template.referenceName as string),
+        ),
+      ),
+    ]
+
+    await Promise.all(
+      nestedValueReferenceNames.map((referenceName) =>
+        genericStore.loadGeneric(referenceName, 'global'),
+      ),
+    )
+  }
+
   async function initializeEntityState(options: InitializeEntityStateOptions = {}) {
     const currentEntityHandle = entityHandle.value
     const initializationId = ++latestInitializationId
@@ -383,6 +454,15 @@ export function useSaplingTable(
       }
 
       const nextEntityTemplates = entityTemplates.value
+      await preloadValueReferenceMetadata(nextEntityTemplates)
+
+      if (
+        initializationId !== latestInitializationId ||
+        entityHandle.value !== currentEntityHandle
+      ) {
+        return
+      }
+
       generateHeaders(currentEntityHandle)
       initialSort(nextEntityTemplates)
       restoreQueryFilterState(nextEntityTemplates)

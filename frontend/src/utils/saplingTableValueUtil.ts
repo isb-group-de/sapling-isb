@@ -2,30 +2,75 @@ import type { SaplingGenericItem } from '@/entity/entity'
 import type { EntityTemplate } from '@/entity/structure'
 import { formatValue } from './saplingFormatUtil'
 
+export interface EntityValueLabelLine {
+  value: string
+  isReference: boolean
+}
+
+export type EntityValueReferenceTemplates = Readonly<Record<string, EntityTemplate[]>>
+
 export function getEntityValueLabel(
   item?: SaplingGenericItem | null,
   entityTemplates?: EntityTemplate[],
+  referenceTemplates: EntityValueReferenceTemplates = {},
 ): string {
-  if (!item) return ''
+  return getEntityValueLabelLines(item, entityTemplates, referenceTemplates)
+    .map((line) => line.value)
+    .join('\n')
+}
 
-  const valueParts =
-    entityTemplates
-      ?.filter((template) => template.options?.includes('isValue'))
-      .map((template) => {
-        const value = item[template.name]
-        if (
-          value === null ||
-          typeof value === 'undefined' ||
-          typeof value === 'object' ||
-          String(value).trim().length === 0
-        ) {
-          return ''
-        }
-        return formatValue(String(value), template.type)
-      })
-      .filter((value) => value && value !== '-') ?? []
+export function getEntityValueLabelLines(
+  item?: SaplingGenericItem | null,
+  entityTemplates?: EntityTemplate[],
+  referenceTemplates: EntityValueReferenceTemplates = {},
+): EntityValueLabelLine[] {
+  if (!item) return []
 
-  if (valueParts.length > 0) return valueParts.join(' ')
+  const scalarParts: string[] = []
+  const referenceLines: EntityValueLabelLine[] = []
+
+  for (const template of entityTemplates?.filter((entry) => entry.options?.includes('isValue')) ??
+    []) {
+    const value = item[template.name]
+
+    if (template.isReference) {
+      const referenceItem = resolveReferenceItem(value)
+      if (!referenceItem) continue
+
+      const nestedTemplates = template.referenceName
+        ? referenceTemplates[template.referenceName]
+        : undefined
+      const nestedValue =
+        getEntityValueLabel(referenceItem, nestedTemplates, referenceTemplates) ||
+        formatFilterDisplayValue(referenceItem.handle)
+      if (nestedValue) {
+        referenceLines.push({ value: nestedValue, isReference: true })
+      }
+      continue
+    }
+
+    if (
+      value === null ||
+      typeof value === 'undefined' ||
+      typeof value === 'object' ||
+      String(value).trim().length === 0
+    ) {
+      continue
+    }
+
+    const formattedValue = formatValue(String(value), template.type)
+    if (formattedValue && formattedValue !== '-') {
+      scalarParts.push(formattedValue)
+    }
+  }
+
+  const lines: EntityValueLabelLine[] = []
+  if (scalarParts.length > 0) {
+    lines.push({ value: scalarParts.join(' '), isReference: false })
+  }
+  lines.push(...referenceLines)
+
+  if (lines.length > 0) return lines
 
   const handleValue = item.handle
   if (
@@ -34,9 +79,18 @@ export function getEntityValueLabel(
     typeof handleValue === 'boolean' ||
     (handleValue && typeof handleValue === 'object')
   ) {
-    return formatFilterDisplayValue(handleValue)
+    const value = formatFilterDisplayValue(handleValue)
+    return value ? [{ value, isReference: false }] : []
   }
-  return ''
+  return []
+}
+
+function resolveReferenceItem(value: unknown): SaplingGenericItem | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return null
+  }
+
+  return value as SaplingGenericItem
 }
 
 function formatFilterDisplayValue(value: unknown): string {

@@ -461,4 +461,140 @@ describe('GlobalSearchService', () => {
       }),
     ]);
   });
+
+  it('searches and displays isValue references on a separate line', async () => {
+    const personEntity = Object.assign(new EntityItem(), {
+      handle: 'person',
+      icon: 'mdi-account',
+      canShow: true,
+      routes: {
+        getItems: () => [{ route: 'table/person' }],
+      },
+    });
+    const em = {
+      find: jest.fn().mockResolvedValue([personEntity]),
+    };
+    const currentUser = { handle: 1 };
+    const currentService = {
+      getPerson: jest.fn().mockResolvedValue(currentUser),
+      getAllEntityPermissions: jest.fn().mockReturnValue([
+        {
+          entityHandle: 'person',
+          allowRead: true,
+          allowShow: true,
+        },
+      ]),
+    };
+    const genericService = {
+      findAndCount: jest.fn().mockResolvedValue({
+        data: [
+          {
+            handle: 42,
+            firstName: 'Max',
+            lastName: 'Mustermann',
+            company: {
+              handle: 7,
+              name: 'Standardfirma GmbH',
+            },
+          },
+        ],
+        meta: {
+          total: 1,
+          page: 1,
+          limit: 10,
+          totalPages: 1,
+          executionTime: 0,
+        },
+      }),
+    };
+    const templateService = {
+      getEntityTemplate: jest.fn((entityHandle: string) =>
+        entityHandle === 'company'
+          ? [
+              {
+                name: 'name',
+                type: 'string',
+                isPersistent: true,
+                isReference: false,
+                options: ['isValue'],
+              },
+            ]
+          : [
+              {
+                name: 'firstName',
+                type: 'string',
+                isPersistent: true,
+                isReference: false,
+                options: ['isValue'],
+              },
+              {
+                name: 'lastName',
+                type: 'string',
+                isPersistent: true,
+                isReference: false,
+                options: ['isValue'],
+              },
+              {
+                name: 'company',
+                type: 'CompanyItem',
+                kind: 'm:1',
+                referenceName: 'company',
+                isPersistent: true,
+                isReference: true,
+                options: ['isValue'],
+              },
+            ],
+      ),
+    };
+    const service = new GlobalSearchService(
+      em as never,
+      currentService as never,
+      genericService as never,
+      templateService as never,
+    );
+
+    const result = await service.search(currentUser as never, {
+      query: 'standardfirma',
+    });
+
+    expect(genericService.findAndCount).toHaveBeenCalledWith(
+      'person',
+      {
+        $or: [
+          {
+            firstName: {
+              $ilike: '%standardfirma%',
+            },
+          },
+          {
+            lastName: {
+              $ilike: '%standardfirma%',
+            },
+          },
+          {
+            'company.name': {
+              $ilike: '%standardfirma%',
+            },
+          },
+        ],
+      },
+      1,
+      10,
+      {},
+      currentUser,
+      ['company'],
+    );
+    expect(result.items).toEqual([
+      expect.objectContaining({
+        entityHandle: 'person',
+        label: 'Max Mustermann\nStandardfirma GmbH',
+        matches: [
+          {
+            field: 'company.name',
+            value: 'Standardfirma GmbH',
+          },
+        ],
+      }),
+    ]);
+  });
 });

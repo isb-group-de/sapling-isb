@@ -248,7 +248,7 @@ export class InboundEmailItem {
    * Name of the company selected in company.
    */
   @ApiPropertyOptional()
-  @Sapling(['isReadOnly'])
+  @Sapling(['isReadOnly', 'isValue'])
   @SaplingForm({
     order: 401,
     group: 'inboundEmail.groupReference',

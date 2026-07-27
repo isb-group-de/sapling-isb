@@ -50,21 +50,39 @@ export function getReadableReferenceRelationNames(
   entityTemplates: EntityTemplate[],
   permissions: AccumulatedPermission[] = [],
   projectedFields?: string[],
+  getReferenceTemplates?: (entityHandle: string) => EntityTemplate[],
 ): string[] {
   const projectedFieldSet = projectedFields ? new Set(projectedFields) : null
+  const readableReferences = entityTemplates.filter(
+    (template) =>
+      TABLE_REFERENCE_PERMISSION_KINDS.includes(template.kind ?? '') &&
+      Boolean(template.name) &&
+      Boolean(template.referenceName) &&
+      template.fieldAccess?.allowRead !== false &&
+      (!projectedFieldSet || projectedFieldSet.has(template.name)) &&
+      canReadReferenceTemplate(template, permissions),
+  )
+
   return [
     ...new Set(
-      entityTemplates
-        .filter(
-          (template) =>
-            TABLE_REFERENCE_PERMISSION_KINDS.includes(template.kind ?? '') &&
-            Boolean(template.name) &&
-            Boolean(template.referenceName) &&
-            template.fieldAccess?.allowRead !== false &&
-            (!projectedFieldSet || projectedFieldSet.has(template.name)) &&
-            canReadReferenceTemplate(template, permissions),
-        )
-        .map((template) => template.name),
+      readableReferences.flatMap((template) => {
+        const relations = [template.name]
+        if (!getReferenceTemplates || !template.referenceName) {
+          return relations
+        }
+
+        const valueRelations = getReferenceTemplates(template.referenceName)
+          .filter(
+            (referenceTemplate) =>
+              TABLE_REFERENCE_PERMISSION_KINDS.includes(referenceTemplate.kind ?? '') &&
+              referenceTemplate.options?.includes('isValue') &&
+              referenceTemplate.fieldAccess?.allowRead !== false &&
+              canReadReferenceTemplate(referenceTemplate, permissions),
+          )
+          .map((referenceTemplate) => `${template.name}.${referenceTemplate.name}`)
+
+        return [...relations, ...valueRelations]
+      }),
     ),
   ]
 }

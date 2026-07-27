@@ -74,7 +74,7 @@ describe('useSaplingTable filters and route state', () => {
     expect(apiFindMock).toHaveBeenCalledWith(
       'ticket',
       expect.objectContaining({
-        relations: ['status', 'assigneePerson'],
+        relations: ['status', 'assigneePerson', 'assigneePerson.company'],
         filter: {
           $and: [
             { status: { handle: 'open' } },

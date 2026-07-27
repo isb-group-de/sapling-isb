@@ -158,7 +158,27 @@
 
 .sapling-field-select__chip,
 .sapling-field-single-select__chip {
+  height: auto;
   margin: 0;
+}
+
+.sapling-field-select__selection,
+.sapling-field-single-select__selection {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.2;
+}
+
+.sapling-field-select__selection-line {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sapling-field-select__selection-line--reference {
+  font-size: var(--sapling-text-meta-size-sm);
+  opacity: 0.68;
 }
 
 .sapling-field-generic-reference {

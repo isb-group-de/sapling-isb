@@ -190,6 +190,23 @@ Reference fields should use the existing Sapling field components instead of raw
 
 These components open a Sapling table inside the menu and derive display labels from the target entity's `isValue` templates. Do not guess label fields such as `title`, `name`, or `displayName` in custom code. If a selected reference value displays only its handle, the target entity metadata has not been loaded early enough; fix the field/component lifecycle so the metadata loads, then let `getEntityValueLabel()` use the templates.
 
+When a source entity marks a many-to-one or one-to-one reference itself with
+`isValue`, the shared single- and multi-select fields resolve the referenced
+record through the target entity's own `isValue` metadata. Scalar values stay
+on the first line and each value reference is displayed on a following line.
+If an existing single-select value contains such a nested reference only as a
+handle, the field hydrates that selected record for display without changing
+the form model.
+Generated table reference cells request the same nested value relations and
+render them as a compact secondary line without increasing the normal row
+height. Circular back-references to the current row reuse that already loaded
+record instead of falling back to its handle.
+
+The generic table search also includes scalar `isValue` fields of readable,
+projected many-to-one and one-to-one references. Search terms may therefore
+match a company's account manager or a person's company. This search stops at
+the direct reference and does not follow nested value references.
+
 Single-record references rendered inside `SaplingDialogEdit` also expose an
 open-record action. It loads the complete referenced record and opens another
 `SaplingDialogEdit` above the current dialog. The nested dialog uses edit mode

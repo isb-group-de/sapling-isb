@@ -248,7 +248,7 @@ export class ContractItem {
    * Name of the company selected in company.
    */
   @ApiPropertyOptional()
-  @Sapling(['isReadOnly'])
+  @Sapling(['isReadOnly', 'isValue'])
   @SaplingForm({
     order: 101,
     group: 'contract.groupReference',

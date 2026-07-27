@@ -4,12 +4,20 @@ import { defineComponent, nextTick } from 'vue'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import SaplingFieldSingleSelect from '../SaplingFieldSingleSelect.vue'
 
-const { findMock, updateMock, loadGenericMock, pushMessageMock, tableState } = vi.hoisted(() => {
+const {
+  findMock,
+  updateMock,
+  loadGenericMock,
+  getEntityTemplateMock,
+  pushMessageMock,
+  tableState,
+} = vi.hoisted(() => {
   const makeRef = <T>(value: T) => ({ value })
   return {
     findMock: vi.fn(),
     updateMock: vi.fn(),
     loadGenericMock: vi.fn(),
+    getEntityTemplateMock: vi.fn(),
     pushMessageMock: vi.fn(),
     tableState: {
       items: makeRef<Array<Record<string, unknown>>>([]),
@@ -21,7 +29,7 @@ const { findMock, updateMock, loadGenericMock, pushMessageMock, tableState } = v
       sortBy: makeRef<Array<Record<string, unknown>>>([]),
       columnFilters: makeRef({}),
       activeFilter: makeRef(null),
-      entityTemplates: makeRef([
+      entityTemplates: makeRef<Array<Record<string, unknown>>>([
         {
           key: 'name',
           name: 'name',
@@ -71,6 +79,12 @@ vi.mock('@/services/api.generic.service', () => ({
   },
 }))
 
+vi.mock('@/services/api.template.service', () => ({
+  default: {
+    getEntityTemplate: getEntityTemplateMock,
+  },
+}))
+
 vi.mock('@/stores/genericStore', () => ({
   useGenericStore: () => ({
     loadGeneric: loadGenericMock,
@@ -91,6 +105,7 @@ const VMenuStub = defineComponent({
 
 const VAutocompleteStub = defineComponent({
   name: 'VAutocomplete',
+  props: { modelValue: Object },
   emits: ['update:search', 'update:modelValue', 'focus', 'mousedown:control', 'click:clear'],
   template: '<div />',
 })
@@ -160,11 +175,38 @@ function mountField(modelValue: Record<string, unknown> | null = null) {
 describe('SaplingFieldSingleSelect reference dialog', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    tableState.entityTemplates.value = [
+      {
+        key: 'name',
+        name: 'name',
+        type: 'string',
+        isPersistent: true,
+        options: ['isValue'],
+      },
+      {
+        key: 'country',
+        name: 'country',
+        type: 'CountryItem',
+        isPersistent: true,
+        isReference: true,
+        kind: 'm:1',
+        referenceName: 'country',
+      },
+    ]
     tableState.entityPermission.value = {
       entityHandle: 'company',
       allowRead: true,
       allowUpdate: true,
     }
+    getEntityTemplateMock.mockResolvedValue([
+      {
+        key: 'name',
+        name: 'name',
+        type: 'string',
+        isPersistent: true,
+        options: ['isValue'],
+      },
+    ])
   })
 
   it('keeps the open action disabled until a record is selected', () => {
@@ -190,6 +232,46 @@ describe('SaplingFieldSingleSelect reference dialog', () => {
     const dialog = wrapper.getComponent(SaplingDialogEditStub)
     expect(dialog.props('mode')).toBe('edit')
     expect(dialog.props('item')).toEqual(resolved)
+  })
+
+  it('hydrates an incomplete nested isValue reference for display without changing the model', async () => {
+    tableState.entityTemplates.value = [
+      {
+        key: 'name',
+        name: 'name',
+        type: 'string',
+        isPersistent: true,
+        options: ['isValue'],
+      },
+      {
+        key: 'country',
+        name: 'country',
+        type: 'CountryItem',
+        isPersistent: true,
+        isReference: true,
+        kind: 'm:1',
+        referenceName: 'country',
+        referencedPks: ['handle'],
+        options: ['isValue'],
+      },
+    ]
+    const selected = { handle: 'company-1', name: 'Sapling GmbH', country: 'de' }
+    const hydrated = {
+      ...selected,
+      country: { handle: 'de', name: 'Germany' },
+    }
+    findMock.mockResolvedValue({ data: [hydrated], meta: { total: 1 } })
+
+    const wrapper = mountField(selected)
+    await flushPromises()
+
+    expect(findMock).toHaveBeenCalledWith('company', {
+      filter: { handle: 'company-1' },
+      limit: 1,
+      relations: ['m:1'],
+    })
+    expect(wrapper.getComponent(VAutocompleteStub).props('modelValue')).toEqual(hydrated)
+    expect(wrapper.emitted('update:modelValue')).toBeUndefined()
   })
 
   it('falls back to a read-only dialog without update permission', async () => {

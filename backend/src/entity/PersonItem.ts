@@ -329,7 +329,7 @@ export class PersonItem {
    * The company this person belongs to (optional).
    */
   @ApiPropertyOptional({ type: () => CompanyItem })
-  @Sapling(['isCompany'])
+  @Sapling(['isCompany', 'isValue'])
   @SaplingForm({
     order: 100,
     group: 'person.groupReference',

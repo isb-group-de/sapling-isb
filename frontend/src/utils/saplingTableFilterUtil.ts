@@ -22,24 +22,44 @@ export function buildTableFilter({
   search,
   columnFilters = {},
   entityTemplates,
+  referenceSearchTemplates = {},
   parentFilter,
 }: {
   search?: string
   columnFilters?: Record<string, string | ColumnFilterItem>
   entityTemplates: EntityTemplate[]
+  referenceSearchTemplates?: Record<string, EntityTemplate[]>
   parentFilter?: Record<string, unknown>
 }): FilterQuery {
   const clauses: FilterQuery[] = []
   const filterableTemplates = entityTemplates.filter(isFilterableTableColumn)
   const searchableTemplates = filterableTemplates.filter(isTextSearchableTemplate)
+  const searchableReferenceTemplates = Object.entries(referenceSearchTemplates).flatMap(
+    ([relationName, templates]) =>
+      templates
+        .filter(isFilterableTableColumn)
+        .filter(isTextSearchableTemplate)
+        .filter((template) => template.options?.includes('isValue'))
+        .map((template) => ({ relationName, template })),
+  )
   const searchTerms = search?.trim().split(/\s+/).filter(Boolean) ?? []
 
-  if (searchTerms.length > 0 && searchableTemplates.length > 0) {
+  if (
+    searchTerms.length > 0 &&
+    (searchableTemplates.length > 0 || searchableReferenceTemplates.length > 0)
+  ) {
     clauses.push(
       ...searchTerms.map((searchTerm) => ({
-        $or: searchableTemplates.map((template) => ({
-          [template.name]: { $ilike: `%${searchTerm}%` },
-        })),
+        $or: [
+          ...searchableTemplates.map((template) => ({
+            [template.name]: { $ilike: `%${searchTerm}%` },
+          })),
+          ...searchableReferenceTemplates.map(({ relationName, template }) => ({
+            [relationName]: {
+              [template.name]: { $ilike: `%${searchTerm}%` },
+            },
+          })),
+        ],
       })),
     )
   }

@@ -17,7 +17,7 @@
             :label="props.label"
             :items="autocompleteItems"
             :rules="props.rules"
-            :model-value="selectedItem"
+            :model-value="displayedSelectedItem"
             :item-title="getAutocompleteItemTitle"
             :search="fieldSearch"
             :menu="false"
@@ -34,7 +34,22 @@
             @update:menu="closeAutocompleteMenu"
             @update:model-value="onActivatorModelUpdate"
             @update:search="onActivatorSearchUpdate"
-          />
+          >
+            <template #selection="{ item }">
+              <span class="sapling-field-single-select__selection">
+                <span
+                  v-for="line in getAutocompleteItemLines(item)"
+                  :key="`${line.isReference}:${line.value}`"
+                  class="sapling-field-select__selection-line"
+                  :class="{
+                    'sapling-field-select__selection-line--reference': line.isReference,
+                  }"
+                >
+                  {{ line.value }}
+                </span>
+              </span>
+            </template>
+          </v-autocomplete>
         </div>
       </template>
       <div class="glass-panel sapling-menu-surface sapling-menu-surface--field-table">
@@ -113,8 +128,8 @@ import type { SaplingGenericItem } from '@/entity/entity'
 import { useSaplingTable } from '@/composables/table/useSaplingTable'
 import { computed, inject, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { getEntityValueLabel } from '@/utils/saplingTableUtil'
 import { useSaplingSingleSelectField } from '@/composables/fields/useSaplingSingleSelectField'
+import { useSaplingEntityValueLabel } from '@/composables/fields/useSaplingEntityValueLabel'
 import { useSaplingReferenceFilter } from '@/composables/fields/useSaplingReferenceFilter'
 import { getDialogRecordRelations } from '@/composables/dialog/saplingDialogRecordLoader'
 import {
@@ -126,7 +141,12 @@ import ApiGenericService, { type FilterQuery } from '@/services/api.generic.serv
 import { useGenericStore } from '@/stores/genericStore'
 import { saplingTableDisplayContextKey } from '@/components/table/saplingTableDisplayContext'
 import { useSaplingMessageCenter } from '@/composables/system/useSaplingMessageCenter'
-import type { DialogSaveAction, DialogSaveContext, DialogState } from '@/entity/structure'
+import type {
+  DialogSaveAction,
+  DialogSaveContext,
+  DialogState,
+  EntityTemplate,
+} from '@/entity/structure'
 // #endregion
 
 // #region Props and Emits
@@ -179,6 +199,7 @@ const {
 } = useSaplingTable(ref(props.entityHandle), DEFAULT_PAGE_SIZE_SMALL, false, false)
 
 const { selectedItem, menuOpen } = useSaplingSingleSelectField(props)
+const { getValueLabel, getValueLabelLines } = useSaplingEntityValueLabel(entityTemplates)
 const { combineFilters, normalizeFilter, areFiltersEqual } = useSaplingReferenceFilter()
 const fieldSearch = ref('')
 const autocompleteItems = ref<SaplingGenericItem[]>([])
@@ -189,9 +210,16 @@ const { t } = useI18n()
 const { pushMessage } = useSaplingMessageCenter()
 const recordDialogOpen = ref(false)
 const recordDialogItem = ref<SaplingGenericItem | null>(null)
+const hydratedSelectedItem = ref<SaplingGenericItem | null>(null)
 const isRecordDialogLoading = ref(false)
+let selectedItemHydrationRequestId = 0
 const recordDialogMode = computed<DialogState>(() =>
   entityPermission.value?.allowUpdate ? 'edit' : 'readonly',
+)
+const displayedSelectedItem = computed(() =>
+  getItemHandle(hydratedSelectedItem.value) === getItemHandle(selectedItem.value)
+    ? hydratedSelectedItem.value
+    : selectedItem.value,
 )
 const openActionLabel = computed(() => props.openActionLabel || t('global.editRecord'))
 const canOpenSelectedRecord = computed(
@@ -361,15 +389,19 @@ function getTableSearchValue() {
 }
 
 function getAutocompleteItemTitle(item: unknown) {
-  return getEntityValueLabel(resolveSaplingItem(item), entityTemplates.value)
+  return getValueLabel(resolveSaplingItem(item))
+}
+
+function getAutocompleteItemLines(item: unknown) {
+  return getValueLabelLines(resolveSaplingItem(item))
 }
 
 function isSelectedItemDisplayText(value: string) {
-  if (!selectedItem.value || !value) {
+  if (!displayedSelectedItem.value || !value) {
     return false
   }
 
-  return value === getAutocompleteItemTitle(selectedItem.value)
+  return value === getAutocompleteItemTitle(displayedSelectedItem.value)
 }
 // #endregion
 
@@ -390,10 +422,50 @@ watch(
 )
 
 watch(
-  () => [props.entityHandle, selectedItem.value?.handle, props.placeholder] as const,
-  () => {
-    if (selectedItem.value || props.placeholder) {
-      void ensureEntityMetadataLoaded()
+  () =>
+    [
+      props.entityHandle,
+      getItemHandle(selectedItem.value),
+      entityTemplates.value,
+      props.placeholder,
+    ] as const,
+  async () => {
+    const currentRequestId = ++selectedItemHydrationRequestId
+    hydratedSelectedItem.value = null
+
+    if (!selectedItem.value && !props.placeholder) {
+      return
+    }
+
+    await ensureEntityMetadataLoaded()
+
+    const item = selectedItem.value
+    const handle = getItemHandle(item)
+    if (
+      !item ||
+      handle == null ||
+      !hasIncompleteValueReference(item, entityTemplates.value)
+    ) {
+      return
+    }
+
+    try {
+      const response = await ApiGenericService.find<SaplingGenericItem>(props.entityHandle, {
+        filter: { handle },
+        limit: 1,
+        relations: getDialogRecordRelations(entityTemplates.value),
+      })
+      const hydratedItem = response.data[0] ?? null
+
+      if (
+        currentRequestId === selectedItemHydrationRequestId &&
+        getItemHandle(selectedItem.value) === handle &&
+        getItemHandle(hydratedItem) === handle
+      ) {
+        hydratedSelectedItem.value = hydratedItem
+      }
+    } catch {
+      // Keep the original selection when its display-only hydration fails.
     }
   },
   { immediate: true },
@@ -463,5 +535,31 @@ async function ensureEntityMetadataLoaded() {
   }
 
   await genericStore.loadGeneric(props.entityHandle, 'global', 'filter', 'exception')
+}
+
+function hasIncompleteValueReference(
+  item: SaplingGenericItem,
+  templates: EntityTemplate[],
+): boolean {
+  return templates.some((template) => {
+    if (
+      !template.isReference ||
+      !['m:1', '1:1'].includes(template.kind ?? '') ||
+      !template.options?.includes('isValue')
+    ) {
+      return false
+    }
+
+    const value = item[template.name]
+    if (value == null) {
+      return false
+    }
+    if (typeof value !== 'object' || Array.isArray(value)) {
+      return true
+    }
+
+    const identifierKeys = new Set(['handle', 'id', ...(template.referencedPks ?? [])])
+    return !Object.keys(value).some((key) => !identifierKeys.has(key))
+  })
 }
 </script>

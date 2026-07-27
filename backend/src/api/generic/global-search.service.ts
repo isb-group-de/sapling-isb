@@ -22,11 +22,22 @@ interface EntitySearchContext {
   entity: SearchableEntity;
   template: EntityTemplateDto[];
   fields: string[];
-  valueFields: string[];
+  valueFields: ValueField[];
+  relations: string[];
   query: string;
   terms: string[];
   perEntityLimit: number;
   currentUser: PersonItem;
+}
+
+interface ValueField {
+  path: string;
+  referenceRoot?: string;
+}
+
+interface ReferenceValueField extends ValueField {
+  referenceRoot: string;
+  isSearchable: boolean;
 }
 
 interface MatchPreview {
@@ -108,14 +119,18 @@ export class GlobalSearchService {
   }
 
   private async searchEntitySafely(
-    context: Omit<EntitySearchContext, 'template' | 'fields' | 'valueFields'>,
+    context: Omit<
+      EntitySearchContext,
+      'template' | 'fields' | 'valueFields' | 'relations'
+    >,
   ): Promise<GlobalSearchResultDto[]> {
     try {
       const template = await this.getUniversallyReadableTemplate(
         context.currentUser,
         context.entity.handle,
       );
-      const fields = this.getSearchableFields(template);
+      const { fields, valueFields, relations } =
+        await this.getSearchConfiguration(context.currentUser, template);
 
       if (fields.length === 0) {
         return [];
@@ -125,7 +140,8 @@ export class GlobalSearchService {
         ...context,
         template,
         fields,
-        valueFields: this.getValueFields(template),
+        valueFields,
+        relations,
       };
       const where = this.buildSearchWhere(searchContext);
       const orderBy = template.some((field) => field.name === 'updatedAt')
@@ -138,7 +154,7 @@ export class GlobalSearchService {
         context.perEntityLimit,
         orderBy,
         context.currentUser,
-        [],
+        relations,
       );
 
       return result.data
@@ -266,9 +282,10 @@ export class GlobalSearchService {
     const label =
       this.getDisplayValue(record, context.valueFields) || String(recordHandle);
     const matches = this.getMatches(record, context.fields, context.query);
-    const preview =
-      matches.find((match) => match.value !== label)?.value ??
-      matches[0]?.value;
+    const labelLines = new Set(label.split('\n'));
+    const preview = matches.find(
+      (match) => !labelLines.has(match.value),
+    )?.value;
 
     return {
       entityHandle: context.entity.handle,
@@ -282,7 +299,14 @@ export class GlobalSearchService {
     };
   }
 
-  private getSearchableFields(template: EntityTemplateDto[]): string[] {
+  private async getSearchConfiguration(
+    currentUser: PersonItem,
+    template: EntityTemplateDto[],
+  ): Promise<{
+    fields: string[];
+    valueFields: ValueField[];
+    relations: string[];
+  }> {
     const preferredFields = new Set([
       'number',
       'externalNumber',
@@ -297,21 +321,87 @@ export class GlobalSearchService {
     const candidates = template.filter((field) =>
       this.isSearchableTextField(field),
     );
-    const valueFields = candidates
+    const scalarValueFields = template
+      .filter(
+        (field) => !field.isReference && field.options?.includes('isValue'),
+      )
+      .map((field) => ({ path: field.name }));
+    const searchableScalarValueFields = candidates
       .filter((field) => field.options?.includes('isValue'))
       .map((field) => field.name);
+    const referenceValueFields = await this.getReferenceValueFields(
+      currentUser,
+      template,
+    );
     const preferred = candidates
       .filter((field) => preferredFields.has(field.name))
       .map((field) => field.name);
     const remaining = candidates.map((field) => field.name);
 
-    return [...new Set([...valueFields, ...preferred, ...remaining])];
+    return {
+      fields: [
+        ...new Set([
+          ...searchableScalarValueFields,
+          ...referenceValueFields
+            .filter((field) => field.isSearchable)
+            .map((field) => field.path),
+          ...preferred,
+          ...remaining,
+        ]),
+      ],
+      valueFields: [
+        ...scalarValueFields,
+        ...referenceValueFields.map(({ path, referenceRoot }) => ({
+          path,
+          referenceRoot,
+        })),
+      ],
+      relations: [
+        ...new Set(referenceValueFields.map((field) => field.referenceRoot)),
+      ],
+    };
   }
 
-  private getValueFields(template: EntityTemplateDto[]): string[] {
-    return template
-      .filter((field) => field.options?.includes('isValue'))
-      .map((field) => field.name);
+  private async getReferenceValueFields(
+    currentUser: PersonItem,
+    template: EntityTemplateDto[],
+  ): Promise<ReferenceValueField[]> {
+    const valueReferences = template.filter(
+      (field) =>
+        field.isReference &&
+        ['m:1', '1:1'].includes(field.kind ?? '') &&
+        field.options?.includes('isValue') &&
+        Boolean(field.referenceName),
+    );
+    const result: ReferenceValueField[] = [];
+
+    for (const reference of valueReferences) {
+      try {
+        const referenceTemplate = await this.getUniversallyReadableTemplate(
+          currentUser,
+          reference.referenceName,
+        );
+        result.push(
+          ...referenceTemplate
+            .filter(
+              (field) =>
+                !field.isReference && field.options?.includes('isValue'),
+            )
+            .map((field) => ({
+              path: `${reference.name}.${field.name}`,
+              referenceRoot: reference.name,
+              isSearchable: this.isSearchableTextField(field),
+            })),
+        );
+      } catch (error) {
+        global.log?.warn?.(
+          `global search skipped value reference ${reference.name}:`,
+          error,
+        );
+      }
+    }
+
+    return result;
   }
 
   private isSearchableTextField(field: EntityTemplateDto): boolean {
@@ -401,8 +491,8 @@ export class GlobalSearchService {
     query: string,
     recordHandle: string | number,
   ): number {
-    const normalizedLabel = label.toLowerCase();
-    const normalizedQuery = query.toLowerCase();
+    const normalizedLabel = this.normalizeComparableText(label);
+    const normalizedQuery = this.normalizeComparableText(query);
     let score = 0;
 
     if (String(recordHandle).toLowerCase() === normalizedQuery) {
@@ -432,13 +522,31 @@ export class GlobalSearchService {
 
   private getDisplayValue(
     record: Record<string, unknown>,
-    valueFields: string[],
+    valueFields: ValueField[],
   ): string {
-    return valueFields
-      .map((field) => this.getRecordTextValue(record, field))
+    const scalarValues: string[] = [];
+    const referenceValues = new Map<string, string[]>();
+
+    for (const field of valueFields) {
+      const value = this.getRecordTextValue(record, field.path);
+      if (!value) continue;
+
+      if (!field.referenceRoot) {
+        scalarValues.push(value);
+        continue;
+      }
+
+      const values = referenceValues.get(field.referenceRoot) ?? [];
+      values.push(value);
+      referenceValues.set(field.referenceRoot, values);
+    }
+
+    return [
+      scalarValues.join(' ').trim(),
+      ...[...referenceValues.values()].map((values) => values.join(' ').trim()),
+    ]
       .filter(Boolean)
-      .join(' ')
-      .trim();
+      .join('\n');
   }
 
   private getRecordTextValue(
@@ -555,6 +663,10 @@ export class GlobalSearchService {
     return typeof query === 'string'
       ? query.trim().slice(0, MAX_GLOBAL_SEARCH_QUERY_LENGTH)
       : '';
+  }
+
+  private normalizeComparableText(value: string): string {
+    return value.toLowerCase().replace(/\s+/g, ' ').trim();
   }
 
   private normalizeLimit(limit: unknown): number {

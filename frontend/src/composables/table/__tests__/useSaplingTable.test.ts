@@ -21,6 +21,37 @@ describe('useSaplingTable initialization and loading', () => {
   beforeEach(resetTableTestMocks)
   afterEach(cleanupTableTestWrappers)
 
+  it('loads nested isValue relations needed by reference labels', async () => {
+    loadGenericMock.mockResolvedValue(undefined)
+    apiFindMock.mockResolvedValue({
+      data: [
+        {
+          handle: 1,
+          name: 'Beispielfirma',
+          accountManager: {
+            handle: 7,
+            firstName: 'Max',
+            lastName: 'Mustermann',
+            company: { handle: 1, name: 'Beispielfirma' },
+          },
+        },
+      ],
+      meta: { total: 1 },
+    })
+
+    mountTestHost(ref('company'))
+    await flushPromises()
+
+    expect(loadGenericMock).toHaveBeenCalledWith('person', 'global')
+    expect(loadGenericMock).toHaveBeenCalledWith('company', 'global')
+    expect(apiFindMock).toHaveBeenCalledWith(
+      'company',
+      expect.objectContaining({
+        relations: ['accountManager', 'accountManager.company'],
+      }),
+    )
+  })
+
   it('ignores stale entity initialization when the route entity changes quickly', async () => {
     const entityHandle = ref('partner')
     const partnerDeferred = createDeferred<void>()

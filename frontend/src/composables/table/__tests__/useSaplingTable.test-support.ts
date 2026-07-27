@@ -54,6 +54,7 @@ vi.mock('@/stores/currentPermissionStore', () => ({
     accumulatedPermission: [
       { entityHandle: 'ticketStatus', allowRead: true },
       { entityHandle: 'person', allowRead: true },
+      { entityHandle: 'company', allowRead: true },
     ],
     fetchCurrentPermission: fetchCurrentPermissionMock,
   }),
@@ -146,6 +147,42 @@ const entityStates = reactive<Record<string, ReturnType<typeof createEntityState
     createTemplate({
       name: 'isAllDay',
       type: 'boolean',
+    }),
+  ]),
+  company: createEntityState([
+    createTemplate({
+      name: 'name',
+      type: 'string',
+      options: ['isValue'],
+    }),
+    createTemplate({
+      name: 'accountManager',
+      type: 'PersonItem',
+      kind: 'm:1',
+      isReference: true,
+      referenceName: 'person',
+      referencedPks: ['handle'],
+    }),
+  ]),
+  person: createEntityState([
+    createTemplate({
+      name: 'firstName',
+      type: 'string',
+      options: ['isValue'],
+    }),
+    createTemplate({
+      name: 'lastName',
+      type: 'string',
+      options: ['isValue'],
+    }),
+    createTemplate({
+      name: 'company',
+      type: 'CompanyItem',
+      kind: 'm:1',
+      isReference: true,
+      referenceName: 'company',
+      referencedPks: ['handle'],
+      options: ['isValue'],
     }),
   ]),
 })

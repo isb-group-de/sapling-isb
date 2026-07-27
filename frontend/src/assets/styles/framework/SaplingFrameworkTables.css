@@ -923,6 +923,29 @@
   text-align: left;
 }
 
+.sapling-table-reference-label {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  max-width: var(--sapling-panel-width-sm);
+  margin-left: var(--sapling-space-2xs);
+  font-size: var(--sapling-text-meta-size);
+  line-height: 0.95;
+  text-align: left;
+}
+
+.sapling-table-reference-label__line {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sapling-table-reference-label__line--reference {
+  font-size: 0.75rem;
+  opacity: 0.68;
+}
+
 .sapling-table-generic-reference__placeholder {
   color: rgba(255, 255, 255, 0.65);
 }

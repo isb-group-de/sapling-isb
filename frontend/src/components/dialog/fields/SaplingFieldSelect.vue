@@ -35,6 +35,22 @@
           @update:model-value="onActivatorModelUpdate"
           @update:search="onActivatorSearchUpdate"
         >
+          <template #chip="{ props: chipProps, item }">
+            <v-chip v-bind="chipProps" class="sapling-field-select__chip">
+              <span class="sapling-field-select__selection">
+                <span
+                  v-for="line in getAutocompleteItemLines(item)"
+                  :key="`${line.isReference}:${line.value}`"
+                  class="sapling-field-select__selection-line"
+                  :class="{
+                    'sapling-field-select__selection-line--reference': line.isReference,
+                  }"
+                >
+                  {{ line.value }}
+                </span>
+              </span>
+            </v-chip>
+          </template>
           <template #append-inner>
             <v-btn
               class="sapling-field-select__menu-toggle"
@@ -98,8 +114,8 @@ import SaplingTable from '@/components/table/SaplingTable.vue'
 import type { SaplingGenericItem } from '@/entity/entity'
 import { useSaplingTable } from '@/composables/table/useSaplingTable'
 import { computed, inject, ref, watch } from 'vue'
-import { getEntityValueLabel } from '@/utils/saplingTableUtil'
 import { useSaplingSelectField } from '@/composables/fields/useSaplingSelectField'
+import { useSaplingEntityValueLabel } from '@/composables/fields/useSaplingEntityValueLabel'
 import { useSaplingReferenceFilter } from '@/composables/fields/useSaplingReferenceFilter'
 import { DEFAULT_PAGE_SIZE_SMALL } from '@/constants/project.constants'
 import ApiGenericService, { type FilterQuery } from '@/services/api.generic.service'
@@ -152,6 +168,7 @@ const {
 } = useSaplingTable(ref(props.entityHandle), DEFAULT_PAGE_SIZE_SMALL, false, false)
 
 const { selectedItems, menuOpen } = useSaplingSelectField(props)
+const { getValueLabel, getValueLabelLines } = useSaplingEntityValueLabel(entityTemplates)
 const { combineFilters, normalizeFilter, areFiltersEqual } = useSaplingReferenceFilter()
 const fieldSearch = ref('')
 const autocompleteItems = ref<SaplingGenericItem[]>([])
@@ -238,7 +255,11 @@ function getTableSearchValue() {
 }
 
 function getAutocompleteItemTitle(item: unknown) {
-  return getEntityValueLabel(resolveSaplingItem(item), entityTemplates.value)
+  return getValueLabel(resolveSaplingItem(item))
+}
+
+function getAutocompleteItemLines(item: unknown) {
+  return getValueLabelLines(resolveSaplingItem(item))
 }
 
 function mergeTableSelection(tableSelectedItems: SaplingGenericItem[]) {

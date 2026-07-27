@@ -126,11 +126,15 @@ The backend derives searchable fields from entity metadata:
 - visible entities are included unless `EntityItem.canRead` is explicitly `false`
 - string-like, persistent, non-security, non-system fields are searched
 - fields marked with `isValue` are preferred for labels and ranking
+- many-to-one and one-to-one references marked with `isValue` contribute the
+  readable `isValue` fields of their target entity to search and labels
 - multi-word queries are matched both as a full phrase and as terms across fields
 
 Results return entity handle, record handle, label, icon, a compact preview, and
 a fallback table path. The frontend renders them in the `Datensätze` / `Records`
 group and opens the matching record through the global generic record dialog.
+Scalar value fields form the first label line; each value reference is rendered
+on its own following line.
 
 Use AI semantic search instead when the user asks natural-language questions
 over long text such as ticket problems, solutions, knowledge articles, effort

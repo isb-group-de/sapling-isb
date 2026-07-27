@@ -11,7 +11,12 @@ import type {
   EntityTemplate,
   SaplingTableHeaderItem,
 } from '@/entity/structure'
-import { canReadReferenceTemplate, getEntityValueLabel } from '@/utils/saplingTableUtil'
+import {
+  canReadReferenceTemplate,
+  getEntityValueLabelLines,
+  type EntityValueLabelLine,
+  type EntityValueReferenceTemplates,
+} from '@/utils/saplingTableUtil'
 import { buildMailMenuActions } from '@/utils/saplingMailMenuUtil'
 import { useSaplingMailDialog } from '@/composables/dialog/useSaplingMailDialog'
 import { useSaplingMessageCenter } from '@/composables/system/useSaplingMessageCenter'
@@ -153,7 +158,7 @@ export function useSaplingTableRow(props: UseSaplingTableRowProps, emit: UseSapl
           mailToLabel: mailToLabel.value,
         }),
   )
-  const compactPanelTitles = computed<Record<string, string>>(() => {
+  const compactPanelTitleLines = computed<Record<string, EntityValueLabelLine[]>>(() => {
     const referenceColumns = props.columns.filter(
       (column) => Boolean(column.key) && isReferenceColumn(column),
     )
@@ -161,7 +166,7 @@ export function useSaplingTableRow(props: UseSaplingTableRowProps, emit: UseSapl
       return {}
     }
 
-    const titles: Record<string, string> = {}
+    const titles: Record<string, EntityValueLabelLine[]> = {}
 
     for (const column of referenceColumns) {
       const columnKey = column.key as string
@@ -173,13 +178,15 @@ export function useSaplingTableRow(props: UseSaplingTableRowProps, emit: UseSapl
         !referenceValue ||
         typeof referenceValue !== 'object'
       ) {
-        titles[columnKey] = ''
+        titles[columnKey] = []
         continue
       }
 
-      titles[columnKey] = getEntityValueLabel(
-        referenceValue as SaplingGenericItem,
-        getReferenceTemplates(column.referenceName),
+      const referenceTemplates = getReferenceTemplates(column.referenceName)
+      titles[columnKey] = getEntityValueLabelLines(
+        resolveCircularValueReferences(referenceValue as SaplingGenericItem, referenceTemplates),
+        referenceTemplates,
+        getValueReferenceTemplates(referenceTemplates),
       )
     }
 
@@ -200,6 +207,53 @@ export function useSaplingTableRow(props: UseSaplingTableRowProps, emit: UseSapl
     return getReferenceState(referenceName)?.entity ?? null
   }
 
+  function getValueReferenceTemplates(templates: EntityTemplate[]): EntityValueReferenceTemplates {
+    return Object.fromEntries(
+      templates
+        .filter(
+          (template) =>
+            REFERENCE_COLUMN_KINDS.includes(template.kind ?? '') &&
+            template.options?.includes('isValue') &&
+            Boolean(template.referenceName),
+        )
+        .map((template) => [
+          template.referenceName as string,
+          getReferenceTemplates(template.referenceName),
+        ]),
+    )
+  }
+
+  function resolveCircularValueReferences(
+    referenceItem: SaplingGenericItem,
+    templates: EntityTemplate[],
+  ): SaplingGenericItem {
+    const sourceHandle = getItemHandle(props.item)
+    if (sourceHandle == null) {
+      return referenceItem
+    }
+
+    const replacements = templates.flatMap((template) => {
+      if (!template.options?.includes('isValue') || template.referenceName !== props.entityHandle) {
+        return []
+      }
+
+      const nestedValue = referenceItem[template.name]
+      if (
+        !nestedValue ||
+        typeof nestedValue !== 'object' ||
+        String(getItemHandle(nestedValue as SaplingGenericItem) ?? '') !== String(sourceHandle)
+      ) {
+        return []
+      }
+
+      return [[template.name, props.item] as const]
+    })
+
+    return replacements.length > 0
+      ? { ...referenceItem, ...Object.fromEntries(replacements) }
+      : referenceItem
+  }
+
   function isReferenceColumn(column: EntityTemplate) {
     return REFERENCE_COLUMN_KINDS.includes(column.kind ?? '') && Boolean(column.referenceName)
   }
@@ -216,8 +270,8 @@ export function useSaplingTableRow(props: UseSaplingTableRowProps, emit: UseSapl
     return getReferenceState(column.referenceName)?.isLoading ?? false
   }
 
-  function getCompactPanelTitle(columnKey: string): string {
-    return compactPanelTitles.value[columnKey] ?? ''
+  function getCompactPanelTitleLines(columnKey: string): EntityValueLabelLine[] {
+    return compactPanelTitleLines.value[columnKey] ?? []
   }
   // #endregion
 
@@ -643,7 +697,7 @@ export function useSaplingTableRow(props: UseSaplingTableRowProps, emit: UseSapl
     isReferenceColumn,
     canReadReferenceColumn,
     isReferenceLoading,
-    getCompactPanelTitle,
+    getCompactPanelTitleLines,
     isDateTimeColumn,
     isDateColumn,
     isTimeColumn,
