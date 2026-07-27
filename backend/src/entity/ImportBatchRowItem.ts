@@ -89,6 +89,7 @@ export class ImportBatchRowItem {
   targetReference?: string | null;
 
   @ApiPropertyOptional()
+  @Sapling(['isSearchExcluded'])
   @Property({ length: 128, nullable: true })
   externalKeyHash?: string | null;
 
