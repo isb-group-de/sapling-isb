@@ -26,7 +26,7 @@ export class ImportBatchRowItem {
   batch!: Rel<ImportBatchItem>;
 
   @ApiProperty()
-  @Sapling(['isValue'])
+  @Sapling(['isValue', 'isSearchExcluded'])
   @SaplingForm({
     order: 100,
     group: 'importBatchRow.groupBasics',
