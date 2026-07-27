@@ -262,6 +262,17 @@ Common responsibilities:
 - upload behavior
 - table component state
 
+The shared table refresh action opens a menu with an immediate refresh and
+temporary automatic refresh intervals of one, five, or ten minutes. Automatic
+refresh belongs to the mounted table instance, pauses while the browser tab is
+hidden or the table has an open create/edit dialog, refreshes once when a hidden
+tab becomes visible again, and is discarded when the user leaves the page or
+closes the containing dialog. Closing a create/edit dialog resumes the selected
+interval from the beginning so an in-progress draft is never refreshed out
+from under the user. While active, the toolbar button shows a compact,
+tabular-numeric seconds countdown and the open menu shows the same remaining
+time as a full localized label.
+
 Table columns are driven by template metadata and translations.
 `useSaplingTable` owns the entity lifecycle, paging, server loading, and event
 coordination. Form-configuration catalog loading, selection, and overlay state

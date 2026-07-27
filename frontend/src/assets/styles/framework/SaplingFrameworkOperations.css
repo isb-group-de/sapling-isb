@@ -232,8 +232,17 @@
   gap: var(--sapling-gap-xs);
 }
 
+.sapling-permission-summary-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(9rem, 100%), 1fr));
+}
+
 .sapling-admin-summary-card {
   padding: var(--sapling-gap-md);
+}
+
+.sapling-permission-summary-card {
+  min-width: 0;
+  overflow: hidden;
 }
 
 .sapling-admin-summary-grid span {
@@ -241,8 +250,25 @@
   opacity: var(--sapling-opacity-secondary);
 }
 
+.sapling-permission-summary-card > span {
+  display: -webkit-box;
+  max-width: 100%;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
 .sapling-admin-summary-grid strong {
   font-size: 1.06rem;
+}
+
+.sapling-permission-summary-card > strong {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .sapling-admin-empty-state,

@@ -135,6 +135,48 @@ export class SocialMediaItem {
   @ManyToOne(() => PersonItem, { nullable: false })
   person!: Rel<PersonItem>;
 
+  /**
+   * First name of the person selected in person.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 101,
+    group: 'socialMedia.groupReference',
+    groupOrder: 600,
+    width: 1,
+    visible: false,
+    tableOrder: 101,
+    tableVisible: false,
+    mobileOrder: 101,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get personFirstName(): string | null | undefined {
+    return this.person?.firstName;
+  }
+
+  /**
+   * Last name of the person selected in person.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 102,
+    group: 'socialMedia.groupReference',
+    groupOrder: 600,
+    width: 1,
+    visible: false,
+    tableOrder: 102,
+    tableVisible: false,
+    mobileOrder: 102,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get personLastName(): string | undefined {
+    return this.person?.lastName;
+  }
+
   @ApiProperty({ type: () => SocialMediaTypeItem })
   @Sapling(['isChip'])
   @SaplingForm({

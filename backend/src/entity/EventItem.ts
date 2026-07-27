@@ -199,6 +199,42 @@ export class EventItem {
   recurrenceRule?: string | null;
 
   /**
+   * Time reserved immediately before the event, expressed as HH:mm:ss.
+   */
+  @ApiPropertyOptional({ default: '00:00:00' })
+  @SaplingForm({
+    order: 450,
+    group: 'event.groupSchedule',
+    groupOrder: 300,
+    width: 1,
+    visible: true,
+    tableOrder: 450,
+    tableVisible: false,
+    mobileOrder: 450,
+    mobileVisible: false,
+  })
+  @Property({ type: 'time', nullable: false, default: '00:00:00' })
+  preparationDuration: string = '00:00:00';
+
+  /**
+   * Time reserved immediately after the event, expressed as HH:mm:ss.
+   */
+  @ApiPropertyOptional({ default: '00:00:00' })
+  @SaplingForm({
+    order: 500,
+    group: 'event.groupSchedule',
+    groupOrder: 300,
+    width: 1,
+    visible: true,
+    tableOrder: 500,
+    tableVisible: false,
+    mobileOrder: 500,
+    mobileVisible: false,
+  })
+  @Property({ type: 'time', nullable: false, default: '00:00:00' })
+  followUpDuration: string = '00:00:00';
+
+  /**
    * URL for the online meeting (optional).
    * @type {string}
    */
@@ -284,6 +320,27 @@ export class EventItem {
   })
   @ManyToOne(() => CompanyItem, { nullable: true })
   assigneeCompany?: Rel<CompanyItem>;
+
+  /**
+   * Name of the company selected in assigneeCompany.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 201,
+    group: 'event.groupReference',
+    groupOrder: 500,
+    width: 2,
+    visible: false,
+    tableOrder: 201,
+    tableVisible: false,
+    mobileOrder: 201,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get assigneeCompanyName(): string | undefined {
+    return this.assigneeCompany?.name;
+  }
   /**
    * The person assigned to this event.
    * @type {PersonItem}
@@ -311,6 +368,48 @@ export class EventItem {
   assigneePerson?: Rel<PersonItem>;
 
   /**
+   * First name of the person selected in assigneePerson.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 301,
+    group: 'event.groupReference',
+    groupOrder: 500,
+    width: 1,
+    visible: false,
+    tableOrder: 301,
+    tableVisible: false,
+    mobileOrder: 301,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get assigneePersonFirstName(): string | null | undefined {
+    return this.assigneePerson?.firstName;
+  }
+
+  /**
+   * Last name of the person selected in assigneePerson.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 302,
+    group: 'event.groupReference',
+    groupOrder: 500,
+    width: 1,
+    visible: false,
+    tableOrder: 302,
+    tableVisible: false,
+    mobileOrder: 302,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get assigneePersonLastName(): string | undefined {
+    return this.assigneePerson?.lastName;
+  }
+
+  /**
    * The company that created the event.
    * @type {CompanyItem}
    */
@@ -329,6 +428,27 @@ export class EventItem {
   })
   @ManyToOne(() => CompanyItem, { nullable: false })
   creatorCompany?: Rel<CompanyItem>;
+
+  /**
+   * Name of the company selected in creatorCompany.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 401,
+    group: 'event.groupReference',
+    groupOrder: 500,
+    width: 2,
+    visible: false,
+    tableOrder: 401,
+    tableVisible: false,
+    mobileOrder: 401,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get creatorCompanyName(): string | undefined {
+    return this.creatorCompany?.name;
+  }
 
   /**
    * The person who created the event.
@@ -355,6 +475,48 @@ export class EventItem {
   })
   @ManyToOne(() => PersonItem, { nullable: false })
   creatorPerson?: Rel<PersonItem>;
+
+  /**
+   * First name of the person selected in creatorPerson.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 501,
+    group: 'event.groupReference',
+    groupOrder: 500,
+    width: 1,
+    visible: false,
+    tableOrder: 501,
+    tableVisible: false,
+    mobileOrder: 501,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get creatorPersonFirstName(): string | null | undefined {
+    return this.creatorPerson?.firstName;
+  }
+
+  /**
+   * Last name of the person selected in creatorPerson.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 502,
+    group: 'event.groupReference',
+    groupOrder: 500,
+    width: 1,
+    visible: false,
+    tableOrder: 502,
+    tableVisible: false,
+    mobileOrder: 502,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get creatorPersonLastName(): string | undefined {
+    return this.creatorPerson?.lastName;
+  }
 
   /**
    * The ticket associated with this event (optional).

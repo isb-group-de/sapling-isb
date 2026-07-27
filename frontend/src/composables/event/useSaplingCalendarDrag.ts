@@ -8,6 +8,7 @@ import {
   buildDraftEventPayload,
   getCalendarEventHandle,
   getCalendarInteractionForcedDirtyFields,
+  isHolidayCalendarEvent,
   isReadonlyCalendarEvent,
   type SaplingCalendarEvent,
 } from '@/composables/event/eventCalendar.utils'
@@ -212,7 +213,7 @@ export function useSaplingCalendarDrag(options: UseSaplingCalendarDragOptions) {
   }
 
   function getEventColor(event: CalendarEvent): string {
-    const fallbackColor = isReadonlyCalendarEvent(event)
+    const fallbackColor = isHolidayCalendarEvent(event)
       ? DEFAULT_HOLIDAY_COLOR
       : DEFAULT_EVENT_COLOR
     const color =

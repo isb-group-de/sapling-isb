@@ -120,6 +120,27 @@ describe('useSaplingEventEditor', () => {
     expect(harness.showEditDialog.value).toBe(true)
   })
 
+  it('ignores derived preparation and follow-up placeholders', async () => {
+    const harness = createHarness()
+    const placeholder = {
+      start: 1,
+      end: 2,
+      timed: true,
+      saplingSource: 'eventBuffer',
+      event: {
+        bufferKind: 'preparation',
+        parentEventHandle: 42,
+        title: 'Vorbereitung: Planning',
+        isAllDay: false,
+      },
+    } as SaplingCalendarEvent
+
+    await harness.editor.openEventEditor(placeholder)
+
+    expect(harness.loadPersistedEvent).not.toHaveBeenCalled()
+    expect(harness.showEditDialog.value).toBe(false)
+  })
+
   it('opens a route-selected event once and aligns the calendar date', async () => {
     mocks.route.query = { open: '42' }
     const harness = createHarness()

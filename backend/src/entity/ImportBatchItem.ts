@@ -91,6 +91,48 @@ export class ImportBatchItem {
   @ManyToOne(() => PersonItem, { nullable: false })
   createdBy!: Rel<PersonItem>;
 
+  /**
+   * First name of the person selected in createdBy.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 301,
+    group: 'importBatch.groupReference',
+    groupOrder: 100,
+    width: 1,
+    visible: false,
+    tableOrder: 301,
+    tableVisible: false,
+    mobileOrder: 301,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get createdByFirstName(): string | null | undefined {
+    return this.createdBy?.firstName;
+  }
+
+  /**
+   * Last name of the person selected in createdBy.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 302,
+    group: 'importBatch.groupReference',
+    groupOrder: 100,
+    width: 1,
+    visible: false,
+    tableOrder: 302,
+    tableVisible: false,
+    mobileOrder: 302,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get createdByLastName(): string | undefined {
+    return this.createdBy?.lastName;
+  }
+
   @ApiProperty()
   @Sapling(['isValue'])
   @SaplingForm({

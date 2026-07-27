@@ -190,6 +190,48 @@ export class AiChatSessionItem {
   @ManyToOne(() => PersonItem, { nullable: false })
   person!: Rel<PersonItem>;
 
+  /**
+   * First name of the person selected in person.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 401,
+    group: 'aiChatSession.groupReference',
+    groupOrder: 200,
+    width: 1,
+    visible: false,
+    tableOrder: 401,
+    tableVisible: false,
+    mobileOrder: 401,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get personFirstName(): string | null | undefined {
+    return this.person?.firstName;
+  }
+
+  /**
+   * Last name of the person selected in person.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 402,
+    group: 'aiChatSession.groupReference',
+    groupOrder: 200,
+    width: 1,
+    visible: false,
+    tableOrder: 402,
+    tableVisible: false,
+    mobileOrder: 402,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get personLastName(): string | undefined {
+    return this.person?.lastName;
+  }
+
   @ApiPropertyOptional({ type: () => AiChatMessageItem, isArray: true })
   @OneToMany(() => AiChatMessageItem, (message) => message.session)
   messages: Collection<AiChatMessageItem> = new Collection<AiChatMessageItem>(

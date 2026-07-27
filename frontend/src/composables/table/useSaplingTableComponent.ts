@@ -24,6 +24,7 @@ import {
 import { useSaplingTableFilters } from '@/composables/table/useSaplingTableFilters'
 import { useSaplingTableSelection } from '@/composables/table/useSaplingTableSelection'
 import { useSaplingTableActions } from '@/composables/table/useSaplingTableActions'
+import { useSaplingTableAutoRefresh } from '@/composables/table/useSaplingTableAutoRefresh'
 
 export interface UseSaplingTableProps {
   items: SaplingGenericItem[]
@@ -123,7 +124,7 @@ export function useSaplingTableComponent(props: UseSaplingTableProps, emit: UseS
     exportCSV,
     exportCSVTemplate,
     importCSVFile,
-    refreshTable,
+    refreshTable: reloadTable,
     exportSelectedJSON,
     openContextMenu,
     closeContextMenu,
@@ -171,6 +172,17 @@ export function useSaplingTableComponent(props: UseSaplingTableProps, emit: UseS
     selectedRows,
     clearSelection,
   })
+  const {
+    autoRefreshIntervalMinutes,
+    secondsUntilRefresh,
+    setAutoRefreshInterval,
+    restartAutoRefreshTimer,
+  } = useSaplingTableAutoRefresh(
+    reloadTable,
+    () =>
+      props.isLoading ||
+      (editDialog.value.visible && ['create', 'edit'].includes(editDialog.value.mode)),
+  )
   const initialEditDialogShown = ref(false)
   const lastAutoOpenedEditKey = ref<string | null>(null)
   const tableContainerRef = ref<HTMLElement | null>(null)
@@ -189,6 +201,11 @@ export function useSaplingTableComponent(props: UseSaplingTableProps, emit: UseS
   )
   const showToolbarActionsInline = computed(() => windowWidth.value >= COMPACT_TOOLBAR_BREAKPOINT)
   const currentPermissions = computed(() => currentPermissionStore.accumulatedPermission ?? [])
+
+  function refreshTable(): void {
+    reloadTable()
+    restartAutoRefreshTimer()
+  }
   // #endregion
 
   // #region Lifecycle
@@ -303,6 +320,13 @@ export function useSaplingTableComponent(props: UseSaplingTableProps, emit: UseS
     },
     { immediate: true },
   )
+
+  watch(
+    () => props.tableKey,
+    () => {
+      setAutoRefreshInterval(null)
+    },
+  )
   // #endregion
 
   // #region Computed
@@ -402,6 +426,8 @@ export function useSaplingTableComponent(props: UseSaplingTableProps, emit: UseS
     isImportingCSV,
     showToolbarActionsInline,
     isMobileTable,
+    autoRefreshIntervalMinutes,
+    secondsUntilRefresh,
     multiSelectScriptButtons,
     rowScriptButtons,
     onSearchUpdate,
@@ -419,6 +445,7 @@ export function useSaplingTableComponent(props: UseSaplingTableProps, emit: UseS
     exportCSVTemplate,
     importCSVFile,
     refreshTable,
+    setAutoRefreshInterval,
     exportSelectedJSON,
     openContextMenu,
     closeContextMenu,

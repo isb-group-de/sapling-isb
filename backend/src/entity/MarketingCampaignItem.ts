@@ -178,6 +178,48 @@ export class MarketingCampaignItem {
   @ManyToOne(() => PersonItem, { nullable: true })
   ownerPerson?: Rel<PersonItem>;
 
+  /**
+   * First name of the person selected in ownerPerson.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 301,
+    group: 'marketingCampaign.groupReference',
+    groupOrder: 500,
+    width: 1,
+    visible: false,
+    tableOrder: 301,
+    tableVisible: false,
+    mobileOrder: 301,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get ownerPersonFirstName(): string | null | undefined {
+    return this.ownerPerson?.firstName;
+  }
+
+  /**
+   * Last name of the person selected in ownerPerson.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 302,
+    group: 'marketingCampaign.groupReference',
+    groupOrder: 500,
+    width: 1,
+    visible: false,
+    tableOrder: 302,
+    tableVisible: false,
+    mobileOrder: 302,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get ownerPersonLastName(): string | undefined {
+    return this.ownerPerson?.lastName;
+  }
+
   @ApiPropertyOptional({ type: () => SalesOpportunitySourceItem })
   @SaplingForm({
     order: 400,

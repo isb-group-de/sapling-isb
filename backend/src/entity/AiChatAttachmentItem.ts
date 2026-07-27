@@ -60,6 +60,48 @@ export class AiChatAttachmentItem {
   @ManyToOne(() => PersonItem, { nullable: false })
   person!: Rel<PersonItem>;
 
+  /**
+   * First name of the person selected in person.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 301,
+    group: 'aiChatAttachment.groupReference',
+    groupOrder: 100,
+    width: 1,
+    visible: false,
+    tableOrder: 301,
+    tableVisible: false,
+    mobileOrder: 301,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get personFirstName(): string | null | undefined {
+    return this.person?.firstName;
+  }
+
+  /**
+   * Last name of the person selected in person.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 302,
+    group: 'aiChatAttachment.groupReference',
+    groupOrder: 100,
+    width: 1,
+    visible: false,
+    tableOrder: 302,
+    tableVisible: false,
+    mobileOrder: 302,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get personLastName(): string | undefined {
+    return this.person?.lastName;
+  }
+
   @ApiProperty({ type: () => DocumentItem })
   @SaplingForm({
     order: 400,

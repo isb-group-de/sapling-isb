@@ -1,9 +1,11 @@
 import type { Ref } from 'vue'
+import { i18n } from '@/i18n'
 import ApiGenericService, { type FilterQuery } from '@/services/api.generic.service'
 import type { EventItem, HolidayItem, PersonItem } from '@/entity/entity'
 import { expandRecurringEvent } from '@/utils/eventRecurrence'
 import { parseLocalCalendarDate, type CalendarDatePair, type CalendarType } from './eventDate.utils'
 import {
+  addEventBufferPlaceholders,
   filterByCalendarMode,
   filterWorkweekEvents,
   toHolidayCalendarEvent,
@@ -20,6 +22,8 @@ const EVENT_CALENDAR_FIELDS = [
   'isAllDay',
   'isPrivate',
   'recurrenceRule',
+  'preparationDuration',
+  'followUpDuration',
   'onlineMeetingURL',
   'type',
   'participants',
@@ -164,10 +168,18 @@ export function useSaplingEventData(options: UseSaplingEventDataOptions) {
       filterByCalendarMode(
         [
           ...response.data.flatMap((event) =>
-            expandRecurringEvent(event, startDate, endDate).map((calendarEvent) => ({
-              ...calendarEvent,
-              saplingSource: 'event' as const,
-            })),
+            expandRecurringEvent(event, startDate, endDate).flatMap((calendarEvent) =>
+              addEventBufferPlaceholders(
+                {
+                  ...calendarEvent,
+                  saplingSource: 'event' as const,
+                },
+                {
+                  preparation: i18n.global.t('event.preparationPlaceholder'),
+                  followUp: i18n.global.t('event.followUpPlaceholder'),
+                },
+              ),
+            ),
           ),
           ...holidayResponse.data.map(toHolidayCalendarEvent),
         ],

@@ -82,6 +82,48 @@ export class DashboardTemplateItem {
   @ManyToOne(() => PersonItem, { nullable: false })
   person!: Rel<PersonItem>;
 
+  /**
+   * First name of the person selected in person.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 101,
+    group: 'dashboardTemplate.groupReference',
+    groupOrder: 300,
+    width: 1,
+    visible: false,
+    tableOrder: 101,
+    tableVisible: false,
+    mobileOrder: 101,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get personFirstName(): string | null | undefined {
+    return this.person?.firstName;
+  }
+
+  /**
+   * Last name of the person selected in person.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 102,
+    group: 'dashboardTemplate.groupReference',
+    groupOrder: 300,
+    width: 1,
+    visible: false,
+    tableOrder: 102,
+    tableVisible: false,
+    mobileOrder: 102,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get personLastName(): string | undefined {
+    return this.person?.lastName;
+  }
+
   @ApiPropertyOptional({ type: () => KpiItem, isArray: true })
   @ManyToMany(() => KpiItem, undefined, { owner: true })
   kpis: Collection<KpiItem> = new Collection<KpiItem>(this);

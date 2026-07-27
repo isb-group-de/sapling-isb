@@ -189,7 +189,7 @@ export class AddressItem {
     order: 100,
     group: 'address.groupReference',
     groupOrder: 300,
-    width: 1,
+    width: 2,
     visible: true,
     tableOrder: 100,
     tableVisible: true,
@@ -198,6 +198,27 @@ export class AddressItem {
   })
   @ManyToOne(() => CompanyItem, { nullable: false })
   company!: Rel<CompanyItem>;
+
+  /**
+   * Name of the company selected in company.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 101,
+    group: 'address.groupReference',
+    groupOrder: 300,
+    width: 2,
+    visible: false,
+    tableOrder: 101,
+    tableVisible: false,
+    mobileOrder: 101,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get companyName(): string | undefined {
+    return this.company?.name;
+  }
 
   /**
    * Type assigned to this address.

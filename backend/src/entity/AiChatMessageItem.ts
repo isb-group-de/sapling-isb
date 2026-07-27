@@ -42,6 +42,48 @@ export class AiChatMessageItem {
   @ManyToOne(() => PersonItem, { nullable: false })
   person!: Rel<PersonItem>;
 
+  /**
+   * First name of the person selected in person.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 201,
+    group: 'aiChatMessage.groupReference',
+    groupOrder: 100,
+    width: 1,
+    visible: false,
+    tableOrder: 201,
+    tableVisible: false,
+    mobileOrder: 201,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get personFirstName(): string | null | undefined {
+    return this.person?.firstName;
+  }
+
+  /**
+   * Last name of the person selected in person.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 202,
+    group: 'aiChatMessage.groupReference',
+    groupOrder: 100,
+    width: 1,
+    visible: false,
+    tableOrder: 202,
+    tableVisible: false,
+    mobileOrder: 202,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get personLastName(): string | undefined {
+    return this.person?.lastName;
+  }
+
   @ApiProperty()
   @Sapling(['isChip'])
   @SaplingForm({

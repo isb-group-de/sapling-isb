@@ -135,6 +135,27 @@ export class EffortEstimateItem {
   @ManyToOne(() => CompanyItem, { nullable: true })
   assigneeCompany?: Rel<CompanyItem>;
 
+  /**
+   * Name of the company selected in assigneeCompany.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 101,
+    group: 'effortEstimate.groupReference',
+    groupOrder: 300,
+    width: 2,
+    visible: false,
+    tableOrder: 101,
+    tableVisible: false,
+    mobileOrder: 101,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get assigneeCompanyName(): string | undefined {
+    return this.assigneeCompany?.name;
+  }
+
   @ApiPropertyOptional({ type: () => PersonItem })
   @Sapling(['isPerson', 'isPartner', 'isCurrentPerson'])
   @SaplingDependsOn({
@@ -157,6 +178,48 @@ export class EffortEstimateItem {
   @ManyToOne(() => PersonItem, { nullable: true })
   assigneePerson?: Rel<PersonItem>;
 
+  /**
+   * First name of the person selected in assigneePerson.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 201,
+    group: 'effortEstimate.groupReference',
+    groupOrder: 300,
+    width: 1,
+    visible: false,
+    tableOrder: 201,
+    tableVisible: false,
+    mobileOrder: 201,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get assigneePersonFirstName(): string | null | undefined {
+    return this.assigneePerson?.firstName;
+  }
+
+  /**
+   * Last name of the person selected in assigneePerson.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 202,
+    group: 'effortEstimate.groupReference',
+    groupOrder: 300,
+    width: 1,
+    visible: false,
+    tableOrder: 202,
+    tableVisible: false,
+    mobileOrder: 202,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get assigneePersonLastName(): string | undefined {
+    return this.assigneePerson?.lastName;
+  }
+
   @ApiPropertyOptional({ type: () => CompanyItem })
   @Sapling(['isCompany', 'isCurrentCompany', 'isCustomer'])
   @SaplingForm({
@@ -172,6 +235,27 @@ export class EffortEstimateItem {
   })
   @ManyToOne(() => CompanyItem, { nullable: true })
   creatorCompany?: Rel<CompanyItem>;
+
+  /**
+   * Name of the company selected in creatorCompany.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 301,
+    group: 'effortEstimate.groupReference',
+    groupOrder: 300,
+    width: 2,
+    visible: false,
+    tableOrder: 301,
+    tableVisible: false,
+    mobileOrder: 301,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get creatorCompanyName(): string | undefined {
+    return this.creatorCompany?.name;
+  }
 
   @ApiPropertyOptional({ type: () => PersonItem })
   @Sapling(['isPerson', 'isPartner', 'isCurrentPerson', 'isCustomer'])
@@ -194,6 +278,48 @@ export class EffortEstimateItem {
   })
   @ManyToOne(() => PersonItem, { nullable: true })
   creatorPerson?: Rel<PersonItem>;
+
+  /**
+   * First name of the person selected in creatorPerson.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 401,
+    group: 'effortEstimate.groupReference',
+    groupOrder: 300,
+    width: 1,
+    visible: false,
+    tableOrder: 401,
+    tableVisible: false,
+    mobileOrder: 401,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get creatorPersonFirstName(): string | null | undefined {
+    return this.creatorPerson?.firstName;
+  }
+
+  /**
+   * Last name of the person selected in creatorPerson.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 402,
+    group: 'effortEstimate.groupReference',
+    groupOrder: 300,
+    width: 1,
+    visible: false,
+    tableOrder: 402,
+    tableVisible: false,
+    mobileOrder: 402,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get creatorPersonLastName(): string | undefined {
+    return this.creatorPerson?.lastName;
+  }
 
   @ApiPropertyOptional({ type: () => SalesOpportunityItem })
   @SaplingForm({

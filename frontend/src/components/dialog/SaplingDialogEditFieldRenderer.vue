@@ -187,6 +187,18 @@
       :rules="rules"
       @update:model-value="(val: string) => updateField(template.name, val)"
     />
+    <SaplingFieldEventBufferDuration
+      v-else-if="
+        template.type === 'time' &&
+        entityHandle === 'event' &&
+        ['preparationDuration', 'followUpDuration'].includes(template.name)
+      "
+      :label="requiredLabel"
+      :model-value="stringValue(template.name) || '00:00:00'"
+      :disabled="fieldDisabled"
+      :rules="rules"
+      @update:model-value="(val: string) => updateField(template.name, val)"
+    />
     <SaplingTimeField
       v-else-if="template.type === 'time' || isRenderer('time')"
       :label="requiredLabel"
@@ -322,6 +334,9 @@ const SaplingDateTypeField = defineAsyncComponent(
 )
 const SaplingTimeField = defineAsyncComponent(
   () => import('@/components/dialog/fields/SaplingFieldTime.vue'),
+)
+const SaplingFieldEventBufferDuration = defineAsyncComponent(
+  () => import('@/components/dialog/fields/SaplingFieldEventBufferDuration.vue'),
 )
 const SaplingShortTextField = defineAsyncComponent(
   () => import('@/components/dialog/fields/SaplingFieldShortText.vue'),

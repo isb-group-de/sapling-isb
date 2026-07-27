@@ -75,6 +75,14 @@ beforeEach(() => {
 })
 
 describe('useSaplingTableTransferActions', () => {
+  it('reloads the table when a refresh is requested', () => {
+    const subject = createSubject()
+
+    subject.refreshTable()
+
+    expect(mocks.reload).toHaveBeenCalledOnce()
+  })
+
   it('imports supported CSV files and reloads the table', async () => {
     const subject = createSubject()
     const file = {

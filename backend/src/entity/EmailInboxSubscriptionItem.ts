@@ -63,6 +63,48 @@ export class EmailInboxSubscriptionItem {
   @ManyToOne(() => PersonItem, { nullable: false })
   processingPerson!: Rel<PersonItem>;
 
+  /**
+   * First name of the person selected in processingPerson.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 201,
+    group: 'emailInboxSubscription.groupReference',
+    groupOrder: 200,
+    width: 1,
+    visible: false,
+    tableOrder: 201,
+    tableVisible: false,
+    mobileOrder: 201,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get processingPersonFirstName(): string | null | undefined {
+    return this.processingPerson?.firstName;
+  }
+
+  /**
+   * Last name of the person selected in processingPerson.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 202,
+    group: 'emailInboxSubscription.groupReference',
+    groupOrder: 200,
+    width: 1,
+    visible: false,
+    tableOrder: 202,
+    tableVisible: false,
+    mobileOrder: 202,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get processingPersonLastName(): string | undefined {
+    return this.processingPerson?.lastName;
+  }
+
   @ApiPropertyOptional({ type: () => AiAgentItem })
   @Sapling(['isChip'])
   @SaplingForm({

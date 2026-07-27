@@ -27,6 +27,7 @@ import {
   type GenericUpdateConcurrencyOptions,
 } from './generic-update-conflict.service';
 import { FieldPermissionService } from '../current/field-permission.service';
+import { normalizeEventBufferMutationPayload } from '../../calendar/event-buffer.utils';
 
 type GenericMutationPayload = {
   createdAt?: Date;
@@ -76,7 +77,10 @@ export class GenericEntityMutationService {
     currentUser: PersonItem,
     scriptContext: ScriptServerContext,
   ): Promise<object> {
-    data = this.genericPayloadService.sanitizeClientMutationPayload(data);
+    data = normalizeEventBufferMutationPayload(
+      entityHandle,
+      this.genericPayloadService.sanitizeClientMutationPayload(data),
+    );
     const template = this.templateService.getEntityTemplate(entityHandle);
     const permissionTemplate =
       await this.fieldPermissions.getTemplates(entityHandle);
@@ -211,7 +215,10 @@ export class GenericEntityMutationService {
     concurrencyOptions: GenericUpdateConcurrencyOptions,
     lifecycleOptions: GenericMutationLifecycleOptions = {},
   ): Promise<object> {
-    data = this.genericPayloadService.sanitizeClientMutationPayload(data);
+    data = normalizeEventBufferMutationPayload(
+      entityHandle,
+      this.genericPayloadService.sanitizeClientMutationPayload(data),
+    );
     const updatePayload =
       this.genericUpdateConflictService.extractConcurrencyMetadata(
         data,

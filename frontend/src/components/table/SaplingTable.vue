@@ -67,6 +67,8 @@
               :is-downloading-json="isDownloadingJSON"
               :is-importing-csv="isImportingCSV"
               :refresh-button-label="refreshButtonLabel"
+              :auto-refresh-interval-minutes="autoRefreshIntervalMinutes"
+              :seconds-until-refresh="secondsUntilRefresh"
               :show-favorite="showFavoriteButton"
               :show-import="showImportButton"
               :show-add="showAddButton"
@@ -81,6 +83,7 @@
               @download-csv-template="exportCSVTemplate"
               @import-csv="openImportFilePicker"
               @refresh="refreshTable"
+              @update:auto-refresh-interval-minutes="setAutoRefreshInterval"
               @favorite="openFavoriteDialog"
               @select-favorite="selectFavorite"
               @select-form-config="emit('selectFormConfig', $event)"
@@ -454,11 +457,14 @@ const {
   isColumnFilterable,
   showToolbarActionsInline,
   isMobileTable,
+  autoRefreshIntervalMinutes,
+  secondsUntilRefresh,
   downloadJSON,
   exportCSV,
   exportCSVTemplate,
   importCSVFile,
   refreshTable,
+  setAutoRefreshInterval,
   exportSelectedJSON,
   openContextMenu,
   onContextMenuAction,

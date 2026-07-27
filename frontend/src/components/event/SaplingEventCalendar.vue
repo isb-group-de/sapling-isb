@@ -40,7 +40,7 @@
         :open-on-hover="!props.isDragActive"
         :open-delay="500"
         :close-delay="250"
-        :disabled="props.isDragActive"
+        :disabled="props.isDragActive || isBufferEvent(event)"
         :close-on-content-click="false"
         :open-on-click="false"
         content-class="sapling-calendar-event-tooltip-overlay"
@@ -246,6 +246,7 @@ function getEventCardClasses(event: CalendarEvent) {
     'sapling-calendar-event-card--resizable': shouldShowResizeHandle(event),
     'sapling-calendar-event-card--recurring': isRecurringOccurrence(event),
     'sapling-calendar-event-card--readonly': !isInteractiveEvent(event),
+    'sapling-calendar-event-card--buffer': isBufferEvent(event),
   }
 }
 
@@ -272,11 +273,15 @@ function getResizeHandleIconSize(event: CalendarEvent) {
 }
 
 function isInteractiveEvent(event: CalendarEvent) {
-  return !isHolidayEvent(event)
+  return !isHolidayEvent(event) && !isBufferEvent(event)
 }
 
 function isHolidayEvent(event: CalendarEvent) {
   return (event as CalendarEvent & { saplingSource?: string }).saplingSource === 'holiday'
+}
+
+function isBufferEvent(event: CalendarEvent) {
+  return (event as CalendarEvent & { saplingSource?: string }).saplingSource === 'eventBuffer'
 }
 
 function getEventAccentColor(event: CalendarEvent) {
@@ -291,6 +296,11 @@ function getEventAccentColor(event: CalendarEvent) {
 function getEventIcon(event: CalendarEvent) {
   if (isHolidayEvent(event)) {
     return (event.event as { icon?: string } | undefined)?.icon || 'mdi-calendar-alert'
+  }
+  if (isBufferEvent(event)) {
+    return (event.event as { bufferKind?: string } | undefined)?.bufferKind === 'preparation'
+      ? 'mdi-progress-clock'
+      : 'mdi-clock-check-outline'
   }
 
   return event.event?.type?.icon || 'mdi-calendar-edit'
@@ -318,7 +328,7 @@ function isPrimaryMouseButton(event: Event) {
 }
 
 function onEventMouseDown(nativeEvent: Event, payload: { event: CalendarEvent; timed: boolean }) {
-  if (!isPrimaryMouseButton(nativeEvent)) {
+  if (!isPrimaryMouseButton(nativeEvent) || !isInteractiveEvent(payload.event)) {
     return
   }
 

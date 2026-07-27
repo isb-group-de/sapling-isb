@@ -100,6 +100,31 @@ describe('useSaplingCalendarDrag', () => {
     expect(harness.drag.consumeSuppressedEventClick()).toBe(false)
   })
 
+  it('does not start dragging a derived buffer placeholder', () => {
+    const harness = createHarness()
+    const placeholder = {
+      start: new Date(2026, 6, 15, 8).getTime(),
+      end: new Date(2026, 6, 15, 9).getTime(),
+      timed: true,
+      saplingSource: 'eventBuffer',
+      event: {
+        bufferKind: 'preparation',
+        parentEventHandle: 42,
+        title: 'Vorbereitung: Planning',
+        isAllDay: false,
+      },
+    } as CalendarEvent
+
+    harness.drag.startDrag(new Event('mousedown'), { event: placeholder, timed: true })
+    harness.drag.startTime(new Event('mousedown'), createTimeSlot(8))
+    harness.drag.mouseMove(new Event('mousemove'), createTimeSlot(10))
+    harness.drag.endDrag()
+
+    expect(placeholder.start).toBe(new Date(2026, 6, 15, 8).getTime())
+    expect(placeholder.end).toBe(new Date(2026, 6, 15, 9).getTime())
+    expect(harness.openPersistedEventEditor).not.toHaveBeenCalled()
+  })
+
   it('creates a clean draft with the current person and selected participants', () => {
     const harness = createHarness()
 

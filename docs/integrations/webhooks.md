@@ -37,20 +37,20 @@ backend/src/database/seeder/json-production/webhookSubscription/
 
 `WebhookSubscriptionItem` defines one outbound integration.
 
-| Field | Meaning |
-| --- | --- |
-| `description` | Visible subscription name |
-| `url` | Target URL; may include `{{field}}` replacement for item payloads |
-| `customHeaders` | Optional additional request headers |
-| `containerName` | Optional wrapper property; payload is JSON-stringified into this property |
-| `relations` | Optional relation population list before sanitizing payload |
-| `payloadType` | Payload shape, commonly `list` or `item` |
-| `isActive` | Enables/disables the subscription |
-| `signingSecret` | HMAC secret for `X-Webhook-Signature` |
-| `entity` | Entity being observed |
-| `type` | Lifecycle event such as `afterInsert`, `afterUpdate`, `afterDelete` |
-| `method` | HTTP method: `post`, `put`, `patch`, `delete` |
-| `authenticationType` | `none`, `apikey`, `oauth2`, or `basic` |
+| Field                | Meaning                                                                   |
+| -------------------- | ------------------------------------------------------------------------- |
+| `description`        | Visible subscription name                                                 |
+| `url`                | Target URL; may include `{{field}}` replacement for item payloads         |
+| `customHeaders`      | Optional additional request headers                                       |
+| `containerName`      | Optional wrapper property; payload is JSON-stringified into this property |
+| `relations`          | Optional relation population list before sanitizing payload               |
+| `payloadType`        | Payload shape, commonly `list` or `item`                                  |
+| `isActive`           | Enables/disables the subscription                                         |
+| `signingSecret`      | HMAC secret for `X-Webhook-Signature`                                     |
+| `entity`             | Entity being observed                                                     |
+| `type`               | Lifecycle event such as `afterInsert`, `afterUpdate`, `afterDelete`       |
+| `method`             | HTTP method: `post`, `put`, `patch`, `delete`                             |
+| `authenticationType` | `none`, `apikey`, `oauth2`, or `basic`                                    |
 
 `relations` supports:
 
@@ -62,18 +62,18 @@ backend/src/database/seeder/json-production/webhookSubscription/
 
 `WebhookDeliveryItem` stores one outbound attempt chain.
 
-| Field | Meaning |
-| --- | --- |
-| `status` | Pending, success, failed |
-| `subscription` | Source subscription |
-| `payload` | Prepared and sanitized payload |
-| `requestHeaders` | Headers sent to the endpoint |
-| `responseStatusCode` | Last response status |
-| `responseBody` | Last response body |
-| `responseHeaders` | Last response headers |
-| `completedAt` | Completion timestamp |
-| `attemptCount` | Number of attempts |
-| `nextRetryAt` | Optional retry scheduling hint |
+| Field                | Meaning                                                                                      |
+| -------------------- | -------------------------------------------------------------------------------------------- |
+| `status`             | Pending, success, failed                                                                     |
+| `subscription`       | Source subscription                                                                          |
+| `payload`            | Prepared and sanitized canonical payload; request-specific transformations are not persisted |
+| `requestHeaders`     | Headers sent to the endpoint                                                                 |
+| `responseStatusCode` | Last response status                                                                         |
+| `responseBody`       | Last response body                                                                           |
+| `responseHeaders`    | Last response headers                                                                        |
+| `completedAt`        | Completion timestamp                                                                         |
+| `attemptCount`       | Number of attempts                                                                           |
+| `nextRetryAt`        | Optional retry scheduling hint                                                               |
 
 ## Trigger Flow
 
@@ -101,7 +101,7 @@ Execution flow:
 4. A pending `WebhookDeliveryItem` is persisted.
 5. Redis enabled: BullMQ `webhooks` queue gets `deliver-webhook`.
 6. Redis disabled: `WebhookDeliveryExecutor.execute()` runs immediately.
-7. Executor resolves auth headers, signing, method, URL, and payload wrapping.
+7. Executor resolves auth headers, signing, method, URL, and payload wrapping from a local request copy. Retries therefore start from the unchanged canonical delivery payload.
 8. Success/failure response metadata is persisted.
 
 ## Payload Sanitizing
@@ -125,7 +125,7 @@ X-Webhook-Event: <subscription.type.handle>
 X-Webhook-Signature: <hmac-sha256>
 ```
 
-The signature is computed over `JSON.stringify(delivery.payload)` using `subscription.signingSecret` or an empty string when no secret is configured.
+The signature is computed over `JSON.stringify(requestPayload)` after item selection and optional container wrapping, using `subscription.signingSecret` or an empty string when no secret is configured.
 
 Prefer configuring a non-empty signing secret for production integrations.
 
@@ -133,22 +133,22 @@ Prefer configuring a non-empty signing secret for production integrations.
 
 Supported outbound authentication types:
 
-| Type | Header behavior |
-| --- | --- |
-| `none` | No auth header |
-| `apikey` | Uses configured header name, defaulting to `X-Api-Key` |
-| `basic` | Sends `Authorization: Basic <base64(username:password)>` |
+| Type     | Header behavior                                                 |
+| -------- | --------------------------------------------------------------- |
+| `none`   | No auth header                                                  |
+| `apikey` | Uses configured header name, defaulting to `X-Api-Key`          |
+| `basic`  | Sends `Authorization: Basic <base64(username:password)>`        |
 | `oauth2` | Client credentials grant; sends `Authorization: Bearer <token>` |
 
 OAuth2 tokens are cached on `WebhookAuthenticationOAuth2Item` until `tokenExpiresAt`. The executor refreshes when the cached token is missing or expired.
 
 ## HTTP Method Behavior
 
-| Method | Behavior |
-| --- | --- |
-| `post` | Sends payload as JSON body |
-| `put` | Sends payload as JSON body |
-| `patch` | Sends payload as JSON body |
+| Method   | Behavior                                             |
+| -------- | ---------------------------------------------------- |
+| `post`   | Sends payload as JSON body                           |
+| `put`    | Sends payload as JSON body                           |
+| `patch`  | Sends payload as JSON body                           |
 | `delete` | Converts payload object fields into query parameters |
 
 For `payloadType = item`, when the delivery payload is an array, the executor uses the first item and can replace `{{field}}` placeholders in the URL with base64-encoded field values.

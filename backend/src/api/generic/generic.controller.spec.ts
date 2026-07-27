@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/require-await, @typescript-eslint/unbound-method */
 import { describe, expect, it, jest } from '@jest/globals';
+import { HEADERS_METADATA } from '@nestjs/common/constants';
 import { Response } from 'express';
 
 jest.mock('./generic.service', () => ({ GenericService: class {} }));
@@ -18,6 +19,20 @@ const createMockResponse = (): Response =>
   }) as unknown as Response;
 
 describe('GenericController', () => {
+  it('prevents paginated entity data from being cached', () => {
+    const headers = Reflect.getMetadata(
+      HEADERS_METADATA,
+      GenericController.prototype.findPaginated,
+    ) as Array<{ name: string; value: string }>;
+
+    expect(headers).toEqual(
+      expect.arrayContaining([
+        { name: 'Cache-Control', value: 'no-store' },
+        { name: 'Pragma', value: 'no-cache' },
+      ]),
+    );
+  });
+
   it('returns paginated entity data', async () => {
     const expected = { items: [{ handle: 1 }], total: 1 };
     const genericService = { findAndCount: jest.fn(async () => expected) };

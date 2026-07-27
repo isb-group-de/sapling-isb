@@ -94,6 +94,48 @@ export class TeamsDeliveryItem {
   @ManyToOne(() => PersonItem, { nullable: false })
   createdBy!: Rel<PersonItem>;
 
+  /**
+   * First name of the person selected in createdBy.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 301,
+    group: 'teamsDelivery.groupReference',
+    groupOrder: 100,
+    width: 1,
+    visible: false,
+    tableOrder: 301,
+    tableVisible: false,
+    mobileOrder: 301,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get createdByFirstName(): string | null | undefined {
+    return this.createdBy?.firstName;
+  }
+
+  /**
+   * Last name of the person selected in createdBy.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 302,
+    group: 'teamsDelivery.groupReference',
+    groupOrder: 100,
+    width: 1,
+    visible: false,
+    tableOrder: 302,
+    tableVisible: false,
+    mobileOrder: 302,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get createdByLastName(): string | undefined {
+    return this.createdBy?.lastName;
+  }
+
   @ApiPropertyOptional({ type: () => PersonItem })
   @Sapling(['isPerson'])
   @SaplingForm({
@@ -109,6 +151,48 @@ export class TeamsDeliveryItem {
   })
   @ManyToOne(() => PersonItem, { nullable: true })
   recipientPerson?: Rel<PersonItem>;
+
+  /**
+   * First name of the person selected in recipientPerson.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 401,
+    group: 'teamsDelivery.groupReference',
+    groupOrder: 100,
+    width: 1,
+    visible: false,
+    tableOrder: 401,
+    tableVisible: false,
+    mobileOrder: 401,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get recipientPersonFirstName(): string | null | undefined {
+    return this.recipientPerson?.firstName;
+  }
+
+  /**
+   * Last name of the person selected in recipientPerson.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 402,
+    group: 'teamsDelivery.groupReference',
+    groupOrder: 100,
+    width: 1,
+    visible: false,
+    tableOrder: 402,
+    tableVisible: false,
+    mobileOrder: 402,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get recipientPersonLastName(): string | undefined {
+    return this.recipientPerson?.lastName;
+  }
 
   @ApiProperty()
   @Property({ primary: true, autoincrement: true })

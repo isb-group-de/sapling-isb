@@ -306,6 +306,48 @@ export class KnowledgeArticleItem {
   @ManyToOne(() => PersonItem, { nullable: true })
   authorPerson?: Rel<PersonItem>;
 
+  /**
+   * First name of the person selected in authorPerson.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 101,
+    group: 'knowledgeArticle.groupPeople',
+    groupOrder: 500,
+    width: 1,
+    visible: false,
+    tableOrder: 101,
+    tableVisible: false,
+    mobileOrder: 101,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get authorPersonFirstName(): string | null | undefined {
+    return this.authorPerson?.firstName;
+  }
+
+  /**
+   * Last name of the person selected in authorPerson.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 102,
+    group: 'knowledgeArticle.groupPeople',
+    groupOrder: 500,
+    width: 1,
+    visible: false,
+    tableOrder: 102,
+    tableVisible: false,
+    mobileOrder: 102,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get authorPersonLastName(): string | undefined {
+    return this.authorPerson?.lastName;
+  }
+
   @ApiPropertyOptional({ type: () => PersonItem })
   @Sapling(['isPerson', 'isPartner'])
   @SaplingForm({
@@ -321,6 +363,48 @@ export class KnowledgeArticleItem {
   })
   @ManyToOne(() => PersonItem, { nullable: true })
   reviewerPerson?: Rel<PersonItem>;
+
+  /**
+   * First name of the person selected in reviewerPerson.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 201,
+    group: 'knowledgeArticle.groupPeople',
+    groupOrder: 500,
+    width: 1,
+    visible: false,
+    tableOrder: 201,
+    tableVisible: false,
+    mobileOrder: 201,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get reviewerPersonFirstName(): string | null | undefined {
+    return this.reviewerPerson?.firstName;
+  }
+
+  /**
+   * Last name of the person selected in reviewerPerson.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 202,
+    group: 'knowledgeArticle.groupPeople',
+    groupOrder: 500,
+    width: 1,
+    visible: false,
+    tableOrder: 202,
+    tableVisible: false,
+    mobileOrder: 202,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get reviewerPersonLastName(): string | undefined {
+    return this.reviewerPerson?.lastName;
+  }
 
   @ApiPropertyOptional({ type: 'string', format: 'date-time' })
   @Sapling(['isReadOnly', 'isSystem'])

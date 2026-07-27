@@ -143,6 +143,27 @@ export class InternalCaseItem {
   @ManyToOne(() => CompanyItem, { nullable: true })
   customerCompany?: Rel<CompanyItem>;
 
+  /**
+   * Name of the company selected in customerCompany.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 101,
+    group: 'internalCase.groupReference',
+    groupOrder: 300,
+    width: 2,
+    visible: false,
+    tableOrder: 101,
+    tableVisible: false,
+    mobileOrder: 101,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get customerCompanyName(): string | undefined {
+    return this.customerCompany?.name;
+  }
+
   @ApiPropertyOptional({ type: () => PersonItem })
   @Sapling(['isPerson', 'isPartner'])
   @SaplingDependsOn({
@@ -165,6 +186,48 @@ export class InternalCaseItem {
   @ManyToOne(() => PersonItem, { nullable: true })
   customerPerson?: Rel<PersonItem>;
 
+  /**
+   * First name of the person selected in customerPerson.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 201,
+    group: 'internalCase.groupReference',
+    groupOrder: 300,
+    width: 1,
+    visible: false,
+    tableOrder: 201,
+    tableVisible: false,
+    mobileOrder: 201,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get customerPersonFirstName(): string | null | undefined {
+    return this.customerPerson?.firstName;
+  }
+
+  /**
+   * Last name of the person selected in customerPerson.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 202,
+    group: 'internalCase.groupReference',
+    groupOrder: 300,
+    width: 1,
+    visible: false,
+    tableOrder: 202,
+    tableVisible: false,
+    mobileOrder: 202,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get customerPersonLastName(): string | undefined {
+    return this.customerPerson?.lastName;
+  }
+
   @ApiPropertyOptional({ type: () => CompanyItem })
   @Sapling(['isCompany', 'isCurrentCompany'])
   @SaplingForm({
@@ -180,6 +243,27 @@ export class InternalCaseItem {
   })
   @ManyToOne(() => CompanyItem, { nullable: true })
   responsibleCompany?: Rel<CompanyItem>;
+
+  /**
+   * Name of the company selected in responsibleCompany.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 301,
+    group: 'internalCase.groupReference',
+    groupOrder: 300,
+    width: 2,
+    visible: false,
+    tableOrder: 301,
+    tableVisible: false,
+    mobileOrder: 301,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get responsibleCompanyName(): string | undefined {
+    return this.responsibleCompany?.name;
+  }
 
   @ApiPropertyOptional({ type: () => PersonItem })
   @Sapling(['isPerson', 'isPartner', 'isCurrentPerson'])
@@ -202,6 +286,48 @@ export class InternalCaseItem {
   })
   @ManyToOne(() => PersonItem, { nullable: true })
   responsiblePerson?: Rel<PersonItem>;
+
+  /**
+   * First name of the person selected in responsiblePerson.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 401,
+    group: 'internalCase.groupReference',
+    groupOrder: 300,
+    width: 1,
+    visible: false,
+    tableOrder: 401,
+    tableVisible: false,
+    mobileOrder: 401,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get responsiblePersonFirstName(): string | null | undefined {
+    return this.responsiblePerson?.firstName;
+  }
+
+  /**
+   * Last name of the person selected in responsiblePerson.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 402,
+    group: 'internalCase.groupReference',
+    groupOrder: 300,
+    width: 1,
+    visible: false,
+    tableOrder: 402,
+    tableVisible: false,
+    mobileOrder: 402,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get responsiblePersonLastName(): string | undefined {
+    return this.responsiblePerson?.lastName;
+  }
 
   @ApiProperty()
   @Property({ primary: true, autoincrement: true })

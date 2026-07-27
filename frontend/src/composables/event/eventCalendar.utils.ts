@@ -22,8 +22,19 @@ import {
 export type CalendarViewMode = 'single' | 'sidebyside'
 export type CalendarMode = 'default' | 'extended'
 export type CalendarParticipant = PersonItem | number | string
-export type CalendarRecord = EventItem | HolidayItem
-export type CalendarSource = 'event' | 'holiday'
+export type EventBufferKind = 'preparation' | 'followUp'
+export interface EventBufferPlaceholder {
+  handle?: never
+  bufferKind: EventBufferKind
+  parentEventHandle: EventItem['handle']
+  title: string
+  participants?: EventItem['participants']
+  type?: EventItem['type']
+  status?: EventItem['status']
+  isAllDay: false
+}
+export type CalendarRecord = EventItem | HolidayItem | EventBufferPlaceholder
+export type CalendarSource = 'event' | 'holiday' | 'eventBuffer'
 export type SaplingCalendarEvent = CalendarEvent & {
   event?: CalendarRecord
   saplingSource?: CalendarSource
@@ -178,8 +189,66 @@ export function toHolidayCalendarEvent(holiday: HolidayItem): SaplingCalendarEve
   }
 }
 
+export function addEventBufferPlaceholders(
+  event: SaplingCalendarEvent,
+  labels: Record<EventBufferKind, string>,
+): SaplingCalendarEvent[] {
+  if (event.saplingSource !== 'event' || event.timed !== true) {
+    return [event]
+  }
+
+  const mainEvent = event.event as EventItem | undefined
+  const start = calendarTimestamp(event.start)
+  const end = calendarTimestamp(event.end)
+  if (!mainEvent || start == null || end == null) {
+    return [event]
+  }
+
+  const preparationMilliseconds = eventBufferDurationToMilliseconds(mainEvent.preparationDuration)
+  const followUpMilliseconds = eventBufferDurationToMilliseconds(mainEvent.followUpDuration)
+  const result: SaplingCalendarEvent[] = []
+
+  if (preparationMilliseconds > 0) {
+    result.push(
+      createEventBufferPlaceholder(
+        event,
+        mainEvent,
+        'preparation',
+        labels.preparation,
+        start - preparationMilliseconds,
+        start,
+      ),
+    )
+  }
+
+  result.push(event)
+
+  if (followUpMilliseconds > 0) {
+    result.push(
+      createEventBufferPlaceholder(
+        event,
+        mainEvent,
+        'followUp',
+        labels.followUp,
+        end,
+        end + followUpMilliseconds,
+      ),
+    )
+  }
+
+  return result
+}
+
 export function isReadonlyCalendarEvent(event: CalendarEvent | null | undefined): boolean {
+  return isHolidayCalendarEvent(event) || isBufferCalendarEvent(event)
+}
+
+export function isHolidayCalendarEvent(event: CalendarEvent | null | undefined): boolean {
   return (event as SaplingCalendarEvent | null | undefined)?.saplingSource === 'holiday'
+}
+
+export function isBufferCalendarEvent(event: CalendarEvent | null | undefined): boolean {
+  return (event as SaplingCalendarEvent | null | undefined)?.saplingSource === 'eventBuffer'
 }
 
 export function getCalendarInteractionForcedDirtyFields(interaction: {
@@ -245,15 +314,20 @@ export function normalizeOnlineMeetingUrl(url: string | null | undefined): strin
 }
 
 export function getCalendarEventIcon(event: CalendarEvent) {
-  if (isReadonlyCalendarEvent(event)) {
+  if (isHolidayCalendarEvent(event)) {
     return (event.event as HolidayItem | undefined)?.icon || 'mdi-calendar-alert'
+  }
+  if (isBufferCalendarEvent(event)) {
+    return (event.event as EventBufferPlaceholder | undefined)?.bufferKind === 'preparation'
+      ? 'mdi-progress-clock'
+      : 'mdi-clock-check-outline'
   }
 
   return (event.event as EventItem | undefined)?.type?.icon || 'mdi-calendar-clock-outline'
 }
 
 export function getCalendarEventAccentColor(event: CalendarEvent, fallbackColor: string) {
-  if (isReadonlyCalendarEvent(event)) {
+  if (isHolidayCalendarEvent(event)) {
     return (event.event as HolidayItem | undefined)?.color || fallbackColor
   }
 
@@ -280,11 +354,11 @@ export function filterByCalendarMode(
   }
 
   return calendarEvents.filter((event) => {
-    if (event.saplingSource !== 'event') {
+    if (event.saplingSource === 'holiday') {
       return true
     }
 
-    const typeRecord = (event.event as EventItem | undefined)?.type
+    const typeRecord = (event.event as EventItem | EventBufferPlaceholder | undefined)?.type
     if (typeRecord?.showInDefaultCalendar === false) {
       return false
     }
@@ -515,4 +589,61 @@ export function getWorkHourForDate(
 
 export function getCalendarEventHandle(event: CalendarEvent | null) {
   return event?.event?.handle ?? event?.handle ?? null
+}
+
+function createEventBufferPlaceholder(
+  source: SaplingCalendarEvent,
+  parent: EventItem,
+  bufferKind: EventBufferKind,
+  label: string,
+  start: number,
+  end: number,
+): SaplingCalendarEvent {
+  const title = `${label}: ${parent.title}`
+  const occurrenceStart = (source as SaplingCalendarEvent & { recurrenceOccurrenceStart?: string })
+    .recurrenceOccurrenceStart
+
+  return {
+    name: title,
+    color: source.color,
+    start,
+    end,
+    timed: true,
+    event: {
+      bufferKind,
+      parentEventHandle: parent.handle,
+      title,
+      participants: parent.participants,
+      type: parent.type,
+      status: parent.status,
+      isAllDay: false,
+    },
+    saplingSource: 'eventBuffer',
+    ...(occurrenceStart ? { recurrenceOccurrenceStart: `${occurrenceStart}:${bufferKind}` } : {}),
+  }
+}
+
+function eventBufferDurationToMilliseconds(value: unknown): number {
+  if (typeof value !== 'string') {
+    return 0
+  }
+
+  const match = /^(\d{1,2}):([0-5]\d)(?::([0-5]\d))?$/.exec(value.trim())
+  if (!match) {
+    return 0
+  }
+
+  const hours = Number.parseInt(match[1], 10)
+  const minutes = Number.parseInt(match[2], 10)
+  const seconds = Number.parseInt(match[3] ?? '0', 10)
+  if (hours > 23 || seconds !== 0 || minutes % 15 !== 0) {
+    return 0
+  }
+
+  return (hours * 60 + minutes) * 60_000
+}
+
+function calendarTimestamp(value: CalendarEvent['start']): number | null {
+  const timestamp = value instanceof Date ? value.getTime() : new Date(value).getTime()
+  return Number.isNaN(timestamp) ? null : timestamp
 }

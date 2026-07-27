@@ -110,6 +110,10 @@ export interface EventItem extends SaplingGenericItem {
   isPrivate: boolean
   /** Optional RFC5545 recurrence rule for repeating events */
   recurrenceRule?: string | null
+  /** Time reserved immediately before the appointment (HH:mm:ss) */
+  preparationDuration?: string
+  /** Time reserved immediately after the appointment (HH:mm:ss) */
+  followUpDuration?: string
   /** URL for the online meeting (optional) */
   onlineMeetingURL?: string
   /** The type/category of the event */

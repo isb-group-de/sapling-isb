@@ -186,6 +186,48 @@ export class InboundEmailItem {
   @ManyToOne(() => PersonItem, { nullable: true })
   person?: Rel<PersonItem> | null;
 
+  /**
+   * First name of the person selected in person.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 301,
+    group: 'inboundEmail.groupReference',
+    groupOrder: 300,
+    width: 1,
+    visible: false,
+    tableOrder: 301,
+    tableVisible: false,
+    mobileOrder: 301,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get personFirstName(): string | null | undefined {
+    return this.person?.firstName;
+  }
+
+  /**
+   * Last name of the person selected in person.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 302,
+    group: 'inboundEmail.groupReference',
+    groupOrder: 300,
+    width: 1,
+    visible: false,
+    tableOrder: 302,
+    tableVisible: false,
+    mobileOrder: 302,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get personLastName(): string | undefined {
+    return this.person?.lastName;
+  }
+
   @ApiPropertyOptional({ type: () => CompanyItem })
   @Sapling(['isCompany', 'isCustomer'])
   @SaplingForm({
@@ -201,6 +243,27 @@ export class InboundEmailItem {
   })
   @ManyToOne(() => CompanyItem, { nullable: true })
   company?: Rel<CompanyItem> | null;
+
+  /**
+   * Name of the company selected in company.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 401,
+    group: 'inboundEmail.groupReference',
+    groupOrder: 300,
+    width: 2,
+    visible: false,
+    tableOrder: 401,
+    tableVisible: false,
+    mobileOrder: 401,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get companyName(): string | undefined {
+    return this.company?.name;
+  }
 
   @ApiPropertyOptional({ type: () => TicketItem })
   @SaplingForm({

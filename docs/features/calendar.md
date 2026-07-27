@@ -45,6 +45,8 @@ Important fields:
 | `isAllDay`                          | Marks all-day events                                                                            |
 | `isPrivate`                         | Marks owner-only events, including Outlook events imported with private sensitivity             |
 | `recurrenceRule`                    | Optional RRULE string for recurring events                                                      |
+| `preparationDuration`               | Optional preparation block duration in 15-minute increments; defaults to `00:00`                |
+| `followUpDuration`                  | Optional follow-up block duration in 15-minute increments; defaults to `00:00`                  |
 | `onlineMeetingURL`                  | Optional meeting link                                                                           |
 | `type`                              | Event category; controls default-calendar behavior                                              |
 | `status`                            | Current event status; `EventStatusItem.isOpen` controls the default open-status calendar filter |
@@ -54,6 +56,24 @@ Important fields:
 | `salesOpportunity`                  | Optional sales opportunity relation                                                             |
 | `participants`                      | Person collection for attendees                                                                 |
 | `azure`, `google`                   | External calendar projection records                                                            |
+
+### Preparation And Follow-Up Blocks
+
+`preparationDuration` and `followUpDuration` are properties of the main
+`EventItem`. They do not create additional entity records. For timed events, the
+Sapling frontend derives a visual placeholder immediately before and/or after
+every visible main-event occurrence.
+
+Derived placeholders have no entity handle and are excluded from editing,
+dragging, resizing, context menus, agenda lists, and event counters. Moving or
+resizing the main event automatically changes their position because their
+dates are recalculated from the main event. Recurring events receive fresh
+placeholders for each expanded occurrence.
+
+Preparation and follow-up placeholders are currently Sapling-only. Azure and
+Google calendar delivery continues to synchronize only the main `EventItem`;
+the derived placeholders do not create deliveries, invitations, notifications,
+or external calendar entries.
 
 `EventTypeItem.showInDefaultCalendar` is important for delivery. If it is `false`, the event stays in Sapling and is not queued for external default-calendar synchronization.
 

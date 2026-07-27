@@ -72,6 +72,48 @@ export class EmailSubscriptionItem {
   @ManyToOne(() => PersonItem, { nullable: false })
   senderPerson!: Rel<PersonItem>;
 
+  /**
+   * First name of the person selected in senderPerson.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 301,
+    group: 'emailSubscription.groupContent',
+    groupOrder: 100,
+    width: 1,
+    visible: false,
+    tableOrder: 301,
+    tableVisible: false,
+    mobileOrder: 301,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get senderPersonFirstName(): string | null | undefined {
+    return this.senderPerson?.firstName;
+  }
+
+  /**
+   * Last name of the person selected in senderPerson.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 302,
+    group: 'emailSubscription.groupContent',
+    groupOrder: 100,
+    width: 1,
+    visible: false,
+    tableOrder: 302,
+    tableVisible: false,
+    mobileOrder: 302,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get senderPersonLastName(): string | undefined {
+    return this.senderPerson?.lastName;
+  }
+
   @ApiPropertyOptional({ type: () => SharedMailboxItem })
   @SaplingForm({
     order: 400,

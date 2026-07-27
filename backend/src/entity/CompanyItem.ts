@@ -436,6 +436,48 @@ export class CompanyItem {
   accountManager?: Rel<PersonItem>;
 
   /**
+   * First name of the person selected in accountManager.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 101,
+    group: 'company.groupAccount',
+    groupOrder: 450,
+    width: 1,
+    visible: false,
+    tableOrder: 101,
+    tableVisible: false,
+    mobileOrder: 101,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get accountManagerFirstName(): string | null | undefined {
+    return this.accountManager?.firstName;
+  }
+
+  /**
+   * Last name of the person selected in accountManager.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 102,
+    group: 'company.groupAccount',
+    groupOrder: 450,
+    width: 1,
+    visible: false,
+    tableOrder: 102,
+    tableVisible: false,
+    mobileOrder: 102,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get accountManagerLastName(): string | undefined {
+    return this.accountManager?.lastName;
+  }
+
+  /**
    * Responsible customer success manager.
    */
   @ApiPropertyOptional({ type: () => PersonItem })
@@ -456,6 +498,48 @@ export class CompanyItem {
     deferMode: DeferMode.INITIALLY_IMMEDIATE,
   })
   customerSuccessManager?: Rel<PersonItem>;
+
+  /**
+   * First name of the person selected in customerSuccessManager.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 401,
+    group: 'company.groupCustomerSuccess',
+    groupOrder: 460,
+    width: 1,
+    visible: false,
+    tableOrder: 401,
+    tableVisible: false,
+    mobileOrder: 401,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get customerSuccessManagerFirstName(): string | null | undefined {
+    return this.customerSuccessManager?.firstName;
+  }
+
+  /**
+   * Last name of the person selected in customerSuccessManager.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 402,
+    group: 'company.groupCustomerSuccess',
+    groupOrder: 460,
+    width: 1,
+    visible: false,
+    tableOrder: 402,
+    tableVisible: false,
+    mobileOrder: 402,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get customerSuccessManagerLastName(): string | undefined {
+    return this.customerSuccessManager?.lastName;
+  }
 
   /**
    * Industry classification for this company.
@@ -727,7 +811,7 @@ export class CompanyItem {
     order: 200,
     group: 'company.groupReference',
     groupOrder: 500,
-    width: 1,
+    width: 2,
     visible: true,
     tableOrder: 200,
     tableVisible: false,
@@ -736,6 +820,27 @@ export class CompanyItem {
   })
   @ManyToOne(() => CompanyItem, { nullable: true })
   serviceProvider!: CompanyItem;
+
+  /**
+   * Name of the company selected in serviceProvider.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 201,
+    group: 'company.groupReference',
+    groupOrder: 500,
+    width: 2,
+    visible: false,
+    tableOrder: 201,
+    tableVisible: false,
+    mobileOrder: 201,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get serviceProviderName(): string | undefined {
+    return this.serviceProvider?.name;
+  }
   // #endregion
 
   // #region Properties: System

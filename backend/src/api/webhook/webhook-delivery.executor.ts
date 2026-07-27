@@ -156,15 +156,16 @@ export class WebhookDeliveryExecutor {
     try {
       const authHeaders = await this.resolveAuthHeaders(subscription, em);
       let subscriptionUrl = subscription.url;
+      let requestPayload: unknown = delivery.payload;
 
       if (
         subscription.payloadType.handle == 'item' &&
-        Array.isArray(delivery.payload)
+        Array.isArray(requestPayload)
       ) {
-        const itemPayload = (delivery.payload as unknown[])[0];
+        const itemPayload = requestPayload[0];
 
         if (isRecord(itemPayload)) {
-          delivery.payload = itemPayload;
+          requestPayload = itemPayload;
 
           subscriptionUrl = subscriptionUrl.replace(
             /\{\{(.*?)\}\}/g,
@@ -184,15 +185,12 @@ export class WebhookDeliveryExecutor {
       const containerName = getContainerName(subscription.containerName);
 
       if (containerName) {
-        delivery.payload = wrapPayloadInContainer(
-          delivery.payload,
-          containerName,
-        );
+        requestPayload = wrapPayloadInContainer(requestPayload, containerName);
       }
 
       const signature = crypto
         .createHmac('sha256', subscription.signingSecret ?? '')
-        .update(JSON.stringify(delivery.payload))
+        .update(JSON.stringify(requestPayload))
         .digest('hex');
 
       const headers = {
@@ -209,7 +207,7 @@ export class WebhookDeliveryExecutor {
       switch (subscription.method.handle) {
         case 'put': {
           const httpResponse = await firstValueFrom(
-            this.httpService.put(subscriptionUrl, delivery.payload, {
+            this.httpService.put(subscriptionUrl, requestPayload, {
               headers,
             }),
           );
@@ -218,7 +216,7 @@ export class WebhookDeliveryExecutor {
         }
         case 'patch': {
           const httpResponse = await firstValueFrom(
-            this.httpService.patch(subscriptionUrl, delivery.payload, {
+            this.httpService.patch(subscriptionUrl, requestPayload, {
               headers,
             }),
           );
@@ -227,8 +225,8 @@ export class WebhookDeliveryExecutor {
         }
         case 'delete': {
           const url = new URL(subscriptionUrl);
-          if (delivery.payload && typeof delivery.payload === 'object') {
-            Object.entries(delivery.payload).forEach(([key, value]) => {
+          if (requestPayload && typeof requestPayload === 'object') {
+            Object.entries(requestPayload).forEach(([key, value]) => {
               if (Array.isArray(value)) {
                 value.forEach((v) => url.searchParams.append(key, String(v)));
               } else if (value !== undefined && value !== null) {
@@ -246,7 +244,7 @@ export class WebhookDeliveryExecutor {
         }
         default: {
           const httpResponse = await firstValueFrom(
-            this.httpService.post(subscriptionUrl, delivery.payload, {
+            this.httpService.post(subscriptionUrl, requestPayload, {
               headers,
             }),
           );

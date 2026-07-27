@@ -88,6 +88,48 @@ export class NoteItem {
   person?: PersonItem | number;
 
   /**
+   * First name of the person selected in person.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 101,
+    group: 'note.groupReference',
+    groupOrder: 300,
+    width: 1,
+    visible: false,
+    tableOrder: 101,
+    tableVisible: false,
+    mobileOrder: 101,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get personFirstName(): string | null | undefined {
+    return typeof this.person === 'number' ? undefined : this.person?.firstName;
+  }
+
+  /**
+   * Last name of the person selected in person.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 102,
+    group: 'note.groupReference',
+    groupOrder: 300,
+    width: 1,
+    visible: false,
+    tableOrder: 102,
+    tableVisible: false,
+    mobileOrder: 102,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get personLastName(): string | undefined {
+    return typeof this.person === 'number' ? undefined : this.person?.lastName;
+  }
+
+  /**
    * The group this note belongs to (optional).
    */
   @ApiPropertyOptional({ type: () => NoteGroupItem })

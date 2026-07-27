@@ -192,6 +192,48 @@ export class SaplingFormConfigItem {
   @ManyToOne(() => PersonItem, { nullable: true })
   person?: Rel<PersonItem>;
 
+  /**
+   * First name of the person selected in person.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 901,
+    group: 'saplingFormConfig.groupReference',
+    groupOrder: 400,
+    width: 1,
+    visible: false,
+    tableOrder: 901,
+    tableVisible: false,
+    mobileOrder: 901,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get personFirstName(): string | null | undefined {
+    return this.person?.firstName;
+  }
+
+  /**
+   * Last name of the person selected in person.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 902,
+    group: 'saplingFormConfig.groupReference',
+    groupOrder: 400,
+    width: 1,
+    visible: false,
+    tableOrder: 902,
+    tableVisible: false,
+    mobileOrder: 902,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get personLastName(): string | undefined {
+    return this.person?.lastName;
+  }
+
   @ApiPropertyOptional({ type: 'string', format: 'date-time' })
   @Sapling(['isReadOnly', 'isSystem'])
   @Property({ nullable: false, type: 'datetime', onCreate: () => new Date() })

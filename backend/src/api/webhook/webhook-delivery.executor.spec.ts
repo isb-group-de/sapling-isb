@@ -39,7 +39,7 @@ describe('WebhookDeliveryExecutor', () => {
     jest.clearAllMocks();
   });
 
-  it('wraps the outbound payload in the configured container as a string', async () => {
+  it('wraps every attempt from the unchanged persisted payload', async () => {
     const flush = jest.fn<() => Promise<void>>().mockResolvedValue(undefined);
     const successStatus: TestDeliveryStatus = { handle: 'success' };
     const delivery: TestDelivery = {
@@ -57,6 +57,8 @@ describe('WebhookDeliveryExecutor', () => {
     };
     const findOne = jest
       .fn<() => Promise<unknown>>()
+      .mockResolvedValueOnce(delivery)
+      .mockResolvedValueOnce(successStatus)
       .mockResolvedValueOnce(delivery)
       .mockResolvedValueOnce(successStatus);
 
@@ -89,12 +91,17 @@ describe('WebhookDeliveryExecutor', () => {
     );
 
     await executor.execute(42, 1);
+    await executor.execute(42, 2);
 
-    expect(post).toHaveBeenCalledWith(
+    const expectedRequestPayload = {
+      container: JSON.stringify({ handle: 7, description: 'Payload value' }),
+    };
+
+    expect(post).toHaveBeenCalledTimes(2);
+    expect(post).toHaveBeenNthCalledWith(
+      1,
       'https://example.invalid/webhook',
-      {
-        container: JSON.stringify({ handle: 7, description: 'Payload value' }),
-      },
+      expectedRequestPayload,
       expect.objectContaining({
         headers: expect.objectContaining({
           'Content-Type': 'application/json',
@@ -103,10 +110,25 @@ describe('WebhookDeliveryExecutor', () => {
         }),
       }),
     );
-    expect(delivery.payload).toEqual({
-      container: JSON.stringify({ handle: 7, description: 'Payload value' }),
-    });
+    expect(post).toHaveBeenNthCalledWith(
+      2,
+      'https://example.invalid/webhook',
+      expectedRequestPayload,
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          'Content-Type': 'application/json',
+          'X-Webhook-Event': 'afterInsert',
+          'X-Webhook-Signature': expect.any(String),
+        }),
+      }),
+    );
+    expect(delivery.payload).toEqual([
+      {
+        handle: 7,
+        description: 'Payload value',
+      },
+    ]);
     expect(delivery.status).toBe(successStatus);
-    expect(flush).toHaveBeenCalled();
+    expect(flush).toHaveBeenCalledTimes(2);
   });
 });

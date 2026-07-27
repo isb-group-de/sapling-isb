@@ -1,0 +1,692 @@
+[
+  {
+    "entity": "global",
+    "property": "autoRefresh",
+    "de": "Automatische Aktualisierung",
+    "en": "Automatic refresh"
+  },
+  {
+    "entity": "global",
+    "property": "autoRefreshOff",
+    "de": "Aus",
+    "en": "Off"
+  },
+  {
+    "entity": "global",
+    "property": "refreshEveryMinute",
+    "de": "Minütlich aktualisieren",
+    "en": "Refresh every minute"
+  },
+  {
+    "entity": "global",
+    "property": "refreshEveryMinutes",
+    "de": "Alle {count} Minuten aktualisieren",
+    "en": "Refresh every {count} minutes"
+  },
+  {
+    "entity": "event",
+    "property": "preparationDuration",
+    "de": "Vorbereitungszeit",
+    "en": "Preparation time"
+  },
+  {
+    "entity": "event",
+    "property": "followUpDuration",
+    "de": "Nachbereitungszeit",
+    "en": "Follow-up time"
+  },
+  {
+    "entity": "event",
+    "property": "preparationPlaceholder",
+    "de": "Vorbereitung",
+    "en": "Preparation"
+  },
+  {
+    "entity": "event",
+    "property": "followUpPlaceholder",
+    "de": "Nachbereitung",
+    "en": "Follow-up"
+  },
+  {
+    "entity": "event",
+    "property": "invalidBufferDuration",
+    "de": "Vor- und Nachbereitungszeiten müssen in 15-Minuten-Schritten angegeben werden.",
+    "en": "Preparation and follow-up times must use 15-minute increments."
+  },
+  {
+    "entity": "address",
+    "property": "companyName",
+    "de": "Firmenname",
+    "en": "Company name"
+  },
+  {
+    "entity": "aiAgentRun",
+    "property": "personFirstName",
+    "de": "Vorname",
+    "en": "First name"
+  },
+  {
+    "entity": "aiAgentRun",
+    "property": "personLastName",
+    "de": "Nachname",
+    "en": "Last name"
+  },
+  {
+    "entity": "aiChatAttachment",
+    "property": "personFirstName",
+    "de": "Vorname",
+    "en": "First name"
+  },
+  {
+    "entity": "aiChatAttachment",
+    "property": "personLastName",
+    "de": "Nachname",
+    "en": "Last name"
+  },
+  {
+    "entity": "aiChatMessage",
+    "property": "personFirstName",
+    "de": "Vorname",
+    "en": "First name"
+  },
+  {
+    "entity": "aiChatMessage",
+    "property": "personLastName",
+    "de": "Nachname",
+    "en": "Last name"
+  },
+  {
+    "entity": "aiChatSession",
+    "property": "personFirstName",
+    "de": "Vorname",
+    "en": "First name"
+  },
+  {
+    "entity": "aiChatSession",
+    "property": "personLastName",
+    "de": "Nachname",
+    "en": "Last name"
+  },
+  {
+    "entity": "aiChatToolAction",
+    "property": "personFirstName",
+    "de": "Vorname",
+    "en": "First name"
+  },
+  {
+    "entity": "aiChatToolAction",
+    "property": "personLastName",
+    "de": "Nachname",
+    "en": "Last name"
+  },
+  {
+    "entity": "aiChatTranscription",
+    "property": "personFirstName",
+    "de": "Vorname",
+    "en": "First name"
+  },
+  {
+    "entity": "aiChatTranscription",
+    "property": "personLastName",
+    "de": "Nachname",
+    "en": "Last name"
+  },
+  {
+    "entity": "changeLog",
+    "property": "personFirstName",
+    "de": "Vorname",
+    "en": "First name"
+  },
+  {
+    "entity": "changeLog",
+    "property": "personLastName",
+    "de": "Nachname",
+    "en": "Last name"
+  },
+  {
+    "entity": "company",
+    "property": "accountManagerFirstName",
+    "de": "Vorname",
+    "en": "First name"
+  },
+  {
+    "entity": "company",
+    "property": "accountManagerLastName",
+    "de": "Nachname",
+    "en": "Last name"
+  },
+  {
+    "entity": "company",
+    "property": "customerSuccessManagerFirstName",
+    "de": "Vorname",
+    "en": "First name"
+  },
+  {
+    "entity": "company",
+    "property": "customerSuccessManagerLastName",
+    "de": "Nachname",
+    "en": "Last name"
+  },
+  {
+    "entity": "company",
+    "property": "serviceProviderName",
+    "de": "Firmenname",
+    "en": "Company name"
+  },
+  {
+    "entity": "companyRelationship",
+    "property": "sourceCompanyName",
+    "de": "Firmenname",
+    "en": "Company name"
+  },
+  {
+    "entity": "companyRelationship",
+    "property": "targetCompanyName",
+    "de": "Firmenname",
+    "en": "Company name"
+  },
+  {
+    "entity": "contract",
+    "property": "companyName",
+    "de": "Firmenname",
+    "en": "Company name"
+  },
+  {
+    "entity": "dashboard",
+    "property": "personFirstName",
+    "de": "Vorname",
+    "en": "First name"
+  },
+  {
+    "entity": "dashboard",
+    "property": "personLastName",
+    "de": "Nachname",
+    "en": "Last name"
+  },
+  {
+    "entity": "dashboardTemplate",
+    "property": "personFirstName",
+    "de": "Vorname",
+    "en": "First name"
+  },
+  {
+    "entity": "dashboardTemplate",
+    "property": "personLastName",
+    "de": "Nachname",
+    "en": "Last name"
+  },
+  {
+    "entity": "document",
+    "property": "personFirstName",
+    "de": "Vorname",
+    "en": "First name"
+  },
+  {
+    "entity": "document",
+    "property": "personLastName",
+    "de": "Nachname",
+    "en": "Last name"
+  },
+  {
+    "entity": "effortEstimate",
+    "property": "assigneeCompanyName",
+    "de": "Firmenname",
+    "en": "Company name"
+  },
+  {
+    "entity": "effortEstimate",
+    "property": "assigneePersonFirstName",
+    "de": "Vorname",
+    "en": "First name"
+  },
+  {
+    "entity": "effortEstimate",
+    "property": "assigneePersonLastName",
+    "de": "Nachname",
+    "en": "Last name"
+  },
+  {
+    "entity": "effortEstimate",
+    "property": "creatorCompanyName",
+    "de": "Firmenname",
+    "en": "Company name"
+  },
+  {
+    "entity": "effortEstimate",
+    "property": "creatorPersonFirstName",
+    "de": "Vorname",
+    "en": "First name"
+  },
+  {
+    "entity": "effortEstimate",
+    "property": "creatorPersonLastName",
+    "de": "Nachname",
+    "en": "Last name"
+  },
+  {
+    "entity": "emailDelivery",
+    "property": "createdByFirstName",
+    "de": "Vorname",
+    "en": "First name"
+  },
+  {
+    "entity": "emailDelivery",
+    "property": "createdByLastName",
+    "de": "Nachname",
+    "en": "Last name"
+  },
+  {
+    "entity": "emailDelivery",
+    "property": "customerCompanyName",
+    "de": "Firmenname",
+    "en": "Company name"
+  },
+  {
+    "entity": "emailDelivery",
+    "property": "customerPersonFirstName",
+    "de": "Vorname",
+    "en": "First name"
+  },
+  {
+    "entity": "emailDelivery",
+    "property": "customerPersonLastName",
+    "de": "Nachname",
+    "en": "Last name"
+  },
+  {
+    "entity": "emailInboxSubscription",
+    "property": "processingPersonFirstName",
+    "de": "Vorname",
+    "en": "First name"
+  },
+  {
+    "entity": "emailInboxSubscription",
+    "property": "processingPersonLastName",
+    "de": "Nachname",
+    "en": "Last name"
+  },
+  {
+    "entity": "emailSubscription",
+    "property": "senderPersonFirstName",
+    "de": "Vorname",
+    "en": "First name"
+  },
+  {
+    "entity": "emailSubscription",
+    "property": "senderPersonLastName",
+    "de": "Nachname",
+    "en": "Last name"
+  },
+  {
+    "entity": "event",
+    "property": "assigneeCompanyName",
+    "de": "Firmenname",
+    "en": "Company name"
+  },
+  {
+    "entity": "event",
+    "property": "assigneePersonFirstName",
+    "de": "Vorname",
+    "en": "First name"
+  },
+  {
+    "entity": "event",
+    "property": "assigneePersonLastName",
+    "de": "Nachname",
+    "en": "Last name"
+  },
+  {
+    "entity": "event",
+    "property": "creatorCompanyName",
+    "de": "Firmenname",
+    "en": "Company name"
+  },
+  {
+    "entity": "event",
+    "property": "creatorPersonFirstName",
+    "de": "Vorname",
+    "en": "First name"
+  },
+  {
+    "entity": "event",
+    "property": "creatorPersonLastName",
+    "de": "Nachname",
+    "en": "Last name"
+  },
+  {
+    "entity": "favorite",
+    "property": "personFirstName",
+    "de": "Vorname",
+    "en": "First name"
+  },
+  {
+    "entity": "favorite",
+    "property": "personLastName",
+    "de": "Nachname",
+    "en": "Last name"
+  },
+  {
+    "entity": "importBatch",
+    "property": "createdByFirstName",
+    "de": "Vorname",
+    "en": "First name"
+  },
+  {
+    "entity": "importBatch",
+    "property": "createdByLastName",
+    "de": "Nachname",
+    "en": "Last name"
+  },
+  {
+    "entity": "inboundEmail",
+    "property": "companyName",
+    "de": "Firmenname",
+    "en": "Company name"
+  },
+  {
+    "entity": "inboundEmail",
+    "property": "personFirstName",
+    "de": "Vorname",
+    "en": "First name"
+  },
+  {
+    "entity": "inboundEmail",
+    "property": "personLastName",
+    "de": "Nachname",
+    "en": "Last name"
+  },
+  {
+    "entity": "inboxNotification",
+    "property": "createdByFirstName",
+    "de": "Vorname",
+    "en": "First name"
+  },
+  {
+    "entity": "inboxNotification",
+    "property": "createdByLastName",
+    "de": "Nachname",
+    "en": "Last name"
+  },
+  {
+    "entity": "inboxNotification",
+    "property": "recipientPersonFirstName",
+    "de": "Vorname",
+    "en": "First name"
+  },
+  {
+    "entity": "inboxNotification",
+    "property": "recipientPersonLastName",
+    "de": "Nachname",
+    "en": "Last name"
+  },
+  {
+    "entity": "information",
+    "property": "personFirstName",
+    "de": "Vorname",
+    "en": "First name"
+  },
+  {
+    "entity": "information",
+    "property": "personLastName",
+    "de": "Nachname",
+    "en": "Last name"
+  },
+  {
+    "entity": "internalCase",
+    "property": "customerCompanyName",
+    "de": "Firmenname",
+    "en": "Company name"
+  },
+  {
+    "entity": "internalCase",
+    "property": "customerPersonFirstName",
+    "de": "Vorname",
+    "en": "First name"
+  },
+  {
+    "entity": "internalCase",
+    "property": "customerPersonLastName",
+    "de": "Nachname",
+    "en": "Last name"
+  },
+  {
+    "entity": "internalCase",
+    "property": "responsibleCompanyName",
+    "de": "Firmenname",
+    "en": "Company name"
+  },
+  {
+    "entity": "internalCase",
+    "property": "responsiblePersonFirstName",
+    "de": "Vorname",
+    "en": "First name"
+  },
+  {
+    "entity": "internalCase",
+    "property": "responsiblePersonLastName",
+    "de": "Nachname",
+    "en": "Last name"
+  },
+  {
+    "entity": "knowledgeArticle",
+    "property": "authorPersonFirstName",
+    "de": "Vorname",
+    "en": "First name"
+  },
+  {
+    "entity": "knowledgeArticle",
+    "property": "authorPersonLastName",
+    "de": "Nachname",
+    "en": "Last name"
+  },
+  {
+    "entity": "knowledgeArticle",
+    "property": "reviewerPersonFirstName",
+    "de": "Vorname",
+    "en": "First name"
+  },
+  {
+    "entity": "knowledgeArticle",
+    "property": "reviewerPersonLastName",
+    "de": "Nachname",
+    "en": "Last name"
+  },
+  {
+    "entity": "marketingCampaign",
+    "property": "ownerPersonFirstName",
+    "de": "Vorname",
+    "en": "First name"
+  },
+  {
+    "entity": "marketingCampaign",
+    "property": "ownerPersonLastName",
+    "de": "Nachname",
+    "en": "Last name"
+  },
+  {
+    "entity": "note",
+    "property": "personFirstName",
+    "de": "Vorname",
+    "en": "First name"
+  },
+  {
+    "entity": "note",
+    "property": "personLastName",
+    "de": "Nachname",
+    "en": "Last name"
+  },
+  {
+    "entity": "person",
+    "property": "companyName",
+    "de": "Firmenname",
+    "en": "Company name"
+  },
+  {
+    "entity": "personApiToken",
+    "property": "personFirstName",
+    "de": "Vorname",
+    "en": "First name"
+  },
+  {
+    "entity": "personApiToken",
+    "property": "personLastName",
+    "de": "Nachname",
+    "en": "Last name"
+  },
+  {
+    "entity": "personPasskey",
+    "property": "personFirstName",
+    "de": "Vorname",
+    "en": "First name"
+  },
+  {
+    "entity": "personPasskey",
+    "property": "personLastName",
+    "de": "Nachname",
+    "en": "Last name"
+  },
+  {
+    "entity": "phoneCall",
+    "property": "personFirstName",
+    "de": "Vorname",
+    "en": "First name"
+  },
+  {
+    "entity": "phoneCall",
+    "property": "personLastName",
+    "de": "Nachname",
+    "en": "Last name"
+  },
+  {
+    "entity": "salesOpportunity",
+    "property": "assigneeCompanyName",
+    "de": "Firmenname",
+    "en": "Company name"
+  },
+  {
+    "entity": "salesOpportunity",
+    "property": "assigneePersonFirstName",
+    "de": "Vorname",
+    "en": "First name"
+  },
+  {
+    "entity": "salesOpportunity",
+    "property": "assigneePersonLastName",
+    "de": "Nachname",
+    "en": "Last name"
+  },
+  {
+    "entity": "salesOpportunity",
+    "property": "creatorCompanyName",
+    "de": "Firmenname",
+    "en": "Company name"
+  },
+  {
+    "entity": "salesOpportunity",
+    "property": "creatorPersonFirstName",
+    "de": "Vorname",
+    "en": "First name"
+  },
+  {
+    "entity": "salesOpportunity",
+    "property": "creatorPersonLastName",
+    "de": "Nachname",
+    "en": "Last name"
+  },
+  {
+    "entity": "saplingFormConfig",
+    "property": "personFirstName",
+    "de": "Vorname",
+    "en": "First name"
+  },
+  {
+    "entity": "saplingFormConfig",
+    "property": "personLastName",
+    "de": "Nachname",
+    "en": "Last name"
+  },
+  {
+    "entity": "serverLandscape",
+    "property": "companyName",
+    "de": "Firmenname",
+    "en": "Company name"
+  },
+  {
+    "entity": "socialMedia",
+    "property": "personFirstName",
+    "de": "Vorname",
+    "en": "First name"
+  },
+  {
+    "entity": "socialMedia",
+    "property": "personLastName",
+    "de": "Nachname",
+    "en": "Last name"
+  },
+  {
+    "entity": "teamsDelivery",
+    "property": "createdByFirstName",
+    "de": "Vorname",
+    "en": "First name"
+  },
+  {
+    "entity": "teamsDelivery",
+    "property": "createdByLastName",
+    "de": "Nachname",
+    "en": "Last name"
+  },
+  {
+    "entity": "teamsDelivery",
+    "property": "recipientPersonFirstName",
+    "de": "Vorname",
+    "en": "First name"
+  },
+  {
+    "entity": "teamsDelivery",
+    "property": "recipientPersonLastName",
+    "de": "Nachname",
+    "en": "Last name"
+  },
+  {
+    "entity": "ticket",
+    "property": "assigneeCompanyName",
+    "de": "Firmenname",
+    "en": "Company name"
+  },
+  {
+    "entity": "ticket",
+    "property": "assigneePersonFirstName",
+    "de": "Vorname",
+    "en": "First name"
+  },
+  {
+    "entity": "ticket",
+    "property": "assigneePersonLastName",
+    "de": "Nachname",
+    "en": "Last name"
+  },
+  {
+    "entity": "ticket",
+    "property": "creatorCompanyName",
+    "de": "Firmenname",
+    "en": "Company name"
+  },
+  {
+    "entity": "ticket",
+    "property": "creatorPersonFirstName",
+    "de": "Vorname",
+    "en": "First name"
+  },
+  {
+    "entity": "ticket",
+    "property": "creatorPersonLastName",
+    "de": "Nachname",
+    "en": "Last name"
+  },
+  {
+    "entity": "global",
+    "property": "nextRefreshInSeconds",
+    "de": "Nächste Aktualisierung in {count} Sekunden",
+    "en": "Next refresh in {count} seconds"
+  }
+]

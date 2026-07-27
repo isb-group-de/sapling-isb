@@ -67,6 +67,7 @@
               @update:items-per-page="onItemsPerPageUpdate"
               @update:sort-by="onSortByUpdate"
               @update:column-filters="onColumnFiltersUpdate"
+              @reload="loadData"
             />
           </div>
         </div>
@@ -130,6 +131,7 @@ const {
   entity,
   entityPermission,
   isInitialized,
+  loadData,
   onSearchUpdate,
   onPageUpdate,
   onItemsPerPageUpdate,

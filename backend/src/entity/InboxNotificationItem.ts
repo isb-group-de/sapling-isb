@@ -80,6 +80,48 @@ export class InboxNotificationItem {
   @ManyToOne(() => PersonItem, { nullable: false })
   recipientPerson!: Rel<PersonItem>;
 
+  /**
+   * First name of the person selected in recipientPerson.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 401,
+    group: 'inboxNotification.groupReference',
+    groupOrder: 300,
+    width: 1,
+    visible: false,
+    tableOrder: 401,
+    tableVisible: false,
+    mobileOrder: 401,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get recipientPersonFirstName(): string | null | undefined {
+    return this.recipientPerson?.firstName;
+  }
+
+  /**
+   * Last name of the person selected in recipientPerson.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 402,
+    group: 'inboxNotification.groupReference',
+    groupOrder: 300,
+    width: 1,
+    visible: false,
+    tableOrder: 402,
+    tableVisible: false,
+    mobileOrder: 402,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get recipientPersonLastName(): string | undefined {
+    return this.recipientPerson?.lastName;
+  }
+
   @ApiProperty({ type: () => PersonItem })
   @Sapling(['isPerson'])
   @SaplingForm({
@@ -95,6 +137,48 @@ export class InboxNotificationItem {
   })
   @ManyToOne(() => PersonItem, { nullable: false })
   createdBy!: Rel<PersonItem>;
+
+  /**
+   * First name of the person selected in createdBy.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 501,
+    group: 'inboxNotification.groupReference',
+    groupOrder: 300,
+    width: 1,
+    visible: false,
+    tableOrder: 501,
+    tableVisible: false,
+    mobileOrder: 501,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get createdByFirstName(): string | null | undefined {
+    return this.createdBy?.firstName;
+  }
+
+  /**
+   * Last name of the person selected in createdBy.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 502,
+    group: 'inboxNotification.groupReference',
+    groupOrder: 300,
+    width: 1,
+    visible: false,
+    tableOrder: 502,
+    tableVisible: false,
+    mobileOrder: 502,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get createdByLastName(): string | undefined {
+    return this.createdBy?.lastName;
+  }
 
   @ApiPropertyOptional()
   @Sapling(['isSystem', 'isValue'])

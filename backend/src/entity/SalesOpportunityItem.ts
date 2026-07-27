@@ -387,6 +387,27 @@ export class SalesOpportunityItem {
   })
   @ManyToOne(() => CompanyItem, { nullable: true })
   assigneeCompany?: Rel<CompanyItem>;
+
+  /**
+   * Name of the company selected in assigneeCompany.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 401,
+    group: 'salesOpportunity.groupReference',
+    groupOrder: 400,
+    width: 2,
+    visible: false,
+    tableOrder: 401,
+    tableVisible: false,
+    mobileOrder: 401,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get assigneeCompanyName(): string | undefined {
+    return this.assigneeCompany?.name;
+  }
   /**
    * The person assigned to this ticket.
    * @type {PersonItem}
@@ -414,6 +435,48 @@ export class SalesOpportunityItem {
   assigneePerson?: Rel<PersonItem>;
 
   /**
+   * First name of the person selected in assigneePerson.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 501,
+    group: 'salesOpportunity.groupReference',
+    groupOrder: 400,
+    width: 1,
+    visible: false,
+    tableOrder: 501,
+    tableVisible: false,
+    mobileOrder: 501,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get assigneePersonFirstName(): string | null | undefined {
+    return this.assigneePerson?.firstName;
+  }
+
+  /**
+   * Last name of the person selected in assigneePerson.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 502,
+    group: 'salesOpportunity.groupReference',
+    groupOrder: 400,
+    width: 1,
+    visible: false,
+    tableOrder: 502,
+    tableVisible: false,
+    mobileOrder: 502,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get assigneePersonLastName(): string | undefined {
+    return this.assigneePerson?.lastName;
+  }
+
+  /**
    * The company that created the ticket.
    * @type {CompanyItem}
    */
@@ -432,6 +495,27 @@ export class SalesOpportunityItem {
   })
   @ManyToOne(() => CompanyItem, { nullable: false })
   creatorCompany?: Rel<CompanyItem>;
+
+  /**
+   * Name of the company selected in creatorCompany.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 601,
+    group: 'salesOpportunity.groupReference',
+    groupOrder: 400,
+    width: 2,
+    visible: false,
+    tableOrder: 601,
+    tableVisible: false,
+    mobileOrder: 601,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get creatorCompanyName(): string | undefined {
+    return this.creatorCompany?.name;
+  }
 
   /**
    * The person who created the ticket.
@@ -458,6 +542,48 @@ export class SalesOpportunityItem {
   })
   @ManyToOne(() => PersonItem, { nullable: false })
   creatorPerson?: Rel<PersonItem>;
+
+  /**
+   * First name of the person selected in creatorPerson.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 701,
+    group: 'salesOpportunity.groupReference',
+    groupOrder: 400,
+    width: 1,
+    visible: false,
+    tableOrder: 701,
+    tableVisible: false,
+    mobileOrder: 701,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get creatorPersonFirstName(): string | null | undefined {
+    return this.creatorPerson?.firstName;
+  }
+
+  /**
+   * Last name of the person selected in creatorPerson.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 702,
+    group: 'salesOpportunity.groupReference',
+    groupOrder: 400,
+    width: 1,
+    visible: false,
+    tableOrder: 702,
+    tableVisible: false,
+    mobileOrder: 702,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get creatorPersonLastName(): string | undefined {
+    return this.creatorPerson?.lastName;
+  }
 
   /**
    * Tickets related to this sales opportunity.

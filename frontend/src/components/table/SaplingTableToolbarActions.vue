@@ -12,17 +12,13 @@
     >
       <slot name="leading" />
 
-      <v-btn
-        class="sapling-table-toolbar-action sapling-table-toolbar-action--icon-only sapling-table-toolbar-action--utility"
-        color="primary"
-        variant="tonal"
-        icon
-        :title="refreshButtonLabel"
-        :aria-label="refreshButtonLabel"
-        @click="emit('refresh')"
-      >
-        <v-icon>mdi-refresh</v-icon>
-      </v-btn>
+      <SaplingTableRefreshMenu
+        :model-value="autoRefreshIntervalMinutes"
+        :refresh-button-label="refreshButtonLabel"
+        :seconds-until-refresh="secondsUntilRefresh"
+        @refresh="emit('refresh')"
+        @update:model-value="emit('update:autoRefreshIntervalMinutes', $event)"
+      />
 
       <v-menu v-if="showFavorite" location="bottom end">
         <template #activator="{ props: favoriteMenuProps }">
@@ -168,17 +164,13 @@
       >
         <slot name="leading" />
 
-        <v-btn
-          class="sapling-table-toolbar-action sapling-table-toolbar-action--icon-only sapling-table-toolbar-action--utility"
-          color="primary"
-          variant="tonal"
-          icon
-          :title="refreshButtonLabel"
-          :aria-label="refreshButtonLabel"
-          @click="emit('refresh')"
-        >
-          <v-icon>mdi-refresh</v-icon>
-        </v-btn>
+        <SaplingTableRefreshMenu
+          :model-value="autoRefreshIntervalMinutes"
+          :refresh-button-label="refreshButtonLabel"
+          :seconds-until-refresh="secondsUntilRefresh"
+          @refresh="emit('refresh')"
+          @update:model-value="emit('update:autoRefreshIntervalMinutes', $event)"
+        />
         <v-menu v-if="showFavorite" location="bottom end">
           <template #activator="{ props: favoriteMenuProps }">
             <v-btn
@@ -318,16 +310,20 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { FavoriteItem } from '@/entity/entity'
+import type { SaplingTableAutoRefreshInterval } from '@/composables/table/useSaplingTableAutoRefresh'
 import type {
   FormConfigMenuItem,
   FormConfigSelectionHandle,
 } from '@/composables/dialog/saplingDialogEdit.utils'
+import SaplingTableRefreshMenu from './SaplingTableRefreshMenu.vue'
 
 const props = defineProps<{
   isMobileTable: boolean
   isDownloadingJson: boolean
   isImportingCsv: boolean
   refreshButtonLabel: string
+  autoRefreshIntervalMinutes: SaplingTableAutoRefreshInterval | null
+  secondsUntilRefresh: number | null
   showFavorite: boolean
   showImport: boolean
   showAdd: boolean
@@ -345,6 +341,7 @@ const emit = defineEmits<{
   downloadCsvTemplate: []
   importCsv: []
   refresh: []
+  'update:autoRefreshIntervalMinutes': [value: SaplingTableAutoRefreshInterval | null]
   favorite: []
   selectFavorite: [favorite: FavoriteItem]
   selectFormConfig: [handle: FormConfigSelectionHandle]

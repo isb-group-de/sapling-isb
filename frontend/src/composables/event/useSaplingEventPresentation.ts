@@ -19,7 +19,8 @@ import {
   getCalendarEventOnlineMeetingUrl,
   getCalendarEventTitle,
   hasParticipant,
-  isReadonlyCalendarEvent,
+  isBufferCalendarEvent,
+  isHolidayCalendarEvent,
   normalizeParticipantNames,
   resolveHolidayGroupHandle,
   resolveParticipantHandle,
@@ -117,13 +118,19 @@ export function useSaplingEventPresentation(options: UseSaplingEventPresentation
     return formatDateValue(parseLocalCalendarDate(options.calendarValue.value))
   })
 
+  const persistedVisibleEvents = computed(() =>
+    options.events.value.filter((event) => !isBufferCalendarEvent(event)),
+  )
+
   const sortedVisibleEvents = computed(() =>
-    [...options.events.value].sort((left, right) => Number(left.start) - Number(right.start)),
+    [...persistedVisibleEvents.value].sort(
+      (left, right) => Number(left.start) - Number(right.start),
+    ),
   )
 
   const todayEventsCount = computed(() => {
     const { startOfDay, endOfDay } = getTodayRange()
-    return options.events.value.filter(
+    return persistedVisibleEvents.value.filter(
       (event) => event.start <= endOfDay && event.end >= startOfDay,
     ).length
   })
@@ -178,7 +185,7 @@ export function useSaplingEventPresentation(options: UseSaplingEventPresentation
     {
       key: 'visible-events',
       label: i18n.global.t('navigation.event'),
-      value: String(options.events.value.length),
+      value: String(persistedVisibleEvents.value.length),
       icon: 'mdi-calendar-clock-outline',
     },
     {
@@ -204,7 +211,7 @@ export function useSaplingEventPresentation(options: UseSaplingEventPresentation
 
   function getEventsForPerson(personId: number) {
     return options.events.value.filter((event) =>
-      isReadonlyCalendarEvent(event)
+      isHolidayCalendarEvent(event)
         ? isHolidayVisibleForPerson(event, personId)
         : hasParticipant(event, personId),
     )
@@ -238,7 +245,7 @@ export function useSaplingEventPresentation(options: UseSaplingEventPresentation
   }
 
   function getCalendarEventParticipants(event: CalendarEvent) {
-    return isReadonlyCalendarEvent(event)
+    return isHolidayCalendarEvent(event)
       ? []
       : normalizeParticipantNames(event.event?.participants, resolveParticipantName)
   }

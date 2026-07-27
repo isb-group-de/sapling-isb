@@ -53,6 +53,11 @@ The handle must exist in `ENTITY_REGISTRY`.
 GET /api/generic/:entityHandle
 ```
 
+Paginated entity-list responses use `Cache-Control: no-store` and
+`Pragma: no-cache`. These records can be changed by background jobs and
+integrations, so table refreshes must always reach the API instead of reusing a
+browser or intermediary cache entry.
+
 Common query parameters:
 
 | Parameter   | Meaning                                                   |

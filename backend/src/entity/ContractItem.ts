@@ -245,6 +245,27 @@ export class ContractItem {
   company?: Rel<CompanyItem>;
 
   /**
+   * Name of the company selected in company.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 101,
+    group: 'contract.groupReference',
+    groupOrder: 500,
+    width: 2,
+    visible: false,
+    tableOrder: 101,
+    tableVisible: false,
+    mobileOrder: 101,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get companyName(): string | undefined {
+    return this.company?.name;
+  }
+
+  /**
    * Service level assigned to this contract.
    * @type {ContractServiceItem}
    */

@@ -25,8 +25,61 @@ export class AiAgentRunItem {
 
   @ApiProperty({ type: () => PersonItem })
   @Sapling(['isPerson', 'isCurrentPerson'])
+  @SaplingForm({
+    order: 50,
+    group: 'aiAgentRun.groupBasics',
+    groupOrder: 100,
+    width: 2,
+    visible: true,
+    tableOrder: 50,
+    tableVisible: false,
+    mobileOrder: 50,
+    mobileVisible: false,
+  })
   @ManyToOne(() => PersonItem, { nullable: false })
   person!: Rel<PersonItem>;
+
+  /**
+   * First name of the person selected in person.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 51,
+    group: 'aiAgentRun.groupBasics',
+    groupOrder: 100,
+    width: 1,
+    visible: false,
+    tableOrder: 51,
+    tableVisible: false,
+    mobileOrder: 51,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get personFirstName(): string | null | undefined {
+    return this.person?.firstName;
+  }
+
+  /**
+   * Last name of the person selected in person.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 52,
+    group: 'aiAgentRun.groupBasics',
+    groupOrder: 100,
+    width: 1,
+    visible: false,
+    tableOrder: 52,
+    tableVisible: false,
+    mobileOrder: 52,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get personLastName(): string | undefined {
+    return this.person?.lastName;
+  }
 
   @ApiPropertyOptional({ type: () => AiAgentItem })
   @Sapling(['isChip'])

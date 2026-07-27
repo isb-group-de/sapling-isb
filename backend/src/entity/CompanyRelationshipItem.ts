@@ -68,7 +68,7 @@ export class CompanyRelationshipItem {
     order: 100,
     group: 'companyRelationship.groupReference',
     groupOrder: 200,
-    width: 1,
+    width: 2,
     visible: true,
     tableOrder: 100,
     tableVisible: true,
@@ -77,6 +77,27 @@ export class CompanyRelationshipItem {
   })
   @ManyToOne(() => CompanyItem, { nullable: false })
   sourceCompany!: Rel<CompanyItem>;
+
+  /**
+   * Name of the company selected in sourceCompany.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 101,
+    group: 'companyRelationship.groupReference',
+    groupOrder: 200,
+    width: 2,
+    visible: false,
+    tableOrder: 101,
+    tableVisible: false,
+    mobileOrder: 101,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get sourceCompanyName(): string | undefined {
+    return this.sourceCompany?.name;
+  }
 
   /**
    * The target company of the relationship.
@@ -97,6 +118,27 @@ export class CompanyRelationshipItem {
   })
   @ManyToOne(() => CompanyItem, { nullable: false })
   targetCompany!: Rel<CompanyItem>;
+
+  /**
+   * Name of the company selected in targetCompany.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 201,
+    group: 'companyRelationship.groupReference',
+    groupOrder: 200,
+    width: 2,
+    visible: false,
+    tableOrder: 201,
+    tableVisible: false,
+    mobileOrder: 201,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get targetCompanyName(): string | undefined {
+    return this.targetCompany?.name;
+  }
 
   /**
    * The type of the relationship.

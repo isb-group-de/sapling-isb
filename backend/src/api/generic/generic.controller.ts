@@ -11,6 +11,7 @@ import {
   HttpStatus,
   Req,
   Res,
+  Header,
   UseGuards,
 } from '@nestjs/common';
 import { GenericPermissionGuard } from '../../auth/guard/generic-permission.guard';
@@ -172,6 +173,8 @@ export class GenericController {
    */
   @UseGuards(GenericPermissionGuard)
   @Get(':entityHandle')
+  @Header('Cache-Control', 'no-store')
+  @Header('Pragma', 'no-cache')
   @ApiOperation({
     summary: 'Get paginated entity list',
     description:

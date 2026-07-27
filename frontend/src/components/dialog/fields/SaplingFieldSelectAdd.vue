@@ -17,10 +17,11 @@
         :disabled="props.disabled || !selectedItems.length"
         :loading="props.loading"
         @click="emitAddSelected"
-        :icon="showActionLabel ? undefined : actionIcon"
+        :icon="showActionLabel ? undefined : true"
         :prepend-icon="showActionLabel ? actionIcon : undefined"
         :title="resolvedActionLabel"
       >
+        <v-icon v-if="!showActionLabel" :icon="actionIcon" />
         <span v-if="showActionLabel">{{ resolvedActionLabel }}</span>
       </v-btn>
     </v-btn-group>

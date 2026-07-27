@@ -172,6 +172,27 @@ export class ServerLandscapeItem {
   })
   @ManyToOne(() => CompanyItem, { nullable: false })
   company!: Rel<CompanyItem>;
+
+  /**
+   * Name of the company selected in company.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 301,
+    group: 'serverLandscape.groupReference',
+    groupOrder: 400,
+    width: 2,
+    visible: false,
+    tableOrder: 301,
+    tableVisible: false,
+    mobileOrder: 301,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get companyName(): string | undefined {
+    return this.company?.name;
+  }
   // #endregion
 
   // #region Properties: System
