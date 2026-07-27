@@ -3,6 +3,7 @@ import { check, sleep } from "k6";
 import { Counter, Rate, Trend } from "k6/metrics";
 
 const DEFAULT_EXTRA_ENTITIES = "salesOpportunity,event";
+const GENERIC_PAGE_LIMIT = 20;
 const BASE_URL = (
   __ENV.SAPLING_BASE_URL || "http://localhost:3000/api"
 ).replace(/\/+$/, "");
@@ -110,7 +111,7 @@ export default function saplingWorkflow() {
 
     const ticketQuery = {
       page: 1,
-      limit: 100,
+      limit: GENERIC_PAGE_LIMIT,
       relations: JSON.stringify([
         "status",
         "priority",
@@ -181,12 +182,12 @@ export default function saplingWorkflow() {
 
     pause();
 
-    const personResult = browseEntity("person", 30);
+    const personResult = browseEntity("person");
     successful = personResult.ok && successful;
 
     pause();
 
-    const companyResult = browseEntity("company", 30);
+    const companyResult = browseEntity("company");
     successful = companyResult.ok && successful;
 
     pause();
@@ -207,7 +208,7 @@ export default function saplingWorkflow() {
           "GET",
           apiUrl(`generic/${encodeURIComponent(entityHandle)}`, {
             page: 1,
-            limit: 20,
+            limit: GENERIC_PAGE_LIMIT,
           }),
           null,
           { entity: entityHandle },
@@ -236,7 +237,7 @@ export default function saplingWorkflow() {
   }
 }
 
-function browseEntity(entityHandle, limit) {
+function browseEntity(entityHandle) {
   const prefix = metricName(entityHandle);
   let successful = requestStep(
     `${prefix}_template`,
@@ -248,7 +249,7 @@ function browseEntity(entityHandle, limit) {
     "GET",
     apiUrl(`generic/${encodeURIComponent(entityHandle)}`, {
       page: 1,
-      limit,
+      limit: GENERIC_PAGE_LIMIT,
     }),
   );
   successful = listResult.ok && successful;
