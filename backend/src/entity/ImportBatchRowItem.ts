@@ -85,6 +85,7 @@ export class ImportBatchRowItem {
     mobileOrder: 400,
     mobileVisible: false,
   })
+  @Sapling(['isSearchExcluded'])
   @Property({ length: 64, nullable: true })
   targetReference?: string | null;
 
