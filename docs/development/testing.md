@@ -130,6 +130,24 @@ vue-tsc --build
 
 Run typechecks after most TypeScript, Vue, entity, DTO, or service changes.
 
+## API Performance Tests
+
+The reproducible k6 suite under `performance/` executes a realistic API workflow
+with 1 and then 10 through 100 concurrent users. It produces a comparison
+matrix plus per-endpoint latency data:
+
+```bash
+npm run test:performance
+npm run test:performance:smoke
+```
+
+This suite is separate from Jest/Vitest because it needs a running Sapling
+backend and database. It uses bearer authentication, is read-only by default,
+and supports explicitly enabled Ticket update modes for disposable test
+environments. See [`performance/README.md`](../../performance/README.md) for
+credentials, Docker/native k6 execution, write safety, thresholds, and report
+interpretation.
+
 ## Formatting
 
 Root commands:

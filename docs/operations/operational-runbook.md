@@ -164,6 +164,18 @@ Operational checks:
 
 Backend logging is controlled by `LOG_*` in `backend/.env`.
 
+HTTP access logging through Morgan is configured independently from
+`LOG_LEVEL`:
+
+- `LOG_REQUESTS_CONSOLE_ENABLED=true|false` controls the `dev` request log on
+  stdout.
+- `LOG_REQUESTS_FILE_ENABLED=true|false` controls the rotating
+  `LOG_NAME_REQUESTS` access-log file.
+
+Both default to `true` when omitted. Restart the backend after changing them.
+For comparable performance tests, keep both settings identical across every
+load level.
+
 Check:
 
 - request logs for HTTP errors and authentication issues

@@ -407,6 +407,21 @@ export const LOG_NAME_SERVER: string =
   process.env.LOG_NAME_SERVER || 'server.log';
 
 /**
+ * @constant {boolean} LOG_REQUESTS_CONSOLE_ENABLED
+ * Whether Morgan writes HTTP request logs to the console. Defaults to true.
+ */
+export const LOG_REQUESTS_CONSOLE_ENABLED: boolean =
+  process.env.LOG_REQUESTS_CONSOLE_ENABLED?.trim().toLowerCase() !== 'false';
+
+/**
+ * @constant {boolean} LOG_REQUESTS_FILE_ENABLED
+ * Whether Morgan writes HTTP request logs to the rotating request log file.
+ * Defaults to true.
+ */
+export const LOG_REQUESTS_FILE_ENABLED: boolean =
+  process.env.LOG_REQUESTS_FILE_ENABLED?.trim().toLowerCase() !== 'false';
+
+/**
  * @constant {string[]} LOG_APPENDERS
  * List of log appenders. Defaults to ['console', 'file'].
  */

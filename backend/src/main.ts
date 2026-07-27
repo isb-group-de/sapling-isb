@@ -22,6 +22,8 @@ import {
   LOG_BACKUP_FILES,
   LOG_NAME_REQUESTS,
   LOG_OUTPUT_PATH,
+  LOG_REQUESTS_CONSOLE_ENABLED,
+  LOG_REQUESTS_FILE_ENABLED,
   PORT,
   SAPLING_FRONTEND_URL,
 } from './constants/project.constants';
@@ -75,17 +77,19 @@ async function bootstrap() {
   const entityManager = app.get(EntityManager);
   app.use(session(createSessionOptions(entityManager)));
 
-  // Configure Morgan request logger with rotating file stream
-  const accessLogStream = createStream(LOG_NAME_REQUESTS, {
-    interval: '1d', // rotate daily
-    size: '10M', // 10 Megabytes
-    path: LOG_OUTPUT_PATH,
-    maxFiles: LOG_BACKUP_FILES,
-  });
+  if (LOG_REQUESTS_CONSOLE_ENABLED) {
+    app.use(morgan('dev'));
+  }
 
-  // Use Morgan for request logging (console and file)
-  app.use(morgan('dev'));
-  app.use(morgan('combined', { stream: accessLogStream }));
+  if (LOG_REQUESTS_FILE_ENABLED) {
+    const accessLogStream = createStream(LOG_NAME_REQUESTS, {
+      interval: '1d', // rotate daily
+      size: '10M', // 10 Megabytes
+      path: LOG_OUTPUT_PATH,
+      maxFiles: LOG_BACKUP_FILES,
+    });
+    app.use(morgan('combined', { stream: accessLogStream }));
+  }
 
   initializeLogger();
   app.useGlobalFilters(new ApiExceptionFilter());

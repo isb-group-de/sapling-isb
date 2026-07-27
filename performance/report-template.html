@@ -1,0 +1,1496 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Interaktive Auswertung der Sapling Performance-Matrix"
+    />
+    <title>Sapling Performance Report</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --background: #07110e;
+        --background-elevated: #0b1713;
+        --surface: #10201a;
+        --surface-strong: #152a22;
+        --surface-soft: rgba(255, 255, 255, 0.035);
+        --foreground: #eef8f1;
+        --muted: #96aa9e;
+        --border: rgba(216, 244, 225, 0.12);
+        --border-strong: rgba(216, 244, 225, 0.21);
+        --green: #79df9a;
+        --green-soft: rgba(121, 223, 154, 0.14);
+        --lime: #c8ee72;
+        --amber: #f4c56b;
+        --red: #ff8f82;
+        --blue: #77bdf8;
+        --violet: #c0a4ff;
+        --shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
+        font-family:
+          Inter,
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        background: var(--background);
+      }
+
+      body {
+        min-width: 320px;
+        margin: 0;
+        color: var(--foreground);
+        background:
+          radial-gradient(
+            circle at 82% 0%,
+            rgba(84, 191, 126, 0.14),
+            transparent 34rem
+          ),
+          radial-gradient(
+            circle at 3% 32%,
+            rgba(70, 142, 113, 0.09),
+            transparent 28rem
+          ),
+          var(--background);
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      button {
+        color: inherit;
+      }
+
+      .shell {
+        width: min(1480px, calc(100% - 40px));
+        margin: 0 auto;
+        padding: 28px 0 56px;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+        padding-bottom: 26px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 13px;
+      }
+
+      .brand-mark {
+        position: relative;
+        width: 38px;
+        height: 38px;
+        border: 1px solid rgba(121, 223, 154, 0.42);
+        border-radius: 12px;
+        background:
+          linear-gradient(145deg, rgba(121, 223, 154, 0.23), transparent 62%),
+          var(--surface);
+        box-shadow: inset 0 0 24px rgba(121, 223, 154, 0.08);
+      }
+
+      .brand-mark::before,
+      .brand-mark::after {
+        position: absolute;
+        content: "";
+        background: var(--green);
+      }
+
+      .brand-mark::before {
+        top: 8px;
+        left: 18px;
+        width: 2px;
+        height: 22px;
+        border-radius: 2px;
+        transform: rotate(25deg);
+      }
+
+      .brand-mark::after {
+        top: 9px;
+        left: 11px;
+        width: 13px;
+        height: 9px;
+        border-radius: 11px 2px 11px 2px;
+        transform: rotate(18deg);
+        box-shadow: 7px 10px 0 -1px var(--green);
+      }
+
+      .eyebrow,
+      .section-label {
+        margin: 0;
+        color: var(--green);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+
+      .brand-title {
+        margin: 2px 0 0;
+        font-size: 18px;
+        font-weight: 650;
+        letter-spacing: -0.02em;
+      }
+
+      .file-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 40px;
+        padding: 0 15px;
+        border: 1px solid var(--border-strong);
+        border-radius: 10px;
+        color: var(--foreground);
+        background: var(--surface-soft);
+        cursor: pointer;
+        transition:
+          border-color 160ms ease,
+          background 160ms ease;
+      }
+
+      .file-button:hover {
+        border-color: rgba(121, 223, 154, 0.5);
+        background: var(--green-soft);
+      }
+
+      .file-button:focus-within {
+        outline: 2px solid var(--green);
+        outline-offset: 3px;
+      }
+
+      .file-button input {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1.4fr) minmax(280px, 0.6fr);
+        gap: 32px;
+        align-items: end;
+        padding: 48px 0 34px;
+      }
+
+      h1 {
+        max-width: 900px;
+        margin: 8px 0 14px;
+        font-size: clamp(34px, 5vw, 68px);
+        font-weight: 620;
+        line-height: 1.02;
+        letter-spacing: -0.055em;
+      }
+
+      .hero-copy {
+        max-width: 720px;
+        margin: 0;
+        color: var(--muted);
+        font-size: 16px;
+        line-height: 1.65;
+      }
+
+      .run-meta {
+        display: grid;
+        gap: 12px;
+        padding-left: 24px;
+        border-left: 1px solid var(--border);
+      }
+
+      .meta-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 24px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .meta-row strong {
+        color: var(--foreground);
+        font-weight: 580;
+        text-align: right;
+      }
+
+      .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        width: fit-content;
+        padding: 7px 11px;
+        border: 1px solid rgba(121, 223, 154, 0.3);
+        border-radius: 999px;
+        color: var(--green);
+        background: var(--green-soft);
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .status-pill::before {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: currentColor;
+        box-shadow: 0 0 12px currentColor;
+        content: "";
+      }
+
+      .status-pill.is-failing {
+        border-color: rgba(255, 143, 130, 0.35);
+        color: var(--red);
+        background: rgba(255, 143, 130, 0.11);
+      }
+
+      .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 14px;
+        margin-bottom: 20px;
+      }
+
+      .kpi {
+        min-height: 142px;
+        padding: 22px;
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        background:
+          linear-gradient(145deg, rgba(255, 255, 255, 0.025), transparent 65%),
+          var(--background-elevated);
+        box-shadow: 0 12px 42px rgba(0, 0, 0, 0.12);
+      }
+
+      .kpi-label {
+        color: var(--muted);
+        font-size: 12px;
+        letter-spacing: 0.03em;
+      }
+
+      .kpi-value {
+        margin-top: 17px;
+        font-size: clamp(27px, 3vw, 42px);
+        font-weight: 620;
+        letter-spacing: -0.045em;
+      }
+
+      .kpi-context {
+        margin-top: 7px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .kpi-context strong {
+        color: var(--green);
+        font-weight: 650;
+      }
+
+      .dashboard-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.55fr) minmax(300px, 0.45fr);
+        gap: 20px;
+      }
+
+      .panel {
+        min-width: 0;
+        padding: 24px;
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        background: rgba(11, 23, 19, 0.78);
+        box-shadow: var(--shadow);
+      }
+
+      .panel-heading {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 24px;
+        margin-bottom: 20px;
+      }
+
+      h2 {
+        margin: 5px 0 0;
+        font-size: 20px;
+        font-weight: 620;
+        letter-spacing: -0.025em;
+      }
+
+      .panel-caption {
+        margin: 5px 0 0;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .legend {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 13px;
+        color: var(--muted);
+        font-size: 11px;
+      }
+
+      .legend-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .legend-swatch {
+        width: 16px;
+        height: 3px;
+        border-radius: 2px;
+        background: var(--series-color);
+      }
+
+      .chart-wrap {
+        position: relative;
+        min-height: 340px;
+      }
+
+      #latency-chart {
+        display: block;
+        width: 100%;
+        height: 340px;
+      }
+
+      .chart-tooltip {
+        position: absolute;
+        z-index: 2;
+        min-width: 155px;
+        padding: 10px 12px;
+        border: 1px solid var(--border-strong);
+        border-radius: 10px;
+        color: var(--foreground);
+        background: rgba(8, 19, 15, 0.96);
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.32);
+        font-size: 11px;
+        line-height: 1.65;
+        pointer-events: none;
+      }
+
+      .chart-tooltip[hidden] {
+        display: none;
+      }
+
+      .chart-tooltip strong {
+        display: block;
+        margin-bottom: 3px;
+        font-size: 12px;
+      }
+
+      .insight-list {
+        display: grid;
+        gap: 0;
+      }
+
+      .insight {
+        padding: 18px 0;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .insight:first-child {
+        padding-top: 2px;
+      }
+
+      .insight:last-child {
+        padding-bottom: 0;
+        border-bottom: 0;
+      }
+
+      .insight-number {
+        color: var(--green);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+      }
+
+      .insight-title {
+        margin: 7px 0 5px;
+        font-size: 15px;
+        font-weight: 620;
+      }
+
+      .insight-copy {
+        margin: 0;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.55;
+      }
+
+      .wide-panel {
+        margin-top: 20px;
+      }
+
+      .bottleneck-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px 28px;
+      }
+
+      .bottleneck {
+        display: grid;
+        grid-template-columns: minmax(125px, 0.8fr) minmax(150px, 1.2fr) auto;
+        gap: 12px;
+        align-items: center;
+        min-width: 0;
+      }
+
+      .bottleneck-label {
+        overflow: hidden;
+        font-size: 12px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .bar-track {
+        height: 7px;
+        overflow: hidden;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.055);
+      }
+
+      .bar-value {
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, var(--green), var(--lime));
+      }
+
+      .bottleneck-value {
+        color: var(--muted);
+        font-size: 11px;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+      }
+
+      .table-wrap {
+        overflow-x: auto;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+      }
+
+      th {
+        padding: 10px 12px;
+        color: var(--muted);
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-align: right;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+
+      th:first-child,
+      td:first-child {
+        position: sticky;
+        left: 0;
+        z-index: 1;
+        text-align: left;
+        background: var(--background-elevated);
+      }
+
+      td {
+        padding: 11px 12px;
+        border-top: 1px solid var(--border);
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+      }
+
+      tbody tr:hover td {
+        background-color: rgba(121, 223, 154, 0.045);
+      }
+
+      .heat-cell {
+        background-image: linear-gradient(
+          rgba(121, 223, 154, var(--heat, 0)),
+          rgba(121, 223, 154, var(--heat, 0))
+        );
+      }
+
+      .threshold-pass {
+        color: var(--green);
+      }
+
+      .threshold-fail {
+        color: var(--red);
+      }
+
+      .empty-state {
+        display: grid;
+        min-height: 430px;
+        place-items: center;
+        padding: 40px;
+        text-align: center;
+      }
+
+      .empty-state-inner {
+        max-width: 520px;
+      }
+
+      .empty-state h1 {
+        margin-inline: auto;
+        font-size: clamp(32px, 5vw, 54px);
+      }
+
+      .empty-state p {
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      .empty-state .file-button {
+        margin-top: 14px;
+      }
+
+      .error-message {
+        margin: 18px 0 0;
+        color: var(--red);
+        font-size: 13px;
+      }
+
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+
+      [hidden] {
+        display: none !important;
+      }
+
+      @media (max-width: 980px) {
+        .hero,
+        .dashboard-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .run-meta {
+          padding: 20px 0 0;
+          border-top: 1px solid var(--border);
+          border-left: 0;
+        }
+
+        .kpi-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .bottleneck-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .shell {
+          width: min(100% - 24px, 1480px);
+          padding-top: 18px;
+        }
+
+        .topbar,
+        .panel-heading {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+
+        .hero {
+          padding-top: 34px;
+        }
+
+        .kpi-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .panel {
+          padding: 18px;
+        }
+
+        .legend {
+          justify-content: flex-start;
+        }
+
+        .bottleneck {
+          grid-template-columns: minmax(110px, 1fr) minmax(110px, 1fr);
+        }
+
+        .bottleneck-value {
+          grid-column: 2;
+        }
+      }
+
+      @media print {
+        :root {
+          color-scheme: light;
+          --background: #ffffff;
+          --background-elevated: #ffffff;
+          --surface: #ffffff;
+          --surface-soft: #f5f7f5;
+          --foreground: #102018;
+          --muted: #506058;
+          --border: rgba(16, 32, 24, 0.15);
+          --border-strong: rgba(16, 32, 24, 0.25);
+        }
+
+        body {
+          background: #ffffff;
+        }
+
+        .shell {
+          width: 100%;
+          padding: 0;
+        }
+
+        .file-button {
+          display: none;
+        }
+
+        .panel,
+        .kpi {
+          break-inside: avoid;
+          box-shadow: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <section id="empty-state" class="empty-state" hidden>
+        <div class="empty-state-inner">
+          <p class="section-label">Sapling Performance</p>
+          <h1>Matrix laden und Engpässe sichtbar machen.</h1>
+          <p>
+            Öffne eine erzeugte <code>matrix.json</code>. Neue Testläufe betten
+            ihre Daten automatisch in diese Auswertung ein.
+          </p>
+          <label class="file-button">
+            Matrixdatei öffnen
+            <input
+              class="matrix-file-input"
+              type="file"
+              accept=".json,application/json"
+            />
+          </label>
+          <p id="empty-error" class="error-message" hidden></p>
+        </div>
+      </section>
+
+      <section id="report" hidden>
+        <header class="topbar">
+          <div class="brand">
+            <div class="brand-mark" aria-hidden="true"></div>
+            <div>
+              <p class="eyebrow">Sapling</p>
+              <p class="brand-title">Performance Report</p>
+            </div>
+          </div>
+          <label class="file-button">
+            Andere Matrix öffnen
+            <input
+              class="matrix-file-input"
+              type="file"
+              accept=".json,application/json"
+            />
+          </label>
+        </header>
+
+        <section class="hero">
+          <div>
+            <p class="section-label">Load test intelligence</p>
+            <h1 id="hero-title">Wie Sapling unter Last reagiert.</h1>
+            <p id="hero-copy" class="hero-copy"></p>
+          </div>
+          <div class="run-meta">
+            <span id="run-status" class="status-pill"></span>
+            <div class="meta-row">
+              <span>Ausgeführt</span>
+              <strong id="run-date"></strong>
+            </div>
+            <div class="meta-row">
+              <span>Zielsystem</span>
+              <strong id="run-target"></strong>
+            </div>
+            <div class="meta-row">
+              <span>Engine</span>
+              <strong id="run-engine"></strong>
+            </div>
+          </div>
+        </section>
+
+        <section
+          id="kpi-grid"
+          class="kpi-grid"
+          aria-label="Kennzahlen"
+        ></section>
+
+        <section class="dashboard-grid">
+          <article class="panel">
+            <div class="panel-heading">
+              <div>
+                <p class="section-label">Skalierung</p>
+                <h2>Antwortzeit nach Benutzerzahl</h2>
+                <p class="panel-caption">HTTP-Latenz in Millisekunden</p>
+              </div>
+              <div class="legend" aria-label="Datenreihen">
+                <span class="legend-item"
+                  ><span
+                    class="legend-swatch"
+                    style="--series-color: var(--blue)"
+                  ></span
+                  >Durchschnitt</span
+                >
+                <span class="legend-item"
+                  ><span
+                    class="legend-swatch"
+                    style="--series-color: var(--green)"
+                  ></span
+                  >p95</span
+                >
+                <span class="legend-item"
+                  ><span
+                    class="legend-swatch"
+                    style="--series-color: var(--amber)"
+                  ></span
+                  >p99</span
+                >
+              </div>
+            </div>
+            <div id="chart-wrap" class="chart-wrap">
+              <canvas
+                id="latency-chart"
+                role="img"
+                aria-label="HTTP-Antwortzeiten nach Anzahl paralleler Benutzer"
+              ></canvas>
+              <div id="chart-tooltip" class="chart-tooltip" hidden></div>
+            </div>
+          </article>
+
+          <aside class="panel">
+            <div class="panel-heading">
+              <div>
+                <p class="section-label">Automatische Lesart</p>
+                <h2>Was auffällt</h2>
+              </div>
+            </div>
+            <div id="insight-list" class="insight-list"></div>
+          </aside>
+        </section>
+
+        <section class="panel wide-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="section-label">Engpass-Ranking</p>
+              <h2>Langsamste Schritte bei maximaler Last</h2>
+              <p id="bottleneck-caption" class="panel-caption"></p>
+            </div>
+          </div>
+          <div id="bottleneck-grid" class="bottleneck-grid"></div>
+        </section>
+
+        <section class="panel wide-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="section-label">Endpoint-Heatmap</p>
+              <h2>p95 je Workflow-Schritt</h2>
+              <p class="panel-caption">
+                Intensivere Flächen markieren höhere absolute Latenzen.
+              </p>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table id="heatmap-table">
+              <caption class="sr-only">
+                p95-Latenzen aller gemessenen API-Schritte nach Benutzerzahl
+              </caption>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel wide-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="section-label">Gesamtmatrix</p>
+              <h2>Alle Laststufen im Vergleich</h2>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table id="matrix-table">
+              <caption class="sr-only">
+                Gesamtwerte aller Laststufen
+              </caption>
+            </table>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script>
+      window.__SAPLING_PERFORMANCE_REPORT__ = /*__SAPLING_REPORT_DATA__*/ null;
+
+      (() => {
+        "use strict";
+
+        const chartSeries = [
+          {
+            key: "averageMs",
+            label: "Durchschnitt",
+            color: "#77bdf8",
+          },
+          { key: "p95Ms", label: "p95", color: "#79df9a" },
+          { key: "p99Ms", label: "p99", color: "#f4c56b" },
+        ];
+        let currentReport = window.__SAPLING_PERFORMANCE_REPORT__;
+        let currentLevels = [];
+        let chartGeometry = null;
+
+        const reportElement = document.getElementById("report");
+        const emptyStateElement = document.getElementById("empty-state");
+        const emptyErrorElement = document.getElementById("empty-error");
+        const canvas = document.getElementById("latency-chart");
+        const chartWrap = document.getElementById("chart-wrap");
+        const tooltip = document.getElementById("chart-tooltip");
+
+        document.querySelectorAll(".matrix-file-input").forEach((input) => {
+          input.addEventListener("change", async (event) => {
+            const file = event.target.files && event.target.files[0];
+            if (!file) return;
+            try {
+              const parsed = JSON.parse(await file.text());
+              validateReport(parsed);
+              currentReport = parsed;
+              emptyErrorElement.hidden = true;
+              render(parsed);
+            } catch (error) {
+              emptyErrorElement.textContent = `Die Datei konnte nicht gelesen werden: ${error.message}`;
+              emptyErrorElement.hidden = false;
+              reportElement.hidden = true;
+              emptyStateElement.hidden = false;
+            } finally {
+              event.target.value = "";
+            }
+          });
+        });
+
+        canvas.addEventListener("mousemove", showChartTooltip);
+        canvas.addEventListener("mouseleave", () => {
+          tooltip.hidden = true;
+        });
+
+        if ("ResizeObserver" in window) {
+          new ResizeObserver(() => {
+            if (!reportElement.hidden && currentLevels.length > 0) {
+              drawLatencyChart(currentLevels);
+            }
+          }).observe(chartWrap);
+        } else {
+          window.addEventListener("resize", () => {
+            if (!reportElement.hidden && currentLevels.length > 0) {
+              drawLatencyChart(currentLevels);
+            }
+          });
+        }
+
+        if (currentReport) {
+          try {
+            validateReport(currentReport);
+            render(currentReport);
+          } catch (error) {
+            emptyErrorElement.textContent = error.message;
+            emptyErrorElement.hidden = false;
+            emptyStateElement.hidden = false;
+          }
+        } else {
+          emptyStateElement.hidden = false;
+        }
+
+        function validateReport(report) {
+          if (
+            !report ||
+            !Array.isArray(report.results) ||
+            report.results.length === 0
+          ) {
+            throw new Error(
+              "Die Matrix enthält keine auswertbaren Laststufen.",
+            );
+          }
+        }
+
+        function render(report) {
+          const levels = report.results
+            .map(toLevel)
+            .sort((left, right) => left.users - right.users);
+          if (levels.length === 0) {
+            throw new Error("Die Matrix enthält keine gültigen Messwerte.");
+          }
+
+          currentLevels = levels;
+          reportElement.hidden = false;
+          emptyStateElement.hidden = true;
+
+          const baseline = levels[0];
+          const maximum = levels[levels.length - 1];
+          const allPassed = levels.every((level) => level.thresholdsPassed);
+          const peakRps = Math.max(
+            ...levels.map((level) => level.requestsPerSecond),
+          );
+          const p95Growth = ratio(maximum.p95Ms, baseline.p95Ms);
+
+          document.getElementById("hero-copy").textContent =
+            `${levels.length} Laststufen zeigen, wie sich Antwortzeit, Durchsatz und einzelne Workflow-Schritte von ${baseline.users} bis ${maximum.users} parallelen Benutzern entwickeln.`;
+          const status = document.getElementById("run-status");
+          status.textContent = allPassed
+            ? "Alle Grenzwerte eingehalten"
+            : "Grenzwerte verletzt";
+          status.classList.toggle("is-failing", !allPassed);
+          document.getElementById("run-date").textContent = formatDate(
+            report.generatedAt,
+          );
+          document.getElementById("run-target").textContent =
+            report.configuration?.baseUrl || maximum.config?.baseUrl || "–";
+          document.getElementById("run-engine").textContent =
+            report.configuration?.engine || "k6";
+
+          renderKpis({
+            maximum,
+            peakRps,
+            baseline,
+            p95Growth,
+            totalWorkflows: levels.reduce(
+              (sum, level) => sum + level.workflowsCompleted,
+              0,
+            ),
+          });
+          renderInsights(levels, baseline, maximum, p95Growth);
+          renderBottlenecks(levels, maximum);
+          renderHeatmap(levels);
+          renderMatrix(levels);
+          requestAnimationFrame(() => drawLatencyChart(levels));
+        }
+
+        function toLevel(summary) {
+          const metrics = summary.metrics || {};
+          const requests = metrics.httpRequests || {};
+          const duration = metrics.httpRequestDuration || {};
+          const failures = metrics.httpRequestFailed || {};
+          const workflow = metrics.workflowSuccess || {};
+          const workflowDuration = metrics.workflowDuration || {};
+          const durationSeconds = positive(summary.durationMs) / 1000;
+          return {
+            users: positive(summary.config?.users),
+            config: summary.config || {},
+            thresholdsPassed: summary.thresholdsPassed !== false,
+            workflowsExpected: positive(summary.config?.expectedWorkflows),
+            workflowsCompleted: positive(metrics.iterations?.count),
+            workflowSuccessRate: finite(workflow.rate),
+            requestCount: positive(requests.count),
+            requestsPerSecond:
+              durationSeconds > 0
+                ? positive(requests.count) / durationSeconds
+                : 0,
+            errorRate: finite(failures.rate),
+            averageMs: finite(duration.avg),
+            p90Ms: finite(duration["p(90)"]),
+            p95Ms: finite(duration["p(95)"]),
+            p99Ms: finite(duration["p(99)"]),
+            maxMs: finite(duration.max),
+            workflowP95Ms: finite(workflowDuration["p(95)"]),
+            steps: summary.steps || {},
+          };
+        }
+
+        function renderKpis(values) {
+          const cards = [
+            {
+              label: "Maximale Last",
+              value: `${formatNumber(values.maximum.users, 0)} User`,
+              context: `${values.maximum.workflowsCompleted}/${values.maximum.workflowsExpected} Workflows`,
+            },
+            {
+              label: "HTTP p95 bei Max-Last",
+              value: formatMilliseconds(values.maximum.p95Ms),
+              context: `${formatRatio(values.p95Growth)} gegenüber Baseline`,
+            },
+            {
+              label: "Spitzendurchsatz",
+              value: `${formatNumber(values.peakRps, 1)} req/s`,
+              context: `${formatNumber(values.totalWorkflows, 0)} Workflows insgesamt`,
+            },
+            {
+              label: "Fehlerrate bei Max-Last",
+              value: formatPercent(values.maximum.errorRate),
+              context: `${formatPercent(values.maximum.workflowSuccessRate)} Workflow-Erfolg`,
+            },
+          ];
+          document.getElementById("kpi-grid").innerHTML = cards
+            .map(
+              (card) => `
+                <article class="kpi">
+                  <div class="kpi-label">${escapeHtml(card.label)}</div>
+                  <div class="kpi-value">${escapeHtml(card.value)}</div>
+                  <div class="kpi-context">${escapeHtml(card.context)}</div>
+                </article>`,
+            )
+            .join("");
+        }
+
+        function renderInsights(levels, baseline, maximum, p95Growth) {
+          const endpointRows = endpointComparison(levels);
+          const slowest = endpointRows
+            .slice()
+            .sort((left, right) => right.maximumP95 - left.maximumP95)[0];
+          const strongestGrowth = endpointRows
+            .filter((row) => Number.isFinite(row.growth))
+            .sort((left, right) => right.growth - left.growth)[0];
+          const peakThroughput = levels
+            .slice()
+            .sort(
+              (left, right) => right.requestsPerSecond - left.requestsPerSecond,
+            )[0];
+
+          const insights = [
+            {
+              title: "Latenzentwicklung",
+              copy:
+                Number.isFinite(p95Growth) && p95Growth > 1
+                  ? `HTTP p95 steigt von ${formatMilliseconds(baseline.p95Ms)} auf ${formatMilliseconds(maximum.p95Ms)} – das entspricht ${formatRatio(p95Growth)}.`
+                  : `HTTP p95 bleibt zwischen Baseline und Maximalstufe stabil bei etwa ${formatMilliseconds(maximum.p95Ms)}.`,
+            },
+            {
+              title: "Langsamster Schritt",
+              copy: slowest
+                ? `${stepLabel(slowest.step)} erreicht bei ${maximum.users} Benutzern ${formatMilliseconds(slowest.maximumP95)} p95.`
+                : "Für die Endpoint-Auswertung liegen noch keine Schrittmetriken vor.",
+            },
+            {
+              title: "Stärkste Veränderung",
+              copy: strongestGrowth
+                ? `${stepLabel(strongestGrowth.step)} wächst relativ am stärksten: ${formatRatio(strongestGrowth.growth)} von Baseline bis Maximalstufe.`
+                : "Eine Wachstumsrate lässt sich mit den vorhandenen Stufen noch nicht bestimmen.",
+            },
+            {
+              title: "Durchsatzspitze",
+              copy: `Der höchste gemessene Durchsatz liegt bei ${formatNumber(peakThroughput.requestsPerSecond, 1)} Requests/s mit ${peakThroughput.users} Benutzern.`,
+            },
+          ];
+
+          document.getElementById("insight-list").innerHTML = insights
+            .map(
+              (insight, index) => `
+                <article class="insight">
+                  <div class="insight-number">${String(index + 1).padStart(2, "0")}</div>
+                  <h3 class="insight-title">${escapeHtml(insight.title)}</h3>
+                  <p class="insight-copy">${escapeHtml(insight.copy)}</p>
+                </article>`,
+            )
+            .join("");
+        }
+
+        function renderBottlenecks(levels, maximum) {
+          const rows = endpointComparison(levels)
+            .sort((left, right) => right.maximumP95 - left.maximumP95)
+            .slice(0, 10);
+          const ceiling = Math.max(1, ...rows.map((row) => row.maximumP95));
+          document.getElementById("bottleneck-caption").textContent =
+            `${maximum.users} parallele Benutzer · sortiert nach p95`;
+          document.getElementById("bottleneck-grid").innerHTML =
+            rows.length > 0
+              ? rows
+                  .map(
+                    (row) => `
+                      <div class="bottleneck">
+                        <span class="bottleneck-label">${escapeHtml(stepLabel(row.step))}</span>
+                        <span class="bar-track" aria-hidden="true">
+                          <span class="bar-value" style="width:${Math.max(2, (row.maximumP95 / ceiling) * 100).toFixed(1)}%"></span>
+                        </span>
+                        <span class="bottleneck-value">${escapeHtml(formatMilliseconds(row.maximumP95))}</span>
+                      </div>`,
+                  )
+                  .join("")
+              : '<p class="panel-caption">Keine Schrittmetriken vorhanden.</p>';
+        }
+
+        function renderHeatmap(levels) {
+          const comparisons = endpointComparison(levels).sort(
+            (left, right) => right.maximumP95 - left.maximumP95,
+          );
+          const globalMaximum = Math.max(
+            1,
+            ...comparisons.flatMap((row) =>
+              levels.map((level) => finite(level.steps[row.step]?.["p(95)"])),
+            ),
+          );
+          const header = `
+            <thead><tr>
+              <th scope="col">Workflow-Schritt</th>
+              ${levels.map((level) => `<th scope="col">${level.users} User</th>`).join("")}
+            </tr></thead>`;
+          const body = comparisons
+            .map(
+              (row) => `
+                <tr>
+                  <td>${escapeHtml(stepLabel(row.step))}</td>
+                  ${levels
+                    .map((level) => {
+                      const value = finite(level.steps[row.step]?.["p(95)"]);
+                      const heat =
+                        value > 0 ? 0.04 + (value / globalMaximum) * 0.32 : 0;
+                      return `<td class="heat-cell" style="--heat:${heat.toFixed(3)}">${value > 0 ? escapeHtml(formatMilliseconds(value)) : "–"}</td>`;
+                    })
+                    .join("")}
+                </tr>`,
+            )
+            .join("");
+          document.getElementById("heatmap-table").innerHTML =
+            `${header}<tbody>${body}</tbody>`;
+        }
+
+        function renderMatrix(levels) {
+          const header = `
+            <thead><tr>
+              <th scope="col">User</th>
+              <th scope="col">Workflows</th>
+              <th scope="col">req/s</th>
+              <th scope="col">Ø HTTP</th>
+              <th scope="col">p95</th>
+              <th scope="col">p99</th>
+              <th scope="col">Workflow p95</th>
+              <th scope="col">Fehler</th>
+              <th scope="col">Status</th>
+            </tr></thead>`;
+          const body = levels
+            .map(
+              (level) => `
+                <tr>
+                  <td>${formatNumber(level.users, 0)}</td>
+                  <td>${formatNumber(level.workflowsCompleted, 0)}/${formatNumber(level.workflowsExpected, 0)}</td>
+                  <td>${formatNumber(level.requestsPerSecond, 1)}</td>
+                  <td>${escapeHtml(formatMilliseconds(level.averageMs))}</td>
+                  <td>${escapeHtml(formatMilliseconds(level.p95Ms))}</td>
+                  <td>${escapeHtml(formatMilliseconds(level.p99Ms))}</td>
+                  <td>${escapeHtml(formatMilliseconds(level.workflowP95Ms))}</td>
+                  <td>${formatPercent(level.errorRate)}</td>
+                  <td class="${level.thresholdsPassed ? "threshold-pass" : "threshold-fail"}">${level.thresholdsPassed ? "Pass" : "Fail"}</td>
+                </tr>`,
+            )
+            .join("");
+          document.getElementById("matrix-table").innerHTML =
+            `${header}<tbody>${body}</tbody>`;
+        }
+
+        function endpointComparison(levels) {
+          const steps = [
+            ...new Set(levels.flatMap((level) => Object.keys(level.steps))),
+          ];
+          const baseline = levels[0];
+          const maximum = levels[levels.length - 1];
+          return steps.map((step) => {
+            const baselineP95 = finite(baseline.steps[step]?.["p(95)"]);
+            const maximumP95 = finite(maximum.steps[step]?.["p(95)"]);
+            return {
+              step,
+              baselineP95,
+              maximumP95,
+              growth: ratio(maximumP95, baselineP95),
+            };
+          });
+        }
+
+        function drawLatencyChart(levels) {
+          const bounds = canvas.getBoundingClientRect();
+          if (bounds.width < 10) return;
+          const dpr = Math.min(window.devicePixelRatio || 1, 2);
+          const width = bounds.width;
+          const height = 340;
+          canvas.width = Math.round(width * dpr);
+          canvas.height = Math.round(height * dpr);
+          canvas.style.height = `${height}px`;
+
+          const context = canvas.getContext("2d");
+          context.setTransform(dpr, 0, 0, dpr, 0, 0);
+          context.clearRect(0, 0, width, height);
+
+          const styles = getComputedStyle(document.documentElement);
+          const foreground = styles.getPropertyValue("--foreground").trim();
+          const muted = styles.getPropertyValue("--muted").trim();
+          const border = styles.getPropertyValue("--border").trim();
+          const padding = { top: 18, right: 20, bottom: 42, left: 62 };
+          const plotWidth = width - padding.left - padding.right;
+          const plotHeight = height - padding.top - padding.bottom;
+          const allValues = levels.flatMap((level) =>
+            chartSeries.map((series) => finite(level[series.key])),
+          );
+          const p95Limit = positive(
+            levels[levels.length - 1]?.config?.p95LimitMs,
+          );
+          const dataMaximum = Math.max(1, ...allValues);
+          const showThreshold = p95Limit > 0 && p95Limit <= dataMaximum * 1.75;
+          const rawMaximum = Math.max(
+            dataMaximum,
+            showThreshold ? p95Limit : 0,
+          );
+          const yMaximum = niceCeiling(rawMaximum * 1.08);
+          const yTicks = 5;
+
+          context.font =
+            '11px Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif';
+          context.lineWidth = 1;
+          context.textBaseline = "middle";
+          for (let index = 0; index <= yTicks; index += 1) {
+            const value = (yMaximum / yTicks) * index;
+            const y =
+              padding.top + plotHeight - (value / yMaximum) * plotHeight;
+            context.strokeStyle = border;
+            context.beginPath();
+            context.moveTo(padding.left, y);
+            context.lineTo(width - padding.right, y);
+            context.stroke();
+            context.fillStyle = muted;
+            context.textAlign = "right";
+            context.fillText(
+              formatAxisMilliseconds(value),
+              padding.left - 11,
+              y,
+            );
+          }
+
+          const xForIndex = (index) =>
+            levels.length === 1
+              ? padding.left + plotWidth / 2
+              : padding.left + (index / (levels.length - 1)) * plotWidth;
+          const yForValue = (value) =>
+            padding.top + plotHeight - (value / yMaximum) * plotHeight;
+
+          levels.forEach((level, index) => {
+            const x = xForIndex(index);
+            context.fillStyle = muted;
+            context.textAlign = "center";
+            context.textBaseline = "top";
+            context.fillText(
+              String(level.users),
+              x,
+              height - padding.bottom + 14,
+            );
+          });
+          context.fillStyle = muted;
+          context.textAlign = "right";
+          context.fillText(
+            "parallele User",
+            width - padding.right,
+            height - 11,
+          );
+
+          if (showThreshold && p95Limit <= yMaximum) {
+            const thresholdY = yForValue(p95Limit);
+            context.save();
+            context.setLineDash([5, 5]);
+            context.strokeStyle = styles.getPropertyValue("--red").trim();
+            context.beginPath();
+            context.moveTo(padding.left, thresholdY);
+            context.lineTo(width - padding.right, thresholdY);
+            context.stroke();
+            context.restore();
+            context.fillStyle = styles.getPropertyValue("--red").trim();
+            context.textAlign = "right";
+            context.textBaseline = "bottom";
+            context.fillText(
+              `Limit ${formatAxisMilliseconds(p95Limit)}`,
+              width - padding.right,
+              thresholdY - 5,
+            );
+          }
+
+          chartSeries.forEach((series) => {
+            context.strokeStyle = series.color;
+            context.fillStyle = series.color;
+            context.lineWidth = series.key === "p95Ms" ? 2.5 : 1.7;
+            context.lineJoin = "round";
+            context.beginPath();
+            levels.forEach((level, index) => {
+              const x = xForIndex(index);
+              const y = yForValue(finite(level[series.key]));
+              if (index === 0) context.moveTo(x, y);
+              else context.lineTo(x, y);
+            });
+            context.stroke();
+            levels.forEach((level, index) => {
+              const x = xForIndex(index);
+              const y = yForValue(finite(level[series.key]));
+              context.beginPath();
+              context.arc(
+                x,
+                y,
+                series.key === "p95Ms" ? 3.5 : 2.8,
+                0,
+                Math.PI * 2,
+              );
+              context.fill();
+            });
+          });
+
+          chartGeometry = {
+            width,
+            height,
+            padding,
+            plotWidth,
+            levels,
+            xForIndex,
+            yForValue,
+          };
+          canvas.setAttribute(
+            "aria-label",
+            `HTTP-Antwortzeiten von ${formatMilliseconds(levels[0].p95Ms)} p95 bei ${levels[0].users} Benutzern bis ${formatMilliseconds(levels[levels.length - 1].p95Ms)} p95 bei ${levels[levels.length - 1].users} Benutzern.`,
+          );
+        }
+
+        function showChartTooltip(event) {
+          if (!chartGeometry) return;
+          const bounds = canvas.getBoundingClientRect();
+          const localX = event.clientX - bounds.left;
+          let nearestIndex = 0;
+          let nearestDistance = Number.POSITIVE_INFINITY;
+          chartGeometry.levels.forEach((level, index) => {
+            const distance = Math.abs(chartGeometry.xForIndex(index) - localX);
+            if (distance < nearestDistance) {
+              nearestDistance = distance;
+              nearestIndex = index;
+            }
+          });
+          const level = chartGeometry.levels[nearestIndex];
+          const x = chartGeometry.xForIndex(nearestIndex);
+          const y = Math.min(
+            ...chartSeries.map((series) =>
+              chartGeometry.yForValue(finite(level[series.key])),
+            ),
+          );
+          tooltip.innerHTML = `
+            <strong>${level.users} parallele User</strong>
+            ${chartSeries
+              .map(
+                (series) =>
+                  `${escapeHtml(series.label)}: ${escapeHtml(formatMilliseconds(level[series.key]))}`,
+              )
+              .join("<br>")}`;
+          tooltip.hidden = false;
+          const tooltipWidth = tooltip.offsetWidth;
+          const tooltipHeight = tooltip.offsetHeight;
+          const left = Math.max(
+            8,
+            Math.min(
+              chartGeometry.width - tooltipWidth - 8,
+              x - tooltipWidth / 2,
+            ),
+          );
+          const top = Math.max(8, y - tooltipHeight - 13);
+          tooltip.style.left = `${left}px`;
+          tooltip.style.top = `${top}px`;
+        }
+
+        function niceCeiling(value) {
+          if (!Number.isFinite(value) || value <= 0) return 1;
+          const magnitude = 10 ** Math.floor(Math.log10(value));
+          const normalized = value / magnitude;
+          const nice =
+            normalized <= 1
+              ? 1
+              : normalized <= 2
+                ? 2
+                : normalized <= 5
+                  ? 5
+                  : 10;
+          return nice * magnitude;
+        }
+
+        function ratio(value, baseline) {
+          return baseline > 0 && Number.isFinite(value)
+            ? value / baseline
+            : Number.NaN;
+        }
+
+        function finite(value) {
+          return Number.isFinite(Number(value)) ? Number(value) : 0;
+        }
+
+        function positive(value) {
+          return Math.max(0, finite(value));
+        }
+
+        function formatNumber(value, digits) {
+          return new Intl.NumberFormat("de-DE", {
+            minimumFractionDigits: digits,
+            maximumFractionDigits: digits,
+          }).format(finite(value));
+        }
+
+        function formatMilliseconds(value) {
+          const milliseconds = finite(value);
+          return milliseconds >= 1000
+            ? `${formatNumber(milliseconds / 1000, 2)} s`
+            : `${formatNumber(milliseconds, milliseconds < 10 ? 2 : 1)} ms`;
+        }
+
+        function formatAxisMilliseconds(value) {
+          return value >= 1000
+            ? `${formatNumber(value / 1000, 1)} s`
+            : `${formatNumber(value, 0)} ms`;
+        }
+
+        function formatPercent(value) {
+          return `${formatNumber(finite(value) * 100, 2)} %`;
+        }
+
+        function formatRatio(value) {
+          return Number.isFinite(value) ? `${formatNumber(value, 2)}×` : "–";
+        }
+
+        function formatDate(value) {
+          const date = value ? new Date(value) : null;
+          return date && !Number.isNaN(date.getTime())
+            ? new Intl.DateTimeFormat("de-DE", {
+                dateStyle: "medium",
+                timeStyle: "short",
+              }).format(date)
+            : "–";
+        }
+
+        function stepLabel(value) {
+          return String(value || "")
+            .split("_")
+            .filter(Boolean)
+            .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+            .join(" ");
+        }
+
+        function escapeHtml(value) {
+          return String(value ?? "")
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+        }
+      })();
+    </script>
+  </body>
+</html>
