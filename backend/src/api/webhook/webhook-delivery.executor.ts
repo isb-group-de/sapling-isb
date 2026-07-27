@@ -162,7 +162,7 @@ export class WebhookDeliveryExecutor {
         subscription.payloadType.handle == 'item' &&
         Array.isArray(requestPayload)
       ) {
-        const itemPayload = requestPayload[0];
+        const itemPayload: unknown = requestPayload[0];
 
         if (isRecord(itemPayload)) {
           requestPayload = itemPayload;

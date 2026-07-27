@@ -20,7 +20,7 @@ jest.mock('@microsoft/microsoft-graph-client', () => ({
   Client: { init: graphInit },
 }));
 
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, Logger } from '@nestjs/common';
 import { MailProviderSessionService } from './mail-provider-session.service';
 
 type TestSession = {
@@ -107,6 +107,9 @@ describe('MailProviderSessionService', () => {
   });
 
   it('falls back when sender lookup authentication cannot recover', async () => {
+    const warn = jest
+      .spyOn(Logger.prototype, 'warn')
+      .mockImplementation(() => undefined);
     graphApiGet.mockReset();
     graphApiGet.mockRejectedValue(
       new Error('Lifetime validation failed, the token is expired.'),
@@ -124,6 +127,10 @@ describe('MailProviderSessionService', () => {
     expect(result.senders.map((sender) => sender.email)).toEqual([
       'fallback@example.com',
     ]);
+    expect(warn).toHaveBeenCalledWith(
+      'Refreshing azure access token for sender lookup failed, using fallback sender options.',
+    );
+    warn.mockRestore();
   });
 
   it('includes configured shared mailboxes for the current provider', async () => {

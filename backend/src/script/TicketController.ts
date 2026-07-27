@@ -165,8 +165,7 @@ export class TicketController extends ScriptClass {
       this.extractHandleValue(mergedTicket.slaPolicy),
     );
     const explicitlyClearsContract =
-      Object.prototype.hasOwnProperty.call(data, 'contract') &&
-      data.contract == null;
+      Object.hasOwn(data, 'contract') && data.contract == null;
     const contract = explicitlyClearsContract
       ? null
       : ((explicitContractHandle != null

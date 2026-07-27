@@ -259,10 +259,12 @@ describe('TicketController', () => {
             options: object,
           ) => Promise<object[]>
         >()
-        .mockImplementation(async (_entity, filter, _options) =>
-          (filter as { company?: { handle?: number } }).company?.handle === 10
-            ? [assigneeContract]
-            : [],
+        .mockImplementation((_entity, filter) =>
+          Promise.resolve(
+            (filter as { company?: { handle?: number } }).company?.handle === 10
+              ? [assigneeContract]
+              : [],
+          ),
         ),
       findOne: jest.fn<() => Promise<object | null>>().mockResolvedValue(null),
     };
@@ -313,8 +315,10 @@ describe('TicketController', () => {
       find: jest.fn<() => Promise<object[]>>().mockResolvedValue([]),
       findOne: jest
         .fn<(entity: unknown) => Promise<object | null>>()
-        .mockImplementation(async (entity) =>
-          String(entity).includes('SupportQueueItem') ? queue : null,
+        .mockImplementation((entity) =>
+          Promise.resolve(
+            String(entity).includes('SupportQueueItem') ? queue : null,
+          ),
         ),
     };
     const controller = new TicketController(
@@ -383,8 +387,10 @@ describe('TicketController', () => {
         .mockResolvedValue([unrelatedDefaultContract]),
       findOne: jest
         .fn<(entity: unknown) => Promise<object | null>>()
-        .mockImplementation(async (entity) =>
-          String(entity).includes('SupportQueueItem') ? queue : null,
+        .mockImplementation((entity) =>
+          Promise.resolve(
+            String(entity).includes('SupportQueueItem') ? queue : null,
+          ),
         ),
     };
     const controller = new TicketController(
