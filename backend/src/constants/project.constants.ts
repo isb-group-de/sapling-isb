@@ -302,6 +302,29 @@ const sessionCookieSameSite =
   process.env.SESSION_COOKIE_SAME_SITE?.trim().toLowerCase();
 
 /**
+ * Resolves the session cookie Secure flag.
+ *
+ * An explicit true/false value takes precedence over NODE_ENV so local release
+ * builds can use HTTP. Missing or invalid values retain the secure production
+ * default.
+ */
+export function resolveSessionCookieSecure(
+  configuredValue: string | undefined,
+  nodeEnvironment: string | undefined,
+): boolean {
+  const normalizedValue = configuredValue?.trim().toLowerCase();
+
+  if (normalizedValue === 'true') {
+    return true;
+  }
+  if (normalizedValue === 'false') {
+    return false;
+  }
+
+  return nodeEnvironment === 'production';
+}
+
+/**
  * @constant {string} SESSION_COOKIE_NAME
  * Cookie name used for session authentication.
  */
@@ -337,11 +360,13 @@ export const GENERIC_DOWNLOAD_LIMIT: number = parseInt(
 
 /**
  * @constant {boolean} SESSION_COOKIE_SECURE
- * Enables the Secure cookie flag for sessions. Defaults to true in production.
+ * Enables the Secure cookie flag for sessions. Explicit true/false values take
+ * precedence; otherwise it defaults to true in production.
  */
-export const SESSION_COOKIE_SECURE: boolean =
-  process.env.SESSION_COOKIE_SECURE === 'true' ||
-  process.env.NODE_ENV === 'production';
+export const SESSION_COOKIE_SECURE: boolean = resolveSessionCookieSecure(
+  process.env.SESSION_COOKIE_SECURE,
+  process.env.NODE_ENV,
+);
 
 /**
  * @constant {false | 'lax' | 'strict' | 'none'} SESSION_COOKIE_SAME_SITE

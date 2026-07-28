@@ -85,6 +85,12 @@ GET /api/auth/isAuthenticated
 
 `AuthController.completeLogin()` regenerates the session before logging in the user. Local login sets session max age based on `rememberMe`.
 
+`SESSION_COOKIE_SECURE=true` always enables the Secure cookie flag, while
+`SESSION_COOKIE_SECURE=false` explicitly disables it for HTTP-based local test
+systems, including runs with `NODE_ENV=production`. When the setting is omitted
+or invalid, Sapling defaults it to `true` in production and `false` otherwise.
+Production deployments served over HTTPS should set it to `true`.
+
 Role-based starter dashboards and favorites are provisioned during successful
 login and when the explicit current-person profile is loaded. Session
 deserialization deliberately skips this provisioning so ordinary API requests
