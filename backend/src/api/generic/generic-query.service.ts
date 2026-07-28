@@ -136,6 +136,62 @@ export class GenericQueryService {
       }
     }
 
+    this.collectPopulatedReferenceValueFields(populate, template).forEach(
+      (fieldName) => selectedFields.add(fieldName),
+    );
+
+    return [...selectedFields];
+  }
+
+  private collectPopulatedReferenceValueFields(
+    populate: string[],
+    rootTemplate: EntityTemplateDto[],
+  ): string[] {
+    if (populate.length === 0) {
+      return [];
+    }
+
+    const selectedFields = new Set<string>();
+
+    for (const relationPath of populate) {
+      const relationSegments = relationPath
+        .split('.')
+        .map((segment) => segment.trim())
+        .filter(Boolean);
+      let currentTemplate = rootTemplate;
+      const resolvedSegments: string[] = [];
+
+      for (const relationSegment of relationSegments) {
+        const relationField = currentTemplate.find(
+          (field) =>
+            field.name === relationSegment &&
+            field.isReference &&
+            Boolean(field.referenceName),
+        );
+        if (!relationField?.referenceName) {
+          break;
+        }
+
+        resolvedSegments.push(relationSegment);
+        const relationPrefix = resolvedSegments.join('.');
+        selectedFields.add(relationPrefix);
+        currentTemplate = this.templateService.getEntityTemplate(
+          relationField.referenceName,
+        );
+
+        currentTemplate
+          .filter(
+            (field) =>
+              field.isPersistent !== false &&
+              !field.options?.includes('isSecurity') &&
+              field.options?.includes('isValue'),
+          )
+          .forEach((field) =>
+            selectedFields.add(`${relationPrefix}.${field.name}`),
+          );
+      }
+    }
+
     return [...selectedFields];
   }
 

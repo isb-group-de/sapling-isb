@@ -27,7 +27,9 @@ const createTemplateField = (
 
 describe('GenericQueryService', () => {
   it('builds safe list projections with primary keys and populated relations', () => {
-    const service = new GenericQueryService({} as never);
+    const service = new GenericQueryService({
+      getEntityTemplate: () => [],
+    } as never);
     const template = [
       createTemplateField({
         name: 'handle',
@@ -71,6 +73,65 @@ describe('GenericQueryService', () => {
     expect(() => service.buildFields(['computedEmail'], template)).toThrow(
       BadRequestException,
     );
+  });
+
+  it('selects value fields for populated nested reference labels', () => {
+    const templatesByEntity: Record<string, EntityTemplateDto[]> = {
+      person: [
+        createTemplateField({
+          name: 'firstName',
+          options: ['isValue'],
+        }),
+        createTemplateField({
+          name: 'lastName',
+          options: ['isValue'],
+        }),
+        createTemplateField({
+          name: 'company',
+          isReference: true,
+          kind: 'm:1',
+          referenceName: 'company',
+          options: ['isValue'],
+        }),
+      ],
+      company: [
+        createTemplateField({
+          name: 'name',
+          options: ['isValue'],
+        }),
+      ],
+    };
+    const service = new GenericQueryService({
+      getEntityTemplate: (entityHandle: string) =>
+        templatesByEntity[entityHandle] ?? [],
+    } as never);
+    const template = [
+      createTemplateField({
+        name: 'handle',
+        type: 'number',
+        isPrimaryKey: true,
+      }),
+      createTemplateField({
+        name: 'assigneePerson',
+        isReference: true,
+        kind: 'm:1',
+        referenceName: 'person',
+      }),
+    ];
+
+    expect(
+      service.buildFields(['assigneePerson'], template, [
+        'assigneePerson',
+        'assigneePerson.company',
+      ]),
+    ).toEqual([
+      'handle',
+      'assigneePerson',
+      'assigneePerson.firstName',
+      'assigneePerson.lastName',
+      'assigneePerson.company',
+      'assigneePerson.company.name',
+    ]);
   });
 
   it('reuses cached template field maps across repeated query normalization work', () => {

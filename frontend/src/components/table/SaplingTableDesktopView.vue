@@ -12,7 +12,6 @@
     :items-per-page="itemsPerPage"
     :items-per-page-options="DEFAULT_PAGE_SIZE_OPTIONS"
     :items-length="totalItems"
-    :loading="isLoading"
     :server-items-length="totalItems"
     :sort-by="sortBy"
     @update:page="emit('update:page', $event)"
@@ -63,6 +62,17 @@
             </template>
           </th>
         </template>
+      </tr>
+      <tr class="sapling-table-loading-row" aria-hidden="true">
+        <th :colspan="columns.length">
+          <v-progress-linear
+            class="sapling-table-loading-progress"
+            :active="isLoading"
+            color="primary"
+            height="2"
+            :indeterminate="isLoading"
+          />
+        </th>
       </tr>
     </template>
 
