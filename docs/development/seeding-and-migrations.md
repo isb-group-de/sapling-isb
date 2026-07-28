@@ -75,6 +75,12 @@ additive. Use this for navigation metadata corrections such as group labels,
 icons, order, or parentage, and for other stable reference data. Keep ordinary
 business/demo data additive unless the record has a deliberately stable handle.
 
+`EntityRouteItem` is the additional composite-key exception. Its seed identity
+is `entity + route + group`; an omitted group is stored and matched as `null`
+and therefore uses the entity's default navigation group. The same entity and
+route may deliberately occur once without a group and again with different
+group overrides so one page can appear in multiple navigation areas.
+
 ## SeedScript Tracking
 
 Successful seed files are recorded in `SeedScriptItem`.

@@ -50,7 +50,7 @@ describe('GenericSeeder', () => {
     expect(em.assign).toHaveBeenCalledWith(existingItem, seedItem);
   });
 
-  it('updates an existing entity route by entity and route', async () => {
+  it('updates an existing entity route by entity, route, and group', async () => {
     const existingRoute = { handle: 42 };
     const em = {
       findOne: jest.fn<(...args: unknown[]) => Promise<typeof existingRoute>>(
@@ -75,7 +75,68 @@ describe('GenericSeeder', () => {
     expect(em.findOne).toHaveBeenCalledWith(EntityRouteItem, {
       entity: { handle: 'emailTemplate' },
       route: 'table/emailTemplate',
+      group: { handle: 'emailInbound' },
     });
     expect(em.assign).toHaveBeenCalledWith(existingRoute, seedItem);
+  });
+
+  it('uses the null group as part of the default entity-route key', async () => {
+    const existingRoute = { handle: 43 };
+    const em = {
+      findOne: jest.fn<(...args: unknown[]) => Promise<typeof existingRoute>>(
+        () => Promise.resolve(existingRoute),
+      ),
+      assign: jest.fn<(...args: unknown[]) => unknown>(),
+    };
+    const seedItem = {
+      entity: 'event',
+      route: 'event',
+      navigation: 'calendar',
+    };
+    const seeder = new GenericSeeder() as unknown as SeedItemUpdater;
+
+    const updated = await seeder.updateExistingSeedItemByHandle(
+      EntityRouteItem,
+      seedItem,
+      em as unknown as EntityManager,
+    );
+
+    expect(updated).toBe(true);
+    expect(em.findOne).toHaveBeenCalledWith(EntityRouteItem, {
+      entity: { handle: 'event' },
+      route: 'event',
+      group: null,
+    });
+    expect(em.assign).toHaveBeenCalledWith(existingRoute, seedItem);
+  });
+
+  it('does not update an entity route from a different navigation group', async () => {
+    const em = {
+      findOne: jest.fn<(...args: unknown[]) => Promise<null>>(() =>
+        Promise.resolve(null),
+      ),
+      assign: jest.fn<(...args: unknown[]) => unknown>(),
+    };
+    const seedItem = {
+      entity: 'event',
+      route: 'event',
+      navigation: 'calendar',
+      group: 'salesCalendar',
+    };
+    const seeder = new GenericSeeder() as unknown as SeedItemUpdater;
+
+    const updated = await seeder.updateExistingSeedItemByHandle(
+      EntityRouteItem,
+      seedItem,
+      em as unknown as EntityManager,
+    );
+
+    expect(updated).toBe(false);
+    expect(em.findOne).toHaveBeenCalledWith(EntityRouteItem, {
+      entity: { handle: 'event' },
+      route: 'event',
+      group: { handle: 'salesCalendar' },
+    });
+    expect(em.assign).not.toHaveBeenCalled();
   });
 });

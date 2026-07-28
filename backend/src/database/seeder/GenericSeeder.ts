@@ -166,6 +166,7 @@ export class GenericSeeder extends Seeder {
     const entityRoute = await em.findOne(EntityRouteItem, {
       entity: { handle: relatedEntityHandle },
       route: `table/${relatedEntityHandle}`,
+      group: null,
     });
 
     if (!entityRoute?.handle) {
@@ -214,12 +215,17 @@ export class GenericSeeder extends Seeder {
     if (entityClass === EntityRouteItem) {
       const entityRoute = item as {
         entity?: string | { handle?: string };
+        group?: string | { handle?: string } | null;
         route?: unknown;
       };
       const relatedEntityHandle =
         typeof entityRoute.entity === 'string'
           ? entityRoute.entity
           : entityRoute.entity?.handle;
+      const relatedGroupHandle =
+        typeof entityRoute.group === 'string'
+          ? entityRoute.group
+          : entityRoute.group?.handle;
 
       if (
         relatedEntityHandle &&
@@ -229,6 +235,7 @@ export class GenericSeeder extends Seeder {
         const existing = await em.findOne(EntityRouteItem, {
           entity: { handle: relatedEntityHandle },
           route: entityRoute.route,
+          group: relatedGroupHandle ? { handle: relatedGroupHandle } : null,
         });
 
         if (existing) {
