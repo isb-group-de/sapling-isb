@@ -5,6 +5,8 @@ param(
 
   [string]$BaseUrl = "http://localhost:3000/api",
 
+  [string]$TokenFile = "performance-tokens.json",
+
   [string]$Users = "1,5,10,20,50,100",
 
   [ValidateRange(1, 1000)]
@@ -19,17 +21,48 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-# Optional: Paste a Sapling bearer API token here for a purely one-click run.
-# Prefer the SAPLING_TOKEN environment variable or the secure prompt below so
-# that a real token cannot accidentally be committed to Git.
-$ConfiguredApiToken = ""
-
 if ($WriteMode -eq "round-trip" -and [string]::IsNullOrWhiteSpace($TicketFilter)) {
   throw "round-trip requires -TicketFilter so only dedicated performance-test tickets are modified."
 }
 
+$resolvedTokenFile = if ([System.IO.Path]::IsPathRooted($TokenFile)) {
+  $TokenFile
+}
+else {
+  Join-Path $PSScriptRoot $TokenFile
+}
+
+if (-not (Test-Path -LiteralPath $resolvedTokenFile -PathType Leaf)) {
+  throw "Token file not found: $resolvedTokenFile"
+}
+
+try {
+  $rawTokenJson = Get-Content -LiteralPath $resolvedTokenFile -Raw
+  $trimmedTokenJson = $rawTokenJson.Trim()
+  if (-not $trimmedTokenJson.StartsWith("[") -or -not $trimmedTokenJson.EndsWith("]")) {
+    throw "The token file must contain a JSON array."
+  }
+  $parsedTokens = $trimmedTokenJson | ConvertFrom-Json
+  $tokens = @(
+    $parsedTokens | ForEach-Object {
+      if ($_ -isnot [string] -or [string]::IsNullOrWhiteSpace($_)) {
+        throw "Every token array entry must be a non-empty string."
+      }
+      $_.Trim()
+    }
+  )
+}
+catch {
+  throw "Could not read tokens from '$resolvedTokenFile': $($_.Exception.Message)"
+}
+
+if ($tokens.Count -eq 0) {
+  throw "The token file is empty. Add at least one API token to $resolvedTokenFile."
+}
+
 $originalEnvironment = @{
   SAPLING_TOKEN = $env:SAPLING_TOKEN
+  SAPLING_TOKENS_JSON = $env:SAPLING_TOKENS_JSON
   SAPLING_BASE_URL = $env:SAPLING_BASE_URL
   SAPLING_WRITE_MODE = $env:SAPLING_WRITE_MODE
   SAPLING_TICKET_FILTER = $env:SAPLING_TICKET_FILTER
@@ -38,27 +71,8 @@ $originalEnvironment = @{
 $exitCode = 0
 
 try {
-  if (-not [string]::IsNullOrWhiteSpace($ConfiguredApiToken)) {
-    $env:SAPLING_TOKEN = $ConfiguredApiToken.Trim()
-  }
-  elseif (
-    [string]::IsNullOrWhiteSpace($env:SAPLING_TOKEN) -and
-    [string]::IsNullOrWhiteSpace($env:SAPLING_TOKENS_JSON)
-  ) {
-    $secureToken = Read-Host "Sapling API token" -AsSecureString
-    $tokenPointer = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secureToken)
-    try {
-      $env:SAPLING_TOKEN = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($tokenPointer)
-    }
-    finally {
-      [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($tokenPointer)
-    }
-  }
-
-  if ([string]::IsNullOrWhiteSpace($env:SAPLING_TOKEN) -and [string]::IsNullOrWhiteSpace($env:SAPLING_TOKENS_JSON)) {
-    throw "No API token was provided."
-  }
-
+  Remove-Item Env:SAPLING_TOKEN -ErrorAction SilentlyContinue
+  $env:SAPLING_TOKENS_JSON = ConvertTo-Json -InputObject $tokens -Compress
   $env:SAPLING_BASE_URL = $BaseUrl.TrimEnd("/")
   $env:SAPLING_WRITE_MODE = $WriteMode
 
@@ -73,6 +87,7 @@ try {
   Write-Host "Sapling performance test"
   Write-Host "  Backend:    $($env:SAPLING_BASE_URL)"
   Write-Host "  Engine:     $Engine"
+  Write-Host "  Tokens:     $($tokens.Count) identities"
   Write-Host "  Users:      $Users"
   Write-Host "  Iterations: $IterationsPerUser per user"
   Write-Host "  Write mode: $WriteMode"

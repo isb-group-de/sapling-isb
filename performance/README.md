@@ -45,10 +45,17 @@ The simplest entry point from the repository root is:
 .\run-performance-test.ps1
 ```
 
-It uses Docker by default and securely prompts for the token when neither
-`SAPLING_TOKEN` nor `SAPLING_TOKENS_JSON` is set. The clearly marked
-`$ConfiguredApiToken` variable near the top can also be filled locally, but a
-real token must never be committed.
+Add the test-system bearer tokens to `performance-tokens.json`:
+
+```json
+["token-1", "token-2", "token-3", "token-4", "token-5"]
+```
+
+The PowerShell runner reads this file and passes the array to k6. Virtual users
+receive the tokens in array order and wrap to the first token after the last
+one. Each virtual user keeps its assigned identity for the complete workflow;
+tokens are not changed between individual requests. Use `-TokenFile` to select
+another JSON file.
 
 PowerShell with native k6:
 

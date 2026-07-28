@@ -396,6 +396,8 @@ function searchTerm(ticket) {
 }
 
 function tokenForVu() {
+  // Keep one identity for a complete virtual-user workflow. VUs are assigned
+  // token 1..n in order and wrap back to token 1 after the last token.
   return TOKENS[(__VU - 1) % TOKENS.length];
 }
 
@@ -411,9 +413,10 @@ function parseTokens() {
     if (!Array.isArray(parsed)) {
       throw new Error("SAPLING_TOKENS_JSON must be a JSON string array.");
     }
-    tokens = parsed.filter(
-      (token) => typeof token === "string" && token.trim().length > 0,
-    );
+    tokens = parsed
+      .filter((token) => typeof token === "string")
+      .map((token) => token.trim())
+      .filter(Boolean);
   } else if (__ENV.SAPLING_TOKEN?.trim()) {
     tokens = [__ENV.SAPLING_TOKEN.trim()];
   }
@@ -498,6 +501,7 @@ export function handleSummary(data) {
       users: USERS,
       iterationsPerUser: ITERATIONS_PER_USER,
       expectedWorkflows: USERS * ITERATIONS_PER_USER,
+      tokenCount: TOKENS.length,
       thinkTimeMs: THINK_TIME_SECONDS * 1000,
       writeMode: WRITE_MODE,
       extraEntities: EXTRA_ENTITIES,
