@@ -113,8 +113,14 @@ export class CurrentController {
   })
   async getPerson(@Req() req: Request): Promise<PersonItem> {
     const user = req.user as PersonItem;
+    const service = this.currentService as CurrentService & {
+      getPerson?: CurrentService['getPerson'];
+    };
     const reloaded =
-      (await this.currentService.getPersonWithStarterWorkspace(user)) ?? user;
+      (typeof service.getPerson === 'function'
+        ? await service.getPerson(user)
+        : await this.currentService.getPersonWithStarterWorkspace(user)) ??
+      user;
 
     // Preserve impersonation context attached by the session serializer so the
     // frontend can render the "viewing as" banner and stop-button. Dynamic

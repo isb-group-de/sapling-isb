@@ -10,7 +10,7 @@ const BASE_URL = (
 const USERS = positiveInteger(__ENV.SAPLING_USERS, 1);
 const ITERATIONS_PER_USER = positiveInteger(
   __ENV.SAPLING_ITERATIONS_PER_USER,
-  3,
+  10,
 );
 const THINK_TIME_SECONDS =
   nonNegativeNumber(__ENV.SAPLING_THINK_TIME_MS, 250) / 1000;
@@ -28,7 +28,9 @@ const TICKET_FILTER = parseJsonObject(
   __ENV.SAPLING_TICKET_FILTER,
   "SAPLING_TICKET_FILTER",
 );
-const TOKENS = parseTokens();
+const AUTH_MODE = parseAuthMode();
+const CREDENTIALS =
+  AUTH_MODE === "session" ? parseSessionCookies() : parseTokens();
 
 const workflowDuration = new Trend("workflow_duration", true);
 const workflowSuccess = new Rate("workflow_success");
@@ -336,7 +338,7 @@ function requestStep(step, method, url, body = null, tags = {}) {
   const response = http.request(method, url, payload, {
     headers: {
       Accept: "application/json",
-      Authorization: `Bearer ${tokenForVu()}`,
+      ...authHeaders(),
       ...(body === null ? {} : { "Content-Type": "application/json" }),
     },
     tags: {
@@ -398,7 +400,51 @@ function searchTerm(ticket) {
 function tokenForVu() {
   // Keep one identity for a complete virtual-user workflow. VUs are assigned
   // token 1..n in order and wrap back to token 1 after the last token.
-  return TOKENS[(__VU - 1) % TOKENS.length];
+  return CREDENTIALS[(__VU - 1) % CREDENTIALS.length];
+}
+
+function authHeaders() {
+  return AUTH_MODE === "session"
+    ? { Cookie: tokenForVu() }
+    : { Authorization: `Bearer ${tokenForVu()}` };
+}
+
+function parseAuthMode() {
+  const configured = (__ENV.SAPLING_AUTH_MODE || "").trim().toLowerCase();
+  const mode =
+    configured || (__ENV.SAPLING_SESSION_COOKIES_JSON ? "session" : "bearer");
+  if (!["bearer", "session"].includes(mode)) {
+    throw new Error("SAPLING_AUTH_MODE must be bearer or session.");
+  }
+  return mode;
+}
+
+function parseSessionCookies() {
+  if (!__ENV.SAPLING_SESSION_COOKIES_JSON) {
+    throw new Error(
+      "Set SAPLING_SESSION_COOKIES_JSON when SAPLING_AUTH_MODE=session.",
+    );
+  }
+  let parsed;
+  try {
+    parsed = JSON.parse(__ENV.SAPLING_SESSION_COOKIES_JSON);
+  } catch {
+    throw new Error(
+      "SAPLING_SESSION_COOKIES_JSON must be a JSON string array.",
+    );
+  }
+  if (!Array.isArray(parsed)) {
+    throw new Error(
+      "SAPLING_SESSION_COOKIES_JSON must be a JSON string array.",
+    );
+  }
+  const cookies = parsed.filter(
+    (cookie) => typeof cookie === "string" && cookie.trim().length > 0,
+  );
+  if (cookies.length === 0) {
+    throw new Error("SAPLING_SESSION_COOKIES_JSON contains no session cookie.");
+  }
+  return cookies;
 }
 
 function parseTokens() {
@@ -501,7 +547,8 @@ export function handleSummary(data) {
       users: USERS,
       iterationsPerUser: ITERATIONS_PER_USER,
       expectedWorkflows: USERS * ITERATIONS_PER_USER,
-      tokenCount: TOKENS.length,
+      authMode: AUTH_MODE,
+      credentialCount: CREDENTIALS.length,
       thinkTimeMs: THINK_TIME_SECONDS * 1000,
       writeMode: WRITE_MODE,
       extraEntities: EXTRA_ENTITIES,

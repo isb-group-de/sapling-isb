@@ -382,6 +382,26 @@ Relevant file:
 backend/src/api/generic/generic-sanitizer.service.ts
 ```
 
+## Command-Palette Record Search
+
+`GET /api/command-palette/records` keeps its existing response contract. With
+`GLOBAL_SEARCH_INDEX_ENABLED=true`, it first queries
+`global_search_index_item`, which stores one normalized row per searchable
+record field and uses PostgreSQL `pg_trgm`. Security/system/excluded fields are
+never indexed.
+
+The index query is scoped to entity and field permissions. Candidate handles
+are then loaded through the normal Generic read filters without a total-count
+query; labels, previews, and matches are built only from that projected result.
+This second check preserves company/person/event visibility and field-level
+security even if an index row is stale.
+
+Apply the migration and use **Rebuild search index** in the administrator
+account menu's **Danger Zone** before enabling the flag. The action starts a
+background job through the authenticated system API and exposes progress via
+`GET /api/system/search-index/rebuild`. Disabling the flag immediately restores
+the previous per-entity implementation.
+
 ## Frontend Consumers
 
 Key frontend files:

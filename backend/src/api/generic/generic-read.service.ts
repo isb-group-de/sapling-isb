@@ -127,6 +127,7 @@ export class GenericReadService {
       offset?: number;
       orderBy?: object;
       populate?: any[];
+      fields?: any[];
       runBeforeReadScript?: boolean;
     } = {},
   ): Promise<{ entity: EntityItem | null; items: object[] }> {

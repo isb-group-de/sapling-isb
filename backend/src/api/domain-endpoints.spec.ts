@@ -409,6 +409,10 @@ describe('SystemController', () => {
   const versionService = {
     getVersion: jest.fn(() => ({ version: '0.0.1' })),
   };
+  const globalSearchIndexService = {
+    getRebuildStatus: jest.fn(() => ({ state: 'idle' })),
+    startRebuild: jest.fn(() => ({ state: 'running' })),
+  };
 
   const controller = new SystemController(
     cpuService as never,
@@ -418,7 +422,17 @@ describe('SystemController', () => {
     osService as never,
     timeService as never,
     versionService,
+    globalSearchIndexService as never,
   );
+
+  it('returns and starts the global search-index rebuild status', () => {
+    expect(controller.getSearchIndexRebuildStatus()).toEqual({
+      state: 'idle',
+    });
+    expect(controller.startSearchIndexRebuild()).toEqual({
+      state: 'running',
+    });
+  });
 
   it('returns CPU information', async () => {
     await expect(controller.getCpu()).resolves.toEqual({

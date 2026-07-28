@@ -23,9 +23,10 @@ import { OsService } from './services/os.service';
 import { TimeService } from './services/time.service';
 import { VersionService } from './services/version.service';
 import { AuthModule } from '../../auth/auth.module';
+import { GenericModule } from '../generic/generic.module';
 
 @Module({
-  imports: [AuthModule],
+  imports: [AuthModule, GenericModule],
   controllers: [SystemController],
   providers: [
     CpuService,

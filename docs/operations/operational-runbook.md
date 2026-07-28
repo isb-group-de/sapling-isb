@@ -64,11 +64,15 @@ Minimum backend values to verify:
 - `SAPLING_FRONTEND_URL`
 - `API_REQUEST_BODY_LIMIT` for JSON/form requests such as script-button and AI contexts
 - `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`
+- `DB_POOL_MIN`, `DB_POOL_MAX`
 - `DB_DATA_SEEDER`
 - `SESSION_COOKIE_SECURE`
 - `SESSION_TRUST_PROXY`
 - `REDIS_ENABLED`
 - `LOG_*`
+- `SECURITY_PRINCIPAL_CACHE_TTL_MS`,
+  `SECURITY_PRINCIPAL_CACHE_MAX_ENTRIES`
+- `GLOBAL_SEARCH_INDEX_ENABLED`
 - `SAPLING_DEFAULT_PHONE_COUNTRY` and `SAPLING_DEFAULT_PHONE_DIALING_CODE` for
   phone number normalization when a user/company country is unavailable
 
@@ -112,6 +116,21 @@ For a fresh or updated environment, use:
 ```bash
 npm run orm:deploy --prefix backend
 ```
+
+The global command-palette search has an additive PostgreSQL trigram index.
+After applying its migration, an administrator opens the account menu's
+**Danger Zone**, selects **Rebuild search index**, and starts the background
+rebuild. The dialog shows the current entity, processed record count, duration,
+completion result, and a sanitized error message when a run fails. Closing the
+dialog does not cancel the server-side job; reopening it resumes status polling.
+The rebuild keeps the previous index readable and removes stale rows only after
+the complete run succeeds.
+
+Then set `GLOBAL_SEARCH_INDEX_ENABLED=true` and restart the backend. Keep the
+flag false to fall back to the previous per-entity search implementation.
+Generic record mutations maintain the index in the background; rerunning the
+backfill is safe and reconciles records changed outside the generic mutation
+path.
 
 Seeder behavior:
 
@@ -163,6 +182,10 @@ Operational checks:
 ## Logs
 
 Backend logging is controlled by `LOG_*` in `backend/.env`.
+
+Authenticated API responses include `Server-Timing` values for authentication,
+handler execution, and total request duration. Performance matrices also record
+host, auth-mode, logging, and DB-pool metadata.
 
 HTTP access logging through Morgan is configured independently from
 `LOG_LEVEL`:

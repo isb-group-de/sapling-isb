@@ -7,15 +7,14 @@ function createApiTokenService(lastUsedAt?: Date) {
     expiresAt: new Date(Date.now() + 60_000),
     lastUsedAt,
     allowedIps: [],
-    person: { handle: 7 },
+    personHandle: 7,
+    personIsActive: true,
   };
+  const execute = jest.fn((sql: string) =>
+    Promise.resolve(sql.trimStart().startsWith('select') ? [token] : []),
+  );
   const forkedEntityManager = {
-    findOne: jest.fn<(...args: unknown[]) => Promise<typeof token | null>>(() =>
-      Promise.resolve(token),
-    ),
-    nativeUpdate: jest.fn<(...args: unknown[]) => Promise<number>>(() =>
-      Promise.resolve(1),
-    ),
+    getConnection: () => ({ execute }),
   };
   const currentService = {
     getPerson: jest.fn(() =>
@@ -29,12 +28,12 @@ function createApiTokenService(lastUsedAt?: Date) {
     currentService as never,
   );
 
-  return { forkedEntityManager, service };
+  return { execute, service };
 }
 
 describe('AuthService bearer token activity', () => {
   it('persists stale token activity with the forked entity manager', async () => {
-    const { forkedEntityManager, service } = createApiTokenService(
+    const { execute, service } = createApiTokenService(
       new Date(Date.now() - 10 * 60 * 1000),
     );
 
@@ -42,20 +41,37 @@ describe('AuthService bearer token activity', () => {
       service.validateApiToken('secret', '127.0.0.1'),
     ).resolves.toEqual(expect.objectContaining({ handle: 7 }));
 
-    expect(forkedEntityManager.nativeUpdate).toHaveBeenCalledWith(
-      expect.anything(),
-      { handle: 11 },
-      { lastUsedAt: expect.any(Date) },
+    expect(execute).toHaveBeenCalledTimes(2);
+    expect(execute.mock.calls[1]?.[0]).toContain(
+      'update "person_api_token_item"',
     );
   });
 
   it('does not write token activity again inside the throttle window', async () => {
-    const { forkedEntityManager, service } = createApiTokenService(new Date());
+    const { execute, service } = createApiTokenService(new Date());
 
     await expect(
       service.validateApiToken('secret', '127.0.0.1'),
     ).resolves.toEqual(expect.objectContaining({ handle: 7 }));
 
-    expect(forkedEntityManager.nativeUpdate).not.toHaveBeenCalled();
+    expect(execute).toHaveBeenCalledTimes(1);
+  });
+
+  it('coalesces concurrent stale-token activity writes', async () => {
+    const { execute, service } = createApiTokenService(
+      new Date(Date.now() - 10 * 60 * 1000),
+    );
+
+    await expect(
+      Promise.all([
+        service.validateApiToken('secret', '127.0.0.1'),
+        service.validateApiToken('secret', '127.0.0.1'),
+      ]),
+    ).resolves.toHaveLength(2);
+
+    const updates = execute.mock.calls.filter(([sql]) =>
+      sql.includes('update "person_api_token_item"'),
+    );
+    expect(updates).toHaveLength(1);
   });
 });

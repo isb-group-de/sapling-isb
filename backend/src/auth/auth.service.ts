@@ -35,8 +35,19 @@ import {
 
 const API_TOKEN_LAST_USED_WRITE_INTERVAL_MS = 5 * 60 * 1000;
 
+type ApiTokenValidationRow = {
+  handle: number;
+  expiresAt: Date | string;
+  lastUsedAt: Date | string | null;
+  allowedIps: string[] | string | null;
+  personHandle: number;
+  personIsActive: boolean;
+};
+
 @Injectable()
 export class AuthService {
+  private readonly tokenActivityNextWriteAt = new Map<number, number>();
+  private readonly tokenActivityWrites = new Map<number, Promise<void>>();
   /**
    * Entity manager for database operations.
    * @type {EntityManager}
@@ -181,50 +192,128 @@ export class AuthService {
   ): Promise<PersonItem | null> {
     const em = this.forkEntityManager();
     const tokenHash = this.hashApiToken(rawToken);
-    const token = await em.findOne(
-      PersonApiTokenItem,
-      { tokenHash, isActive: true },
-      { populate: ['person'] },
+    const rows = await em.getConnection().execute<ApiTokenValidationRow[]>(
+      `select
+        token."handle",
+        token."expires_at" as "expiresAt",
+        token."last_used_at" as "lastUsedAt",
+        token."allowed_ips" as "allowedIps",
+        person."handle" as "personHandle",
+        person."is_active" as "personIsActive"
+      from "person_api_token_item" token
+      inner join "person_item" person
+        on person."handle" = token."person_handle"
+      where token."token_hash" = ?
+        and token."is_active" = true
+      limit 1`,
+      [tokenHash],
     );
+    const token = rows[0];
 
     if (!token) {
       return null;
     }
 
-    if (token.expiresAt <= new Date()) {
+    const now = new Date();
+    if (new Date(token.expiresAt) <= now || token.personIsActive === false) {
       return null;
     }
 
-    const personHandle = this.extractHandleValue(token.person);
-    const user = await this.getSecurityUserByHandle(personHandle);
+    const allowedIps = this.parseAllowedIps(token.allowedIps);
+    if (
+      allowedIps.length > 0 &&
+      !allowedIps.some((allowedIp) => allowedIp.trim() === requestIp.trim())
+    ) {
+      return null;
+    }
+
+    const user = await this.getSecurityUserByHandle(token.personHandle);
     if (!user || user.isActive === false) {
       return null;
     }
 
-    if (
-      token.allowedIps?.length &&
-      !token.allowedIps.some(
-        (allowedIp) => allowedIp.trim() === requestIp.trim(),
-      )
-    ) {
-      return null;
-    }
-
-    const now = new Date();
-    if (
-      token.handle != null &&
-      (!token.lastUsedAt ||
-        now.getTime() - token.lastUsedAt.getTime() >=
-          API_TOKEN_LAST_USED_WRITE_INTERVAL_MS)
-    ) {
-      await em.nativeUpdate(
-        PersonApiTokenItem,
-        { handle: token.handle },
-        { lastUsedAt: now },
-      );
-    }
+    await this.recordTokenActivity(
+      em,
+      token.handle,
+      token.lastUsedAt ? new Date(token.lastUsedAt) : null,
+      now,
+    );
 
     return user;
+  }
+
+  private async recordTokenActivity(
+    em: EntityManager,
+    tokenHandle: number,
+    lastUsedAt: Date | null,
+    now: Date,
+  ): Promise<void> {
+    const nextKnownWriteAt = this.tokenActivityNextWriteAt.get(tokenHandle);
+    if (nextKnownWriteAt != null && now.getTime() < nextKnownWriteAt) {
+      return;
+    }
+    if (
+      lastUsedAt &&
+      now.getTime() - lastUsedAt.getTime() <
+        API_TOKEN_LAST_USED_WRITE_INTERVAL_MS
+    ) {
+      this.tokenActivityNextWriteAt.set(
+        tokenHandle,
+        lastUsedAt.getTime() + API_TOKEN_LAST_USED_WRITE_INTERVAL_MS,
+      );
+      return;
+    }
+
+    const inFlight = this.tokenActivityWrites.get(tokenHandle);
+    if (inFlight) {
+      return inFlight;
+    }
+
+    this.tokenActivityNextWriteAt.set(
+      tokenHandle,
+      now.getTime() + API_TOKEN_LAST_USED_WRITE_INTERVAL_MS,
+    );
+    const threshold = new Date(
+      now.getTime() - API_TOKEN_LAST_USED_WRITE_INTERVAL_MS,
+    );
+    const write = em
+      .getConnection()
+      .execute(
+        `update "person_api_token_item"
+         set "last_used_at" = ?
+         where "handle" = ?
+           and ("last_used_at" is null or "last_used_at" <= ?)`,
+        [now, tokenHandle, threshold],
+      )
+      .then(() => undefined)
+      .catch((error) => {
+        this.tokenActivityNextWriteAt.delete(tokenHandle);
+        throw error;
+      })
+      .finally(() => {
+        this.tokenActivityWrites.delete(tokenHandle);
+      });
+    this.tokenActivityWrites.set(tokenHandle, write);
+    return write;
+  }
+
+  private parseAllowedIps(value: string[] | string | null): string[] {
+    if (Array.isArray(value)) {
+      return value.filter(
+        (entry): entry is string => typeof entry === 'string',
+      );
+    }
+    if (typeof value !== 'string') {
+      return [];
+    }
+    try {
+      const parsed = JSON.parse(value) as unknown;
+      return Array.isArray(parsed)
+        ? parsed.filter((entry): entry is string => typeof entry === 'string')
+        : [];
+    } catch {
+      return [];
+    }
   }
 
   async getApiTokens(

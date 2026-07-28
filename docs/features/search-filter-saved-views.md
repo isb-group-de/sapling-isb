@@ -80,18 +80,18 @@ Date strings on date/datetime fields are converted to `Date` instances before qu
 
 Backend-supported placeholders:
 
-| Placeholder | Meaning |
-| --- | --- |
-| `{{currentUser.handle}}` | Current user person handle |
-| `{{currentUser.company.handle}}` | Current user's company handle |
-| `{{today.start}}` | Start of today |
-| `{{tomorrow.start}}` | Start of tomorrow |
-| `{{dayAfterTomorrow.start}}` | Start of the day after tomorrow |
-| `{{week.start}}` | Start of current week |
-| `{{week.end}}` | Start of next week |
-| `{{month.start}}` | Start of current month |
-| `{{month.end}}` | Start of next month |
-| `{{now}}` | Current timestamp |
+| Placeholder                      | Meaning                         |
+| -------------------------------- | ------------------------------- |
+| `{{currentUser.handle}}`         | Current user person handle      |
+| `{{currentUser.company.handle}}` | Current user's company handle   |
+| `{{today.start}}`                | Start of today                  |
+| `{{tomorrow.start}}`             | Start of tomorrow               |
+| `{{dayAfterTomorrow.start}}`     | Start of the day after tomorrow |
+| `{{week.start}}`                 | Start of current week           |
+| `{{week.end}}`                   | Start of next week              |
+| `{{month.start}}`                | Start of current month          |
+| `{{month.end}}`                  | Start of next month             |
+| `{{now}}`                        | Current timestamp               |
 
 Frontend utilities also understand older UI token names such as `{{currentPerson.handle}}` and `{{currentCompany.handle}}`. When persisting filters for backend execution, prefer the backend token names.
 
@@ -138,6 +138,14 @@ group and opens the matching record through the global generic record dialog.
 Scalar value fields form the first label line; each value reference is rendered
 on its own following line.
 
+With `GLOBAL_SEARCH_INDEX_ENABLED=true`, candidate discovery uses the
+`globalSearchIndex` entity instead of issuing one search query per entity.
+The index entity is registered as an administrator-only, read-only generic
+entity and can be inspected at `/table/globalSearchIndex`. Its table schema
+shows the source entity, record, field path, stored value, and source update
+timestamp. The entity is excluded from its own indexing and from command-palette
+record search to prevent recursive growth and disclosure through the palette.
+
 The same `isSearchExcluded` option is honored by generic table free-text search
 and reference selectors. It does not hide the field, remove it from record
 labels, or prevent users from applying an explicit column filter.
@@ -150,24 +158,24 @@ estimate requirements, or sales opportunity pain points.
 
 `FavoriteItem` stores a personal saved view.
 
-| Field | Meaning |
-| --- | --- |
-| `title` | Visible name |
-| `search` | Persisted free-text search |
-| `sortBy` | Persisted table sort configuration |
-| `filter` | Persisted generic filter JSON |
-| `person` | Owner |
-| `entity` | Target entity |
+| Field         | Meaning                                       |
+| ------------- | --------------------------------------------- |
+| `title`       | Visible name                                  |
+| `search`      | Persisted free-text search                    |
+| `sortBy`      | Persisted table sort configuration            |
+| `filter`      | Persisted generic filter JSON                 |
+| `person`      | Owner                                         |
+| `entity`      | Target entity                                 |
 | `entityRoute` | Optional route used when opening the favorite |
 
 `FavoriteTemplateItem` stores reusable favorite definitions.
 
-| Field | Meaning |
-| --- | --- |
-| `name` | Template name |
-| `entity` | Target entity |
-| `entityRoute` | Optional route |
-| `filter` | Reusable filter JSON |
+| Field           | Meaning                                              |
+| --------------- | ---------------------------------------------------- |
+| `name`          | Template name                                        |
+| `entity`        | Target entity                                        |
+| `entityRoute`   | Optional route                                       |
+| `filter`        | Reusable filter JSON                                 |
 | `isRecommended` | Highlights the template in dashboard recommendations |
 
 `RoleStarterSeeder` can assign favorite templates to roles through `roleStarterFavorite` seed files.

@@ -220,6 +220,26 @@ export const DB_DATA_SEEDER: string =
  */
 export const DB_LOGGING: boolean = process.env.DB_LOGGING === 'true';
 
+export const DB_POOL_MIN: number = parseInt(process.env.DB_POOL_MIN || '2', 10);
+
+export const DB_POOL_MAX: number = parseInt(
+  process.env.DB_POOL_MAX || '10',
+  10,
+);
+
+export const SECURITY_PRINCIPAL_CACHE_TTL_MS: number = Math.max(
+  100,
+  parseInt(process.env.SECURITY_PRINCIPAL_CACHE_TTL_MS || '2000', 10),
+);
+
+export const SECURITY_PRINCIPAL_CACHE_MAX_ENTRIES: number = Math.max(
+  0,
+  parseInt(process.env.SECURITY_PRINCIPAL_CACHE_MAX_ENTRIES || '10000', 10),
+);
+
+export const GLOBAL_SEARCH_INDEX_ENABLED: boolean =
+  process.env.GLOBAL_SEARCH_INDEX_ENABLED === 'true';
+
 /**
  * @constant {string} DB_HOST
  * Database host. Defaults to empty string.

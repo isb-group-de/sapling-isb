@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import { EntityManager } from '@mikro-orm/core';
 import { PersonItem } from '../../entity/PersonItem';
 import type { TicketItem } from '../../entity/TicketItem';
@@ -20,6 +20,7 @@ import {
   type OpenTaskSnapshot,
 } from './current-open-task.service';
 import { CurrentStarterWorkspaceService } from './current-starter-workspace.service';
+import { SecurityPrincipalCacheService } from './security-principal-cache.service';
 
 export type { OpenTaskSnapshot } from './current-open-task.service';
 
@@ -81,6 +82,8 @@ export class CurrentService {
   constructor(
     private readonly em: EntityManager,
     private readonly inboxService: InboxService,
+    @Optional()
+    private readonly securityPrincipalCache?: SecurityPrincipalCacheService,
   ) {
     this.openTasks = new CurrentOpenTaskService(em, inboxService);
   }
@@ -101,8 +104,11 @@ export class CurrentService {
       return null;
     }
 
-    const em = this.forkEntityManager();
-    return this.loadPerson(em, user.handle);
+    if (this.securityPrincipalCache) {
+      return this.securityPrincipalCache.get(user.handle);
+    }
+
+    return this.loadPerson(this.forkEntityManager(), user.handle);
   }
 
   /**
@@ -119,7 +125,10 @@ export class CurrentService {
 
     const em = this.forkEntityManager();
     await this.starterWorkspace.ensure(em, user.handle);
-    return this.loadPerson(em, user.handle);
+    this.securityPrincipalCache?.invalidate(user.handle);
+    return this.securityPrincipalCache
+      ? this.securityPrincipalCache.get(user.handle)
+      : this.loadPerson(em, user.handle);
   }
 
   private async loadPerson(
@@ -197,6 +206,7 @@ export class CurrentService {
     person.color = this.normalizeColor(dto.color, person.color ?? '#4CAF50');
 
     await this.em.flush();
+    this.securityPrincipalCache?.invalidate(user.handle);
 
     return (await this.getPerson(person)) ?? person;
   }

@@ -145,8 +145,7 @@ export function useSaplingTable(
             : null
         })
         .filter(
-          (entry): entry is [string, EntityTemplate[]] =>
-            entry !== null && entry[1].length > 0,
+          (entry): entry is [string, EntityTemplate[]] => entry !== null && entry[1].length > 0,
         ),
     ),
   )

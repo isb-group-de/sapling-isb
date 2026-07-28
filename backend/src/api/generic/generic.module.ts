@@ -3,6 +3,7 @@ import { GenericController } from './generic.controller';
 import { GenericImportController } from './generic-import.controller';
 import { GlobalSearchController } from './global-search.controller';
 import { GlobalSearchService } from './global-search.service';
+import { GlobalSearchIndexService } from './global-search-index.service';
 import { GenericFilterService } from './generic-filter.service';
 import { GenericChangeLogService } from './generic-change-log.service';
 import { GenericCustomFieldService } from './generic-custom-field.service';
@@ -67,6 +68,7 @@ import { MailModule } from '../mail/mail.module';
   providers: [
     GenericService,
     GlobalSearchService,
+    GlobalSearchIndexService,
     GenericChangeLogService,
     GenericCustomFieldService,
     GenericFilterService,
@@ -99,6 +101,7 @@ import { MailModule } from '../mail/mail.module';
     GenericCustomFieldService,
     GenericReadService,
     GenericSanitizerService,
+    GlobalSearchIndexService,
   ],
 })
 export class GenericModule {}

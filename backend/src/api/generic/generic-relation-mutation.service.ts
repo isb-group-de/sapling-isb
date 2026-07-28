@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import { EntityManager } from '@mikro-orm/core';
 import { EntityItem } from '../../entity/EntityItem';
 import { PersonItem } from '../../entity/PersonItem';
@@ -11,6 +11,8 @@ import { GenericOpenTaskEventsService } from './generic-open-task-events.service
 import { GenericRelationService } from './generic-relation.service';
 import { GenericSanitizerService } from './generic-sanitizer.service';
 import { FieldPermissionService } from '../current/field-permission.service';
+import { SecurityPrincipalCacheService } from '../current/security-principal-cache.service';
+import { GlobalSearchIndexService } from './global-search-index.service';
 
 type RelationMutationContext = Awaited<
   ReturnType<GenericRelationService['addReferenceAndFlush']>
@@ -33,6 +35,10 @@ export class GenericRelationMutationService {
         Promise.resolve(this.templateService.getEntityTemplate(entityHandle)),
       assertPayloadAccess: () => Promise.resolve(),
     } as unknown as FieldPermissionService,
+    @Optional()
+    private readonly securityPrincipalCache?: SecurityPrincipalCacheService,
+    @Optional()
+    private readonly globalSearchIndex?: GlobalSearchIndexService,
   ) {}
 
   createReference(
@@ -152,6 +158,21 @@ export class GenericRelationMutationService {
       entityHandleValue,
       previousOpenTaskUserHandles,
     );
+
+    if (
+      entityHandle === 'person' ||
+      entityHandle === 'role' ||
+      entityHandle === 'permission'
+    ) {
+      this.securityPrincipalCache?.invalidateAll();
+    }
+    if (this.globalSearchIndex?.isEnabled()) {
+      setImmediate(() => {
+        void this.globalSearchIndex
+          ?.handleUpsert(entityHandle, entityHandleValue)
+          .catch((error) => global.log?.error?.('globalSearchIndex:', error));
+      });
+    }
 
     return this.genericSanitizerService.projectEntityResult(
       entityHandle,

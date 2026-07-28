@@ -2,6 +2,7 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
+  Optional,
 } from '@nestjs/common';
 import { EntityManager } from '@mikro-orm/core';
 import { EntityItem } from '../../entity/EntityItem';
@@ -28,6 +29,8 @@ import {
 } from './generic-update-conflict.service';
 import { FieldPermissionService } from '../current/field-permission.service';
 import { normalizeEventBufferMutationPayload } from '../../calendar/event-buffer.utils';
+import { SecurityPrincipalCacheService } from '../current/security-principal-cache.service';
+import { GlobalSearchIndexService } from './global-search-index.service';
 
 type GenericMutationPayload = {
   createdAt?: Date;
@@ -69,6 +72,10 @@ export class GenericEntityMutationService {
       renameFieldOverrides: () => Promise.resolve(),
       deleteFieldOverrides: () => Promise.resolve(),
     } as unknown as FieldPermissionService,
+    @Optional()
+    private readonly securityPrincipalCache?: SecurityPrincipalCacheService,
+    @Optional()
+    private readonly globalSearchIndex?: GlobalSearchIndexService,
   ) {}
 
   async create(
@@ -185,6 +192,8 @@ export class GenericEntityMutationService {
       this.extractEntityHandle(newData),
       splitPayload.customFields,
     );
+    this.invalidateSecurityPrincipalAfterMutation(entityHandle, newData);
+    this.scheduleSearchIndexUpsert(entityHandle, newData);
     this.scheduleBackgroundTask('emailAutomation', () =>
       this.emailAutomationService.handleAfterInsert(
         entityHandle,
@@ -432,6 +441,8 @@ export class GenericEntityMutationService {
         customFieldOverrideRename.newFieldName,
       );
     }
+    this.invalidateSecurityPrincipalAfterMutation(entityHandle, newData);
+    this.queueSearchIndexUpsert(lifecycleOptions, entityHandle, newData);
     return this.genericSanitizerService.projectEntityResult(
       entityHandle,
       hydrated,
@@ -509,6 +520,8 @@ export class GenericEntityMutationService {
         customFieldOverrideDelete.oldFieldName,
       );
     }
+    this.invalidateSecurityPrincipalAfterMutation(entityHandle, item);
+    this.scheduleSearchIndexDelete(entityHandle, item);
     this.invalidateTemplateMetadataAfterMutation(entityHandle);
 
     if (entity) {
@@ -612,6 +625,57 @@ export class GenericEntityMutationService {
     ) {
       this.genericCustomFieldService.invalidateTemplateCache();
     }
+  }
+
+  private invalidateSecurityPrincipalAfterMutation(
+    entityHandle: string,
+    item: object,
+  ): void {
+    if (!this.securityPrincipalCache) {
+      return;
+    }
+    if (entityHandle === 'person') {
+      const handle = this.extractEntityHandle(item);
+      this.securityPrincipalCache.invalidate(
+        typeof handle === 'number' ? handle : null,
+      );
+      return;
+    }
+    if (
+      entityHandle === 'role' ||
+      entityHandle === 'permission' ||
+      entityHandle === 'fieldPermission'
+    ) {
+      this.securityPrincipalCache.invalidateAll();
+    }
+  }
+
+  private scheduleSearchIndexUpsert(entityHandle: string, item: object): void {
+    const handle = this.extractEntityHandle(item);
+    if (handle == null || !this.globalSearchIndex?.isEnabled()) return;
+    this.scheduleBackgroundTask('globalSearchIndex', () =>
+      this.globalSearchIndex!.handleUpsert(entityHandle, handle),
+    );
+  }
+
+  private queueSearchIndexUpsert(
+    lifecycleOptions: GenericMutationLifecycleOptions,
+    entityHandle: string,
+    item: object,
+  ): void {
+    const handle = this.extractEntityHandle(item);
+    if (handle == null || !this.globalSearchIndex?.isEnabled()) return;
+    this.queueBackgroundTask(lifecycleOptions, 'globalSearchIndex', () =>
+      this.globalSearchIndex!.handleUpsert(entityHandle, handle),
+    );
+  }
+
+  private scheduleSearchIndexDelete(entityHandle: string, item: object): void {
+    const handle = this.extractEntityHandle(item);
+    if (handle == null || !this.globalSearchIndex?.isEnabled()) return;
+    this.scheduleBackgroundTask('globalSearchIndex', () =>
+      this.globalSearchIndex!.handleDelete(entityHandle, handle),
+    );
   }
 
   private scheduleBackgroundTask(

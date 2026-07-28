@@ -3,6 +3,7 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
+  Optional,
 } from '@nestjs/common';
 import { Collection, EntityManager, type EntityName } from '@mikro-orm/core';
 import type { FieldPermissionItem } from '../../entity/FieldPermissionItem';
@@ -13,6 +14,7 @@ import { TemplateService } from '../template/template.service';
 import { EntityTemplateDto } from '../template/dto/entity-template.dto';
 import { GenericCustomFieldService } from '../generic/generic-custom-field.service';
 import { isPublicGenericReadEntity } from '../../auth/public-generic-read-entities';
+import { SecurityPrincipalCacheService } from './security-principal-cache.service';
 
 export type FieldPermissionAction = 'read' | 'insert' | 'update';
 
@@ -47,6 +49,8 @@ export class FieldPermissionService {
     private readonly em: EntityManager,
     private readonly templateService: TemplateService,
     private readonly customFields: GenericCustomFieldService,
+    @Optional()
+    private readonly securityPrincipalCache?: SecurityPrincipalCacheService,
   ) {}
 
   async getTemplates(entityHandle: string): Promise<EntityTemplateDto[]> {
@@ -375,6 +379,7 @@ export class FieldPermissionService {
         (field) => !field.allowRead || !field.allowInsert || !field.allowUpdate,
       ).length,
     });
+    this.securityPrincipalCache?.invalidateAll();
     return this.getAdminCatalog(roleHandle, entityHandle);
   }
 
@@ -417,6 +422,7 @@ export class FieldPermissionService {
         source.fieldName = newFieldName;
       }
     });
+    this.securityPrincipalCache?.invalidateAll();
   }
 
   async deleteFieldOverrides(
@@ -427,6 +433,7 @@ export class FieldPermissionService {
       permission: { entity: { handle: entityHandle } },
       fieldName,
     });
+    this.securityPrincipalCache?.invalidateAll();
   }
 
   private resolveAction(

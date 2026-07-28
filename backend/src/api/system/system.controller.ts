@@ -5,7 +5,14 @@ import {
   ApiResponse,
   ApiExtraModels,
 } from '@nestjs/swagger';
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { CpuDto } from './dto/cpu.dto';
 import { CpuSpeedDto } from './dto/cpuspeed.dto';
 import { MemoryDto } from './dto/memory.dto';
@@ -25,6 +32,8 @@ import { VersionService } from './services/version.service';
 import { SessionOrBearerAuthGuard } from '../../auth/guard/session-or-token-auth.guard';
 import { AdminPermissionGuard } from '../../auth/guard/admin-permission.guard';
 import { AdminPermission } from '../../auth/admin-permission';
+import { GlobalSearchIndexService } from '../generic/global-search-index.service';
+import { GlobalSearchIndexRebuildStatusDto } from '../generic/dto/global-search-index.dto';
 
 /**
  * @class SystemController
@@ -73,7 +82,41 @@ export class SystemController {
     private readonly osService: OsService,
     private readonly timeService: TimeService,
     private readonly versionService: VersionService,
+    private readonly globalSearchIndexService: GlobalSearchIndexService,
   ) {}
+
+  @Get('search-index/rebuild')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Get global search-index rebuild status',
+    description:
+      'Returns the status and progress of the current or most recent in-process global search-index rebuild.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Current global search-index rebuild status.',
+    type: GlobalSearchIndexRebuildStatusDto,
+  })
+  getSearchIndexRebuildStatus(): GlobalSearchIndexRebuildStatusDto {
+    return this.globalSearchIndexService.getRebuildStatus();
+  }
+
+  @Post('search-index/rebuild')
+  @HttpCode(HttpStatus.ACCEPTED)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Start a global search-index rebuild',
+    description:
+      'Starts an administrator-only background rebuild. A running rebuild is reused instead of starting a duplicate job.',
+  })
+  @ApiResponse({
+    status: 202,
+    description: 'The rebuild was started or is already running.',
+    type: GlobalSearchIndexRebuildStatusDto,
+  })
+  startSearchIndexRebuild(): GlobalSearchIndexRebuildStatusDto {
+    return this.globalSearchIndexService.startRebuild();
+  }
 
   /**
    * Returns CPU information.

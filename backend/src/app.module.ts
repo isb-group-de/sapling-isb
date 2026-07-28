@@ -35,6 +35,7 @@ import { ImportModule } from './api/import/import.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { FieldPermissionProjectionInterceptor } from './security/field-permission-projection.interceptor';
 import { Customer360Module } from './api/customer-360/customer-360.module';
+import { PerformanceTimingInterceptor } from './api/common/performance-timing.interceptor';
 
 /**
  * @class AppModule
@@ -105,6 +106,10 @@ import { Customer360Module } from './api/customer-360/customer-360.module';
     {
       provide: APP_INTERCEPTOR,
       useClass: FieldPermissionProjectionInterceptor,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: PerformanceTimingInterceptor,
     },
   ],
 })

@@ -31,6 +31,7 @@
 
       <SaplingAiChat />
       <SaplingVectorizationDialog />
+      <SaplingSearchIndexRebuildDialog />
       <SaplingMessageCenter />
       <SaplingDialogMail />
       <SaplingDialogPhoneCall />
@@ -63,6 +64,9 @@ const SaplingMessageCenter = defineAsyncComponent(
 )
 const SaplingVectorizationDialog = defineAsyncComponent(
   () => import('@/components/system/SaplingVectorizationDialog.vue'),
+)
+const SaplingSearchIndexRebuildDialog = defineAsyncComponent(
+  () => import('@/components/system/SaplingSearchIndexRebuildDialog.vue'),
 )
 const SaplingDialogMail = defineAsyncComponent(
   () => import('@/components/dialog/SaplingDialogMail.vue'),

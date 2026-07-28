@@ -122,10 +122,12 @@ export class SessionSerializer extends PassportSerializer {
               firstName: realUser.firstName,
               lastName: realUser.lastName,
             };
-            (
-              target as PersonItem & { _impersonator?: ImpersonatorInfo }
-            )._impersonator = impersonator;
-            done(null, target);
+            const impersonatedUser = Object.assign(
+              Object.create(Object.getPrototypeOf(target)) as PersonItem,
+              target,
+            ) as PersonItem & { _impersonator?: ImpersonatorInfo };
+            impersonatedUser._impersonator = impersonator;
+            done(null, impersonatedUser);
             return;
           }
         }

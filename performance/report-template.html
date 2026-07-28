@@ -736,6 +736,14 @@
               <span>Engine</span>
               <strong id="run-engine"></strong>
             </div>
+            <div class="meta-row">
+              <span>Backend / Auth</span>
+              <strong id="run-backend-auth"></strong>
+            </div>
+            <div class="meta-row">
+              <span>Host / DB-Pool</span>
+              <strong id="run-host-pool"></strong>
+            </div>
           </div>
         </section>
 
@@ -971,6 +979,11 @@
             report.configuration?.baseUrl || maximum.config?.baseUrl || "–";
           document.getElementById("run-engine").textContent =
             report.configuration?.engine || "k6";
+          const environment = report.configuration?.environment || {};
+          document.getElementById("run-backend-auth").textContent =
+            `${environment.backendMode || "unknown"} / ${environment.authMode || maximum.config?.authMode || "bearer"} (${environment.credentialCount ?? maximum.config?.credentialCount ?? "?"})`;
+          document.getElementById("run-host-pool").textContent =
+            `${environment.logicalCpuCount || "?"} CPUs / ${environment.dbPoolMin ?? "?"}–${environment.dbPoolMax ?? "?"}`;
 
           renderKpis({
             maximum,

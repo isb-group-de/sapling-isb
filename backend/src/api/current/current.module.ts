@@ -14,6 +14,7 @@ import { CalendarSyncModule } from '../../calendar/sync/calendar-sync.module';
 import { FieldPermissionService } from './field-permission.service';
 import { PermissionAdminController } from './permission-admin.controller';
 import { GenericSanitizerService } from '../generic/generic-sanitizer.service';
+import { SecurityPrincipalCacheService } from './security-principal-cache.service';
 
 /**
  * @class
@@ -44,12 +45,14 @@ import { GenericSanitizerService } from '../generic/generic-sanitizer.service';
     GenericCustomFieldService,
     FieldPermissionService,
     GenericSanitizerService,
+    SecurityPrincipalCacheService,
   ],
   exports: [
     CurrentService,
     FieldPermissionService,
     GenericSanitizerService,
     OpenTaskEventsModule,
+    SecurityPrincipalCacheService,
   ],
 })
 /**

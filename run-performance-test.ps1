@@ -10,7 +10,7 @@ param(
   [string]$Users = "1,5,10,20,50,100",
 
   [ValidateRange(1, 1000)]
-  [int]$IterationsPerUser = 3,
+  [int]$IterationsPerUser = 10,
 
   [ValidateSet("none", "same-value", "round-trip")]
   [string]$WriteMode = "none",

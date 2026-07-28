@@ -78,10 +78,13 @@ describe('SessionSerializer', () => {
     expect(done).toHaveBeenCalledTimes(1);
     const args = done.mock.calls[0] as [unknown, unknown];
     expect(args[0]).toBeNull();
-    expect(args[1]).toBe(target);
+    expect(args[1]).not.toBe(target);
+    expect(
+      (args[1] as { _impersonator?: { handle: number } })._impersonator,
+    ).toEqual({ handle: 1, firstName: 'Ada', lastName: 'Admin' });
     expect(
       (target as { _impersonator?: { handle: number } })._impersonator,
-    ).toEqual({ handle: 1, firstName: 'Ada', lastName: 'Admin' });
+    ).toBeUndefined();
   });
 
   it('ignores impersonation when the real user is not administrator', async () => {

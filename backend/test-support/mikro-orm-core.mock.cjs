@@ -11,6 +11,16 @@ class Collection extends Array {
 
 class EntityManager {}
 
+class RequestContext {
+  static create(em, next) {
+    if (typeof em?.fork === 'function') {
+      em.fork({ useContext: true });
+    }
+
+    return next();
+  }
+}
+
 class Type {
   convertToDatabaseValue(value) {
     return value;
@@ -43,6 +53,7 @@ const coreExports = {
   Collection,
   EntityManager,
   MikroORM,
+  RequestContext,
   Type,
   Options: class Options {},
   Cascade: new Proxy(

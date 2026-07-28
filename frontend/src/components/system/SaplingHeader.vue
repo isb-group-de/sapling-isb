@@ -76,6 +76,7 @@ import {
 import { useSaplingMessageCenter } from '@/composables/system/useSaplingMessageCenter'
 import { useSaplingPreferences } from '@/composables/system/useSaplingPreferences'
 import { useSaplingVectorization } from '@/composables/system/useSaplingVectorization'
+import { useSaplingSearchIndexRebuild } from '@/composables/system/useSaplingSearchIndexRebuild'
 import { BACKEND_URL, GIT_URL } from '@/constants/project.constants'
 import { i18n } from '@/i18n'
 import SaplingInbox from '@/components/account/SaplingInbox.vue'
@@ -125,6 +126,7 @@ const messageBadgeColor = computed(() => {
 const { currentLanguage, languageOptions, issueAction, appearanceActions, setLanguage } =
   useSaplingPreferences()
 const { toggleSaplingVectorization } = useSaplingVectorization()
+const { openSaplingSearchIndexRebuild } = useSaplingSearchIndexRebuild()
 const {
   showInbox,
   showAccount,
@@ -262,6 +264,12 @@ const adminActions = computed<SaplingProfileAction[]>(() => {
       handler: openVectorization,
     },
     {
+      key: 'searchIndex',
+      icon: 'mdi-database-sync-outline',
+      label: i18n.global.t('global.searchIndexRebuild'),
+      handler: openSearchIndexRebuild,
+    },
+    {
       key: 'formConfig',
       icon: 'mdi-table-cog',
       label: i18n.global.t('formConfig.title'),
@@ -306,6 +314,10 @@ async function openFormConfig() {
 
 async function openVectorization() {
   await toggleSaplingVectorization()
+}
+
+async function openSearchIndexRebuild() {
+  await openSaplingSearchIndexRebuild()
 }
 
 function openSwagger() {

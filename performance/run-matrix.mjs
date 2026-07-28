@@ -2,6 +2,7 @@ import { spawnSync } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import os from "node:os";
 import { writeReportWebsite } from "./report-builder.mjs";
 
 const DEFAULT_USERS = [1, 5, 10, 20, 50, 100];
@@ -14,7 +15,7 @@ const users = parsePositiveIntegerList(
 );
 const iterations = positiveInteger(
   options.iterations || process.env.SAPLING_ITERATIONS_PER_USER,
-  3,
+  10,
 );
 const engine =
   options.engine || process.env.SAPLING_PERFORMANCE_ENGINE || "native";
@@ -34,12 +35,18 @@ mkdirSync(resultsDirectory, { recursive: true });
 
 const summaries = [];
 let infrastructureFailure = false;
+const warmupEnabled =
+  String(options.warmup ?? process.env.SAPLING_WARMUP ?? "true") !== "false";
 
 console.log(`Sapling performance matrix: ${users.join(", ")} users`);
 console.log(`Engine: ${engine}`);
 console.log(`Results: ${resultsDirectory}`);
 
-for (const userCount of users) {
+if (warmupEnabled) {
+  infrastructureFailure = !runWarmup();
+}
+
+for (const userCount of infrastructureFailure ? [] : users) {
   console.log(
     `\n=== ${userCount} concurrent user${userCount === 1 ? "" : "s"} ===`,
   );
@@ -101,6 +108,8 @@ if (summaries.length > 0) {
     iterations,
     baseUrl: configuredBaseUrl,
     runId,
+    warmup: warmupEnabled,
+    environment: runtimeMetadata(),
   });
   console.log(`\nMatrix report: ${path.join(resultsDirectory, "matrix.md")}`);
   console.log(
@@ -161,6 +170,8 @@ function buildCommand(selectedEngine, environment) {
     "SAPLING_BASE_URL",
     "SAPLING_TOKEN",
     "SAPLING_TOKENS_JSON",
+    "SAPLING_AUTH_MODE",
+    "SAPLING_SESSION_COOKIES_JSON",
     "SAPLING_USERS",
     "SAPLING_ITERATIONS_PER_USER",
     "SAPLING_THINK_TIME_MS",
@@ -329,11 +340,90 @@ function assertConfiguration(selectedEngine) {
   if (!["native", "docker"].includes(selectedEngine)) {
     configurationError("--engine must be native or docker.");
   }
-  if (!process.env.SAPLING_TOKEN && !process.env.SAPLING_TOKENS_JSON) {
+  const authMode =
+    process.env.SAPLING_AUTH_MODE ||
+    (process.env.SAPLING_SESSION_COOKIES_JSON ? "session" : "bearer");
+  if (!["bearer", "session"].includes(authMode)) {
+    configurationError("SAPLING_AUTH_MODE must be bearer or session.");
+  }
+  if (authMode === "session" && !process.env.SAPLING_SESSION_COOKIES_JSON) {
     configurationError(
-      "Set SAPLING_TOKEN or SAPLING_TOKENS_JSON. Tokens are accepted only through the environment so they do not enter shell history.",
+      "Set SAPLING_SESSION_COOKIES_JSON when SAPLING_AUTH_MODE=session.",
     );
   }
+  if (
+    authMode === "bearer" &&
+    !process.env.SAPLING_TOKEN &&
+    !process.env.SAPLING_TOKENS_JSON
+  ) {
+    configurationError(
+      "Set SAPLING_TOKEN or SAPLING_TOKENS_JSON when SAPLING_AUTH_MODE=bearer.",
+    );
+  }
+}
+
+function runWarmup() {
+  console.log("\n=== warm-up workflow ===");
+  const warmupFile = path.join(resultsDirectory, "warmup.json");
+  const environment = buildEnvironment(1, 1, warmupFile, runId, engine);
+  const command = buildCommand(engine, environment);
+  const execution = spawnSync(command.executable, command.arguments, {
+    cwd: scriptDirectory,
+    env: environment,
+    stdio: "inherit",
+    windowsHide: true,
+  });
+  if (execution.error || (execution.status !== 0 && execution.status !== 99)) {
+    console.error(
+      `Warm-up failed${execution.error ? `: ${execution.error.message}` : ` with exit code ${execution.status}`}.`,
+    );
+    return false;
+  }
+  return true;
+}
+
+function runtimeMetadata() {
+  return {
+    backendMode: process.env.SAPLING_BACKEND_MODE || "unknown",
+    platform: process.platform,
+    architecture: process.arch,
+    cpuModel: os.cpus()[0]?.model || "unknown",
+    logicalCpuCount: os.cpus().length,
+    totalMemoryBytes: os.totalmem(),
+    dbPoolMin: nullableInteger(process.env.DB_POOL_MIN),
+    dbPoolMax: nullableInteger(process.env.DB_POOL_MAX),
+    requestConsoleLogging: nullableBoolean(
+      process.env.LOG_REQUESTS_CONSOLE_ENABLED,
+    ),
+    requestFileLogging: nullableBoolean(process.env.LOG_REQUESTS_FILE_ENABLED),
+    authMode:
+      process.env.SAPLING_AUTH_MODE ||
+      (process.env.SAPLING_SESSION_COOKIES_JSON ? "session" : "bearer"),
+    credentialCount: credentialCount(),
+  };
+}
+
+function credentialCount() {
+  const json =
+    process.env.SAPLING_SESSION_COOKIES_JSON || process.env.SAPLING_TOKENS_JSON;
+  if (!json) return process.env.SAPLING_TOKEN ? 1 : 0;
+  try {
+    const parsed = JSON.parse(json);
+    return Array.isArray(parsed) ? parsed.length : 0;
+  } catch {
+    return 0;
+  }
+}
+
+function nullableInteger(value) {
+  const parsed = Number.parseInt(String(value || ""), 10);
+  return Number.isInteger(parsed) ? parsed : null;
+}
+
+function nullableBoolean(value) {
+  if (value === "true") return true;
+  if (value === "false") return false;
+  return null;
 }
 
 function configurationError(message) {

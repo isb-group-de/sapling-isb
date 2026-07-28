@@ -7,6 +7,9 @@ import {
 import type { Request } from 'express';
 import { AuthService } from '../auth.service';
 import { isPublicGenericReadEntity } from '../public-generic-read-entities';
+import { performance } from 'perf_hooks';
+import type { Response } from 'express';
+import { appendServerTiming } from '../../api/common/performance-timing.interceptor';
 
 @Injectable()
 export class SessionOrBearerAuthGuard implements CanActivate {
@@ -14,6 +17,8 @@ export class SessionOrBearerAuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req = context.switchToHttp().getRequest<Request>();
+    const response = context.switchToHttp().getResponse<Response>();
+    const startedAt = performance.now();
 
     if (req.method === 'GET' && req.path === '/api/system/state') {
       return true;
@@ -27,6 +32,10 @@ export class SessionOrBearerAuthGuard implements CanActivate {
     }
 
     if (req.user) {
+      appendServerTiming(
+        response,
+        `auth;dur=${(performance.now() - startedAt).toFixed(1)}`,
+      );
       return true;
     }
 
@@ -46,6 +55,10 @@ export class SessionOrBearerAuthGuard implements CanActivate {
     }
 
     req.user = user;
+    appendServerTiming(
+      response,
+      `auth;dur=${(performance.now() - startedAt).toFixed(1)}`,
+    );
     return true;
   }
 }

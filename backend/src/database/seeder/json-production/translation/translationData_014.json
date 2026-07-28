@@ -1,0 +1,182 @@
+[
+  {
+    "entity": "navigation",
+    "property": "globalSearchIndex",
+    "de": "Globaler Suchindex",
+    "en": "Global Search Index"
+  },
+  {
+    "entity": "globalSearchIndex",
+    "property": "handle",
+    "de": "Kennung",
+    "en": "Handle"
+  },
+  {
+    "entity": "globalSearchIndex",
+    "property": "entityHandle",
+    "de": "Entität",
+    "en": "Entity"
+  },
+  {
+    "entity": "globalSearchIndex",
+    "property": "recordHandle",
+    "de": "Datensatzkennung",
+    "en": "Record handle"
+  },
+  {
+    "entity": "globalSearchIndex",
+    "property": "fieldPath",
+    "de": "Feldpfad",
+    "en": "Field path"
+  },
+  {
+    "entity": "globalSearchIndex",
+    "property": "fieldValue",
+    "de": "Feldwert",
+    "en": "Field value"
+  },
+  {
+    "entity": "globalSearchIndex",
+    "property": "normalizedValue",
+    "de": "Normalisierter Wert",
+    "en": "Normalized value"
+  },
+  {
+    "entity": "globalSearchIndex",
+    "property": "sourceUpdatedAt",
+    "de": "Quelle aktualisiert am",
+    "en": "Source updated at"
+  },
+  {
+    "entity": "globalSearchIndex",
+    "property": "createdAt",
+    "de": "Erstellt am",
+    "en": "Created at"
+  },
+  {
+    "entity": "globalSearchIndex",
+    "property": "updatedAt",
+    "de": "Aktualisiert am",
+    "en": "Updated at"
+  },
+  {
+    "entity": "globalSearchIndex",
+    "property": "groupIdentity",
+    "de": "Zuordnung",
+    "en": "Identity"
+  },
+  {
+    "entity": "globalSearchIndex",
+    "property": "groupContent",
+    "de": "Indexinhalt",
+    "en": "Index content"
+  },
+  {
+    "entity": "globalSearchIndex",
+    "property": "groupTimestamps",
+    "de": "Zeitstempel",
+    "en": "Timestamps"
+  },
+  {
+    "entity": "global",
+    "property": "searchIndexEyebrow",
+    "de": "Administration",
+    "en": "Administration"
+  },
+  {
+    "entity": "global",
+    "property": "searchIndexRebuild",
+    "de": "Suchindex neu aufbauen",
+    "en": "Rebuild search index"
+  },
+  {
+    "entity": "global",
+    "property": "searchIndexRebuildTitle",
+    "de": "Globalen Suchindex neu aufbauen",
+    "en": "Rebuild global search index"
+  },
+  {
+    "entity": "global",
+    "property": "searchIndexRebuildDescription",
+    "de": "Erstellt den zentralen Datensatzindex anhand der aktuellen Entity-, Feld- und Suchmetadaten neu.",
+    "en": "Recreates the central record index from the current entity, field, and search metadata."
+  },
+  {
+    "entity": "global",
+    "property": "searchIndexRebuildWarning",
+    "de": "Während des Neuaufbaus kann die globale Suche vorübergehend noch Ergebnisse aus dem bisherigen Index liefern.",
+    "en": "Global search may temporarily continue to return results from the previous index while rebuilding."
+  },
+  {
+    "entity": "global",
+    "property": "searchIndexRebuildRunning",
+    "de": "Der Suchindex wird aufgebaut.",
+    "en": "The search index is rebuilding."
+  },
+  {
+    "entity": "global",
+    "property": "searchIndexPreparing",
+    "de": "Der Neuaufbau wird vorbereitet.",
+    "en": "Preparing the rebuild."
+  },
+  {
+    "entity": "global",
+    "property": "searchIndexCurrentEntity",
+    "de": "{entity}: {processed} von {total} Datensätzen",
+    "en": "{entity}: {processed} of {total} records"
+  },
+  {
+    "entity": "global",
+    "property": "searchIndexProcessedRecords",
+    "de": "Verarbeitete Datensätze",
+    "en": "Processed records"
+  },
+  {
+    "entity": "global",
+    "property": "searchIndexIndexedEntities",
+    "de": "Indizierte Entitäten",
+    "en": "Indexed entities"
+  },
+  {
+    "entity": "global",
+    "property": "searchIndexIndexedItems",
+    "de": "Indexeinträge",
+    "en": "Index items"
+  },
+  {
+    "entity": "global",
+    "property": "searchIndexDuration",
+    "de": "Dauer",
+    "en": "Duration"
+  },
+  {
+    "entity": "global",
+    "property": "searchIndexRebuildCompleted",
+    "de": "Suchindex erfolgreich aufgebaut",
+    "en": "Search index rebuilt successfully"
+  },
+  {
+    "entity": "global",
+    "property": "searchIndexRebuildCompletedDescription",
+    "de": "Die globale Suche verwendet jetzt den neu aufgebauten Index.",
+    "en": "Global search now uses the rebuilt index."
+  },
+  {
+    "entity": "global",
+    "property": "searchIndexRebuildFailed",
+    "de": "Suchindex konnte nicht aufgebaut werden",
+    "en": "Search index rebuild failed"
+  },
+  {
+    "entity": "global",
+    "property": "searchIndexStatusFailed",
+    "de": "Der Status des Suchindex-Neuaufbaus konnte nicht geladen werden.",
+    "en": "The search-index rebuild status could not be loaded."
+  },
+  {
+    "entity": "global",
+    "property": "searchIndexUnknownError",
+    "de": "Unbekannter Fehler beim Neuaufbau des Suchindex.",
+    "en": "Unknown error while rebuilding the search index."
+  }
+]

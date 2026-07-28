@@ -6,7 +6,7 @@ This suite runs the same realistic Sapling workflow with exactly:
 1, 5, 10, 20, 50, 100 concurrent users
 ```
 
-Each virtual user completes a fixed number of iterations. That makes runs
+Each virtual user completes a fixed number of iterations (10 by default). That makes runs
 comparable between commits and environments. This is an API load test, not a
 unit test: Jest and Vitest are deliberately not involved.
 
@@ -37,7 +37,7 @@ only that the application became slower, but also which endpoint deteriorated.
 The Docker runner pins `grafana/k6:0.57.0` so its execution engine is
 repeatable. Override it with `SAPLING_K6_IMAGE` only intentionally.
 
-## Run all eleven load levels
+## Run all six load levels
 
 The simplest entry point from the repository root is:
 
@@ -92,23 +92,38 @@ $env:SAPLING_TOKENS_JSON = '["token-1","token-2","token-3"]'
 Tokens are intentionally accepted only through environment variables. They are
 never written to the reports.
 
+Bearer identities can be shared or distributed one per virtual user through
+`SAPLING_TOKENS_JSON`. To exercise the browser-session path instead, provide
+complete `Cookie` header values through `SAPLING_SESSION_COOKIES_JSON` and set
+`SAPLING_AUTH_MODE=session`. Cookie/token contents are never persisted; reports
+contain only the mode and credential count.
+
+Every matrix performs one unreported warm-up workflow before the measured load
+levels. Set `SAPLING_WARMUP=false` only for deliberate cold-start tests.
+Production comparisons should run the built backend (`npm run build:backend`
+followed by `npm run start:prod --prefix backend`) and set
+`SAPLING_BACKEND_MODE=production`.
+
 ## Configuration
 
-| Variable                      | Default                      | Purpose                                                            |
-| ----------------------------- | ---------------------------- | ------------------------------------------------------------------ |
-| `SAPLING_BASE_URL`            | `http://localhost:3000/api`  | Backend API root                                                   |
-| `SAPLING_USERS`               | `1,10,...,100` in the runner | Override the user matrix                                           |
-| `SAPLING_ITERATIONS_PER_USER` | `3`                          | Complete workflows per virtual user                                |
-| `SAPLING_THINK_TIME_MS`       | `250`                        | Fixed pause between UI-style navigation groups                     |
-| `SAPLING_P95_LIMIT_MS`        | `2000`                       | Global HTTP p95 threshold                                          |
-| `SAPLING_MAX_ERROR_RATE`      | `0.01`                       | Maximum HTTP/check/workflow error rate                             |
-| `SAPLING_MAX_DURATION`        | `10m`                        | Safety timeout for each load level                                 |
-| `SAPLING_EXTRA_ENTITIES`      | `salesOpportunity,event`     | Additional template/list visits; set to an empty string to disable |
-| `SAPLING_TICKET_FILTER`       | none                         | JSON filter limiting tickets used by the test                      |
-| `SAPLING_WRITE_MODE`          | `none`                       | `none`, `same-value`, or `round-trip`                              |
-| `SAPLING_RESULTS_DIRECTORY`   | timestamped folder           | Explicit report directory                                          |
-| `SAPLING_K6_BINARY`           | `k6`                         | Native k6 executable                                               |
-| `SAPLING_K6_IMAGE`            | `grafana/k6:0.57.0`          | Docker image                                                       |
+| Variable                       | Default                      | Purpose                                                            |
+| ------------------------------ | ---------------------------- | ------------------------------------------------------------------ |
+| `SAPLING_BASE_URL`             | `http://localhost:3000/api`  | Backend API root                                                   |
+| `SAPLING_USERS`                | `1,10,...,100` in the runner | Override the user matrix                                           |
+| `SAPLING_ITERATIONS_PER_USER`  | `10`                         | Complete workflows per virtual user                                |
+| `SAPLING_AUTH_MODE`            | inferred                     | `bearer` or `session`                                              |
+| `SAPLING_SESSION_COOKIES_JSON` | none                         | Session `Cookie` headers distributed round-robin                   |
+| `SAPLING_WARMUP`               | `true`                       | Run one warm-up workflow before the matrix                         |
+| `SAPLING_THINK_TIME_MS`        | `250`                        | Fixed pause between UI-style navigation groups                     |
+| `SAPLING_P95_LIMIT_MS`         | `2000`                       | Global HTTP p95 threshold                                          |
+| `SAPLING_MAX_ERROR_RATE`       | `0.01`                       | Maximum HTTP/check/workflow error rate                             |
+| `SAPLING_MAX_DURATION`         | `10m`                        | Safety timeout for each load level                                 |
+| `SAPLING_EXTRA_ENTITIES`       | `salesOpportunity,event`     | Additional template/list visits; set to an empty string to disable |
+| `SAPLING_TICKET_FILTER`        | none                         | JSON filter limiting tickets used by the test                      |
+| `SAPLING_WRITE_MODE`           | `none`                       | `none`, `same-value`, or `round-trip`                              |
+| `SAPLING_RESULTS_DIRECTORY`    | timestamped folder           | Explicit report directory                                          |
+| `SAPLING_K6_BINARY`            | `k6`                         | Native k6 executable                                               |
+| `SAPLING_K6_IMAGE`             | `grafana/k6:0.57.0`          | Docker image                                                       |
 
 CLI arguments can override the most common runner settings:
 
@@ -177,3 +192,8 @@ Correlate a suspicious step with backend request logs, PostgreSQL query
 statistics/`EXPLAIN`, CPU/memory, and Redis queue depth. This suite locates the
 pressure point; it does not by itself prove whether the cause is SQL, CPU,
 network, locking, or synchronous integration work.
+
+`matrix.json` also records backend mode, host CPU/RAM, DB pool settings,
+request-logging switches, authentication mode, and credential count. API
+responses expose `Server-Timing` entries for authentication, handler, and total
+request time to support endpoint-level correlation.

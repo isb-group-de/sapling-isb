@@ -70,6 +70,35 @@ function createSubject(
 }
 
 describe('GenericListQueryService', () => {
+  it('runs bounded lookup reads without issuing a total-count query', async () => {
+    const { service, genericReadService } = createSubject();
+
+    await expect(
+      service.find(
+        'company',
+        { handle: { $in: [1, 2] } },
+        10,
+        {},
+        { handle: 7 } as never,
+        [],
+        ['handle'],
+      ),
+    ).resolves.toEqual([{ handle: 1 }]);
+
+    expect(genericReadService.find).toHaveBeenCalledWith(
+      'company',
+      expect.any(Function),
+      { handle: { $in: [1, 2] } },
+      { handle: 7 },
+      [],
+      expect.objectContaining({
+        limit: 10,
+        fields: ['handle'],
+      }),
+    );
+    expect(genericReadService.findAndCount).not.toHaveBeenCalled();
+  });
+
   it('runs the complete list pipeline and excludes custom-field sorting from ORM orderBy', async () => {
     const { service, genericQueryService, genericReadService } =
       createSubject();

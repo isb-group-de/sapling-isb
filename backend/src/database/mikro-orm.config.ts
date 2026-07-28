@@ -6,6 +6,8 @@ import {
   DB_LOGGING,
   DB_NAME,
   DB_PASSWORD,
+  DB_POOL_MAX,
+  DB_POOL_MIN,
   DB_PORT,
   DB_USER,
 } from '../constants/project.constants';
@@ -43,6 +45,10 @@ const config: Partial<Options> = {
   user: DB_USER,
   password: DB_PASSWORD,
   dbName: DB_NAME,
+  pool: {
+    min: DB_POOL_MIN,
+    max: DB_POOL_MAX,
+  },
   debug: DB_LOGGING,
   logger: (message: string) => {
     if (typeof global !== 'undefined' && global.log) {

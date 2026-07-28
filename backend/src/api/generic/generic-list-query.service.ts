@@ -143,6 +143,92 @@ export class GenericListQueryService {
     };
   }
 
+  /**
+   * Permission-aware bounded list read without the expensive total-count query.
+   * Intended for lookup/search consumers that never expose pagination totals.
+   */
+  async find(
+    entityHandle: string,
+    where: object,
+    limit: number,
+    orderBy: object,
+    currentUser: PersonItem,
+    relations: string[],
+    fields: string[] = [],
+  ): Promise<object[]> {
+    const entityClass = this.genericQueryService.getEntityClass(entityHandle);
+    const template = await this.fieldPermissions.getTemplates(entityHandle);
+    await Promise.all([
+      this.fieldPermissions.assertReadableQuery(
+        currentUser,
+        entityHandle,
+        where,
+      ),
+      this.fieldPermissions.assertReadableQuery(
+        currentUser,
+        entityHandle,
+        orderBy,
+      ),
+      this.fieldPermissions.assertReadableFields(currentUser, entityHandle, [
+        ...fields,
+        ...relations,
+      ]),
+    ]);
+    const normalizedWhere = this.genericQueryService.normalizeQueryCriteria(
+      entityHandle,
+      await this.genericCustomFieldService.applyCustomFieldFilters(
+        entityHandle,
+        where,
+      ),
+      'filter',
+    );
+    const normalizedOrderBy = this.genericQueryService.normalizeQueryCriteria(
+      entityHandle,
+      this.removeCustomFieldOrderBy(orderBy),
+      'orderBy',
+    );
+    const populate = this.buildPopulate(
+      entityHandle,
+      normalizedWhere,
+      normalizedOrderBy,
+      relations,
+      template,
+    );
+    const selectedFields = this.genericQueryService.buildFields(
+      fields,
+      template,
+      populate,
+    );
+    const result = await this.genericReadService.find(
+      entityHandle,
+      entityClass,
+      normalizedWhere,
+      currentUser,
+      template,
+      {
+        limit,
+        orderBy: normalizedOrderBy,
+        populate: populate as any[],
+        fields: selectedFields as any[] | undefined,
+      },
+    );
+    let items = await this.genericReadService.applyAfterRead(
+      result.items,
+      result.entity,
+      currentUser,
+    );
+    items = await this.genericCustomFieldService.hydrateRecords(
+      entityHandle,
+      items,
+    );
+    return this.genericSanitizerService.projectEntityResult(
+      entityHandle,
+      items,
+      currentUser,
+      template,
+    ) as object[];
+  }
+
   async downloadJSON(
     entityHandle: string,
     where: object,

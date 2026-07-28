@@ -161,6 +161,10 @@ import { ExternalRecordLinkItem } from '../ExternalRecordLinkItem';
 import { CustomFieldDefinitionItem } from '../CustomFieldDefinitionItem';
 import { CustomFieldTypeItem } from '../CustomFieldTypeItem';
 import { CustomFieldValueItem } from '../CustomFieldValueItem';
+import {
+  GLOBAL_SEARCH_INDEX_ENTITY_HANDLE,
+  GlobalSearchIndexItem,
+} from '../GlobalSearchIndexItem';
 
 /**
  * @file entity.registry.ts
@@ -233,6 +237,10 @@ const ENTITY_REGISTRY_ENTRIES: { name: string; class: any }[] = [
   { name: 'calendarSyncSubscription', class: CalendarSyncSubscriptionItem },
   { name: 'favorite', class: FavoriteItem },
   { name: 'favoriteTemplate', class: FavoriteTemplateItem },
+  {
+    name: GLOBAL_SEARCH_INDEX_ENTITY_HANDLE,
+    class: GlobalSearchIndexItem,
+  },
   { name: 'kpi', class: KpiItem },
   { name: 'scriptButton', class: ScriptButtonItem },
   { name: 'document', class: DocumentItem },

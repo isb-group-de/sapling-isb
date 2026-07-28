@@ -222,6 +222,26 @@ export class GenericService {
       fields,
     );
   }
+
+  async findWithoutCount(
+    entityHandle: string,
+    where: object,
+    limit: number,
+    orderBy: object,
+    currentUser: PersonItem,
+    relations: string[] = [],
+    fields: string[] = [],
+  ): Promise<object[]> {
+    return this.genericListQueryService.find(
+      entityHandle,
+      where,
+      limit,
+      orderBy,
+      currentUser,
+      relations,
+      fields,
+    );
+  }
   // #endregion
 
   // #region Download

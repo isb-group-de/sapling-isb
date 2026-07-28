@@ -37,6 +37,25 @@ Supported modes:
 
 Bearer tokens are validated through `AuthService.validateApiToken`.
 
+Session and bearer authentication share a short-lived security-principal cache.
+The cache stores the populated role/entity/field-permission graph for two
+seconds by default and coalesces concurrent misses for the same person. Bearer
+token status, expiry, IP restrictions, and person activation are still checked
+through a lightweight indexed query on every request. Person, role, permission,
+and field-permission mutations invalidate affected cache entries; the TTL is a
+multi-instance fallback.
+
+Configuration:
+
+```text
+SECURITY_PRINCIPAL_CACHE_TTL_MS=2000
+SECURITY_PRINCIPAL_CACHE_MAX_ENTRIES=10000
+```
+
+Bearer-token `lastUsedAt` writes use an atomic five-minute condition and are
+single-flight per backend process, preventing a shared integration token from
+creating a row-lock stampede.
+
 Public exceptions:
 
 - `GET /api/system/state`
