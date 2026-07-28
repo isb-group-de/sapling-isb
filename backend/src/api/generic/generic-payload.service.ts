@@ -110,7 +110,8 @@ export class GenericPayloadService {
       value.trim().length === 0 &&
       field.nullable === true &&
       field.isReference !== true &&
-      GenericPayloadService.NULLABLE_NUMBER_TYPES.has(field.type)
+      (field.isUnique === true ||
+        GenericPayloadService.NULLABLE_NUMBER_TYPES.has(field.type))
     );
   }
 

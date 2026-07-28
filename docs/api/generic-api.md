@@ -176,6 +176,12 @@ The generic mutation service handles:
 - special payload normalization
 - change log creation
 
+For both create and update mutations, an empty or whitespace-only client value
+for a nullable unique scalar field is normalized to `null`. This keeps the
+unique constraint active for actual values while allowing multiple records
+without a value. Nullable numeric fields receive the same empty-string
+normalization.
+
 A client-supplied field without `allowUpdate` rejects the complete request.
 Relation add/remove uses the update permission of the relation field. Mutation
 responses are projected with the same read policy.

@@ -165,7 +165,7 @@ describe('GenericPayloadService', () => {
     });
   });
 
-  it('normalizes empty strings to null for nullable numeric fields', () => {
+  it('normalizes empty strings to null for nullable numeric and unique scalar fields', () => {
     const referenceService = {
       reduceReferenceFields: jest.fn(
         (_template: EntityTemplateDto[], data: object) => data,
@@ -192,11 +192,18 @@ describe('GenericPayloadService', () => {
           type: 'string',
           nullable: true,
         }),
+        createTemplateField({
+          name: 'loginName',
+          type: 'string',
+          nullable: true,
+          isUnique: true,
+        }),
       ],
       {
         expectedRevenue: '',
         probability: '   ',
         title: '',
+        loginName: '   ',
       },
     );
 
@@ -204,6 +211,51 @@ describe('GenericPayloadService', () => {
       expectedRevenue: null,
       probability: null,
       title: '',
+      loginName: null,
+    });
+  });
+
+  it('normalizes a blank nullable unique scalar field on update', () => {
+    const referenceService = {
+      reduceReferenceFields: jest.fn(
+        (_template: EntityTemplateDto[], data: object) => data,
+      ),
+    };
+    const service = new GenericPayloadService(
+      referenceService as unknown as GenericReferenceService,
+    );
+
+    const result = service.prepareUpdatePayload(
+      [
+        createTemplateField({
+          name: 'loginName',
+          type: 'string',
+          nullable: true,
+          isUnique: true,
+        }),
+        createTemplateField({
+          name: 'externalId',
+          type: 'string',
+          nullable: true,
+          isUnique: true,
+        }),
+        createTemplateField({
+          name: 'nickname',
+          type: 'string',
+          nullable: true,
+        }),
+      ],
+      {
+        loginName: '',
+        externalId: 'external-123',
+        nickname: '',
+      },
+    );
+
+    expect(result).toEqual({
+      loginName: null,
+      externalId: 'external-123',
+      nickname: '',
     });
   });
 
