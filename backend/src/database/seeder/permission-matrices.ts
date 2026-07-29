@@ -61,6 +61,7 @@ export const salesPermissionsInput: PermissionMatrixInput = {
     'holiday',
     'eventStatus',
     'eventType',
+    'eventCategory',
     'eventDeliveryStatus',
     'ticket',
     'ticketPriority',

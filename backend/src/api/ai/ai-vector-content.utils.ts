@@ -17,6 +17,7 @@ export function buildEventSectionContent(
       'Type',
       relationLabel(event.type, 'description', 'title', 'handle'),
     ),
+    vectorLine('Category', relationLabel(event.category, 'title', 'handle')),
     vectorLine('Start', formatVectorDate(event.startDate)),
     vectorLine('End', formatVectorDate(event.endDate)),
     vectorLine('Creator company', companyLabel(event.creatorCompany)),

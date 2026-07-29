@@ -2,6 +2,7 @@ import { describe, expect, it, jest } from '@jest/globals';
 
 import { AzureCalendarService } from './azure.calendar.service';
 import { EventItem } from '../../entity/EventItem';
+import { PersonItem } from '../../entity/PersonItem';
 
 type UpsertResult = 'created' | 'updated' | 'skipped';
 type AzureCalendarServiceTestHarness = {
@@ -11,13 +12,24 @@ type AzureCalendarServiceTestHarness = {
     defaults: object,
   ) => Promise<UpsertResult>;
 };
+type AzureCategoryServiceTestHarness = {
+  resolveAzureAccessToken: jest.MockedFunction<
+    (...args: unknown[]) => Promise<string | null>
+  >;
+  fetchMasterCategoriesWithRetry: jest.MockedFunction<
+    (
+      ...args: unknown[]
+    ) => Promise<Array<{ id?: string; displayName?: string; color?: string }>>
+  >;
+};
 
 const defaults = {
   user: {
     handle: 7,
     company: { handle: 42 },
   },
-  type: { handle: 'internal' },
+  type: { handle: 'online' },
+  category: { handle: 'internal' },
   scheduledStatus: { handle: 'scheduled' },
   canceledStatus: { handle: 'canceled' },
 };
@@ -134,5 +146,41 @@ describe('AzureCalendarService Outlook import privacy', () => {
     expect(existingEvent.isPrivate).toBe(true);
     expect(existingEvent.title).toBe('Planning');
     expect(emFork.persist).not.toHaveBeenCalled();
+  });
+});
+
+describe('AzureCalendarService Outlook master categories', () => {
+  it('loads, normalizes, and sorts the current user categories', async () => {
+    const session = { handle: 5 };
+    const em = {
+      fork: () => em,
+      findOne: jest.fn(() => Promise.resolve(session)),
+    };
+    const service = new AzureCalendarService({} as never, em as never);
+    const harness = service as unknown as AzureCategoryServiceTestHarness;
+    harness.resolveAzureAccessToken = jest.fn(() =>
+      Promise.resolve('access-token'),
+    );
+    harness.fetchMasterCategoriesWithRetry = jest.fn(() =>
+      Promise.resolve([
+        { id: '2', displayName: ' Vertrieb ', color: ' preset7 ' },
+        { id: '1', displayName: 'Projekt', color: 'preset4' },
+        { id: '3', displayName: ' ' },
+      ]),
+    );
+
+    await expect(
+      service.getMasterCategories({
+        handle: 7,
+        type: { handle: 'azure' },
+      } as unknown as PersonItem),
+    ).resolves.toEqual([
+      { id: '1', displayName: 'Projekt', color: 'preset4' },
+      { id: '2', displayName: 'Vertrieb', color: 'preset7' },
+    ]);
+    expect(harness.fetchMasterCategoriesWithRetry).toHaveBeenCalledWith(
+      session,
+      'access-token',
+    );
   });
 });

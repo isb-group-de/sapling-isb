@@ -91,6 +91,7 @@ const VECTOR_SECTION_FIELD_PATHS: Record<
       'title',
       'status.description',
       'type.description',
+      'category.title',
       'startDate',
       'endDate',
       'creatorCompany.name',
@@ -111,6 +112,7 @@ const VECTOR_SECTION_FIELD_PATHS: Record<
       'title',
       'status.description',
       'type.description',
+      'category.title',
       'startDate',
       'endDate',
       'creatorCompany.name',
@@ -362,6 +364,7 @@ export const VECTOR_SEARCH_RELATIONS: Record<
   event: [
     'status',
     'type',
+    'category',
     'creatorCompany',
     'creatorPerson',
     'assigneeCompany',

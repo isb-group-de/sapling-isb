@@ -35,6 +35,8 @@ import { EventAzureItem } from '../../entity/EventAzureItem';
 import { PersonItem } from '../../entity/PersonItem';
 import { EventTypeItem } from '../../entity/EventTypeItem';
 import { EventStatusItem } from '../../entity/EventStatusItem';
+import { EventCategoryItem } from '../../entity/EventCategoryItem';
+import { CalendarSyncSubscriptionItem } from '../../entity/CalendarSyncSubscriptionItem';
 import {
   AZURE_AD_CLIENT_ID,
   AZURE_AD_CLIENT_SECRET,
@@ -45,13 +47,23 @@ import { ImportAzureCalendarEventsResponseDto } from './dto/import-azure-calenda
 import {
   type AzureCalendarViewResponse,
   type AzureGraphCalendarEvent,
+  type AzureOutlookCategoriesResponse,
+  type AzureOutlookCategory,
+  type AzureOutlookMasterCategory,
   buildAzureCalendarEvent,
   type ImportAzureCalendarEventsRange,
   isAzureAuthenticationError,
+  isAzureForbiddenError,
   normalizeAzureDateTime,
   normalizeAzureEmail,
   truncateAzureText,
 } from './azure-calendar.utils';
+import {
+  type CalendarClassificationMapping,
+  DEFAULT_CALENDAR_EVENT_CATEGORY_HANDLE,
+  DEFAULT_CALENDAR_EVENT_TYPE_HANDLE,
+  resolveImportedCalendarClassification,
+} from '../calendar-classification.utils';
 
 /**
  * Service for managing calendar events in Microsoft Azure (Outlook) via Microsoft Graph API.
@@ -99,14 +111,22 @@ export class AzureCalendarService {
    * @param {string} accessToken OAuth access token of the calling user
    * @returns {Promise<any>} The result of the operation (create, update, or delete)
    */
-  async setEvent(eventHandle: number, accessToken: string): Promise<any> {
+  async setEvent(
+    eventHandle: number,
+    accessToken: string,
+    personHandle?: number,
+  ): Promise<any> {
     const client = this.createClient(accessToken);
     // Fork EntityManager for context-specific actions
     const emFork = this.em.fork();
     const event = await emFork.findOne(
       EventItem,
       { handle: eventHandle },
-      { populate: ['participants', 'status', 'type'] },
+      { populate: ['participants', 'status', 'type', 'category'] },
+    );
+    const classificationMappings = await this.loadClassificationMappings(
+      emFork,
+      personHandle,
     );
 
     if (!event) {
@@ -130,9 +150,20 @@ export class AzureCalendarService {
         break;
       default:
         if (reference) {
-          return await this.updateEvent(client, event, reference, emFork);
+          return await this.updateEvent(
+            client,
+            event,
+            reference,
+            emFork,
+            classificationMappings,
+          );
         } else {
-          return await this.createEvent(client, event, emFork);
+          return await this.createEvent(
+            client,
+            event,
+            emFork,
+            classificationMappings,
+          );
         }
     }
   }
@@ -178,13 +209,40 @@ export class AzureCalendarService {
       { handle: currentUser.handle },
       { populate: ['company', 'type'] },
     );
-    const type = await emFork.findOne(EventTypeItem, { handle: 'internal' });
-    const scheduledStatus = await emFork.findOne(EventStatusItem, {
-      handle: 'scheduled',
-    });
-    const canceledStatus = await emFork.findOne(EventStatusItem, {
-      handle: 'canceled',
-    });
+    const [
+      subscription,
+      eventTypes,
+      eventCategories,
+      scheduledStatus,
+      canceledStatus,
+    ] = await Promise.all([
+      emFork.findOne(
+        CalendarSyncSubscriptionItem,
+        { person: { handle: currentUser.handle } },
+        { populate: ['defaultEventType', 'defaultEventCategory'] },
+      ),
+      emFork.find(EventTypeItem, {}),
+      emFork.find(EventCategoryItem, {}),
+      emFork.findOne(EventStatusItem, { handle: 'scheduled' }),
+      emFork.findOne(EventStatusItem, { handle: 'canceled' }),
+    ]);
+    const eventTypesByHandle = new Map(
+      eventTypes.map((eventType) => [eventType.handle, eventType]),
+    );
+    const eventCategoriesByHandle = new Map(
+      eventCategories.map((eventCategory) => [
+        eventCategory.handle,
+        eventCategory,
+      ]),
+    );
+    const defaultType =
+      eventTypesByHandle.get(
+        getRelationHandle(subscription?.defaultEventType),
+      ) ?? eventTypesByHandle.get(DEFAULT_CALENDAR_EVENT_TYPE_HANDLE);
+    const defaultCategory =
+      eventCategoriesByHandle.get(
+        getRelationHandle(subscription?.defaultEventCategory),
+      ) ?? eventCategoriesByHandle.get(DEFAULT_CALENDAR_EVENT_CATEGORY_HANDLE);
 
     if (!user || this.getPersonTypeHandle(user) !== 'azure') {
       throw new ForbiddenException('calendar.azureUserRequired');
@@ -201,15 +259,32 @@ export class AzureCalendarService {
       skipped: 0,
     };
 
-    if (!type || !scheduledStatus || !canceledStatus) {
+    if (
+      !defaultType ||
+      !defaultCategory ||
+      !scheduledStatus ||
+      !canceledStatus
+    ) {
       result.skipped = graphEvents.length;
       return result;
     }
 
     for (const graphEvent of graphEvents) {
+      const classification = resolveImportedCalendarClassification({
+        mappings: subscription?.classificationMappings,
+        externalValues: graphEvent.categories,
+        defaults: {
+          eventTypeHandle: defaultType.handle,
+          eventCategoryHandle: defaultCategory.handle,
+        },
+      });
       const saved = await this.upsertImportedEvent(emFork, graphEvent, {
         user,
-        type,
+        type:
+          eventTypesByHandle.get(classification.eventTypeHandle) ?? defaultType,
+        category:
+          eventCategoriesByHandle.get(classification.eventCategoryHandle) ??
+          defaultCategory,
         scheduledStatus,
         canceledStatus,
       });
@@ -227,6 +302,61 @@ export class AzureCalendarService {
 
     await emFork.flush();
     return result;
+  }
+
+  async getMasterCategories(
+    currentUser: PersonItem,
+  ): Promise<AzureOutlookMasterCategory[]> {
+    if (this.getPersonTypeHandle(currentUser) !== 'azure') {
+      throw new ForbiddenException('calendar.azureUserRequired');
+    }
+
+    const emFork = this.em.fork();
+    const session = await emFork.findOne(PersonSessionItem, {
+      person: { handle: currentUser.handle },
+    });
+    if (!session) {
+      throw new UnauthorizedException('calendar.azureSessionNotFound');
+    }
+
+    const accessToken = await this.resolveAzureAccessToken(session);
+    if (!accessToken) {
+      throw new UnauthorizedException('calendar.azureTokenNotAvailable');
+    }
+
+    let categories: AzureOutlookCategory[];
+    try {
+      categories = await this.fetchMasterCategoriesWithRetry(
+        session,
+        accessToken,
+      );
+    } catch (error) {
+      if (isAzureForbiddenError(error)) {
+        throw new ForbiddenException(
+          'calendarSyncSubscription.outlookCategoryPermissionMissing',
+        );
+      }
+      throw error;
+    }
+    return categories
+      .flatMap((category): AzureOutlookMasterCategory[] => {
+        const displayName = category.displayName?.trim();
+        if (!displayName) {
+          return [];
+        }
+        return [
+          {
+            id: category.id?.trim() || undefined,
+            displayName,
+            color: category.color?.trim() || undefined,
+          },
+        ];
+      })
+      .sort((left, right) =>
+        left.displayName.localeCompare(right.displayName, undefined, {
+          sensitivity: 'base',
+        }),
+      );
   }
 
   /**
@@ -264,6 +394,34 @@ export class AzureCalendarService {
     }
   }
 
+  private async fetchMasterCategoriesWithRetry(
+    session: PersonSessionItem,
+    accessToken: string,
+  ): Promise<AzureOutlookCategory[]> {
+    try {
+      return await this.fetchMasterCategories(accessToken);
+    } catch (error) {
+      if (!isAzureAuthenticationError(error)) {
+        throw error;
+      }
+
+      let refreshedToken: string | null;
+      try {
+        refreshedToken = await this.refreshAzureAccessToken(session);
+      } catch (refreshError) {
+        if (isAzureForbiddenError(error)) {
+          throw error;
+        }
+        throw refreshError;
+      }
+      if (!refreshedToken) {
+        throw error;
+      }
+
+      return this.fetchMasterCategories(refreshedToken);
+    }
+  }
+
   private async fetchCalendarView(
     accessToken: string,
     range: ImportAzureCalendarEventsRange,
@@ -276,7 +434,7 @@ export class AzureCalendarService {
         startDateTime: range.startDateTime.toISOString(),
         endDateTime: range.endDateTime.toISOString(),
         $select:
-          'id,subject,bodyPreview,sensitivity,start,end,isAllDay,isCancelled,attendees,onlineMeeting,onlineMeetingUrl',
+          'id,subject,bodyPreview,sensitivity,start,end,isAllDay,isCancelled,attendees,categories,onlineMeeting,onlineMeetingUrl',
         $top: '100',
       })
       .header('Prefer', 'outlook.timezone="UTC"')
@@ -293,6 +451,31 @@ export class AzureCalendarService {
     }
 
     return events;
+  }
+
+  private async fetchMasterCategories(
+    accessToken: string,
+  ): Promise<AzureOutlookCategory[]> {
+    const client = this.createClient(accessToken);
+    const categories: AzureOutlookCategory[] = [];
+    let response = (await client
+      .api('/me/outlook/masterCategories')
+      .query({
+        $select: 'id,displayName,color',
+        $top: '100',
+      })
+      .get()) as AzureOutlookCategoriesResponse;
+
+    categories.push(...(response.value ?? []));
+
+    while (response['@odata.nextLink']) {
+      response = (await client
+        .api(response['@odata.nextLink'])
+        .get()) as AzureOutlookCategoriesResponse;
+      categories.push(...(response.value ?? []));
+    }
+
+    return categories;
   }
 
   private async refreshAzureAccessToken(
@@ -348,12 +531,28 @@ export class AzureCalendarService {
     return person.type?.handle;
   }
 
+  private async loadClassificationMappings(
+    emFork: EntityManager,
+    personHandle?: number,
+  ): Promise<CalendarClassificationMapping[]> {
+    if (personHandle == null) {
+      return [];
+    }
+
+    const subscription = await emFork.findOne(CalendarSyncSubscriptionItem, {
+      person: { handle: personHandle },
+      provider: 'azure',
+    });
+    return subscription?.classificationMappings ?? [];
+  }
+
   private async upsertImportedEvent(
     emFork: EntityManager,
     graphEvent: AzureGraphCalendarEvent,
     defaults: {
       user: PersonItem;
       type: EventTypeItem;
+      category: EventCategoryItem;
       scheduledStatus: EventStatusItem;
       canceledStatus: EventStatusItem;
     },
@@ -390,6 +589,8 @@ export class AzureCalendarService {
       this.assignImportedEvent(reference.event, graphEvent, {
         startDate,
         endDate,
+        type: defaults.type,
+        category: defaults.category,
         status,
         participants: participantPeople,
       });
@@ -397,7 +598,6 @@ export class AzureCalendarService {
     }
 
     const event = new EventItem();
-    event.type = defaults.type;
     event.creatorCompany = defaults.user.company;
     event.creatorPerson = defaults.user;
     event.assigneeCompany = defaults.user.company;
@@ -405,6 +605,8 @@ export class AzureCalendarService {
     this.assignImportedEvent(event, graphEvent, {
       startDate,
       endDate,
+      type: defaults.type,
+      category: defaults.category,
       status,
       participants: participantPeople,
     });
@@ -424,6 +626,8 @@ export class AzureCalendarService {
     values: {
       startDate: Date;
       endDate: Date;
+      type: EventTypeItem;
+      category: EventCategoryItem;
       status: EventStatusItem;
       participants: PersonItem[];
     },
@@ -436,6 +640,8 @@ export class AzureCalendarService {
     event.isPrivate = graphEvent.sensitivity === 'private';
     event.startDate = values.startDate;
     event.endDate = values.endDate;
+    event.type = values.type;
+    event.category = values.category;
     event.isAllDay = graphEvent.isAllDay === true;
     event.onlineMeetingURL =
       graphEvent.onlineMeeting?.joinUrl ??
@@ -506,8 +712,12 @@ export class AzureCalendarService {
     client: Client,
     event: EventItem,
     emFork: EntityManager,
+    classificationMappings?: CalendarClassificationMapping[] | null,
   ): Promise<any> {
-    const eventResource = buildAzureCalendarEvent(event);
+    const eventResource = buildAzureCalendarEvent(
+      event,
+      classificationMappings,
+    );
 
     // Create event in Azure
     const created = (await client.api('/me/events').post(eventResource)) as {
@@ -541,8 +751,12 @@ export class AzureCalendarService {
     event: EventItem,
     reference: EventAzureItem,
     emFork: EntityManager,
+    classificationMappings?: CalendarClassificationMapping[] | null,
   ): Promise<any> {
-    const eventResource = buildAzureCalendarEvent(event);
+    const eventResource = buildAzureCalendarEvent(
+      event,
+      classificationMappings,
+    );
 
     // PATCH Event (without online meeting fields)
     const patchResult = (await client
@@ -577,4 +791,10 @@ export class AzureCalendarService {
     await emFork.remove(reference).flush();
     return { success: true };
   }
+}
+
+function getRelationHandle(
+  value?: string | { handle?: string } | null,
+): string {
+  return typeof value === 'string' ? value : (value?.handle ?? '');
 }

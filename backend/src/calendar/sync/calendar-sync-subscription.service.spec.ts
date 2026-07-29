@@ -72,6 +72,7 @@ describe('calendar sync subscription helpers', () => {
     const subscription: {
       handle: number;
       isActive: boolean;
+      provider: 'azure';
       syncRange: 'week';
       person: {
         handle: number;
@@ -83,6 +84,7 @@ describe('calendar sync subscription helpers', () => {
     } = {
       handle: 7,
       isActive: true,
+      provider: 'azure',
       syncRange: 'week',
       person: {
         handle: 3,
@@ -115,6 +117,7 @@ describe('calendar sync subscription helpers', () => {
     const service = new CalendarSyncSubscriptionService(
       em as never,
       azureCalendarService as never,
+      { importEvents: jest.fn() } as never,
       { add: jest.fn() } as never,
     );
 
@@ -129,5 +132,61 @@ describe('calendar sync subscription helpers', () => {
     );
     expect(subscription.lastError).toBeNull();
     expect(subscription.lastImportedCount).toBe(2);
+  });
+
+  it('dispatches automatic Google imports to the Google calendar service', async () => {
+    const subscription = {
+      handle: 8,
+      isActive: true,
+      provider: 'google' as const,
+      syncRange: 'day' as const,
+      person: {
+        handle: 4,
+        isActive: true,
+        type: { handle: 'google' },
+      },
+      lastError: undefined as string | null | undefined,
+      lastImportedCount: undefined as number | undefined,
+    };
+    const em = {
+      fork: () => em,
+      findOne: jest.fn(() => Promise.resolve(subscription)),
+      flush: jest.fn(() => Promise.resolve(undefined)),
+    };
+    const googleCalendarService = {
+      importEvents: jest
+        .fn<
+          (...args: unknown[]) => Promise<{
+            imported: number;
+            created: number;
+            updated: number;
+            skipped: number;
+          }>
+        >()
+        .mockResolvedValue({
+          imported: 3,
+          created: 2,
+          updated: 1,
+          skipped: 0,
+        }),
+    };
+    const service = new CalendarSyncSubscriptionService(
+      em as never,
+      { importEvents: jest.fn() } as never,
+      googleCalendarService as never,
+      { add: jest.fn() } as never,
+    );
+
+    await service.executeSubscriptionImport(8);
+
+    expect(googleCalendarService.importEvents).toHaveBeenCalledWith(
+      subscription.person,
+      expect.objectContaining({
+        startDateTime: expect.any(Date),
+        endDateTime: expect.any(Date),
+      }),
+    );
+    expect(subscription.lastError).toBeNull();
+    expect(subscription.lastImportedCount).toBe(3);
   });
 });

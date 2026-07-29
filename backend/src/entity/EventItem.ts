@@ -21,6 +21,7 @@ import { EventGoogleItem } from './EventGoogleItem';
 import { SalesOpportunityItem } from './SalesOpportunityItem';
 import { type Rel } from '@mikro-orm/core';
 import { CompanyItem } from './CompanyItem';
+import { EventCategoryItem } from './EventCategoryItem';
 
 /**
  * @class
@@ -39,7 +40,8 @@ import { CompanyItem } from './CompanyItem';
  * @property        {Date}                  endDate             End date and time of the event
  * @property        {boolean}               isAllDay            Indicates if the event lasts all day
  * @property        {string}                onlineMeetingURL    URL for the online meeting (optional)
- * @property        {EventTypeItem}         type                The type/category of the event
+ * @property        {EventTypeItem}         type                The appointment type of the event
+ * @property        {EventCategoryItem}     category            The business category of the event
  * @property        {TicketItem}            ticket              The ticket associated with this event (optional)
  * @property        {Collection<PersonItem>} participants       Persons participating in this event
  * @property        {SalesOpportunityItem}  salesOpportunity    Sales Opportunity related to this event (optional)
@@ -257,7 +259,7 @@ export class EventItem {
 
   // #region Properties: Relation
   /**
-   * The type/category of the event.
+   * The appointment type of the event.
    * @type {EventTypeItem}
    */
   @ApiPropertyOptional({ type: () => EventTypeItem })
@@ -275,9 +277,33 @@ export class EventItem {
   })
   @ManyToOne(() => EventTypeItem, {
     nullable: true,
+    default: 'online',
     deleteRule: 'set null',
   })
   type?: EventTypeItem | null;
+
+  /**
+   * The business category of the event.
+   * @type {EventCategoryItem}
+   */
+  @ApiProperty({ type: () => EventCategoryItem })
+  @Sapling(['isChip'])
+  @SaplingForm({
+    order: 250,
+    group: 'event.groupBasics',
+    groupOrder: 100,
+    width: 1,
+    visible: true,
+    tableOrder: 250,
+    tableVisible: true,
+    mobileOrder: 250,
+    mobileVisible: false,
+  })
+  @ManyToOne(() => EventCategoryItem, {
+    nullable: false,
+    default: 'internal',
+  })
+  category!: Rel<EventCategoryItem>;
 
   /**
    * Email address of the person who created the ticket.

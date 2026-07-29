@@ -39,6 +39,7 @@ import { CurrentEntityMetadataDto } from './dto/current-entity-metadata.dto';
 import { CalendarSyncSubscriptionService } from '../../calendar/sync/calendar-sync-subscription.service';
 import {
   CalendarSyncSubscriptionDto,
+  OutlookCalendarCategoryDto,
   UpdateCalendarSyncSubscriptionDto,
 } from '../../calendar/sync/dto/calendar-sync-subscription.dto';
 import type {
@@ -467,7 +468,7 @@ export class CurrentController {
   @ApiOperation({
     summary: 'Get current user calendar synchronization settings',
     description:
-      'Returns the Outlook automatic import settings for the authenticated user.',
+      'Returns the Outlook or Google automatic import and classification mapping settings for the authenticated user.',
   })
   @ApiResponse({
     status: 200,
@@ -481,11 +482,30 @@ export class CurrentController {
     return this.getCalendarSyncService().getCurrentSubscription(user);
   }
 
+  @Get('calendarSync/outlookCategories')
+  @ApiOperation({
+    summary: 'Get current user Outlook master categories',
+    description:
+      'Returns the display names and colors of the Outlook master categories available to the authenticated Microsoft user.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Outlook master categories for the current user.',
+    type: OutlookCalendarCategoryDto,
+    isArray: true,
+  })
+  getOutlookCalendarCategories(
+    @Req() req: Request,
+  ): Promise<OutlookCalendarCategoryDto[]> {
+    const user = req.user as PersonItem;
+    return this.getCalendarSyncService().getCurrentOutlookCategories(user);
+  }
+
   @Patch('calendarSync')
   @ApiOperation({
     summary: 'Update current user calendar synchronization settings',
     description:
-      'Creates or updates the Outlook automatic import subscription for the authenticated user.',
+      'Creates or updates the Outlook or Google automatic import and classification mapping subscription for the authenticated user.',
   })
   @ApiBody({ type: UpdateCalendarSyncSubscriptionDto })
   @ApiResponse({

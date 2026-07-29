@@ -33,6 +33,7 @@ type CalendarDeliveryPayload = {
 type ResolvedCalendarSession = {
   accessToken?: string;
   refreshToken?: string;
+  personHandle?: number;
   session?: PersonSessionItem | null;
 };
 
@@ -66,9 +67,11 @@ async function resolveSessionTokens(
   payload: CalendarDeliveryPayload,
 ): Promise<ResolvedCalendarSession> {
   if (typeof payload.sessionHandle === 'number') {
-    const session = await em.findOne(PersonSessionItem, {
-      handle: payload.sessionHandle,
-    });
+    const session = await em.findOne(
+      PersonSessionItem,
+      { handle: payload.sessionHandle },
+      { populate: ['person'] },
+    );
 
     if (!session) {
       throw new Error('calendar.sessionNotFound');
@@ -76,6 +79,7 @@ async function resolveSessionTokens(
 
     return {
       session,
+      personHandle: session.person?.handle,
       accessToken: session.accessToken,
       refreshToken: session.refreshToken,
     };
@@ -185,6 +189,7 @@ export class CalendarDeliveryExecutor {
         provider,
         eventHandle,
         accessToken,
+        sessionContext.personHandle,
       );
 
       if (await this.persistSuccess(em, delivery, providerResponse)) {
@@ -283,12 +288,21 @@ export class CalendarDeliveryExecutor {
     provider: CalendarProvider,
     eventHandle: number,
     accessToken: string,
+    personHandle?: number,
   ): Promise<unknown> {
     if (provider === 'google') {
-      return this.googleCalendarService.setEvent(eventHandle, accessToken);
+      return this.googleCalendarService.setEvent(
+        eventHandle,
+        accessToken,
+        personHandle,
+      );
     }
 
-    return this.azureCalendarService.setEvent(eventHandle, accessToken);
+    return this.azureCalendarService.setEvent(
+      eventHandle,
+      accessToken,
+      personHandle,
+    );
   }
 
   private async persistFailureWithFallback(
@@ -390,6 +404,7 @@ export class CalendarDeliveryExecutor {
         provider,
         eventHandle,
         refreshedToken,
+        sessionContext.personHandle,
       );
 
       const persisted = await this.persistSuccess(

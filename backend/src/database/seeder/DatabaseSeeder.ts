@@ -27,6 +27,7 @@ import { TicketPriorityItem } from '../../entity/TicketPriorityItem';
 import { TicketStatusItem } from '../../entity/TicketStatusItem';
 import { NoteGroupItem } from '../../entity/NoteGroupItem';
 import { EventTypeItem } from '../../entity/EventTypeItem';
+import { EventCategoryItem } from '../../entity/EventCategoryItem';
 import { TicketItem } from '../../entity/TicketItem';
 import { EventItem } from '../../entity/EventItem';
 import { EventDeliveryStatusItem } from '../../entity/EventDeliveryStatusItem';
@@ -186,6 +187,7 @@ const SEED_ORDER: Array<EntityName<object> | (new () => Seeder)> = [
   EventStatusItem,
   EventDeliveryStatusItem,
   EventTypeItem,
+  EventCategoryItem,
   HolidayItem,
   ContractServiceItem,
   ContractItem,

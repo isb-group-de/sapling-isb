@@ -19,12 +19,28 @@ export interface CurrentEntityMetadataResponse<TEntity = unknown, TTemplate = un
   entityTemplates: TTemplate[]
 }
 
+export interface CalendarClassificationMapping {
+  externalValue: string
+  eventTypeHandle?: string | null
+  eventCategoryHandle?: string | null
+}
+
+export interface OutlookCalendarCategory {
+  displayName: string
+  id?: string
+  color?: string
+}
+
 export interface CalendarSyncSubscription {
   handle?: number
   isAvailable: boolean
+  provider: 'azure' | 'google'
   isActive: boolean
   syncRange: 'day' | 'week' | 'month'
   intervalMinutes: number
+  defaultEventTypeHandle: string
+  defaultEventCategoryHandle: string
+  classificationMappings: CalendarClassificationMapping[]
   lastRunAt?: string | Date | null
   lastSuccessAt?: string | Date | null
   lastError?: string | null
@@ -38,6 +54,9 @@ export interface UpdateCalendarSyncSubscriptionPayload {
   isActive: boolean
   syncRange: CalendarSyncSubscription['syncRange']
   intervalMinutes: number
+  defaultEventTypeHandle: string
+  defaultEventCategoryHandle: string
+  classificationMappings: CalendarClassificationMapping[]
 }
 
 export interface CurrentSessionDto {
@@ -80,6 +99,10 @@ class ApiCurrentService {
 
   static async getCalendarSync(): Promise<CalendarSyncSubscription> {
     return this.get<CalendarSyncSubscription>('calendarSync')
+  }
+
+  static async getOutlookCalendarCategories(): Promise<OutlookCalendarCategory[]> {
+    return this.get<OutlookCalendarCategory[]>('calendarSync/outlookCategories')
   }
 
   static async updateCalendarSync(

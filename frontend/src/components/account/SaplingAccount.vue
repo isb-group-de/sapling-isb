@@ -315,6 +315,107 @@
                           {{ $t('calendarSyncSubscription.save') }}
                         </v-btn>
                       </div>
+                      <v-divider />
+                      <div class="sapling-account-dialog__section-heading">
+                        <v-icon color="primary">mdi-tune-variant</v-icon>
+                        <span>{{ $t('calendarSyncSubscription.classificationMapping') }}</span>
+                      </div>
+                      <p class="text-body-2 text-medium-emphasis">
+                        {{
+                          $t(
+                            calendarSync.provider === 'google'
+                              ? 'calendarSyncSubscription.googleMappingHint'
+                              : 'calendarSyncSubscription.azureMappingHint',
+                          )
+                        }}
+                      </p>
+                      <div class="sapling-account-dialog__sync-defaults">
+                        <SaplingStaticSelect
+                          v-model="calendarSync.defaultEventTypeHandle"
+                          :items="calendarSyncEventTypeOptions"
+                          :label="$t('calendarSyncSubscription.defaultEventType')"
+                        />
+                        <SaplingStaticSelect
+                          v-model="calendarSync.defaultEventCategoryHandle"
+                          :items="calendarSyncEventCategoryOptions"
+                          :label="$t('calendarSyncSubscription.defaultEventCategory')"
+                        />
+                      </div>
+                      <div
+                        v-if="calendarSync.provider === 'azure'"
+                        class="sapling-account-dialog__mapping-import"
+                      >
+                        <v-btn
+                          variant="tonal"
+                          prepend-icon="mdi-microsoft-outlook"
+                          :loading="isOutlookCalendarCategoriesLoading"
+                          @click="loadOutlookCalendarCategories"
+                        >
+                          {{ $t('calendarSyncSubscription.loadOutlookCategories') }}
+                        </v-btn>
+                        <span class="text-caption text-medium-emphasis">
+                          {{ $t('calendarSyncSubscription.loadOutlookCategoriesHint') }}
+                        </span>
+                      </div>
+                      <div class="sapling-account-dialog__mapping-list">
+                        <div
+                          v-for="(mapping, index) in calendarSync.classificationMappings"
+                          :key="index"
+                          class="sapling-account-dialog__mapping-row"
+                        >
+                          <v-select
+                            v-if="calendarSync.provider === 'google'"
+                            v-model="mapping.externalValue"
+                            :items="googleCalendarColorOptions"
+                            :label="$t('calendarSyncSubscription.externalValue')"
+                            density="comfortable"
+                            variant="outlined"
+                            hide-details
+                          />
+                          <v-combobox
+                            v-else
+                            v-model="mapping.externalValue"
+                            :items="outlookCalendarCategoryOptions"
+                            :label="$t('calendarSyncSubscription.externalValue')"
+                            density="comfortable"
+                            variant="outlined"
+                            hide-details
+                          />
+                          <v-select
+                            v-model="mapping.eventTypeHandle"
+                            :items="calendarSyncEventTypeOptions"
+                            :label="$t('calendarSyncSubscription.eventType')"
+                            density="comfortable"
+                            variant="outlined"
+                            clearable
+                            hide-details
+                          />
+                          <v-select
+                            v-model="mapping.eventCategoryHandle"
+                            :items="calendarSyncEventCategoryOptions"
+                            :label="$t('calendarSyncSubscription.eventCategory')"
+                            density="comfortable"
+                            variant="outlined"
+                            clearable
+                            hide-details
+                          />
+                          <v-btn
+                            icon="mdi-delete-outline"
+                            variant="text"
+                            color="error"
+                            :aria-label="$t('calendarSyncSubscription.removeMapping')"
+                            @click="removeCalendarClassificationMapping(index)"
+                          />
+                        </div>
+                        <v-btn
+                          variant="tonal"
+                          prepend-icon="mdi-plus"
+                          class="sapling-account-dialog__mapping-add"
+                          @click="addCalendarClassificationMapping"
+                        >
+                          {{ $t('calendarSyncSubscription.addMapping') }}
+                        </v-btn>
+                      </div>
                       <v-list density="compact" class="sapling-account-dialog__sync-list">
                         <v-list-item v-for="detail in calendarSyncDetails" :key="detail.key">
                           <div class="sapling-account-dialog__detail-row">
@@ -505,7 +606,12 @@ const {
   calendarSyncRangeOptions,
   calendarSyncIntervalOptions,
   calendarSyncDetails,
+  calendarSyncEventTypeOptions,
+  calendarSyncEventCategoryOptions,
+  googleCalendarColorOptions,
+  outlookCalendarCategoryOptions,
   isCalendarSyncSaving,
+  isOutlookCalendarCategoriesLoading,
   currentLanguage,
   languageOptions,
   appearanceActions,
@@ -525,6 +631,9 @@ const {
   changePassword,
   saveProfile,
   saveCalendarSync,
+  loadOutlookCalendarCategories,
+  addCalendarClassificationMapping,
+  removeCalendarClassificationMapping,
   saveNotificationPreferenceSelection,
   loadCurrentSessions,
   terminateOtherSessions,

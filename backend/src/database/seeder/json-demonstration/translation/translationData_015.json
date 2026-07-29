@@ -1,0 +1,194 @@
+[
+  {
+    "entity": "navigation",
+    "property": "eventType",
+    "de": "Terminarten",
+    "en": "Appointment types"
+  },
+  {
+    "entity": "navigation",
+    "property": "eventCategory",
+    "de": "Terminkategorien",
+    "en": "Appointment categories"
+  },
+  {
+    "entity": "event",
+    "property": "type",
+    "de": "Terminart",
+    "en": "Appointment type"
+  },
+  {
+    "entity": "event",
+    "property": "category",
+    "de": "Kategorie",
+    "en": "Category"
+  },
+  {
+    "entity": "eventCategory",
+    "property": "handle",
+    "de": "Kennung",
+    "en": "Handle"
+  },
+  {
+    "entity": "eventCategory",
+    "property": "title",
+    "de": "Titel",
+    "en": "Title"
+  },
+  {
+    "entity": "eventCategory",
+    "property": "icon",
+    "de": "Icon",
+    "en": "Icon"
+  },
+  {
+    "entity": "eventCategory",
+    "property": "color",
+    "de": "Farbe",
+    "en": "Color"
+  },
+  {
+    "entity": "eventCategory",
+    "property": "events",
+    "de": "Termine",
+    "en": "Appointments"
+  },
+  {
+    "entity": "eventCategory",
+    "property": "createdAt",
+    "de": "Erstellt am",
+    "en": "Created at"
+  },
+  {
+    "entity": "eventCategory",
+    "property": "updatedAt",
+    "de": "Aktualisiert am",
+    "en": "Updated at"
+  },
+  {
+    "entity": "eventCategory",
+    "property": "groupBasics",
+    "de": "Grundlagen",
+    "en": "Basics"
+  },
+  {
+    "entity": "eventCategory",
+    "property": "groupAppearance",
+    "de": "Darstellung",
+    "en": "Appearance"
+  },
+  {
+    "entity": "calendarSyncSubscription",
+    "property": "classificationMapping",
+    "de": "Zuordnung von Terminart und Kategorie",
+    "en": "Appointment type and category mapping"
+  },
+  {
+    "entity": "calendarSyncSubscription",
+    "property": "azureMappingHint",
+    "de": "Outlook-Kategorien können jeweils einer Terminart, einer Kategorie oder einer Kombination zugeordnet werden.",
+    "en": "Outlook categories can be mapped to an appointment type, a category, or a combination."
+  },
+  {
+    "entity": "calendarSyncSubscription",
+    "property": "googleMappingHint",
+    "de": "Google-Farben können einer Terminart und Kategorie zugeordnet werden. Von Sapling angelegte Termine behalten zusätzlich ihre exakte Zuordnung.",
+    "en": "Google colors can be mapped to an appointment type and category. Events created by Sapling additionally retain their exact classification."
+  },
+  {
+    "entity": "calendarSyncSubscription",
+    "property": "defaultEventType",
+    "de": "Standard-Terminart",
+    "en": "Default appointment type"
+  },
+  {
+    "entity": "calendarSyncSubscription",
+    "property": "defaultEventCategory",
+    "de": "Standardkategorie",
+    "en": "Default category"
+  },
+  {
+    "entity": "calendarSyncSubscription",
+    "property": "externalValue",
+    "de": "Outlook-Kategorie / Google-Farbe",
+    "en": "Outlook category / Google color"
+  },
+  {
+    "entity": "calendarSyncSubscription",
+    "property": "eventType",
+    "de": "Terminart",
+    "en": "Appointment type"
+  },
+  {
+    "entity": "calendarSyncSubscription",
+    "property": "eventCategory",
+    "de": "Kategorie",
+    "en": "Category"
+  },
+  {
+    "entity": "calendarSyncSubscription",
+    "property": "addMapping",
+    "de": "Zuordnung hinzufügen",
+    "en": "Add mapping"
+  },
+  {
+    "entity": "calendarSyncSubscription",
+    "property": "removeMapping",
+    "de": "Zuordnung entfernen",
+    "en": "Remove mapping"
+  },
+  {
+    "entity": "calendarSyncSubscription",
+    "property": "googleColor",
+    "de": "Google-Farbe {id}",
+    "en": "Google color {id}"
+  },
+  {
+    "entity": "calendarSyncSubscription",
+    "property": "invalidGoogleColor",
+    "de": "Die Google-Farb-ID muss zwischen 1 und 11 liegen.",
+    "en": "The Google color ID must be between 1 and 11."
+  },
+  {
+    "entity": "calendarSyncSubscription",
+    "property": "eventTypeNotFound",
+    "de": "Die konfigurierte Terminart wurde nicht gefunden.",
+    "en": "The configured appointment type was not found."
+  },
+  {
+    "entity": "calendarSyncSubscription",
+    "property": "eventCategoryNotFound",
+    "de": "Die konfigurierte Kategorie wurde nicht gefunden.",
+    "en": "The configured category was not found."
+  },
+  {
+    "entity": "calendarSyncSubscription",
+    "property": "loadOutlookCategories",
+    "de": "Outlook-Kategorien laden",
+    "en": "Load Outlook categories"
+  },
+  {
+    "entity": "calendarSyncSubscription",
+    "property": "loadOutlookCategoriesHint",
+    "de": "Fehlende Outlook-Kategorien werden als neue Zuordnungszeilen ergänzt.",
+    "en": "Missing Outlook categories are added as new mapping rows."
+  },
+  {
+    "entity": "calendarSyncSubscription",
+    "property": "outlookCategoriesLoaded",
+    "de": "Die Outlook-Kategorien wurden geladen.",
+    "en": "The Outlook categories were loaded."
+  },
+  {
+    "entity": "calendarSyncSubscription",
+    "property": "outlookCategoryPermissionMissing",
+    "de": "Zum Laden der Outlook-Kategorien muss das Microsoft-Konto mit der Berechtigung MailboxSettings.Read erneut verbunden werden.",
+    "en": "To load Outlook categories, reconnect the Microsoft account with the MailboxSettings.Read permission."
+  },
+  {
+    "entity": "calendar",
+    "property": "calendarUserRequired",
+    "de": "Die Kalendersynchronisation erfordert ein verbundenes Outlook- oder Google-Konto.",
+    "en": "Calendar synchronization requires a connected Outlook or Google account."
+  }
+]

@@ -1,6 +1,7 @@
 import type { CalendarEvent } from 'vuetify/lib/components/VCalendar/types.mjs'
 import type {
   CompanyItem,
+  EventCategoryItem,
   EventItem,
   EventStatusItem,
   EventTypeItem,
@@ -57,7 +58,8 @@ export type EditableEventPayload = Omit<
 
 export const DEFAULT_EVENT_COLOR = '#2196F3'
 export const DEFAULT_HOLIDAY_COLOR = '#C62828'
-export const DEFAULT_EVENT_TYPE_HANDLE = 'internal'
+export const DEFAULT_EVENT_CATEGORY_HANDLE = 'internal'
+export const DEFAULT_EVENT_TYPE_HANDLE = 'online'
 export const DEFAULT_EVENT_STATUS_HANDLE = 'scheduled'
 
 const WORKWEEK_DAYS = [1, 2, 3, 4, 5]
@@ -395,6 +397,7 @@ export function buildDraftEventPayload(
   selectedPeople: number[],
   defaultType?: EventTypeItem | null,
   defaultStatus?: EventStatusItem | null,
+  defaultCategory?: EventCategoryItem | null,
 ): EditableEventPayload {
   const startDateParts = getEventDateParts(event.start)
   const endDateParts = getEventDateParts(event.end)
@@ -411,6 +414,7 @@ export function buildDraftEventPayload(
     participants,
     type: defaultType ?? undefined,
     status: defaultStatus ?? undefined,
+    category: defaultCategory ?? undefined,
     startDate_date: startDateParts.date,
     startDate_time: startDateParts.time,
     endDate_date: endDateParts.date,

@@ -1,6 +1,10 @@
 import { i18n } from '@/i18n'
 import type { AiProviderModelItem, AiProviderTypeItem } from '@/entity/entity'
-import type { CalendarSyncSubscription } from '@/services/api.current.service'
+import type {
+  CalendarClassificationMapping,
+  CalendarSyncSubscription,
+  OutlookCalendarCategory,
+} from '@/services/api.current.service'
 
 export interface AccountDetailItem {
   key: string
@@ -108,6 +112,34 @@ export function formatCalendarSyncResult(subscription?: CalendarSyncSubscription
   }
 
   return `${subscription.lastImportedCount} / ${subscription.lastCreatedCount} / ${subscription.lastUpdatedCount} / ${subscription.lastSkippedCount}`
+}
+
+export function appendMissingOutlookCategoryMappings(
+  mappings: CalendarClassificationMapping[],
+  categories: OutlookCalendarCategory[],
+): number {
+  const existingNames = new Set(
+    mappings.map((mapping) => mapping.externalValue.trim().toLowerCase()),
+  )
+  let added = 0
+
+  for (const category of categories) {
+    const displayName = category.displayName.trim()
+    const normalizedName = displayName.toLowerCase()
+    if (!displayName || existingNames.has(normalizedName)) {
+      continue
+    }
+
+    mappings.push({
+      externalValue: displayName,
+      eventTypeHandle: null,
+      eventCategoryHandle: null,
+    })
+    existingNames.add(normalizedName)
+    added += 1
+  }
+
+  return added
 }
 
 export function mapProviderOptions(providers: AiProviderTypeItem[]): AccountSelectOption<string>[] {

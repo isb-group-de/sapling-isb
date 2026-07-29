@@ -144,6 +144,7 @@ export class AiVectorDocumentBuilderService {
         title,
         status: relationLabel(event.status, 'description'),
         type: relationLabel(event.type, 'description', 'title', 'handle'),
+        category: relationLabel(event.category, 'title', 'handle'),
         startDate: formatVectorDate(event.startDate),
         endDate: formatVectorDate(event.endDate),
         assigneeCompany: companyLabel(event.assigneeCompany),

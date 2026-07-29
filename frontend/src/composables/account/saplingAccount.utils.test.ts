@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { AiProviderModelItem, AiProviderTypeItem } from '@/entity/entity'
 import {
+  appendMissingOutlookCategoryMappings,
   calculateAge,
   getCurrentWeekday,
   mapModelOptions,
@@ -29,6 +30,42 @@ describe('saplingAccount utils', () => {
     expect(normalizeHandle('  model-1 ')).toBe('model-1')
     expect(normalizeHandle('   ')).toBeNull()
     expect(normalizeHandle(42)).toBeNull()
+  })
+
+  it('adds missing Outlook categories as unassigned mapping rows', () => {
+    const mappings = [
+      {
+        externalValue: 'Support',
+        eventTypeHandle: 'review',
+        eventCategoryHandle: 'support',
+      },
+    ]
+
+    expect(
+      appendMissingOutlookCategoryMappings(mappings, [
+        { displayName: ' support ' },
+        { displayName: 'Projekt' },
+        { displayName: ' Vertrieb ' },
+        { displayName: '' },
+      ]),
+    ).toBe(2)
+    expect(mappings).toEqual([
+      {
+        externalValue: 'Support',
+        eventTypeHandle: 'review',
+        eventCategoryHandle: 'support',
+      },
+      {
+        externalValue: 'Projekt',
+        eventTypeHandle: null,
+        eventCategoryHandle: null,
+      },
+      {
+        externalValue: 'Vertrieb',
+        eventTypeHandle: null,
+        eventCategoryHandle: null,
+      },
+    ])
   })
 
   it('returns bounded weekday and age projections', () => {

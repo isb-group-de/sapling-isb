@@ -1,0 +1,13 @@
+[
+  {
+    "handle": "eventCategory",
+    "icon": "mdi-shape-outline",
+    "canShow": true,
+    "group": "event",
+    "order": 35,
+    "canRead": true,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  }
+]

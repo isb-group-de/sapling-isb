@@ -1,5 +1,9 @@
 import { EventItem } from '../../entity/EventItem';
 import { buildAzureRecurrence } from '../calendar.recurrence';
+import {
+  type CalendarClassificationMapping,
+  resolveOutboundCalendarValues,
+} from '../calendar-classification.utils';
 
 export type ImportAzureCalendarEventsRange = {
   startDateTime: Date;
@@ -28,12 +32,30 @@ export type AzureGraphCalendarEvent = {
   isAllDay?: boolean | null;
   isCancelled?: boolean | null;
   attendees?: AzureGraphAttendee[] | null;
+  categories?: string[] | null;
   onlineMeetingUrl?: string | null;
   onlineMeeting?: { joinUrl?: string | null } | null;
 };
 
 export type AzureCalendarViewResponse = {
   value?: AzureGraphCalendarEvent[];
+  '@odata.nextLink'?: string;
+};
+
+export type AzureOutlookCategory = {
+  id?: string;
+  displayName?: string;
+  color?: string;
+};
+
+export type AzureOutlookMasterCategory = {
+  id?: string;
+  displayName: string;
+  color?: string;
+};
+
+export type AzureOutlookCategoriesResponse = {
+  value?: AzureOutlookCategory[];
   '@odata.nextLink'?: string;
 };
 
@@ -60,6 +82,17 @@ export function isAzureAuthenticationError(error: unknown): boolean {
   const message =
     typeof error.message === 'string' ? error.message.toLowerCase() : '';
   return /token|auth|unauthorized|forbidden/.test(message);
+}
+
+export function isAzureForbiddenError(error: unknown): boolean {
+  if (!isRecord(error)) {
+    return false;
+  }
+
+  return (
+    error.statusCode === 403 ||
+    (isRecord(error.response) && error.response.status === 403)
+  );
 }
 
 export function normalizeAzureDateTime(
@@ -94,7 +127,12 @@ export function normalizeAzureEmail(
 
 export function buildAzureCalendarEvent(
   event: EventItem,
+  classificationMappings?: CalendarClassificationMapping[] | null,
 ): Record<string, unknown> {
+  const categories = resolveOutboundCalendarValues(
+    event,
+    classificationMappings,
+  );
   const eventResource: Record<string, unknown> = {
     subject: event.title,
     start: { dateTime: event.startDate.toISOString(), timeZone: 'UTC' },
@@ -108,6 +146,10 @@ export function buildAzureCalendarEvent(
       type: 'required',
     })),
   };
+
+  if (categories.length > 0) {
+    eventResource.categories = categories;
+  }
 
   if (event.type?.handle === 'online' && !event.onlineMeetingURL) {
     eventResource.isOnlineMeeting = true;

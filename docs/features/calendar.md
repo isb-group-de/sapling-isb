@@ -7,6 +7,7 @@ Sapling calendar events are normal metadata-driven entities with an additional d
 ```text
 backend/src/entity/EventItem.ts
 backend/src/entity/EventTypeItem.ts
+backend/src/entity/EventCategoryItem.ts
 backend/src/entity/EventStatusItem.ts
 backend/src/entity/EventDeliveryItem.ts
 backend/src/entity/EventDeliveryStatusItem.ts
@@ -37,25 +38,26 @@ frontend/src/utils/__tests__/eventRecurrence.test.ts
 
 Important fields:
 
-| Field                               | Meaning                                                                                         |
-| ----------------------------------- | ----------------------------------------------------------------------------------------------- |
-| `title`                             | Display title and primary value                                                                 |
-| `description`                       | Markdown description; also part of AI vectorization                                             |
-| `startDate`, `endDate`              | Event time range                                                                                |
-| `isAllDay`                          | Marks all-day events                                                                            |
-| `isPrivate`                         | Marks owner-only events, including Outlook events imported with private sensitivity             |
-| `recurrenceRule`                    | Optional RRULE string for recurring events                                                      |
-| `preparationDuration`               | Optional preparation block duration in 15-minute increments; defaults to `00:00`                |
-| `followUpDuration`                  | Optional follow-up block duration in 15-minute increments; defaults to `00:00`                  |
-| `onlineMeetingURL`                  | Optional meeting link                                                                           |
-| `type`                              | Event category; controls default-calendar behavior                                              |
-| `status`                            | Current event status; `EventStatusItem.isOpen` controls the default open-status calendar filter |
-| `assigneeCompany`, `assigneePerson` | Internal owner                                                                                  |
-| `creatorCompany`, `creatorPerson`   | Creator context                                                                                 |
-| `ticket`                            | Optional ticket relation                                                                        |
-| `salesOpportunity`                  | Optional sales opportunity relation                                                             |
-| `participants`                      | Person collection for attendees                                                                 |
-| `azure`, `google`                   | External calendar projection records                                                            |
+| Field                               | Meaning                                                                                          |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `title`                             | Display title and primary value                                                                  |
+| `description`                       | Markdown description; also part of AI vectorization                                              |
+| `startDate`, `endDate`              | Event time range                                                                                 |
+| `isAllDay`                          | Marks all-day events                                                                             |
+| `isPrivate`                         | Marks owner-only events, including Outlook events imported with private sensitivity              |
+| `recurrenceRule`                    | Optional RRULE string for recurring events                                                       |
+| `preparationDuration`               | Optional preparation block duration in 15-minute increments; defaults to `00:00`                 |
+| `followUpDuration`                  | Optional follow-up block duration in 15-minute increments; defaults to `00:00`                   |
+| `onlineMeetingURL`                  | Optional meeting link                                                                            |
+| `type`                              | Appointment type; defaults to `Online` and controls default-calendar and online-meeting behavior |
+| `category`                          | Business category combined with the appointment type; defaults to `Intern`                       |
+| `status`                            | Current event status; `EventStatusItem.isOpen` controls the default open-status calendar filter  |
+| `assigneeCompany`, `assigneePerson` | Internal owner                                                                                   |
+| `creatorCompany`, `creatorPerson`   | Creator context                                                                                  |
+| `ticket`                            | Optional ticket relation                                                                         |
+| `salesOpportunity`                  | Optional sales opportunity relation                                                              |
+| `participants`                      | Person collection for attendees                                                                  |
+| `azure`, `google`                   | External calendar projection records                                                             |
 
 ### Preparation And Follow-Up Blocks
 
@@ -75,7 +77,7 @@ Google calendar delivery continues to synchronize only the main `EventItem`;
 the derived placeholders do not create deliveries, invitations, notifications,
 or external calendar entries.
 
-`EventTypeItem.showInDefaultCalendar` is important for delivery. If it is `false`, the event stays in Sapling and is not queued for external default-calendar synchronization.
+`EventTypeItem.showInDefaultCalendar` is important for delivery. If it is `false`, the event stays in Sapling and is not queued for external default-calendar synchronization. `EventCategoryItem` is independent of delivery behavior and classifies the business context, for example `Support` together with the type `Review`.
 
 ## Recurrence Contract
 
@@ -139,26 +141,32 @@ provider's response normalization and outbound event mapping explicit and
 independently testable; they intentionally do not force unlike provider payloads
 through one shared abstraction.
 
-Existing Sapling events are updated and unknown provider items are created as internal scheduled events for the current user. Known attendee email addresses are linked as participants when matching `PersonItem` records exist. The current user is always added as a participant so imported events appear in their calendar filter.
+Existing Sapling events are updated and unknown provider items are created with the user's configured default type (`online` by default) and category (`internal` by default). Known attendee email addresses are linked as participants when matching `PersonItem` records exist. The current user is always added as a participant so imported events appear in their calendar filter.
 
 Outlook events whose Microsoft Graph `sensitivity` is `private` are imported with `EventItem.isPrivate = true`. Sapling still stores the full event details for the importing owner, but generic Event reads, exports, relation mutations, updates, deletes, KPIs, and timeline anchor loads must only expose private events when `creatorPerson` is the current user. Non-private events keep the normal Event permission behavior.
 
-This import is intentionally user-triggered. It does not require provider webhooks and relies on the existing Microsoft or Google login scopes instead of a separate calendar-only setup.
+The manual endpoints are user-triggered; optional polling reuses the same import services. Neither mode requires provider webhooks, and both rely on the existing Microsoft or Google login scopes instead of a separate calendar-only setup.
 
-## Automatic Outlook Import
+## Automatic Calendar Import and Classification
 
-Automatic Outlook polling is configured per user through `CalendarSyncSubscriptionItem`. The account dialog exposes the current user's subscription through:
+Automatic Outlook or Google polling is configured per user through `CalendarSyncSubscriptionItem`. The account dialog exposes the current user's subscription through:
 
 ```text
 GET /api/current/calendarSync
 PATCH /api/current/calendarSync
 ```
 
-The subscription stores whether automatic import is active, the import range (`day`, `week`, or `month`), the polling interval in minutes, and the latest run/result metadata. Tokens remain in `PersonSessionItem`; the subscription only references the person.
+The subscription stores the connected provider, whether automatic import is active, the import range (`day`, `week`, or `month`), the polling interval in minutes, and the latest run/result metadata. Tokens remain in `PersonSessionItem`; the subscription only references the person.
 
-When Redis is enabled, `CalendarSyncModule` registers a BullMQ `calendar-sync` queue. On startup it adds a repeatable `schedule-calendar-imports` job, which finds due active Outlook subscriptions and enqueues one `import-calendar-for-subscription` job per user. Each import job calls the same `AzureCalendarService.importEvents()` path as the manual Outlook button. When Redis is disabled, automatic import is not scheduled.
+When Redis is enabled, `CalendarSyncModule` registers a BullMQ `calendar-sync` queue. On startup it adds a repeatable `schedule-calendar-imports` job, which finds due active subscriptions and enqueues one `import-calendar-for-subscription` job per user. Each import job dispatches to the same Azure or Google import path as the corresponding manual import button. When Redis is disabled, automatic import is not scheduled.
 
-Private Outlook events use the same automatic import path as manual imports, so privacy behavior is identical for both flows. Existing imported records are not retroactively reclassified unless a later Outlook import updates the matching event.
+The account dialog also configures fallback type/category values and provider classification mappings:
+
+- Outlook maps its native category names to a Sapling event type, category, or both. The account dialog can load `/me/outlook/masterCategories` and add missing display names as mapping rows; this requires the delegated `MailboxSettings.Read` scope. Matching names are written back to Outlook when Sapling creates or updates the event.
+- Google maps calendar color IDs (`1` through `11`) to a Sapling event type, category, or both. Sapling-created Google events additionally carry the exact handles in private `extendedProperties`, so a later import does not lose the classification even when a color represents only one combined mapping.
+- Provider items without a matching mapping use the configured defaults. Existing linked events are reclassified when a later import reads them again.
+
+Private Outlook events use the same automatic import path as manual imports, so privacy behavior is identical for both flows.
 
 ## Frontend Behavior
 

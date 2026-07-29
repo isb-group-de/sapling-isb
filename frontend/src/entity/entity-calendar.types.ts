@@ -116,8 +116,10 @@ export interface EventItem extends SaplingGenericItem {
   followUpDuration?: string
   /** URL for the online meeting (optional) */
   onlineMeetingURL?: string
-  /** The type/category of the event */
+  /** The appointment type of the event */
   type?: EventTypeItem | null
+  /** The business category of the event */
+  category?: EventCategoryItem | null
   /** The ticket associated with this event (optional) */
   ticket?: TicketItem
   /** Persons participating in this event */
@@ -203,11 +205,11 @@ export interface EventStatusItem extends SaplingGenericItem {
 }
 
 /**
- * Represents an event type or category entity.
+ * Represents an event appointment type entity.
  */
 export interface EventTypeItem extends SaplingGenericItem {
   /** Unique identifier for the event type */
-  handle: number | null
+  handle: string
   /** Title or name of the event type */
   title: string
   /** Icon representing the event type */
@@ -223,6 +225,26 @@ export interface EventTypeItem extends SaplingGenericItem {
   /** Date and time when the event type was created */
   createdAt: Date | null
   /** Date and time when the event type was last updated */
+  updatedAt?: Date | null
+}
+
+/**
+ * Represents a business category that can be combined with an event type.
+ */
+export interface EventCategoryItem extends SaplingGenericItem {
+  /** Unique identifier for the event category */
+  handle: string
+  /** Title or name of the event category */
+  title: string
+  /** Icon representing the event category */
+  icon: string
+  /** Color used for displaying the event category */
+  color: string
+  /** Events belonging to this category */
+  events?: EventItem[]
+  /** Date and time when the category was created */
+  createdAt?: Date | null
+  /** Date and time when the category was last updated */
   updatedAt?: Date | null
 }
 

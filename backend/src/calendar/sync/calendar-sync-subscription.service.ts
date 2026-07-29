@@ -8,6 +8,7 @@ import { EntityManager } from '@mikro-orm/core';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { AzureCalendarService } from '../azure/azure.calendar.service';
+import { GoogleCalendarService } from '../google/google.calendar.service';
 import {
   CALENDAR_SYNC_SCHEDULER_INTERVAL_MS,
   REDIS_ENABLED,
@@ -15,14 +16,23 @@ import {
   REDIS_REMOVE_ON_FAIL,
 } from '../../constants/project.constants';
 import {
+  CalendarSyncProvider,
   CalendarSyncRange,
   CalendarSyncSubscriptionItem,
 } from '../../entity/CalendarSyncSubscriptionItem';
 import { PersonItem } from '../../entity/PersonItem';
+import { EventTypeItem } from '../../entity/EventTypeItem';
+import { EventCategoryItem } from '../../entity/EventCategoryItem';
 import {
   CalendarSyncSubscriptionDto,
+  OutlookCalendarCategoryDto,
   UpdateCalendarSyncSubscriptionDto,
 } from './dto/calendar-sync-subscription.dto';
+import {
+  DEFAULT_CALENDAR_EVENT_CATEGORY_HANDLE,
+  DEFAULT_CALENDAR_EVENT_TYPE_HANDLE,
+  normalizeCalendarClassificationMappings,
+} from '../calendar-classification.utils';
 
 type CalendarSyncRangeWindow = {
   startDateTime: Date;
@@ -97,6 +107,7 @@ export class CalendarSyncSubscriptionService implements OnModuleInit {
   constructor(
     private readonly em: EntityManager,
     private readonly azureCalendarService: AzureCalendarService,
+    private readonly googleCalendarService: GoogleCalendarService,
     @InjectQueue('calendar-sync') private readonly calendarSyncQueue: Queue,
   ) {}
 
@@ -128,8 +139,29 @@ export class CalendarSyncSubscriptionService implements OnModuleInit {
     const subscription = person
       ? await this.findOrCreateSubscription(em, person, false)
       : null;
+    const provider = this.getCalendarProvider(person);
 
-    return this.toDto(subscription, this.isAzureSyncAvailable(person));
+    return this.toDto(
+      subscription,
+      this.isCalendarSyncAvailable(person),
+      provider ?? 'azure',
+    );
+  }
+
+  async getCurrentOutlookCategories(
+    user: PersonItem,
+  ): Promise<OutlookCalendarCategoryDto[]> {
+    const em = this.em.fork();
+    const person = await this.loadPerson(em, user.handle);
+    if (
+      !person ||
+      this.getCalendarProvider(person) !== 'azure' ||
+      !person.session
+    ) {
+      throw new ForbiddenException('calendar.azureUserRequired');
+    }
+
+    return this.azureCalendarService.getMasterCategories(person);
   }
 
   async updateCurrentSubscription(
@@ -143,8 +175,12 @@ export class CalendarSyncSubscriptionService implements OnModuleInit {
       throw new BadRequestException('calendarSyncSubscription.personNotFound');
     }
 
-    if (!this.isAzureSyncAvailable(person)) {
-      throw new ForbiddenException('calendar.azureUserRequired');
+    if (!this.isCalendarSyncAvailable(person)) {
+      throw new ForbiddenException('calendar.calendarUserRequired');
+    }
+    const provider = this.getCalendarProvider(person);
+    if (!provider) {
+      throw new ForbiddenException('calendar.calendarUserRequired');
     }
 
     const subscription = await this.findOrCreateSubscription(em, person, true);
@@ -165,16 +201,43 @@ export class CalendarSyncSubscriptionService implements OnModuleInit {
     if (dto.intervalMinutes != null) {
       subscription.intervalMinutes = dto.intervalMinutes;
     }
+    subscription.provider = provider;
+
+    if (dto.defaultEventTypeHandle != null) {
+      subscription.defaultEventType = await this.requireEventType(
+        em,
+        dto.defaultEventTypeHandle,
+      );
+    }
+
+    if (dto.defaultEventCategoryHandle != null) {
+      subscription.defaultEventCategory = await this.requireEventCategory(
+        em,
+        dto.defaultEventCategoryHandle,
+      );
+    }
+
+    if (dto.classificationMappings != null) {
+      const mappings = normalizeCalendarClassificationMappings(
+        dto.classificationMappings,
+      );
+      await this.assertClassificationMappings(
+        em,
+        subscription.provider,
+        mappings,
+      );
+      subscription.classificationMappings = mappings;
+    }
 
     await em.flush();
-    return this.toDto(subscription, true);
+    return this.toDto(subscription, true, subscription.provider);
   }
 
   async enqueueDueSubscriptions(now: Date = new Date()): Promise<QueueSummary> {
     const em = this.em.fork();
     const subscriptions = await em.find(
       CalendarSyncSubscriptionItem,
-      { isActive: true, provider: 'azure' },
+      { isActive: true },
       { populate: ['person', 'person.type', 'person.session'] },
     );
     let queued = 0;
@@ -184,7 +247,10 @@ export class CalendarSyncSubscriptionService implements OnModuleInit {
         continue;
       }
 
-      if (!this.isAzureSyncAvailable(subscription.person)) {
+      if (
+        !this.isCalendarSyncAvailable(subscription.person) ||
+        this.getCalendarProvider(subscription.person) !== subscription.provider
+      ) {
         continue;
       }
 
@@ -224,8 +290,8 @@ export class CalendarSyncSubscriptionService implements OnModuleInit {
     }
 
     const person = subscription.person as PersonItem;
-    if (!this.isAzurePerson(person)) {
-      subscription.lastError = 'calendar.azureUserRequired';
+    if (this.getCalendarProvider(person) !== subscription.provider) {
+      subscription.lastError = 'calendar.calendarUserRequired';
       await em.flush();
       return;
     }
@@ -235,10 +301,11 @@ export class CalendarSyncSubscriptionService implements OnModuleInit {
     await em.flush();
 
     try {
-      const result = await this.azureCalendarService.importEvents(
-        person,
-        calculateCalendarSyncRange(subscription.syncRange),
-      );
+      const range = calculateCalendarSyncRange(subscription.syncRange);
+      const result =
+        subscription.provider === 'google'
+          ? await this.googleCalendarService.importEvents(person, range)
+          : await this.azureCalendarService.importEvents(person, range);
       subscription.lastSuccessAt = new Date();
       subscription.lastImportedCount = result.imported;
       subscription.lastCreatedCount = result.created;
@@ -273,50 +340,165 @@ export class CalendarSyncSubscriptionService implements OnModuleInit {
     person: PersonItem,
     createWhenMissing: boolean,
   ): Promise<CalendarSyncSubscriptionItem | null> {
-    const subscription = await em.findOne(CalendarSyncSubscriptionItem, {
-      person: { handle: person.handle },
-    });
+    const subscription = await em.findOne(
+      CalendarSyncSubscriptionItem,
+      { person: { handle: person.handle } },
+      { populate: ['defaultEventType', 'defaultEventCategory'] },
+    );
 
     if (subscription || !createWhenMissing) {
       return subscription;
     }
 
+    const provider = this.getCalendarProvider(person);
+    if (!provider) {
+      return null;
+    }
+
     const created = new CalendarSyncSubscriptionItem();
-    created.description = 'Outlook calendar import';
-    created.provider = 'azure';
+    created.description =
+      provider === 'google'
+        ? 'Google calendar import'
+        : 'Outlook calendar import';
+    created.provider = provider;
     created.isActive = false;
     created.syncRange = DEFAULT_SYNC_RANGE;
     created.intervalMinutes = DEFAULT_INTERVAL_MINUTES;
+    created.defaultEventType = await this.requireEventType(
+      em,
+      DEFAULT_CALENDAR_EVENT_TYPE_HANDLE,
+    );
+    created.defaultEventCategory = await this.requireEventCategory(
+      em,
+      DEFAULT_CALENDAR_EVENT_CATEGORY_HANDLE,
+    );
+    created.classificationMappings = [];
     created.person = person;
     em.persist(created);
     return created;
   }
 
-  private isAzureSyncAvailable(person?: PersonItem | null): boolean {
-    return this.isAzurePerson(person) && Boolean(person?.session);
+  private isCalendarSyncAvailable(person?: PersonItem | null): boolean {
+    return Boolean(this.getCalendarProvider(person) && person?.session);
   }
 
-  private isAzurePerson(person?: PersonItem | null): boolean {
+  private getCalendarProvider(
+    person?: PersonItem | null,
+  ): CalendarSyncProvider | null {
     if (!person || person.isActive === false) {
-      return false;
+      return null;
     }
 
     const typeHandle =
       typeof person.type === 'string' ? person.type : person.type?.handle;
-    return typeHandle === 'azure';
+    return typeHandle === 'azure' || typeHandle === 'google'
+      ? typeHandle
+      : null;
+  }
+
+  private async requireEventType(
+    em: EntityManager,
+    handle: string,
+  ): Promise<EventTypeItem> {
+    const eventType = await em.findOne(EventTypeItem, {
+      handle: handle.trim(),
+    });
+    if (!eventType) {
+      throw new BadRequestException(
+        'calendarSyncSubscription.eventTypeNotFound',
+      );
+    }
+    return eventType;
+  }
+
+  private async requireEventCategory(
+    em: EntityManager,
+    handle: string,
+  ): Promise<EventCategoryItem> {
+    const eventCategory = await em.findOne(EventCategoryItem, {
+      handle: handle.trim(),
+    });
+    if (!eventCategory) {
+      throw new BadRequestException(
+        'calendarSyncSubscription.eventCategoryNotFound',
+      );
+    }
+    return eventCategory;
+  }
+
+  private async assertClassificationMappings(
+    em: EntityManager,
+    provider: CalendarSyncProvider,
+    mappings: ReturnType<typeof normalizeCalendarClassificationMappings>,
+  ): Promise<void> {
+    if (
+      provider === 'google' &&
+      mappings.some(
+        (mapping) => !/^(?:[1-9]|1[01])$/.test(mapping.externalValue),
+      )
+    ) {
+      throw new BadRequestException(
+        'calendarSyncSubscription.invalidGoogleColor',
+      );
+    }
+
+    const typeHandles = Array.from(
+      new Set(
+        mappings
+          .map((mapping) => mapping.eventTypeHandle)
+          .filter((handle): handle is string => Boolean(handle)),
+      ),
+    );
+    const categoryHandles = Array.from(
+      new Set(
+        mappings
+          .map((mapping) => mapping.eventCategoryHandle)
+          .filter((handle): handle is string => Boolean(handle)),
+      ),
+    );
+    const [eventTypes, eventCategories] = await Promise.all([
+      typeHandles.length
+        ? em.find(EventTypeItem, { handle: { $in: typeHandles } })
+        : Promise.resolve([]),
+      categoryHandles.length
+        ? em.find(EventCategoryItem, { handle: { $in: categoryHandles } })
+        : Promise.resolve([]),
+    ]);
+
+    if (eventTypes.length !== typeHandles.length) {
+      throw new BadRequestException(
+        'calendarSyncSubscription.eventTypeNotFound',
+      );
+    }
+    if (eventCategories.length !== categoryHandles.length) {
+      throw new BadRequestException(
+        'calendarSyncSubscription.eventCategoryNotFound',
+      );
+    }
   }
 
   private toDto(
     subscription: CalendarSyncSubscriptionItem | null,
     isAvailable: boolean,
+    provider: CalendarSyncProvider,
   ): CalendarSyncSubscriptionDto {
     return {
       handle: subscription?.handle,
       isAvailable,
+      provider,
       isActive: subscription?.isActive ?? false,
       syncRange: subscription?.syncRange ?? DEFAULT_SYNC_RANGE,
       intervalMinutes:
         subscription?.intervalMinutes ?? DEFAULT_INTERVAL_MINUTES,
+      defaultEventTypeHandle:
+        getRelationHandle(subscription?.defaultEventType) ??
+        DEFAULT_CALENDAR_EVENT_TYPE_HANDLE,
+      defaultEventCategoryHandle:
+        getRelationHandle(subscription?.defaultEventCategory) ??
+        DEFAULT_CALENDAR_EVENT_CATEGORY_HANDLE,
+      classificationMappings: normalizeCalendarClassificationMappings(
+        subscription?.classificationMappings,
+      ),
       lastRunAt: subscription?.lastRunAt ?? null,
       lastSuccessAt: subscription?.lastSuccessAt ?? null,
       lastError: subscription?.lastError ?? null,
@@ -326,6 +508,12 @@ export class CalendarSyncSubscriptionService implements OnModuleInit {
       lastSkippedCount: subscription?.lastSkippedCount ?? 0,
     };
   }
+}
+
+function getRelationHandle(
+  value?: string | { handle?: string } | null,
+): string | null {
+  return typeof value === 'string' ? value : (value?.handle ?? null);
 }
 
 function truncateError(error: unknown): string {

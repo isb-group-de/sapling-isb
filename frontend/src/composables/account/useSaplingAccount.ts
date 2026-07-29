@@ -4,11 +4,20 @@ import { i18n } from '@/i18n'
 import { useCurrentPersonStore } from '@/stores/currentPersonStore'
 import ApiAuthService from '@/services/api.auth.service'
 import ApiCurrentService, {
+  type CalendarClassificationMapping,
   type CalendarSyncSubscription,
   type CurrentSessionDto,
+  type OutlookCalendarCategory,
   type TerminateSessionsResult,
 } from '@/services/api.current.service'
-import type { AiProviderModelItem, AiProviderTypeItem, WorkHourWeekItem } from '@/entity/entity'
+import type {
+  AiProviderModelItem,
+  AiProviderTypeItem,
+  EventCategoryItem,
+  EventTypeItem,
+  WorkHourWeekItem,
+} from '@/entity/entity'
+import ApiGenericService from '@/services/api.generic.service'
 import { useSaplingMessageCenter } from '@/composables/system/useSaplingMessageCenter'
 import { useSaplingPreferences } from '@/composables/system/useSaplingPreferences'
 import ApiAiService from '@/services/api.ai.service'
@@ -29,6 +38,7 @@ import {
 } from '@/services/notification-preferences.service'
 import {
   WORK_HOUR_DAY_KEYS,
+  appendMissingOutlookCategoryMappings,
   calculateAge,
   formatAccountValue,
   formatBirthDay,
@@ -63,6 +73,8 @@ export function useSaplingAccount() {
     'workHour',
     'workHourWeek',
     'calendarSyncSubscription',
+    'eventType',
+    'eventCategory',
     'account',
     'navigation',
     'aiChat',
@@ -85,6 +97,10 @@ export function useSaplingAccount() {
   const isProfileSaving = ref(false)
   const calendarSync = ref<CalendarSyncSubscription | null>(null)
   const isCalendarSyncSaving = ref(false)
+  const isOutlookCalendarCategoriesLoading = ref(false)
+  const outlookCalendarCategories = ref<OutlookCalendarCategory[]>([])
+  const eventTypes = ref<EventTypeItem[]>([])
+  const eventCategories = ref<EventCategoryItem[]>([])
   const notificationPreferences = ref<SaplingNotificationPreferences>(
     loadSaplingNotificationPreferences(),
   )
@@ -158,6 +174,41 @@ export function useSaplingAccount() {
     { title: i18n.global.t('calendarSyncSubscription.interval60'), value: 60 },
     { title: i18n.global.t('calendarSyncSubscription.interval240'), value: 240 },
   ])
+
+  const calendarSyncEventTypeOptions = computed<CalendarSyncOption<string>[]>(() =>
+    eventTypes.value.map((item) => ({
+      title: item.title,
+      value: item.handle,
+    })),
+  )
+
+  const calendarSyncEventCategoryOptions = computed<CalendarSyncOption<string>[]>(() =>
+    eventCategories.value.map((item) => ({
+      title: item.title,
+      value: item.handle,
+    })),
+  )
+
+  const googleCalendarColorOptions = computed<CalendarSyncOption<string>[]>(() =>
+    Array.from({ length: 11 }, (_, index) => ({
+      title: i18n.global.t('calendarSyncSubscription.googleColor', {
+        id: index + 1,
+      }),
+      value: String(index + 1),
+    })),
+  )
+
+  const outlookCalendarCategoryOptions = computed<CalendarSyncOption<string>[]>(() => {
+    const names = new Set(outlookCalendarCategories.value.map((category) => category.displayName))
+    for (const mapping of calendarSync.value?.classificationMappings ?? []) {
+      if (mapping.externalValue.trim()) {
+        names.add(mapping.externalValue.trim())
+      }
+    }
+    return Array.from(names)
+      .sort((left, right) => left.localeCompare(right, undefined, { sensitivity: 'base' }))
+      .map((name) => ({ title: name, value: name }))
+  })
 
   const calendarSyncDetails = computed<AccountDetailItem[]>(() => {
     const subscription = calendarSync.value
@@ -241,6 +292,7 @@ export function useSaplingAccount() {
       currentPersonStore.fetchCurrentPerson(),
       loadWorkHours(),
       loadCalendarSync(),
+      loadCalendarClassificationOptions(),
       loadCurrentSessions(),
       loadAiPreferences(),
     ])
@@ -318,14 +370,29 @@ export function useSaplingAccount() {
   }
 
   /**
-   * Loads the current user's automatic Outlook import settings.
+   * Loads the current user's automatic Outlook or Google import settings.
    */
   async function loadCalendarSync() {
     calendarSync.value = await ApiCurrentService.getCalendarSync()
   }
 
+  async function loadCalendarClassificationOptions() {
+    const [typeResponse, categoryResponse] = await Promise.all([
+      ApiGenericService.find<EventTypeItem>('eventType', {
+        limit: 100,
+        page: 1,
+      }),
+      ApiGenericService.find<EventCategoryItem>('eventCategory', {
+        limit: 100,
+        page: 1,
+      }),
+    ])
+    eventTypes.value = typeResponse.data
+    eventCategories.value = categoryResponse.data
+  }
+
   /**
-   * Persists the current user's automatic Outlook import settings.
+   * Persists the current user's automatic Outlook or Google import settings.
    */
   async function saveCalendarSync() {
     if (!calendarSync.value) {
@@ -339,11 +406,54 @@ export function useSaplingAccount() {
         isActive: calendarSync.value.isActive,
         syncRange: calendarSync.value.syncRange,
         intervalMinutes: calendarSync.value.intervalMinutes,
+        defaultEventTypeHandle: calendarSync.value.defaultEventTypeHandle,
+        defaultEventCategoryHandle: calendarSync.value.defaultEventCategoryHandle,
+        classificationMappings: calendarSync.value.classificationMappings,
       })
       pushMessage('success', 'calendarSyncSubscription.saveSuccess', '', 'calendarSyncSubscription')
     } finally {
       isCalendarSyncSaving.value = false
     }
+  }
+
+  async function loadOutlookCalendarCategories() {
+    if (!calendarSync.value || calendarSync.value.provider !== 'azure') {
+      return
+    }
+
+    const subscription = calendarSync.value
+    isOutlookCalendarCategoriesLoading.value = true
+    try {
+      const categories = await ApiCurrentService.getOutlookCalendarCategories()
+      outlookCalendarCategories.value = categories
+      appendMissingOutlookCategoryMappings(subscription.classificationMappings, categories)
+
+      pushMessage(
+        'success',
+        'calendarSyncSubscription.outlookCategoriesLoaded',
+        '',
+        'calendarSyncSubscription',
+      )
+    } finally {
+      isOutlookCalendarCategoriesLoading.value = false
+    }
+  }
+
+  function addCalendarClassificationMapping() {
+    if (!calendarSync.value) {
+      return
+    }
+
+    const mapping: CalendarClassificationMapping = {
+      externalValue: calendarSync.value.provider === 'google' ? '1' : '',
+      eventTypeHandle: null,
+      eventCategoryHandle: null,
+    }
+    calendarSync.value.classificationMappings.push(mapping)
+  }
+
+  function removeCalendarClassificationMapping(index: number) {
+    calendarSync.value?.classificationMappings.splice(index, 1)
   }
 
   function saveNotificationPreferenceSelection() {
@@ -540,7 +650,12 @@ export function useSaplingAccount() {
     calendarSyncRangeOptions,
     calendarSyncIntervalOptions,
     calendarSyncDetails,
+    calendarSyncEventTypeOptions,
+    calendarSyncEventCategoryOptions,
+    googleCalendarColorOptions,
+    outlookCalendarCategoryOptions,
     isCalendarSyncSaving,
+    isOutlookCalendarCategoriesLoading,
     currentLanguage,
     languageOptions,
     appearanceActions,
@@ -561,6 +676,9 @@ export function useSaplingAccount() {
     calculateAge,
     saveProfile,
     saveCalendarSync,
+    loadOutlookCalendarCategories,
+    addCalendarClassificationMapping,
+    removeCalendarClassificationMapping,
     saveNotificationPreferenceSelection,
     loadCurrentSessions,
     terminateOtherSessions,

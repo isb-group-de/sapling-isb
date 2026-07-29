@@ -18,6 +18,7 @@ describe('CalendarDeliveryExecutor', () => {
     const session = {
       handle: 8,
       accessToken: 'azure-token',
+      person: { handle: 7 },
     } as PersonSessionItem;
     const emFork = {
       findOne: jest.fn((entity: unknown, where: { handle?: unknown }) => {
@@ -54,6 +55,7 @@ describe('CalendarDeliveryExecutor', () => {
     expect(asMock(azureCalendarService.setEvent)).toHaveBeenCalledWith(
       4,
       'azure-token',
+      7,
     );
     expect(asMock(googleCalendarService.setEvent)).not.toHaveBeenCalled();
     expect(delivery.status).toBe(success);
@@ -105,6 +107,7 @@ describe('CalendarDeliveryExecutor', () => {
     expect(asMock(googleCalendarService.setEvent)).toHaveBeenCalledWith(
       5,
       'legacy-token',
+      undefined,
     );
     expect(asMock(azureCalendarService.setEvent)).not.toHaveBeenCalled();
     expect(delivery.status).toBe(success);

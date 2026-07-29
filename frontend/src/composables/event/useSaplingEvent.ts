@@ -3,6 +3,7 @@ import { useRoute } from 'vue-router'
 import ApiGenericService from '@/services/api.generic.service'
 import type {
   EntityItem,
+  EventCategoryItem,
   EventStatusItem,
   EventTypeItem,
   PersonItem,
@@ -30,6 +31,7 @@ import {
   type CalendarType,
 } from '@/composables/event/eventDate.utils'
 import {
+  DEFAULT_EVENT_CATEGORY_HANDLE,
   DEFAULT_EVENT_STATUS_HANDLE,
   DEFAULT_EVENT_TYPE_HANDLE,
   type CalendarMode,
@@ -73,6 +75,7 @@ export function useSaplingEvent() {
   const ownPerson = ref<PersonItem | null>(null)
   const defaultEventType = ref<EventTypeItem | null>(null)
   const defaultEventStatus = ref<EventStatusItem | null>(null)
+  const defaultEventCategory = ref<EventCategoryItem | null>(null)
   const events = ref<SaplingCalendarEvent[]>([])
   const templates = ref<EntityTemplate[]>([])
   const {
@@ -127,6 +130,7 @@ export function useSaplingEvent() {
     ownPerson,
     defaultEventType,
     defaultEventStatus,
+    defaultEventCategory,
     editEvent,
     showEditDialog,
     forceEditDialogDirtyFields,
@@ -388,7 +392,7 @@ export function useSaplingEvent() {
   }
 
   async function loadEventDefaults() {
-    const [typeResponse, statusResponse] = await Promise.all([
+    const [typeResponse, statusResponse, categoryResponse] = await Promise.all([
       ApiGenericService.find<EventTypeItem>('eventType', {
         filter: { handle: DEFAULT_EVENT_TYPE_HANDLE },
         limit: 1,
@@ -399,10 +403,16 @@ export function useSaplingEvent() {
         limit: 1,
         page: 1,
       }),
+      ApiGenericService.find<EventCategoryItem>('eventCategory', {
+        filter: { handle: DEFAULT_EVENT_CATEGORY_HANDLE },
+        limit: 1,
+        page: 1,
+      }),
     ])
 
     defaultEventType.value = typeResponse.data[0] ?? null
     defaultEventStatus.value = statusResponse.data[0] ?? null
+    defaultEventCategory.value = categoryResponse.data[0] ?? null
   }
 
   /**

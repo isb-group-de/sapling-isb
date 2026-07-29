@@ -3,6 +3,7 @@ import { EventItem } from '../entity/EventItem';
 import {
   buildAzureCalendarEvent,
   isAzureAuthenticationError,
+  isAzureForbiddenError,
   normalizeAzureDateTime,
 } from './azure/azure-calendar.utils';
 import {
@@ -10,6 +11,10 @@ import {
   isGoogleAuthenticationError,
   normalizeGoogleDateTime,
 } from './google/google-calendar.utils';
+import {
+  resolveImportedCalendarClassification,
+  resolveGoogleCalendarColorId,
+} from './calendar-classification.utils';
 
 const createEvent = (): EventItem =>
   ({
@@ -21,14 +26,22 @@ const createEvent = (): EventItem =>
     participants: [
       { email: 'ada@example.com', firstName: 'Ada', lastName: 'Lovelace' },
     ],
-    type: { handle: 'meeting' },
+    type: { handle: 'online' },
+    category: { handle: 'support' },
   }) as unknown as EventItem;
 
 describe('calendar provider utilities', () => {
   it('builds an Azure event resource', () => {
-    expect(buildAzureCalendarEvent(createEvent())).toMatchObject({
+    expect(
+      buildAzureCalendarEvent(createEvent(), [
+        { externalValue: 'Online', eventTypeHandle: 'online' },
+        { externalValue: 'Support', eventCategoryHandle: 'support' },
+      ]),
+    ).toMatchObject({
       subject: 'Planning',
-      body: { contentType: 'HTML', content: '<p>Agenda</p>' },
+      categories: ['Online', 'Support'],
+      isOnlineMeeting: true,
+      onlineMeetingProvider: 'teamsForBusiness',
       attendees: [
         {
           emailAddress: {
@@ -41,12 +54,85 @@ describe('calendar provider utilities', () => {
   });
 
   it('builds a Google event resource', () => {
-    expect(buildGoogleCalendarEvent(createEvent())).toMatchObject({
+    expect(
+      buildGoogleCalendarEvent(createEvent(), [
+        {
+          externalValue: '7',
+          eventTypeHandle: 'online',
+          eventCategoryHandle: 'support',
+        },
+      ]),
+    ).toMatchObject({
       summary: 'Planning',
+      colorId: '7',
+      extendedProperties: {
+        private: {
+          saplingEventType: 'online',
+          saplingEventCategory: 'support',
+        },
+      },
       description: '<p>Agenda</p>',
       attendees: [{ email: 'ada@example.com', displayName: 'Ada Lovelace' }],
       recurrence: ['RRULE:FREQ=WEEKLY;BYDAY=TH'],
     });
+  });
+
+  it('maps imported provider values and uses configured defaults', () => {
+    expect(
+      resolveImportedCalendarClassification({
+        externalValues: ['support', 'ONLINE'],
+        mappings: [
+          { externalValue: 'Online', eventTypeHandle: 'online' },
+          { externalValue: 'Support', eventCategoryHandle: 'support' },
+        ],
+      }),
+    ).toEqual({
+      eventTypeHandle: 'online',
+      eventCategoryHandle: 'support',
+    });
+
+    expect(
+      resolveImportedCalendarClassification({
+        defaults: {
+          eventTypeHandle: 'onSite',
+          eventCategoryHandle: 'internal',
+        },
+      }),
+    ).toEqual({
+      eventTypeHandle: 'onSite',
+      eventCategoryHandle: 'internal',
+    });
+
+    expect(
+      resolveImportedCalendarClassification({
+        externalValues: ['7'],
+        mappings: [
+          {
+            externalValue: '7',
+            eventTypeHandle: 'online',
+            eventCategoryHandle: 'support',
+          },
+        ],
+        embeddedEventTypeHandle: 'review',
+        embeddedEventCategoryHandle: 'project',
+      }),
+    ).toEqual({
+      eventTypeHandle: 'review',
+      eventCategoryHandle: 'project',
+    });
+  });
+
+  it('prefers a combined Google color mapping', () => {
+    expect(
+      resolveGoogleCalendarColorId(createEvent(), [
+        { externalValue: '2', eventTypeHandle: 'online' },
+        {
+          externalValue: '7',
+          eventTypeHandle: 'online',
+          eventCategoryHandle: 'support',
+        },
+      ]),
+    ).toBe('7');
   });
 
   it('normalizes provider date formats', () => {
@@ -60,6 +146,7 @@ describe('calendar provider utilities', () => {
 
   it('recognizes provider authentication failures', () => {
     expect(isAzureAuthenticationError({ statusCode: 401 })).toBe(true);
+    expect(isAzureForbiddenError({ response: { status: 403 } })).toBe(true);
     expect(isGoogleAuthenticationError({ code: 403 })).toBe(true);
     expect(isGoogleAuthenticationError({ status: 500 })).toBe(false);
   });

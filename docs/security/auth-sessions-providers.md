@@ -31,14 +31,14 @@ frontend/src/components/account/SaplingLogin.vue
 
 ## Authentication Modes
 
-| Mode | Purpose |
-| --- | --- |
-| Local session | Browser login with username/password |
+| Mode                  | Purpose                                                                                      |
+| --------------------- | -------------------------------------------------------------------------------------------- |
+| Local session         | Browser login with username/password                                                         |
 | Local passkey step-up | Browser WebAuthn/passkey challenge after a valid local password when passkeys are registered |
-| Azure session | Browser OAuth login and provider tokens for Microsoft Graph |
-| Google session | Browser OAuth login and provider tokens for Google APIs |
-| Bearer API token | API access for automations, MCP, and integrations |
-| Impersonation | Administrator "view as user" support |
+| Azure session         | Browser OAuth login and provider tokens for Microsoft Graph                                  |
+| Google session        | Browser OAuth login and provider tokens for Google APIs                                      |
+| Bearer API token      | API access for automations, MCP, and integrations                                            |
+| Impersonation         | Administrator "view as user" support                                                         |
 
 Most protected backend endpoints use `SessionOrBearerAuthGuard`, so the same endpoint can work for browser sessions and API clients.
 
@@ -157,6 +157,7 @@ Pure provider mapping and error classification live in
 Provider directory requirements:
 
 - Azure imports call Microsoft Graph `/users` and require directory-read scopes such as `User.ReadBasic.All` or `User.Read.All` in `AZURE_AD_SCOPE`.
+- Loading the signed-in user's Outlook master categories calls Microsoft Graph `/me/outlook/masterCategories` and requires `MailboxSettings.Read` in `AZURE_AD_SCOPE`. Users whose existing token predates that scope must reconnect their Microsoft account.
 - Google imports call Google Workspace Admin SDK Directory `users.list` with `customer=my_customer` and require a scope such as `https://www.googleapis.com/auth/admin.directory.user.readonly` in `GOOGLE_SCOPE`. The signed-in Google account must have enough Workspace directory permission.
 
 Inbound mailbox requirements:
@@ -172,26 +173,26 @@ Inbound mailbox requirements:
 
 `PersonApiTokenItem` stores inbound API tokens.
 
-| Field | Meaning |
-| --- | --- |
-| `description` | Human-readable token label |
-| `tokenPrefix` | Visible prefix for identification |
-| `rawToken` | Non-persisted one-time secret before hashing |
-| `tokenHash` | Persisted SHA-256 hash with `sha256$` prefix |
-| `isActive` | Allows deactivation without deleting |
-| `expiresAt` | Expiration timestamp |
-| `lastUsedAt` | Last successful use |
-| `allowedIps` | Optional exact-match IP allowlist |
-| `person` | Token owner |
+| Field         | Meaning                                      |
+| ------------- | -------------------------------------------- |
+| `description` | Human-readable token label                   |
+| `tokenPrefix` | Visible prefix for identification            |
+| `rawToken`    | Non-persisted one-time secret before hashing |
+| `tokenHash`   | Persisted SHA-256 hash with `sha256$` prefix |
+| `isActive`    | Allows deactivation without deleting         |
+| `expiresAt`   | Expiration timestamp                         |
+| `lastUsedAt`  | Last successful use                          |
+| `allowedIps`  | Optional exact-match IP allowlist            |
+| `person`      | Token owner                                  |
 
 Token endpoints:
 
-| Endpoint | Purpose |
-| --- | --- |
-| `GET /api/auth/token` | List token metadata |
-| `POST /api/auth/token` | Create token and return one-time secret |
+| Endpoint                              | Purpose                                            |
+| ------------------------------------- | -------------------------------------------------- |
+| `GET /api/auth/token`                 | List token metadata                                |
+| `POST /api/auth/token`                | Create token and return one-time secret            |
 | `POST /api/auth/token/:handle/rotate` | Deactivate old token and return replacement secret |
-| `DELETE /api/auth/token/:handle` | Deactivate token |
+| `DELETE /api/auth/token/:handle`      | Deactivate token                                   |
 
 Managing another person's tokens requires global-stage permission on `personApiToken` for the requested action.
 
@@ -255,11 +256,11 @@ The frontend router calls `authStore.validate()` before protected routes. It the
 
 Routing outcomes:
 
-| State | Route behavior |
-| --- | --- |
-| unauthenticated | redirect to `login` |
+| State                                | Route behavior             |
+| ------------------------------------ | -------------------------- |
+| unauthenticated                      | redirect to `login`        |
 | authenticated without assigned roles | redirect to access pending |
-| authenticated with roles | allow app route |
+| authenticated with roles             | allow app route            |
 
 `currentPersonStore` owns current profile loading and impersonation start/stop actions.
 

@@ -1,6 +1,13 @@
 import { calendar_v3 } from '@googleapis/calendar';
 import { EventItem } from '../../entity/EventItem';
 import { buildGoogleRecurrence } from '../calendar.recurrence';
+import {
+  type CalendarClassificationMapping,
+  resolveGoogleCalendarColorId,
+} from '../calendar-classification.utils';
+
+export const SAPLING_GOOGLE_EVENT_TYPE_KEY = 'saplingEventType';
+export const SAPLING_GOOGLE_EVENT_CATEGORY_KEY = 'saplingEventCategory';
 
 export type ImportGoogleCalendarEventsRange = {
   startDateTime: Date;
@@ -69,13 +76,23 @@ export function normalizeGoogleEmail(
 
 export function buildGoogleCalendarEvent(
   event: EventItem,
+  classificationMappings?: CalendarClassificationMapping[] | null,
 ): calendar_v3.Schema$Event {
+  const colorId = resolveGoogleCalendarColorId(event, classificationMappings);
+
   return {
     summary: event.title,
     description: event.description,
     start: { dateTime: event.startDate.toISOString() },
     end: { dateTime: event.endDate.toISOString() },
     recurrence: buildGoogleRecurrence(event.recurrenceRule),
+    colorId,
+    extendedProperties: {
+      private: {
+        [SAPLING_GOOGLE_EVENT_TYPE_KEY]: event.type?.handle ?? '',
+        [SAPLING_GOOGLE_EVENT_CATEGORY_KEY]: event.category?.handle ?? '',
+      },
+    },
     attendees: event.participants?.map((participant) => ({
       email: participant.email,
       displayName: `${participant.firstName} ${participant.lastName}`,

@@ -34,6 +34,7 @@ export const supportPermissionsInput: PermissionMatrixInput = {
     'holiday',
     'eventStatus',
     'eventType',
+    'eventCategory',
     'eventDelivery',
     'eventDeliveryStatus',
     'ticket',

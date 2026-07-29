@@ -1,0 +1,50 @@
+[
+  {
+    "handle": "sales",
+    "title": "Vertrieb",
+    "icon": "mdi-chart-line",
+    "color": "#FF9800"
+  },
+  {
+    "handle": "project",
+    "title": "Projekt",
+    "icon": "mdi-briefcase",
+    "color": "#2196F3"
+  },
+  {
+    "handle": "support",
+    "title": "Support",
+    "icon": "mdi-lifebuoy",
+    "color": "#F44336"
+  },
+  {
+    "handle": "customerSuccess",
+    "title": "Customer Success",
+    "icon": "mdi-account-heart",
+    "color": "#009688"
+  },
+  {
+    "handle": "internal",
+    "title": "Intern",
+    "icon": "mdi-account-group",
+    "color": "#4CAF50"
+  },
+  {
+    "handle": "personal",
+    "title": "Personal",
+    "icon": "mdi-account",
+    "color": "#795548"
+  },
+  {
+    "handle": "marketing",
+    "title": "Marketing",
+    "icon": "mdi-bullhorn",
+    "color": "#E91E63"
+  },
+  {
+    "handle": "partner",
+    "title": "Partner",
+    "icon": "mdi-handshake",
+    "color": "#673AB7"
+  }
+]

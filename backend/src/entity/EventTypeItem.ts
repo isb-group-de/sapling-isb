@@ -8,7 +8,7 @@ import { Sapling, SaplingForm } from './global/entity.decorator';
  * @class
  * @version         1.0
  * @author          Martin Rosbund
- * @summary         Entity representing an event type or category, including persisted properties, relations, and system fields.
+ * @summary         Entity representing an event appointment type, including persisted properties, relations, and system fields.
  *
  * @property        {string}                    handle      Unique identifier for the event type (primary key)
  * @property        {string}                    title       Title or name of the event type

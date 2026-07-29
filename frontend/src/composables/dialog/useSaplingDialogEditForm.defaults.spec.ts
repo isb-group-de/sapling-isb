@@ -20,8 +20,8 @@ describe('useSaplingDialogEditForm create defaults', () => {
             referencedPks: ['handle'],
             formConfig: {
               defaultValue: {
-                handle: 'internal',
-                title: 'Interne Tätigkeit',
+                handle: 'online',
+                title: 'Online',
               },
             },
           },
@@ -79,14 +79,14 @@ describe('useSaplingDialogEditForm create defaults', () => {
     await nextTick()
 
     expect(form.value.type).toEqual({
-      handle: 'internal',
-      title: 'Interne Tätigkeit',
+      handle: 'online',
+      title: 'Online',
     })
     expect(form.value.status).toEqual({ handle: 'scheduled' })
     expect(form.value.creatorPerson).toEqual(currentPerson)
     expect(form.value.participants).toEqual([{ handle: 5 }, { handle: 7 }])
     expect(helper.buildSavePayload()).toEqual({
-      type: 'internal',
+      type: 'online',
       status: 'scheduled',
       creatorPerson: 5,
       participants: [5, 7],

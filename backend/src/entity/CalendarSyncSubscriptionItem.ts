@@ -1,11 +1,23 @@
 import { type Rel } from '@mikro-orm/core';
-import { Entity, OneToOne, Property } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToOne,
+  Property,
+} from '@mikro-orm/decorators/legacy';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { PersonItem } from './PersonItem';
 import { Sapling, SaplingForm } from './global/entity.decorator';
+import { EventTypeItem } from './EventTypeItem';
+import { EventCategoryItem } from './EventCategoryItem';
 
 export type CalendarSyncRange = 'day' | 'week' | 'month';
-export type CalendarSyncProvider = 'azure';
+export type CalendarSyncProvider = 'azure' | 'google';
+export type CalendarClassificationMapping = {
+  externalValue: string;
+  eventTypeHandle?: string | null;
+  eventCategoryHandle?: string | null;
+};
 
 @Entity()
 export class CalendarSyncSubscriptionItem {
@@ -89,6 +101,59 @@ export class CalendarSyncSubscriptionItem {
   })
   @Property({ default: 60, nullable: false })
   intervalMinutes: number = 60;
+
+  @ApiPropertyOptional({ type: () => EventTypeItem })
+  @Sapling(['isChip'])
+  @SaplingForm({
+    order: 400,
+    group: 'calendarSyncSubscription.groupConfiguration',
+    groupOrder: 300,
+    width: 1,
+    visible: true,
+    tableOrder: 400,
+    tableVisible: false,
+    mobileOrder: 400,
+    mobileVisible: false,
+  })
+  @ManyToOne(() => EventTypeItem, {
+    nullable: false,
+    default: 'online',
+  })
+  defaultEventType!: Rel<EventTypeItem>;
+
+  @ApiPropertyOptional({ type: () => EventCategoryItem })
+  @Sapling(['isChip'])
+  @SaplingForm({
+    order: 500,
+    group: 'calendarSyncSubscription.groupConfiguration',
+    groupOrder: 300,
+    width: 1,
+    visible: true,
+    tableOrder: 500,
+    tableVisible: false,
+    mobileOrder: 500,
+    mobileVisible: false,
+  })
+  @ManyToOne(() => EventCategoryItem, {
+    nullable: false,
+    default: 'internal',
+  })
+  defaultEventCategory!: Rel<EventCategoryItem>;
+
+  @ApiPropertyOptional({ type: 'array', default: [] })
+  @SaplingForm({
+    order: 600,
+    group: 'calendarSyncSubscription.groupConfiguration',
+    groupOrder: 300,
+    width: 4,
+    visible: false,
+    tableOrder: 600,
+    tableVisible: false,
+    mobileOrder: 600,
+    mobileVisible: false,
+  })
+  @Property({ type: 'json', nullable: false, defaultRaw: `'[]'::jsonb` })
+  classificationMappings: CalendarClassificationMapping[] = [];
 
   @ApiPropertyOptional({ type: 'string', format: 'date-time' })
   @Sapling(['isReadOnly', 'isSystem'])

@@ -1,7 +1,7 @@
 import { ref } from 'vue'
 import { describe, expect, it, vi } from 'vitest'
 import type { CalendarEvent } from 'vuetify/lib/components/VCalendar/types.mjs'
-import type { EventStatusItem, EventTypeItem, PersonItem } from '@/entity/entity'
+import type { EventCategoryItem, EventStatusItem, EventTypeItem, PersonItem } from '@/entity/entity'
 import type { CalendarDateItem } from '../eventDate.utils'
 import type { SaplingCalendarEvent } from '../eventCalendar.utils'
 import { useSaplingCalendarDrag } from '../useSaplingCalendarDrag'
@@ -22,13 +22,17 @@ function createHarness() {
   const selectedPeople = ref([7, 9])
   const ownPerson = ref<PersonItem | null>({ handle: 5 } as PersonItem)
   const defaultEventType = ref<EventTypeItem | null>({
-    handle: 'internal',
-    title: 'Interne Tätigkeit',
+    handle: 'online',
+    title: 'Online',
   } as unknown as EventTypeItem)
   const defaultEventStatus = ref<EventStatusItem | null>({
     handle: 'scheduled',
     description: 'Geplant',
   } as unknown as EventStatusItem)
+  const defaultEventCategory = ref<EventCategoryItem | null>({
+    handle: 'internal',
+    title: 'Intern',
+  } as EventCategoryItem)
   const editEvent = ref<CalendarEvent | null>(null)
   const showEditDialog = ref(false)
   const forceEditDialogDirtyFields = ref<string[]>([])
@@ -39,6 +43,7 @@ function createHarness() {
     ownPerson,
     defaultEventType,
     defaultEventStatus,
+    defaultEventCategory,
     editEvent,
     showEditDialog,
     forceEditDialogDirtyFields,
@@ -135,12 +140,16 @@ describe('useSaplingCalendarDrag', () => {
     expect(harness.events.value).toHaveLength(1)
     expect(harness.editEvent.value?.event?.participants).toEqual([5, 7, 9])
     expect(harness.editEvent.value?.event?.type).toEqual({
-      handle: 'internal',
-      title: 'Interne Tätigkeit',
+      handle: 'online',
+      title: 'Online',
     })
     expect(harness.editEvent.value?.event?.status).toEqual({
       handle: 'scheduled',
       description: 'Geplant',
+    })
+    expect(harness.editEvent.value?.event?.category).toEqual({
+      handle: 'internal',
+      title: 'Intern',
     })
     expect(harness.forceEditDialogDirtyFields.value).toEqual([])
     expect(harness.showEditDialog.value).toBe(true)

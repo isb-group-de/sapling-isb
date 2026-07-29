@@ -1,0 +1,16 @@
+[
+  {
+    "entity": "eventCategory",
+    "route": "table/eventCategory"
+  },
+  {
+    "entity": "eventCategory",
+    "route": "table/eventCategory",
+    "group": "salesCalendar"
+  },
+  {
+    "entity": "eventCategory",
+    "route": "table/eventCategory",
+    "group": "officeCalendar"
+  }
+]

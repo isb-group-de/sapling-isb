@@ -30,6 +30,7 @@ import { KpiItem } from '../KpiItem';
 import { NoteGroupItem } from '../NoteGroupItem';
 import { EventStatusItem } from '../EventStatusItem';
 import { EventTypeItem } from '../EventTypeItem';
+import { EventCategoryItem } from '../EventCategoryItem';
 import { EventItem } from '../EventItem';
 import { TicketTimeTrackingItem } from '../TicketTimeTracking';
 import { RoleStageItem } from '../RoleStageItem';
@@ -355,6 +356,7 @@ const ENTITY_REGISTRY_ENTRIES: { name: string; class: any }[] = [
   { name: 'translation', class: TranslationItem },
   { name: 'noteGroup', class: NoteGroupItem },
   { name: 'event', class: EventItem },
+  { name: 'eventCategory', class: EventCategoryItem },
   { name: 'eventType', class: EventTypeItem },
   { name: 'eventStatus', class: EventStatusItem },
   { name: 'eventDelivery', class: EventDeliveryItem },

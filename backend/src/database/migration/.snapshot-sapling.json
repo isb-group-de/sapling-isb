@@ -6132,6 +6132,23 @@
       "name": "calendar_sync_subscription_item",
       "schema": "public",
       "columns": {
+        "classification_mappings": {
+          "name": "classification_mappings",
+          "type": "jsonb",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": "'[]'",
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "json"
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamptz(6)",
@@ -6148,6 +6165,40 @@
           "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
+        },
+        "default_event_category_handle": {
+          "name": "default_event_category_handle",
+          "type": "varchar(64)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 64,
+          "precision": null,
+          "scale": null,
+          "default": "'internal'",
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "default_event_type_handle": {
+          "name": "default_event_type_handle",
+          "type": "varchar(64)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 64,
+          "precision": null,
+          "scale": null,
+          "default": "'online'",
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
         },
         "description": {
           "name": "description",
@@ -6408,6 +6459,26 @@
       "indexes": [
         {
           "columnNames": [
+            "default_event_category_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "calendar_sync_subscription_item_default_event_category_handle_i",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "default_event_type_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "calendar_sync_subscription_item_default_event_type_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "is_active",
             "last_run_at"
           ],
@@ -6441,6 +6512,30 @@
       "checks": [],
       "triggers": [],
       "foreignKeys": {
+        "calendar_sync_subscription_item_default_event_category_handle_f": {
+          "columnNames": [
+            "default_event_category_handle"
+          ],
+          "constraintName": "calendar_sync_subscription_item_default_event_category_handle_f",
+          "localTableName": "public.calendar_sync_subscription_item",
+          "referencedColumnNames": [
+            "handle"
+          ],
+          "referencedTableName": "public.event_category_item",
+          "updateRule": "cascade"
+        },
+        "calendar_sync_subscription_item_default_event_type_handle_forei": {
+          "columnNames": [
+            "default_event_type_handle"
+          ],
+          "constraintName": "calendar_sync_subscription_item_default_event_type_handle_forei",
+          "localTableName": "public.calendar_sync_subscription_item",
+          "referencedColumnNames": [
+            "handle"
+          ],
+          "referencedTableName": "public.event_type_item",
+          "updateRule": "cascade"
+        },
         "calendar_sync_subscription_item_person_handle_foreign": {
           "columnNames": [
             "person_handle"
@@ -16942,6 +17037,130 @@
       "comment": null
     },
     {
+      "name": "event_category_item",
+      "schema": "public",
+      "columns": {
+        "color": {
+          "name": "color",
+          "type": "varchar(32)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 32,
+          "precision": null,
+          "scale": null,
+          "default": "'#5C6BC0'",
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamptz(6)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
+        "handle": {
+          "name": "handle",
+          "type": "varchar(64)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": true,
+          "nullable": false,
+          "unique": false,
+          "length": 64,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "icon": {
+          "name": "icon",
+          "type": "varchar(64)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 64,
+          "precision": null,
+          "scale": null,
+          "default": "'mdi-shape-outline'",
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "title": {
+          "name": "title",
+          "type": "varchar(128)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 128,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamptz(6)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        }
+      },
+      "indexes": [
+        {
+          "columnNames": [
+            "handle"
+          ],
+          "composite": false,
+          "constraint": true,
+          "keyName": "event_category_item_pkey",
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "triggers": [],
+      "foreignKeys": {},
+      "comment": null
+    },
+    {
       "name": "event_delivery_item",
       "schema": "public",
       "columns": {
@@ -17520,6 +17739,23 @@
           "enumItems": [],
           "mappedType": "integer"
         },
+        "category_handle": {
+          "name": "category_handle",
+          "type": "varchar(64)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 64,
+          "precision": null,
+          "scale": null,
+          "default": "'internal'",
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamptz(6)",
@@ -17820,7 +18056,7 @@
           "length": 64,
           "precision": null,
           "scale": null,
-          "default": null,
+          "default": "'online'",
           "comment": null,
           "collation": null,
           "enumItems": [],
@@ -17864,6 +18100,16 @@
           "composite": false,
           "constraint": false,
           "keyName": "event_item_assignee_company_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "category_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "event_item_category_handle_index",
           "primary": false,
           "unique": false
         },
@@ -18019,6 +18265,18 @@
           ],
           "referencedTableName": "public.person_item",
           "deleteRule": "set null"
+        },
+        "event_item_category_handle_foreign": {
+          "columnNames": [
+            "category_handle"
+          ],
+          "constraintName": "event_item_category_handle_foreign",
+          "localTableName": "public.event_item",
+          "referencedColumnNames": [
+            "handle"
+          ],
+          "referencedTableName": "public.event_category_item",
+          "updateRule": "cascade"
         },
         "event_item_creator_company_handle_foreign": {
           "columnNames": [

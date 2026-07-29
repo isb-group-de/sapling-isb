@@ -1,6 +1,6 @@
 import { computed, ref, type Ref } from 'vue'
 import type { CalendarEvent } from 'vuetify/lib/components/VCalendar/types.mjs'
-import type { EventStatusItem, EventTypeItem, PersonItem } from '@/entity/entity'
+import type { EventCategoryItem, EventStatusItem, EventTypeItem, PersonItem } from '@/entity/entity'
 import { roundTime, toTime, type CalendarDateItem } from '@/composables/event/eventDate.utils'
 import {
   DEFAULT_EVENT_COLOR,
@@ -19,6 +19,7 @@ interface UseSaplingCalendarDragOptions {
   ownPerson: Ref<PersonItem | null>
   defaultEventType: Ref<EventTypeItem | null>
   defaultEventStatus: Ref<EventStatusItem | null>
+  defaultEventCategory: Ref<EventCategoryItem | null>
   editEvent: Ref<CalendarEvent | null>
   showEditDialog: Ref<boolean>
   forceEditDialogDirtyFields: Ref<string[]>
@@ -143,6 +144,7 @@ export function useSaplingCalendarDrag(options: UseSaplingCalendarDragOptions) {
         options.selectedPeople.value,
         options.defaultEventType.value,
         options.defaultEventStatus.value,
+        options.defaultEventCategory.value,
       )
       options.forceEditDialogDirtyFields.value = getCalendarInteractionForcedDirtyFields({
         isNewDraft,

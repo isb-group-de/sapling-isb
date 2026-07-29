@@ -26,6 +26,7 @@ const EVENT_CALENDAR_FIELDS = [
   'followUpDuration',
   'onlineMeetingURL',
   'type',
+  'category',
   'participants',
   'status',
   'assigneeCompany',
@@ -37,6 +38,7 @@ const EVENT_CALENDAR_FIELDS = [
 const EVENT_CALENDAR_RELATIONS = [
   'participants',
   'type',
+  'category',
   'status',
   'assigneeCompany',
   'assigneePerson',

@@ -1,40 +1,58 @@
 [
   {
-    "handle": "internal",
-    "title": "Interne Tätigkeit",
-    "icon": "mdi-account-group",
+    "handle": "onSite",
+    "title": "Vor Ort",
+    "icon": "mdi-map-marker",
     "color": "#4CAF50"
   },
   {
-    "handle": "project",
-    "title": "Kundenprojekte",
-    "icon": "mdi-briefcase",
-    "color": "#2196F3"
-  },
-  {
-    "handle": "sales",
-    "title": "Vertrieb & Marketing",
-    "icon": "mdi-chart-line",
-    "color": "#FF9800"
-  },
-  {
     "handle": "online",
-    "title": "Online Meeting",
+    "title": "Online",
     "icon": "mdi-web",
     "color": "#9C27B0"
   },
   {
-    "handle": "absent",
-    "title": "Abwesenheit",
-    "icon": "mdi-calendar-remove",
-    "color": "#F44336"
-  },
-  {
     "handle": "call",
-    "title": "Telefonat",
+    "title": "Telefon",
     "icon": "mdi-phone",
     "color": "#3F51B5",
     "showInDefaultCalendar": false
+  },
+  {
+    "handle": "workshop",
+    "title": "Workshop",
+    "icon": "mdi-hammer-wrench",
+    "color": "#FF9800"
+  },
+  {
+    "handle": "presentation",
+    "title": "Präsentation",
+    "icon": "mdi-presentation",
+    "color": "#2196F3"
+  },
+  {
+    "handle": "training",
+    "title": "Schulung",
+    "icon": "mdi-school",
+    "color": "#009688"
+  },
+  {
+    "handle": "coordination",
+    "title": "Abstimmung",
+    "icon": "mdi-account-group",
+    "color": "#607D8B"
+  },
+  {
+    "handle": "review",
+    "title": "Review",
+    "icon": "mdi-clipboard-check-outline",
+    "color": "#673AB7"
+  },
+  {
+    "handle": "installation",
+    "title": "Installation",
+    "icon": "mdi-tools",
+    "color": "#795548"
   },
   {
     "handle": "mail",
