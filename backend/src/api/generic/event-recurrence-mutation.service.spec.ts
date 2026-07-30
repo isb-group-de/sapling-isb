@@ -66,7 +66,11 @@ describe('EventRecurrenceMutationService', () => {
       { recurrenceRule: null },
       expect.any(Object),
       [],
-      {},
+      expect.objectContaining({
+        suppressNotificationSubscriptions: true,
+        calendarDeliveryOperation: 'remove-recurrence',
+        postCommitTasks: expect.any(Array),
+      }),
       {
         expectedUpdatedAt: '2026-07-30T08:00:00.000Z',
         resolution: 'detect',
@@ -82,7 +86,11 @@ describe('EventRecurrenceMutationService', () => {
         participants: [7, 9],
       }),
       expect.any(Object),
-      {},
+      expect.objectContaining({
+        suppressNotificationSubscriptions: true,
+        calendarDeliveryOperation: undefined,
+        postCommitTasks: expect.any(Array),
+      }),
       expect.objectContaining({ postCommitTasks: expect.any(Array) }),
     );
     expect(

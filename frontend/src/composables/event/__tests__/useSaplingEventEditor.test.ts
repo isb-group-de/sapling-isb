@@ -208,6 +208,27 @@ describe('useSaplingEventEditor', () => {
     expect(harness.queueScrollToTime).toHaveBeenCalledWith('2026-07-15T09:00:00.000Z')
   })
 
+  it('does not reopen a dragged event from the synchronized route and clear its dirty fields', async () => {
+    const harness = createHarness()
+    harness.loadPersistedEvent.mockResolvedValue(createEventItem())
+    const draggedEvent = {
+      start: new Date(2026, 6, 15, 11).getTime(),
+      end: new Date(2026, 6, 15, 12).getTime(),
+      event: { handle: 42 },
+      timed: true,
+    } as CalendarEvent
+
+    await harness.editor.openPersistedEventEditor(draggedEvent, ['startDate', 'endDate'])
+    mocks.route.query = { open: '42' }
+
+    await expect(harness.editor.openEventFromRoute()).resolves.toBe(false)
+
+    expect(harness.loadPersistedEvent).toHaveBeenCalledTimes(1)
+    expect(harness.forceEditDialogDirtyFields.value).toEqual(['startDate', 'endDate'])
+    expect(harness.editEvent.value?.start).toBe(draggedEvent.start)
+    expect(harness.editEvent.value?.end).toBe(draggedEvent.end)
+  })
+
   it('restores the drag snapshot and refreshes when editing is cancelled', async () => {
     const harness = createHarness()
     harness.editEvent.value = { start: 1, end: 2 } as CalendarEvent

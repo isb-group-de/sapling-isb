@@ -23,6 +23,7 @@ type CalendarProvider = 'google' | 'azure';
 
 type CalendarDeliveryPayload = {
   provider: CalendarProvider;
+  operation?: 'remove-recurrence';
   sessionHandle?: number;
   session?: {
     accessToken?: string;
@@ -53,6 +54,8 @@ function isCalendarDeliveryPayload(
   return (
     isRecord(payload) &&
     (payload.provider === 'google' || payload.provider === 'azure') &&
+    (payload.operation === undefined ||
+      payload.operation === 'remove-recurrence') &&
     ((typeof payload.sessionHandle === 'number' && payload.sessionHandle > 0) ||
       (isRecord(payload.session) &&
         ((typeof payload.session.accessToken === 'string' &&
@@ -190,6 +193,7 @@ export class CalendarDeliveryExecutor {
         eventHandle,
         accessToken,
         sessionContext.personHandle,
+        delivery.payload.operation,
       );
 
       if (await this.persistSuccess(em, delivery, providerResponse)) {
@@ -203,6 +207,7 @@ export class CalendarDeliveryExecutor {
         sessionContext,
         eventHandle,
         deliveryId,
+        delivery.payload.operation,
       );
       if (retried) {
         return;
@@ -289,20 +294,35 @@ export class CalendarDeliveryExecutor {
     eventHandle: number,
     accessToken: string,
     personHandle?: number,
+    operation?: 'remove-recurrence',
   ): Promise<unknown> {
     if (provider === 'google') {
-      return this.googleCalendarService.setEvent(
-        eventHandle,
-        accessToken,
-        personHandle,
-      );
+      return operation
+        ? this.googleCalendarService.setEvent(
+            eventHandle,
+            accessToken,
+            personHandle,
+            operation,
+          )
+        : this.googleCalendarService.setEvent(
+            eventHandle,
+            accessToken,
+            personHandle,
+          );
     }
 
-    return this.azureCalendarService.setEvent(
-      eventHandle,
-      accessToken,
-      personHandle,
-    );
+    return operation
+      ? this.azureCalendarService.setEvent(
+          eventHandle,
+          accessToken,
+          personHandle,
+          operation,
+        )
+      : this.azureCalendarService.setEvent(
+          eventHandle,
+          accessToken,
+          personHandle,
+        );
   }
 
   private async persistFailureWithFallback(
@@ -380,6 +400,7 @@ export class CalendarDeliveryExecutor {
     sessionContext: ResolvedCalendarSession,
     eventHandle: number,
     deliveryId: number,
+    operation?: 'remove-recurrence',
   ): Promise<boolean> {
     if (!sessionContext.refreshToken) {
       return false;
@@ -405,6 +426,7 @@ export class CalendarDeliveryExecutor {
         eventHandle,
         refreshedToken,
         sessionContext.personHandle,
+        operation,
       );
 
       const persisted = await this.persistSuccess(

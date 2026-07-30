@@ -21,12 +21,14 @@ describe('api.error.service', () => {
           status: 409,
           data: {
             message: 'global.deleteError',
-            error:
-              'Der Datensatz kann nicht geloescht werden, weil er noch von "favorite_item" verwendet wird.',
+            error: 'exception.deleteReferencedRecord',
             details: {
-              summary:
-                'Der Datensatz kann nicht geloescht werden, weil er noch von "favorite_item" verwendet wird.',
-              referencingTable: 'favorite_item',
+              summary: 'exception.deleteReferencedRecord',
+              summaryKey: 'exception.deleteReferencedRecord',
+              summaryParams: {
+                entityHandle: 'favorite',
+              },
+              referencingEntityHandle: 'favorite',
             },
             technical: {
               exception: {
@@ -46,7 +48,10 @@ describe('api.error.service', () => {
     )
 
     expect(result.message).toBe('global.deleteError')
-    expect(result.description).toContain('favorite_item')
+    expect(result.description).toBe('exception.deleteReferencedRecord')
+    expect(result.descriptionParams).toEqual({
+      entityHandle: 'favorite',
+    })
     expect(result.technical).toMatchObject({
       client: {
         method: 'delete',
@@ -64,5 +69,21 @@ describe('api.error.service', () => {
         },
       },
     })
+  })
+
+  it('does not show generic HTTP client text as a user description', () => {
+    const result = resolveApiError({
+      message: 'Request failed with status code 500',
+      response: {
+        status: 500,
+        data: {
+          error: 'Internal Server Error',
+        },
+      },
+    })
+
+    expect(result.message).toBe('exception.serverException')
+    expect(result.description).toBe('')
+    expect(result.technical).toBeDefined()
   })
 })

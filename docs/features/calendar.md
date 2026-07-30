@@ -237,6 +237,21 @@ business, ownership, classification, duration, privacy, and reference fields
 are copied. The request may include `expectedUpdatedAt` for optimistic
 concurrency.
 
+Materialization is an internal structural conversion, not a second user
+notification signal. It therefore suppresses lifecycle-driven Inbox, Teams, and
+email notifications for the source update and generated Events. Entity hooks
+and webhooks still run, so participant defaults, downstream integrations, and
+external calendar synchronization remain active. Azure/Google delivery creation
+is collected as post-commit work and starts only after the complete
+materialization transaction has committed; Redis workers can therefore resolve
+every delivery and Event id.
+
+The source delivery also carries an explicit recurrence-removal operation.
+Outlook first receives a focused `recurrence: null` patch for the existing
+series master; Google receives an empty recurrence array. Because
+materialization does not change any other source fields, no second provider
+update is sent. Later occurrences are delivered as new standalone events.
+
 Open-ended series cannot be completely materialized and must first receive a
 `COUNT` or `UNTIL` limit. Series above the shared 100-occurrence calendar limit
 are rejected instead of being partially converted. The resulting standalone

@@ -167,7 +167,22 @@ describe('GenericMutationService', () => {
 
     await expect(
       service.deleteAndFlush('ticket', () => undefined, { handle: 7 }),
-    ).rejects.toThrow(BadRequestException);
+    ).rejects.toMatchObject({
+      response: expect.objectContaining({
+        message: 'global.deleteError',
+        error: 'exception.deletePersistenceFailed',
+        details: {
+          summary: 'exception.deletePersistenceFailed',
+          summaryKey: 'exception.deletePersistenceFailed',
+          entityHandle: 'ticket',
+        },
+        technical: expect.objectContaining({
+          exception: expect.objectContaining({
+            message: 'broken persistence',
+          }),
+        }),
+      }),
+    });
   });
 
   it('maps foreign key violations to actionable conflict errors', async () => {
@@ -205,10 +220,20 @@ describe('GenericMutationService', () => {
       response: expect.objectContaining({
         message: 'global.deleteError',
         details: expect.objectContaining({
-          referencingTable: 'favorite_item',
-          referencedColumn: 'handle',
-          referencedValue: '113',
-          constraint: 'favorite_item_person_handle_foreign',
+          summary: 'exception.deleteReferencedRecord',
+          summaryKey: 'exception.deleteReferencedRecord',
+          summaryParams: {
+            entityHandle: 'favorite',
+          },
+          referencingEntityHandle: 'favorite',
+        }),
+        technical: expect.objectContaining({
+          exception: expect.objectContaining({
+            referencingTable: 'favorite_item',
+            referencedColumn: 'handle',
+            referencedValue: '113',
+            constraint: 'favorite_item_person_handle_foreign',
+          }),
         }),
       }),
     });

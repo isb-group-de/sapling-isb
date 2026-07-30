@@ -7,7 +7,10 @@ import {
 import { EntityManager } from '@mikro-orm/core';
 import { EntityItem } from '../../entity/EntityItem';
 import { PersonItem } from '../../entity/PersonItem';
-import type { ScriptServerContext } from '../../script/core/script.interface';
+import type {
+  ScriptPostCommitTask,
+  ScriptServerContext,
+} from '../../script/core/script.interface';
 import { ScriptMethods } from '../script/script.service';
 import { TemplateService } from '../template/template.service';
 import { EntityTemplateDto } from '../template/dto/entity-template.dto';
@@ -38,10 +41,7 @@ type GenericMutationPayload = {
   [key: string]: any;
 };
 
-export type GenericPostCommitTask = {
-  label: string;
-  operation: () => Promise<void>;
-};
+export type GenericPostCommitTask = ScriptPostCommitTask;
 
 export type GenericMutationLifecycleOptions = {
   postCommitTasks?: GenericPostCommitTask[];
@@ -195,13 +195,15 @@ export class GenericEntityMutationService {
     );
     this.invalidateSecurityPrincipalAfterMutation(entityHandle, newData);
     this.queueSearchIndexUpsert(lifecycleOptions, entityHandle, newData);
-    this.queueBackgroundTask(lifecycleOptions, 'emailAutomation', () =>
-      this.emailAutomationService.handleAfterInsert(
-        entityHandle,
-        newData,
-        currentUser,
-      ),
-    );
+    if (!scriptContext.suppressNotificationSubscriptions) {
+      this.queueBackgroundTask(lifecycleOptions, 'emailAutomation', () =>
+        this.emailAutomationService.handleAfterInsert(
+          entityHandle,
+          newData,
+          currentUser,
+        ),
+      );
+    }
 
     const hydrated = await this.genericCustomFieldService.hydrateRecords(
       entityHandle,
@@ -421,15 +423,17 @@ export class GenericEntityMutationService {
         template,
         submittedSnapshot,
       );
-    this.queueBackgroundTask(lifecycleOptions, 'emailAutomation', () =>
-      this.emailAutomationService.handleAfterUpdate(
-        entityHandle,
-        handle,
-        oldSnapshot,
-        newSnapshot,
-        currentUser,
-      ),
-    );
+    if (!scriptContext.suppressNotificationSubscriptions) {
+      this.queueBackgroundTask(lifecycleOptions, 'emailAutomation', () =>
+        this.emailAutomationService.handleAfterUpdate(
+          entityHandle,
+          handle,
+          oldSnapshot,
+          newSnapshot,
+          currentUser,
+        ),
+      );
+    }
 
     const hydrated = await this.genericCustomFieldService.hydrateRecords(
       entityHandle,

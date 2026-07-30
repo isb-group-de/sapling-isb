@@ -9,6 +9,7 @@ import {
   ScriptResultServerMethods,
 } from './core/script.result.server.js';
 import { EventItem } from '../entity/EventItem.js';
+import type { ScriptServerContext } from './core/script.interface.js';
 
 /**
  * Controller for Note entity scripts.
@@ -59,11 +60,14 @@ export class EventController extends ScriptClass {
    * @param {EventItem[]} items - The new Event records to be inserted.
    * @returns {Promise<ScriptResultServer>} The result of the before insert event.
    */
-  async afterInsert(items: EventItem[]): Promise<ScriptResultServer> {
+  async afterInsert(
+    items: EventItem[],
+    context?: ScriptServerContext,
+  ): Promise<ScriptResultServer> {
     this.logDebug('afterInsert', 'Handling event insert hook', {
       itemCount: items.length,
     });
-    return this.sendEvent('afterInsert', items);
+    return this.sendEvent('afterInsert', items, context);
   }
 
   /**
@@ -73,11 +77,14 @@ export class EventController extends ScriptClass {
    * @param {EventItem[]} items - The new Event records to be inserted.
    * @returns {Promise<ScriptResultServer>} The result of the before insert event.
    */
-  async afterUpdate(items: EventItem[]): Promise<ScriptResultServer> {
+  async afterUpdate(
+    items: EventItem[],
+    context?: ScriptServerContext,
+  ): Promise<ScriptResultServer> {
     this.logDebug('afterUpdate', 'Handling event update hook', {
       itemCount: items.length,
     });
-    return this.sendEvent('afterUpdate', items);
+    return this.sendEvent('afterUpdate', items, context);
   }
 
   /**
@@ -88,6 +95,7 @@ export class EventController extends ScriptClass {
   private async sendEvent(
     operation: 'afterInsert' | 'afterUpdate',
     items: EventItem[],
+    context?: ScriptServerContext,
   ): Promise<ScriptResultServer> {
     this.logDebug(operation, 'Starting calendar synchronization', {
       itemCount: items.length,
@@ -103,10 +111,7 @@ export class EventController extends ScriptClass {
               this.logInfo(operation, 'Queueing Azure calendar event', {
                 eventHandle: event.handle,
               });
-              await this.azureCalendarService.queueEvent(
-                event,
-                this.user.session,
-              );
+              await this.queueCalendarEvent(operation, 'azure', event, context);
               this.logDebug(operation, 'Azure calendar event queued', {
                 eventHandle: event.handle,
               });
@@ -129,9 +134,11 @@ export class EventController extends ScriptClass {
               this.logInfo(operation, 'Queueing Google calendar event', {
                 eventHandle: event.handle,
               });
-              await this.googleCalendarService.queueEvent(
+              await this.queueCalendarEvent(
+                operation,
+                'google',
                 event,
-                this.user.session,
+                context,
               );
               this.logDebug(operation, 'Google calendar event queued', {
                 eventHandle: event.handle,
@@ -167,6 +174,64 @@ export class EventController extends ScriptClass {
       itemCount: items.length,
     });
     return new ScriptResultServer(items);
+  }
+
+  private async queueCalendarEvent(
+    operation: 'afterInsert' | 'afterUpdate',
+    provider: 'azure' | 'google',
+    event: EventItem,
+    context?: ScriptServerContext,
+  ): Promise<void> {
+    const queueEvent = async () => {
+      let persistedEvent = event;
+
+      if (context?.postCommitTasks) {
+        if (typeof event.handle !== 'number') {
+          throw new Error('calendar.eventHandleRequired');
+        }
+        if (!this.em) {
+          throw new Error('calendar.entityManagerRequired');
+        }
+
+        const reloadedEvent = await this.em.findOne(
+          EventItem,
+          { handle: event.handle },
+          { populate: ['type'] },
+        );
+        if (!reloadedEvent) {
+          throw new Error('calendar.eventNotFound');
+        }
+        persistedEvent = reloadedEvent;
+      }
+
+      const calendarService =
+        provider === 'azure'
+          ? this.azureCalendarService
+          : this.googleCalendarService;
+      if (!calendarService || !this.user.session) {
+        throw new Error('calendar.serviceOrSessionRequired');
+      }
+
+      if (context?.calendarDeliveryOperation) {
+        await calendarService.queueEvent(
+          persistedEvent,
+          this.user.session,
+          context.calendarDeliveryOperation,
+        );
+      } else {
+        await calendarService.queueEvent(persistedEvent, this.user.session);
+      }
+    };
+
+    if (context?.postCommitTasks) {
+      context.postCommitTasks.push({
+        label: `calendarDelivery:${operation}:${event.handle ?? 'unknown'}`,
+        operation: queueEvent,
+      });
+      return;
+    }
+
+    await queueEvent();
   }
 
   private ensureDefaultParticipants(event: EventItem): void {

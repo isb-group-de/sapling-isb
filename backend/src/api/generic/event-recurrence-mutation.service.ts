@@ -43,6 +43,19 @@ export class EventRecurrenceMutationService {
 
     const postCommitTasks: GenericPostCommitTask[] = [];
     const handles: Array<string | number> = [];
+    const materializationContext: ScriptServerContext = {
+      ...scriptContext,
+      suppressNotificationSubscriptions: true,
+      postCommitTasks,
+    };
+    const sourceMaterializationContext: ScriptServerContext = {
+      ...materializationContext,
+      calendarDeliveryOperation: 'remove-recurrence',
+    };
+    const occurrenceMaterializationContext: ScriptServerContext = {
+      ...materializationContext,
+      calendarDeliveryOperation: undefined,
+    };
 
     await this.em.transactional(
       async () => {
@@ -93,7 +106,7 @@ export class EventRecurrenceMutationService {
           { recurrenceRule: null },
           currentUser,
           [],
-          scriptContext,
+          sourceMaterializationContext,
           {
             expectedUpdatedAt: request.expectedUpdatedAt,
             resolution: 'detect',
@@ -107,7 +120,7 @@ export class EventRecurrenceMutationService {
             'event',
             this.buildOccurrencePayload(event, occurrence),
             currentUser,
-            scriptContext,
+            occurrenceMaterializationContext,
             { postCommitTasks },
           );
           const createdHandle = this.extractHandle(created);

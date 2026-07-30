@@ -1,6 +1,6 @@
 <template>
   <v-row density="comfortable" class="sapling-field-date-time">
-    <v-col :cols="8">
+    <v-col class="sapling-field-date-time__date">
       <v-date-input
         :label="computedLabel"
         :model-value="dateValue"
@@ -13,7 +13,7 @@
         @update:model-value="updateDate"
       />
     </v-col>
-    <v-col :cols="4">
+    <v-col class="sapling-field-date-time__time">
       <v-text-field
         type="time"
         label=""

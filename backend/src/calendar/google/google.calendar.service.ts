@@ -84,7 +84,11 @@ export class GoogleCalendarService {
    * @param {PersonSessionItem} session The user session containing access tokens
    * @returns {Promise<any>} The result of the queue operation or null if Redis is disabled
    */
-  async queueEvent(event: EventItem, session: PersonSessionItem) {
+  async queueEvent(
+    event: EventItem,
+    session: PersonSessionItem,
+    operation?: 'remove-recurrence',
+  ) {
     if (typeof session.handle !== 'number') {
       throw new Error('calendar.sessionHandleRequired');
     }
@@ -93,6 +97,7 @@ export class GoogleCalendarService {
     return await this.eventDeliveryService.queueEventDelivery(event, {
       provider: 'google',
       sessionHandle: session.handle,
+      ...(operation ? { operation } : {}),
     });
   }
 
@@ -109,6 +114,7 @@ export class GoogleCalendarService {
     eventHandle: number,
     accessToken: string,
     personHandle?: number,
+    operation?: 'remove-recurrence',
   ): Promise<any> {
     const calendar = google.calendar({ version: 'v3' });
     // Fork EntityManager for context-specific actions
@@ -129,6 +135,10 @@ export class GoogleCalendarService {
 
     if (!event.status) {
       return null;
+    }
+
+    if (operation === 'remove-recurrence') {
+      event.recurrenceRule = null;
     }
 
     const reference = await emFork.findOne(EventGoogleItem, {
@@ -155,6 +165,7 @@ export class GoogleCalendarService {
             reference,
             accessToken,
             classificationMappings,
+            operation,
           );
         } else {
           return await this.createEvent(
@@ -606,7 +617,17 @@ export class GoogleCalendarService {
     reference: EventGoogleItem,
     accessToken: string,
     classificationMappings?: CalendarClassificationMapping[] | null,
+    operation?: 'remove-recurrence',
   ): Promise<any> {
+    if (operation === 'remove-recurrence') {
+      return await calendar.events.patch({
+        calendarId: 'primary',
+        eventId: reference.referenceHandle,
+        requestBody: { recurrence: [] },
+        auth: accessToken,
+      });
+    }
+
     const eventResource = buildGoogleCalendarEvent(
       event,
       classificationMappings,

@@ -262,6 +262,16 @@
   padding-block: 0;
 }
 
+.sapling-field-date-time__date {
+  flex: 3 1 9rem;
+  max-width: 100%;
+}
+
+.sapling-field-date-time__time {
+  flex: 2 1 6.75rem;
+  max-width: 100%;
+}
+
 .sapling-field-date-time .v-input {
   width: 100%;
 }

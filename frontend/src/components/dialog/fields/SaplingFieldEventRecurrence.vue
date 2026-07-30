@@ -237,7 +237,7 @@ const emit = defineEmits<{
   (event: 'update:modelValue', value: string | null): void
 }>()
 
-const { t } = useI18n()
+const { locale, t } = useI18n()
 
 const dialog = ref(false)
 const draftFrequency = ref<'NONE' | RecurrenceFrequency>('NONE')
@@ -425,7 +425,14 @@ function buildSummaryParts(state: RecurrenceDraftState): string[] {
   }
 
   if (state.endMode === 'until' && state.untilDate) {
-    const untilLabel = state.untilTime ? `${state.untilDate} ${state.untilTime}` : state.untilDate
+    const untilDate = parseDateInput(state.untilDate)
+    if (untilDate && state.untilTime) {
+      const [hours, minutes] = state.untilTime.split(':').map(Number)
+      untilDate.setHours(hours || 0, minutes || 0, 0, 0)
+    }
+    const untilLabel = untilDate
+      ? formatDateTimeSummary(untilDate, Boolean(state.untilTime))
+      : state.untilDate
     parts.push(`${t('event.recurrenceEndsOn')} ${untilLabel}`)
   }
 
@@ -546,14 +553,18 @@ function formatLocalTime(date: Date) {
   ].join(':')
 }
 
-function formatDateTimeSummary(date: Date) {
-  const dateLabel = formatLocalDate(date)
-
-  if (props.isAllDay) {
-    return dateLabel
-  }
-
-  return `${dateLabel} ${formatLocalTime(date)}`
+function formatDateTimeSummary(date: Date, includeTime = props.isAllDay !== true) {
+  return new Intl.DateTimeFormat(locale.value, {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    ...(includeTime
+      ? {
+          hour: '2-digit' as const,
+          minute: '2-digit' as const,
+        }
+      : {}),
+  }).format(date)
 }
 
 function stringifyValue(value: unknown) {

@@ -10,6 +10,28 @@ export type ScriptServerContext = {
   referenceItems?: object[];
   clientLocale?: string;
   clientTimeZone?: string;
+  /**
+   * Internal mutation workflows can suppress lifecycle-driven Inbox, Teams,
+   * and email notifications without skipping entity hooks or webhooks.
+   */
+  suppressNotificationSubscriptions?: boolean;
+  /**
+   * Calendar-specific intent that must survive asynchronous delivery.
+   * Recurrence materialization uses this to convert the provider series
+   * master into the first standalone event.
+   */
+  calendarDeliveryOperation?: 'remove-recurrence';
+  /**
+   * Work that must only start after an enclosing transaction has committed.
+   * Calendar materialization uses this to keep Redis workers from observing
+   * delivery/event ids before they are visible outside the transaction.
+   */
+  postCommitTasks?: ScriptPostCommitTask[];
+};
+
+export type ScriptPostCommitTask = {
+  label: string;
+  operation: () => Promise<void>;
 };
 
 /**

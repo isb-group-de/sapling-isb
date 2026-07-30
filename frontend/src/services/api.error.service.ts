@@ -5,6 +5,7 @@ export interface ApiErrorPayload {
   message: string
   description: string
   technical?: unknown
+  descriptionParams?: Record<string, unknown>
 }
 
 const messageCenter = useSaplingMessageCenter()
@@ -25,6 +26,7 @@ export function resolveApiError(
   let message = fallbackMessage
   let description = ''
   let technical: unknown
+  let descriptionParams: Record<string, unknown> | undefined
 
   if (typeof error === 'object' && error !== null) {
     const err = error as {
@@ -39,7 +41,14 @@ export function resolveApiError(
               path?: string
               method?: string
               timestamp?: string
-              details?: { summary?: string } | unknown
+              details?:
+                | {
+                    summary?: string
+                    summaryKey?: string
+                    summaryParams?: Record<string, unknown>
+                    referencingEntityHandle?: string
+                  }
+                | unknown
               technical?: unknown
             }
           | string
@@ -69,6 +78,27 @@ export function resolveApiError(
       typeof responseDetails.summary === 'string'
         ? responseDetails.summary
         : ''
+    const responseSummaryKey =
+      typeof responseDetails === 'object' &&
+      responseDetails !== null &&
+      'summaryKey' in responseDetails &&
+      typeof responseDetails.summaryKey === 'string'
+        ? responseDetails.summaryKey
+        : ''
+    const responseSummaryParams =
+      typeof responseDetails === 'object' &&
+      responseDetails !== null &&
+      'summaryParams' in responseDetails &&
+      isRecord(responseDetails.summaryParams)
+        ? responseDetails.summaryParams
+        : undefined
+    const referencingEntityHandle =
+      typeof responseDetails === 'object' &&
+      responseDetails !== null &&
+      'referencingEntityHandle' in responseDetails &&
+      typeof responseDetails.referencingEntityHandle === 'string'
+        ? responseDetails.referencingEntityHandle
+        : undefined
 
     if (responseMessage?.startsWith('exception.')) {
       message = responseMessage
@@ -84,7 +114,10 @@ export function resolveApiError(
       message = 'exception.serverException'
     }
 
-    description = responseSummary || responseError || err.message || ''
+    description = responseSummaryKey || responseSummary || normalizeResponseError(responseError)
+    descriptionParams =
+      responseSummaryParams ??
+      (referencingEntityHandle ? { entityHandle: referencingEntityHandle } : undefined)
     technical = {
       client: {
         code: err.code,
@@ -102,7 +135,7 @@ export function resolveApiError(
     }
   }
 
-  return { message, description, technical }
+  return { message, description, technical, descriptionParams }
 }
 
 export function pushApiErrorMessage(
@@ -110,11 +143,31 @@ export function pushApiErrorMessage(
   fallbackMessage: string,
   context: string,
 ): void {
-  const { message, description, technical } = resolveApiError(error, fallbackMessage)
+  const { message, description, technical, descriptionParams } = resolveApiError(
+    error,
+    fallbackMessage,
+  )
   if (message === 'exception.unauthorized') {
     useAuthStore().clear()
   }
-  messageCenter.pushMessage('error', message, description, context, technical)
+  messageCenter.pushMessage('error', message, description, context, technical, descriptionParams)
+}
+
+function normalizeResponseError(responseError: string | undefined): string {
+  if (
+    !responseError ||
+    /^(bad request|unauthorized|forbidden|not found|conflict|internal server error)$/i.test(
+      responseError.trim(),
+    )
+  ) {
+    return ''
+  }
+
+  return responseError
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
 function redactPayload(payload: unknown): unknown {

@@ -347,6 +347,12 @@ export function useSaplingEventEditor(options: UseSaplingEventEditorOptions) {
     if (forcedDirtyFields.length === 0) {
       options.clearDragSnapshot()
     }
+    // Opening the editor synchronizes the handle into the route. Mark this
+    // handle as handled before the route watcher runs, otherwise it opens the
+    // same record a second time and clears calendar-interaction dirty fields.
+    if (handle != null) {
+      lastAutoOpenedEventHandle = String(handle)
+    }
     options.showEditDialog.value = true
   }
 

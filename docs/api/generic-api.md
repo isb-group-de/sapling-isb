@@ -426,6 +426,19 @@ frontend/src/components/dialog/
 
 The frontend should prefer generic API calls for registered entities unless a feature needs a specialized workflow endpoint.
 
+## Persistence Error Contract
+
+Generic persistence errors separate user-facing data from diagnostics. A
+foreign-key conflict returns a translation key in `details.summaryKey` and, when
+the referencing table belongs to a registered entity, its public handle in
+`details.summaryParams.entityHandle`. Clients resolve that handle through the
+entity/navigation translations.
+
+Database table names, constraints, column names, values, and exception stacks
+belong only in `technical`. Do not interpolate those identifiers into
+`details.summary` or another user-visible string. When a database table cannot
+be mapped to a registered entity, use the generic translated conflict message.
+
 ## MCP Relationship
 
 Sapling MCP tools such as `generic_list`, `generic_get`, `generic_create`, `generic_update`, and `generic_delete` call the same generic services and apply the same permission model.

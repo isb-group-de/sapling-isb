@@ -1,0 +1,56 @@
+[
+  {
+    "entity": "exception",
+    "property": "deleteReferencedRecord",
+    "de": "Der Datensatz kann nicht gelöscht werden, weil er noch von „{entity}“ verwendet wird.",
+    "en": "The record cannot be deleted because it is still used by “{entity}”."
+  },
+  {
+    "entity": "exception",
+    "property": "deleteReferencedRecordGeneric",
+    "de": "Der Datensatz kann nicht gelöscht werden, weil er noch von anderen Daten verwendet wird.",
+    "en": "The record cannot be deleted because it is still used by other data."
+  },
+  {
+    "entity": "exception",
+    "property": "saveReferencedRecord",
+    "de": "Der Datensatz kann nicht gespeichert werden, weil er noch von „{entity}“ verwendet wird.",
+    "en": "The record cannot be saved because it is still used by “{entity}”."
+  },
+  {
+    "entity": "exception",
+    "property": "saveReferencedRecordGeneric",
+    "de": "Der Datensatz kann nicht gespeichert werden, weil er noch von anderen Daten verwendet wird.",
+    "en": "The record cannot be saved because it is still used by other data."
+  },
+  {
+    "entity": "exception",
+    "property": "createPersistenceFailed",
+    "de": "Der Datensatz konnte nicht erstellt werden. Bitte prüfe die Eingaben und versuche es erneut.",
+    "en": "The record could not be created. Check the input and try again."
+  },
+  {
+    "entity": "exception",
+    "property": "updatePersistenceFailed",
+    "de": "Der Datensatz konnte nicht gespeichert werden. Bitte prüfe die Eingaben und versuche es erneut.",
+    "en": "The record could not be saved. Check the input and try again."
+  },
+  {
+    "entity": "exception",
+    "property": "deletePersistenceFailed",
+    "de": "Der Datensatz konnte nicht gelöscht werden. Bitte versuche es erneut.",
+    "en": "The record could not be deleted. Please try again."
+  },
+  {
+    "entity": "messageCenter",
+    "property": "detailsUnavailable",
+    "de": "Weitere Informationen sind derzeit nicht verfügbar.",
+    "en": "Additional information is currently unavailable."
+  },
+  {
+    "entity": "navigation",
+    "property": "eventDelivery",
+    "de": "Kalenderübertragungen",
+    "en": "Calendar deliveries"
+  }
+]

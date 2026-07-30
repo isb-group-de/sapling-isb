@@ -384,6 +384,10 @@ export class ScriptService {
         ? result.items
         : items;
 
+    if (context?.suppressNotificationSubscriptions) {
+      return result;
+    }
+
     if (
       !(await this.runSubscription(
         method,

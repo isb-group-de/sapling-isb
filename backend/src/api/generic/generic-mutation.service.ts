@@ -17,6 +17,7 @@ import {
   buildForeignKeyViolationDiagnostics,
 } from '../common/error-diagnostics.util';
 import { normalizeSaplingPhonePayload } from '../common/sapling-phone.util';
+import { getEntityHandleByTableName } from '../common/entity-table-name.util';
 
 @Injectable()
 export class GenericMutationService {
@@ -154,22 +155,25 @@ export class GenericMutationService {
       if (foreignKeyViolation) {
         const referencingTable =
           foreignKeyViolation.referencingTable ?? foreignKeyViolation.table;
-        const actionLabel =
-          operationName === 'delete' ? 'geloescht' : 'gespeichert';
-        const summary = referencingTable
-          ? `Der Datensatz kann nicht ${actionLabel} werden, weil er noch von "${referencingTable}" verwendet wird.`
-          : `Der Datensatz kann nicht ${actionLabel} werden, weil er noch von anderen Daten verwendet wird.`;
+        const referencingEntityHandle =
+          getEntityHandleByTableName(referencingTable);
+        const summaryKey = this.getReferenceConflictMessage(
+          operationName,
+          Boolean(referencingEntityHandle),
+        );
+        const summaryParams = referencingEntityHandle
+          ? { entityHandle: referencingEntityHandle }
+          : undefined;
 
         throw new ConflictException({
           message: this.getPersistenceErrorMessage(operationName),
-          error: summary,
+          error: summaryKey,
           details: {
-            summary,
+            summary: summaryKey,
+            summaryKey,
+            summaryParams,
             entityHandle,
-            referencingTable,
-            referencedColumn: foreignKeyViolation.referencedColumn,
-            referencedValue: foreignKeyViolation.referencedValue,
-            constraint: foreignKeyViolation.constraint,
+            referencingEntityHandle,
           },
           technical: {
             operation: `generic.${operationName}`,
@@ -180,11 +184,14 @@ export class GenericMutationService {
       }
 
       if (error instanceof Error) {
+        const summaryKey = `exception.${operationName}PersistenceFailed`;
+
         throw new BadRequestException({
-          message: `global.${error.name.charAt(0).toLowerCase() + error.name.slice(1)}`,
-          error: error.message,
+          message: this.getPersistenceErrorMessage(operationName),
+          error: summaryKey,
           details: {
-            summary: error.message,
+            summary: summaryKey,
+            summaryKey,
             entityHandle,
           },
           technical: {
@@ -197,6 +204,18 @@ export class GenericMutationService {
 
       throw error;
     }
+  }
+
+  private getReferenceConflictMessage(
+    operationName: 'create' | 'update' | 'delete',
+    hasReferencingEntity: boolean,
+  ): string {
+    const action = operationName === 'delete' ? 'delete' : 'save';
+    const suffix = hasReferencingEntity
+      ? 'ReferencedRecord'
+      : 'ReferencedRecordGeneric';
+
+    return `exception.${action}${suffix}`;
   }
 
   private getPersistenceErrorMessage(

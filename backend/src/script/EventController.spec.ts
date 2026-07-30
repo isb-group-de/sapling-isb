@@ -64,6 +64,99 @@ describe('EventController', () => {
     expect(result.method).toBe(ScriptResultServerMethods.none);
   });
 
+  it('defers materialized event deliveries until after commit and reloads their ids', async () => {
+    const azureQueueEvent = jest.fn(() => Promise.resolve(undefined));
+    const persistedItems = new Map<number, EventItem>([
+      [1, { handle: 1 } as EventItem],
+      [2, { handle: 2 } as EventItem],
+    ]);
+    const em = {
+      findOne: jest.fn((_entity: unknown, where: { handle: number }) =>
+        Promise.resolve(persistedItems.get(where.handle) ?? null),
+      ),
+    };
+    const user = {
+      type: { handle: 'azure' },
+      session: { handle: 8 },
+    } as unknown as PersonItem;
+    const controller = new EventController(
+      { handle: 'event' } as never,
+      user,
+      em as never,
+      { queueEvent: azureQueueEvent } as never,
+      {} as never,
+    );
+    const postCommitTasks: Array<{
+      label: string;
+      operation: () => Promise<void>;
+    }> = [];
+
+    await controller.afterInsert(
+      [{ handle: 1 }, { handle: 2 }] as EventItem[],
+      {
+        suppressNotificationSubscriptions: true,
+        postCommitTasks,
+      },
+    );
+
+    expect(azureQueueEvent).not.toHaveBeenCalled();
+    expect(postCommitTasks.map((task) => task.label)).toEqual([
+      'calendarDelivery:afterInsert:1',
+      'calendarDelivery:afterInsert:2',
+    ]);
+
+    for (const task of postCommitTasks) {
+      await task.operation();
+    }
+
+    expect(em.findOne).toHaveBeenCalledTimes(2);
+    expect(asMock(azureQueueEvent)).toHaveBeenNthCalledWith(
+      1,
+      persistedItems.get(1),
+      user.session,
+    );
+    expect(asMock(azureQueueEvent)).toHaveBeenNthCalledWith(
+      2,
+      persistedItems.get(2),
+      user.session,
+    );
+  });
+
+  it('persists the explicit recurrence-removal operation in the source delivery', async () => {
+    const azureQueueEvent = jest.fn(() => Promise.resolve(undefined));
+    const persistedEvent = { handle: 1 } as EventItem;
+    const em = {
+      findOne: jest.fn(() => Promise.resolve(persistedEvent)),
+    };
+    const user = {
+      type: { handle: 'azure' },
+      session: { handle: 8 },
+    } as unknown as PersonItem;
+    const controller = new EventController(
+      { handle: 'event' } as never,
+      user,
+      em as never,
+      { queueEvent: azureQueueEvent } as never,
+      {} as never,
+    );
+    const postCommitTasks: Array<{
+      label: string;
+      operation: () => Promise<void>;
+    }> = [];
+
+    await controller.afterUpdate([persistedEvent], {
+      calendarDeliveryOperation: 'remove-recurrence',
+      postCommitTasks,
+    });
+    await postCommitTasks[0].operation();
+
+    expect(asMock(azureQueueEvent)).toHaveBeenCalledWith(
+      persistedEvent,
+      user.session,
+      'remove-recurrence',
+    );
+  });
+
   it('defaults empty participants to assignee and creator before create', async () => {
     const controller = new EventController(
       { handle: 'event' } as never,

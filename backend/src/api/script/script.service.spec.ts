@@ -233,4 +233,44 @@ describe('ScriptService', () => {
       undefined,
     );
   });
+
+  it('keeps entity hooks and webhooks but suppresses notification subscriptions for internal materialization', async () => {
+    const em = {
+      findAll: jest.fn(() => Promise.resolve([])),
+    };
+    const webhookService = {
+      querySubscription: jest.fn(),
+    };
+    const service = new ScriptService(
+      em as never,
+      webhookService as never,
+      {} as never,
+      {} as never,
+      {} as never,
+      {} as never,
+      {} as never,
+      {} as never,
+    );
+    const expectedResult = new ScriptResultServer([{ handle: 42 }]);
+    const runServerMethod = jest
+      .spyOn(service, 'runServerMethod')
+      .mockResolvedValue(expectedResult);
+    const runSubscription = jest.spyOn(service, 'runSubscription');
+
+    await expect(
+      service.runServer(
+        ScriptMethods.afterInsert,
+        { handle: 42 },
+        { handle: 'event' } as never,
+        { handle: 9 } as never,
+        { suppressNotificationSubscriptions: true },
+      ),
+    ).resolves.toBe(expectedResult);
+    await waitForBackgroundTasks();
+
+    expect(runServerMethod).toHaveBeenCalledTimes(1);
+    expect(runSubscription).not.toHaveBeenCalled();
+    expect(em.findAll).toHaveBeenCalledTimes(1);
+    expect(webhookService.querySubscription).not.toHaveBeenCalled();
+  });
 });

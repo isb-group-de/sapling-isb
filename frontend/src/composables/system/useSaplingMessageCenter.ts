@@ -10,6 +10,7 @@ export interface Message {
   hidden: boolean
   count: number
   technical?: unknown
+  descriptionParams?: Record<string, unknown>
 }
 
 const MAX_VISIBLE_MESSAGES = 3
@@ -38,6 +39,7 @@ export function useSaplingMessageCenter() {
     description: string,
     entity: string,
     technical?: unknown,
+    descriptionParams?: Record<string, unknown>,
   ) {
     const existingMessage = messages.value.find(
       (entry) =>
@@ -45,7 +47,8 @@ export function useSaplingMessageCenter() {
         entry.type === type &&
         entry.message === message &&
         entry.entity === entity &&
-        areDescriptionsCompatible(entry.description, description),
+        areDescriptionsCompatible(entry.description, description) &&
+        areDescriptionParamsCompatible(entry.descriptionParams, descriptionParams),
     )
 
     if (existingMessage) {
@@ -53,6 +56,7 @@ export function useSaplingMessageCenter() {
       existingMessage.description = existingMessage.description || description
       existingMessage.timestamp = new Date()
       existingMessage.technical = mergeTechnicalPayload(existingMessage.technical, technical)
+      existingMessage.descriptionParams = existingMessage.descriptionParams ?? descriptionParams
       clearHideTimer(existingMessage.id)
       hideTimers.set(
         existingMessage.id,
@@ -71,6 +75,7 @@ export function useSaplingMessageCenter() {
       hidden: false,
       count: 1,
       technical,
+      descriptionParams,
     }
 
     messages.value.unshift(messageItem)
@@ -170,6 +175,13 @@ export function useSaplingMessageCenter() {
 
   function areDescriptionsCompatible(left: string, right: string) {
     return left === right || !left || !right
+  }
+
+  function areDescriptionParamsCompatible(
+    left: Record<string, unknown> | undefined,
+    right: Record<string, unknown> | undefined,
+  ) {
+    return JSON.stringify(left ?? {}) === JSON.stringify(right ?? {})
   }
   //#endregion
 

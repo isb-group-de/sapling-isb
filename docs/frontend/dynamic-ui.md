@@ -470,6 +470,18 @@ backend/src/api/current/
 
 The frontend should hide or disable actions based on permissions, but backend guards remain authoritative.
 
+## Message Center
+
+API errors may provide a translation key plus `descriptionParams`. Entity
+parameters use the stable `entityHandle`; the message center resolves them
+through `navigation.<handle>` before interpolation. It loads the `global`,
+`navigation`, `exception`, and `messageCenter` namespaces before rendering.
+
+Missing translation keys and generic HTTP-client errors must not be shown as
+user text. They fall back to localized generic wording while the original
+payload remains available in the technical log export. Raw database table,
+constraint, stack, and request details are diagnostic data only.
+
 ## Adding A Generic Entity To The UI
 
 Usually no frontend route is needed.

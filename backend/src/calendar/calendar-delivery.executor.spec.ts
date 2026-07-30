@@ -114,4 +114,56 @@ describe('CalendarDeliveryExecutor', () => {
     expect(delivery.responseStatusCode).toBe(202);
     expect(delivery.responseBody).toEqual({ ok: true });
   });
+
+  it('forwards recurrence-removal deliveries explicitly to Azure', async () => {
+    const delivery = {
+      handle: 23,
+      event: { handle: 6 },
+      payload: {
+        provider: 'azure',
+        sessionHandle: 8,
+        operation: 'remove-recurrence',
+      },
+      attemptCount: 0,
+    } as EventDeliveryItem;
+    const success = { handle: 'success' } as EventDeliveryStatusItem;
+    const session = {
+      handle: 8,
+      accessToken: 'azure-token',
+      person: { handle: 7 },
+    } as PersonSessionItem;
+    const emFork = {
+      findOne: jest.fn((entity: unknown, where: { handle?: unknown }) => {
+        if (entity === EventDeliveryItem) {
+          return delivery;
+        }
+        if (entity === PersonSessionItem) {
+          return session;
+        }
+        if (entity === EventDeliveryStatusItem && where.handle === 'success') {
+          return success;
+        }
+        return null;
+      }),
+      flush: jest.fn(() => undefined),
+    };
+    const azureCalendarService = {
+      setEvent: jest.fn(() => ({ id: 'az-2' })),
+    };
+    const executor = new CalendarDeliveryExecutor(
+      { fork: jest.fn(() => emFork) } as never,
+      { setEvent: jest.fn() } as never,
+      azureCalendarService as never,
+    );
+
+    await executor.execute(23, 1);
+
+    expect(asMock(azureCalendarService.setEvent)).toHaveBeenCalledWith(
+      6,
+      'azure-token',
+      7,
+      'remove-recurrence',
+    );
+    expect(delivery.status).toBe(success);
+  });
 });

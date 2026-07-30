@@ -34,7 +34,7 @@
                 </v-chip>
               </div>
               <div v-if="message.description" class="message__description">
-                {{ formatMessageDescription(message.description) }}
+                {{ formatDescription(message) }}
               </div>
             </template>
           </v-alert>
@@ -117,7 +117,7 @@
                       v-if="message.description"
                       class="sapling-message-center-entry__description"
                     >
-                      {{ formatMessageDescription(message.description) }}
+                      {{ formatDescription(message) }}
                     </div>
                   </template>
                   <template #subtitle>
@@ -162,19 +162,19 @@ import SaplingDialogHero from '@/components/common/SaplingDialogHero.vue'
 import SaplingSurface from '@/components/common/SaplingSurface.vue'
 import SaplingActionBarSkeleton from '@/components/actions/SaplingActionBarSkeleton.vue'
 import SaplingActionMessageCenter from '@/components/actions/SaplingActionMessageCenter.vue'
+import {
+  formatMessageDescription,
+  formatMessageTitle,
+  getMessageEntityLabel,
+  MESSAGE_CENTER_TRANSLATION_NAMESPACES,
+  type MessageTranslator,
+} from '@/utils/messageCenterPresentation'
 // #endregion
 
 // #region Composable
 const { t, te } = useI18n()
 const { isLoading: isTranslationLoading } = useTranslationLoader(
-  'global',
-  'navigation',
-  'login',
-  'exception',
-  'ai',
-  'aiEntityGeneration',
-  'providerUserImport',
-  'messageCenter',
+  ...MESSAGE_CENTER_TRANSLATION_NAMESPACES,
 )
 
 const {
@@ -191,37 +191,18 @@ const {
 } = useSaplingMessageCenter()
 
 function formatMessageLabel(message: Message) {
-  const entityLabel = getEntityLabel(message.entity)
-  const messageLabel = te(message.message) ? t(message.message) : message.message
+  const entityLabel = getMessageEntityLabel(message.entity, translate, te)
+  const messageLabel = formatMessageTitle(message.message, translate, te)
 
-  return `${entityLabel}: ${messageLabel}`
+  return entityLabel ? `${entityLabel}: ${messageLabel}` : messageLabel
 }
 
-function getEntityLabel(entity: string) {
-  const navigationKey = `navigation.${entity}`
-  if (te(navigationKey)) {
-    return t(navigationKey)
-  }
-
-  const titleKey = `${entity}.title`
-  if (te(titleKey)) {
-    return t(titleKey)
-  }
-
-  const globalKey = `global.${entity}`
-  if (te(globalKey)) {
-    return t(globalKey)
-  }
-
-  return entity
-    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
-    .replace(/[-_]+/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim()
+const translate: MessageTranslator = (key, params) => {
+  return params ? t(key, params) : t(key)
 }
 
-function formatMessageDescription(description: string) {
-  return te(description) ? t(description) : description
+function formatDescription(message: Message) {
+  return formatMessageDescription(message, translate, te)
 }
 
 function translateWithFallback(key: string, fallback: string) {

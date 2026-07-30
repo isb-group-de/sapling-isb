@@ -2,6 +2,7 @@ import { describe, expect, it, jest } from '@jest/globals';
 
 import { AzureCalendarService } from './azure.calendar.service';
 import { EventItem } from '../../entity/EventItem';
+import { EventAzureItem } from '../../entity/EventAzureItem';
 import { PersonItem } from '../../entity/PersonItem';
 
 type UpsertResult = 'created' | 'updated' | 'skipped';
@@ -21,6 +22,16 @@ type AzureCategoryServiceTestHarness = {
       ...args: unknown[]
     ) => Promise<Array<{ id?: string; displayName?: string; color?: string }>>
   >;
+};
+type AzureDeliveryServiceTestHarness = {
+  updateEvent: (
+    client: object,
+    event: EventItem,
+    reference: EventAzureItem,
+    emFork: object,
+    classificationMappings: [],
+    operation: 'remove-recurrence',
+  ) => Promise<unknown>;
 };
 
 const defaults = {
@@ -182,5 +193,43 @@ describe('AzureCalendarService Outlook master categories', () => {
       session,
       'access-token',
     );
+  });
+});
+
+describe('AzureCalendarService recurrence materialization', () => {
+  it('clears the existing series master with one focused update', async () => {
+    const patch = jest
+      .fn<(...args: unknown[]) => Promise<unknown>>()
+      .mockResolvedValueOnce({ id: 'outlook-1', recurrence: null });
+    const api = jest.fn((_path: string) => ({ patch }));
+    const service = new AzureCalendarService(
+      {} as never,
+      {} as never,
+    ) as unknown as AzureDeliveryServiceTestHarness;
+    const event = {
+      handle: 42,
+      title: 'Planning',
+      startDate: new Date('2026-07-28T11:00:00.000Z'),
+      endDate: new Date('2026-07-28T12:00:00.000Z'),
+      recurrenceRule: null,
+      participants: [],
+      type: { handle: 'appointment' },
+    } as unknown as EventItem;
+    const reference = {
+      referenceHandle: 'outlook-1',
+    } as EventAzureItem;
+
+    await service.updateEvent(
+      { api },
+      event,
+      reference,
+      { persist: jest.fn(), flush: jest.fn() },
+      [],
+      'remove-recurrence',
+    );
+
+    expect(api).toHaveBeenCalledTimes(1);
+    expect(api).toHaveBeenNthCalledWith(1, '/me/events/outlook-1');
+    expect(patch).toHaveBeenNthCalledWith(1, { recurrence: null });
   });
 });

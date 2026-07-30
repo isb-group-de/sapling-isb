@@ -166,6 +166,7 @@
     :templates="templates"
     :entity="entityEvent"
     :showReference="true"
+    :force-dirty="forceEditDialogDirtyFields.length > 0"
     :force-dirty-fields="forceEditDialogDirtyFields"
     @update:modelValue="(val) => (showEditDialog = val)"
     @update:mode="onEditDialogModeUpdate"

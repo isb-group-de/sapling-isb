@@ -90,7 +90,11 @@ export class AzureCalendarService {
    * @param {PersonSessionItem} session The user session containing access tokens
    * @returns {Promise<any>} The result of the queue operation or null if Redis is disabled
    */
-  async queueEvent(event: EventItem, session: PersonSessionItem) {
+  async queueEvent(
+    event: EventItem,
+    session: PersonSessionItem,
+    operation?: 'remove-recurrence',
+  ) {
     if (typeof session.handle !== 'number') {
       throw new Error('calendar.sessionHandleRequired');
     }
@@ -99,6 +103,7 @@ export class AzureCalendarService {
     return await this.eventDeliveryService.queueEventDelivery(event, {
       provider: 'azure',
       sessionHandle: session.handle,
+      ...(operation ? { operation } : {}),
     });
   }
 
@@ -115,6 +120,7 @@ export class AzureCalendarService {
     eventHandle: number,
     accessToken: string,
     personHandle?: number,
+    operation?: 'remove-recurrence',
   ): Promise<any> {
     const client = this.createClient(accessToken);
     // Fork EntityManager for context-specific actions
@@ -137,6 +143,10 @@ export class AzureCalendarService {
       return null;
     }
 
+    if (operation === 'remove-recurrence') {
+      event.recurrenceRule = null;
+    }
+
     const reference = await emFork.findOne(EventAzureItem, {
       event: event.handle as never,
     });
@@ -156,6 +166,7 @@ export class AzureCalendarService {
             reference,
             emFork,
             classificationMappings,
+            operation,
           );
         } else {
           return await this.createEvent(
@@ -752,7 +763,14 @@ export class AzureCalendarService {
     reference: EventAzureItem,
     emFork: EntityManager,
     classificationMappings?: CalendarClassificationMapping[] | null,
+    operation?: 'remove-recurrence',
   ): Promise<any> {
+    if (operation === 'remove-recurrence') {
+      return await client
+        .api(`/me/events/${reference.referenceHandle}`)
+        .patch({ recurrence: null });
+    }
+
     const eventResource = buildAzureCalendarEvent(
       event,
       classificationMappings,
