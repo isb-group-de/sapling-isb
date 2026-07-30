@@ -5,35 +5,22 @@ import type { TranslationItem } from '@/entity/entity'
 import { i18n } from '@/i18n'
 import { useTranslationStore } from '@/stores/translationStore'
 
-const { findMock } = vi.hoisted(() => ({
-  findMock: vi.fn(),
+const { findAllMock } = vi.hoisted(() => ({
+  findAllMock: vi.fn(),
 }))
 
 vi.mock('../api.generic.service', () => ({
   default: {
-    find: findMock,
+    findAll: findAllMock,
   },
 }))
 
 import TranslationService from '../translation.service'
 
 describe('TranslationService', () => {
-  function createPaginatedResponse(data: TranslationItem[], page = 1, totalPages = 1) {
-    return {
-      data,
-      meta: {
-        total: data.length,
-        page,
-        limit: 100,
-        totalPages,
-        executionTime: 0,
-      },
-    }
-  }
-
   beforeEach(() => {
     setActivePinia(createPinia())
-    findMock.mockReset()
+    findAllMock.mockReset()
     i18n.global.locale.value = 'de'
     i18n.global.setLocaleMessage('de', {})
     i18n.global.setLocaleMessage('en', {})
@@ -47,7 +34,7 @@ describe('TranslationService', () => {
     const result = await service.prepare('ticket')
 
     expect(result).toEqual([])
-    expect(findMock).not.toHaveBeenCalled()
+    expect(findAllMock).not.toHaveBeenCalled()
   })
 
   it('loads missing translations, filters blank names, and merges locale messages', async () => {
@@ -55,18 +42,17 @@ describe('TranslationService', () => {
       { entity: 'ticket', property: 'title', value: 'Ticket' },
       { entity: 'company', property: 'name', value: 'Firma' },
     ] as TranslationItem[]
-    findMock.mockResolvedValue(createPaginatedResponse(response))
+    findAllMock.mockResolvedValue(response)
     i18n.global.setLocaleMessage('de', { existing: 'Vorhanden' })
 
     const service = new TranslationService()
     const result = await service.prepare('ticket', ' ', 'company')
 
-    expect(findMock).toHaveBeenCalledWith('translation', {
+    expect(findAllMock).toHaveBeenCalledWith('translation', {
       filter: {
         entity: { $in: ['ticket', 'company'] },
         language: 'de',
       },
-      page: 1,
     })
     expect(result).toEqual(response)
     expect(i18n.global.getLocaleMessage('de')).toEqual({
@@ -78,36 +64,25 @@ describe('TranslationService', () => {
     expect(useTranslationStore().has('company')).toBe(true)
   })
 
-  it('loads all translation pages when the metadata reports more results', async () => {
-    const firstPage: TranslationItem[] = [
+  it('loads the complete translation set through the stable generic paginator', async () => {
+    const translations: TranslationItem[] = [
       { entity: 'ticket', property: 'title', value: 'Ticket' },
-    ] as TranslationItem[]
-    const secondPage: TranslationItem[] = [
       { entity: 'ticket', property: 'description', value: 'Beschreibung' },
     ] as TranslationItem[]
 
-    findMock
-      .mockResolvedValueOnce(createPaginatedResponse(firstPage, 1, 2))
-      .mockResolvedValueOnce(createPaginatedResponse(secondPage, 2, 2))
+    findAllMock.mockResolvedValue(translations)
 
     const service = new TranslationService()
     const result = await service.prepare('ticket')
 
-    expect(findMock).toHaveBeenNthCalledWith(1, 'translation', {
+    expect(findAllMock).toHaveBeenCalledOnce()
+    expect(findAllMock).toHaveBeenCalledWith('translation', {
       filter: {
         entity: { $in: ['ticket'] },
         language: 'de',
       },
-      page: 1,
     })
-    expect(findMock).toHaveBeenNthCalledWith(2, 'translation', {
-      filter: {
-        entity: { $in: ['ticket'] },
-        language: 'de',
-      },
-      page: 2,
-    })
-    expect(result).toEqual([...firstPage, ...secondPage])
+    expect(result).toEqual(translations)
     expect(i18n.global.getLocaleMessage('de')).toEqual({
       'ticket.title': 'Ticket',
       'ticket.description': 'Beschreibung',

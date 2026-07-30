@@ -8,25 +8,12 @@ class TranslationService {
     entityHandle: string[],
     currentLanguage: string,
   ): Promise<TranslationItem[]> {
-    const translations: TranslationItem[] = []
-    let page = 1
-    let totalPages = 1
-
-    do {
-      const response = await ApiGenericService.find<TranslationItem>('translation', {
-        filter: {
-          entity: { $in: entityHandle },
-          language: currentLanguage,
-        },
-        page,
-      })
-
-      translations.push(...response.data)
-      totalPages = Math.max(response.meta?.totalPages || 1, 1)
-      page += 1
-    } while (page <= totalPages)
-
-    return translations
+    return ApiGenericService.findAll<TranslationItem>('translation', {
+      filter: {
+        entity: { $in: entityHandle },
+        language: currentLanguage,
+      },
+    })
   }
 
   /**

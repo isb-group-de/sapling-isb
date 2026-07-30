@@ -127,6 +127,10 @@ frontend/src/composables/generic/useTranslationLoader.ts
 ```
 
 Components should load the namespaces they render.
+`TranslationService` loads every matching generic API page through
+`ApiGenericService.findAll()`. Keep the stable `handle` ordering from that
+helper; unordered manual pagination can skip translation rows when a namespace
+set spans multiple pages.
 
 Examples:
 
