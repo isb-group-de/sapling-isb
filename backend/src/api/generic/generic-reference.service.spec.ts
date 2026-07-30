@@ -43,4 +43,23 @@ describe('GenericReferenceService', () => {
       company: 42,
     });
   });
+
+  it.each(['m:n', 'n:m'] as const)(
+    'preserves handle arrays for a %s collection reference',
+    (kind) => {
+      const payload = { participants: [5, 7] };
+      const template = [
+        {
+          name: 'participants',
+          isReference: true,
+          kind,
+          referencedPks: ['handle'],
+        } as EntityTemplateDto,
+      ];
+
+      expect(service.reduceReferenceFields(template, payload)).toEqual({
+        participants: [5, 7],
+      });
+    },
+  );
 });

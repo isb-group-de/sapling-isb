@@ -26,9 +26,8 @@ describe('inboxRoute.util', () => {
       },
     })
     expect(getTaskInboxRoute({ handle: 23 } as EventItem)).toEqual({
-      path: '/table/event',
+      path: '/event',
       query: {
-        filter: JSON.stringify({ handle: 23 }),
         open: '23',
       },
     })
@@ -55,7 +54,7 @@ describe('inboxRoute.util', () => {
     })
   })
 
-  it('opens inbox notification references through the same table dialog route', () => {
+  it('opens inbox notification references through their dedicated record route', () => {
     expect(
       getNotificationInboxRoute({
         handle: 9,
@@ -67,6 +66,21 @@ describe('inboxRoute.util', () => {
       query: {
         filter: JSON.stringify({ handle: '12' }),
         open: '12',
+      },
+    })
+  })
+
+  it('opens event notifications in the calendar and selects the referenced event', () => {
+    expect(
+      getNotificationInboxRoute({
+        handle: 9,
+        entity: { handle: 'event' },
+        referenceHandle: '23',
+      } as InboxNotificationItem),
+    ).toEqual({
+      path: '/event',
+      query: {
+        open: '23',
       },
     })
   })

@@ -38,14 +38,14 @@ Defines message content for one entity.
 
 Important fields:
 
-| Field | Meaning |
-| --- | --- |
-| `name` | Human-readable template name |
+| Field           | Meaning                                |
+| --------------- | -------------------------------------- |
+| `name`          | Human-readable template name           |
 | `titleTemplate` | Placeholder-enabled notification title |
-| `bodyMarkdown` | Placeholder-enabled markdown body |
-| `isDefault` | Marks default template candidates |
-| `isActive` | Allows disabling without deleting |
-| `entity` | Entity the template belongs to |
+| `bodyMarkdown`  | Placeholder-enabled markdown body      |
+| `isDefault`     | Marks default template candidates      |
+| `isActive`      | Allows disabling without deleting      |
+| `entity`        | Entity the template belongs to         |
 
 ### InboxSubscriptionItem
 
@@ -53,14 +53,14 @@ Defines when and for whom notifications are created.
 
 Important fields:
 
-| Field | Meaning |
-| --- | --- |
-| `description` | Human-readable subscription name |
-| `recipientField` | Context path that resolves recipient person(s) |
-| `isActive` | Enables/disables the subscription |
-| `entity` | Entity being watched |
-| `type` | Event type, e.g. `afterInsert`, `afterUpdate`, `afterDelete` |
-| `template` | Template used for generated notifications |
+| Field            | Meaning                                                      |
+| ---------------- | ------------------------------------------------------------ |
+| `description`    | Human-readable subscription name                             |
+| `recipientField` | Context path that resolves recipient person(s)               |
+| `isActive`       | Enables/disables the subscription                            |
+| `entity`         | Entity being watched                                         |
+| `type`           | Event type, e.g. `afterInsert`, `afterUpdate`, `afterDelete` |
+| `template`       | Template used for generated notifications                    |
 
 `template` depends on `entity`, so the frontend filters template choices by selected entity.
 
@@ -70,19 +70,19 @@ Persistent notification instance.
 
 Important fields:
 
-| Field | Meaning |
-| --- | --- |
-| `entity` | Referenced entity type |
-| `subscription` | Subscription that created it |
-| `template` | Template used at creation time |
-| `recipientPerson` | Person who receives the notification |
-| `createdBy` | User who triggered the event |
-| `referenceHandle` | Record handle of the source entity |
-| `title` | Rendered title |
-| `bodyMarkdown` | Rendered markdown body |
-| `bodyText` | Plain-text body for previews/search |
-| `requestPayload` | Diagnostic creation payload |
-| `isRead` / `readAt` | Read state |
+| Field               | Meaning                              |
+| ------------------- | ------------------------------------ |
+| `entity`            | Referenced entity type               |
+| `subscription`      | Subscription that created it         |
+| `template`          | Template used at creation time       |
+| `recipientPerson`   | Person who receives the notification |
+| `createdBy`         | User who triggered the event         |
+| `referenceHandle`   | Record handle of the source entity   |
+| `title`             | Rendered title                       |
+| `bodyMarkdown`      | Rendered markdown body               |
+| `bodyText`          | Plain-text body for previews/search  |
+| `requestPayload`    | Diagnostic creation payload          |
+| `isRead` / `readAt` | Read state                           |
 
 `referenceHandle` uses `@SaplingGenericReference` together with `entity`, so the UI can navigate back to the referenced record.
 
@@ -180,6 +180,10 @@ Navigation from a notification is built through `frontend/src/utils/inboxRoute.u
 Open-task entities with dedicated snapshot entries, including tickets, events,
 sales opportunities, effort estimates, and internal cases, also define explicit
 route helpers for their header preview entries.
+Event snapshot entries and event-backed inbox notifications use the dedicated
+calendar route with the referenced handle. The calendar loads the event, moves
+to its start date and time, and opens its edit dialog automatically. Other
+entities continue to open their filtered generic table and record dialog.
 
 ## Adding A New Entity To Inbox
 

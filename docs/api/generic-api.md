@@ -135,6 +135,9 @@ Projection fields are validated against template metadata; collection,
 non-persistent, and security fields are rejected, while custom-field paths are
 hydrated separately. Omit `fields` for complete records, such as the detail
 reload performed before opening an edit dialog.
+Persistent fields of explicitly populated references can be projected with
+dotted paths such as `type.color`; every segment must be readable and the
+relation path must also be present in `relations`.
 
 ## Create
 
@@ -153,6 +156,8 @@ Rules:
   primary-key handling and validation.
 - Required fields come from template metadata.
 - Relation fields can usually be sent as handles or relation-like values accepted by the payload service.
+  Collection relations with one referenced primary key accept arrays of handles,
+  so related records can be persisted as part of the initial create lifecycle.
 - Custom fields can be sent in a nested `customFields` object, for example
   `{ "customFields": { "externalCompanyName": "Acme GmbH" } }`.
 - Security/system/read-only fields may be ignored or rejected depending on metadata.

@@ -68,7 +68,13 @@
               <div class="sapling-calendar-event-card__content">
                 <div class="sapling-calendar-event-card__header">
                   <div class="sapling-calendar-event-card__type">
-                    <v-icon size="14">{{ getEventIcon(event) }}</v-icon>
+                    <v-icon
+                      class="sapling-calendar-event-card__category-icon"
+                      :style="{ color: getEventCategoryColor(event) }"
+                      size="14"
+                    >
+                      {{ getEventIcon(event) }}
+                    </v-icon>
                     <v-icon v-if="isRecurringOccurrence(event)" size="14">mdi-repeat</v-icon>
                     <span class="sapling-calendar-event-card__time">{{
                       formatEventTimeRange(event)
@@ -111,6 +117,7 @@
           class="glass-panel"
           :time-range="formatEventTimeRange(event)"
           :icon="getEventIcon(event)"
+          :icon-color="getEventCategoryColor(event)"
           :participant-names="props.getEventParticipants(event)"
         />
       </v-menu>
@@ -127,6 +134,11 @@ import type { CalendarEvent } from 'vuetify/lib/components/VCalendar/types.mjs'
 import SaplingSurface from '@/components/common/SaplingSurface.vue'
 import SaplingEventTooltipCard from '@/components/event/SaplingEventTooltipCard.vue'
 import { formatDateValue, formatTimeValue } from '@/utils/saplingFormatUtil'
+import {
+  getCalendarEventCategoryColor as resolveCalendarEventCategoryColor,
+  getCalendarEventIcon as resolveCalendarEventIcon,
+  getCalendarEventStatusColor as resolveCalendarEventStatusColor,
+} from '@/composables/event/eventCalendar.utils'
 
 interface CalendarDatePair {
   start: CalendarDateItem
@@ -285,25 +297,15 @@ function isBufferEvent(event: CalendarEvent) {
 }
 
 function getEventAccentColor(event: CalendarEvent) {
-  if (isHolidayEvent(event)) {
-    return ((event.event as { color?: string } | undefined)?.color ||
-      props.getEventColor(event)) as string
-  }
+  return resolveCalendarEventStatusColor(event, props.getEventColor(event))
+}
 
-  return event?.event?.status?.color || props.getEventColor(event)
+function getEventCategoryColor(event: CalendarEvent) {
+  return resolveCalendarEventCategoryColor(event, props.getEventColor(event))
 }
 
 function getEventIcon(event: CalendarEvent) {
-  if (isHolidayEvent(event)) {
-    return (event.event as { icon?: string } | undefined)?.icon || 'mdi-calendar-alert'
-  }
-  if (isBufferEvent(event)) {
-    return (event.event as { bufferKind?: string } | undefined)?.bufferKind === 'preparation'
-      ? 'mdi-progress-clock'
-      : 'mdi-clock-check-outline'
-  }
-
-  return event.event?.type?.icon || 'mdi-calendar-edit'
+  return resolveCalendarEventIcon(event)
 }
 
 function onEventActivate(event: CalendarEvent) {

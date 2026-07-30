@@ -49,6 +49,7 @@ interface UseSaplingEventEditorOptions {
   refreshVisibleEvents: () => Promise<void>
   goToDate: (target: Date | string) => void
   queueScrollToCurrentTime: (delay?: number) => void
+  queueScrollToTime: (target: Date | string, delay?: number) => void
   clearCreatedEvent: () => void
   clearDragSnapshot: () => void
   consumeSuppressedEventClick: () => boolean
@@ -103,7 +104,11 @@ export function useSaplingEventEditor(options: UseSaplingEventEditorOptions) {
     options.forceEditDialogDirtyFields.value = []
     options.resetDialogInteractionState()
     options.showEditDialog.value = true
-    options.queueScrollToCurrentTime()
+    if (persistedEvent.startDate) {
+      options.queueScrollToTime(persistedEvent.startDate)
+    } else {
+      options.queueScrollToCurrentTime()
+    }
     return true
   }
 
@@ -131,7 +136,6 @@ export function useSaplingEventEditor(options: UseSaplingEventEditorOptions) {
       const editingHandle = getCalendarEventHandle(options.editEvent.value)
       if (editingHandle == null) {
         savedEvent = await ApiGenericService.create<EventItem>('event', eventPayload)
-        await createEventParticipants(savedEvent.handle, participantHandles)
         replaceLocalEvent(options.editEvent.value, eventPayload, savedEvent)
       } else {
         savedEvent = await ApiGenericService.update<EventItem>(
@@ -177,23 +181,6 @@ export function useSaplingEventEditor(options: UseSaplingEventEditorOptions) {
       }
     } finally {
       context?.complete(didSave)
-    }
-  }
-
-  async function createEventParticipants(
-    eventHandle: string | number | null | undefined,
-    participants: number[],
-  ) {
-    if (eventHandle == null || participants.length === 0) {
-      return
-    }
-    for (const participantHandle of participants) {
-      await ApiGenericService.createReference(
-        'event',
-        'participants',
-        eventHandle,
-        participantHandle,
-      )
     }
   }
 

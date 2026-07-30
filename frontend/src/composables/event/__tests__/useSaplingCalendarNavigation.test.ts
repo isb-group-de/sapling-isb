@@ -89,6 +89,25 @@ describe('useSaplingCalendarNavigation', () => {
     expect(container.scrollTop).toBe(281)
   })
 
+  it('centers a selected event start time in the inner calendar scroll area', () => {
+    const outer = document.createElement('div')
+    const container = document.createElement('div')
+    container.className = 'v-calendar-weekly__scroll-area'
+    outer.append(container)
+    document.body.append(outer)
+
+    Object.defineProperties(container, {
+      clientHeight: { configurable: true, value: 400 },
+      scrollHeight: { configurable: true, value: 2400 },
+    })
+
+    const navigation = useSaplingCalendarNavigation(ref('week'), ref(null))
+    navigation.calendarScrollContainer.value = outer
+    navigation.scrollToTime(new Date(2026, 6, 15, 9))
+
+    expect(container.scrollTop).toBe(700)
+  })
+
   it('retries until the rendered calendar scroll area is available', () => {
     vi.useFakeTimers()
     const navigation = useSaplingCalendarNavigation(ref('week'), ref(null))

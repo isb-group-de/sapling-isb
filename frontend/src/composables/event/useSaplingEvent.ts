@@ -34,6 +34,7 @@ import {
   DEFAULT_EVENT_CATEGORY_HANDLE,
   DEFAULT_EVENT_STATUS_HANDLE,
   DEFAULT_EVENT_TYPE_HANDLE,
+  getCalendarEventHandle,
   type CalendarMode,
   type CalendarViewMode,
   type SaplingCalendarEvent,
@@ -147,6 +148,7 @@ export function useSaplingEvent() {
     goToToday,
     nowY,
     queueScrollToCurrentTime,
+    queueScrollToTime,
     scrollToCurrentTime,
     value,
   } = useSaplingCalendarNavigation(calendarType, workHours)
@@ -195,7 +197,7 @@ export function useSaplingEvent() {
   async function getEvents(nextRange: CalendarDatePair) {
     await loadCalendarEvents(nextRange)
     await nextTick()
-    queueScrollToCurrentTime(0)
+    queueCalendarFocusScroll(0)
   }
   const eventEditor = useSaplingEventEditor({
     events,
@@ -209,6 +211,7 @@ export function useSaplingEvent() {
     refreshVisibleEvents,
     goToDate,
     queueScrollToCurrentTime,
+    queueScrollToTime,
     clearCreatedEvent,
     clearDragSnapshot,
     consumeSuppressedEventClick,
@@ -341,7 +344,7 @@ export function useSaplingEvent() {
 
   watch([calendarType, calendarViewMode, value], () => {
     void nextTick(() => {
-      queueScrollToCurrentTime()
+      queueCalendarFocusScroll()
     })
   })
 
@@ -506,6 +509,43 @@ export function useSaplingEvent() {
   //#endregion
 
   //#region Events
+  function queueCalendarFocusScroll(delay = 300) {
+    const focusTime = getRouteSelectedEventStart()
+    if (focusTime) {
+      queueScrollToTime(focusTime, delay)
+      return
+    }
+
+    queueScrollToCurrentTime(delay)
+  }
+
+  function getRouteSelectedEventStart(): Date | string | null {
+    const routeHandle = Array.isArray(route.query.open) ? route.query.open[0] : route.query.open
+    const selectedHandle = getCalendarEventHandle(editEvent.value)
+    if (
+      routeHandle == null ||
+      selectedHandle == null ||
+      String(routeHandle) !== String(selectedHandle)
+    ) {
+      return null
+    }
+
+    const startDate = editEvent.value?.event?.startDate
+    if (startDate instanceof Date || typeof startDate === 'string') {
+      return startDate
+    }
+
+    const start = editEvent.value?.start
+    if (start instanceof Date || typeof start === 'string') {
+      return start
+    }
+    if (typeof start === 'number' && Number.isFinite(start)) {
+      return new Date(start)
+    }
+
+    return null
+  }
+
   /**
    * Updates the selected people from the filter drawer.
    */

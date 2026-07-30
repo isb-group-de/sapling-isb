@@ -52,6 +52,7 @@ function createHarness() {
   const refreshVisibleEvents = vi.fn(async () => undefined)
   const goToDate = vi.fn()
   const queueScrollToCurrentTime = vi.fn()
+  const queueScrollToTime = vi.fn()
   const clearCreatedEvent = vi.fn()
   const clearDragSnapshot = vi.fn()
   const consumeSuppressedEventClick = vi.fn(() => false)
@@ -69,6 +70,7 @@ function createHarness() {
     refreshVisibleEvents,
     goToDate,
     queueScrollToCurrentTime,
+    queueScrollToTime,
     clearCreatedEvent,
     clearDragSnapshot,
     consumeSuppressedEventClick,
@@ -84,6 +86,7 @@ function createHarness() {
     goToDate,
     loadPersistedEvent,
     queueScrollToCurrentTime,
+    queueScrollToTime,
     refreshVisibleEvents,
     resetDialogInteractionState,
     restoreDragSnapshot,
@@ -152,7 +155,8 @@ describe('useSaplingEventEditor', () => {
     expect(harness.loadPersistedEvent).toHaveBeenCalledTimes(1)
     expect(harness.goToDate).toHaveBeenCalledWith('2026-07-15T09:00:00.000Z')
     expect(harness.resetDialogInteractionState).toHaveBeenCalledTimes(1)
-    expect(harness.queueScrollToCurrentTime).toHaveBeenCalledTimes(1)
+    expect(harness.queueScrollToCurrentTime).not.toHaveBeenCalled()
+    expect(harness.queueScrollToTime).toHaveBeenCalledWith('2026-07-15T09:00:00.000Z')
   })
 
   it('restores the drag snapshot and refreshes when editing is cancelled', async () => {
@@ -185,9 +189,11 @@ describe('useSaplingEventEditor', () => {
 
     await harness.editor.onEditDialogSave(draft, 'saveAndClose', { complete })
 
-    expect(mocks.create).toHaveBeenCalledWith('event', expect.any(Object))
-    expect(mocks.createReference).toHaveBeenCalledWith('event', 'participants', 42, 7)
-    expect(mocks.createReference).toHaveBeenCalledWith('event', 'participants', 42, 5)
+    expect(mocks.create).toHaveBeenCalledWith(
+      'event',
+      expect.objectContaining({ participants: [5, 7] }),
+    )
+    expect(mocks.createReference).not.toHaveBeenCalled()
     expect(harness.refreshVisibleEvents).toHaveBeenCalledTimes(1)
     expect(complete).toHaveBeenCalledWith(true)
     expect(harness.showEditDialog.value).toBe(false)

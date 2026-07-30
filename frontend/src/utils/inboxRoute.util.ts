@@ -27,12 +27,27 @@ function getRecordInboxRoute(
   }
 }
 
+function getEventCalendarRoute(recordHandle: string | number | null | undefined): RouteLocationRaw {
+  if (recordHandle == null || String(recordHandle).trim().length === 0) {
+    return {
+      path: '/event',
+    }
+  }
+
+  return {
+    path: '/event',
+    query: {
+      open: String(recordHandle),
+    },
+  }
+}
+
 export function getTicketInboxRoute(ticket: TicketItem): RouteLocationRaw {
   return getRecordInboxRoute('ticket', ticket.handle)
 }
 
 export function getTaskInboxRoute(task: EventItem): RouteLocationRaw {
-  return getRecordInboxRoute('event', task.handle)
+  return getEventCalendarRoute(task.handle)
 }
 
 export function getSalesOpportunityInboxRoute(opportunity: SalesOpportunityItem): RouteLocationRaw {
@@ -55,7 +70,9 @@ export function getNotificationInboxRoute(notification: InboxNotificationItem): 
   const referenceHandle = notification.referenceHandle?.trim()
 
   if (entityHandle && referenceHandle) {
-    return getRecordInboxRoute(entityHandle, referenceHandle)
+    return entityHandle === 'event'
+      ? getEventCalendarRoute(referenceHandle)
+      : getRecordInboxRoute(entityHandle, referenceHandle)
   }
 
   return getRecordInboxRoute('inboxNotification', notification.handle)

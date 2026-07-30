@@ -92,7 +92,12 @@ export class GenericReferenceService {
             case '1:m':
             case 'm:n':
             case 'n:m':
-              if (this.isRecordArray(value)) {
+              if (
+                this.isReferenceHandleArray(value) &&
+                (value.length === 0 || field.referencedPks.length === 1)
+              ) {
+                isHandled = true;
+              } else if (this.isRecordArray(value)) {
                 const arr = value;
                 if (field.referencedPks.length === 1) {
                   (data as Record<string, unknown>)[field.name] = arr.map(
@@ -331,6 +336,17 @@ export class GenericReferenceService {
   private isRecordArray(value: unknown): value is Record<string, unknown>[] {
     return (
       Array.isArray(value) && value.every((entry) => this.isPlainRecord(entry))
+    );
+  }
+
+  private isReferenceHandleArray(
+    value: unknown,
+  ): value is Array<string | number> {
+    return (
+      Array.isArray(value) &&
+      value.every(
+        (entry) => typeof entry === 'string' || typeof entry === 'number',
+      )
     );
   }
 

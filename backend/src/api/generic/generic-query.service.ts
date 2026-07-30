@@ -98,6 +98,23 @@ export class GenericQueryService {
         continue;
       }
 
+      if (fieldName.includes('.')) {
+        const nestedField = this.resolveProjectedFieldPath(
+          fieldName,
+          template,
+          populate,
+        );
+        if (!nestedField) {
+          throw new BadRequestException(
+            'exception.badRequest',
+            `Invalid projection field "${fieldName}"`,
+          );
+        }
+
+        selectedFields.add(nestedField);
+        continue;
+      }
+
       const field = fieldsByName.get(fieldName);
       const isCollectionRelation = ['1:m', 'm:n', 'n:m'].includes(
         field?.kind ?? '',
@@ -141,6 +158,68 @@ export class GenericQueryService {
     );
 
     return [...selectedFields];
+  }
+
+  private resolveProjectedFieldPath(
+    fieldPath: string,
+    rootTemplate: EntityTemplateDto[],
+    populate: string[],
+  ): string | null {
+    const segments = fieldPath
+      .split('.')
+      .map((segment) => segment.trim())
+      .filter(Boolean);
+    if (segments.length < 2) {
+      return null;
+    }
+
+    let currentTemplate = rootTemplate;
+    const resolvedSegments: string[] = [];
+
+    for (let index = 0; index < segments.length; index += 1) {
+      const segment = segments[index];
+      const field = currentTemplate.find((entry) => entry.name === segment);
+      const isLastSegment = index === segments.length - 1;
+
+      if (
+        !field ||
+        field.isPersistent === false ||
+        field.options?.includes('isSecurity')
+      ) {
+        return null;
+      }
+
+      resolvedSegments.push(segment);
+
+      if (isLastSegment) {
+        return ['1:m', 'm:n', 'n:m'].includes(field.kind ?? '')
+          ? null
+          : resolvedSegments.join('.');
+      }
+
+      if (
+        !field.isReference ||
+        !field.referenceName ||
+        ['1:m', 'm:n', 'n:m'].includes(field.kind ?? '')
+      ) {
+        return null;
+      }
+
+      const relationPath = resolvedSegments.join('.');
+      const isPopulated = populate.some(
+        (relation) =>
+          relation === relationPath || relation.startsWith(`${relationPath}.`),
+      );
+      if (!isPopulated) {
+        return null;
+      }
+
+      currentTemplate = this.templateService.getEntityTemplate(
+        field.referenceName,
+      );
+    }
+
+    return null;
   }
 
   private collectPopulatedReferenceValueFields(

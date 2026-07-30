@@ -1,7 +1,10 @@
 <template>
   <article class="sapling-calendar-event-tooltip-card">
     <header class="sapling-calendar-event-tooltip-card__header">
-      <span class="sapling-calendar-event-tooltip-card__icon">
+      <span
+        class="sapling-calendar-event-tooltip-card__icon"
+        :style="{ '--sapling-calendar-event-category-color': iconColor }"
+      >
         <v-icon size="18">{{ eventIcon }}</v-icon>
       </span>
       <div class="sapling-calendar-event-tooltip-card__heading">
@@ -109,12 +112,13 @@ const props = defineProps<{
   event: CalendarEvent
   timeRange: string
   icon: string
+  iconColor: string
   participantNames?: string[]
 }>()
 
 const { t } = useI18n()
 const record = computed(() => props.event.event as TooltipRecord | undefined)
-const eventIcon = computed(() => record.value?.type?.icon || record.value?.icon || props.icon)
+const eventIcon = computed(() => props.icon)
 const eventTitle = computed(
   () => record.value?.title || props.event.name || t('event.defaultTitle'),
 )

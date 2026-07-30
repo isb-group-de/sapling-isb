@@ -134,6 +134,72 @@ describe('GenericQueryService', () => {
     ]);
   });
 
+  it('selects explicitly requested appearance fields from populated references', () => {
+    const templatesByEntity: Record<string, EntityTemplateDto[]> = {
+      eventType: [
+        createTemplateField({ name: 'title', options: ['isValue'] }),
+        createTemplateField({ name: 'icon', options: ['isIcon'] }),
+        createTemplateField({ name: 'color', options: ['isColor'] }),
+        createTemplateField({ name: 'secret', options: ['isSecurity'] }),
+      ],
+      eventStatus: [
+        createTemplateField({
+          name: 'description',
+          options: ['isValue'],
+        }),
+        createTemplateField({ name: 'color', options: ['isColor'] }),
+      ],
+    };
+    const service = new GenericQueryService({
+      getEntityTemplate: (entityHandle: string) =>
+        templatesByEntity[entityHandle] ?? [],
+    } as never);
+    const template = [
+      createTemplateField({
+        name: 'handle',
+        type: 'number',
+        isPrimaryKey: true,
+      }),
+      createTemplateField({ name: 'title' }),
+      createTemplateField({
+        name: 'type',
+        isReference: true,
+        kind: 'm:1',
+        referenceName: 'eventType',
+      }),
+      createTemplateField({
+        name: 'status',
+        isReference: true,
+        kind: 'm:1',
+        referenceName: 'eventStatus',
+      }),
+    ];
+
+    expect(
+      service.buildFields(
+        ['title', 'type.icon', 'type.color', 'status.color'],
+        template,
+        ['type', 'status'],
+      ),
+    ).toEqual([
+      'handle',
+      'title',
+      'type.icon',
+      'type.color',
+      'status.color',
+      'type',
+      'status',
+      'type.title',
+      'status.description',
+    ]);
+    expect(() => service.buildFields(['type.color'], template)).toThrow(
+      BadRequestException,
+    );
+    expect(() =>
+      service.buildFields(['type.secret'], template, ['type']),
+    ).toThrow(BadRequestException);
+  });
+
   it('reuses cached template field maps across repeated query normalization work', () => {
     const templatesByEntity: Record<string, EntityTemplateDto[]> = {
       ticket: [

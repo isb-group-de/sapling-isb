@@ -3,7 +3,10 @@ import type { EventItem } from '@/entity/entity'
 
 import {
   addEventBufferPlaceholders,
+  getCalendarEventCategoryColor,
+  getCalendarEventIcon,
   getCalendarEventOnlineMeetingUrl,
+  getCalendarEventStatusColor,
   getCalendarInteractionForcedDirtyFields,
   isBufferCalendarEvent,
   isReadonlyCalendarEvent,
@@ -57,6 +60,24 @@ describe('getCalendarInteractionForcedDirtyFields', () => {
         event: { onlineMeetingURL: 'https://teams.example.test/join' },
       }),
     ).toBe('https://teams.example.test/join')
+  })
+
+  it('projects type, status, and category into separate calendar appearance roles', () => {
+    const event = {
+      color: '#673AB7',
+      start: 1,
+      end: 2,
+      event: {
+        type: { icon: 'mdi-web', color: '#673AB7' },
+        status: { color: '#F44336' },
+        category: { icon: 'mdi-lifebuoy', color: '#009688' },
+      },
+    }
+
+    expect(event.color).toBe('#673AB7')
+    expect(getCalendarEventStatusColor(event, '#2196F3')).toBe('#F44336')
+    expect(getCalendarEventCategoryColor(event, '#2196F3')).toBe('#009688')
+    expect(getCalendarEventIcon(event)).toBe('mdi-lifebuoy')
   })
 
   it('derives non-persisted preparation and follow-up placeholders from the main event', () => {

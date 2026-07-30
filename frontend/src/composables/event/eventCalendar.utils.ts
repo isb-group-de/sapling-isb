@@ -31,6 +31,7 @@ export interface EventBufferPlaceholder {
   title: string
   participants?: EventItem['participants']
   type?: EventItem['type']
+  category?: EventItem['category']
   status?: EventItem['status']
   isAllDay: false
 }
@@ -325,16 +326,27 @@ export function getCalendarEventIcon(event: CalendarEvent) {
       : 'mdi-clock-check-outline'
   }
 
-  return (event.event as EventItem | undefined)?.type?.icon || 'mdi-calendar-clock-outline'
+  const record = event.event as EventItem | undefined
+  return record?.category?.icon || record?.type?.icon || 'mdi-calendar-clock-outline'
 }
 
-export function getCalendarEventAccentColor(event: CalendarEvent, fallbackColor: string) {
+export function getCalendarEventStatusColor(event: CalendarEvent, fallbackColor: string) {
   if (isHolidayCalendarEvent(event)) {
     return (event.event as HolidayItem | undefined)?.color || fallbackColor
   }
 
   return (event.event as EventItem | undefined)?.status?.color || fallbackColor
 }
+
+export function getCalendarEventCategoryColor(event: CalendarEvent, fallbackColor: string) {
+  if (isHolidayCalendarEvent(event)) {
+    return (event.event as HolidayItem | undefined)?.color || fallbackColor
+  }
+
+  return (event.event as EventItem | undefined)?.category?.color || fallbackColor
+}
+
+export const getCalendarEventAccentColor = getCalendarEventStatusColor
 
 export function filterWorkweekEvents(
   calendarEvents: SaplingCalendarEvent[],
@@ -619,6 +631,7 @@ function createEventBufferPlaceholder(
       title,
       participants: parent.participants,
       type: parent.type,
+      category: parent.category,
       status: parent.status,
       isAllDay: false,
     },

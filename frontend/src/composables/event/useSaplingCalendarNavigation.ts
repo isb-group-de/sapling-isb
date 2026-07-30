@@ -17,8 +17,8 @@ import { getWorkHourForDate } from './eventCalendar.utils'
 
 type CalendarScrollContainerRef = HTMLElement | ComponentPublicInstance | null
 
-const CURRENT_TIME_SCROLL_RETRY_DELAY = 200
-const CURRENT_TIME_SCROLL_MAX_ATTEMPTS = 5
+const CALENDAR_SCROLL_RETRY_DELAY = 200
+const CALENDAR_SCROLL_MAX_ATTEMPTS = 5
 
 /** Owns calendar date navigation, current-time scrolling, and work-hour overlays. */
 export function useSaplingCalendarNavigation(
@@ -93,21 +93,13 @@ export function useSaplingCalendarNavigation(
   }
 
   function scrollToCurrentTime(attempt = 0) {
-    const outer =
-      resolveScrollContainerElement(calendarScrollContainer.value) ||
-      document.querySelector('.sapling-calendar-frame') ||
-      document.querySelector('.calendar-card-text')
+    const outer = resolveCalendarScrollOuter()
     if (!outer) {
       retryScrollToCurrentTime(attempt)
       return
     }
 
-    const containers = Array.from(
-      outer.querySelectorAll(
-        '.v-calendar-daily__scroll-area, .v-calendar-weekly__scroll-area, .v-calendar-monthly__scroll-area',
-      ),
-    ) as HTMLElement[]
-    const resolvedContainers = containers.length > 0 ? containers : [outer]
+    const resolvedContainers = resolveCalendarScrollContainers(outer)
     let hasMarkers = false
 
     resolvedContainers.forEach((container) => {
@@ -127,6 +119,38 @@ export function useSaplingCalendarNavigation(
 
     if (!hasMarkers) {
       retryScrollToCurrentTime(attempt)
+    }
+  }
+
+  function scrollToTime(target: Date | string, attempt = 0) {
+    const targetDate = target instanceof Date ? new Date(target.getTime()) : new Date(target)
+    if (!isValidDate(targetDate) || calendarType.value === 'month') {
+      return
+    }
+
+    const outer = resolveCalendarScrollOuter()
+    if (!outer) {
+      retryScrollToTime(targetDate, attempt)
+      return
+    }
+
+    const resolvedContainers = resolveCalendarScrollContainers(outer)
+    const minutes = targetDate.getHours() * 60 + targetDate.getMinutes()
+    let hasScrollableContainer = false
+
+    resolvedContainers.forEach((container) => {
+      if (container.scrollHeight <= container.clientHeight) {
+        return
+      }
+
+      hasScrollableContainer = true
+      const targetOffset =
+        (minutes / (24 * 60)) * container.scrollHeight - container.clientHeight / 2
+      container.scrollTop = Math.max(targetOffset, 0)
+    })
+
+    if (!hasScrollableContainer) {
+      retryScrollToTime(targetDate, attempt)
     }
   }
 
@@ -162,11 +186,11 @@ export function useSaplingCalendarNavigation(
   }
 
   function retryScrollToCurrentTime(attempt: number) {
-    if (attempt >= CURRENT_TIME_SCROLL_MAX_ATTEMPTS) {
+    if (attempt >= CALENDAR_SCROLL_MAX_ATTEMPTS) {
       return
     }
 
-    queueScrollToCurrentTime(CURRENT_TIME_SCROLL_RETRY_DELAY, attempt + 1)
+    queueScrollToCurrentTime(CALENDAR_SCROLL_RETRY_DELAY, attempt + 1)
   }
 
   function queueScrollToCurrentTime(delay = 300, attempt = 0) {
@@ -177,6 +201,41 @@ export function useSaplingCalendarNavigation(
       scrollTimeoutId = null
       scrollToCurrentTime(attempt)
     }, delay)
+  }
+
+  function retryScrollToTime(target: Date, attempt: number) {
+    if (attempt >= CALENDAR_SCROLL_MAX_ATTEMPTS) {
+      return
+    }
+
+    queueScrollToTime(target, CALENDAR_SCROLL_RETRY_DELAY, attempt + 1)
+  }
+
+  function queueScrollToTime(target: Date | string, delay = 300, attempt = 0) {
+    if (scrollTimeoutId !== null) {
+      window.clearTimeout(scrollTimeoutId)
+    }
+    scrollTimeoutId = window.setTimeout(() => {
+      scrollTimeoutId = null
+      scrollToTime(target, attempt)
+    }, delay)
+  }
+
+  function resolveCalendarScrollOuter(): HTMLElement | null {
+    return (
+      resolveScrollContainerElement(calendarScrollContainer.value) ||
+      document.querySelector<HTMLElement>('.sapling-calendar-frame') ||
+      document.querySelector<HTMLElement>('.calendar-card-text')
+    )
+  }
+
+  function resolveCalendarScrollContainers(outer: HTMLElement): HTMLElement[] {
+    const containers = Array.from(
+      outer.querySelectorAll(
+        '.v-calendar-daily__scroll-area, .v-calendar-weekly__scroll-area, .v-calendar-monthly__scroll-area',
+      ),
+    ) as HTMLElement[]
+    return containers.length > 0 ? containers : [outer]
   }
 
   function resolveScrollContainerElement(target: CalendarScrollContainerRef): HTMLElement | null {
@@ -226,7 +285,9 @@ export function useSaplingCalendarNavigation(
     goToToday,
     nowY,
     queueScrollToCurrentTime,
+    queueScrollToTime,
     scrollToCurrentTime,
+    scrollToTime,
     value,
   }
 }

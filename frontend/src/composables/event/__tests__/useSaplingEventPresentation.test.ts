@@ -72,6 +72,8 @@ describe('useSaplingEventPresentation', () => {
           description: 'Microsoft Teams meeting with a long imported body',
           onlineMeetingURL: 'https://teams.example.test/join',
           participants: [7, { handle: 9, title: 'Doctor' }],
+          status: { color: '#F44336' },
+          category: { icon: 'mdi-lifebuoy', color: '#009688' },
         },
       } as unknown as SaplingCalendarEvent,
     ]
@@ -89,6 +91,9 @@ describe('useSaplingEventPresentation', () => {
     expect(harness.presentation.upcomingEvents.value[0]).toMatchObject({
       title: 'Planning',
       onlineMeetingUrl: 'https://teams.example.test/join',
+      icon: 'mdi-lifebuoy',
+      accentColor: '#F44336',
+      categoryColor: '#009688',
     })
     expect(harness.presentation.upcomingEvents.value[0]).not.toHaveProperty('description')
   })

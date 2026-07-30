@@ -196,13 +196,27 @@ filters, selected-person hydration, holiday loading, recurrence expansion, and
 the final calendar-mode/workweek filtering. `useSaplingEventPresentation.ts`
 projects that loaded state into range/month labels, agenda cards, hero stats,
 person columns, participant labels, holiday groups, and side-by-side drafts.
+Calendar cards keep the three event classifiers visually distinct: the event
+type provides the card background, the status provides the left accent strip,
+and the category provides the colored leading icon. The bounded event list
+projection therefore requests the nested appearance fields for all three
+references explicitly.
 
 `useSaplingCalendarNavigation.ts` owns the date anchor, day/week/month shifts,
-current-time scrolling, scroll cleanup, and work-hour overlays.
+current-time and selected-event-time scrolling, scroll cleanup, and work-hour
+overlays. Calendar deep links use `?open=<eventHandle>`; the referenced event is
+loaded independently of the visible range, its start date/time becomes the
+calendar focus, and its edit dialog opens automatically.
 `useSaplingEventEditor.ts` owns record hydration, create/update persistence,
 participant references, route-driven opening, drag rollback, optimistic local
 replacement, and update-conflict reload/merge behavior. `useSaplingEvent.ts`
 is now a sub-600-line composition shell for these focused workflows.
+
+New events persist their participant handles in the initial generic create
+request. They must not add the same participants through follow-up relation
+requests, because relation mutations intentionally run the event `afterUpdate`
+lifecycle and would emit misleading update notifications immediately after the
+create notification.
 
 `SaplingFieldEventRecurrence.vue` is the editable recurrence field used by generic dialogs. Shared parsing and expansion helpers live in `frontend/src/utils/eventRecurrence.ts`.
 
