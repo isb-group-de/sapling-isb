@@ -2,7 +2,6 @@ import { computed, ref, watch, type Ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import type { EntityItem, SaplingGenericItem, ScriptButtonItem } from '@/entity/entity'
-import { DEFAULT_ENTITY_ITEMS_COUNT } from '@/constants/project.constants'
 import ApiGenericService from '@/services/api.generic.service'
 import ApiScriptService from '@/services/api.script.service'
 import { useCurrentPersonStore } from '@/stores/currentPersonStore'
@@ -69,15 +68,14 @@ export function useSaplingTableScripts({
     }
 
     const currentRequestId = ++scriptButtonsRequestId
-    const result = await ApiGenericService.find<ScriptButtonItem>('scriptButton', {
+    const result = await ApiGenericService.findAll<ScriptButtonItem>('scriptButton', {
       filter: { entity: { handle: props.entityHandle } },
       orderBy: buildTableOrderBy([{ key: 'title', order: 'asc' }]),
-      limit: DEFAULT_ENTITY_ITEMS_COUNT,
       relations: ['m:1'],
     })
 
     if (currentRequestId === scriptButtonsRequestId) {
-      loadedScriptButtons.value = result.data
+      loadedScriptButtons.value = result
     }
   }
 

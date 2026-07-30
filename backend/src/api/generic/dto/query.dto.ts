@@ -1,6 +1,10 @@
 import { BadRequestException } from '@nestjs/common';
 import { Type, Transform } from 'class-transformer';
 import { IsBoolean, IsInt, IsOptional, Max, Min } from 'class-validator';
+import {
+  GENERIC_LIST_DEFAULT_LIMIT,
+  GENERIC_LIST_MAX_LIMIT,
+} from '../../../constants/project.constants';
 
 function parseJsonObjectQuery(
   value: unknown,
@@ -144,8 +148,8 @@ export class PaginatedQueryDto {
   @Type(() => Number)
   @IsInt()
   @Min(1)
-  @Max(200)
-  limit: number = 200; // entries per page
+  @Max(GENERIC_LIST_MAX_LIMIT)
+  limit: number = GENERIC_LIST_DEFAULT_LIMIT; // entries per page
 
   @IsOptional()
   @Transform(({ value }) => parseJsonObjectQuery(value, 'filter'))
@@ -162,6 +166,24 @@ export class PaginatedQueryDto {
   @IsOptional()
   @Transform(({ value }) => parseJsonObjectQuery(value, 'orderBy'))
   orderBy: object = {}; // ordering
+}
+
+/**
+ * Query parameters for generic downloads. Exports are intentionally governed
+ * by GENERIC_DOWNLOAD_LIMIT instead of the paginated list page-size limit.
+ */
+export class DownloadQueryDto {
+  @IsOptional()
+  @Transform(({ value }) => parseJsonObjectQuery(value, 'filter'))
+  filter: object = {};
+
+  @IsOptional()
+  @Transform(({ value }) => parseStringArrayQuery(value, 'relations'))
+  relations: string[] = [];
+
+  @IsOptional()
+  @Transform(({ value }) => parseJsonObjectQuery(value, 'orderBy'))
+  orderBy: object = {};
 }
 
 export class TimelineQueryDto {

@@ -101,6 +101,10 @@ For an unfamiliar topic:
 4. Use `generic_get` once the exact record handle is known.
 5. Use `generic_timeline` when the user asks about activity, chronology, related records, or surrounding history.
 
+`generic_list` accepts at most `100` records per page. When the task requires a
+complete result set, increment `page` and continue until the response metadata
+shows that the last page has been loaded.
+
 For a natural-language support or CRM question:
 
 1. Use `semantic_search` against the most likely indexed entity.

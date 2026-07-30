@@ -1,6 +1,5 @@
 import { ref } from 'vue'
 import type { PhoneCallItem } from '@/entity/entity'
-import { DEFAULT_ENTITY_ITEMS_COUNT } from '@/constants/project.constants'
 import ApiGenericService from '@/services/api.generic.service'
 import type {
   CrmCompany,
@@ -67,38 +66,33 @@ export function useSaplingCrmWorkspaceData() {
     isLoading.value = true
     try {
       const [company, person, opportunity, event, phoneCall] = await Promise.all([
-        ApiGenericService.find<CrmCompany>(CRM_COMPANY_ENTITY, {
-          orderBy: { annualRecurringRevenue: 'DESC', name: 'ASC' },
-          limit: DEFAULT_ENTITY_ITEMS_COUNT,
+        ApiGenericService.findAll<CrmCompany>(CRM_COMPANY_ENTITY, {
+          orderBy: { annualRecurringRevenue: 'DESC', name: 'ASC', handle: 'ASC' },
           relations: RELATIONS.company,
         }),
-        ApiGenericService.find<CrmPerson>(CRM_PERSON_ENTITY, {
-          orderBy: { lastName: 'ASC', firstName: 'ASC' },
-          limit: DEFAULT_ENTITY_ITEMS_COUNT,
+        ApiGenericService.findAll<CrmPerson>(CRM_PERSON_ENTITY, {
+          orderBy: { lastName: 'ASC', firstName: 'ASC', handle: 'ASC' },
           relations: RELATIONS.person,
         }),
-        ApiGenericService.find<CrmOpportunity>(CRM_OPPORTUNITY_ENTITY, {
-          orderBy: { closeDate: 'ASC', expectedRevenue: 'DESC' },
-          limit: DEFAULT_ENTITY_ITEMS_COUNT,
+        ApiGenericService.findAll<CrmOpportunity>(CRM_OPPORTUNITY_ENTITY, {
+          orderBy: { closeDate: 'ASC', expectedRevenue: 'DESC', handle: 'ASC' },
           relations: RELATIONS.opportunity,
         }),
-        ApiGenericService.find<CrmEvent>(CRM_EVENT_ENTITY, {
-          orderBy: { startDate: 'DESC' },
-          limit: DEFAULT_ENTITY_ITEMS_COUNT,
+        ApiGenericService.findAll<CrmEvent>(CRM_EVENT_ENTITY, {
+          orderBy: { startDate: 'DESC', handle: 'ASC' },
           relations: RELATIONS.event,
         }),
-        ApiGenericService.find<PhoneCallItem>(CRM_PHONE_CALL_ENTITY, {
-          orderBy: { createdAt: 'DESC' },
-          limit: DEFAULT_ENTITY_ITEMS_COUNT,
+        ApiGenericService.findAll<PhoneCallItem>(CRM_PHONE_CALL_ENTITY, {
+          orderBy: { createdAt: 'DESC', handle: 'ASC' },
           relations: RELATIONS.phoneCall,
         }),
       ])
 
-      companies.value = company.data
-      people.value = person.data
-      opportunities.value = opportunity.data
-      events.value = event.data
-      phoneCalls.value = phoneCall.data
+      companies.value = company
+      people.value = person
+      opportunities.value = opportunity
+      events.value = event
+      phoneCalls.value = phoneCall
       hasLoadedOnce.value = true
     } finally {
       isLoading.value = false

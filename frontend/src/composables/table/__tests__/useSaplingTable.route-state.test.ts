@@ -2,6 +2,7 @@ import { flushPromises } from '@vue/test-utils'
 import { ref } from 'vue'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import {
+  apiFindAllMock,
   apiFindMock,
   cleanupTableTestWrappers,
   formatLocalDateTimeInput,
@@ -18,22 +19,14 @@ describe('useSaplingTable filters and route state', () => {
 
   it('applies default open filters for chip references with isOpen values', async () => {
     loadGenericMock.mockResolvedValue(undefined)
-    apiFindMock.mockImplementation((entityHandle: string) => {
-      if (entityHandle === 'ticketStatus') {
-        return Promise.resolve({
-          data: [
-            { handle: 'open', description: 'Open', isOpen: true },
-            { handle: 'waiting', description: 'Waiting', isOpen: true },
-            { handle: 'closed', description: 'Closed', isOpen: false },
-          ],
-          meta: { total: 3 },
-        })
-      }
-
-      return Promise.resolve({
-        data: [{ handle: 1, title: 'Open ticket' }],
-        meta: { total: 1 },
-      })
+    apiFindAllMock.mockResolvedValue([
+      { handle: 'open', description: 'Open', isOpen: true },
+      { handle: 'waiting', description: 'Waiting', isOpen: true },
+      { handle: 'closed', description: 'Closed', isOpen: false },
+    ])
+    apiFindMock.mockResolvedValue({
+      data: [{ handle: 1, title: 'Open ticket' }],
+      meta: { total: 1 },
     })
 
     const wrapper = mountTestHost(ref('ticket'))
@@ -97,6 +90,28 @@ describe('useSaplingTable filters and route state', () => {
     })
     expect(wrapper.vm.items).toEqual([{ handle: 1, title: 'Open ticket' }])
     expect(wrapper.vm.totalItems).toBe(1)
+  })
+
+  it('clamps legacy route page sizes to the generic API maximum', async () => {
+    loadGenericMock.mockResolvedValue(undefined)
+    routeState.query = {
+      itemsPerPage: '200',
+    }
+    apiFindMock.mockResolvedValue({
+      data: [],
+      meta: { total: 0 },
+    })
+
+    const wrapper = mountQueryEnabledTestHost(ref('partner'))
+    await flushPromises()
+
+    expect(wrapper.vm.itemsPerPage).toBe(100)
+    expect(apiFindMock).toHaveBeenCalledWith(
+      'partner',
+      expect.objectContaining({
+        limit: 100,
+      }),
+    )
   })
 
   it('restores supported route query filters into the table header state before loading', async () => {

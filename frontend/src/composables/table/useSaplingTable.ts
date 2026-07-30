@@ -11,7 +11,7 @@ import type {
   SortItem,
 } from '@/entity/structure'
 import type { SaplingGenericItem } from '@/entity/entity'
-import { DEFAULT_ENTITY_ITEMS_COUNT, DEFAULT_PAGE_SIZE_MEDIUM } from '@/constants/project.constants'
+import { DEFAULT_PAGE_SIZE_MEDIUM, GENERIC_API_MAX_PAGE_SIZE } from '@/constants/project.constants'
 import { useCurrentPermissionStore } from '@/stores/currentPermissionStore'
 import { useGenericStore } from '@/stores/genericStore'
 import {
@@ -64,7 +64,12 @@ export function useSaplingTable(
   const search = ref('')
   const headers = ref<SaplingTableHeaderItem[]>([])
   const page = ref(1)
-  const itemsPerPageDefault = ref(itemsPerPageDefaultValue ?? DEFAULT_PAGE_SIZE_MEDIUM)
+  const itemsPerPageDefault = ref(
+    Math.min(
+      Math.max(itemsPerPageDefaultValue ?? DEFAULT_PAGE_SIZE_MEDIUM, 1),
+      GENERIC_API_MAX_PAGE_SIZE,
+    ),
+  )
   const itemsPerPage = ref(itemsPerPageDefault.value)
   const totalItems = ref(0)
   const sortBy = ref<SortItem[]>([])
@@ -608,7 +613,7 @@ export function useSaplingTable(
       return
     }
 
-    itemsPerPage.value = value
+    itemsPerPage.value = Math.min(Math.max(value, 1), GENERIC_API_MAX_PAGE_SIZE)
     page.value = 1
   }
 
@@ -716,11 +721,7 @@ async function buildDefaultOpenChipColumnFilter(
 
   let referenceItems: SaplingGenericItem[]
   try {
-    referenceItems = (
-      await ApiGenericService.find<SaplingGenericItem>(referenceName, {
-        limit: DEFAULT_ENTITY_ITEMS_COUNT,
-      })
-    ).data
+    referenceItems = await ApiGenericService.findAll<SaplingGenericItem>(referenceName)
   } catch {
     return null
   }

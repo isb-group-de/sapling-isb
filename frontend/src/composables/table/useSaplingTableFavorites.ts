@@ -3,7 +3,6 @@ import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import type { ColumnFilterItem, EntityTemplate, SortItem } from '@/entity/structure'
 import type { EntityItem, FavoriteItem } from '@/entity/entity'
-import { DEFAULT_ENTITY_ITEMS_COUNT } from '@/constants/project.constants'
 import ApiGenericService, { type FilterQuery } from '@/services/api.generic.service'
 import { useCurrentPersonStore } from '@/stores/currentPersonStore'
 import { useSaplingMessageCenter } from '@/composables/system/useSaplingMessageCenter'
@@ -72,18 +71,17 @@ export function useSaplingTableFavorites({
         return
       }
 
-      const result = await ApiGenericService.find<FavoriteItem>('favorite', {
+      const result = await ApiGenericService.findAll<FavoriteItem>('favorite', {
         filter: {
           person: { handle: personHandle },
           entity: { handle: props.entityHandle },
         },
         orderBy: buildTableOrderBy([{ key: 'title', order: 'asc' }]),
         relations: ['entity', 'entityRoute'],
-        limit: DEFAULT_ENTITY_ITEMS_COUNT,
       })
 
       if (currentRequestId === favoritesRequestId) {
-        currentEntityFavorites.value = result.data ?? []
+        currentEntityFavorites.value = result
       }
     } finally {
       if (currentRequestId === favoritesRequestId) {

@@ -37,18 +37,29 @@
 
     <template v-slot:event="{ event }">
       <v-menu
-        :open-on-hover="!props.isDragActive"
+        :model-value="isEventTooltipOpen(event)"
+        :open-on-hover="!isTooltipInteractionBlocked"
         :open-delay="500"
         :close-delay="250"
-        :disabled="props.isDragActive || isBufferEvent(event)"
+        :disabled="isTooltipInteractionBlocked || isBufferEvent(event)"
         :close-on-content-click="false"
         :open-on-click="false"
-        content-class="sapling-calendar-event-tooltip-overlay"
+        :content-class="[
+          'sapling-calendar-event-tooltip-overlay',
+          {
+            'sapling-calendar-event-tooltip-overlay--blocked': isTooltipInteractionBlocked,
+          },
+        ]"
         location="bottom start"
         transition="fade-transition"
+        @update:model-value="onEventTooltipUpdate(event, $event)"
       >
         <template #activator="{ props: tooltipActivatorProps }">
-          <div class="sapling-calendar-event-tooltip-host" v-bind="tooltipActivatorProps">
+          <div
+            class="sapling-calendar-event-tooltip-host"
+            v-bind="tooltipActivatorProps"
+            @mouseleave="releaseEventTooltipSuppression"
+          >
             <div
               class="sapling-calendar-event-card"
               :class="getEventCardClasses(event)"
@@ -104,9 +115,9 @@
                 v-if="shouldShowResizeHandle(event)"
                 class="sapling-calendar-event-card__resize v-event-drag-bottom"
                 type="button"
-                @mousedown.left.stop="props.extendBottom(event)"
+                @mousedown.left.stop="onEventResizeMouseDown(event)"
               >
-                <v-icon :size="getResizeHandleIconSize(event)">mdi-resize-bottom-right</v-icon>
+                <span class="sapling-calendar-event-card__resize-grip" aria-hidden="true"></span>
               </button>
             </div>
           </div>
@@ -126,7 +137,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed } from 'vue'
+import { computed, ref, shallowRef, watch } from 'vue'
 import { VCalendar } from 'vuetify/components'
 import type { CSSProperties } from 'vue'
 import type { WorkHourWeekItem } from '@/entity/entity'
@@ -167,6 +178,7 @@ const props = withDefaults(
     calendarDisplayType: CalendarDisplayType
     calendarWeekdays?: number[]
     isDragActive?: boolean
+    isTooltipBlocked?: boolean
     workHours: WorkHourWeekItem | null
     showWorkHourBackground: boolean
     calendarClass?: string | string[] | Record<string, boolean>
@@ -189,6 +201,7 @@ const props = withDefaults(
     calendarWeekdays: undefined,
     calendarClass: '',
     isDragActive: false,
+    isTooltipBlocked: false,
     showResizeHandle: false,
   },
 )
@@ -200,6 +213,17 @@ const emit = defineEmits<{
 const calendarValue = computed({
   get: () => props.modelValue,
   set: (value: string) => emit('update:modelValue', value),
+})
+const activeTooltipEvent = shallowRef<CalendarEvent | null>(null)
+const isTooltipLocallySuppressed = ref(false)
+const isTooltipInteractionBlocked = computed(
+  () => props.isDragActive || props.isTooltipBlocked || isTooltipLocallySuppressed.value,
+)
+
+watch(isTooltipInteractionBlocked, (isBlocked) => {
+  if (isBlocked) {
+    closeEventTooltip()
+  }
 })
 
 function formatEventTimeRange(event: CalendarEvent) {
@@ -280,10 +304,6 @@ function shouldShowDescription(event: CalendarEvent) {
   return getEventCardDensity(event) === 'default'
 }
 
-function getResizeHandleIconSize(event: CalendarEvent) {
-  return shouldInlineTitle(event) ? 12 : 14
-}
-
 function isInteractiveEvent(event: CalendarEvent) {
   return !isHolidayEvent(event) && !isBufferEvent(event)
 }
@@ -308,7 +328,43 @@ function getEventIcon(event: CalendarEvent) {
   return resolveCalendarEventIcon(event)
 }
 
+function isEventTooltipOpen(event: CalendarEvent) {
+  return (
+    !isTooltipInteractionBlocked.value &&
+    !isBufferEvent(event) &&
+    activeTooltipEvent.value === event
+  )
+}
+
+function onEventTooltipUpdate(event: CalendarEvent, isOpen: boolean) {
+  if (isOpen) {
+    if (!isTooltipInteractionBlocked.value && !isBufferEvent(event)) {
+      activeTooltipEvent.value = event
+    }
+    return
+  }
+
+  if (activeTooltipEvent.value === event) {
+    closeEventTooltip()
+  }
+}
+
+function closeEventTooltip() {
+  activeTooltipEvent.value = null
+}
+
+function suppressEventTooltip() {
+  isTooltipLocallySuppressed.value = true
+  closeEventTooltip()
+}
+
+function releaseEventTooltipSuppression() {
+  isTooltipLocallySuppressed.value = false
+}
+
 function onEventActivate(event: CalendarEvent) {
+  suppressEventTooltip()
+
   if (!isInteractiveEvent(event)) {
     return
   }
@@ -317,6 +373,8 @@ function onEventActivate(event: CalendarEvent) {
 }
 
 function onEventContextMenu(nativeEvent: MouseEvent, event: CalendarEvent) {
+  suppressEventTooltip()
+
   if (!isInteractiveEvent(event)) {
     return
   }
@@ -330,6 +388,8 @@ function isPrimaryMouseButton(event: Event) {
 }
 
 function onEventMouseDown(nativeEvent: Event, payload: { event: CalendarEvent; timed: boolean }) {
+  suppressEventTooltip()
+
   if (!isPrimaryMouseButton(nativeEvent) || !isInteractiveEvent(payload.event)) {
     return
   }
@@ -338,11 +398,18 @@ function onEventMouseDown(nativeEvent: Event, payload: { event: CalendarEvent; t
 }
 
 function onTimeMouseDown(nativeEvent: Event, timeSlot: CalendarDateItem) {
+  closeEventTooltip()
+
   if (!isPrimaryMouseButton(nativeEvent)) {
     return
   }
 
   props.startTime(nativeEvent, timeSlot)
+}
+
+function onEventResizeMouseDown(event: CalendarEvent) {
+  suppressEventTooltip()
+  props.extendBottom(event)
 }
 
 function onTimeMouseMove(nativeEvent: Event, timeSlot: CalendarDateItem) {

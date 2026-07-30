@@ -2,6 +2,10 @@ import axios from 'axios'
 import type { ChangeLogEntry, PaginatedResponse, TimelineResponse } from '../entity/structure'
 import { buildApiUrl } from '@/services/api.client'
 import { pushApiErrorMessage } from '@/services/api.error.service'
+import {
+  DEFAULT_ENTITY_ITEMS_COUNT,
+  GENERIC_API_MAX_PAGE_SIZE,
+} from '@/constants/project.constants'
 
 export type FilterQuery = { [key: string]: unknown }
 export type OrderByQuery = { [key: string]: 'ASC' | 'DESC' | 1 | -1 | string }
@@ -82,7 +86,7 @@ export interface GenericUpdateConflictDetails {
   summary?: string
 }
 
-interface FindOptions {
+export interface FindOptions {
   filter?: FilterQuery
   orderBy?: OrderByQuery
   page?: number
@@ -90,6 +94,15 @@ interface FindOptions {
   relations?: string[]
   fields?: string[]
   signal?: AbortSignal
+}
+
+export interface FindAllOptions extends Omit<FindOptions, 'page' | 'limit'> {
+  pageSize?: number
+}
+
+export interface FindByHandlesOptions extends Omit<FindAllOptions, 'filter'> {
+  filter?: FilterQuery
+  handleField?: string
 }
 
 interface UpdateOptions {
@@ -166,6 +179,110 @@ class ApiGenericService {
       pushApiErrorMessage(error, 'exception.unknownError', entityHandle)
       throw error
     }
+  }
+
+  static async findAll<T>(
+    entityHandle: string,
+    {
+      filter,
+      orderBy,
+      relations,
+      fields,
+      signal,
+      pageSize = DEFAULT_ENTITY_ITEMS_COUNT,
+    }: FindAllOptions = {},
+  ): Promise<T[]> {
+    const limit = Math.min(
+      Math.max(Math.trunc(pageSize) || DEFAULT_ENTITY_ITEMS_COUNT, 1),
+      GENERIC_API_MAX_PAGE_SIZE,
+    )
+    const stableOrderBy: OrderByQuery = {
+      ...(orderBy ?? {}),
+      handle: orderBy?.handle ?? 'ASC',
+    }
+    const items: T[] = []
+    const handledItems = new Map<EntityHandleValue, number>()
+    let page = 1
+    let totalPages = 1
+
+    do {
+      const response = await this.find<T>(entityHandle, {
+        filter,
+        orderBy: stableOrderBy,
+        page,
+        limit,
+        relations,
+        fields,
+        signal,
+      })
+
+      for (const item of response.data ?? []) {
+        const handle = getItemHandle(item)
+        if (handle == null) {
+          items.push(item)
+          continue
+        }
+
+        const existingIndex = handledItems.get(handle)
+        if (existingIndex == null) {
+          handledItems.set(handle, items.length)
+          items.push(item)
+        } else {
+          items[existingIndex] = item
+        }
+      }
+
+      if (!response.data?.length) {
+        break
+      }
+
+      totalPages = Math.max(page, response.meta?.totalPages ?? 1)
+      page += 1
+    } while (page <= totalPages)
+
+    return items
+  }
+
+  static async findByHandles<T>(
+    entityHandle: string,
+    handles: EntityHandleValue[],
+    {
+      filter,
+      orderBy,
+      relations,
+      fields,
+      signal,
+      pageSize,
+      handleField = 'handle',
+    }: FindByHandlesOptions = {},
+  ): Promise<T[]> {
+    const normalizedHandles = [...new Set(handles)]
+    if (normalizedHandles.length === 0) {
+      return []
+    }
+
+    const items: T[] = []
+    for (let index = 0; index < normalizedHandles.length; index += GENERIC_API_MAX_PAGE_SIZE) {
+      const handleFilter: FilterQuery = {
+        [handleField]: {
+          $in: normalizedHandles.slice(index, index + GENERIC_API_MAX_PAGE_SIZE),
+        },
+      }
+      const chunkItems = await this.findAll<T>(entityHandle, {
+        filter:
+          filter && Object.keys(filter).length > 0
+            ? { $and: [filter, handleFilter] }
+            : handleFilter,
+        orderBy,
+        relations,
+        fields,
+        signal,
+        pageSize,
+      })
+      items.push(...chunkItems)
+    }
+
+    return items
   }
 
   static async getTimeline(
@@ -356,6 +473,15 @@ class ApiGenericService {
       throw error
     }
   }
+}
+
+function getItemHandle(item: unknown): EntityHandleValue | null {
+  if (typeof item !== 'object' || item === null || !('handle' in item)) {
+    return null
+  }
+
+  const handle = (item as { handle?: unknown }).handle
+  return typeof handle === 'string' || typeof handle === 'number' ? handle : null
 }
 
 function isRequestCanceled(error: unknown): boolean {

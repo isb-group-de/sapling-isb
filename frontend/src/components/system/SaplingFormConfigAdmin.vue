@@ -324,23 +324,9 @@ async function loadEntities(): Promise<void> {
 }
 
 async function fetchAllEntities(): Promise<EntityItem[]> {
-  const limit = 200
-  const result: EntityItem[] = []
-  let page = 1
-  let totalPages = 1
-
-  do {
-    const response = await ApiGenericService.find<EntityItem>('entity', {
-      page,
-      limit,
-      orderBy: { order: 'ASC', handle: 'ASC' },
-    })
-    result.push(...response.data)
-    totalPages = response.meta.totalPages || 1
-    page += 1
-  } while (page <= totalPages)
-
-  return result
+  return ApiGenericService.findAll<EntityItem>('entity', {
+    orderBy: { order: 'ASC', handle: 'ASC' },
+  })
 }
 
 function getRequestedEntityHandle(): string {

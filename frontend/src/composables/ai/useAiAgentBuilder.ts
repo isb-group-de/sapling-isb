@@ -128,17 +128,17 @@ export function useAiAgentBuilder() {
   }
 
   async function loadReferenceData(): Promise<void> {
-    const [providerList, modelList, entityPage, rolePage, toolList] = await Promise.all([
+    const [providerList, modelList, entityList, roleList, toolList] = await Promise.all([
       ApiAiService.listProviders(),
       ApiAiService.listModels(),
-      ApiGenericService.find<EntityItem>('entity', { limit: 200 }),
-      ApiGenericService.find<RoleItem>('role', { limit: 100 }),
+      ApiGenericService.findAll<EntityItem>('entity'),
+      ApiGenericService.findAll<RoleItem>('role'),
       ApiAiService.listMcpTools(),
     ])
     providers.value = providerList
     models.value = modelList
-    entities.value = entityPage.data
-    roles.value = rolePage.data
+    entities.value = entityList
+    roles.value = roleList
     tools.value = toolList
   }
 

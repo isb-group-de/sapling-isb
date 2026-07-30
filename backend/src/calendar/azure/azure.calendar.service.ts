@@ -600,8 +600,6 @@ export class AzureCalendarService {
       this.assignImportedEvent(reference.event, graphEvent, {
         startDate,
         endDate,
-        type: defaults.type,
-        category: defaults.category,
         status,
         participants: participantPeople,
       });
@@ -616,10 +614,12 @@ export class AzureCalendarService {
     this.assignImportedEvent(event, graphEvent, {
       startDate,
       endDate,
-      type: defaults.type,
-      category: defaults.category,
       status,
       participants: participantPeople,
+      classification: {
+        type: defaults.type,
+        category: defaults.category,
+      },
     });
 
     const newReference = new EventAzureItem();
@@ -637,10 +637,12 @@ export class AzureCalendarService {
     values: {
       startDate: Date;
       endDate: Date;
-      type: EventTypeItem;
-      category: EventCategoryItem;
       status: EventStatusItem;
       participants: PersonItem[];
+      classification?: {
+        type: EventTypeItem;
+        category: EventCategoryItem;
+      };
     },
   ): void {
     event.title = truncateAzureText(
@@ -651,8 +653,10 @@ export class AzureCalendarService {
     event.isPrivate = graphEvent.sensitivity === 'private';
     event.startDate = values.startDate;
     event.endDate = values.endDate;
-    event.type = values.type;
-    event.category = values.category;
+    if (values.classification) {
+      event.type = values.classification.type;
+      event.category = values.classification.category;
+    }
     event.isAllDay = graphEvent.isAllDay === true;
     event.onlineMeetingURL =
       graphEvent.onlineMeeting?.joinUrl ??

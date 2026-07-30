@@ -1,7 +1,6 @@
 import { computed, ref, type Ref } from 'vue'
 import type { SaplingGenericItem } from '@/entity/entity'
 import type { EntityTemplate } from '@/entity/structure'
-import { DEFAULT_ENTITY_ITEMS_COUNT } from '@/constants/project.constants'
 import type { FilterQuery } from '@/services/api.generic.service'
 import ApiGenericService from '@/services/api.generic.service'
 import ApiTemplateService from '@/services/api.template.service'
@@ -50,9 +49,8 @@ export function useSaplingChipFilters({
       chipTemplates.map(async (template) => {
         const referenceName = template.referenceName ?? ''
         const referenceTemplates = await ApiTemplateService.getEntityTemplate(referenceName)
-        const response = await ApiGenericService.find<SaplingGenericItem>(referenceName, {
+        const response = await ApiGenericService.findAll<SaplingGenericItem>(referenceName, {
           orderBy: buildReferenceOrderBy(referenceTemplates),
-          limit: DEFAULT_ENTITY_ITEMS_COUNT,
         })
         const identifierKey = template.referencedPks?.[0] ?? 'handle'
 
@@ -62,7 +60,7 @@ export function useSaplingChipFilters({
           referenceName,
           identifierKey,
           label: getTemplateLabel(currentEntityHandle, template),
-          options: response.data
+          options: response
             .map((item) => buildChipFilterOption(item, identifierKey, referenceTemplates))
             .filter((option): option is NonNullable<typeof option> => option !== null),
         }

@@ -45,7 +45,7 @@ vi.mock('@/stores/genericStore', () => ({
 
 vi.mock('@/services/api.generic.service', () => ({
   default: {
-    find: findMock,
+    findAll: findMock,
   },
 }))
 
@@ -97,9 +97,7 @@ describe('useSaplingTableColumnFilter', () => {
   })
 
   it('resolves translated relation labels for automatically rehydrated relation filters', async () => {
-    findMock.mockResolvedValueOnce({
-      data: [{ handle: 'closed', description: 'Geschlossen' }],
-    })
+    findMock.mockResolvedValueOnce([{ handle: 'closed', description: 'Geschlossen' }])
 
     const wrapper = mount(TestHost, {
       props: {
@@ -123,7 +121,6 @@ describe('useSaplingTableColumnFilter', () => {
 
     expect(findMock).toHaveBeenCalledWith('ticketStatus', {
       filter: { handle: 'closed' },
-      limit: 1,
     })
     expect(wrapper.vm.filterSummary).toBe('Geschlossen')
     expect(wrapper.vm.relationDisplayItems).toEqual([

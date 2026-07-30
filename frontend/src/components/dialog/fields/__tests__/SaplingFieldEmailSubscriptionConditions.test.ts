@@ -76,13 +76,10 @@ vi.mock('@/stores/genericStore', () => ({
 
 vi.mock('@/services/api.generic.service', () => ({
   default: {
-    find: vi.fn().mockResolvedValue({
-      data: [
-        { handle: 'open', title: 'Open' },
-        { handle: 'closed', title: 'Closed' },
-      ],
-      meta: { total: 2, page: 1, limit: 200, totalPages: 1, executionTime: 0 },
-    }),
+    findAll: vi.fn().mockResolvedValue([
+      { handle: 'open', title: 'Open' },
+      { handle: 'closed', title: 'Closed' },
+    ]),
   },
 }))
 

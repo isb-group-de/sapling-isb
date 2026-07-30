@@ -94,6 +94,8 @@ describe('AzureCalendarService Outlook import privacy', () => {
     expect(event?.isPrivate).toBe(true);
     expect(event?.title).toBe('Planning');
     expect(event?.description).toBe('Details');
+    expect(event?.type).toBe(defaults.type);
+    expect(event?.category).toBe(defaults.category);
   });
 
   it('imports non-private, missing, and unknown Outlook sensitivity as public events', async () => {
@@ -129,10 +131,14 @@ describe('AzureCalendarService Outlook import privacy', () => {
     }
   });
 
-  it('updates an existing Outlook-linked event when privacy changes', async () => {
+  it('updates provider fields without overwriting an existing Sapling classification', async () => {
     const existingEvent = new EventItem();
     existingEvent.title = 'Old title';
     existingEvent.isPrivate = false;
+    const existingType = { handle: 'customer-appointment' };
+    const existingCategory = { handle: 'sales' };
+    existingEvent.type = existingType as never;
+    existingEvent.category = existingCategory as never;
     const emFork = {
       findOne: jest.fn<(...args: unknown[]) => Promise<unknown>>(() =>
         Promise.resolve({
@@ -156,6 +162,8 @@ describe('AzureCalendarService Outlook import privacy', () => {
 
     expect(existingEvent.isPrivate).toBe(true);
     expect(existingEvent.title).toBe('Planning');
+    expect(existingEvent.type).toBe(existingType);
+    expect(existingEvent.category).toBe(existingCategory);
     expect(emFork.persist).not.toHaveBeenCalled();
   });
 });

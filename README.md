@@ -155,7 +155,7 @@ AI-Provider-Credentials werden im laufenden System datengetrieben ueber Provider
 | `VITE_DEFAULT_PAGE_SIZE_MEDIUM` | Standard-Seitengroesse für mittlere Viewports. |
 | `VITE_DEFAULT_PAGE_SIZE_LARGE` | Standard-Seitengroesse für grosse Viewports. |
 | `VITE_DEFAULT_PAGE_SIZE_OPTIONS` | Auswahlwerte für Tabellen-Pagination, z. B. `10,25,50,100`. |
-| `VITE_DEFAULT_ENTITY_ITEMS_COUNT` | Standardlimit für Entity-Abfragen im Client. |
+| `VITE_DEFAULT_ENTITY_ITEMS_COUNT` | Standard-Seitengröße für Entity-Abfragen im Client; Werte werden auf das API-Maximum `100` begrenzt. |
 | `VITE_DOCUMENT_MAX_FILE_SIZE_MB` | Maximale Uploadgroesse pro Datei im Frontend. |
 | `VITE_DEBUG_USERNAME` / `VITE_DEBUG_PASSWORD` | Komfortwerte für lokale Login-Entwicklung; nicht produktiv verwenden. |
 | `VITE_IS_LOGIN_WITH_AZURE_ENABLED` | Schaltet Microsoft-Login im Frontend sichtbar. |

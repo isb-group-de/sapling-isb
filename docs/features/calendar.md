@@ -141,7 +141,7 @@ provider's response normalization and outbound event mapping explicit and
 independently testable; they intentionally do not force unlike provider payloads
 through one shared abstraction.
 
-Existing Sapling events are updated and unknown provider items are created with the user's configured default type (`online` by default) and category (`internal` by default). Known attendee email addresses are linked as participants when matching `PersonItem` records exist. The current user is always added as a participant so imported events appear in their calendar filter.
+Existing Sapling events are updated and unknown provider items are created with the user's configured default type (`online` by default) and category (`internal` by default). Outlook updates preserve the existing Sapling event type and category; Outlook classification mappings and defaults are applied only when an external item is imported for the first time. Known attendee email addresses are linked as participants when matching `PersonItem` records exist. The current user is always added as a participant so imported events appear in their calendar filter.
 
 Outlook events whose Microsoft Graph `sensitivity` is `private` are imported with `EventItem.isPrivate = true`. Sapling still stores the full event details for the importing owner, but generic Event reads, exports, relation mutations, updates, deletes, KPIs, and timeline anchor loads must only expose private events when `creatorPerson` is the current user. Non-private events keep the normal Event permission behavior.
 
@@ -162,9 +162,9 @@ When Redis is enabled, `CalendarSyncModule` registers a BullMQ `calendar-sync` q
 
 The account dialog also configures fallback type/category values and provider classification mappings:
 
-- Outlook maps its native category names to a Sapling event type, category, or both. The account dialog can load `/me/outlook/masterCategories` and add missing display names as mapping rows; this requires the delegated `MailboxSettings.Read` scope. Matching names are written back to Outlook when Sapling creates or updates the event.
+- Outlook maps its native category names to a Sapling event type, category, or both when the Outlook item is first imported. Later imports update the linked event's provider-owned fields but preserve the event type and category selected in Sapling. The account dialog can load `/me/outlook/masterCategories` and add missing display names as mapping rows; this requires the delegated `MailboxSettings.Read` scope. Matching names are written back to Outlook when Sapling creates or updates the event.
 - Google maps calendar color IDs (`1` through `11`) to a Sapling event type, category, or both. Sapling-created Google events additionally carry the exact handles in private `extendedProperties`, so a later import does not lose the classification even when a color represents only one combined mapping.
-- Provider items without a matching mapping use the configured defaults. Existing linked events are reclassified when a later import reads them again.
+- Provider items without a matching mapping use the configured defaults. Existing linked Google events are reclassified when a later import reads them again; existing linked Outlook events retain their Sapling classification.
 
 Private Outlook events use the same automatic import path as manual imports, so privacy behavior is identical for both flows.
 
@@ -179,11 +179,21 @@ Private Outlook events use the same automatic import path as manual imports, so 
 - Skip external-calendar assumptions for event types where `showInDefaultCalendar` is `false`.
 - Keep non-recurring edits separate from recurring occurrence handling.
 
+The calendar toolbar keeps the same compact, non-scrolling height in day,
+workweek, week, and month views. Width-dependent actions move into the overflow
+menu instead of making the toolbar itself scroll.
+
 `useSaplingCalendarDrag.ts` owns timed-event pointer interactions: new drafts,
 move/resize state, readonly guards, forced dirty fields, synthetic click
 suppression, translucent drag colors, cancellation, and rollback snapshots. It
 accepts calendar/dialog refs plus one persisted-editor callback, so the gesture
 logic can be reused independently of calendar loading and persistence.
+Resizable timed events expose their complete lower card edge as the resize
+target. The hit area remains inside the individual card so overlapping events
+retain their normal hover and click stacking order.
+Event detail tooltips close immediately when dragging, resizing, opening the
+editor, or opening the context menu starts. Their teleported overlay also stops
+accepting pointer events for the complete lifetime of those interactions.
 Dragging or resizing one expanded recurrence occurrence updates every rendered
 occurrence of the same series as a live preview. When the edit dialog opens,
 the occurrence delta is applied to the persisted series start instead of

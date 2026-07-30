@@ -262,21 +262,25 @@ export function useSaplingPermission() {
 
   //#region Methods
   async function refreshPersons() {
-    const response = await ApiGenericService.find<PersonItem>('person', { relations: ['roles'] })
-    persons.value = response.data.map(clonePerson)
+    const response = await ApiGenericService.findAll<PersonItem>('person', {
+      relations: ['roles'],
+    })
+    persons.value = response.map(clonePerson)
   }
 
   async function refreshRoles() {
-    const response = await ApiGenericService.find<RoleItem>('role', {
+    const response = await ApiGenericService.findAll<RoleItem>('role', {
       relations: ['m:1', 'permissions', 'permissions.fieldPermissions', 'persons'],
     })
-    roles.value = cloneRoles(response.data)
-    originalRoles.value = cloneRoles(response.data)
+    roles.value = cloneRoles(response)
+    originalRoles.value = cloneRoles(response)
   }
 
   async function refreshEntities() {
-    const response = await ApiGenericService.find<EntityItem>('entity', { relations: ['group'] })
-    entities.value = response.data.map((entity) => ({ ...entity }))
+    const response = await ApiGenericService.findAll<EntityItem>('entity', {
+      relations: ['group'],
+    })
+    entities.value = response.map((entity) => ({ ...entity }))
   }
 
   async function refreshPermissionMembers() {

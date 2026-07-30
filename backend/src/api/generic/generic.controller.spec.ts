@@ -71,8 +71,6 @@ describe('GenericController', () => {
     const res = createMockResponse();
 
     await controller.download(req as never, res, 'ticket', {
-      page: 1,
-      limit: 100,
       filter: { active: true },
       orderBy: { name: 'ASC' },
       relations: ['person'],

@@ -26,7 +26,7 @@ vi.mock('vue-i18n', () => ({
 
 vi.mock('@/services/api.generic.service', () => ({
   default: {
-    find: mocks.apiFind,
+    findAll: mocks.apiFind,
     create: mocks.apiCreate,
   },
 }))
@@ -95,7 +95,7 @@ beforeEach(() => {
   vi.clearAllMocks()
   mocks.person = { handle: 7 }
   mocks.route.fullPath = '/table/ticket'
-  mocks.apiFind.mockResolvedValue({ data: [favorite] })
+  mocks.apiFind.mockResolvedValue([favorite])
   mocks.apiCreate.mockResolvedValue(favorite)
   mocks.fetchCurrentPerson.mockResolvedValue(undefined)
   mocks.routerPush.mockResolvedValue(undefined)

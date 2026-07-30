@@ -108,6 +108,14 @@ frontend/src/services/api.error.service.ts
 
 `genericStore` coordinates loading, caching, and state used by tables/dialogs. API services centralize request behavior and error handling.
 
+Generic list requests have a maximum page size of `100`. Normal tables remain
+server-paginated. Internal catalogs that must be complete, such as navigation,
+permission matrices, command-palette entries, dashboards, calendar data, and
+reference lookups, use `ApiGenericService.findAll()` so every response page is
+loaded. Handle-based hydration uses `findByHandles()`, which batches handle
+filters into groups of at most `100`. Do not implement complete catalog loading
+with one `find()` call or a configured single-page limit.
+
 ## Translation Loading
 
 Important files:
@@ -300,6 +308,8 @@ coordination. Form-configuration catalog loading, selection, and overlay state
 live in `useSaplingTableFormConfig`; parsing and replacing query-string state
 live in `saplingTableRouteState.ts`. Keep new form-view and URL rules in those
 focused modules instead of growing the table orchestrator.
+Table page-size values from configuration, user events, and old URLs are clamped
+to the generic API maximum of `100`.
 Column-filter cloning/template normalization, filter-tree restoration, and
 individual relation/range/date clause parsing live in the focused
 `saplingTableColumnFilterState`, `saplingTableFilterRestore`, and

@@ -18,11 +18,22 @@ export const DEFAULT_PAGE_SIZE_MEDIUM: number =
   parseInt(import.meta.env.VITE_DEFAULT_PAGE_SIZE_MEDIUM) || 25
 export const DEFAULT_PAGE_SIZE_LARGE: number =
   parseInt(import.meta.env.VITE_DEFAULT_PAGE_SIZE_LARGE) || 50
-export const DEFAULT_PAGE_SIZE_OPTIONS: number[] = import.meta.env.VITE_DEFAULT_PAGE_SIZE_OPTIONS
+export const GENERIC_API_MAX_PAGE_SIZE = 100
+const configuredPageSizeOptions: number[] = import.meta.env.VITE_DEFAULT_PAGE_SIZE_OPTIONS
   ? import.meta.env.VITE_DEFAULT_PAGE_SIZE_OPTIONS.split(',').map(Number)
   : [10, 25, 50, 100]
-export const DEFAULT_ENTITY_ITEMS_COUNT: number =
-  parseInt(import.meta.env.VITE_DEFAULT_ENTITY_ITEMS_COUNT) || 100
+export const DEFAULT_PAGE_SIZE_OPTIONS: number[] = [
+  ...new Set(
+    configuredPageSizeOptions
+      .filter((value: number) => Number.isFinite(value) && value > 0)
+      .map((value: number) => Math.min(Math.trunc(value), GENERIC_API_MAX_PAGE_SIZE)),
+  ),
+]
+const configuredEntityItemsCount = parseInt(import.meta.env.VITE_DEFAULT_ENTITY_ITEMS_COUNT) || 100
+export const DEFAULT_ENTITY_ITEMS_COUNT: number = Math.min(
+  Math.max(configuredEntityItemsCount, 1),
+  GENERIC_API_MAX_PAGE_SIZE,
+)
 export const DOCUMENT_MAX_FILE_SIZE_MB: number =
   parseInt(import.meta.env.VITE_DOCUMENT_MAX_FILE_SIZE_MB) || 20
 export const DEBUG_USERNAME: string = import.meta.env.VITE_DEBUG_USERNAME || ''

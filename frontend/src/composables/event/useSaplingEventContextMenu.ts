@@ -5,7 +5,7 @@ import ApiCalendarService from '@/services/api.calendar.service'
 import ApiScriptService from '@/services/api.script.service'
 import type { EntityItem, EventItem, SaplingGenericItem, ScriptButtonItem } from '@/entity/entity'
 import type { AccumulatedPermission, EntityTemplate } from '@/entity/structure'
-import { DEFAULT_ENTITY_ITEMS_COUNT, NAVIGATION_URL } from '@/constants/project.constants'
+import { NAVIGATION_URL } from '@/constants/project.constants'
 import { useCurrentPersonStore } from '@/stores/currentPersonStore'
 import { useCurrentPermissionStore } from '@/stores/currentPermissionStore'
 import { useTimelineDialogStore } from '@/stores/timelineDialogStore'
@@ -165,15 +165,14 @@ export function useSaplingEventContextMenu(options: UseSaplingEventContextMenuOp
 
   async function loadEventScriptButtons() {
     const currentRequestId = ++scriptButtonsRequestId
-    const result = await ApiGenericService.find<ScriptButtonItem>('scriptButton', {
+    const result = await ApiGenericService.findAll<ScriptButtonItem>('scriptButton', {
       filter: { entity: { handle: 'event' } },
       orderBy: buildTableOrderBy([{ key: 'title', order: 'asc' }]),
-      limit: DEFAULT_ENTITY_ITEMS_COUNT,
       relations: ['m:1'],
     })
 
     if (currentRequestId === scriptButtonsRequestId) {
-      loadedScriptButtons.value = result.data
+      loadedScriptButtons.value = result
     }
   }
 

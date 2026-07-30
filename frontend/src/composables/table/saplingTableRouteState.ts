@@ -1,5 +1,6 @@
 import type { LocationQuery } from 'vue-router'
 import type { SortItem } from '@/entity/structure'
+import { GENERIC_API_MAX_PAGE_SIZE } from '@/constants/project.constants'
 
 export type SaplingTableRouteState = {
   filter: unknown
@@ -31,7 +32,7 @@ export function readSaplingTableRouteState(
     search: firstQueryValue(query.search) ?? '',
     sortBy: parseSortBy(firstQueryValue(query.sortBy)),
     page: parsePositiveInteger(firstQueryValue(query.page)) ?? 1,
-    itemsPerPage: parsePositiveInteger(firstQueryValue(query.itemsPerPage)),
+    itemsPerPage: parsePageSize(firstQueryValue(query.itemsPerPage)),
   }
 }
 
@@ -109,6 +110,11 @@ function parseSortBy(value: string | null): SortItem[] {
 function parsePositiveInteger(value: string | null): number | null {
   const parsed = value ? Number.parseInt(value, 10) : NaN
   return Number.isFinite(parsed) && parsed > 0 ? parsed : null
+}
+
+function parsePageSize(value: string | null): number | null {
+  const parsed = parsePositiveInteger(value)
+  return parsed == null ? null : Math.min(parsed, GENERIC_API_MAX_PAGE_SIZE)
 }
 
 function setOptionalParam(params: URLSearchParams, key: string, value: string | null): void {

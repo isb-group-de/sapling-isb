@@ -1,7 +1,6 @@
 import { computed, ref, type Ref } from 'vue'
 import type { EntityItem } from '@/entity/entity'
 import type { AccumulatedPermission, EntityTemplate } from '@/entity/structure'
-import { DEFAULT_ENTITY_ITEMS_COUNT } from '@/constants/project.constants'
 import ApiGenericService, { type FilterQuery } from '@/services/api.generic.service'
 import type { useGenericStore } from '@/stores/genericStore'
 import type { useCurrentPermissionStore } from '@/stores/currentPermissionStore'
@@ -77,11 +76,10 @@ export function useSaplingImportEntityCatalog(options: SaplingImportEntityCatalo
   const sourceFilter = computed<FilterQuery>(() => ({ isActive: true }))
 
   async function loadEntities(): Promise<void> {
-    const response = await ApiGenericService.find<EntityItem>('entity', {
-      limit: DEFAULT_ENTITY_ITEMS_COUNT,
+    const response = await ApiGenericService.findAll<EntityItem>('entity', {
       orderBy: { handle: 'ASC' },
     })
-    entities.value = response.data
+    entities.value = response
   }
 
   return {

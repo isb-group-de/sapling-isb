@@ -28,7 +28,7 @@ vi.mock('vue-i18n', () => ({
 }))
 
 vi.mock('@/services/api.generic.service', () => ({
-  default: { find: mocks.apiFind },
+  default: { findAll: mocks.apiFind },
 }))
 
 vi.mock('@/services/api.script.service', () => ({

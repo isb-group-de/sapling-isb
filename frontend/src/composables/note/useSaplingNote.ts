@@ -72,7 +72,7 @@ export function useSaplingNote() {
    * Loads all note groups and keeps the selected tab index within range.
    */
   async function loadGroups() {
-    groups.value = (await ApiGenericService.find<NoteGroupItem>('noteGroup')).data || []
+    groups.value = await ApiGenericService.findAll<NoteGroupItem>('noteGroup')
     syncSelectedTab()
   }
 
@@ -85,15 +85,12 @@ export function useSaplingNote() {
       return
     }
 
-    notes.value =
-      (
-        await ApiGenericService.find<NoteItem>('note', {
-          filter: {
-            person: currentPersonStore.person.handle,
-            group: currentGroup.value.handle,
-          },
-        })
-      ).data || []
+    notes.value = await ApiGenericService.findAll<NoteItem>('note', {
+      filter: {
+        person: currentPersonStore.person.handle,
+        group: currentGroup.value.handle,
+      },
+    })
   }
 
   /**

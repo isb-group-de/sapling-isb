@@ -129,13 +129,13 @@ export function useSaplingImportValueMappings(options: SaplingImportValueMapping
 
     const cache = getReferenceValueItemCache(referenceName)
     try {
-      const response = await ApiGenericService.find<SaplingGenericItem>(referenceName, {
-        filter: { handle: { $in: missingHandles } },
-        limit: missingHandles.length,
-        relations: ['m:1'],
-      })
+      const response = await ApiGenericService.findByHandles<SaplingGenericItem>(
+        referenceName,
+        missingHandles,
+        { relations: ['m:1'] },
+      )
       const itemsByHandle = new Map(
-        (response.data ?? [])
+        response
           .map((item) => [normalizeImportValueMappingKey(item.handle), item] as const)
           .filter(([handle]) => handle.length > 0),
       )

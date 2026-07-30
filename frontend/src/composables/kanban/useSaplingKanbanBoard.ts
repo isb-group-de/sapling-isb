@@ -7,7 +7,6 @@ import type {
   EntityTemplate,
   EntityTemplateKanban,
 } from '@/entity/structure'
-import { DEFAULT_ENTITY_ITEMS_COUNT } from '@/constants/project.constants'
 import ApiGenericService from '@/services/api.generic.service'
 import { useGenericStore } from '@/stores/genericStore'
 import { useSaplingMessageCenter } from '@/composables/system/useSaplingMessageCenter'
@@ -181,18 +180,16 @@ export function useSaplingKanbanBoard(props: KanbanBoardProps) {
     isLoading.value = true
     try {
       const [columnResponse, recordResponse] = await Promise.all([
-        ApiGenericService.find<SaplingGenericItem>(columnEntityHandle.value, {
+        ApiGenericService.findAll<SaplingGenericItem>(columnEntityHandle.value, {
           orderBy: buildKanbanOrderBy(columnState.value.entityTemplates),
-          limit: DEFAULT_ENTITY_ITEMS_COUNT,
         }),
-        ApiGenericService.find<SaplingGenericItem>(props.entityHandle, {
+        ApiGenericService.findAll<SaplingGenericItem>(props.entityHandle, {
           orderBy: buildKanbanOrderBy(entityState.value.entityTemplates, ['updatedAt']),
-          limit: DEFAULT_ENTITY_ITEMS_COUNT,
           relations: buildRecordRelations(),
         }),
       ])
-      columns.value = columnResponse.data
-      records.value = recordResponse.data
+      columns.value = columnResponse
+      records.value = recordResponse
       hasLoadedOnce.value = true
     } finally {
       isLoading.value = false

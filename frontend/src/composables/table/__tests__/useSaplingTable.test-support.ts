@@ -6,6 +6,7 @@ import type { EntityTemplate } from '@/entity/structure'
 
 const {
   apiFindMock,
+  apiFindAllMock,
   loadGenericMock,
   fetchCurrentPermissionMock,
   getEntityTemplateMock,
@@ -13,6 +14,7 @@ const {
   routeState,
 } = vi.hoisted(() => ({
   apiFindMock: vi.fn(),
+  apiFindAllMock: vi.fn().mockResolvedValue([]),
   loadGenericMock: vi.fn(),
   fetchCurrentPermissionMock: vi.fn(),
   getEntityTemplateMock: vi.fn(),
@@ -27,6 +29,7 @@ vi.mock('vue-router', () => ({
 vi.mock('@/services/api.generic.service', () => ({
   default: {
     find: apiFindMock,
+    findAll: apiFindAllMock,
   },
 }))
 
@@ -318,6 +321,7 @@ function mountBeforeInitialLoadTestHost(
 }
 
 export {
+  apiFindAllMock,
   apiFindMock,
   loadGenericMock,
   fetchCurrentPermissionMock,
@@ -332,6 +336,8 @@ export {
 }
 
 export function resetTableTestMocks(): void {
+  apiFindAllMock.mockReset()
+  apiFindAllMock.mockResolvedValue([])
   apiFindMock.mockReset()
   loadGenericMock.mockReset()
   fetchCurrentPermissionMock.mockReset()

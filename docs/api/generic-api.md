@@ -67,13 +67,22 @@ Common query parameters:
 | `relations` | JSON list encoded as string                               |
 | `fields`    | Optional JSON list of readable persistent response fields |
 | `page`      | 1-based page number                                       |
-| `limit`     | page size                                                 |
+| `limit`     | page size, default and maximum `100`                      |
 
 Example:
 
 ```text
 GET /api/generic/ticket?filter={"status":{"handle":{"$in":["new","open"]}}}&orderBy={"updatedAt":"DESC"}&relations=["status","priority"]
 ```
+
+List responses are paginated even for internal callers. Code that needs a
+complete catalog must keep requesting pages until `meta.totalPages` is reached;
+it must not assume that omitting `limit` returns every record. The frontend
+provides `ApiGenericService.findAll()` for this contract and
+`ApiGenericService.findByHandles()` for handle sets larger than one page.
+
+The `GET /generic/:entity/download` export path has its own download limit and
+does not inherit the list page-size maximum.
 
 URL-encode JSON in real clients.
 

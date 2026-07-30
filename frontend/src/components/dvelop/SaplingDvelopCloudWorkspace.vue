@@ -109,7 +109,6 @@ import type {
 import { capitalizeDvelopKey, formatDvelopDateTime } from './dvelopCloudWorkspace.utils'
 // #endregion
 
-const GENERIC_PAGE_LIMIT = 200
 const HEALTH_CAPABILITY_KEYS: DvelopHealthCheckCapabilityKey[] = [
   'apiKey',
   'repositories',
@@ -231,11 +230,10 @@ async function loadConnections() {
   isLoadingConnections.value = true
 
   try {
-    const response = await ApiGenericService.find<DvelopConnectionItem>('dvelopConnection', {
+    const response = await ApiGenericService.findAll<DvelopConnectionItem>('dvelopConnection', {
       orderBy: { title: 'ASC' },
-      limit: GENERIC_PAGE_LIMIT,
     })
-    connections.value = response.data
+    connections.value = response
     const currentConnection = selectedConnectionHandle.value
     selectedConnectionHandle.value =
       connections.value.find((connection) => connection.handle === currentConnection)?.handle ??
@@ -409,24 +407,10 @@ async function loadAllGenericItems<T>(
   entityHandle: string,
   filter: Record<string, unknown>,
 ): Promise<T[]> {
-  const items: T[] = []
-  let page = 1
-
-  while (true) {
-    const response = await ApiGenericService.find<T>(entityHandle, {
-      filter,
-      orderBy: { title: 'ASC' },
-      page,
-      limit: GENERIC_PAGE_LIMIT,
-    })
-    items.push(...response.data)
-
-    if (page >= response.meta.totalPages || response.data.length === 0) {
-      return items
-    }
-
-    page += 1
-  }
+  return ApiGenericService.findAll<T>(entityHandle, {
+    filter,
+    orderBy: { title: 'ASC', handle: 'ASC' },
+  })
 }
 
 function formatSummary(summary: {

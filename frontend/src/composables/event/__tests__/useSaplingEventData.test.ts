@@ -7,10 +7,16 @@ import type { SaplingCalendarEvent } from '../eventCalendar.utils'
 
 const mocks = vi.hoisted(() => ({
   find: vi.fn(),
+  findAll: vi.fn(),
+  findByHandles: vi.fn(),
 }))
 
 vi.mock('@/services/api.generic.service', () => ({
-  default: { find: mocks.find },
+  default: {
+    find: mocks.find,
+    findAll: mocks.findAll,
+    findByHandles: mocks.findByHandles,
+  },
 }))
 
 import { useSaplingEventData } from '../useSaplingEventData'
@@ -45,6 +51,8 @@ function createHarness() {
 describe('useSaplingEventData', () => {
   beforeEach(() => {
     mocks.find.mockReset()
+    mocks.findAll.mockReset()
+    mocks.findByHandles.mockReset()
   })
 
   it('loads events and holidays for the visible range with active filters', async () => {
@@ -65,12 +73,12 @@ describe('useSaplingEventData', () => {
       isAllDay: true,
       group: { handle: 3 },
     } as unknown as HolidayItem
-    mocks.find.mockResolvedValueOnce({ data: [event] }).mockResolvedValueOnce({ data: [holiday] })
+    mocks.findAll.mockResolvedValueOnce([event]).mockResolvedValueOnce([holiday])
 
     await harness.data.getEvents(visibleRange)
 
     expect(harness.calendarDateRange.value).toEqual(visibleRange)
-    expect(mocks.find).toHaveBeenNthCalledWith(
+    expect(mocks.findAll).toHaveBeenNthCalledWith(
       1,
       'event',
       expect.objectContaining({
@@ -92,7 +100,7 @@ describe('useSaplingEventData', () => {
         }),
       }),
     )
-    expect(mocks.find).toHaveBeenNthCalledWith(
+    expect(mocks.findAll).toHaveBeenNthCalledWith(
       2,
       'holiday',
       expect.objectContaining({
@@ -107,16 +115,15 @@ describe('useSaplingEventData', () => {
   it('hydrates selected people into the shared lookup map', async () => {
     const harness = createHarness()
     const person = { handle: 7, displayName: 'Ada Owner' } as unknown as PersonItem
-    mocks.find.mockResolvedValueOnce({ data: [person] })
+    mocks.findByHandles.mockResolvedValueOnce([person])
 
     await harness.data.loadSelectedPeopleDetails()
 
     expect(harness.peopleMap.value[7]).toEqual(person)
-    expect(mocks.find).toHaveBeenCalledWith(
+    expect(mocks.findByHandles).toHaveBeenCalledWith(
       'person',
+      [7],
       expect.objectContaining({
-        filter: { handle: { $in: [7] } },
-        limit: 1,
         relations: expect.arrayContaining([
           'workWeek.monday',
           'workWeek.friday',

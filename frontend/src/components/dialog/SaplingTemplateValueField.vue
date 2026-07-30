@@ -216,13 +216,13 @@ async function flushReferenceBatch(entityHandle: string, batch: ReferenceBatch):
   const handles = [...batch.handles]
 
   try {
-    const response = await ApiGenericService.find<SaplingGenericItem>(entityHandle, {
-      filter: { handle: { $in: handles } },
-      limit: handles.length,
-      relations: ['m:1'],
-    })
+    const response = await ApiGenericService.findByHandles<SaplingGenericItem>(
+      entityHandle,
+      handles,
+      { relations: ['m:1'] },
+    )
     const itemsByHandle = new Map(
-      (response.data ?? [])
+      response
         .map((item) => [normalizeReferenceHandle(item.handle), item] as const)
         .filter(([itemHandle]) => itemHandle.length > 0),
     )

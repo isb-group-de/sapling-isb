@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { GENERIC_LIST_MAX_LIMIT } from '../../constants/project.constants';
 import { PersonItem } from '../../entity/PersonItem';
 import { CurrentService } from '../current/current.service';
 import { GenericService } from '../generic/generic.service';
@@ -63,7 +64,10 @@ export class SaplingMcpGenericToolService {
       this.values.asStringArray(args.relations),
     );
     const page = this.values.asPositiveNumber(args.page) ?? 1;
-    const limit = this.values.asPositiveNumber(args.limit) ?? 50;
+    const limit = Math.min(
+      this.values.asPositiveNumber(args.limit) ?? 50,
+      GENERIC_LIST_MAX_LIMIT,
+    );
 
     return this.genericService.findAndCount(
       entityHandle,

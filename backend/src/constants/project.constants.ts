@@ -359,6 +359,18 @@ export const GENERIC_DOWNLOAD_LIMIT: number = parseInt(
 );
 
 /**
+ * @constant {number} GENERIC_LIST_DEFAULT_LIMIT
+ * Default page size for public generic entity list queries.
+ */
+export const GENERIC_LIST_DEFAULT_LIMIT = 100;
+
+/**
+ * @constant {number} GENERIC_LIST_MAX_LIMIT
+ * Maximum page size for public generic entity list queries.
+ */
+export const GENERIC_LIST_MAX_LIMIT = 100;
+
+/**
  * @constant {boolean} SESSION_COOKIE_SECURE
  * Enables the Secure cookie flag for sessions. Explicit true/false values take
  * precedence; otherwise it defaults to true in production.

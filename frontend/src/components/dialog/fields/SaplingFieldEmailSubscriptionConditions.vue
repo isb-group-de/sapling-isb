@@ -154,7 +154,6 @@ const loadedEntityHandle = ref('')
 const localConditions = ref<EmailCondition[]>([])
 const valueOptionsByField = ref<Record<string, ValueOption[]>>({})
 const loadingValueOptions = new Set<string>()
-const REFERENCE_VALUE_LIMIT = 200
 let conditionKeyCounter = 0
 
 const selectedEntityHandle = computed(() => {
@@ -419,13 +418,13 @@ async function ensureValueOptions(fieldName: string): Promise<void> {
   try {
     await genericStore.loadGeneric(referenceName, 'global')
     const referenceTemplates = genericStore.getState(referenceName).entityTemplates
-    const result = await ApiGenericService.find<SaplingGenericItem>(referenceName, {
-      limit: REFERENCE_VALUE_LIMIT,
+    const result = await ApiGenericService.findAll<SaplingGenericItem>(referenceName, {
+      orderBy: { handle: 'ASC' },
       relations: ['m:1'],
     })
     valueOptionsByField.value = {
       ...valueOptionsByField.value,
-      [fieldName]: result.data.map((item) => ({
+      [fieldName]: result.map((item) => ({
         label: getEntityValueLabel(item, referenceTemplates) || String(item.handle ?? ''),
         value: String(item.handle ?? ''),
       })),

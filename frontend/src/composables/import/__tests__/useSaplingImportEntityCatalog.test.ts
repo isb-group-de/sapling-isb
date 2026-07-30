@@ -4,7 +4,7 @@ import { useSaplingImportEntityCatalog } from '@/composables/import/useSaplingIm
 
 const findEntities = vi.hoisted(() => vi.fn())
 vi.mock('@/services/api.generic.service', () => ({
-  default: { find: findEntities },
+  default: { findAll: findEntities },
 }))
 
 describe('useSaplingImportEntityCatalog', () => {
@@ -47,13 +47,11 @@ describe('useSaplingImportEntityCatalog', () => {
   })
 
   it('loads readable entities and exposes sorted selector options', async () => {
-    findEntities.mockResolvedValue({
-      data: [
-        { handle: 'person', canRead: true },
-        { handle: 'hidden', canRead: false },
-        { handle: 'company', canRead: true },
-      ],
-    })
+    findEntities.mockResolvedValue([
+      { handle: 'person', canRead: true },
+      { handle: 'hidden', canRead: false },
+      { handle: 'company', canRead: true },
+    ])
     const catalog = useSaplingImportEntityCatalog({
       selectedEntityHandle: ref(null),
       selectedSourceHandle: ref(null),

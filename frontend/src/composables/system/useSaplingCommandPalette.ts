@@ -95,7 +95,7 @@ export function useSaplingCommandPalette() {
   }
 
   async function loadEntities(accumulated: AccumulatedPermission[]) {
-    const response = await ApiGenericService.find<EntityItem>('entity', {
+    const response = await ApiGenericService.findAll<EntityItem>('entity', {
       filter: { canShow: true },
       relations: ['routes'],
     })
@@ -104,7 +104,7 @@ export function useSaplingCommandPalette() {
         .filter((permission) => canAccessEntityWorkspace(permission))
         .map((permission) => permission.entityHandle),
     )
-    entities.value = (response.data ?? []).filter((entity) => allowedHandles.has(entity.handle))
+    entities.value = response.filter((entity) => allowedHandles.has(entity.handle))
   }
 
   async function loadFavorites(accumulated: AccumulatedPermission[]) {
@@ -119,11 +119,11 @@ export function useSaplingCommandPalette() {
     if (!person?.handle) {
       return
     }
-    const response = await ApiGenericService.find<FavoriteItem>('favorite', {
+    const response = await ApiGenericService.findAll<FavoriteItem>('favorite', {
       filter: { person: { handle: person.handle } },
       relations: ['entity', 'entityRoute'],
     })
-    favorites.value = response.data ?? []
+    favorites.value = response
   }
 
   function getEntityLabel(entity: EntityItem) {

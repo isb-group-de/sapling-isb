@@ -15,7 +15,8 @@ export function useSaplingPlaygroundKpis() {
   async function loadKpi(handle: number, target: Ref<KPIItem | null>, loading: Ref<boolean>) {
     try {
       target.value =
-        (await ApiGenericService.find<KPIItem>('kpi', { filter: { handle } })).data?.[0] ?? null
+        (await ApiGenericService.find<KPIItem>('kpi', { filter: { handle }, limit: 1 }))
+          .data?.[0] ?? null
     } finally {
       loading.value = false
     }

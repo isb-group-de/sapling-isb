@@ -378,17 +378,11 @@ export function useSaplingAccount() {
 
   async function loadCalendarClassificationOptions() {
     const [typeResponse, categoryResponse] = await Promise.all([
-      ApiGenericService.find<EventTypeItem>('eventType', {
-        limit: 100,
-        page: 1,
-      }),
-      ApiGenericService.find<EventCategoryItem>('eventCategory', {
-        limit: 100,
-        page: 1,
-      }),
+      ApiGenericService.findAll<EventTypeItem>('eventType'),
+      ApiGenericService.findAll<EventCategoryItem>('eventCategory'),
     ])
-    eventTypes.value = typeResponse.data
-    eventCategories.value = categoryResponse.data
+    eventTypes.value = typeResponse
+    eventCategories.value = categoryResponse
   }
 
   /**

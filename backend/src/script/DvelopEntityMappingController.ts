@@ -78,7 +78,7 @@ function buildPropertyMappingPrompt(
     `   entityHandle: dvelopEntityMapping, handle: ${JSON.stringify(handle)}, relations: ["connection", "entity", "objectDefinition", "searchCategories", "searchCategories.objectDefinition", "propertyMappings", "propertyMappings.property"]`,
     '2. Pruefe, ob connection und entity gesetzt sind. Wenn eine davon fehlt, stoppe und erklaere, was konfiguriert werden muss.',
     '3. Lade das Sapling-Schema der gemappten Entitaet mit entity_schema. Verwende exakt die technischen Feldnamen aus dem Schema.',
-    '4. Lade die aktiven d.velop Eigenschaften der Verbindung mit generic_list auf dvelopProperty. Filtere ueber connection.handle, objectDefinition.handle der Ablagekategorie und isActive=true, sortiere nach title ASC und lade bis zu 200 Datensaetze. Wenn keine Ablagekategorie gesetzt ist, verwende nur Eigenschaften ohne objectDefinition.',
+    '4. Lade die aktiven d.velop Eigenschaften der Verbindung mit generic_list auf dvelopProperty. Filtere ueber connection.handle, objectDefinition.handle der Ablagekategorie und isActive=true, sortiere nach title ASC und lade bei Bedarf alle Seiten mit hoechstens 100 Datensaetzen pro Seite. Wenn keine Ablagekategorie gesetzt ist, verwende nur Eigenschaften ohne objectDefinition.',
     '5. Lade vorhandene Eigenschaftszuordnungen mit generic_list auf dvelopEntityMappingProperty fuer diese mapping.handle und Relation property.',
     '6. Erzeuge konservative Matches zwischen d.velop Eigenschaften und Sapling-Feldern.',
     '',

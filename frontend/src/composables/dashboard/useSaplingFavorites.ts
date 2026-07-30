@@ -138,11 +138,11 @@ export function useSaplingFavorites() {
         return
       }
 
-      const favoriteRes = await ApiGenericService.find<FavoriteItem>(FAVORITE_ENTITY_HANDLE, {
+      const favoriteRes = await ApiGenericService.findAll<FavoriteItem>(FAVORITE_ENTITY_HANDLE, {
         filter: { person: { handle: currentPersonStore.person.handle } },
         relations: ['entity', 'entityRoute'],
       })
-      favorites.value = favoriteRes.data || []
+      favorites.value = favoriteRes
     } finally {
       isFavoritesLoading.value = false
     }
@@ -163,13 +163,10 @@ export function useSaplingFavorites() {
     isEntitiesLoading.value = true
 
     try {
-      entities.value =
-        (
-          await ApiGenericService.find<EntityItem>('entity', {
-            filter: { canShow: true },
-            relations: ['routes'],
-          })
-        ).data || []
+      entities.value = await ApiGenericService.findAll<EntityItem>('entity', {
+        filter: { canShow: true },
+        relations: ['routes'],
+      })
     } finally {
       isEntitiesLoading.value = false
     }
@@ -188,7 +185,7 @@ export function useSaplingFavorites() {
     isFavoriteTemplatesLoading.value = true
 
     try {
-      const favoriteTemplateRes = await ApiGenericService.find<FavoriteTemplateItem>(
+      const favoriteTemplateRes = await ApiGenericService.findAll<FavoriteTemplateItem>(
         FAVORITE_TEMPLATE_ENTITY_HANDLE,
         {
           orderBy: { isRecommended: 'DESC', name: 'ASC' },
@@ -196,7 +193,7 @@ export function useSaplingFavorites() {
         },
       )
 
-      favoriteTemplates.value = favoriteTemplateRes.data || []
+      favoriteTemplates.value = favoriteTemplateRes
     } finally {
       isFavoriteTemplatesLoading.value = false
     }

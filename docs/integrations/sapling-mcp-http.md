@@ -179,6 +179,9 @@ Recommended flow for unknown entities:
 3. Call `generic_list`, `generic_get`, `generic_create`, `generic_update`, or `generic_delete`.
 
 For filters, use MikroORM-style operators such as `$eq`, `$in`, `$ilike`, `$and`, and `$or`.
+`generic_list.limit` is capped at `100`. Consumers that need all matching
+records must follow the response pagination metadata and request subsequent
+pages.
 
 ## Error Handling
 

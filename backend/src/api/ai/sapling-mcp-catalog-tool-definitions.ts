@@ -1,4 +1,5 @@
 import * as z from 'zod/v4';
+import { GENERIC_LIST_MAX_LIMIT } from '../../constants/project.constants';
 import { SAPLING_MCP_TOOL_DESCRIPTIONS } from './prompts/sapling-mcp.prompts';
 import type { SaplingMcpToolDefinition } from './sapling-mcp-tool-definition.types';
 
@@ -109,7 +110,8 @@ export const SAPLING_MCP_CATALOG_TOOL_DEFINITIONS: readonly SaplingMcpToolDefini
           },
           limit: {
             type: 'integer',
-            description: 'Maximum result size, default 50.',
+            maximum: GENERIC_LIST_MAX_LIMIT,
+            description: `Maximum result size, default 50 and maximum ${GENERIC_LIST_MAX_LIMIT}.`,
           },
         },
         required: ['entityHandle'],
@@ -139,9 +141,11 @@ export const SAPLING_MCP_CATALOG_TOOL_DEFINITIONS: readonly SaplingMcpToolDefini
           .number()
           .int()
           .positive()
-          .max(200)
+          .max(GENERIC_LIST_MAX_LIMIT)
           .optional()
-          .describe('Maximum result size, default 50.'),
+          .describe(
+            `Maximum result size, default 50 and maximum ${GENERIC_LIST_MAX_LIMIT}.`,
+          ),
       },
     },
     {

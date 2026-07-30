@@ -516,11 +516,10 @@ export function useSaplingTableColumnFilter(
     const requestId = ++latestRelationLookupRequestId
 
     try {
-      const result = await ApiGenericService.find<SaplingGenericItem>(
+      const result = await ApiGenericService.findAll<SaplingGenericItem>(
         currentReferenceEntityHandle,
         {
           filter: lookupFilter,
-          limit: itemsToResolve.length,
         },
       )
 
@@ -529,7 +528,7 @@ export function useSaplingTableColumnFilter(
       }
 
       const nextResolvedRelationItems: Record<string, SaplingGenericItem> = {}
-      result.data.forEach((item) => {
+      result.forEach((item) => {
         const lookupKey = getRelationLookupKey(item, referenceIdentifierKeys.value)
         if (lookupKey) {
           nextResolvedRelationItems[lookupKey] = item

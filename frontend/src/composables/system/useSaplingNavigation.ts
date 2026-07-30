@@ -263,12 +263,10 @@ export function useSaplingNavigation(props: SaplingNavigationProps, emit: Saplin
    * Loads all visible navigation entities and the group hierarchy that contains them.
    */
   async function fetchGroupsAndEntities() {
-    entities.value = (
-      await ApiGenericService.find<EntityItem>('entity', {
-        filter: { canShow: true },
-        relations: ['routes', 'routes.group', 'group', 'group.parent'],
-      })
-    ).data
+    entities.value = await ApiGenericService.findAll<EntityItem>('entity', {
+      filter: { canShow: true },
+      relations: ['routes', 'routes.group', 'group', 'group.parent'],
+    })
 
     if (entitiesPermissions.value) {
       entities.value = entities.value.filter((entity) => {
@@ -279,11 +277,9 @@ export function useSaplingNavigation(props: SaplingNavigationProps, emit: Saplin
       })
     }
 
-    const nextGroups = (
-      await ApiGenericService.find<EntityGroupItem>('entityGroup', {
-        relations: ['parent'],
-      })
-    ).data
+    const nextGroups = await ApiGenericService.findAll<EntityGroupItem>('entityGroup', {
+      relations: ['parent'],
+    })
 
     const visibleGroupHandles = collectVisibleGroupHandles(nextGroups, entities.value)
     groups.value = nextGroups.filter((group) => visibleGroupHandles.has(group.handle))

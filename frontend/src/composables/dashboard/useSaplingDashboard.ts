@@ -98,12 +98,12 @@ export function useSaplingDashboard() {
       return
     }
 
-    const dashboardRes = await ApiGenericService.find<DashboardItem>('dashboard', {
+    const dashboardRes = await ApiGenericService.findAll<DashboardItem>('dashboard', {
       filter: { person: { handle: currentPersonStore.person.handle } },
       relations: ['kpis'],
     })
 
-    dashboards.value = dashboardRes.data || []
+    dashboards.value = dashboardRes
     syncActiveTab()
   }
 
@@ -159,12 +159,12 @@ export function useSaplingDashboard() {
       return
     }
 
-    const response = await ApiGenericService.find<DashboardTemplateItem>('dashboardTemplate', {
+    const response = await ApiGenericService.findAll<DashboardTemplateItem>('dashboardTemplate', {
       orderBy: { isShared: 'DESC', name: 'ASC' },
       relations: ['kpis', 'person'],
     })
 
-    availableDashboardTemplates.value = response.data || []
+    availableDashboardTemplates.value = response
   }
   // #endregion
 

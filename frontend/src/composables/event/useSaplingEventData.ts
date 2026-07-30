@@ -105,13 +105,11 @@ export function useSaplingEventData(options: UseSaplingEventDataOptions) {
       return
     }
 
-    const response = await ApiGenericService.find<PersonItem>('person', {
-      filter: { handle: { $in: selectedHandles } },
+    const people = await ApiGenericService.findByHandles<PersonItem>('person', selectedHandles, {
       relations: PERSON_CALENDAR_RELATIONS,
-      limit: selectedHandles.length,
     })
 
-    response.data.forEach((person) => {
+    people.forEach((person) => {
       if (typeof person.handle === 'number') {
         options.peopleMap.value[person.handle] = person
       }
@@ -133,8 +131,8 @@ export function useSaplingEventData(options: UseSaplingEventDataOptions) {
     endDate.setHours(23, 59, 59, 999)
 
     const holidayGroupHandles = options.getSelectedHolidayGroupHandles()
-    const [response, holidayResponse] = await Promise.all([
-      ApiGenericService.find<EventItem>('event', {
+    const [eventItems, holidayItems] = await Promise.all([
+      ApiGenericService.findAll<EventItem>('event', {
         relations: EVENT_CALENDAR_RELATIONS,
         fields: EVENT_CALENDAR_FIELDS,
         filter: {
@@ -158,7 +156,7 @@ export function useSaplingEventData(options: UseSaplingEventDataOptions) {
         },
       }),
       holidayGroupHandles.length > 0
-        ? ApiGenericService.find<HolidayItem>('holiday', {
+        ? ApiGenericService.findAll<HolidayItem>('holiday', {
             relations: ['group'],
             fields: HOLIDAY_CALENDAR_FIELDS,
             filter: {
@@ -169,13 +167,13 @@ export function useSaplingEventData(options: UseSaplingEventDataOptions) {
               ],
             },
           })
-        : Promise.resolve({ data: [] as HolidayItem[] }),
+        : Promise.resolve([] as HolidayItem[]),
     ])
 
     options.events.value = filterWorkweekEvents(
       filterByCalendarMode(
         [
-          ...response.data.flatMap((event) =>
+          ...eventItems.flatMap((event) =>
             expandRecurringEvent(event, startDate, endDate).flatMap((calendarEvent) =>
               addEventBufferPlaceholders(
                 {
@@ -189,7 +187,7 @@ export function useSaplingEventData(options: UseSaplingEventDataOptions) {
               ),
             ),
           ),
-          ...holidayResponse.data.map(toHolidayCalendarEvent),
+          ...holidayItems.map(toHolidayCalendarEvent),
         ],
         options.calendarMode.value,
       ),

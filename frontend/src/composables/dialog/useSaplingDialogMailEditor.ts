@@ -1,6 +1,6 @@
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import type { EntityTemplate, PaginatedResponse } from '@/entity/structure'
+import type { EntityTemplate } from '@/entity/structure'
 import type {
   AttachmentOption,
   EmailTemplateItem,
@@ -189,7 +189,7 @@ export function useSaplingDialogMailEditor() {
     isLoadingTemplates.value = true
 
     try {
-      const response = (await ApiGenericService.find<EmailTemplateItem>('emailTemplate', {
+      const response = await ApiGenericService.findAll<EmailTemplateItem>('emailTemplate', {
         filter: {
           entity: context.value.entityHandle,
           isActive: true,
@@ -197,11 +197,10 @@ export function useSaplingDialogMailEditor() {
         orderBy: {
           name: 'ASC',
         },
-        limit: 100,
         relations: ['entity'],
-      })) as PaginatedResponse<EmailTemplateItem>
+      })
 
-      templates.value = response.data ?? []
+      templates.value = response
     } catch (error) {
       console.error('Error loading email templates:', error)
       pushMessage(
@@ -271,7 +270,7 @@ export function useSaplingDialogMailEditor() {
     isLoadingAttachments.value = true
 
     try {
-      const response = (await ApiGenericService.find<AttachmentItem>('document', {
+      const response = await ApiGenericService.findAll<AttachmentItem>('document', {
         filter: {
           reference: String(context.value.itemHandle),
           entity: context.value.entityHandle,
@@ -279,10 +278,9 @@ export function useSaplingDialogMailEditor() {
         orderBy: {
           createdAt: 'DESC',
         },
-        limit: 100,
-      })) as PaginatedResponse<AttachmentItem>
+      })
 
-      availableAttachments.value = (response.data ?? []).map((document) => ({
+      availableAttachments.value = response.map((document) => ({
         handle: document.handle,
         filename: document.filename,
         title: document.description

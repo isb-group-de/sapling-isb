@@ -17,6 +17,7 @@ import {
 import { GenericPermissionGuard } from '../../auth/guard/generic-permission.guard';
 import { GenericService } from './generic.service';
 import {
+  DownloadQueryDto,
   PaginatedQueryDto,
   TimelineQueryDto,
   UpdateQueryDto,
@@ -45,6 +46,10 @@ import {
   GenericBulkUpdateDto,
   GenericBulkUpdateResponseDto,
 } from './dto/bulk-update.dto';
+import {
+  GENERIC_LIST_DEFAULT_LIMIT,
+  GENERIC_LIST_MAX_LIMIT,
+} from '../../constants/project.constants';
 
 /**
  * @class
@@ -218,8 +223,10 @@ export class GenericController {
   @ApiQuery({
     name: 'limit',
     required: false,
-    description: 'Number of results per page (default: 200, maximum: 200)',
+    description: `Number of results per page (default: ${GENERIC_LIST_DEFAULT_LIMIT}, maximum: ${GENERIC_LIST_MAX_LIMIT})`,
     type: Number,
+    default: GENERIC_LIST_DEFAULT_LIMIT,
+    maximum: GENERIC_LIST_MAX_LIMIT,
   })
   @ApiResponse({
     status: 200,
@@ -252,7 +259,7 @@ export class GenericController {
    * @param {Request & { user: PersonItem }} req Express request object with authenticated user
    * @param {Response} res Express response object
    * @param {string} entityHandle Name of the entity
-   * @param {PaginatedQueryDto} query Query parameters (filter, orderBy, relations)
+   * @param {DownloadQueryDto} query Query parameters (filter, orderBy, relations)
    * @returns {void} Sends JSON file as response
    */
   @UseGuards(GenericPermissionGuard)
@@ -293,7 +300,7 @@ export class GenericController {
     @Req() req: Request & { user: PersonItem },
     @Res() res: Response,
     @Param('entityHandle') entityHandle: string,
-    @Query() query: PaginatedQueryDto,
+    @Query() query: DownloadQueryDto,
   ): Promise<void> {
     const { filter, orderBy, relations } = query;
     const json = await this.genericService.downloadJSON(

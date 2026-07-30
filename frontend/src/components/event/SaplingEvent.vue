@@ -91,6 +91,7 @@
               :calendar-display-type="calendarDisplayType"
               :calendar-weekdays="calendarWeekdays"
               :is-drag-active="isCalendarDragActive"
+              :is-tooltip-blocked="isCalendarTooltipBlocked"
               :work-hours="workHours"
               :show-work-hour-background="showWorkHourBackground"
               :selected-peoples="selectedPeoples"
@@ -413,4 +414,15 @@ const {
   value,
   workHours,
 } = useSaplingEvent()
+
+const isCalendarTooltipBlocked = computed(
+  () =>
+    isCalendarDragActive.value ||
+    showEditDialog.value ||
+    eventContextMenu.value.visible ||
+    showInformationDialog.value ||
+    showUploadDialog.value ||
+    materializeRecurrenceDialog.value.visible ||
+    updateConflictDialog.value.visible,
+)
 </script>

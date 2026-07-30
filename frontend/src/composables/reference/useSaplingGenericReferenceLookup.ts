@@ -65,22 +65,19 @@ async function fetchGenericReferenceRecords(
   try {
     await genericStore.loadGeneric(normalizedEntityHandle, 'global')
 
-    const result = await ApiGenericService.find<SaplingGenericItem>(normalizedEntityHandle, {
-      filter:
-        normalizedHandles.length === 1
-          ? { handle: normalizedHandles[0] }
-          : {
-              $or: normalizedHandles.map((handle) => ({ handle })),
-            },
-      limit: normalizedHandles.length,
-      relations: getDialogRecordRelations(
-        genericStore.getState(normalizedEntityHandle).entityTemplates,
-      ),
-    })
+    const result = await ApiGenericService.findByHandles<SaplingGenericItem>(
+      normalizedEntityHandle,
+      normalizedHandles,
+      {
+        relations: getDialogRecordRelations(
+          genericStore.getState(normalizedEntityHandle).entityTemplates,
+        ),
+      },
+    )
 
     const foundHandles = new Set<string>()
 
-    result.data.forEach((item) => {
+    result.forEach((item) => {
       const itemHandle = item.handle
       if (itemHandle == null) {
         return

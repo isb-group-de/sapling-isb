@@ -6,7 +6,10 @@ import type {
   SaplingTableHeaderItem,
   SortItem,
 } from '@/entity/structure'
-import { DEFAULT_ENTITY_ITEMS_COUNT } from '@/constants/project.constants'
+import {
+  DEFAULT_ENTITY_ITEMS_COUNT,
+  GENERIC_API_MAX_PAGE_SIZE,
+} from '@/constants/project.constants'
 import {
   cloneColumnFilters,
   isEmptyColumnFilterItem,
@@ -69,7 +72,11 @@ export function useSaplingTableFilters(
   }
 
   function onItemsPerPageUpdate(value: number | string) {
-    const limit = value === -1 ? DEFAULT_ENTITY_ITEMS_COUNT : Number(value)
+    const requestedLimit = value === -1 ? DEFAULT_ENTITY_ITEMS_COUNT : Number(value)
+    const limit = Math.min(
+      Math.max(Number.isFinite(requestedLimit) ? requestedLimit : DEFAULT_ENTITY_ITEMS_COUNT, 1),
+      GENERIC_API_MAX_PAGE_SIZE,
+    )
     emit('update:itemsPerPage', limit)
   }
 
