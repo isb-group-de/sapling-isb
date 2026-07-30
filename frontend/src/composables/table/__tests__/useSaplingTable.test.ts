@@ -52,6 +52,36 @@ describe('useSaplingTable initialization and loading', () => {
     )
   })
 
+  it('projects color and icon fields for visible reference chips', async () => {
+    loadGenericMock.mockResolvedValue(undefined)
+    apiFindMock.mockResolvedValue({
+      data: [
+        {
+          handle: 1,
+          status: {
+            handle: 7,
+            title: 'Offen',
+            color: '#4CAF50',
+            icon: 'mdi-circle-outline',
+          },
+        },
+      ],
+      meta: { total: 1 },
+    })
+
+    mountTestHost(ref('chipRecord'))
+    await flushPromises()
+
+    expect(loadGenericMock).toHaveBeenCalledWith('chipStatus', 'global')
+    expect(apiFindMock).toHaveBeenCalledWith(
+      'chipRecord',
+      expect.objectContaining({
+        relations: ['status'],
+        fields: expect.arrayContaining(['status', 'status.color', 'status.icon']),
+      }),
+    )
+  })
+
   it('ignores stale entity initialization when the route entity changes quickly', async () => {
     const entityHandle = ref('partner')
     const partnerDeferred = createDeferred<void>()

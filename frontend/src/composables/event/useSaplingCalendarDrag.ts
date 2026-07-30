@@ -12,6 +12,7 @@ import {
   isReadonlyCalendarEvent,
   type SaplingCalendarEvent,
 } from '@/composables/event/eventCalendar.utils'
+import { isRecurringCalendarEvent } from '@/utils/eventRecurrence'
 
 interface UseSaplingCalendarDragOptions {
   events: Ref<SaplingCalendarEvent[]>
@@ -47,7 +48,7 @@ export function useSaplingCalendarDrag(options: UseSaplingCalendarDragOptions) {
   const createStart = ref<number | null>(null)
   const extendOriginal = ref<number | null>(null)
   const suppressNextEventClick = ref(false)
-  const dragSnapshot = ref<CalendarDragSnapshot | null>(null)
+  const dragSnapshots = ref<CalendarDragSnapshot[]>([])
 
   const isCalendarDragActive = computed(
     () => dragEvent.value != null || createEvent.value != null || extendOriginal.value != null,
@@ -103,9 +104,13 @@ export function useSaplingCalendarDrag(options: UseSaplingCalendarDragOptions) {
     const mouseTime = toTime(timeSlot)
 
     if (dragEvent.value && dragTime.value !== null) {
-      const duration = dragEvent.value.end - dragEvent.value.start
+      const draggedSnapshot = findDragSnapshot(dragEvent.value)
+      const duration =
+        (draggedSnapshot?.end ?? dragEvent.value.end) -
+        (draggedSnapshot?.start ?? dragEvent.value.start)
       const newStart = roundTime(mouseTime - dragTime.value)
-      dragEvent.value.start = newStart
+      const startDelta = newStart - (draggedSnapshot?.start ?? dragEvent.value.start)
+      applySeriesMove(startDelta)
       dragEvent.value.end = newStart + duration
       return
     }
@@ -117,6 +122,10 @@ export function useSaplingCalendarDrag(options: UseSaplingCalendarDragOptions) {
     const mouseRounded = roundTime(mouseTime, false)
     createEvent.value.start = Math.min(mouseRounded, createStart.value)
     createEvent.value.end = Math.max(mouseRounded, createStart.value)
+
+    if (extendOriginal.value != null) {
+      applySeriesResize(createEvent.value.end - extendOriginal.value)
+    }
   }
 
   function endDrag() {
@@ -127,9 +136,9 @@ export function useSaplingCalendarDrag(options: UseSaplingCalendarDragOptions) {
     const wasDragged =
       dragEvent.value != null &&
       dragTime.value != null &&
-      dragSnapshot.value != null &&
-      (dragEvent.value.start !== dragSnapshot.value.start ||
-        dragEvent.value.end !== dragSnapshot.value.end)
+      findDragSnapshot(dragEvent.value) != null &&
+      (dragEvent.value.start !== findDragSnapshot(dragEvent.value)?.start ||
+        dragEvent.value.end !== findDragSnapshot(dragEvent.value)?.end)
     const wasResized =
       extendOriginal.value != null &&
       createEvent.value != null &&
@@ -179,24 +188,33 @@ export function useSaplingCalendarDrag(options: UseSaplingCalendarDragOptions) {
   }
 
   function captureDragSnapshot(target: CalendarEvent) {
-    dragSnapshot.value = {
-      target,
-      start: target.start,
-      end: target.end,
-      event: target.event,
-    }
+    const targets = isRecurringCalendarEvent(target)
+      ? options.events.value.filter(
+          (candidate) =>
+            isRecurringCalendarEvent(candidate) &&
+            getCalendarEventHandle(candidate) === getCalendarEventHandle(target),
+        )
+      : [target]
+
+    dragSnapshots.value = targets.map((candidate) => ({
+      target: candidate,
+      start: candidate.start,
+      end: candidate.end,
+      event: candidate.event,
+    }))
   }
 
   function restoreDragSnapshot() {
-    const snapshot = dragSnapshot.value
-    if (!snapshot) {
+    if (dragSnapshots.value.length === 0) {
       return
     }
 
-    snapshot.target.start = snapshot.start
-    snapshot.target.end = snapshot.end
-    snapshot.target.event = snapshot.event
-    dragSnapshot.value = null
+    dragSnapshots.value.forEach((snapshot) => {
+      snapshot.target.start = snapshot.start
+      snapshot.target.end = snapshot.end
+      snapshot.target.event = snapshot.event
+    })
+    dragSnapshots.value = []
   }
 
   function cancelDrag() {
@@ -247,12 +265,38 @@ export function useSaplingCalendarDrag(options: UseSaplingCalendarDragOptions) {
   }
 
   function clearDragSnapshot() {
-    dragSnapshot.value = null
+    dragSnapshots.value = []
   }
 
   function resetDialogInteractionState() {
     clearDragSnapshot()
     suppressNextEventClick.value = false
+  }
+
+  function findDragSnapshot(target: CalendarEvent): CalendarDragSnapshot | undefined {
+    return dragSnapshots.value.find((snapshot) => snapshot.target === target)
+  }
+
+  function applySeriesMove(startDelta: number) {
+    const snapshots = dragSnapshots.value
+    if (snapshots.length === 0) {
+      return
+    }
+
+    snapshots.forEach((snapshot) => {
+      snapshot.target.start = snapshot.start + startDelta
+      snapshot.target.end = snapshot.end + startDelta
+    })
+  }
+
+  function applySeriesResize(endDelta: number) {
+    if (!createEvent.value || !isRecurringCalendarEvent(createEvent.value)) {
+      return
+    }
+
+    dragSnapshots.value.forEach((snapshot) => {
+      snapshot.target.end = snapshot.end + endDelta
+    })
   }
 
   return {

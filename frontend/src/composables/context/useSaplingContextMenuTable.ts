@@ -7,6 +7,7 @@ export type SaplingContextMenuTableAction =
   | 'copy'
   | 'customer360'
   | 'delete'
+  | 'dissolveRecurrence'
   | 'edit'
   | 'formConfig'
   | 'mail'

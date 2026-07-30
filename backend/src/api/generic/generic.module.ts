@@ -28,6 +28,8 @@ import { GenericRelationMutationService } from './generic-relation-mutation.serv
 import { GenericEntityMutationService } from './generic-entity-mutation.service';
 import { GenericUpdateConflictService } from './generic-update-conflict.service';
 import { GenericBulkMutationService } from './generic-bulk-mutation.service';
+import { EventRecurrenceController } from './event-recurrence.controller';
+import { EventRecurrenceMutationService } from './event-recurrence-mutation.service';
 import { TemplateModule } from '../template/template.module';
 import { ScriptModule } from '../script/script.module';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
@@ -64,6 +66,7 @@ import { MailModule } from '../mail/mail.module';
     GenericController,
     GenericImportController,
     GlobalSearchController,
+    EventRecurrenceController,
   ],
   providers: [
     GenericService,
@@ -92,6 +95,7 @@ import { MailModule } from '../mail/mail.module';
     GenericEntityMutationService,
     GenericUpdateConflictService,
     GenericBulkMutationService,
+    EventRecurrenceMutationService,
   ],
   exports: [
     GenericService,

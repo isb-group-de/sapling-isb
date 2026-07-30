@@ -12,6 +12,19 @@ export interface ParsedRecurrenceRule {
   until?: Date;
 }
 
+export interface RecurrenceOccurrence {
+  startDate: Date;
+  endDate: Date;
+}
+
+export interface ExpandedFiniteRecurrence {
+  occurrences: RecurrenceOccurrence[];
+  isFinite: boolean;
+  isComplete: boolean;
+}
+
+export const RECURRENCE_MAX_OCCURRENCES = 100;
+
 const RECURRENCE_FREQUENCIES = new Set<RecurrenceFrequency>([
   'DAILY',
   'WEEKLY',
@@ -122,6 +135,80 @@ export function buildAzureRecurrence(
   return {
     pattern,
     range: buildAzureRange(startDate, parsedRule),
+  };
+}
+
+/**
+ * Expands a stored recurrence into standalone occurrence ranges.
+ *
+ * The result explicitly reports open-ended and over-limit series so callers
+ * that materialize records can reject them instead of silently creating only
+ * a partial series.
+ */
+export function expandFiniteRecurrence(
+  startDate: Date,
+  endDate: Date,
+  recurrenceRule?: string | null,
+  maxOccurrences = RECURRENCE_MAX_OCCURRENCES,
+): ExpandedFiniteRecurrence {
+  const parsedRule = parseRecurrenceRule(recurrenceRule);
+  if (
+    !parsedRule ||
+    Number.isNaN(startDate.getTime()) ||
+    Number.isNaN(endDate.getTime())
+  ) {
+    return { occurrences: [], isFinite: false, isComplete: false };
+  }
+
+  const isFinite =
+    typeof parsedRule.count === 'number' || parsedRule.until instanceof Date;
+  if (!isFinite) {
+    return { occurrences: [], isFinite: false, isComplete: false };
+  }
+
+  const occurrenceLimit = Math.max(
+    1,
+    Math.min(RECURRENCE_MAX_OCCURRENCES, maxOccurrences),
+  );
+  const durationMilliseconds = Math.max(
+    endDate.getTime() - startDate.getTime(),
+    0,
+  );
+  const occurrences: RecurrenceOccurrence[] = [];
+  let currentStart = new Date(startDate);
+
+  while (occurrences.length <= occurrenceLimit) {
+    const occurrenceIndex = occurrences.length + 1;
+    if (parsedRule.count && occurrenceIndex > parsedRule.count) {
+      return { occurrences, isFinite: true, isComplete: true };
+    }
+    if (
+      parsedRule.until &&
+      currentStart.getTime() > parsedRule.until.getTime()
+    ) {
+      return { occurrences, isFinite: true, isComplete: true };
+    }
+
+    occurrences.push({
+      startDate: new Date(currentStart),
+      endDate: new Date(currentStart.getTime() + durationMilliseconds),
+    });
+
+    const nextStart = getNextOccurrenceStart(
+      currentStart,
+      parsedRule,
+      startDate,
+    );
+    if (!nextStart) {
+      return { occurrences, isFinite: true, isComplete: true };
+    }
+    currentStart = nextStart;
+  }
+
+  return {
+    occurrences: occurrences.slice(0, occurrenceLimit),
+    isFinite: true,
+    isComplete: false,
   };
 }
 
@@ -280,4 +367,143 @@ function toWeekdayCode(date: Date): RecurrenceWeekdayCode {
     default:
       return 'MO';
   }
+}
+
+function getNextOccurrenceStart(
+  currentStart: Date,
+  parsedRule: ParsedRecurrenceRule,
+  baseStart: Date,
+): Date | null {
+  switch (parsedRule.frequency) {
+    case 'DAILY':
+      return addUtcDays(currentStart, parsedRule.interval);
+    case 'WEEKLY':
+      return advanceWeeklyOccurrence(currentStart, parsedRule, baseStart);
+    case 'MONTHLY':
+      return advanceMonthlyOccurrence(
+        currentStart,
+        parsedRule.interval,
+        baseStart,
+      );
+    case 'YEARLY':
+      return advanceYearlyOccurrence(
+        currentStart,
+        parsedRule.interval,
+        baseStart,
+      );
+    default:
+      return null;
+  }
+}
+
+function advanceWeeklyOccurrence(
+  currentStart: Date,
+  parsedRule: ParsedRecurrenceRule,
+  baseStart: Date,
+): Date | null {
+  const allowedWeekdays =
+    parsedRule.byDay.length > 0 ? parsedRule.byDay : [toWeekdayCode(baseStart)];
+  let candidate = new Date(currentStart);
+
+  for (let index = 0; index < 370; index += 1) {
+    candidate = addUtcDays(candidate, 1);
+    if (
+      allowedWeekdays.includes(toWeekdayCode(candidate)) &&
+      diffWeeksFromMonday(baseStart, candidate) % parsedRule.interval === 0
+    ) {
+      return candidate;
+    }
+  }
+
+  return null;
+}
+
+function advanceMonthlyOccurrence(
+  currentStart: Date,
+  interval: number,
+  baseStart: Date,
+): Date | null {
+  for (
+    let monthsToAdd = interval;
+    monthsToAdd <= 1200;
+    monthsToAdd += interval
+  ) {
+    const candidate = createUtcDateWithBaseTime(
+      currentStart.getUTCFullYear(),
+      currentStart.getUTCMonth() + monthsToAdd,
+      baseStart.getUTCDate(),
+      baseStart,
+    );
+    if (candidate.getUTCDate() === baseStart.getUTCDate()) {
+      return candidate;
+    }
+  }
+
+  return null;
+}
+
+function advanceYearlyOccurrence(
+  currentStart: Date,
+  interval: number,
+  baseStart: Date,
+): Date | null {
+  for (let yearsToAdd = interval; yearsToAdd <= 200; yearsToAdd += interval) {
+    const candidate = createUtcDateWithBaseTime(
+      currentStart.getUTCFullYear() + yearsToAdd,
+      baseStart.getUTCMonth(),
+      baseStart.getUTCDate(),
+      baseStart,
+    );
+    if (
+      candidate.getUTCMonth() === baseStart.getUTCMonth() &&
+      candidate.getUTCDate() === baseStart.getUTCDate()
+    ) {
+      return candidate;
+    }
+  }
+
+  return null;
+}
+
+function addUtcDays(date: Date, days: number): Date {
+  const candidate = new Date(date);
+  candidate.setUTCDate(candidate.getUTCDate() + days);
+  return candidate;
+}
+
+function diffWeeksFromMonday(baseDate: Date, candidateDate: Date): number {
+  const millisecondsPerWeek = 604_800_000;
+  return Math.floor(
+    (startOfUtcWeekMonday(candidateDate).getTime() -
+      startOfUtcWeekMonday(baseDate).getTime()) /
+      millisecondsPerWeek,
+  );
+}
+
+function startOfUtcWeekMonday(date: Date): Date {
+  const candidate = new Date(
+    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()),
+  );
+  const day = candidate.getUTCDay();
+  candidate.setUTCDate(candidate.getUTCDate() + (day === 0 ? -6 : 1 - day));
+  return candidate;
+}
+
+function createUtcDateWithBaseTime(
+  year: number,
+  month: number,
+  day: number,
+  baseTime: Date,
+): Date {
+  return new Date(
+    Date.UTC(
+      year,
+      month,
+      day,
+      baseTime.getUTCHours(),
+      baseTime.getUTCMinutes(),
+      baseTime.getUTCSeconds(),
+      baseTime.getUTCMilliseconds(),
+    ),
+  );
 }

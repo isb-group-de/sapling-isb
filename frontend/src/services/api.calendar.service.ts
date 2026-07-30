@@ -16,6 +16,15 @@ export interface CalendarImportResult {
   skipped: number
 }
 
+export interface MaterializeEventRecurrencePayload {
+  expectedUpdatedAt?: string
+}
+
+export interface MaterializeEventRecurrenceResult {
+  materializedCount: number
+  handles: Array<string | number>
+}
+
 class ApiCalendarService {
   static async importEvents(
     provider: CalendarSyncProvider,
@@ -25,6 +34,24 @@ class ApiCalendarService {
 
     try {
       const response = await axios.post<CalendarImportResult>(buildApiUrl(endpoint), payload)
+      return response.data
+    } catch (error: unknown) {
+      pushApiErrorMessage(error, 'exception.unknownError', endpoint)
+      throw error
+    }
+  }
+
+  static async materializeEventRecurrence(
+    handle: string | number,
+    payload: MaterializeEventRecurrencePayload = {},
+  ): Promise<MaterializeEventRecurrenceResult> {
+    const endpoint = `calendar/events/${encodeURIComponent(String(handle))}/materialize-recurrence`
+
+    try {
+      const response = await axios.post<MaterializeEventRecurrenceResult>(
+        buildApiUrl(endpoint),
+        payload,
+      )
       return response.data
     } catch (error: unknown) {
       pushApiErrorMessage(error, 'exception.unknownError', endpoint)

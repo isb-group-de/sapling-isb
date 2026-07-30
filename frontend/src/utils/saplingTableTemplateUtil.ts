@@ -110,6 +110,46 @@ export function getListProjectionFieldNames(
   ]
 }
 
+export function getReferenceChipProjectionFieldNames(
+  entityTemplates: EntityTemplate[],
+  permissions: AccumulatedPermission[] = [],
+  projectedFields: string[] = [],
+  getReferenceTemplates?: (entityHandle: string) => EntityTemplate[],
+): string[] {
+  if (!getReferenceTemplates) {
+    return []
+  }
+
+  const projectedFieldSet = new Set(projectedFields)
+
+  return [
+    ...new Set(
+      entityTemplates
+        .filter(
+          (template) =>
+            TABLE_REFERENCE_PERMISSION_KINDS.includes(template.kind ?? '') &&
+            template.options?.includes('isChip') &&
+            Boolean(template.name) &&
+            Boolean(template.referenceName) &&
+            projectedFieldSet.has(template.name) &&
+            template.fieldAccess?.allowRead !== false &&
+            canReadReferenceTemplate(template, permissions),
+        )
+        .flatMap((template) =>
+          getReferenceTemplates(template.referenceName as string)
+            .filter(
+              (referenceTemplate) =>
+                referenceTemplate.isPersistent !== false &&
+                referenceTemplate.fieldAccess?.allowRead !== false &&
+                (referenceTemplate.options?.includes('isColor') ||
+                  referenceTemplate.options?.includes('isIcon')),
+            )
+            .map((referenceTemplate) => `${template.name}.${referenceTemplate.name}`),
+        ),
+    ),
+  ]
+}
+
 function normalizeTemplateOrder(order?: number | null): number | null {
   return typeof order === 'number' && Number.isFinite(order) ? Math.trunc(order) : null
 }

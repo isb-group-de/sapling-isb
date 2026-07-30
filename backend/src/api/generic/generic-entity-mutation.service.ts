@@ -83,6 +83,7 @@ export class GenericEntityMutationService {
     data: GenericMutationPayload,
     currentUser: PersonItem,
     scriptContext: ScriptServerContext,
+    lifecycleOptions: GenericMutationLifecycleOptions = {},
   ): Promise<object> {
     data = normalizeEventBufferMutationPayload(
       entityHandle,
@@ -172,7 +173,7 @@ export class GenericEntityMutationService {
       inlineCollections,
       currentUser,
     );
-    this.scheduleBackgroundTask('changeLog', () =>
+    this.queueBackgroundTask(lifecycleOptions, 'changeLog', () =>
       this.genericChangeLogService.safeStoreChangeLog(
         'create',
         entity,
@@ -181,7 +182,7 @@ export class GenericEntityMutationService {
         submittedSnapshot,
       ),
     );
-    this.scheduleBackgroundTask('openTaskCountChanges', () =>
+    this.queueBackgroundTask(lifecycleOptions, 'openTaskCountChanges', () =>
       this.genericOpenTaskEventsService.emitCountChangesForHandle(
         entityHandle,
         this.extractEntityHandle(newData),
@@ -193,8 +194,8 @@ export class GenericEntityMutationService {
       splitPayload.customFields,
     );
     this.invalidateSecurityPrincipalAfterMutation(entityHandle, newData);
-    this.scheduleSearchIndexUpsert(entityHandle, newData);
-    this.scheduleBackgroundTask('emailAutomation', () =>
+    this.queueSearchIndexUpsert(lifecycleOptions, entityHandle, newData);
+    this.queueBackgroundTask(lifecycleOptions, 'emailAutomation', () =>
       this.emailAutomationService.handleAfterInsert(
         entityHandle,
         newData,

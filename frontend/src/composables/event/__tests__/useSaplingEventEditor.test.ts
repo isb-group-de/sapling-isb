@@ -123,6 +123,55 @@ describe('useSaplingEventEditor', () => {
     expect(harness.showEditDialog.value).toBe(true)
   })
 
+  it('opens the canonical series start when a later recurrence occurrence is clicked', async () => {
+    const harness = createHarness()
+    harness.loadPersistedEvent.mockResolvedValue(
+      createEventItem({ recurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=2' }),
+    )
+    const laterOccurrence = {
+      start: new Date('2026-07-16T09:00:00.000Z').getTime(),
+      end: new Date('2026-07-16T10:00:00.000Z').getTime(),
+      event: {
+        handle: 42,
+        recurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=2',
+      },
+      timed: true,
+      isRecurringOccurrence: true,
+      recurrenceOccurrenceStart: '2026-07-16T09:00:00.000Z',
+      recurrenceOccurrenceEnd: '2026-07-16T10:00:00.000Z',
+    } as CalendarEvent
+
+    await harness.editor.openPersistedEventEditor(laterOccurrence, [])
+
+    expect(harness.editEvent.value?.start).toBe(new Date('2026-07-15T09:00:00.000Z').getTime())
+    expect(harness.editEvent.value?.end).toBe(new Date('2026-07-15T10:00:00.000Z').getTime())
+    expect(harness.forceEditDialogDirtyFields.value).toEqual([])
+  })
+
+  it('applies a dragged occurrence delta to the canonical series start', async () => {
+    const harness = createHarness()
+    harness.loadPersistedEvent.mockResolvedValue(
+      createEventItem({ recurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=2' }),
+    )
+    const draggedOccurrence = {
+      start: new Date('2026-07-16T11:00:00.000Z').getTime(),
+      end: new Date('2026-07-16T12:00:00.000Z').getTime(),
+      event: {
+        handle: 42,
+        recurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=2',
+      },
+      timed: true,
+      isRecurringOccurrence: true,
+      recurrenceOccurrenceStart: '2026-07-16T09:00:00.000Z',
+      recurrenceOccurrenceEnd: '2026-07-16T10:00:00.000Z',
+    } as CalendarEvent
+
+    await harness.editor.openPersistedEventEditor(draggedOccurrence, ['startDate', 'endDate'])
+
+    expect(harness.editEvent.value?.start).toBe(new Date('2026-07-15T11:00:00.000Z').getTime())
+    expect(harness.editEvent.value?.end).toBe(new Date('2026-07-15T12:00:00.000Z').getTime())
+  })
+
   it('ignores derived preparation and follow-up placeholders', async () => {
     const harness = createHarness()
     const placeholder = {

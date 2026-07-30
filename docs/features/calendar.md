@@ -184,6 +184,10 @@ move/resize state, readonly guards, forced dirty fields, synthetic click
 suppression, translucent drag colors, cancellation, and rollback snapshots. It
 accepts calendar/dialog refs plus one persisted-editor callback, so the gesture
 logic can be reused independently of calendar loading and persistence.
+Dragging or resizing one expanded recurrence occurrence updates every rendered
+occurrence of the same series as a live preview. When the edit dialog opens,
+the occurrence delta is applied to the persisted series start instead of
+turning the selected occurrence into a new series anchor.
 
 `useSaplingEventContextMenu.ts` owns the shared record-action projection,
 script-button loading/execution, permissions, positioning, and the copy,
@@ -213,6 +217,30 @@ and its URL can be shared. Closing the dialog removes only `open`.
 participant references, route-driven opening, drag rollback, optimistic local
 replacement, and update-conflict reload/merge behavior. `useSaplingEvent.ts`
 is now a sub-600-line composition shell for these focused workflows.
+Opening an expanded occurrence without a drag always edits the canonical
+persisted series record and keeps its original `startDate`/`endDate`. This
+prevents opening and saving a later occurrence from shifting the complete
+series forward.
+
+Finite recurring series can be converted into standalone Events through the
+calendar card context menu:
+
+```text
+POST /api/calendar/events/:handle/materialize-recurrence
+```
+
+The endpoint requires Event insert permission at the route boundary and applies
+the normal Event update and create permission checks and mutation lifecycles.
+It clears the source Event's recurrence rule and creates one Event for every
+later occurrence in a single database transaction. Participants and the
+business, ownership, classification, duration, privacy, and reference fields
+are copied. The request may include `expectedUpdatedAt` for optimistic
+concurrency.
+
+Open-ended series cannot be completely materialized and must first receive a
+`COUNT` or `UNTIL` limit. Series above the shared 100-occurrence calendar limit
+are rejected instead of being partially converted. The resulting standalone
+Events can be edited or completed independently.
 
 New events persist their participant handles in the initial generic create
 request. They must not add the same participants through follow-up relation

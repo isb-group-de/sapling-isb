@@ -26,6 +26,7 @@ import {
   canReadReferenceTemplate,
   getListProjectionFieldNames,
   getReadableReferenceRelationNames,
+  getReferenceChipProjectionFieldNames,
   getTableHeaders,
   isFilterableTableColumn,
   isTextSearchableTemplate,
@@ -102,27 +103,39 @@ export function useSaplingTable(
   const isLoading = computed(
     () => genericStore.getState(entityHandle.value).isLoading || isDataLoading.value,
   )
-  const listProjectionFields = computed(() => [
-    ...new Set([
-      ...getListProjectionFieldNames(
-        entityTemplates.value,
-        currentPermissionStore.accumulatedPermission ?? [],
-      ),
-      ...entityTemplates.value
-        .filter(
-          (template) =>
-            template.name === 'updatedAt' &&
-            template.isPersistent !== false &&
-            template.fieldAccess?.allowRead !== false,
-        )
-        .map((template) => template.name),
-      ...additionalListProjectionFields.filter((fieldName) =>
-        entityTemplates.value.some(
-          (template) => template.name === fieldName && template.fieldAccess?.allowRead !== false,
+  const listProjectionFields = computed(() => {
+    const permissions = currentPermissionStore.accumulatedPermission ?? []
+    const baseFields = [
+      ...new Set([
+        ...getListProjectionFieldNames(entityTemplates.value, permissions),
+        ...entityTemplates.value
+          .filter(
+            (template) =>
+              template.name === 'updatedAt' &&
+              template.isPersistent !== false &&
+              template.fieldAccess?.allowRead !== false,
+          )
+          .map((template) => template.name),
+        ...additionalListProjectionFields.filter((fieldName) =>
+          entityTemplates.value.some(
+            (template) => template.name === fieldName && template.fieldAccess?.allowRead !== false,
+          ),
         ),
-      ),
-    ]),
-  ])
+      ]),
+    ]
+
+    return [
+      ...new Set([
+        ...baseFields,
+        ...getReferenceChipProjectionFieldNames(
+          entityTemplates.value,
+          permissions,
+          baseFields,
+          (referenceName) => genericStore.getState(referenceName).entityTemplates,
+        ),
+      ]),
+    ]
+  })
   const readableReferenceRelations = computed(() =>
     getReadableReferenceRelationNames(
       entityTemplates.value,

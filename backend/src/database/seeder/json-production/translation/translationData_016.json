@@ -1,0 +1,56 @@
+[
+  {
+    "entity": "calendar",
+    "property": "materializeRecurrence",
+    "de": "Wiederholung auflösen",
+    "en": "Resolve recurrence"
+  },
+  {
+    "entity": "calendar",
+    "property": "materializeRecurrenceQuestion",
+    "de": "Soll diese Terminserie in einzelne Termine aufgelöst werden?",
+    "en": "Do you want to resolve this recurring series into standalone events?"
+  },
+  {
+    "entity": "calendar",
+    "property": "materializeRecurrenceHint",
+    "de": "Jedes Vorkommen wird als eigener Termin gespeichert. Die Termine können danach unabhängig bearbeitet und abgeschlossen werden. Dieser Vorgang lässt sich nicht automatisch rückgängig machen.",
+    "en": "Each occurrence will be saved as a standalone event. The events can then be edited and completed independently. This action cannot be undone automatically."
+  },
+  {
+    "entity": "calendar",
+    "property": "materializeRecurrenceConfirm",
+    "de": "Serie auflösen",
+    "en": "Resolve series"
+  },
+  {
+    "entity": "calendar",
+    "property": "materializeRecurrenceSuccess",
+    "de": "Terminserie aufgelöst",
+    "en": "Recurring series resolved"
+  },
+  {
+    "entity": "calendar",
+    "property": "materializeRecurrenceSuccessDescription",
+    "de": "{count} eigenständige Termine wurden erstellt.",
+    "en": "{count} standalone events were created."
+  },
+  {
+    "entity": "event",
+    "property": "recurrenceRequired",
+    "de": "Der Termin enthält keine gültige Wiederholungsregel.",
+    "en": "The event does not contain a valid recurrence rule."
+  },
+  {
+    "entity": "event",
+    "property": "recurrenceFiniteRequired",
+    "de": "Eine endlose Terminserie kann nicht vollständig aufgelöst werden. Lege zuerst ein Enddatum oder eine Anzahl fest.",
+    "en": "An open-ended recurring series cannot be resolved completely. Set an end date or occurrence count first."
+  },
+  {
+    "entity": "event",
+    "property": "recurrenceTooManyOccurrences",
+    "de": "Die Terminserie enthält mehr als 100 Vorkommen und kann nicht automatisch aufgelöst werden.",
+    "en": "The recurring series contains more than 100 occurrences and cannot be resolved automatically."
+  }
+]

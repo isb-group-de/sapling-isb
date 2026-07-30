@@ -291,6 +291,10 @@ tabular-numeric seconds countdown and the open menu shows the same remaining
 time as a full localized label.
 
 Table columns are driven by template metadata and translations.
+Reference columns marked with `isChip` project readable `isColor` and `isIcon`
+fields from the referenced entity in addition to its value fields. The shared
+desktop and mobile chip renderer therefore receives the persisted appearance
+metadata without loading full reference records.
 `useSaplingTable` owns the entity lifecycle, paging, server loading, and event
 coordination. Form-configuration catalog loading, selection, and overlay state
 live in `useSaplingTableFormConfig`; parsing and replacing query-string state

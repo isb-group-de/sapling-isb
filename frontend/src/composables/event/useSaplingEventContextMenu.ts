@@ -1,6 +1,7 @@
 import { computed, nextTick, ref, type CSSProperties, type Ref } from 'vue'
 import type { CalendarEvent } from 'vuetify/lib/components/VCalendar/types.mjs'
 import ApiGenericService from '@/services/api.generic.service'
+import ApiCalendarService from '@/services/api.calendar.service'
 import ApiScriptService from '@/services/api.script.service'
 import type { EntityItem, EventItem, SaplingGenericItem, ScriptButtonItem } from '@/entity/entity'
 import type { AccumulatedPermission, EntityTemplate } from '@/entity/structure'
@@ -39,6 +40,12 @@ interface EventContextMenuState {
   y: number
 }
 
+interface MaterializeRecurrenceDialogState {
+  visible: boolean
+  item: EventItem | null
+  isSubmitting: boolean
+}
+
 interface UseSaplingEventContextMenuOptions {
   templates: Ref<EntityTemplate[]>
   entityEvent: Ref<EntityItem | null>
@@ -68,6 +75,11 @@ export function useSaplingEventContextMenu(options: UseSaplingEventContextMenuOp
     item: null,
     x: 0,
     y: 0,
+  })
+  const materializeRecurrenceDialog = ref<MaterializeRecurrenceDialogState>({
+    visible: false,
+    item: null,
+    isSubmitting: false,
   })
   const showUploadDialog = ref(false)
   const uploadDialogItem = ref<SaplingGenericItem | null>(null)
@@ -112,7 +124,7 @@ export function useSaplingEventContextMenu(options: UseSaplingEventContextMenuOp
       return []
     }
 
-    return getSaplingContextMenuTableItems({
+    const groups = getSaplingContextMenuTableItems({
       canChangeLog: true,
       canShowInformation: canShowInformation.value,
       entityPermission: eventEntityPermission.value,
@@ -129,6 +141,26 @@ export function useSaplingEventContextMenu(options: UseSaplingEventContextMenuOp
         ),
       )
       .filter((group) => group.length > 0)
+
+    if (
+      eventContextMenu.value.item.recurrenceRule &&
+      eventEntityPermission.value?.allowInsert === true &&
+      eventEntityPermission.value.allowUpdate === true
+    ) {
+      groups.unshift([
+        {
+          type: 'dissolveRecurrence',
+          icon: 'mdi-calendar-remove-outline',
+          title: translateCalendarLabel(
+            'materializeRecurrence',
+            'Wiederholung auflösen',
+            'Resolve recurrence',
+          ),
+        },
+      ])
+    }
+
+    return groups
   })
 
   async function loadEventScriptButtons() {
@@ -174,6 +206,86 @@ export function useSaplingEventContextMenu(options: UseSaplingEventContextMenuOp
   function closeInformationDialog() {
     showInformationDialog.value = false
     informationDialogItem.value = null
+  }
+
+  function closeMaterializeRecurrenceDialog() {
+    if (materializeRecurrenceDialog.value.isSubmitting) {
+      return
+    }
+    materializeRecurrenceDialog.value = {
+      visible: false,
+      item: null,
+      isSubmitting: false,
+    }
+  }
+
+  function openMaterializeRecurrenceDialog() {
+    const item = eventContextMenu.value.item
+    if (!item?.recurrenceRule || item.handle == null) {
+      return
+    }
+    materializeRecurrenceDialog.value = {
+      visible: true,
+      item,
+      isSubmitting: false,
+    }
+  }
+
+  async function confirmMaterializeRecurrence() {
+    const state = materializeRecurrenceDialog.value
+    if (!state.item?.recurrenceRule || state.item.handle == null || state.isSubmitting) {
+      return
+    }
+
+    materializeRecurrenceDialog.value = { ...state, isSubmitting: true }
+    try {
+      const result = await ApiCalendarService.materializeEventRecurrence(state.item.handle, {
+        expectedUpdatedAt:
+          state.item.updatedAt == null ? undefined : new Date(state.item.updatedAt).toISOString(),
+      })
+      materializeRecurrenceDialog.value = {
+        visible: false,
+        item: null,
+        isSubmitting: false,
+      }
+      await options.refreshVisibleEvents()
+      pushMessage(
+        'success',
+        translateCalendarLabel(
+          'materializeRecurrenceSuccess',
+          'Terminserie aufgelöst',
+          'Recurring series resolved',
+        ),
+        translateCalendarLabel(
+          'materializeRecurrenceSuccessDescription',
+          `${result.materializedCount} eigenständige Termine wurden erstellt.`,
+          `${result.materializedCount} standalone events were created.`,
+          { count: result.materializedCount },
+        ),
+        'calendar',
+      )
+    } catch {
+      materializeRecurrenceDialog.value = {
+        ...materializeRecurrenceDialog.value,
+        isSubmitting: false,
+      }
+    }
+  }
+
+  function translateCalendarLabel(
+    key: string,
+    germanFallback: string,
+    englishFallback: string,
+    parameters?: Record<string, unknown>,
+  ): string {
+    const translationKey = `calendar.${key}`
+    if (i18n.global.te(translationKey)) {
+      return i18n.global.t(translationKey, parameters ?? {})
+    }
+
+    return String(i18n.global.locale.value).toLowerCase().startsWith('de')
+      ? germanFallback
+      : englishFallback
   }
 
   function openCopyDialogFromContextMenu() {
@@ -334,6 +446,9 @@ export function useSaplingEventContextMenu(options: UseSaplingEventContextMenuOp
       case 'copy':
         openCopyDialogFromContextMenu()
         break
+      case 'dissolveRecurrence':
+        openMaterializeRecurrenceDialog()
+        break
       case 'changeLog':
         openChangeLogFromContextMenu()
         break
@@ -375,13 +490,16 @@ export function useSaplingEventContextMenu(options: UseSaplingEventContextMenuOp
   return {
     closeEventContextMenu,
     closeInformationDialog,
+    closeMaterializeRecurrenceDialog,
     closeUploadDialog,
+    confirmMaterializeRecurrence,
     eventContextMenu,
     eventContextMenuItems,
     eventContextMenuStyle,
     handleEventContextMenuAction,
     informationDialogItem,
     loadEventScriptButtons,
+    materializeRecurrenceDialog,
     openEventContextMenu,
     showInformationDialog,
     showUploadDialog,

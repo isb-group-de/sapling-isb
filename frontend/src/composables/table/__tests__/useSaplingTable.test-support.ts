@@ -53,6 +53,7 @@ vi.mock('@/stores/currentPermissionStore', () => ({
   useCurrentPermissionStore: () => ({
     accumulatedPermission: [
       { entityHandle: 'ticketStatus', allowRead: true },
+      { entityHandle: 'chipStatus', allowRead: true },
       { entityHandle: 'person', allowRead: true },
       { entityHandle: 'company', allowRead: true },
     ],
@@ -126,6 +127,33 @@ const entityStates = reactive<Record<string, ReturnType<typeof createEntityState
       kind: 'm:1',
       referenceName: 'person',
       referencedPks: ['handle'],
+    }),
+  ]),
+  chipRecord: createEntityState([
+    createTemplate({
+      name: 'status',
+      type: 'string',
+      kind: 'm:1',
+      referenceName: 'chipStatus',
+      referencedPks: ['handle'],
+      options: ['isChip'],
+    }),
+  ]),
+  chipStatus: createEntityState([
+    createTemplate({
+      name: 'title',
+      type: 'string',
+      options: ['isValue'],
+    }),
+    createTemplate({
+      name: 'color',
+      type: 'string',
+      options: ['isColor'],
+    }),
+    createTemplate({
+      name: 'icon',
+      type: 'string',
+      options: ['isIcon'],
     }),
   ]),
   event: createEntityState([

@@ -186,6 +186,60 @@
     @open-change-log="openUpdateConflictChangeLog"
   />
 
+  <SaplingDialogConfirm
+    :model-value="materializeRecurrenceDialog.visible"
+    :eyebrow="calendarLabel('materializeRecurrence', 'Wiederholung auflösen', 'Resolve recurrence')"
+    :title="calendarLabel('materializeRecurrence', 'Wiederholung auflösen', 'Resolve recurrence')"
+    :subtitle="
+      calendarLabel(
+        'materializeRecurrenceQuestion',
+        'Soll diese Terminserie in einzelne Termine aufgelöst werden?',
+        'Do you want to resolve this recurring series into standalone events?',
+      )
+    "
+    :close-disabled="materializeRecurrenceDialog.isSubmitting"
+    persistent
+    @update:model-value="(value) => !value && closeMaterializeRecurrenceDialog()"
+    @enter="confirmMaterializeRecurrence"
+    @escape="closeMaterializeRecurrenceDialog"
+  >
+    <template #body>
+      <p>
+        {{
+          calendarLabel(
+            'materializeRecurrenceHint',
+            'Jedes Vorkommen wird als eigener Termin gespeichert. Die Termine können danach unabhängig bearbeitet und abgeschlossen werden. Dieser Vorgang lässt sich nicht automatisch rückgängig machen.',
+            'Each occurrence will be saved as a standalone event. The events can then be edited and completed independently. This action cannot be undone automatically.',
+          )
+        }}
+      </p>
+    </template>
+    <template #actions>
+      <SaplingActionBar>
+        <template #leading>
+          <v-btn
+            variant="text"
+            prepend-icon="mdi-close"
+            :disabled="materializeRecurrenceDialog.isSubmitting"
+            @click="closeMaterializeRecurrenceDialog"
+          >
+            {{ $t('global.cancel') }}
+          </v-btn>
+        </template>
+        <template #trailing>
+          <v-btn
+            color="warning"
+            append-icon="mdi-calendar-remove-outline"
+            :loading="materializeRecurrenceDialog.isSubmitting"
+            @click="confirmMaterializeRecurrence"
+          >
+            {{ calendarLabel('materializeRecurrenceConfirm', 'Serie auflösen', 'Resolve series') }}
+          </v-btn>
+        </template>
+      </SaplingActionBar>
+    </template>
+  </SaplingDialogConfirm>
+
   <v-menu
     v-model="eventContextMenu.visible"
     :style="eventContextMenuStyle"
@@ -242,6 +296,8 @@ import SaplingTableRowInformation from '@/components/table/SaplingTableRowInform
 import SaplingTableRowUpload from '@/components/table/SaplingTableRowUpload.vue'
 import SaplingDialogEdit from '../dialog/SaplingDialogEdit.vue'
 import SaplingDialogUpdateConflict from '@/components/dialog/SaplingDialogUpdateConflict.vue'
+import SaplingDialogConfirm from '@/components/dialog/SaplingDialogConfirm.vue'
+import SaplingActionBar from '@/components/actions/SaplingActionBar.vue'
 import { SAPLING_DIALOG_MAX_WIDTH } from '@/constants/dialog.constants'
 
 defineOptions({
@@ -251,7 +307,7 @@ defineOptions({
 const EVENT_CONTEXT_DIALOG_BREAKPOINT = 1080
 
 const attrs = useAttrs()
-const { t } = useI18n()
+const { t, te, locale } = useI18n()
 const { width } = useDisplay()
 
 const isMobileContextLayout = computed(() => width.value <= EVENT_CONTEXT_DIALOG_BREAKPOINT)
@@ -267,6 +323,15 @@ watch(isMobileContextLayout, (isMobile) => {
 
 function toggleContextDialog() {
   mobileContextDialogVisible.value = !mobileContextDialogVisible.value
+}
+
+function calendarLabel(key: string, germanFallback: string, englishFallback: string): string {
+  const translationKey = `calendar.${key}`
+  if (te(translationKey)) {
+    return t(translationKey)
+  }
+
+  return String(locale.value).toLowerCase().startsWith('de') ? germanFallback : englishFallback
 }
 
 const {
@@ -323,7 +388,9 @@ const {
   syncExternalCalendar,
   closeEventContextMenu,
   closeInformationDialog,
+  closeMaterializeRecurrenceDialog,
   closeUploadDialog,
+  confirmMaterializeRecurrence,
   showEditDialog,
   showInformationDialog,
   showWorkHourBackground,
@@ -336,6 +403,7 @@ const {
   endDrag,
   cancelDrag,
   informationDialogItem,
+  materializeRecurrenceDialog,
   templates,
   updateConflictDialog,
   uploadDialogItem,

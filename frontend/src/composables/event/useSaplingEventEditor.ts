@@ -339,13 +339,58 @@ export function useSaplingEventEditor(options: UseSaplingEventEditorOptions) {
         ? toCalendarEvent(calendarEvent.event as EventItem)
         : calendarEvent
 
-    options.editEvent.value = { ...baseEvent, start: calendarEvent.start, end: calendarEvent.end }
+    options.editEvent.value = isRecurringCalendarEvent(calendarEvent)
+      ? applyRecurringInteractionToSeries(baseEvent, calendarEvent, forcedDirtyFields)
+      : { ...baseEvent, start: calendarEvent.start, end: calendarEvent.end }
     applyCalendarEventDateParts(options.editEvent.value)
     options.forceEditDialogDirtyFields.value = forcedDirtyFields
     if (forcedDirtyFields.length === 0) {
       options.clearDragSnapshot()
     }
     options.showEditDialog.value = true
+  }
+
+  function applyRecurringInteractionToSeries(
+    baseEvent: CalendarEvent,
+    occurrence: CalendarEvent,
+    forcedDirtyFields: string[],
+  ): CalendarEvent {
+    const result = { ...baseEvent }
+    if (forcedDirtyFields.length === 0) {
+      return result
+    }
+
+    const recurringOccurrence = occurrence as CalendarEvent & {
+      recurrenceOccurrenceStart?: string
+      recurrenceOccurrenceEnd?: string
+    }
+    const occurrenceStart = recurringOccurrence.recurrenceOccurrenceStart
+      ? new Date(recurringOccurrence.recurrenceOccurrenceStart).getTime()
+      : Number.NaN
+    const occurrenceEnd = recurringOccurrence.recurrenceOccurrenceEnd
+      ? new Date(recurringOccurrence.recurrenceOccurrenceEnd).getTime()
+      : Number.NaN
+
+    if (
+      forcedDirtyFields.includes('startDate') &&
+      Number.isFinite(occurrenceStart) &&
+      typeof occurrence.start === 'number'
+    ) {
+      const startDelta = occurrence.start - occurrenceStart
+      result.start = Number(result.start) + startDelta
+      result.end = Number(result.end) + startDelta
+    }
+
+    if (
+      forcedDirtyFields.includes('endDate') &&
+      !forcedDirtyFields.includes('startDate') &&
+      Number.isFinite(occurrenceEnd) &&
+      typeof occurrence.end === 'number'
+    ) {
+      result.end = Number(result.end) + occurrence.end - occurrenceEnd
+    }
+
+    return result
   }
 
   function getOpenEventHandleFromRoute(): number | null {

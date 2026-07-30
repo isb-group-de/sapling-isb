@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { CalendarEvent } from 'vuetify/lib/components/VCalendar/types.mjs'
 import type { EntityItem, EventItem } from '@/entity/entity'
 import type { EntityTemplate } from '@/entity/structure'
+import ApiCalendarService from '@/services/api.calendar.service'
 import { useCurrentPermissionStore } from '@/stores/currentPermissionStore'
 import { useSaplingEventContextMenu } from '../useSaplingEventContextMenu'
 
@@ -40,6 +41,7 @@ function createHarness() {
     forceEditDialogDirtyFields,
     loadPersistedEvent,
     menu,
+    refreshVisibleEvents,
     showEditDialog,
     templates,
   }
@@ -150,5 +152,32 @@ describe('useSaplingEventContextMenu', () => {
     expect(actionTypes).not.toContain('delete')
     expect(actionTypes).toContain('copy')
     expect(actionTypes).toContain('timeline')
+  })
+
+  it('offers and confirms recurrence materialization for editable recurring events', async () => {
+    const harness = createHarness()
+    const materialize = vi
+      .spyOn(ApiCalendarService, 'materializeEventRecurrence')
+      .mockResolvedValue({ materializedCount: 2, handles: [42, 43] })
+    harness.menu.eventContextMenu.value.item = createEventItem({
+      recurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=2',
+      updatedAt: new Date('2026-07-30T08:00:00.000Z'),
+    })
+
+    const action = harness.menu.eventContextMenuItems.value
+      .flatMap((group) => (Array.isArray(group) ? group : [group]))
+      .find((item) => item.type === 'dissolveRecurrence')
+
+    expect(action).toBeDefined()
+    await harness.menu.handleEventContextMenuAction(action!)
+    expect(harness.menu.materializeRecurrenceDialog.value.visible).toBe(true)
+
+    await harness.menu.confirmMaterializeRecurrence()
+
+    expect(materialize).toHaveBeenCalledWith(42, {
+      expectedUpdatedAt: '2026-07-30T08:00:00.000Z',
+    })
+    expect(harness.refreshVisibleEvents).toHaveBeenCalledTimes(1)
+    expect(harness.menu.materializeRecurrenceDialog.value.visible).toBe(false)
   })
 })

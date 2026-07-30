@@ -6,12 +6,12 @@ import type { CalendarDateItem } from '../eventDate.utils'
 import type { SaplingCalendarEvent } from '../eventCalendar.utils'
 import { useSaplingCalendarDrag } from '../useSaplingCalendarDrag'
 
-function createTimeSlot(hour: number, minute = 0): CalendarDateItem {
+function createTimeSlot(hour: number, minute = 0, day = 15): CalendarDateItem {
   return {
-    date: '2026-07-15',
+    date: `2026-07-${String(day).padStart(2, '0')}`,
     year: 2026,
     month: 7,
-    day: 15,
+    day,
     hour,
     minute,
   }
@@ -70,6 +70,25 @@ function createPersistedEvent(): CalendarEvent {
   }
 }
 
+function createRecurringOccurrence(day: number): SaplingCalendarEvent {
+  const start = new Date(2026, 6, day, 9)
+  const end = new Date(2026, 6, day, 10)
+  return {
+    start: start.getTime(),
+    end: end.getTime(),
+    timed: true,
+    color: '#336699',
+    event: {
+      handle: 42,
+      recurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=2',
+    },
+    isRecurringOccurrence: true,
+    recurrenceOccurrenceStart: start.toISOString(),
+    recurrenceOccurrenceEnd: end.toISOString(),
+    recurrenceSeriesHandle: 42,
+  } as unknown as SaplingCalendarEvent
+}
+
 describe('useSaplingCalendarDrag', () => {
   it('moves persisted events, opens them dirty, and can restore the snapshot', () => {
     const harness = createHarness()
@@ -103,6 +122,28 @@ describe('useSaplingCalendarDrag', () => {
 
     expect(harness.openPersistedEventEditor).not.toHaveBeenCalled()
     expect(harness.drag.consumeSuppressedEventClick()).toBe(false)
+  })
+
+  it('moves every rendered occurrence of a recurring series during drag', () => {
+    const harness = createHarness()
+    const firstOccurrence = createRecurringOccurrence(15)
+    const secondOccurrence = createRecurringOccurrence(16)
+    harness.events.value.push(firstOccurrence, secondOccurrence)
+
+    harness.drag.startDrag(new Event('mousedown'), { event: secondOccurrence, timed: true })
+    harness.drag.startTime(new Event('mousedown'), createTimeSlot(9, 30))
+    harness.drag.mouseMove(new Event('mousemove'), createTimeSlot(11))
+
+    expect(firstOccurrence.start).toBe(new Date(2026, 6, 15, 10, 30).getTime())
+    expect(firstOccurrence.end).toBe(new Date(2026, 6, 15, 11, 30).getTime())
+    expect(secondOccurrence.start).toBe(new Date(2026, 6, 16, 10, 30).getTime())
+    expect(secondOccurrence.end).toBe(new Date(2026, 6, 16, 11, 30).getTime())
+
+    harness.drag.endDrag()
+    harness.drag.restoreDragSnapshot()
+
+    expect(firstOccurrence.start).toBe(new Date(2026, 6, 15, 9).getTime())
+    expect(secondOccurrence.start).toBe(new Date(2026, 6, 16, 9).getTime())
   })
 
   it('does not start dragging a derived buffer placeholder', () => {
@@ -167,5 +208,18 @@ describe('useSaplingCalendarDrag', () => {
     harness.drag.cancelDrag()
     expect(event.end).toBe(new Date(2026, 6, 15, 10).getTime())
     expect(harness.drag.createEvent.value).toBeNull()
+  })
+
+  it('resizes every rendered occurrence of a recurring series', () => {
+    const harness = createHarness()
+    const firstOccurrence = createRecurringOccurrence(15)
+    const secondOccurrence = createRecurringOccurrence(16)
+    harness.events.value.push(firstOccurrence, secondOccurrence)
+
+    harness.drag.extendBottom(secondOccurrence)
+    harness.drag.mouseMove(new Event('mousemove'), createTimeSlot(11, 0, 16))
+
+    expect(firstOccurrence.end).toBe(new Date(2026, 6, 15, 11).getTime())
+    expect(secondOccurrence.end).toBe(new Date(2026, 6, 16, 11).getTime())
   })
 })
