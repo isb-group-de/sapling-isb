@@ -286,7 +286,7 @@
 // #region Imports
 import { computed, onMounted, provide, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import SaplingSearch from '@/components/system/SaplingSearch.vue'
 import { useTranslationLoader } from '@/composables/generic/useTranslationLoader'
 import { useSaplingMailDialog } from '@/composables/dialog/useSaplingMailDialog'
@@ -307,6 +307,7 @@ import type {
   FormConfigMenuItem,
   FormConfigSelectionHandle,
 } from '@/composables/dialog/saplingDialogEdit.utils'
+import { clearRouteQueryParameter, setRouteQueryParameter } from '@/utils/routerNavigation'
 import { saplingTableDisplayContextKey } from './saplingTableDisplayContext'
 // #endregion
 
@@ -343,6 +344,7 @@ const props = withDefaults(defineProps<SaplingTableProps>(), {
 })
 const emit = defineEmits<SaplingTableEmit>()
 const { t } = useI18n()
+const route = useRoute()
 const router = useRouter()
 const { isLoading: isHeaderTranslationLoading } = useTranslationLoader(props.entityHandle)
 const currentPersonStore = useCurrentPersonStore()
@@ -507,6 +509,24 @@ const {
   openDeleteDialog,
   closeDeleteDialog,
 } = useSaplingTableComponent(props, emit)
+
+let routeEditDialogHandle: string | null = null
+
+watch(
+  () => [editDialog.value.visible, editDialog.value.item?.handle] as const,
+  ([isVisible, handle], [wasVisible]) => {
+    if (isVisible && (typeof handle === 'string' || typeof handle === 'number')) {
+      routeEditDialogHandle = String(handle)
+      void setRouteQueryParameter(router, route, 'open', handle)
+      return
+    }
+
+    if (wasVisible && !isVisible && routeEditDialogHandle !== null) {
+      routeEditDialogHandle = null
+      void clearRouteQueryParameter(router, route, 'open')
+    }
+  },
+)
 
 provide(saplingTableDisplayContextKey, {
   isMobileTable,

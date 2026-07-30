@@ -206,7 +206,9 @@ references explicitly.
 current-time and selected-event-time scrolling, scroll cleanup, and work-hour
 overlays. Calendar deep links use `?open=<eventHandle>`; the referenced event is
 loaded independently of the visible range, its start date/time becomes the
-calendar focus, and its edit dialog opens automatically.
+calendar focus, and its edit dialog opens automatically. Opening any persisted
+calendar event also writes this parameter, so the active dialog survives reloads
+and its URL can be shared. Closing the dialog removes only `open`.
 `useSaplingEventEditor.ts` owns record hydration, create/update persistence,
 participant references, route-driven opening, drag rollback, optimistic local
 replacement, and update-conflict reload/merge behavior. `useSaplingEvent.ts`

@@ -17,9 +17,9 @@ import {
 } from '@/utils/inboxRoute.util'
 
 describe('inboxRoute.util', () => {
-  it('opens actionable inbox entries in their filtered table dialog', () => {
+  it('opens partner work entries in the partner workspace and events in the calendar', () => {
     expect(getTicketInboxRoute({ handle: 12 } as TicketItem)).toEqual({
-      path: '/table/ticket',
+      path: '/partner/ticket',
       query: {
         filter: JSON.stringify({ handle: 12 }),
         open: '12',
@@ -32,21 +32,21 @@ describe('inboxRoute.util', () => {
       },
     })
     expect(getSalesOpportunityInboxRoute({ handle: 34 } as SalesOpportunityItem)).toEqual({
-      path: '/table/salesOpportunity',
+      path: '/partner/salesOpportunity',
       query: {
         filter: JSON.stringify({ handle: 34 }),
         open: '34',
       },
     })
     expect(getEffortEstimateInboxRoute({ handle: 45 } as EffortEstimateItem)).toEqual({
-      path: '/table/effortEstimate',
+      path: '/partner/effortEstimate',
       query: {
         filter: JSON.stringify({ handle: 45 }),
         open: '45',
       },
     })
     expect(getInternalCaseInboxRoute({ handle: 56 } as InternalCaseItem)).toEqual({
-      path: '/table/internalCase',
+      path: '/partner/internalCase',
       query: {
         filter: JSON.stringify({ handle: 56 }),
         open: '56',
@@ -54,15 +54,34 @@ describe('inboxRoute.util', () => {
     })
   })
 
-  it('opens inbox notification references through their dedicated record route', () => {
+  it.each(['ticket', 'salesOpportunity', 'effortEstimate', 'internalCase'])(
+    'opens %s inbox notification references in the partner workspace',
+    (entityHandle) => {
+      expect(
+        getNotificationInboxRoute({
+          handle: 9,
+          entity: { handle: entityHandle },
+          referenceHandle: '12',
+        } as InboxNotificationItem),
+      ).toEqual({
+        path: `/partner/${entityHandle}`,
+        query: {
+          filter: JSON.stringify({ handle: '12' }),
+          open: '12',
+        },
+      })
+    },
+  )
+
+  it('keeps notifications for other entities on the generic table workspace', () => {
     expect(
       getNotificationInboxRoute({
         handle: 9,
-        entity: { handle: 'ticket' },
+        entity: { handle: 'company' },
         referenceHandle: '12',
       } as InboxNotificationItem),
     ).toEqual({
-      path: '/table/ticket',
+      path: '/table/company',
       query: {
         filter: JSON.stringify({ handle: '12' }),
         open: '12',

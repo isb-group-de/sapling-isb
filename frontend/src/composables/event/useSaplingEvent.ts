@@ -1,5 +1,5 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import ApiGenericService from '@/services/api.generic.service'
 import type {
   EntityItem,
@@ -45,6 +45,7 @@ import { useSaplingEventData } from '@/composables/event/useSaplingEventData'
 import { useSaplingEventContextMenu } from '@/composables/event/useSaplingEventContextMenu'
 import { useSaplingEventEditor } from '@/composables/event/useSaplingEventEditor'
 import { useSaplingEventPresentation } from '@/composables/event/useSaplingEventPresentation'
+import { clearRouteQueryParameter, setRouteQueryParameter } from '@/utils/routerNavigation'
 
 const CALENDAR_TYPE_OPTIONS: CalendarType[] = ['day', 'workweek', 'week', 'month']
 const WORKWEEK_DAYS = [1, 2, 3, 4, 5]
@@ -57,6 +58,7 @@ const WORKWEEK_DAYS = [1, 2, 3, 4, 5]
 export function useSaplingEvent() {
   //#region State
   const route = useRoute()
+  const router = useRouter()
   const { isLoading: isTranslationLoading, loadTranslations } = useTranslationLoader(
     'navigation',
     'calendar',
@@ -368,6 +370,24 @@ export function useSaplingEvent() {
       }
 
       void openEventFromRoute()
+    },
+  )
+
+  let routeEditEventHandle: string | null = null
+
+  watch(
+    () => [showEditDialog.value, getCalendarEventHandle(editEvent.value)] as const,
+    ([isVisible, handle], [wasVisible]) => {
+      if (isVisible && handle != null) {
+        routeEditEventHandle = String(handle)
+        void setRouteQueryParameter(router, route, 'open', handle)
+        return
+      }
+
+      if (wasVisible && !isVisible && routeEditEventHandle !== null) {
+        routeEditEventHandle = null
+        void clearRouteQueryParameter(router, route, 'open')
+      }
     },
   )
   //#endregion

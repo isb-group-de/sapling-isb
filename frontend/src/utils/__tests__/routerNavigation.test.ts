@@ -1,7 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createMemoryHistory, createRouter } from 'vue-router'
 
-import { isRecoverableRouteLoadError, pushAppRoute } from '../routerNavigation'
+import {
+  clearRouteQueryParameter,
+  isRecoverableRouteLoadError,
+  pushAppRoute,
+  setRouteQueryParameter,
+} from '../routerNavigation'
 
 function createTestRouter() {
   return createRouter({
@@ -24,6 +29,60 @@ describe('pushAppRoute', () => {
     await router.push('/target')
 
     await expect(pushAppRoute(router, '/target')).resolves.toBe(false)
+  })
+
+  it('removes a dialog query parameter while preserving the current route and filters', async () => {
+    const router = createTestRouter()
+    await router.push({
+      path: '/table/ticket',
+      query: {
+        filter: JSON.stringify({ handle: 52 }),
+        open: '52',
+        view: 'compact',
+      },
+      hash: '#details',
+    })
+
+    await expect(clearRouteQueryParameter(router, router.currentRoute.value, 'open')).resolves.toBe(
+      true,
+    )
+
+    expect(router.currentRoute.value.path).toBe('/table/ticket')
+    expect(router.currentRoute.value.query).toEqual({
+      filter: JSON.stringify({ handle: 52 }),
+      view: 'compact',
+    })
+    expect(router.currentRoute.value.hash).toBe('#details')
+    await expect(clearRouteQueryParameter(router, router.currentRoute.value, 'open')).resolves.toBe(
+      false,
+    )
+  })
+
+  it('writes a shareable dialog handle while preserving the current route and filters', async () => {
+    const router = createTestRouter()
+    await router.push({
+      path: '/table/ticket',
+      query: {
+        filter: JSON.stringify({ status: 'open' }),
+        view: 'compact',
+      },
+      hash: '#details',
+    })
+
+    await expect(
+      setRouteQueryParameter(router, router.currentRoute.value, 'open', 52),
+    ).resolves.toBe(true)
+
+    expect(router.currentRoute.value.path).toBe('/table/ticket')
+    expect(router.currentRoute.value.query).toEqual({
+      filter: JSON.stringify({ status: 'open' }),
+      open: '52',
+      view: 'compact',
+    })
+    expect(router.currentRoute.value.hash).toBe('#details')
+    await expect(
+      setRouteQueryParameter(router, router.currentRoute.value, 'open', 52),
+    ).resolves.toBe(false)
   })
 
   it('deduplicates concurrent requests to the same target', async () => {

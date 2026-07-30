@@ -1,4 +1,4 @@
-import type { RouteLocationRaw, Router } from 'vue-router'
+import type { RouteLocationNormalizedLoaded, RouteLocationRaw, Router } from 'vue-router'
 import { isNavigationFailure } from 'vue-router'
 
 let pendingTargetPath: string | null = null
@@ -17,6 +17,44 @@ export function isRecoverableRouteLoadError(error: unknown): boolean {
 
   const normalizedMessage = message.toLowerCase()
   return routeLoadErrorMessages.some((fragment) => normalizedMessage.includes(fragment))
+}
+
+/** Removes one query parameter while preserving the current route and every other query value. */
+export async function clearRouteQueryParameter(
+  router: Router,
+  route: Pick<RouteLocationNormalizedLoaded, 'hash' | 'query'>,
+  parameter: string,
+): Promise<boolean> {
+  if (!(parameter in route.query)) {
+    return false
+  }
+
+  const query = { ...route.query }
+  delete query[parameter]
+  await router.replace({ hash: route.hash, query })
+  return true
+}
+
+export async function setRouteQueryParameter(
+  router: Router,
+  route: Pick<RouteLocationNormalizedLoaded, 'hash' | 'query'>,
+  parameter: string,
+  value: string | number,
+): Promise<boolean> {
+  const normalizedValue = String(value)
+  const currentValue = route.query[parameter]
+  if (!Array.isArray(currentValue) && currentValue === normalizedValue) {
+    return false
+  }
+
+  await router.replace({
+    hash: route.hash,
+    query: {
+      ...route.query,
+      [parameter]: normalizedValue,
+    },
+  })
+  return true
 }
 
 function recoverFromRouteLoadError(targetHref: string): boolean {

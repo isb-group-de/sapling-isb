@@ -182,8 +182,15 @@ sales opportunities, effort estimates, and internal cases, also define explicit
 route helpers for their header preview entries.
 Event snapshot entries and event-backed inbox notifications use the dedicated
 calendar route with the referenced handle. The calendar loads the event, moves
-to its start date and time, and opens its edit dialog automatically. Other
-entities continue to open their filtered generic table and record dialog.
+to its start date and time, and opens its edit dialog automatically. Tickets,
+sales opportunities, effort estimates, and internal cases open the matching
+partner workspace with the referenced record filtered and its edit dialog open.
+Every persisted record dialog writes its handle to the `open` query parameter,
+including dialogs opened directly in the calendar, table, or partner workspace.
+This keeps an open dialog reloadable and makes its URL shareable. Closing the
+dialog removes only `open`, preserving all filters and other route state so the
+same inbox entry can be selected again.
+Other entities continue to open their filtered generic table and record dialog.
 
 ## Adding A New Entity To Inbox
 

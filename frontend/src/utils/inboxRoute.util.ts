@@ -8,18 +8,28 @@ import type {
 } from '@/entity/entity'
 import type { RouteLocationRaw } from 'vue-router'
 
+const PARTNER_INBOX_ENTITY_HANDLES = new Set([
+  'effortEstimate',
+  'internalCase',
+  'salesOpportunity',
+  'ticket',
+])
+
 function getRecordInboxRoute(
   entityHandle: string,
   recordHandle: string | number | null | undefined,
+  workspace: 'partner' | 'table' = 'table',
 ): RouteLocationRaw {
+  const path = `/${workspace}/${entityHandle}`
+
   if (recordHandle == null || String(recordHandle).trim().length === 0) {
     return {
-      path: `/table/${entityHandle}`,
+      path,
     }
   }
 
   return {
-    path: `/table/${entityHandle}`,
+    path,
     query: {
       filter: JSON.stringify({ handle: recordHandle }),
       open: String(recordHandle),
@@ -43,7 +53,7 @@ function getEventCalendarRoute(recordHandle: string | number | null | undefined)
 }
 
 export function getTicketInboxRoute(ticket: TicketItem): RouteLocationRaw {
-  return getRecordInboxRoute('ticket', ticket.handle)
+  return getRecordInboxRoute('ticket', ticket.handle, 'partner')
 }
 
 export function getTaskInboxRoute(task: EventItem): RouteLocationRaw {
@@ -51,15 +61,15 @@ export function getTaskInboxRoute(task: EventItem): RouteLocationRaw {
 }
 
 export function getSalesOpportunityInboxRoute(opportunity: SalesOpportunityItem): RouteLocationRaw {
-  return getRecordInboxRoute('salesOpportunity', opportunity.handle)
+  return getRecordInboxRoute('salesOpportunity', opportunity.handle, 'partner')
 }
 
 export function getEffortEstimateInboxRoute(estimate: EffortEstimateItem): RouteLocationRaw {
-  return getRecordInboxRoute('effortEstimate', estimate.handle)
+  return getRecordInboxRoute('effortEstimate', estimate.handle, 'partner')
 }
 
 export function getInternalCaseInboxRoute(internalCase: InternalCaseItem): RouteLocationRaw {
-  return getRecordInboxRoute('internalCase', internalCase.handle)
+  return getRecordInboxRoute('internalCase', internalCase.handle, 'partner')
 }
 
 export function getNotificationInboxRoute(notification: InboxNotificationItem): RouteLocationRaw {
@@ -70,9 +80,15 @@ export function getNotificationInboxRoute(notification: InboxNotificationItem): 
   const referenceHandle = notification.referenceHandle?.trim()
 
   if (entityHandle && referenceHandle) {
-    return entityHandle === 'event'
-      ? getEventCalendarRoute(referenceHandle)
-      : getRecordInboxRoute(entityHandle, referenceHandle)
+    if (entityHandle === 'event') {
+      return getEventCalendarRoute(referenceHandle)
+    }
+
+    return getRecordInboxRoute(
+      entityHandle,
+      referenceHandle,
+      PARTNER_INBOX_ENTITY_HANDLES.has(entityHandle) ? 'partner' : 'table',
+    )
   }
 
   return getRecordInboxRoute('inboxNotification', notification.handle)

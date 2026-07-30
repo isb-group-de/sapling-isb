@@ -54,6 +54,7 @@ export interface UseSaplingTableProps {
   selected?: SaplingGenericItem[]
   isOpenEditDialog?: boolean
   openEditHandle?: string | number | null
+  isInitialized?: boolean
 }
 
 export type UseSaplingTableEmit = {
@@ -268,20 +269,25 @@ export function useSaplingTableComponent(props: UseSaplingTableProps, emit: UseS
 
   // #region Watchers
   watch(
-    () => [props.items, props.isOpenEditDialog, props.openEditHandle, props.entityHandle] as const,
-    ([items, isOpenEditDialog, openEditHandle, entityHandle]) => {
+    () =>
+      [
+        props.items,
+        props.isOpenEditDialog,
+        props.openEditHandle,
+        props.entityHandle,
+        props.isInitialized,
+      ] as const,
+    ([items, isOpenEditDialog, openEditHandle, entityHandle, isInitialized]) => {
       const requestedHandle = normalizeOpenEditHandle(openEditHandle)
-      if (requestedHandle && Array.isArray(items) && items.length > 0) {
+      if (requestedHandle && entityHandle && isInitialized !== false) {
         const autoOpenKey = `${entityHandle}:${requestedHandle}`
         if (lastAutoOpenedEditKey.value !== autoOpenKey) {
           const matchingItem =
             items.find((item) => String(getItemHandle(item) ?? '') === requestedHandle) ??
-            (items.length === 1 ? items[0] : null)
+            ({ handle: requestedHandle } as SaplingGenericItem)
 
-          if (matchingItem) {
-            lastAutoOpenedEditKey.value = autoOpenKey
-            void openEditDialog(matchingItem)
-          }
+          lastAutoOpenedEditKey.value = autoOpenKey
+          void openEditDialog(matchingItem)
         }
 
         initialEditDialogShown.value = true
