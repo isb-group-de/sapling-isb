@@ -77,8 +77,12 @@ export class MailService {
 
   async listSenderOptions(
     currentUser: PersonItem,
+    entityHandle?: string,
   ): Promise<MailSenderListResponseDto> {
-    return this.providerSessionService.listSenderOptions(currentUser);
+    return this.providerSessionService.listSenderOptions(
+      currentUser,
+      entityHandle,
+    );
   }
 
   /** Shares the outgoing OAuth session with background inbound mail work. */

@@ -1,0 +1,7 @@
+[
+  {
+    "entity": "sharedMailboxContext",
+    "route": "table/sharedMailboxContext",
+    "group": "emailSharedAccounts"
+  }
+]

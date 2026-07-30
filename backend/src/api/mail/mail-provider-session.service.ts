@@ -14,6 +14,7 @@ import {
 } from '../../constants/project.constants';
 import { PersonItem } from '../../entity/PersonItem';
 import { PersonSessionItem } from '../../entity/PersonSessionItem';
+import { SharedMailboxContextItem } from '../../entity/SharedMailboxContextItem';
 import { MailSenderListResponseDto } from './dto/mail.dto';
 import {
   isAuthenticationProviderError,
@@ -50,6 +51,7 @@ export class MailProviderSessionService {
 
   async listSenderOptions(
     currentUser: PersonItem,
+    entityHandle?: string,
   ): Promise<MailSenderListResponseDto> {
     const person = await this.loadCurrentMailPerson(currentUser);
     if (!person) {
@@ -58,7 +60,10 @@ export class MailProviderSessionService {
     const provider = extractProviderHandle(person);
     const fallbackSenders = buildFallbackSenderOptions(person, provider);
     if (!isSupportedMailProvider(provider) || !person.session) {
-      return { provider, senders: fallbackSenders };
+      return {
+        provider,
+        senders: await this.applyContextDefault(fallbackSenders, entityHandle),
+      };
     }
     const senders = await this.listAvailableSendersForProvider(
       provider,
@@ -67,7 +72,10 @@ export class MailProviderSessionService {
     );
     return {
       provider,
-      senders: senders.length > 0 ? senders : fallbackSenders,
+      senders: await this.applyContextDefault(
+        senders.length > 0 ? senders : fallbackSenders,
+        entityHandle,
+      ),
     };
   }
 
@@ -196,6 +204,41 @@ export class MailProviderSessionService {
         ],
       },
     );
+  }
+
+  private async applyContextDefault(
+    senders: MailSenderOption[],
+    entityHandle?: string,
+  ): Promise<MailSenderOption[]> {
+    const normalizedEntityHandle = entityHandle?.trim();
+    if (!normalizedEntityHandle || senders.length === 0) {
+      return senders;
+    }
+
+    const context = await this.em.findOne(
+      SharedMailboxContextItem,
+      {
+        entity: { handle: normalizedEntityHandle },
+        isActive: true,
+      },
+      { populate: ['mailbox'] },
+    );
+    const defaultEmail = normalizeEmailAddress(context?.mailbox?.email);
+    const normalizedDefaultEmail = defaultEmail?.toLowerCase();
+    const isAllowedConfiguredMailbox = senders.some(
+      (sender) =>
+        sender.source === 'configured' &&
+        sender.email.toLowerCase() === normalizedDefaultEmail,
+    );
+
+    if (!normalizedDefaultEmail || !isAllowedConfiguredMailbox) {
+      return senders;
+    }
+
+    return senders.map((sender) => ({
+      ...sender,
+      isDefault: sender.email.toLowerCase() === normalizedDefaultEmail,
+    }));
   }
 
   private async listAvailableSendersForProvider(

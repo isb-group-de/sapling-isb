@@ -24,6 +24,7 @@ backend/src/entity/EmailDeliveryStatusItem.ts
 backend/src/entity/EMailListItem.ts
 backend/src/entity/SharedMailboxItem.ts
 backend/src/entity/SharedMailboxGroupItem.ts
+backend/src/entity/SharedMailboxContextItem.ts
 backend/src/entity/TeamsTemplateItem.ts
 backend/src/entity/TeamsSubscriptionItem.ts
 backend/src/entity/TeamsDeliveryItem.ts
@@ -123,11 +124,11 @@ mutations.
 
 Manual email sending goes through `MailController`.
 
-| Endpoint                 | Permission                      | Purpose                                                       |
-| ------------------------ | ------------------------------- | ------------------------------------------------------------- |
-| `GET /api/mail/senders`  | Authenticated user              | Lists available sender addresses                              |
-| `POST /api/mail/preview` | `allowRead` on `entityHandle`   | Resolves recipients, subject, markdown, HTML, and attachments |
-| `POST /api/mail/send`    | `allowUpdate` on `entityHandle` | Persists and queues/sends an email delivery                   |
+| Endpoint                 | Permission                      | Purpose                                                                         |
+| ------------------------ | ------------------------------- | ------------------------------------------------------------------------------- |
+| `GET /api/mail/senders`  | Authenticated user              | Lists available sender addresses and applies an optional entity-context default |
+| `POST /api/mail/preview` | `allowRead` on `entityHandle`   | Resolves recipients, subject, markdown, HTML, and attachments                   |
+| `POST /api/mail/send`    | `allowUpdate` on `entityHandle` | Persists and queues/sends an email delivery                                     |
 
 `MailService.sendEmail()` always renders through preview first. It then persists an `EmailDeliveryItem` with pending status. If Redis is enabled, a BullMQ `emails` job is queued. If Redis is disabled, dispatch runs immediately.
 
@@ -178,6 +179,16 @@ Sender options are resolved from the current person:
 3. Provider-discovered primary or alias addresses.
 4. Configured shared mailboxes assigned through active mailbox groups.
 5. Fallback to the user's profile email when provider lookup is not available.
+
+The optional `entityHandle` query parameter on `GET /api/mail/senders` resolves
+an active `SharedMailboxContextItem`. Each context entity can have at most one
+configured default mailbox, while the same mailbox can be reused for any number
+of contexts. The configured mailbox replaces the provider default only when it
+is active, belongs to an active group assigned to the current person, and uses
+the current provider. Otherwise sender resolution keeps the normal personal or
+provider default. The mail composer passes its current entity context when it
+loads sender options, so opening it from a ticket or another configured entity
+preselects the eligible shared address without preventing a manual change.
 
 When a sender email is requested explicitly, it must match an available sender option. Otherwise `mail.senderNotAllowed` is raised.
 
@@ -265,6 +276,16 @@ When adding a new automatic email subscription:
 6. For update notifications, each condition observes one field; optionally set `oldValue` and/or `newValue`.
 7. Use relation handles for value constraints, for example `closed` for a status handle.
 8. Make sure the recipient path resolves to a person with an email address or directly to an email string.
+
+When configuring a manual context default:
+
+1. Create or reuse an active shared mailbox in an active mailbox group.
+2. Assign the group to every person who may use that sender.
+3. Create one `sharedMailboxContext` record for each desired entity context,
+   such as `ticket`, and select the mailbox.
+4. Reuse the same mailbox in additional context records when it should be the
+   default in several entities.
+5. Confirm the provider-specific Send As permission and OAuth scopes.
 
 When adding a new Teams subscription:
 

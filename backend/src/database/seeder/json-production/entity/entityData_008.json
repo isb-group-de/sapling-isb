@@ -1,0 +1,13 @@
+[
+  {
+    "handle": "sharedMailboxContext",
+    "icon": "mdi-email-arrow-left-outline",
+    "canShow": true,
+    "group": "mails",
+    "order": 70,
+    "canRead": true,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  }
+]

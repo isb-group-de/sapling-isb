@@ -27,14 +27,37 @@
               <v-skeleton-loader type="text, text" />
             </template>
             <template v-else>
-              <div class="message__title-row">
-                <span>{{ formatMessageLabel(message) }}</span>
-                <v-chip v-if="message.count > 1" size="x-small" variant="tonal">
-                  {{ message.count }}x
-                </v-chip>
-              </div>
-              <div v-if="message.description" class="message__description">
-                {{ formatDescription(message) }}
+              <div class="message__content">
+                <div class="message__body">
+                  <div class="message__title-row">
+                    <span>{{ formatMessageLabel(message) }}</span>
+                    <v-chip v-if="message.count > 1" size="x-small" variant="tonal">
+                      {{ message.count }}x
+                    </v-chip>
+                  </div>
+                  <div v-if="message.description" class="message__description">
+                    {{ formatDescription(message) }}
+                  </div>
+                </div>
+                <v-btn
+                  v-if="message.type === 'error'"
+                  class="message__report-button"
+                  color="white"
+                  variant="outlined"
+                  size="small"
+                  prepend-icon="mdi-bug-outline"
+                  :loading="isReportingError(message.id)"
+                  :disabled="isErrorReported(message.id)"
+                  :aria-label="$t('messageCenter.reportError')"
+                  @click.stop="reportError(message)"
+                  @keydown.stop
+                >
+                  {{
+                    isErrorReported(message.id)
+                      ? $t('messageCenter.errorReported')
+                      : $t('messageCenter.reportError')
+                  }}
+                </v-btn>
               </div>
             </template>
           </v-alert>
@@ -153,10 +176,12 @@
 <script lang="ts" setup>
 // #region Imports
 import { useI18n } from 'vue-i18n'
+import { ref } from 'vue'
 import { VSkeletonLoader } from 'vuetify/components'
 import { useSaplingMessageCenter } from '@/composables/system/useSaplingMessageCenter'
 import { useTranslationLoader } from '@/composables/generic/useTranslationLoader'
 import type { Message } from '@/composables/system/useSaplingMessageCenter'
+import ApiGithubService from '@/services/api.github.service'
 import SaplingDialogCard from '@/components/dialog/SaplingDialogCard.vue'
 import SaplingDialogHero from '@/components/common/SaplingDialogHero.vue'
 import SaplingSurface from '@/components/common/SaplingSurface.vue'
@@ -169,6 +194,10 @@ import {
   MESSAGE_CENTER_TRANSLATION_NAMESPACES,
   type MessageTranslator,
 } from '@/utils/messageCenterPresentation'
+import {
+  createErrorIssuePayload,
+  createMessageCenterExportPayload,
+} from '@/utils/messageCenterExport'
 // #endregion
 
 // #region Composable
@@ -188,7 +217,10 @@ const {
   closeDialog,
   getMessageIcon,
   getMessageColor,
+  pushMessage,
 } = useSaplingMessageCenter()
+const reportingErrorIds = ref<Set<number>>(new Set())
+const reportedErrorIds = ref<Set<number>>(new Set())
 
 function formatMessageLabel(message: Message) {
   const entityLabel = getMessageEntityLabel(message.entity, translate, te)
@@ -205,6 +237,11 @@ function formatDescription(message: Message) {
   return formatMessageDescription(message, translate, te)
 }
 
+function formatErrorIssueTitle(message: Message) {
+  const description = formatDescription(message).trim()
+  return message.description.trim() && description ? description : formatMessageLabel(message)
+}
+
 function translateWithFallback(key: string, fallback: string) {
   return te(key) ? t(key) : fallback
 }
@@ -213,19 +250,42 @@ function formatTimestamp(timestamp: Date) {
   return timestamp.toLocaleTimeString()
 }
 
+function isReportingError(messageId: number) {
+  return reportingErrorIds.value.has(messageId)
+}
+
+function isErrorReported(messageId: number) {
+  return reportedErrorIds.value.has(messageId)
+}
+
+async function reportError(message: Message) {
+  if (message.type !== 'error' || isReportingError(message.id) || isErrorReported(message.id)) {
+    return
+  }
+
+  reportingErrorIds.value = new Set([...reportingErrorIds.value, message.id])
+
+  try {
+    await ApiGithubService.createIssue(
+      createErrorIssuePayload(message, formatErrorIssueTitle(message)),
+    )
+    reportedErrorIds.value = new Set([...reportedErrorIds.value, message.id])
+    pushMessage('success', 'issue.createSuccess', 'issue.createSuccessDescription', 'github')
+  } catch {
+    // ApiGithubService already publishes the detailed API error in the message center.
+  } finally {
+    reportingErrorIds.value = new Set(
+      [...reportingErrorIds.value].filter((messageId) => messageId !== message.id),
+    )
+  }
+}
+
 function exportMessages() {
   if (messages.value.length === 0) {
     return
   }
 
-  const exportPayload = {
-    source: 'sapling-log-message-center',
-    exportedAt: new Date().toISOString(),
-    messages: messages.value.map((message) => ({
-      ...message,
-      timestamp: message.timestamp.toISOString(),
-    })),
-  }
+  const exportPayload = createMessageCenterExportPayload(messages.value)
 
   const blob = new Blob([JSON.stringify(exportPayload, null, 2)], {
     type: 'application/json',

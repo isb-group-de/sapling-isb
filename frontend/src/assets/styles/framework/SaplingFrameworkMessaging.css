@@ -868,6 +868,21 @@
   font-size: 0.92em;
 }
 
+.message__content {
+  display: flex;
+  align-items: center;
+  gap: var(--sapling-gap-lg);
+}
+
+.message__body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.message__report-button {
+  flex: 0 0 auto;
+}
+
 .message__title-row {
   display: flex;
   align-items: center;

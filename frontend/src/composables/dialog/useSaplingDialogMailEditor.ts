@@ -305,7 +305,7 @@ export function useSaplingDialogMailEditor() {
     isLoadingSenderOptions.value = true
 
     try {
-      const response = await ApiMailService.listSenders()
+      const response = await ApiMailService.listSenders(context.value?.entityHandle)
       senderOptions.value = response.senders ?? []
       selectedSenderEmail.value =
         senderOptions.value.find((sender) => sender.isDefault)?.email ??

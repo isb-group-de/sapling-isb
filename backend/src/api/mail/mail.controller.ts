@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Post,
+  Query,
   Req,
   SetMetadata,
   UseGuards,
@@ -11,6 +12,7 @@ import {
   ApiBearerAuth,
   ApiBody,
   ApiOperation,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -64,10 +66,17 @@ export class MailController {
     description: 'Available sender addresses grouped by the active provider.',
     type: MailSenderListResponseDto,
   })
+  @ApiQuery({
+    name: 'entityHandle',
+    required: false,
+    description:
+      'Optional entity context used to preselect an assigned shared mailbox.',
+  })
   async listSenders(
     @Req() req: Request & { user: PersonItem },
+    @Query('entityHandle') entityHandle?: string,
   ): Promise<MailSenderListResponseDto> {
-    return this.mailService.listSenderOptions(req.user);
+    return this.mailService.listSenderOptions(req.user, entityHandle);
   }
 
   @Post('preview')

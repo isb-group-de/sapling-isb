@@ -10,6 +10,9 @@ jest.mock('../../entity/PersonItem', () => ({
 jest.mock('../../entity/PersonSessionItem', () => ({
   PersonSessionItem: class PersonSessionItem {},
 }));
+jest.mock('../../entity/SharedMailboxContextItem', () => ({
+  SharedMailboxContextItem: class SharedMailboxContextItem {},
+}));
 
 const graphApiGet = jest.fn<(...args: unknown[]) => Promise<unknown>>();
 const graphApiSelect = jest.fn(() => ({ get: graphApiGet }));
@@ -43,11 +46,15 @@ function createPerson(
   };
 }
 
-function createService(person: ReturnType<typeof createPerson>) {
+function createService(
+  person: ReturnType<typeof createPerson>,
+  context: unknown = null,
+) {
   const em = {
     findOne: jest
       .fn<(...args: unknown[]) => Promise<unknown>>()
-      .mockResolvedValue(person),
+      .mockResolvedValueOnce(person)
+      .mockResolvedValue(context),
   };
   return new MailProviderSessionService(em as never);
 }
@@ -169,6 +176,79 @@ describe('MailProviderSessionService', () => {
     expect(result.senders.map((sender) => sender.email)).not.toContain(
       'legacy@example.com',
     );
+  });
+
+  it('preselects an assigned shared mailbox configured for the entity context', async () => {
+    graphApiGet.mockReset();
+    graphApiGet.mockResolvedValue({
+      displayName: 'ISB - Martin Rosbund',
+      mail: 'martin.rosbund@example.com',
+    });
+    const service = createService(
+      createPerson({ accessToken: 'token', refreshToken: 'refresh' }, [
+        {
+          isActive: true,
+          items: [
+            {
+              title: 'Support',
+              email: 'support@example.com',
+              provider: { handle: 'azure' },
+              isActive: true,
+            },
+          ],
+        },
+      ]),
+      {
+        entity: { handle: 'ticket' },
+        mailbox: { email: 'support@example.com' },
+        isActive: true,
+      },
+    );
+
+    const result = await service.listSenderOptions(
+      { handle: 1 } as never,
+      'ticket',
+    );
+
+    expect(
+      result.senders.find((sender) => sender.email === 'support@example.com')
+        ?.isDefault,
+    ).toBe(true);
+    expect(
+      result.senders.find(
+        (sender) => sender.email === 'martin.rosbund@example.com',
+      )?.isDefault,
+    ).toBe(false);
+  });
+
+  it('keeps the provider default when the configured mailbox is not assigned', async () => {
+    graphApiGet.mockReset();
+    graphApiGet.mockResolvedValue({
+      displayName: 'ISB - Martin Rosbund',
+      mail: 'martin.rosbund@example.com',
+    });
+    const service = createService(
+      createPerson({ accessToken: 'token', refreshToken: 'refresh' }),
+      {
+        entity: { handle: 'ticket' },
+        mailbox: { email: 'support@example.com' },
+        isActive: true,
+      },
+    );
+
+    const result = await service.listSenderOptions(
+      { handle: 1 } as never,
+      'ticket',
+    );
+
+    expect(
+      result.senders.find(
+        (sender) => sender.email === 'martin.rosbund@example.com',
+      )?.isDefault,
+    ).toBe(true);
+    expect(
+      result.senders.some((sender) => sender.email === 'support@example.com'),
+    ).toBe(false);
   });
 
   it('rejects Azure aliases that are not configured shared mailboxes', async () => {

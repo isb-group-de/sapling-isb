@@ -1,0 +1,62 @@
+[
+  {
+    "entity": "navigation",
+    "property": "sharedMailboxContext",
+    "de": "Shared-Mailbox-Standards",
+    "en": "Shared mailbox defaults"
+  },
+  {
+    "entity": "sharedMailboxContext",
+    "property": "entity",
+    "de": "Kontext",
+    "en": "Context"
+  },
+  {
+    "entity": "sharedMailboxContext",
+    "property": "mailbox",
+    "de": "Standard-Postfach",
+    "en": "Default mailbox"
+  },
+  {
+    "entity": "sharedMailboxContext",
+    "property": "isActive",
+    "de": "Aktiv",
+    "en": "Active"
+  },
+  {
+    "entity": "sharedMailboxContext",
+    "property": "groupReference",
+    "de": "Zuordnung",
+    "en": "Assignment"
+  },
+  {
+    "entity": "sharedMailboxContext",
+    "property": "groupConfiguration",
+    "de": "Konfiguration",
+    "en": "Configuration"
+  },
+  {
+    "entity": "sharedMailboxContext",
+    "property": "createdAt",
+    "de": "Erstellt am",
+    "en": "Created at"
+  },
+  {
+    "entity": "sharedMailboxContext",
+    "property": "updatedAt",
+    "de": "Aktualisiert am",
+    "en": "Updated at"
+  },
+  {
+    "entity": "messageCenter",
+    "property": "reportError",
+    "de": "Fehler melden",
+    "en": "Report error"
+  },
+  {
+    "entity": "messageCenter",
+    "property": "errorReported",
+    "de": "Fehler gemeldet",
+    "en": "Error reported"
+  }
+]

@@ -136,6 +136,7 @@ import { HolidayItem } from '../HolidayItem';
 import { HolidayGroupItem } from '../HolidayGroupItem';
 import { SharedMailboxGroupItem } from '../SharedMailboxGroupItem';
 import { SharedMailboxItem } from '../SharedMailboxItem';
+import { SharedMailboxContextItem } from '../SharedMailboxContextItem';
 import { EmailInboxSubscriptionItem } from '../EmailInboxSubscriptionItem';
 import { EmailInboxProcessingModeItem } from '../EmailInboxProcessingModeItem';
 import { InboundEmailItem } from '../InboundEmailItem';
@@ -298,6 +299,7 @@ const ENTITY_REGISTRY_ENTRIES: { name: string; class: any }[] = [
   { name: 'marketingCampaignType', class: MarketingCampaignTypeItem },
   { name: 'sharedMailboxGroup', class: SharedMailboxGroupItem },
   { name: 'sharedMailbox', class: SharedMailboxItem },
+  { name: 'sharedMailboxContext', class: SharedMailboxContextItem },
   { name: 'emailInboxSubscription', class: EmailInboxSubscriptionItem },
   { name: 'emailInboxProcessingMode', class: EmailInboxProcessingModeItem },
   { name: 'inboundEmailStatus', class: InboundEmailStatusItem },

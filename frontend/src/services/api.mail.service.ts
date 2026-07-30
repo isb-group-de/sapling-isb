@@ -67,9 +67,11 @@ class ApiMailService {
     }
   }
 
-  static async listSenders(): Promise<MailSenderListResult> {
+  static async listSenders(entityHandle?: string): Promise<MailSenderListResult> {
     try {
-      const response = await axios.get<MailSenderListResult>(buildApiUrl('mail/senders'))
+      const response = await axios.get<MailSenderListResult>(buildApiUrl('mail/senders'), {
+        params: entityHandle ? { entityHandle } : undefined,
+      })
 
       return response.data
     } catch (error) {
