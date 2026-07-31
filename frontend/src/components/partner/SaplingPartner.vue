@@ -35,6 +35,7 @@
                 :side-panel-visible="isFilterPanelVisible"
                 :side-panel-toggle-label="filterPanelToggleLabel"
                 :open-edit-handle="openEditHandle"
+                sync-edit-dialog-with-route
                 side-panel-toggle-icon="mdi-account-group-outline"
                 :parent-filter="parentFilter"
                 :table-key="tableKey"

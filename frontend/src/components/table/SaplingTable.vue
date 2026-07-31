@@ -302,12 +302,12 @@ import {
   type UseSaplingTableEmit,
   type UseSaplingTableProps,
 } from '@/composables/table/useSaplingTableComponent'
+import { useSaplingTableRouteDialogSync } from '@/composables/table/useSaplingTableRouteDialogSync'
 import { useCurrentPersonStore } from '@/stores/currentPersonStore'
 import type {
   FormConfigMenuItem,
   FormConfigSelectionHandle,
 } from '@/composables/dialog/saplingDialogEdit.utils'
-import { clearRouteQueryParameter, setRouteQueryParameter } from '@/utils/routerNavigation'
 import { saplingTableDisplayContextKey } from './saplingTableDisplayContext'
 // #endregion
 
@@ -329,6 +329,7 @@ type SaplingTableProps = UseSaplingTableProps & {
   formConfigMenuItems?: FormConfigMenuItem[]
   selectedFormConfigLabel?: string
   isLoadingFormConfigs?: boolean
+  syncEditDialogWithRoute?: boolean
 }
 
 type SaplingTableEmit = UseSaplingTableEmit & {
@@ -341,6 +342,7 @@ const props = withDefaults(defineProps<SaplingTableProps>(), {
   showToolbar: true,
   showSelectionToolbar: true,
   rowInteraction: true,
+  syncEditDialogWithRoute: false,
 })
 const emit = defineEmits<SaplingTableEmit>()
 const { t } = useI18n()
@@ -510,23 +512,12 @@ const {
   closeDeleteDialog,
 } = useSaplingTableComponent(props, emit)
 
-let routeEditDialogHandle: string | null = null
-
-watch(
-  () => [editDialog.value.visible, editDialog.value.item?.handle] as const,
-  ([isVisible, handle], [wasVisible]) => {
-    if (isVisible && (typeof handle === 'string' || typeof handle === 'number')) {
-      routeEditDialogHandle = String(handle)
-      void setRouteQueryParameter(router, route, 'open', handle)
-      return
-    }
-
-    if (wasVisible && !isVisible && routeEditDialogHandle !== null) {
-      routeEditDialogHandle = null
-      void clearRouteQueryParameter(router, route, 'open')
-    }
-  },
-)
+useSaplingTableRouteDialogSync({
+  enabled: () => props.syncEditDialogWithRoute,
+  editDialog,
+  router,
+  getRoute: () => route,
+})
 
 provide(saplingTableDisplayContextKey, {
   isMobileTable,

@@ -19,6 +19,7 @@
     :selected-form-config-label="selectedFormConfigLabel"
     :is-loading-form-configs="isLoadingFormConfigs"
     :open-edit-handle="openEditHandle"
+    sync-edit-dialog-with-route
     :show-actions="true"
     :multi-select="true"
     :show-favorite="true"

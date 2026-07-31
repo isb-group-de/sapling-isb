@@ -280,6 +280,12 @@ Table orchestration regression coverage is split into a shared harness plus
 initialization/loading and route/filter suites; add scenarios to the matching
 suite rather than rebuilding the harness.
 
+Only route-level primary tables, including generic table and partner views,
+synchronize their edit dialog with the `open` query parameter. Tables embedded
+in relation tabs or selector menus keep their edit dialogs local, so opening a
+related record does not replace the parent record encoded by `open`. The
+calendar owns equivalent synchronization for its primary Event dialog.
+
 Common responsibilities:
 
 - loading pages
