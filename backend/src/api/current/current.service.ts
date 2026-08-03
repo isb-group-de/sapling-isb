@@ -1,4 +1,4 @@
-import { Injectable, Optional } from '@nestjs/common';
+import { BadRequestException, Injectable, Optional } from '@nestjs/common';
 import { EntityManager } from '@mikro-orm/core';
 import { PersonItem } from '../../entity/PersonItem';
 import type { TicketItem } from '../../entity/TicketItem';
@@ -21,6 +21,11 @@ import {
 } from './current-open-task.service';
 import { CurrentStarterWorkspaceService } from './current-starter-workspace.service';
 import { SecurityPrincipalCacheService } from './security-principal-cache.service';
+import { DashboardItem } from '../../entity/DashboardItem';
+import type {
+  DashboardLayoutResultDto,
+  UpdateDashboardLayoutDto,
+} from './dto/dashboard-layout.dto';
 
 export type { OpenTaskSnapshot } from './current-open-task.service';
 
@@ -209,6 +214,71 @@ export class CurrentService {
     this.securityPrincipalCache?.invalidate(user.handle);
 
     return (await this.getPerson(person)) ?? person;
+  }
+
+  /**
+   * Atomically stores the full dashboard-tab and KPI-card order for the current person.
+   * The complete layout is required so a partial or foreign dashboard can never be mixed in.
+   */
+  async updateDashboardLayout(
+    user: Pick<PersonItem, 'handle'>,
+    dto: UpdateDashboardLayoutDto,
+  ): Promise<DashboardLayoutResultDto> {
+    if (user.handle == null || !Array.isArray(dto?.dashboards)) {
+      throw new BadRequestException('dashboard.invalidLayout');
+    }
+
+    return this.em.transactional(async (em) => {
+      const dashboards = await em.find(
+        DashboardItem,
+        { person: { handle: user.handle } },
+        { populate: ['kpis'] },
+      );
+      const dashboardByHandle = new Map(
+        dashboards.flatMap((dashboard) =>
+          dashboard.handle == null
+            ? []
+            : [[dashboard.handle, dashboard] as const],
+        ),
+      );
+      const requestedHandles = dto.dashboards.map((entry) => entry.handle);
+
+      if (
+        requestedHandles.length !== dashboards.length ||
+        new Set(requestedHandles).size !== requestedHandles.length ||
+        requestedHandles.some((handle) => !dashboardByHandle.has(handle))
+      ) {
+        throw new BadRequestException('dashboard.invalidLayout');
+      }
+
+      dto.dashboards.forEach((entry, index) => {
+        const dashboard = dashboardByHandle.get(entry.handle);
+        if (!dashboard || !Array.isArray(entry.kpiOrder)) {
+          throw new BadRequestException('dashboard.invalidLayout');
+        }
+
+        const assignedKpiHandles = dashboard.kpis
+          .getItems()
+          .flatMap((kpi) => (kpi.handle == null ? [] : [kpi.handle]));
+        const assignedKpiSet = new Set(assignedKpiHandles);
+        if (
+          entry.kpiOrder.length !== assignedKpiHandles.length ||
+          new Set(entry.kpiOrder).size !== entry.kpiOrder.length ||
+          entry.kpiOrder.some((handle) => !assignedKpiSet.has(handle))
+        ) {
+          throw new BadRequestException('dashboard.invalidLayout');
+        }
+
+        dashboard.sortOrder = (index + 1) * 100;
+        dashboard.kpiOrder = [...entry.kpiOrder];
+      });
+
+      await em.flush();
+      return {
+        updatedCount: dashboards.length,
+        dashboardHandles: requestedHandles,
+      };
+    });
   }
 
   async getCurrentSessions(

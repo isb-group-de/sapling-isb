@@ -34,6 +34,30 @@ export function useSaplingKpis(
     onKpisChange?.([...nextKpis])
   }
 
+  async function persistKpiOrder(nextKpis: KPIItem[]) {
+    const currentDashboard = toValue(dashboard)
+    if (currentDashboard.handle == null) {
+      return
+    }
+
+    await ApiGenericService.update('dashboard', currentDashboard.handle, {
+      kpiOrder: nextKpis.map((kpi) => kpi.handle),
+    })
+  }
+
+  function reorderKpis(draggedHandle: number, targetHandle: number) {
+    const fromIndex = kpis.value.findIndex((kpi) => kpi.handle === draggedHandle)
+    const targetIndex = kpis.value.findIndex((kpi) => kpi.handle === targetHandle)
+    if (fromIndex < 0 || targetIndex < 0 || fromIndex === targetIndex) {
+      return
+    }
+
+    const nextKpis = [...kpis.value]
+    const [movedKpi] = nextKpis.splice(fromIndex, 1)
+    nextKpis.splice(targetIndex, 0, movedKpi)
+    updateKpis(nextKpis)
+  }
+
   /**
    * Closes the add-KPI dialog and clears the current selection.
    */
@@ -71,7 +95,9 @@ export function useSaplingKpis(
         kpiToDelete.value.handle,
       )
 
-      updateKpis(kpis.value.filter((kpi) => kpi.handle !== kpiToDelete.value?.handle))
+      const nextKpis = kpis.value.filter((kpi) => kpi.handle !== kpiToDelete.value?.handle)
+      updateKpis(nextKpis)
+      await persistKpiOrder(nextKpis)
     }
 
     cancelKpiDelete()
@@ -120,7 +146,9 @@ export function useSaplingKpis(
       )
 
       if (!kpis.value.some((kpi) => kpi.handle === createdKpi.handle)) {
-        updateKpis([...kpis.value, createdKpi])
+        const nextKpis = [...kpis.value, createdKpi]
+        updateKpis(nextKpis)
+        await persistKpiOrder(nextKpis)
       }
 
       closeAddKpiDialog()
@@ -142,6 +170,7 @@ export function useSaplingKpis(
     confirmKpiDelete,
     cancelKpiDelete,
     openAddKpiDialog,
+    reorderKpis,
   }
   // #endregion
 }

@@ -73,6 +73,20 @@ export interface TerminateSessionsResult {
   sessions: CurrentSessionDto[]
 }
 
+export interface DashboardLayoutEntry {
+  handle: number
+  kpiOrder: number[]
+}
+
+export interface UpdateDashboardLayoutPayload {
+  dashboards: DashboardLayoutEntry[]
+}
+
+export interface DashboardLayoutResult {
+  updatedCount: number
+  dashboardHandles: number[]
+}
+
 class ApiCurrentService {
   static async getPerson(): Promise<PersonItem> {
     return this.get<PersonItem>('person')
@@ -121,6 +135,12 @@ class ApiCurrentService {
 
   static async markInboxNotificationRead(handle: string | number): Promise<InboxNotificationItem> {
     return this.post<InboxNotificationItem>(`inboxNotification/${handle}/read`)
+  }
+
+  static async updateDashboardLayout(
+    payload: UpdateDashboardLayoutPayload,
+  ): Promise<DashboardLayoutResult> {
+    return this.patch<DashboardLayoutResult>('dashboardLayout', payload)
   }
 
   private static async get<T>(path: string): Promise<T> {

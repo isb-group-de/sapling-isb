@@ -1,6 +1,7 @@
 import { Collection } from '@mikro-orm/core';
 import {
   Entity,
+  Index,
   ManyToMany,
   ManyToOne,
   Property,
@@ -19,12 +20,18 @@ import { type Rel } from '@mikro-orm/core';
  *
  * @property        {number}                handle      Unique identifier for the dashboard (primary key)
  * @property        {string}                name        Name of the dashboard
+ * @property        {number}                sortOrder   User-defined tab position
+ * @property        {number[]}              kpiOrder    User-defined KPI positions
  * @property        {PersonItem}            person      The person this dashboard belongs to
  * @property        {Collection<KpiItem>}   kpis        KPIs associated with this dashboard
  * @property        {Date}                  createdAt   Date and time when the dashboard was created
  * @property        {Date}                  updatedAt   Date and time when the dashboard was last updated
  */
 @Entity()
+@Index({
+  name: 'dashboard_item_person_sort_order_index',
+  properties: ['person', 'sortOrder', 'handle'],
+})
 export class DashboardItem {
   // #region Properties: Persisted
   /**
@@ -54,6 +61,38 @@ export class DashboardItem {
   })
   @Property({ length: 128, nullable: false })
   name!: string;
+
+  /** User-defined position of this dashboard in the tab strip. */
+  @ApiProperty({ default: 100 })
+  @SaplingForm({
+    order: 110,
+    group: 'dashboard.groupBasics',
+    groupOrder: 100,
+    width: 1,
+    visible: false,
+    tableOrder: 110,
+    tableVisible: false,
+    mobileOrder: 110,
+    mobileVisible: false,
+  })
+  @Property({ nullable: false, default: 100 })
+  sortOrder = 100;
+
+  /** Ordered KPI handles for this dashboard. */
+  @ApiProperty({ type: [Number], default: [] })
+  @SaplingForm({
+    order: 120,
+    group: 'dashboard.groupBasics',
+    groupOrder: 100,
+    width: 1,
+    visible: false,
+    tableOrder: 120,
+    tableVisible: false,
+    mobileOrder: 120,
+    mobileVisible: false,
+  })
+  @Property({ type: 'json', nullable: false, default: '[]' })
+  kpiOrder: number[] = [];
   // #endregion
 
   // #region Properties: Relation

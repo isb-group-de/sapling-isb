@@ -1,0 +1,130 @@
+[
+  {
+    "name": "My Support Operations",
+    "description": "Persönliche Alternative der Support-Vorlage mit auf den aktuellen Benutzer gefilterten Tickets.",
+    "isShared": true,
+    "person": 1,
+    "kpis": [
+      "Meine offene Tickets",
+      "Meine Tickets nach Priorität",
+      "Meine gelöste Tickets Jahresvergleich",
+      "Meine neue Tickets pro Monat",
+      "Meine Ticketbestand nach Status",
+      "Meine Ticketeingang Monatsvergleich"
+    ],
+    "createdAt": "2026-08-03T09:00:00.000Z",
+    "updatedAt": "2026-08-03T09:00:00.000Z"
+  },
+  {
+    "name": "My Sales Pipeline",
+    "description": "Persönliche Alternative der Vertriebs-Vorlage mit den zugewiesenen Vertriebschancen.",
+    "isShared": true,
+    "person": 1,
+    "kpis": [
+      "Mein Pipeline-Umsatz aktiv",
+      "Meine Vertriebschancen nach Forecast",
+      "Meine Abschlüsse Jahresvergleich",
+      "Meine neue Vertriebschancen pro Monat",
+      "Meine Pipeline nach Phase",
+      "Meine neue Chancen Monatsvergleich"
+    ],
+    "createdAt": "2026-08-03T09:01:00.000Z",
+    "updatedAt": "2026-08-03T09:01:00.000Z"
+  },
+  {
+    "name": "My Event Coordination",
+    "description": "Persönliche Alternative der Event-Vorlage mit den zugewiesenen Terminen.",
+    "isShared": true,
+    "person": 1,
+    "kpis": [
+      "Meine ganztägigen Events",
+      "Meine Events nach Status",
+      "Meine Eventvolumen Jahresvergleich",
+      "Meine Events pro Monat",
+      "Meine Eventmix nach Typ",
+      "Meine Eventvolumen Monatsvergleich"
+    ],
+    "createdAt": "2026-08-03T09:02:00.000Z",
+    "updatedAt": "2026-08-03T09:02:00.000Z"
+  },
+  {
+    "name": "My Contracts & Products",
+    "description": "Persönliche Firmensicht auf Verträge und die damit verbundenen Produkte.",
+    "isShared": true,
+    "person": 1,
+    "kpis": [
+      "Meine aktiven Verträge",
+      "Meine Produkte nach Version",
+      "Meine Vertragsstarts Jahresvergleich",
+      "Meine neuen Produkte pro Monat",
+      "Meine Verträge nach Firma",
+      "Meine Produktanlage Monatsvergleich"
+    ],
+    "createdAt": "2026-08-03T09:03:00.000Z",
+    "updatedAt": "2026-08-03T09:03:00.000Z"
+  },
+  {
+    "name": "Internal Operations",
+    "description": "Allgemeine Vorlage für Volumen, Status, Kategorien und Entwicklung interner Vorgänge.",
+    "isShared": true,
+    "person": 1,
+    "kpis": [
+      "Offene interne Vorgänge",
+      "Interne Vorgänge nach Status",
+      "Interne Vorgänge Jahresvergleich",
+      "Interne Vorgänge pro Monat",
+      "Interne Vorgänge nach Kategorie",
+      "Interne Vorgänge Monatsvergleich"
+    ],
+    "createdAt": "2026-08-03T09:04:00.000Z",
+    "updatedAt": "2026-08-03T09:04:00.000Z"
+  },
+  {
+    "name": "My Internal Operations",
+    "description": "Persönliche Vorlage für die dem aktuellen Benutzer zugewiesenen internen Vorgänge.",
+    "isShared": true,
+    "person": 1,
+    "kpis": [
+      "Meine offenen internen Vorgänge",
+      "Meine internen Vorgänge nach Status",
+      "Meine internen Vorgänge Jahresvergleich",
+      "Meine internen Vorgänge pro Monat",
+      "Meine internen Vorgänge nach Kategorie",
+      "Meine internen Vorgänge Monatsvergleich"
+    ],
+    "createdAt": "2026-08-03T09:05:00.000Z",
+    "updatedAt": "2026-08-03T09:05:00.000Z"
+  },
+  {
+    "name": "Effort Estimation",
+    "description": "Allgemeine Vorlage für aktive Aufwandsschätzungen, Stunden, Status und Entwicklung.",
+    "isShared": true,
+    "person": 1,
+    "kpis": [
+      "Aktive Aufwandsschätzungen",
+      "Geschätzter Gesamtaufwand",
+      "Aufwandsschätzungen nach Status",
+      "Aufwandsschätzungen pro Monat",
+      "Aktive Aufwandsschätzungen nach Kundenfirma",
+      "Aufwandsschätzungen Monatsvergleich"
+    ],
+    "createdAt": "2026-08-03T09:06:00.000Z",
+    "updatedAt": "2026-08-03T09:06:00.000Z"
+  },
+  {
+    "name": "My Effort Estimation",
+    "description": "Persönliche Vorlage für die dem aktuellen Benutzer zugewiesenen Aufwandsschätzungen.",
+    "isShared": true,
+    "person": 1,
+    "kpis": [
+      "Meine aktiven Aufwandsschätzungen",
+      "Mein geschätzter Gesamtaufwand",
+      "Meine Aufwandsschätzungen nach Status",
+      "Meine Aufwandsschätzungen pro Monat",
+      "Meine aktiven Aufwandsschätzungen nach Kundenfirma",
+      "Meine Aufwandsschätzungen Monatsvergleich"
+    ],
+    "createdAt": "2026-08-03T09:07:00.000Z",
+    "updatedAt": "2026-08-03T09:07:00.000Z"
+  }
+]

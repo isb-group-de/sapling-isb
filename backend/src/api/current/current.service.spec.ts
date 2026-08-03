@@ -15,13 +15,17 @@ jest.mock('../../entity/SalesOpportunityItem', () => ({
 }));
 jest.mock('../../entity/DashboardItem', () => ({
   DashboardItem: class {
+    handle?: number;
     name?: string;
     person?: unknown;
+    sortOrder = 100;
+    kpiOrder: number[] = [];
     kpis = {
       items: [] as unknown[],
       add: (...items: unknown[]) => {
         this.kpis.items.push(...items);
       },
+      getItems: () => this.kpis.items,
     };
   },
 }));
@@ -140,6 +144,8 @@ describe('CurrentService', () => {
       expect.objectContaining({
         name: 'Support Cockpit',
         person: hydratedPerson,
+        sortOrder: 100,
+        kpiOrder: [101, 102],
       }),
     );
     expect(persistedDashboard?.kpis.items).toEqual([
@@ -157,6 +163,83 @@ describe('CurrentService', () => {
     );
     expect(flush).toHaveBeenCalledTimes(1);
     expect(result).toEqual({ handle: 7, roles: [] });
+  });
+
+  it('atomically persists the complete dashboard and KPI order for the current person', async () => {
+    const first = {
+      handle: 3,
+      person: { handle: 7 },
+      sortOrder: 100,
+      kpiOrder: [31, 32],
+      kpis: { getItems: () => [{ handle: 31 }, { handle: 32 }] },
+    };
+    const second = {
+      handle: 8,
+      person: { handle: 7 },
+      sortOrder: 200,
+      kpiOrder: [81],
+      kpis: { getItems: () => [{ handle: 81 }] },
+    };
+    const flush = jest.fn<() => Promise<void>>().mockResolvedValue();
+    const transactional = jest.fn(
+      async (callback: (transactionEm: unknown) => Promise<unknown>) =>
+        callback({
+          find: jest
+            .fn<(...args: unknown[]) => Promise<unknown[]>>()
+            .mockResolvedValue([first, second]),
+          flush,
+        }),
+    );
+    const service = new CurrentService({ transactional } as never, {} as never);
+
+    await expect(
+      service.updateDashboardLayout(
+        { handle: 7 },
+        {
+          dashboards: [
+            { handle: 8, kpiOrder: [81] },
+            { handle: 3, kpiOrder: [32, 31] },
+          ],
+        },
+      ),
+    ).resolves.toEqual({ updatedCount: 2, dashboardHandles: [8, 3] });
+
+    expect(second).toEqual(
+      expect.objectContaining({ sortOrder: 100, kpiOrder: [81] }),
+    );
+    expect(first).toEqual(
+      expect.objectContaining({ sortOrder: 200, kpiOrder: [32, 31] }),
+    );
+    expect(flush).toHaveBeenCalledTimes(1);
+  });
+
+  it('rejects layouts that omit a dashboard or contain an invalid KPI assignment', async () => {
+    const transactional = jest.fn(
+      async (callback: (transactionEm: unknown) => Promise<unknown>) =>
+        callback({
+          find: jest
+            .fn<(...args: unknown[]) => Promise<unknown[]>>()
+            .mockResolvedValue([
+              {
+                handle: 3,
+                kpis: { getItems: () => [{ handle: 31 }] },
+              },
+              {
+                handle: 8,
+                kpis: { getItems: () => [{ handle: 81 }] },
+              },
+            ]),
+          flush: jest.fn(),
+        }),
+    );
+    const service = new CurrentService({ transactional } as never, {} as never);
+
+    await expect(
+      service.updateDashboardLayout(
+        { handle: 7 },
+        { dashboards: [{ handle: 3, kpiOrder: [999] }] },
+      ),
+    ).rejects.toMatchObject({ message: 'dashboard.invalidLayout' });
   });
 
   it('builds an open-task snapshot from the assigned records and unread notifications', async () => {

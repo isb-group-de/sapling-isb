@@ -3,6 +3,7 @@ import { EntityManager } from '@mikro-orm/core';
 import type { EntityName } from '@mikro-orm/core';
 import { Seeder } from '@mikro-orm/seeder';
 import { EntityRouteItem } from '../../entity/EntityRouteItem';
+import { KpiItem } from '../../entity/KpiItem';
 import { ENTITY_REGISTRY } from '../../entity/global/entity.registry';
 import { getSaplingOptions } from '../../entity/global/entity.decorator';
 import { SeedScriptItem } from '../../entity/SeedScriptItem';
@@ -141,6 +142,10 @@ export class GenericSeeder extends Seeder {
   ): Promise<object> {
     const normalizedItem = this.normalizePhoneSeedFields(item);
 
+    if (entityHandle === 'dashboardTemplate') {
+      return this.resolveDashboardTemplateKpis(normalizedItem, em);
+    }
+
     if (entityHandle !== 'favorite' && entityHandle !== 'favoriteTemplate') {
       return normalizedItem;
     }
@@ -176,6 +181,42 @@ export class GenericSeeder extends Seeder {
     return {
       ...seedItem,
       entityRoute: entityRoute.handle,
+    };
+  }
+
+  private async resolveDashboardTemplateKpis(
+    item: object,
+    em: EntityManager,
+  ): Promise<object> {
+    const seedItem = item as { kpis?: unknown[] };
+
+    if (!Array.isArray(seedItem.kpis)) {
+      return item;
+    }
+
+    const resolvedKpis = await Promise.all(
+      seedItem.kpis.map(async (kpiReference) => {
+        if (typeof kpiReference !== 'string') {
+          throw new Error(
+            'Dashboard template seeding failed. KPI references must use names.',
+          );
+        }
+
+        const kpi = await em.findOne(KpiItem, { name: kpiReference });
+
+        if (!kpi) {
+          throw new Error(
+            `Dashboard template seeding failed. Unknown KPI: ${kpiReference}`,
+          );
+        }
+
+        return kpi;
+      }),
+    );
+
+    return {
+      ...seedItem,
+      kpis: resolvedKpis,
     };
   }
 

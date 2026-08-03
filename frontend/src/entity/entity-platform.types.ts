@@ -10,6 +10,10 @@ export interface DashboardItem extends SaplingGenericItem {
   handle: number | null
   /** Name of the dashboard */
   name: string
+  /** User-defined position in the dashboard tab strip */
+  sortOrder?: number | null
+  /** User-defined order of assigned KPI handles */
+  kpiOrder?: number[] | null
   /** The person this dashboard belongs to */
   person: PersonItem | number | null
   /** KPIs associated with this dashboard */

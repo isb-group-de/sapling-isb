@@ -41,8 +41,8 @@ export class CurrentStarterWorkspaceService {
     ]);
     const dashboards =
       dashboardCount === 0
-        ? dashboardTemplates.map((template) =>
-            this.createDashboard(person, template),
+        ? dashboardTemplates.map((template, index) =>
+            this.createDashboard(person, template, index),
           )
         : [];
     const favorites =
@@ -79,13 +79,17 @@ export class CurrentStarterWorkspaceService {
   private createDashboard(
     person: PersonItem,
     template: DashboardTemplateItem,
+    index: number,
   ): DashboardItem {
     const dashboard = new DashboardItem();
     dashboard.name = template.name;
     dashboard.person = person;
-    this.getCollectionItems<KpiItem>(template.kpis).forEach((kpi) =>
-      dashboard.kpis.add(kpi),
+    dashboard.sortOrder = (index + 1) * 100;
+    const kpis = this.getCollectionItems<KpiItem>(template.kpis);
+    dashboard.kpiOrder = kpis.flatMap((kpi) =>
+      kpi.handle == null ? [] : [kpi.handle],
     );
+    kpis.forEach((kpi) => dashboard.kpis.add(kpi));
     return dashboard;
   }
 

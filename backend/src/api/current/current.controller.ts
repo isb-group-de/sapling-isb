@@ -48,6 +48,10 @@ import type {
 } from './current.service';
 import { FieldPermissionService } from './field-permission.service';
 import { GenericSanitizerService } from '../generic/generic-sanitizer.service';
+import {
+  DashboardLayoutResultDto,
+  UpdateDashboardLayoutDto,
+} from './dto/dashboard-layout.dto';
 
 /**
  * @class
@@ -240,6 +244,28 @@ export class CurrentController {
       updated,
       user,
       template,
+    );
+  }
+
+  @Patch('dashboardLayout')
+  @ApiOperation({
+    summary: 'Update current dashboard layout',
+    description:
+      'Atomically stores the complete dashboard-tab order and KPI-card order for the authenticated user.',
+  })
+  @ApiBody({ type: UpdateDashboardLayoutDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Dashboard layout updated successfully.',
+    type: DashboardLayoutResultDto,
+  })
+  updateDashboardLayout(
+    @Req() req: Request,
+    @Body() dto: UpdateDashboardLayoutDto,
+  ): Promise<DashboardLayoutResultDto> {
+    return this.currentService.updateDashboardLayout(
+      req.user as PersonItem,
+      dto,
     );
   }
 

@@ -1,0 +1,387 @@
+[
+  {
+    "name": "Meine aktiven Verträge",
+    "description": "Persönliche Firmensicht: Anzahl der aktiven Verträge der eigenen Firma.",
+    "aggregation": "COUNT",
+    "field": "handle",
+    "type": "ITEM",
+    "targetEntity": "contract",
+    "groupBy": null,
+    "timeframe": null,
+    "filter": {
+      "$and": [
+        { "is_active": true },
+        { "company": "{{currentUser.company.handle}}" }
+      ]
+    },
+    "timeframeField": null
+  },
+  {
+    "name": "Meine Produkte nach Version",
+    "description": "Persönliche Firmensicht: Verteilung der vertraglich zugeordneten Produkte nach Versionsstand.",
+    "aggregation": "COUNT",
+    "field": "version",
+    "type": "LIST",
+    "targetEntity": "product",
+    "groupBy": ["version"],
+    "timeframe": null,
+    "filter": { "contracts": { "company": "{{currentUser.company.handle}}" } },
+    "timeframeField": null
+  },
+  {
+    "name": "Meine Vertragsstarts Jahresvergleich",
+    "description": "Persönliche Firmensicht: Vertragsstarts der eigenen Firma im aktuellen und vorherigen Jahr.",
+    "aggregation": "COUNT",
+    "field": "handle",
+    "type": "TREND",
+    "targetEntity": "contract",
+    "groupBy": null,
+    "timeframe": "YEAR",
+    "filter": { "company": "{{currentUser.company.handle}}" },
+    "timeframeField": "start_date"
+  },
+  {
+    "name": "Meine neuen Produkte pro Monat",
+    "description": "Persönliche Firmensicht: Monatliche Anlage vertraglich zugeordneter Produkte im laufenden Jahr.",
+    "aggregation": "COUNT",
+    "field": "handle",
+    "type": "SPARKLINE",
+    "targetEntity": "product",
+    "groupBy": null,
+    "timeframe": "YEAR",
+    "timeframeInterval": "MONTH",
+    "filter": { "contracts": { "company": "{{currentUser.company.handle}}" } },
+    "timeframeField": "created_at"
+  },
+  {
+    "name": "Meine Verträge nach Firma",
+    "description": "Persönliche Firmensicht: Breakdown des Vertragsbestands für die eigene Firma.",
+    "aggregation": "COUNT",
+    "field": "company.name",
+    "type": "BREAKDOWN",
+    "targetEntity": "contract",
+    "groupBy": ["company"],
+    "timeframe": null,
+    "filter": { "company": "{{currentUser.company.handle}}" },
+    "timeframeField": null,
+    "relationField": "title"
+  },
+  {
+    "name": "Meine Produktanlage Monatsvergleich",
+    "description": "Persönliche Firmensicht: Neue vertraglich zugeordnete Produkte im aktuellen versus vorherigen Monat.",
+    "aggregation": "COUNT",
+    "field": "handle",
+    "type": "COMPARISON",
+    "targetEntity": "product",
+    "groupBy": null,
+    "timeframe": "MONTH",
+    "filter": { "contracts": { "company": "{{currentUser.company.handle}}" } },
+    "timeframeField": "created_at"
+  },
+  {
+    "name": "Offene interne Vorgänge",
+    "description": "Anzahl aller internen Vorgänge mit einem offenen Bearbeitungsstatus.",
+    "aggregation": "COUNT",
+    "field": "handle",
+    "type": "ITEM",
+    "targetEntity": "internalCase",
+    "groupBy": null,
+    "timeframe": null,
+    "filter": { "status": { "isOpen": true } },
+    "timeframeField": null
+  },
+  {
+    "name": "Interne Vorgänge nach Status",
+    "description": "Verteilung der internen Vorgänge nach Bearbeitungsstatus.",
+    "aggregation": "COUNT",
+    "field": "status.description",
+    "type": "LIST",
+    "targetEntity": "internalCase",
+    "groupBy": ["status"],
+    "timeframe": null,
+    "timeframeField": null,
+    "relationField": "handle"
+  },
+  {
+    "name": "Interne Vorgänge Jahresvergleich",
+    "description": "Neu angelegte interne Vorgänge im aktuellen und vorherigen Jahr.",
+    "aggregation": "COUNT",
+    "field": "handle",
+    "type": "TREND",
+    "targetEntity": "internalCase",
+    "groupBy": null,
+    "timeframe": "YEAR",
+    "timeframeField": "created_at"
+  },
+  {
+    "name": "Interne Vorgänge pro Monat",
+    "description": "Monatliche Entwicklung neu angelegter interner Vorgänge im laufenden Jahr.",
+    "aggregation": "COUNT",
+    "field": "handle",
+    "type": "SPARKLINE",
+    "targetEntity": "internalCase",
+    "groupBy": null,
+    "timeframe": "YEAR",
+    "timeframeInterval": "MONTH",
+    "timeframeField": "created_at"
+  },
+  {
+    "name": "Interne Vorgänge nach Kategorie",
+    "description": "Breakdown der internen Vorgänge nach organisatorischer Kategorie.",
+    "aggregation": "COUNT",
+    "field": "category.title",
+    "type": "BREAKDOWN",
+    "targetEntity": "internalCase",
+    "groupBy": ["category"],
+    "timeframe": null,
+    "timeframeField": null,
+    "relationField": "handle"
+  },
+  {
+    "name": "Interne Vorgänge Monatsvergleich",
+    "description": "Neu angelegte interne Vorgänge im aktuellen versus vorherigen Monat.",
+    "aggregation": "COUNT",
+    "field": "handle",
+    "type": "COMPARISON",
+    "targetEntity": "internalCase",
+    "groupBy": null,
+    "timeframe": "MONTH",
+    "timeframeField": "created_at"
+  },
+  {
+    "name": "Meine offenen internen Vorgänge",
+    "description": "Persönliche Sicht: Anzahl der eigenen internen Vorgänge mit einem offenen Bearbeitungsstatus.",
+    "aggregation": "COUNT",
+    "field": "handle",
+    "type": "ITEM",
+    "targetEntity": "internalCase",
+    "groupBy": null,
+    "timeframe": null,
+    "filter": {
+      "$and": [
+        { "status": { "isOpen": true } },
+        { "responsiblePerson": "{{currentUser.handle}}" }
+      ]
+    },
+    "timeframeField": null
+  },
+  {
+    "name": "Meine internen Vorgänge nach Status",
+    "description": "Persönliche Sicht: Verteilung der eigenen internen Vorgänge nach Bearbeitungsstatus.",
+    "aggregation": "COUNT",
+    "field": "status.description",
+    "type": "LIST",
+    "targetEntity": "internalCase",
+    "groupBy": ["status"],
+    "timeframe": null,
+    "filter": { "responsiblePerson": "{{currentUser.handle}}" },
+    "timeframeField": null,
+    "relationField": "handle"
+  },
+  {
+    "name": "Meine internen Vorgänge Jahresvergleich",
+    "description": "Persönliche Sicht: Eigene interne Vorgänge im aktuellen und vorherigen Jahr.",
+    "aggregation": "COUNT",
+    "field": "handle",
+    "type": "TREND",
+    "targetEntity": "internalCase",
+    "groupBy": null,
+    "timeframe": "YEAR",
+    "filter": { "responsiblePerson": "{{currentUser.handle}}" },
+    "timeframeField": "created_at"
+  },
+  {
+    "name": "Meine internen Vorgänge pro Monat",
+    "description": "Persönliche Sicht: Monatliche Entwicklung der eigenen internen Vorgänge.",
+    "aggregation": "COUNT",
+    "field": "handle",
+    "type": "SPARKLINE",
+    "targetEntity": "internalCase",
+    "groupBy": null,
+    "timeframe": "YEAR",
+    "timeframeInterval": "MONTH",
+    "filter": { "responsiblePerson": "{{currentUser.handle}}" },
+    "timeframeField": "created_at"
+  },
+  {
+    "name": "Meine internen Vorgänge nach Kategorie",
+    "description": "Persönliche Sicht: Breakdown der eigenen internen Vorgänge nach Kategorie.",
+    "aggregation": "COUNT",
+    "field": "category.title",
+    "type": "BREAKDOWN",
+    "targetEntity": "internalCase",
+    "groupBy": ["category"],
+    "timeframe": null,
+    "filter": { "responsiblePerson": "{{currentUser.handle}}" },
+    "timeframeField": null,
+    "relationField": "handle"
+  },
+  {
+    "name": "Meine internen Vorgänge Monatsvergleich",
+    "description": "Persönliche Sicht: Eigene interne Vorgänge im aktuellen versus vorherigen Monat.",
+    "aggregation": "COUNT",
+    "field": "handle",
+    "type": "COMPARISON",
+    "targetEntity": "internalCase",
+    "groupBy": null,
+    "timeframe": "MONTH",
+    "filter": { "responsiblePerson": "{{currentUser.handle}}" },
+    "timeframeField": "created_at"
+  },
+  {
+    "name": "Aktive Aufwandsschätzungen",
+    "description": "Anzahl der derzeit aktiven Aufwandsschätzungen.",
+    "aggregation": "COUNT",
+    "field": "handle",
+    "type": "ITEM",
+    "targetEntity": "effortEstimate",
+    "groupBy": null,
+    "timeframe": null,
+    "filter": { "is_active": true },
+    "timeframeField": null
+  },
+  {
+    "name": "Geschätzter Gesamtaufwand",
+    "description": "Summe der geschätzten Stunden aller Positionen.",
+    "aggregation": "SUM",
+    "field": "estimated_hours",
+    "type": "ITEM",
+    "targetEntity": "effortEstimatePosition",
+    "groupBy": null,
+    "timeframe": null,
+    "timeframeField": null
+  },
+  {
+    "name": "Aufwandsschätzungen nach Status",
+    "description": "Verteilung der Aufwandsschätzungen nach Bearbeitungsstatus.",
+    "aggregation": "COUNT",
+    "field": "status.description",
+    "type": "LIST",
+    "targetEntity": "effortEstimate",
+    "groupBy": ["status"],
+    "timeframe": null,
+    "timeframeField": null,
+    "relationField": "handle"
+  },
+  {
+    "name": "Aufwandsschätzungen pro Monat",
+    "description": "Monatliche Entwicklung neu angelegter Aufwandsschätzungen im laufenden Jahr.",
+    "aggregation": "COUNT",
+    "field": "handle",
+    "type": "SPARKLINE",
+    "targetEntity": "effortEstimate",
+    "groupBy": null,
+    "timeframe": "YEAR",
+    "timeframeInterval": "MONTH",
+    "timeframeField": "created_at"
+  },
+  {
+    "name": "Aktive Aufwandsschätzungen nach Kundenfirma",
+    "description": "Breakdown der aktiven Aufwandsschätzungen nach anfragender Firma.",
+    "aggregation": "COUNT",
+    "field": "creatorCompany.name",
+    "type": "BREAKDOWN",
+    "targetEntity": "effortEstimate",
+    "groupBy": ["creatorCompany"],
+    "timeframe": null,
+    "filter": { "is_active": true },
+    "timeframeField": null,
+    "relationField": "handle"
+  },
+  {
+    "name": "Aufwandsschätzungen Monatsvergleich",
+    "description": "Neu angelegte Aufwandsschätzungen im aktuellen versus vorherigen Monat.",
+    "aggregation": "COUNT",
+    "field": "handle",
+    "type": "COMPARISON",
+    "targetEntity": "effortEstimate",
+    "groupBy": null,
+    "timeframe": "MONTH",
+    "timeframeField": "created_at"
+  },
+  {
+    "name": "Meine aktiven Aufwandsschätzungen",
+    "description": "Persönliche Sicht: Anzahl der eigenen aktiven Aufwandsschätzungen.",
+    "aggregation": "COUNT",
+    "field": "handle",
+    "type": "ITEM",
+    "targetEntity": "effortEstimate",
+    "groupBy": null,
+    "timeframe": null,
+    "filter": {
+      "$and": [
+        { "is_active": true },
+        { "assigneePerson": "{{currentUser.handle}}" }
+      ]
+    },
+    "timeframeField": null
+  },
+  {
+    "name": "Mein geschätzter Gesamtaufwand",
+    "description": "Persönliche Sicht: Summe der geschätzten Stunden aller eigenen Positionen.",
+    "aggregation": "SUM",
+    "field": "estimated_hours",
+    "type": "ITEM",
+    "targetEntity": "effortEstimatePosition",
+    "groupBy": null,
+    "timeframe": null,
+    "filter": { "estimate": { "assigneePerson": "{{currentUser.handle}}" } },
+    "timeframeField": null
+  },
+  {
+    "name": "Meine Aufwandsschätzungen nach Status",
+    "description": "Persönliche Sicht: Verteilung der eigenen Aufwandsschätzungen nach Status.",
+    "aggregation": "COUNT",
+    "field": "status.description",
+    "type": "LIST",
+    "targetEntity": "effortEstimate",
+    "groupBy": ["status"],
+    "timeframe": null,
+    "filter": { "assigneePerson": "{{currentUser.handle}}" },
+    "timeframeField": null,
+    "relationField": "handle"
+  },
+  {
+    "name": "Meine Aufwandsschätzungen pro Monat",
+    "description": "Persönliche Sicht: Monatliche Entwicklung der eigenen Aufwandsschätzungen.",
+    "aggregation": "COUNT",
+    "field": "handle",
+    "type": "SPARKLINE",
+    "targetEntity": "effortEstimate",
+    "groupBy": null,
+    "timeframe": "YEAR",
+    "timeframeInterval": "MONTH",
+    "filter": { "assigneePerson": "{{currentUser.handle}}" },
+    "timeframeField": "created_at"
+  },
+  {
+    "name": "Meine aktiven Aufwandsschätzungen nach Kundenfirma",
+    "description": "Persönliche Sicht: Breakdown der eigenen aktiven Aufwandsschätzungen nach anfragender Firma.",
+    "aggregation": "COUNT",
+    "field": "creatorCompany.name",
+    "type": "BREAKDOWN",
+    "targetEntity": "effortEstimate",
+    "groupBy": ["creatorCompany"],
+    "timeframe": null,
+    "filter": {
+      "$and": [
+        { "is_active": true },
+        { "assigneePerson": "{{currentUser.handle}}" }
+      ]
+    },
+    "timeframeField": null,
+    "relationField": "handle"
+  },
+  {
+    "name": "Meine Aufwandsschätzungen Monatsvergleich",
+    "description": "Persönliche Sicht: Eigene Aufwandsschätzungen im aktuellen versus vorherigen Monat.",
+    "aggregation": "COUNT",
+    "field": "handle",
+    "type": "COMPARISON",
+    "targetEntity": "effortEstimate",
+    "groupBy": null,
+    "timeframe": "MONTH",
+    "filter": { "assigneePerson": "{{currentUser.handle}}" },
+    "timeframeField": "created_at"
+  }
+]

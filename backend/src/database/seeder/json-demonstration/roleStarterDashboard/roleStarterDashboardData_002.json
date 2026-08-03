@@ -1,0 +1,67 @@
+[
+  {
+    "role": "Administrator",
+    "templates": [
+      "Support Operations",
+      "My Support Operations",
+      "Sales Pipeline",
+      "My Sales Pipeline",
+      "Event Coordination",
+      "My Event Coordination",
+      "Contracts & Products",
+      "My Contracts & Products",
+      "Master Data Quality",
+      "System Operations",
+      "Internal Operations",
+      "My Internal Operations",
+      "Effort Estimation",
+      "My Effort Estimation"
+    ]
+  },
+  {
+    "role": "Support",
+    "templates": [
+      "Support Operations",
+      "My Support Operations",
+      "Event Coordination",
+      "My Event Coordination",
+      "Internal Operations",
+      "My Internal Operations",
+      "Effort Estimation",
+      "My Effort Estimation"
+    ]
+  },
+  {
+    "role": "Vertrieb",
+    "templates": [
+      "Sales Pipeline",
+      "My Sales Pipeline",
+      "Event Coordination",
+      "My Event Coordination",
+      "Contracts & Products",
+      "My Contracts & Products",
+      "Internal Operations",
+      "My Internal Operations",
+      "Effort Estimation",
+      "My Effort Estimation"
+    ]
+  },
+  {
+    "role": "Kunde",
+    "templates": [
+      "Support Operations",
+      "My Support Operations",
+      "Contracts & Products",
+      "My Contracts & Products"
+    ]
+  },
+  {
+    "role": "Dienstleister",
+    "templates": [
+      "Support Operations",
+      "My Support Operations",
+      "Contracts & Products",
+      "My Contracts & Products"
+    ]
+  }
+]

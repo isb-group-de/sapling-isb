@@ -11,12 +11,30 @@
             md="6"
             lg="4"
             xl="3"
-            class="d-flex"
+            class="d-flex sapling-dashboard__kpi-sortable"
+            :class="{
+              'sapling-dashboard__kpi-sortable--active': layoutEditing,
+              'sapling-dashboard__kpi-sortable--dragging': draggedHandle === kpi.handle,
+              'sapling-dashboard__kpi-sortable--drop-target': dropTargetHandle === kpi.handle,
+            }"
+            :draggable="layoutEditing"
+            @dragstart="layoutEditing && start($event, kpi.handle)"
+            @dragenter="layoutEditing && enter($event, kpi.handle)"
+            @dragover="layoutEditing && over($event)"
+            @drop="finish"
+            @dragend="finish"
           >
+            <div v-if="layoutEditing" class="sapling-dashboard__kpi-drag-handle">
+              <v-icon size="small">mdi-drag-variant</v-icon>
+              <span>{{ $t('dashboard.dragKpi') }}</span>
+            </div>
             <SaplingKpiCard
               :kpi="kpi"
               :kpiIdx="kpiIdx"
-              :onDelete="() => (kpi.handle != null ? openKpiDeleteDialog(kpi.handle) : undefined)"
+              :onDelete="
+                () =>
+                  !layoutEditing && kpi.handle != null ? openKpiDeleteDialog(kpi.handle) : undefined
+              "
             />
           </v-col>
         </template>
@@ -59,6 +77,7 @@ import type { DashboardItem } from '@/entity/entity'
 import SaplingKpiCard from '@/components/kpi/SaplingKpiCard.vue'
 import SaplingDialogDelete from '@/components/dialog/SaplingDialogDelete.vue'
 import { useSaplingKpis } from '@/composables/dashboard/useSaplingKpis'
+import { useSaplingSortableDrag } from '@/composables/dashboard/useSaplingSortableDrag'
 import SaplingDialogKpi from '@/components/dialog/SaplingDialogKpi.vue'
 import { toRef, watch } from 'vue'
 // #endregion
@@ -67,6 +86,7 @@ import { toRef, watch } from 'vue'
 const props = defineProps<{
   dashboard: DashboardItem
   openAddRequest?: number
+  layoutEditing: boolean
 }>()
 
 const emit = defineEmits<{
@@ -88,12 +108,16 @@ const {
   confirmKpiDelete,
   cancelKpiDelete,
   openAddKpiDialog,
+  reorderKpis,
 } = useSaplingKpis(toRef(props, 'dashboard'), (nextKpis) => emit('update:kpis', nextKpis))
+
+const { draggedHandle, dropTargetHandle, start, enter, over, finish } =
+  useSaplingSortableDrag(reorderKpis)
 
 watch(
   () => props.openAddRequest,
   (nextRequest, previousRequest) => {
-    if (!nextRequest || nextRequest === previousRequest) {
+    if (props.layoutEditing || !nextRequest || nextRequest === previousRequest) {
       return
     }
 

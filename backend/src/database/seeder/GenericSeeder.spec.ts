@@ -1,6 +1,9 @@
 import { describe, expect, it, jest } from '@jest/globals';
 import type { EntityManager, EntityName } from '@mikro-orm/core';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import { EntityRouteItem } from '../../entity/EntityRouteItem';
+import { KpiItem } from '../../entity/KpiItem';
 import { GenericSeeder } from './GenericSeeder';
 
 jest.mock('@mikro-orm/seeder', () => ({
@@ -13,9 +16,138 @@ type SeedItemUpdater = {
     item: object,
     em: EntityManager,
   ): Promise<boolean>;
+  prepareSeedItem(
+    entityHandle: string,
+    item: object,
+    em: EntityManager,
+  ): Promise<object>;
 };
 
 describe('GenericSeeder', () => {
+  it.each(['production', 'demonstration'])(
+    'keeps the new %s dashboard seeds linked to existing KPI and template names',
+    (dataset) => {
+      const loadSeed = <T>(folder: string, fileName: string): T =>
+        JSON.parse(
+          readFileSync(
+            join(__dirname, `json-${dataset}`, folder, fileName),
+            'utf8',
+          ),
+        ) as T;
+      const kpis = [
+        ...loadSeed<Array<{ name: string }>>('kpi', 'kpiData_001.json'),
+        ...loadSeed<Array<{ name: string }>>('kpi', 'kpiData_002.json'),
+      ];
+      const dashboards = [
+        ...loadSeed<Array<{ name: string; kpis: Array<number | string> }>>(
+          'dashboardTemplate',
+          'dashboardTemplateData_001.json',
+        ),
+        ...loadSeed<Array<{ name: string; kpis: Array<number | string> }>>(
+          'dashboardTemplate',
+          'dashboardTemplateData_002.json',
+        ),
+      ];
+      const roleMappings = loadSeed<
+        Array<{ role: string; templates: string[] }>
+      >('roleStarterDashboard', 'roleStarterDashboardData_002.json');
+      const kpiNames = new Set(kpis.map((kpi) => kpi.name));
+      const dashboardNames = new Set(
+        dashboards.map((dashboard) => dashboard.name),
+      );
+
+      for (const dashboard of dashboards) {
+        for (const kpiReference of dashboard.kpis) {
+          expect(typeof kpiReference).toBe('string');
+          if (typeof kpiReference !== 'string') continue;
+          expect(kpiNames).toContain(kpiReference);
+        }
+      }
+
+      for (const roleMapping of roleMappings) {
+        for (const templateName of roleMapping.templates) {
+          expect(dashboardNames).toContain(templateName);
+        }
+      }
+    },
+  );
+
+  it('resolves dashboard-template KPI names without relying on numeric handles', async () => {
+    const openTickets = { handle: 7, name: 'Offene Tickets' };
+    const ticketTrend = {
+      handle: 23,
+      name: 'Gelöste Tickets Jahresvergleich',
+    };
+    const em = {
+      findOne: jest.fn<(...args: unknown[]) => Promise<object | null>>(
+        (_entity, criteria) => {
+          const name = (criteria as { name?: string }).name;
+          return Promise.resolve(
+            name === openTickets.name
+              ? openTickets
+              : name === ticketTrend.name
+                ? ticketTrend
+                : null,
+          );
+        },
+      ),
+    };
+    const seeder = new GenericSeeder() as unknown as SeedItemUpdater;
+
+    const prepared = await seeder.prepareSeedItem(
+      'dashboardTemplate',
+      {
+        name: 'Support Operations',
+        kpis: [openTickets.name, ticketTrend.name],
+      },
+      em as unknown as EntityManager,
+    );
+
+    expect(prepared).toEqual({
+      name: 'Support Operations',
+      kpis: [openTickets, ticketTrend],
+    });
+    expect(em.findOne).toHaveBeenCalledWith(KpiItem, {
+      name: openTickets.name,
+    });
+    expect(em.findOne).toHaveBeenCalledWith(KpiItem, {
+      name: ticketTrend.name,
+    });
+  });
+
+  it('fails a dashboard-template seed when a named KPI is missing', async () => {
+    const em = {
+      findOne: jest.fn<(...args: unknown[]) => Promise<null>>(() =>
+        Promise.resolve(null),
+      ),
+    };
+    const seeder = new GenericSeeder() as unknown as SeedItemUpdater;
+
+    await expect(
+      seeder.prepareSeedItem(
+        'dashboardTemplate',
+        { name: 'Broken template', kpis: ['Missing KPI'] },
+        em as unknown as EntityManager,
+      ),
+    ).rejects.toThrow(
+      'Dashboard template seeding failed. Unknown KPI: Missing KPI',
+    );
+  });
+
+  it('rejects numeric KPI references in dashboard-template seeds', async () => {
+    const seeder = new GenericSeeder() as unknown as SeedItemUpdater;
+
+    await expect(
+      seeder.prepareSeedItem(
+        'dashboardTemplate',
+        { name: 'Legacy template', kpis: [1] },
+        {} as EntityManager,
+      ),
+    ).rejects.toThrow(
+      'Dashboard template seeding failed. KPI references must use names.',
+    );
+  });
+
   it('updates an existing handle-keyed seed item', async () => {
     class ReferenceItem {}
 

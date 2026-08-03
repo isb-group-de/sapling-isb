@@ -14,6 +14,76 @@
   margin: var(--sapling-gap-sm);
 }
 
+.sapling-dashboard__kpi-sortable {
+  position: relative;
+  transition:
+    transform var(--sapling-motion-fast) ease,
+    opacity var(--sapling-motion-fast) ease;
+}
+
+.sapling-dashboard__kpi-sortable--active {
+  cursor: grab;
+  padding-top: calc(var(--sapling-space-md) + var(--sapling-gap-sm));
+}
+
+.sapling-dashboard__kpi-sortable--active .sapling-kpi-card {
+  border: 1px dashed rgba(var(--v-theme-primary), 0.45);
+  background:
+    repeating-linear-gradient(
+      -45deg,
+      rgba(var(--v-theme-primary), 0.018) 0,
+      rgba(var(--v-theme-primary), 0.018) 7px,
+      transparent 7px,
+      transparent 14px
+    ),
+    var(--sapling-surface-fill);
+  transition:
+    transform var(--sapling-motion-fast) ease,
+    box-shadow var(--sapling-motion-fast) ease;
+}
+
+.sapling-dashboard__kpi-sortable--active:hover .sapling-kpi-card {
+  transform: translateY(-2px);
+  box-shadow:
+    0 8px 24px rgba(var(--v-theme-primary), 0.12),
+    inset 0 0 0 1px rgba(var(--v-theme-primary), 0.16);
+}
+
+.sapling-dashboard__kpi-sortable--active .sapling-kpi-card__actions {
+  opacity: 0.25;
+  pointer-events: none;
+}
+
+.sapling-dashboard__kpi-sortable--dragging {
+  opacity: 0.35;
+  transform: scale(0.97);
+}
+
+.sapling-dashboard__kpi-sortable--drop-target .sapling-kpi-card {
+  box-shadow:
+    inset 4px 0 0 rgb(var(--v-theme-primary)),
+    0 8px 24px rgba(var(--v-theme-primary), 0.14);
+}
+
+.sapling-dashboard__kpi-drag-handle {
+  position: absolute;
+  z-index: 2;
+  top: var(--sapling-space-xs);
+  left: 50%;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sapling-gap-2xs);
+  padding: var(--sapling-space-3xs) var(--sapling-space-sm);
+  border-radius: var(--sapling-radius-pill);
+  background: rgba(var(--v-theme-primary), 0.12);
+  color: rgb(var(--v-theme-primary));
+  font-size: var(--sapling-text-label-size-sm);
+  font-weight: 700;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
 .sapling-kpi-card {
   display: flex;
   flex: 1 1 auto;

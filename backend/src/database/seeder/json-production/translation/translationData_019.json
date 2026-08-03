@@ -1,0 +1,74 @@
+[
+  {
+    "entity": "dashboard",
+    "property": "sortOrder",
+    "de": "Sortierreihenfolge",
+    "en": "Sort order"
+  },
+  {
+    "entity": "dashboard",
+    "property": "kpiOrder",
+    "de": "KPI-Reihenfolge",
+    "en": "KPI order"
+  },
+  {
+    "entity": "dashboard",
+    "property": "editLayout",
+    "de": "Layout bearbeiten",
+    "en": "Edit layout"
+  },
+  {
+    "entity": "dashboard",
+    "property": "saveLayout",
+    "de": "Layout speichern",
+    "en": "Save layout"
+  },
+  {
+    "entity": "dashboard",
+    "property": "cancelLayout",
+    "de": "Abbrechen",
+    "en": "Cancel"
+  },
+  {
+    "entity": "dashboard",
+    "property": "editModeTitle",
+    "de": "Bearbeitungsmodus aktiv",
+    "en": "Edit mode active"
+  },
+  {
+    "entity": "dashboard",
+    "property": "editModeText",
+    "de": "Dashboards und KPIs per Drag-and-drop neu anordnen.",
+    "en": "Drag and drop dashboards and KPIs to reorder them."
+  },
+  {
+    "entity": "dashboard",
+    "property": "dragDashboard",
+    "de": "Dashboard verschieben",
+    "en": "Move dashboard"
+  },
+  {
+    "entity": "dashboard",
+    "property": "dragKpi",
+    "de": "KPI verschieben",
+    "en": "Move KPI"
+  },
+  {
+    "entity": "dashboard",
+    "property": "layoutSaved",
+    "de": "Layout gespeichert",
+    "en": "Layout saved"
+  },
+  {
+    "entity": "dashboard",
+    "property": "layoutSavedDescription",
+    "de": "Die Reihenfolge der Dashboards und KPIs wurde übernommen.",
+    "en": "The dashboard and KPI order has been saved."
+  },
+  {
+    "entity": "dashboard",
+    "property": "invalidLayout",
+    "de": "Das Dashboard-Layout ist ungültig oder unvollständig.",
+    "en": "The dashboard layout is invalid or incomplete."
+  }
+]

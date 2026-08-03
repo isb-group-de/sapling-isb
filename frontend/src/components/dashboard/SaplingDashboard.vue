@@ -84,10 +84,47 @@
           :title="currentDashboard?.name || $t('dashboard.executiveOverview')"
           :subtitle="$t('dashboard.workspaceSubtitle')"
         >
+          <div class="sapling-dashboard__layout-actions">
+            <v-btn
+              v-if="!isLayoutEditing"
+              color="primary"
+              variant="tonal"
+              prepend-icon="mdi-pencil-outline"
+              :aria-label="$t('dashboard.editLayout')"
+              :title="$t('dashboard.editLayout')"
+              :disabled="!hasDashboards || !currentPersonStore.loaded"
+              @click="beginLayoutEdit"
+            >
+              {{ $t('dashboard.editLayout') }}
+            </v-btn>
+            <template v-else>
+              <v-btn
+                color="primary"
+                variant="flat"
+                prepend-icon="mdi-content-save-check-outline"
+                :loading="isLayoutSaving"
+                :disabled="isLayoutSaving"
+                @click="saveLayout"
+              >
+                {{ $t('dashboard.saveLayout') }}
+              </v-btn>
+              <v-btn
+                color="primary"
+                variant="text"
+                prepend-icon="mdi-close"
+                :disabled="isLayoutSaving"
+                @click="cancelLayoutEdit"
+              >
+                {{ $t('dashboard.cancelLayout') }}
+              </v-btn>
+            </template>
+          </div>
+
           <template #side>
             <SaplingDashboardHeroActions
               :has-dashboards="hasDashboards"
               :current-person-loaded="currentPersonStore.loaded"
+              :is-layout-editing="isLayoutEditing"
               @add-kpi="requestAddKpi"
               @open-dashboard="openDashboardDialog"
               @open-template-load="openDashboardTemplateLoadDialog"
@@ -105,8 +142,10 @@
         :dashboards="dashboards"
         :add-kpi-request-key="addKpiRequestKey"
         :is-dashboard-removable="isDashboardRemovable"
+        :layout-editing="isLayoutEditing"
         @remove-dashboard="removeDashboard"
         @update-kpis="updateDashboardKpis"
+        @reorder-dashboards="reorderDashboards"
       />
 
       <SaplingDashboardEmptyState
@@ -195,6 +234,8 @@ const {
   currentDashboard,
   hasDashboards,
   isDashboardRemovable,
+  isLayoutEditing,
+  isLayoutSaving,
   cancelDashboardDelete,
   closeDashboardDialog,
   closeDashboardTemplateDialog,
@@ -214,6 +255,10 @@ const {
   onDashboardTemplateSave,
   removeDashboard,
   updateDashboardKpis,
+  beginLayoutEdit,
+  cancelLayoutEdit,
+  reorderDashboards,
+  saveLayout,
 } = useSaplingDashboard()
 
 const addKpiRequestKey = ref(0)

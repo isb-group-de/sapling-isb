@@ -17,6 +17,8 @@ backend/src/api/kpi/kpi.controller.ts
 backend/src/api/kpi/kpi.service.ts
 backend/src/api/kpi/kpi.executor.ts
 backend/src/api/kpi/dto/
+backend/src/api/current/current.service.ts
+backend/src/api/current/dto/dashboard-layout.dto.ts
 frontend/src/components/kpi/
 frontend/src/components/dashboard/
 frontend/src/composables/kpi/
@@ -134,8 +136,38 @@ Drilldowns should always carry enough context to reproduce the KPI subset in the
 ## Dashboard And Favorites
 
 `DashboardItem` stores a person-owned dashboard with a many-to-many list of KPIs.
+Its `sortOrder` defines the dashboard position in the tab strip and its
+`kpiOrder` JSON array stores the KPI handles in card order. Consumers append
+assigned KPI handles that are missing from `kpiOrder`, which keeps migrated or
+partially configured records usable.
+
+The dashboard page keeps its normal read-only presentation until the user
+opens layout editing. During editing, dashboard tabs and KPI cards are reordered
+locally with drag-and-drop. Cancel restores the complete local snapshot. Save
+sends all owned dashboards to `PATCH /api/current/dashboardLayout`; the backend
+validates dashboard ownership and the exact KPI assignments and persists both
+orders atomically. Add/remove operations outside layout editing also update
+`kpiOrder`, so there is one ordering model rather than a separate legacy path.
+
+`Migration20260803120000` adds both fields, backfills existing dashboards in a
+stable handle order, and creates the person/order lookup index. Role-based
+starter provisioning writes `sortOrder` and `kpiOrder` at creation time, so new
+databases and existing databases use the same runtime logic.
 
 `DashboardTemplateItem` stores reusable dashboard layouts. It is usually seeded so roles or users can start with sensible KPI collections.
+
+New dashboard-template seed files should reference seeded KPIs by name. The
+generic seeder resolves those names to persisted KPI records and fails the seed
+when a name is unknown. Numeric KPI handles are deliberately rejected because
+auto-increment values can differ between databases. All production and
+demonstration dashboard-template seeds use the same name-based contract.
+
+```json
+{
+  "name": "My Support Operations",
+  "kpis": ["Meine offene Tickets", "Meine Tickets nach Priorität"]
+}
+```
 
 `FavoriteItem` stores person-owned saved generic views:
 
@@ -156,8 +188,8 @@ Frontend dashboard components:
 | Component                                  | Responsibility           |
 | ------------------------------------------ | ------------------------ |
 | `SaplingDashboard.vue`                     | Main dashboard surface   |
-| `SaplingDashboardTabs.vue`                 | Dashboard tab switching  |
-| `SaplingKpis.vue`                          | KPI collection renderer  |
+| `SaplingDashboardTabs.vue`                 | Tab switching and sorting |
+| `SaplingKpis.vue`                          | KPI rendering and sorting |
 | `SaplingFavorites.vue`                     | Favorite list renderer   |
 | `SaplingDashboardTemplateLoadDialog.vue`   | Load dashboard templates |
 | `SaplingFavoriteTemplateLoadDialog.vue`    | Load favorite templates  |
