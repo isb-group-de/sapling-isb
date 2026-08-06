@@ -52,7 +52,6 @@ const {
 } = useSaplingGenericReferenceTarget({
   item: toRef(props, 'item'),
   template: toRef(props, 'col'),
-  autoResolve: false,
 })
 
 async function openTarget() {
