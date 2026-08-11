@@ -33,6 +33,7 @@ import {
 } from '@/utils/saplingTableUtil'
 import { useSaplingTableFormConfig } from '@/composables/table/useSaplingTableFormConfig'
 import {
+  getSaplingTableRouteStateSignature,
   readSaplingTableRouteState,
   replaceSaplingTableUrlState,
 } from '@/composables/table/saplingTableRouteState'
@@ -171,6 +172,9 @@ export function useSaplingTable(
 
   // #region Filters and Sorting
   const getRouteState = () => readSaplingTableRouteState(route.query, Boolean(isUseQueryParameter))
+  const routeStateSignature = computed(() =>
+    getSaplingTableRouteStateSignature(route.query, Boolean(isUseQueryParameter)),
+  )
 
   const activeFilter = computed(() =>
     buildTableFilter({
@@ -545,7 +549,10 @@ export function useSaplingTable(
     syncUrlState()
   })
 
-  watch([entityHandle, () => route.query], () => {
+  // Dialog routing and other page-level query parameters must not reset the
+  // table. Reinitialize only when the entity or effective table URL state
+  // (search, paging, sorting, filters) changes.
+  watch([entityHandle, routeStateSignature], () => {
     if (!autoInitialize && !isInitialized.value) {
       return
     }
@@ -571,9 +578,9 @@ export function useSaplingTable(
   /**
    * Persists user-controlled table state (search, page, itemsPerPage, sortBy, filter)
    * into the location bar via history.replaceState. We bypass vue-router's
-   * `router.replace` here on purpose so the existing `route.query` watcher does
+   * `router.replace` here on purpose so the table route-state watcher does
    * not trigger a full re-initialization for our own writes — browser back/forward
-   * still works because popstate updates `route.query` and re-runs the watcher.
+   * still works because popstate updates the effective table route state.
    */
   function syncUrlState() {
     replaceSaplingTableUrlState(

@@ -36,6 +36,10 @@ export function readSaplingTableRouteState(
   }
 }
 
+export function getSaplingTableRouteStateSignature(query: LocationQuery, enabled: boolean): string {
+  return JSON.stringify(readSaplingTableRouteState(query, enabled))
+}
+
 export function replaceSaplingTableUrlState(state: SaplingTableUrlState, enabled: boolean): void {
   if (!enabled || typeof window === 'undefined') {
     return

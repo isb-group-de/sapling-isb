@@ -12,10 +12,28 @@ import {
   resetTableTestMocks,
   routeState,
 } from './useSaplingTable.test-support'
+import { getSaplingTableRouteStateSignature } from '../saplingTableRouteState'
 
 describe('useSaplingTable filters and route state', () => {
   beforeEach(resetTableTestMocks)
   afterEach(cleanupTableTestWrappers)
+
+  it('ignores dialog-only query changes when deciding whether to reinitialize the table', () => {
+    const filter = JSON.stringify({ status: { handle: 'closed' } })
+    const baseSignature = getSaplingTableRouteStateSignature({ filter }, true)
+
+    expect(getSaplingTableRouteStateSignature({ filter, open: '2' }, true)).toBe(baseSignature)
+    expect(getSaplingTableRouteStateSignature({ filter, open: '3' }, true)).toBe(baseSignature)
+    expect(
+      getSaplingTableRouteStateSignature({ filter, open: '3', context: 'calendar' }, true),
+    ).toBe(baseSignature)
+    expect(
+      getSaplingTableRouteStateSignature(
+        { filter: JSON.stringify({ status: { handle: 'open' } }), open: '3' },
+        true,
+      ),
+    ).not.toBe(baseSignature)
+  })
 
   it('applies default open filters for chip references with isOpen values', async () => {
     loadGenericMock.mockResolvedValue(undefined)
