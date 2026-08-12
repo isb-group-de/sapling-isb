@@ -11,6 +11,7 @@ const {
   fetchCurrentPermissionMock,
   getEntityTemplateMock,
   listFormConfigsMock,
+  setPersonalTableViewDefaultMock,
   routeState,
 } = vi.hoisted(() => ({
   apiFindMock: vi.fn(),
@@ -19,6 +20,7 @@ const {
   fetchCurrentPermissionMock: vi.fn(),
   getEntityTemplateMock: vi.fn(),
   listFormConfigsMock: vi.fn(),
+  setPersonalTableViewDefaultMock: vi.fn(),
   routeState: { query: {} as Record<string, unknown> },
 }))
 
@@ -41,7 +43,8 @@ vi.mock('@/services/api.template.service', () => ({
 
 vi.mock('@/services/api.form-config.service', () => ({
   default: {
-    list: listFormConfigsMock,
+    listTableViews: listFormConfigsMock,
+    setPersonalTableViewDefault: setPersonalTableViewDefaultMock,
   },
 }))
 
@@ -327,6 +330,7 @@ export {
   fetchCurrentPermissionMock,
   getEntityTemplateMock,
   listFormConfigsMock,
+  setPersonalTableViewDefaultMock,
   routeState,
   mountTestHost,
   mountQueryEnabledTestHost,
@@ -343,6 +347,7 @@ export function resetTableTestMocks(): void {
   fetchCurrentPermissionMock.mockReset()
   getEntityTemplateMock.mockReset()
   listFormConfigsMock.mockReset()
+  setPersonalTableViewDefaultMock.mockReset()
   routeState.query = {}
 
   getEntityTemplateMock.mockImplementation((handle: string) =>

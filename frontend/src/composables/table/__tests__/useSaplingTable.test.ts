@@ -15,6 +15,7 @@ import {
   mountManualTestHost,
   mountTestHost,
   resetTableTestMocks,
+  setPersonalTableViewDefaultMock,
 } from './useSaplingTable.test-support'
 
 describe('useSaplingTable initialization and loading', () => {
@@ -262,6 +263,28 @@ describe('useSaplingTable initialization and loading', () => {
     expect(fields.filter((field) => field === 'filename')).toHaveLength(1)
   })
 
+  it('reloads hidden fields when they are added to the temporary table view', async () => {
+    vi.useFakeTimers()
+    loadGenericMock.mockResolvedValue(undefined)
+    apiFindMock.mockResolvedValue({ data: [], meta: { total: 0 } })
+
+    const wrapper = mountTestHost(ref('document'))
+    await flushPromises()
+    apiFindMock.mockClear()
+
+    wrapper.vm.onVisibleColumnKeysUpdate(['title', 'filename'])
+    await nextTick()
+    await vi.advanceTimersByTimeAsync(250)
+    await flushPromises()
+
+    expect(apiFindMock).toHaveBeenCalledWith(
+      'document',
+      expect.objectContaining({
+        fields: expect.arrayContaining(['title', 'filename']),
+      }),
+    )
+  })
+
   it('runs the initial load hook before the first request', async () => {
     loadGenericMock.mockResolvedValue(undefined)
     apiFindMock.mockResolvedValue({
@@ -370,5 +393,38 @@ describe('useSaplingTable initialization and loading', () => {
     expect(
       wrapper.vm.entityTemplates.find((template) => template.name === 'name')?.tableVisible,
     ).toBe(false)
+  })
+
+  it('promotes an owned view to the personal default and selects it', async () => {
+    vi.useFakeTimers()
+    loadGenericMock.mockResolvedValue(undefined)
+    apiFindMock.mockResolvedValue({ data: [], meta: { total: 0 } })
+    const personalView = {
+      handle: 8,
+      name: 'My people',
+      entity: 'partner',
+      scope: 'person' as const,
+      scopeHandle: '1',
+      isActive: true,
+      isDefault: false,
+      version: 1,
+      config: { schema: 'sapling.form-config.v1' as const, entityHandle: 'partner' },
+    }
+    listFormConfigsMock
+      .mockResolvedValueOnce([personalView])
+      .mockResolvedValueOnce([{ ...personalView, isDefault: true }])
+    setPersonalTableViewDefaultMock.mockResolvedValue({ ...personalView, isDefault: true })
+
+    const wrapper = mountTestHost(ref('partner'))
+    await flushPromises()
+    await vi.advanceTimersByTimeAsync(100)
+    await flushPromises()
+
+    await wrapper.vm.setDefaultFormConfig(8)
+    await flushPromises()
+
+    expect(setPersonalTableViewDefaultMock).toHaveBeenCalledWith('partner', 8)
+    expect(wrapper.vm.selectedFormConfigHandle).toBe(8)
+    expect(wrapper.vm.formConfigMenuItems.find((item) => item.handle === 8)?.isDefault).toBe(true)
   })
 })

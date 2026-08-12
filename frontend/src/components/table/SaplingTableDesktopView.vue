@@ -21,7 +21,15 @@
     <template #headers="{ columns, isSorted, getSortIcon, toggleSort }">
       <tr>
         <template v-for="column in columns" :key="String(column.key ?? column.title ?? '')">
-          <th :class="getHeaderCellClasses(column)">
+          <th
+            :class="getHeaderCellClasses(column)"
+            :draggable="columnOrderEditing && isDataColumn(column)"
+            @dragstart="onColumnDragStart($event, column)"
+            @dragend="clearColumnDrag"
+            @dragover="onColumnDragOver($event, column)"
+            @dragleave="onColumnDragLeave($event, column)"
+            @drop="onColumnDrop($event, column)"
+          >
             <template v-if="column.key === '__actions'">
               <span></span>
             </template>
@@ -30,6 +38,17 @@
             </template>
             <template v-else-if="isDesktopColumnFilterable(column)">
               <div class="sapling-table-filter-shell">
+                <button
+                  v-if="columnOrderEditing"
+                  class="sapling-table-column-drag-handle"
+                  type="button"
+                  draggable="true"
+                  :title="getColumnMoveLabel(column)"
+                  :aria-label="getColumnMoveLabel(column)"
+                  @keydown="onColumnHandleKeydown($event, column)"
+                >
+                  <v-icon size="x-small">mdi-drag-vertical</v-icon>
+                </button>
                 <SaplingTableColumnFilter
                   :column="column"
                   :filter-item="getColumnFilterItem(String(column.key ?? ''))"
@@ -49,16 +68,33 @@
               </div>
             </template>
             <template v-else>
-              <button class="sapling-table-header-button" type="button" @click="toggleSort(column)">
-                <span v-if="!isHeaderTranslationLoading">{{ column.title }}</span>
-                <v-skeleton-loader
-                  v-else
-                  class="sapling-table-header-skeleton"
-                  type="text"
-                  width="88"
-                />
-                <v-icon v-if="isSorted(column)" size="small">{{ getSortIcon(column) }}</v-icon>
-              </button>
+              <div class="sapling-table-header-content">
+                <button
+                  v-if="columnOrderEditing"
+                  class="sapling-table-column-drag-handle"
+                  type="button"
+                  draggable="true"
+                  :title="getColumnMoveLabel(column)"
+                  :aria-label="getColumnMoveLabel(column)"
+                  @keydown="onColumnHandleKeydown($event, column)"
+                >
+                  <v-icon size="x-small">mdi-drag-vertical</v-icon>
+                </button>
+                <button
+                  class="sapling-table-header-button"
+                  type="button"
+                  @click="toggleSort(column)"
+                >
+                  <span v-if="!isHeaderTranslationLoading">{{ column.title }}</span>
+                  <v-skeleton-loader
+                    v-else
+                    class="sapling-table-header-skeleton"
+                    type="text"
+                    width="88"
+                  />
+                  <v-icon v-if="isSorted(column)" size="small">{{ getSortIcon(column) }}</v-icon>
+                </button>
+              </div>
             </template>
           </th>
         </template>
@@ -121,7 +157,8 @@
 </template>
 
 <script lang="ts" setup>
-import { defineAsyncComponent } from 'vue'
+import { defineAsyncComponent, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { DEFAULT_PAGE_SIZE_OPTIONS } from '@/constants/project.constants'
 import type { EntityItem, SaplingGenericItem, ScriptButtonItem } from '@/entity/entity'
 import type {
@@ -137,6 +174,11 @@ import type {
   UseSaplingTableRowEmit,
 } from '@/composables/table/useSaplingTableRow'
 import SaplingTableColumnFilter from './filter/SaplingTableColumnFilter.vue'
+import {
+  SAPLING_TABLE_COLUMN_DRAG_TYPE,
+  type SaplingTableColumnMove,
+  type SaplingTableColumnPlacement,
+} from '@/composables/table/saplingTableColumnOrder'
 
 type FilterOperatorOption = { label: string; value: ColumnFilterOperator }
 type TableColumnLike = Record<string, unknown> & { key?: string | null; title?: string | null }
@@ -147,6 +189,8 @@ type SaplingTableDesktopViewEmit = UseSaplingTableRowEmit & {
   (event: 'update:items-per-page', value: number | string): void
   (event: 'update:sort-by', value: SortItem[]): void
   (event: 'update:column-filter', value: { key: string; value: ColumnFilterItem | null }): void
+  (event: 'move-column', value: SaplingTableColumnMove): void
+  (event: 'remove-column', value: string): void
 }
 
 const SaplingTableRow = defineAsyncComponent(() => import('./SaplingTableRow.vue'))
@@ -173,12 +217,17 @@ const props = defineProps<{
   selectedRows: number[]
   selectedRow: number | null
   isHeaderTranslationLoading: boolean
+  columnOrderEditing: boolean
   getColumnFilterItem: (columnKey: string) => ColumnFilterItem | null | undefined
   getFilterOperatorOptions: (column: SaplingTableHeaderItem) => FilterOperatorOption[]
   isColumnFilterable: (column: SaplingTableHeaderItem) => boolean
 }>()
 
 const emit = defineEmits<SaplingTableDesktopViewEmit>()
+const { t } = useI18n()
+const draggedColumnKey = ref<string | null>(null)
+const dragTarget = ref<{ key: string; placement: SaplingTableColumnPlacement } | null>(null)
+let dragPreviewElement: HTMLElement | null = null
 
 function getHeaderCellClasses(column: Record<string, unknown> & { key?: string | null }) {
   const key = String(column.key ?? '')
@@ -188,7 +237,151 @@ function getHeaderCellClasses(column: Record<string, unknown> & { key?: string |
     key === '__select' ? 'sapling-table-header-cell--select' : '',
     key === '__actions' ? 'sapling-table-header-cell--actions' : '',
     key !== '__select' && key !== '__actions' ? 'sapling-table-header-cell--data' : '',
+    draggedColumnKey.value === key ? 'sapling-table-header-cell--dragging' : '',
+    dragTarget.value?.key === key && dragTarget.value.placement === 'before'
+      ? 'sapling-table-header-cell--drop-before'
+      : '',
+    dragTarget.value?.key === key && dragTarget.value.placement === 'after'
+      ? 'sapling-table-header-cell--drop-after'
+      : '',
   ].filter(Boolean)
+}
+
+function isDataColumn(column: TableColumnLike): boolean {
+  const key = String(column.key ?? '')
+  return Boolean(key) && !['__select', '__actions'].includes(key)
+}
+
+function getColumnMoveLabel(column: TableColumnLike): string {
+  return `${t('formConfig.moveColumn')}: ${String(column.title ?? '')}`
+}
+
+function onColumnDragStart(event: DragEvent, column: TableColumnLike): void {
+  if (!props.columnOrderEditing || !isDataColumn(column)) return
+
+  const key = String(column.key)
+  draggedColumnKey.value = key
+  event.dataTransfer?.setData(SAPLING_TABLE_COLUMN_DRAG_TYPE, key)
+  event.dataTransfer?.setData('text/plain', key)
+  if (event.dataTransfer) {
+    event.dataTransfer.effectAllowed = 'move'
+    const headerCell = event.currentTarget as HTMLElement
+    const headerRect = headerCell.getBoundingClientRect()
+    dragPreviewElement?.remove()
+    dragPreviewElement = document.createElement('div')
+    dragPreviewElement.className = 'sapling-table-column-drag-preview'
+    dragPreviewElement.setAttribute('aria-hidden', 'true')
+    dragPreviewElement.style.width = `${headerRect.width}px`
+    dragPreviewElement.style.height = `${headerRect.height}px`
+    dragPreviewElement.innerHTML = headerCell.innerHTML
+    document.body.appendChild(dragPreviewElement)
+    event.dataTransfer.setDragImage(
+      dragPreviewElement,
+      Math.max(0, Math.min(event.clientX - headerRect.left, headerRect.width)),
+      Math.max(0, Math.min(event.clientY - headerRect.top, headerRect.height)),
+    )
+  }
+}
+
+function onColumnDragOver(event: DragEvent, column: TableColumnLike): void {
+  if (!props.columnOrderEditing || !hasColumnDragType(event) || !isDataColumn(column)) return
+
+  const targetKey = String(column.key)
+  const sourceKey = getDraggedColumnKey(event)
+  if (targetKey === sourceKey) {
+    dragTarget.value = null
+    return
+  }
+
+  event.preventDefault()
+  if (event.dataTransfer) event.dataTransfer.dropEffect = 'move'
+  const target = event.currentTarget as HTMLElement
+  dragTarget.value = {
+    key: targetKey,
+    placement:
+      event.clientX < target.getBoundingClientRect().left + target.offsetWidth / 2
+        ? 'before'
+        : 'after',
+  }
+}
+
+function onColumnDragLeave(event: DragEvent, column: TableColumnLike): void {
+  if (dragTarget.value?.key !== String(column.key ?? '')) return
+  const target = event.currentTarget as HTMLElement
+  if (event.relatedTarget instanceof Node && target.contains(event.relatedTarget)) return
+  dragTarget.value = null
+}
+
+function onColumnDrop(event: DragEvent, column: TableColumnLike): void {
+  event.preventDefault()
+  const sourceKey = getDraggedColumnKey(event)
+  const targetKey = String(column.key ?? '')
+  const placement = dragTarget.value?.key === targetKey ? dragTarget.value.placement : 'before'
+  clearColumnDrag()
+
+  if (
+    !props.columnOrderEditing ||
+    !sourceKey ||
+    !targetKey ||
+    sourceKey === targetKey ||
+    !isDataColumn(column)
+  )
+    return
+  emit('move-column', { sourceKey, targetKey, placement })
+}
+
+function moveColumnByStep(column: TableColumnLike, direction: -1 | 1): void {
+  const sourceKey = String(column.key ?? '')
+  const dataColumns = props.visibleHeaders.filter(isDataColumn)
+  const sourceIndex = dataColumns.findIndex((item) => String(item.key) === sourceKey)
+  const target = dataColumns[sourceIndex + direction]
+  if (!target) return
+
+  emit('move-column', {
+    sourceKey,
+    targetKey: String(target.key),
+    placement: direction < 0 ? 'before' : 'after',
+  })
+}
+
+function onColumnHandleKeydown(event: KeyboardEvent, column: TableColumnLike): void {
+  if (props.columnOrderEditing && ['Delete', 'Backspace'].includes(event.key)) {
+    event.preventDefault()
+    emit('remove-column', String(column.key ?? ''))
+    return
+  }
+
+  if (
+    !props.columnOrderEditing ||
+    !event.altKey ||
+    !['ArrowLeft', 'ArrowRight'].includes(event.key)
+  )
+    return
+
+  event.preventDefault()
+  moveColumnByStep(column, event.key === 'ArrowLeft' ? -1 : 1)
+}
+
+function getDraggedColumnKey(event: DragEvent): string {
+  return (
+    draggedColumnKey.value ||
+    event.dataTransfer?.getData(SAPLING_TABLE_COLUMN_DRAG_TYPE) ||
+    event.dataTransfer?.getData('text/plain') ||
+    ''
+  )
+}
+
+function hasColumnDragType(event: DragEvent): boolean {
+  if (draggedColumnKey.value) return true
+  const types = Array.from(event.dataTransfer?.types ?? [])
+  return types.includes(SAPLING_TABLE_COLUMN_DRAG_TYPE) || types.includes('text/plain')
+}
+
+function clearColumnDrag(): void {
+  dragPreviewElement?.remove()
+  dragPreviewElement = null
+  draggedColumnKey.value = null
+  dragTarget.value = null
 }
 
 function isRowSelected(index: number) {

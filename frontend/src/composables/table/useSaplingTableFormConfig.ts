@@ -11,6 +11,8 @@ import {
   type FormConfigMenuItem,
   type FormConfigSelectionHandle,
 } from '@/composables/dialog/saplingDialogEdit.utils'
+import { buildPersonalTableViewConfig } from '@/composables/table/saplingTableColumnOrder'
+import { useSaplingMessageCenter } from '@/composables/system/useSaplingMessageCenter'
 
 const FORM_CONFIG_CONTEXT_DELAY_MS = 100
 
@@ -18,10 +20,12 @@ export function useSaplingTableFormConfig(
   entityHandle: Ref<string>,
   getFallbackTemplates: () => EntityTemplate[],
 ) {
+  const { pushMessage } = useSaplingMessageCenter()
   const systemTemplates = ref<EntityTemplate[]>([])
   const formConfigs = ref<SaplingFormConfigItem[]>([])
   const selectedFormConfigHandle = ref<FormConfigSelectionHandle>(null)
   const isLoadingFormConfigs = ref(false)
+  const isSavingTableView = ref(false)
   let scheduledLoad: ReturnType<typeof setTimeout> | null = null
   let latestRequestId = 0
 
@@ -42,22 +46,23 @@ export function useSaplingTableFormConfig(
     const selectableConfigs = formConfigs.value.filter(
       (config) => config.isActive !== false && typeof config.handle === 'number',
     )
-    if (selectableConfigs.length === 0) {
-      return []
-    }
-
+    const defaultHandle = getDefaultFormConfigHandle(selectableConfigs)
     return [
       {
         handle: null,
         title: i18n.global.t('formConfig.defaultView'),
         icon: 'mdi-view-dashboard-outline',
         active: selectedFormConfigHandle.value === null,
+        isDefault: defaultHandle === null,
+        canSetDefault: false,
       },
       ...selectableConfigs.map((config) => ({
         handle: config.handle ?? null,
         title: config.name,
-        icon: config.isDefault ? 'mdi-table-star' : 'mdi-table-cog',
+        icon: defaultHandle === config.handle ? 'mdi-table-star' : 'mdi-table-cog',
         active: selectedFormConfigHandle.value === config.handle,
+        isDefault: defaultHandle === config.handle,
+        canSetDefault: config.scope === 'person',
       })),
     ]
   })
@@ -93,7 +98,7 @@ export function useSaplingTableFormConfig(
     try {
       const [templates, configs] = await Promise.all([
         ApiTemplateService.getEntityTemplate(nextEntityHandle),
-        ApiFormConfigService.list(nextEntityHandle),
+        ApiFormConfigService.listTableViews(nextEntityHandle),
       ])
       if (requestId !== latestRequestId || !isCurrent()) {
         return
@@ -128,15 +133,60 @@ export function useSaplingTableFormConfig(
     selectedFormConfigHandle.value = handle
   }
 
+  async function savePersonalTableView(
+    name: string,
+    orderedColumnKeys: string[],
+    selectableColumnKeys: string[],
+  ): Promise<SaplingFormConfigItem> {
+    isSavingTableView.value = true
+    try {
+      const savedConfig = await ApiFormConfigService.createPersonalTableView(entityHandle.value, {
+        name: name.trim(),
+        config: buildPersonalTableViewConfig(
+          entityHandle.value,
+          selectedFormConfig.value?.config,
+          orderedColumnKeys,
+          selectableColumnKeys,
+        ),
+      })
+
+      formConfigs.value = await ApiFormConfigService.listTableViews(entityHandle.value, true)
+      selectedFormConfigHandle.value = savedConfig.handle ?? null
+      pushMessage(
+        'success',
+        i18n.global.t('formConfig.tableViewSaved'),
+        i18n.global.t('formConfig.tableViewSavedDescription'),
+        entityHandle.value,
+      )
+      return savedConfig
+    } finally {
+      isSavingTableView.value = false
+    }
+  }
+
+  async function setPersonalDefault(handle: number): Promise<void> {
+    isLoadingFormConfigs.value = true
+    try {
+      await ApiFormConfigService.setPersonalTableViewDefault(entityHandle.value, handle)
+      formConfigs.value = await ApiFormConfigService.listTableViews(entityHandle.value, true)
+      selectedFormConfigHandle.value = handle
+    } finally {
+      isLoadingFormConfigs.value = false
+    }
+  }
+
   return {
     entityTemplates,
     menuItems,
     selectedLabel,
     selectedFormConfigHandle,
     isLoadingFormConfigs,
+    isSavingTableView,
     reset,
     cancelScheduledLoad,
     scheduleLoad,
     select,
+    setPersonalDefault,
+    savePersonalTableView,
   }
 }

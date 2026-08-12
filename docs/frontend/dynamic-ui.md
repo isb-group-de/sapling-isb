@@ -309,6 +309,26 @@ tabular-numeric seconds countdown and the open menu shows the same remaining
 time as a full localized label.
 
 Table columns are driven by template metadata and translations.
+Desktop headers expose drag handles only after the user starts **Edit view**
+from the current-view menu. Reordering remains temporary and instance-local;
+finishing editing keeps it for the current visit, while leaving the table or
+changing its entity/view discards it. Route-level generic and partner tables can
+open the column selection while editing. Its fixed-height drop area overlays the
+lower-right table corner so it does not cover the headers, and its search field
+filters every readable, table-capable entity field that is not currently
+visible. Fields can be dragged from there onto an exact header position (or
+appended with the plus action), while visible headers can be dragged back into
+the drop area to hide them. At least one data column remains visible. Newly shown fields extend the
+list projection immediately, so their values load without changing the active
+form configuration. Route-level generic and partner tables can explicitly save
+the resulting visibility and order while editing; the backend creates a named
+person-scoped form configuration for the authenticated user and activates it.
+Available table views are limited to global, matching role, and the current
+person's scope. The effective default is marked with a star; users can promote
+one of their own person-scoped views to their personal default, which takes
+precedence over role and global defaults on subsequent table visits.
+The saved overlay preserves the selected view's form/mobile settings while
+replacing desktop `tableVisible` and `tableOrder` values.
 Reference columns marked with `isChip` project readable `isColor` and `isIcon`
 fields from the referenced entity in addition to its value fields. The shared
 desktop and mobile chip renderer therefore receives the persisted appearance

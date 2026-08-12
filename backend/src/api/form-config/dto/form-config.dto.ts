@@ -41,6 +41,17 @@ export class SaveSaplingFormConfigDto {
   config!: SaplingFormConfigPayload;
 }
 
+export class SavePersonalSaplingTableViewDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  name!: string;
+
+  @ApiProperty({ type: Object })
+  @IsObject()
+  config!: SaplingFormConfigPayload;
+}
+
 export class SaplingFormConfigValidationIssueDto {
   @ApiProperty()
   path!: string;

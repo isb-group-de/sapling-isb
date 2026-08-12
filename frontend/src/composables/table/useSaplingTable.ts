@@ -79,6 +79,7 @@ export function useSaplingTable(
   const isResettingEntityState = ref(false)
   const isInitialized = ref(false)
   const isDataLoading = ref(false)
+  const temporaryVisibleColumnKeys = ref<string[]>([])
   const route = useRoute()
   const currentPermissionStore = useCurrentPermissionStore()
   const genericStore = useGenericStore()
@@ -105,6 +106,8 @@ export function useSaplingTable(
     selectedLabel: selectedFormConfigLabel,
     selectedFormConfigHandle,
     isLoadingFormConfigs,
+    isSavingTableView,
+    setPersonalDefault,
   } = formConfigContext
   const isLoading = computed(
     () => genericStore.getState(entityHandle.value).isLoading || isDataLoading.value,
@@ -125,6 +128,14 @@ export function useSaplingTable(
         ...additionalListProjectionFields.filter((fieldName) =>
           entityTemplates.value.some(
             (template) => template.name === fieldName && template.fieldAccess?.allowRead !== false,
+          ),
+        ),
+        ...temporaryVisibleColumnKeys.value.filter((fieldName) =>
+          entityTemplates.value.some(
+            (template) =>
+              template.name === fieldName &&
+              template.isPersistent !== false &&
+              template.fieldAccess?.allowRead !== false,
           ),
         ),
       ]),
@@ -213,6 +224,7 @@ export function useSaplingTable(
       itemsPerPage: itemsPerPage.value,
       sortBy: validSortBy.value,
       filter: activeFilter.value,
+      fields: listProjectionFields.value,
     }),
   )
 
@@ -340,6 +352,7 @@ export function useSaplingTable(
     search.value = routeState.search
     sortBy.value = []
     columnFilters.value = {}
+    temporaryVisibleColumnKeys.value = []
   }
 
   function restoreQueryFilterState(nextEntityTemplates: EntityTemplate[]) {
@@ -640,6 +653,34 @@ export function useSaplingTable(
 
     sortBy.value = value
   }
+
+  function onVisibleColumnKeysUpdate(value: string[]) {
+    temporaryVisibleColumnKeys.value = [...new Set(value.filter(Boolean))]
+  }
+
+  function selectFormConfig(handle: number | null): void {
+    temporaryVisibleColumnKeys.value = []
+    formConfigContext.select(handle)
+  }
+
+  async function setDefaultFormConfig(handle: number): Promise<void> {
+    temporaryVisibleColumnKeys.value = []
+    await setPersonalDefault(handle)
+  }
+
+  async function savePersonalTableView(
+    name: string,
+    orderedColumnKeys: string[],
+    selectableColumnKeys: string[],
+  ) {
+    const savedConfig = await formConfigContext.savePersonalTableView(
+      name,
+      orderedColumnKeys,
+      selectableColumnKeys,
+    )
+    temporaryVisibleColumnKeys.value = []
+    return savedConfig
+  }
   // #endregion
 
   // #region Return
@@ -661,6 +702,7 @@ export function useSaplingTable(
     selectedFormConfigLabel,
     selectedFormConfigHandle,
     isLoadingFormConfigs,
+    isSavingTableView,
     parentFilter,
     isInitialized,
     initializeEntityState,
@@ -670,7 +712,10 @@ export function useSaplingTable(
     onItemsPerPageUpdate,
     onColumnFiltersUpdate,
     onSortByUpdate,
-    selectFormConfig: formConfigContext.select,
+    onVisibleColumnKeysUpdate,
+    selectFormConfig,
+    setDefaultFormConfig,
+    savePersonalTableView,
     generateHeaders,
     initialSort,
   }

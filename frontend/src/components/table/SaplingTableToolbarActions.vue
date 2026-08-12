@@ -66,7 +66,7 @@
         </v-list>
       </v-menu>
 
-      <v-menu v-if="formConfigMenuItems.length > 0" location="bottom end">
+      <v-menu v-if="formConfigMenuItems.length > 0 || canSaveCurrentView" location="bottom end">
         <template #activator="{ props: formConfigMenuProps }">
           <v-btn
             class="sapling-table-toolbar-action sapling-table-toolbar-action--icon-only sapling-table-toolbar-action--utility"
@@ -94,7 +94,60 @@
               <v-icon>{{ item.active ? 'mdi-check-circle-outline' : item.icon }}</v-icon>
             </template>
             <v-list-item-title>{{ item.title }}</v-list-item-title>
+            <template #append>
+              <v-btn
+                v-if="item.isDefault || item.canSetDefault"
+                :icon="item.isDefault ? 'mdi-star' : 'mdi-star-outline'"
+                :color="item.isDefault ? 'warning' : undefined"
+                size="x-small"
+                variant="text"
+                :disabled="item.isDefault || !item.canSetDefault"
+                :title="
+                  item.isDefault
+                    ? $t('formConfig.openedByDefaultView')
+                    : $t('formConfig.setAsPersonalDefaultView')
+                "
+                :aria-label="
+                  item.isDefault
+                    ? `${item.title}: ${$t('formConfig.openedByDefaultView')}`
+                    : `${item.title}: ${$t('formConfig.setAsPersonalDefaultView')}`
+                "
+                @click.stop="emit('setDefaultFormConfig', Number(item.handle))"
+              />
+            </template>
           </v-list-item>
+          <v-divider />
+          <v-list-item
+            v-if="!isColumnOrderEditing"
+            prepend-icon="mdi-table-edit"
+            :title="$t('formConfig.editCurrentView')"
+            @click="emit('beginColumnOrderEdit')"
+          />
+          <v-list-item
+            v-else
+            prepend-icon="mdi-check"
+            :title="$t('formConfig.finishEditingView')"
+            @click="emit('finishColumnOrderEdit')"
+          />
+          <v-list-item
+            v-if="isColumnOrderEditing"
+            prepend-icon="mdi-table-column-plus-after"
+            :active="isColumnChooserOpen"
+            :title="$t('formConfig.columnSelection')"
+            @click="emit('toggleColumnChooser')"
+          />
+          <v-list-item
+            v-if="canSaveCurrentView && isColumnOrderEditing"
+            prepend-icon="mdi-content-save-outline"
+            :title="$t('formConfig.saveCurrentView')"
+            @click="emit('saveCurrentView')"
+          />
+          <v-list-item
+            v-if="hasTemporaryColumnOrder && isColumnOrderEditing"
+            prepend-icon="mdi-restore"
+            :title="$t('formConfig.resetTemporaryColumnOrder')"
+            @click="emit('resetTemporaryColumnOrder')"
+          />
         </v-list>
       </v-menu>
 
@@ -216,7 +269,7 @@
             </template>
           </v-list>
         </v-menu>
-        <v-menu v-if="formConfigMenuItems.length > 0" location="bottom end">
+        <v-menu v-if="formConfigMenuItems.length > 0 || canSaveCurrentView" location="bottom end">
           <template #activator="{ props: formConfigMenuProps }">
             <v-btn
               class="sapling-table-toolbar-action sapling-table-toolbar-action--icon-only sapling-table-toolbar-action--utility"
@@ -244,7 +297,60 @@
                 <v-icon>{{ item.active ? 'mdi-check-circle-outline' : item.icon }}</v-icon>
               </template>
               <v-list-item-title>{{ item.title }}</v-list-item-title>
+              <template #append>
+                <v-btn
+                  v-if="item.isDefault || item.canSetDefault"
+                  :icon="item.isDefault ? 'mdi-star' : 'mdi-star-outline'"
+                  :color="item.isDefault ? 'warning' : undefined"
+                  size="x-small"
+                  variant="text"
+                  :disabled="item.isDefault || !item.canSetDefault"
+                  :title="
+                    item.isDefault
+                      ? $t('formConfig.openedByDefaultView')
+                      : $t('formConfig.setAsPersonalDefaultView')
+                  "
+                  :aria-label="
+                    item.isDefault
+                      ? `${item.title}: ${$t('formConfig.openedByDefaultView')}`
+                      : `${item.title}: ${$t('formConfig.setAsPersonalDefaultView')}`
+                  "
+                  @click.stop="emit('setDefaultFormConfig', Number(item.handle))"
+                />
+              </template>
             </v-list-item>
+            <v-divider />
+            <v-list-item
+              v-if="!isColumnOrderEditing"
+              prepend-icon="mdi-table-edit"
+              :title="$t('formConfig.editCurrentView')"
+              @click="emit('beginColumnOrderEdit')"
+            />
+            <v-list-item
+              v-else
+              prepend-icon="mdi-check"
+              :title="$t('formConfig.finishEditingView')"
+              @click="emit('finishColumnOrderEdit')"
+            />
+            <v-list-item
+              v-if="isColumnOrderEditing"
+              prepend-icon="mdi-table-column-plus-after"
+              :active="isColumnChooserOpen"
+              :title="$t('formConfig.columnSelection')"
+              @click="emit('toggleColumnChooser')"
+            />
+            <v-list-item
+              v-if="canSaveCurrentView && isColumnOrderEditing"
+              prepend-icon="mdi-content-save-outline"
+              :title="$t('formConfig.saveCurrentView')"
+              @click="emit('saveCurrentView')"
+            />
+            <v-list-item
+              v-if="hasTemporaryColumnOrder && isColumnOrderEditing"
+              prepend-icon="mdi-restore"
+              :title="$t('formConfig.resetTemporaryColumnOrder')"
+              @click="emit('resetTemporaryColumnOrder')"
+            />
           </v-list>
         </v-menu>
         <v-menu location="bottom end">
@@ -333,6 +439,10 @@ const props = defineProps<{
   formConfigMenuItems: FormConfigMenuItem[]
   selectedFormConfigLabel?: string
   isLoadingFormConfigs: boolean
+  canSaveCurrentView: boolean
+  hasTemporaryColumnOrder: boolean
+  isColumnOrderEditing: boolean
+  isColumnChooserOpen: boolean
 }>()
 
 const emit = defineEmits<{
@@ -345,6 +455,12 @@ const emit = defineEmits<{
   favorite: []
   selectFavorite: [favorite: FavoriteItem]
   selectFormConfig: [handle: FormConfigSelectionHandle]
+  saveCurrentView: []
+  resetTemporaryColumnOrder: []
+  beginColumnOrderEdit: []
+  finishColumnOrderEdit: []
+  toggleColumnChooser: []
+  setDefaultFormConfig: [handle: number]
   add: []
 }>()
 

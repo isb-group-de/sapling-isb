@@ -27,6 +27,10 @@
                 :entity-permission="entityPermission"
                 :entity-templates="entityTemplates || []"
                 :is-initialized="isInitialized"
+                :form-config-menu-items="formConfigMenuItems"
+                :selected-form-config-label="selectedFormConfigLabel"
+                :is-loading-form-configs="isLoadingFormConfigs"
+                :is-saving-table-view="isSavingTableView"
                 :show-actions="true"
                 :multi-select="true"
                 :show-favorite="true"
@@ -45,6 +49,10 @@
                 @update:sort-by="onSortByUpdate"
                 @update:column-filters="onColumnFiltersUpdate"
                 @toggle-side-panel="toggleFilterPanel"
+                @select-form-config="selectFormConfig"
+                @set-default-form-config="setDefaultFormConfig"
+                @save-current-view="saveCurrentView"
+                @update:visible-column-keys="onVisibleColumnKeysUpdate"
                 @reload="loadData"
               />
             </div>
@@ -179,6 +187,10 @@ const {
   entityTemplates,
   entity,
   entityPermission,
+  formConfigMenuItems,
+  selectedFormConfigLabel,
+  isLoadingFormConfigs,
+  isSavingTableView,
   isInitialized,
   loadData,
   onSearchUpdate,
@@ -186,6 +198,10 @@ const {
   onItemsPerPageUpdate,
   onColumnFiltersUpdate,
   onSortByUpdate,
+  onVisibleColumnKeysUpdate,
+  selectFormConfig,
+  setDefaultFormConfig,
+  savePersonalTableView,
   parentFilter,
   selectedPeopleHandles,
   tableKey,
@@ -195,6 +211,24 @@ const {
   onSelectedPeoplesUpdate,
   onSelectedChipFiltersUpdate,
 } = useSaplingPartner(entityHandleRef)
+
+async function saveCurrentView(request: {
+  name: string
+  orderedColumnKeys: string[]
+  selectableColumnKeys: string[]
+  complete: (saved: boolean) => void
+}): Promise<void> {
+  try {
+    await savePersonalTableView(
+      request.name,
+      request.orderedColumnKeys,
+      request.selectableColumnKeys,
+    )
+    request.complete(true)
+  } catch {
+    request.complete(false)
+  }
+}
 
 // #endregion
 </script>

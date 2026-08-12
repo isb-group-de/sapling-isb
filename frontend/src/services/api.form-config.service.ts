@@ -5,6 +5,7 @@ import type { EntityTemplate, SaplingFormConfigPayload } from '@/entity/structur
 
 const effectiveTemplateCache = new Map<string, Promise<EntityTemplate[]>>()
 const formConfigListCache = new Map<string, Promise<SaplingFormConfigItem[]>>()
+const tableViewListCache = new Map<string, Promise<SaplingFormConfigItem[]>>()
 
 export interface SaplingFormConfigItem {
   handle?: number
@@ -24,6 +25,11 @@ export interface SaveSaplingFormConfigPayload {
   scopeHandle?: string | null
   isActive?: boolean
   isDefault?: boolean
+  config: SaplingFormConfigPayload
+}
+
+export interface SavePersonalSaplingTableViewPayload {
+  name: string
   config: SaplingFormConfigPayload
 }
 
@@ -78,11 +84,57 @@ class ApiFormConfigService {
       const normalizedEntityHandle = entityHandle.trim()
       effectiveTemplateCache.delete(normalizedEntityHandle)
       formConfigListCache.delete(normalizedEntityHandle)
+      tableViewListCache.delete(normalizedEntityHandle)
       return
     }
 
     effectiveTemplateCache.clear()
     formConfigListCache.clear()
+    tableViewListCache.clear()
+  }
+
+  static async listTableViews(
+    entityHandle: string,
+    force = false,
+  ): Promise<SaplingFormConfigItem[]> {
+    const normalizedEntityHandle = entityHandle.trim()
+    if (!force) {
+      const cachedPromise = tableViewListCache.get(normalizedEntityHandle)
+      if (cachedPromise) return cachedPromise
+    }
+
+    const promise = this.fetchTableViews(normalizedEntityHandle)
+    tableViewListCache.set(normalizedEntityHandle, promise)
+    return promise
+  }
+
+  private static async fetchTableViews(entityHandle: string): Promise<SaplingFormConfigItem[]> {
+    try {
+      const response = await axios.get<SaplingFormConfigItem[]>(
+        buildApiUrl(`form-config/${entityHandle}/table-views`),
+      )
+      return response.data
+    } catch (error: unknown) {
+      tableViewListCache.delete(entityHandle)
+      pushApiErrorMessage(error, 'exception.unknownError', entityHandle)
+      throw error
+    }
+  }
+
+  static async setPersonalTableViewDefault(
+    entityHandle: string,
+    handle: number,
+  ): Promise<SaplingFormConfigItem> {
+    try {
+      const response = await axios.patch<SaplingFormConfigItem>(
+        buildApiUrl(`form-config/${entityHandle}/personal-table-view/${handle}/default`),
+      )
+      this.invalidate(entityHandle)
+      return response.data
+    } catch (error: unknown) {
+      pushApiErrorMessage(error, 'exception.unknownError', entityHandle)
+      throw error
+    }
   }
 
   private static async fetchEffectiveTemplate(entityHandle: string): Promise<EntityTemplate[]> {
@@ -146,6 +198,23 @@ class ApiFormConfigService {
     try {
       const response = await axios.post<SaplingFormConfigItem>(
         buildApiUrl(`form-config/${entityHandle}`),
+        payload,
+      )
+      this.invalidate(entityHandle)
+      return response.data
+    } catch (error: unknown) {
+      pushApiErrorMessage(error, 'exception.unknownError', entityHandle)
+      throw error
+    }
+  }
+
+  static async createPersonalTableView(
+    entityHandle: string,
+    payload: SavePersonalSaplingTableViewPayload,
+  ): Promise<SaplingFormConfigItem> {
+    try {
+      const response = await axios.post<SaplingFormConfigItem>(
+        buildApiUrl(`form-config/${entityHandle}/personal-table-view`),
         payload,
       )
       this.invalidate(entityHandle)

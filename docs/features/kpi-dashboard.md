@@ -148,6 +148,10 @@ sends all owned dashboards to `PATCH /api/current/dashboardLayout`; the backend
 validates dashboard ownership and the exact KPI assignments and persists both
 orders atomically. Add/remove operations outside layout editing also update
 `kpiOrder`, so there is one ordering model rather than a separate legacy path.
+The dashboard tab strip keeps the shared tab height for each two-line label and
+adds a dedicated scrollbar row to Vuetify's horizontal slide container. The
+native scrollbar therefore stays below the title and KPI-count lines instead of
+reducing their usable height.
 
 `Migration20260803120000` adds both fields, backfills existing dashboards in a
 stable handle order, and creates the person/order lookup index. Role-based

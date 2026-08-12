@@ -1,0 +1,98 @@
+[
+  {
+    "entity": "formConfig",
+    "property": "moveColumn",
+    "de": "Spalte verschieben",
+    "en": "Move column"
+  },
+  {
+    "entity": "formConfig",
+    "property": "saveCurrentView",
+    "de": "Aktuelle Ansicht speichern",
+    "en": "Save current view"
+  },
+  {
+    "entity": "formConfig",
+    "property": "saveCurrentViewDescription",
+    "de": "Speichert die sichtbaren Spalten und ihre Reihenfolge als persönliche Ansicht.",
+    "en": "Saves the visible columns and their order as a personal view."
+  },
+  {
+    "entity": "formConfig",
+    "property": "viewName",
+    "de": "Name der Ansicht",
+    "en": "View name"
+  },
+  {
+    "entity": "formConfig",
+    "property": "resetTemporaryColumnOrder",
+    "de": "Temporäre Spaltenreihenfolge zurücksetzen",
+    "en": "Reset temporary column order"
+  },
+  {
+    "entity": "formConfig",
+    "property": "tableViewSaved",
+    "de": "Ansicht gespeichert",
+    "en": "View saved"
+  },
+  {
+    "entity": "formConfig",
+    "property": "tableViewSavedDescription",
+    "de": "Die persönliche Tabellenansicht wurde gespeichert und aktiviert.",
+    "en": "The personal table view was saved and activated."
+  },
+  {
+    "entity": "formConfig",
+    "property": "editCurrentView",
+    "de": "Ansicht bearbeiten",
+    "en": "Edit view"
+  },
+  {
+    "entity": "formConfig",
+    "property": "finishEditingView",
+    "de": "Bearbeitung beenden",
+    "en": "Finish editing"
+  },
+  {
+    "entity": "formConfig",
+    "property": "columnSelection",
+    "de": "Spaltenauswahl",
+    "en": "Column selection"
+  },
+  {
+    "entity": "formConfig",
+    "property": "columnSelectionDescription",
+    "de": "Nicht sichtbare Spalten an die gewünschte Position in der Tabelle ziehen oder mit Plus am Ende hinzufügen.",
+    "en": "Drag hidden columns to the desired table position or use plus to append them."
+  },
+  {
+    "entity": "formConfig",
+    "property": "removeColumnDropHint",
+    "de": "Sichtbare Spalte hierher ziehen, um sie auszublenden",
+    "en": "Drag a visible column here to hide it"
+  },
+  {
+    "entity": "formConfig",
+    "property": "addColumn",
+    "de": "Spalte hinzufügen",
+    "en": "Add column"
+  },
+  {
+    "entity": "formConfig",
+    "property": "allColumnsVisible",
+    "de": "Alle verfügbaren Spalten sind sichtbar. Ziehe eine Spalte aus der Tabelle hierher, um sie auszublenden.",
+    "en": "All available columns are visible. Drag a table column here to hide it."
+  },
+  {
+    "entity": "formConfig",
+    "property": "openedByDefaultView",
+    "de": "Wird standardmäßig geöffnet",
+    "en": "Opens by default"
+  },
+  {
+    "entity": "formConfig",
+    "property": "setAsPersonalDefaultView",
+    "de": "Als persönlichen Standard festlegen",
+    "en": "Set as personal default"
+  }
+]

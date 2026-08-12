@@ -18,6 +18,7 @@
     :form-config-menu-items="formConfigMenuItems"
     :selected-form-config-label="selectedFormConfigLabel"
     :is-loading-form-configs="isLoadingFormConfigs"
+    :is-saving-table-view="isSavingTableView"
     :open-edit-handle="openEditHandle"
     sync-edit-dialog-with-route
     :show-actions="true"
@@ -31,6 +32,9 @@
     @update:column-filters="onColumnFiltersUpdate"
     @update:search="onSearchUpdate"
     @select-form-config="selectFormConfig"
+    @set-default-form-config="setDefaultFormConfig"
+    @save-current-view="saveCurrentView"
+    @update:visible-column-keys="onVisibleColumnKeysUpdate"
     @reload="loadData"
   />
 </template>
@@ -70,12 +74,34 @@ const {
   formConfigMenuItems,
   selectedFormConfigLabel,
   isLoadingFormConfigs,
+  isSavingTableView,
   loadData,
   onSearchUpdate,
   onPageUpdate,
   onItemsPerPageUpdate,
   onColumnFiltersUpdate,
   onSortByUpdate,
+  onVisibleColumnKeysUpdate,
   selectFormConfig,
+  setDefaultFormConfig,
+  savePersonalTableView,
 } = useSaplingTable(entityHandle, DEFAULT_PAGE_SIZE_MEDIUM, true)
+
+async function saveCurrentView(request: {
+  name: string
+  orderedColumnKeys: string[]
+  selectableColumnKeys: string[]
+  complete: (saved: boolean) => void
+}): Promise<void> {
+  try {
+    await savePersonalTableView(
+      request.name,
+      request.orderedColumnKeys,
+      request.selectableColumnKeys,
+    )
+    request.complete(true)
+  } catch {
+    request.complete(false)
+  }
+}
 </script>

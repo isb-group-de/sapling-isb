@@ -213,4 +213,52 @@ describe('FormConfigService', () => {
       },
     });
   });
+
+  it('replaces the previous personal default for the same entity and person', async () => {
+    const previous = {
+      handle: 1,
+      scope: 'person',
+      scopeHandle: '42',
+      isActive: true,
+      isDefault: true,
+    };
+    const target = {
+      handle: 2,
+      scope: 'person',
+      scopeHandle: '42',
+      isActive: true,
+      isDefault: false,
+    };
+    const em = {
+      findOne: jest.fn<() => Promise<unknown>>().mockResolvedValue(target),
+      find: jest
+        .fn<() => Promise<unknown[]>>()
+        .mockResolvedValue([previous, target]),
+      persist: jest.fn(),
+      flush: jest.fn<() => Promise<void>>().mockResolvedValue(undefined),
+    };
+    const service = new FormConfigService(em as never);
+
+    await expect(service.setPersonalDefault('person', 2, '42')).resolves.toBe(
+      target,
+    );
+    expect(previous.isDefault).toBe(false);
+    expect(target.isDefault).toBe(true);
+    expect(em.flush).toHaveBeenCalledTimes(1);
+  });
+
+  it('rejects making another person or a global view the personal default', async () => {
+    const em = {
+      findOne: jest.fn<() => Promise<unknown>>().mockResolvedValue({
+        handle: 2,
+        scope: 'person',
+        scopeHandle: '7',
+      }),
+    };
+    const service = new FormConfigService(em as never);
+
+    await expect(service.setPersonalDefault('person', 2, '42')).rejects.toThrow(
+      'exception.forbidden',
+    );
+  });
 });

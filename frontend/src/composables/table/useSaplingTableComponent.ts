@@ -25,6 +25,12 @@ import { useSaplingTableFilters } from '@/composables/table/useSaplingTableFilte
 import { useSaplingTableSelection } from '@/composables/table/useSaplingTableSelection'
 import { useSaplingTableActions } from '@/composables/table/useSaplingTableActions'
 import { useSaplingTableAutoRefresh } from '@/composables/table/useSaplingTableAutoRefresh'
+import {
+  placeTableColumnKey,
+  removeTableColumnKey,
+  selectTableColumns,
+  type SaplingTableColumnMove,
+} from '@/composables/table/saplingTableColumnOrder'
 
 export interface UseSaplingTableProps {
   items: SaplingGenericItem[]
@@ -65,6 +71,7 @@ export type UseSaplingTableEmit = {
   (event: 'update:columnFilters', value: Record<string, ColumnFilterItem>): void
   (event: 'reload'): void
   (event: 'update:selected', value: SaplingGenericItem[]): void
+  (event: 'update:visibleColumnKeys', value: string[]): void
 }
 
 const MOBILE_TABLE_BREAKPOINT = DEFAULT_SMALL_WINDOW_WIDTH
@@ -187,6 +194,7 @@ export function useSaplingTableComponent(props: UseSaplingTableProps, emit: UseS
   const initialEditDialogShown = ref(false)
   const lastAutoOpenedEditKey = ref<string | null>(null)
   const tableContainerRef = ref<HTMLElement | null>(null)
+  const manualColumnOrder = ref<string[] | null>(null)
   const windowWidth = ref(
     typeof window === 'undefined' ? MOBILE_TABLE_BREAKPOINT : window.innerWidth,
   )
@@ -331,7 +339,13 @@ export function useSaplingTableComponent(props: UseSaplingTableProps, emit: UseS
     () => props.tableKey,
     () => {
       setAutoRefreshInterval(null)
+      resetColumnOrder()
     },
+  )
+
+  watch(
+    () => props.entityTemplates,
+    () => resetColumnOrder(),
   )
   // #endregion
 
@@ -361,6 +375,71 @@ export function useSaplingTableComponent(props: UseSaplingTableProps, emit: UseS
     tableHeaders.value.filter((header) => header.key !== '__select' && header.key !== '__actions'),
   )
 
+  const selectableDataHeaders = computed(() =>
+    supportedTableHeaders.value.filter(
+      (header) => header.key !== '__select' && header.key !== '__actions',
+    ),
+  )
+  const configuredColumnKeys = computed(() => dataHeaders.value.map((header) => String(header.key)))
+  const effectiveColumnKeys = computed(() =>
+    manualColumnOrder.value === null ? configuredColumnKeys.value : manualColumnOrder.value,
+  )
+  const orderedDataHeaders = computed(() =>
+    selectTableColumns(selectableDataHeaders.value, effectiveColumnKeys.value),
+  )
+  const orderedColumnKeys = computed(() =>
+    orderedDataHeaders.value.map((header) => String(header.key)),
+  )
+  const selectableColumnKeys = computed(() =>
+    selectableDataHeaders.value.map((header) => String(header.key)),
+  )
+  const visibleColumnKeySet = computed(() => new Set(orderedColumnKeys.value))
+  const availableColumnHeaders = computed(() =>
+    selectableDataHeaders.value.filter(
+      (header) => !visibleColumnKeySet.value.has(String(header.key)),
+    ),
+  )
+  const hasManualColumnOrder = computed(() => manualColumnOrder.value !== null)
+
+  function setManualColumnOrder(nextOrder: string[]): void {
+    manualColumnOrder.value = [...new Set(nextOrder)]
+    emit('update:visibleColumnKeys', manualColumnOrder.value)
+  }
+
+  function moveColumn(move: SaplingTableColumnMove): void {
+    const nextOrder = placeTableColumnKey(orderedColumnKeys.value, move)
+    if (nextOrder.join('|') === orderedColumnKeys.value.join('|')) {
+      return
+    }
+
+    setManualColumnOrder(nextOrder)
+  }
+
+  function addColumn(columnKey: string): void {
+    if (
+      !selectableColumnKeys.value.includes(columnKey) ||
+      orderedColumnKeys.value.includes(columnKey)
+    ) {
+      return
+    }
+
+    setManualColumnOrder([...orderedColumnKeys.value, columnKey])
+  }
+
+  function removeColumn(columnKey: string): void {
+    const nextOrder = removeTableColumnKey(orderedColumnKeys.value, columnKey)
+    if (nextOrder.join('|') === orderedColumnKeys.value.join('|')) {
+      return
+    }
+
+    setManualColumnOrder(nextOrder)
+  }
+
+  function resetColumnOrder(): void {
+    manualColumnOrder.value = null
+    emit('update:visibleColumnKeys', configuredColumnKeys.value)
+  }
+
   const mobileCardHeaders = computed<SaplingTableHeaderItem[]>(() => {
     const mobileSourceHeaders = props.headers?.length
       ? dataHeaders.value
@@ -372,7 +451,7 @@ export function useSaplingTableComponent(props: UseSaplingTableProps, emit: UseS
   })
 
   const visibleHeaders = computed<SaplingTableHeaderItem[]>(() => {
-    let headers = dataHeaders.value.map((header) =>
+    let headers = orderedDataHeaders.value.map((header) =>
       withCellClass(header, 'sapling-table__cell--data'),
     )
 
@@ -408,6 +487,10 @@ export function useSaplingTableComponent(props: UseSaplingTableProps, emit: UseS
     selectedItems,
     localColumnFilters,
     visibleHeaders,
+    orderedColumnKeys,
+    selectableColumnKeys,
+    availableColumnHeaders,
+    hasManualColumnOrder,
     mobileCardHeaders,
     canNavigate,
     canShowInformation,
@@ -446,6 +529,10 @@ export function useSaplingTableComponent(props: UseSaplingTableProps, emit: UseS
     getColumnFilterItem,
     getFilterOperatorOptions,
     isColumnFilterable,
+    moveColumn,
+    addColumn,
+    removeColumn,
+    resetColumnOrder,
     downloadJSON,
     exportCSV,
     exportCSVTemplate,

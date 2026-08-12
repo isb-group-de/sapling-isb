@@ -78,6 +78,10 @@
               :form-config-menu-items="formConfigMenuItems ?? []"
               :selected-form-config-label="selectedFormConfigLabel"
               :is-loading-form-configs="isLoadingFormConfigs === true"
+              :can-save-current-view="canSaveCurrentView"
+              :has-temporary-column-order="hasManualColumnOrder"
+              :is-column-order-editing="isColumnOrderEditing"
+              :is-column-chooser-open="isColumnChooserOpen"
               @download-json="downloadJSON"
               @download-csv="exportCSV"
               @download-csv-template="exportCSVTemplate"
@@ -86,7 +90,13 @@
               @update:auto-refresh-interval-minutes="setAutoRefreshInterval"
               @favorite="openFavoriteDialog"
               @select-favorite="selectFavorite"
-              @select-form-config="emit('selectFormConfig', $event)"
+              @select-form-config="selectFormConfig"
+              @set-default-form-config="emit('setDefaultFormConfig', $event)"
+              @begin-column-order-edit="beginColumnOrderEdit"
+              @finish-column-order-edit="finishColumnOrderEdit"
+              @toggle-column-chooser="isColumnChooserOpen = !isColumnChooserOpen"
+              @save-current-view="openTableViewDialog"
+              @reset-temporary-column-order="resetColumnOrder"
               @add="openCreateDialog"
             >
               <template v-if="showSidePanelToggleButton || showFormConfigButton" #leading>
@@ -197,6 +207,7 @@
         :selected-rows="selectedRows"
         :selected-row="selectedRow"
         :is-header-translation-loading="isHeaderTranslationLoading"
+        :column-order-editing="isColumnOrderEditing"
         :get-column-filter-item="getColumnFilterItem"
         :get-filter-operator-options="getFilterOperatorOptions"
         :is-column-filterable="isColumnFilterable"
@@ -204,6 +215,8 @@
         @update:items-per-page="onItemsPerPageUpdate"
         @update:sort-by="onSortByUpdate"
         @update:column-filter="({ key, value }) => onColumnFilterChange(key, value)"
+        @move-column="moveColumn"
+        @remove-column="removeColumn"
         @select-row="selectRow"
         @change-log="openChangeLog"
         @delete="openDeleteDialog"
@@ -221,6 +234,13 @@
         @reload="refreshTable"
       />
     </div>
+
+    <SaplingTableColumnChooser
+      v-model="isColumnChooserOpen"
+      :available-columns="availableColumnHeaders"
+      @add-column="addColumn"
+      @remove-column="removeColumn"
+    />
 
     <SaplingTableOverlays
       :entity="entity"
@@ -279,6 +299,16 @@
       @save="saveFavorite"
       @cancel="closeFavoriteDialog"
     />
+
+    <SaplingTableViewDialog
+      :model-value="tableViewDialog.visible"
+      :name="tableViewDialog.name"
+      :loading="tableViewDialog.loading || isSavingTableView"
+      @update:model-value="(value) => (tableViewDialog.visible = value)"
+      @update:name="tableViewDialog.name = $event"
+      @save="saveCurrentView"
+      @cancel="closeTableViewDialog"
+    />
   </div>
 </template>
 
@@ -292,11 +322,13 @@ import { useTranslationLoader } from '@/composables/generic/useTranslationLoader
 import { useSaplingMailDialog } from '@/composables/dialog/useSaplingMailDialog'
 import type { SaplingBulkMailAction } from '@/utils/saplingMailMenuUtil'
 import SaplingTableDesktopView from './SaplingTableDesktopView.vue'
+import SaplingTableColumnChooser from './SaplingTableColumnChooser.vue'
 import SaplingTableFavoriteDialog from './SaplingTableFavoriteDialog.vue'
 import SaplingTableMobileView from './SaplingTableMobileView.vue'
 import SaplingTableMultiSelect from './SaplingTableMultiSelect.vue'
 import SaplingTableOverlays from './SaplingTableOverlays.vue'
 import SaplingTableToolbarActions from './SaplingTableToolbarActions.vue'
+import SaplingTableViewDialog from './SaplingTableViewDialog.vue'
 import {
   useSaplingTableComponent,
   type UseSaplingTableEmit,
@@ -309,6 +341,7 @@ import type {
   FormConfigSelectionHandle,
 } from '@/composables/dialog/saplingDialogEdit.utils'
 import { saplingTableDisplayContextKey } from './saplingTableDisplayContext'
+import type { SaplingTableViewSaveRequest } from '@/composables/table/saplingTableColumnOrder'
 // #endregion
 
 // #region Props and Emits
@@ -329,12 +362,15 @@ type SaplingTableProps = UseSaplingTableProps & {
   formConfigMenuItems?: FormConfigMenuItem[]
   selectedFormConfigLabel?: string
   isLoadingFormConfigs?: boolean
+  isSavingTableView?: boolean
   syncEditDialogWithRoute?: boolean
 }
 
 type SaplingTableEmit = UseSaplingTableEmit & {
   (event: 'toggleSidePanel'): void
   (event: 'selectFormConfig', value: FormConfigSelectionHandle): void
+  (event: 'setDefaultFormConfig', value: number): void
+  (event: 'saveCurrentView', value: SaplingTableViewSaveRequest): void
 }
 
 const props = withDefaults(defineProps<SaplingTableProps>(), {
@@ -353,6 +389,9 @@ const currentPersonStore = useCurrentPersonStore()
 
 const hasCompletedInitialLoad = ref(!props.isLoading)
 const importInputRef = ref<HTMLInputElement | null>(null)
+const tableViewDialog = ref({ visible: false, name: '', loading: false })
+const isColumnOrderEditing = ref(false)
+const isColumnChooserOpen = ref(false)
 
 watch(
   () => props.isLoading,
@@ -368,6 +407,8 @@ watch(
   () => props.tableKey,
   () => {
     hasCompletedInitialLoad.value = !props.isLoading
+    isColumnOrderEditing.value = false
+    isColumnChooserOpen.value = false
   },
 )
 
@@ -405,6 +446,12 @@ const showSearchField = computed(() => props.showSearch !== false)
 const showToolbar = computed(() => props.showToolbar !== false)
 const showSelectionToolbar = computed(() => props.showSelectionToolbar !== false)
 const showSidePanelToggleButton = computed(() => props.showSidePanelToggle === true)
+const canSaveCurrentView = computed(
+  () =>
+    props.formConfigMenuItems !== undefined &&
+    Boolean(props.entityHandle) &&
+    orderedColumnKeys.value.length > 0,
+)
 const sidePanelVisible = computed(() => props.sidePanelVisible === true)
 const sidePanelToggleLabel = computed(
   () => props.sidePanelToggleLabel?.trim() || t('global.filter'),
@@ -424,6 +471,10 @@ const {
   selectedRows,
   selectedRow,
   visibleHeaders,
+  orderedColumnKeys,
+  selectableColumnKeys,
+  availableColumnHeaders,
+  hasManualColumnOrder,
   mobileCardHeaders,
   canNavigate,
   canShowInformation,
@@ -459,6 +510,10 @@ const {
   getColumnFilterItem,
   getFilterOperatorOptions,
   isColumnFilterable,
+  moveColumn,
+  addColumn,
+  removeColumn,
+  resetColumnOrder,
   showToolbarActionsInline,
   isMobileTable,
   autoRefreshIntervalMinutes,
@@ -538,6 +593,55 @@ function onMailToSelected(action: SaplingBulkMailAction): void {
 
 function openImportFilePicker(): void {
   importInputRef.value?.click()
+}
+
+function openTableViewDialog(): void {
+  tableViewDialog.value = {
+    visible: true,
+    name: props.selectedFormConfigLabel?.trim() ?? '',
+    loading: false,
+  }
+}
+
+function beginColumnOrderEdit(): void {
+  isColumnOrderEditing.value = true
+}
+
+function finishColumnOrderEdit(): void {
+  isColumnOrderEditing.value = false
+  isColumnChooserOpen.value = false
+}
+
+function selectFormConfig(handle: FormConfigSelectionHandle): void {
+  isColumnOrderEditing.value = false
+  isColumnChooserOpen.value = false
+  resetColumnOrder()
+  emit('selectFormConfig', handle)
+}
+
+function closeTableViewDialog(): void {
+  if (tableViewDialog.value.loading || props.isSavingTableView) return
+  tableViewDialog.value = { visible: false, name: '', loading: false }
+}
+
+function saveCurrentView(): void {
+  const name = tableViewDialog.value.name.trim()
+  if (!name || tableViewDialog.value.loading || props.isSavingTableView) return
+
+  tableViewDialog.value.loading = true
+  emit('saveCurrentView', {
+    name,
+    orderedColumnKeys: [...orderedColumnKeys.value],
+    selectableColumnKeys: [...selectableColumnKeys.value],
+    complete(saved) {
+      tableViewDialog.value.loading = false
+      if (saved) {
+        isColumnOrderEditing.value = false
+        isColumnChooserOpen.value = false
+        tableViewDialog.value = { visible: false, name: '', loading: false }
+      }
+    },
+  })
 }
 
 async function openFormConfigForTable(): Promise<void> {

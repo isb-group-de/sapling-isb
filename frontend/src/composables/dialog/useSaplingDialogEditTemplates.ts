@@ -80,12 +80,16 @@ export function useSaplingDialogEditTemplates({
         title: t('formConfig.defaultView'),
         icon: 'mdi-view-dashboard-outline',
         active: selectedFormConfigHandle.value === null,
+        isDefault: getDefaultFormConfigHandle(selectableConfigs) === null,
+        canSetDefault: false,
       },
       ...selectableConfigs.map((config) => ({
         handle: config.handle ?? null,
         title: config.name,
         icon: config.isDefault ? 'mdi-table-star' : 'mdi-table-cog',
         active: selectedFormConfigHandle.value === config.handle,
+        isDefault: getDefaultFormConfigHandle(selectableConfigs) === config.handle,
+        canSetDefault: false,
       })),
     ]
   })

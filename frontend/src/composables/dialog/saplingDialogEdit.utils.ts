@@ -14,6 +14,8 @@ export interface FormConfigMenuItem {
   title: string
   icon: string
   active: boolean
+  isDefault: boolean
+  canSetDefault: boolean
 }
 
 export function getItemHandle(item?: SaplingGenericItem | null): string | number | null {
@@ -108,11 +110,20 @@ function applyFieldConfig(
 export function getDefaultFormConfigHandle(
   configs: SaplingFormConfigItem[],
 ): FormConfigSelectionHandle {
+  const scopePriority: Record<SaplingFormConfigItem['scope'], number> = {
+    global: 0,
+    role: 1,
+    person: 2,
+  }
+
   return (
-    configs.find(
-      (config) =>
-        config.isActive !== false && config.isDefault && typeof config.handle === 'number',
-    )?.handle ?? null
+    configs
+      .filter(
+        (config) =>
+          config.isActive !== false && config.isDefault && typeof config.handle === 'number',
+      )
+      .sort((left, right) => scopePriority[right.scope] - scopePriority[left.scope])[0]?.handle ??
+    null
   )
 }
 

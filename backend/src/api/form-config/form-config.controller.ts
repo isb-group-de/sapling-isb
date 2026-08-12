@@ -26,6 +26,7 @@ import { FormConfigService } from './form-config.service';
 import {
   EffectiveSaplingFormTemplateDto,
   SaplingFormConfigValidationResultDto,
+  SavePersonalSaplingTableViewDto,
   SaveSaplingFormConfigDto,
 } from './dto/form-config.dto';
 import { SaplingFormConfigItem } from '../../entity/SaplingFormConfigItem';
@@ -89,6 +90,21 @@ export class FormConfigController {
     @Param('entityHandle') entityHandle: string,
   ): Promise<SaplingFormConfigItem[]> {
     return this.formConfigService.listConfigs(entityHandle);
+  }
+
+  @Get(':entityHandle/table-views')
+  @ApiOperation({
+    summary: 'List available table views',
+    description:
+      'Returns active global, matching role, and authenticated-person table views for one entity.',
+  })
+  async listTableViews(
+    @Req() req: Request,
+    @Param('entityHandle') entityHandle: string,
+  ): Promise<SaplingFormConfigItem[]> {
+    const person = req.user as PersonItem;
+    this.assertCanReadEntity(person, entityHandle);
+    return this.formConfigService.listApplicableConfigs(entityHandle, person);
   }
 
   @Get(':entityHandle/:handle/export')
@@ -174,6 +190,61 @@ export class FormConfigController {
     return this.saveConfigForRequest(req, entityHandle, payload, 'insert');
   }
 
+  @Post(':entityHandle/personal-table-view')
+  @ApiOperation({
+    summary: 'Create a personal table view',
+    description:
+      'Creates a person-scoped table configuration for the authenticated user without granting access to global form-configuration administration.',
+  })
+  @ApiParam({ name: 'entityHandle', type: String })
+  @ApiResponse({
+    status: 201,
+    description: 'Created personal table view.',
+    type: SaplingFormConfigItem,
+  })
+  async createPersonalTableView(
+    @Req() req: Request,
+    @Param('entityHandle') entityHandle: string,
+    @Body() payload: SavePersonalSaplingTableViewDto,
+  ): Promise<SaplingFormConfigItem> {
+    const person = req.user as PersonItem;
+    this.assertCanReadEntity(person, entityHandle);
+
+    const templates = this.templateService.getEntityTemplate(entityHandle);
+    return this.formConfigService.saveConfig(
+      entityHandle,
+      {
+        name: payload.name,
+        scope: 'person',
+        scopeHandle: String(person.handle),
+        isActive: true,
+        isDefault: false,
+        config: payload.config,
+      },
+      templates,
+    );
+  }
+
+  @Patch(':entityHandle/personal-table-view/:handle/default')
+  @ApiOperation({
+    summary: 'Set a personal default table view',
+    description:
+      'Makes one table view owned by the authenticated user their default for the entity.',
+  })
+  async setPersonalTableViewDefault(
+    @Req() req: Request,
+    @Param('entityHandle') entityHandle: string,
+    @Param('handle') handle: string,
+  ): Promise<SaplingFormConfigItem> {
+    const person = req.user as PersonItem;
+    this.assertCanReadEntity(person, entityHandle);
+    return this.formConfigService.setPersonalDefault(
+      entityHandle,
+      Number(handle),
+      String(person.handle),
+    );
+  }
+
   @Patch(':entityHandle/:handle')
   @ApiOperation({
     summary: 'Update a form configuration',
@@ -230,6 +301,16 @@ export class FormConfigController {
       action === 'insert' ? permission.allowInsert : permission.allowUpdate;
 
     if (!isAllowed && !this.hasAdministratorRole(user)) {
+      throw new ForbiddenException('exception.forbidden');
+    }
+  }
+
+  private assertCanReadEntity(user: PersonItem, entityHandle: string): void {
+    const permission = this.currentService.getEntityPermissions(
+      user,
+      entityHandle,
+    );
+    if (!permission.allowRead && !this.hasAdministratorRole(user)) {
       throw new ForbiddenException('exception.forbidden');
     }
   }

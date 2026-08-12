@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -53,6 +54,52 @@ export class FormConfigService {
       { entity: { handle: entityHandle } },
       { orderBy: { scope: 'ASC', name: 'ASC', handle: 'ASC' } },
     );
+  }
+
+  async listApplicableConfigs(
+    entityHandle: string,
+    person?: PersonItem | null,
+  ): Promise<SaplingFormConfigItem[]> {
+    const roleHandles = this.getPersonRoleHandles(person);
+    const personHandle = person?.handle != null ? String(person.handle) : null;
+    const items = await this.em.find(
+      SaplingFormConfigItem,
+      { entity: { handle: entityHandle }, isActive: true },
+      { orderBy: { scope: 'ASC', name: 'ASC', handle: 'ASC' } },
+    );
+
+    return items.filter((item) =>
+      this.isConfigApplicable(item, roleHandles, personHandle),
+    );
+  }
+
+  async setPersonalDefault(
+    entityHandle: string,
+    handle: number,
+    personHandle: string,
+  ): Promise<SaplingFormConfigItem> {
+    const target = await this.getConfig(entityHandle, handle);
+    if (
+      target.scope !== 'person' ||
+      target.scopeHandle?.trim() !== personHandle
+    ) {
+      throw new ForbiddenException('exception.forbidden');
+    }
+
+    const personalConfigs = await this.em.find(SaplingFormConfigItem, {
+      entity: { handle: entityHandle },
+      scope: 'person',
+      scopeHandle: personHandle,
+    });
+    for (const config of personalConfigs) {
+      config.isDefault = config.handle === target.handle;
+      this.em.persist(config);
+    }
+    target.isDefault = true;
+    target.isActive = true;
+    this.em.persist(target);
+    await this.em.flush();
+    return target;
   }
 
   async getConfig(
@@ -215,23 +262,9 @@ export class FormConfigService {
     entityHandle: string,
     person?: PersonItem | null,
   ): Promise<NormalizedSaplingFormConfig[]> {
-    const roleHandles = this.getPersonRoleHandles(person);
-    const personHandle = person?.handle != null ? String(person.handle) : null;
-    const items = await this.em.find(
-      SaplingFormConfigItem,
-      {
-        entity: { handle: entityHandle },
-        isActive: true,
-      },
-      {
-        orderBy: { scope: 'ASC', isDefault: 'DESC', handle: 'ASC' },
-      },
-    );
+    const items = await this.listApplicableConfigs(entityHandle, person);
 
     return items
-      .filter((item) =>
-        this.isConfigApplicable(item, roleHandles, personHandle),
-      )
       .sort((left, right) => {
         const leftOrder = CONFIG_SCOPE_ORDER[left.scope] ?? 0;
         const rightOrder = CONFIG_SCOPE_ORDER[right.scope] ?? 0;

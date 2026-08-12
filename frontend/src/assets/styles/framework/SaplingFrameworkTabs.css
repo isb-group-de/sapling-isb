@@ -16,6 +16,23 @@
   max-height: var(--sapling-tab-strip-height) !important;
 }
 
+/* Dashboard labels use two lines and can overflow horizontally. Reserve a
+ * separate row for the native scrollbar so it never consumes label height. */
+.sapling-dashboard__tabs {
+  height: calc(var(--sapling-tab-strip-height) + var(--sapling-space-md));
+  min-height: calc(var(--sapling-tab-strip-height) + var(--sapling-space-md));
+  max-height: calc(var(--sapling-tab-strip-height) + var(--sapling-space-md)) !important;
+}
+
+.sapling-dashboard__tabs .v-slide-group__container {
+  align-items: flex-start;
+}
+
+.sapling-dashboard__tabs .v-slide-group__content {
+  height: var(--sapling-tab-strip-height);
+  min-height: var(--sapling-tab-strip-height);
+}
+
 .sapling-dashboard__tabs .v-slide-group__content,
 .sapling-note-tabs .v-slide-group__content,
 .sapling-admin-tabs .v-slide-group__content,
