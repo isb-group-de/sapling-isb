@@ -22,6 +22,7 @@ import { type Rel } from '@mikro-orm/core';
  * @summary         Entity representing a contract, including persisted properties, relations, and system fields.
  *
  * @property        {number}                handle              Unique identifier for the contract (primary key)
+ * @property        {string}                contractNumber      Optional contract number
  * @property        {string}                title               Title of the contract
  * @property        {string}                description         Description of the contract
  * @property        {Date}                  startDate           Start date of the contract
@@ -46,20 +47,40 @@ export class ContractItem {
   handle?: number;
 
   /**
-   * Title of the contract.
+   * Optional contract number.
    * @type {string}
    */
-  @ApiProperty()
-  @Sapling(['isValue', 'isOrderASC', 'isDuplicateCheck'])
+  @ApiPropertyOptional()
+  @Sapling(['isValue', 'isOrderDESC', 'isDuplicateCheck'])
   @SaplingForm({
     order: 100,
     group: 'contract.groupBasics',
     groupOrder: 100,
-    width: 2,
+    width: 1,
     visible: true,
     tableOrder: 100,
     tableVisible: true,
     mobileOrder: 100,
+    mobileVisible: false,
+  })
+  @Property({ length: 128, nullable: true })
+  contractNumber?: string;
+
+  /**
+   * Title of the contract.
+   * @type {string}
+   */
+  @ApiProperty()
+  @Sapling(['isValue', 'isDuplicateCheck'])
+  @SaplingForm({
+    order: 200,
+    group: 'contract.groupBasics',
+    groupOrder: 100,
+    width: 2,
+    visible: true,
+    tableOrder: 200,
+    tableVisible: true,
+    mobileOrder: 200,
     mobileVisible: true,
   })
   @Property({ length: 128, nullable: false })

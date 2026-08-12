@@ -1,6 +1,7 @@
 [
     {
         "title":  "IT Servicevertrag 2022",
+        "contractNumber":  "VTR-0001",
         "description":  "Wartung und Support für IT-Infrastruktur.",
         "startDate":  "2022-01-15T00:00:00Z",
         "endDate":  "2026-01-14T00:00:00Z",
@@ -17,6 +18,7 @@
     },
     {
         "title":  "Cloud Migration Vertrag",
+        "contractNumber":  "VTR-0002",
         "description":  "Migration von lokalen Servern in die Cloud.",
         "startDate":  "2025-03-01T00:00:00Z",
         "endDate":  "2026-03-01T00:00:00Z",
@@ -33,6 +35,7 @@
     },
     {
         "title":  "Softwarelizenzvertrag Q4",
+        "contractNumber":  "VTR-0003",
         "description":  "Bereitstellung und Wartung von Lizenzen für Unternehmenssoftware.",
         "startDate":  "2025-10-01T00:00:00Z",
         "endDate":  "2026-09-30T00:00:00Z",
@@ -49,6 +52,7 @@
     },
     {
         "title":  "Wartungsvertrag Maschinenpark",
+        "contractNumber":  "VTR-0004",
         "description":  "Regelmäßige Wartung der Produktionsmaschinen.",
         "startDate":  "2021-06-01T00:00:00Z",
         "endDate":  "2026-06-01T00:00:00Z",
@@ -65,6 +69,7 @@
     },
     {
         "title":  "Beratungsvertrag Digitalisierung",
+        "contractNumber":  "VTR-0005",
         "description":  "Beratung zur digitalen Transformation.",
         "startDate":  "2025-09-01T00:00:00Z",
         "endDate":  "2026-09-01T00:00:00Z",
@@ -81,6 +86,7 @@
     },
     {
         "title":  "Supportvertrag Helpdesk",
+        "contractNumber":  "VTR-0006",
         "description":  "24/7 Helpdesk für Endanwender.",
         "startDate":  "2022-05-01T00:00:00Z",
         "endDate":  "2026-05-01T00:00:00Z",
@@ -97,6 +103,7 @@
     },
     {
         "title":  "Vertrag IT-Sicherheit",
+        "contractNumber":  "VTR-0007",
         "description":  "Implementierung und Überwachung von Sicherheitsmaßnahmen.",
         "startDate":  "2025-02-01T00:00:00Z",
         "endDate":  "2026-02-01T00:00:00Z",
@@ -113,6 +120,7 @@
     },
     {
         "title":  "Vertrag Webentwicklung",
+        "contractNumber":  "VTR-0008",
         "description":  "Entwicklung und Pflege der Firmenwebsite.",
         "startDate":  "2025-07-01T00:00:00Z",
         "endDate":  "2026-07-01T00:00:00Z",
@@ -129,6 +137,7 @@
     },
     {
         "title":  "Vertrag Hardwarelieferung",
+        "contractNumber":  "VTR-0009",
         "description":  "Lieferung von Hardware-Komponenten für das Rechenzentrum.",
         "startDate":  "2022-11-01T00:00:00Z",
         "endDate":  "2023-11-01T00:00:00Z",
@@ -145,6 +154,7 @@
     },
     {
         "title":  "Vertrag Datenanalyse",
+        "contractNumber":  "VTR-0010",
         "description":  "Analyse von Geschäftsdaten zur Optimierung von Prozessen.",
         "startDate":  "2025-04-01T00:00:00Z",
         "endDate":  "2026-04-01T00:00:00Z",
@@ -161,6 +171,7 @@
     },
     {
         "title":  "Vertrag Netzwerkbetreuung",
+        "contractNumber":  "VTR-0011",
         "description":  "Betreuung und Monitoring des Firmennetzwerks.",
         "startDate":  "2025-01-01T00:00:00Z",
         "endDate":  "2026-01-01T00:00:00Z",
@@ -177,6 +188,7 @@
     },
     {
         "title":  "Vertrag Consulting SAP",
+        "contractNumber":  "VTR-0012",
         "description":  "Beratung und Customizing von SAP-Systemen.",
         "startDate":  "2022-08-01T00:00:00Z",
         "endDate":  "2026-08-01T00:00:00Z",
@@ -193,6 +205,7 @@
     },
     {
         "title":  "Vertrag App-Entwicklung",
+        "contractNumber":  "VTR-0013",
         "description":  "Entwicklung einer mobilen App für Kundenservice.",
         "startDate":  "2025-05-01T00:00:00Z",
         "endDate":  "2026-05-01T00:00:00Z",
@@ -209,6 +222,7 @@
     },
     {
         "title":  "Vertrag IT-Notfallmanagement",
+        "contractNumber":  "VTR-0014",
         "description":  "Planung und Umsetzung von Notfallmaßnahmen.",
         "startDate":  "2022-03-01T00:00:00Z",
         "endDate":  "2026-03-01T00:00:00Z",
@@ -225,6 +239,7 @@
     },
     {
         "title":  "Vertrag Hosting Services",
+        "contractNumber":  "VTR-0015",
         "description":  "Bereitstellung und Wartung von Hosting-Diensten.",
         "startDate":  "2025-11-01T00:00:00Z",
         "endDate":  "2026-11-01T00:00:00Z",
@@ -241,6 +256,7 @@
     },
     {
         "title":  "Vertrag IT-Training",
+        "contractNumber":  "VTR-0016",
         "description":  "Schulungen für Mitarbeiter zu neuen IT-Systemen.",
         "startDate":  "2025-06-01T00:00:00Z",
         "endDate":  "2026-06-01T00:00:00Z",
@@ -257,6 +273,7 @@
     },
     {
         "title":  "Vertrag Backup-Lösungen",
+        "contractNumber":  "VTR-0017",
         "description":  "Implementierung von Backup- und Recovery-Strategien.",
         "startDate":  "2022-09-01T00:00:00Z",
         "endDate":  "2026-09-01T00:00:00Z",
@@ -273,6 +290,7 @@
     },
     {
         "title":  "Vertrag Digitalisierung HR",
+        "contractNumber":  "VTR-0018",
         "description":  "Digitalisierung der Personalakten und Prozesse.",
         "startDate":  "2025-02-01T00:00:00Z",
         "endDate":  "2026-02-01T00:00:00Z",
@@ -289,6 +307,7 @@
     },
     {
         "title":  "Vertrag IT-Asset Management",
+        "contractNumber":  "VTR-0019",
         "description":  "Verwaltung und Tracking von IT-Assets.",
         "startDate":  "2025-01-01T00:00:00Z",
         "endDate":  "2026-01-01T00:00:00Z",
@@ -305,6 +324,7 @@
     },
     {
         "title":  "Vertrag IT-Strategie",
+        "contractNumber":  "VTR-0020",
         "description":  "Entwicklung einer langfristigen IT-Strategie.",
         "startDate":  "2022-07-01T00:00:00Z",
         "endDate":  "2026-07-01T00:00:00Z",
@@ -321,6 +341,7 @@
     },
     {
         "title":  "Vertrag IT-Compliance",
+        "contractNumber":  "VTR-0021",
         "description":  "Sicherstellung der Einhaltung gesetzlicher Vorgaben.",
         "startDate":  "2025-10-01T00:00:00Z",
         "endDate":  "2026-10-01T00:00:00Z",
@@ -337,6 +358,7 @@
     },
     {
         "title":  "Vertrag IT-Integration",
+        "contractNumber":  "VTR-0022",
         "description":  "Integration neuer Systeme in die bestehende IT-Landschaft.",
         "startDate":  "2025-03-01T00:00:00Z",
         "endDate":  "2026-03-01T00:00:00Z",
@@ -353,6 +375,7 @@
     },
     {
         "title":  "Vertrag IT-Servicedesk",
+        "contractNumber":  "VTR-0023",
         "description":  "First-Level-Support für Mitarbeiter.",
         "startDate":  "2022-12-01T00:00:00Z",
         "endDate":  "2023-12-01T00:00:00Z",
@@ -369,6 +392,7 @@
     },
     {
         "title":  "Vertrag IT-Modernisierung",
+        "contractNumber":  "VTR-0024",
         "description":  "Modernisierung der IT-Infrastruktur.",
         "startDate":  "2025-06-01T00:00:00Z",
         "endDate":  "2026-06-01T00:00:00Z",
@@ -385,6 +409,7 @@
     },
     {
         "title":  "Vertrag IT-Helpdesk",
+        "contractNumber":  "VTR-0025",
         "description":  "Helpdesk für technische Anfragen.",
         "startDate":  "2025-05-01T00:00:00Z",
         "endDate":  "2026-05-01T00:00:00Z",
@@ -401,6 +426,7 @@
     },
     {
         "title":  "Vertrag IT-Cloud Services",
+        "contractNumber":  "VTR-0026",
         "description":  "Bereitstellung von Cloud-Diensten.",
         "startDate":  "2022-10-01T00:00:00Z",
         "endDate":  "2026-10-01T00:00:00Z",
@@ -417,6 +443,7 @@
     },
     {
         "title":  "Vertrag IT-Consulting",
+        "contractNumber":  "VTR-0027",
         "description":  "Beratung zu IT-Projekten und -Prozessen.",
         "startDate":  "2025-08-01T00:00:00Z",
         "endDate":  "2026-08-01T00:00:00Z",
@@ -433,6 +460,7 @@
     },
     {
         "title":  "Vertrag IT-Servicemanagement",
+        "contractNumber":  "VTR-0028",
         "description":  "Management von IT-Services und Prozessen.",
         "startDate":  "2025-07-01T00:00:00Z",
         "endDate":  "2026-07-01T00:00:00Z",
@@ -449,6 +477,7 @@
     },
     {
         "title":  "Vertrag IT-Change Management",
+        "contractNumber":  "VTR-0029",
         "description":  "Begleitung von Change-Prozessen in der IT.",
         "startDate":  "2022-04-01T00:00:00Z",
         "endDate":  "2026-04-01T00:00:00Z",
@@ -465,6 +494,7 @@
     },
     {
         "title":  "Vertrag IT-Serviceteam",
+        "contractNumber":  "VTR-0030",
         "description":  "Bereitstellung eines IT-Serviceteams.",
         "startDate":  "2025-12-01T00:00:00Z",
         "endDate":  "2026-12-01T00:00:00Z",
@@ -481,6 +511,7 @@
     },
     {
         "title":  "Vertrag IT-Serviceteam 2",
+        "contractNumber":  "VTR-0031",
         "description":  "Bereitstellung eines zweiten IT-Serviceteams.",
         "startDate":  "2025-08-01T00:00:00Z",
         "endDate":  "2026-08-01T00:00:00Z",
@@ -497,6 +528,7 @@
     },
     {
         "title":  "Vertrag IT-Serviceteam 3",
+        "contractNumber":  "VTR-0032",
         "description":  "Bereitstellung eines dritten IT-Serviceteams.",
         "startDate":  "2022-06-01T00:00:00Z",
         "endDate":  "2023-06-01T00:00:00Z",
@@ -513,6 +545,7 @@
     },
     {
         "title":  "Vertrag IT-Serviceteam 4",
+        "contractNumber":  "VTR-0033",
         "description":  "Bereitstellung eines vierten IT-Serviceteams.",
         "startDate":  "2025-09-01T00:00:00Z",
         "endDate":  "2026-09-01T00:00:00Z",
@@ -529,6 +562,7 @@
     },
     {
         "title":  "Vertrag IT-Serviceteam 5",
+        "contractNumber":  "VTR-0034",
         "description":  "Bereitstellung eines fünften IT-Serviceteams.",
         "startDate":  "2025-02-01T00:00:00Z",
         "endDate":  "2026-02-01T00:00:00Z",
@@ -545,6 +579,7 @@
     },
     {
         "title":  "Vertrag IT-Serviceteam 6",
+        "contractNumber":  "VTR-0035",
         "description":  "Bereitstellung eines sechsten IT-Serviceteams.",
         "startDate":  "2022-05-01T00:00:00Z",
         "endDate":  "2023-05-01T00:00:00Z",
@@ -561,6 +596,7 @@
     },
     {
         "title":  "Vertrag IT-Serviceteam 7",
+        "contractNumber":  "VTR-0036",
         "description":  "Bereitstellung eines siebten IT-Serviceteams.",
         "startDate":  "2025-11-01T00:00:00Z",
         "endDate":  "2026-11-01T00:00:00Z",
@@ -577,6 +613,7 @@
     },
     {
         "title":  "Vertrag IT-Serviceteam 8",
+        "contractNumber":  "VTR-0037",
         "description":  "Bereitstellung eines achten IT-Serviceteams.",
         "startDate":  "2025-03-01T00:00:00Z",
         "endDate":  "2026-03-01T00:00:00Z",
@@ -593,6 +630,7 @@
     },
     {
         "title":  "Vertrag IT-Serviceteam 9",
+        "contractNumber":  "VTR-0038",
         "description":  "Bereitstellung eines neunten IT-Serviceteams.",
         "startDate":  "2022-07-01T00:00:00Z",
         "endDate":  "2023-07-01T00:00:00Z",
@@ -609,6 +647,7 @@
     },
     {
         "title":  "Vertrag IT-Serviceteam 10",
+        "contractNumber":  "VTR-0039",
         "description":  "Bereitstellung eines zehnten IT-Serviceteams.",
         "startDate":  "2025-10-01T00:00:00Z",
         "endDate":  "2026-10-01T00:00:00Z",
@@ -625,6 +664,7 @@
     },
     {
         "title":  "Vertrag IT-Serviceteam 11",
+        "contractNumber":  "VTR-0040",
         "description":  "Bereitstellung eines elften IT-Serviceteams.",
         "startDate":  "2025-01-01T00:00:00Z",
         "endDate":  "2026-01-01T00:00:00Z",
@@ -641,6 +681,7 @@
     },
     {
         "title":  "Vertrag IT-Serviceteam 12",
+        "contractNumber":  "VTR-0041",
         "description":  "Bereitstellung eines zwölften IT-Serviceteams.",
         "startDate":  "2022-08-01T00:00:00Z",
         "endDate":  "2023-08-01T00:00:00Z",
@@ -657,6 +698,7 @@
     },
     {
         "title":  "Vertrag IT-Serviceteam 13",
+        "contractNumber":  "VTR-0042",
         "description":  "Bereitstellung eines dreizehnten IT-Serviceteams.",
         "startDate":  "2025-05-01T00:00:00Z",
         "endDate":  "2026-05-01T00:00:00Z",
@@ -673,6 +715,7 @@
     },
     {
         "title":  "Vertrag IT-Serviceteam 14",
+        "contractNumber":  "VTR-0043",
         "description":  "Bereitstellung eines vierzehnten IT-Serviceteams.",
         "startDate":  "2025-06-01T00:00:00Z",
         "endDate":  "2026-06-01T00:00:00Z",
@@ -689,6 +732,7 @@
     },
     {
         "title":  "Vertrag IT-Serviceteam 15",
+        "contractNumber":  "VTR-0044",
         "description":  "Bereitstellung eines fünfzehnten IT-Serviceteams.",
         "startDate":  "2022-09-01T00:00:00Z",
         "endDate":  "2023-09-01T00:00:00Z",
@@ -705,6 +749,7 @@
     },
     {
         "title":  "Vertrag IT-Projektmanagement",
+        "contractNumber":  "VTR-0045",
         "description":  "Projektmanagement für die Einführung neuer Softwarelösungen.",
         "startDate":  "2025-04-01T00:00:00Z",
         "endDate":  "2026-04-01T00:00:00Z",
@@ -721,6 +766,7 @@
     },
     {
         "title":  "Vertrag IT-Support Außendienst",
+        "contractNumber":  "VTR-0046",
         "description":  "Vor-Ort-Support für technische Störungen.",
         "startDate":  "2024-11-01T00:00:00Z",
         "endDate":  "2024-11-01T00:00:00Z",
@@ -737,6 +783,7 @@
     },
     {
         "title":  "Vertrag IT-Weiterbildung",
+        "contractNumber":  "VTR-0047",
         "description":  "Weiterbildung der Mitarbeiter im Bereich IT-Sicherheit.",
         "startDate":  "2025-02-01T00:00:00Z",
         "endDate":  "2026-02-01T00:00:00Z",
@@ -753,6 +800,7 @@
     },
     {
         "title":  "Vertrag IT-Beschaffung",
+        "contractNumber":  "VTR-0048",
         "description":  "Beschaffung von IT-Equipment für neue Standorte.",
         "startDate":  "2025-07-01T00:00:00Z",
         "endDate":  "2026-07-01T00:00:00Z",
@@ -769,6 +817,7 @@
     },
     {
         "title":  "Vertrag IT-Optimierung",
+        "contractNumber":  "VTR-0049",
         "description":  "Optimierung der bestehenden IT-Infrastruktur.",
         "startDate":  "2024-05-01T00:00:00Z",
         "endDate":  "2024-05-01T00:00:00Z",
@@ -785,6 +834,7 @@
     },
     {
         "title":  "Vertrag IT-Serviceline",
+        "contractNumber":  "VTR-0050",
         "description":  "Bereitstellung einer IT-Serviceline für Kundenanfragen.",
         "startDate":  "2025-09-01T00:00:00Z",
         "endDate":  "2025-09-01T00:00:00Z",

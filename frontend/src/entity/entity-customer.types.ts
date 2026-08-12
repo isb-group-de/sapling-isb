@@ -63,6 +63,8 @@ export interface CountryItem extends SaplingGenericItem {
 export interface ContractItem extends SaplingGenericItem {
   /** Unique identifier for the contract */
   handle: number | null
+  /** Optional contract number */
+  contractNumber?: string | null
   /** Title of the contract */
   title: string
   /** Description of the contract */
