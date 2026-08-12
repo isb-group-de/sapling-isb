@@ -18,25 +18,28 @@
       @keydown.esc.stop.prevent="closeJsonDialog"
     >
       <SaplingDialogCard
-        class="sapling-dialog-json-card sapling-dialog-card--fullscreen"
+        class="sapling-dialog-json-card sapling-dialog-card--fill"
         :tilt="false"
         :close="closeJsonDialog"
       >
-        <div class="sapling-dialog-shell sapling-fill-shell">
-          <v-card-title class="sapling-dialog-json-title">
-            <span>{{ $t(dialogTitleKey) }}</span>
-            <v-spacer />
-            <v-btn
-              variant="text"
-              size="small"
-              density="comfortable"
-              icon="mdi-close"
-              :aria-label="$t('global.close')"
-              :title="$t('global.close')"
-              @click="closeJsonDialog"
-            />
-          </v-card-title>
-          <v-card-text class="sapling-dialog-json-content">
+        <SaplingDialogShell fill-shell body-class="sapling-dialog-json-content">
+          <template #hero>
+            <v-card-title class="sapling-dialog-json-title">
+              <span>{{ $t(dialogTitleKey) }}</span>
+              <v-spacer />
+              <v-btn
+                variant="text"
+                size="small"
+                density="comfortable"
+                icon="mdi-close"
+                :aria-label="$t('global.close')"
+                :title="$t('global.close')"
+                @click="closeJsonDialog"
+              />
+            </v-card-title>
+          </template>
+
+          <template #body>
             <div class="sapling-dialog-json-body">
               <SaplingCodeMirror
                 v-model="formattedJson"
@@ -46,9 +49,16 @@
                 class="sapling-dialog-json-editor"
               />
             </div>
-          </v-card-text>
-        </div>
-        <SaplingActionClose :close="closeJsonDialog" />
+          </template>
+
+          <template #actions>
+            <SaplingActionJson
+              :cancel="closeJsonDialog"
+              :download="downloadJson"
+              cancel-label-key="global.close"
+            />
+          </template>
+        </SaplingDialogShell>
       </SaplingDialogCard>
     </v-dialog>
   </div>
@@ -56,13 +66,16 @@
 
 <script lang="ts" setup>
 import SaplingCodeMirror from '@/components/common/SaplingCodeMirror.vue'
+import SaplingDialogShell from '@/components/common/SaplingDialogShell.vue'
 import SaplingDialogCard from '@/components/dialog/SaplingDialogCard.vue'
+import SaplingActionJson from '@/components/actions/SaplingActionJson.vue'
 import {
   useSaplingTableJson,
   type UseSaplingTableJsonProps,
 } from '@/composables/table/useSaplingTableJson'
-import SaplingActionClose from '../actions/SaplingActionClose.vue'
+import { downloadTextFile } from '@/composables/table/saplingTableAction.utils'
 import { SAPLING_DIALOG_MAX_WIDTH, SAPLING_DIALOG_HEIGHT } from '@/constants/dialog.constants'
+import { createJsonDownloadFilename } from '@/utils/jsonDownload'
 
 const props = defineProps<UseSaplingTableJsonProps>()
 
@@ -74,4 +87,12 @@ const {
   dialogTitleKey,
   editorTheme,
 } = useSaplingTableJson(props)
+
+function downloadJson() {
+  downloadTextFile(
+    formattedJson.value,
+    createJsonDownloadFilename(`${props.entityHandle}-${props.template.name}`, 'data'),
+    'application/json;charset=utf-8',
+  )
+}
 </script>
