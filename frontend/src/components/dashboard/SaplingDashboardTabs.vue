@@ -1,16 +1,25 @@
 <template>
   <section
     class="sapling-dashboard__board glass-panel"
+    data-tutorial="dashboard-board"
     :class="{ 'sapling-dashboard__board--layout-editing': layoutEditing }"
   >
-    <div v-if="layoutEditing" class="sapling-dashboard__edit-banner" role="status">
+    <div
+      v-if="layoutEditing"
+      class="sapling-dashboard__edit-banner"
+      data-tutorial="dashboard-layout-mode"
+      role="status"
+    >
       <v-icon size="small">mdi-drag-variant</v-icon>
       <div>
         <strong>{{ $t('dashboard.editModeTitle') }}</strong>
         <span>{{ $t('dashboard.editModeText') }}</span>
       </div>
     </div>
-    <div class="sapling-tabs-shell sapling-dashboard__tabs-shell">
+    <div
+      class="sapling-tabs-shell sapling-dashboard__tabs-shell"
+      data-tutorial="dashboard-tabs"
+    >
       <v-tabs v-model="activeTabModel" class="sapling-dashboard__tabs" show-arrows>
         <v-tab
           v-for="(dashboard, dashboardIndex) in dashboards"

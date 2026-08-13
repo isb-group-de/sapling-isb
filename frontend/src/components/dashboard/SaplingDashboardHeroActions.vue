@@ -1,5 +1,5 @@
 <template>
-  <div class="sapling-action-stack">
+  <div class="sapling-action-stack" data-tutorial="dashboard-actions">
     <div class="sapling-action-cluster">
       <v-btn
         color="primary"

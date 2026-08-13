@@ -1,5 +1,6 @@
 <template>
   <SaplingSurface
+    data-tutorial="calendar-events"
     :as="VCalendar"
     v-model="calendarValue"
     class="sapling-event-vcalendar"

@@ -1,5 +1,5 @@
 <template>
-  <section class="sapling-work-filter-panel glass-panel">
+  <section data-tutorial="work-filter-panel" class="sapling-work-filter-panel glass-panel">
     <template v-if="isLoading">
       <div class="sapling-work-filter-skeleton">
         <div class="sapling-work-filter-skeleton__header">
@@ -18,7 +18,7 @@
     </template>
 
     <template v-else>
-      <div class="sapling-work-filter-panel__header">
+      <div data-tutorial="work-filter-summary" class="sapling-work-filter-panel__header">
         <div class="sapling-work-filter-panel__headline">
           <v-icon>mdi-account-group</v-icon>
           <span>{{ $t('navigation.person') + ' & ' + $t('navigation.company') }}</span>
@@ -40,7 +40,11 @@
 
       <div class="sapling-work-filter-panel__content sapling-scrollable">
         <div class="sapling-accordion-scroll-wrapper">
-          <v-expansion-panels v-model="expandedPanels" multiple>
+          <v-expansion-panels
+            v-model="expandedPanels"
+            data-tutorial="work-filter-people-companies"
+            multiple
+          >
             <v-expansion-panel v-if="ownPerson">
               <v-expansion-panel-title>
                 <v-list-subheader>{{ $t('global.me') }}</v-list-subheader>
@@ -108,7 +112,11 @@
               </v-expansion-panel-text>
             </v-expansion-panel>
 
-            <v-expansion-panel v-for="chipFilter in chipFilters" :key="chipFilter.key">
+            <v-expansion-panel
+              v-for="chipFilter in chipFilters"
+              :key="chipFilter.key"
+              data-tutorial="work-filter-attributes"
+            >
               <v-expansion-panel-title>
                 <v-list-subheader>{{ chipFilter.label }}</v-list-subheader>
               </v-expansion-panel-title>

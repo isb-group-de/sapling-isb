@@ -10,7 +10,8 @@ class CookieService {
    */
   static set(name: string, value: string, days = 365) {
     const expires = new Date(Date.now() + days * 864e5).toUTCString()
-    document.cookie = `sapling-${name}=${encodeURIComponent(value)}; expires=${expires}; path=/`
+    const secure = window.location.protocol === 'https:' ? '; Secure' : ''
+    document.cookie = `sapling-${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax${secure}`
   }
 
   /**

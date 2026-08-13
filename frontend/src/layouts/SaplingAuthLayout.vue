@@ -2,7 +2,7 @@
   <div class="sapling-app-layout sapling-auth-layout">
     <template v-if="!isShellTranslationLoading">
       <div class="sapling-app-layout__header">
-        <SaplingHeader v-model="navigationDrawer" />
+        <SaplingHeader ref="headerRef" v-model="navigationDrawer" />
       </div>
 
       <div class="sapling-auth-layout__body">
@@ -39,6 +39,11 @@
       <SaplingRecordChangeLog />
       <SaplingCommandPalette />
       <SaplingHelpDialog />
+      <SaplingDashboardTutorials
+        @set-navigation-open="setTutorialNavigationOpen"
+        @set-profile-menu-open="setTutorialProfileMenuOpen"
+        @close-inbox="closeTutorialInbox"
+      />
     </template>
 
     <div v-else class="sapling-app-layout__loading">
@@ -53,6 +58,7 @@ import { RouterView } from 'vue-router'
 import { useTranslationLoader } from '@/composables/generic/useTranslationLoader'
 import { useSaplingImportJobs } from '@/composables/import/useSaplingImportJobs'
 import SaplingHeader from '@/components/system/SaplingHeader.vue'
+import SaplingDashboardTutorials from '@/components/system/tutorial/SaplingDashboardTutorials.vue'
 
 // Shell widgets: load them only when actually mounted/opened.
 const SaplingAiChat = defineAsyncComponent(() => import('@/components/system/SaplingAiChat.vue'))
@@ -89,6 +95,10 @@ const SaplingHelpDialog = defineAsyncComponent(
 
 const navigationDrawer = ref(false)
 const navigationDrawerMounted = ref(false)
+const headerRef = ref<{
+  closeInbox: () => void
+  setProfileMenu: (value: boolean) => void
+} | null>(null)
 const { startImportJobWatcher, stopImportJobWatcher } = useSaplingImportJobs()
 const { isLoading: isShellTranslationLoading } = useTranslationLoader(
   'global',
@@ -96,7 +106,20 @@ const { isLoading: isShellTranslationLoading } = useTranslationLoader(
   'import',
   'login',
   'permission',
+  'tutorial',
 )
+
+function setTutorialNavigationOpen(value: boolean) {
+  navigationDrawer.value = value
+}
+
+function setTutorialProfileMenuOpen(value: boolean) {
+  headerRef.value?.setProfileMenu(value)
+}
+
+function closeTutorialInbox() {
+  headerRef.value?.closeInbox()
+}
 
 watch(
   navigationDrawer,

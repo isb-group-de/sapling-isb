@@ -153,6 +153,13 @@ adds a dedicated scrollbar row to Vuetify's horizontal slide container. The
 native scrollbar therefore stays below the title and KPI-count lines instead of
 reducing their usable height.
 
+The first-visit dashboard tutorial is the second group orchestrated by
+`SaplingDashboardTutorials.vue`. It explains the KPI workspace, creation and
+template actions, permission-aware quick links, dashboard tabs, KPI cards, and
+layout editing. Its final step temporarily enters the existing layout editor so
+the user sees draggable/resizable cards; finishing or dismissing the tutorial
+cancels that tutorial-started edit and restores the previous local layout.
+
 `Migration20260803120000` adds both fields, backfills existing dashboards in a
 stable handle order, and creates the person/order lookup index. Role-based
 starter provisioning writes `sortOrder` and `kpiOrder` at creation time, so new
@@ -189,15 +196,15 @@ demonstration dashboard-template seeds use the same name-based contract.
 
 Frontend dashboard components:
 
-| Component                                  | Responsibility           |
-| ------------------------------------------ | ------------------------ |
-| `SaplingDashboard.vue`                     | Main dashboard surface   |
+| Component                                  | Responsibility            |
+| ------------------------------------------ | ------------------------- |
+| `SaplingDashboard.vue`                     | Main dashboard surface    |
 | `SaplingDashboardTabs.vue`                 | Tab switching and sorting |
 | `SaplingKpis.vue`                          | KPI rendering and sorting |
-| `SaplingFavorites.vue`                     | Favorite list renderer   |
-| `SaplingDashboardTemplateLoadDialog.vue`   | Load dashboard templates |
-| `SaplingFavoriteTemplateLoadDialog.vue`    | Load favorite templates  |
-| `SaplingDashboardRecommendedFavorites.vue` | Suggested favorites      |
+| `SaplingFavorites.vue`                     | Favorite list renderer    |
+| `SaplingDashboardTemplateLoadDialog.vue`   | Load dashboard templates  |
+| `SaplingFavoriteTemplateLoadDialog.vue`    | Load favorite templates   |
+| `SaplingDashboardRecommendedFavorites.vue` | Suggested favorites       |
 
 ## Extension Checklist
 

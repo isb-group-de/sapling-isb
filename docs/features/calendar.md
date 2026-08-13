@@ -183,6 +183,15 @@ The calendar toolbar keeps the same compact, non-scrolling height in day,
 workweek, week, and month views. Width-dependent actions move into the overflow
 menu instead of making the toolbar itself scroll.
 
+`SaplingCalendarTutorial.vue` provides first-visit onboarding for `/event` and
+can be restarted independently from the command palette. Its targets cover the
+visible period, navigation, display and view controls, calendar grid, entries,
+agenda, and filters. During the agenda/filter steps it asks
+`SaplingEventContextPanels.vue` to expose the corresponding panel so the
+spotlight always references visible UI. Stable `data-tutorial` hooks are part of
+this onboarding contract and should be preserved when the calendar layout is
+refactored.
+
 `useSaplingCalendarDrag.ts` owns timed-event pointer interactions: new drafts,
 move/resize state, readonly guards, forced dirty fields, synthetic click
 suppression, translucent drag colors, cancellation, and rollback snapshots. It

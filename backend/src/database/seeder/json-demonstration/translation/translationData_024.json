@@ -1,0 +1,858 @@
+[
+  {
+    "entity": "tutorial",
+    "property": "step",
+    "de": "Schritt {current} von {total}",
+    "en": "Step {current} of {total}"
+  },
+  {
+    "entity": "tutorial",
+    "property": "end",
+    "de": "Tutorial beenden",
+    "en": "End tutorial"
+  },
+  { "entity": "tutorial", "property": "back", "de": "Zurück", "en": "Back" },
+  { "entity": "tutorial", "property": "next", "de": "Weiter", "en": "Next" },
+  {
+    "entity": "tutorial",
+    "property": "done",
+    "de": "Verstanden",
+    "en": "Got it"
+  },
+  {
+    "entity": "tutorial",
+    "property": "continueToDashboard",
+    "de": "Weiter zum Dashboard",
+    "en": "Continue to dashboard"
+  },
+
+  {
+    "entity": "tutorial",
+    "property": "navigationTriggerTitle",
+    "de": "Navigation öffnen",
+    "en": "Open navigation"
+  },
+  {
+    "entity": "tutorial",
+    "property": "navigationTriggerDescription",
+    "de": "Klicken Sie auf die Menüschaltfläche. Hier öffnen Sie die zentrale Navigation zu allen Arbeitsbereichen.",
+    "en": "Click the menu button. This opens the central navigation to every workspace."
+  },
+  {
+    "entity": "tutorial",
+    "property": "navigationPanelTitle",
+    "de": "Ihre Arbeitsbereiche",
+    "en": "Your workspaces"
+  },
+  {
+    "entity": "tutorial",
+    "property": "navigationPanelDescription",
+    "de": "In der Navigation finden Sie die für Sie freigeschalteten Bereiche. Gruppen lassen sich aufklappen und Favoriten direkt öffnen.",
+    "en": "The navigation contains the areas available to you. Expand groups or open favorites directly."
+  },
+  {
+    "entity": "tutorial",
+    "property": "navigationSearchTitle",
+    "de": "Navigation filtern",
+    "en": "Filter navigation"
+  },
+  {
+    "entity": "tutorial",
+    "property": "navigationSearchDescription",
+    "de": "Mit diesem Suchfeld filtern Sie die Navigation, wenn Sie einen Bereich oder eine Arbeitsliste nicht sofort finden.",
+    "en": "Use this field to filter navigation when you cannot immediately find an area or work list."
+  },
+  {
+    "entity": "tutorial",
+    "property": "navigationPrimaryTitle",
+    "de": "Hauptkategorien",
+    "en": "Main categories"
+  },
+  {
+    "entity": "tutorial",
+    "property": "navigationPrimaryDescription",
+    "de": "Die Hauptkategorien bündeln zusammengehörige Fachbereiche. Ein Klick wechselt die daneben angezeigten Inhalte, ohne die Navigation zu verlassen.",
+    "en": "Main categories group related business areas. A click changes the content shown beside them without leaving navigation."
+  },
+  {
+    "entity": "tutorial",
+    "property": "navigationDetailTitle",
+    "de": "Unterkategorien und Arbeitslisten",
+    "en": "Subcategories and work lists"
+  },
+  {
+    "entity": "tutorial",
+    "property": "navigationDetailDescription",
+    "de": "Rechts sehen Sie Unterkategorien, Datentypen und die dazugehörigen Arbeitslisten. Einträge mit mehreren Ansichten bieten darunter eigene Listen an.",
+    "en": "On the right, you see subcategories, record types, and their work lists. Entries with several views list them underneath."
+  },
+  {
+    "entity": "tutorial",
+    "property": "navigationDestinationsTitle",
+    "de": "Wissen und gespeicherte Arbeitslisten",
+    "en": "Knowledge and saved work lists"
+  },
+  {
+    "entity": "tutorial",
+    "property": "navigationDestinationsDescription",
+    "de": "Über das Buch öffnen Sie die Wissensdatenbank. Die zweite Schaltfläche wechselt zwischen der vollständigen Navigation und Ihren gespeicherten Favoriten beziehungsweise Arbeitslisten.",
+    "en": "Use the book to open the knowledge base. The second button switches between full navigation and your saved favorites or work lists."
+  },
+  {
+    "entity": "tutorial",
+    "property": "homeTitle",
+    "de": "Zurück zur Startseite",
+    "en": "Back to the start page"
+  },
+  {
+    "entity": "tutorial",
+    "property": "homeDescription",
+    "de": "Ein Klick auf den Namen „Sapling“ bringt Sie aus jedem Bereich zurück zu diesem Dashboard.",
+    "en": "Clicking the “Sapling” name returns you to this dashboard from anywhere."
+  },
+  {
+    "entity": "tutorial",
+    "property": "searchTitle",
+    "de": "Schnell finden",
+    "en": "Find things quickly"
+  },
+  {
+    "entity": "tutorial",
+    "property": "searchDescription",
+    "de": "Klicken Sie auf die Suche, um die Command Palette zu öffnen. Sie findet Arbeitsbereiche, Favoriten, Datensätze und wichtige Aktionen.",
+    "en": "Click search to open the command palette. It finds workspaces, favorites, records, and important actions."
+  },
+  {
+    "entity": "tutorial",
+    "property": "commandPaletteOpenTitle",
+    "de": "Die Command Palette",
+    "en": "The command palette"
+  },
+  {
+    "entity": "tutorial",
+    "property": "commandPaletteOpenDescription",
+    "de": "Die Command Palette ist der schnellste Weg durch Sapling. Öffnen können Sie sie jederzeit auch mit Strg+K oder der Schrägstrich-Taste.",
+    "en": "The command palette is the fastest way through Sapling. You can also open it at any time with Ctrl+K or the slash key."
+  },
+  {
+    "entity": "tutorial",
+    "property": "commandPaletteResultsTitle",
+    "de": "Suchen und Aktionen ausführen",
+    "en": "Search and run actions"
+  },
+  {
+    "entity": "tutorial",
+    "property": "commandPaletteResultsDescription",
+    "de": "Tippen Sie frei oder suchen Sie gezielt nach einem Bereich und Datensatz. Ergebnisse sind in Favoriten, Bereiche, Datensätze und Aktionen gegliedert.",
+    "en": "Type freely or search for a specific area and record. Results are grouped into favorites, areas, records, and actions."
+  },
+  {
+    "entity": "tutorial",
+    "property": "commandPaletteShortcutsTitle",
+    "de": "Komplett per Tastatur bedienbar",
+    "en": "Fully keyboard accessible"
+  },
+  {
+    "entity": "tutorial",
+    "property": "commandPaletteShortcutsDescription",
+    "de": "Mit den Pfeiltasten wählen Sie ein Ergebnis, Enter öffnet es und Escape schließt die Palette. F1 zeigt die ausführliche Hilfe mit Suchsyntax und allen Befehlen.",
+    "en": "Use arrow keys to select a result, Enter to open it, and Escape to close the palette. F1 shows detailed help with search syntax and all commands."
+  },
+  {
+    "entity": "tutorial",
+    "property": "helpTitle",
+    "de": "Hilfe und Wissensdatenbank",
+    "en": "Help and knowledge base"
+  },
+  {
+    "entity": "tutorial",
+    "property": "helpDescription",
+    "de": "Hier öffnen Sie die kontextbezogene Hilfe und die Wissensdatenbank für den Bereich, in dem Sie gerade arbeiten.",
+    "en": "Open contextual help and the knowledge base for the area you are currently using."
+  },
+  {
+    "entity": "tutorial",
+    "property": "helpOpenTitle",
+    "de": "Kurzbefehle und Suchsyntax",
+    "en": "Shortcuts and search syntax"
+  },
+  {
+    "entity": "tutorial",
+    "property": "helpOpenDescription",
+    "de": "In dieser Hilfe finden Sie die Tastenkürzel, alle Aktionen der Command Palette und Beispiele für die Suche. Auf dem Dashboard erreichen Sie diese Übersicht mit F1; auf anderen Seiten führt F1 direkt zur jeweils passenden Hilfeseite.",
+    "en": "This help contains keyboard shortcuts, every command-palette action, and search examples. On the dashboard, F1 opens this overview; on other pages, F1 takes you directly to the relevant help article."
+  },
+  {
+    "entity": "tutorial",
+    "property": "inboxTriggerTitle",
+    "de": "Posteingang öffnen",
+    "en": "Open the inbox"
+  },
+  {
+    "entity": "tutorial",
+    "property": "inboxTriggerDescription",
+    "de": "Klicken Sie jetzt auf den Posteingang, um Aufgaben und Nachrichten anzusehen.",
+    "en": "Click the inbox now to view tasks and messages."
+  },
+  {
+    "entity": "tutorial",
+    "property": "inboxOpenTitle",
+    "de": "Posteingang und Inbox",
+    "en": "Inbox"
+  },
+  {
+    "entity": "tutorial",
+    "property": "inboxOpenDescription",
+    "de": "Im Posteingang bündeln sich offene Aufgaben und persönliche Nachrichten. Die Zahl in der Kopfleiste zeigt an, wie viele Einträge auf Sie warten.",
+    "en": "The inbox combines open tasks and personal messages. The header count shows how many items are waiting for you."
+  },
+  {
+    "entity": "tutorial",
+    "property": "messageCenterTriggerTitle",
+    "de": "Meldungscenter öffnen",
+    "en": "Open the message center"
+  },
+  {
+    "entity": "tutorial",
+    "property": "messageCenterTriggerDescription",
+    "de": "Klicken Sie auf das Meldungscenter. Dort informiert Sapling über Vorgänge innerhalb der Anwendung.",
+    "en": "Click the message center. Sapling uses it to report activity within the application."
+  },
+  {
+    "entity": "tutorial",
+    "property": "messageCenterOpenTitle",
+    "de": "Meldungen auf einen Blick",
+    "en": "Notifications at a glance"
+  },
+  {
+    "entity": "tutorial",
+    "property": "messageCenterOpenDescription",
+    "de": "Hier erscheinen Hinweise, Erfolge, Warnungen und Fehler. Wir haben zur Veranschaulichung eine lokale Willkommensmeldung hinzugefügt.",
+    "en": "Information, successes, warnings, and errors appear here. We added a local welcome notification as an example."
+  },
+  {
+    "entity": "tutorial",
+    "property": "welcomeMessageTitle",
+    "de": "Herzlich willkommen bei Sapling",
+    "en": "Welcome to Sapling"
+  },
+  {
+    "entity": "tutorial",
+    "property": "welcomeMessageDescription",
+    "de": "So sehen Meldungen aus, mit denen Sapling Sie über wichtige Vorgänge informiert.",
+    "en": "This is how Sapling notifies you about important activity."
+  },
+  {
+    "entity": "tutorial",
+    "property": "profileTriggerTitle",
+    "de": "Ihr Profil öffnen",
+    "en": "Open your profile"
+  },
+  {
+    "entity": "tutorial",
+    "property": "profileTriggerDescription",
+    "de": "Klicken Sie jetzt auf Ihre Profilschaltfläche, um die persönlichen Einstellungen kennenzulernen.",
+    "en": "Click your profile button now to explore your personal settings."
+  },
+  {
+    "entity": "tutorial",
+    "property": "profilePrimaryTitle",
+    "de": "Konto und Bug Tracker",
+    "en": "Account and bug tracker"
+  },
+  {
+    "entity": "tutorial",
+    "property": "profilePrimaryDescription",
+    "de": "Über „Konto“ verwalten Sie Ihr Profil. Mit dem Bug Tracker melden Sie Fehler oder reichen Feedback ein.",
+    "en": "Use Account to manage your profile. The bug tracker lets you report errors or submit feedback."
+  },
+  {
+    "entity": "tutorial",
+    "property": "profileAppearanceTitle",
+    "de": "Darstellung anpassen",
+    "en": "Customize appearance"
+  },
+  {
+    "entity": "tutorial",
+    "property": "profileAppearanceDescription",
+    "de": "Hier wechseln Sie zwischen hellem und dunklem Thema und steuern Glasdesign sowie Tilteffekt nach Ihrem Geschmack.",
+    "en": "Switch between light and dark themes and adjust glass design and tilt effects to your preference."
+  },
+  {
+    "entity": "tutorial",
+    "property": "profileLanguageTitle",
+    "de": "Sprache auswählen",
+    "en": "Choose a language"
+  },
+  {
+    "entity": "tutorial",
+    "property": "profileLanguageDescription",
+    "de": "Mit dieser Einstellung wechseln Sie die Sprache der Benutzeroberfläche zwischen Deutsch und Englisch.",
+    "en": "Use this setting to switch the interface language between German and English."
+  },
+  {
+    "entity": "tutorial",
+    "property": "songbirdTitle",
+    "de": "Songbird – Ihr KI-Assistent",
+    "en": "Songbird — your AI assistant"
+  },
+  {
+    "entity": "tutorial",
+    "property": "songbirdDescription",
+    "de": "Klicken Sie auf Songbird, um den KI-Assistenten und seine Möglichkeiten kennenzulernen.",
+    "en": "Click Songbird to explore the AI assistant and its capabilities."
+  },
+  {
+    "entity": "tutorial",
+    "property": "songbirdOpenTitle",
+    "de": "Fragen, Aufgaben und Kontext",
+    "en": "Questions, tasks, and context"
+  },
+  {
+    "entity": "tutorial",
+    "property": "songbirdOpenDescription",
+    "de": "Hier stellen Sie Fragen zu Ihren Sapling-Daten, lassen sich bei Aufgaben unterstützen und starten neue oder frühere Unterhaltungen. Songbird berücksichtigt dabei Ihre Berechtigungen; je nach Konfiguration stehen Agenten, Playbooks, Spracheingabe und Anhänge bereit.",
+    "en": "Ask questions about your Sapling data, get help with tasks, and start new or previous conversations. Songbird respects your permissions; depending on configuration, agents, playbooks, voice input, and attachments are available."
+  },
+
+  {
+    "entity": "tutorial",
+    "property": "dashboardWorkspaceTitle",
+    "de": "Ihr KPI-Arbeitsbereich",
+    "en": "Your KPI workspace"
+  },
+  {
+    "entity": "tutorial",
+    "property": "dashboardWorkspaceDescription",
+    "de": "Das Dashboard bündelt Ihre wichtigsten Kennzahlen und Arbeitsbereiche auf einer persönlichen Startseite.",
+    "en": "The dashboard brings your most important metrics and workspaces together on a personal start page."
+  },
+  {
+    "entity": "tutorial",
+    "property": "dashboardActionsTitle",
+    "de": "Dashboards und KPIs hinzufügen",
+    "en": "Add dashboards and KPIs"
+  },
+  {
+    "entity": "tutorial",
+    "property": "dashboardActionsDescription",
+    "de": "Mit diesen Aktionen erstellen Sie eigene Dashboards, fügen KPIs hinzu oder laden und speichern vorbereitete Dashboard-Vorlagen.",
+    "en": "Use these actions to create dashboards, add KPIs, or load and save prepared dashboard templates."
+  },
+  {
+    "entity": "tutorial",
+    "property": "dashboardQuicklinksTitle",
+    "de": "Ihre Quicklinks",
+    "en": "Your quick links"
+  },
+  {
+    "entity": "tutorial",
+    "property": "dashboardQuicklinksDescription",
+    "de": "Diese Schnellzugriffe führen direkt zu häufig benötigten Listen und Arbeitsbereichen. Sie richten sich nach Ihren Favoriten und Berechtigungen.",
+    "en": "These shortcuts lead directly to frequently used lists and workspaces based on your favorites and permissions."
+  },
+  {
+    "entity": "tutorial",
+    "property": "dashboardTabsTitle",
+    "de": "Mehrere Dashboards organisieren",
+    "en": "Organize multiple dashboards"
+  },
+  {
+    "entity": "tutorial",
+    "property": "dashboardTabsDescription",
+    "de": "Über die Reiter wechseln Sie zwischen Ihren Dashboards und ordnen verschiedene Sichten nach Aufgabe oder Verantwortungsbereich.",
+    "en": "Use the tabs to switch between dashboards and organize views by task or responsibility."
+  },
+  {
+    "entity": "tutorial",
+    "property": "dashboardKpisTitle",
+    "de": "Kennzahlen verstehen",
+    "en": "Understand your metrics"
+  },
+  {
+    "entity": "tutorial",
+    "property": "dashboardKpisDescription",
+    "de": "KPI-Kacheln zeigen aktuelle Werte, Entwicklungen und Visualisierungen. Je nach Kachel können Sie Details öffnen oder die Kennzahl bearbeiten.",
+    "en": "KPI cards show current values, trends, and visualizations. Depending on the card, you can open details or edit the metric."
+  },
+  {
+    "entity": "tutorial",
+    "property": "dashboardLayoutActionTitle",
+    "de": "Layout bearbeiten",
+    "en": "Edit the layout"
+  },
+  {
+    "entity": "tutorial",
+    "property": "dashboardLayoutActionDescription",
+    "de": "Mit „Layout bearbeiten“ aktivieren Sie den Gestaltungsmodus für Ihr aktuelles Dashboard.",
+    "en": "Use Edit layout to activate design mode for the current dashboard."
+  },
+  {
+    "entity": "tutorial",
+    "property": "dashboardLayoutModeTitle",
+    "de": "Kacheln frei anordnen",
+    "en": "Arrange cards freely"
+  },
+  {
+    "entity": "tutorial",
+    "property": "dashboardLayoutModeDescription",
+    "de": "Im Gestaltungsmodus verschieben und skalieren Sie KPI-Kacheln. Speichern übernimmt die neue Anordnung; Abbrechen stellt das vorherige Layout wieder her.",
+    "en": "In design mode, move and resize KPI cards. Save applies the arrangement; Cancel restores the previous layout."
+  },
+  {
+    "entity": "tutorial",
+    "property": "commandPaletteTitle",
+    "de": "Tutorial erneut starten",
+    "en": "Restart tutorial"
+  },
+  {
+    "entity": "tutorial",
+    "property": "commandPaletteHint",
+    "de": "Navigation und Dashboard noch einmal kennenlernen",
+    "en": "Explore navigation and dashboard again"
+  },
+  {
+    "entity": "tutorial",
+    "property": "welcomeEventTitle",
+    "de": "Sapling-Tutorial anschauen",
+    "en": "Explore the Sapling tutorial"
+  },
+  {
+    "entity": "tutorial",
+    "property": "welcomeEventDescription",
+    "de": "Dieser Termin wurde durch das Willkommens-Tutorial angelegt. Sie können ihn im Posteingang oder Kalender öffnen, bearbeiten und anschließend als erledigt markieren.",
+    "en": "This appointment was created by the welcome tutorial. You can open and edit it from the inbox or calendar, then mark it as completed."
+  },
+  {
+    "entity": "tutorial",
+    "property": "tableOverviewTitle",
+    "de": "Die Sapling Table",
+    "en": "The Sapling Table"
+  },
+  {
+    "entity": "tutorial",
+    "property": "tableOverviewDescription",
+    "de": "In der Tabellenansicht finden, filtern und bearbeiten Sie Datensätze. Dieser Rundgang zeigt Ihnen die wichtigsten Werkzeuge.",
+    "en": "Use the table view to find, filter, and edit records. This tour covers its most important tools."
+  },
+  {
+    "entity": "tutorial",
+    "property": "tableSelectionTitle",
+    "de": "Auswahl und Massenaktionen",
+    "en": "Selection and bulk actions"
+  },
+  {
+    "entity": "tutorial",
+    "property": "tableSelectionDescription",
+    "de": "Wählen Sie einen oder mehrere Datensätze aus. Die Schaltflächen links von der Suche führen Aktionen für die gesamte Auswahl aus.",
+    "en": "Select one or more records. The buttons to the left of search apply actions to the entire selection."
+  },
+  {
+    "entity": "tutorial",
+    "property": "tableSearchTitle",
+    "de": "Volltextsuche",
+    "en": "Full-text search"
+  },
+  {
+    "entity": "tutorial",
+    "property": "tableSearchDescription",
+    "de": "Klicken Sie in dieses Feld und suchen Sie gleichzeitig in allen dafür vorgesehenen Feldern der Tabelle.",
+    "en": "Click this field to search all searchable table fields at once."
+  },
+  {
+    "entity": "tutorial",
+    "property": "tableToolbarTitle",
+    "de": "Werkzeuge der Tabelle",
+    "en": "Table tools"
+  },
+  {
+    "entity": "tutorial",
+    "property": "tableToolbarDescription",
+    "de": "Rechts finden Sie Aktualisieren, Arbeitslisten, Ansichten, Import und Download sowie das Anlegen neuer Datensätze.",
+    "en": "On the right, you can refresh, manage worklists and views, import or download data, and create records."
+  },
+  {
+    "entity": "tutorial",
+    "property": "tableRefreshTitle",
+    "de": "Daten aktualisieren",
+    "en": "Refresh data"
+  },
+  {
+    "entity": "tutorial",
+    "property": "tableRefreshDescription",
+    "de": "Laden Sie den aktuellen Stand der Tabelle neu, ohne die Seite zu verlassen.",
+    "en": "Reload the latest table data without leaving the page."
+  },
+  {
+    "entity": "tutorial",
+    "property": "tableWorklistsTitle",
+    "de": "Arbeitslisten",
+    "en": "Worklists"
+  },
+  {
+    "entity": "tutorial",
+    "property": "tableWorklistsDescription",
+    "de": "Speichern Sie eine gefilterte Auswahl als Arbeitsliste oder öffnen Sie bereits vorbereitete Arbeitslisten.",
+    "en": "Save a filtered selection as a worklist or open an existing worklist."
+  },
+  {
+    "entity": "tutorial",
+    "property": "tableViewsTitle",
+    "de": "Ansichten",
+    "en": "Views"
+  },
+  {
+    "entity": "tutorial",
+    "property": "tableViewsDescription",
+    "de": "Ansichten speichern Spalten, Reihenfolge, Sortierung und Filter für wiederkehrende Aufgaben.",
+    "en": "Views preserve columns, order, sorting, and filters for recurring tasks."
+  },
+  {
+    "entity": "tutorial",
+    "property": "tableDownloadsTitle",
+    "de": "Import und Download",
+    "en": "Import and download"
+  },
+  {
+    "entity": "tutorial",
+    "property": "tableDownloadsDescription",
+    "de": "Über das Weitere-Menü importieren Sie Daten oder laden den aktuellen Tabelleninhalt herunter.",
+    "en": "Use the More menu to import data or download the current table contents."
+  },
+  {
+    "entity": "tutorial",
+    "property": "tableAddTitle",
+    "de": "Datensatz hinzufügen",
+    "en": "Add a record"
+  },
+  {
+    "entity": "tutorial",
+    "property": "tableAddDescription",
+    "de": "Klicken Sie jetzt auf Hinzufügen, um den Dialog für einen neuen Datensatz kennenzulernen.",
+    "en": "Now click Add to explore the dialog for creating a record."
+  },
+  {
+    "entity": "tutorial",
+    "property": "tableDialogTitle",
+    "de": "Der Datensatzdialog",
+    "en": "The record dialog"
+  },
+  {
+    "entity": "tutorial",
+    "property": "tableDialogDescription",
+    "de": "Hier erfassen Sie die Informationen des neuen Datensatzes. Der Dialog passt sich an den jeweiligen Datensatztyp an.",
+    "en": "Enter the new record's information here. The dialog adapts to the selected record type."
+  },
+  {
+    "entity": "tutorial",
+    "property": "tableDialogFieldsTitle",
+    "de": "Felder und Bereiche",
+    "en": "Fields and sections"
+  },
+  {
+    "entity": "tutorial",
+    "property": "tableDialogFieldsDescription",
+    "de": "Pflichtfelder sind gekennzeichnet. Weitere Bereiche und Registerkarten bündeln zusammengehörige Informationen.",
+    "en": "Required fields are marked. Additional sections and tabs group related information."
+  },
+  {
+    "entity": "tutorial",
+    "property": "tableDialogActionsTitle",
+    "de": "Speichern oder verwerfen",
+    "en": "Save or discard"
+  },
+  {
+    "entity": "tutorial",
+    "property": "tableDialogActionsDescription",
+    "de": "Speichern legt den Datensatz an. Abbrechen oder Schließen verwirft die noch nicht gespeicherten Eingaben.",
+    "en": "Save creates the record. Cancel or Close discards any unsaved input."
+  },
+  {
+    "entity": "tutorial",
+    "property": "tableFiltersTitle",
+    "de": "Filterzeile",
+    "en": "Filter row"
+  },
+  {
+    "entity": "tutorial",
+    "property": "tableFiltersDescription",
+    "de": "Filtern Sie einzelne Spalten gezielt. Mehrere Spaltenfilter können miteinander kombiniert werden.",
+    "en": "Filter individual columns precisely. Multiple column filters can be combined."
+  },
+  {
+    "entity": "tutorial",
+    "property": "tableContactsTitle",
+    "de": "Telefon und E-Mail",
+    "en": "Phone and email"
+  },
+  {
+    "entity": "tutorial",
+    "property": "tableContactsDescription",
+    "de": "Telefonnummern und E-Mail-Adressen sind direkt anklickbar und öffnen die passende Aktion auf Ihrem Gerät.",
+    "en": "Phone numbers and email addresses are clickable and open the appropriate action on your device."
+  },
+  {
+    "entity": "tutorial",
+    "property": "tableReferencesTitle",
+    "de": "Verknüpfte Datensätze",
+    "en": "Linked records"
+  },
+  {
+    "entity": "tutorial",
+    "property": "tableReferencesDescription",
+    "de": "Referenzen wie der Account Manager führen direkt zum verknüpften Datensatz.",
+    "en": "References such as the account manager take you directly to the linked record."
+  },
+  {
+    "entity": "tutorial",
+    "property": "tableRowActionsTitle",
+    "de": "Aktionen eines Datensatzes",
+    "en": "Record actions"
+  },
+  {
+    "entity": "tutorial",
+    "property": "tableRowActionsDescription",
+    "de": "Klicken Sie jetzt auf die drei Punkte, um die verfügbaren Aktionen dieses Datensatzes zu öffnen.",
+    "en": "Now click the three dots to open the actions available for this record."
+  },
+  {
+    "entity": "tutorial",
+    "property": "tableRowMenuTitle",
+    "de": "Datensatzfunktionen",
+    "en": "Record functions"
+  },
+  {
+    "entity": "tutorial",
+    "property": "tableRowMenuDescription",
+    "de": "Je nach Berechtigung können Sie den Datensatz hier öffnen, bearbeiten, duplizieren, teilen oder weitere Funktionen ausführen.",
+    "en": "Depending on your permissions, you can open, edit, duplicate, share, or use further functions here."
+  },
+  {
+    "entity": "tutorial",
+    "property": "tablePaginationTitle",
+    "de": "Seitengröße und Navigation",
+    "en": "Page size and navigation"
+  },
+  {
+    "entity": "tutorial",
+    "property": "tablePaginationDescription",
+    "de": "Wählen Sie die Elemente pro Seite und wechseln Sie mit der Seitennavigation durch größere Ergebnismengen.",
+    "en": "Choose the number of items per page and use pagination to move through larger result sets."
+  },
+  {
+    "entity": "tutorial",
+    "property": "partnerWorkspaceTitle",
+    "de": "Partner-Tickets",
+    "en": "Partner tickets"
+  },
+  {
+    "entity": "tutorial",
+    "property": "partnerWorkspaceDescription",
+    "de": "Diese Arbeitsansicht verbindet die bekannte Sapling Table mit zusätzlichen Filtern für Personen, Unternehmen und Ticketmerkmale.",
+    "en": "This workspace combines the familiar Sapling Table with additional filters for people, companies, and ticket attributes."
+  },
+  {
+    "entity": "tutorial",
+    "property": "partnerTableTitle",
+    "de": "Ihre Tickets",
+    "en": "Your tickets"
+  },
+  {
+    "entity": "tutorial",
+    "property": "partnerTableDescription",
+    "de": "Die Tabelle funktioniert wie bereits gezeigt. Filter aus dem rechten Bereich werden direkt auf diese Ergebnisse angewendet.",
+    "en": "The table works as previously shown. Filters from the right-hand panel apply directly to these results."
+  },
+  {
+    "entity": "tutorial",
+    "property": "partnerFilterSummaryTitle",
+    "de": "Zusätzliche Filter",
+    "en": "Additional filters"
+  },
+  {
+    "entity": "tutorial",
+    "property": "partnerFilterSummaryDescription",
+    "de": "Der Filterbereich zeigt aktive Einschränkungen und lässt sich bei wenig Platz über die Filterschaltfläche öffnen.",
+    "en": "The filter panel shows active constraints and can be opened with the filter button when space is limited."
+  },
+  {
+    "entity": "tutorial",
+    "property": "partnerPeopleCompaniesTitle",
+    "de": "Personen und Unternehmen",
+    "en": "People and companies"
+  },
+  {
+    "entity": "tutorial",
+    "property": "partnerPeopleCompaniesDescription",
+    "de": "Grenzen Sie Tickets über beteiligte Personen oder Unternehmen ein. Mehrere Auswahlen lassen sich kombinieren.",
+    "en": "Narrow tickets by involved people or companies. Multiple selections can be combined."
+  },
+  {
+    "entity": "tutorial",
+    "property": "partnerAttributesTitle",
+    "de": "Ticketmerkmale",
+    "en": "Ticket attributes"
+  },
+  {
+    "entity": "tutorial",
+    "property": "partnerAttributesDescription",
+    "de": "Weitere Filter wie Status, Zuständigkeit oder Kategorie helfen, genau die benötigte Arbeitsmenge zusammenzustellen.",
+    "en": "Additional filters such as status, responsibility, or category help create the exact work queue you need."
+  },
+  {
+    "entity": "tutorial",
+    "property": "calendarOverviewTitle",
+    "de": "Der Sapling Kalender",
+    "en": "The Sapling calendar"
+  },
+  {
+    "entity": "tutorial",
+    "property": "calendarOverviewDescription",
+    "de": "Der Kalender bündelt Termine, Aufgaben und weitere zeitbezogene Einträge in einer gemeinsamen Arbeitsansicht.",
+    "en": "The calendar brings appointments, tasks, and other time-based entries together in one workspace."
+  },
+  {
+    "entity": "tutorial",
+    "property": "calendarPeriodTitle",
+    "de": "Angezeigter Zeitraum",
+    "en": "Displayed period"
+  },
+  {
+    "entity": "tutorial",
+    "property": "calendarPeriodDescription",
+    "de": "Hier sehen Sie jederzeit, welcher Tag, welche Woche oder welcher Monat gerade dargestellt wird.",
+    "en": "This always shows which day, week, or month is currently displayed."
+  },
+  {
+    "entity": "tutorial",
+    "property": "calendarNavigationTitle",
+    "de": "Im Kalender navigieren",
+    "en": "Navigate the calendar"
+  },
+  {
+    "entity": "tutorial",
+    "property": "calendarNavigationDescription",
+    "de": "Springen Sie zu Heute oder wechseln Sie mit den Pfeilen in den vorherigen beziehungsweise nächsten Zeitraum.",
+    "en": "Jump to Today or use the arrows to move to the previous or next period."
+  },
+  {
+    "entity": "tutorial",
+    "property": "calendarDisplayTitle",
+    "de": "Darstellung anpassen",
+    "en": "Adjust the display"
+  },
+  {
+    "entity": "tutorial",
+    "property": "calendarDisplayDescription",
+    "de": "Die weiteren Werkzeuge steuern Darstellung, Aktualisierung und zusätzliche Optionen des Kalenders.",
+    "en": "The remaining tools control the calendar display, refresh, and additional options."
+  },
+  {
+    "entity": "tutorial",
+    "property": "calendarViewTypesTitle",
+    "de": "Tag, Woche und Monat",
+    "en": "Day, week, and month"
+  },
+  {
+    "entity": "tutorial",
+    "property": "calendarViewTypesDescription",
+    "de": "Wechseln Sie die passende Kalenderansicht für Ihre aktuelle Planung.",
+    "en": "Switch to the calendar view that best suits your current planning."
+  },
+  {
+    "entity": "tutorial",
+    "property": "calendarGridTitle",
+    "de": "Kalenderfläche",
+    "en": "Calendar grid"
+  },
+  {
+    "entity": "tutorial",
+    "property": "calendarGridDescription",
+    "de": "Die Kalenderfläche ordnet Einträge zeitlich ein. Freie Bereiche und vorhandene Einträge lassen sich für die tägliche Planung verwenden.",
+    "en": "The calendar grid places entries in time. Use open slots and existing entries for daily planning."
+  },
+  {
+    "entity": "tutorial",
+    "property": "calendarEventsTitle",
+    "de": "Kalendereinträge",
+    "en": "Calendar entries"
+  },
+  {
+    "entity": "tutorial",
+    "property": "calendarEventsDescription",
+    "de": "Farben, Position und Dauer machen Art und Zeitraum eines Eintrags sichtbar. Ein Klick öffnet seine Details.",
+    "en": "Color, position, and duration show an entry's type and timing. Click an entry to open its details."
+  },
+  {
+    "entity": "tutorial",
+    "property": "calendarContextTitle",
+    "de": "Kontextbereich",
+    "en": "Context panel"
+  },
+  {
+    "entity": "tutorial",
+    "property": "calendarContextDescription",
+    "de": "Der Seitenbereich ergänzt die Kalenderfläche um Agenda und Filter. Auf kleinen Bildschirmen öffnen Sie ihn über die entsprechende Schaltfläche.",
+    "en": "The side panel complements the calendar grid with agenda and filters. On small screens, open it using the corresponding button."
+  },
+  {
+    "entity": "tutorial",
+    "property": "calendarAgendaTitle",
+    "de": "Agenda",
+    "en": "Agenda"
+  },
+  {
+    "entity": "tutorial",
+    "property": "calendarAgendaDescription",
+    "de": "Die Agenda zeigt die anstehenden Einträge kompakt als Liste und erleichtert den schnellen Überblick.",
+    "en": "The agenda presents upcoming entries in a compact list for a quick overview."
+  },
+  {
+    "entity": "tutorial",
+    "property": "calendarFiltersTitle",
+    "de": "Kalender filtern",
+    "en": "Filter the calendar"
+  },
+  {
+    "entity": "tutorial",
+    "property": "calendarFiltersDescription",
+    "de": "Blenden Sie gezielt Kalender, Arten oder Zuständigkeiten ein und aus, ohne Einträge zu verändern.",
+    "en": "Show or hide calendars, types, or responsibilities without changing any entries."
+  },
+  {
+    "entity": "tutorial",
+    "property": "tableCommandPaletteTitle",
+    "de": "Tabellen-Tutorial starten",
+    "en": "Start table tutorial"
+  },
+  {
+    "entity": "tutorial",
+    "property": "tableCommandPaletteHint",
+    "de": "Die Sapling Table vollständig kennenlernen",
+    "en": "Learn the complete Sapling Table"
+  },
+  {
+    "entity": "tutorial",
+    "property": "partnerCommandPaletteTitle",
+    "de": "Partner-Ticket-Tutorial starten",
+    "en": "Start partner ticket tutorial"
+  },
+  {
+    "entity": "tutorial",
+    "property": "partnerCommandPaletteHint",
+    "de": "Personen-, Unternehmens- und Zusatzfilter kennenlernen",
+    "en": "Learn people, company, and additional filters"
+  },
+  {
+    "entity": "tutorial",
+    "property": "calendarCommandPaletteTitle",
+    "de": "Kalender-Tutorial starten",
+    "en": "Start calendar tutorial"
+  },
+  {
+    "entity": "tutorial",
+    "property": "calendarCommandPaletteHint",
+    "de": "Die Kalenderansicht vollständig kennenlernen",
+    "en": "Learn the complete calendar view"
+  }
+]

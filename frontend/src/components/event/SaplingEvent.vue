@@ -1,5 +1,6 @@
 <template>
   <section
+    data-tutorial="calendar-page"
     v-bind="attrs"
     class="sapling-page-shell sapling-page-shell--fill sapling-page-shell--uniform-inset sapling-dashboard-page sapling-dashboard-page--flow-lg sapling-event-page"
   >
@@ -45,6 +46,7 @@
 
     <template v-else>
       <SaplingPageHero
+        data-tutorial="calendar-period"
         class="sapling-event-hero"
         variant="calendar"
         :eyebrow="$t('navigation.calendar')"
@@ -62,6 +64,7 @@
         class="sapling-page-workspace sapling-page-workspace--main-context sapling-page-workspace--collapse-lg sapling-event-workspace"
       >
         <SaplingSurface
+          data-tutorial="calendar-main"
           class="sapling-workspace-panel sapling-page-panel sapling-event-workspace__main"
         >
           <SaplingEventToolbar
@@ -82,6 +85,7 @@
 
           <div
             ref="calendarScrollContainer"
+            data-tutorial="calendar-grid"
             class="sapling-calendar-frame sapling-event-calendar-body"
           >
             <SaplingEventCalendarWorkspace
@@ -117,6 +121,7 @@
         </SaplingSurface>
 
         <SaplingEventContextPanels
+          data-tutorial="calendar-context"
           :is-mobile-filter-layout="isMobileContextLayout"
           :upcoming-events="upcomingEvents"
           :chip-filters="chipFilters"
@@ -131,6 +136,7 @@
           @open-event="openEventEditor"
         />
       </section>
+      <SaplingCalendarTutorial />
     </template>
   </section>
 
@@ -288,6 +294,7 @@ import { VSkeletonLoader } from 'vuetify/components'
 import { useSaplingEvent } from '@/composables/event/useSaplingEvent'
 import SaplingPageHero from '@/components/common/SaplingPageHero.vue'
 import SaplingSurface from '@/components/common/SaplingSurface.vue'
+import SaplingCalendarTutorial from '@/components/system/tutorial/SaplingCalendarTutorial.vue'
 import SaplingEventCalendarWorkspace from '@/components/event/SaplingEventCalendarWorkspace.vue'
 import SaplingEventContextPanels from '@/components/event/SaplingEventContextPanels.vue'
 import SaplingEventToolbar from '@/components/event/SaplingEventToolbar.vue'

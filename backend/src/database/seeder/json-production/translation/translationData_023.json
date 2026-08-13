@@ -1,0 +1,92 @@
+[
+  {
+    "entity": "login",
+    "property": "tutorialStep",
+    "de": "Schritt {current} von {total}",
+    "en": "Step {current} of {total}"
+  },
+  {
+    "entity": "login",
+    "property": "tutorialEnd",
+    "de": "Tutorial beenden",
+    "en": "End tutorial"
+  },
+  {
+    "entity": "login",
+    "property": "tutorialBack",
+    "de": "Zurück",
+    "en": "Back"
+  },
+  {
+    "entity": "login",
+    "property": "tutorialNext",
+    "de": "Weiter",
+    "en": "Next"
+  },
+  {
+    "entity": "login",
+    "property": "tutorialDone",
+    "de": "Verstanden",
+    "en": "Got it"
+  },
+  {
+    "entity": "login",
+    "property": "tutorialWelcomeTitle",
+    "de": "Willkommen bei Sapling",
+    "en": "Welcome to Sapling"
+  },
+  {
+    "entity": "login",
+    "property": "tutorialWelcomeDescription",
+    "de": "Diese kurze Einführung zeigt Ihnen die verfügbaren Anmeldewege. Sie können sie jederzeit über das Kreuz oben rechts beenden.",
+    "en": "This short introduction shows the available sign-in options. You can end it at any time using the close button in the top right."
+  },
+  {
+    "entity": "login",
+    "property": "tutorialCredentialsTitle",
+    "de": "Mit Zugangsdaten anmelden",
+    "en": "Sign in with credentials"
+  },
+  {
+    "entity": "login",
+    "property": "tutorialCredentialsDescription",
+    "de": "Tragen Sie hier Ihren Benutzernamen und Ihr Kennwort ein. Mit „Angemeldet bleiben“ bleibt Ihre Sitzung auf diesem Gerät länger aktiv.",
+    "en": "Enter your username and password here. “Keep me signed in” keeps your session active on this device for longer."
+  },
+  {
+    "entity": "login",
+    "property": "tutorialLocalTitle",
+    "de": "Lokale Anmeldung starten",
+    "en": "Start local sign-in"
+  },
+  {
+    "entity": "login",
+    "property": "tutorialLocalDescription",
+    "de": "Nachdem Sie Ihre Zugangsdaten eingegeben haben, melden Sie sich über diese Schaltfläche direkt bei Sapling an.",
+    "en": "After entering your credentials, use this button to sign in to Sapling directly."
+  },
+  {
+    "entity": "login",
+    "property": "tutorialAzureTitle",
+    "de": "Mit Microsoft anmelden",
+    "en": "Sign in with Microsoft"
+  },
+  {
+    "entity": "login",
+    "property": "tutorialAzureDescription",
+    "de": "Wenn Ihre Organisation Microsoft verwendet, können Sie sich hier sicher mit Ihrem Microsoft-Konto anmelden.",
+    "en": "If your organization uses Microsoft, you can sign in securely here with your Microsoft account."
+  },
+  {
+    "entity": "login",
+    "property": "tutorialGoogleTitle",
+    "de": "Mit Google anmelden",
+    "en": "Sign in with Google"
+  },
+  {
+    "entity": "login",
+    "property": "tutorialGoogleDescription",
+    "de": "Wenn Ihre Organisation Google verwendet, können Sie sich hier mit Ihrem Google-Konto anmelden.",
+    "en": "If your organization uses Google, you can sign in here with your Google account."
+  }
+]

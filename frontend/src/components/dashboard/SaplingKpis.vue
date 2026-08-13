@@ -1,6 +1,6 @@
 <template>
   <div class="sapling-dashboard-kpi-scroll">
-    <div class="sapling-kpi-surface">
+    <div class="sapling-kpi-surface" data-tutorial="dashboard-kpis">
       <v-row class="sapling-kpi-grid" density="comfortable">
         <template v-if="kpis.length > 0">
           <v-col

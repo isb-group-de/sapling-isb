@@ -2,6 +2,7 @@
   <Teleport to="body">
     <div class="sapling-overlay-shell sapling-ai-chat-shell">
       <v-btn
+        data-tutorial="songbird"
         v-if="hasSaplingAiChatAccess && !isOpen && !isGhostEasterEggActive"
         class="sapling-ai-chat-fab"
         color="primary"
@@ -30,6 +31,7 @@
         <SaplingSurface
           as="section"
           class="sapling-floating-panel sapling-floating-panel--top-center sapling-floating-panel--mobile-sheet sapling-ai-chat"
+          data-tutorial="songbird-chat"
           @click.stop
         >
           <SaplingAiChatLoadingState v-if="isTranslationLoading" />

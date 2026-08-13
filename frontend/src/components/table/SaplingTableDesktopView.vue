@@ -1,5 +1,6 @@
 <template>
   <v-data-table-server
+    data-tutorial="table-data"
     :key="tableKey"
     density="compact"
     fixed-header
@@ -19,7 +20,7 @@
     @update:sort-by="emit('update:sort-by', $event)"
   >
     <template #headers="{ columns, isSorted, getSortIcon, toggleSort }">
-      <tr>
+      <tr data-tutorial="table-filter-row">
         <template v-for="column in columns" :key="String(column.key ?? column.title ?? '')">
           <th
             :class="getHeaderCellClasses(column)"

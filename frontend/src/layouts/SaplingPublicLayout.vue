@@ -21,5 +21,9 @@ import { RouterView } from 'vue-router'
 import { useTranslationLoader } from '@/composables/generic/useTranslationLoader'
 import SaplingFooterLogin from '@/components/system/SaplingFooterLogin.vue'
 
-const { isLoading: isShellTranslationLoading } = useTranslationLoader('global', 'login')
+const { isLoading: isShellTranslationLoading } = useTranslationLoader(
+  'global',
+  'login',
+  'tutorial',
+)
 </script>

@@ -1,7 +1,14 @@
 <template>
-  <header ref="toolbarElement" class="sapling-split-toolbar sapling-event-toolbar">
+  <header
+    ref="toolbarElement"
+    data-tutorial="calendar-toolbar"
+    class="sapling-split-toolbar sapling-event-toolbar"
+  >
     <div class="sapling-toolbar-group sapling-event-toolbar__primary">
-      <div class="sapling-toolbar-nav-group sapling-event-toolbar__nav-group">
+      <div
+        data-tutorial="calendar-navigation"
+        class="sapling-toolbar-nav-group sapling-event-toolbar__nav-group"
+      >
         <v-btn-group class="sapling-event-toolbar__nav" density="comfortable">
           <v-btn
             variant="tonal"
@@ -75,7 +82,10 @@
         </v-btn-group>
       </div>
 
-      <div class="sapling-toolbar-group sapling-event-toolbar__options">
+      <div
+        data-tutorial="calendar-display-options"
+        class="sapling-toolbar-group sapling-event-toolbar__options"
+      >
         <v-btn-toggle
           v-if="showModeInline"
           v-model="calendarModeModel"
@@ -209,7 +219,11 @@
         </div>
       </div>
 
-      <div v-if="showTypeInline" class="sapling-event-toolbar__type-wrap">
+      <div
+        v-if="showTypeInline"
+        data-tutorial="calendar-view-types"
+        class="sapling-event-toolbar__type-wrap"
+      >
         <v-btn-toggle
           v-model="calendarTypeModel"
           class="sapling-segmented-toggle sapling-toolbar-toggle sapling-event-toolbar__type-toggle"

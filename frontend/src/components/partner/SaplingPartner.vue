@@ -1,5 +1,6 @@
 <template>
   <v-container
+    data-tutorial="partner-workspace"
     class="sapling-fill-shell sapling-min-size-0 sapling-partner-container pa-0"
     density="compact"
     fluid
@@ -8,7 +9,10 @@
       class="sapling-partner-layout"
       :class="{ 'sapling-partner-layout--panel-hidden': !showDesktopFilterPanel }"
     >
-      <div class="sapling-stack-md sapling-min-size-0 sapling-partner-main-table-col pa-0">
+      <div
+        data-tutorial="partner-table"
+        class="sapling-stack-md sapling-min-size-0 sapling-partner-main-table-col pa-0"
+      >
         <v-card flat class="sapling-stack-md sapling-partner-main-table-card rounded-0">
           <v-card-text class="sapling-stack-md sapling-partner-table-text pa-0 flex-grow-1">
             <div class="sapling-scroll-region sapling-partner-table-scroll">
@@ -99,6 +103,12 @@
         </SaplingDialogCard>
       </v-dialog>
     </section>
+
+    <SaplingPartnerTutorial
+      v-if="isInitialized && props.entityHandle === 'ticket'"
+      :filter-panel-visible="isFilterPanelVisible"
+      @show-filter-panel="showTutorialFilterPanel"
+    />
   </v-container>
 </template>
 
@@ -110,6 +120,7 @@ import { useDisplay } from 'vuetify'
 import { useRoute } from 'vue-router'
 import SaplingWorkFilterPanel from '@/components/filter/SaplingWorkFilterPanel.vue'
 import SaplingDialogCard from '@/components/dialog/SaplingDialogCard.vue'
+import SaplingPartnerTutorial from '@/components/system/tutorial/SaplingPartnerTutorial.vue'
 import { useSaplingPartner } from '@/composables/partner/useSaplingPartner'
 import { SAPLING_DIALOG_MAX_WIDTH } from '@/constants/dialog.constants'
 // #endregion
@@ -171,6 +182,18 @@ function toggleFilterPanel() {
   }
 
   desktopFilterPanelVisible.value = !desktopFilterPanelVisible.value
+}
+
+function showTutorialFilterPanel() {
+  if (isFilterPanelVisible.value) {
+    return
+  }
+
+  if (isMobileFilterLayout.value) {
+    mobileFilterDialogVisible.value = true
+  } else {
+    desktopFilterPanelVisible.value = true
+  }
 }
 
 // #region Composable

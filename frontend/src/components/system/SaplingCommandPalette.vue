@@ -11,11 +11,12 @@
   >
     <SaplingDialogCard
       class="sapling-command-palette"
+      data-tutorial="command-palette"
       rounded="lg"
       :tilt="false"
       :close="closePalette"
     >
-      <div class="sapling-command-palette__search">
+      <div class="sapling-command-palette__search" data-tutorial="command-palette-search">
         <v-text-field
           ref="searchInputRef"
           v-model="query"
@@ -42,6 +43,7 @@
       <v-divider />
 
       <SaplingCommandPaletteResults
+        data-tutorial="command-palette-results"
         :is-loading="isLoading"
         :grouped-results="groupedResults"
         :active-index="activeIndex"
@@ -52,7 +54,7 @@
 
       <v-divider />
 
-      <SaplingCommandPaletteFooter />
+      <SaplingCommandPaletteFooter data-tutorial="command-palette-shortcuts" />
     </SaplingDialogCard>
   </v-dialog>
 </template>
@@ -66,6 +68,7 @@ import SaplingCommandPaletteResults from '@/components/system/command-palette/Sa
 import { useKonamiInCommandPalette } from '@/composables/easter-egg/useKonamiInCommandPalette'
 import { useSaplingCommandPalette } from '@/composables/system/useSaplingCommandPalette'
 import { SAPLING_OPEN_COMMAND_PALETTE_EVENT } from '@/services/command-palette.service'
+import { SAPLING_CLOSE_COMMAND_PALETTE_EVENT } from '@/services/command-palette.service'
 
 const { t } = useI18n()
 const {
@@ -140,10 +143,12 @@ function onSearchKeydown(event: KeyboardEvent) {
 onMounted(() => {
   window.addEventListener('keydown', onKeyDown)
   window.addEventListener(SAPLING_OPEN_COMMAND_PALETTE_EVENT, openPaletteAndFocus)
+  window.addEventListener(SAPLING_CLOSE_COMMAND_PALETTE_EVENT, closePalette)
 })
 
 onBeforeUnmount(() => {
   window.removeEventListener('keydown', onKeyDown)
   window.removeEventListener(SAPLING_OPEN_COMMAND_PALETTE_EVENT, openPaletteAndFocus)
+  window.removeEventListener(SAPLING_CLOSE_COMMAND_PALETTE_EVENT, closePalette)
 })
 </script>

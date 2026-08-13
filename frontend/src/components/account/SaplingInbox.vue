@@ -6,7 +6,12 @@
     class="sapling-dialog-large"
     @keydown.esc.stop.prevent="closeDialog"
   >
-    <SaplingDialogCard class="sapling-inbox-dialog" :tilt="false" :close="closeDialog">
+    <SaplingDialogCard
+      class="sapling-inbox-dialog"
+      data-tutorial="inbox-dialog"
+      :tilt="false"
+      :close="closeDialog"
+    >
       <SaplingDialogShell
         fill-shell
         body-class="sapling-dialog-fill-body sapling-dialog-transparent-loaders sapling-inbox-dialog__body sapling-scrollable"

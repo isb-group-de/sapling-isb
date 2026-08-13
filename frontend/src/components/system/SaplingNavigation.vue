@@ -1,5 +1,6 @@
 <template>
   <v-navigation-drawer
+    data-tutorial="main-navigation"
     :model-value="drawer"
     temporary
     scrim
@@ -28,7 +29,10 @@
               }}
             </div>
 
-            <div class="sapling-navigation-shell__hero-actions">
+            <div
+              class="sapling-navigation-shell__hero-actions"
+              data-tutorial="navigation-destinations"
+            >
               <v-btn
                 class="sapling-navigation-shell__panel-toggle"
                 icon="mdi-book-open-page-variant-outline"
@@ -62,6 +66,7 @@
       <div
         v-if="activePanel === 'navigation'"
         class="sapling-search-panel sapling-navigation-shell__search-panel"
+        data-tutorial="navigation-search"
       >
         <v-text-field
           v-model="navigationSearch"
@@ -95,7 +100,11 @@
         v-else-if="hasSearchResults && isDesktopNavigationPanel"
         class="sapling-navigation-workspace"
       >
-        <nav class="sapling-navigation-primary" :aria-label="$t('global.navigation')">
+        <nav
+          class="sapling-navigation-primary"
+          data-tutorial="navigation-primary"
+          :aria-label="$t('global.navigation')"
+        >
           <button
             v-for="groupResult in filteredGroups"
             :key="groupResult.group.handle"
@@ -121,6 +130,7 @@
         <section
           v-if="selectedNavigationGroup"
           class="sapling-navigation-detail"
+          data-tutorial="navigation-detail"
           :aria-label="selectedNavigationGroup.label"
         >
           <div class="sapling-navigation-detail__header">
@@ -217,6 +227,7 @@
       <div
         v-else-if="hasSearchResults"
         class="sapling-panel-scroll sapling-navigation-shell__content"
+        data-tutorial="navigation-primary"
       >
         <section
           v-for="groupResult in filteredGroups"
@@ -257,6 +268,7 @@
             <div
               v-show="isGroupExpanded(groupResult.group.handle)"
               class="sapling-nav-body sapling-navigation-section__body"
+              data-tutorial="navigation-detail"
             >
               <article
                 v-for="subgroup in groupResult.subgroups"

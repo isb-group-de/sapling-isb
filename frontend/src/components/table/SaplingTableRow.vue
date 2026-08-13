@@ -1,6 +1,7 @@
 <template>
   <!-- Table row for entity table, modularized for reuse and clarity -->
   <tr
+    :data-tutorial="index === 0 ? 'table-first-row' : undefined"
     class="sapling-table-row"
     :class="{
       'selected-row': !props.multiSelect && props.isSelected,
@@ -28,7 +29,11 @@
     </td>
     <!-- Render all other columns except actions -->
     <template v-for="col in columns" :key="col.key ?? ''">
-      <td v-if="col.key !== '__actions' && col.key !== '__select'" :class="getColumnCellClass(col)">
+      <td
+        v-if="col.key !== '__actions' && col.key !== '__select'"
+        :class="getColumnCellClass(col)"
+        :data-tutorial="getCellTutorialTarget(col)"
+      >
         <div v-if="'options' in col && col.options?.includes('isChip')">
           <SaplingTableChip
             :item="item"
@@ -190,6 +195,7 @@
       <v-menu v-model="menuActive">
         <template #activator="{ props: menuProps }">
           <v-btn
+            data-tutorial="table-row-actions"
             class="glass-panel sapling-table-row__actions-button"
             v-bind="menuProps"
             icon="mdi-dots-vertical"
@@ -203,6 +209,7 @@
         </template>
         <SaplingRecordActionMenuList
           v-if="menuActive"
+          data-tutorial="table-row-menu"
           class="glass-panel"
           :menu-items="rowMenuItems"
           :show-close-item="true"
@@ -219,6 +226,7 @@
 // #region Imports
 import { computed } from 'vue'
 import type { SaplingContextMenuTableMenuItem } from '@/composables/context/useSaplingContextMenuTable'
+import type { SaplingTableHeaderItem } from '@/entity/structure'
 import SaplingRecordActionMenuList from '@/components/common/SaplingRecordActionMenuList.vue'
 import SaplingDialogEdit from '@/components/dialog/SaplingDialogEdit.vue'
 import SaplingTableJson from '@/components/table/SaplingTableJson.vue'
@@ -249,6 +257,22 @@ import SaplingCellDateTime from './cells/SaplingCellDateTime.vue'
 // #region Props and Emits
 const props = defineProps<UseSaplingTableRowProps>()
 const emit = defineEmits<UseSaplingTableRowEmit>()
+
+function getCellTutorialTarget(column: SaplingTableHeaderItem) {
+  if (props.index !== 0 || !('options' in column)) {
+    return undefined
+  }
+
+  if (column.options?.includes('isPhone') || column.options?.includes('isMail')) {
+    return 'table-contact-cell'
+  }
+
+  if (isReferenceColumn(column)) {
+    return 'table-reference-cell'
+  }
+
+  return undefined
+}
 // #endregion
 
 // #region Composable

@@ -79,12 +79,13 @@
       <section class="sapling-dashboard__overview">
         <SaplingPageHero
           class="sapling-dashboard__hero"
+          data-tutorial="dashboard-workspace"
           variant="workspace"
           :eyebrow="$t('dashboard.workspace')"
           :title="currentDashboard?.name || $t('dashboard.executiveOverview')"
           :subtitle="$t('dashboard.workspaceSubtitle')"
         >
-          <div class="sapling-dashboard__layout-actions">
+          <div class="sapling-dashboard__layout-actions" data-tutorial="dashboard-layout-action">
             <v-btn
               v-if="!isLayoutEditing"
               color="primary"
@@ -122,6 +123,7 @@
 
           <template #side>
             <SaplingDashboardHeroActions
+              data-tutorial="dashboard-actions"
               :has-dashboards="hasDashboards"
               :current-person-loaded="currentPersonStore.loaded"
               :is-layout-editing="isLayoutEditing"
@@ -211,7 +213,8 @@ import SaplingDashboardTabs from '@/components/dashboard/SaplingDashboardTabs.vu
 import SaplingDialogDelete from '@/components/dialog/SaplingDialogDelete.vue'
 import SaplingDialogEdit from '@/components/dialog/SaplingDialogEdit.vue'
 import SaplingPageHero from '@/components/common/SaplingPageHero.vue'
-import { ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { SAPLING_SET_DASHBOARD_TUTORIAL_LAYOUT_EVENT } from '@/services/dashboard-tutorial.service'
 // #endregion
 
 // #region Composable
@@ -262,6 +265,7 @@ const {
 } = useSaplingDashboard()
 
 const addKpiRequestKey = ref(0)
+const tutorialStartedLayoutEdit = ref(false)
 
 function requestAddKpi() {
   if (!hasDashboards.value) {
@@ -270,5 +274,32 @@ function requestAddKpi() {
 
   addKpiRequestKey.value += 1
 }
+
+function handleTutorialLayout(event: Event) {
+  const shouldEdit = (event as CustomEvent<boolean>).detail
+
+  if (shouldEdit && !isLayoutEditing.value && hasDashboards.value) {
+    beginLayoutEdit()
+    tutorialStartedLayoutEdit.value = true
+    return
+  }
+
+  if (!shouldEdit && tutorialStartedLayoutEdit.value) {
+    cancelLayoutEdit()
+    tutorialStartedLayoutEdit.value = false
+  }
+}
+
+onMounted(() => {
+  window.addEventListener(SAPLING_SET_DASHBOARD_TUTORIAL_LAYOUT_EVENT, handleTutorialLayout)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener(SAPLING_SET_DASHBOARD_TUTORIAL_LAYOUT_EVENT, handleTutorialLayout)
+  if (tutorialStartedLayoutEdit.value) {
+    cancelLayoutEdit()
+    tutorialStartedLayoutEdit.value = false
+  }
+})
 // #endregion
 </script>

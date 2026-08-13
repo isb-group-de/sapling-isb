@@ -264,6 +264,40 @@ Routing outcomes:
 
 `currentPersonStore` owns current profile loading and impersonation start/stop actions.
 
+## First-Visit Tutorials
+
+The public login view starts a short first-visit tutorial after the login shell
+and its translations have loaded. `SaplingTutorialOverlay.vue` provides the
+reusable spotlight, positioning, keyboard navigation, and dismiss behavior;
+`SaplingLogin.vue` only declares the login-specific steps and targets.
+
+The Azure and Google steps are added only when their corresponding frontend
+provider flag is enabled. Completion and dismissal store only the tutorial ID
+and version in a SameSite-Lax browser cookie (`sapling-tutorial-login`). No
+person or credential data is stored. Increasing the configured version makes a
+substantially revised tutorial appear again.
+
+The authenticated start page uses the same overlay for two independently
+versioned groups. `SaplingDashboardTutorials.vue` first guides the header and
+navigation, then starts a separate dashboard tour. The navigation tour explains
+the category/detail hierarchy, work lists, knowledge-base and favorites links,
+the command palette with its F1 help, inbox, notification center, profile, and
+Songbird. Navigation, global search, inbox, notification center, profile, and
+Songbird require a click on the spotlighted control. Opened dialogs receive a
+follow-up step before the tour continues. When the inbox step starts, Sapling
+idempotently creates one all-day welcome Event for the current person and day.
+Its normal Event lifecycle produces the inbox notification, so the tutorial
+demonstrates a real, editable calendar record without duplicating it when the
+tour is restarted. The notification-center step separately adds an in-memory
+welcome notification without creating a database record. Profile coverage
+excludes the administrator-only Danger Zone.
+
+Completion or dismissal stores `sapling-tutorial-dashboard-navigation` and
+`sapling-tutorial-dashboard-workspace`. The command-palette action **Restart tutorial**
+returns to `/` and forces both authenticated groups to run again without
+replaying the login tour. Optional permission-dependent targets are skipped if
+they are unavailable.
+
 ## Security Notes
 
 - Never expose `loginPassword`, token hashes, refresh tokens, or webhook secrets in APIs or webhook payloads.

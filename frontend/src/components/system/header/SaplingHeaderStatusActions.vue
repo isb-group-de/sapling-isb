@@ -1,6 +1,7 @@
 <template>
   <div class="sapling-header__compact-actions">
     <v-btn
+      data-tutorial="header-search"
       class="sapling-header__desktop-action sapling-header__compact-action text-none"
       stacked
       :aria-label="searchLabel"
@@ -11,6 +12,7 @@
     </v-btn>
 
     <v-btn
+      data-tutorial="header-help"
       class="sapling-header__desktop-action sapling-header__compact-action text-none"
       stacked
       :aria-label="helpLabel"
@@ -23,6 +25,7 @@
 
   <div class="sapling-header__inbox-slot">
     <v-btn
+      data-tutorial="header-inbox"
       class="sapling-header__desktop-action text-none"
       stacked
       :aria-label="inboxActionLabel"
@@ -41,6 +44,7 @@
   </div>
 
   <v-btn
+    data-tutorial="header-message-center"
     class="sapling-header__desktop-action text-none"
     stacked
     :aria-label="messageCenterActionLabel"

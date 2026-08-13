@@ -1,6 +1,7 @@
 <template>
   <aside class="sapling-fill-shell sapling-event-context">
     <SaplingSurface
+      data-tutorial="calendar-context-switcher"
       as="section"
       class="sapling-section-panel sapling-panel-shell sapling-event-context__switcher"
     >
@@ -42,6 +43,7 @@
 
     <SaplingWorkFilterPanel
       v-if="activePanel === 'filter' && !isMobileFilterLayout"
+      data-tutorial="calendar-filter-panel"
       class="sapling-event-context__panel"
       :chip-filters="chipFilters"
       :selected-chip-filters="selectedChipFilters"
@@ -60,6 +62,7 @@
 
     <SaplingEventAgendaPanel
       v-else
+      data-tutorial="calendar-agenda"
       class="sapling-event-context__panel"
       :upcoming-events="upcomingEvents"
       @open-event="emit('openEvent', $event)"
@@ -68,7 +71,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import type { CalendarEvent } from 'vuetify/lib/components/VCalendar/types.mjs'
 import { useI18n } from 'vue-i18n'
 import SaplingSurface from '@/components/common/SaplingSurface.vue'
@@ -114,5 +117,17 @@ const filterSummaryLabel = computed(() =>
   ]
     .filter(Boolean)
     .join(', '),
+)
+
+function handleTutorialPanel(event: Event) {
+  const panel = (event as CustomEvent<ContextPanelKey>).detail
+  if (panel === 'agenda' || panel === 'filter') {
+    activePanel.value = panel
+  }
+}
+
+onMounted(() => window.addEventListener('sapling:calendar-tutorial-panel', handleTutorialPanel))
+onBeforeUnmount(() =>
+  window.removeEventListener('sapling:calendar-tutorial-panel', handleTutorialPanel),
 )
 </script>

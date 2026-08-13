@@ -1,5 +1,6 @@
 <template>
   <SaplingTable
+    enable-tutorial
     :key="entityHandle"
     :entity-handle="entityHandle"
     :items="items"

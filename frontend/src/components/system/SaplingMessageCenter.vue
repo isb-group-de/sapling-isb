@@ -75,7 +75,12 @@
       <template v-slot:activator="{ props }">
         <slot name="activator" v-bind="props" />
       </template>
-      <SaplingDialogCard class="sapling-message-center-dialog" :tilt="false" :close="closeDialog">
+      <SaplingDialogCard
+        class="sapling-message-center-dialog"
+        data-tutorial="message-center-dialog"
+        :tilt="false"
+        :close="closeDialog"
+      >
         <div class="sapling-dialog-shell sapling-fill-shell">
           <template v-if="isTranslationLoading">
             <SaplingDialogHero loading />

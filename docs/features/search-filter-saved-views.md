@@ -204,6 +204,13 @@ When adding routes:
 
 ## Extension Checklist
 
+The Partner ticket workspace has a focused first-visit tutorial for its
+additional person, company, and attribute filters. It does not repeat the full
+generic-table tutorial. The tutorial opens the responsive filter panel when
+necessary and can be restarted independently from the command palette. Keep the
+`data-tutorial` hooks in `SaplingPartner.vue` and
+`SaplingWorkFilterPanel.vue` aligned with that flow when filter groups change.
+
 When adding a saved view:
 
 1. Test the filter in the generic table URL first.

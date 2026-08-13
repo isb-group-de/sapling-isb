@@ -1,4 +1,4 @@
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import ApiGenericService from '@/services/api.generic.service'
@@ -10,6 +10,8 @@ import { useSaplingAccount } from '@/composables/account/useSaplingAccount'
 import { useSaplingAiChat } from '@/composables/system/useSaplingAiChat'
 import { useSaplingHelp } from '@/composables/system/useSaplingHelp'
 import { pushAppRoute } from '@/utils/routerNavigation'
+import { startSaplingDashboardTutorial } from '@/services/dashboard-tutorial.service'
+import { startSaplingFeatureTutorial } from '@/services/feature-tutorial.service'
 import type { EntityItem, EntityRouteItem, FavoriteItem, PersonItem } from '@/entity/entity'
 import type { AccumulatedPermission } from '@/entity/structure'
 import { canAccessEntityWorkspace } from '@/utils/entityAccess'
@@ -183,6 +185,68 @@ export function useSaplingCommandPalette() {
     const logoutHint = t('global.commandPalette.actionLogoutHint')
 
     const items: Omit<CommandPaletteItem, 'flatIndex'>[] = []
+
+    const tutorialLabel = t('tutorial.commandPaletteTitle')
+    const tutorialHint = t('tutorial.commandPaletteHint')
+    items.push({
+      id: 'action:tutorial',
+      group: 'action',
+      label: tutorialLabel,
+      hint: tutorialHint,
+      icon: 'mdi-school-outline',
+      haystack:
+        `${tutorialLabel} ${tutorialHint} tutorial onboarding einführung rundgang`.toLowerCase(),
+      path: '',
+      run: async () => {
+        await router.push('/')
+        await nextTick()
+        startSaplingDashboardTutorial()
+      },
+    })
+
+    const featureTutorialActions = [
+      {
+        id: 'table',
+        path: '/table/company',
+        icon: 'mdi-table-large',
+        tutorial: 'table' as const,
+      },
+      {
+        id: 'partner',
+        path: '/partner/ticket',
+        icon: 'mdi-account-filter-outline',
+        tutorial: 'partner' as const,
+      },
+      {
+        id: 'calendar',
+        path: '/event',
+        icon: 'mdi-calendar-month-outline',
+        tutorial: 'calendar' as const,
+      },
+    ]
+
+    for (const action of featureTutorialActions) {
+      const label = t(`tutorial.${action.id}CommandPaletteTitle`)
+      const hint = t(`tutorial.${action.id}CommandPaletteHint`)
+      items.push({
+        id: `action:tutorial-${action.id}`,
+        group: 'action',
+        label,
+        hint,
+        icon: action.icon,
+        haystack: `${label} ${hint} tutorial onboarding einführung rundgang`.toLowerCase(),
+        path: '',
+        run: async () => {
+          const targetPath =
+            action.tutorial === 'table' && router.currentRoute.value.path.startsWith('/table/')
+              ? router.currentRoute.value.fullPath
+              : action.path
+          await router.push(targetPath)
+          await nextTick()
+          startSaplingFeatureTutorial(action.tutorial)
+        },
+      })
+    }
 
     if (hasSaplingAiChatAccess.value) {
       const aiChatLabel = t('global.commandPalette.actionAiChat')

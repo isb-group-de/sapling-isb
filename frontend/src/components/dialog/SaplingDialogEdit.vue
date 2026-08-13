@@ -9,10 +9,12 @@
   >
     <SaplingDialogCard class="sapling-dialog-card--fill" :tilt="false" :close="cancel">
       <div
+        data-tutorial="table-record-dialog"
         class="sapling-stack-xl sapling-record-dialog-shell sapling-dialog-edit-shell"
         @keydown="onDialogKeydown"
       >
         <SaplingDialogEditHeader
+          data-tutorial="table-record-dialog-header"
           :loading="isLoading"
           :eyebrow="entityLabel"
           :title="dialogTitle"
@@ -27,7 +29,10 @@
           :can-open-form-config-editor="canOpenFormConfigEditor"
           @open-form-config="openFormConfigEditor"
         />
-        <v-card-text class="sapling-record-dialog-content sapling-dialog-edit-content">
+        <v-card-text
+          data-tutorial="table-record-dialog-fields"
+          class="sapling-record-dialog-content sapling-dialog-edit-content"
+        >
           <template v-if="isLoading">
             <div class="sapling-stack-xl sapling-record-dialog-loading sapling-dialog-edit-loading">
               <v-skeleton-loader
@@ -158,6 +163,7 @@
           </template>
         </v-card-text>
         <SaplingDialogEditActions
+          data-tutorial="table-record-dialog-actions"
           :mode="mode"
           :is-loading="isLoading"
           :is-dirty="isDirty"

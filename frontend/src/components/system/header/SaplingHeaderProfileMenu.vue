@@ -3,11 +3,13 @@
     :model-value="modelValue"
     location="bottom end"
     :offset="12"
+    :persistent="persistent"
     :close-on-content-click="false"
     @update:model-value="emit('update:modelValue', $event)"
   >
     <template #activator="{ props: menuProps }">
       <v-btn
+        data-tutorial="header-profile"
         v-bind="menuProps"
         class="sapling-profile-trigger text-none"
         :class="{ 'sapling-profile-trigger--impersonating': isImpersonating }"
@@ -59,6 +61,7 @@
 
       <div class="sapling-menu-panel__body sapling-profile-menu__body">
         <div
+          data-tutorial="profile-primary"
           class="sapling-menu-section sapling-profile-menu__section sapling-profile-menu__section--primary"
         >
           <v-btn
@@ -94,7 +97,10 @@
           </v-btn>
         </div>
 
-        <div class="sapling-menu-section sapling-profile-menu__section">
+        <div
+          class="sapling-menu-section sapling-profile-menu__section"
+          data-tutorial="profile-appearance"
+        >
           <button
             v-for="action in appearanceActions"
             :key="action.key"
@@ -121,7 +127,10 @@
           </button>
         </div>
 
-        <div class="sapling-menu-section sapling-profile-menu__section">
+        <div
+          class="sapling-menu-section sapling-profile-menu__section"
+          data-tutorial="profile-language"
+        >
           <div class="sapling-menu-section-label sapling-profile-menu__section-label">
             {{ languageLabel }}
           </div>
@@ -192,6 +201,7 @@ import type { SaplingProfileAction } from '@/components/system/header/header.typ
 
 const props = defineProps<{
   modelValue: boolean
+  persistent?: boolean
   isImpersonating: boolean
   impersonationActorName: string
   impersonationReturning: boolean

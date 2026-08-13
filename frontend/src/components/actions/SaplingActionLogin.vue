@@ -3,12 +3,14 @@
     <template #leading>
       <v-btn
         v-if="IS_LOGIN_WITH_AZURE_ENABLED"
+        data-tutorial="login-azure"
         icon="mdi-microsoft-azure"
         color="primary"
         @click="handleAzure"
       />
       <v-btn
         v-if="IS_LOGIN_WITH_GOOGLE_ENABLED"
+        data-tutorial="login-google"
         icon="mdi-google"
         color="primary"
         @click="handleGoogle"
@@ -17,6 +19,7 @@
 
     <template #trailing>
       <v-btn
+        data-tutorial="login-local"
         color="primary"
         append-icon="mdi-login"
         @click="handleLogin"

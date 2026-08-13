@@ -8,6 +8,7 @@
   />
   <div
     v-else
+    data-tutorial="table-root"
     class="sapling-table-root"
     :class="{
       'sapling-table-root--has-select': Boolean(multiSelect),
@@ -22,6 +23,7 @@
       <div class="sapling-toolbar-controls sapling-table-toolbar-controls">
         <div
           v-if="multiSelect && showSelectionToolbar"
+          data-tutorial="table-selection-actions"
           class="sapling-toolbar-slot sapling-table-toolbar-slot sapling-table-toolbar-slot--selection"
         >
           <SaplingTableMultiSelect
@@ -45,6 +47,7 @@
 
         <div
           v-if="showSearchField"
+          data-tutorial="table-search"
           class="sapling-toolbar-slot sapling-toolbar-slot--grow sapling-table-toolbar-slot sapling-table-toolbar-slot--search"
         >
           <SaplingSearch
@@ -59,6 +62,7 @@
           class="sapling-toolbar-slot sapling-toolbar-slot--trailing sapling-table-toolbar-slot sapling-table-toolbar-slot--actions"
         >
           <div
+            data-tutorial="table-toolbar-actions"
             class="sapling-action-cluster sapling-table-toolbar-actions"
             :class="{ 'sapling-table-toolbar-actions--compact': !showToolbarActionsInline }"
           >
@@ -102,6 +106,7 @@
               <template v-if="showSidePanelToggleButton || showFormConfigButton" #leading>
                 <v-btn
                   v-if="showSidePanelToggleButton"
+                  data-tutorial="partner-filter-toggle"
                   class="sapling-table-toolbar-action sapling-table-toolbar-action--icon-only sapling-table-toolbar-action--utility"
                   color="primary"
                   :variant="sidePanelVisible ? 'flat' : 'tonal'"
@@ -235,6 +240,13 @@
       />
     </div>
 
+    <SaplingTableTutorial
+      v-if="enableTutorial && isInitialized"
+      :create-dialog-open="editDialog.visible && editDialog.mode === 'create'"
+      @open-create="openCreateDialog"
+      @close-create="closeDialog"
+    />
+
     <SaplingTableColumnChooser
       v-model="isColumnChooserOpen"
       :available-columns="availableColumnHeaders"
@@ -329,6 +341,7 @@ import SaplingTableMultiSelect from './SaplingTableMultiSelect.vue'
 import SaplingTableOverlays from './SaplingTableOverlays.vue'
 import SaplingTableToolbarActions from './SaplingTableToolbarActions.vue'
 import SaplingTableViewDialog from './SaplingTableViewDialog.vue'
+import SaplingTableTutorial from '@/components/system/tutorial/SaplingTableTutorial.vue'
 import {
   useSaplingTableComponent,
   type UseSaplingTableEmit,
@@ -346,6 +359,7 @@ import type { SaplingTableViewSaveRequest } from '@/composables/table/saplingTab
 
 // #region Props and Emits
 type SaplingTableProps = UseSaplingTableProps & {
+  enableTutorial?: boolean
   showFavorite?: boolean
   showAdd?: boolean
   showImport?: boolean
@@ -374,6 +388,7 @@ type SaplingTableEmit = UseSaplingTableEmit & {
 }
 
 const props = withDefaults(defineProps<SaplingTableProps>(), {
+  enableTutorial: false,
   showSearch: true,
   showToolbar: true,
   showSelectionToolbar: true,

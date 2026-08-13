@@ -2,6 +2,7 @@
   <v-app-bar :elevation="2" class="sapling-header">
     <template #prepend>
       <v-app-bar-nav-icon
+        data-tutorial="header-navigation"
         :aria-label="props.modelValue ? $t('global.closeDrawer') : $t('global.navigation')"
         :title="props.modelValue ? $t('global.closeDrawer') : $t('global.navigation')"
         @click="toggleNavigation"
@@ -10,7 +11,7 @@
 
     <v-app-bar-title>
       <div class="sapling-inline-cluster sapling-inline-cluster--wide sapling-header__brand">
-        <v-btn stacked class="pa-1" @click="goHome">Sapling</v-btn>
+        <v-btn data-tutorial="header-home" stacked class="pa-1" @click="goHome">Sapling</v-btn>
       </div>
     </v-app-bar-title>
 
@@ -33,6 +34,7 @@
 
       <SaplingHeaderProfileMenu
         v-model="showProfileMenu"
+        :persistent="tutorialProfileMenuOpen"
         :is-impersonating="isImpersonating"
         :impersonation-actor-name="impersonationActorName"
         :impersonation-returning="impersonationReturning"
@@ -95,6 +97,7 @@ import type { SaplingProfileAction } from '@/components/system/header/header.typ
 const router = useRouter()
 const route = useRoute()
 const showProfileMenu = ref(false)
+const tutorialProfileMenuOpen = ref(false)
 const initialAccountTab = ref<SaplingAccountDialogTab>('profile')
 
 const props = withDefaults(
@@ -361,4 +364,14 @@ function resolveCurrentContextHelpKey(): string | null {
 
   return resolveRouteContextHelpKey(route)
 }
+
+function setProfileMenu(value: boolean) {
+  tutorialProfileMenuOpen.value = value
+  showProfileMenu.value = value
+}
+
+defineExpose({
+  closeInbox,
+  setProfileMenu,
+})
 </script>

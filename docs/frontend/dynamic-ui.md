@@ -357,6 +357,21 @@ with `isValue`, but this is stored in the decorator and not inferred in the
 frontend. Hiding a field from the desktop table does not automatically hide a
 mobile-visible field.
 
+### Table Onboarding Tutorial
+
+The standalone `/table/:entity` workspace enables `SaplingTableTutorial.vue`.
+It is intentionally not enabled for embedded tables or the table inside the
+Partner workspace. Stable `data-tutorial` attributes identify toolbar actions,
+the filter row, representative contact/reference cells, row actions, the record
+dialog, and pagination; keep these hooks when restructuring the table UI.
+
+The tutorial is remembered per browser by `useSaplingTutorial` and can be
+forced independently from the command palette through
+`feature-tutorial.service.ts`. The Add and row-action steps permit interaction
+and advance only after the highlighted control is clicked. Optional targets are
+skipped when permissions, table metadata, or an empty result set make them
+unavailable.
+
 ### Selection Bulk Update
 
 When at least one row is selected and update access is effective, the selection

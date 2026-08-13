@@ -13,6 +13,7 @@
       <slot name="leading" />
 
       <SaplingTableRefreshMenu
+        data-tutorial="table-refresh"
         :model-value="autoRefreshIntervalMinutes"
         :refresh-button-label="refreshButtonLabel"
         :seconds-until-refresh="secondsUntilRefresh"
@@ -23,6 +24,7 @@
       <v-menu v-if="showFavorite" location="bottom end">
         <template #activator="{ props: favoriteMenuProps }">
           <v-btn
+            data-tutorial="table-worklists"
             class="sapling-table-toolbar-action sapling-table-toolbar-action--icon-only sapling-table-toolbar-action--utility"
             color="primary"
             variant="tonal"
@@ -69,6 +71,7 @@
       <v-menu v-if="formConfigMenuItems.length > 0 || canSaveCurrentView" location="bottom end">
         <template #activator="{ props: formConfigMenuProps }">
           <v-btn
+            data-tutorial="table-views"
             class="sapling-table-toolbar-action sapling-table-toolbar-action--icon-only sapling-table-toolbar-action--utility"
             color="primary"
             variant="tonal"
@@ -154,6 +157,7 @@
       <v-menu location="bottom end">
         <template #activator="{ props: menuProps }">
           <v-btn
+            data-tutorial="table-downloads"
             class="sapling-table-toolbar-action sapling-table-toolbar-action--icon-only sapling-table-toolbar-action--utility"
             color="primary"
             variant="tonal"
@@ -196,6 +200,7 @@
 
       <v-btn
         v-if="showAdd"
+        data-tutorial="table-add"
         class="sapling-table-toolbar-action sapling-table-toolbar-action--icon-only sapling-table-toolbar-action--add"
         color="primary"
         variant="flat"
@@ -218,6 +223,7 @@
         <slot name="leading" />
 
         <SaplingTableRefreshMenu
+          data-tutorial="table-refresh"
           :model-value="autoRefreshIntervalMinutes"
           :refresh-button-label="refreshButtonLabel"
           :seconds-until-refresh="secondsUntilRefresh"
@@ -227,6 +233,7 @@
         <v-menu v-if="showFavorite" location="bottom end">
           <template #activator="{ props: favoriteMenuProps }">
             <v-btn
+              data-tutorial="table-worklists"
               class="sapling-table-toolbar-action sapling-table-toolbar-action--icon-only sapling-table-toolbar-action--utility"
               color="primary"
               variant="tonal"
@@ -272,6 +279,7 @@
         <v-menu v-if="formConfigMenuItems.length > 0 || canSaveCurrentView" location="bottom end">
           <template #activator="{ props: formConfigMenuProps }">
             <v-btn
+              data-tutorial="table-views"
               class="sapling-table-toolbar-action sapling-table-toolbar-action--icon-only sapling-table-toolbar-action--utility"
               color="primary"
               variant="tonal"
@@ -356,6 +364,7 @@
         <v-menu location="bottom end">
           <template #activator="{ props: toolsMenuProps }">
             <v-btn
+              data-tutorial="table-downloads"
               class="sapling-table-toolbar-action sapling-table-toolbar-action--icon-only sapling-table-toolbar-action--utility"
               color="primary"
               variant="tonal"
@@ -397,6 +406,7 @@
 
         <v-btn
           v-if="showAdd"
+          data-tutorial="table-add"
           class="sapling-table-toolbar-action sapling-table-toolbar-action--add"
           color="primary"
           variant="flat"
