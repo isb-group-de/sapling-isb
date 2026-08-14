@@ -20,6 +20,10 @@ const VDataTableServerStub = defineComponent({
       type: Array,
       default: () => [],
     },
+    items: {
+      type: Array,
+      default: () => [],
+    },
   },
   template: `
     <table>
@@ -32,8 +36,27 @@ const VDataTableServerStub = defineComponent({
           :toggle-sort="() => undefined"
         />
       </thead>
+      <tbody>
+        <slot
+          v-for="(item, index) in items"
+          :key="item.handle"
+          name="item"
+          :item="item"
+          :index="index"
+        />
+      </tbody>
     </table>
   `,
+})
+
+const SaplingTableRowStub = defineComponent({
+  props: {
+    item: {
+      type: Object,
+      required: true,
+    },
+  },
+  template: '<tr><td data-testid="projected-email">{{ item.creatorPersonEmail ?? "" }}</td></tr>',
 })
 
 const VCheckboxStub = defineComponent({
@@ -57,12 +80,15 @@ const VCheckboxStub = defineComponent({
   `,
 })
 
-function mountDesktopTable(selectedRows: number[]) {
+function mountDesktopTable(
+  selectedRows: number[],
+  items: Array<Record<string, unknown>> = [{ handle: 1 }, { handle: 2 }],
+) {
   return mount(SaplingTableDesktopView, {
     props: {
       tableKey: 'person',
-      items: [{ handle: 1 }, { handle: 2 }],
-      totalItems: 2,
+      items,
+      totalItems: items.length,
       itemsPerPage: 20,
       page: 1,
       isLoading: false,
@@ -90,6 +116,7 @@ function mountDesktopTable(selectedRows: number[]) {
         VDataTableServer: VDataTableServerStub,
         VCheckbox: VCheckboxStub,
         VProgressLinear: true,
+        SaplingTableRow: SaplingTableRowStub,
       },
     },
   })
@@ -124,5 +151,24 @@ describe('SaplingTableDesktopView page selection', () => {
     await checkbox.setValue(false)
 
     expect(wrapper.emitted('clear-selection')).toHaveLength(1)
+  })
+
+  it('rerenders a row when a reloaded projection replaces the same record version', async () => {
+    const unchangedVersion = '2026-08-14T12:00:00.000Z'
+    const wrapper = mountDesktopTable([], [{ handle: 3, updatedAt: unchangedVersion }])
+
+    expect(wrapper.get('[data-testid="projected-email"]').text()).toBe('')
+
+    await wrapper.setProps({
+      items: [
+        {
+          handle: 3,
+          updatedAt: unchangedVersion,
+          creatorPersonEmail: 'customer@example.com',
+        },
+      ],
+    })
+
+    expect(wrapper.get('[data-testid="projected-email"]').text()).toBe('customer@example.com')
   })
 })

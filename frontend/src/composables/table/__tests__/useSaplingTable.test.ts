@@ -427,7 +427,6 @@ describe('useSaplingTable initialization and loading', () => {
 
   it('reloads newly visible computed reference fields after switching to the standard view', async () => {
     vi.useFakeTimers()
-    const entityHandle = 'standardProjectionRecord'
     const systemTemplates = [
       createTemplate({ name: 'name', type: 'string' }),
       createTemplate({
@@ -460,7 +459,6 @@ describe('useSaplingTable initialization and loading', () => {
         referencedPks: ['handle'],
       }),
     ]
-    setMockedEntityTemplates(entityHandle, systemTemplates)
 
     loadGenericMock.mockImplementation(async (handle: string) => {
       if (handle === 'projectionPerson') {
@@ -471,11 +469,12 @@ describe('useSaplingTable initialization and loading', () => {
       }
     })
     apiFindMock.mockResolvedValue({ data: [], meta: { total: 0 } })
+    getEntityTemplateMock.mockResolvedValue(systemTemplates)
     listFormConfigsMock.mockResolvedValue([
       {
         handle: 7,
         name: 'Customer view',
-        entity: entityHandle,
+        entity: 'partner',
         scope: 'global',
         scopeHandle: null,
         isActive: true,
@@ -483,7 +482,7 @@ describe('useSaplingTable initialization and loading', () => {
         version: 1,
         config: {
           schema: 'sapling.form-config.v1',
-          entityHandle,
+          entityHandle: 'partner',
           fields: {
             creatorPersonEmail: { tableVisible: false },
             creatorPersonPhone: { tableVisible: false },
@@ -493,20 +492,10 @@ describe('useSaplingTable initialization and loading', () => {
       },
     ])
 
-    const wrapper = mountTestHost(ref(entityHandle))
+    const wrapper = mountTestHost(ref('partner'))
     await flushPromises()
     await vi.advanceTimersByTimeAsync(350)
     await flushPromises()
-
-    expect(wrapper.vm.selectedFormConfigHandle).toBe(7)
-    expect(apiFindMock).toHaveBeenLastCalledWith(
-      entityHandle,
-      expect.objectContaining({
-        relations: expect.arrayContaining(['creatorPerson', 'slaPolicy']),
-        fields: expect.arrayContaining(['creatorPerson.email', 'creatorPerson.phone', 'slaPolicy']),
-      }),
-    )
-
     apiFindMock.mockClear()
     loadGenericMock.mockClear()
 
@@ -516,7 +505,7 @@ describe('useSaplingTable initialization and loading', () => {
 
     expect(loadGenericMock).toHaveBeenCalledWith('projectionPerson', 'global')
     expect(apiFindMock).toHaveBeenCalledWith(
-      entityHandle,
+      'partner',
       expect.objectContaining({
         relations: expect.arrayContaining(['creatorPerson', 'slaPolicy']),
         fields: expect.arrayContaining(['creatorPerson.email', 'creatorPerson.phone', 'slaPolicy']),

@@ -127,6 +127,7 @@
     <template #item="{ item, index }">
       <SaplingTableRow
         v-memo="[
+          item,
           item.handle,
           item.updatedAt,
           isRowSelected(index),
