@@ -114,26 +114,43 @@ export function useSaplingTable(
   const isLoading = computed(
     () => genericStore.getState(entityHandle.value).isLoading || isDataLoading.value,
   )
+
+  function getProjectionTemplateSets(nextEntityTemplates: EntityTemplate[]) {
+    const standardEntityTemplates = genericStore.getState(entityHandle.value).entityTemplates
+
+    return standardEntityTemplates.length > 0 && standardEntityTemplates !== nextEntityTemplates
+      ? [standardEntityTemplates, nextEntityTemplates]
+      : [nextEntityTemplates]
+  }
+
   function buildListProjectionFields(nextEntityTemplates: EntityTemplate[]) {
     const permissions = currentPermissionStore.accumulatedPermission ?? []
+    const projectionTemplateSets = getProjectionTemplateSets(nextEntityTemplates)
     const baseFields = [
       ...new Set([
-        ...getListProjectionFieldNames(
-          nextEntityTemplates,
-          permissions,
-          (referenceName) => genericStore.getState(referenceName).entityTemplates,
+        ...projectionTemplateSets.flatMap((templates) =>
+          getListProjectionFieldNames(
+            templates,
+            permissions,
+            (referenceName) => genericStore.getState(referenceName).entityTemplates,
+          ),
         ),
-        ...nextEntityTemplates
-          .filter(
-            (template) =>
-              template.name === 'updatedAt' &&
-              template.isPersistent !== false &&
-              template.fieldAccess?.allowRead !== false,
-          )
-          .map((template) => template.name),
+        ...projectionTemplateSets.flatMap((templates) =>
+          templates
+            .filter(
+              (template) =>
+                template.name === 'updatedAt' &&
+                template.isPersistent !== false &&
+                template.fieldAccess?.allowRead !== false,
+            )
+            .map((template) => template.name),
+        ),
         ...additionalListProjectionFields.filter((fieldName) =>
-          nextEntityTemplates.some(
-            (template) => template.name === fieldName && template.fieldAccess?.allowRead !== false,
+          projectionTemplateSets.some((templates) =>
+            templates.some(
+              (template) =>
+                template.name === fieldName && template.fieldAccess?.allowRead !== false,
+            ),
           ),
         ),
         ...temporaryVisibleColumnKeys.value.filter((fieldName) =>
@@ -150,11 +167,13 @@ export function useSaplingTable(
     return [
       ...new Set([
         ...baseFields,
-        ...getReferenceChipProjectionFieldNames(
-          nextEntityTemplates,
-          permissions,
-          baseFields,
-          (referenceName) => genericStore.getState(referenceName).entityTemplates,
+        ...projectionTemplateSets.flatMap((templates) =>
+          getReferenceChipProjectionFieldNames(
+            templates,
+            permissions,
+            baseFields,
+            (referenceName) => genericStore.getState(referenceName).entityTemplates,
+          ),
         ),
       ]),
     ]
@@ -421,21 +440,34 @@ export function useSaplingTable(
 
   async function preloadValueReferenceMetadata(nextEntityTemplates: EntityTemplate[]) {
     const permissions = currentPermissionStore.accumulatedPermission ?? []
-    const projectedFields = getListProjectionFieldNames(nextEntityTemplates, permissions)
+    const projectionTemplateSets = getProjectionTemplateSets(nextEntityTemplates)
+    const projectedFields = [
+      ...new Set(
+        projectionTemplateSets.flatMap((templates) =>
+          getListProjectionFieldNames(templates, permissions),
+        ),
+      ),
+    ]
     const rootRelations = [
       ...new Set([
-        ...getReadableReferenceRelationNames(nextEntityTemplates, permissions, projectedFields),
-        ...getListProjectionReferenceDependencyNames(nextEntityTemplates, permissions),
+        ...projectionTemplateSets.flatMap((templates) =>
+          getReadableReferenceRelationNames(templates, permissions, projectedFields),
+        ),
+        ...projectionTemplateSets.flatMap((templates) =>
+          getListProjectionReferenceDependencyNames(templates, permissions),
+        ),
       ]),
     ]
     const rootRelationSet = new Set(rootRelations)
     const rootReferenceNames = [
       ...new Set(
-        nextEntityTemplates
-          .filter(
-            (template) => rootRelationSet.has(template.name) && Boolean(template.referenceName),
-          )
-          .map((template) => template.referenceName as string),
+        projectionTemplateSets.flatMap((templates) =>
+          templates
+            .filter(
+              (template) => rootRelationSet.has(template.name) && Boolean(template.referenceName),
+            )
+            .map((template) => template.referenceName as string),
+        ),
       ),
     ]
 
