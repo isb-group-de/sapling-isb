@@ -7,6 +7,7 @@ import {
   apiFindMock,
   cleanupTableTestWrappers,
   createDeferred,
+  createTemplate,
   getEntityTemplateMock,
   listFormConfigsMock,
   loadGenericMock,
@@ -15,6 +16,7 @@ import {
   mountManualTestHost,
   mountTestHost,
   resetTableTestMocks,
+  setMockedEntityTemplates,
   setPersonalTableViewDefaultMock,
 } from './useSaplingTable.test-support'
 
@@ -421,6 +423,86 @@ describe('useSaplingTable initialization and loading', () => {
     expect(
       wrapper.vm.entityTemplates.find((template) => template.name === 'name')?.tableVisible,
     ).toBe(false)
+  })
+
+  it('reloads newly visible computed reference fields after switching to the standard view', async () => {
+    vi.useFakeTimers()
+    const systemTemplates = [
+      createTemplate({ name: 'name', type: 'string' }),
+      createTemplate({
+        name: 'creatorPerson',
+        type: 'PersonItem',
+        kind: 'm:1',
+        isReference: true,
+        referenceName: 'projectionPerson',
+        referencedPks: ['handle'],
+        tableVisible: false,
+      }),
+      createTemplate({
+        name: 'creatorPersonEmail',
+        type: 'string',
+        isPersistent: false,
+        options: ['isMail'],
+      }),
+      createTemplate({
+        name: 'creatorPersonPhone',
+        type: 'string',
+        isPersistent: false,
+        options: ['isPhone'],
+      }),
+    ]
+
+    loadGenericMock.mockImplementation(async (handle: string) => {
+      if (handle === 'projectionPerson') {
+        setMockedEntityTemplates('projectionPerson', [
+          createTemplate({ name: 'email', type: 'string' }),
+          createTemplate({ name: 'phone', type: 'string' }),
+        ])
+      }
+    })
+    apiFindMock.mockResolvedValue({ data: [], meta: { total: 0 } })
+    getEntityTemplateMock.mockResolvedValue(systemTemplates)
+    listFormConfigsMock.mockResolvedValue([
+      {
+        handle: 7,
+        name: 'Customer view',
+        entity: 'partner',
+        scope: 'global',
+        scopeHandle: null,
+        isActive: true,
+        isDefault: true,
+        version: 1,
+        config: {
+          schema: 'sapling.form-config.v1',
+          entityHandle: 'partner',
+          fields: {
+            creatorPersonEmail: { tableVisible: false },
+            creatorPersonPhone: { tableVisible: false },
+          },
+        },
+      },
+    ])
+
+    const wrapper = mountTestHost(ref('partner'))
+    await flushPromises()
+    await vi.advanceTimersByTimeAsync(350)
+    await flushPromises()
+    apiFindMock.mockClear()
+    loadGenericMock.mockClear()
+
+    wrapper.vm.selectFormConfig(null)
+    await nextTick()
+    await vi.advanceTimersByTimeAsync(250)
+    await flushPromises()
+
+    expect(loadGenericMock).toHaveBeenCalledWith('projectionPerson', 'global')
+    expect(apiFindMock).toHaveBeenCalledWith(
+      'partner',
+      expect.objectContaining({
+        relations: expect.arrayContaining(['creatorPerson']),
+        fields: expect.arrayContaining(['creatorPerson.email', 'creatorPerson.phone']),
+      }),
+    )
   })
 
   it('promotes an owned view to the personal default and selects it', async () => {

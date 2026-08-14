@@ -89,6 +89,7 @@ export function useSaplingTable(
   let scheduledLoadTimeout: ReturnType<typeof setTimeout> | null = null
   let latestLoadRequestId = 0
   let latestInitializationId = 0
+  let latestFormConfigSelectionId = 0
   let latestLoadedTableQuerySignature = ''
   // #endregion
 
@@ -552,6 +553,7 @@ export function useSaplingTable(
   })
 
   onBeforeUnmount(() => {
+    latestFormConfigSelectionId += 1
     cancelScheduledLoad()
     formConfigContext.cancelScheduledLoad()
     activeLoadController?.abort()
@@ -595,9 +597,26 @@ export function useSaplingTable(
         return
       }
 
-      generateHeaders()
-      page.value = 1
-      scheduleLoadData()
+      const selectionId = ++latestFormConfigSelectionId
+      const currentEntityHandle = entityHandle.value
+      const initializationId = latestInitializationId
+      const nextEntityTemplates = entityTemplates.value
+
+      void preloadValueReferenceMetadata(nextEntityTemplates)
+        .catch(() => undefined)
+        .then(() => {
+          if (
+            selectionId !== latestFormConfigSelectionId ||
+            initializationId !== latestInitializationId ||
+            entityHandle.value !== currentEntityHandle
+          ) {
+            return
+          }
+
+          generateHeaders()
+          page.value = 1
+          scheduleLoadData()
+        })
     },
   )
   // #endregion

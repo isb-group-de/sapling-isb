@@ -61,6 +61,7 @@ vi.mock('@/stores/currentPermissionStore', () => ({
       { entityHandle: 'ticketStatus', allowRead: true },
       { entityHandle: 'chipStatus', allowRead: true },
       { entityHandle: 'person', allowRead: true },
+      { entityHandle: 'projectionPerson', allowRead: true },
       { entityHandle: 'company', allowRead: true },
     ],
     fetchCurrentPermission: fetchCurrentPermissionMock,
@@ -219,6 +220,7 @@ const entityStates = reactive<Record<string, ReturnType<typeof createEntityState
       options: ['isValue'],
     }),
   ]),
+  projectionPerson: createEntityState(),
 })
 
 function createTestHost(entityHandle: Ref<string>) {
@@ -349,6 +351,7 @@ export function resetTableTestMocks(): void {
   listFormConfigsMock.mockReset()
   setPersonalTableViewDefaultMock.mockReset()
   routeState.query = {}
+  entityStates.projectionPerson = createEntityState()
 
   getEntityTemplateMock.mockImplementation((handle: string) =>
     Promise.resolve(getMockedEntityState(handle).entityTemplates),
@@ -359,6 +362,10 @@ export function resetTableTestMocks(): void {
 export function cleanupTableTestWrappers(): void {
   vi.useRealTimers()
   while (mountedWrappers.length > 0) mountedWrappers.pop()?.unmount()
+}
+
+export function setMockedEntityTemplates(key: string, templates: EntityTemplate[]): void {
+  entityStates[key] = createEntityState(templates)
 }
 
 function createEntityState(entityTemplates: EntityTemplate[] = []) {
@@ -389,7 +396,7 @@ export function formatLocalDateTimeInput(value: string): string {
   )
 }
 
-function createTemplate(
+export function createTemplate(
   overrides: Partial<EntityTemplate> & Pick<EntityTemplate, 'name' | 'type'>,
 ): EntityTemplate {
   return {
@@ -400,7 +407,7 @@ function createTemplate(
     kind: overrides.kind,
     options: overrides.options ?? [],
     isAutoIncrement: false,
-    isPersistent: true,
+    isPersistent: overrides.isPersistent ?? true,
     tableVisible: overrides.tableVisible ?? true,
     mobileVisible: overrides.mobileVisible ?? false,
     isReference: overrides.isReference ?? false,
