@@ -10,6 +10,9 @@ const {
   loadGenericMock,
   getEntityTemplateMock,
   pushMessageMock,
+  initializeEntityStateMock,
+  loadDataMock,
+  useSaplingTableMock,
   tableState,
 } = vi.hoisted(() => {
   const makeRef = <T>(value: T) => ({ value })
@@ -19,6 +22,9 @@ const {
     loadGenericMock: vi.fn(),
     getEntityTemplateMock: vi.fn(),
     pushMessageMock: vi.fn(),
+    initializeEntityStateMock: vi.fn(),
+    loadDataMock: vi.fn(),
+    useSaplingTableMock: vi.fn(),
     tableState: {
       items: makeRef<Array<Record<string, unknown>>>([]),
       search: makeRef(''),
@@ -53,23 +59,26 @@ const {
         allowRead: true,
         allowUpdate: true,
       }),
-      parentFilter: makeRef(null),
+      parentFilter: makeRef<Record<string, unknown> | null>(null),
       isInitialized: makeRef(true),
     },
   }
 })
 
 vi.mock('@/composables/table/useSaplingTable', () => ({
-  useSaplingTable: () => ({
-    ...tableState,
-    initializeEntityState: vi.fn(),
-    loadData: vi.fn(),
-    onSearchUpdate: vi.fn(),
-    onPageUpdate: vi.fn(),
-    onItemsPerPageUpdate: vi.fn(),
-    onColumnFiltersUpdate: vi.fn(),
-    onSortByUpdate: vi.fn(),
-  }),
+  useSaplingTable: (...args: unknown[]) => {
+    useSaplingTableMock(...args)
+    return {
+      ...tableState,
+      initializeEntityState: initializeEntityStateMock,
+      loadData: loadDataMock,
+      onSearchUpdate: vi.fn(),
+      onPageUpdate: vi.fn(),
+      onItemsPerPageUpdate: vi.fn(),
+      onColumnFiltersUpdate: vi.fn(),
+      onSortByUpdate: vi.fn(),
+    }
+  },
 }))
 
 vi.mock('@/services/api.generic.service', () => ({
@@ -135,7 +144,10 @@ const SaplingDialogEditStub = defineComponent({
   template: '<div data-test="reference-edit-dialog" />',
 })
 
-function mountField(modelValue: Record<string, unknown> | null = null) {
+function mountField(
+  modelValue: Record<string, unknown> | null = null,
+  extraProps: Record<string, unknown> = {},
+) {
   const i18n = createI18n({
     legacy: false,
     locale: 'en',
@@ -157,6 +169,7 @@ function mountField(modelValue: Record<string, unknown> | null = null) {
       modelValue,
       showOpenAction: true,
       openActionLabel: 'Open record',
+      ...extraProps,
     },
     global: {
       plugins: [i18n],
@@ -175,6 +188,10 @@ function mountField(modelValue: Record<string, unknown> | null = null) {
 describe('SaplingFieldSingleSelect reference dialog', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    initializeEntityStateMock.mockResolvedValue(undefined)
+    loadDataMock.mockResolvedValue(undefined)
+    tableState.parentFilter.value = null
+    tableState.isInitialized.value = true
     tableState.entityTemplates.value = [
       {
         key: 'name',
@@ -213,6 +230,29 @@ describe('SaplingFieldSingleSelect reference dialog', () => {
     const wrapper = mountField()
 
     expect(wrapper.get('[data-test="open-reference-record"]').attributes('disabled')).toBeDefined()
+  })
+
+  it('reapplies the latest dependency filter before the initial dropdown request', async () => {
+    const companyFilter = { company: { $eq: 17 } }
+    tableState.isInitialized.value = false
+    initializeEntityStateMock.mockImplementation(
+      async (options: { beforeInitialLoad?: () => Promise<void> | void }) => {
+        tableState.parentFilter.value = {}
+        await options.beforeInitialLoad?.()
+        tableState.isInitialized.value = true
+      },
+    )
+    const wrapper = mountField(null, {
+      parentFilter: companyFilter,
+      dependencyTargetField: 'company',
+    })
+
+    wrapper.getComponent(VAutocompleteStub).vm.$emit('focus')
+    await flushPromises()
+
+    expect(initializeEntityStateMock).toHaveBeenCalledTimes(1)
+    expect(tableState.parentFilter.value).toEqual(companyFilter)
+    expect(useSaplingTableMock.mock.calls[0]?.[5]).toEqual(['company'])
   })
 
   it('loads the complete reference and opens an edit dialog above the field', async () => {

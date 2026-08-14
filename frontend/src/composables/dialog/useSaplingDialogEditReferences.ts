@@ -4,6 +4,7 @@ import type { SaplingGenericItem } from '@/entity/entity'
 import { useGenericStore } from '@/stores/genericStore'
 import ApiGenericService, { type FilterQuery } from '@/services/api.generic.service'
 import { isTextSearchableTemplate } from '@/utils/saplingTableUtil'
+import { getDialogRecordRelations } from './saplingDialogRecordLoader'
 
 type DependencyComparableValue = string | number | boolean
 
@@ -17,6 +18,7 @@ interface UseSaplingDialogEditReferencesOptions {
 export function useSaplingDialogEditReferences(options: UseSaplingDialogEditReferencesOptions) {
   const genericStore = useGenericStore()
   const referenceColumnsMap = ref<Record<string, EntityTemplate[]>>({})
+  const autoSelectRequestIds = new Map<string, number>()
 
   function getTemplateByName(name: string): EntityTemplate | undefined {
     return options.templates.value.find((template) => template.name === name)
@@ -144,7 +146,9 @@ export function useSaplingDialogEditReferences(options: UseSaplingDialogEditRefe
     )
 
     if (parentIdentifier == null) {
-      return !dependency.requireParent
+      // An optional parent makes the child selector available globally, but an
+      // explicit parent removal still invalidates a previously selected child.
+      return false
     }
 
     if (!childValue || typeof childValue !== 'object' || Array.isArray(childValue)) {
@@ -155,6 +159,92 @@ export function useSaplingDialogEditReferences(options: UseSaplingDialogEditRefe
     const childIdentifier = extractDependencyIdentifier(childRecord[dependency.targetField])
 
     return areDependencyIdentifiersEqual(parentIdentifier, childIdentifier)
+  }
+
+  function applyReferenceDependencyParent(fieldName: string, value: unknown): void {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+      return
+    }
+
+    const template = getTemplateByName(fieldName)
+    const dependency = template?.referenceDependency
+    if (!dependency?.parentField || !dependency.targetField) {
+      return
+    }
+
+    const parentTemplate = getTemplateByName(dependency.parentField)
+    const parentValue = (value as SaplingGenericItem)[dependency.targetField]
+    const parentIdentifier = extractDependencyIdentifier(parentValue, parentTemplate)
+    if (parentIdentifier == null) {
+      return
+    }
+
+    const currentParentIdentifier = extractDependencyIdentifier(
+      options.form.value[dependency.parentField],
+      parentTemplate,
+    )
+    if (areDependencyIdentifiersEqual(currentParentIdentifier, parentIdentifier)) {
+      return
+    }
+
+    options.form.value[dependency.parentField] = parentValue
+  }
+
+  async function findSingleReferenceForDependency(
+    template: EntityTemplate,
+  ): Promise<SaplingGenericItem | null> {
+    const dependency = template.referenceDependency
+    const entityHandle = template.referenceName?.trim()
+    const requestId = (autoSelectRequestIds.get(template.name) ?? 0) + 1
+    autoSelectRequestIds.set(template.name, requestId)
+
+    if (!dependency?.parentField || !dependency.targetField || !entityHandle) {
+      return null
+    }
+
+    const parentTemplate = getTemplateByName(dependency.parentField)
+    const parentIdentifier = extractDependencyIdentifier(
+      options.form.value[dependency.parentField],
+      parentTemplate,
+    )
+    if (
+      parentIdentifier == null ||
+      options.hasFormValue(options.form.value[template.name]) ||
+      !canReadReferenceEntity(entityHandle)
+    ) {
+      return null
+    }
+
+    const parentSignature = JSON.stringify(parentIdentifier)
+    const parentFilter = getReferenceParentFilter(template)
+
+    try {
+      await genericStore.loadGeneric(entityHandle, 'global')
+      const targetTemplates = genericStore.getState(entityHandle).entityTemplates
+      const result = await ApiGenericService.find<SaplingGenericItem>(entityHandle, {
+        filter: parentFilter,
+        page: 1,
+        limit: 2,
+        relations: getDialogRecordRelations(targetTemplates),
+      })
+
+      const currentParentIdentifier = extractDependencyIdentifier(
+        options.form.value[dependency.parentField],
+        parentTemplate,
+      )
+      if (
+        autoSelectRequestIds.get(template.name) !== requestId ||
+        JSON.stringify(currentParentIdentifier) !== parentSignature ||
+        options.hasFormValue(options.form.value[template.name]) ||
+        result.meta.total !== 1
+      ) {
+        return null
+      }
+
+      return result.data[0] ?? null
+    } catch {
+      return null
+    }
   }
 
   function getReferenceColumnsSync(template: EntityTemplate): EntityTemplate[] {
@@ -284,6 +374,8 @@ export function useSaplingDialogEditReferences(options: UseSaplingDialogEditRefe
     getReferenceParentFilter,
     isReferenceDependencyBlocked,
     isReferenceValueValidForDependency,
+    applyReferenceDependencyParent,
+    findSingleReferenceForDependency,
     getReferenceColumnsSync,
     canReadReferenceEntity,
     ensureReferenceColumns,

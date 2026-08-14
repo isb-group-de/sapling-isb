@@ -23,6 +23,7 @@
       :rules="rules"
       :disabled="referenceFieldDisabled"
       :parent-filter="effectiveReferenceParentFilter"
+      :dependency-target-field="template.referenceDependency?.targetField"
       :placeholder="defaultRawPlaceholder"
       :show-open-action="true"
       :open-action-label="t('global.editRecord')"

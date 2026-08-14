@@ -169,7 +169,6 @@ export class InternalCaseItem {
   @SaplingDependsOn({
     parentField: 'customerCompany',
     targetField: 'company',
-    requireParent: true,
     clearOnParentChange: true,
   })
   @SaplingForm({
@@ -270,7 +269,6 @@ export class InternalCaseItem {
   @SaplingDependsOn({
     parentField: 'responsibleCompany',
     targetField: 'company',
-    requireParent: true,
     clearOnParentChange: true,
   })
   @SaplingForm({

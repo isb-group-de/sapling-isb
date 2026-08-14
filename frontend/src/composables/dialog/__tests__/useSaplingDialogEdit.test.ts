@@ -13,6 +13,9 @@ const {
   findAllMock,
   initializeFormMock,
   syncParentReferencesMock,
+  extractDependencyIdentifierMock,
+  applyReferenceDependencyParentMock,
+  findSingleReferenceForDependencyMock,
 } = vi.hoisted(() => ({
   fetchCurrentPersonMock: vi.fn(),
   fetchCurrentPermissionMock: vi.fn(),
@@ -21,6 +24,9 @@ const {
   findAllMock: vi.fn(),
   initializeFormMock: vi.fn(),
   syncParentReferencesMock: vi.fn(),
+  extractDependencyIdentifierMock: vi.fn(),
+  applyReferenceDependencyParentMock: vi.fn(),
+  findSingleReferenceForDependencyMock: vi.fn(),
 }))
 
 vi.mock('vue-i18n', () => ({
@@ -107,10 +113,12 @@ vi.mock('../useSaplingDialogEditRelations', () => ({
 
 vi.mock('../useSaplingDialogEditReferences', () => ({
   useSaplingDialogEditReferences: () => ({
-    extractDependencyIdentifier: vi.fn().mockReturnValue(null),
+    extractDependencyIdentifier: extractDependencyIdentifierMock,
     getReferenceParentFilter: vi.fn(),
     isReferenceDependencyBlocked: vi.fn().mockReturnValue(false),
     isReferenceValueValidForDependency: vi.fn().mockReturnValue(true),
+    applyReferenceDependencyParent: applyReferenceDependencyParentMock,
+    findSingleReferenceForDependency: findSingleReferenceForDependencyMock,
     getReferenceColumnsSync: vi.fn().mockReturnValue([]),
     canReadReferenceEntity: vi.fn().mockReturnValue(true),
     prefetchReferenceColumns: vi.fn().mockResolvedValue(undefined),
@@ -226,7 +234,9 @@ const TestHost = defineComponent({
       formConfigMenuItems: dialog.formConfigMenuItems,
       selectedFormConfigLabel: dialog.selectedFormConfigLabel,
       visibleTemplates: dialog.visibleTemplates,
+      form: dialog.form,
       isFieldDisabled: dialog.isFieldDisabled,
+      updateFormField: dialog.updateFormField,
       selectFormConfig: dialog.selectFormConfig,
     }
   },
@@ -242,6 +252,9 @@ describe('useSaplingDialogEdit', () => {
     findAllMock.mockReset()
     initializeFormMock.mockReset()
     syncParentReferencesMock.mockReset()
+    extractDependencyIdentifierMock.mockReset()
+    applyReferenceDependencyParentMock.mockReset()
+    findSingleReferenceForDependencyMock.mockReset()
     fetchCurrentPersonMock.mockResolvedValue(undefined)
     fetchCurrentPermissionMock.mockResolvedValue(undefined)
     listFormConfigsMock.mockResolvedValue([])
@@ -250,6 +263,14 @@ describe('useSaplingDialogEdit', () => {
       handle: 42,
       title: 'Updated event',
     })
+    extractDependencyIdentifierMock.mockImplementation((value: unknown) => {
+      if (value && typeof value === 'object' && 'handle' in value) {
+        return (value as { handle: unknown }).handle
+      }
+
+      return value ?? null
+    })
+    findSingleReferenceForDependencyMock.mockResolvedValue(null)
   })
 
   it('disables every primary key outside create mode', () => {
@@ -558,5 +579,82 @@ describe('useSaplingDialogEdit', () => {
     expect(syncParentReferencesMock.mock.invocationCallOrder[0]).toBeGreaterThan(
       initializeFormMock.mock.invocationCallOrder[0] ?? 0,
     )
+  })
+
+  it('auto-selects one dependent child after a parent change without forcing manual clears', async () => {
+    const companyTemplate = {
+      name: 'creatorCompany',
+      type: 'CompanyItem',
+      isReference: true,
+      referenceName: 'company',
+    } as EntityTemplate
+    const contractTemplate = {
+      name: 'contract',
+      type: 'ContractItem',
+      isReference: true,
+      referenceName: 'contract',
+      referenceDependency: {
+        parentField: 'creatorCompany',
+        targetField: 'company',
+        clearOnParentChange: true,
+      },
+    } as EntityTemplate
+    const typeTemplate = {
+      name: 'type',
+      type: 'TicketTypeItem',
+      isReference: true,
+      referenceName: 'ticketType',
+    } as EntityTemplate
+    const categoryTemplate = {
+      name: 'category',
+      type: 'TicketCategoryItem',
+      isReference: true,
+      referenceName: 'ticketCategory',
+      referenceDependency: {
+        parentField: 'type',
+        targetField: 'type',
+        clearOnParentChange: true,
+      },
+    } as EntityTemplate
+    const onlyContract = { handle: 31, name: 'Premium support' }
+    const onlyCategory = { handle: 'incident', name: 'Incident' }
+    const templates = [companyTemplate, contractTemplate, typeTemplate, categoryTemplate]
+    findAllMock.mockResolvedValue(templates)
+    findSingleReferenceForDependencyMock.mockImplementation((template: EntityTemplate) =>
+      Promise.resolve(template.name === 'contract' ? onlyContract : onlyCategory),
+    )
+    const wrapper = mount(TestHost, {
+      props: {
+        mode: 'create',
+        item: null,
+        templates,
+      },
+    })
+    await flushPromises()
+    findSingleReferenceForDependencyMock.mockClear()
+    const vm = wrapper.vm as unknown as {
+      form: SaplingGenericItem
+      updateFormField: (key: string, value: unknown) => void
+    }
+
+    vm.updateFormField('creatorCompany', { handle: 17, name: 'Example GmbH' })
+    await flushPromises()
+
+    expect(findSingleReferenceForDependencyMock).toHaveBeenCalledWith(contractTemplate)
+    expect(vm.form.contract).toEqual(onlyContract)
+
+    findSingleReferenceForDependencyMock.mockClear()
+    vm.updateFormField('contract', null)
+    await flushPromises()
+
+    expect(vm.form.contract).toBeNull()
+    expect(findSingleReferenceForDependencyMock).not.toHaveBeenCalled()
+
+    vm.updateFormField('type', { handle: 'incident', name: 'Incident' })
+    await flushPromises()
+
+    expect(findSingleReferenceForDependencyMock).toHaveBeenCalledWith(categoryTemplate)
+    expect(findSingleReferenceForDependencyMock).not.toHaveBeenCalledWith(contractTemplate)
+    expect(vm.form.contract).toBeNull()
   })
 })

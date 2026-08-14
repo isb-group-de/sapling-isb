@@ -327,7 +327,6 @@ export class TicketItem {
   @SaplingDependsOn({
     parentField: 'assigneeCompany',
     targetField: 'company',
-    requireParent: true,
     clearOnParentChange: true,
   })
   @SaplingForm({
@@ -436,7 +435,6 @@ export class TicketItem {
   @SaplingDependsOn({
     parentField: 'creatorCompany',
     targetField: 'company',
-    requireParent: true,
     clearOnParentChange: true,
   })
   @SaplingForm({

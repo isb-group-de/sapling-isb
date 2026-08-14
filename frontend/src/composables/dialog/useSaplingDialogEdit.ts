@@ -129,6 +129,8 @@ export function useSaplingDialogEdit(
     getReferenceParentFilter,
     isReferenceDependencyBlocked,
     isReferenceValueValidForDependency,
+    applyReferenceDependencyParent,
+    findSingleReferenceForDependency,
     getReferenceColumnsSync,
     canReadReferenceEntity,
     prefetchReferenceColumns,
@@ -177,6 +179,7 @@ export function useSaplingDialogEdit(
       formatLocalTime,
       getLocalDateTimeParts,
       toUtcIsoString,
+      onHydrated: autoSelectHydratedDependencies,
     })
 
   const {
@@ -279,6 +282,57 @@ export function useSaplingDialogEdit(
 
   function isReferenceFieldDisabled(template: EntityTemplate): boolean {
     return isFieldDisabled(template) || isReferenceDependencyBlocked(template)
+  }
+
+  function applyReferenceTemplate(key: string, value: unknown): void {
+    if (!value || typeof value !== 'object') {
+      return
+    }
+
+    const template = visibleTemplates.value.find((entry) => entry.name === key)
+    const mappings = template?.referenceTemplate?.mappings ?? []
+    const source = value as Record<string, unknown>
+
+    mappings.forEach((mapping) => {
+      if (!mapping.sourceField || !mapping.targetField) {
+        return
+      }
+
+      const nextValue = source[mapping.sourceField]
+      if (nextValue === undefined || nextValue === null) {
+        return
+      }
+
+      if (mapping.overwrite === false && hasFormValue(form.value[mapping.targetField])) {
+        return
+      }
+
+      form.value[mapping.targetField] = nextValue
+    })
+  }
+
+  function updateFormField(key: string, value: unknown): void {
+    form.value[key] = value
+    applyReferenceDependencyParent(key, value)
+    applyReferenceTemplate(key, value)
+  }
+
+  function autoSelectSingleDependencies(dependencyTemplates: EntityTemplate[]): void {
+    dependencyTemplates.forEach((template) => {
+      void findSingleReferenceForDependency(template).then((singleReference) => {
+        if (singleReference && !isReferenceFieldDisabled(template)) {
+          updateFormField(template.name, singleReference)
+        }
+      })
+    })
+  }
+
+  function autoSelectHydratedDependencies(): void {
+    if (props.mode !== 'create') {
+      return
+    }
+
+    autoSelectSingleDependencies(templates.value.filter((template) => template.referenceDependency))
   }
 
   async function loadActiveRelationTableItems(): Promise<void> {
@@ -395,26 +449,35 @@ export function useSaplingDialogEdit(
 
   watch(
     () =>
-      templates.value
-        .filter((template) => template.referenceDependency)
-        .map((template) => {
-          const value = form.value[template.referenceDependency?.parentField ?? '']
-          const identifier = extractDependencyIdentifier(value)
-          return `${template.name}::${identifier ?? ''}`
-        })
-        .join('|'),
-    () => {
+      Object.fromEntries(
+        templates.value
+          .filter((template) => template.referenceDependency)
+          .map((template) => {
+            const value = form.value[template.referenceDependency?.parentField ?? '']
+            const identifier = extractDependencyIdentifier(value)
+            return [template.name, JSON.stringify(identifier)]
+          }),
+      ),
+    (nextParentSignatures, previousParentSignatures) => {
       if (isHydratingForm.value) {
         return
       }
 
-      templates.value
+      const dependencyTemplates = templates.value.filter(
+        (template) =>
+          template.referenceDependency &&
+          nextParentSignatures[template.name] !== previousParentSignatures?.[template.name],
+      )
+
+      dependencyTemplates
         .filter((template) => template.referenceDependency?.clearOnParentChange)
         .forEach((template) => {
           if (!isReferenceValueValidForDependency(template)) {
             form.value[template.name] = null
           }
         })
+
+      autoSelectSingleDependencies(dependencyTemplates)
     },
   )
 
@@ -496,6 +559,7 @@ export function useSaplingDialogEdit(
     isFieldDisabled,
     isReferenceFieldDisabled,
     getReferenceParentFilter,
+    updateFormField,
     getReferenceColumnsSync,
     fetchReferenceData,
     handleDialogUpdate,

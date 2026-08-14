@@ -1,5 +1,5 @@
 import { computed, nextTick, ref } from 'vue'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import type { SaplingGenericItem } from '@/entity/entity'
 import type { EntityTemplate } from '@/entity/structure'
 import { useSaplingDialogEditForm } from './useSaplingDialogEditForm'
@@ -9,6 +9,7 @@ describe('useSaplingDialogEditForm create defaults', () => {
     const form = ref<SaplingGenericItem>({})
     const initialFormSnapshot = ref<Record<string, string>>({})
     const currentPerson = { handle: 5, firstName: 'Max', lastName: 'Mustermann' }
+    const onHydrated = vi.fn()
     const templates = computed(
       () =>
         [
@@ -73,6 +74,7 @@ describe('useSaplingDialogEditForm create defaults', () => {
       formatLocalTime: () => '',
       getLocalDateTimeParts: () => ({ date: '', time: '' }),
       toUtcIsoString: () => null,
+      onHydrated,
     })
 
     helper.initializeForm()
@@ -92,5 +94,6 @@ describe('useSaplingDialogEditForm create defaults', () => {
       participants: [5, 7],
     })
     expect(initialFormSnapshot.value).toEqual(form.value)
+    expect(onHydrated).toHaveBeenCalledTimes(1)
   })
 })

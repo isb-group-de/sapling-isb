@@ -376,7 +376,6 @@ export class EventItem {
   @SaplingDependsOn({
     parentField: 'assigneeCompany',
     targetField: 'company',
-    requireParent: true,
     clearOnParentChange: true,
   })
   @SaplingForm({
@@ -485,7 +484,6 @@ export class EventItem {
   @SaplingDependsOn({
     parentField: 'creatorCompany',
     targetField: 'company',
-    requireParent: true,
     clearOnParentChange: true,
   })
   @SaplingForm({

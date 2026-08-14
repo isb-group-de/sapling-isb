@@ -4,9 +4,16 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { AccumulatedPermission, EntityState, EntityTemplate } from '@/entity/structure'
 import type { EntityItem, SaplingGenericItem } from '@/entity/entity'
 
-const { loadGenericManyMock, loadGenericMock } = vi.hoisted(() => ({
+const { findMock, loadGenericManyMock, loadGenericMock } = vi.hoisted(() => ({
+  findMock: vi.fn(),
   loadGenericManyMock: vi.fn(),
   loadGenericMock: vi.fn(),
+}))
+
+vi.mock('@/services/api.generic.service', () => ({
+  default: {
+    find: findMock,
+  },
 }))
 
 vi.mock('@/stores/genericStore', () => ({
@@ -47,6 +54,7 @@ const entityStates = reactive<Record<string, EntityState>>({
 
 describe('useSaplingDialogEditReferences', () => {
   beforeEach(() => {
+    findMock.mockReset()
     loadGenericManyMock.mockReset()
     loadGenericMock.mockReset()
     loadGenericManyMock.mockResolvedValue(undefined)
@@ -110,6 +118,137 @@ describe('useSaplingDialogEditReferences', () => {
     expect(loadGenericManyMock).not.toHaveBeenCalled()
     expect(references.getReferenceColumnsSync(template)).toEqual([])
   })
+
+  it('keeps optional dependent references available without a parent and derives the parent', () => {
+    const references = createReferences([
+      { entityHandle: 'company', allowRead: true } as AccumulatedPermission,
+      { entityHandle: 'person', allowRead: true } as AccumulatedPermission,
+    ])
+    references.templates.value = [
+      createTemplate({
+        name: 'creatorCompany',
+        type: 'CompanyItem',
+        isReference: true,
+        referenceName: 'company',
+      }),
+      createTemplate({
+        name: 'creatorPerson',
+        type: 'PersonItem',
+        isReference: true,
+        referenceName: 'person',
+        referenceDependency: {
+          parentField: 'creatorCompany',
+          targetField: 'company',
+          clearOnParentChange: true,
+        },
+      }),
+    ]
+    const personTemplate = references.templates.value[1]
+    const company = { handle: 17, name: 'Example GmbH' }
+    const person = { handle: 23, firstName: 'Ada', company }
+
+    expect(references.isReferenceDependencyBlocked(personTemplate)).toBe(false)
+    expect(references.getReferenceParentFilter(personTemplate)).toEqual({})
+
+    references.form.value.creatorPerson = person
+    references.applyReferenceDependencyParent('creatorPerson', person)
+
+    expect(references.form.value.creatorCompany).toEqual(company)
+
+    references.form.value.creatorCompany = null
+    expect(references.isReferenceValueValidForDependency(personTemplate)).toBe(false)
+  })
+
+  it('returns the only filtered child and leaves ambiguous child catalogs unselected', async () => {
+    const references = createReferences([
+      { entityHandle: 'company', allowRead: true } as AccumulatedPermission,
+      { entityHandle: 'person', allowRead: true } as AccumulatedPermission,
+    ])
+    references.templates.value = [
+      createTemplate({
+        name: 'creatorCompany',
+        type: 'CompanyItem',
+        isReference: true,
+        referenceName: 'company',
+      }),
+      createTemplate({
+        name: 'creatorPerson',
+        type: 'PersonItem',
+        isReference: true,
+        referenceName: 'person',
+        referenceDependency: {
+          parentField: 'creatorCompany',
+          targetField: 'company',
+        },
+      }),
+    ]
+    references.form.value.creatorCompany = { handle: 17, name: 'Example GmbH' }
+    const personTemplate = references.templates.value[1]
+    const onlyPerson = {
+      handle: 23,
+      firstName: 'Ada',
+      company: references.form.value.creatorCompany,
+    }
+    findMock.mockResolvedValueOnce({ data: [onlyPerson], meta: { total: 1 } })
+
+    await expect(references.findSingleReferenceForDependency(personTemplate)).resolves.toEqual(
+      onlyPerson,
+    )
+    expect(findMock).toHaveBeenCalledWith('person', {
+      filter: { company: { $eq: 17 } },
+      page: 1,
+      limit: 2,
+      relations: ['m:1'],
+    })
+
+    findMock.mockResolvedValueOnce({ data: [onlyPerson, { handle: 24 }], meta: { total: 2 } })
+    await expect(references.findSingleReferenceForDependency(personTemplate)).resolves.toBeNull()
+  })
+
+  it('ignores a unique-child response when the parent changed while it was loading', async () => {
+    const references = createReferences([
+      { entityHandle: 'company', allowRead: true } as AccumulatedPermission,
+      { entityHandle: 'person', allowRead: true } as AccumulatedPermission,
+    ])
+    references.templates.value = [
+      createTemplate({
+        name: 'creatorCompany',
+        type: 'CompanyItem',
+        isReference: true,
+        referenceName: 'company',
+      }),
+      createTemplate({
+        name: 'creatorPerson',
+        type: 'PersonItem',
+        isReference: true,
+        referenceName: 'person',
+        referenceDependency: {
+          parentField: 'creatorCompany',
+          targetField: 'company',
+        },
+      }),
+    ]
+    const firstCompany = { handle: 17, name: 'First GmbH' }
+    references.form.value.creatorCompany = firstCompany
+    let resolveRequest!: (value: { data: SaplingGenericItem[]; meta: { total: number } }) => void
+    findMock.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveRequest = resolve
+      }),
+    )
+
+    const pendingSelection = references.findSingleReferenceForDependency(
+      references.templates.value[1],
+    )
+    await Promise.resolve()
+    references.form.value.creatorCompany = { handle: 18, name: 'Second GmbH' }
+    resolveRequest({
+      data: [{ handle: 23, firstName: 'Ada', company: firstCompany }],
+      meta: { total: 1 },
+    })
+
+    await expect(pendingSelection).resolves.toBeNull()
+  })
 })
 
 function createReferences(permissionsValue: AccumulatedPermission[]) {
@@ -117,12 +256,16 @@ function createReferences(permissionsValue: AccumulatedPermission[]) {
   const templates = ref<EntityTemplate[]>([])
   const permissions = ref<AccumulatedPermission[] | null>(permissionsValue)
 
-  return useSaplingDialogEditReferences({
+  return {
+    ...useSaplingDialogEditReferences({
+      form,
+      templates: computed(() => templates.value),
+      permissions,
+      hasFormValue: (value: unknown) => value !== null && value !== undefined && value !== '',
+    }),
     form,
-    templates: computed(() => templates.value),
-    permissions,
-    hasFormValue: (value: unknown) => value !== null && value !== undefined && value !== '',
-  })
+    templates,
+  }
 }
 
 function createEntityState(entityHandle: string, entityTemplates: EntityTemplate[]): EntityState {
@@ -151,6 +294,7 @@ function createTemplate(
     type: overrides.type,
     kind: overrides.kind,
     referenceName: overrides.referenceName,
+    referenceDependency: overrides.referenceDependency,
     options: overrides.options ?? [],
     isAutoIncrement: false,
     isPersistent: true,

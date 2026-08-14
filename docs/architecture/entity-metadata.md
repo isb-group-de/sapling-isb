@@ -160,6 +160,21 @@ Common pattern:
 ```
 
 The frontend uses this metadata to filter a child relation by the selected parent relation.
+When `requireParent` is omitted or false, the child selector remains enabled and
+shows the complete catalog while no parent is selected. Selecting a child that
+contains `targetField` then synchronizes that referenced value back into
+`parentField`. `clearOnParentChange` still clears an existing child when the
+parent is changed or removed. This makes suitable reference pairs bidirectional
+without entity-specific frontend logic.
+
+After a parent change, generated edit dialogs also query each dependent
+reference with a two-record limit. Exactly one permitted result is selected
+automatically; zero or multiple results leave the child empty for manual input.
+Create-dialog defaults such as `isCurrentCompany`, `isCurrentPerson`, and
+configured reference placeholders trigger the same lookup after form hydration.
+The lookup is tied to the current parent value so a slower response for an older
+selection cannot overwrite the form. Clearing a child manually does not trigger
+the lookup again until its own parent changes.
 
 ### `@SaplingGenericReference(...)`
 

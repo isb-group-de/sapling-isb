@@ -219,6 +219,34 @@ describe('useSaplingTable initialization and loading', () => {
     )
   })
 
+  it('aborts an in-flight request as soon as the effective filter changes', async () => {
+    vi.useFakeTimers()
+    loadGenericMock.mockResolvedValue(undefined)
+    apiFindMock.mockResolvedValue({ data: [], meta: { total: 0 } })
+
+    const wrapper = mountTestHost(ref('partner'))
+    await flushPromises()
+    apiFindMock.mockClear()
+
+    const staleResponse = createDeferred<{ data: []; meta: { total: number } }>()
+    apiFindMock.mockImplementationOnce(() => staleResponse.promise)
+    wrapper.vm.onSearchUpdate('Ada')
+    await nextTick()
+    await vi.advanceTimersByTimeAsync(250)
+
+    const staleSignal = apiFindMock.mock.calls[0]?.[1]?.signal as AbortSignal
+    expect(staleSignal.aborted).toBe(false)
+
+    wrapper.vm.onSearchUpdate('Adab')
+    await nextTick()
+
+    expect(staleSignal.aborted).toBe(true)
+
+    staleResponse.resolve({ data: [], meta: { total: 0 } })
+    await vi.advanceTimersByTimeAsync(250)
+    await flushPromises()
+  })
+
   it('uses an initial search value for the first manual initialization request', async () => {
     loadGenericMock.mockResolvedValue(undefined)
     apiFindMock.mockResolvedValue({

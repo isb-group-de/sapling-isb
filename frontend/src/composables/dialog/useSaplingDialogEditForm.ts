@@ -20,6 +20,7 @@ interface UseSaplingDialogEditFormOptions {
   formatLocalTime: (date: Date) => string
   getLocalDateTimeParts: (value: unknown) => { date: string; time: string }
   toUtcIsoString: (dateValue: unknown, timeValue: unknown) => string | null
+  onHydrated?: () => void
 }
 
 export function useSaplingDialogEditForm(options: UseSaplingDialogEditFormOptions) {
@@ -113,6 +114,7 @@ export function useSaplingDialogEditForm(options: UseSaplingDialogEditFormOption
     void nextTick(() => {
       options.isHydratingForm.value = false
       options.syncInitialFormSnapshot()
+      options.onHydrated?.()
     })
   }
 

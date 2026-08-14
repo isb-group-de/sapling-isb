@@ -162,6 +162,7 @@ const props = withDefaults(
     placeholder?: string
     disabled?: boolean
     parentFilter?: FilterQuery
+    dependencyTargetField?: string
     density?: 'default' | 'comfortable' | 'compact'
     hideDetails?: boolean | 'auto'
     showOpenAction?: boolean
@@ -199,7 +200,9 @@ const {
   onItemsPerPageUpdate,
   onColumnFiltersUpdate,
   onSortByUpdate,
-} = useSaplingTable(ref(props.entityHandle), DEFAULT_PAGE_SIZE_SMALL, false, false)
+} = useSaplingTable(ref(props.entityHandle), DEFAULT_PAGE_SIZE_SMALL, false, false, () => ({}), [
+  ...(props.dependencyTargetField ? [props.dependencyTargetField] : []),
+])
 
 const { selectedItem, menuOpen } = useSaplingSingleSelectField(props)
 const { getValueLabel, getValueLabelLines } = useSaplingEntityValueLabel(entityTemplates)
@@ -409,6 +412,18 @@ function isSelectedItemDisplayText(value: string) {
 
   return value === getAutocompleteItemTitle(displayedSelectedItem.value)
 }
+
+function initializeReferenceEntityState() {
+  return initializeEntityState({
+    initialSearch: getTableSearchValue(),
+    beforeInitialLoad: () => {
+      // Table initialization restores URL filters. Reference fields do not use
+      // URL state, so reapply the latest dependency filter before the very
+      // first request instead of briefly (or permanently) loading all rows.
+      parentFilter.value = normalizeFilter(props.parentFilter)
+    },
+  })
+}
 // #endregion
 
 watch(
@@ -420,8 +435,14 @@ watch(
     }
 
     parentFilter.value = nextFilter
+    items.value = []
+    totalItems.value = 0
     if (page.value !== 1) {
       page.value = 1
+    }
+
+    if (menuOpen.value && !isInitialized.value) {
+      void initializeReferenceEntityState()
     }
   },
   { immediate: true, deep: true },
@@ -484,7 +505,7 @@ watch(menuOpen, async (isOpen) => {
   }
 
   if (!isInitialized.value) {
-    await initializeEntityState({ initialSearch: getTableSearchValue() })
+    await initializeReferenceEntityState()
     if (!menuOpen.value) {
       return
     }

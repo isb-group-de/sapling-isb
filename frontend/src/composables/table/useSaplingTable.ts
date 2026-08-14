@@ -558,6 +558,12 @@ export function useSaplingTable(
       return
     }
 
+    // Invalidate the old request immediately. Waiting for the debounced reload
+    // would allow stale rows from the previous filter to reappear meanwhile.
+    activeLoadController?.abort()
+    activeLoadController = null
+    latestLoadRequestId += 1
+    isDataLoading.value = false
     scheduleLoadData()
     syncUrlState()
   })
