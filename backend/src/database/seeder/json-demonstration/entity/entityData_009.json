@@ -1,0 +1,18 @@
+[
+  {
+    "handle": "emailDelivery",
+    "canDelete": true
+  },
+  {
+    "handle": "teamsDelivery",
+    "canDelete": true
+  },
+  {
+    "handle": "eventDelivery",
+    "canDelete": true
+  },
+  {
+    "handle": "webhookDelivery",
+    "canDelete": true
+  }
+]

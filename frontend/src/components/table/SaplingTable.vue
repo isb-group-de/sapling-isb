@@ -222,6 +222,8 @@
         @update:column-filter="({ key, value }) => onColumnFilterChange(key, value)"
         @move-column="moveColumn"
         @remove-column="removeColumn"
+        @select-all-rows="selectAllRows"
+        @clear-selection="clearSelection"
         @select-row="selectRow"
         @change-log="openChangeLog"
         @delete="openDeleteDialog"

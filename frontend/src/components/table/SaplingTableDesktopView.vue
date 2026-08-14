@@ -35,7 +35,18 @@
               <span></span>
             </template>
             <template v-else-if="column.key === '__select'">
-              <span></span>
+              <v-checkbox
+                data-testid="table-page-selection"
+                class="sapling-table-header-selection-checkbox"
+                :model-value="allRowsSelected"
+                :indeterminate="someRowsSelected"
+                hide-details
+                density="compact"
+                :aria-label="pageSelectionLabel"
+                :title="pageSelectionLabel"
+                @update:model-value="togglePageSelection"
+                @click.stop
+              />
             </template>
             <template v-else-if="isDesktopColumnFilterable(column)">
               <div class="sapling-table-filter-shell">
@@ -158,7 +169,7 @@
 </template>
 
 <script lang="ts" setup>
-import { defineAsyncComponent, ref } from 'vue'
+import { computed, defineAsyncComponent, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { DEFAULT_PAGE_SIZE_OPTIONS } from '@/constants/project.constants'
 import type { EntityItem, SaplingGenericItem, ScriptButtonItem } from '@/entity/entity'
@@ -192,6 +203,8 @@ type SaplingTableDesktopViewEmit = UseSaplingTableRowEmit & {
   (event: 'update:column-filter', value: { key: string; value: ColumnFilterItem | null }): void
   (event: 'move-column', value: SaplingTableColumnMove): void
   (event: 'remove-column', value: string): void
+  (event: 'select-all-rows'): void
+  (event: 'clear-selection'): void
 }
 
 const SaplingTableRow = defineAsyncComponent(() => import('./SaplingTableRow.vue'))
@@ -229,6 +242,28 @@ const { t } = useI18n()
 const draggedColumnKey = ref<string | null>(null)
 const dragTarget = ref<{ key: string; placement: SaplingTableColumnPlacement } | null>(null)
 let dragPreviewElement: HTMLElement | null = null
+
+const allRowsSelected = computed(
+  () =>
+    Boolean(props.multiSelect) &&
+    props.items.length > 0 &&
+    props.selectedRows.length === props.items.length,
+)
+const someRowsSelected = computed(
+  () => Boolean(props.multiSelect) && props.selectedRows.length > 0 && !allRowsSelected.value,
+)
+const pageSelectionLabel = computed(() =>
+  allRowsSelected.value ? t('global.clearSelection') : t('global.selectAll'),
+)
+
+function togglePageSelection(selected: boolean | null): void {
+  if (selected) {
+    emit('select-all-rows')
+    return
+  }
+
+  emit('clear-selection')
+}
 
 function getHeaderCellClasses(column: Record<string, unknown> & { key?: string | null }) {
   const key = String(column.key ?? '')

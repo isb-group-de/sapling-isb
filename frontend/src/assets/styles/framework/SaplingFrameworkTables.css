@@ -239,6 +239,12 @@
   max-width: var(--sapling-table-select-column-width);
 }
 
+.sapling-table-header-selection-checkbox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .sapling-table-header-cell--actions,
 .sapling-table-row__actions-cell {
   width: var(--sapling-table-actions-column-width);
