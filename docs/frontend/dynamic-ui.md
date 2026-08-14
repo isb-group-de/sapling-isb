@@ -309,6 +309,11 @@ tabular-numeric seconds countdown and the open menu shows the same remaining
 time as a full localized label.
 
 Table columns are driven by template metadata and translations.
+Visible non-persistent read-only getters that mirror a direct reference field
+follow the `<reference><TargetField>` naming convention, for example
+`creatorPersonEmail` for `creatorPerson.email`. The table projection resolves
+that dependency through readable reference metadata, requests only the nested
+target field, and still renders the computed getter as the configured column.
 Desktop headers expose drag handles only after the user starts **Edit view**
 from the current-view menu. Reordering remains temporary and instance-local;
 finishing editing keeps it for the current visit, while leaving the table or

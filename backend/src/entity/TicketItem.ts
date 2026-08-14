@@ -527,7 +527,7 @@ export class TicketItem {
     width: 1,
     visible: true,
     tableOrder: 100,
-    tableVisible: false,
+    tableVisible: true,
     mobileOrder: 100,
     mobileVisible: false,
   })
@@ -766,6 +766,17 @@ export class TicketItem {
    */
   @ApiPropertyOptional()
   @Sapling(['isMail', 'isReadOnly'])
+  @SaplingForm({
+    order: 803,
+    group: 'ticket.groupReference',
+    groupOrder: 400,
+    width: 1,
+    visible: true,
+    tableOrder: 803,
+    tableVisible: true,
+    mobileOrder: 803,
+    mobileVisible: false,
+  })
   @Property({ persist: false, nullable: true, length: 128 })
   get creatorPersonEmail(): string | undefined {
     return this.creatorPerson?.email;
@@ -777,6 +788,17 @@ export class TicketItem {
    */
   @ApiPropertyOptional()
   @Sapling(['isPhone', 'isReadOnly'])
+  @SaplingForm({
+    order: 804,
+    group: 'ticket.groupReference',
+    groupOrder: 400,
+    width: 1,
+    visible: true,
+    tableOrder: 804,
+    tableVisible: true,
+    mobileOrder: 804,
+    mobileVisible: false,
+  })
   @Property({ persist: false, nullable: true, length: 128 })
   get creatorPersonPhone(): string | undefined {
     return this.creatorPerson?.phone;

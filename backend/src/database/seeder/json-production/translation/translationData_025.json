@@ -1,0 +1,14 @@
+[
+  {
+    "entity": "effortEstimate",
+    "property": "creatorPersonEmail",
+    "de": "Kunde (Person) E-Mail",
+    "en": "Customer (Person) Email"
+  },
+  {
+    "entity": "effortEstimate",
+    "property": "creatorPersonPhone",
+    "de": "Kunde (Person) Telefon",
+    "en": "Customer (Person) Phone"
+  }
+]

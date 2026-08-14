@@ -25,6 +25,7 @@ import {
   buildTableOrderBy,
   canReadReferenceTemplate,
   getListProjectionFieldNames,
+  getListProjectionReferenceDependencyNames,
   getReadableReferenceRelationNames,
   getReferenceChipProjectionFieldNames,
   getTableHeaders,
@@ -116,7 +117,11 @@ export function useSaplingTable(
     const permissions = currentPermissionStore.accumulatedPermission ?? []
     const baseFields = [
       ...new Set([
-        ...getListProjectionFieldNames(entityTemplates.value, permissions),
+        ...getListProjectionFieldNames(
+          entityTemplates.value,
+          permissions,
+          (referenceName) => genericStore.getState(referenceName).entityTemplates,
+        ),
         ...entityTemplates.value
           .filter(
             (template) =>
@@ -207,7 +212,10 @@ export function useSaplingTable(
   const validSortBy = computed(() => {
     const validTemplateKeys = new Set(
       entityTemplates.value
-        .filter((template) => template.fieldAccess?.allowRead !== false)
+        .filter(
+          (template) =>
+            template.isPersistent !== false && template.fieldAccess?.allowRead !== false,
+        )
         .map((template) => template.name),
     )
     return sortBy.value.filter((sortItem) => validTemplateKeys.has(sortItem.key))
@@ -407,11 +415,12 @@ export function useSaplingTable(
   async function preloadValueReferenceMetadata(nextEntityTemplates: EntityTemplate[]) {
     const permissions = currentPermissionStore.accumulatedPermission ?? []
     const projectedFields = getListProjectionFieldNames(nextEntityTemplates, permissions)
-    const rootRelations = getReadableReferenceRelationNames(
-      nextEntityTemplates,
-      permissions,
-      projectedFields,
-    )
+    const rootRelations = [
+      ...new Set([
+        ...getReadableReferenceRelationNames(nextEntityTemplates, permissions, projectedFields),
+        ...getListProjectionReferenceDependencyNames(nextEntityTemplates, permissions),
+      ]),
+    ]
     const rootRelationSet = new Set(rootRelations)
     const rootReferenceNames = [
       ...new Set(

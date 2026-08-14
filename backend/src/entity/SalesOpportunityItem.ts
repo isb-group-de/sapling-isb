@@ -352,6 +352,17 @@ export class SalesOpportunityItem {
    */
   @ApiPropertyOptional()
   @Sapling(['isMail', 'isReadOnly'])
+  @SaplingForm({
+    order: 703,
+    group: 'salesOpportunity.groupReference',
+    groupOrder: 400,
+    width: 1,
+    visible: true,
+    tableOrder: 703,
+    tableVisible: true,
+    mobileOrder: 703,
+    mobileVisible: false,
+  })
   @Property({ persist: false, nullable: true, length: 128 })
   get creatorPersonEmail(): string | undefined {
     return this.creatorPerson?.email;
@@ -363,6 +374,17 @@ export class SalesOpportunityItem {
    */
   @ApiPropertyOptional()
   @Sapling(['isPhone', 'isReadOnly'])
+  @SaplingForm({
+    order: 704,
+    group: 'salesOpportunity.groupReference',
+    groupOrder: 400,
+    width: 1,
+    visible: true,
+    tableOrder: 704,
+    tableVisible: true,
+    mobileOrder: 704,
+    mobileVisible: false,
+  })
   @Property({ persist: false, nullable: true, length: 128 })
   get creatorPersonPhone(): string | undefined {
     return this.creatorPerson?.phone;

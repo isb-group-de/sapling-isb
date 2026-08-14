@@ -59,7 +59,9 @@ export function getReadableReferenceRelationNames(
       Boolean(template.name) &&
       Boolean(template.referenceName) &&
       template.fieldAccess?.allowRead !== false &&
-      (!projectedFieldSet || projectedFieldSet.has(template.name)) &&
+      (!projectedFieldSet ||
+        projectedFieldSet.has(template.name) ||
+        [...projectedFieldSet].some((fieldName) => fieldName.startsWith(`${template.name}.`))) &&
       canReadReferenceTemplate(template, permissions),
   )
 
@@ -87,7 +89,56 @@ export function getReadableReferenceRelationNames(
   ]
 }
 
-export function getListProjectionFieldNames(
+function isListProjectionCandidate(
+  template: EntityTemplate,
+  permissions: AccumulatedPermission[],
+): boolean {
+  return (
+    template.fieldAccess?.allowRead !== false &&
+    (template.isPrimaryKey === true ||
+      (isSupportedTableTemplate(template, permissions) &&
+        (getTemplateConfiguredBoolean(template, 'tableVisible') === true ||
+          getTemplateConfiguredBoolean(template, 'mobileVisible') === true ||
+          template.options?.includes('isValue') === true)))
+  )
+}
+
+function findComputedReferenceDependency(
+  template: EntityTemplate,
+  entityTemplates: EntityTemplate[],
+  permissions: AccumulatedPermission[],
+): { relation: EntityTemplate; targetFieldName: string } | null {
+  if (template.isPersistent !== false || !template.name) {
+    return null
+  }
+
+  const relation = entityTemplates
+    .filter(
+      (candidate) =>
+        TABLE_REFERENCE_PERMISSION_KINDS.includes(candidate.kind ?? '') &&
+        candidate.isPersistent !== false &&
+        Boolean(candidate.name) &&
+        Boolean(candidate.referenceName) &&
+        template.name.startsWith(candidate.name) &&
+        template.name.length > candidate.name.length &&
+        /^[A-Z]/.test(template.name.slice(candidate.name.length)) &&
+        candidate.fieldAccess?.allowRead !== false &&
+        canReadReferenceTemplate(candidate, permissions),
+    )
+    .sort((left, right) => right.name.length - left.name.length)[0]
+
+  if (!relation) {
+    return null
+  }
+
+  const suffix = template.name.slice(relation.name.length)
+  return {
+    relation,
+    targetFieldName: `${suffix.charAt(0).toLowerCase()}${suffix.slice(1)}`,
+  }
+}
+
+export function getListProjectionReferenceDependencyNames(
   entityTemplates: EntityTemplate[],
   permissions: AccumulatedPermission[] = [],
 ): string[] {
@@ -96,16 +147,51 @@ export function getListProjectionFieldNames(
       entityTemplates
         .filter(
           (template) =>
-            template.fieldAccess?.allowRead !== false &&
-            (template.isPrimaryKey ||
-              (template.isPersistent !== false &&
-                isSupportedTableTemplate(template, permissions) &&
-                (getTemplateConfiguredBoolean(template, 'tableVisible') === true ||
-                  getTemplateConfiguredBoolean(template, 'mobileVisible') === true ||
-                  template.options?.includes('isValue')))),
+            template.isPersistent === false && isListProjectionCandidate(template, permissions),
         )
-        .map((template) => template.name)
-        .filter(Boolean),
+        .map(
+          (template) =>
+            findComputedReferenceDependency(template, entityTemplates, permissions)?.relation.name,
+        )
+        .filter((name): name is string => Boolean(name)),
+    ),
+  ]
+}
+
+export function getListProjectionFieldNames(
+  entityTemplates: EntityTemplate[],
+  permissions: AccumulatedPermission[] = [],
+  getReferenceTemplates?: (entityHandle: string) => EntityTemplate[],
+): string[] {
+  return [
+    ...new Set(
+      entityTemplates
+        .filter((template) => isListProjectionCandidate(template, permissions))
+        .map((template) => {
+          if (template.isPersistent !== false) {
+            return template.name
+          }
+
+          const dependency = findComputedReferenceDependency(template, entityTemplates, permissions)
+          if (!dependency?.relation.referenceName || !getReferenceTemplates) {
+            return null
+          }
+
+          const targetField = getReferenceTemplates(dependency.relation.referenceName).find(
+            (field) => field.name === dependency.targetFieldName,
+          )
+          if (
+            !targetField ||
+            targetField.isPersistent === false ||
+            targetField.fieldAccess?.allowRead === false ||
+            targetField.options?.includes('isSecurity')
+          ) {
+            return null
+          }
+
+          return `${dependency.relation.name}.${targetField.name}`
+        })
+        .filter((name): name is string => typeof name === 'string' && name.length > 0),
     ),
   ]
 }
@@ -301,6 +387,7 @@ export function getSupportedTableHeaders(
         ...template,
         key: template.name,
         title: template.formConfig?.label?.trim() || t(`${entity?.handle}.${template.name}`),
+        sortable: template.isPersistent !== false,
       })),
   )
 }

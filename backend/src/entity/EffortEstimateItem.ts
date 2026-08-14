@@ -319,6 +319,48 @@ export class EffortEstimateItem {
     return this.creatorPerson?.lastName;
   }
 
+  /**
+   * Email address of the customer contact person.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isMail', 'isReadOnly'])
+  @SaplingForm({
+    order: 403,
+    group: 'effortEstimate.groupReference',
+    groupOrder: 300,
+    width: 1,
+    visible: true,
+    tableOrder: 403,
+    tableVisible: true,
+    mobileOrder: 403,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get creatorPersonEmail(): string | undefined {
+    return this.creatorPerson?.email;
+  }
+
+  /**
+   * Phone number of the customer contact person.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isPhone', 'isReadOnly'])
+  @SaplingForm({
+    order: 404,
+    group: 'effortEstimate.groupReference',
+    groupOrder: 300,
+    width: 1,
+    visible: true,
+    tableOrder: 404,
+    tableVisible: true,
+    mobileOrder: 404,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get creatorPersonPhone(): string | undefined {
+    return this.creatorPerson?.phone;
+  }
+
   @ApiPropertyOptional({ type: () => SalesOpportunityItem })
   @SaplingForm({
     order: 500,

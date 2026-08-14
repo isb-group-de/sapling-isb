@@ -16,6 +16,7 @@ import {
   getGenericReferenceEntityHandle,
   getGenericReferenceHandle,
   getListProjectionFieldNames,
+  getListProjectionReferenceDependencyNames,
   getMobileTableHeaders,
   getReadableReferenceRelationNames,
   getRelationTableHeaders,
@@ -191,6 +192,59 @@ describe('saplingTableUtil', () => {
     ]
 
     expect(getListProjectionFieldNames(templates)).toEqual(['handle', 'title', 'mobileSummary'])
+  })
+
+  it('projects readable dependencies for visible computed reference fields', () => {
+    const templates = [
+      createTemplate({
+        name: 'creatorPerson',
+        kind: 'm:1',
+        referenceName: 'person',
+        isReference: true,
+        isPersistent: true,
+        tableVisible: false,
+      }),
+      createTemplate({
+        name: 'creatorPersonEmail',
+        isPersistent: false,
+        tableVisible: true,
+        options: ['isMail', 'isReadOnly'],
+      }),
+      createTemplate({
+        name: 'creatorPersonPhone',
+        isPersistent: false,
+        tableVisible: true,
+        options: ['isPhone', 'isReadOnly'],
+      }),
+    ]
+    const permissions = [{ entityHandle: 'person', allowRead: true }]
+    const personTemplates = [
+      createTemplate({ name: 'email', isPersistent: true }),
+      createTemplate({
+        name: 'phone',
+        isPersistent: true,
+        fieldAccess: { allowRead: false, allowInsert: true, allowUpdate: true },
+      }),
+    ]
+    const projectedFields = getListProjectionFieldNames(templates, permissions, (referenceName) =>
+      referenceName === 'person' ? personTemplates : [],
+    )
+
+    expect(getListProjectionReferenceDependencyNames(templates, permissions)).toEqual([
+      'creatorPerson',
+    ])
+    expect(projectedFields).toEqual(['creatorPerson.email'])
+    expect(getReadableReferenceRelationNames(templates, permissions, projectedFields)).toEqual([
+      'creatorPerson',
+    ])
+    expect(
+      getTableHeaders(templates, { handle: 'ticket' } as never, (key) => key, permissions),
+    ).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ key: 'creatorPersonEmail', sortable: false }),
+        expect.objectContaining({ key: 'creatorPersonPhone', sortable: false }),
+      ]),
+    )
   })
 
   it('keeps early entity groups ahead of later groups when sorting table columns', () => {
