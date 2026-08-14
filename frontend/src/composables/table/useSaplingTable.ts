@@ -114,16 +114,16 @@ export function useSaplingTable(
   const isLoading = computed(
     () => genericStore.getState(entityHandle.value).isLoading || isDataLoading.value,
   )
-  const listProjectionFields = computed(() => {
+  function buildListProjectionFields(nextEntityTemplates: EntityTemplate[]) {
     const permissions = currentPermissionStore.accumulatedPermission ?? []
     const baseFields = [
       ...new Set([
         ...getListProjectionFieldNames(
-          entityTemplates.value,
+          nextEntityTemplates,
           permissions,
           (referenceName) => genericStore.getState(referenceName).entityTemplates,
         ),
-        ...entityTemplates.value
+        ...nextEntityTemplates
           .filter(
             (template) =>
               template.name === 'updatedAt' &&
@@ -132,12 +132,12 @@ export function useSaplingTable(
           )
           .map((template) => template.name),
         ...additionalListProjectionFields.filter((fieldName) =>
-          entityTemplates.value.some(
+          nextEntityTemplates.some(
             (template) => template.name === fieldName && template.fieldAccess?.allowRead !== false,
           ),
         ),
         ...temporaryVisibleColumnKeys.value.filter((fieldName) =>
-          entityTemplates.value.some(
+          nextEntityTemplates.some(
             (template) =>
               template.name === fieldName &&
               template.isPersistent !== false &&
@@ -151,14 +151,15 @@ export function useSaplingTable(
       ...new Set([
         ...baseFields,
         ...getReferenceChipProjectionFieldNames(
-          entityTemplates.value,
+          nextEntityTemplates,
           permissions,
           baseFields,
           (referenceName) => genericStore.getState(referenceName).entityTemplates,
         ),
       ]),
     ]
-  })
+  }
+  const listProjectionFields = computed(() => buildListProjectionFields(entityTemplates.value))
   const readableReferenceRelations = computed(() =>
     getReadableReferenceRelationNames(
       entityTemplates.value,
@@ -269,7 +270,12 @@ export function useSaplingTable(
   // #endregion
 
   // #region Data Loading
-  async function loadData(options?: { entityHandle?: string; initializationId?: number }) {
+  async function loadData(options?: {
+    entityHandle?: string
+    initializationId?: number
+    projectionFields?: string[]
+    projectionRelations?: string[]
+  }) {
     const currentEntityHandle = options?.entityHandle ?? entityHandle.value
     const initializationId = options?.initializationId
 
@@ -290,8 +296,8 @@ export function useSaplingTable(
         orderBy: buildTableOrderBy(validSortBy.value),
         page: page.value,
         limit: itemsPerPage.value,
-        relations: readableReferenceRelations.value,
-        fields: listProjectionFields.value,
+        relations: options?.projectionRelations ?? readableReferenceRelations.value,
+        fields: options?.projectionFields ?? listProjectionFields.value,
         signal: loadController.signal,
       })
 
@@ -615,7 +621,16 @@ export function useSaplingTable(
 
           generateHeaders()
           page.value = 1
-          scheduleLoadData()
+          const projectionFields = buildListProjectionFields(nextEntityTemplates)
+          const projectionRelations = getReadableReferenceRelationNames(
+            nextEntityTemplates,
+            currentPermissionStore.accumulatedPermission ?? [],
+            projectionFields,
+            (referenceName) => genericStore.getState(referenceName).entityTemplates,
+          )
+
+          cancelScheduledLoad()
+          void loadData({ projectionFields, projectionRelations })
         })
     },
   )

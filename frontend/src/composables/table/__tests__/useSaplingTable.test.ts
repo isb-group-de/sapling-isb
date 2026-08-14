@@ -450,6 +450,14 @@ describe('useSaplingTable initialization and loading', () => {
         isPersistent: false,
         options: ['isPhone'],
       }),
+      createTemplate({
+        name: 'slaPolicy',
+        type: 'SlaPolicyItem',
+        kind: 'm:1',
+        isReference: true,
+        referenceName: 'ticketStatus',
+        referencedPks: ['handle'],
+      }),
     ]
 
     loadGenericMock.mockImplementation(async (handle: string) => {
@@ -478,6 +486,7 @@ describe('useSaplingTable initialization and loading', () => {
           fields: {
             creatorPersonEmail: { tableVisible: false },
             creatorPersonPhone: { tableVisible: false },
+            slaPolicy: { tableVisible: false },
           },
         },
       },
@@ -492,15 +501,14 @@ describe('useSaplingTable initialization and loading', () => {
 
     wrapper.vm.selectFormConfig(null)
     await nextTick()
-    await vi.advanceTimersByTimeAsync(250)
     await flushPromises()
 
     expect(loadGenericMock).toHaveBeenCalledWith('projectionPerson', 'global')
     expect(apiFindMock).toHaveBeenCalledWith(
       'partner',
       expect.objectContaining({
-        relations: expect.arrayContaining(['creatorPerson']),
-        fields: expect.arrayContaining(['creatorPerson.email', 'creatorPerson.phone']),
+        relations: expect.arrayContaining(['creatorPerson', 'slaPolicy']),
+        fields: expect.arrayContaining(['creatorPerson.email', 'creatorPerson.phone', 'slaPolicy']),
       }),
     )
   })
