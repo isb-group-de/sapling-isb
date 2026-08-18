@@ -64,7 +64,7 @@
         :items="responsiblePersonOptions"
         :label="t('crmWorkspace.responsiblePerson')"
       />
-      <v-select
+      <v-autocomplete
         v-if="activeCockpit === 'sales'"
         v-model="opportunityHorizonDays"
         density="comfortable"
@@ -83,7 +83,7 @@
         :items="segmentOptions"
         :label="t('crmWorkspace.customerSegment')"
       />
-      <v-select
+      <v-autocomplete
         v-if="activeCockpit !== 'sales'"
         v-model="contactThresholdDays"
         density="comfortable"

@@ -65,7 +65,7 @@
       :disabled="!canUseTemplates || isImportJobRunning"
       autocomplete="off"
     />
-    <v-select
+    <v-autocomplete
       v-model="externalKeyColumnsModel"
       :items="headerOptions"
       chips
@@ -90,7 +90,7 @@
         :label="t('import.genericReferenceTarget')"
         autocomplete="off"
       />
-      <v-select
+      <v-autocomplete
         v-model="genericReferenceKeyColumnsModel"
         :items="headerOptions"
         chips

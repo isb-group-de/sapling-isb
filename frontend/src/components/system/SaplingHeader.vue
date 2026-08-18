@@ -11,7 +11,21 @@
 
     <v-app-bar-title>
       <div class="sapling-inline-cluster sapling-inline-cluster--wide sapling-header__brand">
-        <v-btn data-tutorial="header-home" stacked class="pa-1" @click="goHome">Sapling</v-btn>
+        <v-tooltip location="bottom" :text="$t('global.backToHome')">
+          <template #activator="{ props: tooltipProps }">
+            <v-btn
+              v-bind="tooltipProps"
+              data-tutorial="header-home"
+              class="sapling-header__home pa-1"
+              prepend-icon="mdi-home-outline"
+              :aria-label="$t('global.backToHome')"
+              :title="$t('global.backToHome')"
+              @click="goHome"
+            >
+              <span class="sapling-header__home-label">Sapling</span>
+            </v-btn>
+          </template>
+        </v-tooltip>
       </div>
     </v-app-bar-title>
 

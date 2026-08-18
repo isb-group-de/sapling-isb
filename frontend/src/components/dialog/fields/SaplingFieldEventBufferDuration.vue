@@ -1,5 +1,5 @@
 <template>
-  <v-select
+  <v-autocomplete
     v-model:menu="menuOpen"
     :label="label"
     :model-value="normalizedValue"

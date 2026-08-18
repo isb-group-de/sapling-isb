@@ -1,8 +1,12 @@
 import { mount } from '@vue/test-utils'
 import { nextTick } from 'vue'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import SaplingDialogEditNavigation from '../SaplingDialogEditNavigation.vue'
+
+vi.mock('vue-i18n', () => ({
+  useI18n: () => ({ t: (key: string) => key }),
+}))
 
 describe('SaplingDialogEditNavigation', () => {
   it('selects record and relation tabs through the active-tab model', async () => {
@@ -80,14 +84,18 @@ describe('SaplingDialogEditNavigation', () => {
     })
   })
 
-  it('hides relation tabs while creating a record', () => {
+  it('shows relation tabs as locked while creating a record', async () => {
     const wrapper = mount(SaplingDialogEditNavigation, {
       props: {
         activeTab: 0,
         entityHandle: 'ticket',
         entityLabel: 'Tickets',
         mode: 'create' as const,
-        relationTemplates: [{ name: 'notes', type: 'collection' }] as never,
+        relationTemplates: [{ name: 'notes', type: 'collection', kind: '1:m' }] as never,
+        relationEntities: {
+          notes: { handle: 'note', icon: 'mdi-note-outline' },
+        } as never,
+        'onUpdate:activeTab': (value: number) => wrapper.setProps({ activeTab: value }),
       },
       global: {
         mocks: {
@@ -99,7 +107,50 @@ describe('SaplingDialogEditNavigation', () => {
       },
     })
 
-    expect(wrapper.findAll('button')).toHaveLength(1)
+    const buttons = wrapper.findAll('button')
+    expect(buttons).toHaveLength(2)
+    expect(wrapper.text()).toContain('global.referencesAvailableAfterSave')
+    expect(buttons[1].text()).toContain('mdi-note-outline')
+    expect(buttons[1].text()).toContain('1:m')
+    expect(buttons[1].text()).toContain('mdi-lock-outline')
+    expect(buttons[1].classes()).toContain('sapling-record-dialog-nav-item--locked')
+    expect(buttons[1].attributes('aria-disabled')).toBe('true')
+    expect(buttons[1].attributes('aria-describedby')).toContain('relations-locked-hint')
+    expect(buttons[1].attributes('tabindex')).toBe('-1')
+
+    await buttons[1].trigger('click')
+    await buttons[0].trigger('keydown', { key: 'End' })
+
+    expect(wrapper.emitted('update:activeTab')).toBeUndefined()
+    expect(buttons[0].attributes('aria-selected')).toBe('true')
+
+    await wrapper.setProps({ mode: 'edit' })
+    await wrapper.findAll('button')[1].trigger('click')
+    expect(wrapper.emitted('update:activeTab')).toEqual([[1]])
+  })
+
+  it('returns a programmatically selected relation to the record tab while creating', () => {
+    const updateActiveTab = vi.fn()
+    mount(SaplingDialogEditNavigation, {
+      props: {
+        activeTab: 1,
+        entityHandle: 'ticket',
+        entityLabel: 'Tickets',
+        mode: 'create' as const,
+        relationTemplates: [{ name: 'notes', type: 'collection', kind: '1:m' }] as never,
+        'onUpdate:activeTab': updateActiveTab,
+      },
+      global: {
+        mocks: {
+          $t: (key: string) => key,
+        },
+        stubs: {
+          VIcon: { template: '<span><slot /></span>' },
+        },
+      },
+    })
+
+    expect(updateActiveTab).toHaveBeenCalledWith(0)
   })
 
   it('uses arrow, Home, and End keys as a roving tablist', async () => {

@@ -10,7 +10,7 @@
         v-if="(!isAgentLocked && agentOptions.length > 0) || playbookOptions.length > 0"
         class="sapling-chat-conversation__controls sapling-ai-chat__conversation-controls"
       >
-        <v-select
+        <v-autocomplete
           v-if="!isAgentLocked && agentOptions.length > 0"
           :model-value="selectedAgentHandle"
           class="sapling-ai-chat__agent-select"
@@ -24,7 +24,7 @@
           variant="outlined"
           @update:model-value="emit('update:selectedAgent', String($event || ''))"
         />
-        <v-select
+        <v-autocomplete
           v-if="playbookOptions.length > 0"
           :model-value="selectedPlaybookHandle"
           class="sapling-ai-chat__playbook-select"

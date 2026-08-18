@@ -205,14 +205,14 @@
                   >
                 </v-chip-group>
                 <div class="d-flex ga-2 customer360__activity-filters">
-                  <v-select
+                  <v-autocomplete
                     v-model="activityDirection"
                     :items="activityDirectionOptions"
                     density="compact"
                     hide-details
                     variant="outlined"
                   />
-                  <v-select
+                  <v-autocomplete
                     v-model="activityPeriod"
                     :items="activityPeriodOptions"
                     density="compact"

@@ -6,7 +6,7 @@
       <div
         class="sapling-row-md sapling-row-wrap sapling-chat-composer__select-row sapling-ai-chat__voice-select-row"
       >
-        <v-select
+        <v-autocomplete
           v-if="transcriptionProviderOptions.length > 0"
           :model-value="selectedTranscriptionProviderHandle"
           class="sapling-chat-runtime-selectors__select sapling-chat-runtime-selectors__select--provider sapling-ai-chat__provider-select"
@@ -20,7 +20,7 @@
           variant="outlined"
           @update:model-value="emit('update:selectedTranscriptionProvider', $event)"
         />
-        <v-select
+        <v-autocomplete
           v-if="transcriptionModelOptions.length > 0"
           :model-value="selectedTranscriptionModelHandle"
           class="sapling-chat-runtime-selectors__select sapling-chat-runtime-selectors__select--model sapling-ai-chat__model-select"
@@ -45,7 +45,7 @@
         "
         class="sapling-row-md sapling-row-wrap sapling-chat-composer__select-row sapling-ai-chat__voice-select-row"
       >
-        <v-select
+        <v-autocomplete
           v-if="speechProviderOptions.length > 0"
           :model-value="selectedSpeechProviderHandle"
           class="sapling-chat-runtime-selectors__select sapling-chat-runtime-selectors__select--provider sapling-ai-chat__provider-select"
@@ -59,7 +59,7 @@
           variant="outlined"
           @update:model-value="emit('update:selectedSpeechProvider', $event)"
         />
-        <v-select
+        <v-autocomplete
           v-if="speechModelOptions.length > 0"
           :model-value="selectedSpeechModelHandle"
           class="sapling-chat-runtime-selectors__select sapling-chat-runtime-selectors__select--model sapling-ai-chat__model-select"

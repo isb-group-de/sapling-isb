@@ -24,7 +24,7 @@
 
           <div class="sapling-dialog-form-body">
             <v-form ref="formRef" class="sapling-dialog-form">
-              <v-select
+              <v-autocomplete
                 :model-value="selectedKpi"
                 @update:model-value="handleSelectedKpiUpdate"
                 :items="availableKpis"

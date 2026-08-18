@@ -34,26 +34,27 @@ backend/src/database/seeder/json-demonstration/kpi/
 
 Important fields:
 
-| Field               | Meaning                                                                                           |
-| ------------------- | ------------------------------------------------------------------------------------------------- |
-| `name`              | Human-readable KPI name                                                                           |
-| `description`       | Optional explanatory text                                                                         |
-| `targetEntity`      | `EntityItem` that resolves through `ENTITY_MAP`                                                   |
-| `aggregation`       | Aggregation handle such as `COUNT`, `SUM`, `AVG`, `MIN`, `MAX`                                    |
-| `field`             | Field path to aggregate; relation paths such as `type.handle` are supported                       |
-| `type`              | Rendering/execution shape such as `ITEM`, `LIST`, `BREAKDOWN`, `TREND`, `COMPARISON`, `SPARKLINE` |
-| `timeframeField`    | Date field for time-based KPIs; defaults to `created_at` in executor logic                        |
-| `timeframe`         | Current period such as `DAY`, `WEEK`, `MONTH`, `QUARTER`, `YEAR`                                  |
-| `timeframeInterval` | Sparkline bucket interval, for example `MONTH` within `YEAR`                                      |
-| `filter`            | Persisted generic filter JSON                                                                     |
-| `groupBy`           | Optional list of field paths used for grouped output                                              |
-| `relation`          | Optional relation entity context                                                                  |
-| `relationField`     | Field used for relation drilldowns/grouping                                                       |
+| Field               | Meaning                                                                                                       |
+| ------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `name`              | Human-readable KPI name                                                                                       |
+| `description`       | Optional explanatory text                                                                                     |
+| `targetEntity`      | `EntityItem` that resolves through `ENTITY_MAP`                                                               |
+| `aggregation`       | Aggregation handle such as `COUNT`, `SUM`, `AVG`, `MIN`, `MAX`                                                |
+| `field`             | Field path to aggregate; relation paths such as `type.handle` are supported                                   |
+| `type`              | Rendering/execution shape such as `ITEM`, `LIST`, `BREAKDOWN`, `TREND`, `COMPARISON`, `SPARKLINE`, `CALENDAR` |
+| `timeframeField`    | Date field for time-based KPIs; defaults to `created_at` in executor logic                                    |
+| `timeframe`         | Current period such as `DAY`, `WEEK`, `MONTH`, `QUARTER`, `YEAR`                                              |
+| `timeframeInterval` | Sparkline bucket interval, for example `MONTH` within `YEAR`                                                  |
+| `filter`            | Persisted generic filter JSON                                                                                 |
+| `groupBy`           | Optional list of field paths used for grouped output                                                          |
+| `relation`          | Optional relation entity context                                                                              |
+| `relationField`     | Field used for relation drilldowns/grouping                                                                   |
 
 Reference handles are seeded in:
 
 ```text
 backend/src/database/seeder/json-production/kpiType/kpiTypeData_001.json
+backend/src/database/seeder/json-production/kpiType/kpiTypeData_002.json
 backend/src/database/seeder/json-production/kpiAggregation/kpiAggregationData_001.json
 backend/src/database/seeder/json-production/kpiTimeframe/kpiTimeframeData_001.json
 ```
@@ -81,16 +82,30 @@ This means KPI results are not a bypass around normal entity permissions. If a u
 
 ## KPI Types
 
-| Type         | Runtime method                      | Typical frontend component |
-| ------------ | ----------------------------------- | -------------------------- |
-| `ITEM`       | `executeItemOrList()`               | `SaplingKpiItem.vue`       |
-| `LIST`       | `executeItemOrList()`               | `SaplingKpiList.vue`       |
-| `BREAKDOWN`  | `executeItemOrList()` with grouping | `SaplingKpiBreakdown.vue`  |
-| `TREND`      | `executeTrend()`                    | `SaplingKpiTrend.vue`      |
-| `COMPARISON` | `executeTrend()`                    | `SaplingKpiComparison.vue` |
-| `SPARKLINE`  | `executeSparkline()`                | `SaplingKpiSparkline.vue`  |
+| Type         | Runtime method                       | Typical frontend component |
+| ------------ | ------------------------------------ | -------------------------- |
+| `ITEM`       | `executeItemOrList()`                | `SaplingKpiItem.vue`       |
+| `LIST`       | `executeItemOrList()`                | `SaplingKpiList.vue`       |
+| `BREAKDOWN`  | `executeItemOrList()` with grouping  | `SaplingKpiBreakdown.vue`  |
+| `TREND`      | `executeTrend()`                     | `SaplingKpiTrend.vue`      |
+| `COMPARISON` | `executeTrend()`                     | `SaplingKpiComparison.vue` |
+| `SPARKLINE`  | `executeSparkline()`                 | `SaplingKpiSparkline.vue`  |
+| `CALENDAR`   | permission-aware generic Event query | `SaplingKpiCalendar.vue`   |
 
 `TREND` and `COMPARISON` compare the current timeframe with the previous equivalent timeframe. `SPARKLINE` creates bucketed values inside a timeframe, for example months within a year or days within a month.
+
+`CALENDAR` is a frontend agenda rather than an aggregation payload. It requires
+`targetEntity=event`, combines the persisted KPI filter with the signed-in
+person as participant, and uses the permission-enforced generic Event API. The
+card expands recurring events locally and displays the next five occurrences
+within 90 days. Its required `aggregation` and `field` values remain persisted
+for compatibility with the shared KPI model but are not evaluated by this
+renderer.
+
+Production and demonstration seed `kpiData_003.json` provide three reusable
+calendar definitions: the next open appointments, the next confirmed
+appointments, and the next online appointments for the signed-in participant.
+They are intentionally not assigned to a dashboard template automatically.
 
 ## Aggregation And Grouping
 
@@ -221,8 +236,10 @@ When adding a new KPI:
 When adding a new KPI type:
 
 1. Add or seed the `KpiTypeItem` handle.
-2. Extend `KpiService` dispatch.
-3. Extend `KPIExecutor` if the data shape is new.
+2. Extend `KpiService` dispatch when the type uses the KPI execution endpoint;
+   frontend-only widgets such as `CALENDAR` instead document and test their
+   permission-enforced data source.
+3. Extend `KPIExecutor` if the server-side data shape is new.
 4. Add DTOs when the response shape changes.
 5. Add frontend component/composable rendering.
 6. Add translations and seed permissions as needed.
@@ -230,7 +247,9 @@ When adding a new KPI type:
 
 ## Verification
 
-There are currently no dedicated KPI test files in the repository. Use targeted typechecks and add tests when changing executor behavior.
+Dedicated frontend KPI tests cover rendering, navigation, refresh behavior, and
+calendar agenda normalization. Continue to add backend tests when changing
+executor behavior.
 
 Useful commands:
 

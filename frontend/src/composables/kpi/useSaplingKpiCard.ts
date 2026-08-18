@@ -5,6 +5,7 @@ import { pushAppRoute } from '@/utils/routerNavigation'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { computed, ref, type ComponentPublicInstance } from 'vue'
+import { CALENDAR_KPI_TYPE_HANDLE } from '@/composables/kpi/useSaplingKpiCalendar'
 
 const KPI_TYPE_LABEL_KEYS: Record<string, string> = {
   LIST: 'kpi.typeList',
@@ -13,6 +14,7 @@ const KPI_TYPE_LABEL_KEYS: Record<string, string> = {
   SPARKLINE: 'kpi.typeSparkline',
   BREAKDOWN: 'kpi.typeBreakdown',
   COMPARISON: 'kpi.typeComparison',
+  CALENDAR: 'kpi.typeCalendar',
 }
 
 function resolveHandleLabel(value: { handle?: string } | string | null | undefined): string | null {
@@ -31,7 +33,8 @@ function resolveHandleLabel(value: { handle?: string } | string | null | undefin
 }
 
 export interface SaplingKpiCardContentRef {
-  loadKpiValue: () => Promise<void> | void
+  loadKpiValue?: () => Promise<void> | void
+  refresh?: () => Promise<void> | void
 }
 
 function resolveKpiTypeHandle(type: KPIItem['type'] | null | undefined): string | null {
@@ -55,8 +58,8 @@ function isKpiCardContentRef(value: unknown): value is SaplingKpiCardContentRef 
   return (
     value !== null &&
     typeof value === 'object' &&
-    'loadKpiValue' in value &&
-    typeof value.loadKpiValue === 'function'
+    (('loadKpiValue' in value && typeof value.loadKpiValue === 'function') ||
+      ('refresh' in value && typeof value.refresh === 'function'))
   )
 }
 
@@ -107,9 +110,12 @@ export function useSaplingKpiCard(props: SaplingKpiCardProps) {
   const targetEntityLabel = computed(() =>
     resolveHandleLabel(getKpiTargetEntityHandle(props.kpi?.targetEntity ?? null)),
   )
-  const canOpenEntity = computed(() =>
-    Boolean(getKpiTargetEntityHandle(props.kpi?.targetEntity ?? null)),
-  )
+  const isCalendarKpi = computed(() => kpiTypeHandle.value === CALENDAR_KPI_TYPE_HANDLE)
+  const canOpenEntity = computed(() => {
+    const targetEntityHandle = getKpiTargetEntityHandle(props.kpi?.targetEntity ?? null)
+
+    return isCalendarKpi.value ? targetEntityHandle === 'event' : Boolean(targetEntityHandle)
+  })
   const isListKpi = computed(() => kpiTypeHandle.value === 'LIST')
   const isBreakdownKpi = computed(() => kpiTypeHandle.value === 'BREAKDOWN')
   const isItemKpi = computed(() => kpiTypeHandle.value === 'ITEM')
@@ -130,7 +136,11 @@ export function useSaplingKpiCard(props: SaplingKpiCardProps) {
    * Refreshes the current KPI widget and notifies the parent dashboard if required.
    */
   async function refreshKpi() {
-    await kpiRef.value?.loadKpiValue?.()
+    if (kpiRef.value?.refresh) {
+      await kpiRef.value.refresh()
+    } else {
+      await kpiRef.value?.loadKpiValue?.()
+    }
     props.onRefresh?.(props.kpiIdx)
   }
 
@@ -145,6 +155,15 @@ export function useSaplingKpiCard(props: SaplingKpiCardProps) {
    * Navigates to the configured target entity of the KPI.
    */
   async function openEntity() {
+    if (isCalendarKpi.value) {
+      if (getKpiTargetEntityHandle(props.kpi?.targetEntity ?? null) !== 'event') {
+        return
+      }
+
+      await pushAppRoute(router, '/event')
+      return
+    }
+
     const path = buildKpiEntityPath(props.kpi)
     if (!path) {
       return
@@ -176,6 +195,7 @@ export function useSaplingKpiCard(props: SaplingKpiCardProps) {
     isTrendKpi,
     isComparisonKpi,
     isSparklineKpi,
+    isCalendarKpi,
   }
   //#endregion
 }

@@ -463,6 +463,116 @@
   overflow-y: auto;
 }
 
+.sapling-kpi-calendar {
+  min-height: 0;
+}
+
+.sapling-kpi-calendar__agenda {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: var(--sapling-gap-2xs);
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.sapling-kpi-calendar__item {
+  min-width: 0;
+}
+
+.sapling-kpi-calendar__entry {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto auto minmax(5.7rem, auto) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--sapling-gap-sm);
+  width: 100%;
+  min-height: var(--sapling-control-size-lg);
+  padding: var(--sapling-space-xs) var(--sapling-space-sm);
+  overflow: hidden;
+  border: 1px solid rgba(var(--v-border-color), 0.12);
+  border-radius: var(--sapling-radius-sm);
+  background: var(--sapling-surface-fill-soft);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background-color var(--sapling-motion-fast) ease,
+    border-color var(--sapling-motion-fast) ease;
+}
+
+.sapling-kpi-calendar__entry:hover,
+.sapling-kpi-calendar__entry:focus-visible {
+  border-color: rgba(var(--v-theme-primary), 0.4);
+  background: var(--sapling-interactive-hover-fill);
+}
+
+.sapling-kpi-calendar__entry:focus-visible {
+  outline: 2px solid rgb(var(--v-theme-primary));
+  outline-offset: -2px;
+}
+
+.sapling-kpi-calendar__entry:disabled {
+  cursor: default;
+  opacity: var(--sapling-opacity-disabled);
+}
+
+.sapling-kpi-calendar__accent {
+  align-self: stretch;
+  width: 3px;
+  border-radius: var(--sapling-radius-pill);
+}
+
+.sapling-kpi-calendar__icon {
+  flex: 0 0 auto;
+}
+
+.sapling-kpi-calendar__date,
+.sapling-kpi-calendar__content {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--sapling-gap-3xs);
+}
+
+.sapling-kpi-calendar__date {
+  font-size: var(--sapling-text-body-size-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.sapling-kpi-calendar__date small,
+.sapling-kpi-calendar__meta {
+  opacity: var(--sapling-opacity-secondary);
+  font-size: var(--sapling-text-meta-size-sm);
+}
+
+.sapling-kpi-calendar__title,
+.sapling-kpi-calendar__meta {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 520px) {
+  .sapling-kpi-calendar__entry {
+    grid-template-columns: auto auto minmax(0, 1fr) auto;
+  }
+
+  .sapling-kpi-calendar__date {
+    grid-column: 3;
+  }
+
+  .sapling-kpi-calendar__content {
+    grid-column: 2 / 4;
+    grid-row: 2;
+    padding-left: calc(20px + var(--sapling-gap-sm));
+  }
+}
+
 .sapling-kpi-sparkline__content {
   flex: 1 1 auto;
   justify-content: space-between;

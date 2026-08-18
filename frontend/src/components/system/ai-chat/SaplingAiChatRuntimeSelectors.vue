@@ -12,7 +12,7 @@
         {{ t('aiChat.contactAdministrator') }}
       </div>
     </v-alert>
-    <v-select
+    <v-autocomplete
       v-if="providerOptions.length > 0"
       :model-value="selectedProviderHandle"
       class="sapling-chat-runtime-selectors__select sapling-chat-runtime-selectors__select--provider sapling-ai-chat__provider-select"
@@ -26,7 +26,7 @@
       variant="outlined"
       @update:model-value="emit('update:selectedProvider', $event)"
     />
-    <v-select
+    <v-autocomplete
       v-if="modelOptions.length > 0"
       :model-value="selectedModelHandle"
       class="sapling-chat-runtime-selectors__select sapling-chat-runtime-selectors__select--model sapling-ai-chat__model-select"

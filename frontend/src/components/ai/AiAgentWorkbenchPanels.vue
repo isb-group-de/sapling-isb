@@ -45,7 +45,7 @@
     <div class="sapling-ai-agent-builder__panel-stack">
       <v-textarea v-model="testPrompt" :label="t('aiAgentBuilder.testPrompt')" rows="5" />
       <div class="sapling-row-md">
-        <v-select
+        <v-autocomplete
           v-model="selectedTestVersionHandle"
           :items="versionOptions"
           item-title="title"
@@ -53,7 +53,7 @@
           clearable
           :label="t('aiAgentBuilder.testVersion')"
         />
-        <v-select
+        <v-autocomplete
           v-model="selectedTestPlaybookHandle"
           :items="playbookOptions"
           item-title="title"
@@ -136,7 +136,7 @@
           v-model="evaluationDraft.title"
           :label="t('aiAgentBuilder.evaluationTitle')"
         />
-        <v-select
+        <v-autocomplete
           v-model="evaluationDraft.agentVersionHandle"
           :items="versionOptions"
           item-title="title"

@@ -1,0 +1,38 @@
+[
+  {
+    "entity": "global",
+    "property": "referencesAvailableAfterSave",
+    "de": "Referenzen sind nach dem ersten Speichern verfügbar.",
+    "en": "References are available after the first save."
+  },
+  {
+    "entity": "kpi",
+    "property": "typeCalendar",
+    "de": "Kalender-Agenda",
+    "en": "Calendar agenda"
+  },
+  {
+    "entity": "kpi",
+    "property": "calendarAgenda",
+    "de": "Kommende Termine",
+    "en": "Upcoming events"
+  },
+  {
+    "entity": "kpi",
+    "property": "calendarAllDay",
+    "de": "Ganztägig",
+    "en": "All day"
+  },
+  {
+    "entity": "kpi",
+    "property": "calendarEmpty",
+    "de": "Keine Termine in den nächsten 90 Tagen.",
+    "en": "No events in the next 90 days."
+  },
+  {
+    "entity": "kpi",
+    "property": "calendarConfigurationError",
+    "de": "Dieser Kalender-KPI muss die Entität Termine verwenden.",
+    "en": "This calendar KPI must target the event entity."
+  }
+]

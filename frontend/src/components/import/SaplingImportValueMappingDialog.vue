@@ -16,7 +16,7 @@
 
         <template #body>
           <div class="sapling-dialog-fill-content sapling-stack-md">
-            <v-select
+            <v-autocomplete
               :model-value="valueMapping.fallback"
               :items="valueMappingFallbackOptions"
               item-title="title"

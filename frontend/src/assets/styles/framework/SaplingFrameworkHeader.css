@@ -2,6 +2,37 @@
   --sapling-inline-cluster-gap: var(--sapling-header-cluster-gap);
 }
 
+.sapling-header__home {
+  min-width: 0;
+  font-weight: 700;
+}
+
+.sapling-header__home .v-icon {
+  flex: 0 0 auto;
+}
+
+.sapling-header__home-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 520px) {
+  .sapling-header__home {
+    min-width: var(--sapling-control-size-md) !important;
+    padding-inline: var(--sapling-space-xs) !important;
+  }
+
+  .sapling-header__home-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
 .sapling-header__desktop-action {
   display: inline-flex;
 }

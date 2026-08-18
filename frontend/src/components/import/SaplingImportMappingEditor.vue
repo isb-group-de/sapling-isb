@@ -17,7 +17,7 @@
         </v-tooltip>
       </div>
 
-      <v-select
+      <v-autocomplete
         :model-value="fieldMappings[field.name]"
         :items="headerOptions"
         density="compact"
@@ -55,7 +55,7 @@
             </template>
           </v-list-item>
         </template>
-      </v-select>
+      </v-autocomplete>
 
       <SaplingTemplateValueField
         :model-value="fieldDefaults[field.name]"
@@ -86,7 +86,7 @@
       </div>
 
       <div v-if="isUniqueConflictField(field)" class="sapling-import__unique-conflict-controls">
-        <v-select
+        <v-autocomplete
           :model-value="uniqueConflictStrategies[field.name] ?? 'error'"
           :items="uniqueConflictStrategyOptions"
           item-title="title"
@@ -105,7 +105,7 @@
         v-if="field.isReference && field.referenceName"
         class="sapling-import__relation-mapping-controls"
       >
-        <v-select
+        <v-autocomplete
           :model-value="relationMappingModes[field.name]"
           :items="relationMappingModeOptions"
           item-title="title"
@@ -117,7 +117,7 @@
           autocomplete="off"
           @update:model-value="updateRelationMappingMode(field.name, $event)"
         />
-        <v-select
+        <v-autocomplete
           :model-value="relationMappingColumns[field.name]"
           :items="headerOptions"
           density="compact"

@@ -123,7 +123,7 @@
                   :reverse-transition="false"
                 >
                   <SaplingDialogEditRelationTab
-                    v-if="activeTab === idx + 1"
+                    v-if="mode !== 'create' && activeTab === idx + 1"
                     :template="template"
                     :mode="mode"
                     :entity-handle="entity?.handle ?? ''"

@@ -1,5 +1,6 @@
 import { i18n } from '@/i18n'
 import type { AiProviderModelItem, AiProviderTypeItem } from '@/entity/entity'
+import { sortSelectOptions } from '@/utils/saplingSelectOptions'
 import type {
   CalendarClassificationMapping,
   CalendarSyncSubscription,
@@ -143,17 +144,23 @@ export function appendMissingOutlookCategoryMappings(
 }
 
 export function mapProviderOptions(providers: AiProviderTypeItem[]): AccountSelectOption<string>[] {
-  return providers.map((provider) => ({
-    title: provider.title || provider.handle || '',
-    value: provider.handle || '',
-  }))
+  return sortSelectOptions(
+    providers.map((provider) => ({
+      title: provider.title || provider.handle || '',
+      value: provider.handle || '',
+    })),
+    (provider) => provider.title,
+  )
 }
 
 export function mapModelOptions(models: AiProviderModelItem[]): AccountSelectOption<string>[] {
-  return models.map((model) => ({
-    title: model.providerModel ? `${model.title} (${model.providerModel})` : model.title,
-    value: model.handle || '',
-  }))
+  return sortSelectOptions(
+    models.map((model) => ({
+      title: model.providerModel ? `${model.title} (${model.providerModel})` : model.title,
+      value: model.handle || '',
+    })),
+    (model) => model.title,
+  )
 }
 
 export function normalizeHandle(value: unknown): string | null {

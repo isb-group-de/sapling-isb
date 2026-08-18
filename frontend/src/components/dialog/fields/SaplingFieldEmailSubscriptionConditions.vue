@@ -5,7 +5,7 @@
       :key="condition.key"
       class="sapling-email-conditions__row"
     >
-      <v-select
+      <v-autocomplete
         :menu="isConditionMenuOpen(condition.key, 'field')"
         :label="t('emailSubscriptionCondition.observedField')"
         :items="conditionFields"
@@ -21,7 +21,7 @@
         @update:model-value="(value) => updateObservedField(index, normalizeString(value))"
       />
 
-      <v-select
+      <v-autocomplete
         v-if="isValueSelectionField(condition.observedField)"
         :menu="isConditionMenuOpen(condition.key, 'oldValue')"
         :label="t('emailSubscriptionCondition.oldValue')"
@@ -54,7 +54,7 @@
         "
       />
 
-      <v-select
+      <v-autocomplete
         v-if="isValueSelectionField(condition.observedField)"
         :menu="isConditionMenuOpen(condition.key, 'newValue')"
         :label="t('emailSubscriptionCondition.newValue')"

@@ -1,5 +1,6 @@
 import { ref, toValue, watch, type MaybeRefOrGetter } from 'vue'
 import ApiGenericService from '@/services/api.generic.service'
+import { sortSelectOptions } from '@/utils/saplingSelectOptions'
 import type { KPIItem, DashboardItem } from '../../entity/entity'
 
 /**
@@ -127,7 +128,10 @@ export function useSaplingKpis(
     })
 
     const assignedKpiHandles = new Set(kpis.value.map((kpi) => kpi.handle))
-    availableKpis.value = res.filter((kpi) => !assignedKpiHandles.has(kpi.handle))
+    availableKpis.value = sortSelectOptions(
+      res.filter((kpi) => !assignedKpiHandles.has(kpi.handle)),
+      (kpi) => kpi.name,
+    )
     addKpiDialog.value = true
   }
 

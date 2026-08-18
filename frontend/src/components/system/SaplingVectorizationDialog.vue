@@ -64,7 +64,7 @@
             <div
               class="sapling-responsive-grid sapling-responsive-grid--md sapling-vectorization__selectors"
             >
-              <v-select
+              <v-autocomplete
                 :items="providerOptions"
                 :label="t('aiVectorization.provider')"
                 :model-value="selectedProviderHandle"
@@ -76,7 +76,7 @@
                 :disabled="isBusy"
                 @update:model-value="updateSelectedProvider"
               />
-              <v-select
+              <v-autocomplete
                 :items="modelOptions"
                 :label="t('aiVectorization.model')"
                 :model-value="selectedModelHandle"
@@ -88,7 +88,7 @@
                 :disabled="isBusy || !selectedProviderHandle"
                 @update:model-value="updateSelectedModel"
               />
-              <v-select
+              <v-autocomplete
                 :items="entityOptions"
                 :label="t('aiVectorization.entity')"
                 :model-value="selectedEntityHandle"
@@ -217,6 +217,7 @@ import { useTranslationLoader } from '@/composables/generic/useTranslationLoader
 import { useSaplingVectorization } from '@/composables/system/useSaplingVectorization'
 import { useSaplingMessageCenter } from '@/composables/system/useSaplingMessageCenter'
 import ApiAiService, { type VectorizeEntityResponse } from '@/services/api.ai.service'
+import { sortSelectOptions } from '@/utils/saplingSelectOptions'
 
 interface SelectOption {
   label: string
@@ -260,45 +261,35 @@ const isBusy = computed(
 )
 
 const providerOptions = computed<SelectOption[]>(() =>
-  providerConfigs.value.map((provider) => ({
+  sortSelectOptions(providerConfigs.value, (provider) => provider.title).map((provider) => ({
     label: provider.title,
     value: provider.handle ?? '',
   })),
 )
 
 const modelOptions = computed<SelectOption[]>(() =>
-  modelConfigs.value.map((model) => ({
+  sortSelectOptions(modelConfigs.value, (model) => model.title).map((model) => ({
     label: `${model.title} (${model.providerModel})`,
     value: model.handle ?? '',
   })),
 )
 
-const entityOptions = computed<SelectOption[]>(() => [
-  {
-    label: t('aiVectorization.entityTicket'),
-    value: 'ticket',
-  },
-  {
-    label: t('aiVectorization.entityEvent'),
-    value: 'event',
-  },
-  {
-    label: t('aiVectorization.entitySalesOpportunity'),
-    value: 'salesOpportunity',
-  },
-  {
-    label: t('aiVectorization.entityEffortEstimate'),
-    value: 'effortEstimate',
-  },
-  {
-    label: t('aiVectorization.entityEffortEstimatePosition'),
-    value: 'effortEstimatePosition',
-  },
-  {
-    label: t('aiVectorization.entityKnowledgeArticle'),
-    value: 'knowledgeArticle',
-  },
-])
+const entityOptions = computed<SelectOption[]>(() =>
+  sortSelectOptions(
+    [
+      { label: t('aiVectorization.entityTicket'), value: 'ticket' },
+      { label: t('aiVectorization.entityEvent'), value: 'event' },
+      { label: t('aiVectorization.entitySalesOpportunity'), value: 'salesOpportunity' },
+      { label: t('aiVectorization.entityEffortEstimate'), value: 'effortEstimate' },
+      {
+        label: t('aiVectorization.entityEffortEstimatePosition'),
+        value: 'effortEstimatePosition',
+      },
+      { label: t('aiVectorization.entityKnowledgeArticle'), value: 'knowledgeArticle' },
+    ],
+    (entity) => entity.label,
+  ),
+)
 
 const indexedFieldLabels = computed(() => {
   const fieldKeysByEntity: Record<string, string[]> = {

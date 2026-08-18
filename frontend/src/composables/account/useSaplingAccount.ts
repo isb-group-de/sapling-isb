@@ -18,6 +18,7 @@ import type {
   WorkHourWeekItem,
 } from '@/entity/entity'
 import ApiGenericService from '@/services/api.generic.service'
+import { sortSelectOptions } from '@/utils/saplingSelectOptions'
 import { useSaplingMessageCenter } from '@/composables/system/useSaplingMessageCenter'
 import { useSaplingPreferences } from '@/composables/system/useSaplingPreferences'
 import ApiAiService from '@/services/api.ai.service'
@@ -176,14 +177,14 @@ export function useSaplingAccount() {
   ])
 
   const calendarSyncEventTypeOptions = computed<CalendarSyncOption<string>[]>(() =>
-    eventTypes.value.map((item) => ({
+    sortSelectOptions(eventTypes.value, (item) => item.title).map((item) => ({
       title: item.title,
       value: item.handle,
     })),
   )
 
   const calendarSyncEventCategoryOptions = computed<CalendarSyncOption<string>[]>(() =>
-    eventCategories.value.map((item) => ({
+    sortSelectOptions(eventCategories.value, (item) => item.title).map((item) => ({
       title: item.title,
       value: item.handle,
     })),

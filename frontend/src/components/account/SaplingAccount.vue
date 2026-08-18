@@ -363,7 +363,7 @@
                           :key="index"
                           class="sapling-account-dialog__mapping-row"
                         >
-                          <v-select
+                          <v-autocomplete
                             v-if="calendarSync.provider === 'google'"
                             v-model="mapping.externalValue"
                             :items="googleCalendarColorOptions"
@@ -381,7 +381,7 @@
                             variant="outlined"
                             hide-details
                           />
-                          <v-select
+                          <v-autocomplete
                             v-model="mapping.eventTypeHandle"
                             :items="calendarSyncEventTypeOptions"
                             :label="$t('calendarSyncSubscription.eventType')"
@@ -390,7 +390,7 @@
                             clearable
                             hide-details
                           />
-                          <v-select
+                          <v-autocomplete
                             v-model="mapping.eventCategoryHandle"
                             :items="calendarSyncEventCategoryOptions"
                             :label="$t('calendarSyncSubscription.eventCategory')"

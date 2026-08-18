@@ -107,6 +107,7 @@ import type {
   DvelopRepositoryItem,
 } from './dvelopCloudWorkspace.types'
 import { capitalizeDvelopKey, formatDvelopDateTime } from './dvelopCloudWorkspace.utils'
+import { sortSelectOptions } from '@/utils/saplingSelectOptions'
 // #endregion
 
 const HEALTH_CAPABILITY_KEYS: DvelopHealthCheckCapabilityKey[] = [
@@ -149,7 +150,7 @@ const healthCheckResult = ref<DvelopHealthCheckResponse | null>(null)
 
 // #region Computed
 const connectionOptions = computed(() =>
-  connections.value.map((connection) => ({
+  sortSelectOptions(connections.value, (connection) => connection.title).map((connection) => ({
     title: connection.title,
     value: connection.handle,
   })),

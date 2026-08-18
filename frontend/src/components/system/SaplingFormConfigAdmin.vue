@@ -135,6 +135,7 @@ import ApiFormConfigService, {
 import ApiGenericService from '@/services/api.generic.service'
 import ApiTemplateService from '@/services/api.template.service'
 import TranslationService from '@/services/translation.service'
+import { sortSelectOptions } from '@/utils/saplingSelectOptions'
 import type { EntityItem, SaplingGenericItem } from '@/entity/entity'
 import type { EntityTemplate, SaplingFormConfigPayload } from '@/entity/structure'
 import SaplingPageHero from '@/components/common/SaplingPageHero.vue'
@@ -216,7 +217,7 @@ const scopeSelectEntityHandle = computed(() => {
 const scopeSelectKey = computed(() => `${configScope.value}-${scopeHandle.value || 'empty'}`)
 
 const entityOptions = computed(() =>
-  entities.value.map((entity) => ({
+  sortSelectOptions(entities.value, (entity) => translateEntity(entity.handle)).map((entity) => ({
     title: translateEntity(entity.handle),
     value: entity.handle,
   })),
@@ -224,7 +225,7 @@ const entityOptions = computed(() =>
 
 const configOptions = computed(() => [
   { title: t('formConfig.newConfig'), value: null },
-  ...configs.value.map((config) => ({
+  ...sortSelectOptions(configs.value, (config) => config.name).map((config) => ({
     title: config.name,
     value: config.handle ?? null,
   })),

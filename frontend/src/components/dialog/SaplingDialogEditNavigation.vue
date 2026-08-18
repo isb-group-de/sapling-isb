@@ -4,6 +4,14 @@
     :aria-label="entityLabel"
     role="tablist"
   >
+    <p
+      v-if="relationsLocked"
+      :id="lockedRelationsHintId"
+      class="sapling-dialog-edit-nav__locked-hint"
+    >
+      <v-icon size="16" aria-hidden="true">mdi-lock-outline</v-icon>
+      <span>{{ $t('global.referencesAvailableAfterSave') }}</span>
+    </p>
     <button
       class="sapling-record-dialog-nav-item sapling-dialog-edit-nav-item"
       :class="{
@@ -25,39 +33,40 @@
       </v-icon>
       <span class="sapling-record-dialog-nav-item__label">{{ entityLabel }}</span>
     </button>
-    <template v-if="mode !== 'create'">
-      <button
-        v-for="(template, idx) in relationTemplates"
-        :key="template.name"
-        class="sapling-record-dialog-nav-item sapling-dialog-edit-nav-item"
-        :class="[
-          relationKindClass(template),
-          {
-            'sapling-record-dialog-nav-item--active': activeTab === idx + 1,
-          },
-        ]"
-        type="button"
-        :id="tabId(idx + 1)"
-        role="tab"
-        :aria-controls="panelId(idx + 1)"
-        :aria-selected="activeTab === idx + 1"
-        :tabindex="activeTab === idx + 1 ? 0 : -1"
-        :aria-current="activeTab === idx + 1 ? 'page' : undefined"
-        :aria-label="
-          relationKindLabel(template)
-            ? $t(`${entityHandle}.${template.name}`) + ' (' + relationKindLabel(template) + ')'
-            : $t(`${entityHandle}.${template.name}`)
-        "
-        :title="relationKindLabel(template)"
-        @click="activeTab = idx + 1"
-        @keydown="onTabKeydown($event, idx + 1)"
-      >
-        <v-icon class="sapling-record-dialog-nav-item__icon" size="18">
-          {{ relationIcon(template) }}
-        </v-icon>
-        <span class="sapling-record-dialog-nav-item__label">
-          {{ $t(`${entityHandle}.${template.name}`) }}
-        </span>
+    <button
+      v-for="(template, idx) in relationTemplates"
+      :key="template.name"
+      class="sapling-record-dialog-nav-item sapling-dialog-edit-nav-item"
+      :class="[
+        relationKindClass(template),
+        {
+          'sapling-record-dialog-nav-item--active': !relationsLocked && activeTab === idx + 1,
+          'sapling-record-dialog-nav-item--locked': relationsLocked,
+        },
+      ]"
+      type="button"
+      :id="tabId(idx + 1)"
+      role="tab"
+      :aria-controls="panelId(idx + 1)"
+      :aria-selected="!relationsLocked && activeTab === idx + 1"
+      :aria-disabled="relationsLocked ? 'true' : undefined"
+      :aria-describedby="relationsLocked ? lockedRelationsHintId : undefined"
+      :tabindex="relationsLocked ? -1 : activeTab === idx + 1 ? 0 : -1"
+      :aria-current="!relationsLocked && activeTab === idx + 1 ? 'page' : undefined"
+      :aria-label="relationAriaLabel(template)"
+      :title="
+        relationsLocked ? $t('global.referencesAvailableAfterSave') : relationKindLabel(template)
+      "
+      @click="selectRelationTab(idx + 1)"
+      @keydown="onTabKeydown($event, idx + 1)"
+    >
+      <v-icon class="sapling-record-dialog-nav-item__icon" size="18">
+        {{ relationIcon(template) }}
+      </v-icon>
+      <span class="sapling-record-dialog-nav-item__label">
+        {{ $t(`${entityHandle}.${template.name}`) }}
+      </span>
+      <span class="sapling-record-dialog-nav-item__meta">
         <span
           v-if="relationKindLabel(template)"
           class="sapling-record-dialog-nav-item__relation-type"
@@ -65,12 +74,22 @@
         >
           {{ relationKindLabel(template) }}
         </span>
-      </button>
-    </template>
+        <v-icon
+          v-if="relationsLocked"
+          class="sapling-record-dialog-nav-item__lock"
+          size="15"
+          aria-hidden="true"
+        >
+          mdi-lock-outline
+        </v-icon>
+      </span>
+    </button>
   </nav>
 </template>
 
 <script lang="ts" setup>
+import { computed, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import type { DialogState, EntityTemplate } from '@/entity/structure'
 import type { EntityItem } from '@/entity/entity'
 
@@ -84,6 +103,21 @@ const props = defineProps<{
 }>()
 
 const activeTab = defineModel<number>('activeTab', { required: true })
+const { t } = useI18n()
+const relationsLocked = computed(
+  () => props.mode === 'create' && props.relationTemplates.length > 0,
+)
+const lockedRelationsHintId = `${props.tabIdPrefix || `sapling-record-dialog-${props.entityHandle}`}-relations-locked-hint`
+
+watch(
+  [relationsLocked, activeTab],
+  ([locked, currentTab]) => {
+    if (locked && currentTab !== 0) {
+      activeTab.value = 0
+    }
+  },
+  { immediate: true },
+)
 
 function tabId(index: number): string {
   return `${props.tabIdPrefix || `sapling-record-dialog-${props.entityHandle}`}-tab-${index}`
@@ -94,7 +128,11 @@ function panelId(index: number): string {
 }
 
 function onTabKeydown(event: KeyboardEvent, currentIndex: number): void {
-  const tabCount = props.mode === 'create' ? 1 : props.relationTemplates.length + 1
+  if (relationsLocked.value && currentIndex > 0) {
+    return
+  }
+
+  const tabCount = relationsLocked.value ? 1 : props.relationTemplates.length + 1
   let nextIndex: number | null = null
 
   switch (event.key) {
@@ -124,6 +162,24 @@ function onTabKeydown(event: KeyboardEvent, currentIndex: number): void {
     event.currentTarget as HTMLElement | null
   )?.parentElement?.querySelectorAll<HTMLElement>('[role="tab"]')
   tabs?.[nextIndex]?.focus()
+}
+
+function selectRelationTab(index: number): void {
+  if (relationsLocked.value) {
+    return
+  }
+
+  activeTab.value = index
+}
+
+function relationAriaLabel(template: EntityTemplate): string {
+  const translatedLabel = String(t(`${props.entityHandle}.${template.name}`))
+  const kind = relationKindLabel(template)
+  const relationLabel = kind ? `${translatedLabel} (${kind})` : translatedLabel
+
+  return relationsLocked.value
+    ? `${relationLabel}. ${String(t('global.referencesAvailableAfterSave'))}`
+    : relationLabel
 }
 
 function relationKindLabel(template: EntityTemplate): string {

@@ -16,6 +16,7 @@ import type {
 import ApiAiService, { type AiMcpToolDescriptor } from '@/services/api.ai.service'
 import ApiGenericService, { type FilterQuery } from '@/services/api.generic.service'
 import TranslationService from '@/services/translation.service'
+import { sortSelectOptions } from '@/utils/saplingSelectOptions'
 import type { AgentWorkbenchStats } from '@/components/ai/aiAgentBuilder.types'
 import {
   createEmptyAgentDraft,
@@ -94,12 +95,18 @@ export function useAiAgentBuilder() {
     },
   })
   const internalToolOptions = computed(() =>
-    tools.value.filter((tool) => tool.serverName === 'sapling').map((tool) => tool.toolName),
+    sortSelectOptions(
+      tools.value.filter((tool) => tool.serverName === 'sapling').map((tool) => tool.toolName),
+      (tool) => tool,
+    ),
   )
   const externalToolOptions = computed(() =>
-    tools.value
-      .filter((tool) => tool.serverName !== 'sapling')
-      .map((tool) => `${tool.serverName}.${tool.toolName}`),
+    sortSelectOptions(
+      tools.value
+        .filter((tool) => tool.serverName !== 'sapling')
+        .map((tool) => `${tool.serverName}.${tool.toolName}`),
+      (tool) => tool,
+    ),
   )
   const filteredModels = computed(() =>
     draft.value.provider
@@ -113,7 +120,7 @@ export function useAiAgentBuilder() {
     })),
   )
   const playbookOptions = computed(() =>
-    workbenchPlaybooks.value.map((playbook) => ({
+    sortSelectOptions(workbenchPlaybooks.value, (playbook) => playbook.title).map((playbook) => ({
       title: playbook.title,
       value: playbook.handle,
     })),
@@ -135,8 +142,8 @@ export function useAiAgentBuilder() {
       ApiGenericService.findAll<RoleItem>('role'),
       ApiAiService.listMcpTools(),
     ])
-    providers.value = providerList
-    models.value = modelList
+    providers.value = sortSelectOptions(providerList, (provider) => provider.title)
+    models.value = sortSelectOptions(modelList, (model) => model.title)
     entities.value = entityList
     roles.value = roleList
     tools.value = toolList

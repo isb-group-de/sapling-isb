@@ -72,6 +72,7 @@
       <SaplingKpiComparison v-else-if="kpi && isComparisonKpi" :ref="setRef" :kpi="kpi" />
       <SaplingKpiTrend v-else-if="kpi && isTrendKpi" :ref="setRef" :kpi="kpi" />
       <SaplingKpiSparkline v-else-if="kpi && isSparklineKpi" :ref="setRef" :kpi="kpi" />
+      <SaplingKpiCalendar v-else-if="kpi && isCalendarKpi" :ref="setRef" :kpi="kpi" />
       <div v-else class="sapling-kpi-card__unsupported">
         <v-icon size="28">mdi-chart-box-outline</v-icon>
         <span>{{ $t('kpi.unsupportedType') }}</span>
@@ -90,6 +91,7 @@ import SaplingKpiItem from '@/components/kpi/SaplingKpiItem.vue'
 import SaplingKpiList from '@/components/kpi/SaplingKpiList.vue'
 import SaplingKpiSparkline from '@/components/kpi/SaplingKpiSparkline.vue'
 import SaplingKpiTrend from '@/components/kpi/SaplingKpiTrend.vue'
+import SaplingKpiCalendar from '@/components/kpi/SaplingKpiCalendar.vue'
 import { useSaplingKpiCard } from '@/composables/kpi/useSaplingKpiCard'
 import type { KPIItem } from '@/entity/entity'
 // #endregion
@@ -128,6 +130,7 @@ const {
   isTrendKpi,
   isComparisonKpi,
   isSparklineKpi,
+  isCalendarKpi,
 } = useSaplingKpiCard(props)
 // #endregion
 </script>

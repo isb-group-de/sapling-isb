@@ -84,7 +84,7 @@
             </div>
           </div>
 
-          <v-select
+          <v-autocomplete
             v-if="isOperatorSelectable"
             :model-value="currentOperator"
             :items="operatorItems"
@@ -100,7 +100,7 @@
             <template #item="{ item, props: itemProps }">
               <v-list-item v-bind="itemProps" :title="item.title" :subtitle="item.symbol" />
             </template>
-          </v-select>
+          </v-autocomplete>
 
           <SaplingTableFilterBooleanValue
             v-if="filterVariant === 'boolean'"

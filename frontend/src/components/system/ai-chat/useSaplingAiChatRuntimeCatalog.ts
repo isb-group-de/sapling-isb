@@ -7,6 +7,7 @@ import type {
 } from '@/entity/entity'
 import ApiAiService from '@/services/api.ai.service'
 import type { SaplingAiPreferences } from '@/services/ai-preferences.service'
+import { sortSelectOptions } from '@/utils/saplingSelectOptions'
 import { getModelHandle, getProviderHandle, resolveRuntimeTarget } from './aiChatRuntimeTargets'
 
 const RUNTIME_CATALOG_RETRY_DELAY_MS = 200
@@ -70,7 +71,10 @@ export function useSaplingAiChatRuntimeCatalog(
     () => typeof Audio !== 'undefined' && hasConfiguredSpeechProviders.value,
   )
   const agentOptions = computed(() =>
-    agentConfigs.value.map((agent) => ({ label: agent.title, value: agent.handle })),
+    sortSelectOptions(agentConfigs.value, (agent) => agent.title).map((agent) => ({
+      label: agent.title,
+      value: agent.handle,
+    })),
   )
   const selectedAgentConfig = computed(
     () => agentConfigs.value.find((agent) => agent.handle === selectedAgentHandle.value) ?? null,
@@ -84,10 +88,12 @@ export function useSaplingAiChatRuntimeCatalog(
     () => modelConfigs.value.find((model) => model.handle === selectedModelHandle.value) ?? null,
   )
   const playbookOptions = computed(() =>
-    (selectedAgentConfig.value?.playbooks ?? []).map((playbook) => ({
-      label: playbook.title,
-      value: playbook.handle,
-    })),
+    sortSelectOptions(selectedAgentConfig.value?.playbooks ?? [], (playbook) => playbook.title).map(
+      (playbook) => ({
+        label: playbook.title,
+        value: playbook.handle,
+      }),
+    ),
   )
   const canUploadImportAttachment = computed(() =>
     (selectedAgentConfig.value?.allowedInternalTools ?? []).some((tool) =>

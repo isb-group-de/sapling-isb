@@ -1,5 +1,5 @@
 <template>
-  <v-select
+  <v-autocomplete
     :model-value="modelValue"
     :items="booleanItems"
     item-title="title"

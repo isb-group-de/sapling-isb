@@ -68,7 +68,7 @@
 
   <v-window-item value="tools">
     <div class="sapling-ai-agent-builder__grid">
-      <v-select
+      <v-autocomplete
         v-model="draft.allowedInternalTools"
         class="sapling-ai-agent-builder__wide"
         chips
@@ -76,7 +76,7 @@
         :items="internalToolOptions"
         :label="t('aiAgentBuilder.fieldInternalTools')"
       />
-      <v-select
+      <v-autocomplete
         v-model="draft.allowedExternalTools"
         class="sapling-ai-agent-builder__wide"
         chips
@@ -89,7 +89,7 @@
 
   <v-window-item value="runtime">
     <div class="sapling-ai-agent-builder__grid">
-      <v-select
+      <v-autocomplete
         v-model="draft.provider"
         item-title="title"
         item-value="handle"
@@ -97,7 +97,7 @@
         :label="t('aiAgentBuilder.fieldProvider')"
         clearable
       />
-      <v-select
+      <v-autocomplete
         v-model="draft.model"
         item-title="title"
         item-value="handle"
@@ -105,7 +105,7 @@
         :label="t('aiAgentBuilder.fieldModel')"
         clearable
       />
-      <v-select
+      <v-autocomplete
         v-model="draft.mutationMode"
         :items="mutationModeOptions"
         :label="t('aiAgentBuilder.fieldMutationMode')"

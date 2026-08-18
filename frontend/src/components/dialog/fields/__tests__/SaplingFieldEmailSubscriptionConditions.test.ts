@@ -98,8 +98,8 @@ vi.mock('@/services/api.generic.service', () => ({
 
 import SaplingFieldEmailSubscriptionConditions from '../SaplingFieldEmailSubscriptionConditions.vue'
 
-const VSelectStub = defineComponent({
-  name: 'v-select',
+const VAutocompleteStub = defineComponent({
+  name: 'v-autocomplete',
   props: {
     items: {
       type: Array,
@@ -146,7 +146,7 @@ describe('SaplingFieldEmailSubscriptionConditions', () => {
       },
       global: {
         stubs: {
-          'v-select': VSelectStub,
+          'v-autocomplete': VAutocompleteStub,
           'v-text-field': VTextFieldStub,
           'v-btn': VBtnStub,
         },
@@ -156,7 +156,7 @@ describe('SaplingFieldEmailSubscriptionConditions', () => {
     await flushPromises()
 
     expect(loadGenericMock).toHaveBeenCalledWith('ticket', 'global')
-    expect(wrapper.findAllComponents(VSelectStub)[0].props('items')).toEqual([
+    expect(wrapper.findAllComponents(VAutocompleteStub)[0].props('items')).toEqual([
       { label: 'Service level', value: 'customFields.serviceLevel' },
       { label: 'Solution', value: 'solutionDescription' },
       { label: 'Status', value: 'status' },
@@ -172,7 +172,7 @@ describe('SaplingFieldEmailSubscriptionConditions', () => {
       },
       global: {
         stubs: {
-          'v-select': VSelectStub,
+          'v-autocomplete': VAutocompleteStub,
           'v-text-field': VTextFieldStub,
           'v-btn': VBtnStub,
         },
@@ -181,7 +181,7 @@ describe('SaplingFieldEmailSubscriptionConditions', () => {
 
     await flushPromises()
 
-    const selects = wrapper.findAllComponents(VSelectStub)
+    const selects = wrapper.findAllComponents(VAutocompleteStub)
     expect(selects[1].props('items')).toEqual([
       { label: 'Silver', value: 'silver' },
       { label: 'Gold', value: 'gold' },
@@ -197,7 +197,7 @@ describe('SaplingFieldEmailSubscriptionConditions', () => {
       },
       global: {
         stubs: {
-          'v-select': VSelectStub,
+          'v-autocomplete': VAutocompleteStub,
           'v-text-field': VTextFieldStub,
           'v-btn': VBtnStub,
         },
@@ -208,7 +208,7 @@ describe('SaplingFieldEmailSubscriptionConditions', () => {
 
     const buttons = wrapper.findAllComponents(VBtnStub)
     await buttons[buttons.length - 1].trigger('click')
-    const selects = wrapper.findAllComponents(VSelectStub)
+    const selects = wrapper.findAllComponents(VAutocompleteStub)
     await selects[3].vm.$emit('update:modelValue', 'solutionDescription')
 
     const emittedUpdates = wrapper.emitted('update:modelValue') ?? []

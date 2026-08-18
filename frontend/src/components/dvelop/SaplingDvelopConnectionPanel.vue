@@ -4,7 +4,7 @@
     class="sapling-panel-shell sapling-section-panel sapling-dvelop-cloud__control-band"
   >
     <div class="sapling-dvelop-cloud__connection-panel">
-      <v-select
+      <v-autocomplete
         :model-value="modelValue"
         class="sapling-dvelop-cloud__connection-field"
         :items="connectionOptions"

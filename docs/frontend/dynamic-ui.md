@@ -230,9 +230,12 @@ throughout the nested workflow.
 When a custom workflow needs an initial selected reference, pass the full item when available and ensure the target entity metadata can load before the user opens the menu. The fallback to handles is intentional for unknown metadata and should not be hidden with hard-coded field-name guesses.
 
 Static option lists should use `frontend/src/components/common/SaplingStaticSelect.vue`
-instead of repeating raw `v-select` defaults in each feature component. Keep this
-component for literal option arrays such as modes, intervals, providers already
-loaded by a service, or display preferences. Do not use it for entity
+instead of repeating raw Vuetify select defaults in each feature component. The
+shared component renders a searchable autocomplete while preserving the supplied
+order for deliberately ordered values such as intervals or workflow modes.
+Growing catalogs should also use searchable autocompletes and sort a copied
+option array by its localized display label; `sortSelectOptions()` provides the
+shared case-insensitive, natural ordering. Do not use static selects for entity
 references; entity relations should continue to use the Sapling reference field
 components so labels, metadata, filtering, and table-menu behavior remain
 consistent.

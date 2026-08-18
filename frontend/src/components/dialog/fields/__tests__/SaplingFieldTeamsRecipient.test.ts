@@ -97,8 +97,8 @@ vi.mock('@/stores/genericStore', () => ({
 
 import SaplingFieldTeamsRecipient from '../SaplingFieldTeamsRecipient.vue'
 
-const VSelectStub = defineComponent({
-  name: 'v-select',
+const VAutocompleteStub = defineComponent({
+  name: 'v-autocomplete',
   props: {
     items: {
       type: Array,
@@ -125,7 +125,7 @@ describe('SaplingFieldTeamsRecipient', () => {
       },
       global: {
         stubs: {
-          'v-select': VSelectStub,
+          'v-autocomplete': VAutocompleteStub,
         },
       },
     })
@@ -138,7 +138,7 @@ describe('SaplingFieldTeamsRecipient', () => {
       { entityHandle: 'salesOpportunity', namespaces: ['global'] },
     ])
 
-    expect(wrapper.findComponent(VSelectStub).props('items')).toEqual([
+    expect(wrapper.findComponent(VAutocompleteStub).props('items')).toEqual([
       { label: 'Participants', value: 'participants' },
       { label: 'Responsible person', value: 'assigneePerson' },
       {
@@ -158,14 +158,14 @@ describe('SaplingFieldTeamsRecipient', () => {
       },
       global: {
         stubs: {
-          'v-select': VSelectStub,
+          'v-autocomplete': VAutocompleteStub,
         },
       },
     })
 
     await flushPromises()
 
-    expect(wrapper.findComponent(VSelectStub).props('items')).toEqual([
+    expect(wrapper.findComponent(VAutocompleteStub).props('items')).toEqual([
       { label: 'Responsible person', value: 'assigneePerson' },
       {
         label: 'Sales opportunity / Opportunity owner',

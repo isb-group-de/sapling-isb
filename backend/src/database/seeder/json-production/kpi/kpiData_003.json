@@ -1,0 +1,63 @@
+[
+  {
+    "name": "Meine nächsten Termine",
+    "description": "Die nächsten fünf eigenen, offenen Termine innerhalb der kommenden 90 Tage.",
+    "aggregation": "COUNT",
+    "field": "handle",
+    "type": "CALENDAR",
+    "targetEntity": "event",
+    "groupBy": null,
+    "timeframe": null,
+    "timeframeField": null,
+    "filter": {
+      "status": {
+        "handle": {
+          "$nin": ["canceled", "completed"]
+        }
+      }
+    }
+  },
+  {
+    "name": "Meine bestätigten Termine",
+    "description": "Die nächsten fünf eigenen, bestätigten Termine innerhalb der kommenden 90 Tage.",
+    "aggregation": "COUNT",
+    "field": "handle",
+    "type": "CALENDAR",
+    "targetEntity": "event",
+    "groupBy": null,
+    "timeframe": null,
+    "timeframeField": null,
+    "filter": {
+      "status": {
+        "handle": "confirmed"
+      }
+    }
+  },
+  {
+    "name": "Meine nächsten Online-Termine",
+    "description": "Die nächsten fünf eigenen Online-Termine innerhalb der kommenden 90 Tage.",
+    "aggregation": "COUNT",
+    "field": "handle",
+    "type": "CALENDAR",
+    "targetEntity": "event",
+    "groupBy": null,
+    "timeframe": null,
+    "timeframeField": null,
+    "filter": {
+      "$and": [
+        {
+          "type": {
+            "handle": "online"
+          }
+        },
+        {
+          "status": {
+            "handle": {
+              "$nin": ["canceled", "completed"]
+            }
+          }
+        }
+      ]
+    }
+  }
+]

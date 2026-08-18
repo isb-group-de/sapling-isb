@@ -12,7 +12,7 @@
       :label="$t('formConfig.entity')"
       :loading="loadingEntities"
     />
-    <v-select
+    <v-autocomplete
       v-model="selectedConfigHandle"
       class="sapling-form-config__config-select"
       :items="configOptions"
@@ -40,7 +40,7 @@
       :label="$t('formConfig.name')"
       prepend-inner-icon="mdi-label-outline"
     />
-    <v-select
+    <v-autocomplete
       v-model="configScope"
       density="comfortable"
       :items="scopeOptions"

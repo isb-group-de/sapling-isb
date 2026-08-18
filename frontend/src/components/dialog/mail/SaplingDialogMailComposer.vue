@@ -1,8 +1,8 @@
 <template>
   <div class="sapling-message-dialog__form sapling-mail-dialog__form">
-    <v-select
+    <v-autocomplete
       :model-value="templateHandle"
-      :items="templates"
+      :items="sortedTemplates"
       item-title="name"
       item-value="handle"
       :label="translate('mail.template')"
@@ -16,7 +16,7 @@
       <span class="sapling-message-dialog__sender-label sapling-mail-dialog__sender-label">{{
         translate('document.from')
       }}</span>
-      <v-select
+      <v-autocomplete
         v-if="senderOptions.length > 1"
         class="sapling-message-dialog__sender-select sapling-mail-dialog__sender-select"
         :model-value="selectedSenderEmail"
@@ -147,6 +147,7 @@
 import { computed, nextTick, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import SaplingMarkdownField from '@/components/dialog/fields/SaplingFieldMarkdown.vue'
+import { sortSelectOptions } from '@/utils/saplingSelectOptions'
 import type {
   AttachmentOption,
   EmailTemplateItem,
@@ -207,8 +208,11 @@ const subjectSelectionEnd = ref(0)
 const senderFallbackLabel = computed(() =>
   locale.value === 'de' ? 'Keine Absenderadresse hinterlegt' : 'No sender address available',
 )
+const sortedTemplates = computed(() =>
+  sortSelectOptions(props.templates, (template) => template.name),
+)
 const senderItems = computed(() =>
-  props.senderOptions.map((option) => ({
+  sortSelectOptions(props.senderOptions, buildSenderTitle).map((option) => ({
     title: buildSenderTitle(option),
     value: option.email,
   })),

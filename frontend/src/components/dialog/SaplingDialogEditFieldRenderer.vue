@@ -218,7 +218,7 @@
       :rules="rules"
       @update:model-value="(val: string) => updateField(template.name, val)"
     />
-    <v-select
+    <v-autocomplete
       v-else-if="isRenderer('select') || template.customField?.type === 'select'"
       v-model:menu="customSelectMenuOpen"
       :label="requiredLabel"
@@ -234,7 +234,7 @@
       @keydown.tab="customSelectMenuOpen = false"
       @update:model-value="(val: unknown) => updateField(template.name, val)"
     />
-    <v-select
+    <v-autocomplete
       v-else-if="isRenderer('multiSelect') || template.customField?.type === 'multiSelect'"
       v-model:menu="customSelectMenuOpen"
       :label="requiredLabel"
