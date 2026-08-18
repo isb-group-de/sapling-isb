@@ -1,56 +1,73 @@
 <template>
-  <v-menu
-    v-model="menuOpen"
-    max-width="600px"
-    :close-on-content-click="false"
-    scroll-strategy="block"
+  <div
+    ref="fieldRootRef"
+    class="sapling-field-duplicate-check"
+    @focusout="closeMenuWhenFocusLeaves"
+    @keydown.tab.capture="closeMenuOnTab"
+    @keydown.esc="closeMenuOnEscape"
   >
-    <template #activator="{ props: activatorProps }">
-      <v-text-field
-        v-bind="activatorProps"
-        :label="label"
-        :placeholder="placeholder"
-        :disabled="disabled"
-        :rules="rules"
-        :required="required"
-        :model-value="inputValue"
-        @update:model-value="onSearchInput"
-        clearable
-        hide-details="auto"
-        autocomplete="off"
-      />
-    </template>
-    <div class="sapling-menu-surface sapling-menu-surface--field-table">
-      <sapling-table
-        class="glass-panel"
-        :entity-handle="entityHandle"
-        :items="items"
-        :search="tableSearch"
-        :page="page"
-        :items-per-page="itemsPerPage"
-        :total-items="totalItems"
-        :is-loading="isLoading"
-        :sort-by="sortBy"
-        :column-filters="columnFilters"
-        :active-filter="activeFilter"
-        :entity-templates="entityTemplates"
-        :entity="entity"
-        :entity-permission="entityPermission"
-        :show-actions="false"
-        :show-search="false"
-        :multi-select="false"
-        :table-key="entityHandle"
-        :selected="selectedItem ? [selectedItem] : []"
-        @update:page="onPageUpdate"
-        @update:items-per-page="onItemsPerPageUpdate"
-        @update:sort-by="onSortByUpdate"
-        @update:column-filters="onColumnFiltersUpdate"
-        @update:search="onSearchInput"
-        @reload="loadData"
-        @update:selected="onTableSelect"
-      />
-    </div>
-  </v-menu>
+    <v-menu
+      v-model="menuOpen"
+      max-width="600px"
+      :close-on-content-click="false"
+      scroll-strategy="block"
+    >
+      <template #activator="{ props: activatorProps }">
+        <v-text-field
+          v-bind="activatorProps"
+          :label="label"
+          :placeholder="placeholder"
+          :disabled="disabled"
+          :rules="rules"
+          :required="required"
+          :model-value="inputValue"
+          @keydown.down.prevent="focusFirstMenuRow"
+          @update:model-value="onSearchInput"
+          clearable
+          hide-details="auto"
+          autocomplete="off"
+        />
+      </template>
+      <div
+        ref="menuSurfaceRef"
+        class="sapling-menu-surface sapling-menu-surface--field-table"
+        @focusout="closeMenuWhenFocusLeaves"
+        @keydown.tab.capture="closeMenuOnTab"
+        @keydown.esc="closeMenuOnEscape"
+        @keydown.down.prevent="moveMenuRowFocus(1)"
+        @keydown.up.prevent="moveMenuRowFocus(-1)"
+      >
+        <sapling-table
+          class="glass-panel"
+          :entity-handle="entityHandle"
+          :items="items"
+          :search="tableSearch"
+          :page="page"
+          :items-per-page="itemsPerPage"
+          :total-items="totalItems"
+          :is-loading="isLoading"
+          :sort-by="sortBy"
+          :column-filters="columnFilters"
+          :active-filter="activeFilter"
+          :entity-templates="entityTemplates"
+          :entity="entity"
+          :entity-permission="entityPermission"
+          :show-actions="false"
+          :show-search="false"
+          :multi-select="false"
+          :table-key="entityHandle"
+          :selected="selectedItem ? [selectedItem] : []"
+          @update:page="onPageUpdate"
+          @update:items-per-page="onItemsPerPageUpdate"
+          @update:sort-by="onSortByUpdate"
+          @update:column-filters="onColumnFiltersUpdate"
+          @update:search="onSearchInput"
+          @reload="loadData"
+          @update:selected="onTableSelect"
+        />
+      </div>
+    </v-menu>
+  </div>
 </template>
 
 <script lang="ts" setup>
@@ -59,6 +76,7 @@ import type { SaplingGenericItem } from '@/entity/entity'
 import { useSaplingTable } from '@/composables/table/useSaplingTable'
 import { onBeforeUnmount, ref, watch } from 'vue'
 import type { EntityTemplate } from '@/entity/structure'
+import { useSaplingFieldDropdownFocus } from '@/composables/fields/useSaplingFieldDropdownFocus'
 
 const DUPLICATE_CHECK_SEARCH_DEBOUNCE_MS = 250
 
@@ -76,6 +94,15 @@ const props = defineProps<{
 const emit = defineEmits(['update:modelValue', 'select-record'])
 
 const menuOpen = ref(false)
+const {
+  fieldRootRef,
+  menuSurfaceRef,
+  closeMenuOnTab,
+  closeMenuOnEscape,
+  closeMenuWhenFocusLeaves,
+  focusFirstMenuRow,
+  moveMenuRowFocus,
+} = useSaplingFieldDropdownFocus(menuOpen)
 const inputValue = ref(typeof props.modelValue === 'string' ? props.modelValue : '')
 const tableSearch = ref(inputValue.value)
 const selectedItem = ref<SaplingGenericItem | null>(null)

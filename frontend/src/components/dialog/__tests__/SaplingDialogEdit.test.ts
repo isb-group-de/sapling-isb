@@ -1,4 +1,4 @@
-import { mount } from '@vue/test-utils'
+import { flushPromises, mount } from '@vue/test-utils'
 import { computed, nextTick, ref } from 'vue'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -76,6 +76,10 @@ function createDialogState() {
     isSaving: computed(() => false),
     unsavedChangesDialog: ref(false),
     pendingSaveAction: ref(null),
+    validationFeedback: ref<{
+      action: 'save' | 'saveAndClose'
+      attempt: number
+    } | null>(null),
     dirtyFieldCount: computed(() => 0),
     formConfigMenuItems: computed(() => []),
     selectedFormConfigLabel: computed(() => ''),
@@ -133,7 +137,10 @@ function mountDialog() {
         VWindowItem: { template: '<div><slot /></div>' },
         SaplingDialogCard: { template: '<div><slot /></div>' },
         SaplingDialogEditActions: { template: '<div />' },
-        SaplingDialogEditFormSections: { template: '<input data-test="first-field" />' },
+        SaplingDialogEditFormSections: {
+          template:
+            '<section data-dialog-group-id="main"><div data-dialog-field-name="title"><input data-test="first-field" class="v-input--error" aria-invalid="true" /></div></section>',
+        },
         SaplingDialogEditHeader: { template: '<div />' },
         SaplingDialogEditRelationTab: { template: '<div />' },
         SaplingDialogRecordActionDialogs: { template: '<div />' },
@@ -198,5 +205,52 @@ describe('SaplingDialogEdit', () => {
     await wrapper.getComponent({ name: 'VDialog' }).trigger('keydown', { key: 'Escape' })
 
     expect(state.cancel).toHaveBeenCalledOnce()
+  })
+
+  it('returns to the form tab, scrolls to and focuses the first invalid field', async () => {
+    const scrollDescriptor = Object.getOwnPropertyDescriptor(
+      HTMLElement.prototype,
+      'scrollIntoView',
+    )
+    const scrollIntoView = vi.fn()
+    const requestAnimationFrameSpy = vi
+      .spyOn(window, 'requestAnimationFrame')
+      .mockImplementation((callback) => {
+        callback(0)
+        return 1
+      })
+    Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
+      configurable: true,
+      value: scrollIntoView,
+    })
+
+    try {
+      const state = dialogHarness.state as ReturnType<typeof createDialogState>
+      state.isLoading.value = false
+      state.activeTab.value = 1
+      const wrapper = mountDialog()
+      await settleFocus()
+      const invalidField = wrapper.get('[data-test="first-field"]')
+      const focusSpy = vi.spyOn(invalidField.element as HTMLInputElement, 'focus')
+
+      state.validationFeedback.value = { action: 'save', attempt: 1 }
+      await nextTick()
+      await flushPromises()
+
+      expect(state.activeTab.value).toBe(0)
+      expect(scrollIntoView).toHaveBeenCalledWith({
+        behavior: 'smooth',
+        block: 'center',
+        inline: 'nearest',
+      })
+      expect(focusSpy).toHaveBeenCalledWith({ preventScroll: true })
+    } finally {
+      requestAnimationFrameSpy.mockRestore()
+      if (scrollDescriptor) {
+        Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', scrollDescriptor)
+      } else {
+        Reflect.deleteProperty(HTMLElement.prototype, 'scrollIntoView')
+      }
+    }
   })
 })

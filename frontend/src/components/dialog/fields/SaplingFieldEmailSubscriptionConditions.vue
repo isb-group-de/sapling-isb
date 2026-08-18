@@ -6,6 +6,7 @@
       class="sapling-email-conditions__row"
     >
       <v-select
+        :menu="isConditionMenuOpen(condition.key, 'field')"
         :label="t('emailSubscriptionCondition.observedField')"
         :items="conditionFields"
         :model-value="condition.observedField"
@@ -15,11 +16,14 @@
         density="compact"
         clearable
         :disabled="disabled || !selectedEntityHandle"
+        @update:menu="(open) => setConditionMenuOpen(condition.key, 'field', open)"
+        @keydown.tab="setConditionMenuOpen(condition.key, 'field', false)"
         @update:model-value="(value) => updateObservedField(index, normalizeString(value))"
       />
 
       <v-select
         v-if="isValueSelectionField(condition.observedField)"
+        :menu="isConditionMenuOpen(condition.key, 'oldValue')"
         :label="t('emailSubscriptionCondition.oldValue')"
         :model-value="condition.oldValue ?? null"
         :items="getValueOptions(condition.observedField)"
@@ -30,6 +34,8 @@
         clearable
         :type="getValueInputType(condition.observedField)"
         :disabled="disabled || !condition.observedField"
+        @update:menu="(open) => setConditionMenuOpen(condition.key, 'oldValue', open)"
+        @keydown.tab="setConditionMenuOpen(condition.key, 'oldValue', false)"
         @update:model-value="
           (value: unknown) => updateCondition(index, { oldValue: normalizeConditionValue(value) })
         "
@@ -50,6 +56,7 @@
 
       <v-select
         v-if="isValueSelectionField(condition.observedField)"
+        :menu="isConditionMenuOpen(condition.key, 'newValue')"
         :label="t('emailSubscriptionCondition.newValue')"
         :model-value="condition.newValue ?? null"
         :items="getValueOptions(condition.observedField)"
@@ -60,6 +67,8 @@
         clearable
         :type="getValueInputType(condition.observedField)"
         :disabled="disabled || !condition.observedField"
+        @update:menu="(open) => setConditionMenuOpen(condition.key, 'newValue', open)"
+        @keydown.tab="setConditionMenuOpen(condition.key, 'newValue', false)"
         @update:model-value="
           (value: unknown) => updateCondition(index, { newValue: normalizeConditionValue(value) })
         "
@@ -102,7 +111,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, watch } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { EntityTemplate } from '@/entity/structure'
 import type { SaplingGenericItem } from '@/entity/entity'
@@ -153,6 +162,7 @@ const genericStore = useGenericStore()
 const loadedEntityHandle = ref('')
 const localConditions = ref<EmailCondition[]>([])
 const valueOptionsByField = ref<Record<string, ValueOption[]>>({})
+const conditionMenus = reactive<Record<string, boolean>>({})
 const loadingValueOptions = new Set<string>()
 let conditionKeyCounter = 0
 
@@ -180,7 +190,7 @@ const conditionFields = computed<ConditionFieldOption[]>(() =>
   sourceTemplates.value
     .filter(isConditionFieldTemplate)
     .map((template) => ({
-      label: translateFieldLabel(loadedEntityHandle.value, template.name),
+      label: getConditionFieldLabel(loadedEntityHandle.value, template),
       value: template.name,
     }))
     .sort((left, right) => left.label.localeCompare(right.label)),
@@ -254,10 +264,28 @@ function updateCondition(index: number, patch: Partial<EmailCondition>): void {
 }
 
 function removeCondition(index: number): void {
+  const removedKey = localConditions.value[index]?.key
   localConditions.value = localConditions.value.filter(
     (_, conditionIndex) => conditionIndex !== index,
   )
+  if (removedKey) {
+    Object.keys(conditionMenus)
+      .filter((key) => key.startsWith(`${removedKey}:`))
+      .forEach((key) => delete conditionMenus[key])
+  }
   emitConditions()
+}
+
+function conditionMenuKey(conditionKey: string, field: string): string {
+  return `${conditionKey}:${field}`
+}
+
+function isConditionMenuOpen(conditionKey: string, field: string): boolean {
+  return conditionMenus[conditionMenuKey(conditionKey, field)] === true
+}
+
+function setConditionMenuOpen(conditionKey: string, field: string, open: boolean): void {
+  conditionMenus[conditionMenuKey(conditionKey, field)] = open
 }
 
 function emitConditions(): void {
@@ -339,6 +367,11 @@ function translateFieldLabel(entityHandle: string, fieldName: string): string {
   return te(translationKey) ? t(translationKey) : fieldName
 }
 
+function getConditionFieldLabel(entityHandle: string, template: EntityTemplate): string {
+  const configuredLabel = template.formConfig?.label?.trim()
+  return configuredLabel || translateFieldLabel(entityHandle, template.name)
+}
+
 function getSelectedFieldTemplate(fieldName: string): EntityTemplate | null {
   return sourceTemplates.value.find((template) => template.name === fieldName) ?? null
 }
@@ -350,7 +383,13 @@ function isValueSelectionField(fieldName: string): boolean {
     return false
   }
 
-  return template.kind === 'm:1' || template.kind === '1:1' || template.type === 'boolean'
+  return (
+    template.kind === 'm:1' ||
+    template.kind === '1:1' ||
+    template.type === 'boolean' ||
+    template.customField?.type === 'select' ||
+    template.customField?.type === 'multiSelect'
+  )
 }
 
 function getValueInputType(fieldName: string): string {
@@ -390,6 +429,13 @@ function getValueOptions(fieldName: string): ValueOption[] {
       { label: t('global.yes'), value: 'true' },
       { label: t('global.no'), value: 'false' },
     ]
+  }
+
+  if (template?.customField?.type === 'select' || template?.customField?.type === 'multiSelect') {
+    return (template.customField.options ?? []).map((option) => ({
+      label: option.label,
+      value: option.value,
+    }))
   }
 
   return valueOptionsByField.value[fieldName] ?? []
@@ -435,7 +481,10 @@ async function ensureValueOptions(fieldName: string): Promise<void> {
 }
 
 function isConditionFieldTemplate(template: EntityTemplate): boolean {
-  if (template.isPersistent === false || template.isPrimaryKey === true) {
+  if (
+    (template.isPersistent === false && !template.customField) ||
+    template.isPrimaryKey === true
+  ) {
     return false
   }
 

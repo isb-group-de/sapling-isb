@@ -184,6 +184,7 @@ export function useSaplingDialogEdit(
 
   const {
     pendingSaveAction,
+    validationFeedback,
     unsavedChangesDialog,
     isSaving,
     completeSave,
@@ -547,6 +548,7 @@ export function useSaplingDialogEdit(
     isSaving,
     unsavedChangesDialog,
     pendingSaveAction,
+    validationFeedback,
     dirtyFieldCount,
     formConfigMenuItems,
     selectedFormConfigLabel,

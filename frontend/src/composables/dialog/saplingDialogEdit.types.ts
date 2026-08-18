@@ -12,6 +12,11 @@ export type VuetifyFormRef = {
   resetValidation?: () => void
 }
 
+export type SaplingDialogValidationFeedback = {
+  action: DialogSaveAction
+  attempt: number
+}
+
 export type SaplingDialogEditEmit = {
   (event: 'update:modelValue', value: boolean): void
   (

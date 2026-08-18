@@ -3,7 +3,11 @@ import type { EntityItem, SaplingGenericItem } from '@/entity/entity'
 import type { DialogSaveAction, DialogState } from '@/entity/structure'
 import ApiGenericService from '@/services/api.generic.service'
 import { isFormValid } from './saplingDialogEdit.utils'
-import type { SaplingDialogEditEmit, VuetifyFormRef } from './saplingDialogEdit.types'
+import type {
+  SaplingDialogEditEmit,
+  SaplingDialogValidationFeedback,
+  VuetifyFormRef,
+} from './saplingDialogEdit.types'
 
 export function useSaplingDialogEditActions({
   mode,
@@ -29,8 +33,10 @@ export function useSaplingDialogEditActions({
   initializeFormWithParentContext: () => void
 }) {
   const pendingSaveAction = ref<DialogSaveAction | null>(null)
+  const validationFeedback = ref<SaplingDialogValidationFeedback | null>(null)
   const unsavedChangesDialog = ref(false)
   const isSaving = computed(() => pendingSaveAction.value !== null)
+  let validationAttempt = 0
 
   function completeSave(action?: DialogSaveAction): void {
     if (!action || pendingSaveAction.value === action) {
@@ -66,11 +72,14 @@ export function useSaplingDialogEditActions({
   async function prepareSubmit(action: DialogSaveAction): Promise<SaplingGenericItem | null> {
     if (!isDirty.value || isSaving.value) return null
 
+    validationFeedback.value = null
     pendingSaveAction.value = action
     await waitForUiPaint()
     const result = await formRef.value?.validate()
     if (!isFormValid(result)) {
       completeSave(action)
+      validationAttempt += 1
+      validationFeedback.value = { action, attempt: validationAttempt }
       return null
     }
     return buildSavePayload()
@@ -93,6 +102,7 @@ export function useSaplingDialogEditActions({
 
   function resetForm(): void {
     if (!isDirty.value) return
+    validationFeedback.value = null
     resetRelationSelections()
     activeTab.value = 0
     initializeFormWithParentContext()
@@ -101,6 +111,7 @@ export function useSaplingDialogEditActions({
 
   function closeDialog(): void {
     pendingSaveAction.value = null
+    validationFeedback.value = null
     unsavedChangesDialog.value = false
     emit('update:modelValue', false)
     emit('cancel')
@@ -138,6 +149,7 @@ export function useSaplingDialogEditActions({
 
   return {
     pendingSaveAction,
+    validationFeedback,
     unsavedChangesDialog,
     isSaving,
     completeSave,

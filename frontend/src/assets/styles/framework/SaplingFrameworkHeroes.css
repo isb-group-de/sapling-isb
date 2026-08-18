@@ -313,6 +313,21 @@
   opacity: var(--sapling-opacity-secondary);
 }
 
+@media (max-width: 1600px) {
+  .sapling-dialog-edit-hero {
+    gap: var(--sapling-gap-md);
+    padding: var(--sapling-space-panel-md);
+  }
+
+  .sapling-dialog-edit-hero__copy {
+    gap: var(--sapling-gap-sm);
+  }
+
+  .sapling-dialog-edit-hero__title {
+    font-size: clamp(1.45rem, 2vw, 1.9rem);
+  }
+}
+
 @media (max-width: 900px) {
   .sapling-page-hero {
     grid-template-columns: minmax(0, 1fr);

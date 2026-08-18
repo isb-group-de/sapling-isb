@@ -1,5 +1,6 @@
 <template>
   <v-select
+    v-model:menu="menuOpen"
     :label="label"
     :items="recipientFields"
     :model-value="modelValue"
@@ -8,6 +9,7 @@
     item-title="label"
     item-value="value"
     hide-details="auto"
+    @keydown.tab="menuOpen = false"
     @update:model-value="(value) => emit('update:modelValue', value)"
   />
 </template>
@@ -40,6 +42,7 @@ const emit = defineEmits<{
 const { t, te } = useI18n()
 const genericStore = useGenericStore()
 const loadedEntityHandle = ref('')
+const menuOpen = ref(false)
 
 const selectedEntityHandle = computed(() => {
   const value = props.entityReference

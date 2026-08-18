@@ -114,6 +114,12 @@
             min-width="260"
           >
             <v-list-item
+              data-dialog-save-action="saveAndClose"
+              aria-keyshortcuts="Control+Enter Meta+Enter"
+              :class="{
+                'sapling-dialog-edit-save-action--validation-error':
+                  pulsingSaveAction === 'saveAndClose',
+              }"
               prepend-icon="mdi-content-save-check"
               :title="t('global.saveAndClose')"
               :disabled="!isDirty || isSaving"
@@ -152,7 +158,12 @@
         </v-menu>
 
         <v-btn
+          data-dialog-save-action="save"
+          aria-keyshortcuts="Control+S Meta+S"
           class="sapling-mobile-primary-action sapling-dialog-edit__mobile-primary-action"
+          :class="{
+            'sapling-dialog-edit-save-action--validation-error': pulsingSaveAction === 'save',
+          }"
           color="primary"
           prepend-icon="mdi-content-save"
           :disabled="!isDirty || isSaving"
@@ -203,6 +214,11 @@
           <template v-if="mdAndUp">{{ resetButtonLabel }}</template>
         </v-btn>
         <v-btn
+          data-dialog-save-action="save"
+          aria-keyshortcuts="Control+S Meta+S"
+          :class="{
+            'sapling-dialog-edit-save-action--validation-error': pulsingSaveAction === 'save',
+          }"
           color="primary"
           append-icon="mdi-content-save"
           :disabled="!isDirty || isSaving"
@@ -212,6 +228,12 @@
           <template v-if="mdAndUp">{{ t('global.save') }}</template>
         </v-btn>
         <v-btn
+          data-dialog-save-action="saveAndClose"
+          aria-keyshortcuts="Control+Enter Meta+Enter"
+          :class="{
+            'sapling-dialog-edit-save-action--validation-error':
+              pulsingSaveAction === 'saveAndClose',
+          }"
           color="primary"
           variant="tonal"
           append-icon="mdi-content-save-check"
@@ -227,6 +249,7 @@
 </template>
 
 <script lang="ts" setup>
+import { nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { useDisplay } from 'vuetify'
 import { useI18n } from 'vue-i18n'
 import type { DialogSaveAction, DialogState } from '@/entity/structure'
@@ -237,13 +260,15 @@ import type {
 import SaplingRecordActionMenuList from '@/components/common/SaplingRecordActionMenuList.vue'
 import SaplingActionBar from '@/components/actions/SaplingActionBar.vue'
 import SaplingActionBarSkeleton from '@/components/actions/SaplingActionBarSkeleton.vue'
+import type { SaplingDialogValidationFeedback } from '@/composables/dialog/saplingDialogEdit.types'
 
-defineProps<{
+const props = defineProps<{
   mode: DialogState
   isLoading: boolean
   isDirty: boolean
   isSaving: boolean
   pendingSaveAction: DialogSaveAction | null
+  validationFeedback: SaplingDialogValidationFeedback | null
   canDeleteRecord: boolean
   recordActionButtonsDisabled: boolean
   editMobileSecondaryActionsDisabled: boolean
@@ -264,6 +289,37 @@ const emit = defineEmits<{
 
 const { t, te } = useI18n()
 const { mdAndUp, smAndDown } = useDisplay()
+const pulsingSaveAction = ref<DialogSaveAction | null>(null)
+let validationPulseTimer: ReturnType<typeof setTimeout> | null = null
+
+watch(
+  () => props.validationFeedback?.attempt,
+  async (attempt) => {
+    if (validationPulseTimer) {
+      clearTimeout(validationPulseTimer)
+      validationPulseTimer = null
+    }
+
+    pulsingSaveAction.value = null
+    if (!attempt || !props.validationFeedback) {
+      return
+    }
+
+    await nextTick()
+    pulsingSaveAction.value = props.validationFeedback.action
+    validationPulseTimer = setTimeout(() => {
+      pulsingSaveAction.value = null
+      validationPulseTimer = null
+    }, 1000)
+  },
+  { flush: 'post' },
+)
+
+onBeforeUnmount(() => {
+  if (validationPulseTimer) {
+    clearTimeout(validationPulseTimer)
+  }
+})
 
 function resolveRecordActionMenuTitle(menuItem: SaplingContextMenuTableMenuItem): string {
   if (menuItem.titleKey) {

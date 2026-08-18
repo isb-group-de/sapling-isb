@@ -1,5 +1,6 @@
 <template>
   <v-select
+    v-model:menu="menuOpen"
     :label="label"
     :model-value="normalizedValue"
     :items="durationOptions"
@@ -9,12 +10,13 @@
     hide-details="auto"
     :disabled="disabled"
     :rules="rules"
+    @keydown.tab="menuOpen = false"
     @update:model-value="(value: string | null) => emit('update:modelValue', value || '00:00:00')"
   />
 </template>
 
 <script lang="ts" setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 
 const props = defineProps<{
   label: string
@@ -26,6 +28,8 @@ const props = defineProps<{
 const emit = defineEmits<{
   (event: 'update:modelValue', value: string): void
 }>()
+
+const menuOpen = ref(false)
 
 const durationOptions = Array.from({ length: 96 }, (_, index) => {
   const totalMinutes = index * 15

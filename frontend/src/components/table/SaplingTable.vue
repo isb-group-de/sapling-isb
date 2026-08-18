@@ -679,4 +679,6 @@ function onImportFileInputChange(event: Event): void {
   }
 }
 // #endregion
+
+defineExpose({ openCreateDialog })
 </script>

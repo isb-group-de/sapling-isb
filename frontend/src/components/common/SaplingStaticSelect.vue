@@ -1,5 +1,6 @@
 <template>
   <v-select
+    v-model:menu="menuOpen"
     :model-value="modelValue"
     :items="items"
     :label="label"
@@ -8,11 +9,14 @@
     :hide-details="hideDetails"
     :density="density"
     :variant="variant"
+    @keydown.tab="menuOpen = false"
     @update:model-value="emit('update:modelValue', $event)"
   />
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
+
 interface StaticSelectItem {
   title: string
   value: unknown
@@ -43,4 +47,6 @@ withDefaults(
 const emit = defineEmits<{
   (event: 'update:modelValue', value: unknown): void
 }>()
+
+const menuOpen = ref(false)
 </script>

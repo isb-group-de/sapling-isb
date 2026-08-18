@@ -62,6 +62,11 @@ const VMenuStub = defineComponent({
   name: 'VMenu',
   props: {
     modelValue: Boolean,
+    width: String,
+    maxWidth: String,
+    maxHeight: String,
+    location: String,
+    scrollStrategy: String,
   },
   template: '<div><slot name="activator" :props="{}" /><slot /></div>',
 })
@@ -88,7 +93,8 @@ const SaplingTableStub = defineComponent({
     disableMobileView: Boolean,
   },
   emits: ['update:selected'],
-  template: '<div />',
+  template:
+    '<div><button class="sapling-table-row" data-test="result-row-1" /><button class="sapling-table-row" data-test="result-row-2" /></div>',
 })
 
 function mountSelectField(
@@ -184,6 +190,18 @@ describe('SaplingFieldSelect', () => {
     expect(wrapper.findComponent(SaplingTableStub).props('disableMobileView')).toBe(true)
   })
 
+  it('constrains and repositions the dropdown within zoomed viewports', () => {
+    const menu = mountSelectField().findComponent(VMenuStub)
+
+    expect(menu.props()).toMatchObject({
+      width: 'min(600px, calc(100vw - 2rem))',
+      maxWidth: 'min(600px, calc(100vw - 2rem))',
+      maxHeight: 'min(22rem, 48dvh)',
+      location: 'bottom start',
+      scrollStrategy: 'reposition',
+    })
+  })
+
   it('opens and closes the dropdown from the same toggle button', async () => {
     const wrapper = mountSelectField()
     const menu = wrapper.findComponent(VMenuStub)
@@ -196,5 +214,51 @@ describe('SaplingFieldSelect', () => {
 
     await toggle.trigger('click')
     expect(menu.props('modelValue')).toBe(false)
+  })
+
+  it('closes the dropdown on Tab and when focus moves to another field', async () => {
+    const wrapper = mountSelectField()
+    const autocomplete = wrapper.findComponent(VAutocompleteStub)
+    const menu = wrapper.findComponent(VMenuStub)
+
+    await autocomplete.vm.$emit('focus')
+    expect(menu.props('modelValue')).toBe(true)
+
+    await wrapper.get('.sapling-field-select').trigger('keydown', { key: 'Tab' })
+    expect(menu.props('modelValue')).toBe(false)
+
+    await autocomplete.vm.$emit('focus')
+    const nextField = document.createElement('input')
+    await wrapper.get('.sapling-field-select').trigger('focusout', { relatedTarget: nextField })
+
+    expect(menu.props('modelValue')).toBe(false)
+  })
+
+  it('keeps the dropdown open when focus moves into its menu surface', async () => {
+    const wrapper = mountSelectField()
+    const autocomplete = wrapper.findComponent(VAutocompleteStub)
+    const menu = wrapper.findComponent(VMenuStub)
+    const menuSurface = wrapper.get('.sapling-menu-surface')
+
+    await autocomplete.vm.$emit('focus')
+    await wrapper
+      .get('.sapling-field-select')
+      .trigger('focusout', { relatedTarget: menuSurface.element })
+
+    expect(menu.props('modelValue')).toBe(true)
+  })
+
+  it('moves keyboard focus from the input into the first result row', async () => {
+    const wrapper = mountSelectField()
+    const autocomplete = wrapper.findComponent(VAutocompleteStub)
+    await autocomplete.vm.$emit('focus')
+    await nextTick()
+    const firstRow = wrapper.get('[data-test="result-row-1"]')
+    const focusSpy = vi.spyOn(firstRow.element as HTMLButtonElement, 'focus')
+
+    await autocomplete.trigger('keydown', { key: 'ArrowDown' })
+    await nextTick()
+
+    expect(focusSpy).toHaveBeenCalledWith({ preventScroll: true })
   })
 })

@@ -480,6 +480,28 @@ the framework contract in `SaplingFrameworkTabs.css`. Feature classes such as
 dashboard, note, permission, AI-agent, account, inbox, and record-dialog tabs
 may add domain layout such as minimum label width, but they must not redefine
 the shared height, gap, radius, selected fill, typography, or active inset.
+Relation entries in `SaplingDialogEdit` use the icon from their referenced
+entity metadata. Their visible relation badge and semantic color distinguish
+one-to-many (`1:m`) from many-to-many (`m:n`, including inverse `n:m`) relations.
+Failed record validation returns the dialog to the form tab, expands the group
+containing the first invalid field, scrolls that field into view, and focuses it.
+The invoked save action pulses twice in the error color; reduced-motion clients
+receive the same feedback as a temporary static highlight.
+Reference and static-select dropdowns close when keyboard focus leaves their
+field, including Tab navigation, while focus moving into a teleported dropdown
+surface keeps the menu open. Record and relation navigation follows the tablist
+keyboard pattern: arrow keys change tabs, Home selects the record tab, and End
+selects the last available relation.
+Tabular reference dropdowns move focus from the input to their first result with
+Arrow Down. Arrow Up/Down then traverses result rows, Space selects the focused
+row, and Escape closes the dropdown before the dialog itself handles Escape.
+At effective viewport widths up to 1600 CSS pixels (including browser zoom),
+`SaplingDialogEdit` moves its relation navigation above the content and reduces
+workspace spacing. Narrower relation views stack add/remove controls, and
+tabular reference dropdowns use viewport-relative width and height limits.
+Relation tabs expose the shared table create workflow when the target entity
+and current user allow inserts. A separate header action opens the target
+entity's configured table route, with `/table/<entity>` as fallback.
 Compact `v-btn-toggle` controls use `sapling-segmented-toggle`; only the shared
 `--small` and `--field` modifiers may change their height to match a compact
 helper row or a full-height form control.

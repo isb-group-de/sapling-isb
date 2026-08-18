@@ -4,6 +4,7 @@
       v-for="group in groups"
       :key="group.id"
       class="sapling-section-panel sapling-record-section sapling-dialog-edit-section"
+      :data-dialog-group-id="group.id"
       :class="{
         'sapling-dialog-edit-section--collapsed': group.label && !isGroupExpanded(group.id),
         'sapling-record-section--dirty': mode !== 'readonly' && isGroupDirty(group.templates),
@@ -45,6 +46,7 @@
             >
               <div
                 class="sapling-record-field-shell sapling-dialog-edit-field-shell"
+                :data-dialog-field-name="template.name"
                 :class="{
                   'sapling-record-field-shell--dirty':
                     mode !== 'readonly' && isTemplateDirty(template),

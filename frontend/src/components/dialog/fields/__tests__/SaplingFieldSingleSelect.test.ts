@@ -449,4 +449,18 @@ describe('SaplingFieldSingleSelect reference dialog', () => {
     expect(wrapper.findComponent(SaplingDialogEditStub).exists()).toBe(true)
     expect(pushMessageMock).not.toHaveBeenCalled()
   })
+
+  it('closes the reference dropdown when Tab leaves the field', async () => {
+    const wrapper = mountField()
+    const autocomplete = wrapper.getComponent(VAutocompleteStub)
+    const menu = wrapper.getComponent(VMenuStub)
+
+    autocomplete.vm.$emit('focus')
+    await nextTick()
+    expect(menu.props('modelValue')).toBe(true)
+
+    await wrapper.get('.sapling-field-single-select').trigger('keydown', { key: 'Tab' })
+
+    expect(menu.props('modelValue')).toBe(false)
+  })
 })

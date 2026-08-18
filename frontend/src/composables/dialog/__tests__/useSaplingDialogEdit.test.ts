@@ -16,6 +16,7 @@ const {
   extractDependencyIdentifierMock,
   applyReferenceDependencyParentMock,
   findSingleReferenceForDependencyMock,
+  validateFormMock,
 } = vi.hoisted(() => ({
   fetchCurrentPersonMock: vi.fn(),
   fetchCurrentPermissionMock: vi.fn(),
@@ -27,6 +28,7 @@ const {
   extractDependencyIdentifierMock: vi.fn(),
   applyReferenceDependencyParentMock: vi.fn(),
   findSingleReferenceForDependencyMock: vi.fn(),
+  validateFormMock: vi.fn(),
 }))
 
 vi.mock('vue-i18n', () => ({
@@ -222,7 +224,7 @@ const TestHost = defineComponent({
     )
 
     dialog.formRef.value = {
-      validate: async () => ({ valid: true }),
+      validate: validateFormMock,
     }
 
     return {
@@ -230,6 +232,8 @@ const TestHost = defineComponent({
       discardChanges: dialog.discardChanges,
       keepEditing: dialog.keepEditing,
       saveAndClose: dialog.saveAndClose,
+      save: dialog.save,
+      validationFeedback: dialog.validationFeedback,
       unsavedChangesDialog: dialog.unsavedChangesDialog,
       formConfigMenuItems: dialog.formConfigMenuItems,
       selectedFormConfigLabel: dialog.selectedFormConfigLabel,
@@ -255,6 +259,7 @@ describe('useSaplingDialogEdit', () => {
     extractDependencyIdentifierMock.mockReset()
     applyReferenceDependencyParentMock.mockReset()
     findSingleReferenceForDependencyMock.mockReset()
+    validateFormMock.mockReset()
     fetchCurrentPersonMock.mockResolvedValue(undefined)
     fetchCurrentPermissionMock.mockResolvedValue(undefined)
     listFormConfigsMock.mockResolvedValue([])
@@ -271,6 +276,7 @@ describe('useSaplingDialogEdit', () => {
       return value ?? null
     })
     findSingleReferenceForDependencyMock.mockResolvedValue(null)
+    validateFormMock.mockResolvedValue({ valid: true })
   })
 
   it('disables every primary key outside create mode', () => {
@@ -305,6 +311,26 @@ describe('useSaplingDialogEdit', () => {
     expect(wrapper.emitted('save')).toHaveLength(1)
     expect(wrapper.emitted('save')?.[0]?.[1]).toBe('saveAndClose')
     expect(wrapper.emitted('update:modelValue')).toBeUndefined()
+  })
+
+  it('reports the invoked save action after every failed validation attempt', async () => {
+    validateFormMock.mockResolvedValue({ valid: false, errors: [{ id: 'title' }] })
+    const wrapper = mount(TestHost)
+    const vm = wrapper.vm as unknown as {
+      save: () => Promise<void>
+      saveAndClose: () => Promise<void>
+      validationFeedback: { action: 'save' | 'saveAndClose'; attempt: number } | null
+    }
+
+    await vm.save()
+
+    expect(wrapper.emitted('save')).toBeUndefined()
+    expect(vm.validationFeedback).toEqual({ action: 'save', attempt: 1 })
+
+    await vm.saveAndClose()
+
+    expect(wrapper.emitted('save')).toBeUndefined()
+    expect(vm.validationFeedback).toEqual({ action: 'saveAndClose', attempt: 2 })
   })
 
   it('asks for confirmation before cancelling a dirty dialog', async () => {

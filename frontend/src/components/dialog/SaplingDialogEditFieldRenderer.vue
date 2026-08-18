@@ -220,6 +220,7 @@
     />
     <v-select
       v-else-if="isRenderer('select') || template.customField?.type === 'select'"
+      v-model:menu="customSelectMenuOpen"
       :label="requiredLabel"
       :model-value="stringValue(template.name) || null"
       :items="customFieldOptions"
@@ -230,10 +231,12 @@
       clearable
       :disabled="fieldDisabled"
       :rules="rules"
+      @keydown.tab="customSelectMenuOpen = false"
       @update:model-value="(val: unknown) => updateField(template.name, val)"
     />
     <v-select
       v-else-if="isRenderer('multiSelect') || template.customField?.type === 'multiSelect'"
+      v-model:menu="customSelectMenuOpen"
       :label="requiredLabel"
       :model-value="arrayValue(template.name)"
       :items="customFieldOptions"
@@ -246,6 +249,7 @@
       clearable
       :disabled="fieldDisabled"
       :rules="rules"
+      @keydown.tab="customSelectMenuOpen = false"
       @update:model-value="(val: unknown) => updateField(template.name, val)"
     />
     <SaplingJsonField
@@ -306,7 +310,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, defineAsyncComponent } from 'vue'
+import { computed, defineAsyncComponent, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { FilterQuery } from '@/services/api.generic.service'
 import type { AccumulatedPermission, DialogState, EntityTemplate } from '@/entity/structure'
@@ -419,6 +423,7 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+const customSelectMenuOpen = ref(false)
 
 const configuredRenderer = computed(() => props.template.formConfig?.renderer ?? null)
 const isRequired = computed(() => {

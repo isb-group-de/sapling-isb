@@ -9,13 +9,43 @@
           class="sapling-section-panel sapling-record-relation-content sapling-dialog-edit-relation-content"
         >
           <div class="sapling-record-relation-overview">
-            <div class="sapling-record-relation-summary">
-              <div class="sapling-record-relation-summary__icon" aria-hidden="true">
-                <v-icon size="22">mdi-link-variant</v-icon>
+            <div class="sapling-record-relation-overview__header">
+              <div class="sapling-record-relation-summary">
+                <div class="sapling-record-relation-summary__icon" aria-hidden="true">
+                  <v-icon size="22">mdi-link-variant</v-icon>
+                </div>
+                <div class="sapling-record-relation-summary__copy">
+                  <span class="sapling-record-relation-summary__eyebrow">{{ entityLabel }}</span>
+                  <h3 class="sapling-record-relation-summary__title">{{ relationLabel }}</h3>
+                </div>
               </div>
-              <div class="sapling-record-relation-summary__copy">
-                <span class="sapling-record-relation-summary__eyebrow">{{ entityLabel }}</span>
-                <h3 class="sapling-record-relation-summary__title">{{ relationLabel }}</h3>
+
+              <div class="sapling-record-relation-overview__actions">
+                <v-btn
+                  v-if="canCreateRelationRecord"
+                  data-testid="relation-create-record"
+                  size="small"
+                  color="primary"
+                  variant="tonal"
+                  prepend-icon="mdi-plus"
+                  :disabled="isMutating || isInitialLoading"
+                  @click="openCreateRelationRecord"
+                >
+                  {{ t('global.createRecord') }}
+                </v-btn>
+                <v-btn
+                  v-if="relationEntityPath"
+                  data-testid="relation-open-entity"
+                  size="small"
+                  color="primary"
+                  variant="text"
+                  append-icon="mdi-arrow-top-right"
+                  :disabled="isMutating"
+                  :title="`${t('kpi.openEntity')}: ${relationLabel}`"
+                  @click="navigateToRelationEntity"
+                >
+                  {{ relationLabel }}
+                </v-btn>
               </div>
             </div>
 
@@ -106,6 +136,7 @@
               type="table"
             />
             <SaplingTable
+              ref="relationTableRef"
               v-else
               :headers="headers"
               :items="items"
@@ -149,8 +180,9 @@
 </template>
 
 <script lang="ts" setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 import SaplingSelectAddField from '@/components/dialog/fields/SaplingFieldSelectAdd.vue'
 import SaplingTable from '@/components/table/SaplingTable.vue'
 import type { EntityItem, SaplingGenericItem } from '@/entity/entity'
@@ -189,6 +221,8 @@ const props = defineProps<{
 }>()
 
 const { t } = useI18n()
+const router = useRouter()
+const relationTableRef = ref<{ openCreateDialog: () => void } | null>(null)
 const relationLabel = computed(() => t(`${props.entityHandle}.${props.template.name}`))
 const isReadOnlyRelation = computed(
   () =>
@@ -196,6 +230,44 @@ const isReadOnlyRelation = computed(
     props.template.fieldAccess?.allowUpdate === false ||
     (props.template.options?.includes('isReadOnly') ?? false),
 )
+const targetEntityHandle = computed(() => props.template.referenceName?.trim() ?? '')
+const canCreateRelationRecord = computed(
+  () =>
+    !isReadOnlyRelation.value &&
+    Boolean(targetEntityHandle.value) &&
+    Boolean(props.relationEntity?.canInsert) &&
+    Boolean(props.entityPermission?.allowInsert),
+)
+const relationEntityPath = computed(() => {
+  const entityHandle = targetEntityHandle.value
+  if (!entityHandle || props.entityPermission?.allowRead === false) {
+    return ''
+  }
+
+  const tableRoute = `table/${entityHandle}`
+  const configuredRoute = props.relationEntity?.routes?.find(
+    (route) => route.route?.replace(/^\/+/, '') === tableRoute,
+  )
+  const fallbackRoute = props.relationEntity?.routes?.find((route) => Boolean(route.route))
+  const route = configuredRoute?.route || fallbackRoute?.route || tableRoute
+  return route.startsWith('/') ? route : `/${route}`
+})
+
+function openCreateRelationRecord(): void {
+  if (!canCreateRelationRecord.value) {
+    return
+  }
+
+  relationTableRef.value?.openCreateDialog()
+}
+
+async function navigateToRelationEntity(): Promise<void> {
+  if (!relationEntityPath.value) {
+    return
+  }
+
+  await router.push(relationEntityPath.value)
+}
 
 const emit = defineEmits<{
   (event: 'update:selected-relations', value: SaplingGenericItem[]): void

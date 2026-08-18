@@ -1,111 +1,129 @@
 <template>
-  <v-menu
-    v-model="menuOpen"
-    max-width="600px"
-    :close-on-content-click="false"
-    :open-on-click="false"
-    scroll-strategy="block"
+  <div
+    ref="fieldRootRef"
+    class="sapling-field-select"
+    @focusout="closeMenuWhenFocusLeaves"
+    @keydown.tab.capture="closeMenuOnTab"
+    @keydown.esc="closeMenuOnEscape"
   >
-    <template #activator="{ props: activatorProps }">
-      <div v-bind="activatorProps" class="sapling-field-select__activator">
-        <v-autocomplete
-          :disabled="props.disabled"
-          :label="props.label"
-          :items="autocompleteItems"
-          :rules="props.rules"
-          :model-value="selectedItems"
-          :item-title="getAutocompleteItemTitle"
-          :search="fieldSearch"
-          :menu="false"
-          menu-icon=""
-          :density="props.density"
-          :hide-details="props.hideDetails"
-          return-object
-          multiple
-          chips
-          closable-chips
-          clearable
-          hide-no-data
-          no-filter
-          autocomplete="off"
-          @focus="openMenu"
-          @mousedown:control="openMenu"
-          @click:clear="clearSelection"
-          @update:menu="closeAutocompleteMenu"
-          @update:model-value="onActivatorModelUpdate"
-          @update:search="onActivatorSearchUpdate"
-        >
-          <template #chip="{ props: chipProps, item }">
-            <v-chip v-bind="chipProps" class="sapling-field-select__chip">
-              <span class="sapling-field-select__selection">
-                <span
-                  v-for="line in getAutocompleteItemLines(item)"
-                  :key="`${line.isReference}:${line.value}`"
-                  class="sapling-field-select__selection-line"
-                  :class="{
-                    'sapling-field-select__selection-line--reference': line.isReference,
-                  }"
-                >
-                  {{ line.value }}
-                </span>
-              </span>
-            </v-chip>
-          </template>
-          <template #append-inner>
-            <v-btn
-              class="sapling-field-select__menu-toggle"
-              data-testid="toggle-reference-menu"
-              icon
-              size="small"
-              variant="text"
-              :disabled="props.disabled"
-              :aria-label="props.label"
-              :title="props.label"
-              @mousedown.stop
-              @click.stop="toggleMenu"
-            >
-              <v-icon>{{ menuOpen ? 'mdi-menu-up' : 'mdi-menu-down' }}</v-icon>
-            </v-btn>
-          </template>
-        </v-autocomplete>
-      </div>
-    </template>
-    <div
-      class="glass-panel sapling-menu-surface sapling-menu-surface--field-table"
-      @mousedown.capture="suppressNextActivatorSearchUpdate"
+    <v-menu
+      v-model="menuOpen"
+      width="min(600px, calc(100vw - 2rem))"
+      max-width="min(600px, calc(100vw - 2rem))"
+      max-height="min(22rem, 48dvh)"
+      :close-on-content-click="false"
+      :open-on-click="false"
+      location="bottom start"
+      scroll-strategy="reposition"
     >
-      <sapling-table
-        v-if="menuOpen"
-        :entity-handle="entityHandle"
-        :items="items"
-        :search="search"
-        :page="page"
-        :items-per-page="itemsPerPage"
-        :total-items="totalItems"
-        :is-loading="isLoading"
-        :is-initialized="isInitialized"
-        :sort-by="sortBy"
-        :column-filters="columnFilters"
-        :active-filter="activeFilter"
-        :entity-templates="entityTemplates"
-        :entity="entity"
-        :entity-permission="entityPermission"
-        :show-actions="false"
-        :show-search="false"
-        :multi-select="true"
-        :disable-mobile-view="disableDropdownMobileView"
-        :table-key="entityHandle"
-        :selected="selectedItems"
-        @update:page="onPageUpdate"
-        @update:items-per-page="onItemsPerPageUpdate"
-        @update:sort-by="onSortByUpdate"
-        @update:column-filters="onColumnFiltersUpdate"
-        @update:search="onSearchUpdate"
-        @reload="loadData"
-        @update:selected="onTableSelect"
-      />
-    </div>
-  </v-menu>
+      <template #activator="{ props: activatorProps }">
+        <div v-bind="activatorProps" class="sapling-field-select__activator">
+          <v-autocomplete
+            :disabled="props.disabled"
+            :label="props.label"
+            :items="autocompleteItems"
+            :rules="props.rules"
+            :model-value="selectedItems"
+            :item-title="getAutocompleteItemTitle"
+            :search="fieldSearch"
+            :menu="false"
+            menu-icon=""
+            :density="props.density"
+            :hide-details="props.hideDetails"
+            return-object
+            multiple
+            chips
+            closable-chips
+            clearable
+            hide-no-data
+            no-filter
+            autocomplete="off"
+            @keydown.down.prevent="focusFirstMenuRow"
+            @focus="openMenu"
+            @mousedown:control="openMenu"
+            @click:clear="clearSelection"
+            @update:menu="closeAutocompleteMenu"
+            @update:model-value="onActivatorModelUpdate"
+            @update:search="onActivatorSearchUpdate"
+          >
+            <template #chip="{ props: chipProps, item }">
+              <v-chip v-bind="chipProps" class="sapling-field-select__chip">
+                <span class="sapling-field-select__selection">
+                  <span
+                    v-for="line in getAutocompleteItemLines(item)"
+                    :key="`${line.isReference}:${line.value}`"
+                    class="sapling-field-select__selection-line"
+                    :class="{
+                      'sapling-field-select__selection-line--reference': line.isReference,
+                    }"
+                  >
+                    {{ line.value }}
+                  </span>
+                </span>
+              </v-chip>
+            </template>
+            <template #append-inner>
+              <v-btn
+                class="sapling-field-select__menu-toggle"
+                data-testid="toggle-reference-menu"
+                icon
+                size="small"
+                variant="text"
+                :disabled="props.disabled"
+                :aria-label="props.label"
+                :title="props.label"
+                @mousedown.stop
+                @click.stop="toggleMenu"
+              >
+                <v-icon>{{ menuOpen ? 'mdi-menu-up' : 'mdi-menu-down' }}</v-icon>
+              </v-btn>
+            </template>
+          </v-autocomplete>
+        </div>
+      </template>
+      <div
+        ref="menuSurfaceRef"
+        class="glass-panel sapling-menu-surface sapling-menu-surface--field-table"
+        @focusout="closeMenuWhenFocusLeaves"
+        @keydown.tab.capture="closeMenuOnTab"
+        @keydown.esc="closeMenuOnEscape"
+        @keydown.down.prevent="moveMenuRowFocus(1)"
+        @keydown.up.prevent="moveMenuRowFocus(-1)"
+        @mousedown.capture="suppressNextActivatorSearchUpdate"
+      >
+        <sapling-table
+          v-if="menuOpen"
+          :entity-handle="entityHandle"
+          :items="items"
+          :search="search"
+          :page="page"
+          :items-per-page="itemsPerPage"
+          :total-items="totalItems"
+          :is-loading="isLoading"
+          :is-initialized="isInitialized"
+          :sort-by="sortBy"
+          :column-filters="columnFilters"
+          :active-filter="activeFilter"
+          :entity-templates="entityTemplates"
+          :entity="entity"
+          :entity-permission="entityPermission"
+          :show-actions="false"
+          :show-search="false"
+          :multi-select="true"
+          :disable-mobile-view="disableDropdownMobileView"
+          :table-key="entityHandle"
+          :selected="selectedItems"
+          @update:page="onPageUpdate"
+          @update:items-per-page="onItemsPerPageUpdate"
+          @update:sort-by="onSortByUpdate"
+          @update:column-filters="onColumnFiltersUpdate"
+          @update:search="onSearchUpdate"
+          @reload="loadData"
+          @update:selected="onTableSelect"
+        />
+      </div>
+    </v-menu>
+  </div>
 </template>
 
 <script lang="ts" setup>
@@ -117,6 +135,7 @@ import { computed, inject, ref, watch } from 'vue'
 import { useSaplingSelectField } from '@/composables/fields/useSaplingSelectField'
 import { useSaplingEntityValueLabel } from '@/composables/fields/useSaplingEntityValueLabel'
 import { useSaplingReferenceFilter } from '@/composables/fields/useSaplingReferenceFilter'
+import { useSaplingFieldDropdownFocus } from '@/composables/fields/useSaplingFieldDropdownFocus'
 import { DEFAULT_PAGE_SIZE_SMALL } from '@/constants/project.constants'
 import ApiGenericService, { type FilterQuery } from '@/services/api.generic.service'
 import { useGenericStore } from '@/stores/genericStore'
@@ -168,6 +187,15 @@ const {
 } = useSaplingTable(ref(props.entityHandle), DEFAULT_PAGE_SIZE_SMALL, false, false)
 
 const { selectedItems, menuOpen } = useSaplingSelectField(props)
+const {
+  fieldRootRef,
+  menuSurfaceRef,
+  closeMenuOnTab,
+  closeMenuOnEscape,
+  closeMenuWhenFocusLeaves,
+  focusFirstMenuRow,
+  moveMenuRowFocus,
+} = useSaplingFieldDropdownFocus(menuOpen)
 const { getValueLabel, getValueLabelLines } = useSaplingEntityValueLabel(entityTemplates)
 const { combineFilters, normalizeFilter, areFiltersEqual } = useSaplingReferenceFilter()
 const fieldSearch = ref('')

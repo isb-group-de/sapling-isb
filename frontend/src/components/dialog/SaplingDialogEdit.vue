@@ -55,6 +55,8 @@
                 :entity-label="entityLabel"
                 :mode="mode"
                 :relation-templates="relationTemplates"
+                :relation-entities="relationEntities"
+                :tab-id-prefix="dialogTabIdPrefix"
               />
               <v-window
                 v-model="activeTab"
@@ -63,7 +65,10 @@
                 :reverse-transition="false"
               >
                 <v-window-item
+                  :id="`${dialogTabIdPrefix}-panel-0`"
                   :value="0"
+                  role="tabpanel"
+                  :aria-labelledby="`${dialogTabIdPrefix}-tab-0`"
                   class="sapling-record-dialog-window-item sapling-dialog-edit-window-item"
                   :transition="false"
                   :reverse-transition="false"
@@ -108,8 +113,11 @@
                 </v-window-item>
                 <v-window-item
                   v-for="(template, idx) in relationTemplates"
+                  :id="`${dialogTabIdPrefix}-panel-${idx + 1}`"
                   :key="template.name"
                   :value="idx + 1"
+                  role="tabpanel"
+                  :aria-labelledby="`${dialogTabIdPrefix}-tab-${idx + 1}`"
                   class="sapling-record-dialog-window-item sapling-dialog-edit-window-item"
                   :transition="false"
                   :reverse-transition="false"
@@ -169,6 +177,7 @@
           :is-dirty="isDirty"
           :is-saving="isSaving"
           :pending-save-action="pendingSaveAction"
+          :validation-feedback="validationFeedback"
           :can-delete-record="canDeleteRecord"
           :record-action-buttons-disabled="recordActionButtonsDisabled"
           :edit-mobile-secondary-actions-disabled="editMobileSecondaryActionsDisabled"
@@ -214,7 +223,7 @@
 
 <script lang="ts" setup>
 // #region Imports
-import { computed, nextTick, ref, watch } from 'vue'
+import { computed, getCurrentInstance, nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type {
   DialogSaveAction,
@@ -313,6 +322,7 @@ const {
   isSaving,
   unsavedChangesDialog,
   pendingSaveAction,
+  validationFeedback,
   dirtyFieldCount,
   formConfigMenuItems,
   selectedFormConfigLabel,
@@ -350,6 +360,7 @@ const {
 
 const formSurfaceRef = ref<HTMLElement | null>(null)
 const hasFocusedCurrentOpenDialog = ref(false)
+const dialogTabIdPrefix = `sapling-record-dialog-${getCurrentInstance()?.uid ?? 'record'}`
 
 const {
   canDeleteRecord,
@@ -405,6 +416,15 @@ const dialogTitle = computed(() => {
 })
 
 const entityHandle = computed(() => props.entity?.handle ?? '')
+
+const relationEntities = computed<Record<string, EntityItem | null>>(() =>
+  Object.fromEntries(
+    relationTemplates.value.map((template) => [
+      template.name,
+      relationTableState.value[template.name]?.entity ?? null,
+    ]),
+  ),
+)
 
 const itemHandle = computed<string | number | null>(() => {
   const handle = props.item?.handle
@@ -498,6 +518,75 @@ function onRelationSearch(templateName: string, search: string): void {
 }
 
 watch(visibleTemplateGroups, () => syncExpandedGroups(), { immediate: true })
+
+function findFirstInvalidFieldShell(): HTMLElement | null {
+  const invalidControl = formSurfaceRef.value?.querySelector<HTMLElement>(
+    '[aria-invalid="true"], .v-input--error',
+  )
+  return invalidControl?.closest<HTMLElement>('[data-dialog-field-name]') ?? invalidControl ?? null
+}
+
+function focusInvalidField(fieldShell: HTMLElement): void {
+  const focusTarget = fieldShell.matches(
+    'input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [role="combobox"]',
+  )
+    ? fieldShell
+    : fieldShell.querySelector<HTMLElement>(
+        '[aria-invalid="true"]:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [role="combobox"]',
+      )
+
+  focusTarget?.focus({ preventScroll: true })
+}
+
+async function waitForValidationLayout(): Promise<void> {
+  await nextTick()
+  if (typeof window === 'undefined' || typeof window.requestAnimationFrame !== 'function') {
+    return
+  }
+
+  await new Promise<void>((resolve) => {
+    window.requestAnimationFrame(() => window.requestAnimationFrame(() => resolve()))
+  })
+}
+
+async function revealFirstInvalidField(): Promise<void> {
+  activeTab.value = 0
+  await nextTick()
+
+  const initialFieldShell = findFirstInvalidFieldShell()
+  if (!initialFieldShell) {
+    return
+  }
+
+  const groupId =
+    initialFieldShell.closest<HTMLElement>('[data-dialog-group-id]')?.dataset.dialogGroupId
+  if (groupId && !isGroupExpanded(groupId)) {
+    expandedGroupIds.value = [...expandedGroupIds.value, groupId]
+  }
+
+  await waitForValidationLayout()
+  const fieldShell = findFirstInvalidFieldShell()
+  if (!fieldShell) {
+    return
+  }
+
+  const prefersReducedMotion =
+    typeof window !== 'undefined' &&
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  fieldShell.scrollIntoView({
+    behavior: prefersReducedMotion ? 'auto' : 'smooth',
+    block: 'center',
+    inline: 'nearest',
+  })
+  focusInvalidField(fieldShell)
+}
+
+watch(validationFeedback, (feedback) => {
+  if (feedback) {
+    void revealFirstInvalidField()
+  }
+})
 
 watch(
   () => props.modelValue,

@@ -1,10 +1,14 @@
 <template>
   <div
+    ref="fieldRootRef"
     class="sapling-field-single-select"
     :class="{
       'sapling-field-single-select--with-open-action': props.showOpenAction,
       'sapling-field-single-select--multiline': hasMultilineSelection,
     }"
+    @focusout="closeMenuWhenFocusLeaves"
+    @keydown.tab.capture="closeMenuOnTab"
+    @keydown.esc="closeMenuOnEscape"
   >
     <v-menu
       v-model="menuOpen"
@@ -31,6 +35,7 @@
             hide-no-data
             no-filter
             autocomplete="off"
+            @keydown.down.prevent="focusFirstMenuRow"
             @focus="openMenu"
             @mousedown:control="openMenu"
             @click:clear="clearSelection"
@@ -55,7 +60,15 @@
           </v-autocomplete>
         </div>
       </template>
-      <div class="glass-panel sapling-menu-surface sapling-menu-surface--field-table">
+      <div
+        ref="menuSurfaceRef"
+        class="glass-panel sapling-menu-surface sapling-menu-surface--field-table"
+        @focusout="closeMenuWhenFocusLeaves"
+        @keydown.tab.capture="closeMenuOnTab"
+        @keydown.esc="closeMenuOnEscape"
+        @keydown.down.prevent="moveMenuRowFocus(1)"
+        @keydown.up.prevent="moveMenuRowFocus(-1)"
+      >
         <sapling-table
           v-if="menuOpen"
           :entity-handle="entityHandle"
@@ -134,6 +147,7 @@ import { useI18n } from 'vue-i18n'
 import { useSaplingSingleSelectField } from '@/composables/fields/useSaplingSingleSelectField'
 import { useSaplingEntityValueLabel } from '@/composables/fields/useSaplingEntityValueLabel'
 import { useSaplingReferenceFilter } from '@/composables/fields/useSaplingReferenceFilter'
+import { useSaplingFieldDropdownFocus } from '@/composables/fields/useSaplingFieldDropdownFocus'
 import { getDialogRecordRelations } from '@/composables/dialog/saplingDialogRecordLoader'
 import {
   buildConcurrencyOptions,
@@ -205,6 +219,15 @@ const {
 ])
 
 const { selectedItem, menuOpen } = useSaplingSingleSelectField(props)
+const {
+  fieldRootRef,
+  menuSurfaceRef,
+  closeMenuOnTab,
+  closeMenuOnEscape,
+  closeMenuWhenFocusLeaves,
+  focusFirstMenuRow,
+  moveMenuRowFocus,
+} = useSaplingFieldDropdownFocus(menuOpen)
 const { getValueLabel, getValueLabelLines } = useSaplingEntityValueLabel(entityTemplates)
 const { combineFilters, normalizeFilter, areFiltersEqual } = useSaplingReferenceFilter()
 const fieldSearch = ref('')

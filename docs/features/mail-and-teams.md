@@ -160,7 +160,9 @@ lifecycle trigger matches, which is useful for create confirmations. Rules with
 conditions require every configured condition to match. On updates, each
 condition also requires the observed field to have changed. For example, a
 ticket rule can require both `solutionDescription` to change and `status` to
-change to `closed`.
+change to `closed`. Custom fields are available as `customFields.<fieldKey>`;
+their configured labels and select options are used by the condition editor,
+and their hydrated old/new values participate in update matching.
 
 For automatic shared-mailbox delivery, `senderPerson` remains the OAuth
 authentication identity and `senderMailbox` supplies the visible From address.

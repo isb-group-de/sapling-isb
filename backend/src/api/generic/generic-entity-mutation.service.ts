@@ -111,8 +111,8 @@ export class GenericEntityMutationService {
       this.genericInlineCollectionService.extractPayload(template, data);
     const submittedSnapshot =
       this.genericChangeLogService.captureSubmittedChangeLogPayload(
-        template,
-        data,
+        permissionTemplate,
+        this.withCustomFields(data, splitPayload.customFields),
       );
 
     this.genericPermissionService.checkTopLevelPermission(
@@ -193,22 +193,22 @@ export class GenericEntityMutationService {
       this.extractEntityHandle(newData),
       splitPayload.customFields,
     );
+    const hydrated = await this.genericCustomFieldService.hydrateRecords(
+      entityHandle,
+      newData,
+    );
     this.invalidateSecurityPrincipalAfterMutation(entityHandle, newData);
     this.queueSearchIndexUpsert(lifecycleOptions, entityHandle, newData);
     if (!scriptContext.suppressNotificationSubscriptions) {
       this.queueBackgroundTask(lifecycleOptions, 'emailAutomation', () =>
         this.emailAutomationService.handleAfterInsert(
           entityHandle,
-          newData,
+          hydrated,
           currentUser,
         ),
       );
     }
 
-    const hydrated = await this.genericCustomFieldService.hydrateRecords(
-      entityHandle,
-      newData,
-    );
     return this.genericSanitizerService.projectEntityResult(
       entityHandle,
       hydrated,
@@ -257,8 +257,8 @@ export class GenericEntityMutationService {
       this.genericInlineCollectionService.extractPayload(template, data);
     let submittedSnapshot =
       this.genericChangeLogService.captureSubmittedChangeLogPayload(
-        template,
-        data,
+        permissionTemplate,
+        this.withCustomFields(data, splitPayload.customFields),
       );
     const populate = this.genericQueryService.buildPopulate(
       relations,
@@ -282,6 +282,8 @@ export class GenericEntityMutationService {
       throw new NotFoundException(`global.entityNotFound`);
     }
 
+    await this.genericCustomFieldService.hydrateRecords(entityHandle, item);
+
     const customFieldOverrideRename = this.getCustomFieldOverrideChange(
       entityHandle,
       item,
@@ -301,7 +303,7 @@ export class GenericEntityMutationService {
       this.genericChangeLogService.captureEntityChangeLogPayload(
         entityHandle,
         item,
-        template,
+        permissionTemplate,
         submittedSnapshot,
       );
     this.genericPermissionService.checkTopLevelPermission(
@@ -416,11 +418,15 @@ export class GenericEntityMutationService {
       handle,
       splitPayload.customFields,
     );
+    const hydrated = await this.genericCustomFieldService.hydrateRecords(
+      entityHandle,
+      newData,
+    );
     const newSnapshot =
       this.genericChangeLogService.captureEntityChangeLogPayload(
         entityHandle,
-        newData,
-        template,
+        hydrated,
+        permissionTemplate,
         submittedSnapshot,
       );
     if (!scriptContext.suppressNotificationSubscriptions) {
@@ -435,10 +441,6 @@ export class GenericEntityMutationService {
       );
     }
 
-    const hydrated = await this.genericCustomFieldService.hydrateRecords(
-      entityHandle,
-      newData,
-    );
     if (customFieldOverrideRename) {
       await this.fieldPermissions.renameFieldOverrides(
         customFieldOverrideRename.entityHandle,
@@ -559,6 +561,20 @@ export class GenericEntityMutationService {
     return typeof handle === 'string' || typeof handle === 'number'
       ? handle
       : null;
+  }
+
+  private withCustomFields(
+    data: GenericMutationPayload,
+    customFields: Record<string, unknown>,
+  ): GenericMutationPayload {
+    if (Object.keys(customFields).length === 0) {
+      return data;
+    }
+
+    return {
+      ...data,
+      customFields,
+    };
   }
 
   private getCustomFieldOverrideChange(

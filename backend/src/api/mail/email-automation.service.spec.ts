@@ -161,6 +161,11 @@ describe('EmailAutomationService', () => {
       conditions: [
         { observedField: 'solutionDescription' },
         { observedField: 'status', newValue: 'closed' },
+        {
+          observedField: 'customFields.serviceLevel',
+          oldValue: 'silver',
+          newValue: 'gold',
+        },
       ],
     });
     const { mailService, service } = createService({
@@ -170,8 +175,16 @@ describe('EmailAutomationService', () => {
     await service.handleAfterUpdate(
       'ticket',
       101,
-      { solutionDescription: 'Old', status: 'open' },
-      { solutionDescription: 'New', status: 'closed' },
+      {
+        solutionDescription: 'Old',
+        status: 'open',
+        customFields: { serviceLevel: 'silver' },
+      },
+      {
+        solutionDescription: 'New',
+        status: 'closed',
+        customFields: { serviceLevel: 'gold' },
+      },
       { handle: 1 } as never,
     );
 

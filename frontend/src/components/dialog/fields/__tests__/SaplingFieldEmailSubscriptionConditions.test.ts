@@ -13,6 +13,19 @@ const entityTemplatesByHandle: Record<string, EntityTemplate[]> = {
     createTemplate({ name: 'title', type: 'string' }),
     createTemplate({ name: 'solutionDescription', type: 'string' }),
     createTemplate({
+      name: 'customFields.serviceLevel',
+      type: 'string',
+      formConfig: { label: 'Service level' },
+      customField: {
+        key: 'serviceLevel',
+        type: 'select',
+        options: [
+          { label: 'Silver', value: 'silver' },
+          { label: 'Gold', value: 'gold' },
+        ],
+      },
+    }),
+    createTemplate({
       name: 'status',
       type: 'TicketStatusItem',
       kind: 'm:1',
@@ -144,10 +157,36 @@ describe('SaplingFieldEmailSubscriptionConditions', () => {
 
     expect(loadGenericMock).toHaveBeenCalledWith('ticket', 'global')
     expect(wrapper.findAllComponents(VSelectStub)[0].props('items')).toEqual([
+      { label: 'Service level', value: 'customFields.serviceLevel' },
       { label: 'Solution', value: 'solutionDescription' },
       { label: 'Status', value: 'status' },
       { label: 'Title', value: 'title' },
     ])
+  })
+
+  it('uses configured options for custom select fields', async () => {
+    const wrapper = mount(SaplingFieldEmailSubscriptionConditions, {
+      props: {
+        sourceEntityReference: { handle: 'ticket' },
+        modelValue: [{ observedField: 'customFields.serviceLevel', newValue: 'gold' }],
+      },
+      global: {
+        stubs: {
+          'v-select': VSelectStub,
+          'v-text-field': VTextFieldStub,
+          'v-btn': VBtnStub,
+        },
+      },
+    })
+
+    await flushPromises()
+
+    const selects = wrapper.findAllComponents(VSelectStub)
+    expect(selects[1].props('items')).toEqual([
+      { label: 'Silver', value: 'silver' },
+      { label: 'Gold', value: 'gold' },
+    ])
+    expect(selects[2].props('items')).toEqual(selects[1].props('items'))
   })
 
   it('emits multiple configured conditions', async () => {
@@ -184,6 +223,7 @@ function createTemplate(
   overrides: Partial<EntityTemplate> & Pick<EntityTemplate, 'name' | 'type'>,
 ): EntityTemplate {
   return {
+    ...overrides,
     key: overrides.name,
     name: overrides.name,
     type: overrides.type,

@@ -17,12 +17,20 @@
 .sapling-menu-surface {
   display: flex;
   flex-direction: column;
-  min-width: var(--sapling-field-menu-min-width);
-  height: min(var(--sapling-field-menu-max-height), calc(100vh - (var(--sapling-space-3xl) * 2)));
+  min-width: min(
+    var(--sapling-field-menu-min-width),
+    calc(100vw - (var(--sapling-space-panel-md) * 2))
+  );
+  height: min(var(--sapling-field-menu-max-height), calc(100dvh - (var(--sapling-space-3xl) * 2)));
   max-height: var(--sapling-field-menu-max-height);
   min-height: 0;
   overflow: hidden;
   overscroll-behavior: contain;
+}
+
+.sapling-menu-surface--field-table {
+  height: min(var(--sapling-field-menu-max-height), 48dvh);
+  max-height: min(var(--sapling-field-menu-max-height), 48dvh);
 }
 
 .sapling-menu-surface > * {
