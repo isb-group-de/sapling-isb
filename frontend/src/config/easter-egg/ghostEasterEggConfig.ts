@@ -17,5 +17,5 @@ export const ghostEasterEggConfig: GhostEasterEggConfig = {
   size: 64,
   idleRadiusPx: 84,
   randomMessageIntervalMs: [60000, 120000],
-  messageVisibleMs: 3500,
+  messageVisibleMs: 7000,
 }

@@ -248,6 +248,151 @@ export class KpiItem {
   })
   @Property({ length: 128, nullable: true })
   relationField?: string;
+
+  /** Optional second operand used by RATIO, FORMULA, TARGET and PROGRESS KPIs. */
+  @ApiPropertyOptional({ type: () => KpiAggregationItem })
+  @SaplingForm({
+    order: 600,
+    group: 'kpi.groupCalculation',
+    groupOrder: 350,
+    width: 1,
+    visible: true,
+    tableVisible: false,
+    mobileVisible: false,
+  })
+  @ManyToOne(() => KpiAggregationItem, { nullable: true })
+  secondaryAggregation?: Rel<KpiAggregationItem>;
+
+  @ApiPropertyOptional()
+  @SaplingForm({
+    order: 700,
+    group: 'kpi.groupCalculation',
+    groupOrder: 350,
+    width: 1,
+    visible: true,
+    tableVisible: false,
+    mobileVisible: false,
+  })
+  @Property({ length: 128, nullable: true })
+  secondaryField?: string;
+
+  @ApiPropertyOptional({ type: 'object', additionalProperties: true })
+  @SaplingForm({
+    order: 800,
+    group: 'kpi.groupCalculation',
+    groupOrder: 350,
+    width: 4,
+    visible: true,
+    tableVisible: false,
+    mobileVisible: false,
+  })
+  @Property({ type: 'json', nullable: true })
+  secondaryFilter?: object;
+
+  /** Start/comparison field for duration and field-to-field aggregations. */
+  @ApiPropertyOptional()
+  @SaplingForm({
+    order: 900,
+    group: 'kpi.groupCalculation',
+    groupOrder: 350,
+    width: 1,
+    visible: true,
+    tableVisible: false,
+    mobileVisible: false,
+  })
+  @Property({ length: 128, nullable: true })
+  durationStartField?: string;
+
+  @ApiPropertyOptional({ default: 'DIVIDE' })
+  @SaplingForm({
+    order: 1000,
+    group: 'kpi.groupCalculation',
+    groupOrder: 350,
+    width: 1,
+    visible: true,
+    tableVisible: false,
+    mobileVisible: false,
+  })
+  @Property({ length: 32, nullable: true })
+  formulaOperation?: string;
+
+  @ApiPropertyOptional({ default: 1 })
+  @SaplingForm({
+    order: 1100,
+    group: 'kpi.groupCalculation',
+    groupOrder: 350,
+    width: 1,
+    visible: true,
+    tableVisible: false,
+    mobileVisible: false,
+  })
+  @Property({ type: 'float', nullable: true })
+  formulaScale?: number;
+
+  @ApiPropertyOptional()
+  @SaplingForm({
+    order: 1200,
+    group: 'kpi.groupCalculation',
+    groupOrder: 350,
+    width: 1,
+    visible: true,
+    tableVisible: false,
+    mobileVisible: false,
+  })
+  @Property({ length: 32, nullable: true })
+  unit?: string;
+
+  @ApiPropertyOptional()
+  @SaplingForm({
+    order: 100,
+    group: 'kpi.groupTarget',
+    groupOrder: 360,
+    width: 1,
+    visible: true,
+    tableVisible: false,
+    mobileVisible: false,
+  })
+  @Property({ type: 'float', nullable: true })
+  targetValue?: number;
+
+  @ApiPropertyOptional({ default: 'HIGHER_IS_BETTER' })
+  @SaplingForm({
+    order: 200,
+    group: 'kpi.groupTarget',
+    groupOrder: 360,
+    width: 1,
+    visible: true,
+    tableVisible: false,
+    mobileVisible: false,
+  })
+  @Property({ length: 32, nullable: true })
+  targetDirection?: string;
+
+  @ApiPropertyOptional()
+  @SaplingForm({
+    order: 300,
+    group: 'kpi.groupTarget',
+    groupOrder: 360,
+    width: 1,
+    visible: true,
+    tableVisible: false,
+    mobileVisible: false,
+  })
+  @Property({ type: 'float', nullable: true })
+  warningThreshold?: number;
+
+  @ApiPropertyOptional()
+  @SaplingForm({
+    order: 400,
+    group: 'kpi.groupTarget',
+    groupOrder: 360,
+    width: 1,
+    visible: true,
+    tableVisible: false,
+    mobileVisible: false,
+  })
+  @Property({ type: 'float', nullable: true })
+  criticalThreshold?: number;
   //#endregion
 
   //#region Properties: Relation
@@ -269,6 +414,21 @@ export class KpiItem {
   })
   @ManyToOne(() => EntityItem, { nullable: true })
   relation?: Rel<EntityItem>;
+
+  /** Optional entity supplying the second formula operand. */
+  @ApiPropertyOptional({ type: () => EntityItem })
+  @Sapling(['isEntity'])
+  @SaplingForm({
+    order: 550,
+    group: 'kpi.groupReference',
+    groupOrder: 300,
+    width: 2,
+    visible: true,
+    tableVisible: false,
+    mobileVisible: false,
+  })
+  @ManyToOne(() => EntityItem, { nullable: true })
+  secondaryTargetEntity?: Rel<EntityItem>;
   /**
    * The entity this KPI targets (optional).
    */

@@ -24,16 +24,13 @@
 
           <div class="sapling-dialog-form-body">
             <v-form ref="formRef" class="sapling-dialog-form">
-              <v-autocomplete
-                :model-value="selectedKpi"
-                @update:model-value="handleSelectedKpiUpdate"
-                :items="availableKpis"
-                item-title="name"
-                item-value="handle"
+              <SaplingFieldSingleSelect
+                v-model="selectedKpiModel"
+                entity-handle="kpi"
+                :parent-filter="availableKpiFilter"
                 :label="$t('navigation.kpi') + '*'"
-                return-object
                 :rules="kpiRules"
-                required
+                density="compact"
               />
             </v-form>
           </div>
@@ -47,7 +44,8 @@
 <script setup lang="ts">
 // #region Imports
 import { computed } from 'vue'
-import type { KPIItem } from '@/entity/entity'
+import type { KPIItem, SaplingGenericItem } from '@/entity/entity'
+import type { FilterQuery } from '@/services/api.generic.service'
 import { useSaplingDialogKpi } from '@/composables/dialog/useSaplingDialogKpi'
 import { useTranslationLoader } from '@/composables/generic/useTranslationLoader'
 import { SAPLING_DIALOG_MAX_WIDTH } from '@/constants/dialog.constants'
@@ -55,13 +53,14 @@ import SaplingActionSave from '../actions/SaplingActionSave.vue'
 import SaplingActionBarSkeleton from '@/components/actions/SaplingActionBarSkeleton.vue'
 import SaplingDialogCard from '@/components/dialog/SaplingDialogCard.vue'
 import SaplingDialogHero from '@/components/common/SaplingDialogHero.vue'
+import SaplingFieldSingleSelect from '@/components/dialog/fields/SaplingFieldSingleSelect.vue'
 // #endregion
 
 // #region Props & Emits
 const props = defineProps<{
   addKpiDialog: boolean
   selectedKpi?: KPIItem | null
-  availableKpis: KPIItem[]
+  excludedKpiHandles?: number[]
   validateAndAddKpi: () => void | Promise<void>
   closeDialog: () => void
   tilt?: boolean
@@ -80,6 +79,17 @@ const { formRef, kpiRules, handleDialogUpdate, handleSelectedKpiUpdate, handleCa
     validateAndAddKpi: props.validateAndAddKpi,
   })
 const { isLoading: isTranslationLoading } = useTranslationLoader('global', 'navigation', 'kpi')
+
+const selectedKpiModel = computed<SaplingGenericItem | null>({
+  get: () => props.selectedKpi ?? null,
+  set: (value) => handleSelectedKpiUpdate(value as KPIItem | null),
+})
+
+const availableKpiFilter = computed<FilterQuery>(() => ({
+  ...(props.excludedKpiHandles?.length
+    ? { handle: { $nin: Array.from(new Set(props.excludedKpiHandles)) } }
+    : {}),
+}))
 
 const selectedKpiName = computed(() => props.selectedKpi?.name || '')
 // #endregion

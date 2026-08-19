@@ -58,7 +58,7 @@
     <SaplingDialogKpi
       :addKpiDialog="addKpiDialog"
       v-model:selectedKpi="selectedKpi"
-      :availableKpis="availableKpis"
+      :excluded-kpi-handles="assignedKpiHandles"
       :validateAndAddKpi="validateAndAddKpi"
       :closeDialog="closeAddKpiDialog"
     />
@@ -80,7 +80,7 @@ import SaplingDialogDelete from '@/components/dialog/SaplingDialogDelete.vue'
 import { useSaplingKpis } from '@/composables/dashboard/useSaplingKpis'
 import { useSaplingSortableDrag } from '@/composables/dashboard/useSaplingSortableDrag'
 import SaplingDialogKpi from '@/components/dialog/SaplingDialogKpi.vue'
-import { ref, toRef, watch } from 'vue'
+import { computed, ref, toRef, watch } from 'vue'
 // #endregion
 
 // #region Props
@@ -102,7 +102,6 @@ const {
   kpiToDelete,
   addKpiDialog,
   selectedKpi,
-  availableKpis,
   validateAndAddKpi,
   closeAddKpiDialog,
   openKpiDeleteDialog,
@@ -111,6 +110,12 @@ const {
   openAddKpiDialog,
   reorderKpis,
 } = useSaplingKpis(toRef(props, 'dashboard'), (nextKpis) => emit('update:kpis', nextKpis))
+
+const assignedKpiHandles = computed(() =>
+  kpis.value
+    .map((kpi) => kpi.handle)
+    .filter((handle): handle is number => typeof handle === 'number'),
+)
 
 const { draggedHandle, dropTargetHandle, start, enter, over, finish } =
   useSaplingSortableDrag(reorderKpis)

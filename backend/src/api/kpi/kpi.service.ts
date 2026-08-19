@@ -70,6 +70,8 @@ export class KpiService {
           'timeframeInterval',
           'targetEntity',
           'relation',
+          'secondaryAggregation',
+          'secondaryTargetEntity',
         ],
       },
     );
@@ -105,6 +107,8 @@ export class KpiService {
           'timeframeInterval',
           'targetEntity',
           'relation',
+          'secondaryAggregation',
+          'secondaryTargetEntity',
         ],
       },
     );
@@ -174,6 +178,52 @@ export class KpiService {
             entityHandle,
           ) as Record<string, unknown>)
         : (resolvedFilter as Record<string, unknown>);
+    let secondaryWhere: Record<string, unknown> | undefined;
+    if (kpi.secondaryField && kpi.secondaryAggregation) {
+      const secondaryEntityHandle =
+        kpi.secondaryTargetEntity?.handle ?? entityHandle;
+      const secondaryTemplate = this.templateService.getEntityTemplate(
+        secondaryEntityHandle,
+      );
+      const secondaryRawFilter =
+        kpi.secondaryFilter && typeof kpi.secondaryFilter === 'object'
+          ? { ...kpi.secondaryFilter }
+          : {};
+
+      if (currentUser && secondaryEntityHandle) {
+        this.genericPermissionService.checkTopLevelReadPermission(
+          secondaryEntityHandle,
+          currentUser,
+        );
+        await this.fieldPermissions.assertReadableFields(
+          currentUser,
+          secondaryEntityHandle,
+          [kpi.secondaryField].map((field) =>
+            this.normalizePermissionPath(field),
+          ),
+        );
+        await this.fieldPermissions.assertReadableQuery(
+          currentUser,
+          secondaryEntityHandle,
+          this.normalizePermissionCriteria(secondaryRawFilter),
+        );
+      }
+
+      const resolvedSecondaryFilter =
+        this.genericFilterService.prepareReadCriteria(
+          secondaryRawFilter,
+          secondaryTemplate,
+          currentUser ?? null,
+        );
+      secondaryWhere =
+        currentUser && secondaryEntityHandle
+          ? (this.genericPermissionService.setTopLevelFilter(
+              resolvedSecondaryFilter,
+              currentUser,
+              secondaryEntityHandle,
+            ) as Record<string, unknown>)
+          : (resolvedSecondaryFilter as Record<string, unknown>);
+    }
     // Instantiate executor for this KPI
     const executor = new KPIExecutor(this.em as SqlEntityManager, kpi);
     const type = kpi.type?.handle || 'ITEM';
@@ -188,8 +238,17 @@ export class KpiService {
       | SparklineWeekPointDto[]
       | null;
     // Delegate to the correct executor method based on KPI type
-    if (type === 'ITEM' || type === 'LIST' || type === 'BREAKDOWN') {
+    if (
+      type === 'ITEM' ||
+      type === 'LIST' ||
+      type === 'BREAKDOWN' ||
+      type === 'FUNNEL'
+    ) {
       value = await executor.executeItemOrList(baseWhere, groupBy);
+    } else if (type === 'RATIO' || type === 'FORMULA') {
+      value = await executor.executeFormula(baseWhere, secondaryWhere);
+    } else if (type === 'TARGET' || type === 'PROGRESS') {
+      value = await executor.executeTarget(baseWhere, secondaryWhere);
     } else if (type === 'TREND' || type === 'COMPARISON') {
       const trend = await executor.executeTrend(baseWhere, groupBy);
       value = trend
@@ -222,6 +281,7 @@ export class KpiService {
     const paths = [
       kpi.field,
       kpi.timeframeField,
+      kpi.durationStartField,
       ...(Array.isArray(kpi.groupBy) ? kpi.groupBy : []),
     ]
       .filter((value): value is string => !!value?.trim())

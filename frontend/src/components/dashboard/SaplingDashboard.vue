@@ -176,7 +176,7 @@
         :item="dashboardTemplateDialog.item"
         :templates="dashboardTemplateEntityTemplates"
         :entity="dashboardTemplateEntity"
-        :force-dirty="dashboardTemplateDialog.visible && dashboardTemplateDialog.mode === 'create'"
+        allow-pristine-create
         @update:model-value="updateDashboardTemplateDialogVisibility"
         @update:mode="updateDashboardTemplateDialogMode"
         @update:item="updateDashboardTemplateDialogItem"

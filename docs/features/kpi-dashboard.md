@@ -41,7 +41,7 @@ Important fields:
 | `targetEntity`      | `EntityItem` that resolves through `ENTITY_MAP`                                                               |
 | `aggregation`       | Aggregation handle such as `COUNT`, `SUM`, `AVG`, `MIN`, `MAX`                                                |
 | `field`             | Field path to aggregate; relation paths such as `type.handle` are supported                                   |
-| `type`              | Rendering/execution shape such as `ITEM`, `LIST`, `BREAKDOWN`, `TREND`, `COMPARISON`, `SPARKLINE`, `CALENDAR` |
+| `type`              | Rendering/execution shape, including scalar, grouped, formula, target, funnel, trend, and calendar variants  |
 | `timeframeField`    | Date field for time-based KPIs; defaults to `created_at` in executor logic                                    |
 | `timeframe`         | Current period such as `DAY`, `WEEK`, `MONTH`, `QUARTER`, `YEAR`                                              |
 | `timeframeInterval` | Sparkline bucket interval, for example `MONTH` within `YEAR`                                                  |
@@ -49,6 +49,10 @@ Important fields:
 | `groupBy`           | Optional list of field paths used for grouped output                                                          |
 | `relation`          | Optional relation entity context                                                                              |
 | `relationField`     | Field used for relation drilldowns/grouping                                                                   |
+| `secondary*`        | Optional independently filtered aggregation/entity/field used as the second formula operand                  |
+| `durationStartField`| Start/comparison column for duration and field-to-field aggregations                                           |
+| `formula*`          | Operation, scale, and display unit for calculated KPIs                                                         |
+| `target*`           | Plan value, direction, warning boundary, and critical boundary for target/progress KPIs                        |
 
 Reference handles are seeded in:
 
@@ -70,11 +74,11 @@ It is explicitly marked with `@ImpersonationReadOnly()`, so dashboards continue
 to load while an administrator views the application as another user. The
 batch service still applies each target entity's read permission and scope.
 
-1. The KPI is loaded with `aggregation`, `type`, `timeframe`, `timeframeInterval`, `targetEntity`, and `relation`.
+1. The KPI is loaded with its primary and optional secondary aggregation/entity plus presentation references.
 2. `targetEntity.handle` is resolved against `ENTITY_MAP`.
 3. The persisted filter is prepared through `GenericFilterService.prepareReadCriteria()`.
 4. Runtime placeholders such as `{{currentUser.handle}}`, `{{currentUser.company.handle}}`, and date placeholders are resolved.
-5. `GenericPermissionService.setTopLevelFilter()` applies the current user's entity scope.
+5. `GenericPermissionService.setTopLevelFilter()` applies the current user's entity scope independently to both operands.
 6. `KPIExecutor` builds SQL through MikroORM query builders.
 7. The service returns a KPI response with value data and drilldown metadata.
 
@@ -91,8 +95,28 @@ This means KPI results are not a bypass around normal entity permissions. If a u
 | `COMPARISON` | `executeTrend()`                     | `SaplingKpiComparison.vue` |
 | `SPARKLINE`  | `executeSparkline()`                 | `SaplingKpiSparkline.vue`  |
 | `CALENDAR`   | permission-aware generic Event query | `SaplingKpiCalendar.vue`   |
+| `RATIO`      | `executeFormula()`                   | `SaplingKpiPerformance.vue`|
+| `FORMULA`    | `executeFormula()`                   | `SaplingKpiPerformance.vue`|
+| `TARGET`     | `executeTarget()`                    | `SaplingKpiPerformance.vue`|
+| `PROGRESS`   | `executeTarget()`                    | `SaplingKpiPerformance.vue`|
+| `FUNNEL`     | `executeItemOrList()` with grouping  | `SaplingKpiFunnel.vue`     |
 
 `TREND` and `COMPARISON` compare the current timeframe with the previous equivalent timeframe. `SPARKLINE` creates bucketed values inside a timeframe, for example months within a year or days within a month.
+
+`RATIO` and `FORMULA` return the calculated value together with both operand
+values, operation, scale, and unit. Division by zero deliberately produces no
+value. The optional second operand can target another entity; its filter, field
+permissions, entity permission, and person/company scope are checked separately.
+`TARGET` and `PROGRESS` build on the same calculation and add the target value,
+attainment percentage, target direction, and a `good`, `warning`, or `critical`
+status. The warning threshold is the configurable boundary into `good` (falling
+back to the target), while the critical threshold is the boundary into
+`critical`; values between those boundaries are warnings.
+
+`FUNNEL` uses the same grouped backend result as `BREAKDOWN`, but renders stages
+with relative widths and step-to-step conversion. The add-KPI autocomplete shows
+the translated KPI type next to every name, so paired Breakdown and Funnel KPIs
+do not need technical type suffixes in their business names.
 
 `CALENDAR` is a frontend agenda rather than an aggregation payload. It requires
 `targetEntity=event`, combines the persisted KPI filter with the signed-in
@@ -133,6 +157,11 @@ Examples:
 ```
 
 Use relation paths intentionally. Every additional relation affects query shape and must still match the entity metadata and database naming.
+
+Duration aggregations `DURATION_AVG` and `DURATION_SUM` return hours and require
+`durationStartField`. `COUNT_LTE_FIELD` counts rows whose primary field is less
+than or equal to the comparison field and is used for SLA compliance. Formula
+scales can convert hours to days or ratios to percentages.
 
 ## Drilldowns
 

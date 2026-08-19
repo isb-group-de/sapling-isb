@@ -1,0 +1,142 @@
+[
+  {
+    "entity": "kpi",
+    "property": "typeRatio",
+    "de": "Quoten-KPI",
+    "en": "Ratio KPI"
+  },
+  {
+    "entity": "kpi",
+    "property": "typeFormula",
+    "de": "Formel-KPI",
+    "en": "Formula KPI"
+  },
+  {
+    "entity": "kpi",
+    "property": "typeTarget",
+    "de": "Ziel-KPI",
+    "en": "Target KPI"
+  },
+  {
+    "entity": "kpi",
+    "property": "typeProgress",
+    "de": "Fortschritts-KPI",
+    "en": "Progress KPI"
+  },
+  {
+    "entity": "kpi",
+    "property": "typeFunnel",
+    "de": "Funnel-KPI",
+    "en": "Funnel KPI"
+  },
+  {
+    "entity": "kpi",
+    "property": "targetValue",
+    "de": "Zielwert",
+    "en": "Target value"
+  },
+  {
+    "entity": "kpi",
+    "property": "targetAttainment",
+    "de": "Zielerreichung",
+    "en": "target attainment"
+  },
+  {
+    "entity": "kpi",
+    "property": "numerator",
+    "de": "Zähler",
+    "en": "Numerator"
+  },
+  {
+    "entity": "kpi",
+    "property": "denominator",
+    "de": "Nenner",
+    "en": "Denominator"
+  },
+  { "entity": "kpi", "property": "status.good", "de": "Gut", "en": "Good" },
+  {
+    "entity": "kpi",
+    "property": "status.warning",
+    "de": "Warnung",
+    "en": "Warning"
+  },
+  {
+    "entity": "kpi",
+    "property": "status.critical",
+    "de": "Kritisch",
+    "en": "Critical"
+  },
+  {
+    "entity": "kpi",
+    "property": "groupCalculation",
+    "de": "Berechnung",
+    "en": "Calculation"
+  },
+  {
+    "entity": "kpi",
+    "property": "groupTarget",
+    "de": "Ziel und Ampel",
+    "en": "Target and thresholds"
+  },
+  {
+    "entity": "kpi",
+    "property": "secondaryAggregation",
+    "de": "Zweite Aggregation",
+    "en": "Secondary aggregation"
+  },
+  {
+    "entity": "kpi",
+    "property": "secondaryTargetEntity",
+    "de": "Zweite Zielentität",
+    "en": "Secondary target entity"
+  },
+  {
+    "entity": "kpi",
+    "property": "secondaryField",
+    "de": "Zweites Feld",
+    "en": "Secondary field"
+  },
+  {
+    "entity": "kpi",
+    "property": "secondaryFilter",
+    "de": "Zweiter Filter",
+    "en": "Secondary filter"
+  },
+  {
+    "entity": "kpi",
+    "property": "durationStartField",
+    "de": "Start- oder Vergleichsfeld",
+    "en": "Start or comparison field"
+  },
+  {
+    "entity": "kpi",
+    "property": "formulaOperation",
+    "de": "Formeloperation",
+    "en": "Formula operation"
+  },
+  {
+    "entity": "kpi",
+    "property": "formulaScale",
+    "de": "Skalierungsfaktor",
+    "en": "Scale factor"
+  },
+  { "entity": "kpi", "property": "unit", "de": "Einheit", "en": "Unit" },
+  {
+    "entity": "kpi",
+    "property": "targetDirection",
+    "de": "Zielrichtung",
+    "en": "Target direction"
+  },
+  {
+    "entity": "kpi",
+    "property": "warningThreshold",
+    "de": "Warnschwelle",
+    "en": "Warning threshold"
+  },
+  {
+    "entity": "kpi",
+    "property": "criticalThreshold",
+    "de": "Kritische Schwelle",
+    "en": "Critical threshold"
+  }
+]

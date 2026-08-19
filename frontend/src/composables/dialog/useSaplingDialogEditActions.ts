@@ -13,6 +13,7 @@ export function useSaplingDialogEditActions({
   mode,
   entity,
   isDirty,
+  canSubmit,
   formRef,
   activeTab,
   emit,
@@ -24,6 +25,7 @@ export function useSaplingDialogEditActions({
   mode: ComputedRef<DialogState>
   entity: ComputedRef<EntityItem | null>
   isDirty: ComputedRef<boolean>
+  canSubmit: ComputedRef<boolean>
   formRef: Ref<VuetifyFormRef | null>
   activeTab: Ref<number>
   emit: SaplingDialogEditEmit
@@ -70,7 +72,7 @@ export function useSaplingDialogEditActions({
   }
 
   async function prepareSubmit(action: DialogSaveAction): Promise<SaplingGenericItem | null> {
-    if (!isDirty.value || isSaving.value) return null
+    if (!canSubmit.value || isSaving.value) return null
 
     validationFeedback.value = null
     pendingSaveAction.value = action
@@ -95,7 +97,7 @@ export function useSaplingDialogEditActions({
   }
 
   async function saveWithAction(action: DialogSaveAction): Promise<void> {
-    if (!isDirty.value) return
+    if (!canSubmit.value) return
     const output = await prepareSubmit(action)
     if (output) emitSave(output, action)
   }

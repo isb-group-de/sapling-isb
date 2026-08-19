@@ -1,0 +1,82 @@
+[
+  {
+    "name": "Support Operations",
+    "description": "Standardvorlage für Support-Kennzahlen einschließlich SLA, Abschlussdauer und Ticketfluss.",
+    "isShared": true,
+    "person": 1,
+    "kpis": [
+      "Offene Tickets",
+      "Tickets nach Priorität",
+      "Gelöste Tickets Jahresvergleich",
+      "Neue Tickets pro Monat",
+      "Ticketbestand nach Status",
+      "Ticketeingang Monatsvergleich",
+      "SLA-Erfüllungsquote bei Tickets",
+      "Durchschnittliche Ticket-Abschlussdauer",
+      "SLA-Zielerreichung",
+      "Ticketfluss nach Status"
+    ],
+    "createdAt": "2026-08-19T12:10:00.000Z",
+    "updatedAt": "2026-08-19T12:10:00.000Z"
+  },
+  {
+    "name": "Sales Pipeline",
+    "description": "Standardvorlage für Vertriebs-Kennzahlen einschließlich Gewinnquote, Wert, Zielen und Funnel.",
+    "isShared": true,
+    "person": 1,
+    "kpis": [
+      "Pipeline-Umsatz aktiv",
+      "Vertriebschancen nach Forecast",
+      "Abschlüsse Jahresvergleich",
+      "Neue Vertriebschancen pro Monat",
+      "Pipeline nach Phase",
+      "Neue Chancen Monatsvergleich",
+      "Gewinnquote bei Verkaufschancen",
+      "Durchschnittlicher Verkaufschancenwert",
+      "Vertriebsziel Pipeline-Umsatz",
+      "Gewonnener Umsatz gegenüber Plan",
+      "Vertriebspipeline nach Phase"
+    ],
+    "createdAt": "2026-08-19T12:11:00.000Z",
+    "updatedAt": "2026-08-19T12:11:00.000Z"
+  },
+  {
+    "name": "System Operations",
+    "description": "Aktualisierte Systemvorlage für Automatisierungsvolumen, Fehlerbestände und Zustellquoten.",
+    "isShared": true,
+    "person": 1,
+    "kpis": [
+      "Aktive Webhook-Subscriptions",
+      "Aktive Mail-Subscriptions",
+      "Aktive Teams-Subscriptions",
+      "Aktive Kalender-Synchronisationen",
+      "Aktive Posteingangs-Synchronisationen",
+      "Fehlgeschlagene Mail-Deliveries",
+      "Fehlgeschlagene Teams-Deliveries",
+      "Fehlgeschlagene Event-Deliveries",
+      "Fehlgeschlagene Webhook-Deliveries",
+      "Fehlgeschlagene Kalender-Synchronisationen",
+      "Fehlgeschlagene Posteingangs-Synchronisationen",
+      "Fehlgeschlagene eingehende E-Mail-Verarbeitungen",
+      "Mail-Queue nach Status",
+      "Teams-Queue nach Status",
+      "Event-Queue nach Status",
+      "Webhook-Queue nach Status",
+      "Eingehende E-Mails nach Verarbeitungsstatus",
+      "Event-Deliveries Jahresvergleich",
+      "Webhook-Deliveries pro Monat",
+      "Teams-Deliveries pro Monat",
+      "Mail-Volumen Monatsvergleich",
+      "Teams-Volumen Monatsvergleich",
+      "Webhook-Subscriptions nach Methode",
+      "Webhook-Subscriptions nach Authentifizierung",
+      "Erfolgsquote der Mail-Deliveries",
+      "Erfolgsquote der Teams-Deliveries",
+      "Erfolgsquote der Event-Deliveries",
+      "Erfolgsquote der Webhook-Deliveries",
+      "Tolerierter Mail-Fehlerbestand"
+    ],
+    "createdAt": "2026-08-19T12:12:00.000Z",
+    "updatedAt": "2026-08-19T12:12:00.000Z"
+  }
+]

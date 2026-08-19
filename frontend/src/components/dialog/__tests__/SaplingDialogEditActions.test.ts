@@ -26,6 +26,7 @@ function mountActions() {
       mode: 'edit',
       isLoading: false,
       isDirty: true,
+      canSubmit: true,
       isSaving: false,
       pendingSaveAction: null,
       validationFeedback: null,
@@ -83,5 +84,21 @@ describe('SaplingDialogEditActions', () => {
     )
 
     wrapper.unmount()
+  })
+
+  it('allows saving a prefilled create record without marking it as dirty', async () => {
+    const wrapper = mountActions()
+    await wrapper.setProps({ mode: 'create', isDirty: false, canSubmit: true })
+
+    const saveButton = wrapper.get('[data-dialog-save-action="save"]')
+    const saveAndCloseButton = wrapper.get('[data-dialog-save-action="saveAndClose"]')
+    const resetButton = wrapper.findAll('button').find((button) => button.text() === 'Reset')
+
+    expect(saveButton.attributes('disabled')).toBeUndefined()
+    expect(saveAndCloseButton.attributes('disabled')).toBeUndefined()
+    expect(resetButton?.attributes('disabled')).toBeDefined()
+
+    await saveAndCloseButton.trigger('click')
+    expect(wrapper.emitted('save-and-close')).toHaveLength(1)
   })
 })

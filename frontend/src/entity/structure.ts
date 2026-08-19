@@ -366,6 +366,24 @@ export type KpiListData = {
   value: Array<Record<string, unknown>>
 }
 
+export type KpiFormulaValue = {
+  value: number | null
+  primaryValue: number | null
+  secondaryValue: number | null
+  operation: string
+  scale: number
+  unit: string | null
+}
+
+export type KpiTargetValue = KpiFormulaValue & {
+  targetValue: number
+  progressPercent: number | null
+  status: 'good' | 'warning' | 'critical'
+  direction: 'HIGHER_IS_BETTER' | 'LOWER_IS_BETTER'
+  warningThreshold: number | null
+  criticalThreshold: number | null
+}
+
 export type KpiDrilldownEntry = {
   key: string
   label: string

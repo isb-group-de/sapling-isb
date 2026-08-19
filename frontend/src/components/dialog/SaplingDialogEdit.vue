@@ -175,6 +175,7 @@
           :mode="mode"
           :is-loading="isLoading"
           :is-dirty="isDirty"
+          :can-submit="canSubmit"
           :is-saving="isSaving"
           :pending-save-action="pendingSaveAction"
           :validation-feedback="validationFeedback"
@@ -259,6 +260,7 @@ const props = defineProps<{
   showReference?: boolean
   forceDirty?: boolean
   forceDirtyFields?: string[]
+  allowPristineCreate?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -319,6 +321,7 @@ const {
   iconNames,
   selectedItems,
   isDirty,
+  canSubmit,
   isSaving,
   unsavedChangesDialog,
   pendingSaveAction,
@@ -356,6 +359,7 @@ const {
   forceDirtyFields: computed(() =>
     Array.isArray(props.forceDirtyFields) ? props.forceDirtyFields : [],
   ),
+  allowPristineCreate: computed(() => props.allowPristineCreate === true),
 })
 
 const formSurfaceRef = ref<HTMLElement | null>(null)

@@ -15,6 +15,11 @@ const KPI_TYPE_LABEL_KEYS: Record<string, string> = {
   BREAKDOWN: 'kpi.typeBreakdown',
   COMPARISON: 'kpi.typeComparison',
   CALENDAR: 'kpi.typeCalendar',
+  RATIO: 'kpi.typeRatio',
+  FORMULA: 'kpi.typeFormula',
+  TARGET: 'kpi.typeTarget',
+  PROGRESS: 'kpi.typeProgress',
+  FUNNEL: 'kpi.typeFunnel',
 }
 
 function resolveHandleLabel(value: { handle?: string } | string | null | undefined): string | null {
@@ -122,6 +127,10 @@ export function useSaplingKpiCard(props: SaplingKpiCardProps) {
   const isTrendKpi = computed(() => kpiTypeHandle.value === 'TREND')
   const isComparisonKpi = computed(() => kpiTypeHandle.value === 'COMPARISON')
   const isSparklineKpi = computed(() => kpiTypeHandle.value === 'SPARKLINE')
+  const isPerformanceKpi = computed(() =>
+    ['RATIO', 'FORMULA', 'TARGET', 'PROGRESS'].includes(kpiTypeHandle.value ?? ''),
+  )
+  const isFunnelKpi = computed(() => kpiTypeHandle.value === 'FUNNEL')
   //#endregion
 
   //#region Methods
@@ -195,6 +204,8 @@ export function useSaplingKpiCard(props: SaplingKpiCardProps) {
     isTrendKpi,
     isComparisonKpi,
     isSparklineKpi,
+    isPerformanceKpi,
+    isFunnelKpi,
     isCalendarKpi,
   }
   //#endregion

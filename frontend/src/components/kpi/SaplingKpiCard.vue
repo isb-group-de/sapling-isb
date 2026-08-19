@@ -68,6 +68,8 @@
 
     <div class="sapling-kpi-card__body">
       <SaplingKpiBreakdown v-if="kpi && isBreakdownKpi" :ref="setRef" :kpi="kpi" />
+      <SaplingKpiFunnel v-else-if="kpi && isFunnelKpi" :ref="setRef" :kpi="kpi" />
+      <SaplingKpiPerformance v-else-if="kpi && isPerformanceKpi" :ref="setRef" :kpi="kpi" />
       <SaplingKpiList v-else-if="kpi && isListKpi" :ref="setRef" :kpi="kpi" />
       <SaplingKpiItem v-else-if="kpi && isItemKpi" :ref="setRef" :kpi="kpi" />
       <SaplingKpiComparison v-else-if="kpi && isComparisonKpi" :ref="setRef" :kpi="kpi" />
@@ -93,6 +95,8 @@ import SaplingKpiList from '@/components/kpi/SaplingKpiList.vue'
 import SaplingKpiSparkline from '@/components/kpi/SaplingKpiSparkline.vue'
 import SaplingKpiTrend from '@/components/kpi/SaplingKpiTrend.vue'
 import SaplingKpiCalendar from '@/components/kpi/SaplingKpiCalendar.vue'
+import SaplingKpiFunnel from '@/components/kpi/SaplingKpiFunnel.vue'
+import SaplingKpiPerformance from '@/components/kpi/SaplingKpiPerformance.vue'
 import { useSaplingKpiCard } from '@/composables/kpi/useSaplingKpiCard'
 import type { KPIItem } from '@/entity/entity'
 // #endregion
@@ -132,6 +136,8 @@ const {
   isComparisonKpi,
   isSparklineKpi,
   isCalendarKpi,
+  isPerformanceKpi,
+  isFunnelKpi,
 } = useSaplingKpiCard(props)
 // #endregion
 </script>

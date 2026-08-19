@@ -73,6 +73,7 @@ function createDialogState() {
     iconNames: ref([]),
     selectedItems: ref([]),
     isDirty: computed(() => false),
+    canSubmit: computed(() => false),
     isSaving: computed(() => false),
     unsavedChangesDialog: ref(false),
     pendingSaveAction: ref(null),

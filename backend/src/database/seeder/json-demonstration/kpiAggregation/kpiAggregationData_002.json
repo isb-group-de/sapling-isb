@@ -1,0 +1,5 @@
+[
+  { "handle": "DURATION_AVG" },
+  { "handle": "DURATION_SUM" },
+  { "handle": "COUNT_LTE_FIELD" }
+]

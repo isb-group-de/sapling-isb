@@ -122,7 +122,7 @@
               }"
               prepend-icon="mdi-content-save-check"
               :title="t('global.saveAndClose')"
-              :disabled="!isDirty || isSaving"
+              :disabled="!canSubmit || isSaving"
               @click="emit('save-and-close')"
             />
             <v-list-item
@@ -166,7 +166,7 @@
           }"
           color="primary"
           prepend-icon="mdi-content-save"
-          :disabled="!isDirty || isSaving"
+          :disabled="!canSubmit || isSaving"
           :loading="pendingSaveAction === 'save'"
           @click="emit('save')"
         />
@@ -221,7 +221,7 @@
           }"
           color="primary"
           append-icon="mdi-content-save"
-          :disabled="!isDirty || isSaving"
+          :disabled="!canSubmit || isSaving"
           :loading="pendingSaveAction === 'save'"
           @click="emit('save')"
         >
@@ -237,7 +237,7 @@
           color="primary"
           variant="tonal"
           append-icon="mdi-content-save-check"
-          :disabled="!isDirty || isSaving"
+          :disabled="!canSubmit || isSaving"
           :loading="pendingSaveAction === 'saveAndClose'"
           @click="emit('save-and-close')"
         >
@@ -266,6 +266,7 @@ const props = defineProps<{
   mode: DialogState
   isLoading: boolean
   isDirty: boolean
+  canSubmit: boolean
   isSaving: boolean
   pendingSaveAction: DialogSaveAction | null
   validationFeedback: SaplingDialogValidationFeedback | null

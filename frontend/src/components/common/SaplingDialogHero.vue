@@ -60,6 +60,7 @@
         :disabled="dialogClose.disabled.value"
         :aria-label="dialogClose.label.value"
         :title="dialogClose.label.value"
+        @mousedown.prevent
         @click.stop="dialogClose.close.value?.()"
       />
     </div>

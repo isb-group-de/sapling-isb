@@ -225,6 +225,19 @@ export interface KPIItem extends SaplingGenericItem {
   timeframeInterval?: KPITimeframeItem | null
   /** Optional filter for the KPI (JSON object) */
   filter?: object
+  /** Optional second aggregation operand for formula KPIs */
+  secondaryAggregation?: KPIAggregationItem | string | null
+  secondaryTargetEntity?: EntityItem | string | null
+  secondaryField?: string | null
+  secondaryFilter?: object | null
+  durationStartField?: string | null
+  formulaOperation?: 'DIVIDE' | 'ADD' | 'SUBTRACT' | 'MULTIPLY' | string | null
+  formulaScale?: number | null
+  unit?: string | null
+  targetValue?: number | null
+  targetDirection?: 'HIGHER_IS_BETTER' | 'LOWER_IS_BETTER' | string | null
+  warningThreshold?: number | null
+  criticalThreshold?: number | null
   /** Optional group by fields for the KPI (array of strings) */
   groupBy?: string[]
   /** Optional relations to include (array of strings) */

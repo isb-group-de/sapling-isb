@@ -17,6 +17,32 @@ type KpiAggregateValue =
 
 type KpiWhere = Record<string, unknown>;
 
+interface AggregateConfig {
+  entityHandle?: string;
+  field?: string;
+  aggregation?: string;
+  durationStartField?: string;
+  relation?: string;
+}
+
+export interface KpiFormulaResult {
+  value: number | null;
+  primaryValue: number | null;
+  secondaryValue: number | null;
+  operation: string;
+  scale: number;
+  unit: string | null;
+}
+
+export interface KpiTargetResult extends KpiFormulaResult {
+  targetValue: number;
+  progressPercent: number | null;
+  status: 'good' | 'warning' | 'critical';
+  direction: 'HIGHER_IS_BETTER' | 'LOWER_IS_BETTER';
+  warningThreshold: number | null;
+  criticalThreshold: number | null;
+}
+
 /**
  * @class KPIExecutor
  * @version         1.0
@@ -49,12 +75,18 @@ export class KPIExecutor {
    * @param {string[]} [groupBy] Optional array of fields to group by
    * @returns {Promise<unknown>} Aggregated value or grouped result
    */
-  private async aggregate(where: object, groupBy?: string[]) {
-    const field = this.kpi.field;
-    const aggregation = this.kpi.aggregation.handle.toUpperCase();
+  private async aggregate(
+    where: object,
+    groupBy?: string[],
+    config: AggregateConfig = {},
+  ) {
+    const field = config.field ?? this.kpi.field;
+    const aggregation = (
+      config.aggregation ?? this.kpi.aggregation.handle
+    ).toUpperCase();
     let result: unknown;
     const entityClass = ENTITY_MAP[
-      this.kpi.targetEntity?.handle || ''
+      config.entityHandle ?? this.kpi.targetEntity?.handle ?? ''
     ] as import('@mikro-orm/core').EntityName<any>;
     const meta = this.em.getMetadata().get(entityClass);
     const qb = this.em.createQueryBuilder(entityClass, 'e');
@@ -72,7 +104,10 @@ export class KPIExecutor {
       return alias;
     };
 
-    let relation: string | undefined = this.kpi.relation?.handle;
+    let relation: string | undefined = config.relation;
+    if (!config.entityHandle) {
+      relation = relation ?? this.kpi.relation?.handle;
+    }
     let selectField = `e.${field}`;
     let useRelation = false;
 
@@ -139,6 +174,34 @@ export class KPIExecutor {
       };
     };
 
+    const durationStartField = config.durationStartField;
+    const aggregateExpression = (valueExpression: string) => {
+      if (
+        (aggregation === 'DURATION_AVG' ||
+          aggregation === 'DURATION_SUM' ||
+          aggregation === 'COUNT_LTE_FIELD') &&
+        !durationStartField
+      ) {
+        throw new Error(`${aggregation} requires durationStartField`);
+      }
+
+      const comparisonExpression = durationStartField
+        ? resolveField(durationStartField).expression
+        : null;
+
+      if (aggregation === 'DURATION_AVG') {
+        return `AVG(EXTRACT(EPOCH FROM (${valueExpression} - ${comparisonExpression}))) / 3600.0`;
+      }
+      if (aggregation === 'DURATION_SUM') {
+        return `SUM(EXTRACT(EPOCH FROM (${valueExpression} - ${comparisonExpression}))) / 3600.0`;
+      }
+      if (aggregation === 'COUNT_LTE_FIELD') {
+        return `SUM(CASE WHEN ${valueExpression} <= ${comparisonExpression} THEN 1 ELSE 0 END)`;
+      }
+
+      return `${aggregation}(${valueExpression})`;
+    };
+
     if (useRelation) {
       if (groupBy && groupBy.length > 0) {
         const primaryField = resolveField(field, 'handle');
@@ -161,13 +224,13 @@ export class KPIExecutor {
 
         qb.select([
           ...selectFields,
-          raw<RawQueryFragment>(`${aggregation}(${selectField}) as value`),
+          raw<RawQueryFragment>(`${aggregateExpression(selectField)} as value`),
         ]);
         qb.groupBy(groupByFields);
         qb.where(where);
         result = await qb.execute();
       } else {
-        qb.select([raw(`${aggregation}(${selectField}) as value`)]);
+        qb.select([raw(`${aggregateExpression(selectField)} as value`)]);
         qb.where(where);
         result = await qb.execute();
         result =
@@ -183,13 +246,19 @@ export class KPIExecutor {
 
         qb.select([
           ...groupFields.map((groupField) => groupField.select),
-          raw<RawQueryFragment>(`${aggregation}(e.${field}) as value`),
+          raw<RawQueryFragment>(
+            `${aggregateExpression(resolveField(field).expression)} as value`,
+          ),
         ]);
         qb.groupBy(groupFields.map((groupField) => groupField.groupBy));
         qb.where(where);
         result = await qb.execute();
       } else {
-        qb.select([raw(`${aggregation}(e.${field}) as value`)]);
+        qb.select([
+          raw(
+            `${aggregateExpression(resolveField(field).expression)} as value`,
+          ),
+        ]);
         qb.where(where);
         result = await qb.execute();
         result =
@@ -357,6 +426,157 @@ export class KPIExecutor {
     groupBy?: string[],
   ): Promise<KpiAggregateValue> {
     return (await this.aggregate(baseWhere, groupBy)) as KpiAggregateValue;
+  }
+
+  private normalizeNumber(value: unknown): number | null {
+    if (typeof value === 'number' && Number.isFinite(value)) return value;
+    if (typeof value === 'string' && value.trim() !== '') {
+      const parsed = Number(value);
+      return Number.isFinite(parsed) ? parsed : null;
+    }
+    return null;
+  }
+
+  private calculateFormula(
+    primaryValue: number | null,
+    secondaryValue: number | null,
+    operation: string,
+    scale: number,
+  ): number | null {
+    if (primaryValue === null) return null;
+
+    let value: number;
+    switch (operation) {
+      case 'ADD':
+        if (secondaryValue === null) return null;
+        value = primaryValue + secondaryValue;
+        break;
+      case 'SUBTRACT':
+        if (secondaryValue === null) return null;
+        value = primaryValue - secondaryValue;
+        break;
+      case 'MULTIPLY':
+        if (secondaryValue === null) return null;
+        value = primaryValue * secondaryValue;
+        break;
+      case 'DIVIDE':
+        if (secondaryValue === null || secondaryValue === 0) return null;
+        value = primaryValue / secondaryValue;
+        break;
+      case 'IDENTITY':
+        value = primaryValue;
+        break;
+      default:
+        throw new Error(`Unsupported KPI formula operation: ${operation}`);
+    }
+
+    const scaled = value * scale;
+    return Number.isFinite(scaled) ? scaled : null;
+  }
+
+  async executeFormula(
+    baseWhere: object,
+    secondaryWhere?: object,
+  ): Promise<KpiFormulaResult> {
+    const operation = (this.kpi.formulaOperation ?? 'DIVIDE').toUpperCase();
+    const scale = this.kpi.formulaScale ?? (operation === 'DIVIDE' ? 100 : 1);
+    const primaryValue = this.normalizeNumber(
+      await this.aggregate(baseWhere, undefined, {
+        durationStartField: this.kpi.durationStartField,
+      }),
+    );
+    const hasSecondaryOperand = Boolean(
+      this.kpi.secondaryField && this.kpi.secondaryAggregation,
+    );
+    const secondaryValue = hasSecondaryOperand
+      ? this.normalizeNumber(
+          await this.aggregate(secondaryWhere ?? {}, undefined, {
+            entityHandle:
+              this.kpi.secondaryTargetEntity?.handle ??
+              this.kpi.targetEntity?.handle,
+            field: this.kpi.secondaryField,
+            aggregation: this.kpi.secondaryAggregation?.handle,
+          }),
+        )
+      : null;
+
+    return {
+      value: this.calculateFormula(
+        primaryValue,
+        secondaryValue,
+        hasSecondaryOperand ? operation : 'IDENTITY',
+        scale,
+      ),
+      primaryValue,
+      secondaryValue,
+      operation: hasSecondaryOperand ? operation : 'IDENTITY',
+      scale,
+      unit: this.kpi.unit ?? null,
+    };
+  }
+
+  async executeTarget(
+    baseWhere: object,
+    secondaryWhere?: object,
+  ): Promise<KpiTargetResult> {
+    const formula = await this.executeFormula(baseWhere, secondaryWhere);
+    const targetValue = this.kpi.targetValue ?? 0;
+    const direction =
+      this.kpi.targetDirection === 'LOWER_IS_BETTER'
+        ? 'LOWER_IS_BETTER'
+        : 'HIGHER_IS_BETTER';
+    const value = formula.value;
+    const warningThreshold = this.kpi.warningThreshold ?? null;
+    const criticalThreshold = this.kpi.criticalThreshold ?? null;
+    let status: KpiTargetResult['status'] = 'warning';
+
+    if (value !== null) {
+      if (direction === 'HIGHER_IS_BETTER') {
+        const goodThreshold = warningThreshold ?? targetValue;
+        status =
+          value >= goodThreshold
+            ? 'good'
+            : criticalThreshold !== null && value <= criticalThreshold
+              ? 'critical'
+              : 'warning';
+      } else {
+        const goodThreshold = warningThreshold ?? targetValue;
+        status =
+          value <= goodThreshold
+            ? 'good'
+            : criticalThreshold !== null && value >= criticalThreshold
+              ? 'critical'
+              : 'warning';
+      }
+    } else {
+      status = 'critical';
+    }
+
+    const progressPercent =
+      value === null
+        ? null
+        : direction === 'HIGHER_IS_BETTER'
+          ? targetValue === 0
+            ? value >= 0
+              ? 100
+              : 0
+            : (value / targetValue) * 100
+          : value === 0
+            ? 100
+            : (targetValue / value) * 100;
+
+    return {
+      ...formula,
+      targetValue,
+      progressPercent:
+        progressPercent !== null && Number.isFinite(progressPercent)
+          ? progressPercent
+          : null,
+      status,
+      direction,
+      warningThreshold,
+      criticalThreshold,
+    };
   }
 
   /**

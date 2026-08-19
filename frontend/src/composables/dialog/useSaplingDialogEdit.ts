@@ -44,7 +44,11 @@ import type {
 export function useSaplingDialogEdit(
   props: UseSaplingDialogEditProps,
   emit: SaplingDialogEditEmit,
-  options?: { forceDirty?: ComputedRef<boolean>; forceDirtyFields?: ComputedRef<string[]> },
+  options?: {
+    forceDirty?: ComputedRef<boolean>
+    forceDirtyFields?: ComputedRef<string[]>
+    allowPristineCreate?: ComputedRef<boolean>
+  },
 ) {
   // #region State
   const { t, te } = useI18n()
@@ -159,6 +163,11 @@ export function useSaplingDialogEdit(
     formatLocalTime,
     isValidDate,
   })
+  const canSubmit = computed(
+    () =>
+      isDirty.value ||
+      (props.mode === 'create' && options?.allowPristineCreate?.value === true),
+  )
 
   const { applyCurrentDefaults, initializeForm, syncParentReferences, buildSavePayload } =
     useSaplingDialogEditForm({
@@ -201,6 +210,7 @@ export function useSaplingDialogEdit(
     mode: computed(() => props.mode),
     entity: computed(() => props.entity),
     isDirty,
+    canSubmit,
     formRef,
     activeTab,
     emit,
@@ -545,6 +555,7 @@ export function useSaplingDialogEdit(
     iconNames,
     selectedItems,
     isDirty,
+    canSubmit,
     isSaving,
     unsavedChangesDialog,
     pendingSaveAction,

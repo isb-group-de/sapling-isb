@@ -20,6 +20,7 @@ const isMessageVisible = ref(false)
 const config = ref<GhostEasterEggConfig>({ ...ghostEasterEggConfig })
 
 let initialized = false
+let mountedConsumers = 0
 let transitionTimer: ReturnType<typeof setTimeout> | null = null
 let messageTimer: ReturnType<typeof setTimeout> | null = null
 let randomMessageTimer: ReturnType<typeof setTimeout> | null = null
@@ -190,8 +191,24 @@ export function useGhostEasterEgg(options?: Partial<GhostEasterEggConfig>) {
     clearBlink()
   }
 
-  onMounted(initialize)
-  onBeforeUnmount(cleanup)
+  onMounted(() => {
+    mountedConsumers += 1
+    initialize()
+  })
+  onBeforeUnmount(() => {
+    mountedConsumers = Math.max(0, mountedConsumers - 1)
+    if (mountedConsumers > 0) {
+      return
+    }
+
+    cleanup()
+    initialized = false
+    status.value = 'inactive'
+    pose.value = 'hidden'
+    message.value = ''
+    isMessageVisible.value = false
+    config.value = { ...ghostEasterEggConfig }
+  })
 
   return {
     status,

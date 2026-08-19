@@ -1,0 +1,395 @@
+[
+  {
+    "name": "Gewinnquote bei Verkaufschancen",
+    "description": "Anteil gewonnener an allen abgeschlossenen Verkaufschancen.",
+    "aggregation": "COUNT",
+    "field": "handle",
+    "type": "RATIO",
+    "targetEntity": "salesOpportunity",
+    "filter": { "resultStatus": "won" },
+    "secondaryAggregation": "COUNT",
+    "secondaryField": "handle",
+    "secondaryFilter": {
+      "resultStatus": { "$in": ["won", "lost", "no_decision"] }
+    },
+    "formulaOperation": "DIVIDE",
+    "formulaScale": 100,
+    "unit": "percent"
+  },
+  {
+    "name": "SLA-Erfüllungsquote bei Tickets",
+    "description": "Anteil fristgerecht gelöster Tickets an allen Tickets mit Lösungsfrist und Lösungszeitpunkt.",
+    "aggregation": "COUNT_LTE_FIELD",
+    "field": "resolved_at",
+    "durationStartField": "resolution_due_at",
+    "type": "RATIO",
+    "targetEntity": "ticket",
+    "filter": {
+      "$and": [
+        { "resolved_at": { "$ne": null } },
+        { "resolution_due_at": { "$ne": null } }
+      ]
+    },
+    "secondaryAggregation": "COUNT",
+    "secondaryField": "handle",
+    "secondaryFilter": {
+      "$and": [
+        { "resolved_at": { "$ne": null } },
+        { "resolution_due_at": { "$ne": null } }
+      ]
+    },
+    "formulaOperation": "DIVIDE",
+    "formulaScale": 100,
+    "unit": "percent"
+  },
+  {
+    "name": "Erfolgsquote der Mail-Deliveries",
+    "description": "Anteil erfolgreicher an allen abgeschlossenen Mail-Deliveries.",
+    "aggregation": "COUNT",
+    "field": "handle",
+    "type": "RATIO",
+    "targetEntity": "emailDelivery",
+    "filter": { "status": "success" },
+    "secondaryAggregation": "COUNT",
+    "secondaryField": "handle",
+    "secondaryFilter": { "status": { "$in": ["success", "failed"] } },
+    "formulaOperation": "DIVIDE",
+    "formulaScale": 100,
+    "unit": "percent"
+  },
+  {
+    "name": "Erfolgsquote der Teams-Deliveries",
+    "description": "Anteil erfolgreicher an allen abgeschlossenen Teams-Deliveries.",
+    "aggregation": "COUNT",
+    "field": "handle",
+    "type": "RATIO",
+    "targetEntity": "teamsDelivery",
+    "filter": { "status": "success" },
+    "secondaryAggregation": "COUNT",
+    "secondaryField": "handle",
+    "secondaryFilter": { "status": { "$in": ["success", "failed"] } },
+    "formulaOperation": "DIVIDE",
+    "formulaScale": 100,
+    "unit": "percent"
+  },
+  {
+    "name": "Erfolgsquote der Event-Deliveries",
+    "description": "Anteil erfolgreicher an allen abgeschlossenen Event-Deliveries.",
+    "aggregation": "COUNT",
+    "field": "handle",
+    "type": "RATIO",
+    "targetEntity": "eventDelivery",
+    "filter": { "status": "success" },
+    "secondaryAggregation": "COUNT",
+    "secondaryField": "handle",
+    "secondaryFilter": { "status": { "$in": ["success", "failed"] } },
+    "formulaOperation": "DIVIDE",
+    "formulaScale": 100,
+    "unit": "percent"
+  },
+  {
+    "name": "Erfolgsquote der Webhook-Deliveries",
+    "description": "Anteil erfolgreicher an allen abgeschlossenen Webhook-Deliveries.",
+    "aggregation": "COUNT",
+    "field": "handle",
+    "type": "RATIO",
+    "targetEntity": "webhookDelivery",
+    "filter": { "status": "success" },
+    "secondaryAggregation": "COUNT",
+    "secondaryField": "handle",
+    "secondaryFilter": { "status": { "$in": ["success", "failed"] } },
+    "formulaOperation": "DIVIDE",
+    "formulaScale": 100,
+    "unit": "percent"
+  },
+  {
+    "name": "Durchschnittliche Ticket-Abschlussdauer",
+    "description": "Durchschnittliche Zeit von der Anlage bis zur Lösung eines Tickets in Tagen.",
+    "aggregation": "DURATION_AVG",
+    "field": "resolved_at",
+    "durationStartField": "created_at",
+    "type": "FORMULA",
+    "targetEntity": "ticket",
+    "filter": { "resolved_at": { "$ne": null } },
+    "formulaScale": 0.0416666667,
+    "unit": "days"
+  },
+  {
+    "name": "Durchschnittlicher Verkaufschancenwert",
+    "description": "Durchschnittlicher erwarteter Umsatz aller Verkaufschancen.",
+    "aggregation": "AVG",
+    "field": "expected_revenue",
+    "type": "FORMULA",
+    "targetEntity": "salesOpportunity",
+    "filter": { "expected_revenue": { "$ne": null } },
+    "formulaScale": 1,
+    "unit": "currency"
+  },
+  {
+    "name": "Ist-Aufwand gegenüber Schätzung",
+    "description": "Erfasster Ist-Aufwand im Verhältnis zu den geschätzten Stunden.",
+    "aggregation": "DURATION_SUM",
+    "field": "end_time",
+    "durationStartField": "start_time",
+    "type": "RATIO",
+    "targetEntity": "ticketTimeTracking",
+    "filter": {
+      "$and": [
+        { "start_time": { "$ne": null } },
+        { "end_time": { "$ne": null } }
+      ]
+    },
+    "secondaryTargetEntity": "effortEstimatePosition",
+    "secondaryAggregation": "SUM",
+    "secondaryField": "estimated_hours",
+    "formulaOperation": "DIVIDE",
+    "formulaScale": 100,
+    "unit": "percent"
+  },
+  {
+    "name": "Vertriebsziel Pipeline-Umsatz",
+    "description": "Aktiver Pipeline-Umsatz gegenüber dem Planwert von 100.000 Euro.",
+    "aggregation": "SUM",
+    "field": "expected_revenue",
+    "type": "TARGET",
+    "targetEntity": "salesOpportunity",
+    "filter": { "is_active": true },
+    "formulaScale": 1,
+    "unit": "currency",
+    "targetValue": 100000,
+    "targetDirection": "HIGHER_IS_BETTER",
+    "warningThreshold": 80000,
+    "criticalThreshold": 50000
+  },
+  {
+    "name": "SLA-Zielerreichung",
+    "description": "SLA-Erfüllungsquote gegenüber dem Zielwert von 95 Prozent.",
+    "aggregation": "COUNT_LTE_FIELD",
+    "field": "resolved_at",
+    "durationStartField": "resolution_due_at",
+    "type": "TARGET",
+    "targetEntity": "ticket",
+    "filter": {
+      "$and": [
+        { "resolved_at": { "$ne": null } },
+        { "resolution_due_at": { "$ne": null } }
+      ]
+    },
+    "secondaryAggregation": "COUNT",
+    "secondaryField": "handle",
+    "secondaryFilter": {
+      "$and": [
+        { "resolved_at": { "$ne": null } },
+        { "resolution_due_at": { "$ne": null } }
+      ]
+    },
+    "formulaOperation": "DIVIDE",
+    "formulaScale": 100,
+    "unit": "percent",
+    "targetValue": 95,
+    "targetDirection": "HIGHER_IS_BETTER",
+    "warningThreshold": 90,
+    "criticalThreshold": 80
+  },
+  {
+    "name": "Tolerierter Mail-Fehlerbestand",
+    "description": "Fehlgeschlagene Mail-Deliveries gegenüber dem maximal tolerierten Bestand.",
+    "aggregation": "COUNT",
+    "field": "handle",
+    "type": "TARGET",
+    "targetEntity": "emailDelivery",
+    "filter": { "status": "failed" },
+    "formulaScale": 1,
+    "unit": "number",
+    "targetValue": 0,
+    "targetDirection": "LOWER_IS_BETTER",
+    "warningThreshold": 5,
+    "criticalThreshold": 10
+  },
+  {
+    "name": "Gewonnener Umsatz gegenüber Plan",
+    "description": "Umsatz gewonnener Verkaufschancen gegenüber dem Planwert.",
+    "aggregation": "SUM",
+    "field": "expected_revenue",
+    "type": "PROGRESS",
+    "targetEntity": "salesOpportunity",
+    "filter": { "resultStatus": "won" },
+    "formulaScale": 1,
+    "unit": "currency",
+    "targetValue": 100000,
+    "targetDirection": "HIGHER_IS_BETTER",
+    "warningThreshold": 80000,
+    "criticalThreshold": 50000
+  },
+
+  {
+    "name": "Ticketfluss nach Status",
+    "description": "Funnel-Ansicht des Ticketbestands nach Bearbeitungsstatus.",
+    "aggregation": "COUNT",
+    "field": "status.description",
+    "type": "FUNNEL",
+    "targetEntity": "ticket",
+    "groupBy": ["status"],
+    "relationField": "handle"
+  },
+  {
+    "name": "Vertriebspipeline nach Phase",
+    "description": "Funnel-Ansicht der offenen Pipeline nach Vertriebsphase.",
+    "aggregation": "COUNT",
+    "field": "type.title",
+    "type": "FUNNEL",
+    "targetEntity": "salesOpportunity",
+    "groupBy": ["type"],
+    "filter": { "is_active": true },
+    "relationField": "handle"
+  },
+  {
+    "name": "Terminfluss nach Typ",
+    "description": "Funnel-Ansicht der Termine nach Typ.",
+    "aggregation": "COUNT",
+    "field": "type.title",
+    "type": "FUNNEL",
+    "targetEntity": "event",
+    "groupBy": ["type"],
+    "relationField": "handle"
+  },
+  {
+    "name": "Vertragsfluss nach Firma",
+    "description": "Funnel-Ansicht des Vertragsbestands nach Kundenfirma.",
+    "aggregation": "COUNT",
+    "field": "company.name",
+    "type": "FUNNEL",
+    "targetEntity": "contract",
+    "groupBy": ["company"],
+    "relationField": "title"
+  },
+  {
+    "name": "Personenfluss nach Typ",
+    "description": "Funnel-Ansicht der Personen nach Personentyp.",
+    "aggregation": "COUNT",
+    "field": "type.handle",
+    "type": "FUNNEL",
+    "targetEntity": "person",
+    "groupBy": ["type"],
+    "relationField": "handle"
+  },
+  {
+    "name": "Firmenfluss mit Website nach Land",
+    "description": "Funnel-Ansicht der Firmen mit Website nach Land.",
+    "aggregation": "COUNT",
+    "field": "handle",
+    "type": "FUNNEL",
+    "targetEntity": "company",
+    "groupBy": ["country"],
+    "filter": { "website": { "$ne": null } },
+    "relationField": "handle"
+  },
+  {
+    "name": "Webhook-Fluss nach Authentifizierung",
+    "description": "Funnel-Ansicht aktiver Webhook-Subscriptions nach Authentifizierungstyp.",
+    "aggregation": "COUNT",
+    "field": "authenticationType.description",
+    "type": "FUNNEL",
+    "targetEntity": "webhookSubscription",
+    "groupBy": ["authenticationType"],
+    "filter": { "is_active": true },
+    "relationField": "handle"
+  },
+  {
+    "name": "Mein Ticketfluss nach Status",
+    "description": "Persönliche Funnel-Ansicht des Ticketbestands nach Status.",
+    "aggregation": "COUNT",
+    "field": "status.description",
+    "type": "FUNNEL",
+    "targetEntity": "ticket",
+    "groupBy": ["status"],
+    "filter": { "assigneePerson": "{{currentUser.handle}}" },
+    "relationField": "handle"
+  },
+  {
+    "name": "Mein Terminfluss nach Typ",
+    "description": "Persönliche Funnel-Ansicht der Termine nach Typ.",
+    "aggregation": "COUNT",
+    "field": "type.title",
+    "type": "FUNNEL",
+    "targetEntity": "event",
+    "groupBy": ["type"],
+    "filter": { "assigneePerson": "{{currentUser.handle}}" },
+    "relationField": "handle"
+  },
+  {
+    "name": "Meine Vertriebspipeline nach Phase",
+    "description": "Persönliche Funnel-Ansicht der offenen Pipeline nach Phase.",
+    "aggregation": "COUNT",
+    "field": "type.title",
+    "type": "FUNNEL",
+    "targetEntity": "salesOpportunity",
+    "groupBy": ["type"],
+    "filter": {
+      "$and": [
+        { "is_active": true },
+        { "assigneePerson": "{{currentUser.handle}}" }
+      ]
+    },
+    "relationField": "handle"
+  },
+  {
+    "name": "Mein Vertragsfluss nach Firma",
+    "description": "Persönliche Funnel-Ansicht des Vertragsbestands der eigenen Firma.",
+    "aggregation": "COUNT",
+    "field": "company.name",
+    "type": "FUNNEL",
+    "targetEntity": "contract",
+    "groupBy": ["company"],
+    "filter": { "company": "{{currentUser.company.handle}}" },
+    "relationField": "title"
+  },
+  {
+    "name": "Interner Vorgangsfluss nach Kategorie",
+    "description": "Funnel-Ansicht interner Vorgänge nach Kategorie.",
+    "aggregation": "COUNT",
+    "field": "category.title",
+    "type": "FUNNEL",
+    "targetEntity": "internalCase",
+    "groupBy": ["category"],
+    "relationField": "handle"
+  },
+  {
+    "name": "Mein interner Vorgangsfluss nach Kategorie",
+    "description": "Persönliche Funnel-Ansicht interner Vorgänge nach Kategorie.",
+    "aggregation": "COUNT",
+    "field": "category.title",
+    "type": "FUNNEL",
+    "targetEntity": "internalCase",
+    "groupBy": ["category"],
+    "filter": { "responsiblePerson": "{{currentUser.handle}}" },
+    "relationField": "handle"
+  },
+  {
+    "name": "Schätzungsfluss nach Kundenfirma",
+    "description": "Funnel-Ansicht aktiver Aufwandsschätzungen nach Kundenfirma.",
+    "aggregation": "COUNT",
+    "field": "creatorCompany.name",
+    "type": "FUNNEL",
+    "targetEntity": "effortEstimate",
+    "groupBy": ["creatorCompany"],
+    "filter": { "is_active": true },
+    "relationField": "handle"
+  },
+  {
+    "name": "Mein Schätzungsfluss nach Kundenfirma",
+    "description": "Persönliche Funnel-Ansicht aktiver Aufwandsschätzungen nach Kundenfirma.",
+    "aggregation": "COUNT",
+    "field": "creatorCompany.name",
+    "type": "FUNNEL",
+    "targetEntity": "effortEstimate",
+    "groupBy": ["creatorCompany"],
+    "filter": {
+      "$and": [
+        { "is_active": true },
+        { "assigneePerson": "{{currentUser.handle}}" }
+      ]
+    },
+    "relationField": "handle"
+  }
+]

@@ -241,7 +241,8 @@ function onGhostClick() {
   position: absolute;
   left: 50%;
   top: calc(100% - 5px);
-  max-width: min(280px, calc(100vw - 32px));
+  box-sizing: border-box;
+  width: min(280px, calc(100vw - 32px));
   padding: 8px 10px;
   border: 1px solid rgba(80, 170, 220, 0.4);
   border-radius: 8px;
@@ -250,6 +251,7 @@ function onGhostClick() {
   box-shadow: 0 8px 24px rgba(20, 57, 88, 0.16);
   font-size: 0.78rem;
   line-height: 1.3;
+  overflow-wrap: anywhere;
   text-align: left;
   white-space: normal;
   pointer-events: none;
@@ -358,7 +360,7 @@ function onGhostClick() {
 
   .sapling-ghost-bubble {
     left: 50%;
-    max-width: calc(100vw - 24px);
+    width: min(280px, calc(100vw - 24px));
   }
 }
 </style>

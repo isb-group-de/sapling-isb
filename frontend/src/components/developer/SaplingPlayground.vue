@@ -69,7 +69,6 @@
     <SaplingDialogKpi
       :add-kpi-dialog="kpiDialogModel"
       :selected-kpi="selectedKpi"
-      :available-kpis="availableKpiOptions"
       :tilt="false"
       :validate-and-add-kpi="handleKpiAdd"
       :close-dialog="closeKpiDialog"

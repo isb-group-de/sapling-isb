@@ -37,7 +37,7 @@ export function useSaplingDialogKpi(
 
   // #region Rules
   const kpiRules = [
-    (value: KPIItem | null | undefined) =>
+    (value: unknown) =>
       value != null || `${t('navigation.kpi')} ${t('global.isRequired')}`,
   ]
   // #endregion

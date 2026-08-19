@@ -1,0 +1,25 @@
+[
+  {
+    "name": "Performance & Ziele",
+    "description": "Vorlage für Quoten, Formeln, Zielerreichung und Ampelschwellen in Vertrieb, Support und Automatisierung.",
+    "isShared": true,
+    "person": 1,
+    "kpis": [
+      "Gewinnquote bei Verkaufschancen",
+      "SLA-Erfüllungsquote bei Tickets",
+      "Erfolgsquote der Mail-Deliveries",
+      "Erfolgsquote der Teams-Deliveries",
+      "Erfolgsquote der Event-Deliveries",
+      "Erfolgsquote der Webhook-Deliveries",
+      "Durchschnittliche Ticket-Abschlussdauer",
+      "Durchschnittlicher Verkaufschancenwert",
+      "Ist-Aufwand gegenüber Schätzung",
+      "Vertriebsziel Pipeline-Umsatz",
+      "SLA-Zielerreichung",
+      "Tolerierter Mail-Fehlerbestand",
+      "Gewonnener Umsatz gegenüber Plan"
+    ],
+    "createdAt": "2026-08-19T12:00:00.000Z",
+    "updatedAt": "2026-08-19T12:00:00.000Z"
+  }
+]

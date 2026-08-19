@@ -38,6 +38,25 @@ describe('useSaplingKpiCard calendar behavior', () => {
     mocks.pushAppRoute.mockClear()
   })
 
+  it('recognizes formula, target and funnel KPI render families', () => {
+    const formula = useSaplingKpiCard({
+      kpi: { ...calendarKpi(), type: 'RATIO' },
+      kpiIdx: 0,
+    })
+    const target = useSaplingKpiCard({
+      kpi: { ...calendarKpi(), type: 'TARGET' },
+      kpiIdx: 0,
+    })
+    const funnel = useSaplingKpiCard({
+      kpi: { ...calendarKpi(), type: 'FUNNEL' },
+      kpiIdx: 0,
+    })
+
+    expect(formula.isPerformanceKpi.value).toBe(true)
+    expect(target.isPerformanceKpi.value).toBe(true)
+    expect(funnel.isFunnelKpi.value).toBe(true)
+  })
+
   it('recognizes the calendar KPI and opens the full calendar route', async () => {
     const state = useSaplingKpiCard({ kpi: calendarKpi(), kpiIdx: 0 })
 

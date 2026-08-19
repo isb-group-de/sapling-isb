@@ -5,11 +5,48 @@ export function useSaplingFieldDropdownFocus(menuOpen: Ref<boolean>) {
   const menuSurfaceRef = ref<HTMLElement | null>(null)
   let deferredFocusCheck: ReturnType<typeof setTimeout> | null = null
 
+  function isWithinFieldBoundary(target: Node): boolean {
+    return (
+      fieldRootRef.value?.contains(target) === true ||
+      menuSurfaceRef.value?.contains(target) === true
+    )
+  }
+
+  function isOwnedOverlay(overlay: Element, visited = new Set<Element>()): boolean {
+    if (visited.has(overlay)) {
+      return false
+    }
+    visited.add(overlay)
+
+    const overlayId = overlay.id
+    if (!overlayId) {
+      return false
+    }
+
+    const activators = Array.from(document.querySelectorAll<HTMLElement>('[aria-controls]')).filter(
+      (activator) => activator.getAttribute('aria-controls') === overlayId,
+    )
+
+    return activators.some((activator) => {
+      if (isWithinFieldBoundary(activator)) {
+        return true
+      }
+
+      const parentOverlay = activator.closest<HTMLElement>('.v-overlay[id]')
+      return parentOverlay ? isOwnedOverlay(parentOverlay, visited) : false
+    })
+  }
+
+  function isWithinOwnedOverlay(target: Node): boolean {
+    const element = target instanceof Element ? target : target.parentElement
+    const overlay = element?.closest<HTMLElement>('.v-overlay[id]')
+    return overlay ? isOwnedOverlay(overlay) : false
+  }
+
   function containsTarget(target: EventTarget | null): boolean {
     return (
       target instanceof Node &&
-      (fieldRootRef.value?.contains(target) === true ||
-        menuSurfaceRef.value?.contains(target) === true)
+      (isWithinFieldBoundary(target) || isWithinOwnedOverlay(target))
     )
   }
 
@@ -70,11 +107,6 @@ export function useSaplingFieldDropdownFocus(menuOpen: Ref<boolean>) {
 
   function closeMenuWhenFocusLeaves(event: FocusEvent): void {
     if (containsTarget(event.relatedTarget)) {
-      return
-    }
-
-    if (event.relatedTarget instanceof Node) {
-      closeMenu()
       return
     }
 

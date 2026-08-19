@@ -1,6 +1,5 @@
 import { ref, toValue, watch, type MaybeRefOrGetter } from 'vue'
 import ApiGenericService from '@/services/api.generic.service'
-import { sortSelectOptions } from '@/utils/saplingSelectOptions'
 import type { KPIItem, DashboardItem } from '../../entity/entity'
 
 /**
@@ -16,7 +15,6 @@ export function useSaplingKpis(
   const kpiToDelete = ref<KPIItem | null>(null)
   const addKpiDialog = ref(false)
   const selectedKpi = ref<KPIItem | null>(null)
-  const availableKpis = ref<KPIItem[]>([])
   // #endregion
 
   // #region Sync
@@ -112,10 +110,8 @@ export function useSaplingKpis(
     kpiToDelete.value = null
   }
 
-  /**
-   * Loads all available KPIs that are not already assigned to the current dashboard.
-   */
-  async function openAddKpiDialog() {
+  /** Opens the standard KPI reference selector for the current dashboard. */
+  function openAddKpiDialog() {
     const currentDashboard = toValue(dashboard)
 
     if (currentDashboard.handle == null) {
@@ -123,15 +119,6 @@ export function useSaplingKpis(
     }
 
     selectedKpi.value = null
-    const res = await ApiGenericService.findAll<KPIItem>('kpi', {
-      orderBy: { name: 'ASC', handle: 'ASC' },
-    })
-
-    const assignedKpiHandles = new Set(kpis.value.map((kpi) => kpi.handle))
-    availableKpis.value = sortSelectOptions(
-      res.filter((kpi) => !assignedKpiHandles.has(kpi.handle)),
-      (kpi) => kpi.name,
-    )
     addKpiDialog.value = true
   }
 
@@ -167,7 +154,6 @@ export function useSaplingKpis(
     kpiToDelete,
     addKpiDialog,
     selectedKpi,
-    availableKpis,
     validateAndAddKpi,
     closeAddKpiDialog,
     openKpiDeleteDialog,
