@@ -55,8 +55,11 @@
                 :entity-label="entityLabel"
                 :mode="mode"
                 :relation-templates="relationTemplates"
+                :dirty-field-count="dirtyFieldCount"
+                :dirty-relation-names="dirtyRelationNames"
                 :relation-entities="relationEntities"
                 :tab-id-prefix="dialogTabIdPrefix"
+                :relations-locked="mode === 'create' && Boolean(parent)"
               />
               <v-window
                 v-model="activeTab"
@@ -123,12 +126,13 @@
                   :reverse-transition="false"
                 >
                   <SaplingDialogEditRelationTab
-                    v-if="mode !== 'create' && activeTab === idx + 1"
+                    v-if="activeTab === idx + 1"
                     :template="template"
                     :mode="mode"
                     :entity-handle="entity?.handle ?? ''"
                     :entity-label="entityLabel"
                     :item="item"
+                    :parent-draft="form"
                     :entity="entity"
                     :headers="relationTableHeaders[template.name] ?? []"
                     :items="relationTableItems[template.name] ?? []"
@@ -154,6 +158,9 @@
                     @update:selected-items="updateSelectedRelationTableItems"
                     @add-relation="addRelation(template)"
                     @remove-relation="removeRelation(template, selectedItems)"
+                    @create-relation-record="
+                      (value, context) => stageNewRelationRecord(template, value, context)
+                    "
                     @update:search="(val) => onRelationSearch(template.name, val)"
                     @update:page="(val) => onRelationTablePage(template.name, val)"
                     @update:items-per-page="
@@ -306,6 +313,7 @@ const {
   visibleTemplates,
   visibleTemplateGroups,
   relationTemplates,
+  dirtyRelationNames,
   relationTableHeaders,
   relationTableState,
   relationTableItems,
@@ -348,6 +356,7 @@ const {
   save,
   saveAndClose,
   addRelation,
+  stageNewRelationRecord,
   removeRelation,
   onRelationTablePage,
   onRelationTableItemsPerPage,

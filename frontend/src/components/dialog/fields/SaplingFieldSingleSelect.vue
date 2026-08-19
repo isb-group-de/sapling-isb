@@ -491,7 +491,7 @@ watch(
 
     const item = selectedItem.value
     const handle = getItemHandle(item)
-    if (!item || handle == null || !hasIncompleteValueReference(item, entityTemplates.value)) {
+    if (!item || handle == null || !hasIncompleteValueData(item, entityTemplates.value)) {
       return
     }
 
@@ -583,10 +583,16 @@ async function ensureEntityMetadataLoaded() {
   await genericStore.loadGeneric(props.entityHandle, 'global', 'filter', 'exception')
 }
 
-function hasIncompleteValueReference(
-  item: SaplingGenericItem,
-  templates: EntityTemplate[],
-): boolean {
+function hasIncompleteValueData(item: SaplingGenericItem, templates: EntityTemplate[]): boolean {
+  const hasMissingDirectValue = templates.some(
+    (template) =>
+      template.options?.includes('isValue') &&
+      !Object.prototype.hasOwnProperty.call(item, template.name),
+  )
+  if (hasMissingDirectValue) {
+    return true
+  }
+
   return templates.some((template) => {
     if (
       !template.isReference ||

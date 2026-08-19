@@ -201,6 +201,9 @@ Reference fields should use the existing Sapling field components instead of raw
 | select and add to a collection | `SaplingFieldSingleSelectAdd.vue` or `SaplingFieldSelectAdd.vue`     |
 
 These components open a Sapling table inside the menu and derive display labels from the target entity's `isValue` templates. Do not guess label fields such as `title`, `name`, or `displayName` in custom code. If a selected reference value displays only its handle, the target entity metadata has not been loaded early enough; fix the field/component lifecycle so the metadata loads, then let `getEntityValueLabel()` use the templates.
+This also applies to database defaults that initially contain only a reference
+handle: hydrate the selected item as soon as the entity metadata is available so
+the closed field shows its configured value label before the dropdown is opened.
 
 When a source entity marks a many-to-one or one-to-one reference itself with
 `isValue`, the shared single- and multi-select fields resolve the referenced
@@ -491,8 +494,10 @@ dashboard, note, permission, AI-agent, account, inbox, and record-dialog tabs
 may add domain layout such as minimum label width, but they must not redefine
 the shared height, gap, radius, selected fill, typography, or active inset.
 Relation entries in `SaplingDialogEdit` use the icon from their referenced
-entity metadata. Their visible relation badge and semantic color distinguish
-one-to-many (`1:m`) from many-to-many (`m:n`, including inverse `n:m`) relations.
+entity metadata. A restrained semantic icon color distinguishes one-to-many
+(`1:m`) from many-to-many (`m:n`, including inverse `n:m`) relations. The
+technical relation notation remains available to assistive technology and as a
+tooltip, but is hidden visually because it is not meaningful to most users.
 Failed record validation returns the dialog to the form tab, expands the group
 containing the first invalid field, scrolls that field into view, and focuses it.
 The invoked save action pulses twice in the error color; reduced-motion clients
@@ -512,6 +517,23 @@ tabular reference dropdowns use viewport-relative width and height limits.
 Relation tabs expose the shared table create workflow when the target entity
 and current user allow inserts. A separate header action opens the target
 entity's configured table route, with `/table/<entity>` as fallback.
+Relation tabs are also available while the parent record is being created.
+Selections remain local until the parent save succeeds. Owning many-to-many
+relations (`m:n` and `n:m`) are included in the initial create payload; inverse
+one-to-many relations (`1:m`) are attached with minimal child updates after the
+new parent handle is known. For `1:m`, users may also open the standard create
+dialog for a new child record. Its payload remains a local draft and is created
+with the real parent handle only after the parent save succeeds. Relation tabs
+inside that deferred child dialog stay locked until the child itself has been
+persisted; this prevents recursively nested draft trees. A failed child update
+or create keeps the parent record and returns the failed selection to the edit
+dialog for retry, so retrying cannot create a duplicate parent. Resetting or
+discarding the create form clears all staged relation selections and child
+drafts.
+Relation navigation marks tabs that contain staged create-time changes. Embedded
+relation tables keep edit and double-click workflows, but must not expose the
+target record's destructive delete action: unlinking a relation is performed
+explicitly through row selection and the relation tab's remove action.
 Compact `v-btn-toggle` controls use `sapling-segmented-toggle`; only the shared
 `--small` and `--field` modifiers may change their height to match a compact
 helper row or a full-height form control.

@@ -156,7 +156,7 @@
         :mobile-card-headers="mobileCardHeaders"
         :multi-select="multiSelect"
         :entity="entity"
-        :entity-permission="entityPermission"
+        :entity-permission="actionEntityPermission"
         :entity-templates="entityTemplates"
         :entity-handle="entityHandle"
         :row-script-buttons="rowScriptButtons"
@@ -201,7 +201,7 @@
         :visible-headers="visibleHeaders"
         :multi-select="multiSelect"
         :entity="entity"
-        :entity-permission="entityPermission"
+        :entity-permission="actionEntityPermission"
         :entity-templates="entityTemplates"
         :entity-handle="entityHandle"
         :row-script-buttons="rowScriptButtons"
@@ -259,7 +259,7 @@
     <SaplingTableOverlays
       :entity="entity"
       :entity-handle="entityHandle"
-      :entity-permission="entityPermission"
+      :entity-permission="actionEntityPermission"
       :entity-templates="entityTemplates"
       :parent="parent"
       :parent-entity="parentEntity"
@@ -439,6 +439,16 @@ const showInitialSkeleton = computed(
     (props.isInitialized === false && !hasTableStructure.value) ||
     (!hasCompletedInitialLoad.value && !hasTableStructure.value),
 )
+const actionEntityPermission = computed(() => {
+  if (props.allowDeleteActions !== false || !props.entityPermission) {
+    return props.entityPermission
+  }
+
+  return {
+    ...props.entityPermission,
+    allowDelete: false,
+  }
+})
 const refreshButtonLabel = computed(() => t('global.refresh'))
 const showFavoriteButton = computed(() => props.showFavorite !== false)
 const showAddButton = computed(

@@ -92,6 +92,8 @@ export function useSaplingDialogEdit(
 
   const {
     relationTemplates,
+    dirtyRelationNames,
+    hasPendingRelationChanges,
     relationTableHeaders,
     relationTableState,
     relationTableItems,
@@ -106,6 +108,7 @@ export function useSaplingDialogEdit(
     selectedRelations,
     selectedItems,
     addRelation,
+    stageNewRelationRecord,
     removeRelation,
     initializeRelationTables,
     ensureRelationTableItems,
@@ -117,6 +120,8 @@ export function useSaplingDialogEdit(
     clearSelectedItems,
     resetRelationTableItems,
     resetRelationSelections,
+    appendPendingRelationsToPayload,
+    persistPendingRelations,
   } = useSaplingDialogEditRelations({
     entity: computed(() => props.entity),
     item: computed(() => props.item),
@@ -127,6 +132,10 @@ export function useSaplingDialogEdit(
     t,
     getItemHandle,
   })
+
+  const relationAwareForceDirty = computed(
+    () => options?.forceDirty?.value === true || hasPendingRelationChanges.value,
+  )
 
   const {
     extractDependencyIdentifier,
@@ -156,7 +165,7 @@ export function useSaplingDialogEdit(
     form,
     templates,
     initialFormSnapshot,
-    forceDirty: options?.forceDirty,
+    forceDirty: relationAwareForceDirty,
     forceDirtyFields: options?.forceDirtyFields,
     extractDependencyIdentifier,
     formatLocalDate,
@@ -165,8 +174,7 @@ export function useSaplingDialogEdit(
   })
   const canSubmit = computed(
     () =>
-      isDirty.value ||
-      (props.mode === 'create' && options?.allowPristineCreate?.value === true),
+      isDirty.value || (props.mode === 'create' && options?.allowPristineCreate?.value === true),
   )
 
   const { applyCurrentDefaults, initializeForm, syncParentReferences, buildSavePayload } =
@@ -215,6 +223,8 @@ export function useSaplingDialogEdit(
     activeTab,
     emit,
     buildSavePayload,
+    appendPendingRelationsToPayload,
+    persistPendingRelations,
     syncInitialFormSnapshot,
     resetRelationSelections,
     initializeFormWithParentContext,
@@ -347,10 +357,6 @@ export function useSaplingDialogEdit(
   }
 
   async function loadActiveRelationTableItems(): Promise<void> {
-    if (props.mode === 'create') {
-      return
-    }
-
     const activeRelationTemplate = relationTemplates.value[activeTab.value - 1]
     if (!activeRelationTemplate) {
       return
@@ -540,6 +546,7 @@ export function useSaplingDialogEdit(
     visibleTemplates,
     visibleTemplateGroups,
     relationTemplates,
+    dirtyRelationNames,
     relationTableHeaders,
     relationTableState,
     relationTableItems,
@@ -585,6 +592,7 @@ export function useSaplingDialogEdit(
     save,
     saveAndClose,
     addRelation,
+    stageNewRelationRecord,
     removeRelation,
     onRelationTablePage,
     onRelationTableItemsPerPage,

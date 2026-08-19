@@ -314,6 +314,33 @@ describe('SaplingFieldSingleSelect reference dialog', () => {
     expect(wrapper.emitted('update:modelValue')).toBeUndefined()
   })
 
+  it('hydrates an identifier-only default before the reference dropdown is opened', async () => {
+    tableState.entityTemplates.value = [
+      {
+        key: 'name',
+        name: 'name',
+        type: 'string',
+        isPersistent: true,
+        options: ['isValue'],
+      },
+    ]
+    const hydratedLanguage = { handle: 'de', name: 'Deutsch (Deutschland)' }
+    findMock.mockResolvedValue({ data: [hydratedLanguage], meta: { total: 1 } })
+
+    const wrapper = mountField({ handle: 'de' }, { entityHandle: 'language' })
+    await flushPromises()
+
+    expect(findMock).toHaveBeenCalledWith(
+      'language',
+      expect.objectContaining({
+        filter: { handle: 'de' },
+        limit: 1,
+      }),
+    )
+    expect(wrapper.getComponent(VAutocompleteStub).props('modelValue')).toEqual(hydratedLanguage)
+    expect(wrapper.emitted('update:modelValue')).toBeUndefined()
+  })
+
   it('marks nested value labels as multiline without changing single-line selections', async () => {
     const singleLineWrapper = mountField({ handle: 'company-1', name: 'Sapling GmbH' })
 

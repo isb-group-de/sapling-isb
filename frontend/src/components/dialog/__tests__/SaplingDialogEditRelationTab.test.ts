@@ -37,6 +37,12 @@ vi.mock('vue-router', () => ({
 
 const SaplingTableStub = defineComponent({
   name: 'SaplingTable',
+  props: {
+    allowDeleteActions: {
+      type: Boolean,
+      default: true,
+    },
+  },
   setup(_, { expose }) {
     expose({ openCreateDialog: openCreateDialogMock })
     return () => h('div', { 'data-testid': 'relation-table' })
@@ -65,13 +71,15 @@ function mountRelationTab(
   overrides: {
     relationEntity?: EntityItem | null
     entityPermission?: AccumulatedPermission | null
+    mode?: 'create' | 'edit' | 'readonly'
+    relationKind?: '1:m' | 'm:n'
   } = {},
 ) {
   const template = {
     key: 'people',
     name: 'people',
     type: 'PersonItem',
-    kind: 'm:n',
+    kind: overrides.relationKind ?? 'm:n',
     referenceName: 'person',
     fieldAccess: { allowRead: true, allowInsert: true, allowUpdate: true },
   } as EntityTemplate
@@ -89,10 +97,11 @@ function mountRelationTab(
   return mount(SaplingDialogEditRelationTab, {
     props: {
       template,
-      mode: 'edit',
+      mode: overrides.mode ?? 'edit',
       entityHandle: 'company',
       entityLabel: 'Companies',
       item: { handle: 1 } as SaplingGenericItem,
+      parentDraft: { name: 'Draft company' } as SaplingGenericItem,
       entity: { handle: 'company' } as EntityItem,
       headers: [] as SaplingTableHeaderItem[],
       items: [],
@@ -119,7 +128,7 @@ function mountRelationTab(
       },
       stubs: {
         SaplingTable: SaplingTableStub,
-        SaplingSelectAddField: { template: '<div />' },
+        SaplingSelectAddField: { template: '<div data-testid="relation-select-add" />' },
         VCard: { template: '<div><slot /></div>' },
         VCardText: { template: '<div><slot /></div>' },
         VIcon: { template: '<span><slot /></span>' },
@@ -137,6 +146,8 @@ describe('SaplingDialogEditRelationTab', () => {
 
   it('opens the existing relation table create workflow', async () => {
     const wrapper = mountRelationTab()
+
+    expect(wrapper.getComponent(SaplingTableStub).props('allowDeleteActions')).toBe(false)
 
     await wrapper.get('[data-testid="relation-create-record"]').trigger('click')
 
@@ -162,5 +173,21 @@ describe('SaplingDialogEditRelationTab', () => {
 
     expect(wrapper.find('[data-testid="relation-create-record"]').exists()).toBe(false)
     expect(wrapper.find('[data-testid="relation-open-entity"]').exists()).toBe(true)
+  })
+
+  it('allows staging existing relations during create without creating a child record', () => {
+    const wrapper = mountRelationTab({ mode: 'create' })
+
+    expect(wrapper.find('[data-testid="relation-select-add"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="relation-create-record"]').exists()).toBe(false)
+    expect(wrapper.find('[data-testid="relation-open-entity"]').exists()).toBe(true)
+  })
+
+  it('opens a deferred child create dialog for 1:m relations during parent creation', async () => {
+    const wrapper = mountRelationTab({ mode: 'create', relationKind: '1:m' })
+
+    await wrapper.get('[data-testid="relation-create-record"]').trigger('click')
+
+    expect(openCreateDialogMock).toHaveBeenCalledTimes(1)
   })
 })

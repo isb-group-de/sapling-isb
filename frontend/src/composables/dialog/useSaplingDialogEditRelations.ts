@@ -2,6 +2,7 @@ import { computed, ref, type ComputedRef, type Ref } from 'vue'
 import type {
   AccumulatedPermission,
   ColumnFilterItem,
+  DialogSaveContext,
   DialogState,
   EntityState,
   EntityTemplate,
@@ -24,6 +25,7 @@ import { sortDialogTemplates } from '@/utils/saplingDialogLayoutUtil'
 
 type GetItemHandle = (item?: SaplingGenericItem | null) => string | number | null
 const TABLE_VALUE_REFERENCE_KINDS = ['m:1', '1:1']
+const PENDING_RELATION_DRAFT_KEY = '__saplingPendingRelationDraftId'
 
 interface UseSaplingDialogEditRelationsOptions {
   entity: ComputedRef<EntityItem | null>
@@ -51,6 +53,8 @@ export function useSaplingDialogEditRelations(options: UseSaplingDialogEditRelat
   const selectedRelations = ref<Record<string, SaplingGenericItem[]>>({})
   const relationTableState = ref<Record<string, EntityState>>({})
   const selectedItems = ref<SaplingGenericItem[]>([])
+  const pendingRelationCreateContexts = new Map<string, DialogSaveContext>()
+  let nextPendingRelationDraftId = 1
 
   const relationTemplates = computed(() => {
     if (!options.showReference.value) {
@@ -69,6 +73,15 @@ export function useSaplingDialogEditRelations(options: UseSaplingDialogEditRelat
       ),
     )
   })
+
+  const dirtyRelationNames = computed(() =>
+    options.mode.value === 'create'
+      ? relationTemplates.value
+          .filter((template) => (relationTableItems.value[template.name]?.length ?? 0) > 0)
+          .map((template) => template.name)
+      : [],
+  )
+  const hasPendingRelationChanges = computed(() => dirtyRelationNames.value.length > 0)
 
   const relationTableHeaders = computed(() =>
     getRelationTableHeaders(relationTableState.value, options.t, options.permissions.value ?? []),
@@ -94,6 +107,13 @@ export function useSaplingDialogEditRelations(options: UseSaplingDialogEditRelat
     relationMutationState.value[template.name] = true
 
     try {
+      if (options.mode.value === 'create') {
+        stageRelations(template, items)
+        selectedRelations.value[template.name] = []
+        selectedItems.value = []
+        return
+      }
+
       switch (template.kind) {
         case '1:m':
           await addRelation1M(template, items)
@@ -149,6 +169,32 @@ export function useSaplingDialogEditRelations(options: UseSaplingDialogEditRelat
     relationMutationState.value[template.name] = true
 
     try {
+      if (options.mode.value === 'create') {
+        const removedIdentities = new Set(
+          itemsToRemove
+            .map(getStagedRelationIdentity)
+            .filter((identity): identity is string => Boolean(identity)),
+        )
+        relationTableItems.value[template.name] = (
+          relationTableItems.value[template.name] ?? []
+        ).filter((item) => {
+          const identity = getStagedRelationIdentity(item)
+          if (!identity || !removedIdentities.has(identity)) {
+            return true
+          }
+
+          const draftId = getPendingRelationDraftId(item)
+          if (draftId) {
+            pendingRelationCreateContexts.delete(draftId)
+          }
+          return false
+        })
+        relationTableTotal.value[template.name] =
+          relationTableItems.value[template.name]?.length ?? 0
+        selectedItems.value = []
+        return
+      }
+
       switch (template.kind) {
         case '1:m':
           await removeRelation1M(template, itemsToRemove)
@@ -160,6 +206,152 @@ export function useSaplingDialogEditRelations(options: UseSaplingDialogEditRelat
     } finally {
       relationMutationState.value[template.name] = false
     }
+  }
+
+  function stageNewRelationRecord(
+    template: EntityTemplate,
+    item: SaplingGenericItem,
+    context?: DialogSaveContext,
+  ): void {
+    if (options.mode.value !== 'create' || template.kind !== '1:m') {
+      return
+    }
+
+    const draftId = `${template.name}:${nextPendingRelationDraftId++}`
+    const draft = {
+      ...item,
+      [PENDING_RELATION_DRAFT_KEY]: draftId,
+    }
+    relationTableItems.value[template.name] = [
+      ...(relationTableItems.value[template.name] ?? []),
+      draft,
+    ]
+    relationTableTotal.value[template.name] = relationTableItems.value[template.name].length
+    relationTableLoaded.value[template.name] = true
+    if (context) {
+      pendingRelationCreateContexts.set(draftId, context)
+    }
+  }
+
+  function getPendingRelationDraftId(item: SaplingGenericItem): string | null {
+    const value = item[PENDING_RELATION_DRAFT_KEY]
+    return typeof value === 'string' && value.length > 0 ? value : null
+  }
+
+  function getStagedRelationIdentity(item: SaplingGenericItem): string | null {
+    const draftId = getPendingRelationDraftId(item)
+    if (draftId) {
+      return `draft:${draftId}`
+    }
+
+    const handle = options.getItemHandle(item)
+    return handle == null ? null : `handle:${String(handle)}`
+  }
+
+  function stageRelations(template: EntityTemplate, items: SaplingGenericItem[]): void {
+    const staged = relationTableItems.value[template.name] ?? []
+    const handles = new Set(
+      staged
+        .map((item) => options.getItemHandle(item))
+        .filter((handle): handle is string | number => handle != null),
+    )
+
+    relationTableItems.value[template.name] = [
+      ...staged,
+      ...items.filter((item) => {
+        const handle = options.getItemHandle(item)
+        if (handle == null || handles.has(handle)) {
+          return false
+        }
+        handles.add(handle)
+        return true
+      }),
+    ]
+    relationTableTotal.value[template.name] = relationTableItems.value[template.name].length
+    relationTableLoaded.value[template.name] = true
+  }
+
+  function appendPendingRelationsToPayload(payload: SaplingGenericItem): SaplingGenericItem {
+    if (options.mode.value !== 'create') {
+      return payload
+    }
+
+    const output = { ...payload }
+    relationTemplates.value
+      .filter((template) => ['m:n', 'n:m'].includes(template.kind ?? ''))
+      .forEach((template) => {
+        const handles = (relationTableItems.value[template.name] ?? [])
+          .map((item) => options.getItemHandle(item))
+          .filter((handle): handle is string | number => handle != null)
+
+        if (handles.length > 0) {
+          output[template.name] = handles
+        }
+      })
+
+    return output
+  }
+
+  async function persistPendingRelations(parentHandle: string | number): Promise<boolean> {
+    let allPersisted = true
+
+    for (const template of relationTemplates.value.filter((entry) => entry.kind === '1:m')) {
+      const pending = relationTableItems.value[template.name] ?? []
+      const mappedBy = template.mappedBy
+      if (!mappedBy || pending.length === 0) {
+        continue
+      }
+
+      const failed: SaplingGenericItem[] = []
+      for (let index = 0; index < pending.length; index += 1) {
+        let item = pending[index]
+        let handle = options.getItemHandle(item)
+        const draftId = getPendingRelationDraftId(item)
+
+        try {
+          if (handle == null) {
+            const createPayload = { ...item, [mappedBy]: parentHandle }
+            delete createPayload[PENDING_RELATION_DRAFT_KEY]
+            const created = await ApiGenericService.create(
+              template.referenceName ?? '',
+              createPayload,
+            )
+            handle = options.getItemHandle(created)
+            if (handle == null) {
+              throw new Error('Created relation record has no handle')
+            }
+            item = { ...item, ...created }
+            pending[index] = item
+          } else {
+            await ApiGenericService.update(template.referenceName ?? '', handle, {
+              [mappedBy]: parentHandle,
+            })
+          }
+
+          const nestedRelationsPersisted =
+            (draftId && handle != null
+              ? await pendingRelationCreateContexts.get(draftId)?.persistPendingRelations?.(handle)
+              : undefined) ?? true
+          if (!nestedRelationsPersisted) {
+            failed.push(item, ...pending.slice(index + 1))
+            break
+          }
+          if (draftId) {
+            pendingRelationCreateContexts.delete(draftId)
+          }
+        } catch {
+          failed.push(item, ...pending.slice(index + 1))
+          break
+        }
+      }
+
+      relationTableItems.value[template.name] = failed
+      relationTableTotal.value[template.name] = failed.length
+      selectedRelations.value[template.name] = failed
+      allPersisted = allPersisted && failed.length === 0
+    }
+
+    return allPersisted
   }
 
   async function removeRelationNM(
@@ -431,8 +623,13 @@ export function useSaplingDialogEditRelations(options: UseSaplingDialogEditRelat
         return
       }
 
-      relationTableItems.value[template.name] = []
-      relationTableTotal.value[template.name] = 0
+      if (options.mode.value !== 'create') {
+        relationTableItems.value[template.name] = []
+        relationTableTotal.value[template.name] = 0
+      } else {
+        relationTableTotal.value[template.name] =
+          relationTableItems.value[template.name]?.length ?? 0
+      }
       relationTableLoaded.value[template.name] = true
     } catch (error) {
       if (relationTableRequestId.value[template.name] === requestId) {
@@ -523,10 +720,16 @@ export function useSaplingDialogEditRelations(options: UseSaplingDialogEditRelat
   function resetRelationSelections(): void {
     selectedItems.value = []
     selectedRelations.value = {}
+    pendingRelationCreateContexts.clear()
+    if (options.mode.value === 'create') {
+      resetRelationTableItems()
+    }
   }
 
   return {
     relationTemplates,
+    dirtyRelationNames,
+    hasPendingRelationChanges,
     relationTableHeaders,
     relationTableState,
     relationTableItems,
@@ -541,6 +744,7 @@ export function useSaplingDialogEditRelations(options: UseSaplingDialogEditRelat
     selectedRelations,
     selectedItems,
     addRelation,
+    stageNewRelationRecord,
     removeRelation,
     initializeRelationTables,
     loadRelationTableItems,
@@ -553,5 +757,7 @@ export function useSaplingDialogEditRelations(options: UseSaplingDialogEditRelat
     clearSelectedItems,
     resetRelationTableItems,
     resetRelationSelections,
+    appendPendingRelationsToPayload,
+    persistPendingRelations,
   }
 }

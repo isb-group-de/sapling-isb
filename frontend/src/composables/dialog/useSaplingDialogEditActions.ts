@@ -18,6 +18,8 @@ export function useSaplingDialogEditActions({
   activeTab,
   emit,
   buildSavePayload,
+  appendPendingRelationsToPayload,
+  persistPendingRelations,
   syncInitialFormSnapshot,
   resetRelationSelections,
   initializeFormWithParentContext,
@@ -30,6 +32,8 @@ export function useSaplingDialogEditActions({
   activeTab: Ref<number>
   emit: SaplingDialogEditEmit
   buildSavePayload: () => SaplingGenericItem
+  appendPendingRelationsToPayload: (payload: SaplingGenericItem) => SaplingGenericItem
+  persistPendingRelations: (parentHandle: string | number) => Promise<boolean>
   syncInitialFormSnapshot: () => void
   resetRelationSelections: () => void
   initializeFormWithParentContext: () => void
@@ -84,11 +88,12 @@ export function useSaplingDialogEditActions({
       validationFeedback.value = { action, attempt: validationAttempt }
       return null
     }
-    return buildSavePayload()
+    return appendPendingRelationsToPayload(buildSavePayload())
   }
 
   function emitSave(output: SaplingGenericItem, action: DialogSaveAction): void {
     emit('save', output, action, {
+      persistPendingRelations,
       complete: (didSave = true) => {
         completeSave(action)
         if (didSave) syncInitialFormSnapshot()

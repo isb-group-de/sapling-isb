@@ -17,6 +17,7 @@
       :class="{
         'sapling-record-dialog-nav-item--active': activeTab === 0,
         'sapling-record-dialog-nav-item--record': true,
+        'sapling-record-dialog-nav-item--dirty': isRecordDirty,
       }"
       type="button"
       :id="tabId(0)"
@@ -25,6 +26,7 @@
       :aria-selected="activeTab === 0"
       :tabindex="activeTab === 0 ? 0 : -1"
       :aria-current="activeTab === 0 ? 'page' : undefined"
+      :aria-label="recordAriaLabel"
       @click="activeTab = 0"
       @keydown="onTabKeydown($event, 0)"
     >
@@ -32,6 +34,9 @@
         mdi-file-document-edit-outline
       </v-icon>
       <span class="sapling-record-dialog-nav-item__label">{{ entityLabel }}</span>
+      <span v-if="isRecordDirty" class="sapling-record-dialog-nav-item__meta">
+        <span class="sapling-record-dialog-nav-item__dirty-indicator" aria-hidden="true" />
+      </span>
     </button>
     <button
       v-for="(template, idx) in relationTemplates"
@@ -42,6 +47,7 @@
         {
           'sapling-record-dialog-nav-item--active': !relationsLocked && activeTab === idx + 1,
           'sapling-record-dialog-nav-item--locked': relationsLocked,
+          'sapling-record-dialog-nav-item--dirty': isRelationDirty(template),
         },
       ]"
       type="button"
@@ -82,6 +88,11 @@
         >
           mdi-lock-outline
         </v-icon>
+        <span
+          v-if="isRelationDirty(template)"
+          class="sapling-record-dialog-nav-item__dirty-indicator"
+          aria-hidden="true"
+        />
       </span>
     </button>
   </nav>
@@ -100,12 +111,27 @@ const props = defineProps<{
   relationTemplates: EntityTemplate[]
   relationEntities?: Record<string, EntityItem | null>
   tabIdPrefix?: string
+  relationsLocked?: boolean
+  dirtyFieldCount?: number
+  dirtyRelationNames?: string[]
 }>()
 
 const activeTab = defineModel<number>('activeTab', { required: true })
 const { t } = useI18n()
 const relationsLocked = computed(
-  () => props.mode === 'create' && props.relationTemplates.length > 0,
+  () => props.relationsLocked === true && props.relationTemplates.length > 0,
+)
+const isRecordDirty = computed(() => (props.dirtyFieldCount ?? 0) > 0)
+const recordAriaLabel = computed(() =>
+  isRecordDirty.value
+    ? `${props.entityLabel}. ${String(
+        t(
+          'global.dirtyFieldCount',
+          { count: props.dirtyFieldCount ?? 0 },
+          props.dirtyFieldCount ?? 0,
+        ),
+      )}`
+    : props.entityLabel,
 )
 const lockedRelationsHintId = `${props.tabIdPrefix || `sapling-record-dialog-${props.entityHandle}`}-relations-locked-hint`
 
@@ -177,9 +203,17 @@ function relationAriaLabel(template: EntityTemplate): string {
   const kind = relationKindLabel(template)
   const relationLabel = kind ? `${translatedLabel} (${kind})` : translatedLabel
 
-  return relationsLocked.value
-    ? `${relationLabel}. ${String(t('global.referencesAvailableAfterSave'))}`
+  const accessibleLabel = isRelationDirty(template)
+    ? `${relationLabel}. ${String(t('global.dirtyFieldCount', { count: 1 }, 1))}`
     : relationLabel
+
+  return relationsLocked.value
+    ? `${accessibleLabel}. ${String(t('global.referencesAvailableAfterSave'))}`
+    : accessibleLabel
+}
+
+function isRelationDirty(template: EntityTemplate): boolean {
+  return props.dirtyRelationNames?.includes(template.name) ?? false
 }
 
 function relationKindLabel(template: EntityTemplate): string {

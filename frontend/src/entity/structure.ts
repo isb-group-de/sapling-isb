@@ -170,6 +170,7 @@ export type DialogSaveAction = 'save' | 'saveAndClose'
 
 export interface DialogSaveContext {
   complete: (didSave?: boolean) => void
+  persistPendingRelations?: (parentHandle: string | number) => Promise<boolean>
 }
 
 export type EditDialogOptions = {

@@ -425,6 +425,8 @@ export function useSaplingKanbanBoard(props: KanbanBoardProps) {
     context?: DialogSaveContext,
   ): Promise<void> {
     let didSave = false
+    let pendingRelationsPersisted = true
+    let savedRecord: SaplingGenericItem | null = null
     try {
       if (editDialog.value.mode === 'edit' && editDialog.value.item?.handle != null) {
         const updated = await ApiGenericService.update<SaplingGenericItem>(
@@ -433,10 +435,16 @@ export function useSaplingKanbanBoard(props: KanbanBoardProps) {
           item,
           { relations: buildRecordRelations() },
         )
-        patchRecord(await loadDialogItem(updated))
+        savedRecord = await loadDialogItem(updated)
+        patchRecord(savedRecord)
       } else if (editDialog.value.mode === 'create') {
         const created = await ApiGenericService.create<SaplingGenericItem>(props.entityHandle, item)
-        patchRecord(await loadDialogItem(created))
+        if (created.handle != null) {
+          pendingRelationsPersisted =
+            (await context?.persistPendingRelations?.(created.handle)) ?? true
+        }
+        savedRecord = await loadDialogItem(created)
+        patchRecord(savedRecord)
       }
       didSave = true
       pushMessage(
@@ -445,12 +453,12 @@ export function useSaplingKanbanBoard(props: KanbanBoardProps) {
         t('global.recordSavedDescription'),
         props.entityHandle,
       )
-      if (action === 'saveAndClose') closeDialog()
-      else if (editDialog.value.item) {
+      if (action === 'saveAndClose' && pendingRelationsPersisted) closeDialog()
+      else if (savedRecord) {
         editDialog.value = {
           visible: true,
           mode: 'edit',
-          item: await loadDialogItem(editDialog.value.item),
+          item: savedRecord,
         }
       }
     } finally {

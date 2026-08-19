@@ -417,6 +417,7 @@ export function useSaplingDashboard() {
     }
 
     try {
+      let pendingRelationsPersisted = true
       const formWithoutKpis = toDashboardPayload(form)
       const isEditing =
         dashboardDialog.value.mode === 'edit' && dashboardDialog.value.item?.handle != null
@@ -444,6 +445,10 @@ export function useSaplingDashboard() {
           sortOrder: getNextDashboardSortOrder(),
         })
         if (dashboard.handle != null) {
+          pendingRelationsPersisted =
+            (await context?.persistPendingRelations?.(dashboard.handle)) ?? true
+        }
+        if (dashboard.handle != null) {
           await createDashboardKpiReferences(dashboard.handle, kpiHandles)
         }
       }
@@ -457,7 +462,7 @@ export function useSaplingDashboard() {
         activeTab.value = dashboardIndex
       }
 
-      if (action === 'saveAndClose') {
+      if (action === 'saveAndClose' && pendingRelationsPersisted) {
         closeDashboardDialog()
         return
       }
@@ -496,12 +501,25 @@ export function useSaplingDashboard() {
         payload,
       )
 
+      const pendingRelationsPersisted =
+        dashboardTemplate.handle == null
+          ? true
+          : ((await context?.persistPendingRelations?.(dashboardTemplate.handle)) ?? true)
+
       if (dashboardTemplate.handle != null) {
         await createDashboardTemplateKpiReferences(dashboardTemplate.handle, getKpiHandles(form))
       }
 
       await loadAvailableDashboardTemplates()
-      closeDashboardTemplateDialog()
+      if (pendingRelationsPersisted) {
+        closeDashboardTemplateDialog()
+      } else {
+        dashboardTemplateDialog.value = {
+          visible: true,
+          mode: 'edit',
+          item: dashboardTemplate,
+        }
+      }
       pushMessage(
         'success',
         'global.recordSaved',

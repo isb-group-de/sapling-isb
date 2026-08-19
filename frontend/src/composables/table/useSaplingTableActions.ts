@@ -51,10 +51,17 @@ interface UseSaplingTableActionsProps {
   scriptButtons?: ScriptButtonItem[]
   activeFilter?: FilterQuery
   showActions?: boolean
+  deferCreate?: boolean
 }
 
 type UseSaplingTableActionsEmit = {
   (event: 'reload'): void
+  (
+    event: 'createDraft',
+    value: SaplingGenericItem,
+    action: DialogSaveAction,
+    context?: DialogSaveContext,
+  ): void
 }
 
 interface UseSaplingTableActionsOptions {
@@ -251,8 +258,16 @@ export function useSaplingTableActions({
       return
     }
 
+    if (editDialog.value.mode === 'create' && props.deferCreate) {
+      emit('createDraft', item, action, context)
+      closeDialog()
+      context?.complete(true)
+      return
+    }
+
     let nextDialogItem: SaplingGenericItem | null = null
     let didSave = false
+    let pendingRelationsPersisted = true
     try {
       if (editDialog.value.mode === 'edit' && editDialog.value.item) {
         const handle = getItemHandle(editDialog.value.item)
@@ -268,9 +283,13 @@ export function useSaplingTableActions({
         )
         patchVisibleTableItem(nextDialogItem)
       } else if (editDialog.value.mode === 'create') {
-        nextDialogItem = await loadDialogItem(
-          await ApiGenericService.create(props.entityHandle, item),
-        )
+        const createdItem = await ApiGenericService.create(props.entityHandle, item)
+        const createdHandle = getItemHandle(createdItem)
+        if (createdHandle != null) {
+          pendingRelationsPersisted =
+            (await context?.persistPendingRelations?.(createdHandle)) ?? true
+        }
+        nextDialogItem = await loadDialogItem(createdItem)
       }
 
       didSave = true
@@ -282,7 +301,7 @@ export function useSaplingTableActions({
         props.entityHandle,
       )
 
-      if (action === 'saveAndClose') {
+      if (action === 'saveAndClose' && pendingRelationsPersisted) {
         closeDialog()
         return
       }

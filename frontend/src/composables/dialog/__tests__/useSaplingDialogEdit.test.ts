@@ -17,6 +17,8 @@ const {
   applyReferenceDependencyParentMock,
   findSingleReferenceForDependencyMock,
   validateFormMock,
+  ensureRelationTableItemsMock,
+  relationTemplatesState,
 } = vi.hoisted(() => ({
   fetchCurrentPersonMock: vi.fn(),
   fetchCurrentPermissionMock: vi.fn(),
@@ -29,6 +31,8 @@ const {
   applyReferenceDependencyParentMock: vi.fn(),
   findSingleReferenceForDependencyMock: vi.fn(),
   validateFormMock: vi.fn(),
+  ensureRelationTableItemsMock: vi.fn(),
+  relationTemplatesState: { templates: [] as EntityTemplate[] },
 }))
 
 vi.mock('vue-i18n', () => ({
@@ -86,7 +90,9 @@ vi.mock('@/stores/currentPersonStore', () => ({
 
 vi.mock('../useSaplingDialogEditRelations', () => ({
   useSaplingDialogEditRelations: () => ({
-    relationTemplates: computed(() => []),
+    relationTemplates: computed(() => relationTemplatesState.templates),
+    dirtyRelationNames: computed(() => []),
+    hasPendingRelationChanges: computed(() => false),
     relationTableHeaders: ref({}),
     relationTableState: ref({}),
     relationTableItems: ref({}),
@@ -96,12 +102,15 @@ vi.mock('../useSaplingDialogEditRelations', () => ({
     relationTableItemsPerPage: ref({}),
     relationTableSortBy: ref({}),
     relationTableColumnFilters: ref({}),
+    relationMutationState: ref({}),
+    relationTableLoaded: ref({}),
     selectedRelations: ref({}),
     selectedItems: ref([]),
     addRelation: vi.fn(),
+    stageNewRelationRecord: vi.fn(),
     removeRelation: vi.fn(),
     initializeRelationTables: vi.fn().mockResolvedValue(undefined),
-    ensureRelationTableItems: vi.fn().mockResolvedValue(undefined),
+    ensureRelationTableItems: ensureRelationTableItemsMock,
     onRelationTablePage: vi.fn(),
     onRelationTableItemsPerPage: vi.fn(),
     onRelationTableSort: vi.fn(),
@@ -110,6 +119,8 @@ vi.mock('../useSaplingDialogEditRelations', () => ({
     clearSelectedItems: vi.fn(),
     resetRelationTableItems: vi.fn(),
     resetRelationSelections: vi.fn(),
+    appendPendingRelationsToPayload: (payload: SaplingGenericItem) => payload,
+    persistPendingRelations: vi.fn().mockResolvedValue(true),
   }),
 }))
 
@@ -234,6 +245,7 @@ const TestHost = defineComponent({
       saveAndClose: dialog.saveAndClose,
       save: dialog.save,
       validationFeedback: dialog.validationFeedback,
+      activeTab: dialog.activeTab,
       unsavedChangesDialog: dialog.unsavedChangesDialog,
       formConfigMenuItems: dialog.formConfigMenuItems,
       selectedFormConfigLabel: dialog.selectedFormConfigLabel,
@@ -260,6 +272,8 @@ describe('useSaplingDialogEdit', () => {
     applyReferenceDependencyParentMock.mockReset()
     findSingleReferenceForDependencyMock.mockReset()
     validateFormMock.mockReset()
+    ensureRelationTableItemsMock.mockReset()
+    relationTemplatesState.templates = []
     fetchCurrentPersonMock.mockResolvedValue(undefined)
     fetchCurrentPermissionMock.mockResolvedValue(undefined)
     listFormConfigsMock.mockResolvedValue([])
@@ -277,6 +291,30 @@ describe('useSaplingDialogEdit', () => {
     })
     findSingleReferenceForDependencyMock.mockResolvedValue(null)
     validateFormMock.mockResolvedValue({ valid: true })
+    ensureRelationTableItemsMock.mockResolvedValue(undefined)
+  })
+
+  it('loads the selected relation tab while creating a new record', async () => {
+    relationTemplatesState.templates = [
+      {
+        name: 'people',
+        type: 'relation',
+      } as EntityTemplate,
+    ]
+    const wrapper = mount(TestHost, {
+      props: {
+        mode: 'create',
+        item: null,
+      },
+    })
+    await flushPromises()
+    ensureRelationTableItemsMock.mockClear()
+
+    ;(wrapper.vm as unknown as { activeTab: number }).activeTab = 1
+    await nextTick()
+    await flushPromises()
+
+    expect(ensureRelationTableItemsMock).toHaveBeenCalledWith('people')
   })
 
   it('disables every primary key outside create mode', () => {

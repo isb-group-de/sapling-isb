@@ -3,6 +3,8 @@ import { useI18n } from 'vue-i18n'
 import type {
   AccumulatedPermission,
   ColumnFilterItem,
+  DialogSaveAction,
+  DialogSaveContext,
   EntityTemplate,
   SaplingTableHeaderItem,
   SortItem,
@@ -61,6 +63,8 @@ export interface UseSaplingTableProps {
   isOpenEditDialog?: boolean
   openEditHandle?: string | number | null
   isInitialized?: boolean
+  deferCreate?: boolean
+  allowDeleteActions?: boolean
 }
 
 export type UseSaplingTableEmit = {
@@ -72,6 +76,12 @@ export type UseSaplingTableEmit = {
   (event: 'reload'): void
   (event: 'update:selected', value: SaplingGenericItem[]): void
   (event: 'update:visibleColumnKeys', value: string[]): void
+  (
+    event: 'createDraft',
+    value: SaplingGenericItem,
+    action: DialogSaveAction,
+    context?: DialogSaveContext,
+  ): void
 }
 
 const MOBILE_TABLE_BREAKPOINT = DEFAULT_SMALL_WINDOW_WIDTH

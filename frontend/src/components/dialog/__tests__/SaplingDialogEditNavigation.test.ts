@@ -84,7 +84,7 @@ describe('SaplingDialogEditNavigation', () => {
     })
   })
 
-  it('shows relation tabs as locked while creating a record', async () => {
+  it('allows selecting relation tabs while creating a record', async () => {
     const wrapper = mount(SaplingDialogEditNavigation, {
       props: {
         activeTab: 0,
@@ -109,27 +109,91 @@ describe('SaplingDialogEditNavigation', () => {
 
     const buttons = wrapper.findAll('button')
     expect(buttons).toHaveLength(2)
-    expect(wrapper.text()).toContain('global.referencesAvailableAfterSave')
+    expect(wrapper.text()).not.toContain('global.referencesAvailableAfterSave')
     expect(buttons[1].text()).toContain('mdi-note-outline')
     expect(buttons[1].text()).toContain('1:m')
-    expect(buttons[1].text()).toContain('mdi-lock-outline')
-    expect(buttons[1].classes()).toContain('sapling-record-dialog-nav-item--locked')
-    expect(buttons[1].attributes('aria-disabled')).toBe('true')
-    expect(buttons[1].attributes('aria-describedby')).toContain('relations-locked-hint')
+    expect(buttons[1].text()).not.toContain('mdi-lock-outline')
+    expect(buttons[1].classes()).not.toContain('sapling-record-dialog-nav-item--locked')
+    expect(buttons[1].attributes('aria-disabled')).toBeUndefined()
     expect(buttons[1].attributes('tabindex')).toBe('-1')
 
     await buttons[1].trigger('click')
-    await buttons[0].trigger('keydown', { key: 'End' })
-
-    expect(wrapper.emitted('update:activeTab')).toBeUndefined()
-    expect(buttons[0].attributes('aria-selected')).toBe('true')
-
-    await wrapper.setProps({ mode: 'edit' })
-    await wrapper.findAll('button')[1].trigger('click')
     expect(wrapper.emitted('update:activeTab')).toEqual([[1]])
+    expect(wrapper.findAll('button')[1].attributes('aria-selected')).toBe('true')
   })
 
-  it('returns a programmatically selected relation to the record tab while creating', () => {
+  it('marks record and relation tabs independently when they contain changes', async () => {
+    const wrapper = mount(SaplingDialogEditNavigation, {
+      props: {
+        activeTab: 0,
+        entityHandle: 'company',
+        entityLabel: 'Companies',
+        mode: 'create' as const,
+        dirtyFieldCount: 0,
+        dirtyRelationNames: [],
+        relationTemplates: [
+          { name: 'people', type: 'collection', kind: '1:m' },
+          { name: 'contracts', type: 'collection', kind: '1:m' },
+        ] as never,
+      },
+      global: {
+        mocks: {
+          $t: (key: string) => key,
+        },
+        stubs: {
+          VIcon: { template: '<span><slot /></span>' },
+        },
+      },
+    })
+
+    await wrapper.setProps({ dirtyFieldCount: 2, dirtyRelationNames: ['people'] })
+
+    const [recordButton, ...relationButtons] = wrapper.findAll('button')
+    expect(recordButton.classes()).toContain('sapling-record-dialog-nav-item--dirty')
+    expect(recordButton.find('.sapling-record-dialog-nav-item__dirty-indicator').exists()).toBe(
+      true,
+    )
+    expect(recordButton.attributes('aria-label')).toContain('global.dirtyFieldCount')
+    expect(relationButtons[0].classes()).toContain('sapling-record-dialog-nav-item--dirty')
+    expect(
+      relationButtons[0].find('.sapling-record-dialog-nav-item__dirty-indicator').exists(),
+    ).toBe(true)
+    expect(relationButtons[0].attributes('aria-label')).toContain('global.dirtyFieldCount')
+    expect(relationButtons[1].classes()).not.toContain('sapling-record-dialog-nav-item--dirty')
+  })
+
+  it('locks relation tabs in a deferred child create dialog', async () => {
+    const wrapper = mount(SaplingDialogEditNavigation, {
+      props: {
+        activeTab: 0,
+        entityHandle: 'person',
+        entityLabel: 'People',
+        mode: 'create' as const,
+        relationsLocked: true,
+        relationTemplates: [{ name: 'tickets', type: 'collection', kind: '1:m' }] as never,
+      },
+      global: {
+        mocks: {
+          $t: (key: string) => key,
+        },
+        stubs: {
+          VIcon: { template: '<span><slot /></span>' },
+        },
+      },
+    })
+
+    const relationButton = wrapper.findAll('button')[1]
+    expect(wrapper.text()).toContain('global.referencesAvailableAfterSave')
+    expect(relationButton.classes()).toContain('sapling-record-dialog-nav-item--locked')
+    expect(relationButton.attributes('aria-disabled')).toBe('true')
+    expect(relationButton.attributes('aria-describedby')).toContain('relations-locked-hint')
+
+    await relationButton.trigger('click')
+
+    expect(wrapper.emitted('update:activeTab')).toBeUndefined()
+  })
+
+  it('keeps a programmatically selected relation active while creating', () => {
     const updateActiveTab = vi.fn()
     mount(SaplingDialogEditNavigation, {
       props: {
@@ -150,7 +214,7 @@ describe('SaplingDialogEditNavigation', () => {
       },
     })
 
-    expect(updateActiveTab).toHaveBeenCalledWith(0)
+    expect(updateActiveTab).not.toHaveBeenCalled()
   })
 
   it('uses arrow, Home, and End keys as a roving tablist', async () => {

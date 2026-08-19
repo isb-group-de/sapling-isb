@@ -126,6 +126,7 @@ export function useSaplingEventEditor(options: UseSaplingEventEditorOptions) {
     )
     let savedEvent: EventItem
     let didSave = false
+    let pendingRelationsPersisted = true
 
     try {
       if (isNewEvent) {
@@ -136,6 +137,10 @@ export function useSaplingEventEditor(options: UseSaplingEventEditorOptions) {
       const editingHandle = getCalendarEventHandle(options.editEvent.value)
       if (editingHandle == null) {
         savedEvent = await ApiGenericService.create<EventItem>('event', eventPayload)
+        if (savedEvent.handle != null) {
+          pendingRelationsPersisted =
+            (await context?.persistPendingRelations?.(savedEvent.handle)) ?? true
+        }
         replaceLocalEvent(options.editEvent.value, eventPayload, savedEvent)
       } else {
         savedEvent = await ApiGenericService.update<EventItem>(
@@ -159,7 +164,7 @@ export function useSaplingEventEditor(options: UseSaplingEventEditorOptions) {
       options.clearDragSnapshot()
       await options.refreshVisibleEvents()
 
-      if (action === 'saveAndClose') {
+      if (action === 'saveAndClose' && pendingRelationsPersisted) {
         options.showEditDialog.value = false
         options.editEvent.value = null
         return

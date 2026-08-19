@@ -140,7 +140,7 @@
               v-else
               :headers="headers"
               :items="items"
-              :parent="item"
+              :parent="relationParent"
               :parent-entity="entity"
               :search="search"
               :page="page"
@@ -160,6 +160,8 @@
               :show-import="false"
               :show-form-config="false"
               :show-selection-toolbar="false"
+              :defer-create="mode === 'create'"
+              :allow-delete-actions="false"
               :table-key="template.name"
               :selected="selectedItems"
               @update:selected="(val: SaplingGenericItem[]) => emit('update:selected-items', val)"
@@ -171,6 +173,9 @@
                 (val: Record<string, ColumnFilterItem>) => emit('update:column-filters', val)
               "
               @reload="emit('reload')"
+              @create-draft="
+                (value, action, context) => emit('create-relation-record', value, context)
+              "
             />
           </div>
         </v-card-text>
@@ -190,6 +195,7 @@ import type {
   AccumulatedPermission,
   ColumnFilterItem,
   DialogState,
+  DialogSaveContext,
   EntityTemplate,
   SortItem,
   SaplingTableHeaderItem,
@@ -201,6 +207,7 @@ const props = defineProps<{
   entityHandle: string
   entityLabel: string
   item: SaplingGenericItem | null
+  parentDraft: SaplingGenericItem
   entity: EntityItem | null
   headers: SaplingTableHeaderItem[]
   items: SaplingGenericItem[]
@@ -226,18 +233,20 @@ const relationTableRef = ref<{ openCreateDialog: () => void } | null>(null)
 const relationLabel = computed(() => t(`${props.entityHandle}.${props.template.name}`))
 const isReadOnlyRelation = computed(
   () =>
-    props.mode !== 'edit' ||
+    props.mode === 'readonly' ||
     props.template.fieldAccess?.allowUpdate === false ||
     (props.template.options?.includes('isReadOnly') ?? false),
 )
 const targetEntityHandle = computed(() => props.template.referenceName?.trim() ?? '')
 const canCreateRelationRecord = computed(
   () =>
+    (props.mode === 'edit' || (props.mode === 'create' && props.template.kind === '1:m')) &&
     !isReadOnlyRelation.value &&
     Boolean(targetEntityHandle.value) &&
     Boolean(props.relationEntity?.canInsert) &&
     Boolean(props.entityPermission?.allowInsert),
 )
+const relationParent = computed(() => (props.mode === 'create' ? props.parentDraft : props.item))
 const relationEntityPath = computed(() => {
   const entityHandle = targetEntityHandle.value
   if (!entityHandle || props.entityPermission?.allowRead === false) {
@@ -274,6 +283,7 @@ const emit = defineEmits<{
   (event: 'update:selected-items', value: SaplingGenericItem[]): void
   (event: 'add-relation'): void
   (event: 'remove-relation'): void
+  (event: 'create-relation-record', value: SaplingGenericItem, context?: DialogSaveContext): void
   (event: 'update:search', value: string): void
   (event: 'update:page', value: number): void
   (event: 'update:items-per-page', value: number): void

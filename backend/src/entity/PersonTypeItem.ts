@@ -27,6 +27,17 @@ export class PersonTypeItem {
    */
   @ApiProperty()
   @Sapling(['isValue', 'isOrderASC'])
+  @SaplingForm({
+    order: 50,
+    group: 'personType.groupAppearance',
+    groupOrder: 100,
+    width: 1,
+    visible: true,
+    tableOrder: 50,
+    tableVisible: true,
+    mobileOrder: 50,
+    mobileVisible: true,
+  })
   @Property({ primary: true, length: 64 })
   handle!: string;
 

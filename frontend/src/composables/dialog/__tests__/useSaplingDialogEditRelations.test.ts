@@ -3,13 +3,15 @@ import { describe, expect, it, beforeEach, vi } from 'vitest'
 
 import type {
   AccumulatedPermission,
+  DialogSaveContext,
   DialogState,
   EntityState,
   EntityTemplate,
 } from '@/entity/structure'
 import type { EntityItem, SaplingGenericItem } from '@/entity/entity'
 
-const { apiFindMock, apiUpdateMock, loadGenericManyMock } = vi.hoisted(() => ({
+const { apiCreateMock, apiFindMock, apiUpdateMock, loadGenericManyMock } = vi.hoisted(() => ({
+  apiCreateMock: vi.fn(),
   apiFindMock: vi.fn(),
   apiUpdateMock: vi.fn(),
   loadGenericManyMock: vi.fn(),
@@ -17,6 +19,7 @@ const { apiFindMock, apiUpdateMock, loadGenericManyMock } = vi.hoisted(() => ({
 
 vi.mock('@/services/api.generic.service', () => ({
   default: {
+    create: apiCreateMock,
     find: apiFindMock,
     update: apiUpdateMock,
   },
@@ -84,11 +87,13 @@ const entityStates = reactive<Record<string, EntityState>>({
 
 describe('useSaplingDialogEditRelations', () => {
   beforeEach(() => {
+    apiCreateMock.mockReset()
     apiFindMock.mockReset()
     apiUpdateMock.mockReset()
     loadGenericManyMock.mockReset()
     loadGenericManyMock.mockResolvedValue(undefined)
     apiUpdateMock.mockResolvedValue({})
+    apiCreateMock.mockResolvedValue({ handle: 101 })
     apiFindMock.mockResolvedValue({
       data: [{ handle: 1, title: 'First note' }],
       meta: { total: 1 },
@@ -213,6 +218,124 @@ describe('useSaplingDialogEditRelations', () => {
     expect(apiFindMock).not.toHaveBeenCalled()
     expect(relations.relationTableItems.value.notes).toEqual([])
     expect(relations.relationTableTotal.value.notes).toBe(0)
+  })
+
+  it('stages and removes 1:m relations locally while creating a record', async () => {
+    const relations = createRelations({ mode: 'create' })
+    const selected = { handle: 7, title: 'Existing note' }
+    relations.selectedRelations.value.notes = [selected, selected]
+
+    await relations.addRelation(relations.relationTemplates.value[0])
+
+    expect(apiUpdateMock).not.toHaveBeenCalled()
+    expect(relations.relationTableItems.value.notes).toEqual([selected])
+    expect(relations.hasPendingRelationChanges.value).toBe(true)
+    expect(relations.dirtyRelationNames.value).toEqual(['notes'])
+
+    await relations.removeRelation(relations.relationTemplates.value[0], [selected])
+
+    expect(apiUpdateMock).not.toHaveBeenCalled()
+    expect(relations.relationTableItems.value.notes).toEqual([])
+    expect(relations.hasPendingRelationChanges.value).toBe(false)
+    expect(relations.dirtyRelationNames.value).toEqual([])
+  })
+
+  it('includes staged m:n handles in the initial create payload', async () => {
+    const relations = createRelations({
+      mode: 'create',
+      templates: [
+        createTemplate({
+          name: 'watchers',
+          type: 'Collection<PersonItem>',
+          kind: 'm:n',
+          referenceName: 'note',
+        }),
+      ],
+    })
+    relations.selectedRelations.value.watchers = [
+      { handle: 4, title: 'Ada' },
+      { handle: 5, title: 'Grace' },
+    ]
+
+    await relations.addRelation(relations.relationTemplates.value[0])
+
+    expect(relations.appendPendingRelationsToPayload({ title: 'Draft' })).toEqual({
+      title: 'Draft',
+      watchers: [4, 5],
+    })
+  })
+
+  it('persists staged 1:m relations after the parent receives its handle', async () => {
+    const relations = createRelations({ mode: 'create' })
+    relations.selectedRelations.value.notes = [
+      { handle: 7, title: 'First' },
+      { handle: 8, title: 'Second' },
+    ]
+    await relations.addRelation(relations.relationTemplates.value[0])
+
+    await expect(relations.persistPendingRelations(99)).resolves.toBe(true)
+
+    expect(apiUpdateMock).toHaveBeenNthCalledWith(1, 'note', 7, { ticket: 99 })
+    expect(apiUpdateMock).toHaveBeenNthCalledWith(2, 'note', 8, { ticket: 99 })
+    expect(relations.relationTableItems.value.notes).toEqual([])
+  })
+
+  it('creates staged new 1:m records after the parent receives its handle', async () => {
+    const relations = createRelations({ mode: 'create' })
+    const persistNestedRelations = vi.fn().mockResolvedValue(true)
+    const context = {
+      persistPendingRelations: persistNestedRelations,
+      complete: vi.fn(),
+    } as DialogSaveContext
+
+    relations.stageNewRelationRecord(
+      relations.relationTemplates.value[0],
+      { title: 'New note', ticket: '__sapling_pending_parent__' },
+      context,
+    )
+
+    expect(relations.relationTableItems.value.notes).toEqual([
+      expect.objectContaining({ title: 'New note' }),
+    ])
+    expect(relations.hasPendingRelationChanges.value).toBe(true)
+
+    await expect(relations.persistPendingRelations(99)).resolves.toBe(true)
+
+    expect(apiCreateMock).toHaveBeenCalledWith('note', {
+      title: 'New note',
+      ticket: 99,
+    })
+    expect(apiUpdateMock).not.toHaveBeenCalled()
+    expect(persistNestedRelations).toHaveBeenCalledWith(101)
+    expect(relations.relationTableItems.value.notes).toEqual([])
+  })
+
+  it('removes a staged new 1:m record without calling the API', async () => {
+    const relations = createRelations({ mode: 'create' })
+    const template = relations.relationTemplates.value[0]
+
+    relations.stageNewRelationRecord(template, { title: 'Mistaken draft' })
+    const stagedDraft = relations.relationTableItems.value.notes[0]
+    await relations.removeRelation(template, [stagedDraft])
+
+    expect(apiCreateMock).not.toHaveBeenCalled()
+    expect(apiUpdateMock).not.toHaveBeenCalled()
+    expect(relations.relationTableItems.value.notes).toEqual([])
+    expect(relations.dirtyRelationNames.value).toEqual([])
+  })
+
+  it('keeps failed 1:m drafts selected for retry after the parent was created', async () => {
+    const relations = createRelations({ mode: 'create' })
+    const first = { handle: 7, title: 'First' }
+    const second = { handle: 8, title: 'Second' }
+    relations.selectedRelations.value.notes = [first, second]
+    await relations.addRelation(relations.relationTemplates.value[0])
+    apiUpdateMock.mockRejectedValueOnce(new Error('update failed'))
+
+    await expect(relations.persistPendingRelations(99)).resolves.toBe(false)
+
+    expect(apiUpdateMock).toHaveBeenCalledTimes(1)
+    expect(relations.selectedRelations.value.notes).toEqual([first, second])
   })
 
   it('adds a 1:m relation with a minimal update payload', async () => {
