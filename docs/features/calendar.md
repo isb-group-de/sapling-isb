@@ -285,6 +285,12 @@ request. They must not add the same participants through follow-up relation
 requests, because relation mutations intentionally run the event `afterUpdate`
 lifecycle and would emit misleading update notifications immediately after the
 create notification.
+The people selected in the calendar filter are also copied into the local Event
+draft as hydrated participant records. The create dialog therefore shows them
+immediately in its participants relation tab, where they can be reviewed or
+removed before the same handles are sent in the initial create request.
+The signed-in person is not added implicitly; they are included only when they
+are part of the current calendar filter selection.
 
 `SaplingFieldEventRecurrence.vue` is the editable recurrence field used by generic dialogs. Shared parsing and expansion helpers live in `frontend/src/utils/eventRecurrence.ts`.
 

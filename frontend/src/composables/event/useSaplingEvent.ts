@@ -130,6 +130,7 @@ export function useSaplingEvent() {
   } = useSaplingCalendarDrag({
     events,
     selectedPeople: selectedPeoples,
+    peopleMap,
     ownPerson,
     defaultEventType,
     defaultEventStatus,
@@ -205,7 +206,6 @@ export function useSaplingEvent() {
     events,
     templates,
     selectedPeople: selectedPeoples,
-    ownPerson,
     editEvent,
     showEditDialog,
     forceEditDialogDirtyFields,

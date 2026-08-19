@@ -21,6 +21,10 @@ function createHarness() {
   const events = ref<SaplingCalendarEvent[]>([])
   const selectedPeople = ref([7, 9])
   const ownPerson = ref<PersonItem | null>({ handle: 5 } as PersonItem)
+  const peopleMap = ref<Record<number, PersonItem>>({
+    7: { handle: 7, firstName: 'Ada', lastName: 'Lovelace' } as PersonItem,
+    9: { handle: 9, firstName: 'Grace', lastName: 'Hopper' } as PersonItem,
+  })
   const defaultEventType = ref<EventTypeItem | null>({
     handle: 'online',
     title: 'Online',
@@ -40,6 +44,7 @@ function createHarness() {
   const drag = useSaplingCalendarDrag({
     events,
     selectedPeople,
+    peopleMap,
     ownPerson,
     defaultEventType,
     defaultEventStatus,
@@ -171,7 +176,7 @@ describe('useSaplingCalendarDrag', () => {
     expect(harness.openPersistedEventEditor).not.toHaveBeenCalled()
   })
 
-  it('creates a clean draft with the current person and selected participants', () => {
+  it('creates a clean draft with only the selected participants', () => {
     const harness = createHarness()
 
     harness.drag.startTime(new Event('mousedown'), createTimeSlot(9))
@@ -179,7 +184,10 @@ describe('useSaplingCalendarDrag', () => {
     harness.drag.endDrag()
 
     expect(harness.events.value).toHaveLength(1)
-    expect(harness.editEvent.value?.event?.participants).toEqual([5, 7, 9])
+    expect(harness.editEvent.value?.event?.participants).toEqual([
+      { handle: 7, firstName: 'Ada', lastName: 'Lovelace' },
+      { handle: 9, firstName: 'Grace', lastName: 'Hopper' },
+    ])
     expect(harness.editEvent.value?.event?.type).toEqual({
       handle: 'online',
       title: 'Online',

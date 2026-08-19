@@ -17,6 +17,7 @@ import { isRecurringCalendarEvent } from '@/utils/eventRecurrence'
 interface UseSaplingCalendarDragOptions {
   events: Ref<SaplingCalendarEvent[]>
   selectedPeople: Ref<number[]>
+  peopleMap: Ref<Record<number, PersonItem>>
   ownPerson: Ref<PersonItem | null>
   defaultEventType: Ref<EventTypeItem | null>
   defaultEventStatus: Ref<EventStatusItem | null>
@@ -147,7 +148,7 @@ export function useSaplingCalendarDrag(options: UseSaplingCalendarDragOptions) {
     if (isNewDraft) {
       const draftEvent = createEvent.value!
       options.editEvent.value = draftEvent
-      draftEvent.event = buildDraftEventPayload(
+      const draftPayload = buildDraftEventPayload(
         draftEvent,
         options.ownPerson.value,
         options.selectedPeople.value,
@@ -155,6 +156,12 @@ export function useSaplingCalendarDrag(options: UseSaplingCalendarDragOptions) {
         options.defaultEventStatus.value,
         options.defaultEventCategory.value,
       )
+      draftPayload.participants = resolveDraftParticipantRecords(
+        draftPayload.participants,
+        options.peopleMap.value,
+        options.ownPerson.value,
+      )
+      draftEvent.event = draftPayload
       options.forceEditDialogDirtyFields.value = getCalendarInteractionForcedDirtyFields({
         isNewDraft,
         wasDragged,
@@ -275,6 +282,31 @@ export function useSaplingCalendarDrag(options: UseSaplingCalendarDragOptions) {
 
   function findDragSnapshot(target: CalendarEvent): CalendarDragSnapshot | undefined {
     return dragSnapshots.value.find((snapshot) => snapshot.target === target)
+  }
+
+  function resolveDraftParticipantRecords(
+    participants: unknown,
+    peopleMap: Record<number, PersonItem>,
+    ownPerson: PersonItem | null,
+  ): PersonItem[] {
+    if (!Array.isArray(participants)) {
+      return []
+    }
+
+    return participants.flatMap((participant) => {
+      const handle =
+        typeof participant === 'number'
+          ? participant
+          : typeof participant === 'object' && participant != null && 'handle' in participant
+            ? Number(participant.handle)
+            : Number.NaN
+      if (!Number.isFinite(handle)) {
+        return []
+      }
+
+      const person = ownPerson?.handle === handle ? ownPerson : peopleMap[handle]
+      return [person ?? ({ handle } as PersonItem)]
+    })
   }
 
   function applySeriesMove(startDelta: number) {

@@ -2,7 +2,7 @@ import { createPinia, setActivePinia } from 'pinia'
 import { ref } from 'vue'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { CalendarEvent } from 'vuetify/lib/components/VCalendar/types.mjs'
-import type { EventItem, PersonItem } from '@/entity/entity'
+import type { EventItem } from '@/entity/entity'
 import type { EntityTemplate } from '@/entity/structure'
 import type { SaplingCalendarEvent } from '../eventCalendar.utils'
 
@@ -44,7 +44,6 @@ function createHarness() {
   const events = ref<SaplingCalendarEvent[]>([])
   const templates = ref<EntityTemplate[]>([])
   const selectedPeople = ref([7])
-  const ownPerson = ref<PersonItem | null>({ handle: 5 } as PersonItem)
   const editEvent = ref<CalendarEvent | null>(null)
   const showEditDialog = ref(false)
   const forceEditDialogDirtyFields = ref<string[]>([])
@@ -62,7 +61,6 @@ function createHarness() {
     events,
     templates,
     selectedPeople,
-    ownPerson,
     editEvent,
     showEditDialog,
     forceEditDialogDirtyFields,
@@ -242,7 +240,7 @@ describe('useSaplingEventEditor', () => {
     expect(harness.showEditDialog.value).toBe(false)
   })
 
-  it('creates a new event, always persists the current participant, and completes save-and-close', async () => {
+  it('creates a new event with only the selected participants and completes save-and-close', async () => {
     const harness = createHarness()
     const savedEvent = createEventItem()
     mocks.create.mockResolvedValue(savedEvent)
@@ -261,7 +259,7 @@ describe('useSaplingEventEditor', () => {
 
     expect(mocks.create).toHaveBeenCalledWith(
       'event',
-      expect.objectContaining({ participants: [5, 7] }),
+      expect.objectContaining({ participants: [7] }),
     )
     expect(mocks.createReference).not.toHaveBeenCalled()
     expect(harness.refreshVisibleEvents).toHaveBeenCalledTimes(1)

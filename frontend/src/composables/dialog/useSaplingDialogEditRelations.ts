@@ -440,6 +440,36 @@ export function useSaplingDialogEditRelations(options: UseSaplingDialogEditRelat
     for (const template of relationTemplates.value) {
       initializeRelationTableState(template.name)
     }
+
+    initializeCreateRelationItems()
+  }
+
+  function initializeCreateRelationItems(): void {
+    if (options.mode.value !== 'create' || !options.item.value) {
+      return
+    }
+
+    relationTemplates.value.forEach((template) => {
+      if ((relationTableItems.value[template.name]?.length ?? 0) > 0) {
+        return
+      }
+
+      const initialValue = options.item.value?.[template.name]
+      if (!Array.isArray(initialValue)) {
+        return
+      }
+
+      const initialItems = initialValue.flatMap((item) => {
+        if (item && typeof item === 'object') {
+          return [item as SaplingGenericItem]
+        }
+
+        return typeof item === 'string' || typeof item === 'number'
+          ? [{ handle: item } as SaplingGenericItem]
+          : []
+      })
+      stageRelations(template, initialItems)
+    })
   }
 
   function clearStaleRelationTableState(templateNames: Set<string>): void {

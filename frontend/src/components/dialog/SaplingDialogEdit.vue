@@ -477,11 +477,12 @@ const selectedFormConfigChipLabel = computed(() =>
 const resetButtonLabel = computed(() => t('filter.reset'))
 
 const dirtySummaryLabel = computed(() => {
-  if (dirtyFieldCount.value <= 0) {
+  const dirtyChangeCount = dirtyFieldCount.value + dirtyRelationNames.value.length
+  if (dirtyChangeCount <= 0) {
     return ''
   }
 
-  return t('global.dirtyFieldCount', { count: dirtyFieldCount.value }, dirtyFieldCount.value)
+  return t('global.dirtyFieldCount', { count: dirtyChangeCount }, dirtyChangeCount)
 })
 
 const expandedGroupIds = ref<string[]>([])

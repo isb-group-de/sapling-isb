@@ -220,6 +220,33 @@ describe('useSaplingDialogEditRelations', () => {
     expect(relations.relationTableTotal.value.notes).toBe(0)
   })
 
+  it('stages relation records already present in a new record draft', async () => {
+    const participants = [
+      { handle: 5, firstName: 'Max' },
+      { handle: 7, firstName: 'Ada' },
+    ]
+    const relations = createRelations({
+      mode: 'create',
+      item: { participants },
+      templates: [
+        createTemplate({
+          name: 'participants',
+          type: 'Collection<PersonItem>',
+          kind: 'm:n',
+          referenceName: 'note',
+        }),
+      ],
+    })
+
+    await relations.initializeRelationTables()
+
+    expect(apiFindMock).not.toHaveBeenCalled()
+    expect(relations.relationTableItems.value.participants).toEqual(participants)
+    expect(relations.relationTableTotal.value.participants).toBe(2)
+    expect(relations.relationTableLoaded.value.participants).toBe(true)
+    expect(relations.dirtyRelationNames.value).toEqual(['participants'])
+  })
+
   it('stages and removes 1:m relations locally while creating a record', async () => {
     const relations = createRelations({ mode: 'create' })
     const selected = { handle: 7, title: 'Existing note' }
@@ -414,10 +441,11 @@ function createRelations(
     mode?: DialogState
     templates?: EntityTemplate[]
     permissions?: string[]
+    item?: SaplingGenericItem
   } = {},
 ) {
   const entity = ref({ handle: 'ticket' } as EntityItem)
-  const item = ref({ handle: 42 } as SaplingGenericItem)
+  const item = ref(overrides.item ?? ({ handle: 42 } as SaplingGenericItem))
   const mode = ref<DialogState>(overrides.mode ?? 'edit')
   const permissions = ref<AccumulatedPermission[] | null>(
     (overrides.permissions ?? ['note', 'event']).map(

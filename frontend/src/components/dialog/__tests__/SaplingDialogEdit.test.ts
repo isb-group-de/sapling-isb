@@ -60,7 +60,7 @@ function createDialogState() {
     visibleTemplates: computed(() => [{ name: 'title', type: 'string' }]),
     visibleTemplateGroups: computed(() => [{ id: 'main', label: '', templates: [] }]),
     relationTemplates: computed(() => []),
-    dirtyRelationNames: computed(() => []),
+    dirtyRelationNames: computed<string[]>(() => []),
     relationTableHeaders: ref({}),
     relationTableState: ref({}),
     relationTableItems: ref({}),
@@ -144,7 +144,11 @@ function mountDialog() {
           template:
             '<section data-dialog-group-id="main"><div data-dialog-field-name="title"><input data-test="first-field" class="v-input--error" aria-invalid="true" /></div></section>',
         },
-        SaplingDialogEditHeader: { template: '<div />' },
+        SaplingDialogEditHeader: {
+          name: 'SaplingDialogEditHeader',
+          props: ['dirtySummaryLabel'],
+          template: '<div data-test="dialog-dirty-summary">{{ dirtySummaryLabel }}</div>',
+        },
         SaplingDialogEditRelationTab: { template: '<div />' },
         SaplingDialogRecordActionDialogs: { template: '<div />' },
         SaplingDialogUnsavedChanges: { template: '<div />' },
@@ -208,6 +212,17 @@ describe('SaplingDialogEdit', () => {
     await wrapper.getComponent({ name: 'VDialog' }).trigger('keydown', { key: 'Escape' })
 
     expect(state.cancel).toHaveBeenCalledOnce()
+  })
+
+  it('shows a dirty summary when only a relation has changed', () => {
+    const state = createDialogState()
+    state.dirtyRelationNames = computed(() => ['participants'])
+    state.isDirty = computed(() => true)
+    dialogHarness.state = state
+
+    const wrapper = mountDialog()
+
+    expect(wrapper.get('[data-test="dialog-dirty-summary"]').text()).toBe('global.dirtyFieldCount')
   })
 
   it('returns to the form tab, scrolls to and focuses the first invalid field', async () => {

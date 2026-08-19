@@ -413,7 +413,7 @@ export function buildDraftEventPayload(
 ): EditableEventPayload {
   const startDateParts = getEventDateParts(event.start)
   const endDateParts = getEventDateParts(event.end)
-  const participants = resolveDraftParticipants(event, selectedPeople, ownPerson)
+  const participants = resolveDraftParticipants(event, selectedPeople)
 
   return {
     title: event.name,
@@ -434,36 +434,18 @@ export function buildDraftEventPayload(
   }
 }
 
-export function resolveDraftParticipants(
-  event: CalendarEvent,
-  selectedPeople: number[],
-  requiredParticipant?: CalendarParticipant | null,
-) {
-  const requiredParticipantHandle =
-    requiredParticipant == null ? null : resolveParticipantHandle(requiredParticipant)
+export function resolveDraftParticipants(event: CalendarEvent, selectedPeople: number[]) {
   const explicitParticipants = normalizeParticipantHandles(event.participants)
   if (explicitParticipants.length > 0) {
-    return mergeParticipantHandles(requiredParticipantHandle, explicitParticipants)
+    return explicitParticipants
   }
 
   const nestedParticipants = normalizeParticipantHandles(event.event?.participants)
   if (nestedParticipants.length > 0) {
-    return mergeParticipantHandles(requiredParticipantHandle, nestedParticipants)
+    return nestedParticipants
   }
 
-  return mergeParticipantHandles(requiredParticipantHandle, selectedPeople)
-}
-
-function mergeParticipantHandles(
-  requiredParticipantHandle: number | null,
-  participantHandles: number[],
-) {
-  return Array.from(
-    new Set([
-      ...(requiredParticipantHandle == null ? [] : [requiredParticipantHandle]),
-      ...participantHandles,
-    ]),
-  )
+  return Array.from(new Set(selectedPeople))
 }
 
 export function normalizeParticipantHandles(participants: unknown) {
