@@ -16,7 +16,10 @@
         :is-enhanced-editor-ready="isEnhancedEditorReady"
         :editor-theme="editorTheme"
         :editor-height="editorHeight"
+        :is-preparing-with-ai="isPreparingWithAi"
+        :can-prepare-with-ai="Boolean(draftValue.trim())"
         @focus="emit('focus')"
+        @prepare-with-ai="prepareWithAi"
         @update:draft-value="draftValue = $event"
       />
 
@@ -78,11 +81,13 @@ const {
   previewValue,
   editor,
   isEnhancedEditorReady,
+  isPreparingWithAi,
   resolvedLabel,
   editorTheme,
   editorHeight,
   refreshPreviewLabel,
   refreshPreview,
+  prepareWithAi,
   toolbarActions,
   insertTextAtCursor,
 } = useSaplingMarkdownField({

@@ -8,6 +8,17 @@
         <span class="sapling-eyebrow sapling-markdown-pane__eyebrow">{{ markdownLabel }}</span>
         <h3 class="sapling-section-title sapling-markdown-pane__title">{{ resolvedLabel }}</h3>
       </div>
+      <v-btn
+        variant="tonal"
+        color="primary"
+        size="small"
+        prepend-icon="mdi-auto-fix"
+        :loading="isPreparingWithAi"
+        :disabled="disabled || !canPrepareWithAi"
+        @click="emit('prepareWithAi')"
+      >
+        {{ t('global.aiPrepareMarkdown') }}
+      </v-btn>
     </header>
 
     <div class="sapling-markdown-input" :class="{ 'sapling-markdown-input--disabled': disabled }">
@@ -33,9 +44,9 @@
             :icon="action.icon"
             :title="action.title"
             size="small"
-            density="comfortable"
+            density="compact"
             variant="text"
-            :disabled="disabled"
+            :disabled="disabled || isPreparingWithAi"
             @mousedown.prevent
             @click.stop="action.run"
           />
@@ -47,7 +58,7 @@
           :model-value="draftValue"
           language="markdown"
           :theme="editorTheme"
-          :read-only="disabled"
+          :read-only="disabled || isPreparingWithAi"
           :line-numbers="false"
           class="sapling-markdown-editor"
           :style="{ height: editorHeight }"
@@ -57,7 +68,7 @@
         <v-textarea
           v-else
           :model-value="draftValue"
-          :disabled="disabled"
+          :disabled="disabled || isPreparingWithAi"
           :rows="Math.max(rows, 6)"
           hide-details
           no-resize
@@ -92,11 +103,14 @@ defineProps<{
   isEnhancedEditorReady: boolean
   editorTheme: 'dark' | 'light'
   editorHeight: string
+  isPreparingWithAi: boolean
+  canPrepareWithAi: boolean
 }>()
 
 const emit = defineEmits<{
   focus: []
   'update:draftValue': [value: string]
+  prepareWithAi: []
 }>()
 
 const { t } = useI18n()

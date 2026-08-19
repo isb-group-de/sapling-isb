@@ -1,0 +1,14 @@
+[
+  {
+    "entity": "global",
+    "property": "aiPrepareMarkdown",
+    "de": "Mit AI Aufbereiten",
+    "en": "Refine with AI"
+  },
+  {
+    "entity": "global",
+    "property": "aiPrepareMarkdownFailed",
+    "de": "Der Inhalt konnte nicht mit AI aufbereitet werden.",
+    "en": "The content could not be refined with AI."
+  }
+]

@@ -1,5 +1,6 @@
 import { EntityManager } from '@mikro-orm/core';
 import {
+  BadRequestException,
   Inject,
   Injectable,
   NotFoundException,
@@ -23,6 +24,8 @@ import {
   CreateAiChatMessageDto,
   CreateAiChatSessionDto,
   ListAiChatMessagesQueryDto,
+  PrepareAiMarkdownDto,
+  PrepareAiMarkdownResponseDto,
   UpdateAiChatSessionDto,
 } from './dto/chat.dto';
 import { McpService, type McpInlineToolExecution } from './mcp.service';
@@ -58,6 +61,7 @@ import {
   type AiChatAttachmentUploadResponse,
 } from './ai-chat-media.service';
 import { ImportService } from '../import/import.service';
+import { AI_MARKDOWN_PREPARATION_INSTRUCTIONS } from './prompts/ai.prompts';
 
 /**
  * @class
@@ -189,6 +193,36 @@ export class AiService {
 
   async listAccessibleAgents(user: PersonItem): Promise<AiAgentItem[]> {
     return this.agentPolicy.listAccessibleAgents(user);
+  }
+
+  async prepareMarkdown(
+    dto: PrepareAiMarkdownDto,
+  ): Promise<PrepareAiMarkdownResponseDto> {
+    const content = dto.content;
+
+    if (!content.trim()) {
+      throw new BadRequestException('ai.markdownContentRequired');
+    }
+
+    const runtimeTarget = await this.providerRegistry.resolveRuntimeTarget(
+      dto.providerHandle,
+      dto.modelHandle,
+    );
+    const revisedContent = await this.chatRuntime.completeText({
+      provider: runtimeTarget.provider,
+      providerKind: runtimeTarget.providerKind,
+      model: runtimeTarget.model.providerModel,
+      systemInstruction: AI_MARKDOWN_PREPARATION_INSTRUCTIONS,
+      prompt: `Revise the following source Markdown according to the system instructions.\n\n<source_markdown>\n${content}\n</source_markdown>`,
+    });
+
+    const normalizedContent = this.normalizePreparedMarkdown(revisedContent);
+
+    if (!normalizedContent) {
+      throw new Error('ai.emptyResponse');
+    }
+
+    return { content: normalizedContent };
   }
 
   async createChatAttachment(
@@ -375,6 +409,15 @@ export class AiService {
     args: Record<string, unknown>,
   ): Promise<McpInlineToolExecution | null> {
     return this.toolActions.preflightPendingToolAction(descriptor, args);
+  }
+
+  private normalizePreparedMarkdown(content: string): string {
+    const trimmedContent = content.trim();
+    const fencedMatch = trimmedContent.match(
+      /^```(?:markdown|md)?\s*\r?\n([\s\S]*?)\r?\n```$/i,
+    );
+
+    return (fencedMatch?.[1] ?? trimmedContent).trim();
   }
 
   private normalizeStringArray(value: unknown): string[] {

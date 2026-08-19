@@ -160,6 +160,18 @@ Important expectations:
 - do not invent record URLs
 - treat internal handles as technical metadata unless explicitly requested
 
+### Focused Markdown Preparation
+
+`POST /api/ai/markdown/prepare` provides a non-persisting text transformation
+for `SaplingFieldMarkdown`. It uses the user's preferred chat provider/model
+when supplied and otherwise resolves the configured default runtime. The
+dedicated system instruction corrects grammar, spelling, professional tone, and
+structure while requiring the model to stay close to the source and add no new
+content. It produces a neutral, factual description and removes email-style
+salutations, greetings, closing pleasantries, sign-offs, and signature lines
+while preserving the substantive information. The response contains only the
+revised Markdown; it does not create a Songbird chat session or message.
+
 ## MCP Layers
 
 Sapling has two MCP-related layers.

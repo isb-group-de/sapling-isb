@@ -1,6 +1,8 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import CookieService from '@/services/cookie.service'
+import ApiAiService from '@/services/api.ai.service'
+import { loadSaplingAiPreferences } from '@/services/ai-preferences.service'
 import type {
   MarkdownEditorHandle,
   MarkdownToolbarAction,
@@ -21,6 +23,7 @@ export function useSaplingMarkdownField(options: {
   const previewValue = ref(options.modelValue() ?? '')
   const editor = ref<MarkdownEditorHandle | null>(null)
   const isEnhancedEditorReady = ref(false)
+  const isPreparingWithAi = ref(false)
   const resolvedLabel = computed(() => options.label() || t('global.markdown'))
   const editorTheme = computed(() => (CookieService.get('theme') === 'dark' ? 'dark' : 'light'))
   const editorHeight = computed(() => `${Math.max(options.rows(), 6) * 24 + 56}px`)
@@ -47,6 +50,33 @@ export function useSaplingMarkdownField(options: {
 
   function refreshPreview() {
     previewValue.value = draftValue.value
+  }
+
+  async function prepareWithAi() {
+    const content = draftValue.value
+
+    if (!content.trim() || isPreparingWithAi.value) {
+      return
+    }
+
+    isPreparingWithAi.value = true
+
+    try {
+      const preferences = loadSaplingAiPreferences()
+      const result = await ApiAiService.prepareMarkdown({
+        content,
+        providerHandle: preferences.chatProviderHandle ?? undefined,
+        modelHandle: preferences.chatModelHandle ?? undefined,
+      })
+
+      draftValue.value = result.content
+      previewValue.value = result.content
+      editor.value?.focus()
+    } catch {
+      // ApiAiService already forwards a localized error to the message center.
+    } finally {
+      isPreparingWithAi.value = false
+    }
   }
 
   watch(draftValue, (value) => {
@@ -420,11 +450,13 @@ export function useSaplingMarkdownField(options: {
     previewValue,
     editor,
     isEnhancedEditorReady,
+    isPreparingWithAi,
     resolvedLabel,
     editorTheme,
     editorHeight,
     refreshPreviewLabel,
     refreshPreview,
+    prepareWithAi,
     toolbarActions,
     insertTextAtCursor,
   }

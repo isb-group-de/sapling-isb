@@ -5,6 +5,7 @@ import {
   IsBoolean,
   IsInt,
   IsArray,
+  IsNotEmpty,
   IsObject,
   IsOptional,
   IsString,
@@ -320,6 +321,40 @@ export class CreateAiChatMessageDto {
   @Type(() => Number)
   @IsInt()
   clientUtcOffsetMinutes?: number;
+}
+
+export class PrepareAiMarkdownDto {
+  @ApiProperty({
+    description:
+      'Existing Markdown content that should be professionally revised',
+  })
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(50000)
+  content!: string;
+
+  @ApiPropertyOptional({
+    description: 'Optional preferred AI provider handle for the transformation',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(64)
+  providerHandle?: string;
+
+  @ApiPropertyOptional({
+    description: 'Optional preferred AI model handle for the transformation',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(128)
+  modelHandle?: string;
+}
+
+export class PrepareAiMarkdownResponseDto {
+  @ApiProperty({
+    description: 'Revised Markdown content without explanatory wrapper text',
+  })
+  content!: string;
 }
 
 export class CreateAiChatMessageSpeechDto {

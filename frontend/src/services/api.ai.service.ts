@@ -24,6 +24,8 @@ import type {
   CreateAiChatMessageSpeechPayload,
   CreateAiChatSessionPayload,
   CreateAiChatTranscriptionPayload,
+  PrepareAiMarkdownPayload,
+  PrepareAiMarkdownResponse,
   UpdateAiChatSessionPayload,
   VectorizeEntityPayload,
   VectorizeEntityResponse,
@@ -68,6 +70,21 @@ class ApiAiService {
       return response.data
     } catch (error: unknown) {
       this.handleError(error, 'ai.chat.agentListFailed')
+      throw error
+    }
+  }
+
+  static async prepareMarkdown(
+    payload: PrepareAiMarkdownPayload,
+  ): Promise<PrepareAiMarkdownResponse> {
+    try {
+      const response = await axios.post<PrepareAiMarkdownResponse>(
+        buildApiUrl('ai/markdown/prepare'),
+        payload,
+      )
+      return response.data
+    } catch (error: unknown) {
+      this.handleError(error, 'global.aiPrepareMarkdownFailed', 'aiMarkdownPreparation')
       throw error
     }
   }

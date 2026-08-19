@@ -88,6 +88,58 @@ describe('AiService runtime and navigation', () => {
     );
   });
 
+  it('prepares Markdown with the selected runtime and removes an outer response fence', async () => {
+    const providerRegistry = {
+      resolveRuntimeTarget: jest
+        .fn<
+          (
+            providerHandle?: string,
+            modelHandle?: string,
+          ) => Promise<Record<string, unknown>>
+        >()
+        .mockResolvedValue({
+          provider: { handle: 'openai' },
+          providerKind: 'openai',
+          model: { handle: 'gpt-5', providerModel: 'gpt-5' },
+        }),
+    };
+    const chatRuntime = {
+      completeText: jest
+        .fn<(options: Record<string, unknown>) => Promise<string>>()
+        .mockResolvedValue('```markdown\n## Korrigierter Text\n```'),
+    };
+    const service = createService(
+      {},
+      {},
+      {},
+      providerRegistry,
+      {},
+      chatRuntime,
+    );
+
+    const result = await service.prepareMarkdown({
+      content: '  ## fehlerhafter Text  ',
+      providerHandle: 'openai',
+      modelHandle: 'gpt-5',
+    });
+
+    expect(providerRegistry.resolveRuntimeTarget).toHaveBeenCalledWith(
+      'openai',
+      'gpt-5',
+    );
+    expect(chatRuntime.completeText).toHaveBeenCalledWith(
+      expect.objectContaining({
+        providerKind: 'openai',
+        model: 'gpt-5',
+        prompt: expect.stringContaining('  ## fehlerhafter Text  '),
+        systemInstruction: expect.stringMatching(
+          /neutral, factual description[\s\S]*Remove opening salutations[\s\S]*Remove closing pleasantries[\s\S]*Do not add new facts/,
+        ),
+      }),
+    );
+    expect(result).toEqual({ content: '## Korrigierter Text' });
+  });
+
   it('uses the client timezone context for local date and time instructions', () => {
     const service = createService();
 

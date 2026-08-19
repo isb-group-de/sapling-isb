@@ -271,6 +271,13 @@ media inline with `{{sapling-image:123|Screenshot}}`,
 `{{sapling-document:123|Open document}}`. The handle is the existing
 `document` record handle and permissions are enforced by the document API.
 
+The shared Markdown editor also exposes `Mit AI Aufbereiten` / `Refine with AI`.
+It sends the current draft to the focused, non-persisting AI Markdown endpoint,
+uses the user's preferred chat runtime when configured, and replaces the draft
+only after the professionalized Markdown has returned. The transformation is
+instructed to produce neutral, factual prose, remove email-style greetings and
+sign-offs, and correct language and structure without adding new content.
+
 ## Tables
 
 Table behavior is split across composables in:

@@ -97,6 +97,35 @@ describe('AiChatRuntimeService', () => {
     expect(onDelta).toHaveBeenCalledWith('Hallo lokal.');
   });
 
+  it('completes a focused text transformation without chat persistence or tools', async () => {
+    const createCompletion = jest
+      .fn<(payload: unknown) => Promise<unknown>>()
+      .mockResolvedValue({
+        choices: [{ message: { content: '## Professioneller Text' } }],
+      });
+    asMock(createOpenAiClient).mockReturnValue({
+      chat: { completions: { create: createCompletion } },
+    });
+    const service = new AiChatRuntimeService({} as never);
+
+    const result = await service.completeText({
+      provider: { handle: 'openai' } as never,
+      providerKind: 'openai',
+      model: 'gpt-5',
+      systemInstruction: 'Revise only the supplied text.',
+      prompt: '# original',
+    });
+
+    expect(result).toBe('## Professioneller Text');
+    expect(createCompletion).toHaveBeenCalledWith({
+      model: 'gpt-5',
+      messages: [
+        { role: 'system', content: 'Revise only the supplied text.' },
+        { role: 'user', content: '# original' },
+      ],
+    });
+  });
+
   it('disables reasoning for GPT-5.6 Chat Completions tool calls', async () => {
     const createCompletion = jest
       .fn<(payload: unknown) => Promise<unknown>>()

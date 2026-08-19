@@ -13,6 +13,7 @@ import { McpService, type McpToolDescriptor } from './mcp.service';
 import type {
   AiClientTimeContext,
   AiExecutedToolCall,
+  AiProviderKind,
   AiStreamResult,
   AiToolErrorPayload,
   AiToolRegistryEntry,
@@ -47,6 +48,42 @@ type AiRuntimeToolExecution = Awaited<
 @Injectable()
 export class AiChatRuntimeService {
   constructor(private readonly mcpService: McpService) {}
+
+  async completeText(options: {
+    provider: AiProviderTypeItem;
+    providerKind: AiProviderKind;
+    model: string;
+    systemInstruction: string;
+    prompt: string;
+  }): Promise<string> {
+    if (options.providerKind === 'gemini') {
+      const generativeModel = createGeminiClient(
+        options.provider,
+      ).getGenerativeModel({
+        model: options.model,
+        systemInstruction: options.systemInstruction,
+      });
+      const result = await generativeModel.generateContent(options.prompt);
+      return result.response.text();
+    }
+
+    const response = await createOpenAiClient(
+      options.provider,
+    ).chat.completions.create({
+      model: options.model,
+      messages: [
+        { role: 'system', content: options.systemInstruction },
+        { role: 'user', content: options.prompt },
+      ],
+    });
+    const content = response.choices[0]?.message?.content;
+
+    if (!content) {
+      throw new Error('ai.emptyResponse');
+    }
+
+    return content;
+  }
 
   async streamOpenAi(
     history: AiChatMessageItem[],

@@ -323,9 +323,9 @@
   opacity: var(--sapling-opacity-disabled);
 }
 
-.sapling-markdown-toolbar {
-  gap: var(--sapling-gap-sm);
-  padding: var(--sapling-gap-md);
+.sapling-toolbar-group.sapling-markdown-toolbar {
+  gap: var(--sapling-gap-xs);
+  padding: var(--sapling-space-sm);
   border-bottom: 1px solid var(--sapling-surface-border);
 }
 

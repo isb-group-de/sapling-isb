@@ -57,6 +57,16 @@ export interface CreateAiChatMessagePayload {
   clientUtcOffsetMinutes?: number
 }
 
+export interface PrepareAiMarkdownPayload {
+  content: string
+  providerHandle?: string
+  modelHandle?: string
+}
+
+export interface PrepareAiMarkdownResponse {
+  content: string
+}
+
 export interface AiChatImportBatchSummary {
   handle: number | null
   status: string

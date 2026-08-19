@@ -41,6 +41,8 @@ import {
   CreateAiChatMessageDto,
   CreateAiChatSessionDto,
   ListAiChatMessagesQueryDto,
+  PrepareAiMarkdownDto,
+  PrepareAiMarkdownResponseDto,
   UpdateAiChatSessionDto,
 } from './dto/chat.dto';
 import {
@@ -152,6 +154,24 @@ export class AiController {
     @Query('providerHandle') providerHandle?: string,
   ): Promise<AiProviderModelItem[]> {
     return this.aiService.listActiveModels(providerHandle, 'chat', true);
+  }
+
+  @Post('markdown/prepare')
+  @ApiOperation({
+    summary: 'Professionally revise Markdown content',
+    description:
+      'Corrects grammar, spelling, professional tone, and structure while preserving the source meaning and without adding new content.',
+  })
+  @ApiBody({ type: PrepareAiMarkdownDto })
+  @ApiResponse({
+    status: 201,
+    description: 'Revised Markdown content.',
+    type: PrepareAiMarkdownResponseDto,
+  })
+  async prepareMarkdown(
+    @Body() body: PrepareAiMarkdownDto,
+  ): Promise<PrepareAiMarkdownResponseDto> {
+    return this.aiService.prepareMarkdown(body);
   }
 
   @Get('chat/agents')
