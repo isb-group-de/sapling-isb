@@ -44,6 +44,25 @@ export interface GenericBulkUpdateResponse {
   handles: string[]
 }
 
+export interface GenericDeleteReference {
+  name: string
+  entityHandle: string
+  kind: '1:m'
+}
+
+export interface GenericDeleteImpact {
+  action: 'delete' | 'cancel'
+  references: GenericDeleteReference[]
+}
+
+export interface GenericDeleteResult {
+  action: 'deleted' | 'canceled'
+}
+
+export interface GenericDeleteOptions {
+  cascadeRelations?: string[]
+}
+
 export interface GenericUpdateConcurrency {
   expectedUpdatedAt?: string | Date | null
   basePayload?: Record<string, unknown> | null
@@ -415,13 +434,40 @@ class ApiGenericService {
     }
   }
 
-  static async delete(entityHandle: string, handle: EntityHandleValue): Promise<void> {
+  static async getDeleteImpact(
+    entityHandle: string,
+    handle: EntityHandleValue,
+  ): Promise<GenericDeleteImpact> {
+    try {
+      const response = await axios.get<GenericDeleteImpact>(
+        buildApiUrl(`generic/${entityHandle}/delete-impact`),
+        { params: { handle } },
+      )
+      return response.data
+    } catch (error: unknown) {
+      pushApiErrorMessage(error, 'exception.unknownError', entityHandle)
+      throw error
+    }
+  }
+
+  static async delete(
+    entityHandle: string,
+    handle: EntityHandleValue,
+    options: GenericDeleteOptions = {},
+  ): Promise<GenericDeleteResult> {
     const params: Record<string, unknown> = {
       handle,
     }
+    if (options.cascadeRelations?.length) {
+      params.cascadeRelations = options.cascadeRelations.join(',')
+    }
 
     try {
-      await axios.delete(buildApiUrl(`generic/${entityHandle}`), { params })
+      const response = await axios.delete<GenericDeleteResult>(
+        buildApiUrl(`generic/${entityHandle}`),
+        { params },
+      )
+      return response.data
     } catch (error: unknown) {
       pushApiErrorMessage(error, 'exception.unknownError', entityHandle)
       throw error

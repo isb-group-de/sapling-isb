@@ -43,6 +43,10 @@ import type { Request, Response } from 'express';
 import { SessionOrBearerAuthGuard } from '../../auth/guard/session-or-token-auth.guard';
 import { extractClientFormattingContextFromRequest } from '../common/client-formatting-context.util';
 import {
+  GenericDeleteImpactDto,
+  GenericDeleteResultDto,
+} from './dto/delete.dto';
+import {
   GenericBulkUpdateDto,
   GenericBulkUpdateResponseDto,
 } from './dto/bulk-update.dto';
@@ -465,6 +469,25 @@ export class GenericController {
   // #endregion
 
   // #region Delete
+  @UseGuards(GenericPermissionGuard)
+  @GenericPermission('allowDelete')
+  @Get(':entityHandle/delete-impact')
+  @ApiOperation({
+    summary: 'Inspect record deletion behavior',
+    description:
+      'Returns selectable owned child relations and whether a synchronized Event will be canceled instead of deleted.',
+  })
+  @ApiGenericEntityOperation('Inspects deletion behavior for an entry')
+  @ApiResponse({ status: 200, type: GenericDeleteImpactDto })
+  @ApiQuery({ name: 'handle', required: true, type: String })
+  async getDeleteImpact(
+    @Req() req: Request & { user: PersonItem },
+    @Param('entityHandle') entityHandle: string,
+    @Query('handle') handle: string,
+  ): Promise<GenericDeleteImpactDto> {
+    return this.genericService.getDeleteImpact(entityHandle, handle, req.user);
+  }
+
   /**
    * Deletes an entry by its handle.
    * @param {Request & { user: PersonItem }} req Express request object with authenticated user
@@ -480,27 +503,32 @@ export class GenericController {
       'Deletes an existing record identified by the handle query parameter.',
   })
   @ApiGenericEntityOperation('Deletes an entry by its handle')
-  @ApiResponse({
-    status: 204,
-    description: 'Record deleted successfully. No response body is returned.',
-  })
+  @ApiResponse({ status: 200, type: GenericDeleteResultDto })
   @ApiQuery({
     name: 'handle',
     required: true,
     description: 'Handle of the entity to delete, e.g. ?handle=1',
     type: String,
   })
-  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiQuery({
+    name: 'cascadeRelations',
+    required: false,
+    description: 'Comma-separated owned 1:m relation names to delete first.',
+    type: String,
+  })
+  @HttpCode(HttpStatus.OK)
   async delete(
     @Req() req: Request & { user: PersonItem },
     @Param('entityHandle') entityHandle: string,
     @Query('handle') handle: string,
-  ): Promise<void> {
-    await this.genericService.delete(
+    @Query('cascadeRelations') cascadeRelations?: string,
+  ): Promise<GenericDeleteResultDto> {
+    return this.genericService.delete(
       entityHandle,
       handle,
       req.user,
       extractClientFormattingContextFromRequest(req),
+      parseCascadeRelations(cascadeRelations),
     );
   }
   // #endregion
@@ -630,4 +658,16 @@ export class GenericController {
     );
   }
   // #endregion
+}
+
+function parseCascadeRelations(value?: string): string[] {
+  if (!value) return [];
+  return [
+    ...new Set(
+      value
+        .split(',')
+        .map((entry) => entry.trim())
+        .filter(Boolean),
+    ),
+  ];
 }

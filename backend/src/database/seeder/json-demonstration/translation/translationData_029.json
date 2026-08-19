@@ -1,0 +1,80 @@
+[
+  {
+    "entity": "global",
+    "property": "deleteWithReferences",
+    "de": "Löschen mit Referenzen",
+    "en": "Delete with references"
+  },
+  {
+    "entity": "global",
+    "property": "selectDeleteReferences",
+    "de": "Welche untergeordneten Datensätze sollen mitgelöscht werden?",
+    "en": "Which dependent records should also be deleted?"
+  },
+  {
+    "entity": "global",
+    "property": "deleteReferencesDescription",
+    "de": "Wählen Sie nur die Referenzgruppen aus, deren Datensätze endgültig gelöscht werden sollen. Gemeinsame M:N-Verknüpfungen werden nicht als Datensätze gelöscht.",
+    "en": "Select only the reference groups whose records should be permanently deleted. Shared many-to-many targets are not deleted as records."
+  },
+  {
+    "entity": "global",
+    "property": "deleteWithSelectedReferences",
+    "de": "Auswahl mitlöschen",
+    "en": "Delete selected references"
+  },
+  {
+    "entity": "global",
+    "property": "cancelSyncedEvent",
+    "de": "Synchronisierten Termin abbrechen",
+    "en": "Cancel synchronized event"
+  },
+  {
+    "entity": "global",
+    "property": "cancelSyncedEventQuestion",
+    "de": "Soll dieser synchronisierte Termin abgebrochen werden?",
+    "en": "Do you want to cancel this synchronized event?"
+  },
+  {
+    "entity": "global",
+    "property": "cancelSyncedEventDescription",
+    "de": "Der Sapling-Datensatz und seine Delivery-Historie bleiben erhalten. Der Status wird auf Abgebrochen gesetzt und die bestehende Kalender-Synchronisation entfernt den Termin aus Outlook oder Google.",
+    "en": "The Sapling record and its delivery history are retained. Its status is set to Canceled and the existing calendar synchronization removes it from Outlook or Google."
+  },
+  {
+    "entity": "global",
+    "property": "cancelEvent",
+    "de": "Termin abbrechen",
+    "en": "Cancel event"
+  },
+  {
+    "entity": "global",
+    "property": "eventCanceled",
+    "de": "Termin abgebrochen",
+    "en": "Event canceled"
+  },
+  {
+    "entity": "global",
+    "property": "eventCanceledDescription",
+    "de": "Der Termin wurde auf Abgebrochen gesetzt und wird mit dem verbundenen Kalender synchronisiert.",
+    "en": "The event was set to Canceled and will be synchronized with the connected calendar."
+  },
+  {
+    "entity": "global",
+    "property": "back",
+    "de": "Zurück",
+    "en": "Back"
+  },
+  {
+    "entity": "global",
+    "property": "invalidDeleteReference",
+    "de": "Mindestens eine ausgewählte Referenz kann nicht mitgelöscht werden.",
+    "en": "At least one selected reference cannot be deleted with the record."
+  },
+  {
+    "entity": "global",
+    "property": "syncedEventBlocksCascadeDelete",
+    "de": "Ein synchronisierter Termin kann nicht als untergeordneter Datensatz mitgelöscht werden. Brechen Sie den Termin zuerst ab und ordnen Sie seine Pflichtreferenzen neu zu.",
+    "en": "A synchronized event cannot be cascade-deleted as a dependent record. Cancel the event first and reassign its required references."
+  }
+]

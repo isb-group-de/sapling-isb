@@ -322,7 +322,7 @@ export class SalesOpportunityItem {
     mobileVisible: false,
   })
   @ManyToOne(() => SalesOpportunityResultStatusItem, {
-    defaultRaw: `'open'`,
+    default: 'new',
     nullable: false,
   })
   resultStatus!: Rel<SalesOpportunityResultStatusItem>;

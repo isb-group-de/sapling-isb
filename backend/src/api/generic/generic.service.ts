@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Optional } from '@nestjs/common';
 import { EntityManager } from '@mikro-orm/core';
 import { TemplateService } from '../template/template.service';
 import { PersonItem } from '../../entity/PersonItem';
@@ -42,6 +42,11 @@ import type {
 } from './generic-import.util';
 import { FieldPermissionService } from '../current/field-permission.service';
 import { GenericBulkMutationService } from './generic-bulk-mutation.service';
+import { GenericDeleteService } from './generic-delete.service';
+import type {
+  GenericDeleteImpactDto,
+  GenericDeleteResultDto,
+} from './dto/delete.dto';
 import type {
   GenericBulkUpdateDto,
   GenericBulkUpdateResponseDto,
@@ -186,6 +191,8 @@ export class GenericService {
       em,
       genericEntityMutationService,
     ),
+    @Optional()
+    private readonly genericDeleteService?: GenericDeleteService,
   ) {}
   // #endregion
 
@@ -463,6 +470,21 @@ export class GenericService {
   // #endregion
 
   // #region Delete
+  async getDeleteImpact(
+    entityHandle: string,
+    handle: string | number,
+    currentUser: PersonItem,
+  ): Promise<GenericDeleteImpactDto> {
+    if (!this.genericDeleteService) {
+      return { action: 'delete', references: [] };
+    }
+    return this.genericDeleteService.getImpact(
+      entityHandle,
+      handle,
+      currentUser,
+    );
+  }
+
   /**
    * Deletes an entry by its handle, applies security, and runs before/after scripts.
    * @param {string} entityHandle Name of the entity
@@ -475,13 +497,25 @@ export class GenericService {
     handle: string | number,
     currentUser: PersonItem,
     scriptContext: ScriptServerContext = {},
-  ): Promise<void> {
-    return this.genericEntityMutationService.delete(
+    cascadeRelations: string[] = [],
+  ): Promise<GenericDeleteResultDto> {
+    if (this.genericDeleteService) {
+      return this.genericDeleteService.delete(
+        entityHandle,
+        handle,
+        currentUser,
+        scriptContext,
+        cascadeRelations,
+      );
+    }
+
+    await this.genericEntityMutationService.delete(
       entityHandle,
       handle,
       currentUser,
       scriptContext,
     );
+    return { action: 'deleted' };
   }
 
   // #endregion

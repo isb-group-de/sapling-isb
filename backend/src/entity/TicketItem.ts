@@ -124,6 +124,7 @@ export class TicketItem {
   })
   @ManyToOne(() => TicketStatusItem, {
     nullable: true,
+    default: 'open',
     deleteRule: 'set null',
   })
   status?: TicketStatusItem | null;
@@ -147,6 +148,7 @@ export class TicketItem {
   })
   @ManyToOne(() => TicketPriorityItem, {
     nullable: true,
+    default: 'normal',
     deleteRule: 'set null',
   })
   priority?: TicketPriorityItem | null;

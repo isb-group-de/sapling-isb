@@ -46,7 +46,9 @@ export function useSaplingTableDeleteActions({
     deleteDialog.value = { visible: false, item: null }
   }
 
-  async function confirmDelete() {
+  async function confirmDelete(
+    confirmation: { cascadeRelations: string[] } = { cascadeRelations: [] },
+  ) {
     const currentEntityHandle = entityHandle()
     const handle = getItemHandle(deleteDialog.value.item)
     if (handle == null || !currentEntityHandle) {
@@ -54,13 +56,20 @@ export function useSaplingTableDeleteActions({
     }
 
     try {
-      await ApiGenericService.delete(currentEntityHandle, handle)
+      const result = await ApiGenericService.delete(currentEntityHandle, handle, {
+        cascadeRelations: confirmation.cascadeRelations,
+      })
+      const action = result?.action ?? 'deleted'
       closeDeleteDialog()
       reload()
       pushMessage(
         'success',
-        t('global.recordDeleted'),
-        t('global.recordDeletedDescription'),
+        t(action === 'canceled' ? 'global.eventCanceled' : 'global.recordDeleted'),
+        t(
+          action === 'canceled'
+            ? 'global.eventCanceledDescription'
+            : 'global.recordDeletedDescription',
+        ),
         currentEntityHandle,
       )
     } catch {

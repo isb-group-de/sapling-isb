@@ -292,6 +292,14 @@ removed before the same handles are sent in the initial create request.
 The signed-in person is not added implicitly; they are included only when they
 are part of the current calendar filter selection.
 
+Deleting an Event through the generic record UI first inspects whether it has an
+Azure/Google reference or Event delivery history. Synchronized Events are not
+physically deleted. The delete action updates their status to `canceled`, which
+runs the standard `afterUpdate` delivery and removes the provider-side Outlook
+or Google appointment. The Sapling Event and its delivery history remain for
+auditability, while closed-status calendar filters hide it from the normal
+calendar view. Unsynchronized Events retain the normal physical delete path.
+
 `SaplingFieldEventRecurrence.vue` is the editable recurrence field used by generic dialogs. Shared parsing and expansion helpers live in `frontend/src/utils/eventRecurrence.ts`.
 
 The shared work filter used by calendar and partner views includes one

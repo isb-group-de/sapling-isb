@@ -468,18 +468,27 @@ export function useSaplingDialogRecordActions(
     loadedScriptButtons.value = result
   }
 
-  async function confirmRecordDelete(): Promise<void> {
+  async function confirmRecordDelete(
+    confirmation: { cascadeRelations: string[] } = { cascadeRelations: [] },
+  ): Promise<void> {
     if (!entityHandle.value || itemHandle.value == null) {
       return
     }
 
     try {
-      await ApiGenericService.delete(entityHandle.value, itemHandle.value)
+      const result = await ApiGenericService.delete(entityHandle.value, itemHandle.value, {
+        cascadeRelations: confirmation.cascadeRelations,
+      })
+      const action = result?.action ?? 'deleted'
       closeRecordDeleteDialog()
       pushMessage(
         'success',
-        t('global.recordDeleted'),
-        t('global.recordDeletedDescription'),
+        t(action === 'canceled' ? 'global.eventCanceled' : 'global.recordDeleted'),
+        t(
+          action === 'canceled'
+            ? 'global.eventCanceledDescription'
+            : 'global.recordDeletedDescription',
+        ),
         entityHandle.value,
       )
       emit('deleted', props.item)

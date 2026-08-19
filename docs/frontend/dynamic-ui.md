@@ -474,17 +474,28 @@ feature-specific top padding to compensate for a clipped Vuetify field label.
 
 Do not hand-roll dialog footers with ad hoc `<div class="sapling-dialog-actions">` blocks. Use the action components so spacing, mobile behavior, icons, and button ordering stay consistent:
 
-| Dialog action pattern    | Component                                      |
-| ------------------------ | ---------------------------------------------- |
-| close only               | `SaplingActionClose`                           |
-| cancel + save            | `SaplingActionSave`                            |
-| account/preferences save | `SaplingActionAccount`                         |
-| password change          | `SaplingActionChangePassword`                  |
-| delete confirmation      | `SaplingActionDelete`                          |
-| upload                   | `SaplingActionUpload`                          |
-| custom action grouping   | `SaplingActionBar` with leading/trailing slots |
+| Dialog action pattern      | Component                                      |
+| -------------------------- | ---------------------------------------------- |
+| close only                 | `SaplingActionClose`                           |
+| cancel + save              | `SaplingActionSave`                            |
+| account/preferences save   | `SaplingActionAccount`                         |
+| password change            | `SaplingActionChangePassword`                  |
+| simple delete confirmation | `SaplingActionDelete`                          |
+| generic record deletion    | `SaplingDialogDelete` with `SaplingActionBar`  |
+| upload                     | `SaplingActionUpload`                          |
+| custom action grouping     | `SaplingActionBar` with leading/trailing slots |
 
 If none of the existing action components fit, add or extend an action component first and then use it from the dialog. This keeps footer behavior centralized instead of duplicating button layout in each custom dialog.
+
+Generic single-record deletion loads `/generic/:entity/delete-impact` when the
+confirmation dialog opens. A normal record uses one height-stable confirmation
+dialog. When owned `1:m` groups exist, their optional checkboxes appear directly
+in a scrollable list; the safe default selects none, while **Select all** and
+**Select none** provide bulk selection. The delete action passes only the selected
+relation groups rather than individual records. Synchronized Events use the same
+dialog shell but present **Cancel event**, because the backend retains the record
+and changes its status to `canceled`. Bulk deletion intentionally keeps the simple
+confirmation and does not expose reference cascades.
 
 ### Shared Tab And Dialog Navigation Contract
 

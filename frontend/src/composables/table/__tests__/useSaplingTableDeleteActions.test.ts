@@ -52,9 +52,22 @@ describe('useSaplingTableDeleteActions', () => {
 
     await subject.confirmDelete()
 
-    expect(mocks.deleteRecord).toHaveBeenCalledWith('ticket', 42)
+    expect(mocks.deleteRecord).toHaveBeenCalledWith('ticket', 42, {
+      cascadeRelations: [],
+    })
     expect(subject.deleteDialog.value).toEqual({ visible: false, item: null })
     expect(mocks.reload).toHaveBeenCalledOnce()
+  })
+
+  it('forwards the selected owned relation groups', async () => {
+    const { subject } = createSubject()
+    subject.openDeleteDialog({ handle: 42 })
+
+    await subject.confirmDelete({ cascadeRelations: ['positions', 'events'] })
+
+    expect(mocks.deleteRecord).toHaveBeenCalledWith('ticket', 42, {
+      cascadeRelations: ['positions', 'events'],
+    })
   })
 
   it('snapshots the selection and deletes all captured handles', async () => {

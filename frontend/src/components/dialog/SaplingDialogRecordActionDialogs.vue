@@ -3,8 +3,9 @@
     persistent
     :model-value="recordDeleteDialog"
     :item="item"
+    :entity-handle="entityHandle"
     @update:model-value="emit('set-record-delete-dialog', $event)"
-    @confirm="emit('confirm-delete')"
+    @confirm="emit('confirm-delete', $event)"
     @cancel="emit('cancel-delete')"
   />
 
@@ -54,7 +55,7 @@ defineProps<{
 
 const emit = defineEmits<{
   (event: 'set-record-delete-dialog', value: boolean): void
-  (event: 'confirm-delete'): void
+  (event: 'confirm-delete', value: { cascadeRelations: string[] }): void
   (event: 'cancel-delete'): void
   (event: 'close-upload'): void
   (event: 'close-information'): void

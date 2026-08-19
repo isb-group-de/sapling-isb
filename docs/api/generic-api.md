@@ -308,10 +308,29 @@ still display hydrated values.
 ## Delete
 
 ```text
-DELETE /api/generic/:entityHandle/:handle
+GET    /api/generic/:entityHandle/delete-impact?handle=:handle
+DELETE /api/generic/:entityHandle?handle=:handle
+DELETE /api/generic/:entityHandle?handle=:handle&cascadeRelations=persons,events
 ```
 
-Deletion requires `allowDelete` permission for the entity.
+Deletion requires `allowDelete` permission for the entity. The impact endpoint
+returns the effective action and the visible owned `1:m` relation groups that
+can be selected for an all-or-nothing cascade. Shared `m:n` targets are never
+offered for record deletion; their join-table links follow the normal ORM/DB
+relation behavior.
+
+When `cascadeRelations` is supplied, the selected child records are deleted
+before the parent in one transaction. Every child still runs its normal generic
+delete permissions and lifecycle. A failure rolls back the complete operation.
+The response reports `{ "action": "deleted" }`.
+
+A synchronized `event` is a deliberate exception. If an Azure/Google reference
+or Event delivery history exists, generic deletion performs a normal Event
+update to status `canceled` and returns `{ "action": "canceled" }`. That update
+preserves the Event and its delivery history while the existing `afterUpdate`
+calendar synchronization removes the provider-side appointment. Synchronized
+Events cannot be cascade-deleted as children of another record because their
+required parent references must remain valid.
 
 ## Change Log
 

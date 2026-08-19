@@ -127,6 +127,7 @@ The backend derives searchable fields from entity metadata:
 - string-like, persistent, non-security, non-system fields are searched
 - fields marked with `isSearchExcluded` are omitted from metadata-driven
   free-text search, including direct `isValue` fields of readable references
+- entities without any remaining searchable fields produce no record results
 - fields marked with `isValue` are preferred for labels and ranking
 - many-to-one and one-to-one references marked with `isValue` contribute the
   readable `isValue` fields of their target entity to search and labels

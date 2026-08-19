@@ -69,6 +69,7 @@ export class InternalCaseItem {
   })
   @ManyToOne(() => InternalCaseStatusItem, {
     nullable: true,
+    default: 'open',
     deleteRule: 'set null',
   })
   status?: Rel<InternalCaseStatusItem> | null;

@@ -3,8 +3,9 @@
     persistent
     :model-value="deleteDialog.visible"
     :item="deleteDialog.item"
+    :entity-handle="entityHandle"
     @update:model-value="emit('update:delete-visible', $event)"
-    @confirm="emit('confirm-delete')"
+    @confirm="emit('confirm-delete', $event)"
     @cancel="emit('close-delete')"
   />
 
@@ -170,7 +171,7 @@ defineProps<{
 
 const emit = defineEmits<{
   (event: 'update:delete-visible', value: boolean): void
-  (event: 'confirm-delete'): void
+  (event: 'confirm-delete', value: { cascadeRelations: string[] }): void
   (event: 'close-delete'): void
   (event: 'update:bulk-delete-visible', value: boolean): void
   (event: 'confirm-bulk-delete'): void

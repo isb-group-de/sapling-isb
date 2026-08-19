@@ -163,18 +163,41 @@ describe('GenericController', () => {
   });
 
   it('deletes an entity entry', async () => {
-    const genericService = { delete: jest.fn(async () => undefined) };
+    const expected = { action: 'deleted' };
+    const genericService = { delete: jest.fn(async () => expected) };
     const controller = new GenericController(genericService as never);
     const req = { user: createMockUser() };
 
-    await expect(
-      controller.delete(req as never, 'ticket', '3'),
-    ).resolves.toBeUndefined();
+    await expect(controller.delete(req as never, 'ticket', '3')).resolves.toBe(
+      expected,
+    );
     expect(asMock(genericService.delete)).toHaveBeenCalledWith(
       'ticket',
       '3',
       req.user,
       {},
+      [],
+    );
+  });
+
+  it('returns the delete impact for an entity entry', async () => {
+    const expected = {
+      action: 'delete',
+      references: [
+        { name: 'positions', entityHandle: 'position', kind: '1:m' },
+      ],
+    };
+    const genericService = { getDeleteImpact: jest.fn(async () => expected) };
+    const controller = new GenericController(genericService as never);
+    const req = { user: createMockUser() };
+
+    await expect(
+      controller.getDeleteImpact(req as never, 'ticket', '3'),
+    ).resolves.toBe(expected);
+    expect(asMock(genericService.getDeleteImpact)).toHaveBeenCalledWith(
+      'ticket',
+      '3',
+      req.user,
     );
   });
 

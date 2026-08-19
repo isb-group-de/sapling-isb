@@ -463,6 +463,7 @@ export class GenericEntityMutationService {
     handle: string | number,
     currentUser: PersonItem,
     scriptContext: ScriptServerContext,
+    lifecycleOptions: GenericMutationLifecycleOptions = {},
   ): Promise<void> {
     const previousOpenTaskUserHandles =
       await this.genericOpenTaskEventsService.loadUserHandles(
@@ -528,7 +529,7 @@ export class GenericEntityMutationService {
       );
     }
     this.invalidateSecurityPrincipalAfterMutation(entityHandle, item);
-    this.scheduleSearchIndexDelete(entityHandle, item);
+    this.queueSearchIndexDelete(lifecycleOptions, entityHandle, item);
     this.invalidateTemplateMetadataAfterMutation(entityHandle);
 
     if (entity) {
@@ -540,7 +541,7 @@ export class GenericEntityMutationService {
         scriptContext,
       );
     }
-    this.scheduleBackgroundTask('changeLog', () =>
+    this.queueBackgroundTask(lifecycleOptions, 'changeLog', () =>
       this.genericChangeLogService.safeStoreChangeLog(
         'delete',
         entity,
@@ -549,7 +550,7 @@ export class GenericEntityMutationService {
         null,
       ),
     );
-    this.scheduleBackgroundTask('openTaskCountChanges', () =>
+    this.queueBackgroundTask(lifecycleOptions, 'openTaskCountChanges', () =>
       this.genericOpenTaskEventsService.notifyUsers(
         previousOpenTaskUserHandles,
       ),
@@ -691,10 +692,14 @@ export class GenericEntityMutationService {
     );
   }
 
-  private scheduleSearchIndexDelete(entityHandle: string, item: object): void {
+  private queueSearchIndexDelete(
+    lifecycleOptions: GenericMutationLifecycleOptions,
+    entityHandle: string,
+    item: object,
+  ): void {
     const handle = this.extractEntityHandle(item);
     if (handle == null || !this.globalSearchIndex?.isEnabled()) return;
-    this.scheduleBackgroundTask('globalSearchIndex', () =>
+    this.queueBackgroundTask(lifecycleOptions, 'globalSearchIndex', () =>
       this.globalSearchIndex!.handleDelete(entityHandle, handle),
     );
   }

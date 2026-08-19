@@ -1,0 +1,14 @@
+[
+  {
+    "entity": "global",
+    "property": "selectNone",
+    "de": "Keine auswählen",
+    "en": "Select none"
+  },
+  {
+    "entity": "global",
+    "property": "deleteReferencesDescription",
+    "de": "Optional: Wählen Sie Referenzgruppen nur aus, wenn deren Datensätze ebenfalls endgültig gelöscht werden sollen. Ohne Auswahl wird nur der aktuelle Datensatz gelöscht. Gemeinsame M:N-Verknüpfungen werden nicht als Datensätze gelöscht.",
+    "en": "Optional: Select relation groups only when their records should also be permanently deleted. With no selection, only the current record is deleted. Shared many-to-many targets are not deleted as records."
+  }
+]

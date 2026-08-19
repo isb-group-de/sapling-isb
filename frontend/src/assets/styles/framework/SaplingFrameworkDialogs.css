@@ -94,6 +94,36 @@
   align-self: flex-start;
 }
 
+.sapling-dialog-delete-card {
+  --sapling-delete-dialog-stable-height: min(
+    680px,
+    calc(100dvh - var(--sapling-dialog-viewport-inset) - var(--sapling-dialog-viewport-inset))
+  );
+  display: flex;
+  flex: 0 0 var(--sapling-delete-dialog-stable-height);
+  flex-direction: column;
+  height: var(--sapling-delete-dialog-stable-height);
+  min-height: var(--sapling-delete-dialog-stable-height);
+  max-height: var(--sapling-delete-dialog-stable-height);
+  overflow: hidden;
+}
+
+.sapling-dialog-delete-card .sapling-dialog-shell {
+  height: 100%;
+  overflow: hidden;
+}
+
+.sapling-dialog-delete-card .sapling-dialog__body {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.sapling-dialog-delete-card .sapling-dialog__footer {
+  margin-top: auto;
+}
+
 .sapling-inbox-dialog,
 .sapling-message-center-dialog {
   display: flex;
@@ -1065,6 +1095,13 @@
 }
 
 @media (max-width: 640px) {
+  .sapling-dialog-delete-card {
+    --sapling-delete-dialog-stable-height: calc(
+      100dvh - var(--sapling-dialog-viewport-inset-mobile) -
+        var(--sapling-dialog-viewport-inset-mobile)
+    );
+  }
+
   .sapling-dialog-compact-card {
     max-height: calc(
       100dvh - var(--sapling-dialog-viewport-inset-mobile) -

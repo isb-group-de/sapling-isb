@@ -28,7 +28,7 @@ export class ChangeLogDetailItem {
   log!: Rel<ChangeLogItem>;
 
   @ApiProperty()
-  @Sapling(['isValue'])
+  @Sapling(['isValue', 'isSearchExcluded'])
   @SaplingForm({
     order: 100,
     group: 'changeLogDetail.groupContent',
