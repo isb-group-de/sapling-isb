@@ -33,8 +33,9 @@
             <v-icon size="small">mdi-refresh</v-icon>
           </v-btn>
           <v-btn
+            v-if="onDelete"
             variant="text"
-            class="sapling-kpi-card__action"
+            class="sapling-kpi-card__action sapling-kpi-card__action--delete"
             :title="$t('kpi.removeKpi')"
             @click.stop="openKpiDeleteDialog"
           >

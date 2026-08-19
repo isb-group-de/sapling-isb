@@ -50,6 +50,11 @@
 }
 
 .sapling-dashboard__kpi-sortable--active .sapling-kpi-card__actions {
+  pointer-events: auto;
+}
+
+.sapling-dashboard__kpi-sortable--active
+  .sapling-kpi-card__action:not(.sapling-kpi-card__action--delete) {
   opacity: 0.25;
   pointer-events: none;
 }

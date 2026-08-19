@@ -158,11 +158,16 @@ partially configured records usable.
 
 The dashboard page keeps its normal read-only presentation until the user
 opens layout editing. During editing, dashboard tabs and KPI cards are reordered
-locally with drag-and-drop. Cancel restores the complete local snapshot. Save
-sends all owned dashboards to `PATCH /api/current/dashboardLayout`; the backend
+locally with drag-and-drop, and the removal controls for dashboards and KPI cards
+are shown only in this mode. Cancel restores the previous ordering while keeping
+already confirmed removals removed. Save sends all owned dashboards to
+`PATCH /api/current/dashboardLayout`; the backend
 validates dashboard ownership and the exact KPI assignments and persists both
-orders atomically. Add/remove operations outside layout editing also update
-`kpiOrder`, so there is one ordering model rather than a separate legacy path.
+orders atomically. Adding KPIs outside layout editing and removing them during
+layout editing also update `kpiOrder`, so there is one ordering model rather than
+a separate legacy path. An add-KPI request is scoped to the dashboard from which
+it was started and consumed only once, so changing dashboard tabs cannot replay a
+completed or cancelled dialog.
 The dashboard tab strip keeps the shared tab height for each two-line label and
 adds a dedicated scrollbar row to Vuetify's horizontal slide container. The
 native scrollbar therefore stays below the title and KPI-count lines instead of

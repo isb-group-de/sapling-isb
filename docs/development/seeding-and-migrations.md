@@ -81,6 +81,11 @@ and therefore uses the entity's default navigation group. The same entity and
 route may deliberately occur once without a group and again with different
 group overrides so one page can appear in multiple navigation areas.
 
+`DashboardTemplateItem` is upserted by `name + person`. This allows a later
+numbered dashboard-template seed to update a shipped template and its KPI
+assignment without duplicating it, while templates with the same name owned by
+different persons remain independent.
+
 ## SeedScript Tracking
 
 Successful seed files are recorded in `SeedScriptItem`.

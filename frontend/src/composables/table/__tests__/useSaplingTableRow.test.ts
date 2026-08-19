@@ -167,6 +167,66 @@ describe('useSaplingTableRow relation dialogs', () => {
     ])
   })
 
+  it('limits compact reference buttons to the first two value lines', () => {
+    mocks.permissions = [
+      { entityHandle: 'effortEstimate', allowRead: true },
+      { entityHandle: 'effortEstimateStatus', allowRead: true },
+      { entityHandle: 'company', allowRead: true },
+    ]
+    mocks.referenceStates.effortEstimate = {
+      isLoading: false,
+      entity: { handle: 'effortEstimate' },
+      entityPermission: { allowUpdate: true },
+      entityTemplates: [
+        { name: 'title', type: 'string', options: ['isValue'] },
+        {
+          name: 'status',
+          type: 'EffortEstimateStatusItem',
+          kind: 'm:1',
+          isReference: true,
+          referenceName: 'effortEstimateStatus',
+          options: ['isValue'],
+        },
+        {
+          name: 'assigneeCompany',
+          type: 'CompanyItem',
+          kind: 'm:1',
+          isReference: true,
+          referenceName: 'company',
+          options: ['isValue'],
+        },
+      ] as EntityTemplate[],
+    }
+    mocks.referenceStates.effortEstimateStatus = {
+      entityTemplates: [
+        { name: 'description', type: 'string', options: ['isValue'] },
+      ] as EntityTemplate[],
+    }
+    mocks.referenceStates.company = {
+      entityTemplates: [{ name: 'name', type: 'string', options: ['isValue'] }] as EntityTemplate[],
+    }
+
+    const { row } = createRow(
+      {
+        key: 'estimate',
+        name: 'estimate',
+        kind: 'm:1',
+        referenceName: 'effortEstimate',
+      } as SaplingTableHeaderItem,
+      {
+        handle: 5,
+        title: 'Rollenbasierte Formularansichten',
+        status: { handle: 'in-progress', description: 'In Bearbeitung' },
+        assigneeCompany: { handle: 4, name: 'Wolf Technik AG' },
+      },
+    )
+
+    expect(row.getCompactPanelTitleLines('estimate')).toEqual([
+      { value: 'Rollenbasierte Formularansichten', isReference: false },
+      { value: 'In Bearbeitung', isReference: true },
+    ])
+  })
+
   it('loads the complete referenced record before opening the edit dialog', async () => {
     const fullCountry = {
       handle: 'DE',

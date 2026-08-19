@@ -143,6 +143,7 @@
         v-model:active-tab="activeTab"
         :dashboards="dashboards"
         :add-kpi-request-key="addKpiRequestKey"
+        :add-kpi-request-dashboard-handle="addKpiRequestDashboardHandle"
         :is-dashboard-removable="isDashboardRemovable"
         :layout-editing="isLayoutEditing"
         @remove-dashboard="removeDashboard"
@@ -265,13 +266,15 @@ const {
 } = useSaplingDashboard()
 
 const addKpiRequestKey = ref(0)
+const addKpiRequestDashboardHandle = ref<number | null>(null)
 const tutorialStartedLayoutEdit = ref(false)
 
 function requestAddKpi() {
-  if (!hasDashboards.value) {
+  if (!hasDashboards.value || currentDashboard.value?.handle == null) {
     return
   }
 
+  addKpiRequestDashboardHandle.value = currentDashboard.value.handle
   addKpiRequestKey.value += 1
 }
 

@@ -3,6 +3,7 @@ import { EntityManager } from '@mikro-orm/core';
 import type { EntityName } from '@mikro-orm/core';
 import { Seeder } from '@mikro-orm/seeder';
 import { EntityRouteItem } from '../../entity/EntityRouteItem';
+import { DashboardTemplateItem } from '../../entity/DashboardTemplateItem';
 import { KpiItem } from '../../entity/KpiItem';
 import { ENTITY_REGISTRY } from '../../entity/global/entity.registry';
 import { getSaplingOptions } from '../../entity/global/entity.decorator';
@@ -277,6 +278,29 @@ export class GenericSeeder extends Seeder {
           entity: { handle: relatedEntityHandle },
           route: entityRoute.route,
           group: relatedGroupHandle ? { handle: relatedGroupHandle } : null,
+        });
+
+        if (existing) {
+          em.assign(existing, item as never);
+          return true;
+        }
+      }
+    }
+
+    if (entityClass === DashboardTemplateItem) {
+      const dashboardTemplate = item as {
+        name?: unknown;
+        person?: unknown;
+      };
+
+      if (
+        typeof dashboardTemplate.name === 'string' &&
+        dashboardTemplate.name.trim() &&
+        dashboardTemplate.person != null
+      ) {
+        const existing = await em.findOne(DashboardTemplateItem, {
+          name: dashboardTemplate.name,
+          person: dashboardTemplate.person as never,
         });
 
         if (existing) {

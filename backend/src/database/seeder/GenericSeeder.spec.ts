@@ -1,8 +1,9 @@
 import { describe, expect, it, jest } from '@jest/globals';
 import type { EntityManager, EntityName } from '@mikro-orm/core';
-import { readFileSync } from 'fs';
+import { readFileSync, readdirSync } from 'fs';
 import { join } from 'path';
 import { EntityRouteItem } from '../../entity/EntityRouteItem';
+import { DashboardTemplateItem } from '../../entity/DashboardTemplateItem';
 import { KpiItem } from '../../entity/KpiItem';
 import { GenericSeeder } from './GenericSeeder';
 
@@ -34,23 +35,33 @@ describe('GenericSeeder', () => {
             'utf8',
           ),
         ) as T;
-      const kpis = [
-        ...loadSeed<Array<{ name: string }>>('kpi', 'kpiData_001.json'),
-        ...loadSeed<Array<{ name: string }>>('kpi', 'kpiData_002.json'),
-      ];
-      const dashboards = [
-        ...loadSeed<Array<{ name: string; kpis: Array<number | string> }>>(
-          'dashboardTemplate',
-          'dashboardTemplateData_001.json',
-        ),
-        ...loadSeed<Array<{ name: string; kpis: Array<number | string> }>>(
-          'dashboardTemplate',
-          'dashboardTemplateData_002.json',
-        ),
-      ];
+      const loadSeedSeries = <T>(folder: string, prefix: string): T[] =>
+        readdirSync(join(__dirname, `json-${dataset}`, folder))
+          .filter(
+            (fileName) =>
+              fileName.startsWith(`${prefix}_`) && fileName.endsWith('.json'),
+          )
+          .sort((left, right) => left.localeCompare(right))
+          .flatMap((fileName) => loadSeed<T[]>(folder, fileName));
+      const kpis = loadSeedSeries<{ name: string }>('kpi', 'kpiData');
+      const dashboards = loadSeedSeries<{
+        name: string;
+        kpis: Array<number | string>;
+      }>('dashboardTemplate', 'dashboardTemplateData');
+      const roleSeedFile = readdirSync(
+        join(__dirname, `json-${dataset}`, 'roleStarterDashboard'),
+      )
+        .filter(
+          (fileName) =>
+            fileName.startsWith('roleStarterDashboardData_') &&
+            fileName.endsWith('.json'),
+        )
+        .sort((left, right) => left.localeCompare(right))
+        .at(-1);
+      if (!roleSeedFile) throw new Error('Missing role starter dashboard seed');
       const roleMappings = loadSeed<
         Array<{ role: string; templates: string[] }>
-      >('roleStarterDashboard', 'roleStarterDashboardData_002.json');
+      >('roleStarterDashboard', roleSeedFile);
       const kpiNames = new Set(kpis.map((kpi) => kpi.name));
       const dashboardNames = new Set(
         dashboards.map((dashboard) => dashboard.name),
@@ -210,6 +221,39 @@ describe('GenericSeeder', () => {
       group: { handle: 'emailInbound' },
     });
     expect(em.assign).toHaveBeenCalledWith(existingRoute, seedItem);
+  });
+
+  it('updates an existing dashboard template by name and owner', async () => {
+    const existingTemplate = {
+      handle: 12,
+      name: 'System Operations',
+      person: 1,
+    };
+    const em = {
+      findOne: jest.fn<
+        (...args: unknown[]) => Promise<typeof existingTemplate>
+      >(() => Promise.resolve(existingTemplate)),
+      assign: jest.fn<(...args: unknown[]) => unknown>(),
+    };
+    const seedItem = {
+      name: 'System Operations',
+      person: 1,
+      kpis: [{ handle: 42, name: 'Fehlgeschlagene Teams-Deliveries' }],
+    };
+    const seeder = new GenericSeeder() as unknown as SeedItemUpdater;
+
+    const updated = await seeder.updateExistingSeedItemByHandle(
+      DashboardTemplateItem,
+      seedItem,
+      em as unknown as EntityManager,
+    );
+
+    expect(updated).toBe(true);
+    expect(em.findOne).toHaveBeenCalledWith(DashboardTemplateItem, {
+      name: 'System Operations',
+      person: 1,
+    });
+    expect(em.assign).toHaveBeenCalledWith(existingTemplate, seedItem);
   });
 
   it('uses the null group as part of the default entity-route key', async () => {

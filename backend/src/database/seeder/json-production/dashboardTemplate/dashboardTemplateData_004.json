@@ -1,0 +1,36 @@
+[
+  {
+    "name": "System Operations",
+    "description": "Aktualisierte Systemvorlage für Mail-, Teams-, Event-, Webhook-, Kalender- und Posteingangsautomatisierungen.",
+    "isShared": true,
+    "person": 1,
+    "kpis": [
+      "Aktive Webhook-Subscriptions",
+      "Aktive Mail-Subscriptions",
+      "Aktive Teams-Subscriptions",
+      "Aktive Kalender-Synchronisationen",
+      "Aktive Posteingangs-Synchronisationen",
+      "Fehlgeschlagene Mail-Deliveries",
+      "Fehlgeschlagene Teams-Deliveries",
+      "Fehlgeschlagene Event-Deliveries",
+      "Fehlgeschlagene Webhook-Deliveries",
+      "Fehlgeschlagene Kalender-Synchronisationen",
+      "Fehlgeschlagene Posteingangs-Synchronisationen",
+      "Fehlgeschlagene eingehende E-Mail-Verarbeitungen",
+      "Mail-Queue nach Status",
+      "Teams-Queue nach Status",
+      "Event-Queue nach Status",
+      "Webhook-Queue nach Status",
+      "Eingehende E-Mails nach Verarbeitungsstatus",
+      "Event-Deliveries Jahresvergleich",
+      "Webhook-Deliveries pro Monat",
+      "Teams-Deliveries pro Monat",
+      "Mail-Volumen Monatsvergleich",
+      "Teams-Volumen Monatsvergleich",
+      "Webhook-Subscriptions nach Methode",
+      "Webhook-Subscriptions nach Authentifizierung"
+    ],
+    "createdAt": "2026-08-19T09:04:00.000Z",
+    "updatedAt": "2026-08-19T09:04:00.000Z"
+  }
+]

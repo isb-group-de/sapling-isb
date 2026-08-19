@@ -1,0 +1,197 @@
+[
+  {
+    "name": "Aktive Mail-Subscriptions",
+    "description": "Anzahl aktiv geschalteter automatischer Mail-Subscriptions.",
+    "aggregation": "COUNT",
+    "field": "handle",
+    "type": "ITEM",
+    "targetEntity": "emailSubscription",
+    "groupBy": null,
+    "timeframe": null,
+    "filter": {
+      "is_active": true
+    },
+    "timeframeField": null
+  },
+  {
+    "name": "Aktive Teams-Subscriptions",
+    "description": "Anzahl aktiv geschalteter automatischer Teams-Subscriptions.",
+    "aggregation": "COUNT",
+    "field": "handle",
+    "type": "ITEM",
+    "targetEntity": "teamsSubscription",
+    "groupBy": null,
+    "timeframe": null,
+    "filter": {
+      "is_active": true
+    },
+    "timeframeField": null
+  },
+  {
+    "name": "Aktive Kalender-Synchronisationen",
+    "description": "Anzahl aktiv geschalteter automatischer Kalender-Synchronisationen.",
+    "aggregation": "COUNT",
+    "field": "handle",
+    "type": "ITEM",
+    "targetEntity": "calendarSyncSubscription",
+    "groupBy": null,
+    "timeframe": null,
+    "filter": {
+      "is_active": true
+    },
+    "timeframeField": null
+  },
+  {
+    "name": "Aktive Posteingangs-Synchronisationen",
+    "description": "Anzahl aktiv geschalteter automatischer E-Mail-Posteingangs-Synchronisationen.",
+    "aggregation": "COUNT",
+    "field": "handle",
+    "type": "ITEM",
+    "targetEntity": "emailInboxSubscription",
+    "groupBy": null,
+    "timeframe": null,
+    "filter": {
+      "is_active": true
+    },
+    "timeframeField": null
+  },
+  {
+    "name": "Fehlgeschlagene Teams-Deliveries",
+    "description": "Anzahl der fehlgeschlagenen Teams-Deliveries.",
+    "aggregation": "COUNT",
+    "field": "handle",
+    "type": "ITEM",
+    "targetEntity": "teamsDelivery",
+    "groupBy": null,
+    "timeframe": null,
+    "filter": {
+      "status": "failed"
+    },
+    "timeframeField": null
+  },
+  {
+    "name": "Fehlgeschlagene Kalender-Synchronisationen",
+    "description": "Anzahl der Kalender-Synchronisationen mit einem aktuellen Fehler.",
+    "aggregation": "COUNT",
+    "field": "handle",
+    "type": "ITEM",
+    "targetEntity": "calendarSyncSubscription",
+    "groupBy": null,
+    "timeframe": null,
+    "filter": {
+      "last_error": {
+        "$ne": null
+      }
+    },
+    "timeframeField": null
+  },
+  {
+    "name": "Fehlgeschlagene Posteingangs-Synchronisationen",
+    "description": "Anzahl der E-Mail-Posteingangs-Synchronisationen mit einem aktuellen Fehler.",
+    "aggregation": "COUNT",
+    "field": "handle",
+    "type": "ITEM",
+    "targetEntity": "emailInboxSubscription",
+    "groupBy": null,
+    "timeframe": null,
+    "filter": {
+      "last_error": {
+        "$ne": null
+      }
+    },
+    "timeframeField": null
+  },
+  {
+    "name": "Fehlgeschlagene eingehende E-Mail-Verarbeitungen",
+    "description": "Anzahl eingehender E-Mails mit fehlgeschlagener automatischer Verarbeitung.",
+    "aggregation": "COUNT",
+    "field": "handle",
+    "type": "ITEM",
+    "targetEntity": "inboundEmail",
+    "groupBy": null,
+    "timeframe": null,
+    "filter": {
+      "status": "failed"
+    },
+    "timeframeField": null
+  },
+  {
+    "name": "Teams-Queue nach Status",
+    "description": "Verteilung der Teams-Deliveries nach Zustellstatus.",
+    "aggregation": "COUNT",
+    "field": "status.description",
+    "type": "LIST",
+    "targetEntity": "teamsDelivery",
+    "groupBy": [
+      "status"
+    ],
+    "timeframe": null,
+    "timeframeField": null,
+    "relationField": "handle"
+  },
+  {
+    "name": "Event-Queue nach Status",
+    "description": "Verteilung der Event-Deliveries nach Zustellstatus.",
+    "aggregation": "COUNT",
+    "field": "status.description",
+    "type": "LIST",
+    "targetEntity": "eventDelivery",
+    "groupBy": [
+      "status"
+    ],
+    "timeframe": null,
+    "timeframeField": null,
+    "relationField": "handle"
+  },
+  {
+    "name": "Webhook-Queue nach Status",
+    "description": "Verteilung der Webhook-Deliveries nach Zustellstatus.",
+    "aggregation": "COUNT",
+    "field": "status.description",
+    "type": "LIST",
+    "targetEntity": "webhookDelivery",
+    "groupBy": [
+      "status"
+    ],
+    "timeframe": null,
+    "timeframeField": null,
+    "relationField": "handle"
+  },
+  {
+    "name": "Eingehende E-Mails nach Verarbeitungsstatus",
+    "description": "Verteilung eingehender E-Mails nach ihrem automatischen Verarbeitungsstatus.",
+    "aggregation": "COUNT",
+    "field": "status.description",
+    "type": "LIST",
+    "targetEntity": "inboundEmail",
+    "groupBy": [
+      "status"
+    ],
+    "timeframe": null,
+    "timeframeField": null,
+    "relationField": "handle"
+  },
+  {
+    "name": "Teams-Deliveries pro Monat",
+    "description": "Monatliche Entwicklung der Teams-Zustellungen im laufenden Jahr.",
+    "aggregation": "COUNT",
+    "field": "handle",
+    "type": "SPARKLINE",
+    "targetEntity": "teamsDelivery",
+    "groupBy": null,
+    "timeframe": "YEAR",
+    "timeframeInterval": "MONTH",
+    "timeframeField": "created_at"
+  },
+  {
+    "name": "Teams-Volumen Monatsvergleich",
+    "description": "Teams-Deliveries im aktuellen versus vorherigen Monat.",
+    "aggregation": "COUNT",
+    "field": "handle",
+    "type": "COMPARISON",
+    "targetEntity": "teamsDelivery",
+    "groupBy": null,
+    "timeframe": "MONTH",
+    "timeframeField": "created_at"
+  }
+]

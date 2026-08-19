@@ -5,6 +5,7 @@ import ApiCurrentService from '@/services/api.current.service'
 import { useTranslationLoader } from '@/composables/generic/useTranslationLoader'
 import { useSaplingMessageCenter } from '@/composables/system/useSaplingMessageCenter'
 import { useCurrentPersonStore } from '@/stores/currentPersonStore'
+import { restoreDashboardLayoutSnapshot } from '@/composables/dashboard/saplingDashboardLayout'
 import type {
   DashboardItem,
   DashboardTemplateItem,
@@ -602,7 +603,7 @@ export function useSaplingDashboard() {
   function cancelLayoutEdit() {
     if (layoutSnapshot.value) {
       const activeHandle = currentDashboard.value?.handle
-      dashboards.value = cloneDashboardLayout(layoutSnapshot.value)
+      dashboards.value = restoreDashboardLayoutSnapshot(layoutSnapshot.value, dashboards.value)
       const nextIndex = dashboards.value.findIndex((dashboard) => dashboard.handle === activeHandle)
       activeTab.value = nextIndex >= 0 ? nextIndex : 0
     }

@@ -1,0 +1,368 @@
+[
+  {
+    "name": "Offene Verkaufschancen",
+    "description": "Anzahl aller derzeit offenen Verkaufschancen.",
+    "aggregation": "COUNT",
+    "field": "handle",
+    "type": "ITEM",
+    "targetEntity": "salesOpportunity",
+    "groupBy": null,
+    "timeframe": null,
+    "filter": {
+      "is_active": true
+    },
+    "timeframeField": null
+  },
+  {
+    "name": "Verkaufschancen nach Forecast",
+    "description": "Verteilung der Verkaufschancen nach Forecast-Kategorie.",
+    "aggregation": "COUNT",
+    "field": "forecast.title",
+    "type": "LIST",
+    "targetEntity": "salesOpportunity",
+    "groupBy": [
+      "forecast"
+    ],
+    "timeframe": null,
+    "timeframeField": null,
+    "relationField": "handle"
+  },
+  {
+    "name": "Abgeschlossene Verkaufschancen Jahresvergleich",
+    "description": "Abgeschlossene Verkaufschancen im aktuellen und vorherigen Jahr.",
+    "aggregation": "COUNT",
+    "field": "handle",
+    "type": "TREND",
+    "targetEntity": "salesOpportunity",
+    "groupBy": null,
+    "timeframe": "YEAR",
+    "timeframeField": "close_date",
+    "filter": {
+      "resultStatus": {
+        "isClosed": true
+      }
+    }
+  },
+  {
+    "name": "Neue Verkaufschancen pro Monat",
+    "description": "Monatlicher Eingang neuer Verkaufschancen im laufenden Jahr.",
+    "aggregation": "COUNT",
+    "field": "handle",
+    "type": "SPARKLINE",
+    "targetEntity": "salesOpportunity",
+    "groupBy": null,
+    "timeframe": "YEAR",
+    "timeframeInterval": "MONTH",
+    "timeframeField": "created_at"
+  },
+  {
+    "name": "Verkaufschancenbestand nach Status",
+    "description": "Breakdown des aktuellen Verkaufschancenbestands nach Ergebnisstatus.",
+    "aggregation": "COUNT",
+    "field": "resultStatus.title",
+    "type": "BREAKDOWN",
+    "targetEntity": "salesOpportunity",
+    "groupBy": [
+      "resultStatus"
+    ],
+    "timeframe": null,
+    "timeframeField": null,
+    "relationField": "handle"
+  },
+  {
+    "name": "Verkaufschanceneingang Monatsvergleich",
+    "description": "Neue Verkaufschancen im aktuellen versus vorherigen Monat.",
+    "aggregation": "COUNT",
+    "field": "handle",
+    "type": "COMPARISON",
+    "targetEntity": "salesOpportunity",
+    "groupBy": null,
+    "timeframe": "MONTH",
+    "timeframeField": "created_at"
+  },
+  {
+    "name": "Meine offenen Verkaufschancen",
+    "description": "Persönliche Sicht: Anzahl der dem aktuellen Benutzer zugewiesenen offenen Verkaufschancen.",
+    "aggregation": "COUNT",
+    "field": "handle",
+    "type": "ITEM",
+    "targetEntity": "salesOpportunity",
+    "groupBy": null,
+    "timeframe": null,
+    "filter": {
+      "$and": [
+        {
+          "is_active": true
+        },
+        {
+          "assigneePerson": "{{currentUser.handle}}"
+        }
+      ]
+    },
+    "timeframeField": null
+  },
+  {
+    "name": "Meine Verkaufschancen nach Forecast",
+    "description": "Persönliche Sicht: Verteilung der eigenen Verkaufschancen nach Forecast-Kategorie.",
+    "aggregation": "COUNT",
+    "field": "forecast.title",
+    "type": "LIST",
+    "targetEntity": "salesOpportunity",
+    "groupBy": [
+      "forecast"
+    ],
+    "timeframe": null,
+    "filter": {
+      "assigneePerson": "{{currentUser.handle}}"
+    },
+    "timeframeField": null,
+    "relationField": "handle"
+  },
+  {
+    "name": "Meine abgeschlossenen Verkaufschancen Jahresvergleich",
+    "description": "Persönliche Sicht: Eigene abgeschlossene Verkaufschancen im aktuellen und vorherigen Jahr.",
+    "aggregation": "COUNT",
+    "field": "handle",
+    "type": "TREND",
+    "targetEntity": "salesOpportunity",
+    "groupBy": null,
+    "timeframe": "YEAR",
+    "timeframeField": "close_date",
+    "filter": {
+      "$and": [
+        {
+          "resultStatus": {
+            "isClosed": true
+          }
+        },
+        {
+          "assigneePerson": "{{currentUser.handle}}"
+        }
+      ]
+    }
+  },
+  {
+    "name": "Meine neuen Verkaufschancen pro Monat",
+    "description": "Persönliche Sicht: Monatlicher Eingang eigener Verkaufschancen im laufenden Jahr.",
+    "aggregation": "COUNT",
+    "field": "handle",
+    "type": "SPARKLINE",
+    "targetEntity": "salesOpportunity",
+    "groupBy": null,
+    "timeframe": "YEAR",
+    "timeframeInterval": "MONTH",
+    "filter": {
+      "assigneePerson": "{{currentUser.handle}}"
+    },
+    "timeframeField": "created_at"
+  },
+  {
+    "name": "Mein Verkaufschancenbestand nach Status",
+    "description": "Persönliche Sicht: Breakdown des eigenen Verkaufschancenbestands nach Ergebnisstatus.",
+    "aggregation": "COUNT",
+    "field": "resultStatus.title",
+    "type": "BREAKDOWN",
+    "targetEntity": "salesOpportunity",
+    "groupBy": [
+      "resultStatus"
+    ],
+    "timeframe": null,
+    "filter": {
+      "assigneePerson": "{{currentUser.handle}}"
+    },
+    "timeframeField": null,
+    "relationField": "handle"
+  },
+  {
+    "name": "Mein Verkaufschanceneingang Monatsvergleich",
+    "description": "Persönliche Sicht: Neue eigene Verkaufschancen im aktuellen versus vorherigen Monat.",
+    "aggregation": "COUNT",
+    "field": "handle",
+    "type": "COMPARISON",
+    "targetEntity": "salesOpportunity",
+    "groupBy": null,
+    "timeframe": "MONTH",
+    "filter": {
+      "assigneePerson": "{{currentUser.handle}}"
+    },
+    "timeframeField": "created_at"
+  },
+  {
+    "name": "Offene Office-Aufgaben",
+    "description": "Anzahl aller Office-Aufgaben mit einem offenen Bearbeitungsstatus.",
+    "aggregation": "COUNT",
+    "field": "handle",
+    "type": "ITEM",
+    "targetEntity": "internalCase",
+    "groupBy": null,
+    "timeframe": null,
+    "filter": {
+      "status": {
+        "isOpen": true
+      }
+    },
+    "timeframeField": null
+  },
+  {
+    "name": "Office-Aufgaben nach Status",
+    "description": "Verteilung der Office-Aufgaben nach Bearbeitungsstatus.",
+    "aggregation": "COUNT",
+    "field": "status.description",
+    "type": "LIST",
+    "targetEntity": "internalCase",
+    "groupBy": [
+      "status"
+    ],
+    "timeframe": null,
+    "timeframeField": null,
+    "relationField": "handle"
+  },
+  {
+    "name": "Office-Aufgaben Jahresvergleich",
+    "description": "Neu angelegte Office-Aufgaben im aktuellen und vorherigen Jahr.",
+    "aggregation": "COUNT",
+    "field": "handle",
+    "type": "TREND",
+    "targetEntity": "internalCase",
+    "groupBy": null,
+    "timeframe": "YEAR",
+    "timeframeField": "created_at"
+  },
+  {
+    "name": "Office-Aufgaben pro Monat",
+    "description": "Monatliche Entwicklung neu angelegter Office-Aufgaben im laufenden Jahr.",
+    "aggregation": "COUNT",
+    "field": "handle",
+    "type": "SPARKLINE",
+    "targetEntity": "internalCase",
+    "groupBy": null,
+    "timeframe": "YEAR",
+    "timeframeInterval": "MONTH",
+    "timeframeField": "created_at"
+  },
+  {
+    "name": "Office-Aufgaben nach Kategorie",
+    "description": "Breakdown der Office-Aufgaben nach organisatorischer Kategorie.",
+    "aggregation": "COUNT",
+    "field": "category.title",
+    "type": "BREAKDOWN",
+    "targetEntity": "internalCase",
+    "groupBy": [
+      "category"
+    ],
+    "timeframe": null,
+    "timeframeField": null,
+    "relationField": "handle"
+  },
+  {
+    "name": "Office-Aufgaben Monatsvergleich",
+    "description": "Neu angelegte Office-Aufgaben im aktuellen versus vorherigen Monat.",
+    "aggregation": "COUNT",
+    "field": "handle",
+    "type": "COMPARISON",
+    "targetEntity": "internalCase",
+    "groupBy": null,
+    "timeframe": "MONTH",
+    "timeframeField": "created_at"
+  },
+  {
+    "name": "Meine offenen Office-Aufgaben",
+    "description": "Persönliche Sicht: Anzahl der eigenen Office-Aufgaben mit einem offenen Bearbeitungsstatus.",
+    "aggregation": "COUNT",
+    "field": "handle",
+    "type": "ITEM",
+    "targetEntity": "internalCase",
+    "groupBy": null,
+    "timeframe": null,
+    "filter": {
+      "$and": [
+        {
+          "status": {
+            "isOpen": true
+          }
+        },
+        {
+          "responsiblePerson": "{{currentUser.handle}}"
+        }
+      ]
+    },
+    "timeframeField": null
+  },
+  {
+    "name": "Meine Office-Aufgaben nach Status",
+    "description": "Persönliche Sicht: Verteilung der eigenen Office-Aufgaben nach Bearbeitungsstatus.",
+    "aggregation": "COUNT",
+    "field": "status.description",
+    "type": "LIST",
+    "targetEntity": "internalCase",
+    "groupBy": [
+      "status"
+    ],
+    "timeframe": null,
+    "filter": {
+      "responsiblePerson": "{{currentUser.handle}}"
+    },
+    "timeframeField": null,
+    "relationField": "handle"
+  },
+  {
+    "name": "Meine Office-Aufgaben Jahresvergleich",
+    "description": "Persönliche Sicht: Eigene Office-Aufgaben im aktuellen und vorherigen Jahr.",
+    "aggregation": "COUNT",
+    "field": "handle",
+    "type": "TREND",
+    "targetEntity": "internalCase",
+    "groupBy": null,
+    "timeframe": "YEAR",
+    "filter": {
+      "responsiblePerson": "{{currentUser.handle}}"
+    },
+    "timeframeField": "created_at"
+  },
+  {
+    "name": "Meine Office-Aufgaben pro Monat",
+    "description": "Persönliche Sicht: Monatliche Entwicklung der eigenen Office-Aufgaben.",
+    "aggregation": "COUNT",
+    "field": "handle",
+    "type": "SPARKLINE",
+    "targetEntity": "internalCase",
+    "groupBy": null,
+    "timeframe": "YEAR",
+    "timeframeInterval": "MONTH",
+    "filter": {
+      "responsiblePerson": "{{currentUser.handle}}"
+    },
+    "timeframeField": "created_at"
+  },
+  {
+    "name": "Meine Office-Aufgaben nach Kategorie",
+    "description": "Persönliche Sicht: Breakdown der eigenen Office-Aufgaben nach Kategorie.",
+    "aggregation": "COUNT",
+    "field": "category.title",
+    "type": "BREAKDOWN",
+    "targetEntity": "internalCase",
+    "groupBy": [
+      "category"
+    ],
+    "timeframe": null,
+    "filter": {
+      "responsiblePerson": "{{currentUser.handle}}"
+    },
+    "timeframeField": null,
+    "relationField": "handle"
+  },
+  {
+    "name": "Meine Office-Aufgaben Monatsvergleich",
+    "description": "Persönliche Sicht: Eigene Office-Aufgaben im aktuellen versus vorherigen Monat.",
+    "aggregation": "COUNT",
+    "field": "handle",
+    "type": "COMPARISON",
+    "targetEntity": "internalCase",
+    "groupBy": null,
+    "timeframe": "MONTH",
+    "filter": {
+      "responsiblePerson": "{{currentUser.handle}}"
+    },
+    "timeframeField": "created_at"
+  }
+]

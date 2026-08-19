@@ -32,8 +32,9 @@
               :kpi="kpi"
               :kpiIdx="kpiIdx"
               :onDelete="
-                () =>
-                  !layoutEditing && kpi.handle != null ? openKpiDeleteDialog(kpi.handle) : undefined
+                layoutEditing && kpi.handle != null
+                  ? () => openKpiDeleteDialog(kpi.handle as number)
+                  : undefined
               "
             />
           </v-col>
@@ -79,7 +80,7 @@ import SaplingDialogDelete from '@/components/dialog/SaplingDialogDelete.vue'
 import { useSaplingKpis } from '@/composables/dashboard/useSaplingKpis'
 import { useSaplingSortableDrag } from '@/composables/dashboard/useSaplingSortableDrag'
 import SaplingDialogKpi from '@/components/dialog/SaplingDialogKpi.vue'
-import { toRef, watch } from 'vue'
+import { ref, toRef, watch } from 'vue'
 // #endregion
 
 // #region Props
@@ -113,14 +114,16 @@ const {
 
 const { draggedHandle, dropTargetHandle, start, enter, over, finish } =
   useSaplingSortableDrag(reorderKpis)
+const lastHandledAddRequest = ref(0)
 
 watch(
   () => props.openAddRequest,
-  (nextRequest, previousRequest) => {
-    if (props.layoutEditing || !nextRequest || nextRequest === previousRequest) {
+  (nextRequest) => {
+    if (props.layoutEditing || !nextRequest || nextRequest === lastHandledAddRequest.value) {
       return
     }
 
+    lastHandledAddRequest.value = nextRequest
     void openAddKpiDialog()
   },
 )

@@ -44,6 +44,42 @@ const entityStates = reactive<Record<string, EntityState>>({
       type: 'string',
     }),
   ]),
+  effortEstimatePosition: createEntityState('effortEstimatePosition', [
+    createTemplate({ name: 'title', type: 'string', options: ['isValue'], tableVisible: true }),
+    createTemplate({
+      name: 'estimate',
+      type: 'EffortEstimateItem',
+      kind: 'm:1',
+      isReference: true,
+      referenceName: 'effortEstimate',
+      tableVisible: true,
+    }),
+  ]),
+  effortEstimate: createEntityState('effortEstimate', [
+    createTemplate({ name: 'title', type: 'string', options: ['isValue'] }),
+    createTemplate({
+      name: 'status',
+      type: 'EffortEstimateStatusItem',
+      kind: 'm:1',
+      isReference: true,
+      referenceName: 'effortEstimateStatus',
+      options: ['isValue'],
+    }),
+    createTemplate({
+      name: 'assigneeCompany',
+      type: 'CompanyItem',
+      kind: 'm:1',
+      isReference: true,
+      referenceName: 'company',
+      options: ['isValue'],
+    }),
+  ]),
+  effortEstimateStatus: createEntityState('effortEstimateStatus', [
+    createTemplate({ name: 'description', type: 'string', options: ['isValue'] }),
+  ]),
+  company: createEntityState('company', [
+    createTemplate({ name: 'name', type: 'string', options: ['isValue'] }),
+  ]),
 })
 
 describe('useSaplingDialogEditRelations', () => {
@@ -106,6 +142,38 @@ describe('useSaplingDialogEditRelations', () => {
       expect.objectContaining({
         filter: { ticket: 42 },
         page: 1,
+      }),
+    )
+  })
+
+  it('loads nested value references for labels in embedded relation tables', async () => {
+    const relations = createRelations({
+      templates: [
+        createTemplate({
+          name: 'positions',
+          type: 'Collection<EffortEstimatePositionItem>',
+          kind: '1:m',
+          referenceName: 'effortEstimatePosition',
+          mappedBy: 'estimate',
+        }),
+      ],
+      permissions: ['effortEstimatePosition', 'effortEstimate', 'effortEstimateStatus', 'company'],
+    })
+
+    await relations.initializeRelationTables()
+    await relations.ensureRelationTableItems('positions')
+
+    expect(loadGenericManyMock).toHaveBeenNthCalledWith(2, [
+      { entityHandle: 'effortEstimate', namespaces: ['global'] },
+    ])
+    expect(loadGenericManyMock).toHaveBeenNthCalledWith(3, [
+      { entityHandle: 'effortEstimateStatus', namespaces: ['global'] },
+      { entityHandle: 'company', namespaces: ['global'] },
+    ])
+    expect(apiFindMock).toHaveBeenCalledWith(
+      'effortEstimatePosition',
+      expect.objectContaining({
+        relations: ['estimate', 'estimate.status', 'estimate.assigneeCompany'],
       }),
     )
   })
@@ -218,31 +286,40 @@ describe('useSaplingDialogEditRelations', () => {
   })
 })
 
-function createRelations(overrides: { mode?: DialogState } = {}) {
+function createRelations(
+  overrides: {
+    mode?: DialogState
+    templates?: EntityTemplate[]
+    permissions?: string[]
+  } = {},
+) {
   const entity = ref({ handle: 'ticket' } as EntityItem)
   const item = ref({ handle: 42 } as SaplingGenericItem)
   const mode = ref<DialogState>(overrides.mode ?? 'edit')
-  const permissions = ref<AccumulatedPermission[] | null>([
-    { entityHandle: 'note', allowRead: true } as AccumulatedPermission,
-    { entityHandle: 'event', allowRead: true } as AccumulatedPermission,
-  ])
+  const permissions = ref<AccumulatedPermission[] | null>(
+    (overrides.permissions ?? ['note', 'event']).map(
+      (entityHandle) => ({ entityHandle, allowRead: true }) as AccumulatedPermission,
+    ),
+  )
   const showReference = ref(true)
-  const templates = ref<EntityTemplate[]>([
-    createTemplate({
-      name: 'notes',
-      type: 'Collection<NoteItem>',
-      kind: '1:m',
-      referenceName: 'note',
-      mappedBy: 'ticket',
-    }),
-    createTemplate({
-      name: 'events',
-      type: 'Collection<EventItem>',
-      kind: '1:m',
-      referenceName: 'event',
-      mappedBy: 'ticket',
-    }),
-  ])
+  const templates = ref<EntityTemplate[]>(
+    overrides.templates ?? [
+      createTemplate({
+        name: 'notes',
+        type: 'Collection<NoteItem>',
+        kind: '1:m',
+        referenceName: 'note',
+        mappedBy: 'ticket',
+      }),
+      createTemplate({
+        name: 'events',
+        type: 'Collection<EventItem>',
+        kind: '1:m',
+        referenceName: 'event',
+        mappedBy: 'ticket',
+      }),
+    ],
+  )
 
   return useSaplingDialogEditRelations({
     entity: computed(() => entity.value),
@@ -287,9 +364,11 @@ function createTemplate(
     mappedBy: overrides.mappedBy,
     referenceName: overrides.referenceName,
     options: overrides.options ?? [],
+    tableVisible: overrides.tableVisible,
+    mobileVisible: overrides.mobileVisible,
     isAutoIncrement: false,
     isPersistent: true,
-    isReference: false,
+    isReference: overrides.isReference ?? false,
     referencedPks: [],
     length: undefined,
   } as EntityTemplate

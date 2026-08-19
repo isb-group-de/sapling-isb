@@ -35,6 +35,7 @@ import {
 // #endregion
 
 const REFERENCE_COLUMN_KINDS = ['m:1', '1:1']
+const COMPACT_REFERENCE_LABEL_MAX_LINES = 2
 
 export interface SaplingTableRowContextMenuOpenPayload {
   item: SaplingGenericItem
@@ -187,7 +188,7 @@ export function useSaplingTableRow(props: UseSaplingTableRowProps, emit: UseSapl
         resolveCircularValueReferences(referenceValue as SaplingGenericItem, referenceTemplates),
         referenceTemplates,
         getValueReferenceTemplates(referenceTemplates),
-      )
+      ).slice(0, COMPACT_REFERENCE_LABEL_MAX_LINES)
     }
 
     return titles

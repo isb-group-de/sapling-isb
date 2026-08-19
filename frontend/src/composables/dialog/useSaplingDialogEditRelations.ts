@@ -14,11 +14,16 @@ import { useGenericStore } from '@/stores/genericStore'
 import {
   buildTableFilter,
   buildTableOrderBy,
+  canReadReferenceTemplate,
+  getListProjectionFieldNames,
+  getListProjectionReferenceDependencyNames,
+  getReadableReferenceRelationNames,
   getRelationTableHeaders,
 } from '@/utils/saplingTableUtil'
 import { sortDialogTemplates } from '@/utils/saplingDialogLayoutUtil'
 
 type GetItemHandle = (item?: SaplingGenericItem | null) => string | number | null
+const TABLE_VALUE_REFERENCE_KINDS = ['m:1', '1:1']
 
 interface UseSaplingDialogEditRelationsOptions {
   entity: ComputedRef<EntityItem | null>
@@ -296,12 +301,72 @@ export function useSaplingDialogEditRelations(options: UseSaplingDialogEditRelat
       await genericStore.loadGenericMany(relationLoadRequests)
     }
 
+    await preloadRelationValueReferenceMetadata()
+
     for (const template of relationTemplates.value) {
       const tableState = getRelationTableState(template.name)
       const state = genericStore.getState(template.referenceName ?? '')
       tableState.entityTemplates = state.entityTemplates
       tableState.entity = state.entity
       tableState.entityPermission = state.entityPermission
+    }
+  }
+
+  async function preloadRelationValueReferenceMetadata(): Promise<void> {
+    const permissions = options.permissions.value ?? []
+    const relationEntityTemplates = relationTemplates.value.flatMap((template) => {
+      const templates = genericStore.getState(template.referenceName ?? '').entityTemplates
+      const projectedFields = getListProjectionFieldNames(templates, permissions)
+      const rootRelations = [
+        ...new Set([
+          ...getReadableReferenceRelationNames(templates, permissions, projectedFields),
+          ...getListProjectionReferenceDependencyNames(templates, permissions),
+        ]),
+      ]
+      const rootRelationSet = new Set(rootRelations)
+
+      return templates.filter(
+        (entry) => rootRelationSet.has(entry.name) && Boolean(entry.referenceName),
+      )
+    })
+    const rootReferenceNames = [
+      ...new Set(relationEntityTemplates.map((template) => template.referenceName as string)),
+    ]
+
+    if (rootReferenceNames.length > 0) {
+      await genericStore.loadGenericMany(
+        rootReferenceNames.map((entityHandle) => ({
+          entityHandle,
+          namespaces: ['global'],
+        })),
+      )
+    }
+
+    const nestedValueReferenceNames = [
+      ...new Set(
+        rootReferenceNames.flatMap((referenceName) =>
+          genericStore
+            .getState(referenceName)
+            .entityTemplates.filter(
+              (template) =>
+                TABLE_VALUE_REFERENCE_KINDS.includes(template.kind ?? '') &&
+                template.options?.includes('isValue') &&
+                template.fieldAccess?.allowRead !== false &&
+                canReadReferenceTemplate(template, permissions) &&
+                Boolean(template.referenceName),
+            )
+            .map((template) => template.referenceName as string),
+        ),
+      ),
+    ]
+
+    if (nestedValueReferenceNames.length > 0) {
+      await genericStore.loadGenericMany(
+        nestedValueReferenceNames.map((entityHandle) => ({
+          entityHandle,
+          namespaces: ['global'],
+        })),
+      )
     }
   }
 
@@ -329,6 +394,14 @@ export function useSaplingDialogEditRelations(options: UseSaplingDialogEditRelat
       const columnFilters = relationTableColumnFilters.value[template.name] || {}
 
       if (options.mode.value !== 'create' && options.item.value && template.referenceName) {
+        const permissions = options.permissions.value ?? []
+        const projectedFields = getListProjectionFieldNames(columns, permissions)
+        const relations = getReadableReferenceRelationNames(
+          columns,
+          permissions,
+          projectedFields,
+          (referenceName) => genericStore.getState(referenceName).entityTemplates,
+        )
         const apiFilter = buildTableFilter({
           search,
           columnFilters,
@@ -341,7 +414,7 @@ export function useSaplingDialogEditRelations(options: UseSaplingDialogEditRelat
           limit,
           page,
           orderBy: buildTableOrderBy(sortBy),
-          relations: ['m:1'],
+          relations,
         })
 
         if (relationTableRequestId.value[template.name] !== requestId) {

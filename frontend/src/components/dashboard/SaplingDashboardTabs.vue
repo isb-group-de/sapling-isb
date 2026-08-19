@@ -16,10 +16,7 @@
         <span>{{ $t('dashboard.editModeText') }}</span>
       </div>
     </div>
-    <div
-      class="sapling-tabs-shell sapling-dashboard__tabs-shell"
-      data-tutorial="dashboard-tabs"
-    >
+    <div class="sapling-tabs-shell sapling-dashboard__tabs-shell" data-tutorial="dashboard-tabs">
       <v-tabs v-model="activeTabModel" class="sapling-dashboard__tabs" show-arrows>
         <v-tab
           v-for="(dashboard, dashboardIndex) in dashboards"
@@ -53,7 +50,7 @@
               >
             </div>
             <v-btn
-              v-if="!layoutEditing && isDashboardRemovable && dashboard.handle != null"
+              v-if="layoutEditing && isDashboardRemovable && dashboard.handle != null"
               icon
               variant="text"
               size="x-small"
@@ -78,7 +75,9 @@
         >
           <SaplingDashboardKpis
             :dashboard="dashboard"
-            :open-add-request="dashboardIndex === activeTab ? addKpiRequestKey : 0"
+            :open-add-request="
+              dashboard.handle === addKpiRequestDashboardHandle ? addKpiRequestKey : 0
+            "
             :layout-editing="layoutEditing"
             @update:kpis="emit('updateKpis', dashboard.handle, $event)"
           />
@@ -98,6 +97,7 @@ const props = defineProps<{
   dashboards: DashboardItem[]
   activeTab: number
   addKpiRequestKey: number
+  addKpiRequestDashboardHandle: DashboardItem['handle'] | null
   isDashboardRemovable: boolean
   layoutEditing: boolean
 }>()
