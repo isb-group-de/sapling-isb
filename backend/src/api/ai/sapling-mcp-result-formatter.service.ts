@@ -21,7 +21,7 @@ export class SaplingMcpResultFormatterService {
         return this.sanitizeUnknownValue(payload);
       case 'generic_list':
       case 'ticket_search':
-        return this.createModelListResult(payload, args);
+        return this.createModelListResult(payload, args, toolName);
       case 'generic_get':
         return this.createModelGetResult(payload);
       case 'semantic_search':
@@ -52,6 +52,7 @@ export class SaplingMcpResultFormatterService {
   private createModelListResult(
     payload: unknown,
     args: Record<string, unknown>,
+    toolName: string,
   ): unknown {
     const record = this.asRecord(payload);
     const entityHandle =
@@ -62,7 +63,10 @@ export class SaplingMcpResultFormatterService {
       return this.sanitizeUnknownValue(payload);
     }
 
-    return {
+    const result: Record<string, unknown> & {
+      entityHandle: string;
+      data: unknown[];
+    } = {
       ...this.copyModelResultMetadata(record, [
         'entityHandle',
         'query',
@@ -84,6 +88,25 @@ export class SaplingMcpResultFormatterService {
             this.sanitizeEntityRecord(entityHandle, item),
           )
         : [],
+    };
+
+    if (toolName !== 'generic_list') {
+      return result;
+    }
+
+    const existingUsageHints = Array.isArray(result.usageHints)
+      ? result.usageHints
+      : [];
+
+    return {
+      ...result,
+      usageHints: Array.from(
+        new Set([
+          ...existingUsageHints,
+          ...SAPLING_MCP_USAGE_HINTS.genericList,
+          ...SAPLING_MCP_USAGE_HINTS.userFacingValues,
+        ]),
+      ),
     };
   }
 

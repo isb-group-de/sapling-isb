@@ -152,6 +152,19 @@ Use `generic_list` when:
 - exact relation fields are known
 - the answer depends on current field values rather than long text similarity
 
+For self-scoped questions such as "Welche Termine habe ich heute?":
+
+1. Call `current_person`; never discover the authenticated user through a
+   name search on `person`.
+2. Inspect `event` with `entity_schema` when its fields are not already known.
+3. Query `event` directly with the current person's handle in `participants`
+   and with an overlap filter for the requested local date range.
+4. Do not populate reverse person collections such as `assignedEvents` or
+   `events`; they are broad, can include unrelated periods, and produce an
+   unnecessarily large tool result.
+5. Treat the tool payload as evidence for the original question and summarize
+   the appointments. Never describe it as a JSON dataset supplied by the user.
+
 ## Working With Import Files
 
 The Import-Agent can receive CSV, TSV, and TXT files through the AI Chat

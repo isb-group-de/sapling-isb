@@ -1,6 +1,6 @@
 export const SAPLING_MCP_TOOL_DESCRIPTIONS = {
   currentPerson:
-    'Return safe profile context for the current authenticated Sapling user, including name, login, company, language, department, and roles. Use this for questions such as "Wer bin ich?", "Welche Rollen habe ich?", or "Zu welcher Firma gehore ich?".',
+    'Return safe profile context for the current authenticated Sapling user, including their handle, name, login, company, language, department, and roles. Use this both for profile questions and whenever "I", "me", "my", "ich", "mir", "mein", or "meine" must be resolved to the authenticated person before querying related records. Never identify the current user by searching person records by name.',
   entityCatalog:
     'List the registered Sapling entity handles that can be used with the generic CRUD tools. Use this when you are unsure which entity name to query. For questions about where something is located in the app, navigation, or menu, inspect this catalog first to identify likely candidates such as entity, entityGroup, and entityRoute before querying details.',
   entitySchema:
@@ -8,7 +8,7 @@ export const SAPLING_MCP_TOOL_DESCRIPTIONS = {
   entitySearch:
     'Search the Sapling entity catalog by entity handle, field name, or relation target. Use this when you only know a rough term, a field such as email or assigneePerson, or a partial entity name and need to discover likely entity handles before calling entity_schema or generic tools.',
   genericList:
-    'List Sapling generic records with the same read permissions and filters as the current user. Before using complex filters or relations, first inspect the entity with entity_schema and only use fields and relation names returned there. Use MikroORM-style operators such as $eq, $in, $ilike, $and, and $or; common aliases like eq and like are normalized automatically.',
+    'List Sapling generic records with the same read permissions and filters as the current user. Before using complex filters or relations, first inspect the entity with entity_schema and only use fields and relation names returned there. For self-scoped requests, call current_person and query the requested entity directly with its person relation and narrow business filters; do not search person by name or populate reverse to-many collections such as assignedEvents. For calendar questions, filter event records by participants and date overlap. Use MikroORM-style operators such as $eq, $in, $ilike, $and, and $or; common aliases like eq and like are normalized automatically.',
   genericGet:
     'Load one Sapling generic record by handle with the same read permissions as the current user. Use this when you already know the record handle and need the current sanitized record instead of a list.',
   genericTimeline:
@@ -41,8 +41,14 @@ export const SAPLING_MCP_TOOL_DESCRIPTIONS = {
 
 export const SAPLING_MCP_USAGE_HINTS = {
   currentPerson: [
-    'Use this tool when the user asks about their own identity, profile, company, department, language, or roles.',
+    'Use this tool whenever the user asks about their own identity, profile, company, department, language, roles, or related records such as their appointments or tickets.',
+    'Use the returned person.handle in a direct query on the requested entity; never search person records by the current user name.',
     'This payload is intentionally sanitized and does not include passwords, session tokens, or refresh tokens.',
+  ],
+  genericList: [
+    'This payload is a tool result for the original user request, not a new dataset supplied by the user. Interpret it and answer the original request instead of describing the JSON.',
+    'For self-scoped requests, resolve the authenticated person with current_person and query the requested entity directly. Do not infer the current person from a name search.',
+    'For calendar questions, query event with a participants filter and date-overlap filters. Do not load person.assignedEvents or person.events.',
   ],
   entitySchema: [
     'Inspect this schema before composing filters or relation names.',

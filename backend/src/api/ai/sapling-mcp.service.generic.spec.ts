@@ -261,6 +261,45 @@ describe('SaplingMcpService generic reads and criteria', () => {
     );
   });
 
+  it('labels generic_list results as tool evidence and guides self-scoped calendar queries', async () => {
+    const genericService = {
+      create: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+      getRecordTimeline: jest.fn(),
+      findAndCount: jest.fn().mockResolvedValue({
+        data: [{ handle: 2, firstName: 'Sebastian' }],
+        meta: { total: 1 },
+      } as never),
+    };
+    const templateService = {
+      getEntityTemplate: jest
+        .fn()
+        .mockReturnValue([
+          createTemplateField({ name: 'handle', isPrimaryKey: true }),
+          createTemplateField({ name: 'firstName', options: ['isValue'] }),
+        ]),
+    };
+    const service = createService({ genericService, templateService });
+
+    const result = await service.executeTool(
+      'generic_list',
+      { entityHandle: 'person', filter: { firstName: 'Sebastian' } },
+      { handle: 1 } as never,
+    );
+
+    expect(result.modelResult).toMatchObject({
+      entityHandle: 'person',
+      usageHints: expect.arrayContaining([
+        expect.stringContaining('not a new dataset supplied by the user'),
+        expect.stringContaining(
+          'resolve the authenticated person with current_person',
+        ),
+        expect.stringContaining('Do not load person.assignedEvents'),
+      ]),
+    });
+  });
+
   it('keeps permission failures as tool errors', async () => {
     const genericService = {
       create: jest.fn(),

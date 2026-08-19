@@ -151,7 +151,7 @@ export class AiAgentRunItem {
   contextRecordHandle?: string | null;
 
   @ApiPropertyOptional()
-  @Property({ nullable: true })
+  @Property({ type: 'integer', nullable: true })
   durationMs?: number | null;
 
   @ApiPropertyOptional()

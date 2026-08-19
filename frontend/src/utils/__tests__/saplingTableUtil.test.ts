@@ -484,6 +484,7 @@ describe('saplingTableUtil', () => {
         createTemplate({ name: 'externalKeyHash', options: ['isSearchExcluded'] }),
         createTemplate({ name: 'creatorPersonEmail', isPersistent: false }),
         createTemplate({ name: 'amount', type: 'Decimal' }),
+        createTemplate({ name: 'durationMs', type: 'integer' }),
       ],
     })
 
