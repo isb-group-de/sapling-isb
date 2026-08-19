@@ -4,7 +4,11 @@
     :max-width="SAPLING_DIALOG_MAX_WIDTH.lg"
     @update:model-value="onDialogModelValueUpdate"
   >
-    <SaplingDialogCard class="sapling-dialog-compact-card" :close="() => emit('close')">
+    <SaplingDialogCard
+      class="sapling-dialog-compact-card"
+      :tilt="false"
+      :close="() => emit('close')"
+    >
       <div class="sapling-dialog-shell">
         <template v-if="isLoading">
           <SaplingDialogHero loading :loading-stats-count="2" />

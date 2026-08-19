@@ -1,66 +1,36 @@
 [
   {
-    "name": "Sales Opportunities",
-    "description": "Allgemeine Vorlage für offene Verkaufschancen, Forecast, Status und zeitliche Entwicklung.",
+    "name": "System Operations",
+    "description": "Aktualisierte Systemvorlage für Mail-, Teams-, Event-, Webhook-, Kalender- und Posteingangsautomatisierungen.",
     "isShared": true,
     "person": 1,
     "kpis": [
-      "Offene Verkaufschancen",
-      "Verkaufschancen nach Forecast",
-      "Abgeschlossene Verkaufschancen Jahresvergleich",
-      "Neue Verkaufschancen pro Monat",
-      "Verkaufschancenbestand nach Status",
-      "Verkaufschanceneingang Monatsvergleich"
+      "Aktive Webhook-Subscriptions",
+      "Aktive Mail-Subscriptions",
+      "Aktive Teams-Subscriptions",
+      "Aktive Kalender-Synchronisationen",
+      "Aktive Posteingangs-Synchronisationen",
+      "Fehlgeschlagene Mail-Deliveries",
+      "Fehlgeschlagene Teams-Deliveries",
+      "Fehlgeschlagene Event-Deliveries",
+      "Fehlgeschlagene Webhook-Deliveries",
+      "Fehlgeschlagene Kalender-Synchronisationen",
+      "Fehlgeschlagene Posteingangs-Synchronisationen",
+      "Fehlgeschlagene eingehende E-Mail-Verarbeitungen",
+      "Mail-Queue nach Status",
+      "Teams-Queue nach Status",
+      "Event-Queue nach Status",
+      "Webhook-Queue nach Status",
+      "Eingehende E-Mails nach Verarbeitungsstatus",
+      "Event-Deliveries Jahresvergleich",
+      "Webhook-Deliveries pro Monat",
+      "Teams-Deliveries pro Monat",
+      "Mail-Volumen Monatsvergleich",
+      "Teams-Volumen Monatsvergleich",
+      "Webhook-Subscriptions nach Methode",
+      "Webhook-Subscriptions nach Authentifizierung"
     ],
-    "createdAt": "2026-08-19T09:00:00.000Z",
-    "updatedAt": "2026-08-19T09:00:00.000Z"
-  },
-  {
-    "name": "My Sales Opportunities",
-    "description": "Persönliche Vorlage für offene, dem aktuellen Benutzer zugewiesene Verkaufschancen, Status und Entwicklung.",
-    "isShared": true,
-    "person": 1,
-    "kpis": [
-      "Meine offenen Verkaufschancen",
-      "Meine Verkaufschancen nach Forecast",
-      "Meine abgeschlossenen Verkaufschancen Jahresvergleich",
-      "Meine neuen Verkaufschancen pro Monat",
-      "Mein Verkaufschancenbestand nach Status",
-      "Mein Verkaufschanceneingang Monatsvergleich"
-    ],
-    "createdAt": "2026-08-19T09:01:00.000Z",
-    "updatedAt": "2026-08-19T09:01:00.000Z"
-  },
-  {
-    "name": "Office Tasks",
-    "description": "Allgemeine Vorlage für offene Office-Aufgaben, Status, Kategorien und zeitliche Entwicklung.",
-    "isShared": true,
-    "person": 1,
-    "kpis": [
-      "Offene Office-Aufgaben",
-      "Office-Aufgaben nach Status",
-      "Office-Aufgaben Jahresvergleich",
-      "Office-Aufgaben pro Monat",
-      "Office-Aufgaben nach Kategorie",
-      "Office-Aufgaben Monatsvergleich"
-    ],
-    "createdAt": "2026-08-19T09:02:00.000Z",
-    "updatedAt": "2026-08-19T09:02:00.000Z"
-  },
-  {
-    "name": "My Office Tasks",
-    "description": "Persönliche Vorlage für die dem aktuellen Benutzer zugewiesenen Office-Aufgaben.",
-    "isShared": true,
-    "person": 1,
-    "kpis": [
-      "Meine offenen Office-Aufgaben",
-      "Meine Office-Aufgaben nach Status",
-      "Meine Office-Aufgaben Jahresvergleich",
-      "Meine Office-Aufgaben pro Monat",
-      "Meine Office-Aufgaben nach Kategorie",
-      "Meine Office-Aufgaben Monatsvergleich"
-    ],
-    "createdAt": "2026-08-19T09:03:00.000Z",
-    "updatedAt": "2026-08-19T09:03:00.000Z"
+    "createdAt": "2026-08-19T09:04:00.000Z",
+    "updatedAt": "2026-08-19T09:04:00.000Z"
   }
 ]
