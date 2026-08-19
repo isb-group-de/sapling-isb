@@ -390,6 +390,7 @@ type SaplingTableEmit = UseSaplingTableEmit & {
 }
 
 const props = withDefaults(defineProps<SaplingTableProps>(), {
+  allowDeleteActions: true,
   enableTutorial: false,
   showSearch: true,
   showToolbar: true,
