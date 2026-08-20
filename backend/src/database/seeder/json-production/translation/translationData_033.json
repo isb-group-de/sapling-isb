@@ -1,0 +1,20 @@
+[
+  {
+    "entity": "global",
+    "property": "recordContentAvailableAfterSave",
+    "de": "Informationen und Dokumente sind nach dem ersten Speichern verfügbar.",
+    "en": "Information and documents are available after the first save."
+  },
+  {
+    "entity": "document",
+    "property": "dvelopTabDescription",
+    "de": "Die Dokumente dieses Datensatzes werden in d.velop Cloud verwaltet. Öffne die Dokumentansicht oder lade ein neues Dokument hoch.",
+    "en": "This record's documents are managed in d.velop Cloud. Open the document view or upload a new document."
+  },
+  {
+    "entity": "global",
+    "property": "recordContentAvailableAfterSave",
+    "de": "Informationen, Dokumente, E-Mails und Telefonate sind nach dem ersten Speichern verfügbar.",
+    "en": "Information, documents, emails, and phone calls are available after the first save."
+  }
+]

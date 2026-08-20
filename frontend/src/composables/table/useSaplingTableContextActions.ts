@@ -8,6 +8,7 @@ import { useTimelineDialogStore } from '@/stores/timelineDialogStore'
 import { useChangeLogDialogStore } from '@/stores/changeLogDialogStore'
 import { useSaplingMailDialog } from '@/composables/dialog/useSaplingMailDialog'
 import { buildMailMenuActions, loadCustomerContactMailActions } from '@/utils/saplingMailMenuUtil'
+import { getCommunicationValueLabel } from '@/utils/saplingCommunicationRecordUtil'
 import { openDocumentView, openDvelopUploadDialog } from '@/utils/saplingDocumentActionUtil'
 import type { SaplingContextMenuTableActionPayload } from '@/composables/context/useSaplingContextMenuTable'
 import type { SaplingTableRowContextMenuOpenPayload } from '@/composables/table/useSaplingTableRow'
@@ -231,6 +232,7 @@ export function useSaplingTableContextActions({
             itemHandle: item.handle as string | number | undefined,
             draftValues: item,
             initialTo: [mailAction.email],
+            recordLabel: getCommunicationValueLabel(item, props.entityTemplates),
           })
         }
       },

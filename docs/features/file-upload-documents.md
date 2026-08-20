@@ -76,6 +76,13 @@ If no active d.velop Cloud mapping is configured, the frontend falls back to the
 - Show documents opens `/file/document?filter=...`.
 - Upload document opens the existing Sapling upload dialog and stores a local `DocumentItem`.
 
+The generic record edit dialog also exposes a **Documents** tab. For local
+storage it embeds the same filtered file table and preview workspace for the
+current entity/reference and launches the existing upload dialog from the tab.
+For an active d.velop Cloud mapping it keeps the overlay contract and presents
+actions that open the cloud document and upload dialogs instead of exposing the
+local document list.
+
 This means d.velop Cloud is an overlay, not a replacement for the stored local document model.
 
 ## Storage

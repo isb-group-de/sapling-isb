@@ -154,6 +154,29 @@ Provider dispatch supports:
 
 After successful dispatch, Sapling creates a completed `EventItem` of type `mail` as a communication follow-up. Failures are persisted on the delivery record.
 
+Persisted email deliveries are also shown in the generic record edit dialog's
+**Emails** tab. The embedded list filters `EmailDeliveryItem` by the current
+record's `entity` and `referenceHandle`. Its compose action reuses the global
+mail composer with the current record context, so recipient suggestions,
+templates, sender resolution, attachments, and normal mail permissions remain
+unchanged. Every populated field marked `isMail` on the edited main record is
+passed to the composer as an initial **To** recipient; multiple mail fields
+preselect multiple recipients. The tab is omitted when no populated `isMail`
+field exists. Composer and phone-call hero labels use `isValue` metadata
+from the record that owns the active contact field. Direct fields use the edited
+record; non-persistent named assistants resolve their master reference and its
+target templates rather than entity-specific field-name guesses. Reference
+fields marked `isValue` are excluded from communication hero labels; only
+scalar value fields contribute to the displayed name.
+
+The neighboring **Phone Calls** tab uses the same pattern for `PhoneCallItem`,
+filtering by `entity` and `reference`. When the current record contains a field
+marked `isPhone`, the existing phone-call dialog can be opened directly from the
+tab with that number and the current record context. The tab is omitted when no
+populated `isPhone` field exists. Non-persistent named-assistant fields such as
+projected ticket contact mail/phone values participate through the same metadata
+options.
+
 Automatic email subscriptions are executed by the generic create/update flow
 after a record was saved. A rule without conditions always sends when its
 lifecycle trigger matches, which is useful for create confirmations. Rules with

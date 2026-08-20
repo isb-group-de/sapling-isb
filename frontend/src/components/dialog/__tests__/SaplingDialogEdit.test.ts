@@ -3,10 +3,13 @@ import { computed, nextTick, ref } from 'vue'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import SaplingDialogEdit from '../SaplingDialogEdit.vue'
+import type { AccumulatedPermission } from '@/entity/structure'
 
 const dialogHarness = vi.hoisted(() => ({
   state: null as Record<string, unknown> | null,
 }))
+const useTranslationLoaderMock = vi.hoisted(() => vi.fn())
+const getEntityTemplateMock = vi.hoisted(() => vi.fn())
 
 vi.mock('vue-i18n', () => ({
   createI18n: () => ({
@@ -24,6 +27,16 @@ vi.mock('vue-i18n', () => ({
 
 vi.mock('@/composables/dialog/useSaplingDialogEdit', () => ({
   useSaplingDialogEdit: () => dialogHarness.state,
+}))
+
+vi.mock('@/composables/generic/useTranslationLoader', () => ({
+  useTranslationLoader: useTranslationLoaderMock,
+}))
+
+vi.mock('@/services/api.template.service', () => ({
+  default: {
+    getEntityTemplate: getEntityTemplateMock,
+  },
 }))
 
 vi.mock('@/composables/dialog/useSaplingDialogRecordActions', () => ({
@@ -53,7 +66,7 @@ vi.mock('@/composables/dialog/useSaplingDialogRecordActions', () => ({
 function createDialogState() {
   return {
     isLoading: ref(true),
-    form: ref({ title: '' }),
+    form: ref<Record<string, unknown>>({ title: '' }),
     formRef: ref(null),
     activeTab: ref(0),
     selectedRelations: ref({}),
@@ -70,7 +83,7 @@ function createDialogState() {
     relationTableItemsPerPage: ref({}),
     relationTableSortBy: ref({}),
     relationTableColumnFilters: ref({}),
-    permissions: ref([]),
+    permissions: ref<AccumulatedPermission[]>([]),
     iconNames: ref([]),
     selectedItems: ref([]),
     isDirty: computed(() => false),
@@ -113,7 +126,7 @@ function createDialogState() {
   }
 }
 
-function mountDialog() {
+function mountDialog(propOverrides: Record<string, unknown> = {}) {
   return mount(SaplingDialogEdit, {
     props: {
       modelValue: true,
@@ -121,6 +134,7 @@ function mountDialog() {
       item: { handle: 1, title: 'Existing' },
       templates: [{ key: 'title', name: 'title', type: 'string' }],
       entity: { handle: 'ticket' } as never,
+      ...propOverrides,
     },
     global: {
       stubs: {
@@ -150,6 +164,13 @@ function mountDialog() {
           template: '<div data-test="dialog-dirty-summary">{{ dirtySummaryLabel }}</div>',
         },
         SaplingDialogEditRelationTab: { template: '<div />' },
+        SaplingDialogEditCommunicationTab: {
+          name: 'SaplingDialogEditCommunicationTab',
+          props: ['kind', 'emailRecipients', 'recordLabel'],
+          template: '<div />',
+        },
+        SaplingDialogEditInformationTab: { template: '<div />' },
+        SaplingDialogEditDocumentsTab: { template: '<div />' },
         SaplingDialogRecordActionDialogs: { template: '<div />' },
         SaplingDialogUnsavedChanges: { template: '<div />' },
       },
@@ -164,6 +185,12 @@ async function settleFocus() {
 
 describe('SaplingDialogEdit', () => {
   beforeEach(() => {
+    useTranslationLoaderMock.mockReset()
+    getEntityTemplateMock.mockReset().mockResolvedValue([])
+    useTranslationLoaderMock.mockReturnValue({
+      isLoading: ref(false),
+      loadTranslations: vi.fn(),
+    })
     dialogHarness.state = createDialogState()
   })
 
@@ -223,6 +250,171 @@ describe('SaplingDialogEdit', () => {
     const wrapper = mountDialog()
 
     expect(wrapper.get('[data-test="dialog-dirty-summary"]').text()).toBe('global.dirtyFieldCount')
+  })
+
+  it('appends information, documents, email, and phone-call tabs for records', async () => {
+    const state = createDialogState()
+    state.isLoading.value = false
+    state.activeTab.value = 3
+    state.permissions.value = [
+      { entityHandle: 'information', allowRead: true },
+      { entityHandle: 'emailDelivery', allowRead: true },
+      { entityHandle: 'phoneCall', allowRead: true, allowInsert: true },
+    ]
+    state.form.value = {
+      title: 'Existing',
+      email: 'ticket@example.com',
+      phone: '+49 30 1234567',
+    }
+    dialogHarness.state = state
+
+    const wrapper = mountDialog({
+      templates: [
+        { key: 'title', name: 'title', type: 'string', options: ['isValue'] },
+        { key: 'email', name: 'email', type: 'string', options: ['isMail'] },
+        { key: 'phone', name: 'phone', type: 'string', options: ['isPhone'] },
+      ],
+    })
+    await nextTick()
+
+    expect(useTranslationLoaderMock).toHaveBeenCalledWith('navigationGroup')
+    const tabs = wrapper.findAll('[role="tab"]')
+    expect(tabs.map((tab) => tab.text())).toEqual([
+      expect.stringContaining('navigation.ticket'),
+      expect.stringContaining('navigation.information'),
+      expect.stringContaining('navigation.document'),
+      expect.stringContaining('navigationGroup.mails'),
+      expect.stringContaining('navigation.phoneCall'),
+    ])
+  })
+
+  it('passes every populated isMail field to the email composer tab', async () => {
+    const state = createDialogState()
+    state.isLoading.value = false
+    state.activeTab.value = 3
+    state.form.value = {
+      email: 'info@example.com',
+      invoiceEmail: ' billing@example.com ',
+      ignoredEmail: 'ignored@example.com',
+    }
+    state.permissions.value = [{ entityHandle: 'emailDelivery', allowRead: true }]
+    dialogHarness.state = state
+
+    const wrapper = mountDialog({
+      templates: [
+        { key: 'email', name: 'email', type: 'string', options: ['isMail'] },
+        { key: 'invoiceEmail', name: 'invoiceEmail', type: 'string', options: ['isMail'] },
+        { key: 'ignoredEmail', name: 'ignoredEmail', type: 'string' },
+      ],
+    })
+    await nextTick()
+
+    expect(
+      wrapper.getComponent({ name: 'SaplingDialogEditCommunicationTab' }).props('emailRecipients'),
+    ).toEqual(['info@example.com', 'billing@example.com'])
+  })
+
+  it('uses isValue metadata generically and hides communication tabs without contact values', async () => {
+    const state = createDialogState()
+    state.isLoading.value = false
+    state.activeTab.value = 3
+    state.form.value = {
+      caseNumber: 'T-1042',
+      summary: 'Drucker defekt',
+      creatorPerson: { handle: 42 },
+      creatorPersonFirstName: 'Ada',
+      creatorPersonLastName: 'Lovelace',
+      creatorPersonCompany: { handle: 5 },
+      creatorPersonEmail: 'creator@example.com',
+      creatorPersonPhone: '+49 30 7654321',
+    }
+    state.permissions.value = [
+      { entityHandle: 'emailDelivery', allowRead: true },
+      { entityHandle: 'phoneCall', allowRead: true },
+    ]
+    dialogHarness.state = state
+    getEntityTemplateMock.mockResolvedValue([
+      { key: 'firstName', name: 'firstName', type: 'string', options: ['isValue'] },
+      { key: 'lastName', name: 'lastName', type: 'string', options: ['isValue'] },
+      {
+        key: 'company',
+        name: 'company',
+        type: 'object',
+        isReference: true,
+        referenceName: 'company',
+        options: ['isValue'],
+      },
+    ])
+
+    const wrapper = mountDialog({
+      entity: { handle: 'customWorkItem' } as never,
+      templates: [
+        { key: 'caseNumber', name: 'caseNumber', type: 'string', options: ['isValue'] },
+        { key: 'summary', name: 'summary', type: 'string', options: ['isValue'] },
+        {
+          key: 'creatorPerson',
+          name: 'creatorPerson',
+          type: 'object',
+          kind: 'm:1',
+          isReference: true,
+          referenceName: 'person',
+        },
+        {
+          key: 'creatorPersonFirstName',
+          name: 'creatorPersonFirstName',
+          type: 'string',
+          isPersistent: false,
+        },
+        {
+          key: 'creatorPersonLastName',
+          name: 'creatorPersonLastName',
+          type: 'string',
+          isPersistent: false,
+        },
+        {
+          key: 'creatorPersonCompany',
+          name: 'creatorPersonCompany',
+          type: 'object',
+          isPersistent: false,
+        },
+        {
+          key: 'creatorPersonEmail',
+          name: 'creatorPersonEmail',
+          type: 'string',
+          isPersistent: false,
+          options: ['isMail'],
+        },
+        {
+          key: 'creatorPersonPhone',
+          name: 'creatorPersonPhone',
+          type: 'string',
+          isPersistent: false,
+          options: ['isPhone'],
+        },
+      ],
+    })
+    await flushPromises()
+
+    expect(wrapper.findAll('[role="tab"]').map((tab) => tab.text())).toEqual([
+      expect.stringContaining('navigation.customWorkItem'),
+      expect.stringContaining('navigation.information'),
+      expect.stringContaining('navigation.document'),
+      expect.stringContaining('navigationGroup.mails'),
+      expect.stringContaining('navigation.phoneCall'),
+    ])
+    expect(
+      wrapper.getComponent({ name: 'SaplingDialogEditCommunicationTab' }).props('recordLabel'),
+    ).toBe('Ada Lovelace')
+    expect(getEntityTemplateMock).toHaveBeenCalledWith('person')
+
+    state.form.value = { caseNumber: 'T-1042', summary: 'Drucker defekt' }
+    await nextTick()
+
+    expect(wrapper.findAll('[role="tab"]').map((tab) => tab.text())).toEqual([
+      expect.stringContaining('navigation.customWorkItem'),
+      expect.stringContaining('navigation.information'),
+      expect.stringContaining('navigation.document'),
+    ])
   })
 
   it('returns to the form tab, scrolls to and focuses the first invalid field', async () => {

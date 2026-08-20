@@ -38,8 +38,13 @@ vi.mock('@/utils/saplingDocumentActionUtil', () => ({
 }))
 
 import { useSaplingTableContextActions } from '../useSaplingTableContextActions'
+import type { EntityTemplate } from '@/entity/structure'
 
-function createSubject(showActions = true, entityHandle = 'ticket') {
+function createSubject(
+  showActions = true,
+  entityHandle = 'ticket',
+  entityTemplates: EntityTemplate[] = [],
+) {
   const callbacks = {
     loadItem: vi.fn(async (item) => ({ ...item, title: 'Loaded' })),
     editItem: vi.fn(),
@@ -50,7 +55,7 @@ function createSubject(showActions = true, entityHandle = 'ticket') {
   }
   const props = reactive({
     entityHandle,
-    entityTemplates: [],
+    entityTemplates,
     showActions,
   })
 
@@ -104,5 +109,30 @@ describe('useSaplingTableContextActions', () => {
       name: 'customer360',
       params: { entityHandle: 'company', handle: '42' },
     })
+  })
+
+  it('passes the generic isValue label to the mail composer context', () => {
+    const { subject } = createSubject(true, 'customWorkItem', [
+      { name: 'caseNumber', type: 'string', options: ['isValue'] } as EntityTemplate,
+      { name: 'summary', type: 'string', options: ['isValue'] } as EntityTemplate,
+    ])
+
+    subject.onContextMenuAction({
+      type: 'mail',
+      item: { handle: 42, caseNumber: 'T-1042', summary: 'Drucker defekt' },
+      mailAction: {
+        templateName: 'creatorPersonEmail',
+        email: 'creator@example.com',
+        fieldLabel: 'Creator',
+        source: 'record',
+      },
+    })
+
+    expect(mocks.openMailDialog).toHaveBeenCalledWith(
+      expect.objectContaining({
+        initialTo: ['creator@example.com'],
+        recordLabel: 'T-1042 Drucker defekt',
+      }),
+    )
   })
 })

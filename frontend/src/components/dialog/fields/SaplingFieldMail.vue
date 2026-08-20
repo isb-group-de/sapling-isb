@@ -16,7 +16,11 @@
 </template>
 
 <script lang="ts" setup>
+import { computed } from 'vue'
 import { useSaplingMailDialog } from '@/composables/dialog/useSaplingMailDialog'
+import type { EntityTemplate } from '@/entity/structure'
+import type { SaplingGenericItem } from '@/entity/entity'
+import { getCommunicationValueLabel } from '@/utils/saplingCommunicationRecordUtil'
 
 const props = defineProps<{
   label: string
@@ -29,9 +33,15 @@ const props = defineProps<{
   entityHandle?: string
   itemHandle?: string | number
   draftValues?: Record<string, unknown>
+  entityTemplates?: EntityTemplate[]
 }>()
 
 const { openMailDialog } = useSaplingMailDialog()
+const recordLabel = computed(() =>
+  props.entityTemplates?.length
+    ? getCommunicationValueLabel(props.draftValues as SaplingGenericItem, props.entityTemplates)
+    : '',
+)
 
 function onMailClick() {
   if (!props.entityHandle) {
@@ -43,6 +53,7 @@ function onMailClick() {
     itemHandle: props.itemHandle,
     draftValues: props.draftValues,
     initialTo: props.modelValue ? [props.modelValue] : [],
+    recordLabel: recordLabel.value,
   })
 }
 </script>

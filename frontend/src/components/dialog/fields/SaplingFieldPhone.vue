@@ -19,6 +19,9 @@
 import { computed, toRef, watch } from 'vue'
 import { useSaplingPhoneDialog } from '@/composables/dialog/useSaplingPhoneDialog'
 import { useSaplingPhoneNumber } from '@/composables/phone/useSaplingPhoneNumber'
+import type { EntityTemplate } from '@/entity/structure'
+import type { SaplingGenericItem } from '@/entity/entity'
+import { getCommunicationValueLabel } from '@/utils/saplingCommunicationRecordUtil'
 
 const props = defineProps<{
   label: string
@@ -31,6 +34,7 @@ const props = defineProps<{
   entityHandle?: string
   itemHandle?: string | number
   draftValues?: Record<string, unknown>
+  entityTemplates?: EntityTemplate[]
 }>()
 
 const emit = defineEmits<{
@@ -41,6 +45,11 @@ const { openPhoneDialog } = useSaplingPhoneDialog()
 const { currentCountryHandle, currentDialingCode, formatPhoneNumber } = useSaplingPhoneNumber()
 const modelValue = toRef(props, 'modelValue')
 const formattedModelValue = computed(() => formatPhoneNumber(props.modelValue))
+const recordLabel = computed(() =>
+  props.entityTemplates?.length
+    ? getCommunicationValueLabel(props.draftValues as SaplingGenericItem, props.entityTemplates)
+    : '',
+)
 
 watch(
   [modelValue, currentCountryHandle, currentDialingCode],
@@ -65,6 +74,7 @@ function onPhoneClick() {
       itemHandle: props.itemHandle,
       draftValues: props.draftValues,
       phoneNumber: formattedValue,
+      recordLabel: recordLabel.value,
     })
   }
 }

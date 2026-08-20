@@ -95,6 +95,38 @@
         />
       </span>
     </button>
+    <button
+      v-for="(tab, supplementalIndex) in supplementalTabs"
+      :key="tab.value"
+      class="sapling-record-dialog-nav-item sapling-dialog-edit-nav-item sapling-record-dialog-nav-item--supplemental"
+      :class="{
+        'sapling-record-dialog-nav-item--active': !tab.disabled && activeTab === tab.value,
+        'sapling-record-dialog-nav-item--locked': tab.disabled,
+        'sapling-record-dialog-nav-item--supplemental-first': supplementalIndex === 0,
+      }"
+      type="button"
+      :id="tabId(tab.value)"
+      role="tab"
+      :aria-controls="panelId(tab.value)"
+      :aria-selected="!tab.disabled && activeTab === tab.value"
+      :aria-disabled="tab.disabled ? 'true' : undefined"
+      :tabindex="!tab.disabled && activeTab === tab.value ? 0 : -1"
+      :aria-current="!tab.disabled && activeTab === tab.value ? 'page' : undefined"
+      :aria-label="supplementalAriaLabel(tab)"
+      :title="tab.disabled ? tab.disabledReason : tab.label"
+      @click="selectSupplementalTab(tab)"
+      @keydown="onTabKeydown($event, tab.value)"
+    >
+      <v-icon class="sapling-record-dialog-nav-item__icon" size="18">
+        {{ tab.icon }}
+      </v-icon>
+      <span class="sapling-record-dialog-nav-item__label">{{ tab.label }}</span>
+      <span v-if="tab.disabled" class="sapling-record-dialog-nav-item__meta">
+        <v-icon class="sapling-record-dialog-nav-item__lock" size="15" aria-hidden="true">
+          mdi-lock-outline
+        </v-icon>
+      </span>
+    </button>
   </nav>
 </template>
 
@@ -103,6 +135,14 @@ import { computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { DialogState, EntityTemplate } from '@/entity/structure'
 import type { EntityItem } from '@/entity/entity'
+
+interface SupplementalTab {
+  value: number
+  label: string
+  icon: string
+  disabled?: boolean
+  disabledReason?: string
+}
 
 const props = defineProps<{
   entityHandle: string
@@ -114,6 +154,7 @@ const props = defineProps<{
   relationsLocked?: boolean
   dirtyFieldCount?: number
   dirtyRelationNames?: string[]
+  supplementalTabs?: SupplementalTab[]
 }>()
 
 const activeTab = defineModel<number>('activeTab', { required: true })
@@ -135,10 +176,19 @@ const recordAriaLabel = computed(() =>
 )
 const lockedRelationsHintId = `${props.tabIdPrefix || `sapling-record-dialog-${props.entityHandle}`}-relations-locked-hint`
 
+const supplementalTabs = computed(() => props.supplementalTabs ?? [])
+const enabledTabValues = computed(() => [
+  0,
+  ...(relationsLocked.value
+    ? []
+    : props.relationTemplates.map((_, relationIndex) => relationIndex + 1)),
+  ...supplementalTabs.value.filter((tab) => !tab.disabled).map((tab) => tab.value),
+])
+
 watch(
-  [relationsLocked, activeTab],
-  ([locked, currentTab]) => {
-    if (locked && currentTab !== 0) {
+  [enabledTabValues, activeTab],
+  ([enabledValues, currentTab]) => {
+    if (!enabledValues.includes(currentTab)) {
       activeTab.value = 0
     }
   },
@@ -154,40 +204,41 @@ function panelId(index: number): string {
 }
 
 function onTabKeydown(event: KeyboardEvent, currentIndex: number): void {
-  if (relationsLocked.value && currentIndex > 0) {
+  const currentPosition = enabledTabValues.value.indexOf(currentIndex)
+  if (currentPosition < 0) {
     return
   }
 
-  const tabCount = relationsLocked.value ? 1 : props.relationTemplates.length + 1
-  let nextIndex: number | null = null
+  let nextPosition: number | null = null
 
   switch (event.key) {
     case 'ArrowDown':
     case 'ArrowRight':
-      nextIndex = (currentIndex + 1) % tabCount
+      nextPosition = (currentPosition + 1) % enabledTabValues.value.length
       break
     case 'ArrowUp':
     case 'ArrowLeft':
-      nextIndex = (currentIndex - 1 + tabCount) % tabCount
+      nextPosition =
+        (currentPosition - 1 + enabledTabValues.value.length) % enabledTabValues.value.length
       break
     case 'Home':
-      nextIndex = 0
+      nextPosition = 0
       break
     case 'End':
-      nextIndex = tabCount - 1
+      nextPosition = enabledTabValues.value.length - 1
       break
   }
 
-  if (nextIndex === null) {
+  if (nextPosition === null) {
     return
   }
 
   event.preventDefault()
-  activeTab.value = nextIndex
-  const tabs = (
+  activeTab.value = enabledTabValues.value[nextPosition] ?? 0
+  const enabledTabs = (
     event.currentTarget as HTMLElement | null
-  )?.parentElement?.querySelectorAll<HTMLElement>('[role="tab"]')
-  tabs?.[nextIndex]?.focus()
+  )?.parentElement?.querySelectorAll<HTMLElement>('[role="tab"]:not([aria-disabled="true"])')
+  enabledTabs?.[nextPosition]?.focus()
 }
 
 function selectRelationTab(index: number): void {
@@ -196,6 +247,18 @@ function selectRelationTab(index: number): void {
   }
 
   activeTab.value = index
+}
+
+function selectSupplementalTab(tab: SupplementalTab): void {
+  if (tab.disabled) {
+    return
+  }
+
+  activeTab.value = tab.value
+}
+
+function supplementalAriaLabel(tab: SupplementalTab): string {
+  return tab.disabled && tab.disabledReason ? `${tab.label}. ${tab.disabledReason}` : tab.label
 }
 
 function relationAriaLabel(template: EntityTemplate): string {

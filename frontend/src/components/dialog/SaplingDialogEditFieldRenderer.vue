@@ -43,6 +43,7 @@
       :entity-handle="entityHandle"
       :item-handle="itemHandle"
       :draft-values="formValues"
+      :entity-templates="visibleTemplates"
       :rules="rules"
       @update:model-value="(val: string) => updateField(template.name, val)"
     />
@@ -57,6 +58,7 @@
       :entity-handle="entityHandle"
       :item-handle="itemHandle"
       :draft-values="formValues"
+      :entity-templates="visibleTemplates"
       :rules="rules"
       @update:model-value="(val: string) => updateField(template.name, val)"
     />

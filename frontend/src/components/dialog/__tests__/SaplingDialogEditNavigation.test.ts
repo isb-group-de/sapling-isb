@@ -266,4 +266,52 @@ describe('SaplingDialogEditNavigation', () => {
     await nextTick()
     expect(wrapper.findAll('[role="tab"]')[0].attributes('aria-selected')).toBe('true')
   })
+
+  it('renders supplemental record tabs after relations and skips disabled tabs by keyboard', async () => {
+    const wrapper = mount(SaplingDialogEditNavigation, {
+      props: {
+        activeTab: 0,
+        entityHandle: 'company',
+        entityLabel: 'Companies',
+        mode: 'edit' as const,
+        relationTemplates: [{ name: 'people', type: 'collection', kind: '1:m' }] as never,
+        supplementalTabs: [
+          {
+            value: 2,
+            label: 'Information',
+            icon: 'mdi-text-box-edit-outline',
+            disabled: true,
+            disabledReason: 'Permission denied',
+          },
+          {
+            value: 3,
+            label: 'Documents',
+            icon: 'mdi-file-document-multiple-outline',
+          },
+        ],
+        'onUpdate:activeTab': (value: number) => wrapper.setProps({ activeTab: value }),
+      },
+      global: {
+        mocks: {
+          $t: (key: string) => key,
+        },
+        stubs: {
+          VIcon: { template: '<span><slot /></span>' },
+        },
+      },
+    })
+
+    const tabs = wrapper.findAll('[role="tab"]')
+    expect(tabs).toHaveLength(4)
+    expect(tabs[2].attributes('aria-disabled')).toBe('true')
+    expect(tabs[2].attributes('aria-label')).toContain('Permission denied')
+    expect(tabs[2].classes()).toContain('sapling-record-dialog-nav-item--supplemental-first')
+    expect(tabs[3].classes()).not.toContain('sapling-record-dialog-nav-item--supplemental-first')
+
+    await tabs[0].trigger('keydown', { key: 'End' })
+    await nextTick()
+
+    expect(wrapper.findAll('[role="tab"]')[3].attributes('aria-selected')).toBe('true')
+    expect(wrapper.emitted('update:activeTab')).toContainEqual([3])
+  })
 })

@@ -6,6 +6,7 @@ export type SaplingMailDialogContext = {
   draftValues?: Record<string, unknown>
   initialTo?: string[]
   initialSubject?: string
+  recordLabel?: string
 }
 
 const state = reactive<{

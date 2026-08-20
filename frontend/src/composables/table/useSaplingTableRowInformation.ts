@@ -9,6 +9,7 @@ export interface UseSaplingTableRowInformationProps {
   show: boolean
   item: SaplingGenericItem | null
   entityHandle: string
+  closeAfterSave?: boolean
 }
 
 export type UseSaplingTableRowInformationEmit = {
@@ -39,6 +40,7 @@ export function useSaplingTableRowInformation(
 
   const hasExistingRecord = computed(() => currentInformation.value?.handle != null)
   const trimmedContent = computed(() => content.value.trim())
+  const isDirty = computed(() => content.value !== (currentInformation.value?.content ?? ''))
   const canEdit = computed(
     () =>
       Boolean(informationPermission.value?.allowInsert) ||
@@ -133,9 +135,10 @@ export function useSaplingTableRowInformation(
       if (hasExistingRecord.value && currentInformation.value?.handle != null) {
         if (trimmedContent.value.length === 0) {
           await ApiGenericService.delete('information', currentInformation.value.handle)
+          currentInformation.value = null
+          content.value = ''
           emit('saved')
-          resetState()
-          emit('close')
+          closeAfterSave()
           return
         }
 
@@ -146,8 +149,7 @@ export function useSaplingTableRowInformation(
           { relations: ['entity', 'person'] },
         )
         emit('saved')
-        resetState()
-        emit('close')
+        closeAfterSave()
         return
       }
 
@@ -158,21 +160,30 @@ export function useSaplingTableRowInformation(
         return
       }
 
-      await ApiGenericService.create<InformationItem>('information', {
+      currentInformation.value = await ApiGenericService.create<InformationItem>('information', {
         content: trimmedContent.value,
         entity: props.entityHandle,
         person: personHandle,
         reference: referenceHandle.value,
       })
+      content.value = currentInformation.value.content ?? trimmedContent.value
 
       emit('saved')
-      resetState()
-      emit('close')
+      closeAfterSave()
     } catch (error: unknown) {
       errorMessage.value = getErrorMessage(error)
     } finally {
       isSaving.value = false
     }
+  }
+
+  function closeAfterSave() {
+    if (props.closeAfterSave === false) {
+      return
+    }
+
+    resetState()
+    emit('close')
   }
 
   function getErrorMessage(error: unknown): string {
@@ -197,6 +208,7 @@ export function useSaplingTableRowInformation(
     isSaving,
     errorMessage,
     hasExistingRecord,
+    isDirty,
     canEdit,
     canSave,
     onDialogModelValueUpdate,

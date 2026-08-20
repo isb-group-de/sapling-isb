@@ -230,7 +230,7 @@ export class TeamsDeliveryItem {
   provider: string = 'azure';
 
   @ApiProperty()
-  @Sapling(['isMarkdown'])
+  @Sapling(['isValue', 'isMarkdown'])
   @SaplingForm({
     order: 300,
     group: 'teamsDelivery.groupContent',
@@ -240,7 +240,7 @@ export class TeamsDeliveryItem {
     tableOrder: 300,
     tableVisible: false,
     mobileOrder: 300,
-    mobileVisible: false,
+    mobileVisible: true,
   })
   @Property({ nullable: false, length: 8192 })
   bodyMarkdown!: string;

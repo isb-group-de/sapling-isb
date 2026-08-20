@@ -1,9 +1,5 @@
 <template>
-  <v-container
-    class="sapling-page-shell sapling-page-shell--panel sapling-page-shell--fill sapling-page-shell--uniform-inset sapling-browser-page sapling-file-page sapling-fill-shell"
-    density="compact"
-    fluid
-  >
+  <v-container :class="fileContainerClasses" density="compact" fluid>
     <section
       class="sapling-browser-workspace sapling-browser-workspace--balanced sapling-file-workspace"
     >
@@ -39,6 +35,8 @@
         <div
           class="sapling-panel-shell sapling-browser-workspace__table-shell sapling-file-workspace__table-shell"
         >
+          <slot name="table-header" />
+
           <div
             class="sapling-browser-scroll sapling-browser-scroll--flush sapling-document-table-scroll"
           >
@@ -99,7 +97,7 @@ import { useTranslationLoader } from '@/composables/generic/useTranslationLoader
 import { BACKEND_URL, DEFAULT_PAGE_SIZE_SMALL } from '@/constants/project.constants'
 import { useSaplingTable } from '@/composables/table/useSaplingTable'
 import type { SaplingGenericItem } from '@/entity/entity'
-import { defineAsyncComponent, ref, computed, watch } from 'vue'
+import { defineAsyncComponent, ref, computed, onMounted, watch } from 'vue'
 import SaplingSurface from '@/components/common/SaplingSurface.vue'
 import SaplingFilePDF from './SaplingFilePDF.vue'
 import SaplingFilePNG from './SaplingFilePNG.vue'
@@ -113,9 +111,30 @@ import SaplingFileHeader from './SaplingFileHeader.vue'
 import SaplingFileMail from './SaplingFileMail.vue'
 
 const SaplingTable = defineAsyncComponent(() => import('@/components/table/SaplingTable.vue'))
-const props = defineProps<{ entityHandle: string }>()
+const props = withDefaults(
+  defineProps<{
+    entityHandle: string
+    recordFilter?: Record<string, unknown> | null
+    embedded?: boolean
+    reloadKey?: number
+  }>(),
+  {
+    recordFilter: null,
+    embedded: false,
+    reloadKey: 0,
+  },
+)
 const entityHandleRef = ref(props.entityHandle)
 const { isLoading: isTranslationLoading } = useTranslationLoader('document', 'global')
+
+const table = useSaplingTable(
+  entityHandleRef,
+  DEFAULT_PAGE_SIZE_SMALL,
+  props.recordFilter == null,
+  false,
+  undefined,
+  ['filename', 'mimetype'],
+)
 
 const {
   items,
@@ -138,9 +157,23 @@ const {
   onColumnFiltersUpdate,
   onSortByUpdate,
   parentFilter,
-} = useSaplingTable(entityHandleRef, DEFAULT_PAGE_SIZE_SMALL, true, true, undefined, [
-  'filename',
-  'mimetype',
+} = table
+
+onMounted(() => {
+  void table.initializeEntityState({
+    beforeInitialLoad: () => {
+      if (props.recordFilter) {
+        parentFilter.value = { ...props.recordFilter }
+      }
+    },
+  })
+})
+
+const fileContainerClasses = computed(() => [
+  'sapling-fill-shell',
+  props.embedded
+    ? 'sapling-file-embedded'
+    : 'sapling-page-shell sapling-page-shell--panel sapling-page-shell--fill sapling-page-shell--uniform-inset sapling-browser-page sapling-file-page',
 ])
 
 const selectedHandle = ref('')
@@ -154,6 +187,27 @@ watch(
   (value) => {
     entityHandleRef.value = value
     clearSelection()
+  },
+)
+
+watch(
+  () => JSON.stringify(props.recordFilter ?? {}),
+  () => {
+    if (!props.recordFilter) {
+      return
+    }
+
+    parentFilter.value = { ...props.recordFilter }
+    page.value = 1
+    clearSelection()
+  },
+)
+
+watch(
+  () => props.reloadKey,
+  () => {
+    clearSelection()
+    void loadData()
   },
 )
 

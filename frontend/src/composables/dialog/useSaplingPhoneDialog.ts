@@ -5,6 +5,11 @@ export type SaplingPhoneDialogContext = {
   entityHandle?: string
   itemHandle?: string | number
   draftValues?: Record<string, unknown>
+  recordLabel?: string
+}
+
+export function resolvePhoneDialogSubject(context: SaplingPhoneDialogContext | null): string {
+  return context?.recordLabel?.trim() ?? ''
 }
 
 const state = reactive<{

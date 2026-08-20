@@ -305,6 +305,7 @@ export class EmailDeliveryItem {
   bccRecipients?: string[];
 
   @ApiProperty()
+  @Sapling(['isValue'])
   @SaplingForm({
     order: 500,
     group: 'emailDelivery.groupBasics',
@@ -314,7 +315,7 @@ export class EmailDeliveryItem {
     tableOrder: 500,
     tableVisible: true,
     mobileOrder: 500,
-    mobileVisible: false,
+    mobileVisible: true,
   })
   @Property({ length: 256, nullable: false })
   subject!: string;

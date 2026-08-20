@@ -128,6 +128,7 @@
           :entity-handle="props.entityHandle"
           :item-handle="item.handle"
           :item="item"
+          :entity-templates="props.entityTemplates"
         >
           {{ formatPhoneNumber(item[col.key] != null ? String(item[col.key]) : '') }}
         </SaplingCellPhone>
@@ -137,6 +138,7 @@
           :entity-handle="props.entityHandle"
           :item-handle="item.handle"
           :item="item"
+          :entity-templates="props.entityTemplates"
         >
           {{
             formatValue(

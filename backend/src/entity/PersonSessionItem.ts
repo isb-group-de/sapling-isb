@@ -36,7 +36,7 @@ export class PersonSessionItem {
    * Session number for the person session (not primary key).
    */
   @ApiProperty()
-  @Sapling(['isOrderASC'])
+  @Sapling(['isValue', 'isOrderASC'])
   @SaplingForm({
     order: 100,
     group: 'personSession.groupBasics',
@@ -46,7 +46,7 @@ export class PersonSessionItem {
     tableOrder: 100,
     tableVisible: true,
     mobileOrder: 100,
-    mobileVisible: false,
+    mobileVisible: true,
   })
   @Property({ length: 128, nullable: false })
   number!: string;

@@ -60,6 +60,7 @@
                 :relation-entities="relationEntities"
                 :tab-id-prefix="dialogTabIdPrefix"
                 :relations-locked="mode === 'create' && Boolean(parent)"
+                :supplemental-tabs="supplementalTabs"
               />
               <v-window
                 v-model="activeTab"
@@ -173,6 +174,77 @@
                     @reload="onRelationTableReload(template.name)"
                   />
                 </v-window-item>
+                <v-window-item
+                  :id="`${dialogTabIdPrefix}-panel-${informationTabIndex}`"
+                  :value="informationTabIndex"
+                  role="tabpanel"
+                  :aria-labelledby="`${dialogTabIdPrefix}-tab-${informationTabIndex}`"
+                  class="sapling-record-dialog-window-item sapling-dialog-edit-window-item"
+                  :transition="false"
+                  :reverse-transition="false"
+                >
+                  <SaplingDialogEditInformationTab
+                    v-if="hasOpenedInformationTab"
+                    :item="item"
+                    :entity-handle="entityHandle"
+                  />
+                </v-window-item>
+                <v-window-item
+                  :id="`${dialogTabIdPrefix}-panel-${documentsTabIndex}`"
+                  :value="documentsTabIndex"
+                  role="tabpanel"
+                  :aria-labelledby="`${dialogTabIdPrefix}-tab-${documentsTabIndex}`"
+                  class="sapling-record-dialog-window-item sapling-dialog-edit-window-item"
+                  :transition="false"
+                  :reverse-transition="false"
+                >
+                  <SaplingDialogEditDocumentsTab
+                    v-if="hasOpenedDocumentsTab"
+                    :item="item"
+                    :entity-handle="entityHandle"
+                    :can-upload="canUploadDocuments"
+                  />
+                </v-window-item>
+                <v-window-item
+                  :id="`${dialogTabIdPrefix}-panel-${emailsTabIndex}`"
+                  :value="emailsTabIndex"
+                  role="tabpanel"
+                  :aria-labelledby="`${dialogTabIdPrefix}-tab-${emailsTabIndex}`"
+                  class="sapling-record-dialog-window-item sapling-dialog-edit-window-item"
+                  :transition="false"
+                  :reverse-transition="false"
+                >
+                  <SaplingDialogEditCommunicationTab
+                    v-if="hasOpenedEmailsTab"
+                    kind="email"
+                    :item="item"
+                    :draft-values="form"
+                    :record-entity-handle="entityHandle"
+                    :can-create="canComposeEmails"
+                    :email-recipients="recordEmailRecipients"
+                    :record-label="emailRecordDisplayValue"
+                  />
+                </v-window-item>
+                <v-window-item
+                  :id="`${dialogTabIdPrefix}-panel-${phoneCallsTabIndex}`"
+                  :value="phoneCallsTabIndex"
+                  role="tabpanel"
+                  :aria-labelledby="`${dialogTabIdPrefix}-tab-${phoneCallsTabIndex}`"
+                  class="sapling-record-dialog-window-item sapling-dialog-edit-window-item"
+                  :transition="false"
+                  :reverse-transition="false"
+                >
+                  <SaplingDialogEditCommunicationTab
+                    v-if="hasOpenedPhoneCallsTab"
+                    kind="phoneCall"
+                    :item="item"
+                    :draft-values="form"
+                    :record-entity-handle="entityHandle"
+                    :can-create="canCreatePhoneCalls"
+                    :phone-number="recordPhoneNumber"
+                    :record-label="phoneRecordDisplayValue"
+                  />
+                </v-window-item>
               </v-window>
             </div>
           </template>
@@ -245,11 +317,22 @@ import type { EntityItem, SaplingGenericItem } from '@/entity/entity'
 import { useSaplingDialogEdit } from '@/composables/dialog/useSaplingDialogEdit'
 import { useSaplingDialogKeyboardShortcuts } from '@/composables/dialog/useSaplingDialogKeyboardShortcuts'
 import { useSaplingDialogRecordActions } from '@/composables/dialog/useSaplingDialogRecordActions'
+import { useTranslationLoader } from '@/composables/generic/useTranslationLoader'
+import { buildMailMenuActions } from '@/utils/saplingMailMenuUtil'
+import ApiTemplateService from '@/services/api.template.service'
+import type { EntityValueReferenceTemplates } from '@/utils/saplingTableUtil'
+import {
+  getCommunicationOwnerReferenceNames,
+  getCommunicationRecordLabel,
+} from '@/utils/saplingCommunicationRecordUtil'
 import SaplingDialogCard from '@/components/dialog/SaplingDialogCard.vue'
 import SaplingDialogEditActions from '@/components/dialog/SaplingDialogEditActions.vue'
 import SaplingDialogEditFormSections from '@/components/dialog/SaplingDialogEditFormSections.vue'
 import SaplingDialogEditHeader from '@/components/dialog/SaplingDialogEditHeader.vue'
 import SaplingDialogEditNavigation from '@/components/dialog/SaplingDialogEditNavigation.vue'
+import SaplingDialogEditCommunicationTab from '@/components/dialog/SaplingDialogEditCommunicationTab.vue'
+import SaplingDialogEditDocumentsTab from '@/components/dialog/SaplingDialogEditDocumentsTab.vue'
+import SaplingDialogEditInformationTab from '@/components/dialog/SaplingDialogEditInformationTab.vue'
 import SaplingDialogRecordActionDialogs from '@/components/dialog/SaplingDialogRecordActionDialogs.vue'
 import SaplingDialogUnsavedChanges from '@/components/dialog/SaplingDialogUnsavedChanges.vue'
 import SaplingDialogEditRelationTab from './SaplingDialogEditRelationTab.vue'
@@ -283,6 +366,7 @@ const emit = defineEmits<{
 // #endregion
 
 const { t, d, te } = useI18n()
+useTranslationLoader('navigationGroup')
 
 const dialogFieldDefaults = {
   VAutocomplete: {
@@ -443,6 +527,190 @@ const itemHandle = computed<string | number | null>(() => {
   const handle = props.item?.handle
   return typeof handle === 'string' || typeof handle === 'number' ? handle : null
 })
+
+const informationTabIndex = computed(() => relationTemplates.value.length + 1)
+const documentsTabIndex = computed(() => relationTemplates.value.length + 2)
+const emailsTabIndex = computed(() => relationTemplates.value.length + 3)
+const phoneCallsTabIndex = computed(() => relationTemplates.value.length + 4)
+const hasPersistedItem = computed(() => itemHandle.value != null && props.mode !== 'create')
+const permissionFor = (entity: string) =>
+  permissions.value?.find((permission) => permission.entityHandle === entity)
+const canShowInformationTab = computed(() => permissionFor('information')?.allowRead === true)
+const canShowDocumentsTab = computed(() => props.entity?.canRead === true)
+const canShowEmailsTab = computed(() => permissionFor('emailDelivery')?.allowRead === true)
+const canShowPhoneCallsTab = computed(() => permissionFor('phoneCall')?.allowRead === true)
+const canUploadDocuments = computed(
+  () => hasPersistedItem.value && props.entity?.canInsert === true,
+)
+const canComposeEmails = computed(() => hasPersistedItem.value && props.entity?.canUpdate === true)
+const canCreatePhoneCalls = computed(
+  () => hasPersistedItem.value && permissionFor('phoneCall')?.allowInsert === true,
+)
+const recordPhoneTemplate = computed(() =>
+  props.templates.find((template) => {
+    const value = form.value[template.name]
+    return template.options?.includes('isPhone') && value != null && String(value).trim().length > 0
+  }),
+)
+
+const recordPhoneNumber = computed(() =>
+  recordPhoneTemplate.value ? String(form.value[recordPhoneTemplate.value.name] ?? '').trim() : '',
+)
+const recordEmailActions = computed(() => buildMailMenuActions(props.templates, form.value))
+const recordEmailRecipients = computed(() => [
+  ...new Set(recordEmailActions.value.map((action) => action.email)),
+])
+const communicationContactTemplateNames = computed(() => [
+  ...new Set([
+    ...recordEmailActions.value.map((action) => action.templateName),
+    ...(recordPhoneTemplate.value ? [recordPhoneTemplate.value.name] : []),
+  ]),
+])
+const communicationReferenceTemplates = ref<EntityValueReferenceTemplates>({})
+let communicationTemplateRequestId = 0
+
+async function loadCommunicationReferenceTemplates(
+  initialReferenceNames: string[],
+): Promise<EntityValueReferenceTemplates> {
+  const loaded: Record<string, EntityTemplate[]> = {}
+  const queued = new Set(initialReferenceNames)
+
+  while (queued.size > 0) {
+    const referenceNames = [...queued]
+    queued.clear()
+    const entries = await Promise.all(
+      referenceNames.map(async (referenceName) => {
+        try {
+          return [referenceName, await ApiTemplateService.getEntityTemplate(referenceName)] as const
+        } catch {
+          return [referenceName, [] as EntityTemplate[]] as const
+        }
+      }),
+    )
+
+    for (const [referenceName, templates] of entries) {
+      loaded[referenceName] = templates
+      for (const template of templates) {
+        const nestedReferenceName = template.referenceName?.trim()
+        if (
+          template.isReference &&
+          template.options?.includes('isValue') &&
+          nestedReferenceName &&
+          !(nestedReferenceName in loaded)
+        ) {
+          queued.add(nestedReferenceName)
+        }
+      }
+    }
+  }
+
+  return loaded
+}
+
+watch(
+  () =>
+    getCommunicationOwnerReferenceNames(communicationContactTemplateNames.value, props.templates),
+  async (referenceNames) => {
+    const requestId = ++communicationTemplateRequestId
+    const loadedTemplates = await loadCommunicationReferenceTemplates(referenceNames)
+
+    if (requestId === communicationTemplateRequestId) {
+      communicationReferenceTemplates.value = loadedTemplates
+    }
+  },
+  { immediate: true },
+)
+
+const emailRecordDisplayValue = computed(() =>
+  getCommunicationRecordLabel(
+    form.value,
+    props.templates,
+    recordEmailActions.value.map((action) => action.templateName),
+    communicationReferenceTemplates.value,
+  ),
+)
+const phoneRecordDisplayValue = computed(() =>
+  getCommunicationRecordLabel(
+    form.value,
+    props.templates,
+    recordPhoneTemplate.value ? [recordPhoneTemplate.value.name] : [],
+    communicationReferenceTemplates.value,
+  ),
+)
+const emailsTabLabel = computed(() => t('navigationGroup.mails'))
+
+function supplementalDisabledReason(hasPermission: boolean): string {
+  if (!hasPersistedItem.value) {
+    return t('global.recordContentAvailableAfterSave')
+  }
+
+  return hasPermission ? '' : t('global.permissionDenied')
+}
+
+const supplementalTabs = computed(() => {
+  const tabs = [
+    {
+      value: informationTabIndex.value,
+      label: t('navigation.information'),
+      icon: 'mdi-text-box-edit-outline',
+      disabled: !hasPersistedItem.value || !canShowInformationTab.value,
+      disabledReason: supplementalDisabledReason(canShowInformationTab.value),
+    },
+    {
+      value: documentsTabIndex.value,
+      label: t('navigation.document'),
+      icon: 'mdi-file-document-multiple-outline',
+      disabled: !hasPersistedItem.value || !canShowDocumentsTab.value,
+      disabledReason: supplementalDisabledReason(canShowDocumentsTab.value),
+    },
+  ]
+
+  if (recordEmailRecipients.value.length > 0) {
+    tabs.push({
+      value: emailsTabIndex.value,
+      label: emailsTabLabel.value,
+      icon: 'mdi-email-multiple-outline',
+      disabled: !hasPersistedItem.value || !canShowEmailsTab.value,
+      disabledReason: supplementalDisabledReason(canShowEmailsTab.value),
+    })
+  }
+
+  if (recordPhoneNumber.value) {
+    tabs.push({
+      value: phoneCallsTabIndex.value,
+      label: t('navigation.phoneCall'),
+      icon: 'mdi-phone-log-outline',
+      disabled: !hasPersistedItem.value || !canShowPhoneCallsTab.value,
+      disabledReason: supplementalDisabledReason(canShowPhoneCallsTab.value),
+    })
+  }
+
+  return tabs
+})
+
+const hasOpenedInformationTab = ref(false)
+const hasOpenedDocumentsTab = ref(false)
+const hasOpenedEmailsTab = ref(false)
+const hasOpenedPhoneCallsTab = ref(false)
+
+watch(
+  activeTab,
+  (tab) => {
+    if (tab === informationTabIndex.value) {
+      hasOpenedInformationTab.value = true
+    }
+    if (tab === documentsTabIndex.value) {
+      hasOpenedDocumentsTab.value = true
+    }
+    if (tab === emailsTabIndex.value) {
+      hasOpenedEmailsTab.value = true
+    }
+    if (tab === phoneCallsTabIndex.value) {
+      hasOpenedPhoneCallsTab.value = true
+    }
+  },
+  { immediate: true },
+)
 
 function getTimestampTitle(field: 'createdAt' | 'updatedAt'): string {
   const entityHandle = props.entity?.handle

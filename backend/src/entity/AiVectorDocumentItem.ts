@@ -4,6 +4,7 @@ import {
   ApiProperty,
   ApiPropertyOptional,
 } from '@nestjs/swagger';
+import { Sapling } from './global/entity.decorator';
 
 @Entity()
 @Unique({
@@ -36,6 +37,7 @@ export class AiVectorDocumentItem {
   chunkIndex = 0;
 
   @ApiPropertyOptional()
+  @Sapling(['isValue'])
   @Property({ length: 256, nullable: true })
   title?: string | null;
 

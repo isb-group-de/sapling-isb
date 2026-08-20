@@ -524,6 +524,27 @@ entity metadata. A restrained semantic icon color distinguishes one-to-many
 (`1:m`) from many-to-many (`m:n`, including inverse `n:m`) relations. The
 technical relation notation remains available to assistive technology and as a
 tooltip, but is hidden visually because it is not meaningful to most users.
+Persisted records append **Information**, **Documents**, **Emails**, and
+**Phone Calls** to the same dialog navigation after the relation entries.
+Information uses the existing generic information record and permission
+contract in a large Markdown workspace. Documents preserve the d.velop Cloud
+overlay; local document storage renders the filtered document browser and
+preview directly in the dialog, with the existing upload workflow available
+from the tab. Emails filter `EmailDeliveryItem` by `entity + referenceHandle`;
+phone calls filter `PhoneCallItem` by `entity + reference`. Their header actions
+reuse the shared mail composer and phone-call dialog and refresh the embedded
+table when that dialog closes. Available entries remain visible but locked until a
+new record has been saved for the first time, and inaccessible entries remain
+permission-locked. Email and phone-call entries are metadata-conditional: each
+appears only when at least one populated `isMail` or `isPhone` template exists,
+including non-persistent projected assistant fields. Communication dialog
+record labels come from `isValue` metadata through the shared value-label
+resolver, without entity-specific field-name fallbacks. Reference-based
+`isValue` entries are intentionally omitted from communication heroes so raw
+reference handles are never appended to the name. A direct contact field
+uses the edited record's label. A named assistant such as
+`creatorPersonPhone` instead resolves its owner reference (`creatorPerson`) and
+uses the referenced target entity's `isValue` templates and projected values.
 Failed record validation returns the dialog to the form tab, expands the group
 containing the first invalid field, scrolls that field into view, and focuses it.
 The invoked save action pulses twice in the error color; reduced-motion clients

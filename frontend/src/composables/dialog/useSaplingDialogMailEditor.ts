@@ -97,7 +97,9 @@ export function useSaplingDialogMailEditor() {
       return translate('mail.compose')
     }
 
-    return translateWithParams('mail.composeForEntity', { entity: entityLabel.value })
+    return translateWithParams('mail.composeForEntity', {
+      entity: context.value.recordLabel?.trim() || entityLabel.value,
+    })
   })
 
   const heroStats = computed(() => [

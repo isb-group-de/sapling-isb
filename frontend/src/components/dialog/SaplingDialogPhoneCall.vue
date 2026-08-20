@@ -4,7 +4,7 @@
     :max-width="SAPLING_DIALOG_MAX_WIDTH.lg"
     @update:model-value="handleVisibilityChange"
   >
-    <SaplingDialogCard class="sapling-dialog-compact-card" :close="closePhoneDialog">
+    <SaplingDialogCard class="sapling-dialog-compact-card" :tilt="false" :close="closePhoneDialog">
       <div class="sapling-dialog-shell">
         <SaplingDialogHero
           :loading="isTranslationLoading"
@@ -92,7 +92,10 @@ import SaplingDialogCard from '@/components/dialog/SaplingDialogCard.vue'
 import SaplingDialogHero from '@/components/common/SaplingDialogHero.vue'
 import SaplingMarkdownField from '@/components/dialog/fields/SaplingFieldMarkdown.vue'
 import { SAPLING_DIALOG_MAX_WIDTH } from '@/constants/dialog.constants'
-import { useSaplingPhoneDialog } from '@/composables/dialog/useSaplingPhoneDialog'
+import {
+  resolvePhoneDialogSubject,
+  useSaplingPhoneDialog,
+} from '@/composables/dialog/useSaplingPhoneDialog'
 import { useSaplingPhoneNumber } from '@/composables/phone/useSaplingPhoneNumber'
 import { useTranslationLoader } from '@/composables/generic/useTranslationLoader'
 import type { PhoneCallItem } from '@/entity/entity'
@@ -125,7 +128,9 @@ const canSave = computed(
   () => hasPhoneNumber.value && hasSavedRecord.value && hasEntityContext.value && !isSaving.value,
 )
 
-const dialogTitle = computed(() => phoneNumber.value || translate('phoneCall.call'))
+const dialogTitle = computed(
+  () => resolvePhoneDialogSubject(context.value) || translate('phoneCall.call'),
+)
 const dialogSubtitle = computed(() => {
   const entityHandle = context.value?.entityHandle
   const itemHandle = context.value?.itemHandle
