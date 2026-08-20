@@ -18,7 +18,7 @@ import {
   type SaplingContextMenuTableMenuItem,
 } from '@/composables/context/useSaplingContextMenuTable'
 import { i18n } from '@/i18n'
-import { buildMailMenuActions } from '@/utils/saplingMailMenuUtil'
+import { buildMailMenuActions, loadCustomerContactMailActions } from '@/utils/saplingMailMenuUtil'
 import { buildTableOrderBy } from '@/utils/saplingTableUtil'
 import {
   buildScriptButtonExecutionKey,
@@ -86,6 +86,7 @@ export function useSaplingEventContextMenu(options: UseSaplingEventContextMenuOp
   const showInformationDialog = ref(false)
   const informationDialogItem = ref<SaplingGenericItem | null>(null)
   const loadedScriptButtons = ref<ScriptButtonItem[]>([])
+  const customerContactMailActions = ref<ReturnType<typeof buildMailMenuActions>>([])
   const runningScriptButtonKeys = new Set<string>()
   let scriptButtonsRequestId = 0
 
@@ -116,9 +117,10 @@ export function useSaplingEventContextMenu(options: UseSaplingEventContextMenuOp
     top: `${eventContextMenu.value.y}px`,
     left: `${eventContextMenu.value.x}px`,
   }))
-  const eventContextMenuMailActions = computed(() =>
-    buildMailMenuActions(options.templates.value, eventContextMenu.value.item),
-  )
+  const eventContextMenuMailActions = computed(() => [
+    ...buildMailMenuActions(options.templates.value, eventContextMenu.value.item),
+    ...customerContactMailActions.value,
+  ])
   const eventContextMenuItems = computed<SaplingContextMenuTableMenuEntry[]>(() => {
     if (!eventContextMenu.value.item) {
       return []
@@ -187,8 +189,22 @@ export function useSaplingEventContextMenu(options: UseSaplingEventContextMenuOp
     }
 
     const persistedItem = await options.loadPersistedEvent(targetItem.handle)
+    const menuItem = persistedItem ?? targetItem
+    const canReadPerson =
+      currentPermissionStore.accumulatedPermission?.some(
+        (permission) => permission.entityHandle === 'person' && permission.allowRead,
+      ) ?? false
+    try {
+      customerContactMailActions.value = await loadCustomerContactMailActions(
+        options.templates.value,
+        menuItem,
+        canReadPerson,
+      )
+    } catch {
+      customerContactMailActions.value = []
+    }
     eventContextMenu.value.visible = false
-    eventContextMenu.value.item = persistedItem ?? targetItem
+    eventContextMenu.value.item = menuItem
     eventContextMenu.value.x = mouseEvent.clientX
     eventContextMenu.value.y = mouseEvent.clientY
 

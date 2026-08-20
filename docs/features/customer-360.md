@@ -13,6 +13,7 @@ Customer-facing relationship properties carry the Sapling metadata option `isCus
 Current markers include:
 
 - `creatorCompany` and `creatorPerson` on tickets, events, sales opportunities, and effort estimates;
+- `customerCompany` and `customerPerson` on internal cases (Office tasks);
 - `company` on contracts;
 - `company` and `person` on inbound email;
 - `customerCompany` and `customerPerson` on email deliveries.

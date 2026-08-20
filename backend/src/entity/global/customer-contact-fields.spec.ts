@@ -1,6 +1,7 @@
 import { describe, expect, it } from '@jest/globals';
 
 import { EffortEstimateItem } from '../EffortEstimateItem';
+import { InternalCaseItem } from '../InternalCaseItem';
 import { SalesOpportunityItem } from '../SalesOpportunityItem';
 import { TicketItem } from '../TicketItem';
 import { getSaplingFormLayout, hasSaplingOption } from './entity.decorator';
@@ -13,6 +14,23 @@ type CustomerContactEntityClass = {
 };
 
 describe('customer contact display fields', () => {
+  it('marks the Office task company and person as customer-side references', () => {
+    expect(
+      hasSaplingOption(
+        InternalCaseItem.prototype,
+        'customerCompany',
+        'isCustomer',
+      ),
+    ).toBe(true);
+    expect(
+      hasSaplingOption(
+        InternalCaseItem.prototype,
+        'customerPerson',
+        'isCustomer',
+      ),
+    ).toBe(true);
+  });
+
   it.each([
     ['ticket', TicketItem, 'ticket.groupReference', 803, 804],
     [

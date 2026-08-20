@@ -1,5 +1,5 @@
 // #region Imports
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useGenericStore } from '@/stores/genericStore'
 import { useCurrentPermissionStore } from '@/stores/currentPermissionStore'
 import type { EntityItem, SaplingGenericItem, ScriptButtonItem } from '@/entity/entity'
@@ -17,7 +17,11 @@ import {
   type EntityValueLabelLine,
   type EntityValueReferenceTemplates,
 } from '@/utils/saplingTableUtil'
-import { buildMailMenuActions } from '@/utils/saplingMailMenuUtil'
+import {
+  buildMailMenuActions,
+  getCustomerCompanyHandle,
+  loadCustomerContactMailActions,
+} from '@/utils/saplingMailMenuUtil'
 import { useSaplingMailDialog } from '@/composables/dialog/useSaplingMailDialog'
 import { useSaplingMessageCenter } from '@/composables/system/useSaplingMessageCenter'
 import ApiGenericService from '@/services/api.generic.service'
@@ -110,12 +114,23 @@ export function useSaplingTableRow(props: UseSaplingTableRowProps, emit: UseSapl
   const showDialogMap = ref<Record<string, boolean>>({})
   const dialogItemMap = ref<Record<string, SaplingGenericItem | null>>({})
   const dialogLoadingMap = ref<Record<string, boolean>>({})
+  const customerContactMailActions = ref<ReturnType<typeof buildMailMenuActions>>([])
+  let customerContactsRequestId = 0
 
   const hasActionsColumn = computed(() =>
     props.columns.some((column) => column.key === '__actions'),
   )
   const scriptButtons = computed(() => props.scriptButtons ?? [])
   const mailToLabel = computed(() => t('global.mailTo'))
+  const canReadPerson = computed(
+    () =>
+      currentPermissionStore.accumulatedPermission?.some(
+        (permission) => permission.entityHandle === 'person' && permission.allowRead,
+      ) ?? false,
+  )
+  const customerCompanyHandle = computed(() =>
+    getCustomerCompanyHandle(props.entityTemplates, props.item),
+  )
   const hasActionMenuItems = computed(() => {
     if (props.entityPermission?.allowUpdate || props.entityPermission?.allowDelete) {
       return true
@@ -130,6 +145,10 @@ export function useSaplingTableRow(props: UseSaplingTableRowProps, emit: UseSapl
     }
 
     if (scriptButtons.value.length > 0) {
+      return true
+    }
+
+    if (canReadPerson.value && customerCompanyHandle.value != null) {
       return true
     }
 
@@ -155,7 +174,10 @@ export function useSaplingTableRow(props: UseSaplingTableRowProps, emit: UseSapl
           canTimeline: props.item?.handle != null,
           canShowExternalRecordLinks: props.item?.handle != null,
           scriptButtons: scriptButtons.value,
-          mailActions: buildMailMenuActions(props.entityTemplates, props.item),
+          mailActions: [
+            ...buildMailMenuActions(props.entityTemplates, props.item),
+            ...customerContactMailActions.value,
+          ],
           mailToLabel: mailToLabel.value,
         }),
   )
@@ -194,6 +216,35 @@ export function useSaplingTableRow(props: UseSaplingTableRowProps, emit: UseSapl
     return titles
   })
   // #endregion
+
+  watch(menuActive, (isActive) => {
+    if (!isActive) {
+      return
+    }
+    void loadCustomerContacts()
+  })
+
+  watch(customerCompanyHandle, () => {
+    customerContactMailActions.value = []
+  })
+
+  async function loadCustomerContacts(): Promise<void> {
+    const currentRequestId = ++customerContactsRequestId
+    try {
+      const actions = await loadCustomerContactMailActions(
+        props.entityTemplates,
+        props.item,
+        canReadPerson.value,
+      )
+      if (currentRequestId === customerContactsRequestId) {
+        customerContactMailActions.value = actions
+      }
+    } catch {
+      if (currentRequestId === customerContactsRequestId) {
+        customerContactMailActions.value = []
+      }
+    }
+  }
 
   // #region Reference Data
   function getReferenceState(referenceName?: string) {

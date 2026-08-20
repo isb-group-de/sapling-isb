@@ -69,6 +69,10 @@ export class InboxService {
       });
 
       for (const recipient of prepared.recipients) {
+        if (recipient.handle === currentUser.handle) {
+          continue;
+        }
+
         if (typeof recipient.handle === 'number') {
           affectedUserHandles.add(recipient.handle);
         }

@@ -7,11 +7,13 @@
     prepend-icon=""
     prepend-inner-icon="mdi-calendar"
     autocomplete="off"
-    @update:model-value="(val) => emit('update:modelValue', val)"
+    @update:model-value="updateModelValue"
   />
 </template>
 
 <script lang="ts" setup>
+import { formatLocalDate, isValidDate } from '@/composables/dialog/saplingDialogEdit.utils'
+
 defineProps<{
   label: string
   modelValue: string | null
@@ -19,5 +21,16 @@ defineProps<{
   rules?: Array<(value: string | null) => boolean | string>
 }>()
 
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits<{
+  (event: 'update:modelValue', value: string | null): void
+}>()
+
+function updateModelValue(value: string | Date | null): void {
+  if (value instanceof Date) {
+    emit('update:modelValue', isValidDate(value) ? formatLocalDate(value) : null)
+    return
+  }
+
+  emit('update:modelValue', value)
+}
 </script>

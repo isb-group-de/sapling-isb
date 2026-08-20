@@ -150,6 +150,10 @@ participants
 
 If no person handles are found, no notification is created.
 
+The person who triggered the entity change is excluded from the resolved
+recipients. For subscriptions with multiple recipients, notifications are still
+created for every other person. Existing inbox entries are not affected.
+
 ## Open Task Events
 
 `OpenTaskEventsService` provides in-memory user-specific refresh notifications.

@@ -166,11 +166,14 @@ Important expectations:
 for `SaplingFieldMarkdown`. It uses the user's preferred chat provider/model
 when supplied and otherwise resolves the configured default runtime. The
 dedicated system instruction corrects grammar, spelling, professional tone, and
-structure while requiring the model to stay close to the source and add no new
-content. It produces a neutral, factual description and removes email-style
-salutations, greetings, closing pleasantries, sign-offs, and signature lines
-while preserving the substantive information. The response contains only the
-revised Markdown; it does not create a Songbird chat session or message.
+awkward wording while requiring the model to stay close to the source and add,
+remove, shorten, or summarize no content. It keeps the original language,
+document type, structure, forms of address, salutations, greetings, closing
+pleasantries, sign-offs, signatures, and personal wording. Unnecessarily
+emotional, aggressive, accusatory, or exaggerated wording is made calm,
+factual, and professional without changing the underlying message. The response
+contains only the revised Markdown; it does not create a Songbird chat session
+or message.
 
 ## MCP Layers
 

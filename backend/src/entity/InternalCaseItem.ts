@@ -129,7 +129,7 @@ export class InternalCaseItem {
   internalInformationMarkdown?: string;
 
   @ApiPropertyOptional({ type: () => CompanyItem })
-  @Sapling(['isCompany', 'isValue'])
+  @Sapling(['isCompany', 'isValue', 'isCustomer'])
   @SaplingForm({
     order: 100,
     group: 'internalCase.groupReference',
@@ -166,7 +166,7 @@ export class InternalCaseItem {
   }
 
   @ApiPropertyOptional({ type: () => PersonItem })
-  @Sapling(['isPerson', 'isPartner'])
+  @Sapling(['isPerson', 'isPartner', 'isCustomer'])
   @SaplingDependsOn({
     parentField: 'customerCompany',
     targetField: 'company',

@@ -274,6 +274,13 @@
   min-width: 0;
 }
 
+.sapling-markdown-pane__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--sapling-gap-sm);
+}
+
 .sapling-markdown-pane__eyebrow {
   display: inline-block;
   margin-bottom: var(--sapling-space-3xs);

@@ -28,13 +28,12 @@
               v-for="(group, groupIdx) in mobileRecordActionMenuGroups"
               :key="`readonly-group-${groupIdx}`"
             >
-              <v-list-item
+              <SaplingRecordActionMenuItem
                 v-for="(menuItem, itemIdx) in group"
                 :key="getMobileRecordActionKey(menuItem, groupIdx, itemIdx)"
-                :prepend-icon="menuItem.icon"
-                :title="resolveRecordActionMenuTitle(menuItem)"
+                :menu-item="menuItem"
                 :disabled="recordActionButtonsDisabled"
-                @click="emit('select-action', menuItem)"
+                @select="emit('select-action', $event)"
               />
               <v-divider
                 v-if="
@@ -144,13 +143,12 @@
               v-for="(group, groupIdx) in mobileRecordActionMenuGroups"
               :key="`edit-group-${groupIdx}`"
             >
-              <v-list-item
+              <SaplingRecordActionMenuItem
                 v-for="(menuItem, itemIdx) in group"
                 :key="getMobileRecordActionKey(menuItem, groupIdx, itemIdx)"
-                :prepend-icon="menuItem.icon"
-                :title="resolveRecordActionMenuTitle(menuItem)"
+                :menu-item="menuItem"
                 :disabled="recordActionButtonsDisabled"
-                @click="emit('select-action', menuItem)"
+                @select="emit('select-action', $event)"
               />
               <v-divider v-if="groupIdx < mobileRecordActionMenuGroups.length - 1" />
             </template>
@@ -258,6 +256,7 @@ import type {
   SaplingContextMenuTableMenuItem,
 } from '@/composables/context/useSaplingContextMenuTable'
 import SaplingRecordActionMenuList from '@/components/common/SaplingRecordActionMenuList.vue'
+import SaplingRecordActionMenuItem from '@/components/common/SaplingRecordActionMenuItem.vue'
 import SaplingActionBar from '@/components/actions/SaplingActionBar.vue'
 import SaplingActionBarSkeleton from '@/components/actions/SaplingActionBarSkeleton.vue'
 import type { SaplingDialogValidationFeedback } from '@/composables/dialog/saplingDialogEdit.types'
@@ -288,7 +287,7 @@ const emit = defineEmits<{
   (event: 'select-action', menuItem: SaplingContextMenuTableMenuItem): void
 }>()
 
-const { t, te } = useI18n()
+const { t } = useI18n()
 const { mdAndUp, smAndDown } = useDisplay()
 const pulsingSaveAction = ref<DialogSaveAction | null>(null)
 let validationPulseTimer: ReturnType<typeof setTimeout> | null = null
@@ -321,18 +320,6 @@ onBeforeUnmount(() => {
     clearTimeout(validationPulseTimer)
   }
 })
-
-function resolveRecordActionMenuTitle(menuItem: SaplingContextMenuTableMenuItem): string {
-  if (menuItem.titleKey) {
-    return t(menuItem.titleKey)
-  }
-
-  if (!menuItem.title) {
-    return ''
-  }
-
-  return te(menuItem.title) ? t(menuItem.title) : menuItem.title
-}
 
 function getMobileRecordActionKey(
   menuItem: SaplingContextMenuTableMenuItem,

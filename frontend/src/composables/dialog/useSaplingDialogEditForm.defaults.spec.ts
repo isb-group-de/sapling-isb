@@ -96,4 +96,42 @@ describe('useSaplingDialogEditForm create defaults', () => {
     expect(initialFormSnapshot.value).toEqual(form.value)
     expect(onHydrated).toHaveBeenCalledTimes(1)
   })
+
+  it('serializes a date-only field without converting local midnight to UTC', () => {
+    const selectedDate = new Date(2026, 5, 20)
+    const form = ref<SaplingGenericItem>({ expectedCompletionDate: selectedDate })
+    const templates = computed(
+      () =>
+        [
+          {
+            name: 'expectedCompletionDate',
+            type: 'DateType',
+          },
+        ] as EntityTemplate[],
+    )
+    const helper = useSaplingDialogEditForm({
+      form,
+      templates,
+      mode: computed(() => 'edit'),
+      item: computed(() => null),
+      parent: computed(() => null),
+      parentEntity: computed(() => null),
+      relationTemplates: computed(() => []),
+      currentPerson: computed(() => null),
+      isHydratingForm: ref(false),
+      isLoading: ref(false),
+      initialFormSnapshot: ref<Record<string, string>>({}),
+      hasFormValue: (value) => value != null && value !== '',
+      syncInitialFormSnapshot: () => undefined,
+      formatLocalDate: (date) =>
+        `${date.getFullYear()}-${`${date.getMonth() + 1}`.padStart(2, '0')}-${`${date.getDate()}`.padStart(2, '0')}`,
+      formatLocalTime: () => '',
+      getLocalDateTimeParts: () => ({ date: '', time: '' }),
+      toUtcIsoString: () => null,
+    })
+
+    expect(helper.buildSavePayload()).toEqual({
+      expectedCompletionDate: '2026-06-20',
+    })
+  })
 })

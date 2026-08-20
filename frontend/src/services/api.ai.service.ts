@@ -167,19 +167,26 @@ class ApiAiService {
     }
   }
 
-  static async listTranscriptionProviders(): Promise<AiProviderTypeItem[]> {
+  static async listTranscriptionProviders(options?: {
+    suppressErrorMessage?: boolean
+  }): Promise<AiProviderTypeItem[]> {
     try {
       const response = await axios.get<AiProviderTypeItem[]>(
         buildApiUrl('ai/transcription/providers'),
       )
       return response.data
     } catch (error: unknown) {
-      this.handleError(error, 'ai.transcription.providerListFailed')
+      if (!options?.suppressErrorMessage) {
+        this.handleError(error, 'ai.transcription.providerListFailed')
+      }
       throw error
     }
   }
 
-  static async listTranscriptionModels(providerHandle?: string): Promise<AiProviderModelItem[]> {
+  static async listTranscriptionModels(
+    providerHandle?: string,
+    options?: { suppressErrorMessage?: boolean },
+  ): Promise<AiProviderModelItem[]> {
     try {
       const response = await axios.get<AiProviderModelItem[]>(
         buildApiUrl('ai/transcription/models'),
@@ -192,7 +199,9 @@ class ApiAiService {
 
       return response.data
     } catch (error: unknown) {
-      this.handleError(error, 'ai.transcription.modelListFailed')
+      if (!options?.suppressErrorMessage) {
+        this.handleError(error, 'ai.transcription.modelListFailed')
+      }
       throw error
     }
   }

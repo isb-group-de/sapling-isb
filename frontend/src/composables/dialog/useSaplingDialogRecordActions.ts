@@ -16,7 +16,11 @@ import { useSaplingMessageCenter } from '@/composables/system/useSaplingMessageC
 import { useChangeLogDialogStore } from '@/stores/changeLogDialogStore'
 import { useCurrentPersonStore } from '@/stores/currentPersonStore'
 import { useTimelineDialogStore } from '@/stores/timelineDialogStore'
-import { buildMailMenuActions } from '@/utils/saplingMailMenuUtil'
+import {
+  buildMailMenuActions,
+  getCustomerCompanyHandle,
+  loadCustomerContactMailActions,
+} from '@/utils/saplingMailMenuUtil'
 import {
   buildScriptButtonExecutionKey,
   handleScriptResultClient,
@@ -71,9 +75,11 @@ export function useSaplingDialogRecordActions(
   const showInformationDialog = ref(false)
   const showExternalRecordLinksDialog = ref(false)
   const loadedScriptButtons = ref<ScriptButtonItem[]>([])
+  const customerContactMailActions = ref<ReturnType<typeof buildMailMenuActions>>([])
   const runningScriptActionCount = ref(0)
 
   let scriptButtonsRequestId = 0
+  let customerContactsRequestId = 0
   const runningScriptButtonKeys = new Set<string>()
 
   const entityHandle = computed(() => props.entity?.handle ?? '')
@@ -109,6 +115,15 @@ export function useSaplingDialogRecordActions(
         (permission) => permission.entityHandle === 'information' && permission.allowRead,
       ) ?? false,
   )
+  const canReadPerson = computed(
+    () =>
+      options.permissions.value?.some(
+        (permission) => permission.entityHandle === 'person' && permission.allowRead,
+      ) ?? false,
+  )
+  const customerCompanyHandle = computed(() =>
+    getCustomerCompanyHandle(props.templates, options.form.value),
+  )
 
   const canDeleteRecord = computed(
     () => hasPersistedItem.value && Boolean(entityPermission.value?.allowDelete),
@@ -134,7 +149,10 @@ export function useSaplingDialogRecordActions(
             canTimeline: true,
             canShowExternalRecordLinks: true,
             scriptButtons: loadedScriptButtons.value,
-            mailActions: buildMailMenuActions(props.templates, options.form.value),
+            mailActions: [
+              ...buildMailMenuActions(props.templates, options.form.value),
+              ...customerContactMailActions.value,
+            ],
             mailToLabel: t('global.mailTo'),
             showEdit: false,
           })
@@ -468,6 +486,29 @@ export function useSaplingDialogRecordActions(
     loadedScriptButtons.value = result
   }
 
+  async function loadCustomerContacts(): Promise<void> {
+    const currentRequestId = ++customerContactsRequestId
+    if (!props.modelValue || !hasPersistedItem.value || props.mode === 'create') {
+      customerContactMailActions.value = []
+      return
+    }
+
+    try {
+      const actions = await loadCustomerContactMailActions(
+        props.templates,
+        options.form.value,
+        canReadPerson.value,
+      )
+      if (currentRequestId === customerContactsRequestId) {
+        customerContactMailActions.value = actions
+      }
+    } catch {
+      if (currentRequestId === customerContactsRequestId) {
+        customerContactMailActions.value = []
+      }
+    }
+  }
+
   async function confirmRecordDelete(
     confirmation: { cascadeRelations: string[] } = { cascadeRelations: [] },
   ): Promise<void> {
@@ -512,6 +553,19 @@ export function useSaplingDialogRecordActions(
 
       void loadScriptButtons()
     },
+    { immediate: true },
+  )
+
+  watch(
+    () =>
+      [
+        props.modelValue,
+        itemHandle.value,
+        props.mode,
+        customerCompanyHandle.value,
+        canReadPerson.value,
+      ] as const,
+    () => void loadCustomerContacts(),
     { immediate: true },
   )
 

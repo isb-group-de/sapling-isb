@@ -133,7 +133,7 @@ describe('AiService runtime and navigation', () => {
         model: 'gpt-5',
         prompt: expect.stringContaining('  ## fehlerhafter Text  '),
         systemInstruction: expect.stringMatching(
-          /neutral, factual description[\s\S]*Remove opening salutations[\s\S]*Remove closing pleasantries[\s\S]*Do not add new facts/,
+          /Correct the existing Markdown[\s\S]*emotionally neutral[\s\S]*Keep all forms of address, salutations, greetings[\s\S]*Do not turn an email[\s\S]*Do not shorten, summarize, omit, or add content/,
         ),
       }),
     );

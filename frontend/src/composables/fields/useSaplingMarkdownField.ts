@@ -3,6 +3,7 @@ import { useI18n } from 'vue-i18n'
 import CookieService from '@/services/cookie.service'
 import ApiAiService from '@/services/api.ai.service'
 import { loadSaplingAiPreferences } from '@/services/ai-preferences.service'
+import { useSaplingMarkdownVoiceInput } from '@/composables/fields/useSaplingMarkdownVoiceInput'
 import type {
   MarkdownEditorHandle,
   MarkdownToolbarAction,
@@ -52,11 +53,9 @@ export function useSaplingMarkdownField(options: {
     previewValue.value = draftValue.value
   }
 
-  async function prepareWithAi() {
-    const content = draftValue.value
-
+  async function prepareWithAi(content = draftValue.value) {
     if (!content.trim() || isPreparingWithAi.value) {
-      return
+      return false
     }
 
     isPreparingWithAi.value = true
@@ -72,12 +71,22 @@ export function useSaplingMarkdownField(options: {
       draftValue.value = result.content
       previewValue.value = result.content
       editor.value?.focus()
+      return true
     } catch {
       // ApiAiService already forwards a localized error to the message center.
+      return false
     } finally {
       isPreparingWithAi.value = false
     }
   }
+
+  const markdownVoiceInput = useSaplingMarkdownVoiceInput({
+    draftValue,
+    previewValue,
+    editor,
+    isPreparingWithAi,
+    prepareWithAi,
+  })
 
   watch(draftValue, (value) => {
     if (isApplyingExternalValue) {
@@ -451,12 +460,16 @@ export function useSaplingMarkdownField(options: {
     editor,
     isEnhancedEditorReady,
     isPreparingWithAi,
+    canTranscribeWithAi: markdownVoiceInput.canTranscribeWithAi,
+    isRecordingVoiceInput: markdownVoiceInput.isRecordingVoiceInput,
+    isTranscribingVoiceInput: markdownVoiceInput.isTranscribingVoiceInput,
     resolvedLabel,
     editorTheme,
     editorHeight,
     refreshPreviewLabel,
     refreshPreview,
     prepareWithAi,
+    toggleVoiceInput: markdownVoiceInput.toggleVoiceInput,
     toolbarActions,
     insertTextAtCursor,
   }

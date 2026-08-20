@@ -1,0 +1,14 @@
+[
+  {
+    "entity": "global",
+    "property": "aiTranscribeAndPrepareMarkdown",
+    "de": "Diktieren und mit AI aufbereiten",
+    "en": "Dictate and refine with AI"
+  },
+  {
+    "entity": "global",
+    "property": "mailTo",
+    "de": "E-Mail senden an",
+    "en": "Send email to"
+  }
+]

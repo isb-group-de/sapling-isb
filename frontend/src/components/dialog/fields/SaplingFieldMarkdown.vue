@@ -17,9 +17,13 @@
         :editor-theme="editorTheme"
         :editor-height="editorHeight"
         :is-preparing-with-ai="isPreparingWithAi"
+        :can-transcribe-with-ai="canTranscribeWithAi"
+        :is-recording-voice-input="isRecordingVoiceInput"
+        :is-transcribing-voice-input="isTranscribingVoiceInput"
         :can-prepare-with-ai="Boolean(draftValue.trim())"
         @focus="emit('focus')"
         @prepare-with-ai="prepareWithAi"
+        @toggle-voice-input="toggleVoiceInput"
         @update:draft-value="draftValue = $event"
       />
 
@@ -82,12 +86,16 @@ const {
   editor,
   isEnhancedEditorReady,
   isPreparingWithAi,
+  canTranscribeWithAi,
+  isRecordingVoiceInput,
+  isTranscribingVoiceInput,
   resolvedLabel,
   editorTheme,
   editorHeight,
   refreshPreviewLabel,
   refreshPreview,
   prepareWithAi,
+  toggleVoiceInput,
   toolbarActions,
   insertTextAtCursor,
 } = useSaplingMarkdownField({

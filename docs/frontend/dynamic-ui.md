@@ -278,8 +278,19 @@ The shared Markdown editor also exposes `Mit AI aufbereiten` / `Refine with AI`.
 It sends the current draft to the focused, non-persisting AI Markdown endpoint,
 uses the user's preferred chat runtime when configured, and replaces the draft
 only after the professionalized Markdown has returned. The transformation is
-instructed to produce neutral, factual prose, remove email-style greetings and
-sign-offs, and correct language and structure without adding new content.
+instructed to correct grammar, spelling, punctuation, and awkward wording and to
+make unnecessarily emotional wording calm and professional. It preserves the
+original language and document type, including email salutations, forms of
+address, greetings, sign-offs, signatures, structure, order, and level of
+detail, without adding, removing, shortening, or summarizing content.
+
+When an active transcription provider and model are configured, the editor also
+shows `Diktieren und mit AI aufbereiten` / `Dictate and refine with AI`. It uses
+the same microphone capture and silence detection as Songbird voice input,
+appends the transcript to the current draft, and immediately runs the normal
+Markdown preparation. The action is not rendered when no usable transcription
+target is available. If preparation fails after a successful transcription,
+the raw transcript remains in the draft so the recording is not lost.
 
 ## Tables
 

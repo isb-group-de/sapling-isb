@@ -54,9 +54,15 @@ export function useSaplingAiChatNavigation(options?: { onNavigated?: () => void 
   }
 }
 
-function singularizeEntityLabel(label: string) {
+export function singularizeEntityLabel(label: string) {
   const trimmedLabel = label.trim()
-  return trimmedLabel.length > 3 && trimmedLabel.endsWith('s')
-    ? trimmedLabel.slice(0, -1)
-    : trimmedLabel
+  if (
+    trimmedLabel.length <= 3 ||
+    !trimmedLabel.endsWith('s') ||
+    /(?:is|us|ss)$/i.test(trimmedLabel)
+  ) {
+    return trimmedLabel
+  }
+
+  return /ies$/i.test(trimmedLabel) ? `${trimmedLabel.slice(0, -3)}y` : trimmedLabel.slice(0, -1)
 }

@@ -345,6 +345,15 @@ export function useSaplingDialogEditForm(options: UseSaplingDialogEditFormOption
       })
 
     writableTemplates
+      .filter((template) => template.type === 'DateType')
+      .forEach((template) => {
+        const value = output[template.name]
+        if (value instanceof Date) {
+          output[template.name] = options.formatLocalDate(value)
+        }
+      })
+
+    writableTemplates
       .filter((template) => template.kind === 'm:1')
       .forEach((template) => {
         output[template.name] = normalizeSingleReferenceValue(

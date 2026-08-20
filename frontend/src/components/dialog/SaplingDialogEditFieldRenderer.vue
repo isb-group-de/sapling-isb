@@ -186,7 +186,7 @@
       :model-value="stringValue(template.name)"
       :disabled="fieldDisabled"
       :rules="rules"
-      @update:model-value="(val: string) => updateField(template.name, val)"
+      @update:model-value="(val: string | null) => updateField(template.name, val)"
     />
     <SaplingFieldEventBufferDuration
       v-else-if="

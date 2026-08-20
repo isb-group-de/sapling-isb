@@ -8,17 +8,35 @@
         <span class="sapling-eyebrow sapling-markdown-pane__eyebrow">{{ markdownLabel }}</span>
         <h3 class="sapling-section-title sapling-markdown-pane__title">{{ resolvedLabel }}</h3>
       </div>
-      <v-btn
-        variant="tonal"
-        color="primary"
-        size="small"
-        prepend-icon="mdi-auto-fix"
-        :loading="isPreparingWithAi"
-        :disabled="disabled || !canPrepareWithAi"
-        @click="emit('prepareWithAi')"
-      >
-        {{ t('global.aiPrepareMarkdown') }}
-      </v-btn>
+      <div class="sapling-markdown-pane__actions">
+        <v-btn
+          v-if="canTranscribeWithAi"
+          data-test="markdown-voice-input"
+          variant="tonal"
+          :color="isRecordingVoiceInput ? 'error' : 'primary'"
+          size="small"
+          :prepend-icon="isRecordingVoiceInput ? 'mdi-stop' : 'mdi-microphone-outline'"
+          :loading="isTranscribingVoiceInput"
+          :disabled="disabled || isPreparingWithAi || isTranscribingVoiceInput"
+          @click="emit('toggleVoiceInput')"
+        >
+          {{ voiceInputLabel }}
+        </v-btn>
+        <v-btn
+          data-test="markdown-prepare-with-ai"
+          variant="tonal"
+          color="primary"
+          size="small"
+          prepend-icon="mdi-auto-fix"
+          :loading="isPreparingWithAi"
+          :disabled="
+            disabled || !canPrepareWithAi || isRecordingVoiceInput || isTranscribingVoiceInput
+          "
+          @click="emit('prepareWithAi')"
+        >
+          {{ t('global.aiPrepareMarkdown') }}
+        </v-btn>
+      </div>
     </header>
 
     <div class="sapling-markdown-input" :class="{ 'sapling-markdown-input--disabled': disabled }">
@@ -46,7 +64,7 @@
             size="small"
             density="compact"
             variant="text"
-            :disabled="disabled || isPreparingWithAi"
+            :disabled="disabled || isPreparingWithAi || isTranscribingVoiceInput"
             @mousedown.prevent
             @click.stop="action.run"
           />
@@ -58,7 +76,7 @@
           :model-value="draftValue"
           language="markdown"
           :theme="editorTheme"
-          :read-only="disabled || isPreparingWithAi"
+          :read-only="disabled || isPreparingWithAi || isTranscribingVoiceInput"
           :line-numbers="false"
           class="sapling-markdown-editor"
           :style="{ height: editorHeight }"
@@ -68,7 +86,7 @@
         <v-textarea
           v-else
           :model-value="draftValue"
-          :disabled="disabled || isPreparingWithAi"
+          :disabled="disabled || isPreparingWithAi || isTranscribingVoiceInput"
           :rows="Math.max(rows, 6)"
           hide-details
           no-resize
@@ -92,7 +110,7 @@ import type {
   MarkdownToolbarAction,
 } from '@/components/dialog/fields/markdown/markdownField.types'
 
-defineProps<{
+const props = defineProps<{
   draftValue: string
   resolvedLabel: string
   rows: number
@@ -105,15 +123,30 @@ defineProps<{
   editorHeight: string
   isPreparingWithAi: boolean
   canPrepareWithAi: boolean
+  canTranscribeWithAi: boolean
+  isRecordingVoiceInput: boolean
+  isTranscribingVoiceInput: boolean
 }>()
 
 const emit = defineEmits<{
   focus: []
   'update:draftValue': [value: string]
   prepareWithAi: []
+  toggleVoiceInput: []
 }>()
 
 const { t } = useI18n()
 const editor = defineModel<MarkdownEditorHandle | null>('editor', { default: null })
 const markdownLabel = computed(() => t('global.markdown'))
+const voiceInputLabel = computed(() => {
+  if (props.isTranscribingVoiceInput) {
+    return t('aiChat.transcribingAudio')
+  }
+
+  if (props.isRecordingVoiceInput) {
+    return t('aiChat.stopVoiceInput')
+  }
+
+  return t('global.aiTranscribeAndPrepareMarkdown')
+})
 </script>

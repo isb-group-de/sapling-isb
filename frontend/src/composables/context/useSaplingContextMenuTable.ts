@@ -24,6 +24,13 @@ export interface SaplingMailMenuAction {
   templateName: string
   email: string
   fieldLabel?: string
+  recipientName?: string
+  department?: {
+    handle: string
+    title: string
+    icon?: string
+  }
+  source?: 'record' | 'customerContact'
 }
 
 export interface SaplingContextMenuTableProps {
@@ -55,6 +62,7 @@ export interface SaplingContextMenuTableMenuItem {
   formConfigHandle?: number | null
   scriptButton?: ScriptButtonItem
   mailAction?: SaplingMailMenuAction
+  children?: SaplingContextMenuTableMenuItem[]
 }
 
 export type SaplingContextMenuTableMenuGroup = SaplingContextMenuTableMenuItem[]
@@ -169,18 +177,70 @@ export function getSaplingContextMenuTableItems(
     })
   }
   const mailToLabel = options.mailToLabel ?? 'E-Mail an'
-  for (const mailAction of options.mailActions ?? []) {
+  const mailActions = options.mailActions ?? []
+  const recordMailActions = mailActions.filter((action) => action.source !== 'customerContact')
+  const customerContactMailActions = mailActions.filter(
+    (action) => action.source === 'customerContact',
+  )
+
+  for (const mailAction of recordMailActions) {
     group4.push({
       type: 'mail',
       icon: 'mdi-email-fast-outline',
-      title: `${mailToLabel} ${mailAction.email}`,
+      title: `${mailToLabel} ${
+        mailAction.recipientName || mailAction.fieldLabel || mailAction.templateName
+      }`,
       mailAction,
+    })
+  }
+
+  if (customerContactMailActions.length > 0) {
+    group4.push({
+      type: 'mail',
+      icon: 'mdi-email-fast-outline',
+      title: mailToLabel,
+      children: buildMailMenuChildren(customerContactMailActions),
     })
   }
 
   // Filter leere Gruppen raus
   const groups = [group1, group2, group3, group4].filter((group) => group.length > 0)
   return groups
+}
+
+function buildMailMenuChildren(
+  mailActions: SaplingMailMenuAction[],
+): SaplingContextMenuTableMenuItem[] {
+  const departments = new Map<string, SaplingContextMenuTableMenuItem>()
+  const standaloneItems: SaplingContextMenuTableMenuItem[] = []
+
+  for (const mailAction of mailActions) {
+    const contactItem: SaplingContextMenuTableMenuItem = {
+      type: 'mail',
+      icon: 'mdi-account-outline',
+      title: mailAction.recipientName || mailAction.fieldLabel || mailAction.templateName,
+      mailAction,
+    }
+
+    if (!mailAction.department) {
+      standaloneItems.push(contactItem)
+      continue
+    }
+
+    let departmentItem = departments.get(mailAction.department.handle)
+    if (!departmentItem) {
+      departmentItem = {
+        type: 'mail',
+        icon: mailAction.department.icon || 'mdi-office-building-outline',
+        title: mailAction.department.title,
+        children: [],
+      }
+      departments.set(mailAction.department.handle, departmentItem)
+    }
+    departmentItem.children?.push(contactItem)
+  }
+
+  return [...departments.values(), ...standaloneItems]
 }
 
 /**

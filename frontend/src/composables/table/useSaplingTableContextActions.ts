@@ -7,7 +7,7 @@ import { useCurrentPermissionStore } from '@/stores/currentPermissionStore'
 import { useTimelineDialogStore } from '@/stores/timelineDialogStore'
 import { useChangeLogDialogStore } from '@/stores/changeLogDialogStore'
 import { useSaplingMailDialog } from '@/composables/dialog/useSaplingMailDialog'
-import { buildMailMenuActions } from '@/utils/saplingMailMenuUtil'
+import { buildMailMenuActions, loadCustomerContactMailActions } from '@/utils/saplingMailMenuUtil'
 import { openDocumentView, openDvelopUploadDialog } from '@/utils/saplingDocumentActionUtil'
 import type { SaplingContextMenuTableActionPayload } from '@/composables/context/useSaplingContextMenuTable'
 import type { SaplingTableRowContextMenuOpenPayload } from '@/composables/table/useSaplingTableRow'
@@ -56,6 +56,7 @@ export function useSaplingTableContextActions({
   const informationDialogItem = ref<SaplingGenericItem | null>(null)
   const showExternalRecordLinksDialog = ref(false)
   const externalRecordLinksDialogItem = ref<SaplingGenericItem | null>(null)
+  const customerContactMailActions = ref<ReturnType<typeof buildMailMenuActions>>([])
   const contextMenu = ref<TableContextMenuState>({
     visible: false,
     item: null,
@@ -72,9 +73,10 @@ export function useSaplingTableContextActions({
         (permission) => permission.entityHandle === 'information' && permission.allowRead,
       ) ?? false,
   )
-  const contextMenuMailActions = computed(() =>
-    buildMailMenuActions(props.entityTemplates, contextMenu.value.item),
-  )
+  const contextMenuMailActions = computed(() => [
+    ...buildMailMenuActions(props.entityTemplates, contextMenu.value.item),
+    ...customerContactMailActions.value,
+  ])
 
   async function openContextMenu({ item, x, y }: SaplingTableRowContextMenuOpenPayload) {
     if (props.showActions === false) {
@@ -82,9 +84,24 @@ export function useSaplingTableContextActions({
       return
     }
 
+    const loadedItem = await loadItem(item)
+    const canReadPerson =
+      currentPermissionStore.accumulatedPermission?.some(
+        (permission) => permission.entityHandle === 'person' && permission.allowRead,
+      ) ?? false
+    try {
+      customerContactMailActions.value = await loadCustomerContactMailActions(
+        props.entityTemplates,
+        loadedItem,
+        canReadPerson,
+      )
+    } catch {
+      customerContactMailActions.value = []
+    }
+
     contextMenu.value = {
       visible: true,
-      item: await loadItem(item),
+      item: loadedItem,
       x,
       y,
     }
@@ -92,6 +109,7 @@ export function useSaplingTableContextActions({
 
   function closeContextMenu() {
     contextMenu.value = { ...contextMenu.value, visible: false }
+    customerContactMailActions.value = []
   }
 
   async function openUploadDialog(item: SaplingGenericItem) {

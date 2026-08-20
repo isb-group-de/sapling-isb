@@ -42,7 +42,57 @@ describe('inbound email context menu behavior', () => {
         templateName: 'fromAddress',
         email: 'Customer@Example.com',
         fieldLabel: 'fromAddress',
+        recipientName: '',
+        source: 'record',
       },
     ])
+  })
+
+  it('keeps the direct customer action and adds a separate department submenu', () => {
+    const entries = getSaplingContextMenuTableItems({
+      canChangeLog: false,
+      canShowInformation: false,
+      entityPermission: null,
+      canNavigate: false,
+      canTimeline: false,
+      mailToLabel: 'E-Mail senden an',
+      mailActions: [
+        {
+          templateName: 'creatorPersonEmail',
+          email: 'ada@example.com',
+          recipientName: 'Ada Lovelace',
+          source: 'record',
+        },
+        {
+          templateName: 'customerCompanyContact',
+          email: 'ada@example.com',
+          recipientName: 'Ada Lovelace',
+          department: { handle: 'it', title: 'IT', icon: 'mdi-laptop' },
+          source: 'customerContact',
+        },
+      ],
+    })
+    const mailItems = entries
+      .flatMap((entry) => (Array.isArray(entry) ? entry : [entry]))
+      .filter((entry) => entry.type === 'mail')
+    const directAction = mailItems.find((entry) => entry.mailAction?.source === 'record')
+    const mailRoot = mailItems.find((entry) => (entry.children?.length ?? 0) > 0)
+
+    expect(directAction).toMatchObject({
+      title: 'E-Mail senden an Ada Lovelace',
+      mailAction: { email: 'ada@example.com' },
+    })
+    expect(mailRoot?.title).toBe('E-Mail senden an')
+    expect(mailRoot?.title).not.toContain('ada@example.com')
+    expect(mailRoot?.children?.[0]).toMatchObject({
+      title: 'IT',
+      icon: 'mdi-laptop',
+      children: [
+        expect.objectContaining({
+          title: 'Ada Lovelace',
+          mailAction: expect.objectContaining({ email: 'ada@example.com' }),
+        }),
+      ],
+    })
   })
 })
