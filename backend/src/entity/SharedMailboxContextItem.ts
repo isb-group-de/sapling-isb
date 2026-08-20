@@ -6,9 +6,14 @@ import {
   Unique,
 } from '@mikro-orm/decorators/legacy';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { EmailTemplateItem } from './EmailTemplateItem';
 import { EntityItem } from './EntityItem';
 import { SharedMailboxItem } from './SharedMailboxItem';
-import { Sapling, SaplingForm } from './global/entity.decorator';
+import {
+  Sapling,
+  SaplingDependsOn,
+  SaplingForm,
+} from './global/entity.decorator';
 
 @Entity()
 @Unique({ properties: ['entity'] })
@@ -48,6 +53,27 @@ export class SharedMailboxContextItem {
   })
   @ManyToOne(() => SharedMailboxItem, { nullable: false })
   mailbox!: Rel<SharedMailboxItem>;
+
+  @ApiPropertyOptional({ type: () => EmailTemplateItem })
+  @SaplingDependsOn({
+    parentField: 'entity',
+    targetField: 'entity',
+    requireParent: true,
+    clearOnParentChange: true,
+  })
+  @SaplingForm({
+    order: 300,
+    group: 'sharedMailboxContext.groupReference',
+    groupOrder: 100,
+    width: 2,
+    visible: true,
+    tableOrder: 300,
+    tableVisible: true,
+    mobileOrder: 300,
+    mobileVisible: false,
+  })
+  @ManyToOne(() => EmailTemplateItem, { nullable: true })
+  template?: Rel<EmailTemplateItem>;
 
   @ApiPropertyOptional({ default: true })
   @SaplingForm({

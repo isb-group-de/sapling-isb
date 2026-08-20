@@ -30,6 +30,7 @@ import { useSaplingTableScripts } from '@/composables/table/useSaplingTableScrip
 import { useSaplingTableContextActions } from '@/composables/table/useSaplingTableContextActions'
 import { getDialogRecordRelations } from '@/composables/dialog/saplingDialogRecordLoader'
 import { useSaplingTableBulkUpdate } from '@/composables/table/useSaplingTableBulkUpdate'
+import { createSaplingRecordCopy } from '@/utils/saplingRecordCopy'
 
 export interface UpdateConflictDialogState {
   visible: boolean
@@ -200,16 +201,13 @@ export function useSaplingTableActions({
     editDialog.value = { visible: true, mode: 'readonly', item: dialogItem }
   }
 
-  function openCopyDialog(item: SaplingGenericItem) {
-    const copiedItem = { ...item }
-
-    props.entityTemplates
-      .filter((template) => template.name === 'handle' || template.isUnique)
-      .forEach((template) => {
-        delete copiedItem[template.name]
-      })
-
-    editDialog.value = { visible: true, mode: 'create', item: copiedItem }
+  async function openCopyDialog(item: SaplingGenericItem) {
+    const dialogItem = await loadDialogItem(item)
+    editDialog.value = {
+      visible: true,
+      mode: 'create',
+      item: createSaplingRecordCopy(dialogItem, props.entityTemplates),
+    }
   }
 
   function closeDialog() {

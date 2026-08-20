@@ -29,6 +29,7 @@ import {
 } from '@/utils/saplingScriptResultUtil'
 import { buildTableOrderBy } from '@/utils/saplingTableUtil'
 import { openDocumentView, openDvelopUploadDialog } from '@/utils/saplingDocumentActionUtil'
+import { createSaplingRecordCopy } from '@/utils/saplingRecordCopy'
 import type { FormConfigMenuItem, FormConfigSelectionHandle } from './saplingDialogEdit.utils'
 
 interface UseSaplingDialogRecordActionsProps {
@@ -238,16 +239,8 @@ export function useSaplingDialogRecordActions(
       return
     }
 
-    const copiedItem = { ...props.item }
-
-    props.templates
-      .filter((template) => template.name === 'handle' || template.isUnique)
-      .forEach((template) => {
-        delete copiedItem[template.name]
-      })
-
     options.activeTab.value = 0
-    emit('update:item', copiedItem)
+    emit('update:item', createSaplingRecordCopy(props.item, props.templates))
     emit('update:mode', 'create')
   }
 

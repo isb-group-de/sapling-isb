@@ -44,6 +44,7 @@ export function useSaplingDialogMailEditor() {
   const placeholders = ref<PlaceholderItem[]>([])
   const availableAttachments = ref<AttachmentOption[]>([])
   const senderOptions = ref<MailSenderOption[]>([])
+  const defaultTemplateHandle = ref<number | null>(null)
   const templateHandle = ref<number | null>(null)
   const attachmentHandles = ref<number[]>([])
   const toRecipients = ref<string[]>([])
@@ -131,6 +132,7 @@ export function useSaplingDialogMailEditor() {
       await loadTranslations()
       await currentPersonStore.fetchCurrentPerson()
       await Promise.all([loadTemplates(), loadAttachments(), loadSenderOptions()])
+      applyContextDefaultTemplate()
       await loadPlaceholders()
       await refreshPreview()
     },
@@ -159,6 +161,7 @@ export function useSaplingDialogMailEditor() {
     placeholders.value = []
     availableAttachments.value = []
     senderOptions.value = []
+    defaultTemplateHandle.value = null
     templateHandle.value = null
     attachmentHandles.value = []
     toRecipients.value = []
@@ -225,6 +228,21 @@ export function useSaplingDialogMailEditor() {
     }
 
     await refreshPreview()
+  }
+
+  function applyContextDefaultTemplate() {
+    const configuredTemplate = templates.value.find(
+      (template) => template.handle === defaultTemplateHandle.value,
+    )
+    if (!configuredTemplate) {
+      return
+    }
+
+    templateHandle.value = configuredTemplate.handle
+    if (!subject.value.trim()) {
+      subject.value = configuredTemplate.subjectTemplate
+    }
+    bodyMarkdown.value = configuredTemplate.bodyMarkdown
   }
 
   async function loadPlaceholders() {
@@ -307,6 +325,7 @@ export function useSaplingDialogMailEditor() {
     try {
       const response = await ApiMailService.listSenders(context.value?.entityHandle)
       senderOptions.value = response.senders ?? []
+      defaultTemplateHandle.value = response.defaultTemplateHandle ?? null
       selectedSenderEmail.value =
         senderOptions.value.find((sender) => sender.isDefault)?.email ??
         senderOptions.value[0]?.email ??
@@ -321,6 +340,7 @@ export function useSaplingDialogMailEditor() {
         'mail',
       )
       senderOptions.value = []
+      defaultTemplateHandle.value = null
       selectedSenderEmail.value = currentPersonStore.person?.email?.trim() ?? ''
     } finally {
       isLoadingSenderOptions.value = false

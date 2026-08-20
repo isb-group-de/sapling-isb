@@ -338,6 +338,10 @@ follow the `<reference><TargetField>` naming convention, for example
 `creatorPersonEmail` for `creatorPerson.email`. The table projection resolves
 that dependency through readable reference metadata, requests only the nested
 target field, and still renders the computed getter as the configured column.
+Record actions that need form data, including copy from a row menu or context
+menu, reload the complete record without the table projection before opening the
+dialog. This keeps hidden scalar, long-text, Markdown, and custom-field values
+available regardless of which table action entry point was used.
 Desktop headers expose drag handles only after the user starts **Edit view**
 from the current-view menu. Reordering remains temporary and instance-local;
 finishing editing keeps it for the current visit, while leaving the table or

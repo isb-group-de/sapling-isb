@@ -90,6 +90,12 @@ export class MailSenderListResponseDto {
     description: 'Sender options that the user may choose from.',
   })
   senders!: MailSenderOptionDto[];
+
+  @ApiPropertyOptional({
+    description:
+      'Configured default email template for the requested entity context.',
+  })
+  defaultTemplateHandle?: number;
 }
 
 export class MailPreviewDto {

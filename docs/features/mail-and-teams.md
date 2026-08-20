@@ -184,13 +184,16 @@ Sender options are resolved from the current person:
 
 The optional `entityHandle` query parameter on `GET /api/mail/senders` resolves
 an active `SharedMailboxContextItem`. Each context entity can have at most one
-configured default mailbox, while the same mailbox can be reused for any number
-of contexts. The configured mailbox replaces the provider default only when it
-is active, belongs to an active group assigned to the current person, and uses
-the current provider. Otherwise sender resolution keeps the normal personal or
-provider default. The mail composer passes its current entity context when it
-loads sender options, so opening it from a ticket or another configured entity
-preselects the eligible shared address without preventing a manual change.
+configured default mailbox and one optional default email template, while the
+same mailbox can be reused for any number of contexts. The template selection is
+restricted to email templates for the configured entity and is applied only
+while the selected template is active. The configured mailbox replaces the
+provider default only when it is active, belongs to an active group assigned to
+the current person, and uses the current provider. Otherwise sender resolution
+keeps the normal personal or provider default. The mail composer passes its
+current entity context when it loads sender options, so opening it from a ticket
+or another configured entity preselects the eligible shared address and
+configured email template without preventing a manual change.
 
 When a sender email is requested explicitly, it must match an available sender option. Otherwise `mail.senderNotAllowed` is raised.
 
@@ -284,7 +287,7 @@ When configuring a manual context default:
 1. Create or reuse an active shared mailbox in an active mailbox group.
 2. Assign the group to every person who may use that sender.
 3. Create one `sharedMailboxContext` record for each desired entity context,
-   such as `ticket`, and select the mailbox.
+   such as `ticket`, and select the mailbox plus an optional email template.
 4. Reuse the same mailbox in additional context records when it should be the
    default in several entities.
 5. Confirm the provider-specific Send As permission and OAuth scopes.

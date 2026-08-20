@@ -34092,6 +34092,23 @@
           "enumItems": [],
           "mappedType": "integer"
         },
+        "template_handle": {
+          "name": "template_handle",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
         "updated_at": {
           "name": "updated_at",
           "type": "timestamptz(6)",
@@ -34140,6 +34157,16 @@
           "keyName": "shared_mailbox_context_item_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "template_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "shared_mailbox_context_item_template_handle_index",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
@@ -34168,6 +34195,19 @@
           ],
           "referencedTableName": "public.shared_mailbox_item",
           "updateRule": "cascade"
+        },
+        "shared_mailbox_context_item_template_handle_foreign": {
+          "columnNames": [
+            "template_handle"
+          ],
+          "constraintName": "shared_mailbox_context_item_template_handle_foreign",
+          "localTableName": "public.shared_mailbox_context_item",
+          "referencedColumnNames": [
+            "handle"
+          ],
+          "referencedTableName": "public.email_template_item",
+          "updateRule": "cascade",
+          "deleteRule": "set null"
         }
       },
       "comment": null

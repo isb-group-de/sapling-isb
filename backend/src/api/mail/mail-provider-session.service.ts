@@ -54,15 +54,21 @@ export class MailProviderSessionService {
     entityHandle?: string,
   ): Promise<MailSenderListResponseDto> {
     const person = await this.loadCurrentMailPerson(currentUser);
+    const context = await this.loadContextDefault(entityHandle);
+    const defaultTemplateHandle = this.getDefaultTemplateHandle(
+      context,
+      entityHandle,
+    );
     if (!person) {
-      return { senders: [] };
+      return { senders: [], defaultTemplateHandle };
     }
     const provider = extractProviderHandle(person);
     const fallbackSenders = buildFallbackSenderOptions(person, provider);
     if (!isSupportedMailProvider(provider) || !person.session) {
       return {
         provider,
-        senders: await this.applyContextDefault(fallbackSenders, entityHandle),
+        senders: this.applyContextDefault(fallbackSenders, context),
+        defaultTemplateHandle,
       };
     }
     const senders = await this.listAvailableSendersForProvider(
@@ -72,10 +78,11 @@ export class MailProviderSessionService {
     );
     return {
       provider,
-      senders: await this.applyContextDefault(
+      senders: this.applyContextDefault(
         senders.length > 0 ? senders : fallbackSenders,
-        entityHandle,
+        context,
       ),
+      defaultTemplateHandle,
     };
   }
 
@@ -206,23 +213,50 @@ export class MailProviderSessionService {
     );
   }
 
-  private async applyContextDefault(
-    senders: MailSenderOption[],
+  private async loadContextDefault(
     entityHandle?: string,
-  ): Promise<MailSenderOption[]> {
+  ): Promise<SharedMailboxContextItem | null> {
     const normalizedEntityHandle = entityHandle?.trim();
-    if (!normalizedEntityHandle || senders.length === 0) {
-      return senders;
+    if (!normalizedEntityHandle) {
+      return null;
     }
 
-    const context = await this.em.findOne(
+    return this.em.findOne(
       SharedMailboxContextItem,
       {
         entity: { handle: normalizedEntityHandle },
         isActive: true,
       },
-      { populate: ['mailbox'] },
+      { populate: ['mailbox', 'template', 'template.entity'] },
     );
+  }
+
+  private getDefaultTemplateHandle(
+    context: SharedMailboxContextItem | null,
+    entityHandle?: string,
+  ): number | undefined {
+    const normalizedEntityHandle = entityHandle?.trim();
+    const template = context?.template;
+
+    if (
+      !normalizedEntityHandle ||
+      template?.handle == null ||
+      template.isActive === false ||
+      template.entity?.handle !== normalizedEntityHandle
+    ) {
+      return undefined;
+    }
+
+    return template.handle;
+  }
+
+  private applyContextDefault(
+    senders: MailSenderOption[],
+    context: SharedMailboxContextItem | null,
+  ): MailSenderOption[] {
+    if (senders.length === 0) {
+      return senders;
+    }
     const defaultEmail = normalizeEmailAddress(context?.mailbox?.email);
     const normalizedDefaultEmail = defaultEmail?.toLowerCase();
     const isAllowedConfiguredMailbox = senders.some(

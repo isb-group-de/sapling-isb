@@ -221,6 +221,62 @@ describe('MailProviderSessionService', () => {
     ).toBe(false);
   });
 
+  it('returns the active email template configured for the entity context', async () => {
+    graphApiGet.mockReset();
+    graphApiGet.mockResolvedValue({
+      displayName: 'ISB - Martin Rosbund',
+      mail: 'martin.rosbund@example.com',
+    });
+    const service = createService(
+      createPerson({ accessToken: 'token', refreshToken: 'refresh' }),
+      {
+        entity: { handle: 'ticket' },
+        mailbox: { email: 'support@example.com' },
+        template: {
+          handle: 42,
+          isActive: true,
+          entity: { handle: 'ticket' },
+        },
+        isActive: true,
+      },
+    );
+
+    const result = await service.listSenderOptions(
+      { handle: 1 } as never,
+      'ticket',
+    );
+
+    expect(result.defaultTemplateHandle).toBe(42);
+  });
+
+  it('ignores a configured email template from another entity context', async () => {
+    graphApiGet.mockReset();
+    graphApiGet.mockResolvedValue({
+      displayName: 'ISB - Martin Rosbund',
+      mail: 'martin.rosbund@example.com',
+    });
+    const service = createService(
+      createPerson({ accessToken: 'token', refreshToken: 'refresh' }),
+      {
+        entity: { handle: 'ticket' },
+        mailbox: { email: 'support@example.com' },
+        template: {
+          handle: 42,
+          isActive: true,
+          entity: { handle: 'salesOpportunity' },
+        },
+        isActive: true,
+      },
+    );
+
+    const result = await service.listSenderOptions(
+      { handle: 1 } as never,
+      'ticket',
+    );
+
+    expect(result.defaultTemplateHandle).toBeUndefined();
+  });
+
   it('keeps the provider default when the configured mailbox is not assigned', async () => {
     graphApiGet.mockReset();
     graphApiGet.mockResolvedValue({

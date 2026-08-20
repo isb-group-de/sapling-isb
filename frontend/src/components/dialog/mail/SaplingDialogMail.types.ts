@@ -24,6 +24,7 @@ export type MailSenderOption = {
 export type MailSenderListResult = {
   provider?: string
   senders: MailSenderOption[]
+  defaultTemplateHandle?: number
 }
 
 export type PlaceholderItem = {
