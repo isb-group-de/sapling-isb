@@ -44,6 +44,7 @@ import {
 import { ImportGoogleCalendarEventsResponseDto } from './dto/import-google-calendar-events.dto';
 import {
   buildGoogleCalendarEvent,
+  buildGoogleCalendarEventPatch,
   type ImportGoogleCalendarEventsRange,
   isGoogleAuthenticationError,
   normalizeGoogleDateTime,
@@ -88,6 +89,7 @@ export class GoogleCalendarService {
     event: EventItem,
     session: PersonSessionItem,
     operation?: 'remove-recurrence',
+    changedFields?: string[],
   ) {
     if (typeof session.handle !== 'number') {
       throw new Error('calendar.sessionHandleRequired');
@@ -98,6 +100,7 @@ export class GoogleCalendarService {
       provider: 'google',
       sessionHandle: session.handle,
       ...(operation ? { operation } : {}),
+      ...(changedFields ? { changedFields } : {}),
     });
   }
 
@@ -115,6 +118,7 @@ export class GoogleCalendarService {
     accessToken: string,
     personHandle?: number,
     operation?: 'remove-recurrence',
+    changedFields?: string[],
   ): Promise<any> {
     const calendar = google.calendar({ version: 'v3' });
     // Fork EntityManager for context-specific actions
@@ -147,7 +151,6 @@ export class GoogleCalendarService {
 
     switch (event.status.handle) {
       case 'canceled':
-      case 'completed':
         if (reference) {
           return await this.deleteEvent(
             calendar,
@@ -157,6 +160,11 @@ export class GoogleCalendarService {
           );
         }
         break;
+      case 'completed':
+        // Completion is internal to Sapling. This also protects against older
+        // pending deliveries that were queued before completion was separated
+        // from cancellation.
+        return null;
       default:
         if (reference) {
           return await this.updateEvent(
@@ -166,6 +174,7 @@ export class GoogleCalendarService {
             accessToken,
             classificationMappings,
             operation,
+            changedFields,
           );
         } else {
           return await this.createEvent(
@@ -446,7 +455,7 @@ export class GoogleCalendarService {
     const reference = await emFork.findOne(
       EventGoogleItem,
       { referenceHandle },
-      { populate: ['event', 'event.participants'] },
+      { populate: ['event', 'event.participants', 'event.status'] },
     );
 
     if (graphEvent.status === 'cancelled' && !reference) {
@@ -464,12 +473,17 @@ export class GoogleCalendarService {
     );
 
     if (reference?.event && typeof reference.event === 'object') {
+      const importedStatus =
+        status.handle === 'scheduled' &&
+        getRelationHandle(reference.event.status) === 'completed'
+          ? (reference.event.status ?? status)
+          : status;
       this.assignImportedEvent(reference.event, graphEvent, {
         startDate,
         endDate,
         type: defaults.type,
         category: defaults.category,
-        status,
+        status: importedStatus,
         participants: participantPeople,
       });
       return 'updated';
@@ -590,6 +604,7 @@ export class GoogleCalendarService {
       calendarId: 'primary',
       requestBody: eventResource,
       auth: accessToken,
+      sendUpdates: 'all',
     });
 
     // Create EventGoogleItem with Google event ID and save
@@ -618,6 +633,7 @@ export class GoogleCalendarService {
     accessToken: string,
     classificationMappings?: CalendarClassificationMapping[] | null,
     operation?: 'remove-recurrence',
+    changedFields?: string[],
   ): Promise<any> {
     if (operation === 'remove-recurrence') {
       return await calendar.events.patch({
@@ -628,10 +644,15 @@ export class GoogleCalendarService {
       });
     }
 
-    const eventResource = buildGoogleCalendarEvent(
+    const { patch: eventResource, sendUpdates } = buildGoogleCalendarEventPatch(
       event,
       classificationMappings,
+      changedFields,
     );
+
+    if (Object.keys(eventResource).length === 0) {
+      return { id: reference.referenceHandle, unchanged: true };
+    }
 
     // reference.referenceHandle should contain the Google event id
     return await calendar.events.patch({
@@ -639,6 +660,7 @@ export class GoogleCalendarService {
       eventId: reference.referenceHandle,
       requestBody: eventResource,
       auth: accessToken,
+      sendUpdates,
     });
   }
 
@@ -660,6 +682,7 @@ export class GoogleCalendarService {
       calendarId: 'primary',
       eventId: reference.referenceHandle,
       auth: accessToken,
+      sendUpdates: 'all',
     });
     // Remove the EventGoogleItem from the database
     await emFork.remove(reference).flush();

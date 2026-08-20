@@ -59,6 +59,7 @@
       :item-handle="itemHandle"
       :draft-values="formValues"
       :entity-templates="visibleTemplates"
+      :can-compose="canComposeMail"
       :rules="rules"
       @update:model-value="(val: string) => updateField(template.name, val)"
     />
@@ -476,6 +477,11 @@ const canReadReference = computed(
   () =>
     props.permissions?.find((entry) => entry.entityHandle === props.template.referenceName)
       ?.allowRead,
+)
+const canComposeMail = computed(
+  () =>
+    props.permissions?.find((entry) => entry.entityHandle === props.entityHandle)?.allowUpdate ===
+    true,
 )
 const jsonValue = computed(() => props.formValues[props.template.name])
 const customFieldOptions = computed(() => props.template.customField?.options ?? [])

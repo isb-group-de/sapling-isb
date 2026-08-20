@@ -24,6 +24,7 @@ type CalendarProvider = 'google' | 'azure';
 type CalendarDeliveryPayload = {
   provider: CalendarProvider;
   operation?: 'remove-recurrence';
+  changedFields?: string[];
   sessionHandle?: number;
   session?: {
     accessToken?: string;
@@ -56,6 +57,9 @@ function isCalendarDeliveryPayload(
     (payload.provider === 'google' || payload.provider === 'azure') &&
     (payload.operation === undefined ||
       payload.operation === 'remove-recurrence') &&
+    (payload.changedFields === undefined ||
+      (Array.isArray(payload.changedFields) &&
+        payload.changedFields.every((field) => typeof field === 'string'))) &&
     ((typeof payload.sessionHandle === 'number' && payload.sessionHandle > 0) ||
       (isRecord(payload.session) &&
         ((typeof payload.session.accessToken === 'string' &&
@@ -194,6 +198,7 @@ export class CalendarDeliveryExecutor {
         accessToken,
         sessionContext.personHandle,
         delivery.payload.operation,
+        delivery.payload.changedFields,
       );
 
       if (await this.persistSuccess(em, delivery, providerResponse)) {
@@ -208,6 +213,7 @@ export class CalendarDeliveryExecutor {
         eventHandle,
         deliveryId,
         delivery.payload.operation,
+        delivery.payload.changedFields,
       );
       if (retried) {
         return;
@@ -295,8 +301,18 @@ export class CalendarDeliveryExecutor {
     accessToken: string,
     personHandle?: number,
     operation?: 'remove-recurrence',
+    changedFields?: string[],
   ): Promise<unknown> {
     if (provider === 'google') {
+      if (changedFields) {
+        return this.googleCalendarService.setEvent(
+          eventHandle,
+          accessToken,
+          personHandle,
+          operation,
+          changedFields,
+        );
+      }
       return operation
         ? this.googleCalendarService.setEvent(
             eventHandle,
@@ -311,6 +327,15 @@ export class CalendarDeliveryExecutor {
           );
     }
 
+    if (changedFields) {
+      return this.azureCalendarService.setEvent(
+        eventHandle,
+        accessToken,
+        personHandle,
+        operation,
+        changedFields,
+      );
+    }
     return operation
       ? this.azureCalendarService.setEvent(
           eventHandle,
@@ -401,6 +426,7 @@ export class CalendarDeliveryExecutor {
     eventHandle: number,
     deliveryId: number,
     operation?: 'remove-recurrence',
+    changedFields?: string[],
   ): Promise<boolean> {
     if (!sessionContext.refreshToken) {
       return false;
@@ -427,6 +453,7 @@ export class CalendarDeliveryExecutor {
         refreshedToken,
         sessionContext.personHandle,
         operation,
+        changedFields,
       );
 
       const persisted = await this.persistSuccess(

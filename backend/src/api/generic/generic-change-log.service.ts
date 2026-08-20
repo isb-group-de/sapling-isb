@@ -210,6 +210,20 @@ export class GenericChangeLogService {
     return projectChangeLogPayload(template, normalized);
   }
 
+  withRecordReference(
+    payload: ChangeLogPayload,
+    reference: string | number | null,
+  ): ChangeLogPayload {
+    if (reference == null) {
+      return payload;
+    }
+
+    return {
+      ...(payload ?? {}),
+      handle: reference,
+    };
+  }
+
   private async storeChangeLog(
     action: ChangeLogAction,
     entity: EntityItem | null,

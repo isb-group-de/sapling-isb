@@ -122,6 +122,24 @@ Calendar delivery starts after an event change asks for synchronization.
 5. `CalendarProcessor` executes queued jobs and passes the delivery id to the executor.
 6. Azure and Google services update or create provider-side calendar items and persist `EventAzureItem` / `EventGoogleItem` references.
 
+Update deliveries carry the fields whose persisted values actually changed.
+Provider updates are built as focused patches from that list instead of
+resending the complete Event. In particular, category/type classification or a
+date move does not resend the unchanged attendee collection. Participant
+changes send an attendee-only patch, while title, description, time, and
+recurrence changes send only their corresponding provider fields. Google uses
+`sendUpdates: none` for classification-only patches and `sendUpdates: all` for
+guest-visible changes, creation, and cancellation. This distinction prevents
+an unchanged attendee list from being interpreted as attendee removal and
+generating misleading cancellation mail.
+
+The Event lifecycle filters internal-only updates before delivery creation.
+Ticket, sales-opportunity, ownership, preparation/follow-up, custom-field, and
+other Sapling-only changes therefore create no `EventDeliveryItem`, do not
+resolve a provider token, and do not call Outlook or Google. Provider-relevant
+updates are currently limited to title, description, start/end, recurrence,
+participants, type/category classification, and status lifecycle changes.
+
 Retries use `EventDeliveryService.retryDelivery(handle)`. The delivery is reset to pending, `nextRetryAt` is cleared, and the same queue-or-direct execution path is used.
 
 ## Provider Import
@@ -285,6 +303,10 @@ request. They must not add the same participants through follow-up relation
 requests, because relation mutations intentionally run the event `afterUpdate`
 lifecycle and would emit misleading update notifications immediately after the
 create notification.
+Existing-event saves determine update mode from the canonical editor record,
+not from the generic form payload: update payloads intentionally omit the
+primary key. They must never fall back to the calendar's selected-person filter
+or include `participants` unless the participant relation itself was changed.
 The people selected in the calendar filter are also copied into the local Event
 draft as hydrated participant records. The create dialog therefore shows them
 immediately in its participants relation tab, where they can be reviewed or
@@ -299,6 +321,16 @@ runs the standard `afterUpdate` delivery and removes the provider-side Outlook
 or Google appointment. The Sapling Event and its delivery history remain for
 auditability, while closed-status calendar filters hide it from the normal
 calendar view. Unsynchronized Events retain the normal physical delete path.
+
+Completing and canceling an Event have intentionally different external
+calendar semantics. Status `completed` is an internal Sapling workflow action:
+it creates no calendar delivery, leaves an existing Outlook/Google appointment
+and its provider reference untouched, and therefore sends no cancellation or
+meeting update to attendees. Status `canceled` keeps the external deletion path
+described above. Azure and Google imports preserve an existing Sapling
+`completed` status while the provider item remains active, so polling cannot
+reopen the completed Event as `scheduled`; an actual provider-side cancellation
+may still change it to `canceled`.
 
 `SaplingFieldEventRecurrence.vue` is the editable recurrence field used by generic dialogs. Shared parsing and expansion helpers live in `frontend/src/utils/eventRecurrence.ts`.
 

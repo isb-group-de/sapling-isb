@@ -13,6 +13,7 @@ import { TemplateController } from '../../api/template/template.controller';
 import { WebhookController } from '../../api/webhook/webhook.controller';
 import type { GenericPermissionAction } from '../../api/generic/generic.decorator';
 import { GenericPermissionGuard } from './generic-permission.guard';
+import { IMPERSONATION_READ_ONLY_KEY } from '../impersonation-read-only';
 
 jest.mock('@mikro-orm/core', () => ({ EntityManager: class {} }));
 jest.mock('../../api/kpi/kpi.service', () => ({ KpiService: class {} }));
@@ -153,6 +154,17 @@ const createGuard = (findOne?: EntityManager['findOne']) =>
   } as unknown as EntityManager);
 
 describe('GenericPermissionGuard entity resolvers', () => {
+  it('marks mail preview as read-only during impersonation', () => {
+    const controller = new MailController(
+      {} as never,
+    ) as unknown as HandlerOwner;
+    const handler = Reflect.get(controller, 'preview') as () => unknown;
+
+    expect(
+      new Reflector().get<boolean>(IMPERSONATION_READ_ONLY_KEY, handler),
+    ).toBe(true);
+  });
+
   it('allows template access only for explicitly permitted entities', async () => {
     const controller = new TemplateController({
       getEntityTemplate: jest.fn(),

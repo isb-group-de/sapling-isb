@@ -249,14 +249,71 @@ describe('EventController', () => {
       googleCalendarService as never,
     );
 
-    const result = await controller.afterUpdate(items);
+    const result = await controller.afterUpdate(items, {
+      changedFields: ['category'],
+    });
 
     expect(asMock(googleQueueEvent)).toHaveBeenCalledWith(
       items[0],
       user.session,
+      undefined,
+      ['category'],
     );
     expect(asMock(azureQueueEvent)).not.toHaveBeenCalled();
     expect(result.items).toBe(items);
     expect(result.method).toBe(ScriptResultServerMethods.none);
+  });
+
+  it('does not queue calendar delivery for internal-only event changes', async () => {
+    const azureQueueEvent = jest.fn(() => Promise.resolve(undefined));
+    const user = {
+      type: { handle: 'azure' },
+      session: { provider: 'azure' },
+    } as unknown as PersonItem;
+    const items = [{ handle: 5 }] as EventItem[];
+    const controller = new EventController(
+      { handle: 'event' } as never,
+      user,
+      {} as never,
+      { queueEvent: azureQueueEvent } as never,
+      {} as never,
+    );
+
+    await controller.afterUpdate(items, {
+      changedFields: [
+        'ticket',
+        'salesOpportunity',
+        'customFields.customerNote',
+      ],
+    });
+
+    expect(azureQueueEvent).not.toHaveBeenCalled();
+  });
+
+  it('queues participant relation changes but skips internal relations', async () => {
+    const azureQueueEvent = jest.fn(() => Promise.resolve(undefined));
+    const user = {
+      type: { handle: 'azure' },
+      session: { provider: 'azure' },
+    } as unknown as PersonItem;
+    const event = { handle: 5 } as EventItem;
+    const controller = new EventController(
+      { handle: 'event' } as never,
+      user,
+      {} as never,
+      { queueEvent: azureQueueEvent } as never,
+      {} as never,
+    );
+
+    await controller.afterUpdate([event], { referenceName: 'ticket' });
+    expect(azureQueueEvent).not.toHaveBeenCalled();
+
+    await controller.afterUpdate([event], { referenceName: 'participants' });
+    expect(asMock(azureQueueEvent)).toHaveBeenCalledWith(
+      event,
+      user.session,
+      undefined,
+      ['participants'],
+    );
   });
 });

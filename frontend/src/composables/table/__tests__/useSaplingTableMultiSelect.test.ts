@@ -56,4 +56,27 @@ describe('useSaplingTableMultiSelect', () => {
 
     expect(subject.canBulkUpdateSelection.value).toBe(false)
   })
+
+  it('shows bulk mail only with update permission on the context entity', () => {
+    const mailTemplate = { name: 'email', type: 'string', options: ['isMail'] }
+    const selectedItems = [
+      { handle: 1, email: 'one@example.com' },
+      { handle: 2, email: 'two@example.com' },
+    ]
+    const allowed = useSaplingTableMultiSelect(
+      createProps({ entityTemplates: [mailTemplate], selectedItems }),
+      vi.fn() as never,
+    )
+    const denied = useSaplingTableMultiSelect(
+      createProps({
+        entityTemplates: [mailTemplate],
+        selectedItems,
+        entityPermission: { entityHandle: 'company', allowUpdate: false },
+      }),
+      vi.fn() as never,
+    )
+
+    expect(allowed.canMailSelection.value).toBe(true)
+    expect(denied.canMailSelection.value).toBe(false)
+  })
 })

@@ -10,6 +10,8 @@ const mocks = vi.hoisted(() => ({
   fetchCurrentPerson: vi.fn(),
   fetchCurrentPermission: vi.fn(),
   pushMessage: vi.fn(),
+  permissions: [] as Array<Record<string, unknown>>,
+  isImpersonating: false,
 }))
 
 vi.mock('vue-i18n', () => ({
@@ -35,13 +37,14 @@ vi.mock('@/composables/system/useSaplingMessageCenter', () => ({
 vi.mock('@/stores/currentPersonStore', () => ({
   useCurrentPersonStore: () => ({
     person: { email: 'sender@example.com' },
+    isImpersonating: mocks.isImpersonating,
     fetchCurrentPerson: mocks.fetchCurrentPerson,
   }),
 }))
 
 vi.mock('@/stores/currentPermissionStore', () => ({
   useCurrentPermissionStore: () => ({
-    accumulatedPermission: [{ entityHandle: 'person', allowRead: true }],
+    accumulatedPermission: mocks.permissions,
     fetchCurrentPermission: mocks.fetchCurrentPermission,
   }),
 }))
@@ -71,6 +74,12 @@ describe('useSaplingDialogMailEditor', () => {
     useSaplingMailDialog().closeMailDialog()
     mocks.fetchCurrentPerson.mockResolvedValue(undefined)
     mocks.fetchCurrentPermission.mockResolvedValue(undefined)
+    mocks.permissions = [
+      { entityHandle: 'ticket', allowRead: true, allowUpdate: true },
+      { entityHandle: 'company', allowRead: true },
+      { entityHandle: 'person', allowRead: true },
+    ]
+    mocks.isImpersonating = false
     mocks.listSenders.mockResolvedValue({ senders: [] })
     mocks.preview.mockResolvedValue({
       to: [],
@@ -158,5 +167,62 @@ describe('useSaplingDialogMailEditor', () => {
         departmentName: 'Entwicklung',
       },
     ])
+    expect(mocks.findAll).not.toHaveBeenCalledWith('emailTemplate', expect.anything())
+    expect(mocks.findAll).not.toHaveBeenCalledWith('document', expect.anything())
+  })
+
+  it('keeps readable placeholders and skips reference templates without read access', async () => {
+    mocks.getEntityTemplate.mockImplementation(async (entityHandle: string) => {
+      if (entityHandle === 'ticket') {
+        return [
+          { name: 'title', type: 'string', isPersistent: true },
+          {
+            name: 'customerCompany',
+            isReference: true,
+            referenceName: 'company',
+            kind: 'm:1',
+          },
+          {
+            name: 'opportunity',
+            isReference: true,
+            referenceName: 'salesOpportunity',
+            kind: 'm:1',
+          },
+        ]
+      }
+      if (entityHandle === 'company') {
+        return [{ name: 'name', type: 'string', isPersistent: true }]
+      }
+      throw new Error(`Unexpected template request: ${entityHandle}`)
+    })
+
+    const editor = useSaplingDialogMailEditor()
+    useSaplingMailDialog().openMailDialog({ entityHandle: 'ticket', itemHandle: 99 })
+
+    await vi.waitFor(() =>
+      expect(
+        editor.placeholderGroups.value.flatMap((group) => group.items.map((item) => item.token)),
+      ).toEqual(['{{customerCompany.name}}', '{{title}}']),
+    )
+
+    expect(mocks.getEntityTemplate).toHaveBeenCalledWith('ticket', { reportError: false })
+    expect(mocks.getEntityTemplate).toHaveBeenCalledWith('company', { reportError: false })
+    expect(mocks.getEntityTemplate).not.toHaveBeenCalledWith('salesOpportunity', expect.anything())
+    expect(mocks.pushMessage).not.toHaveBeenCalledWith(
+      'warning',
+      'mail.placeholdersLoadFailed',
+      expect.anything(),
+      'mail',
+    )
+  })
+
+  it('never exposes sending while impersonating', async () => {
+    mocks.isImpersonating = true
+    const editor = useSaplingDialogMailEditor()
+    useSaplingMailDialog().openMailDialog({ entityHandle: 'ticket', itemHandle: 99 })
+
+    await vi.waitFor(() => expect(mocks.fetchCurrentPermission).toHaveBeenCalled())
+
+    expect(editor.canSendMail.value).toBe(false)
   })
 })

@@ -47,19 +47,26 @@ export class EventDeliveryService {
     // Events whose type is excluded from the default calendar (e.g. internal
     // mail/phone-call follow-ups) must not be propagated to external
     // calendars such as Outlook or Google.
-    const eventType =
-      event.type ??
-      (event.handle != null
-        ? (
-            await this.em.findOne(
-              EventItem,
-              { handle: event.handle },
-              { populate: ['type'] },
-            )
-          )?.type
-        : undefined);
+    let eventType = event.type;
+    let eventStatus = event.status;
+
+    if (event.handle != null && (!eventType || !eventStatus)) {
+      const persistedEvent = await this.em.findOne(
+        EventItem,
+        { handle: event.handle },
+        { populate: ['type', 'status'] },
+      );
+      eventType ??= persistedEvent?.type;
+      eventStatus ??= persistedEvent?.status;
+    }
 
     if (eventType && eventType.showInDefaultCalendar === false) {
+      return null;
+    }
+
+    // Completing an event is an internal Sapling workflow action. The linked
+    // provider event stays untouched so Outlook/Google do not notify attendees.
+    if (eventStatus?.handle === 'completed') {
       return null;
     }
 

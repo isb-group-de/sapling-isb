@@ -33,6 +33,9 @@ type AzureDeliveryServiceTestHarness = {
     operation: 'remove-recurrence',
   ) => Promise<unknown>;
 };
+type AzureSetEventTestHarness = {
+  deleteEvent: jest.MockedFunction<(...args: unknown[]) => Promise<unknown>>;
+};
 
 const defaults = {
   user: {
@@ -165,6 +168,66 @@ describe('AzureCalendarService Outlook import privacy', () => {
     expect(existingEvent.type).toBe(existingType);
     expect(existingEvent.category).toBe(existingCategory);
     expect(emFork.persist).not.toHaveBeenCalled();
+  });
+
+  it('does not reopen a completed Sapling event during an active Outlook import', async () => {
+    const existingEvent = new EventItem();
+    const completedStatus = { handle: 'completed' };
+    existingEvent.status = completedStatus as never;
+    const emFork = {
+      findOne: jest.fn<(...args: unknown[]) => Promise<unknown>>(() =>
+        Promise.resolve({ event: existingEvent }),
+      ),
+      find: jest.fn<(...args: unknown[]) => Promise<unknown[]>>(() =>
+        Promise.resolve([]),
+      ),
+      persist: jest.fn(),
+    };
+    const service = createService();
+
+    await expect(
+      service.upsertImportedEvent(emFork, createGraphEvent(), defaults),
+    ).resolves.toBe('updated');
+
+    expect(existingEvent.status).toBe(completedStatus);
+  });
+});
+
+describe('AzureCalendarService completion delivery', () => {
+  it('keeps a completed Outlook event while canceled events still use deletion', async () => {
+    const reference = {
+      referenceHandle: 'outlook-1',
+    } as EventAzureItem;
+    const emFork = {
+      findOne: jest
+        .fn<(...args: unknown[]) => Promise<unknown>>()
+        .mockResolvedValueOnce({
+          handle: 42,
+          status: { handle: 'completed' },
+        })
+        .mockResolvedValueOnce(reference),
+    };
+    const service = new AzureCalendarService(
+      {} as never,
+      { fork: () => emFork } as never,
+    );
+    const harness = service as unknown as AzureSetEventTestHarness;
+    harness.deleteEvent = jest.fn(() => Promise.resolve({ success: true }));
+
+    await expect(service.setEvent(42, 'access-token')).resolves.toBeNull();
+    expect(harness.deleteEvent).not.toHaveBeenCalled();
+
+    emFork.findOne
+      .mockResolvedValueOnce({
+        handle: 42,
+        status: { handle: 'canceled' },
+      })
+      .mockResolvedValueOnce(reference);
+
+    await expect(service.setEvent(42, 'access-token')).resolves.toEqual({
+      success: true,
+    });
+    expect(harness.deleteEvent).toHaveBeenCalledTimes(1);
   });
 });
 

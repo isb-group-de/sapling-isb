@@ -9,6 +9,83 @@ import {
 } from './generic.service.spec-support';
 
 describe('GenericService change-log workflows', () => {
+  it('logs the generated record handle for create payloads without a handle', async () => {
+    (hasSaplingOption as jest.Mock).mockImplementation(() => false);
+
+    const createdRecord = {
+      handle: 42,
+      title: 'Neuer Datensatz',
+    };
+    const logCreateCalls: Array<Record<string, unknown>> = [];
+    const logEm = {
+      findOne: jest.fn(() => Promise.resolve({ handle: 'create' })),
+      create: jest.fn((_cls: unknown, data: Record<string, unknown>) => {
+        if ('action' in data) {
+          logCreateCalls.push(data);
+          return {
+            ...data,
+            details: { add: jest.fn() },
+          };
+        }
+
+        return data;
+      }),
+      flush: jest.fn<() => Promise<void>>().mockResolvedValue(undefined),
+    };
+    const em = {
+      findOne: jest.fn(() => Promise.resolve({ handle: 'ticket' })),
+      create: jest.fn(() => createdRecord),
+      flush: jest.fn<() => Promise<void>>().mockResolvedValue(undefined),
+      fork: jest.fn(() => logEm),
+    };
+    const templateService = {
+      getEntityTemplate: jest.fn(() => [
+        createTemplateField({
+          name: 'handle',
+          type: 'number',
+          isPrimaryKey: true,
+          isAutoIncrement: true,
+        }),
+        createTemplateField({ name: 'title', type: 'string' }),
+      ]),
+    };
+    const currentService = {
+      getEntityPermissions: jest.fn(() => ({
+        allowInsertStage: 'global',
+      })),
+      getAllEntityPermissions: jest.fn(() => []),
+    };
+    const scriptService = {
+      runServer: jest.fn((_method: unknown, items: object | object[]) =>
+        Promise.resolve(new ScriptResultServer(toScriptItems(items))),
+      ),
+    };
+    const service = createGenericService({
+      em,
+      templateService,
+      currentService,
+      scriptService,
+    });
+
+    await service.create(
+      'ticket',
+      { title: 'Neuer Datensatz' },
+      { handle: 1 } as never,
+    );
+    await waitForBackgroundTasks();
+
+    expect(logCreateCalls).toHaveLength(1);
+    expect(logCreateCalls[0]).toMatchObject({
+      action: 'create',
+      reference: '42',
+      oldPayload: null,
+      newPayload: {
+        handle: 42,
+        title: 'Neuer Datensatz',
+      },
+    });
+  });
+
   it('logs the submitted update payload without reusing the persisted entity state', async () => {
     (hasSaplingOption as jest.Mock).mockImplementation(
       (...args: unknown[]) =>
@@ -71,7 +148,12 @@ describe('GenericService change-log workflows', () => {
         switch (entityHandle) {
           case 'person':
             return [
-              createTemplateField({ name: 'handle', type: 'number' }),
+              createTemplateField({
+                name: 'handle',
+                type: 'number',
+                isPrimaryKey: true,
+                isAutoIncrement: true,
+              }),
               createTemplateField({ name: 'phone', type: 'string' }),
               createTemplateField({
                 name: 'loginPassword',

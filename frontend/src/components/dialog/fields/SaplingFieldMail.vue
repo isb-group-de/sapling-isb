@@ -8,7 +8,7 @@
     :readonly="disabled"
     :required="required"
     :placeholder="placeholder"
-    append-inner-icon="mdi-email"
+    :append-inner-icon="canCompose ? 'mdi-email' : undefined"
     @click:append-inner="onMailClick"
     autocomplete="off"
     @update:model-value="$emit('update:modelValue', $event)"
@@ -34,6 +34,7 @@ const props = defineProps<{
   itemHandle?: string | number
   draftValues?: Record<string, unknown>
   entityTemplates?: EntityTemplate[]
+  canCompose?: boolean
 }>()
 
 const { openMailDialog } = useSaplingMailDialog()
@@ -44,7 +45,7 @@ const recordLabel = computed(() =>
 )
 
 function onMailClick() {
-  if (!props.entityHandle) {
+  if (!props.entityHandle || !props.canCompose) {
     return
   }
 

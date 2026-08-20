@@ -8,6 +8,36 @@ import { REDIS_ENABLED } from '../constants/project.constants';
 const asMock = (value: unknown): jest.Mock => value as jest.Mock;
 
 describe('EventDeliveryService', () => {
+  it('does not create a calendar delivery for completed events', async () => {
+    const queue = { add: jest.fn() };
+    const calendarDeliveryExecutor = { execute: jest.fn() };
+    const em = {
+      findOne: jest.fn(),
+      persist: jest.fn(),
+    };
+    const service = new EventDeliveryService(
+      em as never,
+      queue as never,
+      calendarDeliveryExecutor as never,
+    );
+
+    await expect(
+      service.queueEventDelivery(
+        {
+          handle: 42,
+          type: { showInDefaultCalendar: true },
+          status: { handle: 'completed' },
+        } as EventItem,
+        { provider: 'azure', sessionHandle: 7 },
+      ),
+    ).resolves.toBeNull();
+
+    expect(em.findOne).not.toHaveBeenCalled();
+    expect(em.persist).not.toHaveBeenCalled();
+    expect(queue.add).not.toHaveBeenCalled();
+    expect(calendarDeliveryExecutor.execute).not.toHaveBeenCalled();
+  });
+
   it('stores only the explicit calendar payload and executes the delivery directly without Redis', async () => {
     const pending = { handle: 'pending' } as EventDeliveryStatusItem;
     const queue = {

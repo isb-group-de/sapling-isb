@@ -1,10 +1,13 @@
 <template>
-  <v-icon start small class="mr-1 sapling-cell-mail__icon" @click.stop="openCompose"
-    >mdi-email</v-icon
-  >
-  <a href="#" @click.prevent="openCompose">
-    <slot />
-  </a>
+  <template v-if="canCompose">
+    <v-icon start small class="mr-1 sapling-cell-mail__icon" @click.stop="openCompose"
+      >mdi-email</v-icon
+    >
+    <a href="#" @click.prevent="openCompose">
+      <slot />
+    </a>
+  </template>
+  <slot v-else />
 </template>
 
 <script lang="ts" setup>
@@ -20,6 +23,7 @@ const props = defineProps<{
   itemHandle?: string | number
   item?: SaplingGenericItem
   entityTemplates?: EntityTemplate[]
+  canCompose?: boolean
 }>()
 
 const { openMailDialog } = useSaplingMailDialog()

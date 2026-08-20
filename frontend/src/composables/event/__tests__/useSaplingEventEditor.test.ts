@@ -266,4 +266,36 @@ describe('useSaplingEventEditor', () => {
     expect(complete).toHaveBeenCalledWith(true)
     expect(harness.showEditDialog.value).toBe(false)
   })
+
+  it('does not replace participants when an existing event payload omits its handle', async () => {
+    const harness = createHarness()
+    const existingEvent = createEventItem({
+      participants: [{ handle: 7 }, { handle: 9 }],
+    } as Partial<EventItem>)
+    const savedEvent = createEventItem({ category: { handle: 'partner' } } as Partial<EventItem>)
+    mocks.update.mockResolvedValue(savedEvent)
+    harness.editEvent.value = {
+      event: existingEvent,
+      start: new Date(existingEvent.startDate).getTime(),
+      end: new Date(existingEvent.endDate).getTime(),
+      timed: true,
+    } as CalendarEvent
+    harness.showEditDialog.value = true
+
+    const categoryOnlyPayload = {
+      category: 'partner',
+      startDate: existingEvent.startDate,
+      endDate: existingEvent.endDate,
+    } as CalendarEvent
+
+    await harness.editor.onEditDialogSave(categoryOnlyPayload, 'saveAndClose')
+
+    expect(mocks.create).not.toHaveBeenCalled()
+    expect(mocks.update).toHaveBeenCalledWith(
+      'event',
+      42,
+      expect.not.objectContaining({ participants: expect.anything() }),
+      expect.any(Object),
+    )
+  })
 })

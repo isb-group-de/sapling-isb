@@ -32,6 +32,7 @@ import {
   GenericPermission,
 } from '../generic/generic.decorator';
 import { GenericPermissionGuard } from '../../auth/guard/generic-permission.guard';
+import { ImpersonationReadOnly } from '../../auth/impersonation-read-only';
 
 type MailPermissionBody = {
   entityHandle?: string | number;
@@ -99,6 +100,7 @@ export class MailController {
   @UseGuards(GenericPermissionGuard)
   @GenericPermission('allowRead')
   @SetMetadata(GENERIC_PERMISSION_RESOLVE_KEY, resolveMailEntityPermission)
+  @ImpersonationReadOnly()
   async preview(
     @Req() req: Request & { user: PersonItem },
     @Body() previewDto: MailPreviewDto,

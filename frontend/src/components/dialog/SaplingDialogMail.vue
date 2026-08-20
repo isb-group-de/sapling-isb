@@ -99,6 +99,7 @@
           :close="closeMailDialog"
           :refresh-preview="refreshPreview"
           :send="sendMail"
+          :can-send="canSendMail"
           :is-preview-loading="isPreviewLoading"
           :is-sending="isSending"
         />
@@ -124,6 +125,7 @@ const {
   attachmentSelectionSummary,
   bccRecipients,
   bodyMarkdown,
+  canSendMail,
   ccRecipients,
   closeMailDialog,
   composer,

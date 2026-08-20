@@ -59,7 +59,13 @@ export function useSaplingTableMultiSelect(
   const bulkMailActions = computed<SaplingBulkMailAction[]>(() =>
     canClearSelection.value ? buildBulkMailActions(props.entityTemplates, props.selectedItems) : [],
   )
-  const canMailSelection = computed(() => bulkMailActions.value.length > 0)
+  const canMailSelection = computed(
+    () =>
+      props.showActions &&
+      props.entity?.canUpdate === true &&
+      props.entityPermission?.allowUpdate === true &&
+      bulkMailActions.value.length > 0,
+  )
   const hasSelectionActions = computed(
     () =>
       canClearSelection.value ||

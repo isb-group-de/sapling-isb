@@ -99,3 +99,50 @@ export function buildGoogleCalendarEvent(
     })),
   };
 }
+
+export function buildGoogleCalendarEventPatch(
+  event: EventItem,
+  classificationMappings?: CalendarClassificationMapping[] | null,
+  changedFields?: string[],
+): {
+  patch: calendar_v3.Schema$Event;
+  sendUpdates: 'all' | 'none';
+} {
+  const eventResource = buildGoogleCalendarEvent(event, classificationMappings);
+  if (!changedFields) {
+    return { patch: eventResource, sendUpdates: 'all' };
+  }
+
+  const changed = new Set(changedFields);
+  const patch: calendar_v3.Schema$Event = {};
+  const copy = (target: keyof calendar_v3.Schema$Event) => {
+    if (typeof eventResource[target] !== 'undefined') {
+      patch[target] = eventResource[target] as never;
+    }
+  };
+
+  if (changed.has('title')) copy('summary');
+  if (changed.has('description')) copy('description');
+  if (changed.has('startDate')) copy('start');
+  if (changed.has('endDate')) copy('end');
+  if (changed.has('recurrenceRule')) copy('recurrence');
+  if (changed.has('participants')) copy('attendees');
+  if (changed.has('type') || changed.has('category')) {
+    copy('colorId');
+    copy('extendedProperties');
+  }
+
+  const attendeeVisibleFields = [
+    'summary',
+    'description',
+    'start',
+    'end',
+    'recurrence',
+    'attendees',
+  ];
+  const sendUpdates = attendeeVisibleFields.some((field) => field in patch)
+    ? 'all'
+    : 'none';
+
+  return { patch, sendUpdates };
+}

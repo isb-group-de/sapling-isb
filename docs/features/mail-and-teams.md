@@ -316,6 +316,15 @@ When adding a new mail template:
 4. Use `{{currentUser...}}` and entity paths intentionally.
 5. Preview in the UI before relying on send behavior.
 
+The manual composer builds its placeholder catalog from the readable fields of
+the current entity. Nested relation placeholders are included only when the
+current user may read the referenced entity. Missing access to an optional
+relation, email-template catalog, contact catalog, or document catalog must not
+fail the composer or trigger a forbidden request; the corresponding optional
+choices are simply omitted. Sending still requires update access to the context
+entity. Preview rendering is read-only and remains available during
+impersonation, while the send action is hidden and remains blocked server-side.
+
 When adding a new automatic email subscription:
 
 1. Reuse an active `EmailTemplateItem` for the target entity.

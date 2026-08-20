@@ -92,6 +92,12 @@ export function useSaplingDialogMailEditor() {
     () => selectedSenderEmail.value || currentPersonStore.person?.email?.trim() || '',
   )
 
+  const canSendMail = computed(
+    () =>
+      !currentPersonStore.isImpersonating &&
+      hasEntityPermission(context.value?.entityHandle, 'allowUpdate'),
+  )
+
   const dialogTitle = computed(() => {
     if (!context.value?.entityHandle) {
       return translate('mail.compose')
@@ -207,7 +213,8 @@ export function useSaplingDialogMailEditor() {
   }
 
   async function loadTemplates() {
-    if (!context.value?.entityHandle) {
+    if (!context.value?.entityHandle || !hasEntityPermission('emailTemplate', 'allowRead')) {
+      templates.value = []
       return
     }
 
@@ -277,6 +284,7 @@ export function useSaplingDialogMailEditor() {
     try {
       contextEntityTemplates.value = await ApiMailService.getEntityTemplate(
         context.value.entityHandle,
+        { reportError: false },
       )
     } catch (error) {
       console.error('Error loading context entity templates:', error)
@@ -303,11 +311,29 @@ export function useSaplingDialogMailEditor() {
 
     try {
       const rootTemplates = contextEntityTemplates.value
-      const relatedTemplates = await Promise.all(
-        rootTemplates.filter(isSupportedPlaceholderRelation).map(async (template) => ({
-          parent: template,
-          children: await ApiMailService.getEntityTemplate(template.referenceName ?? ''),
-        })),
+      const relationResults = await Promise.all(
+        rootTemplates
+          .filter(isSupportedPlaceholderRelation)
+          .filter((template) => hasEntityPermission(template.referenceName, 'allowRead'))
+          .map(async (template): Promise<PlaceholderRelationTemplates | null> => {
+            try {
+              return {
+                parent: template,
+                children: await ApiMailService.getEntityTemplate(template.referenceName ?? '', {
+                  reportError: false,
+                }),
+              }
+            } catch (error) {
+              console.error(
+                `Error loading placeholder relation ${template.referenceName ?? ''}:`,
+                error,
+              )
+              return null
+            }
+          }),
+      )
+      const relatedTemplates = relationResults.filter(
+        (relation): relation is PlaceholderRelationTemplates => relation !== null,
       )
 
       await loadPlaceholderTranslations(relatedTemplates)
@@ -329,6 +355,12 @@ export function useSaplingDialogMailEditor() {
 
   async function loadAttachments() {
     if (!context.value?.entityHandle || context.value.itemHandle == null) {
+      availableAttachments.value = []
+      attachmentHandles.value = []
+      return
+    }
+
+    if (!hasEntityPermission('document', 'allowRead')) {
       availableAttachments.value = []
       attachmentHandles.value = []
       return
@@ -532,7 +564,7 @@ export function useSaplingDialogMailEditor() {
   }
 
   async function sendMail() {
-    if (!context.value?.entityHandle) {
+    if (!context.value?.entityHandle || !canSendMail.value) {
       return
     }
 
@@ -565,6 +597,21 @@ export function useSaplingDialogMailEditor() {
 
   function insertPlaceholder(token: string) {
     composer.value?.insertPlaceholderAtCursor?.(insertTarget.value, token)
+  }
+
+  function hasEntityPermission(
+    entityHandle: string | null | undefined,
+    action: 'allowRead' | 'allowUpdate',
+  ): boolean {
+    if (!entityHandle) {
+      return false
+    }
+
+    return (
+      currentPermissionStore.accumulatedPermission?.some(
+        (permission) => permission.entityHandle === entityHandle && permission[action] === true,
+      ) === true
+    )
   }
 
   function buildPlaceholderItems(
@@ -664,6 +711,7 @@ export function useSaplingDialogMailEditor() {
     attachmentSelectionSummary,
     bccRecipients,
     bodyMarkdown,
+    canSendMail,
     ccRecipients,
     closeMailDialog,
     composer,

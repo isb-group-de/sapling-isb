@@ -34,6 +34,7 @@ import { FieldPermissionService } from '../current/field-permission.service';
 import { normalizeEventBufferMutationPayload } from '../../calendar/event-buffer.utils';
 import { SecurityPrincipalCacheService } from '../current/security-principal-cache.service';
 import { GlobalSearchIndexService } from './global-search-index.service';
+import { buildChangeLogDetails } from './generic-change-log.util';
 
 type GenericMutationPayload = {
   createdAt?: Date;
@@ -173,13 +174,18 @@ export class GenericEntityMutationService {
       inlineCollections,
       currentUser,
     );
+    const createdChangeLogSnapshot =
+      this.genericChangeLogService.withRecordReference(
+        submittedSnapshot,
+        this.extractEntityHandle(newData),
+      );
     this.queueBackgroundTask(lifecycleOptions, 'changeLog', () =>
       this.genericChangeLogService.safeStoreChangeLog(
         'create',
         entity,
         currentUser,
         null,
-        submittedSnapshot,
+        createdChangeLogSnapshot,
       ),
     );
     this.queueBackgroundTask(lifecycleOptions, 'openTaskCountChanges', () =>
@@ -350,6 +356,11 @@ export class GenericEntityMutationService {
     }
 
     data = this.genericPayloadService.prepareUpdatePayload(template, data);
+    const changedFields = buildChangeLogDetails(
+      'update',
+      oldSnapshot,
+      submittedSnapshot,
+    ).map((detail) => detail.property);
     data = await this.genericMutationService.applyBeforeScript(
       ScriptMethods.beforeUpdate,
       data,
@@ -379,7 +390,7 @@ export class GenericEntityMutationService {
           newData,
           entity,
           currentUser,
-          scriptContext,
+          { ...scriptContext, changedFields },
         );
       if (overwrittenData !== newData) {
         newData = await this.genericMutationService.assignAndFlush(
@@ -397,13 +408,24 @@ export class GenericEntityMutationService {
       inlineCollections,
       currentUser,
     );
+    const updatedRecordReference = this.extractEntityHandle(newData) ?? handle;
+    const oldChangeLogSnapshot =
+      this.genericChangeLogService.withRecordReference(
+        oldSnapshot,
+        updatedRecordReference,
+      );
+    const newChangeLogSnapshot =
+      this.genericChangeLogService.withRecordReference(
+        submittedSnapshot,
+        updatedRecordReference,
+      );
     this.queueBackgroundTask(lifecycleOptions, 'changeLog', () =>
       this.genericChangeLogService.safeStoreChangeLog(
         'update',
         entity,
         currentUser,
-        oldSnapshot,
-        submittedSnapshot,
+        oldChangeLogSnapshot,
+        newChangeLogSnapshot,
       ),
     );
     this.queueBackgroundTask(lifecycleOptions, 'openTaskCountChanges', () =>

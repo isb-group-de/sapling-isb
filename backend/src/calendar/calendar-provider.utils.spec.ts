@@ -2,12 +2,14 @@ import { describe, expect, it } from '@jest/globals';
 import { EventItem } from '../entity/EventItem';
 import {
   buildAzureCalendarEvent,
+  buildAzureCalendarEventPatch,
   isAzureAuthenticationError,
   isAzureForbiddenError,
   normalizeAzureDateTime,
 } from './azure/azure-calendar.utils';
 import {
   buildGoogleCalendarEvent,
+  buildGoogleCalendarEventPatch,
   isGoogleAuthenticationError,
   normalizeGoogleDateTime,
 } from './google/google-calendar.utils';
@@ -75,6 +77,69 @@ describe('calendar provider utilities', () => {
       attendees: [{ email: 'ada@example.com', displayName: 'Ada Lovelace' }],
       recurrence: ['RRULE:FREQ=WEEKLY;BYDAY=TH'],
     });
+  });
+
+  it('builds focused category patches without resending attendees', () => {
+    expect(
+      buildAzureCalendarEventPatch(
+        createEvent(),
+        [{ externalValue: 'Support', eventCategoryHandle: 'support' }],
+        ['category'],
+      ),
+    ).toEqual({ categories: ['Support'] });
+
+    expect(
+      buildGoogleCalendarEventPatch(
+        createEvent(),
+        [
+          {
+            externalValue: '7',
+            eventTypeHandle: 'online',
+            eventCategoryHandle: 'support',
+          },
+        ],
+        ['category'],
+      ),
+    ).toEqual({
+      patch: {
+        colorId: '7',
+        extendedProperties: {
+          private: {
+            saplingEventType: 'online',
+            saplingEventCategory: 'support',
+          },
+        },
+      },
+      sendUpdates: 'none',
+    });
+  });
+
+  it('builds focused time patches without rewriting attendees', () => {
+    expect(
+      buildAzureCalendarEventPatch(createEvent(), [], ['startDate', 'endDate']),
+    ).toEqual({
+      start: {
+        dateTime: '2026-07-16T08:00:00.000Z',
+        timeZone: 'UTC',
+      },
+      end: {
+        dateTime: '2026-07-16T09:00:00.000Z',
+        timeZone: 'UTC',
+      },
+      recurrence: expect.any(Object),
+    });
+
+    const googlePatch = buildGoogleCalendarEventPatch(
+      createEvent(),
+      [],
+      ['startDate', 'endDate'],
+    );
+    expect(googlePatch.patch).toEqual({
+      start: { dateTime: '2026-07-16T08:00:00.000Z' },
+      end: { dateTime: '2026-07-16T09:00:00.000Z' },
+    });
+    expect(googlePatch.patch).not.toHaveProperty('attendees');
+    expect(googlePatch.sendUpdates).toBe('all');
   });
 
   it('maps imported provider values and uses configured defaults', () => {

@@ -42,13 +42,18 @@ export type MailDeliveryResult = {
 }
 
 class ApiMailService {
-  static async getEntityTemplate(entityHandle: string): Promise<EntityTemplate[]> {
+  static async getEntityTemplate(
+    entityHandle: string,
+    options: { reportError?: boolean } = {},
+  ): Promise<EntityTemplate[]> {
     try {
       const response = await axios.get<EntityTemplate[]>(buildApiUrl(`template/${entityHandle}`))
 
       return response.data
     } catch (error) {
-      pushApiErrorMessage(error, 'exception.unknownError', entityHandle)
+      if (options.reportError !== false) {
+        pushApiErrorMessage(error, 'exception.unknownError', entityHandle)
+      }
       throw error
     }
   }

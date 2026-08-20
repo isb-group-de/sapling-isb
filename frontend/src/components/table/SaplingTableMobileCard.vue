@@ -196,6 +196,7 @@
             :item-handle="item.handle"
             :item="item"
             :entity-templates="props.entityTemplates"
+            :can-compose="props.entityPermission?.allowUpdate === true"
           >
             {{
               formatValue(

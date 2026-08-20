@@ -117,7 +117,12 @@ export function useSaplingEventEditor(options: UseSaplingEventEditorOptions) {
     context?: DialogSaveContext,
   ) {
     const eventPayload: CalendarEvent = { ...updatedEvent }
-    const isNewEvent = getCalendarEventHandle(eventPayload) == null
+    // The generic edit form intentionally omits the primary key from update
+    // payloads. Determine create/update mode from the canonical editor state;
+    // otherwise every existing Event looks new here and its participants are
+    // replaced with the currently selected calendar-filter people.
+    const editingHandle = getCalendarEventHandle(options.editEvent.value)
+    const isNewEvent = editingHandle == null
     const participantHandles = resolveDraftParticipants(updatedEvent, options.selectedPeople.value)
     let savedEvent: EventItem
     let didSave = false
@@ -129,7 +134,6 @@ export function useSaplingEventEditor(options: UseSaplingEventEditorOptions) {
       }
       applyCalendarEventDateParts(eventPayload)
 
-      const editingHandle = getCalendarEventHandle(options.editEvent.value)
       if (editingHandle == null) {
         savedEvent = await ApiGenericService.create<EventItem>('event', eventPayload)
         if (savedEvent.handle != null) {

@@ -16,6 +16,11 @@ export type ScriptServerContext = {
    */
   suppressNotificationSubscriptions?: boolean;
   /**
+   * Properties whose persisted values actually changed during an update.
+   * Integration hooks use this to avoid resending unchanged provider fields.
+   */
+  changedFields?: string[];
+  /**
    * Calendar-specific intent that must survive asynchronous delivery.
    * Recurrence materialization uses this to convert the provider series
    * master into the first standalone event.

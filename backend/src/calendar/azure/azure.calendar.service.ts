@@ -51,6 +51,7 @@ import {
   type AzureOutlookCategory,
   type AzureOutlookMasterCategory,
   buildAzureCalendarEvent,
+  buildAzureCalendarEventPatch,
   type ImportAzureCalendarEventsRange,
   isAzureAuthenticationError,
   isAzureForbiddenError,
@@ -94,6 +95,7 @@ export class AzureCalendarService {
     event: EventItem,
     session: PersonSessionItem,
     operation?: 'remove-recurrence',
+    changedFields?: string[],
   ) {
     if (typeof session.handle !== 'number') {
       throw new Error('calendar.sessionHandleRequired');
@@ -104,6 +106,7 @@ export class AzureCalendarService {
       provider: 'azure',
       sessionHandle: session.handle,
       ...(operation ? { operation } : {}),
+      ...(changedFields ? { changedFields } : {}),
     });
   }
 
@@ -121,6 +124,7 @@ export class AzureCalendarService {
     accessToken: string,
     personHandle?: number,
     operation?: 'remove-recurrence',
+    changedFields?: string[],
   ): Promise<any> {
     const client = this.createClient(accessToken);
     // Fork EntityManager for context-specific actions
@@ -153,11 +157,15 @@ export class AzureCalendarService {
 
     switch (event.status.handle) {
       case 'canceled':
-      case 'completed':
         if (reference) {
           return await this.deleteEvent(client, reference, emFork);
         }
         break;
+      case 'completed':
+        // Completion is internal to Sapling. This also protects against older
+        // pending deliveries that were queued before completion was separated
+        // from cancellation.
+        return null;
       default:
         if (reference) {
           return await this.updateEvent(
@@ -167,6 +175,7 @@ export class AzureCalendarService {
             emFork,
             classificationMappings,
             operation,
+            changedFields,
           );
         } else {
           return await this.createEvent(
@@ -579,7 +588,7 @@ export class AzureCalendarService {
     const reference = await emFork.findOne(
       EventAzureItem,
       { referenceHandle },
-      { populate: ['event', 'event.participants'] },
+      { populate: ['event', 'event.participants', 'event.status'] },
     );
 
     if (graphEvent.isCancelled === true && !reference) {
@@ -597,10 +606,15 @@ export class AzureCalendarService {
     );
 
     if (reference?.event && typeof reference.event === 'object') {
+      const importedStatus =
+        status.handle === 'scheduled' &&
+        getRelationHandle(reference.event.status) === 'completed'
+          ? (reference.event.status ?? status)
+          : status;
       this.assignImportedEvent(reference.event, graphEvent, {
         startDate,
         endDate,
-        status,
+        status: importedStatus,
         participants: participantPeople,
       });
       return 'updated';
@@ -768,6 +782,7 @@ export class AzureCalendarService {
     emFork: EntityManager,
     classificationMappings?: CalendarClassificationMapping[] | null,
     operation?: 'remove-recurrence',
+    changedFields?: string[],
   ): Promise<any> {
     if (operation === 'remove-recurrence') {
       return await client
@@ -775,10 +790,15 @@ export class AzureCalendarService {
         .patch({ recurrence: null });
     }
 
-    const eventResource = buildAzureCalendarEvent(
+    const eventResource = buildAzureCalendarEventPatch(
       event,
       classificationMappings,
+      changedFields,
     );
+
+    if (Object.keys(eventResource).length === 0) {
+      return { id: reference.referenceHandle, unchanged: true };
+    }
 
     // PATCH Event (without online meeting fields)
     const patchResult = (await client

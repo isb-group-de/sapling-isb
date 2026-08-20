@@ -163,3 +163,35 @@ export function buildAzureCalendarEvent(
 
   return eventResource;
 }
+
+export function buildAzureCalendarEventPatch(
+  event: EventItem,
+  classificationMappings?: CalendarClassificationMapping[] | null,
+  changedFields?: string[],
+): Record<string, unknown> {
+  const eventResource = buildAzureCalendarEvent(event, classificationMappings);
+  if (!changedFields) {
+    return eventResource;
+  }
+
+  const changed = new Set(changedFields);
+  const patch: Record<string, unknown> = {};
+  const copy = (target: string) => {
+    if (target in eventResource) {
+      patch[target] = eventResource[target];
+    }
+  };
+
+  if (changed.has('title')) copy('subject');
+  if (changed.has('startDate')) {
+    copy('start');
+    copy('recurrence');
+  }
+  if (changed.has('endDate')) copy('end');
+  if (changed.has('recurrenceRule')) copy('recurrence');
+  if (changed.has('participants')) copy('attendees');
+  if (changed.has('description')) copy('body');
+  if (changed.has('type') || changed.has('category')) copy('categories');
+
+  return patch;
+}

@@ -52,7 +52,7 @@ describe('inbound email context menu behavior', () => {
     const entries = getSaplingContextMenuTableItems({
       canChangeLog: false,
       canShowInformation: false,
-      entityPermission: null,
+      entityPermission: { entityHandle: 'company', allowUpdate: true },
       canNavigate: false,
       canTimeline: false,
       mailToLabel: 'E-Mail senden an',
@@ -94,5 +94,25 @@ describe('inbound email context menu behavior', () => {
         }),
       ],
     })
+  })
+
+  it('does not offer mail actions without update permission on the context entity', () => {
+    const entries = getSaplingContextMenuTableItems({
+      canChangeLog: false,
+      canShowInformation: false,
+      entityPermission: { entityHandle: 'company', allowRead: true, allowUpdate: false },
+      canNavigate: false,
+      canTimeline: false,
+      mailActions: [
+        {
+          templateName: 'email',
+          email: 'customer@example.com',
+          source: 'record',
+        },
+      ],
+    })
+    const actions = entries.flatMap((entry) => (Array.isArray(entry) ? entry : [entry]))
+
+    expect(actions.some((action) => action.type === 'mail')).toBe(false)
   })
 })

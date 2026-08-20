@@ -183,24 +183,26 @@ export function getSaplingContextMenuTableItems(
     (action) => action.source === 'customerContact',
   )
 
-  for (const mailAction of recordMailActions) {
-    group4.push({
-      type: 'mail',
-      icon: 'mdi-email-fast-outline',
-      title: `${mailToLabel} ${
-        mailAction.recipientName || mailAction.fieldLabel || mailAction.templateName
-      }`,
-      mailAction,
-    })
-  }
+  if (options.entityPermission?.allowUpdate === true) {
+    for (const mailAction of recordMailActions) {
+      group4.push({
+        type: 'mail',
+        icon: 'mdi-email-fast-outline',
+        title: `${mailToLabel} ${
+          mailAction.recipientName || mailAction.fieldLabel || mailAction.templateName
+        }`,
+        mailAction,
+      })
+    }
 
-  if (customerContactMailActions.length > 0) {
-    group4.push({
-      type: 'mail',
-      icon: 'mdi-email-fast-outline',
-      title: mailToLabel,
-      children: buildMailMenuChildren(customerContactMailActions),
-    })
+    if (customerContactMailActions.length > 0) {
+      group4.push({
+        type: 'mail',
+        icon: 'mdi-email-fast-outline',
+        title: mailToLabel,
+        children: buildMailMenuChildren(customerContactMailActions),
+      })
+    }
   }
 
   // Filter leere Gruppen raus

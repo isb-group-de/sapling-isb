@@ -7,11 +7,15 @@ import { PersonSessionItem } from '../entity/PersonSessionItem';
 const asMock = (value: unknown): jest.Mock => value as jest.Mock;
 
 describe('CalendarDeliveryExecutor', () => {
-  it('resolves the session by handle and forwards only stable identifiers to Azure', async () => {
+  it('resolves the session and forwards focused changed fields to Azure', async () => {
     const delivery = {
       handle: 21,
       event: { handle: 4 },
-      payload: { provider: 'azure', sessionHandle: 8 },
+      payload: {
+        provider: 'azure',
+        sessionHandle: 8,
+        changedFields: ['category'],
+      },
       attemptCount: 0,
     } as EventDeliveryItem;
     const success = { handle: 'success' } as EventDeliveryStatusItem;
@@ -56,6 +60,8 @@ describe('CalendarDeliveryExecutor', () => {
       4,
       'azure-token',
       7,
+      undefined,
+      ['category'],
     );
     expect(asMock(googleCalendarService.setEvent)).not.toHaveBeenCalled();
     expect(delivery.status).toBe(success);

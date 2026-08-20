@@ -11,6 +11,18 @@ import {
 import { EventItem } from '../entity/EventItem.js';
 import type { ScriptServerContext } from './core/script.interface.js';
 
+const CALENDAR_PROVIDER_RELEVANT_EVENT_FIELDS = new Set([
+  'title',
+  'description',
+  'startDate',
+  'endDate',
+  'recurrenceRule',
+  'participants',
+  'type',
+  'category',
+  'status',
+]);
+
 /**
  * Controller for Note entity scripts.
  * Extends the ScriptClass to provide custom logic for Note operations.
@@ -182,6 +194,25 @@ export class EventController extends ScriptClass {
     event: EventItem,
     context?: ScriptServerContext,
   ): Promise<void> {
+    const changedFields =
+      context?.changedFields ??
+      (context?.referenceName ? [context.referenceName] : undefined);
+
+    if (
+      operation === 'afterUpdate' &&
+      !context?.calendarDeliveryOperation &&
+      changedFields &&
+      !changedFields.some((field) =>
+        CALENDAR_PROVIDER_RELEVANT_EVENT_FIELDS.has(field),
+      )
+    ) {
+      this.logDebug(operation, 'Skipping internal-only calendar update', {
+        eventHandle: event.handle,
+        changedFields,
+      });
+      return;
+    }
+
     const queueEvent = async () => {
       let persistedEvent = event;
 
@@ -213,10 +244,26 @@ export class EventController extends ScriptClass {
       }
 
       if (context?.calendarDeliveryOperation) {
+        if (changedFields) {
+          await calendarService.queueEvent(
+            persistedEvent,
+            this.user.session,
+            context.calendarDeliveryOperation,
+            changedFields,
+          );
+        } else {
+          await calendarService.queueEvent(
+            persistedEvent,
+            this.user.session,
+            context.calendarDeliveryOperation,
+          );
+        }
+      } else if (changedFields) {
         await calendarService.queueEvent(
           persistedEvent,
           this.user.session,
-          context.calendarDeliveryOperation,
+          undefined,
+          changedFields,
         );
       } else {
         await calendarService.queueEvent(persistedEvent, this.user.session);

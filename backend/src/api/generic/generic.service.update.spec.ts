@@ -25,7 +25,7 @@ describe('GenericService update workflows', () => {
       items: object | object[],
       entity: unknown,
       user: unknown,
-      context?: { currentItems?: object[] },
+      context?: { currentItems?: object[]; changedFields?: string[] },
     ) => Promise<ScriptResultServer>;
     const scriptService = {
       runServer: jest
@@ -36,7 +36,7 @@ describe('GenericService update workflows', () => {
             items: object | object[],
             _entity: unknown,
             _user: unknown,
-            context?: { currentItems?: object[] },
+            context?: { currentItems?: object[]; changedFields?: string[] },
           ) => {
             expect(context).toEqual({ currentItems: [item] });
             const nextItem = (
@@ -56,7 +56,14 @@ describe('GenericService update workflows', () => {
           },
         )
         .mockImplementationOnce(
-          (_method: unknown, items: object | object[]) => {
+          (
+            _method: unknown,
+            items: object | object[],
+            _entity: unknown,
+            _user: unknown,
+            context?: { changedFields?: string[] },
+          ) => {
+            expect(context?.changedFields).toEqual(['title']);
             const resultItems: object[] =
               items instanceof Array ? items : [items];
             return Promise.resolve(new ScriptResultServer(resultItems));
