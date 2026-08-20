@@ -195,6 +195,28 @@ current entity context when it loads sender options, so opening it from a ticket
 or another configured entity preselects the eligible shared address and
 configured email template without preventing a manual change.
 
+## Context Recipient Suggestions
+
+The manual mail composer derives optional recipient suggestions from entity
+metadata. Every readable context field marked with `isCompany` participates;
+the field does not also need `isCustomer`. A Company record itself participates
+through its `isCompany` primary key. For persisted contexts the composer loads
+missing company references with a narrow projection, while draft values take
+precedence so unsaved company changes are respected.
+
+When the current user can read Person records, active people with an email
+address from all resolved companies are offered in the **To** combobox. Entries
+are sorted alphabetically by person name and shown as:
+
+```text
+Ada Lovelace (Acme GmbH, Entwicklung) – ada@example.com
+```
+
+Missing company or department labels use an em dash so both context positions
+remain visible. Selecting a suggestion stores and displays only its email
+address. Free-form email entry, delimiter handling, CC, and BCC behavior remain
+unchanged. Duplicate email addresses are collapsed case-insensitively.
+
 When a sender email is requested explicitly, it must match an available sender option. Otherwise `mail.senderNotAllowed` is raised.
 
 Azure shared-mailbox sending additionally requires delegated

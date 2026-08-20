@@ -36,6 +36,9 @@
 
     <v-combobox
       :model-value="toRecipients"
+      :items="recipientItems"
+      item-title="title"
+      item-value="value"
       :label="translate('document.to')"
       multiple
       chips
@@ -43,9 +46,14 @@
       clearable
       hide-selected
       hide-details="auto"
+      :loading="isLoadingRecipientOptions"
       :delimiters="[',', ';']"
       @update:model-value="handleToUpdate"
-    />
+    >
+      <template #chip="{ props: chipProps, item }">
+        <v-chip v-bind="chipProps">{{ getRecipientSelectionEmail(item) }}</v-chip>
+      </template>
+    </v-combobox>
 
     <div class="sapling-message-dialog__meta-grid sapling-mail-dialog__meta-grid">
       <v-combobox
@@ -152,8 +160,10 @@ import type {
   AttachmentOption,
   EmailTemplateItem,
   InsertTarget,
+  MailRecipientOption,
   MailSenderOption,
 } from '@/components/dialog/mail/SaplingDialogMail.types'
+import { buildMailRecipientTitle } from '@/utils/saplingMailRecipientOptions'
 
 type TextSelectionInput = HTMLInputElement | HTMLTextAreaElement
 
@@ -175,6 +185,8 @@ const props = defineProps<{
   selectedSenderEmail: string
   senderOptions: MailSenderOption[]
   isLoadingSenderOptions: boolean
+  recipientOptions: MailRecipientOption[]
+  isLoadingRecipientOptions: boolean
   subject: string
   bodyMarkdown: string
   availableAttachments: AttachmentOption[]
@@ -217,6 +229,12 @@ const senderItems = computed(() =>
     value: option.email,
   })),
 )
+const recipientItems = computed(() =>
+  sortSelectOptions(props.recipientOptions, (option) => option.name).map((option) => ({
+    title: buildMailRecipientTitle(option),
+    value: option.email,
+  })),
+)
 
 function handleTemplateUpdate(value: number | null | undefined) {
   emit('update:templateHandle', value ?? null)
@@ -229,7 +247,7 @@ function normalizeRecipients(value: unknown): string[] {
   }
 
   return value
-    .flatMap((entry) => String(entry ?? '').split(/[;,]/))
+    .flatMap((entry) => readRecipientValue(entry).split(/[;,]/))
     .map((entry) => entry.trim())
     .filter(Boolean)
     .filter((entry, index, array) => array.indexOf(entry) === index)
@@ -333,6 +351,32 @@ function buildSenderTitle(option: MailSenderOption): string {
   }
 
   return option.email
+}
+
+function getRecipientSelectionEmail(item: unknown): string {
+  return readRecipientValue(item)
+}
+
+function readRecipientValue(value: unknown, seen = new Set<object>()): string {
+  if (typeof value === 'string' || typeof value === 'number') {
+    return String(value)
+  }
+
+  if (!value || typeof value !== 'object' || seen.has(value)) {
+    return ''
+  }
+
+  seen.add(value)
+  const option = value as { value?: unknown; email?: unknown; raw?: unknown }
+
+  for (const candidate of [option.value, option.email, option.raw]) {
+    const recipient = readRecipientValue(candidate, seen).trim()
+    if (recipient) {
+      return recipient
+    }
+  }
+
+  return ''
 }
 
 defineExpose({

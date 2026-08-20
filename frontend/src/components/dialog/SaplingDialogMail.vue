@@ -48,6 +48,8 @@
                 :selected-sender-email="selectedSenderEmail"
                 :sender-options="senderOptions"
                 :is-loading-sender-options="isLoadingSenderOptions"
+                :recipient-options="recipientOptions"
+                :is-loading-recipient-options="isLoadingRecipientOptions"
                 :subject="subject"
                 :body-markdown="bodyMarkdown"
                 :available-attachments="availableAttachments"
@@ -133,6 +135,7 @@ const {
   insertTarget,
   isLoadingAttachments,
   isLoadingPlaceholders,
+  isLoadingRecipientOptions,
   isLoadingSenderOptions,
   isLoadingTemplates,
   isOpen,
@@ -145,6 +148,7 @@ const {
   previewMarkdown,
   previewSubject,
   previewTo,
+  recipientOptions,
   refreshPreview,
   selectedSenderEmail,
   sendMail,

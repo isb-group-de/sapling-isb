@@ -27,6 +27,13 @@ export type MailSenderListResult = {
   defaultTemplateHandle?: number
 }
 
+export type MailRecipientOption = {
+  email: string
+  name: string
+  companyName: string
+  departmentName: string
+}
+
 export type PlaceholderItem = {
   token: string
   label: string

@@ -5,6 +5,7 @@ import type {
   AttachmentOption,
   EmailTemplateItem,
   InsertTarget,
+  MailRecipientOption,
   MailSenderOption,
   PlaceholderItem,
   PlaceholderRelationTemplates,
@@ -14,7 +15,14 @@ import { useSaplingMailDialog } from '@/composables/dialog/useSaplingMailDialog'
 import { useSaplingMessageCenter } from '@/composables/system/useSaplingMessageCenter'
 import ApiGenericService from '@/services/api.generic.service'
 import ApiMailService from '@/services/api.mail.service'
+import { useCurrentPermissionStore } from '@/stores/currentPermissionStore'
 import { useCurrentPersonStore } from '@/stores/currentPersonStore'
+import {
+  buildMailRecipientOptions,
+  getContextCompanyHandles,
+  getContextCompanyTemplates,
+  type MailRecipientPerson,
+} from '@/utils/saplingMailRecipientOptions'
 
 type MailComposerPlaceholderTarget = {
   insertPlaceholderAtCursor?: (target: InsertTarget, token: string) => void
@@ -32,7 +40,8 @@ export function useSaplingDialogMailEditor() {
   const { isOpen, context, closeMailDialog } = useSaplingMailDialog()
   const { pushMessage } = useSaplingMessageCenter()
   const currentPersonStore = useCurrentPersonStore()
-  const { t, te } = useI18n()
+  const currentPermissionStore = useCurrentPermissionStore()
+  const { locale, t, te } = useI18n()
   const {
     translationService,
     isLoading: isTranslationLoading,
@@ -44,6 +53,8 @@ export function useSaplingDialogMailEditor() {
   const placeholders = ref<PlaceholderItem[]>([])
   const availableAttachments = ref<AttachmentOption[]>([])
   const senderOptions = ref<MailSenderOption[]>([])
+  const recipientOptions = ref<MailRecipientOption[]>([])
+  const contextEntityTemplates = ref<EntityTemplate[]>([])
   const defaultTemplateHandle = ref<number | null>(null)
   const templateHandle = ref<number | null>(null)
   const attachmentHandles = ref<number[]>([])
@@ -63,6 +74,7 @@ export function useSaplingDialogMailEditor() {
   const isLoadingPlaceholders = ref(false)
   const isLoadingAttachments = ref(false)
   const isLoadingSenderOptions = ref(false)
+  const isLoadingRecipientOptions = ref(false)
   const isPreviewLoading = ref(false)
   const isSending = ref(false)
 
@@ -129,11 +141,16 @@ export function useSaplingDialogMailEditor() {
       }
 
       initializeFromContext()
-      await loadTranslations()
-      await currentPersonStore.fetchCurrentPerson()
+      await Promise.all([
+        loadTranslations(),
+        currentPersonStore.fetchCurrentPerson(),
+        currentPermissionStore.fetchCurrentPermission(),
+      ])
       await Promise.all([loadTemplates(), loadAttachments(), loadSenderOptions()])
       applyContextDefaultTemplate()
-      await loadPlaceholders()
+      isLoadingRecipientOptions.value = true
+      await loadContextEntityTemplates()
+      await Promise.all([loadPlaceholders(), loadRecipientOptions()])
       await refreshPreview()
     },
     { immediate: true },
@@ -161,6 +178,8 @@ export function useSaplingDialogMailEditor() {
     placeholders.value = []
     availableAttachments.value = []
     senderOptions.value = []
+    recipientOptions.value = []
+    contextEntityTemplates.value = []
     defaultTemplateHandle.value = null
     templateHandle.value = null
     attachmentHandles.value = []
@@ -180,6 +199,7 @@ export function useSaplingDialogMailEditor() {
     isLoadingPlaceholders.value = false
     isLoadingAttachments.value = false
     isLoadingSenderOptions.value = false
+    isLoadingRecipientOptions.value = false
     isPreviewLoading.value = false
     isSending.value = false
   }
@@ -245,7 +265,7 @@ export function useSaplingDialogMailEditor() {
     bodyMarkdown.value = configuredTemplate.bodyMarkdown
   }
 
-  async function loadPlaceholders() {
+  async function loadContextEntityTemplates() {
     if (!context.value?.entityHandle) {
       return
     }
@@ -253,7 +273,34 @@ export function useSaplingDialogMailEditor() {
     isLoadingPlaceholders.value = true
 
     try {
-      const rootTemplates = await ApiMailService.getEntityTemplate(context.value.entityHandle)
+      contextEntityTemplates.value = await ApiMailService.getEntityTemplate(
+        context.value.entityHandle,
+      )
+    } catch (error) {
+      console.error('Error loading context entity templates:', error)
+      pushMessage(
+        'warning',
+        'mail.placeholdersLoadFailed',
+        'mail.placeholdersLoadFailedDescription',
+        'mail',
+      )
+      contextEntityTemplates.value = []
+      placeholders.value = []
+      isLoadingPlaceholders.value = false
+    }
+  }
+
+  async function loadPlaceholders() {
+    if (!context.value?.entityHandle || contextEntityTemplates.value.length === 0) {
+      placeholders.value = []
+      isLoadingPlaceholders.value = false
+      return
+    }
+
+    isLoadingPlaceholders.value = true
+
+    try {
+      const rootTemplates = contextEntityTemplates.value
       const relatedTemplates = await Promise.all(
         rootTemplates.filter(isSupportedPlaceholderRelation).map(async (template) => ({
           parent: template,
@@ -316,6 +363,106 @@ export function useSaplingDialogMailEditor() {
       availableAttachments.value = []
     } finally {
       isLoadingAttachments.value = false
+    }
+  }
+
+  async function loadRecipientOptions() {
+    recipientOptions.value = []
+
+    const currentContext = context.value
+    const companyTemplates = getContextCompanyTemplates(contextEntityTemplates.value)
+    const canReadPeople =
+      currentPermissionStore.accumulatedPermission?.some(
+        (permission) => permission.entityHandle === 'person' && permission.allowRead === true,
+      ) === true
+
+    if (!currentContext || companyTemplates.length === 0 || !canReadPeople) {
+      isLoadingRecipientOptions.value = false
+      return
+    }
+
+    isLoadingRecipientOptions.value = true
+
+    try {
+      const contextValues = await loadContextCompanyValues(companyTemplates)
+      const companyHandles = getContextCompanyHandles(
+        companyTemplates,
+        contextValues,
+        currentContext.itemHandle,
+      )
+
+      if (companyHandles.length === 0) {
+        return
+      }
+
+      const people = await ApiGenericService.findAll<MailRecipientPerson>('person', {
+        filter: {
+          company: {
+            $in: companyHandles,
+          },
+        },
+        orderBy: {
+          lastName: 'ASC',
+          firstName: 'ASC',
+        },
+        relations: ['company', 'department'],
+        fields: [
+          'handle',
+          'firstName',
+          'lastName',
+          'email',
+          'isActive',
+          'company',
+          'company.handle',
+          'company.name',
+          'department',
+          'department.description',
+        ],
+      })
+
+      recipientOptions.value = buildMailRecipientOptions(people, locale.value)
+    } catch (error) {
+      console.error('Error loading context mail recipients:', error)
+      recipientOptions.value = []
+    } finally {
+      isLoadingRecipientOptions.value = false
+    }
+  }
+
+  async function loadContextCompanyValues(
+    companyTemplates: EntityTemplate[],
+  ): Promise<Record<string, unknown>> {
+    const currentContext = context.value
+    const draftValues = currentContext?.draftValues ?? {}
+    const missingReferences = companyTemplates.filter(
+      (template) =>
+        template.isReference === true &&
+        !Object.prototype.hasOwnProperty.call(draftValues, template.name),
+    )
+
+    if (!currentContext || currentContext.itemHandle == null || missingReferences.length === 0) {
+      return draftValues
+    }
+
+    const relationNames = missingReferences.map((template) => template.name)
+    const response = await ApiGenericService.find<Record<string, unknown>>(
+      currentContext.entityHandle,
+      {
+        filter: { handle: currentContext.itemHandle },
+        page: 1,
+        limit: 1,
+        relations: relationNames,
+        fields: [
+          'handle',
+          ...relationNames,
+          ...relationNames.map((relationName) => `${relationName}.handle`),
+        ],
+      },
+    )
+
+    return {
+      ...(response.data[0] ?? {}),
+      ...draftValues,
     }
   }
 
@@ -526,6 +673,7 @@ export function useSaplingDialogMailEditor() {
     insertTarget,
     isLoadingAttachments,
     isLoadingPlaceholders,
+    isLoadingRecipientOptions,
     isLoadingSenderOptions,
     isLoadingTemplates,
     isOpen,
@@ -538,6 +686,7 @@ export function useSaplingDialogMailEditor() {
     previewMarkdown,
     previewSubject,
     previewTo,
+    recipientOptions,
     refreshPreview,
     selectedSenderEmail,
     sendMail,
