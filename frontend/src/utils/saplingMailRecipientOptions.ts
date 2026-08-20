@@ -48,27 +48,28 @@ export function getContextCompanyHandles(
 export function buildMailRecipientOptions(
   people: MailRecipientPerson[],
   locale?: string,
+  currentCompanyHandle?: EntityHandleValue | null,
 ): MailRecipientOption[] {
-  const collator = new Intl.Collator(locale, { sensitivity: 'base' })
   const options = people
     .filter((person) => person.isActive !== false)
-    .map((person) => ({
-      email: cleanText(person.email),
-      name: joinPersonName(person.firstName, person.lastName),
-      companyName: cleanText(person.company?.name),
-      departmentName: cleanText(person.department?.description),
-    }))
+    .map((person) => {
+      const companyHandle = person.company?.handle ?? null
+
+      return {
+        email: cleanText(person.email),
+        name: joinPersonName(person.firstName, person.lastName),
+        companyHandle,
+        companyName: cleanText(person.company?.name),
+        departmentName: cleanText(person.department?.description),
+        isCurrentCompany: handlesEqual(companyHandle, currentCompanyHandle),
+      }
+    })
     .filter((option) => option.email && option.name)
-    .sort(
-      (left, right) =>
-        collator.compare(left.name, right.name) ||
-        collator.compare(left.companyName, right.companyName) ||
-        collator.compare(left.departmentName, right.departmentName) ||
-        collator.compare(left.email, right.email),
-    )
+
+  const sortedOptions = sortMailRecipientOptions(options, locale)
 
   const uniqueOptions = new Map<string, MailRecipientOption>()
-  for (const option of options) {
+  for (const option of sortedOptions) {
     const key = option.email.toLocaleLowerCase()
     if (!uniqueOptions.has(key)) {
       uniqueOptions.set(key, option)
@@ -76,6 +77,22 @@ export function buildMailRecipientOptions(
   }
 
   return [...uniqueOptions.values()]
+}
+
+export function sortMailRecipientOptions(
+  options: MailRecipientOption[],
+  locale?: string,
+): MailRecipientOption[] {
+  const collator = new Intl.Collator(locale, { sensitivity: 'base' })
+
+  return [...options].sort(
+    (left, right) =>
+      Number(Boolean(right.isCurrentCompany)) - Number(Boolean(left.isCurrentCompany)) ||
+      collator.compare(left.companyName, right.companyName) ||
+      collator.compare(left.name, right.name) ||
+      collator.compare(left.departmentName, right.departmentName) ||
+      collator.compare(left.email, right.email),
+  )
 }
 
 export function buildMailRecipientTitle(option: MailRecipientOption): string {
@@ -109,4 +126,11 @@ function joinPersonName(firstName: unknown, lastName: unknown): string {
 
 function cleanText(value: unknown): string {
   return typeof value === 'string' ? value.trim() : ''
+}
+
+function handlesEqual(
+  left: EntityHandleValue | null | undefined,
+  right: EntityHandleValue | null | undefined,
+): boolean {
+  return left != null && right != null && String(left).trim() === String(right).trim()
 }

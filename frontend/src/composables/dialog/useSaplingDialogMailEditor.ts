@@ -405,12 +405,17 @@ export function useSaplingDialogMailEditor() {
 
     const currentContext = context.value
     const companyTemplates = getContextCompanyTemplates(contextEntityTemplates.value)
+    const currentCompanyHandle = getRelationHandle(currentPersonStore.person?.company)
     const canReadPeople =
       currentPermissionStore.accumulatedPermission?.some(
         (permission) => permission.entityHandle === 'person' && permission.allowRead === true,
       ) === true
 
-    if (!currentContext || companyTemplates.length === 0 || !canReadPeople) {
+    if (
+      !currentContext ||
+      (companyTemplates.length === 0 && currentCompanyHandle == null) ||
+      !canReadPeople
+    ) {
       isLoadingRecipientOptions.value = false
       return
     }
@@ -418,12 +423,12 @@ export function useSaplingDialogMailEditor() {
     isLoadingRecipientOptions.value = true
 
     try {
-      const contextValues = await loadContextCompanyValues(companyTemplates)
-      const companyHandles = getContextCompanyHandles(
-        companyTemplates,
-        contextValues,
-        currentContext.itemHandle,
-      )
+      const contextValues =
+        companyTemplates.length > 0 ? await loadContextCompanyValues(companyTemplates) : {}
+      const companyHandles = distinctHandles([
+        ...getContextCompanyHandles(companyTemplates, contextValues, currentContext.itemHandle),
+        ...(currentCompanyHandle == null ? [] : [currentCompanyHandle]),
+      ])
 
       if (companyHandles.length === 0) {
         return
@@ -454,7 +459,7 @@ export function useSaplingDialogMailEditor() {
         ],
       })
 
-      recipientOptions.value = buildMailRecipientOptions(people, locale.value)
+      recipientOptions.value = buildMailRecipientOptions(people, locale.value, currentCompanyHandle)
     } catch (error) {
       console.error('Error loading context mail recipients:', error)
       recipientOptions.value = []
@@ -682,6 +687,32 @@ export function useSaplingDialogMailEditor() {
     const values = Array.isArray(value) ? value : String(value ?? '').split(/[;,]/)
 
     return values.map((entry) => String(entry).trim()).filter(Boolean)
+  }
+
+  function getRelationHandle(value: unknown): string | number | null {
+    if (typeof value === 'string' || typeof value === 'number') {
+      return value
+    }
+
+    if (!value || typeof value !== 'object') {
+      return null
+    }
+
+    const handle = (value as { handle?: unknown }).handle
+    return typeof handle === 'string' || typeof handle === 'number' ? handle : null
+  }
+
+  function distinctHandles(handles: Array<string | number>): Array<string | number> {
+    const distinct = new Map<string, string | number>()
+
+    for (const handle of handles) {
+      const key = String(handle).trim()
+      if (key && !distinct.has(key)) {
+        distinct.set(key, handle)
+      }
+    }
+
+    return [...distinct.values()]
   }
 
   function translateTemplateLabel(entityHandle: string, property: string): string {

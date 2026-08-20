@@ -93,14 +93,17 @@ describe('SaplingDialogMailComposer', () => {
           {
             email: 'zoe@example.com',
             name: 'Zoë Zimmer',
+            companyHandle: 2,
             companyName: 'Beta AG',
             departmentName: 'Support',
           },
           {
             email: 'ada@example.com',
             name: 'Ada Lovelace',
+            companyHandle: 1,
             companyName: 'Acme GmbH',
             departmentName: 'Entwicklung',
+            isCurrentCompany: true,
           },
         ],
       },
@@ -109,17 +112,26 @@ describe('SaplingDialogMailComposer', () => {
       },
     })
 
-    const recipientField = wrapper.findAllComponents(components.VCombobox)[0]
-    expect(recipientField.props('items')).toEqual([
+    const recipientFields = wrapper.findAllComponents(components.VCombobox)
+    const expectedItems = [
       {
         title: 'Ada Lovelace (Acme GmbH, Entwicklung) – ada@example.com',
         value: 'ada@example.com',
+        companyLabel: 'Acme GmbH · mail.currentCompany',
+        showCompanyHeader: true,
+        showDivider: false,
       },
       {
         title: 'Zoë Zimmer (Beta AG, Support) – zoe@example.com',
         value: 'zoe@example.com',
+        companyLabel: 'Beta AG',
+        showCompanyHeader: true,
+        showDivider: true,
       },
-    ])
+    ]
+
+    expect(recipientFields).toHaveLength(3)
+    recipientFields.forEach((field) => expect(field.props('items')).toEqual(expectedItems))
     expect(wrapper.text()).toContain('ada@example.com')
     expect(wrapper.text()).not.toContain('Ada Lovelace')
   })
@@ -176,5 +188,17 @@ describe('SaplingDialogMailComposer', () => {
       [...firstSelection, 'info@standardfirma.de'],
     ])
     expect(recipientUpdates.flat()).not.toContain('[object Object]')
+
+    const option = {
+      title: 'Erik Baumann (Standardfirma, Finanzen) – info@standardfirma.de',
+      value: 'info@standardfirma.de',
+    }
+    const recipientFields = wrapper.findAllComponents(components.VCombobox)
+    recipientFields[1].vm.$emit('update:modelValue', [option])
+    recipientFields[2].vm.$emit('update:modelValue', [option])
+    await nextTick()
+
+    expect(wrapper.emitted('update:ccRecipients')).toEqual([[['info@standardfirma.de']]])
+    expect(wrapper.emitted('update:bccRecipients')).toEqual([[['info@standardfirma.de']]])
   })
 })

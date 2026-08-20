@@ -65,6 +65,10 @@ import {
   DEFAULT_CALENDAR_EVENT_TYPE_HANDLE,
   resolveImportedCalendarClassification,
 } from '../calendar-classification.utils';
+import {
+  buildCalendarParticipantEmailFilter,
+  selectUniqueCalendarParticipantsByEmail,
+} from '../calendar-participant.utils';
 
 /**
  * Service for managing calendar events in Microsoft Azure (Outlook) via Microsoft Graph API.
@@ -711,10 +715,17 @@ export class AzureCalendarService {
       ),
     );
 
-    const knownAttendees =
+    const attendeeCandidates =
       attendeeEmails.length > 0
-        ? await emFork.find(PersonItem, { email: { $in: attendeeEmails } })
+        ? await emFork.find(
+            PersonItem,
+            buildCalendarParticipantEmailFilter(attendeeEmails),
+          )
         : [];
+    const knownAttendees = selectUniqueCalendarParticipantsByEmail(
+      attendeeCandidates,
+      attendeeEmails,
+    );
     const participantsByHandle = new Map<number, PersonItem>();
 
     if (typeof user.handle === 'number') {

@@ -12,6 +12,11 @@ type AzureCalendarServiceTestHarness = {
     graphEvent: object,
     defaults: object,
   ) => Promise<UpsertResult>;
+  resolveImportedParticipants: (
+    emFork: object,
+    graphEvent: object,
+    user: PersonItem,
+  ) => Promise<PersonItem[]>;
 };
 type AzureCategoryServiceTestHarness = {
   resolveAzureAccessToken: jest.MockedFunction<
@@ -70,6 +75,48 @@ function createService(): AzureCalendarServiceTestHarness {
 }
 
 describe('AzureCalendarService Outlook import privacy', () => {
+  it('links only unique case-insensitive attendee email matches', async () => {
+    const owner = { handle: 7 } as PersonItem;
+    const uniqueMatch = {
+      handle: 8,
+      email: 'Ada.Lovelace@Example.com',
+    } as PersonItem;
+    const ambiguousMatchA = {
+      handle: 9,
+      email: 'duplicate@example.com',
+    } as PersonItem;
+    const ambiguousMatchB = {
+      handle: 10,
+      email: 'DUPLICATE@example.com',
+    } as PersonItem;
+    const emFork = {
+      find: jest.fn<(...args: unknown[]) => Promise<PersonItem[]>>(() =>
+        Promise.resolve([uniqueMatch, ambiguousMatchA, ambiguousMatchB]),
+      ),
+    };
+    const service = createService();
+
+    await expect(
+      service.resolveImportedParticipants(
+        emFork,
+        createGraphEvent({
+          attendees: [
+            { emailAddress: { address: 'ada.lovelace@example.com' } },
+            { emailAddress: { address: 'duplicate@example.com' } },
+          ],
+        }),
+        owner,
+      ),
+    ).resolves.toEqual([owner, uniqueMatch]);
+
+    expect(emFork.find).toHaveBeenCalledWith(PersonItem, {
+      $or: [
+        { email: { $ilike: 'ada.lovelace@example.com' } },
+        { email: { $ilike: 'duplicate@example.com' } },
+      ],
+    });
+  });
+
   it('imports private Outlook sensitivity as a private Sapling event', async () => {
     const persisted: unknown[] = [];
     const emFork = {

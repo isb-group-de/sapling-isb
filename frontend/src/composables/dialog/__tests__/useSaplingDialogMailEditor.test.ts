@@ -12,6 +12,10 @@ const mocks = vi.hoisted(() => ({
   pushMessage: vi.fn(),
   permissions: [] as Array<Record<string, unknown>>,
   isImpersonating: false,
+  currentPerson: {
+    email: 'sender@example.com',
+    company: { handle: 20 },
+  },
 }))
 
 vi.mock('vue-i18n', () => ({
@@ -36,7 +40,7 @@ vi.mock('@/composables/system/useSaplingMessageCenter', () => ({
 
 vi.mock('@/stores/currentPersonStore', () => ({
   useCurrentPersonStore: () => ({
-    person: { email: 'sender@example.com' },
+    person: mocks.currentPerson,
     isImpersonating: mocks.isImpersonating,
     fetchCurrentPerson: mocks.fetchCurrentPerson,
   }),
@@ -80,6 +84,8 @@ describe('useSaplingDialogMailEditor', () => {
       { entityHandle: 'person', allowRead: true },
     ]
     mocks.isImpersonating = false
+    mocks.currentPerson.email = 'sender@example.com'
+    mocks.currentPerson.company = { handle: 20 }
     mocks.listSenders.mockResolvedValue({ senders: [] })
     mocks.preview.mockResolvedValue({
       to: [],
@@ -163,12 +169,64 @@ describe('useSaplingDialogMailEditor', () => {
       {
         email: 'ada@example.com',
         name: 'Ada Lovelace',
+        companyHandle: 20,
         companyName: 'Acme GmbH',
         departmentName: 'Entwicklung',
+        isCurrentCompany: true,
       },
     ])
     expect(mocks.findAll).not.toHaveBeenCalledWith('emailTemplate', expect.anything())
     expect(mocks.findAll).not.toHaveBeenCalledWith('document', expect.anything())
+  })
+
+  it('adds the current user company without context companies and deduplicates contact emails', async () => {
+    mocks.currentPerson.company = { handle: 30 }
+    mocks.getEntityTemplate.mockResolvedValue([
+      { name: 'title', type: 'string', isPersistent: true },
+    ])
+    mocks.findAll.mockImplementation(async (entityHandle: string) => {
+      if (entityHandle !== 'person') {
+        return []
+      }
+
+      return [
+        {
+          firstName: 'Zoe',
+          lastName: 'Colleague',
+          email: 'shared@example.com',
+          company: { handle: 30, name: 'Eigene GmbH' },
+          department: { description: 'Support' },
+        },
+        {
+          firstName: 'Ada',
+          lastName: 'Current',
+          email: 'SHARED@example.com',
+          company: { handle: 30, name: 'Eigene GmbH' },
+          department: { description: 'Entwicklung' },
+        },
+      ]
+    })
+    const editor = useSaplingDialogMailEditor()
+
+    useSaplingMailDialog().openMailDialog({
+      entityHandle: 'ticket',
+    })
+
+    await vi.waitFor(() => expect(editor.recipientOptions.value).toHaveLength(1))
+
+    expect(mocks.findAll).toHaveBeenCalledWith(
+      'person',
+      expect.objectContaining({
+        filter: { company: { $in: [30] } },
+      }),
+    )
+    expect(editor.recipientOptions.value[0]).toEqual(
+      expect.objectContaining({
+        email: 'SHARED@example.com',
+        name: 'Ada Current',
+        companyName: 'Eigene GmbH',
+      }),
+    )
   })
 
   it('keeps readable placeholders and skips reference templates without read access', async () => {

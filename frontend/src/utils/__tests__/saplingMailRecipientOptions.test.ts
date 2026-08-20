@@ -70,20 +70,20 @@ describe('saplingMailRecipientOptions', () => {
     expect(getContextCompanyHandles(companyTemplates, { handle: '17' }, 17)).toEqual(['17'])
   })
 
-  it('sorts active contacts by name and keeps company and department in the title', () => {
+  it('sorts active contacts by company and then by person name', () => {
     const options = buildMailRecipientOptions(
       [
         {
-          firstName: 'Zoë',
-          lastName: 'Zimmer',
-          email: 'zoe@example.com',
+          firstName: 'Ada',
+          lastName: 'Alpha',
+          email: 'ada@example.com',
           company: { handle: 2, name: 'Beta AG' },
           department: { description: 'Support' },
         },
         {
-          firstName: 'Ada',
-          lastName: 'Lovelace',
-          email: 'ada@example.com',
+          firstName: 'Zoë',
+          lastName: 'Zimmer',
+          email: 'zoe@example.com',
           company: { handle: 1, name: 'Acme GmbH' },
           department: { description: 'Entwicklung' },
         },
@@ -97,10 +97,41 @@ describe('saplingMailRecipientOptions', () => {
       'de',
     )
 
-    expect(options.map((option) => option.name)).toEqual(['Ada Lovelace', 'Zoë Zimmer'])
+    expect(options.map((option) => option.name)).toEqual(['Zoë Zimmer', 'Ada Alpha'])
     expect(buildMailRecipientTitle(options[0])).toBe(
-      'Ada Lovelace (Acme GmbH, Entwicklung) – ada@example.com',
+      'Zoë Zimmer (Acme GmbH, Entwicklung) – zoe@example.com',
     )
+  })
+
+  it('places the current company first and prefers it when duplicate emails exist', () => {
+    const options = buildMailRecipientOptions(
+      [
+        {
+          firstName: 'Ada',
+          lastName: 'Other',
+          email: 'shared@example.com',
+          company: { handle: 1, name: 'Acme GmbH' },
+        },
+        {
+          firstName: 'Zoe',
+          lastName: 'Current',
+          email: 'SHARED@example.com',
+          company: { handle: 2, name: 'Beta AG' },
+        },
+      ],
+      'de',
+      2,
+    )
+
+    expect(options).toEqual([
+      expect.objectContaining({
+        email: 'SHARED@example.com',
+        name: 'Zoe Current',
+        companyHandle: 2,
+        companyName: 'Beta AG',
+        isCurrentCompany: true,
+      }),
+    ])
   })
 
   it('deduplicates email addresses case-insensitively after sorting', () => {
@@ -113,8 +144,10 @@ describe('saplingMailRecipientOptions', () => {
       {
         email: 'team@example.com',
         name: 'Ada Alpha',
+        companyHandle: null,
         companyName: '',
         departmentName: '',
+        isCurrentCompany: false,
       },
     ])
   })

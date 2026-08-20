@@ -50,6 +50,14 @@
       :delimiters="[',', ';']"
       @update:model-value="handleToUpdate"
     >
+      <template #item="{ props: itemProps, item }">
+        <v-divider v-if="item.showDivider" class="my-1" />
+        <v-list-subheader v-if="item.showCompanyHeader">
+          <v-icon start size="small">mdi-domain</v-icon>
+          {{ item.companyLabel }}
+        </v-list-subheader>
+        <v-list-item v-bind="itemProps" />
+      </template>
       <template #chip="{ props: chipProps, item }">
         <v-chip v-bind="chipProps">{{ getRecipientSelectionEmail(item) }}</v-chip>
       </template>
@@ -58,6 +66,9 @@
     <div class="sapling-message-dialog__meta-grid sapling-mail-dialog__meta-grid">
       <v-combobox
         :model-value="ccRecipients"
+        :items="recipientItems"
+        item-title="title"
+        item-value="value"
         :label="translate('document.cc')"
         multiple
         chips
@@ -65,11 +76,27 @@
         clearable
         hide-selected
         hide-details="auto"
+        :loading="isLoadingRecipientOptions"
         :delimiters="[',', ';']"
         @update:model-value="handleCcUpdate"
-      />
+      >
+        <template #item="{ props: itemProps, item }">
+          <v-divider v-if="item.showDivider" class="my-1" />
+          <v-list-subheader v-if="item.showCompanyHeader">
+            <v-icon start size="small">mdi-domain</v-icon>
+            {{ item.companyLabel }}
+          </v-list-subheader>
+          <v-list-item v-bind="itemProps" />
+        </template>
+        <template #chip="{ props: chipProps, item }">
+          <v-chip v-bind="chipProps">{{ getRecipientSelectionEmail(item) }}</v-chip>
+        </template>
+      </v-combobox>
       <v-combobox
         :model-value="bccRecipients"
+        :items="recipientItems"
+        item-title="title"
+        item-value="value"
         :label="translate('document.bcc')"
         multiple
         chips
@@ -77,9 +104,22 @@
         clearable
         hide-selected
         hide-details="auto"
+        :loading="isLoadingRecipientOptions"
         :delimiters="[',', ';']"
         @update:model-value="handleBccUpdate"
-      />
+      >
+        <template #item="{ props: itemProps, item }">
+          <v-divider v-if="item.showDivider" class="my-1" />
+          <v-list-subheader v-if="item.showCompanyHeader">
+            <v-icon start size="small">mdi-domain</v-icon>
+            {{ item.companyLabel }}
+          </v-list-subheader>
+          <v-list-item v-bind="itemProps" />
+        </template>
+        <template #chip="{ props: chipProps, item }">
+          <v-chip v-bind="chipProps">{{ getRecipientSelectionEmail(item) }}</v-chip>
+        </template>
+      </v-combobox>
     </div>
 
     <v-text-field
@@ -163,7 +203,10 @@ import type {
   MailRecipientOption,
   MailSenderOption,
 } from '@/components/dialog/mail/SaplingDialogMail.types'
-import { buildMailRecipientTitle } from '@/utils/saplingMailRecipientOptions'
+import {
+  buildMailRecipientTitle,
+  sortMailRecipientOptions,
+} from '@/utils/saplingMailRecipientOptions'
 
 type TextSelectionInput = HTMLInputElement | HTMLTextAreaElement
 
@@ -229,12 +272,23 @@ const senderItems = computed(() =>
     value: option.email,
   })),
 )
-const recipientItems = computed(() =>
-  sortSelectOptions(props.recipientOptions, (option) => option.name).map((option) => ({
-    title: buildMailRecipientTitle(option),
-    value: option.email,
-  })),
-)
+const recipientItems = computed(() => {
+  const options = sortMailRecipientOptions(props.recipientOptions, locale.value)
+
+  return options.map((option, index) => {
+    const previousOption = options[index - 1]
+    const showCompanyHeader =
+      index === 0 || getRecipientCompanyKey(previousOption) !== getRecipientCompanyKey(option)
+
+    return {
+      title: buildMailRecipientTitle(option),
+      value: option.email,
+      companyLabel: buildRecipientCompanyLabel(option),
+      showCompanyHeader,
+      showDivider: index > 0 && showCompanyHeader,
+    }
+  })
+})
 
 function handleTemplateUpdate(value: number | null | undefined) {
   emit('update:templateHandle', value ?? null)
@@ -351,6 +405,23 @@ function buildSenderTitle(option: MailSenderOption): string {
   }
 
   return option.email
+}
+
+function getRecipientCompanyKey(option: MailRecipientOption | undefined): string {
+  if (!option) {
+    return ''
+  }
+
+  return option.companyHandle == null
+    ? option.companyName.trim().toLocaleLowerCase()
+    : String(option.companyHandle).trim()
+}
+
+function buildRecipientCompanyLabel(option: MailRecipientOption): string {
+  const companyName = option.companyName || '—'
+  return option.isCurrentCompany
+    ? `${companyName} · ${props.translate('mail.currentCompany')}`
+    : companyName
 }
 
 function getRecipientSelectionEmail(item: unknown): string {

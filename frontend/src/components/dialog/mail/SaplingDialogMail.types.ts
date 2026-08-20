@@ -30,8 +30,10 @@ export type MailSenderListResult = {
 export type MailRecipientOption = {
   email: string
   name: string
+  companyHandle?: string | number | null
   companyName: string
   departmentName: string
+  isCurrentCompany?: boolean
 }
 
 export type PlaceholderItem = {

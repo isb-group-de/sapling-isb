@@ -227,9 +227,16 @@ through its `isCompany` primary key. For persisted contexts the composer loads
 missing company references with a narrow projection, while draft values take
 precedence so unsaved company changes are respected.
 
+The current user's Company is added to the resolved context companies. Company
+handles are deduplicated before loading contacts, so a Company that is both the
+user's own Company and part of the record context is queried only once.
+
 When the current user can read Person records, active people with an email
-address from all resolved companies are offered in the **To** combobox. Entries
-are sorted alphabetically by person name and shown as:
+address from all resolved companies are offered in the **To**, **CC**, and
+**BCC** comboboxes. The dropdown groups entries by Company, places the current
+user's Company first, and separates subsequent Company groups visually. The
+current Company header is marked explicitly. Companies and the people within
+each Company are sorted alphabetically. Entries are shown as:
 
 ```text
 Ada Lovelace (Acme GmbH, Entwicklung) – ada@example.com
