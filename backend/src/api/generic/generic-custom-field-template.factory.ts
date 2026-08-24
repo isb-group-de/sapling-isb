@@ -44,6 +44,7 @@ export function createCustomFieldTemplate(
   template.mobileVisible = definition.mobileVisible;
   template.formConfig = {
     label: definition.label,
+    helpText: definition.tooltip?.trim() || null,
     required: isRequired,
     renderer: getRenderer(fieldType),
     metadata: {
@@ -59,6 +60,7 @@ export function createCustomFieldTemplate(
     key: definition.fieldKey,
     type: fieldType,
     options: definition.selectOptions ?? [],
+    tooltip: definition.tooltip?.trim() || null,
   };
 
   return template;

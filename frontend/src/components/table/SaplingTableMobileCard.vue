@@ -36,9 +36,15 @@
           class="sapling-table-mobile-card__field-header"
           :class="{ 'sapling-table-mobile-card__field-header--with-controls': hasHeaderControls }"
         >
-          <span class="sapling-field-label sapling-table-mobile-card__field-label">{{
-            col.title
-          }}</span>
+          <span class="sapling-field-label sapling-table-mobile-card__field-label">
+            {{ col.title }}
+            <SaplingHelpTooltip
+              v-if="getColumnHelpText(col)"
+              :text="getColumnHelpText(col)"
+              :aria-label="col.title"
+              icon-size="16"
+            />
+          </span>
           <div
             v-if="hasHeaderControls || hasExpandableDetails"
             class="sapling-table-mobile-card__controls"
@@ -87,9 +93,15 @@
             </v-menu>
           </div>
         </div>
-        <span v-else class="sapling-field-label sapling-table-mobile-card__field-label">{{
-          col.title
-        }}</span>
+        <span v-else class="sapling-field-label sapling-table-mobile-card__field-label">
+          {{ col.title }}
+          <SaplingHelpTooltip
+            v-if="getColumnHelpText(col)"
+            :text="getColumnHelpText(col)"
+            :aria-label="col.title"
+            icon-size="16"
+          />
+        </span>
         <div class="sapling-table-mobile-card__field-value">
           <div v-if="'options' in col && col.options?.includes('isChip')">
             <SaplingTableChip
@@ -253,7 +265,9 @@
 
 <script lang="ts" setup>
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import SaplingSurface from '@/components/common/SaplingSurface.vue'
+import SaplingHelpTooltip from '@/components/common/SaplingHelpTooltip.vue'
 import type { SaplingContextMenuTableMenuItem } from '@/composables/context/useSaplingContextMenuTable'
 import SaplingRecordActionMenuList from '@/components/common/SaplingRecordActionMenuList.vue'
 import SaplingDialogEdit from '@/components/dialog/SaplingDialogEdit.vue'
@@ -284,6 +298,7 @@ import SaplingCellDateTime from './cells/SaplingCellDateTime.vue'
 const props = defineProps<UseSaplingTableRowProps>()
 const emit = defineEmits<UseSaplingTableRowEmit>()
 const detailsOpen = ref(false)
+const { t, te } = useI18n()
 
 const {
   menuActive,
@@ -354,6 +369,19 @@ const cardLabel = computed(() => {
   const value = firstReadableColumn?.key ? props.item[firstReadableColumn.key] : undefined
   return value == null || value === '' ? String(props.index + 1) : String(value)
 })
+
+function getColumnHelpText(column: (typeof displayColumns.value)[number]): string {
+  const configuredHelpText = column.formConfig?.helpText?.trim()
+  if (configuredHelpText) return configuredHelpText
+
+  if (!column.name) return ''
+
+  const entityTranslationKey = `${props.entityHandle}.${column.name}Tooltip`
+  if (te(entityTranslationKey)) return String(t(entityTranslationKey)).trim()
+
+  const globalTranslationKey = `global.${column.name}Tooltip`
+  return te(globalTranslationKey) ? String(t(globalTranslationKey)).trim() : ''
+}
 
 function handleCardClick() {
   if (props.rowInteraction === false) {

@@ -1,5 +1,5 @@
 <template>
-  <v-menu location="bottom start" :offset="8">
+  <v-menu v-if="quickLinks.length > 0" location="bottom start" :offset="8">
     <template #activator="{ props: menuProps }">
       <v-btn
         v-bind="menuProps"
@@ -31,17 +31,20 @@
 </template>
 
 <script lang="ts" setup>
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { VList } from 'vuetify/components'
 import SaplingSurface from '@/components/common/SaplingSurface.vue'
+import { useCurrentPermissionStore } from '@/stores/currentPermissionStore'
+import { canAccessEntityWorkspace } from '@/utils/entityAccess'
 
 interface HeaderQuicklinkDefinition {
   key: string
   labelKey: string
   fallbackDe: string
   fallbackEn: string
+  entityHandle: string
   path: string
   icon: string
 }
@@ -52,6 +55,7 @@ const QUICKLINK_DEFINITIONS: HeaderQuicklinkDefinition[] = [
     labelKey: 'navigation.effortEstimate',
     fallbackDe: 'Aufwandsschätzungen',
     fallbackEn: 'Effort estimates',
+    entityHandle: 'effortEstimate',
     path: '/partner/effortEstimate',
     icon: 'mdi-clipboard-text-clock-outline',
   },
@@ -60,6 +64,7 @@ const QUICKLINK_DEFINITIONS: HeaderQuicklinkDefinition[] = [
     labelKey: 'navigation.calendar',
     fallbackDe: 'Kalender',
     fallbackEn: 'Calendar',
+    entityHandle: 'event',
     path: '/event',
     icon: 'mdi-calendar-star',
   },
@@ -68,6 +73,7 @@ const QUICKLINK_DEFINITIONS: HeaderQuicklinkDefinition[] = [
     labelKey: 'navigation.ticket',
     fallbackDe: 'Tickets',
     fallbackEn: 'Tickets',
+    entityHandle: 'ticket',
     path: '/partner/ticket',
     icon: 'mdi-ticket',
   },
@@ -76,6 +82,7 @@ const QUICKLINK_DEFINITIONS: HeaderQuicklinkDefinition[] = [
     labelKey: 'navigation.salesOpportunity',
     fallbackDe: 'Verkaufschancen',
     fallbackEn: 'Sales opportunities',
+    entityHandle: 'salesOpportunity',
     path: '/partner/salesOpportunity',
     icon: 'mdi-cash-multiple',
   },
@@ -84,6 +91,7 @@ const QUICKLINK_DEFINITIONS: HeaderQuicklinkDefinition[] = [
     labelKey: 'navigation.internalCase',
     fallbackDe: 'Vorgänge',
     fallbackEn: 'Cases',
+    entityHandle: 'internalCase',
     path: '/partner/internalCase',
     icon: 'mdi-clipboard-text-outline',
   },
@@ -91,6 +99,7 @@ const QUICKLINK_DEFINITIONS: HeaderQuicklinkDefinition[] = [
 
 const router = useRouter()
 const { locale, t } = useI18n()
+const currentPermissionStore = useCurrentPermissionStore()
 
 const quickLinksLabel = computed(() =>
   translatedLabel('global.quickLinks', 'Quicklinks', 'Quick links'),
@@ -99,10 +108,22 @@ const quickLinksLabel = computed(() =>
 const quickLinks = computed(() => {
   const collator = new Intl.Collator(locale.value, { sensitivity: 'base' })
 
-  return QUICKLINK_DEFINITIONS.map((link) => ({
-    ...link,
-    label: translatedLabel(link.labelKey, link.fallbackDe, link.fallbackEn),
-  })).sort((left, right) => collator.compare(left.label, right.label))
+  const permissions = currentPermissionStore.accumulatedPermission ?? []
+
+  return QUICKLINK_DEFINITIONS.filter((link) =>
+    canAccessEntityWorkspace(
+      permissions.find((permission) => permission.entityHandle === link.entityHandle),
+    ),
+  )
+    .map((link) => ({
+      ...link,
+      label: translatedLabel(link.labelKey, link.fallbackDe, link.fallbackEn),
+    }))
+    .sort((left, right) => collator.compare(left.label, right.label))
+})
+
+onMounted(() => {
+  void currentPermissionStore.fetchCurrentPermission()
 })
 
 function translatedLabel(key: string, fallbackDe: string, fallbackEn: string) {

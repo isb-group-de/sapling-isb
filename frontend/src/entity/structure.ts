@@ -163,6 +163,7 @@ export interface EntityTemplateCustomField {
   key: string
   type: 'text' | 'longText' | 'number' | 'boolean' | 'date' | 'dateTime' | 'select' | 'multiSelect'
   options?: Array<{ label: string; value: string }>
+  tooltip?: string | null
 }
 
 export type DialogState = 'create' | 'edit' | 'readonly'

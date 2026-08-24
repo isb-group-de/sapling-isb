@@ -17,6 +17,7 @@ const field: FieldDraft = {
   mobileOrder: 5,
   renderer: 'shortText',
   placeholder: '  Enter title  ',
+  helpText: '  Used in headings and references.  ',
   required: true,
   readonly: false,
 }
@@ -46,6 +47,7 @@ describe('formConfigDraft utils', () => {
           mobileOrder: 5,
           renderer: 'shortText',
           placeholder: 'Enter title',
+          helpText: 'Used in headings and references.',
           required: true,
           readonly: false,
         },
@@ -88,6 +90,7 @@ describe('formConfigDraft utils', () => {
       formConfig: {
         label: '  Headline  ',
         renderer: 'shortText',
+        helpText: '  Used in headings and references.  ',
         readonly: false,
       },
     })

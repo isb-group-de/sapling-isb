@@ -25,6 +25,7 @@ export interface SaplingTableColumnFilterProps {
   operatorOptions: Array<{ label: string; value: ColumnFilterOperator }>
   sortIcon: unknown
   loading?: boolean
+  helpText?: string
 }
 
 export type SaplingTableColumnFilterEmit = {

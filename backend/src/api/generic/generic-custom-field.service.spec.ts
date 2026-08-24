@@ -16,6 +16,7 @@ const createDefinition = (
     fieldKey,
     fieldType,
     label: fieldKey,
+    tooltip: null,
     isRequired: false,
     isReadOnly: false,
     isActive: true,
@@ -192,6 +193,30 @@ describe('GenericCustomFieldService', () => {
       nullable: true,
       options: ['isReadOnly'],
       formConfig: expect.objectContaining({ required: false }),
+    });
+  });
+
+  it('projects configured tooltips into generated field help metadata', async () => {
+    const service = createService([
+      createDefinition('customerTier', 'select', {
+        tooltip: 'Controls service priority for this customer.',
+      }),
+    ]);
+    service.invalidateTemplateCache('tooltipEntity');
+
+    const templates = await service.appendCustomFieldTemplates(
+      'tooltipEntity',
+      [],
+    );
+
+    expect(templates[0]).toMatchObject({
+      name: 'customFields.customerTier',
+      formConfig: {
+        helpText: 'Controls service priority for this customer.',
+      },
+      customField: {
+        tooltip: 'Controls service priority for this customer.',
+      },
     });
   });
 

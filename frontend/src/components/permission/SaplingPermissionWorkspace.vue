@@ -59,7 +59,16 @@
         <thead>
           <tr>
             <th>{{ $t('navigation.entity') }}</th>
-            <th v-for="column in permissionColumns" :key="column.key">{{ $t(column.labelKey) }}</th>
+            <th v-for="column in permissionColumns" :key="column.key">
+              <span class="d-inline-flex align-center ga-1">
+                {{ $t(column.labelKey) }}
+                <SaplingHelpTooltip
+                  :text="$t(`${column.labelKey}Tooltip`)"
+                  :aria-label="$t(column.labelKey)"
+                  icon-size="16"
+                />
+              </span>
+            </th>
             <th class="text-right">{{ $t('right.actions') }}</th>
           </tr>
         </thead>
@@ -166,7 +175,14 @@
             :key="`mobile-${item.handle}-${column.key}`"
             class="sapling-row-between-xs sapling-admin-mobile-grid__row sapling-permission-mobile-grid-row"
           >
-            <span>{{ $t(column.labelKey) }}</span>
+            <span class="d-inline-flex align-center ga-1">
+              {{ $t(column.labelKey) }}
+              <SaplingHelpTooltip
+                :text="$t(`${column.labelKey}Tooltip`)"
+                :aria-label="$t(column.labelKey)"
+                icon-size="16"
+              />
+            </span>
             <v-checkbox
               v-if="canUsePermission(item, column.key)"
               :model-value="getPermission(selectedRole, item, column.key)"
@@ -194,6 +210,7 @@
 import { computed } from 'vue'
 import { useDisplay } from 'vuetify'
 import type { EntityItem, RoleItem } from '@/entity/entity'
+import SaplingHelpTooltip from '@/components/common/SaplingHelpTooltip.vue'
 
 type PermissionColumnKey = 'allowShow' | 'allowRead' | 'allowInsert' | 'allowUpdate' | 'allowDelete'
 type PermissionFilterMode = 'all' | 'enabled' | 'disabled'

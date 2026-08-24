@@ -11,11 +11,23 @@
     :variant="variant"
     @keydown.tab="menuOpen = false"
     @update:model-value="emit('update:modelValue', $event)"
-  />
+  >
+    <template #label>
+      <span>{{ label }}</span>
+      <SaplingHelpTooltip
+        v-if="helpText"
+        class="sapling-static-select__help"
+        :text="helpText"
+        :aria-label="label"
+        icon-size="16"
+      />
+    </template>
+  </v-autocomplete>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import SaplingHelpTooltip from '@/components/common/SaplingHelpTooltip.vue'
 
 interface StaticSelectItem {
   title: string
@@ -27,6 +39,7 @@ withDefaults(
     modelValue: unknown
     items: StaticSelectItem[]
     label?: string
+    helpText?: string
     loading?: boolean
     disabled?: boolean
     hideDetails?: boolean | 'auto'
@@ -36,6 +49,7 @@ withDefaults(
   }>(),
   {
     label: '',
+    helpText: '',
     loading: false,
     disabled: false,
     hideDetails: true,
@@ -50,3 +64,10 @@ const emit = defineEmits<{
 
 const menuOpen = ref(false)
 </script>
+
+<style scoped>
+.sapling-static-select__help {
+  margin-inline-start: 0.2rem;
+  vertical-align: middle;
+}
+</style>

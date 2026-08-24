@@ -17,13 +17,17 @@ describe('formConfigAdminDraft utils', () => {
 
     const draft = buildFormConfigDraftRows(
       templates,
-      { title: { label: 'Configured title', order: 5 } },
+      { title: { label: 'Configured title', helpText: 'Explains the title', order: 5 } },
       { main: { order: 20, label: 'Main', visible: true } },
       (template) => template.name,
     )
 
     expect(draft.fields.map((field) => field.name)).toEqual(['title'])
-    expect(draft.fields[0]).toMatchObject({ label: 'Configured title', order: 100 })
+    expect(draft.fields[0]).toMatchObject({
+      label: 'Configured title',
+      helpText: 'Explains the title',
+      order: 100,
+    })
     expect(draft.groups).toEqual([{ key: 'main', label: 'Main', visible: true, order: 100 }])
   })
 

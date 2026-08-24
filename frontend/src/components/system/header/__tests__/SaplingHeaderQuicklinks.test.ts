@@ -5,6 +5,12 @@ import SaplingHeaderQuicklinks from '../SaplingHeaderQuicklinks.vue'
 
 const harness = vi.hoisted(() => ({
   push: vi.fn(),
+  fetchCurrentPermission: vi.fn(),
+  permissions: [] as Array<{
+    entityHandle: string
+    allowRead: boolean
+    allowShow: boolean
+  }>,
 }))
 
 vi.mock('vue-router', () => ({
@@ -25,6 +31,21 @@ vi.mock('vue-i18n', () => ({
       })[key] ?? '',
   }),
 }))
+
+vi.mock('@/stores/currentPermissionStore', () => ({
+  useCurrentPermissionStore: () => ({
+    accumulatedPermission: harness.permissions,
+    fetchCurrentPermission: harness.fetchCurrentPermission,
+  }),
+}))
+
+const allQuicklinkPermissions = [
+  'effortEstimate',
+  'event',
+  'ticket',
+  'salesOpportunity',
+  'internalCase',
+].map((entityHandle) => ({ entityHandle, allowRead: true, allowShow: true }))
 
 function mountQuicklinks() {
   return mount(SaplingHeaderQuicklinks, {
@@ -55,6 +76,8 @@ function mountQuicklinks() {
 describe('SaplingHeaderQuicklinks', () => {
   beforeEach(() => {
     harness.push.mockReset()
+    harness.fetchCurrentPermission.mockReset()
+    harness.permissions = allQuicklinkPermissions.map((permission) => ({ ...permission }))
   })
 
   it('renders the requested destinations alphabetically', () => {
@@ -86,5 +109,26 @@ describe('SaplingHeaderQuicklinks', () => {
     await wrapper.get(`[data-quicklink="${key}"]`).trigger('click')
 
     expect(harness.push).toHaveBeenCalledWith(path)
+  })
+
+  it('renders only destinations with workspace access', () => {
+    harness.permissions = [
+      { entityHandle: 'ticket', allowRead: true, allowShow: true },
+      { entityHandle: 'event', allowRead: true, allowShow: false },
+    ]
+
+    const wrapper = mountQuicklinks()
+
+    expect(
+      wrapper.findAll('[data-quicklink]').map((item) => item.attributes('data-quicklink')),
+    ).toEqual(['ticket'])
+  })
+
+  it('hides the quicklink activator when no destination is accessible', () => {
+    harness.permissions = []
+
+    const wrapper = mountQuicklinks()
+
+    expect(wrapper.find('[data-tutorial="header-quicklinks"]').exists()).toBe(false)
   })
 })

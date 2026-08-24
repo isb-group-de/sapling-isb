@@ -135,8 +135,6 @@
   width: 100%;
   min-width: 0;
   padding: var(--sapling-gap-sm) var(--sapling-gap-md);
-  background: var(--sapling-surface-fill);
-  box-shadow: var(--sapling-inset-highlight);
 }
 
 .sapling-toolbar-controls {

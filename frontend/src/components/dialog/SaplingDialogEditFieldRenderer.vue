@@ -310,6 +310,9 @@
       @update:model-value="(val: string) => updateField(template.name, val)"
     />
   </template>
+  <div v-if="helpText && showLabel" class="sapling-record-field-help-action">
+    <SaplingHelpTooltip :text="helpText" :aria-label="plainLabel" icon-size="16" compact />
+  </div>
 </template>
 
 <script lang="ts" setup>
@@ -318,6 +321,7 @@ import { useI18n } from 'vue-i18n'
 import type { FilterQuery } from '@/services/api.generic.service'
 import type { AccumulatedPermission, DialogState, EntityTemplate } from '@/entity/structure'
 import type { SaplingGenericItem } from '@/entity/entity'
+import SaplingHelpTooltip from '@/components/common/SaplingHelpTooltip.vue'
 
 // Field components are loaded on demand. A typical edit dialog only renders a
 // small subset of these per template, so lazy-loading keeps the initial bundle
@@ -425,7 +429,7 @@ const emit = defineEmits<{
   (event: 'select-record', value: SaplingGenericItem): void
 }>()
 
-const { t } = useI18n()
+const { t, te } = useI18n()
 const customSelectMenuOpen = ref(false)
 
 const configuredRenderer = computed(() => props.template.formConfig?.renderer ?? null)
@@ -462,6 +466,20 @@ const requiredLabel = computed(() => {
   }
 
   return `${plainLabel.value}${isRequired.value ? '*' : ''}`
+})
+const helpText = computed(() => {
+  const configuredHelpText = props.template.formConfig?.helpText?.trim()
+  if (configuredHelpText) {
+    return configuredHelpText
+  }
+
+  const entityTranslationKey = `${props.entityHandle}.${props.template.name}Tooltip`
+  if (te(entityTranslationKey)) {
+    return String(t(entityTranslationKey)).trim()
+  }
+
+  const globalTranslationKey = `global.${props.template.name}Tooltip`
+  return te(globalTranslationKey) ? String(t(globalTranslationKey)).trim() : ''
 })
 const defaultPlaceholder = computed(() =>
   props.template.formConfig?.placeholder != null

@@ -1,7 +1,12 @@
 import { defineComponent } from 'vue'
 import { mount } from '@vue/test-utils'
 import { describe, expect, it, vi } from 'vitest'
+import type { SaplingTableHeaderItem } from '@/entity/structure'
 import SaplingTableDesktopView from '../SaplingTableDesktopView.vue'
+
+const { availableTranslationKeys } = vi.hoisted(() => ({
+  availableTranslationKeys: new Set<string>(),
+}))
 
 vi.mock('vue-i18n', async (importOriginal) => {
   const actual = await importOriginal<typeof import('vue-i18n')>()
@@ -10,6 +15,7 @@ vi.mock('vue-i18n', async (importOriginal) => {
     ...actual,
     useI18n: () => ({
       t: (key: string) => key,
+      te: (key: string) => availableTranslationKeys.has(key),
     }),
   }
 })
@@ -83,6 +89,9 @@ const VCheckboxStub = defineComponent({
 function mountDesktopTable(
   selectedRows: number[],
   items: Array<Record<string, unknown>> = [{ handle: 1 }, { handle: 2 }],
+  visibleHeaders: SaplingTableHeaderItem[] = [
+    { key: '__select', title: '', name: '__select', type: 'select' },
+  ],
 ) {
   return mount(SaplingTableDesktopView, {
     props: {
@@ -93,7 +102,7 @@ function mountDesktopTable(
       page: 1,
       isLoading: false,
       sortBy: [],
-      visibleHeaders: [{ key: '__select', title: '', name: '__select', type: 'select' }],
+      visibleHeaders,
       multiSelect: true,
       entity: null,
       entityPermission: null,
@@ -117,6 +126,10 @@ function mountDesktopTable(
         VCheckbox: VCheckboxStub,
         VProgressLinear: true,
         SaplingTableRow: SaplingTableRowStub,
+        SaplingHelpTooltip: {
+          props: ['text'],
+          template: '<span data-testid="help-tooltip">{{ text }}</span>',
+        },
       },
     },
   })
@@ -170,5 +183,18 @@ describe('SaplingTableDesktopView page selection', () => {
     })
 
     expect(wrapper.get('[data-testid="projected-email"]').text()).toBe('customer@example.com')
+  })
+
+  it('uses a global field tooltip when the entity has no specific tooltip', () => {
+    availableTranslationKeys.add('global.colorTooltip')
+
+    const wrapper = mountDesktopTable(
+      [],
+      [],
+      [{ key: 'color', title: 'Farbe', name: 'color', type: 'string' }],
+    )
+
+    expect(wrapper.get('[data-testid="help-tooltip"]').text()).toBe('global.colorTooltip')
+    availableTranslationKeys.clear()
   })
 })

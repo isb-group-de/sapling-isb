@@ -70,6 +70,24 @@ export class CustomFieldDefinitionItem {
   @Property({ length: 128 })
   label!: string;
 
+  @ApiPropertyOptional({
+    description:
+      'Optional help text shown next to the generated field on hover, focus, or click.',
+  })
+  @SaplingForm({
+    order: 250,
+    group: 'customFieldDefinition.groupBasics',
+    groupOrder: 200,
+    width: 4,
+    visible: true,
+    tableOrder: 350,
+    tableVisible: false,
+    mobileOrder: 350,
+    mobileVisible: false,
+  })
+  @Property({ type: 'text', nullable: true })
+  tooltip?: string | null;
+
   @ApiProperty({ type: () => CustomFieldTypeItem })
   @Sapling(['isChip'])
   @SaplingForm({

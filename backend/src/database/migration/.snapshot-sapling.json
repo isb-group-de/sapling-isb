@@ -10024,6 +10024,23 @@
           "enumItems": [],
           "mappedType": "boolean"
         },
+        "tooltip": {
+          "name": "tooltip",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "text"
+        },
         "updated_at": {
           "name": "updated_at",
           "type": "timestamptz(6)",

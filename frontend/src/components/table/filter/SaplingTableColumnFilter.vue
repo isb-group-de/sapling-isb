@@ -2,14 +2,17 @@
   <div class="sapling-row-xs sapling-table-filter-cell" @click.stop @mousedown.stop @keydown.stop>
     <v-menu v-model="menuOpen" :close-on-content-click="false" location="bottom start" offset="6">
       <template #activator="{ props: menuProps }">
-        <button
+        <div
           v-bind="menuProps"
           class="sapling-table-filter-trigger"
           :class="{ 'sapling-table-filter-trigger--active': hasValue }"
-          type="button"
+          role="button"
+          tabindex="0"
           :aria-label="filterTriggerLabel"
           :title="filterTriggerLabel"
           @click.stop
+          @keydown.enter.stop.prevent="menuOpen = !menuOpen"
+          @keydown.space.stop.prevent="menuOpen = !menuOpen"
         >
           <span class="sapling-row-xs sapling-table-filter-trigger__title">
             <v-icon size="x-small">{{ hasValue ? 'mdi-filter' : 'mdi-filter-outline' }}</v-icon>
@@ -18,6 +21,13 @@
               v-else
               class="sapling-table-filter-trigger__title-skeleton"
               type="text"
+            />
+            <SaplingHelpTooltip
+              v-if="props.helpText"
+              :text="props.helpText"
+              :aria-label="title"
+              icon-size="16"
+              compact
             />
           </span>
           <span
@@ -38,7 +48,7 @@
           <span v-else class="sapling-table-filter-trigger__placeholder">
             {{ $t(`filter.noFilter`) }}
           </span>
-        </button>
+        </div>
       </template>
 
       <SaplingSurface
@@ -178,6 +188,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { VCard } from 'vuetify/components'
 import SaplingSurface from '@/components/common/SaplingSurface.vue'
+import SaplingHelpTooltip from '@/components/common/SaplingHelpTooltip.vue'
 import { useSaplingTableColumnFilter } from '@/composables/table/useSaplingTableColumnFilter'
 import SaplingTableFilterBooleanValue from './SaplingTableFilterBooleanValue.vue'
 import SaplingTableFilterIconValue from './SaplingTableFilterIconValue.vue'

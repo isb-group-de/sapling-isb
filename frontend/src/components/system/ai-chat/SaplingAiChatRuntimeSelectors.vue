@@ -25,7 +25,16 @@
       :label="t('aiChat.provider')"
       variant="outlined"
       @update:model-value="emit('update:selectedProvider', $event)"
-    />
+    >
+      <template #label>
+        <span>{{ t('aiChat.provider') }}</span>
+        <SaplingHelpTooltip
+          :text="t('aiChat.providerTooltip')"
+          :aria-label="t('aiChat.provider')"
+          icon-size="16"
+        />
+      </template>
+    </v-autocomplete>
     <v-autocomplete
       v-if="modelOptions.length > 0"
       :model-value="selectedModelHandle"
@@ -39,12 +48,22 @@
       :label="t('aiChat.model')"
       variant="outlined"
       @update:model-value="emit('update:selectedModel', $event)"
-    />
+    >
+      <template #label>
+        <span>{{ t('aiChat.model') }}</span>
+        <SaplingHelpTooltip
+          :text="t('aiChat.modelTooltip')"
+          :aria-label="t('aiChat.model')"
+          icon-size="16"
+        />
+      </template>
+    </v-autocomplete>
   </div>
 </template>
 
 <script lang="ts" setup>
 import { useI18n } from 'vue-i18n'
+import SaplingHelpTooltip from '@/components/common/SaplingHelpTooltip.vue'
 
 type SelectOption = {
   label: string

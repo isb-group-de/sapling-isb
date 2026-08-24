@@ -1,61 +1,77 @@
 <template>
   <div class="sapling-header__status-actions sapling-header__status-actions--desktop">
-    <v-btn
-      data-tutorial="header-search"
-      class="sapling-button--icon sapling-header__icon-action text-none"
-      variant="text"
-      :aria-label="searchLabel"
-      :title="searchLabel"
-      @click="emit('openSearch')"
-    >
-      <v-icon icon="mdi-magnify" />
-    </v-btn>
+    <SaplingHelpTooltip :text="searchLabel" :aria-label="searchLabel">
+      <template #activator="{ props: tooltipProps }">
+        <v-btn
+          v-bind="tooltipProps"
+          data-tutorial="header-search"
+          class="sapling-button--icon sapling-header__icon-action text-none"
+          variant="text"
+          :aria-label="searchLabel"
+          @click="emit('openSearch')"
+        >
+          <v-icon icon="mdi-magnify" />
+        </v-btn>
+      </template>
+    </SaplingHelpTooltip>
 
-    <v-btn
-      data-tutorial="header-help"
-      class="sapling-button--icon sapling-header__icon-action text-none"
-      variant="text"
-      :aria-label="helpLabel"
-      :title="helpLabel"
-      @click="emit('openContextHelp')"
-    >
-      <v-icon icon="mdi-help-circle-outline" />
-    </v-btn>
-    <v-btn
-      data-tutorial="header-inbox"
-      class="sapling-button--icon sapling-header__icon-action text-none"
-      variant="text"
-      :aria-label="inboxActionLabel"
-      :title="inboxActionLabel"
-      @click="emit('openInbox')"
-    >
-      <v-badge
-        location="top right"
-        :color="inboxBadgeColor"
-        :content="inboxCount"
-        :model-value="true"
-      >
-        <v-icon icon="mdi-email" />
-      </v-badge>
-    </v-btn>
+    <SaplingHelpTooltip :text="helpLabel" :aria-label="helpLabel">
+      <template #activator="{ props: tooltipProps }">
+        <v-btn
+          v-bind="tooltipProps"
+          data-tutorial="header-help"
+          class="sapling-button--icon sapling-header__icon-action text-none"
+          variant="text"
+          :aria-label="helpLabel"
+          @click="emit('openContextHelp')"
+        >
+          <v-icon icon="mdi-help-circle-outline" />
+        </v-btn>
+      </template>
+    </SaplingHelpTooltip>
+    <SaplingHelpTooltip :text="inboxActionLabel" :aria-label="inboxActionLabel">
+      <template #activator="{ props: tooltipProps }">
+        <v-btn
+          v-bind="tooltipProps"
+          data-tutorial="header-inbox"
+          class="sapling-button--icon sapling-header__icon-action text-none"
+          variant="text"
+          :aria-label="inboxActionLabel"
+          @click="emit('openInbox')"
+        >
+          <v-badge
+            location="top right"
+            :color="inboxBadgeColor"
+            :content="inboxCount"
+            :model-value="true"
+          >
+            <v-icon icon="mdi-email" />
+          </v-badge>
+        </v-btn>
+      </template>
+    </SaplingHelpTooltip>
 
-    <v-btn
-      data-tutorial="header-message-center"
-      class="sapling-button--icon sapling-header__icon-action text-none"
-      variant="text"
-      :aria-label="messageCenterActionLabel"
-      :title="messageCenterActionLabel"
-      @click="emit('openMessageCenter')"
-    >
-      <v-badge
-        location="top right"
-        :color="messageBadgeColor"
-        :content="messageCount"
-        :value="messageCount > 0"
-      >
-        <v-icon icon="mdi-cloud-alert" />
-      </v-badge>
-    </v-btn>
+    <SaplingHelpTooltip :text="messageCenterActionLabel" :aria-label="messageCenterActionLabel">
+      <template #activator="{ props: tooltipProps }">
+        <v-btn
+          v-bind="tooltipProps"
+          data-tutorial="header-message-center"
+          class="sapling-button--icon sapling-header__icon-action text-none"
+          variant="text"
+          :aria-label="messageCenterActionLabel"
+          @click="emit('openMessageCenter')"
+        >
+          <v-badge
+            location="top right"
+            :color="messageBadgeColor"
+            :content="messageCount"
+            :value="messageCount > 0"
+          >
+            <v-icon icon="mdi-cloud-alert" />
+          </v-badge>
+        </v-btn>
+      </template>
+    </SaplingHelpTooltip>
   </div>
 
   <v-menu location="bottom end" :offset="12">
@@ -117,6 +133,7 @@
 import { computed } from 'vue'
 import { VList } from 'vuetify/components'
 import SaplingSurface from '@/components/common/SaplingSurface.vue'
+import SaplingHelpTooltip from '@/components/common/SaplingHelpTooltip.vue'
 
 const props = defineProps<{
   inboxCount: number

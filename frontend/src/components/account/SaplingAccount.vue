@@ -217,28 +217,64 @@
                         hide-details
                         inset
                         :label="$t('account.inboxNotificationsEnabled')"
-                      />
+                      >
+                        <template #label>
+                          <span>{{ $t('account.inboxNotificationsEnabled') }}</span>
+                          <SaplingHelpTooltip
+                            :text="$t('account.inboxNotificationsEnabledTooltip')"
+                            :aria-label="$t('account.inboxNotificationsEnabled')"
+                            icon-size="16"
+                          />
+                        </template>
+                      </v-switch>
                       <v-switch
                         v-model="notificationPreferences.openTaskNotificationsEnabled"
                         color="primary"
                         hide-details
                         inset
                         :label="$t('account.openTaskNotificationsEnabled')"
-                      />
+                      >
+                        <template #label>
+                          <span>{{ $t('account.openTaskNotificationsEnabled') }}</span>
+                          <SaplingHelpTooltip
+                            :text="$t('account.openTaskNotificationsEnabledTooltip')"
+                            :aria-label="$t('account.openTaskNotificationsEnabled')"
+                            icon-size="16"
+                          />
+                        </template>
+                      </v-switch>
                       <v-switch
                         v-model="notificationPreferences.badgeChannelEnabled"
                         color="primary"
                         hide-details
                         inset
                         :label="$t('account.badgeChannelEnabled')"
-                      />
+                      >
+                        <template #label>
+                          <span>{{ $t('account.badgeChannelEnabled') }}</span>
+                          <SaplingHelpTooltip
+                            :text="$t('account.badgeChannelEnabledTooltip')"
+                            :aria-label="$t('account.badgeChannelEnabled')"
+                            icon-size="16"
+                          />
+                        </template>
+                      </v-switch>
                       <v-switch
                         v-model="notificationPreferences.previewChannelEnabled"
                         color="primary"
                         hide-details
                         inset
                         :label="$t('account.previewChannelEnabled')"
-                      />
+                      >
+                        <template #label>
+                          <span>{{ $t('account.previewChannelEnabled') }}</span>
+                          <SaplingHelpTooltip
+                            :text="$t('account.previewChannelEnabledTooltip')"
+                            :aria-label="$t('account.previewChannelEnabled')"
+                            icon-size="16"
+                          />
+                        </template>
+                      </v-switch>
                     </div>
                     <v-divider />
                     <div class="sapling-account-dialog__quiet-hours-grid">
@@ -248,7 +284,16 @@
                         hide-details
                         inset
                         :label="$t('account.quietHoursEnabled')"
-                      />
+                      >
+                        <template #label>
+                          <span>{{ $t('account.quietHoursEnabled') }}</span>
+                          <SaplingHelpTooltip
+                            :text="$t('account.quietHoursEnabledTooltip')"
+                            :aria-label="$t('account.quietHoursEnabled')"
+                            icon-size="16"
+                          />
+                        </template>
+                      </v-switch>
                       <v-text-field
                         v-model="notificationPreferences.quietHoursFrom"
                         density="comfortable"
@@ -570,6 +615,7 @@ import SaplingActionBarSkeleton from '@/components/actions/SaplingActionBarSkele
 import SaplingDialogCard from '@/components/dialog/SaplingDialogCard.vue'
 import SaplingDialogHero from '@/components/common/SaplingDialogHero.vue'
 import SaplingDialogShell from '@/components/common/SaplingDialogShell.vue'
+import SaplingHelpTooltip from '@/components/common/SaplingHelpTooltip.vue'
 import SaplingStaticSelect from '@/components/common/SaplingStaticSelect.vue'
 // #endregion
 

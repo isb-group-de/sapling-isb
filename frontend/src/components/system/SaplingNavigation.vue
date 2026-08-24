@@ -33,31 +33,49 @@
               class="sapling-navigation-shell__hero-actions"
               data-tutorial="navigation-destinations"
             >
-              <v-btn
-                class="sapling-navigation-shell__panel-toggle"
-                icon="mdi-book-open-page-variant-outline"
-                size="small"
-                variant="tonal"
-                :color="isKnowledgeBaseActive ? 'primary' : undefined"
+              <SaplingHelpTooltip
+                :text="$t('navigation.knowledgeBaseTooltip')"
                 :aria-label="$t('navigation.knowledgeBase')"
-                @click="navigateToKnowledgeBase"
-              />
+              >
+                <template #activator="{ props: tooltipProps }">
+                  <v-btn
+                    v-bind="tooltipProps"
+                    class="sapling-navigation-shell__panel-toggle"
+                    icon="mdi-book-open-page-variant-outline"
+                    size="small"
+                    variant="tonal"
+                    :color="isKnowledgeBaseActive ? 'primary' : undefined"
+                    :aria-label="$t('navigation.knowledgeBase')"
+                    @click="navigateToKnowledgeBase"
+                  />
+                </template>
+              </SaplingHelpTooltip>
 
-              <v-btn
+              <SaplingHelpTooltip
                 v-if="hasFavoritesAccess"
-                class="sapling-navigation-shell__panel-toggle"
-                :icon="
-                  activePanel === 'navigation'
-                    ? 'mdi-bookmark-multiple-outline'
-                    : 'mdi-compass-outline'
-                "
-                size="small"
-                variant="tonal"
-                :aria-label="
-                  activePanel === 'navigation' ? $t('navigation.favorite') : $t('global.navigation')
-                "
-                @click="toggleActivePanel"
-              />
+                :text="$t('navigation.favoriteTooltip')"
+                :aria-label="$t('navigation.favorite')"
+              >
+                <template #activator="{ props: tooltipProps }">
+                  <v-btn
+                    v-bind="tooltipProps"
+                    class="sapling-navigation-shell__panel-toggle"
+                    :icon="
+                      activePanel === 'navigation'
+                        ? 'mdi-bookmark-multiple-outline'
+                        : 'mdi-compass-outline'
+                    "
+                    size="small"
+                    variant="tonal"
+                    :aria-label="
+                      activePanel === 'navigation'
+                        ? $t('navigation.favorite')
+                        : $t('global.navigation')
+                    "
+                    @click="toggleActivePanel"
+                  />
+                </template>
+              </SaplingHelpTooltip>
             </div>
           </div>
         </template>
@@ -402,6 +420,7 @@ import { computed, nextTick, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useDisplay } from 'vuetify'
 import SaplingFavorites from '@/components/dashboard/SaplingFavorites.vue'
+import SaplingHelpTooltip from '@/components/common/SaplingHelpTooltip.vue'
 import { useSaplingNavigation } from '@/composables/system/useSaplingNavigation'
 import { useSaplingFavoritesAccess } from '@/composables/dashboard/useSaplingFavorites'
 // #endregion

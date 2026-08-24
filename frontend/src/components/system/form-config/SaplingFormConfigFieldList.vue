@@ -132,6 +132,15 @@
               hide-details
               :label="t('formConfig.placeholder')"
             />
+            <v-textarea
+              v-model="field.helpText"
+              class="sapling-config-field__control sapling-config-field__control--help-text"
+              density="compact"
+              hide-details
+              auto-grow
+              rows="1"
+              :label="formConfigText('helpText', 'Hilfetext')"
+            />
             <v-number-input
               v-model="field.tableOrder"
               class="sapling-config-field__control"

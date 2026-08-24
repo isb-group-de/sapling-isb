@@ -173,6 +173,18 @@ Selection examples:
 
 If a new field behavior is generally useful, add a Sapling option and renderer branch rather than special-casing one entity.
 
+Generated fields render contextual help through the shared
+`SaplingHelpTooltip` control. The renderer first uses
+`formConfig.helpText`; when it is empty, it checks the translation convention
+`<entityHandle>.<fieldName>Tooltip` and then the shared fallback
+`global.<fieldName>Tooltip`. Use the global fallback only for fields with
+genuinely identical semantics across entities, such as `handle`, `sortOrder`,
+`icon`, `color`, or `isActive`. The control opens on hover, keyboard focus, or
+click/touch. Generated desktop table headers and mobile card labels use the same
+resolution. The Form Configuration administration can set `helpText` for
+ordinary metadata fields, while custom-field definitions populate it from their
+`tooltip` property.
+
 The shared icon picker renders `isIcon` fields as a searchable, paginated icon
 grid. Keep icon-selection behavior in `SaplingFieldIcon.vue` so every dynamic
 entity dialog receives the same visual picker.
@@ -194,6 +206,10 @@ exception: it stays in the main form and is saved as a structured child-entity
 collection. The first implementation is the email-subscription condition
 builder, which loads the selected source entity metadata and renders the
 condition value editor according to the observed field type.
+
+Relation tabs use translated business labels and entity icons only. Technical
+ORM cardinalities such as `1:m` and `m:n` are intentionally not exposed as
+visible, hover, or accessibility text.
 
 ### Reference Field Components
 
@@ -255,6 +271,9 @@ pipeline and saves them back as a nested `customFields` payload. The definition
 itself selects its type through the `customFieldType` reference entity, so users
 choose from seeded type records instead of entering raw type strings. Generic
 table rows receive flattened hydrated values for display.
+Their optional `tooltip` is included in the derived template as
+`formConfig.helpText`, so custom and built-in fields share the same accessible
+interaction and visual treatment.
 
 ## Field Permission UI
 

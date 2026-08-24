@@ -16,6 +16,7 @@ export interface FieldDraft {
   mobileOrder: number | null
   renderer: SaplingFormRenderer
   placeholder: string
+  helpText: string
   required: boolean
   readonly: boolean
 }

@@ -62,6 +62,7 @@ export function buildFormConfigDraftRows(
           index + 1,
         renderer: fieldConfig.renderer ?? 'auto',
         placeholder: fieldConfig.placeholder ?? '',
+        helpText: fieldConfig.helpText ?? template.formConfig?.helpText ?? '',
         required: fieldConfig.required ?? template.isRequired === true,
         readonly:
           fieldConfig.readonly ??

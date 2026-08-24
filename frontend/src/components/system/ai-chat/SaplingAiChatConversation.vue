@@ -23,7 +23,16 @@
           :label="t('aiChat.agent')"
           variant="outlined"
           @update:model-value="emit('update:selectedAgent', String($event || ''))"
-        />
+        >
+          <template #label>
+            <span>{{ t('aiChat.agent') }}</span>
+            <SaplingHelpTooltip
+              :text="t('aiChat.agentTooltip')"
+              :aria-label="t('aiChat.agent')"
+              icon-size="16"
+            />
+          </template>
+        </v-autocomplete>
         <v-autocomplete
           v-if="playbookOptions.length > 0"
           :model-value="selectedPlaybookHandle"
@@ -38,7 +47,16 @@
           clearable
           variant="outlined"
           @update:model-value="emit('update:selectedPlaybook', $event ? String($event) : null)"
-        />
+        >
+          <template #label>
+            <span>{{ t('aiChat.playbook') }}</span>
+            <SaplingHelpTooltip
+              :text="t('aiChat.playbookTooltip')"
+              :aria-label="t('aiChat.playbook')"
+              icon-size="16"
+            />
+          </template>
+        </v-autocomplete>
       </div>
     </div>
 
@@ -177,6 +195,7 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import SaplingAiChatConversationTitle from '@/components/system/ai-chat/SaplingAiChatConversationTitle.vue'
 import SaplingAiChatMessageList from '@/components/system/ai-chat/SaplingAiChatMessageList.vue'
+import SaplingHelpTooltip from '@/components/common/SaplingHelpTooltip.vue'
 import type { AiAgentItem, AiChatMessageItem, AiChatToolActionItem } from '@/entity/entity'
 
 type SelectOption = {

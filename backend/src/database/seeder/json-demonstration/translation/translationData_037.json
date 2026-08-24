@@ -1,0 +1,2528 @@
+[
+  {
+    "entity": "navigation",
+    "property": "knowledgeBaseTooltip",
+    "de": "Öffnet die Wissensbasis mit kontextbezogenen Anleitungen und Fachinformationen.",
+    "en": "Opens the knowledge base with contextual guidance and domain information."
+  },
+  {
+    "entity": "navigation",
+    "property": "favoriteTooltip",
+    "de": "Wechselt zwischen der vollständigen Navigation und Ihren persönlichen Favoriten.",
+    "en": "Switches between the full navigation and your personal favorites."
+  },
+  {
+    "entity": "formConfig",
+    "property": "helpText",
+    "de": "Hilfetext (Tooltip)",
+    "en": "Help text (tooltip)"
+  },
+  {
+    "entity": "customFieldDefinition",
+    "property": "tooltip",
+    "de": "Tooltip",
+    "en": "Tooltip"
+  },
+  {
+    "entity": "customFieldDefinition",
+    "property": "entityTooltip",
+    "de": "Legt fest, bei welcher Datensatzart das benutzerdefinierte Feld erscheint.",
+    "en": "Determines which record type displays the custom field."
+  },
+  {
+    "entity": "customFieldDefinition",
+    "property": "fieldKeyTooltip",
+    "de": "Technischer, innerhalb der Datensatzart eindeutiger Schlüssel. Nach der ersten Verwendung möglichst nicht mehr ändern.",
+    "en": "Technical key that is unique within the record type. Avoid changing it after first use."
+  },
+  {
+    "entity": "customFieldDefinition",
+    "property": "labelTooltip",
+    "de": "Sichtbare Bezeichnung des Feldes in Formularen und Tabellen.",
+    "en": "Visible name of the field in forms and tables."
+  },
+  {
+    "entity": "customFieldDefinition",
+    "property": "tooltipTooltip",
+    "de": "Kurze fachliche Erklärung des Feldes. Sie erscheint am Fragezeichen per Hover, Tastaturfokus oder Klick.",
+    "en": "Short domain explanation of the field. It appears at the question mark on hover, keyboard focus, or click."
+  },
+  {
+    "entity": "customFieldDefinition",
+    "property": "fieldTypeTooltip",
+    "de": "Bestimmt Eingabe, Validierung und Speicherung der Feldwerte.",
+    "en": "Controls input, validation, and storage of field values."
+  },
+  {
+    "entity": "customFieldDefinition",
+    "property": "isRequiredTooltip",
+    "de": "Neue oder geänderte Datensätze können ohne einen gültigen Wert in diesem Feld nicht gespeichert werden.",
+    "en": "New or changed records cannot be saved without a valid value in this field."
+  },
+  {
+    "entity": "customFieldDefinition",
+    "property": "isReadOnlyTooltip",
+    "de": "Das Feld bleibt sichtbar, kann aber in generierten Formularen nicht bearbeitet werden.",
+    "en": "The field remains visible but cannot be edited in generated forms."
+  },
+  {
+    "entity": "customFieldDefinition",
+    "property": "isActiveTooltip",
+    "de": "Nur aktive Definitionen werden als benutzerdefinierte Felder eingeblendet.",
+    "en": "Only active definitions are displayed as custom fields."
+  },
+  {
+    "entity": "customFieldDefinition",
+    "property": "selectOptionsTooltip",
+    "de": "Werteliste für Auswahlfelder. Jede Option benötigt eine sichtbare Bezeichnung und einen stabilen Wert.",
+    "en": "Value list for select fields. Each option needs a visible label and a stable value."
+  },
+  {
+    "entity": "entity",
+    "property": "handleTooltip",
+    "de": "Stabiler technischer Bezeichner der Datensatzart; er wird in Routen, APIs, Übersetzungen und Rechten verwendet.",
+    "en": "Stable technical identifier of the record type; used in routes, APIs, translations, and permissions."
+  },
+  {
+    "entity": "entity",
+    "property": "iconTooltip",
+    "de": "Symbol, das die Datensatzart in Navigation und Oberfläche kennzeichnet.",
+    "en": "Icon used to identify the record type in navigation and the interface."
+  },
+  {
+    "entity": "entity",
+    "property": "orderTooltip",
+    "de": "Bestimmt die Sortierreihenfolge innerhalb der Navigation; kleinere Werte erscheinen zuerst.",
+    "en": "Controls navigation order; lower values appear first."
+  },
+  {
+    "entity": "entity",
+    "property": "canReadTooltip",
+    "de": "Aktiviert die Leseberechtigung als grundsätzlich verfügbare Fähigkeit dieser Datensatzart.",
+    "en": "Enables read permission as an available capability of this record type."
+  },
+  {
+    "entity": "entity",
+    "property": "canInsertTooltip",
+    "de": "Aktiviert das Anlegen neuer Datensätze als grundsätzlich verfügbare Fähigkeit.",
+    "en": "Enables creating records as an available capability."
+  },
+  {
+    "entity": "entity",
+    "property": "canUpdateTooltip",
+    "de": "Aktiviert das Bearbeiten als grundsätzlich verfügbare Fähigkeit.",
+    "en": "Enables editing as an available capability."
+  },
+  {
+    "entity": "entity",
+    "property": "canDeleteTooltip",
+    "de": "Aktiviert das Löschen als grundsätzlich verfügbare Fähigkeit.",
+    "en": "Enables deletion as an available capability."
+  },
+  {
+    "entity": "entity",
+    "property": "canShowTooltip",
+    "de": "Erlaubt, die Sichtbarkeit dieser Datensatzart in der Navigation rollenabhängig zu steuern.",
+    "en": "Allows this record type's navigation visibility to be controlled by role."
+  },
+  {
+    "entity": "entity",
+    "property": "groupTooltip",
+    "de": "Ordnet die Datensatzart einer Gruppe im Hauptmenü zu.",
+    "en": "Assigns the record type to a main-menu group."
+  },
+  {
+    "entity": "entityGroup",
+    "property": "iconTooltip",
+    "de": "Symbol der Gruppe im Hauptmenü.",
+    "en": "Icon of the group in the main menu."
+  },
+  {
+    "entity": "entityGroup",
+    "property": "isExpandedTooltip",
+    "de": "Legt fest, ob die Gruppe beim ersten Öffnen der Navigation aufgeklappt ist.",
+    "en": "Determines whether the group is expanded when navigation first opens."
+  },
+  {
+    "entity": "entityGroup",
+    "property": "sortOrderTooltip",
+    "de": "Sortierreihenfolge der Gruppe; kleinere Werte erscheinen zuerst.",
+    "en": "Order of the group; lower values appear first."
+  },
+  {
+    "entity": "entityGroup",
+    "property": "parentTooltip",
+    "de": "Optionale übergeordnete Gruppe für eine mehrstufige Navigation.",
+    "en": "Optional parent group for multi-level navigation."
+  },
+  {
+    "entity": "entityRoute",
+    "property": "routeTooltip",
+    "de": "Interner Pfad, der beim Auswählen des Menüeintrags geöffnet wird.",
+    "en": "Internal path opened when the menu entry is selected."
+  },
+  {
+    "entity": "entityRoute",
+    "property": "navigationTooltip",
+    "de": "Optionaler Übersetzungsschlüssel für eine abweichende Beschriftung dieses Menüeintrags.",
+    "en": "Optional translation key for a custom label of this menu entry."
+  },
+  {
+    "entity": "entityRoute",
+    "property": "entityTooltip",
+    "de": "Datensatzart, zu der dieser Menüeintrag gehört.",
+    "en": "Record type associated with this menu entry."
+  },
+  {
+    "entity": "entityRoute",
+    "property": "groupTooltip",
+    "de": "Optionale abweichende Navigationsgruppe nur für diesen Menüeintrag.",
+    "en": "Optional navigation-group override for this menu entry only."
+  },
+  {
+    "entity": "right",
+    "property": "canShowTooltip",
+    "de": "Steuert, ob die Datensatzart für diese Rolle in Navigation und Auswahlflächen sichtbar ist.",
+    "en": "Controls whether this role can see the record type in navigation and selection surfaces."
+  },
+  {
+    "entity": "right",
+    "property": "canReadTooltip",
+    "de": "Erlaubt das Öffnen und Lesen vorhandener Datensätze und Felder.",
+    "en": "Allows existing records and fields to be opened and read."
+  },
+  {
+    "entity": "right",
+    "property": "canInsertTooltip",
+    "de": "Erlaubt das Anlegen neuer Datensätze beziehungsweise das Setzen eines Feldes beim Anlegen.",
+    "en": "Allows new records to be created or a field to be set during creation."
+  },
+  {
+    "entity": "right",
+    "property": "canUpdateTooltip",
+    "de": "Erlaubt das Ändern bestehender Datensätze beziehungsweise dieses Feldes.",
+    "en": "Allows existing records or this field to be changed."
+  },
+  {
+    "entity": "right",
+    "property": "canDeleteTooltip",
+    "de": "Erlaubt das Löschen vorhandener Datensätze, sofern keine fachlichen Abhängigkeiten entgegenstehen.",
+    "en": "Allows existing records to be deleted when no domain dependencies prevent it."
+  },
+  {
+    "entity": "permission",
+    "property": "allowShowTooltip",
+    "de": "Blendet die Datensatzart für die gewählte Rolle in Navigation und Auswahlflächen ein.",
+    "en": "Shows the record type to the selected role in navigation and selection surfaces."
+  },
+  {
+    "entity": "permission",
+    "property": "allowReadTooltip",
+    "de": "Erlaubt der Rolle, vorhandene Datensätze dieser Art zu lesen.",
+    "en": "Allows the role to read existing records of this type."
+  },
+  {
+    "entity": "permission",
+    "property": "allowInsertTooltip",
+    "de": "Erlaubt der Rolle, neue Datensätze dieser Art anzulegen.",
+    "en": "Allows the role to create records of this type."
+  },
+  {
+    "entity": "permission",
+    "property": "allowUpdateTooltip",
+    "de": "Erlaubt der Rolle, vorhandene Datensätze dieser Art zu bearbeiten.",
+    "en": "Allows the role to edit existing records of this type."
+  },
+  {
+    "entity": "permission",
+    "property": "allowDeleteTooltip",
+    "de": "Erlaubt der Rolle, vorhandene Datensätze dieser Art zu löschen.",
+    "en": "Allows the role to delete existing records of this type."
+  },
+  {
+    "entity": "permission",
+    "property": "entityTooltip",
+    "de": "Datensatzart, für die diese Berechtigungen gelten.",
+    "en": "Record type to which these permissions apply."
+  },
+  {
+    "entity": "permission",
+    "property": "roleTooltip",
+    "de": "Rolle, deren effektiver Zugriff durch diese Berechtigungen bestimmt wird.",
+    "en": "Role whose effective access is controlled by these permissions."
+  },
+  {
+    "entity": "role",
+    "property": "titleTooltip",
+    "de": "Sichtbarer Name der Rolle in der Rechteverwaltung.",
+    "en": "Visible name of the role in permission management."
+  },
+  {
+    "entity": "role",
+    "property": "isAdministratorTooltip",
+    "de": "Administratoren erhalten systemweiten Verwaltungszugriff. Diese Option nur sehr restriktiv vergeben.",
+    "en": "Administrators receive system-wide management access. Grant this option very sparingly."
+  },
+  {
+    "entity": "role",
+    "property": "stageTooltip",
+    "de": "Ordnet die Rolle einer Hierarchiestufe zu, die für gestufte Feldrechte verwendet werden kann.",
+    "en": "Assigns the role to a hierarchy stage that can be used for staged field permissions."
+  },
+  {
+    "entity": "account",
+    "property": "inboxNotificationsEnabledTooltip",
+    "de": "Erstellt persönliche Posteingangseinträge aus abonnierten fachlichen Ereignissen.",
+    "en": "Creates personal inbox entries from subscribed domain events."
+  },
+  {
+    "entity": "account",
+    "property": "openTaskNotificationsEnabledTooltip",
+    "de": "Benachrichtigt über neue oder geänderte offene Aufgaben, die Ihnen zugeordnet sind.",
+    "en": "Notifies you about new or changed open tasks assigned to you."
+  },
+  {
+    "entity": "account",
+    "property": "badgeChannelEnabledTooltip",
+    "de": "Zeigt die Anzahl ungelesener Einträge als Zähler im Kopfbereich an.",
+    "en": "Shows the number of unread entries as a badge in the header."
+  },
+  {
+    "entity": "account",
+    "property": "previewChannelEnabledTooltip",
+    "de": "Zeigt neue Einträge zusätzlich in der kompakten Vorschau im Kopfbereich an.",
+    "en": "Also shows new entries in the compact header preview."
+  },
+  {
+    "entity": "account",
+    "property": "quietHoursEnabledTooltip",
+    "de": "Unterdrückt Benachrichtigungsvorschauen im gewählten Zeitraum; die Einträge bleiben im Posteingang erhalten.",
+    "en": "Suppresses notification previews during the selected period; entries remain available in the inbox."
+  },
+  {
+    "entity": "aiChat",
+    "property": "providerTooltip",
+    "de": "Anbieter, über den Songbird Chat-Anfragen verarbeitet. Die Auswahl bestimmt verfügbare Modelle und Datenschutzrahmen.",
+    "en": "Provider used by Songbird for chat requests. The selection determines available models and the data-processing boundary."
+  },
+  {
+    "entity": "aiChat",
+    "property": "modelTooltip",
+    "de": "Sprachmodell für Antworten in diesem Chat. Fähigkeiten, Geschwindigkeit und Kosten können sich je Modell unterscheiden.",
+    "en": "Language model used for this chat. Capabilities, speed, and cost can differ by model."
+  },
+  {
+    "entity": "aiChat",
+    "property": "voiceProviderTooltip",
+    "de": "Anbieter, der Ihre Spracheingabe in Text umwandelt.",
+    "en": "Provider that converts your voice input to text."
+  },
+  {
+    "entity": "aiChat",
+    "property": "voiceModelTooltip",
+    "de": "Modell für die Transkription aufgenommener Sprache.",
+    "en": "Model used to transcribe recorded speech."
+  },
+  {
+    "entity": "aiChat",
+    "property": "voiceOutputProviderTooltip",
+    "de": "Anbieter, der KI-Antworten als Sprache ausgibt.",
+    "en": "Provider that turns AI responses into speech."
+  },
+  {
+    "entity": "aiChat",
+    "property": "voiceOutputModelTooltip",
+    "de": "Modell beziehungsweise Stimme für die Sprachausgabe.",
+    "en": "Model or voice used for speech output."
+  },
+  {
+    "entity": "aiChat",
+    "property": "agentTooltip",
+    "de": "Der Agent legt Rolle, Anweisungen, erlaubte Datenbereiche und Werkzeuge für den Chat fest.",
+    "en": "The agent defines the chat role, instructions, allowed data scopes, and tools."
+  },
+  {
+    "entity": "aiChat",
+    "property": "playbookTooltip",
+    "de": "Ein Playbook ergänzt den Agenten für diesen Chat um einen konkreten Ablauf oder Anwendungsfall.",
+    "en": "A playbook adds a specific workflow or use case to the agent for this chat."
+  },
+  {
+    "entity": "aiAgent",
+    "property": "promptMarkdownTooltip",
+    "de": "Grundlegende Arbeitsanweisung des Agenten. Sie beeinflusst Ton, Vorgehen und fachliche Grenzen aller Antworten.",
+    "en": "Core instruction for the agent. It shapes tone, behavior, and domain boundaries of all responses."
+  },
+  {
+    "entity": "aiAgent",
+    "property": "welcomeMessageTooltip",
+    "de": "Optionale Begrüßung, die beim Start eines neuen Chats angezeigt wird.",
+    "en": "Optional greeting shown when a new chat starts."
+  },
+  {
+    "entity": "aiAgent",
+    "property": "conversationStartersTooltip",
+    "de": "Vorschläge, mit denen Benutzer typische Aufgaben dieses Agenten direkt starten können.",
+    "en": "Suggestions that let users start common tasks for this agent directly."
+  },
+  {
+    "entity": "aiAgent",
+    "property": "providerTooltip",
+    "de": "Optional fest vorgegebener KI-Anbieter. Ohne Auswahl gilt die persönliche beziehungsweise systemweite Voreinstellung.",
+    "en": "Optional fixed AI provider. If empty, the personal or system default applies."
+  },
+  {
+    "entity": "aiAgent",
+    "property": "modelTooltip",
+    "de": "Optional fest vorgegebenes Modell des gewählten Anbieters.",
+    "en": "Optional fixed model from the selected provider."
+  },
+  {
+    "entity": "aiAgent",
+    "property": "allowedEntityHandlesTooltip",
+    "de": "Datensatzarten, auf die der Agent über generische Werkzeuge zugreifen darf. Leer bedeutet keine zusätzliche Einschränkung.",
+    "en": "Record types the agent may access through generic tools. Empty means no additional restriction."
+  },
+  {
+    "entity": "aiAgent",
+    "property": "allowedKnowledgeEntityHandlesTooltip",
+    "de": "Datensatzarten, deren Inhalte der Agent für semantische Wissenssuchen verwenden darf.",
+    "en": "Record types whose content the agent may use for semantic knowledge searches."
+  },
+  {
+    "entity": "aiAgent",
+    "property": "allowedInternalToolsTooltip",
+    "de": "Interne Sapling-Werkzeuge, die diesem Agenten zur Verfügung stehen.",
+    "en": "Internal Sapling tools available to this agent."
+  },
+  {
+    "entity": "aiAgent",
+    "property": "allowedExternalToolsTooltip",
+    "de": "Externe MCP-Werkzeuge, die dieser Agent aufrufen darf.",
+    "en": "External MCP tools this agent is allowed to call."
+  },
+  {
+    "entity": "aiProviderModel",
+    "property": "providerModelTooltip",
+    "de": "Exakter Modellbezeichner, den die API des Anbieters erwartet.",
+    "en": "Exact model identifier expected by the provider API."
+  },
+  {
+    "entity": "aiProviderModel",
+    "property": "supportsStreamingTooltip",
+    "de": "Kennzeichnet, ob Antworten schrittweise während der Generierung übertragen werden können.",
+    "en": "Indicates whether responses can be streamed while they are generated."
+  },
+  {
+    "entity": "aiProviderModel",
+    "property": "supportsToolsTooltip",
+    "de": "Kennzeichnet, ob das Modell strukturierte Werkzeugaufrufe unterstützt.",
+    "en": "Indicates whether the model supports structured tool calls."
+  },
+  {
+    "entity": "aiProviderModel",
+    "property": "supportsEmbeddingsTooltip",
+    "de": "Kennzeichnet, ob das Modell Vektoren für semantische Suche erzeugen kann.",
+    "en": "Indicates whether the model can create vectors for semantic search."
+  },
+  {
+    "entity": "aiProviderModel",
+    "property": "supportsTranscriptionTooltip",
+    "de": "Kennzeichnet, ob das Modell Audiodateien in Text umwandeln kann.",
+    "en": "Indicates whether the model can transcribe audio into text."
+  },
+  {
+    "entity": "aiProviderModel",
+    "property": "supportsSpeechTooltip",
+    "de": "Kennzeichnet, ob das Modell Text als Sprache ausgeben kann.",
+    "en": "Indicates whether the model can produce speech from text."
+  },
+  {
+    "entity": "aiProviderModel",
+    "property": "embeddingBatchSizeTooltip",
+    "de": "Anzahl der Textabschnitte pro Embedding-Anfrage. Größere Werte erhöhen den Durchsatz, benötigen aber mehr Ressourcen.",
+    "en": "Number of text chunks per embedding request. Higher values improve throughput but require more resources."
+  },
+  {
+    "entity": "aiProviderModel",
+    "property": "vectorChunkLengthTooltip",
+    "de": "Zielgröße der Textabschnitte für die Vektorisierung.",
+    "en": "Target size of text chunks used for vectorization."
+  },
+  {
+    "entity": "aiProviderModel",
+    "property": "vectorChunkOverlapTooltip",
+    "de": "Überlappung benachbarter Textabschnitte, damit Zusammenhänge an Abschnittsgrenzen erhalten bleiben.",
+    "en": "Overlap between neighboring chunks to preserve context across chunk boundaries."
+  },
+  {
+    "entity": "company",
+    "property": "allowNewsletterTooltip",
+    "de": "Kennzeichnet, ob dieses Unternehmen grundsätzlich für Newsletter-Kommunikation freigegeben ist. Einwilligungen einzelner Ansprechpartner bleiben zusätzlich maßgeblich.",
+    "en": "Indicates whether this company is generally approved for newsletter communication. Consent from individual contacts still applies separately."
+  },
+  {
+    "entity": "company",
+    "property": "dataPrivacyConsentGivenTooltip",
+    "de": "Dokumentiert, ob eine gültige Einwilligung zur Verarbeitung personenbezogener Daten vorliegt.",
+    "en": "Records whether valid consent to process personal data has been provided."
+  },
+  {
+    "entity": "company",
+    "property": "dataPrivacyConsentAtTooltip",
+    "de": "Zeitpunkt, zu dem die hinterlegte Datenschutz-Einwilligung erteilt wurde.",
+    "en": "Date and time when the recorded data privacy consent was granted."
+  },
+  {
+    "entity": "company",
+    "property": "contractValueTooltip",
+    "de": "Gesamtwert der bestehenden Vertragsbeziehung mit diesem Unternehmen.",
+    "en": "Total value of the existing contractual relationship with this company."
+  },
+  {
+    "entity": "company",
+    "property": "annualRecurringRevenueTooltip",
+    "de": "Wiederkehrender Umsatz dieses Unternehmens, hochgerechnet auf ein Jahr (ARR).",
+    "en": "Recurring revenue from this company projected over one year (ARR)."
+  },
+  {
+    "entity": "company",
+    "property": "monthlyRecurringRevenueTooltip",
+    "de": "Wiederkehrender Umsatz dieses Unternehmens pro Monat (MRR).",
+    "en": "Recurring revenue from this company per month (MRR)."
+  },
+  {
+    "entity": "company",
+    "property": "churnRiskReasonTooltip",
+    "de": "Hauptgrund für ein erkanntes Abwanderungs- oder Kündigungsrisiko.",
+    "en": "Primary reason for an identified churn or cancellation risk."
+  },
+  {
+    "entity": "company",
+    "property": "workWeekTooltip",
+    "de": "Arbeitszeitmodell, das für Termin- und Verfügbarkeitsberechnungen dieses Unternehmens verwendet wird.",
+    "en": "Working-week model used for scheduling and availability calculations for this company."
+  },
+  {
+    "entity": "company",
+    "property": "holidayGroupTooltip",
+    "de": "Feiertagskalender, der bei Termin- und Fristberechnungen für dieses Unternehmen berücksichtigt wird.",
+    "en": "Holiday calendar considered for scheduling and deadline calculations for this company."
+  },
+  {
+    "entity": "company",
+    "property": "serviceProviderTooltip",
+    "de": "Unternehmen, das für die operative Leistungserbringung oder Betreuung zuständig ist.",
+    "en": "Company responsible for operational service delivery or support."
+  },
+  {
+    "entity": "person",
+    "property": "loginNameTooltip",
+    "de": "Eindeutiger Anmeldename der Person. Änderungen können den Zugang und angebundene Authentifizierungsverfahren beeinflussen.",
+    "en": "Unique sign-in name for the person. Changes can affect access and connected authentication methods."
+  },
+  {
+    "entity": "person",
+    "property": "loginPasswordTooltip",
+    "de": "Lokales Anmeldekennwort. Es wird geschützt gespeichert und sollte nur gesetzt werden, wenn lokale Anmeldung vorgesehen ist.",
+    "en": "Local sign-in password. It is stored securely and should only be set when local authentication is intended."
+  },
+  {
+    "entity": "person",
+    "property": "requirePasswordChangeTooltip",
+    "de": "Erzwingt bei der nächsten lokalen Anmeldung die Vergabe eines neuen Kennworts.",
+    "en": "Requires the user to choose a new password at the next local sign-in."
+  },
+  {
+    "entity": "person",
+    "property": "sendNewsletterTooltip",
+    "de": "Kennzeichnet, ob diese Person Newsletter erhalten darf. Die erforderliche Einwilligung muss unabhängig davon vorliegen.",
+    "en": "Indicates whether this person may receive newsletters. Any required consent must still be present independently."
+  },
+  {
+    "entity": "person",
+    "property": "decisionRoleTooltip",
+    "de": "Rolle dieser Person in Beschaffungs- oder Entscheidungsprozessen, beispielsweise Entscheider oder Einflussnehmer.",
+    "en": "This person's role in purchasing or decision processes, such as decision-maker or influencer."
+  },
+  {
+    "entity": "person",
+    "property": "typeTooltip",
+    "de": "Ordnet die Person fachlich ein, beispielsweise als internen Benutzer, Ansprechpartner oder Interessenten.",
+    "en": "Classifies the person by business role, for example as an internal user, contact, or prospect."
+  },
+  {
+    "entity": "person",
+    "property": "workWeekTooltip",
+    "de": "Persönliches Arbeitszeitmodell für Verfügbarkeits-, Termin- und Fristberechnungen.",
+    "en": "Personal working-week model used for availability, scheduling, and deadline calculations."
+  },
+  {
+    "entity": "person",
+    "property": "holidayGroupTooltip",
+    "de": "Persönlich geltender Feiertagskalender für Verfügbarkeits- und Fristberechnungen.",
+    "en": "Holiday calendar applicable to this person for availability and deadline calculations."
+  },
+  {
+    "entity": "contract",
+    "property": "lastServiceDateTooltip",
+    "de": "Datum der zuletzt erbrachten oder dokumentierten vertraglichen Serviceleistung.",
+    "en": "Date of the most recently delivered or documented contractual service."
+  },
+  {
+    "entity": "contract",
+    "property": "nextServiceDateTooltip",
+    "de": "Geplanter Termin der nächsten vertraglichen Serviceleistung.",
+    "en": "Scheduled date of the next contractual service."
+  },
+  {
+    "entity": "contract",
+    "property": "annualIncludedHoursTooltip",
+    "de": "Anzahl der pro Vertragsjahr enthaltenen Leistungs- oder Supportstunden.",
+    "en": "Number of service or support hours included per contract year."
+  },
+  {
+    "entity": "contract",
+    "property": "hasUpdateserviceTooltip",
+    "de": "Kennzeichnet, ob der Vertrag einen Update-Service für betreute Produkte oder Systeme umfasst.",
+    "en": "Indicates whether the contract includes an update service for supported products or systems."
+  },
+  {
+    "entity": "contract",
+    "property": "serviceLevelTooltip",
+    "de": "Vereinbartes Leistungsniveau des Vertrags; es kann Reaktionszeiten und Leistungsumfang beeinflussen.",
+    "en": "Agreed service level for the contract; it can affect response times and service scope."
+  },
+  {
+    "entity": "contract",
+    "property": "defaultSupportTeamTooltip",
+    "de": "Support-Team, das für neue Vorgänge aus diesem Vertrag vorgeschlagen wird.",
+    "en": "Support team suggested for new cases created from this contract."
+  },
+  {
+    "entity": "contract",
+    "property": "defaultSupportQueueTooltip",
+    "de": "Support-Warteschlange, die für neue Vorgänge aus diesem Vertrag vorgeschlagen wird.",
+    "en": "Support queue suggested for new cases created from this contract."
+  },
+  {
+    "entity": "contract",
+    "property": "slaPolicyTooltip",
+    "de": "SLA-Regelwerk, aus dem Reaktions- und Lösungsfristen für zugehörige Tickets berechnet werden.",
+    "en": "SLA policy used to calculate response and resolution deadlines for related tickets."
+  },
+  {
+    "entity": "serverLandscape",
+    "property": "allowRemoteAccessTooltip",
+    "de": "Kennzeichnet, ob ein freigegebener Fernzugriff auf dieses System zulässig ist.",
+    "en": "Indicates whether approved remote access to this system is permitted."
+  },
+  {
+    "entity": "serverLandscape",
+    "property": "hasInternetAccessTooltip",
+    "de": "Kennzeichnet, ob das System ausgehend oder eingehend mit dem Internet verbunden ist.",
+    "en": "Indicates whether the system has outbound or inbound internet connectivity."
+  },
+  {
+    "entity": "serverLandscape",
+    "property": "usageTooltip",
+    "de": "Betriebliche Verwendung des Systems, beispielsweise Produktion, Test oder Entwicklung.",
+    "en": "Operational use of the system, for example production, test, or development."
+  },
+  {
+    "entity": "dashboardTemplate",
+    "property": "isSharedTooltip",
+    "de": "Macht die Dashboard-Vorlage für weitere berechtigte Benutzer verfügbar.",
+    "en": "Makes the dashboard template available to other authorized users."
+  },
+  {
+    "entity": "dashboardTemplate",
+    "property": "personTooltip",
+    "de": "Eigentümer der persönlichen Vorlage. Bei freigegebenen Vorlagen bleibt dies der verantwortliche Ansprechpartner.",
+    "en": "Owner of the personal template. For shared templates, this remains the responsible contact."
+  },
+  {
+    "entity": "saplingFormConfig",
+    "property": "scopeTooltip",
+    "de": "Geltungsbereich der Formularkonfiguration, beispielsweise systemweit oder benutzerspezifisch.",
+    "en": "Scope of the form configuration, for example system-wide or user-specific."
+  },
+  {
+    "entity": "saplingFormConfig",
+    "property": "scopeHandleTooltip",
+    "de": "Technischer Bezeichner des Objekts, für das der gewählte Geltungsbereich gilt.",
+    "en": "Technical identifier of the object to which the selected scope applies."
+  },
+  {
+    "entity": "saplingFormConfig",
+    "property": "isDefaultTooltip",
+    "de": "Verwendet diese Konfiguration als Vorgabe, wenn keine spezifischere Konfiguration zutrifft.",
+    "en": "Uses this configuration as the default when no more specific configuration applies."
+  },
+  {
+    "entity": "saplingFormConfig",
+    "property": "versionTooltip",
+    "de": "Versionsnummer der Konfiguration zur Nachverfolgung und Auflösung konkurrierender Stände.",
+    "en": "Configuration version used for tracking and resolving competing revisions."
+  },
+  {
+    "entity": "saplingFormConfig",
+    "property": "configTooltip",
+    "de": "Technische JSON-Konfiguration für Reihenfolge, Sichtbarkeit, Renderer und Hilfetexte der Felder.",
+    "en": "Technical JSON configuration for field order, visibility, renderers, and help text."
+  },
+  {
+    "entity": "effortEstimate",
+    "property": "expectedCompletionDateTooltip",
+    "de": "Voraussichtlicher Termin, bis zu dem die Schätzung fachlich abgeschlossen sein soll.",
+    "en": "Expected date by which the estimate should be completed from a business perspective."
+  },
+  {
+    "entity": "effortEstimate",
+    "property": "requirementsMarkdownTooltip",
+    "de": "Anforderungen und Annahmen, auf deren Grundlage die Aufwandspositionen geschätzt werden.",
+    "en": "Requirements and assumptions on which the effort positions are estimated."
+  },
+  {
+    "entity": "effortEstimatePosition",
+    "property": "estimatedHoursTooltip",
+    "de": "Geschätzter Arbeitsaufwand dieser Position in Stunden.",
+    "en": "Estimated work effort for this position in hours."
+  },
+  {
+    "entity": "effortEstimatePosition",
+    "property": "offerTextMarkdownTooltip",
+    "de": "Kundentaugliche Leistungsbeschreibung dieser Position für Angebot oder Leistungsumfang.",
+    "en": "Customer-facing service description for this position in a quotation or statement of work."
+  },
+  {
+    "entity": "effortEstimatePosition",
+    "property": "sortOrderTooltip",
+    "de": "Reihenfolge der Position innerhalb der Schätzung; kleinere Werte erscheinen zuerst.",
+    "en": "Order of the position within the estimate; lower values appear first."
+  },
+  {
+    "entity": "effortEstimatePosition",
+    "property": "isOptionalTooltip",
+    "de": "Kennzeichnet eine optionale Position, die nicht zum verbindlichen Grundumfang gehört.",
+    "en": "Marks an optional position that is not part of the binding base scope."
+  },
+  {
+    "entity": "effortEstimatePosition",
+    "property": "templateTooltip",
+    "de": "Vorlage, aus der Text und Schätzwert dieser Position übernommen wurden.",
+    "en": "Template from which this position's text and estimate were taken."
+  },
+  {
+    "entity": "knowledgeArticle",
+    "property": "statusTooltip",
+    "de": "Redaktioneller Lebenszyklus des Artikels, beispielsweise Entwurf, veröffentlicht oder archiviert.",
+    "en": "Editorial lifecycle of the article, such as draft, published, or archived."
+  },
+  {
+    "entity": "knowledgeArticle",
+    "property": "visibilityTooltip",
+    "de": "Legt fest, für welchen Benutzerkreis der Wissensartikel sichtbar und auffindbar ist.",
+    "en": "Determines which audience can view and discover the knowledge article."
+  },
+  {
+    "entity": "knowledgeArticle",
+    "property": "summaryTooltip",
+    "de": "Kurzzusammenfassung für Suchergebnisse und die schnelle Einordnung des Artikels.",
+    "en": "Short summary used in search results and for quickly understanding the article."
+  },
+  {
+    "entity": "knowledgeArticle",
+    "property": "tagsTooltip",
+    "de": "Such- und Schlagwörter, über die der Artikel zusätzlich gefunden und gruppiert werden kann.",
+    "en": "Search terms and keywords used to find and group the article."
+  },
+  {
+    "entity": "knowledgeArticle",
+    "property": "contextKeyTooltip",
+    "de": "Stabiler fachlicher Kontextschlüssel, über den die Anwendung gezielt passende Wissensartikel ermitteln kann.",
+    "en": "Stable domain context key used by the application to locate matching knowledge articles."
+  },
+  {
+    "entity": "knowledgeArticle",
+    "property": "problemMarkdownTooltip",
+    "de": "Beschreibung des Problems oder der Ausgangssituation, die dieser Artikel behandelt.",
+    "en": "Description of the problem or initial situation addressed by this article."
+  },
+  {
+    "entity": "knowledgeArticle",
+    "property": "solutionMarkdownTooltip",
+    "de": "Konkrete Lösungsschritte oder Handlungsempfehlungen für das beschriebene Problem.",
+    "en": "Specific solution steps or recommended actions for the described problem."
+  },
+  {
+    "entity": "knowledgeArticle",
+    "property": "documentationMarkdownTooltip",
+    "de": "Ergänzende technische oder fachliche Dokumentation, die über Problem und Lösung hinausgeht.",
+    "en": "Additional technical or domain documentation beyond the problem and solution."
+  },
+  {
+    "entity": "knowledgeArticle",
+    "property": "publishedAtTooltip",
+    "de": "Zeitpunkt, ab dem der Artikel als veröffentlicht gilt.",
+    "en": "Date and time from which the article is considered published."
+  },
+  {
+    "entity": "knowledgeArticle",
+    "property": "validUntilTooltip",
+    "de": "Datum, bis zu dem der Inhalt geprüft oder fachlich gültig ist. Danach sollte er erneut bewertet werden.",
+    "en": "Date until which the content has been reviewed or remains valid. It should be reassessed afterward."
+  },
+  {
+    "entity": "knowledgeArticle",
+    "property": "reviewerPersonTooltip",
+    "de": "Person, die den Inhalt fachlich prüft oder zur Veröffentlichung freigibt.",
+    "en": "Person responsible for reviewing or approving the content for publication."
+  },
+  {
+    "entity": "knowledgeArticleStatus",
+    "property": "isPublishedTooltip",
+    "de": "Artikel mit diesem Status gelten als veröffentlicht und können entsprechend ihrer Sichtbarkeit verwendet werden.",
+    "en": "Articles with this status are considered published and can be used according to their visibility."
+  },
+  {
+    "entity": "knowledgeArticleStatus",
+    "property": "isArchivedTooltip",
+    "de": "Artikel mit diesem Status gelten als archiviert und werden in regulären Ansichten zurückgestellt.",
+    "en": "Articles with this status are considered archived and are de-emphasized in regular views."
+  },
+  {
+    "entity": "calendarSyncSubscription",
+    "property": "providerTooltip",
+    "de": "Kalenderdienst, aus dem Termine für diese Person synchronisiert werden.",
+    "en": "Calendar service from which events are synchronized for this person."
+  },
+  {
+    "entity": "calendarSyncSubscription",
+    "property": "isActiveTooltip",
+    "de": "Ruft Termine automatisch im festgelegten Intervall ab. Deaktivieren pausiert die Synchronisierung, ohne die Konfiguration zu löschen.",
+    "en": "Automatically retrieves events at the configured interval. Disabling pauses synchronization without deleting its configuration."
+  },
+  {
+    "entity": "calendarSyncSubscription",
+    "property": "syncRangeTooltip",
+    "de": "Zeitraum um das aktuelle Datum, für den Termine importiert und aktualisiert werden.",
+    "en": "Time range around the current date for which events are imported and updated."
+  },
+  {
+    "entity": "calendarSyncSubscription",
+    "property": "intervalMinutesTooltip",
+    "de": "Zeitabstand in Minuten zwischen zwei automatischen Kalenderabrufen.",
+    "en": "Number of minutes between automatic calendar retrievals."
+  },
+  {
+    "entity": "calendarSyncSubscription",
+    "property": "defaultEventTypeTooltip",
+    "de": "Terminart, die synchronisierten Terminen zugewiesen wird, wenn der Anbieter keine passende Zuordnung liefert.",
+    "en": "Event type assigned to synchronized events when the provider does not supply a matching value."
+  },
+  {
+    "entity": "calendarSyncSubscription",
+    "property": "defaultEventCategoryTooltip",
+    "de": "Kategorie, die synchronisierten Terminen ohne anderweitige Zuordnung zugewiesen wird.",
+    "en": "Category assigned to synchronized events when no other mapping is available."
+  },
+  {
+    "entity": "favorite",
+    "property": "searchTooltip",
+    "de": "Gespeicherter Suchtext, der beim Öffnen dieses Favoriten automatisch angewendet wird.",
+    "en": "Saved search text applied automatically when this favorite is opened."
+  },
+  {
+    "entity": "favorite",
+    "property": "sortByTooltip",
+    "de": "Gespeicherte Sortierung der Zielansicht einschließlich Feld und Richtung.",
+    "en": "Saved sorting of the target view, including field and direction."
+  },
+  {
+    "entity": "favorite",
+    "property": "filterTooltip",
+    "de": "Gespeicherte Filterbedingungen, mit denen die Zielansicht eingeschränkt wird.",
+    "en": "Saved filter conditions used to narrow the target view."
+  },
+  {
+    "entity": "favorite",
+    "property": "entityRouteTooltip",
+    "de": "Konkreter Menüeintrag oder Ansichtsweg, der durch diesen Favoriten geöffnet wird.",
+    "en": "Specific menu entry or view route opened by this favorite."
+  },
+  {
+    "entity": "favoriteTemplate",
+    "property": "filterTooltip",
+    "de": "Vorgegebene Filterbedingungen, die beim Erstellen eines Favoriten aus dieser Vorlage übernommen werden.",
+    "en": "Preset filter conditions copied when a favorite is created from this template."
+  },
+  {
+    "entity": "favoriteTemplate",
+    "property": "isRecommendedTooltip",
+    "de": "Kennzeichnet die Vorlage als empfohlene Ansicht für Benutzer dieser Datensatzart.",
+    "en": "Marks the template as a recommended view for users of this record type."
+  },
+  {
+    "entity": "kpi",
+    "property": "aggregationTooltip",
+    "de": "Berechnung, die auf die ausgewählten Datensätze angewendet wird, beispielsweise Anzahl, Summe oder Durchschnitt.",
+    "en": "Calculation applied to the selected records, such as count, sum, or average."
+  },
+  {
+    "entity": "kpi",
+    "property": "fieldTooltip",
+    "de": "Feld der Zielentität, dessen Werte mit der gewählten Aggregation ausgewertet werden.",
+    "en": "Field of the target entity whose values are evaluated by the selected aggregation."
+  },
+  {
+    "entity": "kpi",
+    "property": "typeTooltip",
+    "de": "Darstellungs- und Berechnungsart der Kennzahl, beispielsweise Einzelwert, Verhältnis oder Fortschritt.",
+    "en": "Display and calculation type of the KPI, such as single value, ratio, or progress."
+  },
+  {
+    "entity": "kpi",
+    "property": "timeframeFieldTooltip",
+    "de": "Datumsfeld, auf das der gewählte Auswertungszeitraum angewendet wird.",
+    "en": "Date field to which the selected reporting period is applied."
+  },
+  {
+    "entity": "kpi",
+    "property": "timeframeTooltip",
+    "de": "Relativer oder fester Zeitraum, aus dem Datensätze in die Kennzahl einfließen.",
+    "en": "Relative or fixed period from which records are included in the KPI."
+  },
+  {
+    "entity": "kpi",
+    "property": "timeframeIntervalTooltip",
+    "de": "Vergleichs- oder Gruppierungsintervall innerhalb des gewählten Zeitraums.",
+    "en": "Comparison or grouping interval within the selected period."
+  },
+  {
+    "entity": "kpi",
+    "property": "filterTooltip",
+    "de": "Zusätzliche Filterbedingungen für die Datensätze der primären Berechnung.",
+    "en": "Additional filter conditions for records used in the primary calculation."
+  },
+  {
+    "entity": "kpi",
+    "property": "groupByTooltip",
+    "de": "Felder, nach denen das Ergebnis in mehrere Teilwerte oder Reihen aufgeteilt wird.",
+    "en": "Fields used to split the result into multiple values or series."
+  },
+  {
+    "entity": "kpi",
+    "property": "relationFieldTooltip",
+    "de": "Relationsfeld, über das Werte einer verbundenen Datensatzart in die Berechnung einbezogen werden.",
+    "en": "Relation field through which values from a related record type are included in the calculation."
+  },
+  {
+    "entity": "kpi",
+    "property": "secondaryAggregationTooltip",
+    "de": "Berechnung für den zweiten Operanden bei Verhältnis-, Formel-, Ziel- oder Fortschrittskennzahlen.",
+    "en": "Calculation for the second operand of ratio, formula, target, or progress KPIs."
+  },
+  {
+    "entity": "kpi",
+    "property": "secondaryFieldTooltip",
+    "de": "Feld, dessen Werte für den zweiten Operanden ausgewertet werden.",
+    "en": "Field whose values are evaluated for the second operand."
+  },
+  {
+    "entity": "kpi",
+    "property": "secondaryFilterTooltip",
+    "de": "Zusätzliche Filterbedingungen ausschließlich für den zweiten Operanden.",
+    "en": "Additional filter conditions applied only to the second operand."
+  },
+  {
+    "entity": "kpi",
+    "property": "durationStartFieldTooltip",
+    "de": "Start- oder Vergleichsfeld für Dauerberechnungen und Vergleiche zwischen zwei Feldern.",
+    "en": "Start or comparison field for duration calculations and field-to-field comparisons."
+  },
+  {
+    "entity": "kpi",
+    "property": "formulaOperationTooltip",
+    "de": "Mathematische Operation, mit der primärer und sekundärer Wert verbunden werden.",
+    "en": "Mathematical operation used to combine the primary and secondary values."
+  },
+  {
+    "entity": "kpi",
+    "property": "formulaScaleTooltip",
+    "de": "Faktor, mit dem das Formelergebnis multipliziert wird, beispielsweise 100 für eine Prozentdarstellung.",
+    "en": "Factor by which the formula result is multiplied, for example 100 for a percentage display."
+  },
+  {
+    "entity": "kpi",
+    "property": "unitTooltip",
+    "de": "Einheit, die hinter dem Kennzahlenwert angezeigt wird, beispielsweise €, %, Stunden oder Stück.",
+    "en": "Unit displayed after the KPI value, such as €, %, hours, or items."
+  },
+  {
+    "entity": "kpi",
+    "property": "targetValueTooltip",
+    "de": "Sollwert, mit dem das berechnete Ergebnis für Ziel- und Fortschrittsanzeigen verglichen wird.",
+    "en": "Target against which the calculated result is compared for target and progress displays."
+  },
+  {
+    "entity": "kpi",
+    "property": "targetDirectionTooltip",
+    "de": "Legt fest, ob höhere oder niedrigere Werte als bessere Zielerreichung gelten.",
+    "en": "Determines whether higher or lower values represent better target achievement."
+  },
+  {
+    "entity": "kpi",
+    "property": "warningThresholdTooltip",
+    "de": "Grenzwert, ab dem die Kennzahl als Warnung dargestellt wird.",
+    "en": "Threshold at which the KPI is displayed as a warning."
+  },
+  {
+    "entity": "kpi",
+    "property": "criticalThresholdTooltip",
+    "de": "Grenzwert, ab dem die Kennzahl als kritisch dargestellt wird.",
+    "en": "Threshold at which the KPI is displayed as critical."
+  },
+  {
+    "entity": "kpi",
+    "property": "relationTooltip",
+    "de": "Verbundene Datensatzart, aus der die primäre Berechnung ihre Werte bezieht.",
+    "en": "Related record type from which the primary calculation obtains its values."
+  },
+  {
+    "entity": "kpi",
+    "property": "secondaryTargetEntityTooltip",
+    "de": "Datensatzart, aus der der zweite Operand einer kombinierten Kennzahl berechnet wird.",
+    "en": "Record type from which the second operand of a combined KPI is calculated."
+  },
+  {
+    "entity": "kpi",
+    "property": "targetEntityTooltip",
+    "de": "Datensatzart, auf deren Daten diese Kennzahl basiert.",
+    "en": "Record type whose data forms the basis of this KPI."
+  },
+  {
+    "entity": "scriptButton",
+    "property": "parameterTooltip",
+    "de": "JSON-Parameter, die beim Auslösen an das hinterlegte Skript übergeben werden.",
+    "en": "JSON parameters passed to the configured script when the action is triggered."
+  },
+  {
+    "entity": "scriptButton",
+    "property": "isMultiSelectTooltip",
+    "de": "Erlaubt, die Aktion gleichzeitig für mehrere ausgewählte Datensätze auszuführen.",
+    "en": "Allows the action to run for multiple selected records at once."
+  },
+  {
+    "entity": "changeLog",
+    "property": "referenceTooltip",
+    "de": "Technischer Bezeichner des Datensatzes, dessen Änderung protokolliert wurde.",
+    "en": "Technical identifier of the record whose change was logged."
+  },
+  {
+    "entity": "changeLog",
+    "property": "oldPayloadTooltip",
+    "de": "Gespeicherter Datenstand vor der protokollierten Änderung.",
+    "en": "Stored record state before the logged change."
+  },
+  {
+    "entity": "changeLog",
+    "property": "newPayloadTooltip",
+    "de": "Gespeicherter Datenstand nach der protokollierten Änderung.",
+    "en": "Stored record state after the logged change."
+  },
+  {
+    "entity": "document",
+    "property": "referenceTooltip",
+    "de": "Technischer Bezeichner des Datensatzes, dem das Dokument zugeordnet ist.",
+    "en": "Technical identifier of the record to which the document is attached."
+  },
+  {
+    "entity": "document",
+    "property": "entityTooltip",
+    "de": "Datensatzart, zu der das Dokument gehört. Zusammen mit der Referenz bestimmt sie die Zuordnung.",
+    "en": "Record type to which the document belongs. Together with the reference, it determines the association."
+  },
+  {
+    "entity": "dvelopConnection",
+    "property": "baseUrlTooltip",
+    "de": "Basisadresse der d.velop-API ohne objektspezifischen Pfad.",
+    "en": "Base address of the d.velop API without an object-specific path."
+  },
+  {
+    "entity": "dvelopConnection",
+    "property": "apiKeyTooltip",
+    "de": "Geheimer API-Schlüssel für die Authentifizierung an d.velop. Nur mit minimal erforderlichen Rechten hinterlegen.",
+    "en": "Secret API key used to authenticate with d.velop. Store it with only the minimum required permissions."
+  },
+  {
+    "entity": "dvelopConnection",
+    "property": "repositoryTooltip",
+    "de": "Standard-Repository, das diese Verbindung für Dokumentoperationen verwendet.",
+    "en": "Default repository used by this connection for document operations."
+  },
+  {
+    "entity": "dvelopConnection",
+    "property": "defaultObjectDefinitionTooltip",
+    "de": "Standard-Objektdefinition für Dokumente, wenn keine spezifischere Zuordnung greift.",
+    "en": "Default object definition for documents when no more specific mapping applies."
+  },
+  {
+    "entity": "dvelopEntityMapping",
+    "property": "entityTooltip",
+    "de": "Sapling-Datensatzart, deren Felder und Dokumente dieser d.velop-Zuordnung folgen.",
+    "en": "Sapling record type whose fields and documents follow this d.velop mapping."
+  },
+  {
+    "entity": "dvelopEntityMapping",
+    "property": "objectDefinitionTooltip",
+    "de": "d.velop-Objektdefinition, in die Datensätze dieser Zuordnung übertragen werden.",
+    "en": "d.velop object definition into which records from this mapping are transferred."
+  },
+  {
+    "entity": "dvelopEntityMappingProperty",
+    "property": "sourceFieldTooltip",
+    "de": "Sapling-Feld, dessen Wert in die ausgewählte d.velop-Eigenschaft geschrieben wird.",
+    "en": "Sapling field whose value is written to the selected d.velop property."
+  },
+  {
+    "entity": "dvelopEntityMappingProperty",
+    "property": "staticValueTooltip",
+    "de": "Fester Wert für die d.velop-Eigenschaft. Er wird verwendet, wenn kein Quellfeld ausgewählt ist.",
+    "en": "Fixed value for the d.velop property. It is used when no source field is selected."
+  },
+  {
+    "entity": "dvelopProperty",
+    "property": "dvelopIdTooltip",
+    "de": "Unveränderter technischer Bezeichner der Eigenschaft in d.velop.",
+    "en": "Stable technical identifier of the property in d.velop."
+  },
+  {
+    "entity": "dvelopProperty",
+    "property": "dataTypeTooltip",
+    "de": "Von d.velop erwarteter Datentyp; er bestimmt die zulässige Übertragung und Formatierung.",
+    "en": "Data type expected by d.velop; it controls valid transfer and formatting."
+  },
+  {
+    "entity": "dvelopProperty",
+    "property": "isRequiredTooltip",
+    "de": "Dokumente können für diese Objektdefinition nur übertragen werden, wenn die Eigenschaft einen gültigen Wert besitzt.",
+    "en": "Documents can only be transferred for this object definition when the property has a valid value."
+  },
+  {
+    "entity": "dvelopProperty",
+    "property": "isMultiValueTooltip",
+    "de": "Kennzeichnet eine d.velop-Eigenschaft, die mehrere Werte gleichzeitig aufnehmen kann.",
+    "en": "Indicates a d.velop property that can hold multiple values at the same time."
+  },
+  {
+    "entity": "dvelopRepository",
+    "property": "dvelopIdTooltip",
+    "de": "Technischer Repository-Bezeichner, den die d.velop-API erwartet.",
+    "en": "Technical repository identifier expected by the d.velop API."
+  },
+  {
+    "entity": "dvelopRepository",
+    "property": "isDefaultTooltip",
+    "de": "Verwendet dieses Repository als Vorgabe für die zugehörige Verbindung.",
+    "en": "Uses this repository as the default for the associated connection."
+  },
+  {
+    "entity": "dvelopRepository",
+    "property": "isAvailableTooltip",
+    "de": "Zeigt, ob das Repository beim letzten Abgleich über die Verbindung erreichbar und nutzbar war.",
+    "en": "Shows whether the repository was reachable and usable through the connection during the last synchronization."
+  },
+  {
+    "entity": "personApiToken",
+    "property": "tokenHashTooltip",
+    "de": "Nicht rückrechenbarer Prüfwert des API-Tokens. Das ursprüngliche Token wird nach der Erstellung nicht erneut angezeigt.",
+    "en": "Non-reversible verification value of the API token. The original token is not shown again after creation."
+  },
+  {
+    "entity": "personApiToken",
+    "property": "expiresAtTooltip",
+    "de": "Nach diesem Zeitpunkt kann das API-Token nicht mehr zur Authentifizierung verwendet werden.",
+    "en": "After this time, the API token can no longer be used for authentication."
+  },
+  {
+    "entity": "personApiToken",
+    "property": "allowedIpsTooltip",
+    "de": "Optionale Liste zulässiger IP-Adressen oder Netze. Leer bedeutet keine zusätzliche IP-Einschränkung.",
+    "en": "Optional list of allowed IP addresses or networks. Empty means no additional IP restriction."
+  },
+  {
+    "entity": "personPasskey",
+    "property": "credentialIdTooltip",
+    "de": "Technischer Bezeichner des registrierten Passkeys. Er wird vom Authentifikator vergeben und sollte nicht manuell geändert werden.",
+    "en": "Technical identifier of the registered passkey. It is assigned by the authenticator and should not be changed manually."
+  },
+  {
+    "entity": "personPasskey",
+    "property": "publicKeyTooltip",
+    "de": "Öffentlicher kryptografischer Schlüssel zur Prüfung von Passkey-Anmeldungen; er enthält keinen privaten Schlüssel.",
+    "en": "Public cryptographic key used to verify passkey sign-ins; it does not contain the private key."
+  },
+  {
+    "entity": "socialMedia",
+    "property": "externalIdTooltip",
+    "de": "Stabiler Bezeichner des Profils im externen sozialen Netzwerk, sofern verfügbar.",
+    "en": "Stable identifier of the profile in the external social network, when available."
+  },
+  {
+    "entity": "socialMedia",
+    "property": "isPrimaryTooltip",
+    "de": "Kennzeichnet dieses Profil als bevorzugten Social-Media-Kanal der Person.",
+    "en": "Marks this profile as the person's preferred social media channel."
+  },
+  {
+    "entity": "socialMedia",
+    "property": "isPublicTooltip",
+    "de": "Kennzeichnet, ob das Profil in allgemein sichtbaren Kontaktinformationen verwendet werden darf.",
+    "en": "Indicates whether the profile may be used in generally visible contact information."
+  },
+  {
+    "entity": "emailTemplate",
+    "property": "subjectTemplateTooltip",
+    "de": "Vorlage für die Betreffzeile. Unterstützte Platzhalter werden beim Versand aus dem Bezugsdatensatz ersetzt.",
+    "en": "Template for the subject line. Supported placeholders are replaced from the referenced record when sent."
+  },
+  {
+    "entity": "emailTemplate",
+    "property": "bodyMarkdownTooltip",
+    "de": "Nachrichtenvorlage in Markdown. Platzhalter werden vor dem Versand mit Daten des Bezugsdatensatzes gefüllt.",
+    "en": "Message template in Markdown. Placeholders are filled with data from the referenced record before sending."
+  },
+  {
+    "entity": "emailTemplate",
+    "property": "isDefaultTooltip",
+    "de": "Verwendet diese Vorlage als Vorgabe für die zugeordnete Datensatzart, wenn keine spezifische Vorlage gewählt wurde.",
+    "en": "Uses this template as the default for the associated record type when no specific template is selected."
+  },
+  {
+    "entity": "emailTemplate",
+    "property": "entityTooltip",
+    "de": "Datensatzart, deren Felder als Platzhalter in dieser E-Mail-Vorlage verfügbar sind.",
+    "en": "Record type whose fields are available as placeholders in this email template."
+  },
+  {
+    "entity": "emailSubscription",
+    "property": "recipientFieldTooltip",
+    "de": "Feld des Bezugsdatensatzes, aus dem der E-Mail-Empfänger ermittelt wird.",
+    "en": "Field of the referenced record from which the email recipient is determined."
+  },
+  {
+    "entity": "emailSubscription",
+    "property": "senderPersonTooltip",
+    "de": "Person, deren persönliches Postfach für den Versand verwendet wird, sofern kein freigegebenes Postfach gewählt ist.",
+    "en": "Person whose mailbox is used for sending when no shared mailbox is selected."
+  },
+  {
+    "entity": "emailSubscription",
+    "property": "senderMailboxTooltip",
+    "de": "Freigegebenes Postfach, über das automatische Nachrichten dieser Subscription versendet werden.",
+    "en": "Shared mailbox used to send automated messages for this subscription."
+  },
+  {
+    "entity": "emailSubscription",
+    "property": "conditionsTooltip",
+    "de": "Feldbedingungen, die zusätzlich zum Ereignistyp erfüllt sein müssen, bevor eine E-Mail erzeugt wird.",
+    "en": "Field conditions that must be met in addition to the event type before an email is created."
+  },
+  {
+    "entity": "emailSubscription",
+    "property": "typeTooltip",
+    "de": "Datensatzereignis, das den automatischen E-Mail-Versand auslöst, beispielsweise Anlegen oder Ändern.",
+    "en": "Record event that triggers automated email delivery, such as creation or update."
+  },
+  {
+    "entity": "emailSubscriptionCondition",
+    "property": "observedFieldTooltip",
+    "de": "Feld, dessen alter und neuer Wert beim Auslösen der Subscription geprüft werden.",
+    "en": "Field whose old and new values are evaluated when the subscription is triggered."
+  },
+  {
+    "entity": "emailSubscriptionCondition",
+    "property": "oldValueTooltip",
+    "de": "Optional erwarteter Wert vor der Änderung. Leer lässt den vorherigen Wert unberücksichtigt.",
+    "en": "Optional expected value before the change. Empty ignores the previous value."
+  },
+  {
+    "entity": "emailSubscriptionCondition",
+    "property": "newValueTooltip",
+    "de": "Optional erwarteter Wert nach der Änderung. Leer lässt den neuen Wert unberücksichtigt.",
+    "en": "Optional expected value after the change. Empty ignores the new value."
+  },
+  {
+    "entity": "emailDelivery",
+    "property": "referenceHandleTooltip",
+    "de": "Technischer Bezeichner des Datensatzes, der diesen Versand ausgelöst hat.",
+    "en": "Technical identifier of the record that triggered this delivery."
+  },
+  {
+    "entity": "emailDelivery",
+    "property": "requestPayloadTooltip",
+    "de": "Für Diagnosezwecke gespeicherte Nutzdaten der Anfrage an den E-Mail-Anbieter.",
+    "en": "Request payload sent to the email provider and stored for diagnostic purposes."
+  },
+  {
+    "entity": "emailDelivery",
+    "property": "responseStatusCodeTooltip",
+    "de": "HTTP-Statuscode der letzten Antwort des E-Mail-Anbieters.",
+    "en": "HTTP status code from the email provider's latest response."
+  },
+  {
+    "entity": "emailDelivery",
+    "property": "attemptCountTooltip",
+    "de": "Anzahl der bisher unternommenen Versandversuche einschließlich des letzten Versuchs.",
+    "en": "Number of delivery attempts made so far, including the latest attempt."
+  },
+  {
+    "entity": "emailDelivery",
+    "property": "nextRetryAtTooltip",
+    "de": "Geplanter Zeitpunkt des nächsten automatischen Versandversuchs nach einem vorübergehenden Fehler.",
+    "en": "Scheduled time of the next automatic delivery attempt after a temporary failure."
+  },
+  {
+    "entity": "externalRecordLink",
+    "property": "externalKeyHashTooltip",
+    "de": "Prüfwert des externen Schlüssels zur schnellen und eindeutigen Wiedererkennung importierter Datensätze.",
+    "en": "Hash of the external key used to identify imported records quickly and uniquely."
+  },
+  {
+    "entity": "externalRecordLink",
+    "property": "externalKeyPartsTooltip",
+    "de": "Bestandteile des fachlichen Schlüssels im Fremdsystem, aus denen die eindeutige Zuordnung gebildet wird.",
+    "en": "Components of the business key in the external system used to build the unique mapping."
+  },
+  {
+    "entity": "externalRecordLink",
+    "property": "lastSeenAtTooltip",
+    "de": "Zeitpunkt, zu dem der externe Datensatz zuletzt in einem Import vorhanden war.",
+    "en": "Time when the external record was last present in an import."
+  },
+  {
+    "entity": "importTemplate",
+    "property": "sourceTooltip",
+    "de": "Fremdsystem oder Herkunft, für dessen Datenformat diese Importvorlage gilt.",
+    "en": "External system or origin whose data format this import template supports."
+  },
+  {
+    "entity": "importTemplate",
+    "property": "targetEntityTooltip",
+    "de": "Sapling-Datensatzart, die mit den importierten Zeilen angelegt oder aktualisiert wird.",
+    "en": "Sapling record type created or updated from imported rows."
+  },
+  {
+    "entity": "importTemplate",
+    "property": "mappingTooltip",
+    "de": "JSON-Zuordnung von Quellspalten zu Zielfeldern einschließlich Konvertierungs- und Schlüsselregeln.",
+    "en": "JSON mapping from source columns to target fields, including conversion and key rules."
+  },
+  {
+    "entity": "importTemplateValueMapping",
+    "property": "targetFieldTooltip",
+    "de": "Zielfeld, auf dessen Wert diese Übersetzungsregel angewendet wird.",
+    "en": "Target field to whose value this translation rule is applied."
+  },
+  {
+    "entity": "importTemplateValueMapping",
+    "property": "sourceValueTooltip",
+    "de": "Wert aus der Importquelle, der erkannt und ersetzt werden soll.",
+    "en": "Value from the import source that should be recognized and replaced."
+  },
+  {
+    "entity": "importTemplateValueMapping",
+    "property": "targetValueTooltip",
+    "de": "Wert, der nach erfolgreicher Zuordnung in das Sapling-Zielfeld geschrieben wird.",
+    "en": "Value written to the Sapling target field after a successful mapping."
+  },
+  {
+    "entity": "importTemplateValueMapping",
+    "property": "fallbackTooltip",
+    "de": "Verwendet diese Regel als Rückfall, wenn keine spezifische Wertzuordnung passt.",
+    "en": "Uses this rule as a fallback when no specific value mapping matches."
+  },
+  {
+    "entity": "importBatch",
+    "property": "currentOperationTooltip",
+    "de": "Aktueller Verarbeitungsschritt des Imports, beispielsweise Prüfen, Vorbereiten oder Ausführen.",
+    "en": "Current import processing step, such as validating, preparing, or executing."
+  },
+  {
+    "entity": "importBatch",
+    "property": "readyCountTooltip",
+    "de": "Anzahl der geprüften Zeilen, die ohne bekannte Fehler ausgeführt werden können.",
+    "en": "Number of validated rows that can be executed without known errors."
+  },
+  {
+    "entity": "importBatch",
+    "property": "errorCountTooltip",
+    "de": "Anzahl der Importzeilen mit Validierungs- oder Verarbeitungsfehlern.",
+    "en": "Number of import rows with validation or processing errors."
+  },
+  {
+    "entity": "importBatch",
+    "property": "lastErrorTooltip",
+    "de": "Letzte technische Fehlermeldung des Importlaufs zur Diagnose.",
+    "en": "Latest technical error message from the import run for diagnostic purposes."
+  },
+  {
+    "entity": "importBatchRow",
+    "property": "actionTooltip",
+    "de": "Geplante oder ausgeführte Aktion für diese Zeile, beispielsweise Anlegen, Aktualisieren oder Überspringen.",
+    "en": "Planned or completed action for this row, such as create, update, or skip."
+  },
+  {
+    "entity": "importBatchRow",
+    "property": "targetReferenceTooltip",
+    "de": "Technischer Bezeichner des Sapling-Datensatzes, der dieser Importzeile zugeordnet wurde.",
+    "en": "Technical identifier of the Sapling record associated with this import row."
+  },
+  {
+    "entity": "sharedMailbox",
+    "property": "providerTooltip",
+    "de": "Maildienst, über den dieses freigegebene Postfach gelesen und zum Versand verwendet wird.",
+    "en": "Mail service through which this shared mailbox is read and used for sending."
+  },
+  {
+    "entity": "sharedMailboxContext",
+    "property": "entityTooltip",
+    "de": "Datensatzart, für die dieses Postfach und diese Vorlage als Standardkontext gelten.",
+    "en": "Record type for which this mailbox and template serve as the default context."
+  },
+  {
+    "entity": "sharedMailboxContext",
+    "property": "templateTooltip",
+    "de": "E-Mail-Vorlage, die in diesem Postfachkontext standardmäßig angeboten wird.",
+    "en": "Email template offered by default in this mailbox context."
+  },
+  {
+    "entity": "emailInboxSubscription",
+    "property": "processingModeTooltip",
+    "de": "Legt fest, ob eingehende Nachrichten nur importiert, regelbasiert verarbeitet oder durch einen AI-Agenten ausgewertet werden.",
+    "en": "Determines whether incoming messages are only imported, processed by rules, or evaluated by an AI agent."
+  },
+  {
+    "entity": "emailInboxSubscription",
+    "property": "contextMarkdownTooltip",
+    "de": "Zusätzlicher fachlicher Kontext und Arbeitsanweisungen für die automatische Verarbeitung eingehender Nachrichten.",
+    "en": "Additional business context and instructions for automated processing of incoming messages."
+  },
+  {
+    "entity": "emailInboxSubscription",
+    "property": "automaticProcessingTooltip",
+    "de": "Erlaubt, importierte Nachrichten ohne manuelle Freigabe gemäß dem gewählten Verarbeitungsmodus weiterzuverarbeiten.",
+    "en": "Allows imported messages to be processed further without manual approval according to the selected mode."
+  },
+  {
+    "entity": "emailInboxSubscription",
+    "property": "intervalMinutesTooltip",
+    "de": "Zeitabstand in Minuten zwischen automatischen Abrufen des Postfachs.",
+    "en": "Number of minutes between automatic mailbox retrievals."
+  },
+  {
+    "entity": "emailInboxSubscription",
+    "property": "importExistingOnFirstRunTooltip",
+    "de": "Importiert beim ersten Lauf auch bereits vorhandene Nachrichten. Andernfalls werden nur danach eingehende Nachrichten berücksichtigt.",
+    "en": "Imports messages already present during the first run. Otherwise, only messages received afterward are considered."
+  },
+  {
+    "entity": "emailInboxSubscription",
+    "property": "processingPersonTooltip",
+    "de": "Person, in deren fachlichem oder technischem Kontext eingehende Nachrichten verarbeitet werden.",
+    "en": "Person in whose business or technical context incoming messages are processed."
+  },
+  {
+    "entity": "emailInboxSubscription",
+    "property": "agentTooltip",
+    "de": "AI-Agent, der Inhalt und Anhänge eingehender Nachrichten im AI-Verarbeitungsmodus bewertet.",
+    "en": "AI agent that evaluates the content and attachments of incoming messages in AI processing mode."
+  },
+  {
+    "entity": "emailInboxSubscription",
+    "property": "lastErrorTooltip",
+    "de": "Letzte beim Abruf oder bei der Verarbeitung aufgetretene Fehlermeldung.",
+    "en": "Latest error encountered while retrieving or processing messages."
+  },
+  {
+    "entity": "inboundEmail",
+    "property": "processingAttemptsTooltip",
+    "de": "Anzahl der bisherigen automatischen Verarbeitungsversuche für diese Nachricht.",
+    "en": "Number of automated processing attempts made for this message."
+  },
+  {
+    "entity": "inboundEmail",
+    "property": "processingMessageTooltip",
+    "de": "Aktuelle fachliche Status- oder Fehlermeldung der Nachrichtenverarbeitung.",
+    "en": "Current business status or error message from message processing."
+  },
+  {
+    "entity": "inboundEmail",
+    "property": "processingLogTooltip",
+    "de": "Technisches Ablaufprotokoll der Verarbeitung zur Diagnose und Nachvollziehbarkeit.",
+    "en": "Technical processing log used for diagnostics and traceability."
+  },
+  {
+    "entity": "teamsTemplate",
+    "property": "bodyMarkdownTooltip",
+    "de": "Nachrichtenvorlage in Markdown. Platzhalter werden aus dem Bezugsdatensatz ersetzt.",
+    "en": "Message template in Markdown. Placeholders are replaced from the referenced record."
+  },
+  {
+    "entity": "teamsTemplate",
+    "property": "isDefaultTooltip",
+    "de": "Verwendet diese Vorlage als Vorgabe für die zugeordnete Datensatzart.",
+    "en": "Uses this template as the default for the associated record type."
+  },
+  {
+    "entity": "teamsSubscription",
+    "property": "recipientFieldTooltip",
+    "de": "Feld des Bezugsdatensatzes, aus dem der Teams-Empfänger ermittelt wird.",
+    "en": "Field of the referenced record from which the Teams recipient is determined."
+  },
+  {
+    "entity": "teamsSubscription",
+    "property": "typeTooltip",
+    "de": "Datensatzereignis, das die automatische Teams-Nachricht auslöst.",
+    "en": "Record event that triggers the automated Teams message."
+  },
+  {
+    "entity": "inboxTemplate",
+    "property": "titleTemplateTooltip",
+    "de": "Vorlage für den Titel der internen Benachrichtigung mit Platzhaltern aus dem Bezugsdatensatz.",
+    "en": "Template for the internal notification title with placeholders from the referenced record."
+  },
+  {
+    "entity": "inboxTemplate",
+    "property": "bodyMarkdownTooltip",
+    "de": "Vorlage für den Inhalt der internen Benachrichtigung in Markdown.",
+    "en": "Template for the internal notification content in Markdown."
+  },
+  {
+    "entity": "inboxSubscription",
+    "property": "recipientFieldTooltip",
+    "de": "Feld des Bezugsdatensatzes, aus dem der persönliche Empfänger der Benachrichtigung ermittelt wird.",
+    "en": "Field of the referenced record from which the personal notification recipient is determined."
+  },
+  {
+    "entity": "inboxSubscription",
+    "property": "typeTooltip",
+    "de": "Datensatzereignis, das die interne Benachrichtigung auslöst.",
+    "en": "Record event that triggers the internal notification."
+  },
+  {
+    "entity": "aiAgent",
+    "property": "mutationModeTooltip",
+    "de": "Steuert den Umgang mit schreibenden Werkzeugaufrufen, beispielsweise vorherige Bestätigung oder direkte Ausführung.",
+    "en": "Controls how write-capable tool calls are handled, such as requiring confirmation or executing directly."
+  },
+  {
+    "entity": "aiAgent",
+    "property": "rolesTooltip",
+    "de": "Rollen, deren Benutzer diesen Agenten auswählen und verwenden dürfen. Leer bedeutet keine zusätzliche Rollenfreigabe.",
+    "en": "Roles whose users may select and use this agent. Empty means no additional role grant."
+  },
+  {
+    "entity": "aiAgent",
+    "property": "isDefaultTooltip",
+    "de": "Wählt diesen Agenten für neue Chats vor, sofern kein persönlicher oder kontextbezogener Agent festgelegt ist.",
+    "en": "Preselects this agent for new chats when no personal or contextual agent has been configured."
+  },
+  {
+    "entity": "aiAgentVersion",
+    "property": "versionTooltip",
+    "de": "Fortlaufende Version der Agentenkonfiguration für reproduzierbare Chat- und Ausführungshistorien.",
+    "en": "Sequential version of the agent configuration used for reproducible chat and execution histories."
+  },
+  {
+    "entity": "aiAgentVersion",
+    "property": "statusTooltip",
+    "de": "Lebenszyklus dieser Agentenversion, beispielsweise Entwurf, veröffentlicht oder abgelöst.",
+    "en": "Lifecycle state of this agent version, such as draft, published, or superseded."
+  },
+  {
+    "entity": "aiAgentVersion",
+    "property": "changelogTooltip",
+    "de": "Beschreibung der fachlichen oder technischen Änderungen gegenüber der vorherigen Version.",
+    "en": "Description of business or technical changes compared with the previous version."
+  },
+  {
+    "entity": "aiChatSession",
+    "property": "isArchivedTooltip",
+    "de": "Blendet den Chat aus der aktiven Verlaufsliste aus, ohne Nachrichten oder Ausführungshistorie zu löschen.",
+    "en": "Removes the chat from the active history without deleting messages or execution history."
+  },
+  {
+    "entity": "aiChatSession",
+    "property": "agentVersionTooltip",
+    "de": "Festgehaltene Agentenversion, mit der dieser Chat ausgeführt wird. Sie sichert die Nachvollziehbarkeit späterer Antworten.",
+    "en": "Recorded agent version used by this chat. It preserves traceability of later responses."
+  },
+  {
+    "entity": "aiChatMessage",
+    "property": "roleTooltip",
+    "de": "Technische Nachrichtenrolle, beispielsweise Benutzer, Assistent, System oder Werkzeug.",
+    "en": "Technical message role, such as user, assistant, system, or tool."
+  },
+  {
+    "entity": "aiChatMessage",
+    "property": "statusTooltip",
+    "de": "Verarbeitungszustand der Nachricht, beispielsweise laufend, abgeschlossen oder fehlgeschlagen.",
+    "en": "Processing state of the message, such as running, completed, or failed."
+  },
+  {
+    "entity": "aiChatMessage",
+    "property": "sequenceTooltip",
+    "de": "Fortlaufende Position der Nachricht innerhalb des Chats.",
+    "en": "Sequential position of the message within the chat."
+  },
+  {
+    "entity": "aiChatMessage",
+    "property": "contextPayloadTooltip",
+    "de": "Zum Anfragezeitpunkt übergebener Seiten-, Datensatz- und Anwendungskontext.",
+    "en": "Page, record, and application context supplied when the request was made."
+  },
+  {
+    "entity": "aiChatMessage",
+    "property": "toolCallsTooltip",
+    "de": "Vom Modell angeforderte strukturierte Werkzeugaufrufe einschließlich ihrer Parameter.",
+    "en": "Structured tool calls requested by the model, including their parameters."
+  },
+  {
+    "entity": "aiChatMessage",
+    "property": "requestPayloadTooltip",
+    "de": "Für Diagnose und Nachvollziehbarkeit gespeicherte Anfrage an den AI-Anbieter.",
+    "en": "Request sent to the AI provider and stored for diagnostics and traceability."
+  },
+  {
+    "entity": "aiChatMessage",
+    "property": "responsePayloadTooltip",
+    "de": "Für Diagnose und Nachvollziehbarkeit gespeicherte Rohantwort des AI-Anbieters.",
+    "en": "Raw response from the AI provider stored for diagnostics and traceability."
+  },
+  {
+    "entity": "aiChatMessage",
+    "property": "urlTooltip",
+    "de": "Adresse der Anwendungsseite, aus deren Kontext die Nachricht erstellt wurde.",
+    "en": "Address of the application page from whose context the message was created."
+  },
+  {
+    "entity": "aiChatMessage",
+    "property": "routeNameTooltip",
+    "de": "Technischer Name der Anwendungsroute zum Zeitpunkt der Nachricht.",
+    "en": "Technical application route name at the time of the message."
+  },
+  {
+    "entity": "aiChatTranscription",
+    "property": "detectedLanguageTooltip",
+    "de": "Vom Transkriptionsmodell erkannte Sprache der Aufnahme.",
+    "en": "Language of the recording detected by the transcription model."
+  },
+  {
+    "entity": "aiChatTranscription",
+    "property": "durationSecondsTooltip",
+    "de": "Dauer der verarbeiteten Audioaufnahme in Sekunden.",
+    "en": "Duration of the processed audio recording in seconds."
+  },
+  {
+    "entity": "aiChatTranscription",
+    "property": "failurePayloadTooltip",
+    "de": "Technische Fehlerdetails einer fehlgeschlagenen Transkription.",
+    "en": "Technical error details from a failed transcription."
+  },
+  {
+    "entity": "aiChatToolAction",
+    "property": "serverNameTooltip",
+    "de": "Technischer Name des internen oder externen Werkzeugservers.",
+    "en": "Technical name of the internal or external tool server."
+  },
+  {
+    "entity": "aiChatToolAction",
+    "property": "toolNameTooltip",
+    "de": "Exakter Werkzeugname, der durch das Modell angefordert wurde.",
+    "en": "Exact tool name requested by the model."
+  },
+  {
+    "entity": "aiChatToolAction",
+    "property": "argumentsTooltip",
+    "de": "Vom Modell übergebene strukturierte Eingabeparameter des Werkzeugaufrufs.",
+    "en": "Structured tool input parameters supplied by the model."
+  },
+  {
+    "entity": "aiChatToolAction",
+    "property": "expiresAtTooltip",
+    "de": "Zeitpunkt, bis zu dem ein ausstehender Werkzeugaufruf bestätigt und ausgeführt werden kann.",
+    "en": "Time until which a pending tool action can be approved and executed."
+  },
+  {
+    "entity": "aiChatToolAction",
+    "property": "resultPayloadTooltip",
+    "de": "Strukturiertes Ergebnis des erfolgreich ausgeführten Werkzeugaufrufs.",
+    "en": "Structured result of the successfully executed tool action."
+  },
+  {
+    "entity": "aiChatToolAction",
+    "property": "errorPayloadTooltip",
+    "de": "Technische Fehlerdetails eines abgelehnten oder fehlgeschlagenen Werkzeugaufrufs.",
+    "en": "Technical error details from a rejected or failed tool action."
+  },
+  {
+    "entity": "aiChatAttachment",
+    "property": "purposeTooltip",
+    "de": "Verwendungszweck des Anhangs im Chat, beispielsweise Kontext, Import oder Analyse.",
+    "en": "Purpose of the attachment in the chat, such as context, import, or analysis."
+  },
+  {
+    "entity": "aiChatAttachment",
+    "property": "summaryPayloadTooltip",
+    "de": "Strukturierte Zusammenfassung und erkannte Metadaten des verarbeiteten Anhangs.",
+    "en": "Structured summary and detected metadata of the processed attachment."
+  },
+  {
+    "entity": "aiEntityGenerationTemplate",
+    "property": "sourceRelationsTooltip",
+    "de": "Relationen der Quellentität, die vor der AI-Generierung zusätzlich geladen und in den Kontext aufgenommen werden.",
+    "en": "Relations of the source entity loaded and included in context before AI generation."
+  },
+  {
+    "entity": "aiEntityGenerationTemplate",
+    "property": "fieldMappingTooltip",
+    "de": "Zuordnung der strukturierten AI-Ausgabe zu Feldern der Zielentität.",
+    "en": "Mapping from structured AI output to fields of the target entity."
+  },
+  {
+    "entity": "aiEntityGenerationTemplate",
+    "property": "sourceFieldMappingTooltip",
+    "de": "Zuordnung von Feldern des Quelldatensatzes zu Eingaben und Kontextwerten der Generierung.",
+    "en": "Mapping from source-record fields to generation inputs and context values."
+  },
+  {
+    "entity": "aiEntityGenerationTemplate",
+    "property": "targetDefaultsTooltip",
+    "de": "Feste Standardwerte, die unabhängig von der AI-Ausgabe in neue Zieldatensätze übernommen werden.",
+    "en": "Fixed default values copied to new target records independently of AI output."
+  },
+  {
+    "entity": "aiEntityGenerationTemplate",
+    "property": "sourceReferenceFieldTooltip",
+    "de": "Zielfeld, in dem die Referenz auf den verwendeten Quelldatensatz gespeichert wird.",
+    "en": "Target field in which the reference to the source record is stored."
+  },
+  {
+    "entity": "aiEntityGenerationTemplate",
+    "property": "userReferenceFieldTooltip",
+    "de": "Zielfeld, in dem die ausführende oder verantwortliche Person gespeichert wird.",
+    "en": "Target field in which the executing or responsible person is stored."
+  },
+  {
+    "entity": "aiProviderType",
+    "property": "credentialTypesTooltip",
+    "de": "Vom Anbieter unterstützte Arten von Zugangsdaten, beispielsweise API-Schlüssel oder OAuth.",
+    "en": "Credential types supported by the provider, such as API keys or OAuth."
+  },
+  {
+    "entity": "aiProviderType",
+    "property": "credentialsTooltip",
+    "de": "Geschützt gespeicherte Zugangsdaten und anbieterspezifische Verbindungsparameter.",
+    "en": "Securely stored credentials and provider-specific connection parameters."
+  },
+  {
+    "entity": "aiProviderModel",
+    "property": "vectorSearchCandidateMultiplierTooltip",
+    "de": "Vervielfacht die Zahl zunächst geladener Vektortreffer, bevor Filter und endgültige Begrenzung angewendet werden.",
+    "en": "Multiplies the number of vector candidates initially retrieved before filters and the final limit are applied."
+  },
+  {
+    "entity": "aiProviderModel",
+    "property": "vectorSearchMaxCandidateLimitTooltip",
+    "de": "Absolute Obergrenze der zunächst geprüften Kandidaten einer Vektorsuche zum Schutz von Laufzeit und Ressourcen.",
+    "en": "Absolute upper limit on initial vector-search candidates to protect runtime and resources."
+  },
+  {
+    "entity": "aiProviderModel",
+    "property": "vectorSearchMaxResultsTooltip",
+    "de": "Maximale Anzahl semantischer Treffer, die nach Bewertung und Filterung an den Agenten zurückgegeben werden.",
+    "en": "Maximum number of semantic matches returned to the agent after ranking and filtering."
+  },
+  {
+    "entity": "aiProviderModel",
+    "property": "speechVoiceTooltip",
+    "de": "Anbieterspezifischer Bezeichner der Standardstimme für die Sprachausgabe.",
+    "en": "Provider-specific identifier of the default voice used for speech output."
+  },
+  {
+    "entity": "aiProviderModel",
+    "property": "speechSpeedTooltip",
+    "de": "Geschwindigkeitsfaktor der Sprachausgabe; 1 entspricht in der Regel der normalen Sprechgeschwindigkeit.",
+    "en": "Speech output speed factor; 1 generally represents normal speaking speed."
+  },
+  {
+    "entity": "aiProviderModel",
+    "property": "speechMimeTypeTooltip",
+    "de": "MIME-Typ des vom Anbieter erzeugten Audioformats, beispielsweise audio/mpeg.",
+    "en": "MIME type of the audio format produced by the provider, such as audio/mpeg."
+  },
+  {
+    "entity": "aiProviderModel",
+    "property": "speechFileExtensionTooltip",
+    "de": "Dateiendung, die für erzeugte Sprachdateien dieses Modells verwendet wird.",
+    "en": "File extension used for speech files generated by this model."
+  },
+  {
+    "entity": "aiProviderModel",
+    "property": "speechMaxInputLengthTooltip",
+    "de": "Maximale Textlänge pro Sprachausgabe-Anfrage. Längere Inhalte müssen aufgeteilt werden.",
+    "en": "Maximum text length per speech request. Longer content must be split."
+  },
+  {
+    "entity": "aiProviderModel",
+    "property": "maxToolCallIterationsTooltip",
+    "de": "Maximale Zahl aufeinanderfolgender Modell- und Werkzeugrunden pro Anfrage. Die Begrenzung verhindert Endlosschleifen.",
+    "en": "Maximum number of consecutive model and tool rounds per request. The limit prevents endless loops."
+  },
+  {
+    "entity": "aiProviderModel",
+    "property": "isDefaultTooltip",
+    "de": "Verwendet dieses Modell als Vorgabe für den Anbieter, wenn kein anderes Modell ausgewählt wurde.",
+    "en": "Uses this model as the provider default when no other model has been selected."
+  },
+  {
+    "entity": "mcpServerConfig",
+    "property": "transportTooltip",
+    "de": "Verbindungsart zum MCP-Server, beispielsweise HTTP oder lokaler Prozess über Standard-Ein-/Ausgabe.",
+    "en": "Connection method for the MCP server, such as HTTP or a local process over standard input/output."
+  },
+  {
+    "entity": "mcpServerConfig",
+    "property": "endpointTooltip",
+    "de": "Netzwerkadresse des MCP-Servers bei einem HTTP-basierten Transport.",
+    "en": "Network address of the MCP server when using an HTTP-based transport."
+  },
+  {
+    "entity": "mcpServerConfig",
+    "property": "commandTooltip",
+    "de": "Ausführbares Programm, das für einen lokalen MCP-Server gestartet wird.",
+    "en": "Executable program started for a local MCP server."
+  },
+  {
+    "entity": "mcpServerConfig",
+    "property": "argsTooltip",
+    "de": "Befehlszeilenargumente, die beim Start an den lokalen MCP-Server übergeben werden.",
+    "en": "Command-line arguments passed when starting the local MCP server."
+  },
+  {
+    "entity": "mcpServerConfig",
+    "property": "environmentTooltip",
+    "de": "Umgebungsvariablen für den lokalen MCP-Prozess. Geheimnisse nur über dafür vorgesehene geschützte Werte hinterlegen.",
+    "en": "Environment variables for the local MCP process. Store secrets only through designated protected values."
+  },
+  {
+    "entity": "mcpServerConfig",
+    "property": "headersTooltip",
+    "de": "Zusätzliche HTTP-Header, die bei jeder Verbindung zum MCP-Endpunkt gesendet werden.",
+    "en": "Additional HTTP headers sent with every connection to the MCP endpoint."
+  },
+  {
+    "entity": "mcpServerConfig",
+    "property": "authConfigTooltip",
+    "de": "Geschützte Authentifizierungsparameter für den MCP-Server.",
+    "en": "Protected authentication parameters for the MCP server."
+  },
+  {
+    "entity": "mcpServerConfig",
+    "property": "allowedToolsTooltip",
+    "de": "Positivliste der Werkzeuge, die Sapling von diesem Server verfügbar machen darf. Leer bedeutet keine zusätzliche Werkzeugfreigabe.",
+    "en": "Allowlist of tools Sapling may expose from this server. Empty means no additional tool grant."
+  },
+  {
+    "entity": "mcpServerConfig",
+    "property": "timeoutMsTooltip",
+    "de": "Maximale Wartezeit eines MCP-Aufrufs in Millisekunden, bevor er als fehlgeschlagen gilt.",
+    "en": "Maximum time in milliseconds to wait for an MCP call before it is considered failed."
+  },
+  {
+    "entity": "salesOpportunity",
+    "property": "expectedRevenueTooltip",
+    "de": "Aktuell erwarteter ungewichteter Umsatzwert der Verkaufschance.",
+    "en": "Current expected unweighted revenue value of the sales opportunity."
+  },
+  {
+    "entity": "salesOpportunity",
+    "property": "probabilityTooltip",
+    "de": "Geschätzte Abschlusswahrscheinlichkeit in Prozent. Sie kann für gewichtete Forecasts verwendet werden.",
+    "en": "Estimated probability of closing as a percentage. It can be used for weighted forecasts."
+  },
+  {
+    "entity": "salesOpportunity",
+    "property": "closeDateTooltip",
+    "de": "Voraussichtliches Datum, an dem die Verkaufschance gewonnen oder beendet wird.",
+    "en": "Expected date on which the sales opportunity will be won or closed."
+  },
+  {
+    "entity": "salesOpportunity",
+    "property": "nextStepTooltip",
+    "de": "Nächste konkret vereinbarte Aktivität, mit der die Verkaufschance vorangebracht wird.",
+    "en": "Next specifically agreed action for advancing the sales opportunity."
+  },
+  {
+    "entity": "salesOpportunity",
+    "property": "painPointsTooltip",
+    "de": "Fachliche Probleme, Ziele oder Handlungsdruck des Interessenten, die das Angebot adressieren soll.",
+    "en": "Business problems, goals, or urgency of the prospect that the proposal should address."
+  },
+  {
+    "entity": "salesOpportunity",
+    "property": "forecastTooltip",
+    "de": "Vertriebliche Forecast-Kategorie für die erwartete Berücksichtigung im Umsatzplan.",
+    "en": "Sales forecast category controlling expected inclusion in the revenue plan."
+  },
+  {
+    "entity": "salesOpportunity",
+    "property": "resultStatusTooltip",
+    "de": "Fachliches Ergebnis der Verkaufschance, insbesondere offen, gewonnen oder verloren.",
+    "en": "Business outcome of the sales opportunity, especially open, won, or lost."
+  },
+  {
+    "entity": "salesOpportunity",
+    "property": "lossReasonTooltip",
+    "de": "Hauptgrund, aus dem eine Verkaufschance nicht gewonnen wurde.",
+    "en": "Primary reason why a sales opportunity was not won."
+  },
+  {
+    "entity": "salesOpportunity",
+    "property": "competitorsTooltip",
+    "de": "Unternehmen oder Lösungen, die in dieser Verkaufschance als Wettbewerber auftreten.",
+    "en": "Companies or solutions competing in this sales opportunity."
+  },
+  {
+    "entity": "salesOpportunityStage",
+    "property": "defaultProbabilityTooltip",
+    "de": "Abschlusswahrscheinlichkeit, die beim Wechsel in diese Vertriebsphase vorgeschlagen wird.",
+    "en": "Closing probability suggested when entering this sales stage."
+  },
+  {
+    "entity": "salesOpportunityStage",
+    "property": "isClosedTooltip",
+    "de": "Verkaufschancen in dieser Phase gelten als beendet und erscheinen nicht mehr im offenen Vertriebsvorrat.",
+    "en": "Sales opportunities in this stage are considered closed and no longer appear in the open pipeline."
+  },
+  {
+    "entity": "salesOpportunityStage",
+    "property": "isSuccessTooltip",
+    "de": "Kennzeichnet eine geschlossene Phase als erfolgreichen Abschluss.",
+    "en": "Marks a closed stage as a successful outcome."
+  },
+  {
+    "entity": "salesOpportunityResultStatus",
+    "property": "isOpenTooltip",
+    "de": "Verkaufschancen mit diesem Ergebnis gelten weiterhin als offen.",
+    "en": "Sales opportunities with this result remain open."
+  },
+  {
+    "entity": "salesOpportunityResultStatus",
+    "property": "isClosedTooltip",
+    "de": "Verkaufschancen mit diesem Ergebnis gelten als fachlich abgeschlossen.",
+    "en": "Sales opportunities with this result are considered closed."
+  },
+  {
+    "entity": "salesOpportunityResultStatus",
+    "property": "isSuccessTooltip",
+    "de": "Kennzeichnet dieses abgeschlossene Ergebnis als gewonnen oder erfolgreich.",
+    "en": "Marks this closed result as won or successful."
+  },
+  {
+    "entity": "ticket",
+    "property": "externalNumberTooltip",
+    "de": "Vorgangsnummer eines Kunden, Partners oder angebundenen Fremdsystems.",
+    "en": "Case number from a customer, partner, or connected external system."
+  },
+  {
+    "entity": "ticket",
+    "property": "deadlineDateTooltip",
+    "de": "Fachlich vereinbarter Endtermin des Tickets, unabhängig von automatisch berechneten SLA-Fristen.",
+    "en": "Business deadline agreed for the ticket, independently of automatically calculated SLA deadlines."
+  },
+  {
+    "entity": "ticket",
+    "property": "slaPolicyTooltip",
+    "de": "SLA-Regelwerk, aus dem Reaktions- und Lösungsfrist dieses Tickets berechnet werden.",
+    "en": "SLA policy used to calculate this ticket's response and resolution deadlines."
+  },
+  {
+    "entity": "ticket",
+    "property": "firstResponseDueAtTooltip",
+    "de": "Aus dem SLA berechneter spätester Zeitpunkt für die erste qualifizierte Reaktion.",
+    "en": "Latest time for the first qualified response as calculated from the SLA."
+  },
+  {
+    "entity": "ticket",
+    "property": "resolutionDueAtTooltip",
+    "de": "Aus dem SLA berechneter spätester Zeitpunkt für die Lösung oder den Abschluss des Tickets.",
+    "en": "Latest time for resolving or closing the ticket as calculated from the SLA."
+  },
+  {
+    "entity": "ticket",
+    "property": "firstRespondedAtTooltip",
+    "de": "Zeitpunkt der ersten qualifizierten Reaktion; er dient zur Bewertung der SLA-Reaktionszeit.",
+    "en": "Time of the first qualified response, used to evaluate the SLA response target."
+  },
+  {
+    "entity": "ticket",
+    "property": "resolvedAtTooltip",
+    "de": "Zeitpunkt, zu dem das Ticket fachlich gelöst wurde; er dient zur Bewertung der SLA-Lösungszeit.",
+    "en": "Time when the ticket was resolved, used to evaluate the SLA resolution target."
+  },
+  {
+    "entity": "ticketStatus",
+    "property": "isOpenTooltip",
+    "de": "Tickets mit diesem Status gelten als offen und fließen in offene Arbeitsvorräte ein.",
+    "en": "Tickets with this status are considered open and included in active work queues."
+  },
+  {
+    "entity": "ticketTimeTracking",
+    "property": "startTimeTooltip",
+    "de": "Beginn des erfassten Arbeitszeitraums für dieses Ticket.",
+    "en": "Start of the recorded work period for this ticket."
+  },
+  {
+    "entity": "ticketTimeTracking",
+    "property": "endTimeTooltip",
+    "de": "Ende des erfassten Arbeitszeitraums. Leer kennzeichnet eine noch laufende Zeiterfassung.",
+    "en": "End of the recorded work period. Empty indicates time tracking still in progress."
+  },
+  {
+    "entity": "supportQueue",
+    "property": "defaultSlaPolicyTooltip",
+    "de": "SLA-Regelwerk, das neuen Tickets dieser Warteschlange vorgeschlagen wird, sofern Vertrag oder Ticket nichts Spezifischeres vorgeben.",
+    "en": "SLA policy suggested for new tickets in this queue unless the contract or ticket specifies a more specific policy."
+  },
+  {
+    "entity": "slaPolicy",
+    "property": "firstResponseHoursTooltip",
+    "de": "Zulässige Arbeitsstunden bis zur ersten qualifizierten Reaktion. Arbeitszeiten und Feiertage werden berücksichtigt.",
+    "en": "Allowed working hours until the first qualified response. Working times and holidays are taken into account."
+  },
+  {
+    "entity": "slaPolicy",
+    "property": "resolutionHoursTooltip",
+    "de": "Zulässige Arbeitsstunden bis zur Lösung. Arbeitszeiten und Feiertage werden berücksichtigt.",
+    "en": "Allowed working hours until resolution. Working times and holidays are taken into account."
+  },
+  {
+    "entity": "internalCase",
+    "property": "requestMarkdownTooltip",
+    "de": "Fachliche Anfrage oder Problemstellung, die mit diesem internen Vorgang bearbeitet werden soll.",
+    "en": "Business request or problem to be handled by this internal case."
+  },
+  {
+    "entity": "internalCase",
+    "property": "internalInformationMarkdownTooltip",
+    "de": "Interne Bearbeitungshinweise, die nicht Teil der externen Anfrage oder Kundenkommunikation sind.",
+    "en": "Internal processing notes that are not part of the external request or customer communication."
+  },
+  {
+    "entity": "event",
+    "property": "isAllDayTooltip",
+    "de": "Behandelt den Termin als ganztägig; konkrete Uhrzeiten werden dann nicht für die Anzeige verwendet.",
+    "en": "Treats the event as all-day; specific times are then not used for display."
+  },
+  {
+    "entity": "event",
+    "property": "isPrivateTooltip",
+    "de": "Kennzeichnet vertrauliche Termine, deren Details nur berechtigten Personen angezeigt werden sollen.",
+    "en": "Marks confidential events whose details should only be shown to authorized people."
+  },
+  {
+    "entity": "event",
+    "property": "recurrenceRuleTooltip",
+    "de": "Wiederholungsregel des Termins. Sie bestimmt Rhythmus, Ausnahmen und Ende einer Terminserie.",
+    "en": "Recurrence rule for the event. It controls frequency, exceptions, and the end of an event series."
+  },
+  {
+    "entity": "event",
+    "property": "preparationDurationTooltip",
+    "de": "Zusätzliche Pufferzeit vor dem Termin, die bei Verfügbarkeitsprüfungen blockiert wird.",
+    "en": "Additional buffer before the event that is blocked in availability checks."
+  },
+  {
+    "entity": "event",
+    "property": "followUpDurationTooltip",
+    "de": "Zusätzliche Pufferzeit nach dem Termin, die bei Verfügbarkeitsprüfungen blockiert wird.",
+    "en": "Additional buffer after the event that is blocked in availability checks."
+  },
+  {
+    "entity": "event",
+    "property": "onlineMeetingURLTooltip",
+    "de": "Direkter Teilnahmelink für den Online-Termin, beispielsweise zu Teams oder Google Meet.",
+    "en": "Direct participation link for the online event, such as Teams or Google Meet."
+  },
+  {
+    "entity": "eventType",
+    "property": "showInDefaultCalendarTooltip",
+    "de": "Termine dieser Art werden in der Standard-Kalenderansicht ohne zusätzlichen Filter angezeigt.",
+    "en": "Events of this type are shown in the default calendar view without an additional filter."
+  },
+  {
+    "entity": "eventStatus",
+    "property": "isOpenTooltip",
+    "de": "Termine mit diesem Status gelten als offen beziehungsweise noch nicht abgeschlossen.",
+    "en": "Events with this status are considered open or not yet completed."
+  },
+  {
+    "entity": "workHour",
+    "property": "timeFromTooltip",
+    "de": "Beginn des Arbeitszeitfensters für Verfügbarkeits- und SLA-Berechnungen.",
+    "en": "Start of the working-time window used for availability and SLA calculations."
+  },
+  {
+    "entity": "workHour",
+    "property": "timeToTooltip",
+    "de": "Ende des Arbeitszeitfensters für Verfügbarkeits- und SLA-Berechnungen.",
+    "en": "End of the working-time window used for availability and SLA calculations."
+  },
+  {
+    "entity": "webhookAuthenticationApiKey",
+    "property": "headerNameTooltip",
+    "de": "Name des HTTP-Headers, in dem der API-Schlüssel an das Zielsystem übertragen wird.",
+    "en": "Name of the HTTP header in which the API key is sent to the target system."
+  },
+  {
+    "entity": "webhookAuthenticationApiKey",
+    "property": "apiKeyTooltip",
+    "de": "Geheimer API-Schlüssel für das Zielsystem. Er wird geschützt gespeichert und bei jedem Aufruf im festgelegten Header gesendet.",
+    "en": "Secret API key for the target system. It is stored securely and sent in the configured header with each request."
+  },
+  {
+    "entity": "webhookAuthenticationOAuth2",
+    "property": "clientIdTooltip",
+    "de": "Öffentlicher Bezeichner der OAuth2-Anwendung beim Autorisierungsserver des Zielsystems.",
+    "en": "Public identifier of the OAuth2 application at the target system's authorization server."
+  },
+  {
+    "entity": "webhookAuthenticationOAuth2",
+    "property": "clientSecretTooltip",
+    "de": "Geheimes Kennwort der OAuth2-Anwendung. Nur mit minimal erforderlichen Berechtigungen hinterlegen.",
+    "en": "Secret credential of the OAuth2 application. Store it with only the minimum required permissions."
+  },
+  {
+    "entity": "webhookAuthenticationOAuth2",
+    "property": "tokenUrlTooltip",
+    "de": "Adresse des OAuth2-Endpunkts, von dem Zugriffstokens für das Zielsystem angefordert werden.",
+    "en": "Address of the OAuth2 endpoint from which access tokens for the target system are requested."
+  },
+  {
+    "entity": "webhookAuthenticationOAuth2",
+    "property": "scopeTooltip",
+    "de": "Vom Zielsystem angeforderte OAuth2-Berechtigungsbereiche, üblicherweise durch Leerzeichen getrennt.",
+    "en": "OAuth2 permission scopes requested from the target system, usually separated by spaces."
+  },
+  {
+    "entity": "webhookAuthenticationOAuth2",
+    "property": "parametersTooltip",
+    "de": "Zusätzliche anbieterspezifische Parameter für die Token-Anfrage.",
+    "en": "Additional provider-specific parameters for the token request."
+  },
+  {
+    "entity": "webhookAuthenticationOAuth2",
+    "property": "cachedTokenTooltip",
+    "de": "Zwischengespeichertes Zugriffstoken. Es wird automatisch verwaltet und sollte nicht manuell geändert werden.",
+    "en": "Cached access token. It is managed automatically and should not be changed manually."
+  },
+  {
+    "entity": "webhookAuthenticationOAuth2",
+    "property": "tokenExpiresAtTooltip",
+    "de": "Zeitpunkt, zu dem das zwischengespeicherte Zugriffstoken abläuft und automatisch erneuert werden muss.",
+    "en": "Time when the cached access token expires and must be refreshed automatically."
+  },
+  {
+    "entity": "webhookAuthenticationBasic",
+    "property": "usernameTooltip",
+    "de": "Benutzername für die HTTP-Basic-Authentifizierung am Zielsystem.",
+    "en": "Username used for HTTP Basic authentication with the target system."
+  },
+  {
+    "entity": "webhookAuthenticationBasic",
+    "property": "passwordTooltip",
+    "de": "Kennwort für die HTTP-Basic-Authentifizierung. Es wird geschützt gespeichert.",
+    "en": "Password used for HTTP Basic authentication. It is stored securely."
+  },
+  {
+    "entity": "webhookSubscription",
+    "property": "customHeadersTooltip",
+    "de": "Zusätzliche HTTP-Header als JSON-Objekt, die bei jedem Webhook-Aufruf gesendet werden.",
+    "en": "Additional HTTP headers as a JSON object, sent with every webhook request."
+  },
+  {
+    "entity": "webhookSubscription",
+    "property": "containerNameTooltip",
+    "de": "Optionaler Eigenschaftsname, unter dem die Nutzdaten als Zeichenfolge in einem umschließenden JSON-Objekt gesendet werden.",
+    "en": "Optional property name under which the payload is sent as a string inside a wrapping JSON object."
+  },
+  {
+    "entity": "webhookSubscription",
+    "property": "relationsTooltip",
+    "de": "Relationen, die vor dem Versand zusätzlich geladen und in die Webhook-Nutzdaten aufgenommen werden.",
+    "en": "Relations loaded and included in the webhook payload before delivery."
+  },
+  {
+    "entity": "webhookSubscription",
+    "property": "payloadTypeTooltip",
+    "de": "Form der übertragenen Daten, beispielsweise vollständiger Datensatz, Liste oder Ereignisdaten.",
+    "en": "Shape of the transferred data, such as a full record, list, or event data."
+  },
+  {
+    "entity": "webhookSubscription",
+    "property": "urlTooltip",
+    "de": "Vollständige HTTPS-Adresse des Zielsystems, an die Webhook-Anfragen gesendet werden.",
+    "en": "Complete HTTPS address of the target system to which webhook requests are sent."
+  },
+  {
+    "entity": "webhookSubscription",
+    "property": "authenticationTypeTooltip",
+    "de": "Authentifizierungsverfahren für das Zielsystem. Die dazu passende Konfiguration muss zusätzlich ausgewählt werden.",
+    "en": "Authentication method for the target system. The matching configuration must also be selected."
+  },
+  {
+    "entity": "webhookSubscription",
+    "property": "authenticationApiKeyTooltip",
+    "de": "API-Key-Konfiguration, die bei Auswahl der API-Key-Authentifizierung verwendet wird.",
+    "en": "API key configuration used when API key authentication is selected."
+  },
+  {
+    "entity": "webhookSubscription",
+    "property": "authenticationOAuth2Tooltip",
+    "de": "OAuth2-Konfiguration, die bei Auswahl der OAuth2-Authentifizierung verwendet wird.",
+    "en": "OAuth2 configuration used when OAuth2 authentication is selected."
+  },
+  {
+    "entity": "webhookSubscription",
+    "property": "authenticationBasicTooltip",
+    "de": "Zugangsdaten, die bei Auswahl der HTTP-Basic-Authentifizierung verwendet werden.",
+    "en": "Credentials used when HTTP Basic authentication is selected."
+  },
+  {
+    "entity": "webhookSubscription",
+    "property": "signingSecretTooltip",
+    "de": "Geheimnis zur kryptografischen Signierung der Webhook-Nutzdaten, damit das Zielsystem Herkunft und Unverändertheit prüfen kann.",
+    "en": "Secret used to cryptographically sign webhook payloads so the target system can verify origin and integrity."
+  },
+  {
+    "entity": "webhookSubscription",
+    "property": "entityTooltip",
+    "de": "Datensatzart, deren Ereignisse durch diese Subscription beobachtet werden.",
+    "en": "Record type whose events are observed by this subscription."
+  },
+  {
+    "entity": "webhookSubscription",
+    "property": "typeTooltip",
+    "de": "Datensatzereignis, das den Webhook auslöst, beispielsweise Anlegen, Ändern oder Löschen.",
+    "en": "Record event that triggers the webhook, such as creation, update, or deletion."
+  },
+  {
+    "entity": "webhookSubscription",
+    "property": "methodTooltip",
+    "de": "HTTP-Methode, mit der die Nutzdaten an das Zielsystem übertragen werden.",
+    "en": "HTTP method used to send the payload to the target system."
+  },
+  {
+    "entity": "webhookDelivery",
+    "property": "payloadTooltip",
+    "de": "Nutzdaten, die bei diesem konkreten Webhook-Versuch an das Zielsystem gesendet wurden.",
+    "en": "Payload sent to the target system for this specific webhook attempt."
+  },
+  {
+    "entity": "webhookDelivery",
+    "property": "requestHeadersTooltip",
+    "de": "Für Diagnosezwecke gespeicherte HTTP-Header der Webhook-Anfrage; geschützte Werte können maskiert sein.",
+    "en": "HTTP headers of the webhook request stored for diagnostics; protected values may be masked."
+  },
+  {
+    "entity": "webhookDelivery",
+    "property": "responseStatusCodeTooltip",
+    "de": "HTTP-Statuscode der letzten Antwort des Zielsystems.",
+    "en": "HTTP status code from the target system's latest response."
+  },
+  {
+    "entity": "webhookDelivery",
+    "property": "responseBodyTooltip",
+    "de": "Antwortinhalt des Zielsystems zur Diagnose erfolgreicher oder fehlgeschlagener Aufrufe.",
+    "en": "Response content from the target system for diagnosing successful or failed calls."
+  },
+  {
+    "entity": "webhookDelivery",
+    "property": "attemptCountTooltip",
+    "de": "Anzahl der bisher unternommenen Zustellversuche einschließlich des letzten Versuchs.",
+    "en": "Number of delivery attempts made so far, including the latest attempt."
+  },
+  {
+    "entity": "webhookDelivery",
+    "property": "nextRetryAtTooltip",
+    "de": "Geplanter Zeitpunkt des nächsten automatischen Zustellversuchs nach einem vorübergehenden Fehler.",
+    "en": "Scheduled time of the next automatic delivery attempt after a temporary failure."
+  },
+  {
+    "entity": "eventDelivery",
+    "property": "payloadTooltip",
+    "de": "Nutzdaten, die für diese Ereigniszustellung erzeugt wurden.",
+    "en": "Payload generated for this event delivery."
+  },
+  {
+    "entity": "eventDelivery",
+    "property": "responseStatusCodeTooltip",
+    "de": "HTTP-Statuscode der letzten Antwort des Zielsystems.",
+    "en": "HTTP status code from the target system's latest response."
+  },
+  {
+    "entity": "eventDelivery",
+    "property": "attemptCountTooltip",
+    "de": "Anzahl der bisher unternommenen Zustellversuche einschließlich des letzten Versuchs.",
+    "en": "Number of delivery attempts made so far, including the latest attempt."
+  },
+  {
+    "entity": "eventDelivery",
+    "property": "nextRetryAtTooltip",
+    "de": "Geplanter Zeitpunkt des nächsten automatischen Zustellversuchs.",
+    "en": "Scheduled time of the next automatic delivery attempt."
+  },
+  {
+    "entity": "teamsDelivery",
+    "property": "referenceHandleTooltip",
+    "de": "Technischer Bezeichner des Datensatzes, der diese Teams-Nachricht ausgelöst hat.",
+    "en": "Technical identifier of the record that triggered this Teams message."
+  },
+  {
+    "entity": "teamsDelivery",
+    "property": "responseStatusCodeTooltip",
+    "de": "HTTP-Statuscode der letzten Antwort des Teams-Anbieters.",
+    "en": "HTTP status code from the Teams provider's latest response."
+  },
+  {
+    "entity": "teamsDelivery",
+    "property": "attemptCountTooltip",
+    "de": "Anzahl der bisher unternommenen Versandversuche einschließlich des letzten Versuchs.",
+    "en": "Number of delivery attempts made so far, including the latest attempt."
+  },
+  {
+    "entity": "teamsDelivery",
+    "property": "nextRetryAtTooltip",
+    "de": "Geplanter Zeitpunkt des nächsten automatischen Versandversuchs.",
+    "en": "Scheduled time of the next automatic delivery attempt."
+  },
+  {
+    "entity": "global",
+    "property": "handleTooltip",
+    "de": "Stabiler technischer Schlüssel des Datensatzes. Änderungen können Referenzen, Automatisierungen und Integrationen beeinflussen.",
+    "en": "Stable technical key of the record. Changes can affect references, automations, and integrations."
+  },
+  {
+    "entity": "global",
+    "property": "sortOrderTooltip",
+    "de": "Bestimmt die Reihenfolge in Auswahlfeldern und Listen; kleinere Werte erscheinen zuerst.",
+    "en": "Controls order in selections and lists; lower values appear first."
+  },
+  {
+    "entity": "global",
+    "property": "iconTooltip",
+    "de": "Symbol, mit dem der Eintrag in Auswahlfeldern, Tabellen und Navigation dargestellt wird.",
+    "en": "Icon used to represent the entry in selections, tables, and navigation."
+  },
+  {
+    "entity": "global",
+    "property": "colorTooltip",
+    "de": "Darstellungsfarbe des Eintrags in Chips, Statusanzeigen und Auswertungen.",
+    "en": "Display color of the entry in chips, status indicators, and reports."
+  },
+  {
+    "entity": "global",
+    "property": "isActiveTooltip",
+    "de": "Nur aktive Einträge werden für neue Zuordnungen und automatische Verarbeitung verwendet. Bestehende Verknüpfungen bleiben erhalten.",
+    "en": "Only active entries are used for new assignments and automated processing. Existing links remain intact."
+  },
+  {
+    "entity": "global",
+    "property": "isDefaultTooltip",
+    "de": "Verwendet diesen Eintrag als Vorgabe, wenn keine spezifischere Auswahl getroffen wurde.",
+    "en": "Uses this entry as the default when no more specific selection has been made."
+  },
+  {
+    "entity": "global",
+    "property": "lastSyncedAtTooltip",
+    "de": "Zeitpunkt, zu dem die Daten zuletzt erfolgreich mit dem Fremdsystem abgeglichen wurden.",
+    "en": "Time when the data was last synchronized successfully with the external system."
+  },
+  {
+    "entity": "global",
+    "property": "referenceHandleTooltip",
+    "de": "Technischer Bezeichner des Bezugsdatensatzes, der den Vorgang ausgelöst hat.",
+    "en": "Technical identifier of the referenced record that triggered the operation."
+  },
+  {
+    "entity": "global",
+    "property": "requestPayloadTooltip",
+    "de": "Für Diagnose und Nachvollziehbarkeit gespeicherte Nutzdaten der ausgehenden Anfrage.",
+    "en": "Outgoing request payload stored for diagnostics and traceability."
+  },
+  {
+    "entity": "global",
+    "property": "responseStatusCodeTooltip",
+    "de": "HTTP-Statuscode der letzten Antwort des angebundenen Dienstes.",
+    "en": "HTTP status code from the connected service's latest response."
+  },
+  {
+    "entity": "global",
+    "property": "responseBodyTooltip",
+    "de": "Antwortinhalt des angebundenen Dienstes zur Diagnose erfolgreicher oder fehlgeschlagener Aufrufe.",
+    "en": "Response content from the connected service for diagnosing successful or failed calls."
+  },
+  {
+    "entity": "global",
+    "property": "responseHeadersTooltip",
+    "de": "Für Diagnosezwecke gespeicherte HTTP-Header der letzten Antwort.",
+    "en": "HTTP headers from the latest response stored for diagnostic purposes."
+  },
+  {
+    "entity": "global",
+    "property": "attemptCountTooltip",
+    "de": "Anzahl der bisher unternommenen Verarbeitungs- oder Zustellversuche.",
+    "en": "Number of processing or delivery attempts made so far."
+  },
+  {
+    "entity": "global",
+    "property": "nextRetryAtTooltip",
+    "de": "Geplanter Zeitpunkt des nächsten automatischen Versuchs nach einem vorübergehenden Fehler.",
+    "en": "Scheduled time of the next automatic attempt after a temporary failure."
+  },
+  {
+    "entity": "global",
+    "property": "completedAtTooltip",
+    "de": "Zeitpunkt, zu dem die Verarbeitung oder Zustellung erfolgreich abgeschlossen wurde.",
+    "en": "Time when processing or delivery completed successfully."
+  },
+  {
+    "entity": "customFieldValue",
+    "property": "entityTooltip",
+    "de": "Datensatzart, zu der der gespeicherte benutzerdefinierte Wert gehört.",
+    "en": "Record type to which the stored custom-field value belongs."
+  },
+  {
+    "entity": "customFieldValue",
+    "property": "definitionTooltip",
+    "de": "Felddefinition, die Datentyp, Bezeichnung und Darstellung dieses Werts bestimmt.",
+    "en": "Field definition that controls the data type, label, and display of this value."
+  },
+  {
+    "entity": "customFieldValue",
+    "property": "recordReferenceTooltip",
+    "de": "Technischer Bezeichner des konkreten Datensatzes, dem der benutzerdefinierte Wert zugeordnet ist.",
+    "en": "Technical identifier of the specific record to which the custom-field value is assigned."
+  },
+  {
+    "entity": "phoneCall",
+    "property": "reachedTooltip",
+    "de": "Kennzeichnet, ob die angerufene Person tatsächlich erreicht und ein Gespräch geführt wurde.",
+    "en": "Indicates whether the called person was actually reached and a conversation took place."
+  },
+  {
+    "entity": "phoneCall",
+    "property": "entityTooltip",
+    "de": "Bezugsdatensatz, in dessen Kontext der Anruf dokumentiert wurde.",
+    "en": "Referenced record in whose context the call was documented."
+  },
+  {
+    "entity": "marketingCampaign",
+    "property": "targetListTooltip",
+    "de": "E-Mail-Liste beziehungsweise Zielgruppe, an die sich diese Kampagne richtet.",
+    "en": "Email list or target audience addressed by this campaign."
+  },
+  {
+    "entity": "marketingCampaign",
+    "property": "opportunitySourceTooltip",
+    "de": "Quelle, die neuen Verkaufschancen zugewiesen wird, wenn sie aus dieser Kampagne entstehen.",
+    "en": "Source assigned to new sales opportunities when they originate from this campaign."
+  },
+  {
+    "entity": "sessionStore",
+    "property": "payloadTooltip",
+    "de": "Technische Sitzungsdaten. Sie werden von der Anwendung verwaltet und sollten nicht manuell geändert werden.",
+    "en": "Technical session data. It is managed by the application and should not be changed manually."
+  },
+  {
+    "entity": "sessionStore",
+    "property": "expiresAtTooltip",
+    "de": "Zeitpunkt, nach dem die gespeicherte Sitzung ungültig ist und entfernt werden kann.",
+    "en": "Time after which the stored session is invalid and can be removed."
+  },
+  {
+    "entity": "translation",
+    "property": "entityTooltip",
+    "de": "Namensraum der Übersetzung, üblicherweise der technische Handle einer Datensatzart oder eines Oberflächenbereichs.",
+    "en": "Translation namespace, usually the technical handle of a record type or interface area."
+  },
+  {
+    "entity": "translation",
+    "property": "propertyTooltip",
+    "de": "Schlüssel innerhalb des Namensraums. Zusammen mit der Entity identifiziert er den übersetzten Text eindeutig.",
+    "en": "Key within the namespace. Together with the entity, it uniquely identifies the translated text."
+  },
+  {
+    "entity": "translation",
+    "property": "valueTooltip",
+    "de": "Text, der für die ausgewählte Sprache in der Oberfläche angezeigt wird.",
+    "en": "Text displayed in the interface for the selected language."
+  },
+  {
+    "entity": "translation",
+    "property": "languageTooltip",
+    "de": "Sprache, für die dieser Übersetzungswert gilt.",
+    "en": "Language for which this translation value applies."
+  },
+  {
+    "entity": "aiAgentEvaluation",
+    "property": "promptTooltip",
+    "de": "Testeingabe, mit der Verhalten und Antwortqualität des Agenten reproduzierbar bewertet werden.",
+    "en": "Test input used to evaluate the agent's behavior and response quality reproducibly."
+  },
+  {
+    "entity": "aiAgentMemory",
+    "property": "typeTooltip",
+    "de": "Art und Verwendungszweck des dauerhaften Agentengedächtnisses.",
+    "en": "Type and intended use of the persistent agent memory."
+  },
+  {
+    "entity": "aiAgentMemory",
+    "property": "contentMarkdownTooltip",
+    "de": "Dauerhaft gespeicherter Wissens- oder Kontextinhalt, den der Agent bei passenden Anfragen berücksichtigen kann.",
+    "en": "Persistently stored knowledge or context the agent can consider for relevant requests."
+  },
+  {
+    "entity": "globalSearchIndex",
+    "property": "entityHandleTooltip",
+    "de": "Technischer Handle der Datensatzart, aus der dieser Suchindexeintrag stammt.",
+    "en": "Technical handle of the record type from which this search-index entry originates."
+  },
+  {
+    "entity": "globalSearchIndex",
+    "property": "recordHandleTooltip",
+    "de": "Technischer Bezeichner des indizierten Datensatzes.",
+    "en": "Technical identifier of the indexed record."
+  },
+  {
+    "entity": "globalSearchIndex",
+    "property": "fieldPathTooltip",
+    "de": "Pfad des indizierten Feldes einschließlich möglicher Relationssegmente.",
+    "en": "Path of the indexed field, including any relation segments."
+  },
+  {
+    "entity": "globalSearchIndex",
+    "property": "normalizedValueTooltip",
+    "de": "Für Suche und Vergleich normalisierte Form des ursprünglichen Feldwerts.",
+    "en": "Normalized form of the original field value used for search and comparison."
+  },
+  {
+    "entity": "globalSearchIndex",
+    "property": "sourceUpdatedAtTooltip",
+    "de": "Änderungszeitpunkt des Quelldatensatzes, auf dessen Stand dieser Indexeintrag basiert.",
+    "en": "Update time of the source record on which this index entry is based."
+  }
+]

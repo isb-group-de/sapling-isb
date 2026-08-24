@@ -12,6 +12,7 @@
         :loading="loading"
         :items="field.items"
         :label="$t(field.label)"
+        :help-text="$t(field.tooltip)"
         @update:model-value="updateField(field.event, $event)"
       />
     </div>
@@ -61,6 +62,7 @@ const fields = computed(() => [
     value: props.preferences.chatProviderHandle,
     items: props.aiProviderOptions,
     label: 'aiChat.provider',
+    tooltip: 'aiChat.providerTooltip',
     event: 'updateAiProvider' as const,
   },
   {
@@ -68,6 +70,7 @@ const fields = computed(() => [
     value: props.preferences.chatModelHandle,
     items: props.aiModelOptions,
     label: 'aiChat.model',
+    tooltip: 'aiChat.modelTooltip',
     event: 'updateAiModel' as const,
   },
   {
@@ -75,6 +78,7 @@ const fields = computed(() => [
     value: props.preferences.transcriptionProviderHandle,
     items: props.transcriptionProviderOptions,
     label: 'aiChat.voiceProvider',
+    tooltip: 'aiChat.voiceProviderTooltip',
     event: 'updateTranscriptionProvider' as const,
   },
   {
@@ -82,6 +86,7 @@ const fields = computed(() => [
     value: props.preferences.transcriptionModelHandle,
     items: props.transcriptionModelOptions,
     label: 'aiChat.voiceModel',
+    tooltip: 'aiChat.voiceModelTooltip',
     event: 'updateTranscriptionModel' as const,
   },
   {
@@ -89,6 +94,7 @@ const fields = computed(() => [
     value: props.preferences.speechProviderHandle,
     items: props.speechProviderOptions,
     label: 'aiChat.voiceOutputProvider',
+    tooltip: 'aiChat.voiceOutputProviderTooltip',
     event: 'updateSpeechProvider' as const,
   },
   {
@@ -96,6 +102,7 @@ const fields = computed(() => [
     value: props.preferences.speechModelHandle,
     items: props.speechModelOptions,
     label: 'aiChat.voiceOutputModel',
+    tooltip: 'aiChat.voiceOutputModelTooltip',
     event: 'updateSpeechModel' as const,
   },
 ])

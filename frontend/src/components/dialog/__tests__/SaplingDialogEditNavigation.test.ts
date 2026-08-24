@@ -43,9 +43,9 @@ describe('SaplingDialogEditNavigation', () => {
     expect(buttons[0].attributes('aria-current')).toBe('page')
     expect(buttons[1].text()).toContain('ticket.notes')
     expect(buttons[1].text()).toContain('mdi-note-outline')
-    expect(buttons[1].text()).toContain('1:m')
-    expect(buttons[1].classes()).toContain('sapling-record-dialog-nav-item--one-to-many')
-    expect(buttons[1].attributes('aria-label')).toContain('(1:m)')
+    expect(buttons[1].text()).not.toContain('1:m')
+    expect(buttons[1].attributes('aria-label')).toBe('ticket.notes')
+    expect(buttons[1].attributes('title')).toBeUndefined()
 
     await buttons[1].trigger('click')
 
@@ -53,7 +53,7 @@ describe('SaplingDialogEditNavigation', () => {
     expect(wrapper.findAll('button')[1].attributes('aria-current')).toBe('page')
   })
 
-  it('marks many-to-many relations and falls back to the link icon without entity metadata', () => {
+  it('hides technical cardinalities and falls back to the link icon without entity metadata', () => {
     const wrapper = mount(SaplingDialogEditNavigation, {
       props: {
         activeTab: 0,
@@ -79,8 +79,8 @@ describe('SaplingDialogEditNavigation', () => {
     expect(relationButtons).toHaveLength(2)
     relationButtons.forEach((button) => {
       expect(button.text()).toContain('mdi-link-variant')
-      expect(button.text()).toContain('m:n')
-      expect(button.classes()).toContain('sapling-record-dialog-nav-item--many-to-many')
+      expect(button.text()).not.toMatch(/[mn]:[mn]/)
+      expect(button.attributes('title')).toBeUndefined()
     })
   })
 
@@ -111,7 +111,7 @@ describe('SaplingDialogEditNavigation', () => {
     expect(buttons).toHaveLength(2)
     expect(wrapper.text()).not.toContain('global.referencesAvailableAfterSave')
     expect(buttons[1].text()).toContain('mdi-note-outline')
-    expect(buttons[1].text()).toContain('1:m')
+    expect(buttons[1].text()).not.toContain('1:m')
     expect(buttons[1].text()).not.toContain('mdi-lock-outline')
     expect(buttons[1].classes()).not.toContain('sapling-record-dialog-nav-item--locked')
     expect(buttons[1].attributes('aria-disabled')).toBeUndefined()

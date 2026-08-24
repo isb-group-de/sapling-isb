@@ -42,14 +42,11 @@
       v-for="(template, idx) in relationTemplates"
       :key="template.name"
       class="sapling-record-dialog-nav-item sapling-dialog-edit-nav-item"
-      :class="[
-        relationKindClass(template),
-        {
-          'sapling-record-dialog-nav-item--active': !relationsLocked && activeTab === idx + 1,
-          'sapling-record-dialog-nav-item--locked': relationsLocked,
-          'sapling-record-dialog-nav-item--dirty': isRelationDirty(template),
-        },
-      ]"
+      :class="{
+        'sapling-record-dialog-nav-item--active': !relationsLocked && activeTab === idx + 1,
+        'sapling-record-dialog-nav-item--locked': relationsLocked,
+        'sapling-record-dialog-nav-item--dirty': isRelationDirty(template),
+      }"
       type="button"
       :id="tabId(idx + 1)"
       role="tab"
@@ -60,9 +57,7 @@
       :tabindex="relationsLocked ? -1 : activeTab === idx + 1 ? 0 : -1"
       :aria-current="!relationsLocked && activeTab === idx + 1 ? 'page' : undefined"
       :aria-label="relationAriaLabel(template)"
-      :title="
-        relationsLocked ? $t('global.referencesAvailableAfterSave') : relationKindLabel(template)
-      "
+      :title="relationsLocked ? $t('global.referencesAvailableAfterSave') : undefined"
       @click="selectRelationTab(idx + 1)"
       @keydown="onTabKeydown($event, idx + 1)"
     >
@@ -73,13 +68,6 @@
         {{ $t(`${entityHandle}.${template.name}`) }}
       </span>
       <span class="sapling-record-dialog-nav-item__meta">
-        <span
-          v-if="relationKindLabel(template)"
-          class="sapling-record-dialog-nav-item__relation-type"
-          aria-hidden="true"
-        >
-          {{ relationKindLabel(template) }}
-        </span>
         <v-icon
           v-if="relationsLocked"
           class="sapling-record-dialog-nav-item__lock"
@@ -263,12 +251,9 @@ function supplementalAriaLabel(tab: SupplementalTab): string {
 
 function relationAriaLabel(template: EntityTemplate): string {
   const translatedLabel = String(t(`${props.entityHandle}.${template.name}`))
-  const kind = relationKindLabel(template)
-  const relationLabel = kind ? `${translatedLabel} (${kind})` : translatedLabel
-
   const accessibleLabel = isRelationDirty(template)
-    ? `${relationLabel}. ${String(t('global.dirtyFieldCount', { count: 1 }, 1))}`
-    : relationLabel
+    ? `${translatedLabel}. ${String(t('global.dirtyFieldCount', { count: 1 }, 1))}`
+    : translatedLabel
 
   return relationsLocked.value
     ? `${accessibleLabel}. ${String(t('global.referencesAvailableAfterSave'))}`
@@ -277,30 +262,6 @@ function relationAriaLabel(template: EntityTemplate): string {
 
 function isRelationDirty(template: EntityTemplate): boolean {
   return props.dirtyRelationNames?.includes(template.name) ?? false
-}
-
-function relationKindLabel(template: EntityTemplate): string {
-  if (template.kind === '1:m') {
-    return '1:m'
-  }
-
-  if (template.kind === 'm:n' || template.kind === 'n:m') {
-    return 'm:n'
-  }
-
-  return ''
-}
-
-function relationKindClass(template: EntityTemplate): string {
-  if (template.kind === '1:m') {
-    return 'sapling-record-dialog-nav-item--one-to-many'
-  }
-
-  if (template.kind === 'm:n' || template.kind === 'n:m') {
-    return 'sapling-record-dialog-nav-item--many-to-many'
-  }
-
-  return ''
 }
 
 function relationIcon(template: EntityTemplate): string {

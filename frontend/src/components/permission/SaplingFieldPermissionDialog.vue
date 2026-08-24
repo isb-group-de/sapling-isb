@@ -40,7 +40,14 @@
                 <tr>
                   <th>{{ $t('fieldPermission.fieldName') }}</th>
                   <th v-for="action in actions" :key="action.key" class="text-center">
-                    <div>{{ $t(action.label) }}</div>
+                    <div class="d-inline-flex align-center ga-1">
+                      {{ $t(action.label) }}
+                      <SaplingHelpTooltip
+                        :text="$t(`${action.label}Tooltip`)"
+                        :aria-label="$t(action.label)"
+                        icon-size="16"
+                      />
+                    </div>
                     <div class="d-flex justify-center ga-1">
                       <v-btn size="x-small" variant="text" @click="setAll(action.key, true)">{{
                         $t('right.all')
@@ -134,6 +141,7 @@ import SaplingDialogCard from '@/components/dialog/SaplingDialogCard.vue'
 import SaplingDialogShell from '@/components/common/SaplingDialogShell.vue'
 import SaplingDialogHero from '@/components/common/SaplingDialogHero.vue'
 import SaplingActionSave from '@/components/actions/SaplingActionSave.vue'
+import SaplingHelpTooltip from '@/components/common/SaplingHelpTooltip.vue'
 import { useTranslationLoader } from '@/composables/generic/useTranslationLoader'
 import ApiFieldPermissionService, {
   type FieldPermissionActionKey,

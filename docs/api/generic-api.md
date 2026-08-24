@@ -281,6 +281,9 @@ Definitions can be marked as required, active, and read-only. Read-only custom
 fields remain visible according to their visibility settings and are disabled
 in generated forms. Client attempts to write structurally or
 permission-denied custom fields fail instead of being silently stripped.
+Definitions can also provide an optional `tooltip`. The custom-field template
+factory exposes it as `formConfig.helpText`, so generated forms render the same
+contextual help on hover, keyboard focus, and click/touch.
 
 Supported first-pass custom field types are seeded as reference records in
 `customFieldType`:

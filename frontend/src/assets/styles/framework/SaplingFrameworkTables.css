@@ -647,7 +647,6 @@
 }
 
 .sapling-table-mobile-list {
-  gap: var(--sapling-gap-md);
   padding-top: var(--sapling-space-3xs);
   padding-right: var(--sapling-space-3xs);
 }

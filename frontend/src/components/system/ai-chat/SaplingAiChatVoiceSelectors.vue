@@ -19,7 +19,16 @@
           :label="t('aiChat.voiceProvider')"
           variant="outlined"
           @update:model-value="emit('update:selectedTranscriptionProvider', $event)"
-        />
+        >
+          <template #label>
+            <span>{{ t('aiChat.voiceProvider') }}</span>
+            <SaplingHelpTooltip
+              :text="t('aiChat.voiceProviderTooltip')"
+              :aria-label="t('aiChat.voiceProvider')"
+              icon-size="16"
+            />
+          </template>
+        </v-autocomplete>
         <v-autocomplete
           v-if="transcriptionModelOptions.length > 0"
           :model-value="selectedTranscriptionModelHandle"
@@ -35,7 +44,16 @@
           :label="t('aiChat.voiceModel')"
           variant="outlined"
           @update:model-value="emit('update:selectedTranscriptionModel', $event)"
-        />
+        >
+          <template #label>
+            <span>{{ t('aiChat.voiceModel') }}</span>
+            <SaplingHelpTooltip
+              :text="t('aiChat.voiceModelTooltip')"
+              :aria-label="t('aiChat.voiceModel')"
+              icon-size="16"
+            />
+          </template>
+        </v-autocomplete>
       </div>
       <div
         v-if="
@@ -58,7 +76,16 @@
           :label="t('aiChat.voiceOutputProvider')"
           variant="outlined"
           @update:model-value="emit('update:selectedSpeechProvider', $event)"
-        />
+        >
+          <template #label>
+            <span>{{ t('aiChat.voiceOutputProvider') }}</span>
+            <SaplingHelpTooltip
+              :text="t('aiChat.voiceOutputProviderTooltip')"
+              :aria-label="t('aiChat.voiceOutputProvider')"
+              icon-size="16"
+            />
+          </template>
+        </v-autocomplete>
         <v-autocomplete
           v-if="speechModelOptions.length > 0"
           :model-value="selectedSpeechModelHandle"
@@ -72,7 +99,16 @@
           :label="t('aiChat.voiceOutputModel')"
           variant="outlined"
           @update:model-value="emit('update:selectedSpeechModel', $event)"
-        />
+        >
+          <template #label>
+            <span>{{ t('aiChat.voiceOutputModel') }}</span>
+            <SaplingHelpTooltip
+              :text="t('aiChat.voiceOutputModelTooltip')"
+              :aria-label="t('aiChat.voiceOutputModel')"
+              icon-size="16"
+            />
+          </template>
+        </v-autocomplete>
       </div>
     </div>
   </div>
@@ -80,6 +116,7 @@
 
 <script lang="ts" setup>
 import { useI18n } from 'vue-i18n'
+import SaplingHelpTooltip from '@/components/common/SaplingHelpTooltip.vue'
 
 type SelectOption = {
   label: string

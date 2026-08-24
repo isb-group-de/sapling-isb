@@ -68,6 +68,7 @@
                   :loading="isHeaderTranslationLoading"
                   :operator-options="getDesktopFilterOperatorOptions(column)"
                   :sort-icon="isSorted(column) ? getSortIcon(column) : 'mdi-swap-vertical'"
+                  :help-text="getColumnHelpText(column)"
                   @update:filter="
                     (value) =>
                       emit('update:column-filter', {
@@ -106,6 +107,12 @@
                   />
                   <v-icon v-if="isSorted(column)" size="small">{{ getSortIcon(column) }}</v-icon>
                 </button>
+                <SaplingHelpTooltip
+                  v-if="getColumnHelpText(column)"
+                  :text="getColumnHelpText(column)"
+                  :aria-label="String(column.title ?? '')"
+                  icon-size="16"
+                />
               </div>
             </template>
           </th>
@@ -187,6 +194,7 @@ import type {
   UseSaplingTableRowEmit,
 } from '@/composables/table/useSaplingTableRow'
 import SaplingTableColumnFilter from './filter/SaplingTableColumnFilter.vue'
+import SaplingHelpTooltip from '@/components/common/SaplingHelpTooltip.vue'
 import {
   SAPLING_TABLE_COLUMN_DRAG_TYPE,
   type SaplingTableColumnMove,
@@ -239,7 +247,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<SaplingTableDesktopViewEmit>()
-const { t } = useI18n()
+const { t, te } = useI18n()
 const draggedColumnKey = ref<string | null>(null)
 const dragTarget = ref<{ key: string; placement: SaplingTableColumnPlacement } | null>(null)
 let dragPreviewElement: HTMLElement | null = null
@@ -291,6 +299,21 @@ function isDataColumn(column: TableColumnLike): boolean {
 
 function getColumnMoveLabel(column: TableColumnLike): string {
   return `${t('formConfig.moveColumn')}: ${String(column.title ?? '')}`
+}
+
+function getColumnHelpText(column: TableColumnLike): string {
+  const template = column as SaplingTableHeaderItem
+  const configuredHelpText = template.formConfig?.helpText?.trim()
+  if (configuredHelpText) return configuredHelpText
+
+  const fieldName = template.name || String(template.key ?? '')
+  if (!fieldName) return ''
+
+  const entityTranslationKey = `${props.entityHandle}.${fieldName}Tooltip`
+  if (te(entityTranslationKey)) return String(t(entityTranslationKey)).trim()
+
+  const globalTranslationKey = `global.${fieldName}Tooltip`
+  return te(globalTranslationKey) ? String(t(globalTranslationKey)).trim() : ''
 }
 
 function onColumnDragStart(event: DragEvent, column: TableColumnLike): void {
