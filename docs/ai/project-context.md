@@ -22,7 +22,7 @@ Seed files, translations, permissions, routes, and form metadata complete the co
 backend/              NestJS API, MikroORM entities, seeders, migrations, integrations
 frontend/             Vue 3/Vite client, dynamic UI, stores, services, components
 docs/                 Human and AI-readable project documentation
-deploy/               Deployment, Docker infrastructure, Nginx, environment examples
+deploy/               Interactive local Ubuntu deployment, release management, Nginx and infrastructure templates
 README.md             Main project overview
 package.json          Root scripts for build, debug, tests, typechecks, ORM
 ```

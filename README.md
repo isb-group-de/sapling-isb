@@ -49,7 +49,7 @@ sapling/
 - npm
 - PostgreSQL
 - Redis optional, wenn Queues für Mail, Webhooks oder Teams genutzt werden sollen
-- Ubuntu 22.04 LTS oder neuer für die Deployment-Beispiele
+- Ubuntu für das Server-Deployment; getestet ist Ubuntu 26.04 LTS, andere Ubuntu-Versionen erfordern eine ausdrückliche Bestätigung
 
 für lokale Entwicklung kann PostgreSQL klassisch installiert oder per Docker gestartet werden. Wenn AI-Vektorisierung genutzt werden soll, empfiehlt sich ein PostgreSQL-Image mit `pgvector`.
 
@@ -335,88 +335,25 @@ npm run debug
 
 ## Ubuntu-Deployment
 
-für ein selbst betriebenes Deployment empfiehlt sich:
-
-- PostgreSQL lokal oder als verwalteter Dienst
-- optional Redis für Queue-basierte Verarbeitung
-- Backend als PM2-Prozess auf Port `3000`
-- Frontend statisch aus `frontend/dist` via Nginx
-- Nginx als Reverse Proxy für `/` und `/api/`
-
-### Build und Deployment-Schritte
+Neue selbst betriebene Systeme werden lokal über SSH eingerichtet. Dazu wird nur der Ordner `deploy/` auf einen Ubuntu-Server kopiert und der interaktive Assistent gestartet:
 
 ```bash
-cd /var/www/sapling
-git pull
-
-npm ci
-npm ci --prefix backend
-npm ci --prefix frontend
-
-npm run build
-npm run orm:deploy --prefix backend
+scp -r deploy operator@sapling.example.com:sapling-deploy
+ssh operator@sapling.example.com
+sudo bash ~/sapling-deploy/setup.sh
 ```
 
-### PM2 (Backend)
+Das Setup installiert Node.js 24 LTS, PM2, Nginx, Docker-Infrastruktur und TLS. PostgreSQL/pgvector und Redis können lokal oder als externe Dienste konfiguriert werden. Updates werden als atomare Git-Releases ausgeführt:
 
 ```bash
-sudo npm install -g pm2
-
-pm2 start npm --name sapling-backend -- run release:backend
-pm2 save
-pm2 startup
+sudo saplingctl update
+sudo saplingctl status
+sudo saplingctl doctor
 ```
 
-Danach den von `pm2 startup` ausgegebenen `sudo`-Befehl ausfuehren.
+Vor Migrationen wird zwingend ein Datenbank-Backup erstellt. Uploads, Logs, Konfiguration und Infrastruktur liegen persistent außerhalb der Code-Releases. Details zu Erstinstallation, Zertifikaten, Rollback und Restore stehen in [deploy/README.md](./deploy/README.md).
 
-### Nginx-Beispiel (statisches Frontend)
-
-```nginx
-server {
-    listen 443 ssl http2;
-    listen [::]:443 ssl http2;
-
-    server_name sapling.example.com;
-
-    ssl_certificate /etc/letsencrypt/live/sapling.example.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/sapling.example.com/privkey.pem;
-
-    client_max_body_size 20M;
-    root /var/www/sapling/current/frontend/dist;
-    index index.html;
-
-    location / {
-        try_files $uri $uri/ /index.html;
-    }
-
-    location /api/ {
-        proxy_pass http://127.0.0.1:3000;
-        proxy_http_version 1.1;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
-```
-
-Wichtige Produktionswerte:
-
-```dotenv
-SAPLING_FRONTEND_URL=https://sapling.example.com
-SESSION_COOKIE_SECURE=true
-SESSION_TRUST_PROXY=1
-VITE_BACKEND_URL=https://sapling.example.com/api/
-```
-
-Nach Nginx-Änderungen:
-
-```bash
-sudo nginx -t
-sudo systemctl reload nginx
-```
-
-Ein produktionsreifes Bootstrap- und CI/CD-Setup liegt unter [deploy/README.md](./deploy/README.md).
+Das Skript `deploy.sh` im Repository-Root ist ein unveränderter Legacy-Weg für bereits damit betriebene Bestandssysteme und nicht für Neuinstallationen vorgesehen.
 
 ## Logging
 

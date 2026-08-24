@@ -1,111 +1,99 @@
-# Sapling Deployment (IONOS VPS)
+# Sapling Deployment für Ubuntu
 
-## Zielarchitektur
+Dieser Ordner enthält das lokale, interaktive Deployment für neue Sapling-Systeme. Es benötigt keine GitHub Actions und führt keine Remote-Befehle von einem CI-System aus. Der Quellcode wird über ein frei konfigurierbares Git-Remote bezogen.
 
-- **GitHub Actions CI/CD** mit CI auf `push`/`pull_request`
-- **Deployment nur für `push` auf `main`**
-- **Release-basiertes Deployment** unter `/var/www/sapling/releases/<release>`
-- Aktives Release via Symlink `/var/www/sapling/current`
-- **Backend** als PM2-Prozess (`sapling-backend`)
-- **Frontend statisch** über Nginx aus `/var/www/sapling/current/frontend/dist`
-- **PostgreSQL (pgvector) + Redis** per Docker Compose
+Das historische Skript [`../deploy.sh`](../deploy.sh) bleibt ausschließlich für Bestandssysteme erhalten.
 
-## Erwartete Serverstruktur
+Der Installer ist für Neuinstallationen gedacht. Erkennt er unter dem gewählten Zielpfad ein vorhandenes Deployment oder Datenverzeichnis ohne seine eigene Konfiguration, bricht er ab; eine Bestandsmigration muss mit gesichertem Datenbank- und Storage-Backup separat geplant werden.
+
+## Voraussetzungen
+
+- frischer oder dedizierter Ubuntu-Server; getestet ist Ubuntu 26.04 LTS
+- amd64 oder arm64
+- root- beziehungsweise `sudo`-Zugriff
+- öffentliche Domain, die auf den Server zeigt
+- ausgehender Zugriff auf Ubuntu-, NodeSource-, Docker-, NPM-, Git- und Zertifikatsdienste
+- mindestens 10 GiB freier Speicher; 4 GiB RAM oder zusätzlicher Swap werden empfohlen
+
+## Erstinstallation
+
+Den Ordner von einem Administratorrechner auf den Server kopieren:
+
+```bash
+scp -r deploy operator@sapling.example.com:sapling-deploy
+ssh operator@sapling.example.com
+sudo bash ~/sapling-deploy/setup.sh
+```
+
+Der Assistent fragt Domain, Git-Quelle, Datenbank, Redis, TLS, Seed-Datensatz, ersten Administrator und optionale OAuth-Provider ab. Secrets werden verdeckt eingegeben und in Dateien mit eingeschränkten Rechten gespeichert. Die lokale Infrastruktur ist auf PostgreSQL 18 mit pgvector 0.8.6 und Redis 7.4.10 festgelegt.
+
+Das Setup aktualisiert Ubuntu. Wenn `/var/run/reboot-required` angelegt wird, beendet es sich mit Code `20`. Nach dem Neustart denselben Setup-Befehl erneut ausführen; abgeschlossene Systemphasen werden nicht wiederholt.
+
+## Zielstruktur
 
 ```text
 /var/www/sapling/
-├─ current -> /var/www/sapling/releases/<release>
-├─ releases/
-│  ├─ <release-1>/
-│  └─ <release-2>/
-└─ shared/
-   ├─ backend/.env
-   ├─ frontend/.env
-   ├─ log/
-   └─ infrastructure/
-      ├─ docker-compose.infrastructure.yml
-      ├─ postgres-data/
-      └─ redis-data/
+├── repository.git
+├── current -> releases/<timestamp>-<commit>
+├── releases/
+└── shared/
+    ├── backend/.env
+    ├── frontend/.env
+    ├── storage/
+    ├── log/
+    ├── backups/database/
+    ├── deployment/
+    └── infrastructure/
 ```
 
-## Benötigte GitHub Secrets
+Code-Releases sind unveränderlich. Datenbank, Redis, Uploads, Logs und Konfiguration liegen außerhalb der Releases. `backend/storage` wird je Release auf `shared/storage` verlinkt.
 
-Nutze in GitHub Actions (Repository oder Environment `production`) folgende Secrets:
-
-- `SAPLING_SSH_HOST` (z. B. `203.0.113.10`)
-- `SAPLING_SSH_PORT` (optional, default `22`)
-- `SAPLING_SSH_USER` (Deploy-User auf dem Server)
-- `SAPLING_SSH_PRIVATE_KEY` (Private Key passend zum Server)
-- `SAPLING_SSH_KNOWN_HOSTS` (optional, empfohlen; Ausgabe von `ssh-keyscan -H <host>`)
-- `SAPLING_APP_ROOT` (optional, default `/var/www/sapling`)
-
-## Erstinstallation / Bootstrap
-
-Das Bootstrap-Skript richtet eine Ubuntu-22.04+-Maschine idempotent ein:
-
-- Basis-Pakete, Nginx, UFW, Certbot
-- Node.js 20 + PM2
-- Docker + Compose Plugin
-- App-User + Verzeichnisstruktur
-- Infrastruktur-Compose (PostgreSQL pgvector + Redis)
-- Nginx-Site mit statischem Frontend + `/api/` Reverse Proxy
-- SSL via Let's Encrypt
-
-Auf dem Server im ausgecheckten Repo ausführen (alternativ mindestens den Ordner `deploy/` auf den Server kopieren):
+## Betrieb
 
 ```bash
-sudo DOMAIN=sapling.example.com EMAIL=ops@example.com APP_USER=sapling APP_GROUP=sapling APP_ROOT=/var/www/sapling bash deploy/bootstrap-server.sh
+sudo saplingctl update
+sudo saplingctl update --ref main
+sudo saplingctl status
+sudo saplingctl doctor
+sudo saplingctl backup
+sudo saplingctl configure
+sudo saplingctl rollback <release-verzeichnis>
 ```
 
-Optionale Parameter:
+`update` führt `git fetch` aus und löst Branch, Tag oder Commit auf. Bei unverändertem Commit ist der Lauf ein No-op. Mit `--force` kann derselbe Commit erneut gebaut werden.
 
-- `INSTALL_FAIL2BAN=true`
-- `ENABLE_CERTBOT=false` (falls Zertifikat später manuell eingerichtet wird)
+Vor jeder Migration ist ein erfolgreicher, komprimierter `pg_dump` zwingend. Danach stoppt das Backend kurz, Migrationen und Seeder laufen, der `current`-Symlink wird atomar gewechselt und PM2 startet das neue Release. Ein fehlerhafter Healthcheck aktiviert wieder den vorherigen Code. Bereits ausgeführte Datenbankmigrationen werden dabei nicht automatisch zurückgenommen.
 
-## Deployment-Ablauf
+Standardmäßig bleiben fünf Releases und sieben Datenbank-Backups erhalten. Diese Werte stehen in `/etc/sapling/deployment.conf` als `KEEP_RELEASES` und `KEEP_BACKUPS`.
 
-Workflow `.github/workflows/ci-cd-ionos.yml`:
+## TLS
 
-1. CI (Runner):
-   - `npm ci`
-   - `npm ci --prefix backend`
-   - `npm ci --prefix frontend`
-   - `npm run type-check`
-   - `npm run test`
-2. CD (nur `main`):
-   - Release-ID erzeugen
-   - Repo per `rsync` nach `/var/www/sapling/releases/<release>` übertragen
-   - `deploy/remote-deploy.sh` auf dem Server ausführen
-
-`deploy/remote-deploy.sh` führt aus:
-
-- Shared `.env` und `log` symlinken
-- `npm ci` (root/backend/frontend)
-- `npm run build`
-- `npm run orm:deploy --prefix backend`
-- Symlink `current` erst nach Erfolg umstellen
-- PM2 `startOrReload`
-- `nginx -t` + Reload
-- Backend-Healthcheck gegen `http://127.0.0.1:3000/api`
-- Cleanup alter Releases (Default: 5)
-
-## Rollback
-
-Rollback auf ein älteres Release:
+Im Modus `letsencrypt` richtet das Setup Certbot, den Renewal-Timer und einen Nginx-Reload-Hook ein. Prüfung:
 
 ```bash
-cd /var/www/sapling
-ls -1 releases
-ln -sfn /var/www/sapling/releases/<altes-release> current
-pm2 startOrReload /var/www/sapling/current/deploy/ecosystem.config.cjs --env production
-pm2 save
-sudo nginx -t && sudo systemctl reload nginx
+sudo certbot renew --dry-run
 ```
 
-## Hinweise zu `.env`
+Im Modus `custom` prüft das Setup Domain, Gültigkeit und Schlüsselpaar und installiert die Dateien geschützt unter `/etc/nginx/ssl/sapling`. Die Erneuerung eines eigenen Zertifikats bleibt Betreiberaufgabe; `saplingctl doctor` warnt 14 Tage vor Ablauf.
 
-- `.env` Dateien liegen **nur** in `shared/` und werden je Release verlinkt.
-- Kein Secret-Management über GitHub Actions für App-Runtime-Variablen.
-- Nach Bootstrap zwingend Werte in folgenden Dateien prüfen:
-  - `/var/www/sapling/shared/backend/.env`
-  - `/var/www/sapling/shared/frontend/.env`
+## Datenwiederherstellung
+
+`saplingctl rollback` ist ausschließlich ein Code-Rollback. Eine Datenbankwiederherstellung muss bewusst im Wartungsfenster erfolgen. Bei Docker-PostgreSQL muss `pg_restore` im Container ausgeführt beziehungsweise das Backup in den Container gestreamt werden. Vor einer Wiederherstellung zusätzlich den aktuellen Datenbankzustand und `shared/storage` sichern.
+
+## Sicherheitsmodell
+
+- NPM-Build und PM2 laufen als eigener Benutzer `sapling`.
+- Der Benutzer `sapling` gehört nicht zur Docker-Gruppe.
+- PostgreSQL und Redis werden bei lokaler Installation nur an `127.0.0.1` gebunden.
+- UFW öffnet nur den erkannten SSH-Port sowie HTTP und HTTPS.
+- Das bekannte Produktions-Seed-Konto wird vor dem ersten Anwendungsstart durch die interaktiv gewählten Admin-Zugangsdaten ersetzt.
+- Deployment-Secrets werden nicht in Frontend-Variablen, Git oder normalen Logs gespeichert.
+
+## Statische Prüfung
+
+Auf einem Linux-Entwicklungsrechner:
+
+```bash
+bash deploy/tests/static-tests.sh
+shellcheck deploy/setup.sh deploy/saplingctl deploy/lib/*.sh deploy/tests/*.sh
+```

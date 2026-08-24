@@ -1,6 +1,6 @@
 # Operational Runbook
 
-This runbook collects the day-to-day commands and checks for running Sapling locally or in a small self-hosted deployment. The root `README.md` remains the broad setup guide; this file is the shorter "what do I do now?" reference for operators and AI agents.
+This runbook collects the day-to-day commands and checks for running Sapling locally or in a small self-hosted deployment. The root `README.md` remains the broad setup guide; `deploy/README.md` owns the complete Ubuntu installation and recovery workflow.
 
 ## System Shape
 
@@ -229,34 +229,36 @@ After deployment or an update:
 9. Optional Redis-backed deliveries can enqueue and complete.
 10. Semantic search works if AI/vectorization is enabled.
 
-## Deployment Order
+## Ubuntu Deployment And Updates
 
-For a self-hosted update:
-
-```bash
-git pull
-npm ci
-npm ci --prefix backend
-npm ci --prefix frontend
-npm run build
-npm run orm:deploy --prefix backend
-```
-
-Then restart the backend process and refresh the frontend deployment.
-
-For PM2-style backend hosting:
+New Ubuntu systems use the interactive local installer, copied and started over SSH:
 
 ```bash
-pm2 restart sapling-backend
-pm2 logs sapling-backend
+scp -r deploy operator@sapling.example.com:sapling-deploy
+ssh operator@sapling.example.com
+sudo bash ~/sapling-deploy/setup.sh
 ```
 
-For Nginx changes:
+The installer may stop after the operating-system update when a reboot is required. Reboot and run the same command again; completed phases are recorded under `/var/lib/sapling-deployment/phases`.
+
+Normal operation uses the installed management command:
 
 ```bash
-sudo nginx -t
-sudo systemctl reload nginx
+sudo saplingctl update
+sudo saplingctl status
+sudo saplingctl doctor
+sudo saplingctl backup
+sudo saplingctl configure
+sudo saplingctl rollback <release-directory>
 ```
+
+`update` fetches the configured Git ref into a bare mirror and exports an immutable release. It installs dependencies and builds before touching the active service. A successful compressed database backup is mandatory before PM2 is stopped and migrations plus seeders run. The `current` symlink changes atomically only after those steps.
+
+On a failed activation, the previous code release is restarted. Database migrations are not reversed automatically. Use the retained pre-deployment dump for a deliberate database restore in a maintenance window.
+
+Persistent state lives below `/var/www/sapling/shared` by default: backend/frontend environment files, uploaded documents, logs, infrastructure data, and database backups. Never remove a release tree manually without first resolving the `current` symlink.
+
+The root `deploy.sh` remains a legacy update path for existing systems only. New installations must not mix that script with `saplingctl` release management.
 
 ## Common Incidents
 

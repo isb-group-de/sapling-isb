@@ -1,0 +1,491 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+readonly SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+if [[ -f "$SCRIPT_DIR/lib/common.sh" ]]; then
+  readonly TOOLKIT_DIR="$SCRIPT_DIR"
+  # shellcheck source=lib/common.sh
+  source "$SCRIPT_DIR/lib/common.sh"
+else
+  readonly TOOLKIT_DIR="/usr/local/share/sapling-deployment"
+  # shellcheck source=/usr/local/lib/sapling-deployment/common.sh
+  source /usr/local/lib/sapling-deployment/common.sh
+fi
+readonly TEMPLATE_DIR="${TOOLKIT_DIR}/templates"
+
+require_root
+
+usage() {
+  cat <<'EOF'
+Verwendung:
+  saplingctl update [--ref <branch|tag|commit>] [--force]
+  saplingctl status
+  saplingctl doctor
+  saplingctl backup
+  saplingctl rollback <release>
+  saplingctl configure
+EOF
+}
+
+ensure_directories() {
+  install -d -m 0755 -o "$APP_USER" -g "$APP_GROUP" "$APP_ROOT" "$APP_ROOT/releases"
+  install -d -m 0750 -o "$APP_USER" -g "$APP_GROUP" \
+    "$APP_ROOT/shared/backend" "$APP_ROOT/shared/frontend" "$APP_ROOT/shared/storage" \
+    "$APP_ROOT/shared/log" "$APP_ROOT/shared/backups/database" \
+    "$APP_ROOT/shared/deployment" "$APP_ROOT/shared/infrastructure"
+}
+
+render_environment_files() {
+  local backend_temp frontend_temp infrastructure_temp
+  local redis_enabled=false
+  [[ "$REDIS_MODE" != "disabled" ]] && redis_enabled=true
+
+  backend_temp="$(mktemp)"
+  frontend_temp="$(mktemp)"
+  infrastructure_temp="$(mktemp)"
+
+  {
+    printf 'NODE_ENV=production\nPORT=3000\n'
+    printf 'SAPLING_WHITELISTED_IPS=127.0.0.1,::1\nAPI_REQUEST_BODY_LIMIT=20mb\n'
+    printf 'SAPLING_SECRET=%s\n' "$(dotenv_value "$SAPLING_SECRET")"
+    printf 'SAPLING_FRONTEND_URL=%s\n' "$(dotenv_value "https://$DOMAIN")"
+    printf 'SAPLING_HASH_INDICATOR=%s\nSAPLING_HASH_COST=12\n' "$(dotenv_value '$2b$')"
+    printf 'SAPLING_DEFAULT_PHONE_COUNTRY=DE\nSAPLING_DEFAULT_PHONE_DIALING_CODE=49\n'
+    printf 'DB_DRIVER=postgresql\nDB_HOST=%s\nDB_PORT=%s\nDB_USER=%s\nDB_PASSWORD=%s\nDB_NAME=%s\n' \
+      "$(dotenv_value "$DB_HOST")" "$DB_PORT" "$(dotenv_value "$DB_USER")" \
+      "$(dotenv_value "$DB_PASSWORD")" "$(dotenv_value "$DB_NAME")"
+    printf 'DB_DATA_SEEDER=%s\nDB_LOGGING=false\nDB_POOL_MIN=2\nDB_POOL_MAX=10\n' "$SEED_MODE"
+    printf 'REDIS_ENABLED=%s\nREDIS_SERVER=%s\nREDIS_PORT=%s\nREDIS_USERNAME=%s\nREDIS_PASSWORD=%s\n' \
+      "$redis_enabled" "$(dotenv_value "$REDIS_HOST")" "$REDIS_PORT" \
+      "$(dotenv_value "$REDIS_USERNAME")" "$(dotenv_value "$REDIS_PASSWORD")"
+    printf 'REDIS_ATTEMPTS=20\nREDIS_REMOVE_ON_FAIL=100\nREDIS_BACKOFF_STRATEGY=exponential\n'
+    printf 'REDIS_BACKOFF_DELAY=1000\nREDIS_REMOVE_ON_COMPLETE=true\n'
+    printf 'LOG_OUTPUT_PATH=%s\nLOG_BACKUP_FILES=14\nLOG_LEVEL=info\n' \
+      "$(dotenv_value "$APP_ROOT/shared/log")"
+    printf 'LOG_NAME_REQUESTS=requests.log\nLOG_NAME_SERVER=server.log\nLOG_APPENDERS=console,file\n'
+    printf 'LOG_REQUESTS_CONSOLE_ENABLED=true\nLOG_REQUESTS_FILE_ENABLED=true\n'
+    printf 'SESSION_COOKIE_NAME=sapling.sid\nSESSION_MAX_AGE=86400000\n'
+    printf 'SESSION_REMEMBER_ME_MAX_AGE=2592000000\nSESSION_COOKIE_SECURE=true\n'
+    printf 'SESSION_COOKIE_SAME_SITE=lax\nSESSION_TRUST_PROXY=1\nGENERIC_DOWNLOAD_LIMIT=5000\n'
+    printf 'SECURITY_PRINCIPAL_CACHE_TTL_MS=2000\nSECURITY_PRINCIPAL_CACHE_MAX_ENTRIES=10000\n'
+    printf 'GLOBAL_SEARCH_INDEX_ENABLED=false\nWEBHOOK_TIMEOUT=5000\nWEBHOOK_MAX_REDIRECTS=5\n'
+    printf 'AZURE_AD_TENNANT_ID=%s\nAZURE_AD_CLIENT_ID=%s\nAZURE_AD_CLIENT_SECRET=%s\n' \
+      "$(dotenv_value "$AZURE_TENANT_ID")" "$(dotenv_value "$AZURE_CLIENT_ID")" \
+      "$(dotenv_value "$AZURE_CLIENT_SECRET")"
+    printf 'AZURE_AD_REDIRECT_URL=%s\n' "$(dotenv_value "https://$DOMAIN/api/auth/azure/callback")"
+    printf 'AZURE_AD_SCOPE=profile,openid,email,offline_access,User.Read,User.ReadBasic.All,Calendars.ReadWrite,MailboxSettings.Read,Mail.Send,Mail.Send.Shared,Mail.Read,Mail.Read.Shared,Chat.Create,Chat.ReadWrite\n'
+    printf 'GOOGLE_CLIENT_ID=%s\nGOOGLE_CLIENT_SECRET=%s\n' \
+      "$(dotenv_value "$GOOGLE_CLIENT_ID")" "$(dotenv_value "$GOOGLE_CLIENT_SECRET")"
+    printf 'GOOGLE_CALLBACK_URL=%s\n' "$(dotenv_value "https://$DOMAIN/api/auth/google/callback")"
+    printf 'GOOGLE_SCOPE=profile,email,calendar.events,gmail.readonly\n'
+  } > "$backend_temp"
+
+  {
+    printf 'VITE_BACKEND_URL=%s\n' "$(dotenv_value "https://$DOMAIN/api/")"
+    printf 'VITE_GIT_URL=%s\n' "$(dotenv_value "$GIT_URL")"
+    printf 'VITE_ALLOWED_HOSTS=%s\n' "$(dotenv_value "$DOMAIN")"
+    printf 'VITE_DOCUMENT_MAX_FILE_SIZE_MB=20\n'
+    printf 'VITE_IS_LOGIN_WITH_AZURE_ENABLED=%s\n' "$AZURE_ENABLED"
+    printf 'VITE_IS_LOGIN_WITH_GOOGLE_ENABLED=%s\n' "$GOOGLE_ENABLED"
+    printf 'VITE_SAPLING_DEFAULT_PHONE_COUNTRY=DE\nVITE_SAPLING_DEFAULT_PHONE_DIALING_CODE=49\n'
+  } > "$frontend_temp"
+
+  {
+    printf 'APP_ROOT=%s\n' "$(compose_env_value "$APP_ROOT")"
+    printf 'POSTGRES_DB=%s\nPOSTGRES_USER=%s\nPOSTGRES_PASSWORD=%s\nPOSTGRES_PORT=%s\n' \
+      "$(compose_env_value "$DB_NAME")" "$(compose_env_value "$DB_USER")" \
+      "$(compose_env_value "$DB_PASSWORD")" "$DB_PORT"
+    printf 'REDIS_PASSWORD=%s\nREDIS_PORT=%s\n' "$(compose_env_value "$REDIS_PASSWORD")" "$REDIS_PORT"
+  } > "$infrastructure_temp"
+
+  atomic_install "$backend_temp" "$APP_ROOT/shared/backend/.env" 0640 "$APP_USER" "$APP_GROUP"
+  atomic_install "$frontend_temp" "$APP_ROOT/shared/frontend/.env" 0640 "$APP_USER" "$APP_GROUP"
+  atomic_install "$infrastructure_temp" "$APP_ROOT/shared/infrastructure/.env" 0600 root root
+  rm -f "$backend_temp" "$frontend_temp" "$infrastructure_temp"
+}
+
+start_infrastructure() {
+  install -m 0644 "$TEMPLATE_DIR/docker-compose.yml" \
+    "$APP_ROOT/shared/infrastructure/docker-compose.yml"
+  local -a services=()
+  [[ "$DATABASE_MODE" == "local" ]] && services+=(postgres)
+  [[ "$REDIS_MODE" == "local" ]] && services+=(redis)
+  if (( ${#services[@]} > 0 )); then
+    docker compose --env-file "$APP_ROOT/shared/infrastructure/.env" \
+      -f "$APP_ROOT/shared/infrastructure/docker-compose.yml" up -d --wait --wait-timeout 120 "${services[@]}"
+  fi
+  if [[ "$DATABASE_MODE" != "local" ]]; then
+    docker compose --env-file "$APP_ROOT/shared/infrastructure/.env" \
+      -f "$APP_ROOT/shared/infrastructure/docker-compose.yml" stop postgres >/dev/null 2>&1 || true
+  fi
+  if [[ "$REDIS_MODE" != "local" ]]; then
+    docker compose --env-file "$APP_ROOT/shared/infrastructure/.env" \
+      -f "$APP_ROOT/shared/infrastructure/docker-compose.yml" stop redis >/dev/null 2>&1 || true
+  fi
+}
+
+validate_external_services() {
+  if [[ "$DATABASE_MODE" == "external" ]]; then
+    PGPASSWORD="$DB_PASSWORD" psql -w -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" \
+      -v ON_ERROR_STOP=1 -c 'select 1' >/dev/null
+    if ! PGPASSWORD="$DB_PASSWORD" psql -w -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" \
+      -Atqc "select 1 from pg_available_extensions where name = 'vector'" | grep -qx 1; then
+      die "Die externe PostgreSQL-Instanz stellt die Erweiterung pgvector nicht bereit."
+    fi
+    PGPASSWORD="$DB_PASSWORD" pg_dump -w -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" \
+      -d "$DB_NAME" --schema-only --no-owner >/dev/null
+  fi
+  if [[ "$REDIS_MODE" == "external" ]]; then
+    local -a redis_args=(-h "$REDIS_HOST" -p "$REDIS_PORT")
+    [[ -n "$REDIS_USERNAME" ]] && redis_args+=(--user "$REDIS_USERNAME")
+    REDISCLI_AUTH="$REDIS_PASSWORD" redis-cli "${redis_args[@]}" ping | grep -q PONG
+  fi
+}
+
+render_nginx_template() {
+  local template="$1"
+  local target="$2"
+  local cert="${3:-}"
+  local key="${4:-}"
+  sed \
+    -e "s|__DOMAIN__|${DOMAIN//|/\\|}|g" \
+    -e "s|__APP_ROOT__|${APP_ROOT//|/\\|}|g" \
+    -e "s|__TLS_CERT__|${cert//|/\\|}|g" \
+    -e "s|__TLS_KEY__|${key//|/\\|}|g" \
+    "$template" > "$target"
+}
+
+configure_nginx() {
+  local nginx_target=/etc/nginx/sites-available/sapling
+  local cert_path key_path cert_public key_public
+
+  render_nginx_template "$TEMPLATE_DIR/nginx-http.conf" "$nginx_target"
+  ln -sfn "$nginx_target" /etc/nginx/sites-enabled/sapling
+  rm -f /etc/nginx/sites-enabled/default
+  nginx -t
+  systemctl enable --now nginx
+  systemctl reload nginx
+
+  if [[ "$TLS_MODE" == "letsencrypt" ]]; then
+    certbot certonly --webroot --non-interactive --agree-tos --email "$ADMIN_EMAIL" \
+      -w /var/www/html -d "$DOMAIN" --keep-until-expiring
+    cert_path="/etc/letsencrypt/live/$DOMAIN/fullchain.pem"
+    key_path="/etc/letsencrypt/live/$DOMAIN/privkey.pem"
+    install -d -m 0755 /etc/letsencrypt/renewal-hooks/deploy
+    printf '#!/usr/bin/env bash\nsystemctl reload nginx\n' > /etc/letsencrypt/renewal-hooks/deploy/reload-nginx
+    chmod 0755 /etc/letsencrypt/renewal-hooks/deploy/reload-nginx
+    systemctl enable --now certbot.timer 2>/dev/null || true
+  else
+    openssl x509 -in "$TLS_CERT_SOURCE" -noout -checkend 0 >/dev/null \
+      || die "Das Zertifikat ist ungültig oder abgelaufen."
+    openssl x509 -in "$TLS_CERT_SOURCE" -noout -checkhost "$DOMAIN" >/dev/null \
+      || die "Das Zertifikat gilt nicht für $DOMAIN."
+    cert_public="$(openssl x509 -in "$TLS_CERT_SOURCE" -pubkey -noout | openssl pkey -pubin -outform der | sha256sum)"
+    key_public="$(openssl pkey -in "$TLS_KEY_SOURCE" -pubout -outform der | sha256sum)"
+    [[ "$cert_public" == "$key_public" ]] || die "Zertifikat und privater Schlüssel passen nicht zusammen."
+    install -d -m 0750 -o root -g www-data /etc/nginx/ssl/sapling
+    if [[ "$(readlink -f "$TLS_CERT_SOURCE")" != /etc/nginx/ssl/sapling/fullchain.pem ]]; then
+      install -m 0644 -o root -g root "$TLS_CERT_SOURCE" /etc/nginx/ssl/sapling/fullchain.pem
+    fi
+    if [[ "$(readlink -f "$TLS_KEY_SOURCE")" != /etc/nginx/ssl/sapling/privkey.pem ]]; then
+      install -m 0640 -o root -g www-data "$TLS_KEY_SOURCE" /etc/nginx/ssl/sapling/privkey.pem
+    fi
+    cert_path=/etc/nginx/ssl/sapling/fullchain.pem
+    key_path=/etc/nginx/ssl/sapling/privkey.pem
+  fi
+
+  render_nginx_template "$TEMPLATE_DIR/nginx-https.conf" "$nginx_target" "$cert_path" "$key_path"
+  nginx -t
+  systemctl reload nginx
+}
+
+apply_configuration() {
+  load_config
+  ensure_directories
+  render_environment_files
+  start_infrastructure
+  validate_external_services
+  configure_nginx
+}
+
+database_backup() {
+  load_config
+  ensure_directories
+  local timestamp temp target
+  timestamp="$(date -u +%Y%m%d%H%M%S-%N)"
+  temp="$APP_ROOT/shared/backups/database/.${timestamp}.dump.tmp"
+  target="$APP_ROOT/shared/backups/database/${timestamp}.dump"
+  rm -f "$temp"
+
+  if [[ "$DATABASE_MODE" == "local" ]]; then
+    docker compose --env-file "$APP_ROOT/shared/infrastructure/.env" \
+      -f "$APP_ROOT/shared/infrastructure/docker-compose.yml" exec -T postgres \
+      pg_dump -U "$DB_USER" -d "$DB_NAME" --format=custom > "$temp"
+  else
+    PGPASSWORD="$DB_PASSWORD" pg_dump -w -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" \
+      -d "$DB_NAME" --format=custom > "$temp"
+  fi
+  [[ -s "$temp" ]] || die "Das Datenbank-Backup ist leer."
+  chmod 0600 "$temp"
+  mv -f "$temp" "$target"
+  find "$APP_ROOT/shared/backups/database" -maxdepth 1 -type f -name '*.dump' -printf '%T@ %p\n' \
+    | sort -rn | awk -v keep="$KEEP_BACKUPS" 'NR > keep { sub(/^[^ ]+ /, ""); print }' \
+    | while IFS= read -r old_backup; do rm -f -- "$old_backup"; done
+  log "Datenbank-Backup erstellt: $target"
+}
+
+resolve_commit() {
+  local requested_ref="$1"
+  local candidate
+  for candidate in "$requested_ref" "refs/heads/$requested_ref" "refs/tags/$requested_ref"; do
+    if run_as_app git --git-dir="$APP_ROOT/repository.git" rev-parse --verify "${candidate}^{commit}" >/dev/null 2>&1; then
+      run_as_app git --git-dir="$APP_ROOT/repository.git" rev-parse --verify "${candidate}^{commit}"
+      return
+    fi
+  done
+  die "Git-Ref konnte nicht aufgelöst werden: $requested_ref"
+}
+
+healthcheck() {
+  run_as_app pm2 pid sapling-backend | grep -Eq '^[1-9][0-9]*$'
+  curl --fail --silent --show-error --max-time 10 --retry 6 --retry-delay 2 \
+    --retry-connrefused http://127.0.0.1:3000/api >/dev/null
+  nginx -t
+  curl --fail --silent --show-error --max-time 15 --retry 4 --retry-delay 3 \
+    "https://$DOMAIN/" >/dev/null
+}
+
+activate_release() {
+  local release_dir="$1"
+  rm -f "$APP_ROOT/.current-new"
+  ln -s "$release_dir" "$APP_ROOT/.current-new"
+  mv -Tf "$APP_ROOT/.current-new" "$APP_ROOT/current"
+}
+
+restart_previous_release() {
+  local previous="$1"
+  set +e
+  if [[ -n "$previous" && -d "$previous" ]]; then
+    rm -f "$APP_ROOT/.current-new"
+    ln -s "$previous" "$APP_ROOT/.current-new"
+    mv -Tf "$APP_ROOT/.current-new" "$APP_ROOT/current"
+    run_as_app env SAPLING_APP_ROOT="$APP_ROOT" pm2 startOrReload \
+      "$previous/deploy/templates/ecosystem.config.cjs" --update-env
+    run_as_app pm2 save --force
+  fi
+  set -e
+}
+
+cleanup_releases() {
+  local current previous
+  current="$(current_release_target)"
+  previous="${1:-}"
+  find "$APP_ROOT/releases" -mindepth 1 -maxdepth 1 -type d -printf '%T@ %p\n' \
+    | sort -rn | awk -v keep="$KEEP_RELEASES" 'NR > keep { sub(/^[^ ]+ /, ""); print }' \
+    | while IFS= read -r old_release; do
+        [[ "$old_release" == "$current" || "$old_release" == "$previous" ]] || rm -rf -- "$old_release"
+      done
+}
+
+command_update() {
+  load_config
+  acquire_lock
+  local requested_ref="$GIT_REF"
+  local force=false
+  local initial=false
+  while (( $# > 0 )); do
+    case "$1" in
+      --ref) [[ $# -ge 2 ]] || die "--ref benötigt einen Wert."; requested_ref="$2"; shift 2 ;;
+      --force) force=true; shift ;;
+      --initial) initial=true; shift ;;
+      *) die "Unbekannte Update-Option: $1" ;;
+    esac
+  done
+
+  ensure_directories
+  run_as_app git --git-dir="$APP_ROOT/repository.git" remote set-url origin "$GIT_URL"
+  run_as_app git --git-dir="$APP_ROOT/repository.git" fetch --prune --tags origin '+refs/heads/*:refs/heads/*'
+  local commit active_commit short_commit release_id release_dir archive previous
+  commit="$(resolve_commit "$requested_ref")"
+  active_commit="$(current_release_commit)"
+  if [[ "$force" != "true" && "$commit" == "$active_commit" ]]; then
+    log "Commit $commit ist bereits aktiv; nichts zu tun."
+    return
+  fi
+  short_commit="${commit:0:12}"
+  release_id="$(date -u +%Y%m%d%H%M%S-%N)-$short_commit"
+  release_dir="$APP_ROOT/releases/$release_id"
+  archive="$APP_ROOT/shared/deployment/$release_id.tar"
+  [[ ! -e "$release_dir" ]] || die "Release existiert bereits: $release_dir"
+  install -d -m 0755 -o "$APP_USER" -g "$APP_GROUP" "$release_dir"
+  run_as_app git --git-dir="$APP_ROOT/repository.git" archive --format=tar --output="$archive" "$commit"
+  run_as_app tar -xf "$archive" -C "$release_dir"
+  rm -f "$archive"
+  printf 'commit=%s\nref=%s\ndeployed_at=%s\n' "$commit" "$requested_ref" \
+    "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" > "$release_dir/.sapling-release"
+  chown "$APP_USER:$APP_GROUP" "$release_dir/.sapling-release"
+
+  ln -s "$APP_ROOT/shared/backend/.env" "$release_dir/backend/.env"
+  ln -s "$APP_ROOT/shared/frontend/.env" "$release_dir/frontend/.env"
+  rm -rf "$release_dir/backend/storage"
+  ln -s "$APP_ROOT/shared/storage" "$release_dir/backend/storage"
+
+  log "Abhängigkeiten für Release $release_id werden installiert."
+  run_as_app npm ci --prefix "$release_dir"
+  run_as_app npm ci --prefix "$release_dir/backend"
+  run_as_app npm ci --prefix "$release_dir/frontend"
+  run_as_app npm run build --prefix "$release_dir"
+
+  database_backup
+  previous="$(current_release_target)"
+  if [[ "$initial" == "true" ]]; then
+    admin_file="$APP_ROOT/shared/deployment/initial-admin.input"
+    [[ -f "$admin_file" ]] || die "Eingabedatei für den Erstadministrator fehlt."
+  fi
+  if [[ -n "$previous" ]]; then
+    run_as_app pm2 stop sapling-backend
+  fi
+
+  rollback_on_error() {
+    local code="$1"
+    trap - ERR
+    warn "Deployment fehlgeschlagen; das vorherige Code-Release wird wieder gestartet. Datenbankmigrationen werden nicht zurückgerollt."
+    restart_previous_release "$previous"
+    exit "$code"
+  }
+  trap 'rollback_on_error "$?"' ERR
+
+  (
+    cd "$release_dir/backend"
+    run_as_app env NODE_ENV=production UPDATE_MODE=all node dist/update.js
+  )
+
+  if [[ "$initial" == "true" ]]; then
+    (
+      cd "$release_dir/backend"
+      run_as_app env NODE_ENV=production node dist/bootstrap-admin.js "$admin_file"
+    )
+  fi
+
+  activate_release "$release_dir"
+  run_as_app env SAPLING_APP_ROOT="$APP_ROOT" pm2 startOrReload \
+    "$release_dir/deploy/templates/ecosystem.config.cjs" --update-env
+  run_as_app pm2 save --force
+  healthcheck
+  trap - ERR
+  [[ "$initial" == "true" ]] && rm -f "$admin_file"
+  cleanup_releases "$previous"
+  install_toolkit "$release_dir/deploy"
+  log "Release $release_id wurde erfolgreich aktiviert."
+}
+
+command_status() {
+  load_config
+  local target commit backup cert_path cert_end
+  target="$(current_release_target)"
+  commit="$(current_release_commit)"
+  backup="$(find "$APP_ROOT/shared/backups/database" -maxdepth 1 -type f -name '*.dump' \
+    -printf '%T@ %p\n' 2>/dev/null | sort -rn | awk 'NR == 1 { sub(/^[^ ]+ /, ""); print }')"
+  printf 'Aktives Release: %s\nCommit: %s\nLetztes DB-Backup: %s\n' \
+    "${target:-keines}" "${commit:-keiner}" "${backup:-keines}"
+  printf 'Verfügbare Code-Rollbacks:\n'
+  find "$APP_ROOT/releases" -mindepth 1 -maxdepth 1 -type d -printf '%T@ %f\n' 2>/dev/null \
+    | sort -rn \
+    | awk -v active="$(basename "${target:-/}")" -v keep="$KEEP_RELEASES" \
+      '$2 != active && shown < keep { print "  " $2; shown++ }'
+  if [[ "$TLS_MODE" == "letsencrypt" ]]; then
+    cert_path="/etc/letsencrypt/live/$DOMAIN/fullchain.pem"
+  else
+    cert_path=/etc/nginx/ssl/sapling/fullchain.pem
+  fi
+  cert_end="$(openssl x509 -in "$cert_path" -noout -enddate 2>/dev/null | cut -d= -f2- || true)"
+  printf 'TLS-Zertifikat gültig bis: %s\n' "${cert_end:-unbekannt}"
+  run_as_app pm2 status sapling-backend || true
+  systemctl --no-pager --full status nginx | sed -n '1,6p' || true
+  if [[ "$DATABASE_MODE" == "local" || "$REDIS_MODE" == "local" ]]; then
+    docker compose --env-file "$APP_ROOT/shared/infrastructure/.env" \
+      -f "$APP_ROOT/shared/infrastructure/docker-compose.yml" ps
+  fi
+}
+
+command_doctor() {
+  load_config
+  local failed=0 cert_path
+  for command in git node npm pm2 nginx pg_dump curl openssl; do
+    if ! command -v "$command" >/dev/null 2>&1; then warn "$command fehlt."; failed=1; fi
+  done
+  if [[ "$(node --version 2>/dev/null || true)" != v24.* ]]; then warn "Node.js 24 LTS ist nicht aktiv."; failed=1; fi
+  if ! validate_external_services; then warn "Externe Infrastruktur ist nicht erreichbar."; failed=1; fi
+  if ! healthcheck; then warn "Anwendungs-Healthcheck fehlgeschlagen."; failed=1; fi
+  if [[ "$TLS_MODE" == "letsencrypt" ]]; then
+    cert_path="/etc/letsencrypt/live/$DOMAIN/fullchain.pem"
+  else
+    cert_path=/etc/nginx/ssl/sapling/fullchain.pem
+  fi
+  if ! openssl x509 -in "$cert_path" -checkend 1209600 -noout >/dev/null 2>&1; then
+    warn "Das TLS-Zertifikat läuft innerhalb von 14 Tagen ab oder ist ungültig."
+    failed=1
+  fi
+  (( failed == 0 )) || return 1
+  log "Alle Prüfungen waren erfolgreich."
+}
+
+command_rollback() {
+  load_config
+  acquire_lock
+  local requested="${1:-}"
+  [[ -n "$requested" ]] || die "Bitte ein Release-Verzeichnis angeben."
+  [[ "$requested" != */* && "$requested" != *..* ]] || die "Ungültiger Release-Name."
+  local target="$APP_ROOT/releases/$requested"
+  local previous
+  [[ -d "$target" && -f "$target/.sapling-release" ]] || die "Release nicht gefunden: $requested"
+  warn "Nur der Code wird zurückgerollt; das Datenbankschema bleibt unverändert."
+  confirm "Rollback auf $requested ausführen?" n || exit 0
+  previous="$(current_release_target)"
+  activate_release "$target"
+  if ! run_as_app env SAPLING_APP_ROOT="$APP_ROOT" pm2 startOrReload \
+      "$target/deploy/templates/ecosystem.config.cjs" --update-env || ! healthcheck; then
+    warn "Rollback-Healthcheck fehlgeschlagen; vorheriges Release wird wiederhergestellt."
+    restart_previous_release "$previous"
+    return 1
+  fi
+  run_as_app pm2 save --force
+  log "Rollback auf $requested erfolgreich."
+}
+
+command_configure() {
+  load_config
+  acquire_lock
+  local config_backup
+  config_backup="$(mktemp)"
+  install -m 0600 "$SAPLING_CONFIG_FILE" "$config_backup"
+  if ! (
+    /usr/local/lib/sapling-deployment/configure.sh
+    apply_configuration
+    command_update --force
+  ); then
+    warn "Die neue Konfiguration konnte nicht aktiviert werden; die vorherige Konfiguration wird wiederhergestellt."
+    atomic_install "$config_backup" "$SAPLING_CONFIG_FILE" 0600 root root
+    if ! (apply_configuration); then
+      warn "Auch die automatische Wiederherstellung der Laufzeitkonfiguration ist fehlgeschlagen."
+    fi
+    rm -f "$config_backup"
+    return 1
+  fi
+  rm -f "$config_backup"
+}
+
+command="${1:-}"
+[[ -n "$command" ]] || { usage; exit 1; }
+shift
+case "$command" in
+  update) command_update "$@" ;;
+  status) command_status "$@" ;;
+  doctor) command_doctor "$@" ;;
+  backup) acquire_lock; database_backup "$@" ;;
+  rollback) command_rollback "$@" ;;
+  configure) command_configure "$@" ;;
+  _apply-configuration) acquire_lock; apply_configuration "$@" ;;
+  *) usage; exit 1 ;;
+esac
