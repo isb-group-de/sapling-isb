@@ -257,9 +257,10 @@ describe('SaplingDialogEdit', () => {
     state.isLoading.value = false
     state.activeTab.value = 3
     state.permissions.value = [
-      { entityHandle: 'information', allowRead: true },
-      { entityHandle: 'emailDelivery', allowRead: true },
-      { entityHandle: 'phoneCall', allowRead: true, allowInsert: true },
+      { entityHandle: 'information', allowRead: true, allowShow: false },
+      { entityHandle: 'document', allowRead: true, allowShow: false },
+      { entityHandle: 'emailDelivery', allowRead: true, allowShow: false },
+      { entityHandle: 'phoneCall', allowRead: true, allowShow: false, allowInsert: true },
     ]
     state.form.value = {
       title: 'Existing',
@@ -286,6 +287,66 @@ describe('SaplingDialogEdit', () => {
       expect.stringContaining('navigationGroup.mails'),
       expect.stringContaining('navigation.phoneCall'),
     ])
+  })
+
+  it.each([
+    ['information', 'navigation.information'],
+    ['document', 'navigation.document'],
+    ['emailDelivery', 'navigationGroup.mails'],
+    ['phoneCall', 'navigation.phoneCall'],
+  ] as const)(
+    'hides the %s supplemental tab without read permission regardless of show permission',
+    async (restrictedEntity, hiddenLabel) => {
+      const state = createDialogState()
+      state.isLoading.value = false
+      state.form.value = {
+        title: 'Existing',
+        email: 'ticket@example.com',
+        phone: '+49 30 1234567',
+      }
+      state.permissions.value = ['information', 'document', 'emailDelivery', 'phoneCall'].map(
+        (entityHandle) => ({
+          entityHandle,
+          allowRead: entityHandle !== restrictedEntity,
+          allowShow: true,
+        }),
+      )
+      dialogHarness.state = state
+
+      const wrapper = mountDialog({
+        templates: [
+          { key: 'title', name: 'title', type: 'string', options: ['isValue'] },
+          { key: 'email', name: 'email', type: 'string', options: ['isMail'] },
+          { key: 'phone', name: 'phone', type: 'string', options: ['isPhone'] },
+        ],
+      })
+      await nextTick()
+
+      const tabLabels = wrapper.findAll('[role="tab"]').map((tab) => tab.text())
+      expect(tabLabels.some((label) => label.includes(hiddenLabel))).toBe(false)
+    },
+  )
+
+  it('returns to the record tab when read permission for the active supplemental tab is removed', async () => {
+    const state = createDialogState()
+    state.isLoading.value = false
+    state.activeTab.value = 1
+    state.permissions.value = [{ entityHandle: 'information', allowRead: true }]
+    dialogHarness.state = state
+
+    const wrapper = mountDialog()
+    await nextTick()
+    expect(
+      wrapper.findAll('[role="tab"]').some((tab) => tab.text().includes('navigation.information')),
+    ).toBe(true)
+
+    state.permissions.value = [{ entityHandle: 'information', allowRead: false, allowShow: true }]
+    await nextTick()
+
+    expect(state.activeTab.value).toBe(0)
+    expect(
+      wrapper.findAll('[role="tab"]').some((tab) => tab.text().includes('navigation.information')),
+    ).toBe(false)
   })
 
   it('passes every populated isMail field to the email composer tab', async () => {
@@ -329,6 +390,8 @@ describe('SaplingDialogEdit', () => {
       creatorPersonPhone: '+49 30 7654321',
     }
     state.permissions.value = [
+      { entityHandle: 'information', allowRead: true },
+      { entityHandle: 'document', allowRead: true },
       { entityHandle: 'emailDelivery', allowRead: true },
       { entityHandle: 'phoneCall', allowRead: true },
     ]

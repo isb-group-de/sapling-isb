@@ -175,6 +175,7 @@
                   />
                 </v-window-item>
                 <v-window-item
+                  v-if="canShowInformationTab"
                   :id="`${dialogTabIdPrefix}-panel-${informationTabIndex}`"
                   :value="informationTabIndex"
                   role="tabpanel"
@@ -190,6 +191,7 @@
                   />
                 </v-window-item>
                 <v-window-item
+                  v-if="canShowDocumentsTab"
                   :id="`${dialogTabIdPrefix}-panel-${documentsTabIndex}`"
                   :value="documentsTabIndex"
                   role="tabpanel"
@@ -206,6 +208,7 @@
                   />
                 </v-window-item>
                 <v-window-item
+                  v-if="canShowEmailsTab"
                   :id="`${dialogTabIdPrefix}-panel-${emailsTabIndex}`"
                   :value="emailsTabIndex"
                   role="tabpanel"
@@ -226,6 +229,7 @@
                   />
                 </v-window-item>
                 <v-window-item
+                  v-if="canShowPhoneCallsTab"
                   :id="`${dialogTabIdPrefix}-panel-${phoneCallsTabIndex}`"
                   :value="phoneCallsTabIndex"
                   role="tabpanel"
@@ -536,7 +540,7 @@ const hasPersistedItem = computed(() => itemHandle.value != null && props.mode !
 const permissionFor = (entity: string) =>
   permissions.value?.find((permission) => permission.entityHandle === entity)
 const canShowInformationTab = computed(() => permissionFor('information')?.allowRead === true)
-const canShowDocumentsTab = computed(() => props.entity?.canRead === true)
+const canShowDocumentsTab = computed(() => permissionFor('document')?.allowRead === true)
 const canShowEmailsTab = computed(() => permissionFor('emailDelivery')?.allowRead === true)
 const canShowPhoneCallsTab = computed(() => permissionFor('phoneCall')?.allowRead === true)
 const canUploadDocuments = computed(
@@ -639,49 +643,50 @@ const phoneRecordDisplayValue = computed(() =>
 )
 const emailsTabLabel = computed(() => t('navigationGroup.mails'))
 
-function supplementalDisabledReason(hasPermission: boolean): string {
-  if (!hasPersistedItem.value) {
-    return t('global.recordContentAvailableAfterSave')
-  }
-
-  return hasPermission ? '' : t('global.permissionDenied')
-}
+const supplementalDisabledReason = computed(() =>
+  hasPersistedItem.value ? '' : t('global.recordContentAvailableAfterSave'),
+)
 
 const supplementalTabs = computed(() => {
-  const tabs = [
-    {
+  const tabs = []
+
+  if (canShowInformationTab.value) {
+    tabs.push({
       value: informationTabIndex.value,
       label: t('navigation.information'),
       icon: 'mdi-text-box-edit-outline',
-      disabled: !hasPersistedItem.value || !canShowInformationTab.value,
-      disabledReason: supplementalDisabledReason(canShowInformationTab.value),
-    },
-    {
+      disabled: !hasPersistedItem.value,
+      disabledReason: supplementalDisabledReason.value,
+    })
+  }
+
+  if (canShowDocumentsTab.value) {
+    tabs.push({
       value: documentsTabIndex.value,
       label: t('navigation.document'),
       icon: 'mdi-file-document-multiple-outline',
-      disabled: !hasPersistedItem.value || !canShowDocumentsTab.value,
-      disabledReason: supplementalDisabledReason(canShowDocumentsTab.value),
-    },
-  ]
+      disabled: !hasPersistedItem.value,
+      disabledReason: supplementalDisabledReason.value,
+    })
+  }
 
-  if (recordEmailRecipients.value.length > 0) {
+  if (canShowEmailsTab.value && recordEmailRecipients.value.length > 0) {
     tabs.push({
       value: emailsTabIndex.value,
       label: emailsTabLabel.value,
       icon: 'mdi-email-multiple-outline',
-      disabled: !hasPersistedItem.value || !canShowEmailsTab.value,
-      disabledReason: supplementalDisabledReason(canShowEmailsTab.value),
+      disabled: !hasPersistedItem.value,
+      disabledReason: supplementalDisabledReason.value,
     })
   }
 
-  if (recordPhoneNumber.value) {
+  if (canShowPhoneCallsTab.value && recordPhoneNumber.value) {
     tabs.push({
       value: phoneCallsTabIndex.value,
       label: t('navigation.phoneCall'),
       icon: 'mdi-phone-log-outline',
-      disabled: !hasPersistedItem.value || !canShowPhoneCallsTab.value,
-      disabledReason: supplementalDisabledReason(canShowPhoneCallsTab.value),
+      disabled: !hasPersistedItem.value,
+      disabledReason: supplementalDisabledReason.value,
     })
   }
 
@@ -694,8 +699,17 @@ const hasOpenedEmailsTab = ref(false)
 const hasOpenedPhoneCallsTab = ref(false)
 
 watch(
-  activeTab,
-  (tab) => {
+  [activeTab, supplementalTabs],
+  ([tab, tabs]) => {
+    if (
+      typeof tab === 'number' &&
+      tab > relationTemplates.value.length &&
+      !tabs.some((supplementalTab) => supplementalTab.value === tab)
+    ) {
+      activeTab.value = 0
+      return
+    }
+
     if (tab === informationTabIndex.value) {
       hasOpenedInformationTab.value = true
     }

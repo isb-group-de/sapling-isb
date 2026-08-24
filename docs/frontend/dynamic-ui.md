@@ -553,8 +553,10 @@ from the tab. Emails filter `EmailDeliveryItem` by `entity + referenceHandle`;
 phone calls filter `PhoneCallItem` by `entity + reference`. Their header actions
 reuse the shared mail composer and phone-call dialog and refresh the embedded
 table when that dialog closes. Available entries remain visible but locked until a
-new record has been saved for the first time, and inaccessible entries remain
-permission-locked. Email and phone-call entries are metadata-conditional: each
+new record has been saved for the first time. Entries without effective read
+permission on `information`, `document`, `emailDelivery`, or `phoneCall` are
+omitted entirely; `allowShow` does not affect these record-level tabs. Email and
+phone-call entries are metadata-conditional: each
 appears only when at least one populated `isMail` or `isPhone` template exists,
 including non-persistent projected assistant fields. Communication dialog
 record labels come from `isValue` metadata through the shared value-label
