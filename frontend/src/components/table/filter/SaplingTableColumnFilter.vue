@@ -94,7 +94,7 @@
             </div>
           </div>
 
-          <v-autocomplete
+          <SaplingAutocomplete
             v-if="isOperatorSelectable"
             :model-value="currentOperator"
             :items="operatorItems"
@@ -110,7 +110,7 @@
             <template #item="{ item, props: itemProps }">
               <v-list-item v-bind="itemProps" :title="item.title" :subtitle="item.symbol" />
             </template>
-          </v-autocomplete>
+          </SaplingAutocomplete>
 
           <SaplingTableFilterBooleanValue
             v-if="filterVariant === 'boolean'"
@@ -187,6 +187,7 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { VCard } from 'vuetify/components'
+import SaplingAutocomplete from '@/components/common/SaplingAutocomplete.vue'
 import SaplingSurface from '@/components/common/SaplingSurface.vue'
 import SaplingHelpTooltip from '@/components/common/SaplingHelpTooltip.vue'
 import { useSaplingTableColumnFilter } from '@/composables/table/useSaplingTableColumnFilter'

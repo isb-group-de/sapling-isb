@@ -76,11 +76,11 @@
         @update:selected-chip-filters="onSelectedChipFiltersUpdate"
       />
 
-      <v-dialog
+      <SaplingDialog
         v-if="isMobileFilterLayout"
         v-model="mobileFilterDialogVisible"
         class="sapling-partner-filter-dialog"
-        :max-width="SAPLING_DIALOG_MAX_WIDTH.md"
+        size="md"
         scrollable
       >
         <SaplingDialogCard
@@ -101,7 +101,7 @@
             @update:selected-chip-filters="onSelectedChipFiltersUpdate"
           />
         </SaplingDialogCard>
-      </v-dialog>
+      </SaplingDialog>
     </section>
 
     <SaplingPartnerTutorial
@@ -119,10 +119,10 @@ import { useI18n } from 'vue-i18n'
 import { useDisplay } from 'vuetify'
 import { useRoute } from 'vue-router'
 import SaplingWorkFilterPanel from '@/components/filter/SaplingWorkFilterPanel.vue'
+import SaplingDialog from '@/components/common/SaplingDialog.vue'
 import SaplingDialogCard from '@/components/dialog/SaplingDialogCard.vue'
 import SaplingPartnerTutorial from '@/components/system/tutorial/SaplingPartnerTutorial.vue'
 import { useSaplingPartner } from '@/composables/partner/useSaplingPartner'
-import { SAPLING_DIALOG_MAX_WIDTH } from '@/constants/dialog.constants'
 // #endregion
 
 const SaplingTable = defineAsyncComponent(() => import('@/components/table/SaplingTable.vue'))

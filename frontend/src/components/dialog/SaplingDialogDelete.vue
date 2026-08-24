@@ -59,7 +59,7 @@
           role="group"
           :aria-label="$t('global.selectDeleteReferences')"
         >
-          <v-checkbox
+          <SaplingCheckbox
             v-for="reference in referenceOptions"
             :key="reference.name"
             v-model="selectedReferenceNames"
@@ -101,6 +101,7 @@ import { computed, toRef } from 'vue'
 import { useSaplingDialogDelete } from '@/composables/dialog/useSaplingDialogDelete'
 import { useTranslationLoader } from '@/composables/generic/useTranslationLoader'
 import type { SaplingGenericItem } from '@/entity/entity'
+import SaplingCheckbox from '@/components/common/SaplingCheckbox.vue'
 import SaplingActionBar from '@/components/actions/SaplingActionBar.vue'
 import SaplingDialogConfirm from '@/components/dialog/SaplingDialogConfirm.vue'
 // #endregion

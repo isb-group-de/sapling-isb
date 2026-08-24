@@ -75,7 +75,7 @@
           class="sapling-stack-lg sapling-work-compose__form sapling-issue-compose__form"
           @submit.prevent="handleCreateIssue"
         >
-          <v-text-field
+          <SaplingTextField
             v-model="draft.title"
             :label="$t('issue.titleFieldLabel')"
             variant="outlined"
@@ -86,7 +86,7 @@
             counter="256"
           />
 
-          <v-textarea
+          <SaplingTextarea
             v-model="draft.description"
             :label="$t('issue.descriptionFieldLabel')"
             variant="outlined"
@@ -228,6 +228,8 @@ import { VSkeletonLoader } from 'vuetify/components'
 import { useSaplingIssue } from '@/composables/system/useSaplingIssue'
 import SaplingPageHero from '@/components/common/SaplingPageHero.vue'
 import SaplingSurface from '@/components/common/SaplingSurface.vue'
+import SaplingTextField from '@/components/common/SaplingTextField.vue'
+import SaplingTextarea from '@/components/common/SaplingTextarea.vue'
 import SaplingIssuesClosed from './SaplingIssuesClosed.vue'
 import SaplingIssuesOpen from './SaplingIssuesOpen.vue'
 // #endregion

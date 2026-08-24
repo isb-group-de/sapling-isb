@@ -95,9 +95,13 @@
   --sapling-panel-width-sm: 320px;
   --sapling-panel-width-md: 340px;
   --sapling-panel-width-lg: 360px;
-  --sapling-dialog-width-sm: 400px;
-  --sapling-dialog-width-md: 800px;
-  --sapling-dialog-width-lg: 1200px;
+  --sapling-dialog-width-xs: 400px;
+  --sapling-dialog-width-sm: 560px;
+  --sapling-dialog-width-md: 680px;
+  --sapling-dialog-width-lg: 960px;
+  --sapling-dialog-width-xl: 1200px;
+  --sapling-dialog-width-xxl: 1440px;
+  --sapling-dialog-width-3xl: 1760px;
   --sapling-field-color-height: var(--sapling-control-height-compact);
   --sapling-device-preview-radius: var(--sapling-space-2xl-plus);
   --sapling-field-color-min-width: 120px;
@@ -208,6 +212,8 @@
   --sapling-control-size-xl: 48px;
   --sapling-control-size-2xl: 56px;
   --sapling-control-height-compact: 38px;
+  --sapling-control-height-comfortable: 48px;
+  --sapling-control-radius: var(--sapling-radius-xs);
   --sapling-control-height-reference-multiline: calc(
     var(--sapling-control-size-2xl) + var(--sapling-space-2xs)
   );

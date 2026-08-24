@@ -1,6 +1,6 @@
 <template>
   <div class="sapling-message-dialog__form sapling-mail-dialog__form">
-    <v-autocomplete
+    <SaplingAutocomplete
       :model-value="templateHandle"
       :items="sortedTemplates"
       item-title="name"
@@ -16,7 +16,7 @@
       <span class="sapling-message-dialog__sender-label sapling-mail-dialog__sender-label">{{
         translate('document.from')
       }}</span>
-      <v-autocomplete
+      <SaplingAutocomplete
         v-if="senderOptions.length > 1"
         class="sapling-message-dialog__sender-select sapling-mail-dialog__sender-select"
         :model-value="selectedSenderEmail"
@@ -34,7 +34,7 @@
       </v-chip>
     </div>
 
-    <v-combobox
+    <SaplingCombobox
       :model-value="toRecipients"
       :items="recipientItems"
       item-title="title"
@@ -61,10 +61,10 @@
       <template #chip="{ props: chipProps, item }">
         <v-chip v-bind="chipProps">{{ getRecipientSelectionEmail(item) }}</v-chip>
       </template>
-    </v-combobox>
+    </SaplingCombobox>
 
     <div class="sapling-message-dialog__meta-grid sapling-mail-dialog__meta-grid">
-      <v-combobox
+      <SaplingCombobox
         :model-value="ccRecipients"
         :items="recipientItems"
         item-title="title"
@@ -91,8 +91,8 @@
         <template #chip="{ props: chipProps, item }">
           <v-chip v-bind="chipProps">{{ getRecipientSelectionEmail(item) }}</v-chip>
         </template>
-      </v-combobox>
-      <v-combobox
+      </SaplingCombobox>
+      <SaplingCombobox
         :model-value="bccRecipients"
         :items="recipientItems"
         item-title="title"
@@ -119,10 +119,10 @@
         <template #chip="{ props: chipProps, item }">
           <v-chip v-bind="chipProps">{{ getRecipientSelectionEmail(item) }}</v-chip>
         </template>
-      </v-combobox>
+      </SaplingCombobox>
     </div>
 
-    <v-text-field
+    <SaplingTextField
       ref="subjectField"
       :model-value="subject"
       :label="translate('document.subject')"
@@ -165,7 +165,7 @@
         />
 
         <template v-else>
-          <v-autocomplete
+          <SaplingAutocomplete
             :model-value="attachmentHandles"
             :items="availableAttachments"
             item-title="title"
@@ -194,6 +194,9 @@
 <script lang="ts" setup>
 import { computed, nextTick, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import SaplingAutocomplete from '@/components/common/SaplingAutocomplete.vue'
+import SaplingCombobox from '@/components/common/SaplingCombobox.vue'
+import SaplingTextField from '@/components/common/SaplingTextField.vue'
 import SaplingMarkdownField from '@/components/dialog/fields/SaplingFieldMarkdown.vue'
 import { sortSelectOptions } from '@/utils/saplingSelectOptions'
 import type {

@@ -1,10 +1,10 @@
 <template>
   <!-- Dialog container for the account -->
-  <v-dialog
+  <SaplingDialog
     v-if="dialog"
     v-model="dialog"
     persistent
-    class="sapling-dialog-large"
+    size="xl"
     @keydown.esc.stop.prevent="handleClose"
   >
     <SaplingDialogCard class="sapling-account-dialog" :tilt="false" :close="handleClose">
@@ -149,7 +149,7 @@
                         <span>{{ $t('account.editProfile') }}</span>
                       </div>
                       <div class="sapling-account-dialog__profile-grid">
-                        <v-text-field
+                        <SaplingTextField
                           v-model="profileForm.firstName"
                           density="comfortable"
                           variant="outlined"
@@ -157,7 +157,7 @@
                           autocomplete="off"
                           :label="$t('person.firstName')"
                         />
-                        <v-text-field
+                        <SaplingTextField
                           v-model="profileForm.lastName"
                           density="comfortable"
                           variant="outlined"
@@ -165,7 +165,7 @@
                           autocomplete="off"
                           :label="$t('person.lastName')"
                         />
-                        <v-text-field
+                        <SaplingTextField
                           v-model="profileForm.phone"
                           density="comfortable"
                           variant="outlined"
@@ -173,7 +173,7 @@
                           autocomplete="off"
                           :label="$t('person.phone')"
                         />
-                        <v-text-field
+                        <SaplingTextField
                           v-model="profileForm.mobile"
                           density="comfortable"
                           variant="outlined"
@@ -181,7 +181,7 @@
                           autocomplete="off"
                           :label="$t('person.mobile')"
                         />
-                        <v-text-field
+                        <SaplingTextField
                           v-model="profileForm.color"
                           density="comfortable"
                           variant="outlined"
@@ -211,7 +211,7 @@
                       <span>{{ $t('account.notifications') }}</span>
                     </div>
                     <div class="sapling-account-dialog__notification-grid">
-                      <v-switch
+                      <SaplingSwitch
                         v-model="notificationPreferences.inboxNotificationsEnabled"
                         color="primary"
                         hide-details
@@ -226,8 +226,8 @@
                             icon-size="16"
                           />
                         </template>
-                      </v-switch>
-                      <v-switch
+                      </SaplingSwitch>
+                      <SaplingSwitch
                         v-model="notificationPreferences.openTaskNotificationsEnabled"
                         color="primary"
                         hide-details
@@ -242,8 +242,8 @@
                             icon-size="16"
                           />
                         </template>
-                      </v-switch>
-                      <v-switch
+                      </SaplingSwitch>
+                      <SaplingSwitch
                         v-model="notificationPreferences.badgeChannelEnabled"
                         color="primary"
                         hide-details
@@ -258,8 +258,8 @@
                             icon-size="16"
                           />
                         </template>
-                      </v-switch>
-                      <v-switch
+                      </SaplingSwitch>
+                      <SaplingSwitch
                         v-model="notificationPreferences.previewChannelEnabled"
                         color="primary"
                         hide-details
@@ -274,11 +274,11 @@
                             icon-size="16"
                           />
                         </template>
-                      </v-switch>
+                      </SaplingSwitch>
                     </div>
                     <v-divider />
                     <div class="sapling-account-dialog__quiet-hours-grid">
-                      <v-switch
+                      <SaplingSwitch
                         v-model="notificationPreferences.quietHoursEnabled"
                         color="primary"
                         hide-details
@@ -293,8 +293,8 @@
                             icon-size="16"
                           />
                         </template>
-                      </v-switch>
-                      <v-text-field
+                      </SaplingSwitch>
+                      <SaplingTextField
                         v-model="notificationPreferences.quietHoursFrom"
                         density="comfortable"
                         variant="outlined"
@@ -303,7 +303,7 @@
                         :disabled="!notificationPreferences.quietHoursEnabled"
                         :label="$t('account.quietHoursFrom')"
                       />
-                      <v-text-field
+                      <SaplingTextField
                         v-model="notificationPreferences.quietHoursTo"
                         density="comfortable"
                         variant="outlined"
@@ -333,7 +333,7 @@
                     </div>
                     <template v-if="calendarSync.isAvailable">
                       <div class="sapling-account-dialog__sync-controls">
-                        <v-switch
+                        <SaplingSwitch
                           v-model="calendarSync.isActive"
                           color="primary"
                           hide-details
@@ -408,7 +408,7 @@
                           :key="index"
                           class="sapling-account-dialog__mapping-row"
                         >
-                          <v-autocomplete
+                          <SaplingAutocomplete
                             v-if="calendarSync.provider === 'google'"
                             v-model="mapping.externalValue"
                             :items="googleCalendarColorOptions"
@@ -417,7 +417,7 @@
                             variant="outlined"
                             hide-details
                           />
-                          <v-combobox
+                          <SaplingCombobox
                             v-else
                             v-model="mapping.externalValue"
                             :items="outlookCalendarCategoryOptions"
@@ -426,7 +426,7 @@
                             variant="outlined"
                             hide-details
                           />
-                          <v-autocomplete
+                          <SaplingAutocomplete
                             v-model="mapping.eventTypeHandle"
                             :items="calendarSyncEventTypeOptions"
                             :label="$t('calendarSyncSubscription.eventType')"
@@ -435,7 +435,7 @@
                             clearable
                             hide-details
                           />
-                          <v-autocomplete
+                          <SaplingAutocomplete
                             v-model="mapping.eventCategoryHandle"
                             :items="calendarSyncEventCategoryOptions"
                             :label="$t('calendarSyncSubscription.eventCategory')"
@@ -597,7 +597,7 @@
     </SaplingDialogCard>
     <!-- Password change dialog -->
     <SaplingChangePassword v-model="showPasswordChange" />
-  </v-dialog>
+  </SaplingDialog>
 </template>
 
 <script setup lang="ts">
@@ -613,10 +613,15 @@ import SaplingAccountSongbirdPanel from '@/components/account/SaplingAccountSong
 import SaplingActionAccount from '@/components/actions/SaplingActionAccount.vue'
 import SaplingActionBarSkeleton from '@/components/actions/SaplingActionBarSkeleton.vue'
 import SaplingDialogCard from '@/components/dialog/SaplingDialogCard.vue'
+import SaplingAutocomplete from '@/components/common/SaplingAutocomplete.vue'
+import SaplingCombobox from '@/components/common/SaplingCombobox.vue'
+import SaplingDialog from '@/components/common/SaplingDialog.vue'
 import SaplingDialogHero from '@/components/common/SaplingDialogHero.vue'
 import SaplingDialogShell from '@/components/common/SaplingDialogShell.vue'
 import SaplingHelpTooltip from '@/components/common/SaplingHelpTooltip.vue'
 import SaplingStaticSelect from '@/components/common/SaplingStaticSelect.vue'
+import SaplingSwitch from '@/components/common/SaplingSwitch.vue'
+import SaplingTextField from '@/components/common/SaplingTextField.vue'
 // #endregion
 
 // #region Composable

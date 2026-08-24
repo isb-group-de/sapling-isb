@@ -3,7 +3,10 @@
     class="sapling-login-shell sapling-access-pending d-flex flex-column justify-center align-center"
     fluid
   >
-    <v-card class="glass-panel sapling-dialog-small sapling-access-pending__card" elevation="10">
+    <v-card
+      class="glass-panel sapling-dialog-width--sm sapling-access-pending__card"
+      elevation="10"
+    >
       <div class="sapling-access-pending__icon">
         <v-icon color="success" size="56">mdi-check-circle-outline</v-icon>
       </div>

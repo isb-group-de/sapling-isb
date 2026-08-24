@@ -1,5 +1,5 @@
 <template>
-  <v-autocomplete
+  <SaplingAutocomplete
     :model-value="modelValue"
     :items="booleanItems"
     item-title="title"
@@ -16,6 +16,7 @@
 <script lang="ts" setup>
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import SaplingAutocomplete from '@/components/common/SaplingAutocomplete.vue'
 
 defineProps<{
   modelValue: string

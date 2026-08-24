@@ -1,9 +1,5 @@
 <template>
-  <v-dialog
-    :model-value="show"
-    @update:model-value="onDialogModelValueUpdate"
-    class="sapling-dialog-medium"
-  >
+  <SaplingDialog :model-value="show" @update:model-value="onDialogModelValueUpdate" size="md">
     <SaplingDialogCard class="sapling-dialog-compact-card" :close="() => emit('close')">
       <div class="sapling-dialog-shell">
         <template v-if="isLoading">
@@ -95,7 +91,7 @@
                 </div>
               </div>
 
-              <v-text-field
+              <SaplingTextField
                 v-model="description"
                 :label="$t('document.description')"
                 :hint="$t('document.descriptionHint')"
@@ -119,12 +115,14 @@
         </template>
       </div>
     </SaplingDialogCard>
-  </v-dialog>
+  </SaplingDialog>
 </template>
 
 <script lang="ts" setup>
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import SaplingTextField from '@/components/common/SaplingTextField.vue'
+import SaplingDialog from '@/components/common/SaplingDialog.vue'
 import { DOCUMENT_MAX_FILE_SIZE_MB } from '@/constants/project.constants'
 import SaplingActionUpload from '../actions/SaplingActionUpload.vue'
 import SaplingActionBarSkeleton from '@/components/actions/SaplingActionBarSkeleton.vue'

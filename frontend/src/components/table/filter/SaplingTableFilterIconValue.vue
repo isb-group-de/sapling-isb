@@ -1,5 +1,5 @@
 <template>
-  <v-autocomplete
+  <SaplingAutocomplete
     :model-value="modelValue"
     :items="mdiIcons"
     item-title="name"
@@ -22,11 +22,12 @@
         <span>{{ item.name }}</span>
       </div>
     </template>
-  </v-autocomplete>
+  </SaplingAutocomplete>
 </template>
 
 <script lang="ts" setup>
 import { onMounted, ref } from 'vue'
+import SaplingAutocomplete from '@/components/common/SaplingAutocomplete.vue'
 
 // The full icon catalog is large (~340kB source). Defer loading it until this
 // filter actually mounts so tables without an icon filter never pay the cost.

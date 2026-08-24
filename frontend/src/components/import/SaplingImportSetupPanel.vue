@@ -57,7 +57,7 @@
   </div>
 
   <div v-if="hasBatch" class="sapling-import__settings">
-    <v-text-field
+    <SaplingTextField
       v-model="templateTitleModel"
       density="comfortable"
       prepend-inner-icon="mdi-label-outline"
@@ -65,7 +65,7 @@
       :disabled="!canUseTemplates || isImportJobRunning"
       autocomplete="off"
     />
-    <v-autocomplete
+    <SaplingAutocomplete
       v-model="externalKeyColumnsModel"
       :items="headerOptions"
       chips
@@ -80,7 +80,7 @@
       @update:model-value="emit('normalizeExternalKeyColumns')"
     />
     <template v-if="hasGenericReference">
-      <v-autocomplete
+      <SaplingAutocomplete
         v-model="genericReferenceEntityHandleModel"
         :items="entityOptions"
         item-title="title"
@@ -90,7 +90,7 @@
         :label="t('import.genericReferenceTarget')"
         autocomplete="off"
       />
-      <v-autocomplete
+      <SaplingAutocomplete
         v-model="genericReferenceKeyColumnsModel"
         :items="headerOptions"
         chips
@@ -111,6 +111,8 @@
 <script lang="ts" setup>
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import SaplingAutocomplete from '@/components/common/SaplingAutocomplete.vue'
+import SaplingTextField from '@/components/common/SaplingTextField.vue'
 import SaplingFieldSingleSelect from '@/components/dialog/fields/SaplingFieldSingleSelect.vue'
 import type { SaplingGenericItem } from '@/entity/entity'
 import type { FilterQuery } from '@/services/api.generic.service'

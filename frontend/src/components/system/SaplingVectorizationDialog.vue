@@ -64,7 +64,7 @@
             <div
               class="sapling-responsive-grid sapling-responsive-grid--md sapling-vectorization__selectors"
             >
-              <v-autocomplete
+              <SaplingAutocomplete
                 :items="providerOptions"
                 :label="t('aiVectorization.provider')"
                 :model-value="selectedProviderHandle"
@@ -76,7 +76,7 @@
                 :disabled="isBusy"
                 @update:model-value="updateSelectedProvider"
               />
-              <v-autocomplete
+              <SaplingAutocomplete
                 :items="modelOptions"
                 :label="t('aiVectorization.model')"
                 :model-value="selectedModelHandle"
@@ -88,7 +88,7 @@
                 :disabled="isBusy || !selectedProviderHandle"
                 @update:model-value="updateSelectedModel"
               />
-              <v-autocomplete
+              <SaplingAutocomplete
                 :items="entityOptions"
                 :label="t('aiVectorization.entity')"
                 :model-value="selectedEntityHandle"
@@ -212,6 +212,7 @@
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { AiProviderModelItem, AiProviderTypeItem } from '@/entity/entity'
+import SaplingAutocomplete from '@/components/common/SaplingAutocomplete.vue'
 import SaplingSurface from '@/components/common/SaplingSurface.vue'
 import { useTranslationLoader } from '@/composables/generic/useTranslationLoader'
 import { useSaplingVectorization } from '@/composables/system/useSaplingVectorization'

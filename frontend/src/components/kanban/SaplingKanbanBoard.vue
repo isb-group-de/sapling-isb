@@ -69,7 +69,7 @@
             <div
               class="sapling-split-toolbar sapling-admin-toolbar-actions sapling-kanban-toolbar-actions"
             >
-              <v-text-field
+              <SaplingTextField
                 v-model="search"
                 density="comfortable"
                 rounded="lg"
@@ -171,6 +171,7 @@
 import { useI18n } from 'vue-i18n'
 import SaplingDialogEdit from '@/components/dialog/SaplingDialogEdit.vue'
 import SaplingPageHero from '@/components/common/SaplingPageHero.vue'
+import SaplingTextField from '@/components/common/SaplingTextField.vue'
 import SaplingWorkFilterPanel from '@/components/filter/SaplingWorkFilterPanel.vue'
 import SaplingKanbanColumns from './SaplingKanbanColumns.vue'
 import type { KanbanBoardProps } from './kanbanBoard.types'

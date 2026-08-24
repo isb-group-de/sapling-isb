@@ -20,10 +20,10 @@
       <v-icon size="20">mdi-repeat</v-icon>
     </button>
 
-    <v-dialog
+    <SaplingDialog
       v-if="dialog"
       v-model="dialog"
-      class="sapling-dialog-medium"
+      size="md"
       persistent
       @keydown.esc.stop.prevent="closeDialog"
     >
@@ -189,7 +189,7 @@
           </template>
         </SaplingDialogShell>
       </SaplingDialogCard>
-    </v-dialog>
+    </SaplingDialog>
   </div>
 </template>
 
@@ -199,6 +199,7 @@ import { useI18n } from 'vue-i18n'
 import SaplingActionRecurrence from '@/components/actions/SaplingActionRecurrence.vue'
 import SaplingDialogCard from '@/components/dialog/SaplingDialogCard.vue'
 import SaplingDialogHero from '@/components/common/SaplingDialogHero.vue'
+import SaplingDialog from '@/components/common/SaplingDialog.vue'
 import SaplingDialogShell from '@/components/common/SaplingDialogShell.vue'
 import SaplingNumberField from '@/components/dialog/fields/SaplingFieldNumber.vue'
 import SaplingDateTypeField from '@/components/dialog/fields/SaplingFieldDateType.vue'

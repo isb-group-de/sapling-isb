@@ -4,7 +4,7 @@
       <v-icon size="small">{{ entity?.icon || 'mdi-magnify' }}</v-icon>
       <v-skeleton-loader class="sapling-search__loading-text" type="text" />
     </div>
-    <v-text-field
+    <SaplingTextField
       v-else
       :model-value="localSearch"
       :label="searchLabel"
@@ -23,6 +23,7 @@
 //#region Imports
 import { computed, toRef } from 'vue'
 import { useI18n } from 'vue-i18n'
+import SaplingTextField from '@/components/common/SaplingTextField.vue'
 import { useTranslationLoader } from '@/composables/generic/useTranslationLoader'
 import { useSaplingSearch } from '@/composables/system/useSaplingSearch'
 import type { EntityItem } from '@/entity/entity'

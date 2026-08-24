@@ -1,8 +1,8 @@
 <template>
-  <v-dialog
+  <SaplingDialog
     v-model="isOpen"
     width="780"
-    max-width="780"
+    size="lg"
     height="min(720px, 86vh)"
     transition="dialog-top-transition"
     scrollable
@@ -17,7 +17,7 @@
       :close="closePalette"
     >
       <div class="sapling-command-palette__search" data-tutorial="command-palette-search">
-        <v-text-field
+        <SaplingTextField
           ref="searchInputRef"
           v-model="query"
           :placeholder="t('global.commandPalette.placeholder')"
@@ -56,12 +56,14 @@
 
       <SaplingCommandPaletteFooter data-tutorial="command-palette-shortcuts" />
     </SaplingDialogCard>
-  </v-dialog>
+  </SaplingDialog>
 </template>
 
 <script lang="ts" setup>
 import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import SaplingTextField from '@/components/common/SaplingTextField.vue'
+import SaplingDialog from '@/components/common/SaplingDialog.vue'
 import SaplingDialogCard from '@/components/dialog/SaplingDialogCard.vue'
 import SaplingCommandPaletteFooter from '@/components/system/command-palette/SaplingCommandPaletteFooter.vue'
 import SaplingCommandPaletteResults from '@/components/system/command-palette/SaplingCommandPaletteResults.vue'

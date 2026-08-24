@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="visible" class="sapling-dialog-large" persistent>
+  <SaplingDialog v-model="visible" size="xl" persistent>
     <SaplingDialogCard :close="close" :close-disabled="saving" :tilt="false">
       <SaplingDialogShell fill-shell body-class="sapling-dialog-fill-body">
         <template #hero>
@@ -23,7 +23,7 @@
             </v-alert>
 
             <div class="sapling-split-toolbar">
-              <v-text-field
+              <SaplingTextField
                 v-model="search"
                 :label="$t('global.search')"
                 prepend-inner-icon="mdi-magnify"
@@ -104,7 +104,7 @@
                       :key="`${field.name}-${action.key}`"
                       class="text-center"
                     >
-                      <v-checkbox
+                      <SaplingCheckbox
                         v-model="draft[field.name][action.key]"
                         :disabled="
                           !field.structural[action.key] || !catalog?.entityPermission[action.key]
@@ -130,7 +130,7 @@
         </template>
       </SaplingDialogShell>
     </SaplingDialogCard>
-  </v-dialog>
+  </SaplingDialog>
 </template>
 
 <script setup lang="ts">
@@ -138,10 +138,13 @@ import { computed, reactive, ref, watch } from 'vue'
 import type { EntityItem, RoleItem } from '@/entity/entity'
 import { useI18n } from 'vue-i18n'
 import SaplingDialogCard from '@/components/dialog/SaplingDialogCard.vue'
+import SaplingDialog from '@/components/common/SaplingDialog.vue'
 import SaplingDialogShell from '@/components/common/SaplingDialogShell.vue'
 import SaplingDialogHero from '@/components/common/SaplingDialogHero.vue'
+import SaplingCheckbox from '@/components/common/SaplingCheckbox.vue'
 import SaplingActionSave from '@/components/actions/SaplingActionSave.vue'
 import SaplingHelpTooltip from '@/components/common/SaplingHelpTooltip.vue'
+import SaplingTextField from '@/components/common/SaplingTextField.vue'
 import { useTranslationLoader } from '@/composables/generic/useTranslationLoader'
 import ApiFieldPermissionService, {
   type FieldPermissionActionKey,

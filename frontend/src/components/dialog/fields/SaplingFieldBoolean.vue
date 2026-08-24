@@ -1,5 +1,5 @@
 <template>
-  <v-checkbox
+  <SaplingCheckbox
     :label="label"
     :model-value="modelValue"
     :disabled="disabled"
@@ -10,6 +10,8 @@
 </template>
 
 <script lang="ts" setup>
+import SaplingCheckbox from '@/components/common/SaplingCheckbox.vue'
+
 defineProps<{
   label: string
   modelValue: boolean

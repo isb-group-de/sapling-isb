@@ -1,5 +1,5 @@
 <template>
-  <v-text-field
+  <SaplingTextField
     :class="{ 'sapling-field-phone--disabled': disabled }"
     :label="label"
     :model-value="formattedModelValue"
@@ -17,6 +17,7 @@
 
 <script lang="ts" setup>
 import { computed, toRef, watch } from 'vue'
+import SaplingTextField from '@/components/common/SaplingTextField.vue'
 import { useSaplingPhoneDialog } from '@/composables/dialog/useSaplingPhoneDialog'
 import { useSaplingPhoneNumber } from '@/composables/phone/useSaplingPhoneNumber'
 import type { EntityTemplate } from '@/entity/structure'

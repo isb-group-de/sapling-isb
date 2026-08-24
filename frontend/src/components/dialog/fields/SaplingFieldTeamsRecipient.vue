@@ -1,5 +1,5 @@
 <template>
-  <v-autocomplete
+  <SaplingAutocomplete
     v-model:menu="menuOpen"
     :label="label"
     :items="recipientFields"
@@ -10,13 +10,14 @@
     item-value="value"
     hide-details="auto"
     @keydown.tab="menuOpen = false"
-    @update:model-value="(value) => emit('update:modelValue', value)"
+    @update:model-value="(value) => emit('update:modelValue', value ?? null)"
   />
 </template>
 
 <script lang="ts" setup>
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import SaplingAutocomplete from '@/components/common/SaplingAutocomplete.vue'
 import type { EntityTemplate } from '@/entity/structure'
 import type { SaplingGenericItem } from '@/entity/entity'
 import { useGenericStore } from '@/stores/genericStore'

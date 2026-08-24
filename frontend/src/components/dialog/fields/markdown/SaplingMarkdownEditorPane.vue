@@ -40,7 +40,7 @@
     </header>
 
     <div class="sapling-markdown-input" :class="{ 'sapling-markdown-input--disabled': disabled }">
-      <v-textarea
+      <SaplingTextarea
         :model-value="draftValue"
         :rules="rules"
         :disabled="disabled"
@@ -83,7 +83,7 @@
           @focus="emit('focus')"
           @update:model-value="emit('update:draftValue', $event)"
         />
-        <v-textarea
+        <SaplingTextarea
           v-else
           :model-value="draftValue"
           :disabled="disabled || isPreparingWithAi || isTranscribingVoiceInput"
@@ -104,6 +104,7 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import SaplingCodeMirror from '@/components/common/SaplingCodeMirror.vue'
+import SaplingTextarea from '@/components/common/SaplingTextarea.vue'
 import type {
   MarkdownEditorHandle,
   MarkdownRule,

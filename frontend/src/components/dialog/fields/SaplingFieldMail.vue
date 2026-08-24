@@ -1,5 +1,5 @@
 <template>
-  <v-text-field
+  <SaplingTextField
     :class="{ 'sapling-field-mail--disabled': disabled }"
     :label="label"
     :model-value="modelValue"
@@ -17,6 +17,7 @@
 
 <script lang="ts" setup>
 import { computed } from 'vue'
+import SaplingTextField from '@/components/common/SaplingTextField.vue'
 import { useSaplingMailDialog } from '@/composables/dialog/useSaplingMailDialog'
 import type { EntityTemplate } from '@/entity/structure'
 import type { SaplingGenericItem } from '@/entity/entity'

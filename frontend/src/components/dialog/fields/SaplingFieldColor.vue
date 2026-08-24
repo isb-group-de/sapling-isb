@@ -1,5 +1,5 @@
 <template>
-  <v-text-field
+  <SaplingTextField
     type="color"
     :label="computedLabel"
     v-model="modelValueProxy"
@@ -12,6 +12,7 @@
 </template>
 
 <script setup lang="ts">
+import SaplingTextField from '@/components/common/SaplingTextField.vue'
 import { useSaplingColorField } from '@/composables/fields/useSaplingColorField'
 
 const props = defineProps<{

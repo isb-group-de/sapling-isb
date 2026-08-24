@@ -2,7 +2,7 @@
   <div class="sapling-vertical-item sapling-vertical-item-static">
     <v-icon class="mr-1" size="20">mdi-account-circle</v-icon>
     <span class="sapling-person-name">{{ getPersonName(ownPerson) }}</span>
-    <v-checkbox
+    <SaplingCheckbox
       :model-value="isPersonSelected(getPersonId(ownPerson))"
       @update:model-value="(checked) => togglePerson(getPersonId(ownPerson), checked)"
       hide-details
@@ -16,6 +16,7 @@
 
 <script setup lang="ts">
 // #region Imports
+import SaplingCheckbox from '@/components/common/SaplingCheckbox.vue'
 import {
   useSaplingFilterMe,
   type UseSaplingFilterMeEmit,

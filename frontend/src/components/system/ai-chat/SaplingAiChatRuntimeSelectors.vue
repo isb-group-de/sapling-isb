@@ -12,7 +12,7 @@
         {{ t('aiChat.contactAdministrator') }}
       </div>
     </v-alert>
-    <v-autocomplete
+    <SaplingAutocomplete
       v-if="providerOptions.length > 0"
       :model-value="selectedProviderHandle"
       class="sapling-chat-runtime-selectors__select sapling-chat-runtime-selectors__select--provider sapling-ai-chat__provider-select"
@@ -34,8 +34,8 @@
           icon-size="16"
         />
       </template>
-    </v-autocomplete>
-    <v-autocomplete
+    </SaplingAutocomplete>
+    <SaplingAutocomplete
       v-if="modelOptions.length > 0"
       :model-value="selectedModelHandle"
       class="sapling-chat-runtime-selectors__select sapling-chat-runtime-selectors__select--model sapling-ai-chat__model-select"
@@ -57,12 +57,13 @@
           icon-size="16"
         />
       </template>
-    </v-autocomplete>
+    </SaplingAutocomplete>
   </div>
 </template>
 
 <script lang="ts" setup>
 import { useI18n } from 'vue-i18n'
+import SaplingAutocomplete from '@/components/common/SaplingAutocomplete.vue'
 import SaplingHelpTooltip from '@/components/common/SaplingHelpTooltip.vue'
 
 type SelectOption = {

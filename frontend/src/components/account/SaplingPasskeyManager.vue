@@ -34,7 +34,7 @@
       {{ $t('login.passkeyUnsupported') }}
     </v-alert>
 
-    <v-text-field
+    <SaplingTextField
       v-model="newPasskeyLabel"
       class="mt-4"
       :label="$t('login.passkeyLabel')"
@@ -82,6 +82,7 @@
 </template>
 
 <script setup lang="ts">
+import SaplingTextField from '@/components/common/SaplingTextField.vue'
 import { useSaplingPasskeys } from '@/composables/account/useSaplingPasskeys'
 
 const {

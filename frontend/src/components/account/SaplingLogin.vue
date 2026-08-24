@@ -2,7 +2,7 @@
   <!-- Container for the login form, styled to center content both vertically and horizontally -->
   <v-container class="sapling-login-shell d-flex flex-column justify-center align-center" fluid>
     <!-- Card container for the login form -->
-    <SaplingDialogCard class="sapling-dialog-small sapling-login-dialog" :elevation="10">
+    <SaplingDialogCard class="sapling-dialog-width--sm sapling-login-dialog" :elevation="10">
       <template v-if="isLoading">
         <SaplingInstanceBooting />
       </template>
@@ -29,7 +29,7 @@
               >
                 {{ loginErrorMessage }}
               </v-alert>
-              <v-text-field
+              <SaplingTextField
                 :label="$t('login.username')"
                 prepend-icon="mdi-account"
                 type="email"
@@ -38,7 +38,7 @@
                 v-model="email"
                 @keyup.enter="handleLogin"
               />
-              <v-text-field
+              <SaplingTextField
                 :label="$t('login.password')"
                 prepend-icon="mdi-lock"
                 type="password"
@@ -46,7 +46,7 @@
                 v-model="password"
                 @keyup.enter="handleLogin"
               />
-              <v-checkbox
+              <SaplingCheckbox
                 v-model="rememberMe"
                 :label="$t('login.rememberMe')"
                 class="d-flex justify-end"
@@ -97,6 +97,8 @@ import { useSaplingLogin } from '@/composables/account/useSaplingLogin'
 import { useSaplingTutorial } from '@/composables/system/useSaplingTutorial'
 // Import the password change dialog component
 import SaplingChangePassword from '@/components/account/SaplingChangePassword.vue'
+import SaplingCheckbox from '@/components/common/SaplingCheckbox.vue'
+import SaplingTextField from '@/components/common/SaplingTextField.vue'
 // Import the extracted SaplingActionLogin component
 import SaplingActionLogin from '@/components/actions/SaplingActionLogin.vue'
 import SaplingDialogCard from '@/components/dialog/SaplingDialogCard.vue'

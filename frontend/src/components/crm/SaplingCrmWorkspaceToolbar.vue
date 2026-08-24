@@ -46,7 +46,7 @@
     </div>
 
     <div class="sapling-crm-workspace__toolbar-fields">
-      <v-text-field
+      <SaplingTextField
         v-model="search"
         density="comfortable"
         hide-details
@@ -55,7 +55,7 @@
         prepend-inner-icon="mdi-magnify"
         :label="t('global.search')"
       />
-      <v-autocomplete
+      <SaplingAutocomplete
         v-model="selectedResponsibleHandle"
         density="comfortable"
         hide-details
@@ -64,7 +64,7 @@
         :items="responsiblePersonOptions"
         :label="t('crmWorkspace.responsiblePerson')"
       />
-      <v-autocomplete
+      <SaplingAutocomplete
         v-if="activeCockpit === 'sales'"
         v-model="opportunityHorizonDays"
         density="comfortable"
@@ -73,7 +73,7 @@
         :items="opportunityHorizonOptions"
         :label="t('crmWorkspace.closeHorizon')"
       />
-      <v-autocomplete
+      <SaplingAutocomplete
         v-else
         v-model="selectedSegmentHandle"
         density="comfortable"
@@ -83,7 +83,7 @@
         :items="segmentOptions"
         :label="t('crmWorkspace.customerSegment')"
       />
-      <v-autocomplete
+      <SaplingAutocomplete
         v-if="activeCockpit !== 'sales'"
         v-model="contactThresholdDays"
         density="comfortable"
@@ -98,6 +98,8 @@
 
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
+import SaplingAutocomplete from '@/components/common/SaplingAutocomplete.vue'
+import SaplingTextField from '@/components/common/SaplingTextField.vue'
 import type { CrmCockpitKey } from './crmWorkspace.types'
 
 export type { CrmCockpitKey } from './crmWorkspace.types'

@@ -5,7 +5,7 @@
       :key="condition.key"
       class="sapling-email-conditions__row"
     >
-      <v-autocomplete
+      <SaplingAutocomplete
         :menu="isConditionMenuOpen(condition.key, 'field')"
         :label="t('emailSubscriptionCondition.observedField')"
         :items="conditionFields"
@@ -21,7 +21,7 @@
         @update:model-value="(value) => updateObservedField(index, normalizeString(value))"
       />
 
-      <v-autocomplete
+      <SaplingAutocomplete
         v-if="isValueSelectionField(condition.observedField)"
         :menu="isConditionMenuOpen(condition.key, 'oldValue')"
         :label="t('emailSubscriptionCondition.oldValue')"
@@ -40,7 +40,7 @@
           (value: unknown) => updateCondition(index, { oldValue: normalizeConditionValue(value) })
         "
       />
-      <v-text-field
+      <SaplingTextField
         v-else
         :label="t('emailSubscriptionCondition.oldValue')"
         :model-value="condition.oldValue ?? null"
@@ -54,7 +54,7 @@
         "
       />
 
-      <v-autocomplete
+      <SaplingAutocomplete
         v-if="isValueSelectionField(condition.observedField)"
         :menu="isConditionMenuOpen(condition.key, 'newValue')"
         :label="t('emailSubscriptionCondition.newValue')"
@@ -73,7 +73,7 @@
           (value: unknown) => updateCondition(index, { newValue: normalizeConditionValue(value) })
         "
       />
-      <v-text-field
+      <SaplingTextField
         v-else
         :label="t('emailSubscriptionCondition.newValue')"
         :model-value="condition.newValue ?? null"
@@ -113,6 +113,8 @@
 <script lang="ts" setup>
 import { computed, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import SaplingAutocomplete from '@/components/common/SaplingAutocomplete.vue'
+import SaplingTextField from '@/components/common/SaplingTextField.vue'
 import type { EntityTemplate } from '@/entity/structure'
 import type { SaplingGenericItem } from '@/entity/entity'
 import ApiGenericService from '@/services/api.generic.service'

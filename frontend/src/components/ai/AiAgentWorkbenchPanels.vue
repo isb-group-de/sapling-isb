@@ -43,9 +43,9 @@
 
   <v-window-item value="test">
     <div class="sapling-ai-agent-builder__panel-stack">
-      <v-textarea v-model="testPrompt" :label="t('aiAgentBuilder.testPrompt')" rows="5" />
+      <SaplingTextarea v-model="testPrompt" :label="t('aiAgentBuilder.testPrompt')" rows="5" />
       <div class="sapling-row-md">
-        <v-autocomplete
+        <SaplingAutocomplete
           v-model="selectedTestVersionHandle"
           :items="versionOptions"
           item-title="title"
@@ -53,7 +53,7 @@
           clearable
           :label="t('aiAgentBuilder.testVersion')"
         />
-        <v-autocomplete
+        <SaplingAutocomplete
           v-model="selectedTestPlaybookHandle"
           :items="playbookOptions"
           item-title="title"
@@ -132,11 +132,11 @@
   <v-window-item value="quality">
     <div class="sapling-ai-agent-builder__panel-stack">
       <div class="sapling-ai-agent-builder__grid">
-        <v-text-field
+        <SaplingTextField
           v-model="evaluationDraft.title"
           :label="t('aiAgentBuilder.evaluationTitle')"
         />
-        <v-autocomplete
+        <SaplingAutocomplete
           v-model="evaluationDraft.agentVersionHandle"
           :items="versionOptions"
           item-title="title"
@@ -144,13 +144,13 @@
           clearable
           :label="t('aiAgentBuilder.testVersion')"
         />
-        <v-textarea
+        <SaplingTextarea
           v-model="evaluationDraft.prompt"
           class="sapling-ai-agent-builder__wide"
           :label="t('aiAgentBuilder.testPrompt')"
           rows="4"
         />
-        <v-textarea
+        <SaplingTextarea
           v-model="evaluationDraft.expectedCriteria"
           class="sapling-ai-agent-builder__wide"
           :label="t('aiAgentBuilder.expectedCriteria')"
@@ -237,6 +237,9 @@ import type {
   AiProviderModelItem,
   AiProviderTypeItem,
 } from '@/entity/entity'
+import SaplingAutocomplete from '@/components/common/SaplingAutocomplete.vue'
+import SaplingTextField from '@/components/common/SaplingTextField.vue'
+import SaplingTextarea from '@/components/common/SaplingTextarea.vue'
 import AiAgentRunTraceList from './AiAgentRunTraceList.vue'
 import type {
   AgentEvaluationDraft,

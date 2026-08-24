@@ -796,14 +796,9 @@
   text-transform: uppercase;
 }
 
-.sapling-dialog-small {
+.sapling-dialog-width--sm {
+  width: 100%;
   max-width: var(--sapling-dialog-width-sm);
-  width: 100%;
-}
-
-.sapling-dialog-medium {
-  max-width: var(--sapling-dialog-width-md);
-  width: 100%;
 }
 
 .sapling-bulk-update {
@@ -877,9 +872,36 @@
   }
 }
 
-.sapling-dialog-large {
-  max-width: var(--sapling-dialog-width-lg);
+.sapling-dialog-frame {
   width: 100%;
+}
+
+.sapling-dialog-frame--xs {
+  max-width: var(--sapling-dialog-width-xs);
+}
+
+.sapling-dialog-frame--sm {
+  max-width: var(--sapling-dialog-width-sm);
+}
+
+.sapling-dialog-frame--md {
+  max-width: var(--sapling-dialog-width-md);
+}
+
+.sapling-dialog-frame--lg {
+  max-width: var(--sapling-dialog-width-lg);
+}
+
+.sapling-dialog-frame--xl {
+  max-width: var(--sapling-dialog-width-xl);
+}
+
+.sapling-dialog-frame--xxl {
+  max-width: var(--sapling-dialog-width-xxl);
+}
+
+.sapling-dialog-frame--3xl {
+  max-width: var(--sapling-dialog-width-3xl);
 }
 
 .sapling-dashboard-template-dialog {

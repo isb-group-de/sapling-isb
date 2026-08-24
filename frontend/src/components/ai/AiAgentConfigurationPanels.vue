@@ -1,22 +1,22 @@
 <template>
   <v-window-item value="profile">
     <div class="sapling-ai-agent-builder__grid">
-      <v-text-field
+      <SaplingTextField
         v-model="draft.handle"
         :disabled="isEditingExisting"
         :label="t('aiAgentBuilder.fieldHandle')"
         required
       />
-      <v-text-field v-model="draft.title" :label="t('aiAgentBuilder.fieldTitle')" required />
-      <v-text-field v-model="draft.icon" :label="t('aiAgentBuilder.fieldIcon')" />
-      <v-text-field v-model="draft.color" :label="t('aiAgentBuilder.fieldColor')" />
-      <v-textarea
+      <SaplingTextField v-model="draft.title" :label="t('aiAgentBuilder.fieldTitle')" required />
+      <SaplingTextField v-model="draft.icon" :label="t('aiAgentBuilder.fieldIcon')" />
+      <SaplingTextField v-model="draft.color" :label="t('aiAgentBuilder.fieldColor')" />
+      <SaplingTextarea
         v-model="draft.description"
         class="sapling-ai-agent-builder__wide"
         :label="t('aiAgentBuilder.fieldDescription')"
         rows="3"
       />
-      <v-combobox
+      <SaplingCombobox
         v-model="draft.conversationStarters"
         class="sapling-ai-agent-builder__wide"
         chips
@@ -28,14 +28,14 @@
 
   <v-window-item value="prompt">
     <div class="sapling-ai-agent-builder__grid">
-      <v-textarea
+      <SaplingTextarea
         v-model="draft.promptMarkdown"
         class="sapling-ai-agent-builder__wide"
         :label="t('aiAgentBuilder.fieldPrompt')"
         rows="12"
         required
       />
-      <v-textarea
+      <SaplingTextarea
         v-model="draft.welcomeMessage"
         class="sapling-ai-agent-builder__wide"
         :label="t('aiAgentBuilder.fieldWelcome')"
@@ -68,7 +68,7 @@
 
   <v-window-item value="tools">
     <div class="sapling-ai-agent-builder__grid">
-      <v-autocomplete
+      <SaplingAutocomplete
         v-model="draft.allowedInternalTools"
         class="sapling-ai-agent-builder__wide"
         chips
@@ -76,7 +76,7 @@
         :items="internalToolOptions"
         :label="t('aiAgentBuilder.fieldInternalTools')"
       />
-      <v-autocomplete
+      <SaplingAutocomplete
         v-model="draft.allowedExternalTools"
         class="sapling-ai-agent-builder__wide"
         chips
@@ -89,7 +89,7 @@
 
   <v-window-item value="runtime">
     <div class="sapling-ai-agent-builder__grid">
-      <v-autocomplete
+      <SaplingAutocomplete
         v-model="draft.provider"
         item-title="title"
         item-value="handle"
@@ -97,7 +97,7 @@
         :label="t('aiAgentBuilder.fieldProvider')"
         clearable
       />
-      <v-autocomplete
+      <SaplingAutocomplete
         v-model="draft.model"
         item-title="title"
         item-value="handle"
@@ -105,7 +105,7 @@
         :label="t('aiAgentBuilder.fieldModel')"
         clearable
       />
-      <v-autocomplete
+      <SaplingAutocomplete
         v-model="draft.mutationMode"
         :items="mutationModeOptions"
         :label="t('aiAgentBuilder.fieldMutationMode')"
@@ -123,9 +123,9 @@
         density="comfortable"
         hide-details
       />
-      <v-switch v-model="draft.isActive" :label="t('aiAgentBuilder.fieldActive')" />
-      <v-switch v-model="draft.isDefault" :label="t('aiAgentBuilder.fieldDefault')" />
-      <v-text-field
+      <SaplingSwitch v-model="draft.isActive" :label="t('aiAgentBuilder.fieldActive')" />
+      <SaplingSwitch v-model="draft.isDefault" :label="t('aiAgentBuilder.fieldDefault')" />
+      <SaplingTextField
         v-model.number="draft.sortOrder"
         type="number"
         :label="t('aiAgentBuilder.fieldSortOrder')"
@@ -138,6 +138,11 @@
 import { useI18n } from 'vue-i18n'
 import type { AiProviderModelItem, AiProviderTypeItem, SaplingGenericItem } from '@/entity/entity'
 import type { FilterQuery } from '@/services/api.generic.service'
+import SaplingAutocomplete from '@/components/common/SaplingAutocomplete.vue'
+import SaplingCombobox from '@/components/common/SaplingCombobox.vue'
+import SaplingSwitch from '@/components/common/SaplingSwitch.vue'
+import SaplingTextField from '@/components/common/SaplingTextField.vue'
+import SaplingTextarea from '@/components/common/SaplingTextarea.vue'
 import SaplingFieldSelect from '@/components/dialog/fields/SaplingFieldSelect.vue'
 import type { AgentDraft, AgentSelectOption } from './aiAgentBuilder.types'
 

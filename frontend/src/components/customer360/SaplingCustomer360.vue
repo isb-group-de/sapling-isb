@@ -205,14 +205,14 @@
                   >
                 </v-chip-group>
                 <div class="d-flex ga-2 customer360__activity-filters">
-                  <v-autocomplete
+                  <SaplingAutocomplete
                     v-model="activityDirection"
                     :items="activityDirectionOptions"
                     density="compact"
                     hide-details
                     variant="outlined"
                   />
-                  <v-autocomplete
+                  <SaplingAutocomplete
                     v-model="activityPeriod"
                     :items="activityPeriodOptions"
                     density="compact"
@@ -320,7 +320,7 @@
               />
               <section class="sapling-section-panel sapling-panel-shell customer360__panel">
                 <h2>{{ $t('customer360.brief') }}</h2>
-                <v-textarea
+                <SaplingTextarea
                   v-model="briefContent"
                   :loading="briefLoading"
                   auto-grow
@@ -362,7 +362,9 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 
 import SaplingDialogEdit from '@/components/dialog/SaplingDialogEdit.vue'
+import SaplingAutocomplete from '@/components/common/SaplingAutocomplete.vue'
 import SaplingPageHero from '@/components/common/SaplingPageHero.vue'
+import SaplingTextarea from '@/components/common/SaplingTextarea.vue'
 import type { EntityItem, SaplingGenericItem } from '@/entity/entity'
 import type { EntityTemplate } from '@/entity/structure'
 import ApiGenericService from '@/services/api.generic.service'

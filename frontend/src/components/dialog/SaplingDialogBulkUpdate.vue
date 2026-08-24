@@ -1,7 +1,7 @@
 <template>
-  <v-dialog
+  <SaplingDialog
     :model-value="modelValue"
-    class="sapling-dialog-medium"
+    size="md"
     :height="SAPLING_DIALOG_HEIGHT.xl"
     persistent
     @update:model-value="handleDialogUpdate"
@@ -29,7 +29,7 @@
         <template #body>
           <div class="sapling-bulk-update">
             <div class="sapling-bulk-update__picker">
-              <v-autocomplete
+              <SaplingAutocomplete
                 v-model="selectedFieldName"
                 :items="fieldOptions"
                 item-title="title"
@@ -151,13 +151,15 @@
         </template>
       </SaplingDialogShell>
     </SaplingDialogCard>
-  </v-dialog>
+  </SaplingDialog>
 </template>
 
 <script lang="ts" setup>
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { AccumulatedPermission, EntityTemplate } from '@/entity/structure'
+import SaplingAutocomplete from '@/components/common/SaplingAutocomplete.vue'
+import SaplingDialog from '@/components/common/SaplingDialog.vue'
 import SaplingActionBulkUpdate from '@/components/actions/SaplingActionBulkUpdate.vue'
 import SaplingDialogCard from '@/components/dialog/SaplingDialogCard.vue'
 import SaplingDialogShell from '@/components/common/SaplingDialogShell.vue'

@@ -1,9 +1,9 @@
 <template>
-  <v-dialog
+  <SaplingDialog
     v-if="dialog"
     v-model="dialogModel"
     persistent
-    class="sapling-dialog-large"
+    size="xl"
     @keydown.esc.stop.prevent="closeDialog"
   >
     <SaplingDialogCard
@@ -218,7 +218,7 @@
         </template>
       </SaplingDialogShell>
     </SaplingDialogCard>
-  </v-dialog>
+  </SaplingDialog>
 </template>
 
 <script setup lang="ts">
@@ -227,6 +227,7 @@ import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 import { useDisplay } from 'vuetify'
 import SaplingActionClose from '@/components/actions/SaplingActionClose.vue'
+import SaplingDialog from '@/components/common/SaplingDialog.vue'
 import SaplingDialogCard from '@/components/dialog/SaplingDialogCard.vue'
 import SaplingDialogHero from '@/components/common/SaplingDialogHero.vue'
 import SaplingDialogShell from '@/components/common/SaplingDialogShell.vue'

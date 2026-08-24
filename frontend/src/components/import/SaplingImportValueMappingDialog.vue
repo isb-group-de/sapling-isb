@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="visibleModel" class="sapling-dialog-large" max-width="960">
+  <SaplingDialog v-model="visibleModel" size="lg">
     <SaplingDialogCard
       v-if="valueMapping && field"
       class="sapling-import__value-mapping-dialog"
@@ -16,7 +16,7 @@
 
         <template #body>
           <div class="sapling-dialog-fill-content sapling-stack-md">
-            <v-autocomplete
+            <SaplingAutocomplete
               :model-value="valueMapping.fallback"
               :items="valueMappingFallbackOptions"
               item-title="title"
@@ -85,12 +85,14 @@
         </template>
       </SaplingDialogShell>
     </SaplingDialogCard>
-  </v-dialog>
+  </SaplingDialog>
 </template>
 
 <script lang="ts" setup>
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import SaplingAutocomplete from '@/components/common/SaplingAutocomplete.vue'
+import SaplingDialog from '@/components/common/SaplingDialog.vue'
 import SaplingTemplateValueField from '@/components/dialog/SaplingTemplateValueField.vue'
 import SaplingActionBar from '@/components/actions/SaplingActionBar.vue'
 import SaplingDialogHero from '@/components/common/SaplingDialogHero.vue'

@@ -1,6 +1,6 @@
 <template>
   <div class="sapling-table-filter-menu__range">
-    <v-text-field
+    <SaplingTextField
       :model-value="startValue"
       :type="inputType"
       :label="$t('filter.from')"
@@ -14,7 +14,7 @@
       class="sapling-table-filter-menu__field"
       @update:model-value="(value) => emit('update:startValue', normalizeValue(value))"
     />
-    <v-text-field
+    <SaplingTextField
       :model-value="endValue"
       :type="inputType"
       :label="$t('filter.to')"
@@ -32,6 +32,8 @@
 </template>
 
 <script lang="ts" setup>
+import SaplingTextField from '@/components/common/SaplingTextField.vue'
+
 defineProps<{
   startValue: string
   endValue: string

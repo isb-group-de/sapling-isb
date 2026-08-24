@@ -1,5 +1,5 @@
 <template>
-  <v-text-field
+  <SaplingTextField
     :class="{ 'sapling-field-link--disabled': disabled }"
     :label="label"
     :model-value="modelValue"
@@ -16,6 +16,8 @@
 </template>
 
 <script lang="ts" setup>
+import SaplingTextField from '@/components/common/SaplingTextField.vue'
+
 const props = defineProps<{
   label: string
   modelValue: string

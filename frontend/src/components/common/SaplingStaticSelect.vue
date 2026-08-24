@@ -1,6 +1,5 @@
 <template>
-  <v-autocomplete
-    v-model:menu="menuOpen"
+  <SaplingAutocomplete
     :model-value="modelValue"
     :items="items"
     :label="label"
@@ -9,7 +8,6 @@
     :hide-details="hideDetails"
     :density="density"
     :variant="variant"
-    @keydown.tab="menuOpen = false"
     @update:model-value="emit('update:modelValue', $event)"
   >
     <template #label>
@@ -22,11 +20,11 @@
         icon-size="16"
       />
     </template>
-  </v-autocomplete>
+  </SaplingAutocomplete>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import SaplingAutocomplete from '@/components/common/SaplingAutocomplete.vue'
 import SaplingHelpTooltip from '@/components/common/SaplingHelpTooltip.vue'
 
 interface StaticSelectItem {
@@ -37,7 +35,7 @@ interface StaticSelectItem {
 withDefaults(
   defineProps<{
     modelValue: unknown
-    items: StaticSelectItem[]
+    items: readonly StaticSelectItem[]
     label?: string
     helpText?: string
     loading?: boolean
@@ -61,13 +59,4 @@ withDefaults(
 const emit = defineEmits<{
   (event: 'update:modelValue', value: unknown): void
 }>()
-
-const menuOpen = ref(false)
 </script>
-
-<style scoped>
-.sapling-static-select__help {
-  margin-inline-start: 0.2rem;
-  vertical-align: middle;
-}
-</style>

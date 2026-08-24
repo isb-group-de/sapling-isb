@@ -1,6 +1,6 @@
 <template>
   <div class="sapling-config-toolbar sapling-form-config__toolbar">
-    <v-autocomplete
+    <SaplingAutocomplete
       v-model="selectedEntityHandle"
       class="sapling-form-config__entity-select"
       :items="entityOptions"
@@ -12,7 +12,7 @@
       :label="$t('formConfig.entity')"
       :loading="loadingEntities"
     />
-    <v-autocomplete
+    <SaplingAutocomplete
       v-model="selectedConfigHandle"
       class="sapling-form-config__config-select"
       :items="configOptions"
@@ -34,13 +34,13 @@
   </div>
 
   <div class="sapling-config-settings sapling-form-config__settings">
-    <v-text-field
+    <SaplingTextField
       v-model="configName"
       density="comfortable"
       :label="$t('formConfig.name')"
       prepend-inner-icon="mdi-label-outline"
     />
-    <v-autocomplete
+    <SaplingAutocomplete
       v-model="configScope"
       density="comfortable"
       :items="scopeOptions"
@@ -60,7 +60,7 @@
         density="comfortable"
         hide-details
       />
-      <v-text-field
+      <SaplingTextField
         v-else
         v-model="scopeHandle"
         density="comfortable"
@@ -71,14 +71,14 @@
       />
     </div>
     <div class="sapling-row-md sapling-config-switches sapling-form-config__switches">
-      <v-switch
+      <SaplingSwitch
         v-model="isActive"
         color="primary"
         hide-details
         density="compact"
         :label="$t('formConfig.active')"
       />
-      <v-switch
+      <SaplingSwitch
         v-model="isDefault"
         color="primary"
         hide-details
@@ -90,6 +90,9 @@
 </template>
 
 <script setup lang="ts">
+import SaplingAutocomplete from '@/components/common/SaplingAutocomplete.vue'
+import SaplingSwitch from '@/components/common/SaplingSwitch.vue'
+import SaplingTextField from '@/components/common/SaplingTextField.vue'
 import SaplingFieldSingleSelect from '@/components/dialog/fields/SaplingFieldSingleSelect.vue'
 import type { SaplingGenericItem } from '@/entity/entity'
 

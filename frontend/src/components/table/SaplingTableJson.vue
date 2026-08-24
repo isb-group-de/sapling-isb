@@ -10,9 +10,9 @@
       <v-icon class="pr-3" left>mdi-code-json</v-icon>
       {{ $t(`global.show`) }}
     </v-btn>
-    <v-dialog
+    <SaplingDialog
       v-model:modelValue="isDialogOpen"
-      :max-width="SAPLING_DIALOG_MAX_WIDTH.xxl"
+      size="xxl"
       :height="SAPLING_DIALOG_HEIGHT.xl"
       persistent
       @keydown.esc.stop.prevent="closeJsonDialog"
@@ -60,12 +60,13 @@
           </template>
         </SaplingDialogShell>
       </SaplingDialogCard>
-    </v-dialog>
+    </SaplingDialog>
   </div>
 </template>
 
 <script lang="ts" setup>
 import SaplingCodeMirror from '@/components/common/SaplingCodeMirror.vue'
+import SaplingDialog from '@/components/common/SaplingDialog.vue'
 import SaplingDialogShell from '@/components/common/SaplingDialogShell.vue'
 import SaplingDialogCard from '@/components/dialog/SaplingDialogCard.vue'
 import SaplingActionJson from '@/components/actions/SaplingActionJson.vue'
@@ -74,7 +75,7 @@ import {
   type UseSaplingTableJsonProps,
 } from '@/composables/table/useSaplingTableJson'
 import { downloadTextFile } from '@/composables/table/saplingTableAction.utils'
-import { SAPLING_DIALOG_MAX_WIDTH, SAPLING_DIALOG_HEIGHT } from '@/constants/dialog.constants'
+import { SAPLING_DIALOG_HEIGHT } from '@/constants/dialog.constants'
 import { createJsonDownloadFilename } from '@/utils/jsonDownload'
 
 const props = defineProps<UseSaplingTableJsonProps>()

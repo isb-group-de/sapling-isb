@@ -518,12 +518,24 @@ Dialogs use:
 
 Custom dialogs should follow the shared shell pattern:
 
-1. `v-dialog` with one of the size classes such as `sapling-dialog-small`, `sapling-dialog-medium`, or `sapling-dialog-large`.
+1. `SaplingDialog` with a semantic `size` from `xs` through `3xl`; use the smallest size that fits the workflow.
 2. `SaplingDialogCard` as the card surface.
 3. `SaplingDialogShell` with `#hero`, `#body`, and `#actions` slots.
 4. `SaplingDialogHero` for dialog title/stats/loading states when a hero is needed.
 5. Framework scroll classes for constrained content: `sapling-dialog-fill-body`, `sapling-dialog-fill-content`, and `sapling-scrollable`.
 6. Existing action components from `frontend/src/components/actions/` in the `#actions` slot.
+
+General-purpose form controls are framework components too. Use
+`SaplingTextField`, `SaplingTextarea`, `SaplingAutocomplete`,
+`SaplingCombobox`, `SaplingSwitch`, and `SaplingCheckbox` in application and
+feature components. They centralize outlined geometry, comfortable density,
+validation-detail spacing, and dropdown focus behavior. Metadata-driven
+renderers such as `SaplingFieldSingleSelect` remain the higher-level choice for
+entity references. Raw Vuetify controls belong only inside these shared
+primitives; table boolean cells are the documented exception because they are
+read/selection affordances rather than form fields. Songbird likewise keeps its
+positioned `v-dialog` because it is a floating overlay rather than a standard
+dialog card.
 
 Shared dialog body classes reserve the framework's floating-label clearance above their content.
 Keep the first outlined field inside `sapling-dialog-form-body`,

@@ -17,7 +17,7 @@
     </template>
 
     <template v-else>
-      <v-text-field
+      <SaplingTextField
         v-model="favoriteSearch"
         class="sapling-favorites-panel__search"
         clearable
@@ -99,6 +99,7 @@
 // #region Imports
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import SaplingTextField from '@/components/common/SaplingTextField.vue'
 import { useSaplingFavorites } from '@/composables/dashboard/useSaplingFavorites'
 import SaplingFavoriteTemplateLoadDialog from '@/components/dashboard/SaplingFavoriteTemplateLoadDialog.vue'
 import SaplingDialogDelete from '@/components/dialog/SaplingDialogDelete.vue'

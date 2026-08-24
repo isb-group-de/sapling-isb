@@ -221,7 +221,7 @@
       :rules="rules"
       @update:model-value="(val: string) => updateField(template.name, val)"
     />
-    <v-autocomplete
+    <SaplingAutocomplete
       v-else-if="isRenderer('select') || template.customField?.type === 'select'"
       v-model:menu="customSelectMenuOpen"
       :label="requiredLabel"
@@ -237,7 +237,7 @@
       @keydown.tab="customSelectMenuOpen = false"
       @update:model-value="(val: unknown) => updateField(template.name, val)"
     />
-    <v-autocomplete
+    <SaplingAutocomplete
       v-else-if="isRenderer('multiSelect') || template.customField?.type === 'multiSelect'"
       v-model:menu="customSelectMenuOpen"
       :label="requiredLabel"
@@ -321,6 +321,7 @@ import { useI18n } from 'vue-i18n'
 import type { FilterQuery } from '@/services/api.generic.service'
 import type { AccumulatedPermission, DialogState, EntityTemplate } from '@/entity/structure'
 import type { SaplingGenericItem } from '@/entity/entity'
+import SaplingAutocomplete from '@/components/common/SaplingAutocomplete.vue'
 import SaplingHelpTooltip from '@/components/common/SaplingHelpTooltip.vue'
 
 // Field components are loaded on demand. A typical edit dialog only renders a

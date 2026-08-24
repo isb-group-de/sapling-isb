@@ -717,3 +717,30 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+.sapling-control {
+  width: 100%;
+  min-width: 0;
+}
+
+.sapling-control .v-field {
+  border-radius: var(--sapling-control-radius);
+}
+
+.sapling-control .v-input__details {
+  min-height: var(--sapling-field-detail-min-height);
+  padding-inline: var(--sapling-space-md);
+}
+
+.sapling-control--selection .v-input__details,
+.sapling-control[hide-details='true'] .v-input__details {
+  min-height: 0;
+}
+
+.sapling-control--selection {
+  min-height: var(--sapling-control-height-comfortable);
+}
+
+.sapling-static-select__help {
+  margin-inline-start: var(--sapling-space-2xs);
+  vertical-align: middle;
+}

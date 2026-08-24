@@ -65,11 +65,11 @@
       </transition-group>
     </Teleport>
     <!-- Dialog for all Meldungen -->
-    <v-dialog
+    <SaplingDialog
       v-if="dialog"
       v-model="dialog"
       persistent
-      class="sapling-dialog-large"
+      size="xl"
       @keydown.esc.stop.prevent="closeDialog"
     >
       <template v-slot:activator="{ props }">
@@ -193,7 +193,7 @@
           </template>
         </div>
       </SaplingDialogCard>
-    </v-dialog>
+    </SaplingDialog>
   </div>
 </template>
 
@@ -207,6 +207,7 @@ import { useTranslationLoader } from '@/composables/generic/useTranslationLoader
 import type { Message } from '@/composables/system/useSaplingMessageCenter'
 import ApiGithubService from '@/services/api.github.service'
 import SaplingDialogCard from '@/components/dialog/SaplingDialogCard.vue'
+import SaplingDialog from '@/components/common/SaplingDialog.vue'
 import SaplingDialogHero from '@/components/common/SaplingDialogHero.vue'
 import SaplingSurface from '@/components/common/SaplingSurface.vue'
 import SaplingActionBarSkeleton from '@/components/actions/SaplingActionBarSkeleton.vue'

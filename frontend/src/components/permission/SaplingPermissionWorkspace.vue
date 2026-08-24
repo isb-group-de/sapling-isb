@@ -21,7 +21,7 @@
       <div
         class="sapling-split-toolbar sapling-admin-toolbar-actions sapling-permission-toolbar-actions"
       >
-        <v-text-field
+        <SaplingTextField
           v-model="permissionSearchModel"
           :label="$t('global.search')"
           density="comfortable"
@@ -106,7 +106,7 @@
               :key="`${item.handle}-${column.key}`"
               class="text-center"
             >
-              <v-checkbox
+              <SaplingCheckbox
                 v-if="canUsePermission(item, column.key)"
                 :model-value="getPermission(selectedRole, item, column.key)"
                 hide-details
@@ -183,7 +183,7 @@
                 icon-size="16"
               />
             </span>
-            <v-checkbox
+            <SaplingCheckbox
               v-if="canUsePermission(item, column.key)"
               :model-value="getPermission(selectedRole, item, column.key)"
               hide-details
@@ -210,7 +210,9 @@
 import { computed } from 'vue'
 import { useDisplay } from 'vuetify'
 import type { EntityItem, RoleItem } from '@/entity/entity'
+import SaplingCheckbox from '@/components/common/SaplingCheckbox.vue'
 import SaplingHelpTooltip from '@/components/common/SaplingHelpTooltip.vue'
+import SaplingTextField from '@/components/common/SaplingTextField.vue'
 
 type PermissionColumnKey = 'allowShow' | 'allowRead' | 'allowInsert' | 'allowUpdate' | 'allowDelete'
 type PermissionFilterMode = 'all' | 'enabled' | 'disabled'

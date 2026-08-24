@@ -1,10 +1,5 @@
 <template>
-  <v-dialog
-    v-model="dialogModel"
-    persistent
-    class="sapling-dialog-large"
-    @keydown.esc.stop.prevent="closeDialog"
-  >
+  <SaplingDialog v-model="dialogModel" persistent size="xl" @keydown.esc.stop.prevent="closeDialog">
     <SaplingDialogCard
       class="sapling-external-record-links-dialog"
       :tilt="false"
@@ -130,7 +125,7 @@
         </template>
       </SaplingDialogShell>
     </SaplingDialogCard>
-  </v-dialog>
+  </SaplingDialog>
 </template>
 
 <script setup lang="ts">
@@ -140,6 +135,7 @@ import type { SaplingGenericItem } from '@/entity/entity'
 import ApiGenericService from '@/services/api.generic.service'
 import SaplingActionClose from '@/components/actions/SaplingActionClose.vue'
 import SaplingDialogCard from '@/components/dialog/SaplingDialogCard.vue'
+import SaplingDialog from '@/components/common/SaplingDialog.vue'
 import SaplingDialogHero from '@/components/common/SaplingDialogHero.vue'
 import SaplingDialogShell from '@/components/common/SaplingDialogShell.vue'
 import { useTranslationLoader } from '@/composables/generic/useTranslationLoader'

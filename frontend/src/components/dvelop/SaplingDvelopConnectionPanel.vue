@@ -4,7 +4,7 @@
     class="sapling-panel-shell sapling-section-panel sapling-dvelop-cloud__control-band"
   >
     <div class="sapling-dvelop-cloud__connection-panel">
-      <v-autocomplete
+      <SaplingAutocomplete
         :model-value="modelValue"
         class="sapling-dvelop-cloud__connection-field"
         :items="connectionOptions"
@@ -116,6 +116,7 @@
 </template>
 
 <script lang="ts" setup>
+import SaplingAutocomplete from '@/components/common/SaplingAutocomplete.vue'
 import SaplingSurface from '@/components/common/SaplingSurface.vue'
 import type { DvelopHealthCheckStatus } from '@/services/api.dvelop.service'
 import type { DvelopConnectionItem, DvelopHealthCapabilityRow } from './dvelopCloudWorkspace.types'

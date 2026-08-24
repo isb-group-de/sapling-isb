@@ -9,7 +9,7 @@
         </p>
         <h2 class="sapling-section-title">{{ $t('role.directory') }}</h2>
       </div>
-      <v-text-field
+      <SaplingTextField
         v-model="roleSearchModel"
         :label="$t('global.search')"
         density="comfortable"
@@ -62,6 +62,7 @@
 
 <script lang="ts" setup>
 import { computed } from 'vue'
+import SaplingTextField from '@/components/common/SaplingTextField.vue'
 import type { RoleItem } from '@/entity/entity'
 
 const props = defineProps<{

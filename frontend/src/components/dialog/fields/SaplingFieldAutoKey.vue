@@ -1,5 +1,5 @@
 <template>
-  <v-text-field
+  <SaplingTextField
     :label="label"
     :model-value="modelValue"
     :maxlength="maxlength"
@@ -9,7 +9,7 @@
     :rules="rules"
     :type="isVisible ? 'text' : 'password'"
     autocomplete="off"
-    @update:model-value="(val) => emit('update:modelValue', val)"
+    @update:model-value="(val) => emit('update:modelValue', val ?? '')"
   >
     <template #append-inner>
       <div class="sapling-auto-key__actions">
@@ -29,11 +29,12 @@
         />
       </div>
     </template>
-  </v-text-field>
+  </SaplingTextField>
 </template>
 
 <script lang="ts" setup>
 import { ref } from 'vue'
+import SaplingTextField from '@/components/common/SaplingTextField.vue'
 
 const props = defineProps<{
   label: string

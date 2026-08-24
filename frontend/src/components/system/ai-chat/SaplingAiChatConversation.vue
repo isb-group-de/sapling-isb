@@ -10,7 +10,7 @@
         v-if="(!isAgentLocked && agentOptions.length > 0) || playbookOptions.length > 0"
         class="sapling-chat-conversation__controls sapling-ai-chat__conversation-controls"
       >
-        <v-autocomplete
+        <SaplingAutocomplete
           v-if="!isAgentLocked && agentOptions.length > 0"
           :model-value="selectedAgentHandle"
           class="sapling-ai-chat__agent-select"
@@ -32,8 +32,8 @@
               icon-size="16"
             />
           </template>
-        </v-autocomplete>
-        <v-autocomplete
+        </SaplingAutocomplete>
+        <SaplingAutocomplete
           v-if="playbookOptions.length > 0"
           :model-value="selectedPlaybookHandle"
           class="sapling-ai-chat__playbook-select"
@@ -56,7 +56,7 @@
               icon-size="16"
             />
           </template>
-        </v-autocomplete>
+        </SaplingAutocomplete>
       </div>
     </div>
 
@@ -88,7 +88,7 @@
     />
 
     <div class="sapling-stack-xl sapling-chat-composer sapling-ai-chat__composer">
-      <v-textarea
+      <SaplingTextarea
         ref="messageInput"
         v-model="draftMessageModel"
         :disabled="!hasConfiguredProviders"
@@ -193,6 +193,8 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import SaplingAutocomplete from '@/components/common/SaplingAutocomplete.vue'
+import SaplingTextarea from '@/components/common/SaplingTextarea.vue'
 import SaplingAiChatConversationTitle from '@/components/system/ai-chat/SaplingAiChatConversationTitle.vue'
 import SaplingAiChatMessageList from '@/components/system/ai-chat/SaplingAiChatMessageList.vue'
 import SaplingHelpTooltip from '@/components/common/SaplingHelpTooltip.vue'

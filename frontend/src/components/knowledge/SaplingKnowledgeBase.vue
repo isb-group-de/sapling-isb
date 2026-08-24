@@ -26,7 +26,7 @@
       <SaplingSurface as="aside" class="sapling-knowledge-sidebar">
         <div class="sapling-knowledge-sidebar__controls">
           <div class="sapling-knowledge-sidebar__search-row">
-            <v-text-field
+            <SaplingTextField
               v-model="search"
               :label="t('knowledgeBase.search')"
               prepend-inner-icon="mdi-magnify"
@@ -283,6 +283,7 @@ import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import SaplingMarkdownContent from '@/components/common/SaplingMarkdownContent.vue'
 import SaplingSurface from '@/components/common/SaplingSurface.vue'
+import SaplingTextField from '@/components/common/SaplingTextField.vue'
 import SaplingFieldSelect from '@/components/dialog/fields/SaplingFieldSelect.vue'
 import { useTranslationLoader } from '@/composables/generic/useTranslationLoader'
 import { useSaplingKnowledgeBase } from '@/composables/knowledge/useSaplingKnowledgeBase'

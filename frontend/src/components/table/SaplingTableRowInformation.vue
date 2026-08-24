@@ -1,9 +1,5 @@
 <template>
-  <v-dialog
-    :model-value="show"
-    :max-width="SAPLING_DIALOG_MAX_WIDTH.lg"
-    @update:model-value="onDialogModelValueUpdate"
-  >
+  <SaplingDialog :model-value="show" size="lg" @update:model-value="onDialogModelValueUpdate">
     <SaplingDialogCard
       class="sapling-dialog-compact-card"
       :tilt="false"
@@ -54,7 +50,7 @@
         </template>
       </div>
     </SaplingDialogCard>
-  </v-dialog>
+  </SaplingDialog>
 </template>
 
 <script lang="ts" setup>
@@ -65,8 +61,8 @@ import SaplingActionSave from '@/components/actions/SaplingActionSave.vue'
 import SaplingActionBarSkeleton from '@/components/actions/SaplingActionBarSkeleton.vue'
 import SaplingDialogCard from '@/components/dialog/SaplingDialogCard.vue'
 import SaplingDialogHero from '@/components/common/SaplingDialogHero.vue'
+import SaplingDialog from '@/components/common/SaplingDialog.vue'
 import SaplingMarkdownField from '@/components/dialog/fields/SaplingFieldMarkdown.vue'
-import { SAPLING_DIALOG_MAX_WIDTH } from '@/constants/dialog.constants'
 import {
   useSaplingTableRowInformation,
   type UseSaplingTableRowInformationEmit,

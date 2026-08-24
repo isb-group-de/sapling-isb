@@ -1,13 +1,13 @@
 <template>
   <div class="sapling-config-field-tools sapling-form-config__field-tools glass-panel">
-    <v-text-field
+    <SaplingTextField
       v-model="fieldSearch"
       density="comfortable"
       prepend-inner-icon="mdi-magnify"
       :label="t('global.search')"
       hide-details
     />
-    <v-text-field
+    <SaplingTextField
       v-model="newGroupLabel"
       density="comfortable"
       prepend-inner-icon="mdi-folder-plus-outline"
@@ -60,7 +60,7 @@
           <strong>{{ resolveGroupLabel(group) }}</strong>
           <span>{{ group.key || formConfigText('ungrouped', 'Ohne Gruppe') }}</span>
         </div>
-        <v-text-field
+        <SaplingTextField
           v-model="group.label"
           class="sapling-form-config-group__label"
           density="compact"
@@ -68,7 +68,7 @@
           :label="formConfigText('groupLabel', 'Gruppenname')"
           :placeholder="resolveGroupLabel(group)"
         />
-        <v-switch
+        <SaplingSwitch
           v-model="group.visible"
           class="sapling-form-config-group__visibility"
           color="primary"
@@ -103,7 +103,7 @@
           class="sapling-panel-shell sapling-stack-md sapling-config-field sapling-form-config-field"
         >
           <div class="sapling-row-md sapling-config-field__main sapling-form-config-field__main">
-            <v-switch
+            <SaplingSwitch
               v-model="field.visible"
               color="primary"
               hide-details
@@ -118,21 +118,21 @@
           </div>
 
           <div class="sapling-config-field__controls sapling-form-config-field__controls">
-            <v-text-field
+            <SaplingTextField
               v-model="field.label"
               class="sapling-config-field__control sapling-config-field__control--label"
               density="compact"
               hide-details
               :label="t('formConfig.label')"
             />
-            <v-text-field
+            <SaplingTextField
               v-model="field.placeholder"
               class="sapling-config-field__control sapling-config-field__control--placeholder"
               density="compact"
               hide-details
               :label="t('formConfig.placeholder')"
             />
-            <v-textarea
+            <SaplingTextarea
               v-model="field.helpText"
               class="sapling-config-field__control sapling-config-field__control--help-text"
               density="compact"
@@ -174,25 +174,25 @@
           <div
             class="sapling-row-md sapling-config-field__toggles sapling-form-config-field__toggles"
           >
-            <v-checkbox
+            <SaplingCheckbox
               v-model="field.required"
               density="compact"
               hide-details
               :label="t('formConfig.required')"
             />
-            <v-checkbox
+            <SaplingCheckbox
               v-model="field.tableVisible"
               density="compact"
               hide-details
               :label="t('formConfig.tableVisible')"
             />
-            <v-checkbox
+            <SaplingCheckbox
               v-model="field.mobileVisible"
               density="compact"
               hide-details
               :label="t('formConfig.mobileVisible')"
             />
-            <v-checkbox
+            <SaplingCheckbox
               v-model="field.readonly"
               density="compact"
               hide-details
@@ -214,8 +214,12 @@
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { EntityTemplateFormWidth, SaplingFormRenderer } from '@/entity/structure'
+import SaplingCheckbox from '@/components/common/SaplingCheckbox.vue'
 import SaplingStaticSelect from '@/components/common/SaplingStaticSelect.vue'
 import SaplingSurface from '@/components/common/SaplingSurface.vue'
+import SaplingSwitch from '@/components/common/SaplingSwitch.vue'
+import SaplingTextField from '@/components/common/SaplingTextField.vue'
+import SaplingTextarea from '@/components/common/SaplingTextarea.vue'
 import type { FieldDraft, GroupDraft, StaticOption } from './formConfigAdmin.types'
 
 const props = defineProps<{

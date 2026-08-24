@@ -5,7 +5,7 @@
   >
     <SaplingSurface
       :as="VCard"
-      class="sapling-dialog-small sapling-access-pending__card"
+      class="sapling-dialog-width--sm sapling-access-pending__card"
       :elevation="10"
     >
       <div class="sapling-access-pending__icon">

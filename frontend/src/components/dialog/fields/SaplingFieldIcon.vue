@@ -1,6 +1,6 @@
 <template>
   <div class="sapling-field-icon">
-    <v-text-field
+    <SaplingTextField
       data-testid="icon-picker-trigger"
       class="sapling-field-icon__input"
       :class="{ 'sapling-field-icon__input--disabled': isDisabled }"
@@ -22,14 +22,9 @@
       <template v-if="modelValueProxy" #prepend-inner>
         <v-icon size="20">{{ modelValueProxy }}</v-icon>
       </template>
-    </v-text-field>
+    </SaplingTextField>
 
-    <v-dialog
-      v-if="dialog"
-      v-model="dialog"
-      class="sapling-dialog-medium"
-      @keydown.esc.stop="closeDialog"
-    >
+    <SaplingDialog v-if="dialog" v-model="dialog" size="md" @keydown.esc.stop="closeDialog">
       <SaplingDialogCard
         class="sapling-account-dialog sapling-field-icon__dialog"
         :close="closeDialog"
@@ -45,7 +40,7 @@
 
           <template #body>
             <div class="sapling-account-dialog__content sapling-field-icon__content">
-              <v-text-field
+              <SaplingTextField
                 data-testid="icon-picker-search"
                 class="sapling-field-icon__search"
                 :model-value="searchQuery"
@@ -105,7 +100,7 @@
           </template>
         </SaplingDialogShell>
       </SaplingDialogCard>
-    </v-dialog>
+    </SaplingDialog>
   </div>
 </template>
 
@@ -113,7 +108,9 @@
 import { useI18n } from 'vue-i18n'
 import SaplingActionClose from '@/components/actions/SaplingActionClose.vue'
 import SaplingDialogHero from '@/components/common/SaplingDialogHero.vue'
+import SaplingDialog from '@/components/common/SaplingDialog.vue'
 import SaplingDialogShell from '@/components/common/SaplingDialogShell.vue'
+import SaplingTextField from '@/components/common/SaplingTextField.vue'
 import SaplingDialogCard from '@/components/dialog/SaplingDialogCard.vue'
 import { useSaplingIconField } from '@/composables/fields/useSaplingIconField'
 

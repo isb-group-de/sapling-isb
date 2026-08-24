@@ -1,14 +1,8 @@
 <!-- Dialog for changing the user password -->
 <template>
-  <v-dialog
-    :model-value="props.modelValue"
-    :max-width="SAPLING_DIALOG_MAX_WIDTH.sm"
-    persistent
-    @keydown.esc="onEscape"
-  >
+  <SaplingDialog :model-value="props.modelValue" size="sm" persistent @keydown.esc="onEscape">
     <SaplingDialogCard
       class="sapling-change-password-dialog"
-      :max-width="SAPLING_DIALOG_MAX_WIDTH.sm"
       :elevation="10"
       :close="props.allowCancel ? closeDialog : undefined"
     >
@@ -30,14 +24,14 @@
             class="sapling-change-password-form"
             @submit.prevent="handlePasswordChange"
           >
-            <v-text-field
+            <SaplingTextField
               v-model="newPassword"
               :label="$t('login.newPassword')"
               prepend-icon="mdi-lock"
               type="password"
               autocomplete="off"
             />
-            <v-text-field
+            <SaplingTextField
               v-model="confirmPassword"
               :label="$t('login.confirmPassword')"
               prepend-icon="mdi-lock-check"
@@ -59,18 +53,19 @@
         </template>
       </SaplingDialogShell>
     </SaplingDialogCard>
-  </v-dialog>
+  </SaplingDialog>
 </template>
 
 <script setup lang="ts">
 // #region Imports
 import { useSaplingChangePassword } from '@/composables/account/useSaplingChangePassword'
-import { SAPLING_DIALOG_MAX_WIDTH } from '@/constants/dialog.constants'
 import SaplingActionChangePassword from '../actions/SaplingActionChangePassword.vue'
 import SaplingActionBarSkeleton from '@/components/actions/SaplingActionBarSkeleton.vue'
 import SaplingDialogCard from '@/components/dialog/SaplingDialogCard.vue'
 import SaplingDialogHero from '@/components/common/SaplingDialogHero.vue'
+import SaplingDialog from '@/components/common/SaplingDialog.vue'
 import SaplingDialogShell from '@/components/common/SaplingDialogShell.vue'
+import SaplingTextField from '@/components/common/SaplingTextField.vue'
 // #endregion
 
 // #region Props & Composable

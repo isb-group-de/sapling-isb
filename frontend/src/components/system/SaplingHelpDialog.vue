@@ -1,7 +1,7 @@
 <template>
-  <v-dialog
+  <SaplingDialog
     v-model="isOpen"
-    max-width="640"
+    size="md"
     scrollable
     transition="dialog-top-transition"
     content-class="sapling-overlay-content--top"
@@ -62,12 +62,13 @@
         </span>
       </div>
     </SaplingDialogCard>
-  </v-dialog>
+  </SaplingDialog>
 </template>
 
 <script lang="ts" setup>
 import { onBeforeUnmount, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
+import SaplingDialog from '@/components/common/SaplingDialog.vue'
 import SaplingDialogCard from '@/components/dialog/SaplingDialogCard.vue'
 import SaplingHelpEntryList from '@/components/system/help-dialog/SaplingHelpEntryList.vue'
 import SaplingHelpSection from '@/components/system/help-dialog/SaplingHelpSection.vue'

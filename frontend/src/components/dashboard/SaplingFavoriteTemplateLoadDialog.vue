@@ -1,9 +1,9 @@
 <template>
-  <v-dialog
+  <SaplingDialog
     v-if="dialog"
     v-model="dialog"
     :persistent="busy"
-    class="sapling-dialog-medium"
+    size="md"
     @keydown.esc.stop.prevent="busy ? undefined : handleClose()"
   >
     <SaplingDialogCard
@@ -95,12 +95,13 @@
         </template>
       </SaplingDialogShell>
     </SaplingDialogCard>
-  </v-dialog>
+  </SaplingDialog>
 </template>
 
 <script setup lang="ts">
 import SaplingActionClose from '@/components/actions/SaplingActionClose.vue'
 import SaplingDialogCard from '@/components/dialog/SaplingDialogCard.vue'
+import SaplingDialog from '@/components/common/SaplingDialog.vue'
 import SaplingDialogHero from '@/components/common/SaplingDialogHero.vue'
 import SaplingDialogShell from '@/components/common/SaplingDialogShell.vue'
 import type { FavoriteTemplateItem } from '@/entity/entity'

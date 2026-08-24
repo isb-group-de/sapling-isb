@@ -1,6 +1,6 @@
 <template>
   <div class="section-padding-bottom">
-    <v-text-field
+    <SaplingTextField
       :model-value="employeeSearch ?? ''"
       :label="$t('global.search')"
       prepend-inner-icon="mdi-magnify"
@@ -22,7 +22,7 @@
     >
       <v-icon class="mr-1" size="20">mdi-account-supervisor</v-icon>
       <span class="sapling-person-name">{{ getPersonName(person) }}</span>
-      <v-checkbox
+      <SaplingCheckbox
         :model-value="isPersonSelected(getPersonId(person))"
         @update:model-value="(checked) => togglePerson(getPersonId(person), checked)"
         hide-details
@@ -47,6 +47,8 @@
 
 <script setup lang="ts">
 // #region Imports
+import SaplingCheckbox from '@/components/common/SaplingCheckbox.vue'
+import SaplingTextField from '@/components/common/SaplingTextField.vue'
 import {
   useSaplingFilterEmployee,
   type UseSaplingFilterEmployeeEmit,

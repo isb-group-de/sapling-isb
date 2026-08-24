@@ -139,11 +139,17 @@ Use these shared patterns before creating a new class family:
   `sapling-vectorization`
 - Messaging: `sapling-ai-chat`, `sapling-chat-layout`,
   `sapling-message-center-entry`, `messages-float`
-- Dialogs: `sapling-dialog-shell`, `sapling-dialog-card`,
-  `sapling-account-dialog__content`, `sapling-workhours-card`
+- Dialogs: `SaplingDialog` owns the shared `xs` through `3xl` width scale;
+  `sapling-dialog-shell`, `sapling-dialog-card`,
+  `sapling-account-dialog__content`, and `sapling-workhours-card` compose the
+  content inside it.
 - Forms: `sapling-upload`, `sapling-upload-dropzone`,
   `sapling-field-color`, `sapling-field-select__activator`,
-  `sapling-field-generic-reference`, `sapling-field-icon`
+  `sapling-field-generic-reference`, `sapling-field-icon`; general application
+  forms use `SaplingTextField`, `SaplingTextarea`, `SaplingAutocomplete`,
+  `SaplingCombobox`, `SaplingSwitch`, and `SaplingCheckbox`. Specialized
+  metadata/reference fields continue to use the components under
+  `components/dialog/fields`.
 - Editors: `sapling-codemirror`, `sapling-markdown-content`,
   `sapling-markdown-workspace`, `sapling-markdown-pane`,
   `sapling-markdown-preview`

@@ -25,7 +25,7 @@
         {{ $t('formConfig.columnSelectionDescription') }}
       </v-card-subtitle>
 
-      <v-text-field
+      <SaplingTextField
         v-model="columnFilter"
         class="sapling-table-column-chooser__filter"
         density="compact"
@@ -94,6 +94,7 @@
 
 <script lang="ts" setup>
 import { computed, ref, watch } from 'vue'
+import SaplingTextField from '@/components/common/SaplingTextField.vue'
 import type { SaplingTableHeaderItem } from '@/entity/structure'
 import { SAPLING_TABLE_COLUMN_DRAG_TYPE } from '@/composables/table/saplingTableColumnOrder'
 

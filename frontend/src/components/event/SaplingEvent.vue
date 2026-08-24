@@ -140,11 +140,11 @@
     </template>
   </section>
 
-  <v-dialog
+  <SaplingDialog
     v-if="isMobileContextLayout"
     v-model="mobileContextDialogVisible"
     class="sapling-event-context-dialog"
-    :max-width="SAPLING_DIALOG_MAX_WIDTH.md"
+    size="md"
     scrollable
   >
     <SaplingDialogCard
@@ -163,7 +163,7 @@
         @update:selected-peoples="onSelectedPeoplesUpdate"
       />
     </SaplingDialogCard>
-  </v-dialog>
+  </SaplingDialog>
 
   <SaplingDialogEdit
     v-if="showEditDialog && entityEvent && templates.length > 0 && editEvent"
@@ -293,6 +293,7 @@ import { useDisplay } from 'vuetify'
 import { VSkeletonLoader } from 'vuetify/components'
 import { useSaplingEvent } from '@/composables/event/useSaplingEvent'
 import SaplingPageHero from '@/components/common/SaplingPageHero.vue'
+import SaplingDialog from '@/components/common/SaplingDialog.vue'
 import SaplingSurface from '@/components/common/SaplingSurface.vue'
 import SaplingCalendarTutorial from '@/components/system/tutorial/SaplingCalendarTutorial.vue'
 import SaplingEventCalendarWorkspace from '@/components/event/SaplingEventCalendarWorkspace.vue'
@@ -307,7 +308,6 @@ import SaplingDialogEdit from '../dialog/SaplingDialogEdit.vue'
 import SaplingDialogUpdateConflict from '@/components/dialog/SaplingDialogUpdateConflict.vue'
 import SaplingDialogConfirm from '@/components/dialog/SaplingDialogConfirm.vue'
 import SaplingActionBar from '@/components/actions/SaplingActionBar.vue'
-import { SAPLING_DIALOG_MAX_WIDTH } from '@/constants/dialog.constants'
 
 defineOptions({
   inheritAttrs: false,

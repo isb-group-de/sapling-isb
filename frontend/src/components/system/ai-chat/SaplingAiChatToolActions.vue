@@ -89,10 +89,10 @@
         </v-btn>
       </div>
     </div>
-    <v-dialog
+    <SaplingDialog
       :model-value="!!activeToolActionDetails"
-      max-width="760"
-      class="sapling-dialog-medium sapling-ai-chat__tool-action-details-dialog"
+      size="md"
+      class="sapling-ai-chat__tool-action-details-dialog"
       @update:model-value="handleToolActionDetailsDialogUpdate"
     >
       <SaplingDialogCard
@@ -153,7 +153,7 @@
           </SaplingActionBar>
         </div>
       </SaplingDialogCard>
-    </v-dialog>
+    </SaplingDialog>
   </div>
 </template>
 
@@ -162,6 +162,7 @@ import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import SaplingActionBar from '@/components/actions/SaplingActionBar.vue'
 import SaplingDialogHero from '@/components/common/SaplingDialogHero.vue'
+import SaplingDialog from '@/components/common/SaplingDialog.vue'
 import SaplingDialogCard from '@/components/dialog/SaplingDialogCard.vue'
 import type { AiChatToolActionItem } from '@/entity/entity'
 import {

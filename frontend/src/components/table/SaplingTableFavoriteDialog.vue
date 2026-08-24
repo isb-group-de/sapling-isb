@@ -1,7 +1,7 @@
 <template>
-  <v-dialog
+  <SaplingDialog
     :model-value="modelValue"
-    :max-width="SAPLING_DIALOG_MAX_WIDTH.sm"
+    size="sm"
     @update:model-value="emit('update:modelValue', $event)"
   >
     <SaplingDialogCard class="sapling-dialog-compact-card" :close="onCancel">
@@ -14,7 +14,7 @@
 
         <div class="sapling-dialog-form-body">
           <v-form ref="favoriteFormRef" class="sapling-dialog-form">
-            <v-text-field
+            <SaplingTextField
               :model-value="title"
               :label="$t('favorite.title') + '*'"
               :rules="titleRules"
@@ -27,16 +27,17 @@
         <SaplingActionSave :cancel="onCancel" :save="onSave" />
       </div>
     </SaplingDialogCard>
-  </v-dialog>
+  </SaplingDialog>
 </template>
 
 <script lang="ts" setup>
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import SaplingTextField from '@/components/common/SaplingTextField.vue'
+import SaplingDialog from '@/components/common/SaplingDialog.vue'
 import SaplingActionSave from '@/components/actions/SaplingActionSave.vue'
 import SaplingDialogCard from '@/components/dialog/SaplingDialogCard.vue'
 import SaplingDialogHero from '@/components/common/SaplingDialogHero.vue'
-import { SAPLING_DIALOG_MAX_WIDTH } from '@/constants/dialog.constants'
 
 type FavoriteFormRef = {
   validate?: () => Promise<boolean | { valid: boolean }>

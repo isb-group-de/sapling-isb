@@ -27,7 +27,7 @@
         <v-icon :icon="isCollapsed ? 'mdi-chevron-down' : 'mdi-chevron-up'" size="small" />
       </button>
       <span v-else>{{ t('aiChat.sessions') }}</span>
-      <v-switch
+      <SaplingSwitch
         :model-value="includeArchived"
         color="primary"
         density="compact"
@@ -40,10 +40,10 @@
             {{ t('aiChat.showArchived') }}
           </span>
         </template>
-      </v-switch>
+      </SaplingSwitch>
     </div>
 
-    <v-text-field
+    <SaplingTextField
       v-if="!isCollapsed && sessions.length > 0"
       v-model="searchQuery"
       class="sapling-chat-rail__search sapling-ai-chat__session-search"
@@ -101,7 +101,7 @@
             }"
           >
             <template v-if="editingSessionHandle === session.handle">
-              <v-text-field
+              <SaplingTextField
                 v-model="editingSessionTitleModel"
                 density="compact"
                 hide-details
@@ -232,6 +232,8 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import SaplingSwitch from '@/components/common/SaplingSwitch.vue'
+import SaplingTextField from '@/components/common/SaplingTextField.vue'
 import type { AiChatSessionItem } from '@/entity/entity'
 import {
   formatSessionRuntimeSummary,

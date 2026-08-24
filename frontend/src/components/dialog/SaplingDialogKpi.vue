@@ -1,9 +1,9 @@
 <template>
   <!-- Dialog for assigning an additional KPI to the current dashboard -->
-  <v-dialog
+  <SaplingDialog
     :model-value="addKpiDialog"
     @update:model-value="handleDialogUpdate"
-    :max-width="SAPLING_DIALOG_MAX_WIDTH.sm"
+    size="sm"
     class="sapling-add-kpi-dialog"
   >
     <SaplingDialogCard class="sapling-dialog-compact-card" :close="handleCancel" :tilt="tilt">
@@ -38,7 +38,7 @@
         </template>
       </div>
     </SaplingDialogCard>
-  </v-dialog>
+  </SaplingDialog>
 </template>
 
 <script setup lang="ts">
@@ -48,11 +48,11 @@ import type { KPIItem, SaplingGenericItem } from '@/entity/entity'
 import type { FilterQuery } from '@/services/api.generic.service'
 import { useSaplingDialogKpi } from '@/composables/dialog/useSaplingDialogKpi'
 import { useTranslationLoader } from '@/composables/generic/useTranslationLoader'
-import { SAPLING_DIALOG_MAX_WIDTH } from '@/constants/dialog.constants'
 import SaplingActionSave from '../actions/SaplingActionSave.vue'
 import SaplingActionBarSkeleton from '@/components/actions/SaplingActionBarSkeleton.vue'
 import SaplingDialogCard from '@/components/dialog/SaplingDialogCard.vue'
 import SaplingDialogHero from '@/components/common/SaplingDialogHero.vue'
+import SaplingDialog from '@/components/common/SaplingDialog.vue'
 import SaplingFieldSingleSelect from '@/components/dialog/fields/SaplingFieldSingleSelect.vue'
 // #endregion
 

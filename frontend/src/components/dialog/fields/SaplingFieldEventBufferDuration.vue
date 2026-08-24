@@ -1,5 +1,5 @@
 <template>
-  <v-autocomplete
+  <SaplingAutocomplete
     v-model:menu="menuOpen"
     :label="label"
     :model-value="normalizedValue"
@@ -17,6 +17,7 @@
 
 <script lang="ts" setup>
 import { computed, ref } from 'vue'
+import SaplingAutocomplete from '@/components/common/SaplingAutocomplete.vue'
 
 const props = defineProps<{
   label: string

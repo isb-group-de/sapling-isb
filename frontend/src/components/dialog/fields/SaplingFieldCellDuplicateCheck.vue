@@ -13,7 +13,7 @@
       scroll-strategy="block"
     >
       <template #activator="{ props: activatorProps }">
-        <v-text-field
+        <SaplingTextField
           v-bind="activatorProps"
           :label="label"
           :placeholder="placeholder"
@@ -82,6 +82,7 @@
 
 <script lang="ts" setup>
 import SaplingTable from '@/components/table/SaplingTable.vue'
+import SaplingTextField from '@/components/common/SaplingTextField.vue'
 import type { SaplingGenericItem } from '@/entity/entity'
 import { useSaplingTable } from '@/composables/table/useSaplingTable'
 import { onBeforeUnmount, ref, watch } from 'vue'

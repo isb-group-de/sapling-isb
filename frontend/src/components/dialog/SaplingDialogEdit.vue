@@ -1,8 +1,8 @@
 <template>
-  <v-dialog
+  <SaplingDialog
     :model-value="modelValue"
     @update:model-value="handleDialogUpdate"
-    :max-width="SAPLING_DIALOG_MAX_WIDTH['3xl']"
+    size="3xl"
     :height="SAPLING_DIALOG_HEIGHT.xl"
     persistent
     @keydown.esc.stop.prevent="cancel"
@@ -278,7 +278,7 @@
         />
       </div>
     </SaplingDialogCard>
-  </v-dialog>
+  </SaplingDialog>
 
   <SaplingDialogRecordActionDialogs
     :record-delete-dialog="recordDeleteDialog"
@@ -316,7 +316,7 @@ import type {
   EntityTemplate,
 } from '@/entity/structure'
 import { DEFAULT_PAGE_SIZE_SMALL } from '@/constants/project.constants'
-import { SAPLING_DIALOG_MAX_WIDTH, SAPLING_DIALOG_HEIGHT } from '@/constants/dialog.constants'
+import { SAPLING_DIALOG_HEIGHT } from '@/constants/dialog.constants'
 import type { EntityItem, SaplingGenericItem } from '@/entity/entity'
 import { useSaplingDialogEdit } from '@/composables/dialog/useSaplingDialogEdit'
 import { useSaplingDialogKeyboardShortcuts } from '@/composables/dialog/useSaplingDialogKeyboardShortcuts'
@@ -330,6 +330,7 @@ import {
   getCommunicationRecordLabel,
 } from '@/utils/saplingCommunicationRecordUtil'
 import SaplingDialogCard from '@/components/dialog/SaplingDialogCard.vue'
+import SaplingDialog from '@/components/common/SaplingDialog.vue'
 import SaplingDialogEditActions from '@/components/dialog/SaplingDialogEditActions.vue'
 import SaplingDialogEditFormSections from '@/components/dialog/SaplingDialogEditFormSections.vue'
 import SaplingDialogEditHeader from '@/components/dialog/SaplingDialogEditHeader.vue'

@@ -86,7 +86,7 @@
         class="sapling-search-panel sapling-navigation-shell__search-panel"
         data-tutorial="navigation-search"
       >
-        <v-text-field
+        <SaplingTextField
           v-model="navigationSearch"
           class="sapling-navigation-shell__search"
           clearable
@@ -421,6 +421,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useDisplay } from 'vuetify'
 import SaplingFavorites from '@/components/dashboard/SaplingFavorites.vue'
 import SaplingHelpTooltip from '@/components/common/SaplingHelpTooltip.vue'
+import SaplingTextField from '@/components/common/SaplingTextField.vue'
 import { useSaplingNavigation } from '@/composables/system/useSaplingNavigation'
 import { useSaplingFavoritesAccess } from '@/composables/dashboard/useSaplingFavorites'
 // #endregion

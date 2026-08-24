@@ -4,9 +4,9 @@
     optional body and a slot for action buttons. Used by SaplingDialogDelete,
     SaplingDialogUnsavedChanges and other lightweight confirmation prompts.
   -->
-  <v-dialog
+  <SaplingDialog
     :model-value="modelValue"
-    :class="dialogClass"
+    :size="dialogSize"
     :persistent="persistent"
     @update:model-value="handleDialogUpdate"
     @keydown.esc.stop.prevent="handleEscape"
@@ -40,11 +40,12 @@
         </template>
       </div>
     </SaplingDialogCard>
-  </v-dialog>
+  </SaplingDialog>
 </template>
 
 <script lang="ts" setup>
 import { computed } from 'vue'
+import SaplingDialog from '@/components/common/SaplingDialog.vue'
 import SaplingDialogCard from '@/components/dialog/SaplingDialogCard.vue'
 import SaplingDialogHero from '@/components/common/SaplingDialogHero.vue'
 import SaplingActionBarSkeleton from '@/components/actions/SaplingActionBarSkeleton.vue'
@@ -86,7 +87,11 @@ const emit = defineEmits<{
 // #endregion
 
 // #region Computed
-const dialogClass = computed(() => `sapling-dialog-${props.size}`)
+const dialogSize = computed<'sm' | 'md' | 'xl'>(() => {
+  if (props.size === 'small') return 'sm'
+  if (props.size === 'large') return 'xl'
+  return 'md'
+})
 // #endregion
 
 // #region Methods

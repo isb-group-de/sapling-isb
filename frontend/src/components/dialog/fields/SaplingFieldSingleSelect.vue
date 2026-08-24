@@ -19,7 +19,7 @@
     >
       <template #activator="{ props: activatorProps }">
         <div v-bind="activatorProps" class="sapling-field-select__activator">
-          <v-autocomplete
+          <SaplingAutocomplete
             :disabled="props.disabled"
             :label="props.label"
             :items="autocompleteItems"
@@ -57,7 +57,7 @@
                 </span>
               </span>
             </template>
-          </v-autocomplete>
+          </SaplingAutocomplete>
         </div>
       </template>
       <div
@@ -139,6 +139,7 @@
 <script lang="ts" setup>
 // #region Imports
 import SaplingTable from '@/components/table/SaplingTable.vue'
+import SaplingAutocomplete from '@/components/common/SaplingAutocomplete.vue'
 import SaplingDialogEdit from '@/components/dialog/SaplingDialogEdit.vue'
 import type { SaplingGenericItem } from '@/entity/entity'
 import { useSaplingTable } from '@/composables/table/useSaplingTable'

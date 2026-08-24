@@ -17,7 +17,7 @@
         </v-tooltip>
       </div>
 
-      <v-autocomplete
+      <SaplingAutocomplete
         :model-value="fieldMappings[field.name]"
         :items="headerOptions"
         density="compact"
@@ -55,7 +55,7 @@
             </template>
           </v-list-item>
         </template>
-      </v-autocomplete>
+      </SaplingAutocomplete>
 
       <SaplingTemplateValueField
         :model-value="fieldDefaults[field.name]"
@@ -86,7 +86,7 @@
       </div>
 
       <div v-if="isUniqueConflictField(field)" class="sapling-import__unique-conflict-controls">
-        <v-autocomplete
+        <SaplingAutocomplete
           :model-value="uniqueConflictStrategies[field.name] ?? 'error'"
           :items="uniqueConflictStrategyOptions"
           item-title="title"
@@ -105,7 +105,7 @@
         v-if="field.isReference && field.referenceName"
         class="sapling-import__relation-mapping-controls"
       >
-        <v-autocomplete
+        <SaplingAutocomplete
           :model-value="relationMappingModes[field.name]"
           :items="relationMappingModeOptions"
           item-title="title"
@@ -117,7 +117,7 @@
           autocomplete="off"
           @update:model-value="updateRelationMappingMode(field.name, $event)"
         />
-        <v-autocomplete
+        <SaplingAutocomplete
           :model-value="relationMappingColumns[field.name]"
           :items="headerOptions"
           density="compact"
@@ -137,6 +137,7 @@
 
 <script lang="ts" setup>
 import { useI18n } from 'vue-i18n'
+import SaplingAutocomplete from '@/components/common/SaplingAutocomplete.vue'
 import SaplingTemplateValueField from '@/components/dialog/SaplingTemplateValueField.vue'
 import type {
   ImportRelationMappingMode,

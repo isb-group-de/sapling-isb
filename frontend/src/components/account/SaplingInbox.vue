@@ -1,9 +1,9 @@
 <template>
-  <v-dialog
+  <SaplingDialog
     v-if="dialog"
     v-model="dialog"
     persistent
-    class="sapling-dialog-large"
+    size="xl"
     @keydown.esc.stop.prevent="closeDialog"
   >
     <SaplingDialogCard
@@ -205,7 +205,7 @@
         </template>
       </SaplingDialogShell>
     </SaplingDialogCard>
-  </v-dialog>
+  </SaplingDialog>
 </template>
 
 <script setup lang="ts">
@@ -214,6 +214,7 @@ import { computed, ref } from 'vue'
 import { useSaplingInbox, type InboxEntry } from '@/composables/account/useSaplingInbox'
 import SaplingActionClose from '@/components/actions/SaplingActionClose.vue'
 import SaplingDialogCard from '@/components/dialog/SaplingDialogCard.vue'
+import SaplingDialog from '@/components/common/SaplingDialog.vue'
 import SaplingDialogHero from '@/components/common/SaplingDialogHero.vue'
 import SaplingDialogShell from '@/components/common/SaplingDialogShell.vue'
 import SaplingInboxEntryCard from '@/components/account/inbox/SaplingInboxEntryCard.vue'

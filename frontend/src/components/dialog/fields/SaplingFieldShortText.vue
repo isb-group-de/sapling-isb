@@ -1,5 +1,5 @@
 <template>
-  <v-text-field
+  <SaplingTextField
     :label="label"
     :model-value="modelValue"
     :maxlength="maxlength"
@@ -13,6 +13,8 @@
 </template>
 
 <script lang="ts" setup>
+import SaplingTextField from '@/components/common/SaplingTextField.vue'
+
 defineProps<{
   label: string
   modelValue: string | null

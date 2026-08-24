@@ -1,5 +1,5 @@
 <template>
-  <v-textarea
+  <SaplingTextarea
     :label="label"
     :model-value="modelValue"
     :maxlength="maxlength"
@@ -14,6 +14,8 @@
 </template>
 
 <script lang="ts" setup>
+import SaplingTextarea from '@/components/common/SaplingTextarea.vue'
+
 defineProps<{
   label: string
   modelValue: string | null

@@ -1,9 +1,9 @@
 <template>
-  <v-dialog
+  <SaplingDialog
     v-if="dialog"
     v-model="dialog"
     :persistent="isBusy"
-    class="sapling-dialog-large"
+    size="xl"
     @keydown.esc.stop.prevent="isBusy ? undefined : closeDialog()"
   >
     <SaplingDialogCard
@@ -46,7 +46,7 @@
                 </v-btn>
               </v-btn-toggle>
 
-              <v-text-field
+              <SaplingTextField
                 v-model="search"
                 class="sapling-permission-provider-dialog__search"
                 :label="$t('global.search')"
@@ -91,7 +91,7 @@
                 <thead>
                   <tr>
                     <th class="sapling-permission-provider-dialog__select-cell">
-                      <v-checkbox
+                      <SaplingCheckbox
                         :model-value="allVisibleUsersSelected"
                         hide-details
                         density="compact"
@@ -107,7 +107,7 @@
                 <tbody>
                   <tr v-for="user in users" :key="user.id">
                     <td>
-                      <v-checkbox
+                      <SaplingCheckbox
                         :model-value="selectedUserIds.includes(user.id)"
                         hide-details
                         density="compact"
@@ -172,11 +172,14 @@
         </template>
       </SaplingDialogShell>
     </SaplingDialogCard>
-  </v-dialog>
+  </SaplingDialog>
 </template>
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import SaplingCheckbox from '@/components/common/SaplingCheckbox.vue'
+import SaplingTextField from '@/components/common/SaplingTextField.vue'
+import SaplingDialog from '@/components/common/SaplingDialog.vue'
 import SaplingDialogCard from '@/components/dialog/SaplingDialogCard.vue'
 import SaplingDialogHero from '@/components/common/SaplingDialogHero.vue'
 import SaplingDialogShell from '@/components/common/SaplingDialogShell.vue'

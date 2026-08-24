@@ -6,7 +6,7 @@
       <div
         class="sapling-row-md sapling-row-wrap sapling-chat-composer__select-row sapling-ai-chat__voice-select-row"
       >
-        <v-autocomplete
+        <SaplingAutocomplete
           v-if="transcriptionProviderOptions.length > 0"
           :model-value="selectedTranscriptionProviderHandle"
           class="sapling-chat-runtime-selectors__select sapling-chat-runtime-selectors__select--provider sapling-ai-chat__provider-select"
@@ -28,8 +28,8 @@
               icon-size="16"
             />
           </template>
-        </v-autocomplete>
-        <v-autocomplete
+        </SaplingAutocomplete>
+        <SaplingAutocomplete
           v-if="transcriptionModelOptions.length > 0"
           :model-value="selectedTranscriptionModelHandle"
           class="sapling-chat-runtime-selectors__select sapling-chat-runtime-selectors__select--model sapling-ai-chat__model-select"
@@ -53,7 +53,7 @@
               icon-size="16"
             />
           </template>
-        </v-autocomplete>
+        </SaplingAutocomplete>
       </div>
       <div
         v-if="
@@ -63,7 +63,7 @@
         "
         class="sapling-row-md sapling-row-wrap sapling-chat-composer__select-row sapling-ai-chat__voice-select-row"
       >
-        <v-autocomplete
+        <SaplingAutocomplete
           v-if="speechProviderOptions.length > 0"
           :model-value="selectedSpeechProviderHandle"
           class="sapling-chat-runtime-selectors__select sapling-chat-runtime-selectors__select--provider sapling-ai-chat__provider-select"
@@ -85,8 +85,8 @@
               icon-size="16"
             />
           </template>
-        </v-autocomplete>
-        <v-autocomplete
+        </SaplingAutocomplete>
+        <SaplingAutocomplete
           v-if="speechModelOptions.length > 0"
           :model-value="selectedSpeechModelHandle"
           class="sapling-chat-runtime-selectors__select sapling-chat-runtime-selectors__select--model sapling-ai-chat__model-select"
@@ -108,7 +108,7 @@
               icon-size="16"
             />
           </template>
-        </v-autocomplete>
+        </SaplingAutocomplete>
       </div>
     </div>
   </div>
@@ -116,6 +116,7 @@
 
 <script lang="ts" setup>
 import { useI18n } from 'vue-i18n'
+import SaplingAutocomplete from '@/components/common/SaplingAutocomplete.vue'
 import SaplingHelpTooltip from '@/components/common/SaplingHelpTooltip.vue'
 
 type SelectOption = {

@@ -138,7 +138,7 @@
                       {{ option.icon }}
                     </v-icon>
                     <span class="sapling-person-name">{{ option.label }}</span>
-                    <v-checkbox
+                    <SaplingCheckbox
                       :model-value="isChipFilterOptionSelected(chipFilter.key, option.handle)"
                       hide-details
                       density="comfortable"
@@ -163,6 +163,7 @@
 <script setup lang="ts">
 // #region Imports
 import { computed, toRef } from 'vue'
+import SaplingCheckbox from '@/components/common/SaplingCheckbox.vue'
 import SaplingFilterMe from '@/components/filter/SaplingFilterMe.vue'
 import SaplingFilterEmployee from '@/components/filter/SaplingFilterEmployee.vue'
 import SaplingFilterPerson from '@/components/filter/SaplingFilterPerson.vue'

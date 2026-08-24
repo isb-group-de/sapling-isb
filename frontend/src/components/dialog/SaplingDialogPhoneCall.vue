@@ -1,9 +1,5 @@
 <template>
-  <v-dialog
-    :model-value="isOpen"
-    :max-width="SAPLING_DIALOG_MAX_WIDTH.lg"
-    @update:model-value="handleVisibilityChange"
-  >
+  <SaplingDialog :model-value="isOpen" size="lg" @update:model-value="handleVisibilityChange">
     <SaplingDialogCard class="sapling-dialog-compact-card" :tilt="false" :close="closePhoneDialog">
       <div class="sapling-dialog-shell">
         <SaplingDialogHero
@@ -26,7 +22,7 @@
             {{ errorMessage }}
           </v-alert>
 
-          <v-text-field
+          <SaplingTextField
             :model-value="phoneNumber"
             :label="translate('phoneCall.phoneNumber')"
             prepend-inner-icon="mdi-phone"
@@ -41,7 +37,7 @@
             :rows="6"
           />
 
-          <v-checkbox
+          <SaplingCheckbox
             v-model="reached"
             class="mt-2"
             :label="translate('phoneCall.reached')"
@@ -80,18 +76,20 @@
         <SaplingActionBarSkeleton v-else :leading="1" :trailing="2" />
       </div>
     </SaplingDialogCard>
-  </v-dialog>
+  </SaplingDialog>
 </template>
 
 <script lang="ts" setup>
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import SaplingCheckbox from '@/components/common/SaplingCheckbox.vue'
+import SaplingTextField from '@/components/common/SaplingTextField.vue'
 import SaplingActionBar from '@/components/actions/SaplingActionBar.vue'
 import SaplingActionBarSkeleton from '@/components/actions/SaplingActionBarSkeleton.vue'
 import SaplingDialogCard from '@/components/dialog/SaplingDialogCard.vue'
 import SaplingDialogHero from '@/components/common/SaplingDialogHero.vue'
+import SaplingDialog from '@/components/common/SaplingDialog.vue'
 import SaplingMarkdownField from '@/components/dialog/fields/SaplingFieldMarkdown.vue'
-import { SAPLING_DIALOG_MAX_WIDTH } from '@/constants/dialog.constants'
 import {
   resolvePhoneDialogSubject,
   useSaplingPhoneDialog,

@@ -14,7 +14,7 @@
       />
     </v-col>
     <v-col class="sapling-field-date-time__time">
-      <v-text-field
+      <SaplingTextField
         type="time"
         label=""
         :aria-label="`${computedLabel} time`"
@@ -31,6 +31,7 @@
 </template>
 
 <script setup lang="ts">
+import SaplingTextField from '@/components/common/SaplingTextField.vue'
 import { useSaplingDateTimeField } from '@/composables/fields/useSaplingDateTimeField'
 
 const props = defineProps<{
