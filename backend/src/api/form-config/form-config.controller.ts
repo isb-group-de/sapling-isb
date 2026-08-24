@@ -25,6 +25,7 @@ import { CurrentService } from '../current/current.service';
 import { FormConfigService } from './form-config.service';
 import {
   EffectiveSaplingFormTemplateDto,
+  SaplingFormConfigResponseDto,
   SaplingFormConfigValidationResultDto,
   SavePersonalSaplingTableViewDto,
   SaveSaplingFormConfigDto,
@@ -92,6 +93,31 @@ export class FormConfigController {
     return this.formConfigService.listConfigs(entityHandle);
   }
 
+  @Get(':entityHandle/applicable')
+  @ApiOperation({
+    summary: 'List applicable form configurations',
+    description:
+      'Returns active global, matching role, and authenticated-person form configurations for one entity.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Applicable form configurations.',
+    type: SaplingFormConfigResponseDto,
+    isArray: true,
+  })
+  async listApplicableConfigs(
+    @Req() req: Request,
+    @Param('entityHandle') entityHandle: string,
+  ): Promise<SaplingFormConfigResponseDto[]> {
+    const person = req.user as PersonItem;
+    this.assertCanReadEntity(person, entityHandle);
+    const configs = await this.formConfigService.listApplicableConfigs(
+      entityHandle,
+      person,
+    );
+    return configs.map((config) => this.toResponseDto(config, entityHandle));
+  }
+
   @Get(':entityHandle/table-views')
   @ApiOperation({
     summary: 'List available table views',
@@ -101,10 +127,14 @@ export class FormConfigController {
   async listTableViews(
     @Req() req: Request,
     @Param('entityHandle') entityHandle: string,
-  ): Promise<SaplingFormConfigItem[]> {
+  ): Promise<SaplingFormConfigResponseDto[]> {
     const person = req.user as PersonItem;
     this.assertCanReadEntity(person, entityHandle);
-    return this.formConfigService.listApplicableConfigs(entityHandle, person);
+    const configs = await this.formConfigService.listApplicableConfigs(
+      entityHandle,
+      person,
+    );
+    return configs.map((config) => this.toResponseDto(config, entityHandle));
   }
 
   @Get(':entityHandle/:handle/export')
@@ -327,5 +357,22 @@ export class FormConfigController {
       (role) =>
         role?.isAdministrator === true || role?.handle === ROLE_HANDLE.ADMIN,
     );
+  }
+
+  private toResponseDto(
+    item: SaplingFormConfigItem,
+    entityHandle: string,
+  ): SaplingFormConfigResponseDto {
+    return {
+      handle: item.handle,
+      name: item.name,
+      entity: entityHandle,
+      scope: item.scope,
+      scopeHandle: item.scopeHandle ?? null,
+      isActive: item.isActive,
+      isDefault: item.isDefault,
+      version: item.version,
+      config: item.config,
+    };
   }
 }

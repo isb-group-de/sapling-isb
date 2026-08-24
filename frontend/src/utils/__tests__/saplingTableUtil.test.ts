@@ -367,6 +367,18 @@ describe('saplingTableUtil', () => {
     ])
   })
 
+  it('hides fields whose form group is hidden even when the field itself is visible', () => {
+    const hiddenGroupField = createTemplate({
+      name: 'username',
+      formVisible: false,
+      formConfig: { visible: true },
+      formGroup: 'person.dialogGroup.security',
+      formGroupConfig: { visible: false },
+    })
+
+    expect(getEditDialogHeaders([hiddenGroupField], 'edit', true)).toEqual([])
+  })
+
   it('shows manual primary keys in create and edit dialogs and hides auto-increment keys', () => {
     const manualHandle = createTemplate({
       name: 'handle',

@@ -50,7 +50,7 @@ vi.mock('@/services/api.generic.service', () => ({
 
 vi.mock('@/services/api.form-config.service', () => ({
   default: {
-    list: listFormConfigsMock,
+    listApplicable: listFormConfigsMock,
   },
 }))
 

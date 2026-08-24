@@ -5,6 +5,7 @@ import type { EntityTemplate, SaplingFormConfigPayload } from '@/entity/structur
 
 const effectiveTemplateCache = new Map<string, Promise<EntityTemplate[]>>()
 const formConfigListCache = new Map<string, Promise<SaplingFormConfigItem[]>>()
+const applicableFormConfigListCache = new Map<string, Promise<SaplingFormConfigItem[]>>()
 const tableViewListCache = new Map<string, Promise<SaplingFormConfigItem[]>>()
 
 export interface SaplingFormConfigItem {
@@ -79,17 +80,35 @@ class ApiFormConfigService {
     return promise
   }
 
+  static async listApplicable(
+    entityHandle: string,
+    force = false,
+  ): Promise<SaplingFormConfigItem[]> {
+    const normalizedEntityHandle = entityHandle.trim()
+
+    if (!force) {
+      const cachedPromise = applicableFormConfigListCache.get(normalizedEntityHandle)
+      if (cachedPromise) return cachedPromise
+    }
+
+    const promise = this.fetchApplicableList(normalizedEntityHandle)
+    applicableFormConfigListCache.set(normalizedEntityHandle, promise)
+    return promise
+  }
+
   static invalidate(entityHandle?: string): void {
     if (entityHandle?.trim()) {
       const normalizedEntityHandle = entityHandle.trim()
       effectiveTemplateCache.delete(normalizedEntityHandle)
       formConfigListCache.delete(normalizedEntityHandle)
+      applicableFormConfigListCache.delete(normalizedEntityHandle)
       tableViewListCache.delete(normalizedEntityHandle)
       return
     }
 
     effectiveTemplateCache.clear()
     formConfigListCache.clear()
+    applicableFormConfigListCache.clear()
     tableViewListCache.clear()
   }
 
@@ -158,6 +177,19 @@ class ApiFormConfigService {
       return response.data
     } catch (error: unknown) {
       formConfigListCache.delete(entityHandle)
+      pushApiErrorMessage(error, 'exception.unknownError', entityHandle)
+      throw error
+    }
+  }
+
+  private static async fetchApplicableList(entityHandle: string): Promise<SaplingFormConfigItem[]> {
+    try {
+      const response = await axios.get<SaplingFormConfigItem[]>(
+        buildApiUrl(`form-config/${entityHandle}/applicable`),
+      )
+      return response.data
+    } catch (error: unknown) {
+      applicableFormConfigListCache.delete(entityHandle)
       pushApiErrorMessage(error, 'exception.unknownError', entityHandle)
       throw error
     }

@@ -104,3 +104,55 @@ describe('FormConfigController personal table views', () => {
     expect(setPersonalDefault).toHaveBeenCalledWith('person', 17, '42');
   });
 });
+
+describe('FormConfigController applicable form configurations', () => {
+  it('returns applicable configurations as plain response DTOs', async () => {
+    const config = {
+      handle: 1,
+      name: 'Person configuration',
+      scope: 'global',
+      scopeHandle: undefined,
+      isActive: true,
+      isDefault: true,
+      version: 1,
+      config: {
+        schema: 'sapling.form-config.v1',
+        entityHandle: 'person',
+        groups: { 'person.groupSecurity': { visible: false } },
+      },
+    } as unknown as SaplingFormConfigItem;
+    const listApplicableConfigs = jest.fn(
+      async (_entityHandle: string, _person?: PersonItem | null) => [config],
+    );
+    const controller = new FormConfigController(
+      { listApplicableConfigs } as unknown as FormConfigService,
+      {} as TemplateService,
+      {
+        getEntityPermissions: jest.fn().mockReturnValue({ allowRead: true }),
+      } as unknown as CurrentService,
+    );
+    const person = { handle: 42, roles: [] } as unknown as PersonItem;
+
+    const result = await controller.listApplicableConfigs(
+      { user: person } as unknown as Request,
+      'person',
+    );
+
+    expect(result).toEqual([
+      {
+        handle: 1,
+        name: 'Person configuration',
+        entity: 'person',
+        scope: 'global',
+        scopeHandle: null,
+        isActive: true,
+        isDefault: true,
+        version: 1,
+        config: config.config,
+      },
+    ]);
+    expect(Object.getPrototypeOf(result[0])).toBe(Object.prototype);
+    expect(listApplicableConfigs.mock.calls[0]?.[0]).toBe('person');
+    expect(listApplicableConfigs.mock.calls[0]?.[1]).toBe(person);
+  });
+});

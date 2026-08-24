@@ -8,6 +8,7 @@ import {
   IsString,
 } from 'class-validator';
 import type { SaplingFormConfigPayload } from '../../../entity/SaplingFormConfigItem';
+import type { SaplingFormConfigScope } from '../../../entity/SaplingFormConfigItem';
 import { EntityTemplateDto } from '../../template/dto/entity-template.dto';
 
 export class SaveSaplingFormConfigDto {
@@ -86,4 +87,33 @@ export class EffectiveSaplingFormTemplateDto {
 
   @ApiProperty({ type: () => EntityTemplateDto, isArray: true })
   entityTemplates!: EntityTemplateDto[];
+}
+
+export class SaplingFormConfigResponseDto {
+  @ApiPropertyOptional()
+  handle?: number;
+
+  @ApiProperty()
+  name!: string;
+
+  @ApiProperty()
+  entity!: string;
+
+  @ApiProperty({ enum: ['global', 'role', 'person'] })
+  scope!: SaplingFormConfigScope;
+
+  @ApiPropertyOptional({ nullable: true })
+  scopeHandle?: string | null;
+
+  @ApiProperty()
+  isActive!: boolean;
+
+  @ApiProperty()
+  isDefault!: boolean;
+
+  @ApiProperty()
+  version!: number;
+
+  @ApiProperty({ type: Object })
+  config!: SaplingFormConfigPayload;
 }

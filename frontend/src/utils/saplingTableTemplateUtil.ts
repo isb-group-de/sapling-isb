@@ -254,6 +254,10 @@ function getTemplateConfiguredBoolean(
 }
 
 function getTemplateConfiguredFormVisible(template: Partial<EntityTemplate>): boolean | null {
+  if (template.formGroupConfig?.visible === false) {
+    return false
+  }
+
   if (typeof template.formConfig?.visible === 'boolean') {
     return template.formConfig.visible
   }

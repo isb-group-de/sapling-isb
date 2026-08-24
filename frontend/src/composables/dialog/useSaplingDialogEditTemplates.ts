@@ -114,7 +114,7 @@ export function useSaplingDialogEditTemplates({
 
     isLoadingFormConfigs.value = true
     try {
-      formConfigs.value = await ApiFormConfigService.list(entityHandle)
+      formConfigs.value = await ApiFormConfigService.listApplicable(entityHandle)
       selectDefaultFormConfig()
     } catch {
       formConfigs.value = []
