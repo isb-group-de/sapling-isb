@@ -211,7 +211,7 @@ export class GlobalSearchIndexService {
     const entityClass = ENTITY_MAP[entityHandle] as new () => object;
     const record = (await this.em.findOne(
       entityClass,
-      { handle: recordHandle } as never,
+      { handle: recordHandle },
       { populate: definition.relations as never[] },
     )) as Record<string, unknown> | null;
     if (!record) {
@@ -219,10 +219,10 @@ export class GlobalSearchIndexService {
       return;
     }
 
-    const hydrated = (await this.genericCustomFieldService.hydrateRecords(
+    const hydrated = await this.genericCustomFieldService.hydrateRecords(
       entityHandle,
       record,
-    )) as Record<string, unknown>;
+    );
     const sourceUpdatedAt =
       hydrated.updatedAt instanceof Date ? hydrated.updatedAt : new Date();
     const entries = definition.fields.flatMap((field) => {

@@ -67,11 +67,9 @@ describe('GenericService change-log workflows', () => {
       scriptService,
     });
 
-    await service.create(
-      'ticket',
-      { title: 'Neuer Datensatz' },
-      { handle: 1 } as never,
-    );
+    await service.create('ticket', { title: 'Neuer Datensatz' }, {
+      handle: 1,
+    } as never);
     await waitForBackgroundTasks();
 
     expect(logCreateCalls).toHaveLength(1);

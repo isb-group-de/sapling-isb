@@ -75,8 +75,7 @@ describe('TranslationService', () => {
     const service = new TranslationService()
     const result = await service.prepare('ticket')
 
-    expect(findAllMock).toHaveBeenCalledOnce()
-    expect(findAllMock).toHaveBeenCalledWith('translation', {
+    expect(findAllMock).toHaveBeenCalledExactlyOnceWith('translation', {
       filter: {
         entity: { $in: ['ticket'] },
         language: 'de',

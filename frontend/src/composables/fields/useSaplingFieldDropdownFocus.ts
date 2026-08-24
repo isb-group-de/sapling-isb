@@ -44,10 +44,7 @@ export function useSaplingFieldDropdownFocus(menuOpen: Ref<boolean>) {
   }
 
   function containsTarget(target: EventTarget | null): boolean {
-    return (
-      target instanceof Node &&
-      (isWithinFieldBoundary(target) || isWithinOwnedOverlay(target))
-    )
+    return target instanceof Node && (isWithinFieldBoundary(target) || isWithinOwnedOverlay(target))
   }
 
   function closeMenu(): void {

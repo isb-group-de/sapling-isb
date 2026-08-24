@@ -185,6 +185,19 @@ export default defineConfig(({ mode }) => {
     ],
     build: {
       rollupOptions: {
+        onwarn(warning, defaultHandler) {
+          // These async imports deliberately break dialog/table component cycles;
+          // SaplingTable is already in the main graph, so no chunk split is expected.
+          const isIntentionalSaplingTableCycle =
+            warning.code === 'INEFFECTIVE_DYNAMIC_IMPORT' &&
+            warning.message.includes('src/components/table/SaplingTable.vue')
+
+          if (isIntentionalSaplingTableCycle) {
+            return
+          }
+
+          defaultHandler(warning)
+        },
         output: {
           manualChunks,
         },

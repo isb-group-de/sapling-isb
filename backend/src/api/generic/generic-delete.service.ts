@@ -53,7 +53,11 @@ export class GenericDeleteService {
     return {
       action: 'delete',
       references: this.getCascadeReferences(entityHandle).map(
-        ({ mappedBy: _mappedBy, ...reference }) => reference,
+        ({ name, entityHandle: referenceEntityHandle, kind }) => ({
+          name,
+          entityHandle: referenceEntityHandle,
+          kind,
+        }),
       ),
     };
   }
@@ -141,7 +145,7 @@ export class GenericDeleteService {
     );
     const children = await this.em.find(entityClass, {
       [reference.mappedBy]: parentHandle,
-    } as never);
+    });
     const childHandles = children
       .map((child) => this.extractHandle(child))
       .filter(

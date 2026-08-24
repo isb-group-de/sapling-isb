@@ -231,7 +231,7 @@ describe('SaplingFieldSelect', () => {
     const nextField = document.createElement('input')
     await wrapper.get('.sapling-field-select').trigger('focusout', { relatedTarget: nextField })
 
-    expect(menu.props('modelValue')).toBe(false)
+    await vi.waitFor(() => expect(menu.props('modelValue')).toBe(false))
   })
 
   it('keeps the dropdown open when focus moves into its menu surface', async () => {

@@ -105,7 +105,7 @@ export class SecurityPrincipalCacheService {
       return;
     }
     while (this.entries.size >= SECURITY_PRINCIPAL_CACHE_MAX_ENTRIES) {
-      const oldestKey = this.entries.keys().next().value as number | undefined;
+      const oldestKey = this.entries.keys().next().value;
       if (oldestKey == null) break;
       this.entries.delete(oldestKey);
     }

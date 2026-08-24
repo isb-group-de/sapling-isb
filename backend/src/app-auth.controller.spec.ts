@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/unbound-method */
 import { describe, expect, it, jest } from '@jest/globals';
 import type { Request, Response } from 'express';
 import { AppController } from './app.controller';

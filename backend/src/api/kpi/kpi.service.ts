@@ -222,7 +222,7 @@ export class KpiService {
               currentUser,
               secondaryEntityHandle,
             ) as Record<string, unknown>)
-          : (resolvedSecondaryFilter as Record<string, unknown>);
+          : resolvedSecondaryFilter;
     }
     // Instantiate executor for this KPI
     const executor = new KPIExecutor(this.em as SqlEntityManager, kpi);

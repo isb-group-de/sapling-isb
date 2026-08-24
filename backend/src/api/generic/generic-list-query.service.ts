@@ -226,7 +226,7 @@ export class GenericListQueryService {
       items,
       currentUser,
       template,
-    ) as object[];
+    );
   }
 
   async downloadJSON(

@@ -192,7 +192,7 @@ export class AuthService {
   ): Promise<PersonItem | null> {
     const em = this.forkEntityManager();
     const tokenHash = this.hashApiToken(rawToken);
-    const rows = await em.getConnection().execute<ApiTokenValidationRow[]>(
+    const rows = (await em.getConnection().execute(
       `select
         token."handle",
         token."expires_at" as "expiresAt",
@@ -207,7 +207,7 @@ export class AuthService {
         and token."is_active" = true
       limit 1`,
       [tokenHash],
-    );
+    )) as unknown as ApiTokenValidationRow[];
     const token = rows[0];
 
     if (!token) {

@@ -114,6 +114,7 @@ describe('SaplingHeader home navigation', () => {
     expect(home.text()).toContain('Sapling')
     expect(home.attributes('aria-label')).toBe('global.backToHome')
     expect(home.attributes('title')).toBe('global.backToHome')
+    expect(wrapper.find('sapling-header-quicklinks-stub').exists()).toBe(true)
 
     await home.trigger('click')
     expect(harness.goHome).toHaveBeenCalledOnce()

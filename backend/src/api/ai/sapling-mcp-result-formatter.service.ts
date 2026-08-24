@@ -95,7 +95,9 @@ export class SaplingMcpResultFormatterService {
     }
 
     const existingUsageHints = Array.isArray(result.usageHints)
-      ? result.usageHints
+      ? result.usageHints.filter(
+          (usageHint): usageHint is string => typeof usageHint === 'string',
+        )
       : [];
 
     return {

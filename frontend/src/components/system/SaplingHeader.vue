@@ -26,6 +26,8 @@
             </v-btn>
           </template>
         </v-tooltip>
+
+        <SaplingHeaderQuicklinks />
       </div>
     </v-app-bar-title>
 
@@ -98,6 +100,7 @@ import { i18n } from '@/i18n'
 import SaplingInbox from '@/components/account/SaplingInbox.vue'
 import SaplingAccount from '@/components/account/SaplingAccount.vue'
 import SaplingHeaderInboxPreview from '@/components/system/header/SaplingHeaderInboxPreview.vue'
+import SaplingHeaderQuicklinks from '@/components/system/header/SaplingHeaderQuicklinks.vue'
 import SaplingHeaderProfileMenu from '@/components/system/header/SaplingHeaderProfileMenu.vue'
 import SaplingHeaderStatusActions from '@/components/system/header/SaplingHeaderStatusActions.vue'
 import {

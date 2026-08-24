@@ -59,14 +59,15 @@ describe('GlobalSearchIndexService', () => {
     service.startRebuild();
     await new Promise<void>((resolve) => setImmediate(resolve));
 
-    expect(service.getRebuildStatus()).toEqual(
+    const status = service.getRebuildStatus();
+    expect(status).toEqual(
       expect.objectContaining({
         state: 'failed',
         error: 'Error: database unavailable',
-        completedAt: expect.any(String),
-        durationMs: expect.any(Number),
       }),
     );
+    expect(typeof status.completedAt).toBe('string');
+    expect(typeof status.durationMs).toBe('number');
   });
 
   it('does not recursively index the search-index entity itself', async () => {

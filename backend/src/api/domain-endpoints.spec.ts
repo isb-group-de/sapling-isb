@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/require-await */
 import { describe, expect, it, jest } from '@jest/globals';
 import { BadRequestException } from '@nestjs/common';
 import { firstValueFrom, of } from 'rxjs';

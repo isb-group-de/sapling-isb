@@ -164,9 +164,13 @@ describe('GoogleCalendarService completion synchronization', () => {
 
 describe('GoogleCalendarService recurrence materialization', () => {
   it('clears the existing series master with one focused update', async () => {
-    const patch = jest.fn((_request: object) =>
-      Promise.resolve({ data: { id: 'google-1', recurrence: [] } }),
-    );
+    const patch = jest
+      .fn<
+        (_request: object) => Promise<{
+          data: { id: string; recurrence: never[] };
+        }>
+      >()
+      .mockResolvedValue({ data: { id: 'google-1', recurrence: [] } });
     const service = new GoogleCalendarService(
       {} as never,
       {} as never,

@@ -44,6 +44,12 @@ import {
 
 type ModelConstructor = abstract new (...args: never[]) => unknown;
 type ProxyConfigurableApp = { set(setting: string, value: unknown): unknown };
+type ResponseEndArguments = [
+  chunk?: unknown,
+  encodingOrCallback?: BufferEncoding | (() => void),
+  callback?: () => void,
+];
+type ResponseEnd = (...args: ResponseEndArguments) => Response;
 
 /**
  * Bootstraps the NestJS application, configures middleware, logging, ORM, Swagger, and CORS.
@@ -65,8 +71,8 @@ async function bootstrap() {
 
   app.use((_req: Request, res: Response, next: NextFunction) => {
     const startedAt = performance.now();
-    const originalEnd = res.end.bind(res);
-    res.end = ((...args: Parameters<Response['end']>) => {
+    const originalEnd = res.end.bind(res) as unknown as ResponseEnd;
+    res.end = ((...args: ResponseEndArguments) => {
       if (!res.headersSent) {
         const existing = res.getHeader('Server-Timing');
         const total = `total;dur=${(performance.now() - startedAt).toFixed(1)}`;

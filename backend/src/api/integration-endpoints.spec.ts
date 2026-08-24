@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/require-await, @typescript-eslint/unbound-method */
 import { describe, expect, it, jest } from '@jest/globals';
 import { BadRequestException } from '@nestjs/common';
 import type { Request, Response } from 'express';

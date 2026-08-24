@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/require-await, @typescript-eslint/unbound-method */
 import { describe, expect, it, jest } from '@jest/globals';
 import { HEADERS_METADATA } from '@nestjs/common/constants';
 import { Response } from 'express';

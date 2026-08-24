@@ -78,6 +78,7 @@ function createSubject() {
         data,
         customFields: {},
       })),
+      hydrateRecords: jest.fn(() => Promise.resolve()),
     } as never,
     {
       extractPayload: jest.fn(() => ({})),

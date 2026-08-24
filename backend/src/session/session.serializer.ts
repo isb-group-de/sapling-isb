@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PassportSerializer } from '@nestjs/passport';
 import { AuthService } from '../auth/auth.service';
-import type { PersonItem } from '../entity/PersonItem';
+import { PersonItem } from '../entity/PersonItem';
 
 export interface SessionUserPayload {
   /** Real (logged-in) user handle. Never replaced while a session lives. */
@@ -123,7 +123,7 @@ export class SessionSerializer extends PassportSerializer {
               lastName: realUser.lastName,
             };
             const impersonatedUser = Object.assign(
-              Object.create(Object.getPrototypeOf(target)) as PersonItem,
+              new PersonItem(),
               target,
             ) as PersonItem & { _impersonator?: ImpersonatorInfo };
             impersonatedUser._impersonator = impersonator;

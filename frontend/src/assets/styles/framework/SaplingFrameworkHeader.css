@@ -16,6 +16,20 @@
   text-overflow: ellipsis;
 }
 
+.sapling-header__quicklinks {
+  min-width: 0;
+  font-weight: 600;
+}
+
+.sapling-header__quicklinks-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sapling-header__quicklinks-menu {
+  min-width: min(18rem, calc(100vw - var(--sapling-space-xl)));
+}
+
 @media (max-width: 520px) {
   .sapling-header__home {
     min-width: var(--sapling-control-size-md) !important;
@@ -23,6 +37,22 @@
   }
 
   .sapling-header__home-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .sapling-header__quicklinks {
+    min-width: var(--sapling-control-size-md) !important;
+    padding-inline: var(--sapling-space-xs) !important;
+  }
+
+  .sapling-header__quicklinks-label,
+  .sapling-header__quicklinks .v-icon:last-child {
     position: absolute;
     width: 1px;
     height: 1px;

@@ -528,29 +528,21 @@ export class KPIExecutor {
     const value = formula.value;
     const warningThreshold = this.kpi.warningThreshold ?? null;
     const criticalThreshold = this.kpi.criticalThreshold ?? null;
-    let status: KpiTargetResult['status'] = 'warning';
-
-    if (value !== null) {
-      if (direction === 'HIGHER_IS_BETTER') {
-        const goodThreshold = warningThreshold ?? targetValue;
-        status =
-          value >= goodThreshold
+    const goodThreshold = warningThreshold ?? targetValue;
+    const status: KpiTargetResult['status'] =
+      value === null
+        ? 'critical'
+        : direction === 'HIGHER_IS_BETTER'
+          ? value >= goodThreshold
             ? 'good'
             : criticalThreshold !== null && value <= criticalThreshold
               ? 'critical'
-              : 'warning';
-      } else {
-        const goodThreshold = warningThreshold ?? targetValue;
-        status =
-          value <= goodThreshold
+              : 'warning'
+          : value <= goodThreshold
             ? 'good'
             : criticalThreshold !== null && value >= criticalThreshold
               ? 'critical'
               : 'warning';
-      }
-    } else {
-      status = 'critical';
-    }
 
     const progressPercent =
       value === null

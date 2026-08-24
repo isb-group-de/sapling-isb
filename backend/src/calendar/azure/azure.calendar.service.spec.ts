@@ -319,7 +319,9 @@ describe('AzureCalendarService recurrence materialization', () => {
     const patch = jest
       .fn<(...args: unknown[]) => Promise<unknown>>()
       .mockResolvedValueOnce({ id: 'outlook-1', recurrence: null });
-    const api = jest.fn((_path: string) => ({ patch }));
+    const api = jest
+      .fn<(_path: string) => { patch: typeof patch }>()
+      .mockReturnValue({ patch });
     const service = new AzureCalendarService(
       {} as never,
       {} as never,

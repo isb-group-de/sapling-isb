@@ -150,7 +150,6 @@ const {
   deleteDialogItem,
   kpiDialogModel,
   selectedKpi,
-  availableKpiOptions,
   editDialogModel,
   editDialogMode,
   editDialogItem,

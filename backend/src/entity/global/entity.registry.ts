@@ -1,3 +1,4 @@
+import type { EntityClass } from '@mikro-orm/core';
 import { LanguageItem } from '../LanguageItem';
 import { TranslationItem } from '../TranslationItem';
 import { AddressItem } from '../AddressItem';
@@ -193,9 +194,14 @@ import {
  * @example
  *   { name: 'company', class: CompanyItem }
  *   { name: 'person', class: PersonItem }
- * @type {{ name: string, class: any }[]}
+ * @type {EntityRegistryEntry[]}
  */
-const ENTITY_REGISTRY_ENTRIES: { name: string; class: any }[] = [
+export interface EntityRegistryEntry {
+  name: string;
+  class: EntityClass<object>;
+}
+
+const ENTITY_REGISTRY_ENTRIES: EntityRegistryEntry[] = [
   { name: 'country', class: CountryItem },
   { name: 'customFieldDefinition', class: CustomFieldDefinitionItem },
   { name: 'customFieldType', class: CustomFieldTypeItem },
@@ -394,7 +400,7 @@ const ENTITY_REGISTRY_ENTRIES: { name: string; class: any }[] = [
   { name: 'seedScript', class: SeedScriptItem },
 ];
 
-export const ENTITY_REGISTRY: { name: string; class: any }[] =
+export const ENTITY_REGISTRY: EntityRegistryEntry[] =
   ENTITY_REGISTRY_ENTRIES.toSorted((left, right) =>
     left.name.localeCompare(right.name),
   );

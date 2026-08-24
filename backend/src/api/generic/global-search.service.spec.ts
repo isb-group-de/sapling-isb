@@ -33,7 +33,7 @@ describe('GlobalSearchService', () => {
       currentService as never,
       genericService as never,
       templateService as never,
-      undefined as never,
+      undefined,
       searchIndex as never,
     );
 
@@ -118,7 +118,7 @@ describe('GlobalSearchService', () => {
       currentService as never,
       genericService as never,
       templateService as never,
-      undefined as never,
+      undefined,
       searchIndex as never,
     );
 

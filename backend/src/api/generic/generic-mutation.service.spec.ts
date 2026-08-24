@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException } from '@nestjs/common';
+import { ConflictException } from '@nestjs/common';
 import { describe, expect, it, jest } from '@jest/globals';
 import {
   ScriptResultServer,
