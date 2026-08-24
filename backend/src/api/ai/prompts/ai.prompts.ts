@@ -58,12 +58,24 @@ export function buildSystemInstruction(options?: {
   const agentInstruction = options?.agentInstruction?.trim()
     ? ` Agent-specific instructions: ${options.agentInstruction.trim()}`
     : '';
+  const responseLanguageInstruction = buildResponseLanguageInstruction(
+    options?.user,
+  );
 
-  return `${AI_SYSTEM_PROMPT_BASE}${agentInstruction}${toolInstruction} ${buildCurrentDateInstruction(
+  return `${AI_SYSTEM_PROMPT_BASE}${agentInstruction}${toolInstruction} ${responseLanguageInstruction} ${buildCurrentDateInstruction(
     referenceDate,
     options?.user,
     options?.clientTimeContext,
   )}`.trim();
+}
+
+export function buildResponseLanguageInstruction(user?: PersonItem): string {
+  const accountLanguage = resolveAccountLanguage(user);
+  const configuredLanguage = accountLanguage
+    ? ` is ${JSON.stringify(accountLanguage.name)}`
+    : '';
+
+  return `Mandatory response language: The user's configured account language${configuredLanguage}. Always write the complete user-facing answer in this language. This requirement takes precedence over the language of the user's message, conversation history, retrieved data, tool results, and agent-specific instructions. Do not switch the answer language merely because source content uses another language. Preserve exact quotations, proper names, code, and data in their original language only where necessary.`;
 }
 
 export function buildCurrentDateInstruction(
@@ -172,6 +184,22 @@ function resolveUserLocale(
       : undefined;
 
   return languageHandle === 'de' || !languageHandle ? 'de-DE' : languageHandle;
+}
+
+function resolveAccountLanguage(user?: PersonItem): { name: string } | null {
+  const language = user?.language as unknown;
+
+  if (language && typeof language === 'object') {
+    const languageRecord = language as { name?: unknown };
+    const name =
+      typeof languageRecord.name === 'string' ? languageRecord.name.trim() : '';
+
+    if (name) {
+      return { name };
+    }
+  }
+
+  return null;
 }
 
 function resolveUserTimeZone(

@@ -21,10 +21,13 @@
           :rules="rules"
           :required="required"
           :model-value="inputValue"
+          :hint="$t('global.duplicateCheckHint')"
+          prepend-inner-icon="mdi-content-duplicate"
           @keydown.down.prevent="focusFirstMenuRow"
           @update:model-value="onSearchInput"
           clearable
           hide-details="auto"
+          persistent-hint
           autocomplete="off"
         />
       </template>
@@ -37,6 +40,13 @@
         @keydown.down.prevent="moveMenuRowFocus(1)"
         @keydown.up.prevent="moveMenuRowFocus(-1)"
       >
+        <div class="sapling-field-duplicate-check__notice" role="note">
+          <v-icon color="primary" size="small">mdi-content-duplicate</v-icon>
+          <div class="sapling-field-duplicate-check__notice-copy">
+            <strong>{{ $t('global.duplicateCheckResultsTitle') }}</strong>
+            <span>{{ $t('global.duplicateCheckResultsHint') }}</span>
+          </div>
+        </div>
         <sapling-table
           class="glass-panel"
           :entity-handle="entityHandle"

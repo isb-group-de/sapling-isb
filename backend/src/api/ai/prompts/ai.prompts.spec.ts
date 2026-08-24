@@ -1,8 +1,10 @@
 import { describe, expect, it } from '@jest/globals';
 import {
   AI_SYSTEM_PROMPT_TOOL_GUIDANCE,
+  buildResponseLanguageInstruction,
   buildSystemInstruction,
 } from './ai.prompts';
+import type { PersonItem } from '../../../entity/PersonItem';
 import {
   SAPLING_MCP_TOOL_DESCRIPTIONS,
   SAPLING_MCP_USAGE_HINTS,
@@ -35,6 +37,34 @@ describe('AI tool guidance', () => {
         expect.stringContaining('not a new dataset supplied by the user'),
         expect.stringContaining('Do not load person.assignedEvents'),
       ]),
+    );
+  });
+
+  it('requires the configured account language for every user-facing answer', () => {
+    const user = {
+      language: { handle: 'fr', name: 'Français (France)' },
+    } as PersonItem;
+
+    const instruction = buildSystemInstruction({
+      user,
+      clientTimeContext: { locale: 'zh-CN' },
+      agentInstruction: 'Answer in Chinese.',
+    });
+
+    expect(instruction).toContain(
+      `The user's configured account language is "Français (France)"`,
+    );
+    expect(instruction).toContain(
+      'Always write the complete user-facing answer in this language',
+    );
+    expect(instruction).toContain(
+      "takes precedence over the language of the user's message, conversation history, retrieved data, tool results, and agent-specific instructions",
+    );
+  });
+
+  it('does not invent a language when account language metadata is unavailable', () => {
+    expect(buildResponseLanguageInstruction()).toContain(
+      "The user's configured account language. Always write",
     );
   });
 });

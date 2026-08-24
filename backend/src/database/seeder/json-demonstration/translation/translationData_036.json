@@ -1,0 +1,20 @@
+[
+  {
+    "entity": "global",
+    "property": "duplicateCheckHint",
+    "de": "Dublettenprüfung aktiv – ähnliche Datensätze werden bei der Eingabe angezeigt.",
+    "en": "Duplicate check active — similar records appear as you type."
+  },
+  {
+    "entity": "global",
+    "property": "duplicateCheckResultsTitle",
+    "de": "Mögliche Dubletten",
+    "en": "Possible duplicates"
+  },
+  {
+    "entity": "global",
+    "property": "duplicateCheckResultsHint",
+    "de": "Nur zur Prüfung: Die Auswahl eines Treffers öffnet den vorhandenen Datensatz.",
+    "en": "For review only: Selecting a match opens the existing record."
+  }
+]
