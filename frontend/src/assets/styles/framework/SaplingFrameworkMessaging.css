@@ -904,6 +904,12 @@
   align-self: flex-start;
 }
 
+.sapling-message-center-entry__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sapling-gap-sm);
+}
+
 .sapling-message-center-entry__description {
   margin-top: var(--sapling-gap-xs);
   line-height: 1.5;

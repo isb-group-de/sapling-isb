@@ -88,4 +88,41 @@ describe('PermissionSeeder', () => {
     expect(em.assign).not.toHaveBeenCalled();
     expect(em.flush).not.toHaveBeenCalled();
   });
+
+  it.each([ROLE_HANDLE.SUPPORT, ROLE_HANDLE.SALES])(
+    'grants standard role %s read access to email delivery statuses',
+    async (roleHandle) => {
+      const entity = {
+        handle: 'emailDeliveryStatus',
+        canRead: true,
+        canInsert: true,
+        canUpdate: true,
+        canDelete: true,
+        canShow: true,
+      } as EntityItem;
+      const role = { handle: roleHandle } as RoleItem;
+      const em = {
+        findAll: jest.fn((entityClass: unknown) => {
+          if (entityClass === EntityItem) return Promise.resolve([entity]);
+          if (entityClass === RoleItem) return Promise.resolve([role]);
+          return Promise.resolve([]);
+        }),
+        assign: jest.fn(),
+        create: jest.fn(),
+        flush: jest.fn(() => Promise.resolve()),
+      };
+
+      await new PermissionSeeder().run(em as unknown as EntityManager);
+
+      expect(em.create).toHaveBeenCalledWith(PermissionItem, {
+        entity,
+        role,
+        allowRead: true,
+        allowInsert: false,
+        allowUpdate: false,
+        allowDelete: false,
+        allowShow: false,
+      });
+    },
+  );
 });

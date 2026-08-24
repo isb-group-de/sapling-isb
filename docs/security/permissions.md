@@ -202,6 +202,11 @@ Other known roles use permission matrices.
 
 Unknown roles default to deny all.
 
+`emailDeliveryStatus` is shared reference data required by mail delivery UI.
+The Support and Sales standard roles receive read access without navigation
+visibility on newly seeded systems. Existing non-administrator permissions are
+left untouched by the permission seeder.
+
 ## Frontend Permission Usage
 
 Frontend permissions are loaded from current-user/current-metadata endpoints.

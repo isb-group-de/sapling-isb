@@ -662,6 +662,11 @@ user text. They fall back to localized generic wording while the original
 payload remains available in the technical log export. Raw database table,
 constraint, stack, and request details are diagnostic data only.
 
+Error entries expose the same **Report error** action in both the temporary
+floating alert and the persistent message-center list. Both surfaces share the
+same per-message loading and reported state, so an error cannot be submitted
+twice from the two entry points.
+
 ## Adding A Generic Entity To The UI
 
 Usually no frontend route is needed.

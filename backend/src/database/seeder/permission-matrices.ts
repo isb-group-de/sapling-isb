@@ -73,6 +73,7 @@ export const salesPermissionsInput: PermissionMatrixInput = {
     'emailSubscription',
     'emailSubscriptionCondition',
     'emailDelivery',
+    'emailDeliveryStatus',
     'sharedMailbox',
     'emailInboxSubscription',
     'emailInboxProcessingMode',

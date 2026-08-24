@@ -152,14 +152,33 @@
                     {{ formatTimestamp(message.timestamp) }}
                   </template>
                   <template #append>
-                    <v-btn
-                      icon="mdi-close"
-                      @click="removeMessage(message.id)"
-                      variant="text"
-                      size="small"
-                      :aria-label="$t('global.close')"
-                      :title="$t('global.close')"
-                    />
+                    <div class="sapling-message-center-entry__actions">
+                      <v-btn
+                        v-if="message.type === 'error'"
+                        color="error"
+                        variant="tonal"
+                        size="small"
+                        prepend-icon="mdi-bug-outline"
+                        :loading="isReportingError(message.id)"
+                        :disabled="isErrorReported(message.id)"
+                        :aria-label="$t('messageCenter.reportError')"
+                        @click="reportError(message)"
+                      >
+                        {{
+                          isErrorReported(message.id)
+                            ? $t('messageCenter.errorReported')
+                            : $t('messageCenter.reportError')
+                        }}
+                      </v-btn>
+                      <v-btn
+                        icon="mdi-close"
+                        @click="removeMessage(message.id)"
+                        variant="text"
+                        size="small"
+                        :aria-label="$t('global.close')"
+                        :title="$t('global.close')"
+                      />
+                    </div>
                   </template>
                 </v-list-item>
               </v-list>
