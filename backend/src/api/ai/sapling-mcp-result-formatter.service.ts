@@ -281,6 +281,26 @@ export class SaplingMcpResultFormatterService {
       return this.sanitizeUnknownValue(payload);
     }
 
+    if (record.status === 'needs_schema_retry') {
+      return {
+        ...this.copyModelResultMetadata(record, [
+          'entityHandle',
+          'toolName',
+          'queryExecuted',
+          'mutationExecuted',
+          'pendingToolAction',
+          'status',
+          'invalidFields',
+          'missingRequiredFields',
+          'invalidValues',
+          'invalidReferences',
+          'validFields',
+          'usageHints',
+        ]),
+        entityHandle,
+      };
+    }
+
     return this.sanitizeEntityRecord(entityHandle, record);
   }
 

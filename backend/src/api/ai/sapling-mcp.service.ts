@@ -84,6 +84,15 @@ export class SaplingMcpService {
     return this.execution.executeTool(toolName, args, user, policy);
   }
 
+  preflightTool(
+    toolName: string,
+    args: Record<string, unknown>,
+    user: PersonItem,
+    policy?: McpToolPolicy,
+  ) {
+    return this.execution.preflightTool(toolName, args, user, policy);
+  }
+
   getServerName(): string {
     return this.execution.getServerName();
   }

@@ -221,6 +221,49 @@ export class McpService {
     throw new Error('tool_not_found');
   }
 
+  async preflightTool(
+    serverName: string | undefined,
+    toolName: string,
+    args: Record<string, unknown>,
+    user?: PersonItem,
+    policy?: McpToolPolicy,
+  ): Promise<McpInlineToolExecution | null> {
+    if (!user) {
+      return null;
+    }
+
+    const internalServerName = this.saplingMcpService.getServerName();
+    const targetsInternal =
+      !serverName || serverName.trim().toLowerCase() === internalServerName;
+    if (!targetsInternal) {
+      return null;
+    }
+
+    this.assertToolAllowed(
+      { serverName: internalServerName, toolName },
+      policy,
+    );
+    const result = await this.saplingMcpService.preflightTool(
+      toolName,
+      args,
+      user,
+      policy,
+    );
+    if (!result) {
+      return null;
+    }
+
+    return {
+      serverHandle: 0,
+      serverName: internalServerName,
+      toolName,
+      arguments: args,
+      content: result.content,
+      modelResult: result.modelResult,
+      rawResult: result.rawResult,
+    };
+  }
+
   private async listToolsForConfig(
     config: McpServerConfigItem,
   ): Promise<McpToolDescriptor[]> {

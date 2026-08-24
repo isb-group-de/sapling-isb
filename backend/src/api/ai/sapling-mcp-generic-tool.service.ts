@@ -397,6 +397,16 @@ export class SaplingMcpGenericToolService {
     user: PersonItem,
     policy?: McpToolPolicy,
   ): Promise<unknown> {
+    const repair = await this.preflightGenericMutation(
+      'generic_create',
+      args,
+      user,
+      policy,
+    );
+    if (repair) {
+      return repair;
+    }
+
     const entityHandle = this.values.requireStringArg(
       args.entityHandle,
       'entityHandle',
@@ -428,6 +438,16 @@ export class SaplingMcpGenericToolService {
     user: PersonItem,
     policy?: McpToolPolicy,
   ): Promise<unknown> {
+    const repair = await this.preflightGenericMutation(
+      'generic_update',
+      args,
+      user,
+      policy,
+    );
+    if (repair) {
+      return repair;
+    }
+
     const entityHandle = this.values.requireStringArg(
       args.entityHandle,
       'entityHandle',
@@ -452,6 +472,253 @@ export class SaplingMcpGenericToolService {
       normalizedData,
       user,
       relations,
+    );
+  }
+
+  async preflightGenericMutation(
+    toolName: 'generic_create' | 'generic_update',
+    args: Record<string, unknown>,
+    user: PersonItem,
+    policy?: McpToolPolicy,
+  ): Promise<Record<string, unknown> | null> {
+    const entityHandle = this.values.requireStringArg(
+      args.entityHandle,
+      'entityHandle',
+    );
+    this.values.assertEntityAllowed(entityHandle, policy);
+    const permission =
+      toolName === 'generic_create' ? 'allowInsert' : 'allowUpdate';
+    await this.permissionService.assertEntityPermission(
+      user,
+      entityHandle,
+      permission,
+    );
+    if (toolName === 'generic_update') {
+      this.values.requireHandleArg(args.handle, 'handle');
+    }
+
+    const submittedData = this.metadata.stripSecurityFields(
+      entityHandle,
+      this.values.asRecord(args.data),
+    );
+    const data =
+      toolName === 'generic_create'
+        ? await this.applyCurrentReferenceDefaults(
+            entityHandle,
+            submittedData,
+            user,
+          )
+        : submittedData;
+    const schema = await this.metadata.executeEntitySchema(
+      { entityHandle },
+      policy,
+      user,
+    );
+    const accessKey =
+      toolName === 'generic_create' ? 'allowInsert' : 'allowUpdate';
+    const writableFields = schema.fields.filter(
+      (field) =>
+        field.fieldAccess?.[accessKey] !== false &&
+        !field.isAutoIncrement &&
+        !field.options.includes('isReadOnly') &&
+        !field.options.includes('isSystem'),
+    );
+    const writableByName = new Map(
+      writableFields.map((field) => [field.name, field]),
+    );
+    const supportsNestedCustomFields = writableFields.some((field) =>
+      field.name.startsWith('customFields.'),
+    );
+    const invalidFields = Object.keys(data)
+      .filter(
+        (fieldName) =>
+          !writableByName.has(fieldName) &&
+          !(fieldName === 'customFields' && supportsNestedCustomFields),
+      )
+      .map((fieldName) => ({ fieldName, reason: 'unknownOrNotWritable' }));
+    const missingRequiredFields =
+      toolName === 'generic_create'
+        ? writableFields
+            .filter(
+              (field) =>
+                field.isRequired &&
+                !this.hasMutationPayloadField(data, field.name),
+            )
+            .map((field) => field.name)
+        : [];
+    const invalidValues: Array<Record<string, unknown>> = [];
+    const invalidReferences: Array<Record<string, unknown>> = [];
+
+    for (const [fieldName, value] of Object.entries(data)) {
+      const field = writableByName.get(fieldName);
+      if (!field || value == null) {
+        continue;
+      }
+
+      if (
+        field.isReference &&
+        field.referenceName &&
+        (field.kind === 'm:1' || field.kind === '1:1')
+      ) {
+        const referencedPks =
+          field.referencedPks.length > 0
+            ? field.referencedPks
+            : field.referencePrimaryKeys.map((primaryKey) => primaryKey.name);
+        const effectivePks =
+          referencedPks.length > 0 ? referencedPks : ['handle'];
+
+        if (effectivePks.length !== 1) {
+          continue;
+        }
+
+        const referencedPk = effectivePks[0];
+        const submittedValue =
+          value && typeof value === 'object' && !Array.isArray(value)
+            ? (value as Record<string, unknown>)[referencedPk]
+            : value;
+
+        if (
+          (typeof submittedValue !== 'string' || !submittedValue.trim()) &&
+          (typeof submittedValue !== 'number' ||
+            !Number.isFinite(submittedValue))
+        ) {
+          invalidReferences.push({
+            fieldName,
+            referenceName: field.referenceName,
+            referencedPk,
+            reason: 'referencePrimaryKeyRequired',
+          });
+          continue;
+        }
+
+        const referencedPkType = field.referencePrimaryKeys
+          .find((primaryKey) => primaryKey.name === referencedPk)
+          ?.type.toLowerCase();
+        if (
+          referencedPkType &&
+          [
+            'number',
+            'float',
+            'double',
+            'decimal',
+            'real',
+            'int',
+            'integer',
+            'smallint',
+            'bigint',
+          ].includes(referencedPkType) &&
+          (typeof submittedValue === 'boolean' ||
+            !Number.isFinite(Number(submittedValue)))
+        ) {
+          invalidReferences.push({
+            fieldName,
+            referenceName: field.referenceName,
+            referencedPk,
+            expectedType: referencedPkType,
+            submittedValue,
+            reason: 'referencePrimaryKeyTypeMismatch',
+          });
+          continue;
+        }
+
+        try {
+          const referencedRecord = (await this.executeGenericGet(
+            {
+              entityHandle: field.referenceName,
+              handle: submittedValue,
+            },
+            user,
+            policy,
+          )) as { found?: unknown };
+
+          if (referencedRecord.found !== true) {
+            invalidReferences.push({
+              fieldName,
+              referenceName: field.referenceName,
+              referencedPk,
+              submittedValue,
+              reason: 'referenceRecordNotFound',
+            });
+          }
+        } catch {
+          invalidReferences.push({
+            fieldName,
+            referenceName: field.referenceName,
+            referencedPk,
+            submittedValue,
+            reason: 'referenceCouldNotBeValidated',
+          });
+        }
+        continue;
+      }
+
+      const normalizedType = field.type.toLowerCase();
+      if (
+        [
+          'number',
+          'float',
+          'double',
+          'decimal',
+          'real',
+          'int',
+          'integer',
+          'smallint',
+          'bigint',
+        ].includes(normalizedType) &&
+        (typeof value === 'boolean' ||
+          value === '' ||
+          !Number.isFinite(Number(value)))
+      ) {
+        invalidValues.push({
+          fieldName,
+          expectedType: field.type,
+          submittedValue: value,
+          reason: 'invalidNumericValue',
+        });
+      }
+    }
+
+    if (
+      invalidFields.length === 0 &&
+      missingRequiredFields.length === 0 &&
+      invalidValues.length === 0 &&
+      invalidReferences.length === 0
+    ) {
+      return null;
+    }
+
+    return {
+      entityHandle,
+      toolName,
+      queryExecuted: false,
+      mutationExecuted: false,
+      pendingToolAction: false,
+      status: 'needs_schema_retry',
+      invalidFields,
+      missingRequiredFields,
+      invalidValues,
+      invalidReferences,
+      validFields: writableFields.map((field) => field.name),
+      usageHints: [...SAPLING_MCP_USAGE_HINTS.mutationRepair],
+    };
+  }
+
+  private hasMutationPayloadField(
+    data: Record<string, unknown>,
+    fieldName: string,
+  ): boolean {
+    if (Object.prototype.hasOwnProperty.call(data, fieldName)) {
+      return true;
+    }
+
+    if (!fieldName.startsWith('customFields.')) {
+      return false;
+    }
+
+    const customFields = this.values.asRecord(data.customFields);
+    return Object.prototype.hasOwnProperty.call(
+      customFields,
+      fieldName.slice('customFields.'.length),
     );
   }
 

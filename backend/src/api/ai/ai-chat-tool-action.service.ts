@@ -238,6 +238,8 @@ export class AiChatToolActionService {
       const preflightFailure = await this.preflightPendingToolAction(
         descriptor,
         args,
+        user,
+        policy,
       );
 
       if (preflightFailure) {
@@ -305,7 +307,22 @@ export class AiChatToolActionService {
   async preflightPendingToolAction(
     descriptor: AiToolRegistryEntry['descriptor'],
     args: Record<string, unknown>,
+    user?: PersonItem,
+    policy?: McpToolPolicy,
   ): Promise<McpInlineToolExecution | null> {
+    if (user) {
+      const mutationRepair = await this.mcpService.preflightTool(
+        descriptor.serverName,
+        descriptor.toolName,
+        args,
+        user,
+        policy,
+      );
+      if (mutationRepair) {
+        return mutationRepair;
+      }
+    }
+
     if (descriptor.toolName !== 'import_execute_batch') {
       return null;
     }

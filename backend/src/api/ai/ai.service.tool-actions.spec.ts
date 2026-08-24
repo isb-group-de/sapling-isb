@@ -186,6 +186,85 @@ describe('AiService tool actions', () => {
     });
   });
 
+  it('does not prepare a confirmation action when mutation preflight requires schema repair', async () => {
+    const mutationRepair = {
+      serverHandle: 0,
+      serverName: 'sapling',
+      toolName: 'generic_update',
+      arguments: {
+        entityHandle: 'company',
+        handle: 1939,
+        data: { employees: '3000-5000' },
+      },
+      content: '{"status":"needs_schema_retry"}',
+      modelResult: {
+        mutationExecuted: false,
+        pendingToolAction: false,
+        status: 'needs_schema_retry',
+        invalidFields: [{ fieldName: 'employees' }],
+      },
+      rawResult: {
+        mutationExecuted: false,
+        pendingToolAction: false,
+        status: 'needs_schema_retry',
+        invalidFields: [{ fieldName: 'employees' }],
+      },
+    };
+    const em = {
+      create: jest.fn(),
+      persist: jest.fn(),
+      flush: jest.fn(),
+    };
+    const mcpService = {
+      preflightTool: jest
+        .fn<() => Promise<typeof mutationRepair>>()
+        .mockResolvedValue(mutationRepair),
+      executeTool: jest.fn(),
+    };
+    const agentPolicy = {
+      isMutatingTool: jest.fn().mockReturnValue(true),
+    };
+    const service = createService(
+      em,
+      mcpService,
+      {},
+      {},
+      {},
+      undefined,
+      agentPolicy,
+    );
+
+    const result = await (
+      service as unknown as {
+        toolActions: {
+          executePolicyAwareToolCall: (...args: unknown[]) => Promise<unknown>;
+        };
+      }
+    ).toolActions.executePolicyAwareToolCall(
+      {
+        encodedName: 'sapling__generic_update',
+        descriptor: {
+          serverHandle: 0,
+          serverName: 'sapling',
+          toolName: 'generic_update',
+        },
+      } as never,
+      mutationRepair.arguments,
+      { handle: 9 } as never,
+      { handle: 9 } as never,
+      { handle: 2 } as never,
+      { handle: 3 } as never,
+      { handle: 'songbirdGeneral', mutationMode: 'confirm' } as never,
+      {},
+      jest.fn(),
+    );
+
+    expect(result).toBe(mutationRepair);
+    expect(mcpService.preflightTool).toHaveBeenCalled();
+    expect(em.create).not.toHaveBeenCalled();
+    expect(em.flush).not.toHaveBeenCalled();
+  });
+
   it('creates a follow-up execution action after confirmed import configuration', async () => {
     const action = {
       handle: 4,

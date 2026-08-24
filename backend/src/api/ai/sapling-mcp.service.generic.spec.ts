@@ -5,6 +5,107 @@ import {
 } from './sapling-mcp.service.spec-support';
 
 describe('SaplingMcpService generic reads and criteria', () => {
+  it('returns a schema repair instead of executing an invalid company update', async () => {
+    const genericService = {
+      create: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+      getRecordTimeline: jest.fn(),
+      findAndCount: jest.fn().mockResolvedValue({
+        data: [],
+        meta: { total: 0 },
+      } as never),
+    };
+    const templateService = {
+      getEntityTemplate: jest.fn((entityHandle: string) => {
+        if (entityHandle === 'company') {
+          return [
+            createTemplateField({
+              name: 'handle',
+              type: 'integer',
+              isPrimaryKey: true,
+              isAutoIncrement: true,
+            }),
+            createTemplateField({ name: 'name' }),
+            createTemplateField({ name: 'employeeCount', type: 'integer' }),
+            createTemplateField({
+              name: 'industry',
+              kind: 'm:1',
+              isReference: true,
+              referenceName: 'companyIndustry',
+              referencedPks: ['handle'],
+            }),
+          ];
+        }
+
+        if (entityHandle === 'companyIndustry') {
+          return [
+            createTemplateField({
+              name: 'handle',
+              isPrimaryKey: true,
+            }),
+            createTemplateField({ name: 'title', options: ['isValue'] }),
+          ];
+        }
+
+        return [];
+      }),
+    };
+    const service = createService({ genericService, templateService });
+
+    const result = await service.executeTool(
+      'generic_update',
+      {
+        entityHandle: 'company',
+        handle: 1939,
+        data: {
+          name: 'XING',
+          fax: '+49 40 30390 5000',
+          employees: '3000-5000',
+          employeeCount: '3000-5000',
+          industry: 'Internet/Dienstleistungen',
+        },
+      },
+      { handle: 1 } as never,
+    );
+
+    expect(genericService.update).not.toHaveBeenCalled();
+    expect(result.rawResult).toMatchObject({
+      entityHandle: 'company',
+      toolName: 'generic_update',
+      mutationExecuted: false,
+      pendingToolAction: false,
+      status: 'needs_schema_retry',
+      invalidFields: expect.arrayContaining([
+        { fieldName: 'fax', reason: 'unknownOrNotWritable' },
+        { fieldName: 'employees', reason: 'unknownOrNotWritable' },
+      ]),
+      invalidReferences: [
+        expect.objectContaining({
+          fieldName: 'industry',
+          referenceName: 'companyIndustry',
+          reason: 'referenceRecordNotFound',
+        }),
+      ],
+      invalidValues: [
+        expect.objectContaining({
+          fieldName: 'employeeCount',
+          reason: 'invalidNumericValue',
+        }),
+      ],
+      validFields: expect.arrayContaining([
+        'name',
+        'employeeCount',
+        'industry',
+      ]),
+    });
+    expect(result.modelResult).toMatchObject({
+      status: 'needs_schema_retry',
+      invalidFields: expect.any(Array),
+      invalidReferences: expect.any(Array),
+    });
+  });
+
   it('searches entities by handle and field names', async () => {
     const genericService = {
       create: jest.fn(),

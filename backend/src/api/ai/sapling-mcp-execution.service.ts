@@ -186,6 +186,50 @@ export class SaplingMcpExecutionService {
     };
   }
 
+  async preflightTool(
+    toolName: string,
+    args: Record<string, unknown>,
+    user: PersonItem,
+    policy?: McpToolPolicy,
+  ): Promise<{
+    content: string;
+    modelResult: unknown;
+    rawResult: unknown;
+  } | null> {
+    if (toolName !== 'generic_create' && toolName !== 'generic_update') {
+      return null;
+    }
+
+    let payload: Record<string, unknown> | null;
+    try {
+      this.values.assertInternalToolAllowed(toolName, policy);
+      payload = await this.genericTools.preflightGenericMutation(
+        toolName,
+        args,
+        user,
+        policy,
+      );
+    } catch (error) {
+      payload = this.createToolErrorPayload(toolName, error);
+    }
+
+    if (!payload) {
+      return null;
+    }
+
+    const modelResult = this.resultFormatter.createModelResult(
+      toolName,
+      payload,
+      args,
+    );
+
+    return {
+      content: JSON.stringify(modelResult, null, 2),
+      modelResult,
+      rawResult: payload,
+    };
+  }
+
   getServerName(): string {
     return this.internalServerName;
   }

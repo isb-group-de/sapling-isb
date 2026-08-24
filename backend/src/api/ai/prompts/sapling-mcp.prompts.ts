@@ -107,4 +107,11 @@ export const SAPLING_MCP_USAGE_HINTS = {
     'Retry only after replacing invalid fields with one of the suggestedFields or validFields.',
     'Call entity_schema if the intended field is still unclear.',
   ],
+  mutationRepair: [
+    'The mutation was not executed and no confirmation action was prepared because its payload does not match the entity schema.',
+    'Call entity_schema for the target entity, replace every invalid field or value, and then retry the mutation.',
+    'For referenceRecordNotFound, query referenceName with generic_list and submit its referencedPk value instead of a display label.',
+    'For referencePrimaryKeyTypeMismatch, submit the referenced primary-key type reported by entity_schema.',
+    'For invalidNumericValue, submit one numeric value only when the source provides an exact number; otherwise omit the field or ask the user instead of inventing a value from a range.',
+  ],
 } as const;

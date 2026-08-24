@@ -262,6 +262,16 @@ Before deleting:
 2. Prefer asking for explicit confirmation unless the user's instruction is already explicit.
 3. Be aware that delete participates in change logging but may still remove operational data.
 
+For confirm-gated generic creates and updates, Sapling validates the proposed
+payload against the current user's entity schema before creating a confirmation
+action. Unknown or non-writable fields, invalid numeric values, missing required
+fields, and unresolved reference keys return `status: needs_schema_retry` with
+`mutationExecuted: false` and `pendingToolAction: false`. Inspect
+`invalidFields`, `invalidValues`, and `invalidReferences`, call `entity_schema`
+or resolve the referenced record as indicated, and retry with a corrected
+payload. Do not tell the user to confirm an action until Sapling actually
+returns a pending tool action.
+
 ## Prompting Guidance
 
 Good agent prompts should include:

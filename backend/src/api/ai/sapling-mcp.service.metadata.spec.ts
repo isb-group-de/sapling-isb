@@ -242,11 +242,16 @@ describe('SaplingMcpService metadata and payload security', () => {
 
     expect(genericService.update).not.toHaveBeenCalled();
     expect(result.rawResult).toMatchObject({
-      ok: false,
       toolName: 'generic_update',
-      error: expect.stringContaining(
-        'Reference field "workWeek" on "person" requires the workHourWeek.handle primary-key value',
-      ),
+      mutationExecuted: false,
+      status: 'needs_schema_retry',
+      invalidReferences: [
+        expect.objectContaining({
+          fieldName: 'workWeek',
+          referenceName: 'workHourWeek',
+          reason: 'referencePrimaryKeyTypeMismatch',
+        }),
+      ],
     });
   });
 
@@ -260,7 +265,10 @@ describe('SaplingMcpService metadata and payload security', () => {
       update: jest.fn(),
       delete: jest.fn(),
       getRecordTimeline: jest.fn(),
-      findAndCount: jest.fn(),
+      findAndCount: jest.fn().mockResolvedValue({
+        data: [{ handle: 1 }],
+        meta: { total: 1 },
+      } as never),
     };
     const currentService = {
       getPerson: jest.fn().mockResolvedValue({
@@ -350,7 +358,10 @@ describe('SaplingMcpService metadata and payload security', () => {
       update: jest.fn(),
       delete: jest.fn(),
       getRecordTimeline: jest.fn(),
-      findAndCount: jest.fn(),
+      findAndCount: jest.fn().mockResolvedValue({
+        data: [{ handle: 1 }],
+        meta: { total: 1 },
+      } as never),
     };
     const currentService = {
       getPerson: jest.fn().mockResolvedValue({
