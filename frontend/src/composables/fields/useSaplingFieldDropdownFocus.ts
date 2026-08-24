@@ -103,6 +103,13 @@ export function useSaplingFieldDropdownFocus(menuOpen: Ref<boolean>) {
   }
 
   function closeMenuWhenFocusLeaves(event: FocusEvent): void {
+    // Pagination replaces its focused button while loading the next page and
+    // emits a transient focusout without a destination. Only a concrete target
+    // outside the field proves that focus actually left this dropdown.
+    if (event.relatedTarget == null) {
+      return
+    }
+
     if (containsTarget(event.relatedTarget)) {
       return
     }

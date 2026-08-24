@@ -68,4 +68,18 @@ describe('useSaplingFieldDropdownFocus', () => {
     nestedOverlay.remove()
     unrelatedInput.remove()
   })
+
+  it('ignores transient focus loss when an internal control is replaced', async () => {
+    const wrapper = mount(TestHost)
+    const vm = wrapper.vm as unknown as {
+      menuOpen: boolean
+      closeMenuWhenFocusLeaves: (event: FocusEvent) => void
+    }
+
+    vm.closeMenuWhenFocusLeaves({ relatedTarget: null } as unknown as FocusEvent)
+    await new Promise((resolve) => setTimeout(resolve, 0))
+
+    expect(vm.menuOpen).toBe(true)
+    wrapper.unmount()
+  })
 })
