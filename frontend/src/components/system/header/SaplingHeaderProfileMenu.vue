@@ -11,7 +11,7 @@
       <v-btn
         data-tutorial="header-profile"
         v-bind="menuProps"
-        class="sapling-profile-trigger text-none"
+        class="sapling-button--pill sapling-profile-trigger text-none"
         :class="{ 'sapling-profile-trigger--impersonating': isImpersonating }"
         variant="text"
       >
@@ -29,7 +29,7 @@
               <template v-else>{{ profileMeta }}</template>
             </div>
           </div>
-          <v-icon icon="mdi-chevron-down" size="18" />
+          <v-icon class="sapling-header__account-chevron" icon="mdi-chevron-down" size="18" />
         </div>
       </v-btn>
     </template>
@@ -51,6 +51,7 @@
         </div>
 
         <v-btn
+          class="sapling-button--icon"
           icon="mdi-close"
           size="small"
           variant="text"

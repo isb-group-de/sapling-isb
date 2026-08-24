@@ -1,3 +1,27 @@
+.v-btn:not(.v-tab) {
+  --sapling-button-radius: var(--sapling-radius-xs);
+  border-radius: var(--sapling-button-radius);
+}
+
+/*
+ * Button geometry is semantic and independent from Vuetify's visual variant.
+ * Standard and icon-only actions share the compact control radius. Only
+ * floating/composer actions and identity controls opt into round or pill
+ * geometry explicitly.
+ */
+.v-btn.sapling-button--action,
+.v-btn.sapling-button--icon {
+  --sapling-button-radius: var(--sapling-radius-xs);
+}
+
+.v-btn.sapling-button--round {
+  --sapling-button-radius: 50%;
+}
+
+.v-btn.sapling-button--pill {
+  --sapling-button-radius: var(--sapling-radius-pill);
+}
+
 .sapling-dialog__footer,
 .sapling-account-dialog__footer {
   flex: 0 0 auto;
@@ -64,7 +88,7 @@
 .sapling-action-cluster > .v-btn.v-btn--variant-plain {
   border: 1px solid
     color-mix(in srgb, rgb(var(--v-theme-primary)) 32%, var(--sapling-surface-border-muted));
-  border-radius: var(--sapling-radius-pill);
+  border-radius: var(--sapling-radius-xs);
   background: color-mix(in srgb, rgb(var(--v-theme-primary)) 14%, var(--sapling-surface-fill-soft));
   color: color-mix(in srgb, rgb(var(--v-theme-primary)) 82%, white) !important;
   opacity: 1;

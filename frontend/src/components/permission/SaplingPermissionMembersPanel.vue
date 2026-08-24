@@ -15,6 +15,7 @@
           <h2 class="sapling-section-title">{{ $t('role.membersTitle') }}</h2>
         </div>
         <v-btn
+          class="sapling-button--action"
           variant="tonal"
           color="primary"
           prepend-icon="mdi-account-multiple-plus-outline"
@@ -55,6 +56,7 @@
               <template #activator="{ props: tooltipProps }">
                 <v-btn
                   v-bind="tooltipProps"
+                  class="sapling-button--icon"
                   icon="mdi-eye-outline"
                   variant="text"
                   size="small"
@@ -67,6 +69,7 @@
               {{ $t('permission.impersonationViewAs') }}
             </v-tooltip>
             <v-btn
+              class="sapling-button--icon"
               icon="mdi-close"
               variant="text"
               size="small"

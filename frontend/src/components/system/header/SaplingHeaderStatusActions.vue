@@ -1,9 +1,9 @@
 <template>
-  <div class="sapling-header__compact-actions">
+  <div class="sapling-header__status-actions sapling-header__status-actions--desktop">
     <v-btn
       data-tutorial="header-search"
-      class="sapling-header__desktop-action sapling-header__compact-action text-none"
-      stacked
+      class="sapling-button--icon sapling-header__icon-action text-none"
+      variant="text"
       :aria-label="searchLabel"
       :title="searchLabel"
       @click="emit('openSearch')"
@@ -13,21 +13,18 @@
 
     <v-btn
       data-tutorial="header-help"
-      class="sapling-header__desktop-action sapling-header__compact-action text-none"
-      stacked
+      class="sapling-button--icon sapling-header__icon-action text-none"
+      variant="text"
       :aria-label="helpLabel"
       :title="helpLabel"
       @click="emit('openContextHelp')"
     >
       <v-icon icon="mdi-help-circle-outline" />
     </v-btn>
-  </div>
-
-  <div class="sapling-header__inbox-slot">
     <v-btn
       data-tutorial="header-inbox"
-      class="sapling-header__desktop-action text-none"
-      stacked
+      class="sapling-button--icon sapling-header__icon-action text-none"
+      variant="text"
       :aria-label="inboxActionLabel"
       :title="inboxActionLabel"
       @click="emit('openInbox')"
@@ -41,31 +38,31 @@
         <v-icon icon="mdi-email" />
       </v-badge>
     </v-btn>
-  </div>
 
-  <v-btn
-    data-tutorial="header-message-center"
-    class="sapling-header__desktop-action text-none"
-    stacked
-    :aria-label="messageCenterActionLabel"
-    :title="messageCenterActionLabel"
-    @click="emit('openMessageCenter')"
-  >
-    <v-badge
-      location="top right"
-      :color="messageBadgeColor"
-      :content="messageCount"
-      :value="messageCount > 0"
+    <v-btn
+      data-tutorial="header-message-center"
+      class="sapling-button--icon sapling-header__icon-action text-none"
+      variant="text"
+      :aria-label="messageCenterActionLabel"
+      :title="messageCenterActionLabel"
+      @click="emit('openMessageCenter')"
     >
-      <v-icon icon="mdi-cloud-alert" />
-    </v-badge>
-  </v-btn>
+      <v-badge
+        location="top right"
+        :color="messageBadgeColor"
+        :content="messageCount"
+        :value="messageCount > 0"
+      >
+        <v-icon icon="mdi-cloud-alert" />
+      </v-badge>
+    </v-btn>
+  </div>
 
   <v-menu location="bottom end" :offset="12">
     <template #activator="{ props: menuProps }">
       <v-btn
         v-bind="menuProps"
-        class="sapling-header__mobile-overflow"
+        class="sapling-button--icon sapling-header__icon-action sapling-header__mobile-overflow"
         icon="mdi-dots-vertical"
         variant="text"
         :aria-label="moreLabel"

@@ -453,6 +453,25 @@ available exclusively in that preview; the detailed editor remains focused on
 visibility and field options. A hidden field can be shown temporarily when it
 needs to be repositioned and hidden again afterward.
 
+## Button Geometry
+
+Button shape is semantic and independent from Vuetify's `text`, `tonal`,
+`flat`, or `elevated` variants. Standalone text buttons and icon-only toolbar
+or navigation actions use the shared 8px control radius by default. Use
+`sapling-button--action` and `sapling-button--icon` when the role should be
+explicit in component markup.
+
+Reserve `sapling-button--round` for genuine floating actions and the compact
+actions attached to a chat composer. Reserve `sapling-button--pill` for
+identity controls such as the signed-in profile trigger. Avatars may remain
+circular, while chips and status labels use the pill token through their own
+component contract. Tabs and segmented button groups use the shared tab
+geometry and must not be assigned standalone button-shape classes.
+
+Do not derive geometry from color, fill, or the presence of an icon. In
+particular, Vuetify's `icon` prop does not by itself make an action semantically
+round in Sapling.
+
 ## Dialogs
 
 Dialog files live under:

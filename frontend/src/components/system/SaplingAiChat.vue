@@ -4,7 +4,7 @@
       <v-btn
         data-tutorial="songbird"
         v-if="hasSaplingAiChatAccess && !isOpen && !isGhostEasterEggActive"
-        class="sapling-ai-chat-fab"
+        class="sapling-button--round sapling-ai-chat-fab"
         color="primary"
         size="large"
         variant="elevated"

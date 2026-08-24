@@ -13,6 +13,7 @@
       class="sapling-action-cluster sapling-floating-panel__actions sapling-ai-chat__header-actions"
     >
       <v-btn
+        class="sapling-button--icon"
         icon="mdi-account-cog-outline"
         size="small"
         variant="text"
@@ -22,6 +23,7 @@
       />
       <v-btn
         v-if="isCompactHeaderActions"
+        class="sapling-button--icon"
         icon="mdi-refresh"
         size="small"
         variant="text"
@@ -31,6 +33,7 @@
       />
       <v-btn
         v-else
+        class="sapling-button--action"
         size="small"
         variant="text"
         prepend-icon="mdi-refresh"
@@ -42,6 +45,7 @@
       </v-btn>
       <v-btn
         v-if="isCompactHeaderActions"
+        class="sapling-button--icon"
         icon="mdi-plus"
         size="small"
         variant="tonal"
@@ -51,6 +55,7 @@
       />
       <v-btn
         v-else
+        class="sapling-button--action"
         size="small"
         variant="tonal"
         prepend-icon="mdi-plus"
@@ -61,6 +66,7 @@
         {{ t('aiChat.newChat') }}
       </v-btn>
       <v-btn
+        class="sapling-button--icon"
         icon="mdi-close"
         variant="text"
         size="small"

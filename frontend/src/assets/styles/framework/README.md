@@ -28,7 +28,7 @@ surface components before adding local CSS.
 - `SaplingFrameworkAppearance.css`: light/dark appearance variables, glass,
   tilt, performance states, background blobs, and Vuetify appearance chrome
 - `SaplingFrameworkActions.css`: action bars, action stacks, toolbar groups,
-  and button clusters
+  button clusters, and semantic button geometry
 - `SaplingFrameworkCalendar.css`: calendar pages, calendar context panels,
   Vuetify calendar chrome, event cards, and event editor layouts
 - `SaplingFrameworkConfig.css`: configuration forms, config matrices, settings
@@ -78,6 +78,21 @@ surface components before adding local CSS.
   cards, filter panels, and compose surfaces
 - `SaplingFrameworkWorkspaces.css`: dashboard shells, page workspaces,
   browser/partner layouts, tabs, boards, and workspace grids
+
+## Button Geometry
+
+Button shape communicates the role of the control and does not depend on its
+Vuetify color or visual variant:
+
+- ordinary text and icon-only actions use the shared 8px control radius;
+- `sapling-button--action` makes an ordinary action explicit;
+- `sapling-button--icon` marks an icon-only toolbar or navigation action;
+- `sapling-button--round` is reserved for floating and chat-composer actions;
+- `sapling-button--pill` is reserved for identity controls;
+- chips, statuses, tabs, and segmented button groups keep their own framework
+  geometry.
+
+Do not add `rounded` merely because a button is filled, tonal, or icon-only.
 
 ## Pattern Index
 

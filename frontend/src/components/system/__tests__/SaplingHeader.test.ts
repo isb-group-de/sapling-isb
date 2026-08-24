@@ -96,25 +96,20 @@ describe('SaplingHeader home navigation', () => {
           },
           VAppBarTitle: { template: '<div><slot /></div>' },
           VAppBarNavIcon: { template: '<button />' },
-          VTooltip: {
-            template: '<div><slot name="activator" :props="{}" /></div>',
-          },
-          VBtn: {
-            props: ['prependIcon'],
-            emits: ['click'],
+          SaplingHeaderPrimaryActions: {
+            props: ['homeLabel'],
+            emits: ['openHome'],
             template:
-              '<button v-bind="$attrs" @click="$emit(\'click\')"><span>{{ prependIcon }}</span><slot /></button>',
+              '<button data-tutorial="header-home" :aria-label="homeLabel" :title="homeLabel" @click="$emit(\'openHome\')">Sapling</button>',
           },
         },
       },
     })
 
     const home = wrapper.get('[data-tutorial="header-home"]')
-    expect(home.text()).toContain('mdi-home-outline')
     expect(home.text()).toContain('Sapling')
     expect(home.attributes('aria-label')).toBe('global.backToHome')
     expect(home.attributes('title')).toBe('global.backToHome')
-    expect(wrapper.find('sapling-header-quicklinks-stub').exists()).toBe(true)
 
     await home.trigger('click')
     expect(harness.goHome).toHaveBeenCalledOnce()

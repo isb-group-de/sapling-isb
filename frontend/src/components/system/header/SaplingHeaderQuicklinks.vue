@@ -4,14 +4,16 @@
       <v-btn
         v-bind="menuProps"
         data-tutorial="header-quicklinks"
-        class="sapling-header__quicklinks text-none pa-1"
+        class="sapling-button--action sapling-header__primary-action sapling-header__quicklinks text-none"
         variant="text"
-        prepend-icon="mdi-lightning-bolt-outline"
-        append-icon="mdi-chevron-down"
         :aria-label="quickLinksLabel"
         :title="quickLinksLabel"
       >
-        <span class="sapling-header__quicklinks-label">{{ quickLinksLabel }}</span>
+        <span class="sapling-header__primary-action-content">
+          <v-icon class="sapling-header__primary-action-icon" icon="mdi-lightning-bolt-outline" />
+          <span class="sapling-header__primary-action-label">{{ quickLinksLabel }}</span>
+          <v-icon class="sapling-header__quicklinks-chevron" icon="mdi-chevron-down" size="18" />
+        </span>
       </v-btn>
     </template>
 

@@ -131,6 +131,7 @@
         <div class="d-flex ga-2 sapling-ai-chat__composer-action-buttons">
           <v-btn
             v-if="canUploadImportAttachment"
+            class="sapling-button--round"
             variant="text"
             icon="mdi-paperclip"
             :disabled="!hasConfiguredProviders || isSending || isUploadingImportAttachment"
@@ -140,6 +141,7 @@
             @click="openImportFilePicker"
           />
           <v-btn
+            class="sapling-button--round"
             variant="text"
             :disabled="
               !hasConfiguredProviders ||
@@ -154,6 +156,7 @@
             @click="emit('toggle-voice-input')"
           />
           <v-btn
+            class="sapling-button--round"
             color="primary"
             variant="flat"
             icon="mdi-send"

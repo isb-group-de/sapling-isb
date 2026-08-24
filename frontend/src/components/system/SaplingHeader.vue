@@ -3,6 +3,7 @@
     <template #prepend>
       <v-app-bar-nav-icon
         data-tutorial="header-navigation"
+        class="sapling-button--icon"
         :aria-label="props.modelValue ? $t('global.closeDrawer') : $t('global.navigation')"
         :title="props.modelValue ? $t('global.closeDrawer') : $t('global.navigation')"
         @click="toggleNavigation"
@@ -10,65 +11,49 @@
     </template>
 
     <v-app-bar-title>
-      <div class="sapling-inline-cluster sapling-inline-cluster--wide sapling-header__brand">
-        <v-tooltip location="bottom" :text="$t('global.backToHome')">
-          <template #activator="{ props: tooltipProps }">
-            <v-btn
-              v-bind="tooltipProps"
-              data-tutorial="header-home"
-              class="sapling-header__home pa-1"
-              prepend-icon="mdi-home-outline"
-              :aria-label="$t('global.backToHome')"
-              :title="$t('global.backToHome')"
-              @click="goHome"
-            >
-              <span class="sapling-header__home-label">Sapling</span>
-            </v-btn>
-          </template>
-        </v-tooltip>
-
-        <SaplingHeaderQuicklinks />
-      </div>
+      <SaplingHeaderPrimaryActions :home-label="$t('global.backToHome')" @open-home="goHome" />
     </v-app-bar-title>
 
     <template #append>
-      <SaplingHeaderStatusActions
-        :inbox-count="inboxCount"
-        :inbox-badge-color="inboxBadgeColor"
-        :message-count="messageCount"
-        :message-badge-color="messageBadgeColor"
-        :more-label="$t('global.more')"
-        :inbox-label="$t('global.inbox')"
-        :message-center-label="$t('global.messageCenter')"
-        :help-label="$t('global.contextualHelp')"
-        :search-label="$t('global.search')"
-        @open-context-help="openContextHelp"
-        @open-search="openSearch"
-        @open-inbox="openInbox"
-        @open-message-center="openMessageCenter"
-      />
+      <div class="sapling-header__secondary-actions">
+        <SaplingHeaderStatusActions
+          :inbox-count="inboxCount"
+          :inbox-badge-color="inboxBadgeColor"
+          :message-count="messageCount"
+          :message-badge-color="messageBadgeColor"
+          :more-label="$t('global.more')"
+          :inbox-label="$t('global.inbox')"
+          :message-center-label="$t('global.messageCenter')"
+          :help-label="$t('global.contextualHelp')"
+          :search-label="$t('global.search')"
+          @open-context-help="openContextHelp"
+          @open-search="openSearch"
+          @open-inbox="openInbox"
+          @open-message-center="openMessageCenter"
+        />
 
-      <SaplingHeaderProfileMenu
-        v-model="showProfileMenu"
-        :persistent="tutorialProfileMenuOpen"
-        :is-impersonating="isImpersonating"
-        :impersonation-actor-name="impersonationActorName"
-        :impersonation-returning="impersonationReturning"
-        :profile-name="profileName"
-        :profile-meta="profileMeta"
-        :profile-initials="profileInitials"
-        :current-language="currentLanguage"
-        :language-options="languageOptions"
-        :issue-action="issueAction"
-        :appearance-actions="appearanceActions"
-        :admin-actions="adminActions"
-        :danger-zone-label="dangerZoneLabel"
-        @return-to-own-account="returnToOwnAccount"
-        @open-account="openAccountFromProfile"
-        @open-issue="openIssueFromProfile"
-        @run-admin-action="runAdminAction"
-        @set-language="setLanguage"
-      />
+        <SaplingHeaderProfileMenu
+          v-model="showProfileMenu"
+          :persistent="tutorialProfileMenuOpen"
+          :is-impersonating="isImpersonating"
+          :impersonation-actor-name="impersonationActorName"
+          :impersonation-returning="impersonationReturning"
+          :profile-name="profileName"
+          :profile-meta="profileMeta"
+          :profile-initials="profileInitials"
+          :current-language="currentLanguage"
+          :language-options="languageOptions"
+          :issue-action="issueAction"
+          :appearance-actions="appearanceActions"
+          :admin-actions="adminActions"
+          :danger-zone-label="dangerZoneLabel"
+          @return-to-own-account="returnToOwnAccount"
+          @open-account="openAccountFromProfile"
+          @open-issue="openIssueFromProfile"
+          @run-admin-action="runAdminAction"
+          @set-language="setLanguage"
+        />
+      </div>
     </template>
   </v-app-bar>
 
@@ -100,7 +85,7 @@ import { i18n } from '@/i18n'
 import SaplingInbox from '@/components/account/SaplingInbox.vue'
 import SaplingAccount from '@/components/account/SaplingAccount.vue'
 import SaplingHeaderInboxPreview from '@/components/system/header/SaplingHeaderInboxPreview.vue'
-import SaplingHeaderQuicklinks from '@/components/system/header/SaplingHeaderQuicklinks.vue'
+import SaplingHeaderPrimaryActions from '@/components/system/header/SaplingHeaderPrimaryActions.vue'
 import SaplingHeaderProfileMenu from '@/components/system/header/SaplingHeaderProfileMenu.vue'
 import SaplingHeaderStatusActions from '@/components/system/header/SaplingHeaderStatusActions.vue'
 import {

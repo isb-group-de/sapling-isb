@@ -34,9 +34,11 @@ function mountQuicklinks() {
           template: '<div><slot name="activator" :props="{}" /><slot /></div>',
         },
         VBtn: {
-          props: ['prependIcon', 'appendIcon'],
-          template:
-            '<button v-bind="$attrs"><span>{{ prependIcon }}</span><slot /><span>{{ appendIcon }}</span></button>',
+          template: '<button v-bind="$attrs"><slot /></button>',
+        },
+        VIcon: {
+          props: ['icon'],
+          template: '<span :data-icon="icon">{{ icon }}</span>',
         },
         SaplingSurface: { template: '<div class="glass-panel"><slot /></div>' },
         VListItem: {
@@ -59,6 +61,10 @@ describe('SaplingHeaderQuicklinks', () => {
     const wrapper = mountQuicklinks()
 
     expect(wrapper.find('.glass-panel').exists()).toBe(true)
+    expect(wrapper.get('[data-tutorial="header-quicklinks"]').classes()).toContain(
+      'sapling-button--action',
+    )
+    expect(wrapper.find('[data-icon="mdi-lightning-bolt-outline"]').exists()).toBe(true)
     expect(wrapper.findAll('[data-quicklink]').map((item) => item.text())).toEqual([
       'mdi-clipboard-text-clock-outlineAufwandsschätzungen',
       'mdi-calendar-starKalender',

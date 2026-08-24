@@ -27,7 +27,12 @@
         </template>
         <template #side>
           <div class="sapling-action-cluster sapling-ai-agent-builder__hero-actions">
-            <v-btn color="primary" prepend-icon="mdi-plus" @click="startNewAgent">
+            <v-btn
+              class="sapling-button--action"
+              color="primary"
+              prepend-icon="mdi-plus"
+              @click="startNewAgent"
+            >
               {{ t('aiAgentBuilder.newAgent') }}
             </v-btn>
           </div>
@@ -41,6 +46,7 @@
           <div class="sapling-ai-agent-builder__rail-header">
             <span>{{ t('aiAgentBuilder.agentList') }}</span>
             <v-btn
+              class="sapling-button--icon"
               icon="mdi-plus"
               variant="tonal"
               size="small"
@@ -124,8 +130,11 @@
           </v-window>
 
           <div class="sapling-ai-agent-builder__actions">
-            <v-btn variant="text" @click="resetDraft">{{ t('global.cancel') }}</v-btn>
+            <v-btn class="sapling-button--action" variant="text" @click="resetDraft">{{
+              t('global.cancel')
+            }}</v-btn>
             <v-btn
+              class="sapling-button--action"
               color="primary"
               prepend-icon="mdi-content-save"
               :disabled="!canSaveAgent"
