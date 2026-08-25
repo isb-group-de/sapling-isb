@@ -157,10 +157,8 @@ export class SaplingMcpMetadataService {
       type: string;
       kind: string | null | undefined;
       referenceName: string;
-      referencedPks: string[];
-      referencePrimaryKeys: Array<{ name: string; type: string }>;
+      referenceHandleType: string | null;
       isReference: boolean;
-      isPrimaryKey: boolean;
       isAutoIncrement: boolean;
       isRequired: boolean;
       nullable: boolean;
@@ -197,12 +195,10 @@ export class SaplingMcpMetadataService {
         type: field.type,
         kind: field.kind,
         referenceName: field.referenceName,
-        referencedPks: [...field.referencedPks],
-        referencePrimaryKeys: field.isReference
-          ? this.getReferencePrimaryKeys(field)
-          : [],
+        referenceHandleType: field.isReference
+          ? this.getReferenceHandleType(field)
+          : null,
         isReference: field.isReference,
-        isPrimaryKey: field.isPrimaryKey,
         isAutoIncrement: field.isAutoIncrement,
         isRequired: field.isRequired,
         nullable: field.nullable,
@@ -371,28 +367,17 @@ export class SaplingMcpMetadataService {
     );
   }
 
-  private getReferencePrimaryKeys(
-    field: EntityTemplateDto,
-  ): Array<{ name: string; type: string }> {
+  private getReferenceHandleType(field: EntityTemplateDto): string | null {
     if (!field.referenceName) {
-      return [];
+      return null;
     }
 
     const referenceTemplate = this.getEntityTemplate(field.referenceName);
-    const referencedPks =
-      field.referencedPks.length > 0
-        ? field.referencedPks
-        : referenceTemplate
-            .filter((referenceField) => referenceField.isPrimaryKey)
-            .map((referenceField) => referenceField.name);
-    const effectivePks = referencedPks.length > 0 ? referencedPks : ['handle'];
-
-    return effectivePks.map((name) => ({
-      name,
-      type:
-        referenceTemplate.find((referenceField) => referenceField.name === name)
-          ?.type ?? 'unknown',
-    }));
+    return (
+      referenceTemplate.find(
+        (referenceField) => referenceField.name === 'handle',
+      )?.type ?? 'unknown'
+    );
   }
 
   private getUserEntityTemplate(

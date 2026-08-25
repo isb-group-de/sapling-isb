@@ -18,7 +18,6 @@ describe('GenericReferenceService', () => {
           name: 'company',
           isReference: true,
           kind,
-          referencedPks: ['handle'],
         } as EntityTemplateDto,
       ];
 
@@ -35,7 +34,6 @@ describe('GenericReferenceService', () => {
         name: 'company',
         isReference: true,
         kind: 'm:1',
-        referencedPks: ['handle'],
       } as EntityTemplateDto,
     ];
 
@@ -53,7 +51,6 @@ describe('GenericReferenceService', () => {
           name: 'participants',
           isReference: true,
           kind,
-          referencedPks: ['handle'],
         } as EntityTemplateDto,
       ];
 

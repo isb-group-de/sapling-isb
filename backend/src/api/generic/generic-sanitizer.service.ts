@@ -284,9 +284,7 @@ export class GenericSanitizerService {
     const handle = this.extractHandleValue(value);
 
     if (currentUser && entityHandle && metadata) {
-      const identifierField =
-        metadata.fieldMap.get('handle') ??
-        metadata.template.find((field) => field.isPrimaryKey);
+      const identifierField = metadata.fieldMap.get('handle');
       if (
         !identifierField ||
         !this.fieldPermissions.canAccessField(

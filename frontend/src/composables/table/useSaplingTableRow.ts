@@ -336,7 +336,7 @@ export function useSaplingTableRow(props: UseSaplingTableRowProps, emit: UseSapl
     const column = props.columns.find((entry) => entry.key === columnKey)
     const referenceName = column?.referenceName
     const referenceValue = props.item[columnKey]
-    const identifier = getReferenceIdentifier(column, referenceValue)
+    const identifier = getReferenceIdentifier(referenceValue)
 
     if (!referenceName || !identifier) {
       return
@@ -458,31 +458,19 @@ export function useSaplingTableRow(props: UseSaplingTableRowProps, emit: UseSapl
     emit('reload')
   }
 
-  function getReferenceIdentifier(
-    column: EntityTemplate | undefined,
-    value: unknown,
-  ): { key: string; value: string | number } | null {
-    const identifierKeys = [...(column?.referencedPks ?? []), 'handle', 'id'].filter(
-      (key, index, keys) => Boolean(key) && keys.indexOf(key) === index,
-    )
-
+  function getReferenceIdentifier(value: unknown): { key: string; value: string | number } | null {
     if (typeof value === 'string' || typeof value === 'number') {
-      return { key: identifierKeys[0] ?? 'handle', value }
+      return { key: 'handle', value }
     }
 
     if (!value || typeof value !== 'object') {
       return null
     }
 
-    const referenceItem = value as SaplingGenericItem
-    for (const key of identifierKeys) {
-      const identifierValue = referenceItem[key]
-      if (typeof identifierValue === 'string' || typeof identifierValue === 'number') {
-        return { key, value: identifierValue }
-      }
-    }
-
-    return null
+    const identifierValue = (value as SaplingGenericItem).handle
+    return typeof identifierValue === 'string' || typeof identifierValue === 'number'
+      ? { key: 'handle', value: identifierValue }
+      : null
   }
 
   // #endregion

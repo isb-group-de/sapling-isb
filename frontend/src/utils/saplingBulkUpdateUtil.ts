@@ -18,7 +18,7 @@ export function isBulkUpdateTemplateEligible(
 ): boolean {
   if (
     !template.name ||
-    template.isPrimaryKey ||
+    template.name === 'handle' ||
     template.isAutoIncrement ||
     template.isUnique ||
     template.isPersistent === false ||

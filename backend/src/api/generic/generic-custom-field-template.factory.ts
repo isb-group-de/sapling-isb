@@ -17,7 +17,6 @@ export function createCustomFieldTemplate(
   template.type = type;
   template.length = fieldType === 'text' ? 255 : null;
   template.default = fieldType === 'boolean' ? false : null;
-  template.isPrimaryKey = false;
   template.isAutoIncrement = false;
   template.kind = null;
   template.mappedBy = null;
@@ -28,7 +27,6 @@ export function createCustomFieldTemplate(
   template.isRequired = isRequired;
   template.nullable = !isRequired;
   template.isPersistent = true;
-  template.referencedPks = [];
   template.options = fieldType === 'longText' ? ['isMarkdown'] : [];
   if (definition.isReadOnly) {
     template.options.push('isReadOnly');

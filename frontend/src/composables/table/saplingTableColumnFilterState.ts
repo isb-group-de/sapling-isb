@@ -16,7 +16,6 @@ export type TableColumnLike = Record<string, unknown> & {
   type?: string | null
   kind?: string | null
   referenceName?: string | null
-  referencedPks?: unknown
   length?: number | null
   options?: unknown
   isReference?: boolean | null
@@ -82,9 +81,6 @@ export function normalizeTableColumnTemplate(
     type: typeof column.type === 'string' ? column.type : undefined,
     kind: typeof column.kind === 'string' ? column.kind : undefined,
     referenceName: typeof column.referenceName === 'string' ? column.referenceName : undefined,
-    referencedPks: Array.isArray(column.referencedPks)
-      ? column.referencedPks.filter((key): key is string => typeof key === 'string')
-      : undefined,
     length: typeof column.length === 'number' ? column.length : undefined,
     options: Array.isArray(column.options)
       ? (column.options.filter(

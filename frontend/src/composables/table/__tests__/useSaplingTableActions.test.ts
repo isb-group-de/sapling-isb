@@ -127,7 +127,6 @@ function template(name: string, overrides: Partial<EntityTemplate> = {}): Entity
     tableVisible: true,
     mobileVisible: false,
     isReference: false,
-    referencedPks: [],
     ...overrides,
   } as EntityTemplate
 }

@@ -95,7 +95,7 @@ describe('SaplingMcpService metadata and payload security', () => {
     });
   });
 
-  it('exposes reference primary keys so mutation tools do not use display labels', async () => {
+  it('exposes the reference handle type so mutation tools do not use display labels', async () => {
     const templateService = {
       getEntityTemplate: jest.fn((entityHandle: string) => {
         if (entityHandle === 'person') {
@@ -105,7 +105,6 @@ describe('SaplingMcpService metadata and payload security', () => {
               kind: 'm:1',
               isReference: true,
               referenceName: 'workHourWeek',
-              referencedPks: ['handle'],
             }),
           ];
         }
@@ -115,7 +114,6 @@ describe('SaplingMcpService metadata and payload security', () => {
             createTemplateField({
               name: 'handle',
               type: 'number',
-              isPrimaryKey: true,
               isAutoIncrement: true,
             }),
             createTemplateField({ name: 'title', options: ['isValue'] }),
@@ -138,8 +136,7 @@ describe('SaplingMcpService metadata and payload security', () => {
         expect.objectContaining({
           name: 'workWeek',
           referenceName: 'workHourWeek',
-          referencedPks: ['handle'],
-          referencePrimaryKeys: [{ name: 'handle', type: 'number' }],
+          referenceHandleType: 'number',
         }),
       ],
     });
@@ -210,7 +207,6 @@ describe('SaplingMcpService metadata and payload security', () => {
               kind: 'm:1',
               isReference: true,
               referenceName: 'workHourWeek',
-              referencedPks: ['handle'],
             }),
           ];
         }
@@ -220,7 +216,6 @@ describe('SaplingMcpService metadata and payload security', () => {
             createTemplateField({
               name: 'handle',
               type: 'number',
-              isPrimaryKey: true,
             }),
           ];
         }
@@ -249,7 +244,7 @@ describe('SaplingMcpService metadata and payload security', () => {
         expect.objectContaining({
           fieldName: 'workWeek',
           referenceName: 'workHourWeek',
-          reason: 'referencePrimaryKeyTypeMismatch',
+          reason: 'referenceHandleTypeMismatch',
         }),
       ],
     });

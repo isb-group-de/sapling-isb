@@ -305,60 +305,20 @@ function buildManyToOneColumnFilterClause(
   relationItems: SaplingGenericItem[],
   operator: ColumnFilterOperator = 'eq',
 ): FilterQuery {
-  const identifierKeys = getRelationIdentifierKeys(template, relationItems)
-  if (identifierKeys.length === 0) return {}
-
-  if (identifierKeys.length === 1) {
-    const identifierKey = identifierKeys[0]
-    const selectedValues = relationItems
-      .map((item) => item?.[identifierKey])
-      .filter(
-        (value): value is string | number | boolean =>
-          value !== null && typeof value !== 'undefined',
-      )
-    if (selectedValues.length === 0) return {}
-    if (operator === 'nin') {
-      return { [template.name]: { [identifierKey]: { $nin: selectedValues } } }
-    }
-    if (selectedValues.length === 1) {
-      return { [template.name]: { [identifierKey]: selectedValues[0] } }
-    }
-    return { [template.name]: { [identifierKey]: { $in: selectedValues } } }
+  const selectedHandles = relationItems
+    .map((item) => item?.handle)
+    .filter(
+      (handle): handle is string | number =>
+        typeof handle === 'string' || typeof handle === 'number',
+    )
+  if (selectedHandles.length === 0) return {}
+  if (operator === 'nin') {
+    return { [template.name]: { handle: { $nin: selectedHandles } } }
   }
-
-  const selectedRelations = relationItems
-    .map((item) => buildRelationIdentifier(item, identifierKeys))
-    .filter((value): value is Record<string, unknown> => value !== null)
-  if (selectedRelations.length === 0) return {}
-  if (selectedRelations.length === 1) {
-    return { [template.name]: selectedRelations[0] }
+  if (selectedHandles.length === 1) {
+    return { [template.name]: { handle: selectedHandles[0] } }
   }
-  return {
-    $or: selectedRelations.map((relation) => ({ [template.name]: relation })),
-  }
-}
-
-function getRelationIdentifierKeys(
-  template: EntityTemplate,
-  relationItems: SaplingGenericItem[],
-): string[] {
-  if (template.referencedPks?.length) return template.referencedPks
-  return ['handle', 'id'].filter((key) =>
-    relationItems.some((item) => item?.[key] !== null && typeof item?.[key] !== 'undefined'),
-  )
-}
-
-function buildRelationIdentifier(
-  item: SaplingGenericItem,
-  identifierKeys: string[],
-): Record<string, unknown> | null {
-  const identifier: Record<string, unknown> = {}
-  for (const key of identifierKeys) {
-    const value = item?.[key]
-    if (value === null || typeof value === 'undefined') return null
-    identifier[key] = value
-  }
-  return identifier
+  return { [template.name]: { handle: { $in: selectedHandles } } }
 }
 
 function normalizeDateFilterValue(

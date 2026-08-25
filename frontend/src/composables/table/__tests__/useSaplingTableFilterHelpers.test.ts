@@ -16,7 +16,6 @@ describe('useSaplingTableFilterHelpers', () => {
       name: 'budget',
       type: 'number',
       options: ['isMoney', 42, null],
-      referencedPks: ['handle', 99],
       isReference: true,
       referenceName: 'company',
     })
@@ -27,7 +26,6 @@ describe('useSaplingTableFilterHelpers', () => {
       type: 'number',
       kind: undefined,
       referenceName: 'company',
-      referencedPks: ['handle'],
       length: undefined,
       options: ['isMoney'],
       isReference: true,
@@ -85,7 +83,6 @@ describe('useSaplingTableFilterHelpers', () => {
         type: 'string',
         kind: 'm:1',
         referenceName: 'ticketStatus',
-        referencedPks: ['handle'],
       }),
       createTemplate({
         name: 'deadlineDate',
@@ -96,7 +93,6 @@ describe('useSaplingTableFilterHelpers', () => {
         type: 'string',
         kind: 'm:1',
         referenceName: 'person',
-        referencedPks: ['handle'],
       }),
     ]
 
@@ -174,7 +170,6 @@ describe('useSaplingTableFilterHelpers', () => {
         type: 'string',
         kind: 'm:1',
         referenceName: 'entity',
-        referencedPks: ['handle'],
       }),
       createTemplate({
         name: 'reference',
@@ -226,7 +221,6 @@ function createTemplate(
     isAutoIncrement: false,
     isPersistent: true,
     isReference: overrides.isReference ?? false,
-    referencedPks: overrides.referencedPks ?? [],
     referenceName: overrides.referenceName,
     length: overrides.length,
   } as EntityTemplate

@@ -23,7 +23,6 @@ import type {
  * @property        type                The data type of the property
  * @property        length              The length of the property (if applicable)
  * @property        default             The default value for the property
- * @property        isPrimaryKey        True if the property is a primary key column
  * @property        isAutoIncrement     True if the property is auto-incremented
  * @property        kind                The kind of relation (e.g., 1:1, 1:m, m:n)
  * @property        mappedBy            The property name on the related entity that maps this relation
@@ -34,7 +33,6 @@ import type {
  * @property        isRequired          True if the property is required (not nullable or primary key)
  * @property        nullable            Indicates if the property can be null
  * @property        isPersistent        True if the property is persisted in the database
- * @property        referencedPks       Referenced primary keys for the property, if any
  * @property        options             Additional options defined via Sapling decorators
  * @property        formGroup           Optional form group key for generated edit dialogs
  * @property        formGroupOrder      Optional display order for the enclosing form group
@@ -86,9 +84,6 @@ export class EntityTemplateDto {
     required: false,
   })
   defaultRaw?: string | null;
-
-  @ApiProperty({ description: 'True if the property is a primary key column.' })
-  isPrimaryKey: boolean = false;
 
   @ApiProperty({ description: 'True if the property is auto-incremented.' })
   isAutoIncrement: boolean = false;
@@ -144,11 +139,6 @@ export class EntityTemplateDto {
   })
   isPersistent: boolean = false;
 
-  @ApiProperty({
-    description: 'Referenced primary keys for the property, if any.',
-    type: [String],
-  })
-  referencedPks: string[] = [];
   @ApiProperty({
     description:
       'Additional options defined via Sapling decorators on the property.',

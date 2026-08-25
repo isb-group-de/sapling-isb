@@ -273,7 +273,7 @@ export class SaplingMcpImportToolService {
       .filter(
         (field) =>
           !field.isReference &&
-          !field.isPrimaryKey &&
+          field.name !== 'handle' &&
           field.type === 'string' &&
           !field.options?.includes('isSecurity'),
       );

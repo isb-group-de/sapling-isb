@@ -8,7 +8,6 @@ const createTemplateField = (
 ): EntityTemplateDto => ({
   name: '',
   type: 'string',
-  isPrimaryKey: false,
   isAutoIncrement: false,
   isUnique: false,
   referenceName: '',
@@ -16,7 +15,6 @@ const createTemplateField = (
   isRequired: false,
   nullable: false,
   isPersistent: true,
-  referencedPks: [],
   options: [],
   formGroup: null,
   formGroupOrder: null,
@@ -34,7 +32,6 @@ describe('GenericQueryService', () => {
       createTemplateField({
         name: 'handle',
         type: 'number',
-        isPrimaryKey: true,
       }),
       createTemplateField({ name: 'title' }),
       createTemplateField({ name: 'description' }),
@@ -109,7 +106,6 @@ describe('GenericQueryService', () => {
       createTemplateField({
         name: 'handle',
         type: 'number',
-        isPrimaryKey: true,
       }),
       createTemplateField({
         name: 'assigneePerson',
@@ -158,7 +154,6 @@ describe('GenericQueryService', () => {
       createTemplateField({
         name: 'handle',
         type: 'number',
-        isPrimaryKey: true,
       }),
       createTemplateField({ name: 'title' }),
       createTemplateField({

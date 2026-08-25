@@ -317,11 +317,10 @@ describe('useSaplingDialogEdit', () => {
     expect(ensureRelationTableItemsMock).toHaveBeenCalledWith('people')
   })
 
-  it('disables every primary key outside create mode', () => {
+  it('disables the handle outside create mode', () => {
     const manualPrimaryKey = {
-      name: 'externalId',
+      name: 'handle',
       type: 'string',
-      isPrimaryKey: true,
       isAutoIncrement: false,
       fieldAccess: { allowRead: true, allowInsert: true, allowUpdate: true },
     } as EntityTemplate

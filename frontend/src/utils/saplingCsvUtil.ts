@@ -4,6 +4,13 @@ import type { SaplingGenericItem } from '@/entity/entity'
 const CSV_DELIMITER = ';'
 const CSV_BOM = '\uFEFF'
 
+export type CsvHeaderResolver = (fieldName: string, template?: EntityTemplate) => string | undefined
+
+interface CsvColumn {
+  fieldName: string
+  template?: EntityTemplate
+}
+
 export function getImportableCsvTemplates(entityTemplates: EntityTemplate[]): EntityTemplate[] {
   return entityTemplates.filter((template) => {
     if (!template.name) {
@@ -30,17 +37,24 @@ export function getImportableCsvTemplates(entityTemplates: EntityTemplate[]): En
   })
 }
 
-export function buildCsvTemplate(entityTemplates: EntityTemplate[]): string {
-  return buildCsv([], entityTemplates)
+export function buildCsvTemplate(
+  entityTemplates: EntityTemplate[],
+  resolveHeader?: CsvHeaderResolver,
+): string {
+  return buildCsv([], entityTemplates, resolveHeader)
 }
 
-export function buildCsv(items: SaplingGenericItem[], entityTemplates: EntityTemplate[]): string {
-  const headers = getCsvHeaders(entityTemplates)
+export function buildCsv(
+  items: SaplingGenericItem[],
+  entityTemplates: EntityTemplate[],
+  resolveHeader?: CsvHeaderResolver,
+): string {
+  const columns = getCsvColumns(entityTemplates)
   const lines = [
-    headers.map(escapeCsvCell).join(CSV_DELIMITER),
+    columns.map((column) => escapeCsvCell(getCsvHeader(column, resolveHeader))).join(CSV_DELIMITER),
     ...items.map((item) =>
-      headers
-        .map((header) => escapeCsvCell(normalizeExportValue(item[header])))
+      columns
+        .map((column) => escapeCsvCell(normalizeExportValue(item[column.fieldName])))
         .join(CSV_DELIMITER),
     ),
   ]
@@ -48,9 +62,44 @@ export function buildCsv(items: SaplingGenericItem[], entityTemplates: EntityTem
   return `${CSV_BOM}${lines.join('\r\n')}\r\n`
 }
 
-function getCsvHeaders(entityTemplates: EntityTemplate[]): string[] {
-  const fieldNames = getImportableCsvTemplates(entityTemplates).map((template) => template.name)
-  return ['handle', ...fieldNames.filter((fieldName) => fieldName !== 'handle')]
+function getCsvColumns(entityTemplates: EntityTemplate[]): CsvColumn[] {
+  const templates = getImportableCsvTemplates(entityTemplates)
+  const handleTemplate = templates.find((template) => template.name === 'handle')
+
+  return [
+    { fieldName: 'handle', template: handleTemplate },
+    ...templates
+      .filter((template) => template.name !== 'handle')
+      .map((template) => ({ fieldName: template.name, template })),
+  ]
+}
+
+function getCsvHeader(column: CsvColumn, resolveHeader?: CsvHeaderResolver): string {
+  const resolvedHeader = resolveHeader?.(column.fieldName, column.template)
+  return resolvedHeader?.trim() ? resolvedHeader : column.fieldName
+}
+
+export function mapCsvRowsToInternalFields(
+  rows: Record<string, unknown>[],
+  entityTemplates: EntityTemplate[],
+  resolveHeader?: CsvHeaderResolver,
+): Record<string, unknown>[] {
+  const columns = getCsvColumns(entityTemplates)
+  const internalFieldNames = new Set(columns.map((column) => column.fieldName))
+  const headerAliases = new Map(columns.map((column) => [column.fieldName, column.fieldName]))
+
+  for (const column of columns) {
+    const displayHeader = getCsvHeader(column, resolveHeader)
+    if (!internalFieldNames.has(displayHeader) && !headerAliases.has(displayHeader)) {
+      headerAliases.set(displayHeader, column.fieldName)
+    }
+  }
+
+  return rows.map((row) =>
+    Object.fromEntries(
+      Object.entries(row).map(([header, value]) => [headerAliases.get(header) ?? header, value]),
+    ),
+  )
 }
 
 export function parseCsv(text: string): Record<string, unknown>[] {

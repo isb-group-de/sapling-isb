@@ -367,10 +367,7 @@ export class SaplingMcpResultFormatterService {
     for (const [key, rawValue] of Object.entries(record)) {
       const field = fieldsByName.get(key);
 
-      if (
-        this.isInternalIdentifierKey(key) ||
-        (field?.isPrimaryKey && key !== 'handle')
-      ) {
+      if (this.isInternalIdentifierKey(key)) {
         continue;
       }
 

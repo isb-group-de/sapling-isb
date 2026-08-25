@@ -25,7 +25,7 @@ function field(name: string, overrides: Partial<EntityTemplate> = {}): EntityTem
 describe('saplingBulkUpdateUtil', () => {
   it('keeps writable value fields and excludes structural or protected fields', () => {
     expect(isBulkUpdateTemplateEligible(field('email', { options: ['isMail'] }))).toBe(true)
-    expect(isBulkUpdateTemplateEligible(field('handle', { isPrimaryKey: true }))).toBe(false)
+    expect(isBulkUpdateTemplateEligible(field('handle'))).toBe(false)
     expect(isBulkUpdateTemplateEligible(field('customerNumber', { isUnique: true }))).toBe(false)
     expect(isBulkUpdateTemplateEligible(field('secret', { options: ['isSecurity'] }))).toBe(false)
     expect(isBulkUpdateTemplateEligible(field('children', { kind: '1:m' }))).toBe(false)

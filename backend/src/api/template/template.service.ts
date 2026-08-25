@@ -34,6 +34,23 @@ function isGeneratedInverseRelation(prop: {
   );
 }
 
+function assertHandlePrimaryKeyInvariant(
+  entityHandle: string,
+  properties: Array<{
+    name: string;
+    primary?: boolean;
+  }>,
+): void {
+  const primaryKeys = properties.filter(
+    (property) => property.primary === true,
+  );
+  if (primaryKeys.length !== 1 || primaryKeys[0].name !== 'handle') {
+    throw new Error(
+      `Invalid entity metadata for "${entityHandle}": expected exactly one primary key named "handle".`,
+    );
+  }
+}
+
 /**
  * @class
  * @version         1.0
@@ -76,7 +93,10 @@ export class TemplateService {
     }
     const meta = this.em.getMetadata().get(entityClass);
 
-    const template = Object.values(meta.properties)
+    const properties = Object.values(meta.properties);
+    assertHandlePrimaryKeyInvariant(entityHandle, properties);
+
+    const template = properties
       .filter((prop) => !isGeneratedInverseRelation(prop))
       .map((prop) => {
         const isReadOnly = hasSaplingOption(
@@ -108,9 +128,7 @@ export class TemplateService {
           defaultRaw: prop.defaultRaw
             ? String(prop.defaultRaw).replace(/^['"]|['"]$/g, '')
             : null,
-          isPrimaryKey: prop.primary ?? false,
           isAutoIncrement: prop.autoincrement ?? false,
-          referencedPks: prop.referencedPKs ?? [],
           kind: prop.kind ?? null,
           mappedBy: prop.mappedBy ?? null,
           inversedBy: prop.inversedBy ?? null,

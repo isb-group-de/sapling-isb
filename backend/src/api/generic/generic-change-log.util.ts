@@ -309,17 +309,7 @@ export function projectChangeLogReferenceValue(
     return value;
   }
 
-  if (field.referencedPks.length <= 1) {
-    const pk = field.referencedPks[0] ?? 'handle';
-    return normalizeChangeLogValue((value as Record<string, unknown>)[pk]);
-  }
-
-  return Object.fromEntries(
-    field.referencedPks.map((pk) => [
-      pk,
-      normalizeChangeLogValue((value as Record<string, unknown>)[pk]),
-    ]),
-  );
+  return normalizeChangeLogValue((value as Record<string, unknown>).handle);
 }
 
 export function normalizeChangeLogValue(

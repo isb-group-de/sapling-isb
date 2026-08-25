@@ -180,7 +180,7 @@ describe('saplingTableUtil', () => {
 
   it('projects only list-visible, mobile, value, and primary fields', () => {
     const templates = [
-      createTemplate({ name: 'handle', isPrimaryKey: true, tableVisible: false }),
+      createTemplate({ name: 'handle', tableVisible: false }),
       createTemplate({ name: 'title', options: ['isValue'], tableVisible: true }),
       createTemplate({ name: 'mobileSummary', tableVisible: false, mobileVisible: true }),
       createTemplate({ name: 'description', tableVisible: false, mobileVisible: false }),
@@ -339,7 +339,6 @@ describe('saplingTableUtil', () => {
     const templates = [
       createTemplate({
         name: 'handle',
-        isPrimaryKey: true,
         isAutoIncrement: false,
       }),
       createTemplate({
@@ -382,23 +381,24 @@ describe('saplingTableUtil', () => {
   it('shows manual primary keys in create and edit dialogs and hides auto-increment keys', () => {
     const manualHandle = createTemplate({
       name: 'handle',
-      isPrimaryKey: true,
       isAutoIncrement: false,
       formVisible: false,
     })
     const autoIncrementHandle = createTemplate({
-      name: 'id',
-      isPrimaryKey: true,
+      name: 'handle',
       isAutoIncrement: true,
       formVisible: true,
     })
     const title = createTemplate({ name: 'title', formVisible: true })
 
     expect(
-      getEditDialogHeaders([manualHandle, autoIncrementHandle, title], 'create', true).map(
+      getEditDialogHeaders([manualHandle, title], 'create', true).map((template) => template.name),
+    ).toEqual(['handle', 'title'])
+    expect(
+      getEditDialogHeaders([autoIncrementHandle, title], 'create', true).map(
         (template) => template.name,
       ),
-    ).toEqual(['handle', 'title'])
+    ).toEqual(['title'])
     expect(
       getEditDialogHeaders([manualHandle, title], 'edit', true).map((template) => template.name),
     ).toEqual(['handle', 'title'])
@@ -407,7 +407,6 @@ describe('saplingTableUtil', () => {
   it('keeps a configured handle visible when it is the only dialog field', () => {
     const handleTemplate = createTemplate({
       name: 'handle',
-      isPrimaryKey: true,
       options: ['isValue'],
       formVisible: true,
     })
@@ -514,7 +513,6 @@ describe('saplingTableUtil', () => {
           name: 'accountManager',
           kind: 'm:1',
           referenceName: 'person',
-          referencedPks: ['id'],
         }),
       ],
       referenceSearchTemplates: {
@@ -530,7 +528,6 @@ describe('saplingTableUtil', () => {
             name: 'company',
             kind: 'm:1',
             referenceName: 'company',
-            referencedPks: ['id'],
             options: ['isValue'],
           }),
         ],
@@ -587,7 +584,6 @@ describe('saplingTableUtil', () => {
       name: 'company',
       kind: 'm:1',
       referenceName: 'company',
-      referencedPks: ['id'],
     })
     const createdAtTemplate = createTemplate({ name: 'createdAt', type: 'Date' })
     const rangeEndExclusive = new Date('2026-04-02T00:00:00')
@@ -606,12 +602,12 @@ describe('saplingTableUtil', () => {
           company: {
             operator: 'eq',
             value: '',
-            relationItems: [{ id: 5 }],
+            relationItems: [{ handle: 5 }],
           },
         },
         entityTemplates: [companyTemplate],
       }),
-    ).toEqual({ company: { id: 5 } })
+    ).toEqual({ company: { handle: 5 } })
 
     expect(
       buildTableFilter({

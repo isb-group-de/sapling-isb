@@ -10,12 +10,19 @@ const mocks = vi.hoisted(() => ({
   parseCsv: vi.fn(),
   buildCsv: vi.fn(),
   buildCsvTemplate: vi.fn(),
+  mapCsvRowsToInternalFields: vi.fn(),
   pushMessage: vi.fn(),
   reload: vi.fn(),
 }))
 
 vi.mock('vue-i18n', () => ({
-  useI18n: () => ({ t: (key: string) => key }),
+  useI18n: () => ({
+    t: (key: string) =>
+      ({
+        'ticket.handle': 'ID',
+        'ticket.title': 'Bezeichnung',
+      })[key] ?? key,
+  }),
 }))
 
 vi.mock('@/services/api.generic.service', () => ({
@@ -39,6 +46,7 @@ vi.mock('@/utils/saplingCsvUtil', () => ({
   parseCsv: mocks.parseCsv,
   buildCsv: mocks.buildCsv,
   buildCsvTemplate: mocks.buildCsvTemplate,
+  mapCsvRowsToInternalFields: mocks.mapCsvRowsToInternalFields,
 }))
 
 import { useSaplingTableTransferActions } from '../useSaplingTableTransferActions'
@@ -49,7 +57,15 @@ function createSubject() {
     search: '',
     sortBy: [],
     entityHandle: 'ticket',
-    entityTemplates: [],
+    entityTemplates: [
+      {
+        key: 'title',
+        name: 'title',
+        type: 'string',
+        isPersistent: true,
+        options: [],
+      },
+    ],
     parentFilter: undefined,
     activeFilter: undefined,
   })
@@ -66,6 +82,7 @@ beforeEach(() => {
   vi.clearAllMocks()
   mocks.isSupportedCsvFile.mockReturnValue(true)
   mocks.parseCsv.mockReturnValue([{ title: 'Imported' }])
+  mocks.mapCsvRowsToInternalFields.mockReturnValue([{ title: 'Imported' }])
   mocks.importRows.mockResolvedValue({
     created: 1,
     updated: 0,
@@ -94,9 +111,45 @@ describe('useSaplingTableTransferActions', () => {
     await subject.importCSVFile(file)
 
     expect(mocks.parseCsv).toHaveBeenCalledWith('title\nImported')
+    expect(mocks.mapCsvRowsToInternalFields).toHaveBeenCalledWith(
+      [{ title: 'Imported' }],
+      expect.any(Array),
+      expect.any(Function),
+    )
     expect(mocks.importRows).toHaveBeenCalledWith('ticket', [{ title: 'Imported' }])
     expect(mocks.reload).toHaveBeenCalledOnce()
     expect(subject.isImportingCSV.value).toBe(false)
+  })
+
+  it('uses the current translated table labels for CSV exports and templates', async () => {
+    mocks.downloadJSON.mockResolvedValue([{ handle: 1, title: 'Planning' }])
+    const subject = createSubject()
+
+    subject.exportCSVTemplate()
+    await subject.exportCSV()
+
+    const templateResolver = mocks.buildCsvTemplate.mock.calls[0]?.[1]
+    const exportResolver = mocks.buildCsv.mock.calls[0]?.[2]
+    const titleTemplate = {
+      name: 'title',
+      formConfig: { label: 'Individuelle Bezeichnung' },
+    }
+
+    expect(templateResolver('handle')).toBe('ID')
+    expect(exportResolver('title')).toBe('Bezeichnung')
+    expect(exportResolver('title', titleTemplate)).toBe('Individuelle Bezeichnung')
+  })
+
+  it('keeps internal field names in JSON exports', async () => {
+    const items = [{ handle: 1, title: 'Planning' }]
+    mocks.downloadJSON.mockResolvedValue(items)
+    const subject = createSubject()
+
+    await subject.downloadJSON()
+
+    expect(mocks.downloadJSONFile).toHaveBeenCalledWith(items, 'ticket.json')
+    expect(mocks.buildCsv).not.toHaveBeenCalled()
+    expect(mocks.buildCsvTemplate).not.toHaveBeenCalled()
   })
 
   it('rejects unsupported files without calling the import API', async () => {

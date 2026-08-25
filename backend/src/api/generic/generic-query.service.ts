@@ -86,11 +86,7 @@ export class GenericQueryService {
     }
 
     const fieldsByName = new Map(template.map((field) => [field.name, field]));
-    const selectedFields = new Set(
-      template
-        .filter((field) => field.isPrimaryKey && field.isPersistent !== false)
-        .map((field) => field.name),
-    );
+    const selectedFields = new Set(['handle']);
 
     for (const requestedField of requestedFields) {
       const fieldName = requestedField.trim();
@@ -463,14 +459,9 @@ export class GenericQueryService {
       return relationRecord;
     }
 
-    const identifierKeys = this.getReferenceIdentifierKeys(field);
-    if (identifierKeys.length !== 1) {
-      return relationRecord;
-    }
-
     return {
-      [identifierKeys[0]]: this.normalizeFieldCriteriaValue(
-        this.getTemplateField(field.referenceName, identifierKeys[0]),
+      handle: this.normalizeFieldCriteriaValue(
+        this.getTemplateField(field.referenceName, 'handle'),
         relationRecord,
       ),
     };
@@ -501,52 +492,14 @@ export class GenericQueryService {
           );
     }
 
-    const identifierField = this.getSingleReferenceIdentifierField(field);
-    if (!identifierField) {
+    const handleField = this.getTemplateField(field.referenceName, 'handle');
+    if (!handleField) {
       return rawValue;
     }
 
     return {
-      [identifierField.name]: this.normalizeFieldCriteriaValue(
-        identifierField,
-        rawValue,
-      ),
+      handle: this.normalizeFieldCriteriaValue(handleField, rawValue),
     };
-  }
-
-  private getReferenceIdentifierKeys(field: EntityTemplateDto): string[] {
-    if (field.referencedPks.length > 0) {
-      return field.referencedPks;
-    }
-
-    if (!field.referenceName) {
-      return [];
-    }
-
-    const referenceTemplate = this.templateService.getEntityTemplate(
-      field.referenceName,
-    );
-
-    return ['handle', 'id'].filter((key) =>
-      referenceTemplate.some((templateField) => templateField.name === key),
-    );
-  }
-
-  private getSingleReferenceIdentifierField(
-    field: EntityTemplateDto,
-  ): EntityTemplateDto | null {
-    if (!field.referenceName) {
-      return null;
-    }
-
-    const identifierKeys = this.getReferenceIdentifierKeys(field);
-    if (identifierKeys.length !== 1) {
-      return null;
-    }
-
-    return (
-      this.getTemplateField(field.referenceName, identifierKeys[0]) ?? null
-    );
   }
 
   private normalizeFieldCriteriaValue(

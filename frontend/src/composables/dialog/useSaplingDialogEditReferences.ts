@@ -24,10 +24,7 @@ export function useSaplingDialogEditReferences(options: UseSaplingDialogEditRefe
     return options.templates.value.find((template) => template.name === name)
   }
 
-  function extractDependencyIdentifier(
-    value: unknown,
-    template?: EntityTemplate,
-  ): DependencyComparableValue | Record<string, unknown> | null {
+  function extractDependencyIdentifier(value: unknown): DependencyComparableValue | null {
     if (typeof value === 'string') {
       const trimmedValue = value.trim()
       return trimmedValue ? trimmedValue : null
@@ -41,42 +38,16 @@ export function useSaplingDialogEditReferences(options: UseSaplingDialogEditRefe
       return null
     }
 
-    const recordValue = value as SaplingGenericItem
-    const identifierKeys = template?.referencedPks?.length
-      ? template.referencedPks
-      : ['handle', 'id']
-    const identifierEntries = identifierKeys
-      .map((key) => [key, recordValue[key]] as const)
-      .filter((entry): entry is readonly [string, DependencyComparableValue] => {
-        const [, entryValue] = entry
-        return (
-          typeof entryValue === 'string' ||
-          typeof entryValue === 'number' ||
-          typeof entryValue === 'boolean'
-        )
-      })
-
-    if (identifierEntries.length === 0) {
-      return null
-    }
-
-    if (identifierEntries.length === 1) {
-      return identifierEntries[0][1]
-    }
-
-    return Object.fromEntries(identifierEntries)
+    const handle = (value as SaplingGenericItem).handle
+    return typeof handle === 'string' || typeof handle === 'number' ? handle : null
   }
 
   function areDependencyIdentifiersEqual(
-    left: DependencyComparableValue | Record<string, unknown> | null,
-    right: DependencyComparableValue | Record<string, unknown> | null,
+    left: DependencyComparableValue | null,
+    right: DependencyComparableValue | null,
   ): boolean {
     if (left == null || right == null) {
       return left === right
-    }
-
-    if (typeof left === 'object' || typeof right === 'object') {
-      return JSON.stringify(left) === JSON.stringify(right)
     }
 
     return String(left) === String(right)
@@ -94,20 +65,10 @@ export function useSaplingDialogEditReferences(options: UseSaplingDialogEditRefe
       return {}
     }
 
-    const parentTemplate = getTemplateByName(dependency.parentField)
-    const parentIdentifier = extractDependencyIdentifier(
-      options.form.value[dependency.parentField],
-      parentTemplate,
-    )
+    const parentIdentifier = extractDependencyIdentifier(options.form.value[dependency.parentField])
 
     if (parentIdentifier == null) {
       return dependency.requireParent ? buildEmptyDependencyFilter(dependency.targetField) : {}
-    }
-
-    if (typeof parentIdentifier === 'object') {
-      return {
-        [dependency.targetField]: parentIdentifier,
-      }
     }
 
     return {
@@ -121,11 +82,7 @@ export function useSaplingDialogEditReferences(options: UseSaplingDialogEditRefe
       return false
     }
 
-    const parentTemplate = getTemplateByName(dependency.parentField)
-    return (
-      extractDependencyIdentifier(options.form.value[dependency.parentField], parentTemplate) ==
-      null
-    )
+    return extractDependencyIdentifier(options.form.value[dependency.parentField]) == null
   }
 
   function isReferenceValueValidForDependency(template: EntityTemplate): boolean {
@@ -139,11 +96,7 @@ export function useSaplingDialogEditReferences(options: UseSaplingDialogEditRefe
       return true
     }
 
-    const parentTemplate = getTemplateByName(dependency.parentField)
-    const parentIdentifier = extractDependencyIdentifier(
-      options.form.value[dependency.parentField],
-      parentTemplate,
-    )
+    const parentIdentifier = extractDependencyIdentifier(options.form.value[dependency.parentField])
 
     if (parentIdentifier == null) {
       // An optional parent makes the child selector available globally, but an
@@ -172,16 +125,14 @@ export function useSaplingDialogEditReferences(options: UseSaplingDialogEditRefe
       return
     }
 
-    const parentTemplate = getTemplateByName(dependency.parentField)
     const parentValue = (value as SaplingGenericItem)[dependency.targetField]
-    const parentIdentifier = extractDependencyIdentifier(parentValue, parentTemplate)
+    const parentIdentifier = extractDependencyIdentifier(parentValue)
     if (parentIdentifier == null) {
       return
     }
 
     const currentParentIdentifier = extractDependencyIdentifier(
       options.form.value[dependency.parentField],
-      parentTemplate,
     )
     if (areDependencyIdentifiersEqual(currentParentIdentifier, parentIdentifier)) {
       return
@@ -202,11 +153,7 @@ export function useSaplingDialogEditReferences(options: UseSaplingDialogEditRefe
       return null
     }
 
-    const parentTemplate = getTemplateByName(dependency.parentField)
-    const parentIdentifier = extractDependencyIdentifier(
-      options.form.value[dependency.parentField],
-      parentTemplate,
-    )
+    const parentIdentifier = extractDependencyIdentifier(options.form.value[dependency.parentField])
     if (
       parentIdentifier == null ||
       options.hasFormValue(options.form.value[template.name]) ||
@@ -230,7 +177,6 @@ export function useSaplingDialogEditReferences(options: UseSaplingDialogEditRefe
 
       const currentParentIdentifier = extractDependencyIdentifier(
         options.form.value[dependency.parentField],
-        parentTemplate,
       )
       if (
         autoSelectRequestIds.get(template.name) !== requestId ||

@@ -74,25 +74,15 @@ export function getDefaultRangeEndOperator(inputKind: SaplingTableFilterInputKin
   return ['date', 'datetime', 'time'].includes(inputKind) ? 'lt' : 'lte'
 }
 
-export function getTranslatedRelationIdentifier(
-  item: SaplingGenericItem,
-  identifierKeys: string[],
-  t: TranslationFunction,
-) {
-  const translatedValues = identifierKeys
-    .map((key) => item?.[key])
-    .filter((value): value is string => typeof value === 'string')
-    .map((value) => {
-      const tokenPath = extractDynamicFilterTokenPath(value)
-      return tokenPath ? translateDynamicFilterTokenPath(tokenPath, t) : ''
-    })
-    .filter(Boolean)
-  return translatedValues[0] ?? ''
+export function getTranslatedRelationIdentifier(item: SaplingGenericItem, t: TranslationFunction) {
+  const handle = item.handle
+  if (typeof handle !== 'string') return ''
+  const tokenPath = extractDynamicFilterTokenPath(handle)
+  return tokenPath ? translateDynamicFilterTokenPath(tokenPath, t) : ''
 }
 
 export function shouldResolveRelationItem(
   item: SaplingGenericItem,
-  identifierKeys: string[],
   referenceTemplates: EntityTemplate[],
 ) {
   const hasTranslatableValueField = referenceTemplates
@@ -107,40 +97,25 @@ export function shouldResolveRelationItem(
     })
   if (hasTranslatableValueField) return false
 
-  return identifierKeys.some((key) => {
-    const value = item?.[key]
-    return (
-      (typeof value === 'string' && value.trim().length > 0 && !isTokenFilterValue(value)) ||
-      typeof value === 'number' ||
-      typeof value === 'boolean'
-    )
-  })
+  const handle = item.handle
+  return (
+    (typeof handle === 'string' && handle.trim().length > 0 && !isTokenFilterValue(handle)) ||
+    typeof handle === 'number'
+  )
 }
 
-export function buildReferenceLookupFilter(items: SaplingGenericItem[], identifierKeys: string[]) {
-  const relationIdentifiers = items
-    .map((item) => buildRelationIdentifier(item, identifierKeys))
-    .filter(
-      (identifier): identifier is Record<string, string | number | boolean> => identifier !== null,
-    )
-  if (relationIdentifiers.length === 0) return null
-
-  if (identifierKeys.length === 1) {
-    const identifierKey = identifierKeys[0]
-    const values = relationIdentifiers
-      .map((identifier) => identifier[identifierKey])
-      .filter((value): value is string | number | boolean => typeof value !== 'undefined')
-    if (values.length === 0) return null
-    if (values.length === 1) return { [identifierKey]: values[0] }
-    return { [identifierKey]: { $in: values } }
-  }
-  if (relationIdentifiers.length === 1) return relationIdentifiers[0]
-  return { $or: relationIdentifiers }
+export function buildReferenceLookupFilter(items: SaplingGenericItem[]) {
+  const handles = items
+    .map((item) => getRelationHandle(item))
+    .filter((handle): handle is string | number => handle !== null)
+  if (handles.length === 0) return null
+  if (handles.length === 1) return { handle: handles[0] }
+  return { handle: { $in: handles } }
 }
 
-export function getRelationLookupKey(item: SaplingGenericItem, identifierKeys: string[]) {
-  const identifier = buildRelationIdentifier(item, identifierKeys)
-  return identifier ? JSON.stringify(identifier) : null
+export function getRelationLookupKey(item: SaplingGenericItem) {
+  const handle = getRelationHandle(item)
+  return handle == null ? null : JSON.stringify({ handle })
 }
 
 function extractDynamicFilterTokenPath(value: string) {
@@ -184,20 +159,10 @@ function formatScopedDynamicFilterToken(
   return propertyKey.trim() ? `${t(scopeKey)}: ${t(`${entityKey}.${propertyKey}`)}` : t(scopeKey)
 }
 
-function buildRelationIdentifier(item: SaplingGenericItem, identifierKeys: string[]) {
-  const identifier: Record<string, string | number | boolean> = {}
-  for (const key of identifierKeys) {
-    const value = item?.[key]
-    if (typeof value === 'string') {
-      if (!value.trim() || isTokenFilterValue(value)) return null
-      identifier[key] = value
-      continue
-    }
-    if (typeof value === 'number' || typeof value === 'boolean') {
-      identifier[key] = value
-      continue
-    }
-    return null
+function getRelationHandle(item: SaplingGenericItem): string | number | null {
+  const handle = item.handle
+  if (typeof handle === 'string') {
+    return handle.trim() && !isTokenFilterValue(handle) ? handle : null
   }
-  return identifier
+  return typeof handle === 'number' ? handle : null
 }

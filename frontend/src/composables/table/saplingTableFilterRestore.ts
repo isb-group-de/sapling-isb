@@ -310,7 +310,7 @@ function tryCollectRelationOrClause(
       return false
     }
 
-    const relationItem = createRelationFilterItem(template, value)
+    const relationItem = createRelationFilterItem(value)
     if (!relationItem) {
       return false
     }

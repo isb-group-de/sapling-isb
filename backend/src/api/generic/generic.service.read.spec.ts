@@ -30,7 +30,6 @@ describe('GenericService read workflows', () => {
                 isReference: true,
                 kind: 'm:1',
                 referenceName: 'person',
-                referencedPks: ['handle'],
               }),
             ];
           case 'person':
@@ -113,7 +112,6 @@ describe('GenericService read workflows', () => {
                 isReference: true,
                 kind: 'm:1',
                 referenceName: 'person',
-                referencedPks: ['handle'],
               }),
             ];
           case 'person':
@@ -198,7 +196,6 @@ describe('GenericService read workflows', () => {
                 isReference: true,
                 kind: 'm:1',
                 referenceName: 'salesOpportunity',
-                referencedPks: ['handle'],
               }),
             ];
           default:
@@ -285,7 +282,6 @@ describe('GenericService read workflows', () => {
                 isReference: true,
                 kind: 'm:1',
                 referenceName: 'person',
-                referencedPks: ['handle'],
               }),
             ];
           case 'person':
@@ -298,7 +294,6 @@ describe('GenericService read workflows', () => {
                 isReference: true,
                 kind: 'm:1',
                 referenceName: 'company',
-                referencedPks: ['handle'],
               }),
             ];
           default:
@@ -394,14 +389,12 @@ describe('GenericService read workflows', () => {
                 isReference: true,
                 kind: 'm:1',
                 referenceName: 'company',
-                referencedPks: ['handle'],
               }),
               createTemplateField({
                 name: 'creatorPerson',
                 isReference: true,
                 kind: 'm:1',
                 referenceName: 'person',
-                referencedPks: ['handle'],
               }),
               createTemplateField({
                 name: 'creatorPersonEmail',
@@ -424,7 +417,6 @@ describe('GenericService read workflows', () => {
                 isReference: true,
                 kind: 'm:1',
                 referenceName: 'company',
-                referencedPks: ['handle'],
               }),
             ];
           case 'company':
@@ -505,7 +497,6 @@ describe('GenericService read workflows', () => {
                 isReference: true,
                 kind: 'm:1',
                 referenceName: 'company',
-                referencedPks: ['handle'],
               }),
             ];
           case 'company':

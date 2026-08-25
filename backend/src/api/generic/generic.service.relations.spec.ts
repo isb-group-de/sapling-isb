@@ -94,7 +94,6 @@ describe('GenericService relation workflows', () => {
                 isReference: true,
                 kind: 'm:n',
                 referenceName: 'tag',
-                referencedPks: ['handle'],
               }),
             ];
           case 'tag':
@@ -205,7 +204,6 @@ describe('GenericService relation workflows', () => {
                 isReference: true,
                 kind: 'm:n',
                 referenceName: 'tag',
-                referencedPks: ['handle'],
               }),
             ];
           case 'tag':
@@ -320,7 +318,6 @@ describe('GenericService relation workflows', () => {
                 kind: 'n:m',
                 mappedBy: 'participants',
                 referenceName: 'event',
-                referencedPks: ['handle'],
               }),
             ];
           case 'event':
@@ -332,7 +329,6 @@ describe('GenericService relation workflows', () => {
                 isReference: true,
                 kind: 'm:n',
                 referenceName: 'person',
-                referencedPks: ['handle'],
               }),
             ];
           default:

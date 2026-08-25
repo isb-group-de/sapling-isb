@@ -36,7 +36,6 @@ describe('GenericService update conflicts', () => {
           isReference: true,
           kind: 'm:1',
           referenceName: 'company',
-          referencedPks: ['handle'],
         }),
         createTemplateField({ name: 'updatedAt', type: 'date' }),
       ]),
@@ -154,7 +153,6 @@ describe('GenericService update conflicts', () => {
           isReference: true,
           kind: 'm:1',
           referenceName: 'company',
-          referencedPks: ['handle'],
         }),
         createTemplateField({ name: 'updatedAt', type: 'date' }),
       ]),
@@ -251,7 +249,6 @@ describe('GenericService update conflicts', () => {
           isReference: true,
           kind: 'm:1',
           referenceName: 'company',
-          referencedPks: ['handle'],
         }),
         createTemplateField({ name: 'updatedAt', type: 'date' }),
       ]),
@@ -297,7 +294,6 @@ describe('GenericService update conflicts', () => {
 
     expect(assign).toHaveBeenCalledWith(item, {
       company: 5,
-      handle: 7,
     });
     expect(result).toMatchObject({
       handle: 7,
@@ -376,7 +372,6 @@ describe('GenericService update conflicts', () => {
 
     expect(assign).toHaveBeenCalledWith(item, {
       description: 'Client description',
-      handle: 7,
     });
     expect(result).toMatchObject({
       handle: 7,
@@ -413,7 +408,6 @@ describe('GenericService update conflicts', () => {
                 isReference: true,
                 kind: '1:m',
                 referenceName: 'ticket',
-                referencedPks: ['handle'],
               }),
             ];
           default:

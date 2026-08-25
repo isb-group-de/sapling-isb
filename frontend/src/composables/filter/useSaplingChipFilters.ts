@@ -52,16 +52,13 @@ export function useSaplingChipFilters({
         const response = await ApiGenericService.findAll<SaplingGenericItem>(referenceName, {
           orderBy: buildReferenceOrderBy(referenceTemplates),
         })
-        const identifierKey = template.referencedPks?.[0] ?? 'handle'
-
         return {
           key: template.name,
           fieldName: template.name,
           referenceName,
-          identifierKey,
           label: getTemplateLabel(currentEntityHandle, template),
           options: response
-            .map((item) => buildChipFilterOption(item, identifierKey, referenceTemplates))
+            .map((item) => buildChipFilterOption(item, referenceTemplates))
             .filter((option): option is NonNullable<typeof option> => option !== null),
         }
       }),
@@ -107,7 +104,7 @@ export function useSaplingChipFilters({
 
       clauses.push({
         [filter.fieldName]: {
-          [filter.identifierKey]: {
+          handle: {
             $in: handles,
           },
         },
@@ -176,10 +173,9 @@ function buildReferenceOrderBy(referenceTemplates: EntityTemplate[]): Record<str
 
 function buildChipFilterOption(
   item: SaplingGenericItem,
-  identifierKey: string,
   referenceTemplates: EntityTemplate[],
 ): SaplingChipFilterGroup['options'][number] | null {
-  const handle = item[identifierKey]
+  const handle = item.handle
   if (typeof handle !== 'string' && typeof handle !== 'number') {
     return null
   }

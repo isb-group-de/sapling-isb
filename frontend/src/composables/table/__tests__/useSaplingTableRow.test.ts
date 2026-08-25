@@ -241,7 +241,6 @@ describe('useSaplingTableRow relation dialogs', () => {
         name: 'country',
         kind: 'm:1',
         referenceName: 'country',
-        referencedPks: ['handle'],
       } as SaplingTableHeaderItem,
       { handle: 'DE', name: 'Deutschland' },
     )
@@ -260,7 +259,7 @@ describe('useSaplingTableRow relation dialogs', () => {
     expect(row.getReferenceDialogMode('country')).toBe('edit')
   })
 
-  it('uses the declared referenced primary key and keeps the dialog closed for missing records', async () => {
+  it('uses handle and keeps the dialog closed for missing records', async () => {
     mocks.find.mockResolvedValue({ data: [], meta: { total: 0 } })
     const { row } = createRow(
       {
@@ -268,16 +267,15 @@ describe('useSaplingTableRow relation dialogs', () => {
         name: 'country',
         kind: 'm:1',
         referenceName: 'country',
-        referencedPks: ['code'],
       } as SaplingTableHeaderItem,
-      { code: 'DE', name: 'Deutschland' },
+      { handle: 'DE', name: 'Deutschland' },
     )
 
     await row.openDialogForCol('country')
 
     expect(mocks.find).toHaveBeenCalledWith(
       'country',
-      expect.objectContaining({ filter: { code: 'DE' } }),
+      expect.objectContaining({ filter: { handle: 'DE' } }),
     )
     expect(row.getDialogItemForCol('country')).toBeNull()
     expect(row.isDialogOpenForCol('country')).toBe(false)
@@ -305,7 +303,6 @@ describe('useSaplingTableRow relation dialogs', () => {
         name: 'country',
         kind: 'm:1',
         referenceName: 'country',
-        referencedPks: ['handle'],
       } as SaplingTableHeaderItem,
       { handle: 'DE', name: 'Deutschland' },
     )

@@ -11,7 +11,6 @@ function field(name: string, overrides: Partial<EntityTemplate> = {}): EntityTem
   return {
     name,
     type: 'string',
-    isPrimaryKey: false,
     isAutoIncrement: false,
     isUnique: false,
     isReference: false,

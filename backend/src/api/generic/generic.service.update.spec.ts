@@ -80,7 +80,6 @@ describe('GenericService update workflows', () => {
         createTemplateField({
           name: 'handle',
           type: 'number',
-          isPrimaryKey: true,
           isAutoIncrement: true,
         }),
         createTemplateField({ name: 'title' }),
@@ -322,7 +321,6 @@ describe('GenericService update workflows', () => {
                 isReference: true,
                 kind: 'm:n',
                 referenceName: 'role',
-                referencedPks: ['handle'],
               }),
             ];
           default:

@@ -412,11 +412,9 @@ function getItemIdentity(item?: Record<string, unknown>) {
     return ''
   }
 
-  for (const key of ['handle']) {
-    const value = item[key]
-    if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
-      return `${key}:${String(value)}`
-    }
+  const handle = item.handle
+  if (typeof handle === 'string' || typeof handle === 'number') {
+    return `handle:${String(handle)}`
   }
 
   return JSON.stringify(item)

@@ -84,7 +84,6 @@ const entityStates = reactive<Record<string, ReturnType<typeof createEntityState
       type: 'string',
       kind: 'm:1',
       referenceName: 'ticketStatus',
-      referencedPks: ['handle'],
     }),
     createTemplate({
       name: 'amount',
@@ -121,7 +120,6 @@ const entityStates = reactive<Record<string, ReturnType<typeof createEntityState
       type: 'string',
       kind: 'm:1',
       referenceName: 'ticketStatus',
-      referencedPks: ['handle'],
       options: ['isChip'],
     }),
     createTemplate({
@@ -133,7 +131,6 @@ const entityStates = reactive<Record<string, ReturnType<typeof createEntityState
       type: 'string',
       kind: 'm:1',
       referenceName: 'person',
-      referencedPks: ['handle'],
     }),
   ]),
   chipRecord: createEntityState([
@@ -142,7 +139,6 @@ const entityStates = reactive<Record<string, ReturnType<typeof createEntityState
       type: 'string',
       kind: 'm:1',
       referenceName: 'chipStatus',
-      referencedPks: ['handle'],
       options: ['isChip'],
     }),
   ]),
@@ -169,7 +165,6 @@ const entityStates = reactive<Record<string, ReturnType<typeof createEntityState
       type: 'string',
       kind: 'm:1',
       referenceName: 'company',
-      referencedPks: ['handle'],
     }),
     createTemplate({
       name: 'startDate',
@@ -196,7 +191,6 @@ const entityStates = reactive<Record<string, ReturnType<typeof createEntityState
       kind: 'm:1',
       isReference: true,
       referenceName: 'person',
-      referencedPks: ['handle'],
     }),
   ]),
   person: createEntityState([
@@ -216,7 +210,6 @@ const entityStates = reactive<Record<string, ReturnType<typeof createEntityState
       kind: 'm:1',
       isReference: true,
       referenceName: 'company',
-      referencedPks: ['handle'],
       options: ['isValue'],
     }),
   ]),
@@ -411,7 +404,6 @@ export function createTemplate(
     tableVisible: overrides.tableVisible ?? true,
     mobileVisible: overrides.mobileVisible ?? false,
     isReference: overrides.isReference ?? false,
-    referencedPks: overrides.referencedPks ?? [],
     referenceName: overrides.referenceName,
     length: undefined,
   } as EntityTemplate

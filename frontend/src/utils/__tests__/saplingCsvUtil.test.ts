@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { buildCsv, buildCsvTemplate, parseCsv } from '@/utils/saplingCsvUtil'
+import {
+  buildCsv,
+  buildCsvTemplate,
+  mapCsvRowsToInternalFields,
+  parseCsv,
+} from '@/utils/saplingCsvUtil'
 import type { EntityTemplate } from '@/entity/structure'
 
 describe('saplingCsvUtil', () => {
@@ -36,6 +41,37 @@ describe('saplingCsvUtil', () => {
     )
 
     expect(csv).toBe('\uFEFFhandle;title\r\n9;Imported later\r\n')
+  })
+
+  it('uses resolved display labels as headers while reading values by internal field name', () => {
+    const csv = buildCsv(
+      [{ handle: 9, title: 'Übersetzter Export' }],
+      [createTemplate({ name: 'title' })],
+      (fieldName) => ({ handle: 'ID', title: 'Bezeichnung' })[fieldName],
+    )
+
+    expect(csv).toBe('\uFEFFID;Bezeichnung\r\n9;Übersetzter Export\r\n')
+  })
+
+  it('maps resolved display labels back to internal field names for CSV imports', () => {
+    const templates = [createTemplate({ name: 'title' }), createTemplate({ name: 'status' })]
+    const rows = mapCsvRowsToInternalFields(
+      [{ Bezeichnung: 'Planung', Status: 'open' }],
+      templates,
+      (fieldName) => ({ handle: 'ID', title: 'Bezeichnung', status: 'Status' })[fieldName],
+    )
+
+    expect(rows).toEqual([{ title: 'Planung', status: 'open' }])
+  })
+
+  it('continues to accept internal field names when display labels are configured', () => {
+    const rows = mapCsvRowsToInternalFields(
+      [{ handle: '9', title: 'Existing format' }],
+      [createTemplate({ name: 'title' })],
+      (fieldName) => ({ handle: 'ID', title: 'Bezeichnung' })[fieldName],
+    )
+
+    expect(rows).toEqual([{ handle: '9', title: 'Existing format' }])
   })
 
   it('parses semicolon CSV rows with quoted cells', () => {

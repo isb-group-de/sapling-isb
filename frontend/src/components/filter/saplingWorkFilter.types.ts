@@ -12,7 +12,6 @@ export interface SaplingChipFilterGroup {
   key: string
   fieldName: string
   referenceName: string
-  identifierKey: string
   label: string
   options: SaplingChipFilterOption[]
 }

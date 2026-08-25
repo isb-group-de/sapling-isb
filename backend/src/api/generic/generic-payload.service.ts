@@ -43,7 +43,7 @@ export class GenericPayloadService {
       removeAutoIncrement: true,
     });
 
-    this.assertRequiredPrimaryKeys(template, preparedPayload);
+    this.assertRequiredHandle(template, preparedPayload);
     return preparedPayload;
   }
 
@@ -115,37 +115,34 @@ export class GenericPayloadService {
     );
   }
 
-  private assertRequiredPrimaryKeys(
+  private assertRequiredHandle(
     template: EntityTemplateDto[],
     data: Record<string, unknown>,
   ): void {
-    const missingPrimaryKeys = template
-      .filter(
-        (field) =>
-          field.isPrimaryKey === true &&
-          field.isAutoIncrement !== true &&
-          field.default == null &&
-          field.defaultRaw == null,
-      )
-      .filter((field) => {
-        const value = data[field.name];
-        return (
-          value === null ||
-          value === undefined ||
-          (typeof value === 'string' && value.trim().length === 0)
-        );
-      })
-      .map((field) => field.name);
+    const handleField = template.find((field) => field.name === 'handle');
+    if (
+      !handleField ||
+      handleField.isAutoIncrement === true ||
+      handleField.default != null ||
+      handleField.defaultRaw != null
+    ) {
+      return;
+    }
 
-    if (missingPrimaryKeys.length === 0) {
+    const handle = data.handle;
+    if (
+      handle !== null &&
+      handle !== undefined &&
+      (typeof handle !== 'string' || handle.trim().length > 0)
+    ) {
       return;
     }
 
     throw new BadRequestException({
       message: 'global.requiredFieldsMissing',
-      error: `Missing required primary key field(s): ${missingPrimaryKeys.join(', ')}`,
+      error: 'Missing required handle field.',
       details: {
-        fields: missingPrimaryKeys,
+        fields: ['handle'],
       },
     });
   }

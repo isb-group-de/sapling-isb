@@ -102,7 +102,7 @@ export class ImportUniqueConflictService {
     return Boolean(
       field.name &&
       field.isUnique &&
-      !field.isPrimaryKey &&
+      field.name !== 'handle' &&
       !field.isReference &&
       !field.customField &&
       !field.name.startsWith('customFields.') &&

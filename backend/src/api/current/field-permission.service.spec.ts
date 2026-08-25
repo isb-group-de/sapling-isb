@@ -53,7 +53,7 @@ const user = (
 
 describe('FieldPermissionService', () => {
   const templates = [
-    field('handle', [], { isPrimaryKey: true }),
+    field('handle'),
     field('title'),
     field('secret'),
     field('creatorCompany', ['isCompany'], {

@@ -5,7 +5,12 @@ import type { SaplingGenericItem } from '@/entity/entity'
 import ApiGenericService, { type FilterQuery } from '@/services/api.generic.service'
 import { useSaplingMessageCenter } from '@/composables/system/useSaplingMessageCenter'
 import { buildTableFilter, buildTableOrderBy } from '@/utils/saplingTableUtil'
-import { buildCsv, buildCsvTemplate, parseCsv } from '@/utils/saplingCsvUtil'
+import {
+  buildCsv,
+  buildCsvTemplate,
+  mapCsvRowsToInternalFields,
+  parseCsv,
+} from '@/utils/saplingCsvUtil'
 import {
   downloadJSONFile,
   downloadTextFile,
@@ -39,6 +44,9 @@ export function useSaplingTableTransferActions({
   const { pushMessage } = useSaplingMessageCenter()
   const isDownloadingJSON = ref(false)
   const isImportingCSV = ref(false)
+
+  const resolveCsvHeader = (fieldName: string, template?: EntityTemplate) =>
+    template?.formConfig?.label?.trim() || t(`${props.entityHandle}.${fieldName}`)
 
   function getActiveFilter() {
     return (
@@ -85,7 +93,7 @@ export function useSaplingTableTransferActions({
     }
 
     downloadTextFile(
-      buildCsvTemplate(props.entityTemplates),
+      buildCsvTemplate(props.entityTemplates, resolveCsvHeader),
       `${props.entityHandle}-template.csv`,
       'text/csv;charset=utf-8',
     )
@@ -111,7 +119,7 @@ export function useSaplingTableTransferActions({
       })
 
       downloadTextFile(
-        buildCsv(items, props.entityTemplates),
+        buildCsv(items, props.entityTemplates, resolveCsvHeader),
         `${props.entityHandle}.csv`,
         'text/csv;charset=utf-8',
       )
@@ -145,7 +153,11 @@ export function useSaplingTableTransferActions({
 
     try {
       isImportingCSV.value = true
-      const rows = parseCsv(await file.text())
+      const rows = mapCsvRowsToInternalFields(
+        parseCsv(await file.text()),
+        props.entityTemplates,
+        resolveCsvHeader,
+      )
       const result = await ApiGenericService.importRows(props.entityHandle, rows)
 
       reload()

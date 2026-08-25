@@ -14,7 +14,6 @@ function createSubject() {
     {
       name: 'handle',
       type: 'number',
-      isPrimaryKey: true,
       isAutoIncrement: true,
     },
     { name: 'title', type: 'string' },

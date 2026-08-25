@@ -11,7 +11,6 @@ describe('saplingMailRecipientOptions', () => {
   const templates = [
     {
       name: 'handle',
-      isPrimaryKey: true,
       options: [],
     },
     {
@@ -61,7 +60,6 @@ describe('saplingMailRecipientOptions', () => {
     const companyTemplates = [
       {
         name: 'handle',
-        isPrimaryKey: true,
         options: ['isCompany'],
       },
     ] as EntityTemplate[]

@@ -380,7 +380,6 @@ describe('useSaplingTable initialization and loading', () => {
         tableVisible: false,
         mobileVisible: false,
         isReference: false,
-        referencedPks: [],
       } as EntityTemplate,
     ])
     listFormConfigsMock.mockResolvedValue([
@@ -435,7 +434,6 @@ describe('useSaplingTable initialization and loading', () => {
         kind: 'm:1',
         isReference: true,
         referenceName: 'projectionPerson',
-        referencedPks: ['handle'],
         tableVisible: false,
       }),
       createTemplate({
@@ -456,7 +454,6 @@ describe('useSaplingTable initialization and loading', () => {
         kind: 'm:1',
         isReference: true,
         referenceName: 'ticketStatus',
-        referencedPks: ['handle'],
       }),
     ]
 

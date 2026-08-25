@@ -76,13 +76,7 @@ export class GenericReferenceService {
             case '1:1':
               if (value !== null) {
                 if (this.isPlainRecord(value)) {
-                  if (field.referencedPks.length === 1) {
-                    (data as Record<string, unknown>)[field.name] =
-                      this.getReferencedValue(value, field.referencedPks[0]);
-                  } else {
-                    (data as Record<string, unknown>)[field.name] =
-                      this.getReferencedValues(value, field.referencedPks);
-                  }
+                  (data as Record<string, unknown>)[field.name] = value.handle;
                 }
               }
               // An explicit null is a meaningful update for nullable owning
@@ -92,24 +86,12 @@ export class GenericReferenceService {
             case '1:m':
             case 'm:n':
             case 'n:m':
-              if (
-                this.isReferenceHandleArray(value) &&
-                (value.length === 0 || field.referencedPks.length === 1)
-              ) {
+              if (this.isReferenceHandleArray(value)) {
                 isHandled = true;
               } else if (this.isRecordArray(value)) {
-                const arr = value;
-                if (field.referencedPks.length === 1) {
-                  (data as Record<string, unknown>)[field.name] = arr.map(
-                    (entry) =>
-                      this.getReferencedValue(entry, field.referencedPks[0]),
-                  );
-                } else {
-                  (data as Record<string, unknown>)[field.name] = arr.map(
-                    (entry) =>
-                      this.getReferencedValues(entry, field.referencedPks),
-                  );
-                }
+                (data as Record<string, unknown>)[field.name] = value.map(
+                  (entry) => entry.handle,
+                );
                 isHandled = true;
               }
               break;
@@ -348,19 +330,5 @@ export class GenericReferenceService {
         (entry) => typeof entry === 'string' || typeof entry === 'number',
       )
     );
-  }
-
-  private getReferencedValue(
-    value: Record<string, unknown>,
-    referencedPk: string,
-  ): unknown {
-    return value[referencedPk];
-  }
-
-  private getReferencedValues(
-    value: Record<string, unknown>,
-    referencedPks: string[],
-  ): unknown[] {
-    return referencedPks.map((referencedPk) => value[referencedPk]);
   }
 }

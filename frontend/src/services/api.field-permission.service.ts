@@ -8,7 +8,7 @@ export interface FieldPermissionCatalogField {
   type: string
   formGroup?: string | null
   options: string[]
-  isPrimaryKey: boolean
+  isHandle: boolean
   isRequired: boolean
   isReference: boolean
   customField?: Record<string, unknown> | null

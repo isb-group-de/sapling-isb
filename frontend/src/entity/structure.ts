@@ -196,8 +196,6 @@ export interface EntityTemplate {
   default?: string | number | boolean | null | Record<string, unknown>
   /** Default value (can be string, number, boolean, null, or object) */
   defaultRaw?: string | number | boolean | null | Record<string, unknown>
-  /** Whether this property is a primary key */
-  isPrimaryKey?: boolean
   /** Whether this property is auto-incremented */
   isAutoIncrement?: boolean
   /** Kind of property (e.g., relation type) */
@@ -216,8 +214,6 @@ export interface EntityTemplate {
   isRequired?: boolean
   /** Whether this property is nullable */
   nullable?: boolean
-  /** Referenced primary keys for the property, if any */
-  referencedPks?: string[]
   /** Whether this property is persistent */
   isPersistent?: boolean
   /** Additional options defined via Sapling decorators on the property */

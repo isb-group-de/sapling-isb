@@ -178,7 +178,7 @@ export function useSaplingDialogEditForm(options: UseSaplingDialogEditFormOption
     currentCompany: SaplingGenericItem | null,
   ): void {
     const itemValue = options.item.value?.[template.name]
-    const normalizedItemValue = normalizeReferenceFormValue(itemValue, template)
+    const normalizedItemValue = normalizeReferenceFormValue(itemValue)
 
     if (normalizedItemValue != null) {
       options.form.value[template.name] = normalizedItemValue
@@ -186,10 +186,7 @@ export function useSaplingDialogEditForm(options: UseSaplingDialogEditFormOption
     }
 
     if (options.mode.value === 'create') {
-      const normalizedDefaultValue = normalizeReferenceFormValue(
-        getTemplateDefaultValue(template),
-        template,
-      )
+      const normalizedDefaultValue = normalizeReferenceFormValue(getTemplateDefaultValue(template))
 
       if (normalizedDefaultValue != null) {
         options.form.value[template.name] = normalizedDefaultValue
@@ -223,7 +220,6 @@ export function useSaplingDialogEditForm(options: UseSaplingDialogEditFormOption
 
   function normalizeReferenceFormValue(
     value: unknown,
-    template: EntityTemplate,
   ): SaplingGenericItem | SaplingGenericItem[] | null {
     if (value === null || value === undefined || value === '') {
       return null
@@ -231,19 +227,16 @@ export function useSaplingDialogEditForm(options: UseSaplingDialogEditFormOption
 
     if (Array.isArray(value)) {
       const normalizedValues = value
-        .map((entry) => normalizeSingleReferenceFormValue(entry, template))
+        .map((entry) => normalizeSingleReferenceFormValue(entry))
         .filter((entry): entry is SaplingGenericItem => entry != null)
 
       return normalizedValues.length > 0 ? normalizedValues : null
     }
 
-    return normalizeSingleReferenceFormValue(value, template)
+    return normalizeSingleReferenceFormValue(value)
   }
 
-  function normalizeSingleReferenceFormValue(
-    value: unknown,
-    template: EntityTemplate,
-  ): SaplingGenericItem | null {
+  function normalizeSingleReferenceFormValue(value: unknown): SaplingGenericItem | null {
     if (value && typeof value === 'object') {
       return value as SaplingGenericItem
     }
@@ -252,8 +245,7 @@ export function useSaplingDialogEditForm(options: UseSaplingDialogEditFormOption
       return null
     }
 
-    const primaryKey = template.referencedPks?.length === 1 ? template.referencedPks[0] : 'handle'
-    return primaryKey ? { [primaryKey]: value } : null
+    return { handle: value }
   }
 
   function syncParentReferences(): void {
@@ -356,10 +348,7 @@ export function useSaplingDialogEditForm(options: UseSaplingDialogEditFormOption
     writableTemplates
       .filter((template) => template.kind === 'm:1')
       .forEach((template) => {
-        output[template.name] = normalizeSingleReferenceValue(
-          options.form.value[template.name],
-          template,
-        )
+        output[template.name] = normalizeSingleReferenceValue(options.form.value[template.name])
       })
 
     if (options.mode.value === 'create') {
@@ -368,7 +357,6 @@ export function useSaplingDialogEditForm(options: UseSaplingDialogEditFormOption
         .forEach((template) => {
           output[template.name] = normalizeCollectionReferenceValue(
             options.form.value[template.name],
-            template,
           )
         })
     }
@@ -403,7 +391,7 @@ export function useSaplingDialogEditForm(options: UseSaplingDialogEditFormOption
       return template.fieldAccess?.allowInsert !== false
     }
     if (options.mode.value === 'edit') {
-      return template.isPrimaryKey !== true && template.fieldAccess?.allowUpdate !== false
+      return template.name !== 'handle' && template.fieldAccess?.allowUpdate !== false
     }
     return false
   }
@@ -425,30 +413,16 @@ export function useSaplingDialogEditForm(options: UseSaplingDialogEditFormOption
     }
   }
 
-  function normalizeSingleReferenceValue(value: unknown, template: EntityTemplate): unknown {
+  function normalizeSingleReferenceValue(value: unknown): unknown {
     if (!value || typeof value !== 'object') {
       return value ?? null
     }
 
-    const valueObject = value as Record<string, unknown>
-    const pkValues =
-      template.referencedPks
-        ?.map((primaryKey) => valueObject[primaryKey])
-        .filter((entry) => entry !== undefined && entry !== null) ?? []
-
-    if (pkValues.length === 1) {
-      return pkValues[0]
-    }
-
-    if (pkValues.length > 1) {
-      return pkValues
-    }
-
-    return null
+    return (value as Record<string, unknown>).handle ?? null
   }
 
-  function normalizeCollectionReferenceValue(value: unknown, template: EntityTemplate): unknown {
-    if (!Array.isArray(value) || !template.referencedPks) {
+  function normalizeCollectionReferenceValue(value: unknown): unknown {
+    if (!Array.isArray(value)) {
       return value ?? null
     }
 
@@ -462,9 +436,8 @@ export function useSaplingDialogEditForm(options: UseSaplingDialogEditFormOption
           return []
         }
 
-        return template
-          .referencedPks!.map((primaryKey) => (entry as Record<string, unknown>)[primaryKey])
-          .filter((primaryKeyValue) => primaryKeyValue !== undefined && primaryKeyValue !== null)
+        const handle = (entry as Record<string, unknown>).handle
+        return handle === undefined || handle === null ? [] : [handle]
       })
       .filter((entry) => entry.length > 0)
       .flat()

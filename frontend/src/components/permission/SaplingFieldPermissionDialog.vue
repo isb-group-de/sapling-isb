@@ -76,7 +76,7 @@
                     <td>
                       <span class="font-weight-medium">{{ fieldLabel(field.name) }}</span>
                       <v-chip
-                        v-if="field.isPrimaryKey || field.isRequired"
+                        v-if="field.isHandle || field.isRequired"
                         class="sapling-field-required-marker"
                         color="error"
                         size="x-small"
@@ -274,7 +274,7 @@ function groupLabel(groupName: string) {
 function hasRiskyRestriction(field: FieldPermissionCatalog['fields'][number]) {
   const access = draft[field.name]
   return (
-    (field.isPrimaryKey ||
+    (field.isHandle ||
       field.isRequired ||
       field.isReference ||
       field.options.includes('isValue')) &&

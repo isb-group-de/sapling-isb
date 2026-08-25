@@ -184,7 +184,6 @@ function createChipFilter(): SaplingChipFilterGroup {
     key: 'status',
     fieldName: 'status',
     referenceName: 'ticketStatus',
-    identifierKey: 'handle',
     label: 'Status',
     options: [
       { handle: 'closed', label: 'Geschlossen' },
@@ -206,7 +205,6 @@ function createPartnerTemplate(name: string): EntityTemplate {
     isAutoIncrement: false,
     isPersistent: true,
     isReference: true,
-    referencedPks: ['handle'],
     referenceName: 'person',
   } as EntityTemplate
 }
@@ -222,7 +220,6 @@ function createPriorityTemplate(): EntityTemplate {
     isAutoIncrement: false,
     isPersistent: true,
     isReference: true,
-    referencedPks: ['handle'],
     referenceName: 'ticketPriority',
   } as EntityTemplate
 }
@@ -232,7 +229,6 @@ function createPriorityChipFilter(): SaplingChipFilterGroup {
     key: 'priority',
     fieldName: 'priority',
     referenceName: 'ticketPriority',
-    identifierKey: 'handle',
     label: 'Priority',
     options: [
       { handle: 'low', label: 'Low' },

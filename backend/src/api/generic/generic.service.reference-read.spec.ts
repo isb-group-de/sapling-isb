@@ -30,7 +30,6 @@ describe('GenericService reference reads', () => {
                 isReference: true,
                 kind: 'm:1',
                 referenceName: 'aiProviderModel',
-                referencedPks: ['handle'],
               }),
             ];
           case 'aiProviderModel':
@@ -115,14 +114,12 @@ describe('GenericService reference reads', () => {
                 isReference: true,
                 kind: '1:1',
                 referenceName: 'personSession',
-                referencedPks: ['handle'],
               }),
               createTemplateField({
                 name: 'roles',
                 isReference: true,
                 kind: 'm:n',
                 referenceName: 'role',
-                referencedPks: ['handle'],
               }),
             ];
           case 'personSession':
@@ -142,7 +139,6 @@ describe('GenericService reference reads', () => {
                 isReference: true,
                 kind: '1:1',
                 referenceName: 'person',
-                referencedPks: ['handle'],
               }),
             ];
           case 'role':

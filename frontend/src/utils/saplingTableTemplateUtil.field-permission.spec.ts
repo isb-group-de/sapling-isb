@@ -30,7 +30,7 @@ describe('sapling table template field access', () => {
     const hiddenHandle = template(
       'handle',
       { allowRead: false, allowInsert: false, allowUpdate: false },
-      { isPrimaryKey: true },
+      {},
     )
 
     expect(getListProjectionFieldNames([hiddenHandle])).toEqual([])

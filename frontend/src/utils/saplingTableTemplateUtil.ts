@@ -95,7 +95,7 @@ function isListProjectionCandidate(
 ): boolean {
   return (
     template.fieldAccess?.allowRead !== false &&
-    (template.isPrimaryKey === true ||
+    (template.name === 'handle' ||
       (isSupportedTableTemplate(template, permissions) &&
         (getTemplateConfiguredBoolean(template, 'tableVisible') === true ||
           getTemplateConfiguredBoolean(template, 'mobileVisible') === true ||
@@ -403,7 +403,7 @@ export function getEditDialogHeaders(
   permissions: AccumulatedPermission[] = [],
 ) {
   const visibleTemplates = entityTemplates.filter((template) => {
-    const isManualPrimaryKey = template.isPrimaryKey === true && template.isAutoIncrement !== true
+    const isManualPrimaryKey = template.name === 'handle' && template.isAutoIncrement !== true
 
     return (
       (mode === 'create'

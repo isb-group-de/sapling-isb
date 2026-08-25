@@ -836,13 +836,10 @@ async function buildDefaultOpenChipColumnFilter(
     return null
   }
 
-  const identifierKey = template.referencedPks?.[0] ?? 'handle'
   const relationItems = openItems
-    .map((item) => {
-      const value = item[identifierKey]
-      return typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean'
-        ? { [identifierKey]: value }
-        : null
+    .map((item): SaplingGenericItem | null => {
+      const value = item.handle
+      return typeof value === 'string' || typeof value === 'number' ? { handle: value } : null
     })
     .filter((item): item is SaplingGenericItem => item !== null)
 

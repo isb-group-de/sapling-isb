@@ -17,7 +17,6 @@ const createTemplateField = (
 ): EntityTemplateDto => ({
   name: '',
   type: 'string',
-  isPrimaryKey: false,
   isAutoIncrement: false,
   isUnique: false,
   referenceName: '',
@@ -25,7 +24,6 @@ const createTemplateField = (
   isRequired: false,
   nullable: false,
   isPersistent: true,
-  referencedPks: [],
   options: [],
   formGroup: null,
   formGroupOrder: null,

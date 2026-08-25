@@ -18,7 +18,6 @@ describe('useSaplingDialogEditForm create defaults', () => {
             type: 'EventTypeItem',
             kind: 'm:1',
             isReference: true,
-            referencedPks: ['handle'],
             formConfig: {
               defaultValue: {
                 handle: 'online',
@@ -31,7 +30,6 @@ describe('useSaplingDialogEditForm create defaults', () => {
             type: 'EventStatusItem',
             kind: 'm:1',
             isReference: true,
-            referencedPks: ['handle'],
             default: 'scheduled',
           },
           {
@@ -39,7 +37,6 @@ describe('useSaplingDialogEditForm create defaults', () => {
             type: 'PersonItem',
             kind: 'm:1',
             isReference: true,
-            referencedPks: ['handle'],
             options: ['isCurrentPerson'],
           },
           {
@@ -47,7 +44,6 @@ describe('useSaplingDialogEditForm create defaults', () => {
             type: 'Collection<PersonItem>',
             kind: 'm:n',
             isReference: true,
-            referencedPks: ['handle'],
           },
         ] as EntityTemplate[],
     )

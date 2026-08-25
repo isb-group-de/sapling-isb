@@ -370,7 +370,7 @@ function normalizeImportValueMappings(mappings: ImportValueMapping[]): ImportVal
 }
 
 function getTemplateDefaultValue(field: EntityTemplate): unknown {
-  if (field.name === 'handle' || field.isPrimaryKey || field.isAutoIncrement) {
+  if (field.name === 'handle' || field.isAutoIncrement) {
     return null
   }
 
@@ -419,7 +419,7 @@ function isGeneratedDefaultValue(value: unknown): boolean {
 function isUniqueConflictField(field: EntityTemplate): boolean {
   return Boolean(
     field.isUnique &&
-    !field.isPrimaryKey &&
+    field.name !== 'handle' &&
     !field.isReference &&
     ['string', 'text', 'varchar'].includes(field.type),
   )

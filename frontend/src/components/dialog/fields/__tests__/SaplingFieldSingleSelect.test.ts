@@ -300,7 +300,6 @@ describe('SaplingFieldSingleSelect reference dialog', () => {
         isReference: true,
         kind: 'm:1',
         referenceName: 'country',
-        referencedPks: ['handle'],
         options: ['isValue'],
       },
     ]

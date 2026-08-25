@@ -237,11 +237,16 @@ used when the row itself also has an open/active flag.
 
 `backend/src/api/template/template.service.ts` reads MikroORM metadata and Sapling decorator metadata.
 
+Every Sapling entity must define exactly one primary key named `handle`.
+`TemplateService` validates this invariant. Generic reference metadata never
+exposes an alternate or composite identifier contract; all generic consumers
+address related records through `handle`.
+
 It returns `EntityTemplateDto[]` with:
 
 - field name and type
 - relation kind and reference target
-- primary key/autoincrement flags
+- auto-increment flag
 - nullable/required/default values
 - Sapling options
 - form layout

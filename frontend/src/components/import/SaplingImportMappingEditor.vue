@@ -251,7 +251,7 @@ function updateRelationMappingColumns(targetField: string, value: unknown): void
 function isUniqueConflictField(field: EntityTemplate): boolean {
   return Boolean(
     field.isUnique &&
-    !field.isPrimaryKey &&
+    field.name !== 'handle' &&
     !field.isReference &&
     ['string', 'text', 'varchar'].includes(field.type),
   )

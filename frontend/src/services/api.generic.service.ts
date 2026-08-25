@@ -121,7 +121,6 @@ export interface FindAllOptions extends Omit<FindOptions, 'page' | 'limit'> {
 
 export interface FindByHandlesOptions extends Omit<FindAllOptions, 'filter'> {
   filter?: FilterQuery
-  handleField?: string
 }
 
 interface UpdateOptions {
@@ -265,15 +264,7 @@ class ApiGenericService {
   static async findByHandles<T>(
     entityHandle: string,
     handles: EntityHandleValue[],
-    {
-      filter,
-      orderBy,
-      relations,
-      fields,
-      signal,
-      pageSize,
-      handleField = 'handle',
-    }: FindByHandlesOptions = {},
+    { filter, orderBy, relations, fields, signal, pageSize }: FindByHandlesOptions = {},
   ): Promise<T[]> {
     const normalizedHandles = [...new Set(handles)]
     if (normalizedHandles.length === 0) {
@@ -283,7 +274,7 @@ class ApiGenericService {
     const items: T[] = []
     for (let index = 0; index < normalizedHandles.length; index += GENERIC_API_MAX_PAGE_SIZE) {
       const handleFilter: FilterQuery = {
-        [handleField]: {
+        handle: {
           $in: normalizedHandles.slice(index, index + GENERIC_API_MAX_PAGE_SIZE),
         },
       }

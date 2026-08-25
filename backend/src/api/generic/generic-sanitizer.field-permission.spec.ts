@@ -97,7 +97,7 @@ describe('GenericSanitizerService field permissions', () => {
   it('does not expose handle fallbacks when the identifier is unreadable', () => {
     const templates = {
       ticket: [
-        { name: 'handle', options: [], isPrimaryKey: true },
+        { name: 'handle', options: [] },
         {
           name: 'company',
           options: [],
@@ -106,7 +106,7 @@ describe('GenericSanitizerService field permissions', () => {
         },
       ],
       company: [
-        { name: 'handle', options: [], isPrimaryKey: true },
+        { name: 'handle', options: [] },
         {
           name: 'ticket',
           options: [],

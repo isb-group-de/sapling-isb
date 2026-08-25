@@ -370,7 +370,7 @@ export function buildChipColumnFilterFromSelection(
     operator: 'eq',
     value: '',
     relationItems: handles.map((handle) => ({
-      [filter.identifierKey]: handle,
+      handle,
     })),
   }
 }
@@ -386,7 +386,7 @@ export function getChipSelectionFromColumnFilter(
   }
 
   const relationHandles = columnFilter.relationItems
-    .map((item) => item?.[filter.identifierKey])
+    .map((item) => item?.handle)
     .filter((handle): handle is SaplingFilterHandle => isSaplingFilterHandle(handle))
 
   if (columnFilter.operator === 'nin') {

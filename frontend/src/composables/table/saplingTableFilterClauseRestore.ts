@@ -14,7 +14,7 @@ export function restoreColumnFilterFromClause(
   rawValue: unknown,
 ): Partial<ColumnFilterItem> | null {
   if (isManyToOneTemplate(template)) {
-    const relationFilter = restoreRelationFilter(template, rawValue)
+    const relationFilter = restoreRelationFilter(rawValue)
     if (relationFilter) {
       return relationFilter
     }
@@ -97,12 +97,9 @@ export function restoreColumnFilterFromClause(
   return null
 }
 
-function restoreRelationFilter(
-  template: EntityTemplate,
-  rawValue: unknown,
-): Partial<ColumnFilterItem> | null {
+function restoreRelationFilter(rawValue: unknown): Partial<ColumnFilterItem> | null {
   if (typeof rawValue !== 'object' || rawValue === null) {
-    const relationItem = createRelationFilterItem(template, rawValue)
+    const relationItem = createRelationFilterItem(rawValue)
     return relationItem
       ? {
           operator: 'eq',
@@ -119,7 +116,7 @@ function restoreRelationFilter(
 
   if (Array.isArray(operatorValue.$in)) {
     const relationItems = operatorValue.$in
-      .map((item) => createRelationFilterItem(template, item))
+      .map((item) => createRelationFilterItem(item))
       .filter((item): item is SaplingGenericItem => item !== null)
 
     if (relationItems.length > 0) {
@@ -132,7 +129,7 @@ function restoreRelationFilter(
     return null
   }
 
-  const nestedIdentifierOperator = restoreRelationIdentifierOperatorFilter(template, operatorValue)
+  const nestedIdentifierOperator = restoreRelationIdentifierOperatorFilter(operatorValue)
   if (nestedIdentifierOperator) {
     return nestedIdentifierOperator
   }
@@ -141,11 +138,11 @@ function restoreRelationFilter(
     return null
   }
 
-  if (!isRoundTrippableRelationIdentifier(template, operatorValue)) {
+  if (!isRoundTrippableRelationIdentifier(operatorValue)) {
     return null
   }
 
-  const relationItem = createRelationFilterItem(template, rawValue)
+  const relationItem = createRelationFilterItem(rawValue)
   return relationItem
     ? {
         operator: 'eq',
@@ -225,48 +222,27 @@ function parseLikeOperatorFilter(value: string): Partial<ColumnFilterItem> {
   }
 }
 
-export function createRelationFilterItem(
-  template: EntityTemplate,
-  rawValue: unknown,
-): SaplingGenericItem | null {
-  if (isRoundTrippableRelationIdentifier(template, rawValue)) {
+export function createRelationFilterItem(rawValue: unknown): SaplingGenericItem | null {
+  if (isRoundTrippableRelationIdentifier(rawValue)) {
     return { ...(rawValue as Record<string, unknown>) }
   }
 
-  if (
-    typeof rawValue !== 'string' &&
-    typeof rawValue !== 'number' &&
-    typeof rawValue !== 'boolean'
-  ) {
+  if (typeof rawValue !== 'string' && typeof rawValue !== 'number') {
     return null
   }
 
-  const identifierKey = template.referencedPks?.[0] ?? 'handle'
-  return {
-    [identifierKey]: rawValue,
-  }
+  return { handle: rawValue }
 }
 
 function restoreRelationIdentifierOperatorFilter(
-  template: EntityTemplate,
   operatorValue: Record<string, unknown>,
 ): Partial<ColumnFilterItem> | null {
-  const identifierKeys = template.referencedPks?.length ? template.referencedPks : ['handle', 'id']
-  if (identifierKeys.length !== 1) {
-    return null
-  }
+  const nestedValue = operatorValue.handle
 
-  const identifierKey = identifierKeys[0]
-  const nestedValue = operatorValue[identifierKey]
-
-  if (
-    typeof nestedValue === 'string' ||
-    typeof nestedValue === 'number' ||
-    typeof nestedValue === 'boolean'
-  ) {
+  if (isHandleFilterValue(nestedValue)) {
     return {
       operator: 'eq',
-      relationItems: [{ [identifierKey]: nestedValue }],
+      relationItems: [{ handle: nestedValue }],
     }
   }
 
@@ -280,8 +256,8 @@ function restoreRelationIdentifierOperatorFilter(
     return {
       operator: 'eq',
       relationItems: nestedOperatorValue.$in
-        .filter(isScalarFilterValue)
-        .map((value) => ({ [identifierKey]: value })),
+        .filter(isHandleFilterValue)
+        .map((value) => ({ handle: value })),
     }
   }
 
@@ -289,8 +265,8 @@ function restoreRelationIdentifierOperatorFilter(
     return {
       operator: 'nin',
       relationItems: nestedOperatorValue.$nin
-        .filter(isScalarFilterValue)
-        .map((value) => ({ [identifierKey]: value })),
+        .filter(isHandleFilterValue)
+        .map((value) => ({ handle: value })),
     }
   }
 
@@ -347,7 +323,7 @@ function restoreBetweenFilter(
   return null
 }
 
-function isRoundTrippableRelationIdentifier(template: EntityTemplate, rawValue: unknown) {
+function isRoundTrippableRelationIdentifier(rawValue: unknown) {
   if (typeof rawValue !== 'object' || rawValue === null || Array.isArray(rawValue)) {
     return false
   }
@@ -357,19 +333,11 @@ function isRoundTrippableRelationIdentifier(template: EntityTemplate, rawValue: 
     return false
   }
 
-  const identifierKeys = template.referencedPks?.length
-    ? template.referencedPks
-    : ['handle', 'id'].filter((key) => key in identifier)
-
-  if (identifierKeys.length === 0) {
-    return false
-  }
-
-  return identifierKeys.every((key) => isScalarFilterValue(identifier[key]))
+  return Object.keys(identifier).length === 1 && isHandleFilterValue(identifier.handle)
 }
 
-function isScalarFilterValue(value: unknown): value is string | number | boolean {
-  return typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean'
+function isHandleFilterValue(value: unknown): value is string | number {
+  return typeof value === 'string' || typeof value === 'number'
 }
 
 export function normalizeRestoredColumnFilter(

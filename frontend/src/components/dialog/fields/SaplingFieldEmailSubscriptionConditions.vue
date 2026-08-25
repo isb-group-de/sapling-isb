@@ -483,10 +483,7 @@ async function ensureValueOptions(fieldName: string): Promise<void> {
 }
 
 function isConditionFieldTemplate(template: EntityTemplate): boolean {
-  if (
-    (template.isPersistent === false && !template.customField) ||
-    template.isPrimaryKey === true
-  ) {
+  if ((template.isPersistent === false && !template.customField) || template.name === 'handle') {
     return false
   }
 

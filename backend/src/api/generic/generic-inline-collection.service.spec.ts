@@ -8,7 +8,6 @@ function inlineField(
   return {
     name: 'items',
     type: 'object',
-    isPrimaryKey: false,
     isAutoIncrement: false,
     isUnique: false,
     referenceName: 'ticketLine',
@@ -16,7 +15,6 @@ function inlineField(
     isRequired: false,
     nullable: true,
     isPersistent: true,
-    referencedPks: ['handle'],
     options: [],
     kind: '1:m',
     mappedBy: 'ticket',

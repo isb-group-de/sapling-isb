@@ -26,7 +26,11 @@ describe('GenericService create delete and import workflows', () => {
     };
     const templateService = {
       getEntityTemplate: jest.fn(() => [
-        createTemplateField({ name: 'handle', type: 'number' }),
+        createTemplateField({
+          name: 'handle',
+          type: 'number',
+          isAutoIncrement: true,
+        }),
         createTemplateField({ name: 'title', type: 'string' }),
       ]),
     };
@@ -91,7 +95,11 @@ describe('GenericService create delete and import workflows', () => {
     };
     const templateService = {
       getEntityTemplate: jest.fn(() => [
-        createTemplateField({ name: 'handle', type: 'number' }),
+        createTemplateField({
+          name: 'handle',
+          type: 'number',
+          isAutoIncrement: true,
+        }),
         createTemplateField({ name: 'title', type: 'string' }),
       ]),
     };
@@ -204,7 +212,6 @@ describe('GenericService create delete and import workflows', () => {
           isReference: true,
           kind: 'm:n',
           referenceName: 'role',
-          referencedPks: ['handle'],
         }),
       ]),
     };

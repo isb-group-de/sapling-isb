@@ -232,11 +232,9 @@ function createTemplate(
     isReference: overrides.isReference ?? false,
     isPersistent: true,
     isAutoIncrement: false,
-    isPrimaryKey: false,
     isRequired: false,
     isUnique: false,
     nullable: true,
-    referencedPks: ['handle'],
     options: overrides.options ?? [],
   } as EntityTemplate
 }

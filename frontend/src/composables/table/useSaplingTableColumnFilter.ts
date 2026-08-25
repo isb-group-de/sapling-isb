@@ -115,26 +115,12 @@ export function useSaplingTableColumnFilter(
   const relationItems = computed(() => activeFilter.value.relationItems ?? [])
   const relationDisplayItems = computed(() =>
     relationItems.value.map((item) => {
-      const relationLookupKey = getRelationLookupKey(item, referenceIdentifierKeys.value)
+      const relationLookupKey = getRelationLookupKey(item)
       return relationLookupKey != null
         ? (resolvedRelationItems.value[relationLookupKey] ?? item)
         : item
     }),
   )
-  const referenceIdentifierKeys = computed(() => {
-    if (normalizedColumn.value.referencedPks?.length) {
-      return normalizedColumn.value.referencedPks
-    }
-
-    const availableIdentifierKeys = ['handle', 'id'].filter((key) =>
-      relationItems.value.some((item) => {
-        const value = item?.[key]
-        return typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean'
-      }),
-    )
-
-    return availableIdentifierKeys.length ? availableIdentifierKeys : ['handle']
-  })
   const referenceEntityHandle = computed(() => normalizedColumn.value.referenceName ?? '')
   const referenceTemplates = computed(() => {
     if (!referenceEntityHandle.value) {
@@ -471,7 +457,7 @@ export function useSaplingTableColumnFilter(
   }
 
   function getRelationItemSummary(item: SaplingGenericItem) {
-    const relationLookupKey = getRelationLookupKey(item, referenceIdentifierKeys.value)
+    const relationLookupKey = getRelationLookupKey(item)
     const resolvedRelationItem =
       relationLookupKey != null ? resolvedRelationItems.value[relationLookupKey] : undefined
 
@@ -479,11 +465,7 @@ export function useSaplingTableColumnFilter(
       return getEntityValueLabel(resolvedRelationItem, referenceTemplates.value)
     }
 
-    const translatedIdentifier = getTranslatedRelationIdentifier(
-      item,
-      referenceIdentifierKeys.value,
-      t,
-    )
+    const translatedIdentifier = getTranslatedRelationIdentifier(item, t)
     if (translatedIdentifier) {
       return translatedIdentifier
     }
@@ -499,7 +481,7 @@ export function useSaplingTableColumnFilter(
     }
 
     const itemsToResolve = relationItems.value.filter((item) =>
-      shouldResolveRelationItem(item, referenceIdentifierKeys.value, referenceTemplates.value),
+      shouldResolveRelationItem(item, referenceTemplates.value),
     )
 
     if (itemsToResolve.length === 0) {
@@ -507,7 +489,7 @@ export function useSaplingTableColumnFilter(
       return
     }
 
-    const lookupFilter = buildReferenceLookupFilter(itemsToResolve, referenceIdentifierKeys.value)
+    const lookupFilter = buildReferenceLookupFilter(itemsToResolve)
     if (!lookupFilter) {
       resolvedRelationItems.value = {}
       return
@@ -529,7 +511,7 @@ export function useSaplingTableColumnFilter(
 
       const nextResolvedRelationItems: Record<string, SaplingGenericItem> = {}
       result.forEach((item) => {
-        const lookupKey = getRelationLookupKey(item, referenceIdentifierKeys.value)
+        const lookupKey = getRelationLookupKey(item)
         if (lookupKey) {
           nextResolvedRelationItems[lookupKey] = item
         }

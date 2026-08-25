@@ -10,7 +10,6 @@ function createTemplate(
   return {
     name: 'title',
     type: 'string',
-    isPrimaryKey: false,
     isAutoIncrement: false,
     isUnique: false,
     referenceName: '',
@@ -18,7 +17,6 @@ function createTemplate(
     isRequired: false,
     nullable: true,
     isPersistent: true,
-    referencedPks: [],
     options: [],
     formGroup: null,
     formGroupOrder: null,

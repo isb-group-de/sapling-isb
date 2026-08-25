@@ -70,7 +70,6 @@ describe('GenericService timeline workflows', () => {
                 isReference: true,
                 kind: 'm:1',
                 referenceName: 'person',
-                referencedPks: ['handle'],
                 options: ['isPerson'],
               }),
               createTemplateField({
@@ -151,7 +150,6 @@ describe('GenericService timeline workflows', () => {
                 isReference: true,
                 kind: 'm:1',
                 referenceName: 'company',
-                referencedPks: ['handle'],
               }),
             ],
             relationCategory: null,

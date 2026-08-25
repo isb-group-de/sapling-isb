@@ -23,7 +23,6 @@ describe('SaplingMcpService generic reads and criteria', () => {
             createTemplateField({
               name: 'handle',
               type: 'integer',
-              isPrimaryKey: true,
               isAutoIncrement: true,
             }),
             createTemplateField({ name: 'name' }),
@@ -33,7 +32,6 @@ describe('SaplingMcpService generic reads and criteria', () => {
               kind: 'm:1',
               isReference: true,
               referenceName: 'companyIndustry',
-              referencedPks: ['handle'],
             }),
           ];
         }
@@ -42,7 +40,6 @@ describe('SaplingMcpService generic reads and criteria', () => {
           return [
             createTemplateField({
               name: 'handle',
-              isPrimaryKey: true,
             }),
             createTemplateField({ name: 'title', options: ['isValue'] }),
           ];
@@ -157,7 +154,7 @@ describe('SaplingMcpService generic reads and criteria', () => {
       getEntityTemplate: jest.fn((entityHandle: string) => {
         if (entityHandle === 'ticketStatus') {
           return [
-            createTemplateField({ name: 'handle', isPrimaryKey: true }),
+            createTemplateField({ name: 'handle' }),
             createTemplateField({
               name: 'description',
               options: ['isValue', 'isOrderASC'],
@@ -219,7 +216,7 @@ describe('SaplingMcpService generic reads and criteria', () => {
       getEntityTemplate: jest
         .fn()
         .mockReturnValue([
-          createTemplateField({ name: 'handle', isPrimaryKey: true }),
+          createTemplateField({ name: 'handle' }),
           createTemplateField({ name: 'description', options: ['isValue'] }),
         ]),
     };
@@ -271,7 +268,7 @@ describe('SaplingMcpService generic reads and criteria', () => {
 
         if (entityHandle === 'ticketStatus') {
           return [
-            createTemplateField({ name: 'handle', isPrimaryKey: true }),
+            createTemplateField({ name: 'handle' }),
             createTemplateField({ name: 'description', options: ['isValue'] }),
           ];
         }
@@ -331,7 +328,7 @@ describe('SaplingMcpService generic reads and criteria', () => {
 
         if (entityHandle === 'ticketStatus') {
           return [
-            createTemplateField({ name: 'handle', isPrimaryKey: true }),
+            createTemplateField({ name: 'handle' }),
             createTemplateField({ name: 'description', options: ['isValue'] }),
           ];
         }
@@ -377,7 +374,7 @@ describe('SaplingMcpService generic reads and criteria', () => {
       getEntityTemplate: jest
         .fn()
         .mockReturnValue([
-          createTemplateField({ name: 'handle', isPrimaryKey: true }),
+          createTemplateField({ name: 'handle' }),
           createTemplateField({ name: 'firstName', options: ['isValue'] }),
         ]),
     };
@@ -522,7 +519,6 @@ describe('SaplingMcpService generic reads and criteria', () => {
             createTemplateField({
               name: 'handle',
               type: 'number',
-              isPrimaryKey: true,
               isAutoIncrement: true,
             }),
             createTemplateField({ name: 'title', options: ['isValue'] }),
@@ -544,7 +540,6 @@ describe('SaplingMcpService generic reads and criteria', () => {
             createTemplateField({
               name: 'handle',
               type: 'number',
-              isPrimaryKey: true,
               isAutoIncrement: true,
             }),
             createTemplateField({ name: 'title', options: ['isValue'] }),
@@ -556,7 +551,6 @@ describe('SaplingMcpService generic reads and criteria', () => {
             createTemplateField({
               name: 'handle',
               type: 'number',
-              isPrimaryKey: true,
               isAutoIncrement: true,
             }),
             createTemplateField({ name: 'title', options: ['isValue'] }),

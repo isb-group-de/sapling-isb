@@ -42,14 +42,12 @@ describe('TemplateService', () => {
         externalHandle: {
           name: 'externalHandle',
           type: 'string',
-          primary: true,
-          autoincrement: false,
+          nullable: false,
         },
         status: {
           name: 'status',
           type: 'TicketStatusItem',
           kind: 'm:1',
-          referencedPKs: ['handle'],
           nullable: false,
           default: 'open',
         },
@@ -72,7 +70,6 @@ describe('TemplateService', () => {
     expect(second).toHaveLength(4);
     expect(second[1]).toMatchObject({
       name: 'externalHandle',
-      isPrimaryKey: true,
       isAutoIncrement: false,
       isRequired: true,
     });
@@ -91,5 +88,24 @@ describe('TemplateService', () => {
       isRequired: true,
     });
     expect(second).not.toBe(first);
+  });
+
+  it('rejects entities whose only primary key is not handle', () => {
+    const get = jest.fn(() => ({
+      properties: {
+        code: {
+          name: 'code',
+          type: 'string',
+          primary: true,
+        },
+      },
+    }));
+    const service = new TemplateService({
+      getMetadata: jest.fn(() => ({ get })),
+    } as never);
+
+    expect(() => service.getEntityTemplate('ticketStatus')).toThrow(
+      'expected exactly one primary key named "handle"',
+    );
   });
 });

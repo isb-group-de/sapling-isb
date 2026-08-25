@@ -22,7 +22,7 @@ export function getContextCompanyTemplates(templates: EntityTemplate[]): EntityT
     (template) =>
       template.options?.includes('isCompany') === true &&
       template.fieldAccess?.allowRead !== false &&
-      (template.referenceName === 'company' || template.isPrimaryKey === true),
+      (template.referenceName === 'company' || template.name === 'handle'),
   )
 }
 
@@ -34,7 +34,7 @@ export function getContextCompanyHandles(
   const handles = new Map<string, EntityHandleValue>()
 
   for (const template of getContextCompanyTemplates(templates)) {
-    if (template.isPrimaryKey) {
+    if (template.name === 'handle') {
       addCompanyHandles(handles, values?.[template.name] ?? itemHandle)
       continue
     }

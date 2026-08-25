@@ -9,7 +9,6 @@ function field(
   return {
     name,
     type: 'string',
-    isPrimaryKey: false,
     isAutoIncrement: false,
     isUnique: false,
     referenceName: '',
@@ -17,7 +16,6 @@ function field(
     isRequired: false,
     nullable: true,
     isPersistent: true,
-    referencedPks: [],
     options: [],
     formGroup: null,
     formGroupOrder: null,

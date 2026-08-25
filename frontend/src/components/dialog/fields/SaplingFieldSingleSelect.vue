@@ -626,8 +626,7 @@ function hasIncompleteValueData(item: SaplingGenericItem, templates: EntityTempl
       return true
     }
 
-    const identifierKeys = new Set(['handle', 'id', ...(template.referencedPks ?? [])])
-    return !Object.keys(value).some((key) => !identifierKeys.has(key))
+    return Object.keys(value).every((key) => key === 'handle')
   })
 }
 </script>

@@ -244,7 +244,7 @@ export class GenericEntityMutationService {
       );
     data = updatePayload.data;
     const template = this.templateService.getEntityTemplate(entityHandle);
-    data = this.removeMatchingHandleEcho(template, data, handle);
+    data = this.removeMatchingHandleEcho(data, handle);
     const submittedPermissionPayload = { ...data };
     const permissionTemplate =
       await this.fieldPermissions.getTemplates(entityHandle);
@@ -641,15 +641,10 @@ export class GenericEntityMutationService {
    * attempted field change and must not be checked or assigned as one.
    */
   private removeMatchingHandleEcho(
-    template: EntityTemplateDto[],
     data: GenericMutationPayload,
     targetHandle: string | number,
   ): GenericMutationPayload {
-    const handleField = template.find(
-      (field) => field.name === 'handle' && field.isPrimaryKey === true,
-    );
     if (
-      !handleField ||
       !Object.prototype.hasOwnProperty.call(data, 'handle') ||
       data.handle == null ||
       String(data.handle) !== String(targetHandle)

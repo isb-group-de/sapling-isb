@@ -8,7 +8,6 @@ const createTemplateField = (
 ): EntityTemplateDto => ({
   name: '',
   type: 'string',
-  isPrimaryKey: false,
   isAutoIncrement: false,
   isUnique: false,
   referenceName: '',
@@ -16,7 +15,6 @@ const createTemplateField = (
   isRequired: false,
   nullable: false,
   isPersistent: true,
-  referencedPks: [],
   options: [],
   formGroup: null,
   formGroupOrder: null,
@@ -119,7 +117,6 @@ describe('GenericPayloadService', () => {
         [
           createTemplateField({
             name: 'handle',
-            isPrimaryKey: true,
             isAutoIncrement: false,
           }),
         ],
@@ -316,13 +313,11 @@ describe('GenericPayloadService', () => {
           name: 'createdTickets',
           isReference: true,
           kind: '1:m',
-          referencedPks: ['handle'],
         }),
         createTemplateField({
           name: 'roles',
           isReference: true,
           kind: 'm:n',
-          referencedPks: ['handle'],
         }),
       ],
       {

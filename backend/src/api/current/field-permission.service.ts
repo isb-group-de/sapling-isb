@@ -260,7 +260,7 @@ export class FieldPermissionService {
           type: field.type,
           formGroup: field.formGroup,
           options: [...(field.options ?? [])],
-          isPrimaryKey: field.isPrimaryKey,
+          isHandle: field.name === 'handle',
           isRequired: field.isRequired,
           isReference: field.isReference,
           customField: field.customField ?? null,

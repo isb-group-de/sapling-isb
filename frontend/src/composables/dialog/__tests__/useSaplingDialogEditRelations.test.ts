@@ -520,7 +520,6 @@ function createTemplate(
     isAutoIncrement: false,
     isPersistent: true,
     isReference: overrides.isReference ?? false,
-    referencedPks: [],
     length: undefined,
   } as EntityTemplate
 }

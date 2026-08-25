@@ -237,13 +237,7 @@ export class SaplingMcpGenericToolService {
     }
 
     const record = value as Record<string, unknown>;
-    const referencedPks =
-      field.referencedPks.length > 0 ? field.referencedPks : ['handle'];
-
-    return referencedPks.every(
-      (referencedPk) =>
-        this.values.asResultHandle(record[referencedPk]) != null,
-    );
+    return this.values.asResultHandle(record.handle) != null;
   }
 
   private normalizeMutationReferences(
@@ -273,35 +267,13 @@ export class SaplingMcpGenericToolService {
       const referenceTemplate = this.metadata.getEntityTemplate(
         field.referenceName,
       );
-      const referencedPks =
-        field.referencedPks.length > 0
-          ? field.referencedPks
-          : referenceTemplate
-              .filter((referenceField) => referenceField.isPrimaryKey)
-              .map((referenceField) => referenceField.name);
-      const effectivePks =
-        referencedPks.length > 0 ? referencedPks : ['handle'];
-
-      if (effectivePks.length !== 1) {
-        this.assertCompositeReferenceValue(
-          entityHandle,
-          field,
-          value,
-          effectivePks,
-          referenceTemplate,
-        );
-        continue;
-      }
-
-      const referencedPk = effectivePks[0];
       const submittedValue =
         value && typeof value === 'object' && !Array.isArray(value)
-          ? (value as Record<string, unknown>)[referencedPk]
+          ? (value as Record<string, unknown>).handle
           : value;
-      normalizedData[field.name] = this.normalizeReferencePrimaryKeyValue(
+      normalizedData[field.name] = this.normalizeReferenceHandleValue(
         entityHandle,
         field,
-        referencedPk,
         submittedValue,
         referenceTemplate,
       );
@@ -310,42 +282,14 @@ export class SaplingMcpGenericToolService {
     return normalizedData;
   }
 
-  private assertCompositeReferenceValue(
+  private normalizeReferenceHandleValue(
     entityHandle: string,
     field: EntityTemplateDto,
-    value: unknown,
-    referencedPks: string[],
-    referenceTemplate: EntityTemplateDto[],
-  ): void {
-    if (!value || typeof value !== 'object' || Array.isArray(value)) {
-      this.throwReferencePrimaryKeyRequired(
-        entityHandle,
-        field,
-        referencedPks.join(', '),
-      );
-    }
-
-    const record = value as Record<string, unknown>;
-    for (const referencedPk of referencedPks) {
-      this.normalizeReferencePrimaryKeyValue(
-        entityHandle,
-        field,
-        referencedPk,
-        record[referencedPk],
-        referenceTemplate,
-      );
-    }
-  }
-
-  private normalizeReferencePrimaryKeyValue(
-    entityHandle: string,
-    field: EntityTemplateDto,
-    referencedPk: string,
     value: unknown,
     referenceTemplate: EntityTemplateDto[],
   ): string | number {
-    const primaryKeyType = referenceTemplate.find(
-      (referenceField) => referenceField.name === referencedPk,
+    const handleType = referenceTemplate.find(
+      (referenceField) => referenceField.name === 'handle',
     )?.type;
     const numericTypes = new Set([
       'number',
@@ -359,7 +303,7 @@ export class SaplingMcpGenericToolService {
       'bigint',
     ]);
 
-    if (numericTypes.has(String(primaryKeyType).toLowerCase())) {
+    if (numericTypes.has(String(handleType).toLowerCase())) {
       const numericValue =
         typeof value === 'number'
           ? value
@@ -369,7 +313,7 @@ export class SaplingMcpGenericToolService {
       if (Number.isFinite(numericValue)) {
         return numericValue;
       }
-      this.throwReferencePrimaryKeyRequired(entityHandle, field, referencedPk);
+      this.throwReferenceHandleRequired(entityHandle, field);
     }
 
     if (
@@ -379,16 +323,15 @@ export class SaplingMcpGenericToolService {
       return typeof value === 'string' ? value.trim() : value;
     }
 
-    this.throwReferencePrimaryKeyRequired(entityHandle, field, referencedPk);
+    this.throwReferenceHandleRequired(entityHandle, field);
   }
 
-  private throwReferencePrimaryKeyRequired(
+  private throwReferenceHandleRequired(
     entityHandle: string,
     field: EntityTemplateDto,
-    referencedPk: string,
   ): never {
     throw new BadRequestException(
-      `Reference field "${field.name}" on "${entityHandle}" requires the ${field.referenceName}.${referencedPk} primary-key value. Do not send a display label; look up the referenced record with generic_list first.`,
+      `Reference field "${field.name}" on "${entityHandle}" requires the ${field.referenceName}.handle value. Do not send a display label; look up the referenced record with generic_list first.`,
     );
   }
 
@@ -560,21 +503,9 @@ export class SaplingMcpGenericToolService {
         field.referenceName &&
         (field.kind === 'm:1' || field.kind === '1:1')
       ) {
-        const referencedPks =
-          field.referencedPks.length > 0
-            ? field.referencedPks
-            : field.referencePrimaryKeys.map((primaryKey) => primaryKey.name);
-        const effectivePks =
-          referencedPks.length > 0 ? referencedPks : ['handle'];
-
-        if (effectivePks.length !== 1) {
-          continue;
-        }
-
-        const referencedPk = effectivePks[0];
         const submittedValue =
           value && typeof value === 'object' && !Array.isArray(value)
-            ? (value as Record<string, unknown>)[referencedPk]
+            ? (value as Record<string, unknown>).handle
             : value;
 
         if (
@@ -585,17 +516,15 @@ export class SaplingMcpGenericToolService {
           invalidReferences.push({
             fieldName,
             referenceName: field.referenceName,
-            referencedPk,
-            reason: 'referencePrimaryKeyRequired',
+            handleField: 'handle',
+            reason: 'referenceHandleRequired',
           });
           continue;
         }
 
-        const referencedPkType = field.referencePrimaryKeys
-          .find((primaryKey) => primaryKey.name === referencedPk)
-          ?.type.toLowerCase();
+        const referenceHandleType = field.referenceHandleType?.toLowerCase();
         if (
-          referencedPkType &&
+          referenceHandleType &&
           [
             'number',
             'float',
@@ -606,17 +535,17 @@ export class SaplingMcpGenericToolService {
             'integer',
             'smallint',
             'bigint',
-          ].includes(referencedPkType) &&
+          ].includes(referenceHandleType) &&
           (typeof submittedValue === 'boolean' ||
             !Number.isFinite(Number(submittedValue)))
         ) {
           invalidReferences.push({
             fieldName,
             referenceName: field.referenceName,
-            referencedPk,
-            expectedType: referencedPkType,
+            handleField: 'handle',
+            expectedType: referenceHandleType,
             submittedValue,
-            reason: 'referencePrimaryKeyTypeMismatch',
+            reason: 'referenceHandleTypeMismatch',
           });
           continue;
         }
@@ -635,7 +564,7 @@ export class SaplingMcpGenericToolService {
             invalidReferences.push({
               fieldName,
               referenceName: field.referenceName,
-              referencedPk,
+              handleField: 'handle',
               submittedValue,
               reason: 'referenceRecordNotFound',
             });
@@ -644,7 +573,7 @@ export class SaplingMcpGenericToolService {
           invalidReferences.push({
             fieldName,
             referenceName: field.referenceName,
-            referencedPk,
+            handleField: 'handle',
             submittedValue,
             reason: 'referenceCouldNotBeValidated',
           });
