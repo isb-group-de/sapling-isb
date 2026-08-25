@@ -161,6 +161,22 @@ export class TicketController extends ScriptClass {
     const explicitQueueHandle = this.normalizeStringHandle(
       this.extractHandleValue(mergedTicket.supportQueue),
     );
+    const currentQueueHandle = this.normalizeStringHandle(
+      this.extractHandleValue(currentTicket?.supportQueue),
+    );
+    const submittedQueue = Object.hasOwn(data, 'supportQueue');
+    const explicitlyClearsQueue = submittedQueue && data.supportQueue == null;
+    const queueChanged =
+      submittedQueue && explicitQueueHandle !== currentQueueHandle;
+    const supportTeamHandle = this.normalizeStringHandle(
+      this.extractHandleValue(mergedTicket.supportTeam),
+    );
+    const currentSupportTeamHandle = this.normalizeStringHandle(
+      this.extractHandleValue(currentTicket?.supportTeam),
+    );
+    const submittedSupportTeam = Object.hasOwn(data, 'supportTeam');
+    const supportTeamChanged =
+      submittedSupportTeam && supportTeamHandle !== currentSupportTeamHandle;
     const explicitSlaPolicyHandle = this.normalizeStringHandle(
       this.extractHandleValue(mergedTicket.slaPolicy),
     );
@@ -185,33 +201,52 @@ export class TicketController extends ScriptClass {
       mergedTicket.contract = contract.handle;
     }
 
-    const queue =
-      (explicitQueueHandle != null
-        ? await this.findSupportQueueByHandle(explicitQueueHandle)
-        : null) ??
-      contract?.defaultSupportQueue ??
-      null;
+    let queue = explicitlyClearsQueue
+      ? null
+      : ((explicitQueueHandle != null
+          ? await this.findSupportQueueByHandle(explicitQueueHandle)
+          : null) ??
+        contract?.defaultSupportQueue ??
+        null);
 
+    const queueTeamHandle = this.normalizeStringHandle(queue?.team?.handle);
     if (
-      explicitQueueHandle == null &&
-      currentTicket?.supportQueue == null &&
-      contract?.defaultSupportQueue?.handle != null
+      supportTeamChanged &&
+      !queueChanged &&
+      queueTeamHandle != null &&
+      supportTeamHandle !== queueTeamHandle
     ) {
-      data.supportQueue = contract.defaultSupportQueue.handle;
-      mergedTicket.supportQueue = contract.defaultSupportQueue.handle;
+      data.supportQueue = null;
+      mergedTicket.supportQueue = null;
+      queue = null;
     }
 
-    const supportTeamHandle = this.extractHandleValue(mergedTicket.supportTeam);
     if (
+      !explicitlyClearsQueue &&
+      explicitQueueHandle == null &&
+      currentTicket?.supportQueue == null &&
+      queue?.handle != null
+    ) {
+      data.supportQueue = queue.handle;
+      mergedTicket.supportQueue = queue.handle;
+    }
+
+    const resolvedQueueTeamHandle = this.normalizeStringHandle(
+      queue?.team?.handle,
+    );
+    if (
+      resolvedQueueTeamHandle != null &&
+      (supportTeamHandle == null || (queueChanged && !supportTeamChanged))
+    ) {
+      data.supportTeam = resolvedQueueTeamHandle;
+      mergedTicket.supportTeam = resolvedQueueTeamHandle;
+    } else if (
       supportTeamHandle == null &&
       currentTicket?.supportTeam == null &&
-      (queue?.team?.handle != null ||
-        contract?.defaultSupportTeam?.handle != null)
+      contract?.defaultSupportTeam?.handle != null
     ) {
-      data.supportTeam =
-        queue?.team?.handle ?? contract?.defaultSupportTeam?.handle;
-      mergedTicket.supportTeam =
-        queue?.team?.handle ?? contract?.defaultSupportTeam?.handle;
+      data.supportTeam = contract.defaultSupportTeam.handle;
+      mergedTicket.supportTeam = contract.defaultSupportTeam.handle;
     }
 
     const resolvedSlaPolicy =

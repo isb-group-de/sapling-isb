@@ -341,9 +341,15 @@ describe('GithubController', () => {
       description: 'Beim Export ohne Filter erscheint ein 500-Fehler.',
       type: 'bug',
     };
+    const req = { user: createMockUser() };
 
-    await expect(controller.createIssue(payload as never)).resolves.toBe(issue);
-    expect(asMock(githubService.createIssue)).toHaveBeenCalledWith(payload);
+    await expect(
+      controller.createIssue(payload as never, req as never),
+    ).resolves.toBe(issue);
+    expect(asMock(githubService.createIssue)).toHaveBeenCalledWith(
+      payload,
+      req.user,
+    );
   });
 });
 

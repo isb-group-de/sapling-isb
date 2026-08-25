@@ -353,6 +353,118 @@ describe('TicketController', () => {
     );
   });
 
+  it('updates the support team when an existing ticket moves to another queue', async () => {
+    const queue = {
+      handle: 'platform_ops',
+      team: { handle: 'platform' },
+      defaultSlaPolicy: null,
+    };
+    const em = {
+      find: jest.fn<() => Promise<object[]>>().mockResolvedValue([]),
+      findOne: jest.fn<() => Promise<object | null>>().mockResolvedValue(queue),
+    };
+    const controller = new TicketController(
+      { handle: 'ticket' } as never,
+      { handle: 99 } as never,
+      em as never,
+    );
+
+    const result = await controller.beforeUpdate(
+      [{ supportQueue: 'platform_ops' }] as unknown as TicketItem[],
+      {
+        currentItems: [
+          {
+            supportQueue: { handle: 'general_support' },
+            supportTeam: { handle: 'service_desk' },
+          },
+        ],
+      },
+    );
+
+    expect(result.items[0]).toMatchObject({
+      supportQueue: 'platform_ops',
+      supportTeam: 'platform',
+    });
+  });
+
+  it('clears the existing support queue when only its support team changes', async () => {
+    const queue = {
+      handle: 'general_support',
+      team: { handle: 'service_desk' },
+      defaultSlaPolicy: null,
+    };
+    const em = {
+      find: jest.fn<() => Promise<object[]>>().mockResolvedValue([]),
+      findOne: jest.fn<() => Promise<object | null>>().mockResolvedValue(queue),
+    };
+    const controller = new TicketController(
+      { handle: 'ticket' } as never,
+      { handle: 99 } as never,
+      em as never,
+    );
+
+    const result = await controller.beforeUpdate(
+      [{ supportTeam: 'platform' }] as unknown as TicketItem[],
+      {
+        currentItems: [
+          {
+            supportQueue: { handle: 'general_support' },
+            supportTeam: { handle: 'service_desk' },
+          },
+        ],
+      },
+    );
+
+    expect(result.items[0]).toMatchObject({
+      supportQueue: null,
+      supportTeam: 'platform',
+    });
+  });
+
+  it('keeps an explicitly cleared support queue empty despite contract defaults', async () => {
+    const contract = {
+      handle: 17,
+      defaultSupportQueue: {
+        handle: 'general_support',
+        team: { handle: 'service_desk' },
+        defaultSlaPolicy: null,
+      },
+      defaultSupportTeam: { handle: 'service_desk' },
+      slaPolicy: null,
+    };
+    const em = {
+      find: jest.fn<() => Promise<object[]>>().mockResolvedValue([]),
+      findOne: jest
+        .fn<() => Promise<object | null>>()
+        .mockImplementationOnce(() => Promise.resolve(contract)),
+    };
+    const controller = new TicketController(
+      { handle: 'ticket' } as never,
+      { handle: 99 } as never,
+      em as never,
+    );
+
+    const result = await controller.beforeUpdate(
+      [
+        { contract: 17, supportQueue: null, supportTeam: 'platform' },
+      ] as unknown as TicketItem[],
+      {
+        currentItems: [
+          {
+            contract: { handle: 17 },
+            supportQueue: { handle: 'general_support' },
+            supportTeam: { handle: 'service_desk' },
+          },
+        ],
+      },
+    );
+
+    expect(result.items[0]).toMatchObject({
+      supportQueue: null,
+      supportTeam: 'platform',
+    });
+  });
+
   it('keeps an explicitly cleared contract null during an update', async () => {
     const unrelatedDefaultContract = {
       handle: 23,

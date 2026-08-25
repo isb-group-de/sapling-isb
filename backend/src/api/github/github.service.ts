@@ -19,6 +19,7 @@ import {
   GithubReleaseDto,
   GithubRepositoryDto,
 } from './dto/github.dto';
+import { PersonItem } from '../../entity/PersonItem';
 
 type GithubIssueApiResponse = Omit<
   GithubIssueDto,
@@ -233,15 +234,42 @@ export class GithubService {
   }
 
   /**
-   * Builds the GitHub issue body and preserves the chosen type in markdown.
+   * Builds the GitHub issue body and preserves the chosen type and reporter in markdown.
    * @param {CreateGithubIssueDto} issueDto Issue creation payload
+   * @param {PersonItem} reporter Authenticated Sapling user creating the issue
    * @returns {string} Markdown body for GitHub
    */
-  private buildIssueBody(issueDto: CreateGithubIssueDto): string {
+  private buildIssueBody(
+    issueDto: CreateGithubIssueDto,
+    reporter: PersonItem,
+  ): string {
     const typeLabel =
       issueDto.type === GithubIssueType.FEATURE ? 'Feature' : 'Bug';
+    const reporterName =
+      [reporter.firstName?.trim(), reporter.lastName?.trim()]
+        .filter(Boolean)
+        .join(' ') ||
+      reporter.loginName?.trim() ||
+      'Unknown Sapling user';
+    const metadata = [
+      `**Type:** ${typeLabel}`,
+      `**Reported by:** ${this.escapeMarkdownText(reporterName)}`,
+      ...(reporter.loginName?.trim()
+        ? [
+            `**Login:** \`${this.escapeMarkdownCode(reporter.loginName.trim())}\``,
+          ]
+        : []),
+    ];
 
-    return `**Type:** ${typeLabel}\n\n${issueDto.description.trim()}`;
+    return `${metadata.join('\n')}\n\n${issueDto.description.trim()}`;
+  }
+
+  private escapeMarkdownText(value: string): string {
+    return value.replace(/([\\`*_{}[\]()<>#+.!|])/g, '\\$1');
+  }
+
+  private escapeMarkdownCode(value: string): string {
+    return value.replace(/`/g, '\\`');
   }
 
   /**
@@ -371,16 +399,20 @@ export class GithubService {
   /**
    * Creates a new GitHub issue and applies the selected issue type as metadata.
    * @param {CreateGithubIssueDto} issueDto Validated issue creation payload
+   * @param {PersonItem} reporter Authenticated Sapling user creating the issue
    * @returns {Promise<GithubIssueDto>} Newly created GitHub issue
    */
-  async createIssue(issueDto: CreateGithubIssueDto): Promise<GithubIssueDto> {
+  async createIssue(
+    issueDto: CreateGithubIssueDto,
+    reporter: PersonItem,
+  ): Promise<GithubIssueDto> {
     this.assertTokenConfigured();
 
     const { data } = await axios.post<GithubIssueApiResponse>(
       this.buildRepositoryUrl('/issues'),
       {
         title: issueDto.title.trim(),
-        body: this.buildIssueBody(issueDto),
+        body: this.buildIssueBody(issueDto, reporter),
       },
       {
         headers: this.headers,

@@ -45,4 +45,31 @@ describe('messageCenterExport', () => {
     expect(payload.type).toBe('bug')
     expect(JSON.parse(json)).toEqual(createMessageCenterExportPayload([errorMessage], exportedAt))
   })
+
+  it('keeps oversized automatic error reports below the API limit with valid JSON', () => {
+    const oversizedMessage: Message = {
+      ...errorMessage,
+      technical: {
+        request: 'x'.repeat(14_000),
+        response: 'y'.repeat(14_000),
+      },
+    }
+
+    const payload = createErrorIssuePayload(
+      oversizedMessage,
+      'Support Queue is not valid for Support Team',
+      exportedAt,
+    )
+    const json = payload.description.replace(/^```json\n|\n```$/g, '')
+    const parsed = JSON.parse(json) as {
+      truncated: boolean
+      originalDescriptionLength: number
+      messages: Array<{ diagnosticsPreview: string }>
+    }
+
+    expect(payload.description.length).toBeLessThanOrEqual(10_000)
+    expect(parsed.truncated).toBe(true)
+    expect(parsed.originalDescriptionLength).toBeGreaterThan(10_000)
+    expect(parsed.messages[0]?.diagnosticsPreview.length).toBeGreaterThan(0)
+  })
 })

@@ -28,8 +28,10 @@ import { GithubIssueStatus } from './dto/github.dto';
 
 const mockedAxios = axios as unknown as {
   get: jest.Mock<(...args: unknown[]) => Promise<{ data: unknown }>>;
+  post: jest.Mock<(...args: unknown[]) => Promise<{ data: unknown }>>;
 };
 const axiosGet = mockedAxios.get;
+const axiosPost = mockedAxios.post;
 
 describe('GithubService', () => {
   beforeEach(() => {
@@ -144,5 +146,59 @@ describe('GithubService', () => {
       expect.any(Object),
     );
     expect(axiosGet).toHaveBeenCalledTimes(2);
+  });
+
+  it('adds the authenticated Sapling user to a created issue', async () => {
+    axiosPost
+      .mockResolvedValueOnce({
+        data: {
+          id: 7,
+          number: 176,
+          title: 'Support queue fails',
+          html_url: 'https://github.test/owner/repo/issues/176',
+          body: '',
+          updated_at: '2026-08-25T10:00:00Z',
+          created_at: '2026-08-25T10:00:00Z',
+          closed_at: null,
+          state: 'open',
+          labels: [],
+          assignees: [],
+        },
+      })
+      .mockResolvedValueOnce({ data: [{ name: 'bug', color: 'D73A4A' }] });
+    axiosGet.mockResolvedValueOnce({
+      data: { name: 'bug', color: 'D73A4A' },
+    });
+    const service = new GithubService();
+
+    await service.createIssue(
+      {
+        title: 'Support queue fails',
+        description: 'The queue cannot be saved.',
+        type: 'bug' as never,
+      },
+      {
+        handle: 42,
+        firstName: 'Ada',
+        lastName: 'Lovelace',
+        loginName: 'ada.lovelace',
+      } as never,
+    );
+
+    expect(axiosPost).toHaveBeenNthCalledWith(
+      1,
+      'https://api.github.test/repos/owner/repo/issues',
+      {
+        title: 'Support queue fails',
+        body: [
+          '**Type:** Bug',
+          '**Reported by:** Ada Lovelace',
+          '**Login:** `ada.lovelace`',
+          '',
+          'The queue cannot be saved.',
+        ].join('\n'),
+      },
+      expect.objectContaining({ headers: expect.any(Object) }),
+    );
   });
 });

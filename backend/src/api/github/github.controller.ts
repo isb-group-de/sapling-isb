@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
+import type { Request } from 'express';
 import { GithubService } from './github.service';
 import {
   ApiBearerAuth,
@@ -13,6 +22,7 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { SessionOrBearerAuthGuard } from '../../auth/guard/session-or-token-auth.guard';
+import { PersonItem } from '../../entity/PersonItem';
 import {
   CreateGithubIssueDto,
   GithubIssueDto,
@@ -128,13 +138,14 @@ export class GithubController {
   /**
    * Creates a new issue in the configured GitHub repository.
    * @param {CreateGithubIssueDto} issueDto Validated issue payload
+   * @param {Request & { user: PersonItem }} req Authenticated request
    * @returns {Promise<GithubIssueDto>} Newly created issue
    */
   @Post('issues')
   @ApiOperation({
     summary: 'Create a GitHub issue',
     description:
-      'Creates a new issue in the configured GitHub repository and stores the selected issue type as metadata.',
+      'Creates a new issue in the configured GitHub repository and stores the selected issue type and authenticated Sapling user as metadata.',
   })
   @ApiBody({ type: CreateGithubIssueDto })
   @ApiCreatedResponse({
@@ -152,7 +163,10 @@ export class GithubController {
     description:
       'The GitHub integration is misconfigured or issue creation failed internally.',
   })
-  createIssue(@Body() issueDto: CreateGithubIssueDto): Promise<GithubIssueDto> {
-    return this.githubService.createIssue(issueDto);
+  createIssue(
+    @Body() issueDto: CreateGithubIssueDto,
+    @Req() req: Request & { user: PersonItem },
+  ): Promise<GithubIssueDto> {
+    return this.githubService.createIssue(issueDto, req.user);
   }
 }
