@@ -210,6 +210,9 @@ function buildCommand(selectedEngine, environment) {
     "-v",
     `${resultsDirectory}:/results`,
   ];
+  if (process.platform === "linux") {
+    dockerArguments.push("--add-host", "host.docker.internal:host-gateway");
+  }
   for (const variableName of forwardedVariables) {
     dockerArguments.push("-e", variableName);
   }

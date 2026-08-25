@@ -142,6 +142,10 @@ npm run test:performance
 npm run test:performance:smoke
 ```
 
+For the complete standard matrix with token-file validation, use
+`run-performance-test.ps1` on Windows or `run-performance-test.sh` on Linux.
+Both wrappers invoke this same runner and generate the same report files.
+
 This suite is separate from Jest/Vitest because it needs a running Sapling
 backend and database. It uses bearer authentication, is read-only by default,
 and supports explicitly enabled Ticket update modes for disposable test

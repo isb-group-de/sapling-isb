@@ -45,6 +45,30 @@ The simplest entry point from the repository root is:
 .\run-performance-test.ps1 -BackendMode production
 ```
 
+On Ubuntu, use the equivalent Bash wrapper. It validates the same token file,
+passes the same settings to the shared Node/k6 runner, and therefore creates
+the identical report formats:
+
+```bash
+bash ./run-performance-test.sh --backend-mode production
+```
+
+The Bash options use kebab-case, for example:
+
+```bash
+bash ./run-performance-test.sh \
+  --engine docker \
+  --base-url http://localhost:3000/api \
+  --token-file performance-tokens.json \
+  --users 1,5,10,20,50,100 \
+  --iterations-per-user 10
+```
+
+For `--engine docker`, the Ubuntu user must be allowed to run Docker. With
+`--engine native`, install k6 on the host instead. Node.js and npm are required
+in both cases because the matrix and self-contained HTML report are assembled
+by the shared runner.
+
 Use `development` instead when the backend deliberately runs through the
 development command. If the mode is omitted, the report records `unknown`
 rather than guessing from the process that happens to be listening on the API
