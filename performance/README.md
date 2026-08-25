@@ -67,7 +67,9 @@ bash ./run-performance-test.sh \
 For `--engine docker`, the Ubuntu user must be allowed to run Docker. With
 `--engine native`, install k6 on the host instead. Node.js and npm are required
 in both cases because the matrix and self-contained HTML report are assembled
-by the shared runner.
+by the shared runner. On Linux, the Docker container automatically runs with
+the UID and GID of the invoking user so it can write the bind-mounted result
+directory without creating root-owned report files.
 
 Use `development` instead when the backend deliberately runs through the
 development command. If the mode is omitted, the report records `unknown`

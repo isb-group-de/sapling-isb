@@ -211,6 +211,11 @@ function buildCommand(selectedEngine, environment) {
     `${resultsDirectory}:/results`,
   ];
   if (process.platform === "linux") {
+    const userId = process.getuid?.();
+    const groupId = process.getgid?.();
+    if (Number.isInteger(userId) && Number.isInteger(groupId)) {
+      dockerArguments.push("--user", `${userId}:${groupId}`);
+    }
     dockerArguments.push("--add-host", "host.docker.internal:host-gateway");
   }
   for (const variableName of forwardedVariables) {
