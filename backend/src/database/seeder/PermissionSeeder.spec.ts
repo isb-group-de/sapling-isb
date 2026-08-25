@@ -125,4 +125,46 @@ describe('PermissionSeeder', () => {
       });
     },
   );
+
+  it.each([
+    [ROLE_HANDLE.SUPPORT, 'aiProviderType'],
+    [ROLE_HANDLE.SUPPORT, 'aiProviderModel'],
+    [ROLE_HANDLE.SALES, 'aiProviderType'],
+    [ROLE_HANDLE.SALES, 'aiProviderModel'],
+  ])(
+    'grants AI-enabled standard role %s read access to %s without navigation visibility',
+    async (roleHandle, entityHandle) => {
+      const entity = {
+        handle: entityHandle,
+        canRead: true,
+        canInsert: true,
+        canUpdate: true,
+        canDelete: true,
+        canShow: true,
+      } as EntityItem;
+      const role = { handle: roleHandle } as RoleItem;
+      const em = {
+        findAll: jest.fn((entityClass: unknown) => {
+          if (entityClass === EntityItem) return Promise.resolve([entity]);
+          if (entityClass === RoleItem) return Promise.resolve([role]);
+          return Promise.resolve([]);
+        }),
+        assign: jest.fn(),
+        create: jest.fn(),
+        flush: jest.fn(() => Promise.resolve()),
+      };
+
+      await new PermissionSeeder().run(em as unknown as EntityManager);
+
+      expect(em.create).toHaveBeenCalledWith(PermissionItem, {
+        entity,
+        role,
+        allowRead: true,
+        allowInsert: false,
+        allowUpdate: false,
+        allowDelete: false,
+        allowShow: false,
+      });
+    },
+  );
 });

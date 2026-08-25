@@ -12,6 +12,8 @@ import type {
 
 const MARKDOWN_SYNC_DEBOUNCE_MS = 120
 
+let activeMarkdownPreparationAvailabilityRequest: Promise<boolean> | null = null
+
 export function useSaplingMarkdownField(options: {
   modelValue: () => string | undefined
   rows: () => number
@@ -25,6 +27,10 @@ export function useSaplingMarkdownField(options: {
   const editor = ref<MarkdownEditorHandle | null>(null)
   const isEnhancedEditorReady = ref(false)
   const isPreparingWithAi = ref(false)
+  const hasConfiguredAiTarget = ref(false)
+  const canPrepareWithAi = computed(
+    () => hasConfiguredAiTarget.value && Boolean(draftValue.value.trim()),
+  )
   const resolvedLabel = computed(() => options.label() || t('global.markdown'))
   const editorTheme = computed(() => (CookieService.get('theme') === 'dark' ? 'dark' : 'light'))
   const editorHeight = computed(() => `${Math.max(options.rows(), 6) * 24 + 56}px`)
@@ -54,7 +60,7 @@ export function useSaplingMarkdownField(options: {
   }
 
   async function prepareWithAi(content = draftValue.value) {
-    if (!content.trim() || isPreparingWithAi.value) {
+    if (!hasConfiguredAiTarget.value || !content.trim() || isPreparingWithAi.value) {
       return false
     }
 
@@ -110,6 +116,14 @@ export function useSaplingMarkdownField(options: {
   })
 
   onMounted(() => {
+    void loadMarkdownPreparationAvailability()
+      .then((isAvailable) => {
+        hasConfiguredAiTarget.value = isAvailable
+      })
+      .catch(() => {
+        hasConfiguredAiTarget.value = false
+      })
+
     enhanceTimeout = setTimeout(() => {
       enhanceTimeout = null
       isEnhancedEditorReady.value = true
@@ -460,6 +474,7 @@ export function useSaplingMarkdownField(options: {
     editor,
     isEnhancedEditorReady,
     isPreparingWithAi,
+    canPrepareWithAi,
     canTranscribeWithAi: markdownVoiceInput.canTranscribeWithAi,
     isRecordingVoiceInput: markdownVoiceInput.isRecordingVoiceInput,
     isTranscribingVoiceInput: markdownVoiceInput.isTranscribingVoiceInput,
@@ -473,4 +488,27 @@ export function useSaplingMarkdownField(options: {
     toolbarActions,
     insertTextAtCursor,
   }
+}
+
+function loadMarkdownPreparationAvailability() {
+  if (activeMarkdownPreparationAvailabilityRequest) {
+    return activeMarkdownPreparationAvailabilityRequest
+  }
+
+  const request = Promise.all([
+    ApiAiService.listProviders({ suppressErrorMessage: true }),
+    ApiAiService.listModels(undefined, { suppressErrorMessage: true }),
+  ]).then(([providerConfigs, modelConfigs]) => {
+    return providerConfigs.length > 0 && modelConfigs.length > 0
+  })
+
+  activeMarkdownPreparationAvailabilityRequest = request
+  const clearRequest = () => {
+    if (activeMarkdownPreparationAvailabilityRequest === request) {
+      activeMarkdownPreparationAvailabilityRequest = null
+    }
+  }
+  void request.then(clearRequest, clearRequest)
+
+  return request
 }

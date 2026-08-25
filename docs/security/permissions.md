@@ -222,6 +222,12 @@ frontend/src/components/permission/
 
 Frontend checks are for UX only. Backend guards remain authoritative.
 
+The global Songbird button requires read access to `aiChatSession`,
+`aiProviderType`, and `aiProviderModel`. The Support and Sales standard roles
+receive read-only access to the provider and model catalogs without
+`allowShow`, so the button remains available even when no provider is
+configured while the administration tables stay out of navigation.
+
 During user impersonation, the global `ImpersonationReadOnlyGuard` rejects
 non-read HTTP methods by default. A handler that uses `POST` only to perform a
 query can opt in with `@ImpersonationReadOnly()` after verifying that it does

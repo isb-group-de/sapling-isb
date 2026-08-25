@@ -20,7 +20,7 @@
         :can-transcribe-with-ai="canTranscribeWithAi"
         :is-recording-voice-input="isRecordingVoiceInput"
         :is-transcribing-voice-input="isTranscribingVoiceInput"
-        :can-prepare-with-ai="Boolean(draftValue.trim())"
+        :can-prepare-with-ai="canPrepareWithAi"
         @focus="emit('focus')"
         @prepare-with-ai="prepareWithAi"
         @toggle-voice-input="toggleVoiceInput"
@@ -86,6 +86,7 @@ const {
   editor,
   isEnhancedEditorReady,
   isPreparingWithAi,
+  canPrepareWithAi,
   canTranscribeWithAi,
   isRecordingVoiceInput,
   isTranscribingVoiceInput,

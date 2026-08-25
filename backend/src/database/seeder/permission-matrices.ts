@@ -125,6 +125,8 @@ export const salesPermissionsInput: PermissionMatrixInput = {
     'customFieldValue',
     'importBatch',
     'importBatchRow',
+    'aiProviderType',
+    'aiProviderModel',
     'aiAgent',
     'aiChatSession',
     'aiChatMessage',
