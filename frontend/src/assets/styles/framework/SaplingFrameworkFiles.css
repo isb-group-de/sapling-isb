@@ -7,9 +7,12 @@
 }
 
 .sapling-document-title {
+  min-width: 0;
   font-size: 1.1rem;
   font-weight: 600;
-  overflow-wrap: anywhere;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .sapling-document-download-btn {
@@ -22,6 +25,7 @@
 }
 
 .sapling-document-header__copy {
+  flex: 1 1 auto;
   min-width: 0;
 }
 
@@ -33,6 +37,7 @@
 }
 
 .sapling-document-header__text {
+  flex: 1 1 auto;
   min-width: 0;
 }
 
@@ -40,9 +45,12 @@
   margin: 0 0 var(--sapling-gap-xs);
   font-size: var(--sapling-text-label-size-sm);
   opacity: var(--sapling-opacity-muted);
+  white-space: nowrap;
 }
 
-.sapling-document-header__actions {
+.sapling-document-header .sapling-document-header__actions {
+  flex: 0 0 auto;
+  flex-wrap: nowrap;
   gap: var(--sapling-gap-xs);
   width: auto;
 }
@@ -64,7 +72,7 @@
 .sapling-file-mail-summary {
   display: flex;
   flex-direction: column;
-  gap: var(--sapling-gap-md);
+  gap: var(--sapling-gap-sm);
 }
 
 .sapling-file-mail-loading-summary {
@@ -87,7 +95,9 @@
   font-size: 1.05rem;
   font-weight: 600;
   color: rgb(var(--v-theme-on-surface));
-  overflow-wrap: anywhere;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .sapling-file-mail-meta-grid {
@@ -106,7 +116,9 @@
 
 .sapling-file-mail-value {
   min-width: 0;
-  overflow-wrap: anywhere;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   color: rgb(var(--v-theme-on-surface));
 }
 
@@ -118,12 +130,17 @@
 
 .sapling-file-mail-chip-list {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: var(--sapling-gap-xs);
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 1px;
 }
 
 .sapling-file-mail-chip-list .v-chip {
-  max-width: 100%;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: min(18rem, 100%);
 }
 
 .sapling-file-mail-chip-list .v-chip__content {
@@ -176,7 +193,7 @@
     flex-direction: column;
   }
 
-  .sapling-document-header__actions {
+  .sapling-document-header .sapling-document-header__actions {
     width: 100%;
     justify-content: stretch;
   }

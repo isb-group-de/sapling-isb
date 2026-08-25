@@ -2,7 +2,15 @@ import * as path from 'path';
 
 const MIME_TYPE_BY_EXTENSION: Readonly<Record<string, string>> = {
   '.eml': 'message/rfc822',
+  '.jpeg': 'image/jpeg',
+  '.jpg': 'image/jpeg',
+  '.json': 'application/json',
   '.msg': 'application/vnd.ms-outlook',
+  '.mp3': 'audio/mpeg',
+  '.mp4': 'video/mp4',
+  '.pdf': 'application/pdf',
+  '.png': 'image/png',
+  '.webm': 'video/webm',
 };
 
 /**

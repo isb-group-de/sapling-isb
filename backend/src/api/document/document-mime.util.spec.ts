@@ -9,6 +9,9 @@ describe('resolveUploadedDocumentMimeType', () => {
     ['MAIL.EML', 'application/octet-stream', 'message/rfc822'],
     ['outlook.msg', '', 'application/vnd.ms-outlook'],
     ['OUTLOOK.MSG', 'application/octet-stream', 'application/vnd.ms-outlook'],
+    ['report.pdf', '', 'application/pdf'],
+    ['photo.JPG', 'application/octet-stream', 'image/jpeg'],
+    ['data.json', '', 'application/json'],
   ])(
     'normalizes %s independently from the browser MIME type',
     (filename, input, expected) => {

@@ -19,13 +19,15 @@
           <p class="sapling-eyebrow sapling-document-header__eyebrow">
             {{ $t('document.preview') }}
           </p>
-          <h2 class="sapling-section-title sapling-document-title">{{ headerTitle }}</h2>
+          <h2 class="sapling-section-title sapling-document-title" :title="headerTitle">
+            {{ headerTitle }}
+          </h2>
         </div>
       </div>
 
       <div class="sapling-action-cluster sapling-document-header__actions">
         <v-chip
-          v-if="hasSelection"
+          v-if="hasSelection && previewType !== 'mail'"
           class="sapling-document-header__badge"
           size="small"
           variant="tonal"

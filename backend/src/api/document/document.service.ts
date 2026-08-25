@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { DocumentItem } from '../../entity/DocumentItem';
 import * as uuid from 'uuid';
 import * as fs from 'fs';
@@ -11,6 +11,10 @@ import {
   resolveUploadedDocumentFilename,
   resolveUploadedDocumentMimeType,
 } from './document-mime.util';
+import {
+  extractEmlAttachments,
+  extractMsgAttachments,
+} from './document-mail-attachment.util';
 
 /**
  * @class
@@ -25,6 +29,8 @@ import {
  */
 @Injectable()
 export class DocumentService {
+  private readonly logger = new Logger(DocumentService.name);
+
   /**
    * Entity manager for database operations.
    * @type {EntityManager}
@@ -56,28 +62,97 @@ export class DocumentService {
     });
     if (!type) throw new NotFoundException('document.documentTypeNotFound');
 
-    const guid = uuid.v4();
     const storageDir = path.join(__dirname, '../../../storage', entityHandle);
     if (!fs.existsSync(storageDir)) {
       fs.mkdirSync(storageDir, { recursive: true });
     }
-    const filePath = path.join(storageDir, guid);
-    fs.writeFileSync(filePath, file.buffer);
+
+    const document = this.createStoredDocument({
+      buffer: file.buffer,
+      filename: resolveUploadedDocumentFilename(file.originalname),
+      mimetype: resolveUploadedDocumentMimeType(
+        file.originalname,
+        file.mimetype,
+      ),
+      description,
+      reference,
+      entity,
+      type,
+      currentUser,
+      storageDir,
+    });
+    const documents = [document];
+
+    const isEml = document.mimetype === 'message/rfc822';
+    const isMsg = document.mimetype === 'application/vnd.ms-outlook';
+    if (isEml || isMsg) {
+      try {
+        const attachmentType = await this.em.findOne(DocumentTypeItem, {
+          handle: 'document',
+        });
+        if (!attachmentType) {
+          this.logger.warn(
+            `Skipped mail attachment extraction because document type "document" is missing`,
+          );
+        } else {
+          const attachments = isEml
+            ? await extractEmlAttachments(file.buffer)
+            : extractMsgAttachments(file.buffer);
+          documents.push(
+            ...attachments.map((attachment) =>
+              this.createStoredDocument({
+                buffer: attachment.buffer,
+                filename: attachment.filename,
+                mimetype: resolveUploadedDocumentMimeType(
+                  attachment.filename,
+                  attachment.mimetype,
+                ),
+                description: attachment.filename,
+                reference,
+                entity,
+                type: attachmentType,
+                currentUser,
+                storageDir,
+              }),
+            ),
+          );
+        }
+      } catch (error) {
+        this.logger.warn(
+          `Could not extract attachments from uploaded mail file "${document.filename}": ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
+    }
+
+    this.em.persist(documents);
+    await this.em.flush();
+    return document;
+  }
+
+  private createStoredDocument(options: {
+    buffer: Buffer;
+    filename: string;
+    mimetype: string;
+    description?: string;
+    reference: string;
+    entity: EntityItem;
+    type: DocumentTypeItem;
+    currentUser: PersonItem;
+    storageDir: string;
+  }): DocumentItem {
+    const guid = uuid.v4();
+    fs.writeFileSync(path.join(options.storageDir, guid), options.buffer);
 
     const document = new DocumentItem();
-    document.reference = reference;
+    document.reference = options.reference;
     document.path = guid;
-    document.filename = resolveUploadedDocumentFilename(file.originalname);
-    document.mimetype = resolveUploadedDocumentMimeType(
-      document.filename,
-      file.mimetype,
-    );
-    document.length = file.size;
-    document.description = description;
-    document.entity = entity;
-    document.type = type;
-    document.person = { handle: currentUser.handle } as PersonItem;
-    await this.em.persist(document).flush();
+    document.filename = options.filename;
+    document.mimetype = options.mimetype;
+    document.length = options.buffer.length;
+    document.description = options.description;
+    document.entity = options.entity;
+    document.type = options.type;
+    document.person = { handle: options.currentUser.handle } as PersonItem;
     return document;
   }
 

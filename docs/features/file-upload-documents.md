@@ -101,20 +101,29 @@ The current implementation writes files with `fs.writeFileSync()` and creates th
 
 All document endpoints require `SessionOrBearerAuthGuard`.
 
-| Endpoint                                                          | Permission                                  | Purpose                                                       |
-| ----------------------------------------------------------------- | ------------------------------------------- | ------------------------------------------------------------- |
-| `POST /api/document/upload/:entityHandle/:reference`              | `allowUpdate` on `entityHandle`             | Uploads and links a file                                      |
-| `GET /api/document/dvelop/open/:entityHandle/:reference`          | `allowRead` on `entityHandle`               | Resolves a d.velop Cloud document-results URL when configured |
-| `GET /api/document/dvelop/upload-dialog/:entityHandle/:reference` | `allowUpdate` on `entityHandle`             | Resolves a d.velop Cloud storage dialog URL when configured   |
+| Endpoint                                                          | Permission                                  | Purpose                                                                   |
+| ----------------------------------------------------------------- | ------------------------------------------- | ------------------------------------------------------------------------- |
+| `POST /api/document/upload/:entityHandle/:reference`              | `allowUpdate` on `entityHandle`             | Uploads and links a file                                                  |
+| `GET /api/document/dvelop/open/:entityHandle/:reference`          | `allowRead` on `entityHandle`               | Resolves a d.velop Cloud document-results URL when configured             |
+| `GET /api/document/dvelop/upload-dialog/:entityHandle/:reference` | `allowUpdate` on `entityHandle`             | Resolves a d.velop Cloud storage dialog URL when configured               |
 | `POST /api/document/dvelop/config/:connectionHandle/import`       | `allowUpdate` on `dvelopConnection`         | Imports normalized d.velop Cloud repositories, categories, and properties |
-| `GET /api/document/download/:handle`                              | `allowRead` on the document's target entity | Downloads original file as attachment                         |
-| `GET /api/document/preview/:handle`                               | `allowRead` on the document's target entity | Previews PDFs inline, other files as attachment               |
+| `GET /api/document/download/:handle`                              | `allowRead` on the document's target entity | Downloads original file as attachment                                     |
+| `GET /api/document/preview/:handle`                               | `allowRead` on the document's target entity | Previews PDFs inline, other files as attachment                           |
 
 The frontend file browser also previews EML and Outlook MSG mail files. It
 loads the protected download response with the current session, parses the mail
 locally, sanitizes HTML, resolves embedded CID images, and exposes non-inline
 mail attachments as download chips. Attachment bytes remain local to the
 browser and retain their filename and MIME type when downloaded.
+
+When an EML or Outlook MSG file is uploaded, the backend additionally extracts
+each user-visible attachment as its own `DocumentItem` of type `document`. The
+extracted files use the same entity/reference link and uploading person as the
+original email, so they appear beside it in the existing document list and
+automatically use the normal preview or download fallback. Inline EML parts and
+MSG attachments marked as hidden remain only in the original mail file to avoid
+filling the list with signature images. A malformed mail file does not prevent
+the unchanged original file from being stored.
 
 Upload expects multipart form data:
 

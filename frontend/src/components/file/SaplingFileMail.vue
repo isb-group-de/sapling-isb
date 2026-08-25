@@ -26,7 +26,7 @@
         <div class="sapling-file-mail-title-row">
           <div>
             <div class="sapling-file-mail-label">{{ $t('document.subject') }}</div>
-            <div class="sapling-file-mail-subject">
+            <div class="sapling-file-mail-subject" :title="mailPreview.subject || fallbackSubject">
               {{ mailPreview.subject || fallbackSubject }}
             </div>
           </div>
@@ -40,7 +40,7 @@
             class="sapling-file-mail-meta-item"
           >
             <div class="sapling-file-mail-label">{{ entry.label }}</div>
-            <div class="sapling-file-mail-value">{{ entry.value }}</div>
+            <div class="sapling-file-mail-value" :title="entry.value">{{ entry.value }}</div>
           </div>
         </div>
 
