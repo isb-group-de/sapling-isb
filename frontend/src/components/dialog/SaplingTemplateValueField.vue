@@ -3,7 +3,7 @@
     <SaplingDialogEditFieldRenderer
       :template="template"
       :entity-handle="entityHandle"
-      mode="create"
+      mode="edit"
       :form-values="formValues"
       :visible-templates="visibleTemplates"
       :permissions="permissions"

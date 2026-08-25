@@ -141,13 +141,14 @@ describe('SaplingFormConfigPreviewPanel', () => {
     expect(wrapper.emitted('update:previewMode')).toEqual([['table']])
   })
 
-  it('renders group structure and field names with friendly types', () => {
+  it('renders only translated group and field labels', () => {
     const wrapper = mountPreview('form')
 
     expect(wrapper.text()).toContain('Basics')
-    expect(wrapper.text()).toContain('company.groupBasics')
-    expect(wrapper.text()).toContain('Name (Short Text)')
-    expect(wrapper.text()).toContain('name · Required')
+    expect(wrapper.text()).toContain('Name')
+    expect(wrapper.text()).not.toContain('company.groupBasics')
+    expect(wrapper.text()).not.toContain('Short Text')
+    expect(wrapper.text()).not.toContain('name · Required')
   })
 
   it('shows an exact field drop preview and emits the target group', async () => {
@@ -295,15 +296,14 @@ describe('SaplingFormConfigPreviewPanel', () => {
     ])
   })
 
-  it('shows field structure without sample values in table and mobile modes', () => {
+  it('shows only translated field labels in table and mobile modes', () => {
     const table = mountPreview('table')
     const mobile = mountPreview('mobile')
 
     expect(table.text()).toContain('Name')
-    expect(table.text()).toContain('Short Text')
     expect(table.find('tbody').exists()).toBe(false)
     expect(mobile.text()).toContain('Name')
-    expect(mobile.text()).toContain('Short Text')
-    expect(`${table.text()} ${mobile.text()}`).not.toContain('true')
+    expect(`${table.text()} ${mobile.text()}`).not.toContain('Short Text')
+    expect(`${table.text()} ${mobile.text()}`).not.toContain('name')
   })
 })

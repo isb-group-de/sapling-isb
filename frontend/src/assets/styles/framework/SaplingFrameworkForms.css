@@ -145,7 +145,7 @@
   gap: var(--sapling-gap-2xs);
 }
 
-.sapling-field-single-select__open-action {
+.v-btn.sapling-field-action-button {
   width: var(--sapling-control-height-compact);
   height: var(--sapling-control-height-compact) !important;
   min-width: var(--sapling-control-height-compact);

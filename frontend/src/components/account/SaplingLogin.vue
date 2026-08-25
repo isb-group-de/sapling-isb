@@ -2,7 +2,7 @@
   <!-- Container for the login form, styled to center content both vertically and horizontally -->
   <v-container class="sapling-login-shell d-flex flex-column justify-center align-center" fluid>
     <!-- Card container for the login form -->
-    <SaplingDialogCard class="sapling-dialog-width--sm sapling-login-dialog" :elevation="10">
+    <SaplingDialogCard class="sapling-dialog-width--sm sapling-login-dialog" :elevation="10" tilt>
       <template v-if="isLoading">
         <SaplingInstanceBooting />
       </template>

@@ -141,6 +141,11 @@ then displays source system, external key parts, import batches, and timestamps.
     rows exist, the workspace can run the import without invalid rows; invalid
     rows remain in the batch for later correction.
 
+An exported `handle` can be mapped back to `handle` when a Sapling export is
+re-imported. It is used only as the routing identity for the planned update and
+is removed before field-permission checks and create/update mutations. Read-only
+system fields such as `createdAt` and `updatedAt` are not importable field data.
+
 Validation rejects non-empty invalid date strings and invalid boolean values
 before execution. This includes source values such as `NULL` in date or datetime
 fields and unsupported boolean values such as `-1`, so those rows are shown as
@@ -308,6 +313,13 @@ application, external/generic key normalization, and save-payload construction.
 `useSaplingImportEntityCatalog` owns available entities, selected metadata and
 permissions, importable-field filtering, and selector filters/options. The
 workspace is now a sub-600-line composition shell.
+
+Default-value and value-mapping editors use edit semantics because they capture
+configuration values rather than creating a target record directly. Create-only
+helpers such as duplicate suggestions therefore stay out of the import workspace.
+Single-line source-column and default-value controls share the same comfortable
+height and top alignment across text, numeric, date, boolean, and reference
+renderers.
 
 The UI applies the proposal to the same editable mapping state used for manual
 configuration. Users can correct fields, open the value mapping dialog, save

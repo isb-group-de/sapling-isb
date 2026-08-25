@@ -1,12 +1,20 @@
 import { computed, reactive, ref } from 'vue'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { EntityTemplate } from '@/entity/structure'
+import ApiImportService, {
+  type ImportBatchSourceValues,
+  type ImportBatchSummary,
+} from '@/services/api.import.service'
 import {
   normalizeImportValueMappingKey,
   useSaplingImportValueMappings,
 } from '../useSaplingImportValueMappings'
 
 describe('useSaplingImportValueMappings', () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
   function createValueMappings() {
     const clearAiSuggestionFieldDetail = vi.fn()
     const fieldMappings = reactive<Record<string, string | null>>({
@@ -65,5 +73,69 @@ describe('useSaplingImportValueMappings', () => {
 
     expect(mappings.valueMappings).toEqual({})
     expect(mappings.valueMappingDialog).toMatchObject({ visible: false, targetField: null })
+  })
+
+  it('opens immediately while source values are loading', async () => {
+    let resolveSourceValues: ((value: ImportBatchSourceValues) => void) | undefined
+    vi.spyOn(ApiImportService, 'getBatchSourceValues').mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveSourceValues = resolve
+      }),
+    )
+    const batch = {
+      handle: 7,
+      rows: [],
+      sampleRows: [],
+    } as unknown as ImportBatchSummary
+    const state = useSaplingImportValueMappings({
+      batch: ref(batch),
+      importableFields: computed(() => [{ name: 'name', type: 'string' }] as EntityTemplate[]),
+      fieldMappings: reactive({ name: 'Name' }),
+      clearAiSuggestionFieldDetail: vi.fn(),
+      fieldLabel: (targetField) => targetField,
+      usedLabel: () => 'Used',
+    })
+
+    const opening = state.openValueMapping({ name: 'name', type: 'string' } as EntityTemplate)
+
+    expect(state.valueMappingDialog).toMatchObject({
+      visible: true,
+      targetField: 'name',
+      loading: true,
+    })
+
+    resolveSourceValues?.({ values: ['Legacy'], isTruncated: false })
+    await opening
+
+    expect(state.valueMappingDialog.loading).toBe(false)
+    expect(state.currentValueMappingSourceValues.value).toEqual(['Legacy'])
+  })
+
+  it('keeps the dialog open with batch values when loading source values fails', async () => {
+    vi.spyOn(ApiImportService, 'getBatchSourceValues').mockRejectedValueOnce(
+      new Error('Source values unavailable'),
+    )
+    const batch = {
+      handle: 8,
+      rows: [],
+      sampleRows: [{ Name: 'Fallback' }],
+    } as unknown as ImportBatchSummary
+    const state = useSaplingImportValueMappings({
+      batch: ref(batch),
+      importableFields: computed(() => [{ name: 'name', type: 'string' }] as EntityTemplate[]),
+      fieldMappings: reactive({ name: 'Name' }),
+      clearAiSuggestionFieldDetail: vi.fn(),
+      fieldLabel: (targetField) => targetField,
+      usedLabel: () => 'Used',
+    })
+
+    await state.openValueMapping({ name: 'name', type: 'string' } as EntityTemplate)
+
+    expect(state.valueMappingDialog).toMatchObject({
+      visible: true,
+      targetField: 'name',
+      loading: false,
+    })
+    expect(state.currentValueMappingSourceValues.value).toEqual(['Fallback'])
   })
 })

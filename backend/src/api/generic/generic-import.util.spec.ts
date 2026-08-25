@@ -1,6 +1,10 @@
 import { describe, expect, it } from '@jest/globals';
 import type { EntityTemplateDto } from '../template/dto/entity-template.dto';
-import { extractImportHandle, normalizeImportRow } from './generic-import.util';
+import {
+  extractImportHandle,
+  normalizeImportRow,
+  omitImportHandle,
+} from './generic-import.util';
 
 describe('generic-import.util', () => {
   it('extracts every non-empty string or numeric import handle', () => {
@@ -33,5 +37,12 @@ describe('generic-import.util', () => {
     expect(normalizeImportRow(template, { phone: '+49 1234567891' })).toEqual({
       phone: '+49 123 456 789 1',
     });
+  });
+
+  it('keeps the import handle as routing identity instead of writable data', () => {
+    const payload = { handle: 12, name: 'Acme' };
+
+    expect(omitImportHandle(payload)).toEqual({ name: 'Acme' });
+    expect(payload).toEqual({ handle: 12, name: 'Acme' });
   });
 });

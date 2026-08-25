@@ -4,7 +4,7 @@
     class="sapling-field-single-select"
     :class="{
       'sapling-field-single-select--with-open-action': props.showOpenAction,
-      'sapling-field-single-select--multiline': hasMultilineSelection,
+      'sapling-field-single-select--multiline': reservesMultilineSelection,
     }"
     @focusout="closeMenuWhenFocusLeaves"
     @keydown.tab.capture="closeMenuOnTab"
@@ -106,7 +106,7 @@
       <template #activator="{ props: tooltipProps }">
         <v-btn
           v-bind="tooltipProps"
-          class="sapling-field-single-select__open-action"
+          class="sapling-button--icon sapling-field-action-button sapling-field-single-select__open-action"
           data-test="open-reference-record"
           icon="mdi-open-in-new"
           variant="tonal"
@@ -254,6 +254,18 @@ const displayedSelectedItem = computed(() =>
 const hasMultilineSelection = computed(
   () => getValueLabelLines(displayedSelectedItem.value).length > 1,
 )
+const reservesMultilineSelection = computed(() => {
+  const valueTemplates = entityTemplates.value.filter((template) =>
+    template.options?.includes('isValue'),
+  )
+  const scalarLineCount = valueTemplates.some((template) => !template.isReference) ? 1 : 0
+  const referenceLineCount = valueTemplates.filter((template) => template.isReference).length
+
+  // Scalar value fields share the first line, while every value reference is
+  // rendered on its own line. Reserve that geometry before a value is chosen
+  // so clearing or selecting a record never changes the control height.
+  return scalarLineCount + referenceLineCount > 1 || hasMultilineSelection.value
+})
 const openActionLabel = computed(() => props.openActionLabel || t('global.editRecord'))
 const canOpenSelectedRecord = computed(
   () =>
@@ -484,11 +496,14 @@ watch(
     const currentRequestId = ++selectedItemHydrationRequestId
     hydratedSelectedItem.value = null
 
+    // The target metadata also determines whether this field reserves one or
+    // multiple label lines. Load it even for an empty selection so the field's
+    // height does not depend on whether a value is currently present.
+    await ensureEntityMetadataLoaded()
+
     if (!selectedItem.value && !props.placeholder) {
       return
     }
-
-    await ensureEntityMetadataLoaded()
 
     const item = selectedItem.value
     const handle = getItemHandle(item)

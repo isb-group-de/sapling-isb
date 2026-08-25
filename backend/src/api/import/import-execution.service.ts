@@ -10,6 +10,7 @@ import { GenericService } from '../generic/generic.service';
 import {
   extractImportHandle,
   getImportErrorMessage,
+  omitImportHandle,
 } from '../generic/generic-import.util';
 
 const IMPORT_PROGRESS_FLUSH_INTERVAL = 25;
@@ -111,17 +112,18 @@ export class ImportExecutionService {
       const link = await this.findRowExternalLink(batch, row);
       const handleToUpdate =
         link?.reference ?? extractImportHandle(row.payload);
+      const writablePayload = omitImportHandle(row.payload);
       const result =
         handleToUpdate == null
           ? await this.genericService.create(
               entityHandle,
-              row.payload,
+              writablePayload,
               currentUser,
             )
           : await this.genericService.update(
               entityHandle,
               handleToUpdate,
-              row.payload,
+              writablePayload,
               currentUser,
               [],
               {},

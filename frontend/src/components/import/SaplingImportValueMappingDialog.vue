@@ -29,8 +29,12 @@
               @update:model-value="updateFallback"
             />
 
+            <div v-if="loading" class="sapling-import__value-mapping-loading">
+              <v-progress-circular indeterminate color="primary" size="32" />
+            </div>
+
             <div
-              v-if="sourceValues.length > 0"
+              v-else-if="sourceValues.length > 0"
               class="sapling-import__value-mapping-table-region sapling-scrollable"
             >
               <v-table
@@ -113,6 +117,7 @@ const props = defineProps<{
   valueMapping: ValueMappingState | null
   field: EntityTemplate | undefined
   sourceValues: string[]
+  loading: boolean
   selectedEntityHandle: string | null
   visibleTemplates: EntityTemplate[]
   permissions: AccumulatedPermission[]

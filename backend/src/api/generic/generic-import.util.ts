@@ -69,6 +69,14 @@ export function extractImportHandle(
   return trimmedHandle ? trimmedHandle : null;
 }
 
+export function omitImportHandle(
+  payload: Record<string, unknown>,
+): Record<string, unknown> {
+  const writablePayload = { ...payload };
+  delete writablePayload.handle;
+  return writablePayload;
+}
+
 export function getImportErrorMessage(error: unknown): string {
   if (error && typeof error === 'object') {
     const response = (error as { response?: unknown }).response;

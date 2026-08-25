@@ -49,6 +49,9 @@ import SaplingDialog from '@/components/common/SaplingDialog.vue'
 import SaplingDialogCard from '@/components/dialog/SaplingDialogCard.vue'
 import SaplingDialogHero from '@/components/common/SaplingDialogHero.vue'
 import SaplingActionBarSkeleton from '@/components/actions/SaplingActionBarSkeleton.vue'
+import type { SaplingDialogSize } from '@/constants/dialog.constants'
+
+type SaplingDialogConfirmSize = SaplingDialogSize | 'small' | 'medium' | 'large'
 
 // #region Props & Emits
 const props = withDefaults(
@@ -61,7 +64,7 @@ const props = withDefaults(
     loading?: boolean
     persistent?: boolean
     tilt?: boolean
-    size?: 'small' | 'medium' | 'large'
+    size?: SaplingDialogConfirmSize
     cardClass?: string | string[] | Record<string, boolean>
     closeDisabled?: boolean
   }>(),
@@ -72,7 +75,7 @@ const props = withDefaults(
     variant: 'default',
     loading: false,
     persistent: true,
-    tilt: true,
+    tilt: false,
     size: 'medium',
     cardClass: '',
     closeDisabled: false,
@@ -87,10 +90,11 @@ const emit = defineEmits<{
 // #endregion
 
 // #region Computed
-const dialogSize = computed<'sm' | 'md' | 'xl'>(() => {
+const dialogSize = computed<SaplingDialogSize>(() => {
   if (props.size === 'small') return 'sm'
   if (props.size === 'large') return 'xl'
-  return 'md'
+  if (props.size === 'medium') return 'md'
+  return props.size
 })
 // #endregion
 

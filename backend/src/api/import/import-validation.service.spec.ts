@@ -91,4 +91,71 @@ describe('ImportValidationService', () => {
     });
     expect(flush).toHaveBeenCalledTimes(1);
   });
+
+  it('does not permission-check an imported handle as writable field data', async () => {
+    const currentUser = { handle: 7, roles: [] };
+    const row = { rawData: { handle: 17, name: 'Acme' } };
+    const batch = {
+      handle: 42,
+      targetEntity: { handle: 'company' },
+      source: null,
+      importTemplate: null,
+      externalKeyColumns: [],
+      genericReferenceMapping: null,
+      mapping: {},
+      processedCount: 0,
+      readyCount: 0,
+      errorCount: 0,
+    };
+    const fieldPermissions = {
+      applyTemplateAccess: jest.fn(
+        (_user: unknown, _entityHandle: string, templates: unknown[]) =>
+          templates,
+      ),
+      assertPayloadAccess: jest.fn(() => Promise.resolve()),
+    };
+    const em = {
+      findOne: jest.fn(() => Promise.resolve(currentUser)),
+      find: jest.fn(() => Promise.resolve([row])),
+      flush: jest.fn(() => Promise.resolve()),
+    };
+    const service = new ImportValidationService(
+      em as never,
+      { getEntityTemplate: jest.fn(() => []) } as never,
+      {
+        appendCustomFieldTemplates: jest.fn(() => Promise.resolve([])),
+      } as never,
+      {
+        buildPayload: jest.fn(() =>
+          Promise.resolve({ handle: 17, name: 'Acme' }),
+        ),
+      } as never,
+      {} as never,
+      { applyStrategies: jest.fn(() => Promise.resolve()) } as never,
+      {
+        validatePrimitiveValues: jest.fn(),
+        getMissingRequiredFieldNames: jest.fn(() => []),
+      } as never,
+      {} as never,
+      fieldPermissions as never,
+    );
+
+    await (
+      service as unknown as {
+        validateBatch(batchValue: unknown, userHandle: number): Promise<void>;
+      }
+    ).validateBatch(batch, 7);
+
+    expect(fieldPermissions.assertPayloadAccess).toHaveBeenCalledWith(
+      currentUser,
+      'company',
+      { name: 'Acme' },
+      'update',
+    );
+    expect(row).toMatchObject({
+      payload: { handle: 17, name: 'Acme' },
+      action: 'updated',
+      status: 'ready',
+    });
+  });
 });

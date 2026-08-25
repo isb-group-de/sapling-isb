@@ -20,7 +20,7 @@
       <SaplingAutocomplete
         :model-value="fieldMappings[field.name]"
         :items="headerOptions"
-        density="compact"
+        density="comfortable"
         hide-details
         clearable
         :placeholder="field.name"
@@ -73,11 +73,13 @@
           <template #activator="{ props: tooltipProps }">
             <v-btn
               v-bind="tooltipProps"
+              class="sapling-button--icon sapling-field-action-button"
               icon="mdi-swap-horizontal"
               size="small"
               variant="tonal"
               :color="hasValueMapping(field.name) ? 'primary' : undefined"
               :disabled="!fieldMappings[field.name] || isImportJobRunning"
+              :loading="valueMappingLoadingField === field.name"
               :aria-label="t('import.valueMapping')"
               @click="emit('openValueMapping', field)"
             />
@@ -171,6 +173,7 @@ const props = defineProps<{
   permissions: AccumulatedPermission[]
   aiSuggestionFieldDetails: Record<string, { confidence: number; reason: string | null }>
   isImportJobRunning: boolean
+  valueMappingLoadingField: string | null
   fieldLabel: (fieldName: string) => string
   aiSuggestionReason: (targetField: string) => string
   confidencePercent: (confidence: number) => string

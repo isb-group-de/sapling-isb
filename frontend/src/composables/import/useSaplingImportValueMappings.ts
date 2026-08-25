@@ -37,7 +37,9 @@ export function useSaplingImportValueMappings(options: SaplingImportValueMapping
   const valueMappingDialog = reactive({
     visible: false,
     targetField: null as string | null,
+    loading: false,
   })
+  let valueMappingLoadRequest = 0
 
   const currentValueMappingField = computed(() =>
     options.importableFields.value.find((field) => field.name === valueMappingDialog.targetField),
@@ -105,10 +107,21 @@ export function useSaplingImportValueMappings(options: SaplingImportValueMapping
     }
 
     ensureValueMapping(field.name)
-    await loadSourceValuesForField(field)
-    await loadReferenceItemsForValueMapping(field)
     valueMappingDialog.targetField = field.name
     valueMappingDialog.visible = true
+    valueMappingDialog.loading = true
+    const request = ++valueMappingLoadRequest
+
+    try {
+      await Promise.allSettled([
+        loadSourceValuesForField(field),
+        loadReferenceItemsForValueMapping(field),
+      ])
+    } finally {
+      if (request === valueMappingLoadRequest) {
+        valueMappingDialog.loading = false
+      }
+    }
   }
 
   async function loadReferenceItemsForValueMapping(field: EntityTemplate): Promise<void> {
@@ -179,8 +192,10 @@ export function useSaplingImportValueMappings(options: SaplingImportValueMapping
   }
 
   function closeValueMapping(): void {
+    valueMappingLoadRequest += 1
     valueMappingDialog.visible = false
     valueMappingDialog.targetField = null
+    valueMappingDialog.loading = false
   }
 
   function clearCurrentValueMapping(): void {

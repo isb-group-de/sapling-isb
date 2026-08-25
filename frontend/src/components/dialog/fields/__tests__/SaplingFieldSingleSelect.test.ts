@@ -232,6 +232,15 @@ describe('SaplingFieldSingleSelect reference dialog', () => {
     expect(wrapper.get('[data-test="open-reference-record"]').attributes('disabled')).toBeDefined()
   })
 
+  it('loads target metadata before an empty reference needs to render a value', async () => {
+    tableState.entityTemplates.value = []
+
+    mountField()
+    await flushPromises()
+
+    expect(loadGenericMock).toHaveBeenCalledWith('company', 'global', 'filter', 'exception')
+  })
+
   it('reapplies the latest dependency filter before the initial dropdown request', async () => {
     const companyFilter = { company: { $eq: 17 } }
     tableState.isInitialized.value = false
@@ -341,7 +350,7 @@ describe('SaplingFieldSingleSelect reference dialog', () => {
     expect(wrapper.emitted('update:modelValue')).toBeUndefined()
   })
 
-  it('marks nested value labels as multiline without changing single-line selections', async () => {
+  it('reserves multiline height from metadata independently of the current selection', async () => {
     const singleLineWrapper = mountField({ handle: 'company-1', name: 'Sapling GmbH' })
 
     expect(singleLineWrapper.get('.sapling-field-single-select').classes()).not.toContain(
@@ -367,12 +376,26 @@ describe('SaplingFieldSingleSelect reference dialog', () => {
         options: ['isValue'],
       },
     ]
-    const multilineWrapper = mountField({
-      handle: 'company-2',
-      name: 'Sapling AG',
-      country: { handle: 'de', name: 'Germany' },
-    })
+    const multilineWrapper = mountField()
     await flushPromises()
+
+    expect(multilineWrapper.get('.sapling-field-single-select').classes()).toContain(
+      'sapling-field-single-select--multiline',
+    )
+
+    await multilineWrapper.setProps({
+      modelValue: {
+        handle: 'company-2',
+        name: 'Sapling AG',
+        country: { handle: 'de', name: 'Germany' },
+      },
+    })
+
+    expect(multilineWrapper.get('.sapling-field-single-select').classes()).toContain(
+      'sapling-field-single-select--multiline',
+    )
+
+    await multilineWrapper.setProps({ modelValue: null })
 
     expect(multilineWrapper.get('.sapling-field-single-select').classes()).toContain(
       'sapling-field-single-select--multiline',

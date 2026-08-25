@@ -377,7 +377,6 @@ describe('GenericService create delete and import workflows', () => {
       'ticket',
       7,
       {
-        handle: 7,
         title: 'Bestehend',
       },
       currentUser,

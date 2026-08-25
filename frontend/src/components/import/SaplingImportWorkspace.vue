@@ -106,6 +106,7 @@
           :permissions="currentPermissions"
           :ai-suggestion-field-details="aiSuggestionFieldDetails"
           :is-import-job-running="isImportJobRunning"
+          :value-mapping-loading-field="valueMappingLoadingField"
           :field-label="fieldLabel"
           :ai-suggestion-reason="aiSuggestionReason"
           :confidence-percent="confidencePercent"
@@ -173,6 +174,7 @@
       :value-mapping="currentValueMapping"
       :field="currentValueMappingField"
       :source-values="currentValueMappingSourceValues"
+      :loading="valueMappingDialog.loading"
       :selected-entity-handle="selectedEntityHandle"
       :visible-templates="importableFields"
       :permissions="currentPermissions"
@@ -338,6 +340,9 @@ const {
   fieldLabel,
   usedLabel: () => t('system.used'),
 })
+const valueMappingLoadingField = computed(() =>
+  valueMappingDialog.loading ? valueMappingDialog.targetField : null,
+)
 
 const {
   initializeMappingConfiguration,

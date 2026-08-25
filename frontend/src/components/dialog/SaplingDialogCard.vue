@@ -23,7 +23,7 @@ defineOptions({
 
 const props = withDefaults(
   defineProps<{
-    /** Disable the tilt directive for callers that need a static surface. */
+    /** Opt in to tilt for exceptional surfaces such as the login card. */
     tilt?: boolean
     /** Card elevation, kept configurable for the few callers that want a softer shadow. */
     elevation?: string | number
@@ -33,7 +33,7 @@ const props = withDefaults(
     closeLabel?: string
   }>(),
   {
-    tilt: true,
+    tilt: false,
     elevation: 12,
     close: undefined,
     closeDisabled: false,

@@ -60,6 +60,7 @@ describe('SaplingFieldNumber', () => {
     const incrementButton = wrapper.find('[data-testid="increment"]')
 
     expect(incrementButton.exists()).toBe(true)
+    expect(wrapper.find('.v-input__details').exists()).toBe(false)
 
     await incrementButton.trigger('pointerdown', { pointerId: 1 })
     await nextTick()
@@ -70,6 +71,28 @@ describe('SaplingFieldNumber', () => {
     await nextTick()
 
     expect((wrapper.vm as { value: number | null }).value).toBe(2)
+
+    wrapper.unmount()
+  })
+
+  it('restores the detail area when validation has a message', async () => {
+    const wrapper = mount(SaplingFieldNumber, {
+      props: {
+        label: 'Anzahl',
+        modelValue: null,
+        rules: [() => 'Pflichtfeld'],
+      },
+      attachTo: document.body,
+      global: {
+        plugins: [vuetify],
+      },
+    })
+
+    const numberInput = wrapper.getComponent({ name: 'VNumberInput' })
+    await (numberInput.vm as unknown as { validate: () => Promise<unknown> }).validate()
+    await nextTick()
+
+    expect(wrapper.get('.v-input__details').text()).toContain('Pflichtfeld')
 
     wrapper.unmount()
   })

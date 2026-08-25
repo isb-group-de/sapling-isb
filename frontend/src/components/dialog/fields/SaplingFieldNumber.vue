@@ -10,6 +10,7 @@
     :max="max"
     :step="step"
     :precision="precision"
+    hide-details="auto"
     autocomplete="off"
     @update:model-value="(val) => emit('update:modelValue', val)"
   />

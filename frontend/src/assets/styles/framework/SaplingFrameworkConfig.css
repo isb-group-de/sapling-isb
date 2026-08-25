@@ -85,11 +85,14 @@
 }
 
 .sapling-config-switches {
+  display: grid;
+  grid-template-columns: repeat(2, max-content);
   gap: var(--sapling-gap-lg);
   justify-content: flex-end;
 }
 
 .sapling-config-switches > * {
+  width: auto;
   flex: 0 0 auto;
 }
 
@@ -241,6 +244,15 @@
   min-width: 0;
 }
 
+.sapling-config-field__main > .sapling-control--switch {
+  width: auto;
+  flex: 0 0 auto;
+}
+
+.sapling-form-config-field__identity {
+  flex: 1 1 auto;
+}
+
 .sapling-config-field__main strong,
 .sapling-config-preview-header h2 {
   display: block;
@@ -269,6 +281,10 @@
 .sapling-config-field__control--label,
 .sapling-config-field__control--placeholder {
   grid-column: span 2;
+}
+
+.sapling-config-field__control--help-text {
+  grid-column: 1 / -1;
 }
 
 .sapling-config-field__toggles {
@@ -1326,7 +1342,8 @@
   }
 
   .sapling-config-field__control--label,
-  .sapling-config-field__control--placeholder {
+  .sapling-config-field__control--placeholder,
+  .sapling-config-field__control--help-text {
     grid-column: auto;
   }
 

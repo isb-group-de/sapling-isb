@@ -10,6 +10,7 @@
     :max="1000000"
     :step="10000"
     :prefix="currencySymbol"
+    hide-details="auto"
     autocomplete="off"
     @update:model-value="(val) => emit('update:modelValue', val)"
   />

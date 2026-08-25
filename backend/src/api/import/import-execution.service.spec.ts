@@ -120,4 +120,27 @@ describe('ImportExecutionService', () => {
       skippedCount: 1,
     });
   });
+
+  it('uses an imported handle only to route an update', async () => {
+    const scenario = createScenario();
+    scenario.readyRow.payload = { handle: 17, name: 'Acme' };
+    scenario.genericService.update.mockResolvedValueOnce({ handle: 17 });
+
+    await processInContext(scenario.service);
+
+    expect(scenario.genericService.update).toHaveBeenCalledWith(
+      'company',
+      17,
+      { name: 'Acme' },
+      scenario.currentUser,
+      [],
+      {},
+      { resolution: 'overwrite' },
+    );
+    expect(scenario.readyRow).toMatchObject({
+      status: 'executed',
+      action: 'updated',
+      targetReference: '17',
+    });
+  });
 });

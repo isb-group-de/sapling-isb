@@ -397,7 +397,8 @@
   cursor: default;
 }
 
-.sapling-filter-checkbox {
+.sapling-work-filter-panel .sapling-filter-checkbox {
+  width: auto;
   margin-left: auto;
   flex: 0 0 auto;
 }

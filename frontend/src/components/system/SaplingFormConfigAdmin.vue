@@ -13,7 +13,7 @@
 
       <template #meta>
         <v-chip size="small" color="primary" variant="tonal" prepend-icon="mdi-table-cog">
-          {{ selectedEntityHandle || $t('formConfig.noEntity') }}
+          {{ selectedEntityLabel }}
         </v-chip>
         <v-chip size="small" variant="outlined" prepend-icon="mdi-form-select">
           {{ baseTemplates.length }}
@@ -221,6 +221,12 @@ const entityOptions = computed(() =>
     title: translateEntity(entity.handle),
     value: entity.handle,
   })),
+)
+
+const selectedEntityLabel = computed(() =>
+  selectedEntityHandle.value
+    ? translateEntity(selectedEntityHandle.value)
+    : t('formConfig.noEntity'),
 )
 
 const configOptions = computed(() => [

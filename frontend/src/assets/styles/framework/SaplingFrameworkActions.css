@@ -52,7 +52,7 @@
 
 .sapling-action-bar__group {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   gap: var(--sapling-gap-sm);
   min-width: 0;
@@ -64,6 +64,37 @@
 
 .sapling-action-bar__spacer {
   flex: 1 1 auto;
+}
+
+.sapling-action-bar--compact .sapling-action-bar__content,
+.sapling-action-bar--compact .sapling-action-bar__group {
+  flex-wrap: nowrap;
+}
+
+.sapling-action-bar--compact .v-btn:not(.v-btn--icon):has(> .v-btn__prepend, > .v-btn__append) {
+  width: var(--v-btn-height);
+  min-width: var(--v-btn-height);
+  padding-inline: 0;
+}
+
+.sapling-action-bar--compact
+  .v-btn:not(.v-btn--icon):has(> .v-btn__prepend, > .v-btn__append)
+  > .v-btn__content {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.sapling-action-bar--compact
+  .v-btn:not(.v-btn--icon):has(> .v-btn__prepend, > .v-btn__append)
+  > :is(.v-btn__prepend, .v-btn__append) {
+  margin-inline: 0;
 }
 
 .sapling-action-stack {

@@ -38,11 +38,33 @@
 }
 
 .sapling-import__mapping-row {
-  --sapling-import-mapping-action-width: var(--sapling-control-size-md);
+  --sapling-import-mapping-action-width: var(--sapling-control-height-compact);
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) var(--sapling-import-mapping-action-width);
+  grid-template-rows: auto minmax(var(--sapling-control-height-comfortable), auto);
   gap: var(--sapling-gap-md);
-  align-items: center;
+  align-items: start;
+}
+
+.sapling-import__mapping-row > .sapling-template-value-field .v-input {
+  --v-input-control-height: var(--sapling-control-height-comfortable) !important;
+}
+
+.sapling-import__mapping-row > .sapling-template-value-field .v-input__details {
+  display: none;
+}
+
+.sapling-import__mapping-row > .sapling-template-value-field .v-number-input .v-field {
+  height: var(--sapling-control-height-comfortable);
+}
+
+.sapling-import__mapping-row .sapling-field-date-time {
+  gap: var(--sapling-gap-sm);
+  margin: 0;
+}
+
+.sapling-import__mapping-row .sapling-field-date-time > .v-col {
+  padding: 0;
 }
 
 .sapling-import__mapping-label {
@@ -61,6 +83,8 @@
 
 .sapling-import__value-mapping-action {
   display: flex;
+  min-height: var(--sapling-control-height-comfortable);
+  align-items: flex-start;
   justify-content: flex-end;
 }
 
@@ -264,6 +288,12 @@
   flex-direction: column;
   gap: var(--sapling-gap-md);
   overflow: hidden;
+}
+
+.sapling-import__value-mapping-loading {
+  display: grid;
+  min-height: 8rem;
+  place-items: center;
 }
 
 .sapling-import__value-mapping-table-region {

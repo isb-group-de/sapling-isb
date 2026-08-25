@@ -29,6 +29,7 @@ import {
   getImportErrorMessage,
   hasImportableRowValues,
   normalizeImportRow,
+  omitImportHandle,
 } from './generic-import.util';
 import { GenericChangeLogService } from './generic-change-log.service';
 import {
@@ -307,17 +308,18 @@ export class GenericService {
         await this.fieldPermissions.assertPayloadAccess(
           currentUser,
           entityHandle,
-          row,
+          omitImportHandle(row),
           handle == null ? 'insert' : 'update',
           undefined,
           template,
         );
         const payload = normalizeImportRow(template, row);
         handle = extractImportHandle(payload);
+        const writablePayload = omitImportHandle(payload);
         if (handle == null) {
           const created = await this.create(
             entityHandle,
-            payload,
+            writablePayload,
             currentUser,
             scriptContext,
           );
@@ -330,7 +332,7 @@ export class GenericService {
           const updated = await this.update(
             entityHandle,
             handle,
-            payload,
+            writablePayload,
             currentUser,
             [],
             scriptContext,

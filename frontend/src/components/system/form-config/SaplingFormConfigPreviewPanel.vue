@@ -107,7 +107,6 @@
                 <v-icon v-else icon="mdi-folder-outline" size="small" />
                 <div>
                   <h3>{{ group.label }}</h3>
-                  <span v-if="group.key">{{ group.key }}</span>
                 </div>
               </div>
               <v-chip size="x-small" variant="tonal">
@@ -153,9 +152,7 @@
                   <strong>
                     <v-icon icon="mdi-drag" size="x-small" />
                     {{ getPreviewFieldLabel(field) }}
-                    <span>({{ getPreviewTypeLabel(field) }})</span>
                   </strong>
-                  <small>{{ field.name }} · {{ getPreviewMeta(field) }}</small>
                 </SaplingSurface>
               </template>
 
@@ -208,7 +205,6 @@
                 <tr>
                   <th v-for="field in previewTableTemplates" :key="field.name">
                     <strong>{{ getPreviewFieldLabel(field) }}</strong>
-                    <small>{{ getPreviewTypeLabel(field) }}</small>
                   </th>
                 </tr>
               </thead>
@@ -238,8 +234,6 @@
                 }"
               >
                 <strong>{{ getPreviewFieldLabel(field) }}</strong>
-                <span>{{ getPreviewTypeLabel(field) }}</span>
-                <small>{{ field.name }}</small>
               </section>
             </div>
           </div>
@@ -455,46 +449,6 @@ function getPreviewFieldLabel(template: EntityTemplate): string {
 
   const key = `${props.selectedEntityHandle}.${template.name}`
   return te(key) ? t(key) : ''
-}
-
-function getPreviewRenderer(template: EntityTemplate): string {
-  return template.formConfig?.renderer && template.formConfig.renderer !== 'auto'
-    ? template.formConfig.renderer
-    : inferRenderer(template)
-}
-
-function getPreviewTypeLabel(template: EntityTemplate): string {
-  const renderer = getPreviewRenderer(template)
-  if (renderer === 'select' && template.referenceName) {
-    return `${formatMetadataName(renderer)} · ${translateEntity(template.referenceName)}`
-  }
-
-  return formatMetadataName(renderer)
-}
-
-function inferRenderer(template: EntityTemplate): string {
-  if (template.isReference || template.referenceName) return 'select'
-  if (template.options?.includes('isPhone')) return 'phone'
-  if (template.options?.includes('isMail')) return 'mail'
-  if (template.options?.includes('isLink')) return 'link'
-  if (template.options?.includes('isMoney')) return 'money'
-  if (template.options?.includes('isPercent')) return 'percent'
-  if (template.options?.includes('isMarkdown')) return 'markdown'
-  if (template.type === 'boolean') return 'boolean'
-  if (['number', 'integer', 'float', 'double', 'decimal'].includes(template.type.toLowerCase())) {
-    return 'number'
-  }
-  if (template.type === 'datetime') return 'dateTime'
-  if (template.type === 'DateType') return 'date'
-  if (template.type === 'JsonType') return 'json'
-  return (template.length ?? 0) > 128 ? 'longText' : 'shortText'
-}
-
-function getPreviewMeta(template: EntityTemplate): string {
-  const parts = []
-  if (template.isRequired) parts.push(t('formConfig.required'))
-  if (template.formConfig?.readonly) parts.push(t('formConfig.readonly'))
-  return parts.join(' - ') || t('formConfig.optional')
 }
 
 function selectPreviewMode(mode: PreviewMode): void {

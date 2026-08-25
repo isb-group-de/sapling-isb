@@ -207,7 +207,6 @@
 
 .sapling-add-note-card {
   height: auto !important;
-  min-height: var(--sapling-empty-state-min-height-sm);
   border-style: dashed;
   cursor: pointer;
   transition:
@@ -340,6 +339,7 @@
 }
 
 @media (max-width: 760px) {
+  .sapling-add-note-card,
   .sapling-note-card {
     min-height: var(--sapling-note-card-min-height-compact);
   }

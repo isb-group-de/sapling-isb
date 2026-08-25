@@ -3,17 +3,18 @@ import { describe, expect, it } from 'vitest'
 
 import SaplingDialogConfirm from '../SaplingDialogConfirm.vue'
 
-function mountDialog(closeDisabled = false) {
+function mountDialog(closeDisabled = false, size?: 'small' | 'medium' | 'large' | 'lg') {
   return mount(SaplingDialogConfirm, {
     props: {
       modelValue: true,
       closeDisabled,
+      size,
     },
     global: {
       stubs: {
         VDialog: {
           name: 'VDialog',
-          props: ['modelValue'],
+          props: ['modelValue', 'maxWidth'],
           template: '<div v-if="modelValue"><slot /></div>',
         },
         SaplingActionBarSkeleton: true,
@@ -40,5 +41,11 @@ describe('SaplingDialogConfirm', () => {
     await wrapper.getComponent({ name: 'VDialog' }).trigger('keydown', { key: 'Escape' })
 
     expect(wrapper.emitted('escape')).toBeUndefined()
+  })
+
+  it('forwards an exact standardized dialog size', () => {
+    const wrapper = mountDialog(false, 'lg')
+
+    expect(wrapper.getComponent({ name: 'VDialog' }).props('maxWidth')).toBe(960)
   })
 })

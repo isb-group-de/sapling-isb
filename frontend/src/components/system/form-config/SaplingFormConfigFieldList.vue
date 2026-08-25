@@ -58,7 +58,6 @@
       <header class="sapling-form-config-group__header">
         <div class="sapling-form-config-group__identity">
           <strong>{{ resolveGroupLabel(group) }}</strong>
-          <span>{{ group.key || formConfigText('ungrouped', 'Ohne Gruppe') }}</span>
         </div>
         <SaplingTextField
           v-model="group.label"
@@ -113,7 +112,6 @@
             />
             <div class="sapling-form-config-field__identity">
               <strong>{{ getFieldLabel(field.name) }}</strong>
-              <span>{{ field.name }} · {{ field.type }}</span>
             </div>
           </div>
 

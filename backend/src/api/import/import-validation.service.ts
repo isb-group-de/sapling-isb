@@ -10,6 +10,7 @@ import { GenericCustomFieldService } from '../generic/generic-custom-field.servi
 import {
   extractImportHandle,
   getImportErrorMessage,
+  omitImportHandle,
 } from '../generic/generic-import.util';
 import { TemplateService } from '../template/template.service';
 import type { EntityTemplateDto } from '../template/dto/entity-template.dto';
@@ -175,7 +176,7 @@ export class ImportValidationService {
         await this.fieldPermissions.assertPayloadAccess(
           currentUser,
           entityHandle,
-          payload,
+          omitImportHandle(payload),
           plannedAction.action === 'updated' ? 'update' : 'insert',
         );
 

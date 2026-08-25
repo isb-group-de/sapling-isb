@@ -5,6 +5,7 @@
     :loading="isTranslationLoading"
     :eyebrow="$t('global.unsavedChanges')"
     :title="$t('global.unsavedChanges')"
+    size="lg"
     persistent
     :close-disabled="isSaving"
     @update:model-value="handleDialogUpdate"

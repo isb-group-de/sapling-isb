@@ -8,15 +8,13 @@
             :eyebrow="`${role.title} · ${$t(`navigation.${entity.handle}`)}`"
             :loading="loading"
             :stats="[{ label: $t('permission.restrictedFields'), value: restrictedCount }]"
+            :stats-columns="1"
           />
         </template>
 
         <template #body>
           <div class="sapling-stack-md sapling-scrollable pa-4">
             <v-alert v-if="error" type="error" variant="tonal">{{ error }}</v-alert>
-            <v-alert v-if="hasRiskyRestrictions" type="warning" variant="tonal">
-              {{ $t('permission.fieldPermissionWarning') }}
-            </v-alert>
             <v-alert v-if="catalog?.staleOverrides.length" type="info" variant="tonal">
               {{ $t('permission.staleFieldPermissions') }}:
               {{ catalog.staleOverrides.map((entry) => entry.fieldName).join(', ') }}
@@ -64,40 +62,28 @@
                       />
                     </div>
                   </th>
+                  <th class="sapling-field-warning-column" aria-hidden="true" />
                 </tr>
               </thead>
               <tbody>
                 <template v-for="group in filteredFieldGroups" :key="group.name">
                   <tr class="sapling-field-permission-group">
-                    <td :colspan="actions.length + 1" class="font-weight-medium">
+                    <td :colspan="actions.length + 2" class="font-weight-medium">
                       {{ group.label }}
                     </td>
                   </tr>
                   <tr v-for="field in group.fields" :key="field.name">
                     <td>
-                      <div class="font-weight-medium">{{ fieldLabel(field.name) }}</div>
-                      <div class="text-caption text-medium-emphasis">{{ field.name }}</div>
-                      <div class="d-flex flex-wrap ga-1 mt-1">
-                        <v-chip v-if="field.isPrimaryKey" size="x-small" color="warning">PK</v-chip>
-                        <v-chip v-if="field.isRequired" size="x-small">required</v-chip>
-                        <v-chip v-if="field.customField" size="x-small">custom</v-chip>
-                        <v-chip
-                          v-if="field.options.includes('isSecurity')"
-                          size="x-small"
-                          color="error"
-                        >
-                          security
-                        </v-chip>
-                        <v-chip v-if="field.options.includes('isSystem')" size="x-small"
-                          >system</v-chip
-                        >
-                        <v-chip v-if="field.options.includes('isReadOnly')" size="x-small"
-                          >read-only</v-chip
-                        >
-                        <v-chip v-if="field.options.includes('isValue')" size="x-small"
-                          >value</v-chip
-                        >
-                      </div>
+                      <span class="font-weight-medium">{{ fieldLabel(field.name) }}</span>
+                      <v-chip
+                        v-if="field.isPrimaryKey || field.isRequired"
+                        class="sapling-field-required-marker"
+                        color="error"
+                        size="x-small"
+                        :title="$t('global.isRequired')"
+                      >
+                        *
+                      </v-chip>
                     </td>
                     <td
                       v-for="action in actions"
@@ -112,6 +98,28 @@
                         hide-details
                         density="compact"
                       />
+                    </td>
+                    <td class="sapling-field-warning-column text-center">
+                      <SaplingHelpTooltip
+                        v-if="hasRiskyRestriction(field)"
+                        :text="$t('permission.fieldPermissionWarning')"
+                        :aria-label="$t('permission.fieldPermissionWarning')"
+                        location="start"
+                        :max-width="420"
+                        compact
+                      >
+                        <template #activator="{ props: tooltipProps }">
+                          <button
+                            v-bind="tooltipProps"
+                            type="button"
+                            class="sapling-field-warning"
+                            :aria-label="$t('permission.fieldPermissionWarning')"
+                            @click.stop
+                          >
+                            <v-icon icon="mdi-alert-circle" color="warning" size="20" />
+                          </button>
+                        </template>
+                      </SaplingHelpTooltip>
                     </td>
                   </tr>
                 </template>
@@ -209,19 +217,6 @@ const restrictedCount = computed(
       (field) => !field.allowRead || !field.allowInsert || !field.allowUpdate,
     ).length,
 )
-const hasRiskyRestrictions = computed(() =>
-  (catalog.value?.fields ?? []).some(
-    (field) =>
-      (field.isPrimaryKey ||
-        field.isRequired ||
-        field.isReference ||
-        field.options.includes('isValue')) &&
-      (!draft[field.name]?.allowRead ||
-        !draft[field.name]?.allowInsert ||
-        !draft[field.name]?.allowUpdate),
-  ),
-)
-
 watch(
   () => [props.modelValue, props.role.handle, props.entity.handle] as const,
   ([isOpen]) => {
@@ -276,6 +271,17 @@ function groupLabel(groupName: string) {
     .replace(/^./, (character) => character.toUpperCase())
 }
 
+function hasRiskyRestriction(field: FieldPermissionCatalog['fields'][number]) {
+  const access = draft[field.name]
+  return (
+    (field.isPrimaryKey ||
+      field.isRequired ||
+      field.isReference ||
+      field.options.includes('isValue')) &&
+    (!access?.allowRead || !access?.allowInsert || !access?.allowUpdate)
+  )
+}
+
 function setAll(action: FieldPermissionActionKey, value: boolean) {
   for (const field of catalog.value?.fields ?? []) {
     if (field.structural[action] && catalog.value?.entityPermission[action]) {
@@ -327,5 +333,39 @@ function close() {
   background: rgba(var(--v-theme-primary), 0.14) !important;
   color: rgb(var(--v-theme-on-surface));
   letter-spacing: 0.025em;
+}
+
+.sapling-field-required-marker {
+  margin-inline-start: 0.3rem;
+  vertical-align: text-bottom;
+}
+
+.sapling-field-warning-column {
+  width: 3rem;
+  min-width: 3rem;
+  padding-inline: var(--sapling-gap-sm) !important;
+}
+
+.sapling-field-warning {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: help;
+}
+
+.sapling-field-warning:hover,
+.sapling-field-warning:focus-visible {
+  background: rgba(var(--v-theme-warning), 0.12);
+}
+
+.sapling-field-warning:focus-visible {
+  outline: 2px solid rgb(var(--v-theme-warning));
+  outline-offset: 1px;
 }
 </style>

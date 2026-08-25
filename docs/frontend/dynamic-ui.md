@@ -465,8 +465,9 @@ Entity/config/scope selection is rendered by
 reordering live in `formConfigAdminDraft.utils.ts`, keeping the administration
 component focused on remote context, persistence, and composition.
 Its preview keeps form, desktop-table, and mobile-table tabs mounted through
-entity reloads, renders the configured form groups explicitly, and emphasizes
-translated field names plus renderer types instead of fabricated sample data.
+entity reloads, renders the configured form groups explicitly, and shows only
+translated group and field names instead of internal metadata or fabricated
+sample data.
 The administration uses a viewport-filling workspace without an outer page
 scrollbar. The editor and preview are independent scrolling panels; editor
 context controls scroll away while field search and group actions remain sticky.
@@ -495,6 +496,12 @@ geometry and must not be assigned standalone button-shape classes.
 Do not derive geometry from color, fill, or the presence of an icon. In
 particular, Vuetify's `icon` prop does not by itself make an action semantically
 round in Sapling.
+
+Icon actions attached directly to a form field use
+`sapling-field-action-button`. This keeps reference-record, mapping, and future
+field utilities on the same compact square geometry regardless of their
+surrounding dialog or field height. Field actions align with the top edge of
+their control, including beside multi-line reference values.
 
 ## Dialogs
 
@@ -543,6 +550,13 @@ Keep the first outlined field inside `sapling-dialog-form-body`,
 feature-specific top padding to compensate for a clipped Vuetify field label.
 
 Do not hand-roll dialog footers with ad hoc `<div class="sapling-dialog-actions">` blocks. Use the action components so spacing, mobile behavior, icons, and button ordering stay consistent:
+
+`SaplingActionBar` measures its own footer width rather than relying only on
+the viewport breakpoint. When the expanded action labels would wrap, every
+eligible icon action in that footer keeps its accessible label but switches to
+an icon-only visual presentation; action groups must remain on one line.
+The unsaved-changes confirmation uses the standard `lg` width so its three
+actions retain their labels on wide screens before that compact fallback applies.
 
 | Dialog action pattern      | Component                                      |
 | -------------------------- | ---------------------------------------------- |
@@ -606,11 +620,21 @@ Failed record validation returns the dialog to the form tab, expands the group
 containing the first invalid field, scrolls that field into view, and focuses it.
 The invoked save action pulses twice in the error color; reduced-motion clients
 receive the same feedback as a temporary static highlight.
+Changed form fields use a content-sized warning ring around the complete field
+surface, including attached actions. The ring follows the control radius and
+must not stretch to a taller neighbor in the same grid row or tint the field's
+transparent text surface. Numeric, money, and percent steppers reserve detail
+height only while a validation message is present, keeping their normal dirty
+ring flush with the visible control.
 Reference and static-select dropdowns close when keyboard focus leaves their
 field, including Tab navigation, while focus moving into a teleported dropdown
 surface keeps the menu open. Record and relation navigation follows the tablist
 keyboard pattern: arrow keys change tabs, Home selects the record tab, and End
 selects the last available relation.
+Reference selectors derive their one- or multi-line control height from the
+target entity's `isValue` metadata. Scalar value parts share the first line and
+each value reference adds a line; that geometry is reserved even while the
+selection is empty, so selecting or clearing a record never shifts the form.
 Tabular reference dropdowns move focus from the input to their first result with
 Arrow Down. Arrow Up/Down then traverses result rows, Space selects the focused
 row, and Escape closes the dropdown before the dialog itself handles Escape.
