@@ -1,0 +1,16 @@
+[
+  {
+    "handle": "waiting_for_supplier_feedback",
+    "description": "Warte auf Lieferantenfeedback",
+    "color": "#f57c00",
+    "icon": "mdi-pause",
+    "isOpen": true
+  },
+  {
+    "handle": "waiting_for_customer_feedback",
+    "description": "Warte auf Kundenfeedback",
+    "color": "#f57c00",
+    "icon": "mdi-pause",
+    "isOpen": true
+  }
+]

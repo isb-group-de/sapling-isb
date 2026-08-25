@@ -2,7 +2,7 @@ import { computed, onMounted, ref, watch, type Ref } from 'vue'
 import type { CompanyItem, PersonItem } from '@/entity/entity'
 import type { PaginatedResponse } from '@/entity/structure'
 import { useCurrentPersonStore } from '@/stores/currentPersonStore'
-import ApiGenericService from '@/services/api.generic.service'
+import ApiGenericService, { type FilterQuery } from '@/services/api.generic.service'
 import { DEFAULT_PAGE_SIZE_SMALL } from '@/constants/project.constants'
 import { useTranslationLoader } from '@/composables/generic/useTranslationLoader'
 import { i18n } from '@/i18n'
@@ -207,16 +207,7 @@ export function useSaplingFilterWork(options: UseSaplingFilterWorkOptions = {}) 
    * Loads the paginated global people list for the person section.
    */
   async function loadPeople(search = peopleSearch.value, page = 1) {
-    const normalizedSearch = search.trim()
-    const filter = normalizedSearch
-      ? {
-          $or: [
-            { firstName: { $ilike: `%${normalizedSearch}%` } },
-            { lastName: { $ilike: `%${normalizedSearch}%` } },
-            { email: { $ilike: `%${normalizedSearch}%` } },
-          ],
-        }
-      : {}
+    const filter = buildWorkSearchFilter(search, ['firstName', 'lastName', 'email'])
 
     peoples.value = await ApiGenericService.find<PersonItem>('person', {
       filter,
@@ -241,21 +232,9 @@ export function useSaplingFilterWork(options: UseSaplingFilterWorkOptions = {}) 
       return
     }
 
-    const normalizedSearch = search.trim()
-    const filter = normalizedSearch
-      ? {
-          $and: [
-            { company: companyHandle },
-            {
-              $or: [
-                { firstName: { $ilike: `%${normalizedSearch}%` } },
-                { lastName: { $ilike: `%${normalizedSearch}%` } },
-                { email: { $ilike: `%${normalizedSearch}%` } },
-              ],
-            },
-          ],
-        }
-      : { company: companyHandle }
+    const filter = buildWorkSearchFilter(search, ['firstName', 'lastName', 'email'], {
+      company: companyHandle,
+    })
 
     companyPeoples.value = await ApiGenericService.find<PersonItem>('person', {
       filter,
@@ -320,8 +299,7 @@ export function useSaplingFilterWork(options: UseSaplingFilterWorkOptions = {}) 
    * Loads the paginated company list for the company section.
    */
   async function loadCompanies(search = companiesSearch.value, page = 1) {
-    const normalizedSearch = search.trim()
-    const filter = normalizedSearch ? { name: { $ilike: `%${normalizedSearch}%` } } : {}
+    const filter = buildWorkSearchFilter(search, ['name'])
 
     companies.value = await ApiGenericService.find<CompanyItem>('company', {
       filter,
@@ -446,6 +424,37 @@ export function useSaplingFilterWork(options: UseSaplingFilterWorkOptions = {}) 
     peopleMap,
   }
   //#endregion
+}
+
+/**
+ * Builds the Partner/work-filter search with AND semantics between whitespace-separated terms.
+ * Each individual term may match any searchable field.
+ */
+export function buildWorkSearchFilter(
+  search: string,
+  fields: string[],
+  requiredFilter?: FilterQuery,
+): FilterQuery {
+  const clauses: FilterQuery[] = requiredFilter ? [requiredFilter] : []
+  const searchTerms = search.trim().split(/\s+/).filter(Boolean)
+
+  clauses.push(
+    ...searchTerms.map((searchTerm) => ({
+      $or: fields.map((field) => ({
+        [field]: { $ilike: `%${searchTerm}%` },
+      })),
+    })),
+  )
+
+  if (clauses.length === 0) {
+    return {}
+  }
+
+  if (clauses.length === 1) {
+    return clauses[0]
+  }
+
+  return { $and: clauses }
 }
 
 function normalizeControlledHandles(values: Array<number | string>): number[] {
