@@ -93,6 +93,25 @@ export class GenericTimelineService {
     return this.dateService.buildRecordUpperBoundFilter(dateFields, upperBound);
   }
 
+  buildTimelineRecordWindowFilter(
+    dateFields: TimelineDateFieldConfig,
+    lowerBound: Date,
+    upperBound: Date,
+  ): object {
+    return this.dateService.buildRecordWindowFilter(
+      dateFields,
+      lowerBound,
+      upperBound,
+    );
+  }
+
+  buildTimelineRecordBeforeFilter(
+    dateFields: TimelineDateFieldConfig,
+    boundary: Date,
+  ): object {
+    return this.dateService.buildRecordBeforeFilter(dateFields, boundary);
+  }
+
   getTimelineDateFieldConfig(
     template: EntityTemplateDto[],
   ): TimelineDateFieldConfig {

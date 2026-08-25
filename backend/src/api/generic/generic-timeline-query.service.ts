@@ -19,6 +19,10 @@ import {
 } from './generic-timeline.service';
 import { FieldPermissionService } from '../current/field-permission.service';
 
+type LoadedTimelineDescriptorDataset = TimelineDescriptorDataset & {
+  hasOlderRecords: boolean;
+};
+
 /** Loads permission-filtered timeline records and composes the paged response. */
 @Injectable()
 export class GenericTimelineQueryService {
@@ -100,16 +104,18 @@ export class GenericTimelineQueryService {
       normalizedHandle,
       currentUser,
       cursorMonth,
+      normalizedMonths,
     );
     const lowerBound =
       this.genericTimelineService.getTimelineLowerBound(datasets);
+    const hasOlderRecords = datasets.some((dataset) => dataset.hasOlderRecords);
 
     const response = new TimelineResponseDto();
     response.entityHandle = entityHandle;
     response.handle = normalizedHandle;
     response.anchor = anchor;
 
-    if (!lowerBound) {
+    if (!lowerBound && !hasOlderRecords) {
       response.hasMore = false;
       response.nextBefore = null;
       return response;
@@ -118,7 +124,8 @@ export class GenericTimelineQueryService {
     let currentMonth = this.genericTimelineService.getMonthStart(cursorMonth);
     while (
       response.months.length < normalizedMonths &&
-      currentMonth.getTime() >= lowerBound.getTime()
+      (hasOlderRecords ||
+        (lowerBound && currentMonth.getTime() >= lowerBound.getTime()))
     ) {
       const window =
         this.genericTimelineService.createTimelineMonthWindow(currentMonth);
@@ -128,7 +135,7 @@ export class GenericTimelineQueryService {
       currentMonth = this.genericTimelineService.addMonths(currentMonth, -1);
     }
 
-    response.hasMore = currentMonth.getTime() >= lowerBound.getTime();
+    response.hasMore = hasOlderRecords;
     response.nextBefore = response.hasMore
       ? this.genericTimelineService.formatTimelineCursor(currentMonth)
       : null;
@@ -167,9 +174,16 @@ export class GenericTimelineQueryService {
     mainHandle: string | number,
     currentUser: PersonItem,
     cursorMonth: Date,
-  ): Promise<TimelineDescriptorDataset[]> {
+    months: number,
+  ): Promise<LoadedTimelineDescriptorDataset[]> {
     const cursorWindow =
       this.genericTimelineService.createTimelineMonthWindow(cursorMonth);
+    const firstMonth = this.genericTimelineService.addMonths(
+      cursorMonth,
+      -(months - 1),
+    );
+    const firstWindow =
+      this.genericTimelineService.createTimelineMonthWindow(firstMonth);
 
     return Promise.all(
       descriptors.map(async (descriptor) => {
@@ -178,22 +192,58 @@ export class GenericTimelineQueryService {
             descriptor.relationFields,
             mainHandle,
           );
-        const records = await this.findTimelineRecords(
-          descriptor.entityHandle,
-          this.genericTimelineService.combineWhere(
-            relationFilter,
-            this.genericTimelineService.buildTimelineRecordUpperBoundFilter(
-              descriptor.dateFields,
-              cursorWindow.end,
+        const [records, hasOlderRecords] = await Promise.all([
+          this.findTimelineRecords(
+            descriptor.entityHandle,
+            this.genericTimelineService.combineWhere(
+              relationFilter,
+              this.genericTimelineService.buildTimelineRecordWindowFilter(
+                descriptor.dateFields,
+                firstWindow.start,
+                cursorWindow.end,
+              ),
             ),
+            descriptor.template,
+            currentUser,
           ),
-          descriptor.template,
-          currentUser,
-        );
+          this.hasTimelineRecordsBefore(
+            descriptor.entityHandle,
+            this.genericTimelineService.combineWhere(
+              relationFilter,
+              this.genericTimelineService.buildTimelineRecordBeforeFilter(
+                descriptor.dateFields,
+                firstWindow.start,
+              ),
+            ),
+            descriptor.template,
+            currentUser,
+          ),
+        ]);
 
-        return { descriptor, relationFilter, records };
+        return { descriptor, relationFilter, records, hasOlderRecords };
       }),
     );
+  }
+
+  private async hasTimelineRecordsBefore(
+    entityHandle: string,
+    where: object,
+    template: EntityTemplateDto[],
+    currentUser: PersonItem,
+  ): Promise<boolean> {
+    const entityClass =
+      this.genericQueryService.getEntityClass<TimelineRecordResult>(
+        entityHandle,
+      );
+    const result = await this.genericReadService.find(
+      entityHandle,
+      entityClass,
+      where,
+      currentUser,
+      template,
+      { limit: 1, fields: ['handle'] },
+    );
+    return result.items.length > 0;
   }
 
   private async findTimelineRecords(

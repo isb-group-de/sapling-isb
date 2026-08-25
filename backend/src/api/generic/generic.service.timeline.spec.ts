@@ -8,7 +8,7 @@ import {
 } from './generic.service.spec-support';
 
 describe('GenericService timeline workflows', () => {
-  it('loads timeline relation records only once per descriptor across multiple months', async () => {
+  it('bounds timeline record payloads to the requested months', async () => {
     (hasSaplingOption as jest.Mock).mockImplementation(() => false);
 
     ENTITY_REGISTRY.splice(0, ENTITY_REGISTRY.length, {
@@ -25,26 +25,30 @@ describe('GenericService timeline workflows', () => {
         updatedAt: new Date('2026-04-10T12:00:00.000Z'),
       })
       .mockResolvedValueOnce(null);
-    const find = jest
-      .fn<() => Promise<Record<string, unknown>[]>>()
-      .mockResolvedValue([
-        {
-          handle: 101,
-          title: 'April ticket',
-          assigneePerson: { handle: 7 },
-          isEscalated: true,
-          createdAt: new Date('2026-04-12T09:00:00.000Z'),
-          updatedAt: new Date('2026-04-15T09:00:00.000Z'),
-        },
-        {
-          handle: 102,
-          title: 'March ticket',
-          assigneePerson: { handle: 7 },
-          isEscalated: false,
-          createdAt: new Date('2026-03-05T09:00:00.000Z'),
-          updatedAt: new Date('2026-03-08T09:00:00.000Z'),
-        },
-      ]);
+    const timelineRecords = [
+      {
+        handle: 101,
+        title: 'April ticket',
+        assigneePerson: { handle: 7 },
+        isEscalated: true,
+        createdAt: new Date('2026-04-12T09:00:00.000Z'),
+        updatedAt: new Date('2026-04-15T09:00:00.000Z'),
+      },
+      {
+        handle: 102,
+        title: 'March ticket',
+        assigneePerson: { handle: 7 },
+        isEscalated: false,
+        createdAt: new Date('2026-03-05T09:00:00.000Z'),
+        updatedAt: new Date('2026-03-08T09:00:00.000Z'),
+      },
+    ];
+    const find = jest.fn((...args: unknown[]) => {
+      const options = args[2] as { limit?: number } | undefined;
+      return Promise.resolve(
+        options?.limit === 1 ? [{ handle: 99 }] : timelineRecords,
+      );
+    });
     const em = {
       findOne,
       find,
@@ -111,7 +115,16 @@ describe('GenericService timeline workflows', () => {
       2,
     );
 
-    expect(find).toHaveBeenCalledTimes(1);
+    expect(find).toHaveBeenCalledTimes(2);
+    const recordQuery = find.mock.calls.find(
+      (call) => (call[2] as { limit?: number } | undefined)?.limit !== 1,
+    );
+    const olderRecordQuery = find.mock.calls.find(
+      (call) => (call[2] as { limit?: number } | undefined)?.limit === 1,
+    );
+    expect(JSON.stringify(recordQuery?.[1])).toContain('$lte');
+    expect(JSON.stringify(recordQuery?.[1])).toContain('$gte');
+    expect(JSON.stringify(olderRecordQuery?.[1])).toContain('$lt');
     expect(result.months).toHaveLength(2);
     expect(result.months.map((month) => month.key)).toEqual([
       '2026-04',
@@ -119,6 +132,8 @@ describe('GenericService timeline workflows', () => {
     ]);
     expect(result.months[0]?.entities[0]?.count).toBe(1);
     expect(result.months[1]?.entities[0]?.count).toBe(1);
+    expect(result.hasMore).toBe(true);
+    expect(result.nextBefore).toBe('2026-02');
 
     ENTITY_REGISTRY.splice(0, ENTITY_REGISTRY.length);
   });

@@ -200,6 +200,31 @@ export class FieldPermissionService {
     }
   }
 
+  filterUniversallyReadableFields(
+    user: PersonItem | null | undefined,
+    entityHandle: string,
+    fields: EntityTemplateDto[],
+  ): EntityTemplateDto[] {
+    if (isPublicGenericReadEntity(entityHandle)) {
+      return fields;
+    }
+    if (!user) {
+      this.throwDenied(entityHandle, '*', 'read');
+    }
+
+    return fields.filter((field) => {
+      try {
+        this.assertFieldReadable(user, entityHandle, field);
+        return true;
+      } catch (error) {
+        if (error instanceof ForbiddenException) {
+          return false;
+        }
+        throw error;
+      }
+    });
+  }
+
   async getAdminCatalog(roleHandle: number, entityHandle: string) {
     const [role, permission, templates] = await Promise.all([
       this.em.findOne(

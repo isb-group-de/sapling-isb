@@ -230,7 +230,7 @@ function writeReports(results, directory, configuration) {
     .sort((left, right) => left.config.users - right.config.users)
     .map(toMatrixRow);
   const report = {
-    schemaVersion: 2,
+    schemaVersion: 3,
     generatedAt: new Date().toISOString(),
     configuration,
     results,
@@ -263,6 +263,7 @@ function toMatrixRow(summary) {
   const workflow = summary.metrics.workflowSuccess || {};
   const workflowDuration = summary.metrics.workflowDuration || {};
   const serverTiming = summary.metrics.serverTiming || {};
+  const failureDiagnostics = summary.failureDiagnostics || {};
   const host = summary.telemetry?.host?.summary || {};
   const databaseTelemetry = summary.telemetry?.database || {};
   const database = databaseTelemetry.summary || {};
@@ -278,6 +279,15 @@ function toMatrixRow(summary) {
     requestsPerSecond:
       durationSeconds > 0 ? (requests.count || 0) / durationSeconds : null,
     httpErrorRate: failures.rate,
+    requestFailureCount: failureDiagnostics.total?.count || 0,
+    transportFailureCount: failureDiagnostics.transport?.count || 0,
+    clientFailureCount: failureDiagnostics.client?.count || 0,
+    serverFailureCount: failureDiagnostics.server?.count || 0,
+    unexpectedFailureCount: failureDiagnostics.unexpected?.count || 0,
+    failureStatusMin: failureDiagnostics.status?.min,
+    failureStatusMax: failureDiagnostics.status?.max,
+    failureErrorCodeMin: failureDiagnostics.errorCode?.min,
+    failureErrorCodeMax: failureDiagnostics.errorCode?.max,
     httpAverageMs: duration.avg,
     httpP90Ms: duration["p(90)"],
     httpP95Ms: duration["p(95)"],
@@ -320,8 +330,10 @@ function stepsCsv(results) {
   for (const summary of results) {
     for (const [step, values] of Object.entries(summary.steps || {})) {
       const serverTiming = summary.stepServerTiming?.[step] || {};
+      const failures = summary.failureDiagnostics?.steps?.[step] || {};
       const requestCount = values.count || 0;
       const missingCount = serverTiming.missing?.count || 0;
+      const failureCount = failures.total?.count || 0;
       rows.push({
         users: summary.config.users,
         step,
@@ -331,6 +343,17 @@ function stepsCsv(results) {
         p95Ms: values["p(95)"],
         p99Ms: values["p(99)"],
         maxMs: values.max,
+        failureCount,
+        failureRate:
+          requestCount > 0 ? clampRatio(failureCount / requestCount) : null,
+        transportFailureCount: failures.transport?.count || 0,
+        clientFailureCount: failures.client?.count || 0,
+        serverFailureCount: failures.server?.count || 0,
+        unexpectedFailureCount: failures.unexpected?.count || 0,
+        failureStatusMin: failures.status?.min,
+        failureStatusMax: failures.status?.max,
+        failureErrorCodeMin: failures.errorCode?.min,
+        failureErrorCodeMax: failures.errorCode?.max,
         serverTimingCoverage:
           requestCount > 0 ? clampRatio(1 - missingCount / requestCount) : null,
         authAverageMs: serverTiming.auth?.avg,
@@ -454,6 +477,18 @@ function matrixMarkdown(rows, configuration) {
   for (const row of rows) {
     lines.push(
       `| ${row.users} | ${percent(row.serverTimingCoverage)} | ${milliseconds(row.serverAuthP95Ms)} | ${milliseconds(row.serverHandlerP95Ms)} | ${milliseconds(row.serverTotalP95Ms)} | ${percentValue(row.hostCpuAveragePercent)} | ${percentValue(row.hostCpuP95Percent)} | ${percentValue(row.hostCpuMaxPercent)} | ${bytes(row.hostUsedMemoryMaxBytes)} | ${decimal(row.databaseActiveConnectionsP95, 1)} | ${decimal(row.databaseWaitingConnectionsMax, 0)} |`,
+    );
+  }
+  lines.push(
+    "",
+    "## Request failure diagnostics",
+    "",
+    "| Users | Failed requests | Transport | HTTP 4xx | HTTP 5xx | Other | Status range | k6 error-code range |",
+    "| ---: | ---: | ---: | ---: | ---: | ---: | :--- | :--- |",
+  );
+  for (const row of rows) {
+    lines.push(
+      `| ${row.users} | ${row.requestFailureCount} | ${row.transportFailureCount} | ${row.clientFailureCount} | ${row.serverFailureCount} | ${row.unexpectedFailureCount} | ${metricRange(row.failureStatusMin, row.failureStatusMax)} | ${metricRange(row.failureErrorCodeMin, row.failureErrorCodeMax)} |`,
     );
   }
   lines.push("");
@@ -1045,4 +1080,13 @@ function milliseconds(value) {
 
 function decimal(value, digits) {
   return Number.isFinite(value) ? value.toFixed(digits) : "n/a";
+}
+
+function metricRange(minimum, maximumValue) {
+  if (!Number.isFinite(minimum) || !Number.isFinite(maximumValue)) {
+    return "n/a";
+  }
+  return minimum === maximumValue
+    ? String(minimum)
+    : `${minimum}–${maximumValue}`;
 }

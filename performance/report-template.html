@@ -847,6 +847,16 @@
               </caption>
             </table>
           </div>
+          <h3 class="diagnostic-subheading">Fehlerdiagnose</h3>
+          <p id="failure-caption" class="panel-caption"></p>
+          <div class="table-wrap">
+            <table id="failure-table">
+              <caption class="sr-only">
+                Fehlgeschlagene Requests nach Laststufe, Workflow-Schritt und
+                Fehlerkategorie
+              </caption>
+            </table>
+          </div>
           <h3 class="diagnostic-subheading">
             Request-Anteile bei maximaler Last
           </h3>
@@ -1002,7 +1012,7 @@
 
           const baseline = levels[0];
           const maximum = levels[levels.length - 1];
-          const allPassed = levels.every((level) => level.thresholdsPassed);
+          const capacity = assessCapacity(levels);
           const peakRps = Math.max(
             ...levels.map((level) => level.requestsPerSecond),
           );
@@ -1011,10 +1021,8 @@
           document.getElementById("hero-copy").textContent =
             `${levels.length} Laststufen zeigen, wie sich Antwortzeit, Durchsatz und einzelne Workflow-Schritte von ${baseline.users} bis ${maximum.users} parallelen Benutzern entwickeln.`;
           const status = document.getElementById("run-status");
-          status.textContent = allPassed
-            ? "Alle Grenzwerte eingehalten"
-            : "Grenzwerte verletzt";
-          status.classList.toggle("is-failing", !allPassed);
+          status.textContent = capacity.text;
+          status.classList.toggle("is-failing", capacity.isFailing);
           document.getElementById("run-date").textContent = formatDate(
             report.generatedAt,
           );
@@ -1056,6 +1064,7 @@
           const workflow = metrics.workflowSuccess || {};
           const workflowDuration = metrics.workflowDuration || {};
           const serverTiming = metrics.serverTiming || null;
+          const failureDiagnostics = summary.failureDiagnostics || {};
           const host = summary.telemetry?.host?.summary || {};
           const databaseTelemetry = summary.telemetry?.database || {};
           const database = databaseTelemetry.summary || {};
@@ -1083,6 +1092,8 @@
             workflowP95Ms: finite(workflowDuration["p(95)"]),
             steps: summary.steps || {},
             stepServerTiming: summary.stepServerTiming || {},
+            failureDiagnostics,
+            stepFailures: failureDiagnostics.steps || {},
             serverTimingCoverage:
               serverTiming && requestCount > 0
                 ? clampRatio(1 - missingServerTiming / requestCount)
@@ -1252,6 +1263,69 @@
             .join("");
           document.getElementById("diagnostics-table").innerHTML =
             `${diagnosticsHeader}<tbody>${diagnosticsBody}</tbody>`;
+
+          const failureRows = levels
+            .flatMap((level) =>
+              Object.entries(level.stepFailures)
+                .map(([step, failure]) => ({
+                  users: level.users,
+                  step,
+                  requestCount: positive(level.steps[step]?.count),
+                  total: positive(failure.total?.count),
+                  transport: positive(failure.transport?.count),
+                  client: positive(failure.client?.count),
+                  server: positive(failure.server?.count),
+                  unexpected: positive(failure.unexpected?.count),
+                  statusMin: optionalFinite(failure.status?.min),
+                  statusMax: optionalFinite(failure.status?.max),
+                  errorCodeMin: optionalFinite(failure.errorCode?.min),
+                  errorCodeMax: optionalFinite(failure.errorCode?.max),
+                }))
+                .filter((failure) => failure.total > 0),
+            )
+            .sort(
+              (left, right) =>
+                left.users - right.users || right.total - left.total,
+            );
+          document.getElementById("failure-caption").textContent =
+            failureRows.length > 0
+              ? "Status 0 bezeichnet einen Transportfehler ohne HTTP-Antwort. 4xx und 5xx stammen aus einer empfangenen API-Antwort; der k6-Fehlercode grenzt Netzwerk- und Protokollfehler weiter ein."
+              : "Keine detaillierten Request-Fehler in den vorhandenen Messdaten. Ältere Reports enthalten diese Diagnose noch nicht.";
+          const failureHeader = `
+            <thead><tr>
+              <th scope="col">User</th>
+              <th scope="col">Workflow-Schritt</th>
+              <th scope="col">Fehler</th>
+              <th scope="col">Fehlerrate</th>
+              <th scope="col">Transport</th>
+              <th scope="col">HTTP 4xx</th>
+              <th scope="col">HTTP 5xx</th>
+              <th scope="col">Sonstige</th>
+              <th scope="col">Status</th>
+              <th scope="col">k6-Code</th>
+            </tr></thead>`;
+          const failureBody =
+            failureRows.length > 0
+              ? failureRows
+                  .map(
+                    (failure) => `
+                      <tr>
+                        <td>${formatNumber(failure.users, 0)}</td>
+                        <td>${escapeHtml(stepLabel(failure.step))}</td>
+                        <td>${formatNumber(failure.total, 0)}</td>
+                        <td>${formatPercent(failure.requestCount > 0 ? failure.total / failure.requestCount : 0)}</td>
+                        <td>${formatNumber(failure.transport, 0)}</td>
+                        <td>${formatNumber(failure.client, 0)}</td>
+                        <td>${formatNumber(failure.server, 0)}</td>
+                        <td>${formatNumber(failure.unexpected, 0)}</td>
+                        <td>${escapeHtml(formatMetricRange(failure.statusMin, failure.statusMax))}</td>
+                        <td>${escapeHtml(formatMetricRange(failure.errorCodeMin, failure.errorCodeMax))}</td>
+                      </tr>`,
+                  )
+                  .join("")
+              : '<tr><td colspan="10">Keine Fehlerdiagnosedaten vorhanden.</td></tr>';
+          document.getElementById("failure-table").innerHTML =
+            `${failureHeader}<tbody>${failureBody}</tbody>`;
 
           const timingRows = Object.entries(maximum.steps)
             .map(([step, values]) => {
@@ -1596,6 +1670,28 @@
             : Number.NaN;
         }
 
+        function assessCapacity(levels) {
+          const firstFailure = levels.findIndex(
+            (level) => !level.thresholdsPassed,
+          );
+          if (firstFailure === -1) {
+            return {
+              text: `System ausgelegt für mindestens ${formatNumber(levels.at(-1).users, 0)} Benutzer`,
+              isFailing: false,
+            };
+          }
+          if (firstFailure === 0) {
+            return {
+              text: "Keine getestete Laststufe innerhalb der Grenzwerte",
+              isFailing: true,
+            };
+          }
+          return {
+            text: `System ausgelegt für ${formatNumber(levels[firstFailure - 1].users, 0)} Benutzer`,
+            isFailing: false,
+          };
+        }
+
         function finite(value) {
           return Number.isFinite(Number(value)) ? Number(value) : 0;
         }
@@ -1661,6 +1757,15 @@
           return optionalFinite(value) === null
             ? "–"
             : formatNumber(value, digits);
+        }
+
+        function formatMetricRange(minimum, maximum) {
+          const parsedMinimum = optionalFinite(minimum);
+          const parsedMaximum = optionalFinite(maximum);
+          if (parsedMinimum === null || parsedMaximum === null) return "–";
+          return parsedMinimum === parsedMaximum
+            ? formatNumber(parsedMinimum, 0)
+            : `${formatNumber(parsedMinimum, 0)}–${formatNumber(parsedMaximum, 0)}`;
         }
 
         function formatBytes(value) {

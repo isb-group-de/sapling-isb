@@ -50,6 +50,8 @@ interface MatchPreview {
   value: string;
 }
 
+type ReadableTemplateCache = Map<string, Promise<EntityTemplateDto[]>>;
+
 const DEFAULT_GLOBAL_SEARCH_LIMIT = 12;
 const MAX_GLOBAL_SEARCH_LIMIT = 25;
 const MIN_GLOBAL_SEARCH_QUERY_LENGTH = 2;
@@ -72,6 +74,11 @@ export class GlobalSearchService {
         templates: EntityTemplateDto[],
       ): EntityTemplateDto[] => templates,
       assertReadableFields: () => Promise.resolve(),
+      filterUniversallyReadableFields: (
+        _user: PersonItem,
+        _entityHandle: string,
+        templates: EntityTemplateDto[],
+      ): EntityTemplateDto[] => templates,
     } as unknown as FieldPermissionService,
     @Optional()
     private readonly searchIndex?: GlobalSearchIndexService,
@@ -99,6 +106,7 @@ export class GlobalSearchService {
     );
     const terms = this.getSearchTerms(query);
     const perEntityLimit = Math.max(3, Math.min(10, limit));
+    const readableTemplateCache: ReadableTemplateCache = new Map();
 
     if (this.searchIndex?.isEnabled()) {
       return this.searchIndexed(
@@ -108,6 +116,7 @@ export class GlobalSearchService {
         entities,
         terms,
         perEntityLimit,
+        readableTemplateCache,
       );
     }
 
@@ -120,6 +129,7 @@ export class GlobalSearchService {
             terms,
             perEntityLimit,
             currentUser: hydratedUser,
+            readableTemplateCache,
           }),
       ),
       ENTITY_SEARCH_CONCURRENCY,
@@ -143,6 +153,7 @@ export class GlobalSearchService {
     entities: SearchableEntity[],
     terms: string[],
     perEntityLimit: number,
+    readableTemplateCache: ReadableTemplateCache,
   ): Promise<GlobalSearchResponseDto> {
     if (!this.searchIndex) {
       return { query, items: [] };
@@ -154,10 +165,12 @@ export class GlobalSearchService {
             const template = await this.getUniversallyReadableTemplate(
               currentUser,
               entity.handle,
+              readableTemplateCache,
             );
             const configuration = await this.getSearchConfiguration(
               currentUser,
               template,
+              readableTemplateCache,
             );
             return {
               entity,
@@ -309,22 +322,31 @@ export class GlobalSearchService {
     context: Omit<
       EntitySearchContext,
       'template' | 'fields' | 'valueFields' | 'relations'
-    >,
+    > & { readableTemplateCache: ReadableTemplateCache },
   ): Promise<GlobalSearchResultDto[]> {
     try {
       const template = await this.getUniversallyReadableTemplate(
         context.currentUser,
         context.entity.handle,
+        context.readableTemplateCache,
       );
       const { fields, valueFields, relations } =
-        await this.getSearchConfiguration(context.currentUser, template);
+        await this.getSearchConfiguration(
+          context.currentUser,
+          template,
+          context.readableTemplateCache,
+        );
 
       if (fields.length === 0) {
         return [];
       }
 
       const searchContext: EntitySearchContext = {
-        ...context,
+        entity: context.entity,
+        query: context.query,
+        terms: context.terms,
+        perEntityLimit: context.perEntityLimit,
+        currentUser: context.currentUser,
         template,
         fields,
         valueFields,
@@ -360,28 +382,52 @@ export class GlobalSearchService {
   private async getUniversallyReadableTemplate(
     currentUser: PersonItem,
     entityHandle: string,
+    cache: ReadableTemplateCache,
   ): Promise<EntityTemplateDto[]> {
-    const template = this.fieldPermissions
-      .applyTemplateAccess(
-        currentUser,
-        entityHandle,
-        await this.fieldPermissions.getTemplates(entityHandle),
-      )
-      .filter((field) => field.fieldAccess?.allowRead !== false);
-    const readable: EntityTemplateDto[] = [];
-    for (const field of template) {
-      try {
-        await this.fieldPermissions.assertReadableFields(
+    const cached = cache.get(entityHandle);
+    if (cached) {
+      return cached;
+    }
+
+    const load = (async () => {
+      const template = this.fieldPermissions
+        .applyTemplateAccess(
           currentUser,
           entityHandle,
-          [field.name],
+          await this.fieldPermissions.getTemplates(entityHandle),
+        )
+        .filter((field) => field.fieldAccess?.allowRead !== false);
+      if (
+        typeof this.fieldPermissions.filterUniversallyReadableFields ===
+        'function'
+      ) {
+        return this.fieldPermissions.filterUniversallyReadableFields(
+          currentUser,
+          entityHandle,
+          template,
         );
-        readable.push(field);
-      } catch (error) {
-        if (!(error instanceof ForbiddenException)) throw error;
       }
-    }
-    return readable;
+
+      const readable: EntityTemplateDto[] = [];
+      for (const field of template) {
+        try {
+          await this.fieldPermissions.assertReadableFields(
+            currentUser,
+            entityHandle,
+            [field.name],
+          );
+          readable.push(field);
+        } catch (error) {
+          if (!(error instanceof ForbiddenException)) throw error;
+        }
+      }
+      return readable;
+    })().catch((error) => {
+      cache.delete(entityHandle);
+      throw error;
+    });
+    cache.set(entityHandle, load);
+    return load;
   }
 
   private async getSearchableEntities(
@@ -492,6 +538,7 @@ export class GlobalSearchService {
   private async getSearchConfiguration(
     currentUser: PersonItem,
     template: EntityTemplateDto[],
+    readableTemplateCache: ReadableTemplateCache,
   ): Promise<{
     fields: string[];
     valueFields: ValueField[];
@@ -522,6 +569,7 @@ export class GlobalSearchService {
     const referenceValueFields = await this.getReferenceValueFields(
       currentUser,
       template,
+      readableTemplateCache,
     );
     const preferred = candidates
       .filter((field) => preferredFields.has(field.name))
@@ -555,6 +603,7 @@ export class GlobalSearchService {
   private async getReferenceValueFields(
     currentUser: PersonItem,
     template: EntityTemplateDto[],
+    readableTemplateCache: ReadableTemplateCache,
   ): Promise<ReferenceValueField[]> {
     const valueReferences = template.filter(
       (field) =>
@@ -563,16 +612,15 @@ export class GlobalSearchService {
         field.options?.includes('isValue') &&
         Boolean(field.referenceName),
     );
-    const result: ReferenceValueField[] = [];
-
-    for (const reference of valueReferences) {
-      try {
-        const referenceTemplate = await this.getUniversallyReadableTemplate(
-          currentUser,
-          reference.referenceName,
-        );
-        result.push(
-          ...referenceTemplate
+    const resultSets = await Promise.all(
+      valueReferences.map(async (reference) => {
+        try {
+          const referenceTemplate = await this.getUniversallyReadableTemplate(
+            currentUser,
+            reference.referenceName,
+            readableTemplateCache,
+          );
+          return referenceTemplate
             .filter(
               (field) =>
                 !field.isReference && field.options?.includes('isValue'),
@@ -581,17 +629,18 @@ export class GlobalSearchService {
               path: `${reference.name}.${field.name}`,
               referenceRoot: reference.name,
               isSearchable: this.isSearchableTextField(field),
-            })),
-        );
-      } catch (error) {
-        global.log?.warn?.(
-          `global search skipped value reference ${reference.name}:`,
-          error,
-        );
-      }
-    }
+            }));
+        } catch (error) {
+          global.log?.warn?.(
+            `global search skipped value reference ${reference.name}:`,
+            error,
+          );
+          return [];
+        }
+      }),
+    );
 
-    return result;
+    return resultSets.flat();
   }
 
   private isSearchableTextField(field: EntityTemplateDto): boolean {

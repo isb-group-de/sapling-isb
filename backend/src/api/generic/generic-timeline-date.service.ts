@@ -38,6 +38,41 @@ export class GenericTimelineDateService {
     );
   }
 
+  buildRecordWindowFilter(
+    dateFields: TimelineDateFieldConfig,
+    lowerBound: Date,
+    upperBound: Date,
+  ): object {
+    return {
+      $and: [
+        this.buildBoundaryComparisonFilter(
+          dateFields.startFieldName,
+          dateFields.startFallbackFieldName,
+          '$lte',
+          upperBound,
+        ),
+        this.buildBoundaryComparisonFilter(
+          dateFields.endFieldName,
+          dateFields.endFallbackFieldName,
+          '$gte',
+          lowerBound,
+        ),
+      ],
+    };
+  }
+
+  buildRecordBeforeFilter(
+    dateFields: TimelineDateFieldConfig,
+    boundary: Date,
+  ): object {
+    return this.buildBoundaryComparisonFilter(
+      dateFields.startFieldName,
+      dateFields.startFallbackFieldName,
+      '$lt',
+      boundary,
+    );
+  }
+
   createMonthWindow(baseDate: Date): TimelineMonthWindow {
     const start = this.getMonthStart(baseDate);
     const end = this.getMonthEnd(baseDate);
@@ -181,7 +216,7 @@ export class GenericTimelineDateService {
   private buildBoundaryComparisonFilter(
     fieldName: string,
     fallbackFieldName: string,
-    operator: '$gte' | '$lte',
+    operator: '$gte' | '$lte' | '$lt',
     value: Date,
   ): object {
     if (fieldName === fallbackFieldName) {

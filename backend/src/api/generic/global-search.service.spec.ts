@@ -750,4 +750,74 @@ describe('GlobalSearchService', () => {
       }),
     ]);
   });
+
+  it('resolves a shared reference template only once per search request', async () => {
+    const entities = ['person', 'ticket'].map((handle) =>
+      Object.assign(new EntityItem(), {
+        handle,
+        canShow: true,
+        routes: {
+          getItems: () => [{ route: `table/${handle}` }],
+        },
+      }),
+    );
+    const currentUser = { handle: 1 };
+    const templateService = {
+      getEntityTemplate: jest.fn((entityHandle: string) =>
+        entityHandle === 'company'
+          ? [
+              {
+                name: 'name',
+                type: 'string',
+                isPersistent: true,
+                isReference: false,
+                options: ['isValue'],
+              },
+            ]
+          : [
+              {
+                name: 'title',
+                type: 'string',
+                isPersistent: true,
+                isReference: false,
+                options: ['isValue'],
+              },
+              {
+                name: 'company',
+                type: 'CompanyItem',
+                kind: 'm:1',
+                referenceName: 'company',
+                isPersistent: true,
+                isReference: true,
+                options: ['isValue'],
+              },
+            ],
+      ),
+    };
+    const service = new GlobalSearchService(
+      { find: jest.fn().mockResolvedValue(entities) } as never,
+      {
+        getPerson: jest.fn().mockResolvedValue(currentUser),
+        getAllEntityPermissions: jest.fn().mockReturnValue(
+          entities.map((entity) => ({
+            entityHandle: entity.handle,
+            allowRead: true,
+            allowShow: true,
+          })),
+        ),
+      } as never,
+      {
+        findAndCount: jest.fn().mockResolvedValue({ data: [] }),
+      } as never,
+      templateService as never,
+    );
+
+    await service.search(currentUser as never, { query: 'standard' });
+
+    expect(
+      templateService.getEntityTemplate.mock.calls.filter(
+        ([entityHandle]) => entityHandle === 'company',
+      ),
+    ).toHaveLength(1);
+  });
 });

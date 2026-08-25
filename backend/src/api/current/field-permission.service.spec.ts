@@ -156,6 +156,27 @@ describe('FieldPermissionService', () => {
     ).rejects.toBeInstanceOf(ForbiddenException);
   });
 
+  it('filters search templates without reloading them for every field', () => {
+    const globalDeny = permission('ticket', [
+      {
+        fieldName: 'secret',
+        allowRead: false,
+        allowInsert: true,
+        allowUpdate: true,
+      },
+    ]);
+    const currentUser = user([
+      { stage: 'global', permissions: [globalDeny] },
+      { stage: 'company', permissions: [permission('ticket')] },
+    ]);
+
+    expect(
+      service
+        .filterUniversallyReadableFields(currentUser, 'ticket', templates)
+        .map((template) => template.name),
+    ).toEqual(['handle', 'title', 'creatorCompany']);
+  });
+
   it('keeps security and read-only metadata as structural upper bounds', () => {
     const currentUser = user([
       { stage: 'global', permissions: [permission('ticket')] },

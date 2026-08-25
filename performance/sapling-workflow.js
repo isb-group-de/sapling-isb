@@ -66,11 +66,9 @@ const extraSteps = EXTRA_ENTITIES.flatMap((entityHandle) => [
   `${metricName(entityHandle)}_template`,
   `${metricName(entityHandle)}_list`,
 ]);
+const workflowSteps = [...new Set([...coreSteps, ...extraSteps])];
 const stepTrends = Object.fromEntries(
-  [...new Set([...coreSteps, ...extraSteps])].map((step) => [
-    step,
-    new Trend(`step_${step}`, true),
-  ]),
+  workflowSteps.map((step) => [step, new Trend(`step_${step}`, true)]),
 );
 const stepServerTimingTrends = Object.fromEntries(
   Object.keys(stepTrends).map((step) => [
@@ -87,6 +85,32 @@ const stepServerTimingMissing = Object.fromEntries(
   Object.keys(stepTrends).map((step) => [
     step,
     new Counter(`step_${step}_server_timing_missing`),
+  ]),
+);
+const failureCategories = ["transport", "client", "server", "unexpected"];
+const requestFailures = new Counter("request_failures");
+const requestFailureCategories = Object.fromEntries(
+  failureCategories.map((category) => [
+    category,
+    new Counter(`request_${category}_failures`),
+  ]),
+);
+const failureStatus = new Trend("failure_status");
+const failureErrorCode = new Trend("failure_error_code");
+const stepFailures = Object.fromEntries(
+  workflowSteps.map((step) => [
+    step,
+    {
+      total: new Counter(`step_${step}_failures`),
+      categories: Object.fromEntries(
+        failureCategories.map((category) => [
+          category,
+          new Counter(`step_${step}_${category}_failures`),
+        ]),
+      ),
+      status: new Trend(`step_${step}_failure_status`),
+      errorCode: new Trend(`step_${step}_failure_error_code`),
+    },
   ]),
 );
 
@@ -387,7 +411,47 @@ function requestStep(step, method, url, body = null, tags = {}) {
     [`${step} returns 2xx`]: (result) =>
       result.status >= 200 && result.status < 300,
   });
+  if (!ok) {
+    recordRequestFailure(step, response);
+  }
   return { ok, response };
+}
+
+function recordRequestFailure(step, response) {
+  const status = Number.isFinite(Number(response?.status))
+    ? Number(response.status)
+    : 0;
+  const rawErrorCode = response?.error_code;
+  const errorCode =
+    rawErrorCode === null || rawErrorCode === undefined
+      ? Number.NaN
+      : Number(rawErrorCode);
+  const category =
+    status === 0
+      ? "transport"
+      : status >= 400 && status < 500
+        ? "client"
+        : status >= 500 && status < 600
+          ? "server"
+          : "unexpected";
+
+  requestFailures.add(1);
+  requestFailureCategories[category].add(1);
+  failureStatus.add(status);
+  stepFailures[step].total.add(1);
+  stepFailures[step].categories[category].add(1);
+  stepFailures[step].status.add(status);
+  if (Number.isFinite(errorCode)) {
+    failureErrorCode.add(errorCode);
+    stepFailures[step].errorCode.add(errorCode);
+  }
+
+  const error = String(response?.error || "unbekannt")
+    .replace(/\s+/g, " ")
+    .slice(0, 240);
+  console.error(
+    `[request-failure] step=${step} status=${status} error_code=${Number.isFinite(errorCode) ? errorCode : "-"} error=${error}`,
+  );
 }
 
 function recordServerTiming(step, response) {
@@ -624,7 +688,7 @@ function rate(value, fallback) {
 
 export function handleSummary(data) {
   const result = {
-    schemaVersion: 2,
+    schemaVersion: 3,
     generatedAt: new Date().toISOString(),
     config: {
       baseUrl: BASE_URL,
@@ -677,6 +741,29 @@ export function handleSummary(data) {
         },
       ]),
     ),
+    failureDiagnostics: {
+      total: values(data, "request_failures"),
+      transport: values(data, "request_transport_failures"),
+      client: values(data, "request_client_failures"),
+      server: values(data, "request_server_failures"),
+      unexpected: values(data, "request_unexpected_failures"),
+      status: values(data, "failure_status"),
+      errorCode: values(data, "failure_error_code"),
+      steps: Object.fromEntries(
+        workflowSteps.map((step) => [
+          step,
+          {
+            total: values(data, `step_${step}_failures`),
+            transport: values(data, `step_${step}_transport_failures`),
+            client: values(data, `step_${step}_client_failures`),
+            server: values(data, `step_${step}_server_failures`),
+            unexpected: values(data, `step_${step}_unexpected_failures`),
+            status: values(data, `step_${step}_failure_status`),
+            errorCode: values(data, `step_${step}_failure_error_code`),
+          },
+        ]),
+      ),
+    },
   };
 
   const resultPath =
@@ -709,6 +796,7 @@ function summaryText(result) {
     `Workflows: ${result.metrics.iterations?.count ?? 0}/${result.config.expectedWorkflows}`,
     `Workflow success: ${percent(workflows.rate)}`,
     `HTTP error rate: ${percent(failures.rate)}`,
+    `Request failures: ${result.failureDiagnostics.total?.count ?? 0} (transport ${result.failureDiagnostics.transport?.count ?? 0}, 4xx ${result.failureDiagnostics.client?.count ?? 0}, 5xx ${result.failureDiagnostics.server?.count ?? 0}, other ${result.failureDiagnostics.unexpected?.count ?? 0})`,
     `HTTP duration: avg ${milliseconds(duration.avg)}, p95 ${milliseconds(duration["p(95)"])}, p99 ${milliseconds(duration["p(99)"])}`,
     `Thresholds: ${result.thresholdsPassed ? "passed" : "failed"}`,
     "",

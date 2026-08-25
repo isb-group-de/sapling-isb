@@ -177,8 +177,8 @@ Each run creates a timestamped directory under `performance/results/`:
 - `matrix.csv`: the same matrix for Excel or other analysis.
 - `matrix.json`: full machine-readable output for CI/regression checks.
 - `steps.csv`: request count, p90/p95/p99/max HTTP latency, `Server-Timing`
-  coverage, and authentication/handler/server latency per API step and load
-  level.
+  coverage, authentication/handler/server latency, and categorized request
+  failures per API step and load level.
 - `host-telemetry.csv`: one-second host CPU and RAM samples for every measured
   load level.
 - `database-telemetry.csv`: one-second PostgreSQL connection-state samples when
@@ -208,6 +208,14 @@ coverage near 100% means each measured response supplied `auth`, `handler`, and
 client/network/proxy overhead, while a growing handler value keeps the search
 inside the application and its downstream calls. A growing auth value instead
 points to principal/session/token resolution.
+
+New reports classify every non-2xx response per workflow step as transport
+(no HTTP response/status 0), HTTP 4xx, HTTP 5xx, or other. The report website,
+`matrix.md`, `matrix.csv`, and `steps.csv` include these counts plus the
+observed status and k6 error-code range. The k6 console also writes one compact
+diagnostic line per failed request without URL, token, cookie, or response
+body. This separates backend responses from host/Docker/network interruptions
+without exposing request credentials.
 
 Host CPU/RAM describe the complete load-generator machine, not only the Sapling
 process. With a local backend this is also its host; with a remote base URL it
