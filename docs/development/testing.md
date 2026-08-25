@@ -18,15 +18,15 @@ npm run verify
 
 Meaning:
 
-| Command | Purpose |
-| --- | --- |
-| `type-check:backend` | TypeScript check for NestJS/backend |
+| Command               | Purpose                                |
+| --------------------- | -------------------------------------- |
+| `type-check:backend`  | TypeScript check for NestJS/backend    |
 | `type-check:frontend` | Vue/TypeScript check through `vue-tsc` |
-| `type-check` | Frontend and backend typechecks |
-| `test:backend` | Backend Jest suite |
-| `test:frontend` | Frontend Vitest suite |
-| `test` | Backend and frontend tests |
-| `verify` | Typechecks and tests |
+| `type-check`          | Frontend and backend typechecks        |
+| `test:backend`        | Backend Jest suite                     |
+| `test:frontend`       | Frontend Vitest suite                  |
+| `test`                | Backend and frontend tests             |
+| `verify`              | Typechecks and tests                   |
 
 ## Backend Tests
 
@@ -133,8 +133,9 @@ Run typechecks after most TypeScript, Vue, entity, DTO, or service changes.
 ## API Performance Tests
 
 The reproducible k6 suite under `performance/` executes a realistic API workflow
-with 1 and then 10 through 100 concurrent users. It produces a comparison
-matrix plus per-endpoint latency data:
+with 1, 5, 10, 20, 50, and 100 concurrent users. It produces a comparison
+matrix plus per-endpoint HTTP and `Server-Timing` latency data, p99 tail latency,
+and host/database telemetry:
 
 ```bash
 npm run test:performance

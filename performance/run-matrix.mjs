@@ -1,13 +1,28 @@
-import { spawnSync } from "node:child_process";
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { spawn } from "node:child_process";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import os from "node:os";
 import { writeReportWebsite } from "./report-builder.mjs";
 
 const DEFAULT_USERS = [1, 5, 10, 20, 50, 100];
 const DEFAULT_K6_IMAGE = "grafana/k6:0.57.0";
+const BACKEND_ENVIRONMENT_KEYS = new Set([
+  "DB_HOST",
+  "DB_PORT",
+  "DB_USER",
+  "DB_PASSWORD",
+  "DB_NAME",
+  "DB_POOL_MIN",
+  "DB_POOL_MAX",
+  "LOG_REQUESTS_CONSOLE_ENABLED",
+  "LOG_REQUESTS_FILE_ENABLED",
+  "SECURITY_PRINCIPAL_CACHE_TTL_MS",
+  "SECURITY_PRINCIPAL_CACHE_MAX_ENTRIES",
+  "GLOBAL_SEARCH_INDEX_ENABLED",
+]);
 const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
+const backendEnvironment = readBackendEnvironment();
 const options = parseArguments(process.argv.slice(2));
 const users = parsePositiveIntegerList(
   options.users || process.env.SAPLING_USERS,
@@ -43,7 +58,7 @@ console.log(`Engine: ${engine}`);
 console.log(`Results: ${resultsDirectory}`);
 
 if (warmupEnabled) {
-  infrastructureFailure = !runWarmup();
+  infrastructureFailure = !(await runWarmup());
 }
 
 for (const userCount of infrastructureFailure ? [] : users) {
@@ -62,12 +77,7 @@ for (const userCount of infrastructureFailure ? [] : users) {
     engine,
   );
   const command = buildCommand(engine, environment);
-  const execution = spawnSync(command.executable, command.arguments, {
-    cwd: scriptDirectory,
-    env: environment,
-    stdio: "inherit",
-    windowsHide: true,
-  });
+  const execution = await executeCommand(command, environment, true);
 
   if (execution.error) {
     infrastructureFailure = true;
@@ -93,6 +103,8 @@ for (const userCount of infrastructureFailure ? [] : users) {
 
   try {
     const summary = JSON.parse(readFileSync(summaryFile, "utf8"));
+    summary.telemetry = execution.telemetry;
+    writeFileSync(summaryFile, `${JSON.stringify(summary, null, 2)}\n`);
     summaries.push(summary);
   } catch (error) {
     infrastructureFailure = true;
@@ -117,6 +129,12 @@ if (summaries.length > 0) {
   );
   console.log(
     `Per-endpoint report: ${path.join(resultsDirectory, "steps.csv")}`,
+  );
+  console.log(
+    `Host telemetry: ${path.join(resultsDirectory, "host-telemetry.csv")}`,
+  );
+  console.log(
+    `Database telemetry: ${path.join(resultsDirectory, "database-telemetry.csv")}`,
   );
   console.log(
     `Presentation website: ${path.join(resultsDirectory, "report.html")}`,
@@ -212,7 +230,7 @@ function writeReports(results, directory, configuration) {
     .sort((left, right) => left.config.users - right.config.users)
     .map(toMatrixRow);
   const report = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     generatedAt: new Date().toISOString(),
     configuration,
     results,
@@ -222,8 +240,19 @@ function writeReports(results, directory, configuration) {
     `${JSON.stringify(report, null, 2)}\n`,
   );
   writeFileSync(path.join(directory, "matrix.csv"), matrixCsv(rows));
-  writeFileSync(path.join(directory, "matrix.md"), matrixMarkdown(rows));
+  writeFileSync(
+    path.join(directory, "matrix.md"),
+    matrixMarkdown(rows, configuration),
+  );
   writeFileSync(path.join(directory, "steps.csv"), stepsCsv(results));
+  writeFileSync(
+    path.join(directory, "host-telemetry.csv"),
+    hostTelemetryCsv(results),
+  );
+  writeFileSync(
+    path.join(directory, "database-telemetry.csv"),
+    databaseTelemetryCsv(results),
+  );
   writeReportWebsite(report, directory);
 }
 
@@ -233,13 +262,19 @@ function toMatrixRow(summary) {
   const failures = summary.metrics.httpRequestFailed || {};
   const workflow = summary.metrics.workflowSuccess || {};
   const workflowDuration = summary.metrics.workflowDuration || {};
+  const serverTiming = summary.metrics.serverTiming || {};
+  const host = summary.telemetry?.host?.summary || {};
+  const databaseTelemetry = summary.telemetry?.database || {};
+  const database = databaseTelemetry.summary || {};
   const durationSeconds = summary.durationMs ? summary.durationMs / 1000 : 0;
+  const requestCount = requests.count || 0;
+  const missingServerTiming = serverTiming.missing?.count || 0;
   return {
     users: summary.config.users,
     workflowsExpected: summary.config.expectedWorkflows,
     workflowsCompleted: summary.metrics.iterations?.count || 0,
     workflowSuccessRate: workflow.rate,
-    requestCount: requests.count || 0,
+    requestCount,
     requestsPerSecond:
       durationSeconds > 0 ? (requests.count || 0) / durationSeconds : null,
     httpErrorRate: failures.rate,
@@ -249,6 +284,22 @@ function toMatrixRow(summary) {
     httpP99Ms: duration["p(99)"],
     httpMaxMs: duration.max,
     workflowP95Ms: workflowDuration["p(95)"],
+    serverTimingCoverage:
+      requestCount > 0
+        ? clampRatio(1 - missingServerTiming / requestCount)
+        : null,
+    serverAuthP95Ms: serverTiming.auth?.["p(95)"],
+    serverHandlerP95Ms: serverTiming.handler?.["p(95)"],
+    serverTotalP95Ms: serverTiming.total?.["p(95)"],
+    hostCpuAveragePercent: host.cpuAveragePercent,
+    hostCpuP95Percent: host.cpuP95Percent,
+    hostCpuMaxPercent: host.cpuMaxPercent,
+    hostUsedMemoryMaxBytes: host.usedMemoryMaxBytes,
+    databaseTelemetryAvailable: databaseTelemetry.available === true,
+    databaseTotalConnectionsMax: database.totalConnectionsMax,
+    databaseActiveConnectionsP95: database.activeConnectionsP95,
+    databaseActiveConnectionsMax: database.activeConnectionsMax,
+    databaseWaitingConnectionsMax: database.waitingConnectionsMax,
     thresholdsPassed: summary.thresholdsPassed,
   };
 }
@@ -268,6 +319,9 @@ function stepsCsv(results) {
   const rows = [];
   for (const summary of results) {
     for (const [step, values] of Object.entries(summary.steps || {})) {
+      const serverTiming = summary.stepServerTiming?.[step] || {};
+      const requestCount = values.count || 0;
+      const missingCount = serverTiming.missing?.count || 0;
       rows.push({
         users: summary.config.users,
         step,
@@ -277,6 +331,14 @@ function stepsCsv(results) {
         p95Ms: values["p(95)"],
         p99Ms: values["p(99)"],
         maxMs: values.max,
+        serverTimingCoverage:
+          requestCount > 0 ? clampRatio(1 - missingCount / requestCount) : null,
+        authAverageMs: serverTiming.auth?.avg,
+        authP95Ms: serverTiming.auth?.["p(95)"],
+        handlerAverageMs: serverTiming.handler?.avg,
+        handlerP95Ms: serverTiming.handler?.["p(95)"],
+        serverTotalAverageMs: serverTiming.total?.avg,
+        serverTotalP95Ms: serverTiming.total?.["p(95)"],
       });
     }
   }
@@ -290,7 +352,74 @@ function stepsCsv(results) {
   ].join("\n");
 }
 
-function matrixMarkdown(rows) {
+function hostTelemetryCsv(results) {
+  const rows = [];
+  for (const summary of results) {
+    for (const sample of summary.telemetry?.host?.samples || []) {
+      rows.push({
+        users: summary.config.users,
+        atMs: sample.atMs,
+        cpuUtilizationPercent: sample.cpuUtilizationPercent,
+        usedMemoryBytes: sample.usedMemoryBytes,
+        freeMemoryBytes: sample.freeMemoryBytes,
+      });
+    }
+  }
+  const headers = Object.keys(
+    rows[0] || {
+      users: "",
+      atMs: "",
+      cpuUtilizationPercent: "",
+      usedMemoryBytes: "",
+      freeMemoryBytes: "",
+    },
+  );
+  return [
+    headers.join(","),
+    ...rows.map((row) =>
+      headers.map((header) => csvValue(row[header])).join(","),
+    ),
+    "",
+  ].join("\n");
+}
+
+function databaseTelemetryCsv(results) {
+  const rows = [];
+  for (const summary of results) {
+    for (const sample of summary.telemetry?.database?.samples || []) {
+      rows.push({
+        users: summary.config.users,
+        atMs: sample.atMs,
+        totalConnections: sample.totalConnections,
+        activeConnections: sample.activeConnections,
+        idleConnections: sample.idleConnections,
+        idleInTransactionConnections: sample.idleInTransactionConnections,
+        waitingConnections: sample.waitingConnections,
+      });
+    }
+  }
+  const headers = Object.keys(
+    rows[0] || {
+      users: "",
+      atMs: "",
+      totalConnections: "",
+      activeConnections: "",
+      idleConnections: "",
+      idleInTransactionConnections: "",
+      waitingConnections: "",
+    },
+  );
+  return [
+    headers.join(","),
+    ...rows.map((row) =>
+      headers.map((header) => csvValue(row[header])).join(","),
+    ),
+    "",
+  ].join("\n");
+}
+
+function matrixMarkdown(rows, configuration) {
+  const environment = configuration.environment || {};
   const lines = [
     "# Sapling performance matrix",
     "",
@@ -308,7 +437,26 @@ function matrixMarkdown(rows) {
     "",
     "Use `steps.csv` to identify which API step grows most strongly as concurrency increases.",
     "",
+    "## Test environment",
+    "",
+    `- Backend mode: ${environment.backendMode || "unknown"}${environment.backendModeDeclared ? " (declared)" : " (not declared)"}`,
+    `- Authentication: ${environment.authMode || "unknown"} with ${environment.credentialCount ?? "unknown"} credential(s)`,
+    `- DB pool: ${environment.dbPoolMin ?? "unknown"}–${environment.dbPoolMax ?? "unknown"}`,
+    `- Request logging: console=${booleanText(environment.requestConsoleLogging)}, file=${booleanText(environment.requestFileLogging)}`,
+    `- Security principal cache: TTL ${environment.securityPrincipalCacheTtlMs ?? "unknown"} ms, max ${environment.securityPrincipalCacheMaxEntries ?? "unknown"} entries`,
+    `- Global search index: ${booleanText(environment.globalSearchIndexEnabled)}`,
+    "",
+    "## Diagnostics",
+    "",
+    "| Users | Server-Timing coverage | Auth p95 | Handler p95 | Server total p95 | Load-host CPU avg | Load-host CPU p95 | Load-host CPU max | Load-host memory max | DB active p95 | DB waiting max |",
+    "| ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
   );
+  for (const row of rows) {
+    lines.push(
+      `| ${row.users} | ${percent(row.serverTimingCoverage)} | ${milliseconds(row.serverAuthP95Ms)} | ${milliseconds(row.serverHandlerP95Ms)} | ${milliseconds(row.serverTotalP95Ms)} | ${percentValue(row.hostCpuAveragePercent)} | ${percentValue(row.hostCpuP95Percent)} | ${percentValue(row.hostCpuMaxPercent)} | ${bytes(row.hostUsedMemoryMaxBytes)} | ${decimal(row.databaseActiveConnectionsP95, 1)} | ${decimal(row.databaseWaitingConnectionsMax, 0)} |`,
+    );
+  }
+  lines.push("");
   return lines.join("\n");
 }
 
@@ -340,6 +488,14 @@ function assertConfiguration(selectedEngine) {
   if (!["native", "docker"].includes(selectedEngine)) {
     configurationError("--engine must be native or docker.");
   }
+  if (
+    options.backendMode &&
+    !["production", "development", "unknown"].includes(options.backendMode)
+  ) {
+    configurationError(
+      "--backend-mode must be production, development, or unknown.",
+    );
+  }
   const authMode =
     process.env.SAPLING_AUTH_MODE ||
     (process.env.SAPLING_SESSION_COOKIES_JSON ? "session" : "bearer");
@@ -362,17 +518,12 @@ function assertConfiguration(selectedEngine) {
   }
 }
 
-function runWarmup() {
+async function runWarmup() {
   console.log("\n=== warm-up workflow ===");
   const warmupFile = path.join(resultsDirectory, "warmup.json");
   const environment = buildEnvironment(1, 1, warmupFile, runId, engine);
   const command = buildCommand(engine, environment);
-  const execution = spawnSync(command.executable, command.arguments, {
-    cwd: scriptDirectory,
-    env: environment,
-    stdio: "inherit",
-    windowsHide: true,
-  });
+  const execution = await executeCommand(command, environment, false);
   if (execution.error || (execution.status !== 0 && execution.status !== 99)) {
     console.error(
       `Warm-up failed${execution.error ? `: ${execution.error.message}` : ` with exit code ${execution.status}`}.`,
@@ -382,25 +533,427 @@ function runWarmup() {
   return true;
 }
 
-function runtimeMetadata() {
+async function executeCommand(command, environment, collectTelemetry) {
+  const sampler = collectTelemetry ? await createTelemetrySampler() : null;
+  return new Promise((resolve) => {
+    let settled = false;
+
+    const finish = async (result) => {
+      if (settled) return;
+      settled = true;
+      resolve({
+        ...result,
+        telemetry: sampler ? await sampler.stop() : null,
+      });
+    };
+
+    let child;
+    try {
+      child = spawn(command.executable, command.arguments, {
+        cwd: scriptDirectory,
+        env: environment,
+        stdio: "inherit",
+        windowsHide: true,
+      });
+    } catch (error) {
+      void finish({ error, status: null, signal: null });
+      return;
+    }
+
+    child.once("error", (error) => {
+      void finish({ error, status: null, signal: null });
+    });
+    child.once("close", (status, signal) => {
+      void finish({ error: null, status, signal });
+    });
+  });
+}
+
+async function createTelemetrySampler() {
+  const host = createHostTelemetrySampler();
+  const database = await createDatabaseTelemetrySampler();
   return {
-    backendMode: process.env.SAPLING_BACKEND_MODE || "unknown",
+    async stop() {
+      let databaseTelemetry;
+      try {
+        databaseTelemetry = await database.stop();
+      } catch (error) {
+        databaseTelemetry = {
+          available: false,
+          reason: safeTelemetryError(error),
+          samples: [],
+          summary: null,
+        };
+      }
+      return {
+        ...host.stop(),
+        database: databaseTelemetry,
+      };
+    },
+  };
+}
+
+function createHostTelemetrySampler(sampleIntervalMs = 1000) {
+  const startedAt = Date.now();
+  const samples = [];
+  let previousCpu = cpuTimes();
+
+  const capture = () => {
+    const currentCpu = cpuTimes();
+    const totalDelta = currentCpu.total - previousCpu.total;
+    const idleDelta = currentCpu.idle - previousCpu.idle;
+    previousCpu = currentCpu;
+    const freeMemoryBytes = os.freemem();
+    const totalMemoryBytes = os.totalmem();
+    samples.push({
+      atMs: Date.now() - startedAt,
+      cpuUtilizationPercent:
+        totalDelta > 0
+          ? clampPercent((1 - idleDelta / totalDelta) * 100)
+          : null,
+      usedMemoryBytes: totalMemoryBytes - freeMemoryBytes,
+      freeMemoryBytes,
+    });
+  };
+
+  const timer = setInterval(capture, sampleIntervalMs);
+  return {
+    stop() {
+      clearInterval(timer);
+      capture();
+      return {
+        host: {
+          scope: "load-generator host",
+          sampleIntervalMs,
+          samples,
+          summary: summarizeHostTelemetry(samples),
+        },
+      };
+    },
+  };
+}
+
+async function createDatabaseTelemetrySampler(sampleIntervalMs = 1000) {
+  const startedAt = Date.now();
+  const samples = [];
+  let sampleErrors = 0;
+  let lastError = null;
+  const explicitlyEnabled = nullableBoolean(
+    process.env.SAPLING_DATABASE_TELEMETRY,
+  );
+  if (explicitlyEnabled === false) {
+    return unavailableDatabaseTelemetry(
+      "Database telemetry was disabled through SAPLING_DATABASE_TELEMETRY.",
+    );
+  }
+  if (explicitlyEnabled !== true && !isLocalBaseUrl(configuredBaseUrl)) {
+    return unavailableDatabaseTelemetry(
+      "Database telemetry is automatic only for a local API. Set SAPLING_DATABASE_TELEMETRY=true and provide DB_* environment variables for an intentional remote measurement.",
+    );
+  }
+  const databaseUser = backendSetting("DB_USER");
+  const databaseName = backendSetting("DB_NAME");
+  if (!databaseUser || !databaseName) {
+    return unavailableDatabaseTelemetry(
+      "DB_USER or DB_NAME is not configured for the performance runner.",
+    );
+  }
+
+  let client;
+  try {
+    const pgPath = path.resolve(
+      scriptDirectory,
+      "..",
+      "backend",
+      "node_modules",
+      "pg",
+      "lib",
+      "index.js",
+    );
+    const pgModule = await import(pathToFileURL(pgPath).href);
+    const Client = pgModule.default?.Client ?? pgModule.Client;
+    client = new Client({
+      host: backendSetting("DB_HOST") || "localhost",
+      port: nullableInteger(backendSetting("DB_PORT")) || 5432,
+      user: databaseUser,
+      password: backendSetting("DB_PASSWORD") || undefined,
+      database: databaseName,
+      application_name: "sapling-performance-sampler",
+      connectionTimeoutMillis: 2000,
+      query_timeout: 2000,
+      statement_timeout: 2000,
+    });
+    await client.connect();
+  } catch (error) {
+    const message = safeTelemetryError(error);
+    console.warn(`Database telemetry unavailable: ${message}`);
+    try {
+      await client?.end();
+    } catch {
+      // The failed telemetry connection has no impact on the load test.
+    }
+    return unavailableDatabaseTelemetry(message);
+  }
+
+  let pendingCapture = Promise.resolve();
+  const capture = () => {
+    pendingCapture = pendingCapture.then(async () => {
+      try {
+        const result = await client.query(`
+          select
+            count(*)::int as "totalConnections",
+            count(*) filter (where state = 'active')::int as "activeConnections",
+            count(*) filter (where state = 'idle')::int as "idleConnections",
+            count(*) filter (where state = 'idle in transaction')::int as "idleInTransactionConnections",
+            count(*) filter (
+              where state = 'active' and wait_event is not null
+            )::int as "waitingConnections"
+          from pg_stat_activity
+          where datname = current_database()
+            and application_name <> 'sapling-performance-sampler'
+        `);
+        const row = result.rows[0] || {};
+        samples.push({
+          atMs: Date.now() - startedAt,
+          totalConnections: Number(row.totalConnections) || 0,
+          activeConnections: Number(row.activeConnections) || 0,
+          idleConnections: Number(row.idleConnections) || 0,
+          idleInTransactionConnections:
+            Number(row.idleInTransactionConnections) || 0,
+          waitingConnections: Number(row.waitingConnections) || 0,
+        });
+      } catch (error) {
+        sampleErrors += 1;
+        lastError = safeTelemetryError(error);
+      }
+    });
+    return pendingCapture;
+  };
+
+  await capture();
+  const timer = setInterval(() => {
+    void capture();
+  }, sampleIntervalMs);
+
+  return {
+    async stop() {
+      clearInterval(timer);
+      await capture();
+      try {
+        await client.end();
+      } catch (error) {
+        sampleErrors += 1;
+        lastError = safeTelemetryError(error);
+      }
+      return {
+        available: true,
+        scope: "current PostgreSQL database",
+        sampleIntervalMs,
+        samples,
+        sampleErrors,
+        lastError,
+        summary: summarizeDatabaseTelemetry(samples),
+      };
+    },
+  };
+}
+
+function unavailableDatabaseTelemetry(reason) {
+  return {
+    async stop() {
+      return {
+        available: false,
+        reason,
+        samples: [],
+        summary: null,
+      };
+    },
+  };
+}
+
+function summarizeDatabaseTelemetry(samples) {
+  const metric = (name) =>
+    samples.map((sample) => sample[name]).filter(Number.isFinite);
+  const total = metric("totalConnections");
+  const active = metric("activeConnections");
+  const idle = metric("idleConnections");
+  const idleInTransaction = metric("idleInTransactionConnections");
+  const waiting = metric("waitingConnections");
+  return {
+    sampleCount: samples.length,
+    durationMs: samples.at(-1)?.atMs ?? 0,
+    totalConnectionsAverage: average(total),
+    totalConnectionsMax: maximum(total),
+    activeConnectionsAverage: average(active),
+    activeConnectionsP95: percentile(active, 95),
+    activeConnectionsMax: maximum(active),
+    idleConnectionsAverage: average(idle),
+    idleConnectionsMax: maximum(idle),
+    idleInTransactionConnectionsMax: maximum(idleInTransaction),
+    waitingConnectionsP95: percentile(waiting, 95),
+    waitingConnectionsMax: maximum(waiting),
+  };
+}
+
+function safeTelemetryError(error) {
+  if (!(error instanceof Error)) return "unknown error";
+  return `${error.name}: ${error.message.split(/\r?\n/, 1)[0]}`.slice(0, 300);
+}
+
+function cpuTimes() {
+  return os.cpus().reduce(
+    (result, cpu) => {
+      const times = cpu.times;
+      result.idle += times.idle;
+      result.total +=
+        times.user + times.nice + times.sys + times.idle + times.irq;
+      return result;
+    },
+    { idle: 0, total: 0 },
+  );
+}
+
+function summarizeHostTelemetry(samples) {
+  const cpuValues = samples
+    .map((sample) => sample.cpuUtilizationPercent)
+    .filter(Number.isFinite);
+  const memoryValues = samples
+    .map((sample) => sample.usedMemoryBytes)
+    .filter(Number.isFinite);
+  return {
+    sampleCount: samples.length,
+    durationMs: samples.at(-1)?.atMs ?? 0,
+    cpuAveragePercent: average(cpuValues),
+    cpuP95Percent: percentile(cpuValues, 95),
+    cpuMaxPercent: maximum(cpuValues),
+    usedMemoryAverageBytes: average(memoryValues),
+    usedMemoryP95Bytes: percentile(memoryValues, 95),
+    usedMemoryMaxBytes: maximum(memoryValues),
+  };
+}
+
+function average(values) {
+  return values.length > 0
+    ? values.reduce((sum, value) => sum + value, 0) / values.length
+    : null;
+}
+
+function maximum(values) {
+  return values.length > 0 ? Math.max(...values) : null;
+}
+
+function percentile(values, requestedPercentile) {
+  if (values.length === 0) return null;
+  const sorted = values.slice().sort((left, right) => left - right);
+  const index = ((sorted.length - 1) * requestedPercentile) / 100;
+  const lower = Math.floor(index);
+  const upper = Math.ceil(index);
+  if (lower === upper) return sorted[lower];
+  return sorted[lower] + (sorted[upper] - sorted[lower]) * (index - lower);
+}
+
+function clampPercent(value) {
+  return Math.max(0, Math.min(100, value));
+}
+
+function clampRatio(value) {
+  return Math.max(0, Math.min(1, value));
+}
+
+function runtimeMetadata() {
+  const backendMode =
+    options.backendMode || process.env.SAPLING_BACKEND_MODE || "unknown";
+  return {
+    backendMode,
+    backendModeDeclared: backendMode !== "unknown",
     platform: process.platform,
     architecture: process.arch,
     cpuModel: os.cpus()[0]?.model || "unknown",
     logicalCpuCount: os.cpus().length,
     totalMemoryBytes: os.totalmem(),
-    dbPoolMin: nullableInteger(process.env.DB_POOL_MIN),
-    dbPoolMax: nullableInteger(process.env.DB_POOL_MAX),
+    dbPoolMin: nullableInteger(backendSetting("DB_POOL_MIN")),
+    dbPoolMax: nullableInteger(backendSetting("DB_POOL_MAX")),
     requestConsoleLogging: nullableBoolean(
-      process.env.LOG_REQUESTS_CONSOLE_ENABLED,
+      backendSetting("LOG_REQUESTS_CONSOLE_ENABLED"),
     ),
-    requestFileLogging: nullableBoolean(process.env.LOG_REQUESTS_FILE_ENABLED),
+    requestFileLogging: nullableBoolean(
+      backendSetting("LOG_REQUESTS_FILE_ENABLED"),
+    ),
+    securityPrincipalCacheTtlMs: nullableInteger(
+      backendSetting("SECURITY_PRINCIPAL_CACHE_TTL_MS"),
+    ),
+    securityPrincipalCacheMaxEntries: nullableInteger(
+      backendSetting("SECURITY_PRINCIPAL_CACHE_MAX_ENTRIES"),
+    ),
+    globalSearchIndexEnabled: nullableBoolean(
+      backendSetting("GLOBAL_SEARCH_INDEX_ENABLED"),
+    ),
+    metadataSources: {
+      backendMode: options.backendMode
+        ? "cli"
+        : process.env.SAPLING_BACKEND_MODE
+          ? "process-environment"
+          : "unknown",
+      backendConfiguration:
+        isLocalBaseUrl(configuredBaseUrl) && existsSync(backendEnvironment.path)
+          ? "backend/.env with process-environment overrides"
+          : "process-environment only",
+    },
     authMode:
       process.env.SAPLING_AUTH_MODE ||
       (process.env.SAPLING_SESSION_COOKIES_JSON ? "session" : "bearer"),
     credentialCount: credentialCount(),
   };
+}
+
+function backendSetting(name) {
+  return (
+    process.env[name] ??
+    (isLocalBaseUrl(configuredBaseUrl)
+      ? backendEnvironment.values[name]
+      : undefined)
+  );
+}
+
+function isLocalBaseUrl(value) {
+  try {
+    const hostname = new URL(value).hostname.toLowerCase();
+    return ["localhost", "127.0.0.1", "::1"].includes(hostname);
+  } catch {
+    return false;
+  }
+}
+
+function readBackendEnvironment() {
+  const environmentPath = path.resolve(
+    scriptDirectory,
+    "..",
+    "backend",
+    ".env",
+  );
+  const values = {};
+  if (!existsSync(environmentPath)) {
+    return { path: environmentPath, values };
+  }
+
+  for (const rawLine of readFileSync(environmentPath, "utf8").split(/\r?\n/)) {
+    const line = rawLine.trim();
+    if (!line || line.startsWith("#")) continue;
+    const separator = line.indexOf("=");
+    if (separator <= 0) continue;
+    const name = line.slice(0, separator).trim();
+    if (!BACKEND_ENVIRONMENT_KEYS.has(name)) continue;
+    let value = line.slice(separator + 1).trim();
+    if (
+      value.length >= 2 &&
+      ((value.startsWith('"') && value.endsWith('"')) ||
+        (value.startsWith("'") && value.endsWith("'")))
+    ) {
+      value = value.slice(1, -1);
+    }
+    values[name] = value;
+  }
+  return { path: environmentPath, values };
 }
 
 function credentialCount() {
@@ -470,6 +1023,20 @@ function csvValue(value) {
 
 function percent(value) {
   return Number.isFinite(value) ? `${(value * 100).toFixed(2)}%` : "n/a";
+}
+
+function percentValue(value) {
+  return Number.isFinite(value) ? `${value.toFixed(1)}%` : "n/a";
+}
+
+function booleanText(value) {
+  return value === true ? "enabled" : value === false ? "disabled" : "unknown";
+}
+
+function bytes(value) {
+  if (!Number.isFinite(value)) return "n/a";
+  const gibibytes = value / 1024 ** 3;
+  return `${gibibytes.toFixed(2)} GiB`;
 }
 
 function milliseconds(value) {

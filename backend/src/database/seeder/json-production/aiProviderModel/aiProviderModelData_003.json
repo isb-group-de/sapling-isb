@@ -1,5 +1,19 @@
 [
   {
+    "handle": "ollama-gpt-oss-20b",
+    "title": "GPT OSS 20B",
+    "description": "Local Ollama chat model exposed through the OpenAI-compatible API.",
+    "provider": "ollama",
+    "providerModel": "gpt-oss:20b",
+    "supportsStreaming": true,
+    "supportsTools": true,
+    "supportsEmbeddings": false,
+    "isDefault": true,
+    "isActive": true,
+    "sortOrder": 10,
+    "maxToolCallIterations": 100
+  },
+  {
     "handle": "ollama-gemma4-e4b",
     "title": "Gemma 4 E4B",
     "description": "Local Ollama chat model exposed through the OpenAI-compatible API.",
@@ -14,6 +28,20 @@
     "maxToolCallIterations": 100
   },
   {
+    "handle": "ollama-gemma4-12b",
+    "title": "Gemma 4 12B",
+    "description": "Local Ollama chat model exposed through the OpenAI-compatible API.",
+    "provider": "ollama",
+    "providerModel": "gemma4:12b",
+    "supportsStreaming": true,
+    "supportsTools": true,
+    "supportsEmbeddings": false,
+    "isDefault": false,
+    "isActive": true,
+    "sortOrder": 25,
+    "maxToolCallIterations": 100
+  },
+  {
     "handle": "ollama-qwen3_6-35b",
     "title": "Qwen 3.6 35B",
     "description": "Local Ollama chat model exposed through the OpenAI-compatible API.",
@@ -25,6 +53,20 @@
     "isDefault": false,
     "isActive": true,
     "sortOrder": 30,
+    "maxToolCallIterations": 100
+  },
+  {
+    "handle": "ollama-qwen3_8-27b",
+    "title": "Qwen 3.8 27B",
+    "description": "Local Ollama chat model exposed through the OpenAI-compatible API.",
+    "provider": "ollama",
+    "providerModel": "qwen3.8:27b",
+    "supportsStreaming": true,
+    "supportsTools": true,
+    "supportsEmbeddings": false,
+    "isDefault": false,
+    "isActive": true,
+    "sortOrder": 35,
     "maxToolCallIterations": 100
   },
   {
@@ -53,6 +95,21 @@
     "isDefault": false,
     "isActive": true,
     "sortOrder": 50,
+    "maxToolCallIterations": 100
+  },
+  {
+    "handle": "ollama-nomic-embed-text",
+    "title": "Nomic Embed Text",
+    "description": "Local Ollama embedding model for vectorization and semantic search.",
+    "provider": "ollama",
+    "providerModel": "nomic-embed-text:latest",
+    "supportsStreaming": false,
+    "supportsTools": false,
+    "supportsEmbeddings": true,
+    "embeddingBatchSize": 16,
+    "isDefault": true,
+    "isActive": true,
+    "sortOrder": 60,
     "maxToolCallIterations": 100
   }
 ]

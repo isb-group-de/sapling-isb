@@ -42,8 +42,13 @@ repeatable. Override it with `SAPLING_K6_IMAGE` only intentionally.
 The simplest entry point from the repository root is:
 
 ```powershell
-.\run-performance-test.ps1
+.\run-performance-test.ps1 -BackendMode production
 ```
+
+Use `development` instead when the backend deliberately runs through the
+development command. If the mode is omitted, the report records `unknown`
+rather than guessing from the process that happens to be listening on the API
+port.
 
 Add the test-system bearer tokens to `performance-tokens.json`:
 
@@ -106,24 +111,26 @@ followed by `npm run start:prod --prefix backend`) and set
 
 ## Configuration
 
-| Variable                       | Default                      | Purpose                                                            |
-| ------------------------------ | ---------------------------- | ------------------------------------------------------------------ |
-| `SAPLING_BASE_URL`             | `http://localhost:3000/api`  | Backend API root                                                   |
-| `SAPLING_USERS`                | `1,10,...,100` in the runner | Override the user matrix                                           |
-| `SAPLING_ITERATIONS_PER_USER`  | `10`                         | Complete workflows per virtual user                                |
-| `SAPLING_AUTH_MODE`            | inferred                     | `bearer` or `session`                                              |
-| `SAPLING_SESSION_COOKIES_JSON` | none                         | Session `Cookie` headers distributed round-robin                   |
-| `SAPLING_WARMUP`               | `true`                       | Run one warm-up workflow before the matrix                         |
-| `SAPLING_THINK_TIME_MS`        | `250`                        | Fixed pause between UI-style navigation groups                     |
-| `SAPLING_P95_LIMIT_MS`         | `2000`                       | Global HTTP p95 threshold                                          |
-| `SAPLING_MAX_ERROR_RATE`       | `0.01`                       | Maximum HTTP/check/workflow error rate                             |
-| `SAPLING_MAX_DURATION`         | `10m`                        | Safety timeout for each load level                                 |
-| `SAPLING_EXTRA_ENTITIES`       | `salesOpportunity,event`     | Additional template/list visits; set to an empty string to disable |
-| `SAPLING_TICKET_FILTER`        | none                         | JSON filter limiting tickets used by the test                      |
-| `SAPLING_WRITE_MODE`           | `none`                       | `none`, `same-value`, or `round-trip`                              |
-| `SAPLING_RESULTS_DIRECTORY`    | timestamped folder           | Explicit report directory                                          |
-| `SAPLING_K6_BINARY`            | `k6`                         | Native k6 executable                                               |
-| `SAPLING_K6_IMAGE`             | `grafana/k6:0.57.0`          | Docker image                                                       |
+| Variable                       | Default                      | Purpose                                                             |
+| ------------------------------ | ---------------------------- | ------------------------------------------------------------------- |
+| `SAPLING_BASE_URL`             | `http://localhost:3000/api`  | Backend API root                                                    |
+| `SAPLING_USERS`                | `1,10,...,100` in the runner | Override the user matrix                                            |
+| `SAPLING_ITERATIONS_PER_USER`  | `10`                         | Complete workflows per virtual user                                 |
+| `SAPLING_AUTH_MODE`            | inferred                     | `bearer` or `session`                                               |
+| `SAPLING_BACKEND_MODE`         | `unknown`                    | Declared backend runtime: `production`, `development`, or `unknown` |
+| `SAPLING_SESSION_COOKIES_JSON` | none                         | Session `Cookie` headers distributed round-robin                    |
+| `SAPLING_WARMUP`               | `true`                       | Run one warm-up workflow before the matrix                          |
+| `SAPLING_THINK_TIME_MS`        | `250`                        | Fixed pause between UI-style navigation groups                      |
+| `SAPLING_P95_LIMIT_MS`         | `2000`                       | Global HTTP p95 threshold                                           |
+| `SAPLING_MAX_ERROR_RATE`       | `0.01`                       | Maximum HTTP/check/workflow error rate                              |
+| `SAPLING_MAX_DURATION`         | `10m`                        | Safety timeout for each load level                                  |
+| `SAPLING_EXTRA_ENTITIES`       | `salesOpportunity,event`     | Additional template/list visits; set to an empty string to disable  |
+| `SAPLING_TICKET_FILTER`        | none                         | JSON filter limiting tickets used by the test                       |
+| `SAPLING_WRITE_MODE`           | `none`                       | `none`, `same-value`, or `round-trip`                               |
+| `SAPLING_RESULTS_DIRECTORY`    | timestamped folder           | Explicit report directory                                           |
+| `SAPLING_K6_BINARY`            | `k6`                         | Native k6 executable                                                |
+| `SAPLING_K6_IMAGE`             | `grafana/k6:0.57.0`          | Docker image                                                        |
+| `SAPLING_DATABASE_TELEMETRY`   | local API only               | Force-enable or disable PostgreSQL sampling                         |
 
 CLI arguments can override the most common runner settings:
 
@@ -169,7 +176,13 @@ Each run creates a timestamped directory under `performance/results/`:
 - `matrix.md`: human-readable comparison across all user counts.
 - `matrix.csv`: the same matrix for Excel or other analysis.
 - `matrix.json`: full machine-readable output for CI/regression checks.
-- `steps.csv`: p90/p95/p99/max latency per API step and load level.
+- `steps.csv`: request count, p90/p95/p99/max HTTP latency, `Server-Timing`
+  coverage, and authentication/handler/server latency per API step and load
+  level.
+- `host-telemetry.csv`: one-second host CPU and RAM samples for every measured
+  load level.
+- `database-telemetry.csv`: one-second PostgreSQL connection-state samples when
+  the runner can connect with the local backend database configuration.
 - `summary-NNN.json`: raw normalized summary for one user count.
 
 Open `report.html` directly in a browser; it needs neither Sapling nor a local
@@ -182,18 +195,44 @@ npm run performance:report -- .\performance\results\<run>\matrix.json
 ```
 
 Start optimization work with `steps.csv`: compare the slope of each step's p95
-from 1 to 100 users. A strongly growing list endpoint often points to query,
-relation-loading, permission-filter, or missing-index work. Slow mutation steps
-can point to synchronous scripts or follow-up work that may be moved behind a
-queue, provided the business transaction does not require it to finish before
-the response.
+from 1 to 100 users. The request count makes missing or under-exercised steps
+visible, while p99 exposes tail latency that p95 can hide. A strongly growing
+list endpoint often points to query, relation-loading, permission-filter, or
+missing-index work. Slow mutation steps can point to synchronous scripts or
+follow-up work that may be moved behind a queue, provided the business
+transaction does not require it to finish before the response.
+
+Use the `Server-Timing` coverage column before interpreting the phase values. A
+coverage near 100% means each measured response supplied `auth`, `handler`, and
+`total`. Compare HTTP p95 with server-total p95: a large stable gap suggests
+client/network/proxy overhead, while a growing handler value keeps the search
+inside the application and its downstream calls. A growing auth value instead
+points to principal/session/token resolution.
+
+Host CPU/RAM describe the complete load-generator machine, not only the Sapling
+process. With a local backend this is also its host; with a remote base URL it
+is not backend telemetry. The database samples describe connections visible in
+`pg_stat_activity`; they do not measure the ORM pool's internal wait queue.
+Active connections approaching `DB_POOL_MAX`, growing database waits, and
+rising handler latency together are a useful signal for pool/query
+investigation, but not proof by themselves.
+
+Database sampling uses `backend/.env` automatically only when the tested API URL
+is local. For an intentional remote measurement, set
+`SAPLING_DATABASE_TELEMETRY=true` and supply the matching `DB_*` variables in
+the runner process; this prevents accidentally correlating a remote API with an
+unrelated local database. If the `pg` package, credentials, privileges, or
+database connection are unavailable, the load test continues and the report
+marks database telemetry as unavailable. Database credentials are used only in
+memory and never written to the results.
 
 Correlate a suspicious step with backend request logs, PostgreSQL query
 statistics/`EXPLAIN`, CPU/memory, and Redis queue depth. This suite locates the
 pressure point; it does not by itself prove whether the cause is SQL, CPU,
 network, locking, or synchronous integration work.
 
-`matrix.json` also records backend mode, host CPU/RAM, DB pool settings,
-request-logging switches, authentication mode, and credential count. API
-responses expose `Server-Timing` entries for authentication, handler, and total
-request time to support endpoint-level correlation.
+`matrix.json` also records the declared backend mode, sampled host CPU/RAM, DB
+pool settings, request-logging switches, principal-cache/search-index settings,
+authentication mode, and credential count. API responses expose
+`Server-Timing` entries for authentication, handler, and total request time to
+support endpoint-level correlation.

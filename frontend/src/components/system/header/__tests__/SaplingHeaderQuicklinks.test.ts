@@ -111,10 +111,11 @@ describe('SaplingHeaderQuicklinks', () => {
     expect(harness.push).toHaveBeenCalledWith(path)
   })
 
-  it('renders only destinations with workspace access', () => {
+  it('renders only destinations with both read and navigation access', () => {
     harness.permissions = [
       { entityHandle: 'ticket', allowRead: true, allowShow: true },
       { entityHandle: 'event', allowRead: true, allowShow: false },
+      { entityHandle: 'salesOpportunity', allowRead: false, allowShow: true },
     ]
 
     const wrapper = mountQuicklinks()

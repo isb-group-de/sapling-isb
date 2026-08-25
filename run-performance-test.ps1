@@ -15,7 +15,10 @@ param(
   [ValidateSet("none", "same-value", "round-trip")]
   [string]$WriteMode = "none",
 
-  [string]$TicketFilter = ""
+  [string]$TicketFilter = "",
+
+  [ValidateSet("production", "development", "unknown")]
+  [string]$BackendMode = "unknown"
 )
 
 Set-StrictMode -Version Latest
@@ -91,12 +94,14 @@ try {
   Write-Host "  Users:      $Users"
   Write-Host "  Iterations: $IterationsPerUser per user"
   Write-Host "  Write mode: $WriteMode"
+  Write-Host "  Backend mode: $BackendMode"
   Write-Host ""
 
   & npm run test:performance -- `
     --engine $Engine `
     --users $Users `
-    --iterations $IterationsPerUser
+    --iterations $IterationsPerUser `
+    --backend-mode $BackendMode
   $exitCode = $LASTEXITCODE
 }
 finally {

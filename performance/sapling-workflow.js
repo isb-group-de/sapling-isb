@@ -35,6 +35,13 @@ const CREDENTIALS =
 const workflowDuration = new Trend("workflow_duration", true);
 const workflowSuccess = new Rate("workflow_success");
 const workflowFailures = new Counter("workflow_failures");
+const serverTimingTrends = Object.fromEntries(
+  ["auth", "handler", "total"].map((phase) => [
+    phase,
+    new Trend(`server_${phase}_duration`, true),
+  ]),
+);
+const serverTimingMissing = new Counter("server_timing_missing");
 
 const coreSteps = [
   "current_person",
@@ -65,8 +72,35 @@ const stepTrends = Object.fromEntries(
     new Trend(`step_${step}`, true),
   ]),
 );
+const stepServerTimingTrends = Object.fromEntries(
+  Object.keys(stepTrends).map((step) => [
+    step,
+    Object.fromEntries(
+      ["auth", "handler", "total"].map((phase) => [
+        phase,
+        new Trend(`step_${step}_server_${phase}`, true),
+      ]),
+    ),
+  ]),
+);
+const stepServerTimingMissing = Object.fromEntries(
+  Object.keys(stepTrends).map((step) => [
+    step,
+    new Counter(`step_${step}_server_timing_missing`),
+  ]),
+);
 
 export const options = {
+  summaryTrendStats: [
+    "avg",
+    "min",
+    "med",
+    "max",
+    "p(90)",
+    "p(95)",
+    "p(99)",
+    "count",
+  ],
   scenarios: {
     sapling_workflow: {
       executor: "per-vu-iterations",
@@ -348,11 +382,61 @@ function requestStep(step, method, url, body = null, tags = {}) {
     },
   });
   stepTrends[step].add(response.timings.duration);
+  recordServerTiming(step, response);
   const ok = check(response, {
     [`${step} returns 2xx`]: (result) =>
       result.status >= 200 && result.status < 300,
   });
   return { ok, response };
+}
+
+function recordServerTiming(step, response) {
+  const timings = parseServerTiming(response?.headers?.["Server-Timing"]);
+  let complete = true;
+
+  for (const phase of ["auth", "handler", "total"]) {
+    const duration = timings[phase];
+    if (!Number.isFinite(duration)) {
+      complete = false;
+      continue;
+    }
+    serverTimingTrends[phase].add(duration);
+    stepServerTimingTrends[step][phase].add(duration);
+  }
+
+  if (!complete) {
+    serverTimingMissing.add(1);
+    stepServerTimingMissing[step].add(1);
+  }
+}
+
+function parseServerTiming(header) {
+  if (typeof header !== "string" || !header.trim()) {
+    return {};
+  }
+
+  const result = {};
+  for (const entry of header.split(",")) {
+    const segments = entry
+      .split(";")
+      .map((segment) => segment.trim())
+      .filter(Boolean);
+    const name = segments[0]?.toLowerCase();
+    if (!name) continue;
+
+    const durationSegment = segments.find((segment) =>
+      segment.toLowerCase().startsWith("dur="),
+    );
+    if (!durationSegment) continue;
+
+    const duration = Number(
+      durationSegment.slice(durationSegment.indexOf("=") + 1),
+    );
+    if (Number.isFinite(duration) && duration >= 0) {
+      result[name] = duration;
+    }
+  }
+  return result;
 }
 
 function responseItems(response) {
@@ -540,7 +624,7 @@ function rate(value, fallback) {
 
 export function handleSummary(data) {
   const result = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     generatedAt: new Date().toISOString(),
     config: {
       baseUrl: BASE_URL,
@@ -570,11 +654,28 @@ export function handleSummary(data) {
       workflowFailures: values(data, "workflow_failures"),
       dataReceived: values(data, "data_received"),
       dataSent: values(data, "data_sent"),
+      serverTiming: {
+        auth: values(data, "server_auth_duration"),
+        handler: values(data, "server_handler_duration"),
+        total: values(data, "server_total_duration"),
+        missing: values(data, "server_timing_missing"),
+      },
     },
     steps: Object.fromEntries(
       Object.keys(stepTrends)
         .filter((step) => data.metrics[`step_${step}`])
         .map((step) => [step, values(data, `step_${step}`)]),
+    ),
+    stepServerTiming: Object.fromEntries(
+      Object.keys(stepTrends).map((step) => [
+        step,
+        {
+          auth: values(data, `step_${step}_server_auth`),
+          handler: values(data, `step_${step}_server_handler`),
+          total: values(data, `step_${step}_server_total`),
+          missing: values(data, `step_${step}_server_timing_missing`),
+        },
+      ]),
     ),
   };
 

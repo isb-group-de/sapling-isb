@@ -437,6 +437,12 @@
         margin-top: 20px;
       }
 
+      .diagnostic-subheading {
+        margin: 28px 0 12px;
+        font-size: 14px;
+        font-weight: 620;
+      }
+
       .bottleneck-grid {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -744,6 +750,10 @@
               <span>Host / DB-Pool</span>
               <strong id="run-host-pool"></strong>
             </div>
+            <div class="meta-row">
+              <span>Logging / Suchindex</span>
+              <strong id="run-logging-search"></strong>
+            </div>
           </div>
         </section>
 
@@ -815,6 +825,39 @@
             </div>
           </div>
           <div id="bottleneck-grid" class="bottleneck-grid"></div>
+        </section>
+
+        <section class="panel wide-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="section-label">Messdiagnostik</p>
+              <h2>Server-Timing und Host-Auslastung</h2>
+              <p class="panel-caption">
+                Authentifizierung, Handler und Gesamtserverzeit stammen aus den
+                API-Headern; CPU und Speicher werden während jeder Laststufe
+                sekündlich auf dem Testhost erfasst.
+              </p>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table id="diagnostics-table">
+              <caption class="sr-only">
+                Server-Timing-Abdeckung und Auslastung des Lastgenerator-Hosts
+                je Laststufe
+              </caption>
+            </table>
+          </div>
+          <h3 class="diagnostic-subheading">
+            Request-Anteile bei maximaler Last
+          </h3>
+          <div class="table-wrap">
+            <table id="server-timing-table">
+              <caption class="sr-only">
+                HTTP- und Server-Timing-Werte je Workflow-Schritt bei maximaler
+                Last
+              </caption>
+            </table>
+          </div>
         </section>
 
         <section class="panel wide-panel">
@@ -984,6 +1027,8 @@
             `${environment.backendMode || "unknown"} / ${environment.authMode || maximum.config?.authMode || "bearer"} (${environment.credentialCount ?? maximum.config?.credentialCount ?? "?"})`;
           document.getElementById("run-host-pool").textContent =
             `${environment.logicalCpuCount || "?"} CPUs / ${environment.dbPoolMin ?? "?"}–${environment.dbPoolMax ?? "?"}`;
+          document.getElementById("run-logging-search").textContent =
+            `Konsole ${enabledLabel(environment.requestConsoleLogging)} / Datei ${enabledLabel(environment.requestFileLogging)} / Index ${enabledLabel(environment.globalSearchIndexEnabled)}`;
 
           renderKpis({
             maximum,
@@ -997,6 +1042,7 @@
           });
           renderInsights(levels, baseline, maximum, p95Growth);
           renderBottlenecks(levels, maximum);
+          renderDiagnostics(levels, maximum);
           renderHeatmap(levels);
           renderMatrix(levels);
           requestAnimationFrame(() => drawLatencyChart(levels));
@@ -1009,7 +1055,13 @@
           const failures = metrics.httpRequestFailed || {};
           const workflow = metrics.workflowSuccess || {};
           const workflowDuration = metrics.workflowDuration || {};
+          const serverTiming = metrics.serverTiming || null;
+          const host = summary.telemetry?.host?.summary || {};
+          const databaseTelemetry = summary.telemetry?.database || {};
+          const database = databaseTelemetry.summary || {};
           const durationSeconds = positive(summary.durationMs) / 1000;
+          const requestCount = positive(requests.count);
+          const missingServerTiming = positive(serverTiming?.missing?.count);
           return {
             users: positive(summary.config?.users),
             config: summary.config || {},
@@ -1017,7 +1069,7 @@
             workflowsExpected: positive(summary.config?.expectedWorkflows),
             workflowsCompleted: positive(metrics.iterations?.count),
             workflowSuccessRate: finite(workflow.rate),
-            requestCount: positive(requests.count),
+            requestCount,
             requestsPerSecond:
               durationSeconds > 0
                 ? positive(requests.count) / durationSeconds
@@ -1030,6 +1082,27 @@
             maxMs: finite(duration.max),
             workflowP95Ms: finite(workflowDuration["p(95)"]),
             steps: summary.steps || {},
+            stepServerTiming: summary.stepServerTiming || {},
+            serverTimingCoverage:
+              serverTiming && requestCount > 0
+                ? clampRatio(1 - missingServerTiming / requestCount)
+                : null,
+            serverAuthP95Ms: optionalFinite(serverTiming?.auth?.["p(95)"]),
+            serverHandlerP95Ms: optionalFinite(
+              serverTiming?.handler?.["p(95)"],
+            ),
+            serverTotalP95Ms: optionalFinite(serverTiming?.total?.["p(95)"]),
+            hostCpuAveragePercent: optionalFinite(host.cpuAveragePercent),
+            hostCpuP95Percent: optionalFinite(host.cpuP95Percent),
+            hostCpuMaxPercent: optionalFinite(host.cpuMaxPercent),
+            hostUsedMemoryMaxBytes: optionalFinite(host.usedMemoryMaxBytes),
+            databaseTelemetryAvailable: databaseTelemetry.available === true,
+            databaseActiveConnectionsP95: optionalFinite(
+              database.activeConnectionsP95,
+            ),
+            databaseWaitingConnectionsMax: optionalFinite(
+              database.waitingConnectionsMax,
+            ),
           };
         }
 
@@ -1142,6 +1215,88 @@
                   )
                   .join("")
               : '<p class="panel-caption">Keine Schrittmetriken vorhanden.</p>';
+        }
+
+        function renderDiagnostics(levels, maximum) {
+          const diagnosticsHeader = `
+            <thead><tr>
+              <th scope="col">User</th>
+              <th scope="col">Timing-Abdeckung</th>
+              <th scope="col">Auth p95</th>
+              <th scope="col">Handler p95</th>
+              <th scope="col">Server p95</th>
+              <th scope="col">Last-Host CPU Ø</th>
+              <th scope="col">Last-Host CPU p95</th>
+              <th scope="col">Last-Host CPU max</th>
+              <th scope="col">Last-Host RAM max</th>
+              <th scope="col">DB aktiv p95</th>
+              <th scope="col">DB wartend max</th>
+            </tr></thead>`;
+          const diagnosticsBody = levels
+            .map(
+              (level) => `
+                <tr>
+                  <td>${formatNumber(level.users, 0)}</td>
+                  <td>${formatOptionalPercent(level.serverTimingCoverage)}</td>
+                  <td>${escapeHtml(formatOptionalMilliseconds(level.serverAuthP95Ms))}</td>
+                  <td>${escapeHtml(formatOptionalMilliseconds(level.serverHandlerP95Ms))}</td>
+                  <td>${escapeHtml(formatOptionalMilliseconds(level.serverTotalP95Ms))}</td>
+                  <td>${formatOptionalPercentValue(level.hostCpuAveragePercent)}</td>
+                  <td>${formatOptionalPercentValue(level.hostCpuP95Percent)}</td>
+                  <td>${formatOptionalPercentValue(level.hostCpuMaxPercent)}</td>
+                  <td>${formatBytes(level.hostUsedMemoryMaxBytes)}</td>
+                  <td>${formatOptionalNumber(level.databaseActiveConnectionsP95, 1)}</td>
+                  <td>${formatOptionalNumber(level.databaseWaitingConnectionsMax, 0)}</td>
+                </tr>`,
+            )
+            .join("");
+          document.getElementById("diagnostics-table").innerHTML =
+            `${diagnosticsHeader}<tbody>${diagnosticsBody}</tbody>`;
+
+          const timingRows = Object.entries(maximum.steps)
+            .map(([step, values]) => {
+              const timing = maximum.stepServerTiming[step] || {};
+              const requestCount = optionalFinite(values.count);
+              const missingCount = optionalFinite(timing.missing?.count) ?? 0;
+              return {
+                step,
+                httpP95Ms: optionalFinite(values["p(95)"]),
+                authP95Ms: optionalFinite(timing.auth?.["p(95)"]),
+                handlerP95Ms: optionalFinite(timing.handler?.["p(95)"]),
+                totalP95Ms: optionalFinite(timing.total?.["p(95)"]),
+                coverage:
+                  requestCount && (timing.total || timing.missing)
+                    ? clampRatio(1 - missingCount / requestCount)
+                    : null,
+              };
+            })
+            .sort(
+              (left, right) => (right.httpP95Ms ?? 0) - (left.httpP95Ms ?? 0),
+            );
+          const timingHeader = `
+            <thead><tr>
+              <th scope="col">Workflow-Schritt</th>
+              <th scope="col">HTTP p95</th>
+              <th scope="col">Auth p95</th>
+              <th scope="col">Handler p95</th>
+              <th scope="col">Server gesamt p95</th>
+              <th scope="col">Abdeckung</th>
+            </tr></thead>`;
+          const timingBody = timingRows
+            .map(
+              (row) => `
+                <tr>
+                  <td>${escapeHtml(stepLabel(row.step))}</td>
+                  <td>${escapeHtml(formatOptionalMilliseconds(row.httpP95Ms))}</td>
+                  <td>${escapeHtml(formatOptionalMilliseconds(row.authP95Ms))}</td>
+                  <td>${escapeHtml(formatOptionalMilliseconds(row.handlerP95Ms))}</td>
+                  <td>${escapeHtml(formatOptionalMilliseconds(row.totalP95Ms))}</td>
+                  <td>${formatOptionalPercent(row.coverage)}</td>
+                </tr>`,
+            )
+            .join("");
+          document.getElementById("server-timing-table").innerHTML =
+            `${timingHeader}<tbody>${timingBody}</tbody>`;
         }
 
         function renderHeatmap(levels) {
@@ -1445,8 +1600,21 @@
           return Number.isFinite(Number(value)) ? Number(value) : 0;
         }
 
+        function optionalFinite(value) {
+          return value !== null &&
+            value !== undefined &&
+            value !== "" &&
+            Number.isFinite(Number(value))
+            ? Number(value)
+            : null;
+        }
+
         function positive(value) {
           return Math.max(0, finite(value));
+        }
+
+        function clampRatio(value) {
+          return Math.max(0, Math.min(1, finite(value)));
         }
 
         function formatNumber(value, digits) {
@@ -1463,6 +1631,12 @@
             : `${formatNumber(milliseconds, milliseconds < 10 ? 2 : 1)} ms`;
         }
 
+        function formatOptionalMilliseconds(value) {
+          return optionalFinite(value) === null
+            ? "–"
+            : formatMilliseconds(value);
+        }
+
         function formatAxisMilliseconds(value) {
           return value >= 1000
             ? `${formatNumber(value / 1000, 1)} s`
@@ -1471,6 +1645,32 @@
 
         function formatPercent(value) {
           return `${formatNumber(finite(value) * 100, 2)} %`;
+        }
+
+        function formatOptionalPercent(value) {
+          return optionalFinite(value) === null ? "–" : formatPercent(value);
+        }
+
+        function formatOptionalPercentValue(value) {
+          return optionalFinite(value) === null
+            ? "–"
+            : `${formatNumber(value, 1)} %`;
+        }
+
+        function formatOptionalNumber(value, digits) {
+          return optionalFinite(value) === null
+            ? "–"
+            : formatNumber(value, digits);
+        }
+
+        function formatBytes(value) {
+          return optionalFinite(value) === null
+            ? "–"
+            : `${formatNumber(value / 1024 ** 3, 2)} GiB`;
+        }
+
+        function enabledLabel(value) {
+          return value === true ? "an" : value === false ? "aus" : "?";
         }
 
         function formatRatio(value) {

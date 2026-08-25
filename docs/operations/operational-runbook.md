@@ -185,7 +185,12 @@ Backend logging is controlled by `LOG_*` in `backend/.env`.
 
 Authenticated API responses include `Server-Timing` values for authentication,
 handler execution, and total request duration. Performance matrices also record
-host, auth-mode, logging, and DB-pool metadata.
+their response coverage, p99 latency, one-second load-generator host CPU/RAM
+samples, optional PostgreSQL connection-state samples, auth mode,
+logging/cache/index switches,
+and DB-pool metadata. Declare the actual runtime when using the PowerShell entry
+point, for example `run-performance-test.ps1 -BackendMode production`; omitted
+modes are reported as `unknown`.
 
 HTTP access logging through Morgan is configured independently from
 `LOG_LEVEL`:
