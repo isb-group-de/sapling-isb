@@ -1,4 +1,14 @@
 import { describe, expect, it, jest } from '@jest/globals';
+
+jest.mock('../../constants/project.constants', () => ({
+  ...jest.requireActual<typeof import('../../constants/project.constants')>(
+    '../../constants/project.constants',
+  ),
+  REDIS_ENABLED: true,
+  REDIS_REMOVE_ON_COMPLETE: true,
+  REDIS_REMOVE_ON_FAIL: 100,
+}));
+
 import {
   CalendarSyncSubscriptionService,
   calculateCalendarSyncRange,
@@ -6,6 +16,32 @@ import {
 } from './calendar-sync-subscription.service';
 
 describe('calendar sync subscription helpers', () => {
+  it('registers automatic imports with the BullMQ job scheduler API', async () => {
+    const queue = {
+      upsertJobScheduler: jest.fn<(...args: unknown[]) => Promise<unknown>>(
+        async () => undefined,
+      ),
+    };
+    const service = new CalendarSyncSubscriptionService(
+      {} as never,
+      {} as never,
+      {} as never,
+      queue as never,
+    );
+
+    await service.onModuleInit();
+
+    expect(queue.upsertJobScheduler).toHaveBeenCalledWith(
+      'calendar-sync-scheduler',
+      { every: 300_000 },
+      {
+        name: 'schedule-calendar-imports',
+        data: {},
+        opts: { removeOnComplete: true, removeOnFail: 100 },
+      },
+    );
+  });
+
   it('calculates the current UTC day range', () => {
     const range = calculateCalendarSyncRange(
       'day',

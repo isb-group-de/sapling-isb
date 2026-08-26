@@ -645,10 +645,7 @@ export class SaplingMcpGenericToolService {
     }
 
     const customFields = this.values.asRecord(data.customFields);
-    return Object.prototype.hasOwnProperty.call(
-      customFields,
-      fieldName.slice('customFields.'.length),
-    );
+    return Object.hasOwn(customFields, fieldName.slice('customFields.'.length));
   }
 
   async executeGenericDelete(

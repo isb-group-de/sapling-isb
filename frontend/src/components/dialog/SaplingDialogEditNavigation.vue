@@ -90,6 +90,7 @@
       :class="{
         'sapling-record-dialog-nav-item--active': !tab.disabled && activeTab === tab.value,
         'sapling-record-dialog-nav-item--locked': tab.disabled,
+        'sapling-record-dialog-nav-item--dirty': tab.dirty === true,
         'sapling-record-dialog-nav-item--supplemental-first': supplementalIndex === 0,
       }"
       type="button"
@@ -109,10 +110,20 @@
         {{ tab.icon }}
       </v-icon>
       <span class="sapling-record-dialog-nav-item__label">{{ tab.label }}</span>
-      <span v-if="tab.disabled" class="sapling-record-dialog-nav-item__meta">
-        <v-icon class="sapling-record-dialog-nav-item__lock" size="15" aria-hidden="true">
+      <span v-if="tab.disabled || tab.dirty" class="sapling-record-dialog-nav-item__meta">
+        <v-icon
+          v-if="tab.disabled"
+          class="sapling-record-dialog-nav-item__lock"
+          size="15"
+          aria-hidden="true"
+        >
           mdi-lock-outline
         </v-icon>
+        <span
+          v-if="tab.dirty"
+          class="sapling-record-dialog-nav-item__dirty-indicator"
+          aria-hidden="true"
+        />
       </span>
     </button>
   </nav>
@@ -130,6 +141,7 @@ interface SupplementalTab {
   icon: string
   disabled?: boolean
   disabledReason?: string
+  dirty?: boolean
 }
 
 const props = defineProps<{
@@ -246,7 +258,14 @@ function selectSupplementalTab(tab: SupplementalTab): void {
 }
 
 function supplementalAriaLabel(tab: SupplementalTab): string {
-  return tab.disabled && tab.disabledReason ? `${tab.label}. ${tab.disabledReason}` : tab.label
+  const labels = [tab.label]
+  if (tab.dirty) {
+    labels.push(String(t('global.dirtyFieldCount', { count: 1 }, 1)))
+  }
+  if (tab.disabled && tab.disabledReason) {
+    labels.push(tab.disabledReason)
+  }
+  return labels.join('. ')
 }
 
 function relationAriaLabel(template: EntityTemplate): string {

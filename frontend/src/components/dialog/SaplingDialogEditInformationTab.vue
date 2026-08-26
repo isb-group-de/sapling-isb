@@ -4,6 +4,7 @@
   >
     <section
       class="sapling-stack-lg sapling-section-panel sapling-record-supplemental-panel sapling-dialog-edit-information"
+      :class="{ 'sapling-record-section--dirty': isDirty }"
     >
       <div class="sapling-row-between-md sapling-record-supplemental-panel__header">
         <div class="sapling-record-relation-summary">
@@ -59,7 +60,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { SaplingGenericItem } from '@/entity/entity'
 import SaplingMarkdownField from '@/components/dialog/fields/SaplingFieldMarkdown.vue'
@@ -74,6 +75,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   (event: 'close'): void
   (event: 'saved'): void
+  (event: 'update:dirty', value: boolean): void
 }>()
 
 const { t, te } = useI18n()
@@ -94,8 +96,12 @@ const informationProps = {
   },
 }
 
-const { content, isLoading, isSaving, isDirty, canEdit, canSave, save } =
+const { content, isLoading, isSaving, isDirty, canEdit, canSave, discardChanges, save } =
   useSaplingTableRowInformation(informationProps, emit)
+
+watch(isDirty, (dirty) => emit('update:dirty', dirty), { immediate: true })
+
+defineExpose({ discardChanges, save })
 
 const entityLabel = computed(() => {
   const key = `navigation.${props.entityHandle}`

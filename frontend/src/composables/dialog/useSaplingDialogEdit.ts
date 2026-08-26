@@ -48,6 +48,9 @@ export function useSaplingDialogEdit(
     forceDirty?: ComputedRef<boolean>
     forceDirtyFields?: ComputedRef<string[]>
     allowPristineCreate?: ComputedRef<boolean>
+    hasSupplementalChanges?: ComputedRef<boolean>
+    persistSupplementalChanges?: () => Promise<boolean>
+    resetSupplementalChanges?: () => void
   },
 ) {
   // #region State
@@ -134,7 +137,10 @@ export function useSaplingDialogEdit(
   })
 
   const relationAwareForceDirty = computed(
-    () => options?.forceDirty?.value === true || hasPendingRelationChanges.value,
+    () =>
+      options?.forceDirty?.value === true ||
+      hasPendingRelationChanges.value ||
+      options?.hasSupplementalChanges?.value === true,
   )
 
   const {
@@ -175,6 +181,13 @@ export function useSaplingDialogEdit(
   const canSubmit = computed(
     () =>
       isDirty.value || (props.mode === 'create' && options?.allowPristineCreate?.value === true),
+  )
+  const shouldPersistRecord = computed(
+    () =>
+      options?.forceDirty?.value === true ||
+      hasPendingRelationChanges.value ||
+      dirtyFieldCount.value > 0 ||
+      (props.mode === 'create' && options?.allowPristineCreate?.value === true),
   )
 
   const { applyCurrentDefaults, initializeForm, syncParentReferences, buildSavePayload } =
@@ -228,6 +241,10 @@ export function useSaplingDialogEdit(
     syncInitialFormSnapshot,
     resetRelationSelections,
     initializeFormWithParentContext,
+    shouldPersistRecord,
+    hasSupplementalChanges: options?.hasSupplementalChanges,
+    persistSupplementalChanges: options?.persistSupplementalChanges,
+    resetSupplementalChanges: options?.resetSupplementalChanges,
   })
   // #endregion
 

@@ -23,6 +23,10 @@ export function useSaplingDialogEditActions({
   syncInitialFormSnapshot,
   resetRelationSelections,
   initializeFormWithParentContext,
+  shouldPersistRecord,
+  hasSupplementalChanges,
+  persistSupplementalChanges,
+  resetSupplementalChanges,
 }: {
   mode: ComputedRef<DialogState>
   entity: ComputedRef<EntityItem | null>
@@ -37,6 +41,10 @@ export function useSaplingDialogEditActions({
   syncInitialFormSnapshot: () => void
   resetRelationSelections: () => void
   initializeFormWithParentContext: () => void
+  shouldPersistRecord?: ComputedRef<boolean>
+  hasSupplementalChanges?: ComputedRef<boolean>
+  persistSupplementalChanges?: () => Promise<boolean>
+  resetSupplementalChanges?: () => void
 }) {
   const pendingSaveAction = ref<DialogSaveAction | null>(null)
   const validationFeedback = ref<SaplingDialogValidationFeedback | null>(null)
@@ -102,15 +110,44 @@ export function useSaplingDialogEditActions({
   }
 
   async function saveWithAction(action: DialogSaveAction): Promise<void> {
-    if (!canSubmit.value) return
-    const output = await prepareSubmit(action)
-    if (output) emitSave(output, action)
+    if (!canSubmit.value || isSaving.value) return
+
+    const persistRecord = shouldPersistRecord?.value ?? true
+    let output: SaplingGenericItem | null = null
+
+    if (persistRecord) {
+      output = await prepareSubmit(action)
+      if (!output) return
+    } else {
+      validationFeedback.value = null
+      pendingSaveAction.value = action
+      await waitForUiPaint()
+    }
+
+    if (hasSupplementalChanges?.value) {
+      const didSaveSupplementalChanges = (await persistSupplementalChanges?.()) ?? false
+      if (!didSaveSupplementalChanges) {
+        completeSave(action)
+        return
+      }
+    }
+
+    if (output) {
+      emitSave(output, action)
+      return
+    }
+
+    completeSave(action)
+    if (action === 'saveAndClose') {
+      closeDialog()
+    }
   }
 
   function resetForm(): void {
     if (!isDirty.value) return
     validationFeedback.value = null
     resetRelationSelections()
+    resetSupplementalChanges?.()
     activeTab.value = 0
     initializeFormWithParentContext()
     void nextTick(() => formRef.value?.resetValidation?.())

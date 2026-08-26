@@ -446,7 +446,7 @@ describe('SystemController', () => {
     versionService,
     globalSearchIndexService as never,
     databaseService as never,
-    documentStorageService as never,
+    documentStorageService,
   );
 
   it('returns and starts the global search-index rebuild status', () => {

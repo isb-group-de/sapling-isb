@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import ApiGenericService from './api.generic.service'
+import { pushApiErrorMessage } from '@/services/api.error.service'
 
 vi.mock('axios', () => ({
   default: {
@@ -130,5 +131,16 @@ describe('ApiGenericService pagination', () => {
       return filter.handle.$in.length
     })
     expect(batchSizes).toEqual([100, 100, 5])
+  })
+
+  it('keeps explicitly silent bootstrap reads out of the message center', async () => {
+    const error = new Error('backend is starting')
+    vi.mocked(axios.get).mockRejectedValueOnce(error)
+
+    await expect(
+      ApiGenericService.findAll('translation', { suppressErrorMessage: true }),
+    ).rejects.toBe(error)
+
+    expect(pushApiErrorMessage).not.toHaveBeenCalled()
   })
 })

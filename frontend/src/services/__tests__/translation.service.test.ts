@@ -53,6 +53,7 @@ describe('TranslationService', () => {
         entity: { $in: ['ticket', 'company'] },
         language: 'de',
       },
+      suppressErrorMessage: true,
     })
     expect(result).toEqual(response)
     expect(i18n.global.getLocaleMessage('de')).toEqual({
@@ -80,6 +81,7 @@ describe('TranslationService', () => {
         entity: { $in: ['ticket'] },
         language: 'de',
       },
+      suppressErrorMessage: true,
     })
     expect(result).toEqual(translations)
     expect(i18n.global.getLocaleMessage('de')).toEqual({

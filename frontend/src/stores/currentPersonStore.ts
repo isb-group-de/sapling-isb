@@ -43,7 +43,7 @@ export const useCurrentPersonStore = defineStore('currentPerson', () => {
     loading.value = true
     fetchPromise = (async () => {
       try {
-        person.value = await ApiCurrentService.getPerson()
+        person.value = await ApiCurrentService.getPerson({ suppressErrorMessage: true })
         loaded.value = true
       } catch {
         person.value = null

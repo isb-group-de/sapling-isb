@@ -180,8 +180,11 @@ Generated fields render contextual help through the shared
 `global.<fieldName>Tooltip`. Use the global fallback only for fields with
 genuinely identical semantics across entities, such as `handle`, `sortOrder`,
 `icon`, `color`, or `isActive`. The control opens on hover, keyboard focus, or
-click/touch. Generated desktop table headers and mobile card labels use the same
-resolution. The Form Configuration administration can set `helpText` for
+click/touch. Edit-dialog fields reserve a fixed, vertically centered help slot
+even when no help text exists, so neighboring controls keep equal widths. A
+reference selector places that slot between its dropdown and open-record action.
+Generated desktop table headers and mobile card labels use the same resolution.
+The Form Configuration administration can set `helpText` for
 ordinary metadata fields, while custom-field definitions populate it from their
 `tooltip` property.
 
@@ -647,6 +650,9 @@ must not stretch to a taller neighbor in the same grid row or tint the field's
 transparent text surface. Numeric, money, and percent steppers reserve detail
 height only while a validation message is present, keeping their normal dirty
 ring flush with the visible control.
+Unsaved Information Markdown drafts participate in the same dialog dirty state.
+The Information tab and panel use warning styling, and save or discard persists
+or resets the separate `information` record before the record dialog closes.
 Reference and static-select dropdowns close when keyboard focus leaves their
 field, including Tab navigation, while focus moving into a teleported dropdown
 surface keeps the menu open. Record and relation navigation follows the tablist
@@ -744,6 +750,14 @@ part of the edited or inspected content itself, such as field validation,
 oversized-file selection, dependency guidance, persisted tool-action errors, or
 destructive-action consequences.
 
+This rule changes the presentation of feedback that was already user-visible; it
+must not make previously silent background failures visible. Automatic bootstrap,
+translation, metadata, session, permission, and skeleton-backed retry requests
+use the API services' `suppressErrorMessage` option. A temporarily unavailable
+backend during deployment remains represented by the existing loading state.
+User-triggered requests and failures that were already shown in the page continue
+to report through the message center.
+
 API errors may provide a translation key plus `descriptionParams`. Entity
 parameters use the stable `entityHandle`; the message center resolves them
 through `navigation.<handle>` before interpolation. It loads the `global`,
@@ -752,7 +766,8 @@ through `navigation.<handle>` before interpolation. It loads the `global`,
 Missing translation keys and generic HTTP-client errors must not be shown as
 user text. They fall back to localized generic wording while the original
 payload remains available in the technical log export. Raw database table,
-constraint, stack, and request details are diagnostic data only.
+constraint, stack, request details, and reverse-proxy HTML error pages are
+diagnostic data only.
 
 Error entries expose the same **Report error** action in both the temporary
 floating alert and the persistent message-center list. Both surfaces share the

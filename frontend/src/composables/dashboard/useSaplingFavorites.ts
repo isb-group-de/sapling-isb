@@ -121,7 +121,7 @@ export function useSaplingFavorites() {
   /**
    * Loads the current person's favorites.
    */
-  async function loadFavorites() {
+  async function loadFavorites(suppressErrorMessage = false) {
     if (!(await ensureFavoritesAccess())) {
       favorites.value = []
       isFavoritesLoading.value = false
@@ -141,6 +141,7 @@ export function useSaplingFavorites() {
       const favoriteRes = await ApiGenericService.findAll<FavoriteItem>(FAVORITE_ENTITY_HANDLE, {
         filter: { person: { handle: currentPersonStore.person.handle } },
         relations: ['entity', 'entityRoute'],
+        suppressErrorMessage,
       })
       favorites.value = favoriteRes
     } finally {
@@ -151,7 +152,7 @@ export function useSaplingFavorites() {
   /**
    * Loads all entities that can be targeted by a favorite.
    */
-  async function loadEntities() {
+  async function loadEntities(suppressErrorMessage = false) {
     const hasAnyAccess = (await ensureFavoritesAccess()) || (await ensureFavoriteTemplateAccess())
 
     if (!hasAnyAccess) {
@@ -166,6 +167,7 @@ export function useSaplingFavorites() {
       entities.value = await ApiGenericService.findAll<EntityItem>('entity', {
         filter: { canShow: true },
         relations: ['routes'],
+        suppressErrorMessage,
       })
     } finally {
       isEntitiesLoading.value = false
@@ -175,7 +177,7 @@ export function useSaplingFavorites() {
   /**
    * Loads all favorite templates visible to the current user.
    */
-  async function loadFavoriteTemplates() {
+  async function loadFavoriteTemplates(suppressErrorMessage = false) {
     if (!(await ensureFavoriteTemplateAccess())) {
       favoriteTemplates.value = []
       isFavoriteTemplatesLoading.value = false
@@ -190,6 +192,7 @@ export function useSaplingFavorites() {
         {
           orderBy: { isRecommended: 'DESC', name: 'ASC' },
           relations: ['entity', 'entityRoute'],
+          suppressErrorMessage,
         },
       )
 
@@ -330,7 +333,7 @@ export function useSaplingFavorites() {
       void genericStore.loadGeneric(FAVORITE_ENTITY_HANDLE, 'global')
     }
 
-    await Promise.all([loadFavorites(), loadEntities(), loadFavoriteTemplates()])
+    await Promise.all([loadFavorites(true), loadEntities(true), loadFavoriteTemplates(true)])
   })
   // #endregion
 

@@ -4,6 +4,7 @@
     class="sapling-field-single-select"
     :class="{
       'sapling-field-single-select--with-open-action': props.showOpenAction,
+      'sapling-field-single-select--with-help-slot': props.reserveHelpSpace || props.helpText,
       'sapling-field-single-select--multiline': reservesMultilineSelection,
     }"
     @focusout="closeMenuWhenFocusLeaves"
@@ -102,6 +103,20 @@
       </div>
     </v-menu>
 
+    <div
+      v-if="props.reserveHelpSpace || props.helpText"
+      class="sapling-field-single-select__help-slot"
+      data-test="reference-help-slot"
+    >
+      <SaplingHelpTooltip
+        v-if="props.helpText"
+        :text="props.helpText"
+        :aria-label="props.helpAriaLabel || props.label"
+        icon-size="16"
+        compact
+      />
+    </div>
+
     <v-tooltip v-if="props.showOpenAction" location="top" :text="openActionLabel">
       <template #activator="{ props: tooltipProps }">
         <v-btn
@@ -140,6 +155,7 @@
 // #region Imports
 import SaplingTable from '@/components/table/SaplingTable.vue'
 import SaplingAutocomplete from '@/components/common/SaplingAutocomplete.vue'
+import SaplingHelpTooltip from '@/components/common/SaplingHelpTooltip.vue'
 import SaplingDialogEdit from '@/components/dialog/SaplingDialogEdit.vue'
 import type { SaplingGenericItem } from '@/entity/entity'
 import { useSaplingTable } from '@/composables/table/useSaplingTable'
@@ -182,11 +198,17 @@ const props = withDefaults(
     hideDetails?: boolean | 'auto'
     showOpenAction?: boolean
     openActionLabel?: string
+    helpText?: string
+    helpAriaLabel?: string
+    reserveHelpSpace?: boolean
   }>(),
   {
     hideDetails: 'auto',
     showOpenAction: false,
     openActionLabel: '',
+    helpText: '',
+    helpAriaLabel: '',
+    reserveHelpSpace: false,
   },
 )
 const emit = defineEmits(['update:modelValue'])

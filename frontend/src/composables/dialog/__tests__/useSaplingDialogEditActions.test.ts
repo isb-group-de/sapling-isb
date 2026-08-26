@@ -44,4 +44,60 @@ describe('useSaplingDialogEditActions', () => {
     expect(emitMock).toHaveBeenNthCalledWith(1, 'update:modelValue', false)
     expect(emitMock).toHaveBeenNthCalledWith(2, 'cancel')
   })
+
+  it('saves supplemental-only changes and closes without emitting a record save', async () => {
+    const emitMock = vi.fn()
+    const validate = vi.fn().mockResolvedValue({ valid: true })
+    const persistSupplementalChanges = vi.fn().mockResolvedValue(true)
+    const actions = useSaplingDialogEditActions({
+      mode: computed(() => 'edit'),
+      entity: computed(() => null),
+      isDirty: computed(() => true),
+      canSubmit: computed(() => true),
+      formRef: ref<VuetifyFormRef | null>({ validate }),
+      activeTab: ref(2),
+      emit: emitMock as unknown as SaplingDialogEditEmit,
+      buildSavePayload: vi.fn(),
+      appendPendingRelationsToPayload: vi.fn(),
+      persistPendingRelations: vi.fn().mockResolvedValue(true),
+      syncInitialFormSnapshot: vi.fn(),
+      resetRelationSelections: vi.fn(),
+      initializeFormWithParentContext: vi.fn(),
+      shouldPersistRecord: computed(() => false),
+      hasSupplementalChanges: computed(() => true),
+      persistSupplementalChanges,
+    })
+
+    await actions.saveAndClose()
+
+    expect(validate).not.toHaveBeenCalled()
+    expect(persistSupplementalChanges).toHaveBeenCalledOnce()
+    expect(emitMock).not.toHaveBeenCalledWith('save', expect.anything(), expect.anything())
+    expect(emitMock).toHaveBeenNthCalledWith(1, 'update:modelValue', false)
+    expect(emitMock).toHaveBeenNthCalledWith(2, 'cancel')
+  })
+
+  it('resets supplemental changes when all dialog changes are discarded', () => {
+    const resetSupplementalChanges = vi.fn()
+    const actions = useSaplingDialogEditActions({
+      mode: computed(() => 'edit'),
+      entity: computed(() => null),
+      isDirty: computed(() => true),
+      canSubmit: computed(() => true),
+      formRef: ref<VuetifyFormRef | null>(null),
+      activeTab: ref(2),
+      emit: vi.fn() as unknown as SaplingDialogEditEmit,
+      buildSavePayload: vi.fn(),
+      appendPendingRelationsToPayload: vi.fn(),
+      persistPendingRelations: vi.fn().mockResolvedValue(true),
+      syncInitialFormSnapshot: vi.fn(),
+      resetRelationSelections: vi.fn(),
+      initializeFormWithParentContext: vi.fn(),
+      resetSupplementalChanges,
+    })
+
+    actions.discardChanges()
+
+    expect(resetSupplementalChanges).toHaveBeenCalledOnce()
+  })
 })

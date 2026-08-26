@@ -526,12 +526,20 @@
   width: 100%;
 }
 
-.sapling-record-field-help-action {
-  flex: 0 0 auto;
-  align-self: flex-start;
+.sapling-record-field-shell > .sapling-control--checkbox {
+  flex: 0 1 auto;
   width: auto;
-  margin-top: 0.65rem;
-  margin-inline-start: var(--sapling-space-3xs);
+}
+
+.sapling-record-field-help-action {
+  display: flex;
+  flex: 0 0 var(--sapling-field-help-slot-width);
+  align-self: flex-start;
+  align-items: center;
+  justify-content: center;
+  width: var(--sapling-field-help-slot-width);
+  height: var(--sapling-control-height-comfortable);
+  margin-inline-start: var(--sapling-gap-2xs);
 }
 
 .sapling-record-field-shell--dirty {

@@ -13,6 +13,9 @@ class TranslationService {
         entity: { $in: entityHandle },
         language: currentLanguage,
       },
+      // Translation loading is part of the application bootstrap. A temporarily
+      // unavailable backend is represented by the surrounding skeleton/retry flow.
+      suppressErrorMessage: true,
     })
   }
 

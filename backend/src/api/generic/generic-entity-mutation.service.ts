@@ -13,7 +13,6 @@ import type {
 } from '../../script/core/script.interface';
 import { ScriptMethods } from '../script/script.service';
 import { TemplateService } from '../template/template.service';
-import { EntityTemplateDto } from '../template/dto/entity-template.dto';
 import { EmailAutomationService } from '../mail/email-automation.service';
 import { normalizeSaplingPhonePayload } from '../common/sapling-phone.util';
 import { GenericChangeLogService } from './generic-change-log.service';
@@ -270,8 +269,17 @@ export class GenericEntityMutationService {
         permissionTemplate,
         this.withCustomFields(data, splitPayload.customFields),
       );
+    const submittedToOneRelations = permissionTemplate
+      .filter(
+        (field) =>
+          field.isReference &&
+          !['1:m', 'm:n', 'n:m'].includes(field.kind ?? '') &&
+          submittedSnapshot != null &&
+          Object.prototype.hasOwnProperty.call(submittedSnapshot, field.name),
+      )
+      .map((field) => field.name);
     const populate = this.genericQueryService.buildPopulate(
-      relations,
+      [...relations, ...submittedToOneRelations],
       template,
     );
     const handleFilter = this.genericReferenceService.getHandleFilter(

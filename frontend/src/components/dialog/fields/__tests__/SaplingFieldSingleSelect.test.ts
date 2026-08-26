@@ -109,7 +109,8 @@ vi.mock('@/composables/system/useSaplingMessageCenter', () => ({
 const VMenuStub = defineComponent({
   name: 'VMenu',
   props: { modelValue: Boolean },
-  template: '<div><slot name="activator" :props="{}" /><slot /></div>',
+  template:
+    '<div data-test="reference-dropdown"><slot name="activator" :props="{}" /><slot /></div>',
 })
 
 const VAutocompleteStub = defineComponent({
@@ -178,6 +179,7 @@ function mountField(
         'v-autocomplete': VAutocompleteStub,
         'v-tooltip': VTooltipStub,
         'v-btn': VBtnStub,
+        'v-icon': true,
         SaplingTable: true,
         SaplingDialogEdit: SaplingDialogEditStub,
       },
@@ -230,6 +232,32 @@ describe('SaplingFieldSingleSelect reference dialog', () => {
     const wrapper = mountField()
 
     expect(wrapper.get('[data-test="open-reference-record"]').attributes('disabled')).toBeDefined()
+  })
+
+  it('reserves help space between the dropdown and open-record action', () => {
+    const wrapper = mountField(null, {
+      reserveHelpSpace: true,
+      helpText: 'Choose the related company.',
+      helpAriaLabel: 'Company',
+    })
+    const root = wrapper.get('.sapling-field-single-select')
+    const dropdown = root.get('[data-test="reference-dropdown"]')
+    const helpSlot = root.get('[data-test="reference-help-slot"]')
+    const openAction = root.get('[data-test="open-reference-record"]')
+
+    expect(root.classes()).toContain('sapling-field-single-select--with-help-slot')
+    expect(
+      dropdown.element.compareDocumentPosition(helpSlot.element) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
+    expect(
+      helpSlot.element.compareDocumentPosition(openAction.element) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
+    expect(helpSlot.get('.sapling-help-tooltip').attributes('aria-label')).toBe('Company')
+
+    const withoutHelp = mountField(null, { reserveHelpSpace: true })
+    expect(withoutHelp.find('[data-test="reference-help-slot"]').exists()).toBe(true)
+    expect(withoutHelp.find('.sapling-help-tooltip').exists()).toBe(false)
   })
 
   it('loads target metadata before an empty reference needs to render a value', async () => {

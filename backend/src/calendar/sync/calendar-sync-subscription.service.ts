@@ -119,14 +119,16 @@ export class CalendarSyncSubscriptionService implements OnModuleInit {
       return;
     }
 
-    await this.calendarSyncQueue.add(
-      'schedule-calendar-imports',
-      {},
+    await this.calendarSyncQueue.upsertJobScheduler(
+      'calendar-sync-scheduler',
+      { every: CALENDAR_SYNC_SCHEDULER_INTERVAL_MS },
       {
-        jobId: 'calendar-sync-scheduler',
-        repeat: { every: CALENDAR_SYNC_SCHEDULER_INTERVAL_MS },
-        removeOnComplete: REDIS_REMOVE_ON_COMPLETE,
-        removeOnFail: REDIS_REMOVE_ON_FAIL,
+        name: 'schedule-calendar-imports',
+        data: {},
+        opts: {
+          removeOnComplete: REDIS_REMOVE_ON_COMPLETE,
+          removeOnFail: REDIS_REMOVE_ON_FAIL,
+        },
       },
     );
   }

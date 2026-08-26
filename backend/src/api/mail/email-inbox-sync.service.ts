@@ -79,14 +79,16 @@ export class EmailInboxSyncService implements OnModuleInit {
       return;
     }
 
-    await this.queue.add(
-      'schedule-email-inbox-imports',
-      {},
+    await this.queue.upsertJobScheduler(
+      'email-inbox-sync-scheduler',
+      { every: SCHEDULER_INTERVAL_MS },
       {
-        jobId: 'email-inbox-sync-scheduler',
-        repeat: { every: SCHEDULER_INTERVAL_MS },
-        removeOnComplete: REDIS_REMOVE_ON_COMPLETE,
-        removeOnFail: REDIS_REMOVE_ON_FAIL,
+        name: 'schedule-email-inbox-imports',
+        data: {},
+        opts: {
+          removeOnComplete: REDIS_REMOVE_ON_COMPLETE,
+          removeOnFail: REDIS_REMOVE_ON_FAIL,
+        },
       },
     );
   }

@@ -122,7 +122,11 @@ describe('FormConfigController applicable form configurations', () => {
       },
     } as unknown as SaplingFormConfigItem;
     const listApplicableConfigs = jest.fn(
-      async (_entityHandle: string, _person?: PersonItem | null) => [config],
+      async (entityHandle: string, person?: PersonItem | null) => {
+        void entityHandle;
+        void person;
+        return [config];
+      },
     );
     const controller = new FormConfigController(
       { listApplicableConfigs } as unknown as FormConfigService,

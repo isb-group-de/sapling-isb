@@ -19,7 +19,7 @@ export class DatabaseService {
   constructor(private readonly em: EntityManager) {}
 
   async getDatabase(): Promise<DatabaseDto> {
-    const rows = await this.em.getConnection().execute<DatabaseInfoRow[]>(`
+    const rows = (await this.em.getConnection().execute(`
       WITH table_sizes AS (
         SELECT
           namespace.nspname AS "schema",
@@ -56,7 +56,7 @@ export class DatabaseService {
           ),
           '[]'::json
         ) AS "largestTables"
-    `);
+    `)) as DatabaseInfoRow[];
     const row = rows[0];
     const largestTables =
       typeof row.largestTables === 'string'
@@ -82,7 +82,7 @@ export class DatabaseService {
   }
 
   async getDatabaseTables(): Promise<DatabaseTableDto[]> {
-    const rows = await this.em.getConnection().execute<DatabaseTableDto[]>(`
+    const rows = (await this.em.getConnection().execute(`
       SELECT
         namespace.nspname AS "schema",
         relation.relname AS "name",
@@ -93,7 +93,7 @@ export class DatabaseService {
         AND namespace.nspname NOT IN ('pg_catalog', 'information_schema')
         AND namespace.nspname NOT LIKE 'pg_toast%'
       ORDER BY "size" DESC, "schema", "name"
-    `);
+    `)) as DatabaseTableDto[];
 
     return rows.map((table) => ({
       schema: table.schema,

@@ -222,7 +222,15 @@ function resolveLoginErrorMessage(error: AxiosError | unknown) {
       case 429:
         return resolveMessage('global.tooManyRequests')
       default:
-        if (typeof error.response?.data === 'string' && error.response.data.trim().length > 0) {
+        if (typeof status === 'number' && status >= 500) {
+          return resolveMessage('exception.serverException')
+        }
+
+        if (
+          typeof error.response?.data === 'string' &&
+          error.response.data.trim().length > 0 &&
+          !/<(?:!doctype|html|head|body|title)\b/i.test(error.response.data)
+        ) {
           return resolveMessage(error.response.data)
         }
 

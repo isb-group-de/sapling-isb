@@ -104,14 +104,14 @@ export function resolveApiError(
       message = responseMessage
     } else if (responseMessage?.startsWith('global.')) {
       message = responseMessage
-    } else if (responseMessage) {
-      message = responseMessage
-    } else if (typeof status === 'number' && HTTP_STATUS_EXCEPTION_KEYS[status]) {
-      message = HTTP_STATUS_EXCEPTION_KEYS[status]
     } else if (err.code === 'ERR_NETWORK') {
       message = 'exception.connectionException'
     } else if (typeof status === 'number' && status >= 500) {
       message = 'exception.serverException'
+    } else if (typeof status === 'number' && HTTP_STATUS_EXCEPTION_KEYS[status]) {
+      message = HTTP_STATUS_EXCEPTION_KEYS[status]
+    } else if (responseMessage && !looksLikeMarkup(responseMessage)) {
+      message = responseMessage
     }
 
     description = responseSummaryKey || responseSummary || normalizeResponseError(responseError)
@@ -136,6 +136,10 @@ export function resolveApiError(
   }
 
   return { message, description, technical, descriptionParams }
+}
+
+function looksLikeMarkup(value: string): boolean {
+  return /<(?:!doctype|html|head|body|title)\b/i.test(value)
 }
 
 export function pushApiErrorMessage(

@@ -119,9 +119,17 @@ export function useSaplingTableRowInformation(
     }
   }
 
-  async function save() {
+  function discardChanges(): void {
+    content.value = currentInformation.value?.content ?? ''
+  }
+
+  async function save(): Promise<boolean> {
+    if (!isDirty.value) {
+      return true
+    }
+
     if (!canSave.value) {
-      return
+      return false
     }
 
     isSaving.value = true
@@ -134,7 +142,7 @@ export function useSaplingTableRowInformation(
           content.value = ''
           emit('saved')
           closeAfterSave()
-          return
+          return true
         }
 
         currentInformation.value = await ApiGenericService.update<InformationItem>(
@@ -143,16 +151,17 @@ export function useSaplingTableRowInformation(
           { content: trimmedContent.value },
           { relations: ['entity', 'person'] },
         )
+        content.value = currentInformation.value.content ?? trimmedContent.value
         emit('saved')
         closeAfterSave()
-        return
+        return true
       }
 
       await currentPersonStore.fetchCurrentPerson()
       const personHandle = currentPersonStore.person?.handle
       if (personHandle == null) {
         pushMessage('error', 'global.entityNotFound', '', 'information')
-        return
+        return false
       }
 
       currentInformation.value = await ApiGenericService.create<InformationItem>('information', {
@@ -165,8 +174,9 @@ export function useSaplingTableRowInformation(
 
       emit('saved')
       closeAfterSave()
+      return true
     } catch {
-      return
+      return false
     } finally {
       isSaving.value = false
     }
@@ -190,6 +200,7 @@ export function useSaplingTableRowInformation(
     canEdit,
     canSave,
     onDialogModelValueUpdate,
+    discardChanges,
     save,
   }
 }

@@ -81,14 +81,14 @@ export function useSaplingDashboard() {
   onMounted(async () => {
     await Promise.all([
       loadTranslations(),
-      loadDashboardEntity(),
-      loadDashboardEntityTemplates(),
-      loadDashboardTemplateEntity(),
-      loadDashboardTemplateEntityTemplates(),
+      loadDashboardEntity(true),
+      loadDashboardEntityTemplates(true),
+      loadDashboardTemplateEntity(true),
+      loadDashboardTemplateEntityTemplates(true),
       currentPersonStore.fetchCurrentPerson(),
     ])
 
-    await Promise.all([loadDashboards(), loadAvailableDashboardTemplates()])
+    await Promise.all([loadDashboards(true), loadAvailableDashboardTemplates(true)])
   })
   // #endregion
 
@@ -96,7 +96,7 @@ export function useSaplingDashboard() {
   /**
    * Loads all dashboards for the current person including their KPI relations.
    */
-  async function loadDashboards() {
+  async function loadDashboards(suppressErrorMessage = false) {
     if (!currentPersonStore.person?.handle) {
       dashboards.value = []
       syncActiveTab()
@@ -106,6 +106,7 @@ export function useSaplingDashboard() {
     const dashboardRes = await ApiGenericService.findAll<DashboardItem>('dashboard', {
       filter: { person: { handle: currentPersonStore.person.handle } },
       relations: ['kpis'],
+      suppressErrorMessage,
     })
 
     dashboards.value = sortDashboards(dashboardRes).map(withSortedKpis)
@@ -115,20 +116,25 @@ export function useSaplingDashboard() {
   /**
    * Loads the dashboard form templates used by the shared edit dialog.
    */
-  async function loadDashboardEntityTemplates() {
-    dashboardEntityTemplates.value = await ApiTemplateService.getEntityTemplate('dashboard')
+  async function loadDashboardEntityTemplates(suppressErrorMessage = false) {
+    dashboardEntityTemplates.value = await ApiTemplateService.getEntityTemplate(
+      'dashboard',
+      false,
+      { suppressErrorMessage },
+    )
   }
 
   /**
    * Loads the dashboard entity metadata required by the shared edit dialog.
    */
-  async function loadDashboardEntity() {
+  async function loadDashboardEntity(suppressErrorMessage = false) {
     dashboardEntity.value =
       (
         await ApiGenericService.find<EntityItem>('entity', {
           filter: { handle: 'dashboard' },
           limit: 1,
           page: 1,
+          suppressErrorMessage,
         })
       ).data[0] || null
   }
@@ -136,21 +142,27 @@ export function useSaplingDashboard() {
   /**
    * Loads the dashboard-template form templates used by the shared edit dialog.
    */
-  async function loadDashboardTemplateEntityTemplates() {
-    dashboardTemplateEntityTemplates.value =
-      await ApiTemplateService.getEntityTemplate('dashboardTemplate')
+  async function loadDashboardTemplateEntityTemplates(suppressErrorMessage = false) {
+    dashboardTemplateEntityTemplates.value = await ApiTemplateService.getEntityTemplate(
+      'dashboardTemplate',
+      false,
+      {
+        suppressErrorMessage,
+      },
+    )
   }
 
   /**
    * Loads the dashboard-template entity metadata required by the shared edit dialog.
    */
-  async function loadDashboardTemplateEntity() {
+  async function loadDashboardTemplateEntity(suppressErrorMessage = false) {
     dashboardTemplateEntity.value =
       (
         await ApiGenericService.find<EntityItem>('entity', {
           filter: { handle: 'dashboardTemplate' },
           limit: 1,
           page: 1,
+          suppressErrorMessage,
         })
       ).data[0] || null
   }
@@ -158,7 +170,7 @@ export function useSaplingDashboard() {
   /**
    * Loads all dashboard templates visible to the current user.
    */
-  async function loadAvailableDashboardTemplates() {
+  async function loadAvailableDashboardTemplates(suppressErrorMessage = false) {
     if (!currentPersonStore.person?.handle) {
       availableDashboardTemplates.value = []
       return
@@ -167,6 +179,7 @@ export function useSaplingDashboard() {
     const response = await ApiGenericService.findAll<DashboardTemplateItem>('dashboardTemplate', {
       orderBy: { isShared: 'DESC', name: 'ASC' },
       relations: ['kpis', 'person'],
+      suppressErrorMessage,
     })
 
     availableDashboardTemplates.value = response

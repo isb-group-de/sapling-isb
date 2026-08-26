@@ -20,6 +20,31 @@ jest.mock('../document/document.service', () => ({
 import { EmailInboxSyncService } from './email-inbox-sync.service';
 
 describe('EmailInboxSyncService', () => {
+  it('registers automatic polling with the BullMQ job scheduler API', async () => {
+    const queue = {
+      upsertJobScheduler: jest.fn().mockResolvedValue(undefined),
+    };
+    const service = new EmailInboxSyncService(
+      {} as never,
+      {} as never,
+      {} as never,
+      {} as never,
+      queue as never,
+    );
+
+    await service.onModuleInit();
+
+    expect(queue.upsertJobScheduler).toHaveBeenCalledWith(
+      'email-inbox-sync-scheduler',
+      { every: 60_000 },
+      {
+        name: 'schedule-email-inbox-imports',
+        data: {},
+        opts: { removeOnComplete: true, removeOnFail: 100 },
+      },
+    );
+  });
+
   it('does not enqueue a second import while the subscription job is delayed', async () => {
     const lastRunAt = new Date('2026-07-13T12:00:00.000Z');
     const subscription = {

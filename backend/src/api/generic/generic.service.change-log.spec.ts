@@ -105,7 +105,7 @@ describe('GenericService change-log workflows', () => {
     const changeLogDetailsAdd = jest.fn();
     const logCreateCalls: Array<Record<string, unknown>> = [];
     const findOne = jest
-      .fn<() => Promise<object | null>>()
+      .fn<(...args: unknown[]) => Promise<object | null>>()
       .mockResolvedValueOnce({ handle: 'person' })
       .mockResolvedValueOnce(item);
     const assign = jest.fn((_item: object, data: object) => ({
@@ -262,7 +262,7 @@ describe('GenericService change-log workflows', () => {
     const changeLogDetailsAdd = jest.fn();
     const logCreateCalls: Array<Record<string, unknown>> = [];
     const findOne = jest
-      .fn<() => Promise<object | null>>()
+      .fn<(...args: unknown[]) => Promise<object | null>>()
       .mockResolvedValueOnce({ handle: 'person' })
       .mockResolvedValueOnce(item);
     const assign = jest.fn((_item: object, data: object) => ({
@@ -489,6 +489,17 @@ describe('GenericService change-log workflows', () => {
       { handle: 1 } as never,
       [],
     );
+
+    expect(findOne.mock.calls[1]?.[2]).toEqual({
+      populate: expect.arrayContaining([
+        'type',
+        'company',
+        'language',
+        'workWeek',
+        'holidayGroup',
+        'session',
+      ]),
+    });
 
     await waitForBackgroundTasks();
 

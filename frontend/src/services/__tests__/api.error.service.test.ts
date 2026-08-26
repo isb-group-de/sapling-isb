@@ -86,4 +86,17 @@ describe('api.error.service', () => {
     expect(result.description).toBe('')
     expect(result.technical).toBeDefined()
   })
+
+  it('never exposes an nginx HTML error page as the message', () => {
+    const result = resolveApiError({
+      response: {
+        status: 502,
+        statusText: 'Bad Gateway',
+        data: '<html><head><title>502 Bad Gateway</title></head><body>nginx</body></html>',
+      },
+    })
+
+    expect(result.message).toBe('exception.serverException')
+    expect(result.description).toBe('')
+  })
 })

@@ -123,6 +123,10 @@ function normalizeChangeLogComparisonValue(
   }
 
   if (Array.isArray(value)) {
+    if (value.length === 0) {
+      return null;
+    }
+
     return value.map((entry) =>
       normalizeChangeLogComparisonValue(entry, visited),
     );

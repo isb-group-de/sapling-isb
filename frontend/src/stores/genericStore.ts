@@ -262,7 +262,10 @@ export const useGenericStore = defineStore('genericLoader', () => {
       return
     }
 
-    const response = await ApiCurrentService.getMetadata<EntityItem, EntityTemplate>(normalizedKeys)
+    const response = await ApiCurrentService.getMetadata<EntityItem, EntityTemplate>(
+      normalizedKeys,
+      { suppressErrorMessage: true },
+    )
     const metadataByHandle = new Map(response.map((metadata) => [metadata.entityHandle, metadata]))
 
     normalizedKeys.forEach((key) => {

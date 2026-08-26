@@ -82,29 +82,39 @@ export interface UpdateDashboardLayoutPayload {
   dashboards: DashboardLayoutEntry[]
 }
 
+export interface CurrentRequestOptions {
+  suppressErrorMessage?: boolean
+}
+
 export interface DashboardLayoutResult {
   updatedCount: number
   dashboardHandles: number[]
 }
 
 class ApiCurrentService {
-  static async getPerson(): Promise<PersonItem> {
-    return this.get<PersonItem>('person')
+  static async getPerson(options: CurrentRequestOptions = {}): Promise<PersonItem> {
+    return this.get<PersonItem>('person', options)
   }
 
   static async updateProfile(payload: CurrentProfileUpdatePayload): Promise<PersonItem> {
     return this.patch<PersonItem>('profile', payload)
   }
 
-  static async getPermissions(): Promise<AccumulatedPermission[]> {
-    return this.get<AccumulatedPermission[]>('permission')
+  static async getPermissions(
+    options: CurrentRequestOptions = {},
+  ): Promise<AccumulatedPermission[]> {
+    return this.get<AccumulatedPermission[]>('permission', options)
   }
 
   static async getMetadata<TEntity, TTemplate>(
     entityHandles: string[],
+    options: CurrentRequestOptions = {},
   ): Promise<CurrentEntityMetadataResponse<TEntity, TTemplate>[]> {
     const query = entityHandles.map(encodeURIComponent).join(',')
-    return this.get<CurrentEntityMetadataResponse<TEntity, TTemplate>[]>(`meta?entities=${query}`)
+    return this.get<CurrentEntityMetadataResponse<TEntity, TTemplate>[]>(
+      `meta?entities=${query}`,
+      options,
+    )
   }
 
   static async getWorkWeek(): Promise<WorkHourWeekItem | null> {
@@ -143,8 +153,8 @@ class ApiCurrentService {
     return this.patch<DashboardLayoutResult>('dashboardLayout', payload)
   }
 
-  private static async get<T>(path: string): Promise<T> {
-    return this.request<T>('get', path)
+  private static async get<T>(path: string, options: CurrentRequestOptions = {}): Promise<T> {
+    return this.request<T>('get', path, undefined, options)
   }
 
   private static async post<T>(path: string, body?: unknown): Promise<T> {
@@ -159,6 +169,7 @@ class ApiCurrentService {
     method: 'get' | 'post' | 'patch',
     path: string,
     body?: unknown,
+    options: CurrentRequestOptions = {},
   ): Promise<T> {
     const endpoint = `current/${path.replace(/^\/+/, '')}`
 
@@ -171,7 +182,9 @@ class ApiCurrentService {
             : await axios.patch<T>(buildApiUrl(endpoint), body)
       return response.data
     } catch (error: unknown) {
-      pushApiErrorMessage(error, 'exception.unknownError', endpoint)
+      if (!options.suppressErrorMessage) {
+        pushApiErrorMessage(error, 'exception.unknownError', endpoint)
+      }
       throw error
     }
   }

@@ -344,6 +344,12 @@ GET /api/generic/:entityHandle/:handle/change-log
 
 Returns persisted create, update, and delete log entries for one record.
 
+Update entries are persisted only when at least one semantic field change
+remains after comparison. Empty representations (`null`, `undefined`, blank
+strings, and empty collections) are treated as equivalent, and submitted
+to-one references are loaded before comparison so unchanged relations do not
+produce false changes.
+
 Important files:
 
 ```text

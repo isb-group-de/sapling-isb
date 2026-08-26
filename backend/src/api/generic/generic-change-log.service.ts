@@ -246,6 +246,11 @@ export class GenericChangeLogService {
       return;
     }
 
+    const details = buildChangeLogDetails(action, oldPayload, newPayload);
+    if (action === 'update' && details.length === 0) {
+      return;
+    }
+
     const logEm = typeof this.em.fork === 'function' ? this.em.fork() : this.em;
 
     const actionEntity = await logEm.findOne(ChangeLogActionItem, {
@@ -263,7 +268,6 @@ export class GenericChangeLogService {
       oldPayload,
       newPayload,
     } as any);
-    const details = buildChangeLogDetails(action, oldPayload, newPayload);
 
     for (const detail of details) {
       log.details.add(

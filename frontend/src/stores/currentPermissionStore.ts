@@ -18,7 +18,9 @@ export const useCurrentPermissionStore = defineStore('currentPermission', () => 
     loading.value = true
     fetchPromise = (async () => {
       try {
-        accumulatedPermission.value = await ApiCurrentService.getPermissions()
+        accumulatedPermission.value = await ApiCurrentService.getPermissions({
+          suppressErrorMessage: true,
+        })
         loaded.value = true
       } catch {
         accumulatedPermission.value = null

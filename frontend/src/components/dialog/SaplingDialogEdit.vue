@@ -186,8 +186,10 @@
                 >
                   <SaplingDialogEditInformationTab
                     v-if="hasOpenedInformationTab"
+                    ref="informationTabRef"
                     :item="item"
                     :entity-handle="entityHandle"
+                    @update:dirty="handleInformationDirtyUpdate"
                   />
                 </v-window-item>
                 <v-window-item
@@ -392,6 +394,31 @@ const dialogFieldDefaults = {
   },
 }
 
+interface InformationTabHandle {
+  discardChanges: () => void
+  save: () => Promise<boolean>
+}
+
+const informationTabRef = ref<InformationTabHandle | null>(null)
+const informationDirty = ref(false)
+
+function handleInformationDirtyUpdate(dirty: boolean): void {
+  informationDirty.value = dirty
+}
+
+async function persistInformationChanges(): Promise<boolean> {
+  if (!informationDirty.value) {
+    return true
+  }
+
+  return (await informationTabRef.value?.save()) ?? false
+}
+
+function resetInformationChanges(): void {
+  informationTabRef.value?.discardChanges()
+  informationDirty.value = false
+}
+
 // #region Composable
 const {
   isLoading,
@@ -458,6 +485,9 @@ const {
     Array.isArray(props.forceDirtyFields) ? props.forceDirtyFields : [],
   ),
   allowPristineCreate: computed(() => props.allowPristineCreate === true),
+  hasSupplementalChanges: computed(() => informationDirty.value),
+  persistSupplementalChanges: persistInformationChanges,
+  resetSupplementalChanges: resetInformationChanges,
 })
 
 const formSurfaceRef = ref<HTMLElement | null>(null)
@@ -658,6 +688,7 @@ const supplementalTabs = computed(() => {
       icon: 'mdi-text-box-edit-outline',
       disabled: !hasPersistedItem.value,
       disabledReason: supplementalDisabledReason.value,
+      dirty: informationDirty.value,
     })
   }
 
@@ -760,7 +791,8 @@ const selectedFormConfigChipLabel = computed(() =>
 const resetButtonLabel = computed(() => t('filter.reset'))
 
 const dirtySummaryLabel = computed(() => {
-  const dirtyChangeCount = dirtyFieldCount.value + dirtyRelationNames.value.length
+  const dirtyChangeCount =
+    dirtyFieldCount.value + dirtyRelationNames.value.length + (informationDirty.value ? 1 : 0)
   if (dirtyChangeCount <= 0) {
     return ''
   }

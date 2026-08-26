@@ -27,6 +27,9 @@
       :placeholder="defaultRawPlaceholder"
       :show-open-action="true"
       :open-action-label="t('global.editRecord')"
+      :help-text="helpText"
+      :help-aria-label="plainLabel"
+      :reserve-help-space="showLabel"
       density="compact"
       @update:model-value="(val: unknown) => updateField(template.name, val)"
     />
@@ -310,8 +313,14 @@
       @update:model-value="(val: string) => updateField(template.name, val)"
     />
   </template>
-  <div v-if="helpText && showLabel" class="sapling-record-field-help-action">
-    <SaplingHelpTooltip :text="helpText" :aria-label="plainLabel" icon-size="16" compact />
+  <div v-if="showLabel && !usesEmbeddedReferenceHelp" class="sapling-record-field-help-action">
+    <SaplingHelpTooltip
+      v-if="helpText"
+      :text="helpText"
+      :aria-label="plainLabel"
+      icon-size="16"
+      compact
+    />
   </div>
 </template>
 
@@ -496,6 +505,13 @@ const canReadReference = computed(
   () =>
     props.permissions?.find((entry) => entry.entityHandle === props.template.referenceName)
       ?.allowRead,
+)
+const usesEmbeddedReferenceHelp = computed(
+  () =>
+    !props.template.genericReference &&
+    props.template.isReference &&
+    props.isReferenceVisible &&
+    canReadReference.value === true,
 )
 const canComposeMail = computed(
   () =>

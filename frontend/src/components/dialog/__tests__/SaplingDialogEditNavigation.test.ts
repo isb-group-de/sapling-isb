@@ -287,6 +287,7 @@ describe('SaplingDialogEditNavigation', () => {
             value: 3,
             label: 'Documents',
             icon: 'mdi-file-document-multiple-outline',
+            dirty: true,
           },
         ],
         'onUpdate:activeTab': (value: number) => wrapper.setProps({ activeTab: value }),
@@ -307,6 +308,9 @@ describe('SaplingDialogEditNavigation', () => {
     expect(tabs[2].attributes('aria-label')).toContain('Permission denied')
     expect(tabs[2].classes()).toContain('sapling-record-dialog-nav-item--supplemental-first')
     expect(tabs[3].classes()).not.toContain('sapling-record-dialog-nav-item--supplemental-first')
+    expect(tabs[3].classes()).toContain('sapling-record-dialog-nav-item--dirty')
+    expect(tabs[3].find('.sapling-record-dialog-nav-item__dirty-indicator').exists()).toBe(true)
+    expect(tabs[3].attributes('aria-label')).toContain('global.dirtyFieldCount')
 
     await tabs[0].trigger('keydown', { key: 'End' })
     await nextTick()

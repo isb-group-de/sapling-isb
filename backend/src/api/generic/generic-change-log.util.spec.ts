@@ -12,6 +12,8 @@ describe('generic-change-log.util', () => {
     expect(areChangeLogValuesEqual({ mobile: null }, { mobile: '' })).toBe(
       true,
     );
+    expect(areChangeLogValuesEqual(null, [])).toBe(true);
+    expect(areChangeLogValuesEqual({ roles: [] }, { roles: null })).toBe(true);
   });
 
   it('does not create details for empty-value transitions', () => {
@@ -38,5 +40,25 @@ describe('generic-change-log.util', () => {
         newValue: 'Bauer IT Solutions 1',
       },
     ]);
+  });
+
+  it('does not create details for empty collection transitions', () => {
+    expect(
+      buildChangeLogDetails(
+        'update',
+        {
+          handle: 1,
+          apiTokens: [],
+          createdTickets: [],
+          roles: [],
+        },
+        {
+          handle: 1,
+          apiTokens: null,
+          createdTickets: undefined,
+          roles: null,
+        },
+      ),
+    ).toEqual([]);
   });
 });

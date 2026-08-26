@@ -69,8 +69,17 @@ const props = defineProps<UseSaplingTableRowInformationProps>()
 const emit = defineEmits<UseSaplingTableRowInformationEmit>()
 const { t, te } = useI18n()
 
-const { content, isLoading, canEdit, onDialogModelValueUpdate, save } =
-  useSaplingTableRowInformation(props, emit)
+const {
+  content,
+  isLoading,
+  canEdit,
+  onDialogModelValueUpdate,
+  save: persistInformation,
+} = useSaplingTableRowInformation(props, emit)
+
+function save(): void {
+  void persistInformation()
+}
 
 const entityLabel = computed(() => {
   const key = `navigation.${props.entityHandle}`

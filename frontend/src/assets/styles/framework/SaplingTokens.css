@@ -220,6 +220,7 @@
   --sapling-control-height-reference-multiline: calc(
     var(--sapling-control-size-2xl) + var(--sapling-space-2xs)
   );
+  --sapling-field-help-slot-width: 1.125rem;
   --sapling-blur-md: 12px;
   --sapling-blur-panel: 14px;
   --sapling-blur-soft: 16px;

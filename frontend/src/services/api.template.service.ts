@@ -5,8 +5,16 @@ import { pushApiErrorMessage } from '@/services/api.error.service'
 
 const entityTemplateCache = new Map<string, Promise<EntityTemplate[]>>()
 
+interface EntityTemplateRequestOptions {
+  suppressErrorMessage?: boolean
+}
+
 class ApiTemplateService {
-  static async getEntityTemplate(entityHandle: string, force = false): Promise<EntityTemplate[]> {
+  static async getEntityTemplate(
+    entityHandle: string,
+    force = false,
+    options: EntityTemplateRequestOptions = {},
+  ): Promise<EntityTemplate[]> {
     const normalizedEntityHandle = entityHandle.trim()
 
     if (!force) {
@@ -16,7 +24,7 @@ class ApiTemplateService {
       }
     }
 
-    const promise = this.fetchEntityTemplate(normalizedEntityHandle)
+    const promise = this.fetchEntityTemplate(normalizedEntityHandle, options)
     entityTemplateCache.set(normalizedEntityHandle, promise)
     return promise
   }
@@ -30,13 +38,18 @@ class ApiTemplateService {
     entityTemplateCache.clear()
   }
 
-  private static async fetchEntityTemplate(entityHandle: string): Promise<EntityTemplate[]> {
+  private static async fetchEntityTemplate(
+    entityHandle: string,
+    options: EntityTemplateRequestOptions,
+  ): Promise<EntityTemplate[]> {
     try {
       const response = await axios.get<EntityTemplate[]>(buildApiUrl(`template/${entityHandle}`))
       return response.data
     } catch (error: unknown) {
       entityTemplateCache.delete(entityHandle)
-      pushApiErrorMessage(error, 'exception.unknownError', entityHandle)
+      if (!options.suppressErrorMessage) {
+        pushApiErrorMessage(error, 'exception.unknownError', entityHandle)
+      }
       throw error
     }
   }

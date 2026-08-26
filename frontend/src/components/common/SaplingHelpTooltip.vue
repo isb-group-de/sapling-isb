@@ -74,8 +74,8 @@ withDefaults(
 }
 
 .sapling-help-tooltip--compact {
-  width: 1.125rem;
-  height: 1.125rem;
+  width: var(--sapling-field-help-slot-width);
+  height: var(--sapling-field-help-slot-width);
 }
 
 .sapling-help-tooltip:hover,

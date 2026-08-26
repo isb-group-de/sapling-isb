@@ -113,6 +113,7 @@ export interface FindOptions {
   relations?: string[]
   fields?: string[]
   signal?: AbortSignal
+  suppressErrorMessage?: boolean
 }
 
 export interface FindAllOptions extends Omit<FindOptions, 'page' | 'limit'> {
@@ -165,7 +166,16 @@ class ApiGenericService {
 
   static async find<T>(
     entityHandle: string,
-    { filter, orderBy, page, limit, relations, fields, signal }: FindOptions = {},
+    {
+      filter,
+      orderBy,
+      page,
+      limit,
+      relations,
+      fields,
+      signal,
+      suppressErrorMessage,
+    }: FindOptions = {},
   ): Promise<PaginatedResponse<T>> {
     const params: Record<string, unknown> = {}
     if (typeof page === 'number') params.page = page
@@ -194,7 +204,9 @@ class ApiGenericService {
         throw error
       }
 
-      pushApiErrorMessage(error, 'exception.unknownError', entityHandle)
+      if (!suppressErrorMessage) {
+        pushApiErrorMessage(error, 'exception.unknownError', entityHandle)
+      }
       throw error
     }
   }
@@ -208,6 +220,7 @@ class ApiGenericService {
       fields,
       signal,
       pageSize = DEFAULT_ENTITY_ITEMS_COUNT,
+      suppressErrorMessage,
     }: FindAllOptions = {},
   ): Promise<T[]> {
     const limit = Math.min(
@@ -232,6 +245,7 @@ class ApiGenericService {
         relations,
         fields,
         signal,
+        suppressErrorMessage,
       })
 
       for (const item of response.data ?? []) {
@@ -264,7 +278,15 @@ class ApiGenericService {
   static async findByHandles<T>(
     entityHandle: string,
     handles: EntityHandleValue[],
-    { filter, orderBy, relations, fields, signal, pageSize }: FindByHandlesOptions = {},
+    {
+      filter,
+      orderBy,
+      relations,
+      fields,
+      signal,
+      pageSize,
+      suppressErrorMessage,
+    }: FindByHandlesOptions = {},
   ): Promise<T[]> {
     const normalizedHandles = [...new Set(handles)]
     if (normalizedHandles.length === 0) {
@@ -288,6 +310,7 @@ class ApiGenericService {
         fields,
         signal,
         pageSize,
+        suppressErrorMessage,
       })
       items.push(...chunkItems)
     }
