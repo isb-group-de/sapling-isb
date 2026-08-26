@@ -204,7 +204,6 @@ export class FavoriteItem {
   @SaplingDependsOn({
     parentField: 'entity',
     targetField: 'entity',
-    requireParent: true,
     clearOnParentChange: true,
   })
   @SaplingForm({

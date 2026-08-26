@@ -54,14 +54,6 @@ export class DvelopConnectionItem {
   @Property({ length: 512 })
   baseUrl!: string;
 
-  @ApiPropertyOptional({
-    type: () => DvelopRepositoryItem,
-  })
-  @SaplingDependsOn({
-    parentField: 'handle',
-    targetField: 'connection',
-    requireParent: true,
-  })
   @ApiPropertyOptional()
   @Sapling(['isSecurity'])
   @SaplingForm({
@@ -88,6 +80,14 @@ export class DvelopConnectionItem {
     tableVisible: true,
     mobileOrder: 300,
     mobileVisible: true,
+  })
+  @ApiPropertyOptional({
+    type: () => DvelopRepositoryItem,
+  })
+  @SaplingDependsOn({
+    parentField: 'handle',
+    targetField: 'connection',
+    requireParent: true,
   })
   @ManyToOne(() => DvelopRepositoryItem, { nullable: true })
   repository?: Rel<DvelopRepositoryItem>;

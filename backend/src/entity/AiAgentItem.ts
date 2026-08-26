@@ -171,7 +171,6 @@ export class AiAgentItem {
   @SaplingDependsOn({
     parentField: 'provider',
     targetField: 'provider',
-    requireParent: true,
     clearOnParentChange: true,
   })
   @SaplingForm({
@@ -187,6 +186,43 @@ export class AiAgentItem {
   })
   @ManyToOne(() => AiProviderModelItem, { nullable: true })
   model?: Rel<AiProviderModelItem> | null;
+
+  @ApiPropertyOptional({ type: () => AiProviderTypeItem })
+  @Sapling(['isChip'])
+  @SaplingForm({
+    order: 300,
+    group: 'aiAgent.groupRuntime',
+    groupOrder: 300,
+    width: 2,
+    visible: true,
+    tableOrder: 300,
+    tableVisible: true,
+    mobileOrder: 300,
+    mobileVisible: false,
+  })
+  @ManyToOne(() => AiProviderTypeItem, { nullable: true })
+  webSearchProvider?: Rel<AiProviderTypeItem> | null;
+
+  @ApiPropertyOptional({ type: () => AiProviderModelItem })
+  @Sapling(['isChip'])
+  @SaplingDependsOn({
+    parentField: 'webSearchProvider',
+    targetField: 'provider',
+    clearOnParentChange: true,
+  })
+  @SaplingForm({
+    order: 400,
+    group: 'aiAgent.groupRuntime',
+    groupOrder: 300,
+    width: 2,
+    visible: true,
+    tableOrder: 400,
+    tableVisible: true,
+    mobileOrder: 400,
+    mobileVisible: false,
+  })
+  @ManyToOne(() => AiProviderModelItem, { nullable: true })
+  webSearchModel?: Rel<AiProviderModelItem> | null;
 
   @ApiPropertyOptional({ type: [String] })
   @SaplingForm({

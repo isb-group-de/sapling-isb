@@ -156,6 +156,47 @@ export class AiController {
     return this.aiService.listActiveModels(providerHandle, 'chat', true);
   }
 
+  @Get('web-search/providers')
+  @ApiOperation({
+    summary: 'List available web-search providers',
+    description:
+      'Returns active AI providers with configured credentials and at least one web-search-capable model.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Active providers available for public web research.',
+    type: AiProviderTypeItem,
+    isArray: true,
+  })
+  async listWebSearchProviders(): Promise<AiProviderTypeItem[]> {
+    return this.aiService.listActiveProviders('webSearch', true);
+  }
+
+  @Get('web-search/models')
+  @ApiOperation({
+    summary: 'List available web-search models',
+    description:
+      'Returns active web-search-capable models. When providerHandle is supplied, only models from that provider are returned.',
+  })
+  @ApiQuery({
+    name: 'providerHandle',
+    required: false,
+    type: String,
+    description:
+      'Optional provider handle used to limit the result to one AI provider.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Active models available for public web research.',
+    type: AiProviderModelItem,
+    isArray: true,
+  })
+  async listWebSearchModels(
+    @Query('providerHandle') providerHandle?: string,
+  ): Promise<AiProviderModelItem[]> {
+    return this.aiService.listActiveModels(providerHandle, 'webSearch', true);
+  }
+
   @Post('markdown/prepare')
   @ApiOperation({
     summary: 'Professionally revise Markdown content',

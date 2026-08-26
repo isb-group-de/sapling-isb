@@ -96,6 +96,33 @@ export class AiAgentRunLifecycleService {
     }
 
     for (const toolCall of toolCalls) {
+      if (toolCall.toolName === 'web_search') {
+        const result = this.asRecord(toolCall.rawResult);
+        const webSources = Array.isArray(result?.sources) ? result.sources : [];
+
+        for (const value of webSources) {
+          const source = this.asRecord(value);
+          const url = typeof source?.url === 'string' ? source.url : null;
+          if (!url) continue;
+
+          sources.set(`web:${url}`, {
+            kind: 'web',
+            url,
+            title: typeof source?.title === 'string' ? source.title : url,
+            providerHandle:
+              typeof result?.providerHandle === 'string'
+                ? result.providerHandle
+                : null,
+            modelHandle:
+              typeof result?.modelHandle === 'string'
+                ? result.modelHandle
+                : null,
+            searchedAt:
+              typeof result?.searchedAt === 'string' ? result.searchedAt : null,
+          });
+        }
+      }
+
       const sourceEntityHandles =
         toolCall.sourceEntityHandles ??
         extractAiToolEntityHandles(toolCall.rawResult);
@@ -119,5 +146,11 @@ export class AiAgentRunLifecycleService {
     }
 
     return [...sources.values()];
+  }
+
+  private asRecord(value: unknown): Record<string, unknown> | null {
+    return value && typeof value === 'object' && !Array.isArray(value)
+      ? (value as Record<string, unknown>)
+      : null;
   }
 }

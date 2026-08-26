@@ -167,6 +167,11 @@ contains `targetField` then synchronizes that referenced value back into
 parent is changed or removed. This makes suitable reference pairs bidirectional
 without entity-specific frontend logic.
 
+Use `requireParent: true` only when the parent cannot safely be derived from a
+child selection, for example when `parentField` is the current record's scalar
+handle rather than another selectable reference. Relation-to-relation pairs
+should normally leave it unset so either field can be selected first.
+
 After a parent change, generated edit dialogs also query each dependent
 reference with a two-record limit. Exactly one permitted result is selected
 automatically; zero or multiple results leave the child empty for manual input.

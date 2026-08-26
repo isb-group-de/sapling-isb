@@ -1,7 +1,7 @@
 import { describe, expect, it, jest } from '@jest/globals';
 import type { EntityManager } from '@mikro-orm/core';
 import { AiProviderRegistryService } from './ai-provider-registry.service';
-import type { AiProviderModelItem } from '../../entity/AiProviderModelItem';
+import { AiProviderModelItem } from '../../entity/AiProviderModelItem';
 import type { AiProviderTypeItem } from '../../entity/AiProviderTypeItem';
 
 describe('AiProviderRegistryService', () => {
@@ -37,5 +37,77 @@ describe('AiProviderRegistryService', () => {
     const result = await service.listActiveModels(undefined, 'chat');
 
     expect(result.map((model) => model.handle)).toEqual(['ollama-gemma4-12b']);
+  });
+
+  it('filters for web-search-capable models', async () => {
+    const provider = {
+      handle: 'gemini',
+      title: 'Gemini',
+      credentials: { geminiApiKey: 'test-key' },
+      isActive: true,
+    } as unknown as AiProviderTypeItem;
+    const models = [
+      {
+        handle: 'gemini-3_5-flash',
+        title: 'Gemini 3.5 Flash',
+        provider,
+        providerModel: 'gemini-3.5-flash',
+        isActive: true,
+        supportsWebSearch: true,
+      },
+    ] as AiProviderModelItem[];
+    const find = jest.fn(
+      (_entity: unknown, _filter: unknown, _options: unknown) =>
+        Promise.resolve(models),
+    );
+    const service = new AiProviderRegistryService({ find } as never);
+
+    const result = await service.listActiveModels(undefined, 'webSearch');
+
+    expect(result).toHaveLength(1);
+    expect(find).toHaveBeenCalledWith(
+      AiProviderModelItem,
+      expect.objectContaining({ supportsWebSearch: true }),
+      expect.any(Object),
+    );
+  });
+
+  it('uses the selected provider default when no web-search model is selected', async () => {
+    const provider = {
+      handle: 'gemini',
+      title: 'Gemini',
+      credentials: { geminiApiKey: 'test-key' },
+      isActive: true,
+    } as unknown as AiProviderTypeItem;
+    const model = {
+      handle: 'gemini-3_5-flash',
+      title: 'Gemini 3.5 Flash',
+      provider,
+      providerModel: 'gemini-3.5-flash',
+      isActive: true,
+      supportsWebSearch: true,
+    } as AiProviderModelItem;
+    const find = jest.fn(
+      (_entity: unknown, _filter: unknown, _options: unknown) =>
+        Promise.resolve([model]),
+    );
+    const populate = jest.fn(() => Promise.resolve());
+    const service = new AiProviderRegistryService({ find, populate } as never);
+
+    const result = await service.resolveWebSearchTarget('gemini', null);
+
+    expect(result).toMatchObject({
+      provider: { handle: 'gemini' },
+      model: { handle: 'gemini-3_5-flash' },
+      providerKind: 'gemini',
+    });
+    expect(find).toHaveBeenCalledWith(
+      AiProviderModelItem,
+      expect.objectContaining({
+        supportsWebSearch: true,
+        provider: { handle: 'gemini' },
+      }),
+      expect.any(Object),
+    );
   });
 });

@@ -69,7 +69,6 @@ export class ImportBatchItem {
   @SaplingDependsOn({
     parentField: 'source',
     targetField: 'source',
-    requireParent: true,
     clearOnParentChange: true,
   })
   @ManyToOne(() => ImportTemplateItem, { nullable: true })

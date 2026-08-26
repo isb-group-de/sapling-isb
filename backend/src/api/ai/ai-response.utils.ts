@@ -178,6 +178,7 @@ export function sanitizeModel(model: AiProviderModelItem): AiProviderModelItem {
     providerModel: model.providerModel,
     supportsStreaming: model.supportsStreaming,
     supportsTools: model.supportsTools,
+    supportsWebSearch: model.supportsWebSearch,
     supportsEmbeddings: model.supportsEmbeddings,
     supportsTranscription: model.supportsTranscription,
     embeddingBatchSize: model.embeddingBatchSize,
@@ -194,6 +195,7 @@ export function sanitizeModel(model: AiProviderModelItem): AiProviderModelItem {
     speechMaxInputLength: model.speechMaxInputLength,
     maxToolCallIterations: model.maxToolCallIterations,
     isDefault: model.isDefault,
+    isDefaultWebSearch: model.isDefaultWebSearch,
     isActive: model.isActive,
     sortOrder: model.sortOrder,
     createdAt: model.createdAt,
@@ -226,6 +228,14 @@ export function sanitizeAgent(agent: AiAgentItem): AiAgentItem {
       agent.model && typeof agent.model !== 'string'
         ? sanitizeModel(agent.model)
         : agent.model,
+    webSearchProvider:
+      agent.webSearchProvider && typeof agent.webSearchProvider !== 'string'
+        ? sanitizeProvider(agent.webSearchProvider)
+        : agent.webSearchProvider,
+    webSearchModel:
+      agent.webSearchModel && typeof agent.webSearchModel !== 'string'
+        ? sanitizeModel(agent.webSearchModel)
+        : agent.webSearchModel,
     allowedEntityHandles: agent.allowedEntityHandles ?? null,
     allowedKnowledgeEntityHandles: agent.allowedKnowledgeEntityHandles ?? null,
     allowedInternalTools: agent.allowedInternalTools ?? null,
@@ -272,6 +282,14 @@ export function sanitizeAgentVersion(
       version.model && typeof version.model !== 'string'
         ? sanitizeModel(version.model)
         : version.model,
+    webSearchProvider:
+      version.webSearchProvider && typeof version.webSearchProvider !== 'string'
+        ? sanitizeProvider(version.webSearchProvider)
+        : version.webSearchProvider,
+    webSearchModel:
+      version.webSearchModel && typeof version.webSearchModel !== 'string'
+        ? sanitizeModel(version.webSearchModel)
+        : version.webSearchModel,
     allowedEntityHandles: version.allowedEntityHandles ?? null,
     allowedKnowledgeEntityHandles:
       version.allowedKnowledgeEntityHandles ?? null,

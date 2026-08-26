@@ -2,6 +2,22 @@
 
 Sapling AI agents are admin-managed chat profiles for Songbird. They reuse the existing chat runtime, provider/model records, internal Sapling MCP tools, external MCP server configs, and semantic search. An agent does not start a separate orchestration stack; it scopes the normal Songbird runtime.
 
+The chat provider/model and web-search provider/model are independent. An
+administrator can select an optional OpenAI or Gemini search provider and a
+search-capable model in the Runtime tab. Selecting a model also selects its
+provider; selecting a provider filters the model list. If only the search
+provider is selected, Sapling uses that provider's default search model;
+otherwise Sapling uses the active system-wide default for web search.
+This lets a tool-capable Ollama or LM Studio chat model use online research
+without pretending that the local provider has built-in browsing.
+The runtime selectors are bidirectional: choosing a provider filters its model
+list, while choosing a model directly selects its owning provider. The search
+provider selector is a UI-only filter; the persisted search-model relation
+remains the authoritative provider/model combination.
+The builder loads the search provider/model catalog independently from the chat
+catalog, so a search-capable model does not also need to be exposed as a chat
+model merely to appear in this selector.
+
 AI Agents 2.0 extends the builder into an Agent Workbench. The principle stays
 the same: agents assist work, prepare changes, and explain sources; mutating
 actions remain confirm-first.

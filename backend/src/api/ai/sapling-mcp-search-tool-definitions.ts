@@ -5,6 +5,70 @@ import type { SaplingMcpToolDefinition } from './sapling-mcp-tool-definition.typ
 export const SAPLING_MCP_SEARCH_TOOL_DEFINITIONS: readonly SaplingMcpToolDefinition[] =
   [
     {
+      toolName: 'web_search',
+      description: SAPLING_MCP_TOOL_DESCRIPTIONS.webSearch,
+      jsonSchema: {
+        type: 'object',
+        properties: {
+          query: {
+            type: 'string',
+            description: 'The concrete public-web research question.',
+          },
+          urls: {
+            type: 'array',
+            items: { type: 'string' },
+            description:
+              'Optional public HTTP(S) URLs to inspect directly, for example an Impressum page.',
+          },
+          allowedDomains: {
+            type: 'array',
+            items: { type: 'string' },
+            description:
+              'Optional domain allow-list for OpenAI web search, without paths.',
+          },
+          searchContextSize: {
+            type: 'string',
+            enum: ['low', 'medium', 'high'],
+            description: 'Search depth, default medium.',
+          },
+          maxSources: {
+            type: 'integer',
+            description: 'Maximum number of source links, default 8.',
+          },
+        },
+        required: ['query'],
+        additionalProperties: false,
+      },
+      serverInputSchema: {
+        query: z
+          .string()
+          .min(1)
+          .max(4000)
+          .describe('Public-web research question.'),
+        urls: z
+          .array(z.url())
+          .max(5)
+          .optional()
+          .describe('Optional public HTTP(S) URLs to inspect directly.'),
+        allowedDomains: z
+          .array(z.string())
+          .max(20)
+          .optional()
+          .describe('Optional domain allow-list for web search.'),
+        searchContextSize: z
+          .enum(['low', 'medium', 'high'])
+          .optional()
+          .describe('Search depth, default medium.'),
+        maxSources: z
+          .number()
+          .int()
+          .positive()
+          .max(10)
+          .optional()
+          .describe('Maximum number of source links, default 8.'),
+      },
+    },
+    {
       toolName: 'ticket_search',
       description: SAPLING_MCP_TOOL_DESCRIPTIONS.ticketSearch,
       jsonSchema: {

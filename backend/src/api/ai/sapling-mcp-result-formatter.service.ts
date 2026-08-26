@@ -28,6 +28,8 @@ export class SaplingMcpResultFormatterService {
         return this.createModelSemanticSearchResult(payload);
       case 'knowledge_search':
         return this.createModelKnowledgeSearchResult(payload);
+      case 'web_search':
+        return this.createModelWebSearchResult(payload);
       case 'import_get_batch':
       case 'import_suggest_mapping':
       case 'import_configure_batch':
@@ -196,6 +198,26 @@ export class SaplingMcpResultFormatterService {
           };
         })
         .filter((item) => item != null),
+    };
+  }
+
+  private createModelWebSearchResult(payload: unknown): unknown {
+    const record = this.asRecord(payload);
+
+    return {
+      ...this.copyModelResultMetadata(record, [
+        'query',
+        'urls',
+        'answer',
+        'queries',
+        'sources',
+        'providerHandle',
+        'modelHandle',
+        'providerModel',
+        'searchedAt',
+        'usagePayload',
+      ]),
+      usageHints: [...SAPLING_MCP_USAGE_HINTS.webSearch],
     };
   }
 

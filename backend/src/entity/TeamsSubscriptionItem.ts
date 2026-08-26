@@ -113,7 +113,6 @@ export class TeamsSubscriptionItem {
   @SaplingDependsOn({
     parentField: 'entity',
     targetField: 'entity',
-    requireParent: true,
     clearOnParentChange: true,
   })
   @SaplingForm({

@@ -1,0 +1,55 @@
+[
+  {
+    "handle": "openai-gpt-5_6-sol",
+    "supportsWebSearch": true
+  },
+  {
+    "handle": "openai-gpt-5_6-terra",
+    "supportsWebSearch": true
+  },
+  {
+    "handle": "openai-gpt-5_6-luna",
+    "supportsWebSearch": true,
+    "isDefaultWebSearch": true
+  },
+  {
+    "handle": "openai-gpt-5_5",
+    "supportsWebSearch": true
+  },
+  {
+    "handle": "openai-gpt-5_4",
+    "supportsWebSearch": true
+  },
+  {
+    "handle": "openai-gpt-5_4-mini",
+    "supportsWebSearch": true
+  },
+  {
+    "handle": "openai-gpt-5_4-nano",
+    "supportsWebSearch": true
+  },
+  {
+    "handle": "gemini-3_5-flash",
+    "supportsWebSearch": true
+  },
+  {
+    "handle": "gemini-3_1-pro-preview",
+    "supportsWebSearch": true
+  },
+  {
+    "handle": "gemini-3_1-flash-lite",
+    "supportsWebSearch": true
+  },
+  {
+    "handle": "gemini-2_5-flash",
+    "supportsWebSearch": true
+  },
+  {
+    "handle": "gemini-2_5-flash-lite",
+    "supportsWebSearch": true
+  },
+  {
+    "handle": "gemini-2_5-pro",
+    "supportsWebSearch": true
+  }
+]

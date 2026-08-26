@@ -17,6 +17,7 @@ import { SaplingMcpResultFormatterService } from './sapling-mcp-result-formatter
 import { SaplingMcpSearchToolService } from './sapling-mcp-search-tool.service';
 import { SaplingMcpTransportService } from './sapling-mcp-transport.service';
 import { SaplingMcpValueService } from './sapling-mcp-value.service';
+import { AiWebSearchService } from './ai-web-search.service';
 
 @Injectable()
 export class SaplingMcpService {
@@ -30,6 +31,7 @@ export class SaplingMcpService {
     private readonly criteriaService: SaplingMcpCriteriaService,
     private readonly permissionService: SaplingMcpPermissionService,
     private readonly resultFormatter: SaplingMcpResultFormatterService,
+    private readonly webSearch: AiWebSearchService,
     private readonly values: SaplingMcpValueService = new SaplingMcpValueService(),
     private readonly metadata: SaplingMcpMetadataService = new SaplingMcpMetadataService(
       currentService,
@@ -63,6 +65,7 @@ export class SaplingMcpService {
       genericTools,
       searchTools,
       importTools,
+      webSearch,
       values,
       resultFormatter,
     ),
@@ -71,8 +74,8 @@ export class SaplingMcpService {
     ),
   ) {}
 
-  listTools() {
-    return this.execution.listTools();
+  listTools(policy?: McpToolPolicy) {
+    return this.execution.listTools(policy);
   }
 
   executeTool(

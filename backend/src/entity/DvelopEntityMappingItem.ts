@@ -58,7 +58,6 @@ export class DvelopEntityMappingItem {
   @SaplingDependsOn({
     parentField: 'connection',
     targetField: 'connection',
-    requireParent: true,
     clearOnParentChange: true,
   })
   @SaplingForm({

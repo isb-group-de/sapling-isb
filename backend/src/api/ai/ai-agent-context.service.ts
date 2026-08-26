@@ -108,7 +108,17 @@ export class AiAgentContextService {
       const version = await this.em.findOne(
         AiAgentVersionItem,
         { handle: versionHandle, agent: { handle: agent.handle } },
-        { populate: ['agent', 'provider', 'model', 'model.provider'] },
+        {
+          populate: [
+            'agent',
+            'provider',
+            'model',
+            'model.provider',
+            'webSearchProvider',
+            'webSearchModel',
+            'webSearchModel.provider',
+          ],
+        },
       );
 
       if (!version) {
@@ -122,7 +132,15 @@ export class AiAgentContextService {
       AiAgentVersionItem,
       { agent: { handle: agent.handle }, status: 'active' },
       {
-        populate: ['agent', 'provider', 'model', 'model.provider'],
+        populate: [
+          'agent',
+          'provider',
+          'model',
+          'model.provider',
+          'webSearchProvider',
+          'webSearchModel',
+          'webSearchModel.provider',
+        ],
         orderBy: { version: 'DESC' },
       },
     );
@@ -135,7 +153,15 @@ export class AiAgentContextService {
       AiAgentVersionItem,
       { agent: { handle: agent.handle } },
       {
-        populate: ['agent', 'provider', 'model', 'model.provider'],
+        populate: [
+          'agent',
+          'provider',
+          'model',
+          'model.provider',
+          'webSearchProvider',
+          'webSearchModel',
+          'webSearchModel.provider',
+        ],
         orderBy: { version: 'DESC' },
       },
     );
@@ -243,6 +269,19 @@ export class AiAgentContextService {
       return basePolicy;
     }
 
+    const webSearchProviderHandle =
+      (typeof version.webSearchProvider === 'string'
+        ? version.webSearchProvider
+        : version.webSearchProvider?.handle) ??
+      basePolicy.webSearchProviderHandle ??
+      null;
+    const webSearchModelHandle =
+      (typeof version.webSearchModel === 'string'
+        ? version.webSearchModel
+        : version.webSearchModel?.handle) ??
+      basePolicy.webSearchModelHandle ??
+      null;
+
     return {
       ...basePolicy,
       allowedEntityHandles:
@@ -263,6 +302,8 @@ export class AiAgentContextService {
           ? this.normalizeStringArray(version.allowedExternalTools)
           : basePolicy.allowedExternalTools,
       blockMutatingTools: true,
+      ...(webSearchProviderHandle ? { webSearchProviderHandle } : {}),
+      ...(webSearchModelHandle ? { webSearchModelHandle } : {}),
     };
   }
 

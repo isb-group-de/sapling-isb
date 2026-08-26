@@ -18,6 +18,8 @@ export function createEmptyAgentDraft(): AgentDraft {
     conversationStarters: [],
     provider: null,
     model: null,
+    webSearchProvider: null,
+    webSearchModel: null,
     allowedEntityHandles: [],
     allowedKnowledgeEntityHandles: [],
     allowedInternalTools: [],
@@ -51,6 +53,8 @@ export function toAgentDraft(agent: AiAgentItem): AgentDraft {
     conversationStarters: agent.conversationStarters ?? [],
     provider: getProviderHandle(agent.provider),
     model: getModelHandle(agent.model),
+    webSearchProvider: getProviderHandle(agent.webSearchProvider),
+    webSearchModel: getModelHandle(agent.webSearchModel),
     allowedEntityHandles: agent.allowedEntityHandles ?? [],
     allowedKnowledgeEntityHandles: agent.allowedKnowledgeEntityHandles ?? [],
     allowedInternalTools: agent.allowedInternalTools ?? [],
@@ -75,6 +79,8 @@ export function toAgentPayload(value: AgentDraft): Partial<AiAgentItem> {
     conversationStarters: value.conversationStarters,
     provider: value.provider || null,
     model: value.model || null,
+    webSearchProvider: value.webSearchProvider || null,
+    webSearchModel: value.webSearchModel || null,
     allowedEntityHandles: value.allowedEntityHandles,
     allowedKnowledgeEntityHandles: value.allowedKnowledgeEntityHandles,
     allowedInternalTools: value.allowedInternalTools,
@@ -93,6 +99,16 @@ export function getProviderHandle(provider?: AiProviderTypeItem | string | null)
 
 export function getModelHandle(model?: AiProviderModelItem | string | null): string | null {
   return model ? (typeof model === 'string' ? model : (model.handle ?? null)) : null
+}
+
+export function getModelProviderHandle(
+  modelHandle: string | null | undefined,
+  models: AiProviderModelItem[],
+): string | null {
+  if (!modelHandle) return null
+
+  const model = models.find((item) => item.handle === modelHandle)
+  return getProviderHandle(model?.provider)
 }
 
 export function normalizeRoleHandles(value: unknown): number[] {

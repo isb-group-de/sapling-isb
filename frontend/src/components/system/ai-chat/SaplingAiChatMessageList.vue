@@ -202,6 +202,19 @@
         >
           {{ getNavigationLinkLabel(link) }}
         </v-btn>
+        <v-btn
+          v-for="source in getMessageWebSources(message)"
+          :key="`${message.handle ?? message.sequence}-${source.url}`"
+          :href="source.url"
+          target="_blank"
+          rel="noopener noreferrer"
+          size="small"
+          variant="tonal"
+          prepend-icon="mdi-web"
+          :title="getTranslationLabel('webSource', 'Webquelle öffnen')"
+        >
+          {{ source.title }}
+        </v-btn>
       </div>
     </div>
   </div>
@@ -226,6 +239,11 @@ interface ChatImportAttachment {
     headers?: unknown[]
     status?: string
   } | null
+}
+
+interface ChatWebSource {
+  title: string
+  url: string
 }
 
 const props = defineProps<{
@@ -293,7 +311,37 @@ function getMessageSessionKey(message?: AiChatMessageItem) {
 }
 
 function shouldShowMessageActions(message: AiChatMessageItem) {
-  return canPlayMessageSpeech(message) || getMessageNavigationLinks(message).length > 0
+  return (
+    canPlayMessageSpeech(message) ||
+    getMessageNavigationLinks(message).length > 0 ||
+    getMessageWebSources(message).length > 0
+  )
+}
+
+function getMessageWebSources(message: AiChatMessageItem): ChatWebSource[] {
+  const sources = asRecord(message.responsePayload)?.sources
+  if (!Array.isArray(sources)) return []
+
+  const uniqueSources = new Map<string, ChatWebSource>()
+  for (const value of sources) {
+    const source = asRecord(value)
+    if (source?.kind !== 'web' || typeof source.url !== 'string') continue
+    try {
+      const url = new URL(source.url)
+      if (url.protocol !== 'http:' && url.protocol !== 'https:') continue
+      uniqueSources.set(url.href, {
+        url: url.href,
+        title:
+          typeof source.title === 'string' && source.title.trim()
+            ? source.title.trim()
+            : url.hostname.replace(/^www\./, ''),
+      })
+    } catch {
+      continue
+    }
+  }
+
+  return [...uniqueSources.values()].slice(0, 8)
 }
 
 function getMessageImportAttachments(message: AiChatMessageItem): ChatImportAttachment[] {

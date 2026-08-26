@@ -34,6 +34,7 @@ backend/src/api/ai/ai-vector-index.service.ts
 backend/src/api/ai/ai-vector-search.service.ts
 backend/src/api/ai/ai-vector-document-builder.service.ts
 backend/src/api/ai/ai-vector-embedding.service.ts
+backend/src/api/ai/ai-web-search.service.ts
 backend/src/api/ai/ai-vector-content.utils.ts
 backend/src/api/ai/ai-vector.utils.ts
 backend/src/api/ai/prompts/
@@ -99,8 +100,9 @@ McpServerConfigItem
 Provider/model records are stored in the database. Runtime credentials and provider behavior are resolved by backend AI provider services.
 
 `AiAgentItem` stores configurable Songbird profiles with an agent prompt,
-optional provider/model overrides, data scopes, tool scopes, and mutation
-behavior. `AiAgentVersionItem` snapshots prompts and scope for traceable
+optional chat provider/model overrides, an independent web-search model, data
+scopes, tool scopes, and mutation behavior. `AiAgentVersionItem` snapshots
+prompts, search-model selection, and scope for traceable
 production chats. `AiChatSessionItem.agent` and
 `AiChatSessionItem.agentVersion` keep the chosen runtime for a conversation.
 `AiAgentPlaybookItem` and `AiAgentMemoryItem` add controlled workflow and
@@ -135,6 +137,11 @@ embedding model example: nomic-embed-text
 Local models should set `supportsTools` only when the loaded model reliably
 supports OpenAI-style tool calls. Chat still works without tools, but Songbird
 will not automatically call Sapling MCP tools for that model.
+
+Local chat models do not need their own internet connection. If an Ollama or LM
+Studio model supports tool calls, it can call Sapling's internal `web_search`
+tool. Sapling then delegates that call to the independently configured OpenAI or
+Gemini search model.
 
 Ollama model seed records are inactive by default because local installations
 may not have the example models pulled yet. Pull the model in Ollama, update
@@ -200,6 +207,7 @@ generic_timeline
 ticket_search
 semantic_search
 knowledge_search
+web_search
 generic_create
 generic_update
 generic_delete
@@ -228,6 +236,37 @@ split as follows:
 
 Internal consumers should depend on `SaplingMcpService`; the collaborators are
 implementation boundaries registered by `AiModule`.
+
+### Provider-independent web search
+
+`web_search` is part of the internal Sapling MCP server; no additional MCP
+process or paid intermediary is required. The tool is advertised only when an
+active `AiProviderModelItem` has `supportsWebSearch = true` and its OpenAI or
+Gemini provider credentials are configured. `isDefaultWebSearch` selects the
+system fallback, while `AiAgentItem.webSearchProvider`/`webSearchModel` and the
+version snapshot can choose a different search provider and model per agent.
+
+The chat model and search model are deliberately separate. OpenAI and Gemini
+chat models can use the tool through their normal function-calling flow. Ollama
+and LM Studio can use exactly the same tool when the local model supports
+OpenAI-compatible function calls. Local providers themselves are not marked as
+web-search capable.
+
+Provider execution lives in `AiWebSearchService`:
+
+- OpenAI uses the Responses API `web_search` tool and requests the complete
+  source list.
+- Gemini uses the Interactions API with `google_search` and adds `url_context`
+  when the request contains explicit URLs.
+- The normalized result contains the answer, actual search queries, citations,
+  provider/model handles, usage, and timestamp.
+- Web citations are persisted as `kind = web` run/message sources and rendered
+  as external links in chat.
+
+Web content is always untrusted evidence. Provider instructions and Songbird's
+system prompt prohibit following webpage instructions. Company onboarding must
+research first, inspect the `company` schema, check existing records, and only
+then prepare a confirm-gated create or update.
 
 See:
 
@@ -385,6 +424,8 @@ Use:
 
 - `ticket_search` for exact ticket numbers, external numbers, strict keywords, known fix lookup
 - `knowledge_search` for broad knowledge-base questions across curated articles, tickets, effort estimates, estimate positions, and sales opportunities
+- `web_search` for current public information, company research, and direct
+  inspection of user-provided public URLs such as an Impressum
 - `semantic_search` for natural-language long-text questions
 - `entity_schema` before generic create/update/filter on unfamiliar entities
 - `generic_get` when the exact handle is known

@@ -59,7 +59,7 @@ export class SaplingMcpTransportService {
         }
       };
 
-      const server = this.createServer(req.user);
+      const server = await this.createServer(req.user);
       await server.connect(transport);
       await transport.handleRequest(req, res, req.body);
     } catch (error) {
@@ -98,13 +98,18 @@ export class SaplingMcpTransportService {
     }
   }
 
-  private createServer(user: PersonItem): McpServer {
+  private async createServer(user: PersonItem): Promise<McpServer> {
     const server = new McpServer({
       name: 'sapling-mcp-server',
       version: '1.0.0',
     });
 
-    for (const tool of SAPLING_MCP_TOOL_DEFINITIONS) {
+    const availableToolNames = new Set(
+      (await this.execution.listTools()).map((tool) => tool.toolName),
+    );
+    for (const tool of SAPLING_MCP_TOOL_DEFINITIONS.filter((definition) =>
+      availableToolNames.has(definition.toolName),
+    )) {
       server.registerTool(
         tool.toolName,
         {

@@ -311,12 +311,18 @@ export class AiChatToolActionService {
     policy?: McpToolPolicy,
   ): Promise<McpInlineToolExecution | null> {
     if (user) {
+      // Preflight only validates the proposed mutation; it never executes it.
+      // Keep all agent allow-lists in effect while bypassing the execution-only
+      // confirmation guard so a pending action can be created afterwards.
+      const preflightPolicy = policy
+        ? { ...policy, blockMutatingTools: false }
+        : policy;
       const mutationRepair = await this.mcpService.preflightTool(
         descriptor.serverName,
         descriptor.toolName,
         args,
         user,
-        policy,
+        preflightPolicy,
       );
       if (mutationRepair) {
         return mutationRepair;

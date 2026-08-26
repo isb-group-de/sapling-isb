@@ -99,6 +99,8 @@
               :is-editing-existing="isEditingExisting"
               :providers="providers"
               :models="filteredModels"
+              :web-search-providers="webSearchProviders"
+              :web-search-models="webSearchModels"
               :internal-tool-options="internalToolOptions"
               :external-tool-options="externalToolOptions"
               :mutation-mode-options="mutationModeOptions"
@@ -203,5 +205,7 @@ const {
   workbenchRuns,
   workbenchStats,
   workbenchVersions,
+  webSearchModels,
+  webSearchProviders,
 } = useAiAgentBuilder()
 </script>

@@ -115,7 +115,6 @@ export class InboxSubscriptionItem {
   @SaplingDependsOn({
     parentField: 'entity',
     targetField: 'entity',
-    requireParent: true,
     clearOnParentChange: true,
   })
   @SaplingForm({

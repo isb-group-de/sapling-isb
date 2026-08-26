@@ -94,4 +94,8 @@ export const createService = ({
     new SaplingMcpCriteriaService(templateService as never),
     permissionService as never,
     new SaplingMcpResultFormatterService(templateService as never),
+    {
+      isConfigured: jest.fn(() => Promise.resolve(false)),
+      search: jest.fn(),
+    } as never,
   );

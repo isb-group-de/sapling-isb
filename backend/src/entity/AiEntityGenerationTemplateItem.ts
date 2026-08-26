@@ -229,7 +229,6 @@ export class AiEntityGenerationTemplateItem {
   @SaplingDependsOn({
     parentField: 'provider',
     targetField: 'provider',
-    requireParent: true,
     clearOnParentChange: true,
   })
   @ManyToOne(() => AiProviderModelItem, { nullable: true })

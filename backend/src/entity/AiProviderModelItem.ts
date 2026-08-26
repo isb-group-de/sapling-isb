@@ -121,6 +121,21 @@ export class AiProviderModelItem {
 
   @ApiPropertyOptional({ default: false })
   @SaplingForm({
+    order: 350,
+    group: 'aiProviderModel.groupIntegration',
+    groupOrder: 400,
+    width: 2,
+    visible: true,
+    tableOrder: 350,
+    tableVisible: true,
+    mobileOrder: 350,
+    mobileVisible: false,
+  })
+  @Property({ nullable: false, default: false })
+  supportsWebSearch = false;
+
+  @ApiPropertyOptional({ default: false })
+  @SaplingForm({
     order: 400,
     group: 'aiProviderModel.groupIntegration',
     groupOrder: 400,
@@ -358,6 +373,21 @@ export class AiProviderModelItem {
   })
   @Property({ nullable: false, default: false })
   isDefault = false;
+
+  @ApiPropertyOptional({ default: false })
+  @SaplingForm({
+    order: 150,
+    group: 'aiProviderModel.groupConfiguration',
+    groupOrder: 500,
+    width: 2,
+    visible: true,
+    tableOrder: 150,
+    tableVisible: true,
+    mobileOrder: 150,
+    mobileVisible: false,
+  })
+  @Property({ nullable: false, default: false })
+  isDefaultWebSearch = false;
 
   @ApiPropertyOptional({ default: true })
   @SaplingForm({

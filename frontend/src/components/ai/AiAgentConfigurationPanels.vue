@@ -96,6 +96,7 @@
         :items="providers"
         :label="t('aiAgentBuilder.fieldProvider')"
         clearable
+        @update:model-value="updateChatProvider"
       />
       <SaplingAutocomplete
         v-model="draft.model"
@@ -104,6 +105,25 @@
         :items="models"
         :label="t('aiAgentBuilder.fieldModel')"
         clearable
+        @update:model-value="updateChatModel"
+      />
+      <SaplingAutocomplete
+        v-model="draft.webSearchProvider"
+        item-title="title"
+        item-value="handle"
+        :items="webSearchProviders"
+        :label="t('aiAgentBuilder.fieldWebSearchProvider')"
+        clearable
+        @update:model-value="updateWebSearchProvider"
+      />
+      <SaplingAutocomplete
+        v-model="draft.webSearchModel"
+        item-title="title"
+        item-value="handle"
+        :items="webSearchModels"
+        :label="t('aiAgentBuilder.fieldWebSearchModel')"
+        clearable
+        @update:model-value="updateWebSearchModel"
       />
       <SaplingAutocomplete
         v-model="draft.mutationMode"
@@ -145,11 +165,14 @@ import SaplingTextField from '@/components/common/SaplingTextField.vue'
 import SaplingTextarea from '@/components/common/SaplingTextarea.vue'
 import SaplingFieldSelect from '@/components/dialog/fields/SaplingFieldSelect.vue'
 import type { AgentDraft, AgentSelectOption } from './aiAgentBuilder.types'
+import { getModelProviderHandle } from './aiAgentBuilder.utils'
 
-defineProps<{
+const props = defineProps<{
   isEditingExisting: boolean
   providers: AiProviderTypeItem[]
   models: AiProviderModelItem[]
+  webSearchProviders: AiProviderTypeItem[]
+  webSearchModels: AiProviderModelItem[]
   internalToolOptions: string[]
   externalToolOptions: string[]
   mutationModeOptions: AgentSelectOption<string>[]
@@ -166,4 +189,46 @@ const selectedAllowedKnowledgeEntities = defineModel<SaplingGenericItem[]>(
 )
 const selectedRoles = defineModel<SaplingGenericItem[]>('selectedRoles', { required: true })
 const { t } = useI18n()
+
+function normalizeHandle(value: unknown): string | null {
+  return typeof value === 'string' && value.trim() ? value.trim() : null
+}
+
+function updateChatProvider(value: unknown): void {
+  const providerHandle = normalizeHandle(value)
+  draft.value.provider = providerHandle
+
+  if (
+    draft.value.model &&
+    getModelProviderHandle(draft.value.model, props.models) !== providerHandle
+  ) {
+    draft.value.model = null
+  }
+}
+
+function updateChatModel(value: unknown): void {
+  const modelHandle = normalizeHandle(value)
+  draft.value.model = modelHandle
+  if (modelHandle) draft.value.provider = getModelProviderHandle(modelHandle, props.models)
+}
+
+function updateWebSearchProvider(value: unknown): void {
+  const providerHandle = normalizeHandle(value)
+  draft.value.webSearchProvider = providerHandle
+
+  if (
+    draft.value.webSearchModel &&
+    getModelProviderHandle(draft.value.webSearchModel, props.webSearchModels) !== providerHandle
+  ) {
+    draft.value.webSearchModel = null
+  }
+}
+
+function updateWebSearchModel(value: unknown): void {
+  const modelHandle = normalizeHandle(value)
+  draft.value.webSearchModel = modelHandle
+  if (modelHandle) {
+    draft.value.webSearchProvider = getModelProviderHandle(modelHandle, props.webSearchModels)
+  }
+}
 </script>

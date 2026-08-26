@@ -39,7 +39,15 @@ export class AiAgentWorkbenchService {
           AiAgentVersionItem,
           { agent: { handle: agent.handle } },
           {
-            populate: ['agent', 'provider', 'model', 'model.provider'],
+            populate: [
+              'agent',
+              'provider',
+              'model',
+              'model.provider',
+              'webSearchProvider',
+              'webSearchModel',
+              'webSearchModel.provider',
+            ],
             orderBy: { version: 'DESC' },
             limit: 20,
           },

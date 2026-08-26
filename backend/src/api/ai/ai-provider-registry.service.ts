@@ -164,6 +164,38 @@ export class AiProviderRegistryService {
     };
   }
 
+  async resolveWebSearchTarget(
+    preferredProviderHandle?: string | null,
+    preferredModelHandle?: string | null,
+  ): Promise<AiEmbeddingTarget> {
+    const target = await this.resolveAiTarget(
+      preferredProviderHandle,
+      preferredModelHandle,
+      'webSearch',
+    );
+
+    if (target.providerKind === 'openaiCompatible') {
+      throw new Error('ai.webSearchProviderUnsupported');
+    }
+
+    return target;
+  }
+
+  async hasConfiguredWebSearchTarget(
+    preferredProviderHandle?: string | null,
+    preferredModelHandle?: string | null,
+  ): Promise<boolean> {
+    try {
+      await this.resolveWebSearchTarget(
+        preferredProviderHandle,
+        preferredModelHandle,
+      );
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   private async resolveAiTarget(
     preferredProviderHandle: string | null | undefined,
     preferredModelHandle: string | null | undefined,
@@ -186,7 +218,9 @@ export class AiProviderRegistryService {
             ? 'ai.transcriptionModelNotFound'
             : capability === 'speech'
               ? 'ai.speechModelNotFound'
-              : 'ai.modelNotFound',
+              : capability === 'webSearch'
+                ? 'ai.webSearchModelNotFound'
+                : 'ai.modelNotFound',
       );
     }
 
@@ -201,7 +235,9 @@ export class AiProviderRegistryService {
             ? 'ai.transcriptionProviderNotConfigured'
             : capability === 'speech'
               ? 'ai.speechProviderNotConfigured'
-              : 'ai.providerNotConfigured',
+              : capability === 'webSearch'
+                ? 'ai.webSearchProviderNotConfigured'
+                : 'ai.providerNotConfigured',
       );
     }
 
@@ -222,6 +258,8 @@ export class AiProviderRegistryService {
         return { supportsTranscription: true };
       case 'speech':
         return { supportsSpeech: true };
+      case 'webSearch':
+        return { supportsWebSearch: true };
       case 'chat':
       default:
         return { supportsStreaming: true };
@@ -254,12 +292,19 @@ export class AiProviderRegistryService {
       },
       {
         populate: ['provider'],
-        orderBy: {
-          isDefault: 'DESC',
-          sortOrder: 'ASC',
-          title: 'ASC',
-        },
-        limit: 1,
+        orderBy:
+          capability === 'webSearch'
+            ? {
+                isDefaultWebSearch: 'DESC',
+                isDefault: 'DESC',
+                sortOrder: 'ASC',
+                title: 'ASC',
+              }
+            : {
+                isDefault: 'DESC',
+                sortOrder: 'ASC',
+                title: 'ASC',
+              },
       },
     );
 
@@ -283,11 +328,19 @@ export class AiProviderRegistryService {
       },
       {
         populate: ['provider'],
-        orderBy: {
-          isDefault: 'DESC',
-          sortOrder: 'ASC',
-          title: 'ASC',
-        },
+        orderBy:
+          capability === 'webSearch'
+            ? {
+                isDefaultWebSearch: 'DESC',
+                isDefault: 'DESC',
+                sortOrder: 'ASC',
+                title: 'ASC',
+              }
+            : {
+                isDefault: 'DESC',
+                sortOrder: 'ASC',
+                title: 'ASC',
+              },
         limit: 1,
       },
     );

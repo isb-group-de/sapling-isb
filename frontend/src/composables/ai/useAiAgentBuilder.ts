@@ -22,6 +22,7 @@ import {
   createEmptyAgentDraft,
   createEmptyEvaluationDraft,
   getModelHandle,
+  getModelProviderHandle,
   getNumberHandles,
   getProviderHandle,
   getStringHandles,
@@ -46,6 +47,8 @@ export function useAiAgentBuilder() {
   const selectedAgent = ref<AiAgentItem | null>(null)
   const providers = ref<AiProviderTypeItem[]>([])
   const models = ref<AiProviderModelItem[]>([])
+  const webSearchProviderConfigs = ref<AiProviderTypeItem[]>([])
+  const webSearchModelConfigs = ref<AiProviderModelItem[]>([])
   const entities = ref<EntityItem[]>([])
   const roles = ref<RoleItem[]>([])
   const tools = ref<AiMcpToolDescriptor[]>([])
@@ -113,6 +116,14 @@ export function useAiAgentBuilder() {
       ? models.value.filter((model) => getProviderHandle(model.provider) === draft.value.provider)
       : models.value,
   )
+  const webSearchProviders = computed(() => webSearchProviderConfigs.value)
+  const webSearchModels = computed(() =>
+    webSearchModelConfigs.value.filter(
+      (model) =>
+        !draft.value.webSearchProvider ||
+        getProviderHandle(model.provider) === draft.value.webSearchProvider,
+    ),
+  )
   const versionOptions = computed(() =>
     workbenchVersions.value.map((version) => ({
       title: `v${version.version} (${version.status})`,
@@ -135,15 +146,30 @@ export function useAiAgentBuilder() {
   }
 
   async function loadReferenceData(): Promise<void> {
-    const [providerList, modelList, entityList, roleList, toolList] = await Promise.all([
+    const [
+      providerList,
+      modelList,
+      webSearchProviderList,
+      webSearchModelList,
+      entityList,
+      roleList,
+      toolList,
+    ] = await Promise.all([
       ApiAiService.listProviders(),
       ApiAiService.listModels(),
+      ApiAiService.listWebSearchProviders(),
+      ApiAiService.listWebSearchModels(),
       ApiGenericService.findAll<EntityItem>('entity'),
       ApiGenericService.findAll<RoleItem>('role'),
       ApiAiService.listMcpTools(),
     ])
     providers.value = sortSelectOptions(providerList, (provider) => provider.title)
     models.value = sortSelectOptions(modelList, (model) => model.title)
+    webSearchProviderConfigs.value = sortSelectOptions(
+      webSearchProviderList,
+      (provider) => provider.title,
+    )
+    webSearchModelConfigs.value = sortSelectOptions(webSearchModelList, (model) => model.title)
     entities.value = entityList
     roles.value = roleList
     tools.value = toolList
@@ -171,6 +197,15 @@ export function useAiAgentBuilder() {
   function selectAgent(agent: AiAgentItem | null): void {
     selectedAgent.value = agent
     draft.value = agent ? toAgentDraft(agent) : createEmptyAgentDraft()
+    const selectedModelProvider = getModelProviderHandle(draft.value.model, models.value)
+    if (selectedModelProvider) draft.value.provider = selectedModelProvider
+    const selectedWebSearchModelProvider = getModelProviderHandle(
+      draft.value.webSearchModel,
+      webSearchModelConfigs.value,
+    )
+    if (selectedWebSearchModelProvider) {
+      draft.value.webSearchProvider = selectedWebSearchModelProvider
+    }
     latestTestRun.value = null
     if (agent) void loadWorkbench(agent.handle)
     else resetWorkbench()
@@ -214,6 +249,8 @@ export function useAiAgentBuilder() {
       changelog: 'Snapshot from Agent Workbench',
       provider: draft.value.provider || null,
       model: draft.value.model || null,
+      webSearchProvider: draft.value.webSearchProvider || null,
+      webSearchModel: draft.value.webSearchModel || null,
       allowedEntityHandles: draft.value.allowedEntityHandles,
       allowedKnowledgeEntityHandles: draft.value.allowedKnowledgeEntityHandles,
       allowedInternalTools: draft.value.allowedInternalTools,
@@ -324,5 +361,7 @@ export function useAiAgentBuilder() {
     workbenchRuns,
     workbenchStats,
     workbenchVersions,
+    webSearchModels,
+    webSearchProviders,
   }
 }

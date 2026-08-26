@@ -64,6 +64,30 @@ class ApiAiService {
     }
   }
 
+  static async listWebSearchProviders(): Promise<AiProviderTypeItem[]> {
+    try {
+      const response = await axios.get<AiProviderTypeItem[]>(buildApiUrl('ai/web-search/providers'))
+      return response.data
+    } catch (error: unknown) {
+      this.handleError(error, 'ai.chat.providerListFailed')
+      throw error
+    }
+  }
+
+  static async listWebSearchModels(providerHandle?: string): Promise<AiProviderModelItem[]> {
+    try {
+      const response = await axios.get<AiProviderModelItem[]>(buildApiUrl('ai/web-search/models'), {
+        params: {
+          providerHandle: providerHandle ?? undefined,
+        },
+      })
+      return response.data
+    } catch (error: unknown) {
+      this.handleError(error, 'ai.chat.modelListFailed')
+      throw error
+    }
+  }
+
   static async listAgents(): Promise<AiAgentItem[]> {
     try {
       const response = await axios.get<AiAgentItem[]>(buildApiUrl('ai/chat/agents'))

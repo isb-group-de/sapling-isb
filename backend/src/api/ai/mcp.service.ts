@@ -44,7 +44,7 @@ export class McpService {
     );
 
     const descriptors: McpToolDescriptor[] = user
-      ? (await this.saplingMcpService.listTools())
+      ? (await this.saplingMcpService.listTools(policy))
           .map((tool) => ({
             serverHandle: 0,
             serverName: this.saplingMcpService.getServerName(),
@@ -135,7 +135,7 @@ export class McpService {
   ): Promise<McpInlineToolExecution> {
     if (user) {
       const internalServerName = this.saplingMcpService.getServerName();
-      const internalTools = await this.saplingMcpService.listTools();
+      const internalTools = await this.saplingMcpService.listTools(policy);
       const internalTool = internalTools.find(
         (tool) => tool.toolName === toolName,
       );

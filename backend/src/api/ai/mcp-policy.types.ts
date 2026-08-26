@@ -4,4 +4,6 @@ export type McpToolPolicy = {
   allowedInternalTools?: string[];
   allowedExternalTools?: string[];
   blockMutatingTools?: boolean;
+  webSearchProviderHandle?: string | null;
+  webSearchModelHandle?: string | null;
 };

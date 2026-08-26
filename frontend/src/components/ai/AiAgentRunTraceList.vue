@@ -200,12 +200,22 @@
                   :icon="
                     toText(source.kind) === 'navigation'
                       ? 'mdi-open-in-new'
-                      : 'mdi-database-outline'
+                      : toText(source.kind) === 'web'
+                        ? 'mdi-web'
+                        : 'mdi-database-outline'
                   "
                   size="17"
                 />
                 <div>
-                  <strong>{{ formatRunSourceTitle(source) }}</strong>
+                  <a
+                    v-if="getRunSourceUrl(source)"
+                    :href="getRunSourceUrl(source)!"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <strong>{{ formatRunSourceTitle(source) }}</strong>
+                  </a>
+                  <strong v-else>{{ formatRunSourceTitle(source) }}</strong>
                   <span v-if="formatRunSourceMeta(source).length">
                     {{ formatRunSourceMeta(source).join(' · ') }}
                   </span>
@@ -298,6 +308,7 @@ import {
   formatRunToolLabel,
   getFiniteNumber,
   getRunPendingActions,
+  getRunSourceUrl,
   getRunSources,
   getRunToolCalls,
   getRunUsageMetrics,

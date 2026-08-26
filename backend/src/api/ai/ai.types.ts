@@ -47,7 +47,7 @@ export type AiToolRegistryEntry = {
 };
 
 export type AiProviderCapability =
-  'chat' | 'embedding' | 'transcription' | 'speech';
+  'chat' | 'embedding' | 'transcription' | 'speech' | 'webSearch';
 
 export type AiProviderKind = 'openai' | 'gemini' | 'openaiCompatible';
 
@@ -90,6 +90,24 @@ export type AiEmbeddingTarget = {
   provider: AiProviderTypeItem;
   model: AiProviderModelItem;
   providerKind: AiProviderKind;
+};
+
+export type AiWebSearchSource = {
+  title: string;
+  url: string;
+};
+
+export type AiWebSearchResult = {
+  query: string;
+  urls: string[];
+  answer: string;
+  queries: string[];
+  sources: AiWebSearchSource[];
+  providerHandle: string;
+  modelHandle: string;
+  providerModel: string;
+  searchedAt: string;
+  usagePayload: Record<string, unknown> | null;
 };
 
 export type AiSpeechTarget = AiEmbeddingTarget & {

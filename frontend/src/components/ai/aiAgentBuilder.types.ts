@@ -9,6 +9,8 @@ export type AgentDraft = {
   conversationStarters: string[]
   provider: string | null
   model: string | null
+  webSearchProvider: string | null
+  webSearchModel: string | null
   allowedEntityHandles: string[]
   allowedKnowledgeEntityHandles: string[]
   allowedInternalTools: string[]

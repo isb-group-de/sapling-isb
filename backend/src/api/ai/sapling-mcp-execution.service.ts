@@ -9,6 +9,7 @@ import { SaplingMcpMetadataService } from './sapling-mcp-metadata.service';
 import { SaplingMcpResultFormatterService } from './sapling-mcp-result-formatter.service';
 import { SaplingMcpSearchToolService } from './sapling-mcp-search-tool.service';
 import { SaplingMcpValueService } from './sapling-mcp-value.service';
+import { AiWebSearchService } from './ai-web-search.service';
 @Injectable()
 export class SaplingMcpExecutionService {
   private readonly internalServerName = 'sapling';
@@ -18,23 +19,29 @@ export class SaplingMcpExecutionService {
     private readonly genericTools: SaplingMcpGenericToolService,
     private readonly searchTools: SaplingMcpSearchToolService,
     private readonly importTools: SaplingMcpImportToolService,
+    private readonly webSearch: AiWebSearchService,
     private readonly values: SaplingMcpValueService,
     private readonly resultFormatter: SaplingMcpResultFormatterService,
   ) {}
-  listTools(): Promise<
+  async listTools(policy?: McpToolPolicy): Promise<
     Array<{
       toolName: string;
       description: string;
       inputSchema: Record<string, unknown>;
     }>
   > {
-    return Promise.resolve(
-      SAPLING_MCP_TOOL_DEFINITIONS.map((tool) => ({
-        toolName: tool.toolName,
-        description: tool.description,
-        inputSchema: { ...tool.jsonSchema },
-      })),
+    const hasWebSearch = await this.webSearch.isConfigured(
+      policy?.webSearchProviderHandle,
+      policy?.webSearchModelHandle,
     );
+
+    return SAPLING_MCP_TOOL_DEFINITIONS.filter(
+      (tool) => tool.toolName !== 'web_search' || hasWebSearch,
+    ).map((tool) => ({
+      toolName: tool.toolName,
+      description: tool.description,
+      inputSchema: { ...tool.jsonSchema },
+    }));
   }
 
   async executeTool(
@@ -102,6 +109,30 @@ export class SaplingMcpExecutionService {
             user,
             policy,
           );
+          break;
+        case 'web_search':
+          payload = await this.webSearch.search({
+            query: typeof args.query === 'string' ? args.query : '',
+            urls: Array.isArray(args.urls)
+              ? args.urls.filter(
+                  (value): value is string => typeof value === 'string',
+                )
+              : undefined,
+            allowedDomains: Array.isArray(args.allowedDomains)
+              ? args.allowedDomains.filter(
+                  (value): value is string => typeof value === 'string',
+                )
+              : undefined,
+            searchContextSize:
+              args.searchContextSize === 'low' ||
+              args.searchContextSize === 'high'
+                ? args.searchContextSize
+                : 'medium',
+            maxSources:
+              typeof args.maxSources === 'number' ? args.maxSources : undefined,
+            preferredProviderHandle: policy?.webSearchProviderHandle,
+            preferredModelHandle: policy?.webSearchModelHandle,
+          });
           break;
         case 'import_get_batch':
           payload = await this.importTools.executeImportGetBatch(

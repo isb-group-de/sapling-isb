@@ -1,0 +1,68 @@
+[
+  {
+    "entity": "aiProviderModel",
+    "property": "supportsWebSearch",
+    "de": "Unterstützt Websuche",
+    "en": "Supports web search"
+  },
+  {
+    "entity": "aiProviderModel",
+    "property": "supportsWebSearchTooltip",
+    "de": "Das Modell kann über den Anbieter öffentliche Webseiten suchen und Quellen liefern.",
+    "en": "The model can search public websites through its provider and return sources."
+  },
+  {
+    "entity": "aiProviderModel",
+    "property": "isDefaultWebSearch",
+    "de": "Standard für Websuche",
+    "en": "Default for web search"
+  },
+  {
+    "entity": "aiProviderModel",
+    "property": "isDefaultWebSearchTooltip",
+    "de": "Dieses Modell wird verwendet, wenn ein Agent kein eigenes Suchmodell auswählt.",
+    "en": "This model is used when an agent does not select a dedicated search model."
+  },
+  {
+    "entity": "aiAgent",
+    "property": "webSearchProvider",
+    "de": "Suchprovider",
+    "en": "Search provider"
+  },
+  {
+    "entity": "aiAgent",
+    "property": "webSearchModel",
+    "de": "Suchmodell",
+    "en": "Search model"
+  },
+  {
+    "entity": "aiAgentVersion",
+    "property": "webSearchProvider",
+    "de": "Suchprovider",
+    "en": "Search provider"
+  },
+  {
+    "entity": "aiAgentVersion",
+    "property": "webSearchModel",
+    "de": "Suchmodell",
+    "en": "Search model"
+  },
+  {
+    "entity": "aiAgentBuilder",
+    "property": "fieldWebSearchModel",
+    "de": "Suchmodell (optional)",
+    "en": "Search model (optional)"
+  },
+  {
+    "entity": "aiChat",
+    "property": "webSource",
+    "de": "Webquelle öffnen",
+    "en": "Open web source"
+  },
+  {
+    "entity": "aiAgentBuilder",
+    "property": "fieldWebSearchProvider",
+    "de": "Suchanbieter (optional)",
+    "en": "Search provider (optional)"
+  }
+]

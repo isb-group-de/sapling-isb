@@ -1,0 +1,21 @@
+[
+  {
+    "handle": "songbirdGeneral",
+    "allowedInternalTools": [
+      "current_person",
+      "entity_catalog",
+      "entity_search",
+      "entity_schema",
+      "generic_list",
+      "generic_get",
+      "generic_timeline",
+      "ticket_search",
+      "semantic_search",
+      "knowledge_search",
+      "web_search",
+      "generic_create",
+      "generic_update",
+      "generic_delete"
+    ]
+  }
+]

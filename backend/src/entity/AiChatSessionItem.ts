@@ -76,7 +76,6 @@ export class AiChatSessionItem {
   @SaplingDependsOn({
     parentField: 'provider',
     targetField: 'provider',
-    requireParent: true,
     clearOnParentChange: true,
   })
   @SaplingForm({

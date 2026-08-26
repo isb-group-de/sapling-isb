@@ -54,6 +54,7 @@ import { AiAgentRunItem } from '../../entity/AiAgentRunItem';
 import { AiAgentVersionItem } from '../../entity/AiAgentVersionItem';
 import { AiChatAttachmentItem } from '../../entity/AiChatAttachmentItem';
 import { ImportModule } from '../import/import.module';
+import { AiWebSearchService } from './ai-web-search.service';
 
 /**
  * @class
@@ -104,6 +105,7 @@ import { ImportModule } from '../import/import.module';
     AiChatStreamService,
     AiChatMediaService,
     AiProviderRegistryService,
+    AiWebSearchService,
     AiVectorDocumentBuilderService,
     AiVectorEmbeddingService,
     AiVectorIndexService,

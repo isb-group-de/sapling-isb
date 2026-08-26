@@ -211,7 +211,6 @@ export class EmailSubscriptionItem {
   @SaplingDependsOn({
     parentField: 'entity',
     targetField: 'entity',
-    requireParent: true,
     clearOnParentChange: true,
   })
   @SaplingForm({

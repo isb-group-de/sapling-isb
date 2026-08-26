@@ -56,11 +56,20 @@ export function formatRunToolLabel(toolCall: AgentRunTraceRecord): string {
 
 export function formatRunSourceTitle(source: AgentRunTraceRecord): string {
   const label = toText(source.label)
+  const title = toText(source.title)
   const path = toText(source.path)
+  const url = toText(source.url)
   const entityHandle = toText(source.entityHandle)
   const toolName = toText(source.toolName)
 
-  return label || path || [entityHandle, toolName].filter(Boolean).join(' · ') || 'Quelle'
+  return (
+    label ||
+    title ||
+    path ||
+    url ||
+    [entityHandle, toolName].filter(Boolean).join(' · ') ||
+    'Quelle'
+  )
 }
 
 export function formatRunSourceMeta(source: AgentRunTraceRecord): string[] {
@@ -70,8 +79,21 @@ export function formatRunSourceMeta(source: AgentRunTraceRecord): string[] {
   return [
     toText(source.kind),
     [serverName, toolName].filter(Boolean).join('.'),
+    [toText(source.providerHandle), toText(source.modelHandle)].filter(Boolean).join(' · '),
     toText(source.status),
   ].filter(Boolean)
+}
+
+export function getRunSourceUrl(source: AgentRunTraceRecord): string | null {
+  const value = toText(source.url)
+  if (!value) return null
+
+  try {
+    const url = new URL(value)
+    return url.protocol === 'http:' || url.protocol === 'https:' ? url.href : null
+  } catch {
+    return null
+  }
 }
 
 export function formatRunError(run: AiAgentRunItem): string | null {

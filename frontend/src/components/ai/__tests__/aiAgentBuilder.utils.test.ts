@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import type { AiAgentItem, SaplingGenericItem } from '@/entity/entity'
+import type { AiAgentItem, AiProviderModelItem, SaplingGenericItem } from '@/entity/entity'
 import {
   createEmptyAgentDraft,
   createEmptyEvaluationDraft,
   getNumberHandles,
+  getModelProviderHandle,
   getStringHandles,
   mapHandlesToItems,
   normalizeRoleHandles,
@@ -36,6 +37,8 @@ describe('AI agent builder draft utilities', () => {
       title: 'Support',
       provider: { handle: 'openai' },
       model: { handle: 'gpt-5' },
+      webSearchProvider: { handle: 'gemini' },
+      webSearchModel: { handle: 'gemini-search' },
       roles: [{ handle: 7 }, 9],
       isActive: true,
       isDefault: false,
@@ -45,6 +48,18 @@ describe('AI agent builder draft utilities', () => {
     expect(draft.provider).toBe('openai')
     expect(draft.model).toBe('gpt-5')
     expect(draft.roles).toEqual([7, 9])
+    expect(draft.webSearchProvider).toBe('gemini')
+    expect(draft.webSearchModel).toBe('gemini-search')
+  })
+
+  it('resolves the owning provider for a directly selected model', () => {
+    expect(
+      getModelProviderHandle('gemini-search', [
+        { handle: 'openai-chat', provider: { handle: 'openai' } },
+        { handle: 'gemini-search', provider: { handle: 'gemini' } },
+      ] as AiProviderModelItem[]),
+    ).toBe('gemini')
+    expect(getModelProviderHandle('missing', [])).toBeNull()
   })
 
   it('trims text fields while preserving explicit scopes in the API payload', () => {
@@ -55,6 +70,7 @@ describe('AI agent builder draft utilities', () => {
       description: ' Help users ',
       promptMarkdown: ' Be useful ',
       allowedEntityHandles: ['ticket'],
+      webSearchProvider: 'gemini',
       roles: [7],
     })
 
@@ -64,6 +80,7 @@ describe('AI agent builder draft utilities', () => {
       description: 'Help users',
       promptMarkdown: 'Be useful',
       allowedEntityHandles: ['ticket'],
+      webSearchProvider: 'gemini',
       roles: [7],
     })
   })

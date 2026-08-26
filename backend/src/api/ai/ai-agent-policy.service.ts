@@ -20,7 +20,16 @@ export class AiAgentPolicyService {
       AiAgentItem,
       { isActive: true },
       {
-        populate: ['roles', 'provider', 'model', 'model.provider', 'playbooks'],
+        populate: [
+          'roles',
+          'provider',
+          'model',
+          'model.provider',
+          'webSearchProvider',
+          'webSearchModel',
+          'webSearchModel.provider',
+          'playbooks',
+        ],
         orderBy: { sortOrder: 'ASC', title: 'ASC' },
       },
     );
@@ -67,7 +76,16 @@ export class AiAgentPolicyService {
       AiAgentItem,
       { handle: agentHandle, isActive: true },
       {
-        populate: ['roles', 'provider', 'model', 'model.provider', 'playbooks'],
+        populate: [
+          'roles',
+          'provider',
+          'model',
+          'model.provider',
+          'webSearchProvider',
+          'webSearchModel',
+          'webSearchModel.provider',
+          'playbooks',
+        ],
       },
     );
 
@@ -92,6 +110,15 @@ export class AiAgentPolicyService {
       return undefined;
     }
 
+    const webSearchProviderHandle =
+      typeof agent.webSearchProvider === 'string'
+        ? agent.webSearchProvider
+        : (agent.webSearchProvider?.handle ?? null);
+    const webSearchModelHandle =
+      typeof agent.webSearchModel === 'string'
+        ? agent.webSearchModel
+        : (agent.webSearchModel?.handle ?? null);
+
     return {
       allowedEntityHandles: this.normalizeStringArray(
         agent.allowedEntityHandles,
@@ -106,6 +133,8 @@ export class AiAgentPolicyService {
         agent.allowedExternalTools,
       ),
       blockMutatingTools: true,
+      ...(webSearchProviderHandle ? { webSearchProviderHandle } : {}),
+      ...(webSearchModelHandle ? { webSearchModelHandle } : {}),
     };
   }
 

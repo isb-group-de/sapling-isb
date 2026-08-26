@@ -70,6 +70,10 @@ export interface AiAgentItem extends SaplingGenericItem {
   provider?: AiProviderTypeItem | string | null
   /** Optional model override */
   model?: AiProviderModelItem | string | null
+  /** Optional provider used independently for public web research */
+  webSearchProvider?: AiProviderTypeItem | string | null
+  /** Optional model used independently for public web research */
+  webSearchModel?: AiProviderModelItem | string | null
   /** Allowed Sapling entity handles */
   allowedEntityHandles?: string[] | null
   /** Allowed semantic knowledge sources */
@@ -105,6 +109,8 @@ export interface AiAgentVersionItem extends SaplingGenericItem {
   changelog?: string | null
   provider?: AiProviderTypeItem | string | null
   model?: AiProviderModelItem | string | null
+  webSearchProvider?: AiProviderTypeItem | string | null
+  webSearchModel?: AiProviderModelItem | string | null
   allowedEntityHandles?: string[] | null
   allowedKnowledgeEntityHandles?: string[] | null
   allowedInternalTools?: string[] | null
@@ -381,6 +387,8 @@ export interface AiProviderModelItem extends SaplingGenericItem {
   supportsStreaming: boolean
   /** Supports tool usage */
   supportsTools: boolean
+  /** Supports provider-managed public web search */
+  supportsWebSearch: boolean
   /** Supports embedding generation */
   supportsEmbeddings: boolean
   /** Supports speech transcription */
@@ -411,6 +419,8 @@ export interface AiProviderModelItem extends SaplingGenericItem {
   speechMaxInputLength: number
   /** Default frontend selection */
   isDefault: boolean
+  /** Preferred default model for the independent web-search tool */
+  isDefaultWebSearch: boolean
   /** Whether the model is active */
   isActive: boolean
   /** Optional sort order */

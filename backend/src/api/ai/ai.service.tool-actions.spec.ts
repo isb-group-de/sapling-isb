@@ -265,6 +265,113 @@ describe('AiService tool actions', () => {
     expect(em.flush).not.toHaveBeenCalled();
   });
 
+  it('preflights a protected mutation and creates a pending confirmation action', async () => {
+    const now = new Date('2026-04-20T08:15:30.000Z');
+    const em = {
+      create: jest.fn((_entity: unknown, payload: Record<string, unknown>) => ({
+        handle: 41,
+        ...payload,
+        createdAt: now,
+        updatedAt: now,
+      })),
+      persist: jest.fn(),
+      flush: jest.fn<() => Promise<void>>().mockResolvedValue(undefined),
+    };
+    const mcpService = {
+      preflightTool: jest.fn(
+        async (
+          _serverName: string,
+          _toolName: string,
+          _args: Record<string, unknown>,
+          _user: unknown,
+          policy: { blockMutatingTools?: boolean },
+        ) => {
+          if (policy.blockMutatingTools) {
+            throw new Error('ai.agentToolRequiresConfirmation');
+          }
+
+          return null;
+        },
+      ),
+      executeTool: jest.fn(),
+    };
+    const agentPolicy = {
+      isMutatingTool: jest.fn().mockReturnValue(true),
+    };
+    const service = createService(
+      em,
+      mcpService,
+      {},
+      {},
+      {},
+      undefined,
+      agentPolicy,
+    );
+    const onEvent = jest.fn();
+    const policy = {
+      allowedEntityHandles: ['company'],
+      allowedInternalTools: ['generic_create'],
+      blockMutatingTools: true,
+    };
+
+    const result = await (
+      service as unknown as {
+        toolActions: {
+          executePolicyAwareToolCall: (...args: unknown[]) => Promise<{
+            modelResult: Record<string, unknown>;
+          }>;
+        };
+      }
+    ).toolActions.executePolicyAwareToolCall(
+      {
+        encodedName: 'sapling__generic_create',
+        descriptor: {
+          serverHandle: 0,
+          serverName: 'sapling',
+          toolName: 'generic_create',
+        },
+      },
+      { entityHandle: 'company', data: { name: 'Enpal' } },
+      { handle: 9 },
+      { handle: 9 },
+      { handle: 2 },
+      { handle: 3 },
+      { handle: 'songbirdGeneral', mutationMode: 'confirm' },
+      policy,
+      onEvent,
+    );
+
+    expect(mcpService.preflightTool).toHaveBeenCalledWith(
+      'sapling',
+      'generic_create',
+      { entityHandle: 'company', data: { name: 'Enpal' } },
+      { handle: 9 },
+      {
+        ...policy,
+        blockMutatingTools: false,
+      },
+    );
+    expect(em.persist).toHaveBeenCalled();
+    expect(em.flush).toHaveBeenCalled();
+    expect(result.modelResult).toMatchObject({
+      pendingToolAction: true,
+      actionHandle: 41,
+      toolName: 'generic_create',
+      status: 'pending',
+    });
+    expect(onEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'tool.action.pending',
+        action: expect.objectContaining({
+          handle: 41,
+          toolName: 'generic_create',
+          status: 'pending',
+        }),
+      }),
+    );
+    expect(mcpService.executeTool).not.toHaveBeenCalled();
+  });
+
   it('creates a follow-up execution action after confirmed import configuration', async () => {
     const action = {
       handle: 4,
