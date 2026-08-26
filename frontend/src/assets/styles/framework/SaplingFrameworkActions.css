@@ -217,7 +217,20 @@
 
 .sapling-action-button-group > .v-btn {
   border: 0;
+  border-radius: 0;
   min-height: var(--sapling-control-size-2xl);
+}
+
+.sapling-action-button-group > .v-btn:first-child {
+  border-radius: var(--sapling-radius-pill) 0 0 var(--sapling-radius-pill);
+}
+
+.sapling-action-button-group > .v-btn:last-child {
+  border-radius: 0 var(--sapling-radius-pill) var(--sapling-radius-pill) 0;
+}
+
+.sapling-action-button-group > .v-btn:only-child {
+  border-radius: var(--sapling-radius-pill);
 }
 
 .sapling-toolbar-toggle .v-btn {

@@ -418,6 +418,23 @@ describe('SystemController', () => {
     getRebuildStatus: jest.fn(() => ({ state: 'idle' })),
     startRebuild: jest.fn(() => ({ state: 'running' })),
   };
+  const databaseService = {
+    getDatabase: jest.fn(async () => ({ engine: 'PostgreSQL' })),
+    getDatabaseTables: jest.fn(async () => [
+      { schema: 'public', name: 'document_item', size: 1024 },
+    ]),
+  };
+  const documentStorageService = {
+    getDocumentStorage: jest.fn(async () => ({
+      totalSize: 0,
+      totalFileCount: 0,
+      entityCount: 0,
+      entities: [],
+    })),
+    getDocumentStorageEntities: jest.fn(async () => [
+      { entityHandle: 'ticket', size: 512, fileCount: 1 },
+    ]),
+  };
 
   const controller = new SystemController(
     cpuService as never,
@@ -428,6 +445,8 @@ describe('SystemController', () => {
     timeService as never,
     versionService,
     globalSearchIndexService as never,
+    databaseService as never,
+    documentStorageService as never,
   );
 
   it('returns and starts the global search-index rebuild status', () => {
@@ -437,6 +456,15 @@ describe('SystemController', () => {
     expect(controller.startSearchIndexRebuild()).toEqual({
       state: 'running',
     });
+  });
+
+  it('returns lazily loaded database and storage detail lists', async () => {
+    await expect(controller.getDatabaseTables()).resolves.toEqual([
+      { schema: 'public', name: 'document_item', size: 1024 },
+    ]);
+    await expect(controller.getDocumentStorageEntities()).resolves.toEqual([
+      { entityHandle: 'ticket', size: 512, fileCount: 1 },
+    ]);
   });
 
   it('returns CPU information', async () => {

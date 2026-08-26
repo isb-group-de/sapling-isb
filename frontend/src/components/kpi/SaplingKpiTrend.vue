@@ -2,17 +2,12 @@
   <div class="sapling-kpi-widget sapling-kpi-trend">
     <v-skeleton-loader v-if="loading && !isLoaded" type="heading, text, text" />
 
-    <div v-else-if="hasError" class="sapling-kpi-widget__state sapling-kpi-widget__state--error">
-      <v-icon size="20">mdi-alert-circle-outline</v-icon>
-      <span>{{ $t('exception.unknownError') }}</span>
-    </div>
-
-    <div v-else-if="!hasData" class="sapling-kpi-widget__state">
+    <div v-else-if="!hasError && !hasData" class="sapling-kpi-widget__state">
       <v-icon size="20">mdi-database-off-outline</v-icon>
       <span>{{ $t('global.noData') }}</span>
     </div>
 
-    <div v-else class="sapling-stack-lg sapling-kpi-trend__content">
+    <div v-else-if="!hasError" class="sapling-stack-lg sapling-kpi-trend__content">
       <div class="sapling-kpi-trend__hero">
         <div class="sapling-stack-md sapling-highlight-panel sapling-kpi-trend__signal">
           <v-icon :color="trendIcon.color" class="sapling-kpi-trend__signal-icon">{{

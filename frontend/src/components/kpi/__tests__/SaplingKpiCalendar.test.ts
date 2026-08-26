@@ -64,7 +64,7 @@ describe('SaplingKpiCalendar', () => {
     harness.openEvent.mockClear()
   })
 
-  it('shows configuration, error and empty states', async () => {
+  it('keeps configuration and empty states local while omitting general errors', async () => {
     harness.hasConfigurationError.value = true
     const wrapper = mountCalendar()
     expect(wrapper.text()).toContain('kpi.calendarConfigurationError')
@@ -72,7 +72,8 @@ describe('SaplingKpiCalendar', () => {
     harness.hasConfigurationError.value = false
     harness.hasError.value = true
     await wrapper.vm.$nextTick()
-    expect(wrapper.text()).toContain('exception.unknownError')
+    expect(wrapper.text()).not.toContain('exception.unknownError')
+    expect(wrapper.text()).not.toContain('kpi.calendarEmpty')
 
     harness.hasError.value = false
     await wrapper.vm.$nextTick()

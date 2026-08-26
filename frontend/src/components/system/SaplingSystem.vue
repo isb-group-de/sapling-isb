@@ -73,16 +73,6 @@
         </template>
       </SaplingPageHero>
 
-      <v-alert
-        v-if="stateError"
-        type="error"
-        density="comfortable"
-        variant="tonal"
-        class="sapling-system-banner"
-      >
-        {{ stateError }}
-      </v-alert>
-
       <section class="sapling-system-metrics">
         <SaplingSystemMetricCard
           icon="mdi-shield-check-outline"
@@ -137,7 +127,6 @@
         <SaplingSystemOverviewPanel
           :hostname="displayValue(os?.hostname)"
           :details="overviewDetails"
-          :error="overviewError"
         />
 
         <SaplingSystemPerformancePanel
@@ -152,7 +141,31 @@
           :memory-gauge-loading="memoryLoading"
           :memory-gauge-progress="memoryUsagePercentage"
           :details="performanceDetails"
-          :error="performanceError"
+        />
+      </section>
+
+      <section class="sapling-system-layout">
+        <SaplingSystemDatabasePanel
+          :name="displayValue(database?.name)"
+          :engine="displayValue(database?.engine)"
+          :table-count="database?.tableCount ?? 0"
+          :loading="databaseLoading"
+          :items="databaseTableItems"
+          :show-all-label="$t('system.showAllDatabaseTables')"
+          :details="databaseDetails"
+          :error="databaseError || ''"
+          @show-details="openSizeDetails('database')"
+        />
+
+        <SaplingSystemDocumentStoragePanel
+          :total-size-label="formatBytes(documentStorage?.totalSize ?? 0)"
+          :total-file-count="documentStorage?.totalFileCount ?? 0"
+          :entity-count="documentStorage?.entityCount ?? 0"
+          :loading="documentStorageLoading"
+          :items="documentStorageItems"
+          :show-all-label="$t('system.showAllStorageFolders')"
+          :error="documentStorageError || ''"
+          @show-details="openSizeDetails('documentStorage')"
         />
       </section>
 
@@ -169,6 +182,20 @@
         :empty-label="networkLoading ? t('global.loading') : $t('system.noNetwork')"
         :error="networkError || ''"
       />
+
+      <SaplingSystemSizeDetailsDialog
+        v-model="sizeDetailsOpen"
+        :eyebrow="$t('system.details')"
+        :title="sizeDetailsTitle"
+        :total-size-label="sizeDetailsTotalSizeLabel"
+        :total-count-label="sizeDetailsTotalCountLabel"
+        :total-size-caption="$t('system.totalSize')"
+        :total-count-caption="sizeDetailsTotalCountCaption"
+        :empty-label="sizeDetailsEmptyLabel"
+        :loading="sizeDetailsLoading"
+        :error="sizeDetailsError"
+        :items="sizeDetailsItems"
+      />
     </template>
   </v-container>
 </template>
@@ -183,9 +210,12 @@ import { useSaplingSystem } from '@/composables/system/useSaplingSystem'
 import SaplingPageHero from '@/components/common/SaplingPageHero.vue'
 import SaplingSurface from '@/components/common/SaplingSurface.vue'
 import SaplingSystemMetricCard from '@/components/system/SaplingSystemMetricCard.vue'
+import SaplingSystemDatabasePanel from '@/components/system/SaplingSystemDatabasePanel.vue'
+import SaplingSystemDocumentStoragePanel from '@/components/system/SaplingSystemDocumentStoragePanel.vue'
 import SaplingSystemNetworkPanel from '@/components/system/SaplingSystemNetworkPanel.vue'
 import SaplingSystemOverviewPanel from '@/components/system/SaplingSystemOverviewPanel.vue'
 import SaplingSystemPerformancePanel from '@/components/system/SaplingSystemPerformancePanel.vue'
+import SaplingSystemSizeDetailsDialog from '@/components/system/SaplingSystemSizeDetailsDialog.vue'
 import SaplingSystemStoragePanel from '@/components/system/SaplingSystemStoragePanel.vue'
 // #endregion
 
@@ -193,33 +223,40 @@ import SaplingSystemStoragePanel from '@/components/system/SaplingSystemStorageP
 const {
   cpu,
   cpuLoading,
-  cpuError,
   cpuSpeed,
   cpuSpeedLoading,
-  cpuSpeedError,
   memory,
   memoryLoading,
-  memoryError,
   filesystem,
   filesystemLoading,
   filesystemError,
   os,
   osLoading,
-  osError,
   state,
-  stateError,
   time,
   timeLoading,
-  timeError,
   version,
   versionLoading,
-  versionError,
   network,
   networkLoading,
   networkError,
+  database,
+  databaseLoading,
+  databaseError,
+  documentStorage,
+  documentStorageLoading,
+  documentStorageError,
+  databaseTables,
+  databaseTablesLoading,
+  databaseTablesError,
+  documentStorageEntities,
+  documentStorageEntitiesLoading,
+  documentStorageEntitiesError,
   lastUpdated,
   isLoading,
   fetchAll,
+  fetchDatabaseTables,
+  fetchDocumentStorageEntities,
   formatGigabytes,
   formatBytes,
   formatBytesPerSecond,
@@ -231,7 +268,9 @@ const {
 
 // #region State
 const refreshing = ref(false)
-const { t } = useI18n()
+const sizeDetailsOpen = ref(false)
+const sizeDetailsKind = ref<'database' | 'documentStorage'>('database')
+const { t, te } = useI18n()
 // #endregion
 
 // #region Computed
@@ -397,10 +436,46 @@ const performanceDetails = computed(() => [
   },
 ])
 
-const overviewError = computed(() => osError.value || timeError.value || versionError.value || '')
-const performanceError = computed(
-  () => cpuError.value || cpuSpeedError.value || memoryError.value || '',
-)
+const databaseDetails = computed(() => [
+  {
+    label: t('system.databaseVersion'),
+    value: displayValue(database.value?.version),
+    loading: databaseLoading.value,
+  },
+  {
+    label: t('system.databaseSize'),
+    value: formatBytes(database.value?.size ?? 0),
+    loading: databaseLoading.value,
+  },
+  {
+    label: t('system.databaseSchema'),
+    value: displayValue(database.value?.schema),
+    loading: databaseLoading.value,
+  },
+  {
+    label: t('system.databaseConnections'),
+    value: database.value
+      ? `${database.value.activeConnections} / ${database.value.maxConnections}`
+      : t('global.notAvailable'),
+    loading: databaseLoading.value,
+  },
+])
+
+const databaseTableItems = computed(() => {
+  const totalSize = database.value?.size ?? 0
+
+  return (database.value?.largestTables ?? []).map((table) => {
+    const share = totalSize > 0 ? (table.size / totalSize) * 100 : 0
+
+    return {
+      schema: table.schema,
+      name: table.name,
+      sizeLabel: formatBytes(table.size),
+      share,
+      shareLabel: formatPercentage(share),
+    }
+  })
+})
 
 const storageItems = computed(() =>
   filesystem.value.map((fs) => ({
@@ -414,6 +489,99 @@ const storageItems = computed(() =>
     freeLabel: formatGigabytes(fs.available),
   })),
 )
+
+const documentStorageItems = computed(() => {
+  const totalSize = documentStorage.value?.totalSize ?? 0
+
+  return (documentStorage.value?.entities ?? []).slice(0, 9).map((entity) => {
+    const translationKey = `navigation.${entity.entityHandle}`
+    const share = totalSize > 0 ? (entity.size / totalSize) * 100 : 0
+
+    return {
+      entityHandle: entity.entityHandle,
+      label: te(translationKey) ? t(translationKey) : entity.entityHandle,
+      sizeLabel: formatBytes(entity.size),
+      fileCount: entity.fileCount,
+      share,
+      shareLabel: formatPercentage(share),
+    }
+  })
+})
+
+const sizeDetailsTitle = computed(() =>
+  sizeDetailsKind.value === 'database'
+    ? t('system.allDatabaseTables')
+    : t('system.allStorageFolders'),
+)
+
+const sizeDetailsTotalSizeLabel = computed(() =>
+  formatBytes(
+    sizeDetailsKind.value === 'database'
+      ? (database.value?.size ?? 0)
+      : (documentStorage.value?.totalSize ?? 0),
+  ),
+)
+
+const sizeDetailsTotalCountLabel = computed(() =>
+  String(
+    sizeDetailsKind.value === 'database'
+      ? (database.value?.tableCount ?? 0)
+      : (documentStorage.value?.entityCount ?? 0),
+  ),
+)
+
+const sizeDetailsTotalCountCaption = computed(() =>
+  sizeDetailsKind.value === 'database' ? t('system.databaseTables') : t('system.storageFolders'),
+)
+
+const sizeDetailsEmptyLabel = computed(() =>
+  sizeDetailsKind.value === 'database'
+    ? t('system.noDatabaseTables')
+    : t('system.noDocumentsStored'),
+)
+
+const sizeDetailsLoading = computed(() =>
+  sizeDetailsKind.value === 'database'
+    ? databaseTablesLoading.value
+    : documentStorageEntitiesLoading.value,
+)
+
+const sizeDetailsError = computed(() => {
+  const error =
+    sizeDetailsKind.value === 'database'
+      ? databaseTablesError.value
+      : documentStorageEntitiesError.value
+  return error ? t(error) : ''
+})
+
+const sizeDetailsItems = computed(() => {
+  if (sizeDetailsKind.value === 'database') {
+    const totalSize = database.value?.size ?? 0
+    return databaseTables.value.map((table) => {
+      const share = totalSize > 0 ? (table.size / totalSize) * 100 : 0
+      return {
+        key: `${table.schema}.${table.name}`,
+        label: table.name,
+        sizeLabel: formatBytes(table.size),
+        share,
+        shareLabel: formatPercentage(share),
+      }
+    })
+  }
+
+  const totalSize = documentStorage.value?.totalSize ?? 0
+  return documentStorageEntities.value.map((entity) => {
+    const translationKey = `navigation.${entity.entityHandle}`
+    const share = totalSize > 0 ? (entity.size / totalSize) * 100 : 0
+    return {
+      key: entity.entityHandle,
+      label: te(translationKey) ? t(translationKey) : entity.entityHandle,
+      sizeLabel: formatBytes(entity.size),
+      share,
+      shareLabel: formatPercentage(share),
+    }
+  })
+})
 
 const networkItems = computed(() =>
   network.value.map((iface) => ({
@@ -463,6 +631,18 @@ async function refreshDashboard() {
   } finally {
     refreshing.value = false
   }
+}
+
+async function openSizeDetails(kind: 'database' | 'documentStorage') {
+  sizeDetailsKind.value = kind
+  sizeDetailsOpen.value = true
+
+  if (kind === 'database') {
+    await fetchDatabaseTables()
+    return
+  }
+
+  await fetchDocumentStorageEntities()
 }
 // #endregion
 </script>

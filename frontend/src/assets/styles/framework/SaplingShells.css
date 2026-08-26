@@ -254,7 +254,6 @@
 @media (max-width: 760px) {
   .sapling-page-shell {
     --sapling-page-shell-padding-block-end-current: var(--sapling-space-panel-md);
-    gap: var(--sapling-gap-md);
   }
 
   .sapling-page-shell--panel {
@@ -262,6 +261,7 @@
   }
 
   .sapling-page-shell--uniform-inset {
+    --sapling-page-shell-padding-inline-current: var(--sapling-space-sm);
     --sapling-page-shell-padding-block-end-current: var(
       --sapling-page-shell-padding-inline-current
     );

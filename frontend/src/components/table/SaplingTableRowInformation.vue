@@ -22,10 +22,6 @@
           />
 
           <div class="sapling-dialog-form-body">
-            <v-alert v-if="errorMessage" class="mb-4" type="error" variant="tonal">
-              {{ errorMessage }}
-            </v-alert>
-
             <SaplingMarkdownField
               v-model="content"
               :label="$t('information.content')"
@@ -73,7 +69,7 @@ const props = defineProps<UseSaplingTableRowInformationProps>()
 const emit = defineEmits<UseSaplingTableRowInformationEmit>()
 const { t, te } = useI18n()
 
-const { content, isLoading, errorMessage, canEdit, onDialogModelValueUpdate, save } =
+const { content, isLoading, canEdit, onDialogModelValueUpdate, save } =
   useSaplingTableRowInformation(props, emit)
 
 const entityLabel = computed(() => {

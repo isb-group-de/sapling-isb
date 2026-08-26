@@ -160,8 +160,6 @@
           :selected-role-stats="selectedRoleStats"
           :selected-group="selectedGroup"
           :visible-entity-count="filteredGroupEntities.length"
-          :permission-save-state="permissionSaveState"
-          :permission-save-error="permissionSaveError"
           :has-unsaved-permission-changes="hasUnsavedPermissionChanges"
           :get-stage-title="getStageTitle"
         />
@@ -265,7 +263,6 @@ const {
   membersArePending,
   deleteDialog,
   permissionSaveState,
-  permissionSaveError,
   hasUnsavedPermissionChanges,
   selectRole,
   setPermission,

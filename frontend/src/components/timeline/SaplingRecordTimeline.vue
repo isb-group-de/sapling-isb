@@ -110,15 +110,7 @@
               </section>
 
               <section
-                v-if="error"
-                class="sapling-record-timeline__empty glass-panel sapling-empty-state-panel sapling-empty-state-panel--compact"
-              >
-                <v-icon size="42">mdi-alert-circle-outline</v-icon>
-                <p>{{ error }}</p>
-              </section>
-
-              <section
-                v-else-if="months.length === 0"
+                v-if="!error && months.length === 0"
                 class="sapling-record-timeline__empty glass-panel sapling-empty-state-panel sapling-empty-state-panel--compact"
               >
                 <v-icon size="42">mdi-timeline-text-outline</v-icon>
@@ -126,7 +118,7 @@
               </section>
 
               <div
-                v-else-if="smAndDown"
+                v-else-if="!error && smAndDown"
                 class="sapling-stack-lg sapling-record-timeline__mobile-list"
               >
                 <article
@@ -166,7 +158,7 @@
               </div>
 
               <v-timeline
-                v-else
+                v-else-if="!error"
                 class="sapling-record-timeline__timeline"
                 align="start"
                 justify="center"

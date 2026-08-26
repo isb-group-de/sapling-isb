@@ -20,17 +20,7 @@
       </v-btn>
     </div>
 
-    <v-alert v-if="errorMessage" class="mt-3" type="error" variant="tonal" density="comfortable">
-      {{ errorMessage }}
-    </v-alert>
-
-    <v-alert
-      v-else-if="!isSupported"
-      class="mt-3"
-      type="warning"
-      variant="tonal"
-      density="comfortable"
-    >
+    <v-alert v-if="!isSupported" class="mt-3" type="warning" variant="tonal" density="comfortable">
       {{ $t('login.passkeyUnsupported') }}
     </v-alert>
 
@@ -90,7 +80,6 @@ const {
   isLoading,
   isRegistering,
   deletingHandle,
-  errorMessage,
   newPasskeyLabel,
   isSupported,
   registerPasskey,

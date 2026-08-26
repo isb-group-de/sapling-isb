@@ -96,10 +96,7 @@
           isLoadingRuntimeCatalog
             ? getTranslationLabel('loadingConfiguration', 'KI-Konfiguration wird geladen …')
             : !hasLoadedRuntimeCatalog || runtimeCatalogLoadFailed
-              ? getTranslationLabel(
-                  'configurationLoadFailed',
-                  'Die KI-Konfiguration konnte nicht geladen werden.',
-                )
+              ? ''
               : hasConfiguredProviders
                 ? t('aiChat.inputPlaceholder')
                 : t('aiChat.noConfiguredProviders')

@@ -37,10 +37,6 @@
       />
 
       <template v-else>
-        <v-alert v-if="errorMessage" type="error" variant="tonal">
-          {{ errorMessage }}
-        </v-alert>
-
         <SaplingMarkdownField
           v-model="content"
           class="sapling-dialog-edit-information__field"
@@ -98,7 +94,7 @@ const informationProps = {
   },
 }
 
-const { content, isLoading, isSaving, errorMessage, isDirty, canEdit, canSave, save } =
+const { content, isLoading, isSaving, isDirty, canEdit, canSave, save } =
   useSaplingTableRowInformation(informationProps, emit)
 
 const entityLabel = computed(() => {

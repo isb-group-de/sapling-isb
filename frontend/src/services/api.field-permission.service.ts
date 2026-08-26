@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { buildApiUrl } from '@/services/api.client'
+import { pushApiErrorMessage } from '@/services/api.error.service'
 
 export type FieldPermissionActionKey = 'allowRead' | 'allowInsert' | 'allowUpdate'
 
@@ -39,10 +40,15 @@ export interface FieldPermissionOverride {
 
 export default class ApiFieldPermissionService {
   static async getCatalog(roleHandle: number, entityHandle: string) {
-    const response = await axios.get<FieldPermissionCatalog>(
-      buildApiUrl(`permission-admin/roles/${roleHandle}/entities/${entityHandle}/fields`),
-    )
-    return response.data
+    try {
+      const response = await axios.get<FieldPermissionCatalog>(
+        buildApiUrl(`permission-admin/roles/${roleHandle}/entities/${entityHandle}/fields`),
+      )
+      return response.data
+    } catch (error: unknown) {
+      pushApiErrorMessage(error, 'exception.unknownError', 'fieldPermission')
+      throw error
+    }
   }
 
   static async saveOverrides(
@@ -50,10 +56,15 @@ export default class ApiFieldPermissionService {
     entityHandle: string,
     fields: FieldPermissionOverride[],
   ) {
-    const response = await axios.put<FieldPermissionCatalog>(
-      buildApiUrl(`permission-admin/roles/${roleHandle}/entities/${entityHandle}/fields`),
-      { fields },
-    )
-    return response.data
+    try {
+      const response = await axios.put<FieldPermissionCatalog>(
+        buildApiUrl(`permission-admin/roles/${roleHandle}/entities/${entityHandle}/fields`),
+        { fields },
+      )
+      return response.data
+    } catch (error: unknown) {
+      pushApiErrorMessage(error, 'exception.unknownError', 'fieldPermission')
+      throw error
+    }
   }
 }

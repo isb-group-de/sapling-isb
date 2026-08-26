@@ -30,18 +30,7 @@
         </div>
       </template>
       <template v-else-if="!hasLoadedRuntimeCatalog || runtimeCatalogLoadFailed">
-        <div class="sapling-chat-welcome__icon" aria-hidden="true">
-          <v-icon icon="mdi-cloud-alert-outline" size="large" />
-        </div>
         <div class="sapling-chat-welcome__copy">
-          <div class="sapling-section-title sapling-chat-welcome__title">
-            {{
-              getTranslationLabel(
-                'configurationLoadFailed',
-                'Die KI-Konfiguration konnte nicht geladen werden.',
-              )
-            }}
-          </div>
           <v-btn variant="tonal" prepend-icon="mdi-refresh" @click="emit('retry-runtime-catalog')">
             {{ getTranslationLabel('retryConfiguration', 'Erneut laden') }}
           </v-btn>

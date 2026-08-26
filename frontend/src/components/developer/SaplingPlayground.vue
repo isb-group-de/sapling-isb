@@ -86,10 +86,6 @@
       @save="handleEditSave"
       @cancel="handleEditCancel"
     />
-
-    <v-snackbar v-model="feedbackVisible" :color="feedbackColor" location="bottom right">
-      {{ feedbackMessage }}
-    </v-snackbar>
   </v-container>
 </template>
 
@@ -143,9 +139,6 @@ const {
   actionCards,
   dialogLaunchers,
   metrics,
-  feedbackVisible,
-  feedbackMessage,
-  feedbackColor,
   deleteDialogModel,
   deleteDialogItem,
   kpiDialogModel,

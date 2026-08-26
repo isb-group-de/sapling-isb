@@ -478,6 +478,27 @@ available exclusively in that preview; the detailed editor remains focused on
 visibility and field options. A hidden field can be shown temporarily when it
 needs to be repositioned and hidden again afterward.
 
+## Responsive Rhythm
+
+Responsive breakpoints may change layout topology, such as stacking columns,
+switching a table to mobile cards, or replacing action labels with accessible
+icon buttons. They must not silently change the visual rhythm of the same
+component. Shared control heights, panel padding, section gaps, radii, and
+semantic type sizes stay token-based across viewport widths.
+
+Avoid viewport-based `font-size` and spacing values for application chrome,
+headings, counters, cards, and controls. In particular, do not use `vw`-driven
+`clamp()` values for these elements: resizing the window must not continuously
+grow or shrink them. A breakpoint-specific size is allowed only when the
+component changes semantic density and the reason is documented with the
+component contract.
+
+`sapling-page-shell--uniform-inset` keeps the same uniform inset on desktop and
+mobile. Responsive page and workspace rules may reflow content but should not
+increase an inset or introduce an extra vertical gap at a narrower breakpoint.
+Verify responsive changes immediately above and below every affected breakpoint
+and at 360px, including horizontal-overflow checks.
+
 ## Button Geometry
 
 Button shape is semantic and independent from Vuetify's `text`, `tonal`,
@@ -713,6 +734,15 @@ backend/src/api/current/
 The frontend should hide or disable actions based on permissions, but backend guards remain authoritative.
 
 ## Message Center
+
+General operational feedback belongs exclusively in the message center. Pages,
+dialogs, panels, KPI widgets, and system cards must not render their own HTTP,
+network, loading, saving, or action-result alerts/snackbars. API services report
+these failures through `pushApiErrorMessage`; non-HTTP workflows use
+`useSaplingMessageCenter` directly. Local feedback remains inline only when it is
+part of the edited or inspected content itself, such as field validation,
+oversized-file selection, dependency guidance, persisted tool-action errors, or
+destructive-action consequences.
 
 API errors may provide a translation key plus `descriptionParams`. Entity
 parameters use the stable `entityHandle`; the message center resolves them

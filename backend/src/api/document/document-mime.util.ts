@@ -42,3 +42,11 @@ export function resolveUploadedDocumentFilename(filename: string): string {
   const utf8Candidate = Buffer.from(filename, 'latin1').toString('utf8');
   return utf8Candidate.includes('\uFFFD') ? filename : utf8Candidate;
 }
+
+/** Uses the normalized filename when an upload does not provide a description. */
+export function resolveUploadedDocumentDescription(
+  filename: string,
+  description?: string,
+): string {
+  return description?.trim() || filename.slice(0, 256);
+}

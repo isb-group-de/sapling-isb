@@ -10,16 +10,10 @@
         type="table, image"
       />
 
-      <v-alert v-else-if="documentModeError" type="error" variant="tonal">
-        <div class="sapling-row-between-md">
-          <span>{{ $t('exception.unknownError') }}</span>
-          <v-btn variant="text" prepend-icon="mdi-refresh" @click="resolveDocumentMode">
-            {{ $t('global.refresh') }}
-          </v-btn>
-        </div>
-      </v-alert>
-
-      <div v-else-if="isDvelopActive" class="sapling-section-panel sapling-record-documents__cloud">
+      <div
+        v-else-if="!documentModeError && isDvelopActive"
+        class="sapling-section-panel sapling-record-documents__cloud"
+      >
         <header class="sapling-record-documents__panel-header">
           <div class="sapling-record-relation-summary">
             <div class="sapling-record-relation-summary__icon">
@@ -61,7 +55,7 @@
       </div>
 
       <SaplingFile
-        v-else
+        v-else-if="!documentModeError"
         embedded
         entity-handle="document"
         :record-filter="recordFilter"

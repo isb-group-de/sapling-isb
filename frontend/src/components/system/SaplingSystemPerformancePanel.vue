@@ -37,10 +37,6 @@
         <strong v-else>{{ item.value }}</strong>
       </div>
     </div>
-
-    <v-alert v-if="error" type="error" density="comfortable" variant="tonal">
-      {{ error }}
-    </v-alert>
   </SaplingSurface>
 </template>
 
@@ -63,6 +59,5 @@ defineProps<{
     value: string
     loading?: boolean
   }>
-  error?: string
 }>()
 </script>

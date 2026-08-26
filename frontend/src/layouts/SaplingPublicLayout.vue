@@ -8,6 +8,8 @@
       <div class="sapling-app-layout__footer">
         <SaplingFooterLogin />
       </div>
+
+      <SaplingMessageCenter />
     </template>
 
     <div v-else class="sapling-app-layout__loading">
@@ -20,6 +22,7 @@
 import { RouterView } from 'vue-router'
 import { useTranslationLoader } from '@/composables/generic/useTranslationLoader'
 import SaplingFooterLogin from '@/components/system/SaplingFooterLogin.vue'
+import SaplingMessageCenter from '@/components/system/SaplingMessageCenter.vue'
 
 const { isLoading: isShellTranslationLoading } = useTranslationLoader('global', 'login', 'tutorial')
 </script>

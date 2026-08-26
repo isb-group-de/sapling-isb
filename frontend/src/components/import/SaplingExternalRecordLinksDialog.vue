@@ -33,22 +33,17 @@
             class="sapling-dialog-fill-content sapling-stack-lg sapling-scrollable sapling-external-record-links-dialog__content"
           >
             <section
-              v-if="error"
-              class="glass-panel sapling-empty-state-panel sapling-external-record-links-dialog__empty"
-            >
-              <v-icon size="42">mdi-alert-circle-outline</v-icon>
-              <p>{{ error }}</p>
-            </section>
-
-            <section
-              v-else-if="!isLoading && links.length === 0"
+              v-if="!error && !isLoading && links.length === 0"
               class="glass-panel sapling-empty-state-panel sapling-external-record-links-dialog__empty"
             >
               <v-icon size="42">mdi-link-off</v-icon>
               <p>{{ t('externalRecordLink.emptyForRecord') }}</p>
             </section>
 
-            <section v-else class="sapling-stack-md sapling-external-record-links-dialog__list">
+            <section
+              v-else-if="!error"
+              class="sapling-stack-md sapling-external-record-links-dialog__list"
+            >
               <article
                 v-for="link in links"
                 :key="link.handle"

@@ -97,6 +97,15 @@ Only the UUID is persisted in `DocumentItem.path`. The original filename is kept
 
 The current implementation writes files with `fs.writeFileSync()` and creates the entity-specific storage folder when needed.
 
+Administrators can inspect the real on-disk footprint in the system monitor.
+`GET /api/system/document-storage` scans the local storage root recursively,
+returns the total byte and file count, and groups the result by the top-level
+entity folder. The system monitor presents the nine largest groups while the
+summary API keeps the complete totals. Its detail dialog loads the complete
+grouping on demand from `GET /api/system/document-storage/entities`. Symbolic
+links and files placed directly in the storage root are not included in entity
+totals.
+
 ## API Contract
 
 All document endpoints require `SessionOrBearerAuthGuard`.
@@ -127,11 +136,11 @@ the unchanged original file from being stored.
 
 Upload expects multipart form data:
 
-| Field         | Meaning              |
-| ------------- | -------------------- |
-| `file`        | Binary file          |
-| `typeHandle`  | Document type handle |
-| `description` | Optional description |
+| Field         | Meaning                                                   |
+| ------------- | --------------------------------------------------------- |
+| `file`        | Binary file                                               |
+| `typeHandle`  | Document type handle                                      |
+| `description` | Optional description; defaults to the normalized filename |
 
 Download and preview resolve the document first, then derive permission from `document.entity.handle` through `GenericPermissionGuard`.
 
@@ -162,6 +171,12 @@ When changing storage behavior:
 3. Update mail attachment loading if the binary storage path changes.
 4. Add migration only if metadata fields change.
 5. Add cleanup/migration tooling if existing files must move.
+
+Deleting a `DocumentItem` through the generic API schedules deletion of its
+opaque storage file only after the database delete succeeds. Bulk deletion uses
+the same lifecycle for every selected document. Missing files are tolerated so
+an already inconsistent record can still be removed; unsafe storage paths are
+rejected instead of being resolved outside the document storage directory.
 
 When changing d.velop Cloud overlay behavior:
 

@@ -18,10 +18,6 @@
             {{ warningMessage }}
           </v-alert>
 
-          <v-alert v-if="errorMessage" class="mb-4" type="error" variant="tonal">
-            {{ errorMessage }}
-          </v-alert>
-
           <SaplingTextField
             :model-value="phoneNumber"
             :label="translate('phoneCall.phoneNumber')"
@@ -99,10 +95,12 @@ import { useTranslationLoader } from '@/composables/generic/useTranslationLoader
 import type { PhoneCallItem } from '@/entity/entity'
 import ApiGenericService from '@/services/api.generic.service'
 import { useCurrentPersonStore } from '@/stores/currentPersonStore'
+import { useSaplingMessageCenter } from '@/composables/system/useSaplingMessageCenter'
 
 const { t, te } = useI18n()
 const { isOpen, context, closePhoneDialog } = useSaplingPhoneDialog()
 const currentPersonStore = useCurrentPersonStore()
+const { pushMessage } = useSaplingMessageCenter()
 const { isLoading: isTranslationLoading, loadTranslations } = useTranslationLoader(
   'global',
   'navigation',
@@ -112,7 +110,6 @@ const { formatPhoneNumber } = useSaplingPhoneNumber()
 
 const note = ref('')
 const reached = ref(false)
-const errorMessage = ref('')
 const isSaving = ref(false)
 
 const phoneNumber = computed(() => formatPhoneNumber(context.value?.phoneNumber ?? ''))
@@ -162,7 +159,6 @@ watch(
 
     note.value = ''
     reached.value = false
-    errorMessage.value = ''
     isSaving.value = false
   },
   { immediate: true },
@@ -176,17 +172,6 @@ function translateIfExists(key: string, fallback: string) {
   return te(key) ? t(key) : fallback
 }
 
-watch(
-  () => isOpen.value,
-  (open) => {
-    if (!open) {
-      return
-    }
-
-    errorMessage.value = ''
-  },
-)
-
 function handleVisibilityChange(value: boolean) {
   if (!value) {
     closePhoneDialog()
@@ -198,7 +183,6 @@ async function startCall() {
     return
   }
 
-  errorMessage.value = ''
   window.open(`tel:${phoneNumber.value}`, '_self')
 }
 
@@ -207,7 +191,6 @@ async function savePhoneCall() {
     return
   }
 
-  errorMessage.value = ''
   isSaving.value = true
 
   try {
@@ -215,7 +198,7 @@ async function savePhoneCall() {
 
     const personHandle = currentPersonStore.person?.handle
     if (personHandle == null) {
-      errorMessage.value = translate('global.entityNotFound')
+      pushMessage('error', 'global.entityNotFound', '', 'phoneCall')
       return
     }
 
@@ -229,22 +212,8 @@ async function savePhoneCall() {
     })
 
     closePhoneDialog()
-  } catch (error: unknown) {
-    if (typeof error === 'object' && error !== null) {
-      const axiosError = error as {
-        response?: { data?: { message?: string } }
-        message?: string
-      }
-      const message = axiosError.response?.data?.message ?? axiosError.message
-      if (typeof message === 'string' && message.length > 0) {
-        const translated = translate(message)
-        errorMessage.value = translated !== message ? translated : message
-      } else {
-        errorMessage.value = translate('exception.unknownError')
-      }
-    } else {
-      errorMessage.value = translate('exception.unknownError')
-    }
+  } catch {
+    return
   } finally {
     isSaving.value = false
   }

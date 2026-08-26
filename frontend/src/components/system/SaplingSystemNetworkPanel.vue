@@ -67,13 +67,9 @@
       </article>
     </div>
 
-    <div v-else class="sapling-empty-state-panel sapling-empty-state-panel--compact">
+    <div v-else-if="!error" class="sapling-empty-state-panel sapling-empty-state-panel--compact">
       {{ emptyLabel }}
     </div>
-
-    <v-alert v-if="error" type="error" density="comfortable" variant="tonal">
-      {{ error }}
-    </v-alert>
   </SaplingSurface>
 </template>
 

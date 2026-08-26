@@ -13,16 +13,7 @@
       </SaplingSurface>
     </div>
 
-    <v-alert
-      v-else-if="isInitialLoadError"
-      color="error"
-      variant="tonal"
-      icon="mdi-alert-circle-outline"
-    >
-      {{ t('knowledgeBase.loadError') }}
-    </v-alert>
-
-    <div v-else class="sapling-knowledge-notebook">
+    <div v-else-if="!isInitialLoadError" class="sapling-knowledge-notebook">
       <SaplingSurface as="aside" class="sapling-knowledge-sidebar">
         <div class="sapling-knowledge-sidebar__controls">
           <div class="sapling-knowledge-sidebar__search-row">

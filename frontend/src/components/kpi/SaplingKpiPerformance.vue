@@ -1,15 +1,11 @@
 <template>
   <div class="sapling-kpi-widget sapling-kpi-performance">
     <v-skeleton-loader v-if="loading && !isLoaded" type="article" />
-    <div v-else-if="hasError" class="sapling-kpi-widget__state sapling-kpi-widget__state--error">
-      <v-icon size="20">mdi-alert-circle-outline</v-icon>
-      <span>{{ $t('exception.unknownError') }}</span>
-    </div>
-    <div v-else-if="!hasData" class="sapling-kpi-widget__state">
+    <div v-else-if="!hasError && !hasData" class="sapling-kpi-widget__state">
       <v-icon size="20">mdi-database-off-outline</v-icon>
       <span>{{ $t('global.noData') }}</span>
     </div>
-    <div v-else class="sapling-stack-md sapling-kpi-performance__content">
+    <div v-else-if="!hasError" class="sapling-stack-md sapling-kpi-performance__content">
       <div class="sapling-kpi-performance__value">
         {{ displayValue }}<span v-if="unitLabel"> {{ unitLabel }}</span>
       </div>
@@ -65,7 +61,7 @@ defineExpose({ loadKpiValue, loading, hasError, hasData, isLoaded })
 
 <style scoped>
 .sapling-kpi-performance__value {
-  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-size: var(--sapling-text-display-size-md);
   font-weight: 750;
   text-align: center;
 }

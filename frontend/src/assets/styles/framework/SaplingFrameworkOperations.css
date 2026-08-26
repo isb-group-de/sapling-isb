@@ -730,10 +730,6 @@
 }
 
 @media (max-width: 760px) {
-  .sapling-admin-dashboard {
-    gap: var(--sapling-gap-md);
-  }
-
   .sapling-admin-hero,
   .sapling-admin-sidebar,
   .sapling-admin-selection,
@@ -844,10 +840,6 @@
 }
 
 @media (max-width: 520px) {
-  .sapling-admin-dashboard {
-    gap: var(--sapling-gap-xs);
-  }
-
   .sapling-admin-hero,
   .sapling-admin-sidebar,
   .sapling-admin-selection,

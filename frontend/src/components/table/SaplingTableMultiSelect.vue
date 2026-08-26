@@ -2,11 +2,6 @@
   <div v-if="multiSelect" class="sapling-pill-control sapling-table-toolbar-selection">
     <v-icon color="primary" size="small">mdi-checkbox-multiple-marked</v-icon>
     <span class="sapling-table-toolbar-selection-count">{{ selectedCount }}</span>
-    <span v-if="!isTranslationLoading" class="sapling-table-toolbar-selection-label">
-      {{ $t('global.selected') }}
-    </span>
-    <v-skeleton-loader v-else class="sapling-table-toolbar-selection-skeleton" type="text" />
-
     <v-menu v-if="hasSelectionActions" location="bottom start">
       <template #activator="{ props }">
         <v-btn

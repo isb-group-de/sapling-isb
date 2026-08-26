@@ -222,6 +222,18 @@ backend/storage
 
 ## Health Checks
 
+The administrator-only system monitor at `/system` includes live database and
+local document-storage diagnostics. The database panel reports the PostgreSQL
+version, current database size, schema, connection usage, and server start
+time, while its detail area lists the nine largest application tables including
+indexes. The file-storage panel scans `backend/storage`, reports the total size
+and file count, and lists the nine largest top-level entity folders. The
+corresponding API endpoints are `GET /api/system/database` and
+`GET /api/system/document-storage`. Their panel detail buttons load the complete
+size-sorted lists only when opened through `GET /api/system/database/tables`
+and `GET /api/system/document-storage/entities`; closing the dialog keeps those
+full lists out of the normal system-monitor refresh cycle.
+
 After deployment or an update:
 
 1. Backend starts without migration errors.

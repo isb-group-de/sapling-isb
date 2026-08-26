@@ -13,12 +13,11 @@
       </div>
     </section>
 
-    <v-alert v-else-if="error" type="error" variant="tonal" class="mb-4">
-      {{ $t('customer360.loadError') }}
-      <template #append
-        ><v-btn variant="text" @click="load">{{ $t('customer360.retry') }}</v-btn></template
-      >
-    </v-alert>
+    <div v-else-if="error" class="sapling-action-cluster">
+      <v-btn variant="tonal" prepend-icon="mdi-refresh" @click="load">
+        {{ $t('customer360.retry') }}
+      </v-btn>
+    </div>
 
     <template v-else-if="summary">
       <SaplingPageHero

@@ -1,4 +1,5 @@
 import {
+  resolveUploadedDocumentDescription,
   resolveUploadedDocumentFilename,
   resolveUploadedDocumentMimeType,
 } from './document-mime.util';
@@ -50,4 +51,21 @@ describe('resolveUploadedDocumentFilename', () => {
   it('preserves ASCII filenames', () => {
     expect(resolveUploadedDocumentFilename('mail.eml')).toBe('mail.eml');
   });
+});
+
+describe('resolveUploadedDocumentDescription', () => {
+  it('preserves an explicit description', () => {
+    expect(
+      resolveUploadedDocumentDescription('report.pdf', 'Monthly report'),
+    ).toBe('Monthly report');
+  });
+
+  it.each([undefined, '', '   '])(
+    'falls back to the filename when description is %p',
+    (description) => {
+      expect(
+        resolveUploadedDocumentDescription('report.pdf', description),
+      ).toBe('report.pdf');
+    },
+  );
 });

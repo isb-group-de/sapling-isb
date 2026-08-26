@@ -112,3 +112,37 @@ export interface Time {
 export interface ApplicationVersion {
   version: string
 }
+
+/**
+ * Represents PostgreSQL diagnostics for the active Sapling database.
+ */
+export interface Database {
+  engine: string
+  name: string
+  version: string
+  schema: string
+  size: number
+  activeConnections: number
+  maxConnections: number
+  startedAt: string
+  tableCount: number
+  largestTables: Array<{
+    schema: string
+    name: string
+    size: number
+  }>
+}
+
+/**
+ * Represents the local document-storage footprint grouped by entity folder.
+ */
+export interface DocumentStorage {
+  totalSize: number
+  totalFileCount: number
+  entityCount: number
+  entities: Array<{
+    entityHandle: string
+    size: number
+    fileCount: number
+  }>
+}

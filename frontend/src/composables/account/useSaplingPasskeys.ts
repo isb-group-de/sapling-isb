@@ -7,6 +7,7 @@ import {
 } from '@simplewebauthn/browser'
 import { buildApiUrl } from '@/services/api.client'
 import { i18n } from '@/i18n'
+import { useSaplingMessageCenter } from '@/composables/system/useSaplingMessageCenter'
 
 export interface PasskeyItem {
   handle: number
@@ -27,9 +28,9 @@ export function useSaplingPasskeys() {
   const isLoading = ref(false)
   const isRegistering = ref(false)
   const deletingHandle = ref<number | null>(null)
-  const errorMessage = ref('')
   const newPasskeyLabel = ref(defaultPasskeyLabel())
   const isSupported = computed(() => browserSupportsWebAuthn())
+  const { pushMessage } = useSaplingMessageCenter()
 
   onMounted(() => {
     void loadPasskeys()
@@ -37,13 +38,11 @@ export function useSaplingPasskeys() {
 
   async function loadPasskeys(): Promise<void> {
     isLoading.value = true
-    errorMessage.value = ''
-
     try {
       const response = await axios.get<PasskeyItem[]>(buildApiUrl('auth/passkey'))
       passkeys.value = response.data
     } catch (error) {
-      errorMessage.value = resolvePasskeyError(error, 'login.passkeyLoadFailed')
+      reportPasskeyError(error, 'login.passkeyLoadFailed')
     } finally {
       isLoading.value = false
     }
@@ -51,13 +50,11 @@ export function useSaplingPasskeys() {
 
   async function registerPasskey(): Promise<void> {
     if (!isSupported.value) {
-      errorMessage.value = i18n.global.t('login.passkeyUnsupported')
+      pushMessage('warning', 'login.passkeyUnsupported', '', 'login')
       return
     }
 
     isRegistering.value = true
-    errorMessage.value = ''
-
     try {
       const label = normalizeLabel(newPasskeyLabel.value)
       const optionsResponse = await axios.post<PasskeyRegistrationOptionsResponse>(
@@ -81,7 +78,7 @@ export function useSaplingPasskeys() {
       ]
       newPasskeyLabel.value = defaultPasskeyLabel()
     } catch (error) {
-      errorMessage.value = resolvePasskeyError(error, 'login.passkeyRegistrationFailed')
+      reportPasskeyError(error, 'login.passkeyRegistrationFailed')
     } finally {
       isRegistering.value = false
     }
@@ -93,13 +90,11 @@ export function useSaplingPasskeys() {
     }
 
     deletingHandle.value = passkey.handle
-    errorMessage.value = ''
-
     try {
       await axios.delete(buildApiUrl(`auth/passkey/${passkey.handle}`))
       passkeys.value = passkeys.value.filter((item) => item.handle !== passkey.handle)
     } catch (error) {
-      errorMessage.value = resolvePasskeyError(error, 'login.passkeyDeleteFailed')
+      reportPasskeyError(error, 'login.passkeyDeleteFailed')
     } finally {
       deletingHandle.value = null
     }
@@ -118,13 +113,16 @@ export function useSaplingPasskeys() {
     isLoading,
     isRegistering,
     deletingHandle,
-    errorMessage,
     newPasskeyLabel,
     isSupported,
     loadPasskeys,
     registerPasskey,
     deletePasskey,
     formatPasskeyDate,
+  }
+
+  function reportPasskeyError(error: unknown, fallbackKey: string): void {
+    pushMessage('error', resolvePasskeyError(error, fallbackKey), '', 'login', error)
   }
 }
 

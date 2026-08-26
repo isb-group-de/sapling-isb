@@ -23,11 +23,28 @@ const rawControlOwners: Record<string, string[]> = {
   ],
 }
 
+const contextualInlineErrorAlertOwners = [
+  // JSON syntax feedback belongs to the field being edited.
+  'components/dialog/fields/SaplingFieldJson.vue',
+  // Tool-action failures are part of the persisted chat action itself.
+  'components/system/ai-chat/SaplingAiChatToolActions.vue',
+]
+
 function collectVueFiles(directory: string): string[] {
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
     const path = join(directory, entry.name)
     if (entry.isDirectory()) return collectVueFiles(path)
     return entry.isFile() && entry.name.endsWith('.vue') ? [path] : []
+  })
+}
+
+function collectResponsiveStyleSources(directory: string): string[] {
+  return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const path = join(directory, entry.name)
+    if (entry.isDirectory()) return collectResponsiveStyleSources(path)
+    return entry.isFile() && (entry.name.endsWith('.css') || entry.name.endsWith('.vue'))
+      ? [path]
+      : []
   })
 }
 
@@ -38,7 +55,7 @@ describe('Sapling UI architecture', () => {
     const tagPattern = new RegExp(`<(${tags.join('|')})\\b`, 'g')
 
     for (const file of collectVueFiles(sourceRoot)) {
-      const fileName = relative(sourceRoot, file).replaceAll('\\', '/')
+      const fileName = relative(sourceRoot, file).replace(/\\/g, '/')
       const source = readFileSync(file, 'utf8')
       for (const match of source.matchAll(tagPattern)) {
         const tag = match[1]
@@ -54,7 +71,40 @@ describe('Sapling UI architecture', () => {
   it('does not reintroduce legacy dialog size classes', () => {
     const violations = collectVueFiles(sourceRoot)
       .filter((file) => /sapling-dialog-(small|medium|large)/.test(readFileSync(file, 'utf8')))
-      .map((file) => relative(sourceRoot, file).replaceAll('\\', '/'))
+      .map((file) => relative(sourceRoot, file).replace(/\\/g, '/'))
+
+    expect(violations).toEqual([])
+  })
+
+  it('routes general feedback through the message center', () => {
+    const inlineErrorAlerts: string[] = []
+    const snackbars: string[] = []
+
+    for (const file of collectVueFiles(sourceRoot)) {
+      const fileName = relative(sourceRoot, file).replace(/\\/g, '/')
+      const source = readFileSync(file, 'utf8')
+
+      if (/<v-snackbar\b/i.test(source)) {
+        snackbars.push(fileName)
+      }
+
+      if (
+        /<v-alert\b[\s\S]*?\btype=["']error["']/i.test(source) &&
+        !contextualInlineErrorAlertOwners.includes(fileName)
+      ) {
+        inlineErrorAlerts.push(fileName)
+      }
+    }
+
+    expect(snackbars).toEqual([])
+    expect(inlineErrorAlerts).toEqual([])
+  })
+
+  it('keeps application typography independent from viewport width', () => {
+    const viewportFontSize = /font-size\s*:\s*clamp\([^;]*(?:vw|vh|dvw|dvh)/
+    const violations = collectResponsiveStyleSources(sourceRoot)
+      .filter((file) => viewportFontSize.test(readFileSync(file, 'utf8')))
+      .map((file) => relative(sourceRoot, file).replace(/\\/g, '/'))
 
     expect(violations).toEqual([])
   })

@@ -14,7 +14,6 @@
 
         <template #body>
           <div class="sapling-stack-md sapling-scrollable pa-4">
-            <v-alert v-if="error" type="error" variant="tonal">{{ error }}</v-alert>
             <v-alert v-if="catalog?.staleOverrides.length" type="info" variant="tonal">
               {{ $t('permission.staleFieldPermissions') }}:
               {{ catalog.staleOverrides.map((entry) => entry.fieldName).join(', ') }}
@@ -158,6 +157,7 @@ import ApiFieldPermissionService, {
   type FieldPermissionActionKey,
   type FieldPermissionCatalog,
 } from '@/services/api.field-permission.service'
+import { useSaplingMessageCenter } from '@/composables/system/useSaplingMessageCenter'
 
 const props = defineProps<{ modelValue: boolean; role: RoleItem; entity: EntityItem }>()
 const emit = defineEmits<{
@@ -165,6 +165,7 @@ const emit = defineEmits<{
   (event: 'saved', restrictedCount: number): void
 }>()
 const { t } = useI18n()
+const { pushMessage } = useSaplingMessageCenter()
 const { translationService } = useTranslationLoader(
   'global',
   'navigation',
@@ -177,7 +178,6 @@ const draft = reactive<Record<string, Record<FieldPermissionActionKey, boolean>>
 const search = ref('')
 const loading = ref(false)
 const saving = ref(false)
-const error = ref('')
 const actions = [
   { key: 'allowRead', label: 'right.canRead' },
   { key: 'allowInsert', label: 'right.canInsert' },
@@ -228,7 +228,6 @@ watch(
 async function load() {
   if (typeof props.role.handle !== 'number') return
   loading.value = true
-  error.value = ''
   try {
     const [, nextCatalog] = await Promise.all([
       translationService.value.prepare(props.entity.handle),
@@ -243,8 +242,8 @@ async function load() {
         allowUpdate: field.override?.allowUpdate ?? true,
       }
     }
-  } catch (cause) {
-    error.value = cause instanceof Error ? cause.message : t('global.error')
+  } catch {
+    catalog.value = null
   } finally {
     loading.value = false
   }
@@ -307,17 +306,17 @@ function resetInheritance() {
 async function save() {
   if (typeof props.role.handle !== 'number') return
   saving.value = true
-  error.value = ''
   try {
     catalog.value = await ApiFieldPermissionService.saveOverrides(
       props.role.handle,
       props.entity.handle,
       Object.entries(draft).map(([fieldName, access]) => ({ fieldName, ...access })),
     )
+    pushMessage('success', 'permission.saved', '', 'fieldPermission')
     emit('saved', restrictedCount.value)
     close()
-  } catch (cause) {
-    error.value = cause instanceof Error ? cause.message : t('global.error')
+  } catch {
+    return
   } finally {
     saving.value = false
   }

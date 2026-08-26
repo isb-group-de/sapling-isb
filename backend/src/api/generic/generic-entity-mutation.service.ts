@@ -35,6 +35,10 @@ import { normalizeEventBufferMutationPayload } from '../../calendar/event-buffer
 import { SecurityPrincipalCacheService } from '../current/security-principal-cache.service';
 import { GlobalSearchIndexService } from './global-search-index.service';
 import { buildChangeLogDetails } from './generic-change-log.util';
+import {
+  captureStoredDocumentFileDescriptor,
+  deleteStoredDocumentFile,
+} from '../document/document-storage.util';
 
 type GenericMutationPayload = {
   createdAt?: Date;
@@ -535,6 +539,10 @@ export class GenericEntityMutationService {
       currentUser,
       scriptContext,
     );
+    const storedDocumentFile =
+      entityHandle === 'document'
+        ? captureStoredDocumentFileDescriptor(item)
+        : null;
 
     const affectedRows = await this.genericMutationService.deleteAndFlush(
       entityHandle,
@@ -553,6 +561,11 @@ export class GenericEntityMutationService {
     this.invalidateSecurityPrincipalAfterMutation(entityHandle, item);
     this.queueSearchIndexDelete(lifecycleOptions, entityHandle, item);
     this.invalidateTemplateMetadataAfterMutation(entityHandle);
+    if (storedDocumentFile) {
+      this.queueBackgroundTask(lifecycleOptions, 'documentFileDelete', () =>
+        deleteStoredDocumentFile(storedDocumentFile),
+      );
+    }
 
     if (entity) {
       await this.genericMutationService.applyAfterScript(

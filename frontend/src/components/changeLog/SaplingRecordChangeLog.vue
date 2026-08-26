@@ -39,22 +39,14 @@
             class="sapling-dialog-fill-content sapling-inbox-dialog__content sapling-stack-lg sapling-record-change-log sapling-scrollable"
           >
             <section
-              v-if="error"
-              class="sapling-record-change-log__empty glass-panel sapling-empty-state-panel"
-            >
-              <v-icon size="42">mdi-alert-circle-outline</v-icon>
-              <p>{{ error }}</p>
-            </section>
-
-            <section
-              v-else-if="!isLoading && entries.length === 0"
+              v-if="!error && !isLoading && entries.length === 0"
               class="sapling-record-change-log__empty glass-panel sapling-empty-state-panel"
             >
               <v-icon size="42">mdi-history</v-icon>
               <p>{{ t('changeLog.empty') }}</p>
             </section>
 
-            <section v-else class="sapling-stack-lg sapling-record-change-log__list">
+            <section v-else-if="!error" class="sapling-stack-lg sapling-record-change-log__list">
               <article
                 v-for="entry in visibleEntries"
                 :key="entry.handle"

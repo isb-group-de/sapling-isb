@@ -179,7 +179,7 @@
 
 .sapling-tutorial__progress {
   flex: 1 1 auto;
-  gap: clamp(2px, 0.25vw, var(--sapling-space-2xs));
+  gap: var(--sapling-space-2xs);
   min-width: 100px;
 }
 

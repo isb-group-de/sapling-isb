@@ -10,6 +10,7 @@ import { resolvePostLoginPath } from '@/utils/authRouting'
 import { useAuthStore } from '@/stores/authStore'
 import { startAuthentication } from '@simplewebauthn/browser'
 import type { PublicKeyCredentialRequestOptionsJSON } from '@simplewebauthn/browser'
+import { useSaplingMessageCenter } from '@/composables/system/useSaplingMessageCenter'
 
 type LocalLoginResponse = {
   passkeyRequired?: boolean
@@ -35,8 +36,8 @@ export function useSaplingLogin() {
   const isBooting = ref(true)
   const isLoading = computed(() => isTranslationLoading.value || isBooting.value)
   const isAuthenticating = ref(false)
-  const loginErrorMessage = ref('')
   const authStore = useAuthStore()
+  const { pushMessage } = useSaplingMessageCenter()
 
   // Reactive properties for managing the password change dialog
   const showPasswordChange = ref(false)
@@ -110,8 +111,6 @@ export function useSaplingLogin() {
   // Function to handle the login process
   async function handleLogin() {
     isAuthenticating.value = true
-    loginErrorMessage.value = ''
-
     try {
       // Send a POST request to the backend to log in
       const loginResponse = await axios.post<LocalLoginResponse>(BACKEND_URL + 'auth/local/login', {
@@ -148,7 +147,7 @@ export function useSaplingLogin() {
         window.location.href = resolvePostLoginPath(personData.value)
       }
     } catch (ex: AxiosError | unknown) {
-      loginErrorMessage.value = resolveLoginErrorMessage(ex)
+      pushMessage('error', resolveLoginErrorMessage(ex), '', 'login', ex)
     } finally {
       isAuthenticating.value = false
     }
@@ -198,7 +197,6 @@ export function useSaplingLogin() {
     rememberMe,
     isLoading,
     isAuthenticating,
-    loginErrorMessage,
     handleLogin,
     handleAzure,
     handleGoogle,

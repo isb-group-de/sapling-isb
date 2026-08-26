@@ -13,22 +13,6 @@
   >
     <template #body>
       <div class="sapling-stack-lg">
-        <v-alert
-          v-if="status.state === 'failed'"
-          type="error"
-          variant="tonal"
-          :title="t('global.searchIndexRebuildFailed')"
-          :text="status.error || t('global.searchIndexUnknownError')"
-        />
-
-        <v-alert
-          v-else-if="status.state === 'completed'"
-          type="success"
-          variant="tonal"
-          :title="t('global.searchIndexRebuildCompleted')"
-          :text="t('global.searchIndexRebuildCompletedDescription')"
-        />
-
         <div v-if="status.state === 'running'" class="sapling-stack-md">
           <div class="sapling-label">
             {{ t('global.searchIndexRebuildRunning') }}
@@ -118,6 +102,7 @@ import { useTranslationLoader } from '@/composables/generic/useTranslationLoader
 import ApiSearchIndexService, {
   type SearchIndexRebuildStatus,
 } from '@/services/api.search-index.service'
+import { useSaplingMessageCenter } from '@/composables/system/useSaplingMessageCenter'
 
 const EMPTY_STATUS: SearchIndexRebuildStatus = {
   state: 'idle',
@@ -137,6 +122,7 @@ const POLL_INTERVAL_MS = 1000
 const { t } = useI18n()
 useTranslationLoader('global')
 const { isOpen, hasAccess, closeSaplingSearchIndexRebuild } = useSaplingSearchIndexRebuild()
+const { pushMessage } = useSaplingMessageCenter()
 const status = ref<SearchIndexRebuildStatus>({ ...EMPTY_STATUS })
 const requestPending = ref(false)
 let pollTimer: ReturnType<typeof setTimeout> | null = null
@@ -166,6 +152,32 @@ watch(isOpen, (open) => {
     void refreshStatus()
   }
 })
+
+watch(
+  () => status.value.state,
+  (state, previousState) => {
+    if (previousState !== 'running') {
+      return
+    }
+
+    if (state === 'completed') {
+      pushMessage(
+        'success',
+        'global.searchIndexRebuildCompleted',
+        'global.searchIndexRebuildCompletedDescription',
+        'globalSearchIndex',
+      )
+    } else if (state === 'failed') {
+      pushMessage(
+        'error',
+        'global.searchIndexRebuildFailed',
+        'global.searchIndexUnknownError',
+        'globalSearchIndex',
+        status.value.error,
+      )
+    }
+  },
+)
 
 onUnmounted(clearPoll)
 

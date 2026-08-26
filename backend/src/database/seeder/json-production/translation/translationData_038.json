@@ -1,0 +1,140 @@
+[
+  {
+    "entity": "system",
+    "property": "database",
+    "de": "Datenbank",
+    "en": "Database"
+  },
+  {
+    "entity": "system",
+    "property": "databaseVersion",
+    "de": "Datenbankversion",
+    "en": "Database version"
+  },
+  {
+    "entity": "system",
+    "property": "databaseSize",
+    "de": "Datenbankgröße",
+    "en": "Database size"
+  },
+  {
+    "entity": "system",
+    "property": "databaseSchema",
+    "de": "Schema",
+    "en": "Schema"
+  },
+  {
+    "entity": "system",
+    "property": "databaseConnections",
+    "de": "Verbindungen",
+    "en": "Connections"
+  },
+  {
+    "entity": "system",
+    "property": "databaseStartedAt",
+    "de": "Server gestartet",
+    "en": "Server started"
+  },
+  {
+    "entity": "system",
+    "property": "documents",
+    "de": "Dokumente",
+    "en": "Documents"
+  },
+  {
+    "entity": "system",
+    "property": "documentStorageTitle",
+    "de": "Dateispeicher",
+    "en": "File storage"
+  },
+  {
+    "entity": "system",
+    "property": "totalSize",
+    "de": "Gesamtgröße",
+    "en": "Total size"
+  },
+  {
+    "entity": "system",
+    "property": "fileCount",
+    "de": "Dateien",
+    "en": "Files"
+  },
+  {
+    "entity": "system",
+    "property": "entityCount",
+    "de": "Datensatzarten",
+    "en": "Entity types"
+  },
+  {
+    "entity": "system",
+    "property": "share",
+    "de": "Anteil",
+    "en": "Share"
+  },
+  {
+    "entity": "system",
+    "property": "noDocumentsStored",
+    "de": "Noch keine lokalen Dokumente gespeichert",
+    "en": "No local documents stored yet"
+  },
+  {
+    "entity": "system",
+    "property": "largestTables",
+    "de": "Die 9 größten Tabellen",
+    "en": "9 largest tables"
+  },
+  {
+    "entity": "system",
+    "property": "largestEntityFolders",
+    "de": "Die 9 größten Entity-Ordner",
+    "en": "9 largest entity folders"
+  },
+  {
+    "entity": "system",
+    "property": "noDatabaseTables",
+    "de": "Keine Datenbanktabellen verfügbar",
+    "en": "No database tables available"
+  },
+  {
+    "entity": "system",
+    "property": "details",
+    "de": "Detailübersicht",
+    "en": "Detailed overview"
+  },
+  {
+    "entity": "system",
+    "property": "showAllDatabaseTables",
+    "de": "Alle Datenbanktabellen anzeigen",
+    "en": "Show all database tables"
+  },
+  {
+    "entity": "system",
+    "property": "showAllStorageFolders",
+    "de": "Alle Dateispeicher-Ordner anzeigen",
+    "en": "Show all file storage folders"
+  },
+  {
+    "entity": "system",
+    "property": "allDatabaseTables",
+    "de": "Alle Datenbanktabellen",
+    "en": "All database tables"
+  },
+  {
+    "entity": "system",
+    "property": "allStorageFolders",
+    "de": "Gesamter Dateispeicher",
+    "en": "Complete file storage"
+  },
+  {
+    "entity": "system",
+    "property": "databaseTables",
+    "de": "Tabellen",
+    "en": "Tables"
+  },
+  {
+    "entity": "system",
+    "property": "storageFolders",
+    "de": "Entity-Ordner",
+    "en": "Entity folders"
+  }
+]

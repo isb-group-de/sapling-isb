@@ -2,13 +2,13 @@ import { ref, type Ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import ApiFormConfigService from '@/services/api.form-config.service'
 import type { SaplingFormConfigPayload } from '@/entity/structure'
+import { useSaplingMessageCenter } from '@/composables/system/useSaplingMessageCenter'
 
 interface UseSaplingFormConfigTransferOptions {
   selectedEntityHandle: Ref<string>
   selectedConfigHandle: Ref<number | null>
   configName: Ref<string>
   draftConfig: Ref<SaplingFormConfigPayload>
-  errorMessage: Ref<string>
   loadEntityContext: () => Promise<void>
   applyConfig: (config: SaplingFormConfigPayload) => void
 }
@@ -19,11 +19,11 @@ export function useSaplingFormConfigTransfer({
   selectedConfigHandle,
   configName,
   draftConfig,
-  errorMessage,
   loadEntityContext,
   applyConfig,
 }: UseSaplingFormConfigTransferOptions) {
   const { t } = useI18n()
+  const { pushMessage } = useSaplingMessageCenter()
   const fileInputRef = ref<HTMLInputElement | null>(null)
 
   function openImportFile(): void {
@@ -38,8 +38,15 @@ export function useSaplingFormConfigTransfer({
       return
     }
 
+    let parsed: SaplingFormConfigPayload
     try {
-      const parsed = JSON.parse(await file.text()) as SaplingFormConfigPayload
+      parsed = JSON.parse(await file.text()) as SaplingFormConfigPayload
+    } catch (error: unknown) {
+      pushMessage('error', 'formConfig.importFailed', '', 'formConfig', error)
+      return
+    }
+
+    try {
       if (parsed.entityHandle && parsed.entityHandle !== selectedEntityHandle.value) {
         selectedEntityHandle.value = parsed.entityHandle
         await loadEntityContext()
@@ -49,16 +56,22 @@ export function useSaplingFormConfigTransfer({
       selectedConfigHandle.value = null
       const validation = await ApiFormConfigService.validate(selectedEntityHandle.value, parsed)
       if (!validation.isValid) {
-        errorMessage.value = t('formConfig.validationSummary', {
-          errors: validation.errors.length,
-          warnings: validation.warnings.length,
-        })
+        pushMessage(
+          'warning',
+          t('formConfig.validationSummary', {
+            errors: validation.errors.length,
+            warnings: validation.warnings.length,
+          }),
+          '',
+          'formConfig',
+          validation,
+        )
         return
       }
 
       applyConfig(validation.normalizedConfig)
     } catch {
-      errorMessage.value = t('formConfig.importFailed')
+      return
     }
   }
 

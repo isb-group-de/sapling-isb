@@ -133,6 +133,9 @@
   --sapling-text-body-size-md: var(--sapling-text-body-size-lg);
   --sapling-text-title-size-sm: 1.1rem;
   --sapling-text-title-size-md: 1.35rem;
+  --sapling-text-title-size-lg: 1.85rem;
+  --sapling-text-display-size-sm: 1.6rem;
+  --sapling-text-display-size-md: 2rem;
   --sapling-shortcut-line-height: 14px;
   --sapling-code-line-height: 16px;
   --sapling-letter-spacing-label: 0;

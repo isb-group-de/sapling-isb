@@ -8,6 +8,7 @@ import { EntityItem } from '../../entity/EntityItem';
 import { DocumentTypeItem } from '../../entity/DocumentTypeItem';
 import { PersonItem } from '../../entity/PersonItem';
 import {
+  resolveUploadedDocumentDescription,
   resolveUploadedDocumentFilename,
   resolveUploadedDocumentMimeType,
 } from './document-mime.util';
@@ -15,6 +16,10 @@ import {
   extractEmlAttachments,
   extractMsgAttachments,
 } from './document-mail-attachment.util';
+import {
+  getDocumentStorageDirectory,
+  getDocumentStorageFilePath,
+} from './document-storage.util';
 
 /**
  * @class
@@ -62,7 +67,7 @@ export class DocumentService {
     });
     if (!type) throw new NotFoundException('document.documentTypeNotFound');
 
-    const storageDir = path.join(__dirname, '../../../storage', entityHandle);
+    const storageDir = getDocumentStorageDirectory(entityHandle);
     if (!fs.existsSync(storageDir)) {
       fs.mkdirSync(storageDir, { recursive: true });
     }
@@ -149,7 +154,10 @@ export class DocumentService {
     document.filename = options.filename;
     document.mimetype = options.mimetype;
     document.length = options.buffer.length;
-    document.description = options.description;
+    document.description = resolveUploadedDocumentDescription(
+      options.filename,
+      options.description,
+    );
     document.entity = options.entity;
     document.type = options.type;
     document.person = { handle: options.currentUser.handle } as PersonItem;
@@ -175,9 +183,7 @@ export class DocumentService {
     );
     if (!document) throw new NotFoundException('document.documentNotFound');
 
-    const filePath = path.join(
-      __dirname,
-      '../../../storage',
+    const filePath = getDocumentStorageFilePath(
       document.entity.handle,
       document.path,
     );

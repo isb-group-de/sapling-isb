@@ -34,6 +34,13 @@ import { AdminPermissionGuard } from '../../auth/guard/admin-permission.guard';
 import { AdminPermission } from '../../auth/admin-permission';
 import { GlobalSearchIndexService } from '../generic/global-search-index.service';
 import { GlobalSearchIndexRebuildStatusDto } from '../generic/dto/global-search-index.dto';
+import { DatabaseDto, DatabaseTableDto } from './dto/database.dto';
+import {
+  DocumentStorageDto,
+  DocumentStorageEntityDto,
+} from './dto/document-storage.dto';
+import { DatabaseService } from './services/database.service';
+import { DocumentStorageService } from './services/document-storage.service';
 
 /**
  * @class SystemController
@@ -60,6 +67,10 @@ import { GlobalSearchIndexRebuildStatusDto } from '../generic/dto/global-search-
   NetworkInterfaceDto,
   ApplicationVersionDto,
   ApplicationStateDto,
+  DatabaseDto,
+  DatabaseTableDto,
+  DocumentStorageDto,
+  DocumentStorageEntityDto,
 )
 @Controller('api/system')
 @AdminPermission()
@@ -83,7 +94,75 @@ export class SystemController {
     private readonly timeService: TimeService,
     private readonly versionService: VersionService,
     private readonly globalSearchIndexService: GlobalSearchIndexService,
+    private readonly databaseService: DatabaseService,
+    private readonly documentStorageService: DocumentStorageService,
   ) {}
+
+  @Get('database')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Get database information',
+    description:
+      'Returns PostgreSQL version, database size, schema, connection usage, server start time, and the nine largest application tables.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Database diagnostics for the current Sapling database.',
+    type: DatabaseDto,
+  })
+  async getDatabase(): Promise<DatabaseDto> {
+    return this.databaseService.getDatabase();
+  }
+
+  @Get('database/tables')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Get all database table sizes',
+    description:
+      'Returns every application table ordered by its combined table and index size.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'All application table sizes for the current database.',
+    type: DatabaseTableDto,
+    isArray: true,
+  })
+  async getDatabaseTables(): Promise<DatabaseTableDto[]> {
+    return this.databaseService.getDatabaseTables();
+  }
+
+  @Get('document-storage')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Get local document storage information',
+    description:
+      'Returns the total local document storage footprint and usage grouped by entity folder.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Local document storage usage for the Sapling server.',
+    type: DocumentStorageDto,
+  })
+  async getDocumentStorage(): Promise<DocumentStorageDto> {
+    return this.documentStorageService.getDocumentStorage();
+  }
+
+  @Get('document-storage/entities')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Get all local document storage groups',
+    description:
+      'Returns every local document storage entity folder ordered by size.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'All local document storage entity folders.',
+    type: DocumentStorageEntityDto,
+    isArray: true,
+  })
+  async getDocumentStorageEntities(): Promise<DocumentStorageEntityDto[]> {
+    return this.documentStorageService.getDocumentStorageEntities();
+  }
 
   @Get('search-index/rebuild')
   @ApiBearerAuth()

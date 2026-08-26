@@ -10,17 +10,16 @@
       <span>{{ t('kpi.calendarConfigurationError') }}</span>
     </div>
 
-    <div v-else-if="hasError" class="sapling-kpi-widget__state sapling-kpi-widget__state--error">
-      <v-icon size="20">mdi-alert-circle-outline</v-icon>
-      <span>{{ t('exception.unknownError') }}</span>
-    </div>
-
-    <div v-else-if="!hasData" class="sapling-kpi-widget__state">
+    <div v-else-if="!hasError && !hasData" class="sapling-kpi-widget__state">
       <v-icon size="20">mdi-calendar-blank-outline</v-icon>
       <span>{{ t('kpi.calendarEmpty') }}</span>
     </div>
 
-    <ol v-else class="sapling-kpi-calendar__agenda" :aria-label="t('kpi.calendarAgenda')">
+    <ol
+      v-else-if="!hasError"
+      class="sapling-kpi-calendar__agenda"
+      :aria-label="t('kpi.calendarAgenda')"
+    >
       <li v-for="entry in entries" :key="entry.key" class="sapling-kpi-calendar__item">
         <button
           type="button"

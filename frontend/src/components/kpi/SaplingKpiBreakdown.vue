@@ -5,17 +5,12 @@
       type="list-item-two-line, list-item-two-line, list-item-two-line"
     />
 
-    <div v-else-if="hasError" class="sapling-kpi-widget__state sapling-kpi-widget__state--error">
-      <v-icon size="20">mdi-alert-circle-outline</v-icon>
-      <span>{{ $t('exception.unknownError') }}</span>
-    </div>
-
-    <div v-else-if="!hasData" class="sapling-kpi-widget__state">
+    <div v-else-if="!hasError && !hasData" class="sapling-kpi-widget__state">
       <v-icon size="20">mdi-database-off-outline</v-icon>
       <span>{{ $t('global.noData') }}</span>
     </div>
 
-    <div v-else class="sapling-stack-md sapling-kpi-breakdown__content">
+    <div v-else-if="!hasError" class="sapling-stack-md sapling-kpi-breakdown__content">
       <div
         v-if="leadItem"
         class="sapling-row-between-md sapling-highlight-panel sapling-kpi-breakdown__hero"

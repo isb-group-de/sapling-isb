@@ -58,16 +58,6 @@
       </template>
     </SaplingPageHero>
 
-    <v-alert
-      v-if="errorMessage"
-      class="sapling-config-alert sapling-form-config__alert"
-      type="error"
-      variant="tonal"
-      density="comfortable"
-    >
-      {{ errorMessage }}
-    </v-alert>
-
     <section class="sapling-config-workspace sapling-form-config__workspace">
       <SaplingSurface
         class="sapling-panel-shell sapling-section-panel sapling-config-panel sapling-config-panel--blurred sapling-form-config__panel sapling-form-config__panel--editor"
@@ -186,7 +176,6 @@ const isDefault = ref(false)
 const isLoadingEntities = ref(false)
 const isLoadingContext = ref(false)
 const isSaving = ref(false)
-const errorMessage = ref('')
 const fieldRows = reactive<FieldDraft[]>([])
 const groupRows = reactive<GroupDraft[]>([])
 const previewMode = ref<PreviewMode>('form')
@@ -263,7 +252,6 @@ const { fileInputRef, openImportFile, onImportFileChange, exportDraft } =
     selectedConfigHandle,
     configName,
     draftConfig,
-    errorMessage,
     loadEntityContext,
     applyConfig: (config) => buildFieldRows(config.fields, config.groups),
   })
@@ -314,7 +302,6 @@ onMounted(async () => {
 
 async function loadEntities(): Promise<void> {
   isLoadingEntities.value = true
-  errorMessage.value = ''
 
   try {
     entities.value = await fetchAllEntities()
@@ -324,7 +311,7 @@ async function loadEntities(): Promise<void> {
         ? requestedEntity
         : (entities.value[0]?.handle ?? '')
   } catch {
-    errorMessage.value = t('formConfig.loadFailed')
+    return
   } finally {
     isLoadingEntities.value = false
   }
@@ -355,7 +342,6 @@ async function loadEntityContext(): Promise<void> {
   }
 
   isLoadingContext.value = true
-  errorMessage.value = ''
 
   try {
     const [templates, nextConfigs] = await Promise.all([
@@ -375,9 +361,7 @@ async function loadEntityContext(): Promise<void> {
       applySelectedConfig()
     }
   } catch {
-    if (requestId === entityContextRequestId) {
-      errorMessage.value = t('formConfig.loadFailed')
-    }
+    return
   } finally {
     if (requestId === entityContextRequestId) {
       isLoadingContext.value = false
@@ -441,7 +425,6 @@ async function saveConfig(): Promise<void> {
   }
 
   isSaving.value = true
-  errorMessage.value = ''
 
   try {
     const payload = {
@@ -468,7 +451,7 @@ async function saveConfig(): Promise<void> {
     await loadEntityContext()
     selectedConfigHandle.value = savedConfig.handle ?? null
   } catch {
-    errorMessage.value = t('formConfig.saveFailed')
+    return
   } finally {
     isSaving.value = false
   }

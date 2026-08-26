@@ -33,7 +33,7 @@
 
 .sapling-dialog-hero__title {
   margin: 0;
-  font-size: clamp(1.35rem, 2vw, 1.9rem);
+  font-size: var(--sapling-text-title-size-md);
   line-height: 1.15;
 }
 
@@ -184,7 +184,7 @@
 
 .sapling-page-hero__title {
   margin: 0;
-  font-size: clamp(1.85rem, 2.45vw, 2.9rem);
+  font-size: var(--sapling-text-title-size-lg);
   line-height: 1.04;
   font-weight: 800;
   letter-spacing: 0;
@@ -246,7 +246,7 @@
 
 .sapling-dialog-edit-hero__title {
   margin: 0;
-  font-size: clamp(1.6rem, 2.2vw, 2.3rem);
+  font-size: var(--sapling-text-display-size-sm);
   line-height: 1.08;
 }
 
@@ -322,10 +322,6 @@
   .sapling-dialog-edit-hero__copy {
     gap: var(--sapling-gap-sm);
   }
-
-  .sapling-dialog-edit-hero__title {
-    font-size: clamp(1.45rem, 2vw, 1.9rem);
-  }
 }
 
 @media (max-width: 900px) {
@@ -372,7 +368,6 @@
 
 @media (max-width: 640px) {
   .sapling-dialog-hero,
-  .sapling-page-hero,
   .sapling-dialog-edit-hero {
     gap: var(--sapling-gap-md);
     padding: var(--sapling-gap-md);

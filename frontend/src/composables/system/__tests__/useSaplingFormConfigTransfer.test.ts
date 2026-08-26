@@ -6,6 +6,7 @@ const mocks = vi.hoisted(() => ({
   validate: vi.fn(),
   loadEntityContext: vi.fn(),
   applyConfig: vi.fn(),
+  pushMessage: vi.fn(),
 }))
 
 vi.mock('vue-i18n', () => ({
@@ -16,6 +17,10 @@ vi.mock('vue-i18n', () => ({
 
 vi.mock('@/services/api.form-config.service', () => ({
   default: { validate: mocks.validate },
+}))
+
+vi.mock('@/composables/system/useSaplingMessageCenter', () => ({
+  useSaplingMessageCenter: () => ({ pushMessage: mocks.pushMessage }),
 }))
 
 import { useSaplingFormConfigTransfer } from '../useSaplingFormConfigTransfer'
@@ -35,19 +40,15 @@ function createSubject() {
     entityHandle: 'ticket',
     fields: {},
   })
-  const errorMessage = ref('')
-
   return {
     selectedEntityHandle,
     selectedConfigHandle,
     configName,
-    errorMessage,
     subject: useSaplingFormConfigTransfer({
       selectedEntityHandle,
       selectedConfigHandle,
       configName,
       draftConfig,
-      errorMessage,
       loadEntityContext: mocks.loadEntityContext,
       applyConfig: mocks.applyConfig,
     }),
@@ -104,7 +105,12 @@ describe('useSaplingFormConfigTransfer', () => {
     await state.subject.onImportFileChange(createFileEvent(importedConfig))
 
     expect(mocks.applyConfig).not.toHaveBeenCalled()
-    expect(state.errorMessage.value).toContain('formConfig.validationSummary')
-    expect(state.errorMessage.value).toContain('"errors":1')
+    expect(mocks.pushMessage).toHaveBeenCalledWith(
+      'warning',
+      expect.stringContaining('formConfig.validationSummary'),
+      '',
+      'formConfig',
+      expect.objectContaining({ isValid: false }),
+    )
   })
 })

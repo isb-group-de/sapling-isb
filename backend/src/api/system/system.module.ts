@@ -24,6 +24,8 @@ import { TimeService } from './services/time.service';
 import { VersionService } from './services/version.service';
 import { AuthModule } from '../../auth/auth.module';
 import { GenericModule } from '../generic/generic.module';
+import { DatabaseService } from './services/database.service';
+import { DocumentStorageService } from './services/document-storage.service';
 
 @Module({
   imports: [AuthModule, GenericModule],
@@ -36,6 +38,8 @@ import { GenericModule } from '../generic/generic.module';
     OsService,
     TimeService,
     VersionService,
+    DatabaseService,
+    DocumentStorageService,
   ],
 })
 export class SystemModule {}

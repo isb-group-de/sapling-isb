@@ -1,9 +1,9 @@
 import { computed, ref, watch } from 'vue'
-import { i18n } from '@/i18n'
 import ApiGenericService from '@/services/api.generic.service'
 import { useCurrentPersonStore } from '@/stores/currentPersonStore'
 import { useGenericStore } from '@/stores/genericStore'
 import type { InformationItem, SaplingGenericItem } from '@/entity/entity'
+import { useSaplingMessageCenter } from '@/composables/system/useSaplingMessageCenter'
 
 export interface UseSaplingTableRowInformationProps {
   show: boolean
@@ -23,12 +23,12 @@ export function useSaplingTableRowInformation(
 ) {
   const genericStore = useGenericStore()
   const currentPersonStore = useCurrentPersonStore()
+  const { pushMessage } = useSaplingMessageCenter()
 
   const content = ref('')
   const currentInformation = ref<InformationItem | null>(null)
   const isLoading = ref(false)
   const isSaving = ref(false)
-  const errorMessage = ref('')
 
   const referenceHandle = computed(() => {
     const handle = props.item?.handle
@@ -80,7 +80,6 @@ export function useSaplingTableRowInformation(
     currentInformation.value = null
     isLoading.value = false
     isSaving.value = false
-    errorMessage.value = ''
   }
 
   function onDialogModelValueUpdate(value: boolean) {
@@ -92,13 +91,11 @@ export function useSaplingTableRowInformation(
 
   async function loadInformation() {
     if (!referenceHandle.value) {
-      errorMessage.value = i18n.global.t('global.referenceNotFound')
+      pushMessage('error', 'global.referenceNotFound', '', props.entityHandle)
       return
     }
 
     isLoading.value = true
-    errorMessage.value = ''
-
     try {
       await genericStore.loadGeneric('information', 'global')
 
@@ -114,8 +111,7 @@ export function useSaplingTableRowInformation(
 
       currentInformation.value = response.data[0] ?? null
       content.value = currentInformation.value?.content ?? ''
-    } catch (error: unknown) {
-      errorMessage.value = getErrorMessage(error)
+    } catch {
       currentInformation.value = null
       content.value = ''
     } finally {
@@ -128,7 +124,6 @@ export function useSaplingTableRowInformation(
       return
     }
 
-    errorMessage.value = ''
     isSaving.value = true
 
     try {
@@ -156,7 +151,7 @@ export function useSaplingTableRowInformation(
       await currentPersonStore.fetchCurrentPerson()
       const personHandle = currentPersonStore.person?.handle
       if (personHandle == null) {
-        errorMessage.value = i18n.global.t('global.entityNotFound')
+        pushMessage('error', 'global.entityNotFound', '', 'information')
         return
       }
 
@@ -170,8 +165,8 @@ export function useSaplingTableRowInformation(
 
       emit('saved')
       closeAfterSave()
-    } catch (error: unknown) {
-      errorMessage.value = getErrorMessage(error)
+    } catch {
+      return
     } finally {
       isSaving.value = false
     }
@@ -186,27 +181,10 @@ export function useSaplingTableRowInformation(
     emit('close')
   }
 
-  function getErrorMessage(error: unknown): string {
-    if (typeof error === 'object' && error !== null) {
-      const axiosError = error as {
-        response?: { data?: { message?: string } }
-        message?: string
-      }
-      const message = axiosError.response?.data?.message ?? axiosError.message
-      if (typeof message === 'string' && message.length > 0) {
-        const translated = i18n.global.t(message)
-        return translated !== message ? translated : message
-      }
-    }
-
-    return i18n.global.t('exception.unknownError')
-  }
-
   return {
     content,
     isLoading,
     isSaving,
-    errorMessage,
     hasExistingRecord,
     isDirty,
     canEdit,

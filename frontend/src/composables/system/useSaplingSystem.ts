@@ -7,6 +7,8 @@ import type {
   ApplicationVersion,
   Cpu,
   CpuSpeed,
+  Database,
+  DocumentStorage,
   Filesystem,
   Memory,
   NetworkInterface,
@@ -60,11 +62,27 @@ export function useSaplingSystem() {
   const networkLoading = ref(true)
   const networkError = ref<string | null>(null)
 
+  const database = ref<Database | null>(null)
+  const databaseLoading = ref(true)
+  const databaseError = ref<string | null>(null)
+
+  const documentStorage = ref<DocumentStorage | null>(null)
+  const documentStorageLoading = ref(true)
+  const documentStorageError = ref<string | null>(null)
+
+  const databaseTables = ref<Database['largestTables']>([])
+  const databaseTablesLoading = ref(false)
+  const databaseTablesError = ref<string | null>(null)
+
+  const documentStorageEntities = ref<DocumentStorage['entities']>([])
+  const documentStorageEntitiesLoading = ref(false)
+  const documentStorageEntitiesError = ref<string | null>(null)
+
   const lastUpdated = ref<Date | null>(null)
 
   const POLL_INTERVAL = 3000
 
-  const { translationService, isLoading } = useTranslationLoader('global', 'system')
+  const { translationService, isLoading } = useTranslationLoader('global', 'system', 'navigation')
   //#endregion
 
   //#region Fetch Functions
@@ -132,6 +150,37 @@ export function useSaplingSystem() {
   async function fetchVersion() {
     await executeSystemRequest('system/version', version, versionLoading, versionError)
   }
+
+  async function fetchDatabase() {
+    await executeSystemRequest('system/database', database, databaseLoading, databaseError)
+  }
+
+  async function fetchDocumentStorage() {
+    await executeSystemRequest(
+      'system/document-storage',
+      documentStorage,
+      documentStorageLoading,
+      documentStorageError,
+    )
+  }
+
+  async function fetchDatabaseTables() {
+    await executeSystemRequest(
+      'system/database/tables',
+      databaseTables,
+      databaseTablesLoading,
+      databaseTablesError,
+    )
+  }
+
+  async function fetchDocumentStorageEntities() {
+    await executeSystemRequest(
+      'system/document-storage/entities',
+      documentStorageEntities,
+      documentStorageEntitiesLoading,
+      documentStorageEntitiesError,
+    )
+  }
   //#endregion
 
   //#region Polling Setup
@@ -146,6 +195,8 @@ export function useSaplingSystem() {
       fetchTime(),
       fetchVersion(),
       fetchNetwork(),
+      fetchDatabase(),
+      fetchDocumentStorage(),
     ])
 
     lastUpdated.value = new Date()
@@ -300,10 +351,24 @@ export function useSaplingSystem() {
     network,
     networkLoading,
     networkError,
+    database,
+    databaseLoading,
+    databaseError,
+    documentStorage,
+    documentStorageLoading,
+    documentStorageError,
+    databaseTables,
+    databaseTablesLoading,
+    databaseTablesError,
+    documentStorageEntities,
+    documentStorageEntitiesLoading,
+    documentStorageEntitiesError,
     lastUpdated,
     translationService,
     isLoading,
     fetchAll,
+    fetchDatabaseTables,
+    fetchDocumentStorageEntities,
     formatGigabytes,
     formatMegabytes,
     formatBytes,

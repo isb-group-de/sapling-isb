@@ -33,23 +33,7 @@
 
       <div class="sapling-admin-selection__status sapling-permission-selection-status">
         <v-alert
-          v-if="permissionSaveState === 'error' && permissionSaveError"
-          type="error"
-          density="comfortable"
-          variant="tonal"
-        >
-          {{ permissionSaveError }}
-        </v-alert>
-        <v-alert
-          v-else-if="permissionSaveState === 'saved'"
-          type="success"
-          density="comfortable"
-          variant="tonal"
-        >
-          {{ $t('permission.savedSuccessfully') }}
-        </v-alert>
-        <v-alert
-          v-else-if="hasUnsavedPermissionChanges"
+          v-if="hasUnsavedPermissionChanges"
           type="warning"
           density="comfortable"
           variant="tonal"
@@ -117,8 +101,6 @@ defineProps<{
   }
   selectedGroup: string | null
   visibleEntityCount: number
-  permissionSaveState: string
-  permissionSaveError?: string | null
   hasUnsavedPermissionChanges: boolean
   getStageTitle: (stage: RoleItem['stage']) => string
 }>()

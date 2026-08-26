@@ -39,9 +39,6 @@ export function useSaplingPlaygroundShowcase(options: PlaygroundShowcaseOptions)
   const { openPhoneDialog } = useSaplingPhoneDialog()
   const { pushMessage } = useSaplingMessageCenter()
 
-  const feedbackVisible = ref(false)
-  const feedbackMessage = ref('')
-  const feedbackColor = ref('primary')
   const deleteDialogModel = ref(false)
   const deleteDialogItem = ref<SaplingGenericItem | null>({
     handle: 101,
@@ -59,10 +56,11 @@ export function useSaplingPlaygroundShowcase(options: PlaygroundShowcaseOptions)
   const canOpenKpiDialog = computed(() => availableKpiOptions.value.length > 0)
 
   function pushFeedback(message: string, color = 'primary') {
-    feedbackMessage.value = message
-    feedbackColor.value = color
-    feedbackVisible.value = false
-    feedbackVisible.value = true
+    const type =
+      color === 'error' || color === 'warning' || color === 'success' || color === 'info'
+        ? color
+        : 'info'
+    pushMessage(type, message, '', 'playground')
   }
 
   function simulateMessage(type: PlaygroundMessageType) {
@@ -313,9 +311,6 @@ export function useSaplingPlaygroundShowcase(options: PlaygroundShowcaseOptions)
     actionCards,
     dialogLaunchers,
     metrics,
-    feedbackVisible,
-    feedbackMessage,
-    feedbackColor,
     deleteDialogModel,
     deleteDialogItem,
     kpiDialogModel,

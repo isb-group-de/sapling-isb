@@ -1,15 +1,11 @@
 <template>
   <div class="sapling-kpi-widget sapling-kpi-funnel">
     <v-skeleton-loader v-if="loading && !isLoaded" type="list-item-three-line" />
-    <div v-else-if="hasError" class="sapling-kpi-widget__state sapling-kpi-widget__state--error">
-      <v-icon size="20">mdi-alert-circle-outline</v-icon>
-      <span>{{ $t('exception.unknownError') }}</span>
-    </div>
-    <div v-else-if="!hasData" class="sapling-kpi-widget__state">
+    <div v-else-if="!hasError && !hasData" class="sapling-kpi-widget__state">
       <v-icon size="20">mdi-database-off-outline</v-icon>
       <span>{{ $t('global.noData') }}</span>
     </div>
-    <div v-else class="sapling-stack-md sapling-kpi-funnel__stages">
+    <div v-else-if="!hasError" class="sapling-stack-md sapling-kpi-funnel__stages">
       <button
         v-for="item in items"
         :key="item.key"

@@ -67,7 +67,6 @@ export function useSaplingPermission() {
   const isBootstrapping = ref(true)
   const membersArePending = ref(false)
   const permissionSaveState = ref<PermissionSaveState>('idle')
-  const permissionSaveError = ref<string | null>(null)
 
   const pendingPermissionKeys = reactive<Record<string, boolean>>({})
 
@@ -294,7 +293,6 @@ export function useSaplingPermission() {
 
   function selectRole(roleHandle: number | null) {
     selectedRoleHandle.value = roleHandle
-    permissionSaveError.value = null
   }
 
   function setSelectedGroup(group: string | null) {
@@ -312,7 +310,6 @@ export function useSaplingPermission() {
       )
     }
 
-    permissionSaveError.value = null
     permissionSaveState.value = hasUnsavedPermissionChanges.value ? 'dirty' : 'idle'
   }
 
@@ -328,7 +325,6 @@ export function useSaplingPermission() {
     }
 
     permissionSaveState.value = 'saving'
-    permissionSaveError.value = null
 
     try {
       for (const role of roles.value) {
@@ -344,8 +340,6 @@ export function useSaplingPermission() {
       messageCenter.pushMessage('success', i18n.global.t('permission.saved'), '', 'permission')
     } catch (error: unknown) {
       permissionSaveState.value = 'error'
-      permissionSaveError.value =
-        error instanceof Error ? error.message : i18n.global.t('permission.saveFailed')
       throw error
     }
   }
@@ -354,7 +348,6 @@ export function useSaplingPermission() {
     roles.value = cloneRoles(originalRoles.value)
     permissionSearch.value = ''
     permissionFilterMode.value = 'all'
-    permissionSaveError.value = null
     permissionSaveState.value = 'idle'
   }
 
@@ -575,7 +568,6 @@ export function useSaplingPermission() {
     membersArePending,
     deleteDialog,
     permissionSaveState,
-    permissionSaveError,
     hasUnsavedPermissionChanges,
     selectRole,
     setSelectedGroup,
