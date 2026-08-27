@@ -385,6 +385,8 @@ export interface AiProviderModelItem extends SaplingGenericItem {
   providerModel: string
   /** Supports streamed responses */
   supportsStreaming: boolean
+  /** Supports provider-generated reasoning summaries */
+  supportsReasoningSummary: boolean
   /** Supports tool usage */
   supportsTools: boolean
   /** Supports provider-managed public web search */

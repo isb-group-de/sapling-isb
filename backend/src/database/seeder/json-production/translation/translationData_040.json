@@ -1,0 +1,212 @@
+[
+  {
+    "entity": "aiChat",
+    "property": "streamingDuration",
+    "de": "{seconds}s",
+    "en": "{seconds}s"
+  },
+  {
+    "entity": "aiChat",
+    "property": "workLog",
+    "de": "Arbeitsverlauf",
+    "en": "Work log"
+  },
+  {
+    "entity": "aiChat",
+    "property": "progressPreparing",
+    "de": "Antwort wird vorbereitet",
+    "en": "Preparing response"
+  },
+  {
+    "entity": "aiChat",
+    "property": "progressToolExecution",
+    "de": "Werkzeug wird ausgeführt",
+    "en": "Running tool"
+  },
+  {
+    "entity": "aiChat",
+    "property": "progressToolNamed",
+    "de": "Werkzeug {tool} wird ausgeführt",
+    "en": "Running {tool}"
+  },
+  {
+    "entity": "aiChat",
+    "property": "progressCurrentPerson",
+    "de": "Benutzerkontext wird geladen",
+    "en": "Loading user context"
+  },
+  {
+    "entity": "aiChat",
+    "property": "progressEntityCatalog",
+    "de": "Verfügbare Datentypen werden ermittelt",
+    "en": "Identifying available data types"
+  },
+  {
+    "entity": "aiChat",
+    "property": "progressEntitySchema",
+    "de": "Datenstruktur wird geprüft",
+    "en": "Checking data structure"
+  },
+  {
+    "entity": "aiChat",
+    "property": "progressEntitySearch",
+    "de": "Passende Datentypen werden gesucht",
+    "en": "Searching for matching data types"
+  },
+  {
+    "entity": "aiChat",
+    "property": "progressRecordSearch",
+    "de": "Datensätze werden gesucht",
+    "en": "Searching records"
+  },
+  {
+    "entity": "aiChat",
+    "property": "progressRecordDetails",
+    "de": "Datensatzdetails werden geladen",
+    "en": "Loading record details"
+  },
+  {
+    "entity": "aiChat",
+    "property": "progressRecordTimeline",
+    "de": "Datensatzverlauf wird geladen",
+    "en": "Loading record timeline"
+  },
+  {
+    "entity": "aiChat",
+    "property": "progressWebSearch",
+    "de": "Webquellen werden durchsucht",
+    "en": "Searching web sources"
+  },
+  {
+    "entity": "aiChat",
+    "property": "progressTicketSearch",
+    "de": "Tickets werden durchsucht",
+    "en": "Searching tickets"
+  },
+  {
+    "entity": "aiChat",
+    "property": "progressSemanticSearch",
+    "de": "Inhalte werden semantisch durchsucht",
+    "en": "Searching content semantically"
+  },
+  {
+    "entity": "aiChat",
+    "property": "progressKnowledgeSearch",
+    "de": "Wissensartikel werden durchsucht",
+    "en": "Searching knowledge articles"
+  },
+  {
+    "entity": "aiChat",
+    "property": "progressCreateAction",
+    "de": "Anlage wird vorbereitet",
+    "en": "Preparing creation"
+  },
+  {
+    "entity": "aiChat",
+    "property": "progressUpdateAction",
+    "de": "Änderung wird vorbereitet",
+    "en": "Preparing update"
+  },
+  {
+    "entity": "aiChat",
+    "property": "progressDeleteAction",
+    "de": "Löschung wird vorbereitet",
+    "en": "Preparing deletion"
+  },
+  {
+    "entity": "aiChat",
+    "property": "progressImportBatch",
+    "de": "Importdaten werden geladen",
+    "en": "Loading import data"
+  },
+  {
+    "entity": "aiChat",
+    "property": "progressImportTemplates",
+    "de": "Importvorlagen werden geladen",
+    "en": "Loading import templates"
+  },
+  {
+    "entity": "aiChat",
+    "property": "progressImportMapping",
+    "de": "Importzuordnung wird vorgeschlagen",
+    "en": "Suggesting import mapping"
+  },
+  {
+    "entity": "aiChat",
+    "property": "progressImportMatching",
+    "de": "Vorhandene Datensätze werden abgeglichen",
+    "en": "Matching existing records"
+  },
+  {
+    "entity": "aiChat",
+    "property": "progressImportConfiguration",
+    "de": "Importkonfiguration wird vorbereitet",
+    "en": "Preparing import configuration"
+  },
+  {
+    "entity": "aiChat",
+    "property": "progressImportExecution",
+    "de": "Import wird ausgeführt",
+    "en": "Running import"
+  },
+  {
+    "entity": "aiChat",
+    "property": "queue",
+    "de": "Einreihen",
+    "en": "Queue"
+  },
+  {
+    "entity": "aiChat",
+    "property": "steer",
+    "de": "Steuern",
+    "en": "Steer"
+  },
+  {
+    "entity": "aiChat",
+    "property": "queuedInputs",
+    "de": "Wartende Nachrichten",
+    "en": "Queued messages"
+  },
+  {
+    "entity": "aiChat",
+    "property": "removeQueuedInput",
+    "de": "Aus Warteschlange entfernen",
+    "en": "Remove from queue"
+  },
+  {
+    "entity": "aiChat",
+    "property": "interrupted",
+    "de": "Unterbrochen",
+    "en": "Interrupted"
+  },
+  {
+    "entity": "aiProviderModel",
+    "property": "supportsReasoningSummary",
+    "de": "Unterstützt Arbeitszusammenfassung",
+    "en": "Supports reasoning summary"
+  },
+  {
+    "entity": "aiProviderModel",
+    "property": "supportsReasoningSummaryTooltip",
+    "de": "Das Modell kann eine gefilterte Zusammenfassung seines Arbeitsverlaufs streamen.",
+    "en": "The model can stream a filtered summary of its work."
+  },
+  {
+    "entity": "entity",
+    "property": "aiChatQueuedInput",
+    "de": "AI-Chat-Warteschlangeneintrag",
+    "en": "AI chat queued input"
+  },
+  {
+    "entity": "aiChatQueuedInput",
+    "property": "aiChatQueuedInput",
+    "de": "AI-Chat-Warteschlangeneintrag",
+    "en": "AI chat queued input"
+  },
+  {
+    "entity": "aiChatQueuedInput",
+    "property": "groupReference",
+    "de": "Referenz",
+    "en": "Reference"
+  }
+]

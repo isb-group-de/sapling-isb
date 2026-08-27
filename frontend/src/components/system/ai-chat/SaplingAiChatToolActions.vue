@@ -4,9 +4,8 @@
       v-for="action in actions"
       :key="action.handle ?? `${action.serverName}.${action.toolName}`"
       class="sapling-ai-chat__tool-action"
-      :class="{ 'sapling-ai-chat__tool-action--compact': action.status !== 'pending' }"
     >
-      <div class="sapling-row-between-md sapling-ai-chat__tool-action-header">
+      <div class="sapling-ai-chat__tool-action-header">
         <div class="sapling-ai-chat__tool-action-copy">
           <strong class="sapling-ai-chat__tool-action-title">{{
             getToolActionTitle(action)
@@ -14,9 +13,6 @@
           <span v-if="getToolActionSummary(action)" class="sapling-ai-chat__tool-action-summary">
             {{ getToolActionSummary(action) }}
           </span>
-        </div>
-        <div class="sapling-ai-chat__tool-action-meta">
-          <v-chip size="small" variant="tonal">{{ getToolActionStatusLabel(action) }}</v-chip>
         </div>
       </div>
       <v-alert
@@ -28,65 +24,70 @@
       >
         {{ getToolActionError(action) }}
       </v-alert>
-      <div
-        v-if="action.status === 'pending' && action.handle"
-        class="sapling-row-xs sapling-ai-chat__tool-action-actions"
-      >
-        <v-btn
-          size="small"
-          color="primary"
-          variant="tonal"
-          prepend-icon="mdi-check"
-          :disabled="isToolActionSubmitting(action)"
-          :loading="isToolActionSubmitting(action)"
-          @click="emit('confirm', action)"
+      <div class="sapling-ai-chat__tool-action-controls">
+        <div class="sapling-ai-chat__tool-action-meta">
+          <v-chip size="small" variant="tonal">{{ getToolActionStatusLabel(action) }}</v-chip>
+        </div>
+        <div
+          v-if="action.status === 'pending' && action.handle"
+          class="sapling-row-xs sapling-ai-chat__tool-action-actions"
         >
-          {{ t('aiChat.confirmToolAction') }}
-        </v-btn>
-        <v-btn
-          size="small"
-          variant="text"
-          prepend-icon="mdi-close"
-          :disabled="isToolActionSubmitting(action)"
-          @click="emit('reject', action)"
+          <v-btn
+            size="small"
+            color="primary"
+            variant="tonal"
+            prepend-icon="mdi-check"
+            :disabled="isToolActionSubmitting(action)"
+            :loading="isToolActionSubmitting(action)"
+            @click="emit('confirm', action)"
+          >
+            {{ t('aiChat.confirmToolAction') }}
+          </v-btn>
+          <v-btn
+            size="small"
+            variant="text"
+            prepend-icon="mdi-close"
+            :disabled="isToolActionSubmitting(action)"
+            @click="emit('reject', action)"
+          >
+            {{ t('aiChat.rejectToolAction') }}
+          </v-btn>
+          <v-btn
+            v-if="hasToolActionTechnicalDetails(action)"
+            size="small"
+            variant="text"
+            prepend-icon="mdi-information-outline"
+            @click="openToolActionTechnicalDetails(action)"
+          >
+            {{ getToolActionDetailsButtonLabel() }}
+          </v-btn>
+        </div>
+        <div
+          v-else-if="
+            hasToolActionTechnicalDetails(action) || getToolActionNavigationLinks(action).length > 0
+          "
+          class="sapling-row-xs sapling-ai-chat__tool-action-actions"
         >
-          {{ t('aiChat.rejectToolAction') }}
-        </v-btn>
-        <v-btn
-          v-if="hasToolActionTechnicalDetails(action)"
-          size="small"
-          variant="text"
-          prepend-icon="mdi-information-outline"
-          @click="openToolActionTechnicalDetails(action)"
-        >
-          {{ getToolActionDetailsButtonLabel() }}
-        </v-btn>
-      </div>
-      <div
-        v-else-if="
-          hasToolActionTechnicalDetails(action) || getToolActionNavigationLinks(action).length > 0
-        "
-        class="sapling-row-xs sapling-ai-chat__tool-action-actions"
-      >
-        <v-btn
-          v-for="link in getToolActionNavigationLinks(action)"
-          :key="`${action.handle ?? `${action.serverName}.${action.toolName}`}-${link.path}`"
-          size="small"
-          variant="tonal"
-          prepend-icon="mdi-open-in-app"
-          @click="openNavigationLink(link.path)"
-        >
-          {{ getNavigationLinkLabel(link) }}
-        </v-btn>
-        <v-btn
-          v-if="hasToolActionTechnicalDetails(action)"
-          size="small"
-          variant="text"
-          prepend-icon="mdi-information-outline"
-          @click="openToolActionTechnicalDetails(action)"
-        >
-          {{ getToolActionDetailsButtonLabel() }}
-        </v-btn>
+          <v-btn
+            v-for="link in getToolActionNavigationLinks(action)"
+            :key="`${action.handle ?? `${action.serverName}.${action.toolName}`}-${link.path}`"
+            size="small"
+            variant="tonal"
+            prepend-icon="mdi-open-in-app"
+            @click="openNavigationLink(link.path)"
+          >
+            {{ getNavigationLinkLabel(link) }}
+          </v-btn>
+          <v-btn
+            v-if="hasToolActionTechnicalDetails(action)"
+            size="small"
+            variant="text"
+            prepend-icon="mdi-information-outline"
+            @click="openToolActionTechnicalDetails(action)"
+          >
+            {{ getToolActionDetailsButtonLabel() }}
+          </v-btn>
+        </div>
       </div>
     </div>
     <SaplingDialog

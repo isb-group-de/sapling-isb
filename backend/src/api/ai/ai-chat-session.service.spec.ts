@@ -16,6 +16,29 @@ jest.mock('./ai-provider-registry.service', () => ({
 import { AiChatSessionService } from './ai-chat-session.service';
 
 describe('AiChatSessionService', () => {
+  it('replaces the placeholder title with the first user request', () => {
+    const service = new AiChatSessionService(
+      {} as never,
+      {} as never,
+      {} as never,
+      {} as never,
+      {} as never,
+    );
+
+    expect(
+      service.resolveInitialSessionTitle(
+        'New Chat',
+        'Unternehmen aus dem Impressum anlegen',
+      ),
+    ).toBe('Unternehmen aus dem Impressum anlegen');
+    expect(
+      service.resolveInitialSessionTitle(
+        'Manuell benannt',
+        'Dieser Text darf den Titel nicht ersetzen',
+      ),
+    ).toBe('Manuell benannt');
+  });
+
   it('filters archived sessions only while the archive option is disabled', async () => {
     const find = jest
       .fn<

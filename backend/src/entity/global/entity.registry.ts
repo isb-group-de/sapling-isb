@@ -117,6 +117,7 @@ import { AiChatMessageItem } from '../AiChatMessageItem';
 import { AiChatTranscriptionItem } from '../AiChatTranscriptionItem';
 import { AiChatToolActionItem } from '../AiChatToolActionItem';
 import { AiChatAttachmentItem } from '../AiChatAttachmentItem';
+import { AiChatQueuedInputItem } from '../AiChatQueuedInputItem';
 import { AiEntityGenerationTemplateItem } from '../AiEntityGenerationTemplateItem';
 import { AiProviderTypeItem } from '../AiProviderTypeItem';
 import { AiProviderModelItem } from '../AiProviderModelItem';
@@ -331,6 +332,7 @@ const ENTITY_REGISTRY_ENTRIES: EntityRegistryEntry[] = [
   { name: 'aiChatTranscription', class: AiChatTranscriptionItem },
   { name: 'aiChatToolAction', class: AiChatToolActionItem },
   { name: 'aiChatAttachment', class: AiChatAttachmentItem },
+  { name: 'aiChatQueuedInput', class: AiChatQueuedInputItem },
   {
     name: 'aiEntityGenerationTemplate',
     class: AiEntityGenerationTemplateItem,

@@ -285,6 +285,21 @@ export class AiChatSessionService {
       : trimmedContent;
   }
 
+  resolveInitialSessionTitle(
+    requestedTitle: string | null | undefined,
+    content: string,
+  ): string {
+    const trimmedTitle = requestedTitle?.trim();
+    return this.isUntitledSessionTitle(trimmedTitle)
+      ? this.buildSessionTitle(content)
+      : (trimmedTitle ?? this.buildSessionTitle(content));
+  }
+
+  isUntitledSessionTitle(title: string | null | undefined): boolean {
+    const normalizedTitle = title?.trim().toLocaleLowerCase();
+    return !normalizedTitle || normalizedTitle === 'new chat';
+  }
+
   private isStaleResponse(session: AiChatSessionItem): boolean {
     if (
       session.responseStatus !== 'responding' ||

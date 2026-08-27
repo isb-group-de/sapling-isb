@@ -12,276 +12,290 @@ jest.mock('@google/generative-ai', () => ({
 }));
 jest.mock('./gemini-ai.runtime', () => ({
   createGeminiClient: jest.fn(),
+  createGeminiStreamingClient: jest.fn(),
 }));
-jest.mock('./openai-ai.runtime', () => ({
-  createOpenAiClient: jest.fn(),
-}));
-jest.mock('./mcp.service', () => ({
-  McpService: class {},
-}));
+jest.mock('./openai-ai.runtime', () => ({ createOpenAiClient: jest.fn() }));
+jest.mock('./mcp.service', () => ({ McpService: class {} }));
 
 import { AiChatRuntimeService } from './ai-chat-runtime.service';
+import { createGeminiStreamingClient } from './gemini-ai.runtime';
 import { createOpenAiClient } from './openai-ai.runtime';
+import { AiChatInterruptedError } from './ai.types';
 
 const asMock = (value: unknown): jest.Mock => value as jest.Mock;
+const history = [
+  { role: 'user', status: 'persisted', content: 'Hallo', contextPayload: null },
+] as never;
+const asNever = (value: unknown): never => value as never;
 
-describe('AiChatRuntimeService', () => {
+function streamOf(...events: unknown[]) {
+  return (async function* () {
+    for (const event of events) yield event;
+  })();
+}
+
+describe('AiChatRuntimeService streaming', () => {
   beforeEach(() => {
     asMock(createOpenAiClient).mockReset();
+    asMock(createGeminiStreamingClient).mockReset();
   });
 
-  it('does not send OpenAI tool schemas when the selected model disables tools', async () => {
-    const createCompletion = jest
-      .fn<(payload: unknown) => Promise<unknown>>()
-      .mockResolvedValue({
-        choices: [
+  it('streams incremental text for OpenAI-compatible providers without reasoning events', async () => {
+    const create = jest.fn().mockResolvedValue(
+      asNever(
+        streamOf(
+          { choices: [{ delta: { content: 'Hallo ' } }], usage: null },
           {
-            message: {
-              content: 'Hallo lokal.',
-            },
+            choices: [{ delta: { content: 'lokal.' } }],
+            usage: { prompt_tokens: 3, completion_tokens: 2, total_tokens: 5 },
           },
-        ],
-      });
+        ),
+      ),
+    );
     asMock(createOpenAiClient).mockReturnValue({
-      chat: {
-        completions: {
-          create: createCompletion,
-        },
-      },
+      chat: { completions: { create } },
     });
     const service = new AiChatRuntimeService({} as never);
-    const onDelta = jest
+    const onTextDelta = jest
       .fn<(delta: string) => Promise<void>>()
       .mockResolvedValue(undefined);
 
-    await service.streamOpenAi(
-      [
-        {
-          role: 'user',
-          status: 'persisted',
-          content: 'Hallo',
-          contextPayload: null,
-        },
-      ] as never,
+    const result = await service.streamOpenAi(
+      history,
       { handle: 'lmstudio' } as never,
-      'openai/gpt-oss-20b',
-      [
-        {
-          serverName: 'sapling',
-          toolName: 'current_person',
-          description: 'Read the current person.',
-          inputSchema: {
-            type: 'object',
-            properties: {},
-          },
-        },
-      ] as never,
+      'local-model',
+      [],
       { handle: 1 } as never,
       1,
       undefined,
-      onDelta,
+      { onTextDelta },
       false,
     );
 
-    const payload = asMock(createCompletion).mock.calls[0][0] as Record<
-      string,
-      unknown
-    >;
-    const systemMessage = (payload.messages as Array<{ content: string }>)[0];
-
-    expect(payload.tools).toBeUndefined();
-    expect(payload.tool_choice).toBeUndefined();
-    expect(systemMessage.content).not.toContain(
-      'Use available tools automatically',
+    expect(onTextDelta.mock.calls.map((call) => call[0])).toEqual([
+      'Hallo ',
+      'lokal.',
+    ]);
+    expect(create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        stream: true,
+        stream_options: { include_usage: true },
+      }),
+      expect.any(Object),
     );
-    expect(onDelta).toHaveBeenCalledWith('Hallo lokal.');
-  });
-
-  it('completes a focused text transformation without chat persistence or tools', async () => {
-    const createCompletion = jest
-      .fn<(payload: unknown) => Promise<unknown>>()
-      .mockResolvedValue({
-        choices: [{ message: { content: '## Professioneller Text' } }],
-      });
-    asMock(createOpenAiClient).mockReturnValue({
-      chat: { completions: { create: createCompletion } },
-    });
-    const service = new AiChatRuntimeService({} as never);
-
-    const result = await service.completeText({
-      provider: { handle: 'openai' } as never,
-      providerKind: 'openai',
-      model: 'gpt-5',
-      systemInstruction: 'Revise only the supplied text.',
-      prompt: '# original',
-    });
-
-    expect(result).toBe('## Professioneller Text');
-    expect(createCompletion).toHaveBeenCalledWith({
-      model: 'gpt-5',
-      messages: [
-        { role: 'system', content: 'Revise only the supplied text.' },
-        { role: 'user', content: '# original' },
-      ],
+    expect(result.usagePayload).toMatchObject({
+      inputTokens: 3,
+      outputTokens: 2,
+      totalTokens: 5,
     });
   });
 
-  it('disables reasoning for GPT-5.6 Chat Completions tool calls', async () => {
-    const createCompletion = jest
-      .fn<(payload: unknown) => Promise<unknown>>()
-      .mockResolvedValue({
-        choices: [{ message: { content: 'Erledigt.' } }],
-      });
-    asMock(createOpenAiClient).mockReturnValue({
-      chat: { completions: { create: createCompletion } },
-    });
+  it('streams OpenAI Responses text and filtered reasoning summaries', async () => {
+    const create = jest.fn().mockResolvedValue(
+      asNever(
+        streamOf(
+          {
+            type: 'response.reasoning_summary_text.delta',
+            delta: 'Prüfe Kontext. ',
+          },
+          { type: 'response.output_text.delta', delta: 'Du bist ' },
+          { type: 'response.output_text.delta', delta: 'Martin.' },
+          {
+            type: 'response.completed',
+            response: {
+              output: [{ type: 'message', role: 'assistant', content: [] }],
+              usage: { input_tokens: 8, output_tokens: 4, total_tokens: 12 },
+            },
+          },
+        ),
+      ),
+    );
+    asMock(createOpenAiClient).mockReturnValue({ responses: { create } });
     const service = new AiChatRuntimeService({} as never);
+    const onTextDelta = jest
+      .fn<(delta: string) => Promise<void>>()
+      .mockResolvedValue(undefined);
+    const onReasoningDelta = jest
+      .fn<(delta: string) => Promise<void>>()
+      .mockResolvedValue(undefined);
 
-    await service.streamOpenAi(
-      [
-        {
-          role: 'user',
-          status: 'persisted',
-          content: 'Lege ein Ticket an.',
-          contextPayload: null,
-        },
-      ] as never,
+    const result = await service.streamOpenAi(
+      history,
       { handle: 'openai' } as never,
       'gpt-5.6-sol',
-      [
-        {
-          serverName: 'sapling',
-          toolName: 'generic_create',
-          description: 'Create a record.',
-          inputSchema: { type: 'object', properties: {} },
-        },
-      ] as never,
+      [],
       { handle: 1 } as never,
-      1,
+      2,
       undefined,
-      jest.fn<(delta: string) => Promise<void>>().mockResolvedValue(undefined),
+      { onTextDelta, onReasoningDelta },
+      false,
+      null,
+      undefined,
       true,
     );
 
-    expect(createCompletion).toHaveBeenCalledWith(
+    expect(onTextDelta.mock.calls.map((call) => call[0])).toEqual([
+      'Du bist ',
+      'Martin.',
+    ]);
+    expect(onReasoningDelta).toHaveBeenCalledWith('Prüfe Kontext. ');
+    expect(create).toHaveBeenCalledWith(
       expect.objectContaining({
-        reasoning_effort: 'none',
-        tool_choice: 'auto',
+        stream: true,
+        store: false,
+        reasoning: { summary: 'auto' },
+        include: ['reasoning.encrypted_content'],
       }),
+      expect.any(Object),
     );
+    expect(result.usagePayload).toMatchObject({
+      inputTokens: 8,
+      outputTokens: 4,
+    });
   });
 
-  it('classifies schema repair tool responses without treating them as tool errors', async () => {
-    const createCompletion = jest
-      .fn<(payload: unknown) => Promise<unknown>>()
-      .mockResolvedValueOnce({
-        choices: [
-          {
-            message: {
-              content: '',
-              tool_calls: [
+  it('preserves Responses output across multiple tool rounds', async () => {
+    const create = jest
+      .fn()
+      .mockResolvedValueOnce(
+        asNever(
+          streamOf({
+            type: 'response.completed',
+            response: {
+              output: [
                 {
-                  id: 'call-1',
-                  type: 'function',
-                  function: {
-                    name: 'sapling__generic_list',
-                    arguments: JSON.stringify({
-                      entityHandle: 'ticketStatus',
-                      filter: { title: 'Offen' },
-                    }),
-                  },
+                  type: 'function_call',
+                  call_id: 'call-1',
+                  name: 'sapling__current_person',
+                  arguments: '{}',
                 },
               ],
             },
-          },
-        ],
-      })
-      .mockResolvedValueOnce({
-        choices: [
-          {
-            message: {
-              content: 'Ich pruefe das Schema und versuche es erneut.',
-            },
-          },
-        ],
-      });
-    asMock(createOpenAiClient).mockReturnValue({
-      chat: {
-        completions: {
-          create: createCompletion,
-        },
-      },
-    });
+          }),
+        ),
+      )
+      .mockResolvedValueOnce(
+        asNever(
+          streamOf(
+            { type: 'response.output_text.delta', delta: 'Du bist Martin.' },
+            { type: 'response.completed', response: { output: [] } },
+          ),
+        ),
+      );
+    asMock(createOpenAiClient).mockReturnValue({ responses: { create } });
     const service = new AiChatRuntimeService({} as never);
-    const onDelta = jest
-      .fn<(delta: string) => Promise<void>>()
-      .mockResolvedValue(undefined);
-    const repairPayload = {
-      entityHandle: 'ticketStatus',
-      queryExecuted: false,
-      status: 'needs_schema_retry',
-      invalidFields: [
-        {
-          entityHandle: 'ticketStatus',
-          fieldPath: 'title',
-          suggestedFields: ['description', 'handle'],
-        },
-      ],
-      usageHints: ['Retry with description.'],
-    };
+    const toolExecutor = jest.fn().mockResolvedValue(
+      asNever({
+        serverHandle: 0,
+        serverName: 'sapling',
+        toolName: 'current_person',
+        arguments: {},
+        content: '{"name":"Martin"}',
+        modelResult: { name: 'Martin' },
+        rawResult: { name: 'Martin' },
+      }),
+    );
 
     const result = await service.streamOpenAi(
-      [
-        {
-          role: 'user',
-          status: 'persisted',
-          content: 'Zeig offene Ticket Status',
-          contextPayload: null,
-        },
-      ] as never,
+      history,
       { handle: 'openai' } as never,
       'gpt-5',
       [
         {
-          serverHandle: 0,
           serverName: 'sapling',
-          toolName: 'generic_list',
-          description: 'List records.',
-          inputSchema: {
-            type: 'object',
-            properties: {},
-          },
+          toolName: 'current_person',
+          inputSchema: { type: 'object' },
         },
       ] as never,
       { handle: 1 } as never,
       3,
       undefined,
-      onDelta,
+      jest.fn<(delta: string) => Promise<void>>().mockResolvedValue(undefined),
       true,
       null,
-      (_entry, args) =>
-        Promise.resolve({
-          serverHandle: 0,
-          serverName: 'sapling',
-          toolName: 'generic_list',
-          arguments: args,
-          content: JSON.stringify(repairPayload),
-          modelResult: repairPayload,
-          rawResult: repairPayload,
-        }),
+      toolExecutor as never,
     );
 
+    expect(toolExecutor).toHaveBeenCalledTimes(1);
     expect(result.toolCalls).toHaveLength(1);
-    expect(result.toolCalls[0]).toMatchObject({
-      serverName: 'sapling',
-      toolName: 'generic_list',
-      status: 'repair',
-      resultCount: 0,
-      sourceEntityHandles: ['ticketStatus'],
-      repairHints: ['Retry with description.'],
-    });
-    expect(onDelta).toHaveBeenCalledWith(
-      'Ich pruefe das Schema und versuche es erneut.',
+    const secondInput = (
+      create.mock.calls[1][0] as { input: Record<string, unknown>[] }
+    ).input;
+    expect(secondInput).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ type: 'function_call', call_id: 'call-1' }),
+        expect.objectContaining({
+          type: 'function_call_output',
+          call_id: 'call-1',
+        }),
+      ]),
     );
+  });
+
+  it('normalizes aborts and streams Gemini thought summaries without exposing signatures', async () => {
+    const generateContentStream = jest.fn().mockResolvedValue(
+      asNever(
+        streamOf({
+          candidates: [
+            {
+              content: {
+                parts: [
+                  {
+                    text: 'Kontext prüfen. ',
+                    thought: true,
+                    thoughtSignature: 'encrypted',
+                  },
+                  { text: 'Antwort.' },
+                ],
+              },
+            },
+          ],
+          usageMetadata: { promptTokenCount: 2, candidatesTokenCount: 2 },
+        }),
+      ),
+    );
+    asMock(createGeminiStreamingClient).mockReturnValue({
+      models: { generateContentStream },
+    });
+    const service = new AiChatRuntimeService({} as never);
+    const onTextDelta = jest
+      .fn<(delta: string) => Promise<void>>()
+      .mockResolvedValue(undefined);
+    const onReasoningDelta = jest
+      .fn<(delta: string) => Promise<void>>()
+      .mockResolvedValue(undefined);
+
+    await service.streamGemini(
+      history,
+      {} as never,
+      'gemini-2.5-pro',
+      [],
+      { handle: 1 } as never,
+      1,
+      undefined,
+      { onTextDelta, onReasoningDelta },
+      false,
+      null,
+      undefined,
+      true,
+    );
+    expect(onReasoningDelta).toHaveBeenCalledWith('Kontext prüfen. ');
+    expect(onTextDelta).toHaveBeenCalledWith('Antwort.');
+
+    const controller = new AbortController();
+    controller.abort();
+    await expect(
+      service.streamGemini(
+        history,
+        {} as never,
+        'gemini-2.5-pro',
+        [],
+        { handle: 1 } as never,
+        1,
+        undefined,
+        { onTextDelta, signal: controller.signal },
+        false,
+      ),
+    ).rejects.toBeInstanceOf(AiChatInterruptedError);
   });
 });

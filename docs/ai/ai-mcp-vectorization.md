@@ -13,6 +13,8 @@ backend/src/api/ai/ai-chat-session.service.ts
 backend/src/api/ai/ai-chat-message.service.ts
 backend/src/api/ai/ai-chat-media.service.ts
 backend/src/api/ai/ai-chat-stream.service.ts
+backend/src/api/ai/ai-chat-coordinator.service.ts
+backend/src/api/ai/ai-chat-queue.service.ts
 backend/src/api/ai/ai-chat-tool-action.service.ts
 backend/src/api/ai/ai-chat-runtime.service.ts
 backend/src/api/ai/ai.controller.ts
@@ -64,6 +66,10 @@ The implementation is divided by lifecycle responsibility:
 - `AiChatStreamService` orchestrates persisted messages, runtime selection,
   MCP tool execution, streaming providers, run traces, sources, and navigation
   links; provider-specific streaming remains in `AiChatRuntimeService`.
+- `AiChatCoordinatorService` enforces one active response per session and owns
+  the provider abort signal used by steer requests.
+- `AiChatQueueService` persists queued and steer inputs, applies steer-first
+  then FIFO ordering, and resumes queued work after a restart.
 
 Assistant responses are durable from the beginning of a run. The session stores
 its response lifecycle and read marker, while streamed message content is
@@ -91,6 +97,7 @@ AiChatSessionItem
 AiChatMessageItem
 AiChatToolActionItem
 AiChatTranscriptionItem
+AiChatQueuedInputItem
 AiProviderTypeItem
 AiProviderModelItem
 AiVectorDocumentItem
@@ -98,6 +105,32 @@ McpServerConfigItem
 ```
 
 Provider/model records are stored in the database. Runtime credentials and provider behavior are resolved by backend AI provider services.
+
+## Streaming, Work Log, Queue, And Steer
+
+Chat runtimes emit one normalized contract: `message.delta` for answer text,
+`progress.delta` for provider-generated reasoning summaries, and
+`progress.step` for localized Sapling and tool activity. OpenAI chat uses the
+Responses API, Gemini uses `@google/genai` `generateContentStream`, and local
+OpenAI-compatible providers continue to use streaming Chat Completions.
+Reasoning summaries are enabled only when the selected model has
+`supportsReasoningSummary`; raw chain-of-thought, tool arguments/results, and
+encrypted reasoning signatures are never copied into the visible work log.
+
+The accumulated progress object is stored under
+`AiChatMessageItem.responsePayload.progress`, including its terminal status,
+summary, and localized step keys. This makes the work log reload-safe. The UI
+opens it while the message is streaming and closes it at completion,
+interruption, or failure while keeping it manually expandable.
+
+`AiChatQueuedInputItem` is the PostgreSQL-backed source of truth for composer
+inputs submitted during an active response. Normal inputs are processed FIFO;
+steer inputs are selected first and are FIFO among themselves. A steer request
+aborts the current provider stream at the next safe boundary, preserves the
+partial assistant message as `interrupted`, and then starts a new turn with the
+full persisted conversation context. Executed tools and confirmation actions
+are intentionally not rolled back. On startup, queued rows are resumed and
+rows left in `running` are marked failed to avoid replaying tool side effects.
 
 `AiAgentItem` stores configurable Songbird profiles with an agent prompt,
 optional chat provider/model overrides, an independent web-search model, data

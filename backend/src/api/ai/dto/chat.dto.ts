@@ -4,6 +4,7 @@ import {
   ArrayMaxSize,
   IsBoolean,
   IsInt,
+  IsIn,
   IsArray,
   IsNotEmpty,
   IsObject,
@@ -321,6 +322,19 @@ export class CreateAiChatMessageDto {
   @Type(() => Number)
   @IsInt()
   clientUtcOffsetMinutes?: number;
+}
+
+export class CreateAiChatInputDto extends CreateAiChatMessageDto {
+  @ApiProperty({ enum: ['queue', 'steer'] })
+  @IsString()
+  @IsIn(['queue', 'steer'])
+  mode!: 'queue' | 'steer';
+
+  @ApiProperty({ description: 'Existing chat session handle' })
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  declare sessionHandle: number;
 }
 
 export class PrepareAiMarkdownDto {

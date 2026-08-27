@@ -1,5 +1,10 @@
 import { EntityManager } from '@mikro-orm/core';
-import { Inject, Injectable, forwardRef } from '@nestjs/common';
+import {
+  ConflictException,
+  Inject,
+  Injectable,
+  forwardRef,
+} from '@nestjs/common';
 import { AI_CHAT_STREAM_CHECKPOINT_INTERVAL_MS } from '../../constants/project.constants';
 import { AiAgentRunItem } from '../../entity/AiAgentRunItem';
 import { AiChatMessageItem } from '../../entity/AiChatMessageItem';
@@ -12,6 +17,7 @@ import { AiChatPersistenceService } from './ai-chat-persistence.service';
 import { AiChatRuntimeService } from './ai-chat-runtime.service';
 import { AiChatSessionService } from './ai-chat-session.service';
 import { AiChatToolActionService } from './ai-chat-tool-action.service';
+import { AiChatCoordinatorService } from './ai-chat-coordinator.service';
 import {
   alignAssistantContentWithNavigationLinks,
   buildNavigationLinks,
@@ -32,7 +38,11 @@ import {
   buildAiExecutedToolCallTrace,
   toAiToolCallRunTrace,
 } from './ai-tool-trace.utils';
-import type { AiStreamResult } from './ai.types';
+import {
+  AiChatInterruptedError,
+  type AiChatProgressPayload,
+  type AiStreamResult,
+} from './ai.types';
 import { CreateAiChatMessageDto } from './dto/chat.dto';
 import { McpService } from './mcp.service';
 
@@ -49,25 +59,36 @@ export class AiChatStreamService {
     private readonly chatPersistence: AiChatPersistenceService,
     private readonly chatSession: AiChatSessionService,
     private readonly toolActions: AiChatToolActionService,
+    private readonly coordinator: AiChatCoordinatorService = new AiChatCoordinatorService(),
   ) {}
 
   async streamChatMessage(
     dto: CreateAiChatMessageDto,
     user: PersonItem,
     onEvent: (event: Record<string, unknown>) => Promise<void> | void,
+    options?: { coordinated?: boolean; signal?: AbortSignal },
   ): Promise<{
     session: AiChatSessionItem;
     userMessage: AiChatMessageItem;
     assistantMessage: AiChatMessageItem;
   }> {
+    if (dto.sessionHandle && !options?.coordinated) {
+      return this.coordinator.run(dto.sessionHandle, (signal) =>
+        this.streamChatMessage(dto, user, onEvent, {
+          coordinated: true,
+          signal,
+        }),
+      );
+    }
     const person = await this.chatPersistence.requireManagedUser(user);
     const session = dto.sessionHandle
       ? await this.chatPersistence.findOwnedSession(dto.sessionHandle, user)
       : await this.chatSession.createManagedChatSession(
           {
-            title:
-              dto.sessionTitle ??
-              this.chatSession.buildSessionTitle(dto.content),
+            title: this.chatSession.resolveInitialSessionTitle(
+              dto.sessionTitle,
+              dto.content,
+            ),
             providerHandle: dto.providerHandle,
             modelHandle: dto.modelHandle,
             agentHandle: dto.agentHandle,
@@ -78,6 +99,9 @@ export class AiChatStreamService {
           },
           user,
         );
+    if (options?.coordinated && session.responseStatus === 'responding') {
+      throw new ConflictException('ai.chatRunAlreadyActive');
+    }
 
     const nextSequence = await this.chatPersistence.getNextSequence(
       session.handle ?? 0,
@@ -174,6 +198,9 @@ export class AiChatStreamService {
       url: dto.url ?? null,
       routeName: dto.routeName ?? null,
       pageTitle: dto.pageTitle ?? null,
+      responsePayload: {
+        progress: createInitialProgress(),
+      },
     });
 
     session.provider = runtimeTarget.provider;
@@ -185,6 +212,9 @@ export class AiChatStreamService {
       dto.contextEntityHandle ?? session.contextEntityHandle ?? null;
     session.contextRecordHandle =
       dto.contextRecordHandle ?? session.contextRecordHandle ?? null;
+    if (this.chatSession.isUntitledSessionTitle(session.title)) {
+      session.title = this.chatSession.buildSessionTitle(dto.content);
+    }
     session.lastMessageAt = new Date();
     session.responseStatus = 'responding';
     session.responseActivityAt = new Date();
@@ -259,6 +289,7 @@ export class AiChatStreamService {
         );
 
       if (inlineToolExecution) {
+        const progress = getProgress(assistantMessage);
         const inlineToolCall = buildAiExecutedToolCallTrace(
           inlineToolExecution,
           {
@@ -275,6 +306,7 @@ export class AiChatStreamService {
 
         assistantMessage.content = inlineToolExecution.content;
         assistantMessage.status = 'completed';
+        completeProgress(progress, 'completed');
         this.completeSessionResponse(session);
         assistantMessage.toolCalls = [inlineToolTrace];
         const usagePayload = buildChatUsagePayload(
@@ -301,6 +333,7 @@ export class AiChatStreamService {
           navigationLinks,
           sources,
           agentRun: sanitizeAgentRun(run),
+          progress,
         };
         await this.em.flush();
         await onEvent({
@@ -317,6 +350,30 @@ export class AiChatStreamService {
       );
 
       let streamResult: AiStreamResult;
+      const progress = getProgress(assistantMessage);
+      const callbacks = {
+        signal: options?.signal,
+        onTextDelta: async (delta: string) => {
+          if (!delta) return;
+          assistantMessage.content += delta;
+          await persistResponseCheckpoint();
+          await onEvent({
+            type: 'message.delta',
+            handle: assistantMessage.handle,
+            delta,
+          });
+        },
+        onReasoningDelta: async (delta: string) => {
+          if (!delta) return;
+          progress.reasoningSummary += delta;
+          await persistResponseCheckpoint();
+          await onEvent({
+            type: 'progress.delta',
+            handle: assistantMessage.handle,
+            delta,
+          });
+        },
+      };
       const maxToolCallIterations = resolveMaxToolCallIterations(
         runtimeTarget.model,
       );
@@ -330,24 +387,23 @@ export class AiChatStreamService {
           user,
           maxToolCallIterations,
           clientTimeContext,
-          async (delta) => {
-            if (!delta) {
-              return;
-            }
-
-            assistantMessage.content += delta;
-            await persistResponseCheckpoint();
-            await onEvent({
-              type: 'message.delta',
-              handle: assistantMessage.handle,
-              delta,
-            });
-          },
+          callbacks,
           runtimeTarget.model.supportsTools,
           runtimeContext.instruction,
           async (entry, args) => {
+            const step = startProgressStep(
+              progress,
+              'tool',
+              getProgressToolLabelKey(entry.descriptor.toolName),
+              entry.descriptor.toolName,
+            );
+            await onEvent({
+              type: 'progress.step',
+              handle: assistantMessage.handle,
+              step,
+            });
             await persistResponseCheckpoint(true);
-            return this.toolActions.executePolicyAwareToolCall(
+            const result = await this.toolActions.executePolicyAwareToolCall(
               entry,
               args,
               user,
@@ -358,7 +414,15 @@ export class AiChatStreamService {
               runtimeContext.toolPolicy,
               onEvent,
             );
+            completeProgressStep(step);
+            await onEvent({
+              type: 'progress.step',
+              handle: assistantMessage.handle,
+              step,
+            });
+            return result;
           },
+          runtimeTarget.model.supportsReasoningSummary,
         );
       } else {
         streamResult = await this.chatRuntime.streamOpenAi(
@@ -369,24 +433,23 @@ export class AiChatStreamService {
           user,
           maxToolCallIterations,
           clientTimeContext,
-          async (delta) => {
-            if (!delta) {
-              return;
-            }
-
-            assistantMessage.content += delta;
-            await persistResponseCheckpoint();
-            await onEvent({
-              type: 'message.delta',
-              handle: assistantMessage.handle,
-              delta,
-            });
-          },
+          callbacks,
           runtimeTarget.model.supportsTools,
           runtimeContext.instruction,
           async (entry, args) => {
+            const step = startProgressStep(
+              progress,
+              'tool',
+              getProgressToolLabelKey(entry.descriptor.toolName),
+              entry.descriptor.toolName,
+            );
+            await onEvent({
+              type: 'progress.step',
+              handle: assistantMessage.handle,
+              step,
+            });
             await persistResponseCheckpoint(true);
-            return this.toolActions.executePolicyAwareToolCall(
+            const result = await this.toolActions.executePolicyAwareToolCall(
               entry,
               args,
               user,
@@ -397,7 +460,15 @@ export class AiChatStreamService {
               runtimeContext.toolPolicy,
               onEvent,
             );
+            completeProgressStep(step);
+            await onEvent({
+              type: 'progress.step',
+              handle: assistantMessage.handle,
+              step,
+            });
+            return result;
           },
+          runtimeTarget.model.supportsReasoningSummary,
         );
       }
 
@@ -406,6 +477,7 @@ export class AiChatStreamService {
       );
 
       assistantMessage.status = 'completed';
+      completeProgress(progress, 'completed');
       this.completeSessionResponse(session);
       const navigationLinks = buildNavigationLinks(streamResult.toolCalls);
       const sources = this.agentRunLifecycle.buildSources(
@@ -459,6 +531,7 @@ export class AiChatStreamService {
           ? sanitizeAgentPlaybook(runtimeContext.playbook)
           : null,
         sources,
+        progress,
       };
       await this.em.flush();
 
@@ -469,11 +542,14 @@ export class AiChatStreamService {
       });
       return { session, userMessage, assistantMessage };
     } catch (error) {
-      assistantMessage.status = 'failed';
+      const interrupted = error instanceof AiChatInterruptedError;
+      assistantMessage.status = interrupted ? 'interrupted' : 'failed';
+      const progress = getProgress(assistantMessage);
+      completeProgress(progress, interrupted ? 'interrupted' : 'failed');
       this.completeSessionResponse(session);
       if (run) {
         this.agentRunLifecycle.completeRun(run, {
-          status: 'failed',
+          status: interrupted ? 'cancelled' : 'failed',
           errorPayload: {
             error: error instanceof Error ? error.message : 'ai.unknownError',
           },
@@ -485,6 +561,7 @@ export class AiChatStreamService {
         durationMs: run?.durationMs ?? null,
         error: error instanceof Error ? error.message : 'ai.unknownError',
         agentRun: run ? sanitizeAgentRun(run) : null,
+        progress,
       };
       await this.em.flush();
       await onEvent({
@@ -492,7 +569,8 @@ export class AiChatStreamService {
         message: sanitizeChatMessage(assistantMessage),
         session: sanitizeChatSession(session),
       });
-      throw error;
+      if (!interrupted) throw error;
+      return { session, userMessage, assistantMessage };
     }
   }
 
@@ -514,4 +592,100 @@ function buildChatUsagePayload(
     provider,
     model,
   };
+}
+
+function createInitialProgress(): AiChatProgressPayload {
+  const now = new Date().toISOString();
+  return {
+    status: 'running',
+    reasoningSummary: '',
+    steps: [
+      {
+        id: `prepare-${Date.now()}`,
+        kind: 'status',
+        labelKey: 'aiChat.progressPreparing',
+        status: 'running',
+        startedAt: now,
+      },
+    ],
+  };
+}
+
+function getProgress(message: AiChatMessageItem): AiChatProgressPayload {
+  const responsePayload = (message.responsePayload ?? {}) as Record<
+    string,
+    unknown
+  >;
+  const progress = responsePayload.progress as
+    AiChatProgressPayload | undefined;
+  if (progress) return progress;
+  const created = createInitialProgress();
+  message.responsePayload = { ...responsePayload, progress: created };
+  return created;
+}
+
+function startProgressStep(
+  progress: AiChatProgressPayload,
+  kind: 'status' | 'tool',
+  labelKey: string,
+  toolName?: string,
+) {
+  const current = progress.steps.find((step) => step.status === 'running');
+  if (current) completeProgressStep(current);
+  const step = {
+    id: `${kind}-${Date.now()}-${progress.steps.length}`,
+    kind,
+    labelKey,
+    ...(toolName ? { toolName } : {}),
+    status: 'running' as const,
+    startedAt: new Date().toISOString(),
+  };
+  progress.steps.push(step);
+  return step;
+}
+
+function getProgressToolLabelKey(toolName: string): string {
+  const labelKeys: Record<string, string> = {
+    current_person: 'aiChat.progressCurrentPerson',
+    entity_catalog: 'aiChat.progressEntityCatalog',
+    entity_schema: 'aiChat.progressEntitySchema',
+    entity_search: 'aiChat.progressEntitySearch',
+    generic_list: 'aiChat.progressRecordSearch',
+    generic_get: 'aiChat.progressRecordDetails',
+    generic_timeline: 'aiChat.progressRecordTimeline',
+    web_search: 'aiChat.progressWebSearch',
+    ticket_search: 'aiChat.progressTicketSearch',
+    semantic_search: 'aiChat.progressSemanticSearch',
+    knowledge_search: 'aiChat.progressKnowledgeSearch',
+    generic_create: 'aiChat.progressCreateAction',
+    generic_update: 'aiChat.progressUpdateAction',
+    generic_delete: 'aiChat.progressDeleteAction',
+    import_get_batch: 'aiChat.progressImportBatch',
+    import_list_templates: 'aiChat.progressImportTemplates',
+    import_suggest_mapping: 'aiChat.progressImportMapping',
+    import_match_existing_records: 'aiChat.progressImportMatching',
+    import_configure_batch: 'aiChat.progressImportConfiguration',
+    import_execute_batch: 'aiChat.progressImportExecution',
+  };
+  return labelKeys[toolName] ?? 'aiChat.progressToolExecution';
+}
+
+function completeProgressStep(
+  step: AiChatProgressPayload['steps'][number],
+): void {
+  step.status = 'completed';
+  step.completedAt = new Date().toISOString();
+}
+
+function completeProgress(
+  progress: AiChatProgressPayload,
+  status: 'completed' | 'interrupted' | 'failed',
+): void {
+  for (const step of progress.steps) {
+    if (step.status === 'running') {
+      step.status = status;
+      step.completedAt = new Date().toISOString();
+    }
+  }
+  progress.status = status;
 }

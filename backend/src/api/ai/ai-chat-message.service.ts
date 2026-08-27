@@ -61,9 +61,10 @@ export class AiChatMessageService {
       ? await this.chatPersistence.findOwnedSession(dto.sessionHandle, user)
       : await this.chatSession.createManagedChatSession(
           {
-            title:
-              dto.sessionTitle ??
-              this.chatSession.buildSessionTitle(dto.content),
+            title: this.chatSession.resolveInitialSessionTitle(
+              dto.sessionTitle,
+              dto.content,
+            ),
             providerHandle: dto.providerHandle,
             modelHandle: dto.modelHandle,
             agentHandle: dto.agentHandle,
@@ -153,7 +154,7 @@ export class AiChatMessageService {
       dto.contextEntityHandle ?? session.contextEntityHandle ?? null;
     session.contextRecordHandle =
       dto.contextRecordHandle ?? session.contextRecordHandle ?? null;
-    if (!session.title?.trim()) {
+    if (this.chatSession.isUntitledSessionTitle(session.title)) {
       session.title = this.chatSession.buildSessionTitle(dto.content);
     }
 

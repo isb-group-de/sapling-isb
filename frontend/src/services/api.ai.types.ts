@@ -57,6 +57,15 @@ export interface CreateAiChatMessagePayload {
   clientUtcOffsetMinutes?: number
 }
 
+export interface AiChatQueuedInput {
+  handle: number
+  sessionHandle: number
+  mode: 'queue' | 'steer'
+  status: 'queued' | 'running' | 'completed' | 'cancelled' | 'failed'
+  content: string
+  createdAt: string
+}
+
 export interface PrepareAiMarkdownPayload {
   content: string
   providerHandle?: string
@@ -144,6 +153,7 @@ export interface AiChatStreamEvent {
   action?: AiChatToolActionItem
   handle?: number
   delta?: string
+  step?: Record<string, unknown>
   messageText?: string
 }
 

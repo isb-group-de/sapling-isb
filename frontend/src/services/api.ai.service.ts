@@ -16,6 +16,7 @@ import type {
   AiChatAttachmentUploadResponse,
   AiChatMessageListResponse,
   AiChatStreamEvent,
+  AiChatQueuedInput,
   AiChatTranscriptionResponse,
   AiMcpToolDescriptor,
   CreateAiAgentEvaluationPayload,
@@ -404,6 +405,28 @@ class ApiAiService {
       this.handleError(error, 'ai.chat.messageCreateFailed')
       throw error
     }
+  }
+
+  static async queueInput(
+    payload: CreateAiChatMessagePayload & { sessionHandle: number; mode: 'queue' | 'steer' },
+  ): Promise<AiChatQueuedInput> {
+    const response = await axios.post<AiChatQueuedInput>(
+      buildApiUrl('ai/chat/inputs'),
+      this.withClientTimeContext(payload),
+    )
+    return response.data
+  }
+
+  static async listQueuedInputs(sessionHandle: number): Promise<AiChatQueuedInput[]> {
+    const response = await axios.get<AiChatQueuedInput[]>(
+      buildApiUrl(`ai/chat/sessions/${sessionHandle}/inputs`),
+    )
+    return response.data
+  }
+
+  static async cancelQueuedInput(handle: number): Promise<AiChatQueuedInput> {
+    const response = await axios.delete<AiChatQueuedInput>(buildApiUrl(`ai/chat/inputs/${handle}`))
+    return response.data
   }
 
   static async ensureMessageSpeech(

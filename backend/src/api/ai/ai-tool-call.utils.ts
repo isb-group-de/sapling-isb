@@ -103,6 +103,20 @@ export function buildOpenAiTools(toolRegistry: AiToolRegistryEntry[]) {
   }));
 }
 
+export function buildOpenAiResponsesTools(toolRegistry: AiToolRegistryEntry[]) {
+  return toolRegistry.map((entry) => ({
+    type: 'function' as const,
+    name: entry.encodedName,
+    description: entry.descriptor.description,
+    parameters: normalizeJsonSchema(entry.descriptor.inputSchema) ?? {
+      type: 'object',
+      properties: {},
+      additionalProperties: true,
+    },
+    strict: false,
+  }));
+}
+
 export function buildGeminiFunctionDeclarations(
   toolRegistry: AiToolRegistryEntry[],
 ): FunctionDeclaration[] {

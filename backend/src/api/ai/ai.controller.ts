@@ -39,12 +39,14 @@ import {
   AiChatMessageListResponseDto,
   ApplyAiChatSessionPlaybookDto,
   CreateAiChatMessageDto,
+  CreateAiChatInputDto,
   CreateAiChatSessionDto,
   ListAiChatMessagesQueryDto,
   PrepareAiMarkdownDto,
   PrepareAiMarkdownResponseDto,
   UpdateAiChatSessionDto,
 } from './dto/chat.dto';
+import { AiChatQueueService } from './ai-chat-queue.service';
 import {
   VectorizeEntityDto,
   VectorizeEntityResponseDto,
@@ -74,6 +76,7 @@ export class AiController {
     private readonly aiService: AiService,
     private readonly mcpService: McpService,
     private readonly saplingMcpService: SaplingMcpService,
+    private readonly chatQueueService: AiChatQueueService,
   ) {}
 
   @Post('mcp')
@@ -446,6 +449,33 @@ export class AiController {
     return this.aiService.listChatMessages(handle, req.user, query);
   }
 
+  @Post('chat/inputs')
+  @ApiOperation({ summary: 'Queue or steer a chat input' })
+  async createChatInput(
+    @Req() req: Request & { user: PersonItem },
+    @Body() body: CreateAiChatInputDto,
+  ) {
+    return this.chatQueueService.enqueue(body, req.user);
+  }
+
+  @Get('chat/sessions/:handle/inputs')
+  @ApiOperation({ summary: 'List queued chat inputs for one session' })
+  async listChatInputs(
+    @Req() req: Request & { user: PersonItem },
+    @Param('handle') handle: number,
+  ) {
+    return this.chatQueueService.list(Number(handle), req.user);
+  }
+
+  @Delete('chat/inputs/:handle')
+  @ApiOperation({ summary: 'Cancel a queued chat input' })
+  async cancelChatInput(
+    @Req() req: Request & { user: PersonItem },
+    @Param('handle') handle: number,
+  ) {
+    return this.chatQueueService.cancel(Number(handle), req.user);
+  }
+
   @Post('chat/messages')
   @ApiOperation({
     summary: 'Create a user chat message',
@@ -555,6 +585,22 @@ export class AiController {
     @Body() body: CreateAiChatMessageDto,
     @Res() res: Response,
   ): Promise<void> {
+    if (!body.sessionHandle) {
+      const session = await this.aiService.createChatSession(
+        {
+          title: body.sessionTitle,
+          providerHandle: body.providerHandle,
+          modelHandle: body.modelHandle,
+          agentHandle: body.agentHandle,
+          agentVersionHandle: body.agentVersionHandle,
+          playbookHandle: body.playbookHandle,
+          contextEntityHandle: body.contextEntityHandle,
+          contextRecordHandle: body.contextRecordHandle,
+        },
+        req.user,
+      );
+      body = { ...body, sessionHandle: session.handle };
+    }
     res.setHeader('Content-Type', 'application/x-ndjson; charset=utf-8');
     res.setHeader('Cache-Control', 'no-cache, no-transform');
     res.setHeader('Connection', 'keep-alive');

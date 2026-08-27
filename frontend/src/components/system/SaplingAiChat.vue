@@ -91,7 +91,8 @@
                 :runtime-catalog-load-failed="hasRuntimeCatalogLoadError"
                 :has-configured-transcription-providers="hasConfiguredTranscriptionProviders"
                 :can-send-message="canSendMessage"
-                :is-sending="isSending"
+                :is-sending="isResponseActive"
+                :queued-inputs="queuedInputs"
                 :messages="messages"
                 :draft-message="draftMessage"
                 :assistant-name="assistantName"
@@ -121,6 +122,8 @@
                 @upload-import-attachment="uploadImportAttachment"
                 @remove-import-attachment="removeImportAttachment"
                 @send="sendMessage"
+                @steer="steerMessage"
+                @cancel-queued-input="cancelQueuedInput"
                 @retry-runtime-catalog="loadRuntimeCatalogs"
               />
             </div>
@@ -200,6 +203,7 @@ let initializationPromise: Promise<void> | null = null
 let streamingClockTimer: number | null = null
 let persistedActivityTimer: number | null = null
 let persistedActivityRefresh: Promise<void> | null = null
+let isLocalStreamSending = () => false
 
 const {
   isOpen,
@@ -310,6 +314,8 @@ const voiceInput = useSaplingAiChatVoiceInput({
   hasConfiguredTranscriptionProviders,
   route,
   sendMessage: () => sendMessage(),
+  isResponseActive: () =>
+    isLocalStreamSending() || activeSession.value?.responseStatus === 'responding',
   pushMessage: messageCenter.pushMessage,
 })
 const {
@@ -341,8 +347,12 @@ const {
 } = speechPlayback
 const {
   isSending,
+  queuedInputs,
   activeToolActionHandles,
   sendMessage,
+  steerMessage,
+  loadQueuedInputs,
+  cancelQueuedInput,
   confirmToolAction,
   rejectToolAction,
   abortStream,
@@ -372,6 +382,7 @@ const {
   autoPlayAssistantSpeech,
   onSessionResponseFinished: markSessionResponseFinished,
 })
+isLocalStreamSending = () => isSending.value
 
 const isBusy = computed(
   () =>
@@ -379,6 +390,9 @@ const isBusy = computed(
     isLoadingSessions.value ||
     isLoadingMessages.value ||
     isSending.value,
+)
+const isResponseActive = computed(
+  () => isSending.value || activeSession.value?.responseStatus === 'responding',
 )
 const isDialogOpen = computed(() => isOpen.value && hasSaplingAiChatAccess.value)
 const activeConversationTitle = computed(
@@ -432,6 +446,10 @@ watch(hasSaplingAiChatAccess, (hasAccess) => {
   if (!hasAccess && isOpen.value) closePanel()
 })
 watch(activeSession, syncSelectedRuntimeTarget, { immediate: true })
+watch(
+  () => activeSession.value?.handle ?? null,
+  (handle) => void loadQueuedInputs(handle).catch(() => undefined),
+)
 
 onMounted(() => {
   window.addEventListener('keydown', handleKeydown)
@@ -529,7 +547,11 @@ async function selectSession(session: AiChatSessionItem) {
   resetImportAttachments()
   editingSessionHandle.value = null
   isOpen.value = true
-  await Promise.all([loadMessages(session.handle), markSessionRead(session.handle)])
+  await Promise.all([
+    loadMessages(session.handle),
+    loadQueuedInputs(session.handle),
+    markSessionRead(session.handle),
+  ])
   if (isMobileLayout.value) isSessionRailCollapsed.value = true
 }
 
@@ -542,6 +564,7 @@ function startNewChat() {
   draftMessage.value = ''
   activeTranscriptionHandle.value = null
   resetImportAttachments()
+  queuedInputs.value = []
   editingSessionHandle.value = null
   selectedContextEntityHandle.value = null
   selectedContextRecordHandle.value = null
@@ -576,13 +599,15 @@ function pollPersistedChatActivity() {
   if (
     persistedActivityRefresh ||
     !isOpen.value ||
-    !sessions.value.some((session) => session.responseStatus === 'responding')
+    (!sessions.value.some((session) => session.responseStatus === 'responding') &&
+      queuedInputs.value.length === 0)
   ) {
     return
   }
 
   persistedActivityRefresh = (async () => {
     const activeResponseCompleted = await refreshPersistedActivity()
+    await loadQueuedInputs(activeSession.value?.handle ?? null)
     if (activeResponseCompleted && activeSession.value?.handle) {
       await markSessionRead(activeSession.value.handle)
     }

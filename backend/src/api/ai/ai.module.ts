@@ -53,6 +53,9 @@ import { AiAgentPlaybookItem } from '../../entity/AiAgentPlaybookItem';
 import { AiAgentRunItem } from '../../entity/AiAgentRunItem';
 import { AiAgentVersionItem } from '../../entity/AiAgentVersionItem';
 import { AiChatAttachmentItem } from '../../entity/AiChatAttachmentItem';
+import { AiChatQueuedInputItem } from '../../entity/AiChatQueuedInputItem';
+import { AiChatCoordinatorService } from './ai-chat-coordinator.service';
+import { AiChatQueueService } from './ai-chat-queue.service';
 import { ImportModule } from '../import/import.module';
 import { AiWebSearchService } from './ai-web-search.service';
 
@@ -77,6 +80,7 @@ import { AiWebSearchService } from './ai-web-search.service';
       AiChatSessionItem,
       AiChatMessageItem,
       AiChatAttachmentItem,
+      AiChatQueuedInputItem,
       AiChatTranscriptionItem,
       AiChatToolActionItem,
       AiAgentItem,
@@ -103,6 +107,8 @@ import { AiWebSearchService } from './ai-web-search.service';
     AiChatMessageService,
     AiChatToolActionService,
     AiChatStreamService,
+    AiChatCoordinatorService,
+    AiChatQueueService,
     AiChatMediaService,
     AiProviderRegistryService,
     AiWebSearchService,

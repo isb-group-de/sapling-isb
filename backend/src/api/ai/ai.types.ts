@@ -41,6 +41,38 @@ export type AiStreamResult = {
   usagePayload?: Record<string, unknown> | null;
 };
 
+export type AiChatProgressStepStatus =
+  'running' | 'completed' | 'interrupted' | 'failed';
+
+export type AiChatProgressStep = {
+  id: string;
+  kind: 'status' | 'tool';
+  labelKey: string;
+  toolName?: string;
+  status: AiChatProgressStepStatus;
+  startedAt: string;
+  completedAt?: string | null;
+};
+
+export type AiChatProgressPayload = {
+  status: AiChatProgressStepStatus;
+  reasoningSummary: string;
+  steps: AiChatProgressStep[];
+};
+
+export type AiRuntimeStreamCallbacks = {
+  onTextDelta: (delta: string) => Promise<void>;
+  onReasoningDelta?: (delta: string) => Promise<void>;
+  signal?: AbortSignal;
+};
+
+export class AiChatInterruptedError extends Error {
+  constructor() {
+    super('ai.chatInterrupted');
+    this.name = 'AiChatInterruptedError';
+  }
+}
+
 export type AiToolRegistryEntry = {
   encodedName: string;
   descriptor: McpToolDescriptor;

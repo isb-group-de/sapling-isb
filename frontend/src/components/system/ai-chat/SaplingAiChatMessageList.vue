@@ -89,6 +89,7 @@
         'sapling-ai-chat__message--user': message.role === 'user',
         'sapling-ai-chat__message--assistant': message.role === 'assistant',
         'sapling-ai-chat__message--failed': message.status === 'failed',
+        'sapling-ai-chat__message--interrupted': message.status === 'interrupted',
         'sapling-chat-message--user': message.role === 'user',
         'sapling-chat-message--assistant': message.role === 'assistant',
         'sapling-chat-message--failed': message.status === 'failed',
@@ -98,7 +99,11 @@
         <div class="sapling-chat-message__role sapling-ai-chat__message-role">
           {{ getMessageRoleLabel(message) }}
           <span
-            v-if="message.status === 'streaming' || message.status === 'failed'"
+            v-if="
+              message.status === 'streaming' ||
+              message.status === 'failed' ||
+              message.status === 'interrupted'
+            "
             class="sapling-chat-message__status sapling-ai-chat__message-status"
           >
             {{ getMessageStatusLabel(message) }}
@@ -142,6 +147,32 @@
           <span class="sapling-chat-message__typing-dot" aria-hidden="true" />
         </div>
         <SaplingMarkdownContent v-else :source="getMessageDisplayContent(message)" />
+      </div>
+      <div v-if="getMessageProgress(message)" class="sapling-ai-chat__work-log">
+        <v-btn
+          size="small"
+          variant="text"
+          :append-icon="isWorkLogOpen(message) ? 'mdi-chevron-up' : 'mdi-chevron-down'"
+          @click="toggleWorkLog(message)"
+        >
+          {{ t('aiChat.workLog') }}
+        </v-btn>
+        <div v-if="isWorkLogOpen(message)" class="sapling-ai-chat__work-log-content">
+          <SaplingMarkdownContent
+            v-if="getMessageProgress(message)?.reasoningSummary"
+            :source="getMessageProgress(message)?.reasoningSummary || ''"
+          />
+          <v-list density="compact" bg-color="transparent">
+            <v-list-item
+              v-for="step in getMessageProgress(message)?.steps || []"
+              :key="step.id"
+              :prepend-icon="
+                step.status === 'running' ? 'mdi-loading mdi-spin' : 'mdi-check-circle-outline'
+              "
+              :title="getProgressStepLabel(step)"
+            />
+          </v-list>
+        </div>
       </div>
       <div
         v-if="getMessageImportAttachments(message).length > 0"
@@ -283,6 +314,7 @@ const { getNavigationLinkLabel, openNavigationLink } = useSaplingAiChatNavigatio
 const messageContainer = ref<HTMLElement | null>(null)
 const isNearMessageListBottom = ref(true)
 const copiedMessageKey = ref<string | null>(null)
+const workLogOpenByMessage = ref<Record<string, boolean>>({})
 let copiedMessageTimer: number | null = null
 
 onUnmounted(() => {
@@ -493,12 +525,75 @@ function getMessageDisplayContent(message: AiChatMessageItem) {
   return message.content?.trim() ? message.content : (message.content ?? '')
 }
 
+interface MessageProgressStep {
+  id: string
+  labelKey: string
+  toolName: string
+  status: string
+}
+
+interface MessageProgress {
+  status: string
+  reasoningSummary: string
+  steps: MessageProgressStep[]
+}
+
+function getMessageProgress(message: AiChatMessageItem): MessageProgress | null {
+  if (message.role !== 'assistant') return null
+  const progress = asRecord(asRecord(message.responsePayload)?.progress)
+  if (!progress) return null
+  return {
+    status: typeof progress.status === 'string' ? progress.status : message.status,
+    reasoningSummary:
+      typeof progress.reasoningSummary === 'string' ? progress.reasoningSummary : '',
+    steps: Array.isArray(progress.steps)
+      ? progress.steps
+          .map((step) => asRecord(step))
+          .filter((step): step is Record<string, unknown> => !!step)
+          .map((step, index) => ({
+            id: typeof step.id === 'string' ? step.id : String(index),
+            labelKey: typeof step.labelKey === 'string' ? step.labelKey : '',
+            toolName: typeof step.toolName === 'string' ? step.toolName : '',
+            status: typeof step.status === 'string' ? step.status : 'completed',
+          }))
+      : [],
+  }
+}
+
+function isWorkLogOpen(message: AiChatMessageItem) {
+  const key = getMessageKey(message)
+  return workLogOpenByMessage.value[key] ?? message.status === 'streaming'
+}
+
+function toggleWorkLog(message: AiChatMessageItem) {
+  const key = getMessageKey(message)
+  workLogOpenByMessage.value = {
+    ...workLogOpenByMessage.value,
+    [key]: !isWorkLogOpen(message),
+  }
+}
+
+function getProgressStepLabel(step: MessageProgressStep) {
+  if (step.labelKey && te(step.labelKey)) return t(step.labelKey)
+  if (step.toolName) {
+    return t('aiChat.progressToolNamed', { tool: formatToolName(step.toolName) })
+  }
+  return t('aiChat.progressToolExecution')
+}
+
+function formatToolName(toolName: string) {
+  return toolName
+    .replace(/[_-]+/g, ' ')
+    .replace(/\b\w/g, (character) => character.toLocaleUpperCase())
+}
+
 function isMessageContentLoading(message: AiChatMessageItem) {
   return message.status === 'streaming' && !message.content?.trim()
 }
 
 function getMessageStatusLabel(message: AiChatMessageItem) {
   if (message.status === 'failed') return t('aiChat.failed')
+  if (message.status === 'interrupted') return t('aiChat.interrupted')
   const seconds =
     message.handle == null ? 0 : (props.streamingDurationByHandle[message.handle] ?? 0)
   return t('aiChat.streamingDuration', { seconds })

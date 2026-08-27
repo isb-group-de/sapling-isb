@@ -38,9 +38,11 @@ describe('AiChatStreamService persistence lifecycle', () => {
     const fixture = createFixture();
     fixture.chatRuntime.streamOpenAi.mockImplementation(
       async (...args: unknown[]) => {
-        const onDelta = args[7] as (delta: string) => Promise<void>;
+        const callbacks = args[7] as {
+          onTextDelta: (delta: string) => Promise<void>;
+        };
         jest.setSystemTime(new Date('2026-07-21T10:00:01Z'));
-        await onDelta('Partial answer');
+        await callbacks.onTextDelta('Partial answer');
         return { toolCalls: [], usagePayload: { outputTokens: 2 } };
       },
     );
@@ -70,6 +72,47 @@ describe('AiChatStreamService persistence lifecycle', () => {
         message: expect.objectContaining({
           content: 'Partial answer',
           status: 'completed',
+        }),
+      }),
+    );
+  });
+
+  it('renames an untitled session and emits a tool-specific progress step', async () => {
+    const fixture = createFixture();
+    fixture.session.title = 'New Chat';
+    fixture.chatRuntime.streamOpenAi.mockImplementation(
+      async (...args: unknown[]) => {
+        const executeTool = args[10] as (
+          entry: Record<string, unknown>,
+          toolArguments: Record<string, unknown>,
+        ) => Promise<unknown>;
+        await executeTool(
+          {
+            descriptor: {
+              serverHandle: 0,
+              serverName: 'sapling',
+              toolName: 'web_search',
+            },
+          },
+          { query: 'Enpal Impressum' },
+        );
+        return { toolCalls: [], usagePayload: {} };
+      },
+    );
+
+    await fixture.service.streamChatMessage(
+      { sessionHandle: 7, content: 'Unternehmen aus dem Impressum anlegen' },
+      fixture.person as never,
+      fixture.onEvent,
+    );
+
+    expect(fixture.session.title).toBe('Unternehmen aus dem Impressum anlegen');
+    expect(fixture.onEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'progress.step',
+        step: expect.objectContaining({
+          labelKey: 'aiChat.progressWebSearch',
+          toolName: 'web_search',
         }),
       }),
     );
@@ -169,6 +212,25 @@ function createFixture() {
     streamOpenAi: jest.fn<(...args: unknown[]) => Promise<unknown>>(),
     streamGemini: jest.fn(),
   };
+  const chatSession = {
+    buildSessionTitle: jest.fn((content: string) => content.trim()),
+    resolveInitialSessionTitle: jest.fn(
+      (title: string | null | undefined, content: string) =>
+        !title?.trim() || title.trim().toLocaleLowerCase() === 'new chat'
+          ? content.trim()
+          : title.trim(),
+    ),
+    isUntitledSessionTitle: jest.fn(
+      (title: string | null | undefined) =>
+        !title?.trim() || title.trim().toLocaleLowerCase() === 'new chat',
+    ),
+  };
+  const toolActions = {
+    executePolicyAwareToolCall: jest.fn(() =>
+      Promise.resolve({ content: '{}', modelResult: {}, rawResult: {} }),
+    ),
+    loadPendingToolActionsForMessage: jest.fn(() => Promise.resolve([])),
+  };
   const run = {
     handle: 21,
     session,
@@ -239,10 +301,8 @@ function createFixture() {
       ),
     } as never,
     chatPersistence as never,
-    {} as never,
-    {
-      loadPendingToolActionsForMessage: jest.fn(() => Promise.resolve([])),
-    } as never,
+    chatSession as never,
+    toolActions as never,
   );
   const onEvent = jest.fn<(event: Record<string, unknown>) => void>();
 

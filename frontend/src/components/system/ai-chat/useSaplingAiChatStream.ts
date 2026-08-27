@@ -1,7 +1,11 @@
 import { ref, type Ref } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import type { AiChatMessageItem, AiChatSessionItem, AiChatToolActionItem } from '@/entity/entity'
-import ApiAiService, { type AiChatStreamEvent } from '@/services/api.ai.service'
+import ApiAiService, {
+  type AiChatQueuedInput,
+  type AiChatStreamEvent,
+  type CreateAiChatMessagePayload,
+} from '@/services/api.ai.service'
 import { normalizeAiChatErrorMessage } from '@/utils/aiChatError'
 import { isToolAction } from './aiChatNavigation'
 import type { PendingImportAttachment } from './useSaplingAiChatAttachments'
@@ -45,6 +49,7 @@ interface SaplingAiChatStreamOptions {
 
 export function useSaplingAiChatStream(options: SaplingAiChatStreamOptions) {
   const isSending = ref(false)
+  const queuedInputs = ref<AiChatQueuedInput[]>([])
   const streamAbortController = ref<AbortController | null>(null)
   const activeToolActionHandles = ref<Record<number, boolean>>({})
   const activeSendAttempt = ref<{
@@ -60,7 +65,7 @@ export function useSaplingAiChatStream(options: SaplingAiChatStreamOptions) {
       options.draftMessage.value.trim() ||
       (hasPendingAttachments ? options.defaultAttachmentPrompt() : '')
 
-    if (!content || isSending.value) return
+    if (!content) return
     if (!options.canSendMessage.value) {
       options.reportMessage(
         'info',
@@ -68,6 +73,11 @@ export function useSaplingAiChatStream(options: SaplingAiChatStreamOptions) {
         'aiChat.contactAdministrator',
         'aiChat',
       )
+      return
+    }
+
+    if (isSending.value || options.activeSession.value?.responseStatus === 'responding') {
+      await submitQueuedInput('queue')
       return
     }
 
@@ -89,27 +99,7 @@ export function useSaplingAiChatStream(options: SaplingAiChatStreamOptions) {
 
     try {
       await ApiAiService.streamMessage(
-        {
-          sessionHandle: options.activeSession.value?.handle ?? undefined,
-          sessionTitle: options.activeSession.value?.title,
-          content,
-          routeName: options.route.name != null ? String(options.route.name) : undefined,
-          url: window.location.href,
-          pageTitle: document.title || undefined,
-          providerHandle: options.selectedProviderHandle.value ?? undefined,
-          modelHandle: options.selectedModelHandle.value ?? undefined,
-          agentHandle: options.selectedAgentHandle.value ?? undefined,
-          playbookHandle: options.selectedPlaybookHandle.value ?? undefined,
-          contextEntityHandle: options.selectedContextEntityHandle.value ?? undefined,
-          contextRecordHandle: options.selectedContextRecordHandle.value ?? undefined,
-          transcriptionHandle: options.activeTranscriptionHandle.value ?? undefined,
-          attachmentHandles: attachmentHandles.length > 0 ? attachmentHandles : undefined,
-          contextPayload: {
-            params: options.route.params,
-            query: options.route.query,
-            fullPath: options.route.fullPath,
-          },
-        },
+        buildMessagePayload(content, attachmentHandles),
         handleStreamEvent,
         streamAbortController.value.signal,
       )
@@ -125,8 +115,73 @@ export function useSaplingAiChatStream(options: SaplingAiChatStreamOptions) {
       isSending.value = false
       activeSendAttempt.value = null
       options.activeTranscriptionHandle.value = null
-      if (didSendSuccessfully) options.pendingAttachments.value = []
+      if (didSendSuccessfully) {
+        options.pendingAttachments.value = options.pendingAttachments.value.filter(
+          (attachment) => !attachmentHandles.includes(attachment.handle),
+        )
+      }
     }
+  }
+
+  async function steerMessage() {
+    await submitQueuedInput('steer')
+  }
+
+  async function submitQueuedInput(mode: 'queue' | 'steer') {
+    const sessionHandle = options.activeSession.value?.handle
+    const attachmentHandles = options.pendingAttachments.value.map((item) => item.handle)
+    const content =
+      options.draftMessage.value.trim() ||
+      (attachmentHandles.length > 0 ? options.defaultAttachmentPrompt() : '')
+    if (!sessionHandle || !content || !options.canSendMessage.value) return
+
+    await ApiAiService.queueInput({
+      ...buildMessagePayload(content, attachmentHandles),
+      sessionHandle,
+      mode,
+    })
+    options.draftMessage.value = ''
+    options.activeTranscriptionHandle.value = null
+    options.pendingAttachments.value = options.pendingAttachments.value.filter(
+      (attachment) => !attachmentHandles.includes(attachment.handle),
+    )
+    await loadQueuedInputs(sessionHandle)
+  }
+
+  function buildMessagePayload(
+    content: string,
+    attachmentHandles: number[],
+  ): CreateAiChatMessagePayload {
+    return {
+      sessionHandle: options.activeSession.value?.handle ?? undefined,
+      sessionTitle: options.activeSession.value?.title,
+      content,
+      routeName: options.route.name != null ? String(options.route.name) : undefined,
+      url: window.location.href,
+      pageTitle: document.title || undefined,
+      providerHandle: options.selectedProviderHandle.value ?? undefined,
+      modelHandle: options.selectedModelHandle.value ?? undefined,
+      agentHandle: options.selectedAgentHandle.value ?? undefined,
+      playbookHandle: options.selectedPlaybookHandle.value ?? undefined,
+      contextEntityHandle: options.selectedContextEntityHandle.value ?? undefined,
+      contextRecordHandle: options.selectedContextRecordHandle.value ?? undefined,
+      transcriptionHandle: options.activeTranscriptionHandle.value ?? undefined,
+      attachmentHandles: attachmentHandles.length > 0 ? attachmentHandles : undefined,
+      contextPayload: {
+        params: options.route.params,
+        query: options.route.query,
+        fullPath: options.route.fullPath,
+      },
+    }
+  }
+
+  async function loadQueuedInputs(sessionHandle = options.activeSession.value?.handle ?? null) {
+    queuedInputs.value = sessionHandle ? await ApiAiService.listQueuedInputs(sessionHandle) : []
+  }
+
+  async function cancelQueuedInput(handle: number) {
+    await ApiAiService.cancelQueuedInput(handle)
+    await loadQueuedInputs()
   }
 
   function handleStreamEvent(event: AiChatStreamEvent) {
@@ -163,6 +218,24 @@ export function useSaplingAiChatStream(options: SaplingAiChatStreamOptions) {
           options.appendMessageDelta(event.handle, event.delta ?? '')
         }
         break
+      case 'progress.delta':
+        if (event.handle != null && isStreamSessionVisible()) {
+          updateProgress(event.handle, (progress) => {
+            progress.reasoningSummary = `${String(progress.reasoningSummary ?? '')}${event.delta ?? ''}`
+          })
+        }
+        break
+      case 'progress.step':
+        if (event.handle != null && event.step && isStreamSessionVisible()) {
+          updateProgress(event.handle, (progress) => {
+            const steps = Array.isArray(progress.steps) ? [...progress.steps] : []
+            const index = steps.findIndex((step) => asRecord(step)?.id === asRecord(event.step)?.id)
+            if (index >= 0) steps.splice(index, 1, event.step)
+            else steps.push(event.step)
+            progress.steps = steps
+          })
+        }
+        break
       case 'tool.action.pending':
         if (event.action && isStreamSessionVisible()) upsertToolAction(event.action)
         break
@@ -186,6 +259,16 @@ export function useSaplingAiChatStream(options: SaplingAiChatStreamOptions) {
     ) {
       options.activeSession.value = session
     }
+  }
+
+  function updateProgress(handle: number, update: (progress: Record<string, unknown>) => void) {
+    const message = options.messages.value.find((item) => item.handle === handle)
+    if (!message) return
+    const payload = { ...(asRecord(message.responsePayload) ?? {}) }
+    const progress = { ...(asRecord(payload.progress) ?? { status: 'running', steps: [] }) }
+    update(progress)
+    payload.progress = progress
+    message.responsePayload = payload
   }
 
   function isStreamSessionVisible(message?: AiChatMessageItem) {
@@ -304,10 +387,20 @@ export function useSaplingAiChatStream(options: SaplingAiChatStreamOptions) {
 
   return {
     isSending,
+    queuedInputs,
     activeToolActionHandles,
     sendMessage,
+    steerMessage,
+    loadQueuedInputs,
+    cancelQueuedInput,
     confirmToolAction,
     rejectToolAction,
     abortStream,
   }
+}
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null
 }

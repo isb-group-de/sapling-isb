@@ -1,25 +1,27 @@
 import { Injectable } from '@nestjs/common';
-import {
-  type Content,
-  type FunctionDeclaration,
-  type Part,
-} from '@google/generative-ai';
+import type { Content, FunctionCall, Part } from '@google/generative-ai';
 import type { AiChatMessageItem } from '../../entity/AiChatMessageItem';
 import type { AiProviderTypeItem } from '../../entity/AiProviderTypeItem';
 import type { PersonItem } from '../../entity/PersonItem';
-import { createGeminiClient } from './gemini-ai.runtime';
+import {
+  createGeminiClient,
+  createGeminiStreamingClient,
+} from './gemini-ai.runtime';
 import { createOpenAiClient } from './openai-ai.runtime';
 import { McpService, type McpToolDescriptor } from './mcp.service';
 import type {
   AiClientTimeContext,
   AiExecutedToolCall,
   AiProviderKind,
+  AiRuntimeStreamCallbacks,
   AiStreamResult,
   AiToolErrorPayload,
   AiToolRegistryEntry,
 } from './ai.types';
+import { AiChatInterruptedError } from './ai.types';
 import {
   buildGeminiFunctionDeclarations,
+  buildOpenAiResponsesTools,
   buildOpenAiTools,
   buildToolCallSignature,
   buildToolRegistry,
@@ -44,6 +46,8 @@ type AiRuntimeToolExecutor = (
 type AiRuntimeToolExecution = Awaited<
   ReturnType<AiChatRuntimeService['executeAutomaticToolCall']>
 >;
+type DeltaHandler =
+  ((delta: string) => Promise<void>) | AiRuntimeStreamCallbacks;
 
 @Injectable()
 export class AiChatRuntimeService {
@@ -77,11 +81,7 @@ export class AiChatRuntimeService {
       ],
     });
     const content = response.choices[0]?.message?.content;
-
-    if (!content) {
-      throw new Error('ai.emptyResponse');
-    }
-
+    if (!content) throw new Error('ai.emptyResponse');
     return content;
   }
 
@@ -93,109 +93,46 @@ export class AiChatRuntimeService {
     user: PersonItem,
     maxToolCallIterations: number,
     clientTimeContext: AiClientTimeContext | undefined,
-    onDelta: (delta: string) => Promise<void>,
+    handler: DeltaHandler,
     supportsTools = true,
     agentInstruction?: string | null,
     toolExecutor?: AiRuntimeToolExecutor,
+    supportsReasoningSummary = false,
   ): Promise<AiStreamResult> {
-    const toolRegistry = supportsTools ? buildToolRegistry(availableTools) : [];
-    const messages = this.buildOpenAiMessages(
-      history,
-      user,
-      clientTimeContext,
-      toolRegistry.length > 0,
-      agentInstruction,
-    );
-    const executedToolCalls: AiExecutedToolCall[] = [];
-    const usageEntries: Record<string, unknown>[] = [];
-    const disableReasoningForTools =
-      toolRegistry.length > 0 &&
-      provider.handle === 'openai' &&
-      /^gpt-5\.6(?:-|$)/i.test(model);
-
-    for (let iteration = 0; iteration < maxToolCallIterations; iteration += 1) {
-      const response = await createOpenAiClient(
-        provider,
-      ).chat.completions.create({
-        model,
-        messages: messages as never,
-        ...(toolRegistry.length > 0
-          ? {
-              tools: buildOpenAiTools(toolRegistry),
-              tool_choice: 'auto' as const,
-              ...(disableReasoningForTools
-                ? { reasoning_effort: 'none' as const }
-                : {}),
-            }
-          : {}),
-      });
-      appendUsageEntry(usageEntries, response.usage);
-
-      const assistantMessage = response.choices[0]?.message;
-
-      if (!assistantMessage) {
-        throw new Error('ai.emptyResponse');
-      }
-
-      const toolCalls = assistantMessage.tool_calls ?? [];
-
-      if (toolCalls.length === 0) {
-        const content = assistantMessage.content ?? '';
-        await onDelta(content);
-        return {
-          toolCalls: executedToolCalls,
-          usagePayload: buildUsagePayload(usageEntries),
-        };
-      }
-
-      messages.push({
-        role: 'assistant',
-        content: assistantMessage.content ?? '',
-        tool_calls: toolCalls,
-      });
-
-      for (const toolCall of toolCalls) {
-        if (toolCall.type !== 'function') {
-          continue;
-        }
-
-        const args = parseToolArguments(toolCall.function.arguments);
-        const registryEntry = resolveToolRegistryEntry(
-          toolRegistry,
-          toolCall.function.name,
-        );
-
-        if (!registryEntry) {
-          throw new Error(`ai.toolNotFound:${toolCall.function.name}`);
-        }
-
-        const startedAt = Date.now();
-        const toolExecution = toolExecutor
-          ? await toolExecutor(registryEntry, args)
-          : await this.executeAutomaticToolCall(
-              toolRegistry,
-              toolCall.function.name,
-              args,
-              user,
-            );
-
-        executedToolCalls.push(
-          buildAiExecutedToolCallTrace(toolExecution, {
-            arguments: args,
-            iteration: iteration + 1,
-            startedAt,
-          }),
-        );
-
-        messages.push({
-          role: 'tool',
-          tool_call_id: toolCall.id,
-          content: toolExecution.content,
+    const callbacks = normalizeCallbacks(handler);
+    try {
+      if (provider.handle === 'openai') {
+        return await this.streamOpenAiResponses({
+          history,
+          provider,
+          model,
+          availableTools,
+          user,
+          maxToolCallIterations,
+          clientTimeContext,
+          callbacks,
+          supportsTools,
+          agentInstruction,
+          toolExecutor,
+          supportsReasoningSummary,
         });
       }
+      return await this.streamOpenAiCompatible({
+        history,
+        provider,
+        model,
+        availableTools,
+        user,
+        maxToolCallIterations,
+        clientTimeContext,
+        callbacks,
+        supportsTools,
+        agentInstruction,
+        toolExecutor,
+      });
+    } catch (error) {
+      throw normalizeAbortError(error, callbacks.signal);
     }
-
-    throw new Error('ai.toolCallLimitExceeded');
   }
 
   async streamGemini(
@@ -206,67 +143,153 @@ export class AiChatRuntimeService {
     user: PersonItem,
     maxToolCallIterations: number,
     clientTimeContext: AiClientTimeContext | undefined,
-    onDelta: (delta: string) => Promise<void>,
+    handler: DeltaHandler,
     supportsTools = true,
     agentInstruction?: string | null,
     toolExecutor?: AiRuntimeToolExecutor,
+    supportsReasoningSummary = false,
   ): Promise<AiStreamResult> {
+    const callbacks = normalizeCallbacks(handler);
     const toolRegistry = supportsTools ? buildToolRegistry(availableTools) : [];
     const conversation = this.buildGeminiConversation(history);
-    const currentTurn = conversation.pop();
-
-    if (!currentTurn || currentTurn.role !== 'user') {
-      throw new Error('ai.invalidHistory');
-    }
-
-    if (toolRegistry.length === 0) {
-      return this.streamGeminiWithoutTools(
-        provider,
-        modelName,
-        conversation,
-        currentTurn.parts,
-        user,
-        clientTimeContext,
-        onDelta,
-        agentInstruction,
-      );
-    }
+    const executedToolCalls: AiExecutedToolCall[] = [];
+    const usageEntries: Record<string, unknown>[] = [];
+    const repeatedCallCounts = new Map<string, number>();
+    let consecutiveToolErrorIterations = 0;
 
     try {
-      const functionDeclarations =
-        buildGeminiFunctionDeclarations(toolRegistry);
+      for (
+        let iteration = 0;
+        iteration < maxToolCallIterations;
+        iteration += 1
+      ) {
+        assertNotAborted(callbacks.signal);
+        const stream = await createGeminiStreamingClient(
+          provider,
+        ).models.generateContentStream({
+          model: modelName,
+          contents: conversation as never,
+          config: {
+            systemInstruction: this.buildSystemInstruction({
+              includeToolGuidance: toolRegistry.length > 0,
+              user,
+              clientTimeContext,
+              agentInstruction,
+            }),
+            ...(toolRegistry.length > 0
+              ? {
+                  tools: [
+                    {
+                      functionDeclarations:
+                        buildGeminiFunctionDeclarations(toolRegistry),
+                    },
+                  ],
+                }
+              : {}),
+            ...(supportsReasoningSummary
+              ? { thinkingConfig: { includeThoughts: true } }
+              : {}),
+            ...(callbacks.signal ? { abortSignal: callbacks.signal } : {}),
+          } as never,
+        });
+        const responseParts: Array<Record<string, unknown>> = [];
+        const functionCalls: FunctionCall[] = [];
+        const roundFunctionCallSignatures = new Set<string>();
+        let roundUsage: Record<string, unknown> | null = null;
 
-      return await this.streamGeminiWithTools(
-        provider,
-        modelName,
-        conversation,
-        currentTurn.parts,
-        toolRegistry,
-        functionDeclarations,
-        user,
-        maxToolCallIterations,
-        clientTimeContext,
-        onDelta,
-        agentInstruction,
-        toolExecutor,
-      );
+        for await (const chunk of stream) {
+          assertNotAborted(callbacks.signal);
+          if (isRecord(chunk.usageMetadata)) roundUsage = chunk.usageMetadata;
+          const parts = chunk.candidates?.[0]?.content?.parts ?? [];
+          for (const part of parts) {
+            responseParts.push(part as Record<string, unknown>);
+            if (part.functionCall) {
+              const functionCall = part.functionCall as FunctionCall;
+              const signature = buildToolCallSignature(
+                functionCall.name,
+                normalizeFunctionCallArgs(functionCall),
+              );
+              if (!roundFunctionCallSignatures.has(signature)) {
+                roundFunctionCallSignatures.add(signature);
+                functionCalls.push(functionCall);
+              }
+            } else if (part.text) {
+              if (part.thought) await callbacks.onReasoningDelta?.(part.text);
+              else await callbacks.onTextDelta(part.text);
+            }
+          }
+        }
+        appendUsageEntry(usageEntries, roundUsage);
+        conversation.push({ role: 'model', parts: responseParts } as never);
+        if (functionCalls.length === 0) {
+          return {
+            toolCalls: executedToolCalls,
+            usagePayload: buildUsagePayload(usageEntries),
+          };
+        }
+
+        const functionResponses: Part[] = [];
+        const toolErrors: AiToolErrorPayload[] = [];
+        for (const functionCall of functionCalls) {
+          assertNotAborted(callbacks.signal);
+          const args = normalizeFunctionCallArgs(functionCall);
+          const signature = buildToolCallSignature(functionCall.name, args);
+          const repeatedCount = (repeatedCallCounts.get(signature) ?? 0) + 1;
+          repeatedCallCounts.set(signature, repeatedCount);
+          if (repeatedCount > 2) {
+            await callbacks.onTextDelta(
+              AI_GEMINI_REPEATED_TOOL_CALL_ABORT_MESSAGE,
+            );
+            return {
+              toolCalls: executedToolCalls,
+              usagePayload: buildUsagePayload(usageEntries),
+            };
+          }
+          const entry = resolveToolRegistryEntry(
+            toolRegistry,
+            functionCall.name,
+          );
+          if (!entry) throw new Error(`ai.toolNotFound:${functionCall.name}`);
+          const execution = await this.executeTool(
+            entry,
+            args,
+            user,
+            iteration,
+            toolRegistry,
+            toolExecutor,
+          );
+          executedToolCalls.push(execution.trace);
+          if (isToolErrorPayload(execution.result.rawResult))
+            toolErrors.push(execution.result.rawResult);
+          functionResponses.push({
+            functionResponse: {
+              name: functionCall.name,
+              response: { content: execution.result.modelResult },
+            },
+          });
+        }
+        consecutiveToolErrorIterations =
+          toolErrors.length === functionCalls.length
+            ? consecutiveToolErrorIterations + 1
+            : 0;
+        if (consecutiveToolErrorIterations >= 2) {
+          await callbacks.onTextDelta(
+            buildToolFailureAssistantMessage(toolErrors),
+          );
+          return {
+            toolCalls: executedToolCalls,
+            usagePayload: buildUsagePayload(usageEntries),
+          };
+        }
+        conversation.push({ role: 'user', parts: functionResponses });
+      }
+      await callbacks.onTextDelta(AI_GEMINI_TOOL_CALL_LIMIT_MESSAGE);
+      return {
+        toolCalls: executedToolCalls,
+        usagePayload: buildUsagePayload(usageEntries),
+      };
     } catch (error) {
-      this.logGeminiToolModeError(
-        error,
-        modelName,
-        toolRegistry.map((entry) => entry.encodedName),
-      );
-
-      return this.streamGeminiWithoutTools(
-        provider,
-        modelName,
-        conversation,
-        currentTurn.parts,
-        user,
-        clientTimeContext,
-        onDelta,
-        agentInstruction,
-      );
+      throw normalizeAbortError(error, callbacks.signal);
     }
   }
 
@@ -292,11 +315,7 @@ export class AiChatRuntimeService {
     user: PersonItem,
   ) {
     const entry = resolveToolRegistryEntry(toolRegistry, encodedName);
-
-    if (!entry) {
-      throw new Error(`ai.toolNotFound:${encodedName}`);
-    }
-
+    if (!entry) throw new Error(`ai.toolNotFound:${encodedName}`);
     return this.mcpService.executeTool(
       entry.descriptor.serverName,
       entry.descriptor.toolName,
@@ -305,199 +324,258 @@ export class AiChatRuntimeService {
     );
   }
 
-  private async streamGeminiWithTools(
-    provider: AiProviderTypeItem,
-    modelName: string,
-    conversation: Content[],
-    currentTurnParts: Part[],
-    toolRegistry: AiToolRegistryEntry[],
-    functionDeclarations: FunctionDeclaration[],
-    user: PersonItem,
-    maxToolCallIterations: number,
-    clientTimeContext: AiClientTimeContext | undefined,
-    onDelta: (delta: string) => Promise<void>,
-    agentInstruction?: string | null,
-    toolExecutor?: AiRuntimeToolExecutor,
-  ): Promise<AiStreamResult> {
-    const generativeModel = createGeminiClient(provider).getGenerativeModel({
-      model: modelName,
-      ...(functionDeclarations.length > 0
-        ? {
-            tools: [
-              {
-                functionDeclarations,
-              },
-            ],
-          }
-        : {}),
-      systemInstruction: this.buildSystemInstruction({
-        includeToolGuidance: true,
-        user,
-        clientTimeContext,
-        agentInstruction,
-      }),
-    });
-
-    const chat = generativeModel.startChat({ history: conversation });
+  private async streamOpenAiResponses(options: {
+    history: AiChatMessageItem[];
+    provider: AiProviderTypeItem;
+    model: string;
+    availableTools: McpToolDescriptor[];
+    user: PersonItem;
+    maxToolCallIterations: number;
+    clientTimeContext?: AiClientTimeContext;
+    callbacks: AiRuntimeStreamCallbacks;
+    supportsTools: boolean;
+    agentInstruction?: string | null;
+    toolExecutor?: AiRuntimeToolExecutor;
+    supportsReasoningSummary: boolean;
+  }): Promise<AiStreamResult> {
+    const toolRegistry = options.supportsTools
+      ? buildToolRegistry(options.availableTools)
+      : [];
+    const input = this.normalizeHistory(options.history).map((message) => ({
+      role: message.role,
+      content: this.buildMessageContent(message),
+    })) as Array<Record<string, unknown>>;
     const executedToolCalls: AiExecutedToolCall[] = [];
-    const repeatedCallCounts = new Map<string, number>();
-    let consecutiveToolErrorIterations = 0;
     const usageEntries: Record<string, unknown>[] = [];
-    let result = await chat.sendMessage(currentTurnParts);
-    appendUsageEntry(usageEntries, getGeminiUsageMetadata(result));
 
-    for (let iteration = 0; iteration < maxToolCallIterations; iteration += 1) {
-      const functionCalls = result.response.functionCalls() ?? [];
+    for (
+      let iteration = 0;
+      iteration < options.maxToolCallIterations;
+      iteration += 1
+    ) {
+      assertNotAborted(options.callbacks.signal);
+      const stream = await createOpenAiClient(
+        options.provider,
+      ).responses.create(
+        {
+          model: options.model,
+          instructions: this.buildSystemInstruction({
+            includeToolGuidance: toolRegistry.length > 0,
+            user: options.user,
+            clientTimeContext:
+              options.clientTimeContext ??
+              extractClientTimeContextFromHistory(options.history),
+            agentInstruction: options.agentInstruction,
+          }),
+          input: input as never,
+          stream: true,
+          store: false,
+          include: ['reasoning.encrypted_content' as const],
+          ...(toolRegistry.length > 0
+            ? {
+                tools: buildOpenAiResponsesTools(toolRegistry),
+                tool_choice: 'auto' as const,
+              }
+            : {}),
+          ...(options.supportsReasoningSummary
+            ? {
+                reasoning: { summary: 'auto' as const },
+              }
+            : {}),
+        },
+        { signal: options.callbacks.signal },
+      );
+      let completedResponse: Record<string, unknown> | null = null;
 
+      for await (const event of stream) {
+        assertNotAborted(options.callbacks.signal);
+        if (event.type === 'response.output_text.delta') {
+          await options.callbacks.onTextDelta(event.delta);
+        } else if (event.type === 'response.reasoning_summary_text.delta') {
+          await options.callbacks.onReasoningDelta?.(event.delta);
+        } else if (event.type === 'response.completed') {
+          completedResponse = event.response as unknown as Record<
+            string,
+            unknown
+          >;
+        } else if (event.type === 'response.failed') {
+          throw new Error('ai.providerResponseFailed');
+        }
+      }
+      if (!completedResponse) throw new Error('ai.emptyResponse');
+      appendUsageEntry(usageEntries, completedResponse.usage);
+      const output = Array.isArray(completedResponse.output)
+        ? (completedResponse.output as Array<Record<string, unknown>>)
+        : [];
+      input.push(...output);
+      const functionCalls = output.filter(
+        (item) => item.type === 'function_call',
+      );
       if (functionCalls.length === 0) {
-        const content = result.response.text();
-        await onDelta(content);
         return {
           toolCalls: executedToolCalls,
           usagePayload: buildUsagePayload(usageEntries),
         };
       }
-
-      const functionResponses: Part[] = [];
-      const toolErrors: AiToolErrorPayload[] = [];
-
       for (const functionCall of functionCalls) {
-        const args = normalizeFunctionCallArgs(functionCall);
-        const toolCallSignature = buildToolCallSignature(
-          functionCall.name,
+        assertNotAborted(options.callbacks.signal);
+        const name = String(functionCall.name ?? '');
+        const entry = resolveToolRegistryEntry(toolRegistry, name);
+        if (!entry) throw new Error(`ai.toolNotFound:${name}`);
+        const args = parseToolArguments(String(functionCall.arguments ?? '{}'));
+        const execution = await this.executeTool(
+          entry,
           args,
-        );
-        const repeatedCallCount =
-          (repeatedCallCounts.get(toolCallSignature) ?? 0) + 1;
-
-        repeatedCallCounts.set(toolCallSignature, repeatedCallCount);
-
-        if (repeatedCallCount > 2) {
-          await onDelta(AI_GEMINI_REPEATED_TOOL_CALL_ABORT_MESSAGE);
-          return {
-            toolCalls: executedToolCalls,
-            usagePayload: buildUsagePayload(usageEntries),
-          };
-        }
-
-        const registryEntry = resolveToolRegistryEntry(
+          options.user,
+          iteration,
           toolRegistry,
-          functionCall.name,
+          options.toolExecutor,
         );
-
-        if (!registryEntry) {
-          throw new Error(`ai.toolNotFound:${functionCall.name}`);
-        }
-
-        const startedAt = Date.now();
-        const toolExecution = toolExecutor
-          ? await toolExecutor(registryEntry, args)
-          : await this.executeAutomaticToolCall(
-              toolRegistry,
-              functionCall.name,
-              args,
-              user,
-            );
-
-        executedToolCalls.push(
-          buildAiExecutedToolCallTrace(toolExecution, {
-            arguments: args,
-            iteration: iteration + 1,
-            startedAt,
-          }),
-        );
-
-        if (isToolErrorPayload(toolExecution.rawResult)) {
-          toolErrors.push(toolExecution.rawResult);
-        }
-
-        functionResponses.push({
-          functionResponse: {
-            name: functionCall.name,
-            response: {
-              content: toolExecution.modelResult,
-            },
-          },
+        executedToolCalls.push(execution.trace);
+        input.push({
+          type: 'function_call_output',
+          call_id: String(functionCall.call_id ?? ''),
+          output: execution.result.content,
         });
       }
+    }
+    throw new Error('ai.toolCallLimitExceeded');
+  }
 
-      if (toolErrors.length === functionCalls.length) {
-        consecutiveToolErrorIterations += 1;
-      } else {
-        consecutiveToolErrorIterations = 0;
+  private async streamOpenAiCompatible(options: {
+    history: AiChatMessageItem[];
+    provider: AiProviderTypeItem;
+    model: string;
+    availableTools: McpToolDescriptor[];
+    user: PersonItem;
+    maxToolCallIterations: number;
+    clientTimeContext?: AiClientTimeContext;
+    callbacks: AiRuntimeStreamCallbacks;
+    supportsTools: boolean;
+    agentInstruction?: string | null;
+    toolExecutor?: AiRuntimeToolExecutor;
+  }): Promise<AiStreamResult> {
+    const toolRegistry = options.supportsTools
+      ? buildToolRegistry(options.availableTools)
+      : [];
+    const messages = this.buildOpenAiMessages(
+      options.history,
+      options.user,
+      options.clientTimeContext,
+      toolRegistry.length > 0,
+      options.agentInstruction,
+    );
+    const executedToolCalls: AiExecutedToolCall[] = [];
+    const usageEntries: Record<string, unknown>[] = [];
+
+    for (
+      let iteration = 0;
+      iteration < options.maxToolCallIterations;
+      iteration += 1
+    ) {
+      assertNotAborted(options.callbacks.signal);
+      const response = await createOpenAiClient(
+        options.provider,
+      ).chat.completions.create(
+        {
+          model: options.model,
+          messages: messages as never,
+          stream: true,
+          stream_options: { include_usage: true },
+          ...(toolRegistry.length > 0
+            ? {
+                tools: buildOpenAiTools(toolRegistry),
+                tool_choice: 'auto' as const,
+              }
+            : {}),
+        },
+        { signal: options.callbacks.signal },
+      );
+      const toolCalls = new Map<
+        number,
+        { id: string; name: string; arguments: string }
+      >();
+      for await (const chunk of response) {
+        assertNotAborted(options.callbacks.signal);
+        appendUsageEntry(usageEntries, chunk.usage);
+        const delta = chunk.choices[0]?.delta;
+        if (delta?.content) await options.callbacks.onTextDelta(delta.content);
+        for (const callDelta of delta?.tool_calls ?? []) {
+          const current = toolCalls.get(callDelta.index) ?? {
+            id: '',
+            name: '',
+            arguments: '',
+          };
+          current.id = callDelta.id ?? current.id;
+          current.name = callDelta.function?.name ?? current.name;
+          current.arguments += callDelta.function?.arguments ?? '';
+          toolCalls.set(callDelta.index, current);
+        }
       }
-
-      if (consecutiveToolErrorIterations >= 2) {
-        await onDelta(buildToolFailureAssistantMessage(toolErrors));
+      if (toolCalls.size === 0) {
         return {
           toolCalls: executedToolCalls,
           usagePayload: buildUsagePayload(usageEntries),
         };
       }
-
-      result = await chat.sendMessage(functionResponses);
-      appendUsageEntry(usageEntries, getGeminiUsageMetadata(result));
+      const calls = [...toolCalls.values()];
+      messages.push({
+        role: 'assistant',
+        content: '',
+        tool_calls: calls.map((call) => ({
+          id: call.id,
+          type: 'function',
+          function: { name: call.name, arguments: call.arguments },
+        })),
+      });
+      for (const call of calls) {
+        const entry = resolveToolRegistryEntry(toolRegistry, call.name);
+        if (!entry) throw new Error(`ai.toolNotFound:${call.name}`);
+        const args = parseToolArguments(call.arguments);
+        const execution = await this.executeTool(
+          entry,
+          args,
+          options.user,
+          iteration,
+          toolRegistry,
+          options.toolExecutor,
+        );
+        executedToolCalls.push(execution.trace);
+        messages.push({
+          role: 'tool',
+          tool_call_id: call.id,
+          content: execution.result.content,
+        });
+      }
     }
-
-    await onDelta(AI_GEMINI_TOOL_CALL_LIMIT_MESSAGE);
-    return {
-      toolCalls: executedToolCalls,
-      usagePayload: buildUsagePayload(usageEntries),
-    };
+    throw new Error('ai.toolCallLimitExceeded');
   }
 
-  private async streamGeminiWithoutTools(
-    provider: AiProviderTypeItem,
-    modelName: string,
-    conversation: Content[],
-    currentTurnParts: Part[],
+  private async executeTool(
+    entry: AiToolRegistryEntry,
+    args: Record<string, unknown>,
     user: PersonItem,
-    clientTimeContext: AiClientTimeContext | undefined,
-    onDelta: (delta: string) => Promise<void>,
-    agentInstruction?: string | null,
-  ): Promise<AiStreamResult> {
-    const generativeModel = createGeminiClient(provider).getGenerativeModel({
-      model: modelName,
-      systemInstruction: this.buildSystemInstruction({
-        user,
-        clientTimeContext,
-        agentInstruction,
-      }),
-    });
-
-    const chat = generativeModel.startChat({ history: conversation });
-    const result = await chat.sendMessage(currentTurnParts);
-    await onDelta(result.response.text());
+    iteration: number,
+    toolRegistry: AiToolRegistryEntry[],
+    toolExecutor?: AiRuntimeToolExecutor,
+  ) {
+    const startedAt = Date.now();
+    const result = toolExecutor
+      ? await toolExecutor(entry, args)
+      : await this.executeAutomaticToolCall(
+          toolRegistry,
+          entry.encodedName,
+          args,
+          user,
+        );
     return {
-      toolCalls: [],
-      usagePayload: buildUsagePayload(
-        [getGeminiUsageMetadata(result)].filter(isRecord),
-      ),
+      result,
+      trace: buildAiExecutedToolCallTrace(result, {
+        arguments: args,
+        iteration: iteration + 1,
+        startedAt,
+      }),
     };
-  }
-
-  private logGeminiToolModeError(
-    error: unknown,
-    modelName: string,
-    functionNames: string[],
-  ): void {
-    const errorMessage =
-      error instanceof Error ? (error.stack ?? error.message) : String(error);
-    const requestedFunctionName =
-      error instanceof Error && error.message.startsWith('ai.toolNotFound:')
-        ? error.message.slice('ai.toolNotFound:'.length)
-        : null;
-
-    global.log?.error?.(
-      [
-        `Gemini tool mode failed for model ${modelName}. Falling back to plain chat.`,
-        `Functions: ${functionNames.join(', ')}`,
-        ...(requestedFunctionName
-          ? [`Requested function: ${requestedFunctionName}`]
-          : []),
-        errorMessage,
-      ].join('\n'),
-    );
   }
 
   private buildOpenAiMessages(
@@ -519,14 +597,12 @@ export class AiChatRuntimeService {
         }),
       },
     ];
-
     for (const message of this.normalizeHistory(history)) {
       messages.push({
         role: message.role,
         content: this.buildMessageContent(message),
       });
     }
-
     return messages;
   }
 
@@ -539,19 +615,12 @@ export class AiChatRuntimeService {
 
   private normalizeHistory(history: AiChatMessageItem[]): AiChatMessageItem[] {
     return history.filter((message) => {
-      if (message.role !== 'user' && message.role !== 'assistant') {
-        return false;
-      }
-
-      if (
+      if (message.role !== 'user' && message.role !== 'assistant') return false;
+      return !(
         message.role === 'assistant' &&
         message.status === 'streaming' &&
         !message.content.trim()
-      ) {
-        return false;
-      }
-
-      return true;
+      );
     });
   }
 
@@ -560,35 +629,43 @@ export class AiChatRuntimeService {
       message.role === 'user' && message.contextPayload
         ? `\n\nContext: ${JSON.stringify(message.contextPayload)}`
         : '';
-
     return `${message.content}${contextPrefix}`;
   }
+}
+
+function normalizeCallbacks(handler: DeltaHandler): AiRuntimeStreamCallbacks {
+  return typeof handler === 'function' ? { onTextDelta: handler } : handler;
+}
+
+function assertNotAborted(signal?: AbortSignal): void {
+  if (signal?.aborted) throw new AiChatInterruptedError();
+}
+
+function normalizeAbortError(error: unknown, signal?: AbortSignal): unknown {
+  return signal?.aborted ? new AiChatInterruptedError() : error;
 }
 
 function appendUsageEntry(
   usageEntries: Record<string, unknown>[],
   usage: unknown,
 ): void {
-  if (isRecord(usage)) {
-    usageEntries.push({ ...usage });
-  }
+  if (isRecord(usage)) usageEntries.push({ ...usage });
 }
 
 function buildUsagePayload(
   usageEntries: Record<string, unknown>[],
 ): Record<string, unknown> | null {
-  if (usageEntries.length === 0) {
-    return null;
-  }
-
+  if (usageEntries.length === 0) return null;
   const inputTokens = sumUsageFields(usageEntries, [
     'inputTokens',
+    'input_tokens',
     'promptTokens',
     'promptTokenCount',
     'prompt_tokens',
   ]);
   const outputTokens = sumUsageFields(usageEntries, [
     'outputTokens',
+    'output_tokens',
     'completionTokens',
     'candidatesTokenCount',
     'completion_tokens',
@@ -598,7 +675,6 @@ function buildUsagePayload(
     'totalTokenCount',
     'total_tokens',
   ]);
-
   return {
     entries: usageEntries,
     ...(inputTokens != null ? { inputTokens } : {}),
@@ -613,7 +689,6 @@ function sumUsageFields(
 ): number | null {
   let total = 0;
   let hasValue = false;
-
   for (const entry of usageEntries) {
     for (const key of keys) {
       const value = entry[key];
@@ -624,23 +699,7 @@ function sumUsageFields(
       }
     }
   }
-
   return hasValue ? total : null;
-}
-
-function getGeminiUsageMetadata(
-  result: unknown,
-): Record<string, unknown> | null {
-  if (!isRecord(result)) {
-    return null;
-  }
-
-  const response = result.response;
-  if (!isRecord(response)) {
-    return null;
-  }
-
-  return isRecord(response.usageMetadata) ? response.usageMetadata : null;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

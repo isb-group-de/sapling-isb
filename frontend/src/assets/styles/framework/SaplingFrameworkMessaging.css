@@ -546,6 +546,12 @@
   letter-spacing: normal;
 }
 
+.sapling-chat-message__time::before,
+.sapling-chat-message__status::before {
+  content: '·';
+  margin-right: var(--sapling-space-sm);
+}
+
 .sapling-chat-message__copy {
   flex: 0 0 auto;
   opacity: 0;
@@ -607,27 +613,23 @@
   margin-top: var(--sapling-space-md);
 }
 
+.sapling-ai-chat__work-log + .sapling-ai-chat__tool-actions {
+  margin-top: var(--sapling-space-lg);
+}
+
 .sapling-ai-chat__tool-action {
   display: grid;
-  gap: var(--sapling-gap-sm);
-  padding: var(--sapling-space-md);
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--sapling-gap-xs) var(--sapling-gap-md);
+  padding: var(--sapling-space-sm-plus) var(--sapling-space-md);
   border: 1px solid rgba(var(--v-theme-primary), 0.28);
   border-radius: var(--sapling-radius-card);
   background: var(--sapling-surface-fill-soft);
 }
 
-.sapling-ai-chat__tool-action--compact {
-  gap: var(--sapling-gap-xs);
-  padding: var(--sapling-space-sm-plus) var(--sapling-space-md);
-}
-
 .sapling-ai-chat__tool-action-header {
-  align-items: flex-start;
-  gap: var(--sapling-gap-lg);
-}
-
-.sapling-ai-chat__tool-action--compact .sapling-ai-chat__tool-action-header {
-  align-items: center;
+  min-width: 0;
 }
 
 .sapling-ai-chat__tool-action-copy {
@@ -652,7 +654,14 @@
   display: flex;
   flex: 0 0 auto;
   align-items: center;
+}
+
+.sapling-ai-chat__tool-action-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   justify-content: flex-end;
+  gap: var(--sapling-gap-sm);
 }
 
 .sapling-ai-chat__tool-action-arguments {
@@ -721,13 +730,12 @@
 }
 
 .sapling-ai-chat__tool-action-actions {
-  justify-content: flex-end;
   gap: var(--sapling-gap-sm);
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 
-.sapling-ai-chat__tool-action--compact .sapling-ai-chat__tool-action-actions {
-  margin-top: calc(var(--sapling-space-2xs) * -1);
+.sapling-ai-chat__tool-action-error {
+  grid-column: 1 / -1;
 }
 
 .sapling-ai-chat__transparency {
@@ -772,6 +780,31 @@
 
 .sapling-ai-chat__attachment-chips .v-chip {
   max-width: 100%;
+}
+
+.sapling-ai-chat__work-log,
+.sapling-ai-chat__queued-inputs {
+  border: 1px solid var(--sapling-surface-border);
+  border-radius: var(--sapling-radius-card);
+  background: color-mix(in srgb, currentColor 3%, transparent);
+}
+
+.sapling-ai-chat__work-log {
+  margin-top: var(--sapling-space-sm-plus);
+}
+
+.sapling-ai-chat__work-log-content {
+  padding: 0 var(--sapling-space-md) var(--sapling-space-sm);
+}
+
+.sapling-ai-chat__queued-inputs {
+  padding: var(--sapling-space-sm) var(--sapling-space-md);
+}
+
+.sapling-ai-chat__queued-inputs .v-list-item-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .sapling-chat-composer {
@@ -821,7 +854,25 @@
 }
 
 .sapling-ai-chat__composer-action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--sapling-gap-sm);
   margin-left: auto;
+}
+
+.sapling-ai-chat__composer-action-buttons > .sapling-ai-chat__composer-action.v-btn {
+  --v-btn-height: var(--sapling-control-size-lg);
+  --sapling-button-radius: var(--sapling-radius-sm);
+  min-width: max-content;
+  padding-inline: var(--sapling-space-md);
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.sapling-ai-chat__composer-action .v-btn__prepend {
+  margin-inline: 0 var(--sapling-gap-sm);
 }
 
 .sapling-chat-empty-state {
@@ -1293,6 +1344,15 @@
     flex: 0 0 auto;
   }
 
+  .sapling-ai-chat__composer-action-buttons {
+    width: 100%;
+  }
+
+  .sapling-ai-chat__composer-action-buttons > .sapling-ai-chat__composer-action.v-btn {
+    flex: 1 1 calc(50% - var(--sapling-gap-sm));
+    min-width: 0;
+  }
+
   .sapling-chat-runtime-selectors__select--model {
     width: 100%;
     flex-basis: auto;
@@ -1359,6 +1419,18 @@
 
   .sapling-chat-message {
     max-width: 100%;
+  }
+
+  .sapling-ai-chat__tool-action {
+    grid-template-columns: 1fr;
+  }
+
+  .sapling-ai-chat__tool-action-controls {
+    justify-content: flex-start;
+  }
+
+  .sapling-ai-chat__tool-action-actions {
+    flex-wrap: wrap;
   }
 
   .sapling-chat-welcome {

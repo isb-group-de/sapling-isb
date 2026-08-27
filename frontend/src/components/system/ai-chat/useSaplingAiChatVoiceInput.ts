@@ -17,6 +17,7 @@ interface SaplingAiChatVoiceInputOptions {
   hasConfiguredTranscriptionProviders: Ref<boolean>
   route: RouteLocationNormalizedLoaded
   sendMessage: () => Promise<void> | void
+  isResponseActive: () => boolean
   pushMessage: (
     type: 'error' | 'info' | 'success' | 'warning',
     message: string,
@@ -34,6 +35,7 @@ export function useSaplingAiChatVoiceInput({
   hasConfiguredTranscriptionProviders,
   route,
   sendMessage,
+  isResponseActive,
   pushMessage,
 }: SaplingAiChatVoiceInputOptions) {
   const isRecordingVoiceInput = ref(false)
@@ -300,7 +302,7 @@ export function useSaplingAiChatVoiceInput({
         : transcript
       activeTranscriptionHandle.value = response.transcriptionHandle
       await nextTick()
-      void sendMessage()
+      if (!isResponseActive()) void sendMessage()
     } catch {
       activeTranscriptionHandle.value = null
     } finally {

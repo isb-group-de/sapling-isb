@@ -106,6 +106,21 @@ export class AiProviderModelItem {
 
   @ApiPropertyOptional({ default: false })
   @SaplingForm({
+    order: 250,
+    group: 'aiProviderModel.groupIntegration',
+    groupOrder: 400,
+    width: 2,
+    visible: true,
+    tableOrder: 250,
+    tableVisible: true,
+    mobileOrder: 250,
+    mobileVisible: false,
+  })
+  @Property({ nullable: false, default: false })
+  supportsReasoningSummary = false;
+
+  @ApiPropertyOptional({ default: false })
+  @SaplingForm({
     order: 300,
     group: 'aiProviderModel.groupIntegration',
     groupOrder: 400,

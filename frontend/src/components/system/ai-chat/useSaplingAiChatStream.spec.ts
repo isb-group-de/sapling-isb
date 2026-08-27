@@ -8,6 +8,9 @@ const api = vi.hoisted(() => ({
   streamMessage: vi.fn(),
   confirmToolAction: vi.fn(),
   rejectToolAction: vi.fn(),
+  queueInput: vi.fn(),
+  listQueuedInputs: vi.fn().mockResolvedValue([]),
+  cancelQueuedInput: vi.fn(),
 }))
 
 vi.mock('@/services/api.ai.service', () => ({ default: api }))
@@ -179,5 +182,72 @@ describe('useSaplingAiChatStream', () => {
 
     expect(api.confirmToolAction).toHaveBeenCalledWith(7)
     expect(testState.state.activeToolActionHandles.value).toEqual({})
+  })
+
+  it('queues Enter submissions while a response is active and supports steer priority', async () => {
+    const testState = setup()
+    testState.activeSession.value = {
+      handle: 22,
+      title: 'Active',
+      responseStatus: 'responding',
+    } as AiChatSessionItem
+    api.queueInput.mockResolvedValue({ handle: 91, mode: 'queue', status: 'queued' })
+    api.listQueuedInputs.mockResolvedValue([
+      {
+        handle: 91,
+        sessionHandle: 22,
+        mode: 'queue',
+        status: 'queued',
+        content: 'Analyze this file',
+      },
+    ])
+
+    await testState.state.sendMessage()
+
+    expect(api.streamMessage).not.toHaveBeenCalled()
+    expect(api.queueInput).toHaveBeenCalledWith(
+      expect.objectContaining({ sessionHandle: 22, mode: 'queue', content: 'Analyze this file' }),
+    )
+    expect(testState.state.queuedInputs.value).toHaveLength(1)
+
+    testState.state.queuedInputs.value = []
+    api.queueInput.mockClear()
+    const second = setup()
+    second.activeSession.value = testState.activeSession.value
+    await second.state.steerMessage()
+    expect(api.queueInput).toHaveBeenCalledWith(expect.objectContaining({ mode: 'steer' }))
+  })
+
+  it('applies streamed reasoning summaries and localized progress steps', async () => {
+    const testState = setup()
+    const assistant = {
+      handle: 32,
+      session: 22,
+      role: 'assistant',
+      status: 'streaming',
+      content: '',
+      responsePayload: { progress: { status: 'running', reasoningSummary: '', steps: [] } },
+    } as AiChatMessageItem
+    api.streamMessage.mockImplementation(
+      async (_payload: unknown, onEvent: (event: Record<string, unknown>) => void) => {
+        onEvent({ type: 'session.upsert', session: { handle: 22 } })
+        onEvent({ type: 'message.assistant', message: assistant })
+        onEvent({ type: 'progress.delta', handle: 32, delta: 'Prüfe Kontext.' })
+        onEvent({
+          type: 'progress.step',
+          handle: 32,
+          step: { id: 'tool-1', labelKey: 'aiChat.progressToolExecution', status: 'running' },
+        })
+      },
+    )
+
+    await testState.state.sendMessage()
+
+    expect(assistant.responsePayload).toMatchObject({
+      progress: {
+        reasoningSummary: 'Prüfe Kontext.',
+        steps: [expect.objectContaining({ id: 'tool-1' })],
+      },
+    })
   })
 })

@@ -32,6 +32,7 @@
     "admin:bootstrap": "cross-env NODE_ENV=production node dist/bootstrap-admin.js"
   },
   "dependencies": {
+    "@google/genai": "^2.19.0",
     "@google/generative-ai": "^0.24.1",
     "@googleapis/calendar": "^16.0.0",
     "@kenjiuno/msgreader": "^1.28.0",

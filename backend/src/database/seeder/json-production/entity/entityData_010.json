@@ -1,0 +1,13 @@
+[
+  {
+    "handle": "aiChatQueuedInput",
+    "canShow": false,
+    "icon": "mdi-tray-arrow-down",
+    "group": "chat",
+    "order": 50,
+    "canRead": true,
+    "canInsert": false,
+    "canUpdate": false,
+    "canDelete": false
+  }
+]

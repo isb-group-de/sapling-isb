@@ -88,6 +88,26 @@
     />
 
     <div class="sapling-stack-xl sapling-chat-composer sapling-ai-chat__composer">
+      <div v-if="queuedInputs.length > 0" class="sapling-ai-chat__queued-inputs">
+        <div class="sapling-section-title">{{ t('aiChat.queuedInputs') }}</div>
+        <v-list density="compact" bg-color="transparent">
+          <v-list-item v-for="(item, index) in queuedInputs" :key="item.handle">
+            <template #prepend>
+              <v-chip size="x-small" variant="tonal">{{ index + 1 }}</v-chip>
+            </template>
+            <v-list-item-title>{{ item.content }}</v-list-item-title>
+            <template #append>
+              <v-btn
+                icon="mdi-close"
+                size="x-small"
+                variant="text"
+                :title="t('aiChat.removeQueuedInput')"
+                @click="emit('cancel-queued-input', item.handle)"
+              />
+            </template>
+          </v-list-item>
+        </v-list>
+      </div>
       <SaplingTextarea
         ref="messageInput"
         v-model="draftMessageModel"
@@ -133,7 +153,6 @@
           variant="tonal"
           prepend-icon="mdi-file-delimited-outline"
           closable
-          :disabled="isSending"
           @click:close="emit('remove-import-attachment', attachment.handle)"
         >
           {{ formatAttachmentChip(attachment) }}
@@ -143,44 +162,61 @@
       <div
         class="sapling-row-between-md sapling-chat-composer__actions sapling-ai-chat__composer-actions"
       >
-        <div class="d-flex ga-2 sapling-ai-chat__composer-action-buttons">
+        <div class="sapling-ai-chat__composer-action-buttons">
           <v-btn
             v-if="canUploadImportAttachment"
-            class="sapling-button--round"
-            variant="text"
-            icon="mdi-paperclip"
-            :disabled="!hasConfiguredProviders || isSending || isUploadingImportAttachment"
+            class="sapling-ai-chat__composer-action"
+            variant="tonal"
+            prepend-icon="mdi-paperclip"
+            :disabled="!hasConfiguredProviders || isUploadingImportAttachment"
             :loading="isUploadingImportAttachment"
             :title="t('aiChat.attachImportFile')"
             :aria-label="t('aiChat.attachImportFile')"
             @click="openImportFilePicker"
-          />
+          >
+            {{ t('aiChat.attachImportFile') }}
+          </v-btn>
           <v-btn
-            class="sapling-button--round"
-            variant="text"
+            class="sapling-ai-chat__composer-action"
+            variant="tonal"
             :disabled="
               !hasConfiguredProviders ||
               !hasConfiguredTranscriptionProviders ||
-              isSending ||
               isTranscribingVoiceInput
             "
-            :icon="isRecordingVoiceInput ? 'mdi-stop' : 'mdi-microphone-outline'"
+            :prepend-icon="isRecordingVoiceInput ? 'mdi-stop' : 'mdi-microphone-outline'"
             :loading="isTranscribingVoiceInput"
             :title="getVoiceInputButtonLabel()"
             :aria-label="getVoiceInputButtonLabel()"
             @click="emit('toggle-voice-input')"
-          />
+          >
+            {{ getVoiceInputButtonLabel() }}
+          </v-btn>
           <v-btn
-            class="sapling-button--round"
+            class="sapling-ai-chat__composer-action"
             color="primary"
             variant="flat"
-            icon="mdi-send"
+            :prepend-icon="isSending ? 'mdi-playlist-plus' : 'mdi-send'"
             :disabled="!canSendMessage || (!draftMessage.trim() && pendingAttachments.length === 0)"
-            :loading="isSending"
-            :title="t('aiChat.send')"
-            :aria-label="t('aiChat.send')"
+            :title="isSending ? t('aiChat.queue') : t('aiChat.send')"
+            :aria-label="isSending ? t('aiChat.queue') : t('aiChat.send')"
             @click="emit('send')"
-          />
+          >
+            {{ isSending ? t('aiChat.queue') : t('aiChat.send') }}
+          </v-btn>
+          <v-btn
+            v-if="isSending"
+            class="sapling-ai-chat__composer-action"
+            color="secondary"
+            variant="tonal"
+            prepend-icon="mdi-directions-fork"
+            :disabled="!canSendMessage || (!draftMessage.trim() && pendingAttachments.length === 0)"
+            :title="t('aiChat.steer')"
+            :aria-label="t('aiChat.steer')"
+            @click="emit('steer')"
+          >
+            {{ t('aiChat.steer') }}
+          </v-btn>
         </div>
       </div>
     </div>
@@ -208,6 +244,12 @@ type PendingImportAttachment = {
   rowCount: number
   headerCount: number
   status: string
+}
+
+type QueuedInput = {
+  handle: number
+  content: string
+  mode: 'queue' | 'steer'
 }
 
 const props = withDefaults(
@@ -241,6 +283,7 @@ const props = withDefaults(
     canUploadImportAttachment: boolean
     isUploadingImportAttachment: boolean
     pendingAttachments: PendingImportAttachment[]
+    queuedInputs: QueuedInput[]
     activeToolActionHandles: Record<number, boolean>
     speechStateByHandle: Record<number, string>
     titlePreviewLimit?: number
@@ -255,6 +298,8 @@ const emit = defineEmits<{
   (event: 'update:selectedAgent', value: string): void
   (event: 'update:selectedPlaybook', value: string | null): void
   (event: 'send'): void
+  (event: 'steer'): void
+  (event: 'cancel-queued-input', handle: number): void
   (event: 'retry-runtime-catalog'): void
   (event: 'close'): void
   (event: 'load-older-messages'): void

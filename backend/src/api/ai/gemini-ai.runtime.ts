@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI, TaskType } from '@google/generative-ai';
+import { GoogleGenAI } from '@google/genai';
 import type { AiProviderTypeItem } from '../../entity/AiProviderTypeItem';
 import type { AiEmbeddingPurpose } from './ai.types';
 
@@ -14,6 +15,18 @@ export function createGeminiClient(
   }
 
   return new GoogleGenerativeAI(apiKey);
+}
+
+export function createGeminiStreamingClient(
+  provider: AiProviderTypeItem,
+): GoogleGenAI {
+  const apiKey = getGeminiApiKey(provider);
+
+  if (!apiKey) {
+    throw new Error('ai.providerNotConfigured');
+  }
+
+  return new GoogleGenAI({ apiKey });
 }
 
 export function getGeminiApiKey(provider: AiProviderTypeItem): string | null {

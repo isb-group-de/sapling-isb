@@ -1,0 +1,13 @@
+[
+  { "handle": "openai-gpt-5_6-sol", "supportsReasoningSummary": true },
+  { "handle": "openai-gpt-5_6-terra", "supportsReasoningSummary": true },
+  { "handle": "openai-gpt-5_6-luna", "supportsReasoningSummary": true },
+  { "handle": "openai-gpt-5_5", "supportsReasoningSummary": true },
+  { "handle": "openai-gpt-5_4", "supportsReasoningSummary": true },
+  { "handle": "openai-gpt-5_4-mini", "supportsReasoningSummary": true },
+  { "handle": "openai-gpt-5_4-nano", "supportsReasoningSummary": true },
+  { "handle": "gemini-3_5-flash", "supportsReasoningSummary": true },
+  { "handle": "gemini-3_1-pro-preview", "supportsReasoningSummary": true },
+  { "handle": "gemini-2_5-flash", "supportsReasoningSummary": true },
+  { "handle": "gemini-2_5-pro", "supportsReasoningSummary": true }
+]
