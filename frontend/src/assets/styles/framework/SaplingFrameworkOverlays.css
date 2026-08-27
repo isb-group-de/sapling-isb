@@ -141,7 +141,8 @@
 }
 
 .sapling-command-palette-overlay {
-  width: min(780px, calc(100vw - var(--sapling-space-2xl)));
+  width: min(780px, calc(100vw - var(--sapling-space-2xl))) !important;
+  max-width: calc(100vw - var(--sapling-space-2xl)) !important;
   height: min(720px, 86vh);
   max-height: min(720px, 86vh);
 }
@@ -256,6 +257,19 @@
 }
 
 @media (max-width: 600px) {
+  .sapling-command-palette-overlay.sapling-overlay-content--top {
+    width: calc(100vw - (var(--sapling-space-sm) * 2)) !important;
+    max-width: calc(100vw - (var(--sapling-space-sm) * 2)) !important;
+    height: calc(
+      100dvh - 65px - env(safe-area-inset-top, 0px) - (var(--sapling-space-sm) * 2)
+    ) !important;
+    max-height: calc(
+      100dvh - 65px - env(safe-area-inset-top, 0px) - (var(--sapling-space-sm) * 2)
+    ) !important;
+    margin-top: calc(65px + env(safe-area-inset-top, 0px) + var(--sapling-space-sm));
+    margin-bottom: var(--sapling-space-sm);
+  }
+
   .sapling-command-palette__item {
     grid-template-columns: auto minmax(0, 1fr);
   }

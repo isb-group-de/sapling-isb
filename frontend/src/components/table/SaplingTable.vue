@@ -76,6 +76,7 @@
               :show-favorite="showFavoriteButton"
               :show-import="showImportButton"
               :show-add="showAddButton"
+              :show-form-config-button="showFormConfigButton"
               :favorite-items="currentEntityFavorites"
               :is-favorites-loading="isCurrentEntityFavoritesLoading"
               :active-favorite-handle="activeFavoriteHandle"
@@ -101,8 +102,23 @@
               @toggle-column-chooser="isColumnChooserOpen = !isColumnChooserOpen"
               @save-current-view="openTableViewDialog"
               @reset-temporary-column-order="resetColumnOrder"
+              @open-form-config="openFormConfigForTable"
               @add="openCreateDialog"
             >
+              <template v-if="showSidePanelToggleButton" #mobile-leading>
+                <v-btn
+                  data-tutorial="partner-filter-toggle"
+                  class="sapling-table-toolbar-action sapling-table-toolbar-action--icon-only sapling-table-toolbar-action--utility"
+                  color="primary"
+                  :variant="sidePanelVisible ? 'flat' : 'tonal'"
+                  icon
+                  :title="sidePanelToggleLabel"
+                  :aria-label="sidePanelToggleLabel"
+                  @click="emit('toggleSidePanel')"
+                >
+                  <v-icon>{{ sidePanelToggleIcon }}</v-icon>
+                </v-btn>
+              </template>
               <template v-if="showSidePanelToggleButton || showFormConfigButton" #leading>
                 <v-btn
                   v-if="showSidePanelToggleButton"

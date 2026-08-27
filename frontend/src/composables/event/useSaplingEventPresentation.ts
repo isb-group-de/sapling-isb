@@ -113,8 +113,15 @@ export function useSaplingEventPresentation(options: UseSaplingEventPresentation
 
   const currentDateRangeLabel = computed(() => {
     const range = options.calendarDateRange.value
-    if (range?.start?.date && range?.end?.date) {
-      return formatDateFromTo(range.start.date, range.end.date)
+    const startDate = range?.start?.date
+    const endDate = range?.end?.date
+
+    if (startDate) {
+      if (!endDate || startDate === endDate) {
+        return formatDateValue(startDate)
+      }
+
+      return formatDateFromTo(startDate, endDate)
     }
 
     return formatDateValue(parseLocalCalendarDate(options.calendarValue.value))

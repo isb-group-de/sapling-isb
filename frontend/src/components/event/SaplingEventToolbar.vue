@@ -5,6 +5,16 @@
     class="sapling-split-toolbar sapling-event-toolbar"
   >
     <div class="sapling-toolbar-group sapling-event-toolbar__primary">
+      <div data-tutorial="calendar-period" class="sapling-event-toolbar__period">
+        <div class="sapling-icon-tile sapling-event-toolbar__period-icon">
+          <v-icon size="18">{{ periodIcon }}</v-icon>
+        </div>
+        <div class="sapling-event-toolbar__period-copy">
+          <h1>{{ periodLabel }}</h1>
+          <span>{{ periodRangeLabel }}</span>
+        </div>
+      </div>
+
       <div
         data-tutorial="calendar-navigation"
         class="sapling-toolbar-nav-group sapling-event-toolbar__nav-group"
@@ -18,12 +28,14 @@
             @click="emit('previous')"
           />
           <v-btn
-            prepend-icon="mdi-calendar-today"
+            :icon="compactNavigation"
+            :prepend-icon="compactNavigation ? undefined : 'mdi-calendar-today'"
             variant="tonal"
             :title="$t('event.today')"
             :aria-label="$t('event.today')"
             @click="emit('today')"
           >
+            <v-icon v-if="compactNavigation">mdi-calendar-today</v-icon>
             <template v-if="$vuetify.display.mdAndUp && !compactNavigation">
               {{ $t('event.today') }}
             </template>
@@ -38,11 +50,13 @@
               <v-btn
                 v-bind="activatorProps"
                 class="sapling-button-truncate sapling-event-toolbar__picker-trigger"
-                prepend-icon="mdi-calendar-search"
+                :icon="compactNavigation"
+                :prepend-icon="compactNavigation ? undefined : 'mdi-calendar-search'"
                 variant="tonal"
                 :title="$t('calendar.selectDate')"
                 :aria-label="$t('calendar.selectDate')"
               >
+                <v-icon v-if="compactNavigation">mdi-calendar-search</v-icon>
                 <template v-if="$vuetify.display.mdAndUp && !compactNavigation">
                   {{ $t('calendar.selectDate') }}</template
                 >
@@ -251,10 +265,11 @@ type CalendarViewMode = 'single' | 'sidebyside'
 type CalendarMode = 'default' | 'extended'
 type CalendarSyncProvider = 'azure' | 'google'
 
-const TOOLBAR_TYPE_INLINE_MIN_WIDTH = 1460
-const TOOLBAR_VIEW_INLINE_MIN_WIDTH = 1140
-const TOOLBAR_SYNC_INLINE_MIN_WIDTH = 860
-const TOOLBAR_MODE_INLINE_MIN_WIDTH = 680
+const TOOLBAR_TYPE_INLINE_MIN_WIDTH = 1680
+const TOOLBAR_VIEW_INLINE_MIN_WIDTH = 1360
+const TOOLBAR_SYNC_INLINE_MIN_WIDTH = 1080
+const TOOLBAR_MODE_INLINE_MIN_WIDTH = 900
+const TOOLBAR_COMPACT_NAVIGATION_MAX_WIDTH = 680
 
 const props = defineProps<{
   isNarrowScreen: boolean
@@ -265,6 +280,9 @@ const props = defineProps<{
   modelValue: string
   isSyncingExternalCalendar: boolean
   calendarSyncProvider: CalendarSyncProvider | null
+  periodLabel: string
+  periodRangeLabel: string
+  periodIcon: string
 }>()
 
 const { t } = useI18n()
@@ -316,7 +334,7 @@ const calendarSyncDescription = computed(() =>
 const calendarSyncIcon = computed(() =>
   props.calendarSyncProvider === 'google' ? 'mdi-google' : 'mdi-microsoft-outlook',
 )
-const compactNavigation = computed(() => toolbarWidth.value < TOOLBAR_MODE_INLINE_MIN_WIDTH)
+const compactNavigation = computed(() => toolbarWidth.value < TOOLBAR_COMPACT_NAVIGATION_MAX_WIDTH)
 const showModeInline = computed(() => toolbarWidth.value >= TOOLBAR_MODE_INLINE_MIN_WIDTH)
 const showSyncInline = computed(() => toolbarWidth.value >= TOOLBAR_SYNC_INLINE_MIN_WIDTH)
 const showViewInline = computed(

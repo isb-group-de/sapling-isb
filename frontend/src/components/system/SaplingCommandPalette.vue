@@ -1,9 +1,7 @@
 <template>
   <SaplingDialog
     v-model="isOpen"
-    width="780"
     size="lg"
-    height="min(720px, 86vh)"
     transition="dialog-top-transition"
     scrollable
     content-class="sapling-overlay-content--top sapling-command-palette-overlay"

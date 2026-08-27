@@ -8,7 +8,10 @@
     :class="[
       props.calendarClass,
       `sapling-event-vcalendar--${props.calendarDisplayType}`,
-      { 'sapling-event-vcalendar--drag-active': props.isDragActive },
+      {
+        'sapling-event-vcalendar--drag-active': props.isDragActive,
+        'sapling-event-vcalendar--has-all-day-events': hasAllDayEvents,
+      },
     ]"
     color="primary"
     :event-color="props.getEventColor"
@@ -215,6 +218,7 @@ const calendarValue = computed({
   get: () => props.modelValue,
   set: (value: string) => emit('update:modelValue', value),
 })
+const hasAllDayEvents = computed(() => props.events.some((event) => !event.timed))
 const activeTooltipEvent = shallowRef<CalendarEvent | null>(null)
 const isTooltipLocallySuppressed = ref(false)
 const isTooltipInteractionBlocked = computed(

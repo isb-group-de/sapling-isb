@@ -96,7 +96,9 @@
               :disabled="!hasDashboards || !currentPersonStore.loaded"
               @click="beginLayoutEdit"
             >
-              {{ $t('dashboard.editLayout') }}
+              <template v-if="$vuetify.display.mdAndUp">
+                {{ $t('dashboard.editLayout') }}
+              </template>
             </v-btn>
             <template v-else>
               <v-btn
@@ -105,18 +107,26 @@
                 prepend-icon="mdi-content-save-check-outline"
                 :loading="isLayoutSaving"
                 :disabled="isLayoutSaving"
+                :aria-label="$t('dashboard.saveLayout')"
+                :title="$t('dashboard.saveLayout')"
                 @click="saveLayout"
               >
-                {{ $t('dashboard.saveLayout') }}
+                <template v-if="$vuetify.display.mdAndUp">
+                  {{ $t('dashboard.saveLayout') }}
+                </template>
               </v-btn>
               <v-btn
                 color="primary"
                 variant="text"
                 prepend-icon="mdi-close"
                 :disabled="isLayoutSaving"
+                :aria-label="$t('dashboard.cancelLayout')"
+                :title="$t('dashboard.cancelLayout')"
                 @click="cancelLayoutEdit"
               >
-                {{ $t('dashboard.cancelLayout') }}
+                <template v-if="$vuetify.display.mdAndUp">
+                  {{ $t('dashboard.cancelLayout') }}
+                </template>
               </v-btn>
             </template>
           </div>

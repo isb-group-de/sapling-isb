@@ -57,6 +57,7 @@ import {
   isAzureForbiddenError,
   normalizeAzureDateTime,
   normalizeAzureEmail,
+  resolveAzureOnlineMeetingUrl,
   truncateAzureText,
 } from './azure-calendar.utils';
 import {
@@ -458,7 +459,7 @@ export class AzureCalendarService {
         startDateTime: range.startDateTime.toISOString(),
         endDateTime: range.endDateTime.toISOString(),
         $select:
-          'id,subject,bodyPreview,sensitivity,start,end,isAllDay,isCancelled,attendees,categories,onlineMeeting,onlineMeetingUrl',
+          'id,subject,bodyPreview,body,sensitivity,start,end,isAllDay,isCancelled,attendees,categories,isOnlineMeeting,onlineMeetingProvider,onlineMeeting,onlineMeetingUrl,locations',
         $top: '100',
       })
       .header('Prefer', 'outlook.timezone="UTC"')
@@ -677,9 +678,7 @@ export class AzureCalendarService {
     }
     event.isAllDay = graphEvent.isAllDay === true;
     event.onlineMeetingURL =
-      graphEvent.onlineMeeting?.joinUrl ??
-      graphEvent.onlineMeetingUrl ??
-      event.onlineMeetingURL;
+      resolveAzureOnlineMeetingUrl(graphEvent) ?? event.onlineMeetingURL;
     event.status = values.status;
     this.replaceParticipants(event, values.participants);
   }

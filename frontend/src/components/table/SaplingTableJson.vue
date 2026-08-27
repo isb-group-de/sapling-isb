@@ -24,19 +24,7 @@
       >
         <SaplingDialogShell fill-shell body-class="sapling-dialog-json-content">
           <template #hero>
-            <v-card-title class="sapling-dialog-json-title">
-              <span>{{ $t(dialogTitleKey) }}</span>
-              <v-spacer />
-              <v-btn
-                variant="text"
-                size="small"
-                density="comfortable"
-                icon="mdi-close"
-                :aria-label="$t('global.close')"
-                :title="$t('global.close')"
-                @click="closeJsonDialog"
-              />
-            </v-card-title>
+            <SaplingDialogHero :title="$t(dialogTitleKey)" />
           </template>
 
           <template #body>
@@ -67,6 +55,7 @@
 <script lang="ts" setup>
 import SaplingCodeMirror from '@/components/common/SaplingCodeMirror.vue'
 import SaplingDialog from '@/components/common/SaplingDialog.vue'
+import SaplingDialogHero from '@/components/common/SaplingDialogHero.vue'
 import SaplingDialogShell from '@/components/common/SaplingDialogShell.vue'
 import SaplingDialogCard from '@/components/dialog/SaplingDialogCard.vue'
 import SaplingActionJson from '@/components/actions/SaplingActionJson.vue'

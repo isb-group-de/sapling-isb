@@ -163,6 +163,14 @@ Existing Sapling events are updated and unknown provider items are created with 
 
 Outlook events whose Microsoft Graph `sensitivity` is `private` are imported with `EventItem.isPrivate = true`. Sapling still stores the full event details for the importing owner, but generic Event reads, exports, relation mutations, updates, deletes, KPIs, and timeline anchor loads must only expose private events when `creatorPerson` is the current user. Non-private events keep the normal Event permission behavior.
 
+Outlook imports store the direct online-meeting join link in
+`EventItem.onlineMeetingURL`. The structured Microsoft Graph
+`onlineMeeting.joinUrl` value has priority. For forwarded or externally
+organized invitations where Graph omits that value, the importer also checks
+URL-based locations and recognized meeting links in the HTML body, unwrapping
+Outlook Safe Links before persistence. Unrelated links from signatures are not
+used as meeting URLs.
+
 The manual endpoints are user-triggered; optional polling reuses the same import services. Neither mode requires provider webhooks, and both rely on the existing Microsoft or Google login scopes instead of a separate calendar-only setup.
 
 ## Automatic Calendar Import and Classification

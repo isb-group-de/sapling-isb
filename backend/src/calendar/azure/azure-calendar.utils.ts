@@ -26,6 +26,10 @@ export type AzureGraphCalendarEvent = {
   id?: string;
   subject?: string | null;
   bodyPreview?: string | null;
+  body?: {
+    content?: string | null;
+    contentType?: string | null;
+  } | null;
   sensitivity?: string | null;
   start?: AzureGraphDateTime | null;
   end?: AzureGraphDateTime | null;
@@ -33,8 +37,14 @@ export type AzureGraphCalendarEvent = {
   isCancelled?: boolean | null;
   attendees?: AzureGraphAttendee[] | null;
   categories?: string[] | null;
+  isOnlineMeeting?: boolean | null;
+  onlineMeetingProvider?: string | null;
   onlineMeetingUrl?: string | null;
   onlineMeeting?: { joinUrl?: string | null } | null;
+  locations?: Array<{
+    displayName?: string | null;
+    locationUri?: string | null;
+  }> | null;
 };
 
 export type AzureCalendarViewResponse = {
@@ -123,6 +133,140 @@ export function normalizeAzureEmail(
   return normalized && /^[^@\s<>]+@[^@\s<>]+$/.test(normalized)
     ? normalized
     : null;
+}
+
+function decodeAzureHtmlEntities(value: string): string {
+  return value
+    .replace(/&amp;/gi, '&')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#(?:39|x27);/gi, "'")
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>');
+}
+
+function normalizeAzureHttpUrl(
+  value: string | null | undefined,
+): string | null {
+  const decoded = decodeAzureHtmlEntities(value?.trim() ?? '')
+    .replace(/^[<([{'"\s]+/, '')
+    .replace(/[>)\]}\s'",.;]+$/, '');
+  if (!decoded) {
+    return null;
+  }
+
+  try {
+    const url = new URL(decoded);
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+      return null;
+    }
+
+    if (
+      url.hostname.toLowerCase().endsWith('.safelinks.protection.outlook.com')
+    ) {
+      const originalUrl = url.searchParams.get('url');
+      if (originalUrl) {
+        return normalizeAzureHttpUrl(originalUrl);
+      }
+    }
+
+    return url.toString();
+  } catch {
+    return null;
+  }
+}
+
+function isKnownOnlineMeetingUrl(value: string): boolean {
+  const hostname = new URL(value).hostname.toLowerCase();
+  return (
+    [
+      'teams.microsoft.com',
+      'teams.live.com',
+      'teams.cloud.microsoft',
+      'meet.google.com',
+      'meet.jit.si',
+      'join.skype.com',
+    ].some(
+      (domain) => hostname === domain || hostname.endsWith(`.${domain}`),
+    ) ||
+    ['zoom.us', 'webex.com', 'gotomeeting.com'].some(
+      (domain) => hostname === domain || hostname.endsWith(`.${domain}`),
+    )
+  );
+}
+
+function extractAzureBodyUrls(body: string): {
+  meetingLabelUrls: string[];
+  urls: string[];
+} {
+  const meetingLabelUrls: string[] = [];
+  const urls: string[] = [];
+  const addUrl = (rawUrl: string, target: string[]) => {
+    const normalized = normalizeAzureHttpUrl(rawUrl);
+    if (normalized && !target.includes(normalized)) {
+      target.push(normalized);
+    }
+    if (normalized && !urls.includes(normalized)) {
+      urls.push(normalized);
+    }
+  };
+
+  const anchorPattern =
+    /<a\b[^>]*?href\s*=\s*["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
+  for (const match of body.matchAll(anchorPattern)) {
+    const label = decodeAzureHtmlEntities(match[2].replace(/<[^>]+>/g, ' '));
+    addUrl(
+      match[1],
+      /\b(join|meeting|teilnehmen|beitreten|besprechung)\b/i.test(label)
+        ? meetingLabelUrls
+        : urls,
+    );
+  }
+
+  for (const match of body.matchAll(/https?:\/\/[^\s<>"']+/gi)) {
+    addUrl(match[0], urls);
+  }
+
+  return { meetingLabelUrls, urls };
+}
+
+/**
+ * Resolves the best join URL exposed by an Outlook calendar event. Graph's
+ * structured onlineMeeting value is authoritative. Body/location fallbacks
+ * cover forwarded and externally organized invitations where Graph sometimes
+ * omits that value.
+ */
+export function resolveAzureOnlineMeetingUrl(
+  event: AzureGraphCalendarEvent,
+): string | null {
+  for (const rawUrl of [
+    event.onlineMeeting?.joinUrl,
+    event.onlineMeetingUrl,
+    ...(event.locations ?? []).map((location) => location.locationUri),
+  ]) {
+    const normalized = normalizeAzureHttpUrl(rawUrl);
+    if (normalized) {
+      return normalized;
+    }
+  }
+
+  const body = event.body?.content?.trim();
+  if (!body) {
+    return null;
+  }
+
+  const { meetingLabelUrls, urls } = extractAzureBodyUrls(body);
+  const knownMeetingUrl = urls.find(isKnownOnlineMeetingUrl);
+  if (knownMeetingUrl) {
+    return knownMeetingUrl;
+  }
+  if (meetingLabelUrls.length > 0) {
+    return meetingLabelUrls[0];
+  }
+  if (event.isOnlineMeeting === true && urls.length === 1) {
+    return urls[0];
+  }
+
+  return null;
 }
 
 export function buildAzureCalendarEvent(

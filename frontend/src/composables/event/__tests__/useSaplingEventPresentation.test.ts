@@ -43,6 +43,7 @@ function createHarness() {
   })
 
   return {
+    calendarDateRange,
     calendarViewMode,
     createEvent,
     events,
@@ -96,6 +97,16 @@ describe('useSaplingEventPresentation', () => {
       categoryColor: '#009688',
     })
     expect(harness.presentation.upcomingEvents.value[0]).not.toHaveProperty('description')
+  })
+
+  it('renders a single selected day without an empty range separator', () => {
+    const harness = createHarness()
+    harness.calendarDateRange.value = {
+      start: { date: '2026-07-15', year: 2026, month: 7, day: 15, hour: 0, minute: 0 },
+      end: { date: '2026-07-15', year: 2026, month: 7, day: 15, hour: 0, minute: 0 },
+    }
+
+    expect(harness.presentation.currentDateRangeLabel.value).toBe('15.07.2026')
   })
 
   it('adds a draft only to matching side-by-side person columns', () => {

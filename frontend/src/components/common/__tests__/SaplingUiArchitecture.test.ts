@@ -36,6 +36,11 @@ const tabularFieldPickerConsumers = [
   'components/dialog/fields/SaplingFieldSingleSelect.vue',
 ]
 
+const jsonDialogConsumers = [
+  'components/dialog/fields/SaplingFieldJson.vue',
+  'components/table/SaplingTableJson.vue',
+]
+
 function collectVueFiles(directory: string): string[] {
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
     const path = join(directory, entry.name)
@@ -86,6 +91,15 @@ describe('Sapling UI architecture', () => {
     const violations = tabularFieldPickerConsumers.filter((fileName) => {
       const source = readFileSync(join(sourceRoot, fileName), 'utf8')
       return !/<SaplingFieldTablePicker\b/.test(source) || /<v-menu\b/.test(source)
+    })
+
+    expect(violations).toEqual([])
+  })
+
+  it('keeps JSON dialog titles and close actions in the shared dialog hero', () => {
+    const violations = jsonDialogConsumers.filter((fileName) => {
+      const source = readFileSync(join(sourceRoot, fileName), 'utf8')
+      return !/<SaplingDialogHero\b/.test(source) || /<v-card-title\b/.test(source)
     })
 
     expect(violations).toEqual([])

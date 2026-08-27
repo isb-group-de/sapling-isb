@@ -6,15 +6,6 @@
   >
     <template v-if="isLoading">
       <div class="sapling-page-skeleton sapling-event-skeleton">
-        <SaplingSurface
-          as="section"
-          class="sapling-page-hero sapling-page-hero--calendar sapling-page-hero--copy-only sapling-event-skeleton__hero"
-        >
-          <div class="sapling-event-skeleton__hero-copy">
-            <v-skeleton-loader type="text, heading, paragraph" />
-          </div>
-        </SaplingSurface>
-
         <section
           class="sapling-page-workspace sapling-page-workspace--main-context sapling-page-workspace--collapse-lg sapling-event-skeleton__workspace"
         >
@@ -45,21 +36,6 @@
     </template>
 
     <template v-else>
-      <SaplingPageHero
-        data-tutorial="calendar-period"
-        class="sapling-event-hero"
-        variant="calendar"
-        :eyebrow="$t('navigation.calendar')"
-        :title="currentMonthLabel"
-        :subtitle="currentDateRangeLabel"
-      >
-        <template #title-prefix>
-          <div class="sapling-icon-tile sapling-event-hero__icon-wrap">
-            <v-icon size="28">{{ entityEvent?.icon || 'mdi-calendar-month-outline' }}</v-icon>
-          </div>
-        </template>
-      </SaplingPageHero>
-
       <section
         class="sapling-page-workspace sapling-page-workspace--main-context sapling-page-workspace--collapse-lg sapling-event-workspace"
       >
@@ -76,6 +52,9 @@
             :calendar-sync-provider="calendarSyncProvider"
             :calendar-type-options="calendarTypeOptions"
             :model-value="value"
+            :period-label="currentMonthLabel"
+            :period-range-label="currentDateRangeLabel"
+            :period-icon="entityEvent?.icon || 'mdi-calendar-month-outline'"
             @previous="goToPrevious"
             @today="goToToday"
             @next="goToNext"
@@ -292,7 +271,6 @@ import { useI18n } from 'vue-i18n'
 import { useDisplay } from 'vuetify'
 import { VSkeletonLoader } from 'vuetify/components'
 import { useSaplingEvent } from '@/composables/event/useSaplingEvent'
-import SaplingPageHero from '@/components/common/SaplingPageHero.vue'
 import SaplingDialog from '@/components/common/SaplingDialog.vue'
 import SaplingSurface from '@/components/common/SaplingSurface.vue'
 import SaplingCalendarTutorial from '@/components/system/tutorial/SaplingCalendarTutorial.vue'

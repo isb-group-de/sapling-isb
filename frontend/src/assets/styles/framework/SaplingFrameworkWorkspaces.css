@@ -979,6 +979,52 @@
     align-items: flex-end;
   }
 
+  .sapling-dashboard__hero.sapling-page-hero {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: var(--sapling-gap-md) var(--sapling-gap-xs);
+    padding: var(--sapling-space-panel-md);
+  }
+
+  .sapling-dashboard__hero .sapling-page-hero__copy {
+    display: contents;
+  }
+
+  .sapling-dashboard__hero .sapling-page-hero__eyebrow,
+  .sapling-dashboard__hero .sapling-page-hero__title-row {
+    grid-column: 1 / -1;
+  }
+
+  .sapling-dashboard__hero .sapling-page-hero__eyebrow {
+    margin-bottom: calc(var(--sapling-gap-md) * -1);
+  }
+
+  .sapling-dashboard__hero .sapling-page-hero__body {
+    grid-column: 1;
+    margin-top: 0;
+    padding-top: 0;
+  }
+
+  .sapling-dashboard__hero .sapling-page-hero__side {
+    grid-column: 2;
+  }
+
+  .sapling-dashboard__layout-actions,
+  .sapling-dashboard__hero .sapling-action-cluster {
+    flex-wrap: nowrap;
+  }
+
+  .sapling-dashboard__layout-actions > .v-btn {
+    width: var(--sapling-control-size-md);
+    min-width: var(--sapling-control-size-md);
+    height: var(--sapling-control-size-md);
+    padding: 0;
+    justify-content: center;
+  }
+
+  .sapling-dashboard__layout-actions > .v-btn .v-btn__prepend {
+    margin-inline: 0;
+  }
+
   .sapling-dashboard__hero .sapling-page-hero__side,
   .sapling-dashboard__hero .sapling-action-cluster {
     width: 100%;
@@ -987,7 +1033,7 @@
 
   .sapling-dashboard__hero .sapling-action-cluster {
     flex-direction: row;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     align-items: center;
   }
 
@@ -1006,6 +1052,35 @@
   .sapling-dashboard__board,
   .sapling-dashboard__favorites {
     padding: var(--sapling-space-panel-sm);
+  }
+
+  .sapling-dashboard__board.glass-panel,
+  .sapling-dashboard__favorites.glass-panel {
+    gap: var(--sapling-gap-md);
+    padding: 0;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  .sapling-dashboard__favorites.glass-panel {
+    overflow: visible;
+  }
+
+  .sapling-dashboard__favorites .sapling-card-strip__track {
+    box-sizing: border-box;
+    padding: 1px var(--sapling-space-2xs) 1px 1px;
+  }
+
+  .sapling-dashboard__board .sapling-dashboard__tabs-shell {
+    border-radius: var(--sapling-radius-sm);
+    background: var(--sapling-surface-fill);
+  }
+
+  .sapling-dashboard__board .sapling-kpi-grid {
+    margin: 0;
   }
 
   .sapling-dashboard__favorites .sapling-card-strip__track {

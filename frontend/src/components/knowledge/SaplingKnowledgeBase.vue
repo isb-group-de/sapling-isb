@@ -93,12 +93,19 @@
           </div>
         </header>
 
-        <div v-if="isLoading" class="sapling-knowledge-sidebar__article-list">
-          <v-skeleton-loader
+        <div
+          v-if="isLoading"
+          class="sapling-knowledge-sidebar__article-list sapling-knowledge-sidebar__article-list--loading"
+          aria-live="polite"
+          :aria-label="t('global.loading')"
+        >
+          <div
             v-for="skeletonIndex in 4"
             :key="`knowledge-article-skeleton-${skeletonIndex}`"
-            type="list-item-three-line"
-          />
+            class="sapling-knowledge-sidebar__article-skeleton"
+          >
+            <v-skeleton-loader type="list-item-three-line" />
+          </div>
         </div>
 
         <div
@@ -172,7 +179,7 @@
           <v-pagination
             :model-value="page"
             :length="totalPages"
-            :total-visible="5"
+            :total-visible="$vuetify.display.smAndDown ? 3 : 5"
             density="comfortable"
             rounded="circle"
             @update:model-value="onPageUpdate"
