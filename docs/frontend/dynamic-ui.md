@@ -689,6 +689,9 @@ Relation navigation marks tabs that contain staged create-time changes. Embedded
 relation tables keep edit and double-click workflows, but must not expose the
 target record's destructive delete action: unlinking a relation is performed
 explicitly through row selection and the relation tab's remove action.
+Reference dropdown tables hide the complete table toolbar explicitly while keeping
+their configured row-selection mode. `SaplingTable` itself keeps the toolbar visible
+by default so full table views and other existing consumers do not opt out accidentally.
 Compact `v-btn-toggle` controls use `sapling-segmented-toggle`; only the shared
 `--small` and `--field` modifiers may change their height to match a compact
 helper row or a full-height form control.

@@ -91,6 +91,8 @@ const SaplingTableStub = defineComponent({
   name: 'SaplingTable',
   props: {
     disableMobileView: Boolean,
+    multiSelect: Boolean,
+    showToolbar: Boolean,
   },
   emits: ['update:selected'],
   template:
@@ -188,6 +190,16 @@ describe('SaplingFieldSelect', () => {
     await wrapper.findComponent(VAutocompleteStub).vm.$emit('focus')
 
     expect(wrapper.findComponent(SaplingTableStub).props('disableMobileView')).toBe(true)
+  })
+
+  it('hides the dropdown toolbar without disabling multi-selection', async () => {
+    const wrapper = mountSelectField()
+
+    await wrapper.findComponent(VAutocompleteStub).vm.$emit('focus')
+
+    const table = wrapper.findComponent(SaplingTableStub)
+    expect(table.props('showToolbar')).toBe(false)
+    expect(table.props('multiSelect')).toBe(true)
   })
 
   it('constrains and repositions the dropdown within zoomed viewports', () => {

@@ -132,6 +132,16 @@ const VBtnStub = defineComponent({
   template: '<button :disabled="disabled" @click="$emit(\'click\', $event)"><slot /></button>',
 })
 
+const SaplingTableStub = defineComponent({
+  name: 'SaplingTable',
+  props: {
+    multiSelect: Boolean,
+    showToolbar: Boolean,
+  },
+  emits: ['update:selected'],
+  template: '<div />',
+})
+
 const SaplingDialogEditStub = defineComponent({
   name: 'SaplingDialogEdit',
   props: {
@@ -180,7 +190,7 @@ function mountField(
         'v-tooltip': VTooltipStub,
         'v-btn': VBtnStub,
         'v-icon': true,
-        SaplingTable: true,
+        SaplingTable: SaplingTableStub,
         SaplingDialogEdit: SaplingDialogEditStub,
       },
     },
@@ -226,6 +236,16 @@ describe('SaplingFieldSingleSelect reference dialog', () => {
         options: ['isValue'],
       },
     ])
+  })
+
+  it('hides the dropdown toolbar for a single-select table', async () => {
+    const wrapper = mountField()
+
+    await wrapper.getComponent(VAutocompleteStub).vm.$emit('focus')
+
+    const table = wrapper.getComponent(SaplingTableStub)
+    expect(table.props('showToolbar')).toBe(false)
+    expect(table.props('multiSelect')).toBe(false)
   })
 
   it('keeps the open action disabled until a record is selected', () => {

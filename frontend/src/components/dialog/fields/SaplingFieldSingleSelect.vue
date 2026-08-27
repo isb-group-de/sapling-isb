@@ -88,6 +88,7 @@
           :entity-permission="entityPermission"
           :show-actions="false"
           :show-search="false"
+          :show-toolbar="false"
           :multi-select="false"
           :disable-mobile-view="disableDropdownMobileView"
           :table-key="entityHandle"
