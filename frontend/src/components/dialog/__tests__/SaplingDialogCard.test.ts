@@ -23,7 +23,10 @@ function mountCard(props: { tilt?: boolean } = {}) {
 
 describe('SaplingDialogCard', () => {
   it('keeps dialog surfaces static by default', () => {
-    expect(mountCard().getComponent({ name: 'SaplingSurface' }).props('tilt')).toBe(false)
+    const surface = mountCard().getComponent({ name: 'SaplingSurface' })
+
+    expect(surface.props('tilt')).toBe(false)
+    expect(surface.attributes('class')).toContain('sapling-nested-backdrop-host')
   })
 
   it('allows the login surface to opt in to tilt', () => {

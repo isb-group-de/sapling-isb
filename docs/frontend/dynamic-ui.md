@@ -692,6 +692,9 @@ explicitly through row selection and the relation tab's remove action.
 Reference dropdown tables hide the complete table toolbar explicitly while keeping
 their configured row-selection mode. `SaplingTable` itself keeps the toolbar visible
 by default so full table views and other existing consumers do not opt out accidentally.
+Glass dialog cards and reference dropdown surfaces paint their outer blur on a sibling
+underlay. This avoids creating an ancestor Backdrop Root, allowing sticky table headers
+and action columns to blur scrolling rows consistently inside overlays as well as pages.
 Compact `v-btn-toggle` controls use `sapling-segmented-toggle`; only the shared
 `--small` and `--field` modifiers may change their height to match a compact
 helper row or a full-height form control.

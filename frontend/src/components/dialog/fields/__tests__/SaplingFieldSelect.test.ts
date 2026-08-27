@@ -202,6 +202,12 @@ describe('SaplingFieldSelect', () => {
     expect(table.props('multiSelect')).toBe(true)
   })
 
+  it('keeps nested header blur outside the menu backdrop root', () => {
+    expect(mountSelectField().find('.sapling-menu-surface').classes()).toContain(
+      'sapling-nested-backdrop-host',
+    )
+  })
+
   it('constrains and repositions the dropdown within zoomed viewports', () => {
     const menu = mountSelectField().findComponent(VMenuStub)
 

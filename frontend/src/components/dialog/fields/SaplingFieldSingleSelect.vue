@@ -63,7 +63,7 @@
       </template>
       <div
         ref="menuSurfaceRef"
-        class="glass-panel sapling-menu-surface sapling-menu-surface--field-table"
+        class="glass-panel sapling-menu-surface sapling-menu-surface--field-table sapling-nested-backdrop-host"
         @focusout="closeMenuWhenFocusLeaves"
         @keydown.tab.capture="closeMenuOnTab"
         @keydown.esc="closeMenuOnEscape"

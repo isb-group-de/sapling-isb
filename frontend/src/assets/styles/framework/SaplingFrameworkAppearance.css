@@ -320,11 +320,45 @@ body {
     box-shadow 0.3s ease;
 }
 
+/*
+ * A backdrop-filter on an ancestor forms a Backdrop Root. Nested glass such as
+ * sticky table headers can then no longer sample the scrolling content behind
+ * them. Paint the host's blur on a sibling underlay instead, preserving the
+ * glass appearance without trapping descendant backdrop filters.
+ */
+.glass-panel.sapling-nested-backdrop-host {
+  --sapling-nested-backdrop-filter: blur(var(--sapling-blur-md));
+  position: relative;
+  isolation: isolate;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.glass-panel.sapling-nested-backdrop-host.sapling-menu-surface--field-table {
+  --sapling-nested-backdrop-filter: blur(var(--sapling-blur-strong));
+}
+
+.glass-panel.sapling-nested-backdrop-host::before {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  content: '';
+  backdrop-filter: var(--sapling-nested-backdrop-filter);
+  -webkit-backdrop-filter: var(--sapling-nested-backdrop-filter);
+}
+
 :root[data-sapling-glass='off'] .v-sheet:not(.sapling-surface),
 :root[data-sapling-glass='off'] .glass-panel {
   border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity)) !important;
   background: rgb(var(--v-theme-surface)) !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.22) !important;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+:root[data-sapling-glass='off'] .glass-panel.sapling-nested-backdrop-host::before {
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }

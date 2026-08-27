@@ -248,6 +248,12 @@ describe('SaplingFieldSingleSelect reference dialog', () => {
     expect(table.props('multiSelect')).toBe(false)
   })
 
+  it('keeps nested header blur outside the menu backdrop root', () => {
+    expect(mountField().find('.sapling-menu-surface').classes()).toContain(
+      'sapling-nested-backdrop-host',
+    )
+  })
+
   it('keeps the open action disabled until a record is selected', () => {
     const wrapper = mountField()
 
