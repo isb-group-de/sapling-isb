@@ -394,6 +394,7 @@ export class FormConfigService {
     }
     if (isBooleanTemplate) {
       mergedFormConfig.required = false;
+      mergedFormConfig.recommended = false;
     }
 
     const nextTemplate = {

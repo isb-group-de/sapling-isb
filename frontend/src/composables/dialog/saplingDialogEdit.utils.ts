@@ -89,6 +89,7 @@ function applyFieldConfig(
   }
   if (isBooleanTemplate) {
     mergedFormConfig.required = false
+    mergedFormConfig.recommended = false
   }
 
   return {

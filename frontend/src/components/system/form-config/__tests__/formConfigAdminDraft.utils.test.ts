@@ -31,6 +31,34 @@ describe('formConfigAdminDraft utils', () => {
     expect(draft.groups).toEqual([{ key: 'main', label: 'Main', visible: true, order: 100 }])
   })
 
+  it('inherits recommended metadata and lets required configuration take precedence', () => {
+    const templates = [
+      {
+        name: 'contract',
+        type: 'ContractItem',
+        formGroup: 'main',
+        formVisible: true,
+        options: ['isRecommended'],
+      },
+    ] as unknown as EntityTemplate[]
+
+    const recommendedDraft = buildFormConfigDraftRows(
+      templates,
+      {},
+      {},
+      (template) => template.name,
+    )
+    expect(recommendedDraft.fields[0]).toMatchObject({ required: false, recommended: true })
+
+    const requiredDraft = buildFormConfigDraftRows(
+      templates,
+      { contract: { required: true, recommended: true } },
+      {},
+      (template) => template.name,
+    )
+    expect(requiredDraft.fields[0]).toMatchObject({ required: true, recommended: false })
+  })
+
   it('creates collision-free custom groups and preserves occupied groups', () => {
     const groups = [{ key: 'ticket.customGroup2', label: 'Existing', visible: true, order: 100 }]
     const created = createFormConfigGroup(groups, 'ticket', 'Extra')

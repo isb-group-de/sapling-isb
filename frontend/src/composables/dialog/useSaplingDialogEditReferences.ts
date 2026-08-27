@@ -7,6 +7,7 @@ import { isTextSearchableTemplate } from '@/utils/saplingTableUtil'
 import { getDialogRecordRelations } from './saplingDialogRecordLoader'
 
 type DependencyComparableValue = string | number | boolean
+export type SaplingReferenceAvailability = 'unknown' | 'loading' | 'available' | 'unavailable'
 
 interface UseSaplingDialogEditReferencesOptions {
   form: Ref<SaplingGenericItem>
@@ -18,7 +19,22 @@ interface UseSaplingDialogEditReferencesOptions {
 export function useSaplingDialogEditReferences(options: UseSaplingDialogEditReferencesOptions) {
   const genericStore = useGenericStore()
   const referenceColumnsMap = ref<Record<string, EntityTemplate[]>>({})
+  const referenceAvailabilityMap = ref<Record<string, SaplingReferenceAvailability>>({})
   const autoSelectRequestIds = new Map<string, number>()
+
+  function setReferenceAvailability(
+    fieldName: string,
+    availability: SaplingReferenceAvailability,
+  ): void {
+    referenceAvailabilityMap.value = {
+      ...referenceAvailabilityMap.value,
+      [fieldName]: availability,
+    }
+  }
+
+  function getReferenceAvailability(template: EntityTemplate): SaplingReferenceAvailability {
+    return referenceAvailabilityMap.value[template.name] ?? 'unknown'
+  }
 
   function getTemplateByName(name: string): EntityTemplate | undefined {
     return options.templates.value.find((template) => template.name === name)
@@ -150,20 +166,23 @@ export function useSaplingDialogEditReferences(options: UseSaplingDialogEditRefe
     autoSelectRequestIds.set(template.name, requestId)
 
     if (!dependency?.parentField || !dependency.targetField || !entityHandle) {
+      setReferenceAvailability(template.name, 'unknown')
       return null
     }
 
     const parentIdentifier = extractDependencyIdentifier(options.form.value[dependency.parentField])
-    if (
-      parentIdentifier == null ||
-      options.hasFormValue(options.form.value[template.name]) ||
-      !canReadReferenceEntity(entityHandle)
-    ) {
+    if (parentIdentifier == null || !canReadReferenceEntity(entityHandle)) {
+      setReferenceAvailability(template.name, parentIdentifier == null ? 'unavailable' : 'unknown')
+      return null
+    }
+
+    if (options.hasFormValue(options.form.value[template.name])) {
       return null
     }
 
     const parentSignature = JSON.stringify(parentIdentifier)
     const parentFilter = getReferenceParentFilter(template)
+    setReferenceAvailability(template.name, 'loading')
 
     try {
       await genericStore.loadGeneric(entityHandle, 'global')
@@ -180,16 +199,61 @@ export function useSaplingDialogEditReferences(options: UseSaplingDialogEditRefe
       )
       if (
         autoSelectRequestIds.get(template.name) !== requestId ||
-        JSON.stringify(currentParentIdentifier) !== parentSignature ||
-        options.hasFormValue(options.form.value[template.name]) ||
-        result.meta.total !== 1
+        JSON.stringify(currentParentIdentifier) !== parentSignature
       ) {
+        return null
+      }
+
+      setReferenceAvailability(template.name, result.meta.total > 0 ? 'available' : 'unavailable')
+
+      if (options.hasFormValue(options.form.value[template.name]) || result.meta.total !== 1) {
         return null
       }
 
       return result.data[0] ?? null
     } catch {
+      if (autoSelectRequestIds.get(template.name) === requestId) {
+        setReferenceAvailability(template.name, 'unknown')
+      }
       return null
+    }
+  }
+
+  async function inspectRecommendedReference(template: EntityTemplate): Promise<void> {
+    if (!template.isReference || !template.referenceName?.trim()) {
+      setReferenceAvailability(template.name, 'unknown')
+      return
+    }
+
+    if (template.referenceDependency) {
+      await findSingleReferenceForDependency(template)
+      return
+    }
+
+    if (
+      options.hasFormValue(options.form.value[template.name]) ||
+      !canReadReferenceEntity(template.referenceName)
+    ) {
+      return
+    }
+
+    const requestId = (autoSelectRequestIds.get(template.name) ?? 0) + 1
+    autoSelectRequestIds.set(template.name, requestId)
+    setReferenceAvailability(template.name, 'loading')
+
+    try {
+      const result = await ApiGenericService.find<SaplingGenericItem>(template.referenceName, {
+        page: 1,
+        limit: 1,
+      })
+      if (autoSelectRequestIds.get(template.name) !== requestId) {
+        return
+      }
+      setReferenceAvailability(template.name, result.meta.total > 0 ? 'available' : 'unavailable')
+    } catch {
+      if (autoSelectRequestIds.get(template.name) === requestId) {
+        setReferenceAvailability(template.name, 'unknown')
+      }
     }
   }
 
@@ -322,6 +386,8 @@ export function useSaplingDialogEditReferences(options: UseSaplingDialogEditRefe
     isReferenceValueValidForDependency,
     applyReferenceDependencyParent,
     findSingleReferenceForDependency,
+    inspectRecommendedReference,
+    getReferenceAvailability,
     getReferenceColumnsSync,
     canReadReferenceEntity,
     ensureReferenceColumns,

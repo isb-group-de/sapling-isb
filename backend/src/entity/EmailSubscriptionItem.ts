@@ -172,6 +172,21 @@ export class EmailSubscriptionItem {
   @Property({ default: true, nullable: false })
   isActive: boolean = true;
 
+  @ApiPropertyOptional({ default: true })
+  @SaplingForm({
+    order: 200,
+    group: 'emailSubscription.groupConfiguration',
+    groupOrder: 200,
+    width: 1,
+    visible: true,
+    tableOrder: 200,
+    tableVisible: true,
+    mobileOrder: 200,
+    mobileVisible: false,
+  })
+  @Property({ default: true, nullable: false })
+  allowRepeatedSending: boolean = true;
+
   @ApiProperty({ type: () => EntityItem })
   @Sapling(['isEntity'])
   @SaplingForm({

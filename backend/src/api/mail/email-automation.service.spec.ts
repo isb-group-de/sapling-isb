@@ -1,4 +1,5 @@
 import { EmailAutomationService } from './email-automation.service';
+import { EmailDeliveryItem } from '../../entity/EmailDeliveryItem';
 
 type MockEntityManager = {
   find: jest.Mock;
@@ -9,6 +10,7 @@ function createService(options?: {
   subscriptions?: object[];
   recipientValue?: unknown;
   sender?: object | null;
+  existingDelivery?: object | null;
 }): {
   em: MockEntityManager;
   mailService: { sendEmail: jest.Mock };
@@ -20,15 +22,21 @@ function createService(options?: {
 } {
   const em: MockEntityManager = {
     find: jest.fn().mockResolvedValue(options?.subscriptions ?? []),
-    findOne: jest.fn().mockResolvedValue(
-      options?.sender === null
-        ? null
-        : (options?.sender ?? {
-            handle: 42,
-            type: { handle: 'azure' },
-            session: { refreshToken: 'refresh-token' },
-          }),
-    ),
+    findOne: jest.fn().mockImplementation((entityClass: unknown) => {
+      if (entityClass === EmailDeliveryItem) {
+        return Promise.resolve(options?.existingDelivery ?? null);
+      }
+
+      return Promise.resolve(
+        options?.sender === null
+          ? null
+          : (options?.sender ?? {
+              handle: 42,
+              type: { handle: 'azure' },
+              session: { refreshToken: 'refresh-token' },
+            }),
+      );
+    }),
   };
   const mailService = {
     sendEmail: jest.fn().mockResolvedValue({ handle: 31 }),
@@ -111,6 +119,7 @@ describe('EmailAutomationService', () => {
         to: ['ada@example.test'],
       }),
       expect.objectContaining({ handle: 42 }),
+      expect.objectContaining({ subscription }),
     );
   });
 
@@ -136,6 +145,7 @@ describe('EmailAutomationService', () => {
         senderEmail: 'support@example.test',
       }),
       expect.objectContaining({ handle: 42 }),
+      expect.objectContaining({ subscription }),
     );
   });
 
@@ -197,6 +207,94 @@ describe('EmailAutomationService', () => {
         to: ['ada@example.test'],
       }),
       expect.objectContaining({ handle: 42 }),
+      expect.objectContaining({ subscription }),
+    );
+  });
+
+  it('skips a non-repeatable subscription when the same rule already created a delivery for the record', async () => {
+    const subscription = createSubscription({
+      allowRepeatedSending: false,
+      conditions: [{ observedField: 'status', newValue: 'inProgress' }],
+    });
+    const { em, mailService, messageTemplateService, service } = createService({
+      subscriptions: [subscription],
+      existingDelivery: { handle: 31 },
+    });
+
+    await service.handleAfterUpdate(
+      'ticket',
+      101,
+      { status: 'waiting' },
+      { status: 'inProgress' },
+      { handle: 1 } as never,
+    );
+
+    expect(em.findOne).toHaveBeenCalledWith(EmailDeliveryItem, {
+      subscription: { handle: 12 },
+      entity: { handle: 'ticket' },
+      referenceHandle: '101',
+    });
+    expect(messageTemplateService.buildContext).not.toHaveBeenCalled();
+    expect(mailService.sendEmail).not.toHaveBeenCalled();
+  });
+
+  it('persists automation provenance and a deduplication key for the first non-repeatable delivery', async () => {
+    const subscription = createSubscription({
+      allowRepeatedSending: false,
+      conditions: [{ observedField: 'status', newValue: 'inProgress' }],
+    });
+    const { mailService, service } = createService({
+      subscriptions: [subscription],
+      existingDelivery: null,
+    });
+
+    await service.handleAfterUpdate(
+      'ticket',
+      101,
+      { status: 'waiting' },
+      { status: 'inProgress' },
+      { handle: 1 } as never,
+    );
+
+    expect(mailService.sendEmail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        entityHandle: 'ticket',
+        itemHandle: 101,
+      }),
+      expect.objectContaining({ handle: 42 }),
+      {
+        subscription,
+        deduplicationKey: '12:ticket:101',
+      },
+    );
+  });
+
+  it('continues to send repeatedly by default for backward compatibility', async () => {
+    const subscription = createSubscription({
+      conditions: [{ observedField: 'status', newValue: 'inProgress' }],
+    });
+    const { em, mailService, service } = createService({
+      subscriptions: [subscription],
+      existingDelivery: { handle: 31 },
+    });
+
+    await service.handleAfterUpdate(
+      'ticket',
+      101,
+      { status: 'waiting' },
+      { status: 'inProgress' },
+      { handle: 1 } as never,
+    );
+
+    expect(em.findOne).not.toHaveBeenCalledWith(
+      EmailDeliveryItem,
+      expect.anything(),
+    );
+    expect(mailService.sendEmail).toHaveBeenCalledTimes(1);
+    expect(mailService.sendEmail).toHaveBeenCalledWith(
+      expect.any(Object),
+      expect.any(Object),
+      { subscription, deduplicationKey: undefined },
     );
   });
 

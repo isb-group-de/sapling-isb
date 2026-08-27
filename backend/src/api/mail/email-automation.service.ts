@@ -1,6 +1,7 @@
 import { EntityManager } from '@mikro-orm/core';
 import { Injectable, Logger } from '@nestjs/common';
 import { EmailSubscriptionItem } from '../../entity/EmailSubscriptionItem';
+import { EmailDeliveryItem } from '../../entity/EmailDeliveryItem';
 import { PersonItem } from '../../entity/PersonItem';
 import { MessageTemplateService } from '../template/message-template.service';
 import { MailService } from './mail.service';
@@ -134,6 +135,13 @@ export class EmailAutomationService {
           continue;
         }
 
+        if (
+          subscription.allowRepeatedSending === false &&
+          (await this.hasExistingDelivery(subscription, options))
+        ) {
+          continue;
+        }
+
         await this.sendSubscriptionEmail(subscription, options);
       } catch (error) {
         this.logger.error(
@@ -228,7 +236,48 @@ export class EmailAutomationService {
         },
       },
       sender,
+      {
+        subscription,
+        deduplicationKey:
+          subscription.allowRepeatedSending === false
+            ? this.buildDeduplicationKey(subscription, options)
+            : undefined,
+      },
     );
+  }
+
+  private async hasExistingDelivery(
+    subscription: EmailSubscriptionItem,
+    options: {
+      entityHandle: string;
+      referenceHandle: string | number;
+    },
+  ): Promise<boolean> {
+    if (!subscription.handle) {
+      return false;
+    }
+
+    const existing = await this.em.findOne(EmailDeliveryItem, {
+      subscription: { handle: subscription.handle },
+      entity: { handle: options.entityHandle },
+      referenceHandle: String(options.referenceHandle),
+    });
+
+    return Boolean(existing);
+  }
+
+  private buildDeduplicationKey(
+    subscription: EmailSubscriptionItem,
+    options: {
+      entityHandle: string;
+      referenceHandle: string | number;
+    },
+  ): string | undefined {
+    if (!subscription.handle) {
+      return undefined;
+    }
+
+    return `${subscription.handle}:${options.entityHandle}:${options.referenceHandle}`;
   }
 
   private matchesSingleCondition(

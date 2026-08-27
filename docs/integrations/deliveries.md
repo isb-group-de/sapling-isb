@@ -104,6 +104,7 @@ Mail supports:
 - Google senders
 - attachments from document records
 - delivery tracking
+- optional per-rule, per-record suppression of repeated automatic deliveries
 - optional creation of a related event entry
 
 The `emails` queue passes:

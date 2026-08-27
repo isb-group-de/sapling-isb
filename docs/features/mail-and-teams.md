@@ -92,6 +92,7 @@ Markdown is rendered to HTML by the shared renderer. Mail additionally creates a
 | Field                                                   | Meaning                                          |
 | ------------------------------------------------------- | ------------------------------------------------ |
 | `status`                                                | Pending, success, failed                         |
+| `subscription`                                          | Optional source automation rule                  |
 | `template`                                              | Optional source template                         |
 | `entity`                                                | Target entity                                    |
 | `createdBy`                                             | Sending user                                     |
@@ -108,17 +109,18 @@ Markdown is rendered to HTML by the shared renderer. Mail additionally creates a
 `EmailSubscriptionItem` configures automatic email delivery for generic entity
 mutations.
 
-| Field            | Meaning                                                         |
-| ---------------- | --------------------------------------------------------------- |
-| `description`    | Human-readable rule name                                        |
-| `entity`         | Page/entity being observed                                      |
-| `type`           | Lifecycle trigger, usually `afterInsert` or `afterUpdate`       |
-| `recipientField` | Context path resolving a `PersonItem` or email address          |
-| `senderPerson`   | Sapling user whose Azure/Google session authenticates the send  |
-| `senderMailbox`  | Optional assigned shared mailbox used as the visible sender     |
-| `template`       | Entity-dependent email template                                 |
-| `conditions`     | Optional list of observed fields with old/new value constraints |
-| `isActive`       | Enables/disables the rule                                       |
+| Field                  | Meaning                                                           |
+| ---------------------- | ----------------------------------------------------------------- |
+| `description`          | Human-readable rule name                                          |
+| `entity`               | Page/entity being observed                                        |
+| `type`                 | Lifecycle trigger, usually `afterInsert` or `afterUpdate`         |
+| `recipientField`       | Context path resolving a `PersonItem` or email address            |
+| `senderPerson`         | Sapling user whose Azure/Google session authenticates the send    |
+| `senderMailbox`        | Optional assigned shared mailbox used as the visible sender       |
+| `template`             | Entity-dependent email template                                   |
+| `conditions`           | Optional list of observed fields with old/new value constraints   |
+| `isActive`             | Enables/disables the rule                                         |
+| `allowRepeatedSending` | Allows the rule to create multiple deliveries for the same record |
 
 ## Email Flow
 
@@ -197,6 +199,16 @@ ticket rule can require both `solutionDescription` to change and `status` to
 change to `closed`. Custom fields are available as `customFields.<fieldKey>`;
 their configured labels and select options are used by the condition editor,
 and their hydrated old/new values participate in update matching.
+
+Each subscription can disable `allowRepeatedSending`. In that mode, an existing
+`EmailDeliveryItem` with the same subscription, entity, and record reference
+suppresses later executions, independent of the condition transition that
+matched again. The delivery keeps the subscription as audit provenance. A
+unique internal deduplication key is persisted only for non-repeatable rules,
+so concurrent matching updates cannot create two delivery records. Pending and
+failed deliveries count as an execution and are retried through the existing
+delivery retry workflow instead of creating a new outbound message. Existing
+subscriptions default to repeated sending to preserve their prior behavior.
 
 For automatic shared-mailbox delivery, `senderPerson` remains the OAuth
 authentication identity and `senderMailbox` supplies the visible From address.
@@ -353,6 +365,7 @@ When adding a new automatic email subscription:
 6. For update notifications, each condition observes one field; optionally set `oldValue` and/or `newValue`.
 7. Use relation handles for value constraints, for example `closed` for a status handle.
 8. Make sure the recipient path resolves to a person with an email address or directly to an email string.
+9. Disable `allowRepeatedSending` when the rule may create at most one delivery per referenced record.
 
 When configuring a manual context default:
 

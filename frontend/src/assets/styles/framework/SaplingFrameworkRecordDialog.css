@@ -507,6 +507,7 @@
 
 .sapling-record-field-shell {
   display: flex;
+  flex-wrap: wrap;
   flex: 1 1 auto;
   align-self: flex-start;
   align-items: flex-start;
@@ -546,6 +547,30 @@
   border-color: rgba(var(--v-theme-warning), 0.58);
   background: transparent;
   box-shadow: 0 0 0 var(--sapling-space-3xs) rgba(var(--v-theme-warning), 0.1);
+}
+
+.sapling-record-field-shell--recommended {
+  border-color: rgba(var(--v-theme-warning), 0.72);
+  background: rgba(var(--v-theme-warning), 0.05);
+  box-shadow: 0 0 0 var(--sapling-space-3xs) rgba(var(--v-theme-warning), 0.12);
+}
+
+.sapling-record-field-recommendation {
+  display: flex;
+  flex: 1 0 100%;
+  align-items: flex-start;
+  gap: var(--sapling-gap-2xs);
+  width: 100%;
+  padding-block: var(--sapling-space-3xs);
+  padding-inline: var(--sapling-space-2xs);
+  color: rgb(var(--v-theme-warning));
+  font-size: var(--sapling-font-size-sm);
+  line-height: 1.35;
+}
+
+.sapling-record-field-recommendation .v-icon {
+  flex: 0 0 auto;
+  margin-top: 0.08em;
 }
 
 .sapling-record-field-shell .v-input,

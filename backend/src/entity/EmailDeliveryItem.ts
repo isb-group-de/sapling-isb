@@ -2,6 +2,7 @@ import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { type Rel } from '@mikro-orm/core';
 import { EmailDeliveryStatusItem } from './EmailDeliveryStatusItem';
+import { EmailSubscriptionItem } from './EmailSubscriptionItem';
 import { EmailTemplateItem } from './EmailTemplateItem';
 import { EntityItem } from './EntityItem';
 import { PersonItem } from './PersonItem';
@@ -31,6 +32,26 @@ export class EmailDeliveryItem {
     nullable: true,
   })
   status?: Rel<EmailDeliveryStatusItem>;
+
+  @ApiPropertyOptional({ type: () => EmailSubscriptionItem })
+  @Sapling(['isReadOnly'])
+  @SaplingForm({
+    order: 50,
+    group: 'emailDelivery.groupContent',
+    groupOrder: 200,
+    width: 4,
+    visible: true,
+    tableOrder: 50,
+    tableVisible: false,
+    mobileOrder: 50,
+    mobileVisible: false,
+  })
+  @ManyToOne(() => EmailSubscriptionItem, {
+    nullable: true,
+    deleteRule: 'set null',
+    index: true,
+  })
+  subscription?: Rel<EmailSubscriptionItem> | null;
 
   @ApiPropertyOptional({ type: () => EmailTemplateItem })
   @SaplingForm({
@@ -263,6 +284,9 @@ export class EmailDeliveryItem {
   })
   @Property({ nullable: true, length: 64 })
   referenceHandle?: string;
+
+  @Property({ nullable: true, length: 160, unique: true, hidden: true })
+  automationDeduplicationKey?: string;
 
   @ApiProperty()
   @Sapling(['isChip'])

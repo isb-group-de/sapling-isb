@@ -192,6 +192,7 @@ export class FormConfigValidationService {
 
     this.setBoolean(record, fieldConfig, 'visible');
     this.setBoolean(record, fieldConfig, 'required');
+    this.setBoolean(record, fieldConfig, 'recommended');
     this.setBoolean(record, fieldConfig, 'readonly');
     this.setBoolean(record, fieldConfig, 'tableVisible');
     this.setBoolean(record, fieldConfig, 'mobileVisible');
@@ -205,6 +206,10 @@ export class FormConfigValidationService {
     this.setNullableNumber(record, fieldConfig, 'mobileOrder');
     this.setNullableWidth(record, fieldConfig, 'width');
     this.setRenderer(record, fieldConfig);
+
+    if (fieldConfig.required === true) {
+      fieldConfig.recommended = false;
+    }
 
     if (Object.prototype.hasOwnProperty.call(record, 'defaultValue')) {
       fieldConfig.defaultValue = record.defaultValue;
@@ -231,7 +236,13 @@ export class FormConfigValidationService {
   private setBoolean(
     source: Record<string, unknown>,
     target: SaplingFormFieldConfig,
-    key: 'visible' | 'required' | 'readonly' | 'tableVisible' | 'mobileVisible',
+    key:
+      | 'visible'
+      | 'required'
+      | 'recommended'
+      | 'readonly'
+      | 'tableVisible'
+      | 'mobileVisible',
   ): void {
     if (typeof source[key] === 'boolean') {
       target[key] = source[key];

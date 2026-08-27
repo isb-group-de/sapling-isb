@@ -10,6 +10,7 @@ import { Queue } from 'bullmq';
 import { REDIS_ENABLED } from '../../constants/project.constants';
 import { EmailDeliveryItem } from '../../entity/EmailDeliveryItem';
 import { EmailDeliveryStatusItem } from '../../entity/EmailDeliveryStatusItem';
+import type { EmailSubscriptionItem } from '../../entity/EmailSubscriptionItem';
 import { EmailTemplateItem } from '../../entity/EmailTemplateItem';
 import { EntityItem } from '../../entity/EntityItem';
 import { PersonItem } from '../../entity/PersonItem';
@@ -113,6 +114,10 @@ export class MailService {
   async sendEmail(
     sendDto: MailSendDto,
     currentUser: PersonItem,
+    automation?: {
+      subscription: EmailSubscriptionItem;
+      deduplicationKey?: string;
+    },
   ): Promise<EmailDeliveryItem> {
     const preview = await this.previewEmail(sendDto, currentUser);
     if (preview.to.length === 0) {
@@ -133,6 +138,8 @@ export class MailService {
     delivery.status = await this.ensureStatus(this.em, 'pending');
     delivery.entity = entity;
     delivery.createdBy = currentUser;
+    delivery.subscription = automation?.subscription;
+    delivery.automationDeduplicationKey = automation?.deduplicationKey;
     delivery.template = sendDto.templateHandle
       ? ((await this.em.findOne(EmailTemplateItem, {
           handle: sendDto.templateHandle,

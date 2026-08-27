@@ -79,6 +79,26 @@ describe('FormConfigService', () => {
     });
   });
 
+  it('normalizes recommended fields and lets required configuration take precedence', () => {
+    const service = new FormConfigService({} as never);
+    const result = service.validateConfig(
+      'ticket',
+      {
+        schema: SAPLING_FORM_CONFIG_SCHEMA,
+        entityHandle: 'ticket',
+        fields: {
+          contract: { required: true, recommended: true },
+        },
+      },
+      [createTemplate({ name: 'contract' })],
+    );
+
+    expect(result.normalizedConfig.fields.contract).toMatchObject({
+      required: true,
+      recommended: false,
+    });
+  });
+
   it('applies table and mobile configuration to effective templates', async () => {
     const em = {
       find: jest.fn<() => Promise<object[]>>().mockResolvedValue([

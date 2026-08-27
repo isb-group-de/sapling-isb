@@ -18,6 +18,7 @@ export interface FieldDraft {
   placeholder: string
   helpText: string
   required: boolean
+  recommended: boolean
   readonly: boolean
 }
 

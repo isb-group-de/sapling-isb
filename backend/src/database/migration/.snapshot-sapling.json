@@ -14610,6 +14610,23 @@
           "enumItems": [],
           "mappedType": "integer"
         },
+        "automation_deduplication_key": {
+          "name": "automation_deduplication_key",
+          "type": "varchar(160)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": true,
+          "length": 160,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
         "bcc_recipients": {
           "name": "bcc_recipients",
           "type": "jsonb",
@@ -14967,6 +14984,23 @@
           "enumItems": [],
           "mappedType": "string"
         },
+        "subscription_handle": {
+          "name": "subscription_handle",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
         "template_handle": {
           "name": "template_handle",
           "type": "int",
@@ -15020,6 +15054,16 @@
         }
       },
       "indexes": [
+        {
+          "columnNames": [
+            "automation_deduplication_key"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "email_delivery_item_automation_deduplication_key_unique",
+          "primary": false,
+          "unique": true
+        },
         {
           "columnNames": [
             "created_by_handle"
@@ -15078,6 +15122,16 @@
           "composite": true,
           "constraint": false,
           "keyName": "email_delivery_item_status_handle_next_retry_at_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "subscription_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "email_delivery_item_subscription_handle_index",
           "primary": false,
           "unique": false
         },
@@ -15153,6 +15207,18 @@
             "handle"
           ],
           "referencedTableName": "public.email_delivery_status_item",
+          "deleteRule": "set null"
+        },
+        "email_delivery_item_subscription_handle_foreign": {
+          "columnNames": [
+            "subscription_handle"
+          ],
+          "constraintName": "email_delivery_item_subscription_handle_foreign",
+          "localTableName": "public.email_delivery_item",
+          "referencedColumnNames": [
+            "handle"
+          ],
+          "referencedTableName": "public.email_subscription_item",
           "deleteRule": "set null"
         },
         "email_delivery_item_template_handle_foreign": {
@@ -16364,6 +16430,23 @@
       "name": "email_subscription_item",
       "schema": "public",
       "columns": {
+        "allow_repeated_sending": {
+          "name": "allow_repeated_sending",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": "true",
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "boolean"
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamptz(6)",
@@ -35276,6 +35359,23 @@
           "enumItems": [],
           "mappedType": "string"
         },
+        "holiday_group_handle": {
+          "name": "holiday_group_handle",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
         "icon": {
           "name": "icon",
           "type": "varchar(64)",
@@ -35327,6 +35427,23 @@
           "enumItems": [],
           "mappedType": "integer"
         },
+        "time_zone": {
+          "name": "time_zone",
+          "type": "varchar(64)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": 64,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
         "title": {
           "name": "title",
           "type": "varchar(128)",
@@ -35360,9 +35477,36 @@
           "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
+        },
+        "work_week_handle": {
+          "name": "work_week_handle",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
         }
       },
       "indexes": [
+        {
+          "columnNames": [
+            "holiday_group_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "sla_policy_item_holiday_group_handle_index",
+          "primary": false,
+          "unique": false
+        },
         {
           "columnNames": [
             "handle"
@@ -35372,11 +35516,46 @@
           "keyName": "sla_policy_item_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "work_week_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "sla_policy_item_work_week_handle_index",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
       "triggers": [],
-      "foreignKeys": {},
+      "foreignKeys": {
+        "sla_policy_item_holiday_group_handle_foreign": {
+          "columnNames": [
+            "holiday_group_handle"
+          ],
+          "constraintName": "sla_policy_item_holiday_group_handle_foreign",
+          "localTableName": "public.sla_policy_item",
+          "referencedColumnNames": [
+            "handle"
+          ],
+          "referencedTableName": "public.holiday_group_item",
+          "deleteRule": "set null"
+        },
+        "sla_policy_item_work_week_handle_foreign": {
+          "columnNames": [
+            "work_week_handle"
+          ],
+          "constraintName": "sla_policy_item_work_week_handle_foreign",
+          "localTableName": "public.sla_policy_item",
+          "referencedColumnNames": [
+            "handle"
+          ],
+          "referencedTableName": "public.work_hour_week_item",
+          "deleteRule": "set null"
+        }
+      },
       "comment": null
     },
     {

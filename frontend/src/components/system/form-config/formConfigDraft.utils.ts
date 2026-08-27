@@ -31,6 +31,7 @@ export function buildFormConfigPayload(
           placeholder: field.placeholder.trim() || null,
           helpText: field.helpText.trim() || null,
           required: field.required,
+          recommended: field.required ? false : field.recommended,
           readonly: field.readonly,
         } satisfies SaplingFormFieldConfig,
       ]),
@@ -59,6 +60,8 @@ export function applyFormConfigDraftToTemplate(
     return template
   }
 
+  const isRecommended = !field.required && field.recommended
+
   return {
     ...template,
     formGroup: field.group || null,
@@ -74,6 +77,9 @@ export function applyFormConfigDraftToTemplate(
     mobileVisible: field.mobileVisible,
     mobileOrder: field.mobileOrder,
     isRequired: field.required,
+    options: isRecommended
+      ? [...new Set([...(template.options ?? []), 'isRecommended' as const])]
+      : (template.options ?? []).filter((option) => option !== 'isRecommended'),
     formConfig: {
       visible: field.visible,
       label: field.label || null,
@@ -88,6 +94,7 @@ export function applyFormConfigDraftToTemplate(
       placeholder: field.placeholder || null,
       helpText: field.helpText || null,
       required: field.required,
+      recommended: isRecommended,
       readonly: field.readonly,
     },
   }

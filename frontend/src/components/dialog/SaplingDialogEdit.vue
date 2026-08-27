@@ -103,6 +103,8 @@
                             :is-template-dirty="isTemplateDirty"
                             :get-template-column-props="getTemplateColumnProps"
                             :get-rules="getRules"
+                            :is-template-recommendation-active="isTemplateRecommendationActive"
+                            :get-recommendation-message="getRecommendationMessage"
                             :is-field-disabled="isFieldDisabled"
                             :is-reference-field-disabled="isReferenceFieldDisabled"
                             :get-reference-parent-filter="getReferenceParentFilter"
@@ -455,6 +457,8 @@ const {
   selectedFormConfigLabel,
   selectFormConfig,
   getRules,
+  isTemplateRecommendationActive,
+  getRecommendationMessage,
   getTemplateColumnProps,
   isTemplateDirty,
   getDirtyTemplateCount,

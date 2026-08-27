@@ -19,6 +19,7 @@ const field: FieldDraft = {
   placeholder: '  Enter title  ',
   helpText: '  Used in headings and references.  ',
   required: true,
+  recommended: true,
   readonly: false,
 }
 
@@ -49,6 +50,7 @@ describe('formConfigDraft utils', () => {
           placeholder: 'Enter title',
           helpText: 'Used in headings and references.',
           required: true,
+          recommended: false,
           readonly: false,
         },
       },
@@ -87,11 +89,13 @@ describe('formConfigDraft utils', () => {
       tableVisible: true,
       mobileVisible: false,
       isRequired: true,
+      options: [],
       formConfig: {
         label: '  Headline  ',
         renderer: 'shortText',
         helpText: '  Used in headings and references.  ',
         readonly: false,
+        recommended: false,
       },
     })
   })

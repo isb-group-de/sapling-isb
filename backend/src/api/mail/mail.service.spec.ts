@@ -87,6 +87,82 @@ function createMessageTemplateServiceMock(
 }
 
 describe('MailService facade', () => {
+  it('persists automation provenance and deduplication data on the delivery', async () => {
+    let persistedDelivery: Record<string, unknown> | undefined;
+    const flush = jest.fn<() => Promise<void>>().mockResolvedValue();
+    const em = {
+      findOne: jest.fn(
+        (_entityClass: unknown, query: { handle: string | number }) => {
+          if (query.handle === 'ticket') {
+            return { handle: 'ticket' };
+          }
+          if (query.handle === 'pending') {
+            return { handle: 'pending' };
+          }
+          return null;
+        },
+      ),
+      persist: jest.fn((delivery: Record<string, unknown>) => {
+        persistedDelivery = delivery;
+        return { flush };
+      }),
+      findOneOrFail: jest.fn(() => persistedDelivery),
+    };
+    const rendering = {
+      previewEmail: jest.fn().mockResolvedValue({
+        to: ['customer@example.test'],
+        cc: [],
+        bcc: [],
+        subject: 'Status update',
+        bodyMarkdown: 'Ready',
+        bodyHtml: '<p>Ready</p>',
+        attachmentHandles: [],
+      }),
+    };
+    const providerSession = {
+      resolveRequestedSender: jest.fn().mockResolvedValue({
+        email: 'agent@example.test',
+        provider: 'azure',
+        source: 'personal',
+      }),
+    };
+    const customerAssociation = {
+      resolve: jest.fn().mockResolvedValue({ company: null, person: null }),
+    };
+    const service = new MailService(
+      em as never,
+      {} as never,
+      createMessageTemplateServiceMock() as never,
+      { add: jest.fn() } as never,
+      rendering as never,
+      undefined,
+      providerSession as never,
+      undefined,
+      customerAssociation as never,
+    );
+    const subscription = { handle: 12 };
+
+    await service.sendEmail(
+      {
+        entityHandle: 'ticket',
+        itemHandle: 101,
+        to: ['customer@example.test'],
+      },
+      { handle: 42, type: { handle: 'azure' } } as never,
+      {
+        subscription: subscription as never,
+        deduplicationKey: '12:ticket:101',
+      },
+    );
+
+    expect(persistedDelivery).toMatchObject({
+      subscription,
+      automationDeduplicationKey: '12:ticket:101',
+      referenceHandle: '101',
+    });
+    expect(flush).toHaveBeenCalled();
+  });
+
   it('renders rich markdown in previewEmail', async () => {
     const em = {
       findOne: jest.fn(

@@ -194,6 +194,7 @@ describe('useSaplingDialogEditReferences', () => {
     await expect(references.findSingleReferenceForDependency(personTemplate)).resolves.toEqual(
       onlyPerson,
     )
+    expect(references.getReferenceAvailability(personTemplate)).toBe('available')
     expect(findMock).toHaveBeenCalledWith('person', {
       filter: { company: { $eq: 17 } },
       page: 1,
@@ -203,6 +204,30 @@ describe('useSaplingDialogEditReferences', () => {
 
     findMock.mockResolvedValueOnce({ data: [onlyPerson, { handle: 24 }], meta: { total: 2 } })
     await expect(references.findSingleReferenceForDependency(personTemplate)).resolves.toBeNull()
+    expect(references.getReferenceAvailability(personTemplate)).toBe('available')
+  })
+
+  it('tracks whether an unfiltered recommended reference has selectable records', async () => {
+    const references = createReferences([
+      { entityHandle: 'company', allowRead: true } as AccumulatedPermission,
+    ])
+    const companyTemplate = createTemplate({
+      name: 'company',
+      type: 'CompanyItem',
+      isReference: true,
+      referenceName: 'company',
+      options: ['isRecommended'],
+    })
+    findMock.mockResolvedValueOnce({ data: [{ handle: 17 }], meta: { total: 1 } })
+
+    await references.inspectRecommendedReference(companyTemplate)
+
+    expect(findMock).toHaveBeenCalledWith('company', { page: 1, limit: 1 })
+    expect(references.getReferenceAvailability(companyTemplate)).toBe('available')
+
+    findMock.mockResolvedValueOnce({ data: [], meta: { total: 0 } })
+    await references.inspectRecommendedReference(companyTemplate)
+    expect(references.getReferenceAvailability(companyTemplate)).toBe('unavailable')
   })
 
   it('ignores a unique-child response when the parent changed while it was loading', async () => {

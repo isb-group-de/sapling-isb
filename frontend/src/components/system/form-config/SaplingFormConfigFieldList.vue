@@ -173,10 +173,18 @@
             class="sapling-row-md sapling-config-field__toggles sapling-form-config-field__toggles"
           >
             <SaplingCheckbox
-              v-model="field.required"
+              :model-value="field.required"
               density="compact"
               hide-details
               :label="t('formConfig.required')"
+              @update:model-value="setFieldRequirement(field, 'required', Boolean($event))"
+            />
+            <SaplingCheckbox
+              :model-value="field.recommended"
+              density="compact"
+              hide-details
+              :label="formConfigText('recommended', 'Empfohlen')"
+              @update:model-value="setFieldRequirement(field, 'recommended', Boolean($event))"
             />
             <SaplingCheckbox
               v-model="field.tableVisible"
@@ -280,6 +288,17 @@ function addGroup(): void {
 
 function getFieldLabel(fieldName: string): string {
   return props.resolveFieldLabel(fieldName)
+}
+
+function setFieldRequirement(
+  field: FieldDraft,
+  requirement: 'required' | 'recommended',
+  enabled: boolean,
+): void {
+  field[requirement] = enabled
+  if (enabled) {
+    field[requirement === 'required' ? 'recommended' : 'required'] = false
+  }
 }
 
 function formConfigText(key: string, fallback: string): string {

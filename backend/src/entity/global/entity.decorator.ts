@@ -62,6 +62,7 @@ const SAPLING_KANBAN_METADATA_KEY = 'sapling:kanban';
  * @property isIcon              Property represents an icon
  * @property isChip              Property is displayed as a chip
  * @property isReadOnly          Property is read-only
+ * @property isRecommended       Property should be completed when applicable without blocking persistence
  * @property isLink              Property is a hyperlink
  * @property isMail              Property is an email address
  * @property isPhone             Property is a phone number

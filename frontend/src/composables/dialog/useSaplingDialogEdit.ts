@@ -150,6 +150,8 @@ export function useSaplingDialogEdit(
     isReferenceValueValidForDependency,
     applyReferenceDependencyParent,
     findSingleReferenceForDependency,
+    inspectRecommendedReference,
+    getReferenceAvailability,
     getReferenceColumnsSync,
     canReadReferenceEntity,
     prefetchReferenceColumns,
@@ -293,6 +295,42 @@ export function useSaplingDialogEdit(
     return template.isRequired === true
   }
 
+  function isTemplateRecommended(template: EntityTemplate): boolean {
+    if (
+      template.type === 'boolean' ||
+      template.formConfig?.renderer === 'boolean' ||
+      isTemplateRequired(template)
+    ) {
+      return false
+    }
+
+    if (typeof template.formConfig?.recommended === 'boolean') {
+      return template.formConfig.recommended
+    }
+
+    return template.options?.includes('isRecommended') === true
+  }
+
+  function isTemplateRecommendationActive(template: EntityTemplate): boolean {
+    if (
+      props.mode === 'readonly' ||
+      !isTemplateRecommended(template) ||
+      isFieldDisabled(template) ||
+      hasFormValue(form.value[template.name])
+    ) {
+      return false
+    }
+
+    return !template.isReference || getReferenceAvailability(template) === 'available'
+  }
+
+  function getRecommendationMessage(template: EntityTemplate): string {
+    const field = t(`${props.entity?.handle}.${template.name}`)
+    return template.isReference
+      ? t('global.recommendedReferenceAvailable', { field })
+      : t('global.recommendedFieldMissing', { field })
+  }
+
   function getRules(template: EntityTemplate): Array<(v: unknown) => true | string> {
     const rules: Array<(v: unknown) => true | string> = []
     if (isTemplateRequired(template)) {
@@ -353,6 +391,11 @@ export function useSaplingDialogEdit(
     form.value[key] = value
     applyReferenceDependencyParent(key, value)
     applyReferenceTemplate(key, value)
+
+    const template = templates.value.find((entry) => entry.name === key)
+    if (template?.isReference && isTemplateRecommended(template) && !hasFormValue(value)) {
+      void inspectRecommendedReference(template)
+    }
   }
 
   function autoSelectSingleDependencies(dependencyTemplates: EntityTemplate[]): void {
@@ -366,11 +409,21 @@ export function useSaplingDialogEdit(
   }
 
   function autoSelectHydratedDependencies(): void {
-    if (props.mode !== 'create') {
-      return
+    const dependencyTemplates = templates.value.filter((template) => template.referenceDependency)
+    if (props.mode === 'create') {
+      autoSelectSingleDependencies(dependencyTemplates)
+    } else {
+      dependencyTemplates
+        .filter(isTemplateRecommended)
+        .forEach((template) => void inspectRecommendedReference(template))
     }
 
-    autoSelectSingleDependencies(templates.value.filter((template) => template.referenceDependency))
+    templates.value
+      .filter(
+        (template) =>
+          template.isReference && !template.referenceDependency && isTemplateRecommended(template),
+      )
+      .forEach((template) => void inspectRecommendedReference(template))
   }
 
   async function loadActiveRelationTableItems(): Promise<void> {
@@ -590,6 +643,8 @@ export function useSaplingDialogEdit(
     isLoadingFormConfigs,
     selectFormConfig,
     getRules,
+    isTemplateRecommendationActive,
+    getRecommendationMessage,
     getTemplateColumnProps,
     isTemplateDirty,
     getDirtyTemplateCount,

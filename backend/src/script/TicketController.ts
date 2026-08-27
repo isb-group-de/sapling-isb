@@ -12,6 +12,7 @@ import type { ScriptServerContext } from './core/script.interface.js';
 import { ContractItem } from '../entity/ContractItem.js';
 import { SlaPolicyItem } from '../entity/SlaPolicyItem.js';
 import { SupportQueueItem } from '../entity/SupportQueueItem.js';
+import { addSlaHours, type SlaHoliday } from './sla-deadline.utils.js';
 
 /**
  * Controller for Note entity scripts.
@@ -249,13 +250,18 @@ export class TicketController extends ScriptClass {
       mergedTicket.supportTeam = contract.defaultSupportTeam.handle;
     }
 
-    const resolvedSlaPolicy =
+    const slaPolicyCandidate =
       (explicitSlaPolicyHandle != null
         ? await this.findSlaPolicyByHandle(explicitSlaPolicyHandle)
         : null) ??
       queue?.defaultSlaPolicy ??
       contract?.slaPolicy ??
       null;
+    const resolvedSlaPolicy =
+      explicitSlaPolicyHandle != null || slaPolicyCandidate?.handle == null
+        ? slaPolicyCandidate
+        : ((await this.findSlaPolicyByHandle(slaPolicyCandidate.handle)) ??
+          slaPolicyCandidate);
 
     if (
       explicitSlaPolicyHandle == null &&
@@ -286,9 +292,10 @@ export class TicketController extends ScriptClass {
         typeof data.firstResponseDueAt === 'undefined' ||
         currentTicket?.firstResponseDueAt == null
       ) {
-        data.firstResponseDueAt = this.addHours(
+        data.firstResponseDueAt = this.addSlaHours(
           startDate,
           resolvedSlaPolicy.firstResponseHours,
+          resolvedSlaPolicy,
         );
       }
 
@@ -296,9 +303,10 @@ export class TicketController extends ScriptClass {
         typeof data.resolutionDueAt === 'undefined' ||
         currentTicket?.resolutionDueAt == null
       ) {
-        data.resolutionDueAt = this.addHours(
+        data.resolutionDueAt = this.addSlaHours(
           startDate,
           resolvedSlaPolicy.resolutionHours,
+          resolvedSlaPolicy,
         );
       }
 
@@ -308,7 +316,11 @@ export class TicketController extends ScriptClass {
       ) {
         data.deadlineDate =
           data.resolutionDueAt ??
-          this.addHours(startDate, resolvedSlaPolicy.resolutionHours);
+          this.addSlaHours(
+            startDate,
+            resolvedSlaPolicy.resolutionHours,
+            resolvedSlaPolicy,
+          );
       }
     }
 
@@ -346,8 +358,35 @@ export class TicketController extends ScriptClass {
     return data;
   }
 
-  private addHours(baseDate: Date, hours: number): Date {
-    return new Date(baseDate.getTime() + hours * 60 * 60 * 1000);
+  private addSlaHours(
+    baseDate: Date,
+    hours: number,
+    slaPolicy: SlaPolicyItem,
+  ): Date {
+    return addSlaHours(baseDate, hours, {
+      workWeek: slaPolicy.workWeek,
+      holidays: this.getCollectionItems<SlaHoliday>(
+        slaPolicy.holidayGroup?.holidays,
+      ),
+      timeZone: slaPolicy.timeZone,
+    });
+  }
+
+  private getCollectionItems<T>(collection: unknown): T[] {
+    if (Array.isArray(collection)) {
+      return collection as T[];
+    }
+
+    if (
+      collection &&
+      typeof collection === 'object' &&
+      'getItems' in collection &&
+      typeof collection.getItems === 'function'
+    ) {
+      return collection.getItems() as T[];
+    }
+
+    return [];
   }
 
   private async findDefaultContractForCompany(
@@ -408,7 +447,24 @@ export class TicketController extends ScriptClass {
   private async findSlaPolicyByHandle(
     handle: string,
   ): Promise<SlaPolicyItem | null> {
-    return this.em!.findOne(SlaPolicyItem, { handle });
+    return this.em!.findOne(
+      SlaPolicyItem,
+      { handle },
+      {
+        populate: [
+          'workWeek',
+          'workWeek.monday',
+          'workWeek.tuesday',
+          'workWeek.wednesday',
+          'workWeek.thursday',
+          'workWeek.friday',
+          'workWeek.saturday',
+          'workWeek.sunday',
+          'holidayGroup',
+          'holidayGroup.holidays',
+        ],
+      },
+    );
   }
 
   private normalizeNumericHandle(

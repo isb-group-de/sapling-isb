@@ -35,6 +35,7 @@ export type SaplingOption =
   | 'isIcon'
   | 'isChip'
   | 'isReadOnly'
+  | 'isRecommended'
   | 'isLink'
   | 'isMail'
   | 'isPhone'
@@ -95,6 +96,7 @@ export interface SaplingFormFieldConfig {
   helpText?: string | null
   placeholder?: string | null
   required?: boolean | null
+  recommended?: boolean | null
   readonly?: boolean | null
   renderer?: SaplingFormRenderer | null
   defaultValue?: unknown

@@ -1,0 +1,92 @@
+[
+  {
+    "entity": "emailSubscription",
+    "property": "allowRepeatedSending",
+    "de": "Wiederholtes Senden erlaubt",
+    "en": "Allow repeated sending"
+  },
+  {
+    "entity": "emailSubscription",
+    "property": "allowRepeatedSendingTooltip",
+    "de": "Erlaubt dieser Regel, für denselben Bezugsdatensatz mehr als eine E-Mail zu erzeugen. Ist die Option deaktiviert, zählt bereits ein vorhandener E-Mail-Ausgang dieser Regel als Ausführung.",
+    "en": "Allows this rule to create more than one email for the same referenced record. When disabled, an existing email delivery for this rule already counts as an execution."
+  },
+  {
+    "entity": "emailDelivery",
+    "property": "subscription",
+    "de": "E-Mail-Automatisierung",
+    "en": "Email automation"
+  },
+  {
+    "entity": "slaPolicy",
+    "property": "workWeek",
+    "de": "Arbeitswoche",
+    "en": "Work week"
+  },
+  {
+    "entity": "slaPolicy",
+    "property": "workWeekTooltip",
+    "de": "Optionale Arbeitswoche, deren Tagesintervalle für die SLA-Fristen zählen. Ohne Arbeitswoche werden Stunden wie bisher durchgehend addiert.",
+    "en": "Optional work week whose daily intervals count towards SLA deadlines. Without a work week, hours continue to be added as elapsed time."
+  },
+  {
+    "entity": "slaPolicy",
+    "property": "holidayGroup",
+    "de": "Feiertagskalender",
+    "en": "Holiday calendar"
+  },
+  {
+    "entity": "slaPolicy",
+    "property": "holidayGroupTooltip",
+    "de": "Optionale Feiertagsgruppe. Ihre Feiertage werden bei einer konfigurierten Arbeitswoche nicht als SLA-Arbeitszeit gezählt.",
+    "en": "Optional holiday group. Its holidays do not count as SLA working time when a work week is configured."
+  },
+  {
+    "entity": "slaPolicy",
+    "property": "timeZone",
+    "de": "Zeitzone",
+    "en": "Time zone"
+  },
+  {
+    "entity": "slaPolicy",
+    "property": "timeZoneTooltip",
+    "de": "IANA-Zeitzone für die Arbeitsintervalle, zum Beispiel Europe/Berlin. Ohne Angabe wird UTC verwendet.",
+    "en": "IANA time zone for the work intervals, for example Europe/Berlin. UTC is used when left empty."
+  },
+  {
+    "entity": "slaPolicy",
+    "property": "groupSchedule",
+    "de": "Arbeitszeitkalender",
+    "en": "Business calendar"
+  },
+  {
+    "entity": "slaPolicy",
+    "property": "firstResponseHoursTooltip",
+    "de": "Zulässige Stunden bis zur ersten qualifizierten Reaktion. Bei ausgewählter Arbeitswoche zählen nur deren Arbeitsintervalle; andernfalls gilt die bisherige durchgehende Berechnung.",
+    "en": "Allowed hours until the first qualified response. When a work week is selected, only its work intervals count; otherwise elapsed-time calculation remains in effect."
+  },
+  {
+    "entity": "slaPolicy",
+    "property": "resolutionHoursTooltip",
+    "de": "Zulässige Stunden bis zur Lösung. Bei ausgewählter Arbeitswoche zählen nur deren Arbeitsintervalle; andernfalls gilt die bisherige durchgehende Berechnung.",
+    "en": "Allowed hours until resolution. When a work week is selected, only its work intervals count; otherwise elapsed-time calculation remains in effect."
+  },
+  {
+    "entity": "global",
+    "property": "recommendedFieldMissing",
+    "de": "{field} sollte nach Möglichkeit ausgefüllt werden.",
+    "en": "{field} should be completed when possible."
+  },
+  {
+    "entity": "global",
+    "property": "recommendedReferenceAvailable",
+    "de": "Für {field} sind passende Einträge vorhanden. Eine Auswahl wird empfohlen.",
+    "en": "Matching records are available for {field}. Selecting one is recommended."
+  },
+  {
+    "entity": "formConfig",
+    "property": "recommended",
+    "de": "Empfohlen",
+    "en": "Recommended"
+  }
+]

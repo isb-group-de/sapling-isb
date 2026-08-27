@@ -33,6 +33,7 @@ export interface SaplingFormConfigPayload {
       helpText?: string | null;
       placeholder?: string | null;
       required?: boolean | null;
+      recommended?: boolean | null;
       readonly?: boolean | null;
       renderer?: string | null;
       defaultValue?: unknown;

@@ -52,6 +52,10 @@
                     mode !== 'readonly' && isTemplateDirty(template),
                   'sapling-dialog-edit-field-shell--dirty':
                     mode !== 'readonly' && isTemplateDirty(template),
+                  'sapling-record-field-shell--recommended':
+                    isTemplateRecommendationActive(template),
+                  'sapling-dialog-edit-field-shell--recommended':
+                    isTemplateRecommendationActive(template),
                 }"
               >
                 <SaplingDialogEditFieldRenderer
@@ -73,6 +77,14 @@
                   @update-field="(key, value) => emit('update-field', key, value)"
                   @select-record="(record) => emit('select-record', record)"
                 />
+                <div
+                  v-if="isTemplateRecommendationActive(template)"
+                  class="sapling-record-field-recommendation sapling-dialog-edit-field-recommendation"
+                  role="status"
+                >
+                  <v-icon icon="mdi-alert-outline" size="16" />
+                  <span>{{ getRecommendationMessage(template) }}</span>
+                </div>
               </div>
             </v-col>
           </v-row>
@@ -109,6 +121,8 @@ defineProps<{
   isTemplateDirty: (template: EntityTemplate) => boolean
   getTemplateColumnProps: (template: EntityTemplate) => SaplingDialogColumnProps
   getRules: (template: EntityTemplate) => ValidationRule[]
+  isTemplateRecommendationActive: (template: EntityTemplate) => boolean
+  getRecommendationMessage: (template: EntityTemplate) => string
   isFieldDisabled: (template: EntityTemplate) => boolean
   isReferenceFieldDisabled: (template: EntityTemplate) => boolean
   getReferenceParentFilter: (template: EntityTemplate) => FilterQuery

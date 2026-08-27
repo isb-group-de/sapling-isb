@@ -644,6 +644,12 @@ Failed record validation returns the dialog to the form tab, expands the group
 containing the first invalid field, scrolls that field into view, and focuses it.
 The invoked save action pulses twice in the error color; reduced-motion clients
 receive the same feedback as a temporary static highlight.
+Recommended fields are distinct from required fields. An empty recommended
+scalar field receives non-blocking warning styling. Recommended references warn
+only when the current effective dependency filter has selectable records. The
+warning clears after a value is selected and never prevents saving. Form
+configuration can override the decorator default with its `recommended` field;
+required semantics always take precedence.
 Changed form fields use a content-sized warning ring around the complete field
 surface, including attached actions. The ring follows the control radius and
 must not stretch to a taller neighbor in the same grid row or tint the field's

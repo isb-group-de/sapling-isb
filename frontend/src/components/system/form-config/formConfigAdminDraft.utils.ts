@@ -64,6 +64,9 @@ export function buildFormConfigDraftRows(
         placeholder: fieldConfig.placeholder ?? '',
         helpText: fieldConfig.helpText ?? template.formConfig?.helpText ?? '',
         required: fieldConfig.required ?? template.isRequired === true,
+        recommended:
+          (fieldConfig.required ?? template.isRequired === true) !== true &&
+          (fieldConfig.recommended ?? template.options?.includes('isRecommended') === true),
         readonly:
           fieldConfig.readonly ??
           (template.options?.includes('isReadOnly') === true ||

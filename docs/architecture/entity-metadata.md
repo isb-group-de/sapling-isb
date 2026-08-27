@@ -89,6 +89,7 @@ Common options:
 | `isSecurity` | Sensitive field; omitted from MCP schemas and handled as protected UI |
 | `isSearchExcluded` | Excludes a field from metadata-driven free-text searches while keeping it available for display and explicit column filters |
 | `isReadOnly` | Display-only/system-controlled field |
+| `isRecommended` | Non-blocking completeness guidance for fields that should be filled when applicable |
 | `isSystem` | System metadata such as timestamps |
 | `isMarkdown` | Markdown editor/preview field |
 | `isLink` | Link field |
@@ -175,6 +176,10 @@ should normally leave it unset so either field can be selected first.
 After a parent change, generated edit dialogs also query each dependent
 reference with a two-record limit. Exactly one permitted result is selected
 automatically; zero or multiple results leave the child empty for manual input.
+When the child also has `isRecommended`, the same query drives a non-blocking
+warning while permitted matching records exist and the child remains empty.
+No warning is shown without a parent, without matches, without read permission,
+or when availability cannot be determined.
 Create-dialog defaults such as `isCurrentCompany`, `isCurrentPerson`, and
 configured reference placeholders trigger the same lookup after form hydration.
 The lookup is tied to the current parent value so a slower response for an older

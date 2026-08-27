@@ -775,6 +775,7 @@ export class TicketItem {
    * @type {ContractItem}
    */
   @ApiPropertyOptional({ type: () => ContractItem })
+  @Sapling(['isRecommended'])
   @SaplingDependsOn({
     parentField: 'creatorCompany',
     targetField: 'company',

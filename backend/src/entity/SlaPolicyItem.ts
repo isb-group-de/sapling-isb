@@ -1,10 +1,17 @@
 import { Collection } from '@mikro-orm/core';
-import { Entity, OneToMany, Property } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  Property,
+} from '@mikro-orm/decorators/legacy';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Sapling, SaplingForm } from './global/entity.decorator';
 import { ContractItem } from './ContractItem';
 import { SupportQueueItem } from './SupportQueueItem';
 import { TicketItem } from './TicketItem';
+import { HolidayGroupItem } from './HolidayGroupItem';
+import { WorkHourWeekItem } from './WorkHourWeekItem';
 
 @Entity()
 export class SlaPolicyItem {
@@ -72,6 +79,54 @@ export class SlaPolicyItem {
   })
   @Property({ default: 40, nullable: false })
   resolutionHours = 40;
+
+  @ApiPropertyOptional({ type: () => WorkHourWeekItem })
+  @SaplingForm({
+    order: 100,
+    group: 'slaPolicy.groupSchedule',
+    groupOrder: 350,
+    width: 1,
+    visible: true,
+    tableOrder: 100,
+    tableVisible: true,
+    mobileOrder: 100,
+    mobileVisible: false,
+  })
+  @ManyToOne(() => WorkHourWeekItem, { nullable: true })
+  workWeek?: WorkHourWeekItem;
+
+  @ApiPropertyOptional({ type: () => HolidayGroupItem })
+  @SaplingForm({
+    order: 200,
+    group: 'slaPolicy.groupSchedule',
+    groupOrder: 350,
+    width: 1,
+    visible: true,
+    tableOrder: 200,
+    tableVisible: true,
+    mobileOrder: 200,
+    mobileVisible: false,
+  })
+  @ManyToOne(() => HolidayGroupItem, { nullable: true })
+  holidayGroup?: HolidayGroupItem;
+
+  @ApiPropertyOptional({
+    description: 'IANA time zone used to interpret the configured work week.',
+    example: 'Europe/Berlin',
+  })
+  @SaplingForm({
+    order: 300,
+    group: 'slaPolicy.groupSchedule',
+    groupOrder: 350,
+    width: 1,
+    visible: true,
+    tableOrder: 300,
+    tableVisible: true,
+    mobileOrder: 300,
+    mobileVisible: false,
+  })
+  @Property({ length: 64, nullable: true })
+  timeZone?: string;
 
   @ApiProperty()
   @Sapling(['isIcon'])

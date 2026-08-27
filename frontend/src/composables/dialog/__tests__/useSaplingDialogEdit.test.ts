@@ -132,6 +132,8 @@ vi.mock('../useSaplingDialogEditReferences', () => ({
     isReferenceValueValidForDependency: vi.fn().mockReturnValue(true),
     applyReferenceDependencyParent: applyReferenceDependencyParentMock,
     findSingleReferenceForDependency: findSingleReferenceForDependencyMock,
+    inspectRecommendedReference: vi.fn().mockResolvedValue(undefined),
+    getReferenceAvailability: vi.fn().mockReturnValue('unknown'),
     getReferenceColumnsSync: vi.fn().mockReturnValue([]),
     canReadReferenceEntity: vi.fn().mockReturnValue(true),
     prefetchReferenceColumns: vi.fn().mockResolvedValue(undefined),
@@ -252,6 +254,7 @@ const TestHost = defineComponent({
       visibleTemplates: dialog.visibleTemplates,
       form: dialog.form,
       isFieldDisabled: dialog.isFieldDisabled,
+      isTemplateRecommendationActive: dialog.isTemplateRecommendationActive,
       updateFormField: dialog.updateFormField,
       selectFormConfig: dialog.selectFormConfig,
     }
@@ -338,6 +341,31 @@ describe('useSaplingDialogEdit', () => {
         createWrapper.vm as { isFieldDisabled: (template: EntityTemplate) => boolean }
       ).isFieldDisabled(manualPrimaryKey),
     ).toBe(false)
+  })
+
+  it('marks an empty recommended scalar field without treating required fields as recommendations', async () => {
+    const recommendedTemplate = {
+      name: 'title',
+      type: 'string',
+      options: ['isRecommended'],
+      fieldAccess: { allowRead: true, allowInsert: true, allowUpdate: true },
+    } as EntityTemplate
+    const wrapper = mount(TestHost, {
+      props: { mode: 'create', item: null, templates: [recommendedTemplate] },
+    })
+    await flushPromises()
+    const vm = wrapper.vm as unknown as {
+      isTemplateRecommendationActive: (template: EntityTemplate) => boolean
+      updateFormField: (key: string, value: unknown) => void
+    }
+
+    expect(vm.isTemplateRecommendationActive(recommendedTemplate)).toBe(true)
+    vm.updateFormField('title', 'Complete')
+    expect(vm.isTemplateRecommendationActive(recommendedTemplate)).toBe(false)
+
+    expect(vm.isTemplateRecommendationActive({ ...recommendedTemplate, isRequired: true })).toBe(
+      false,
+    )
   })
 
   it('emits saveAndClose without closing the dialog before the save handler runs', async () => {

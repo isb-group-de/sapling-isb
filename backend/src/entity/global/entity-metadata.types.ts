@@ -10,6 +10,7 @@ export type SaplingOption =
   | 'isIcon'
   | 'isChip'
   | 'isReadOnly'
+  | 'isRecommended'
   | 'isLink'
   | 'isMail'
   | 'isPhone'

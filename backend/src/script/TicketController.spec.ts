@@ -231,6 +231,76 @@ describe('TicketController', () => {
     );
   });
 
+  it('calculates SLA deadlines in the configured work week and holiday calendar', async () => {
+    const workHour = { timeFrom: '08:00', timeTo: '17:00' };
+    const slaPolicy = {
+      handle: 'business_hours',
+      firstResponseHours: 4,
+      resolutionHours: 8,
+      timeZone: 'Europe/Berlin',
+      workWeek: {
+        monday: workHour,
+        tuesday: workHour,
+        wednesday: workHour,
+        thursday: workHour,
+        friday: workHour,
+      },
+      holidayGroup: {
+        holidays: [
+          {
+            startDate: new Date('2026-05-01T00:00:00.000Z'),
+            endDate: new Date('2026-05-01T12:00:00.000Z'),
+            isAllDay: true,
+          },
+        ],
+      },
+    };
+    const em = {
+      find: jest.fn<() => Promise<object[]>>().mockResolvedValue([]),
+      findOne: jest
+        .fn<
+          (
+            entity?: unknown,
+            where?: unknown,
+            options?: unknown,
+          ) => Promise<object | null>
+        >()
+        .mockResolvedValue(slaPolicy),
+    };
+    const controller = new TicketController(
+      { handle: 'ticket' } as never,
+      { handle: 99 } as never,
+      em as never,
+    );
+
+    const result = await controller.beforeInsert([
+      {
+        slaPolicy: 'business_hours',
+        startDate: '2026-04-30T14:00:00.000Z',
+        status: 'open',
+      },
+    ] as unknown as TicketItem[]);
+    const derivedTicket = result.items[0] as Record<string, unknown>;
+
+    expect(derivedTicket.firstResponseDueAt).toEqual(
+      new Date('2026-05-04T09:00:00.000Z'),
+    );
+    expect(derivedTicket.resolutionDueAt).toEqual(
+      new Date('2026-05-04T13:00:00.000Z'),
+    );
+    expect(em.findOne).toHaveBeenCalledWith(
+      expect.anything(),
+      { handle: 'business_hours' },
+      expect.objectContaining({
+        populate: expect.arrayContaining([
+          'workWeek.monday',
+          'workWeek.sunday',
+          'holidayGroup.holidays',
+        ]),
+      }),
+    );
+  });
+
   it('does not use an assignee company contract when the customer has none', async () => {
     const assigneeContract = {
       handle: 23,
