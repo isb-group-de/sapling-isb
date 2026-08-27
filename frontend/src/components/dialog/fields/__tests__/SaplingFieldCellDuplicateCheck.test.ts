@@ -4,6 +4,7 @@ import { defineComponent } from 'vue'
 import { describe, expect, it, vi } from 'vitest'
 
 import SaplingFieldCellDuplicateCheck from '../SaplingFieldCellDuplicateCheck.vue'
+import SaplingFieldTablePicker from '../SaplingFieldTablePicker.vue'
 
 vi.mock('@/composables/table/useSaplingTable', () => {
   const makeRef = <T>(value: T) => ({ value })
@@ -106,6 +107,7 @@ describe('SaplingFieldCellDuplicateCheck', () => {
     const table = wrapper.getComponent(SaplingTableStub)
     expect(table.props('showToolbar')).toBe(false)
     expect(table.props('multiSelect')).toBe(false)
-    expect(table.classes()).toContain('sapling-nested-backdrop-host')
+    expect(wrapper.get('.sapling-menu-surface').classes()).toContain('sapling-nested-backdrop-host')
+    expect(wrapper.getComponent(SaplingFieldTablePicker).props('openOnClick')).toBe(true)
   })
 })

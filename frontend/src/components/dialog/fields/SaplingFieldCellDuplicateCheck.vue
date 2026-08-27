@@ -1,18 +1,15 @@
 <template>
-  <div
-    ref="fieldRootRef"
-    class="sapling-field-duplicate-check"
-    @focusout="closeMenuWhenFocusLeaves"
-    @keydown.tab.capture="closeMenuOnTab"
-    @keydown.esc="closeMenuOnEscape"
-  >
-    <v-menu
+  <div class="sapling-field-duplicate-check">
+    <SaplingFieldTablePicker
       v-model="menuOpen"
-      max-width="600px"
-      :close-on-content-click="false"
-      scroll-strategy="block"
+      :label="props.label"
+      :search-value="inputValue"
+      :search-hint="$t('global.duplicateCheckHint')"
+      search-icon="mdi-content-duplicate"
+      open-on-click
+      @update:search="onSearchInput"
     >
-      <template #activator="{ props: activatorProps }">
+      <template #activator="{ props: activatorProps, focusFirstResult }">
         <SaplingTextField
           v-bind="activatorProps"
           :label="label"
@@ -23,7 +20,7 @@
           :model-value="inputValue"
           :hint="$t('global.duplicateCheckHint')"
           prepend-inner-icon="mdi-content-duplicate"
-          @keydown.down.prevent="focusFirstMenuRow"
+          @keydown.down.prevent="focusFirstResult"
           @update:model-value="onSearchInput"
           clearable
           hide-details="auto"
@@ -31,16 +28,8 @@
           autocomplete="off"
         />
       </template>
-      <div
-        ref="menuSurfaceRef"
-        class="sapling-menu-surface sapling-menu-surface--field-table"
-        @focusout="closeMenuWhenFocusLeaves"
-        @keydown.tab.capture="closeMenuOnTab"
-        @keydown.esc="closeMenuOnEscape"
-        @keydown.down.prevent="moveMenuRowFocus(1)"
-        @keydown.up.prevent="moveMenuRowFocus(-1)"
-      >
-        <div class="sapling-field-duplicate-check__notice glass-panel" role="note">
+      <template #default>
+        <div class="sapling-field-duplicate-check__notice" role="note">
           <v-icon color="primary" size="small">mdi-content-duplicate</v-icon>
           <div class="sapling-field-duplicate-check__notice-copy">
             <strong>{{ $t('global.duplicateCheckResultsTitle') }}</strong>
@@ -48,7 +37,6 @@
           </div>
         </div>
         <sapling-table
-          class="glass-panel sapling-nested-backdrop-host"
           :entity-handle="entityHandle"
           :items="items"
           :search="tableSearch"
@@ -76,19 +64,19 @@
           @reload="loadData"
           @update:selected="onTableSelect"
         />
-      </div>
-    </v-menu>
+      </template>
+    </SaplingFieldTablePicker>
   </div>
 </template>
 
 <script lang="ts" setup>
 import SaplingTable from '@/components/table/SaplingTable.vue'
 import SaplingTextField from '@/components/common/SaplingTextField.vue'
+import SaplingFieldTablePicker from '@/components/dialog/fields/SaplingFieldTablePicker.vue'
 import type { SaplingGenericItem } from '@/entity/entity'
 import { useSaplingTable } from '@/composables/table/useSaplingTable'
 import { onBeforeUnmount, ref, watch } from 'vue'
 import type { EntityTemplate } from '@/entity/structure'
-import { useSaplingFieldDropdownFocus } from '@/composables/fields/useSaplingFieldDropdownFocus'
 
 const DUPLICATE_CHECK_SEARCH_DEBOUNCE_MS = 250
 
@@ -106,15 +94,6 @@ const props = defineProps<{
 const emit = defineEmits(['update:modelValue', 'select-record'])
 
 const menuOpen = ref(false)
-const {
-  fieldRootRef,
-  menuSurfaceRef,
-  closeMenuOnTab,
-  closeMenuOnEscape,
-  closeMenuWhenFocusLeaves,
-  focusFirstMenuRow,
-  moveMenuRowFocus,
-} = useSaplingFieldDropdownFocus(menuOpen)
 const inputValue = ref(typeof props.modelValue === 'string' ? props.modelValue : '')
 const tableSearch = ref(inputValue.value)
 const selectedItem = ref<SaplingGenericItem | null>(null)

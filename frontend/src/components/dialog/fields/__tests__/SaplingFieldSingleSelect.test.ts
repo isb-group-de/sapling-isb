@@ -562,7 +562,7 @@ describe('SaplingFieldSingleSelect reference dialog', () => {
     await nextTick()
     expect(menu.props('modelValue')).toBe(true)
 
-    await wrapper.get('.sapling-field-single-select').trigger('keydown', { key: 'Tab' })
+    await wrapper.get('.sapling-field-table-picker').trigger('keydown', { key: 'Tab' })
 
     expect(menu.props('modelValue')).toBe(false)
   })

@@ -1,22 +1,13 @@
 <template>
-  <div
-    ref="fieldRootRef"
-    class="sapling-field-select"
-    @focusout="closeMenuWhenFocusLeaves"
-    @keydown.tab.capture="closeMenuOnTab"
-    @keydown.esc="closeMenuOnEscape"
-  >
-    <v-menu
+  <div class="sapling-field-select">
+    <SaplingFieldTablePicker
       v-model="menuOpen"
-      width="min(600px, calc(100vw - 2rem))"
-      max-width="min(600px, calc(100vw - 2rem))"
-      max-height="min(22rem, 48dvh)"
-      :close-on-content-click="false"
-      :open-on-click="false"
-      location="bottom start"
-      scroll-strategy="reposition"
+      :label="props.label"
+      :search-value="fieldSearch"
+      @update:search="onActivatorSearchUpdate"
+      @surface-mousedown="suppressNextActivatorSearchUpdate"
     >
-      <template #activator="{ props: activatorProps }">
+      <template #activator="{ props: activatorProps, focusFirstResult }">
         <div v-bind="activatorProps" class="sapling-field-select__activator">
           <SaplingAutocomplete
             :disabled="props.disabled"
@@ -38,7 +29,7 @@
             hide-no-data
             no-filter
             autocomplete="off"
-            @keydown.down.prevent="focusFirstMenuRow"
+            @keydown.down.prevent="focusFirstResult"
             @focus="openMenu"
             @mousedown:control="openMenu"
             @click:clear="clearSelection"
@@ -81,49 +72,38 @@
           </SaplingAutocomplete>
         </div>
       </template>
-      <div
-        ref="menuSurfaceRef"
-        class="glass-panel sapling-menu-surface sapling-menu-surface--field-table sapling-nested-backdrop-host"
-        @focusout="closeMenuWhenFocusLeaves"
-        @keydown.tab.capture="closeMenuOnTab"
-        @keydown.esc="closeMenuOnEscape"
-        @keydown.down.prevent="moveMenuRowFocus(1)"
-        @keydown.up.prevent="moveMenuRowFocus(-1)"
-        @mousedown.capture="suppressNextActivatorSearchUpdate"
-      >
-        <sapling-table
-          v-if="menuOpen"
-          :entity-handle="entityHandle"
-          :items="items"
-          :search="search"
-          :page="page"
-          :items-per-page="itemsPerPage"
-          :total-items="totalItems"
-          :is-loading="isLoading"
-          :is-initialized="isInitialized"
-          :sort-by="sortBy"
-          :column-filters="columnFilters"
-          :active-filter="activeFilter"
-          :entity-templates="entityTemplates"
-          :entity="entity"
-          :entity-permission="entityPermission"
-          :show-actions="false"
-          :show-search="false"
-          :show-toolbar="false"
-          :multi-select="true"
-          :disable-mobile-view="disableDropdownMobileView"
-          :table-key="entityHandle"
-          :selected="selectedItems"
-          @update:page="onPageUpdate"
-          @update:items-per-page="onItemsPerPageUpdate"
-          @update:sort-by="onSortByUpdate"
-          @update:column-filters="onColumnFiltersUpdate"
-          @update:search="onSearchUpdate"
-          @reload="loadData"
-          @update:selected="onTableSelect"
-        />
-      </div>
-    </v-menu>
+      <sapling-table
+        v-if="menuOpen"
+        :entity-handle="entityHandle"
+        :items="items"
+        :search="search"
+        :page="page"
+        :items-per-page="itemsPerPage"
+        :total-items="totalItems"
+        :is-loading="isLoading"
+        :is-initialized="isInitialized"
+        :sort-by="sortBy"
+        :column-filters="columnFilters"
+        :active-filter="activeFilter"
+        :entity-templates="entityTemplates"
+        :entity="entity"
+        :entity-permission="entityPermission"
+        :show-actions="false"
+        :show-search="false"
+        :show-toolbar="false"
+        :multi-select="true"
+        :disable-mobile-view="disableDropdownMobileView"
+        :table-key="entityHandle"
+        :selected="selectedItems"
+        @update:page="onPageUpdate"
+        @update:items-per-page="onItemsPerPageUpdate"
+        @update:sort-by="onSortByUpdate"
+        @update:column-filters="onColumnFiltersUpdate"
+        @update:search="onSearchUpdate"
+        @reload="loadData"
+        @update:selected="onTableSelect"
+      />
+    </SaplingFieldTablePicker>
   </div>
 </template>
 
@@ -131,13 +111,13 @@
 // #region Imports
 import SaplingTable from '@/components/table/SaplingTable.vue'
 import SaplingAutocomplete from '@/components/common/SaplingAutocomplete.vue'
+import SaplingFieldTablePicker from '@/components/dialog/fields/SaplingFieldTablePicker.vue'
 import type { SaplingGenericItem } from '@/entity/entity'
 import { useSaplingTable } from '@/composables/table/useSaplingTable'
 import { computed, inject, ref, watch } from 'vue'
 import { useSaplingSelectField } from '@/composables/fields/useSaplingSelectField'
 import { useSaplingEntityValueLabel } from '@/composables/fields/useSaplingEntityValueLabel'
 import { useSaplingReferenceFilter } from '@/composables/fields/useSaplingReferenceFilter'
-import { useSaplingFieldDropdownFocus } from '@/composables/fields/useSaplingFieldDropdownFocus'
 import { DEFAULT_PAGE_SIZE_SMALL } from '@/constants/project.constants'
 import ApiGenericService, { type FilterQuery } from '@/services/api.generic.service'
 import { useGenericStore } from '@/stores/genericStore'
@@ -189,21 +169,16 @@ const {
 } = useSaplingTable(ref(props.entityHandle), DEFAULT_PAGE_SIZE_SMALL, false, false)
 
 const { selectedItems, menuOpen } = useSaplingSelectField(props)
-const {
-  fieldRootRef,
-  menuSurfaceRef,
-  closeMenuOnTab,
-  closeMenuOnEscape,
-  closeMenuWhenFocusLeaves,
-  focusFirstMenuRow,
-  moveMenuRowFocus,
-} = useSaplingFieldDropdownFocus(menuOpen)
 const { getValueLabel, getValueLabelLines } = useSaplingEntityValueLabel(entityTemplates)
 const { combineFilters, normalizeFilter, areFiltersEqual } = useSaplingReferenceFilter()
 const fieldSearch = ref('')
 const autocompleteItems = ref<SaplingGenericItem[]>([])
 const genericStore = useGenericStore()
 const suppressNextSelectedItemSearch = ref(false)
+const placeholderSelectionKey = computed(() => `${props.entityHandle}:${props.placeholder ?? ''}`)
+const resolvedPlaceholderSelectionKey = ref<string | null>(
+  !props.placeholder || (props.modelValue?.length ?? 0) > 0 ? placeholderSelectionKey.value : null,
+)
 const tableDisplayContext = inject(saplingTableDisplayContextKey, null)
 const disableDropdownMobileView = computed(() => tableDisplayContext?.isMobileTable.value === false)
 // #endregion
@@ -374,16 +349,36 @@ watch(menuOpen, async (isOpen) => {
   await loadData()
 })
 
+watch(placeholderSelectionKey, (nextKey) => {
+  resolvedPlaceholderSelectionKey.value =
+    !props.placeholder || (props.modelValue?.length ?? 0) > 0 ? nextKey : null
+})
+
 // #region Lifecycle
 watch(
   () => [entityTemplates.value, isLoading.value],
   async ([templates, loading]) => {
-    if (!loading && templates && props.placeholder && selectedItems.value.length === 0) {
-      const response = await ApiGenericService.find(props.entityHandle, {
-        filter: combineFilters({ handle: props.placeholder }, props.parentFilter),
+    const selectionKey = placeholderSelectionKey.value
+    if (
+      !loading &&
+      templates &&
+      props.placeholder &&
+      selectedItems.value.length === 0 &&
+      resolvedPlaceholderSelectionKey.value !== selectionKey
+    ) {
+      const entityHandle = props.entityHandle
+      const placeholder = props.placeholder
+      resolvedPlaceholderSelectionKey.value = selectionKey
+      const response = await ApiGenericService.find(entityHandle, {
+        filter: combineFilters({ handle: placeholder }, props.parentFilter),
         limit: 1,
       })
-      if (response.data && response.data.length > 0) {
+      if (
+        placeholderSelectionKey.value === selectionKey &&
+        selectedItems.value.length === 0 &&
+        response.data &&
+        response.data.length > 0
+      ) {
         selectedItems.value = [response.data[0] as SaplingGenericItem]
       }
     }

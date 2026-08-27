@@ -665,6 +665,14 @@ selection is empty, so selecting or clearing a record never shifts the form.
 Tabular reference dropdowns move focus from the input to their first result with
 Arrow Down. Arrow Up/Down then traverses result rows, Space selects the focused
 row, and Escape closes the dropdown before the dialog itself handles Escape.
+The shared tabular field picker measures the usable viewport space above and
+below its activator. It opens on a side that can contain the result table and
+caps its height to that side, so viewport repositioning never moves the result
+surface across its input. At mobile widths, or when neither side has a usable
+result height, the same picker opens as a full-screen Sapling dialog with its
+own search field. Single references, multi references, and duplicate checking
+must use this shared picker rather than configuring independent `v-menu`
+geometry.
 At effective viewport widths up to 1600 CSS pixels (including browser zoom),
 `SaplingDialogEdit` moves its relation navigation above the content and reduces
 workspace spacing. Narrower relation views stack add/remove controls, and

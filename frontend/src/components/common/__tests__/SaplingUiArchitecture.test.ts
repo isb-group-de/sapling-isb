@@ -30,6 +30,12 @@ const contextualInlineErrorAlertOwners = [
   'components/system/ai-chat/SaplingAiChatToolActions.vue',
 ]
 
+const tabularFieldPickerConsumers = [
+  'components/dialog/fields/SaplingFieldCellDuplicateCheck.vue',
+  'components/dialog/fields/SaplingFieldSelect.vue',
+  'components/dialog/fields/SaplingFieldSingleSelect.vue',
+]
+
 function collectVueFiles(directory: string): string[] {
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
     const path = join(directory, entry.name)
@@ -72,6 +78,15 @@ describe('Sapling UI architecture', () => {
     const violations = collectVueFiles(sourceRoot)
       .filter((file) => /sapling-dialog-(small|medium|large)/.test(readFileSync(file, 'utf8')))
       .map((file) => relative(sourceRoot, file).replace(/\\/g, '/'))
+
+    expect(violations).toEqual([])
+  })
+
+  it('keeps every tabular field dropdown on the shared adaptive picker', () => {
+    const violations = tabularFieldPickerConsumers.filter((fileName) => {
+      const source = readFileSync(join(sourceRoot, fileName), 'utf8')
+      return !/<SaplingFieldTablePicker\b/.test(source) || /<v-menu\b/.test(source)
+    })
 
     expect(violations).toEqual([])
   })

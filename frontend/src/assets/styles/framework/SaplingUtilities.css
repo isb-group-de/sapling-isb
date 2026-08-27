@@ -29,8 +29,21 @@
 }
 
 .sapling-menu-surface--field-table {
-  height: min(var(--sapling-field-menu-max-height), 48dvh);
-  max-height: min(var(--sapling-field-menu-max-height), 48dvh);
+  height: min(
+    var(--sapling-field-menu-max-height),
+    var(--sapling-field-picker-available-height, 48dvh)
+  );
+  max-height: min(
+    var(--sapling-field-menu-max-height),
+    var(--sapling-field-picker-available-height, 48dvh)
+  );
+}
+
+.sapling-menu-surface--field-table-fullscreen {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  max-height: none;
 }
 
 .sapling-menu-surface > * {

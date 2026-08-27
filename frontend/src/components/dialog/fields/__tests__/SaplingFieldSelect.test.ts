@@ -214,7 +214,7 @@ describe('SaplingFieldSelect', () => {
     expect(menu.props()).toMatchObject({
       width: 'min(600px, calc(100vw - 2rem))',
       maxWidth: 'min(600px, calc(100vw - 2rem))',
-      maxHeight: 'min(22rem, 48dvh)',
+      maxHeight: '400px',
       location: 'bottom start',
       scrollStrategy: 'reposition',
     })
@@ -242,12 +242,14 @@ describe('SaplingFieldSelect', () => {
     await autocomplete.vm.$emit('focus')
     expect(menu.props('modelValue')).toBe(true)
 
-    await wrapper.get('.sapling-field-select').trigger('keydown', { key: 'Tab' })
+    await wrapper.get('.sapling-field-table-picker').trigger('keydown', { key: 'Tab' })
     expect(menu.props('modelValue')).toBe(false)
 
     await autocomplete.vm.$emit('focus')
     const nextField = document.createElement('input')
-    await wrapper.get('.sapling-field-select').trigger('focusout', { relatedTarget: nextField })
+    await wrapper
+      .get('.sapling-field-table-picker')
+      .trigger('focusout', { relatedTarget: nextField })
 
     await vi.waitFor(() => expect(menu.props('modelValue')).toBe(false))
   })
@@ -260,7 +262,7 @@ describe('SaplingFieldSelect', () => {
 
     await autocomplete.vm.$emit('focus')
     await wrapper
-      .get('.sapling-field-select')
+      .get('.sapling-field-table-picker')
       .trigger('focusout', { relatedTarget: menuSurface.element })
 
     expect(menu.props('modelValue')).toBe(true)

@@ -92,6 +92,9 @@
   --sapling-header-time-offset: var(--sapling-space-lg);
   --sapling-field-menu-min-width: 400px;
   --sapling-field-menu-max-height: 400px;
+  --sapling-field-picker-min-usable-height: 240px;
+  --sapling-field-picker-viewport-margin: var(--sapling-space-lg);
+  --sapling-field-picker-gap: var(--sapling-space-2xs);
   --sapling-panel-width-sm: 320px;
   --sapling-panel-width-md: 340px;
   --sapling-panel-width-lg: 360px;
