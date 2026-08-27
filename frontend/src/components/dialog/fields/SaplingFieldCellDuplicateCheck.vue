@@ -40,7 +40,7 @@
         @keydown.down.prevent="moveMenuRowFocus(1)"
         @keydown.up.prevent="moveMenuRowFocus(-1)"
       >
-        <div class="sapling-field-duplicate-check__notice" role="note">
+        <div class="sapling-field-duplicate-check__notice glass-panel" role="note">
           <v-icon color="primary" size="small">mdi-content-duplicate</v-icon>
           <div class="sapling-field-duplicate-check__notice-copy">
             <strong>{{ $t('global.duplicateCheckResultsTitle') }}</strong>
