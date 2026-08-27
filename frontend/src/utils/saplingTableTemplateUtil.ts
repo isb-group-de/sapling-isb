@@ -99,6 +99,7 @@ function isListProjectionCandidate(
       (isSupportedTableTemplate(template, permissions) &&
         (getTemplateConfiguredBoolean(template, 'tableVisible') === true ||
           getTemplateConfiguredBoolean(template, 'mobileVisible') === true ||
+          template.options?.includes('isMail') === true ||
           template.options?.includes('isValue') === true)))
   )
 }
@@ -167,17 +168,18 @@ export function getListProjectionFieldNames(
     ...new Set(
       entityTemplates
         .filter((template) => isListProjectionCandidate(template, permissions))
-        .map((template) => {
+        .flatMap((template) => {
           if (template.isPersistent !== false) {
-            return template.name
+            return [template.name]
           }
 
           const dependency = findComputedReferenceDependency(template, entityTemplates, permissions)
           if (!dependency?.relation.referenceName || !getReferenceTemplates) {
-            return null
+            return []
           }
 
-          const targetField = getReferenceTemplates(dependency.relation.referenceName).find(
+          const referenceTemplates = getReferenceTemplates(dependency.relation.referenceName)
+          const targetField = referenceTemplates.find(
             (field) => field.name === dependency.targetFieldName,
           )
           if (
@@ -186,10 +188,32 @@ export function getListProjectionFieldNames(
             targetField.fieldAccess?.allowRead === false ||
             targetField.options?.includes('isSecurity')
           ) {
-            return null
+            return []
           }
 
-          return `${dependency.relation.name}.${targetField.name}`
+          const projectedFields = [`${dependency.relation.name}.${targetField.name}`]
+          if (
+            template.options?.includes('isMail') === true ||
+            template.options?.includes('isPhone') === true
+          ) {
+            projectedFields.push(
+              ...referenceTemplates
+                .filter(
+                  (referenceTemplate) =>
+                    referenceTemplate.isPersistent !== false &&
+                    referenceTemplate.isReference !== true &&
+                    referenceTemplate.fieldAccess?.allowRead !== false &&
+                    referenceTemplate.options?.includes('isValue') === true &&
+                    referenceTemplate.options?.includes('isSecurity') !== true,
+                )
+                .map(
+                  (referenceTemplate) =>
+                    `${dependency.relation.name}.${referenceTemplate.name}`,
+                ),
+            )
+          }
+
+          return projectedFields
         })
         .filter((name): name is string => typeof name === 'string' && name.length > 0),
     ),

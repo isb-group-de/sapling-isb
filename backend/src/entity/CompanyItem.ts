@@ -841,6 +841,27 @@ export class CompanyItem {
   get serviceProviderName(): string | undefined {
     return this.serviceProvider?.name;
   }
+
+  /**
+   * Email address of the company selected in serviceProvider.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isMail', 'isReadOnly'])
+  @SaplingForm({
+    order: 202,
+    group: 'company.groupReference',
+    groupOrder: 500,
+    width: 2,
+    visible: true,
+    tableOrder: 202,
+    tableVisible: true,
+    mobileOrder: 202,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get serviceProviderEmail(): string | undefined {
+    return this.serviceProvider?.email;
+  }
   // #endregion
 
   // #region Properties: System

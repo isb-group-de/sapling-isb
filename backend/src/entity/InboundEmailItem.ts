@@ -265,6 +265,27 @@ export class InboundEmailItem {
     return this.company?.name;
   }
 
+  /**
+   * Email address of the company selected in company.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isMail', 'isReadOnly'])
+  @SaplingForm({
+    order: 402,
+    group: 'inboundEmail.groupReference',
+    groupOrder: 300,
+    width: 2,
+    visible: true,
+    tableOrder: 402,
+    tableVisible: true,
+    mobileOrder: 402,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get companyEmail(): string | undefined {
+    return this.company?.email;
+  }
+
   @ApiPropertyOptional({ type: () => TicketItem })
   @SaplingForm({
     order: 500,

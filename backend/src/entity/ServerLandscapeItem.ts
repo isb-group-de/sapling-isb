@@ -193,6 +193,27 @@ export class ServerLandscapeItem {
   get companyName(): string | undefined {
     return this.company?.name;
   }
+
+  /**
+   * Email address of the company selected in company.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isMail', 'isReadOnly'])
+  @SaplingForm({
+    order: 302,
+    group: 'serverLandscape.groupReference',
+    groupOrder: 400,
+    width: 2,
+    visible: true,
+    tableOrder: 302,
+    tableVisible: true,
+    mobileOrder: 302,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get companyEmail(): string | undefined {
+    return this.company?.email;
+  }
   // #endregion
 
   // #region Properties: System

@@ -430,6 +430,27 @@ export class SalesOpportunityItem {
   get assigneeCompanyName(): string | undefined {
     return this.assigneeCompany?.name;
   }
+
+  /**
+   * Email address of the company selected in assigneeCompany.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isMail', 'isReadOnly'])
+  @SaplingForm({
+    order: 402,
+    group: 'salesOpportunity.groupReference',
+    groupOrder: 400,
+    width: 2,
+    visible: true,
+    tableOrder: 402,
+    tableVisible: true,
+    mobileOrder: 402,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get assigneeCompanyEmail(): string | undefined {
+    return this.assigneeCompany?.email;
+  }
   /**
    * The person assigned to this ticket.
    * @type {PersonItem}
@@ -536,6 +557,27 @@ export class SalesOpportunityItem {
   @Property({ persist: false, nullable: true, length: 128 })
   get creatorCompanyName(): string | undefined {
     return this.creatorCompany?.name;
+  }
+
+  /**
+   * Email address of the company selected in creatorCompany.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isMail', 'isReadOnly'])
+  @SaplingForm({
+    order: 602,
+    group: 'salesOpportunity.groupReference',
+    groupOrder: 400,
+    width: 2,
+    visible: true,
+    tableOrder: 602,
+    tableVisible: true,
+    mobileOrder: 602,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get creatorCompanyEmail(): string | undefined {
+    return this.creatorCompany?.email;
   }
 
   /**

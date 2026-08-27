@@ -287,6 +287,27 @@ export class ContractItem {
   }
 
   /**
+   * Email address of the company selected in company.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isMail', 'isReadOnly'])
+  @SaplingForm({
+    order: 102,
+    group: 'contract.groupReference',
+    groupOrder: 500,
+    width: 2,
+    visible: true,
+    tableOrder: 102,
+    tableVisible: true,
+    mobileOrder: 102,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get companyEmail(): string | undefined {
+    return this.company?.email;
+  }
+
+  /**
    * Service level assigned to this contract.
    * @type {ContractServiceItem}
    */

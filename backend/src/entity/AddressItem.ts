@@ -221,6 +221,27 @@ export class AddressItem {
   }
 
   /**
+   * Email address of the company selected in company.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isMail', 'isReadOnly'])
+  @SaplingForm({
+    order: 102,
+    group: 'address.groupReference',
+    groupOrder: 300,
+    width: 2,
+    visible: true,
+    tableOrder: 102,
+    tableVisible: true,
+    mobileOrder: 102,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get companyEmail(): string | undefined {
+    return this.company?.email;
+  }
+
+  /**
    * Type assigned to this address.
    * @type {AddressTypeItem}
    */

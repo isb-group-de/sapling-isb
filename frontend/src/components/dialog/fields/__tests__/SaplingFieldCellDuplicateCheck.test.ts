@@ -47,6 +47,15 @@ const VTextFieldStub = defineComponent({
   template: '<div data-test="duplicate-input">{{ hint }}</div>',
 })
 
+const SaplingTableStub = defineComponent({
+  name: 'SaplingTable',
+  props: {
+    multiSelect: Boolean,
+    showToolbar: Boolean,
+  },
+  template: '<div />',
+})
+
 describe('SaplingFieldCellDuplicateCheck', () => {
   it('distinguishes duplicate checking from a reference selection', () => {
     const i18n = createI18n({
@@ -77,7 +86,7 @@ describe('SaplingFieldCellDuplicateCheck', () => {
           'v-menu': VMenuStub,
           'v-text-field': VTextFieldStub,
           'v-icon': { template: '<span><slot /></span>' },
-          SaplingTable: true,
+          SaplingTable: SaplingTableStub,
         },
       },
     })
@@ -93,5 +102,10 @@ describe('SaplingFieldCellDuplicateCheck', () => {
     expect(wrapper.get('.sapling-field-duplicate-check__notice').text()).toContain(
       'Nur zur Prüfung',
     )
+
+    const table = wrapper.getComponent(SaplingTableStub)
+    expect(table.props('showToolbar')).toBe(false)
+    expect(table.props('multiSelect')).toBe(false)
+    expect(table.classes()).toContain('sapling-nested-backdrop-host')
   })
 })

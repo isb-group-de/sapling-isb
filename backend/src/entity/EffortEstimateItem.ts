@@ -156,6 +156,27 @@ export class EffortEstimateItem {
     return this.assigneeCompany?.name;
   }
 
+  /**
+   * Email address of the company selected in assigneeCompany.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isMail', 'isReadOnly'])
+  @SaplingForm({
+    order: 102,
+    group: 'effortEstimate.groupReference',
+    groupOrder: 300,
+    width: 2,
+    visible: true,
+    tableOrder: 102,
+    tableVisible: true,
+    mobileOrder: 102,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get assigneeCompanyEmail(): string | undefined {
+    return this.assigneeCompany?.email;
+  }
+
   @ApiPropertyOptional({ type: () => PersonItem })
   @Sapling(['isPerson', 'isPartner', 'isCurrentPerson'])
   @SaplingDependsOn({
@@ -254,6 +275,27 @@ export class EffortEstimateItem {
   @Property({ persist: false, nullable: true, length: 128 })
   get creatorCompanyName(): string | undefined {
     return this.creatorCompany?.name;
+  }
+
+  /**
+   * Email address of the company selected in creatorCompany.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isMail', 'isReadOnly'])
+  @SaplingForm({
+    order: 302,
+    group: 'effortEstimate.groupReference',
+    groupOrder: 300,
+    width: 2,
+    visible: true,
+    tableOrder: 302,
+    tableVisible: true,
+    mobileOrder: 302,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get creatorCompanyEmail(): string | undefined {
+    return this.creatorCompany?.email;
   }
 
   @ApiPropertyOptional({ type: () => PersonItem })

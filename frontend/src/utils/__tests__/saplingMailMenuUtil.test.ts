@@ -26,6 +26,30 @@ describe('saplingMailMenuUtil', () => {
     ])
   })
 
+  it('uses the referenced company name for an explicit company mail action', () => {
+    const actions = buildMailMenuActions(
+      [
+        { name: 'email', options: ['isMail'], isPersistent: true } as EntityTemplate,
+        { name: 'companyEmail', options: ['isMail'], isPersistent: false } as EntityTemplate,
+      ],
+      {
+        firstName: 'Ada',
+        lastName: 'Lovelace',
+        email: null,
+        companyEmail: 'info@analytical-engines.example',
+        companyName: 'Analytical Engines Ltd.',
+      },
+    )
+
+    expect(actions).toEqual([
+      expect.objectContaining({
+        email: 'info@analytical-engines.example',
+        recipientName: 'Analytical Engines Ltd.',
+        source: 'record',
+      }),
+    ])
+  })
+
   it('resolves only company references marked as customer-side metadata', () => {
     const templates = [
       {

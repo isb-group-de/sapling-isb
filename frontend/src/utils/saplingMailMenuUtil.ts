@@ -65,6 +65,12 @@ function resolveRecordRecipientName(item: Record<string, unknown>, templateName:
     return relationPersonName
   }
 
+  const relationValueName =
+    readStringField(relation, 'name') || readStringField(item, `${relationName}Name`)
+  if (relationValueName) {
+    return relationValueName
+  }
+
   if (relationName) {
     const flattenedPersonName = joinPersonName(
       item[`${relationName}FirstName`],

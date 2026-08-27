@@ -169,6 +169,17 @@ target templates rather than entity-specific field-name guesses. Reference
 fields marked `isValue` are excluded from communication hero labels; only
 scalar value fields contribute to the displayed name.
 
+Every direct many-to-one Company relation exposes a read-only, non-persistent
+`<relationName>Email` assistant field (for example `PersonItem.companyEmail`
+or `TicketItem.creatorCompanyEmail`). These fields mirror the referenced
+Company's `email`, are available as table columns, and participate in the same
+metadata-driven mail actions as direct email fields. Mail projections are loaded
+for row actions even when a personal table configuration hides the column.
+Consequently, sending to a person's own address and sending to their Company's
+address remain two explicit, separately labelled choices. Sapling does not use
+the Company address as an invisible fallback for a Person without an email
+address.
+
 The neighboring **Phone Calls** tab uses the same pattern for `PhoneCallItem`,
 filtering by `entity` and `reference`. When the current record contains a field
 marked `isPhone`, the existing phone-call dialog can be opened directly from the

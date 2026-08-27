@@ -48,7 +48,7 @@
           </div>
         </div>
         <sapling-table
-          class="glass-panel"
+          class="glass-panel sapling-nested-backdrop-host"
           :entity-handle="entityHandle"
           :items="items"
           :search="tableSearch"
@@ -64,6 +64,7 @@
           :entity-permission="entityPermission"
           :show-actions="false"
           :show-search="false"
+          :show-toolbar="false"
           :multi-select="false"
           :table-key="entityHandle"
           :selected="selectedItem ? [selectedItem] : []"

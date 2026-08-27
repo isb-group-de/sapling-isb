@@ -178,11 +178,12 @@ describe('saplingTableUtil', () => {
     ).toEqual(['accountManager', 'accountManager.company'])
   })
 
-  it('projects only list-visible, mobile, value, and primary fields', () => {
+  it('projects list-visible, mobile, value, mail-action, and primary fields', () => {
     const templates = [
       createTemplate({ name: 'handle', tableVisible: false }),
       createTemplate({ name: 'title', options: ['isValue'], tableVisible: true }),
       createTemplate({ name: 'mobileSummary', tableVisible: false, mobileVisible: true }),
+      createTemplate({ name: 'email', options: ['isMail'], tableVisible: false }),
       createTemplate({ name: 'description', tableVisible: false, mobileVisible: false }),
       createTemplate({
         name: 'password',
@@ -191,7 +192,41 @@ describe('saplingTableUtil', () => {
       }),
     ]
 
-    expect(getListProjectionFieldNames(templates)).toEqual(['handle', 'title', 'mobileSummary'])
+    expect(getListProjectionFieldNames(templates)).toEqual([
+      'handle',
+      'title',
+      'mobileSummary',
+      'email',
+    ])
+  })
+
+  it('projects hidden computed company email fields for row mail actions', () => {
+    const templates = [
+      createTemplate({
+        name: 'company',
+        kind: 'm:1',
+        referenceName: 'company',
+        isReference: true,
+        isPersistent: true,
+        tableVisible: false,
+      }),
+      createTemplate({
+        name: 'companyEmail',
+        isPersistent: false,
+        tableVisible: false,
+        options: ['isMail', 'isReadOnly'],
+      }),
+    ]
+    const permissions = [{ entityHandle: 'company', allowRead: true }]
+    const companyTemplates = [
+      createTemplate({ name: 'name', isPersistent: true, options: ['isValue'] }),
+      createTemplate({ name: 'email', isPersistent: true }),
+    ]
+
+    expect(
+      getListProjectionFieldNames(templates, permissions, () => companyTemplates),
+    ).toEqual(['company.email', 'company.name'])
+    expect(getListProjectionReferenceDependencyNames(templates, permissions)).toEqual(['company'])
   })
 
   it('projects readable dependencies for visible computed reference fields', () => {

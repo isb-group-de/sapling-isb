@@ -1,0 +1,116 @@
+[
+  {
+    "entity": "address",
+    "property": "companyEmail",
+    "de": "Unternehmen E-Mail",
+    "en": "Company email"
+  },
+  {
+    "entity": "company",
+    "property": "serviceProviderEmail",
+    "de": "Dienstleister E-Mail",
+    "en": "Service provider email"
+  },
+  {
+    "entity": "companyRelationship",
+    "property": "sourceCompanyEmail",
+    "de": "Ausgangsunternehmen E-Mail",
+    "en": "Source company email"
+  },
+  {
+    "entity": "companyRelationship",
+    "property": "targetCompanyEmail",
+    "de": "Zielunternehmen E-Mail",
+    "en": "Target company email"
+  },
+  {
+    "entity": "contract",
+    "property": "companyEmail",
+    "de": "Unternehmen E-Mail",
+    "en": "Company email"
+  },
+  {
+    "entity": "effortEstimate",
+    "property": "assigneeCompanyEmail",
+    "de": "Verantwortlich (Firma) E-Mail",
+    "en": "Responsible (Company) email"
+  },
+  {
+    "entity": "effortEstimate",
+    "property": "creatorCompanyEmail",
+    "de": "Kunde (Firma) E-Mail",
+    "en": "Customer (Company) email"
+  },
+  {
+    "entity": "emailDelivery",
+    "property": "customerCompanyEmail",
+    "de": "Kundenfirma E-Mail",
+    "en": "Customer company email"
+  },
+  {
+    "entity": "event",
+    "property": "assigneeCompanyEmail",
+    "de": "Verantwortlich (Firma) E-Mail",
+    "en": "Responsible (Company) email"
+  },
+  {
+    "entity": "event",
+    "property": "creatorCompanyEmail",
+    "de": "Kunde (Firma) E-Mail",
+    "en": "Customer (Company) email"
+  },
+  {
+    "entity": "inboundEmail",
+    "property": "companyEmail",
+    "de": "Zugeordnetes Unternehmen E-Mail",
+    "en": "Matched company email"
+  },
+  {
+    "entity": "internalCase",
+    "property": "customerCompanyEmail",
+    "de": "Kunde (Firma) E-Mail",
+    "en": "Customer (Company) email"
+  },
+  {
+    "entity": "internalCase",
+    "property": "responsibleCompanyEmail",
+    "de": "Verantwortlich (Firma) E-Mail",
+    "en": "Responsible (Company) email"
+  },
+  {
+    "entity": "person",
+    "property": "companyEmail",
+    "de": "Unternehmen E-Mail",
+    "en": "Company email"
+  },
+  {
+    "entity": "salesOpportunity",
+    "property": "assigneeCompanyEmail",
+    "de": "Verantwortlich (Firma) E-Mail",
+    "en": "Responsible (Company) email"
+  },
+  {
+    "entity": "salesOpportunity",
+    "property": "creatorCompanyEmail",
+    "de": "Kunde (Firma) E-Mail",
+    "en": "Customer (Company) email"
+  },
+  {
+    "entity": "serverLandscape",
+    "property": "companyEmail",
+    "de": "Unternehmen E-Mail",
+    "en": "Company email"
+  },
+  {
+    "entity": "ticket",
+    "property": "assigneeCompanyEmail",
+    "de": "Verantwortlich (Firma) E-Mail",
+    "en": "Responsible (Company) email"
+  },
+  {
+    "entity": "ticket",
+    "property": "creatorCompanyEmail",
+    "de": "Kunde (Firma) E-Mail",
+    "en": "Customer (Company) email"
+  }
+]

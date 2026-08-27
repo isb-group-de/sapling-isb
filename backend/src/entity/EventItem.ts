@@ -367,6 +367,27 @@ export class EventItem {
   get assigneeCompanyName(): string | undefined {
     return this.assigneeCompany?.name;
   }
+
+  /**
+   * Email address of the company selected in assigneeCompany.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isMail', 'isReadOnly'])
+  @SaplingForm({
+    order: 202,
+    group: 'event.groupReference',
+    groupOrder: 500,
+    width: 2,
+    visible: true,
+    tableOrder: 202,
+    tableVisible: true,
+    mobileOrder: 202,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get assigneeCompanyEmail(): string | undefined {
+    return this.assigneeCompany?.email;
+  }
   /**
    * The person assigned to this event.
    * @type {PersonItem}
@@ -473,6 +494,27 @@ export class EventItem {
   @Property({ persist: false, nullable: true, length: 128 })
   get creatorCompanyName(): string | undefined {
     return this.creatorCompany?.name;
+  }
+
+  /**
+   * Email address of the company selected in creatorCompany.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isMail', 'isReadOnly'])
+  @SaplingForm({
+    order: 402,
+    group: 'event.groupReference',
+    groupOrder: 500,
+    width: 2,
+    visible: true,
+    tableOrder: 402,
+    tableVisible: true,
+    mobileOrder: 402,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get creatorCompanyEmail(): string | undefined {
+    return this.creatorCompany?.email;
   }
 
   /**

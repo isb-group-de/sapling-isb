@@ -321,6 +321,27 @@ export class TicketItem {
   }
 
   /**
+   * Email address of the company selected in assigneeCompany.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isMail', 'isReadOnly'])
+  @SaplingForm({
+    order: 302,
+    group: 'ticket.groupReference',
+    groupOrder: 400,
+    width: 2,
+    visible: true,
+    tableOrder: 302,
+    tableVisible: true,
+    mobileOrder: 302,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get assigneeCompanyEmail(): string | undefined {
+    return this.assigneeCompany?.email;
+  }
+
+  /**
    * The person assigned to this ticket.
    * @type {PersonItem}
    */
@@ -426,6 +447,27 @@ export class TicketItem {
   @Property({ persist: false, nullable: true, length: 128 })
   get creatorCompanyName(): string | undefined {
     return this.creatorCompany?.name;
+  }
+
+  /**
+   * Email address of the company selected in creatorCompany.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isMail', 'isReadOnly'])
+  @SaplingForm({
+    order: 702,
+    group: 'ticket.groupReference',
+    groupOrder: 400,
+    width: 2,
+    visible: true,
+    tableOrder: 702,
+    tableVisible: true,
+    mobileOrder: 702,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get creatorCompanyEmail(): string | undefined {
+    return this.creatorCompany?.email;
   }
 
   /**

@@ -162,6 +162,27 @@ export class EmailDeliveryItem {
     return this.customerCompany?.name;
   }
 
+  /**
+   * Email address of the company selected in customerCompany.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isMail', 'isReadOnly'])
+  @SaplingForm({
+    order: 402,
+    group: 'emailDelivery.groupReference',
+    groupOrder: 100,
+    width: 2,
+    visible: true,
+    tableOrder: 402,
+    tableVisible: true,
+    mobileOrder: 402,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get customerCompanyEmail(): string | undefined {
+    return this.customerCompany?.email;
+  }
+
   @ApiPropertyOptional({ type: () => PersonItem })
   @Sapling(['isPerson', 'isCustomer', 'isReadOnly'])
   @SaplingForm({

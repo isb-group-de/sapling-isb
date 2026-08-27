@@ -369,6 +369,27 @@ export class PersonItem {
   }
 
   /**
+   * Email address of the company selected in company.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isMail', 'isReadOnly'])
+  @SaplingForm({
+    order: 102,
+    group: 'person.groupReference',
+    groupOrder: 700,
+    width: 2,
+    visible: true,
+    tableOrder: 102,
+    tableVisible: true,
+    mobileOrder: 102,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get companyEmail(): string | undefined {
+    return this.company?.email;
+  }
+
+  /**
    * Salutation used for addressing this contact.
    */
   @ApiPropertyOptional({ type: () => PersonSalutationItem })

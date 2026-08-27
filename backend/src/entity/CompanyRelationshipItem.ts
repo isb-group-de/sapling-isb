@@ -100,6 +100,27 @@ export class CompanyRelationshipItem {
   }
 
   /**
+   * Email address of the company selected in sourceCompany.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isMail', 'isReadOnly'])
+  @SaplingForm({
+    order: 102,
+    group: 'companyRelationship.groupReference',
+    groupOrder: 200,
+    width: 2,
+    visible: true,
+    tableOrder: 102,
+    tableVisible: true,
+    mobileOrder: 102,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get sourceCompanyEmail(): string | undefined {
+    return this.sourceCompany?.email;
+  }
+
+  /**
    * The target company of the relationship.
    * @type {CompanyItem}
    */
@@ -138,6 +159,27 @@ export class CompanyRelationshipItem {
   @Property({ persist: false, nullable: true, length: 128 })
   get targetCompanyName(): string | undefined {
     return this.targetCompany?.name;
+  }
+
+  /**
+   * Email address of the company selected in targetCompany.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isMail', 'isReadOnly'])
+  @SaplingForm({
+    order: 202,
+    group: 'companyRelationship.groupReference',
+    groupOrder: 200,
+    width: 2,
+    visible: true,
+    tableOrder: 202,
+    tableVisible: true,
+    mobileOrder: 202,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get targetCompanyEmail(): string | undefined {
+    return this.targetCompany?.email;
   }
 
   /**

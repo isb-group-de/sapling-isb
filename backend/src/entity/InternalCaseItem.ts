@@ -165,6 +165,27 @@ export class InternalCaseItem {
     return this.customerCompany?.name;
   }
 
+  /**
+   * Email address of the company selected in customerCompany.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isMail', 'isReadOnly'])
+  @SaplingForm({
+    order: 102,
+    group: 'internalCase.groupReference',
+    groupOrder: 300,
+    width: 2,
+    visible: true,
+    tableOrder: 102,
+    tableVisible: true,
+    mobileOrder: 102,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get customerCompanyEmail(): string | undefined {
+    return this.customerCompany?.email;
+  }
+
   @ApiPropertyOptional({ type: () => PersonItem })
   @Sapling(['isPerson', 'isPartner', 'isCustomer'])
   @SaplingDependsOn({
@@ -263,6 +284,27 @@ export class InternalCaseItem {
   @Property({ persist: false, nullable: true, length: 128 })
   get responsibleCompanyName(): string | undefined {
     return this.responsibleCompany?.name;
+  }
+
+  /**
+   * Email address of the company selected in responsibleCompany.
+   */
+  @ApiPropertyOptional()
+  @Sapling(['isMail', 'isReadOnly'])
+  @SaplingForm({
+    order: 302,
+    group: 'internalCase.groupReference',
+    groupOrder: 300,
+    width: 2,
+    visible: true,
+    tableOrder: 302,
+    tableVisible: true,
+    mobileOrder: 302,
+    mobileVisible: false,
+  })
+  @Property({ persist: false, nullable: true, length: 128 })
+  get responsibleCompanyEmail(): string | undefined {
+    return this.responsibleCompany?.email;
   }
 
   @ApiPropertyOptional({ type: () => PersonItem })
