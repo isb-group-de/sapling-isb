@@ -848,14 +848,14 @@ export class CompanyItem {
   @ApiPropertyOptional()
   @Sapling(['isMail', 'isReadOnly'])
   @SaplingForm({
-    order: 202,
+    order: 10000,
     group: 'company.groupReference',
     groupOrder: 500,
     width: 2,
     visible: true,
-    tableOrder: 202,
+    tableOrder: 10000,
     tableVisible: true,
-    mobileOrder: 202,
+    mobileOrder: 10000,
     mobileVisible: false,
   })
   @Property({ persist: false, nullable: true, length: 128 })

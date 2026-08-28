@@ -326,14 +326,14 @@ export class TicketItem {
   @ApiPropertyOptional()
   @Sapling(['isMail', 'isReadOnly'])
   @SaplingForm({
-    order: 302,
+    order: 10000,
     group: 'ticket.groupReference',
     groupOrder: 400,
     width: 2,
     visible: true,
-    tableOrder: 302,
+    tableOrder: 10000,
     tableVisible: true,
-    mobileOrder: 302,
+    mobileOrder: 10000,
     mobileVisible: false,
   })
   @Property({ persist: false, nullable: true, length: 128 })
@@ -455,14 +455,14 @@ export class TicketItem {
   @ApiPropertyOptional()
   @Sapling(['isMail', 'isReadOnly'])
   @SaplingForm({
-    order: 702,
+    order: 10001,
     group: 'ticket.groupReference',
     groupOrder: 400,
     width: 2,
     visible: true,
-    tableOrder: 702,
+    tableOrder: 10001,
     tableVisible: true,
-    mobileOrder: 702,
+    mobileOrder: 10001,
     mobileVisible: false,
   })
   @Property({ persist: false, nullable: true, length: 128 })

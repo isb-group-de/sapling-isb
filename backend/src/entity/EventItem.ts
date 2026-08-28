@@ -374,14 +374,14 @@ export class EventItem {
   @ApiPropertyOptional()
   @Sapling(['isMail', 'isReadOnly'])
   @SaplingForm({
-    order: 202,
+    order: 10000,
     group: 'event.groupReference',
     groupOrder: 500,
     width: 2,
     visible: true,
-    tableOrder: 202,
+    tableOrder: 10000,
     tableVisible: true,
-    mobileOrder: 202,
+    mobileOrder: 10000,
     mobileVisible: false,
   })
   @Property({ persist: false, nullable: true, length: 128 })
@@ -502,14 +502,14 @@ export class EventItem {
   @ApiPropertyOptional()
   @Sapling(['isMail', 'isReadOnly'])
   @SaplingForm({
-    order: 402,
+    order: 10001,
     group: 'event.groupReference',
     groupOrder: 500,
     width: 2,
     visible: true,
-    tableOrder: 402,
+    tableOrder: 10001,
     tableVisible: true,
-    mobileOrder: 402,
+    mobileOrder: 10001,
     mobileVisible: false,
   })
   @Property({ persist: false, nullable: true, length: 128 })

@@ -71,6 +71,7 @@ import {
 } from '../calendar-classification.utils';
 import {
   buildCalendarParticipantEmailFilter,
+  replaceCalendarEventParticipants,
   selectUniqueCalendarParticipantsByEmail,
 } from '../calendar-participant.utils';
 
@@ -652,7 +653,7 @@ export class AzureCalendarService {
         getRelationHandle(reference.event.status) === 'completed'
           ? (reference.event.status ?? status)
           : status;
-      this.assignImportedEvent(reference.event, graphEvent, {
+      await this.assignImportedEvent(reference.event, graphEvent, {
         startDate,
         endDate,
         status: importedStatus,
@@ -666,7 +667,7 @@ export class AzureCalendarService {
     event.creatorPerson = defaults.user;
     event.assigneeCompany = defaults.user.company;
     event.assigneePerson = defaults.user;
-    this.assignImportedEvent(event, graphEvent, {
+    await this.assignImportedEvent(event, graphEvent, {
       startDate,
       endDate,
       status,
@@ -686,7 +687,7 @@ export class AzureCalendarService {
     return 'created';
   }
 
-  private assignImportedEvent(
+  private async assignImportedEvent(
     event: EventItem,
     graphEvent: AzureGraphCalendarEvent,
     values: {
@@ -699,7 +700,7 @@ export class AzureCalendarService {
         category: EventCategoryItem;
       };
     },
-  ): void {
+  ): Promise<void> {
     event.title = truncateAzureText(
       graphEvent.subject?.trim() || 'Outlook event',
       128,
@@ -719,23 +720,7 @@ export class AzureCalendarService {
     event.onlineMeetingURL =
       resolveAzureOnlineMeetingUrl(graphEvent) ?? event.onlineMeetingURL;
     event.status = values.status;
-    this.replaceParticipants(event, values.participants);
-  }
-
-  private replaceParticipants(event: EventItem, participants: PersonItem[]) {
-    const collection = event.participants as {
-      set?: (items: PersonItem[]) => void;
-      removeAll?: () => void;
-      add?: (...items: PersonItem[]) => void;
-    };
-
-    if (typeof collection.set === 'function') {
-      collection.set(participants);
-      return;
-    }
-
-    collection.removeAll?.();
-    collection.add?.(...participants);
+    await replaceCalendarEventParticipants(event, values.participants);
   }
 
   private async resolveImportedParticipants(

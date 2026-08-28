@@ -171,14 +171,14 @@ export class InternalCaseItem {
   @ApiPropertyOptional()
   @Sapling(['isMail', 'isReadOnly'])
   @SaplingForm({
-    order: 102,
+    order: 10000,
     group: 'internalCase.groupReference',
     groupOrder: 300,
     width: 2,
     visible: true,
-    tableOrder: 102,
+    tableOrder: 10000,
     tableVisible: true,
-    mobileOrder: 102,
+    mobileOrder: 10000,
     mobileVisible: false,
   })
   @Property({ persist: false, nullable: true, length: 128 })
@@ -292,14 +292,14 @@ export class InternalCaseItem {
   @ApiPropertyOptional()
   @Sapling(['isMail', 'isReadOnly'])
   @SaplingForm({
-    order: 302,
+    order: 10001,
     group: 'internalCase.groupReference',
     groupOrder: 300,
     width: 2,
     visible: true,
-    tableOrder: 302,
+    tableOrder: 10001,
     tableVisible: true,
-    mobileOrder: 302,
+    mobileOrder: 10001,
     mobileVisible: false,
   })
   @Property({ persist: false, nullable: true, length: 128 })

@@ -61,6 +61,7 @@ import {
 } from '../calendar-classification.utils';
 import {
   buildCalendarParticipantEmailFilter,
+  replaceCalendarEventParticipants,
   selectUniqueCalendarParticipantsByEmail,
 } from '../calendar-participant.utils';
 
@@ -482,7 +483,7 @@ export class GoogleCalendarService {
         getRelationHandle(reference.event.status) === 'completed'
           ? (reference.event.status ?? status)
           : status;
-      this.assignImportedEvent(reference.event, graphEvent, {
+      await this.assignImportedEvent(reference.event, graphEvent, {
         startDate,
         endDate,
         type: defaults.type,
@@ -498,7 +499,7 @@ export class GoogleCalendarService {
     event.creatorPerson = defaults.user;
     event.assigneeCompany = defaults.user.company;
     event.assigneePerson = defaults.user;
-    this.assignImportedEvent(event, graphEvent, {
+    await this.assignImportedEvent(event, graphEvent, {
       startDate,
       endDate,
       type: defaults.type,
@@ -516,7 +517,7 @@ export class GoogleCalendarService {
     return 'created';
   }
 
-  private assignImportedEvent(
+  private async assignImportedEvent(
     event: EventItem,
     graphEvent: calendar_v3.Schema$Event,
     values: {
@@ -527,7 +528,7 @@ export class GoogleCalendarService {
       status: EventStatusItem;
       participants: PersonItem[];
     },
-  ): void {
+  ): Promise<void> {
     event.title = truncateGoogleText(
       graphEvent.summary?.trim() || 'Google event',
       128,
@@ -547,8 +548,7 @@ export class GoogleCalendarService {
       )?.uri ??
       event.onlineMeetingURL;
     event.status = values.status;
-    event.participants.removeAll();
-    event.participants.add(values.participants);
+    await replaceCalendarEventParticipants(event, values.participants);
   }
 
   private async resolveImportedParticipants(

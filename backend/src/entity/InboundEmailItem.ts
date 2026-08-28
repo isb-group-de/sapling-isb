@@ -271,14 +271,14 @@ export class InboundEmailItem {
   @ApiPropertyOptional()
   @Sapling(['isMail', 'isReadOnly'])
   @SaplingForm({
-    order: 402,
+    order: 10000,
     group: 'inboundEmail.groupReference',
     groupOrder: 300,
     width: 2,
     visible: true,
-    tableOrder: 402,
+    tableOrder: 10000,
     tableVisible: true,
-    mobileOrder: 402,
+    mobileOrder: 10000,
     mobileVisible: false,
   })
   @Property({ persist: false, nullable: true, length: 128 })

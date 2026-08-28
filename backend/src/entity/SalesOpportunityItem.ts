@@ -437,14 +437,14 @@ export class SalesOpportunityItem {
   @ApiPropertyOptional()
   @Sapling(['isMail', 'isReadOnly'])
   @SaplingForm({
-    order: 402,
+    order: 10000,
     group: 'salesOpportunity.groupReference',
     groupOrder: 400,
     width: 2,
     visible: true,
-    tableOrder: 402,
+    tableOrder: 10000,
     tableVisible: true,
-    mobileOrder: 402,
+    mobileOrder: 10000,
     mobileVisible: false,
   })
   @Property({ persist: false, nullable: true, length: 128 })
@@ -565,14 +565,14 @@ export class SalesOpportunityItem {
   @ApiPropertyOptional()
   @Sapling(['isMail', 'isReadOnly'])
   @SaplingForm({
-    order: 602,
+    order: 10001,
     group: 'salesOpportunity.groupReference',
     groupOrder: 400,
     width: 2,
     visible: true,
-    tableOrder: 602,
+    tableOrder: 10001,
     tableVisible: true,
-    mobileOrder: 602,
+    mobileOrder: 10001,
     mobileVisible: false,
   })
   @Property({ persist: false, nullable: true, length: 128 })

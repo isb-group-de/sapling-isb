@@ -24,73 +24,88 @@ type CustomerContactEntityClass = {
 
 describe('customer contact display fields', () => {
   it.each([
-    ['address', AddressItem, 'company', 'companyEmail'],
-    ['company', CompanyItem, 'serviceProvider', 'serviceProviderEmail'],
+    ['address', AddressItem, 'company', 'companyEmail', 10000],
+    ['company', CompanyItem, 'serviceProvider', 'serviceProviderEmail', 10000],
     [
       'companyRelationship',
       CompanyRelationshipItem,
       'sourceCompany',
       'sourceCompanyEmail',
+      10000,
     ],
     [
       'companyRelationship',
       CompanyRelationshipItem,
       'targetCompany',
       'targetCompanyEmail',
+      10001,
     ],
-    ['contract', ContractItem, 'company', 'companyEmail'],
+    ['contract', ContractItem, 'company', 'companyEmail', 10000],
     [
       'effortEstimate',
       EffortEstimateItem,
       'assigneeCompany',
       'assigneeCompanyEmail',
+      10000,
     ],
     [
       'effortEstimate',
       EffortEstimateItem,
       'creatorCompany',
       'creatorCompanyEmail',
+      10001,
     ],
     [
       'emailDelivery',
       EmailDeliveryItem,
       'customerCompany',
       'customerCompanyEmail',
+      10000,
     ],
-    ['event', EventItem, 'assigneeCompany', 'assigneeCompanyEmail'],
-    ['event', EventItem, 'creatorCompany', 'creatorCompanyEmail'],
-    ['inboundEmail', InboundEmailItem, 'company', 'companyEmail'],
+    ['event', EventItem, 'assigneeCompany', 'assigneeCompanyEmail', 10000],
+    ['event', EventItem, 'creatorCompany', 'creatorCompanyEmail', 10001],
+    ['inboundEmail', InboundEmailItem, 'company', 'companyEmail', 10000],
     [
       'internalCase',
       InternalCaseItem,
       'customerCompany',
       'customerCompanyEmail',
+      10000,
     ],
     [
       'internalCase',
       InternalCaseItem,
       'responsibleCompany',
       'responsibleCompanyEmail',
+      10001,
     ],
-    ['person', PersonItem, 'company', 'companyEmail'],
+    ['person', PersonItem, 'company', 'companyEmail', 10000],
     [
       'salesOpportunity',
       SalesOpportunityItem,
       'assigneeCompany',
       'assigneeCompanyEmail',
+      10000,
     ],
     [
       'salesOpportunity',
       SalesOpportunityItem,
       'creatorCompany',
       'creatorCompanyEmail',
+      10001,
     ],
-    ['serverLandscape', ServerLandscapeItem, 'company', 'companyEmail'],
-    ['ticket', TicketItem, 'assigneeCompany', 'assigneeCompanyEmail'],
-    ['ticket', TicketItem, 'creatorCompany', 'creatorCompanyEmail'],
+    ['serverLandscape', ServerLandscapeItem, 'company', 'companyEmail', 10000],
+    ['ticket', TicketItem, 'assigneeCompany', 'assigneeCompanyEmail', 10000],
+    ['ticket', TicketItem, 'creatorCompany', 'creatorCompanyEmail', 10001],
   ])(
     'projects the %s.%s company email as a visible mail field',
-    (_entityHandle, EntityClass, relationName, emailFieldName) => {
+    (
+      _entityHandle,
+      EntityClass,
+      relationName,
+      emailFieldName,
+      expectedOrder,
+    ) => {
       const prototype = EntityClass.prototype as unknown as Record<
         string,
         unknown
@@ -103,7 +118,10 @@ describe('customer contact display fields', () => {
       );
       expect(layout).toMatchObject({
         formVisible: true,
+        order: expectedOrder,
+        tableOrder: expectedOrder,
         tableVisible: true,
+        mobileOrder: expectedOrder,
         mobileVisible: false,
       });
 

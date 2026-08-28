@@ -105,14 +105,14 @@ export class CompanyRelationshipItem {
   @ApiPropertyOptional()
   @Sapling(['isMail', 'isReadOnly'])
   @SaplingForm({
-    order: 102,
+    order: 10000,
     group: 'companyRelationship.groupReference',
     groupOrder: 200,
     width: 2,
     visible: true,
-    tableOrder: 102,
+    tableOrder: 10000,
     tableVisible: true,
-    mobileOrder: 102,
+    mobileOrder: 10000,
     mobileVisible: false,
   })
   @Property({ persist: false, nullable: true, length: 128 })
@@ -167,14 +167,14 @@ export class CompanyRelationshipItem {
   @ApiPropertyOptional()
   @Sapling(['isMail', 'isReadOnly'])
   @SaplingForm({
-    order: 202,
+    order: 10001,
     group: 'companyRelationship.groupReference',
     groupOrder: 200,
     width: 2,
     visible: true,
-    tableOrder: 202,
+    tableOrder: 10001,
     tableVisible: true,
-    mobileOrder: 202,
+    mobileOrder: 10001,
     mobileVisible: false,
   })
   @Property({ persist: false, nullable: true, length: 128 })
