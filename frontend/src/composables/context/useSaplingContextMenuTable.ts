@@ -38,6 +38,7 @@ export interface SaplingContextMenuTableProps {
   canShowInformation: boolean
   entityPermission: AccumulatedPermission | null
   canNavigate: boolean
+  canShowExternalRecordLinks?: boolean
   scriptButtons?: ScriptButtonItem[]
   mailActions?: SaplingMailMenuAction[]
   showEdit?: boolean
@@ -268,7 +269,8 @@ export function useSaplingContextMenuTable(
       entityPermission: props.entityPermission,
       canNavigate: props.canNavigate,
       canTimeline: props.item?.handle != null,
-      canShowExternalRecordLinks: props.item?.handle != null,
+      canShowExternalRecordLinks:
+        props.item?.handle != null && props.canShowExternalRecordLinks === true,
       scriptButtons: props.scriptButtons,
       mailActions: props.mailActions,
       showEdit: props.showEdit,

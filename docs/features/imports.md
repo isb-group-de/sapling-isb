@@ -105,9 +105,11 @@ for companies, people, tickets, documents, information records, and future
 generic target types.
 
 Generic record action menus can show external record links lazily for a single
-persisted record. The frontend only queries `externalRecordLink` when the user
-opens that action, using the current entity handle and record handle as filter,
-then displays source system, external key parts, import batches, and timestamps.
+persisted record when the current user has read permission for
+`externalRecordLink`. The frontend only queries `externalRecordLink` when an
+authorized user opens that action, using the current entity handle and record
+handle as filter, then displays source system, external key parts, import
+batches, and timestamps.
 
 ## Workflow
 

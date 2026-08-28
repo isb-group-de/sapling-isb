@@ -116,6 +116,12 @@ export function useSaplingDialogRecordActions(
         (permission) => permission.entityHandle === 'information' && permission.allowRead,
       ) ?? false,
   )
+  const canShowExternalRecordLinks = computed(
+    () =>
+      options.permissions.value?.some(
+        (permission) => permission.entityHandle === 'externalRecordLink' && permission.allowRead,
+      ) ?? false,
+  )
   const canReadPerson = computed(
     () =>
       options.permissions.value?.some(
@@ -148,7 +154,7 @@ export function useSaplingDialogRecordActions(
             entityPermission: entityPermission.value,
             canNavigate: canNavigate.value,
             canTimeline: true,
-            canShowExternalRecordLinks: true,
+            canShowExternalRecordLinks: canShowExternalRecordLinks.value,
             scriptButtons: loadedScriptButtons.value,
             mailActions: [
               ...buildMailMenuActions(props.templates, options.form.value),
@@ -321,7 +327,7 @@ export function useSaplingDialogRecordActions(
   }
 
   function openExternalRecordLinksDialog(): void {
-    if (!hasPersistedItem.value) {
+    if (!hasPersistedItem.value || !canShowExternalRecordLinks.value) {
       return
     }
 

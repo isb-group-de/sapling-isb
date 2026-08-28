@@ -68,6 +68,7 @@
     :entity-permission="entityPermission"
     :can-navigate="canNavigate"
     :can-show-information="canShowInformation"
+    :can-show-external-record-links="canShowExternalRecordLinks"
     :script-buttons="rowScriptButtons"
     :mail-actions="contextMenuMailActions"
     @action="emit('context-action', $event)"
@@ -155,6 +156,7 @@ defineProps<{
   rowScriptButtons: ScriptButtonItem[]
   canNavigate: boolean
   canShowInformation: boolean
+  canShowExternalRecordLinks?: boolean
   editDialog: EditDialogOptions
   deleteDialog: DeleteDialogState
   bulkDeleteDialog: BulkDeleteDialogState

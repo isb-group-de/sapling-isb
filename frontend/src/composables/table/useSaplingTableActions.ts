@@ -156,6 +156,7 @@ export function useSaplingTableActions({
   const {
     canNavigate,
     canShowInformation,
+    canShowExternalRecordLinks,
     contextMenu,
     contextMenuMailActions,
     showUploadDialog,
@@ -437,6 +438,7 @@ export function useSaplingTableActions({
     rowScriptButtons,
     canNavigate,
     canShowInformation,
+    canShowExternalRecordLinks,
     editDialog,
     deleteDialog,
     bulkDeleteDialog,

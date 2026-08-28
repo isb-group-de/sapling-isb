@@ -180,19 +180,15 @@ export function useSaplingDialogEdit(
     formatLocalTime,
     isValidDate,
   })
-  const isPrefilledCreate = computed(() => props.mode === 'create' && props.item != null)
   const canSubmit = computed(
     () =>
-      isDirty.value ||
-      isPrefilledCreate.value ||
-      (props.mode === 'create' && options?.allowPristineCreate?.value === true),
+      isDirty.value || (props.mode === 'create' && options?.allowPristineCreate?.value === true),
   )
   const shouldPersistRecord = computed(
     () =>
       options?.forceDirty?.value === true ||
       hasPendingRelationChanges.value ||
       dirtyFieldCount.value > 0 ||
-      isPrefilledCreate.value ||
       (props.mode === 'create' && options?.allowPristineCreate?.value === true),
   )
 

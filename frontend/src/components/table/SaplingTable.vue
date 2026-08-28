@@ -178,6 +178,7 @@
         :row-script-buttons="rowScriptButtons"
         :can-navigate="canNavigate"
         :can-show-information="canShowInformation"
+        :can-show-external-record-links="canShowExternalRecordLinks"
         :show-actions="showActions"
         :row-interaction="rowInteraction"
         :selected-rows="selectedRows"
@@ -223,6 +224,7 @@
         :row-script-buttons="rowScriptButtons"
         :can-navigate="canNavigate"
         :can-show-information="canShowInformation"
+        :can-show-external-record-links="canShowExternalRecordLinks"
         :show-actions="showActions"
         :row-interaction="rowInteraction"
         :selected-rows="selectedRows"
@@ -282,6 +284,7 @@
       :row-script-buttons="rowScriptButtons"
       :can-navigate="canNavigate"
       :can-show-information="canShowInformation"
+      :can-show-external-record-links="canShowExternalRecordLinks"
       :edit-dialog="editDialog"
       :delete-dialog="deleteDialog"
       :bulk-delete-dialog="bulkDeleteDialog"
@@ -522,6 +525,7 @@ const {
   mobileCardHeaders,
   canNavigate,
   canShowInformation,
+  canShowExternalRecordLinks,
   editDialog,
   deleteDialog,
   bulkDeleteDialog,

@@ -19,7 +19,6 @@ const {
   validateFormMock,
   ensureRelationTableItemsMock,
   relationTemplatesState,
-  dialogDirtyState,
 } = vi.hoisted(() => ({
   fetchCurrentPersonMock: vi.fn(),
   fetchCurrentPermissionMock: vi.fn(),
@@ -34,7 +33,6 @@ const {
   validateFormMock: vi.fn(),
   ensureRelationTableItemsMock: vi.fn(),
   relationTemplatesState: { templates: [] as EntityTemplate[] },
-  dialogDirtyState: { isDirty: true, dirtyFieldCount: 1 },
 }))
 
 vi.mock('vue-i18n', () => ({
@@ -146,8 +144,8 @@ vi.mock('../useSaplingDialogEditReferences', () => ({
 vi.mock('../useSaplingDialogEditDirty', () => ({
   useSaplingDialogEditDirty: () => ({
     syncInitialFormSnapshot: vi.fn(),
-    isDirty: computed(() => dialogDirtyState.isDirty),
-    dirtyFieldCount: computed(() => dialogDirtyState.dirtyFieldCount),
+    isDirty: computed(() => true),
+    dirtyFieldCount: computed(() => 1),
     isTemplateDirty: vi.fn().mockReturnValue(true),
     getDirtyTemplateCount: vi.fn().mockReturnValue(1),
   }),
@@ -255,7 +253,6 @@ const TestHost = defineComponent({
       selectedFormConfigLabel: dialog.selectedFormConfigLabel,
       visibleTemplates: dialog.visibleTemplates,
       form: dialog.form,
-      canSubmit: dialog.canSubmit,
       isFieldDisabled: dialog.isFieldDisabled,
       isTemplateRecommendationActive: dialog.isTemplateRecommendationActive,
       updateFormField: dialog.updateFormField,
@@ -280,8 +277,6 @@ describe('useSaplingDialogEdit', () => {
     validateFormMock.mockReset()
     ensureRelationTableItemsMock.mockReset()
     relationTemplatesState.templates = []
-    dialogDirtyState.isDirty = true
-    dialogDirtyState.dirtyFieldCount = 1
     fetchCurrentPersonMock.mockResolvedValue(undefined)
     fetchCurrentPermissionMock.mockResolvedValue(undefined)
     listFormConfigsMock.mockResolvedValue([])
@@ -323,27 +318,6 @@ describe('useSaplingDialogEdit', () => {
     await flushPromises()
 
     expect(ensureRelationTableItemsMock).toHaveBeenCalledWith('people')
-  })
-
-  it('submits a pristine copied record immediately in create mode', async () => {
-    dialogDirtyState.isDirty = false
-    dialogDirtyState.dirtyFieldCount = 0
-    const wrapper = mount(TestHost, {
-      props: {
-        mode: 'create',
-        item: { title: 'Planning copy' },
-      },
-    })
-    const vm = wrapper.vm as unknown as {
-      canSubmit: boolean
-      save: () => Promise<void>
-    }
-
-    expect(vm.canSubmit).toBe(true)
-    await vm.save()
-
-    expect(validateFormMock).toHaveBeenCalledTimes(1)
-    expect(wrapper.emitted('save')).toHaveLength(1)
   })
 
   it('disables the handle outside create mode', () => {

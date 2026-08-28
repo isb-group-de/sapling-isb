@@ -61,6 +61,7 @@ export interface UseSaplingTableRowProps {
   scriptButtons?: ScriptButtonItem[]
   canNavigate: boolean
   canShowInformation: boolean
+  canShowExternalRecordLinks?: boolean
   showActions: boolean
   rowInteraction?: boolean
 }
@@ -140,7 +141,12 @@ export function useSaplingTableRow(props: UseSaplingTableRowProps, emit: UseSapl
       return true
     }
 
-    if (props.canNavigate || props.canShowInformation || props.item?.handle != null) {
+    if (
+      props.canNavigate ||
+      props.canShowInformation ||
+      props.canShowExternalRecordLinks ||
+      props.item?.handle != null
+    ) {
       return true
     }
 
@@ -172,7 +178,8 @@ export function useSaplingTableRow(props: UseSaplingTableRowProps, emit: UseSapl
           entityPermission: props.entityPermission,
           canNavigate: props.canNavigate,
           canTimeline: props.item?.handle != null,
-          canShowExternalRecordLinks: props.item?.handle != null,
+          canShowExternalRecordLinks:
+            props.item?.handle != null && props.canShowExternalRecordLinks === true,
           scriptButtons: scriptButtons.value,
           mailActions: [
             ...buildMailMenuActions(props.entityTemplates, props.item),

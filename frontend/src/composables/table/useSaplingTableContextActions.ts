@@ -74,6 +74,12 @@ export function useSaplingTableContextActions({
         (permission) => permission.entityHandle === 'information' && permission.allowRead,
       ) ?? false,
   )
+  const canShowExternalRecordLinks = computed(
+    () =>
+      currentPermissionStore.accumulatedPermission?.some(
+        (permission) => permission.entityHandle === 'externalRecordLink' && permission.allowRead,
+      ) ?? false,
+  )
   const contextMenuMailActions = computed(() => [
     ...buildMailMenuActions(props.entityTemplates, contextMenu.value.item),
     ...customerContactMailActions.value,
@@ -146,7 +152,7 @@ export function useSaplingTableContextActions({
   }
 
   function openExternalRecordLinksDialog(item: SaplingGenericItem) {
-    if (item.handle == null) {
+    if (item.handle == null || !canShowExternalRecordLinks.value) {
       return
     }
 
@@ -250,6 +256,7 @@ export function useSaplingTableContextActions({
   return {
     canNavigate,
     canShowInformation,
+    canShowExternalRecordLinks,
     contextMenu,
     contextMenuMailActions,
     showUploadDialog,

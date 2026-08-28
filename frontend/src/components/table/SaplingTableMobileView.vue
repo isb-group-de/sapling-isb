@@ -122,6 +122,7 @@
         :script-buttons="rowScriptButtons"
         :can-navigate="canNavigate"
         :can-show-information="canShowInformation"
+        :can-show-external-record-links="canShowExternalRecordLinks"
         :show-actions="showActions"
         :row-interaction="rowInteraction"
         @select-row="emit('select-row', $event)"
@@ -210,6 +211,7 @@ const props = defineProps<{
   rowScriptButtons: ScriptButtonItem[]
   canNavigate: boolean
   canShowInformation: boolean
+  canShowExternalRecordLinks?: boolean
   showActions: boolean
   rowInteraction?: boolean
   selectedRows: number[]

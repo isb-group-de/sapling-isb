@@ -142,4 +142,28 @@ describe('Sapling table context menu', () => {
 
     expect(actions.some((action) => action.type === 'mail')).toBe(false)
   })
+
+  it('only offers external record links when the caller confirms read permission', async () => {
+    const props = reactive({
+      canShowInformation: false,
+      canShowExternalRecordLinks: false,
+      entityPermission: null,
+      canNavigate: false,
+      item: { handle: 4 },
+      show: true,
+      x: 0,
+      y: 0,
+    })
+    const emit = vi.fn() as unknown as SaplingContextMenuTableEmit
+    const menu = useSaplingContextMenuTable(props, emit)
+    const actions = () =>
+      menu.menuItems.value.flatMap((entry) => (Array.isArray(entry) ? entry : [entry]))
+
+    expect(actions().some((action) => action.type === 'showExternalRecordLinks')).toBe(false)
+
+    props.canShowExternalRecordLinks = true
+    await nextTick()
+
+    expect(actions().some((action) => action.type === 'showExternalRecordLinks')).toBe(true)
+  })
 })

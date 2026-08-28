@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => ({
   openDocumentView: vi.fn(),
   openDvelopUploadDialog: vi.fn(),
   routerPush: vi.fn(),
+  permissions: [] as Array<{ entityHandle: string; allowRead: boolean }>,
 }))
 
 vi.mock('vue-router', () => ({
@@ -16,7 +17,7 @@ vi.mock('vue-router', () => ({
 
 vi.mock('@/stores/currentPermissionStore', () => ({
   useCurrentPermissionStore: () => ({
-    accumulatedPermission: [{ entityHandle: 'information', allowRead: true }],
+    accumulatedPermission: mocks.permissions,
   }),
 }))
 
@@ -67,6 +68,7 @@ function createSubject(
 
 beforeEach(() => {
   vi.clearAllMocks()
+  mocks.permissions = [{ entityHandle: 'information', allowRead: true }]
   mocks.openDvelopUploadDialog.mockResolvedValue(false)
 })
 
@@ -134,5 +136,27 @@ describe('useSaplingTableContextActions', () => {
         recordLabel: 'T-1042 Drucker defekt',
       }),
     )
+  })
+
+  it('only opens external record links with read permission', () => {
+    const denied = createSubject().subject
+
+    denied.openExternalRecordLinksDialog({ handle: 42 })
+
+    expect(denied.canShowExternalRecordLinks.value).toBe(false)
+    expect(denied.showExternalRecordLinksDialog.value).toBe(false)
+    expect(denied.externalRecordLinksDialogItem.value).toBeNull()
+
+    mocks.permissions = [
+      { entityHandle: 'information', allowRead: true },
+      { entityHandle: 'externalRecordLink', allowRead: true },
+    ]
+    const allowed = createSubject().subject
+
+    allowed.openExternalRecordLinksDialog({ handle: 42 })
+
+    expect(allowed.canShowExternalRecordLinks.value).toBe(true)
+    expect(allowed.showExternalRecordLinksDialog.value).toBe(true)
+    expect(allowed.externalRecordLinksDialogItem.value).toEqual({ handle: 42 })
   })
 })
