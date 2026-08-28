@@ -329,7 +329,7 @@ describe('AzureCalendarService completion delivery', () => {
       referenceHandle: 'deleted-outlook-event',
     } as EventAzureItem;
     const flush = jest.fn(() => Promise.resolve());
-    const remove = jest.fn(() => ({ flush }));
+    const remove = jest.fn((_reference: EventAzureItem) => ({ flush }));
     const emFork = {
       findOne: jest
         .fn<(...args: unknown[]) => Promise<unknown>>()
