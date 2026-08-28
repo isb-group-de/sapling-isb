@@ -92,7 +92,9 @@ export function useSaplingTableDeleteActions({
     bulkDeleteDialog.value = { visible: false, items: [] }
   }
 
-  async function confirmBulkDelete() {
+  async function confirmBulkDelete(
+    confirmation: { cascadeRelations: string[] } = { cascadeRelations: [] },
+  ) {
     const currentEntityHandle = entityHandle()
     if (!currentEntityHandle) {
       return
@@ -106,7 +108,11 @@ export function useSaplingTableDeleteActions({
       for (let index = 0; index < handles.length; index += BULK_DELETE_CONCURRENCY) {
         const batch = handles.slice(index, index + BULK_DELETE_CONCURRENCY)
         await Promise.all(
-          batch.map((handle) => ApiGenericService.delete(currentEntityHandle, handle)),
+          batch.map((handle) =>
+            ApiGenericService.delete(currentEntityHandle, handle, {
+              cascadeRelations: confirmation.cascadeRelations,
+            }),
+          ),
         )
       }
 

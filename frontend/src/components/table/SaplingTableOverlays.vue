@@ -26,7 +26,7 @@
     :item="bulkDeleteDialog.items"
     :entity-handle="entityHandle"
     @update:model-value="emit('update:bulk-delete-visible', $event)"
-    @confirm="emit('confirm-bulk-delete')"
+    @confirm="emit('confirm-bulk-delete', $event)"
     @cancel="emit('close-bulk-delete')"
   />
 
@@ -175,7 +175,7 @@ const emit = defineEmits<{
   (event: 'confirm-delete', value: { cascadeRelations: string[] }): void
   (event: 'close-delete'): void
   (event: 'update:bulk-delete-visible', value: boolean): void
-  (event: 'confirm-bulk-delete'): void
+  (event: 'confirm-bulk-delete', value: { cascadeRelations: string[] }): void
   (event: 'close-bulk-delete'): void
   (event: 'update:bulk-update-visible', value: boolean): void
   (event: 'apply-bulk-update', value: Record<string, unknown>): void

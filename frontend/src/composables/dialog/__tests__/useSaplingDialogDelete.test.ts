@@ -102,7 +102,7 @@ describe('useSaplingDialogDelete', () => {
     })
   })
 
-  it('shows only mandatory cascades for bulk deletion without submitting them', async () => {
+  it('shows optional and mandatory cascades for bulk deletion', async () => {
     mocks.getDeleteImpact.mockResolvedValue({
       action: 'delete',
       references: [
@@ -118,14 +118,16 @@ describe('useSaplingDialogDelete', () => {
 
     expect(mocks.getDeleteImpact).toHaveBeenCalledWith('company', 4)
     expect(harness.subject.referenceOptions.value).toEqual([
+      { name: 'persons', entityHandle: 'person', kind: '1:m', required: false },
       { name: 'details', entityHandle: 'changeLogDetail', kind: '1:m', required: true },
     ])
     expect(harness.subject.hasReferenceOptions.value).toBe(true)
-    expect(harness.subject.hasOptionalReferenceOptions.value).toBe(false)
+    expect(harness.subject.hasOptionalReferenceOptions.value).toBe(true)
 
+    harness.subject.selectedReferenceNames.value = ['persons']
     harness.subject.handleConfirm()
     expect(harness.emit).toHaveBeenCalledWith('confirm', {
-      cascadeRelations: [],
+      cascadeRelations: ['persons'],
     })
   })
 

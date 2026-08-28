@@ -33,7 +33,6 @@ export function useSaplingDialogDelete(
   const selectedReferenceNames = ref<string[]>([])
   let impactRequestId = 0
 
-  const isBulkDelete = computed(() => Array.isArray(options.item.value))
   const isCancelAction = computed(() => impact.value.action === 'cancel')
   const referenceOptions = computed<GenericDeleteReference[]>(() => impact.value.references)
   const optionalReferenceOptions = computed(() =>
@@ -97,12 +96,7 @@ export function useSaplingDialogDelete(
     try {
       const result = await ApiGenericService.getDeleteImpact(entityHandle, handle)
       if (requestId === impactRequestId) {
-        impact.value = isBulkDelete.value
-          ? {
-              action: 'delete',
-              references: result.references.filter((reference) => reference.required),
-            }
-          : result
+        impact.value = result
       }
     } catch {
       // The normal delete action remains available; the backend still enforces its strategy.

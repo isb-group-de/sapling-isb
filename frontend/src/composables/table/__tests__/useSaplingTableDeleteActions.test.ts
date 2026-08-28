@@ -78,10 +78,28 @@ describe('useSaplingTableDeleteActions', () => {
     await subject.confirmBulkDelete()
 
     expect(mocks.deleteRecord).toHaveBeenCalledTimes(7)
-    expect(mocks.deleteRecord).toHaveBeenNthCalledWith(1, 'ticket', 1)
-    expect(mocks.deleteRecord).toHaveBeenNthCalledWith(7, 'ticket', 7)
+    expect(mocks.deleteRecord).toHaveBeenNthCalledWith(1, 'ticket', 1, {
+      cascadeRelations: [],
+    })
+    expect(mocks.deleteRecord).toHaveBeenNthCalledWith(7, 'ticket', 7, {
+      cascadeRelations: [],
+    })
     expect(mocks.clearSelection).toHaveBeenCalledOnce()
     expect(subject.bulkDeleteDialog.value).toEqual({ visible: false, items: [] })
+  })
+
+  it('forwards selected owned relation groups to every bulk deletion', async () => {
+    const { subject } = createSubject(2)
+    subject.deleteAllSelected()
+
+    await subject.confirmBulkDelete({ cascadeRelations: ['persons', 'events'] })
+
+    expect(mocks.deleteRecord).toHaveBeenNthCalledWith(1, 'ticket', 1, {
+      cascadeRelations: ['persons', 'events'],
+    })
+    expect(mocks.deleteRecord).toHaveBeenNthCalledWith(2, 'ticket', 2, {
+      cascadeRelations: ['persons', 'events'],
+    })
   })
 
   it('keeps the bulk confirmation open when deletion fails', async () => {
