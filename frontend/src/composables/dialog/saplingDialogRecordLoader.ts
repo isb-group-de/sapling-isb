@@ -18,3 +18,17 @@ export function getDialogRecordRelations(templates: EntityTemplate[]): string[] 
       .map((template) => template.name),
   ].filter((relation, index, relations) => relations.indexOf(relation) === index)
 }
+
+/**
+ * Copy drafts additionally hydrate owning many-to-many collections. Reusing
+ * those links creates independent join rows and never reassigns the related
+ * records themselves.
+ */
+export function getDialogRecordCopyRelations(templates: EntityTemplate[]): string[] {
+  return [
+    ...getDialogRecordRelations(templates),
+    ...templates
+      .filter((template) => ['m:n', 'n:m'].includes(template.kind ?? '') && Boolean(template.name))
+      .map((template) => template.name),
+  ].filter((relation, index, relations) => relations.indexOf(relation) === index)
+}

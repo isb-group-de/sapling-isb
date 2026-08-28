@@ -28,7 +28,10 @@ import { useSaplingTableTransferActions } from '@/composables/table/useSaplingTa
 import { useSaplingTableDeleteActions } from '@/composables/table/useSaplingTableDeleteActions'
 import { useSaplingTableScripts } from '@/composables/table/useSaplingTableScripts'
 import { useSaplingTableContextActions } from '@/composables/table/useSaplingTableContextActions'
-import { getDialogRecordRelations } from '@/composables/dialog/saplingDialogRecordLoader'
+import {
+  getDialogRecordCopyRelations,
+  getDialogRecordRelations,
+} from '@/composables/dialog/saplingDialogRecordLoader'
 import { useSaplingTableBulkUpdate } from '@/composables/table/useSaplingTableBulkUpdate'
 import { createSaplingRecordCopy } from '@/utils/saplingRecordCopy'
 
@@ -203,7 +206,10 @@ export function useSaplingTableActions({
   }
 
   async function openCopyDialog(item: SaplingGenericItem) {
-    const dialogItem = await loadDialogItem(item)
+    const dialogItem = await loadDialogItem(
+      item,
+      getDialogRecordCopyRelations(props.entityTemplates),
+    )
     editDialog.value = {
       visible: true,
       mode: 'create',
@@ -215,7 +221,10 @@ export function useSaplingTableActions({
     editDialog.value = { ...editDialog.value, visible: false }
   }
 
-  async function loadDialogItem(item: SaplingGenericItem) {
+  async function loadDialogItem(
+    item: SaplingGenericItem,
+    relations = getDialogRecordRelations(props.entityTemplates),
+  ) {
     const handle = getItemHandle(item)
     if (handle == null || !props.entityHandle) {
       return item
@@ -224,7 +233,7 @@ export function useSaplingTableActions({
     const result = await ApiGenericService.find<SaplingGenericItem>(props.entityHandle, {
       filter: { handle },
       limit: 1,
-      relations: getDialogRecordRelations(props.entityTemplates),
+      relations,
     })
 
     return result.data[0] ?? item

@@ -30,7 +30,7 @@
           {{ selectedFormConfigChipLabel }}
         </v-chip>
         <v-chip
-          v-if="isDirty && mode !== 'readonly'"
+          v-if="dirtyChangeCount > 0 && mode !== 'readonly'"
           size="small"
           color="warning"
           variant="tonal"
@@ -71,7 +71,7 @@ defineProps<{
   updatedAtTitle: string
   updatedAtLabel: string
   selectedFormConfigChipLabel: string
-  isDirty: boolean
+  dirtyChangeCount: number
   dirtySummaryLabel: string
   mode: DialogState
   canOpenFormConfigEditor: boolean

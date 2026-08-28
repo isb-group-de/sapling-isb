@@ -220,7 +220,7 @@ describe('useSaplingDialogEditRelations', () => {
     expect(relations.relationTableTotal.value.notes).toBe(0)
   })
 
-  it('stages relation records already present in a new record draft', async () => {
+  it('stages copied relations without presenting them as user edits', async () => {
     const participants = [
       { handle: 5, firstName: 'Max' },
       { handle: 7, firstName: 'Ada' },
@@ -244,6 +244,20 @@ describe('useSaplingDialogEditRelations', () => {
     expect(relations.relationTableItems.value.participants).toEqual(participants)
     expect(relations.relationTableTotal.value.participants).toBe(2)
     expect(relations.relationTableLoaded.value.participants).toBe(true)
+    expect(relations.hasPendingRelationChanges.value).toBe(true)
+    expect(relations.dirtyRelationNames.value).toEqual([])
+    expect(relations.appendPendingRelationsToPayload({ title: 'Copy' })).toEqual({
+      title: 'Copy',
+      participants: [5, 7],
+    })
+
+    relations.resetRelationTableItems()
+
+    expect(relations.relationTableItems.value.participants).toEqual(participants)
+    expect(relations.dirtyRelationNames.value).toEqual([])
+
+    await relations.removeRelation(relations.relationTemplates.value[0], [participants[0]])
+
     expect(relations.dirtyRelationNames.value).toEqual(['participants'])
   })
 

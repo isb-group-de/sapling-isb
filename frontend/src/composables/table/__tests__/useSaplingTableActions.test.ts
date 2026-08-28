@@ -51,6 +51,7 @@ vi.mock('@/composables/table/useSaplingTableBulkUpdate', () => ({
 
 vi.mock('@/composables/dialog/saplingDialogRecordLoader', () => ({
   getDialogRecordRelations: () => ['m:1'],
+  getDialogRecordCopyRelations: () => ['m:1', 'participants'],
 }))
 
 import { useSaplingTableActions } from '../useSaplingTableActions'
@@ -66,6 +67,11 @@ describe('useSaplingTableActions', () => {
       template('referenceNumber', { isUnique: true }),
       template('title'),
       template('description', { options: ['isMarkdown'], tableVisible: false }),
+      template('participants', {
+        isReference: true,
+        kind: 'm:n',
+        referenceName: 'person',
+      }),
     ]
     apiFindMock.mockResolvedValue({
       data: [
@@ -74,6 +80,7 @@ describe('useSaplingTableActions', () => {
           referenceNumber: 'T-007',
           title: 'Projected title',
           description: '# Complete markdown',
+          participants: [{ handle: 9, firstName: 'Ada' }],
         },
       ],
       meta: { total: 1 },
@@ -101,7 +108,7 @@ describe('useSaplingTableActions', () => {
     expect(apiFindMock).toHaveBeenCalledWith('ticket', {
       filter: { handle: 7 },
       limit: 1,
-      relations: ['m:1'],
+      relations: ['m:1', 'participants'],
     })
     expect(actions.editDialog.value).toEqual({
       visible: true,
@@ -109,6 +116,7 @@ describe('useSaplingTableActions', () => {
       item: {
         title: 'Projected title',
         description: '# Complete markdown',
+        participants: [{ handle: 9, firstName: 'Ada' }],
       },
     })
   })

@@ -108,11 +108,18 @@ describe('useSaplingEventContextMenu', () => {
         mappedBy: 'event',
         options: ['isHideAsReference'],
       },
+      {
+        name: 'participants',
+        isReference: true,
+        kind: 'm:n',
+        referenceName: 'person',
+      },
     ] as EntityTemplate[]
     harness.menu.eventContextMenu.value.item = createEventItem({
       externalId: 'EXT-42',
       azure: { handle: 17, referenceHandle: 'outlook-event-id' },
       google: { handle: 18, referenceHandle: 'google-event-id' },
+      participants: [{ handle: 7, firstName: 'Ada' }],
     } as unknown as Partial<EventItem>)
 
     await harness.menu.handleEventContextMenuAction({ type: 'copy', icon: 'mdi-content-copy' })
@@ -122,6 +129,7 @@ describe('useSaplingEventContextMenu', () => {
     expect(harness.editEvent.value?.event?.externalId).toBeUndefined()
     expect(harness.editEvent.value?.event?.azure).toBeUndefined()
     expect(harness.editEvent.value?.event?.google).toBeUndefined()
+    expect(harness.editEvent.value?.event?.participants).toEqual([{ handle: 7, firstName: 'Ada' }])
     expect(harness.forceEditDialogDirtyFields.value).toEqual([])
     expect(harness.clearDragSnapshot).toHaveBeenCalledTimes(1)
     expect(harness.showEditDialog.value).toBe(true)

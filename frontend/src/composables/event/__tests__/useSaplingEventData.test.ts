@@ -142,5 +142,10 @@ describe('useSaplingEventData', () => {
     await expect(harness.data.loadPersistedEvent(42)).resolves.toEqual(event)
     await expect(harness.data.loadPersistedEvent(undefined)).resolves.toBeNull()
     expect(mocks.find).toHaveBeenCalledTimes(1)
+    expect(mocks.find).toHaveBeenCalledWith('event', {
+      filter: { handle: 42 },
+      limit: 1,
+      relations: ['m:1', 'participants'],
+    })
   })
 })

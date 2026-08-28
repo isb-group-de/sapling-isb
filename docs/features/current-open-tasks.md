@@ -102,7 +102,9 @@ The SSE stream is process-local. In multi-instance deployments, open-task notifi
 - current profile loading
 - inbox dialog state
 - account dialog state
-- inbox badge count
+- inbox badge count: unread inbox notifications plus open tasks that are overdue
+  or due today; upcoming, later, and unplanned open tasks remain available in
+  the inbox dialog but do not increase the badge
 - badge color based on unread notification count
 - incoming inbox preview item
 - admin-only header actions

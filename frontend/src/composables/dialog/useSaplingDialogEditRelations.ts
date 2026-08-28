@@ -77,11 +77,24 @@ export function useSaplingDialogEditRelations(options: UseSaplingDialogEditRelat
   const dirtyRelationNames = computed(() =>
     options.mode.value === 'create'
       ? relationTemplates.value
-          .filter((template) => (relationTableItems.value[template.name]?.length ?? 0) > 0)
+          .filter(
+            (template) =>
+              !haveSameRelationIdentities(
+                relationTableItems.value[template.name] ?? [],
+                options.item.value?.[template.name],
+              ),
+          )
           .map((template) => template.name)
       : [],
   )
-  const hasPendingRelationChanges = computed(() => dirtyRelationNames.value.length > 0)
+  const hasPendingRelationChanges = computed(
+    () =>
+      dirtyRelationNames.value.length > 0 ||
+      (options.mode.value === 'create' &&
+        relationTemplates.value.some(
+          (template) => (relationTableItems.value[template.name]?.length ?? 0) > 0,
+        )),
+  )
 
   const relationTableHeaders = computed(() =>
     getRelationTableHeaders(relationTableState.value, options.t, options.permissions.value ?? []),
@@ -246,6 +259,33 @@ export function useSaplingDialogEditRelations(options: UseSaplingDialogEditRelat
 
     const handle = options.getItemHandle(item)
     return handle == null ? null : `handle:${String(handle)}`
+  }
+
+  function haveSameRelationIdentities(
+    stagedItems: SaplingGenericItem[],
+    initialValue: unknown,
+  ): boolean {
+    const stagedIdentities = stagedItems
+      .map(getStagedRelationIdentity)
+      .filter((identity): identity is string => Boolean(identity))
+      .sort()
+    const initialIdentities = (Array.isArray(initialValue) ? initialValue : [])
+      .flatMap((item) => {
+        if (item && typeof item === 'object') {
+          return [getStagedRelationIdentity(item as SaplingGenericItem)]
+        }
+
+        return typeof item === 'string' || typeof item === 'number'
+          ? [`handle:${String(item)}`]
+          : []
+      })
+      .filter((identity): identity is string => Boolean(identity))
+      .sort()
+
+    return (
+      stagedIdentities.length === initialIdentities.length &&
+      stagedIdentities.every((identity, index) => identity === initialIdentities[index])
+    )
   }
 
   function stageRelations(template: EntityTemplate, items: SaplingGenericItem[]): void {
@@ -741,6 +781,8 @@ export function useSaplingDialogEditRelations(options: UseSaplingDialogEditRelat
         (relationTableRequestId.value[template.name] ?? 0) + 1
       getRelationTableState(template.name).isLoading = false
     })
+
+    initializeCreateRelationItems()
   }
 
   function clearSelectedItems(): void {

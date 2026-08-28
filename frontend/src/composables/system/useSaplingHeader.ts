@@ -13,6 +13,7 @@ import {
   SAPLING_NOTIFICATION_PREFERENCES_UPDATED_EVENT,
   type SaplingNotificationPreferences,
 } from '@/services/notification-preferences.service'
+import { getSaplingHeaderBadgeCounts } from '@/composables/system/saplingHeaderBadge.utils'
 
 export interface SaplingHeaderInboxPreview extends OpenTaskStreamItem {
   sequence: number
@@ -98,22 +99,10 @@ export function useSaplingHeader() {
 
   function applyNotificationPreferences(snapshot: OpenTaskSnapshot) {
     const preferences = notificationPreferences.value
-    const openTaskCount =
-      snapshot.tickets.length +
-      snapshot.tasks.length +
-      snapshot.salesOpportunities.length +
-      snapshot.effortEstimates.length +
-      (snapshot.internalCases?.length ?? 0)
-    const notificationCount = snapshot.notifications.length
+    const badgeCounts = getSaplingHeaderBadgeCounts(snapshot, preferences)
 
-    inboxCount.value = preferences.badgeChannelEnabled
-      ? (preferences.openTaskNotificationsEnabled ? openTaskCount : 0) +
-        (preferences.inboxNotificationsEnabled ? notificationCount : 0)
-      : 0
-    inboxNotificationCount.value =
-      preferences.badgeChannelEnabled && preferences.inboxNotificationsEnabled
-        ? notificationCount
-        : 0
+    inboxCount.value = badgeCounts.inboxCount
+    inboxNotificationCount.value = badgeCounts.inboxNotificationCount
   }
 
   function isStreamItemEnabled(item: OpenTaskStreamItem) {

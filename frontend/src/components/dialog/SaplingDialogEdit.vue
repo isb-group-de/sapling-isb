@@ -23,7 +23,7 @@
           :updated-at-title="updatedAtTitle"
           :updated-at-label="updatedAtLabel"
           :selected-form-config-chip-label="selectedFormConfigChipLabel"
-          :is-dirty="isDirty"
+          :dirty-change-count="dirtyChangeCount"
           :dirty-summary-label="dirtySummaryLabel"
           :mode="mode"
           :can-open-form-config-editor="canOpenFormConfigEditor"
@@ -805,14 +805,16 @@ const selectedFormConfigChipLabel = computed(() =>
 
 const resetButtonLabel = computed(() => t('filter.reset'))
 
+const dirtyChangeCount = computed(
+  () => dirtyFieldCount.value + dirtyRelationNames.value.length + (informationDirty.value ? 1 : 0),
+)
+
 const dirtySummaryLabel = computed(() => {
-  const dirtyChangeCount =
-    dirtyFieldCount.value + dirtyRelationNames.value.length + (informationDirty.value ? 1 : 0)
-  if (dirtyChangeCount <= 0) {
+  if (dirtyChangeCount.value <= 0) {
     return ''
   }
 
-  return t('global.dirtyFieldCount', { count: dirtyChangeCount }, dirtyChangeCount)
+  return t('global.dirtyFieldCount', { count: dirtyChangeCount.value }, dirtyChangeCount.value)
 })
 
 const expandedGroupIds = ref<string[]>([])

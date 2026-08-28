@@ -203,7 +203,7 @@ export function useSaplingEventData(options: UseSaplingEventDataOptions) {
     const result = await ApiGenericService.find<EventItem>('event', {
       filter: { handle },
       limit: 1,
-      relations: ['m:1'],
+      relations: ['m:1', 'participants'],
     })
     return result.data[0] ?? null
   }

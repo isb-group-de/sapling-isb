@@ -12,6 +12,8 @@ describe('createSaplingRecordCopy', () => {
       secret: 'not-copyable',
       createdAt: '2026-08-28T08:00:00.000Z',
       azure: { handle: 17, referenceHandle: 'outlook-event-id' },
+      participants: [{ handle: 7, firstName: 'Ada' }],
+      deliveries: [{ handle: 23 }],
     } as SaplingGenericItem
     const templates = [
       { name: 'handle' },
@@ -26,11 +28,15 @@ describe('createSaplingRecordCopy', () => {
         mappedBy: 'event',
         options: ['isHideAsReference'],
       },
+      { name: 'participants', isReference: true, kind: 'm:n' },
+      { name: 'deliveries', isReference: true, kind: '1:m', mappedBy: 'event' },
     ] as EntityTemplate[]
 
     expect(createSaplingRecordCopy(item, templates)).toEqual({
       title: 'Planning',
+      participants: [{ handle: 7, firstName: 'Ada' }],
     })
     expect(item).toHaveProperty('azure')
+    expect(createSaplingRecordCopy(item, templates).participants).not.toBe(item.participants)
   })
 })

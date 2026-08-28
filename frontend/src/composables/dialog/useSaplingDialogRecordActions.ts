@@ -30,6 +30,7 @@ import {
 import { buildTableOrderBy } from '@/utils/saplingTableUtil'
 import { openDocumentView, openDvelopUploadDialog } from '@/utils/saplingDocumentActionUtil'
 import { createSaplingRecordCopy } from '@/utils/saplingRecordCopy'
+import { getDialogRecordCopyRelations } from './saplingDialogRecordLoader'
 import type { FormConfigMenuItem, FormConfigSelectionHandle } from './saplingDialogEdit.utils'
 
 interface UseSaplingDialogRecordActionsProps {
@@ -240,13 +241,23 @@ export function useSaplingDialogRecordActions(
     recordDeleteDialog.value = false
   }
 
-  function openCopyDialogFromRecord(): void {
+  async function openCopyDialogFromRecord(): Promise<void> {
     if (!props.item || !entityPermission.value?.allowInsert) {
       return
     }
 
+    let sourceItem = props.item
+    if (entityHandle.value && itemHandle.value != null) {
+      const result = await ApiGenericService.find<SaplingGenericItem>(entityHandle.value, {
+        filter: { handle: itemHandle.value },
+        limit: 1,
+        relations: getDialogRecordCopyRelations(props.templates),
+      })
+      sourceItem = result.data[0] ?? sourceItem
+    }
+
     options.activeTab.value = 0
-    emit('update:item', createSaplingRecordCopy(props.item, props.templates))
+    emit('update:item', createSaplingRecordCopy(sourceItem, props.templates))
     emit('update:mode', 'create')
   }
 
@@ -419,7 +430,7 @@ export function useSaplingDialogRecordActions(
         }
         break
       case 'copy':
-        openCopyDialogFromRecord()
+        await openCopyDialogFromRecord()
         break
       case 'changeLog':
         openChangeLogFromRecord()
