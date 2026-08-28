@@ -419,10 +419,15 @@ export class AiChatRuntimeService {
       }
       for (const functionCall of functionCalls) {
         assertNotAborted(options.callbacks.signal);
-        const name = String(functionCall.name ?? '');
+        const name =
+          typeof functionCall.name === 'string' ? functionCall.name : '';
         const entry = resolveToolRegistryEntry(toolRegistry, name);
         if (!entry) throw new Error(`ai.toolNotFound:${name}`);
-        const args = parseToolArguments(String(functionCall.arguments ?? '{}'));
+        const serializedArguments =
+          typeof functionCall.arguments === 'string'
+            ? functionCall.arguments
+            : '{}';
+        const args = parseToolArguments(serializedArguments);
         const execution = await this.executeTool(
           entry,
           args,
@@ -434,7 +439,10 @@ export class AiChatRuntimeService {
         executedToolCalls.push(execution.trace);
         input.push({
           type: 'function_call_output',
-          call_id: String(functionCall.call_id ?? ''),
+          call_id:
+            typeof functionCall.call_id === 'string'
+              ? functionCall.call_id
+              : '',
           output: execution.result.content,
         });
       }

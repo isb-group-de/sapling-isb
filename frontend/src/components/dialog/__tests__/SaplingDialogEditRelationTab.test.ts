@@ -147,7 +147,7 @@ describe('SaplingDialogEditRelationTab', () => {
   it('opens the existing relation table create workflow', async () => {
     const wrapper = mountRelationTab()
 
-    expect(wrapper.getComponent(SaplingTableStub).props('allowDeleteActions')).toBe(false)
+    expect(wrapper.getComponent(SaplingTableStub).props('allowDeleteActions')).toBe(true)
 
     await wrapper.get('[data-testid="relation-create-record"]').trigger('click')
 

@@ -377,13 +377,11 @@ export class TicketController extends ScriptClass {
       return collection as T[];
     }
 
-    if (
-      collection &&
-      typeof collection === 'object' &&
-      'getItems' in collection &&
-      typeof collection.getItems === 'function'
-    ) {
-      return collection.getItems() as T[];
+    if (collection && typeof collection === 'object') {
+      const getItems = (collection as { getItems?: () => T[] }).getItems;
+      if (typeof getItems === 'function') {
+        return getItems();
+      }
     }
 
     return [];

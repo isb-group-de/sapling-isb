@@ -40,7 +40,7 @@ describe('AiChatQueueService', () => {
       nativeUpdate: jest.fn().mockResolvedValue(asNever(1)),
       transactional: jest.fn(),
     };
-    em.fork.mockImplementation(() => em as never);
+    em.fork.mockImplementation(() => em);
     persistence = {
       findOwnedSession: jest.fn().mockResolvedValue(asNever(session)),
       requireManagedUser: jest.fn().mockResolvedValue(asNever(person)),

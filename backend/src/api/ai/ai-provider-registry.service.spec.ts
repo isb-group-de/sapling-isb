@@ -56,10 +56,9 @@ describe('AiProviderRegistryService', () => {
         supportsWebSearch: true,
       },
     ] as AiProviderModelItem[];
-    const find = jest.fn(
-      (_entity: unknown, _filter: unknown, _options: unknown) =>
-        Promise.resolve(models),
-    );
+    const find = jest
+      .fn<(...args: unknown[]) => Promise<AiProviderModelItem[]>>()
+      .mockResolvedValue(models);
     const service = new AiProviderRegistryService({ find } as never);
 
     const result = await service.listActiveModels(undefined, 'webSearch');
@@ -87,10 +86,9 @@ describe('AiProviderRegistryService', () => {
       isActive: true,
       supportsWebSearch: true,
     } as AiProviderModelItem;
-    const find = jest.fn(
-      (_entity: unknown, _filter: unknown, _options: unknown) =>
-        Promise.resolve([model]),
-    );
+    const find = jest
+      .fn<(...args: unknown[]) => Promise<AiProviderModelItem[]>>()
+      .mockResolvedValue([model]);
     const populate = jest.fn(() => Promise.resolve());
     const service = new AiProviderRegistryService({ find, populate } as never);
 

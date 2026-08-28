@@ -105,10 +105,7 @@ export function buildMailMenuActions(
       continue
     }
 
-    const recipientName = resolveRecordRecipientName(
-      item as Record<string, unknown>,
-      template.name,
-    )
+    const recipientName = resolveRecordRecipientName(item as Record<string, unknown>, template.name)
     const recipientKey = `${email.toLowerCase()}\u0000${recipientName.toLocaleLowerCase()}`
     if (seenRecipients.has(recipientKey)) {
       continue

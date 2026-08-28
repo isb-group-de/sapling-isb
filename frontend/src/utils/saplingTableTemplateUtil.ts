@@ -207,8 +207,7 @@ export function getListProjectionFieldNames(
                     referenceTemplate.options?.includes('isSecurity') !== true,
                 )
                 .map(
-                  (referenceTemplate) =>
-                    `${dependency.relation.name}.${referenceTemplate.name}`,
+                  (referenceTemplate) => `${dependency.relation.name}.${referenceTemplate.name}`,
                 ),
             )
           }

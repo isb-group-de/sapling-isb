@@ -17,17 +17,15 @@ describe('AiWebSearchService', () => {
       handle: 'gemini-3_5-flash',
       providerModel: 'gemini-3.5-flash',
     } as AiProviderModelItem;
+    const resolvedTarget = {
+      provider,
+      model,
+      providerKind: 'gemini' as const,
+    };
     const providerRegistry = {
-      resolveWebSearchTarget: jest.fn(
-        async (
-          _providerHandle?: string | null,
-          _modelHandle?: string | null,
-        ) => ({
-          provider,
-          model,
-          providerKind: 'gemini' as const,
-        }),
-      ),
+      resolveWebSearchTarget: jest
+        .fn<(...args: unknown[]) => Promise<typeof resolvedTarget>>()
+        .mockResolvedValue(resolvedTarget),
       hasConfiguredWebSearchTarget: jest.fn(async () => true),
     };
     const fetchMock = jest.spyOn(globalThis, 'fetch').mockResolvedValue(

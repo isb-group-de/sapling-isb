@@ -109,25 +109,31 @@ describe('MailService facade', () => {
       findOneOrFail: jest.fn(() => persistedDelivery),
     };
     const rendering = {
-      previewEmail: jest.fn().mockResolvedValue({
-        to: ['customer@example.test'],
-        cc: [],
-        bcc: [],
-        subject: 'Status update',
-        bodyMarkdown: 'Ready',
-        bodyHtml: '<p>Ready</p>',
-        attachmentHandles: [],
-      }),
+      previewEmail: jest
+        .fn<(...args: unknown[]) => Promise<Record<string, unknown>>>()
+        .mockResolvedValue({
+          to: ['customer@example.test'],
+          cc: [],
+          bcc: [],
+          subject: 'Status update',
+          bodyMarkdown: 'Ready',
+          bodyHtml: '<p>Ready</p>',
+          attachmentHandles: [],
+        }),
     };
     const providerSession = {
-      resolveRequestedSender: jest.fn().mockResolvedValue({
-        email: 'agent@example.test',
-        provider: 'azure',
-        source: 'personal',
-      }),
+      resolveRequestedSender: jest
+        .fn<(...args: unknown[]) => Promise<Record<string, unknown>>>()
+        .mockResolvedValue({
+          email: 'agent@example.test',
+          provider: 'azure',
+          source: 'personal',
+        }),
     };
     const customerAssociation = {
-      resolve: jest.fn().mockResolvedValue({ company: null, person: null }),
+      resolve: jest
+        .fn<(...args: unknown[]) => Promise<Record<string, unknown>>>()
+        .mockResolvedValue({ company: null, person: null }),
     };
     const service = new MailService(
       em as never,

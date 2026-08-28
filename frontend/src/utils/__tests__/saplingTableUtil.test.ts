@@ -223,9 +223,10 @@ describe('saplingTableUtil', () => {
       createTemplate({ name: 'email', isPersistent: true }),
     ]
 
-    expect(
-      getListProjectionFieldNames(templates, permissions, () => companyTemplates),
-    ).toEqual(['company.email', 'company.name'])
+    expect(getListProjectionFieldNames(templates, permissions, () => companyTemplates)).toEqual([
+      'company.email',
+      'company.name',
+    ])
     expect(getListProjectionReferenceDependencyNames(templates, permissions)).toEqual(['company'])
   })
 
