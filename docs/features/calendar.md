@@ -147,6 +147,12 @@ participants, type/category classification, and status lifecycle changes.
 
 Retries use `EventDeliveryService.retryDelivery(handle)`. The delivery is reset to pending, `nextRetryAt` is cleared, and the same queue-or-direct execution path is used.
 
+If an active Sapling Event still has an Azure reference but Microsoft Graph
+reports that the Outlook object no longer exists, Sapling removes the stale
+reference and creates a new Outlook event in the same delivery. Other provider
+errors remain failed deliveries with the actual provider error; Sapling does
+not generate a non-executable e-mail/ICS fallback payload.
+
 ## Provider Import
 
 The calendar page can manually fetch external provider events for the currently visible date range through:

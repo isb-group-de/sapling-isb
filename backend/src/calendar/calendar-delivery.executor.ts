@@ -16,7 +16,6 @@ import {
   GOOGLE_CLIENT_ID,
   GOOGLE_CLIENT_SECRET,
 } from '../constants/project.constants';
-import { buildCalendarFallback } from './calendar.fallback';
 import { getErrorMessage } from '../common/error.utils';
 
 type CalendarProvider = 'google' | 'azure';
@@ -115,15 +114,33 @@ function toHttpResponseLike(value: unknown): HttpResponseLike | null {
 }
 
 function getErrorResponse(error: unknown): HttpResponseLike | null {
-  if (!isRecord(error) || !isRecord(error.response)) {
+  if (!isRecord(error)) {
     return null;
   }
 
-  return toHttpResponseLike(error.response);
+  if (isRecord(error.response)) {
+    return toHttpResponseLike(error.response);
+  }
+
+  if (typeof error.statusCode === 'number') {
+    return {
+      status: error.statusCode,
+      data: error.body,
+      headers: error.headers,
+    };
+  }
+
+  return null;
 }
 
 function toPersistedObject(value: unknown): object | undefined {
   return isRecord(value) ? value : undefined;
+}
+
+function getCalendarDeliveryErrorMessage(error: unknown): string {
+  return isRecord(error) && typeof error.message === 'string'
+    ? error.message
+    : getErrorMessage(error);
 }
 
 @Injectable()
@@ -180,14 +197,9 @@ export class CalendarDeliveryExecutor {
       const reason =
         'Es konnte kein gueltiger Access-Token fuer die Kalendersynchronisation ermittelt werden.';
       this.logger.warn(
-        `Calendar delivery #${deliveryId} uses fallback because no access token is available.`,
+        `Calendar delivery #${deliveryId} failed because no access token is available.`,
       );
-      await this.persistFailureWithFallback(
-        em,
-        delivery,
-        new Error(reason),
-        reason,
-      );
+      await this.persistFailure(em, delivery, new Error(reason));
       return;
     }
 
@@ -219,9 +231,7 @@ export class CalendarDeliveryExecutor {
         return;
       }
 
-      const reason =
-        'Der Kalendereintrag konnte nicht direkt synchronisiert werden. Ein E-Mail-Fallback wurde vorbereitet.';
-      await this.persistFailureWithFallback(em, delivery, error, reason);
+      await this.persistFailure(em, delivery, error);
       this.logger.error(`Calendar delivery #${deliveryId} failed.`, error);
     }
   }
@@ -350,11 +360,10 @@ export class CalendarDeliveryExecutor {
         );
   }
 
-  private async persistFailureWithFallback(
+  private async persistFailure(
     em: EntityManager,
     delivery: EventDeliveryItem,
     error: unknown,
-    fallbackReason: string,
   ): Promise<void> {
     const failed = await em.findOne(EventDeliveryStatusItem, {
       handle: 'failed',
@@ -368,23 +377,15 @@ export class CalendarDeliveryExecutor {
     delivery.completedAt = new Date();
 
     const errorResponse = getErrorResponse(error);
-    const fallback = buildCalendarFallback(delivery, fallbackReason);
-
-    delivery.responseStatusCode = errorResponse?.status ?? 202;
+    delivery.responseStatusCode = errorResponse?.status ?? 500;
     delivery.responseBody = {
-      ...(errorResponse
-        ? {
-            providerError: {
-              status: errorResponse.status,
-              body: toPersistedObject(errorResponse.data),
-            },
-          }
-        : {
-            providerError: {
-              message: getErrorMessage(error),
-            },
-          }),
-      ...fallback,
+      providerError: {
+        ...(errorResponse?.status ? { status: errorResponse.status } : {}),
+        message: getCalendarDeliveryErrorMessage(error),
+        ...(toPersistedObject(errorResponse?.data)
+          ? { body: toPersistedObject(errorResponse?.data) }
+          : {}),
+      },
     };
     delivery.responseHeaders = toPersistedObject(errorResponse?.headers);
 

@@ -39,7 +39,9 @@ type AzureDeliveryServiceTestHarness = {
   ) => Promise<unknown>;
 };
 type AzureSetEventTestHarness = {
+  createEvent: jest.MockedFunction<(...args: unknown[]) => Promise<unknown>>;
   deleteEvent: jest.MockedFunction<(...args: unknown[]) => Promise<unknown>>;
+  updateEvent: jest.MockedFunction<(...args: unknown[]) => Promise<unknown>>;
 };
 
 const defaults = {
@@ -275,6 +277,50 @@ describe('AzureCalendarService completion delivery', () => {
       success: true,
     });
     expect(harness.deleteEvent).toHaveBeenCalledTimes(1);
+  });
+
+  it('recreates an active event when its persisted Outlook object no longer exists', async () => {
+    const event = {
+      handle: 42,
+      status: { handle: 'scheduled' },
+    } as EventItem;
+    const reference = {
+      referenceHandle: 'deleted-outlook-event',
+    } as EventAzureItem;
+    const flush = jest.fn(() => Promise.resolve());
+    const remove = jest.fn((_reference: EventAzureItem) => ({ flush }));
+    const emFork = {
+      findOne: jest
+        .fn<(...args: unknown[]) => Promise<unknown>>()
+        .mockResolvedValueOnce(event)
+        .mockResolvedValueOnce(reference),
+      remove,
+    };
+    const service = new AzureCalendarService(
+      {} as never,
+      { fork: () => emFork } as never,
+    );
+    const harness = service as unknown as AzureSetEventTestHarness;
+    harness.updateEvent = jest.fn(() =>
+      Promise.reject({
+        statusCode: 404,
+        code: 'ErrorItemNotFound',
+        message: 'The specified object was not found in the store.',
+      }),
+    );
+    harness.createEvent = jest.fn(() =>
+      Promise.resolve({ id: 'replacement-outlook-event' }),
+    );
+
+    await expect(service.setEvent(42, 'access-token')).resolves.toEqual({
+      id: 'replacement-outlook-event',
+    });
+
+    expect(harness.updateEvent).toHaveBeenCalledTimes(1);
+    expect(remove.mock.calls).toHaveLength(1);
+    expect(remove.mock.calls[0]?.[0]).toBe(reference);
+    expect(flush).toHaveBeenCalledTimes(1);
+    expect(harness.createEvent).toHaveBeenCalledTimes(1);
   });
 });
 

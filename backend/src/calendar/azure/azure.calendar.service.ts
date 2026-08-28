@@ -55,6 +55,7 @@ import {
   type ImportAzureCalendarEventsRange,
   isAzureAuthenticationError,
   isAzureForbiddenError,
+  isAzureNotFoundError,
   normalizeAzureDateTime,
   normalizeAzureEmail,
   resolveAzureOnlineMeetingUrl,
@@ -173,15 +174,32 @@ export class AzureCalendarService {
         return null;
       default:
         if (reference) {
-          return await this.updateEvent(
-            client,
-            event,
-            reference,
-            emFork,
-            classificationMappings,
-            operation,
-            changedFields,
-          );
+          try {
+            return await this.updateEvent(
+              client,
+              event,
+              reference,
+              emFork,
+              classificationMappings,
+              operation,
+              changedFields,
+            );
+          } catch (error) {
+            if (!isAzureNotFoundError(error)) {
+              throw error;
+            }
+
+            // Outlook may have been changed independently of Sapling. A stale
+            // provider reference must not make every later synchronization
+            // fail: remove it and recreate the current Sapling event.
+            await emFork.remove(reference).flush();
+            return await this.createEvent(
+              client,
+              event,
+              emFork,
+              classificationMappings,
+            );
+          }
         } else {
           return await this.createEvent(
             client,

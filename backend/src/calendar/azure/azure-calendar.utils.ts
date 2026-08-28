@@ -105,6 +105,40 @@ export function isAzureForbiddenError(error: unknown): boolean {
   );
 }
 
+export function isAzureNotFoundError(error: unknown): boolean {
+  if (!isRecord(error)) {
+    return false;
+  }
+
+  const status =
+    typeof error.statusCode === 'number'
+      ? error.statusCode
+      : isRecord(error.response) && typeof error.response.status === 'number'
+        ? error.response.status
+        : undefined;
+  if (status === 404) {
+    return true;
+  }
+
+  const responseData = isRecord(error.response)
+    ? error.response.data
+    : undefined;
+  const responseError = isRecord(responseData) ? responseData.error : undefined;
+  const code =
+    typeof error.code === 'string'
+      ? error.code
+      : isRecord(responseError) && typeof responseError.code === 'string'
+        ? responseError.code
+        : '';
+  if (/itemnotfound|erroritemnotfound/i.test(code)) {
+    return true;
+  }
+
+  const message =
+    typeof error.message === 'string' ? error.message.toLowerCase() : '';
+  return message.includes('specified object was not found in the store');
+}
+
 export function normalizeAzureDateTime(
   value?: AzureGraphDateTime | null,
 ): Date | null {

@@ -80,6 +80,13 @@ The stored log contains:
 
 The write is intentionally tolerant. `safeStoreChangeLog` catches errors and logs them through `global.log` so a failed audit write does not break the business mutation.
 
+Change-log records and individual detail rows support deletion through the
+normal generic API permission flow. The `changeLog` and `changeLogDetail`
+entities enable `canDelete`, so the administrator role receives `allowDelete`
+from `PermissionSeeder` by default. Deleting a log also deletes all of its
+owned detail rows through the database foreign-key cascade. Each delete
+operation is recorded as a new audit entry like every other generic deletion.
+
 ## Payload Rules
 
 Change-log payloads are projected from the entity template.
@@ -178,4 +185,3 @@ Check these points for special fields:
 - Open timeline for a company/person/customer record with related tickets, events, opportunities, and effort estimates.
 - Confirm `before` pagination loads older months and stops when `hasMore` is false.
 - Confirm users without read permission on a related entity do not see it in timeline summaries.
-

@@ -37,7 +37,7 @@
             <template v-else-if="column.key === '__select'">
               <v-checkbox
                 data-testid="table-page-selection"
-                class="sapling-table-header-selection-checkbox"
+                class="sapling-table-selection-checkbox"
                 :model-value="allRowsSelected"
                 :indeterminate="someRowsSelected"
                 hide-details

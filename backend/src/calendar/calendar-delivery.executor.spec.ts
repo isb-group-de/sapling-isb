@@ -172,4 +172,65 @@ describe('CalendarDeliveryExecutor', () => {
     );
     expect(delivery.status).toBe(success);
   });
+
+  it('persists provider failures without a non-executable email fallback', async () => {
+    const delivery = {
+      handle: 24,
+      event: { handle: 7 },
+      payload: {
+        provider: 'azure',
+        sessionHandle: 8,
+      },
+      attemptCount: 0,
+    } as EventDeliveryItem;
+    const failed = { handle: 'failed' } as EventDeliveryStatusItem;
+    const session = {
+      handle: 8,
+      accessToken: 'azure-token',
+      person: { handle: 7 },
+    } as PersonSessionItem;
+    const emFork = {
+      findOne: jest.fn((entity: unknown, where: { handle?: unknown }) => {
+        if (entity === EventDeliveryItem) {
+          return delivery;
+        }
+        if (entity === PersonSessionItem) {
+          return session;
+        }
+        if (entity === EventDeliveryStatusItem && where.handle === 'failed') {
+          return failed;
+        }
+        return null;
+      }),
+      flush: jest.fn(() => undefined),
+    };
+    const azureCalendarService = {
+      setEvent: jest.fn(() =>
+        Promise.reject({
+          statusCode: 500,
+          message: 'Microsoft Graph failed',
+          body: { error: { code: 'InternalServerError' } },
+        }),
+      ),
+    };
+    const executor = new CalendarDeliveryExecutor(
+      { fork: jest.fn(() => emFork) } as never,
+      { setEvent: jest.fn() } as never,
+      azureCalendarService as never,
+    );
+
+    await executor.execute(24, 1);
+
+    expect(delivery.status).toBe(failed);
+    expect(delivery.responseStatusCode).toBe(500);
+    expect(delivery.responseBody).toEqual({
+      providerError: {
+        status: 500,
+        message: 'Microsoft Graph failed',
+        body: { error: { code: 'InternalServerError' } },
+      },
+    });
+    expect(delivery.responseBody).not.toHaveProperty('fallback');
+    expect(emFork.flush).toHaveBeenCalled();
+  });
 });

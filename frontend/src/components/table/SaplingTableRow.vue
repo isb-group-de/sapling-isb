@@ -20,6 +20,7 @@
       class="select-cell sapling-table-row__select-cell"
     >
       <v-checkbox
+        class="sapling-table-selection-checkbox"
         :model-value="props.isSelected"
         hide-details
         density="compact"

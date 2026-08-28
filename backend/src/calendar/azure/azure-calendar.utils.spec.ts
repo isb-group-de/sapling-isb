@@ -1,6 +1,26 @@
 import { describe, expect, it } from '@jest/globals';
 
-import { resolveAzureOnlineMeetingUrl } from './azure-calendar.utils';
+import {
+  isAzureNotFoundError,
+  resolveAzureOnlineMeetingUrl,
+} from './azure-calendar.utils';
+
+describe('isAzureNotFoundError', () => {
+  it.each([
+    { statusCode: 404 },
+    { response: { status: 404 } },
+    { code: 'ErrorItemNotFound' },
+    { message: 'The specified object was not found in the store.' },
+  ])('recognizes a missing Outlook object from %p', (error) => {
+    expect(isAzureNotFoundError(error)).toBe(true);
+  });
+
+  it('does not classify unrelated provider failures as missing objects', () => {
+    expect(
+      isAzureNotFoundError({ statusCode: 429, message: 'Too many requests' }),
+    ).toBe(false);
+  });
+});
 
 describe('resolveAzureOnlineMeetingUrl', () => {
   it('prefers the structured Microsoft Graph join URL', () => {

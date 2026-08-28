@@ -240,7 +240,7 @@
   max-width: var(--sapling-table-select-column-width);
 }
 
-.sapling-table-header-selection-checkbox {
+.sapling-table-selection-checkbox {
   display: flex;
   align-items: center;
   justify-content: center;

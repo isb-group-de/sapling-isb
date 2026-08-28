@@ -1,0 +1,10 @@
+[
+  {
+    "handle": "changeLog",
+    "canDelete": true
+  },
+  {
+    "handle": "changeLogDetail",
+    "canDelete": true
+  }
+]

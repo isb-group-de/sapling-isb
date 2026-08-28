@@ -24,7 +24,10 @@ export class ChangeLogDetailItem {
     mobileOrder: 100,
     mobileVisible: false,
   })
-  @ManyToOne(() => ChangeLogItem, { nullable: false })
+  @ManyToOne(() => ChangeLogItem, {
+    nullable: false,
+    deleteRule: 'cascade',
+  })
   log!: Rel<ChangeLogItem>;
 
   @ApiProperty()
