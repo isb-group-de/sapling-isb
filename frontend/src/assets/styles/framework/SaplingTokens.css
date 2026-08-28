@@ -39,9 +39,12 @@
   --sapling-dialog-panel-min-height: min(80vh, 880px);
   --sapling-dialog-panel-max-height: 86vh;
   --sapling-dialog-card-height: 90vh;
+  --sapling-app-header-height: 64px;
+  --sapling-mobile-dialog-top: var(--v-layout-top, var(--sapling-app-header-height));
+  --sapling-mobile-dialog-height: calc(100dvh - var(--sapling-mobile-dialog-top));
   --sapling-dialog-viewport-inset: var(--sapling-space-2xl);
   --sapling-dialog-viewport-inset-mobile: var(--sapling-space-md);
-  --sapling-dialog-field-label-clearance: var(--sapling-space-md);
+  --sapling-dialog-field-label-clearance: var(--sapling-space-lg);
   --sapling-dialog-relation-fill: 95%;
   --sapling-filter-menu-width: min(
     var(--sapling-panel-width-md),

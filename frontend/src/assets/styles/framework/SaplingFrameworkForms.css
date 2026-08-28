@@ -165,7 +165,7 @@
   flex-direction: column;
   gap: var(--sapling-gap-md);
   min-height: 0;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .sapling-field-table-picker__search {

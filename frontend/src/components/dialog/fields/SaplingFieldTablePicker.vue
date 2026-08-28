@@ -18,6 +18,7 @@
       <SaplingDialog
         :id="pickerDialogId"
         v-model="model"
+        docked
         fullscreen
         @keydown.esc.stop="closePicker"
       >

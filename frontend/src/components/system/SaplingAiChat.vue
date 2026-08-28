@@ -30,7 +30,7 @@
       >
         <SaplingSurface
           as="section"
-          class="sapling-floating-panel sapling-floating-panel--top-center sapling-floating-panel--mobile-sheet sapling-ai-chat"
+          class="sapling-floating-panel sapling-floating-panel--top-center sapling-floating-panel--mobile-sheet sapling-nested-backdrop-host sapling-ai-chat"
           data-tutorial="songbird-chat"
           @click.stop
         >

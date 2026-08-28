@@ -924,7 +924,21 @@
   }
 
   .sapling-partner-filter-dialog__surface {
-    width: min(720px, calc(100vw - (var(--sapling-gap-md) * 2)));
+    width: 100%;
+  }
+
+  .sapling-dialog-frame--docked
+    .sapling-partner-filter-panel--dialog.sapling-work-filter-panel.glass-panel {
+    flex: 1 1 auto;
+    width: 100%;
+    min-height: 0;
+    max-height: none;
+    border: 0;
+    border-radius: 0;
+    background: transparent !important;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
   }
 }
 

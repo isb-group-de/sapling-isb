@@ -586,6 +586,12 @@ Shared dialog body classes reserve the framework's floating-label clearance abov
 Keep the first outlined field inside `sapling-dialog-form-body`,
 `sapling-dialog-fill-body`, or `sapling-account-dialog__body`; do not add
 feature-specific top padding to compensate for a clipped Vuetify field label.
+On mobile, standard Sapling dialogs share one viewport-docked shell: the surface
+starts directly below the application header, touches the left, right, and
+bottom viewport edges, keeps only its top corner radii, and owns the remaining
+viewport height. Workflows that switch to a mobile dialog above the standard
+phone breakpoint use the `docked` `SaplingDialog` option. Songbird follows the
+same mobile geometry while retaining its positioned overlay implementation.
 
 Do not hand-roll dialog footers with ad hoc `<div class="sapling-dialog-actions">` blocks. Use the action components so spacing, mobile behavior, icons, and button ordering stay consistent:
 

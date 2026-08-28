@@ -86,7 +86,7 @@ function resolveRecordRecipientName(item: Record<string, unknown>, templateName:
 
 /**
  * Builds mail menu actions for a single item by inspecting all mail-flagged templates
- * and emitting one action per non-empty email field.
+ * and emitting one action per unique recipient and non-empty email address.
  */
 export function buildMailMenuActions(
   templates: EntityTemplate[] | undefined,
@@ -98,17 +98,28 @@ export function buildMailMenuActions(
   }
 
   const actions: SaplingMailMenuAction[] = []
+  const seenRecipients = new Set<string>()
   for (const template of mailTemplates) {
     const email = readStringField(item as Record<string, unknown>, template.name)
     if (!email) {
       continue
     }
 
+    const recipientName = resolveRecordRecipientName(
+      item as Record<string, unknown>,
+      template.name,
+    )
+    const recipientKey = `${email.toLowerCase()}\u0000${recipientName.toLocaleLowerCase()}`
+    if (seenRecipients.has(recipientKey)) {
+      continue
+    }
+    seenRecipients.add(recipientKey)
+
     actions.push({
       templateName: template.name,
       email,
       fieldLabel: template.name,
-      recipientName: resolveRecordRecipientName(item as Record<string, unknown>, template.name),
+      recipientName,
       source: 'record',
     })
   }

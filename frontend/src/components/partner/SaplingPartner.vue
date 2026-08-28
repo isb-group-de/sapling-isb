@@ -80,6 +80,7 @@
         v-if="isMobileFilterLayout"
         v-model="mobileFilterDialogVisible"
         class="sapling-partner-filter-dialog"
+        docked
         size="md"
         scrollable
       >

@@ -50,6 +50,36 @@ describe('saplingMailMenuUtil', () => {
     ])
   })
 
+  it('combines record mail actions that target the same email address', () => {
+    const actions = buildMailMenuActions(
+      [
+        { name: 'creatorPersonEmail', options: ['isMail'] } as EntityTemplate,
+        { name: 'assigneeCompanyEmail', options: ['isMail'] } as EntityTemplate,
+        { name: 'customerCompanyEmail', options: ['isMail'] } as EntityTemplate,
+      ],
+      {
+        creatorPersonEmail: 'info@standardfirma.de',
+        creatorPersonFirstName: 'Max',
+        creatorPersonLastName: 'Mustermann',
+        assigneeCompanyEmail: 'info@standardfirma.de',
+        assigneeCompanyName: 'Standardfirma',
+        customerCompanyEmail: 'INFO@standardfirma.de',
+        customerCompanyName: 'Standardfirma',
+      },
+    )
+
+    expect(actions).toEqual([
+      expect.objectContaining({
+        email: 'info@standardfirma.de',
+        recipientName: 'Max Mustermann',
+      }),
+      expect.objectContaining({
+        email: 'info@standardfirma.de',
+        recipientName: 'Standardfirma',
+      }),
+    ])
+  })
+
   it('resolves only company references marked as customer-side metadata', () => {
     const templates = [
       {

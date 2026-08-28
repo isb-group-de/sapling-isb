@@ -240,6 +240,22 @@ describe('useSaplingEventEditor', () => {
     expect(harness.showEditDialog.value).toBe(false)
   })
 
+  it('keeps a copied event draft when the dialog switches to create mode', () => {
+    const harness = createHarness()
+    const copiedEvent = createEventItem({ handle: undefined, title: 'Planning copy' })
+
+    harness.editor.onEditDialogItemUpdate(copiedEvent)
+    harness.editor.onEditDialogModeUpdate('create')
+
+    expect(harness.editEvent.value).toEqual(
+      expect.objectContaining({
+        name: 'Planning copy',
+        event: expect.objectContaining({ title: 'Planning copy' }),
+      }),
+    )
+    expect(harness.editEvent.value?.event?.handle).toBeUndefined()
+  })
+
   it('creates a new event with only the selected participants and completes save-and-close', async () => {
     const harness = createHarness()
     const savedEvent = createEventItem()

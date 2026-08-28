@@ -297,7 +297,7 @@ export function useSaplingEventEditor(options: UseSaplingEventEditorOptions) {
   }
 
   function onEditDialogModeUpdate(mode: DialogState) {
-    if (mode === 'create') {
+    if (mode === 'create' && getCalendarEventHandle(options.editEvent.value) != null) {
       options.editEvent.value = null
     }
   }

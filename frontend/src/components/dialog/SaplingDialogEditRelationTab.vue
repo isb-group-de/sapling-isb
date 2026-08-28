@@ -161,7 +161,7 @@
               :show-form-config="false"
               :show-selection-toolbar="false"
               :defer-create="mode === 'create'"
-              :allow-delete-actions="false"
+              :allow-delete-actions="true"
               :table-key="template.name"
               :selected="selectedItems"
               @update:selected="(val: SaplingGenericItem[]) => emit('update:selected-items', val)"

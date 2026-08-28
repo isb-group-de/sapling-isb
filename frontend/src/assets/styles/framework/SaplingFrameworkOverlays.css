@@ -381,9 +381,10 @@
   }
 
   .sapling-floating-panel--top-center.sapling-floating-panel--mobile-sheet {
-    top: env(safe-area-inset-top, 0px);
-    height: auto;
-    max-height: none;
+    top: var(--sapling-mobile-dialog-top);
+    height: var(--sapling-mobile-dialog-height);
+    max-height: var(--sapling-mobile-dialog-height);
+    border-radius: var(--sapling-panel-radius-compact) var(--sapling-panel-radius-compact) 0 0;
     transform: none;
   }
 
