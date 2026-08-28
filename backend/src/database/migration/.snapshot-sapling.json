@@ -7336,7 +7336,8 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.change_log_item"
+          "referencedTableName": "public.change_log_item",
+          "deleteRule": "cascade"
         }
       },
       "comment": null

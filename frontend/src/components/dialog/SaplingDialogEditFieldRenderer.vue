@@ -221,6 +221,7 @@
       :rows="8"
       :show-preview="true"
       :disabled="fieldDisabled"
+      :required="isRequired"
       :rules="rules"
       @update:model-value="(val: string) => updateField(template.name, val)"
     />

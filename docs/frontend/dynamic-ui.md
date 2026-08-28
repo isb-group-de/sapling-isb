@@ -617,13 +617,15 @@ If none of the existing action components fit, add or extend an action component
 
 Generic single-record deletion loads `/generic/:entity/delete-impact` when the
 confirmation dialog opens. A normal record uses one height-stable confirmation
-dialog. When owned `1:m` groups exist, their optional checkboxes appear directly
-in a scrollable list; the safe default selects none, while **Select all** and
-**Select none** provide bulk selection. The delete action passes only the selected
-relation groups rather than individual records. Synchronized Events use the same
-dialog shell but present **Cancel event**, because the backend retains the record
-and changes its status to `canceled`. Bulk deletion intentionally keeps the simple
-confirmation and does not expose reference cascades.
+dialog. When owned `1:m` groups exist, their checkboxes appear directly in a
+scrollable list. Optional groups use a safe unselected default, while database
+delete cascades are shown selected and disabled so unavoidable side effects stay
+visible. **Select all** and **Select none** affect optional groups only. The delete
+action passes only the selected optional relation groups rather than individual
+records. Synchronized Events use the same dialog shell but present **Cancel
+event**, because the backend retains the record and changes its status to
+`canceled`. Bulk deletion keeps optional reference cascades unavailable, but
+shows mandatory database cascades from the selected entity as locked choices.
 
 ### Shared Tab And Dialog Navigation Contract
 

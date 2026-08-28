@@ -26,13 +26,13 @@ describe('useSaplingDialogDelete', () => {
     const entityHandle = ref<string | undefined>('company')
     const emit = vi.fn()
     const subject = useSaplingDialogDelete({ modelValue, item, entityHandle }, emit)
-    return { emit, modelValue, subject }
+    return { emit, item, modelValue, subject }
   }
 
   it('loads the delete strategy and owned reference groups when opened', async () => {
     mocks.getDeleteImpact.mockResolvedValue({
       action: 'delete',
-      references: [{ name: 'persons', entityHandle: 'person', kind: '1:m' }],
+      references: [{ name: 'persons', entityHandle: 'person', kind: '1:m', required: false }],
     })
     const harness = createHarness()
 
@@ -43,7 +43,7 @@ describe('useSaplingDialogDelete', () => {
     expect(mocks.getDeleteImpact).toHaveBeenCalledWith('company', 4)
     expect(harness.subject.hasReferenceOptions.value).toBe(true)
     expect(harness.subject.referenceOptions.value).toEqual([
-      { name: 'persons', entityHandle: 'person', kind: '1:m' },
+      { name: 'persons', entityHandle: 'person', kind: '1:m', required: false },
     ])
   })
 
@@ -51,8 +51,8 @@ describe('useSaplingDialogDelete', () => {
     mocks.getDeleteImpact.mockResolvedValue({
       action: 'delete',
       references: [
-        { name: 'persons', entityHandle: 'person', kind: '1:m' },
-        { name: 'events', entityHandle: 'event', kind: '1:m' },
+        { name: 'persons', entityHandle: 'person', kind: '1:m', required: false },
+        { name: 'events', entityHandle: 'event', kind: '1:m', required: false },
       ],
     })
     const harness = createHarness()
@@ -72,8 +72,8 @@ describe('useSaplingDialogDelete', () => {
     mocks.getDeleteImpact.mockResolvedValue({
       action: 'delete',
       references: [
-        { name: 'persons', entityHandle: 'person', kind: '1:m' },
-        { name: 'events', entityHandle: 'event', kind: '1:m' },
+        { name: 'persons', entityHandle: 'person', kind: '1:m', required: false },
+        { name: 'events', entityHandle: 'event', kind: '1:m', required: false },
       ],
     })
     const harness = createHarness()
@@ -97,6 +97,33 @@ describe('useSaplingDialogDelete', () => {
 
     harness.subject.handleConfirm()
 
+    expect(harness.emit).toHaveBeenCalledWith('confirm', {
+      cascadeRelations: [],
+    })
+  })
+
+  it('shows only mandatory cascades for bulk deletion without submitting them', async () => {
+    mocks.getDeleteImpact.mockResolvedValue({
+      action: 'delete',
+      references: [
+        { name: 'persons', entityHandle: 'person', kind: '1:m', required: false },
+        { name: 'details', entityHandle: 'changeLogDetail', kind: '1:m', required: true },
+      ],
+    })
+    const harness = createHarness()
+    harness.item.value = [{ handle: 4 }, { handle: 5 }]
+    harness.modelValue.value = true
+    await nextTick()
+    await nextTick()
+
+    expect(mocks.getDeleteImpact).toHaveBeenCalledWith('company', 4)
+    expect(harness.subject.referenceOptions.value).toEqual([
+      { name: 'details', entityHandle: 'changeLogDetail', kind: '1:m', required: true },
+    ])
+    expect(harness.subject.hasReferenceOptions.value).toBe(true)
+    expect(harness.subject.hasOptionalReferenceOptions.value).toBe(false)
+
+    harness.subject.handleConfirm()
     expect(harness.emit).toHaveBeenCalledWith('confirm', {
       cascadeRelations: [],
     })

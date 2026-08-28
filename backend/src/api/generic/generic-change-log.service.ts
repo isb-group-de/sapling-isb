@@ -19,6 +19,8 @@ import {
   type ChangeLogPayload,
 } from './generic-change-log.util';
 
+const NON_AUDITED_ENTITY_HANDLES = new Set(['changeLog', 'changeLogDetail']);
+
 @Injectable()
 export class GenericChangeLogService {
   constructor(
@@ -234,6 +236,7 @@ export class GenericChangeLogService {
     if (
       !entity ||
       entity.handle == null ||
+      NON_AUDITED_ENTITY_HANDLES.has(entity.handle) ||
       currentUser.handle == null ||
       typeof this.em.create !== 'function' ||
       typeof this.em.flush !== 'function'

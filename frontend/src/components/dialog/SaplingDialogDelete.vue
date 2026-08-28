@@ -32,7 +32,7 @@
 
         <div class="sapling-delete-reference-toolbar">
           <span class="text-subtitle-2">{{ $t('global.selectDeleteReferences') }}</span>
-          <div class="sapling-delete-reference-toolbar__actions">
+          <div v-if="hasOptionalReferenceOptions" class="sapling-delete-reference-toolbar__actions">
             <v-btn
               size="small"
               variant="text"
@@ -59,16 +59,26 @@
           role="group"
           :aria-label="$t('global.selectDeleteReferences')"
         >
-          <SaplingCheckbox
-            v-for="reference in referenceOptions"
-            :key="reference.name"
-            v-model="selectedReferenceNames"
-            :value="reference.name"
-            :label="$t(`${entityHandle}.${reference.name}`)"
-            color="error"
-            density="compact"
-            hide-details
-          />
+          <template v-for="reference in referenceOptions" :key="reference.name">
+            <SaplingCheckbox
+              v-if="reference.required"
+              :model-value="true"
+              :label="getRequiredReferenceLabel(reference.name)"
+              color="error"
+              density="compact"
+              disabled
+              hide-details
+            />
+            <SaplingCheckbox
+              v-else
+              v-model="selectedReferenceNames"
+              :value="reference.name"
+              :label="$t(`${entityHandle}.${reference.name}`)"
+              color="error"
+              density="compact"
+              hide-details
+            />
+          </template>
         </div>
       </div>
     </template>
@@ -98,6 +108,7 @@
 <script lang="ts" setup>
 // #region Imports
 import { computed, toRef } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useSaplingDialogDelete } from '@/composables/dialog/useSaplingDialogDelete'
 import { useTranslationLoader } from '@/composables/generic/useTranslationLoader'
 import type { SaplingGenericItem } from '@/entity/entity'
@@ -123,6 +134,7 @@ const emit = defineEmits<{
 
 // #region Composable
 const { isLoading: isTranslationLoading } = useTranslationLoader('global')
+const { t } = useI18n()
 const deleteItem = computed(() => props.item as SaplingGenericItem | SaplingGenericItem[] | null)
 const {
   allReferencesSelected,
@@ -131,6 +143,7 @@ const {
   handleConfirm,
   handleDialogUpdate,
   hasReferenceOptions,
+  hasOptionalReferenceOptions,
   isCancelAction,
   isImpactLoading,
   referenceOptions,
@@ -144,6 +157,12 @@ const {
   },
   emit,
 )
+
+function getRequiredReferenceLabel(referenceName: string): string {
+  const label = t(`${props.entityHandle}.${referenceName}`)
+  const requiredSuffix = t('global.deleteReferenceRequired')
+  return requiredSuffix ? `${label} · ${requiredSuffix}` : label
+}
 // #endregion
 </script>
 

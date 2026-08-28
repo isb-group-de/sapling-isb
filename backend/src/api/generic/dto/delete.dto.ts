@@ -11,6 +11,12 @@ export class GenericDeleteReferenceDto {
 
   @ApiProperty({ enum: ['1:m'] })
   kind!: '1:m';
+
+  @ApiProperty({
+    description:
+      'True when the database necessarily deletes this child group with its parent.',
+  })
+  required!: boolean;
 }
 
 export class GenericDeleteImpactDto {

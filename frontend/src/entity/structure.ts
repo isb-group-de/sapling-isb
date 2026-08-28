@@ -206,6 +206,8 @@ export interface EntityTemplate {
   mappedBy?: string | null
   /** Name of the property that inverses this relation */
   inversedBy?: string | null
+  /** Database delete rule of the owning relation */
+  deleteRule?: string | null
   /** Whether this property has a unique constraint */
   isUnique?: boolean
   /** Name of the referenced entity, if this property is a relation */

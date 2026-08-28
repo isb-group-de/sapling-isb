@@ -155,8 +155,9 @@ function mountDialog(propOverrides: Record<string, unknown> = {}) {
         SaplingDialogCard: { template: '<div><slot /></div>' },
         SaplingDialogEditActions: { template: '<div />' },
         SaplingDialogEditFormSections: {
+          props: ['visibleTemplates'],
           template:
-            '<section data-dialog-group-id="main"><div data-dialog-field-name="title"><input data-test="first-field" class="v-input--error" aria-invalid="true" /></div></section>',
+            '<section data-dialog-group-id="main"><div data-dialog-field-name="title"><template v-if="visibleTemplates?.[0]?.options?.includes(\'isMarkdown\')"><div class="v-input--error"><textarea readonly aria-invalid="true" /></div><div data-dialog-validation-focus><div data-test="markdown-editor" contenteditable="true" /></div></template><input v-else data-test="first-field" class="v-input--error" aria-invalid="true" /></div></section>',
         },
         SaplingDialogEditHeader: {
           name: 'SaplingDialogEditHeader',
@@ -517,6 +518,51 @@ describe('SaplingDialogEdit', () => {
         inline: 'nearest',
       })
       expect(focusSpy).toHaveBeenCalledWith({ preventScroll: true })
+    } finally {
+      requestAnimationFrameSpy.mockRestore()
+      if (scrollDescriptor) {
+        Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', scrollDescriptor)
+      } else {
+        Reflect.deleteProperty(HTMLElement.prototype, 'scrollIntoView')
+      }
+    }
+  })
+
+  it('focuses the visible Markdown editor instead of its hidden validation proxy', async () => {
+    const scrollDescriptor = Object.getOwnPropertyDescriptor(
+      HTMLElement.prototype,
+      'scrollIntoView',
+    )
+    Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
+      configurable: true,
+      value: vi.fn(),
+    })
+    const requestAnimationFrameSpy = vi
+      .spyOn(window, 'requestAnimationFrame')
+      .mockImplementation((callback) => {
+        callback(0)
+        return 1
+      })
+
+    try {
+      const state = dialogHarness.state as ReturnType<typeof createDialogState>
+      state.isLoading.value = false
+      state.visibleTemplates = computed(() => [
+        { name: 'title', type: 'string', options: ['isMarkdown'] },
+      ])
+      const wrapper = mountDialog()
+      await settleFocus()
+      const markdownEditor = wrapper.get('[data-test="markdown-editor"]')
+      const validationProxy = wrapper.get('textarea[aria-invalid="true"]')
+      const editorFocusSpy = vi.spyOn(markdownEditor.element as HTMLElement, 'focus')
+      const proxyFocusSpy = vi.spyOn(validationProxy.element as HTMLTextAreaElement, 'focus')
+
+      state.validationFeedback.value = { action: 'save', attempt: 1 }
+      await nextTick()
+      await flushPromises()
+
+      expect(editorFocusSpy).toHaveBeenCalledWith({ preventScroll: true })
+      expect(proxyFocusSpy).not.toHaveBeenCalled()
     } finally {
       requestAnimationFrameSpy.mockRestore()
       if (scrollDescriptor) {

@@ -84,8 +84,12 @@ Change-log records and individual detail rows support deletion through the
 normal generic API permission flow. The `changeLog` and `changeLogDetail`
 entities enable `canDelete`, so the administrator role receives `allowDelete`
 from `PermissionSeeder` by default. Deleting a log also deletes all of its
-owned detail rows through the database foreign-key cascade. Each delete
-operation is recorded as a new audit entry like every other generic deletion.
+owned detail rows through the database foreign-key cascade. Mutations of
+`changeLog` and `changeLogDetail` themselves are deliberately excluded from
+audit creation so deleting audit data cannot recursively create replacement
+audit records.
+The delete dialog exposes that mandatory detail cascade as a selected, disabled
+choice for both individual and bulk change-log deletion.
 
 ## Payload Rules
 

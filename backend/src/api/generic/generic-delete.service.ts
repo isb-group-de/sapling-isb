@@ -53,10 +53,11 @@ export class GenericDeleteService {
     return {
       action: 'delete',
       references: this.getCascadeReferences(entityHandle).map(
-        ({ name, entityHandle: referenceEntityHandle, kind }) => ({
+        ({ name, entityHandle: referenceEntityHandle, kind, required }) => ({
           name,
           entityHandle: referenceEntityHandle,
           kind,
+          required,
         }),
       ),
     };
@@ -202,12 +203,36 @@ export class GenericDeleteService {
   private getCascadeReferences(entityHandle: string): CascadeReference[] {
     return this.getCascadeReferencesForTemplate(
       this.templateService.getEntityTemplate(entityHandle),
-    ).map(({ template, mappedBy }) => ({
-      name: template.name,
-      entityHandle: template.referenceName,
-      kind: '1:m',
-      mappedBy,
-    }));
+    )
+      .map(({ template, mappedBy }) => ({
+        name: template.name,
+        entityHandle: template.referenceName,
+        kind: '1:m' as const,
+        mappedBy,
+        required: this.hasDatabaseDeleteCascade(
+          template.referenceName,
+          mappedBy,
+        ),
+        hidden: template.options?.includes('isHideAsReference') ?? false,
+      }))
+      .filter((reference) => reference.required || !reference.hidden)
+      .map(({ hidden: _hidden, ...reference }) => reference);
+  }
+
+  private hasDatabaseDeleteCascade(
+    childEntityHandle: string,
+    mappedBy: string,
+  ): boolean {
+    const owningRelation = this.templateService
+      .getEntityTemplate(childEntityHandle)
+      .find(
+        (field) =>
+          field.name === mappedBy &&
+          field.isReference &&
+          ['m:1', '1:1'].includes(field.kind ?? ''),
+      );
+
+    return owningRelation?.deleteRule === 'cascade';
   }
 
   private getCascadeReferencesForTemplate(template: EntityTemplateDto[]) {
@@ -217,8 +242,7 @@ export class GenericDeleteService {
           field.isReference &&
           field.kind === '1:m' &&
           Boolean(field.referenceName) &&
-          Boolean(field.mappedBy) &&
-          !field.options?.includes('isHideAsReference'),
+          Boolean(field.mappedBy),
       )
       .map((field) => ({
         template: field,
@@ -231,10 +255,9 @@ export class GenericDeleteService {
     relationNames: string[],
   ): CascadeReference[] {
     const available = new Map(
-      this.getCascadeReferences(entityHandle).map((reference) => [
-        reference.name,
-        reference,
-      ]),
+      this.getCascadeReferences(entityHandle)
+        .filter((reference) => !reference.required)
+        .map((reference) => [reference.name, reference]),
     );
     const normalizedNames = [
       ...new Set(relationNames.map((name) => name.trim()).filter(Boolean)),

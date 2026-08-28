@@ -860,13 +860,20 @@ function findFirstInvalidFieldShell(): HTMLElement | null {
 }
 
 function focusInvalidField(fieldShell: HTMLElement): void {
-  const focusTarget = fieldShell.matches(
-    'input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [role="combobox"]',
+  const focusableSelector =
+    'input:not([disabled]):not([readonly]), textarea:not([disabled]):not([readonly]), select:not([disabled]), [role="combobox"], [contenteditable="true"]'
+  const validationFocusContainer = fieldShell.querySelector<HTMLElement>(
+    '[data-dialog-validation-focus]',
   )
+  const validationFocusTarget = validationFocusContainer?.matches(focusableSelector)
+    ? validationFocusContainer
+    : validationFocusContainer?.querySelector<HTMLElement>(focusableSelector)
+  const focusTarget = fieldShell.matches(focusableSelector)
     ? fieldShell
-    : fieldShell.querySelector<HTMLElement>(
-        '[aria-invalid="true"]:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [role="combobox"]',
-      )
+    : (validationFocusTarget ??
+      fieldShell.querySelector<HTMLElement>(
+        `[aria-invalid="true"]:not([disabled]):not([readonly]), ${focusableSelector}`,
+      ))
 
   focusTarget?.focus({ preventScroll: true })
 }

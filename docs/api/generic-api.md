@@ -318,10 +318,13 @@ DELETE /api/generic/:entityHandle?handle=:handle&cascadeRelations=persons,events
 ```
 
 Deletion requires `allowDelete` permission for the entity. The impact endpoint
-returns the effective action and the visible owned `1:m` relation groups that
-can be selected for an all-or-nothing cascade. Shared `m:n` targets are never
-offered for record deletion; their join-table links follow the normal ORM/DB
-relation behavior.
+returns the effective action and owned `1:m` relation groups. Optional visible
+groups have `required: false` and can be selected for an all-or-nothing cascade.
+Groups that the database necessarily removes through `ON DELETE CASCADE` have
+`required: true`; they are returned even when hidden from ordinary relation UI
+so clients can disclose unavoidable side effects. Shared `m:n` targets are
+never offered for record deletion; their join-table links follow the normal
+ORM/DB relation behavior.
 
 When `cascadeRelations` is supplied, the selected child records are deleted
 before the parent in one transaction. Every child still runs its normal generic

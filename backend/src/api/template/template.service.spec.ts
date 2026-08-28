@@ -50,6 +50,7 @@ describe('TemplateService', () => {
           kind: 'm:1',
           nullable: false,
           default: 'open',
+          deleteRule: 'set null',
         },
         title: {
           name: 'title',
@@ -79,6 +80,7 @@ describe('TemplateService', () => {
       isReference: true,
       nullable: false,
       default: 'open',
+      deleteRule: 'set null',
       isRequired: false,
     });
     expect(second[3]).toMatchObject({

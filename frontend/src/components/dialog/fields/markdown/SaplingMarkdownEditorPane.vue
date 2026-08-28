@@ -73,6 +73,7 @@
         <SaplingCodeMirror
           v-if="isEnhancedEditorReady"
           ref="editor"
+          data-dialog-validation-focus
           :model-value="draftValue"
           language="markdown"
           :theme="editorTheme"
@@ -85,6 +86,7 @@
         />
         <SaplingTextarea
           v-else
+          data-dialog-validation-focus
           :model-value="draftValue"
           :disabled="disabled || isPreparingWithAi || isTranscribingVoiceInput"
           :rows="Math.max(rows, 6)"

@@ -33,15 +33,22 @@ export function useSaplingDialogDelete(
   const selectedReferenceNames = ref<string[]>([])
   let impactRequestId = 0
 
+  const isBulkDelete = computed(() => Array.isArray(options.item.value))
   const isCancelAction = computed(() => impact.value.action === 'cancel')
   const referenceOptions = computed<GenericDeleteReference[]>(() => impact.value.references)
+  const optionalReferenceOptions = computed(() =>
+    referenceOptions.value.filter((reference) => !reference.required),
+  )
   const hasReferenceOptions = computed(
     () => referenceOptions.value.length > 0 && !isCancelAction.value,
   )
+  const hasOptionalReferenceOptions = computed(
+    () => optionalReferenceOptions.value.length > 0 && !isCancelAction.value,
+  )
   const allReferencesSelected = computed(
     () =>
-      hasReferenceOptions.value &&
-      selectedReferenceNames.value.length === referenceOptions.value.length,
+      hasOptionalReferenceOptions.value &&
+      selectedReferenceNames.value.length === optionalReferenceOptions.value.length,
   )
 
   function handleDialogUpdate(value: boolean): void {
@@ -59,7 +66,7 @@ export function useSaplingDialogDelete(
   }
 
   function selectAllReferences(): void {
-    selectedReferenceNames.value = referenceOptions.value.map((reference) => reference.name)
+    selectedReferenceNames.value = optionalReferenceOptions.value.map((reference) => reference.name)
   }
 
   function clearReferenceSelection(): void {
@@ -78,7 +85,7 @@ export function useSaplingDialogDelete(
 
   async function loadImpact(): Promise<void> {
     const entityHandle = options.entityHandle.value?.trim()
-    const handle = getSingleItemHandle(options.item.value)
+    const handle = getImpactItemHandle(options.item.value)
     const requestId = ++impactRequestId
     resetSelection()
     impact.value = DEFAULT_IMPACT
@@ -89,7 +96,14 @@ export function useSaplingDialogDelete(
     isImpactLoading.value = true
     try {
       const result = await ApiGenericService.getDeleteImpact(entityHandle, handle)
-      if (requestId === impactRequestId) impact.value = result
+      if (requestId === impactRequestId) {
+        impact.value = isBulkDelete.value
+          ? {
+              action: 'delete',
+              references: result.references.filter((reference) => reference.required),
+            }
+          : result
+      }
     } catch {
       // The normal delete action remains available; the backend still enforces its strategy.
     } finally {
@@ -119,6 +133,7 @@ export function useSaplingDialogDelete(
     handleConfirm,
     handleDialogUpdate,
     hasReferenceOptions,
+    hasOptionalReferenceOptions,
     isCancelAction,
     isImpactLoading,
     referenceOptions,
@@ -127,10 +142,11 @@ export function useSaplingDialogDelete(
   }
 }
 
-function getSingleItemHandle(
+function getImpactItemHandle(
   item: SaplingGenericItem | SaplingGenericItem[] | null,
 ): string | number | null {
-  if (Array.isArray(item) || !item) return null
-  const handle = item.handle
+  const impactItem = Array.isArray(item) ? item[0] : item
+  if (!impactItem) return null
+  const handle = impactItem.handle
   return typeof handle === 'string' || typeof handle === 'number' ? handle : null
 }

@@ -27,6 +27,7 @@ import type {
  * @property        kind                The kind of relation (e.g., 1:1, 1:m, m:n)
  * @property        mappedBy            The property name on the related entity that maps this relation
  * @property        inversedBy          The property name on the related entity that inverses this relation
+ * @property        deleteRule          Database delete rule of the owning relation, if configured
  * @property        isUnique            Indicates if the property has a unique constraint
  * @property        referenceName       The name of the referenced entity, if this property is a relation
  * @property        isReference         True if the property is a reference to another entity
@@ -108,6 +109,13 @@ export class EntityTemplateDto {
     nullable: true,
   })
   inversedBy?: string | null;
+
+  @ApiProperty({
+    description:
+      'Database delete rule of the owning relation, if one is configured.',
+    nullable: true,
+  })
+  deleteRule?: string | null;
 
   @ApiProperty({
     description: 'Indicates if the property has a unique constraint.',

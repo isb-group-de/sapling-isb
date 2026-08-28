@@ -1,0 +1,14 @@
+[
+  {
+    "entity": "global",
+    "property": "deleteReferencesDescription",
+    "de": "Aktivierte, gesperrte Gruppen werden beim Löschen zwangsläufig mitgelöscht. Weitere angezeigte Gruppen können optional ausgewählt werden. Gemeinsame M:N-Verknüpfungen werden nicht als Datensätze gelöscht.",
+    "en": "Selected, locked groups are necessarily deleted with the record. Other displayed groups can be selected optionally. Shared many-to-many targets are not deleted as records."
+  },
+  {
+    "entity": "global",
+    "property": "deleteReferenceRequired",
+    "de": "wird automatisch mitgelöscht",
+    "en": "will be deleted automatically"
+  }
+]

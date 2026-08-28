@@ -48,6 +48,7 @@ export interface GenericDeleteReference {
   name: string
   entityHandle: string
   kind: '1:m'
+  required: boolean
 }
 
 export interface GenericDeleteImpact {

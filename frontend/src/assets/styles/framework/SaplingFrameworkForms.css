@@ -405,6 +405,11 @@
   background: var(--sapling-surface-fill);
 }
 
+.sapling-markdown-validation-proxy.v-input--error + .sapling-markdown-editor-shell {
+  border-color: rgb(var(--v-theme-error));
+  box-shadow: 0 0 0 1px rgb(var(--v-theme-error));
+}
+
 .sapling-markdown-editor-shell--disabled {
   opacity: var(--sapling-opacity-disabled);
 }

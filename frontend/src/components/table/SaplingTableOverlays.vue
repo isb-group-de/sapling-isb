@@ -24,6 +24,7 @@
     persistent
     :model-value="bulkDeleteDialog.visible"
     :item="bulkDeleteDialog.items"
+    :entity-handle="entityHandle"
     @update:model-value="emit('update:bulk-delete-visible', $event)"
     @confirm="emit('confirm-bulk-delete')"
     @cancel="emit('close-bulk-delete')"

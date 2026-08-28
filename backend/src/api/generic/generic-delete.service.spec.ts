@@ -12,6 +12,7 @@ describe('GenericDeleteService', () => {
   ) {
     class CompanyEntity {}
     class PersonEntity {}
+    class HiddenChildEntity {}
     class EventEntity {}
 
     const findOne = jest.fn(async (entity: unknown) => {
@@ -30,6 +31,16 @@ describe('GenericDeleteService', () => {
     const em = { findOne, find, transactional };
     const templateService = {
       getEntityTemplate: jest.fn((entityHandle: string) => {
+        if (entityHandle === 'hiddenChild') {
+          return [
+            {
+              name: 'company',
+              isReference: true,
+              kind: 'm:1',
+              deleteRule: 'cascade',
+            },
+          ];
+        }
         if (entityHandle !== 'company') return [];
         return [
           {
@@ -52,7 +63,7 @@ describe('GenericDeleteService', () => {
             name: 'hiddenChildren',
             isReference: true,
             kind: '1:m',
-            referenceName: 'person',
+            referenceName: 'hiddenChild',
             mappedBy: 'company',
             options: ['isHideAsReference'],
           },
@@ -63,6 +74,7 @@ describe('GenericDeleteService', () => {
       getEntityClass: jest.fn((entityHandle: string) => {
         if (entityHandle === 'company') return CompanyEntity;
         if (entityHandle === 'person') return PersonEntity;
+        if (entityHandle === 'hiddenChild') return HiddenChildEntity;
         return EventEntity;
       }),
     };
@@ -105,14 +117,27 @@ describe('GenericDeleteService', () => {
     };
   }
 
-  it('offers only visible owned one-to-many relations for cascading', async () => {
+  it('offers optional visible children and discloses hidden database cascades', async () => {
     const harness = createHarness();
 
     await expect(
       harness.service.getImpact('company', '4', { handle: 1 } as never),
     ).resolves.toEqual({
       action: 'delete',
-      references: [{ name: 'persons', entityHandle: 'person', kind: '1:m' }],
+      references: [
+        {
+          name: 'persons',
+          entityHandle: 'person',
+          kind: '1:m',
+          required: false,
+        },
+        {
+          name: 'hiddenChildren',
+          entityHandle: 'hiddenChild',
+          kind: '1:m',
+          required: true,
+        },
+      ],
     });
     expect(
       harness.genericPermissionService.checkTopLevelPermission,
