@@ -170,6 +170,15 @@ provider's response normalization and outbound event mapping explicit and
 independently testable; they intentionally do not force unlike provider payloads
 through one shared abstraction.
 
+Microsoft Graph `calendarView` expands a recurring Outlook series into
+individual `occurrence` and `exception` resources. Before persistence, the
+Azure importer groups those resources by `seriesMasterId`, loads each series
+master once, and uses the master id as the provider reference. A Sapling series
+therefore remains one recurring Event instead of producing one standalone Event
+per visible occurrence. Supported recurrence patterns on previously unknown
+Outlook series are converted to Sapling's RRULE format. Occurrence-level Outlook
+exceptions are not materialized as separate Sapling Events.
+
 Existing Sapling events are updated and unknown provider items are created with the user's configured default type (`online` by default) and category (`internal` by default). Outlook updates preserve the existing Sapling event type and category; Outlook classification mappings and defaults are applied only when an external item is imported for the first time. Known attendee email addresses are linked as participants through an exact, case-insensitive match. A provider attendee is linked only when that normalized email belongs to exactly one `PersonItem`; ambiguous duplicate addresses are skipped. The current user is always added as a participant so imported events appear in their calendar filter.
 
 Outlook events whose Microsoft Graph `sensitivity` is `private` are imported with `EventItem.isPrivate = true`. Sapling still stores the full event details for the importing owner, but generic Event reads, exports, relation mutations, updates, deletes, KPIs, and timeline anchor loads must only expose private events when `creatorPerson` is the current user. Non-private events keep the normal Event permission behavior.
@@ -300,8 +309,8 @@ concurrency.
 Materialization is an internal structural conversion, not a second user
 notification signal. It therefore suppresses lifecycle-driven Inbox, Teams, and
 email notifications for the source update and generated Events. Entity hooks
-and webhooks still run, so participant defaults, downstream integrations, and
-external calendar synchronization remain active. Azure/Google delivery creation
+and webhooks still run, so downstream integrations and external calendar
+synchronization remain active. Azure/Google delivery creation
 is collected as post-commit work and starts only after the complete
 materialization transaction has committed; Redis workers can therefore resolve
 every delivery and Event id.
@@ -330,8 +339,10 @@ The people selected in the calendar filter are also copied into the local Event
 draft as hydrated participant records. The create dialog therefore shows them
 immediately in its participants relation tab, where they can be reviewed or
 removed before the same handles are sent in the initial create request.
-The signed-in person is not added implicitly; they are included only when they
-are part of the current calendar filter selection.
+Saving never falls back to the calendar filter or derives participants from the
+assignee or creator. An explicitly emptied participant list stays empty. The
+signed-in person is therefore included only when they remain in the participant
+list copied from the current calendar filter selection.
 
 Deleting an Event through the generic record UI first inspects whether it has an
 Azure/Google reference or Event delivery history. Synchronized Events are not

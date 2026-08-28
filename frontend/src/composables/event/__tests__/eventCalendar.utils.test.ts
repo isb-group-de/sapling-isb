@@ -11,9 +11,20 @@ import {
   isBufferCalendarEvent,
   isReadonlyCalendarEvent,
   normalizeOnlineMeetingUrl,
+  resolveDraftParticipants,
 } from '../eventCalendar.utils'
 
 describe('getCalendarInteractionForcedDirtyFields', () => {
+  it('uses the selected calendar people only while initializing a new draft', () => {
+    expect(resolveDraftParticipants({ start: 1, end: 2 }, [7, 9, 7])).toEqual([7, 9])
+  })
+
+  it('preserves an explicitly emptied participant list', () => {
+    expect(
+      resolveDraftParticipants({ start: 1, end: 2, event: { participants: [] } }, [7, 9]),
+    ).toEqual([])
+  })
+
   it('keeps a newly opened draft clean until a dialog field changes', () => {
     expect(
       getCalendarInteractionForcedDirtyFields({

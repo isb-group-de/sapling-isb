@@ -150,6 +150,46 @@ describe('AzureCalendarService Outlook import privacy', () => {
     expect(event?.category).toBe(defaults.category);
   });
 
+  it('creates one recurring Sapling event from an Outlook series master', async () => {
+    const persisted: unknown[] = [];
+    const emFork = {
+      findOne: jest.fn<(...args: unknown[]) => Promise<unknown>>(() =>
+        Promise.resolve(null),
+      ),
+      find: jest.fn<(...args: unknown[]) => Promise<unknown[]>>(() =>
+        Promise.resolve([]),
+      ),
+      persist: jest.fn((item: unknown) => {
+        persisted.push(item);
+      }),
+    };
+    const service = createService();
+
+    await expect(
+      service.upsertImportedEvent(
+        emFork,
+        createGraphEvent({
+          id: 'series-master-1',
+          type: 'seriesMaster',
+          recurrence: {
+            pattern: {
+              type: 'weekly',
+              interval: 1,
+              daysOfWeek: ['monday'],
+            },
+            range: { type: 'noEnd' },
+          },
+        }),
+        defaults,
+      ),
+    ).resolves.toBe('created');
+
+    const event = persisted.find((item) => item instanceof EventItem);
+    const reference = persisted.find((item) => item instanceof EventAzureItem);
+    expect(event?.recurrenceRule).toBe('FREQ=WEEKLY;INTERVAL=1;BYDAY=MO');
+    expect(reference?.referenceHandle).toBe('series-master-1');
+  });
+
   it('imports non-private, missing, and unknown Outlook sensitivity as public events', async () => {
     const service = createService();
 
@@ -279,16 +319,17 @@ describe('AzureCalendarService completion delivery', () => {
     expect(harness.deleteEvent).toHaveBeenCalledTimes(1);
   });
 
-  it('recreates an active event when its persisted Outlook object no longer exists', async () => {
+  it('recreates an active recurring event when its Outlook master no longer exists', async () => {
     const event = {
       handle: 42,
       status: { handle: 'scheduled' },
+      recurrenceRule: 'FREQ=WEEKLY;INTERVAL=1;BYDAY=MO',
     } as EventItem;
     const reference = {
       referenceHandle: 'deleted-outlook-event',
     } as EventAzureItem;
     const flush = jest.fn(() => Promise.resolve());
-    const remove = jest.fn((_reference: EventAzureItem) => ({ flush }));
+    const remove = jest.fn(() => ({ flush }));
     const emFork = {
       findOne: jest
         .fn<(...args: unknown[]) => Promise<unknown>>()
@@ -302,11 +343,15 @@ describe('AzureCalendarService completion delivery', () => {
     );
     const harness = service as unknown as AzureSetEventTestHarness;
     harness.updateEvent = jest.fn(() =>
-      Promise.reject({
-        statusCode: 404,
-        code: 'ErrorItemNotFound',
-        message: 'The specified object was not found in the store.',
-      }),
+      Promise.reject(
+        Object.assign(
+          new Error('The specified object was not found in the store.'),
+          {
+            statusCode: 404,
+            code: 'ErrorItemNotFound',
+          },
+        ),
+      ),
     );
     harness.createEvent = jest.fn(() =>
       Promise.resolve({ id: 'replacement-outlook-event' }),

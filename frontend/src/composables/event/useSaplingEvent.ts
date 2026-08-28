@@ -205,7 +205,6 @@ export function useSaplingEvent() {
   const eventEditor = useSaplingEventEditor({
     events,
     templates,
-    selectedPeople: selectedPeoples,
     editEvent,
     showEditDialog,
     forceEditDialogDirtyFields,

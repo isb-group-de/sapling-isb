@@ -290,6 +290,41 @@ describe('SaplingDialogEdit', () => {
     ])
   })
 
+  it('omits supplemental record tabs below the mobile table breakpoint', async () => {
+    const originalWidth = window.innerWidth
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 899 })
+
+    try {
+      const state = createDialogState()
+      state.isLoading.value = false
+      state.permissions.value = [
+        { entityHandle: 'information', allowRead: true },
+        { entityHandle: 'document', allowRead: true },
+        { entityHandle: 'emailDelivery', allowRead: true },
+        { entityHandle: 'phoneCall', allowRead: true, allowInsert: true },
+      ]
+      state.form.value = {
+        title: 'Existing',
+        email: 'ticket@example.com',
+        phone: '+49 30 1234567',
+      }
+      dialogHarness.state = state
+
+      const wrapper = mountDialog({
+        templates: [
+          { key: 'title', name: 'title', type: 'string', options: ['isValue'] },
+          { key: 'email', name: 'email', type: 'string', options: ['isMail'] },
+          { key: 'phone', name: 'phone', type: 'string', options: ['isPhone'] },
+        ],
+      })
+      await nextTick()
+
+      expect(wrapper.findAll('[role="tab"]')).toHaveLength(1)
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth })
+    }
+  })
+
   it.each([
     ['information', 'navigation.information'],
     ['document', 'navigation.document'],

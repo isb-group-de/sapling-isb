@@ -85,7 +85,11 @@
           :title="currentDashboard?.name || $t('dashboard.executiveOverview')"
           :subtitle="$t('dashboard.workspaceSubtitle')"
         >
-          <div class="sapling-dashboard__layout-actions" data-tutorial="dashboard-layout-action">
+          <div
+            v-if="isLayoutEditing || !isSmallViewport"
+            class="sapling-dashboard__layout-actions"
+            data-tutorial="dashboard-layout-action"
+          >
             <v-btn
               v-if="!isLayoutEditing"
               color="primary"
@@ -225,6 +229,7 @@ import SaplingDialogDelete from '@/components/dialog/SaplingDialogDelete.vue'
 import SaplingDialogEdit from '@/components/dialog/SaplingDialogEdit.vue'
 import SaplingPageHero from '@/components/common/SaplingPageHero.vue'
 import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { useSaplingViewport } from '@/composables/useSaplingViewport'
 import { SAPLING_SET_DASHBOARD_TUTORIAL_LAYOUT_EVENT } from '@/services/dashboard-tutorial.service'
 // #endregion
 
@@ -274,6 +279,7 @@ const {
   reorderDashboards,
   saveLayout,
 } = useSaplingDashboard()
+const { isSmallViewport } = useSaplingViewport()
 
 const addKpiRequestKey = ref(0)
 const addKpiRequestDashboardHandle = ref<number | null>(null)

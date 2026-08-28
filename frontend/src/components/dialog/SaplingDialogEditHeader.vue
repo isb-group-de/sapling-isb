@@ -42,7 +42,7 @@
 
       <template #actions>
         <v-btn
-          v-if="canOpenFormConfigEditor && $vuetify.display.mdAndUp"
+          v-if="canOpenFormConfigEditor && !isSmallViewport"
           size="small"
           color="primary"
           variant="tonal"
@@ -52,20 +52,6 @@
           @click="emit('open-form-config')"
         >
           {{ $t('formConfig.configure') }}
-        </v-btn>
-        <v-btn
-          v-else-if="canOpenFormConfigEditor"
-          class="sapling-dialog-hero__close"
-          size="small"
-          color="primary"
-          variant="tonal"
-          density="comfortable"
-          icon
-          :aria-label="$t('formConfig.openForEntity')"
-          :title="$t('formConfig.openForEntity')"
-          @click="emit('open-form-config')"
-        >
-          <v-icon icon="mdi-table-cog" />
         </v-btn>
       </template>
     </SaplingDialogEditHero>
@@ -89,6 +75,7 @@ defineProps<{
   dirtySummaryLabel: string
   mode: DialogState
   canOpenFormConfigEditor: boolean
+  isSmallViewport: boolean
 }>()
 
 const emit = defineEmits<{

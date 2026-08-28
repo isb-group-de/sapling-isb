@@ -24,6 +24,8 @@ type AzureGraphAttendee = {
 
 export type AzureGraphCalendarEvent = {
   id?: string;
+  type?: 'singleInstance' | 'occurrence' | 'exception' | 'seriesMaster' | null;
+  seriesMasterId?: string | null;
   subject?: string | null;
   bodyPreview?: string | null;
   body?: {
@@ -45,6 +47,20 @@ export type AzureGraphCalendarEvent = {
     displayName?: string | null;
     locationUri?: string | null;
   }> | null;
+  recurrence?: AzureGraphPatternedRecurrence | null;
+};
+
+type AzureGraphPatternedRecurrence = {
+  pattern?: {
+    type?: string | null;
+    interval?: number | null;
+    daysOfWeek?: string[] | null;
+  } | null;
+  range?: {
+    type?: string | null;
+    endDate?: string | null;
+    numberOfOccurrences?: number | null;
+  } | null;
 };
 
 export type AzureCalendarViewResponse = {
@@ -68,6 +84,119 @@ export type AzureOutlookCategoriesResponse = {
   value?: AzureOutlookCategory[];
   '@odata.nextLink'?: string;
 };
+
+const AZURE_WEEKDAY_TO_RRULE: Record<string, string> = {
+  monday: 'MO',
+  tuesday: 'TU',
+  wednesday: 'WE',
+  thursday: 'TH',
+  friday: 'FR',
+  saturday: 'SA',
+  sunday: 'SU',
+};
+
+/**
+ * calendarView expands recurring events into occurrence/exception resources.
+ * Collapse those resources back to their series master before persistence so
+ * one Outlook series can only produce one Sapling Event and one provider link.
+ */
+export async function resolveAzureSeriesImportEvents(
+  events: AzureGraphCalendarEvent[],
+  loadSeriesMaster: (
+    seriesMasterId: string,
+  ) => Promise<AzureGraphCalendarEvent | null>,
+): Promise<AzureGraphCalendarEvent[]> {
+  const resolvedByReference = new Map<string, AzureGraphCalendarEvent>();
+  const unkeyedEvents: AzureGraphCalendarEvent[] = [];
+  const seriesMasterIds = new Set<string>();
+
+  for (const event of events) {
+    const seriesMasterId = event.seriesMasterId?.trim();
+    if (seriesMasterId) {
+      seriesMasterIds.add(seriesMasterId);
+      continue;
+    }
+
+    const referenceHandle = event.id?.trim();
+    if (referenceHandle) {
+      if (!resolvedByReference.has(referenceHandle)) {
+        resolvedByReference.set(referenceHandle, event);
+      }
+    } else {
+      unkeyedEvents.push(event);
+    }
+  }
+
+  await Promise.all(
+    [...seriesMasterIds].map(async (seriesMasterId) => {
+      if (resolvedByReference.has(seriesMasterId)) {
+        return;
+      }
+
+      const seriesMaster = await loadSeriesMaster(seriesMasterId);
+      if (seriesMaster) {
+        resolvedByReference.set(seriesMasterId, {
+          ...seriesMaster,
+          id: seriesMaster.id?.trim() || seriesMasterId,
+          type: seriesMaster.type ?? 'seriesMaster',
+          seriesMasterId: null,
+        });
+      }
+    }),
+  );
+
+  return [...resolvedByReference.values(), ...unkeyedEvents];
+}
+
+/** Maps the recurrence subset supported by Sapling back to its RRULE form. */
+export function normalizeAzureRecurrenceRule(
+  recurrence?: AzureGraphPatternedRecurrence | null,
+): string | null {
+  const pattern = recurrence?.pattern;
+  const range = recurrence?.range;
+  if (!pattern?.type) {
+    return null;
+  }
+
+  const frequencyByPattern: Record<string, string> = {
+    daily: 'DAILY',
+    weekly: 'WEEKLY',
+    absoluteMonthly: 'MONTHLY',
+    absoluteYearly: 'YEARLY',
+  };
+  const frequency = frequencyByPattern[pattern.type];
+  if (!frequency) {
+    return null;
+  }
+
+  const parts = [`FREQ=${frequency}`];
+  const interval = Math.max(1, Math.trunc(pattern.interval ?? 1));
+  parts.push(`INTERVAL=${interval}`);
+
+  if (frequency === 'WEEKLY') {
+    const weekdays = (pattern.daysOfWeek ?? [])
+      .map((day) => AZURE_WEEKDAY_TO_RRULE[day.toLowerCase()])
+      .filter((day): day is string => Boolean(day));
+    if (weekdays.length > 0) {
+      parts.push(`BYDAY=${weekdays.join(',')}`);
+    }
+  }
+
+  if (
+    range?.type === 'numbered' &&
+    typeof range.numberOfOccurrences === 'number' &&
+    range.numberOfOccurrences > 0
+  ) {
+    parts.push(`COUNT=${Math.trunc(range.numberOfOccurrences)}`);
+  } else if (
+    range?.type === 'endDate' &&
+    /^\d{4}-\d{2}-\d{2}$/.test(range.endDate ?? '')
+  ) {
+    parts.push(`UNTIL=${range.endDate!.replace(/-/g, '')}T235959Z`);
+  }
+
+  return parts.join(';');
+}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;

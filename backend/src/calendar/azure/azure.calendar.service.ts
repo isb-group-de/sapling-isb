@@ -58,6 +58,8 @@ import {
   isAzureNotFoundError,
   normalizeAzureDateTime,
   normalizeAzureEmail,
+  normalizeAzureRecurrenceRule,
+  resolveAzureSeriesImportEvents,
   resolveAzureOnlineMeetingUrl,
   truncateAzureText,
 } from './azure-calendar.utils';
@@ -471,13 +473,14 @@ export class AzureCalendarService {
   ): Promise<AzureGraphCalendarEvent[]> {
     const client = this.createClient(accessToken);
     const events: AzureGraphCalendarEvent[] = [];
+    const eventSelect =
+      'id,type,seriesMasterId,subject,bodyPreview,body,sensitivity,start,end,isAllDay,isCancelled,attendees,categories,isOnlineMeeting,onlineMeetingProvider,onlineMeeting,onlineMeetingUrl,locations,recurrence';
     let response = (await client
       .api('/me/calendarView')
       .query({
         startDateTime: range.startDateTime.toISOString(),
         endDateTime: range.endDateTime.toISOString(),
-        $select:
-          'id,subject,bodyPreview,body,sensitivity,start,end,isAllDay,isCancelled,attendees,categories,isOnlineMeeting,onlineMeetingProvider,onlineMeeting,onlineMeetingUrl,locations',
+        $select: eventSelect,
         $top: '100',
       })
       .header('Prefer', 'outlook.timezone="UTC"')
@@ -493,7 +496,22 @@ export class AzureCalendarService {
       events.push(...(response.value ?? []));
     }
 
-    return events;
+    return resolveAzureSeriesImportEvents(events, async (seriesMasterId) => {
+      try {
+        return (await client
+          .api(`/me/events/${seriesMasterId}`)
+          .query({ $select: eventSelect })
+          .header('Prefer', 'outlook.timezone="UTC"')
+          .get()) as AzureGraphCalendarEvent;
+      } catch (error) {
+        // The series can disappear between calendarView and the master lookup.
+        // In that race, skip its instances instead of importing duplicates.
+        if (isAzureNotFoundError(error)) {
+          return null;
+        }
+        throw error;
+      }
+    });
   }
 
   private async fetchMasterCategories(
@@ -693,6 +711,9 @@ export class AzureCalendarService {
     if (values.classification) {
       event.type = values.classification.type;
       event.category = values.classification.category;
+      event.recurrenceRule = normalizeAzureRecurrenceRule(
+        graphEvent.recurrence,
+      );
     }
     event.isAllDay = graphEvent.isAllDay === true;
     event.onlineMeetingURL =

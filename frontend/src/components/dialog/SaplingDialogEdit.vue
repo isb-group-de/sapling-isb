@@ -27,6 +27,7 @@
           :dirty-summary-label="dirtySummaryLabel"
           :mode="mode"
           :can-open-form-config-editor="canOpenFormConfigEditor"
+          :is-small-viewport="isSmallViewport"
           @open-form-config="openFormConfigEditor"
         />
         <v-card-text
@@ -325,6 +326,7 @@ import type { EntityItem, SaplingGenericItem } from '@/entity/entity'
 import { useSaplingDialogEdit } from '@/composables/dialog/useSaplingDialogEdit'
 import { useSaplingDialogKeyboardShortcuts } from '@/composables/dialog/useSaplingDialogKeyboardShortcuts'
 import { useSaplingDialogRecordActions } from '@/composables/dialog/useSaplingDialogRecordActions'
+import { useSaplingViewport } from '@/composables/useSaplingViewport'
 import { useTranslationLoader } from '@/composables/generic/useTranslationLoader'
 import { buildMailMenuActions } from '@/utils/saplingMailMenuUtil'
 import ApiTemplateService from '@/services/api.template.service'
@@ -376,6 +378,7 @@ const emit = defineEmits<{
 
 const { t, d, te } = useI18n()
 useTranslationLoader('navigationGroup')
+const { isSmallViewport } = useSaplingViewport()
 
 const dialogFieldDefaults = {
   VAutocomplete: {
@@ -574,10 +577,18 @@ const phoneCallsTabIndex = computed(() => relationTemplates.value.length + 4)
 const hasPersistedItem = computed(() => itemHandle.value != null && props.mode !== 'create')
 const permissionFor = (entity: string) =>
   permissions.value?.find((permission) => permission.entityHandle === entity)
-const canShowInformationTab = computed(() => permissionFor('information')?.allowRead === true)
-const canShowDocumentsTab = computed(() => permissionFor('document')?.allowRead === true)
-const canShowEmailsTab = computed(() => permissionFor('emailDelivery')?.allowRead === true)
-const canShowPhoneCallsTab = computed(() => permissionFor('phoneCall')?.allowRead === true)
+const canShowInformationTab = computed(
+  () => !isSmallViewport.value && permissionFor('information')?.allowRead === true,
+)
+const canShowDocumentsTab = computed(
+  () => !isSmallViewport.value && permissionFor('document')?.allowRead === true,
+)
+const canShowEmailsTab = computed(
+  () => !isSmallViewport.value && permissionFor('emailDelivery')?.allowRead === true,
+)
+const canShowPhoneCallsTab = computed(
+  () => !isSmallViewport.value && permissionFor('phoneCall')?.allowRead === true,
+)
 const canUploadDocuments = computed(
   () => hasPersistedItem.value && props.entity?.canInsert === true,
 )

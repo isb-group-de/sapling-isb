@@ -86,6 +86,11 @@ Important fields:
 
 `referenceHandle` uses `@SaplingGenericReference` together with `entity`, so the UI can navigate back to the referenced record.
 
+Inbox notifications support deletion through the normal generic permission
+flow. The `inboxNotification` entity enables `canDelete`; consequently,
+`PermissionSeeder` grants and synchronizes `allowDelete` for the administrator
+role by default.
+
 ## Notification Creation Flow
 
 `InboxService.querySubscription(...)` is the main entry point.

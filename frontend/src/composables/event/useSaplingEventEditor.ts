@@ -40,7 +40,6 @@ interface UpdateConflictDialogState {
 interface UseSaplingEventEditorOptions {
   events: Ref<SaplingCalendarEvent[]>
   templates: Ref<EntityTemplate[]>
-  selectedPeople: Ref<number[]>
   editEvent: Ref<CalendarEvent | null>
   showEditDialog: Ref<boolean>
   forceEditDialogDirtyFields: Ref<string[]>
@@ -123,7 +122,10 @@ export function useSaplingEventEditor(options: UseSaplingEventEditorOptions) {
     // replaced with the currently selected calendar-filter people.
     const editingHandle = getCalendarEventHandle(options.editEvent.value)
     const isNewEvent = editingHandle == null
-    const participantHandles = resolveDraftParticipants(updatedEvent, options.selectedPeople.value)
+    // The filter selection is copied into the draft when the create dialog
+    // opens. Saving only persists the draft's current participant list, so a
+    // deliberately emptied list cannot fall back to the calendar filter.
+    const participantHandles = resolveDraftParticipants(updatedEvent, [])
     let savedEvent: EventItem
     let didSave = false
     let pendingRelationsPersisted = true

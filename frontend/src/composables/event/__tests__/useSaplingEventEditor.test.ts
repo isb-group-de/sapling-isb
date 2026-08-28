@@ -43,7 +43,6 @@ function createEventItem(overrides: Partial<EventItem> = {}): EventItem {
 function createHarness() {
   const events = ref<SaplingCalendarEvent[]>([])
   const templates = ref<EntityTemplate[]>([])
-  const selectedPeople = ref([7])
   const editEvent = ref<CalendarEvent | null>(null)
   const showEditDialog = ref(false)
   const forceEditDialogDirtyFields = ref<string[]>([])
@@ -60,7 +59,6 @@ function createHarness() {
   const editor = useSaplingEventEditor({
     events,
     templates,
-    selectedPeople,
     editEvent,
     showEditDialog,
     forceEditDialogDirtyFields,
@@ -281,6 +279,26 @@ describe('useSaplingEventEditor', () => {
     expect(harness.refreshVisibleEvents).toHaveBeenCalledTimes(1)
     expect(complete).toHaveBeenCalledWith(true)
     expect(harness.showEditDialog.value).toBe(false)
+  })
+
+  it('keeps a deliberately emptied participant list empty when creating an event', async () => {
+    const harness = createHarness()
+    const savedEvent = createEventItem({ participants: [] } as Partial<EventItem>)
+    mocks.create.mockResolvedValue(savedEvent)
+    const draft = {
+      start: new Date(2026, 6, 15, 9).getTime(),
+      end: new Date(2026, 6, 15, 10).getTime(),
+      timed: true,
+      event: { participants: [] },
+    } as CalendarEvent
+    harness.editEvent.value = draft
+
+    await harness.editor.onEditDialogSave(draft, 'saveAndClose')
+
+    expect(mocks.create).toHaveBeenCalledWith(
+      'event',
+      expect.objectContaining({ participants: [] }),
+    )
   })
 
   it('does not replace participants when an existing event payload omits its handle', async () => {

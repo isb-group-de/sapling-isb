@@ -1,9 +1,105 @@
-import { describe, expect, it } from '@jest/globals';
+import { describe, expect, it, jest } from '@jest/globals';
 
 import {
   isAzureNotFoundError,
+  normalizeAzureRecurrenceRule,
   resolveAzureOnlineMeetingUrl,
+  resolveAzureSeriesImportEvents,
 } from './azure-calendar.utils';
+
+describe('resolveAzureSeriesImportEvents', () => {
+  it('collapses all calendar-view occurrences into one series master', async () => {
+    const loadSeriesMaster = jest.fn(async (seriesMasterId: string) => ({
+      id: seriesMasterId,
+      type: 'seriesMaster' as const,
+      subject: 'Weekly planning',
+      recurrence: {
+        pattern: {
+          type: 'weekly',
+          interval: 1,
+          daysOfWeek: ['monday'],
+        },
+        range: { type: 'noEnd' },
+      },
+    }));
+
+    await expect(
+      resolveAzureSeriesImportEvents(
+        [
+          {
+            id: 'occurrence-1',
+            type: 'occurrence',
+            seriesMasterId: 'series-1',
+          },
+          {
+            id: 'occurrence-2',
+            type: 'occurrence',
+            seriesMasterId: 'series-1',
+          },
+          { id: 'single-1', type: 'singleInstance' },
+        ],
+        loadSeriesMaster,
+      ),
+    ).resolves.toEqual([
+      { id: 'single-1', type: 'singleInstance' },
+      {
+        id: 'series-1',
+        type: 'seriesMaster',
+        seriesMasterId: null,
+        subject: 'Weekly planning',
+        recurrence: {
+          pattern: {
+            type: 'weekly',
+            interval: 1,
+            daysOfWeek: ['monday'],
+          },
+          range: { type: 'noEnd' },
+        },
+      },
+    ]);
+    expect(loadSeriesMaster).toHaveBeenCalledTimes(1);
+    expect(loadSeriesMaster).toHaveBeenCalledWith('series-1');
+  });
+
+  it('skips instances when their master disappeared during the import', async () => {
+    await expect(
+      resolveAzureSeriesImportEvents(
+        [
+          {
+            id: 'occurrence-1',
+            type: 'occurrence',
+            seriesMasterId: 'deleted-series',
+          },
+        ],
+        async () => null,
+      ),
+    ).resolves.toEqual([]);
+  });
+});
+
+describe('normalizeAzureRecurrenceRule', () => {
+  it('maps a finite Outlook weekly recurrence to Sapling RRULE syntax', () => {
+    expect(
+      normalizeAzureRecurrenceRule({
+        pattern: {
+          type: 'weekly',
+          interval: 2,
+          daysOfWeek: ['monday', 'wednesday'],
+        },
+        range: { type: 'numbered', numberOfOccurrences: 8 },
+      }),
+    ).toBe('FREQ=WEEKLY;INTERVAL=2;BYDAY=MO,WE;COUNT=8');
+  });
+
+  it('maps an Outlook end date without dropping the final day', () => {
+    expect(
+      normalizeAzureRecurrenceRule({
+        pattern: { type: 'daily', interval: 1 },
+        range: { type: 'endDate', endDate: '2026-09-30' },
+      }),
+    ).toBe('FREQ=DAILY;INTERVAL=1;UNTIL=20260930T235959Z');
+  });
+});
 
 describe('isAzureNotFoundError', () => {
   it.each([

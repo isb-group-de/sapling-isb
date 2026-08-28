@@ -435,14 +435,12 @@ export function buildDraftEventPayload(
 }
 
 export function resolveDraftParticipants(event: CalendarEvent, selectedPeople: number[]) {
-  const explicitParticipants = normalizeParticipantHandles(event.participants)
-  if (explicitParticipants.length > 0) {
-    return explicitParticipants
+  if (Array.isArray(event.participants)) {
+    return normalizeParticipantHandles(event.participants)
   }
 
-  const nestedParticipants = normalizeParticipantHandles(event.event?.participants)
-  if (nestedParticipants.length > 0) {
-    return nestedParticipants
+  if (Array.isArray(event.event?.participants)) {
+    return normalizeParticipantHandles(event.event.participants)
   }
 
   return Array.from(new Set(selectedPeople))

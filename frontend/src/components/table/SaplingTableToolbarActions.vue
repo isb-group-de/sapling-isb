@@ -220,35 +220,6 @@
               />
             </template>
           </v-list-item>
-          <v-divider />
-          <v-list-item
-            :prepend-icon="isColumnOrderEditing ? 'mdi-check' : 'mdi-table-edit'"
-            :title="
-              isColumnOrderEditing
-                ? $t('formConfig.finishEditingView')
-                : $t('formConfig.editCurrentView')
-            "
-            @click="toggleColumnOrderFromMobileMenu"
-          />
-          <v-list-item
-            v-if="isColumnOrderEditing"
-            prepend-icon="mdi-table-column-plus-after"
-            :active="isColumnChooserOpen"
-            :title="$t('formConfig.columnSelection')"
-            @click="emitAndCloseMobileMenu('toggleColumnChooser')"
-          />
-          <v-list-item
-            v-if="canSaveCurrentView && isColumnOrderEditing"
-            prepend-icon="mdi-content-save-outline"
-            :title="$t('formConfig.saveCurrentView')"
-            @click="emitAndCloseMobileMenu('saveCurrentView')"
-          />
-          <v-list-item
-            v-if="hasTemporaryColumnOrder && isColumnOrderEditing"
-            prepend-icon="mdi-restore"
-            :title="$t('formConfig.resetTemporaryColumnOrder')"
-            @click="emitAndCloseMobileMenu('resetTemporaryColumnOrder')"
-          />
         </v-list>
       </v-menu>
 
@@ -543,14 +514,7 @@ const formConfigTitle = computed(() =>
     : t('formConfig.defaultView'),
 )
 
-type MobileMenuEvent =
-  | 'downloadJson'
-  | 'downloadCsv'
-  | 'downloadCsvTemplate'
-  | 'importCsv'
-  | 'toggleColumnChooser'
-  | 'saveCurrentView'
-  | 'resetTemporaryColumnOrder'
+type MobileMenuEvent = 'downloadJson' | 'downloadCsv' | 'downloadCsvTemplate' | 'importCsv'
 
 function closeMobileMenu(): void {
   mobileMenuOpen.value = false
@@ -581,15 +545,6 @@ function emitAndCloseMobileMenu(event: MobileMenuEvent): void {
     case 'importCsv':
       emit('importCsv')
       break
-    case 'toggleColumnChooser':
-      emit('toggleColumnChooser')
-      break
-    case 'saveCurrentView':
-      emit('saveCurrentView')
-      break
-    case 'resetTemporaryColumnOrder':
-      emit('resetTemporaryColumnOrder')
-      break
   }
   closeMobileMenu()
 }
@@ -616,15 +571,6 @@ function selectFormConfigFromMobileMenu(handle: FormConfigSelectionHandle): void
 
 function setDefaultFormConfigFromMobileMenu(handle: number): void {
   emit('setDefaultFormConfig', handle)
-  closeMobileMenu()
-}
-
-function toggleColumnOrderFromMobileMenu(): void {
-  if (props.isColumnOrderEditing) {
-    emit('finishColumnOrderEdit')
-  } else {
-    emit('beginColumnOrderEdit')
-  }
   closeMobileMenu()
 }
 

@@ -415,8 +415,10 @@ inside a narrow dialog or field menu.
 At mobile widths, the table toolbar reserves usable width for its search field.
 Refresh, automatic refresh, worklists, the active/default view, and transfer
 actions live in one nested overflow menu; only the optional entity-context
-toggle, overflow button, and create button remain directly visible. Mobile
-record fields render as divider rows inside one card surface rather than as
+toggle, overflow button, and create button remain directly visible. Users can
+continue to switch views, but current-view editing and its column editing
+actions are omitted below the same small-window breakpoint. Mobile record
+fields render as divider rows inside one card surface rather than as
 rounded panels nested inside another rounded card.
 The current entity convention sets `mobileVisible: true` only for fields marked
 with `isValue`, but this is stored in the decorator and not inferred in the
@@ -512,7 +514,9 @@ The mobile command palette is a viewport-docked surface: it keeps the shared
 viewport inset on the left, right, and bottom and starts below the application
 header so the Songbird action never covers its search field. Dashboard hero
 actions stay on one row at mobile widths and hide action labels while preserving
-their accessible names. Horizontally paged knowledge article previews and their
+their accessible names. Starting dashboard layout editing is unavailable below
+the mobile-table breakpoint; save and cancel remain available if a desktop edit
+was already active when the viewport became narrow. Horizontally paged knowledge article previews and their
 loading skeletons share the same fixed-height list viewport so page changes do
 not move the reader or pagination controls.
 
@@ -641,6 +645,10 @@ technical relation notation remains available to assistive technology and as a
 tooltip, but is hidden visually because it is not meaningful to most users.
 Persisted records append **Information**, **Documents**, **Emails**, and
 **Phone Calls** to the same dialog navigation after the relation entries.
+Below the small-window breakpoint used by mobile table cards, these supplemental
+tabs and the form-configuration action are omitted from the embedded record
+dialog. The corresponding record actions remain available through context
+menus and their dedicated dialogs or pages.
 Information uses the existing generic information record and permission
 contract in a large Markdown workspace. Documents preserve the d.velop Cloud
 overlay; local document storage renders the filtered document browser and
