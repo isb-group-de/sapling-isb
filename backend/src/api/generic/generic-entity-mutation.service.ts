@@ -324,6 +324,12 @@ export class GenericEntityMutationService {
         permissionTemplate,
         submittedSnapshot,
       );
+    const oldAutomationSnapshot =
+      this.genericChangeLogService.captureEntityChangeLogPayload(
+        entityHandle,
+        item,
+        permissionTemplate,
+      );
     this.genericPermissionService.checkTopLevelPermission(
       entityHandle,
       { ...item, ...data },
@@ -463,13 +469,19 @@ export class GenericEntityMutationService {
         permissionTemplate,
         submittedSnapshot,
       );
+    const newAutomationSnapshot =
+      this.genericChangeLogService.captureEntityChangeLogPayload(
+        entityHandle,
+        hydrated,
+        permissionTemplate,
+      );
     if (!scriptContext.suppressNotificationSubscriptions) {
       this.queueBackgroundTask(lifecycleOptions, 'emailAutomation', () =>
         this.emailAutomationService.handleAfterUpdate(
           entityHandle,
           handle,
-          oldSnapshot,
-          newSnapshot,
+          oldAutomationSnapshot,
+          newAutomationSnapshot,
           currentUser,
         ),
       );

@@ -71,7 +71,7 @@ export class TicketTimeTrackingItem {
     mobileOrder: 100,
     mobileVisible: false,
   })
-  @Property({ length: 256, nullable: false })
+  @Property({ length: 2048, nullable: false })
   description!: string;
 
   /**

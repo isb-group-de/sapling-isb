@@ -25,6 +25,7 @@ type MarkdownVoiceInputOptions = {
   editor: Ref<MarkdownEditorHandle | null>
   isPreparingWithAi: Ref<boolean>
   prepareWithAi: (content?: string) => Promise<boolean>
+  updateDraftValue: (value: string) => string
 }
 
 export function useSaplingMarkdownVoiceInput({
@@ -33,6 +34,7 @@ export function useSaplingMarkdownVoiceInput({
   editor,
   isPreparingWithAi,
   prepareWithAi,
+  updateDraftValue,
 }: MarkdownVoiceInputOptions) {
   const { pushMessage } = useSaplingMessageCenter()
   const selectedTranscriptionProviderHandle = ref<string | null>(null)
@@ -307,9 +309,9 @@ export function useSaplingMarkdownVoiceInput({
       }
 
       const contentWithTranscript = appendTranscriptToMarkdown(draftValue.value, transcript)
-      draftValue.value = contentWithTranscript
-      previewValue.value = contentWithTranscript
-      await prepareWithAi(contentWithTranscript)
+      const normalizedContent = updateDraftValue(contentWithTranscript)
+      previewValue.value = normalizedContent
+      await prepareWithAi(normalizedContent)
       editor.value?.focus()
     } catch {
       // ApiAiService already forwards transcription and preparation errors.

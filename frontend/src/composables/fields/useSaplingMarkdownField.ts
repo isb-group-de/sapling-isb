@@ -18,12 +18,15 @@ export function useSaplingMarkdownField(options: {
   modelValue: () => string | undefined
   rows: () => number
   label: () => string | undefined
+  maxLength?: () => number | undefined
   emit: (event: 'update:modelValue' | 'focus', value?: string) => void
 }) {
   const { locale, t } = useI18n()
 
-  const draftValue = ref(options.modelValue() ?? '')
-  const previewValue = ref(options.modelValue() ?? '')
+  const initialMaxLength = normalizeMarkdownMaxLength(options.maxLength?.())
+  const initialValue = truncateMarkdownValue(options.modelValue() ?? '', initialMaxLength)
+  const draftValue = ref(initialValue)
+  const previewValue = ref(initialValue)
   const editor = ref<MarkdownEditorHandle | null>(null)
   const isEnhancedEditorReady = ref(false)
   const isPreparingWithAi = ref(false)
@@ -34,6 +37,14 @@ export function useSaplingMarkdownField(options: {
   const resolvedLabel = computed(() => options.label() || t('global.markdown'))
   const editorTheme = computed(() => (CookieService.get('theme') === 'dark' ? 'dark' : 'light'))
   const editorHeight = computed(() => `${Math.max(options.rows(), 6) * 24 + 56}px`)
+  const maxLength = computed(() => normalizeMarkdownMaxLength(options.maxLength?.()))
+  const remainingCharacters = computed(() => {
+    if (maxLength.value == null) {
+      return null
+    }
+
+    return Math.max(0, maxLength.value - draftValue.value.length)
+  })
   const refreshPreviewLabel = computed(() => (locale.value === 'de' ? 'Aktualisieren' : 'Refresh'))
 
   let isApplyingExternalValue = false
@@ -59,8 +70,15 @@ export function useSaplingMarkdownField(options: {
     previewValue.value = draftValue.value
   }
 
+  function updateDraftValue(value: string) {
+    const nextValue = truncateMarkdownValue(value, maxLength.value)
+    draftValue.value = nextValue
+    return nextValue
+  }
+
   async function prepareWithAi(content = draftValue.value) {
-    if (!hasConfiguredAiTarget.value || !content.trim() || isPreparingWithAi.value) {
+    const sourceContent = truncateMarkdownValue(content, maxLength.value)
+    if (!hasConfiguredAiTarget.value || !sourceContent.trim() || isPreparingWithAi.value) {
       return false
     }
 
@@ -69,13 +87,13 @@ export function useSaplingMarkdownField(options: {
     try {
       const preferences = loadSaplingAiPreferences()
       const result = await ApiAiService.prepareMarkdown({
-        content,
+        content: sourceContent,
         providerHandle: preferences.chatProviderHandle ?? undefined,
         modelHandle: preferences.chatModelHandle ?? undefined,
       })
 
-      draftValue.value = result.content
-      previewValue.value = result.content
+      const preparedContent = updateDraftValue(result.content)
+      previewValue.value = preparedContent
       editor.value?.focus()
       return true
     } catch {
@@ -92,6 +110,7 @@ export function useSaplingMarkdownField(options: {
     editor,
     isPreparingWithAi,
     prepareWithAi,
+    updateDraftValue,
   })
 
   watch(draftValue, (value) => {
@@ -103,7 +122,7 @@ export function useSaplingMarkdownField(options: {
   })
 
   watch(options.modelValue, (value) => {
-    const nextValue = value ?? ''
+    const nextValue = truncateMarkdownValue(value ?? '', maxLength.value)
 
     if (nextValue === draftValue.value) {
       return
@@ -113,6 +132,18 @@ export function useSaplingMarkdownField(options: {
     draftValue.value = nextValue
     previewValue.value = nextValue
     isApplyingExternalValue = false
+  })
+
+  watch(maxLength, () => {
+    const nextDraftValue = truncateMarkdownValue(draftValue.value, maxLength.value)
+    const nextPreviewValue = truncateMarkdownValue(previewValue.value, maxLength.value)
+
+    if (nextDraftValue !== draftValue.value) {
+      updateDraftValue(nextDraftValue)
+    }
+    if (nextPreviewValue !== previewValue.value) {
+      previewValue.value = nextPreviewValue
+    }
   })
 
   onMounted(() => {
@@ -357,13 +388,13 @@ export function useSaplingMarkdownField(options: {
     if (!instance) {
       const result = transform('')
       const separator = draftValue.value && !draftValue.value.endsWith('\n') ? '\n' : ''
-      draftValue.value = `${draftValue.value}${separator}${result.text}`
+      updateDraftValue(`${draftValue.value}${separator}${result.text}`)
       return
     }
 
     const nextValue = instance.applySelection(transform)
     if (nextValue !== draftValue.value) {
-      draftValue.value = nextValue ?? draftValue.value
+      updateDraftValue(nextValue ?? draftValue.value)
     }
 
     instance.focus()
@@ -481,13 +512,31 @@ export function useSaplingMarkdownField(options: {
     resolvedLabel,
     editorTheme,
     editorHeight,
+    remainingCharacters,
     refreshPreviewLabel,
     refreshPreview,
     prepareWithAi,
     toggleVoiceInput: markdownVoiceInput.toggleVoiceInput,
     toolbarActions,
+    updateDraftValue,
     insertTextAtCursor,
   }
+}
+
+export function normalizeMarkdownMaxLength(value: number | undefined): number | undefined {
+  if (!Number.isFinite(value) || !Number.isInteger(value) || (value ?? 0) <= 0) {
+    return undefined
+  }
+
+  return value
+}
+
+export function truncateMarkdownValue(value: string, maxLength?: number): string {
+  if (maxLength == null || value.length <= maxLength) {
+    return value
+  }
+
+  return value.slice(0, maxLength)
 }
 
 function loadMarkdownPreparationAvailability() {

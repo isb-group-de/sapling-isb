@@ -134,15 +134,17 @@ export class GenericInlineCollectionService {
         normalizedHandle == null
           ? null
           : existingByHandle.get(String(normalizedHandle));
+      const submittedPayload =
+        this.genericPayloadService.sanitizeClientMutationPayload(item);
+      delete submittedPayload.handle;
+      delete submittedPayload[mappedBy];
       const payload = this.buildItemPayload(
         referenceTemplate,
         mappedBy,
         ownerHandle,
-        item,
+        submittedPayload,
         index,
       );
-      const submittedPayload = { ...item };
-      delete submittedPayload.handle;
 
       if (existing) {
         await this.fieldPermissions.assertPayloadAccess(

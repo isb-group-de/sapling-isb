@@ -256,6 +256,43 @@ describe('GenericPayloadService', () => {
     });
   });
 
+  it('rejects strings that exceed the declared field length before persistence', () => {
+    const referenceService = {
+      reduceReferenceFields: jest.fn(
+        (_template: EntityTemplateDto[], data: object) => data,
+      ),
+    };
+    const service = new GenericPayloadService(
+      referenceService as unknown as GenericReferenceService,
+    );
+
+    expect(() =>
+      service.prepareCreatePayload(
+        [
+          createTemplateField({
+            name: 'description',
+            type: 'string',
+            length: 4,
+          }),
+        ],
+        { description: '12345' },
+      ),
+    ).toThrow('global.maximumLengthExceeded');
+
+    expect(
+      service.prepareCreatePayload(
+        [
+          createTemplateField({
+            name: 'description',
+            type: 'string',
+            length: 4,
+          }),
+        ],
+        { description: '1234' },
+      ),
+    ).toEqual({ description: '1234' });
+  });
+
   it('builds merged dependency payloads for reference validation', () => {
     const referenceService = {
       reduceReferenceFields: jest.fn(),

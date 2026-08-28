@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
 
-import { buildWorkSearchFilter } from '../useSaplingFilterWork'
+import {
+  addSelectionHandles,
+  buildWorkSearchFilter,
+  removeSelectionHandles,
+} from '../useSaplingFilterWork'
 
 describe('buildWorkSearchFilter', () => {
   it('matches whitespace-separated person terms across different fields', () => {
@@ -49,5 +53,13 @@ describe('buildWorkSearchFilter', () => {
     expect(buildWorkSearchFilter('   ', ['firstName', 'lastName'], { company: 23 })).toEqual({
       company: 23,
     })
+  })
+
+  it('adds all employees without removing previously selected external people', () => {
+    expect(addSelectionHandles([1, 90], [1, 2, 3])).toEqual([1, 90, 2, 3])
+  })
+
+  it('removes all employees without removing selected external people', () => {
+    expect(removeSelectionHandles([1, 2, 3, 90], [1, 2, 3])).toEqual([90])
   })
 })

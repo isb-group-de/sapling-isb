@@ -1,4 +1,4 @@
-import { computed, ref, watch, type CSSProperties, type ComputedRef, type Ref } from 'vue'
+import { computed, ref, watch, type ComputedRef, type Ref } from 'vue'
 import type { SaplingGenericItem, ScriptButtonItem } from '@/entity/entity'
 import type { AccumulatedPermission } from '@/entity/structure'
 
@@ -90,7 +90,7 @@ export interface SaplingContextMenuTableEmit {
 
 export interface UseSaplingContextMenuTableResult {
   menuVisible: Ref<boolean>
-  menuStyle: ComputedRef<CSSProperties>
+  menuTarget: ComputedRef<[number, number]>
   menuItems: ComputedRef<SaplingContextMenuTableMenuEntry[]>
   closeMenu: () => void
   emitAction: (
@@ -258,10 +258,7 @@ export function useSaplingContextMenuTable(
   const x = ref(props.x)
   const y = ref(props.y)
 
-  const menuStyle = computed<CSSProperties>(() => ({
-    top: `${y.value}px`,
-    left: `${x.value}px`,
-  }))
+  const menuTarget = computed<[number, number]>(() => [x.value, y.value])
 
   const menuItems = computed<SaplingContextMenuTableMenuEntry[]>(() =>
     getSaplingContextMenuTableItems({
@@ -342,7 +339,7 @@ export function useSaplingContextMenuTable(
   //#region Return
   return {
     menuVisible,
-    menuStyle,
+    menuTarget,
     menuItems,
     closeMenu,
     emitAction,

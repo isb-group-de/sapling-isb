@@ -67,7 +67,14 @@
               @click.stop="toggleRowSelection(props.index)"
             />
 
-            <v-menu v-if="hasRowActions" v-model="menuActive">
+            <v-menu
+              v-if="hasRowActions"
+              v-model="menuActive"
+              content-class="sapling-record-action-menu__content"
+              location="bottom end"
+              location-strategy="connected"
+              max-height="var(--sapling-record-action-menu-max-height)"
+            >
               <template #activator="{ props: menuProps }">
                 <v-btn
                   class="sapling-table-mobile-card__menu-btn"

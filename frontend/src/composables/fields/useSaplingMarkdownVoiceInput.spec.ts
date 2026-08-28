@@ -65,12 +65,17 @@ function mountHarness(prepareWithAi = vi.fn(async () => true)) {
         const previewValue = ref('Vorhandener Inhalt')
         const editor = ref(null)
         const isPreparingWithAi = ref(false)
+        const updateDraftValue = (value: string) => {
+          draftValue.value = value
+          return value
+        }
         const voiceInput = useSaplingMarkdownVoiceInput({
           draftValue,
           previewValue,
           editor,
           isPreparingWithAi,
           prepareWithAi,
+          updateDraftValue,
         })
 
         return { draftValue, ...voiceInput }

@@ -65,6 +65,45 @@
                 <v-list-subheader>{{ $t('global.employee') }}</v-list-subheader>
               </v-expansion-panel-title>
               <v-expansion-panel-text>
+                <v-btn-toggle
+                  :model-value="employeeSelectionPreset"
+                  class="sapling-segmented-toggle sapling-segmented-toggle--small sapling-work-filter-panel__selection-toggle"
+                  color="primary"
+                  density="comfortable"
+                  divided
+                  variant="outlined"
+                >
+                  <v-btn
+                    value="all"
+                    :active="employeeSelectionPreset === 'all'"
+                    :title="$t('global.all')"
+                    :aria-label="$t('global.all')"
+                    :disabled="isEmployeeSelectionPending"
+                    @click.stop="selectAllCompanyPeople"
+                  >
+                    {{ $t('global.all') }}
+                  </v-btn>
+                  <v-btn
+                    value="onlyMe"
+                    :active="employeeSelectionPreset === 'onlyMe'"
+                    :title="$t('global.onlyMe')"
+                    :aria-label="$t('global.onlyMe')"
+                    :disabled="isEmployeeSelectionPending"
+                    @click.stop="selectOnlyOwnPerson"
+                  >
+                    {{ $t('global.onlyMe') }}
+                  </v-btn>
+                  <v-btn
+                    value="none"
+                    :active="employeeSelectionPreset === 'none'"
+                    :title="$t('global.none')"
+                    :aria-label="$t('global.none')"
+                    :disabled="isEmployeeSelectionPending"
+                    @click.stop="clearAllCompanyPeople"
+                  >
+                    {{ $t('global.none') }}
+                  </v-btn>
+                </v-btn-toggle>
                 <SaplingFilterEmployee
                   :companyPeoples="companyPeoples"
                   :employeeSearch="employeeSearch"
@@ -205,6 +244,9 @@ const {
   isCompanySelected,
   togglePerson,
   toggleCompany,
+  selectOnlyOwnPerson,
+  selectAllCompanyPeople,
+  clearAllCompanyPeople,
   onEmployeeSearch,
   onPeopleSearch,
   onCompaniesSearch,
@@ -215,10 +257,12 @@ const {
   peoples,
   companies,
   companyPeoples,
+  selectedPeoples: selectedPersonHandles,
   employeeSearch,
   peopleSearch,
   companiesSearch,
   expandedPanels,
+  isEmployeeSelectionPending,
 } = useSaplingFilterWork({
   selectedPeoples: toRef(props, 'selectedPeoples'),
   selectedCompanies: toRef(props, 'selectedCompanies'),
@@ -229,6 +273,37 @@ const {
 
 const chipFilters = computed(() => props.chipFilters ?? [])
 const selectedChipFilters = computed(() => props.selectedChipFilters ?? {})
+const employeeSelectionPreset = computed<'all' | 'onlyMe' | 'none' | null>(() => {
+  const ownPersonHandle = ownPerson.value?.handle
+  const employeeHandles = (companyPeoples.value?.data ?? [])
+    .map((person) => person.handle)
+    .filter((handle): handle is number => handle != null)
+  const selectedHandles = selectedPersonHandles.value
+
+  if (
+    employeeHandles.length > 0 &&
+    employeeHandles.every((handle) => selectedHandles.includes(handle))
+  ) {
+    return 'all'
+  }
+
+  if (
+    ownPersonHandle != null &&
+    selectedHandles.length === 1 &&
+    selectedHandles[0] === ownPersonHandle
+  ) {
+    return 'onlyMe'
+  }
+
+  if (
+    employeeHandles.length > 0 &&
+    employeeHandles.every((handle) => !selectedHandles.includes(handle))
+  ) {
+    return 'none'
+  }
+
+  return null
+})
 
 function isChipFilterOptionSelected(groupKey: string, handle: SaplingFilterHandle): boolean {
   return selectedChipFilters.value[groupKey]?.includes(handle) === true

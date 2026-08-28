@@ -1,5 +1,11 @@
 <template>
-  <v-menu v-if="hasChildren" submenu open-on-hover>
+  <v-menu
+    v-if="hasChildren"
+    content-class="sapling-record-action-menu__content"
+    max-height="var(--sapling-record-action-menu-max-height)"
+    submenu
+    open-on-hover
+  >
     <template #activator="{ props: activatorProps }">
       <v-list-item
         v-bind="activatorProps"

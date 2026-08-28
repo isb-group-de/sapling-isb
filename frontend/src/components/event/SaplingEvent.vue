@@ -105,7 +105,6 @@
           :upcoming-events="upcomingEvents"
           :chip-filters="chipFilters"
           :selected-chip-filters="selectedChipFilters"
-          :selected-chip-filter-count="selectedChipFilterCount"
           :selected-peoples="selectedPeoples"
           :selected-people-preview="selectedPeoplePreview"
           :selected-people-overflow-count="selectedPeopleOverflowCount"
@@ -369,7 +368,6 @@ const {
   reloadUpdateConflictRecord,
   selectedPeoples,
   selectedChipFilters,
-  selectedChipFilterCount,
   selectedPeopleOverflowCount,
   selectedPeoplePreview,
   syncExternalCalendar,

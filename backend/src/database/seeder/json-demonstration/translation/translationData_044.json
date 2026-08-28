@@ -1,0 +1,32 @@
+[
+  {
+    "entity": "global",
+    "property": "charactersRemaining",
+    "de": "{remaining} von {maxLength} Zeichen frei",
+    "en": "{remaining} of {maxLength} characters remaining"
+  },
+  {
+    "entity": "global",
+    "property": "maximumLengthExceeded",
+    "de": "Die maximal zulässige Zeichenanzahl wurde überschritten.",
+    "en": "The maximum permitted number of characters was exceeded."
+  },
+  {
+    "entity": "global",
+    "property": "onlyMe",
+    "de": "Nur ich",
+    "en": "Only me"
+  },
+  {
+    "entity": "global",
+    "property": "all",
+    "de": "Alle",
+    "en": "All"
+  },
+  {
+    "entity": "global",
+    "property": "none",
+    "de": "Keine",
+    "en": "None"
+  }
+]

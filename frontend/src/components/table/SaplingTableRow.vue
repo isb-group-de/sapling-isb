@@ -196,7 +196,13 @@
       v-if="showActions && hasActionsColumn && hasActionMenuItems"
       class="actions-cell sapling-table-row__actions-cell"
     >
-      <v-menu v-model="menuActive">
+      <v-menu
+        v-model="menuActive"
+        content-class="sapling-record-action-menu__content"
+        location="bottom end"
+        location-strategy="connected"
+        max-height="var(--sapling-record-action-menu-max-height)"
+      >
         <template #activator="{ props: menuProps }">
           <v-btn
             data-tutorial="table-row-actions"

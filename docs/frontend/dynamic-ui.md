@@ -311,6 +311,14 @@ original language and document type, including email salutations, forms of
 address, greetings, sign-offs, signatures, structure, order, and level of
 detail, without adding, removing, shortening, or summarizing content.
 
+Bounded Markdown properties use the entity template's `length` as their input
+limit. The shared editor truncates typed, pasted, dictated, toolbar-generated,
+and AI-prepared content at that limit and shows the remaining character count
+inside the existing formatting toolbar. The generic mutation pipeline enforces
+the same metadata length for direct API clients before persistence. Markdown
+properties backed by an unbounded database `text` column intentionally do not
+show a counter or receive an artificial frontend limit.
+
 When an active transcription provider and model are configured, the editor also
 shows `Diktieren und mit AI aufbereiten` / `Dictate and refine with AI`. It uses
 the same microphone capture and silence detection as Songbird voice input,

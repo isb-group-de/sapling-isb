@@ -372,6 +372,14 @@ start with all reference records selected. Generic tables apply the same
 `isOpen` convention to `m:1` chip references as a visible default column filter;
 references without an `isOpen` field keep the previous all-values behavior.
 
+The employee area also provides one compact segmented control directly below its
+accordion header. Its `Alle`, `Nur ich`, and `Keine` presets use the shared
+calendar toggle pattern. `Nur ich` resets the complete people selection to the
+signed-in person. `Alle` and `Keine` add or remove every person from the current
+user's company across all backend pages while preserving selected external
+people. Global person and company lists intentionally have no bulk action
+because they can contain very large result sets.
+
 ## Extension Checklist
 
 When changing recurrence:

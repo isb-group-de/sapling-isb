@@ -211,6 +211,54 @@ describe('EmailAutomationService', () => {
     );
   });
 
+  it.each([false, null, undefined, 0, 'false'])(
+    'treats an unchanged non-true boolean value (%p) as false when only the new value is configured',
+    async (incognito) => {
+      const subscription = createSubscription({
+        conditions: [
+          { observedField: 'incognito', newValue: 'false' },
+          {
+            observedField: 'status',
+            oldValue: 'open',
+            newValue: 'inProgress',
+          },
+        ],
+      });
+      const { mailService, service } = createService({
+        subscriptions: [subscription],
+      });
+
+      await service.handleAfterUpdate(
+        'ticket',
+        101,
+        { incognito, status: 'open' },
+        { incognito, status: 'inProgress' },
+        { handle: 1 } as never,
+      );
+
+      expect(mailService.sendEmail).toHaveBeenCalledTimes(1);
+    },
+  );
+
+  it('does not match false when the current boolean value is true', async () => {
+    const subscription = createSubscription({
+      conditions: [{ observedField: 'incognito', newValue: 'false' }],
+    });
+    const { mailService, service } = createService({
+      subscriptions: [subscription],
+    });
+
+    await service.handleAfterUpdate(
+      'ticket',
+      101,
+      { incognito: true, title: 'Old' },
+      { incognito: true, title: 'New' },
+      { handle: 1 } as never,
+    );
+
+    expect(mailService.sendEmail).not.toHaveBeenCalled();
+  });
+
   it('skips a non-repeatable subscription when the same rule already created a delivery for the record', async () => {
     const subscription = createSubscription({
       allowRepeatedSending: false,

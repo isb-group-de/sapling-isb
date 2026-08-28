@@ -420,6 +420,15 @@
   border-bottom: 1px solid var(--sapling-surface-border);
 }
 
+.sapling-markdown-character-count {
+  margin-inline-start: auto;
+  padding-inline: var(--sapling-space-sm);
+  color: color-mix(in srgb, var(--sapling-surface-text) 68%, transparent);
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
 .sapling-markdown-editor {
   width: 100%;
 }

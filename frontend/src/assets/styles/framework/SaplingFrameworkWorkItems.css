@@ -376,6 +376,15 @@
   background: transparent;
 }
 
+.sapling-work-filter-panel__selection-toggle {
+  width: 100%;
+  margin-block-end: var(--sapling-gap-md);
+}
+
+.sapling-work-filter-panel__selection-toggle > .v-btn {
+  flex: 1 1 0;
+}
+
 .sapling-person-name {
   flex: 1 1 auto;
   min-width: 0;

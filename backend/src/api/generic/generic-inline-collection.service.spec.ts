@@ -59,6 +59,14 @@ function createSubject(
     checkTopLevelPermission: jest.fn(),
   };
   const genericPayloadService = {
+    sanitizeClientMutationPayload: jest.fn(
+      (payload: Record<string, unknown>) => {
+        const sanitized = { ...payload };
+        delete sanitized.createdAt;
+        delete sanitized.updatedAt;
+        return sanitized;
+      },
+    ),
     prepareUpdatePayload: jest.fn(
       (_template: unknown, payload: object) => payload,
     ),
@@ -186,5 +194,50 @@ describe('GenericInlineCollectionService', () => {
       { title: 'Created' },
       [],
     );
+  });
+
+  it('ignores server-managed and owner fields before checking child field permissions', async () => {
+    const existing = {
+      handle: 1,
+      title: 'Old',
+      ticket: 7,
+      createdAt: new Date('2026-08-18T15:39:32.270Z'),
+      updatedAt: new Date('2026-08-18T15:39:32.270Z'),
+    };
+    const { service, em, fieldPermissions } = createSubject([existing]);
+
+    await service.sync(
+      'ticket',
+      { handle: 7 },
+      [
+        {
+          field: inlineField(),
+          items: [
+            {
+              handle: 1,
+              ticket: 99,
+              title: 'Updated',
+              createdAt: '2026-08-18T15:39:32.270Z',
+              updatedAt: '2026-08-18T15:39:32.270Z',
+            },
+          ],
+        },
+      ],
+      { handle: 9 } as never,
+    );
+
+    expect(fieldPermissions.assertPayloadAccess).toHaveBeenCalledWith(
+      { handle: 9 },
+      'ticketLine',
+      { title: 'Updated' },
+      'update',
+      expect.objectContaining({ title: 'Updated', ticket: 7 }),
+      [],
+    );
+    expect(em.assign).toHaveBeenCalledWith(existing, {
+      ticket: 7,
+      title: 'Updated',
+      sortOrder: 0,
+    });
   });
 });

@@ -1,9 +1,12 @@
 <template>
   <v-menu
     v-model="menuVisible"
-    :style="menuStyle"
-    absolute
+    :target="menuTarget"
     content-class="sapling-context-menu__content"
+    location="bottom start"
+    location-strategy="connected"
+    max-height="var(--sapling-record-action-menu-max-height)"
+    :offset="4"
     transition="slide-y-transition"
   >
     <SaplingRecordActionMenuList
@@ -37,7 +40,7 @@ const emit = defineEmits<{
   (event: 'update:show', value: boolean): void
 }>()
 
-const { menuVisible, menuStyle, menuItems, closeMenu, emitAction } = useSaplingContextMenuTable(
+const { menuVisible, menuTarget, menuItems, closeMenu, emitAction } = useSaplingContextMenuTable(
   props,
   emit,
 )

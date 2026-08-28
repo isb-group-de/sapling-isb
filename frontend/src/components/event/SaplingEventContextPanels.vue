@@ -24,21 +24,6 @@
           {{ $t('event.today') }}
         </v-btn>
       </v-btn-toggle>
-
-      <div class="sapling-row-xs sapling-row-wrap sapling-event-context__summary">
-        <template v-if="activePanel === 'filter'">
-          <span
-            >{{ selectedPeoples.length + selectedChipFilterCount }}
-            {{ $t('global.selected') }}</span
-          >
-          <span>{{ filterSummaryLabel }}</span>
-        </template>
-
-        <template v-else>
-          <span>{{ upcomingEvents.length }} {{ $t('navigation.event') }}</span>
-          <span>{{ $t('event.today') }}</span>
-        </template>
-      </div>
     </SaplingSurface>
 
     <SaplingWorkFilterPanel
@@ -71,9 +56,8 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
 import type { CalendarEvent } from 'vuetify/lib/components/VCalendar/types.mjs'
-import { useI18n } from 'vue-i18n'
 import SaplingSurface from '@/components/common/SaplingSurface.vue'
 import SaplingEventAgendaPanel from '@/components/event/SaplingEventAgendaPanel.vue'
 import SaplingEventPeoplePanel from '@/components/event/SaplingEventPeoplePanel.vue'
@@ -92,7 +76,6 @@ const props = defineProps<{
   upcomingEvents: EventAgendaItem[]
   chipFilters: SaplingChipFilterGroup[]
   selectedChipFilters: SaplingChipFilterSelection
-  selectedChipFilterCount: number
   selectedPeoples: number[]
   selectedPeoplePreview: SelectedPersonPreviewItem[]
   selectedPeopleOverflowCount: number
@@ -107,17 +90,7 @@ const emit = defineEmits<{
   (event: 'openEvent', value: CalendarEvent): void
 }>()
 
-const { t } = useI18n()
 const activePanel = ref<ContextPanelKey>('agenda')
-const filterSummaryLabel = computed(() =>
-  [
-    t('navigation.person'),
-    t('navigation.company'),
-    ...props.chipFilters.map((filter) => filter.label),
-  ]
-    .filter(Boolean)
-    .join(', '),
-)
 
 function handleTutorialPanel(event: Event) {
   const panel = (event as CustomEvent<ContextPanelKey>).detail

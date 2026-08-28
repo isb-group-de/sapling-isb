@@ -9,7 +9,13 @@
 
     <template #trailing>
       <template v-if="smAndDown">
-        <v-menu v-if="hasReadonlyMobileActionMenu">
+        <v-menu
+          v-if="hasReadonlyMobileActionMenu"
+          content-class="sapling-record-action-menu__content"
+          location="top end"
+          location-strategy="connected"
+          max-height="var(--sapling-record-action-menu-max-height)"
+        >
           <template #activator="{ props: menuProps }">
             <v-btn
               variant="text"
@@ -20,7 +26,7 @@
           </template>
 
           <v-list
-            class="glass-panel sapling-mobile-action-list sapling-dialog-edit__mobile-action-list"
+            class="glass-panel sapling-mobile-action-list sapling-record-action-menu-list sapling-dialog-edit__mobile-action-list"
             density="comfortable"
             min-width="260"
           >
@@ -54,7 +60,13 @@
         </v-menu>
       </template>
       <template v-else>
-        <v-menu v-if="recordActionMenuItems.length > 0">
+        <v-menu
+          v-if="recordActionMenuItems.length > 0"
+          content-class="sapling-record-action-menu__content"
+          location="top end"
+          location-strategy="connected"
+          max-height="var(--sapling-record-action-menu-max-height)"
+        >
           <template #activator="{ props: menuProps }">
             <v-btn
               variant="text"
@@ -97,7 +109,12 @@
 
     <template #trailing>
       <template v-if="smAndDown">
-        <v-menu>
+        <v-menu
+          content-class="sapling-record-action-menu__content"
+          location="top end"
+          location-strategy="connected"
+          max-height="var(--sapling-record-action-menu-max-height)"
+        >
           <template #activator="{ props: menuProps }">
             <v-btn
               variant="text"
@@ -108,7 +125,7 @@
           </template>
 
           <v-list
-            class="glass-panel sapling-mobile-action-list sapling-dialog-edit__mobile-action-list"
+            class="glass-panel sapling-mobile-action-list sapling-record-action-menu-list sapling-dialog-edit__mobile-action-list"
             density="comfortable"
             min-width="260"
           >
@@ -170,7 +187,13 @@
         />
       </template>
       <template v-else>
-        <v-menu v-if="recordActionMenuItems.length > 0">
+        <v-menu
+          v-if="recordActionMenuItems.length > 0"
+          content-class="sapling-record-action-menu__content"
+          location="top end"
+          location-strategy="connected"
+          max-height="var(--sapling-record-action-menu-max-height)"
+        >
           <template #activator="{ props: menuProps }">
             <v-btn
               variant="text"

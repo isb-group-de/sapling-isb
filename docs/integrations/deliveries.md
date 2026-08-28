@@ -110,19 +110,25 @@ Mail supports:
 The `emails` queue passes:
 
 ```ts
-{ deliveryId: number }
+{
+  deliveryId: number;
+}
 ```
 
 The processor calls:
 
 ```ts
-mailService.dispatchDelivery(deliveryId)
+mailService.dispatchDelivery(deliveryId);
 ```
 
 Automatic email subscriptions are evaluated after generic entity create/update
 mutations. A subscription without conditions always sends when the lifecycle
 trigger matches. A subscription with conditions requires every condition to
-match; for updates, every observed field must also have changed. Delivery uses
+match. Configured old and new values are independent predicates: an empty old
+value does not require the field to have changed, so a new-value predicate can
+act as a guard on the current record state. A condition with neither an old nor
+a new value remains a pure "field changed" condition. Boolean predicates treat
+only `true` as yes and every other value, including `null`, as no. Delivery uses
 the configured sender person, so that user must have an Azure or Google person
 type and a usable provider session.
 
@@ -152,13 +158,15 @@ Teams uses templates/subscriptions and Microsoft Graph delivery behavior.
 The `teams` queue passes:
 
 ```ts
-{ deliveryId: number }
+{
+  deliveryId: number;
+}
 ```
 
 The processor calls:
 
 ```ts
-teamsService.dispatchDelivery(deliveryId)
+teamsService.dispatchDelivery(deliveryId);
 ```
 
 ## Webhook Deliveries
@@ -188,13 +196,15 @@ Webhooks support:
 The `webhooks` queue passes:
 
 ```ts
-{ deliveryId: number }
+{
+  deliveryId: number;
+}
 ```
 
 The processor calls:
 
 ```ts
-executor.execute(deliveryId, attemptsMade + 1)
+executor.execute(deliveryId, attemptsMade + 1);
 ```
 
 ## Calendar Deliveries

@@ -96,9 +96,31 @@ export class GenericPayloadService {
       ) {
         nextData[field.name] = null;
       }
+
+      this.assertMaximumLength(field, nextData[field.name]);
     }
 
     return nextData;
+  }
+
+  private assertMaximumLength(field: EntityTemplateDto, value: unknown): void {
+    if (
+      typeof value !== 'string' ||
+      typeof field.length !== 'number' ||
+      field.length <= 0 ||
+      value.length <= field.length
+    ) {
+      return;
+    }
+
+    throw new BadRequestException({
+      message: 'global.maximumLengthExceeded',
+      error: 'Maximum field length exceeded.',
+      details: {
+        field: field.name,
+        maxLength: field.length,
+      },
+    });
   }
 
   private shouldNormalizeEmptyStringToNull(

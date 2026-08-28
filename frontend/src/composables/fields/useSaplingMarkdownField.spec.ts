@@ -28,7 +28,7 @@ vi.mock('@/composables/fields/useSaplingMarkdownVoiceInput', () => ({
   }),
 }))
 
-function mountHarness() {
+function mountHarness(maxLength?: number) {
   return mount(
     defineComponent({
       setup() {
@@ -36,6 +36,7 @@ function mountHarness() {
           modelValue: () => 'Vorhandener Inhalt',
           rows: () => 6,
           label: () => 'Beschreibung',
+          maxLength: () => maxLength,
           emit: vi.fn(),
         })
       },
@@ -84,6 +85,33 @@ describe('useSaplingMarkdownField', () => {
       providerHandle: undefined,
       modelHandle: undefined,
     })
+
+    wrapper.unmount()
+  })
+
+  it('truncates editor updates at the configured maximum and reports the remaining space', async () => {
+    const wrapper = mountHarness(20)
+    await flushPromises()
+
+    wrapper.vm.updateDraftValue('1234567890123456789012345')
+
+    expect(wrapper.vm.draftValue).toBe('12345678901234567890')
+    expect(wrapper.vm.remainingCharacters).toBe(0)
+
+    wrapper.unmount()
+  })
+
+  it('truncates AI-prepared Markdown before updating the draft', async () => {
+    api.listProviders.mockResolvedValue([{ handle: 'openai' }])
+    api.listModels.mockResolvedValue([{ handle: 'openai-gpt-5_6-sol' }])
+    api.prepareMarkdown.mockResolvedValue({ content: '1234567890123456789012345' })
+    const wrapper = mountHarness(20)
+    await flushPromises()
+
+    await wrapper.vm.prepareWithAi()
+
+    expect(wrapper.vm.draftValue).toBe('12345678901234567890')
+    expect(wrapper.vm.previewValue).toBe('12345678901234567890')
 
     wrapper.unmount()
   })

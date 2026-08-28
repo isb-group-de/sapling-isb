@@ -293,9 +293,12 @@ export class EmailAutomationService {
     const newValue = this.getSnapshotValue(options.newSnapshot, field);
     const expectedOldValue = normalizeConfigValue(condition.oldValue);
     const expectedNewValue = normalizeConfigValue(condition.newValue);
+    const isChangeOnlyCondition =
+      expectedOldValue === undefined && expectedNewValue === undefined;
 
     if (
       options.trigger === 'afterUpdate' &&
+      isChangeOnlyCondition &&
       areChangeLogValuesEqual(oldValue, newValue)
     ) {
       return false;
@@ -484,9 +487,50 @@ export class EmailAutomationService {
   }
 
   private matchesConfiguredValue(value: unknown, expected: string): boolean {
+    const expectedBoolean = this.parseConfiguredBoolean(expected);
+    if (expectedBoolean !== null) {
+      return this.isBooleanTrue(value) === expectedBoolean;
+    }
+
     return this.valueCandidates(value).some(
       (candidate) => candidate === expected,
     );
+  }
+
+  private parseConfiguredBoolean(value: string): boolean | null {
+    const normalized = value.trim().toLowerCase();
+    if (normalized === 'true') {
+      return true;
+    }
+
+    if (normalized === 'false') {
+      return false;
+    }
+
+    return null;
+  }
+
+  private isBooleanTrue(value: unknown): boolean {
+    if (value === true) {
+      return true;
+    }
+
+    if (typeof value === 'string') {
+      return value.trim().toLowerCase() === 'true';
+    }
+
+    if (Array.isArray(value)) {
+      return value.some((entry) => this.isBooleanTrue(entry));
+    }
+
+    if (
+      isRecord(value) &&
+      Object.prototype.hasOwnProperty.call(value, 'handle')
+    ) {
+      return this.isBooleanTrue(value.handle);
+    }
+
+    return false;
   }
 
   private valueCandidates(value: unknown): string[] {

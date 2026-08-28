@@ -1,9 +1,36 @@
-import { describe, expect, it } from 'vitest'
-import { getSaplingContextMenuTableItems } from '../useSaplingContextMenuTable'
+import { nextTick, reactive } from 'vue'
+import { describe, expect, it, vi } from 'vitest'
+import {
+  getSaplingContextMenuTableItems,
+  useSaplingContextMenuTable,
+  type SaplingContextMenuTableEmit,
+} from '../useSaplingContextMenuTable'
 import { buildMailMenuActions } from '@/utils/saplingMailMenuUtil'
 import type { EntityTemplate } from '@/entity/structure'
 
-describe('inbound email context menu behavior', () => {
+describe('Sapling table context menu', () => {
+  it('exposes the pointer coordinates as a connected menu target', async () => {
+    const props = reactive({
+      canShowInformation: false,
+      entityPermission: null,
+      canNavigate: false,
+      item: { handle: 4 },
+      show: true,
+      x: 120,
+      y: 680,
+    })
+    const emit = vi.fn() as unknown as SaplingContextMenuTableEmit
+    const menu = useSaplingContextMenuTable(props, emit)
+
+    expect(menu.menuTarget.value).toEqual([120, 680])
+
+    props.x = 240
+    props.y = 80
+    await nextTick()
+
+    expect(menu.menuTarget.value).toEqual([240, 80])
+  })
+
   it('offers document viewing for persisted read-only records without offering uploads', () => {
     const entries = getSaplingContextMenuTableItems({
       canChangeLog: true,

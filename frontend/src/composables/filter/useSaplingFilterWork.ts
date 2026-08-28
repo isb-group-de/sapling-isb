@@ -32,6 +32,7 @@ export function useSaplingFilterWork(options: UseSaplingFilterWorkOptions = {}) 
   const expandedPanels = ref<number[]>([0, 1])
   const drawerOpen = ref(false)
   const peopleMap = ref<Record<number, PersonItem>>({})
+  const isEmployeeSelectionPending = ref(false)
   const isLoading = computed(() => isTranslationLoading.value || isBootstrapping.value)
   //#endregion
 
@@ -326,6 +327,59 @@ export function useSaplingFilterWork(options: UseSaplingFilterWorkOptions = {}) 
   }
 
   /**
+   * Resets the people filter to the signed-in person and drops derived company selections.
+   */
+  function selectOnlyOwnPerson() {
+    companySelectionSyncId += 1
+    selectedCompanies.value = []
+    selectedPeoples.value = ownPerson.value?.handle != null ? [ownPerson.value.handle] : []
+  }
+
+  /**
+   * Adds every employee of the current person's company to the people filter.
+   */
+  async function selectAllCompanyPeople() {
+    await updateCompanyPeopleSelection(true)
+  }
+
+  /**
+   * Removes every employee of the current person's company from the people filter.
+   */
+  async function clearAllCompanyPeople() {
+    await updateCompanyPeopleSelection(false)
+  }
+
+  /**
+   * Applies a company-wide employee selection independent of search and pagination.
+   */
+  async function updateCompanyPeopleSelection(checked: boolean) {
+    if (isEmployeeSelectionPending.value) {
+      return
+    }
+
+    const companyHandle = getCompanyHandle(ownPerson.value)
+    if (companyHandle == null) {
+      return
+    }
+
+    isEmployeeSelectionPending.value = true
+
+    try {
+      const employees = await loadPeopleForSelectedCompanies([companyHandle])
+      const employeeHandles = employees
+        .map((person) => person.handle)
+        .filter((handle): handle is number => handle != null)
+
+      registerPeople(employees)
+      selectedPeoples.value = checked
+        ? addSelectionHandles(selectedPeoples.value, employeeHandles)
+        : removeSelectionHandles(selectedPeoples.value, employeeHandles)
+    } finally {
+      isEmployeeSelectionPending.value = false
+    }
+  }
+
+  /**
    * Applies a new people search term and restarts the people pagination.
    */
   function onPeopleSearch(value: string) {
@@ -404,6 +458,9 @@ export function useSaplingFilterWork(options: UseSaplingFilterWorkOptions = {}) 
     isCompanySelected,
     togglePerson,
     toggleCompany,
+    selectOnlyOwnPerson,
+    selectAllCompanyPeople,
+    clearAllCompanyPeople,
     onEmployeeSearch,
     onPeopleSearch,
     onCompaniesSearch,
@@ -422,6 +479,7 @@ export function useSaplingFilterWork(options: UseSaplingFilterWorkOptions = {}) 
     expandedPanels,
     drawerOpen,
     peopleMap,
+    isEmployeeSelectionPending,
   }
   //#endregion
 }
@@ -455,6 +513,15 @@ export function buildWorkSearchFilter(
   }
 
   return { $and: clauses }
+}
+
+export function addSelectionHandles(values: number[], additions: number[]): number[] {
+  return Array.from(new Set([...values, ...additions]))
+}
+
+export function removeSelectionHandles(values: number[], removals: number[]): number[] {
+  const removalSet = new Set(removals)
+  return values.filter((value) => !removalSet.has(value))
 }
 
 function normalizeControlledHandles(values: Array<number | string>): number[] {

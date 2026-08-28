@@ -332,11 +332,6 @@
   min-width: 0;
 }
 
-.sapling-event-context__summary {
-  font-size: var(--sapling-text-label-size-sm);
-  opacity: var(--sapling-opacity-secondary);
-}
-
 .sapling-event-context__panel {
   flex: 1 1 auto;
   min-height: 0;

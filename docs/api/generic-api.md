@@ -164,6 +164,9 @@ Rules:
   `updatedAt` values are always discarded. A top-level `handle: null` is treated
   as if the property was omitted; non-null handles continue through normal
   handle validation.
+- Rows submitted through inline `1:m` collections receive the same
+  server-managed timestamp cleanup. Their owner field is also ignored and
+  rebound to the parent record by the backend before field-permission checks.
 - Required fields come from template metadata.
 - Relation fields can usually be sent as handles or relation-like values accepted by the payload service.
   Collection relations accept arrays of handles,
@@ -212,6 +215,10 @@ checks and mutation processing, and `handle: null` is treated as an omitted
 field. Clients that need optimistic concurrency must use `expectedUpdatedAt` or
 the `_saplingConcurrency` metadata contract instead of the ordinary
 `updatedAt` property.
+
+The same timestamp cleanup applies to records embedded in inline collections.
+The collection's mapped owner field is server-controlled and cannot be changed
+through the embedded row payload.
 
 ### Atomic Bulk Update
 

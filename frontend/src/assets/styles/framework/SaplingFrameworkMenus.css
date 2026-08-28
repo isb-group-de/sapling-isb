@@ -332,8 +332,28 @@
 }
 
 .sapling-context-menu__content {
-  position: fixed !important;
   margin: 0 !important;
+}
+
+.sapling-record-action-menu-list {
+  max-height: min(
+    var(--sapling-record-action-menu-max-height),
+    calc(100dvh - (var(--sapling-space-lg) * 2))
+  );
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-color: rgba(var(--v-theme-on-surface), 0.46) transparent;
+  scrollbar-gutter: stable;
+}
+
+.sapling-record-action-menu-list::-webkit-scrollbar-thumb {
+  background: rgba(var(--v-theme-on-surface), 0.46);
+  background-clip: padding-box;
+}
+
+.sapling-record-action-menu-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(var(--v-theme-on-surface), 0.68);
+  background-clip: padding-box;
 }
 
 :root[data-sapling-glass='off'] .sapling-menu-option:hover,

@@ -68,6 +68,13 @@
             @mousedown.prevent
             @click.stop="action.run"
           />
+          <span
+            v-if="characterCountLabel"
+            class="sapling-markdown-character-count"
+            aria-live="polite"
+          >
+            {{ characterCountLabel }}
+          </span>
         </div>
 
         <SaplingCodeMirror
@@ -89,6 +96,7 @@
           data-dialog-validation-focus
           :model-value="draftValue"
           :disabled="disabled || isPreparingWithAi || isTranscribingVoiceInput"
+          :maxlength="maxLength"
           :rows="Math.max(rows, 6)"
           hide-details
           no-resize
@@ -119,6 +127,8 @@ const props = defineProps<{
   rows: number
   disabled: boolean
   required: boolean
+  maxLength?: number
+  remainingCharacters?: number | null
   rules: MarkdownRule[]
   toolbarActions: MarkdownToolbarAction[]
   isEnhancedEditorReady: boolean
@@ -138,9 +148,20 @@ const emit = defineEmits<{
   toggleVoiceInput: []
 }>()
 
-const { t } = useI18n()
+const { locale, t } = useI18n()
 const editor = defineModel<MarkdownEditorHandle | null>('editor', { default: null })
 const markdownLabel = computed(() => t('global.markdown'))
+const characterCountLabel = computed(() => {
+  if (!props.maxLength || props.remainingCharacters == null) {
+    return ''
+  }
+
+  const numberFormatter = new Intl.NumberFormat(locale.value)
+  return t('global.charactersRemaining', {
+    remaining: numberFormatter.format(props.remainingCharacters),
+    maxLength: numberFormatter.format(props.maxLength),
+  })
+})
 const voiceInputLabel = computed(() => {
   if (props.isTranscribingVoiceInput) {
     return t('aiChat.transcribingAudio')

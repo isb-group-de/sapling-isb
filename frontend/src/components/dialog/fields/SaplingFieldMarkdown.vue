@@ -11,6 +11,8 @@
         :rows="rows"
         :disabled="disabled"
         :required="required"
+        :max-length="maxlength"
+        :remaining-characters="remainingCharacters"
         :rules="rules"
         :toolbar-actions="toolbarActions"
         :is-enhanced-editor-ready="isEnhancedEditorReady"
@@ -24,7 +26,7 @@
         @focus="emit('focus')"
         @prepare-with-ai="prepareWithAi"
         @toggle-voice-input="toggleVoiceInput"
-        @update:draft-value="draftValue = $event"
+        @update:draft-value="updateDraftValue"
       />
 
       <SaplingMarkdownPreviewPane
@@ -53,6 +55,7 @@ const props = withDefaults(
     showPreview?: boolean
     disabled?: boolean
     required?: boolean
+    maxlength?: number
     rules?: MarkdownRule[]
   }>(),
   {
@@ -93,16 +96,19 @@ const {
   resolvedLabel,
   editorTheme,
   editorHeight,
+  remainingCharacters,
   refreshPreviewLabel,
   refreshPreview,
   prepareWithAi,
   toggleVoiceInput,
   toolbarActions,
+  updateDraftValue,
   insertTextAtCursor,
 } = useSaplingMarkdownField({
   modelValue: () => props.modelValue,
   rows: () => props.rows,
   label: () => props.label,
+  maxLength: () => props.maxlength,
   emit: emitMarkdownEvent,
 })
 
