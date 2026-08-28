@@ -89,21 +89,39 @@ describe('useSaplingEventContextMenu', () => {
     })
   })
 
-  it('opens a clean copy without handle or unique fields', async () => {
+  it('opens a clean copy without identity or provider projection fields', async () => {
     const harness = createHarness()
     harness.templates.value = [
       { name: 'handle' },
       { name: 'externalId', isUnique: true },
+      {
+        name: 'azure',
+        isReference: true,
+        kind: '1:1',
+        mappedBy: 'event',
+        options: ['isHideAsReference'],
+      },
+      {
+        name: 'google',
+        isReference: true,
+        kind: '1:1',
+        mappedBy: 'event',
+        options: ['isHideAsReference'],
+      },
     ] as EntityTemplate[]
     harness.menu.eventContextMenu.value.item = createEventItem({
       externalId: 'EXT-42',
-    } as Partial<EventItem>)
+      azure: { handle: 17, referenceHandle: 'outlook-event-id' },
+      google: { handle: 18, referenceHandle: 'google-event-id' },
+    } as unknown as Partial<EventItem>)
 
     await harness.menu.handleEventContextMenuAction({ type: 'copy', icon: 'mdi-content-copy' })
 
     expect(harness.editEvent.value?.event).toMatchObject({ title: 'Planning' })
     expect(harness.editEvent.value?.event?.handle).toBeUndefined()
     expect(harness.editEvent.value?.event?.externalId).toBeUndefined()
+    expect(harness.editEvent.value?.event?.azure).toBeUndefined()
+    expect(harness.editEvent.value?.event?.google).toBeUndefined()
     expect(harness.forceEditDialogDirtyFields.value).toEqual([])
     expect(harness.clearDragSnapshot).toHaveBeenCalledTimes(1)
     expect(harness.showEditDialog.value).toBe(true)

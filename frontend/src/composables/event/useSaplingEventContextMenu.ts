@@ -32,6 +32,7 @@ import {
   toCalendarEvent,
   toPersistedEventItem,
 } from '@/composables/event/eventCalendar.utils'
+import { createSaplingRecordCopy } from '@/utils/saplingRecordCopy'
 
 interface EventContextMenuState {
   visible: boolean
@@ -309,12 +310,7 @@ export function useSaplingEventContextMenu(options: UseSaplingEventContextMenuOp
       return
     }
 
-    const copiedItem = { ...item } as Record<string, unknown>
-    options.templates.value
-      .filter((template) => template.name === 'handle' || template.isUnique)
-      .forEach((template) => {
-        delete copiedItem[template.name]
-      })
+    const copiedItem = createSaplingRecordCopy(item, options.templates.value)
 
     options.editEvent.value = toCalendarEvent(copiedItem as EventItem)
     applyCalendarEventDateParts(options.editEvent.value)

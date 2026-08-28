@@ -42,6 +42,25 @@ describe('GenericReferenceService', () => {
     });
   });
 
+  it('removes inverse one-to-one references from mutation payloads', () => {
+    const payload = {
+      title: 'Copied event',
+      azure: { handle: 17, referenceHandle: 'outlook-event-id' },
+    };
+    const template = [
+      {
+        name: 'azure',
+        isReference: true,
+        kind: '1:1',
+        mappedBy: 'event',
+      } as EntityTemplateDto,
+    ];
+
+    expect(service.reduceReferenceFields(template, payload)).toEqual({
+      title: 'Copied event',
+    });
+  });
+
   it.each(['m:n', 'n:m'] as const)(
     'preserves handle arrays for a %s collection reference',
     (kind) => {

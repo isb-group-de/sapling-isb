@@ -2,6 +2,11 @@
 
 Sapling calendar events are normal metadata-driven entities with an additional delivery layer for external calendar systems. The internal event is the source of truth; Azure and Google synchronization are projections of that event.
 
+Copies of an Event never inherit its `azure` or `google` projection. Those
+inverse one-to-one references identify one provider item and remain attached to
+the original Event; the copied Event receives a new provider reference when its
+create delivery runs.
+
 ## Main Files
 
 ```text

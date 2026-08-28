@@ -51,9 +51,14 @@ export class GenericReferenceService {
   ): object {
     if (template) {
       for (const field of template.filter((x) => x.isReference)) {
-        // Inverse one-to-many collections are derived from the owning side and
-        // must not be reassigned through generic create/update payloads.
-        if (field.kind === '1:m') {
+        // Inverse one-to-many and one-to-one relations are derived from their
+        // owning side and must not be reassigned through generic mutations. In
+        // particular, accepting an inverse 1:1 value while copying an Event
+        // would move its existing Azure/Google projection to the new Event.
+        if (
+          field.kind === '1:m' ||
+          (field.kind === '1:1' && field.mappedBy != null)
+        ) {
           delete (data as Record<string, any>)[field.name];
           continue;
         }
