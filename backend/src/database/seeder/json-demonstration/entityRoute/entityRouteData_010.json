@@ -1,0 +1,42 @@
+[
+  {
+    "entity": "systemAlertIncident",
+    "route": "system",
+    "navigation": "systemMonitoringOverview"
+  },
+  {
+    "entity": "systemTelemetryInstance",
+    "route": "table/systemTelemetryInstance",
+    "group": "telemetry"
+  },
+  {
+    "entity": "systemMetricBucket",
+    "route": "table/systemMetricBucket",
+    "group": "telemetry"
+  },
+  {
+    "entity": "httpMetricBucket",
+    "route": "table/httpMetricBucket",
+    "group": "telemetry"
+  },
+  {
+    "entity": "aiUsageEvent",
+    "route": "table/aiUsageEvent",
+    "group": "telemetry"
+  },
+  {
+    "entity": "authenticationEvent",
+    "route": "table/authenticationEvent",
+    "group": "telemetry"
+  },
+  {
+    "entity": "systemAlertRule",
+    "route": "table/systemAlertRule",
+    "group": "telemetry"
+  },
+  {
+    "entity": "systemAlertIncident",
+    "route": "table/systemAlertIncident",
+    "group": "telemetry"
+  }
+]

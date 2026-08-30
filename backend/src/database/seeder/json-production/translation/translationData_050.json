@@ -1,0 +1,616 @@
+[
+  {
+    "entity": "navigationGroup",
+    "property": "telemetry",
+    "de": "Telemetrie",
+    "en": "Telemetry"
+  },
+  {
+    "entity": "navigation",
+    "property": "systemMonitoringOverview",
+    "de": "Monitoring & Telemetrie",
+    "en": "Monitoring & telemetry"
+  },
+  {
+    "entity": "navigation",
+    "property": "systemTelemetryInstance",
+    "de": "Telemetrie-Instanzen",
+    "en": "Telemetry instances"
+  },
+  {
+    "entity": "navigation",
+    "property": "systemMetricBucket",
+    "de": "System-Messwerte",
+    "en": "System metric buckets"
+  },
+  {
+    "entity": "navigation",
+    "property": "httpMetricBucket",
+    "de": "HTTP-Messwerte",
+    "en": "HTTP metric buckets"
+  },
+  {
+    "entity": "navigation",
+    "property": "aiUsageEvent",
+    "de": "KI-Nutzungsereignisse",
+    "en": "AI usage events"
+  },
+  {
+    "entity": "navigation",
+    "property": "authenticationEvent",
+    "de": "Anmeldeereignisse",
+    "en": "Authentication events"
+  },
+  {
+    "entity": "navigation",
+    "property": "systemAlertRule",
+    "de": "Monitoring-Warnregeln",
+    "en": "Monitoring alert rules"
+  },
+  {
+    "entity": "navigation",
+    "property": "systemAlertIncident",
+    "de": "Monitoring-Vorfälle",
+    "en": "Monitoring incidents"
+  },
+
+  {
+    "entity": "systemTelemetryInstance",
+    "property": "groupBasics",
+    "de": "Telemetrie-Instanz",
+    "en": "Telemetry instance"
+  },
+  {
+    "entity": "systemMetricBucket",
+    "property": "groupBasics",
+    "de": "System-Messwerte",
+    "en": "System metrics"
+  },
+  {
+    "entity": "httpMetricBucket",
+    "property": "groupBasics",
+    "de": "HTTP-Messwerte",
+    "en": "HTTP metrics"
+  },
+  {
+    "entity": "aiUsageEvent",
+    "property": "groupBasics",
+    "de": "KI-Nutzung",
+    "en": "AI usage"
+  },
+  {
+    "entity": "authenticationEvent",
+    "property": "groupBasics",
+    "de": "Anmeldung",
+    "en": "Authentication"
+  },
+  {
+    "entity": "systemAlertRule",
+    "property": "groupBasics",
+    "de": "Warnregel",
+    "en": "Alert rule"
+  },
+  {
+    "entity": "systemAlertIncident",
+    "property": "groupBasics",
+    "de": "Monitoring-Vorfall",
+    "en": "Monitoring incident"
+  },
+
+  {
+    "entity": "systemTelemetryInstance",
+    "property": "handle",
+    "de": "Instanz",
+    "en": "Instance"
+  },
+  {
+    "entity": "systemTelemetryInstance",
+    "property": "hostname",
+    "de": "Hostname",
+    "en": "Hostname"
+  },
+  {
+    "entity": "systemTelemetryInstance",
+    "property": "appVersion",
+    "de": "Anwendungsversion",
+    "en": "Application version"
+  },
+  {
+    "entity": "systemTelemetryInstance",
+    "property": "processStartedAt",
+    "de": "Prozess gestartet am",
+    "en": "Process started at"
+  },
+  {
+    "entity": "systemTelemetryInstance",
+    "property": "lastSampleAt",
+    "de": "Letzte Messung",
+    "en": "Last sample at"
+  },
+  {
+    "entity": "systemTelemetryInstance",
+    "property": "collectorEnabled",
+    "de": "Collector aktiv",
+    "en": "Collector enabled"
+  },
+  {
+    "entity": "systemTelemetryInstance",
+    "property": "createdAt",
+    "de": "Erstellt am",
+    "en": "Created at"
+  },
+  {
+    "entity": "systemTelemetryInstance",
+    "property": "updatedAt",
+    "de": "Aktualisiert am",
+    "en": "Updated at"
+  },
+
+  {
+    "entity": "systemMetricBucket",
+    "property": "handle",
+    "de": "Kennung",
+    "en": "Handle"
+  },
+  {
+    "entity": "systemMetricBucket",
+    "property": "instance",
+    "de": "Instanz",
+    "en": "Instance"
+  },
+  {
+    "entity": "systemMetricBucket",
+    "property": "bucketStart",
+    "de": "Zeitraumstart",
+    "en": "Bucket start"
+  },
+  {
+    "entity": "systemMetricBucket",
+    "property": "resolution",
+    "de": "Auflösung",
+    "en": "Resolution"
+  },
+  {
+    "entity": "systemMetricBucket",
+    "property": "metricKey",
+    "de": "Metrik",
+    "en": "Metric"
+  },
+  {
+    "entity": "systemMetricBucket",
+    "property": "dimensionKey",
+    "de": "Dimension",
+    "en": "Dimension"
+  },
+  {
+    "entity": "systemMetricBucket",
+    "property": "sampleCount",
+    "de": "Messwertanzahl",
+    "en": "Sample count"
+  },
+  {
+    "entity": "systemMetricBucket",
+    "property": "minimum",
+    "de": "Minimum",
+    "en": "Minimum"
+  },
+  {
+    "entity": "systemMetricBucket",
+    "property": "maximum",
+    "de": "Maximum",
+    "en": "Maximum"
+  },
+  {
+    "entity": "systemMetricBucket",
+    "property": "sum",
+    "de": "Summe",
+    "en": "Sum"
+  },
+  {
+    "entity": "systemMetricBucket",
+    "property": "last",
+    "de": "Letzter Wert",
+    "en": "Last value"
+  },
+  {
+    "entity": "systemMetricBucket",
+    "property": "createdAt",
+    "de": "Erstellt am",
+    "en": "Created at"
+  },
+
+  {
+    "entity": "httpMetricBucket",
+    "property": "handle",
+    "de": "Kennung",
+    "en": "Handle"
+  },
+  {
+    "entity": "httpMetricBucket",
+    "property": "bucketStart",
+    "de": "Zeitraumstart",
+    "en": "Bucket start"
+  },
+  {
+    "entity": "httpMetricBucket",
+    "property": "resolution",
+    "de": "Auflösung",
+    "en": "Resolution"
+  },
+  {
+    "entity": "httpMetricBucket",
+    "property": "attributionKey",
+    "de": "Zuordnung",
+    "en": "Attribution"
+  },
+  {
+    "entity": "httpMetricBucket",
+    "property": "person",
+    "de": "Person",
+    "en": "Person"
+  },
+  {
+    "entity": "httpMetricBucket",
+    "property": "apiToken",
+    "de": "API-Token",
+    "en": "API token"
+  },
+  {
+    "entity": "httpMetricBucket",
+    "property": "authKind",
+    "de": "Authentifizierungsart",
+    "en": "Authentication kind"
+  },
+  {
+    "entity": "httpMetricBucket",
+    "property": "routeGroup",
+    "de": "Routengruppe",
+    "en": "Route group"
+  },
+  {
+    "entity": "httpMetricBucket",
+    "property": "requestCount",
+    "de": "Requests",
+    "en": "Requests"
+  },
+  {
+    "entity": "httpMetricBucket",
+    "property": "clientErrorCount",
+    "de": "Clientfehler",
+    "en": "Client errors"
+  },
+  {
+    "entity": "httpMetricBucket",
+    "property": "serverErrorCount",
+    "de": "Serverfehler",
+    "en": "Server errors"
+  },
+  {
+    "entity": "httpMetricBucket",
+    "property": "requestBytes",
+    "de": "Request-Bytes",
+    "en": "Request bytes"
+  },
+  {
+    "entity": "httpMetricBucket",
+    "property": "responseBytes",
+    "de": "Response-Bytes",
+    "en": "Response bytes"
+  },
+  {
+    "entity": "httpMetricBucket",
+    "property": "durationSumMs",
+    "de": "Gesamtdauer (ms)",
+    "en": "Total duration (ms)"
+  },
+  {
+    "entity": "httpMetricBucket",
+    "property": "durationMaxMs",
+    "de": "Maximale Dauer (ms)",
+    "en": "Maximum duration (ms)"
+  },
+  {
+    "entity": "httpMetricBucket",
+    "property": "durationHistogram",
+    "de": "Dauer-Histogramm",
+    "en": "Duration histogram"
+  },
+  {
+    "entity": "httpMetricBucket",
+    "property": "impersonatedCount",
+    "de": "Impersonierte Requests",
+    "en": "Impersonated requests"
+  },
+  {
+    "entity": "httpMetricBucket",
+    "property": "createdAt",
+    "de": "Erstellt am",
+    "en": "Created at"
+  },
+
+  {
+    "entity": "aiUsageEvent",
+    "property": "handle",
+    "de": "Kennung",
+    "en": "Handle"
+  },
+  {
+    "entity": "aiUsageEvent",
+    "property": "sourceKey",
+    "de": "Quellschlüssel",
+    "en": "Source key"
+  },
+  {
+    "entity": "aiUsageEvent",
+    "property": "person",
+    "de": "Person",
+    "en": "Person"
+  },
+  {
+    "entity": "aiUsageEvent",
+    "property": "operation",
+    "de": "Operation",
+    "en": "Operation"
+  },
+  {
+    "entity": "aiUsageEvent",
+    "property": "executionType",
+    "de": "Ausführungsart",
+    "en": "Execution type"
+  },
+  {
+    "entity": "aiUsageEvent",
+    "property": "provider",
+    "de": "Provider",
+    "en": "Provider"
+  },
+  {
+    "entity": "aiUsageEvent",
+    "property": "model",
+    "de": "Modell",
+    "en": "Model"
+  },
+  {
+    "entity": "aiUsageEvent",
+    "property": "status",
+    "de": "Status",
+    "en": "Status"
+  },
+  {
+    "entity": "aiUsageEvent",
+    "property": "durationMs",
+    "de": "Dauer (ms)",
+    "en": "Duration (ms)"
+  },
+  {
+    "entity": "aiUsageEvent",
+    "property": "inputTokens",
+    "de": "Input-Tokens",
+    "en": "Input tokens"
+  },
+  {
+    "entity": "aiUsageEvent",
+    "property": "outputTokens",
+    "de": "Output-Tokens",
+    "en": "Output tokens"
+  },
+  {
+    "entity": "aiUsageEvent",
+    "property": "totalTokens",
+    "de": "Tokens gesamt",
+    "en": "Total tokens"
+  },
+  {
+    "entity": "aiUsageEvent",
+    "property": "usageReported",
+    "de": "Nutzung gemeldet",
+    "en": "Usage reported"
+  },
+  {
+    "entity": "aiUsageEvent",
+    "property": "occurredAt",
+    "de": "Aufgetreten am",
+    "en": "Occurred at"
+  },
+  {
+    "entity": "aiUsageEvent",
+    "property": "createdAt",
+    "de": "Erstellt am",
+    "en": "Created at"
+  },
+
+  {
+    "entity": "authenticationEvent",
+    "property": "handle",
+    "de": "Kennung",
+    "en": "Handle"
+  },
+  {
+    "entity": "authenticationEvent",
+    "property": "person",
+    "de": "Person",
+    "en": "Person"
+  },
+  {
+    "entity": "authenticationEvent",
+    "property": "eventType",
+    "de": "Ereignisart",
+    "en": "Event type"
+  },
+  {
+    "entity": "authenticationEvent",
+    "property": "provider",
+    "de": "Provider",
+    "en": "Provider"
+  },
+  {
+    "entity": "authenticationEvent",
+    "property": "occurredAt",
+    "de": "Aufgetreten am",
+    "en": "Occurred at"
+  },
+
+  {
+    "entity": "systemAlertRule",
+    "property": "handle",
+    "de": "Kennung",
+    "en": "Handle"
+  },
+  {
+    "entity": "systemAlertRule",
+    "property": "title",
+    "de": "Titel",
+    "en": "Title"
+  },
+  {
+    "entity": "systemAlertRule",
+    "property": "metricKey",
+    "de": "Metrik",
+    "en": "Metric"
+  },
+  {
+    "entity": "systemAlertRule",
+    "property": "severity",
+    "de": "Schweregrad",
+    "en": "Severity"
+  },
+  {
+    "entity": "systemAlertRule",
+    "property": "comparator",
+    "de": "Vergleich",
+    "en": "Comparator"
+  },
+  {
+    "entity": "systemAlertRule",
+    "property": "threshold",
+    "de": "Schwellenwert",
+    "en": "Threshold"
+  },
+  {
+    "entity": "systemAlertRule",
+    "property": "windowSeconds",
+    "de": "Zeitfenster (Sekunden)",
+    "en": "Window (seconds)"
+  },
+  {
+    "entity": "systemAlertRule",
+    "property": "minimumCount",
+    "de": "Mindestanzahl",
+    "en": "Minimum count"
+  },
+  {
+    "entity": "systemAlertRule",
+    "property": "scope",
+    "de": "Geltungsbereich",
+    "en": "Scope"
+  },
+  {
+    "entity": "systemAlertRule",
+    "property": "isActive",
+    "de": "Aktiv",
+    "en": "Active"
+  },
+  {
+    "entity": "systemAlertRule",
+    "property": "createdAt",
+    "de": "Erstellt am",
+    "en": "Created at"
+  },
+  {
+    "entity": "systemAlertRule",
+    "property": "updatedAt",
+    "de": "Aktualisiert am",
+    "en": "Updated at"
+  },
+
+  {
+    "entity": "systemAlertIncident",
+    "property": "handle",
+    "de": "Kennung",
+    "en": "Handle"
+  },
+  {
+    "entity": "systemAlertIncident",
+    "property": "rule",
+    "de": "Warnregel",
+    "en": "Alert rule"
+  },
+  {
+    "entity": "systemAlertIncident",
+    "property": "fingerprint",
+    "de": "Fingerabdruck",
+    "en": "Fingerprint"
+  },
+  {
+    "entity": "systemAlertIncident",
+    "property": "dimensionKey",
+    "de": "Dimension",
+    "en": "Dimension"
+  },
+  {
+    "entity": "systemAlertIncident",
+    "property": "state",
+    "de": "Zustand",
+    "en": "State"
+  },
+  {
+    "entity": "systemAlertIncident",
+    "property": "severity",
+    "de": "Schweregrad",
+    "en": "Severity"
+  },
+  {
+    "entity": "systemAlertIncident",
+    "property": "observedValue",
+    "de": "Beobachteter Wert",
+    "en": "Observed value"
+  },
+  {
+    "entity": "systemAlertIncident",
+    "property": "threshold",
+    "de": "Schwellenwert",
+    "en": "Threshold"
+  },
+  {
+    "entity": "systemAlertIncident",
+    "property": "healthyEvaluations",
+    "de": "Gesunde Auswertungen",
+    "en": "Healthy evaluations"
+  },
+  {
+    "entity": "systemAlertIncident",
+    "property": "notifiedSeverity",
+    "de": "Gemeldeter Schweregrad",
+    "en": "Notified severity"
+  },
+  {
+    "entity": "systemAlertIncident",
+    "property": "firstSeenAt",
+    "de": "Erstmals erkannt",
+    "en": "First seen at"
+  },
+  {
+    "entity": "systemAlertIncident",
+    "property": "lastSeenAt",
+    "de": "Zuletzt erkannt",
+    "en": "Last seen at"
+  },
+  {
+    "entity": "systemAlertIncident",
+    "property": "resolvedAt",
+    "de": "Gelöst am",
+    "en": "Resolved at"
+  },
+  {
+    "entity": "systemAlertIncident",
+    "property": "createdAt",
+    "de": "Erstellt am",
+    "en": "Created at"
+  },
+  {
+    "entity": "systemAlertIncident",
+    "property": "updatedAt",
+    "de": "Aktualisiert am",
+    "en": "Updated at"
+  }
+]

@@ -1,0 +1,79 @@
+[
+  {
+    "handle": "systemTelemetryInstance",
+    "icon": "mdi-server-network",
+    "group": "telemetry",
+    "order": 100,
+    "canShow": true,
+    "canRead": true,
+    "canInsert": false,
+    "canUpdate": false,
+    "canDelete": true
+  },
+  {
+    "handle": "systemMetricBucket",
+    "icon": "mdi-chart-line",
+    "group": "telemetry",
+    "order": 110,
+    "canShow": true,
+    "canRead": true,
+    "canInsert": false,
+    "canUpdate": false,
+    "canDelete": true
+  },
+  {
+    "handle": "httpMetricBucket",
+    "icon": "mdi-web",
+    "group": "telemetry",
+    "order": 120,
+    "canShow": true,
+    "canRead": true,
+    "canInsert": false,
+    "canUpdate": false,
+    "canDelete": true
+  },
+  {
+    "handle": "aiUsageEvent",
+    "icon": "mdi-robot-outline",
+    "group": "telemetry",
+    "order": 130,
+    "canShow": true,
+    "canRead": true,
+    "canInsert": false,
+    "canUpdate": false,
+    "canDelete": true
+  },
+  {
+    "handle": "authenticationEvent",
+    "icon": "mdi-login-variant",
+    "group": "telemetry",
+    "order": 140,
+    "canShow": true,
+    "canRead": true,
+    "canInsert": false,
+    "canUpdate": false,
+    "canDelete": true
+  },
+  {
+    "handle": "systemAlertRule",
+    "icon": "mdi-bell-cog-outline",
+    "group": "telemetry",
+    "order": 150,
+    "canShow": true,
+    "canRead": true,
+    "canInsert": false,
+    "canUpdate": false,
+    "canDelete": true
+  },
+  {
+    "handle": "systemAlertIncident",
+    "icon": "mdi-alert-outline",
+    "group": "telemetry",
+    "order": 160,
+    "canShow": true,
+    "canRead": true,
+    "canInsert": false,
+    "canUpdate": false,
+    "canDelete": true
+  }
+]

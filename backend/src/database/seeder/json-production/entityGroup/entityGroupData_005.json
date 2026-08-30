@@ -1,0 +1,9 @@
+[
+  {
+    "handle": "telemetry",
+    "icon": "mdi-chart-box-outline",
+    "isExpanded": false,
+    "sortOrder": 50,
+    "parent": "systemOperations"
+  }
+]

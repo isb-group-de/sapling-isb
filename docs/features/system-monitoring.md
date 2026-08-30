@@ -34,6 +34,14 @@ administrator guards. Telemetry never stores request bodies, query values,
 concrete URLs, prompts, IP addresses, cookies, authorization headers, or user
 agents. Impersonated requests are attributed to the real administrator.
 
+The seven monitoring entities also expose permission-controlled generic table
+routes in a dedicated Telemetry navigation subgroup under System. Their entity
+metadata defines read-only table columns, value fields, sorting, chips, and
+numeric presentation. They support generic read and delete, but not generic
+insert or update; the collector and the dedicated monitoring services remain
+the only writers. Administrator permissions follow the entity capabilities,
+while other roles remain denied until explicitly granted.
+
 `online` means authenticated activity during the last five minutes. A valid
 session is reported separately and can remain valid without the user being
 online. API-token use is never treated as interactive presence.

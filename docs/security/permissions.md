@@ -281,9 +281,10 @@ docs/ai/ai-mcp-vectorization.md
 ## Monitoring Telemetry
 
 All endpoints below `/api/system/monitoring` require both authenticated access
-and the administrator guard. The underlying telemetry entities deliberately
-disable generic CRUD and navigation capabilities. Request telemetry is limited
-to aggregate status, duration, byte, authentication-mode, route-group, person,
+and the administrator guard. The underlying telemetry entities expose
+permission-controlled generic read, delete, and navigation capabilities, but
+deliberately disable generic insert and update. Request telemetry is limited to
+aggregate status, duration, byte, authentication-mode, route-group, person,
 and API-token handles. Request bodies, query values, exact URLs, prompts, IP
 addresses, cookies, authorization headers, and user agents must never be added
 to these tables or the local fallback spool.
