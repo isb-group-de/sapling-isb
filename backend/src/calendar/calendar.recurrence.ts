@@ -113,9 +113,28 @@ export function parseRecurrenceRule(
 
 export function buildGoogleRecurrence(
   recurrenceRule?: string | null,
+  exceptionDates: string[] = [],
+  isAllDay = false,
 ): string[] | [] {
   const parsedRule = parseRecurrenceRule(recurrenceRule);
-  return parsedRule ? [`RRULE:${parsedRule.raw}`] : [];
+  if (!parsedRule) {
+    return [];
+  }
+
+  const exclusions = Array.from(
+    new Set(
+      exceptionDates
+        .map((value) => new Date(value))
+        .filter((value) => !Number.isNaN(value.getTime()))
+        .map((value) => formatGoogleExceptionDate(value, isAllDay)),
+    ),
+  ).sort();
+
+  return [`RRULE:${parsedRule.raw}`, ...exclusions];
+}
+
+export interface RecurrenceOccurrenceMatch extends RecurrenceOccurrence {
+  occurrenceIndex: number;
 }
 
 export function buildAzureRecurrence(
@@ -344,6 +363,89 @@ function formatUtcDateOnly(date: Date): string {
     String(date.getUTCMonth() + 1).padStart(2, '0'),
     String(date.getUTCDate()).padStart(2, '0'),
   ].join('-');
+}
+
+/** Resolves an exact generated occurrence start without trusting the client. */
+export function findRecurrenceOccurrence(
+  startDate: Date,
+  endDate: Date,
+  recurrenceRule: string | null | undefined,
+  occurrenceStart: Date,
+  maxIterations = 10_000,
+): RecurrenceOccurrenceMatch | null {
+  const parsedRule = parseRecurrenceRule(recurrenceRule);
+  if (
+    !parsedRule ||
+    [startDate, endDate, occurrenceStart].some((date) =>
+      Number.isNaN(date.getTime()),
+    ) ||
+    occurrenceStart.getTime() < startDate.getTime()
+  ) {
+    return null;
+  }
+
+  const durationMilliseconds = Math.max(
+    endDate.getTime() - startDate.getTime(),
+    0,
+  );
+  let currentStart = new Date(startDate);
+
+  for (
+    let occurrenceIndex = 1;
+    occurrenceIndex <= maxIterations;
+    occurrenceIndex += 1
+  ) {
+    if (parsedRule.count && occurrenceIndex > parsedRule.count) {
+      return null;
+    }
+    if (
+      parsedRule.until &&
+      currentStart.getTime() > parsedRule.until.getTime()
+    ) {
+      return null;
+    }
+    if (currentStart.getTime() === occurrenceStart.getTime()) {
+      return {
+        occurrenceIndex,
+        startDate: new Date(currentStart),
+        endDate: new Date(currentStart.getTime() + durationMilliseconds),
+      };
+    }
+    if (currentStart.getTime() > occurrenceStart.getTime()) {
+      return null;
+    }
+
+    const nextStart = getNextOccurrenceStart(
+      currentStart,
+      parsedRule,
+      startDate,
+    );
+    if (!nextStart) {
+      return null;
+    }
+    currentStart = nextStart;
+  }
+
+  return null;
+}
+
+function formatGoogleExceptionDate(date: Date, isAllDay: boolean): string {
+  const datePart = [
+    date.getUTCFullYear(),
+    String(date.getUTCMonth() + 1).padStart(2, '0'),
+    String(date.getUTCDate()).padStart(2, '0'),
+  ].join('');
+
+  if (isAllDay) {
+    return `EXDATE;VALUE=DATE:${datePart}`;
+  }
+
+  const timePart = [
+    String(date.getUTCHours()).padStart(2, '0'),
+    String(date.getUTCMinutes()).padStart(2, '0'),
+    String(date.getUTCSeconds()).padStart(2, '0'),
+  ].join('');
+  return `EXDATE:${datePart}T${timePart}Z`;
 }
 
 function toWeekdayCode(date: Date): RecurrenceWeekdayCode {

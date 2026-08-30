@@ -25,7 +25,9 @@ export type ScriptServerContext = {
    * Recurrence materialization uses this to convert the provider series
    * master into the first standalone event.
    */
-  calendarDeliveryOperation?: 'remove-recurrence';
+  calendarDeliveryOperation?: 'remove-recurrence' | 'detach-occurrence';
+  /** Original generated start of the occurrence targeted by a detach delivery. */
+  calendarDeliveryOccurrenceStart?: string;
   /**
    * Work that must only start after an enclosing transaction has committed.
    * Calendar materialization uses this to keep Redis workers from observing

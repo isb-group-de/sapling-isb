@@ -14,6 +14,7 @@ const CALENDAR_PROVIDER_RELEVANT_EVENT_FIELDS = new Set([
   'startDate',
   'endDate',
   'recurrenceRule',
+  'recurrenceExceptionDates',
   'participants',
   'type',
   'category',
@@ -221,18 +222,38 @@ export class EventController extends ScriptClass {
 
       if (context?.calendarDeliveryOperation) {
         if (changedFields) {
-          await calendarService.queueEvent(
-            persistedEvent,
-            this.user.session,
-            context.calendarDeliveryOperation,
-            changedFields,
-          );
+          if (context.calendarDeliveryOccurrenceStart) {
+            await calendarService.queueEvent(
+              persistedEvent,
+              this.user.session,
+              context.calendarDeliveryOperation,
+              changedFields,
+              context.calendarDeliveryOccurrenceStart,
+            );
+          } else {
+            await calendarService.queueEvent(
+              persistedEvent,
+              this.user.session,
+              context.calendarDeliveryOperation,
+              changedFields,
+            );
+          }
         } else {
-          await calendarService.queueEvent(
-            persistedEvent,
-            this.user.session,
-            context.calendarDeliveryOperation,
-          );
+          if (context.calendarDeliveryOccurrenceStart) {
+            await calendarService.queueEvent(
+              persistedEvent,
+              this.user.session,
+              context.calendarDeliveryOperation,
+              undefined,
+              context.calendarDeliveryOccurrenceStart,
+            );
+          } else {
+            await calendarService.queueEvent(
+              persistedEvent,
+              this.user.session,
+              context.calendarDeliveryOperation,
+            );
+          }
         }
       } else if (changedFields) {
         await calendarService.queueEvent(

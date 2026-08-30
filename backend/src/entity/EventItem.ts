@@ -201,6 +201,30 @@ export class EventItem {
   recurrenceRule?: string | null;
 
   /**
+   * Original occurrence start timestamps that are detached from this series.
+   * Sapling suppresses these generated occurrences and persists the edited
+   * appointment as a separate EventItem.
+   */
+  @ApiPropertyOptional({
+    type: 'array',
+    items: { type: 'string', format: 'date-time' },
+    default: [],
+  })
+  @SaplingForm({
+    order: 410,
+    group: 'event.groupSchedule',
+    groupOrder: 300,
+    width: 2,
+    visible: false,
+    tableOrder: 410,
+    tableVisible: false,
+    mobileOrder: 410,
+    mobileVisible: false,
+  })
+  @Property({ type: 'json', nullable: false, defaultRaw: `'[]'::jsonb` })
+  recurrenceExceptionDates: string[] = [];
+
+  /**
    * Time reserved immediately before the event, expressed as HH:mm:ss.
    */
   @ApiPropertyOptional({ default: '00:00:00' })

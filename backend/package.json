@@ -34,16 +34,15 @@
   "dependencies": {
     "@google/genai": "^2.19.0",
     "@google/generative-ai": "^0.24.1",
-    "@googleapis/calendar": "^16.0.0",
     "@kenjiuno/msgreader": "^1.28.0",
     "@microsoft/microsoft-graph-client": "^3.0.7",
-    "@mikro-orm/core": "^7.1.13",
-    "@mikro-orm/decorators": "^7.1.13",
-    "@mikro-orm/migrations": "^7.1.13",
+    "@mikro-orm/core": "^7.1.14",
+    "@mikro-orm/decorators": "^7.1.14",
+    "@mikro-orm/migrations": "^7.1.14",
     "@mikro-orm/nestjs": "^7.0.2",
-    "@mikro-orm/postgresql": "^7.1.13",
-    "@mikro-orm/reflection": "^7.1.13",
-    "@mikro-orm/seeder": "^7.1.13",
+    "@mikro-orm/postgresql": "^7.1.14",
+    "@mikro-orm/reflection": "^7.1.14",
+    "@mikro-orm/seeder": "^7.1.14",
     "@modelcontextprotocol/sdk": "^1.30.0",
     "@nestjs/axios": "^4.0.1",
     "@nestjs/bullmq": "^11.0.5",
@@ -62,9 +61,7 @@
     "class-validator": "^0.15.1",
     "express-rate-limit": "^8.6.2",
     "express-session": "^1.19.0",
-    "gaxios": "^8.0.0",
     "googleapis": "^176.0.0",
-    "googleapis-common": "^9.0.4",
     "ioredis": "^6.0.0",
     "libphonenumber-js": "^1.13.11",
     "log4js": "^6.9.1",
@@ -116,9 +113,12 @@
     "typescript-eslint": "^8.68.0"
   },
   "allowScripts": {
+    "@google/genai@2.19.0": false,
+    "@parcel/watcher@2.6.0": false,
+    "protobufjs@7.6.5": false,
     "bcrypt@6.0.0": true,
     "msgpackr-extract@3.0.4": true,
-    "unrs-resolver@1.11.1": true,
+    "unrs-resolver@1.12.2": true,
     "@scarf/scarf": false
   }
 }

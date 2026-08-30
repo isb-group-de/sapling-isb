@@ -3,6 +3,7 @@ import {
   buildAzureRecurrence,
   buildGoogleRecurrence,
   expandFiniteRecurrence,
+  findRecurrenceOccurrence,
   parseRecurrenceRule,
 } from './calendar.recurrence';
 
@@ -25,6 +26,44 @@ describe('calendar.recurrence', () => {
     expect(
       buildGoogleRecurrence('RRULE:FREQ=MONTHLY;INTERVAL=1;COUNT=3'),
     ).toEqual(['RRULE:FREQ=MONTHLY;INTERVAL=1;COUNT=3']);
+  });
+
+  it('adds timed and all-day Google exclusion dates', () => {
+    expect(
+      buildGoogleRecurrence('FREQ=DAILY;INTERVAL=1;COUNT=3', [
+        '2026-05-05T09:30:00.000Z',
+      ]),
+    ).toEqual([
+      'RRULE:FREQ=DAILY;INTERVAL=1;COUNT=3',
+      'EXDATE:20260505T093000Z',
+    ]);
+    expect(
+      buildGoogleRecurrence(
+        'FREQ=DAILY;INTERVAL=1;COUNT=3',
+        ['2026-05-05T00:00:00.000Z'],
+        true,
+      ),
+    ).toContain('EXDATE;VALUE=DATE:20260505');
+  });
+
+  it('resolves only exact generated occurrence starts', () => {
+    const match = findRecurrenceOccurrence(
+      new Date('2026-07-28T11:00:00.000Z'),
+      new Date('2026-07-28T12:00:00.000Z'),
+      'FREQ=WEEKLY;INTERVAL=1;BYDAY=TU,WE;COUNT=4',
+      new Date('2026-08-04T11:00:00.000Z'),
+    );
+
+    expect(match).toMatchObject({ occurrenceIndex: 3 });
+    expect(match?.endDate.toISOString()).toBe('2026-08-04T12:00:00.000Z');
+    expect(
+      findRecurrenceOccurrence(
+        new Date('2026-07-28T11:00:00.000Z'),
+        new Date('2026-07-28T12:00:00.000Z'),
+        'FREQ=WEEKLY;INTERVAL=1;BYDAY=TU,WE;COUNT=4',
+        new Date('2026-08-04T11:30:00.000Z'),
+      ),
+    ).toBeNull();
   });
 
   it('maps weekly recurrence rules to a Microsoft Graph recurrence payload', () => {

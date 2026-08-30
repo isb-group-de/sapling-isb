@@ -35,7 +35,12 @@ type AzureDeliveryServiceTestHarness = {
     reference: EventAzureItem,
     emFork: object,
     classificationMappings: [],
-    operation: 'remove-recurrence',
+    operation: 'remove-recurrence' | 'detach-occurrence',
+  ) => Promise<unknown>;
+  detachOccurrence: (
+    client: object,
+    reference: EventAzureItem,
+    occurrenceStart: string,
   ) => Promise<unknown>;
 };
 type AzureSetEventTestHarness = {
@@ -441,6 +446,54 @@ describe('AzureCalendarService recurrence materialization', () => {
 
     expect(api).toHaveBeenCalledTimes(1);
     expect(api).toHaveBeenNthCalledWith(1, '/me/events/outlook-1');
-    expect(patch).toHaveBeenNthCalledWith(1, { recurrence: null });
+    expect(patch).toHaveBeenNthCalledWith(1, {
+      start: { dateTime: '2026-07-28T11:00:00.000Z', timeZone: 'UTC' },
+      end: { dateTime: '2026-07-28T12:00:00.000Z', timeZone: 'UTC' },
+      recurrence: null,
+    });
+  });
+
+  it('deletes exactly the matching Outlook series instance', async () => {
+    const get = jest.fn(() =>
+      Promise.resolve({
+        value: [
+          {
+            id: 'occurrence-2',
+            type: 'occurrence',
+            originalStart: '2026-07-29T11:00:00.0000000',
+            start: { dateTime: '2026-07-29T11:00:00.0000000' },
+          },
+        ],
+      }),
+    );
+    const remove = jest.fn(() => Promise.resolve(undefined));
+    const query = jest.fn(() => ({
+      header: jest.fn(() => ({ get })),
+    }));
+    const api = jest.fn((path: string) =>
+      path.endsWith('/instances') ? { query } : { delete: remove },
+    );
+    const service = new AzureCalendarService(
+      {} as never,
+      {} as never,
+    ) as unknown as AzureDeliveryServiceTestHarness;
+
+    await expect(
+      service.detachOccurrence(
+        { api },
+        { referenceHandle: 'outlook-master' } as EventAzureItem,
+        '2026-07-29T11:00:00.000Z',
+      ),
+    ).resolves.toEqual({
+      success: true,
+      detachedOccurrenceId: 'occurrence-2',
+    });
+
+    expect(api).toHaveBeenNthCalledWith(
+      1,
+      '/me/events/outlook-master/instances',
+    );
+    expect(api).toHaveBeenNthCalledWith(2, '/me/events/occurrence-2');
+    expect(remove).toHaveBeenCalledTimes(1);
   });
 });

@@ -100,6 +100,31 @@ describe('eventRecurrence', () => {
     expect(occurrences.every((item) => item.isRecurringOccurrence === true)).toBe(true)
   })
 
+  it('suppresses occurrences that were detached from the series', () => {
+    const occurrences = expandRecurringEvent(
+      {
+        handle: 9,
+        title: 'Support Sync',
+        startDate: new Date('2026-05-04T09:30:00.000Z'),
+        endDate: new Date('2026-05-04T10:30:00.000Z'),
+        isAllDay: false,
+        isPrivate: false,
+        recurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=3',
+        recurrenceExceptionDates: ['2026-05-05T09:30:00.000Z'],
+        creatorPerson: {} as never,
+        creatorCompany: {} as never,
+        transactionHandle: 'abc123',
+      },
+      new Date('2026-05-04T00:00:00.000Z'),
+      new Date('2026-05-07T00:00:00.000Z'),
+    )
+
+    expect(occurrences.map((item) => new Date(item.start).toISOString())).toEqual([
+      '2026-05-04T09:30:00.000Z',
+      '2026-05-06T09:30:00.000Z',
+    ])
+  })
+
   it('estimates the last recurrence date for count based series', () => {
     const endDate = getRecurrenceEndDate({
       recurrenceRule: 'FREQ=WEEKLY;INTERVAL=1;BYDAY=MO,WE;COUNT=5',

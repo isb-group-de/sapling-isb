@@ -1,4 +1,4 @@
-import { ref, type Ref } from 'vue'
+import { computed, ref, type Ref } from 'vue'
 import { useRoute } from 'vue-router'
 import type { CalendarEvent } from 'vuetify/lib/components/VCalendar/types.mjs'
 import ApiGenericService, {
@@ -14,6 +14,7 @@ import type {
 } from '@/entity/structure'
 import { useChangeLogDialogStore } from '@/stores/changeLogDialogStore'
 import { isRecurringCalendarEvent } from '@/utils/eventRecurrence'
+import ApiCalendarService from '@/services/api.calendar.service'
 import {
   DEFAULT_EVENT_COLOR,
   applyCalendarEventDateParts,
@@ -35,6 +36,19 @@ interface UpdateConflictDialogState {
   draftItem: SaplingGenericItem | null
   action: DialogSaveAction
   isSaving: boolean
+}
+
+interface RecurrenceEditScopeDialogState {
+  visible: boolean
+  isLoading: boolean
+  calendarEvent: CalendarEvent | null
+  forcedDirtyFields: string[]
+}
+
+interface DetachOccurrenceContext {
+  seriesHandle: string | number
+  occurrenceStart: string
+  expectedUpdatedAt?: string
 }
 
 interface UseSaplingEventEditorOptions {
@@ -66,6 +80,14 @@ export function useSaplingEventEditor(options: UseSaplingEventEditorOptions) {
     action: 'save',
     isSaving: false,
   })
+  const recurrenceEditScopeDialog = ref<RecurrenceEditScopeDialogState>({
+    visible: false,
+    isLoading: false,
+    calendarEvent: null,
+    forcedDirtyFields: [],
+  })
+  const detachOccurrenceContext = ref<DetachOccurrenceContext | null>(null)
+  const isDetachingOccurrence = computed(() => detachOccurrenceContext.value !== null)
   let lastAutoOpenedEventHandle: string | null = null
 
   async function openEventEditor(event: CalendarEvent) {
@@ -129,14 +151,28 @@ export function useSaplingEventEditor(options: UseSaplingEventEditorOptions) {
     let savedEvent: EventItem
     let didSave = false
     let pendingRelationsPersisted = true
+    const wasDetachingOccurrence = detachOccurrenceContext.value !== null
 
     try {
-      if (isNewEvent) {
+      if (isNewEvent || detachOccurrenceContext.value) {
         eventPayload.participants = participantHandles
       }
       applyCalendarEventDateParts(eventPayload)
 
-      if (editingHandle == null) {
+      if (detachOccurrenceContext.value) {
+        const detachContext = detachOccurrenceContext.value
+        const result = await ApiCalendarService.detachEventOccurrence(detachContext.seriesHandle, {
+          occurrenceStart: detachContext.occurrenceStart,
+          event: eventPayload as Record<string, unknown>,
+          expectedUpdatedAt: detachContext.expectedUpdatedAt,
+        })
+        savedEvent = result.detachedEvent
+        if (savedEvent.handle != null) {
+          pendingRelationsPersisted =
+            (await context?.persistPendingRelations?.(savedEvent.handle)) ?? true
+        }
+        detachOccurrenceContext.value = null
+      } else if (editingHandle == null) {
         savedEvent = await ApiGenericService.create<EventItem>('event', eventPayload)
         if (savedEvent.handle != null) {
           pendingRelationsPersisted =
@@ -175,6 +211,9 @@ export function useSaplingEventEditor(options: UseSaplingEventEditorOptions) {
       options.editEvent.value = toCalendarEvent(persistedEvent ?? savedEvent)
       options.showEditDialog.value = true
     } catch (error) {
+      if (wasDetachingOccurrence) {
+        return
+      }
       const conflict = getGenericUpdateConflict(error)
       if (conflict) {
         updateConflictDialog.value = {
@@ -195,6 +234,7 @@ export function useSaplingEventEditor(options: UseSaplingEventEditorOptions) {
     options.showEditDialog.value = false
     options.editEvent.value = null
     options.forceEditDialogDirtyFields.value = []
+    detachOccurrenceContext.value = null
     await options.refreshVisibleEvents()
   }
 
@@ -299,6 +339,9 @@ export function useSaplingEventEditor(options: UseSaplingEventEditorOptions) {
   }
 
   function onEditDialogModeUpdate(mode: DialogState) {
+    if (detachOccurrenceContext.value) {
+      return
+    }
     if (mode === 'create' && getCalendarEventHandle(options.editEvent.value) != null) {
       options.editEvent.value = null
     }
@@ -337,6 +380,69 @@ export function useSaplingEventEditor(options: UseSaplingEventEditorOptions) {
     calendarEvent: CalendarEvent,
     forcedDirtyFields: string[],
   ) {
+    if (isRecurringCalendarEvent(calendarEvent)) {
+      recurrenceEditScopeDialog.value = {
+        visible: true,
+        isLoading: false,
+        calendarEvent,
+        forcedDirtyFields: [...forcedDirtyFields],
+      }
+      return
+    }
+
+    await openCalendarEventEditor(calendarEvent, forcedDirtyFields, 'series')
+  }
+
+  async function chooseRecurrenceEditSeries() {
+    await resolveRecurrenceEditScope('series')
+  }
+
+  async function chooseRecurrenceEditOccurrence() {
+    await resolveRecurrenceEditScope('occurrence')
+  }
+
+  function closeRecurrenceEditScopeDialog() {
+    if (recurrenceEditScopeDialog.value.isLoading) {
+      return
+    }
+    recurrenceEditScopeDialog.value = {
+      visible: false,
+      isLoading: false,
+      calendarEvent: null,
+      forcedDirtyFields: [],
+    }
+    options.restoreDragSnapshot()
+  }
+
+  async function resolveRecurrenceEditScope(scope: 'series' | 'occurrence') {
+    const state = recurrenceEditScopeDialog.value
+    if (!state.calendarEvent || state.isLoading) {
+      return
+    }
+    recurrenceEditScopeDialog.value = { ...state, isLoading: true }
+    try {
+      await openCalendarEventEditor(state.calendarEvent, state.forcedDirtyFields, scope)
+      recurrenceEditScopeDialog.value = {
+        visible: false,
+        isLoading: false,
+        calendarEvent: null,
+        forcedDirtyFields: [],
+      }
+    } finally {
+      if (recurrenceEditScopeDialog.value.visible) {
+        recurrenceEditScopeDialog.value = {
+          ...recurrenceEditScopeDialog.value,
+          isLoading: false,
+        }
+      }
+    }
+  }
+
+  async function openCalendarEventEditor(
+    calendarEvent: CalendarEvent,
+    forcedDirtyFields: string[],
+    scope: 'series' | 'occurrence',
+  ) {
     const handle = getCalendarEventHandle(calendarEvent)
     const persistedEvent = handle == null ? null : await options.loadPersistedEvent(handle)
     const baseEvent = persistedEvent
@@ -345,9 +451,37 @@ export function useSaplingEventEditor(options: UseSaplingEventEditorOptions) {
         ? toCalendarEvent(calendarEvent.event as EventItem)
         : calendarEvent
 
-    options.editEvent.value = isRecurringCalendarEvent(calendarEvent)
-      ? applyRecurringInteractionToSeries(baseEvent, calendarEvent, forcedDirtyFields)
-      : { ...baseEvent, start: calendarEvent.start, end: calendarEvent.end }
+    if (scope === 'occurrence' && persistedEvent && handle != null) {
+      const occurrence = calendarEvent as CalendarEvent & {
+        recurrenceOccurrenceStart?: string
+      }
+      if (!occurrence.recurrenceOccurrenceStart) {
+        return
+      }
+      const detachedItem: EventItem = {
+        ...persistedEvent,
+        handle: undefined,
+        recurrenceRule: null,
+        recurrenceExceptionDates: [],
+        startDate: new Date(calendarEvent.start),
+        endDate: new Date(calendarEvent.end),
+      }
+      options.editEvent.value = {
+        ...toCalendarEvent(detachedItem),
+        start: calendarEvent.start,
+        end: calendarEvent.end,
+      }
+      detachOccurrenceContext.value = {
+        seriesHandle: handle,
+        occurrenceStart: occurrence.recurrenceOccurrenceStart,
+        expectedUpdatedAt: normalizeConcurrencyTimestamp(persistedEvent.updatedAt) ?? undefined,
+      }
+    } else {
+      detachOccurrenceContext.value = null
+      options.editEvent.value = isRecurringCalendarEvent(calendarEvent)
+        ? applyRecurringInteractionToSeries(baseEvent, calendarEvent, forcedDirtyFields)
+        : { ...baseEvent, start: calendarEvent.start, end: calendarEvent.end }
+    }
     applyCalendarEventDateParts(options.editEvent.value)
     options.forceEditDialogDirtyFields.value = forcedDirtyFields
     if (forcedDirtyFields.length === 0) {
@@ -415,6 +549,9 @@ export function useSaplingEventEditor(options: UseSaplingEventEditorOptions) {
   }
 
   return {
+    chooseRecurrenceEditOccurrence,
+    chooseRecurrenceEditSeries,
+    closeRecurrenceEditScopeDialog,
     closeUpdateConflictDialog,
     handleUpdateConflictVisibility,
     mergeUpdateConflict,
@@ -427,6 +564,8 @@ export function useSaplingEventEditor(options: UseSaplingEventEditorOptions) {
     openPersistedEventEditor,
     openUpdateConflictChangeLog,
     reloadUpdateConflictRecord,
+    recurrenceEditScopeDialog,
+    isDetachingOccurrence,
     updateConflictDialog,
   }
 }

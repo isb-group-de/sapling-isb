@@ -26,6 +26,7 @@ export type AzureGraphCalendarEvent = {
   id?: string;
   type?: 'singleInstance' | 'occurrence' | 'exception' | 'seriesMaster' | null;
   seriesMasterId?: string | null;
+  originalStart?: string | null;
   subject?: string | null;
   bodyPreview?: string | null;
   body?: {

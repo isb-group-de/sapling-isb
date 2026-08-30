@@ -15,6 +15,7 @@ function createEvent(overrides: Partial<EventItem> = {}): EventItem {
     isAllDay: false,
     isPrivate: false,
     recurrenceRule: 'FREQ=WEEKLY;INTERVAL=1;BYDAY=TU,WE;COUNT=2',
+    recurrenceExceptionDates: [],
     preparationDuration: '00:00:00',
     followUpDuration: '00:00:00',
     category: { handle: 'internal' },
@@ -63,7 +64,12 @@ describe('EventRecurrenceMutationService', () => {
     expect(harness.mutationService.update).toHaveBeenCalledWith(
       'event',
       42,
-      { recurrenceRule: null },
+      expect.objectContaining({
+        startDate: new Date('2026-07-28T11:00:00.000Z'),
+        endDate: new Date('2026-07-28T12:00:00.000Z'),
+        recurrenceRule: null,
+        recurrenceExceptionDates: [],
+      }),
       expect.any(Object),
       [],
       expect.objectContaining({
@@ -112,5 +118,59 @@ describe('EventRecurrenceMutationService', () => {
     );
     expect(harness.mutationService.update).not.toHaveBeenCalled();
     expect(harness.mutationService.create).not.toHaveBeenCalled();
+  });
+
+  it('atomically excludes and creates one edited standalone occurrence', async () => {
+    const harness = createHarness(createEvent());
+
+    await expect(
+      harness.service.detachOccurrence(
+        42,
+        {
+          occurrenceStart: '2026-07-29T11:00:00.000Z',
+          expectedUpdatedAt: '2026-07-30T08:00:00.000Z',
+          event: {
+            title: 'Edited occurrence',
+            startDate: '2026-07-29T13:00:00.000Z',
+            endDate: '2026-07-29T14:00:00.000Z',
+          },
+        },
+        { handle: 5 } as PersonItem,
+        {},
+      ),
+    ).resolves.toEqual({
+      seriesHandle: 42,
+      detachedEvent: { handle: 43 },
+    });
+
+    expect(harness.mutationService.update).toHaveBeenCalledWith(
+      'event',
+      42,
+      { recurrenceExceptionDates: ['2026-07-29T11:00:00.000Z'] },
+      expect.any(Object),
+      [],
+      expect.objectContaining({
+        calendarDeliveryOperation: 'detach-occurrence',
+        calendarDeliveryOccurrenceStart: '2026-07-29T11:00:00.000Z',
+      }),
+      {
+        expectedUpdatedAt: '2026-07-30T08:00:00.000Z',
+        resolution: 'detect',
+      },
+      expect.any(Object),
+    );
+    expect(harness.mutationService.create).toHaveBeenCalledWith(
+      'event',
+      expect.objectContaining({
+        title: 'Edited occurrence',
+        startDate: new Date('2026-07-29T13:00:00.000Z'),
+        endDate: new Date('2026-07-29T14:00:00.000Z'),
+        recurrenceRule: null,
+        recurrenceExceptionDates: [],
+      }),
+      expect.any(Object),
+      expect.objectContaining({ calendarDeliveryOperation: undefined }),
+      expect.any(Object),
+    );
   });
 });

@@ -146,7 +146,7 @@
   <SaplingDialogEdit
     v-if="showEditDialog && entityEvent && templates.length > 0 && editEvent"
     :model-value="showEditDialog"
-    :mode="editEvent?.event?.handle ? 'edit' : 'create'"
+    :mode="editEvent?.event?.handle || isDetachingOccurrence ? 'edit' : 'create'"
     :item="editEvent.event"
     :templates="templates"
     :entity="entityEvent"
@@ -159,6 +159,62 @@
     @save="onEditDialogSave"
     @cancel="onEditDialogCancel"
   />
+
+  <SaplingDialogConfirm
+    :model-value="recurrenceEditScopeDialog.visible"
+    :eyebrow="calendarLabel('recurrenceEditScope', 'Wiederkehrender Termin', 'Recurring event')"
+    :title="
+      calendarLabel(
+        'recurrenceEditScopeQuestion',
+        'Was möchten Sie bearbeiten?',
+        'What would you like to edit?',
+      )
+    "
+    :subtitle="
+      calendarLabel(
+        'recurrenceEditScopeHint',
+        'Die Änderung kann nur für diesen Termin oder für die gesamte Serie gelten.',
+        'Apply the change to this occurrence only or to the entire series.',
+      )
+    "
+    :close-disabled="recurrenceEditScopeDialog.isLoading"
+    persistent
+    @update:model-value="(value) => !value && closeRecurrenceEditScopeDialog()"
+    @escape="closeRecurrenceEditScopeDialog"
+  >
+    <template #actions>
+      <SaplingActionBar>
+        <template #leading>
+          <v-btn
+            variant="text"
+            prepend-icon="mdi-close"
+            :disabled="recurrenceEditScopeDialog.isLoading"
+            @click="closeRecurrenceEditScopeDialog"
+          >
+            {{ $t('global.cancel') }}
+          </v-btn>
+        </template>
+        <template #trailing>
+          <v-btn
+            variant="tonal"
+            prepend-icon="mdi-calendar-edit"
+            :disabled="recurrenceEditScopeDialog.isLoading"
+            @click="chooseRecurrenceEditOccurrence"
+          >
+            {{ calendarLabel('editOccurrence', 'Diesen Termin', 'This event') }}
+          </v-btn>
+          <v-btn
+            color="primary"
+            prepend-icon="mdi-calendar-sync"
+            :loading="recurrenceEditScopeDialog.isLoading"
+            @click="chooseRecurrenceEditSeries"
+          >
+            {{ calendarLabel('editSeries', 'Gesamte Serie', 'Entire series') }}
+          </v-btn>
+        </template>
+      </SaplingActionBar>
+    </template>
+  </SaplingDialogConfirm>
 
   <SaplingDialogUpdateConflict
     :model-value="updateConflictDialog.visible"
@@ -321,6 +377,9 @@ function calendarLabel(key: string, germanFallback: string, englishFallback: str
 }
 
 const {
+  chooseRecurrenceEditOccurrence,
+  chooseRecurrenceEditSeries,
+  closeRecurrenceEditScopeDialog,
   forceEditDialogDirtyFields,
   calendarDisplayType,
   calendarType,
@@ -389,6 +448,8 @@ const {
   cancelDrag,
   informationDialogItem,
   materializeRecurrenceDialog,
+  recurrenceEditScopeDialog,
+  isDetachingOccurrence,
   templates,
   updateConflictDialog,
   uploadDialogItem,
@@ -406,6 +467,7 @@ const isCalendarTooltipBlocked = computed(
     showInformationDialog.value ||
     showUploadDialog.value ||
     materializeRecurrenceDialog.value.visible ||
+    recurrenceEditScopeDialog.value.visible ||
     updateConflictDialog.value.visible,
 )
 </script>

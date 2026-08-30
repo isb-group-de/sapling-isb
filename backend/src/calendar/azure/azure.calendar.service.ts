@@ -103,8 +103,9 @@ export class AzureCalendarService {
   async queueEvent(
     event: EventItem,
     session: PersonSessionItem,
-    operation?: 'remove-recurrence',
+    operation?: 'remove-recurrence' | 'detach-occurrence',
     changedFields?: string[],
+    occurrenceStart?: string,
   ) {
     if (typeof session.handle !== 'number') {
       throw new Error('calendar.sessionHandleRequired');
@@ -116,6 +117,7 @@ export class AzureCalendarService {
       sessionHandle: session.handle,
       ...(operation ? { operation } : {}),
       ...(changedFields ? { changedFields } : {}),
+      ...(occurrenceStart ? { occurrenceStart } : {}),
     });
   }
 
@@ -132,8 +134,9 @@ export class AzureCalendarService {
     eventHandle: number,
     accessToken: string,
     personHandle?: number,
-    operation?: 'remove-recurrence',
+    operation?: 'remove-recurrence' | 'detach-occurrence',
     changedFields?: string[],
+    occurrenceStart?: string,
   ): Promise<any> {
     const client = this.createClient(accessToken);
     // Fork EntityManager for context-specific actions
@@ -163,6 +166,29 @@ export class AzureCalendarService {
     const reference = await emFork.findOne(EventAzureItem, {
       event: event.handle as never,
     });
+
+    if (operation === 'detach-occurrence') {
+      if (!occurrenceStart) {
+        throw new Error('calendar.recurrenceOccurrenceReferenceMissing');
+      }
+      let targetReference = reference;
+      if (!targetReference) {
+        const created = (await this.createEvent(
+          client,
+          event,
+          emFork,
+          classificationMappings,
+        )) as { id?: string };
+        if (!created.id) {
+          throw new Error('calendar.recurrenceOccurrenceReferenceMissing');
+        }
+        targetReference = {
+          event,
+          referenceHandle: created.id,
+        } as EventAzureItem;
+      }
+      return this.detachOccurrence(client, targetReference, occurrenceStart);
+    }
 
     switch (event.status.handle) {
       case 'canceled':
@@ -815,13 +841,16 @@ export class AzureCalendarService {
     reference: EventAzureItem,
     emFork: EntityManager,
     classificationMappings?: CalendarClassificationMapping[] | null,
-    operation?: 'remove-recurrence',
+    operation?: 'remove-recurrence' | 'detach-occurrence',
     changedFields?: string[],
   ): Promise<any> {
     if (operation === 'remove-recurrence') {
-      return await client
-        .api(`/me/events/${reference.referenceHandle}`)
-        .patch({ recurrence: null });
+      const resource = buildAzureCalendarEvent(event, classificationMappings);
+      return await client.api(`/me/events/${reference.referenceHandle}`).patch({
+        start: resource.start,
+        end: resource.end,
+        recurrence: null,
+      });
     }
 
     const eventResource = buildAzureCalendarEventPatch(
@@ -867,6 +896,58 @@ export class AzureCalendarService {
     await emFork.remove(reference).flush();
     return { success: true };
   }
+
+  private async detachOccurrence(
+    client: Client,
+    reference: EventAzureItem,
+    occurrenceStartValue: string,
+  ): Promise<Record<string, unknown>> {
+    const occurrenceStart = new Date(occurrenceStartValue);
+    if (Number.isNaN(occurrenceStart.getTime())) {
+      throw new Error('calendar.invalidOccurrenceStart');
+    }
+
+    const rangeStart = new Date(occurrenceStart.getTime() - 60_000);
+    const rangeEnd = new Date(occurrenceStart.getTime() + 24 * 60 * 60_000);
+    const response = (await client
+      .api(`/me/events/${reference.referenceHandle}/instances`)
+      .query({
+        startDateTime: rangeStart.toISOString(),
+        endDateTime: rangeEnd.toISOString(),
+        $select: 'id,start,originalStart,type',
+      })
+      .header('Prefer', 'outlook.timezone="UTC"')
+      .get()) as AzureCalendarViewResponse;
+
+    const targetTimestamp = occurrenceStart.getTime();
+    const occurrence = (response.value ?? []).find((candidate) => {
+      const originalStart = normalizeAzureOccurrenceStart(
+        candidate.originalStart,
+      );
+      const currentStart = normalizeAzureDateTime(candidate.start);
+      return (
+        originalStart?.getTime() === targetTimestamp ||
+        currentStart?.getTime() === targetTimestamp
+      );
+    });
+
+    if (!occurrence?.id) {
+      return { success: true, unchanged: true };
+    }
+
+    await client.api(`/me/events/${occurrence.id}`).delete();
+    return { success: true, detachedOccurrenceId: occurrence.id };
+  }
+}
+
+function normalizeAzureOccurrenceStart(value?: string | null): Date | null {
+  const raw = value?.trim();
+  if (!raw) {
+    return null;
+  }
+  const normalized = /(?:z|[+-]\d{2}:\d{2})$/i.test(raw) ? raw : `${raw}Z`;
+  const date = new Date(normalized);
+  return Number.isNaN(date.getTime()) ? null : date;
 }
 
 function getRelationHandle(

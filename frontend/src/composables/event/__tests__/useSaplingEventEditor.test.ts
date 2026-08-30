@@ -9,6 +9,7 @@ import type { SaplingCalendarEvent } from '../eventCalendar.utils'
 const mocks = vi.hoisted(() => ({
   create: vi.fn(),
   createReference: vi.fn(),
+  detachEventOccurrence: vi.fn(),
   getGenericUpdateConflict: vi.fn(() => null),
   route: { query: {} as Record<string, unknown> },
   update: vi.fn(),
@@ -25,6 +26,12 @@ vi.mock('@/services/api.generic.service', () => ({
     update: mocks.update,
   },
   getGenericUpdateConflict: mocks.getGenericUpdateConflict,
+}))
+
+vi.mock('@/services/api.calendar.service', () => ({
+  default: {
+    detachEventOccurrence: mocks.detachEventOccurrence,
+  },
 }))
 
 import { useSaplingEventEditor } from '../useSaplingEventEditor'
@@ -95,6 +102,7 @@ describe('useSaplingEventEditor', () => {
     setActivePinia(createPinia())
     mocks.create.mockReset()
     mocks.createReference.mockReset()
+    mocks.detachEventOccurrence.mockReset()
     mocks.getGenericUpdateConflict.mockReset().mockReturnValue(null)
     mocks.route.query = {}
     mocks.update.mockReset()
@@ -139,6 +147,9 @@ describe('useSaplingEventEditor', () => {
 
     await harness.editor.openPersistedEventEditor(laterOccurrence, [])
 
+    expect(harness.editor.recurrenceEditScopeDialog.value.visible).toBe(true)
+    await harness.editor.chooseRecurrenceEditSeries()
+
     expect(harness.editEvent.value?.start).toBe(new Date('2026-07-15T09:00:00.000Z').getTime())
     expect(harness.editEvent.value?.end).toBe(new Date('2026-07-15T10:00:00.000Z').getTime())
     expect(harness.forceEditDialogDirtyFields.value).toEqual([])
@@ -164,8 +175,75 @@ describe('useSaplingEventEditor', () => {
 
     await harness.editor.openPersistedEventEditor(draggedOccurrence, ['startDate', 'endDate'])
 
+    await harness.editor.chooseRecurrenceEditSeries()
+
     expect(harness.editEvent.value?.start).toBe(new Date('2026-07-15T11:00:00.000Z').getTime())
     expect(harness.editEvent.value?.end).toBe(new Date('2026-07-15T12:00:00.000Z').getTime())
+  })
+
+  it('opens a concrete standalone draft when editing only one occurrence', async () => {
+    const harness = createHarness()
+    harness.loadPersistedEvent.mockResolvedValue(
+      createEventItem({
+        recurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=2',
+        updatedAt: new Date('2026-07-14T08:00:00.000Z'),
+      }),
+    )
+    const laterOccurrence = {
+      start: new Date('2026-07-16T09:00:00.000Z').getTime(),
+      end: new Date('2026-07-16T10:00:00.000Z').getTime(),
+      event: { handle: 42, recurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=2' },
+      timed: true,
+      isRecurringOccurrence: true,
+      recurrenceOccurrenceStart: '2026-07-16T09:00:00.000Z',
+      recurrenceOccurrenceEnd: '2026-07-16T10:00:00.000Z',
+    } as CalendarEvent
+
+    await harness.editor.openPersistedEventEditor(laterOccurrence, [])
+    await harness.editor.chooseRecurrenceEditOccurrence()
+
+    expect(harness.editor.isDetachingOccurrence.value).toBe(true)
+    expect(harness.editEvent.value?.event?.handle).toBeUndefined()
+    expect(harness.editEvent.value?.event?.recurrenceRule).toBeNull()
+    expect(harness.editEvent.value?.start).toBe(laterOccurrence.start)
+  })
+
+  it('detaches an occurrence through the calendar API when the draft is saved', async () => {
+    const harness = createHarness()
+    const series = createEventItem({
+      recurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=2',
+      updatedAt: new Date('2026-07-14T08:00:00.000Z'),
+    })
+    const detached = createEventItem({ handle: 84, recurrenceRule: null })
+    harness.loadPersistedEvent.mockResolvedValue(series)
+    mocks.detachEventOccurrence.mockResolvedValue({
+      seriesHandle: 42,
+      detachedEvent: detached,
+    })
+    const occurrence = {
+      start: new Date('2026-07-16T09:00:00.000Z').getTime(),
+      end: new Date('2026-07-16T10:00:00.000Z').getTime(),
+      event: series,
+      timed: true,
+      isRecurringOccurrence: true,
+      recurrenceOccurrenceStart: '2026-07-16T09:00:00.000Z',
+    } as CalendarEvent
+
+    await harness.editor.openPersistedEventEditor(occurrence, [])
+    await harness.editor.chooseRecurrenceEditOccurrence()
+    const draft = harness.editEvent.value as CalendarEvent
+    await harness.editor.onEditDialogSave(draft, 'saveAndClose')
+
+    expect(mocks.detachEventOccurrence).toHaveBeenCalledWith(
+      42,
+      expect.objectContaining({
+        occurrenceStart: '2026-07-16T09:00:00.000Z',
+        expectedUpdatedAt: '2026-07-14T08:00:00.000Z',
+      }),
+    )
+    expect(mocks.create).not.toHaveBeenCalled()
+    expect(mocks.update).not.toHaveBeenCalled()
+    expect(harness.showEditDialog.value).toBe(false)
   })
 
   it('ignores derived preparation and follow-up placeholders', async () => {

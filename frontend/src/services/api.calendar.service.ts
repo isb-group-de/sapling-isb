@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { buildApiUrl } from '@/services/api.client'
 import { pushApiErrorMessage } from '@/services/api.error.service'
+import type { EventItem } from '@/entity/entity'
 
 export type CalendarSyncProvider = 'azure' | 'google'
 
@@ -23,6 +24,17 @@ export interface MaterializeEventRecurrencePayload {
 export interface MaterializeEventRecurrenceResult {
   materializedCount: number
   handles: Array<string | number>
+}
+
+export interface DetachEventOccurrencePayload {
+  occurrenceStart: string
+  event: Record<string, unknown>
+  expectedUpdatedAt?: string
+}
+
+export interface DetachEventOccurrenceResult {
+  seriesHandle: string | number
+  detachedEvent: EventItem
 }
 
 class ApiCalendarService {
@@ -52,6 +64,21 @@ class ApiCalendarService {
         buildApiUrl(endpoint),
         payload,
       )
+      return response.data
+    } catch (error: unknown) {
+      pushApiErrorMessage(error, 'exception.unknownError', endpoint)
+      throw error
+    }
+  }
+
+  static async detachEventOccurrence(
+    handle: string | number,
+    payload: DetachEventOccurrencePayload,
+  ): Promise<DetachEventOccurrenceResult> {
+    const endpoint = `calendar/events/${encodeURIComponent(String(handle))}/detach-occurrence`
+
+    try {
+      const response = await axios.post<DetachEventOccurrenceResult>(buildApiUrl(endpoint), payload)
       return response.data
     } catch (error: unknown) {
       pushApiErrorMessage(error, 'exception.unknownError', endpoint)

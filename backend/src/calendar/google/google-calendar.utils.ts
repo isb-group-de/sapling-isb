@@ -1,4 +1,4 @@
-import { calendar_v3 } from '@googleapis/calendar';
+import { calendar_v3 } from 'googleapis';
 import { EventItem } from '../../entity/EventItem';
 import { buildGoogleRecurrence } from '../calendar.recurrence';
 import {
@@ -13,6 +13,40 @@ export type ImportGoogleCalendarEventsRange = {
   startDateTime: Date;
   endDateTime: Date;
 };
+
+/** Collapses expanded Google instances back to one series master per import. */
+export async function resolveGoogleSeriesImportEvents(
+  events: calendar_v3.Schema$Event[],
+  loadMaster: (
+    recurringEventId: string,
+  ) => Promise<calendar_v3.Schema$Event | null>,
+): Promise<calendar_v3.Schema$Event[]> {
+  const standaloneEvents: calendar_v3.Schema$Event[] = [];
+  const recurringEventIds: string[] = [];
+  const seenRecurringEventIds = new Set<string>();
+
+  for (const event of events) {
+    const recurringEventId = event.recurringEventId?.trim();
+    if (!recurringEventId) {
+      standaloneEvents.push(event);
+      continue;
+    }
+    if (!seenRecurringEventIds.has(recurringEventId)) {
+      seenRecurringEventIds.add(recurringEventId);
+      recurringEventIds.push(recurringEventId);
+    }
+  }
+
+  const masters = await Promise.all(
+    recurringEventIds.map((recurringEventId) => loadMaster(recurringEventId)),
+  );
+  return [
+    ...standaloneEvents,
+    ...masters.filter((event): event is calendar_v3.Schema$Event =>
+      Boolean(event),
+    ),
+  ];
+}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
@@ -74,6 +108,61 @@ export function normalizeGoogleEmail(
     : null;
 }
 
+export function normalizeGoogleRecurrence(recurrence?: string[] | null): {
+  recurrenceRule: string | null;
+  exceptionDates: string[];
+} {
+  let recurrenceRule: string | null = null;
+  const exceptionDates: string[] = [];
+
+  for (const line of recurrence ?? []) {
+    const trimmed = line.trim();
+    if (/^RRULE:/i.test(trimmed) && !recurrenceRule) {
+      recurrenceRule = trimmed.slice(trimmed.indexOf(':') + 1).trim() || null;
+      continue;
+    }
+    if (!/^EXDATE(?:;[^:]*)?:/i.test(trimmed)) {
+      continue;
+    }
+
+    const value = trimmed.slice(trimmed.indexOf(':') + 1);
+    for (const part of value.split(',')) {
+      const compact = part.trim();
+      const dateTimeMatch =
+        /^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z?$/i.exec(compact);
+      const dateMatch = /^(\d{4})(\d{2})(\d{2})$/.exec(compact);
+      const date = dateTimeMatch
+        ? new Date(
+            Date.UTC(
+              Number(dateTimeMatch[1]),
+              Number(dateTimeMatch[2]) - 1,
+              Number(dateTimeMatch[3]),
+              Number(dateTimeMatch[4]),
+              Number(dateTimeMatch[5]),
+              Number(dateTimeMatch[6]),
+            ),
+          )
+        : dateMatch
+          ? new Date(
+              Date.UTC(
+                Number(dateMatch[1]),
+                Number(dateMatch[2]) - 1,
+                Number(dateMatch[3]),
+              ),
+            )
+          : null;
+      if (date && !Number.isNaN(date.getTime())) {
+        exceptionDates.push(date.toISOString());
+      }
+    }
+  }
+
+  return {
+    recurrenceRule,
+    exceptionDates: Array.from(new Set(exceptionDates)).sort(),
+  };
+}
+
 export function buildGoogleCalendarEvent(
   event: EventItem,
   classificationMappings?: CalendarClassificationMapping[] | null,
@@ -85,7 +174,11 @@ export function buildGoogleCalendarEvent(
     description: event.description,
     start: { dateTime: event.startDate.toISOString() },
     end: { dateTime: event.endDate.toISOString() },
-    recurrence: buildGoogleRecurrence(event.recurrenceRule),
+    recurrence: buildGoogleRecurrence(
+      event.recurrenceRule,
+      event.recurrenceExceptionDates,
+      event.isAllDay,
+    ),
     colorId,
     extendedProperties: {
       private: {
@@ -125,7 +218,12 @@ export function buildGoogleCalendarEventPatch(
   if (changed.has('description')) copy('description');
   if (changed.has('startDate')) copy('start');
   if (changed.has('endDate')) copy('end');
-  if (changed.has('recurrenceRule')) copy('recurrence');
+  if (
+    changed.has('recurrenceRule') ||
+    changed.has('recurrenceExceptionDates')
+  ) {
+    copy('recurrence');
+  }
   if (changed.has('participants')) copy('attendees');
   if (changed.has('type') || changed.has('category')) {
     copy('colorId');

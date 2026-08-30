@@ -20,6 +20,10 @@ import {
   MaterializeEventRecurrenceResponseDto,
 } from './dto/materialize-event-recurrence.dto';
 import { EventRecurrenceMutationService } from './event-recurrence-mutation.service';
+import {
+  DetachEventOccurrenceDto,
+  DetachEventOccurrenceResponseDto,
+} from './dto/detach-event-occurrence.dto';
 
 @ApiTags('Calendar')
 @ApiBearerAuth()
@@ -49,6 +53,28 @@ export class EventRecurrenceController {
     @Body() request: MaterializeEventRecurrenceDto,
   ): Promise<MaterializeEventRecurrenceResponseDto> {
     return this.eventRecurrenceMutationService.materialize(
+      handle,
+      request,
+      req.user,
+      extractClientFormattingContextFromRequest(req),
+    );
+  }
+
+  @Post(':handle/detach-occurrence')
+  @GenericPermission('allowUpdate')
+  @ApiOperation({
+    summary: 'Detach one occurrence from a recurring Event',
+    description:
+      'Atomically excludes one generated occurrence from its series and creates the edited occurrence as a standalone Event.',
+  })
+  @ApiBody({ type: DetachEventOccurrenceDto })
+  @ApiResponse({ status: 201, type: DetachEventOccurrenceResponseDto })
+  async detachOccurrence(
+    @Req() req: Request & { user: PersonItem },
+    @Param('handle') handle: string,
+    @Body() request: DetachEventOccurrenceDto,
+  ): Promise<DetachEventOccurrenceResponseDto> {
+    return this.eventRecurrenceMutationService.detachOccurrence(
       handle,
       request,
       req.user,

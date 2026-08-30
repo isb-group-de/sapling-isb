@@ -221,6 +221,9 @@ export function useSaplingEvent() {
   })
   openPersistedEventEditorDelegate = eventEditor.openPersistedEventEditor
   const {
+    chooseRecurrenceEditOccurrence,
+    chooseRecurrenceEditSeries,
+    closeRecurrenceEditScopeDialog,
     closeUpdateConflictDialog,
     handleUpdateConflictVisibility,
     mergeUpdateConflict,
@@ -233,6 +236,8 @@ export function useSaplingEvent() {
     openUpdateConflictChangeLog,
     reloadUpdateConflictRecord,
     updateConflictDialog,
+    recurrenceEditScopeDialog,
+    isDetachingOccurrence,
   } = eventEditor
   const {
     closeEventContextMenu,
@@ -579,6 +584,9 @@ export function useSaplingEvent() {
 
   //#region Return
   return {
+    chooseRecurrenceEditOccurrence,
+    chooseRecurrenceEditSeries,
+    closeRecurrenceEditScopeDialog,
     forceEditDialogDirtyFields,
     calendarScrollContainer,
     calendarDisplayType,
@@ -597,6 +605,8 @@ export function useSaplingEvent() {
     eventContextMenuItems,
     eventContextMenuStyle,
     materializeRecurrenceDialog,
+    recurrenceEditScopeDialog,
+    isDetachingOccurrence,
     editEvent,
     entityEvent,
     chipFilters,

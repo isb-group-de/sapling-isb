@@ -169,6 +169,11 @@ export function expandRecurringEvent(
   }
 
   const occurrences: RecurringCalendarEvent[] = []
+  const exceptionTimestamps = new Set(
+    (event.recurrenceExceptionDates ?? [])
+      .map((value) => new Date(value).getTime())
+      .filter((value) => Number.isFinite(value)),
+  )
   const durationMs = Math.max(baseEnd.getTime() - baseStart.getTime(), 0)
   let currentStart = new Date(baseStart)
   let currentEnd = new Date(baseEnd)
@@ -189,7 +194,10 @@ export function expandRecurringEvent(
       break
     }
 
-    if (rangesOverlap(currentStart, currentEnd, rangeStart, rangeEnd)) {
+    if (
+      !exceptionTimestamps.has(currentStart.getTime()) &&
+      rangesOverlap(currentStart, currentEnd, rangeStart, rangeEnd)
+    ) {
       occurrences.push(
         buildRecurringCalendarEvent(event, currentStart, currentEnd, occurrenceIndex),
       )

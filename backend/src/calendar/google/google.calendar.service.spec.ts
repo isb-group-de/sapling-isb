@@ -29,7 +29,7 @@ type GoogleDeliveryServiceTestHarness = {
     reference: EventGoogleItem,
     accessToken: string,
     classificationMappings: [],
-    operation: 'remove-recurrence',
+    operation: 'remove-recurrence' | 'detach-occurrence',
   ) => Promise<unknown>;
 };
 
@@ -178,7 +178,14 @@ describe('GoogleCalendarService recurrence materialization', () => {
 
     await service.updateEvent(
       { events: { patch } },
-      { handle: 42 } as EventItem,
+      {
+        handle: 42,
+        title: 'Planning',
+        startDate: new Date('2026-07-28T11:00:00.000Z'),
+        endDate: new Date('2026-07-28T12:00:00.000Z'),
+        isAllDay: false,
+        participants: [],
+      } as unknown as EventItem,
       { referenceHandle: 'google-1' } as EventGoogleItem,
       'access-token',
       [],
@@ -189,8 +196,54 @@ describe('GoogleCalendarService recurrence materialization', () => {
     expect(patch).toHaveBeenCalledWith({
       calendarId: 'primary',
       eventId: 'google-1',
-      requestBody: { recurrence: [] },
+      requestBody: {
+        start: { dateTime: '2026-07-28T11:00:00.000Z' },
+        end: { dateTime: '2026-07-28T12:00:00.000Z' },
+        recurrence: [],
+      },
       auth: 'access-token',
     });
+  });
+
+  it('patches the series master with the detached occurrence exclusion', async () => {
+    const patch = jest.fn<(...args: unknown[]) => Promise<unknown>>(() =>
+      Promise.resolve({ data: { id: 'google-1' } }),
+    );
+    const service = new GoogleCalendarService(
+      {} as never,
+      {} as never,
+    ) as unknown as GoogleDeliveryServiceTestHarness;
+    const event = {
+      handle: 42,
+      title: 'Planning',
+      startDate: new Date('2026-07-28T11:00:00.000Z'),
+      endDate: new Date('2026-07-28T12:00:00.000Z'),
+      isAllDay: false,
+      recurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=3',
+      recurrenceExceptionDates: ['2026-07-29T11:00:00.000Z'],
+      participants: [],
+    } as unknown as EventItem;
+
+    await service.updateEvent(
+      { events: { patch } },
+      event,
+      { referenceHandle: 'google-1' } as EventGoogleItem,
+      'access-token',
+      [],
+      'detach-occurrence',
+    );
+
+    expect(patch).toHaveBeenCalledWith(
+      expect.objectContaining({
+        calendarId: 'primary',
+        eventId: 'google-1',
+        requestBody: {
+          recurrence: [
+            'RRULE:FREQ=DAILY;INTERVAL=1;COUNT=3',
+            'EXDATE:20260729T110000Z',
+          ],
+        },
+      }),
+    );
   });
 });

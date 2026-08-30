@@ -24,11 +24,10 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { google } from 'googleapis';
+import { calendar_v3, google } from 'googleapis';
 import { EventItem } from '../../entity/EventItem';
 import { EventDeliveryService } from '../event.delivery.service';
 import { PersonSessionItem } from '../../entity/PersonSessionItem';
-import { calendar_v3 } from '@googleapis/calendar';
 import { EntityManager } from '@mikro-orm/core';
 import { EventGoogleItem } from '../../entity/EventGoogleItem';
 import { PersonItem } from '../../entity/PersonItem';
@@ -49,6 +48,8 @@ import {
   isGoogleAuthenticationError,
   normalizeGoogleDateTime,
   normalizeGoogleEmail,
+  normalizeGoogleRecurrence,
+  resolveGoogleSeriesImportEvents,
   SAPLING_GOOGLE_EVENT_CATEGORY_KEY,
   SAPLING_GOOGLE_EVENT_TYPE_KEY,
   truncateGoogleText,
@@ -93,8 +94,9 @@ export class GoogleCalendarService {
   async queueEvent(
     event: EventItem,
     session: PersonSessionItem,
-    operation?: 'remove-recurrence',
+    operation?: 'remove-recurrence' | 'detach-occurrence',
     changedFields?: string[],
+    occurrenceStart?: string,
   ) {
     if (typeof session.handle !== 'number') {
       throw new Error('calendar.sessionHandleRequired');
@@ -106,6 +108,7 @@ export class GoogleCalendarService {
       sessionHandle: session.handle,
       ...(operation ? { operation } : {}),
       ...(changedFields ? { changedFields } : {}),
+      ...(occurrenceStart ? { occurrenceStart } : {}),
     });
   }
 
@@ -122,8 +125,9 @@ export class GoogleCalendarService {
     eventHandle: number,
     accessToken: string,
     personHandle?: number,
-    operation?: 'remove-recurrence',
+    operation?: 'remove-recurrence' | 'detach-occurrence',
     changedFields?: string[],
+    _occurrenceStart?: string,
   ): Promise<any> {
     const calendar = google.calendar({ version: 'v3' });
     // Fork EntityManager for context-specific actions
@@ -380,7 +384,28 @@ export class GoogleCalendarService {
       pageToken = response.data.nextPageToken ?? undefined;
     } while (pageToken);
 
-    return events;
+    return resolveGoogleSeriesImportEvents(events, async (recurringEventId) => {
+      try {
+        const response = await calendar.events.get({
+          calendarId: 'primary',
+          eventId: recurringEventId,
+          auth: accessToken,
+        });
+        return response.data;
+      } catch (error) {
+        const status =
+          typeof error === 'object' &&
+          error !== null &&
+          'code' in error &&
+          typeof error.code === 'number'
+            ? error.code
+            : undefined;
+        if (status === 404 || status === 410) {
+          return null;
+        }
+        throw error;
+      }
+    });
   }
 
   private async refreshGoogleAccessToken(
@@ -529,6 +554,7 @@ export class GoogleCalendarService {
       participants: PersonItem[];
     },
   ): Promise<void> {
+    const recurrence = normalizeGoogleRecurrence(graphEvent.recurrence);
     event.title = truncateGoogleText(
       graphEvent.summary?.trim() || 'Google event',
       128,
@@ -536,6 +562,8 @@ export class GoogleCalendarService {
     event.description = graphEvent.description?.trim() || undefined;
     event.startDate = values.startDate;
     event.endDate = values.endDate;
+    event.recurrenceRule = recurrence.recurrenceRule;
+    event.recurrenceExceptionDates = recurrence.exceptionDates;
     event.type = values.type;
     event.category = values.category;
     event.isAllDay = Boolean(
@@ -643,15 +671,33 @@ export class GoogleCalendarService {
     reference: EventGoogleItem,
     accessToken: string,
     classificationMappings?: CalendarClassificationMapping[] | null,
-    operation?: 'remove-recurrence',
+    operation?: 'remove-recurrence' | 'detach-occurrence',
     changedFields?: string[],
   ): Promise<any> {
     if (operation === 'remove-recurrence') {
+      const resource = buildGoogleCalendarEvent(event, classificationMappings);
       return await calendar.events.patch({
         calendarId: 'primary',
         eventId: reference.referenceHandle,
-        requestBody: { recurrence: [] },
+        requestBody: {
+          start: resource.start,
+          end: resource.end,
+          recurrence: [],
+        },
         auth: accessToken,
+      });
+    }
+
+    if (operation === 'detach-occurrence') {
+      return await calendar.events.patch({
+        calendarId: 'primary',
+        eventId: reference.referenceHandle,
+        requestBody: {
+          recurrence: buildGoogleCalendarEvent(event, classificationMappings)
+            .recurrence,
+        },
+        auth: accessToken,
+        sendUpdates: 'all',
       });
     }
 

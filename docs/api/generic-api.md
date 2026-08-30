@@ -24,6 +24,14 @@ backend/src/entity/global/entity.registry.ts
 
 ## Base URL
 
+Calendar recurrence commands that atomically mutate more than one Event live
+outside generic CRUD under `/api/calendar/events`. In particular,
+`POST /api/calendar/events/:handle/detach-occurrence` accepts the original
+generated `occurrenceStart`, the edited standalone Event payload, and optional
+`expectedUpdatedAt`. It excludes the occurrence from the series and creates the
+standalone Event in one transaction. The endpoint requires Event update access;
+the internal create mutation also enforces Event insert access.
+
 ```text
 /api/generic
 ```

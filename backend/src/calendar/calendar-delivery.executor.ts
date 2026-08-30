@@ -22,7 +22,8 @@ type CalendarProvider = 'google' | 'azure';
 
 type CalendarDeliveryPayload = {
   provider: CalendarProvider;
-  operation?: 'remove-recurrence';
+  operation?: 'remove-recurrence' | 'detach-occurrence';
+  occurrenceStart?: string;
   changedFields?: string[];
   sessionHandle?: number;
   session?: {
@@ -55,7 +56,13 @@ function isCalendarDeliveryPayload(
     isRecord(payload) &&
     (payload.provider === 'google' || payload.provider === 'azure') &&
     (payload.operation === undefined ||
-      payload.operation === 'remove-recurrence') &&
+      payload.operation === 'remove-recurrence' ||
+      payload.operation === 'detach-occurrence') &&
+    (payload.occurrenceStart === undefined ||
+      (typeof payload.occurrenceStart === 'string' &&
+        !Number.isNaN(new Date(payload.occurrenceStart).getTime()))) &&
+    (payload.operation !== 'detach-occurrence' ||
+      typeof payload.occurrenceStart === 'string') &&
     (payload.changedFields === undefined ||
       (Array.isArray(payload.changedFields) &&
         payload.changedFields.every((field) => typeof field === 'string'))) &&
@@ -211,6 +218,7 @@ export class CalendarDeliveryExecutor {
         sessionContext.personHandle,
         delivery.payload.operation,
         delivery.payload.changedFields,
+        delivery.payload.occurrenceStart,
       );
 
       if (await this.persistSuccess(em, delivery, providerResponse)) {
@@ -226,6 +234,7 @@ export class CalendarDeliveryExecutor {
         deliveryId,
         delivery.payload.operation,
         delivery.payload.changedFields,
+        delivery.payload.occurrenceStart,
       );
       if (retried) {
         return;
@@ -310,9 +319,26 @@ export class CalendarDeliveryExecutor {
     eventHandle: number,
     accessToken: string,
     personHandle?: number,
-    operation?: 'remove-recurrence',
+    operation?: 'remove-recurrence' | 'detach-occurrence',
     changedFields?: string[],
+    occurrenceStart?: string,
   ): Promise<unknown> {
+    const setEvent =
+      provider === 'google'
+        ? this.googleCalendarService.setEvent.bind(this.googleCalendarService)
+        : this.azureCalendarService.setEvent.bind(this.azureCalendarService);
+
+    if (occurrenceStart) {
+      return setEvent(
+        eventHandle,
+        accessToken,
+        personHandle,
+        operation,
+        changedFields,
+        occurrenceStart,
+      );
+    }
+
     if (provider === 'google') {
       if (changedFields) {
         return this.googleCalendarService.setEvent(
@@ -426,8 +452,9 @@ export class CalendarDeliveryExecutor {
     sessionContext: ResolvedCalendarSession,
     eventHandle: number,
     deliveryId: number,
-    operation?: 'remove-recurrence',
+    operation?: 'remove-recurrence' | 'detach-occurrence',
     changedFields?: string[],
+    occurrenceStart?: string,
   ): Promise<boolean> {
     if (!sessionContext.refreshToken) {
       return false;
@@ -455,6 +482,7 @@ export class CalendarDeliveryExecutor {
         sessionContext.personHandle,
         operation,
         changedFields,
+        occurrenceStart,
       );
 
       const persisted = await this.persistSuccess(

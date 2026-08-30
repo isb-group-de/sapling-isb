@@ -22,6 +22,7 @@ const EVENT_CALENDAR_FIELDS = [
   'isAllDay',
   'isPrivate',
   'recurrenceRule',
+  'recurrenceExceptionDates',
   'preparationDuration',
   'followUpDuration',
   'onlineMeetingURL',

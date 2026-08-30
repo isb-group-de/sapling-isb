@@ -46,8 +46,6 @@
     "@tsconfig/node22": "^22.0.6",
     "@types/jsdom": "^30.0.0",
     "@types/node": "^26.3.0",
-    "@types/vanilla-tilt": "^1.6.2",
-    "@types/vue-router": "^2.0.0",
     "@types/webfontloader": "^1.6.38",
     "@vitejs/plugin-vue": "^6.0.8",
     "@vitest/eslint-plugin": "^1.6.27",
@@ -55,18 +53,17 @@
     "@vue/eslint-config-typescript": "^14.9.0",
     "@vue/test-utils": "^2.4.11",
     "@vue/tsconfig": "^0.9.1",
-    "canvas": "^3.2.3",
     "eslint": "^10.9.1",
     "eslint-plugin-vue": "~10.10.0",
     "jiti": "^2.7.0",
     "jsdom": "^30.0.1",
     "npm-run-all2": "^9.0.3",
     "prettier": "3.9.6",
+    "sharp": "^0.35.4",
     "typescript": "~6.0.3",
     "vite": "^8.2.2",
     "vite-plugin-vuetify": "^2.1.3",
     "vitest": "^4.1.11",
-    "vue-cli-plugin-vuetify": "~2.5.8",
     "vue-tsc": "^3.3.11"
   },
   "engines": {
@@ -74,6 +71,6 @@
   },
   "type": "module",
   "allowScripts": {
-    "canvas@3.2.3": true
+    "sharp@0.35.4": true
   }
 }

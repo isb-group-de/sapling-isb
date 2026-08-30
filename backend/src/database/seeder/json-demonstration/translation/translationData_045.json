@@ -1,0 +1,74 @@
+[
+  {
+    "entity": "calendar",
+    "property": "recurrenceEditScope",
+    "de": "Wiederkehrender Termin",
+    "en": "Recurring event"
+  },
+  {
+    "entity": "calendar",
+    "property": "recurrenceEditScopeQuestion",
+    "de": "Was möchten Sie bearbeiten?",
+    "en": "What would you like to edit?"
+  },
+  {
+    "entity": "calendar",
+    "property": "recurrenceEditScopeHint",
+    "de": "Die Änderung kann nur für diesen Termin oder für die gesamte Serie gelten.",
+    "en": "Apply the change to this occurrence only or to the entire series."
+  },
+  {
+    "entity": "calendar",
+    "property": "editOccurrence",
+    "de": "Diesen Termin",
+    "en": "This event"
+  },
+  {
+    "entity": "calendar",
+    "property": "editSeries",
+    "de": "Gesamte Serie",
+    "en": "Entire series"
+  },
+  {
+    "entity": "event",
+    "property": "recurrenceExceptionDates",
+    "de": "Ausnahmen der Terminserie",
+    "en": "Series exceptions"
+  },
+  {
+    "entity": "event",
+    "property": "recurrenceOccurrenceInvalid",
+    "de": "Der ausgewählte Termin gehört nicht mehr zu dieser Serie.",
+    "en": "The selected occurrence no longer belongs to this series."
+  },
+  {
+    "entity": "event",
+    "property": "recurrenceOccurrenceDetached",
+    "de": "Der ausgewählte Termin wurde bereits aus der Serie herausgelöst.",
+    "en": "The selected occurrence has already been detached from the series."
+  },
+  {
+    "entity": "event",
+    "property": "invalidOccurrenceRange",
+    "de": "Beginn und Ende des Einzeltermins sind ungültig.",
+    "en": "The standalone event start and end are invalid."
+  },
+  {
+    "entity": "event",
+    "property": "recurrenceNoRemainingOccurrences",
+    "de": "Die Serie enthält keine weiteren, nicht herausgelösten Termine.",
+    "en": "The series contains no remaining occurrences."
+  },
+  {
+    "entity": "calendar",
+    "property": "recurrenceOccurrenceReferenceMissing",
+    "de": "Die externe Serieninstanz konnte nicht ermittelt werden.",
+    "en": "The external series occurrence could not be resolved."
+  },
+  {
+    "entity": "calendar",
+    "property": "invalidOccurrenceStart",
+    "de": "Der ursprüngliche Beginn der Serieninstanz ist ungültig.",
+    "en": "The original series occurrence start is invalid."
+  }
+]
