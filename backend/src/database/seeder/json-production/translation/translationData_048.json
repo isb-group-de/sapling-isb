@@ -1,0 +1,284 @@
+[
+  {
+    "entity": "system",
+    "property": "monitoringMetricHostCpuPercent",
+    "de": "CPU-Auslastung",
+    "en": "CPU utilization"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringMetricHostCpuUserPercent",
+    "de": "CPU-Benutzeranteil",
+    "en": "CPU user time"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringMetricHostCpuSystemPercent",
+    "de": "CPU-Systemanteil",
+    "en": "CPU system time"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringMetricHostLoad1m",
+    "de": "Systemlast (1 Minute)",
+    "en": "System load (1 minute)"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringMetricHostLoad5m",
+    "de": "Systemlast (5 Minuten)",
+    "en": "System load (5 minutes)"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringMetricHostLoad15m",
+    "de": "Systemlast (15 Minuten)",
+    "en": "System load (15 minutes)"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringMetricHostMemoryTotalBytes",
+    "de": "Arbeitsspeicher gesamt",
+    "en": "Total memory"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringMetricHostMemoryUsedBytes",
+    "de": "Arbeitsspeicher belegt",
+    "en": "Used memory"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringMetricHostMemoryUsedPercent",
+    "de": "Arbeitsspeicherauslastung",
+    "en": "Memory utilization"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringMetricHostMemoryAvailableBytes",
+    "de": "Arbeitsspeicher verfügbar",
+    "en": "Available memory"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringMetricHostSwapUsedBytes",
+    "de": "Auslagerungsspeicher belegt",
+    "en": "Used swap"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringMetricHostSwapUsedPercent",
+    "de": "Auslagerungsspeicherauslastung",
+    "en": "Swap utilization"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringMetricProcessCpuPercent",
+    "de": "Backend-Prozess-CPU",
+    "en": "Backend process CPU"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringMetricProcessMemoryRssBytes",
+    "de": "Prozessspeicher (RSS)",
+    "en": "Process memory (RSS)"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringMetricProcessMemoryHeapUsedBytes",
+    "de": "Heap belegt",
+    "en": "Used heap"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringMetricProcessMemoryHeapTotalBytes",
+    "de": "Heap gesamt",
+    "en": "Total heap"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringMetricProcessMemoryExternalBytes",
+    "de": "Externer Prozessspeicher",
+    "en": "External process memory"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringMetricProcessEventLoopP95Ms",
+    "de": "Event-Loop-Verzögerung (p95)",
+    "en": "Event loop delay (p95)"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringMetricProcessUptimeSeconds",
+    "de": "Backend-Laufzeit",
+    "en": "Backend uptime"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringMetricProcessStartedAtEpochMs",
+    "de": "Backend-Startzeit",
+    "en": "Backend start time"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringMetricNetworkRxBytesPerSecond",
+    "de": "Netzwerkempfang",
+    "en": "Network receive"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringMetricNetworkTxBytesPerSecond",
+    "de": "Netzwerkversand",
+    "en": "Network transmit"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringMetricNetworkRxErrors",
+    "de": "Netzwerk-Empfangsfehler",
+    "en": "Network receive errors"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringMetricNetworkTxErrors",
+    "de": "Netzwerk-Sendefehler",
+    "en": "Network transmit errors"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringMetricNetworkRxDropped",
+    "de": "Verworfene Empfangspakete",
+    "en": "Dropped receive packets"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringMetricNetworkTxDropped",
+    "de": "Verworfene Sendepakete",
+    "en": "Dropped transmit packets"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringMetricFilesystemUsedPercent",
+    "de": "Dateisystemauslastung",
+    "en": "Filesystem utilization"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringMetricFilesystemUsedBytes",
+    "de": "Dateisystem belegt",
+    "en": "Used filesystem space"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringMetricFilesystemSizeBytes",
+    "de": "Dateisystemgröße",
+    "en": "Filesystem size"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringMetricDatabaseActiveConnections",
+    "de": "Aktive Datenbankverbindungen",
+    "en": "Active database connections"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringMetricDatabaseMaxConnections",
+    "de": "Maximale Datenbankverbindungen",
+    "en": "Maximum database connections"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringMetricDatabaseConnectionUsedPercent",
+    "de": "Datenbankverbindungsauslastung",
+    "en": "Database connection utilization"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringMetricDatabaseSizeBytes",
+    "de": "Datenbankgröße",
+    "en": "Database size"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringMetricDocumentStorageSizeBytes",
+    "de": "Dokumentenspeichergröße",
+    "en": "Document storage size"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringMetricDocumentStorageFileCount",
+    "de": "Dokumentenanzahl",
+    "en": "Document count"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringMetricQueueWaiting",
+    "de": "Wartende Queue-Aufträge",
+    "en": "Waiting queue jobs"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringMetricQueueActive",
+    "de": "Aktive Queue-Aufträge",
+    "en": "Active queue jobs"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringMetricQueueFailed",
+    "de": "Fehlgeschlagene Queue-Aufträge",
+    "en": "Failed queue jobs"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringMetricQueueDelayed",
+    "de": "Verzögerte Queue-Aufträge",
+    "en": "Delayed queue jobs"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringMetricQueuePaused",
+    "de": "Pausierte Queue",
+    "en": "Paused queue"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringMetricHttp5xxRate",
+    "de": "HTTP-5xx-Fehlerrate",
+    "en": "HTTP 5xx error rate"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringMetricHttpP95Ms",
+    "de": "HTTP-Latenz (p95)",
+    "en": "HTTP latency (p95)"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringMetricAiErrorRate",
+    "de": "KI-Fehlerrate",
+    "en": "AI error rate"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringMetricCollectorGapSeconds",
+    "de": "Collector-Messlücke",
+    "en": "Collector gap"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringMetricTelemetrySpoolOverflow",
+    "de": "Telemetrie-Spool-Überlauf",
+    "en": "Telemetry spool overflow"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringMetricUserAiTotalTokens",
+    "de": "KI-Tokens je Benutzer",
+    "en": "AI tokens per user"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringMetricUserHttpTrafficBytes",
+    "de": "HTTP-Traffic je Benutzer",
+    "en": "HTTP traffic per user"
+  }
+]

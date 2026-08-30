@@ -2,6 +2,7 @@ import { Strategy } from 'passport-local';
 import { PassportStrategy } from '@nestjs/passport';
 import { Injectable } from '@nestjs/common';
 import { AuthService } from '../auth.service';
+import { AuthenticationTelemetryService } from '../authentication-telemetry.service';
 
 /**
  * @class
@@ -21,7 +22,10 @@ export class LocalStrategy extends PassportStrategy(Strategy, 'local') {
    * Initializes the local strategy with custom username and password fields.
    * @param authService Service for validating user credentials
    */
-  constructor(private authService: AuthService) {
+  constructor(
+    private authService: AuthService,
+    private readonly authenticationTelemetry: AuthenticationTelemetryService,
+  ) {
     super({
       usernameField: 'loginName',
       passwordField: 'loginPassword',
@@ -35,6 +39,15 @@ export class LocalStrategy extends PassportStrategy(Strategy, 'local') {
    * @returns The validated user object
    */
   async validate(loginName: string, loginPassword: string): Promise<any> {
-    return await this.authService.validate(loginName, loginPassword);
+    try {
+      const user = await this.authService.validate(loginName, loginPassword);
+      if (!user) {
+        void this.authenticationTelemetry.record('loginFailure', 'local');
+      }
+      return user;
+    } catch (error) {
+      void this.authenticationTelemetry.record('loginFailure', 'local');
+      throw error;
+    }
   }
 }

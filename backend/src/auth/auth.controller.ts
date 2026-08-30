@@ -6,6 +6,7 @@ import {
   ForbiddenException,
   Get,
   InternalServerErrorException,
+  Optional,
   Param,
   Post,
   Req,
@@ -45,6 +46,10 @@ import {
 } from './dto/passkey.dto';
 import { PersonItem } from '../entity/PersonItem';
 import { createSessionCookieSecurityOptions } from '../session/session.config';
+import {
+  AuthenticationTelemetryProvider,
+  AuthenticationTelemetryService,
+} from './authentication-telemetry.service';
 
 const PASSKEY_CHALLENGE_TTL_MS = 5 * 60 * 1000;
 
@@ -85,12 +90,15 @@ export class AuthController {
     _authService?: AuthService,
     _providerUserImportService?: AuthProviderUserImportService,
     private readonly authPasskeyService?: AuthPasskeyService,
+    @Optional()
+    private readonly authenticationTelemetry?: AuthenticationTelemetryService,
   ) {}
 
   private completeLogin(
     req: Request,
     res: Response,
     onSuccess: (user: Express.User) => void,
+    provider: AuthenticationTelemetryProvider = 'unknown',
   ): void {
     const user = req.user;
 
@@ -106,6 +114,15 @@ export class AuthController {
           return;
         }
 
+        const handle =
+          typeof user === 'object' && user && 'handle' in user
+            ? (user as { handle?: unknown }).handle
+            : null;
+        void this.authenticationTelemetry?.record(
+          'loginSuccess',
+          provider,
+          typeof handle === 'number' ? handle : null,
+        );
         onSuccess(user);
       });
     };
@@ -256,10 +273,15 @@ export class AuthController {
       return;
     }
 
-    this.completeLogin(req, res, () => {
-      this.setSessionMaxAge(req, body?.rememberMe === true);
-      res.send();
-    });
+    this.completeLogin(
+      req,
+      res,
+      () => {
+        this.setSessionMaxAge(req, body?.rememberMe === true);
+        res.send();
+      },
+      'local',
+    );
   }
 
   @Post('local/passkey/verify')
@@ -281,18 +303,33 @@ export class AuthController {
     const sessionPayload = this.assertFreshPasskeyLoginSession(req);
     this.clearPasskeyLoginSession(req);
 
-    const user = await passkeyService.verifyAuthentication(
-      sessionPayload.personHandle,
-      dto.response,
-      sessionPayload.challenge,
-      sessionPayload.context,
-    );
+    let user: PersonItem;
+    try {
+      user = await passkeyService.verifyAuthentication(
+        sessionPayload.personHandle,
+        dto.response,
+        sessionPayload.challenge,
+        sessionPayload.context,
+      );
+    } catch (error) {
+      void this.authenticationTelemetry?.record(
+        'loginFailure',
+        'passkey',
+        sessionPayload.personHandle,
+      );
+      throw error;
+    }
     req.user = user;
 
-    this.completeLogin(req, res, () => {
-      this.setSessionMaxAge(req, sessionPayload.rememberMe);
-      res.send();
-    });
+    this.completeLogin(
+      req,
+      res,
+      () => {
+        this.setSessionMaxAge(req, sessionPayload.rememberMe);
+        res.send();
+      },
+      'passkey',
+    );
   }
 
   /**
@@ -329,11 +366,17 @@ export class AuthController {
   @UseGuards(AuthGuard('azure-ad'))
   azureCallback(@Req() req: Request, @Res() res: Response) {
     if (!req.user) {
+      void this.authenticationTelemetry?.record('loginFailure', 'azure');
       return res.status(400).send('User not found');
     }
-    this.completeLogin(req, res, () => {
-      res.redirect(SAPLING_FRONTEND_URL);
-    });
+    this.completeLogin(
+      req,
+      res,
+      () => {
+        res.redirect(SAPLING_FRONTEND_URL);
+      },
+      'azure',
+    );
   }
 
   /**
@@ -370,11 +413,17 @@ export class AuthController {
   @UseGuards(AuthGuard('google'))
   googleCallback(@Req() req: Request, @Res() res: Response) {
     if (!req.user) {
+      void this.authenticationTelemetry?.record('loginFailure', 'google');
       return res.status(400).send('User not found');
     }
-    this.completeLogin(req, res, () => {
-      res.redirect(SAPLING_FRONTEND_URL);
-    });
+    this.completeLogin(
+      req,
+      res,
+      () => {
+        res.redirect(SAPLING_FRONTEND_URL);
+      },
+      'google',
+    );
   }
 
   /**
@@ -392,11 +441,21 @@ export class AuthController {
   })
   @ApiResponse({ status: 200, description: 'Logout completed successfully' })
   logout(@Req() req: Request, @Res() res: Response) {
+    const personHandle =
+      typeof req.user === 'object' && req.user && 'handle' in req.user
+        ? (req.user as { handle?: unknown }).handle
+        : null;
     req.logout((logoutError) => {
       if (logoutError) {
         res.status(500).send(logoutError);
         return;
       }
+
+      void this.authenticationTelemetry?.record(
+        'logout',
+        'unknown',
+        typeof personHandle === 'number' ? personHandle : null,
+      );
 
       if (!req.session) {
         res.clearCookie(

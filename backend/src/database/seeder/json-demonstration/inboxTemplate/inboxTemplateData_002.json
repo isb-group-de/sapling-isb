@@ -1,0 +1,11 @@
+[
+  {
+    "name": "System monitoring alert",
+    "description": "Administrator notification for a newly opened system monitoring incident.",
+    "titleTemplate": "System monitoring alert",
+    "bodyMarkdown": "A system monitoring threshold has been exceeded. Open the system page for details.",
+    "isDefault": true,
+    "isActive": true,
+    "entity": "systemAlertIncident"
+  }
+]

@@ -80,6 +80,13 @@ export function getNotificationInboxRoute(notification: InboxNotificationItem): 
   const referenceHandle = notification.referenceHandle?.trim()
 
   if (entityHandle && referenceHandle) {
+    if (entityHandle === 'systemAlertIncident') {
+      return {
+        path: '/system',
+        query: { incident: referenceHandle },
+      }
+    }
+
     if (entityHandle === 'event') {
       return getEventCalendarRoute(referenceHandle)
     }

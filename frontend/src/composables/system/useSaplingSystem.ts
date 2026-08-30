@@ -80,7 +80,7 @@ export function useSaplingSystem() {
 
   const lastUpdated = ref<Date | null>(null)
 
-  const POLL_INTERVAL = 3000
+  const POLL_INTERVAL = 30000
 
   const { translationService, isLoading } = useTranslationLoader('global', 'system', 'navigation')
   //#endregion

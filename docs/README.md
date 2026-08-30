@@ -39,6 +39,7 @@ The documentation should stay close to the code, but not duplicate every class o
 - [AI Prompting And Tool Use Guide For Sapling Agents](ai/sapling-agent-tool-use-guide.md)
 - [Configurable AI Agents](ai/configurable-agents.md)
 - [Operational Runbook](operations/operational-runbook.md)
+- [System Monitoring And Telemetry](features/system-monitoring.md)
 
 ## Recommended Documentation Set
 

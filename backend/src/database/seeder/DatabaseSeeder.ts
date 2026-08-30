@@ -121,6 +121,7 @@ import { AiAgentVersionItem } from '../../entity/AiAgentVersionItem';
 import { CustomFieldTypeItem } from '../../entity/CustomFieldTypeItem';
 import { EmailInboxProcessingModeItem } from '../../entity/EmailInboxProcessingModeItem';
 import { InboundEmailStatusItem } from '../../entity/InboundEmailStatusItem';
+import { SystemAlertRuleItem } from '../../entity/SystemAlertRuleItem';
 
 /**
  * Declarative seed order.
@@ -154,6 +155,7 @@ const SEED_ORDER: Array<EntityName<object> | (new () => Seeder)> = [
   CompanyRelationshipItem,
   EntityGroupItem,
   EntityItem,
+  SystemAlertRuleItem,
   EntityRouteItem,
   ChangeLogActionItem,
   ScriptButtonItem,

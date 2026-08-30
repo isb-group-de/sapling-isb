@@ -26,9 +26,18 @@ import { AuthModule } from '../../auth/auth.module';
 import { GenericModule } from '../generic/generic.module';
 import { DatabaseService } from './services/database.service';
 import { DocumentStorageService } from './services/document-storage.service';
+import { HttpTelemetryService } from './services/http-telemetry.service';
+import { SystemTelemetryCollectorService } from './services/system-telemetry-collector.service';
+import { SystemMonitoringQueryService } from './services/system-monitoring-query.service';
+import { AiUsageTelemetryService } from './services/ai-usage-telemetry.service';
+import { SystemAlertService } from './services/system-alert.service';
+import { SystemTelemetryRetentionService } from './services/system-telemetry-retention.service';
+import { SystemAlertNotificationService } from './services/system-alert-notification.service';
+import { OpenTaskEventsModule } from '../current/open-task-events.module';
+import { TelemetrySpoolService } from './services/telemetry-spool.service';
 
 @Module({
-  imports: [AuthModule, GenericModule],
+  imports: [AuthModule, GenericModule, OpenTaskEventsModule],
   controllers: [SystemController],
   providers: [
     CpuService,
@@ -40,6 +49,19 @@ import { DocumentStorageService } from './services/document-storage.service';
     VersionService,
     DatabaseService,
     DocumentStorageService,
+    HttpTelemetryService,
+    SystemTelemetryCollectorService,
+    SystemMonitoringQueryService,
+    AiUsageTelemetryService,
+    SystemAlertService,
+    SystemTelemetryRetentionService,
+    SystemAlertNotificationService,
+    TelemetrySpoolService,
+  ],
+  exports: [
+    HttpTelemetryService,
+    SystemTelemetryCollectorService,
+    AiUsageTelemetryService,
   ],
 })
 export class SystemModule {}

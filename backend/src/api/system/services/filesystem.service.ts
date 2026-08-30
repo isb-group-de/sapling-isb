@@ -6,14 +6,33 @@
  */
 import { Injectable } from '@nestjs/common';
 import systeminformation from 'systeminformation';
+import {
+  filesystemDimension,
+  getExcludedWindowsFilesystemRoots,
+  isMonitorableFilesystem,
+} from './filesystem-monitoring.util';
 
 @Injectable()
 export class FilesystemService {
+  private ignoredFilesystemDimensions: string[] = [];
+
   /**
    * Returns filesystem information.
    * @returns {Promise<object>} Filesystem information object
    */
   async getFilesystem() {
-    return await systeminformation.fsSize();
+    const filesystems = await systeminformation.fsSize();
+    const excludedWindowsRoots = await getExcludedWindowsFilesystemRoots();
+    const included = filesystems.filter((filesystem) =>
+      isMonitorableFilesystem(filesystem, excludedWindowsRoots),
+    );
+    this.ignoredFilesystemDimensions = filesystems
+      .filter((filesystem) => !included.includes(filesystem))
+      .map(filesystemDimension);
+    return included;
+  }
+
+  getIgnoredFilesystemDimensions(): readonly string[] {
+    return this.ignoredFilesystemDimensions;
   }
 }

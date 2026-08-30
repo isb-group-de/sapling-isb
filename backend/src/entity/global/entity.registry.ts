@@ -123,6 +123,13 @@ import { AiProviderTypeItem } from '../AiProviderTypeItem';
 import { AiProviderModelItem } from '../AiProviderModelItem';
 import { McpServerConfigItem } from '../McpServerConfigItem';
 import { SessionStoreItem } from '../SessionStoreItem';
+import { AiUsageEventItem } from '../AiUsageEventItem';
+import { AuthenticationEventItem } from '../AuthenticationEventItem';
+import { HttpMetricBucketItem } from '../HttpMetricBucketItem';
+import { SystemAlertIncidentItem } from '../SystemAlertIncidentItem';
+import { SystemAlertRuleItem } from '../SystemAlertRuleItem';
+import { SystemMetricBucketItem } from '../SystemMetricBucketItem';
+import { SystemTelemetryInstanceItem } from '../SystemTelemetryInstanceItem';
 import { EMailListItem } from '../EMailListItem';
 import { TeamsTemplateItem } from '../TeamsTemplateItem';
 import { TeamsSubscriptionItem } from '../TeamsSubscriptionItem';
@@ -341,6 +348,13 @@ const ENTITY_REGISTRY_ENTRIES: EntityRegistryEntry[] = [
   { name: 'aiProviderModel', class: AiProviderModelItem },
   { name: 'mcpServerConfig', class: McpServerConfigItem },
   { name: 'sessionStore', class: SessionStoreItem },
+  { name: 'aiUsageEvent', class: AiUsageEventItem },
+  { name: 'authenticationEvent', class: AuthenticationEventItem },
+  { name: 'httpMetricBucket', class: HttpMetricBucketItem },
+  { name: 'systemAlertIncident', class: SystemAlertIncidentItem },
+  { name: 'systemAlertRule', class: SystemAlertRuleItem },
+  { name: 'systemMetricBucket', class: SystemMetricBucketItem },
+  { name: 'systemTelemetryInstance', class: SystemTelemetryInstanceItem },
   { name: 'product', class: ProductItem },
   { name: 'role', class: RoleItem },
   { name: 'roleStage', class: RoleStageItem },

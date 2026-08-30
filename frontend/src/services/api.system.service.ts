@@ -15,6 +15,19 @@ class ApiSystemService {
       throw error
     }
   }
+
+  static async patch<T>(endpoint: string, payload: unknown): Promise<T> {
+    const normalizedEndpoint = endpoint.replace(/^\/+/, '').replace(/^system\/?/, '')
+    const path = `system/${normalizedEndpoint}`
+
+    try {
+      const response = await axios.patch<T>(buildApiUrl(path), payload)
+      return response.data
+    } catch (error: unknown) {
+      pushApiErrorMessage(error, 'exception.unknownError', path)
+      throw error
+    }
+  }
 }
 
 export default ApiSystemService

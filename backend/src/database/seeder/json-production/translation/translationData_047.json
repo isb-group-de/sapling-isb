@@ -1,0 +1,21 @@
+[
+  { "entity": "system", "property": "monitoringStorage", "de": "Speicher", "en": "Storage" },
+  { "entity": "system", "property": "monitoringSystemInfo", "de": "Systeminfo", "en": "System info" },
+  { "entity": "system", "property": "monitoringFilesystemUsage", "de": "Dateisystemauslastung", "en": "Filesystem usage" },
+  { "entity": "system", "property": "monitoringDocumentStorage", "de": "Dokumentenspeicher", "en": "Document storage" },
+  { "entity": "system", "property": "monitoringDatabaseConnections", "de": "Datenbankverbindungen", "en": "Database connections" },
+  { "entity": "system", "property": "monitoringDatabaseSize", "de": "Datenbankgröße", "en": "Database size" },
+  { "entity": "system", "property": "monitoringRequestAnalysis", "de": "Request-Analyse", "en": "Request analysis" },
+  { "entity": "system", "property": "monitoringUserAnalysis", "de": "Benutzeranalyse", "en": "User analysis" },
+  { "entity": "system", "property": "monitoringAiAnalysis", "de": "Provider- und Tokenanalyse", "en": "Provider and token analysis" },
+  { "entity": "system", "property": "monitoringIncidentOpen", "de": "Offen", "en": "Open" },
+  { "entity": "system", "property": "monitoringIncidentHistory", "de": "Verlauf", "en": "History" },
+  { "entity": "system", "property": "monitoringIncidentResolved", "de": "Gelöst", "en": "Resolved" },
+  { "entity": "system", "property": "monitoringNoIncidents", "de": "Keine Vorfälle in dieser Ansicht.", "en": "No incidents in this view." },
+  { "entity": "system", "property": "monitoringConfiguration", "de": "Konfiguration", "en": "Configuration" },
+  { "entity": "system", "property": "monitoringOperations", "de": "Betrieb und Limits", "en": "Operations and limits" },
+  { "entity": "system", "property": "monitoringModel", "de": "Modell", "en": "Model" },
+  { "entity": "system", "property": "monitoringApiTokens", "de": "API-Tokens", "en": "API tokens" },
+  { "entity": "system", "property": "monitoringLastUsed", "de": "Zuletzt verwendet", "en": "Last used" },
+  { "entity": "system", "property": "monitoringDescription", "de": "Bezeichnung", "en": "Description" }
+]

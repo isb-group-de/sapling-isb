@@ -234,6 +234,15 @@ size-sorted lists only when opened through `GET /api/system/database/tables`
 and `GET /api/system/document-storage/entities`; closing the dialog keeps those
 full lists out of the normal system-monitor refresh cycle.
 
+The same page also reads persistent server-side telemetry. Collection runs in
+the backend even when no browser has the page open. Infrastructure samples are
+taken every ten seconds by default, HTTP activity is written in aggregated
+minute buckets, and AI usage plus login events are retained for up to 90 days.
+Check `GET /api/system/monitoring/collector-status` when charts show a gap.
+The relevant environment switches are `SYSTEM_TELEMETRY_ENABLED`,
+`SYSTEM_TELEMETRY_INSTANCE_ID`, `SYSTEM_TELEMETRY_SAMPLE_INTERVAL_MS`, and
+`SYSTEM_TELEMETRY_SPOOL_MAX_MB`.
+
 After deployment or an update:
 
 1. Backend starts without migration errors.

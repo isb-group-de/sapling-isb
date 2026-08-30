@@ -239,6 +239,12 @@ export class AuthService {
       now,
     );
 
+    Object.defineProperty(user, '_apiTokenHandle', {
+      value: token.handle,
+      configurable: true,
+      enumerable: false,
+    });
+
     return user;
   }
 

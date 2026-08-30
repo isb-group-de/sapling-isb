@@ -1,0 +1,58 @@
+[
+  {
+    "handle": "aiUsageEvent",
+    "canShow": false,
+    "canRead": false,
+    "canInsert": false,
+    "canUpdate": false,
+    "canDelete": false
+  },
+  {
+    "handle": "authenticationEvent",
+    "canShow": false,
+    "canRead": false,
+    "canInsert": false,
+    "canUpdate": false,
+    "canDelete": false
+  },
+  {
+    "handle": "httpMetricBucket",
+    "canShow": false,
+    "canRead": false,
+    "canInsert": false,
+    "canUpdate": false,
+    "canDelete": false
+  },
+  {
+    "handle": "systemAlertIncident",
+    "canShow": false,
+    "canRead": false,
+    "canInsert": false,
+    "canUpdate": false,
+    "canDelete": false
+  },
+  {
+    "handle": "systemAlertRule",
+    "canShow": false,
+    "canRead": false,
+    "canInsert": false,
+    "canUpdate": false,
+    "canDelete": false
+  },
+  {
+    "handle": "systemMetricBucket",
+    "canShow": false,
+    "canRead": false,
+    "canInsert": false,
+    "canUpdate": false,
+    "canDelete": false
+  },
+  {
+    "handle": "systemTelemetryInstance",
+    "canShow": false,
+    "canRead": false,
+    "canInsert": false,
+    "canUpdate": false,
+    "canDelete": false
+  }
+]

@@ -478,6 +478,28 @@ export const LOG_REQUESTS_CONSOLE_ENABLED: boolean =
 export const LOG_REQUESTS_FILE_ENABLED: boolean =
   process.env.LOG_REQUESTS_FILE_ENABLED?.trim().toLowerCase() !== 'false';
 
+/** Enables the persistent server-side monitoring collector. */
+export const SYSTEM_TELEMETRY_ENABLED: boolean =
+  process.env.SYSTEM_TELEMETRY_ENABLED?.trim().toLowerCase() !== 'false';
+
+/** Stable instance identifier used to separate measurements from backend nodes. */
+export const SYSTEM_TELEMETRY_INSTANCE_ID: string =
+  process.env.SYSTEM_TELEMETRY_INSTANCE_ID?.trim() ||
+  process.env.INSTANCE_ID?.trim() ||
+  '';
+
+/** Fast infrastructure sampling interval. Values below five seconds are rejected. */
+export const SYSTEM_TELEMETRY_SAMPLE_INTERVAL_MS: number = Math.max(
+  5000,
+  parseInt(process.env.SYSTEM_TELEMETRY_SAMPLE_INTERVAL_MS || '10000', 10),
+);
+
+/** Maximum local telemetry fallback spool size. */
+export const SYSTEM_TELEMETRY_SPOOL_MAX_MB: number = Math.max(
+  10,
+  parseInt(process.env.SYSTEM_TELEMETRY_SPOOL_MAX_MB || '100', 10),
+);
+
 /**
  * @constant {string[]} LOG_APPENDERS
  * List of log appenders. Defaults to ['console', 'file'].

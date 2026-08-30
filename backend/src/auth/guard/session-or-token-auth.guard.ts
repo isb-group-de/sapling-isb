@@ -10,6 +10,7 @@ import { isPublicGenericReadEntity } from '../public-generic-read-entities';
 import { performance } from 'perf_hooks';
 import type { Response } from 'express';
 import { appendServerTiming } from '../../api/common/performance-timing.interceptor';
+import { PersonItem } from '../../entity/PersonItem';
 
 @Injectable()
 export class SessionOrBearerAuthGuard implements CanActivate {
@@ -32,6 +33,9 @@ export class SessionOrBearerAuthGuard implements CanActivate {
     }
 
     if (req.user) {
+      (req as Request & { telemetry?: { authKind?: string } }).telemetry = {
+        authKind: 'session',
+      };
       appendServerTiming(
         response,
         `auth;dur=${(performance.now() - startedAt).toFixed(1)}`,
@@ -55,6 +59,18 @@ export class SessionOrBearerAuthGuard implements CanActivate {
     }
 
     req.user = user;
+    const tokenHandle = (user as PersonItem & { _apiTokenHandle?: number })
+      ._apiTokenHandle;
+    (
+      req as Request & {
+        telemetry?: { authKind?: string; apiTokenHandle?: number };
+      }
+    ).telemetry = {
+      authKind: 'apiToken',
+      ...(typeof tokenHandle === 'number'
+        ? { apiTokenHandle: tokenHandle }
+        : {}),
+    };
     appendServerTiming(
       response,
       `auth;dur=${(performance.now() - startedAt).toFixed(1)}`,

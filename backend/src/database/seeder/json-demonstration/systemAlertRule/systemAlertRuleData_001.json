@@ -1,0 +1,202 @@
+[
+  {
+    "handle": "cpu-warning",
+    "title": "CPU usage warning",
+    "metricKey": "host.cpu.percent",
+    "severity": "warning",
+    "comparator": "gt",
+    "threshold": 85,
+    "windowSeconds": 300,
+    "minimumCount": 20,
+    "isActive": true
+  },
+  {
+    "handle": "cpu-critical",
+    "title": "CPU usage critical",
+    "metricKey": "host.cpu.percent",
+    "severity": "critical",
+    "comparator": "gt",
+    "threshold": 95,
+    "windowSeconds": 300,
+    "minimumCount": 20,
+    "isActive": true
+  },
+  {
+    "handle": "memory-warning",
+    "title": "Memory usage warning",
+    "metricKey": "host.memory.usedPercent",
+    "severity": "warning",
+    "comparator": "gt",
+    "threshold": 85,
+    "windowSeconds": 600,
+    "minimumCount": 30,
+    "isActive": true
+  },
+  {
+    "handle": "memory-critical",
+    "title": "Memory usage critical",
+    "metricKey": "host.memory.usedPercent",
+    "severity": "critical",
+    "comparator": "gt",
+    "threshold": 95,
+    "windowSeconds": 300,
+    "minimumCount": 20,
+    "isActive": true
+  },
+  {
+    "handle": "filesystem-warning",
+    "title": "Filesystem usage warning",
+    "metricKey": "filesystem.usedPercent",
+    "severity": "warning",
+    "comparator": "gt",
+    "threshold": 80,
+    "windowSeconds": 300,
+    "minimumCount": 3,
+    "isActive": true
+  },
+  {
+    "handle": "filesystem-critical",
+    "title": "Filesystem usage critical",
+    "metricKey": "filesystem.usedPercent",
+    "severity": "critical",
+    "comparator": "gt",
+    "threshold": 90,
+    "windowSeconds": 300,
+    "minimumCount": 3,
+    "isActive": true
+  },
+  {
+    "handle": "database-connections-warning",
+    "title": "Database connections warning",
+    "metricKey": "database.connectionUsedPercent",
+    "severity": "warning",
+    "comparator": "gt",
+    "threshold": 80,
+    "windowSeconds": 300,
+    "minimumCount": 3,
+    "isActive": true
+  },
+  {
+    "handle": "database-connections-critical",
+    "title": "Database connections critical",
+    "metricKey": "database.connectionUsedPercent",
+    "severity": "critical",
+    "comparator": "gt",
+    "threshold": 95,
+    "windowSeconds": 300,
+    "minimumCount": 3,
+    "isActive": true
+  },
+  {
+    "handle": "http-5xx-warning",
+    "title": "HTTP server error rate warning",
+    "metricKey": "http.5xxRate",
+    "severity": "warning",
+    "comparator": "gt",
+    "threshold": 2,
+    "windowSeconds": 300,
+    "minimumCount": 20,
+    "isActive": true
+  },
+  {
+    "handle": "http-5xx-critical",
+    "title": "HTTP server error rate critical",
+    "metricKey": "http.5xxRate",
+    "severity": "critical",
+    "comparator": "gt",
+    "threshold": 5,
+    "windowSeconds": 300,
+    "minimumCount": 20,
+    "isActive": true
+  },
+  {
+    "handle": "http-p95-warning",
+    "title": "HTTP p95 latency warning",
+    "metricKey": "http.p95Ms",
+    "severity": "warning",
+    "comparator": "gt",
+    "threshold": 1000,
+    "windowSeconds": 600,
+    "minimumCount": 20,
+    "isActive": true
+  },
+  {
+    "handle": "http-p95-critical",
+    "title": "HTTP p95 latency critical",
+    "metricKey": "http.p95Ms",
+    "severity": "critical",
+    "comparator": "gt",
+    "threshold": 3000,
+    "windowSeconds": 300,
+    "minimumCount": 20,
+    "isActive": true
+  },
+  {
+    "handle": "ai-errors-warning",
+    "title": "AI error rate warning",
+    "metricKey": "ai.errorRate",
+    "severity": "warning",
+    "comparator": "gt",
+    "threshold": 5,
+    "windowSeconds": 900,
+    "minimumCount": 10,
+    "isActive": true
+  },
+  {
+    "handle": "collector-gap",
+    "title": "Telemetry collector gap",
+    "metricKey": "collector.gapSeconds",
+    "severity": "warning",
+    "comparator": "gt",
+    "threshold": 60,
+    "windowSeconds": 60,
+    "minimumCount": 1,
+    "isActive": true
+  },
+  {
+    "handle": "telemetry-spool-overflow",
+    "title": "Telemetry spool overflow",
+    "metricKey": "telemetry.spool.overflow",
+    "severity": "critical",
+    "comparator": "gt",
+    "threshold": 0,
+    "windowSeconds": 60,
+    "minimumCount": 1,
+    "isActive": true
+  },
+  {
+    "handle": "queue-backlog",
+    "title": "Queue backlog",
+    "metricKey": "queue.waiting",
+    "severity": "warning",
+    "comparator": "gt",
+    "threshold": 100,
+    "windowSeconds": 300,
+    "minimumCount": 3,
+    "isActive": false
+  },
+  {
+    "handle": "user-token-limit",
+    "title": "User token volume",
+    "metricKey": "user.ai.totalTokens",
+    "severity": "warning",
+    "comparator": "gt",
+    "threshold": 100000,
+    "windowSeconds": 3600,
+    "minimumCount": 1,
+    "scope": "user",
+    "isActive": false
+  },
+  {
+    "handle": "user-traffic-limit",
+    "title": "User traffic volume",
+    "metricKey": "user.http.trafficBytes",
+    "severity": "warning",
+    "comparator": "gt",
+    "threshold": 1073741824,
+    "windowSeconds": 3600,
+    "minimumCount": 1,
+    "scope": "user",
+    "isActive": false
+  }
+]

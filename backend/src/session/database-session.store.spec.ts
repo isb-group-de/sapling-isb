@@ -76,7 +76,12 @@ describe('DatabaseSessionStore', () => {
     expect(em.nativeUpdate).toHaveBeenCalledWith(
       expect.anything(),
       { handle: 'session-1' },
-      { expiresAt: expect.any(Date) },
+      expect.objectContaining({
+        expiresAt: expect.any(Date),
+        personHandle: 1,
+        lastSeenAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+      }),
     );
     expect(em.flush).not.toHaveBeenCalled();
   });

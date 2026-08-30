@@ -1,4 +1,6 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Optional } from '@nestjs/common';
+import { randomUUID } from 'crypto';
+import { performance } from 'perf_hooks';
 import { createOpenAiClient } from './openai-ai.runtime';
 import { getGeminiApiKey } from './gemini-ai.runtime';
 import { AiProviderRegistryService } from './ai-provider-registry.service';
@@ -7,6 +9,7 @@ import type {
   AiWebSearchResult,
   AiWebSearchSource,
 } from './ai.types';
+import { AiUsageTelemetryService } from '../system/services/ai-usage-telemetry.service';
 
 export type AiWebSearchInput = {
   query: string;
@@ -16,11 +19,15 @@ export type AiWebSearchInput = {
   maxSources?: number;
   preferredProviderHandle?: string | null;
   preferredModelHandle?: string | null;
+  personHandle?: number | null;
 };
 
 @Injectable()
 export class AiWebSearchService {
-  constructor(private readonly providerRegistry: AiProviderRegistryService) {}
+  constructor(
+    private readonly providerRegistry: AiProviderRegistryService,
+    @Optional() private readonly usageTelemetry?: AiUsageTelemetryService,
+  ) {}
 
   isConfigured(
     preferredProviderHandle?: string | null,
@@ -45,16 +52,42 @@ export class AiWebSearchService {
       input.preferredProviderHandle,
       input.preferredModelHandle,
     );
-    const providerResult =
-      target.providerKind === 'gemini'
-        ? await this.searchGemini(target, query, urls)
-        : await this.searchOpenAi(
-            target,
-            query,
-            urls,
-            allowedDomains,
-            input.searchContextSize ?? 'medium',
-          );
+    const sourceKey = `webSearch:${randomUUID()}`;
+    const startedAt = performance.now();
+    let providerResult: Awaited<ReturnType<AiWebSearchService['searchOpenAi']>>;
+    try {
+      providerResult =
+        target.providerKind === 'gemini'
+          ? await this.searchGemini(target, query, urls)
+          : await this.searchOpenAi(
+              target,
+              query,
+              urls,
+              allowedDomains,
+              input.searchContextSize ?? 'medium',
+            );
+      void this.usageTelemetry?.record({
+        sourceKey,
+        personHandle: input.personHandle,
+        operation: 'webSearch',
+        provider: target.provider.handle,
+        model: target.model.providerModel,
+        status: 'completed',
+        durationMs: Math.round(performance.now() - startedAt),
+        usagePayload: providerResult.usagePayload,
+      });
+    } catch (error) {
+      void this.usageTelemetry?.record({
+        sourceKey,
+        personHandle: input.personHandle,
+        operation: 'webSearch',
+        provider: target.provider.handle,
+        model: target.model.providerModel,
+        status: 'failed',
+        durationMs: Math.round(performance.now() - startedAt),
+      });
+      throw error;
+    }
 
     return {
       query,

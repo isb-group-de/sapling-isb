@@ -63,6 +63,18 @@ export class SessionStoreItem {
   })
   @Property({ nullable: false, type: 'datetime', index: true })
   expiresAt!: Date;
+
+  /** Numeric person handle denormalized from the Passport session payload. */
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly', 'isSystem'])
+  @Property({ nullable: true, type: 'integer', index: true })
+  personHandle?: number | null;
+
+  /** Last authenticated activity observed for this interactive session. */
+  @ApiPropertyOptional({ type: 'string', format: 'date-time' })
+  @Sapling(['isReadOnly', 'isSystem'])
+  @Property({ nullable: true, type: 'datetime', index: true })
+  lastSeenAt?: Date | null;
   // #endregion
 
   // #region Properties: System

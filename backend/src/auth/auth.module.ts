@@ -25,6 +25,7 @@ import { GenericPermissionGuard } from './guard/generic-permission.guard';
 import { AdminPermissionGuard } from './guard/admin-permission.guard';
 import { ImpersonationReadOnlyGuard } from './guard/impersonation-read-only.guard';
 import { CurrentModule } from '../api/current/current.module';
+import { AuthenticationTelemetryService } from './authentication-telemetry.service';
 
 /**
  * @class
@@ -68,6 +69,7 @@ const loginLimiter = rateLimit({
     AdminPermissionGuard,
     GenericPermissionGuard,
     ImpersonationReadOnlyGuard,
+    AuthenticationTelemetryService,
     {
       provide: APP_GUARD,
       useClass: ImpersonationReadOnlyGuard,

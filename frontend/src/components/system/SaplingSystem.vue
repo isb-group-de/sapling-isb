@@ -73,115 +73,77 @@
         </template>
       </SaplingPageHero>
 
-      <section class="sapling-system-metrics">
-        <SaplingSystemMetricCard
-          icon="mdi-shield-check-outline"
-          icon-class="sapling-system-metric__icon--state"
-          :label="$t('system.status')"
-          :value="state?.isReady ? $t('system.isReady') : $t('system.isNotReady')"
-          :detail="state?.isReady ? $t('system.stableServices') : $t('system.followUpRequired')"
-        />
+      <SaplingSystemMonitoring>
+        <template #performance>
+          <SaplingSystemPerformancePanel
+            class="sapling-system-tab-panel"
+            :title="cpu?.brand || $t('system.cpu')"
+            :manufacturer="cpu?.manufacturer"
+            :cpu-gauge-label="$t('system.cpuUsage')"
+            :cpu-gauge-value="formatPercentage(cpuLoadPercentage)"
+            :cpu-gauge-loading="cpuSpeedLoading"
+            :cpu-gauge-progress="cpuLoadPercentage"
+            :memory-gauge-label="$t('system.memory')"
+            :memory-gauge-value="formatPercentage(memoryUsagePercentage)"
+            :memory-gauge-loading="memoryLoading"
+            :memory-gauge-progress="memoryUsagePercentage"
+            :details="performanceDetails"
+          />
+        </template>
 
-        <SaplingSystemMetricCard
-          icon="mdi-cpu-64-bit"
-          icon-class="sapling-system-metric__icon--cpu"
-          :label="$t('system.cpuUsage')"
-          :value="formatPercentage(cpuLoadPercentage)"
-          :detail="`${$t('system.user')} ${formatPercentage(cpuUserLoadPercentage)} · ${$t('system.systemUsage')} ${formatPercentage(cpuSystemLoadPercentage)}`"
-          :value-loading="cpuSpeedLoading"
-          :detail-loading="cpuSpeedLoading"
-        />
+        <template #storage>
+          <div class="sapling-system-tab-stack">
+            <SaplingSystemDocumentStoragePanel
+              :total-size-label="formatBytes(documentStorage?.totalSize ?? 0)"
+              :total-file-count="documentStorage?.totalFileCount ?? 0"
+              :entity-count="documentStorage?.entityCount ?? 0"
+              :loading="documentStorageLoading"
+              :items="documentStorageItems"
+              :show-all-label="$t('system.showAllStorageFolders')"
+              :error="documentStorageError || ''"
+              @show-details="openSizeDetails('documentStorage')"
+            />
+            <SaplingSystemStoragePanel
+              :count="filesystem.length"
+              :items="storageItems"
+              :empty-label="filesystemLoading ? t('global.loading') : $t('system.noStorage')"
+              :error="filesystemError || ''"
+            />
+          </div>
+        </template>
 
-        <SaplingSystemMetricCard
-          icon="mdi-memory"
-          icon-class="sapling-system-metric__icon--memory"
-          :label="$t('system.memory')"
-          :value="formatGigabytes(memory?.used ?? 0)"
-          :detail="`${formatPercentage(memoryUsagePercentage)} · ${formatGigabytes(memory?.total ?? 0)}`"
-          :value-loading="memoryLoading"
-          :detail-loading="memoryLoading"
-        />
+        <template #database>
+          <SaplingSystemDatabasePanel
+            class="sapling-system-tab-panel"
+            :name="displayValue(database?.name)"
+            :engine="displayValue(database?.engine)"
+            :table-count="database?.tableCount ?? 0"
+            :loading="databaseLoading"
+            :items="databaseTableItems"
+            :show-all-label="$t('system.showAllDatabaseTables')"
+            :details="databaseDetails"
+            :error="databaseError || ''"
+            @show-details="openSizeDetails('database')"
+          />
+        </template>
 
-        <SaplingSystemMetricCard
-          icon="mdi-harddisk"
-          icon-class="sapling-system-metric__icon--storage"
-          :label="$t('system.filesystem')"
-          :value="topFilesystem ? formatPercentage(topFilesystem.use) : t('global.notAvailable')"
-          :detail="topFilesystem ? topFilesystem.fs : $t('system.noStorage')"
-          :value-loading="filesystemLoading"
-          :detail-loading="filesystemLoading"
-        />
+        <template #network>
+          <SaplingSystemNetworkPanel
+            :active-interface-count="activeInterfaceCount"
+            :items="networkItems"
+            :empty-label="networkLoading ? t('global.loading') : $t('system.noNetwork')"
+            :error="networkError || ''"
+          />
+        </template>
 
-        <SaplingSystemMetricCard
-          icon="mdi-lan"
-          icon-class="sapling-system-metric__icon--network"
-          :label="$t('system.network')"
-          :value="String(activeInterfaceCount)"
-          :detail="totalNetworkRateDisplay"
-          :value-loading="networkLoading"
-          :detail-loading="networkLoading"
-        />
-      </section>
-
-      <section class="sapling-system-layout">
-        <SaplingSystemOverviewPanel
-          :hostname="displayValue(os?.hostname)"
-          :details="overviewDetails"
-        />
-
-        <SaplingSystemPerformancePanel
-          :title="cpu?.brand || $t('system.cpu')"
-          :manufacturer="cpu?.manufacturer"
-          :cpu-gauge-label="$t('system.cpuUsage')"
-          :cpu-gauge-value="formatPercentage(cpuLoadPercentage)"
-          :cpu-gauge-loading="cpuSpeedLoading"
-          :cpu-gauge-progress="cpuLoadPercentage"
-          :memory-gauge-label="$t('system.memory')"
-          :memory-gauge-value="formatPercentage(memoryUsagePercentage)"
-          :memory-gauge-loading="memoryLoading"
-          :memory-gauge-progress="memoryUsagePercentage"
-          :details="performanceDetails"
-        />
-      </section>
-
-      <section class="sapling-system-layout">
-        <SaplingSystemDatabasePanel
-          :name="displayValue(database?.name)"
-          :engine="displayValue(database?.engine)"
-          :table-count="database?.tableCount ?? 0"
-          :loading="databaseLoading"
-          :items="databaseTableItems"
-          :show-all-label="$t('system.showAllDatabaseTables')"
-          :details="databaseDetails"
-          :error="databaseError || ''"
-          @show-details="openSizeDetails('database')"
-        />
-
-        <SaplingSystemDocumentStoragePanel
-          :total-size-label="formatBytes(documentStorage?.totalSize ?? 0)"
-          :total-file-count="documentStorage?.totalFileCount ?? 0"
-          :entity-count="documentStorage?.entityCount ?? 0"
-          :loading="documentStorageLoading"
-          :items="documentStorageItems"
-          :show-all-label="$t('system.showAllStorageFolders')"
-          :error="documentStorageError || ''"
-          @show-details="openSizeDetails('documentStorage')"
-        />
-      </section>
-
-      <SaplingSystemStoragePanel
-        :count="filesystem.length"
-        :items="storageItems"
-        :empty-label="filesystemLoading ? t('global.loading') : $t('system.noStorage')"
-        :error="filesystemError || ''"
-      />
-
-      <SaplingSystemNetworkPanel
-        :active-interface-count="activeInterfaceCount"
-        :items="networkItems"
-        :empty-label="networkLoading ? t('global.loading') : $t('system.noNetwork')"
-        :error="networkError || ''"
-      />
+        <template #system>
+          <SaplingSystemOverviewPanel
+            class="sapling-system-tab-panel"
+            :hostname="displayValue(os?.hostname)"
+            :details="overviewDetails"
+          />
+        </template>
+      </SaplingSystemMonitoring>
 
       <SaplingSystemSizeDetailsDialog
         v-model="sizeDetailsOpen"
@@ -209,7 +171,6 @@ import type { NetworkInterface } from '@/entity/system'
 import { useSaplingSystem } from '@/composables/system/useSaplingSystem'
 import SaplingPageHero from '@/components/common/SaplingPageHero.vue'
 import SaplingSurface from '@/components/common/SaplingSurface.vue'
-import SaplingSystemMetricCard from '@/components/system/SaplingSystemMetricCard.vue'
 import SaplingSystemDatabasePanel from '@/components/system/SaplingSystemDatabasePanel.vue'
 import SaplingSystemDocumentStoragePanel from '@/components/system/SaplingSystemDocumentStoragePanel.vue'
 import SaplingSystemNetworkPanel from '@/components/system/SaplingSystemNetworkPanel.vue'
@@ -217,6 +178,7 @@ import SaplingSystemOverviewPanel from '@/components/system/SaplingSystemOvervie
 import SaplingSystemPerformancePanel from '@/components/system/SaplingSystemPerformancePanel.vue'
 import SaplingSystemSizeDetailsDialog from '@/components/system/SaplingSystemSizeDetailsDialog.vue'
 import SaplingSystemStoragePanel from '@/components/system/SaplingSystemStoragePanel.vue'
+import SaplingSystemMonitoring from '@/components/system/SaplingSystemMonitoring.vue'
 // #endregion
 
 // #region Composable
@@ -283,8 +245,6 @@ const systemSubtitle = computed(() => {
 
 const osSummary = computed(() => [os.value?.distro, os.value?.release].filter(Boolean).join(' '))
 const cpuLoadPercentage = computed(() => cpuSpeed.value?.currentLoad ?? 0)
-const cpuUserLoadPercentage = computed(() => cpuSpeed.value?.currentLoadUser ?? 0)
-const cpuSystemLoadPercentage = computed(() => cpuSpeed.value?.currentLoadSystem ?? 0)
 
 const memoryUsagePercentage = computed(() => {
   if (!memory.value?.total) {
@@ -294,21 +254,8 @@ const memoryUsagePercentage = computed(() => {
   return (memory.value.used / memory.value.total) * 100
 })
 
-const topFilesystem = computed(
-  () => [...filesystem.value].sort((left, right) => right.use - left.use)[0] ?? null,
-)
-
 const activeInterfaceCount = computed(() => {
   return network.value.filter((iface) => isInterfaceActive(iface.operstate)).length
-})
-
-const totalNetworkRateDisplay = computed(() => {
-  if (networkLoading.value) {
-    return ''
-  }
-
-  const totalRate = network.value.reduce((sum, iface) => sum + iface.rx_sec + iface.tx_sec, 0)
-  return formatBytesPerSecond(totalRate)
 })
 
 const formattedServerTime = computed(() => formatDateTime(time.value?.current))
@@ -646,3 +593,14 @@ async function openSizeDetails(kind: 'database' | 'documentStorage') {
 }
 // #endregion
 </script>
+
+<style scoped>
+.sapling-system-tab-stack {
+  display: grid;
+  gap: 18px;
+}
+
+.sapling-system-tab-panel {
+  width: 100%;
+}
+</style>

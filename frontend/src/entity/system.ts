@@ -146,3 +146,81 @@ export interface DocumentStorage {
     fileCount: number
   }>
 }
+
+export type MonitoringRange = { from: string; to: string }
+
+export interface MonitoringSummary {
+  range: MonitoringRange
+  lastSampleAt: string | null
+  health: 'healthy' | 'warning' | 'critical' | 'unknown'
+  metrics: Record<string, number>
+  requests: {
+    requestCount: number
+    clientErrorCount: number
+    serverErrorCount: number
+    requestBytes: number
+    responseBytes: number
+    averageDurationMs: number
+    durationP95Ms: number
+    durationMaxMs: number
+    serverErrorRate: number
+  }
+  users: { onlineUsers: number; usersWithSessions: number }
+  ai: { totalTokens: number; callCount: number; errorCount: number; reportedCount: number }
+  incidents: { openCount: number; criticalCount: number }
+}
+
+export interface MonitoringSeriesPoint {
+  metricKey: string
+  dimensionKey: string
+  capturedAt: string
+  sampleCount: number
+  minimum: number
+  maximum: number
+  sum: number
+  last: number
+  average: number
+}
+
+export interface MonitoringUser {
+  handle: number
+  firstName?: string | null
+  lastName: string
+  isActive: boolean
+  requests: number
+  errors: number
+  traffic: number
+  lastActivityAt?: string | null
+  tokens: number
+  lastLoginAt?: string | null
+  sessionCount: number
+  online: boolean
+}
+
+export interface MonitoringIncident {
+  handle: number
+  fingerprint: string
+  dimensionKey: string
+  state: 'open' | 'resolved'
+  severity: 'warning' | 'critical'
+  observedValue: number
+  threshold: number
+  healthyEvaluations: number
+  firstSeenAt: string
+  lastSeenAt: string
+  resolvedAt?: string | null
+  rule: MonitoringAlertRule
+}
+
+export interface MonitoringAlertRule {
+  handle: string
+  title: string
+  metricKey: string
+  severity: 'warning' | 'critical'
+  comparator: 'gt' | 'gte' | 'lt' | 'lte'
+  threshold: number
+  windowSeconds: number
+  minimumCount: number
+  scope: string
+  isActive: boolean
+}

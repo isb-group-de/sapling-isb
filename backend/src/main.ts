@@ -9,7 +9,6 @@ import { ValidationPipe } from '@nestjs/common';
 import session from 'express-session';
 import passport from 'passport';
 import express from 'express';
-import type { NextFunction, Request, Response } from 'express';
 import morgan from 'morgan';
 import { createStream } from 'rotating-file-stream';
 import {
@@ -38,18 +37,16 @@ import {
 } from './session/session.config';
 import { enforceTrustedRequestOrigin } from './security/request-origin-protection';
 import {
+  createHttpTelemetryMiddleware,
+  HttpTelemetryService,
+} from './api/system/services/http-telemetry.service';
+import {
   buildGenericEntitySwaggerUiScript,
   enhanceGenericEntitySwaggerDocument,
 } from './swagger/generic-entity-swagger';
 
 type ModelConstructor = abstract new (...args: never[]) => unknown;
 type ProxyConfigurableApp = { set(setting: string, value: unknown): unknown };
-type ResponseEndArguments = [
-  chunk?: unknown,
-  encodingOrCallback?: BufferEncoding | (() => void),
-  callback?: () => void,
-];
-type ResponseEnd = (...args: ResponseEndArguments) => Response;
 
 /**
  * Bootstraps the NestJS application, configures middleware, logging, ORM, Swagger, and CORS.
@@ -69,22 +66,7 @@ async function bootstrap() {
   // Create the NestJS application
   const app = await NestFactory.create(AppModule, { bodyParser: false });
 
-  app.use((_req: Request, res: Response, next: NextFunction) => {
-    const startedAt = performance.now();
-    const originalEnd = res.end.bind(res) as unknown as ResponseEnd;
-    res.end = ((...args: ResponseEndArguments) => {
-      if (!res.headersSent) {
-        const existing = res.getHeader('Server-Timing');
-        const total = `total;dur=${(performance.now() - startedAt).toFixed(1)}`;
-        res.setHeader(
-          'Server-Timing',
-          existing ? `${String(existing)}, ${total}` : total,
-        );
-      }
-      return originalEnd(...args);
-    }) as Response['end'];
-    next();
-  });
+  app.use(createHttpTelemetryMiddleware(app.get(HttpTelemetryService)));
 
   // Enable request parsing with a Sapling-specific payload limit.
   app.use(express.json({ limit: API_REQUEST_BODY_LIMIT }));

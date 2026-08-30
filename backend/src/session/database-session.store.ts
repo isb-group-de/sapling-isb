@@ -58,15 +58,21 @@ export class DatabaseSessionStore extends session.Store {
       const record = await em.findOne(SessionStoreItem, { handle: sid });
       const payload = JSON.stringify(sessionData);
       const expiresAt = this.resolveExpiry(sessionData);
+      const personHandle = this.resolvePersonHandle(sessionData);
+      const lastSeenAt = personHandle == null ? null : new Date();
 
       if (record) {
         record.payload = payload;
         record.expiresAt = expiresAt;
+        record.personHandle = personHandle;
+        record.lastSeenAt = lastSeenAt;
       } else {
         em.create(SessionStoreItem, {
           handle: sid,
           payload,
           expiresAt,
+          personHandle,
+          lastSeenAt,
         });
       }
 
@@ -82,6 +88,7 @@ export class DatabaseSessionStore extends session.Store {
   ): void {
     void this.run(callback, async () => {
       const expiresAt = this.resolveExpiry(sessionData);
+      const personHandle = this.resolvePersonHandle(sessionData);
       const knownExpiry = this.knownExpiryBySession.get(sid);
 
       if (
@@ -95,7 +102,12 @@ export class DatabaseSessionStore extends session.Store {
       const updated = await em.nativeUpdate(
         SessionStoreItem,
         { handle: sid },
-        { expiresAt },
+        {
+          expiresAt,
+          personHandle,
+          ...(personHandle == null ? {} : { lastSeenAt: new Date() }),
+          updatedAt: new Date(),
+        },
       );
       if (updated > 0) {
         this.knownExpiryBySession.set(sid, expiresAt.getTime());
@@ -160,6 +172,15 @@ export class DatabaseSessionStore extends session.Store {
         : this.defaultTtlMs;
 
     return new Date(Date.now() + maxAge);
+  }
+
+  private resolvePersonHandle(sessionData: SessionData): number | null {
+    const handle = (
+      sessionData as SessionData & {
+        passport?: { user?: { handle?: unknown } };
+      }
+    ).passport?.user?.handle;
+    return typeof handle === 'number' ? handle : null;
   }
 
   private deserialize(payload: string): SessionData {

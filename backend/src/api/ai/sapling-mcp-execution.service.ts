@@ -132,6 +132,7 @@ export class SaplingMcpExecutionService {
               typeof args.maxSources === 'number' ? args.maxSources : undefined,
             preferredProviderHandle: policy?.webSearchProviderHandle,
             preferredModelHandle: policy?.webSearchModelHandle,
+            personHandle: user.handle ?? null,
           });
           break;
         case 'import_get_batch':

@@ -1,0 +1,10 @@
+[
+  {
+    "description": "System monitoring alerts",
+    "recipientField": "createdBy",
+    "isActive": true,
+    "entity": "systemAlertIncident",
+    "type": "afterInsert",
+    "template": "System monitoring alert"
+  }
+]

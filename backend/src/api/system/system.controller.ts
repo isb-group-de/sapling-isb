@@ -7,10 +7,17 @@ import {
 } from '@nestjs/swagger';
 import {
   Controller,
+  Body,
   Get,
+  Header,
   HttpCode,
   HttpStatus,
+  Param,
+  ParseIntPipe,
+  Patch,
   Post,
+  Query,
+  Optional,
   UseGuards,
 } from '@nestjs/common';
 import { CpuDto } from './dto/cpu.dto';
@@ -41,6 +48,14 @@ import {
 } from './dto/document-storage.dto';
 import { DatabaseService } from './services/database.service';
 import { DocumentStorageService } from './services/document-storage.service';
+import {
+  MonitoringGroupQueryDto,
+  MonitoringRangeQueryDto,
+  MonitoringSeriesQueryDto,
+  MonitoringUsersQueryDto,
+  UpdateSystemAlertRuleDto,
+} from './dto/monitoring-query.dto';
+import { SystemMonitoringQueryService } from './services/system-monitoring-query.service';
 
 /**
  * @class SystemController
@@ -96,7 +111,81 @@ export class SystemController {
     private readonly globalSearchIndexService: GlobalSearchIndexService,
     private readonly databaseService: DatabaseService,
     private readonly documentStorageService: DocumentStorageService,
+    @Optional()
+    private readonly monitoringService?: SystemMonitoringQueryService,
   ) {}
+
+  @Get('monitoring/summary')
+  @Header('Cache-Control', 'no-store')
+  getMonitoringSummary(@Query() query: MonitoringRangeQueryDto) {
+    return this.monitoringService!.getSummary(query);
+  }
+
+  @Get('monitoring/series')
+  @Header('Cache-Control', 'no-store')
+  getMonitoringSeries(@Query() query: MonitoringSeriesQueryDto) {
+    return this.monitoringService!.getSeries(query);
+  }
+
+  @Get('monitoring/requests')
+  @Header('Cache-Control', 'no-store')
+  getMonitoringRequests(@Query() query: MonitoringGroupQueryDto) {
+    return this.monitoringService!.getRequests(query);
+  }
+
+  @Get('monitoring/users')
+  @Header('Cache-Control', 'no-store')
+  getMonitoringUsers(@Query() query: MonitoringUsersQueryDto) {
+    return this.monitoringService!.getUsers(query);
+  }
+
+  @Get('monitoring/users/:personHandle')
+  @Header('Cache-Control', 'no-store')
+  getMonitoringUser(
+    @Param('personHandle', ParseIntPipe) personHandle: number,
+    @Query() query: MonitoringRangeQueryDto,
+  ) {
+    return this.monitoringService!.getUser(personHandle, query);
+  }
+
+  @Get('monitoring/ai-usage')
+  @Header('Cache-Control', 'no-store')
+  getMonitoringAiUsage(@Query() query: MonitoringGroupQueryDto) {
+    return this.monitoringService!.getAiUsage(query);
+  }
+
+  @Get('monitoring/incidents')
+  @Header('Cache-Control', 'no-store')
+  getMonitoringIncidents() {
+    return this.monitoringService!.getIncidents();
+  }
+
+  @Get('monitoring/incidents/:handle')
+  @Header('Cache-Control', 'no-store')
+  getMonitoringIncident(@Param('handle', ParseIntPipe) handle: number) {
+    return this.monitoringService!.getIncident(handle);
+  }
+
+  @Get('monitoring/alert-rules')
+  @Header('Cache-Control', 'no-store')
+  getMonitoringAlertRules() {
+    return this.monitoringService!.getAlertRules();
+  }
+
+  @Patch('monitoring/alert-rules/:handle')
+  @Header('Cache-Control', 'no-store')
+  updateMonitoringAlertRule(
+    @Param('handle') handle: string,
+    @Body() dto: UpdateSystemAlertRuleDto,
+  ) {
+    return this.monitoringService!.updateAlertRule(handle, dto);
+  }
+
+  @Get('monitoring/collector-status')
+  @Header('Cache-Control', 'no-store')
+  getMonitoringCollectorStatus() {
+    return this.monitoringService!.getCollectorStatus();
+  }
 
   @Get('database')
   @ApiBearerAuth()

@@ -1,0 +1,332 @@
+[
+  {
+    "entity": "system",
+    "property": "monitoringEyebrow",
+    "de": "Historische Systemanalyse",
+    "en": "Historical system analysis"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringTitle",
+    "de": "Monitoring und Telemetrie",
+    "en": "Monitoring and telemetry"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringSubtitle",
+    "de": "Serverseitig erfasste Infrastruktur-, Request-, Benutzer- und KI-Metriken",
+    "en": "Server-side infrastructure, request, user and AI metrics"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringRange",
+    "de": "Zeitraum",
+    "en": "Time range"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringHealth",
+    "de": "Gesundheit",
+    "en": "Health"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringHealth_healthy",
+    "de": "Gesund",
+    "en": "Healthy"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringHealth_warning",
+    "de": "Warnung",
+    "en": "Warning"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringHealth_critical",
+    "de": "Kritisch",
+    "en": "Critical"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringHealth_unknown",
+    "de": "Noch keine Daten",
+    "en": "No data yet"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringOpenIncidents",
+    "de": "offene Vorfälle",
+    "en": "open incidents"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringRequests",
+    "de": "Requests",
+    "en": "Requests"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringServerErrors",
+    "de": "Serverfehler",
+    "en": "server errors"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringOnlineUsers",
+    "de": "Aktive Benutzer",
+    "en": "Active users"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringValidSessions",
+    "de": "gültige Sitzungen",
+    "en": "valid sessions"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringTokens",
+    "de": "KI-Tokens",
+    "en": "AI tokens"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringAiCalls",
+    "de": "KI-Aufrufe",
+    "en": "AI calls"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringOverview",
+    "de": "Übersicht",
+    "en": "Overview"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringInfrastructure",
+    "de": "Infrastruktur",
+    "en": "Infrastructure"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringUsers",
+    "de": "Benutzer",
+    "en": "Users"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringAiTokens",
+    "de": "KI & Tokens",
+    "en": "AI & tokens"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringAlerts",
+    "de": "Alarme",
+    "en": "Alerts"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringCpuMemory",
+    "de": "CPU- und Speicherauslastung",
+    "en": "CPU and memory utilization"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringRuntime",
+    "de": "Runtime",
+    "en": "Runtime"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringEventLoop",
+    "de": "Event-Loop-Verzögerung (p95)",
+    "en": "Event loop delay (p95)"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringProcessMemory",
+    "de": "Backend-Prozessspeicher",
+    "en": "Backend process memory"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringNetworkThroughput",
+    "de": "Netzwerkdurchsatz",
+    "en": "Network throughput"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringStorageDatabase",
+    "de": "Speicher und Datenbank",
+    "en": "Storage and database"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringNoData",
+    "de": "Für diesen Zeitraum liegen noch keine Messwerte vor.",
+    "en": "No measurements are available for this period yet."
+  },
+  {
+    "entity": "system",
+    "property": "monitoringCategory",
+    "de": "Kategorie",
+    "en": "Category"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringTraffic",
+    "de": "Traffic",
+    "en": "Traffic"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringAverage",
+    "de": "Durchschnitt",
+    "en": "Average"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringUser",
+    "de": "Benutzer",
+    "en": "User"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringPresence",
+    "de": "Präsenz",
+    "en": "Presence"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringLastLogin",
+    "de": "Letzte Anmeldung",
+    "en": "Last login"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringErrors",
+    "de": "Fehler",
+    "en": "Errors"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringOnline",
+    "de": "Online",
+    "en": "Online"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringSession",
+    "de": "Angemeldet",
+    "en": "Signed in"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringOffline",
+    "de": "Offline",
+    "en": "Offline"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringProvider",
+    "de": "Provider",
+    "en": "Provider"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringInputTokens",
+    "de": "Input-Tokens",
+    "en": "Input tokens"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringOutputTokens",
+    "de": "Output-Tokens",
+    "en": "Output tokens"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringCoverage",
+    "de": "Nutzungsabdeckung",
+    "en": "Usage coverage"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringIncidents",
+    "de": "Vorfälle",
+    "en": "Incidents"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringAlertRules",
+    "de": "Warnregeln",
+    "en": "Alert rules"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringGlobal",
+    "de": "Global",
+    "en": "Global"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringUserDetails",
+    "de": "Benutzerdetails",
+    "en": "User details"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringLoadFailed",
+    "de": "Die Monitoringdaten konnten nicht geladen werden.",
+    "en": "Monitoring data could not be loaded."
+  },
+  {
+    "entity": "system",
+    "property": "monitoringMetricsRequired",
+    "de": "Mindestens eine gültige Metrik ist erforderlich.",
+    "en": "At least one valid metric is required."
+  },
+  {
+    "entity": "system",
+    "property": "monitoringInvalidRange",
+    "de": "Der gewählte Zeitraum ist ungültig.",
+    "en": "The selected time range is invalid."
+  },
+  {
+    "entity": "system",
+    "property": "monitoringRangeTooLarge",
+    "de": "Der Zeitraum darf höchstens 90 Tage umfassen.",
+    "en": "The time range cannot exceed 90 days."
+  },
+  {
+    "entity": "system",
+    "property": "monitoringCustomRange",
+    "de": "Benutzerdefiniert",
+    "en": "Custom"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringFrom",
+    "de": "Von",
+    "en": "From"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringTo",
+    "de": "Bis",
+    "en": "To"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringDisabled",
+    "de": "Die serverseitige Telemetrie ist deaktiviert. Statische Systeminformationen bleiben verfügbar.",
+    "en": "Server-side telemetry is disabled. Static system information remains available."
+  },
+  {
+    "entity": "system",
+    "property": "monitoringGapDetected",
+    "de": "Es wurde eine Messlücke von {seconds} Sekunden erkannt.",
+    "en": "A telemetry gap of {seconds} seconds was detected."
+  }
+]

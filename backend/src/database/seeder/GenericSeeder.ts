@@ -5,6 +5,7 @@ import { Seeder } from '@mikro-orm/seeder';
 import { EntityRouteItem } from '../../entity/EntityRouteItem';
 import { DashboardTemplateItem } from '../../entity/DashboardTemplateItem';
 import { KpiItem } from '../../entity/KpiItem';
+import { InboxTemplateItem } from '../../entity/InboxTemplateItem';
 import { ENTITY_REGISTRY } from '../../entity/global/entity.registry';
 import { getSaplingOptions } from '../../entity/global/entity.decorator';
 import { SeedScriptItem } from '../../entity/SeedScriptItem';
@@ -147,6 +148,10 @@ export class GenericSeeder extends Seeder {
       return this.resolveDashboardTemplateKpis(normalizedItem, em);
     }
 
+    if (entityHandle === 'inboxSubscription') {
+      return this.resolveInboxSubscriptionTemplate(normalizedItem, em);
+    }
+
     if (entityHandle !== 'favorite' && entityHandle !== 'favoriteTemplate') {
       return normalizedItem;
     }
@@ -183,6 +188,23 @@ export class GenericSeeder extends Seeder {
       ...seedItem,
       entityRoute: entityRoute.handle,
     };
+  }
+
+  private async resolveInboxSubscriptionTemplate(
+    item: object,
+    em: EntityManager,
+  ): Promise<object> {
+    const seedItem = item as { template?: unknown };
+    if (typeof seedItem.template !== 'string') return item;
+    const template = await em.findOne(InboxTemplateItem, {
+      name: seedItem.template,
+    });
+    if (!template) {
+      throw new Error(
+        `Inbox subscription seeding failed. Unknown template: ${seedItem.template}`,
+      );
+    }
+    return { ...seedItem, template };
   }
 
   private async resolveDashboardTemplateKpis(

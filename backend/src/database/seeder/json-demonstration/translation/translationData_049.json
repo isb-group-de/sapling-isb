@@ -1,0 +1,32 @@
+[
+  {
+    "entity": "system",
+    "property": "monitoringNotificationRecipients",
+    "de": "Benachrichtigungen erhalten ausschließlich aktive Administratoren.",
+    "en": "Notifications are sent exclusively to active administrators."
+  },
+  {
+    "entity": "system",
+    "property": "monitoringIncidentAutoResolve",
+    "de": "Vorfälle schließen automatisch nach drei aufeinanderfolgenden gesunden Minutenprüfungen.",
+    "en": "Incidents close automatically after three consecutive healthy minute evaluations."
+  },
+  {
+    "entity": "system",
+    "property": "monitoringIncidentObserved",
+    "de": "Messwert",
+    "en": "Observed"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringIncidentThreshold",
+    "de": "Schwelle",
+    "en": "Threshold"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringIncidentRecovery",
+    "de": "Erholung {count}/3",
+    "en": "Recovery {count}/3"
+  }
+]

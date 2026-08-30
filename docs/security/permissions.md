@@ -278,6 +278,16 @@ docs/ai/ai-mcp-vectorization.md
 4. Run seeders on a test database.
 5. Verify the entity appears or stays hidden as expected.
 
+## Monitoring Telemetry
+
+All endpoints below `/api/system/monitoring` require both authenticated access
+and the administrator guard. The underlying telemetry entities deliberately
+disable generic CRUD and navigation capabilities. Request telemetry is limited
+to aggregate status, duration, byte, authentication-mode, route-group, person,
+and API-token handles. Request bodies, query values, exact URLs, prompts, IP
+addresses, cookies, authorization headers, and user agents must never be added
+to these tables or the local fallback spool.
+
 ## Common Mistakes
 
 - Granting frontend visibility without backend read permission.

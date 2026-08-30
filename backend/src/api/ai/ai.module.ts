@@ -58,6 +58,7 @@ import { AiChatCoordinatorService } from './ai-chat-coordinator.service';
 import { AiChatQueueService } from './ai-chat-queue.service';
 import { ImportModule } from '../import/import.module';
 import { AiWebSearchService } from './ai-web-search.service';
+import { SystemModule } from '../system/system.module';
 
 /**
  * @class
@@ -76,6 +77,7 @@ import { AiWebSearchService } from './ai-web-search.service';
     TemplateModule,
     CurrentModule,
     forwardRef(() => ImportModule),
+    SystemModule,
     MikroOrmModule.forFeature([
       AiChatSessionItem,
       AiChatMessageItem,
