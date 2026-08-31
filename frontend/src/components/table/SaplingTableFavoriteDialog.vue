@@ -38,6 +38,7 @@ import SaplingDialog from '@/components/common/SaplingDialog.vue'
 import SaplingActionSave from '@/components/actions/SaplingActionSave.vue'
 import SaplingDialogCard from '@/components/dialog/SaplingDialogCard.vue'
 import SaplingDialogHero from '@/components/common/SaplingDialogHero.vue'
+import { useTranslationLoader } from '@/composables/generic/useTranslationLoader'
 
 type FavoriteFormRef = {
   validate?: () => Promise<boolean | { valid: boolean }>
@@ -56,6 +57,7 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+useTranslationLoader('favorite')
 const favoriteFormRef = ref<FavoriteFormRef | null>(null)
 
 const titleRules = computed(() => [
