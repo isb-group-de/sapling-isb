@@ -10,6 +10,10 @@ import { Sapling, SaplingForm } from './global/entity.decorator';
 
 @Entity()
 @Index({ properties: ['person', 'occurredAt'] })
+@Index({
+  name: 'authentication_event_type_time_idx',
+  properties: ['eventType', 'occurredAt'],
+})
 export class AuthenticationEventItem {
   @Property({ primary: true, autoincrement: true })
   handle?: number;

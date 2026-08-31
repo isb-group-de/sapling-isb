@@ -503,22 +503,32 @@ export class AiChatRuntimeService {
         number,
         { id: string; name: string; arguments: string }
       >();
-      for await (const chunk of response) {
-        assertNotAborted(options.callbacks.signal);
-        appendUsageEntry(usageEntries, chunk.usage);
-        const delta = chunk.choices[0]?.delta;
-        if (delta?.content) await options.callbacks.onTextDelta(delta.content);
-        for (const callDelta of delta?.tool_calls ?? []) {
-          const current = toolCalls.get(callDelta.index) ?? {
-            id: '',
-            name: '',
-            arguments: '',
-          };
-          current.id = callDelta.id ?? current.id;
-          current.name = callDelta.function?.name ?? current.name;
-          current.arguments += callDelta.function?.arguments ?? '';
-          toolCalls.set(callDelta.index, current);
+      let receivedFinishReason = false;
+      try {
+        for await (const chunk of response) {
+          assertNotAborted(options.callbacks.signal);
+          appendUsageEntry(usageEntries, chunk.usage);
+          receivedFinishReason ||= chunk.choices.some(
+            (choice) => choice.finish_reason != null,
+          );
+          const delta = chunk.choices[0]?.delta;
+          if (delta?.content)
+            await options.callbacks.onTextDelta(delta.content);
+          for (const callDelta of delta?.tool_calls ?? []) {
+            const current = toolCalls.get(callDelta.index) ?? {
+              id: '',
+              name: '',
+              arguments: '',
+            };
+            current.id = callDelta.id ?? current.id;
+            current.name = callDelta.function?.name ?? current.name;
+            current.arguments += callDelta.function?.arguments ?? '';
+            toolCalls.set(callDelta.index, current);
+          }
         }
+      } catch (error) {
+        assertNotAborted(options.callbacks.signal);
+        if (!receivedFinishReason) throw error;
       }
       if (toolCalls.size === 0) {
         return {

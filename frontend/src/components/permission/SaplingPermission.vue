@@ -195,7 +195,6 @@
       <SaplingPermissionMembersPanel
         :selected-role="selectedRole"
         :members-are-pending="membersArePending"
-        :available-persons="availablePersonsForSelectedRole"
         :selected-role-members="selectedRoleMembers"
         @add-persons="onAddPersons"
         @remove-person="onRemovePerson"
@@ -255,7 +254,6 @@ const {
   permissionFilterMode,
   filteredGroupEntities,
   selectedRoleMembers,
-  availablePersonsForSelectedRole,
   dashboardStats,
   selectedRoleStats,
   permissionEntity,

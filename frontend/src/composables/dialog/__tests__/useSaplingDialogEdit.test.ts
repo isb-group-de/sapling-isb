@@ -19,6 +19,7 @@ const {
   validateFormMock,
   ensureRelationTableItemsMock,
   relationTemplatesState,
+  relationOptionsState,
 } = vi.hoisted(() => ({
   fetchCurrentPersonMock: vi.fn(),
   fetchCurrentPermissionMock: vi.fn(),
@@ -33,6 +34,9 @@ const {
   validateFormMock: vi.fn(),
   ensureRelationTableItemsMock: vi.fn(),
   relationTemplatesState: { templates: [] as EntityTemplate[] },
+  relationOptionsState: {
+    onPersistedItemUpdated: null as ((item: SaplingGenericItem) => void) | null,
+  },
 }))
 
 vi.mock('vue-i18n', () => ({
@@ -89,39 +93,44 @@ vi.mock('@/stores/currentPersonStore', () => ({
 }))
 
 vi.mock('../useSaplingDialogEditRelations', () => ({
-  useSaplingDialogEditRelations: () => ({
-    relationTemplates: computed(() => relationTemplatesState.templates),
-    dirtyRelationNames: computed(() => []),
-    hasPendingRelationChanges: computed(() => false),
-    relationTableHeaders: ref({}),
-    relationTableState: ref({}),
-    relationTableItems: ref({}),
-    relationTableSearch: ref({}),
-    relationTablePage: ref({}),
-    relationTableTotal: ref({}),
-    relationTableItemsPerPage: ref({}),
-    relationTableSortBy: ref({}),
-    relationTableColumnFilters: ref({}),
-    relationMutationState: ref({}),
-    relationTableLoaded: ref({}),
-    selectedRelations: ref({}),
-    selectedItems: ref([]),
-    addRelation: vi.fn(),
-    stageNewRelationRecord: vi.fn(),
-    removeRelation: vi.fn(),
-    initializeRelationTables: vi.fn().mockResolvedValue(undefined),
-    ensureRelationTableItems: ensureRelationTableItemsMock,
-    onRelationTablePage: vi.fn(),
-    onRelationTableItemsPerPage: vi.fn(),
-    onRelationTableSort: vi.fn(),
-    onRelationTableColumnFilters: vi.fn(),
-    onRelationTableReload: vi.fn(),
-    clearSelectedItems: vi.fn(),
-    resetRelationTableItems: vi.fn(),
-    resetRelationSelections: vi.fn(),
-    appendPendingRelationsToPayload: (payload: SaplingGenericItem) => payload,
-    persistPendingRelations: vi.fn().mockResolvedValue(true),
-  }),
+  useSaplingDialogEditRelations: (options: {
+    onPersistedItemUpdated?: (item: SaplingGenericItem) => void
+  }) => {
+    relationOptionsState.onPersistedItemUpdated = options.onPersistedItemUpdated ?? null
+    return {
+      relationTemplates: computed(() => relationTemplatesState.templates),
+      dirtyRelationNames: computed(() => []),
+      hasPendingRelationChanges: computed(() => false),
+      relationTableHeaders: ref({}),
+      relationTableState: ref({}),
+      relationTableItems: ref({}),
+      relationTableSearch: ref({}),
+      relationTablePage: ref({}),
+      relationTableTotal: ref({}),
+      relationTableItemsPerPage: ref({}),
+      relationTableSortBy: ref({}),
+      relationTableColumnFilters: ref({}),
+      relationMutationState: ref({}),
+      relationTableLoaded: ref({}),
+      selectedRelations: ref({}),
+      selectedItems: ref([]),
+      addRelation: vi.fn(),
+      stageNewRelationRecord: vi.fn(),
+      removeRelation: vi.fn(),
+      initializeRelationTables: vi.fn().mockResolvedValue(undefined),
+      ensureRelationTableItems: ensureRelationTableItemsMock,
+      onRelationTablePage: vi.fn(),
+      onRelationTableItemsPerPage: vi.fn(),
+      onRelationTableSort: vi.fn(),
+      onRelationTableColumnFilters: vi.fn(),
+      onRelationTableReload: vi.fn(),
+      clearSelectedItems: vi.fn(),
+      resetRelationTableItems: vi.fn(),
+      resetRelationSelections: vi.fn(),
+      appendPendingRelationsToPayload: (payload: SaplingGenericItem) => payload,
+      persistPendingRelations: vi.fn().mockResolvedValue(true),
+    }
+  },
 }))
 
 vi.mock('../useSaplingDialogEditReferences', () => ({
@@ -277,6 +286,7 @@ describe('useSaplingDialogEdit', () => {
     validateFormMock.mockReset()
     ensureRelationTableItemsMock.mockReset()
     relationTemplatesState.templates = []
+    relationOptionsState.onPersistedItemUpdated = null
     fetchCurrentPersonMock.mockResolvedValue(undefined)
     fetchCurrentPermissionMock.mockResolvedValue(undefined)
     listFormConfigsMock.mockResolvedValue([])
@@ -376,6 +386,29 @@ describe('useSaplingDialogEdit', () => {
     expect(wrapper.emitted('save')).toHaveLength(1)
     expect(wrapper.emitted('save')?.[0]?.[1]).toBe('saveAndClose')
     expect(wrapper.emitted('update:modelValue')).toBeUndefined()
+  })
+
+  it('adopts a relation mutation version without reinitializing dirty form fields', async () => {
+    const initialItem = {
+      handle: 42,
+      title: 'Dirty local title',
+      updatedAt: '2026-08-31T12:00:00.000Z',
+    }
+    const persistedItem = {
+      handle: 42,
+      title: 'Persisted title',
+      updatedAt: '2026-08-31T12:30:00.000Z',
+    }
+    const wrapper = mount(TestHost, { props: { item: initialItem } })
+    await flushPromises()
+    const initializeCallCount = initializeFormMock.mock.calls.length
+
+    relationOptionsState.onPersistedItemUpdated?.(persistedItem)
+    await wrapper.setProps({ item: persistedItem })
+    await nextTick()
+
+    expect(wrapper.emitted('update:item')?.at(-1)).toEqual([persistedItem])
+    expect(initializeFormMock).toHaveBeenCalledTimes(initializeCallCount)
   })
 
   it('reports the invoked save action after every failed validation attempt', async () => {

@@ -1,6 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import {
   resolveRange,
+  runWithConcurrency,
   SystemMonitoringQueryService,
 } from './system-monitoring-query.service';
 
@@ -79,5 +80,22 @@ describe('monitoring query ranges', () => {
       expect.stringContaining(`presence_auth."event_type" = 'loginSuccess'`),
       expect.any(Array),
     );
+  });
+
+  it('limits concurrent monitoring database work while preserving result order', async () => {
+    let active = 0;
+    let maximumActive = 0;
+    const tasks = [0, 1, 2, 3, 4].map((value) => async () => {
+      active += 1;
+      maximumActive = Math.max(maximumActive, active);
+      await new Promise((resolve) => setImmediate(resolve));
+      active -= 1;
+      return value;
+    });
+
+    await expect(runWithConcurrency(tasks, 2)).resolves.toEqual([
+      0, 1, 2, 3, 4,
+    ]);
+    expect(maximumActive).toBe(2);
   });
 });

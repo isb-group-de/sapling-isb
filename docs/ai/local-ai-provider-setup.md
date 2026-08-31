@@ -320,6 +320,13 @@ For semantic search:
 - `supportsTools` is true but the model cannot emit valid tool calls. Disable
   `supportsTools` and retry.
 
+Sapling treats an OpenAI-compatible `finish_reason` as the authoritative stream
+completion marker. If Ollama or LM Studio closes the transport after that
+marker but before an optional usage trailer, the already completed answer is
+kept instead of being reported as failed. A connection failure before the
+completion marker remains an error so partial answers are not mistaken for
+successful responses.
+
 ### Vectorization Fails
 
 - The selected model is a chat model, not an embedding model.

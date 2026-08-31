@@ -4,6 +4,7 @@ import {
   cloneRoles,
   getPermissionTypesForEntity,
   getPermissionState,
+  getUniqueRoleMemberCount,
   updateRoleMembership,
 } from './saplingPermission.utils'
 
@@ -50,5 +51,14 @@ describe('saplingPermission utils', () => {
     expect(added.persons?.map((item) => item.handle)).toEqual([7])
     expect(unchanged).toBe(unrelated)
     expect(removed.persons).toEqual([])
+  })
+
+  it('counts assigned members once across multiple roles', () => {
+    const roles = [
+      { handle: 1, persons: [{ handle: 7 }, { handle: 8 }] },
+      { handle: 2, persons: [{ handle: 7 }] },
+    ] as unknown as RoleItem[]
+
+    expect(getUniqueRoleMemberCount(roles)).toBe(2)
   })
 })

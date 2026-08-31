@@ -64,6 +64,8 @@ export function useSaplingDialogEdit(
   const currentPersonStore = useCurrentPersonStore()
   const isHydratingForm = ref(false)
   const initialFormSnapshot = ref<Record<string, string>>({})
+  let relationMutationRecordIdentity: string | null = null
+  let relationMutationIdentitySkipsRemaining = 0
   // #endregion
 
   // #region Helpers
@@ -92,6 +94,26 @@ export function useSaplingDialogEdit(
   })
 
   // #region Templates
+
+  function handlePersistedRelationMutation(item: SaplingGenericItem): void {
+    relationMutationRecordIdentity = buildRecordIdentity(item)
+    relationMutationIdentitySkipsRemaining = 2
+    emit('update:item', item)
+  }
+
+  function consumeRelationMutationIdentity(identity: string): boolean {
+    if (identity !== relationMutationRecordIdentity) {
+      relationMutationRecordIdentity = null
+      relationMutationIdentitySkipsRemaining = 0
+      return false
+    }
+
+    relationMutationIdentitySkipsRemaining -= 1
+    if (relationMutationIdentitySkipsRemaining <= 0) {
+      relationMutationRecordIdentity = null
+    }
+    return true
+  }
 
   const {
     relationTemplates,
@@ -134,6 +156,7 @@ export function useSaplingDialogEdit(
     templates,
     t,
     getItemHandle,
+    onPersistedItemUpdated: handlePersistedRelationMutation,
   })
 
   const relationAwareForceDirty = computed(
@@ -498,15 +521,18 @@ export function useSaplingDialogEdit(
     return ''
   }
 
-  const recordVersion = computed(() => normalizeRecordVersion(props.item?.updatedAt))
+  function buildRecordIdentity(item: SaplingGenericItem | null | undefined): string {
+    return `${props.entity?.handle ?? ''}::${getItemHandle(item) ?? ''}::${props.mode}::${normalizeRecordVersion(item?.updatedAt)}`
+  }
 
-  const recordIdentity = computed(
-    () =>
-      `${props.entity?.handle ?? ''}::${getItemHandle(props.item) ?? ''}::${props.mode}::${recordVersion.value}`,
-  )
+  const recordIdentity = computed(() => buildRecordIdentity(props.item))
 
   watch(recordIdentity, async (next, previous) => {
     if (next === previous) {
+      return
+    }
+
+    if (consumeRelationMutationIdentity(next)) {
       return
     }
 
@@ -530,9 +556,16 @@ export function useSaplingDialogEdit(
     await initialize()
   })
 
-  watch(() => [recordIdentity.value, templatesSignature.value] as const, initializeForm, {
-    immediate: true,
-  })
+  watch(
+    () => [recordIdentity.value, templatesSignature.value] as const,
+    ([identity]) => {
+      if (consumeRelationMutationIdentity(identity)) {
+        return
+      }
+      initializeForm()
+    },
+    { immediate: true },
+  )
 
   watch(
     () =>

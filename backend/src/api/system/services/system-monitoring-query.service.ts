@@ -45,17 +45,20 @@ export class SystemMonitoringQueryService {
       incidentRows,
       previousHttpRows,
       previousAiRows,
-    ] = await Promise.all([
-      em.getConnection().execute(
-        `select distinct on ("metric_key") "metric_key" as "metricKey",
+    ] = await runWithConcurrency(
+      [
+        () =>
+          em.getConnection().execute(
+            `select distinct on ("metric_key") "metric_key" as "metricKey",
              "last" as "value", "bucket_start" as "capturedAt"
            from "system_metric_bucket_item"
            where "bucket_start" between ? and ?
            order by "metric_key", "bucket_start" desc`,
-        [range.from, range.to],
-      ),
-      em.getConnection().execute(
-        `select coalesce(sum("request_count"), 0)::int as "requestCount",
+            [range.from, range.to],
+          ),
+        () =>
+          em.getConnection().execute(
+            `select coalesce(sum("request_count"), 0)::int as "requestCount",
              coalesce(sum("client_error_count"), 0)::int as "clientErrorCount",
              coalesce(sum("server_error_count"), 0)::int as "serverErrorCount",
              coalesce(sum("request_bytes"), 0)::bigint as "requestBytes",
@@ -65,50 +68,57 @@ export class SystemMonitoringQueryService {
              jsonb_build_array(${histogramSumSql()}) as "durationHistogram"
            from "http_metric_bucket_item"
            where "bucket_start" between ? and ? and "resolution" = ?`,
-        [range.from, range.to, chooseHttpResolution(range)],
-      ),
-      em.getConnection().execute(
-        `select count(distinct "person_handle") filter (
+            [range.from, range.to, chooseHttpResolution(range)],
+          ),
+        () =>
+          em.getConnection().execute(
+            `select count(distinct "person_handle") filter (
               where "last_seen_at" >= ? and "expires_at" > now()
             )::int as "onlineUsers",
             count(distinct "person_handle") filter (
               where "expires_at" > now()
             )::int as "usersWithSessions"
            from "session_store_item" where "person_handle" is not null`,
-        [new Date(Date.now() - ONLINE_WINDOW_MS)],
-      ),
-      em.getConnection().execute(
-        `select coalesce(sum("total_tokens"), 0)::bigint as "totalTokens",
+            [new Date(Date.now() - ONLINE_WINDOW_MS)],
+          ),
+        () =>
+          em.getConnection().execute(
+            `select coalesce(sum("total_tokens"), 0)::bigint as "totalTokens",
              count(*)::int as "callCount",
              count(*) filter (where "status" <> 'completed')::int as "errorCount",
              count(*) filter (where "usage_reported")::int as "reportedCount"
            from "ai_usage_event_item" where "occurred_at" between ? and ?`,
-        [range.from, range.to],
-      ),
-      em.getConnection().execute(
-        `select count(*) filter (where "state" = 'open')::int as "openCount",
+            [range.from, range.to],
+          ),
+        () =>
+          em.getConnection().execute(
+            `select count(*) filter (where "state" = 'open')::int as "openCount",
              count(*) filter (where "state" = 'open' and "severity" = 'critical')::int as "criticalCount"
            from "system_alert_incident_item"`,
-      ),
-      em.getConnection().execute(
-        `select coalesce(sum("request_count"), 0)::int as "requestCount",
+          ),
+        () =>
+          em.getConnection().execute(
+            `select coalesce(sum("request_count"), 0)::int as "requestCount",
              coalesce(sum("server_error_count"), 0)::int as "serverErrorCount",
              coalesce(sum("request_bytes" + "response_bytes"), 0)::bigint as "trafficBytes"
            from "http_metric_bucket_item"
            where "bucket_start" between ? and ? and "resolution" = ?`,
-        [
-          previousRange.from,
-          previousRange.to,
-          chooseHttpResolution(previousRange),
-        ],
-      ),
-      em.getConnection().execute(
-        `select coalesce(sum("total_tokens"), 0)::bigint as "totalTokens",
+            [
+              previousRange.from,
+              previousRange.to,
+              chooseHttpResolution(previousRange),
+            ],
+          ),
+        () =>
+          em.getConnection().execute(
+            `select coalesce(sum("total_tokens"), 0)::bigint as "totalTokens",
              count(*)::int as "callCount"
            from "ai_usage_event_item" where "occurred_at" between ? and ?`,
-        [previousRange.from, previousRange.to],
-      ),
-    ]);
+            [previousRange.from, previousRange.to],
+          ),
+      ],
+      2,
+    );
     const metrics = Object.fromEntries(
       (metricRows as Array<{ metricKey: string; value: number }>).map((row) => [
         row.metricKey,
@@ -582,6 +592,26 @@ function histogramSumSql(): string {
     { length: 10 },
     (_, index) => `sum(coalesce(("duration_histogram"->>${index})::int, 0))`,
   ).join(', ');
+}
+
+export async function runWithConcurrency<T>(
+  tasks: Array<() => Promise<T>>,
+  concurrency: number,
+): Promise<T[]> {
+  const results = new Array<T>(tasks.length);
+  let nextTask = 0;
+  const workers = Array.from(
+    { length: Math.min(Math.max(1, concurrency), tasks.length) },
+    async () => {
+      while (nextTask < tasks.length) {
+        const index = nextTask;
+        nextTask += 1;
+        results[index] = await tasks[index]();
+      }
+    },
+  );
+  await Promise.all(workers);
+  return results;
 }
 
 function percentileFromHistogram(

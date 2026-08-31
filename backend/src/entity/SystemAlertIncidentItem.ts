@@ -10,6 +10,10 @@ import { Sapling, SaplingForm } from './global/entity.decorator';
 
 @Entity()
 @Index({ properties: ['state', 'lastSeenAt'] })
+@Index({
+  name: 'system_alert_incident_state_resolved_idx',
+  properties: ['state', 'resolvedAt'],
+})
 export class SystemAlertIncidentItem {
   @Property({ primary: true, autoincrement: true })
   handle?: number;

@@ -90,6 +90,80 @@ describe('AiChatRuntimeService streaming', () => {
     });
   });
 
+  it('accepts an Ollama response that terminates after its protocol completion marker', async () => {
+    const create = jest.fn().mockResolvedValue(
+      asNever(
+        (async function* () {
+          yield {
+            choices: [{ delta: { content: 'Vollständige Antwort.' } }],
+            usage: null,
+          };
+          yield {
+            choices: [{ delta: {}, finish_reason: 'stop' }],
+            usage: null,
+          };
+          throw new Error('terminated');
+        })(),
+      ),
+    );
+    asMock(createOpenAiClient).mockReturnValue({
+      chat: { completions: { create } },
+    });
+    const service = new AiChatRuntimeService({} as never);
+    const onTextDelta = jest
+      .fn<(delta: string) => Promise<void>>()
+      .mockResolvedValue(undefined);
+
+    await expect(
+      service.streamOpenAi(
+        history,
+        { handle: 'ollama' } as never,
+        'local-model',
+        [],
+        { handle: 1 } as never,
+        1,
+        undefined,
+        { onTextDelta },
+        false,
+      ),
+    ).resolves.toMatchObject({ toolCalls: [] });
+    expect(onTextDelta).toHaveBeenCalledWith('Vollständige Antwort.');
+  });
+
+  it('still rejects an OpenAI-compatible stream that fails before completion', async () => {
+    const create = jest.fn().mockResolvedValue(
+      asNever(
+        (async function* () {
+          yield {
+            choices: [{ delta: { content: 'Unvollständig' } }],
+            usage: null,
+          };
+          throw new Error('terminated');
+        })(),
+      ),
+    );
+    asMock(createOpenAiClient).mockReturnValue({
+      chat: { completions: { create } },
+    });
+    const service = new AiChatRuntimeService({} as never);
+
+    await expect(
+      service.streamOpenAi(
+        history,
+        { handle: 'ollama' } as never,
+        'local-model',
+        [],
+        { handle: 1 } as never,
+        1,
+        undefined,
+        jest
+          .fn<(delta: string) => Promise<void>>()
+          .mockResolvedValue(undefined),
+        false,
+      ),
+    ).rejects.toThrow('terminated');
+  });
+
   it('streams OpenAI Responses text and filtered reasoning summaries', async () => {
     const create = jest.fn().mockResolvedValue(
       asNever(

@@ -36,6 +36,7 @@ interface UseSaplingDialogEditRelationsOptions {
   templates: ComputedRef<EntityTemplate[]>
   t: (key: string) => string
   getItemHandle: GetItemHandle
+  onPersistedItemUpdated?: (item: SaplingGenericItem) => void
 }
 
 export function useSaplingDialogEditRelations(options: UseSaplingDialogEditRelationsOptions) {
@@ -132,7 +133,12 @@ export function useSaplingDialogEditRelations(options: UseSaplingDialogEditRelat
           await addRelation1M(template, items)
           break
         default:
-          await addRelationNM(template, items)
+          {
+            const persistedItem = await addRelationNM(template, items)
+            if (template.kind === 'm:n' && persistedItem) {
+              options.onPersistedItemUpdated?.(persistedItem)
+            }
+          }
           break
       }
 
@@ -147,28 +153,31 @@ export function useSaplingDialogEditRelations(options: UseSaplingDialogEditRelat
   async function addRelationNM(
     template: EntityTemplate,
     items: SaplingGenericItem[],
-  ): Promise<void> {
+  ): Promise<SaplingGenericItem | null> {
     const entityHandle = options.entity.value?.handle ?? ''
     const referenceName = template.name
     const entityItemHandle = options.getItemHandle(options.item.value)
 
     if (entityItemHandle == null) {
-      return
+      return null
     }
 
+    let persistedItem: SaplingGenericItem | null = null
     for (const referenceItem of items) {
       const referenceItemHandle = options.getItemHandle(referenceItem)
       if (referenceItemHandle == null) {
         continue
       }
 
-      await ApiGenericService.createReference(
+      persistedItem = await ApiGenericService.createReference<SaplingGenericItem>(
         entityHandle,
         referenceName,
         entityItemHandle,
         referenceItemHandle,
       )
     }
+
+    return persistedItem
   }
 
   async function removeRelation(
@@ -213,7 +222,12 @@ export function useSaplingDialogEditRelations(options: UseSaplingDialogEditRelat
           await removeRelation1M(template, itemsToRemove)
           break
         default:
-          await removeRelationNM(template, itemsToRemove)
+          {
+            const persistedItem = await removeRelationNM(template, itemsToRemove)
+            if (template.kind === 'm:n' && persistedItem) {
+              options.onPersistedItemUpdated?.(persistedItem)
+            }
+          }
           break
       }
     } finally {
@@ -397,22 +411,23 @@ export function useSaplingDialogEditRelations(options: UseSaplingDialogEditRelat
   async function removeRelationNM(
     template: EntityTemplate,
     itemsToRemove: SaplingGenericItem[],
-  ): Promise<void> {
+  ): Promise<SaplingGenericItem | null> {
     const entityHandle = options.entity.value?.handle ?? ''
     const referenceName = template.name
     const entityItemHandle = options.getItemHandle(options.item.value)
 
     if (entityItemHandle == null) {
-      return
+      return null
     }
 
+    let persistedItem: SaplingGenericItem | null = null
     for (const referenceItem of itemsToRemove) {
       const referenceItemHandle = options.getItemHandle(referenceItem)
       if (referenceItemHandle == null) {
         continue
       }
 
-      await ApiGenericService.deleteReference(
+      persistedItem = await ApiGenericService.deleteReference<SaplingGenericItem>(
         entityHandle,
         referenceName,
         entityItemHandle,
@@ -422,6 +437,7 @@ export function useSaplingDialogEditRelations(options: UseSaplingDialogEditRelat
 
     selectedItems.value = []
     await loadRelationTableItem(template)
+    return persistedItem
   }
 
   async function addRelation1M(

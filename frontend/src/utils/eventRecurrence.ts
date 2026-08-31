@@ -170,9 +170,9 @@ export function expandRecurringEvent(
 
   const occurrences: RecurringCalendarEvent[] = []
   const exceptionTimestamps = new Set(
-    (event.recurrenceExceptionDates ?? [])
-      .map((value) => new Date(value).getTime())
-      .filter((value) => Number.isFinite(value)),
+    normalizeRecurrenceExceptionDates(event.recurrenceExceptionDates)
+      .map(toDateTimestamp)
+      .filter((value): value is number => value !== null),
   )
   const durationMs = Math.max(baseEnd.getTime() - baseStart.getTime(), 0)
   let currentStart = new Date(baseStart)
@@ -591,6 +591,38 @@ function normalizeRecurrenceRule(rule: string): string {
     .map((part) => part.trim())
     .filter(Boolean)
     .join(';')
+}
+
+function normalizeRecurrenceExceptionDates(value: unknown): unknown[] {
+  if (Array.isArray(value)) {
+    return value
+  }
+
+  if (typeof value !== 'string') {
+    return []
+  }
+
+  const trimmedValue = value.trim()
+  if (!trimmedValue) {
+    return []
+  }
+
+  try {
+    const parsedValue: unknown = JSON.parse(trimmedValue)
+    return Array.isArray(parsedValue) ? parsedValue : [parsedValue]
+  } catch {
+    // Legacy records can contain one ISO value instead of a JSON array.
+    return [trimmedValue]
+  }
+}
+
+function toDateTimestamp(value: unknown): number | null {
+  if (!(typeof value === 'string' || typeof value === 'number' || value instanceof Date)) {
+    return null
+  }
+
+  const timestamp = new Date(value).getTime()
+  return Number.isFinite(timestamp) ? timestamp : null
 }
 
 function isValidDate(date: Date): boolean {

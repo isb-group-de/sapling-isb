@@ -27,6 +27,12 @@ request. AI agent-run usage is normalized into input, output, and total tokens.
 Session records expose a denormalized person handle and last-seen time for
 presence queries.
 
+The monitoring page loads its compact summary first. Charts and the collector
+status follow with at most two concurrent requests, while request, user, AI,
+and alert details are fetched only when their tab is opened. This keeps the
+database pool available for normal application traffic and lets the page
+become usable before every historical query has completed.
+
 ## Privacy And Access
 
 Every monitoring API is protected by the existing session/bearer and
@@ -56,7 +62,11 @@ online. API-token use is never treated as interactive presence.
 - resolved incidents: 90 days
 
 An hourly maintenance service creates idempotent rollups under a PostgreSQL
-advisory lock before deleting expired source buckets.
+advisory lock before deleting expired source buckets. Completed rollup windows
+are reused instead of recalculating the complete history on every run. Deletes
+run in bounded 5,000-row batches and yield between batches; up to 500,000 old
+rows per retention target can be removed during one hourly pass. Dedicated
+time/resolution indexes support both the historical queries and cleanup.
 
 ## Alerts
 

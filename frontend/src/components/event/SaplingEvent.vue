@@ -136,6 +136,7 @@
         :close-action-label="contextDialogCloseLabel"
         :chip-filters="chipFilters"
         :selected-chip-filters="selectedChipFilters"
+        :selected-peoples="selectedPeoples"
         @close="mobileContextDialogVisible = false"
         @update:selected-chip-filters="onSelectedChipFiltersUpdate"
         @update:selected-peoples="onSelectedPeoplesUpdate"

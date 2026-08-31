@@ -93,18 +93,14 @@ export function useSaplingDialogRecordActions(
   const isScriptActionRunning = computed(() => runningScriptActionCount.value > 0)
 
   const entityPermission = computed<AccumulatedPermission | null>(() => {
-    if (!props.entity?.handle) {
+    const handle = props.entity?.handle
+    if (!handle) {
       return null
     }
 
-    return {
-      entityHandle: props.entity.handle,
-      allowRead: props.entity.canRead === true,
-      allowInsert: props.entity.canInsert === true,
-      allowUpdate: props.entity.canUpdate === true,
-      allowDelete: props.entity.canDelete === true,
-      allowShow: props.entity.canShow === true,
-    }
+    return (
+      options.permissions.value?.find((permission) => permission.entityHandle === handle) ?? null
+    )
   })
 
   const canNavigate = computed(() =>

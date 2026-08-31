@@ -21,6 +21,10 @@ import { Sapling, SaplingForm } from './global/entity.decorator';
   options: { unique: true },
 })
 @Index({ properties: ['metricKey', 'resolution', 'bucketStart'] })
+@Index({
+  name: 'system_metric_bucket_resolution_time_idx',
+  properties: ['resolution', 'bucketStart'],
+})
 export class SystemMetricBucketItem {
   @Property({ primary: true, autoincrement: true })
   handle?: number;

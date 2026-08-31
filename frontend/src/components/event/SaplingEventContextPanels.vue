@@ -32,6 +32,7 @@
       class="sapling-event-context__panel"
       :chip-filters="chipFilters"
       :selected-chip-filters="selectedChipFilters"
+      :selected-peoples="selectedPeoples"
       @update:selected-chip-filters="emit('updateSelectedChipFilters', $event)"
       @update:selected-peoples="emit('updateSelectedPeoples', $event)"
     />

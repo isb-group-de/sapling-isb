@@ -10,8 +10,17 @@ import type {
 } from '@/entity/structure'
 import type { EntityItem, SaplingGenericItem } from '@/entity/entity'
 
-const { apiCreateMock, apiFindMock, apiUpdateMock, loadGenericManyMock } = vi.hoisted(() => ({
+const {
+  apiCreateMock,
+  apiCreateReferenceMock,
+  apiDeleteReferenceMock,
+  apiFindMock,
+  apiUpdateMock,
+  loadGenericManyMock,
+} = vi.hoisted(() => ({
   apiCreateMock: vi.fn(),
+  apiCreateReferenceMock: vi.fn(),
+  apiDeleteReferenceMock: vi.fn(),
   apiFindMock: vi.fn(),
   apiUpdateMock: vi.fn(),
   loadGenericManyMock: vi.fn(),
@@ -20,6 +29,8 @@ const { apiCreateMock, apiFindMock, apiUpdateMock, loadGenericManyMock } = vi.ho
 vi.mock('@/services/api.generic.service', () => ({
   default: {
     create: apiCreateMock,
+    createReference: apiCreateReferenceMock,
+    deleteReference: apiDeleteReferenceMock,
     find: apiFindMock,
     update: apiUpdateMock,
   },
@@ -88,12 +99,16 @@ const entityStates = reactive<Record<string, EntityState>>({
 describe('useSaplingDialogEditRelations', () => {
   beforeEach(() => {
     apiCreateMock.mockReset()
+    apiCreateReferenceMock.mockReset()
+    apiDeleteReferenceMock.mockReset()
     apiFindMock.mockReset()
     apiUpdateMock.mockReset()
     loadGenericManyMock.mockReset()
     loadGenericManyMock.mockResolvedValue(undefined)
     apiUpdateMock.mockResolvedValue({})
     apiCreateMock.mockResolvedValue({ handle: 101 })
+    apiCreateReferenceMock.mockResolvedValue({ handle: 42 })
+    apiDeleteReferenceMock.mockResolvedValue({ handle: 42 })
     apiFindMock.mockResolvedValue({
       data: [{ handle: 1, title: 'First note' }],
       meta: { total: 1 },
@@ -394,6 +409,57 @@ describe('useSaplingDialogEditRelations', () => {
     expect(selected).not.toHaveProperty('ticket')
   })
 
+  it('refreshes the persisted parent version after an owning m:n relation is added', async () => {
+    const onPersistedItemUpdated = vi.fn()
+    const relations = createRelations({
+      templates: [
+        createTemplate({
+          name: 'participants',
+          type: 'Collection<PersonItem>',
+          kind: 'm:n',
+          referenceName: 'note',
+        }),
+      ],
+      onPersistedItemUpdated,
+    })
+    const persistedItem = {
+      handle: 42,
+      updatedAt: '2026-08-31T12:30:00.000Z',
+    }
+    apiCreateReferenceMock.mockResolvedValue(persistedItem)
+    relations.selectedRelations.value.participants = [{ handle: 7 }]
+
+    await relations.addRelation(relations.relationTemplates.value[0])
+
+    expect(apiCreateReferenceMock).toHaveBeenCalledWith('ticket', 'participants', 42, 7)
+    expect(onPersistedItemUpdated).toHaveBeenCalledWith(persistedItem)
+  })
+
+  it('refreshes the persisted parent version after an owning m:n relation is removed', async () => {
+    const onPersistedItemUpdated = vi.fn()
+    const relations = createRelations({
+      templates: [
+        createTemplate({
+          name: 'participants',
+          type: 'Collection<PersonItem>',
+          kind: 'm:n',
+          referenceName: 'note',
+        }),
+      ],
+      onPersistedItemUpdated,
+    })
+    const persistedItem = {
+      handle: 42,
+      updatedAt: '2026-08-31T12:45:00.000Z',
+    }
+    apiDeleteReferenceMock.mockResolvedValue(persistedItem)
+
+    await relations.removeRelation(relations.relationTemplates.value[0], [{ handle: 7 }])
+
+    expect(apiDeleteReferenceMock).toHaveBeenCalledWith('ticket', 'participants', 42, 7)
+    expect(onPersistedItemUpdated).toHaveBeenCalledWith(persistedItem)
+  })
+
   it('removes a 1:m relation with a minimal update payload', async () => {
     const relations = createRelations()
     const selected = {
@@ -456,6 +522,7 @@ function createRelations(
     templates?: EntityTemplate[]
     permissions?: string[]
     item?: SaplingGenericItem
+    onPersistedItemUpdated?: (item: SaplingGenericItem) => void
   } = {},
 ) {
   const entity = ref({ handle: 'ticket' } as EntityItem)
@@ -498,6 +565,7 @@ function createRelations(
       const handle = record?.handle
       return typeof handle === 'string' || typeof handle === 'number' ? handle : null
     },
+    onPersistedItemUpdated: overrides.onPersistedItemUpdated,
   })
 }
 

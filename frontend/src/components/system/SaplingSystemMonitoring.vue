@@ -650,7 +650,7 @@ const { locale, t } = useI18n()
 const tab = ref(route.query.incident ? 'alerts' : 'overview')
 const incidentFilter = ref<'open' | 'resolved'>('open')
 const userDialog = ref(false)
-const monitoring = useSaplingSystemMonitoring()
+const monitoring = useSaplingSystemMonitoring(tab)
 const {
   rangePreset,
   customFrom,

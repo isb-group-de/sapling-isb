@@ -30,18 +30,27 @@
         :label="$t('global.add')"
         entityHandle="person"
         :modelValue="[]"
-        :items="availablePersons"
+        :parent-filter="availablePersonFilter"
         :disabled="!selectedRole || membersArePending"
         class="sapling-admin-member-add sapling-permission-member-add"
         @add-selected="emit('addPersons', $event)"
       />
 
+      <SaplingTextField
+        v-model="memberSearch"
+        :label="$t('global.search')"
+        density="comfortable"
+        hide-details
+        rounded="lg"
+        prepend-inner-icon="mdi-magnify"
+      />
+
       <div
-        v-if="selectedRoleMembers.length"
+        v-if="filteredRoleMembers.length"
         class="sapling-scroll-list sapling-admin-member-list sapling-permission-member-list"
       >
         <article
-          v-for="person in selectedRoleMembers"
+          v-for="person in filteredRoleMembers"
           :key="person.handle ?? `${person.firstName}-${person.lastName}`"
           class="sapling-panel-shell sapling-row-between-xs sapling-admin-member-card sapling-permission-member-card"
         >
@@ -84,22 +93,22 @@
         v-else
         class="sapling-empty-state-panel sapling-empty-state-panel--compact sapling-admin-empty-block sapling-permission-empty-block"
       >
-        {{ $t('role.noMembersAssigned') }}
+        {{ memberSearch ? $t('global.noData') : $t('role.noMembersAssigned') }}
       </div>
     </section>
   </aside>
 </template>
 
 <script lang="ts" setup>
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import type { PersonItem, RoleItem } from '@/entity/entity'
 import SaplingFieldSelectAdd from '@/components/dialog/fields/SaplingFieldSelectAdd.vue'
+import SaplingTextField from '@/components/common/SaplingTextField.vue'
 import { useCurrentPersonStore } from '@/stores/currentPersonStore'
 
-defineProps<{
+const props = defineProps<{
   selectedRole: RoleItem | null
   membersArePending: boolean
-  availablePersons: PersonItem[]
   selectedRoleMembers: PersonItem[]
 }>()
 
@@ -111,7 +120,34 @@ const emit = defineEmits<{
 
 const currentPersonStore = useCurrentPersonStore()
 const impersonatingHandle = ref<number | null>(null)
+const memberSearch = ref('')
 const impersonationPending = computed(() => impersonatingHandle.value !== null)
+const filteredRoleMembers = computed(() => {
+  const query = memberSearch.value.trim().toLocaleLowerCase()
+  if (!query) return props.selectedRoleMembers
+
+  return props.selectedRoleMembers.filter((person) =>
+    [person.firstName, person.lastName, person.email, person.loginName]
+      .filter(Boolean)
+      .join(' ')
+      .toLocaleLowerCase()
+      .includes(query),
+  )
+})
+const availablePersonFilter = computed(() => {
+  const assignedHandles = props.selectedRoleMembers
+    .map((person) => person.handle)
+    .filter((handle): handle is number => typeof handle === 'number')
+
+  return assignedHandles.length ? { handle: { $nin: assignedHandles } } : {}
+})
+
+watch(
+  () => props.selectedRole?.handle,
+  () => {
+    memberSearch.value = ''
+  },
+)
 
 const isAdministrator = computed(
   () =>

@@ -737,6 +737,11 @@ or create keeps the parent record and returns the failed selection to the edit
 dialog for retry, so retrying cannot create a duplicate parent. Resetting or
 discarding the create form clears all staged relation selections and child
 drafts.
+For persisted records, relation actions remain immediate. When an owning
+many-to-many action advances the parent record's concurrency version, the dialog
+adopts the returned persisted version without rehydrating or discarding other
+unsaved form fields. A later field save therefore compares against the relation
+mutation instead of reporting it as a change by another user.
 Relation navigation marks tabs that contain staged create-time changes. Embedded
 relation tables keep edit and double-click workflows, but must not expose the
 target record's destructive delete action: unlinking a relation is performed

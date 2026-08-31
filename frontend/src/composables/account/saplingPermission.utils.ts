@@ -64,6 +64,18 @@ export function getRoleMemberCount(role: RoleItem): number {
   return role.persons?.length || 0
 }
 
+export function getUniqueRoleMemberCount(roles: RoleItem[]): number {
+  const memberHandles = new Set(
+    roles.flatMap((role) =>
+      (role.persons || [])
+        .map((person) => person.handle)
+        .filter((handle): handle is number => typeof handle === 'number'),
+    ),
+  )
+
+  return memberHandles.size
+}
+
 export function getEnabledPermissionCount(role: RoleItem): number {
   return (role.permissions || []).reduce(
     (total, permission) =>

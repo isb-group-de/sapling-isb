@@ -22,6 +22,14 @@ import { Sapling, SaplingForm } from './global/entity.decorator';
   options: { unique: true },
 })
 @Index({ properties: ['bucketStart', 'person'] })
+@Index({
+  name: 'http_metric_bucket_resolution_time_idx',
+  properties: ['resolution', 'bucketStart'],
+})
+@Index({
+  name: 'http_metric_bucket_person_resolution_time_idx',
+  properties: ['person', 'resolution', 'bucketStart'],
+})
 export class HttpMetricBucketItem {
   @Property({ primary: true, autoincrement: true })
   handle?: number;

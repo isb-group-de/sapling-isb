@@ -7,7 +7,6 @@ import { useSaplingMessageCenter } from '@/composables/system/useSaplingMessageC
 import {
   PERMISSION_FIELDS,
   assignPermissionResponse,
-  clonePerson,
   cloneRoles,
   ensurePermissionRecord,
   getEnabledPermissionCount,
@@ -22,6 +21,7 @@ import {
   getRoleByHandle,
   getRoleMemberCount,
   getStageTitle,
+  getUniqueRoleMemberCount,
   hasAnyEnabledPermission,
   isPermissionRecordEnabled,
   isPermissionStateEnabled,
@@ -53,7 +53,6 @@ export function useSaplingPermission() {
 
   const permissionEntity = computed(() => genericStore.getState('permission').entity)
 
-  const persons = ref<PersonItem[]>([])
   const roles = ref<RoleItem[]>([])
   const entities = ref<EntityItem[]>([])
   const originalRoles = ref<RoleItem[]>([])
@@ -121,25 +120,6 @@ export function useSaplingPermission() {
 
   const selectedRoleMembers = computed<PersonItem[]>(() => selectedRole.value?.persons || [])
 
-  const availablePersonsForSelectedRole = computed<PersonItem[]>(() => {
-    if (!selectedRole.value) {
-      return []
-    }
-
-    const roleHandle = String(selectedRole.value.handle)
-    return persons.value
-      .filter(
-        (person) =>
-          !(person.roles || []).some(
-            (role) => String(typeof role === 'object' ? role.handle : role) === roleHandle,
-          ),
-      )
-      .map((person) => ({
-        ...person,
-        fullName: `${person.firstName} ${person.lastName}`,
-      }))
-  })
-
   const filteredGroupEntities = computed<EntityItem[]>(() => {
     if (!selectedRole.value || !selectedGroup.value) {
       return []
@@ -174,7 +154,7 @@ export function useSaplingPermission() {
 
   const dashboardStats = computed(() => ({
     roleCount: roles.value.length,
-    memberCount: persons.value.length,
+    memberCount: getUniqueRoleMemberCount(roles.value),
     groupCount: permissionGroups.value.length,
     enabledPermissionCount: roles.value.reduce(
       (total, role) => total + getEnabledPermissionCount(role),
@@ -252,7 +232,7 @@ export function useSaplingPermission() {
     isBootstrapping.value = true
 
     try {
-      await Promise.all([refreshPersons(), refreshRoles(), refreshEntities()])
+      await Promise.all([refreshRoles(), refreshEntities()])
     } finally {
       isBootstrapping.value = false
     }
@@ -260,13 +240,6 @@ export function useSaplingPermission() {
   //#endregion
 
   //#region Methods
-  async function refreshPersons() {
-    const response = await ApiGenericService.findAll<PersonItem>('person', {
-      relations: ['roles'],
-    })
-    persons.value = response.map(clonePerson)
-  }
-
   async function refreshRoles() {
     const response = await ApiGenericService.findAll<RoleItem>('role', {
       relations: ['m:1', 'permissions', 'permissions.fieldPermissions', 'persons'],
@@ -285,7 +258,7 @@ export function useSaplingPermission() {
   async function refreshPermissionMembers() {
     membersArePending.value = true
     try {
-      await Promise.all([refreshPersons(), refreshRoles()])
+      await refreshRoles()
     } finally {
       membersArePending.value = false
     }
@@ -447,41 +420,6 @@ export function useSaplingPermission() {
     originalRoles.value = originalRoles.value.map((entry) =>
       updateRoleMembership(entry, role.handle, person, shouldAdd),
     )
-
-    persons.value = persons.value.map((entry) => {
-      if (entry.handle !== person.handle) {
-        return entry
-      }
-
-      const nextRoles = [...(entry.roles || [])]
-      const nextRoleReference = { handle: role.handle, title: role.title } as RoleItem
-
-      if (shouldAdd) {
-        if (
-          !nextRoles.some(
-            (roleEntry) =>
-              String(typeof roleEntry === 'object' ? roleEntry.handle : roleEntry) ===
-              String(role.handle),
-          )
-        ) {
-          nextRoles.push(nextRoleReference)
-        }
-
-        return {
-          ...entry,
-          roles: nextRoles,
-        }
-      }
-
-      return {
-        ...entry,
-        roles: nextRoles.filter(
-          (roleEntry) =>
-            String(typeof roleEntry === 'object' ? roleEntry.handle : roleEntry) !==
-            String(role.handle),
-        ),
-      }
-    })
   }
 
   async function persistRolePermissions(role: RoleItem) {
@@ -560,7 +498,6 @@ export function useSaplingPermission() {
     permissionFilterMode,
     filteredGroupEntities,
     selectedRoleMembers,
-    availablePersonsForSelectedRole,
     dashboardStats,
     selectedRoleStats,
     permissionEntity,

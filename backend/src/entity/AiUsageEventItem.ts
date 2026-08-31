@@ -11,6 +11,7 @@ import { Sapling, SaplingForm } from './global/entity.decorator';
 @Entity()
 @Index({ properties: ['occurredAt', 'person'] })
 @Index({ properties: ['provider', 'model', 'occurredAt'] })
+@Index({ name: 'ai_usage_event_occurred_at_idx', properties: ['occurredAt'] })
 export class AiUsageEventItem {
   @Property({ primary: true, autoincrement: true })
   handle?: number;
