@@ -3,7 +3,6 @@
     v-if="onlineMeetingUrl"
     class="sapling-event-online-meeting-link"
     :href="onlineMeetingUrl"
-    target="_blank"
     rel="noopener noreferrer"
     @click.stop
     @mousedown.stop

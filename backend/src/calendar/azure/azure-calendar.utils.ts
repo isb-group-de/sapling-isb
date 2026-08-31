@@ -24,6 +24,7 @@ type AzureGraphAttendee = {
 
 export type AzureGraphCalendarEvent = {
   id?: string;
+  iCalUId?: string | null;
   type?: 'singleInstance' | 'occurrence' | 'exception' | 'seriesMaster' | null;
   seriesMasterId?: string | null;
   originalStart?: string | null;

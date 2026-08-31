@@ -72,9 +72,8 @@
 
               <v-btn
                 :href="issue.html_url"
-                target="_blank"
                 rel="noopener"
-                icon="mdi-open-in-new"
+                icon="mdi-open-in-app"
                 variant="text"
                 size="small"
               />
@@ -82,7 +81,6 @@
 
             <a
               :href="issue.html_url"
-              target="_blank"
               rel="noopener"
               class="sapling-work-card__title sapling-issue-card__title"
             >
@@ -128,7 +126,6 @@
                   v-for="assignee in issue.assignees"
                   :key="assignee.login"
                   :href="assignee.html_url"
-                  target="_blank"
                   rel="noopener"
                   class="sapling-work-card__assignee sapling-issue-card__assignee"
                 >
@@ -168,7 +165,6 @@
                     <a
                       v-if="comment.user.html_url"
                       :href="comment.user.html_url"
-                      target="_blank"
                       rel="noopener"
                       class="sapling-work-card__comment-author"
                     >
@@ -193,9 +189,8 @@
                       <span>{{ formatDateTime(comment.created_at) }}</span>
                       <v-btn
                         :href="comment.html_url"
-                        target="_blank"
                         rel="noopener"
-                        icon="mdi-open-in-new"
+                        icon="mdi-open-in-app"
                         variant="text"
                         size="x-small"
                       />

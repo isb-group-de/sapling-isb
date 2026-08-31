@@ -70,7 +70,9 @@
               :style="getEventCardStyle(event)"
               :role="isInteractiveEvent(event) ? 'button' : undefined"
               :tabindex="isInteractiveEvent(event) ? 0 : undefined"
-              @click.left.stop="onEventActivate(event)"
+              @mousedown.left="onEventCardMouseDown($event, event)"
+              @pointerup="onEventCardPointerUp($event, event)"
+              @click.left.stop="onEventClick(event)"
               @contextmenu.stop.prevent="onEventContextMenu($event, event)"
               @keydown.enter.stop.prevent="onEventActivate(event)"
               @keydown.space.stop.prevent="onEventActivate(event)"
@@ -280,7 +282,7 @@ function getEventCardClasses(event: CalendarEvent) {
   const density = getEventCardDensity(event)
 
   return {
-    'v-event-draggable': isInteractiveEvent(event),
+    'v-event-draggable': isDraggableEvent(event),
     'sapling-calendar-event-card--all-day': !event.timed,
     'sapling-calendar-event-card--compact': density !== 'default',
     'sapling-calendar-event-card--inline': density === 'inline',
@@ -292,7 +294,7 @@ function getEventCardClasses(event: CalendarEvent) {
 }
 
 function shouldShowResizeHandle(event: CalendarEvent) {
-  return Boolean(event.timed && props.showResizeHandle && isInteractiveEvent(event))
+  return Boolean(event.timed && props.showResizeHandle && isDraggableEvent(event))
 }
 
 function getEventCardStyle(event: CalendarEvent): CSSProperties {
@@ -311,6 +313,10 @@ function shouldShowDescription(event: CalendarEvent) {
 
 function isInteractiveEvent(event: CalendarEvent) {
   return !isHolidayEvent(event) && !isBufferEvent(event)
+}
+
+function isDraggableEvent(event: CalendarEvent) {
+  return isInteractiveEvent(event) && getEventDurationMinutes(event) > 0
 }
 
 function isHolidayEvent(event: CalendarEvent) {
@@ -377,6 +383,27 @@ function onEventActivate(event: CalendarEvent) {
   props.openEvent(event)
 }
 
+function onEventCardMouseDown(nativeEvent: MouseEvent, event: CalendarEvent) {
+  if (!isDraggableEvent(event)) {
+    nativeEvent.stopPropagation()
+  }
+}
+
+function onEventCardPointerUp(nativeEvent: PointerEvent, event: CalendarEvent) {
+  if (!nativeEvent.isPrimary || isDraggableEvent(event) || !isInteractiveEvent(event)) {
+    return
+  }
+
+  nativeEvent.stopPropagation()
+  onEventActivate(event)
+}
+
+function onEventClick(event: CalendarEvent) {
+  if (isDraggableEvent(event)) {
+    onEventActivate(event)
+  }
+}
+
 function onEventContextMenu(nativeEvent: MouseEvent, event: CalendarEvent) {
   suppressEventTooltip()
 
@@ -395,7 +422,7 @@ function isPrimaryMouseButton(event: Event) {
 function onEventMouseDown(nativeEvent: Event, payload: { event: CalendarEvent; timed: boolean }) {
   suppressEventTooltip()
 
-  if (!isPrimaryMouseButton(nativeEvent) || !isInteractiveEvent(payload.event)) {
+  if (!isPrimaryMouseButton(nativeEvent) || !isDraggableEvent(payload.event)) {
     return
   }
 

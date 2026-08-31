@@ -210,7 +210,6 @@
                   <a
                     v-if="getRunSourceUrl(source)"
                     :href="getRunSourceUrl(source)!"
-                    target="_blank"
                     rel="noopener noreferrer"
                   >
                     <strong>{{ formatRunSourceTitle(source) }}</strong>

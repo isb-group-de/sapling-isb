@@ -7,6 +7,13 @@ inverse one-to-one references identify one provider item and remain attached to
 the original Event; the copied Event receives a new provider reference when its
 create delivery runs.
 
+Outlook imports use the Microsoft Graph `iCalUId` as their canonical identity.
+Graph `id` values identify mailbox-specific copies and are therefore different
+for the organizer and attendees of the same meeting. `EventAzureItem` keeps the
+Graph `id` in `referenceHandle` for provider updates and stores the shared
+`iCalUId` for import upserts. The database enforces uniqueness for non-null
+`iCalUId` values; legacy projection rows are backfilled on their next import.
+
 ## Main Files
 
 ```text
@@ -389,6 +396,9 @@ runs the standard `afterUpdate` delivery and removes the provider-side Outlook
 or Google appointment. The Sapling Event and its delivery history remain for
 auditability, while closed-status calendar filters hide it from the normal
 calendar view. Unsynchronized Events retain the normal physical delete path.
+An Outlook `404 ErrorItemNotFound` during cancellation means the provider item
+is already absent: Sapling treats that response as a successful, idempotent
+deletion and removes the stale Azure projection instead of failing the delivery.
 
 Completing and canceling an Event have intentionally different external
 calendar semantics. Status `completed` is an internal Sapling workflow action:

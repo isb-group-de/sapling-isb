@@ -501,7 +501,7 @@ export class AzureCalendarService {
     const client = this.createClient(accessToken);
     const events: AzureGraphCalendarEvent[] = [];
     const eventSelect =
-      'id,type,seriesMasterId,subject,bodyPreview,body,sensitivity,start,end,isAllDay,isCancelled,attendees,categories,isOnlineMeeting,onlineMeetingProvider,onlineMeeting,onlineMeetingUrl,locations,recurrence';
+      'id,iCalUId,type,seriesMasterId,subject,bodyPreview,body,sensitivity,start,end,isAllDay,isCancelled,attendees,categories,isOnlineMeeting,onlineMeetingProvider,onlineMeeting,onlineMeetingUrl,locations,recurrence';
     let response = (await client
       .api('/me/calendarView')
       .query({
@@ -646,6 +646,7 @@ export class AzureCalendarService {
     },
   ): Promise<'created' | 'updated' | 'skipped'> {
     const referenceHandle = graphEvent.id?.trim();
+    const iCalUId = graphEvent.iCalUId?.trim() || null;
     const startDate = normalizeAzureDateTime(graphEvent.start);
     const endDate = normalizeAzureDateTime(graphEvent.end);
 
@@ -653,11 +654,27 @@ export class AzureCalendarService {
       return 'skipped';
     }
 
-    const reference = await emFork.findOne(
-      EventAzureItem,
-      { referenceHandle },
-      { populate: ['event', 'event.participants', 'event.status'] },
-    );
+    // Microsoft Graph event ids identify one mailbox copy. Invitations shared
+    // by an organizer and attendees therefore have different ids, while
+    // iCalUId identifies the meeting across those calendars. Prefer that
+    // calendar-wide identity and fall back to the legacy mailbox id so existing
+    // projection rows are backfilled on their next import.
+    const populateOptions = {
+      populate: ['event', 'event.participants', 'event.status'],
+    } as const;
+    const reference =
+      (iCalUId
+        ? await emFork.findOne(
+            EventAzureItem,
+            { iCalUId },
+            populateOptions as never,
+          )
+        : null) ??
+      (await emFork.findOne(
+        EventAzureItem,
+        { referenceHandle },
+        populateOptions as never,
+      ));
 
     if (graphEvent.isCancelled === true && !reference) {
       return 'skipped';
@@ -674,6 +691,9 @@ export class AzureCalendarService {
     );
 
     if (reference?.event && typeof reference.event === 'object') {
+      if (iCalUId && !reference.iCalUId) {
+        reference.iCalUId = iCalUId;
+      }
       const importedStatus =
         status.handle === 'scheduled' &&
         getRelationHandle(reference.event.status) === 'completed'
@@ -707,6 +727,7 @@ export class AzureCalendarService {
     const newReference = new EventAzureItem();
     newReference.event = event;
     newReference.referenceHandle = referenceHandle;
+    newReference.iCalUId = iCalUId;
 
     emFork.persist(event);
     emFork.persist(newReference);
@@ -811,6 +832,7 @@ export class AzureCalendarService {
     // Create event in Azure
     const created = (await client.api('/me/events').post(eventResource)) as {
       id: string;
+      iCalUId?: string | null;
       onlineMeeting: { joinUrl: string };
     };
 
@@ -818,6 +840,7 @@ export class AzureCalendarService {
     const reference = new EventAzureItem();
     reference.event = event;
     reference.referenceHandle = created.id;
+    reference.iCalUId = created.iCalUId?.trim() || null;
     await emFork.persist(reference).flush();
 
     if (event.type?.handle === 'online' && created.onlineMeeting?.joinUrl) {
@@ -891,7 +914,14 @@ export class AzureCalendarService {
     reference: EventAzureItem,
     emFork: EntityManager,
   ): Promise<any> {
-    await client.api(`/me/events/${reference.referenceHandle}`).delete();
+    try {
+      await client.api(`/me/events/${reference.referenceHandle}`).delete();
+    } catch (error) {
+      if (!isAzureNotFoundError(error)) {
+        throw error;
+      }
+    }
+
     // Remove the EventAzureItem from the database
     await emFork.remove(reference).flush();
     return { success: true };

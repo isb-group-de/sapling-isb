@@ -62,7 +62,6 @@
             </v-chip>
             <a
               :href="latestCreatedIssue.html_url"
-              target="_blank"
               rel="noopener"
               class="sapling-work-compose__latest-link sapling-issue-compose__latest-link"
             >
@@ -138,10 +137,9 @@
             <v-btn
               v-if="latestCreatedIssue"
               :href="latestCreatedIssue.html_url"
-              target="_blank"
               rel="noopener"
               variant="tonal"
-              prepend-icon="mdi-open-in-new"
+              prepend-icon="mdi-open-in-app"
             >
               {{ $t('issue.openCreatedIssue') }}
             </v-btn>

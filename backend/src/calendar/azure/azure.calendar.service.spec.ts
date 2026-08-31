@@ -29,6 +29,12 @@ type AzureCategoryServiceTestHarness = {
   >;
 };
 type AzureDeliveryServiceTestHarness = {
+  createEvent: (
+    client: object,
+    event: EventItem,
+    emFork: object,
+    classificationMappings: [],
+  ) => Promise<unknown>;
   updateEvent: (
     client: object,
     event: EventItem,
@@ -63,6 +69,7 @@ const defaults = {
 function createGraphEvent(overrides: Record<string, unknown> = {}) {
   return {
     id: 'outlook-1',
+    iCalUId: 'ical-planning-1',
     subject: 'Planning',
     bodyPreview: 'Details',
     start: { dateTime: '2026-06-29T09:00:00.000Z' },
@@ -193,6 +200,73 @@ describe('AzureCalendarService Outlook import privacy', () => {
     const reference = persisted.find((item) => item instanceof EventAzureItem);
     expect(event?.recurrenceRule).toBe('FREQ=WEEKLY;INTERVAL=1;BYDAY=MO');
     expect(reference?.referenceHandle).toBe('series-master-1');
+    expect(reference?.iCalUId).toBe('ical-planning-1');
+  });
+
+  it('updates one Sapling event for mailbox-specific ids of the same Outlook meeting', async () => {
+    const existingEvent = new EventItem();
+    existingEvent.title = 'Old title';
+    const sharedReference = {
+      referenceHandle: 'organizer-mailbox-id',
+      iCalUId: 'shared-meeting-uid',
+      event: existingEvent,
+    } as EventAzureItem;
+    const emFork = {
+      findOne: jest.fn<(...args: unknown[]) => Promise<unknown>>(
+        (_entity, where) =>
+          Promise.resolve(
+            (where as { iCalUId?: string }).iCalUId === 'shared-meeting-uid'
+              ? sharedReference
+              : null,
+          ),
+      ),
+      find: jest.fn<(...args: unknown[]) => Promise<unknown[]>>(() =>
+        Promise.resolve([]),
+      ),
+      persist: jest.fn(),
+    };
+    const service = createService();
+
+    await expect(
+      service.upsertImportedEvent(
+        emFork,
+        createGraphEvent({
+          id: 'attendee-mailbox-id',
+          iCalUId: 'shared-meeting-uid',
+          subject: 'Shared planning',
+        }),
+        defaults,
+      ),
+    ).resolves.toBe('updated');
+
+    expect(existingEvent.title).toBe('Shared planning');
+    expect(sharedReference.referenceHandle).toBe('organizer-mailbox-id');
+    expect(emFork.persist).not.toHaveBeenCalled();
+  });
+
+  it('backfills the calendar-wide id on a legacy mailbox reference', async () => {
+    const existingEvent = new EventItem();
+    const legacyReference = {
+      referenceHandle: 'outlook-1',
+      event: existingEvent,
+    } as EventAzureItem;
+    const emFork = {
+      findOne: jest
+        .fn<(...args: unknown[]) => Promise<unknown>>()
+        .mockResolvedValueOnce(null)
+        .mockResolvedValueOnce(legacyReference),
+      find: jest.fn<(...args: unknown[]) => Promise<unknown[]>>(() =>
+        Promise.resolve([]),
+      ),
+      persist: jest.fn(),
+    };
+    const service = createService();
+
+    await expect(
+      service.upsertImportedEvent(emFork, createGraphEvent(), defaults),
+    ).resolves.toBe('updated');
+
+    expect(legacyReference.iCalUId).toBe('ical-planning-1');
   });
 
   it('imports non-private, missing, and unknown Outlook sensitivity as public events', async () => {
@@ -288,6 +362,50 @@ describe('AzureCalendarService Outlook import privacy', () => {
 });
 
 describe('AzureCalendarService completion delivery', () => {
+  it('stores the calendar-wide id returned for a Sapling-created Outlook event', async () => {
+    const post = jest.fn(() =>
+      Promise.resolve({
+        id: 'organizer-mailbox-id',
+        iCalUId: 'shared-meeting-uid',
+        onlineMeeting: null,
+      }),
+    );
+    const api = jest.fn(() => ({ post }));
+    const flush = jest.fn(() => Promise.resolve());
+    const persisted: unknown[] = [];
+    const emFork = {
+      persist: jest.fn((item: unknown) => {
+        persisted.push(item);
+        return { flush };
+      }),
+    };
+    const event = {
+      title: 'Planning',
+      description: 'Details',
+      startDate: new Date('2026-06-29T09:00:00.000Z'),
+      endDate: new Date('2026-06-29T10:00:00.000Z'),
+      participants: [],
+      type: { handle: 'appointment' },
+    } as unknown as EventItem;
+    const service = new AzureCalendarService(
+      {} as never,
+      {} as never,
+    ) as unknown as AzureDeliveryServiceTestHarness;
+
+    await expect(
+      service.createEvent({ api }, event, emFork, []),
+    ).resolves.toEqual({
+      id: 'organizer-mailbox-id',
+      iCalUId: 'shared-meeting-uid',
+      onlineMeeting: null,
+    });
+
+    const reference = persisted.find((item) => item instanceof EventAzureItem);
+    expect(reference?.referenceHandle).toBe('organizer-mailbox-id');
+    expect(reference?.iCalUId).toBe('shared-meeting-uid');
+    expect(flush).toHaveBeenCalledTimes(1);
+  });
+
   it('keeps a completed Outlook event while canceled events still use deletion', async () => {
     const reference = {
       referenceHandle: 'outlook-1',
@@ -322,6 +440,70 @@ describe('AzureCalendarService completion delivery', () => {
       success: true,
     });
     expect(harness.deleteEvent).toHaveBeenCalledTimes(1);
+  });
+
+  it('treats an already missing Outlook event as a successful deletion', async () => {
+    const reference = {
+      referenceHandle: 'deleted-outlook-event',
+    } as EventAzureItem;
+    const removeFromOutlook = jest.fn(() =>
+      Promise.reject(
+        Object.assign(
+          new Error('The specified object was not found in the store.'),
+          {
+            statusCode: 404,
+            code: 'ErrorItemNotFound',
+          },
+        ),
+      ),
+    );
+    const client = {
+      api: jest.fn((_path: string) => ({ delete: removeFromOutlook })),
+    };
+    const flush = jest.fn(() => Promise.resolve());
+    const remove = jest.fn((_reference: EventAzureItem) => ({ flush }));
+    const service = new AzureCalendarService(
+      {} as never,
+      {} as never,
+    ) as unknown as AzureSetEventTestHarness;
+
+    await expect(
+      service.deleteEvent(client, reference, { remove } as never),
+    ).resolves.toEqual({ success: true });
+
+    expect(client.api).toHaveBeenCalledWith(
+      '/me/events/deleted-outlook-event',
+    );
+    expect(removeFromOutlook).toHaveBeenCalledTimes(1);
+    expect(remove.mock.calls).toHaveLength(1);
+    expect(remove.mock.calls[0]?.[0]).toBe(reference);
+    expect(flush).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps the Outlook reference when deletion fails unexpectedly', async () => {
+    const reference = {
+      referenceHandle: 'outlook-event',
+    } as EventAzureItem;
+    const providerError = Object.assign(new Error('Microsoft Graph failed'), {
+      statusCode: 500,
+      code: 'InternalServerError',
+    });
+    const client = {
+      api: jest.fn(() => ({
+        delete: jest.fn(() => Promise.reject(providerError)),
+      })),
+    };
+    const remove = jest.fn();
+    const service = new AzureCalendarService(
+      {} as never,
+      {} as never,
+    ) as unknown as AzureSetEventTestHarness;
+
+    await expect(
+      service.deleteEvent(client, reference, { remove } as never),
+    ).rejects.toBe(providerError);
+
+    expect(remove).not.toHaveBeenCalled();
   });
 
   it('recreates an active recurring event when its Outlook master no longer exists', async () => {

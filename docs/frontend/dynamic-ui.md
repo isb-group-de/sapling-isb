@@ -772,6 +772,15 @@ frontend/src/services/api.script.service.ts
 backend/src/script/
 ```
 
+## Link Navigation
+
+User-facing links use native anchors (or Vue Router links for internal routes) without a forced
+`target`. This preserves the browser navigation contract globally: a normal click opens the link
+in the current tab, while Ctrl-click on Windows/Linux, Cmd-click on macOS, and middle-click open a
+new tab. Do not replace link navigation with an unconditional `window.open(..., '_blank')` call.
+Explicit actions whose documented purpose is to launch a separate window or external workspace are
+the exception.
+
 ## Permissions In UI
 
 Frontend permissions are loaded from current metadata and permission stores.

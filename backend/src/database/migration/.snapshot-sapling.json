@@ -18067,6 +18067,23 @@
           "enumItems": [],
           "mappedType": "integer"
         },
+        "ical_uid": {
+          "name": "ical_uid",
+          "type": "varchar(1024)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": true,
+          "length": 1024,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
         "reference_handle": {
           "name": "reference_handle",
           "type": "varchar(1024)",
@@ -18110,6 +18127,16 @@
           "composite": false,
           "constraint": true,
           "keyName": "event_azure_item_event_handle_unique",
+          "primary": false,
+          "unique": true
+        },
+        {
+          "columnNames": [
+            "ical_uid"
+          ],
+          "composite": false,
+          "constraint": true,
+          "keyName": "event_azure_item_ical_uid_unique",
           "primary": false,
           "unique": true
         },

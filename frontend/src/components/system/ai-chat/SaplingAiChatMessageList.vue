@@ -237,7 +237,6 @@
           v-for="source in getMessageWebSources(message)"
           :key="`${message.handle ?? message.sequence}-${source.url}`"
           :href="source.url"
-          target="_blank"
           rel="noopener noreferrer"
           size="small"
           variant="tonal"

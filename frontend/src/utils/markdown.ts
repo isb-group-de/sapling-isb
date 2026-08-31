@@ -160,7 +160,7 @@ function renderSaplingDocumentEmbed(meta: unknown): string {
 
   return [
     '<a class="sapling-markdown-document-link" ',
-    `href="${escapeAttribute(previewUrl)}" target="_blank" rel="noopener noreferrer">`,
+    `href="${escapeAttribute(previewUrl)}" rel="noopener noreferrer">`,
     `${escapeHtml(label)}</a>`,
   ].join('')
 }
@@ -176,9 +176,7 @@ function rewriteSaplingDocumentUrl(
   }
 
   token?.attrSet?.(attributeName, getSaplingDocumentDownloadUrl(handle))
-
   if (attributeName === 'href') {
-    token?.attrSet?.('target', '_blank')
     token?.attrSet?.('rel', 'noopener noreferrer')
   }
 }
