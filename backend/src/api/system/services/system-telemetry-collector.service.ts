@@ -240,9 +240,21 @@ export class SystemTelemetryCollectorService
               ),
               safeSource(`queue:${queue.name}:paused`, () => queue.isPaused()),
             ]);
+            const countRecord = counts as unknown as Record<
+              string,
+              unknown
+            > | null;
             return {
               name: queue.name,
-              counts: counts ? { ...counts, paused: paused ? 1 : 0 } : null,
+              counts: countRecord
+                ? {
+                    waiting: Number(countRecord.waiting ?? 0),
+                    active: Number(countRecord.active ?? 0),
+                    failed: Number(countRecord.failed ?? 0),
+                    delayed: Number(countRecord.delayed ?? 0),
+                    paused: paused ? 1 : 0,
+                  }
+                : null,
             };
           }),
         );

@@ -133,8 +133,7 @@ describe('SaplingDialogEditCommunicationTab', () => {
 
     await actions[1].trigger('click')
 
-    expect(mocks.openMailDialog).toHaveBeenCalledOnce()
-    expect(mocks.openMailDialog).toHaveBeenCalledWith({
+    expect(mocks.openMailDialog).toHaveBeenCalledExactlyOnceWith({
       entityHandle: 'ticket',
       itemHandle: '10',
       draftValues: undefined,

@@ -1,4 +1,4 @@
-import { Transform, Type } from 'class-transformer';
+import { Transform, Type, type TransformFnParams } from 'class-transformer';
 import {
   ArrayMaxSize,
   IsArray,
@@ -24,13 +24,8 @@ export class MonitoringRangeQueryDto {
 }
 
 export class MonitoringSeriesQueryDto extends MonitoringRangeQueryDto {
-  @Transform(({ value }) =>
-    Array.isArray(value)
-      ? value
-      : String(value ?? '')
-          .split(',')
-          .map((entry) => entry.trim())
-          .filter(Boolean),
+  @Transform((params: TransformFnParams) =>
+    normalizeMetrics(params.value as unknown),
   )
   @IsArray()
   @ArrayMaxSize(20)
@@ -44,6 +39,20 @@ export class MonitoringSeriesQueryDto extends MonitoringRangeQueryDto {
   @IsOptional()
   @IsString()
   instanceId?: string;
+}
+
+function normalizeMetrics(value: unknown): unknown[] {
+  if (Array.isArray(value)) {
+    return value.map((entry: unknown) => entry);
+  }
+  if (value != null && typeof value !== 'string' && typeof value !== 'number') {
+    return [value];
+  }
+  const serialized = typeof value === 'number' ? String(value) : (value ?? '');
+  return serialized
+    .split(',')
+    .map((entry) => entry.trim())
+    .filter(Boolean);
 }
 
 export class MonitoringUsersQueryDto extends MonitoringRangeQueryDto {

@@ -206,11 +206,12 @@ describe('CalendarDeliveryExecutor', () => {
     };
     const azureCalendarService = {
       setEvent: jest.fn(() =>
-        Promise.reject({
-          statusCode: 500,
-          message: 'Microsoft Graph failed',
-          body: { error: { code: 'InternalServerError' } },
-        }),
+        Promise.reject(
+          Object.assign(new Error('Microsoft Graph failed'), {
+            statusCode: 500,
+            body: { error: { code: 'InternalServerError' } },
+          }),
+        ),
       ),
     };
     const executor = new CalendarDeliveryExecutor(

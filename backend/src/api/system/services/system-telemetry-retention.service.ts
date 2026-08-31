@@ -4,6 +4,7 @@ import {
   OnModuleInit,
 } from '@nestjs/common';
 import { EntityManager } from '@mikro-orm/core';
+import { executeRows } from './sql-query.utils';
 import { PostgreSqlConnection } from '@mikro-orm/postgresql';
 import { SYSTEM_TELEMETRY_ENABLED } from '../../../constants/project.constants';
 
@@ -224,9 +225,9 @@ export class SystemTelemetryRetentionService
     condition: string,
   ) {
     for (let batch = 0; batch < MAX_PURGE_BATCHES; batch += 1) {
-      const rows = await em
-        .getConnection()
-        .execute(boundedDelete(table, condition), [PURGE_BATCH_SIZE]);
+      const rows = await executeRows(em, boundedDelete(table, condition), [
+        PURGE_BATCH_SIZE,
+      ]);
       const deletedCount = Number(rows[0]?.deletedCount ?? 0);
       if (deletedCount < PURGE_BATCH_SIZE) return;
       await yieldToEventLoop();

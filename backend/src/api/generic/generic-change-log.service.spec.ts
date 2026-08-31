@@ -31,9 +31,10 @@ describe('GenericChangeLogService', () => {
     const log = { details: { add: jest.fn() } };
     const logEm = {
       findOne: jest.fn(async () => ({ handle: 'delete' })),
-      create: jest.fn((entityClass: unknown, _data: unknown) =>
-        entityClass === ChangeLogItem ? log : {},
-      ),
+      create: jest.fn((entityClass: unknown, data: unknown) => {
+        void data;
+        return entityClass === ChangeLogItem ? log : {};
+      }),
       flush: jest.fn(async () => undefined),
     };
     const em = {

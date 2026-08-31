@@ -216,7 +216,13 @@ export class GenericDeleteService {
         hidden: template.options?.includes('isHideAsReference') ?? false,
       }))
       .filter((reference) => reference.required || !reference.hidden)
-      .map(({ hidden: _hidden, ...reference }) => reference);
+      .map((reference) => ({
+        name: reference.name,
+        entityHandle: reference.entityHandle,
+        kind: reference.kind,
+        mappedBy: reference.mappedBy,
+        required: reference.required,
+      }));
   }
 
   private hasDatabaseDeleteCascade(

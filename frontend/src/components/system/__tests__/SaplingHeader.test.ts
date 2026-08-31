@@ -3,10 +3,6 @@ import { ref } from 'vue'
 import { describe, expect, it, vi } from 'vitest'
 import SaplingHeader from '../SaplingHeader.vue'
 
-const harness = vi.hoisted(() => ({
-  goHome: vi.fn(),
-}))
-
 vi.mock('vue-router', () => ({
   useRoute: () => ({ name: 'home', path: '/' }),
   useRouter: () => ({ push: vi.fn() }),
@@ -33,7 +29,6 @@ vi.mock('@/composables/system/useSaplingHeader', () => ({
     closeInbox: vi.fn(),
     openAccount: vi.fn(),
     closeAccount: vi.fn(),
-    goHome: harness.goHome,
   }),
 }))
 
@@ -98,9 +93,8 @@ describe('SaplingHeader home navigation', () => {
           VAppBarNavIcon: { template: '<button />' },
           SaplingHeaderPrimaryActions: {
             props: ['homeLabel'],
-            emits: ['openHome'],
             template:
-              '<button data-tutorial="header-home" :aria-label="homeLabel" :title="homeLabel" @click="$emit(\'openHome\')">Sapling</button>',
+              '<a data-tutorial="header-home" href="/" :aria-label="homeLabel" :title="homeLabel">Sapling</a>',
           },
         },
       },
@@ -110,8 +104,6 @@ describe('SaplingHeader home navigation', () => {
     expect(home.text()).toContain('Sapling')
     expect(home.attributes('aria-label')).toBe('global.backToHome')
     expect(home.attributes('title')).toBe('global.backToHome')
-
-    await home.trigger('click')
-    expect(harness.goHome).toHaveBeenCalledOnce()
+    expect(home.attributes('href')).toBe('/')
   })
 })

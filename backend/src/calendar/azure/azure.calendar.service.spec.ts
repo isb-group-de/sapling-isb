@@ -458,22 +458,26 @@ describe('AzureCalendarService completion delivery', () => {
       ),
     );
     const client = {
-      api: jest.fn((_path: string) => ({ delete: removeFromOutlook })),
+      api: jest.fn((path: string) => {
+        void path;
+        return { delete: removeFromOutlook };
+      }),
     };
     const flush = jest.fn(() => Promise.resolve());
-    const remove = jest.fn((_reference: EventAzureItem) => ({ flush }));
+    const remove = jest.fn((removedReference: EventAzureItem) => {
+      void removedReference;
+      return { flush };
+    });
     const service = new AzureCalendarService(
       {} as never,
       {} as never,
     ) as unknown as AzureSetEventTestHarness;
 
     await expect(
-      service.deleteEvent(client, reference, { remove } as never),
+      service.deleteEvent(client, reference, { remove }),
     ).resolves.toEqual({ success: true });
 
-    expect(client.api).toHaveBeenCalledWith(
-      '/me/events/deleted-outlook-event',
-    );
+    expect(client.api).toHaveBeenCalledWith('/me/events/deleted-outlook-event');
     expect(removeFromOutlook).toHaveBeenCalledTimes(1);
     expect(remove.mock.calls).toHaveLength(1);
     expect(remove.mock.calls[0]?.[0]).toBe(reference);
@@ -500,7 +504,7 @@ describe('AzureCalendarService completion delivery', () => {
     ) as unknown as AzureSetEventTestHarness;
 
     await expect(
-      service.deleteEvent(client, reference, { remove } as never),
+      service.deleteEvent(client, reference, { remove }),
     ).rejects.toBe(providerError);
 
     expect(remove).not.toHaveBeenCalled();
@@ -516,7 +520,10 @@ describe('AzureCalendarService completion delivery', () => {
       referenceHandle: 'deleted-outlook-event',
     } as EventAzureItem;
     const flush = jest.fn(() => Promise.resolve());
-    const remove = jest.fn((_reference: EventAzureItem) => ({ flush }));
+    const remove = jest.fn((removedReference: EventAzureItem) => {
+      void removedReference;
+      return { flush };
+    });
     const emFork = {
       findOne: jest
         .fn<(...args: unknown[]) => Promise<unknown>>()

@@ -1,4 +1,5 @@
 import {
+  getCurrentInstance,
   onBeforeUnmount,
   ref,
   type ComponentPublicInstance,
@@ -29,11 +30,13 @@ export function useSaplingCalendarNavigation(
   const calendarScrollContainer = ref<CalendarScrollContainerRef>(null)
   let scrollTimeoutId: number | null = null
 
-  onBeforeUnmount(() => {
-    if (scrollTimeoutId !== null) {
-      window.clearTimeout(scrollTimeoutId)
-    }
-  })
+  if (getCurrentInstance()) {
+    onBeforeUnmount(() => {
+      if (scrollTimeoutId !== null) {
+        window.clearTimeout(scrollTimeoutId)
+      }
+    })
+  }
 
   function nowY() {
     const now = new Date()

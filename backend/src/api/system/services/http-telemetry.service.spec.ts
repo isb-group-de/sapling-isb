@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events';
 import { PassThrough } from 'stream';
-import type { NextFunction, Request, Response } from 'express';
+import type { Request, Response } from 'express';
 import {
   createHttpTelemetryMiddleware,
   HttpTelemetryService,
@@ -29,7 +29,7 @@ describe('HTTP telemetry middleware', () => {
     middleware(
       request as unknown as Request,
       response as unknown as Response,
-      next as unknown as NextFunction,
+      next,
     );
 
     request.write(body);
@@ -66,7 +66,13 @@ describe('HTTP telemetry privacy grouping', () => {
   });
 
   it('attributes impersonated and API-token traffic without request details', async () => {
-    const execute = jest.fn().mockResolvedValue([]);
+    const execute = jest.fn(
+      (sql: string, parameters: unknown[]): Promise<unknown[]> => {
+        void sql;
+        void parameters;
+        return Promise.resolve([]);
+      },
+    );
     const transaction = { getConnection: () => ({ execute }) };
     const em = {
       fork: () => ({
@@ -106,7 +112,7 @@ describe('HTTP telemetry privacy grouping', () => {
     await service.flush();
 
     expect(execute).toHaveBeenCalledTimes(2);
-    const calls = execute.mock.calls.map((call) => call[1] as unknown[]);
+    const calls = execute.mock.calls.map((call) => call[1]);
     expect(calls).toEqual(
       expect.arrayContaining([
         expect.arrayContaining(['person:1', 1, null, 'session', 'generic']),

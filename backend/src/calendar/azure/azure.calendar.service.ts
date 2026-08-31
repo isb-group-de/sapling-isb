@@ -185,7 +185,7 @@ export class AzureCalendarService {
         targetReference = {
           event,
           referenceHandle: created.id,
-        } as EventAzureItem;
+        };
       }
       return this.detachOccurrence(client, targetReference, occurrenceStart);
     }

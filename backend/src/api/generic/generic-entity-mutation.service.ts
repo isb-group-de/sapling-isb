@@ -462,13 +462,6 @@ export class GenericEntityMutationService {
       entityHandle,
       newData,
     );
-    const newSnapshot =
-      this.genericChangeLogService.captureEntityChangeLogPayload(
-        entityHandle,
-        hydrated,
-        permissionTemplate,
-        submittedSnapshot,
-      );
     const newAutomationSnapshot =
       this.genericChangeLogService.captureEntityChangeLogPayload(
         entityHandle,

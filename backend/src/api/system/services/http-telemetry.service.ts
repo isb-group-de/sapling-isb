@@ -197,12 +197,16 @@ export function createHttpTelemetryMiddleware(service: HttpTelemetryService) {
     );
     let responseBytes = 0;
     let finalized = false;
-    const originalWrite = response.write.bind(response);
-    const originalEnd = response.end.bind(response);
+    const originalWrite = response.write.bind(response) as unknown as (
+      ...args: unknown[]
+    ) => unknown;
+    const originalEnd = response.end.bind(response) as unknown as (
+      ...args: unknown[]
+    ) => unknown;
 
     response.write = ((chunk: unknown, ...args: unknown[]) => {
       responseBytes += byteLength(chunk);
-      return originalWrite(chunk as never, ...(args as never[]));
+      return originalWrite(chunk, ...args) === true;
     }) as Response['write'];
 
     response.end = ((chunk?: unknown, ...args: unknown[]) => {
@@ -213,7 +217,8 @@ export function createHttpTelemetryMiddleware(service: HttpTelemetryService) {
           `total;dur=${(performance.now() - startedAt).toFixed(1)}`,
         );
       }
-      return originalEnd(chunk as never, ...(args as never[]));
+      originalEnd(chunk, ...args);
+      return response;
     }) as Response['end'];
 
     const finalize = (statusCode = response.statusCode) => {

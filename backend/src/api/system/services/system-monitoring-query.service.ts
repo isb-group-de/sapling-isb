@@ -14,6 +14,7 @@ import type {
   UpdateSystemAlertRuleDto,
 } from '../dto/monitoring-query.dto';
 import { HttpTelemetryService } from './http-telemetry.service';
+import { executeRows } from './sql-query.utils';
 import { SystemTelemetryCollectorService } from './system-telemetry-collector.service';
 
 const MAX_RANGE_MS = 90 * 24 * 60 * 60 * 1000;
@@ -48,7 +49,8 @@ export class SystemMonitoringQueryService {
     ] = await runWithConcurrency(
       [
         () =>
-          em.getConnection().execute(
+          executeRows(
+            em,
             `select distinct on ("metric_key") "metric_key" as "metricKey",
              "last" as "value", "bucket_start" as "capturedAt"
            from "system_metric_bucket_item"
@@ -57,7 +59,8 @@ export class SystemMonitoringQueryService {
             [range.from, range.to],
           ),
         () =>
-          em.getConnection().execute(
+          executeRows(
+            em,
             `select coalesce(sum("request_count"), 0)::int as "requestCount",
              coalesce(sum("client_error_count"), 0)::int as "clientErrorCount",
              coalesce(sum("server_error_count"), 0)::int as "serverErrorCount",
@@ -71,7 +74,8 @@ export class SystemMonitoringQueryService {
             [range.from, range.to, chooseHttpResolution(range)],
           ),
         () =>
-          em.getConnection().execute(
+          executeRows(
+            em,
             `select count(distinct "person_handle") filter (
               where "last_seen_at" >= ? and "expires_at" > now()
             )::int as "onlineUsers",
@@ -82,7 +86,8 @@ export class SystemMonitoringQueryService {
             [new Date(Date.now() - ONLINE_WINDOW_MS)],
           ),
         () =>
-          em.getConnection().execute(
+          executeRows(
+            em,
             `select coalesce(sum("total_tokens"), 0)::bigint as "totalTokens",
              count(*)::int as "callCount",
              count(*) filter (where "status" <> 'completed')::int as "errorCount",
@@ -91,13 +96,15 @@ export class SystemMonitoringQueryService {
             [range.from, range.to],
           ),
         () =>
-          em.getConnection().execute(
+          executeRows(
+            em,
             `select count(*) filter (where "state" = 'open')::int as "openCount",
              count(*) filter (where "state" = 'open' and "severity" = 'critical')::int as "criticalCount"
            from "system_alert_incident_item"`,
           ),
         () =>
-          em.getConnection().execute(
+          executeRows(
+            em,
             `select coalesce(sum("request_count"), 0)::int as "requestCount",
              coalesce(sum("server_error_count"), 0)::int as "serverErrorCount",
              coalesce(sum("request_bytes" + "response_bytes"), 0)::bigint as "trafficBytes"
@@ -110,7 +117,8 @@ export class SystemMonitoringQueryService {
             ],
           ),
         () =>
-          em.getConnection().execute(
+          executeRows(
+            em,
             `select coalesce(sum("total_tokens"), 0)::bigint as "totalTokens",
              count(*)::int as "callCount"
            from "ai_usage_event_item" where "occurred_at" between ? and ?`,
@@ -166,7 +174,8 @@ export class SystemMonitoringQueryService {
         ? chooseMetricResolution(range)
         : query.resolution;
     const em = this.em.fork();
-    const rows = await em.getConnection().execute(
+    const rows = await executeRows(
+      em,
       `select "metric_key" as "metricKey", "dimension_key" as "dimensionKey",
          "bucket_start" as "capturedAt", "sample_count" as "sampleCount",
          "minimum", "maximum", "sum", "last",
@@ -191,10 +200,10 @@ export class SystemMonitoringQueryService {
     return {
       range: serializeRange(range),
       resolution,
-      series: (rows as Array<Record<string, unknown>>).filter(
+      series: rows.filter(
         (row) =>
           row.metricKey !== 'filesystem.usedPercent' ||
-          !ignoredFilesystems.has(String(row.dimensionKey ?? '')),
+          !ignoredFilesystems.has(toDimension(row.dimensionKey)),
       ),
     };
   }
@@ -203,11 +212,9 @@ export class SystemMonitoringQueryService {
     const range = resolveRange(query);
     const resolution = chooseHttpResolution(range);
     const groupColumn = query.groupBy === 'auth' ? 'auth_kind' : 'route_group';
-    const rows = await this.em
-      .fork()
-      .getConnection()
-      .execute(
-        `select "${groupColumn}" as "group",
+    const rows = await executeRows(
+      this.em.fork(),
+      `select "${groupColumn}" as "group",
          sum("request_count")::int as "requestCount",
          sum("client_error_count")::int as "clientErrorCount",
          sum("server_error_count")::int as "serverErrorCount",
@@ -219,12 +226,12 @@ export class SystemMonitoringQueryService {
        from "http_metric_bucket_item"
        where "bucket_start" between ? and ? and "resolution" = ?
        group by "${groupColumn}" order by "requestCount" desc`,
-        [range.from, range.to, resolution],
-      );
+      [range.from, range.to, resolution],
+    );
     return {
       range: serializeRange(range),
       resolution,
-      groups: (rows as Array<Record<string, unknown>>).map((row) => ({
+      groups: rows.map((row) => ({
         ...row,
         durationP50Ms: percentileFromHistogram(
           row.durationHistogram,
@@ -251,7 +258,8 @@ export class SystemMonitoringQueryService {
     const order = userSortSql(query.sort);
     const offset = (query.page - 1) * query.limit;
     const em = this.em.fork();
-    const rows = await em.getConnection().execute(
+    const rows = await executeRows(
+      em,
       `select person."handle", person."first_name" as "firstName",
          person."last_name" as "lastName", person."is_active" as "isActive",
          coalesce(http."requests", 0)::int as "requests",
@@ -311,7 +319,8 @@ export class SystemMonitoringQueryService {
         offset,
       ],
     );
-    const countRows = await em.getConnection().execute(
+    const countRows = await executeRows(
+      em,
       `select count(*)::int as "total" from "person_item" person
        where exists (
          select 1 from "http_metric_bucket_item" presence
@@ -341,11 +350,9 @@ export class SystemMonitoringQueryService {
     const range = resolveRange(query);
     const resolution = chooseHttpResolution(range);
     const [userRows, tokens, apiTokens] = await Promise.all([
-      this.em
-        .fork()
-        .getConnection()
-        .execute(
-          `select person."handle", person."first_name" as "firstName", person."last_name" as "lastName",
+      executeRows(
+        this.em.fork(),
+        `select person."handle", person."first_name" as "firstName", person."last_name" as "lastName",
            person."is_active" as "isActive", coalesce(sum(h."request_count"), 0)::int as "requests",
            coalesce(sum(h."client_error_count" + h."server_error_count"), 0)::int as "errors",
            coalesce(sum(h."request_bytes" + h."response_bytes"), 0)::bigint as "traffic",
@@ -359,31 +366,27 @@ export class SystemMonitoringQueryService {
          from "person_item" person left join "http_metric_bucket_item" h
            on h."person_handle" = person."handle" and h."resolution" = ? and h."bucket_start" between ? and ?
          where person."handle" = ? group by person."handle"`,
-          [
-            new Date(Date.now() - ONLINE_WINDOW_MS),
-            resolution,
-            range.from,
-            range.to,
-            personHandle,
-          ],
-        ),
-      this.em
-        .fork()
-        .getConnection()
-        .execute(
-          `select "provider", "model", "operation", count(*)::int as "calls",
+        [
+          new Date(Date.now() - ONLINE_WINDOW_MS),
+          resolution,
+          range.from,
+          range.to,
+          personHandle,
+        ],
+      ),
+      executeRows(
+        this.em.fork(),
+        `select "provider", "model", "operation", count(*)::int as "calls",
            coalesce(sum("input_tokens"), 0)::bigint as "inputTokens",
            coalesce(sum("output_tokens"), 0)::bigint as "outputTokens",
            coalesce(sum("total_tokens"), 0)::bigint as "totalTokens"
          from "ai_usage_event_item" where "person_handle" = ? and "occurred_at" between ? and ?
          group by "provider", "model", "operation" order by "totalTokens" desc`,
-          [personHandle, range.from, range.to],
-        ),
-      this.em
-        .fork()
-        .getConnection()
-        .execute(
-          `select token."handle", token."description", token."token_prefix" as "tokenPrefix",
+        [personHandle, range.from, range.to],
+      ),
+      executeRows(
+        this.em.fork(),
+        `select token."handle", token."description", token."token_prefix" as "tokenPrefix",
            token."last_used_at" as "lastUsedAt", coalesce(sum(h."request_count"), 0)::int as "requests",
            coalesce(sum(h."client_error_count" + h."server_error_count"), 0)::int as "errors",
            coalesce(sum(h."request_bytes" + h."response_bytes"), 0)::bigint as "traffic"
@@ -392,8 +395,8 @@ export class SystemMonitoringQueryService {
            and h."resolution" = ? and h."bucket_start" between ? and ?
          where token."person_handle" = ?
          group by token."handle" order by token."last_used_at" desc nulls last`,
-          [resolution, range.from, range.to, personHandle],
-        ),
+        [resolution, range.from, range.to, personHandle],
+      ),
     ]);
     const user = userRows[0];
     if (!user) throw new NotFoundException('global.notFound');
@@ -403,11 +406,9 @@ export class SystemMonitoringQueryService {
   async getAiUsage(query: MonitoringGroupQueryDto) {
     const range = resolveRange(query);
     const groupExpression = aiGroupSql(query.groupBy);
-    const rows = await this.em
-      .fork()
-      .getConnection()
-      .execute(
-        `select ${groupExpression} as "group", count(*)::int as "callCount",
+    const rows = await executeRows(
+      this.em.fork(),
+      `select ${groupExpression} as "group", count(*)::int as "callCount",
          count(*) filter (where "status" <> 'completed')::int as "errorCount",
          count(*) filter (where "usage_reported")::int as "reportedCount",
          coalesce(sum("input_tokens"), 0)::bigint as "inputTokens",
@@ -416,8 +417,8 @@ export class SystemMonitoringQueryService {
          coalesce(avg("duration_ms"), 0)::float8 as "averageDurationMs"
        from "ai_usage_event_item" where "occurred_at" between ? and ?
        group by ${groupExpression} order by "totalTokens" desc`,
-        [range.from, range.to],
-      );
+      [range.from, range.to],
+    );
     return { range: serializeRange(range), groups: rows };
   }
 
@@ -465,14 +466,16 @@ export class SystemMonitoringQueryService {
   async getCollectorStatus() {
     const em = this.em.fork();
     const [instances, tableSizes] = await Promise.all([
-      em.getConnection().execute(
+      executeRows(
+        em,
         `select "handle" as "instanceId", "process_started_at" as "processStartedAt",
            "last_sample_at" as "lastSampleAt",
            greatest(0, extract(epoch from now() - "last_sample_at"))::float8 as "gapSeconds",
            "collector_enabled" as "enabled"
          from "system_telemetry_instance_item" order by "last_sample_at" desc nulls last`,
       ),
-      em.getConnection().execute(
+      executeRows(
+        em,
         `select relation as "table", pg_total_relation_size(relation)::bigint as "bytes"
          from unnest(array[
            'system_metric_bucket_item'::regclass,
@@ -576,6 +579,12 @@ function normalizeNumericRecord(record: Record<string, unknown>) {
       ];
     }),
   );
+}
+
+function toDimension(value: unknown): string {
+  return typeof value === 'string' || typeof value === 'number'
+    ? String(value)
+    : '';
 }
 
 function resolveHealth(

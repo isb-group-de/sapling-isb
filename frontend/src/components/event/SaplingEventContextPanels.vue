@@ -72,7 +72,7 @@ import type {
   SelectedPersonPreviewItem,
 } from '@/composables/event/useSaplingEventPresentation'
 
-const props = defineProps<{
+defineProps<{
   isMobileFilterLayout: boolean
   upcomingEvents: EventAgendaItem[]
   chipFilters: SaplingChipFilterGroup[]

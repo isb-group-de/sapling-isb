@@ -323,20 +323,24 @@ export class CalendarDeliveryExecutor {
     changedFields?: string[],
     occurrenceStart?: string,
   ): Promise<unknown> {
-    const setEvent =
-      provider === 'google'
-        ? this.googleCalendarService.setEvent.bind(this.googleCalendarService)
-        : this.azureCalendarService.setEvent.bind(this.azureCalendarService);
-
     if (occurrenceStart) {
-      return setEvent(
-        eventHandle,
-        accessToken,
-        personHandle,
-        operation,
-        changedFields,
-        occurrenceStart,
-      );
+      return provider === 'google'
+        ? this.googleCalendarService.setEvent(
+            eventHandle,
+            accessToken,
+            personHandle,
+            operation,
+            changedFields,
+            occurrenceStart,
+          )
+        : this.azureCalendarService.setEvent(
+            eventHandle,
+            accessToken,
+            personHandle,
+            operation,
+            changedFields,
+            occurrenceStart,
+          );
     }
 
     if (provider === 'google') {

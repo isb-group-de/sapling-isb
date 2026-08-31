@@ -31,6 +31,9 @@ describe('SaplingHeaderInboxPreview', () => {
         preview,
       },
       global: {
+        directives: {
+          tilt: () => undefined,
+        },
         stubs: {
           VIcon: true,
           Teleport: true,
@@ -61,6 +64,9 @@ describe('SaplingHeaderInboxPreview', () => {
         preview,
       },
       global: {
+        directives: {
+          tilt: () => undefined,
+        },
         stubs: {
           VIcon: true,
           Teleport: true,

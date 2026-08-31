@@ -109,6 +109,7 @@ const VAutocompleteStub = defineComponent({
       type: String,
       default: '',
     },
+    type: String,
   },
   emits: ['update:modelValue'],
   template: '<select />',
@@ -121,6 +122,7 @@ const VTextFieldStub = defineComponent({
       type: String,
       default: '',
     },
+    type: String,
   },
   emits: ['update:modelValue'],
   template: '<input />',
@@ -129,7 +131,7 @@ const VTextFieldStub = defineComponent({
 const VBtnStub = defineComponent({
   name: 'v-btn',
   emits: ['click'],
-  template: '<button @click="$emit(\'click\')"><slot /></button>',
+  template: '<button type="button" @click="$emit(\'click\')"><slot /></button>',
 })
 
 describe('SaplingFieldEmailSubscriptionConditions', () => {

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { EntityManager } from '@mikro-orm/core';
 import { OpenTaskEventsService } from '../../current/open-task-events.service';
 import { SystemAlertIncidentItem } from '../../../entity/SystemAlertIncidentItem';
+import { executeRows } from './sql-query.utils';
 
 @Injectable()
 export class SystemAlertNotificationService {
@@ -14,7 +15,8 @@ export class SystemAlertNotificationService {
     if (incident.handle == null) return;
     const em = this.em.fork();
     const [references, admins] = await Promise.all([
-      em.getConnection().execute(
+      executeRows(
+        em,
         `select subscription."handle" as "subscriptionHandle",
            template."handle" as "templateHandle"
          from "inbox_subscription_item" subscription
@@ -22,7 +24,8 @@ export class SystemAlertNotificationService {
          where subscription."description" = 'System monitoring alerts'
            and subscription."is_active" = true and template."is_active" = true limit 1`,
       ),
-      em.getConnection().execute(
+      executeRows(
+        em,
         `select distinct person."handle"
          from "person_item" person
          join "person_item_roles" person_role on person_role."person_item_handle" = person."handle"
@@ -31,9 +34,7 @@ export class SystemAlertNotificationService {
       ),
     ]);
     const reference = references[0];
-    const handles = (admins as Array<{ handle: number }>).map((row) =>
-      Number(row.handle),
-    );
+    const handles = admins.map((row) => Number(row.handle));
     if (!reference || handles.length === 0) return;
     const title = `${incident.severity === 'critical' ? 'Critical' : 'Warning'}: ${incident.rule.title}`;
     const dimension = incident.dimensionKey

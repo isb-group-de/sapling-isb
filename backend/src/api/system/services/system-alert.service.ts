@@ -9,6 +9,7 @@ import { SystemAlertRuleItem } from '../../../entity/SystemAlertRuleItem';
 import { SYSTEM_TELEMETRY_ENABLED } from '../../../constants/project.constants';
 import { SystemAlertNotificationService } from './system-alert-notification.service';
 import { FilesystemService } from './filesystem.service';
+import { executeRows } from './sql-query.utils';
 
 @Injectable()
 export class SystemAlertService implements OnModuleInit, OnApplicationShutdown {
@@ -120,7 +121,8 @@ export class SystemAlertService implements OnModuleInit, OnApplicationShutdown {
   private async readObservations(em: EntityManager, rule: SystemAlertRuleItem) {
     const since = new Date(Date.now() - rule.windowSeconds * 1000);
     if (rule.metricKey === 'http.5xxRate') {
-      const rows = await em.getConnection().execute(
+      const rows = await executeRows(
+        em,
         `select '' as "dimension",
            case when sum("request_count") > 0
              then sum("server_error_count")::float8 / sum("request_count") * 100 else 0 end as "value",
@@ -131,7 +133,8 @@ export class SystemAlertService implements OnModuleInit, OnApplicationShutdown {
       return normalizeObservations(rows);
     }
     if (rule.metricKey === 'ai.errorRate') {
-      const rows = await em.getConnection().execute(
+      const rows = await executeRows(
+        em,
         `select '' as "dimension",
            case when count(*) > 0
              then count(*) filter (where "status" <> 'completed')::float8 / count(*) * 100 else 0 end as "value",
@@ -142,7 +145,8 @@ export class SystemAlertService implements OnModuleInit, OnApplicationShutdown {
       return normalizeObservations(rows);
     }
     if (rule.metricKey === 'user.ai.totalTokens') {
-      const rows = await em.getConnection().execute(
+      const rows = await executeRows(
+        em,
         `select "person_handle"::text as "dimension",
            coalesce(sum("total_tokens"), 0)::float8 as "value", count(*)::int as "count"
          from "ai_usage_event_item"
@@ -153,7 +157,8 @@ export class SystemAlertService implements OnModuleInit, OnApplicationShutdown {
       return normalizeObservations(rows);
     }
     if (rule.metricKey === 'user.http.trafficBytes') {
-      const rows = await em.getConnection().execute(
+      const rows = await executeRows(
+        em,
         `select "person_handle"::text as "dimension",
            coalesce(sum("request_bytes" + "response_bytes"), 0)::float8 as "value",
            coalesce(sum("request_count"), 0)::int as "count"
@@ -170,7 +175,8 @@ export class SystemAlertService implements OnModuleInit, OnApplicationShutdown {
         (_, index) =>
           `sum(coalesce(("duration_histogram"->>${index})::int, 0))`,
       ).join(', ');
-      const rows = await em.getConnection().execute(
+      const rows = await executeRows(
+        em,
         `select jsonb_build_array(${histogram}) as "histogram",
            coalesce(sum("request_count"), 0)::int as "count"
          from "http_metric_bucket_item" where "resolution" = '1m' and "bucket_start" >= ?`,
@@ -186,14 +192,16 @@ export class SystemAlertService implements OnModuleInit, OnApplicationShutdown {
       ];
     }
     if (rule.metricKey === 'collector.gapSeconds') {
-      const rows = await em.getConnection().execute(
+      const rows = await executeRows(
+        em,
         `select "handle" as "dimension",
            extract(epoch from now() - "last_sample_at")::float8 as "value", 1 as "count"
          from "system_telemetry_instance_item" where "collector_enabled" = true`,
       );
       return normalizeObservations(rows);
     }
-    const rows = await em.getConnection().execute(
+    const rows = await executeRows(
+      em,
       `select "dimension_key" as "dimension", avg("sum" / greatest("sample_count", 1))::float8 as "value",
          sum("sample_count")::int as "count"
        from "system_metric_bucket_item"
@@ -275,11 +283,17 @@ function normalizeObservations(rows: unknown) {
   return rows.map((row) => {
     const record = row as Record<string, unknown>;
     return {
-      dimension: String(record.dimension ?? ''),
+      dimension: toDimension(record.dimension),
       value: Number(record.value ?? 0),
       count: Number(record.count ?? 0),
     };
   });
+}
+
+function toDimension(value: unknown): string {
+  return typeof value === 'string' || typeof value === 'number'
+    ? String(value)
+    : '';
 }
 
 function histogramPercentile(

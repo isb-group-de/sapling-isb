@@ -58,8 +58,10 @@ describe('SaplingCommandPaletteResults', () => {
 
   it('leaves modified clicks to the browser instead of routing the current tab', async () => {
     const { wrapper, router } = await mountResults([createItem()])
+    const link = wrapper.get('a.sapling-command-palette__item')
+    link.element.addEventListener('click', (event) => event.preventDefault())
 
-    await wrapper.get('a.sapling-command-palette__item').trigger('click', { ctrlKey: true })
+    await link.trigger('click', { ctrlKey: true })
 
     expect(router.currentRoute.value.path).toBe('/')
     expect(wrapper.emitted('routeItemSelected')).toHaveLength(1)

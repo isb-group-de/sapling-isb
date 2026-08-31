@@ -35,8 +35,16 @@ vi.mock('vue-i18n', () => ({
   useI18n: () => ({ t: (key: string) => key }),
 }))
 
+vi.mock('vue-router', () => ({
+  useRouter: () => ({ push: vi.fn() }),
+}))
+
 vi.mock('@/composables/dialog/useSaplingMailDialog', () => ({
   useSaplingMailDialog: () => ({ openMailDialog: vi.fn() }),
+}))
+
+vi.mock('@/composables/system/useSaplingMessageCenter', () => ({
+  useSaplingMessageCenter: () => ({ pushMessage: vi.fn() }),
 }))
 
 import { useSaplingTableRow, type UseSaplingTableRowProps } from '../useSaplingTableRow'

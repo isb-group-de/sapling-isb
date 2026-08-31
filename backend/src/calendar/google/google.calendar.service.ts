@@ -127,8 +127,9 @@ export class GoogleCalendarService {
     personHandle?: number,
     operation?: 'remove-recurrence' | 'detach-occurrence',
     changedFields?: string[],
-    _occurrenceStart?: string,
-  ): Promise<any> {
+    occurrenceStart?: string,
+  ): Promise<unknown> {
+    void occurrenceStart;
     const calendar = google.calendar({ version: 'v3' });
     // Fork EntityManager for context-specific actions
     const emFork = this.em.fork();

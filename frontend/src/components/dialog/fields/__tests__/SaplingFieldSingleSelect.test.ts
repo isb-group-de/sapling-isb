@@ -15,7 +15,7 @@ const {
   useSaplingTableMock,
   tableState,
 } = vi.hoisted(() => {
-  const makeRef = <T>(value: T) => ({ value })
+  const makeRef = <T>(value: T) => ({ value, __v_isRef: true as const })
   return {
     findMock: vi.fn(),
     updateMock: vi.fn(),
