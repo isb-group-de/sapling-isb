@@ -228,6 +228,22 @@
                   <v-list-item-title>{{ $t(`calendar.${type}`) }}</v-list-item-title>
                 </v-list-item>
               </template>
+
+              <v-divider v-if="hasOverflowItemsBeforeArrangement" />
+              <v-list-item
+                prepend-icon="mdi-layers-outline"
+                :active="eventOverlapModeModel === 'stack'"
+                @click="eventOverlapModeModel = 'stack'"
+              >
+                <v-list-item-title>{{ $t('calendar.overlapStack') }}</v-list-item-title>
+              </v-list-item>
+              <v-list-item
+                prepend-icon="mdi-view-column-outline"
+                :active="eventOverlapModeModel === 'column'"
+                @click="eventOverlapModeModel = 'column'"
+              >
+                <v-list-item-title>{{ $t('calendar.overlapColumns') }}</v-list-item-title>
+              </v-list-item>
             </SaplingSurface>
           </v-menu>
         </div>
@@ -263,6 +279,7 @@ import SaplingSurface from '@/components/common/SaplingSurface.vue'
 type CalendarType = 'workweek' | 'month' | 'day' | 'week'
 type CalendarViewMode = 'single' | 'sidebyside'
 type CalendarMode = 'default' | 'extended'
+type CalendarEventOverlapMode = 'stack' | 'column'
 type CalendarSyncProvider = 'azure' | 'google'
 
 const TOOLBAR_TYPE_INLINE_MIN_WIDTH = 1680
@@ -277,6 +294,7 @@ const props = defineProps<{
   calendarTypeOptions: CalendarType[]
   calendarViewMode: CalendarViewMode
   calendarMode: CalendarMode
+  eventOverlapMode: CalendarEventOverlapMode
   modelValue: string
   isSyncingExternalCalendar: boolean
   calendarSyncProvider: CalendarSyncProvider | null
@@ -291,6 +309,7 @@ const emit = defineEmits<{
   (event: 'update:calendarType', value: CalendarType): void
   (event: 'update:calendarViewMode', value: CalendarViewMode): void
   (event: 'update:calendarMode', value: CalendarMode): void
+  (event: 'update:eventOverlapMode', value: CalendarEventOverlapMode): void
   (event: 'previous'): void
   (event: 'today'): void
   (event: 'next'): void
@@ -311,6 +330,11 @@ const calendarViewModeModel = computed({
 const calendarModeModel = computed({
   get: () => props.calendarMode,
   set: (value: CalendarMode) => emit('update:calendarMode', value),
+})
+
+const eventOverlapModeModel = computed({
+  get: () => props.eventOverlapMode,
+  set: (value: CalendarEventOverlapMode) => emit('update:eventOverlapMode', value),
 })
 
 const toolbarElement = ref<HTMLElement | null>(null)
@@ -343,13 +367,14 @@ const showViewInline = computed(
 const showTypeInline = computed(
   () => !props.isNarrowScreen && toolbarWidth.value >= TOOLBAR_TYPE_INLINE_MIN_WIDTH,
 )
-const hasOverflowActions = computed(
+const hasOverflowItemsBeforeArrangement = computed(
   () =>
     !showModeInline.value ||
     (props.calendarSyncProvider != null && !showSyncInline.value) ||
     (!props.isNarrowScreen && !showViewInline.value) ||
     !showTypeInline.value,
 )
+const hasOverflowActions = true
 const calendarTypeIcons: Record<CalendarType, string> = {
   day: 'mdi-calendar-today-outline',
   workweek: 'mdi-calendar-week-outline',

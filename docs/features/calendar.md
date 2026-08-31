@@ -282,6 +282,14 @@ The calendar toolbar keeps the same compact, non-scrolling height in day,
 workweek, week, and month views. Width-dependent actions move into the overflow
 menu instead of making the toolbar itself scroll.
 
+The overflow menu also lets each browser choose how simultaneous timed Events
+are arranged. **Stack appointments** uses Vuetify's compact overlapping stack;
+**Appointments side by side** assigns equal non-overlapping columns. The chosen
+calendar type, combined/person-column layout, standard/extended mode, and
+overlap arrangement are persisted together in local storage. A narrow viewport
+temporarily uses the day and combined layout without overwriting the saved
+desktop preference.
+
 `SaplingCalendarTutorial.vue` provides first-visit onboarding for `/event` and
 can be restarted independently from the command palette. Its targets cover the
 visible period, navigation, display and view controls, calendar grid, entries,

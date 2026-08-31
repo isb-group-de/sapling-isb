@@ -1,0 +1,14 @@
+[
+  {
+    "entity": "calendar",
+    "property": "overlapStack",
+    "de": "Termine gestapelt",
+    "en": "Stack appointments"
+  },
+  {
+    "entity": "calendar",
+    "property": "overlapColumns",
+    "de": "Termine nebeneinander",
+    "en": "Appointments side by side"
+  }
+]

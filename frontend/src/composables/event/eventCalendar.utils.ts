@@ -22,6 +22,7 @@ import {
 
 export type CalendarViewMode = 'single' | 'sidebyside'
 export type CalendarMode = 'default' | 'extended'
+export type CalendarEventOverlapMode = 'stack' | 'column'
 export type CalendarParticipant = PersonItem | number | string
 export type EventBufferKind = 'preparation' | 'followUp'
 export interface EventBufferPlaceholder {

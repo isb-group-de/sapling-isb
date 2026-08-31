@@ -47,6 +47,7 @@
             v-model:calendar-type="calendarType"
             v-model:calendar-view-mode="calendarViewMode"
             v-model:calendar-mode="calendarMode"
+            v-model:event-overlap-mode="eventOverlapMode"
             :is-narrow-screen="isNarrowScreen"
             :is-syncing-external-calendar="isSyncingExternalCalendar"
             :calendar-sync-provider="calendarSyncProvider"
@@ -70,6 +71,7 @@
             <SaplingEventCalendarWorkspace
               v-model="value"
               :calendar-view-mode="calendarViewMode"
+              :event-overlap-mode="eventOverlapMode"
               :events="events"
               :calendar-display-type="calendarDisplayType"
               :calendar-weekdays="calendarWeekdays"
@@ -386,6 +388,7 @@ const {
   calendarType,
   calendarTypeOptions,
   calendarMode,
+  eventOverlapMode,
   calendarSyncProvider,
   currentDateRangeLabel,
   calendarViewMode,

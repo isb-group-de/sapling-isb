@@ -2,7 +2,10 @@ import { ForbiddenException, Injectable } from '@nestjs/common';
 import { PersonItem } from '../../entity/PersonItem';
 import type { McpToolPolicy } from './mcp-policy.types';
 import { SAPLING_MCP_TOOL_DEFINITIONS } from './sapling-mcp-tool-definitions';
-import { SAPLING_MCP_USAGE_HINTS } from './prompts/sapling-mcp.prompts';
+import {
+  SAPLING_MCP_UNTRUSTED_RESULT_NOTICE,
+  SAPLING_MCP_USAGE_HINTS,
+} from './prompts/sapling-mcp.prompts';
 import { SaplingMcpGenericToolService } from './sapling-mcp-generic-tool.service';
 import { SaplingMcpImportToolService } from './sapling-mcp-import-tool.service';
 import { SaplingMcpMetadataService } from './sapling-mcp-metadata.service';
@@ -39,7 +42,7 @@ export class SaplingMcpExecutionService {
       (tool) => tool.toolName !== 'web_search' || hasWebSearch,
     ).map((tool) => ({
       toolName: tool.toolName,
-      description: tool.description,
+      description: `${tool.description} ${SAPLING_MCP_UNTRUSTED_RESULT_NOTICE}`,
       inputSchema: { ...tool.jsonSchema },
     }));
   }

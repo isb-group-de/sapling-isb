@@ -35,10 +35,15 @@ import {
   DEFAULT_EVENT_STATUS_HANDLE,
   DEFAULT_EVENT_TYPE_HANDLE,
   getCalendarEventHandle,
+  type CalendarEventOverlapMode,
   type CalendarMode,
   type CalendarViewMode,
   type SaplingCalendarEvent,
 } from '@/composables/event/eventCalendar.utils'
+import {
+  loadEventCalendarPreferences,
+  saveEventCalendarPreferences,
+} from '@/composables/event/eventCalendarPreferences'
 import { useSaplingCalendarDrag } from '@/composables/event/useSaplingCalendarDrag'
 import { useSaplingCalendarNavigation } from '@/composables/event/useSaplingCalendarNavigation'
 import { useSaplingEventData } from '@/composables/event/useSaplingEventData'
@@ -72,6 +77,8 @@ export function useSaplingEvent() {
   const currentPermissionStore = useCurrentPermissionStore()
   const { pushMessage } = useSaplingMessageCenter()
   const windowWatcher = new SaplingWindowWatcher()
+  const initialWindowSize = windowWatcher.getCurrentSize()
+  const initialCalendarPreferences = loadEventCalendarPreferences()
   const { peopleMap } = useSaplingFilterWork()
 
   const eventEntityHandle = ref('event')
@@ -93,12 +100,21 @@ export function useSaplingEvent() {
     entityTemplates: templates,
   })
   const selectedPeoples = ref<number[]>([])
-  const calendarMode = ref<CalendarMode>('default')
-  const calendarType = ref<CalendarType>(
-    windowWatcher.getCurrentSize() === 'small' ? 'day' : 'workweek',
+  const preferredCalendarType = ref<CalendarType>(initialCalendarPreferences.calendarType)
+  const preferredCalendarViewMode = ref<CalendarViewMode>(
+    initialCalendarPreferences.calendarViewMode,
   )
-  const calendarViewMode = ref<CalendarViewMode>('single')
-  const isNarrowScreen = ref(windowWatcher.getCurrentSize() === 'small')
+  const calendarMode = ref<CalendarMode>(initialCalendarPreferences.calendarMode)
+  const calendarType = ref<CalendarType>(
+    initialWindowSize === 'small' ? 'day' : preferredCalendarType.value,
+  )
+  const calendarViewMode = ref<CalendarViewMode>(
+    initialWindowSize === 'small' ? 'single' : preferredCalendarViewMode.value,
+  )
+  const eventOverlapMode = ref<CalendarEventOverlapMode>(
+    initialCalendarPreferences.eventOverlapMode,
+  )
+  const isNarrowScreen = ref(initialWindowSize === 'small')
   const entityEvent = ref<EntityItem | null>(null)
   const editEvent = ref<CalendarEvent | null>(null)
   // Names of fields that should be marked dirty in the edit dialog after an
@@ -299,16 +315,23 @@ export function useSaplingEvent() {
   //#region Lifecycle
   stopWindowWatcher = windowWatcher.onChange((size) => {
     const isSmall = size === 'small'
-    isNarrowScreen.value = isSmall
 
     if (isSmall) {
+      if (!isNarrowScreen.value) {
+        preferredCalendarType.value = calendarType.value
+        preferredCalendarViewMode.value = calendarViewMode.value
+      }
+
+      isNarrowScreen.value = true
       calendarType.value = 'day'
       calendarViewMode.value = 'single'
       return
     }
 
-    if (calendarType.value === 'day') {
-      calendarType.value = 'workweek'
+    if (isNarrowScreen.value) {
+      isNarrowScreen.value = false
+      calendarType.value = preferredCalendarType.value
+      calendarViewMode.value = preferredCalendarViewMode.value
     }
   })
 
@@ -354,6 +377,20 @@ export function useSaplingEvent() {
   watch([calendarType, calendarViewMode, value], () => {
     void nextTick(() => {
       queueCalendarFocusScroll()
+    })
+  })
+
+  watch([calendarType, calendarViewMode, calendarMode, eventOverlapMode], () => {
+    if (!isNarrowScreen.value) {
+      preferredCalendarType.value = calendarType.value
+      preferredCalendarViewMode.value = calendarViewMode.value
+    }
+
+    saveEventCalendarPreferences({
+      calendarType: preferredCalendarType.value,
+      calendarViewMode: preferredCalendarViewMode.value,
+      calendarMode: calendarMode.value,
+      eventOverlapMode: eventOverlapMode.value,
     })
   })
 
@@ -608,6 +645,7 @@ export function useSaplingEvent() {
     calendarTypeOptions: CALENDAR_TYPE_OPTIONS,
     calendarViewMode,
     calendarMode,
+    eventOverlapMode,
     calendarSyncProvider,
     calendarWeekdays,
     createEvent,

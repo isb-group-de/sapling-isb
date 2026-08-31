@@ -9,6 +9,10 @@ The frontend route is `/customer-360/:entityHandle/:handle`, where `entityHandle
 ## Customer relationship metadata
 
 Customer-facing relationship properties carry the Sapling metadata option `isCustomer`. The marker identifies the business-side party of a record and must not be placed on internal responsibility properties.
+Customer fields keep their `isCompany` or `isPerson` semantics, but must not
+carry `isCurrentCompany` or `isCurrentPerson`: a new record must not silently
+use the current user's company or person as its customer. Current markers remain
+valid for internal responsibility fields such as assignees.
 
 Current markers include:
 

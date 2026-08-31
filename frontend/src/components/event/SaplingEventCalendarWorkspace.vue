@@ -4,6 +4,7 @@
       v-model="calendarValue"
       :events="events"
       :calendar-display-type="calendarDisplayType"
+      :event-overlap-mode="eventOverlapMode"
       :calendar-weekdays="calendarWeekdays"
       :is-drag-active="isDragActive"
       :is-tooltip-blocked="isTooltipBlocked"
@@ -44,6 +45,7 @@
               v-model="calendarValue"
               :events="getSideBySideEvents(personId)"
               :calendar-display-type="calendarDisplayType"
+              :event-overlap-mode="eventOverlapMode"
               :calendar-weekdays="calendarWeekdays"
               :is-drag-active="isDragActive"
               :is-tooltip-blocked="isTooltipBlocked"
@@ -77,6 +79,7 @@ import type { CSSProperties } from 'vue'
 import type { WorkHourWeekItem } from '@/entity/entity'
 import SaplingEventCalendar from '@/components/event/SaplingEventCalendar.vue'
 import type { CalendarEvent } from 'vuetify/lib/components/VCalendar/types.mjs'
+import type { CalendarEventOverlapMode } from '@/composables/event/eventCalendar.utils'
 
 interface CalendarDatePair {
   start: CalendarDateItem
@@ -100,6 +103,7 @@ const props = defineProps<{
   calendarViewMode: CalendarViewMode
   events: CalendarEvent[]
   calendarDisplayType: CalendarDisplayType
+  eventOverlapMode: CalendarEventOverlapMode
   calendarWeekdays?: number[]
   isDragActive: boolean
   isTooltipBlocked: boolean

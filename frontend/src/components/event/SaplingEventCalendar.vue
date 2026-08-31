@@ -15,6 +15,7 @@
     ]"
     color="primary"
     :event-color="props.getEventColor"
+    :event-overlap-mode="props.eventOverlapMode"
     :event-ripple="false"
     :events="props.events"
     :type="props.calendarDisplayType"
@@ -155,6 +156,7 @@ import {
   getCalendarEventCategoryColor as resolveCalendarEventCategoryColor,
   getCalendarEventIcon as resolveCalendarEventIcon,
   getCalendarEventStatusColor as resolveCalendarEventStatusColor,
+  type CalendarEventOverlapMode,
 } from '@/composables/event/eventCalendar.utils'
 
 interface CalendarDatePair {
@@ -182,6 +184,7 @@ const props = withDefaults(
     modelValue: string
     events: CalendarEvent[]
     calendarDisplayType: CalendarDisplayType
+    eventOverlapMode: CalendarEventOverlapMode
     calendarWeekdays?: number[]
     isDragActive?: boolean
     isTooltipBlocked?: boolean

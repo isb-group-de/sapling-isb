@@ -24,6 +24,33 @@ type CustomerContactEntityClass = {
 
 describe('customer contact display fields', () => {
   it.each([
+    ['ticket', TicketItem, 'creatorCompany', 'isCompany'],
+    ['ticket', TicketItem, 'creatorPerson', 'isPerson'],
+    ['event', EventItem, 'creatorCompany', 'isCompany'],
+    ['event', EventItem, 'creatorPerson', 'isPerson'],
+    ['salesOpportunity', SalesOpportunityItem, 'creatorCompany', 'isCompany'],
+    ['salesOpportunity', SalesOpportunityItem, 'creatorPerson', 'isPerson'],
+    ['effortEstimate', EffortEstimateItem, 'creatorCompany', 'isCompany'],
+    ['effortEstimate', EffortEstimateItem, 'creatorPerson', 'isPerson'],
+  ] as const)(
+    'marks %s.%s as a customer reference without defaulting to the current user or company',
+    (_entityHandle, EntityClass, fieldName, referenceOption) => {
+      const prototype = EntityClass.prototype;
+
+      expect(hasSaplingOption(prototype, fieldName, 'isCustomer')).toBe(true);
+      expect(hasSaplingOption(prototype, fieldName, referenceOption)).toBe(
+        true,
+      );
+      expect(hasSaplingOption(prototype, fieldName, 'isCurrentCompany')).toBe(
+        false,
+      );
+      expect(hasSaplingOption(prototype, fieldName, 'isCurrentPerson')).toBe(
+        false,
+      );
+    },
+  );
+
+  it.each([
     ['address', AddressItem, 'company', 'companyEmail', 10000],
     ['company', CompanyItem, 'serviceProvider', 'serviceProviderEmail', 10000],
     [

@@ -516,99 +516,143 @@
       <v-window-item value="system"><slot name="system" /></v-window-item>
     </v-window>
 
-    <SaplingDialog v-model="userDialog" size="lg">
-      <v-card class="sapling-monitoring__user-dialog">
-        <v-card-title class="sapling-monitoring__dialog-title">
-          <div>
-            <p class="sapling-eyebrow">{{ $t('system.monitoringUserDetails') }}</p>
-            <span>{{ selectedUserName }}</span>
-          </div>
-          <v-chip
-            v-if="selectedUserProfile"
-            :color="
-              selectedUserProfile.online
-                ? 'success'
-                : selectedUserProfile.sessionCount
-                  ? 'info'
-                  : undefined
-            "
-            variant="tonal"
-            >{{ selectedUserPresence }}</v-chip
-          >
-        </v-card-title>
-        <v-card-text>
-          <div v-if="selectedUserProfile" class="sapling-monitoring__detail-metrics">
-            <article>
-              <span>{{ $t('system.monitoringRequests') }}</span
-              ><strong>{{ number(selectedUserProfile.requests) }}</strong>
-            </article>
-            <article>
-              <span>{{ $t('system.monitoringErrors') }}</span
-              ><strong>{{ number(selectedUserProfile.errors) }}</strong>
-            </article>
-            <article>
-              <span>{{ $t('system.monitoringTraffic') }}</span
-              ><strong>{{ bytes(selectedUserProfile.traffic) }}</strong>
-            </article>
-            <article>
-              <span>{{ $t('system.monitoringLastLogin') }}</span
-              ><strong>{{ formatDate(selectedUserProfile.lastLoginAt) }}</strong>
-            </article>
-          </div>
-          <div class="sapling-monitoring__detail-sections">
-            <section>
-              <h3>{{ $t('system.monitoringAiTokens') }}</h3>
-              <v-table class="sapling-table sapling-monitoring__table" density="compact"
-                ><thead>
-                  <tr>
-                    <th>{{ $t('system.monitoringProvider') }}</th>
-                    <th>{{ $t('system.monitoringModel') }}</th>
-                    <th>{{ $t('system.monitoringAiCalls') }}</th>
-                    <th>{{ $t('system.monitoringTokens') }}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr
-                    v-for="token in selectedUserTokens"
-                    :key="`${token.provider}:${token.model}:${token.operation}`"
-                  >
-                    <td>{{ token.provider }}</td>
-                    <td>{{ token.model || '–' }}</td>
-                    <td>{{ number(token.calls) }}</td>
-                    <td>{{ compactNumber(token.totalTokens) }}</td>
-                  </tr>
-                </tbody></v-table
-              >
-            </section>
-            <section>
-              <h3>{{ $t('system.monitoringApiTokens') }}</h3>
-              <v-table class="sapling-table sapling-monitoring__table" density="compact"
-                ><thead>
-                  <tr>
-                    <th>{{ $t('system.monitoringDescription') }}</th>
-                    <th>{{ $t('system.monitoringLastUsed') }}</th>
-                    <th>{{ $t('system.monitoringRequests') }}</th>
-                    <th>{{ $t('system.monitoringTraffic') }}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="token in selectedUserApiTokens" :key="String(token.handle)">
-                    <td>{{ token.description || token.tokenPrefix || '–' }}</td>
-                    <td>{{ formatDate(token.lastUsedAt) }}</td>
-                    <td>{{ number(token.requests) }}</td>
-                    <td>{{ bytes(token.traffic) }}</td>
-                  </tr>
-                </tbody></v-table
-              >
-            </section>
-          </div>
-        </v-card-text>
-        <v-card-actions
-          ><v-spacer /><v-btn variant="tonal" @click="userDialog = false">{{
-            $t('global.close')
-          }}</v-btn></v-card-actions
+    <SaplingDialog v-model="userDialog" size="xl" scrollable>
+      <SaplingDialogCard
+        class="sapling-dialog-compact-card sapling-monitoring__user-dialog"
+        :tilt="false"
+        :close="closeUserDialog"
+      >
+        <SaplingDialogShell
+          fill-shell
+          body-class="sapling-dialog-fill-body sapling-monitoring__user-dialog-body"
         >
-      </v-card>
+          <template #hero>
+            <SaplingDialogHero
+              :eyebrow="$t('system.monitoringUserDetails')"
+              :title="selectedUserName"
+              :stats="selectedUserHeroStats"
+              :stats-columns="4"
+              stats-layout="compact"
+            >
+              <template v-if="selectedUserProfile" #title-trailing>
+                <v-chip
+                  :color="
+                    selectedUserProfile.online
+                      ? 'success'
+                      : selectedUserProfile.sessionCount
+                        ? 'info'
+                        : undefined
+                  "
+                  size="small"
+                  variant="tonal"
+                >
+                  <v-icon start size="small" icon="mdi-circle" />
+                  {{ selectedUserPresence }}
+                </v-chip>
+              </template>
+            </SaplingDialogHero>
+          </template>
+
+          <template #body>
+            <div class="sapling-monitoring__detail-sections sapling-scrollable">
+              <section class="sapling-data-card sapling-monitoring__detail-section">
+                <div class="sapling-section-header sapling-monitoring__detail-section-header">
+                  <div class="sapling-monitoring__detail-heading">
+                    <span class="sapling-monitoring__detail-icon">
+                      <v-icon icon="mdi-creation-outline" />
+                    </span>
+                    <div>
+                      <p class="sapling-eyebrow">{{ $t('system.monitoringAiTokens') }}</p>
+                      <h3>{{ $t('system.monitoringAiAnalysis') }}</h3>
+                    </div>
+                  </div>
+                  <v-chip size="small" variant="tonal" color="primary">
+                    {{ selectedUserTokens.length }}
+                  </v-chip>
+                </div>
+
+                <div v-if="selectedUserTokens.length" class="sapling-monitoring__detail-table">
+                  <v-table class="sapling-table sapling-monitoring__table" density="comfortable">
+                    <thead>
+                      <tr>
+                        <th>{{ $t('system.monitoringProvider') }}</th>
+                        <th>{{ $t('system.monitoringModel') }}</th>
+                        <th>{{ $t('system.monitoringAiCalls') }}</th>
+                        <th>{{ $t('system.monitoringTokens') }}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr
+                        v-for="token in selectedUserTokens"
+                        :key="`${token.provider}:${token.model}:${token.operation}`"
+                      >
+                        <td>
+                          <strong>{{ token.provider }}</strong>
+                        </td>
+                        <td>{{ token.model || '–' }}</td>
+                        <td>{{ number(token.calls) }}</td>
+                        <td>{{ compactNumber(token.totalTokens) }}</td>
+                      </tr>
+                    </tbody>
+                  </v-table>
+                </div>
+                <div v-else class="sapling-empty-state-panel sapling-empty-state-panel--compact">
+                  <v-icon icon="mdi-creation-outline" size="28" />
+                  <span>{{ $t('system.monitoringNoData') }}</span>
+                </div>
+              </section>
+
+              <section class="sapling-data-card sapling-monitoring__detail-section">
+                <div class="sapling-section-header sapling-monitoring__detail-section-header">
+                  <div class="sapling-monitoring__detail-heading">
+                    <span class="sapling-monitoring__detail-icon">
+                      <v-icon icon="mdi-key-chain-variant" />
+                    </span>
+                    <div>
+                      <p class="sapling-eyebrow">{{ $t('system.monitoringApiTokens') }}</p>
+                      <h3>{{ $t('system.monitoringRequestAnalysis') }}</h3>
+                    </div>
+                  </div>
+                  <v-chip size="small" variant="tonal" color="primary">
+                    {{ selectedUserApiTokens.length }}
+                  </v-chip>
+                </div>
+
+                <div v-if="selectedUserApiTokens.length" class="sapling-monitoring__detail-table">
+                  <v-table class="sapling-table sapling-monitoring__table" density="comfortable">
+                    <thead>
+                      <tr>
+                        <th>{{ $t('system.monitoringDescription') }}</th>
+                        <th>{{ $t('system.monitoringLastUsed') }}</th>
+                        <th>{{ $t('system.monitoringRequests') }}</th>
+                        <th>{{ $t('system.monitoringTraffic') }}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="token in selectedUserApiTokens" :key="String(token.handle)">
+                        <td>
+                          <strong>{{ token.description || token.tokenPrefix || '–' }}</strong>
+                        </td>
+                        <td>{{ formatDate(token.lastUsedAt) }}</td>
+                        <td>{{ number(token.requests) }}</td>
+                        <td>{{ bytes(token.traffic) }}</td>
+                      </tr>
+                    </tbody>
+                  </v-table>
+                </div>
+                <div v-else class="sapling-empty-state-panel sapling-empty-state-panel--compact">
+                  <v-icon icon="mdi-key-chain-variant" size="28" />
+                  <span>{{ $t('system.monitoringNoData') }}</span>
+                </div>
+              </section>
+            </div>
+          </template>
+
+          <template #actions>
+            <SaplingActionClose :close="closeUserDialog" />
+          </template>
+        </SaplingDialogShell>
+      </SaplingDialogCard>
     </SaplingDialog>
   </section>
 </template>
@@ -617,10 +661,14 @@
 import { computed, defineAsyncComponent, defineComponent, h, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import SaplingActionClose from '@/components/actions/SaplingActionClose.vue'
 import SaplingSystemMetricCard from './SaplingSystemMetricCard.vue'
 import SaplingDialog from '@/components/common/SaplingDialog.vue'
+import SaplingDialogHero from '@/components/common/SaplingDialogHero.vue'
+import SaplingDialogShell from '@/components/common/SaplingDialogShell.vue'
 import SaplingSwitch from '@/components/common/SaplingSwitch.vue'
 import SaplingTextField from '@/components/common/SaplingTextField.vue'
+import SaplingDialogCard from '@/components/dialog/SaplingDialogCard.vue'
 import type { MonitoringAlertRule, MonitoringUser } from '@/entity/system'
 import { monitoringMetricLabel } from './systemMonitoringLabels'
 import {
@@ -783,6 +831,28 @@ const selectedUserName = computed(() =>
 const selectedUserPresence = computed(() =>
   selectedUserProfile.value ? presenceLabel(selectedUserProfile.value) : '',
 )
+const selectedUserHeroStats = computed(() =>
+  selectedUserProfile.value
+    ? [
+        {
+          label: t('system.monitoringRequests'),
+          value: number(selectedUserProfile.value.requests),
+        },
+        {
+          label: t('system.monitoringErrors'),
+          value: number(selectedUserProfile.value.errors),
+        },
+        {
+          label: t('system.monitoringTraffic'),
+          value: bytes(selectedUserProfile.value.traffic),
+        },
+        {
+          label: t('system.monitoringLastLogin'),
+          value: formatDate(selectedUserProfile.value.lastLoginAt),
+        },
+      ]
+    : [],
+)
 
 watch(incidents, (items) => {
   const target = items.find((item) => String(item.handle) === String(route.query.incident ?? ''))
@@ -794,6 +864,9 @@ function metricPoints(keys: string[]) {
 async function openUser(handle: number) {
   await loadUser(handle)
   userDialog.value = true
+}
+function closeUserDialog() {
+  userDialog.value = false
 }
 function number(value: unknown) {
   return new Intl.NumberFormat(undefined, { maximumFractionDigits: 1 }).format(Number(value ?? 0))
@@ -1090,44 +1163,65 @@ function arrayRecords(value: unknown): Record<string, unknown>[] {
   align-items: center;
   gap: 10px;
 }
-.sapling-monitoring__dialog-title {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 22px 24px 12px;
-}
 .sapling-monitoring__user-dialog {
-  max-height: min(86vh, 860px);
-  overflow-y: auto;
-  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
-  background: rgb(var(--v-theme-surface)) !important;
-  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.42) !important;
+  min-height: 0;
 }
-.sapling-monitoring__dialog-title p {
-  margin: 0;
-}
-.sapling-monitoring__detail-metrics {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
-  margin-bottom: 24px;
-}
-.sapling-monitoring__detail-metrics article {
-  display: grid;
-  gap: 5px;
-  padding: 14px;
-  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
-  border-radius: 12px;
-  background: rgba(var(--v-theme-primary), 0.035);
-}
-.sapling-monitoring__detail-metrics span {
-  color: rgb(var(--v-theme-on-surface-variant));
-  font-size: 0.78rem;
+:deep(.sapling-monitoring__user-dialog-body) {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
 }
 .sapling-monitoring__detail-sections {
   display: grid;
-  gap: 24px;
+  align-content: start;
+  gap: var(--sapling-gap-lg);
+  width: 100%;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: var(--sapling-space-3xs);
+  overscroll-behavior: contain;
+}
+.sapling-monitoring__detail-section {
+  display: grid;
+  gap: var(--sapling-gap-md);
+  padding: 0;
+  overflow: hidden;
+}
+.sapling-monitoring__detail-section-header {
+  align-items: center;
+  padding: var(--sapling-space-panel-md) var(--sapling-space-panel-md) 0;
+}
+.sapling-monitoring__detail-heading {
+  display: flex;
+  align-items: center;
+  gap: var(--sapling-gap-md);
+  min-width: 0;
+}
+.sapling-monitoring__detail-heading p {
+  margin: 0 0 var(--sapling-space-2xs);
+}
+.sapling-monitoring__detail-icon {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: var(--sapling-radius-sm);
+  background: rgba(var(--v-theme-primary), 0.12);
+  color: rgb(var(--v-theme-primary));
+}
+.sapling-monitoring__detail-table {
+  min-width: 0;
+  overflow-x: auto;
+}
+.sapling-monitoring__detail-section .sapling-empty-state-panel {
+  margin: 0 var(--sapling-space-panel-md) var(--sapling-space-panel-md);
+  color: rgb(var(--v-theme-primary));
+}
+.sapling-monitoring__detail-section .sapling-empty-state-panel span {
+  color: rgb(var(--v-theme-on-surface));
+  opacity: var(--sapling-opacity-secondary);
 }
 @media (max-width: 1200px) {
   .sapling-monitoring__metrics {
@@ -1149,8 +1243,7 @@ function arrayRecords(value: unknown): Record<string, unknown>[] {
   .sapling-monitoring__actions {
     justify-content: flex-start;
   }
-  .sapling-monitoring__metrics,
-  .sapling-monitoring__detail-metrics {
+  .sapling-monitoring__metrics {
     grid-template-columns: 1fr;
   }
   .sapling-monitoring__navigation {

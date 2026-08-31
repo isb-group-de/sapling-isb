@@ -36,8 +36,10 @@ import { extractClientTimeContextFromHistory } from './ai-client-time.utils';
 import {
   AI_GEMINI_REPEATED_TOOL_CALL_ABORT_MESSAGE,
   AI_GEMINI_TOOL_CALL_LIMIT_MESSAGE,
+  buildToolResultEnvelope,
   buildSystemInstruction,
   buildToolFailureAssistantMessage,
+  serializeToolResultForModel,
 } from './prompts/ai.prompts';
 
 type AiRuntimeToolExecutor = (
@@ -259,7 +261,7 @@ export class AiChatRuntimeService {
             functionResponses.push({
               functionResponse: {
                 name: functionCall.name,
-                response: { content: toolError },
+                response: buildToolResultEnvelope(toolError),
               },
             });
             continue;
@@ -278,7 +280,7 @@ export class AiChatRuntimeService {
           functionResponses.push({
             functionResponse: {
               name: functionCall.name,
-              response: { content: execution.result.modelResult },
+              response: buildToolResultEnvelope(execution.result.modelResult),
             },
           });
         }
@@ -449,7 +451,7 @@ export class AiChatRuntimeService {
               typeof functionCall.call_id === 'string'
                 ? functionCall.call_id
                 : '',
-            output: JSON.stringify(toolError),
+            output: serializeToolResultForModel(toolError),
           });
           continue;
         }
@@ -473,7 +475,7 @@ export class AiChatRuntimeService {
             typeof functionCall.call_id === 'string'
               ? functionCall.call_id
               : '',
-          output: execution.result.content,
+          output: serializeToolResultForModel(execution.result.content),
         });
       }
       consecutiveUnknownToolIterations =
@@ -601,7 +603,7 @@ export class AiChatRuntimeService {
           messages.push({
             role: 'tool',
             tool_call_id: call.id,
-            content: JSON.stringify(toolError),
+            content: serializeToolResultForModel(toolError),
           });
           continue;
         }
@@ -618,7 +620,7 @@ export class AiChatRuntimeService {
         messages.push({
           role: 'tool',
           tool_call_id: call.id,
-          content: execution.result.content,
+          content: serializeToolResultForModel(execution.result.content),
         });
       }
       consecutiveUnknownToolIterations =
@@ -712,6 +714,14 @@ export class AiChatRuntimeService {
   }
 
   private buildMessageContent(message: AiChatMessageItem): string {
+    if (
+      message.role === 'assistant' &&
+      isRecord(message.responsePayload) &&
+      message.responsePayload.source === 'mcp-inline-tool'
+    ) {
+      return serializeToolResultForModel(message.content);
+    }
+
     const contextPrefix =
       message.role === 'user' && message.contextPayload
         ? `\n\nContext: ${JSON.stringify(message.contextPayload)}`
