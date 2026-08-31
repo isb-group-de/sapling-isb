@@ -2,7 +2,12 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import CookieService from '@/services/cookie.service'
 import ApiAiService from '@/services/api.ai.service'
-import { loadSaplingAiPreferences } from '@/services/ai-preferences.service'
+import type { AiProviderModelItem, AiProviderTypeItem } from '@/entity/entity'
+import { resolveRuntimeTarget } from '@/components/system/ai-chat/aiChatRuntimeTargets'
+import {
+  loadSaplingAiPreferences,
+  SAPLING_AI_PREFERENCES_UPDATED_EVENT,
+} from '@/services/ai-preferences.service'
 import { useSaplingMarkdownVoiceInput } from '@/composables/fields/useSaplingMarkdownVoiceInput'
 import type {
   MarkdownEditorHandle,
@@ -12,7 +17,10 @@ import type {
 
 const MARKDOWN_SYNC_DEBOUNCE_MS = 120
 
-let activeMarkdownPreparationAvailabilityRequest: Promise<boolean> | null = null
+let activeMarkdownPreparationCatalogRequest: Promise<{
+  providerConfigs: AiProviderTypeItem[]
+  modelConfigs: AiProviderModelItem[]
+}> | null = null
 
 export function useSaplingMarkdownField(options: {
   modelValue: () => string | undefined
@@ -30,7 +38,9 @@ export function useSaplingMarkdownField(options: {
   const editor = ref<MarkdownEditorHandle | null>(null)
   const isEnhancedEditorReady = ref(false)
   const isPreparingWithAi = ref(false)
-  const hasConfiguredAiTarget = ref(false)
+  const selectedMarkdownProviderHandle = ref<string | null>(null)
+  const selectedMarkdownModelHandle = ref<string | null>(null)
+  const hasConfiguredAiTarget = computed(() => Boolean(selectedMarkdownModelHandle.value))
   const canPrepareWithAi = computed(
     () => hasConfiguredAiTarget.value && Boolean(draftValue.value.trim()),
   )
@@ -85,11 +95,10 @@ export function useSaplingMarkdownField(options: {
     isPreparingWithAi.value = true
 
     try {
-      const preferences = loadSaplingAiPreferences()
       const result = await ApiAiService.prepareMarkdown({
         content: sourceContent,
-        providerHandle: preferences.chatProviderHandle ?? undefined,
-        modelHandle: preferences.chatModelHandle ?? undefined,
+        providerHandle: selectedMarkdownProviderHandle.value ?? undefined,
+        modelHandle: selectedMarkdownModelHandle.value ?? undefined,
       })
 
       const preparedContent = updateDraftValue(result.content)
@@ -146,14 +155,33 @@ export function useSaplingMarkdownField(options: {
     }
   })
 
+  async function loadMarkdownPreparationTarget() {
+    try {
+      const { providerConfigs, modelConfigs } = await loadMarkdownPreparationCatalog()
+      const preferences = loadSaplingAiPreferences()
+      const target = resolveRuntimeTarget({
+        providerConfigs,
+        modelConfigs,
+        requestedProviderHandle: preferences.chatProviderHandle,
+        requestedModelHandle: preferences.chatModelHandle,
+        preferredModelHandle: preferences.chatModelHandle,
+      })
+
+      selectedMarkdownProviderHandle.value = target.providerHandle
+      selectedMarkdownModelHandle.value = target.modelHandle
+    } catch {
+      selectedMarkdownProviderHandle.value = null
+      selectedMarkdownModelHandle.value = null
+    }
+  }
+
+  function handlePreferencesUpdated() {
+    void loadMarkdownPreparationTarget()
+  }
+
   onMounted(() => {
-    void loadMarkdownPreparationAvailability()
-      .then((isAvailable) => {
-        hasConfiguredAiTarget.value = isAvailable
-      })
-      .catch(() => {
-        hasConfiguredAiTarget.value = false
-      })
+    void loadMarkdownPreparationTarget()
+    window.addEventListener(SAPLING_AI_PREFERENCES_UPDATED_EVENT, handlePreferencesUpdated)
 
     enhanceTimeout = setTimeout(() => {
       enhanceTimeout = null
@@ -162,6 +190,8 @@ export function useSaplingMarkdownField(options: {
   })
 
   onBeforeUnmount(() => {
+    window.removeEventListener(SAPLING_AI_PREFERENCES_UPDATED_EVENT, handlePreferencesUpdated)
+
     if (syncTimeout) {
       clearTimeout(syncTimeout)
       syncTimeout = null
@@ -539,22 +569,20 @@ export function truncateMarkdownValue(value: string, maxLength?: number): string
   return value.slice(0, maxLength)
 }
 
-function loadMarkdownPreparationAvailability() {
-  if (activeMarkdownPreparationAvailabilityRequest) {
-    return activeMarkdownPreparationAvailabilityRequest
+function loadMarkdownPreparationCatalog() {
+  if (activeMarkdownPreparationCatalogRequest) {
+    return activeMarkdownPreparationCatalogRequest
   }
 
   const request = Promise.all([
     ApiAiService.listProviders({ suppressErrorMessage: true }),
     ApiAiService.listModels(undefined, { suppressErrorMessage: true }),
-  ]).then(([providerConfigs, modelConfigs]) => {
-    return providerConfigs.length > 0 && modelConfigs.length > 0
-  })
+  ]).then(([providerConfigs, modelConfigs]) => ({ providerConfigs, modelConfigs }))
 
-  activeMarkdownPreparationAvailabilityRequest = request
+  activeMarkdownPreparationCatalogRequest = request
   const clearRequest = () => {
-    if (activeMarkdownPreparationAvailabilityRequest === request) {
-      activeMarkdownPreparationAvailabilityRequest = null
+    if (activeMarkdownPreparationCatalogRequest === request) {
+      activeMarkdownPreparationCatalogRequest = null
     }
   }
   void request.then(clearRequest, clearRequest)

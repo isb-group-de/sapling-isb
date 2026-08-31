@@ -304,7 +304,9 @@ media inline with `{{sapling-image:123|Screenshot}}`,
 The shared Markdown editor also exposes `Mit AI aufbereiten` / `Refine with AI`.
 It sends the current draft to the focused, non-persisting AI Markdown endpoint,
 uses the user's preferred chat runtime when configured, and replaces the draft
-only after the professionalized Markdown has returned. The transformation is
+only after the professionalized Markdown has returned. Saved runtime preferences
+are validated against the current configured provider/model catalog; stale
+preferences fall back to the configured default runtime. The transformation is
 instructed to correct grammar, spelling, punctuation, and awkward wording and to
 make unnecessarily emotional wording calm and professional. It preserves the
 original language and document type, including email salutations, forms of
