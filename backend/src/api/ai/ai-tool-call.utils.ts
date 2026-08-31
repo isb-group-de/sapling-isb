@@ -312,6 +312,22 @@ export function resolveToolRegistryEntry(
   return null;
 }
 
+export function buildUnknownToolError(
+  toolRegistry: AiToolRegistryEntry[],
+  requestedName: string,
+): AiToolErrorPayload {
+  return {
+    ok: false,
+    toolName: requestedName,
+    error: `ai.toolNotFound:${requestedName}`,
+    hints: [
+      `Use exactly one of the available tool names: ${toolRegistry
+        .map((entry) => entry.encodedName)
+        .join(', ')}`,
+    ],
+  };
+}
+
 export function parseToolArguments(
   argumentsJson: string,
 ): Record<string, unknown> {

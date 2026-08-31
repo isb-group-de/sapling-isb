@@ -161,10 +161,12 @@ Persisted email deliveries are also shown in the generic record edit dialog's
 record's `entity` and `referenceHandle`. Its compose action reuses the global
 mail composer with the current record context, so recipient suggestions,
 templates, sender resolution, attachments, and normal mail permissions remain
-unchanged. Every populated field marked `isMail` on the edited main record is
-passed to the composer as an initial **To** recipient; multiple mail fields
-preselect multiple recipients. The tab is omitted when no populated `isMail`
-field exists. Composer and phone-call hero labels use `isValue` metadata
+unchanged. Its compose button opens a recipient menu with one action for every
+populated field marked `isMail` on the edited main record. Selecting an action
+opens the composer with exactly that address as the initial **To** recipient;
+other available record addresses are not added automatically. The tab is
+omitted when no populated `isMail` field exists. Composer and phone-call hero
+labels use `isValue` metadata
 from the record that owns the active contact field. Direct fields use the edited
 record; non-persistent named assistants resolve their master reference and its
 target templates rather than entity-specific field-name guesses. Reference

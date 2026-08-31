@@ -117,6 +117,13 @@ Reasoning summaries are enabled only when the selected model has
 `supportsReasoningSummary`; raw chain-of-thought, tool arguments/results, and
 encrypted reasoning signatures are never copied into the visible work log.
 
+If a provider emits a tool name that is not in the advertised registry, the
+runtime returns a structured, recoverable tool error with the canonical
+available names. This lets the model repair a hallucinated name without
+failing the complete chat run. Repeated unknown-only tool rounds are stopped
+with a user-facing explanation instead of running until the configured tool
+iteration limit.
+
 The accumulated progress object is stored under
 `AiChatMessageItem.responsePayload.progress`, including its terminal status,
 summary, and localized step keys. This makes the work log reload-safe. The UI

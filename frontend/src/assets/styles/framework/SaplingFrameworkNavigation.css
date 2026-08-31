@@ -126,6 +126,7 @@
   background: transparent;
   color: inherit;
   cursor: pointer;
+  text-decoration: none;
   text-align: left;
   outline: none;
 }
@@ -439,6 +440,7 @@
   background: transparent;
   color: inherit;
   cursor: pointer;
+  text-decoration: none;
   text-align: left;
 }
 

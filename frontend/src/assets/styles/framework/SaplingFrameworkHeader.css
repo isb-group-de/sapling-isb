@@ -48,6 +48,7 @@
   min-height: var(--sapling-header-action-size) !important;
   padding-inline: var(--sapling-space-md) !important;
   border-radius: var(--sapling-radius-xs) !important;
+  font-size: var(--v-btn-size);
 }
 
 .sapling-header__primary-action .v-btn__content {

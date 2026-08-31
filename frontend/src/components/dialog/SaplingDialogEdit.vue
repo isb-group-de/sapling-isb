@@ -229,7 +229,7 @@
                     :draft-values="form"
                     :record-entity-handle="entityHandle"
                     :can-create="canComposeEmails"
-                    :email-recipients="recordEmailRecipients"
+                    :email-actions="recordEmailActions"
                     :record-label="emailRecordDisplayValue"
                   />
                 </v-window-item>
@@ -607,9 +607,6 @@ const recordPhoneNumber = computed(() =>
   recordPhoneTemplate.value ? String(form.value[recordPhoneTemplate.value.name] ?? '').trim() : '',
 )
 const recordEmailActions = computed(() => buildMailMenuActions(props.templates, form.value))
-const recordEmailRecipients = computed(() => [
-  ...new Set(recordEmailActions.value.map((action) => action.email)),
-])
 const communicationContactTemplateNames = computed(() => [
   ...new Set([
     ...recordEmailActions.value.map((action) => action.templateName),
@@ -717,7 +714,7 @@ const supplementalTabs = computed(() => {
     })
   }
 
-  if (canShowEmailsTab.value && recordEmailRecipients.value.length > 0) {
+  if (canShowEmailsTab.value && recordEmailActions.value.length > 0) {
     tabs.push({
       value: emailsTabIndex.value,
       label: emailsTabLabel.value,

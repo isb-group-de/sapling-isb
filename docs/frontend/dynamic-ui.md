@@ -662,9 +662,11 @@ contract in a large Markdown workspace. Documents preserve the d.velop Cloud
 overlay; local document storage renders the filtered document browser and
 preview directly in the dialog, with the existing upload workflow available
 from the tab. Emails filter `EmailDeliveryItem` by `entity + referenceHandle`;
-phone calls filter `PhoneCallItem` by `entity + reference`. Their header actions
-reuse the shared mail composer and phone-call dialog and refresh the embedded
-table when that dialog closes. Available entries remain visible but locked until a
+phone calls filter `PhoneCallItem` by `entity + reference`. The email header
+action opens a menu of the record's populated `isMail` fields and launches the
+shared composer with exactly the selected address. The phone-call header action
+reuses the shared phone-call dialog. Both embedded tables refresh when the
+launched dialog closes. Available entries remain visible but locked until a
 new record has been saved for the first time. Entries without effective read
 permission on `information`, `document`, `emailDelivery`, or `phoneCall` are
 omitted entirely; `allowShow` does not affect these record-level tabs. Email and
@@ -782,9 +784,12 @@ backend/src/script/
 User-facing links use native anchors (or Vue Router links for internal routes) without a forced
 `target`. This preserves the browser navigation contract globally: a normal click opens the link
 in the current tab, while Ctrl-click on Windows/Linux, Cmd-click on macOS, and middle-click open a
-new tab. Do not replace link navigation with an unconditional `window.open(..., '_blank')` call.
-Explicit actions whose documented purpose is to launch a separate window or external workspace are
-the exception.
+new tab. `frontend/src/utils/linkNavigation.ts` additionally enforces modified-click behavior for
+embedded browser shells that do not implement the native anchor behavior themselves. Route
+destinations in navigation surfaces must still render as anchors or Vue Router links; buttons are
+reserved for commands without a destination URL. Do not replace normal link navigation with an
+unconditional `window.open(..., '_blank')` call. Explicit actions whose documented purpose is to
+launch a separate window or external workspace are the exception.
 
 ## Permissions In UI
 

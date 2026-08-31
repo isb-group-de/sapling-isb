@@ -4,17 +4,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import SaplingHeaderQuicklinks from '../SaplingHeaderQuicklinks.vue'
 
 const harness = vi.hoisted(() => ({
-  push: vi.fn(),
   fetchCurrentPermission: vi.fn(),
   permissions: [] as Array<{
     entityHandle: string
     allowRead: boolean
     allowShow: boolean
   }>,
-}))
-
-vi.mock('vue-router', () => ({
-  useRouter: () => ({ push: harness.push }),
 }))
 
 vi.mock('vue-i18n', () => ({
@@ -63,10 +58,8 @@ function mountQuicklinks() {
         },
         SaplingSurface: { template: '<div class="glass-panel"><slot /></div>' },
         VListItem: {
-          props: ['prependIcon', 'title'],
-          emits: ['click'],
-          template:
-            '<button v-bind="$attrs" @click="$emit(\'click\')"><span>{{ prependIcon }}</span>{{ title }}</button>',
+          props: ['prependIcon', 'title', 'to'],
+          template: '<a v-bind="$attrs" :href="to"><span>{{ prependIcon }}</span>{{ title }}</a>',
         },
       },
     },
@@ -75,7 +68,6 @@ function mountQuicklinks() {
 
 describe('SaplingHeaderQuicklinks', () => {
   beforeEach(() => {
-    harness.push.mockReset()
     harness.fetchCurrentPermission.mockReset()
     harness.permissions = allQuicklinkPermissions.map((permission) => ({ ...permission }))
   })
@@ -103,12 +95,10 @@ describe('SaplingHeaderQuicklinks', () => {
     ['ticket', '/partner/ticket'],
     ['salesOpportunity', '/partner/salesOpportunity'],
     ['internalCase', '/partner/internalCase'],
-  ])('navigates %s to its requested workspace', async (key, path) => {
+  ])('renders %s as a native route link', (key, path) => {
     const wrapper = mountQuicklinks()
 
-    await wrapper.get(`[data-quicklink="${key}"]`).trigger('click')
-
-    expect(harness.push).toHaveBeenCalledWith(path)
+    expect(wrapper.get(`[data-quicklink="${key}"]`).attributes('href')).toBe(path)
   })
 
   it('renders only destinations with both read and navigation access', () => {

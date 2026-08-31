@@ -170,36 +170,13 @@
 
 .sapling-issue-stream__loading,
 .sapling-issue-stream__list {
-  gap: 0;
-}
-
-.sapling-issue-stream__list .sapling-issue-card {
-  border-radius: 0;
-  box-shadow: none;
-}
-
-.sapling-issue-stream__list .sapling-issue-card + .sapling-issue-card {
-  border-top-width: 0;
+  gap: var(--sapling-gap-sm);
 }
 
 .sapling-work-card {
   position: relative;
   overflow: hidden;
   border-radius: var(--sapling-panel-radius-compact);
-}
-
-.sapling-work-card__accent {
-  position: absolute;
-  inset: 0 auto 0 0;
-  width: var(--sapling-space-2xs);
-}
-
-.sapling-work-stream--success .sapling-work-card__accent {
-  background: var(--sapling-gradient-success);
-}
-
-.sapling-work-stream--slate .sapling-work-card__accent {
-  background: var(--sapling-gradient-slate);
 }
 
 .sapling-work-card__content {
@@ -216,7 +193,7 @@
 
 .sapling-work-card__summary {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
   gap: var(--sapling-gap-md);
   width: 100%;
@@ -252,7 +229,56 @@
   display: inline-flex;
   align-items: center;
   gap: var(--sapling-gap-xs);
+  margin-left: auto;
   white-space: nowrap;
+}
+
+.sapling-work-card__summary-copy {
+  display: grid;
+  min-width: 0;
+  gap: var(--sapling-gap-xs);
+}
+
+.sapling-work-card__summary-heading {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: var(--sapling-gap-sm);
+}
+
+.sapling-work-card__summary-details {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: var(--sapling-gap-md);
+}
+
+.sapling-work-card__origin {
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  color: var(--sapling-text-secondary);
+  font-size: var(--sapling-text-body-size-xs);
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sapling-work-card__duration {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--sapling-gap-xs);
+  color: var(--sapling-text-secondary);
+  font-size: var(--sapling-text-body-size-xs);
+  font-weight: 700;
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.sapling-work-card__duration-copy {
+  display: inline-flex;
+  align-items: center;
 }
 
 .sapling-work-card__header-row {

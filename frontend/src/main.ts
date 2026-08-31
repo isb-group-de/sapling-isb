@@ -19,11 +19,13 @@ import { createPinia } from 'pinia'
 // Import the tilt directive
 import { vTilt } from './directives/tilt'
 import { configureApiClient } from './services/api.client'
+import { installGlobalModifiedLinkNavigation } from './utils/linkNavigation'
 
 // Create a Pinia instance
 const pinia = createPinia()
 
 configureApiClient()
+installGlobalModifiedLinkNavigation()
 
 // Load custom web fonts
 loadFonts()

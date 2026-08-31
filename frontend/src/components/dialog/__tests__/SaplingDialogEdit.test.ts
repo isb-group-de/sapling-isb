@@ -167,7 +167,7 @@ function mountDialog(propOverrides: Record<string, unknown> = {}) {
         SaplingDialogEditRelationTab: { template: '<div />' },
         SaplingDialogEditCommunicationTab: {
           name: 'SaplingDialogEditCommunicationTab',
-          props: ['kind', 'emailRecipients', 'recordLabel'],
+          props: ['kind', 'emailActions', 'recordLabel'],
           template: '<div />',
         },
         SaplingDialogEditInformationTab: { template: '<div />' },
@@ -385,7 +385,7 @@ describe('SaplingDialogEdit', () => {
     ).toBe(false)
   })
 
-  it('passes every populated isMail field to the email composer tab', async () => {
+  it('passes every populated isMail field as a separate email composer action', async () => {
     const state = createDialogState()
     state.isLoading.value = false
     state.activeTab.value = 3
@@ -407,8 +407,11 @@ describe('SaplingDialogEdit', () => {
     await nextTick()
 
     expect(
-      wrapper.getComponent({ name: 'SaplingDialogEditCommunicationTab' }).props('emailRecipients'),
-    ).toEqual(['info@example.com', 'billing@example.com'])
+      wrapper.getComponent({ name: 'SaplingDialogEditCommunicationTab' }).props('emailActions'),
+    ).toEqual([
+      expect.objectContaining({ templateName: 'email', email: 'info@example.com' }),
+      expect.objectContaining({ templateName: 'invoiceEmail', email: 'billing@example.com' }),
+    ])
   })
 
   it('uses isValue metadata generically and hides communication tabs without contact values', async () => {

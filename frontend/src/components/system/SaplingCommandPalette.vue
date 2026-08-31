@@ -48,6 +48,7 @@
         :empty-label="t('global.commandPalette.empty')"
         @update-active-index="activeIndex = $event"
         @select-item="runItem"
+        @route-item-selected="closePalette"
       />
 
       <v-divider />

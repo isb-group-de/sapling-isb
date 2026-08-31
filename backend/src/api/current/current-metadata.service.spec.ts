@@ -13,10 +13,11 @@ describe('CurrentMetadataService', () => {
       entityHandle: 'importBatchRow',
       allowRead: true,
     };
+    const findOne = jest.fn(() => Promise.resolve(entity));
 
     const service = new CurrentMetadataService(
       {
-        findOne: jest.fn(() => Promise.resolve(entity)),
+        findOne,
       } as never,
       {
         getEntityTemplate: jest.fn(() => baseTemplates),
@@ -47,5 +48,11 @@ describe('CurrentMetadataService', () => {
         entityTemplates: effectiveTemplates,
       },
     ]);
+
+    expect(findOne).toHaveBeenCalledWith(
+      expect.anything(),
+      { handle: 'importBatchRow' },
+      { populate: ['routes'] },
+    );
   });
 });

@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils'
-import { describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { SaplingIssue } from '@/composables/system/useSaplingIssue'
 import SaplingIssueList from '../SaplingIssueList.vue'
 
@@ -8,7 +8,13 @@ const issue: SaplingIssue = {
   number: 42,
   title: 'A compact issue title',
   html_url: 'https://example.com/issues/42',
-  body: 'Issue **description**',
+  body: [
+    '**Type:** Bug',
+    '**Reported by:** Ada Lovelace',
+    '**Login:** `ada.lovelace`',
+    '',
+    'Issue **description**',
+  ].join('\n'),
   updated_at: '2026-08-31T08:00:00.000Z',
   created_at: '2026-08-31T07:00:00.000Z',
   closed_at: null,
@@ -31,18 +37,40 @@ const issue: SaplingIssue = {
   ],
 }
 
-function mountIssueList() {
+const translations: Record<string, string> = {
+  'issue.openedByAt': 'Geöffnet von {reporter} am {date}',
+  'issue.openedAt': 'Geöffnet am {date}',
+  'issue.openDurationPrefix': 'Offen seit',
+  'issue.closedDurationPrefix': 'Geschlossen nach',
+  'issue.durationDaySingular': 'Tag',
+  'issue.durationDayPlural': 'Tage',
+  'issue.durationHourSingular': 'Stunde',
+  'issue.durationHourPlural': 'Stunden',
+  'issue.durationMinuteSingular': 'Minute',
+  'issue.durationMinutePlural': 'Minuten',
+}
+
+function mountIssueList(overrides: Partial<SaplingIssue> = {}, status: 'open' | 'closed' = 'open') {
   return mount(SaplingIssueList, {
     props: {
-      issues: [issue],
+      issues: [{ ...issue, ...overrides }],
       isLoading: false,
-      titleKey: 'issue.openIssues',
-      status: 'open',
-      cardPrefix: 'open',
+      titleKey: status === 'open' ? 'issue.openIssues' : 'issue.closedIssues',
+      status,
+      cardPrefix: status,
     },
     global: {
       mocks: {
-        $t: (key: string) => key,
+        $t: (key: string, params?: Record<string, string | number>) => {
+          const translation = translations[key] || key
+
+          return params
+            ? Object.entries(params).reduce(
+                (value, [name, replacement]) => value.replace(`{${name}}`, String(replacement)),
+                translation,
+              )
+            : translation
+        },
       },
       stubs: {
         VCol: { template: '<div><slot /></div>' },
@@ -64,6 +92,44 @@ function mountIssueList() {
 }
 
 describe('SaplingIssueList', () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-09-02T09:30:00.000Z'))
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it('shows reporter, opening date, and live open duration in the collapsed summary', () => {
+    const wrapper = mountIssueList()
+    const summary = wrapper.get('.sapling-work-card__summary')
+    const summaryText = summary.text().replace(/\s+/g, ' ')
+
+    expect(summaryText).toContain('Geöffnet von Ada Lovelace')
+    expect(summaryText).toContain('Offen seit 2 Tage, 2 Stunden, 30 Minuten')
+
+    wrapper.unmount()
+  })
+
+  it('uses the closing timestamp for the completed duration', () => {
+    const wrapper = mountIssueList(
+      {
+        state: 'closed',
+        closed_at: '2026-08-31T07:45:00.000Z',
+      },
+      'closed',
+    )
+
+    const duration = wrapper.get('.sapling-work-card__duration').text().replace(/\s+/g, ' ')
+
+    expect(duration).toContain('Geschlossen nach 45 Minuten')
+    expect(duration).not.toContain('Tag')
+    expect(duration).not.toContain('Stunde')
+
+    wrapper.unmount()
+  })
+
   it('keeps issue details and comments collapsed independently', async () => {
     const wrapper = mountIssueList()
     const issueToggle = wrapper.get('.sapling-work-card__summary')
@@ -95,5 +161,7 @@ describe('SaplingIssueList', () => {
       'false',
     )
     expect(wrapper.text()).not.toContain('Comment body')
+
+    wrapper.unmount()
   })
 })

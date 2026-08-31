@@ -11,7 +11,7 @@
     </template>
 
     <v-app-bar-title>
-      <SaplingHeaderPrimaryActions :home-label="$t('global.backToHome')" @open-home="goHome" />
+      <SaplingHeaderPrimaryActions :home-label="$t('global.backToHome')" />
     </v-app-bar-title>
 
     <template #append>
@@ -143,7 +143,6 @@ const {
   closeInbox,
   openAccount,
   closeAccount,
-  goHome,
 } = useSaplingHeader()
 const { visibleIncomingInboxPreview, openIncomingInboxPreview } =
   useSaplingHeaderInboxPreview(incomingInboxPreview)

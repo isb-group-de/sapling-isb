@@ -24,7 +24,7 @@
         :data-quicklink="link.key"
         :prepend-icon="link.icon"
         :title="link.label"
-        @click="navigate(link.path)"
+        :to="link.path"
       />
     </SaplingSurface>
   </v-menu>
@@ -33,7 +33,6 @@
 <script lang="ts" setup>
 import { computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
 import { VList } from 'vuetify/components'
 import SaplingSurface from '@/components/common/SaplingSurface.vue'
 import { useCurrentPermissionStore } from '@/stores/currentPermissionStore'
@@ -97,7 +96,6 @@ const QUICKLINK_DEFINITIONS: HeaderQuicklinkDefinition[] = [
   },
 ]
 
-const router = useRouter()
 const { locale, t } = useI18n()
 const currentPermissionStore = useCurrentPermissionStore()
 
@@ -128,9 +126,5 @@ onMounted(() => {
 
 function translatedLabel(key: string, fallbackDe: string, fallbackEn: string) {
   return t(key) || (locale.value === 'de' ? fallbackDe : fallbackEn)
-}
-
-async function navigate(path: string) {
-  await router.push(path)
 }
 </script>

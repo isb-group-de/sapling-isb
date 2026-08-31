@@ -15,16 +15,18 @@
     <template v-else>
       <template v-for="(group, groupIndex) in groupedResults" :key="group.key">
         <div class="sapling-command-palette__group-label">{{ group.label }}</div>
-        <button
+        <component
           v-for="item in group.items"
           :key="item.id"
-          type="button"
+          :is="item.path ? RouterLink : 'button'"
+          :to="item.path || undefined"
+          :type="item.path ? undefined : 'button'"
           class="sapling-command-palette__item"
           :class="{ 'sapling-command-palette__item--active': item.flatIndex === activeIndex }"
           role="option"
           :aria-selected="item.flatIndex === activeIndex"
           @mouseenter="emit('updateActiveIndex', item.flatIndex)"
-          @click="emit('selectItem', item)"
+          @click="onItemClick(item)"
         >
           <v-icon size="20" class="sapling-command-palette__item-icon">
             {{ item.icon }}
@@ -38,7 +40,7 @@
           <span v-if="item.context" class="sapling-command-palette__item-context">
             {{ item.context }}
           </span>
-        </button>
+        </component>
         <v-divider
           v-if="groupIndex < groupedResults.length - 1"
           class="sapling-command-palette__group-divider"
@@ -49,6 +51,7 @@
 </template>
 
 <script lang="ts" setup>
+import { RouterLink } from 'vue-router'
 import type {
   CommandPaletteGroup,
   CommandPaletteItem,
@@ -64,5 +67,15 @@ defineProps<{
 const emit = defineEmits<{
   updateActiveIndex: [index: number]
   selectItem: [item: CommandPaletteItem]
+  routeItemSelected: [item: CommandPaletteItem]
 }>()
+
+function onItemClick(item: CommandPaletteItem) {
+  if (item.path) {
+    emit('routeItemSelected', item)
+    return
+  }
+
+  emit('selectItem', item)
+}
 </script>

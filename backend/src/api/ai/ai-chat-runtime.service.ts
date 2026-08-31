@@ -25,6 +25,7 @@ import {
   buildOpenAiTools,
   buildToolCallSignature,
   buildToolRegistry,
+  buildUnknownToolError,
   isToolErrorPayload,
   normalizeFunctionCallArgs,
   parseToolArguments,
@@ -249,7 +250,20 @@ export class AiChatRuntimeService {
             toolRegistry,
             functionCall.name,
           );
-          if (!entry) throw new Error(`ai.toolNotFound:${functionCall.name}`);
+          if (!entry) {
+            const toolError = buildUnknownToolError(
+              toolRegistry,
+              functionCall.name,
+            );
+            toolErrors.push(toolError);
+            functionResponses.push({
+              functionResponse: {
+                name: functionCall.name,
+                response: { content: toolError },
+              },
+            });
+            continue;
+          }
           const execution = await this.executeTool(
             entry,
             args,
@@ -347,6 +361,7 @@ export class AiChatRuntimeService {
     })) as Array<Record<string, unknown>>;
     const executedToolCalls: AiExecutedToolCall[] = [];
     const usageEntries: Record<string, unknown>[] = [];
+    let consecutiveUnknownToolIterations = 0;
 
     for (
       let iteration = 0;
@@ -417,12 +432,27 @@ export class AiChatRuntimeService {
           usagePayload: buildUsagePayload(usageEntries),
         };
       }
+      let unknownToolCount = 0;
+      const unknownToolErrors: AiToolErrorPayload[] = [];
       for (const functionCall of functionCalls) {
         assertNotAborted(options.callbacks.signal);
         const name =
           typeof functionCall.name === 'string' ? functionCall.name : '';
         const entry = resolveToolRegistryEntry(toolRegistry, name);
-        if (!entry) throw new Error(`ai.toolNotFound:${name}`);
+        if (!entry) {
+          const toolError = buildUnknownToolError(toolRegistry, name);
+          unknownToolCount += 1;
+          unknownToolErrors.push(toolError);
+          input.push({
+            type: 'function_call_output',
+            call_id:
+              typeof functionCall.call_id === 'string'
+                ? functionCall.call_id
+                : '',
+            output: JSON.stringify(toolError),
+          });
+          continue;
+        }
         const serializedArguments =
           typeof functionCall.arguments === 'string'
             ? functionCall.arguments
@@ -445,6 +475,19 @@ export class AiChatRuntimeService {
               : '',
           output: execution.result.content,
         });
+      }
+      consecutiveUnknownToolIterations =
+        unknownToolCount === functionCalls.length
+          ? consecutiveUnknownToolIterations + 1
+          : 0;
+      if (consecutiveUnknownToolIterations >= 2) {
+        await options.callbacks.onTextDelta(
+          buildToolFailureAssistantMessage(unknownToolErrors),
+        );
+        return {
+          toolCalls: executedToolCalls,
+          usagePayload: buildUsagePayload(usageEntries),
+        };
       }
     }
     throw new Error('ai.toolCallLimitExceeded');
@@ -475,6 +518,7 @@ export class AiChatRuntimeService {
     );
     const executedToolCalls: AiExecutedToolCall[] = [];
     const usageEntries: Record<string, unknown>[] = [];
+    let consecutiveUnknownToolIterations = 0;
 
     for (
       let iteration = 0;
@@ -546,9 +590,21 @@ export class AiChatRuntimeService {
           function: { name: call.name, arguments: call.arguments },
         })),
       });
+      let unknownToolCount = 0;
+      const unknownToolErrors: AiToolErrorPayload[] = [];
       for (const call of calls) {
         const entry = resolveToolRegistryEntry(toolRegistry, call.name);
-        if (!entry) throw new Error(`ai.toolNotFound:${call.name}`);
+        if (!entry) {
+          const toolError = buildUnknownToolError(toolRegistry, call.name);
+          unknownToolCount += 1;
+          unknownToolErrors.push(toolError);
+          messages.push({
+            role: 'tool',
+            tool_call_id: call.id,
+            content: JSON.stringify(toolError),
+          });
+          continue;
+        }
         const args = parseToolArguments(call.arguments);
         const execution = await this.executeTool(
           entry,
@@ -564,6 +620,19 @@ export class AiChatRuntimeService {
           tool_call_id: call.id,
           content: execution.result.content,
         });
+      }
+      consecutiveUnknownToolIterations =
+        unknownToolCount === calls.length
+          ? consecutiveUnknownToolIterations + 1
+          : 0;
+      if (consecutiveUnknownToolIterations >= 2) {
+        await options.callbacks.onTextDelta(
+          buildToolFailureAssistantMessage(unknownToolErrors),
+        );
+        return {
+          toolCalls: executedToolCalls,
+          usagePayload: buildUsagePayload(usageEntries),
+        };
       }
     }
     throw new Error('ai.toolCallLimitExceeded');

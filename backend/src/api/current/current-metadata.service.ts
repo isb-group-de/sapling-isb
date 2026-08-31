@@ -50,7 +50,11 @@ export class CurrentMetadataService {
     entityHandle: string,
   ): Promise<CurrentEntityMetadataDto> {
     const [entity, baseTemplates] = await Promise.all([
-      this.em.findOne(EntityItem, { handle: entityHandle }),
+      this.em.findOne(
+        EntityItem,
+        { handle: entityHandle },
+        { populate: ['routes'] },
+      ),
       this.genericCustomFieldService.appendCustomFieldTemplates(
         entityHandle,
         this.templateService.getEntityTemplate(entityHandle),

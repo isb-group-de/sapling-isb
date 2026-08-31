@@ -14,8 +14,8 @@ describe('SaplingHeaderPrimaryActions', () => {
             template: '<div><slot name="activator" :props="{}" /></div>',
           },
           VBtn: {
-            emits: ['click'],
-            template: '<button v-bind="$attrs" @click="$emit(\'click\')"><slot /></button>',
+            props: ['to'],
+            template: '<a v-bind="$attrs" :href="to"><slot /></a>',
           },
           VIcon: {
             props: ['icon'],
@@ -31,11 +31,9 @@ describe('SaplingHeaderPrimaryActions', () => {
     const home = wrapper.get('[data-tutorial="header-home"]')
     expect(home.classes()).toContain('sapling-button--action')
     expect(home.attributes('aria-label')).toBe('Zurück zur Startseite')
+    expect(home.attributes('href')).toBe('/')
     expect(home.find('[data-icon="mdi-home-outline"]').exists()).toBe(true)
     expect(home.text()).toContain('Sapling')
     expect(wrapper.find('[data-tutorial="header-quicklinks"]').exists()).toBe(true)
-
-    await home.trigger('click')
-    expect(wrapper.emitted('openHome')).toHaveLength(1)
   })
 })

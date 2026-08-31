@@ -201,6 +201,7 @@
   background: transparent;
   color: inherit;
   font-size: var(--sapling-text-body-size-md);
+  text-decoration: none;
   text-align: left;
   cursor: pointer;
 }

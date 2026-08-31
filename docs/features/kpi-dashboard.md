@@ -131,6 +131,23 @@ calendar definitions: the next open appointments, the next confirmed
 appointments, and the next online appointments for the signed-in participant.
 They are intentionally not assigned to a dashboard template automatically.
 
+### Appointment Worklist Versus Calendar KPI
+
+Sapling provides two separate appointment surfaces on the dashboard:
+
+- **Meine heutigen Termine** is a worklist (`FavoriteTemplateItem`). Select the
+  matching quick link on the dashboard to open the Event table filtered to the
+  signed-in participant, today's start range, and non-canceled/non-completed
+  statuses.
+- **Meine nächsten Termine** is a calendar KPI (`KpiItem` with type `CALENDAR`).
+  Select **KPI hinzufügen** on the target dashboard, choose this KPI, and save.
+  The card shows the next five open appointments within 90 days. The confirmed
+  and online variants can be added in the same way.
+
+Worklists are therefore intentionally not offered in the **KPI hinzufügen**
+dialog. A KPI already assigned to the current dashboard is also excluded from
+that dialog; it remains available for assignment to another dashboard.
+
 ## Aggregation And Grouping
 
 `KPIExecutor` resolves field paths before building SQL. This allows KPIs to aggregate on direct columns and relation fields.

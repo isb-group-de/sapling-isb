@@ -2,7 +2,7 @@
   <v-col cols="12" md="6">
     <section
       class="sapling-stack-xl sapling-work-stream sapling-issue-stream"
-      :class="[`sapling-work-stream--${streamTone}`, `sapling-issue-stream--${status}`]"
+      :class="`sapling-issue-stream--${status}`"
     >
       <SaplingSurface
         as="header"
@@ -26,7 +26,7 @@
 
       <div
         v-if="isLoading"
-        class="sapling-stack-sm sapling-work-stream__loading sapling-issue-stream__loading"
+        class="sapling-stack-md sapling-work-stream__loading sapling-issue-stream__loading"
       >
         <SaplingSurface
           v-for="item in 4"
@@ -45,15 +45,13 @@
         <p>{{ $t(emptyStateKey) }}</p>
       </SaplingSurface>
 
-      <div v-else class="sapling-stack-sm sapling-work-stream__list sapling-issue-stream__list">
+      <div v-else class="sapling-stack-md sapling-work-stream__list sapling-issue-stream__list">
         <SaplingSurface
           v-for="issue in issues"
           :key="`${cardPrefix}-${issue.id}`"
           as="article"
           class="sapling-work-card sapling-issue-card"
         >
-          <div class="sapling-work-card__accent sapling-issue-card__accent" />
-
           <button
             type="button"
             class="sapling-work-card__summary sapling-issue-card__summary"
@@ -66,27 +64,69 @@
               size="20"
               class="sapling-work-card__summary-icon"
             />
-            <span class="sapling-work-card__title sapling-issue-card__title">
-              {{ issue.title }}
-            </span>
-            <span class="sapling-work-card__summary-badges">
-              <v-chip
-                v-if="resolveIssueType(issue)"
-                :color="resolveIssueType(issue) === 'bug' ? 'error' : 'primary'"
-                size="x-small"
-                variant="tonal"
-                class="sapling-work-card__type"
-              >
-                {{ $t(resolveIssueType(issue) === 'bug' ? 'issue.typeBug' : 'issue.typeFeature') }}
-              </v-chip>
-              <v-chip
-                :color="statusChipColor"
-                size="x-small"
-                variant="tonal"
-                class="sapling-work-card__status"
-              >
-                {{ $t(statusLabelKey) }}
-              </v-chip>
+            <span class="sapling-work-card__summary-copy">
+              <span class="sapling-work-card__summary-heading">
+                <span class="sapling-work-card__title sapling-issue-card__title">
+                  {{ issue.title }}
+                </span>
+                <span class="sapling-work-card__summary-badges">
+                  <v-chip
+                    v-if="resolveIssueType(issue)"
+                    :color="resolveIssueType(issue) === 'bug' ? 'error' : 'primary'"
+                    size="x-small"
+                    variant="tonal"
+                    class="sapling-work-card__type"
+                  >
+                    {{
+                      $t(resolveIssueType(issue) === 'bug' ? 'issue.typeBug' : 'issue.typeFeature')
+                    }}
+                  </v-chip>
+                  <v-chip
+                    :color="statusChipColor"
+                    size="x-small"
+                    variant="tonal"
+                    class="sapling-work-card__status"
+                  >
+                    {{ $t(statusLabelKey) }}
+                  </v-chip>
+                </span>
+              </span>
+              <span class="sapling-work-card__summary-details">
+                <span class="sapling-work-card__origin">
+                  {{
+                    resolveIssueReporter(issue)
+                      ? $t('issue.openedByAt', {
+                          reporter: resolveIssueReporter(issue),
+                          date: formatDateTime(issue.created_at),
+                        })
+                      : $t('issue.openedAt', { date: formatDateTime(issue.created_at) })
+                  }}
+                </span>
+                <span class="sapling-work-card__duration">
+                  <v-icon icon="mdi-clock-outline" size="18" />
+                  <span class="sapling-work-card__duration-copy">
+                    <span class="sapling-work-card__duration-prefix">
+                      {{
+                        $t(
+                          status === 'open'
+                            ? 'issue.openDurationPrefix'
+                            : 'issue.closedDurationPrefix',
+                        )
+                      }}&nbsp;
+                    </span>
+                    <span
+                      v-for="(unit, index) in issueDurationUnits(issue)"
+                      :key="unit.name"
+                      class="sapling-work-card__duration-unit"
+                    >
+                      {{ index ? ', ' : '' }}{{ unit.value }}
+                      {{
+                        $t(`issue.duration${unit.name}${unit.value === 1 ? 'Singular' : 'Plural'}`)
+                      }}
+                    </span>
+                  </span>
+                </span>
+              </span>
             </span>
           </button>
 
@@ -253,7 +293,7 @@
 <script lang="ts" setup>
 // #region Imports
 import { VSkeletonLoader } from 'vuetify/components'
-import { computed, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import type { SaplingIssue, SaplingIssueStatus } from '@/composables/system/useSaplingIssue'
 import SaplingMarkdownContent from '@/components/common/SaplingMarkdownContent.vue'
 import SaplingSurface from '@/components/common/SaplingSurface.vue'
@@ -272,6 +312,8 @@ const props = defineProps<SaplingIssueListProps>()
 
 const expandedIssues = ref(new Set<number>())
 const expandedComments = ref(new Set<number>())
+const currentTime = ref(Date.now())
+let durationTimer: ReturnType<typeof setInterval> | undefined
 const statusLabelKey = computed(() => (props.status === 'open' ? 'issue.open' : 'issue.closed'))
 const emptyStateKey = computed(() =>
   props.status === 'open' ? 'issue.noOpenIssues' : 'issue.noClosedIssues',
@@ -280,7 +322,18 @@ const streamIcon = computed(() =>
   props.status === 'open' ? 'mdi-progress-wrench' : 'mdi-check-all',
 )
 const statusChipColor = computed(() => (props.status === 'open' ? 'success' : 'secondary'))
-const streamTone = computed(() => (props.status === 'open' ? 'success' : 'slate'))
+
+onMounted(() => {
+  durationTimer = setInterval(() => {
+    currentTime.value = Date.now()
+  }, 60_000)
+})
+
+onUnmounted(() => {
+  if (durationTimer) {
+    clearInterval(durationTimer)
+  }
+})
 // #endregion
 
 // #region Methods
@@ -339,6 +392,50 @@ function resolveIssueType(issue: SaplingIssue): 'bug' | 'feature' | null {
 
   const bodyType = issue.body.match(/(?:\*\*)?Type:(?:\*\*)?\s*(Bug|Feature)/i)?.[1]
   return bodyType ? (bodyType.toLowerCase() as 'bug' | 'feature') : null
+}
+
+/**
+ * Reads the Sapling reporter from the metadata header added to issue descriptions.
+ * Older GitHub issues without that header intentionally return no reporter.
+ */
+function resolveIssueReporter(issue: SaplingIssue): string | null {
+  const reportedBy = issue.body.match(/^\s*(?:\*\*)?Reported by:(?:\*\*)?\s*(.+?)\s*$/im)?.[1]
+  const login = issue.body.match(/^\s*(?:\*\*)?Login:(?:\*\*)?\s*`?([^`\r\n]+)`?\s*$/im)?.[1]
+  const value = reportedBy || login
+
+  return value ? value.trim().replace(/\\([\\`*_{}[\]()<>#+.!|])/g, '$1') : null
+}
+
+/**
+ * Returns whole elapsed units between opening and now, or opening and closing.
+ */
+function issueDurationParts(issue: SaplingIssue) {
+  const openedAt = new Date(issue.created_at).getTime()
+  const closedAt = issue.closed_at ? new Date(issue.closed_at).getTime() : currentTime.value
+  const totalMinutes =
+    Number.isFinite(openedAt) && Number.isFinite(closedAt)
+      ? Math.max(0, Math.floor((closedAt - openedAt) / 60_000))
+      : 0
+
+  return {
+    days: Math.floor(totalMinutes / (24 * 60)),
+    hours: Math.floor((totalMinutes % (24 * 60)) / 60),
+    minutes: totalMinutes % 60,
+  }
+}
+
+/**
+ * Omits zero-value duration units while keeping a meaningful value for sub-minute tickets.
+ */
+function issueDurationUnits(issue: SaplingIssue) {
+  const { days, hours, minutes } = issueDurationParts(issue)
+  const units = [
+    { name: 'Day', value: days },
+    { name: 'Hour', value: hours },
+    { name: 'Minute', value: minutes },
+  ].filter((unit) => unit.value > 0)
+
+  return units.length ? units : [{ name: 'Minute', value: 0 }]
 }
 
 function resolveAdditionalLabels(issue: SaplingIssue) {

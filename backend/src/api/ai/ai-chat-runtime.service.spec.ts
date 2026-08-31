@@ -164,6 +164,154 @@ describe('AiChatRuntimeService streaming', () => {
     ).rejects.toThrow('terminated');
   });
 
+  it('lets an OpenAI-compatible model repair an invented tool name', async () => {
+    const create = jest
+      .fn()
+      .mockResolvedValueOnce(
+        asNever(
+          streamOf(
+            {
+              choices: [
+                {
+                  delta: {
+                    tool_calls: [
+                      {
+                        index: 0,
+                        id: 'call-1',
+                        function: {
+                          name: 'sapling__generic_search',
+                          arguments: '{}',
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+            { choices: [{ delta: {}, finish_reason: 'tool_calls' }] },
+          ),
+        ),
+      )
+      .mockResolvedValueOnce(
+        asNever(
+          streamOf(
+            { choices: [{ delta: { content: 'Korrigierte Antwort.' } }] },
+            { choices: [{ delta: {}, finish_reason: 'stop' }] },
+          ),
+        ),
+      );
+    asMock(createOpenAiClient).mockReturnValue({
+      chat: { completions: { create } },
+    });
+    const service = new AiChatRuntimeService({} as never);
+    const onTextDelta = jest
+      .fn<(delta: string) => Promise<void>>()
+      .mockResolvedValue(undefined);
+
+    await expect(
+      service.streamOpenAi(
+        history,
+        { handle: 'ollama' } as never,
+        'ornith:35b',
+        [
+          {
+            serverName: 'sapling',
+            toolName: 'entity_search',
+            inputSchema: { type: 'object' },
+          },
+        ] as never,
+        { handle: 1 } as never,
+        2,
+        undefined,
+        { onTextDelta },
+        true,
+      ),
+    ).resolves.toMatchObject({ toolCalls: [] });
+
+    const secondRequest = create.mock.calls[1][0] as {
+      messages: Array<Record<string, unknown>>;
+    };
+    expect(secondRequest.messages).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          role: 'tool',
+          tool_call_id: 'call-1',
+          content: expect.stringContaining('sapling__entity_search'),
+        }),
+      ]),
+    );
+    expect(onTextDelta).toHaveBeenCalledWith('Korrigierte Antwort.');
+  });
+
+  it('lets an OpenAI Responses model repair an invented tool name', async () => {
+    const create = jest
+      .fn()
+      .mockResolvedValueOnce(
+        asNever(
+          streamOf({
+            type: 'response.completed',
+            response: {
+              output: [
+                {
+                  type: 'function_call',
+                  call_id: 'call-1',
+                  name: 'sapling__generic_search',
+                  arguments: '{}',
+                },
+              ],
+            },
+          }),
+        ),
+      )
+      .mockResolvedValueOnce(
+        asNever(
+          streamOf(
+            { type: 'response.output_text.delta', delta: 'Korrigiert.' },
+            { type: 'response.completed', response: { output: [] } },
+          ),
+        ),
+      );
+    asMock(createOpenAiClient).mockReturnValue({ responses: { create } });
+    const service = new AiChatRuntimeService({} as never);
+    const onTextDelta = jest
+      .fn<(delta: string) => Promise<void>>()
+      .mockResolvedValue(undefined);
+
+    await expect(
+      service.streamOpenAi(
+        history,
+        { handle: 'openai' } as never,
+        'gpt-5',
+        [
+          {
+            serverName: 'sapling',
+            toolName: 'entity_search',
+            inputSchema: { type: 'object' },
+          },
+        ] as never,
+        { handle: 1 } as never,
+        2,
+        undefined,
+        { onTextDelta },
+        true,
+      ),
+    ).resolves.toMatchObject({ toolCalls: [] });
+
+    const secondInput = (
+      create.mock.calls[1][0] as { input: Record<string, unknown>[] }
+    ).input;
+    expect(secondInput).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          type: 'function_call_output',
+          call_id: 'call-1',
+          output: expect.stringContaining('sapling__entity_search'),
+        }),
+      ]),
+    );
+    expect(onTextDelta).toHaveBeenCalledWith('Korrigiert.');
+  });
+
   it('streams OpenAI Responses text and filtered reasoning summaries', async () => {
     const create = jest.fn().mockResolvedValue(
       asNever(
@@ -371,5 +519,74 @@ describe('AiChatRuntimeService streaming', () => {
         false,
       ),
     ).rejects.toBeInstanceOf(AiChatInterruptedError);
+  });
+
+  it('lets Gemini repair an invented tool name', async () => {
+    const generateContentStream = jest
+      .fn()
+      .mockResolvedValueOnce(
+        asNever(
+          streamOf({
+            candidates: [
+              {
+                content: {
+                  parts: [
+                    {
+                      functionCall: {
+                        name: 'sapling__generic_search',
+                        args: {},
+                      },
+                    },
+                  ],
+                },
+              },
+            ],
+          }),
+        ),
+      )
+      .mockResolvedValueOnce(
+        asNever(
+          streamOf({
+            candidates: [
+              { content: { parts: [{ text: 'Korrigierte Antwort.' }] } },
+            ],
+          }),
+        ),
+      );
+    asMock(createGeminiStreamingClient).mockReturnValue({
+      models: { generateContentStream },
+    });
+    const service = new AiChatRuntimeService({} as never);
+    const onTextDelta = jest
+      .fn<(delta: string) => Promise<void>>()
+      .mockResolvedValue(undefined);
+
+    await expect(
+      service.streamGemini(
+        history,
+        {} as never,
+        'gemini-2.5-pro',
+        [
+          {
+            serverName: 'sapling',
+            toolName: 'entity_search',
+            inputSchema: { type: 'object' },
+          },
+        ] as never,
+        { handle: 1 } as never,
+        2,
+        undefined,
+        { onTextDelta },
+        true,
+      ),
+    ).resolves.toMatchObject({ toolCalls: [] });
+
+    const secondContents = (
+      generateContentStream.mock.calls[1][0] as {
+        contents: Array<Record<string, unknown>>;
+      }
+    ).contents;
+    expect(JSON.stringify(secondContents)).toContain('sapling__entity_search');
+    expect(onTextDelta).toHaveBeenCalledWith('Korrigierte Antwort.');
   });
 });

@@ -1,0 +1,62 @@
+[
+  {
+    "entity": "issue",
+    "property": "openedByAt",
+    "de": "Geöffnet von {reporter} am {date}",
+    "en": "Opened by {reporter} on {date}"
+  },
+  {
+    "entity": "issue",
+    "property": "openedAt",
+    "de": "Geöffnet am {date}",
+    "en": "Opened on {date}"
+  },
+  {
+    "entity": "issue",
+    "property": "openDurationPrefix",
+    "de": "Offen seit",
+    "en": "Open for"
+  },
+  {
+    "entity": "issue",
+    "property": "closedDurationPrefix",
+    "de": "Geschlossen nach",
+    "en": "Closed after"
+  },
+  {
+    "entity": "issue",
+    "property": "durationDaySingular",
+    "de": "Tag",
+    "en": "day"
+  },
+  {
+    "entity": "issue",
+    "property": "durationDayPlural",
+    "de": "Tage",
+    "en": "days"
+  },
+  {
+    "entity": "issue",
+    "property": "durationHourSingular",
+    "de": "Stunde",
+    "en": "hour"
+  },
+  {
+    "entity": "issue",
+    "property": "durationHourPlural",
+    "de": "Stunden",
+    "en": "hours"
+  },
+  {
+    "entity": "issue",
+    "property": "durationMinuteSingular",
+    "de": "Minute",
+    "en": "minute"
+  },
+  {
+    "entity": "issue",
+    "property": "durationMinutePlural",
+    "de": "Minuten",
+    "en": "minutes"
+  }
+]

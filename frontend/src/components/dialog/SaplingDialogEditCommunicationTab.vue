@@ -16,17 +16,46 @@
           </div>
 
           <v-btn
-            v-if="canCreate"
+            v-if="canCreate && isPhoneCall"
             color="primary"
             size="small"
             variant="tonal"
             :prepend-icon="actionIcon"
-            :disabled="isPhoneCall && !phoneNumber"
-            :title="isPhoneCall && !phoneNumber ? $t('phoneCall.phoneNumberRequired') : actionLabel"
-            @click="createCommunication"
+            :disabled="!phoneNumber"
+            :title="!phoneNumber ? $t('phoneCall.phoneNumberRequired') : actionLabel"
+            @click="createCommunication()"
           >
             {{ actionLabel }}
           </v-btn>
+
+          <v-menu v-else-if="canCreate" location="bottom end">
+            <template #activator="{ props: activatorProps }">
+              <v-btn
+                v-bind="activatorProps"
+                color="primary"
+                size="small"
+                variant="tonal"
+                :prepend-icon="actionIcon"
+                append-icon="mdi-menu-down"
+                :disabled="emailActions.length === 0"
+                :title="actionLabel"
+              >
+                {{ actionLabel }}
+              </v-btn>
+            </template>
+
+            <v-list class="glass-panel" density="compact" min-width="280">
+              <v-list-item
+                v-for="mailAction in emailActions"
+                :key="`${mailAction.templateName}-${mailAction.email}`"
+                data-test="record-email-action"
+                prepend-icon="mdi-email-fast-outline"
+                :title="resolveMailActionLabel(mailAction)"
+                :subtitle="mailAction.email"
+                @click="createCommunication(mailAction)"
+              />
+            </v-list>
+          </v-menu>
         </header>
 
         <v-skeleton-loader
@@ -83,6 +112,7 @@ import { useSaplingMailDialog } from '@/composables/dialog/useSaplingMailDialog'
 import { useSaplingPhoneDialog } from '@/composables/dialog/useSaplingPhoneDialog'
 import { useTranslationLoader } from '@/composables/generic/useTranslationLoader'
 import { useSaplingTable } from '@/composables/table/useSaplingTable'
+import type { SaplingMailMenuAction } from '@/composables/context/useSaplingContextMenuTable'
 import type { SaplingGenericItem } from '@/entity/entity'
 
 const SaplingTable = defineAsyncComponent(() => import('@/components/table/SaplingTable.vue'))
@@ -95,13 +125,13 @@ const props = withDefaults(
     recordEntityHandle: string
     canCreate: boolean
     phoneNumber?: string
-    emailRecipients?: string[]
+    emailActions?: SaplingMailMenuAction[]
     recordLabel?: string
   }>(),
   {
     draftValues: undefined,
     phoneNumber: '',
-    emailRecipients: () => [],
+    emailActions: () => [],
     recordLabel: '',
   },
 )
@@ -209,7 +239,7 @@ watch(isPhoneDialogOpen, (isOpen, wasOpen) => {
   }
 })
 
-function createCommunication() {
+function createCommunication(mailAction?: SaplingMailMenuAction) {
   if (!props.canCreate || !referenceHandle.value) {
     return
   }
@@ -232,12 +262,29 @@ function createCommunication() {
     return
   }
 
+  const selectedEmail = mailAction?.email.trim()
+  if (!selectedEmail) {
+    launchedDialog.value = false
+    return
+  }
+
   openMailDialog({
     entityHandle: props.recordEntityHandle,
     itemHandle: referenceHandle.value,
     draftValues: props.draftValues,
-    initialTo: props.emailRecipients,
-    recordLabel: props.recordLabel,
+    initialTo: [selectedEmail],
+    recordLabel: mailAction?.recipientName?.trim() || props.recordLabel,
   })
+}
+
+function resolveMailActionLabel(mailAction: SaplingMailMenuAction): string {
+  const recipientName = mailAction.recipientName?.trim()
+  if (recipientName) {
+    return `${actionLabel.value}: ${recipientName}`
+  }
+
+  const fieldLabel = mailAction.fieldLabel?.trim() || mailAction.templateName
+  const translationKey = `${props.recordEntityHandle}.${fieldLabel}`
+  return `${actionLabel.value}: ${te(translationKey) ? t(translationKey) : fieldLabel}`
 }
 </script>

@@ -47,7 +47,7 @@
             >
               <v-icon start>mdi-email-fast-outline</v-icon>
               <span>
-                {{ resolveMailToSelectedLabel() }}
+                {{ resolveMailToSelectedLabel(mailAction) }}
               </span>
             </v-list-item>
           </template>
@@ -75,6 +75,7 @@ import {
   type UseSaplingTableMultiSelectEmit,
   type UseSaplingTableMultiSelectProps,
 } from '@/composables/table/useSaplingTableMultiSelect'
+import type { SaplingBulkMailAction } from '@/utils/saplingMailMenuUtil'
 
 const props = defineProps<UseSaplingTableMultiSelectProps>()
 const emit = defineEmits<UseSaplingTableMultiSelectEmit>()
@@ -106,7 +107,14 @@ function resolveScriptButtonTitle(title: string) {
   return te(title) ? t(title) : title
 }
 
-function resolveMailToSelectedLabel() {
-  return t('global.mailToSelected')
+function resolveMailToSelectedLabel(mailAction: SaplingBulkMailAction) {
+  const baseLabel = t('global.mailToSelected')
+  const entityHandle = props.entity?.handle
+  const fieldTranslationKey = entityHandle
+    ? `${entityHandle}.${mailAction.fieldLabel}`
+    : mailAction.fieldLabel
+  const fieldLabel = te(fieldTranslationKey) ? t(fieldTranslationKey) : mailAction.fieldLabel
+
+  return `${baseLabel}: ${fieldLabel}`
 }
 </script>

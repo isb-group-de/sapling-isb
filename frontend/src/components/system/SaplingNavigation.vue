@@ -44,9 +44,10 @@
                     icon="mdi-book-open-page-variant-outline"
                     size="small"
                     variant="tonal"
+                    :to="{ name: 'knowledgeBase' }"
                     :color="isKnowledgeBaseActive ? 'primary' : undefined"
                     :aria-label="$t('navigation.knowledgeBase')"
-                    @click="navigateToKnowledgeBase"
+                    @click="closeNavigation"
                   />
                 </template>
               </SaplingHelpTooltip>
@@ -188,11 +189,11 @@
                     class="sapling-navigation-detail-entry"
                     :class="{ 'sapling-navigation-detail-entry--active': entry.isActive }"
                   >
-                    <button
+                    <RouterLink
                       v-if="entry.routes.length === 1"
                       class="sapling-navigation-detail-entry__single"
-                      type="button"
-                      @click="navigateToRoute(entry.routes[0].route)"
+                      :to="`/${entry.routes[0].path}`"
+                      @click="closeNavigation"
                     >
                       <span class="sapling-navigation-detail-entry__copy">
                         <span class="sapling-nav-icon sapling-nav-icon--sm">
@@ -203,7 +204,7 @@
                         }}</span>
                       </span>
                       <v-icon icon="mdi-arrow-top-right" size="18"></v-icon>
-                    </button>
+                    </RouterLink>
 
                     <div v-else class="sapling-navigation-detail-entry__multi">
                       <div class="sapling-navigation-detail-entry__heading">
@@ -219,19 +220,19 @@
                       </div>
 
                       <div class="sapling-navigation-detail-entry__routes">
-                        <button
+                        <RouterLink
                           v-for="routeEntry in entry.routes"
                           :key="routeEntry.path"
                           class="sapling-navigation-detail-route"
                           :class="{
                             'sapling-navigation-detail-route--active': routeEntry.isActive,
                           }"
-                          type="button"
-                          @click="navigateToRoute(routeEntry.route)"
+                          :to="`/${routeEntry.path}`"
+                          @click="closeNavigation"
                         >
                           <span>{{ routeEntry.label }}</span>
                           <v-icon icon="mdi-chevron-right" size="16"></v-icon>
-                        </button>
+                        </RouterLink>
                       </div>
                     </div>
                   </div>
@@ -334,11 +335,11 @@
                         'sapling-navigation-entity--active': entry.isActive,
                       }"
                     >
-                      <button
+                      <RouterLink
                         v-if="entry.routes.length === 1"
                         class="sapling-nav-line sapling-nav-trigger sapling-navigation-entity__single"
-                        type="button"
-                        @click="navigateToRoute(entry.routes[0].route)"
+                        :to="`/${entry.routes[0].path}`"
+                        @click="closeNavigation"
                       >
                         <span class="sapling-nav-copy sapling-navigation-entity__single-copy">
                           <span
@@ -356,7 +357,7 @@
                           </span>
                         </span>
                         <v-icon icon="mdi-arrow-top-right" size="18"></v-icon>
-                      </button>
+                      </RouterLink>
 
                       <div v-else class="sapling-navigation-entity__multi">
                         <div class="sapling-nav-line sapling-navigation-entity__header">
@@ -381,7 +382,7 @@
                         </div>
 
                         <div class="sapling-navigation-entity__routes">
-                          <button
+                          <RouterLink
                             v-for="routeEntry in entry.routes"
                             :key="routeEntry.path"
                             class="sapling-nav-route sapling-navigation-route"
@@ -389,12 +390,12 @@
                               'sapling-nav-route--active': routeEntry.isActive,
                               'sapling-navigation-route--active': routeEntry.isActive,
                             }"
-                            type="button"
-                            @click="navigateToRoute(routeEntry.route)"
+                            :to="`/${routeEntry.path}`"
+                            @click="closeNavigation"
                           >
                             <span>{{ routeEntry.label }}</span>
                             <v-icon icon="mdi-chevron-right" size="16"></v-icon>
-                          </button>
+                          </RouterLink>
                         </div>
                       </div>
                     </article>
@@ -417,7 +418,7 @@
 <script lang="ts" setup>
 // #region Imports
 import { computed, nextTick, ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { RouterLink, useRoute } from 'vue-router'
 import { useDisplay } from 'vuetify'
 import SaplingFavorites from '@/components/dashboard/SaplingFavorites.vue'
 import SaplingHelpTooltip from '@/components/common/SaplingHelpTooltip.vue'
@@ -448,12 +449,10 @@ const {
   toggleSubgroup,
   isGroupExpanded,
   isSubgroupExpanded,
-  navigateToRoute,
 } = useSaplingNavigation(props, emit)
 
 const { hasFavoritesAccess } = useSaplingFavoritesAccess()
 const route = useRoute()
-const router = useRouter()
 const { width: viewportWidth, xlAndUp } = useDisplay()
 const activePanel = ref<'navigation' | 'favorites'>('navigation')
 const navigationShell = ref<HTMLElement | null>(null)
@@ -532,12 +531,5 @@ function closeNavigation() {
   onDrawerUpdate(false)
 }
 
-async function navigateToKnowledgeBase() {
-  if (!isKnowledgeBaseActive.value) {
-    await router.push({ name: 'knowledgeBase' })
-  }
-
-  closeNavigation()
-}
 // #endregion
 </script>
