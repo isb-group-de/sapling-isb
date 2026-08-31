@@ -4,6 +4,7 @@
     :data-tutorial="index === 0 ? 'table-first-row' : undefined"
     class="sapling-table-row"
     :class="{
+      'active-row': props.isActive,
       'selected-row': !props.multiSelect && props.isSelected,
       'multi-selected-row': props.multiSelect && props.isSelected,
     }"

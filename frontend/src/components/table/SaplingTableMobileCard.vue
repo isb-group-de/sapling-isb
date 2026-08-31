@@ -6,6 +6,7 @@
     :interactive="rowInteraction !== false"
     :class="{
       'sapling-record-card--selected': isSelected,
+      'sapling-table-mobile-card--active': props.isActive,
       'sapling-table-mobile-card--with-controls': hasHeaderControls,
       'sapling-table-mobile-card--with-select': props.multiSelect,
       'sapling-table-mobile-card--with-actions': hasRowActions,
@@ -395,11 +396,11 @@ function handleCardClick() {
     return
   }
 
-  if (props.multiSelect) {
-    return
-  }
+  emit('activate-row', props.index)
 
-  emit('select-row', props.index)
+  if (!props.multiSelect) {
+    emit('select-row', props.index)
+  }
 }
 
 function onMenuItemClick(menuItem: SaplingContextMenuTableMenuItem) {

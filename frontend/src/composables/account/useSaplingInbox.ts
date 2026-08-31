@@ -25,6 +25,7 @@ import {
   updateOpenTaskSnapshot,
   type OpenTaskSnapshot,
 } from '@/composables/system/useOpenTaskCountEvents'
+import { getOpenTaskEventOccurrence } from '@/utils/openTaskEvent'
 
 type CloseEmitter = (event: 'close') => void
 export type InboxEntryKind =
@@ -246,7 +247,8 @@ export function useSaplingInbox(emit: CloseEmitter) {
   }
 
   function createTaskEntry(task: EventItem): InboxEntry {
-    const dateValue = toDate(task.startDate)
+    const occurrence = getOpenTaskEventOccurrence(task)
+    const dateValue = occurrence?.startDate ?? null
 
     return {
       id: `event-${task.handle ?? task.title}`,
@@ -254,7 +256,9 @@ export function useSaplingInbox(emit: CloseEmitter) {
       kindLabelKey: 'navigation.event',
       title: task.title,
       description: task.description ?? '',
-      dateText: formatDateFromTo(task.startDate, task.endDate),
+      dateText: occurrence
+        ? formatDateFromTo(occurrence.startDate, occurrence.endDate)
+        : formatDateFromTo(task.startDate, task.endDate),
       dateValue,
       icon: task.type?.icon || 'mdi-calendar-clock-outline',
       accentColor: task.type?.color ?? task.status?.color,

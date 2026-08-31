@@ -428,6 +428,10 @@ body {
   background: var(--sapling-interactive-hover-fill) !important;
 }
 
+:root[data-sapling-glass='off'] .sapling-table tbody tr.active-row td {
+  background: var(--sapling-interactive-hover-fill) !important;
+}
+
 :root[data-sapling-glass='off'] .sapling-table tbody tr.selected-row td,
 :root[data-sapling-glass='off'] .sapling-table tbody tr.multi-selected-row td {
   background: var(--sapling-interactive-selected-fill) !important;

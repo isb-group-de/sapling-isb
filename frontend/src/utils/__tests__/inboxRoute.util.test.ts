@@ -54,6 +54,25 @@ describe('inboxRoute.util', () => {
     })
   })
 
+  it('links a recurring task to its first still-generated occurrence', () => {
+    expect(
+      getTaskInboxRoute({
+        handle: 23,
+        title: 'Daily review',
+        startDate: new Date('2026-08-27T09:00:00.000Z'),
+        endDate: new Date('2026-08-27T10:00:00.000Z'),
+        recurrenceRule: 'FREQ=DAILY;COUNT=3',
+        recurrenceExceptionDates: ['2026-08-27T09:00:00.000Z'],
+      } as EventItem),
+    ).toEqual({
+      path: '/event',
+      query: {
+        open: '23',
+        occurrence: '2026-08-28T09:00:00.000Z',
+      },
+    })
+  })
+
   it.each(['ticket', 'salesOpportunity', 'effortEstimate', 'internalCase'])(
     'opens %s inbox notification references in the partner workspace',
     (entityHandle) => {

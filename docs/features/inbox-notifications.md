@@ -201,6 +201,11 @@ dialog removes only `open`, preserving all filters and other route state so the
 same inbox entry can be selected again.
 Other entities continue to open their filtered generic table and record dialog.
 
+Recurring Event snapshot entries additionally carry the first still-generated
+occurrence start. Opening such an entry moves to that occurrence and directly
+uses the existing single-occurrence detach workflow, so changing its status to
+completed does not complete or otherwise edit the remaining series.
+
 ## Adding A New Entity To Inbox
 
 1. Ensure the entity has a useful recipient relation such as `assigneePerson`, `creatorPerson`, or a participants collection.

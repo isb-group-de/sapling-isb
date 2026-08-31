@@ -195,15 +195,10 @@ export function createHttpTelemetryMiddleware(service: HttpTelemetryService) {
     const declaredRequestBytes = parseContentLength(
       request.headers['content-length'],
     );
-    let observedRequestBytes = 0;
     let responseBytes = 0;
     let finalized = false;
     const originalWrite = response.write.bind(response);
     const originalEnd = response.end.bind(response);
-
-    request.on('data', (chunk: unknown) => {
-      observedRequestBytes += byteLength(chunk);
-    });
 
     response.write = ((chunk: unknown, ...args: unknown[]) => {
       responseBytes += byteLength(chunk);
@@ -228,7 +223,7 @@ export function createHttpTelemetryMiddleware(service: HttpTelemetryService) {
         request as TelemetryRequest,
         statusCode,
         performance.now() - startedAt,
-        observedRequestBytes || declaredRequestBytes,
+        declaredRequestBytes,
         responseBytes,
       );
     };

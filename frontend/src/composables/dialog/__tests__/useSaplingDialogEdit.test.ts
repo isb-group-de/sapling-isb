@@ -407,7 +407,8 @@ describe('useSaplingDialogEdit', () => {
     await wrapper.setProps({ item: persistedItem })
     await nextTick()
 
-    expect(wrapper.emitted('update:item')?.at(-1)).toEqual([persistedItem])
+    const itemUpdates = wrapper.emitted('update:item') ?? []
+    expect(itemUpdates[itemUpdates.length - 1]).toEqual([persistedItem])
     expect(initializeFormMock).toHaveBeenCalledTimes(initializeCallCount)
   })
 

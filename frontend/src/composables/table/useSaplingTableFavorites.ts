@@ -173,9 +173,18 @@ export function useSaplingTableFavorites({
   }
 
   function getCurrentFavoriteEntityRouteHandle() {
-    return props.entity?.routes?.find(
-      (entry) => entry.route === `table/${props.entityHandle}` && entry.handle != null,
-    )?.handle
+    const currentRoutePath = route.path.replace(/^\/+|\/+$/g, '')
+    const entityRoutes = props.entity?.routes ?? []
+    const currentEntityRoute = entityRoutes.find(
+      (entry) =>
+        typeof entry.route === 'string' &&
+        entry.route.replace(/^\/+|\/+$/g, '') === currentRoutePath,
+    )
+    const fallbackTableRoute = entityRoutes.find(
+      (entry) => entry.route === `table/${props.entityHandle}`,
+    )
+
+    return currentEntityRoute?.handle ?? fallbackTableRoute?.handle
   }
 
   const activeFavoriteHandle = computed(() => {

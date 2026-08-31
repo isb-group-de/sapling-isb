@@ -7,6 +7,7 @@ import type {
   TicketItem,
 } from '@/entity/entity'
 import type { RouteLocationRaw } from 'vue-router'
+import { getOpenTaskEventOccurrence } from '@/utils/openTaskEvent'
 
 const PARTNER_INBOX_ENTITY_HANDLES = new Set([
   'effortEstimate',
@@ -37,18 +38,26 @@ function getRecordInboxRoute(
   }
 }
 
-function getEventCalendarRoute(recordHandle: string | number | null | undefined): RouteLocationRaw {
+function getEventCalendarRoute(
+  recordHandle: string | number | null | undefined,
+  occurrenceStart?: string | null,
+): RouteLocationRaw {
   if (recordHandle == null || String(recordHandle).trim().length === 0) {
     return {
       path: '/event',
     }
   }
 
+  const query: Record<string, string> = {
+    open: String(recordHandle),
+  }
+  if (occurrenceStart) {
+    query.occurrence = occurrenceStart
+  }
+
   return {
     path: '/event',
-    query: {
-      open: String(recordHandle),
-    },
+    query,
   }
 }
 
@@ -57,7 +66,8 @@ export function getTicketInboxRoute(ticket: TicketItem): RouteLocationRaw {
 }
 
 export function getTaskInboxRoute(task: EventItem): RouteLocationRaw {
-  return getEventCalendarRoute(task.handle)
+  const occurrence = getOpenTaskEventOccurrence(task)
+  return getEventCalendarRoute(task.handle, occurrence?.recurrenceOccurrenceStart)
 }
 
 export function getSalesOpportunityInboxRoute(opportunity: SalesOpportunityItem): RouteLocationRaw {

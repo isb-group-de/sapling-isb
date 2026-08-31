@@ -1,5 +1,6 @@
 import type { OpenTaskSnapshot } from '@/composables/system/useOpenTaskCountEvents'
 import type { SaplingNotificationPreferences } from '@/services/notification-preferences.service'
+import { getOpenTaskEventOccurrence } from '@/utils/openTaskEvent'
 
 export interface SaplingHeaderBadgeCounts {
   inboxCount: number
@@ -27,7 +28,7 @@ export function getSaplingHeaderBadgeCounts(
 ): SaplingHeaderBadgeCounts {
   const dueOpenTaskCount = [
     ...snapshot.tickets.map((ticket) => ticket.deadlineDate),
-    ...snapshot.tasks.map((task) => task.startDate),
+    ...snapshot.tasks.map((task) => getOpenTaskEventOccurrence(task)?.startDate),
     ...snapshot.salesOpportunities.map((opportunity) => opportunity.closeDate),
     ...(snapshot.effortEstimates ?? []).map((estimate) => estimate.expectedCompletionDate),
   ].filter((date) => isDueByEndOfToday(date, now)).length

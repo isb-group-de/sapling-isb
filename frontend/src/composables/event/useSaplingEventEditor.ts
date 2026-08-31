@@ -13,7 +13,7 @@ import type {
   EntityTemplate,
 } from '@/entity/structure'
 import { useChangeLogDialogStore } from '@/stores/changeLogDialogStore'
-import { isRecurringCalendarEvent } from '@/utils/eventRecurrence'
+import { expandRecurringEvent, isRecurringCalendarEvent } from '@/utils/eventRecurrence'
 import ApiCalendarService from '@/services/api.calendar.service'
 import {
   DEFAULT_EVENT_COLOR,
@@ -104,7 +104,10 @@ export function useSaplingEventEditor(options: UseSaplingEventEditorOptions) {
       return false
     }
 
-    const autoOpenKey = String(handle)
+    const requestedOccurrenceStart = getOpenEventOccurrenceFromRoute()
+    const autoOpenKey = requestedOccurrenceStart
+      ? `${handle}:${requestedOccurrenceStart}`
+      : String(handle)
     if (lastAutoOpenedEventHandle === autoOpenKey) {
       return false
     }
@@ -114,15 +117,27 @@ export function useSaplingEventEditor(options: UseSaplingEventEditorOptions) {
       return false
     }
 
+    const occurrence = requestedOccurrenceStart
+      ? resolvePersistedOccurrence(persistedEvent, requestedOccurrenceStart)
+      : null
+    const selectedStart = occurrence ? requestedOccurrenceStart : persistedEvent.startDate
+
     lastAutoOpenedEventHandle = autoOpenKey
-    if (persistedEvent.startDate) {
-      options.goToDate(persistedEvent.startDate)
+    if (selectedStart) {
+      options.goToDate(selectedStart)
+    }
+
+    options.resetDialogInteractionState()
+    if (occurrence) {
+      await openCalendarEventEditor(occurrence, [], 'occurrence', persistedEvent)
+      lastAutoOpenedEventHandle = autoOpenKey
+      options.queueScrollToTime(requestedOccurrenceStart as string)
+      return true
     }
 
     options.editEvent.value = toCalendarEvent(persistedEvent)
     applyCalendarEventDateParts(options.editEvent.value)
     options.forceEditDialogDirtyFields.value = []
-    options.resetDialogInteractionState()
     options.showEditDialog.value = true
     if (persistedEvent.startDate) {
       options.queueScrollToTime(persistedEvent.startDate)
@@ -199,14 +214,15 @@ export function useSaplingEventEditor(options: UseSaplingEventEditorOptions) {
       options.clearCreatedEvent()
       options.forceEditDialogDirtyFields.value = []
       options.clearDragSnapshot()
-      await options.refreshVisibleEvents()
 
       if (action === 'saveAndClose' && pendingRelationsPersisted) {
         options.showEditDialog.value = false
         options.editEvent.value = null
+        await options.refreshVisibleEvents()
         return
       }
 
+      await options.refreshVisibleEvents()
       const persistedEvent = await options.loadPersistedEvent(savedEvent.handle)
       options.editEvent.value = toCalendarEvent(persistedEvent ?? savedEvent)
       options.showEditDialog.value = true
@@ -442,9 +458,15 @@ export function useSaplingEventEditor(options: UseSaplingEventEditorOptions) {
     calendarEvent: CalendarEvent,
     forcedDirtyFields: string[],
     scope: 'series' | 'occurrence',
+    loadedPersistedEvent?: EventItem | null,
   ) {
     const handle = getCalendarEventHandle(calendarEvent)
-    const persistedEvent = handle == null ? null : await options.loadPersistedEvent(handle)
+    const persistedEvent =
+      loadedPersistedEvent === undefined
+        ? handle == null
+          ? null
+          : await options.loadPersistedEvent(handle)
+        : loadedPersistedEvent
     const baseEvent = persistedEvent
       ? toCalendarEvent(persistedEvent)
       : isRecurringCalendarEvent(calendarEvent) && calendarEvent.event
@@ -546,6 +568,34 @@ export function useSaplingEventEditor(options: UseSaplingEventEditorOptions) {
     }
     const parsed = Number.parseInt(value, 10)
     return Number.isFinite(parsed) ? parsed : null
+  }
+
+  function getOpenEventOccurrenceFromRoute(): string | null {
+    const value = Array.isArray(route.query.occurrence)
+      ? route.query.occurrence[0]
+      : route.query.occurrence
+    if (typeof value !== 'string' || value.trim().length === 0) {
+      return null
+    }
+
+    const occurrenceStart = new Date(value)
+    return Number.isFinite(occurrenceStart.getTime()) ? occurrenceStart.toISOString() : null
+  }
+
+  function resolvePersistedOccurrence(
+    event: EventItem,
+    occurrenceStart: string,
+  ): CalendarEvent | null {
+    if (!event.recurrenceRule) {
+      return null
+    }
+
+    const occurrenceDate = new Date(occurrenceStart)
+    return (
+      expandRecurringEvent(event, occurrenceDate, occurrenceDate).find(
+        (occurrence) => occurrence.recurrenceOccurrenceStart === occurrenceStart,
+      ) ?? null
+    )
   }
 
   return {

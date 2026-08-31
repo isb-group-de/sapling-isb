@@ -106,6 +106,7 @@
           item.handle,
           item.updatedAt,
           isRowSelected(index),
+          isRowActive(index),
           multiSelect,
           showActions,
           mobileCardHeaders,
@@ -114,6 +115,7 @@
         :columns="mobileCardHeaders"
         :index="index"
         :is-selected="isRowSelected(index)"
+        :is-active="isRowActive(index)"
         :multi-select="multiSelect"
         :entity="entity"
         :entity-permission="entityPermission"
@@ -126,6 +128,7 @@
         :show-actions="showActions"
         :row-interaction="rowInteraction"
         @select-row="emit('select-row', $event)"
+        @activate-row="emit('activate-row', $event)"
         @change-log="emit('change-log', $event)"
         @delete="emit('delete', $event)"
         @edit="emit('edit', $event)"
@@ -216,6 +219,7 @@ const props = defineProps<{
   rowInteraction?: boolean
   selectedRows: number[]
   selectedRow: number | null
+  activeRow?: number | null
   isHeaderTranslationLoading: boolean
   getColumnSortIcon: (columnKey: string) => string
   isColumnFilterable: (column: SaplingTableHeaderItem) => boolean
@@ -234,5 +238,9 @@ const filterableMobileHeaders = computed(() =>
 
 function isRowSelected(index: number): boolean {
   return props.multiSelect ? props.selectedRows.includes(index) : props.selectedRow === index
+}
+
+function isRowActive(index: number): boolean {
+  return props.activeRow === index
 }
 </script>

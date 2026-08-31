@@ -138,6 +138,7 @@
           item.handle,
           item.updatedAt,
           isRowSelected(index),
+          isRowActive(index),
           multiSelect,
           showActions,
           visibleHeaders,
@@ -146,6 +147,7 @@
         :columns="visibleHeaders"
         :index="index"
         :is-selected="isRowSelected(index)"
+        :is-active="isRowActive(index)"
         :multi-select="multiSelect"
         :entity="entity"
         :entity-permission="entityPermission"
@@ -158,6 +160,7 @@
         :show-actions="showActions"
         :row-interaction="rowInteraction"
         @select-row="emit('select-row', $event)"
+        @activate-row="emit('activate-row', $event)"
         @change-log="emit('change-log', $event)"
         @delete="emit('delete', $event)"
         @edit="emit('edit', $event)"
@@ -241,6 +244,7 @@ const props = defineProps<{
   rowInteraction?: boolean
   selectedRows: number[]
   selectedRow: number | null
+  activeRow?: number | null
   isHeaderTranslationLoading: boolean
   columnOrderEditing: boolean
   getColumnFilterItem: (columnKey: string) => ColumnFilterItem | null | undefined
@@ -448,6 +452,10 @@ function clearColumnDrag(): void {
 
 function isRowSelected(index: number) {
   return props.multiSelect ? props.selectedRows.includes(index) : props.selectedRow === index
+}
+
+function isRowActive(index: number) {
+  return props.activeRow === index
 }
 
 function getItemValue(item: SaplingGenericItem): string | number {

@@ -85,16 +85,13 @@
             counter="256"
           />
 
-          <SaplingTextarea
+          <SaplingMarkdownField
             v-model="draft.description"
+            class="sapling-work-compose__markdown sapling-issue-compose__markdown"
             :label="$t('issue.descriptionFieldLabel')"
-            variant="outlined"
-            density="comfortable"
-            hide-details="auto"
-            rows="5"
-            auto-grow
-            maxlength="10000"
-            counter="10000"
+            :rows="5"
+            :show-preview="false"
+            :maxlength="10000"
           />
 
           <div
@@ -227,7 +224,7 @@ import { useSaplingIssue } from '@/composables/system/useSaplingIssue'
 import SaplingPageHero from '@/components/common/SaplingPageHero.vue'
 import SaplingSurface from '@/components/common/SaplingSurface.vue'
 import SaplingTextField from '@/components/common/SaplingTextField.vue'
-import SaplingTextarea from '@/components/common/SaplingTextarea.vue'
+import SaplingMarkdownField from '@/components/dialog/fields/SaplingFieldMarkdown.vue'
 import SaplingIssuesClosed from './SaplingIssuesClosed.vue'
 import SaplingIssuesOpen from './SaplingIssuesOpen.vue'
 // #endregion

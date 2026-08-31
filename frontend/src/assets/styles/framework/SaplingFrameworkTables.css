@@ -591,6 +591,14 @@
   background: var(--sapling-interactive-hover-fill) !important;
 }
 
+.sapling-table tbody tr.active-row {
+  background: var(--sapling-interactive-hover-fill);
+}
+
+.sapling-table tbody tr.active-row td {
+  background: var(--sapling-interactive-hover-fill) !important;
+}
+
 .sapling-table tbody tr.selected-row,
 .sapling-table tbody tr.multi-selected-row {
   background: var(--sapling-interactive-selected-fill);
@@ -609,6 +617,10 @@
 .sapling-table tbody tr.selected-row:hover td,
 .sapling-table tbody tr.multi-selected-row:hover td {
   background: var(--sapling-interactive-selected-fill-strong) !important;
+}
+
+.sapling-table-mobile-card--active {
+  background: var(--sapling-interactive-hover-fill);
 }
 
 .sapling-table-mobile-shell {

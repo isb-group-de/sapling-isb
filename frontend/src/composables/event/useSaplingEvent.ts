@@ -45,7 +45,7 @@ import { useSaplingEventData } from '@/composables/event/useSaplingEventData'
 import { useSaplingEventContextMenu } from '@/composables/event/useSaplingEventContextMenu'
 import { useSaplingEventEditor } from '@/composables/event/useSaplingEventEditor'
 import { useSaplingEventPresentation } from '@/composables/event/useSaplingEventPresentation'
-import { clearRouteQueryParameter, setRouteQueryParameter } from '@/utils/routerNavigation'
+import { setRouteQueryParameter } from '@/utils/routerNavigation'
 
 const CALENDAR_TYPE_OPTIONS: CalendarType[] = ['day', 'workweek', 'week', 'month']
 const WORKWEEK_DAYS = [1, 2, 3, 4, 5]
@@ -370,7 +370,7 @@ export function useSaplingEvent() {
   )
 
   watch(
-    () => route.query.open,
+    () => [route.query.open, route.query.occurrence] as const,
     () => {
       if (isCalendarInitializing.value) {
         return
@@ -383,17 +383,31 @@ export function useSaplingEvent() {
   let routeEditEventHandle: string | null = null
 
   watch(
-    () => [showEditDialog.value, getCalendarEventHandle(editEvent.value)] as const,
-    ([isVisible, handle], [wasVisible]) => {
+    () =>
+      [
+        showEditDialog.value,
+        getCalendarEventHandle(editEvent.value),
+        isDetachingOccurrence.value,
+      ] as const,
+    ([isVisible, handle, isDetaching], [wasVisible]) => {
       if (isVisible && handle != null) {
         routeEditEventHandle = String(handle)
         void setRouteQueryParameter(router, route, 'open', handle)
         return
       }
 
+      const routeHandle = Array.isArray(route.query.open) ? route.query.open[0] : route.query.open
+      if (isVisible && isDetaching && typeof routeHandle === 'string') {
+        routeEditEventHandle = routeHandle
+        return
+      }
+
       if (wasVisible && !isVisible && routeEditEventHandle !== null) {
         routeEditEventHandle = null
-        void clearRouteQueryParameter(router, route, 'open')
+        const query = { ...route.query }
+        delete query.open
+        delete query.occurrence
+        void router.replace({ hash: route.hash, query })
       }
     },
   )

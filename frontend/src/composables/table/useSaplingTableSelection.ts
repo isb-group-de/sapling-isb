@@ -5,10 +5,12 @@ interface UseSaplingTableSelectionProps {
   items: SaplingGenericItem[]
   multiSelect?: boolean
   selected?: SaplingGenericItem[]
+  activeItem?: SaplingGenericItem | null
 }
 
 type UseSaplingTableSelectionEmit = {
   (event: 'update:selected', value: SaplingGenericItem[]): void
+  (event: 'update:activeItem', value: SaplingGenericItem | null): void
 }
 
 export function useSaplingTableSelection(
@@ -17,6 +19,7 @@ export function useSaplingTableSelection(
 ) {
   const selectedRows = ref<number[]>([])
   const selectedRow = ref<number | null>(null)
+  const activeRow = ref<number | null>(null)
 
   const selectedItems = computed(() =>
     selectedRows.value
@@ -43,6 +46,28 @@ export function useSaplingTableSelection(
       }, [])
 
       selectedRow.value = props.multiSelect ? null : (selectedRows.value[0] ?? null)
+      if (!props.multiSelect) {
+        activeRow.value = selectedRow.value
+      }
+    },
+    { immediate: true },
+  )
+
+  watch(
+    () => [props.activeItem, props.items] as const,
+    ([activeItem]) => {
+      if (activeItem === undefined) {
+        return
+      }
+
+      const activeIdentity = getGenericItemIdentity(activeItem ?? undefined)
+      activeRow.value = activeIdentity
+        ? props.items.findIndex((item) => getGenericItemIdentity(item) === activeIdentity)
+        : null
+
+      if (activeRow.value === -1) {
+        activeRow.value = null
+      }
     },
     { immediate: true },
   )
@@ -71,13 +96,29 @@ export function useSaplingTableSelection(
     }
 
     selectedRow.value = index
+    activateRow(index)
     emit('update:selected', [nextItem])
+  }
+
+  function activateRow(index: number) {
+    const nextItem = props.items[index]
+    if (!nextItem) {
+      return
+    }
+
+    activeRow.value = index
+    emit('update:activeItem', nextItem)
   }
 
   function clearSelection() {
     selectedRows.value = []
     selectedRow.value = null
     emit('update:selected', [])
+
+    if (!props.multiSelect) {
+      activeRow.value = null
+      emit('update:activeItem', null)
+    }
   }
 
   function emitSelectedItems() {
@@ -88,8 +129,10 @@ export function useSaplingTableSelection(
     selectedItems,
     selectedRows,
     selectedRow,
+    activeRow,
     selectAllRows,
     selectRow,
+    activateRow,
     clearSelection,
   }
 }

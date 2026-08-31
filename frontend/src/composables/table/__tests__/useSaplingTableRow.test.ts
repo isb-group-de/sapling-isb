@@ -326,4 +326,33 @@ describe('useSaplingTableRow relation dialogs', () => {
     expect(emit).toHaveBeenCalledWith('reload')
     expect(row.isDialogOpenForCol('country')).toBe(true)
   })
+
+  it('activates a multi-select row without toggling its checkbox selection', () => {
+    const emit = vi.fn()
+    const props: UseSaplingTableRowProps = {
+      item: { handle: 1, name: 'Document' },
+      columns: [],
+      index: 0,
+      multiSelect: true,
+      entityHandle: 'document',
+      entity: null,
+      entityPermission: null,
+      entityTemplates: [],
+      canNavigate: false,
+      canShowInformation: false,
+      showActions: false,
+    }
+    const row = useSaplingTableRow(props, emit)
+
+    row.onRowMouseDown(
+      {
+        button: 0,
+        target: document.createElement('td'),
+      } as unknown as MouseEvent,
+      0,
+    )
+
+    expect(emit).toHaveBeenCalledWith('activate-row', 0)
+    expect(emit).not.toHaveBeenCalledWith('select-row', 0)
+  })
 })

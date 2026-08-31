@@ -83,6 +83,13 @@ For an active d.velop Cloud mapping it keeps the overlay contract and presents
 actions that open the cloud document and upload dialogs instead of exposing the
 local document list.
 
+In the local document browser, the active preview row and the checkbox selection
+are separate states. Clicking a row makes that document active in the preview;
+checkboxes only build the selection used by bulk actions, transfers, or attachment
+workflows and must not change the preview by themselves. The active preview row
+keeps the neutral hover fill after the pointer leaves, while checkbox-selected rows
+retain the distinct bulk-selection styling.
+
 This means d.velop Cloud is an overlay, not a replacement for the stored local document model.
 
 ## Storage

@@ -110,6 +110,12 @@ The SSE stream is process-local. In multi-instance deployments, open-task notifi
 - admin-only header actions
 - impersonation return action
 
+For recurring Events, Inbox grouping, the header badge, and event navigation use
+the first occurrence that has not already been detached from the series. A past
+occurrence can therefore remain visibly overdue and be completed directly from
+the Inbox. After it is detached and completed, the next generated occurrence
+becomes the Event's open-task date.
+
 `useOpenTaskCountEvents()` maps snapshot records to route-aware stream items:
 
 | Kind | Route utility |

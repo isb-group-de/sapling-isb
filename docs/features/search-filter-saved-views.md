@@ -192,6 +192,12 @@ estimate requirements, or sales opportunity pain points.
 
 This means favorite filters should be route-safe and JSON-serializable. Avoid functions, dates as `Date` objects, or values that require client-only state.
 
+New favorites created from a route-level table persist the matching current
+entity route, so a favorite created in `partner/ticket` returns to the Partner
+workspace while one created in `table/ticket` returns to the generic table.
+Existing favorites without `entityRoute` remain compatible and continue to use
+the `table/<entityHandle>` fallback.
+
 ## Entity Routes
 
 `EntityRouteItem` lets one entity open through different views. Favorites can point to the default table route or a more specific route such as partner/file views.

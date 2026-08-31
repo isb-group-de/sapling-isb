@@ -23,7 +23,9 @@ An early Express middleware counts application request and response bytes,
 status classes, route groups, duration histograms, and the authenticated person
 or API-token handle. It swaps an in-memory accumulator every ten seconds and
 upserts minute buckets, so monitoring does not add one database write per
-request. AI agent-run usage is normalized into input, output, and total tokens.
+request. Request sizes come from the declared `Content-Length`; the telemetry
+middleware never consumes the request stream ahead of JSON or multipart body
+parsers. AI agent-run usage is normalized into input, output, and total tokens.
 Session records expose a denormalized person handle and last-seen time for
 presence queries.
 

@@ -9,7 +9,7 @@ const mocks = vi.hoisted(() => ({
   fetchCurrentPerson: vi.fn(),
   routerPush: vi.fn(),
   pushMessage: vi.fn(),
-  route: { fullPath: '/table/ticket' },
+  route: { path: '/table/ticket', fullPath: '/table/ticket' },
   person: { handle: 7 } as { handle: number } | null,
 }))
 
@@ -68,6 +68,12 @@ function createEntity(): EntityItem {
         navigation: null,
         createdAt: null,
       },
+      {
+        handle: 18,
+        route: 'partner/ticket',
+        navigation: null,
+        createdAt: null,
+      },
     ],
   }
 }
@@ -94,6 +100,7 @@ function createSubject() {
 beforeEach(() => {
   vi.clearAllMocks()
   mocks.person = { handle: 7 }
+  mocks.route.path = '/table/ticket'
   mocks.route.fullPath = '/table/ticket'
   mocks.apiFind.mockResolvedValue([favorite])
   mocks.apiCreate.mockResolvedValue(favorite)
@@ -147,6 +154,27 @@ describe('useSaplingTableFavorites', () => {
       'global.favoriteSaved',
       'global.favoriteSavedDescription',
       'ticket',
+    )
+  })
+
+  it('persists the partner route when the worklist is created in the partner view', async () => {
+    mocks.route.path = '/partner/ticket'
+    mocks.route.fullPath = '/partner/ticket'
+    const { subject } = createSubject()
+    await flushPromises()
+
+    subject.openFavoriteDialog()
+    subject.favoriteDialog.value.title = 'Partner tickets'
+
+    await subject.saveFavorite()
+
+    expect(mocks.apiCreate).toHaveBeenCalledWith(
+      'favorite',
+      expect.objectContaining({
+        title: 'Partner tickets',
+        entity: 'ticket',
+        entityRoute: 18,
+      }),
     )
   })
 })

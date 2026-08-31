@@ -56,10 +56,11 @@
               :entity-templates="entityTemplates || []"
               :show-actions="true"
               :multi-select="true"
+              :active-item="activeDocument"
               :show-favorite="false"
               :parent-filter="parentFilter"
               :table-key="entityHandleRef + '-table'"
-              @update:selected="onSelectedDocument"
+              @update:active-item="onActiveDocument"
               @update:search="onSearchUpdate"
               @update:page="onPageUpdate"
               @update:items-per-page="onItemsPerPageUpdate"
@@ -177,6 +178,7 @@ const fileContainerClasses = computed(() => [
 ])
 
 const selectedHandle = ref('')
+const activeDocument = ref<SaplingGenericItem | null>(null)
 
 const selectedMimeType = ref('')
 
@@ -219,14 +221,15 @@ function getSelectedDocumentHandle(item?: SaplingGenericItem) {
   return handle == null ? '' : String(handle)
 }
 
-function onSelectedDocument(val: SaplingGenericItem[]) {
-  const nextItem = val[0] ?? null
+function onActiveDocument(nextItem: SaplingGenericItem | null) {
+  activeDocument.value = nextItem
   selectedHandle.value = getSelectedDocumentHandle(nextItem ?? undefined)
   selectedMimeType.value = nextItem?.mimetype || ''
   selectedFilename.value = normalizeStoredFilename(nextItem?.filename || '')
 }
 
 function clearSelection() {
+  activeDocument.value = null
   selectedHandle.value = ''
   selectedMimeType.value = ''
   selectedFilename.value = ''

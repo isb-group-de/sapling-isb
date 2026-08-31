@@ -88,4 +88,23 @@ describe('getSaplingHeaderBadgeCounts', () => {
       inboxNotificationCount: 0,
     })
   })
+
+  it('uses the first still-generated recurrence instead of the series start', () => {
+    const snapshot = createSnapshot()
+    snapshot.tasks = [
+      {
+        startDate: new Date('2026-08-20T09:00:00.000Z'),
+        endDate: new Date('2026-08-20T10:00:00.000Z'),
+        recurrenceRule: 'FREQ=WEEKLY;COUNT=3',
+        recurrenceExceptionDates: ['2026-08-20T09:00:00.000Z', '2026-08-27T09:00:00.000Z'],
+      } as EventItem,
+    ]
+
+    expect(
+      getSaplingHeaderBadgeCounts(snapshot, enabledPreferences, new Date(2026, 7, 28, 10)),
+    ).toEqual({
+      inboxCount: 6,
+      inboxNotificationCount: 2,
+    })
+  })
 })

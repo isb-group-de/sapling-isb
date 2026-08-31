@@ -183,6 +183,7 @@
         :row-interaction="rowInteraction"
         :selected-rows="selectedRows"
         :selected-row="selectedRow"
+        :active-row="activeRow"
         :is-header-translation-loading="isHeaderTranslationLoading"
         :get-column-sort-icon="getColumnSortIcon"
         :is-column-filterable="isColumnFilterable"
@@ -192,6 +193,7 @@
         @toggle-column-sort="toggleColumnSort"
         @update:column-filter="({ key, value }) => onColumnFilterChange(key, value)"
         @select-row="selectRow"
+        @activate-row="activateRow"
         @change-log="openChangeLog"
         @delete="openDeleteDialog"
         @edit="openEditDialog"
@@ -229,6 +231,7 @@
         :row-interaction="rowInteraction"
         :selected-rows="selectedRows"
         :selected-row="selectedRow"
+        :active-row="activeRow"
         :is-header-translation-loading="isHeaderTranslationLoading"
         :column-order-editing="isColumnOrderEditing"
         :get-column-filter-item="getColumnFilterItem"
@@ -243,6 +246,7 @@
         @select-all-rows="selectAllRows"
         @clear-selection="clearSelection"
         @select-row="selectRow"
+        @activate-row="activateRow"
         @change-log="openChangeLog"
         @delete="openDeleteDialog"
         @edit="openEditDialog"
@@ -517,6 +521,7 @@ const {
   tableContainerRef,
   selectedRows,
   selectedRow,
+  activeRow,
   visibleHeaders,
   orderedColumnKeys,
   selectableColumnKeys,
@@ -558,6 +563,7 @@ const {
   getColumnFilterItem,
   getFilterOperatorOptions,
   isColumnFilterable,
+  activateRow,
   moveColumn,
   addColumn,
   removeColumn,

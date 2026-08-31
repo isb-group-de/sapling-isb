@@ -282,6 +282,31 @@ describe('useSaplingEventEditor', () => {
     expect(harness.queueScrollToTime).toHaveBeenCalledWith('2026-07-15T09:00:00.000Z')
   })
 
+  it('opens a route-selected recurrence directly as an editable occurrence', async () => {
+    mocks.route.query = {
+      open: '42',
+      occurrence: '2026-07-16T09:00:00.000Z',
+    }
+    const harness = createHarness()
+    harness.loadPersistedEvent.mockResolvedValue(
+      createEventItem({
+        recurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=2',
+        updatedAt: new Date('2026-07-14T08:00:00.000Z'),
+      }),
+    )
+
+    await expect(harness.editor.openEventFromRoute()).resolves.toBe(true)
+    await expect(harness.editor.openEventFromRoute()).resolves.toBe(false)
+
+    expect(harness.loadPersistedEvent).toHaveBeenCalledTimes(1)
+    expect(harness.editor.recurrenceEditScopeDialog.value.visible).toBe(false)
+    expect(harness.editor.isDetachingOccurrence.value).toBe(true)
+    expect(harness.editEvent.value?.event?.handle).toBeUndefined()
+    expect(harness.editEvent.value?.start).toBe(new Date('2026-07-16T09:00:00.000Z').getTime())
+    expect(harness.goToDate).toHaveBeenCalledWith('2026-07-16T09:00:00.000Z')
+    expect(harness.queueScrollToTime).toHaveBeenCalledWith('2026-07-16T09:00:00.000Z')
+  })
+
   it('does not reopen a dragged event from the synchronized route and clear its dirty fields', async () => {
     const harness = createHarness()
     harness.loadPersistedEvent.mockResolvedValue(createEventItem())
@@ -357,6 +382,30 @@ describe('useSaplingEventEditor', () => {
     expect(harness.refreshVisibleEvents).toHaveBeenCalledTimes(1)
     expect(complete).toHaveBeenCalledWith(true)
     expect(harness.showEditDialog.value).toBe(false)
+  })
+
+  it('keeps save-and-close closed when the calendar refresh fails after creation', async () => {
+    const harness = createHarness()
+    const savedEvent = createEventItem()
+    mocks.create.mockResolvedValue(savedEvent)
+    harness.refreshVisibleEvents.mockRejectedValueOnce(new Error('Calendar refresh failed'))
+    const complete = vi.fn()
+    const draft = {
+      start: new Date(2026, 6, 15, 9).getTime(),
+      end: new Date(2026, 6, 15, 10).getTime(),
+      timed: true,
+      event: { participants: [7] },
+    } as CalendarEvent
+    harness.editEvent.value = draft
+    harness.showEditDialog.value = true
+
+    await harness.editor.onEditDialogSave(draft, 'saveAndClose', { complete })
+
+    expect(mocks.create).toHaveBeenCalledTimes(1)
+    expect(harness.refreshVisibleEvents).toHaveBeenCalledTimes(1)
+    expect(complete).toHaveBeenCalledWith(true)
+    expect(harness.showEditDialog.value).toBe(false)
+    expect(harness.editEvent.value).toBeNull()
   })
 
   it('keeps a deliberately emptied participant list empty when creating an event', async () => {

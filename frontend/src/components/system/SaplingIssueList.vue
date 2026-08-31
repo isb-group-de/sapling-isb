@@ -26,17 +26,14 @@
 
       <div
         v-if="isLoading"
-        class="sapling-stack-xl sapling-work-stream__loading sapling-issue-stream__loading"
+        class="sapling-stack-sm sapling-work-stream__loading sapling-issue-stream__loading"
       >
         <SaplingSurface
+          v-for="item in 4"
+          :key="item"
           :as="VSkeletonLoader"
           class="sapling-work-stream__skeleton sapling-issue-stream__skeleton"
-          type="article, actions"
-        />
-        <SaplingSurface
-          :as="VSkeletonLoader"
-          class="sapling-work-stream__skeleton sapling-issue-stream__skeleton"
-          type="article, actions"
+          type="list-item"
         />
       </div>
 
@@ -48,76 +45,103 @@
         <p>{{ $t(emptyStateKey) }}</p>
       </SaplingSurface>
 
-      <div v-else class="sapling-stack-xl sapling-work-stream__list sapling-issue-stream__list">
+      <div v-else class="sapling-stack-sm sapling-work-stream__list sapling-issue-stream__list">
         <SaplingSurface
           v-for="issue in issues"
           :key="`${cardPrefix}-${issue.id}`"
-          :as="VCard"
+          as="article"
           class="sapling-work-card sapling-issue-card"
-          :elevation="8"
-          tilt
-          :tilt-options="TILT_SOFT_OPTIONS"
         >
           <div class="sapling-work-card__accent sapling-issue-card__accent" />
 
-          <v-card-text
-            class="sapling-stack-xl sapling-work-card__content sapling-issue-card__content"
+          <button
+            type="button"
+            class="sapling-work-card__summary sapling-issue-card__summary"
+            :aria-expanded="isIssueExpanded(issue.id)"
+            :aria-controls="issueDetailsId(issue.id)"
+            @click="toggleIssue(issue.id)"
           >
-            <div
-              class="sapling-row-between-md sapling-work-card__header-row sapling-issue-card__header-row"
-            >
-              <v-chip :color="statusChipColor" size="small" variant="tonal">
+            <v-icon
+              :icon="isIssueExpanded(issue.id) ? 'mdi-chevron-up' : 'mdi-chevron-down'"
+              size="20"
+              class="sapling-work-card__summary-icon"
+            />
+            <span class="sapling-work-card__title sapling-issue-card__title">
+              {{ issue.title }}
+            </span>
+            <span class="sapling-work-card__summary-badges">
+              <v-chip
+                v-if="resolveIssueType(issue)"
+                :color="resolveIssueType(issue) === 'bug' ? 'error' : 'primary'"
+                size="x-small"
+                variant="tonal"
+                class="sapling-work-card__type"
+              >
+                {{ $t(resolveIssueType(issue) === 'bug' ? 'issue.typeBug' : 'issue.typeFeature') }}
+              </v-chip>
+              <v-chip
+                :color="statusChipColor"
+                size="x-small"
+                variant="tonal"
+                class="sapling-work-card__status"
+              >
                 {{ $t(statusLabelKey) }}
               </v-chip>
+            </span>
+          </button>
 
-              <v-btn
-                :href="issue.html_url"
-                rel="noopener"
-                icon="mdi-open-in-app"
-                variant="text"
-                size="small"
-              />
-            </div>
-
-            <a
-              :href="issue.html_url"
-              rel="noopener"
-              class="sapling-work-card__title sapling-issue-card__title"
+          <div
+            v-if="isIssueExpanded(issue.id)"
+            :id="issueDetailsId(issue.id)"
+            class="sapling-stack-lg sapling-work-card__content sapling-issue-card__content"
+          >
+            <section
+              class="sapling-stack-md sapling-work-card__description sapling-issue-card__description"
             >
-              {{ issue.title }}
-            </a>
-
-            <div class="sapling-detail-grid">
-              <div class="sapling-detail-card">
-                <span>{{ $t('issue.createdAt') }}</span>
-                <strong>{{ formatDateTime(issue.created_at) }}</strong>
+              <div class="sapling-label">{{ $t('issue.description') }}</div>
+              <div class="sapling-work-card__markdown sapling-issue-card__markdown">
+                <SaplingMarkdownContent :source="issue.body || $t('issue.noDescription')" />
               </div>
-              <div class="sapling-detail-card">
-                <span>{{ $t('issue.updatedAt') }}</span>
-                <strong>{{ formatDateTime(issue.updated_at) }}</strong>
-              </div>
-            </div>
+            </section>
 
-            <div
-              v-if="issue.labels.length"
-              class="sapling-chip-row sapling-work-card__labels sapling-issue-card__labels"
-            >
+            <div class="sapling-work-card__meta">
               <v-chip
-                v-for="label in issue.labels"
-                :key="label.name"
+                color="primary"
                 size="small"
-                variant="flat"
-                class="sapling-work-card__label sapling-issue-card__label"
-                :style="resolveLabelStyle(label.color)"
+                variant="tonal"
+                prepend-icon="mdi-calendar-plus-outline"
+                class="sapling-work-card__timestamp"
+                :title="$t('issue.createdAt')"
               >
-                {{ label.name }}
+                {{ formatDateTime(issue.created_at) }}
               </v-chip>
-            </div>
+              <v-chip
+                color="info"
+                size="small"
+                variant="tonal"
+                prepend-icon="mdi-update"
+                class="sapling-work-card__timestamp"
+                :title="$t('issue.updatedAt')"
+              >
+                {{ formatDateTime(issue.updated_at) }}
+              </v-chip>
 
-            <div
-              class="sapling-stack-md sapling-work-card__assignees sapling-issue-card__assignees"
-            >
-              <div class="sapling-label">{{ $t('issue.assignedTo') }}</div>
+              <div
+                v-if="resolveAdditionalLabels(issue).length"
+                class="sapling-chip-row sapling-work-card__labels sapling-issue-card__labels"
+              >
+                <v-chip
+                  v-for="label in resolveAdditionalLabels(issue)"
+                  :key="label.name"
+                  size="x-small"
+                  variant="flat"
+                  class="sapling-work-card__label sapling-issue-card__label"
+                  :style="resolveLabelStyle(label.color)"
+                >
+                  {{ label.name }}
+                </v-chip>
+              </div>
+
               <div
                 v-if="issue.assignees.length"
                 class="sapling-chip-row sapling-work-card__assignee-list sapling-issue-card__assignee-list"
@@ -129,33 +153,49 @@
                   rel="noopener"
                   class="sapling-work-card__assignee sapling-issue-card__assignee"
                 >
-                  <v-avatar size="32">
+                  <v-avatar size="22">
                     <img :src="assignee.avatar_url" :alt="assignee.login" />
                   </v-avatar>
                   <span>{{ assignee.login }}</span>
                 </a>
               </div>
-              <div v-else class="sapling-work-card__empty-copy sapling-issue-card__empty-copy">
-                -
-              </div>
+
+              <v-btn
+                :href="issue.html_url"
+                rel="noopener"
+                icon="mdi-open-in-app"
+                variant="text"
+                size="x-small"
+              />
             </div>
 
-            <div
-              class="sapling-stack-md sapling-work-card__description sapling-issue-card__description"
-            >
-              <div class="sapling-label">{{ $t('issue.description') }}</div>
-              <div class="sapling-work-card__markdown sapling-issue-card__markdown">
-                <VMarkdown :source="issue.body || $t('issue.noDescription')" />
-              </div>
-            </div>
-
-            <div
+            <section
               v-if="issue.comments.length"
-              class="sapling-stack-md sapling-work-card__comments sapling-issue-card__comments"
+              class="sapling-work-card__comments sapling-issue-card__comments"
             >
-              <div class="sapling-label">{{ $t('issue.comments') }}</div>
+              <button
+                type="button"
+                class="sapling-work-card__comments-toggle"
+                :aria-expanded="areCommentsExpanded(issue.id)"
+                :aria-controls="issueCommentsId(issue.id)"
+                @click="toggleComments(issue.id)"
+              >
+                <span>
+                  <v-icon icon="mdi-comment-text-multiple-outline" size="18" />
+                  {{ $t('issue.comments') }}
+                  <v-chip size="x-small" variant="tonal">{{ issue.comments.length }}</v-chip>
+                </span>
+                <v-icon
+                  :icon="areCommentsExpanded(issue.id) ? 'mdi-chevron-up' : 'mdi-chevron-down'"
+                  size="20"
+                />
+              </button>
 
-              <div class="sapling-stack-md sapling-work-card__comment-list">
+              <div
+                v-if="areCommentsExpanded(issue.id)"
+                :id="issueCommentsId(issue.id)"
+                class="sapling-stack-md sapling-work-card__comment-list"
+              >
                 <article
                   v-for="comment in issue.comments"
                   :key="comment.id"
@@ -198,12 +238,12 @@
                   </header>
 
                   <div class="sapling-work-card__markdown sapling-work-card__comment-markdown">
-                    <VMarkdown :source="comment.body || $t('issue.noCommentBody')" />
+                    <SaplingMarkdownContent :source="comment.body || $t('issue.noCommentBody')" />
                   </div>
                 </article>
               </div>
-            </div>
-          </v-card-text>
+            </section>
+          </div>
         </SaplingSurface>
       </div>
     </section>
@@ -212,12 +252,11 @@
 
 <script lang="ts" setup>
 // #region Imports
-import { VCard, VSkeletonLoader } from 'vuetify/components'
-import { computed } from 'vue'
+import { VSkeletonLoader } from 'vuetify/components'
+import { computed, ref } from 'vue'
 import type { SaplingIssue, SaplingIssueStatus } from '@/composables/system/useSaplingIssue'
-import { TILT_SOFT_OPTIONS } from '@/constants/tilt.constants'
+import SaplingMarkdownContent from '@/components/common/SaplingMarkdownContent.vue'
 import SaplingSurface from '@/components/common/SaplingSurface.vue'
-import VMarkdown from 'vue-markdown-render'
 // #endregion
 
 // #region Props
@@ -231,6 +270,8 @@ interface SaplingIssueListProps {
 
 const props = defineProps<SaplingIssueListProps>()
 
+const expandedIssues = ref(new Set<number>())
+const expandedComments = ref(new Set<number>())
 const statusLabelKey = computed(() => (props.status === 'open' ? 'issue.open' : 'issue.closed'))
 const emptyStateKey = computed(() =>
   props.status === 'open' ? 'issue.noOpenIssues' : 'issue.noClosedIssues',
@@ -243,8 +284,72 @@ const streamTone = computed(() => (props.status === 'open' ? 'success' : 'slate'
 // #endregion
 
 // #region Methods
+function isIssueExpanded(issueId: number) {
+  return expandedIssues.value.has(issueId)
+}
+
+function areCommentsExpanded(issueId: number) {
+  return expandedComments.value.has(issueId)
+}
+
+function toggleIssue(issueId: number) {
+  const nextExpandedIssues = new Set(expandedIssues.value)
+
+  if (nextExpandedIssues.has(issueId)) {
+    nextExpandedIssues.delete(issueId)
+    const nextExpandedComments = new Set(expandedComments.value)
+    nextExpandedComments.delete(issueId)
+    expandedComments.value = nextExpandedComments
+  } else {
+    nextExpandedIssues.add(issueId)
+  }
+
+  expandedIssues.value = nextExpandedIssues
+}
+
+function toggleComments(issueId: number) {
+  const nextExpandedComments = new Set(expandedComments.value)
+
+  if (nextExpandedComments.has(issueId)) {
+    nextExpandedComments.delete(issueId)
+  } else {
+    nextExpandedComments.add(issueId)
+  }
+
+  expandedComments.value = nextExpandedComments
+}
+
+function issueDetailsId(issueId: number) {
+  return `${props.cardPrefix}-issue-${issueId}-details`
+}
+
+function issueCommentsId(issueId: number) {
+  return `${props.cardPrefix}-issue-${issueId}-comments`
+}
+
+function resolveIssueType(issue: SaplingIssue): 'bug' | 'feature' | null {
+  const typeLabel = issue.labels.find((label) => {
+    const normalizedName = label.name.trim().toLowerCase()
+    return normalizedName === 'bug' || normalizedName === 'feature'
+  })
+
+  if (typeLabel) {
+    return typeLabel.name.trim().toLowerCase() as 'bug' | 'feature'
+  }
+
+  const bodyType = issue.body.match(/(?:\*\*)?Type:(?:\*\*)?\s*(Bug|Feature)/i)?.[1]
+  return bodyType ? (bodyType.toLowerCase() as 'bug' | 'feature') : null
+}
+
+function resolveAdditionalLabels(issue: SaplingIssue) {
+  return issue.labels.filter((label) => {
+    const normalizedName = label.name.trim().toLowerCase()
+    return normalizedName !== 'bug' && normalizedName !== 'feature'
+  })
+}
+
 /**
- * Formats GitHub timestamps for display in the issue cards.
+ * Formats GitHub timestamps for display in the expanded issue details.
  */
 function formatDateTime(value: string) {
   return new Intl.DateTimeFormat(undefined, {

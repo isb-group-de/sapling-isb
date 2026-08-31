@@ -159,6 +159,14 @@ also restore RRULE and EXDATE data, while Outlook imports preserve Sapling's
 persisted exception timestamps because Graph recurrence patterns do not expose
 EXDATE on the master.
 
+Open-task Inbox entries resolve a recurring Event to its first occurrence that
+is not listed in `recurrenceExceptionDates`. The Inbox route carries that exact
+occurrence start into the calendar and opens it directly as a standalone draft.
+Completing the draft therefore detaches only that occurrence; the series remains
+unchanged and the Inbox advances to the next generated occurrence. Normal clicks
+on recurring calendar entries continue to offer the existing choice between the
+single occurrence and the whole series.
+
 ## Delivery Flow
 
 Calendar delivery starts after an event change asks for synchronization.

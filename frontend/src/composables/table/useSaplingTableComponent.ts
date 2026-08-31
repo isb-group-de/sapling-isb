@@ -60,6 +60,7 @@ export interface UseSaplingTableProps {
   disableMobileView?: boolean
   scriptButtons?: ScriptButtonItem[]
   selected?: SaplingGenericItem[]
+  activeItem?: SaplingGenericItem | null
   isOpenEditDialog?: boolean
   openEditHandle?: string | number | null
   isInitialized?: boolean
@@ -75,6 +76,7 @@ export type UseSaplingTableEmit = {
   (event: 'update:columnFilters', value: Record<string, ColumnFilterItem>): void
   (event: 'reload'): void
   (event: 'update:selected', value: SaplingGenericItem[]): void
+  (event: 'update:activeItem', value: SaplingGenericItem | null): void
   (event: 'update:visibleColumnKeys', value: string[]): void
   (
     event: 'createDraft',
@@ -112,8 +114,16 @@ export function useSaplingTableComponent(props: UseSaplingTableProps, emit: UseS
     getFilterOperatorOptions,
     isColumnFilterable,
   } = useSaplingTableFilters(props, emit)
-  const { selectedItems, selectedRows, selectedRow, selectAllRows, selectRow, clearSelection } =
-    useSaplingTableSelection(props, emit)
+  const {
+    selectedItems,
+    selectedRows,
+    selectedRow,
+    activeRow,
+    selectAllRows,
+    selectRow,
+    activateRow,
+    clearSelection,
+  } = useSaplingTableSelection(props, emit)
   const {
     multiSelectScriptButtons,
     rowScriptButtons,
@@ -495,6 +505,7 @@ export function useSaplingTableComponent(props: UseSaplingTableProps, emit: UseS
     tableContainerRef,
     selectedRows,
     selectedRow,
+    activeRow,
     selectedItems,
     localColumnFilters,
     visibleHeaders,
@@ -557,6 +568,7 @@ export function useSaplingTableComponent(props: UseSaplingTableProps, emit: UseS
     onContextMenuAction,
     selectAllRows,
     selectRow,
+    activateRow,
     clearSelection,
     deleteAllSelected,
     confirmBulkDelete,

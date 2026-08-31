@@ -53,6 +53,7 @@ export interface UseSaplingTableRowProps {
   columns: SaplingTableHeaderItem[]
   index: number
   isSelected?: boolean
+  isActive?: boolean
   multiSelect?: boolean
   entityHandle: string
   entity: EntityItem | null
@@ -68,6 +69,7 @@ export interface UseSaplingTableRowProps {
 
 export type UseSaplingTableRowEmit = {
   (event: 'select-row', value: number): void
+  (event: 'activate-row', value: number): void
   (event: 'change-log', value: SaplingGenericItem): void
   (event: 'edit', value: SaplingGenericItem): void
   (event: 'delete', value: SaplingGenericItem): void
@@ -509,8 +511,11 @@ export function useSaplingTableRow(props: UseSaplingTableRowProps, emit: UseSapl
       return
     }
 
-    if (event.button === 0 && !props.multiSelect && !isInteractiveRowTarget(event.target)) {
-      emit('select-row', index)
+    if (event.button === 0 && !isInteractiveRowTarget(event.target)) {
+      emit('activate-row', index)
+      if (!props.multiSelect) {
+        emit('select-row', index)
+      }
     }
   }
 
