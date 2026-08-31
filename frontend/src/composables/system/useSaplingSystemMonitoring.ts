@@ -12,6 +12,7 @@ import { useSaplingMessageCenter } from './useSaplingMessageCenter'
 
 type RangePreset = '1h' | '6h' | '24h' | '7d' | '30d' | '90d' | 'custom'
 type MonitoringDetail = 'series' | 'requests' | 'users' | 'ai' | 'incidents' | 'rules' | 'status'
+export const DEFAULT_MONITORING_RANGE_PRESET = '1h' satisfies RangePreset
 export const MONITORING_USERS_PAGE_SIZE = 50
 const MONITORING_METRICS = [
   'host.cpu.percent',
@@ -32,7 +33,7 @@ const SERIES_TABS = new Set(['overview', 'performance', 'storage', 'network', 'd
 export function useSaplingSystemMonitoring(activeTab?: Readonly<Ref<string>>) {
   const { pushMessage } = useSaplingMessageCenter()
   let errorReported = false
-  const rangePreset = ref<RangePreset>('24h')
+  const rangePreset = ref<RangePreset>(DEFAULT_MONITORING_RANGE_PRESET)
   const rangeAnchor = ref(Date.now())
   const customFrom = ref(toLocalDateTime(new Date(Date.now() - 24 * 60 * 60_000)))
   const customTo = ref(toLocalDateTime(new Date()))

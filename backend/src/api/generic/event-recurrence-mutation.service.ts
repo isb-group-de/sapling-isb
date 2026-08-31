@@ -361,14 +361,36 @@ export class EventRecurrenceMutationService {
     return payload;
   }
 
-  private normalizeExceptionDates(
-    values: string[] | null | undefined,
-  ): string[] {
+  private normalizeExceptionDates(values: unknown): string[] {
+    let normalizedValues: unknown[] = [];
+    if (Array.isArray(values)) {
+      normalizedValues = values;
+    } else if (typeof values === 'string' && values.trim()) {
+      const trimmedValue = values.trim();
+      try {
+        const parsedValue: unknown = JSON.parse(trimmedValue);
+        normalizedValues = Array.isArray(parsedValue)
+          ? parsedValue
+          : [parsedValue];
+      } catch {
+        normalizedValues = [trimmedValue];
+      }
+    }
+
     return Array.from(
       new Set(
-        (values ?? [])
-          .map((value) => new Date(value))
-          .filter((value) => !Number.isNaN(value.getTime()))
+        normalizedValues
+          .map((value) =>
+            typeof value === 'string' || typeof value === 'number'
+              ? new Date(value)
+              : value instanceof Date
+                ? value
+                : null,
+          )
+          .filter(
+            (value): value is Date =>
+              value !== null && !Number.isNaN(value.getTime()),
+          )
           .map((value) => value.toISOString()),
       ),
     );

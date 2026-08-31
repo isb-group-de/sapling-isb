@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest'
-import { runWithConcurrency } from './useSaplingSystemMonitoring'
+import {
+  DEFAULT_MONITORING_RANGE_PRESET,
+  runWithConcurrency,
+} from './useSaplingSystemMonitoring'
 
 describe('system monitoring request scheduling', () => {
+  it('defaults the monitoring page to the last hour', () => {
+    expect(DEFAULT_MONITORING_RANGE_PRESET).toBe('1h')
+  })
+
   it('limits concurrent detail requests', async () => {
     let active = 0
     let maximumActive = 0

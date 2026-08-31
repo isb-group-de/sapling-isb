@@ -35,6 +35,10 @@ and alert details are fetched only when their tab is opened. This keeps the
 database pool available for normal application traffic and lets the page
 become usable before every historical query has completed.
 
+The page initially shows the last hour to keep its first telemetry queries
+small. Administrators can select a longer preset or a custom range when they
+need broader historical lists and charts.
+
 ## Privacy And Access
 
 Every monitoring API is protected by the existing session/bearer and

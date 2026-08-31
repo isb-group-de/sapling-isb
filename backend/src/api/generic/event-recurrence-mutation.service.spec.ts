@@ -173,4 +173,48 @@ describe('EventRecurrenceMutationService', () => {
       expect.any(Object),
     );
   });
+
+  it('detaches occurrences when legacy exception dates are JSON-serialized', async () => {
+    const harness = createHarness(
+      createEvent({
+        recurrenceExceptionDates:
+          '["2026-07-28T11:00:00.000Z"]' as unknown as string[],
+      }),
+    );
+
+    await expect(
+      harness.service.detachOccurrence(
+        42,
+        {
+          occurrenceStart: '2026-07-29T11:00:00.000Z',
+          event: {
+            title: 'Edited occurrence',
+            startDate: '2026-07-29T13:00:00.000Z',
+            endDate: '2026-07-29T14:00:00.000Z',
+          },
+        },
+        { handle: 5 } as PersonItem,
+        {},
+      ),
+    ).resolves.toEqual({
+      seriesHandle: 42,
+      detachedEvent: { handle: 43 },
+    });
+
+    expect(harness.mutationService.update).toHaveBeenCalledWith(
+      'event',
+      42,
+      {
+        recurrenceExceptionDates: [
+          '2026-07-28T11:00:00.000Z',
+          '2026-07-29T11:00:00.000Z',
+        ],
+      },
+      expect.any(Object),
+      [],
+      expect.any(Object),
+      expect.any(Object),
+      expect.any(Object),
+    );
+  });
 });
