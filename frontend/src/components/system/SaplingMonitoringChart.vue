@@ -29,7 +29,7 @@ import {
   TooltipComponent,
 } from 'echarts/components'
 import { useI18n } from 'vue-i18n'
-import type { MonitoringSeriesPoint } from '@/entity/system'
+import type { MonitoringChartPoint } from '@/entity/system'
 import { monitoringMetricLabel } from './systemMonitoringLabels'
 
 use([
@@ -45,7 +45,7 @@ const props = withDefaults(
   defineProps<{
     title: string
     eyebrow?: string
-    points: MonitoringSeriesPoint[]
+    points: MonitoringChartPoint[]
     unit?: string
   }>(),
   { eyebrow: '', unit: '' },
@@ -53,7 +53,7 @@ const props = withDefaults(
 const { locale, t } = useI18n()
 
 const option = computed(() => {
-  const groups = new Map<string, MonitoringSeriesPoint[]>()
+  const groups = new Map<string, MonitoringChartPoint[]>()
   for (const point of props.points) {
     const metricLabel = monitoringMetricLabel(t, locale.value, point.metricKey)
     const name = point.dimensionKey ? `${metricLabel} · ${point.dimensionKey}` : metricLabel
@@ -100,7 +100,7 @@ function formatNumber(value: number) {
   return new Intl.NumberFormat(undefined, { maximumFractionDigits: 1 }).format(value)
 }
 
-function withVisibleGaps(values: MonitoringSeriesPoint[]) {
+function withVisibleGaps(values: MonitoringChartPoint[]) {
   const sorted = values
     .map((point) => ({
       point,

@@ -2,6 +2,7 @@ import { computed, nextTick, onMounted, ref, watch, type Ref } from 'vue'
 import ApiSystemService from '@/services/api.system.service'
 import type {
   MonitoringAlertRule,
+  MonitoringChartPoint,
   MonitoringIncident,
   MonitoringSeriesPoint,
   MonitoringSummary,
@@ -40,6 +41,7 @@ export function useSaplingSystemMonitoring(activeTab?: Readonly<Ref<string>>) {
   const usersPage = ref(1)
   const summary = ref<MonitoringSummary | null>(null)
   const series = ref<MonitoringSeriesPoint[]>([])
+  const requestSeries = ref<MonitoringChartPoint[]>([])
   const requestGroups = ref<Record<string, unknown>[]>([])
   const users = ref<MonitoringUser[]>([])
   const usersTotal = ref(0)
@@ -195,10 +197,14 @@ export function useSaplingSystemMonitoring(activeTab?: Readonly<Ref<string>>) {
       )
       if (rangeIsCurrent()) series.value = response.series
     } else if (detail === 'requests') {
-      const response = await ApiSystemService.get<{ groups: Record<string, unknown>[] }>(
-        `monitoring/requests?${querySnapshot}&groupBy=route`,
-      )
-      if (rangeIsCurrent()) requestGroups.value = response.groups
+      const response = await ApiSystemService.get<{
+        series: MonitoringChartPoint[]
+        groups: Record<string, unknown>[]
+      }>(`monitoring/requests?${querySnapshot}&groupBy=route`)
+      if (rangeIsCurrent()) {
+        requestSeries.value = response.series
+        requestGroups.value = response.groups
+      }
     } else if (detail === 'users') {
       await loadUsersPage(querySnapshot, generation)
     } else if (detail === 'ai') {
@@ -301,6 +307,7 @@ export function useSaplingSystemMonitoring(activeTab?: Readonly<Ref<string>>) {
     usersPage,
     summary,
     series,
+    requestSeries,
     requestGroups,
     users,
     usersTotal,

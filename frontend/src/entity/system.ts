@@ -170,15 +170,19 @@ export interface MonitoringSummary {
   incidents: { openCount: number; criticalCount: number }
 }
 
-export interface MonitoringSeriesPoint {
+export interface MonitoringChartPoint {
   metricKey: string
   dimensionKey: string
   capturedAt: string
+  last: number
+  average?: number | null
+}
+
+export interface MonitoringSeriesPoint extends MonitoringChartPoint {
   sampleCount: number
   minimum: number
   maximum: number
   sum: number
-  last: number
   average: number
 }
 

@@ -212,25 +212,37 @@ export class SystemMonitoringQueryService {
     const range = resolveRange(query);
     const resolution = chooseHttpResolution(range);
     const groupColumn = query.groupBy === 'auth' ? 'auth_kind' : 'route_group';
-    const rows = await executeRows(
-      this.em.fork(),
-      `select "${groupColumn}" as "group",
-         sum("request_count")::int as "requestCount",
-         sum("client_error_count")::int as "clientErrorCount",
-         sum("server_error_count")::int as "serverErrorCount",
-         sum("request_bytes")::bigint as "requestBytes",
-         sum("response_bytes")::bigint as "responseBytes",
-         sum("duration_sum_ms")::float8 as "durationSumMs",
-         max("duration_max_ms")::float8 as "durationMaxMs",
-         jsonb_build_array(${histogramSumSql()}) as "durationHistogram"
-       from "http_metric_bucket_item"
-       where "bucket_start" between ? and ? and "resolution" = ?
-       group by "${groupColumn}" order by "requestCount" desc`,
-      [range.from, range.to, resolution],
-    );
+    const [rows, series] = await Promise.all([
+      executeRows(
+        this.em.fork(),
+        `select "${groupColumn}" as "group",
+           sum("request_count")::int as "requestCount",
+           sum("client_error_count")::int as "clientErrorCount",
+           sum("server_error_count")::int as "serverErrorCount",
+           sum("request_bytes")::bigint as "requestBytes",
+           sum("response_bytes")::bigint as "responseBytes",
+           sum("duration_sum_ms")::float8 as "durationSumMs",
+           max("duration_max_ms")::float8 as "durationMaxMs",
+           jsonb_build_array(${histogramSumSql()}) as "durationHistogram"
+         from "http_metric_bucket_item"
+         where "bucket_start" between ? and ? and "resolution" = ?
+         group by "${groupColumn}" order by "requestCount" desc`,
+        [range.from, range.to, resolution],
+      ),
+      executeRows(
+        this.em.fork(),
+        `select 'http.requestCount' as "metricKey", '' as "dimensionKey",
+           "bucket_start" as "capturedAt", sum("request_count")::int as "last"
+         from "http_metric_bucket_item"
+         where "bucket_start" between ? and ? and "resolution" = ?
+         group by "bucket_start" order by "bucket_start" asc`,
+        [range.from, range.to, resolution],
+      ),
+    ]);
     return {
       range: serializeRange(range),
       resolution,
+      series,
       groups: rows.map((row) => ({
         ...row,
         durationP50Ms: percentileFromHistogram(

@@ -129,6 +129,11 @@ export const MONITORING_METRIC_DEFINITIONS: Record<string, MonitoringMetricDefin
   'queue.failed': metric('QueueFailed', 'Fehlgeschlagene Queue-Aufträge', 'Failed queue jobs'),
   'queue.delayed': metric('QueueDelayed', 'Verzögerte Queue-Aufträge', 'Delayed queue jobs'),
   'queue.paused': metric('QueuePaused', 'Pausierte Queue', 'Paused queue'),
+  'http.requestCount': {
+    translationKey: 'system.monitoringRequests',
+    de: 'Requests',
+    en: 'Requests',
+  },
   'http.5xxRate': metric('Http5xxRate', 'HTTP-5xx-Fehlerrate', 'HTTP 5xx error rate'),
   'http.p95Ms': metric('HttpP95Ms', 'HTTP-Latenz (p95)', 'HTTP latency (p95)'),
   'ai.errorRate': metric('AiErrorRate', 'KI-Fehlerrate', 'AI error rate'),

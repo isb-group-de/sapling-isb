@@ -82,6 +82,49 @@ describe('monitoring query ranges', () => {
     );
   });
 
+  it('returns the request volume over time alongside the route analysis', async () => {
+    const requestSeries = [
+      {
+        metricKey: 'http.requestCount',
+        dimensionKey: '',
+        capturedAt: new Date('2026-08-29T12:00:00.000Z'),
+        last: 12,
+      },
+    ];
+    const execute = jest
+      .fn()
+      .mockResolvedValueOnce([
+        {
+          group: 'api',
+          requestCount: 12,
+          durationHistogram: [12, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        },
+      ])
+      .mockResolvedValueOnce(requestSeries);
+    const service = new SystemMonitoringQueryService(
+      { fork: () => ({ getConnection: () => ({ execute }) }) } as never,
+      { getStatus: () => ({ lastSampleAt: null }) } as never,
+      { getStatus: () => ({}) } as never,
+    );
+
+    const result = await service.getRequests({
+      groupBy: 'route',
+      from: '2026-08-29T11:00:00.000Z',
+      to: '2026-08-29T13:00:00.000Z',
+    });
+
+    expect(result.series).toEqual(requestSeries);
+    expect(result.groups[0]).toMatchObject({
+      group: 'api',
+      requestCount: 12,
+    });
+    expect(execute).toHaveBeenNthCalledWith(
+      2,
+      expect.stringContaining('group by "bucket_start"'),
+      expect.arrayContaining(['1m']),
+    );
+  });
+
   it('limits concurrent monitoring database work while preserving result order', async () => {
     let active = 0;
     let maximumActive = 0;

@@ -39,6 +39,11 @@ The page initially shows the last hour to keep its first telemetry queries
 small. Administrators can select a longer preset or a custom range when they
 need broader historical lists and charts.
 
+The Requests tab plots the total HTTP request count per persisted telemetry
+bucket above the route-group analysis. It uses the same selected time range and
+automatic minute, fifteen-minute, or hourly resolution, so already retained
+HTTP telemetry appears without additional collection or migration work.
+
 ## Privacy And Access
 
 Every monitoring API is protected by the existing session/bearer and

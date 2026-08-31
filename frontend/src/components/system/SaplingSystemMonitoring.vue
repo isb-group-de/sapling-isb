@@ -233,40 +233,43 @@
       </v-window-item>
 
       <v-window-item value="requests">
-        <MonitoringTablePanel
-          eyebrow="HTTP"
-          :title="$t('system.monitoringRequestAnalysis')"
-          :count="requestGroups.length"
-        >
-          <v-table class="sapling-table sapling-monitoring__table" density="comfortable" hover>
-            <thead>
-              <tr>
-                <th>{{ $t('system.monitoringCategory') }}</th>
-                <th>{{ $t('system.monitoringRequests') }}</th>
-                <th>4xx</th>
-                <th>5xx</th>
-                <th>{{ $t('system.monitoringTraffic') }}</th>
-                <th>{{ $t('system.monitoringAverage') }}</th>
-                <th>p95</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="group in requestGroups" :key="String(group.group)">
-                <td>
-                  <v-chip size="small" variant="tonal">{{ group.group }}</v-chip>
-                </td>
-                <td>{{ number(group.requestCount) }}</td>
-                <td>{{ number(group.clientErrorCount) }}</td>
-                <td>{{ number(group.serverErrorCount) }}</td>
-                <td>
-                  {{ bytes(Number(group.requestBytes ?? 0) + Number(group.responseBytes ?? 0)) }}
-                </td>
-                <td>{{ durationAverage(group) }}</td>
-                <td>{{ number(group.durationP95Ms) }} ms</td>
-              </tr>
-            </tbody>
-          </v-table>
-        </MonitoringTablePanel>
+        <div v-if="tab === 'requests'" class="sapling-monitoring__section-stack">
+          <MonitoringChart eyebrow="HTTP" :title="requestVolumeTitle" :points="requestSeries" />
+          <MonitoringTablePanel
+            eyebrow="HTTP"
+            :title="$t('system.monitoringRequestAnalysis')"
+            :count="requestGroups.length"
+          >
+            <v-table class="sapling-table sapling-monitoring__table" density="comfortable" hover>
+              <thead>
+                <tr>
+                  <th>{{ $t('system.monitoringCategory') }}</th>
+                  <th>{{ $t('system.monitoringRequests') }}</th>
+                  <th>4xx</th>
+                  <th>5xx</th>
+                  <th>{{ $t('system.monitoringTraffic') }}</th>
+                  <th>{{ $t('system.monitoringAverage') }}</th>
+                  <th>p95</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="group in requestGroups" :key="String(group.group)">
+                  <td>
+                    <v-chip size="small" variant="tonal">{{ group.group }}</v-chip>
+                  </td>
+                  <td>{{ number(group.requestCount) }}</td>
+                  <td>{{ number(group.clientErrorCount) }}</td>
+                  <td>{{ number(group.serverErrorCount) }}</td>
+                  <td>
+                    {{ bytes(Number(group.requestBytes ?? 0) + Number(group.responseBytes ?? 0)) }}
+                  </td>
+                  <td>{{ durationAverage(group) }}</td>
+                  <td>{{ number(group.durationP95Ms) }} ms</td>
+                </tr>
+              </tbody>
+            </v-table>
+          </MonitoringTablePanel>
+        </div>
       </v-window-item>
 
       <v-window-item value="users">
@@ -658,6 +661,7 @@ const {
   usersPage,
   summary,
   series,
+  requestSeries,
   requestGroups,
   users,
   aiGroups,
@@ -754,6 +758,13 @@ const incidentThresholdLabel = computed(() =>
 )
 const incidentRecoveryLabel = computed(() =>
   localizedMonitoringText('monitoringIncidentRecovery', 'Erholung {count}/3', 'Recovery {count}/3'),
+)
+const requestVolumeTitle = computed(() =>
+  localizedMonitoringText(
+    'monitoringRequestVolumeOverTime',
+    'Requests im Zeitverlauf',
+    'Requests over time',
+  ),
 )
 const selectedUserProfile = computed(() =>
   selectedUser.value?.user && typeof selectedUser.value.user === 'object'

@@ -1,0 +1,8 @@
+[
+  {
+    "entity": "system",
+    "property": "monitoringRequestVolumeOverTime",
+    "de": "Requests im Zeitverlauf",
+    "en": "Requests over time"
+  }
+]
