@@ -35,10 +35,17 @@ import { SystemTelemetryRetentionService } from './services/system-telemetry-ret
 import { SystemAlertNotificationService } from './services/system-alert-notification.service';
 import { OpenTaskEventsModule } from '../current/open-task-events.module';
 import { TelemetrySpoolService } from './services/telemetry-spool.service';
+import { SystemTelemetryController } from './system-telemetry.controller';
+import { SystemTelemetryEnvironmentService } from './services/system-telemetry-environment.service';
+import { SystemErrorRecorderService } from './services/system-error-recorder.service';
+import { SystemCheckService } from './services/system-check.service';
+import { SystemRemediationService } from './services/system-remediation.service';
+import { SystemProcessErrorCaptureService } from './services/system-process-error-capture.service';
+import { SystemQueueErrorCaptureService } from './services/system-queue-error-capture.service';
 
 @Module({
   imports: [AuthModule, GenericModule, OpenTaskEventsModule],
-  controllers: [SystemController],
+  controllers: [SystemController, SystemTelemetryController],
   providers: [
     CpuService,
     MemoryService,
@@ -57,11 +64,18 @@ import { TelemetrySpoolService } from './services/telemetry-spool.service';
     SystemTelemetryRetentionService,
     SystemAlertNotificationService,
     TelemetrySpoolService,
+    SystemTelemetryEnvironmentService,
+    SystemErrorRecorderService,
+    SystemCheckService,
+    SystemRemediationService,
+    SystemProcessErrorCaptureService,
+    SystemQueueErrorCaptureService,
   ],
   exports: [
     HttpTelemetryService,
     SystemTelemetryCollectorService,
     AiUsageTelemetryService,
+    SystemErrorRecorderService,
   ],
 })
 export class SystemModule {}

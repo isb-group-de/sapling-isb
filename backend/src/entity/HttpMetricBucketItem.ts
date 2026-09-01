@@ -7,16 +7,19 @@ import {
 } from '@mikro-orm/decorators/legacy';
 import { PersonApiTokenItem } from './PersonApiTokenItem';
 import { PersonItem } from './PersonItem';
+import { SystemTelemetryEnvironmentItem } from './SystemTelemetryEnvironmentItem';
 import { Sapling, SaplingForm } from './global/entity.decorator';
 
 @Entity()
 @Index({
   name: 'http_metric_bucket_unique',
   properties: [
+    'environment',
     'bucketStart',
     'resolution',
     'attributionKey',
     'routeGroup',
+    'operation',
     'authKind',
   ],
   options: { unique: true },
@@ -33,6 +36,10 @@ import { Sapling, SaplingForm } from './global/entity.decorator';
 export class HttpMetricBucketItem {
   @Property({ primary: true, autoincrement: true })
   handle?: number;
+
+  @Sapling(['isReadOnly'])
+  @ManyToOne(() => SystemTelemetryEnvironmentItem)
+  environment!: Rel<SystemTelemetryEnvironmentItem>;
 
   @Sapling(['isReadOnly', 'isOrderDESC'])
   @SaplingForm({
@@ -139,6 +146,10 @@ export class HttpMetricBucketItem {
   @Property({ length: 32 })
   routeGroup!: string;
 
+  @Sapling(['isReadOnly'])
+  @Property({ length: 192, default: '' })
+  operation = '';
+
   @Sapling(['isReadOnly', 'isNumeric'])
   @SaplingForm({
     order: 800,
@@ -183,6 +194,14 @@ export class HttpMetricBucketItem {
   })
   @Property({ type: 'integer', default: 0 })
   serverErrorCount = 0;
+
+  @Sapling(['isReadOnly', 'isNumeric'])
+  @Property({ type: 'integer', default: 0 })
+  abortedCount = 0;
+
+  @Sapling(['isReadOnly', 'isNumeric'])
+  @Property({ type: 'integer', default: 0 })
+  timeoutCount = 0;
 
   @Sapling(['isReadOnly', 'isNumeric'])
   @SaplingForm({

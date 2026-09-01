@@ -1,0 +1,32 @@
+[
+  {
+    "entity": "systemTelemetryEnvironment",
+    "route": "table/systemTelemetryEnvironment",
+    "group": "telemetry"
+  },
+  {
+    "entity": "systemErrorGroup",
+    "route": "table/systemErrorGroup",
+    "group": "telemetry"
+  },
+  {
+    "entity": "systemErrorOccurrence",
+    "route": "table/systemErrorOccurrence",
+    "group": "telemetry"
+  },
+  {
+    "entity": "systemCheckRun",
+    "route": "table/systemCheckRun",
+    "group": "telemetry"
+  },
+  {
+    "entity": "systemRemediationExecution",
+    "route": "table/systemRemediationExecution",
+    "group": "telemetry"
+  },
+  {
+    "entity": "systemCanaryRecord",
+    "route": "table/systemCanaryRecord",
+    "group": "telemetry"
+  }
+]

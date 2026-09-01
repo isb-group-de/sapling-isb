@@ -23,8 +23,14 @@ describe('HTTP telemetry middleware', () => {
       writableFinished: false,
     });
     const record = jest.fn();
+    const requestStarted = jest.fn();
+    const requestFinished = jest.fn();
     const next = jest.fn();
-    const middleware = createHttpTelemetryMiddleware({ record } as never);
+    const middleware = createHttpTelemetryMiddleware({
+      record,
+      requestStarted,
+      requestFinished,
+    } as never);
 
     middleware(
       request as unknown as Request,
@@ -40,6 +46,8 @@ describe('HTTP telemetry middleware', () => {
     response.emit('finish');
 
     expect(next).toHaveBeenCalledTimes(1);
+    expect(requestStarted).toHaveBeenCalledTimes(1);
+    expect(requestFinished).toHaveBeenCalledTimes(1);
     expect(Buffer.concat(received)).toEqual(body);
     expect(record).toHaveBeenCalledWith(
       request,
@@ -85,7 +93,14 @@ describe('HTTP telemetry privacy grouping', () => {
       write: jest.fn().mockResolvedValue(undefined),
       getStatus: () => ({}),
     };
-    const service = new HttpTelemetryService(em as never, spool as never);
+    const service = new HttpTelemetryService(
+      em as never,
+      spool as never,
+      {
+        currentId: 'test',
+        ensure: jest.fn().mockResolvedValue(undefined),
+      } as never,
+    );
 
     service.record(
       {

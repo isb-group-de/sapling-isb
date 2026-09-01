@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { DEFAULT_MONITORING_RANGE_PRESET, runWithConcurrency } from './useSaplingSystemMonitoring'
+import {
+  DEFAULT_MONITORING_RANGE_PRESET,
+  monitoringDetailsForArea,
+  runWithConcurrency,
+} from './useSaplingSystemMonitoring'
 
 describe('system monitoring request scheduling', () => {
   it('defaults the monitoring page to the last hour', () => {
@@ -22,5 +26,9 @@ describe('system monitoring request scheduling', () => {
 
     expect(maximumActive).toBe(2)
     expect(completed).toEqual([0, 1, 2, 3, 4])
+  })
+
+  it('loads both metric and request series in the performance area', () => {
+    expect(monitoringDetailsForArea('performance')).toEqual(['series', 'requests'])
   })
 })

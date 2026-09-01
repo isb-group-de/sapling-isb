@@ -6,15 +6,24 @@ import {
   Property,
 } from '@mikro-orm/decorators/legacy';
 import { PersonItem } from './PersonItem';
+import { SystemTelemetryEnvironmentItem } from './SystemTelemetryEnvironmentItem';
 import { Sapling, SaplingForm } from './global/entity.decorator';
 
 @Entity()
 @Index({ properties: ['occurredAt', 'person'] })
 @Index({ properties: ['provider', 'model', 'occurredAt'] })
 @Index({ name: 'ai_usage_event_occurred_at_idx', properties: ['occurredAt'] })
+@Index({
+  name: 'ai_usage_event_environment_time_idx',
+  properties: ['environment', 'occurredAt'],
+})
 export class AiUsageEventItem {
   @Property({ primary: true, autoincrement: true })
   handle?: number;
+
+  @Sapling(['isReadOnly'])
+  @ManyToOne(() => SystemTelemetryEnvironmentItem)
+  environment!: Rel<SystemTelemetryEnvironmentItem>;
 
   @Sapling(['isReadOnly', 'isSystem'])
   @SaplingForm({

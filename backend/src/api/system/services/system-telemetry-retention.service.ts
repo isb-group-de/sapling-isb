@@ -135,14 +135,15 @@ export class SystemTelemetryRetentionService
     ).join(', ');
     await em.getConnection().execute(
       `insert into "http_metric_bucket_item" (
-        "bucket_start", "resolution", "attribution_key", "person_handle", "api_token_handle",
-        "auth_kind", "route_group", "request_count", "client_error_count", "server_error_count",
+        "environment_handle", "bucket_start", "resolution", "attribution_key", "person_handle", "api_token_handle",
+        "auth_kind", "route_group", "operation", "request_count", "client_error_count", "server_error_count", "aborted_count", "timeout_count",
         "request_bytes", "response_bytes", "duration_sum_ms", "duration_max_ms",
         "duration_histogram", "impersonated_count", "created_at"
       )
-      select date_bin(interval '${interval}', "bucket_start", timestamp '2000-01-01'), ?,
-        "attribution_key", max("person_handle"), max("api_token_handle"), "auth_kind", "route_group",
+      select "environment_handle", date_bin(interval '${interval}', "bucket_start", timestamp '2000-01-01'), ?,
+        "attribution_key", max("person_handle"), max("api_token_handle"), "auth_kind", "route_group", "operation",
         sum("request_count")::int, sum("client_error_count")::int, sum("server_error_count")::int,
+        sum("aborted_count")::int, sum("timeout_count")::int,
         sum("request_bytes"), sum("response_bytes"), sum("duration_sum_ms"), max("duration_max_ms"),
         jsonb_build_array(${histogramExpressions}), sum("impersonated_count")::int, now()
       from "http_metric_bucket_item" source where source."resolution" = ?
@@ -157,16 +158,19 @@ export class SystemTelemetryRetentionService
                 interval '${interval}', source."bucket_start", timestamp '2000-01-01'
               )
               and target_bucket."attribution_key" = source."attribution_key"
+              and target_bucket."environment_handle" = source."environment_handle"
               and target_bucket."route_group" = source."route_group"
+              and target_bucket."operation" = source."operation"
               and target_bucket."auth_kind" = source."auth_kind"
           )
         )
-      group by date_bin(interval '${interval}', source."bucket_start", timestamp '2000-01-01'),
-        source."attribution_key", source."auth_kind", source."route_group"
-      on conflict ("bucket_start", "resolution", "attribution_key", "route_group", "auth_kind")
+      group by source."environment_handle", date_bin(interval '${interval}', source."bucket_start", timestamp '2000-01-01'),
+        source."attribution_key", source."auth_kind", source."route_group", source."operation"
+      on conflict ("environment_handle", "bucket_start", "resolution", "attribution_key", "route_group", "operation", "auth_kind")
       do update set "person_handle" = excluded."person_handle", "api_token_handle" = excluded."api_token_handle",
         "request_count" = excluded."request_count", "client_error_count" = excluded."client_error_count",
         "server_error_count" = excluded."server_error_count", "request_bytes" = excluded."request_bytes",
+        "aborted_count" = excluded."aborted_count", "timeout_count" = excluded."timeout_count",
         "response_bytes" = excluded."response_bytes", "duration_sum_ms" = excluded."duration_sum_ms",
         "duration_max_ms" = excluded."duration_max_ms", "duration_histogram" = excluded."duration_histogram",
         "impersonated_count" = excluded."impersonated_count"`,
@@ -212,6 +216,19 @@ export class SystemTelemetryRetentionService
       [
         'system_alert_incident_item',
         `"state" = 'resolved' and "resolved_at" < now() - interval '90 days'`,
+      ],
+      [
+        'system_error_occurrence_item',
+        `"occurred_at" < now() - interval '14 days'`,
+      ],
+      ['system_check_run_item', `"started_at" < now() - interval '14 days'`],
+      [
+        'system_error_group_item',
+        `"last_seen_at" < now() - interval '90 days'`,
+      ],
+      [
+        'system_remediation_execution_item',
+        `"started_at" < now() - interval '90 days'`,
       ],
     ] as const;
     for (const [table, condition] of targets) {

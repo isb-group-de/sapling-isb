@@ -152,6 +152,7 @@ export type MonitoringRange = { from: string; to: string }
 
 export interface MonitoringSummary {
   range: MonitoringRange
+  environment: string
   lastSampleAt: string | null
   health: 'healthy' | 'warning' | 'critical' | 'unknown'
   metrics: Record<string, number>
@@ -159,6 +160,8 @@ export interface MonitoringSummary {
     requestCount: number
     clientErrorCount: number
     serverErrorCount: number
+    abortedCount?: number
+    timeoutCount?: number
     requestBytes: number
     responseBytes: number
     averageDurationMs: number
@@ -169,6 +172,67 @@ export interface MonitoringSummary {
   users: { onlineUsers: number; usersWithSessions: number }
   ai: { totalTokens: number; callCount: number; errorCount: number; reportedCount: number }
   incidents: { openCount: number; criticalCount: number }
+  slo: {
+    apiSuccess: { targetPercent: number; actualPercent: number; met: boolean }
+    apiP95: { targetMs: number; actualMs: number; met: boolean }
+  }
+}
+
+export interface MonitoringEnvironment {
+  handle: string
+  name: string
+  kind: 'production' | 'test' | 'development' | 'imported'
+  isArchived: boolean
+  firstSeenAt: string
+  lastSeenAt: string
+  activeInstances: number
+}
+
+export interface MonitoringServiceHealth {
+  service: string
+  status: 'healthy' | 'warning' | 'critical'
+  durationMs: number
+  summary?: string | null
+  lastCheckedAt: string
+}
+
+export interface MonitoringErrorGroup {
+  handle: number
+  fingerprint: string
+  source: string
+  operation: string
+  status: 'open' | 'resolved' | 'ignored'
+  occurrenceCount: number
+  latestRelease?: string | null
+  latestErrorClass?: string | null
+  latestMessage?: string | null
+  latestRequestId?: string | null
+  latestCorrelationId?: string | null
+  firstSeenAt: string
+  lastSeenAt: string
+}
+
+export interface MonitoringCheckRun {
+  handle: number
+  checkKey: string
+  category: string
+  status: 'healthy' | 'warning' | 'critical'
+  durationMs: number
+  summary?: string | null
+  startedAt: string
+  completedAt: string
+}
+
+export interface MonitoringRemediationExecution {
+  handle: number
+  incidentHandle?: number | null
+  actionKey: string
+  mode: 'automatic' | 'approved'
+  state: 'running' | 'succeeded' | 'failed' | 'denied'
+  attempt: number
+  evidence?: Record<string, unknown> | null
+  startedAt: string
+  completedAt?: string | null
 }
 
 export interface MonitoringChartPoint {
@@ -215,6 +279,10 @@ export interface MonitoringIncident {
   lastSeenAt: string
   resolvedAt?: string | null
   rule: MonitoringAlertRule
+  incidentType?: 'threshold' | 'anomaly' | 'canary' | 'errorSpike' | 'collectorGap'
+  correlationKey?: string | null
+  diagnosis?: Record<string, unknown> | null
+  resolvedReason?: string | null
 }
 
 export interface MonitoringAlertRule {
@@ -228,4 +296,8 @@ export interface MonitoringAlertRule {
   minimumCount: number
   scope: string
   isActive: boolean
+  evaluationType?: string
+  shadowMode?: boolean
+  remediationMode?: 'none' | 'suggest' | 'automatic'
+  remediationActionKey?: string | null
 }

@@ -1,0 +1,13 @@
+[
+  {
+    "handle": "systemCanaryRecord",
+    "icon": "mdi-flask-outline",
+    "group": "telemetry",
+    "order": 210,
+    "canShow": true,
+    "canRead": true,
+    "canInsert": false,
+    "canUpdate": false,
+    "canDelete": false
+  }
+]

@@ -10,6 +10,8 @@ import { SYSTEM_TELEMETRY_ENABLED } from '../../../constants/project.constants';
 import { SystemAlertNotificationService } from './system-alert-notification.service';
 import { FilesystemService } from './filesystem.service';
 import { executeRows } from './sql-query.utils';
+import { SystemTelemetryEnvironmentService } from './system-telemetry-environment.service';
+import { SystemRemediationService } from './system-remediation.service';
 
 @Injectable()
 export class SystemAlertService implements OnModuleInit, OnApplicationShutdown {
@@ -20,6 +22,8 @@ export class SystemAlertService implements OnModuleInit, OnApplicationShutdown {
     private readonly em: EntityManager,
     private readonly notifications: SystemAlertNotificationService,
     private readonly filesystemService: FilesystemService,
+    private readonly environment: SystemTelemetryEnvironmentService,
+    private readonly remediation: SystemRemediationService,
   ) {}
 
   onModuleInit(): void {
@@ -37,64 +41,98 @@ export class SystemAlertService implements OnModuleInit, OnApplicationShutdown {
     this.evaluating = true;
     try {
       const em = this.em.fork();
-      const rules = await em.find(SystemAlertRuleItem, { isActive: true });
-      rules.sort(
-        (left, right) =>
-          severityRank(right.severity) - severityRank(left.severity),
-      );
-      const criticalDimensions = new Set<string>();
-      const ignoredFilesystems = new Set(
-        this.filesystemService.getIgnoredFilesystemDimensions(),
-      );
-      for (const rule of rules) {
-        const observations = await this.readObservations(em, rule);
-        const triggeredDimensions = new Set<string>();
-        for (const observation of observations) {
-          if (
-            rule.metricKey === 'filesystem.usedPercent' &&
-            ignoredFilesystems.has(observation.dimension)
-          )
-            continue;
-          if (observation.count < rule.minimumCount) continue;
-          if (!compare(observation.value, rule.comparator, rule.threshold))
-            continue;
-          const metricDimension = `${rule.metricKey}:${observation.dimension}`;
-          if (
-            rule.severity === 'warning' &&
-            criticalDimensions.has(metricDimension)
-          ) {
-            await this.resolveIncident(em, rule, observation.dimension);
-            continue;
-          }
-          triggeredDimensions.add(observation.dimension);
-          await this.openOrUpdateIncident(em, rule, observation);
-          if (rule.severity === 'critical')
-            criticalDimensions.add(metricDimension);
-        }
-        const open = await em.find(SystemAlertIncidentItem, {
-          rule,
-          state: 'open',
+      const pendingRemediations: Array<{
+        actionKey: string;
+        incidentHandle: number;
+      }> = [];
+      await em.transactional(async (transaction) => {
+        const lock = (await transaction
+          .getConnection()
+          .execute(
+            `select pg_try_advisory_xact_lock(hashtext(?)) as "locked"`,
+            [`system-alerts:${this.environment.currentId}`],
+          )) as Array<{ locked: boolean }>;
+        if (!lock[0]?.locked) return;
+        const rules = await transaction.find(SystemAlertRuleItem, {
+          isActive: true,
         });
-        for (const incident of open) {
-          normalizeGeneratedHandle(incident);
-          if (
-            rule.metricKey === 'filesystem.usedPercent' &&
-            ignoredFilesystems.has(incident.dimensionKey)
-          ) {
-            incident.healthyEvaluations = 3;
-            incident.state = 'resolved';
-            incident.resolvedAt = new Date();
-            continue;
+        rules.sort(
+          (left, right) =>
+            severityRank(right.severity) - severityRank(left.severity),
+        );
+        const criticalDimensions = new Set<string>();
+        const ignoredFilesystems = new Set(
+          this.filesystemService.getIgnoredFilesystemDimensions(),
+        );
+        for (const rule of rules) {
+          const observations = await this.readObservations(transaction, rule);
+          const triggeredDimensions = new Set<string>();
+          for (const observation of observations) {
+            if (
+              rule.metricKey === 'filesystem.usedPercent' &&
+              ignoredFilesystems.has(observation.dimension)
+            )
+              continue;
+            if (observation.count < rule.minimumCount) continue;
+            if (!compare(observation.value, rule.comparator, rule.threshold))
+              continue;
+            const metricDimension = `${rule.metricKey}:${observation.dimension}`;
+            if (
+              rule.severity === 'warning' &&
+              criticalDimensions.has(metricDimension)
+            ) {
+              await this.resolveIncident(
+                transaction,
+                rule,
+                observation.dimension,
+              );
+              continue;
+            }
+            triggeredDimensions.add(observation.dimension);
+            const remediation = await this.openOrUpdateIncident(
+              transaction,
+              rule,
+              observation,
+            );
+            if (remediation) pendingRemediations.push(remediation);
+            if (rule.severity === 'critical')
+              criticalDimensions.add(metricDimension);
           }
-          if (triggeredDimensions.has(incident.dimensionKey)) continue;
-          incident.healthyEvaluations += 1;
-          if (incident.healthyEvaluations >= 3) {
-            incident.state = 'resolved';
-            incident.resolvedAt = new Date();
+          const open = await transaction.find(SystemAlertIncidentItem, {
+            rule,
+            state: 'open',
+            environment: { handle: this.environment.currentId },
+          });
+          for (const incident of open) {
+            normalizeGeneratedHandle(incident);
+            if (
+              rule.metricKey === 'filesystem.usedPercent' &&
+              ignoredFilesystems.has(incident.dimensionKey)
+            ) {
+              incident.healthyEvaluations = 3;
+              incident.state = 'resolved';
+              incident.resolvedAt = new Date();
+              incident.resolvedReason = 'ignoredFilesystem';
+              continue;
+            }
+            if (triggeredDimensions.has(incident.dimensionKey)) continue;
+            incident.healthyEvaluations += 1;
+            if (incident.healthyEvaluations >= 3) {
+              incident.state = 'resolved';
+              incident.resolvedAt = new Date();
+              incident.resolvedReason = 'healthy';
+            }
           }
         }
+        await transaction.flush();
+      });
+      for (const pending of pendingRemediations) {
+        await this.remediation.execute({
+          actionKey: pending.actionKey,
+          incidentHandle: pending.incidentHandle,
+          mode: 'automatic',
+        });
       }
-      await em.flush();
     } catch (error) {
       global.log?.error?.('system alert evaluation failed', error);
     } finally {
@@ -110,6 +148,7 @@ export class SystemAlertService implements OnModuleInit, OnApplicationShutdown {
     const incident = await em.findOne(SystemAlertIncidentItem, {
       fingerprint: `${rule.handle}:${dimension}`,
       state: 'open',
+      environment: { handle: this.environment.currentId },
     });
     if (!incident) return;
     normalizeGeneratedHandle(incident);
@@ -127,8 +166,8 @@ export class SystemAlertService implements OnModuleInit, OnApplicationShutdown {
            case when sum("request_count") > 0
              then sum("server_error_count")::float8 / sum("request_count") * 100 else 0 end as "value",
            coalesce(sum("request_count"), 0)::int as "count"
-         from "http_metric_bucket_item" where "resolution" = '1m' and "bucket_start" >= ?`,
-        [since],
+         from "http_metric_bucket_item" where "resolution" = '1m' and "bucket_start" >= ? and "environment_handle" = ?`,
+        [since, this.environment.currentId],
       );
       return normalizeObservations(rows);
     }
@@ -139,8 +178,8 @@ export class SystemAlertService implements OnModuleInit, OnApplicationShutdown {
            case when count(*) > 0
              then count(*) filter (where "status" <> 'completed')::float8 / count(*) * 100 else 0 end as "value",
            count(*)::int as "count"
-         from "ai_usage_event_item" where "occurred_at" >= ?`,
-        [since],
+         from "ai_usage_event_item" where "occurred_at" >= ? and "environment_handle" = ?`,
+        [since, this.environment.currentId],
       );
       return normalizeObservations(rows);
     }
@@ -150,9 +189,9 @@ export class SystemAlertService implements OnModuleInit, OnApplicationShutdown {
         `select "person_handle"::text as "dimension",
            coalesce(sum("total_tokens"), 0)::float8 as "value", count(*)::int as "count"
          from "ai_usage_event_item"
-         where "occurred_at" >= ? and "person_handle" is not null
+         where "occurred_at" >= ? and "person_handle" is not null and "environment_handle" = ?
          group by "person_handle"`,
-        [since],
+        [since, this.environment.currentId],
       );
       return normalizeObservations(rows);
     }
@@ -163,9 +202,9 @@ export class SystemAlertService implements OnModuleInit, OnApplicationShutdown {
            coalesce(sum("request_bytes" + "response_bytes"), 0)::float8 as "value",
            coalesce(sum("request_count"), 0)::int as "count"
          from "http_metric_bucket_item"
-         where "bucket_start" >= ? and "resolution" = '1m' and "person_handle" is not null
+         where "bucket_start" >= ? and "resolution" = '1m' and "person_handle" is not null and "environment_handle" = ?
          group by "person_handle"`,
-        [since],
+        [since, this.environment.currentId],
       );
       return normalizeObservations(rows);
     }
@@ -179,8 +218,8 @@ export class SystemAlertService implements OnModuleInit, OnApplicationShutdown {
         em,
         `select jsonb_build_array(${histogram}) as "histogram",
            coalesce(sum("request_count"), 0)::int as "count"
-         from "http_metric_bucket_item" where "resolution" = '1m' and "bucket_start" >= ?`,
-        [since],
+         from "http_metric_bucket_item" where "resolution" = '1m' and "bucket_start" >= ? and "environment_handle" = ?`,
+        [since, this.environment.currentId],
       );
       const count = Number(rows[0]?.count ?? 0);
       return [
@@ -196,7 +235,9 @@ export class SystemAlertService implements OnModuleInit, OnApplicationShutdown {
         em,
         `select "handle" as "dimension",
            extract(epoch from now() - "last_sample_at")::float8 as "value", 1 as "count"
-         from "system_telemetry_instance_item" where "collector_enabled" = true`,
+         from "system_telemetry_instance_item" where "collector_enabled" = true
+           and "status" = 'active' and "environment_handle" = ?`,
+        [this.environment.currentId],
       );
       return normalizeObservations(rows);
     }
@@ -204,10 +245,12 @@ export class SystemAlertService implements OnModuleInit, OnApplicationShutdown {
       em,
       `select "dimension_key" as "dimension", avg("sum" / greatest("sample_count", 1))::float8 as "value",
          sum("sample_count")::int as "count"
-       from "system_metric_bucket_item"
+       from "system_metric_bucket_item" metric
+       join "system_telemetry_instance_item" instance on instance."handle" = metric."instance_handle"
        where "metric_key" = ? and "resolution" = '10s' and "bucket_start" >= ?
+         and instance."environment_handle" = ?
        group by "dimension_key"`,
-      [rule.metricKey, since],
+      [rule.metricKey, since, this.environment.currentId],
     );
     return normalizeObservations(rows);
   }
@@ -221,10 +264,12 @@ export class SystemAlertService implements OnModuleInit, OnApplicationShutdown {
     let incident = await em.findOne(SystemAlertIncidentItem, {
       fingerprint,
       state: 'open',
+      environment: { handle: this.environment.currentId },
     });
     if (incident) normalizeGeneratedHandle(incident);
     if (!incident) {
       incident = em.create(SystemAlertIncidentItem, {
+        environment: this.environment.currentId as never,
         rule,
         fingerprint,
         dimensionKey: observation.dimension,
@@ -237,6 +282,16 @@ export class SystemAlertService implements OnModuleInit, OnApplicationShutdown {
         lastSeenAt: new Date(),
         createdAt: new Date(),
         updatedAt: new Date(),
+        incidentType:
+          rule.metricKey === 'collector.gapSeconds'
+            ? 'collectorGap'
+            : 'threshold',
+        correlationKey: `${this.environment.currentId}:${rule.metricKey}:${observation.dimension}`,
+        diagnosis: {
+          metricKey: rule.metricKey,
+          dimension: observation.dimension,
+          count: observation.count,
+        },
       });
       await em.flush();
       normalizeGeneratedHandle(incident);
@@ -246,13 +301,25 @@ export class SystemAlertService implements OnModuleInit, OnApplicationShutdown {
       } catch (error) {
         global.log?.error?.('system alert inbox notification failed', error);
       }
-      return;
+      if (
+        !rule.shadowMode &&
+        rule.remediationMode === 'automatic' &&
+        rule.remediationActionKey &&
+        incident.handle != null
+      ) {
+        return {
+          actionKey: rule.remediationActionKey,
+          incidentHandle: incident.handle,
+        };
+      }
+      return null;
     }
     incident.lastSeenAt = new Date();
     incident.observedValue = observation.value;
     incident.threshold = rule.threshold;
     incident.severity = rule.severity;
     incident.healthyEvaluations = 0;
+    return null;
   }
 }
 

@@ -154,6 +154,36 @@ const createGuard = (findOne?: EntityManager['findOne']) =>
   } as unknown as EntityManager);
 
 describe('GenericPermissionGuard entity resolvers', () => {
+  it.each([
+    'systemTelemetryEnvironment',
+    'systemErrorGroup',
+    'systemErrorOccurrence',
+    'systemCheckRun',
+    'systemRemediationExecution',
+    'systemCanaryRecord',
+  ])('restricts generic %s access to administrators', async (entityHandle) => {
+    const permission = createPermission(entityHandle, 'allowRead');
+    const guard = createGuard();
+    const request = createRequest({
+      method: 'GET',
+      params: { entityHandle },
+      user: {
+        roles: [{ isAdministrator: false, permissions: [permission] }],
+      } as unknown as PersonItem,
+    });
+
+    await expect(guard.assertPermissionForRequest(request)).rejects.toThrow(
+      new ForbiddenException('global.permissionDenied'),
+    );
+
+    request.user = {
+      roles: [{ isAdministrator: true, permissions: [permission] }],
+    } as unknown as PersonItem;
+    await expect(
+      guard.assertPermissionForRequest(request),
+    ).resolves.toBeUndefined();
+  });
+
   it('marks mail preview as read-only during impersonation', () => {
     const controller = new MailController(
       {} as never,

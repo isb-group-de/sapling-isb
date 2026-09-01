@@ -17,9 +17,13 @@ describe('SystemAlertService', () => {
       isActive: true,
     });
     let createdIncident: SystemAlertIncidentItem | undefined;
-    const execute = jest
-      .fn()
-      .mockResolvedValue([{ dimension: '', value: 90, count: 30 }]);
+    const execute = jest.fn((sql: string) =>
+      Promise.resolve(
+        sql.includes('pg_try_advisory_xact_lock')
+          ? [{ locked: true }]
+          : [{ dimension: '', value: 90, count: 30 }],
+      ),
+    );
     const em = {
       find: jest.fn(async (entity: unknown) =>
         entity === SystemAlertRuleItem ? [rule] : [],
@@ -35,6 +39,9 @@ describe('SystemAlertService', () => {
         }
       }),
       getConnection: () => ({ execute }),
+      transactional: (callback: (transaction: unknown) => unknown) =>
+        callback(em),
+      getReference: jest.fn((_entity: unknown, handle: string) => ({ handle })),
     };
     const notifications = {
       notifyOpened: jest.fn().mockResolvedValue(undefined),
@@ -43,6 +50,8 @@ describe('SystemAlertService', () => {
       { fork: () => em } as never,
       notifications as never,
       { getIgnoredFilesystemDimensions: () => [] } as never,
+      { currentId: 'test' } as never,
+      { execute: jest.fn().mockResolvedValue(undefined) } as never,
     );
 
     await service.evaluate();

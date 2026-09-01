@@ -18,6 +18,7 @@ import {
   Post,
   Query,
   Optional,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { CpuDto } from './dto/cpu.dto';
@@ -49,6 +50,7 @@ import {
 import { DatabaseService } from './services/database.service';
 import { DocumentStorageService } from './services/document-storage.service';
 import {
+  ExecuteRemediationDto,
   MonitoringGroupQueryDto,
   MonitoringRangeQueryDto,
   MonitoringSeriesQueryDto,
@@ -56,6 +58,8 @@ import {
   UpdateSystemAlertRuleDto,
 } from './dto/monitoring-query.dto';
 import { SystemMonitoringQueryService } from './services/system-monitoring-query.service';
+import { SystemRemediationService } from './services/system-remediation.service';
+import type { Request } from 'express';
 
 /**
  * @class SystemController
@@ -113,6 +117,8 @@ export class SystemController {
     private readonly documentStorageService: DocumentStorageService,
     @Optional()
     private readonly monitoringService?: SystemMonitoringQueryService,
+    @Optional()
+    private readonly remediationService?: SystemRemediationService,
   ) {}
 
   @Get('monitoring/summary')
@@ -156,14 +162,17 @@ export class SystemController {
 
   @Get('monitoring/incidents')
   @Header('Cache-Control', 'no-store')
-  getMonitoringIncidents() {
-    return this.monitoringService!.getIncidents();
+  getMonitoringIncidents(@Query() query: MonitoringRangeQueryDto) {
+    return this.monitoringService!.getIncidents(query);
   }
 
   @Get('monitoring/incidents/:handle')
   @Header('Cache-Control', 'no-store')
-  getMonitoringIncident(@Param('handle', ParseIntPipe) handle: number) {
-    return this.monitoringService!.getIncident(handle);
+  getMonitoringIncident(
+    @Param('handle', ParseIntPipe) handle: number,
+    @Query() query: MonitoringRangeQueryDto,
+  ) {
+    return this.monitoringService!.getIncident(handle, query);
   }
 
   @Get('monitoring/alert-rules')
@@ -183,8 +192,53 @@ export class SystemController {
 
   @Get('monitoring/collector-status')
   @Header('Cache-Control', 'no-store')
-  getMonitoringCollectorStatus() {
-    return this.monitoringService!.getCollectorStatus();
+  getMonitoringCollectorStatus(@Query() query: MonitoringRangeQueryDto) {
+    return this.monitoringService!.getCollectorStatus(query);
+  }
+
+  @Get('monitoring/environments')
+  @Header('Cache-Control', 'no-store')
+  getMonitoringEnvironments() {
+    return this.monitoringService!.getEnvironments();
+  }
+
+  @Get('monitoring/services')
+  @Header('Cache-Control', 'no-store')
+  getMonitoringServices(@Query() query: MonitoringRangeQueryDto) {
+    return this.monitoringService!.getServices(query);
+  }
+
+  @Get('monitoring/errors')
+  @Header('Cache-Control', 'no-store')
+  getMonitoringErrors(@Query() query: MonitoringRangeQueryDto) {
+    return this.monitoringService!.getErrors(query);
+  }
+
+  @Get('monitoring/checks')
+  @Header('Cache-Control', 'no-store')
+  getMonitoringChecks(@Query() query: MonitoringRangeQueryDto) {
+    return this.monitoringService!.getChecks(query);
+  }
+
+  @Get('monitoring/remediations')
+  @Header('Cache-Control', 'no-store')
+  getMonitoringRemediations(@Query() query: MonitoringRangeQueryDto) {
+    return this.monitoringService!.getRemediations(query);
+  }
+
+  @Post('monitoring/remediations/:action')
+  @Header('Cache-Control', 'no-store')
+  executeMonitoringRemediation(
+    @Param('action') action: string,
+    @Body() dto: ExecuteRemediationDto,
+    @Req() request: Request,
+  ) {
+    return this.remediationService!.execute({
+      actionKey: action,
+      incidentHandle: dto.incidentHandle,
+      mode: 'approved',
+      approvedByHandle: readNumericHandle(request.user),
+    });
   }
 
   @Get('database')
@@ -470,4 +524,10 @@ export class SystemController {
   getState(): ApplicationStateDto {
     return { isReady: global.isReady || false };
   }
+}
+
+function readNumericHandle(value: unknown): number | undefined {
+  if (typeof value !== 'object' || value === null) return undefined;
+  const handle = Reflect.get(value, 'handle') as unknown;
+  return typeof handle === 'number' ? handle : undefined;
 }

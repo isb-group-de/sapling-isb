@@ -130,6 +130,12 @@ import { SystemAlertIncidentItem } from '../SystemAlertIncidentItem';
 import { SystemAlertRuleItem } from '../SystemAlertRuleItem';
 import { SystemMetricBucketItem } from '../SystemMetricBucketItem';
 import { SystemTelemetryInstanceItem } from '../SystemTelemetryInstanceItem';
+import { SystemTelemetryEnvironmentItem } from '../SystemTelemetryEnvironmentItem';
+import { SystemErrorGroupItem } from '../SystemErrorGroupItem';
+import { SystemErrorOccurrenceItem } from '../SystemErrorOccurrenceItem';
+import { SystemCheckRunItem } from '../SystemCheckRunItem';
+import { SystemRemediationExecutionItem } from '../SystemRemediationExecutionItem';
+import { SystemCanaryRecordItem } from '../SystemCanaryRecordItem';
 import { EMailListItem } from '../EMailListItem';
 import { TeamsTemplateItem } from '../TeamsTemplateItem';
 import { TeamsSubscriptionItem } from '../TeamsSubscriptionItem';
@@ -353,7 +359,13 @@ const ENTITY_REGISTRY_ENTRIES: EntityRegistryEntry[] = [
   { name: 'httpMetricBucket', class: HttpMetricBucketItem },
   { name: 'systemAlertIncident', class: SystemAlertIncidentItem },
   { name: 'systemAlertRule', class: SystemAlertRuleItem },
+  { name: 'systemCanaryRecord', class: SystemCanaryRecordItem },
+  { name: 'systemCheckRun', class: SystemCheckRunItem },
+  { name: 'systemErrorGroup', class: SystemErrorGroupItem },
+  { name: 'systemErrorOccurrence', class: SystemErrorOccurrenceItem },
   { name: 'systemMetricBucket', class: SystemMetricBucketItem },
+  { name: 'systemRemediationExecution', class: SystemRemediationExecutionItem },
+  { name: 'systemTelemetryEnvironment', class: SystemTelemetryEnvironmentItem },
   { name: 'systemTelemetryInstance', class: SystemTelemetryInstanceItem },
   { name: 'product', class: ProductItem },
   { name: 'role', class: RoleItem },

@@ -40,6 +40,8 @@ import {
   createHttpTelemetryMiddleware,
   HttpTelemetryService,
 } from './api/system/services/http-telemetry.service';
+import { createSystemRequestContextMiddleware } from './api/system/services/system-request-context';
+import { SystemErrorRecorderService } from './api/system/services/system-error-recorder.service';
 import {
   buildGenericEntitySwaggerUiScript,
   enhanceGenericEntitySwaggerDocument,
@@ -66,6 +68,7 @@ async function bootstrap() {
   // Create the NestJS application
   const app = await NestFactory.create(AppModule, { bodyParser: false });
 
+  app.use(createSystemRequestContextMiddleware());
   app.use(createHttpTelemetryMiddleware(app.get(HttpTelemetryService)));
 
   // Enable request parsing with a Sapling-specific payload limit.
@@ -98,7 +101,9 @@ async function bootstrap() {
   }
 
   initializeLogger();
-  app.useGlobalFilters(new ApiExceptionFilter());
+  app.useGlobalFilters(
+    new ApiExceptionFilter(app.get(SystemErrorRecorderService)),
+  );
 
   // Initialize Passport authentication
   app.use(passport.initialize());

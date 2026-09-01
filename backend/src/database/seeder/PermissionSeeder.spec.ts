@@ -167,4 +167,66 @@ describe('PermissionSeeder', () => {
       });
     },
   );
+
+  it.each([
+    'systemTelemetryEnvironment',
+    'systemErrorGroup',
+    'systemErrorOccurrence',
+    'systemCheckRun',
+    'systemRemediationExecution',
+    'systemCanaryRecord',
+  ])('grants only administrators access to %s', async (entityHandle) => {
+    const entity = {
+      handle: entityHandle,
+      canRead: true,
+      canInsert: false,
+      canUpdate: false,
+      canDelete: false,
+      canShow: true,
+    } as EntityItem;
+    const roles = [
+      ROLE_HANDLE.ADMIN,
+      ROLE_HANDLE.SUPPORT,
+      ROLE_HANDLE.SALES,
+      ROLE_HANDLE.CUSTOMER,
+      ROLE_HANDLE.CONTRACTOR,
+    ].map((handle) => ({ handle }) as RoleItem);
+    const em = {
+      findAll: jest.fn((entityClass: unknown) => {
+        if (entityClass === EntityItem) return Promise.resolve([entity]);
+        if (entityClass === RoleItem) return Promise.resolve(roles);
+        return Promise.resolve([]);
+      }),
+      assign: jest.fn(),
+      create: jest.fn(),
+      flush: jest.fn(() => Promise.resolve()),
+    };
+
+    await new PermissionSeeder().run(em as unknown as EntityManager);
+
+    const grantsByRole = new Map(
+      em.create.mock.calls.map(([, permission]) => [
+        (permission as { role: RoleItem }).role.handle,
+        permission as {
+          allowRead: boolean;
+          allowShow: boolean;
+        },
+      ]),
+    );
+    expect(grantsByRole.get(ROLE_HANDLE.ADMIN)).toMatchObject({
+      allowRead: true,
+      allowShow: true,
+    });
+    for (const roleHandle of [
+      ROLE_HANDLE.SUPPORT,
+      ROLE_HANDLE.SALES,
+      ROLE_HANDLE.CUSTOMER,
+      ROLE_HANDLE.CONTRACTOR,
+    ]) {
+      expect(grantsByRole.get(roleHandle)).toMatchObject({
+        allowRead: false,
+        allowShow: false,
+      });
+    }
+  });
 });

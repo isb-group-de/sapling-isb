@@ -1,56 +1,40 @@
 <template>
-  <section class="sapling-monitoring">
-    <div class="sapling-monitoring__toolbar glass-panel sapling-data-card">
-      <div class="sapling-monitoring__heading">
-        <div class="sapling-monitoring__heading-icon"><v-icon icon="mdi-pulse" /></div>
+  <section class="monitoring-workspace">
+    <header class="monitoring-commandbar glass-panel sapling-data-card">
+      <div class="monitoring-commandbar__identity">
+        <span class="monitoring-commandbar__pulse"><v-icon icon="mdi-pulse" /></span>
         <div>
-          <p class="sapling-eyebrow">{{ $t('system.monitoringEyebrow') }}</p>
-          <h2>{{ $t('system.monitoringTitle') }}</h2>
-          <p class="sapling-muted-copy">
-            {{ $t('system.monitoringSubtitle') }}
-            <span v-if="summary?.lastSampleAt">· {{ formatDate(summary.lastSampleAt) }}</span>
-          </p>
+          <strong>{{ $t('system.monitoringTitle') }}</strong>
+          <span>{{ lastUpdatedLabel }}</span>
         </div>
       </div>
-      <div class="sapling-monitoring__actions">
+      <div class="monitoring-commandbar__controls">
         <v-select
-          v-model="rangePreset"
-          :items="rangeItems"
+          v-model="selectedEnvironment"
+          :items="environmentOptions"
           item-title="title"
           item-value="value"
+          :label="$t('system.monitoringCurrentEnvironment')"
           density="compact"
           hide-details
-          variant="outlined"
+        />
+        <v-select
+          v-model="rangePreset"
+          :items="rangeOptions"
           :label="$t('system.monitoringRange')"
-        />
-        <SaplingTextField
-          v-if="rangePreset === 'custom'"
-          v-model="customFrom"
-          type="datetime-local"
           density="compact"
           hide-details
-          variant="outlined"
-          :label="$t('system.monitoringFrom')"
-        />
-        <SaplingTextField
-          v-if="rangePreset === 'custom'"
-          v-model="customTo"
-          type="datetime-local"
-          density="compact"
-          hide-details
-          variant="outlined"
-          :label="$t('system.monitoringTo')"
         />
         <v-btn
           icon="mdi-refresh"
-          color="primary"
+          size="small"
           variant="tonal"
           :loading="loading"
           :title="$t('system.refresh')"
           @click="loadAll"
         />
       </div>
-    </div>
+    </header>
 
     <v-alert v-if="collectorEnabled === false" type="info" variant="tonal">
       {{ $t('system.monitoringDisabled') }}
@@ -59,55 +43,49 @@
       {{ $t('system.monitoringGapDetected', { seconds: number(maximumGapSeconds) }) }}
     </v-alert>
 
-    <div class="sapling-monitoring__navigation glass-panel sapling-data-card">
-      <v-tabs v-model="tab" show-arrows center-active>
-        <v-tab prepend-icon="mdi-view-dashboard-outline" value="overview">{{
-          $t('system.monitoringOverview')
-        }}</v-tab>
-        <v-tab prepend-icon="mdi-speedometer" value="performance">{{
-          $t('system.performance')
-        }}</v-tab>
-        <v-tab prepend-icon="mdi-harddisk" value="storage">{{
-          $t('system.monitoringStorage')
-        }}</v-tab>
-        <v-tab prepend-icon="mdi-lan" value="network">{{ $t('system.network') }}</v-tab>
-        <v-tab prepend-icon="mdi-database-outline" value="database">{{
-          $t('system.database')
-        }}</v-tab>
-        <v-tab prepend-icon="mdi-swap-horizontal" value="requests">{{
-          $t('system.monitoringRequests')
-        }}</v-tab>
-        <v-tab prepend-icon="mdi-account-multiple-outline" value="users">{{
-          $t('system.monitoringUsers')
-        }}</v-tab>
-        <v-tab prepend-icon="mdi-creation-outline" value="ai">{{
-          $t('system.monitoringAiTokens')
-        }}</v-tab>
-        <v-tab prepend-icon="mdi-alert-outline" value="alerts">
-          {{ $t('system.monitoringAlerts') }}
+    <nav class="monitoring-navigation glass-panel sapling-data-card">
+      <v-tabs v-model="tab" grow show-arrows>
+        <v-tab prepend-icon="mdi-view-dashboard-outline" value="overview">
+          {{ $t('system.monitoringOverview') }}
+        </v-tab>
+        <v-tab prepend-icon="mdi-alert-decagram-outline" value="incidents">
+          {{ $t('system.monitoringIncidentsArea') }}
           <v-badge
             v-if="openIncidents.length"
-            class="ml-2"
-            color="error"
             :content="openIncidents.length"
+            color="error"
             inline
           />
         </v-tab>
-        <v-tab prepend-icon="mdi-server-outline" value="system">{{
-          $t('system.monitoringSystemInfo')
-        }}</v-tab>
+        <v-tab prepend-icon="mdi-server-network-outline" value="services">
+          {{ $t('system.monitoringServicesArea') }}
+        </v-tab>
+        <v-tab prepend-icon="mdi-chart-timeline-variant" value="performance">
+          {{ $t('system.monitoringPerformanceArea') }}
+        </v-tab>
+        <v-tab prepend-icon="mdi-account-chart-outline" value="usage">
+          {{ $t('system.monitoringUsageArea') }}
+        </v-tab>
       </v-tabs>
-    </div>
+    </nav>
 
-    <v-window v-model="tab" class="sapling-monitoring__window">
+    <v-window v-model="tab" class="monitoring-window">
       <v-window-item value="overview">
-        <div v-if="tab === 'overview'" class="sapling-monitoring__metrics">
+        <div class="monitoring-kpis">
           <SaplingSystemMetricCard
             icon="mdi-heart-pulse"
             icon-class="sapling-system-metric__icon--state"
             :label="$t('system.monitoringHealth')"
             :value="$t(`system.monitoringHealth_${summary?.health ?? 'unknown'}`)"
             :detail="`${number(summary?.incidents.openCount)} ${$t('system.monitoringOpenIncidents')}`"
+            :value-loading="loading && !summary"
+          />
+          <SaplingSystemMetricCard
+            icon="mdi-swap-horizontal"
+            icon-class="sapling-system-metric__icon--network"
+            :label="$t('system.monitoringRequests')"
+            :value="compactNumber(summary?.requests.requestCount)"
+            :detail="`SLO ${percent(summary?.slo.apiSuccess.actualPercent)} · p95 ${number(summary?.requests.durationP95Ms)} ms`"
             :value-loading="loading && !summary"
           />
           <SaplingSystemMetricCard
@@ -119,34 +97,75 @@
             :value-loading="loading && !summary"
           />
           <SaplingSystemMetricCard
-            icon="mdi-swap-horizontal"
-            icon-class="sapling-system-metric__icon--network"
-            :label="$t('system.monitoringRequests')"
-            :value="number(summary?.requests.requestCount)"
-            :detail="`p95 ${number(summary?.requests.durationP95Ms)} ms · ${percent(summary?.requests.serverErrorRate)} ${$t('system.monitoringServerErrors')}`"
-            :value-loading="loading && !summary"
-          />
-          <SaplingSystemMetricCard
-            icon="mdi-account-multiple-check"
+            icon="mdi-account-multiple-check-outline"
             icon-class="sapling-system-metric__icon--state"
             :label="$t('system.monitoringOnlineUsers')"
             :value="number(summary?.users.onlineUsers)"
             :detail="`${number(summary?.users.usersWithSessions)} ${$t('system.monitoringValidSessions')}`"
             :value-loading="loading && !summary"
           />
-          <SaplingSystemMetricCard
-            icon="mdi-creation-outline"
-            icon-class="sapling-system-metric__icon--memory"
-            :label="$t('system.monitoringTokens')"
-            :value="compactNumber(summary?.ai.totalTokens)"
-            :detail="`${number(summary?.ai.callCount)} ${$t('system.monitoringAiCalls')}`"
-            :value-loading="loading && !summary"
-          />
         </div>
-        <div
-          v-if="tab === 'overview'"
-          class="sapling-monitoring__chart-grid sapling-monitoring__chart-grid--spaced"
-        >
+
+        <div class="monitoring-overview-grid">
+          <article class="glass-panel sapling-data-card monitoring-panel">
+            <div class="monitoring-panel__header">
+              <h3>{{ $t('system.monitoringCoreFlows') }}</h3>
+              <span>{{ healthyServiceCount }}/{{ serviceCards.length }}</span>
+            </div>
+            <div class="monitoring-service-matrix">
+              <div
+                v-for="service in serviceCards"
+                :key="service.service"
+                class="monitoring-service-row"
+              >
+                <span class="monitoring-status-dot" :class="`is-${service.status}`" />
+                <strong>{{ serviceLabel(service.service) }}</strong>
+                <span>{{ service.summary || `${number(service.durationMs)} ms` }}</span>
+                <time>{{ dateTime(service.lastCheckedAt) }}</time>
+              </div>
+              <v-empty-state
+                v-if="!serviceCards.length"
+                icon="mdi-shield-search-outline"
+                :text="$t('system.monitoringNoData')"
+              />
+            </div>
+          </article>
+
+          <article class="glass-panel sapling-data-card monitoring-panel">
+            <div class="monitoring-panel__header">
+              <h3>{{ $t('system.monitoringIncidents') }}</h3>
+              <v-btn size="small" variant="text" @click="tab = 'incidents'">
+                {{ $t('system.monitoringDetails') }}
+              </v-btn>
+            </div>
+            <div class="monitoring-incident-stack">
+              <button
+                v-for="incident in openIncidents.slice(0, 5)"
+                :key="incident.handle"
+                class="monitoring-incident-row"
+                type="button"
+                @click="openIncident(incident.handle)"
+              >
+                <v-icon
+                  :color="incident.severity === 'critical' ? 'error' : 'warning'"
+                  icon="mdi-alert-circle"
+                />
+                <span>
+                  <strong>{{ incident.rule.title }}</strong>
+                  <small>{{ incident.dimensionKey || $t('system.monitoringGlobal') }}</small>
+                </span>
+                <time>{{ dateTime(incident.lastSeenAt) }}</time>
+              </button>
+              <v-empty-state
+                v-if="!openIncidents.length"
+                icon="mdi-check-circle-outline"
+                :text="$t('system.monitoringNoIncidents')"
+              />
+            </div>
+          </article>
+        </div>
+
+        <div class="monitoring-chart-grid">
           <MonitoringChart
             :eyebrow="$t('system.monitoringInfrastructure')"
             :title="$t('system.monitoringCpuMemory')"
@@ -160,1094 +179,727 @@
             unit=" ms"
           />
         </div>
+        <v-alert type="info" variant="tonal" density="compact">
+          {{ $t('system.monitoringSingleHostLimitation') }}
+        </v-alert>
       </v-window-item>
 
-      <v-window-item value="performance">
-        <div v-if="tab === 'performance'" class="sapling-monitoring__section-stack">
-          <slot name="performance" />
-          <div class="sapling-monitoring__chart-grid">
-            <MonitoringChart
-              :title="$t('system.monitoringCpuMemory')"
-              :points="metricPoints(['host.cpu.percent', 'host.memory.usedPercent'])"
-              unit=" %"
-            />
-            <MonitoringChart
-              :title="$t('system.monitoringProcessMemory')"
-              :points="metricPoints(['process.memory.rssBytes', 'process.memory.heapUsedBytes'])"
-              unit=" B"
-            />
-            <MonitoringChart
-              :title="$t('system.monitoringEventLoop')"
-              :points="metricPoints(['process.eventLoop.p95Ms'])"
-              unit=" ms"
-            />
-          </div>
-        </div>
-      </v-window-item>
+      <v-window-item value="incidents">
+        <div class="monitoring-incident-grid">
+          <article class="glass-panel sapling-data-card monitoring-panel">
+            <div class="monitoring-panel__header">
+              <h3>{{ $t('system.monitoringIncidents') }}</h3>
+              <v-btn
+                prepend-icon="mdi-tune-variant"
+                size="small"
+                variant="tonal"
+                @click="rulesOpen = true"
+              >
+                {{ $t('system.monitoringAlertRules') }}
+              </v-btn>
+            </div>
+            <div class="monitoring-incident-stack">
+              <button
+                v-for="incident in incidents"
+                :key="incident.handle"
+                class="monitoring-incident-row"
+                type="button"
+                @click="openIncident(incident.handle)"
+              >
+                <v-icon
+                  :color="incident.state === 'resolved' ? 'success' : incident.severity"
+                  icon="mdi-alert-circle-outline"
+                />
+                <span>
+                  <strong>{{ incident.rule.title }}</strong>
+                  <small>{{ incident.state }} · {{ incident.incidentType || 'threshold' }}</small>
+                </span>
+                <time>{{ dateTime(incident.lastSeenAt) }}</time>
+              </button>
+            </div>
+          </article>
 
-      <v-window-item value="storage">
-        <div v-if="tab === 'storage'" class="sapling-monitoring__section-stack">
-          <slot name="storage" />
-          <div class="sapling-monitoring__chart-grid">
-            <MonitoringChart
-              :title="$t('system.monitoringFilesystemUsage')"
-              :points="metricPoints(['filesystem.usedPercent'])"
-              unit=" %"
-            />
-            <MonitoringChart
-              :title="$t('system.monitoringDocumentStorage')"
-              :points="metricPoints(['documentStorage.sizeBytes'])"
-              unit=" B"
-            />
-          </div>
-        </div>
-      </v-window-item>
-
-      <v-window-item value="network">
-        <div v-if="tab === 'network'" class="sapling-monitoring__section-stack">
-          <slot name="network" />
-          <MonitoringChart
-            :title="$t('system.monitoringNetworkThroughput')"
-            :points="metricPoints(['network.rxBytesPerSecond', 'network.txBytesPerSecond'])"
-            unit=" B/s"
-          />
-        </div>
-      </v-window-item>
-
-      <v-window-item value="database">
-        <div v-if="tab === 'database'" class="sapling-monitoring__section-stack">
-          <slot name="database" />
-          <div class="sapling-monitoring__chart-grid">
-            <MonitoringChart
-              :title="$t('system.monitoringDatabaseConnections')"
-              :points="metricPoints(['database.connectionUsedPercent'])"
-              unit=" %"
-            />
-            <MonitoringChart
-              :title="$t('system.monitoringDatabaseSize')"
-              :points="metricPoints(['database.sizeBytes'])"
-              unit=" B"
-            />
-          </div>
-        </div>
-      </v-window-item>
-
-      <v-window-item value="requests">
-        <div v-if="tab === 'requests'" class="sapling-monitoring__section-stack">
-          <MonitoringChart eyebrow="HTTP" :title="requestVolumeTitle" :points="requestSeries" />
-          <MonitoringTablePanel
-            eyebrow="HTTP"
-            :title="$t('system.monitoringRequestAnalysis')"
-            :count="requestGroups.length"
-          >
-            <v-table class="sapling-table sapling-monitoring__table" density="comfortable" hover>
+          <article class="glass-panel sapling-data-card monitoring-panel">
+            <div class="monitoring-panel__header">
+              <h3>{{ $t('system.monitoringErrorsAndCauses') }}</h3>
+              <span>{{ errorGroups.length }}</span>
+            </div>
+            <v-table class="sapling-table monitoring-table" density="compact">
               <thead>
                 <tr>
-                  <th>{{ $t('system.monitoringCategory') }}</th>
-                  <th>{{ $t('system.monitoringRequests') }}</th>
-                  <th>4xx</th>
-                  <th>5xx</th>
-                  <th>{{ $t('system.monitoringTraffic') }}</th>
-                  <th>{{ $t('system.monitoringAverage') }}</th>
-                  <th>p95</th>
+                  <th>{{ $t('system.monitoringSource') }}</th>
+                  <th>{{ $t('system.monitoringOperation') }}</th>
+                  <th>{{ $t('system.monitoringCount') }}</th>
+                  <th>{{ $t('system.monitoringLastSeen') }}</th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="group in requestGroups" :key="String(group.group)">
+                <tr v-for="group in errorGroups" :key="group.handle">
                   <td>
-                    <v-chip size="small" variant="tonal">{{ group.group }}</v-chip>
+                    <v-chip size="x-small" variant="tonal">{{ group.source }}</v-chip>
                   </td>
-                  <td>{{ number(group.requestCount) }}</td>
-                  <td>{{ number(group.clientErrorCount) }}</td>
-                  <td>{{ number(group.serverErrorCount) }}</td>
                   <td>
-                    {{ bytes(Number(group.requestBytes ?? 0) + Number(group.responseBytes ?? 0)) }}
+                    <strong>{{ group.operation }}</strong
+                    ><small class="monitoring-table__secondary"
+                      >{{ group.latestErrorClass }} · {{ group.latestMessage }}</small
+                    >
                   </td>
-                  <td>{{ durationAverage(group) }}</td>
-                  <td>{{ number(group.durationP95Ms) }} ms</td>
+                  <td>{{ number(group.occurrenceCount) }}</td>
+                  <td>{{ dateTime(group.lastSeenAt) }}</td>
                 </tr>
               </tbody>
             </v-table>
-          </MonitoringTablePanel>
+          </article>
+        </div>
+
+        <div class="monitoring-incident-grid">
+          <article class="glass-panel sapling-data-card monitoring-panel">
+            <div class="monitoring-panel__header">
+              <h3>{{ $t('system.monitoringChecks') }}</h3>
+              <span>{{ checks.length }}</span>
+            </div>
+            <v-table class="sapling-table monitoring-table" density="compact">
+              <thead>
+                <tr>
+                  <th>{{ $t('system.monitoringCheck') }}</th>
+                  <th>{{ $t('system.monitoringStatus') }}</th>
+                  <th>{{ $t('system.monitoringDuration') }}</th>
+                  <th>{{ $t('system.monitoringTime') }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="check in checks.slice(0, 20)" :key="check.handle">
+                  <td>{{ check.checkKey }}</td>
+                  <td>
+                    <v-chip :color="statusColor(check.status)" size="x-small">{{
+                      check.status
+                    }}</v-chip>
+                  </td>
+                  <td>{{ number(check.durationMs) }} ms</td>
+                  <td>{{ dateTime(check.completedAt) }}</td>
+                </tr>
+              </tbody>
+            </v-table>
+          </article>
+          <article class="glass-panel sapling-data-card monitoring-panel">
+            <div class="monitoring-panel__header">
+              <h3>{{ $t('system.monitoringRemediationHistory') }}</h3>
+              <span>{{ remediations.length }}</span>
+            </div>
+            <v-table class="sapling-table monitoring-table" density="compact">
+              <thead>
+                <tr>
+                  <th>{{ $t('system.monitoringAction') }}</th>
+                  <th>{{ $t('system.monitoringMode') }}</th>
+                  <th>{{ $t('system.monitoringResult') }}</th>
+                  <th>{{ $t('system.monitoringTime') }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="execution in remediations" :key="execution.handle">
+                  <td>{{ execution.actionKey }}</td>
+                  <td>{{ execution.mode }}</td>
+                  <td>
+                    <v-chip
+                      :color="execution.state === 'succeeded' ? 'success' : 'warning'"
+                      size="x-small"
+                      >{{ execution.state }}</v-chip
+                    >
+                  </td>
+                  <td>{{ dateTime(execution.startedAt) }}</td>
+                </tr>
+              </tbody>
+            </v-table>
+          </article>
         </div>
       </v-window-item>
 
-      <v-window-item value="users">
-        <MonitoringTablePanel
-          :eyebrow="$t('system.monitoringPresence')"
-          :title="$t('system.monitoringUserAnalysis')"
-          :count="usersTotal"
-        >
-          <v-table class="sapling-table sapling-monitoring__table" density="comfortable" hover>
+      <v-window-item value="services">
+        <div class="monitoring-service-cards">
+          <article
+            v-for="service in serviceCards"
+            :key="service.service"
+            class="glass-panel sapling-data-card monitoring-service-card"
+          >
+            <span class="monitoring-status-dot" :class="`is-${service.status}`" />
+            <div>
+              <strong>{{ serviceLabel(service.service) }}</strong
+              ><small>{{ service.summary || `${number(service.durationMs)} ms` }}</small>
+            </div>
+            <time>{{ dateTime(service.lastCheckedAt) }}</time>
+          </article>
+        </div>
+        <div class="monitoring-slot-stack">
+          <slot name="database" />
+          <slot name="storage" />
+          <slot name="network" />
+          <slot name="system" />
+        </div>
+      </v-window-item>
+
+      <v-window-item value="performance">
+        <div class="monitoring-slot-stack"><slot name="performance" /></div>
+        <div class="monitoring-chart-grid">
+          <MonitoringChart
+            :eyebrow="$t('system.monitoringRequests')"
+            :title="$t('system.monitoringRequestAnalysis')"
+            :points="requestSeries"
+          />
+          <MonitoringChart
+            :eyebrow="$t('system.monitoringRuntime')"
+            :title="$t('system.monitoringProcessMemory')"
+            :points="metricPoints(['process.memory.rssBytes', 'process.memory.heapUsedBytes'])"
+          />
+        </div>
+        <article class="glass-panel sapling-data-card monitoring-panel">
+          <div class="monitoring-panel__header">
+            <h3>{{ $t('system.monitoringRequestAnalysis') }}</h3>
+            <span>{{ requestGroups.length }}</span>
+          </div>
+          <v-table class="sapling-table monitoring-table" density="compact">
             <thead>
               <tr>
-                <th>{{ $t('system.monitoringUser') }}</th>
-                <th>{{ $t('system.monitoringPresence') }}</th>
-                <th>{{ $t('system.monitoringLastLogin') }}</th>
+                <th>{{ $t('system.monitoringCategory') }}</th>
                 <th>{{ $t('system.monitoringRequests') }}</th>
                 <th>{{ $t('system.monitoringErrors') }}</th>
-                <th>{{ $t('system.monitoringTraffic') }}</th>
-                <th>{{ $t('system.monitoringTokens') }}</th>
+                <th>p50</th>
+                <th>p95</th>
+                <th>p99</th>
               </tr>
             </thead>
             <tbody>
-              <tr
-                v-for="user in users"
-                :key="user.handle"
-                class="sapling-monitoring__clickable"
-                @click="openUser(user.handle)"
-              >
-                <td>
-                  <div class="sapling-monitoring__user-cell">
-                    <v-avatar size="32" color="primary" variant="tonal">{{
-                      userInitials(user)
-                    }}</v-avatar
-                    ><strong>{{
-                      [user.firstName, user.lastName].filter(Boolean).join(' ')
-                    }}</strong>
-                  </div>
-                </td>
-                <td>
-                  <v-chip
-                    size="small"
-                    :color="user.online ? 'success' : user.sessionCount ? 'info' : undefined"
-                    variant="tonal"
-                    >{{ presenceLabel(user) }}</v-chip
-                  >
-                </td>
-                <td>{{ formatDate(user.lastLoginAt) }}</td>
-                <td>{{ number(user.requests) }}</td>
-                <td>{{ number(user.errors) }}</td>
-                <td>{{ bytes(user.traffic) }}</td>
-                <td>{{ compactNumber(user.tokens) }}</td>
+              <tr v-for="row in requestGroups" :key="String(row.group)">
+                <td>{{ row.group }}</td>
+                <td>{{ number(row.requestCount) }}</td>
+                <td>{{ number(row.serverErrorCount) }}</td>
+                <td>{{ number(row.durationP50Ms) }} ms</td>
+                <td>{{ number(row.durationP95Ms) }} ms</td>
+                <td>{{ number(row.durationP99Ms) }} ms</td>
               </tr>
             </tbody>
           </v-table>
-          <v-empty-state
-            v-if="users.length === 0"
-            icon="mdi-account-clock-outline"
-            :text="$t('system.monitoringNoData')"
-          />
-          <v-pagination
-            v-if="usersTotal > MONITORING_USERS_PAGE_SIZE"
-            v-model="usersPage"
-            :length="Math.ceil(usersTotal / MONITORING_USERS_PAGE_SIZE)"
-            class="mt-4"
-          />
-        </MonitoringTablePanel>
+        </article>
       </v-window-item>
 
-      <v-window-item value="ai">
-        <MonitoringTablePanel
-          :eyebrow="$t('system.monitoringAiTokens')"
-          :title="$t('system.monitoringAiAnalysis')"
-          :count="aiGroups.length"
-        >
-          <v-table class="sapling-table sapling-monitoring__table" density="comfortable" hover>
-            <thead>
-              <tr>
-                <th>{{ $t('system.monitoringProvider') }}</th>
-                <th>{{ $t('system.monitoringAiCalls') }}</th>
-                <th>{{ $t('system.monitoringInputTokens') }}</th>
-                <th>{{ $t('system.monitoringOutputTokens') }}</th>
-                <th>{{ $t('system.monitoringTokens') }}</th>
-                <th>{{ $t('system.monitoringErrors') }}</th>
-                <th>{{ $t('system.monitoringCoverage') }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="group in aiGroups" :key="String(group.group)">
-                <td>
-                  <strong>{{ group.group }}</strong>
-                </td>
-                <td>{{ number(group.callCount) }}</td>
-                <td>{{ compactNumber(group.inputTokens) }}</td>
-                <td>{{ compactNumber(group.outputTokens) }}</td>
-                <td>{{ compactNumber(group.totalTokens) }}</td>
-                <td>{{ number(group.errorCount) }}</td>
-                <td>{{ coverage(group) }}</td>
-              </tr>
-            </tbody>
-          </v-table>
-        </MonitoringTablePanel>
-      </v-window-item>
-
-      <v-window-item value="alerts">
-        <div class="sapling-monitoring__alerts-grid">
-          <article class="glass-panel sapling-data-card sapling-monitoring__panel">
-            <div class="sapling-section-header sapling-monitoring__incident-header">
-              <div>
-                <p class="sapling-eyebrow">{{ $t('system.monitoringAlerts') }}</p>
-                <h3>{{ $t('system.monitoringIncidents') }}</h3>
-              </div>
-              <v-btn-toggle v-model="incidentFilter" mandatory density="compact" variant="outlined">
-                <v-btn value="open">{{ $t('system.monitoringIncidentOpen') }}</v-btn>
-                <v-btn value="resolved">{{ $t('system.monitoringIncidentHistory') }}</v-btn>
-              </v-btn-toggle>
+      <v-window-item value="usage">
+        <div class="monitoring-usage-grid">
+          <article class="glass-panel sapling-data-card monitoring-panel">
+            <div class="monitoring-panel__header">
+              <h3>{{ $t('system.monitoringUsers') }}</h3>
+              <span>{{ usersTotal }}</span>
             </div>
-            <div class="sapling-monitoring__alert-guidance">
-              <p>
-                <v-icon icon="mdi-account-shield-outline" size="small" />
-                {{ notificationRecipientsHint }}
-              </p>
-              <p>
-                <v-icon icon="mdi-progress-check" size="small" />
-                {{ incidentAutoResolveHint }}
-              </p>
-            </div>
-            <v-empty-state
-              v-if="filteredIncidents.length === 0"
-              icon="mdi-check-circle-outline"
-              :text="$t('system.monitoringNoIncidents')"
-            />
-            <v-list v-else class="sapling-monitoring__incident-list">
-              <v-list-item
-                v-for="incident in filteredIncidents"
-                :key="incident.handle"
-                :active="String(route.query.incident ?? '') === String(incident.handle)"
-                rounded="lg"
-                class="sapling-monitoring__incident-item"
-              >
-                <template #prepend
-                  ><div
-                    class="sapling-monitoring__incident-icon"
-                    :class="`sapling-monitoring__incident-icon--${incident.severity}`"
-                  >
-                    <v-icon>mdi-alert-circle-outline</v-icon>
-                  </div></template
-                >
-                <v-list-item-title class="sapling-monitoring__incident-title">
-                  {{ alertRuleTitle(incident.rule) }}
-                </v-list-item-title>
-                <v-list-item-subtitle class="sapling-monitoring__incident-meta">
-                  <span>
-                    <v-icon icon="mdi-map-marker-radius-outline" size="x-small" />
-                    {{ incident.dimensionKey || $t('system.monitoringGlobal') }}
-                  </span>
-                  <span>
-                    {{ incidentObservedLabel }} {{ number(incident.observedValue) }} ·
-                    {{ incidentThresholdLabel }} {{ number(incident.threshold) }}
-                  </span>
-                  <span>
-                    <v-icon icon="mdi-clock-outline" size="x-small" />
-                    {{ formatDate(incident.lastSeenAt) }}
-                  </span>
-                </v-list-item-subtitle>
-                <template #append
-                  ><div class="sapling-monitoring__incident-state">
-                    <v-chip
-                      size="small"
-                      :color="
-                        incident.state === 'open'
-                          ? incident.severity === 'critical'
-                            ? 'error'
-                            : 'warning'
-                          : 'success'
-                      "
-                      variant="tonal"
-                      >{{
-                        incident.state === 'open'
-                          ? $t('system.monitoringIncidentOpen')
-                          : $t('system.monitoringIncidentResolved')
-                      }}</v-chip
-                    >
-                    <small v-if="incident.state === 'open' && incident.healthyEvaluations > 0">{{
-                      incidentRecoveryLabel.replace('{count}', String(incident.healthyEvaluations))
-                    }}</small>
-                  </div></template
-                >
-              </v-list-item>
-            </v-list>
+            <v-table class="sapling-table monitoring-table" density="compact">
+              <thead>
+                <tr>
+                  <th>{{ $t('system.monitoringUser') }}</th>
+                  <th>{{ $t('system.monitoringRequests') }}</th>
+                  <th>{{ $t('system.monitoringErrors') }}</th>
+                  <th>{{ $t('system.monitoringTokens') }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="user in users" :key="user.handle">
+                  <td>{{ [user.firstName, user.lastName].filter(Boolean).join(' ') }}</td>
+                  <td>{{ number(user.requests) }}</td>
+                  <td>{{ number(user.errors) }}</td>
+                  <td>{{ compactNumber(user.tokens) }}</td>
+                </tr>
+              </tbody>
+            </v-table>
           </article>
-
-          <article class="glass-panel sapling-data-card sapling-monitoring__panel">
-            <div class="sapling-section-header">
-              <div>
-                <p class="sapling-eyebrow">{{ $t('system.monitoringConfiguration') }}</p>
-                <h3>{{ $t('system.monitoringAlertRules') }}</h3>
-              </div>
-              <v-chip size="small" variant="tonal">{{ rules.length }}</v-chip>
+          <article class="glass-panel sapling-data-card monitoring-panel">
+            <div class="monitoring-panel__header">
+              <h3>{{ $t('system.monitoringAiTokens') }}</h3>
+              <span>{{ aiGroups.length }}</span>
             </div>
-            <v-expansion-panels
-              variant="accordion"
-              multiple
-              class="sapling-monitoring__rule-groups"
-            >
-              <v-expansion-panel v-for="group in ruleGroups" :key="group.key">
-                <v-expansion-panel-title
-                  ><v-icon :icon="group.icon" class="mr-3" />{{ group.title }}<v-spacer /><v-chip
-                    size="x-small"
-                    variant="tonal"
-                    >{{ group.rules.length }}</v-chip
-                  ></v-expansion-panel-title
-                >
-                <v-expansion-panel-text>
-                  <div
-                    v-for="rule in group.rules"
-                    :key="rule.handle"
-                    class="sapling-monitoring__rule"
-                  >
-                    <SaplingSwitch
-                      v-model="rule.isActive"
-                      hide-details
-                      color="primary"
-                      @change="updateRule(rule)"
-                    />
-                    <div class="sapling-monitoring__rule-copy">
-                      <strong>{{ alertRuleTitle(rule) }}</strong
-                      ><span>{{ monitoringMetricLabel(t, locale, rule.metricKey) }}</span>
-                    </div>
-                    <SaplingTextField
-                      v-model.number="rule.threshold"
-                      type="number"
-                      density="compact"
-                      hide-details
-                      variant="outlined"
-                      @change="updateRule(rule)"
-                    />
-                  </div>
-                </v-expansion-panel-text>
-              </v-expansion-panel>
-            </v-expansion-panels>
+            <v-table class="sapling-table monitoring-table" density="compact">
+              <thead>
+                <tr>
+                  <th>{{ $t('system.monitoringProvider') }}</th>
+                  <th>{{ $t('system.monitoringCalls') }}</th>
+                  <th>{{ $t('system.monitoringErrors') }}</th>
+                  <th>{{ $t('system.monitoringTokens') }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="row in aiGroups" :key="String(row.group)">
+                  <td>{{ row.group }}</td>
+                  <td>{{ number(row.callCount) }}</td>
+                  <td>{{ number(row.errorCount) }}</td>
+                  <td>{{ compactNumber(row.totalTokens) }}</td>
+                </tr>
+              </tbody>
+            </v-table>
           </article>
         </div>
       </v-window-item>
-
-      <v-window-item value="system"><slot name="system" /></v-window-item>
     </v-window>
 
-    <SaplingDialog v-model="userDialog" size="xl" scrollable>
-      <SaplingDialogCard
-        class="sapling-dialog-compact-card sapling-monitoring__user-dialog"
-        :tilt="false"
-        :close="closeUserDialog"
-      >
-        <SaplingDialogShell
-          fill-shell
-          body-class="sapling-dialog-fill-body sapling-monitoring__user-dialog-body"
-        >
-          <template #hero>
-            <SaplingDialogHero
-              :eyebrow="$t('system.monitoringUserDetails')"
-              :title="selectedUserName"
-              :stats="selectedUserHeroStats"
-              :stats-columns="4"
-              stats-layout="compact"
+    <SaplingDialog v-model="rulesOpen" size="lg">
+      <v-card class="sapling-dialog-compact-card">
+        <v-card-title>{{ $t('system.monitoringAlertRules') }}</v-card-title>
+        <v-card-text class="monitoring-rules">
+          <div v-for="rule in rules" :key="rule.handle" class="monitoring-rule-row">
+            <SaplingSwitch
+              v-model="rule.isActive"
+              hide-details
+              density="compact"
+              @update:model-value="updateRule(rule)"
+            />
+            <span
+              ><strong>{{ rule.title }}</strong
+              ><small>{{ rule.metricKey }} · {{ rule.evaluationType || 'threshold' }}</small></span
             >
-              <template v-if="selectedUserProfile" #title-trailing>
-                <v-chip
-                  :color="
-                    selectedUserProfile.online
-                      ? 'success'
-                      : selectedUserProfile.sessionCount
-                        ? 'info'
-                        : undefined
-                  "
-                  size="small"
-                  variant="tonal"
-                >
-                  <v-icon start size="small" icon="mdi-circle" />
-                  {{ selectedUserPresence }}
-                </v-chip>
-              </template>
-            </SaplingDialogHero>
-          </template>
+            <v-chip v-if="rule.shadowMode" size="x-small">Shadow</v-chip>
+            <v-chip :color="rule.severity === 'critical' ? 'error' : 'warning'" size="x-small">{{
+              rule.severity
+            }}</v-chip>
+          </div>
+        </v-card-text>
+        <v-card-actions
+          ><v-spacer /><v-btn @click="rulesOpen = false">{{
+            $t('global.close')
+          }}</v-btn></v-card-actions
+        >
+      </v-card>
+    </SaplingDialog>
 
-          <template #body>
-            <div class="sapling-monitoring__detail-sections sapling-scrollable">
-              <section class="sapling-data-card sapling-monitoring__detail-section">
-                <div class="sapling-section-header sapling-monitoring__detail-section-header">
-                  <div class="sapling-monitoring__detail-heading">
-                    <span class="sapling-monitoring__detail-icon">
-                      <v-icon icon="mdi-creation-outline" />
-                    </span>
-                    <div>
-                      <p class="sapling-eyebrow">{{ $t('system.monitoringAiTokens') }}</p>
-                      <h3>{{ $t('system.monitoringAiAnalysis') }}</h3>
-                    </div>
-                  </div>
-                  <v-chip size="small" variant="tonal" color="primary">
-                    {{ selectedUserTokens.length }}
-                  </v-chip>
-                </div>
-
-                <div v-if="selectedUserTokens.length" class="sapling-monitoring__detail-table">
-                  <v-table class="sapling-table sapling-monitoring__table" density="comfortable">
-                    <thead>
-                      <tr>
-                        <th>{{ $t('system.monitoringProvider') }}</th>
-                        <th>{{ $t('system.monitoringModel') }}</th>
-                        <th>{{ $t('system.monitoringAiCalls') }}</th>
-                        <th>{{ $t('system.monitoringTokens') }}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr
-                        v-for="token in selectedUserTokens"
-                        :key="`${token.provider}:${token.model}:${token.operation}`"
-                      >
-                        <td>
-                          <strong>{{ token.provider }}</strong>
-                        </td>
-                        <td>{{ token.model || '–' }}</td>
-                        <td>{{ number(token.calls) }}</td>
-                        <td>{{ compactNumber(token.totalTokens) }}</td>
-                      </tr>
-                    </tbody>
-                  </v-table>
-                </div>
-                <div v-else class="sapling-empty-state-panel sapling-empty-state-panel--compact">
-                  <v-icon icon="mdi-creation-outline" size="28" />
-                  <span>{{ $t('system.monitoringNoData') }}</span>
-                </div>
-              </section>
-
-              <section class="sapling-data-card sapling-monitoring__detail-section">
-                <div class="sapling-section-header sapling-monitoring__detail-section-header">
-                  <div class="sapling-monitoring__detail-heading">
-                    <span class="sapling-monitoring__detail-icon">
-                      <v-icon icon="mdi-key-chain-variant" />
-                    </span>
-                    <div>
-                      <p class="sapling-eyebrow">{{ $t('system.monitoringApiTokens') }}</p>
-                      <h3>{{ $t('system.monitoringRequestAnalysis') }}</h3>
-                    </div>
-                  </div>
-                  <v-chip size="small" variant="tonal" color="primary">
-                    {{ selectedUserApiTokens.length }}
-                  </v-chip>
-                </div>
-
-                <div v-if="selectedUserApiTokens.length" class="sapling-monitoring__detail-table">
-                  <v-table class="sapling-table sapling-monitoring__table" density="comfortable">
-                    <thead>
-                      <tr>
-                        <th>{{ $t('system.monitoringDescription') }}</th>
-                        <th>{{ $t('system.monitoringLastUsed') }}</th>
-                        <th>{{ $t('system.monitoringRequests') }}</th>
-                        <th>{{ $t('system.monitoringTraffic') }}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr v-for="token in selectedUserApiTokens" :key="String(token.handle)">
-                        <td>
-                          <strong>{{ token.description || token.tokenPrefix || '–' }}</strong>
-                        </td>
-                        <td>{{ formatDate(token.lastUsedAt) }}</td>
-                        <td>{{ number(token.requests) }}</td>
-                        <td>{{ bytes(token.traffic) }}</td>
-                      </tr>
-                    </tbody>
-                  </v-table>
-                </div>
-                <div v-else class="sapling-empty-state-panel sapling-empty-state-panel--compact">
-                  <v-icon icon="mdi-key-chain-variant" size="28" />
-                  <span>{{ $t('system.monitoringNoData') }}</span>
-                </div>
-              </section>
-            </div>
-          </template>
-
-          <template #actions>
-            <SaplingActionClose :close="closeUserDialog" />
-          </template>
-        </SaplingDialogShell>
-      </SaplingDialogCard>
+    <SaplingDialog v-model="incidentOpen" size="md" @after-leave="closeIncident">
+      <v-card v-if="selectedIncident" class="sapling-dialog-compact-card">
+        <v-card-title>{{ selectedIncident.rule.title }}</v-card-title>
+        <v-card-subtitle>
+          {{ selectedIncident.state }} · {{ selectedIncident.severity }} ·
+          {{ dateTime(selectedIncident.lastSeenAt) }}
+        </v-card-subtitle>
+        <v-card-text>
+          <dl class="monitoring-diagnosis">
+            <template v-for="(value, key) in selectedIncident.diagnosis || {}" :key="key">
+              <dt>{{ key }}</dt>
+              <dd>{{ value }}</dd>
+            </template>
+          </dl>
+        </v-card-text>
+        <v-card-actions>
+          <v-btn
+            v-if="selectedIncident.state === 'open' && selectedIncident.rule.remediationActionKey"
+            color="primary"
+            prepend-icon="mdi-auto-fix"
+            variant="tonal"
+            :loading="remediationPending"
+            @click="remediateSelectedIncident"
+          >
+            {{ $t('system.monitoringExecuteRemediation') }}
+          </v-btn>
+          <v-spacer />
+          <v-btn @click="incidentOpen = false">{{ $t('global.close') }}</v-btn>
+        </v-card-actions>
+      </v-card>
     </SaplingDialog>
   </section>
 </template>
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent, defineComponent, h, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { computed, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import SaplingActionClose from '@/components/actions/SaplingActionClose.vue'
 import SaplingSystemMetricCard from './SaplingSystemMetricCard.vue'
+import MonitoringChart from './SaplingMonitoringChart.vue'
 import SaplingDialog from '@/components/common/SaplingDialog.vue'
-import SaplingDialogHero from '@/components/common/SaplingDialogHero.vue'
-import SaplingDialogShell from '@/components/common/SaplingDialogShell.vue'
 import SaplingSwitch from '@/components/common/SaplingSwitch.vue'
-import SaplingTextField from '@/components/common/SaplingTextField.vue'
-import SaplingDialogCard from '@/components/dialog/SaplingDialogCard.vue'
-import type { MonitoringAlertRule, MonitoringUser } from '@/entity/system'
-import { monitoringMetricLabel } from './systemMonitoringLabels'
-import {
-  MONITORING_USERS_PAGE_SIZE,
-  useSaplingSystemMonitoring,
-} from '@/composables/system/useSaplingSystemMonitoring'
+import { useSaplingSystemMonitoring } from '@/composables/system/useSaplingSystemMonitoring'
 
-const MonitoringChart = defineAsyncComponent(() => import('./SaplingMonitoringChart.vue'))
-const MonitoringTablePanel = defineComponent({
-  props: { eyebrow: String, title: String, count: Number },
-  setup:
-    (props, { slots }) =>
-    () =>
-      h(
-        'article',
-        {
-          class: 'sapling-table-root glass-panel sapling-data-card sapling-monitoring__table-panel',
-        },
-        [
-          h('div', { class: 'sapling-section-header' }, [
-            h('div', [h('p', { class: 'sapling-eyebrow' }, props.eyebrow), h('h3', props.title)]),
-            h('span', { class: 'sapling-monitoring__count' }, String(props.count ?? 0)),
-          ]),
-          h('div', { class: 'sapling-monitoring__table-scroll' }, slots.default?.()),
-        ],
-      ),
-})
 const route = useRoute()
-const { locale, t } = useI18n()
-const tab = ref(route.query.incident ? 'alerts' : 'overview')
-const incidentFilter = ref<'open' | 'resolved'>('open')
-const userDialog = ref(false)
-const monitoring = useSaplingSystemMonitoring(tab)
+const router = useRouter()
+const { t, n, locale } = useI18n()
+const validAreas = new Set(['overview', 'incidents', 'services', 'performance', 'usage'])
+const initialArea =
+  typeof route.query.area === 'string' && validAreas.has(route.query.area)
+    ? route.query.area
+    : 'overview'
+const tab = ref(initialArea)
+const rulesOpen = ref(false)
+const incidentOpen = ref(typeof route.query.incident === 'string')
+const remediationPending = ref(false)
+
 const {
   rangePreset,
-  customFrom,
-  customTo,
-  usersPage,
+  selectedEnvironment,
+  environments,
   summary,
   series,
   requestSeries,
   requestGroups,
   users,
+  usersTotal,
   aiGroups,
   incidents,
   rules,
   collectorStatus,
-  usersTotal,
-  selectedUser,
+  services,
+  errorGroups,
+  checks,
+  remediations,
   loading,
   loadAll,
-  loadUser,
   updateRule,
-} = monitoring
+  executeRemediation,
+} = useSaplingSystemMonitoring(tab)
 
-const rangeItems = computed(() =>
-  ['1h', '6h', '24h', '7d', '30d', '90d', 'custom'].map((value) => ({
-    title: value === 'custom' ? t('system.monitoringCustomRange') : value,
-    value,
+const rangeOptions = [
+  { title: '1h', value: '1h' },
+  { title: '6h', value: '6h' },
+  { title: '24h', value: '24h' },
+  { title: '7d', value: '7d' },
+  { title: '30d', value: '30d' },
+  { title: '90d', value: '90d' },
+]
+const environmentOptions = computed(() =>
+  environments.value.map((item) => ({
+    title: `${item.name} · ${item.kind}`,
+    value: item.handle,
   })),
+)
+const openIncidents = computed(() => incidents.value.filter((item) => item.state === 'open'))
+const selectedIncident = computed(() => {
+  const handle = Number(route.query.incident)
+  return Number.isSafeInteger(handle)
+    ? (incidents.value.find((incident) => incident.handle === handle) ?? null)
+    : null
+})
+const serviceCards = computed(() => services.value)
+const healthyServiceCount = computed(
+  () => serviceCards.value.filter((item) => item.status === 'healthy').length,
 )
 const collectorEnabled = computed(() => {
   const collector = collectorStatus.value?.collector as Record<string, unknown> | undefined
-  return typeof collector?.enabled === 'boolean' ? collector.enabled : null
+  return typeof collector?.enabled === 'boolean' ? collector.enabled : undefined
 })
 const maximumGapSeconds = computed(() => {
   const instances = collectorStatus.value?.instances
-  return Array.isArray(instances)
-    ? Math.max(
-        0,
-        ...instances.map((item) => Number((item as Record<string, unknown>).gapSeconds ?? 0)),
-      )
-    : 0
+  if (!Array.isArray(instances)) return 0
+  return Math.max(
+    0,
+    ...instances.map((item) => Number((item as Record<string, unknown>).gapSeconds ?? 0)),
+  )
 })
-const openIncidents = computed(() =>
-  incidents.value.filter((incident) => incident.state === 'open'),
-)
-const filteredIncidents = computed(() =>
-  incidents.value.filter((incident) => incident.state === incidentFilter.value),
-)
-const ruleGroups = computed(() => {
-  const groups = [
-    {
-      key: 'performance',
-      title: t('system.performance'),
-      icon: 'mdi-speedometer',
-      match: /^(host|process)\./,
-      rules: [] as MonitoringAlertRule[],
-    },
-    {
-      key: 'storage',
-      title: t('system.monitoringStorageDatabase'),
-      icon: 'mdi-database-outline',
-      match: /^(filesystem|database)\./,
-      rules: [] as MonitoringAlertRule[],
-    },
-    {
-      key: 'traffic',
-      title: t('system.monitoringRequests'),
-      icon: 'mdi-swap-horizontal',
-      match: /^(http|ai)\./,
-      rules: [] as MonitoringAlertRule[],
-    },
-    {
-      key: 'operations',
-      title: t('system.monitoringOperations'),
-      icon: 'mdi-cog-outline',
-      match: /./,
-      rules: [] as MonitoringAlertRule[],
-    },
-  ]
-  for (const rule of rules.value)
-    (groups.find((group) => group.match.test(rule.metricKey)) ?? groups[3]).rules.push(rule)
-  return groups.filter((group) => group.rules.length)
-})
-const notificationRecipientsHint = computed(() =>
-  localizedMonitoringText(
-    'monitoringNotificationRecipients',
-    'Benachrichtigungen erhalten ausschließlich aktive Administratoren.',
-    'Notifications are sent exclusively to active administrators.',
-  ),
-)
-const incidentAutoResolveHint = computed(() =>
-  localizedMonitoringText(
-    'monitoringIncidentAutoResolve',
-    'Vorfälle schließen automatisch nach drei aufeinanderfolgenden gesunden Minutenprüfungen.',
-    'Incidents close automatically after three consecutive healthy minute evaluations.',
-  ),
-)
-const incidentObservedLabel = computed(() =>
-  localizedMonitoringText('monitoringIncidentObserved', 'Messwert', 'Observed'),
-)
-const incidentThresholdLabel = computed(() =>
-  localizedMonitoringText('monitoringIncidentThreshold', 'Schwelle', 'Threshold'),
-)
-const incidentRecoveryLabel = computed(() =>
-  localizedMonitoringText('monitoringIncidentRecovery', 'Erholung {count}/3', 'Recovery {count}/3'),
-)
-const requestVolumeTitle = computed(() =>
-  localizedMonitoringText(
-    'monitoringRequestVolumeOverTime',
-    'Requests im Zeitverlauf',
-    'Requests over time',
-  ),
-)
-const selectedUserProfile = computed(() =>
-  selectedUser.value?.user && typeof selectedUser.value.user === 'object'
-    ? (selectedUser.value.user as Record<string, unknown>)
-    : null,
-)
-const selectedUserTokens = computed(() => arrayRecords(selectedUser.value?.tokens))
-const selectedUserApiTokens = computed(() => arrayRecords(selectedUser.value?.apiTokens))
-const selectedUserName = computed(() =>
-  selectedUserProfile.value
-    ? [selectedUserProfile.value.firstName, selectedUserProfile.value.lastName]
-        .filter(Boolean)
-        .join(' ')
-    : t('system.monitoringUserDetails'),
-)
-const selectedUserPresence = computed(() =>
-  selectedUserProfile.value ? presenceLabel(selectedUserProfile.value) : '',
-)
-const selectedUserHeroStats = computed(() =>
-  selectedUserProfile.value
-    ? [
-        {
-          label: t('system.monitoringRequests'),
-          value: number(selectedUserProfile.value.requests),
-        },
-        {
-          label: t('system.monitoringErrors'),
-          value: number(selectedUserProfile.value.errors),
-        },
-        {
-          label: t('system.monitoringTraffic'),
-          value: bytes(selectedUserProfile.value.traffic),
-        },
-        {
-          label: t('system.monitoringLastLogin'),
-          value: formatDate(selectedUserProfile.value.lastLoginAt),
-        },
-      ]
-    : [],
+const lastUpdatedLabel = computed(() =>
+  summary.value?.lastSampleAt ? dateTime(summary.value.lastSampleAt) : t('global.notAvailable'),
 )
 
-watch(incidents, (items) => {
-  const target = items.find((item) => String(item.handle) === String(route.query.incident ?? ''))
-  if (target) incidentFilter.value = target.state
+watch(tab, (area) => {
+  void router.replace({ query: { ...route.query, area } })
 })
+
 function metricPoints(keys: string[]) {
   return series.value.filter((point) => keys.includes(point.metricKey))
 }
-async function openUser(handle: number) {
-  await loadUser(handle)
-  userDialog.value = true
+
+function number(value: unknown): string {
+  const numeric = Number(value ?? 0)
+  return n(Number.isFinite(numeric) ? numeric : 0, { maximumFractionDigits: 1 })
 }
-function closeUserDialog() {
-  userDialog.value = false
+
+function compactNumber(value: unknown): string {
+  return new Intl.NumberFormat(locale.value, {
+    notation: 'compact',
+    maximumFractionDigits: 1,
+  }).format(Number(value ?? 0))
 }
-function number(value: unknown) {
-  return new Intl.NumberFormat(undefined, { maximumFractionDigits: 1 }).format(Number(value ?? 0))
-}
-function compactNumber(value: unknown) {
-  return new Intl.NumberFormat(undefined, { notation: 'compact', maximumFractionDigits: 1 }).format(
-    Number(value ?? 0),
-  )
-}
-function percent(value: unknown) {
+
+function percent(value: unknown): string {
   return `${number(value)} %`
 }
-function bytes(value: unknown) {
-  const parsed = Number(value ?? 0)
-  if (!Number.isFinite(parsed) || parsed <= 0) return '0 B'
-  const units = ['B', 'KB', 'MB', 'GB', 'TB']
-  const index = Math.min(Math.floor(Math.log(parsed) / Math.log(1024)), units.length - 1)
-  return `${number(parsed / 1024 ** index)} ${units[index]}`
+
+function dateTime(value: string | null | undefined): string {
+  if (!value) return t('global.notAvailable')
+  return new Intl.DateTimeFormat(locale.value, { dateStyle: 'short', timeStyle: 'short' }).format(
+    new Date(value),
+  )
 }
-function formatDate(value?: unknown) {
-  if (!value) return '–'
-  const date = new Date(String(value))
-  return Number.isFinite(date.getTime())
-    ? new Intl.DateTimeFormat(undefined, { dateStyle: 'short', timeStyle: 'medium' }).format(date)
-    : '–'
+
+function serviceLabel(value: string): string {
+  return value.charAt(0).toUpperCase() + value.slice(1)
 }
-function durationAverage(group: Record<string, unknown>) {
-  const count = Number(group.requestCount ?? 0)
-  return `${number(count > 0 ? Number(group.durationSumMs ?? 0) / count : 0)} ms`
+
+function statusColor(value: string): string {
+  return value === 'healthy' ? 'success' : value === 'critical' ? 'error' : 'warning'
 }
-function coverage(group: Record<string, unknown>) {
-  const count = Number(group.callCount ?? 0)
-  return percent(count > 0 ? (Number(group.reportedCount ?? 0) / count) * 100 : 0)
+
+function openIncident(handle: number): void {
+  tab.value = 'incidents'
+  incidentOpen.value = true
+  void router.replace({ query: { ...route.query, area: 'incidents', incident: String(handle) } })
 }
-function userInitials(user: MonitoringUser) {
-  return [user.firstName, user.lastName]
-    .filter(Boolean)
-    .map((part) => String(part)[0].toUpperCase())
-    .join('')
-    .slice(0, 2)
+
+function closeIncident(): void {
+  if (route.query.incident == null) return
+  const query = { ...route.query }
+  delete query.incident
+  void router.replace({ query })
 }
-function presenceLabel(user: MonitoringUser | Record<string, unknown>) {
-  return user.online
-    ? t('system.monitoringOnline')
-    : Number(user.sessionCount ?? 0) > 0
-      ? t('system.monitoringSession')
-      : t('system.monitoringOffline')
-}
-function alertRuleTitle(rule?: MonitoringAlertRule) {
-  if (!rule) return t('system.monitoringAlerts')
-  return `${monitoringMetricLabel(t, locale.value, rule.metricKey)} · ${t(`system.monitoringHealth_${rule.severity}`)}`
-}
-function localizedMonitoringText(property: string, de: string, en: string) {
-  const key = `system.${property}`
-  const translated = t(key)
-  if (translated.trim() && translated !== key) return translated
-  return locale.value.toLowerCase().startsWith('de') ? de : en
-}
-function arrayRecords(value: unknown): Record<string, unknown>[] {
-  return Array.isArray(value) ? (value as Record<string, unknown>[]) : []
+
+async function remediateSelectedIncident(): Promise<void> {
+  const incident = selectedIncident.value
+  const actionKey = incident?.rule.remediationActionKey
+  if (!incident || !actionKey) return
+  remediationPending.value = true
+  try {
+    await executeRemediation(actionKey, incident.handle)
+  } finally {
+    remediationPending.value = false
+  }
 }
 </script>
 
 <style scoped>
-.sapling-monitoring {
+.monitoring-workspace {
   display: grid;
-  gap: 18px;
+  gap: 14px;
   margin-bottom: 28px;
 }
-.sapling-monitoring__toolbar {
+.monitoring-commandbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 24px;
-  padding: 20px 22px;
-  overflow: hidden;
+  gap: 18px;
+  min-height: 74px;
+  padding: 12px 16px;
 }
-.sapling-monitoring__heading {
+.monitoring-commandbar__identity,
+.monitoring-commandbar__controls {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
   min-width: 0;
 }
-.sapling-monitoring__heading-icon {
+.monitoring-commandbar__identity > div {
   display: grid;
-  flex: 0 0 48px;
-  width: 48px;
-  height: 48px;
+  gap: 2px;
+}
+.monitoring-commandbar__identity span {
+  color: rgb(var(--v-theme-on-surface-variant));
+  font-size: 0.8rem;
+}
+.monitoring-commandbar__pulse {
+  display: grid;
+  width: 38px;
+  height: 38px;
   place-items: center;
-  border-radius: 14px;
+  border-radius: 11px;
   color: rgb(var(--v-theme-primary));
   background: rgba(var(--v-theme-primary), 0.12);
 }
-.sapling-monitoring__toolbar h2,
-.sapling-monitoring__heading p {
-  margin: 0;
+.monitoring-commandbar__controls > :not(.v-btn) {
+  width: 190px;
 }
-.sapling-monitoring__actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-}
-.sapling-monitoring__actions > :not(.v-btn) {
-  min-width: 180px;
-}
-.sapling-monitoring__navigation {
+.monitoring-navigation {
   position: sticky;
   top: 66px;
   z-index: 5;
   overflow: hidden;
-  padding: 0 8px;
+  padding: 0 6px;
 }
-.sapling-monitoring__window {
-  min-height: 360px;
+.monitoring-window {
+  min-height: 420px;
 }
-.sapling-monitoring__metrics {
+.monitoring-kpis {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
 }
-.sapling-monitoring__chart-grid {
+.monitoring-overview-grid,
+.monitoring-incident-grid,
+.monitoring-usage-grid,
+.monitoring-chart-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
+  gap: 14px;
+  margin-top: 14px;
 }
-.sapling-monitoring__chart-grid--spaced {
-  margin-top: 18px;
-}
-.sapling-monitoring__section-stack {
-  display: grid;
-  gap: 18px;
-}
-:deep(.sapling-monitoring__table-panel),
-.sapling-monitoring__panel {
-  padding: 20px;
-}
-:deep(.sapling-monitoring__table-panel.sapling-table-root) {
-  min-height: auto;
-}
-:deep(.sapling-monitoring__table-scroll) {
-  flex: 0 1 auto;
+.monitoring-panel {
+  min-width: 0;
+  padding: 16px;
   overflow-x: auto;
-  margin: 0 -8px -8px;
-  border-radius: var(--sapling-radius-md);
 }
-:deep(.sapling-monitoring__table) {
-  min-width: 720px;
-  background: transparent !important;
-}
-:deep(.sapling-monitoring__table-scroll th) {
-  white-space: nowrap;
-}
-:deep(.sapling-monitoring__table-scroll td) {
-  white-space: nowrap;
-}
-:deep(.sapling-monitoring__count) {
-  display: inline-grid;
-  min-width: 28px;
-  height: 28px;
-  place-items: center;
-  border-radius: 99px;
-  color: rgb(var(--v-theme-primary));
-  background: rgba(var(--v-theme-primary), 0.12);
-}
-.sapling-monitoring__alerts-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1.08fr) minmax(420px, 0.92fr);
-  gap: 16px;
-  align-items: start;
-}
-.sapling-monitoring__alerts-grid > .sapling-monitoring__panel {
-  min-width: 0;
-  align-self: start;
-}
-.sapling-monitoring__incident-header {
-  align-items: center;
-}
-.sapling-monitoring__alert-guidance {
-  display: grid;
-  gap: 6px;
-  margin: 14px 0 12px;
-  padding: 12px 14px;
-  border: 1px solid var(--sapling-surface-border-muted);
-  border-radius: var(--sapling-radius-md);
-  background: var(--sapling-surface-fill-soft);
-  color: color-mix(in srgb, var(--sapling-tilt-text-color) 76%, transparent);
-  font-size: 0.82rem;
-}
-.sapling-monitoring__alert-guidance p {
+.monitoring-panel__header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin: 0;
-}
-.sapling-monitoring__incident-list {
-  display: grid;
-  gap: 8px;
-  margin-top: 10px;
-  background: transparent;
-}
-.sapling-monitoring__incident-item {
-  min-height: 84px;
-  border: 1px solid var(--sapling-surface-border-muted);
-  background: var(--sapling-surface-fill-soft);
-}
-:deep(.sapling-monitoring__incident-item .v-list-item__prepend),
-:deep(.sapling-monitoring__incident-item .v-list-item__content),
-:deep(.sapling-monitoring__incident-item .v-list-item__append) {
-  align-self: center;
-}
-:deep(.sapling-monitoring__incident-item .v-list-item__content) {
-  display: grid;
-  gap: 5px;
-  min-width: 0;
-}
-.sapling-monitoring__incident-title {
-  font-weight: 700;
-  line-height: 1.25;
-}
-.sapling-monitoring__incident-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px 14px;
-  align-items: center;
-  line-height: 1.35;
-  opacity: 1;
-}
-.sapling-monitoring__incident-meta span {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-.sapling-monitoring__incident-icon {
-  display: grid;
-  width: 38px;
-  height: 38px;
-  margin-right: 12px;
-  place-items: center;
-  border-radius: 12px;
-}
-.sapling-monitoring__incident-state {
-  display: grid;
-  gap: 5px;
-  justify-items: end;
-  min-width: 72px;
-}
-.sapling-monitoring__incident-state small {
-  color: color-mix(in srgb, var(--sapling-tilt-text-color) 72%, transparent);
-  font-size: 0.7rem;
-  white-space: nowrap;
-}
-.sapling-monitoring__incident-icon--warning {
-  color: rgb(var(--v-theme-warning));
-  background: rgba(var(--v-theme-warning), 0.14);
-}
-.sapling-monitoring__incident-icon--critical {
-  color: rgb(var(--v-theme-error));
-  background: rgba(var(--v-theme-error), 0.14);
-}
-.sapling-monitoring__rule-groups {
-  margin-top: 10px;
-  max-height: min(640px, 68vh);
-  padding-right: 3px;
-  overflow-y: auto;
-}
-.sapling-monitoring__rule {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) 110px;
+  justify-content: space-between;
   gap: 12px;
-  align-items: center;
-  padding: 10px 0;
-  border-bottom: 1px solid rgba(var(--v-border-color), 0.12);
+  margin-bottom: 12px;
 }
-.sapling-monitoring__rule:last-child {
-  border-bottom: 0;
+.monitoring-panel__header h3 {
+  margin: 0;
+  font-size: 1rem;
 }
-.sapling-monitoring__rule-copy {
+.monitoring-panel__header > span {
+  color: rgb(var(--v-theme-on-surface-variant));
+}
+.monitoring-service-matrix,
+.monitoring-incident-stack {
   display: grid;
 }
-.sapling-monitoring__rule-copy span {
-  color: color-mix(in srgb, var(--sapling-tilt-text-color) 72%, transparent);
-  font-size: 0.8rem;
-}
-.sapling-monitoring__clickable {
-  cursor: pointer;
-}
-.sapling-monitoring__clickable:hover {
-  background: rgba(var(--v-theme-primary), 0.045);
-}
-.sapling-monitoring__user-cell {
-  display: flex;
+.monitoring-service-row {
+  display: grid;
+  grid-template-columns: 12px minmax(100px, 0.7fr) minmax(120px, 1fr) auto;
   align-items: center;
   gap: 10px;
+  min-height: 42px;
+  border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
 }
-.sapling-monitoring__user-dialog {
-  min-height: 0;
+.monitoring-service-row:first-child {
+  border-top: 0;
 }
-:deep(.sapling-monitoring__user-dialog-body) {
-  display: flex;
-  flex: 1 1 auto;
-  min-height: 0;
+.monitoring-service-row span,
+.monitoring-service-row time {
   overflow: hidden;
+  color: rgb(var(--v-theme-on-surface-variant));
+  font-size: 0.78rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
-.sapling-monitoring__detail-sections {
+.monitoring-status-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 99px;
+  background: rgb(var(--v-theme-warning));
+  box-shadow: 0 0 0 4px rgba(var(--v-theme-warning), 0.12);
+}
+.monitoring-status-dot.is-healthy {
+  background: rgb(var(--v-theme-success));
+  box-shadow: 0 0 0 4px rgba(var(--v-theme-success), 0.12);
+}
+.monitoring-status-dot.is-critical {
+  background: rgb(var(--v-theme-error));
+  box-shadow: 0 0 0 4px rgba(var(--v-theme-error), 0.12);
+}
+.monitoring-incident-row {
   display: grid;
-  align-content: start;
-  gap: var(--sapling-gap-lg);
-  width: 100%;
-  min-height: 0;
-  overflow-y: auto;
-  padding-right: var(--sapling-space-3xs);
-  overscroll-behavior: contain;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 7px 0;
+  border: 0;
+  border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  color: inherit;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
 }
-.sapling-monitoring__detail-section {
+.monitoring-incident-row:first-child {
+  border-top: 0;
+}
+.monitoring-incident-row span {
   display: grid;
-  gap: var(--sapling-gap-md);
-  padding: 0;
-  overflow: hidden;
-}
-.sapling-monitoring__detail-section-header {
-  align-items: center;
-  padding: var(--sapling-space-panel-md) var(--sapling-space-panel-md) 0;
-}
-.sapling-monitoring__detail-heading {
-  display: flex;
-  align-items: center;
-  gap: var(--sapling-gap-md);
   min-width: 0;
 }
-.sapling-monitoring__detail-heading p {
-  margin: 0 0 var(--sapling-space-2xs);
+.monitoring-incident-row small,
+.monitoring-incident-row time {
+  color: rgb(var(--v-theme-on-surface-variant));
+  font-size: 0.75rem;
 }
-.sapling-monitoring__detail-icon {
+.monitoring-service-cards {
   display: grid;
-  flex: 0 0 auto;
-  place-items: center;
-  width: 2.75rem;
-  height: 2.75rem;
-  border-radius: var(--sapling-radius-sm);
-  background: rgba(var(--v-theme-primary), 0.12);
-  color: rgb(var(--v-theme-primary));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
 }
-.sapling-monitoring__detail-table {
-  min-width: 0;
-  overflow-x: auto;
+.monitoring-service-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 10px;
+  padding: 14px;
 }
-.sapling-monitoring__detail-section .sapling-empty-state-panel {
-  margin: 0 var(--sapling-space-panel-md) var(--sapling-space-panel-md);
-  color: rgb(var(--v-theme-primary));
+.monitoring-service-card div {
+  display: grid;
 }
-.sapling-monitoring__detail-section .sapling-empty-state-panel span {
-  color: rgb(var(--v-theme-on-surface));
-  opacity: var(--sapling-opacity-secondary);
+.monitoring-service-card small,
+.monitoring-service-card time {
+  color: rgb(var(--v-theme-on-surface-variant));
+  font-size: 0.75rem;
 }
-@media (max-width: 1200px) {
-  .sapling-monitoring__metrics {
+.monitoring-service-card time {
+  grid-column: 2;
+}
+.monitoring-slot-stack {
+  display: grid;
+  gap: 14px;
+  margin-top: 14px;
+}
+.monitoring-table {
+  min-width: 620px;
+  background: transparent !important;
+}
+.monitoring-table__secondary {
+  display: block;
+  max-width: 440px;
+  overflow: hidden;
+  color: rgb(var(--v-theme-on-surface-variant));
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.monitoring-rules {
+  display: grid;
+  gap: 2px;
+  max-height: 70vh;
+  overflow: auto;
+}
+.monitoring-rule-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+.monitoring-rule-row span {
+  display: grid;
+}
+.monitoring-rule-row small {
+  color: rgb(var(--v-theme-on-surface-variant));
+}
+.monitoring-diagnosis {
+  display: grid;
+  grid-template-columns: minmax(100px, 0.4fr) 1fr;
+  gap: 8px 14px;
+  margin: 0;
+}
+.monitoring-diagnosis dt {
+  color: rgb(var(--v-theme-on-surface-variant));
+}
+.monitoring-diagnosis dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 1100px) {
+  .monitoring-kpis,
+  .monitoring-service-cards {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .sapling-monitoring__alerts-grid {
-    grid-template-columns: 1fr;
-  }
-  .sapling-monitoring__rule-groups {
-    max-height: none;
-  }
 }
-@media (max-width: 900px) {
-  .sapling-monitoring__toolbar,
-  .sapling-monitoring__chart-grid {
-    display: grid;
+@media (max-width: 760px) {
+  .monitoring-commandbar,
+  .monitoring-commandbar__controls {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .monitoring-commandbar__controls > :not(.v-btn) {
+    width: 100%;
+  }
+  .monitoring-kpis,
+  .monitoring-overview-grid,
+  .monitoring-incident-grid,
+  .monitoring-usage-grid,
+  .monitoring-chart-grid,
+  .monitoring-service-cards {
     grid-template-columns: 1fr;
   }
-  .sapling-monitoring__actions {
-    justify-content: flex-start;
+  .monitoring-service-row {
+    grid-template-columns: 12px 1fr auto;
   }
-  .sapling-monitoring__metrics {
-    grid-template-columns: 1fr;
-  }
-  .sapling-monitoring__navigation {
-    top: 58px;
+  .monitoring-service-row > span:not(.monitoring-status-dot) {
+    grid-column: 2 / -1;
   }
 }
 </style>

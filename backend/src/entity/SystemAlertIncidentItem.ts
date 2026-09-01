@@ -6,6 +6,7 @@ import {
   Property,
 } from '@mikro-orm/decorators/legacy';
 import { SystemAlertRuleItem } from './SystemAlertRuleItem';
+import { SystemTelemetryEnvironmentItem } from './SystemTelemetryEnvironmentItem';
 import { Sapling, SaplingForm } from './global/entity.decorator';
 
 @Entity()
@@ -14,9 +15,17 @@ import { Sapling, SaplingForm } from './global/entity.decorator';
   name: 'system_alert_incident_state_resolved_idx',
   properties: ['state', 'resolvedAt'],
 })
+@Index({
+  name: 'system_alert_incident_environment_state_time_idx',
+  properties: ['environment', 'state', 'lastSeenAt'],
+})
 export class SystemAlertIncidentItem {
   @Property({ primary: true, autoincrement: true })
   handle?: number;
+
+  @Sapling(['isReadOnly'])
+  @ManyToOne(() => SystemTelemetryEnvironmentItem)
+  environment!: Rel<SystemTelemetryEnvironmentItem>;
 
   @Sapling(['isReadOnly'])
   @SaplingForm({
@@ -47,6 +56,20 @@ export class SystemAlertIncidentItem {
   })
   @Property({ length: 320, index: true })
   fingerprint!: string;
+
+  @Sapling(['isReadOnly', 'isChip'])
+  @Property({ length: 24, default: 'threshold' })
+  incidentType:
+    'threshold' | 'anomaly' | 'canary' | 'errorSpike' | 'collectorGap' =
+    'threshold';
+
+  @Sapling(['isReadOnly'])
+  @Property({ length: 320, nullable: true, index: true })
+  correlationKey?: string | null;
+
+  @Sapling(['isReadOnly', 'isSystem'])
+  @Property({ type: 'json', nullable: true })
+  diagnosis?: Record<string, unknown> | null;
 
   @Sapling(['isReadOnly'])
   @SaplingForm({
@@ -197,6 +220,10 @@ export class SystemAlertIncidentItem {
   })
   @Property({ type: 'datetime', nullable: true })
   resolvedAt?: Date | null;
+
+  @Sapling(['isReadOnly'])
+  @Property({ length: 48, nullable: true })
+  resolvedReason?: string | null;
 
   @Sapling(['isReadOnly', 'isSystem'])
   @Property({ type: 'datetime', onCreate: () => new Date() })

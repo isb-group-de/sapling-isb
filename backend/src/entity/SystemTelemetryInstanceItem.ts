@@ -1,10 +1,30 @@
-import { Entity, Property } from '@mikro-orm/decorators/legacy';
+import { type Rel } from '@mikro-orm/core';
+import {
+  Entity,
+  Index,
+  ManyToOne,
+  Property,
+} from '@mikro-orm/decorators/legacy';
+import { SystemTelemetryEnvironmentItem } from './SystemTelemetryEnvironmentItem';
 import { Sapling, SaplingForm } from './global/entity.decorator';
 
 @Entity()
+@Index({ properties: ['environment', 'processSlot', 'status'] })
 export class SystemTelemetryInstanceItem {
   @Property({ primary: true, length: 128 })
   handle!: string;
+
+  @Sapling(['isReadOnly'])
+  @ManyToOne(() => SystemTelemetryEnvironmentItem)
+  environment!: Rel<SystemTelemetryEnvironmentItem>;
+
+  @Sapling(['isReadOnly', 'isChip'])
+  @Property({ length: 96 })
+  processSlot!: string;
+
+  @Sapling(['isReadOnly'])
+  @Property({ length: 64, unique: true })
+  bootId!: string;
 
   @Sapling(['isReadOnly', 'isValue', 'isOrderASC'])
   @SaplingForm({
@@ -80,6 +100,22 @@ export class SystemTelemetryInstanceItem {
   })
   @Property({ default: true })
   collectorEnabled = true;
+
+  @Sapling(['isReadOnly', 'isChip'])
+  @Property({ length: 16, default: 'active', index: true })
+  status: 'active' | 'stopped' | 'retired' = 'active';
+
+  @Sapling(['isReadOnly'])
+  @Property({ type: 'datetime', nullable: true })
+  stoppedAt?: Date | null;
+
+  @Sapling(['isReadOnly'])
+  @Property({ type: 'datetime', nullable: true })
+  retiredAt?: Date | null;
+
+  @Sapling(['isReadOnly'])
+  @Property({ length: 48, nullable: true })
+  lifecycleReason?: string | null;
 
   @Sapling(['isReadOnly', 'isSystem'])
   @Property({ type: 'datetime', onCreate: () => new Date() })

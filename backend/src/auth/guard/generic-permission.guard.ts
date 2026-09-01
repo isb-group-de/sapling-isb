@@ -39,6 +39,15 @@ export type GenericPermissionGuardRequest = Pick<
   user?: PersonItem;
 };
 
+const ADMIN_ONLY_GENERIC_ENTITIES = new Set([
+  'systemTelemetryEnvironment',
+  'systemErrorGroup',
+  'systemErrorOccurrence',
+  'systemCheckRun',
+  'systemRemediationExecution',
+  'systemCanaryRecord',
+]);
+
 /**
  * @class
  * @version         1.0
@@ -111,6 +120,15 @@ export class GenericPermissionGuard implements CanActivate {
     }
 
     if (!user || !entityHandle) {
+      throw new ForbiddenException(`global.permissionDenied`);
+    }
+
+    if (
+      ADMIN_ONLY_GENERIC_ENTITIES.has(entityHandle) &&
+      !Array.from(user.roles ?? []).some(
+        (role) => role.isAdministrator === true,
+      )
+    ) {
       throw new ForbiddenException(`global.permissionDenied`);
     }
 

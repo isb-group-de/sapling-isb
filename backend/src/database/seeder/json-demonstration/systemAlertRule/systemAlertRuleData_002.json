@@ -1,0 +1,42 @@
+[
+  {
+    "handle": "collector-gap",
+    "title": "Telemetry collector gap",
+    "metricKey": "collector.gapSeconds",
+    "severity": "warning",
+    "comparator": "gt",
+    "threshold": 60,
+    "windowSeconds": 60,
+    "minimumCount": 1,
+    "evaluationType": "missingData",
+    "remediationMode": "automatic",
+    "remediationActionKey": "telemetry.recover",
+    "isActive": true
+  },
+  {
+    "handle": "queue-oldest-warning",
+    "title": "Oldest queued job warning",
+    "metricKey": "queue.oldestWaitingSeconds",
+    "severity": "warning",
+    "comparator": "gt",
+    "threshold": 300,
+    "windowSeconds": 300,
+    "minimumCount": 3,
+    "evaluationType": "threshold",
+    "remediationMode": "suggest",
+    "isActive": true
+  },
+  {
+    "handle": "queue-oldest-critical",
+    "title": "Oldest queued job critical",
+    "metricKey": "queue.oldestWaitingSeconds",
+    "severity": "critical",
+    "comparator": "gt",
+    "threshold": 900,
+    "windowSeconds": 300,
+    "minimumCount": 3,
+    "evaluationType": "threshold",
+    "remediationMode": "suggest",
+    "isActive": true
+  }
+]

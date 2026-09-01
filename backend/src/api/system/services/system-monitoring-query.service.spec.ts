@@ -35,6 +35,7 @@ describe('monitoring query ranges', () => {
       { fork: () => ({ getConnection: () => ({ execute }) }) } as never,
       { getStatus: () => ({ lastSampleAt: null }) } as never,
       { getStatus: () => ({}) } as never,
+      { currentId: 'test' } as never,
     );
     const metrics = ['host.cpu.percent', 'host.memory.usedPercent'];
 
@@ -60,6 +61,7 @@ describe('monitoring query ranges', () => {
       { fork: () => ({ getConnection: () => ({ execute }) }) } as never,
       { getStatus: () => ({ lastSampleAt: null }) } as never,
       { getStatus: () => ({}) } as never,
+      { currentId: 'test' } as never,
     );
 
     await service.getUsers({
@@ -105,6 +107,7 @@ describe('monitoring query ranges', () => {
       { fork: () => ({ getConnection: () => ({ execute }) }) } as never,
       { getStatus: () => ({ lastSampleAt: null }) } as never,
       { getStatus: () => ({}) } as never,
+      { currentId: 'test' } as never,
     );
 
     const result = await service.getRequests({

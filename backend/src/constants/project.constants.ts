@@ -488,6 +488,21 @@ export const SYSTEM_TELEMETRY_INSTANCE_ID: string =
   process.env.INSTANCE_ID?.trim() ||
   '';
 
+/** Stable installation/environment id. Configure this explicitly in production. */
+export const SYSTEM_TELEMETRY_ENVIRONMENT_ID: string =
+  process.env.SYSTEM_TELEMETRY_ENVIRONMENT_ID?.trim() || '';
+
+/** Stable logical backend process slot. */
+export const SYSTEM_TELEMETRY_PROCESS_SLOT: string =
+  process.env.SYSTEM_TELEMETRY_PROCESS_SLOT?.trim() ||
+  SYSTEM_TELEMETRY_INSTANCE_ID ||
+  `backend:${process.env.NODE_APP_INSTANCE || '0'}`;
+
+/** Enables non-destructive synthetic system checks. */
+export const SYSTEM_MONITORING_CHECKS_ENABLED: boolean =
+  process.env.SYSTEM_MONITORING_CHECKS_ENABLED?.trim().toLowerCase() !==
+  'false';
+
 /** Fast infrastructure sampling interval. Values below five seconds are rejected. */
 export const SYSTEM_TELEMETRY_SAMPLE_INTERVAL_MS: number = Math.max(
   5000,

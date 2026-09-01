@@ -2,8 +2,13 @@ import { computed, nextTick, onMounted, ref, watch, type Ref } from 'vue'
 import ApiSystemService from '@/services/api.system.service'
 import type {
   MonitoringAlertRule,
+  MonitoringCheckRun,
   MonitoringChartPoint,
+  MonitoringEnvironment,
+  MonitoringErrorGroup,
   MonitoringIncident,
+  MonitoringRemediationExecution,
+  MonitoringServiceHealth,
   MonitoringSeriesPoint,
   MonitoringSummary,
   MonitoringUser,
@@ -12,7 +17,19 @@ import { useVisibilityAwarePolling } from './useVisibilityAwarePolling'
 import { useSaplingMessageCenter } from './useSaplingMessageCenter'
 
 type RangePreset = '1h' | '6h' | '24h' | '7d' | '30d' | '90d' | 'custom'
-type MonitoringDetail = 'series' | 'requests' | 'users' | 'ai' | 'incidents' | 'rules' | 'status'
+type MonitoringDetail =
+  | 'series'
+  | 'requests'
+  | 'users'
+  | 'ai'
+  | 'incidents'
+  | 'rules'
+  | 'status'
+  | 'environments'
+  | 'services'
+  | 'errors'
+  | 'checks'
+  | 'remediations'
 export const DEFAULT_MONITORING_RANGE_PRESET = '1h' satisfies RangePreset
 export const MONITORING_USERS_PAGE_SIZE = 50
 const MONITORING_METRICS = [
@@ -29,8 +46,6 @@ const MONITORING_METRICS = [
   'documentStorage.sizeBytes',
 ].join(',')
 
-const SERIES_TABS = new Set(['overview', 'performance', 'storage', 'network', 'database'])
-
 export function useSaplingSystemMonitoring(activeTab?: Readonly<Ref<string>>) {
   const { pushMessage } = useSaplingMessageCenter()
   let errorReported = false
@@ -39,6 +54,8 @@ export function useSaplingSystemMonitoring(activeTab?: Readonly<Ref<string>>) {
   const customFrom = ref(toLocalDateTime(new Date(Date.now() - 24 * 60 * 60_000)))
   const customTo = ref(toLocalDateTime(new Date()))
   const usersPage = ref(1)
+  const selectedEnvironment = ref('')
+  const environments = ref<MonitoringEnvironment[]>([])
   const summary = ref<MonitoringSummary | null>(null)
   const series = ref<MonitoringSeriesPoint[]>([])
   const requestSeries = ref<MonitoringChartPoint[]>([])
@@ -49,6 +66,10 @@ export function useSaplingSystemMonitoring(activeTab?: Readonly<Ref<string>>) {
   const incidents = ref<MonitoringIncident[]>([])
   const rules = ref<MonitoringAlertRule[]>([])
   const collectorStatus = ref<Record<string, unknown> | null>(null)
+  const services = ref<MonitoringServiceHealth[]>([])
+  const errorGroups = ref<MonitoringErrorGroup[]>([])
+  const checks = ref<MonitoringCheckRun[]>([])
+  const remediations = ref<MonitoringRemediationExecution[]>([])
   const selectedUser = ref<Record<string, unknown> | null>(null)
   const loading = ref(false)
   const detailsLoading = ref(0)
@@ -78,7 +99,11 @@ export function useSaplingSystemMonitoring(activeTab?: Readonly<Ref<string>>) {
     return { from: new Date(to.getTime() - duration).toISOString(), to: to.toISOString() }
   })
 
-  const query = computed(() => new URLSearchParams(range.value).toString())
+  const query = computed(() => {
+    const params = new URLSearchParams(range.value)
+    if (selectedEnvironment.value) params.set('environment', selectedEnvironment.value)
+    return params.toString()
+  })
 
   async function loadSummary() {
     if (rangePreset.value !== 'custom') rangeAnchor.value = Date.now()
@@ -123,6 +148,8 @@ export function useSaplingSystemMonitoring(activeTab?: Readonly<Ref<string>>) {
       [
         () => loadDetail('status', querySnapshot, generation, forceDetails),
         () => loadDetail('incidents', querySnapshot, generation, forceDetails),
+        () => loadDetail('environments', querySnapshot, generation, forceDetails),
+        () => loadDetail('services', querySnapshot, generation, forceDetails),
         ...visibleDetailTasks(
           activeTab?.value ?? 'overview',
           querySnapshot,
@@ -140,25 +167,9 @@ export function useSaplingSystemMonitoring(activeTab?: Readonly<Ref<string>>) {
     generation: number,
     force = false,
   ): Array<() => Promise<void>> {
-    if (SERIES_TABS.has(tab)) {
-      return [() => loadDetail('series', querySnapshot, generation, force)]
-    }
-    if (tab === 'requests') {
-      return [() => loadDetail('requests', querySnapshot, generation, force)]
-    }
-    if (tab === 'users') {
-      return [() => loadDetail('users', querySnapshot, generation, force)]
-    }
-    if (tab === 'ai') {
-      return [() => loadDetail('ai', querySnapshot, generation, force)]
-    }
-    if (tab === 'alerts') {
-      return [
-        () => loadDetail('incidents', querySnapshot, generation, force),
-        () => loadDetail('rules', querySnapshot, generation, force),
-      ]
-    }
-    return []
+    return monitoringDetailsForArea(tab).map(
+      (detail) => () => loadDetail(detail, querySnapshot, generation, force),
+    )
   }
 
   async function loadVisibleDetails(tab: string) {
@@ -213,18 +224,58 @@ export function useSaplingSystemMonitoring(activeTab?: Readonly<Ref<string>>) {
       )
       if (rangeIsCurrent()) aiGroups.value = response.groups
     } else if (detail === 'incidents') {
-      const response = await ApiSystemService.get<MonitoringIncident[]>('monitoring/incidents')
-      if (generation === loadGeneration) incidents.value = response
+      const response = await ApiSystemService.get<MonitoringIncident[]>(
+        `monitoring/incidents?${querySnapshot}`,
+      )
+      if (rangeIsCurrent()) incidents.value = response
     } else if (detail === 'rules') {
       const response = await ApiSystemService.get<MonitoringAlertRule[]>('monitoring/alert-rules')
       if (generation === loadGeneration) rules.value = response
+    } else if (detail === 'environments') {
+      const response = await ApiSystemService.get<{
+        current: string
+        environments: MonitoringEnvironment[]
+      }>('monitoring/environments')
+      if (generation === loadGeneration) {
+        environments.value = response.environments
+        if (!selectedEnvironment.value) selectedEnvironment.value = response.current
+      }
+    } else if (detail === 'services') {
+      const response = await ApiSystemService.get<{ services: MonitoringServiceHealth[] }>(
+        `monitoring/services?${querySnapshot}`,
+      )
+      if (rangeIsCurrent()) services.value = response.services
+    } else if (detail === 'errors') {
+      const response = await ApiSystemService.get<{ groups: MonitoringErrorGroup[] }>(
+        `monitoring/errors?${querySnapshot}`,
+      )
+      if (rangeIsCurrent()) errorGroups.value = response.groups
+    } else if (detail === 'checks') {
+      const response = await ApiSystemService.get<{ checks: MonitoringCheckRun[] }>(
+        `monitoring/checks?${querySnapshot}`,
+      )
+      if (rangeIsCurrent()) checks.value = response.checks
+    } else if (detail === 'remediations') {
+      const response = await ApiSystemService.get<{ executions: MonitoringRemediationExecution[] }>(
+        `monitoring/remediations?${querySnapshot}`,
+      )
+      if (rangeIsCurrent()) remediations.value = response.executions
     } else {
       const response = await ApiSystemService.get<Record<string, unknown>>(
-        'monitoring/collector-status',
+        `monitoring/collector-status?${querySnapshot}`,
       )
-      if (generation === loadGeneration) collectorStatus.value = response
+      if (rangeIsCurrent()) collectorStatus.value = response
     }
-    const isRangeDependent = ['series', 'requests', 'users', 'ai'].includes(detail)
+    const isRangeDependent = [
+      'series',
+      'requests',
+      'users',
+      'ai',
+      'services',
+      'errors',
+      'checks',
+      'remediations',
+    ].includes(detail)
     if (generation === loadGeneration && (!isRangeDependent || rangeIsCurrent())) {
       detailLoadedFor.set(detail, querySnapshot)
     }
@@ -279,6 +330,19 @@ export function useSaplingSystemMonitoring(activeTab?: Readonly<Ref<string>>) {
     }
   }
 
+  async function executeRemediation(actionKey: string, incidentHandle: number) {
+    try {
+      await ApiSystemService.post(`monitoring/remediations/${encodeURIComponent(actionKey)}`, {
+        incidentHandle,
+      })
+      detailLoadedFor.delete('remediations')
+      await loadAll()
+    } catch (remediationError) {
+      reportLoadError(remediationError)
+      throw remediationError
+    }
+  }
+
   function reportLoadError(technical?: unknown) {
     error.value = 'system.monitoringLoadFailed'
     if (errorReported) return
@@ -294,7 +358,10 @@ export function useSaplingSystemMonitoring(activeTab?: Readonly<Ref<string>>) {
     if (rangePreset.value === 'custom') void loadAll()
   })
   watch(usersPage, () => {
-    if ((activeTab?.value ?? 'users') === 'users') void loadUsersPage()
+    if (['usage', 'users'].includes(activeTab?.value ?? 'users')) void loadUsersPage()
+  })
+  watch(selectedEnvironment, (next, previous) => {
+    if (previous && next !== previous) void loadAll()
   })
   if (activeTab) watch(activeTab, (tab) => void loadVisibleDetails(tab))
   useVisibilityAwarePolling(loadSummary, 30_000)
@@ -302,6 +369,8 @@ export function useSaplingSystemMonitoring(activeTab?: Readonly<Ref<string>>) {
 
   return {
     rangePreset,
+    selectedEnvironment,
+    environments,
     customFrom,
     customTo,
     usersPage,
@@ -315,6 +384,10 @@ export function useSaplingSystemMonitoring(activeTab?: Readonly<Ref<string>>) {
     incidents,
     rules,
     collectorStatus,
+    services,
+    errorGroups,
+    checks,
+    remediations,
     selectedUser,
     loading,
     detailsLoading,
@@ -322,7 +395,18 @@ export function useSaplingSystemMonitoring(activeTab?: Readonly<Ref<string>>) {
     loadAll,
     loadUser,
     updateRule,
+    executeRemediation,
   }
+}
+
+export function monitoringDetailsForArea(tab: string): MonitoringDetail[] {
+  if (tab === 'performance' || tab === 'requests') return ['series', 'requests']
+  if (tab === 'overview' || tab === 'services') return ['series']
+  if (tab === 'usage' || tab === 'users' || tab === 'ai') return ['users', 'ai']
+  if (tab === 'incidents' || tab === 'alerts') {
+    return ['incidents', 'rules', 'errors', 'checks', 'remediations']
+  }
+  return []
 }
 
 export async function runWithConcurrency(tasks: Array<() => Promise<void>>, concurrency: number) {

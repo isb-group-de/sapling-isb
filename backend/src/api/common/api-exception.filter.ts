@@ -5,12 +5,13 @@ import {
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
-import { randomUUID } from 'crypto';
 import type { Request, Response } from 'express';
 import {
   buildErrorDiagnostics,
   stringifyErrorForLog,
 } from './error-diagnostics.util';
+import { SystemErrorRecorderService } from '../system/services/system-error-recorder.service';
+import { getSystemRequestContext } from '../system/services/system-request-context';
 
 type ErrorResponseBody = {
   statusCode: number;
@@ -26,11 +27,14 @@ type ErrorResponseBody = {
 
 @Catch()
 export class ApiExceptionFilter implements ExceptionFilter {
+  constructor(private readonly errorRecorder?: SystemErrorRecorderService) {}
+
   catch(exception: unknown, host: ArgumentsHost): void {
-    const context = host.switchToHttp();
-    const request = context.getRequest<Request>();
-    const response = context.getResponse<Response>();
-    const requestId = randomUUID();
+    const httpContext = host.switchToHttp();
+    const request = httpContext.getRequest<Request>();
+    const response = httpContext.getResponse<Response>();
+    const requestContext = getSystemRequestContext();
+    const requestId = requestContext?.requestId ?? 'unavailable';
     const status =
       exception instanceof HttpException
         ? exception.getStatus()
@@ -64,6 +68,15 @@ export class ApiExceptionFilter implements ExceptionFilter {
     };
 
     this.logException(request, payload, exception);
+    if (status >= 500) {
+      void this.errorRecorder?.record({
+        source: 'backend',
+        operation: `${request.method} ${this.requestRoutePath(request)}`,
+        error: exception,
+        requestId,
+        correlationId: requestContext?.correlationId,
+      });
+    }
     response.status(status).json(payload);
   }
 
@@ -142,6 +155,14 @@ export class ApiExceptionFilter implements ExceptionFilter {
     return typeof handle === 'string' || typeof handle === 'number'
       ? handle
       : null;
+  }
+
+  private requestRoutePath(request: Request): string {
+    const route = request.route as unknown;
+    if (this.isRecord(route) && typeof route.path === 'string') {
+      return route.path;
+    }
+    return request.path || 'unknown';
   }
 
   private redactValue(value: unknown): unknown {

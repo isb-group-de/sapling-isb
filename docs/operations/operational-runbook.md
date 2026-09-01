@@ -234,14 +234,22 @@ size-sorted lists only when opened through `GET /api/system/database/tables`
 and `GET /api/system/document-storage/entities`; closing the dialog keeps those
 full lists out of the normal system-monitor refresh cycle.
 
-The same page also reads persistent server-side telemetry. Collection runs in
-the backend even when no browser has the page open. Infrastructure samples are
-taken every ten seconds by default, HTTP activity is written in aggregated
-minute buckets, and AI usage plus login events are retained for up to 90 days.
-Check `GET /api/system/monitoring/collector-status` when charts show a gap.
-The relevant environment switches are `SYSTEM_TELEMETRY_ENABLED`,
-`SYSTEM_TELEMETRY_INSTANCE_ID`, `SYSTEM_TELEMETRY_SAMPLE_INTERVAL_MS`, and
-`SYSTEM_TELEMETRY_SPOOL_MAX_MB`.
+The same page is an environment-aware monitoring workspace. Collection and
+active checks run in the backend even when no browser has the page open.
+Infrastructure samples are taken every ten seconds by default, HTTP activity is
+aggregated in minute buckets, and grouped errors, checks, incidents, and safe
+remediation evidence are retained according to
+[`system-monitoring.md`](../features/system-monitoring.md). Check
+`GET /api/system/monitoring/collector-status` and
+`GET /api/system/monitoring/checks` when charts show a gap.
+
+Set `SYSTEM_TELEMETRY_ENVIRONMENT_ID` to the same stable value on every process
+of one installation and give each process a stable
+`SYSTEM_TELEMETRY_PROCESS_SLOT`. Also review `SYSTEM_TELEMETRY_ENABLED`,
+`SYSTEM_MONITORING_CHECKS_ENABLED`, `SYSTEM_TELEMETRY_SAMPLE_INTERVAL_MS`, and
+`SYSTEM_TELEMETRY_SPOOL_MAX_MB`. A complete outage of the only host is visible
+only after restart because this deployment deliberately has no external
+watchdog.
 
 After deployment or an update:
 
@@ -255,6 +263,9 @@ After deployment or an update:
 8. File upload/download works for one test record.
 9. Optional Redis-backed deliveries can enqueue and complete.
 10. Semantic search works if AI/vectorization is enabled.
+11. `/api/health/live` and `/api/health/ready` return successfully.
+12. `/system` shows the expected environment and recent database, application,
+    and telemetry check results.
 
 ## Ubuntu Deployment And Updates
 

@@ -5,73 +5,44 @@
   >
     <template v-if="isLoading">
       <div class="sapling-system-skeleton">
-        <SaplingSurface :as="VSkeletonLoader" type="article" />
+        <v-skeleton-loader type="article" />
         <div class="sapling-system-skeleton__metrics">
-          <SaplingSurface v-for="item in 4" :key="item" :as="VSkeletonLoader" type="article" />
+          <v-skeleton-loader v-for="item in 4" :key="item" type="article" />
         </div>
         <div class="sapling-system-skeleton__sections">
-          <SaplingSurface :as="VSkeletonLoader" type="article" />
-          <SaplingSurface :as="VSkeletonLoader" type="article" />
+          <v-skeleton-loader type="article" />
+          <v-skeleton-loader type="article" />
         </div>
       </div>
     </template>
 
     <template v-else>
-      <SaplingPageHero
-        class="sapling-system-hero"
-        variant="system"
-        :eyebrow="$t('system.system')"
-        :title="systemTitle"
-        :subtitle="systemSubtitle"
-      >
-        <template #meta>
-          <v-chip size="small" color="primary" variant="tonal">
-            {{ displayValue(os?.platform) }}
+      <header class="sapling-system-context glass-panel sapling-data-card">
+        <div class="sapling-system-context__title">
+          <span class="sapling-label">{{ $t('system.system') }}</span>
+          <strong>{{ systemTitle }}</strong>
+          <small>{{ systemSubtitle }}</small>
+        </div>
+        <div class="sapling-system-context__meta">
+          <v-chip :color="state?.isReady ? 'success' : 'error'" size="small" variant="tonal">
+            {{ state?.isReady ? $t('system.operational') : $t('system.requiresAttention') }}
           </v-chip>
-          <v-chip size="small" variant="outlined">
-            {{ displayValue(os?.arch) }}
-          </v-chip>
-          <v-chip v-if="version?.version" size="small" variant="outlined">
-            v{{ version.version }}
-          </v-chip>
-        </template>
-
-        <template #side>
-          <div class="sapling-system-hero__side">
-            <article class="sapling-system-hero-card sapling-data-card">
-              <div class="sapling-section-header">
-                <span class="sapling-label">{{ $t('system.health') }}</span>
-                <v-chip :color="state?.isReady ? 'success' : 'error'" size="small" variant="tonal">
-                  {{ state?.isReady ? $t('system.isReady') : $t('system.isNotReady') }}
-                </v-chip>
-              </div>
-              <strong>{{
-                state?.isReady ? $t('system.operational') : $t('system.requiresAttention')
-              }}</strong>
-              <p class="sapling-muted-copy">{{ $t('system.liveFeedHint') }}</p>
-            </article>
-
-            <article class="sapling-system-hero-card sapling-data-card">
-              <div class="sapling-section-header">
-                <span class="sapling-label">{{ $t('system.runtime') }}</span>
-                <v-btn
-                  icon="mdi-refresh"
-                  size="small"
-                  variant="text"
-                  :loading="refreshing"
-                  :title="$t('system.refresh')"
-                  @click="refreshDashboard"
-                />
-              </div>
-              <v-skeleton-loader v-if="timeLoading" type="text" width="160" />
-              <strong v-else>{{ formattedServerTime }}</strong>
-              <p class="sapling-muted-copy">
-                {{ $t('system.lastRefresh') }}: {{ lastUpdatedDisplay }}
-              </p>
-            </article>
-          </div>
-        </template>
-      </SaplingPageHero>
+          <v-chip size="small" variant="tonal">{{ displayValue(os?.platform) }}</v-chip>
+          <v-chip size="small" variant="outlined">{{ displayValue(os?.arch) }}</v-chip>
+          <v-chip v-if="version?.version" size="small" variant="outlined"
+            >v{{ version.version }}</v-chip
+          >
+          <span>{{ formattedServerTime }}</span>
+          <v-btn
+            icon="mdi-refresh"
+            size="small"
+            variant="text"
+            :loading="refreshing"
+            :title="$t('system.refresh')"
+            @click="refreshDashboard"
+          />
+        </div>
+      </header>
 
       <SaplingSystemMonitoring>
         <template #performance>
@@ -166,11 +137,8 @@
 // #region Imports
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { VSkeletonLoader } from 'vuetify/components'
 import type { Database, NetworkInterface } from '@/entity/system'
 import { useSaplingSystem } from '@/composables/system/useSaplingSystem'
-import SaplingPageHero from '@/components/common/SaplingPageHero.vue'
-import SaplingSurface from '@/components/common/SaplingSurface.vue'
 import SaplingSystemDatabasePanel from '@/components/system/SaplingSystemDatabasePanel.vue'
 import SaplingSystemDocumentStoragePanel from '@/components/system/SaplingSystemDocumentStoragePanel.vue'
 import SaplingSystemNetworkPanel from '@/components/system/SaplingSystemNetworkPanel.vue'
@@ -214,7 +182,6 @@ const {
   documentStorageEntities,
   documentStorageEntitiesLoading,
   documentStorageEntitiesError,
-  lastUpdated,
   isLoading,
   fetchAll,
   fetchDatabaseTables,
@@ -267,14 +234,6 @@ const versionDisplay = computed(() =>
 const timezoneDisplay = computed(() => {
   const parts = [time.value?.timezoneName, time.value?.timezone].filter(Boolean)
   return parts.length ? parts.join(' • ') : t('global.notAvailable')
-})
-
-const lastUpdatedDisplay = computed(() => {
-  if (!lastUpdated.value) {
-    return t('global.notAvailable')
-  }
-
-  return formatDateTime(lastUpdated.value.toISOString())
 })
 
 const cpuSpeedSummary = computed(() => {
@@ -610,5 +569,44 @@ async function openSizeDetails(kind: 'database' | 'documentStorage') {
 
 .sapling-system-tab-panel {
   width: 100%;
+}
+
+.sapling-system-context {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 68px;
+  margin-bottom: 14px;
+  padding: 10px 16px;
+}
+
+.sapling-system-context__title {
+  display: grid;
+  grid-template-columns: auto auto;
+  align-items: baseline;
+  gap: 2px 10px;
+}
+
+.sapling-system-context__title small {
+  grid-column: 2;
+  color: rgb(var(--v-theme-on-surface-variant));
+}
+
+.sapling-system-context__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  color: rgb(var(--v-theme-on-surface-variant));
+  font-size: 0.8rem;
+}
+
+@media (max-width: 760px) {
+  .sapling-system-context {
+    align-items: flex-start;
+    flex-direction: column;
+  }
 }
 </style>

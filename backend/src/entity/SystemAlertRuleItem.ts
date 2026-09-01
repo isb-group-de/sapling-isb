@@ -37,6 +37,33 @@ export class SystemAlertRuleItem {
   metricKey!: string;
 
   @Sapling(['isReadOnly', 'isChip'])
+  @Property({ length: 24, default: 'threshold' })
+  evaluationType:
+    | 'threshold'
+    | 'rate'
+    | 'missingData'
+    | 'baseline'
+    | 'sloBurn'
+    | 'errorSpike'
+    | 'checkFailure' = 'threshold';
+
+  @Sapling(['isReadOnly', 'isSystem'])
+  @Property({ type: 'json', nullable: true })
+  evaluationConfig?: Record<string, unknown> | null;
+
+  @Sapling(['isReadOnly'])
+  @Property({ default: false })
+  shadowMode = false;
+
+  @Sapling(['isReadOnly', 'isChip'])
+  @Property({ length: 16, default: 'none' })
+  remediationMode: 'none' | 'suggest' | 'automatic' = 'none';
+
+  @Sapling(['isReadOnly'])
+  @Property({ length: 96, nullable: true })
+  remediationActionKey?: string | null;
+
+  @Sapling(['isReadOnly', 'isChip'])
   @SaplingForm({
     order: 300,
     group: 'systemAlertRule.groupBasics',

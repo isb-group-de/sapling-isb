@@ -6,6 +6,7 @@ import {
 import { EntityManager } from '@mikro-orm/core';
 import systeminformation from 'systeminformation';
 import os from 'os';
+import { randomUUID } from 'crypto';
 import { monitorEventLoopDelay } from 'perf_hooks';
 import { Queue } from 'bullmq';
 import {
@@ -15,7 +16,6 @@ import {
   REDIS_SERVER,
   REDIS_USERNAME,
   SYSTEM_TELEMETRY_ENABLED,
-  SYSTEM_TELEMETRY_INSTANCE_ID,
   SYSTEM_TELEMETRY_SAMPLE_INTERVAL_MS,
 } from '../../../constants/project.constants';
 import { DatabaseService } from './database.service';
@@ -23,6 +23,9 @@ import { DocumentStorageService } from './document-storage.service';
 import { VersionService } from './version.service';
 import { TelemetrySpoolService } from './telemetry-spool.service';
 import { FilesystemService } from './filesystem.service';
+import { SystemTelemetryEnvironmentService } from './system-telemetry-environment.service';
+import { SYSTEM_PROCESS_SLOT } from './system-telemetry-context';
+import { HttpTelemetryService } from './http-telemetry.service';
 
 type NumericMetric = {
   key: string;
@@ -34,9 +37,8 @@ type NumericMetric = {
 export class SystemTelemetryCollectorService
   implements OnModuleInit, OnApplicationShutdown
 {
-  readonly instanceId =
-    SYSTEM_TELEMETRY_INSTANCE_ID ||
-    `${os.hostname()}:${process.env.NODE_APP_INSTANCE || '0'}`;
+  readonly bootId = randomUUID();
+  readonly instanceId = `${SYSTEM_PROCESS_SLOT}:${this.bootId}`.slice(0, 128);
   private readonly eventLoopDelay = monitorEventLoopDelay({ resolution: 20 });
   private timer?: NodeJS.Timeout;
   private startupTimer?: NodeJS.Timeout;
@@ -57,10 +59,13 @@ export class SystemTelemetryCollectorService
     private readonly versionService: VersionService,
     private readonly spool: TelemetrySpoolService,
     private readonly filesystemService: FilesystemService,
+    private readonly environment: SystemTelemetryEnvironmentService,
+    private readonly httpTelemetry: HttpTelemetryService,
   ) {}
 
-  onModuleInit(): void {
+  async onModuleInit(): Promise<void> {
     if (!SYSTEM_TELEMETRY_ENABLED) return;
+    await this.prepareInstance();
     if (REDIS_ENABLED) {
       this.queues = MONITORED_QUEUE_NAMES.map(
         (name) =>
@@ -88,6 +93,7 @@ export class SystemTelemetryCollectorService
     if (this.startupTimer) clearTimeout(this.startupTimer);
     if (this.timer) clearInterval(this.timer);
     this.eventLoopDelay.disable();
+    await this.markStopped();
     await Promise.allSettled(this.queues.map((queue) => queue.close()));
   }
 
@@ -95,6 +101,9 @@ export class SystemTelemetryCollectorService
     return {
       enabled: SYSTEM_TELEMETRY_ENABLED,
       instanceId: this.instanceId,
+      environmentId: this.environment.currentId,
+      processSlot: SYSTEM_PROCESS_SLOT,
+      bootId: this.bootId,
       sampleIntervalMs: SYSTEM_TELEMETRY_SAMPLE_INTERVAL_MS,
       running: this.running,
       sampleCount: this.sampleCount,
@@ -138,6 +147,10 @@ export class SystemTelemetryCollectorService
         {
           key: 'process.startedAtEpochMs',
           value: Date.now() - process.uptime() * 1000,
+        },
+        {
+          key: 'http.activeRequests',
+          value: this.httpTelemetry.getStatus().activeRequests,
         },
       ];
 
@@ -188,11 +201,12 @@ export class SystemTelemetryCollectorService
 
       if (now.getTime() - this.lastMinuteCollectionAt >= 60_000) {
         this.lastMinuteCollectionAt = now.getTime();
-        const [filesystems, database] = await Promise.all([
+        const [filesystems, database, databaseRuntime] = await Promise.all([
           safeSource('filesystem', () =>
             this.filesystemService.getFilesystem(),
           ),
           safeSource('database', () => this.databaseService.getDatabase()),
+          safeSource('database-runtime', () => this.collectDatabaseRuntime()),
         ]);
         for (const filesystem of filesystems ?? []) {
           const dimension = sanitizeDimension(
@@ -232,13 +246,18 @@ export class SystemTelemetryCollectorService
             },
           );
         }
+        if (databaseRuntime) metrics.push(...databaseRuntime);
         const queueCounts = await Promise.all(
           this.queues.map(async (queue) => {
-            const [counts, paused] = await Promise.all([
+            const pingStartedAt = performance.now();
+            const [counts, paused, oldestWaiting] = await Promise.all([
               safeSource(`queue:${queue.name}`, () =>
                 queue.getJobCounts('waiting', 'active', 'failed', 'delayed'),
               ),
               safeSource(`queue:${queue.name}:paused`, () => queue.isPaused()),
+              safeSource(`queue:${queue.name}:oldest`, () =>
+                queue.getWaiting(0, 0),
+              ),
             ]);
             const countRecord = counts as unknown as Record<
               string,
@@ -255,6 +274,14 @@ export class SystemTelemetryCollectorService
                     paused: paused ? 1 : 0,
                   }
                 : null,
+              pingMs: performance.now() - pingStartedAt,
+              oldestWaitingSeconds:
+                Array.isArray(oldestWaiting) && oldestWaiting[0]?.timestamp
+                  ? Math.max(
+                      0,
+                      (Date.now() - oldestWaiting[0].timestamp) / 1000,
+                    )
+                  : 0,
             };
           }),
         );
@@ -273,6 +300,18 @@ export class SystemTelemetryCollectorService
               dimension: queue.name,
             });
           }
+          metrics.push(
+            {
+              key: 'queue.connectionLatencyMs',
+              value: queue.pingMs,
+              dimension: queue.name,
+            },
+            {
+              key: 'queue.oldestWaitingSeconds',
+              value: queue.oldestWaitingSeconds,
+              dimension: queue.name,
+            },
+          );
         }
         if (now.getTime() - this.lastExpensiveCollectionAt >= 15 * 60_000) {
           this.lastExpensiveCollectionAt = now.getTime();
@@ -330,21 +369,26 @@ export class SystemTelemetryCollectorService
     metrics: NumericMetric[],
   ): Promise<void> {
     const em = this.em.fork();
+    await this.environment.ensure(em);
     const version = this.versionService.getVersion().version ?? null;
     await em.getConnection().execute(
       `insert into "system_telemetry_instance_item" (
-        "handle", "hostname", "app_version", "process_started_at",
-        "last_sample_at", "collector_enabled", "created_at", "updated_at"
-      ) values (?, ?, ?, ?, ?, true, now(), now())
+        "handle", "environment_handle", "process_slot", "boot_id", "hostname", "app_version", "process_started_at",
+        "last_sample_at", "collector_enabled", "status", "created_at", "updated_at"
+      ) values (?, ?, ?, ?, ?, ?, ?, ?, true, 'active', now(), now())
       on conflict ("handle") do update set
         "hostname" = excluded."hostname",
         "app_version" = excluded."app_version",
         "process_started_at" = excluded."process_started_at",
         "last_sample_at" = excluded."last_sample_at",
         "collector_enabled" = true,
+        "status" = 'active',
         "updated_at" = now()`,
       [
         this.instanceId,
+        this.environment.currentId,
+        SYSTEM_PROCESS_SLOT,
+        this.bootId,
         os.hostname(),
         version,
         new Date(Date.now() - process.uptime() * 1000),
@@ -377,6 +421,50 @@ export class SystemTelemetryCollectorService
     }
   }
 
+  private async prepareInstance(): Promise<void> {
+    const em = this.em.fork();
+    await this.environment.ensure(em);
+    await em.getConnection().execute(
+      `update "system_telemetry_instance_item" set "status" = 'retired',
+        "retired_at" = now(), "lifecycle_reason" = 'uncleanRestart', "updated_at" = now()
+       where "environment_handle" = ? and "process_slot" = ? and "status" = 'active'`,
+      [this.environment.currentId, SYSTEM_PROCESS_SLOT],
+    );
+    const version = this.versionService.getVersion().version ?? null;
+    await em.getConnection().execute(
+      `insert into "system_telemetry_instance_item" (
+        "handle", "environment_handle", "process_slot", "boot_id", "hostname", "app_version",
+        "process_started_at", "collector_enabled", "status", "created_at", "updated_at"
+      ) values (?, ?, ?, ?, ?, ?, ?, true, 'active', now(), now())`,
+      [
+        this.instanceId,
+        this.environment.currentId,
+        SYSTEM_PROCESS_SLOT,
+        this.bootId,
+        os.hostname(),
+        version,
+        new Date(),
+      ],
+    );
+  }
+
+  private async markStopped(): Promise<void> {
+    if (!SYSTEM_TELEMETRY_ENABLED) return;
+    try {
+      await this.em
+        .fork()
+        .getConnection()
+        .execute(
+          `update "system_telemetry_instance_item" set "status" = 'stopped',
+          "stopped_at" = now(), "lifecycle_reason" = 'gracefulShutdown',
+          "collector_enabled" = false, "updated_at" = now() where "handle" = ?`,
+          [this.instanceId],
+        );
+    } catch (error) {
+      global.log?.warn?.('telemetry instance shutdown state failed', error);
+    }
+  }
+
   private measureProcessCpuPercent(): number {
     const measuredAt = process.hrtime.bigint();
     const usage = process.cpuUsage(this.previousCpuUsage);
@@ -391,6 +479,38 @@ export class SystemTelemetryCollectorService
         Math.max(1, os.cpus().length)) *
       100
     );
+  }
+
+  private async collectDatabaseRuntime(): Promise<NumericMetric[]> {
+    const startedAt = performance.now();
+    const rows = (await this.em
+      .fork()
+      .getConnection()
+      .execute(
+        `select (select count(*) from pg_locks where not granted)::int as "waitingLocks",
+         coalesce(sum("deadlocks"), 0)::bigint as "deadlocks",
+         coalesce(sum("xact_rollback"), 0)::bigint as "rollbacks"
+       from pg_stat_database where "datname" = current_database()`,
+      )) as Array<{
+      waitingLocks: number;
+      deadlocks: number;
+      rollbacks: number;
+    }>;
+    return [
+      { key: 'database.probeLatencyMs', value: performance.now() - startedAt },
+      {
+        key: 'database.waitingLocks',
+        value: Number(rows[0]?.waitingLocks ?? 0),
+      },
+      {
+        key: 'database.deadlocksTotal',
+        value: Number(rows[0]?.deadlocks ?? 0),
+      },
+      {
+        key: 'database.rollbacksTotal',
+        value: Number(rows[0]?.rollbacks ?? 0),
+      },
+    ];
   }
 }
 
@@ -422,7 +542,7 @@ async function safeSource<T>(
   }
 }
 
-const MONITORED_QUEUE_NAMES = [
+export const MONITORED_QUEUE_NAMES = [
   'emails',
   'email-inbox-sync',
   'imports',

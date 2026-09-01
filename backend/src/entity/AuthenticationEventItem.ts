@@ -6,6 +6,7 @@ import {
   Property,
 } from '@mikro-orm/decorators/legacy';
 import { PersonItem } from './PersonItem';
+import { SystemTelemetryEnvironmentItem } from './SystemTelemetryEnvironmentItem';
 import { Sapling, SaplingForm } from './global/entity.decorator';
 
 @Entity()
@@ -14,9 +15,17 @@ import { Sapling, SaplingForm } from './global/entity.decorator';
   name: 'authentication_event_type_time_idx',
   properties: ['eventType', 'occurredAt'],
 })
+@Index({
+  name: 'authentication_event_environment_time_idx',
+  properties: ['environment', 'occurredAt'],
+})
 export class AuthenticationEventItem {
   @Property({ primary: true, autoincrement: true })
   handle?: number;
+
+  @Sapling(['isReadOnly'])
+  @ManyToOne(() => SystemTelemetryEnvironmentItem)
+  environment!: Rel<SystemTelemetryEnvironmentItem>;
 
   @Sapling(['isReadOnly', 'isPerson'])
   @SaplingForm({

@@ -51,7 +51,9 @@ export function applyFormConfigOverlay(
     return sourceTemplates
   }
 
-  const tableOrderMode = hasAbsoluteTableOrder(config) ? 'absolute' : undefined
+  const tableOrderMode: EntityTemplate['tableOrderMode'] = hasAbsoluteTableOrder(config)
+    ? 'absolute'
+    : undefined
 
   return sourceTemplates.map((template) => {
     const fieldConfig = getFieldConfig(config.fields?.[template.name])

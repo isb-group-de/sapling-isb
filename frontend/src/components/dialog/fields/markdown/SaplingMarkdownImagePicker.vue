@@ -52,18 +52,17 @@
 
             <v-progress-linear v-if="isLoading" indeterminate color="primary" rounded />
 
-            <v-alert
-              v-else-if="hasLoadError"
-              type="error"
-              variant="tonal"
-              :text="t('markdownImagePicker.referencedImagesLoadFailed')"
-            >
-              <template #append>
-                <v-btn variant="text" prepend-icon="mdi-refresh" @click="loadImages">
-                  {{ t('global.refresh') }}
-                </v-btn>
-              </template>
-            </v-alert>
+            <div v-else-if="hasLoadError" class="sapling-empty-state-panel" role="status">
+              <div class="sapling-empty-state-panel__icon">
+                <v-icon icon="mdi-image-alert-outline" size="34" />
+              </div>
+              <p class="sapling-empty-state-panel__text">
+                {{ t('markdownImagePicker.referencedImagesLoadFailed') }}
+              </p>
+              <v-btn variant="text" prepend-icon="mdi-refresh" @click="loadImages">
+                {{ t('global.refresh') }}
+              </v-btn>
+            </div>
 
             <div
               v-else-if="filteredImages.length > 0"
@@ -174,6 +173,7 @@ import SaplingDialogShell from '@/components/common/SaplingDialogShell.vue'
 import SaplingTextField from '@/components/common/SaplingTextField.vue'
 import SaplingDialogCard from '@/components/dialog/SaplingDialogCard.vue'
 import { useTranslationLoader } from '@/composables/generic/useTranslationLoader'
+import { useSaplingMessageCenter } from '@/composables/system/useSaplingMessageCenter'
 import ApiDocumentService from '@/services/api.document.service'
 import type { ReferencedImageDocument } from '@/services/api.document.service'
 
@@ -190,6 +190,7 @@ const emit = defineEmits<{
 
 const { d, t } = useI18n()
 const { isLoading: isTranslationLoading } = useTranslationLoader('markdownImagePicker')
+const { pushMessage } = useSaplingMessageCenter()
 const images = ref<ReferencedImageDocument[]>([])
 const selectedHandles = ref<number[]>([])
 const failedPreviewHandles = ref(new Set<number>())
@@ -269,10 +270,17 @@ async function loadImages() {
     if (requestId === loadRequestId) {
       images.value = response
     }
-  } catch {
+  } catch (error) {
     if (requestId === loadRequestId) {
       images.value = []
       hasLoadError.value = true
+      pushMessage(
+        'error',
+        'markdownImagePicker.referencedImagesLoadFailed',
+        '',
+        'markdownImagePicker',
+        error,
+      )
     }
   } finally {
     if (requestId === loadRequestId) {

@@ -1,0 +1,8 @@
+[
+  { "handle": "systemTelemetryEnvironment", "icon": "mdi-earth", "group": "telemetry", "order": 90, "canShow": true, "canRead": true, "canInsert": false, "canUpdate": false, "canDelete": true },
+  { "handle": "systemErrorGroup", "icon": "mdi-bug-outline", "group": "telemetry", "order": 170, "canShow": true, "canRead": true, "canInsert": false, "canUpdate": false, "canDelete": true },
+  { "handle": "systemErrorOccurrence", "icon": "mdi-alert-circle-outline", "group": "telemetry", "order": 180, "canShow": true, "canRead": true, "canInsert": false, "canUpdate": false, "canDelete": true },
+  { "handle": "systemCheckRun", "icon": "mdi-shield-check-outline", "group": "telemetry", "order": 190, "canShow": true, "canRead": true, "canInsert": false, "canUpdate": false, "canDelete": true },
+  { "handle": "systemRemediationExecution", "icon": "mdi-auto-fix", "group": "telemetry", "order": 200, "canShow": true, "canRead": true, "canInsert": false, "canUpdate": false, "canDelete": true },
+  { "handle": "systemCanaryRecord", "icon": "mdi-flask-outline", "group": "telemetry", "order": 999, "canShow": false, "canRead": false, "canInsert": false, "canUpdate": false, "canDelete": false }
+]
