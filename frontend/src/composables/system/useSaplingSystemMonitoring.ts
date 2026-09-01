@@ -25,7 +25,6 @@ type MonitoringDetail =
   | 'incidents'
   | 'rules'
   | 'status'
-  | 'environments'
   | 'services'
   | 'errors'
   | 'checks'
@@ -78,6 +77,8 @@ export function useSaplingSystemMonitoring(activeTab?: Readonly<Ref<string>>) {
   const detailInFlight = new Map<string, Promise<void>>()
   let loadGeneration = 0
   let usersRequest = 0
+  let environmentInitialized = false
+  let environmentRequest: Promise<void> | null = null
 
   const range = computed(() => {
     if (rangePreset.value === 'custom') {
@@ -106,9 +107,11 @@ export function useSaplingSystemMonitoring(activeTab?: Readonly<Ref<string>>) {
   })
 
   async function loadSummary() {
-    if (rangePreset.value !== 'custom') rangeAnchor.value = Date.now()
-    const querySnapshot = query.value
+    let querySnapshot: string | null = null
     try {
+      await ensureEnvironment()
+      if (rangePreset.value !== 'custom') rangeAnchor.value = Date.now()
+      querySnapshot = query.value
       const nextSummary = await ApiSystemService.get<MonitoringSummary>(
         `monitoring/summary?${querySnapshot}`,
       )
@@ -117,17 +120,25 @@ export function useSaplingSystemMonitoring(activeTab?: Readonly<Ref<string>>) {
       error.value = null
       errorReported = false
     } catch {
-      if (querySnapshot === query.value) reportLoadError()
+      if (querySnapshot === null || querySnapshot === query.value) reportLoadError()
     }
   }
 
   async function loadAll() {
+    loading.value = true
+    error.value = null
+    try {
+      await ensureEnvironment()
+    } catch (loadError) {
+      reportLoadError(loadError)
+      loading.value = false
+      return
+    }
+
     if (rangePreset.value !== 'custom') rangeAnchor.value = Date.now()
     const generation = ++loadGeneration
     const querySnapshot = query.value
     const forceDetails = summary.value !== null
-    loading.value = true
-    error.value = null
     try {
       const nextSummary = await ApiSystemService.get<MonitoringSummary>(
         `monitoring/summary?${querySnapshot}`,
@@ -146,19 +157,37 @@ export function useSaplingSystemMonitoring(activeTab?: Readonly<Ref<string>>) {
     await nextTick()
     await runWithConcurrency(
       [
-        () => loadDetail('status', querySnapshot, generation, forceDetails),
-        () => loadDetail('incidents', querySnapshot, generation, forceDetails),
-        () => loadDetail('environments', querySnapshot, generation, forceDetails),
-        () => loadDetail('services', querySnapshot, generation, forceDetails),
         ...visibleDetailTasks(
           activeTab?.value ?? 'overview',
           querySnapshot,
           generation,
           forceDetails,
         ),
+        () => loadDetail('status', querySnapshot, generation, forceDetails),
+        () => loadDetail('incidents', querySnapshot, generation, forceDetails),
+        () => loadDetail('services', querySnapshot, generation, forceDetails),
       ],
       2,
     )
+  }
+
+  async function ensureEnvironment() {
+    if (environmentInitialized) return
+    if (!environmentRequest) {
+      environmentRequest = ApiSystemService.get<{
+        current: string
+        environments: MonitoringEnvironment[]
+      }>('monitoring/environments')
+        .then((response) => {
+          environments.value = response.environments
+          if (!selectedEnvironment.value) selectedEnvironment.value = response.current
+          environmentInitialized = true
+        })
+        .finally(() => {
+          environmentRequest = null
+        })
+    }
+    await environmentRequest
   }
 
   function visibleDetailTasks(
@@ -231,15 +260,6 @@ export function useSaplingSystemMonitoring(activeTab?: Readonly<Ref<string>>) {
     } else if (detail === 'rules') {
       const response = await ApiSystemService.get<MonitoringAlertRule[]>('monitoring/alert-rules')
       if (generation === loadGeneration) rules.value = response
-    } else if (detail === 'environments') {
-      const response = await ApiSystemService.get<{
-        current: string
-        environments: MonitoringEnvironment[]
-      }>('monitoring/environments')
-      if (generation === loadGeneration) {
-        environments.value = response.environments
-        if (!selectedEnvironment.value) selectedEnvironment.value = response.current
-      }
     } else if (detail === 'services') {
       const response = await ApiSystemService.get<{ services: MonitoringServiceHealth[] }>(
         `monitoring/services?${querySnapshot}`,
@@ -401,7 +421,8 @@ export function useSaplingSystemMonitoring(activeTab?: Readonly<Ref<string>>) {
 
 export function monitoringDetailsForArea(tab: string): MonitoringDetail[] {
   if (tab === 'performance' || tab === 'requests') return ['series', 'requests']
-  if (tab === 'overview' || tab === 'services') return ['series']
+  if (tab === 'overview') return ['series']
+  if (tab === 'services') return ['services', 'series']
   if (tab === 'usage' || tab === 'users' || tab === 'ai') return ['users', 'ai']
   if (tab === 'incidents' || tab === 'alerts') {
     return ['incidents', 'rules', 'errors', 'checks', 'remediations']

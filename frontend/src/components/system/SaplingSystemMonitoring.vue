@@ -285,6 +285,27 @@
               <time>{{ dateTime(service.lastCheckedAt) }}</time>
             </article>
           </div>
+          <div class="monitoring-chart-grid monitoring-chart-grid--capacity">
+            <MonitoringChart
+              :eyebrow="$t('system.monitoringStorageDatabase')"
+              :title="$t('system.monitoringDatabaseSize')"
+              :points="metricPoints(['database.sizeBytes'])"
+              value-format="bytes"
+            />
+            <MonitoringChart
+              :eyebrow="$t('system.monitoringStorage')"
+              :title="$t('system.monitoringDocumentStorage')"
+              :points="metricPoints(['documentStorage.sizeBytes'])"
+              value-format="bytes"
+            />
+            <MonitoringChart
+              class="monitoring-chart--wide"
+              :eyebrow="$t('system.monitoringInfrastructure')"
+              :title="$t('system.monitoringNetworkThroughput')"
+              :points="metricPoints(['network.rxBytesPerSecond', 'network.txBytesPerSecond'])"
+              value-format="bytesPerSecond"
+            />
+          </div>
           <div class="monitoring-slot-stack">
             <slot name="database" />
             <slot name="storage" />

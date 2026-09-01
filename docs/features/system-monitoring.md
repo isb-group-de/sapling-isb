@@ -35,9 +35,14 @@ A process slot is stable across restarts; a boot ID is not. The effective
 instance handle is `<process-slot>:<boot-id>`. Startup retires a still-active
 instance in the same slot as an unclean restart, while graceful shutdown marks
 the current instance stopped. Alert evaluation only considers active instances,
-so retired processes cannot create permanent collector-gap incidents. Existing
-pre-migration records are assigned to explicit imported environments rather
-than silently mixed with current production data.
+so retired processes cannot create permanent collector-gap incidents.
+
+The first environment-aware rollout assigned pre-migration records to reserved
+`legacy-imported` and `legacy:*` environments rather than silently mixing them
+with current production data. Those early trial observations were deliberately
+removed by a subsequent one-time migration because they predated a meaningful
+monitoring baseline. Current and future host/configured environments are not
+affected by that cleanup.
 
 ## Metrics And Errors
 

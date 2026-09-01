@@ -48,8 +48,9 @@ const props = withDefaults(
     eyebrow?: string
     points: MonitoringChartPoint[]
     unit?: string
+    valueFormat?: 'number' | 'bytes' | 'bytesPerSecond'
   }>(),
-  { eyebrow: '', unit: '' },
+  { eyebrow: '', unit: '', valueFormat: 'number' },
 )
 const { locale, t } = useI18n()
 const { currentTheme } = useSaplingAppearance()
@@ -74,7 +75,7 @@ const option = computed(() => {
     },
     tooltip: {
       trigger: 'axis',
-      valueFormatter: (value: unknown) => `${formatNumber(Number(value))}${props.unit}`,
+      valueFormatter: (value: unknown) => formatValue(Number(value)),
     },
     dataZoom: [{ type: 'inside' }, { type: 'slider', height: 22, bottom: 12 }],
     xAxis: { type: 'time', axisLabel: { color: mutedText, margin: 18 } },
@@ -82,7 +83,7 @@ const option = computed(() => {
       type: 'value',
       axisLabel: {
         color: mutedText,
-        formatter: (value: number) => `${formatNumber(value)}${props.unit}`,
+        formatter: (value: number) => formatValue(value),
       },
       splitLine: { lineStyle: { color: gridLine } },
     },
@@ -102,6 +103,21 @@ const option = computed(() => {
 function formatNumber(value: number) {
   if (!Number.isFinite(value)) return '–'
   return new Intl.NumberFormat(undefined, { maximumFractionDigits: 1 }).format(value)
+}
+
+function formatValue(value: number): string {
+  if (props.valueFormat === 'bytes') return formatBytes(value)
+  if (props.valueFormat === 'bytesPerSecond') return `${formatBytes(value)}/s`
+  return `${formatNumber(value)}${props.unit}`
+}
+
+function formatBytes(value: number): string {
+  if (!Number.isFinite(value)) return '–'
+  const absolute = Math.abs(value)
+  const units = ['B', 'kB', 'MB', 'GB', 'TB']
+  const exponent =
+    absolute > 0 ? Math.max(0, Math.min(Math.floor(Math.log(absolute) / Math.log(1024)), 4)) : 0
+  return `${formatNumber(value / 1024 ** exponent)} ${units[exponent]}`
 }
 
 function withVisibleGaps(values: MonitoringChartPoint[]) {

@@ -237,6 +237,7 @@
 
 .monitoring-chart-grid + .monitoring-panel,
 .monitoring-slot-stack + .monitoring-chart-grid,
+.monitoring-service-cards + .monitoring-chart-grid,
 .monitoring-service-cards + .monitoring-slot-stack,
 .monitoring-incident-grid + .monitoring-incident-grid,
 .monitoring-window-item > .v-alert {
@@ -479,6 +480,10 @@
 .sapling-monitor-chart__canvas {
   width: 100%;
   height: 315px;
+}
+
+.monitoring-chart--wide {
+  grid-column: 1 / -1;
 }
 
 .monitoring-dialog__body {
