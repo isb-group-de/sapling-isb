@@ -77,6 +77,12 @@ Important fields:
 | `participants`                      | Person collection for attendees                                                                  |
 | `azure`, `google`                   | External calendar projection records                                                             |
 
+A ticket-linked Event may retain the Ticket's exact `creatorCompany` and
+`creatorPerson` pair when a contact's current Company has changed since the
+Ticket was recorded. The backend verifies that both submitted references still
+match the referenced Ticket. Events without that provenance continue to require
+the selected creator Person's current Company.
+
 ### Preparation And Follow-Up Blocks
 
 `preparationDuration` and `followUpDuration` are properties of the main

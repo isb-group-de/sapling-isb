@@ -189,7 +189,18 @@ export class GenericReferenceService {
           (childRecord as Record<string, unknown>)[dependency.targetField],
         );
 
-        if (!this.areDependencyValuesEqual(parentValue, targetValue)) {
+        if (
+          !this.areDependencyValuesEqual(parentValue, targetValue) &&
+          !(await this.matchesEventTicketCreatorContext(
+            entityHandle,
+            data,
+            field.name,
+            dependency.parentField,
+            childHandle,
+            parentValue,
+            currentUser,
+          ))
+        ) {
           throw new BadRequestException(
             'exception.badRequest',
             `${field.name} is not valid for ${dependency.parentField}`,
@@ -264,6 +275,43 @@ export class GenericReferenceService {
     }
 
     return String(left) === String(right);
+  }
+
+  private async matchesEventTicketCreatorContext(
+    entityHandle: string,
+    data: Record<string, unknown>,
+    childField: string,
+    parentField: string,
+    childHandle: string | number,
+    parentHandle: string | number | boolean,
+    currentUser: PersonItem,
+  ): Promise<boolean> {
+    if (
+      entityHandle !== 'event' ||
+      childField !== 'creatorPerson' ||
+      parentField !== 'creatorCompany' ||
+      typeof parentHandle === 'boolean'
+    ) {
+      return false;
+    }
+
+    const ticketHandle = this.extractComparableDependencyValue(data.ticket);
+    if (ticketHandle == null || typeof ticketHandle === 'boolean') {
+      return false;
+    }
+
+    const ticketFilter = this.genericPermissionService.setTopLevelFilter(
+      {
+        handle: this.normalizeHandleValue('ticket', ticketHandle),
+        creatorCompany: this.normalizeHandleValue('company', parentHandle),
+        creatorPerson: this.normalizeHandleValue('person', childHandle),
+      },
+      currentUser,
+      'ticket',
+    );
+    const ticketClass = this.genericQueryService.getEntityClass('ticket');
+
+    return (await this.em.findOne(ticketClass, ticketFilter, {})) != null;
   }
 
   private extractHandleValue(
