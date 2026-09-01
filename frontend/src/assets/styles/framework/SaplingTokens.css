@@ -1,4 +1,13 @@
 :root {
+  --sapling-brand-primary: #008c94;
+  --sapling-brand-primary-rgb: 0, 140, 148;
+  --sapling-brand-secondary: #333840;
+  --sapling-brand-secondary-rgb: 51, 56, 64;
+  --sapling-brand-accent: #00c1d5;
+  --sapling-brand-accent-rgb: 0, 193, 213;
+  --sapling-brand-success: #02a74d;
+  --sapling-brand-warning: #d98e00;
+  --sapling-brand-error: #a6192e;
   --sapling-panel-border: rgba(255, 255, 250, 0.1);
   --sapling-panel-radius: 20px;
   --sapling-panel-radius-compact: 16px;
@@ -259,6 +268,10 @@
   --sapling-gradient-info: linear-gradient(135deg, #1565c0, #42a5f5);
   --sapling-gradient-teal: linear-gradient(135deg, #00695c, #26a69a);
   --sapling-gradient-warning: linear-gradient(135deg, #ef6c00, #ffb74d);
-  --sapling-gradient-violet: linear-gradient(135deg, #6a1b9a, #ab47bc);
+  --sapling-gradient-network: linear-gradient(
+    135deg,
+    var(--sapling-brand-primary),
+    var(--sapling-brand-accent)
+  );
   --sapling-field-disabled-opacity: var(--v-disabled-opacity, 0.38);
 }

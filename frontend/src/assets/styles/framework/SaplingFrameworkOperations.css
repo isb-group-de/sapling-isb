@@ -622,7 +622,7 @@
 }
 
 .sapling-system-metric__icon--network {
-  background: var(--sapling-gradient-violet);
+  background: var(--sapling-gradient-network);
 }
 
 .sapling-system-layout {

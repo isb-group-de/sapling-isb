@@ -54,6 +54,7 @@
       <div
         class="sapling-markdown-editor-shell"
         :class="{ 'sapling-markdown-editor-shell--disabled': disabled }"
+        @paste.capture="handlePaste"
       >
         <div
           class="sapling-toolbar-group sapling-markdown-toolbar"
@@ -133,6 +134,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import SaplingCodeMirror from '@/components/common/SaplingCodeMirror.vue'
 import SaplingTextarea from '@/components/common/SaplingTextarea.vue'
+import { extractClipboardImageFiles } from '@/components/dialog/fields/markdown/markdownClipboard'
 import type {
   MarkdownEditorHandle,
   MarkdownRule,
@@ -172,6 +174,7 @@ const emit = defineEmits<{
   toggleVoiceInput: []
   uploadImage: []
   selectExistingImage: []
+  pasteImages: [files: File[]]
 }>()
 
 const { locale, t } = useI18n()
@@ -248,4 +251,19 @@ const voiceInputLabel = computed(() => {
 
   return t('global.aiTranscribeAndPrepareMarkdown')
 })
+
+function handlePaste(event: ClipboardEvent) {
+  if (toolbarDisabled.value || !props.canUploadImage) {
+    return
+  }
+
+  const images = extractClipboardImageFiles(event.clipboardData)
+  if (images.length === 0) {
+    return
+  }
+
+  event.preventDefault()
+  event.stopPropagation()
+  emit('pasteImages', images)
+}
 </script>

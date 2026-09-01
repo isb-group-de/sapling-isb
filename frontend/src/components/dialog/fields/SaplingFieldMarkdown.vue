@@ -33,6 +33,7 @@
         @toggle-voice-input="toggleVoiceInput"
         @upload-image="openImagePicker"
         @select-existing-image="openExistingImagePicker"
+        @paste-images="uploadImages"
         @update:draft-value="updateDraftValue"
       />
 

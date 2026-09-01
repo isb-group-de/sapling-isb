@@ -311,6 +311,12 @@ Multiple selected images keep their selection order. During record creation the
 action remains disabled until the record has been saved once, because document
 links require a stable record handle.
 
+Pasting one or more clipboard images into an eligible Markdown editor follows
+the same scoped upload path. The editor intercepts the paste only when image
+files are present and the record already has a stable handle, uploads them in
+clipboard order, and inserts their inline image embeds at the current cursor.
+Text and non-image clipboard content retain the browser's normal paste behavior.
+
 The Markdown toolbar is presented as a responsive work palette instead of one
 undifferentiated action row. Actions are grouped and labeled as structure, text,
 lists, insert, and code tools; upload and record-scoped image selection remain

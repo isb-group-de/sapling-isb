@@ -121,7 +121,7 @@
     color-mix(in srgb, rgb(var(--v-theme-primary)) 32%, var(--sapling-surface-border-muted));
   border-radius: var(--sapling-radius-xs);
   background: color-mix(in srgb, rgb(var(--v-theme-primary)) 14%, var(--sapling-surface-fill-soft));
-  color: color-mix(in srgb, rgb(var(--v-theme-primary)) 82%, white) !important;
+  color: rgb(var(--v-theme-on-surface)) !important;
   opacity: 1;
 }
 
