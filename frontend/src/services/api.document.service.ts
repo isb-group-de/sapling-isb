@@ -11,15 +11,31 @@ export interface DvelopDocumentActionResponse {
   reason?: string
 }
 
+export interface UploadedDocumentResponse {
+  handle: number
+  filename: string
+  mimetype: string
+}
+
+export interface ReferencedImageDocument {
+  handle: number
+  filename: string
+  mimetype: string
+  description: string | null
+  createdAt: string | null
+}
+
 class ApiDocumentService {
   static async upload(
     entityHandle: string,
     reference: string,
     formData: FormData,
-  ): Promise<unknown> {
+  ): Promise<UploadedDocumentResponse> {
     try {
-      const response = await axios.post(
-        buildApiUrl(`document/upload/${entityHandle}/${reference}`),
+      const response = await axios.post<UploadedDocumentResponse>(
+        buildApiUrl(
+          `document/upload/${encodeURIComponent(entityHandle)}/${encodeURIComponent(reference)}`,
+        ),
         formData,
         {
           headers: { 'Content-Type': 'multipart/form-data' },
@@ -47,6 +63,27 @@ class ApiDocumentService {
       pushApiErrorMessage(error, 'exception.unknownError', entityHandle)
       throw error
     }
+  }
+
+  static async getReferencedImages(
+    entityHandle: string,
+    reference: string,
+  ): Promise<ReferencedImageDocument[]> {
+    try {
+      const response = await axios.get<ReferencedImageDocument[]>(
+        buildApiUrl(
+          `document/referenced-images/${encodeURIComponent(entityHandle)}/${encodeURIComponent(reference)}`,
+        ),
+      )
+      return response.data
+    } catch (error: unknown) {
+      pushApiErrorMessage(error, 'exception.unknownError', entityHandle)
+      throw error
+    }
+  }
+
+  static getDownloadUrl(handle: number): string {
+    return buildApiUrl(`document/download/${encodeURIComponent(handle)}`)
   }
 
   static async getDvelopUploadDialogUrl(

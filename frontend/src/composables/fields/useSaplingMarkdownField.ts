@@ -2,6 +2,8 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import CookieService from '@/services/cookie.service'
 import ApiAiService from '@/services/api.ai.service'
+import ApiDocumentService from '@/services/api.document.service'
+import type { ReferencedImageDocument } from '@/services/api.document.service'
 import type { AiProviderModelItem, AiProviderTypeItem } from '@/entity/entity'
 import { resolveRuntimeTarget } from '@/components/system/ai-chat/aiChatRuntimeTargets'
 import {
@@ -27,6 +29,8 @@ export function useSaplingMarkdownField(options: {
   rows: () => number
   label: () => string | undefined
   maxLength?: () => number | undefined
+  entityHandle?: () => string | undefined
+  itemHandle?: () => string | number | undefined
   emit: (event: 'update:modelValue' | 'focus', value?: string) => void
 }) {
   const { locale, t } = useI18n()
@@ -38,11 +42,16 @@ export function useSaplingMarkdownField(options: {
   const editor = ref<MarkdownEditorHandle | null>(null)
   const isEnhancedEditorReady = ref(false)
   const isPreparingWithAi = ref(false)
+  const isUploadingImage = ref(false)
   const selectedMarkdownProviderHandle = ref<string | null>(null)
   const selectedMarkdownModelHandle = ref<string | null>(null)
   const hasConfiguredAiTarget = computed(() => Boolean(selectedMarkdownModelHandle.value))
   const canPrepareWithAi = computed(
     () => hasConfiguredAiTarget.value && Boolean(draftValue.value.trim()),
+  )
+  const showImageUpload = computed(() => Boolean(options.entityHandle?.()))
+  const canUploadImage = computed(
+    () => showImageUpload.value && options.itemHandle?.() != null && !isUploadingImage.value,
   )
   const resolvedLabel = computed(() => options.label() || t('global.markdown'))
   const editorTheme = computed(() => (CookieService.get('theme') === 'dark' ? 'dark' : 'light'))
@@ -210,6 +219,54 @@ export function useSaplingMarkdownField(options: {
       selectionStart: text.length,
       selectionEnd: text.length,
     }))
+  }
+
+  async function uploadImages(files: File[]): Promise<number> {
+    const entityHandle = options.entityHandle?.()
+    const itemHandle = options.itemHandle?.()
+    const images = files.filter((file) => file.type.startsWith('image/'))
+
+    if (!entityHandle || itemHandle == null || images.length === 0 || isUploadingImage.value) {
+      return 0
+    }
+
+    isUploadingImage.value = true
+    const embeds: string[] = []
+
+    try {
+      for (const file of images) {
+        const formData = new FormData()
+        formData.append('file', file)
+        formData.append('typeHandle', 'document')
+        formData.append('description', file.name)
+
+        const document = await ApiDocumentService.upload(entityHandle, String(itemHandle), formData)
+        embeds.push(buildSaplingImageEmbed(document.handle, file.name, t('global.image')))
+      }
+    } catch {
+      // ApiDocumentService already forwards a localized error to the message center.
+    } finally {
+      if (embeds.length > 0) {
+        insertTextAtCursor(embeds.join('\n\n'))
+        refreshPreview()
+      }
+      isUploadingImage.value = false
+    }
+
+    return embeds.length
+  }
+
+  function insertReferencedImages(images: ReferencedImageDocument[]): number {
+    if (images.length === 0) {
+      return 0
+    }
+
+    const embeds = images.map((image) =>
+      buildSaplingImageEmbed(image.handle, image.filename, t('global.image')),
+    )
+    insertTextAtCursor(embeds.join('\n\n'))
+    refreshPreview()
+    return embeds.length
   }
 
   function wrapSelection(prefix: string, suffix = prefix, placeholder?: string) {
@@ -433,96 +490,112 @@ export function useSaplingMarkdownField(options: {
   const toolbarActions = computed<MarkdownToolbarAction[]>(() => [
     {
       key: 'heading1',
+      group: 'structure',
       icon: 'mdi-format-header-1',
       title: t('global.heading1'),
       run: () => applyHeading(1),
     },
     {
       key: 'heading',
+      group: 'structure',
       icon: 'mdi-format-header-2',
       title: t('global.heading2'),
       run: () => applyHeading(2),
     },
     {
       key: 'heading3',
+      group: 'structure',
       icon: 'mdi-format-header-3',
       title: t('global.heading3'),
       run: () => applyHeading(3),
     },
     {
       key: 'bold',
+      group: 'text',
       icon: 'mdi-format-bold',
       title: t('global.bold'),
       run: () => wrapSelection('**'),
     },
     {
       key: 'italic',
+      group: 'text',
       icon: 'mdi-format-italic',
       title: t('global.italic'),
       run: () => wrapSelection('_'),
     },
     {
       key: 'strike',
+      group: 'text',
       icon: 'mdi-format-strikethrough',
       title: t('global.strikethrough'),
       run: () => wrapSelection('~~'),
     },
     {
       key: 'link',
+      group: 'text',
       icon: 'mdi-link-variant',
       title: t('global.link'),
       run: applyLink,
     },
     {
       key: 'image',
+      group: 'media',
       icon: 'mdi-image-outline',
       title: t('global.image'),
       run: applyImage,
     },
     {
       key: 'list',
+      group: 'lists',
       icon: 'mdi-format-list-bulleted',
       title: t('global.bulletList'),
       run: () => toggleLinePrefix('- ', t('global.listItem')),
     },
     {
       key: 'ordered-list',
+      group: 'lists',
       icon: 'mdi-format-list-numbered',
       title: t('global.numberedList'),
       run: applyOrderedList,
     },
     {
       key: 'checklist',
+      group: 'lists',
       icon: 'mdi-format-list-checks',
       title: t('global.checklist'),
       run: applyChecklist,
     },
     {
       key: 'quote',
+      group: 'structure',
       icon: 'mdi-format-quote-close',
       title: t('global.quote'),
       run: () => toggleLinePrefix('> ', t('global.quote')),
     },
     {
       key: 'inline-code',
+      group: 'code',
       icon: 'mdi-code-tags',
       title: t('global.inlineCode'),
       run: applyInlineCode,
     },
     {
       key: 'code-block',
+      group: 'code',
       icon: 'mdi-code-braces-box',
       title: t('global.codeBlock'),
       run: applyCodeBlock,
     },
     {
       key: 'table',
+      group: 'media',
       icon: 'mdi-table-large',
       title: t('global.table'),
       run: applyTable,
     },
     {
       key: 'divider',
+      group: 'structure',
       icon: 'mdi-minus',
       title: t('global.horizontalRule'),
       run: applyHorizontalRule,
@@ -535,7 +608,10 @@ export function useSaplingMarkdownField(options: {
     editor,
     isEnhancedEditorReady,
     isPreparingWithAi,
+    isUploadingImage,
     canPrepareWithAi,
+    showImageUpload,
+    canUploadImage,
     canTranscribeWithAi: markdownVoiceInput.canTranscribeWithAi,
     isRecordingVoiceInput: markdownVoiceInput.isRecordingVoiceInput,
     isTranscribingVoiceInput: markdownVoiceInput.isTranscribingVoiceInput,
@@ -550,7 +626,23 @@ export function useSaplingMarkdownField(options: {
     toolbarActions,
     updateDraftValue,
     insertTextAtCursor,
+    uploadImages,
+    insertReferencedImages,
   }
+}
+
+export function buildSaplingImageEmbed(
+  handle: number,
+  filename: string,
+  fallbackLabel: string,
+): string {
+  const label = filename
+    .replace(/\.[^.]+$/, '')
+    .replace(/[}\r\n]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+
+  return `{{sapling-image:${handle}|${label || fallbackLabel}}}`
 }
 
 export function normalizeMarkdownMaxLength(value: number | undefined): number | undefined {

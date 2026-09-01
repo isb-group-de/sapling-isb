@@ -1,0 +1,86 @@
+[
+  {
+    "entity": "global",
+    "property": "uploadInlineImage",
+    "de": "Bild hochladen und inline einfügen",
+    "en": "Upload and insert image inline"
+  },
+  {
+    "entity": "global",
+    "property": "inlineImageAvailableAfterSave",
+    "de": "Inline-Bilder sind nach dem ersten Speichern verfügbar.",
+    "en": "Inline images are available after the first save."
+  },
+  {
+    "entity": "markdownImagePicker",
+    "property": "selectReferencedImages",
+    "de": "Vorhandene Bilder dieses Datensatzes auswählen",
+    "en": "Select existing images from this record"
+  },
+  {
+    "entity": "markdownImagePicker",
+    "property": "referencedImagesPrivacyHint",
+    "de": "Hier werden ausschließlich Bilder angezeigt, die mit diesem Datensatz verknüpft sind.",
+    "en": "Only images linked to this record are shown here."
+  },
+  {
+    "entity": "markdownImagePicker",
+    "property": "referencedImagesLoadFailed",
+    "de": "Die verknüpften Bilder konnten nicht geladen werden.",
+    "en": "The linked images could not be loaded."
+  },
+  {
+    "entity": "markdownImagePicker",
+    "property": "noReferencedImages",
+    "de": "Noch keine verknüpften Bilder",
+    "en": "No linked images yet"
+  },
+  {
+    "entity": "markdownImagePicker",
+    "property": "noReferencedImagesDescription",
+    "de": "Für diesen Datensatz wurden noch keine Bilder als Dokument gespeichert.",
+    "en": "No images have been stored as documents for this record yet."
+  },
+  {
+    "entity": "markdownImagePicker",
+    "property": "insertSelectedImages",
+    "de": "Ausgewählte Bilder einfügen",
+    "en": "Insert selected images"
+  },
+  {
+    "entity": "markdownToolbar",
+    "property": "ariaLabel",
+    "de": "Markdown-Werkzeugpalette",
+    "en": "Markdown tool palette"
+  },
+  {
+    "entity": "markdownToolbar",
+    "property": "structure",
+    "de": "Struktur",
+    "en": "Structure"
+  },
+  {
+    "entity": "markdownToolbar",
+    "property": "text",
+    "de": "Text",
+    "en": "Text"
+  },
+  {
+    "entity": "markdownToolbar",
+    "property": "lists",
+    "de": "Listen",
+    "en": "Lists"
+  },
+  {
+    "entity": "markdownToolbar",
+    "property": "media",
+    "de": "Einfügen",
+    "en": "Insert"
+  },
+  {
+    "entity": "markdownToolbar",
+    "property": "code",
+    "de": "Code",
+    "en": "Code"
+  }
+]

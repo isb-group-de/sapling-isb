@@ -13,8 +13,11 @@ export interface MarkdownEditorHandle {
   focus(): void
 }
 
+export type MarkdownToolbarGroupKey = 'structure' | 'text' | 'lists' | 'media' | 'code'
+
 export interface MarkdownToolbarAction {
   key: string
+  group: MarkdownToolbarGroupKey
   icon: string
   title: string
   run: () => void

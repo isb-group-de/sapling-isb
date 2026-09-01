@@ -32,6 +32,64 @@ describe('DocumentService', () => {
     jest.restoreAllMocks();
   });
 
+  it('returns only images linked to the exact requested record without storage paths', async () => {
+    const documents = [
+      {
+        handle: 7,
+        filename: 'step-one.png',
+        mimetype: 'image/png',
+        description: 'Step one',
+        path: 'private-storage-name',
+        createdAt: new Date('2026-09-01T08:00:00.000Z'),
+      },
+      {
+        handle: 8,
+        filename: 'manual.pdf',
+        mimetype: 'application/pdf',
+        description: 'Manual',
+      },
+      {
+        handle: 9,
+        filename: 'step-two.jpg',
+        mimetype: 'image/jpeg',
+      },
+    ] as DocumentItem[];
+    const em = {
+      find: jest.fn(async () => documents),
+    } as unknown as EntityManager;
+
+    const result = await new DocumentService(em).findReferencedImages(
+      'ticket',
+      '218',
+    );
+
+    expect(em.find).toHaveBeenCalledWith(
+      DocumentItem,
+      {
+        entity: { handle: 'ticket' },
+        reference: '218',
+      },
+      { orderBy: { createdAt: 'DESC' } },
+    );
+    expect(result).toEqual([
+      {
+        handle: 7,
+        filename: 'step-one.png',
+        mimetype: 'image/png',
+        description: 'Step one',
+        createdAt: new Date('2026-09-01T08:00:00.000Z'),
+      },
+      {
+        handle: 9,
+        filename: 'step-two.jpg',
+        mimetype: 'image/jpeg',
+        description: null,
+        createdAt: null,
+      },
+    ]);
+    expect(result[0]).not.toHaveProperty('path');
+  });
+
   it('stores non-inline EML attachments beside the original document', async () => {
     const entity = { handle: 'ticket' } as EntityItem;
     const emailType = { handle: 'email' } as DocumentTypeItem;

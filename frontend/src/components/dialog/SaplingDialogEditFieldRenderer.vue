@@ -224,6 +224,8 @@
       :required="isRequired"
       :maxlength="template.length"
       :rules="rules"
+      :entity-handle="entityHandle"
+      :item-handle="itemHandle"
       @update:model-value="(val: string) => updateField(template.name, val)"
     />
     <SaplingAutocomplete

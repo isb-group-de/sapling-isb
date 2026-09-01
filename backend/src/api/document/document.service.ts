@@ -21,6 +21,14 @@ import {
   getDocumentStorageFilePath,
 } from './document-storage.util';
 
+export interface ReferencedImageDocument {
+  handle: number;
+  filename: string;
+  mimetype: string;
+  description: string | null;
+  createdAt: Date | null;
+}
+
 /**
  * @class
  * @version         1.0
@@ -41,6 +49,30 @@ export class DocumentService {
    * @type {EntityManager}
    */
   constructor(private readonly em: EntityManager) {}
+
+  async findReferencedImages(
+    entityHandle: string,
+    reference: string,
+  ): Promise<ReferencedImageDocument[]> {
+    const documents = await this.em.find(
+      DocumentItem,
+      {
+        entity: { handle: entityHandle },
+        reference,
+      },
+      { orderBy: { createdAt: 'DESC' } },
+    );
+
+    return documents
+      .filter((document) => document.mimetype.startsWith('image/'))
+      .map((document) => ({
+        handle: document.handle,
+        filename: document.filename,
+        mimetype: document.mimetype,
+        description: document.description ?? null,
+        createdAt: document.createdAt ?? null,
+      }));
+  }
 
   /**
    * Uploads a document for a given entity and reference.

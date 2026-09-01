@@ -120,6 +120,7 @@ All document endpoints require `SessionOrBearerAuthGuard`.
 | Endpoint                                                          | Permission                                  | Purpose                                                                   |
 | ----------------------------------------------------------------- | ------------------------------------------- | ------------------------------------------------------------------------- |
 | `POST /api/document/upload/:entityHandle/:reference`              | `allowUpdate` on `entityHandle`             | Uploads and links a file                                                  |
+| `GET /api/document/referenced-images/:entityHandle/:reference`    | `allowRead` on `entityHandle`               | Lists safe metadata for images linked exactly to that record              |
 | `GET /api/document/dvelop/open/:entityHandle/:reference`          | `allowRead` on `entityHandle`               | Resolves a d.velop Cloud document-results URL when configured             |
 | `GET /api/document/dvelop/upload-dialog/:entityHandle/:reference` | `allowUpdate` on `entityHandle`             | Resolves a d.velop Cloud storage dialog URL when configured               |
 | `POST /api/document/dvelop/config/:connectionHandle/import`       | `allowUpdate` on `dvelopConnection`         | Imports normalized d.velop Cloud repositories, categories, and properties |

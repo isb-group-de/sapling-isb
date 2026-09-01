@@ -22,6 +22,7 @@ import {
 } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { DocumentService } from './document.service';
+import type { ReferencedImageDocument } from './document.service';
 import type { Request, Response } from 'express';
 import {
   ApiGenericEntityOperation,
@@ -170,6 +171,34 @@ export class DocumentController {
       req.user,
       description,
     );
+  }
+
+  @Get('referenced-images/:entityHandle/:reference')
+  @ApiOperation({
+    summary: 'List images linked to one entity record',
+    description:
+      'Returns image metadata only for documents whose entity and reference exactly match the requested record.',
+  })
+  @ApiGenericEntityOperation(
+    'Lists locally stored images linked to the requested entity reference',
+  )
+  @ApiParam({
+    name: 'reference',
+    type: 'string',
+    description: 'Exact record handle or reference identifier.',
+  })
+  @ApiResponse({
+    status: 200,
+    description:
+      'Safe image metadata without document storage paths, scoped to the requested record.',
+  })
+  @UseGuards(GenericPermissionGuard)
+  @GenericPermission('allowRead')
+  async findReferencedImages(
+    @Param('entityHandle') entityHandle: string,
+    @Param('reference') reference: string,
+  ): Promise<ReferencedImageDocument[]> {
+    return this.documentService.findReferencedImages(entityHandle, reference);
   }
 
   @Get('dvelop/open/:entityHandle/:reference')

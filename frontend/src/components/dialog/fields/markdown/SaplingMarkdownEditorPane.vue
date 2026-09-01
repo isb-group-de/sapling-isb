@@ -55,19 +55,37 @@
         class="sapling-markdown-editor-shell"
         :class="{ 'sapling-markdown-editor-shell--disabled': disabled }"
       >
-        <div class="sapling-toolbar-group sapling-markdown-toolbar">
-          <v-btn
-            v-for="action in toolbarActions"
-            :key="action.key"
-            :icon="action.icon"
-            :title="action.title"
-            size="small"
-            density="compact"
-            variant="text"
-            :disabled="disabled || isPreparingWithAi || isTranscribingVoiceInput"
-            @mousedown.prevent
-            @click.stop="action.run"
-          />
+        <div
+          class="sapling-toolbar-group sapling-markdown-toolbar"
+          role="toolbar"
+          :aria-label="t('markdownToolbar.ariaLabel')"
+        >
+          <div
+            v-for="group in toolbarGroups"
+            :key="group.key"
+            class="sapling-markdown-toolbar__group"
+            role="group"
+            :aria-label="group.label"
+          >
+            <span class="sapling-markdown-toolbar__group-label">{{ group.label }}</span>
+            <div class="sapling-markdown-toolbar__group-actions">
+              <v-btn
+                v-for="action in group.actions"
+                :key="action.key"
+                :data-test="action.testId"
+                :icon="action.icon"
+                :title="action.title"
+                :aria-label="action.title"
+                size="small"
+                density="compact"
+                variant="text"
+                :loading="action.loading"
+                :disabled="toolbarDisabled || action.disabled"
+                @mousedown.prevent
+                @click.stop="action.run"
+              />
+            </div>
+          </div>
           <span
             v-if="characterCountLabel"
             class="sapling-markdown-character-count"
@@ -119,6 +137,7 @@ import type {
   MarkdownEditorHandle,
   MarkdownRule,
   MarkdownToolbarAction,
+  MarkdownToolbarGroupKey,
 } from '@/components/dialog/fields/markdown/markdownField.types'
 
 const props = defineProps<{
@@ -139,6 +158,11 @@ const props = defineProps<{
   canTranscribeWithAi: boolean
   isRecordingVoiceInput: boolean
   isTranscribingVoiceInput: boolean
+  showImageUpload: boolean
+  canUploadImage: boolean
+  isUploadingImage: boolean
+  imageUploadTitle: string
+  existingImageTitle: string
 }>()
 
 const emit = defineEmits<{
@@ -146,11 +170,62 @@ const emit = defineEmits<{
   'update:draftValue': [value: string]
   prepareWithAi: []
   toggleVoiceInput: []
+  uploadImage: []
+  selectExistingImage: []
 }>()
 
 const { locale, t } = useI18n()
 const editor = defineModel<MarkdownEditorHandle | null>('editor', { default: null })
 const markdownLabel = computed(() => t('global.markdown'))
+const toolbarGroupOrder: MarkdownToolbarGroupKey[] = ['structure', 'text', 'lists', 'media', 'code']
+interface MarkdownPaletteAction extends MarkdownToolbarAction {
+  testId?: string
+  loading?: boolean
+  disabled?: boolean
+}
+
+const toolbarDisabled = computed(
+  () => props.disabled || props.isPreparingWithAi || props.isTranscribingVoiceInput,
+)
+const toolbarGroups = computed(() =>
+  toolbarGroupOrder
+    .map((key) => {
+      const actions: MarkdownPaletteAction[] = props.toolbarActions.filter(
+        (action) => action.group === key,
+      )
+
+      if (key === 'media' && props.showImageUpload) {
+        actions.push(
+          {
+            key: 'upload-image',
+            group: 'media',
+            icon: 'mdi-image-plus-outline',
+            title: props.imageUploadTitle,
+            testId: 'markdown-upload-image',
+            loading: props.isUploadingImage,
+            disabled: !props.canUploadImage,
+            run: () => emit('uploadImage'),
+          },
+          {
+            key: 'select-existing-image',
+            group: 'media',
+            icon: 'mdi-image-multiple-outline',
+            title: props.existingImageTitle,
+            testId: 'markdown-select-existing-image',
+            disabled: !props.canUploadImage,
+            run: () => emit('selectExistingImage'),
+          },
+        )
+      }
+
+      return {
+        key,
+        label: t(`markdownToolbar.${key}`),
+        actions,
+      }
+    })
+    .filter((group) => group.actions.length > 0),
+)
 const characterCountLabel = computed(() => {
   if (!props.maxLength || props.remainingCharacters == null) {
     return ''

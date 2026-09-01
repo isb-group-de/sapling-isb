@@ -297,12 +297,40 @@ projection exception. If a saved route or favorite contains fields no longer
 readable, only those clauses are removed from the active view and an
 informational message is shown; the saved favorite itself remains unchanged.
 
-Markdown fields can reference stored Sapling documents without new upload logic.
+Markdown fields can reference stored Sapling documents through the shared document API.
 Use `sapling-document:<handle>` as a normal markdown link or image URL, or embed
 media inline with `{{sapling-image:123|Screenshot}}`,
 `{{sapling-audio:123|Audio note}}`, `{{sapling-video:123|Demo video}}`, or
 `{{sapling-document:123|Open document}}`. The handle is the existing
 `document` record handle and permissions are enforced by the document API.
+
+For persisted records, the shared Markdown toolbar offers an inline image upload.
+It stores selected images through the existing document API, links them to the
+current record, and inserts `{{sapling-image:<handle>|<label>}}` at the cursor.
+Multiple selected images keep their selection order. During record creation the
+action remains disabled until the record has been saved once, because document
+links require a stable record handle.
+
+The Markdown toolbar is presented as a responsive work palette instead of one
+undifferentiated action row. Actions are grouped and labeled as structure, text,
+lists, insert, and code tools; upload and record-scoped image selection remain
+together in the insert group. Those two document actions are added only when the
+field receives an entity handle, and become enabled once a stable item handle is
+available. Context-free editors such as the GitHub issue composer omit the actions
+entirely without reserving toolbar space.
+
+A neighboring toolbar action opens a searchable, multi-select image gallery for
+documents already linked to the current record. The gallery uses the dedicated
+`GET /api/document/referenced-images/:entityHandle/:reference` endpoint rather
+than an unrestricted document list. The backend fixes both scope values from the
+route, filters non-image documents, checks read access to the referenced entity,
+and returns no internal storage paths. The UI therefore cannot accidentally
+offer images attached to another record.
+Selected images are inserted in the order in which the user selected them.
+The picker owns and loads the `markdownImagePicker` translation namespace so
+its title, privacy explanation, empty states, and actions do not depend on the
+already cached global namespace. It renders dialog and action skeletons while
+those translations are loading instead of briefly showing empty labels.
 
 The shared Markdown editor also exposes `Mit AI aufbereiten` / `Refine with AI`.
 It sends the current draft to the focused, non-persisting AI Markdown endpoint,
