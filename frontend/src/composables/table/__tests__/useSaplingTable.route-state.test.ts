@@ -7,6 +7,7 @@ import {
   cleanupTableTestWrappers,
   formatLocalDateTimeInput,
   loadGenericMock,
+  mountBehaviorTestHost,
   mountQueryEnabledTestHost,
   mountTestHost,
   resetTableTestMocks,
@@ -66,6 +67,28 @@ describe('useSaplingTable filters and route state', () => {
           },
         },
       }),
+    )
+  })
+
+  it('can skip default open filters for duplicate-check result tables', async () => {
+    loadGenericMock.mockResolvedValue(undefined)
+    apiFindAllMock.mockResolvedValue([
+      { handle: 'open', description: 'Open', isOpen: true },
+      { handle: 'closed', description: 'Closed', isOpen: false },
+    ])
+    apiFindMock.mockResolvedValue({ data: [], meta: { total: 0 } })
+
+    const wrapper = mountBehaviorTestHost(ref('duplicateTicket'), {
+      searchFieldNames: ['title'],
+      applyDefaultOpenChipFilters: false,
+    })
+    await flushPromises()
+
+    expect(apiFindAllMock).not.toHaveBeenCalled()
+    expect(wrapper.vm.columnFilters).toEqual({})
+    expect(apiFindMock).toHaveBeenCalledWith(
+      'duplicateTicket',
+      expect.objectContaining({ filter: {} }),
     )
   })
 

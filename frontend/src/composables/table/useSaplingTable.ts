@@ -49,6 +49,11 @@ type InitializeEntityStateOptions = {
   beforeInitialLoad?: () => Promise<void> | void
 }
 
+export type SaplingTableBehaviorOptions = {
+  searchFieldNames?: string[]
+  applyDefaultOpenChipFilters?: boolean
+}
+
 /**
  * Shared table state for entity-backed data tables.
  * Handles metadata loading, server pagination, sorting and column filtering.
@@ -60,6 +65,7 @@ export function useSaplingTable(
   autoInitialize = true,
   getInitializeEntityStateOptions: () => InitializeEntityStateOptions = () => ({}),
   additionalListProjectionFields: string[] = [],
+  behaviorOptions: SaplingTableBehaviorOptions = {},
 ) {
   // #region State
   const items = ref<SaplingGenericItem[]>([])
@@ -200,6 +206,7 @@ export function useSaplingTable(
       columnFilters: columnFilters.value,
       entityTemplates: entityTemplates.value,
       referenceSearchTemplates: referenceSearchTemplates.value,
+      searchFieldNames: behaviorOptions.searchFieldNames,
       parentFilter: parentFilter.value,
     }),
   )
@@ -385,7 +392,11 @@ export function useSaplingTable(
         entityHandle.value,
       )
     }
-    const searchFilters = buildRouteSearchFilterCandidates(routeState.search, nextEntityTemplates)
+    const searchFilters = buildRouteSearchFilterCandidates(
+      routeState.search,
+      nextEntityTemplates,
+      behaviorOptions.searchFieldNames,
+    )
     const filterWithoutSearch = searchFilters.reduce<unknown>(
       (filter, searchFilter) => removeMatchingFilterFromFilterQuery(filter, searchFilter),
       routeFilter,
@@ -516,7 +527,9 @@ export function useSaplingTable(
       generateHeaders(currentEntityHandle)
       initialSort(nextEntityTemplates)
       restoreQueryFilterState(nextEntityTemplates)
-      await applyDefaultOpenChipColumnFilters(nextEntityTemplates)
+      if (behaviorOptions.applyDefaultOpenChipFilters !== false) {
+        await applyDefaultOpenChipColumnFilters(nextEntityTemplates)
+      }
       await options.beforeInitialLoad?.()
     } finally {
       if (
@@ -774,16 +787,21 @@ export function useSaplingTable(
 function buildRouteSearchFilterCandidates(
   search: string,
   entityTemplates: EntityTemplate[],
+  searchFieldNames?: string[],
 ): FilterQuery[] {
   const normalizedSearch = search.trim()
   if (!normalizedSearch) {
     return []
   }
 
-  const currentSearchFilter = buildTableFilter({ search, entityTemplates })
+  const currentSearchFilter = buildTableFilter({ search, entityTemplates, searchFieldNames })
+  const allowedSearchFieldNames = searchFieldNames ? new Set(searchFieldNames) : null
   const searchableTemplates = entityTemplates
     .filter(isFilterableTableColumn)
     .filter(isTextSearchableTemplate)
+    .filter(
+      (template) => allowedSearchFieldNames === null || allowedSearchFieldNames.has(template.name),
+    )
   const legacySearchFilter: FilterQuery = searchableTemplates.length
     ? {
         $or: searchableTemplates.map((template) => ({

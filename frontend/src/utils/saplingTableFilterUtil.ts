@@ -23,23 +23,35 @@ export function buildTableFilter({
   columnFilters = {},
   entityTemplates,
   referenceSearchTemplates = {},
+  searchFieldNames,
   parentFilter,
 }: {
   search?: string
   columnFilters?: Record<string, string | ColumnFilterItem>
   entityTemplates: EntityTemplate[]
   referenceSearchTemplates?: Record<string, EntityTemplate[]>
+  searchFieldNames?: string[]
   parentFilter?: Record<string, unknown>
 }): FilterQuery {
   const clauses: FilterQuery[] = []
+  const allowedSearchFieldNames = searchFieldNames ? new Set(searchFieldNames) : null
   const filterableTemplates = entityTemplates.filter(isFilterableTableColumn)
-  const searchableTemplates = filterableTemplates.filter(isTextSearchableTemplate)
+  const searchableTemplates = filterableTemplates
+    .filter(isTextSearchableTemplate)
+    .filter(
+      (template) => allowedSearchFieldNames === null || allowedSearchFieldNames.has(template.name),
+    )
   const searchableReferenceTemplates = Object.entries(referenceSearchTemplates).flatMap(
     ([relationName, templates]) =>
       templates
         .filter(isFilterableTableColumn)
         .filter(isTextSearchableTemplate)
         .filter((template) => template.options?.includes('isValue'))
+        .filter(
+          (template) =>
+            allowedSearchFieldNames === null ||
+            allowedSearchFieldNames.has(`${relationName}.${template.name}`),
+        )
         .map((template) => ({ relationName, template })),
   )
   const searchTerms = search?.trim().split(/\s+/).filter(Boolean) ?? []

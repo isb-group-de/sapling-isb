@@ -117,7 +117,10 @@ const {
   onItemsPerPageUpdate,
   onColumnFiltersUpdate,
   onSortByUpdate,
-} = useSaplingTable(ref(props.entityHandle), 5)
+} = useSaplingTable(ref(props.entityHandle), 5, false, true, undefined, [], {
+  searchFieldNames: props.modelName ? [props.modelName] : undefined,
+  applyDefaultOpenChipFilters: false,
+})
 
 function applySearchValue(nextValue: string) {
   tableSearch.value = nextValue

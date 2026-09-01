@@ -195,7 +195,10 @@ entity dialog receives the same visual picker.
 Fields marked with `isDuplicateCheck` remain normal writable inputs during
 record creation. They show a persistent duplicate-check hint and mark their
 result menu as a review list of possible duplicates. Selecting a result opens
-the existing record; it is not required to complete the new value.
+the existing record; it is not required to complete the new value. The picker
+searches only the field currently being entered and does not apply a table's
+default open-status filter, so long titles stay within the generic API query
+limit and closed records remain available as possible duplicates.
 
 Phone fields use the current person's company country when available. If that
 country is missing, the frontend falls back to

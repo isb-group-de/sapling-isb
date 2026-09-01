@@ -625,6 +625,33 @@ describe('saplingTableUtil', () => {
     })
   })
 
+  it('can constrain a long duplicate-check search to the field being edited', () => {
+    const filter = buildTableFilter({
+      search: 'Kunden antwortet auf E-Mail - neues Ticket',
+      searchFieldNames: ['title'],
+      entityTemplates: [
+        createTemplate({ name: 'number' }),
+        createTemplate({ name: 'title' }),
+        createTemplate({ name: 'problemDescription' }),
+        createTemplate({ name: 'solutionDescription' }),
+      ],
+    })
+
+    expect(filter).toEqual({
+      $and: [
+        { $or: [{ title: { $ilike: '%Kunden%' } }] },
+        { $or: [{ title: { $ilike: '%antwortet%' } }] },
+        { $or: [{ title: { $ilike: '%auf%' } }] },
+        { $or: [{ title: { $ilike: '%E-Mail%' } }] },
+        { $or: [{ title: { $ilike: '%-%' } }] },
+        { $or: [{ title: { $ilike: '%neues%' } }] },
+        { $or: [{ title: { $ilike: '%Ticket%' } }] },
+      ],
+    })
+    expect(JSON.stringify(filter)).not.toContain('problemDescription')
+    expect(JSON.stringify(filter)).not.toContain('solutionDescription')
+  })
+
   it('builds text filters for long varchar columns such as translation values', () => {
     expect(
       buildTableFilter({

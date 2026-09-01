@@ -68,7 +68,7 @@ vi.mock('@/stores/currentPermissionStore', () => ({
   }),
 }))
 
-import { useSaplingTable } from '../useSaplingTable'
+import { useSaplingTable, type SaplingTableBehaviorOptions } from '../useSaplingTable'
 
 export type SaplingTableTestState = ReturnType<typeof useSaplingTable>
 
@@ -131,6 +131,23 @@ const entityStates = reactive<Record<string, ReturnType<typeof createEntityState
       type: 'string',
       kind: 'm:1',
       referenceName: 'person',
+    }),
+  ]),
+  duplicateTicket: createEntityState([
+    createTemplate({
+      name: 'title',
+      type: 'string',
+    }),
+    createTemplate({
+      name: 'problemDescription',
+      type: 'string',
+    }),
+    createTemplate({
+      name: 'status',
+      type: 'string',
+      kind: 'm:1',
+      referenceName: 'ticketStatus',
+      options: ['isChip'],
     }),
   ]),
   chipRecord: createEntityState([
@@ -243,6 +260,18 @@ function createManualTestHost(entityHandle: Ref<string>) {
   })
 }
 
+function createBehaviorTestHost(
+  entityHandle: Ref<string>,
+  behaviorOptions: SaplingTableBehaviorOptions,
+) {
+  return defineComponent({
+    setup() {
+      return useSaplingTable(entityHandle, 25, false, true, undefined, [], behaviorOptions)
+    },
+    template: '<div />',
+  })
+}
+
 function createAdditionalProjectionTestHost(
   entityHandle: Ref<string>,
   additionalListProjectionFields: string[],
@@ -298,6 +327,15 @@ function mountManualTestHost(entityHandle: Ref<string>) {
   return wrapper
 }
 
+function mountBehaviorTestHost(
+  entityHandle: Ref<string>,
+  behaviorOptions: SaplingTableBehaviorOptions,
+) {
+  const wrapper = mount(createBehaviorTestHost(entityHandle, behaviorOptions))
+  mountedWrappers.push(wrapper)
+  return wrapper
+}
+
 function mountAdditionalProjectionTestHost(
   entityHandle: Ref<string>,
   additionalListProjectionFields: string[],
@@ -330,6 +368,7 @@ export {
   mountTestHost,
   mountQueryEnabledTestHost,
   mountManualTestHost,
+  mountBehaviorTestHost,
   mountAdditionalProjectionTestHost,
   mountBeforeInitialLoadTestHost,
 }
