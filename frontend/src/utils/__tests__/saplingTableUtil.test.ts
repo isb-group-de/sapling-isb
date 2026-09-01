@@ -149,6 +149,31 @@ describe('saplingTableUtil', () => {
     ).toEqual(['title', 'longNotes'])
   })
 
+  it('applies table order across form groups', () => {
+    const templates = [
+      createTemplate({
+        name: 'title',
+        formGroup: 'basics',
+        formGroupOrder: 100,
+        tableOrder: 1,
+        tableOrderMode: 'absolute',
+      }),
+      createTemplate({
+        name: 'deadline',
+        formGroup: 'schedule',
+        formGroupOrder: 300,
+        tableOrder: 0,
+        tableOrderMode: 'absolute',
+      }),
+    ]
+
+    expect(
+      getTableHeaders(templates, { handle: 'ticket' } as never, (key) => key).map(
+        (header) => header.key,
+      ),
+    ).toEqual(['deadline', 'title'])
+  })
+
   it('includes readable nested isValue relations for reference labels', () => {
     const accountManager = createTemplate({
       name: 'accountManager',

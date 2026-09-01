@@ -34,11 +34,14 @@
       <v-chip size="small" variant="outlined">{{ items.length }} / {{ tableCount }}</v-chip>
     </div>
 
-    <div v-if="items.length" class="sapling-system-storage-grid">
+    <div
+      v-if="items.length"
+      class="sapling-system-storage-grid sapling-system-storage-grid--database"
+    >
       <article v-for="item in items" :key="`${item.schema}.${item.name}`" class="sapling-data-card">
         <div class="sapling-section-header">
           <div>
-            <h3>{{ item.name }}</h3>
+            <h3>{{ item.label }}</h3>
           </div>
           <v-chip size="small" variant="tonal" color="primary">
             {{ item.sizeLabel }}
@@ -77,6 +80,7 @@ defineProps<{
   items: Array<{
     schema: string
     name: string
+    label: string
     sizeLabel: string
     share: number
     shareLabel: string

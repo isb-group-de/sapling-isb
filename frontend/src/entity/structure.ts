@@ -236,6 +236,8 @@ export interface EntityTemplate {
   formVisible?: boolean | null
   /** Optional display order for generated table columns */
   tableOrder?: number | null
+  /** Whether desktop table order overrides the normal form-group ordering */
+  tableOrderMode?: 'grouped' | 'absolute'
   /** Optional visibility override for generated table columns */
   tableVisible?: boolean | null
   /** Optional display order for generated mobile table card fields */

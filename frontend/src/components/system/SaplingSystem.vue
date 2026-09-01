@@ -167,7 +167,7 @@
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { VSkeletonLoader } from 'vuetify/components'
-import type { NetworkInterface } from '@/entity/system'
+import type { Database, NetworkInterface } from '@/entity/system'
 import { useSaplingSystem } from '@/composables/system/useSaplingSystem'
 import SaplingPageHero from '@/components/common/SaplingPageHero.vue'
 import SaplingSurface from '@/components/common/SaplingSurface.vue'
@@ -417,6 +417,7 @@ const databaseTableItems = computed(() => {
     return {
       schema: table.schema,
       name: table.name,
+      label: getDatabaseTableLabel(table),
       sizeLabel: formatBytes(table.size),
       share,
       shareLabel: formatPercentage(share),
@@ -508,7 +509,7 @@ const sizeDetailsItems = computed(() => {
       const share = totalSize > 0 ? (table.size / totalSize) * 100 : 0
       return {
         key: `${table.schema}.${table.name}`,
-        label: table.name,
+        label: getDatabaseTableLabel(table),
         sizeLabel: formatBytes(table.size),
         share,
         shareLabel: formatPercentage(share),
@@ -529,6 +530,13 @@ const sizeDetailsItems = computed(() => {
     }
   })
 })
+
+function getDatabaseTableLabel(table: Database['largestTables'][number]): string {
+  if (!table.entityHandle) return table.name
+
+  const translationKey = `navigation.${table.entityHandle}`
+  return te(translationKey) ? t(translationKey) : table.entityHandle
+}
 
 const networkItems = computed(() =>
   network.value.map((iface) => ({

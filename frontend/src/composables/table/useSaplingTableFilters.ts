@@ -143,15 +143,7 @@ export function useSaplingTableFilters(
   }
 
   function getColumnFilterItem(key: string) {
-    const filter = localColumnFilters.value[key]
-    if (!filter) {
-      return undefined
-    }
-
-    return {
-      ...filter,
-      relationItems: filter.relationItems?.map((item) => ({ ...item })),
-    }
+    return localColumnFilters.value[key]
   }
 
   function getFilterOperatorOptions(column: TableColumnLike | SaplingTableHeaderItem) {

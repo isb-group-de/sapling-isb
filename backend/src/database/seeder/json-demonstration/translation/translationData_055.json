@@ -1,0 +1,8 @@
+[
+  {
+    "entity": "exception",
+    "property": "connectionExceptionDescription",
+    "de": "Sapling konnte den Server nicht erreichen. Prüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
+    "en": "Sapling could not reach the server. Check your internet connection and try again."
+  }
+]

@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class DatabaseTableDto {
   @ApiProperty({ example: 'public' })
@@ -6,6 +6,13 @@ export class DatabaseTableDto {
 
   @ApiProperty({ example: 'document_item' })
   name!: string;
+
+  @ApiPropertyOptional({
+    example: 'document',
+    description:
+      'Registered Sapling entity handle when the physical table belongs to an entity.',
+  })
+  entityHandle?: string;
 
   @ApiProperty({
     example: 12582912,

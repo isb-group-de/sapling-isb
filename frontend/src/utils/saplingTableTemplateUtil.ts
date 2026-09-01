@@ -330,11 +330,13 @@ export function getTableHeaderOrder(template: Partial<EntityTemplate>, index: nu
 }
 
 export function sortTableHeaders<T extends Partial<EntityTemplate>>(headers: T[]): T[] {
+  const hasAbsoluteOrder = headers.some((header) => header.tableOrderMode === 'absolute')
+
   return [...headers]
     .map((header, index) => ({
       header,
       index,
-      groupOrder: getTemplateConfiguredGroupOrder(header) ?? 0,
+      groupOrder: hasAbsoluteOrder ? 0 : (getTemplateConfiguredGroupOrder(header) ?? 0),
       order: getTableHeaderOrder(header, index),
     }))
     .sort((left, right) => {

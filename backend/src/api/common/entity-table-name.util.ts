@@ -25,9 +25,7 @@ export function getEntityHandleByTableName(
   );
 }
 
+/** Mirrors MikroORM's default UnderscoreNamingStrategy. */
 function classNameToTableName(className: string): string {
-  return className
-    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1_$2')
-    .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
-    .toLowerCase();
+  return className.replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase();
 }

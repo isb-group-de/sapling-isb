@@ -62,6 +62,27 @@ describe('saplingDialogEdit utils', () => {
     })
   })
 
+  it('recognizes saved table snapshots as absolute column order', () => {
+    const templates = ['title', 'deadline', 'hidden'].map(
+      (name) => ({ key: name, name, type: 'string' }) satisfies EntityTemplate,
+    )
+    const config = {
+      schema: 'sapling.form-config.v1',
+      entityHandle: 'ticket',
+      fields: {
+        title: { tableVisible: true, tableOrder: 1 },
+        deadline: { tableVisible: true, tableOrder: 0 },
+        hidden: { tableVisible: false, tableOrder: null },
+      },
+    } satisfies SaplingFormConfigPayload
+
+    expect(applyFormConfigOverlay(templates, config)).toEqual([
+      expect.objectContaining({ name: 'title', tableOrderMode: 'absolute' }),
+      expect.objectContaining({ name: 'deadline', tableOrderMode: 'absolute' }),
+      expect.objectContaining({ name: 'hidden', tableOrderMode: 'absolute' }),
+    ])
+  })
+
   it('prefers a personal default over role and global defaults', () => {
     const createConfig = (
       handle: number,

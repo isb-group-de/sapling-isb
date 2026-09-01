@@ -114,7 +114,11 @@ export function resolveApiError(
       message = responseMessage
     }
 
-    description = responseSummaryKey || responseSummary || normalizeResponseError(responseError)
+    description =
+      responseSummaryKey ||
+      responseSummary ||
+      normalizeResponseError(responseError) ||
+      (err.code === 'ERR_NETWORK' ? 'exception.connectionExceptionDescription' : '')
     descriptionParams =
       responseSummaryParams ??
       (referencingEntityHandle ? { entityHandle: referencingEntityHandle } : undefined)

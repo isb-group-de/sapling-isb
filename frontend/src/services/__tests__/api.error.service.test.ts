@@ -99,4 +99,18 @@ describe('api.error.service', () => {
     expect(result.message).toBe('exception.serverException')
     expect(result.description).toBe('')
   })
+
+  it('explains that a client network failure can be retried', () => {
+    const result = resolveApiError({
+      code: 'ERR_NETWORK',
+      message: 'Network Error',
+      config: {
+        method: 'get',
+        url: '/api/generic/ticketStatus',
+      },
+    })
+
+    expect(result.message).toBe('exception.connectionException')
+    expect(result.description).toBe('exception.connectionExceptionDescription')
+  })
 })

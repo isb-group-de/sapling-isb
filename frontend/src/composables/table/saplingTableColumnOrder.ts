@@ -135,6 +135,9 @@ export function buildPersonalTableViewConfig(
         )
       : undefined,
     layout: sourceConfig?.layout ? { ...sourceConfig.layout } : undefined,
-    metadata: sourceConfig?.metadata ? { ...sourceConfig.metadata } : undefined,
+    metadata: {
+      ...(sourceConfig?.metadata ?? {}),
+      tableOrderMode: 'absolute',
+    },
   }
 }

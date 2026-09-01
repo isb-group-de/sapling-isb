@@ -170,7 +170,24 @@ export function useSaplingMessageCenter() {
       return incoming
     }
 
-    return Array.isArray(existing) ? [...existing, incoming] : [existing, incoming]
+    const existingPayloads = Array.isArray(existing) ? existing : [existing]
+    if (existingPayloads.some((payload) => areTechnicalPayloadsEqual(payload, incoming))) {
+      return existing
+    }
+
+    return [...existingPayloads, incoming]
+  }
+
+  function areTechnicalPayloadsEqual(left: unknown, right: unknown) {
+    if (left === right) {
+      return true
+    }
+
+    try {
+      return JSON.stringify(left) === JSON.stringify(right)
+    } catch {
+      return false
+    }
   }
 
   function areDescriptionsCompatible(left: string, right: string) {

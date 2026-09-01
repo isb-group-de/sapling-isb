@@ -39,6 +39,12 @@ The page initially shows the last hour to keep its first telemetry queries
 small. Administrators can select a longer preset or a custom range when they
 need broader historical lists and charts.
 
+Database-size diagnostics resolve physical MikroORM table names through the
+registered entity classes. Known tables use the localized navigation label in
+the overview and full table list, while unknown infrastructure or join tables
+retain their physical PostgreSQL name. The nine largest tables use at most
+three cards per row on desktop and collapse responsively on narrower screens.
+
 The Requests tab plots the total HTTP request count per persisted telemetry
 bucket above the route-group analysis. It uses the same selected time range and
 automatic minute, fifteen-minute, or hourly resolution, so already retained

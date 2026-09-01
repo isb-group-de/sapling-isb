@@ -34,8 +34,18 @@ describe('DatabaseService', () => {
       startedAt: '2026-08-25T05:31:00.000Z',
       tableCount: 2,
       largestTables: [
-        { schema: 'public', name: 'document_item', size: 12582912 },
-        { schema: 'public', name: 'change_log_item', size: 6291456 },
+        {
+          schema: 'public',
+          name: 'document_item',
+          entityHandle: 'document',
+          size: 12582912,
+        },
+        {
+          schema: 'public',
+          name: 'change_log_item',
+          entityHandle: 'changeLog',
+          size: 6291456,
+        },
       ],
     });
     expect(execute).toHaveBeenCalledTimes(1);
@@ -51,8 +61,38 @@ describe('DatabaseService', () => {
     } as unknown as EntityManager;
 
     await expect(new DatabaseService(em).getDatabaseTables()).resolves.toEqual([
-      { schema: 'public', name: 'document_item', size: 12582912 },
-      { schema: 'public', name: 'change_log_item', size: 6291456 },
+      {
+        schema: 'public',
+        name: 'document_item',
+        entityHandle: 'document',
+        size: 12582912,
+      },
+      {
+        schema: 'public',
+        name: 'change_log_item',
+        entityHandle: 'changeLog',
+        size: 6291456,
+      },
+    ]);
+  });
+
+  it('keeps unknown physical tables available without inventing an entity handle', async () => {
+    const execute = jest
+      .fn()
+      .mockResolvedValue([
+        { schema: 'public', name: 'internal_join_table', size: '1024' },
+      ]);
+    const em = {
+      getConnection: () => ({ execute }),
+    } as unknown as EntityManager;
+
+    await expect(new DatabaseService(em).getDatabaseTables()).resolves.toEqual([
+      {
+        schema: 'public',
+        name: 'internal_join_table',
+        entityHandle: undefined,
+        size: 1024,
+      },
     ]);
   });
 });

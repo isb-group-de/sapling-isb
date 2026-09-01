@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { EntityManager } from '@mikro-orm/core';
+import { getEntityHandleByTableName } from '../../common/entity-table-name.util';
 import { DatabaseDto, DatabaseTableDto } from '../dto/database.dto';
 
 type DatabaseInfoRow = {
@@ -76,6 +77,7 @@ export class DatabaseService {
       largestTables: largestTables.map((table) => ({
         schema: table.schema,
         name: table.name,
+        entityHandle: getEntityHandleByTableName(table.name),
         size: Number(table.size),
       })),
     };
@@ -98,6 +100,7 @@ export class DatabaseService {
     return rows.map((table) => ({
       schema: table.schema,
       name: table.name,
+      entityHandle: getEntityHandleByTableName(table.name),
       size: Number(table.size),
     }));
   }

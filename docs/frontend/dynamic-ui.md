@@ -848,6 +848,11 @@ payload remains available in the technical log export. Raw database table,
 constraint, stack, request details, and reverse-proxy HTML error pages are
 diagnostic data only.
 
+Client network failures identify the unavailable connection and tell the user
+to check it and retry. Repeated identical failures remain counted as occurrences,
+but their identical technical payload is stored only once so issue reports stay
+compact.
+
 Error entries expose the same **Report error** action in both the temporary
 floating alert and the persistent message-center list. Both surfaces share the
 same per-message loading and reported state, so an error cannot be submitted

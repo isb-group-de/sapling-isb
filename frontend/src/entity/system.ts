@@ -129,6 +129,7 @@ export interface Database {
   largestTables: Array<{
     schema: string
     name: string
+    entityHandle?: string
     size: number
   }>
 }

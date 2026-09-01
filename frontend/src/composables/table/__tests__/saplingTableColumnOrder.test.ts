@@ -85,5 +85,6 @@ describe('saplingTableColumnOrder', () => {
       lastName: { tableVisible: true, tableOrder: 0 },
     })
     expect(config.groups).toEqual({ contact: { label: 'Contact' } })
+    expect(config.metadata).toEqual({ tableOrderMode: 'absolute' })
   })
 })

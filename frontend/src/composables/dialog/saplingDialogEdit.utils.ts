@@ -51,24 +51,60 @@ export function applyFormConfigOverlay(
     return sourceTemplates
   }
 
+  const tableOrderMode = hasAbsoluteTableOrder(config) ? 'absolute' : undefined
+
   return sourceTemplates.map((template) => {
     const fieldConfig = getFieldConfig(config.fields?.[template.name])
     const fieldTemplate = fieldConfig ? applyFieldConfig(template, fieldConfig) : template
     const groupKey = fieldTemplate.formGroup?.trim()
     const groupConfig = groupKey ? config.groups?.[groupKey] : undefined
+    const tableTemplate = tableOrderMode ? { ...fieldTemplate, tableOrderMode } : fieldTemplate
 
-    if (!groupConfig) return fieldTemplate
+    if (!groupConfig) return tableTemplate
 
     return {
-      ...fieldTemplate,
-      formGroupOrder: groupConfig.order ?? fieldTemplate.formGroupOrder,
-      formVisible: groupConfig.visible === false ? false : fieldTemplate.formVisible,
+      ...tableTemplate,
+      formGroupOrder: groupConfig.order ?? tableTemplate.formGroupOrder,
+      formVisible: groupConfig.visible === false ? false : tableTemplate.formVisible,
       formGroupConfig: {
-        ...(fieldTemplate.formGroupConfig ?? {}),
+        ...(tableTemplate.formGroupConfig ?? {}),
         ...groupConfig,
       },
     }
   })
+}
+
+function hasAbsoluteTableOrder(config: SaplingFormConfigPayload): boolean {
+  if (config.metadata?.tableOrderMode === 'absolute') {
+    return true
+  }
+
+  const tableFields = Object.values(config.fields ?? {}).filter((fieldConfig) =>
+    Object.prototype.hasOwnProperty.call(fieldConfig, 'tableVisible'),
+  )
+  if (tableFields.length < 2) {
+    return false
+  }
+
+  const visibleOrders: number[] = []
+  for (const fieldConfig of tableFields) {
+    if (fieldConfig.tableVisible === true) {
+      if (typeof fieldConfig.tableOrder !== 'number' || !Number.isFinite(fieldConfig.tableOrder)) {
+        return false
+      }
+      visibleOrders.push(fieldConfig.tableOrder)
+      continue
+    }
+
+    if (fieldConfig.tableVisible === false && fieldConfig.tableOrder != null) {
+      return false
+    }
+  }
+
+  return (
+    visibleOrders.length > 1 &&
+    [...visibleOrders].sort((left, right) => left - right).every((order, index) => order === index)
+  )
 }
 
 function applyFieldConfig(
