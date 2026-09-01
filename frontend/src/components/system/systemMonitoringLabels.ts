@@ -114,6 +114,26 @@ export const MONITORING_METRIC_DEFINITIONS: Record<string, MonitoringMetricDefin
     'Database connection utilization',
   ),
   'database.sizeBytes': metric('DatabaseSizeBytes', 'Datenbankgröße', 'Database size'),
+  'database.probeLatencyMs': metric(
+    'DatabaseProbeLatencyMs',
+    'Datenbank-Prüflatenz',
+    'Database probe latency',
+  ),
+  'database.waitingLocks': metric(
+    'DatabaseWaitingLocks',
+    'Wartende Datenbanksperren',
+    'Waiting database locks',
+  ),
+  'database.deadlocksTotal': metric(
+    'DatabaseDeadlocksTotal',
+    'Datenbank-Deadlocks',
+    'Database deadlocks',
+  ),
+  'database.rollbacksTotal': metric(
+    'DatabaseRollbacksTotal',
+    'Datenbank-Rollbacks',
+    'Database rollbacks',
+  ),
   'documentStorage.sizeBytes': metric(
     'DocumentStorageSizeBytes',
     'Dokumentenspeichergröße',
@@ -129,6 +149,16 @@ export const MONITORING_METRIC_DEFINITIONS: Record<string, MonitoringMetricDefin
   'queue.failed': metric('QueueFailed', 'Fehlgeschlagene Queue-Aufträge', 'Failed queue jobs'),
   'queue.delayed': metric('QueueDelayed', 'Verzögerte Queue-Aufträge', 'Delayed queue jobs'),
   'queue.paused': metric('QueuePaused', 'Pausierte Queue', 'Paused queue'),
+  'queue.connectionLatencyMs': metric(
+    'QueueConnectionLatencyMs',
+    'Queue-Verbindungslatenz',
+    'Queue connection latency',
+  ),
+  'queue.oldestWaitingSeconds': metric(
+    'QueueOldestWaitingSeconds',
+    'Ältester wartender Queue-Auftrag',
+    'Oldest waiting queue job',
+  ),
   'http.requestCount': {
     translationKey: 'system.monitoringRequests',
     de: 'Requests',
@@ -136,8 +166,16 @@ export const MONITORING_METRIC_DEFINITIONS: Record<string, MonitoringMetricDefin
   },
   'http.5xxRate': metric('Http5xxRate', 'HTTP-5xx-Fehlerrate', 'HTTP 5xx error rate'),
   'http.p95Ms': metric('HttpP95Ms', 'HTTP-Latenz (p95)', 'HTTP latency (p95)'),
+  'http.activeRequests': metric(
+    'HttpActiveRequests',
+    'Aktive HTTP-Requests',
+    'Active HTTP requests',
+  ),
   'ai.errorRate': metric('AiErrorRate', 'KI-Fehlerrate', 'AI error rate'),
   'collector.gapSeconds': metric('CollectorGapSeconds', 'Collector-Messlücke', 'Collector gap'),
+  'web.lcpMs': metric('WebLcpMs', 'Frontend-Ladezeit (LCP)', 'Frontend load time (LCP)'),
+  'web.inpMs': metric('WebInpMs', 'Frontend-Reaktionszeit (INP)', 'Frontend response time (INP)'),
+  'web.cls': metric('WebCls', 'Frontend-Layoutstabilität (CLS)', 'Frontend layout stability (CLS)'),
   'telemetry.spool.overflow': metric(
     'TelemetrySpoolOverflow',
     'Telemetrie-Spool-Überlauf',
@@ -156,11 +194,80 @@ export function monitoringMetricLabel(
   locale: string,
   metricKey: string,
 ) {
-  const definition = MONITORING_METRIC_DEFINITIONS[metricKey]
+  const normalizedKey = metricKey.replace(/\.used\.percent$/i, '.usedPercent')
+  const definition =
+    MONITORING_METRIC_DEFINITIONS[metricKey] ??
+    MONITORING_METRIC_DEFINITIONS[normalizedKey] ??
+    Object.entries(MONITORING_METRIC_DEFINITIONS).find(
+      ([key]) => key.toLowerCase() === normalizedKey.toLowerCase(),
+    )?.[1]
   if (!definition) return humanizeMetricKey(metricKey)
   const translated = translate(definition.translationKey)
   if (translated.trim() && translated !== definition.translationKey) return translated
   return locale.toLowerCase().startsWith('de') ? definition.de : definition.en
+}
+
+const SERVICE_LABELS: Record<string, [string, string]> = {
+  application: ['Anwendung', 'Application'],
+  database: ['Datenbank', 'Database'],
+  telemetry: ['Telemetrie', 'Telemetry'],
+  queue: ['Warteschlange', 'Queue'],
+  storage: ['Speicher', 'Storage'],
+  http: ['HTTP', 'HTTP'],
+  frontend: ['Frontend', 'Frontend'],
+  ai: ['KI', 'AI'],
+}
+
+const CHECK_LABELS: Record<string, [string, string]> = {
+  'database.connectivity': ['Datenbankverbindung', 'Database connectivity'],
+  'database.capacity': ['Datenbankkapazität', 'Database capacity'],
+  'telemetry.collector': ['Telemetrie-Collector', 'Telemetry collector'],
+  'queue.flow': ['Queue-Verarbeitung', 'Queue flow'],
+  'storage.capacity': ['Speicherkapazität', 'Storage capacity'],
+  'http.reliability': ['HTTP-Zuverlässigkeit', 'HTTP reliability'],
+  'frontend.experience': ['Frontend-Erlebnis', 'Frontend experience'],
+  'ai.reliability': ['KI-Zuverlässigkeit', 'AI reliability'],
+  'application.canaryLifecycle': ['Canary-Lebenszyklus', 'Canary lifecycle'],
+}
+
+const STATE_LABELS: Record<string, [string, string]> = {
+  healthy: ['Fehlerfrei', 'Healthy'],
+  warning: ['Warnung', 'Warning'],
+  critical: ['Kritisch', 'Critical'],
+  open: ['Offen', 'Open'],
+  resolved: ['Gelöst', 'Resolved'],
+  succeeded: ['Erfolgreich', 'Succeeded'],
+  failed: ['Fehlgeschlagen', 'Failed'],
+  running: ['Wird ausgeführt', 'Running'],
+  manual: ['Manuell', 'Manual'],
+  automatic: ['Automatisch', 'Automatic'],
+  suggest: ['Vorschlag', 'Suggestion'],
+}
+
+const REMEDIATION_LABELS: Record<string, [string, string]> = {
+  'telemetry.recover': ['Telemetrie wiederherstellen', 'Recover telemetry'],
+  'checks.retry': ['Systemprüfungen wiederholen', 'Retry system checks'],
+}
+
+export function monitoringServiceLabel(locale: string, value: string): string {
+  return localizedLabel(locale, SERVICE_LABELS[value]) ?? humanizeMetricKey(value)
+}
+
+export function monitoringCheckLabel(locale: string, value: string): string {
+  return localizedLabel(locale, CHECK_LABELS[value]) ?? humanizeMetricKey(value)
+}
+
+export function monitoringStateLabel(locale: string, value: string): string {
+  return localizedLabel(locale, STATE_LABELS[value]) ?? humanizeMetricKey(value)
+}
+
+export function monitoringRemediationLabel(locale: string, value: string): string {
+  return localizedLabel(locale, REMEDIATION_LABELS[value]) ?? humanizeMetricKey(value)
+}
+
+function localizedLabel(locale: string, labels?: [string, string]): string | undefined {
+  if (!labels) return undefined
+  return locale.toLowerCase().startsWith('de') ? labels[0] : labels[1]
 }
 
 function metric(suffix: string, de: string, en: string): MonitoringMetricDefinition {

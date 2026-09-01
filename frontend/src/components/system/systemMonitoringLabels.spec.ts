@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { MONITORING_METRIC_DEFINITIONS, monitoringMetricLabel } from './systemMonitoringLabels'
+import {
+  MONITORING_METRIC_DEFINITIONS,
+  monitoringCheckLabel,
+  monitoringMetricLabel,
+  monitoringServiceLabel,
+  monitoringStateLabel,
+} from './systemMonitoringLabels'
 
 describe('system monitoring metric labels', () => {
   it('provides German and English labels for every registered metric', () => {
@@ -15,5 +21,17 @@ describe('system monitoring metric labels', () => {
       'Custom metric Value',
     )
     expect(monitoringMetricLabel(() => '', 'de-DE', 'host.cpu.percent')).toBe('CPU-Auslastung')
+  })
+
+  it('normalizes legacy metric keys before displaying them', () => {
+    expect(monitoringMetricLabel((key) => key, 'de-DE', 'host.memory.used.percent')).toBe(
+      'Arbeitsspeicherauslastung',
+    )
+  })
+
+  it('localizes service, check, and state identifiers', () => {
+    expect(monitoringServiceLabel('de-DE', 'database')).toBe('Datenbank')
+    expect(monitoringCheckLabel('de-DE', 'frontend.experience')).toBe('Frontend-Erlebnis')
+    expect(monitoringStateLabel('de-DE', 'healthy')).toBe('Fehlerfrei')
   })
 })

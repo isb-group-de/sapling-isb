@@ -97,8 +97,9 @@ export class AiUsageTelemetryService
           nullif(run."usage_payload"->>'outputTokens', '')::int,
           nullif(run."usage_payload"->>'totalTokens', '')::int,
           run."usage_payload" is not null and (
-            run."usage_payload" ? 'inputTokens' or run."usage_payload" ? 'outputTokens'
-            or run."usage_payload" ? 'totalTokens'
+            jsonb_exists(run."usage_payload", 'inputTokens')
+            or jsonb_exists(run."usage_payload", 'outputTokens')
+            or jsonb_exists(run."usage_payload", 'totalTokens')
           ),
           coalesce(run."completed_at", run."started_at", run."created_at"), now()
         from "ai_agent_run_item" run

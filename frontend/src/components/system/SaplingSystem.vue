@@ -17,34 +17,17 @@
     </template>
 
     <template v-else>
-      <header class="sapling-system-context glass-panel sapling-data-card">
-        <div class="sapling-system-context__title">
-          <span class="sapling-label">{{ $t('system.system') }}</span>
-          <strong>{{ systemTitle }}</strong>
-          <small>{{ systemSubtitle }}</small>
-        </div>
-        <div class="sapling-system-context__meta">
-          <v-chip :color="state?.isReady ? 'success' : 'error'" size="small" variant="tonal">
-            {{ state?.isReady ? $t('system.operational') : $t('system.requiresAttention') }}
-          </v-chip>
-          <v-chip size="small" variant="tonal">{{ displayValue(os?.platform) }}</v-chip>
-          <v-chip size="small" variant="outlined">{{ displayValue(os?.arch) }}</v-chip>
-          <v-chip v-if="version?.version" size="small" variant="outlined"
-            >v{{ version.version }}</v-chip
-          >
-          <span>{{ formattedServerTime }}</span>
-          <v-btn
-            icon="mdi-refresh"
-            size="small"
-            variant="text"
-            :loading="refreshing"
-            :title="$t('system.refresh')"
-            @click="refreshDashboard"
-          />
-        </div>
-      </header>
-
-      <SaplingSystemMonitoring>
+      <SaplingSystemMonitoring
+        :system-title="systemTitle"
+        :system-subtitle="systemSubtitle"
+        :system-ready="state?.isReady === true"
+        :platform="displayValue(os?.platform)"
+        :architecture="displayValue(os?.arch)"
+        :version="versionDisplay"
+        :server-time="formattedServerTime"
+        :system-refreshing="refreshing"
+        @refresh-system="refreshDashboard"
+      >
         <template #performance>
           <SaplingSystemPerformancePanel
             class="sapling-system-tab-panel"
@@ -560,53 +543,3 @@ async function openSizeDetails(kind: 'database' | 'documentStorage') {
 }
 // #endregion
 </script>
-
-<style scoped>
-.sapling-system-tab-stack {
-  display: grid;
-  gap: 18px;
-}
-
-.sapling-system-tab-panel {
-  width: 100%;
-}
-
-.sapling-system-context {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  min-height: 68px;
-  margin-bottom: 14px;
-  padding: 10px 16px;
-}
-
-.sapling-system-context__title {
-  display: grid;
-  grid-template-columns: auto auto;
-  align-items: baseline;
-  gap: 2px 10px;
-}
-
-.sapling-system-context__title small {
-  grid-column: 2;
-  color: rgb(var(--v-theme-on-surface-variant));
-}
-
-.sapling-system-context__meta {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-  color: rgb(var(--v-theme-on-surface-variant));
-  font-size: 0.8rem;
-}
-
-@media (max-width: 760px) {
-  .sapling-system-context {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-}
-</style>

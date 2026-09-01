@@ -1,4 +1,7 @@
-import { normalizeUsage } from './ai-usage-telemetry.service';
+import {
+  AiUsageTelemetryService,
+  normalizeUsage,
+} from './ai-usage-telemetry.service';
 
 describe('AI usage normalization', () => {
   it('normalizes OpenAI-compatible usage', () => {
@@ -27,5 +30,24 @@ describe('AI usage normalization', () => {
       totalTokens: null,
       reported: false,
     });
+  });
+
+  it('uses JSONB functions without introducing extra SQL placeholders', async () => {
+    const execute = jest.fn().mockResolvedValue([]);
+    const em = { getConnection: () => ({ execute }) };
+    const service = new AiUsageTelemetryService(
+      { fork: () => em } as never,
+      {
+        currentId: 'test',
+        ensure: jest.fn().mockResolvedValue(undefined),
+      } as never,
+    );
+
+    await service.backfillAgentRuns();
+
+    const [sql, parameters] = execute.mock.calls[0] as [string, unknown[]];
+    expect(sql).toContain(`jsonb_exists(run."usage_payload", 'inputTokens')`);
+    expect(sql.match(/\?/g)).toHaveLength(1);
+    expect(parameters).toEqual(['test']);
   });
 });

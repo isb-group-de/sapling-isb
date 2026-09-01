@@ -1,0 +1,601 @@
+.sapling-system-page {
+  color: var(--sapling-surface-text);
+}
+
+.sapling-system-tab-stack {
+  display: grid;
+  gap: var(--sapling-gap-xl);
+}
+
+.sapling-system-tab-panel {
+  width: 100%;
+}
+
+.monitoring-console {
+  position: relative;
+  width: 100%;
+  margin-bottom: var(--sapling-gap-xl);
+  overflow: visible;
+  border: 1px solid var(--sapling-surface-border);
+  border-radius: var(--sapling-radius-card-lg);
+  color: var(--sapling-surface-text);
+  box-shadow: var(--sapling-inset-highlight), var(--sapling-shadow-lift);
+}
+
+.monitoring-console__chrome {
+  border-radius: inherit;
+}
+
+.monitoring-console__header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--sapling-gap-xl);
+  padding: var(--sapling-space-xl) var(--sapling-space-2xl);
+  border-radius: var(--sapling-radius-card-lg) var(--sapling-radius-card-lg) 0 0;
+  background:
+    radial-gradient(circle at 8% 0%, rgba(var(--v-theme-primary), 0.1), transparent 32%),
+    color-mix(in srgb, var(--sapling-surface-fill) 84%, transparent);
+}
+
+.monitoring-console__identity,
+.monitoring-console__title-row,
+.monitoring-console__meta,
+.monitoring-console__meta > span,
+.monitoring-console__notice {
+  display: flex;
+  align-items: center;
+}
+
+.monitoring-console__identity {
+  min-width: 0;
+  gap: var(--sapling-gap-lg);
+}
+
+.monitoring-console__mark {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: var(--sapling-icon-box-xl);
+  height: var(--sapling-icon-box-xl);
+  border-radius: var(--sapling-radius-sm);
+  background: var(--primary-gradient);
+  box-shadow: 0 10px 22px rgba(var(--v-theme-primary), 0.18);
+  color: rgb(var(--v-theme-on-primary));
+}
+
+.monitoring-console__identity-copy {
+  min-width: 0;
+}
+
+.monitoring-console__eyebrow,
+.monitoring-console__subtitle,
+.monitoring-console__title-row h1 {
+  margin: 0;
+}
+
+.monitoring-console__eyebrow {
+  color: rgb(var(--v-theme-primary));
+  font-size: var(--sapling-text-label-size);
+  font-weight: 700;
+  letter-spacing: 0.045em;
+  text-transform: uppercase;
+}
+
+.monitoring-console__title-row {
+  flex-wrap: wrap;
+  gap: var(--sapling-gap-md);
+  margin-top: var(--sapling-gap-xs);
+}
+
+.monitoring-console__title-row h1 {
+  color: var(--sapling-surface-text);
+  font-size: var(--sapling-text-title-size-lg);
+  line-height: 1.2;
+}
+
+.monitoring-console__subtitle {
+  margin-top: var(--sapling-gap-sm);
+  color: var(--sapling-surface-text-muted);
+  font-size: var(--sapling-text-meta-size);
+}
+
+.monitoring-console__controls {
+  display: grid;
+  grid-template-columns: minmax(180px, 240px) minmax(120px, 150px) auto;
+  align-items: center;
+  gap: var(--sapling-gap-sm);
+}
+
+.monitoring-console__controls .v-field,
+.monitoring-console__controls .v-btn {
+  background: var(--sapling-surface-fill-subtle);
+}
+
+.monitoring-console__meta {
+  flex-wrap: wrap;
+  gap: var(--sapling-gap-md) var(--sapling-gap-xl);
+  min-height: 40px;
+  padding: var(--sapling-gap-sm) var(--sapling-space-2xl);
+  border-top: 1px solid var(--sapling-surface-border-muted);
+  background: var(--sapling-surface-fill-subtle);
+  color: var(--sapling-surface-text-muted);
+  font-size: var(--sapling-text-label-size-lg);
+}
+
+.monitoring-console__meta > span {
+  gap: var(--sapling-gap-sm);
+  white-space: nowrap;
+}
+
+.monitoring-console__updated {
+  margin-left: auto;
+}
+
+.monitoring-console__notice {
+  gap: var(--sapling-gap-sm);
+  padding: var(--sapling-gap-sm) var(--sapling-space-2xl);
+  border-top: 1px solid var(--sapling-surface-border-muted);
+  font-size: var(--sapling-text-meta-size);
+  font-weight: 600;
+}
+
+.monitoring-console__notice.is-warning {
+  background: rgba(var(--v-theme-warning), 0.1);
+  color: rgb(var(--v-theme-warning));
+}
+
+.monitoring-console__notice.is-info {
+  background: rgba(var(--v-theme-info), 0.1);
+  color: rgb(var(--v-theme-info));
+}
+
+.monitoring-navigation {
+  position: sticky;
+  z-index: 4;
+  top: var(--sapling-app-header-height);
+  border-top: 1px solid var(--sapling-surface-border-muted);
+  border-bottom: 1px solid var(--sapling-surface-border);
+  background: color-mix(in srgb, var(--sapling-tilt-shell-solid-bg) 88%, transparent);
+  backdrop-filter: blur(var(--sapling-blur-md));
+}
+
+.monitoring-navigation .v-tab {
+  min-height: var(--sapling-tab-strip-height);
+  color: var(--sapling-surface-text-muted);
+  font-weight: var(--sapling-tab-font-weight);
+  text-transform: none;
+}
+
+.monitoring-navigation .v-tab.v-tab--selected {
+  background: var(--sapling-tab-selected-fill);
+  color: var(--sapling-surface-text);
+}
+
+.monitoring-console__content {
+  padding: var(--sapling-space-xl) var(--sapling-space-xl) var(--sapling-space-2xl);
+}
+
+.monitoring-window,
+.monitoring-window .v-window__container,
+.monitoring-window-item {
+  overflow: visible;
+}
+
+.monitoring-window-item {
+  min-height: 420px;
+}
+
+.monitoring-kpis,
+.monitoring-overview-grid,
+.monitoring-incident-grid,
+.monitoring-chart-grid,
+.monitoring-service-cards,
+.monitoring-usage-grid,
+.monitoring-presence-summary {
+  display: grid;
+  gap: var(--sapling-gap-lg);
+}
+
+.monitoring-kpis {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.monitoring-overview-grid,
+.monitoring-incident-grid,
+.monitoring-chart-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: var(--sapling-gap-lg);
+}
+
+.monitoring-usage-grid,
+.monitoring-slot-stack {
+  display: grid;
+  gap: var(--sapling-gap-lg);
+}
+
+.monitoring-presence-summary {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-bottom: var(--sapling-gap-lg);
+}
+
+.monitoring-panel,
+.monitoring-service-card,
+.monitoring-presence-card {
+  min-width: 0;
+  border: 1px solid var(--sapling-surface-border-muted);
+  border-radius: var(--sapling-radius-sm);
+  background: var(--sapling-surface-fill-subtle);
+  color: var(--sapling-surface-text);
+  box-shadow: var(--sapling-inset-highlight);
+}
+
+.monitoring-panel {
+  padding: var(--sapling-space-lg);
+  overflow-x: auto;
+}
+
+.monitoring-chart-grid + .monitoring-panel,
+.monitoring-slot-stack + .monitoring-chart-grid,
+.monitoring-service-cards + .monitoring-slot-stack,
+.monitoring-incident-grid + .monitoring-incident-grid,
+.monitoring-window-item > .v-alert {
+  margin-top: var(--sapling-gap-lg);
+}
+
+.monitoring-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sapling-gap-md);
+  margin-bottom: var(--sapling-gap-lg);
+}
+
+.monitoring-panel__header h3 {
+  margin: 0;
+  color: var(--sapling-surface-text);
+  font-size: var(--sapling-text-title-size-sm);
+}
+
+.monitoring-panel__header > span {
+  color: var(--sapling-surface-text-muted);
+  font-size: var(--sapling-text-meta-size);
+}
+
+.monitoring-service-matrix,
+.monitoring-incident-stack,
+.monitoring-rules {
+  display: grid;
+  gap: var(--sapling-gap-sm);
+}
+
+.monitoring-service-row {
+  display: grid;
+  grid-template-columns: auto minmax(110px, 0.8fr) minmax(140px, 1fr) auto;
+  align-items: center;
+  gap: var(--sapling-gap-md);
+  min-height: 38px;
+  padding: var(--sapling-gap-sm) var(--sapling-gap-md);
+  border-radius: var(--sapling-radius-xs);
+  color: var(--sapling-surface-text);
+}
+
+.monitoring-service-row:nth-child(odd) {
+  background: var(--sapling-surface-fill-soft);
+}
+
+.monitoring-service-row > span:not(.monitoring-status-dot),
+.monitoring-service-row time,
+.monitoring-service-card small,
+.monitoring-service-card time {
+  color: var(--sapling-surface-text-muted);
+  font-size: var(--sapling-text-meta-size);
+}
+
+.monitoring-service-row time,
+.monitoring-service-card time {
+  white-space: nowrap;
+}
+
+.monitoring-status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--sapling-radius-pill);
+  background: var(--sapling-surface-text-muted);
+  box-shadow: 0 0 0 4px rgba(var(--v-theme-on-surface), 0.06);
+}
+
+.monitoring-status-dot.is-healthy,
+.monitoring-status-dot.is-succeeded {
+  background: rgb(var(--v-theme-success));
+  box-shadow: 0 0 0 4px rgba(var(--v-theme-success), 0.12);
+}
+
+.monitoring-status-dot.is-warning {
+  background: rgb(var(--v-theme-warning));
+  box-shadow: 0 0 0 4px rgba(var(--v-theme-warning), 0.12);
+}
+
+.monitoring-status-dot.is-critical,
+.monitoring-status-dot.is-failed {
+  background: rgb(var(--v-theme-error));
+  box-shadow: 0 0 0 4px rgba(var(--v-theme-error), 0.12);
+}
+
+.monitoring-incident-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--sapling-gap-md);
+  width: 100%;
+  min-height: 48px;
+  padding: var(--sapling-gap-sm) var(--sapling-gap-md);
+  border: 1px solid transparent;
+  border-radius: var(--sapling-radius-xs);
+  background: transparent;
+  color: var(--sapling-surface-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background var(--sapling-motion-fast) ease,
+    border-color var(--sapling-motion-fast) ease;
+}
+
+.monitoring-incident-row:hover,
+.monitoring-incident-row:focus-visible {
+  border-color: var(--sapling-surface-border-accent);
+  background: var(--sapling-interactive-hover-fill);
+  outline: none;
+}
+
+.monitoring-incident-row span {
+  display: grid;
+  min-width: 0;
+}
+
+.monitoring-incident-row small,
+.monitoring-incident-row time,
+.monitoring-table__secondary {
+  color: var(--sapling-surface-text-muted);
+  font-size: var(--sapling-text-label-size-lg);
+}
+
+.monitoring-incident-row time {
+  white-space: nowrap;
+}
+
+.monitoring-service-cards {
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+}
+
+.monitoring-service-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--sapling-gap-md);
+  padding: var(--sapling-space-md) var(--sapling-space-lg);
+}
+
+.monitoring-service-card > div {
+  display: grid;
+  min-width: 0;
+}
+
+.monitoring-service-card time {
+  grid-column: 2;
+}
+
+.monitoring-console .monitoring-slot-stack .sapling-section-panel {
+  border-color: var(--sapling-surface-border-muted);
+  background: var(--sapling-surface-fill-subtle);
+  box-shadow: var(--sapling-inset-highlight);
+}
+
+.monitoring-presence-card {
+  display: flex;
+  align-items: center;
+  gap: var(--sapling-gap-md);
+  padding: var(--sapling-space-md) var(--sapling-space-lg);
+}
+
+.monitoring-presence-card__icon {
+  display: grid;
+  place-items: center;
+  width: var(--sapling-icon-box-md);
+  height: var(--sapling-icon-box-md);
+  border-radius: var(--sapling-radius-xs);
+  background: rgba(var(--v-theme-on-surface), 0.06);
+  color: var(--sapling-surface-text-muted);
+}
+
+.monitoring-presence-card__icon.is-online {
+  background: rgba(var(--v-theme-success), 0.12);
+  color: rgb(var(--v-theme-success));
+}
+
+.monitoring-presence-card__icon.is-session {
+  background: rgba(var(--v-theme-info), 0.12);
+  color: rgb(var(--v-theme-info));
+}
+
+.monitoring-presence-card > div {
+  display: grid;
+}
+
+.monitoring-presence-card strong {
+  font-size: var(--sapling-text-title-size-md);
+}
+
+.monitoring-presence-card span:last-child {
+  color: var(--sapling-surface-text-muted);
+  font-size: var(--sapling-text-meta-size);
+}
+
+.monitoring-console .sapling-metric-card {
+  min-height: 132px;
+  border: 1px solid var(--sapling-surface-border-muted);
+  background: var(--sapling-surface-fill-subtle);
+  color: var(--sapling-surface-text);
+  box-shadow: var(--sapling-inset-highlight);
+}
+
+.monitoring-console .v-table,
+.monitoring-console .v-table th,
+.monitoring-console .v-table td {
+  color: var(--sapling-surface-text);
+}
+
+.monitoring-console .v-table {
+  min-width: 100%;
+  background: transparent;
+}
+
+.monitoring-console .v-table th {
+  color: var(--sapling-surface-text-muted);
+  font-size: var(--sapling-text-label-size);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.monitoring-table__secondary {
+  display: block;
+  max-width: 40rem;
+  margin-top: var(--sapling-gap-xs);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sapling-monitor-chart {
+  min-height: 390px;
+  overflow: hidden;
+}
+
+.sapling-monitor-chart .sapling-section-header {
+  margin-bottom: var(--sapling-gap-sm);
+}
+
+.sapling-monitor-chart__canvas {
+  width: 100%;
+  height: 315px;
+}
+
+.monitoring-dialog__body {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.monitoring-rule-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--sapling-gap-md);
+  padding: var(--sapling-gap-md);
+  border: 1px solid var(--sapling-surface-border-muted);
+  border-radius: var(--sapling-radius-xs);
+  background: var(--sapling-surface-fill-subtle);
+  color: var(--sapling-surface-text);
+}
+
+.monitoring-rule-row > span {
+  display: grid;
+  min-width: 0;
+}
+
+.monitoring-rule-row small,
+.monitoring-incident-detail dd {
+  color: var(--sapling-surface-text-muted);
+}
+
+.monitoring-incident-detail {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sapling-gap-lg);
+  margin: 0;
+}
+
+.monitoring-incident-detail > div {
+  padding: var(--sapling-gap-md);
+  border: 1px solid var(--sapling-surface-border-muted);
+  border-radius: var(--sapling-radius-xs);
+  background: var(--sapling-surface-fill-subtle);
+}
+
+.monitoring-incident-detail dt {
+  color: var(--sapling-surface-text);
+  font-size: var(--sapling-text-label-size);
+  font-weight: 700;
+}
+
+.monitoring-incident-detail dd {
+  margin: var(--sapling-gap-xs) 0 0;
+}
+
+@media (max-width: 1200px) {
+  .monitoring-console__header {
+    grid-template-columns: 1fr;
+  }
+
+  .monitoring-console__controls {
+    grid-template-columns: minmax(180px, 1fr) minmax(120px, 160px) auto;
+  }
+
+  .monitoring-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .monitoring-overview-grid,
+  .monitoring-incident-grid,
+  .monitoring-chart-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .monitoring-navigation {
+    top: 0;
+  }
+
+  .monitoring-console__updated {
+    width: 100%;
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 700px) {
+  .monitoring-console__header,
+  .monitoring-console__content {
+    padding: var(--sapling-space-lg);
+  }
+
+  .monitoring-console__meta,
+  .monitoring-console__notice {
+    padding-inline: var(--sapling-space-lg);
+  }
+
+  .monitoring-console__controls,
+  .monitoring-kpis,
+  .monitoring-presence-summary,
+  .monitoring-incident-detail {
+    grid-template-columns: 1fr;
+  }
+
+  .monitoring-console__controls .v-btn {
+    justify-self: end;
+  }
+
+  .monitoring-service-row {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .monitoring-service-row > span:not(.monitoring-status-dot),
+  .monitoring-service-row time {
+    grid-column: 2;
+  }
+
+  .monitoring-rule-row {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+}

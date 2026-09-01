@@ -1,5 +1,5 @@
 <template>
-  <article class="sapling-monitor-chart glass-panel sapling-data-card">
+  <article class="sapling-monitor-chart monitoring-panel">
     <div class="sapling-section-header">
       <div>
         <p class="sapling-eyebrow">{{ eyebrow }}</p>
@@ -30,6 +30,7 @@ import {
 } from 'echarts/components'
 import { useI18n } from 'vue-i18n'
 import type { MonitoringChartPoint } from '@/entity/system'
+import { useSaplingAppearance } from '@/composables/system/useSaplingAppearance'
 import { monitoringMetricLabel } from './systemMonitoringLabels'
 
 use([
@@ -51,8 +52,11 @@ const props = withDefaults(
   { eyebrow: '', unit: '' },
 )
 const { locale, t } = useI18n()
+const { currentTheme } = useSaplingAppearance()
 
 const option = computed(() => {
+  const mutedText = currentTheme.value === 'dark' ? 'rgba(255,255,255,.68)' : 'rgba(58,58,58,.7)'
+  const gridLine = currentTheme.value === 'dark' ? 'rgba(255,255,255,.1)' : 'rgba(58,58,58,.12)'
   const groups = new Map<string, MonitoringChartPoint[]>()
   for (const point of props.points) {
     const metricLabel = monitoringMetricLabel(t, locale.value, point.metricKey)
@@ -66,21 +70,21 @@ const option = computed(() => {
       show: groups.size > 1,
       type: 'scroll',
       top: 4,
-      textStyle: { color: '#718096' },
+      textStyle: { color: mutedText },
     },
     tooltip: {
       trigger: 'axis',
       valueFormatter: (value: unknown) => `${formatNumber(Number(value))}${props.unit}`,
     },
     dataZoom: [{ type: 'inside' }, { type: 'slider', height: 22, bottom: 12 }],
-    xAxis: { type: 'time', axisLabel: { color: '#718096', margin: 18 } },
+    xAxis: { type: 'time', axisLabel: { color: mutedText, margin: 18 } },
     yAxis: {
       type: 'value',
       axisLabel: {
-        color: '#718096',
+        color: mutedText,
         formatter: (value: number) => `${formatNumber(value)}${props.unit}`,
       },
-      splitLine: { lineStyle: { color: 'rgba(113,128,150,.16)' } },
+      splitLine: { lineStyle: { color: gridLine } },
     },
     series: [...groups.entries()].map(([name, values]) => ({
       name,
@@ -130,14 +134,3 @@ function withVisibleGaps(values: MonitoringChartPoint[]) {
   return data
 }
 </script>
-
-<style scoped>
-.sapling-monitor-chart {
-  min-height: 430px;
-  padding: 20px;
-}
-
-.sapling-monitor-chart__canvas {
-  height: 350px;
-}
-</style>

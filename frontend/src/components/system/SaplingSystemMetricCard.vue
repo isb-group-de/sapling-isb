@@ -1,5 +1,5 @@
 <template>
-  <SaplingSurface as="article" class="sapling-metric-card">
+  <SaplingSurface as="article" class="sapling-metric-card" variant="subtle">
     <div class="sapling-icon-tile" :class="iconClass">
       <v-icon :icon="icon" />
     </div>
