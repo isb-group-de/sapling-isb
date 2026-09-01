@@ -3296,6 +3296,25 @@
           "enumItems": [],
           "mappedType": "string"
         },
+        "rating": {
+          "name": "rating",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": 32,
+          "scale": 0,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [
+            "-1"
+          ],
+          "mappedType": "enum"
+        },
         "request_payload": {
           "name": "request_payload",
           "type": "jsonb",
@@ -3500,7 +3519,14 @@
           "unique": false
         }
       ],
-      "checks": [],
+      "checks": [
+        {
+          "name": "ai_chat_message_item_rating_check",
+          "expression": "\"rating\" in ('-1')",
+          "definition": "check (\"rating\" in ('-1'))",
+          "columnName": "rating"
+        }
+      ],
       "triggers": [],
       "foreignKeys": {
         "ai_chat_message_item_person_handle_foreign": {
@@ -41928,13 +41954,13 @@
         },
         "title": {
           "name": "title",
-          "type": "varchar(128)",
+          "type": "varchar(256)",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
           "unique": false,
-          "length": 128,
+          "length": 256,
           "precision": null,
           "scale": null,
           "default": null,

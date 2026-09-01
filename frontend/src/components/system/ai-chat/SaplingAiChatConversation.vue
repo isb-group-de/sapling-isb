@@ -78,6 +78,7 @@
       :streaming-duration-by-handle="streamingDurationByHandle"
       :active-tool-action-handles="activeToolActionHandles"
       :speech-state-by-handle="speechStateByHandle"
+      :rating-state-by-handle="ratingStateByHandle"
       @close="emit('close')"
       @select-starter="applyConversationStarter"
       @retry-runtime-catalog="emit('retry-runtime-catalog')"
@@ -85,6 +86,7 @@
       @toggle-message-speech="emit('toggle-message-speech', $event)"
       @confirm-tool-action="emit('confirm-tool-action', $event)"
       @reject-tool-action="emit('reject-tool-action', $event)"
+      @update-message-rating="emit('update-message-rating', $event)"
     />
 
     <div class="sapling-stack-xl sapling-chat-composer sapling-ai-chat__composer">
@@ -286,6 +288,7 @@ const props = withDefaults(
     queuedInputs: QueuedInput[]
     activeToolActionHandles: Record<number, boolean>
     speechStateByHandle: Record<number, string>
+    ratingStateByHandle: Record<number, boolean>
     titlePreviewLimit?: number
   }>(),
   {
@@ -306,6 +309,10 @@ const emit = defineEmits<{
   (event: 'toggle-message-speech', message: AiChatMessageItem): void
   (event: 'confirm-tool-action', action: AiChatToolActionItem): void
   (event: 'reject-tool-action', action: AiChatToolActionItem): void
+  (
+    event: 'update-message-rating',
+    payload: { message: AiChatMessageItem; rating: -1 | 1 | null },
+  ): void
   (event: 'toggle-voice-input'): void
   (event: 'upload-import-attachment', file: File): void
   (event: 'remove-import-attachment', handle: number): void

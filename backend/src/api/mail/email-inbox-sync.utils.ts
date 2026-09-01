@@ -118,6 +118,9 @@ export function applyInboundActionDefaults(
 
   const actionArguments = { ...(action.arguments ?? {}) };
   const data = { ...asRecord(actionArguments.data) };
+  if (typeof data.title === 'string') {
+    data.title = data.title.slice(0, 256);
+  }
   const defaults: Record<string, string> = {
     type: 'incident',
     source: 'email',

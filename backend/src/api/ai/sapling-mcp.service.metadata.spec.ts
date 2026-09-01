@@ -250,6 +250,107 @@ describe('SaplingMcpService metadata and payload security', () => {
     });
   });
 
+  it('rejects null required event references before creating', async () => {
+    const genericService = {
+      create: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+      getRecordTimeline: jest.fn(),
+      findAndCount: jest.fn().mockResolvedValue({
+        data: [{ handle: 1 }],
+        meta: { total: 1 },
+      } as never),
+    };
+    const templateService = {
+      getEntityTemplate: jest.fn((entityHandle: string) => {
+        if (entityHandle === 'event') {
+          return [
+            createTemplateField({ name: 'title', isRequired: true }),
+            createTemplateField({
+              name: 'startDate',
+              type: 'Date',
+              isRequired: true,
+            }),
+            createTemplateField({
+              name: 'endDate',
+              type: 'Date',
+              isRequired: true,
+            }),
+            createTemplateField({ name: 'description', nullable: true }),
+            createTemplateField({
+              name: 'category',
+              kind: 'm:1',
+              isReference: true,
+              referenceName: 'eventCategory',
+            }),
+            createTemplateField({
+              name: 'creatorPerson',
+              kind: 'm:1',
+              isReference: true,
+              isRequired: true,
+              referenceName: 'person',
+            }),
+            createTemplateField({
+              name: 'assigneePerson',
+              kind: 'm:1',
+              isReference: true,
+              referenceName: 'person',
+            }),
+            createTemplateField({
+              name: 'creatorCompany',
+              kind: 'm:1',
+              isReference: true,
+              isRequired: true,
+              referenceName: 'company',
+            }),
+            createTemplateField({
+              name: 'assigneeCompany',
+              kind: 'm:1',
+              isReference: true,
+              referenceName: 'company',
+            }),
+          ];
+        }
+
+        if (entityHandle === 'eventCategory') {
+          return [createTemplateField({ name: 'handle' })];
+        }
+
+        return [createTemplateField({ name: 'handle', type: 'number' })];
+      }),
+    };
+    const service = createService({ genericService, templateService });
+
+    const result = await service.executeTool(
+      'generic_create',
+      {
+        entityHandle: 'event',
+        data: {
+          title: 'Berechtigungsvergabe 2027-10104',
+          startDate: '2026-09-01T12:00:00+02:00',
+          endDate: '2026-09-01T14:00:00+02:00',
+          description: 'Interner Termin, kein Teams-Link.',
+          category: { handle: 'internal' },
+          creatorPerson: 5,
+          assigneePerson: 1233,
+          creatorCompany: null,
+          assigneeCompany: 105,
+        },
+      },
+      { handle: 1233 } as never,
+    );
+
+    expect(genericService.create).not.toHaveBeenCalled();
+    expect(result.rawResult).toMatchObject({
+      entityHandle: 'event',
+      toolName: 'generic_create',
+      mutationExecuted: false,
+      pendingToolAction: false,
+      status: 'needs_schema_retry',
+      missingRequiredFields: ['creatorCompany'],
+    });
+  });
+
   it('adds current reference defaults before generic ticket creates', async () => {
     const genericService = {
       create: jest.fn().mockResolvedValue({

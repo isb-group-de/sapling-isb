@@ -324,6 +324,17 @@ export class CreateAiChatMessageDto {
   clientUtcOffsetMinutes?: number;
 }
 
+export class UpdateAiChatMessageRatingDto {
+  @ApiProperty({
+    enum: [-1, 1, null],
+    nullable: true,
+    description:
+      'Assistant response rating: 1 for positive, -1 for negative, or null to clear it',
+  })
+  @IsIn([-1, 1, null])
+  rating!: -1 | 1 | null;
+}
+
 export class CreateAiChatInputDto extends CreateAiChatMessageDto {
   @ApiProperty({ enum: ['queue', 'steer'] })
   @IsString()

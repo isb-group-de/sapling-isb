@@ -41,6 +41,7 @@ export class ImportPayloadService {
     }
 
     const payload = normalizeImportRow(template, mapped);
+    this.truncateTicketTitle(dto.entityHandle, payload);
     await this.referenceResolver.applyRelationMappings(
       template,
       payload,
@@ -61,6 +62,17 @@ export class ImportPayloadService {
     );
     this.genericCustomFieldService.collectCustomFieldsFromFlatPayload(payload);
     return payload;
+  }
+
+  private truncateTicketTitle(
+    entityHandle: string,
+    payload: Record<string, unknown>,
+  ): void {
+    if (entityHandle !== 'ticket' || typeof payload.title !== 'string') {
+      return;
+    }
+
+    payload.title = payload.title.slice(0, 256);
   }
 
   async applyValueMapping(

@@ -202,6 +202,12 @@ The generic mutation service handles:
 - special payload normalization
 - change log creation
 
+Fields marked with `isDateStart` and `isDateEnd` are paired within the same
+declared form group. Generic create and update mutations reject a complete or
+partial payload when the resulting end value is before its start value. Equal
+values are valid, nullable incomplete ranges stay allowed, and unmatched date
+markers remain usable as standalone timeline anchors.
+
 For both create and update mutations, an empty or whitespace-only client value
 for a nullable unique scalar field is normalized to `null`. This keeps the
 unique constraint active for actual values while allowing multiple records

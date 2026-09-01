@@ -26,6 +26,7 @@ import {
   ListAiChatMessagesQueryDto,
   PrepareAiMarkdownDto,
   PrepareAiMarkdownResponseDto,
+  UpdateAiChatMessageRatingDto,
   UpdateAiChatSessionDto,
 } from './dto/chat.dto';
 import { McpService, type McpInlineToolExecution } from './mcp.service';
@@ -388,6 +389,14 @@ export class AiService {
     user: PersonItem,
   ): Promise<{ session: AiChatSessionItem; message: AiChatMessageItem }> {
     return this.chatMessage.createChatMessage(dto, user);
+  }
+
+  async updateChatMessageRating(
+    handle: number,
+    dto: UpdateAiChatMessageRatingDto,
+    user: PersonItem,
+  ): Promise<AiChatMessageItem> {
+    return this.chatMessage.updateChatMessageRating(handle, dto, user);
   }
 
   async confirmToolAction(

@@ -196,6 +196,7 @@ export function useSaplingDialogEditTemplates({
   )
 
   return {
+    baseTemplates,
     templates,
     visibleTemplates,
     visibleTemplateGroups,

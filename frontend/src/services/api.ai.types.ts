@@ -57,6 +57,10 @@ export interface CreateAiChatMessagePayload {
   clientUtcOffsetMinutes?: number
 }
 
+export interface UpdateAiChatMessageRatingPayload {
+  rating: -1 | 1 | null
+}
+
 export interface AiChatQueuedInput {
   handle: number
   sessionHandle: number

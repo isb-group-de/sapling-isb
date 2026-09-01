@@ -284,6 +284,15 @@ export class AiChatMessageItem {
   @Property({ length: 256, nullable: true })
   pageTitle?: string | null;
 
+  @ApiPropertyOptional({
+    enum: [-1, 1],
+    nullable: true,
+    description:
+      'User rating for an assistant response: 1 for positive and -1 for negative',
+  })
+  @Property({ nullable: true })
+  rating?: number | null;
+
   @ApiPropertyOptional({ type: 'string', format: 'date-time' })
   @Sapling(['isReadOnly', 'isSystem'])
   @Property({ nullable: false, type: 'datetime', onCreate: () => new Date() })

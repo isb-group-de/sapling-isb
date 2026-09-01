@@ -27,6 +27,7 @@ import type {
   CreateAiChatTranscriptionPayload,
   PrepareAiMarkdownPayload,
   PrepareAiMarkdownResponse,
+  UpdateAiChatMessageRatingPayload,
   UpdateAiChatSessionPayload,
   VectorizeEntityPayload,
   VectorizeEntityResponse,
@@ -403,6 +404,22 @@ class ApiAiService {
       return response.data
     } catch (error: unknown) {
       this.handleError(error, 'ai.chat.messageCreateFailed')
+      throw error
+    }
+  }
+
+  static async updateMessageRating(
+    handle: number,
+    payload: UpdateAiChatMessageRatingPayload,
+  ): Promise<AiChatMessageItem> {
+    try {
+      const response = await axios.patch<AiChatMessageItem>(
+        buildApiUrl(`ai/chat/messages/${handle}/rating`),
+        payload,
+      )
+      return response.data
+    } catch (error: unknown) {
+      this.handleError(error, 'aiChat.ratingUpdateFailed')
       throw error
     }
   }

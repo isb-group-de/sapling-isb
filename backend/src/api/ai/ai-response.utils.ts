@@ -556,6 +556,7 @@ export function sanitizeChatMessage(
     url: message.url ?? null,
     routeName: message.routeName ?? null,
     pageTitle: message.pageTitle ?? null,
+    rating: message.rating ?? null,
     createdAt: message.createdAt,
     updatedAt: message.updatedAt,
   } as unknown as AiChatMessageItem;

@@ -225,6 +225,8 @@ export interface AiChatMessageItem extends SaplingGenericItem {
   routeName?: string | null
   /** Page title at message creation time */
   pageTitle?: string | null
+  /** User rating for an assistant response: positive (1) or negative (-1) */
+  rating?: -1 | 1 | null
   /** Creation date */
   createdAt?: Date | null
   /** Last update date */

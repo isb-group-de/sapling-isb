@@ -133,6 +133,22 @@ describe('email inbox synchronization rules', () => {
     });
   });
 
+  it('truncates imported email subjects to the ticket title limit', () => {
+    const action = {
+      toolName: 'generic_create',
+      arguments: {
+        entityHandle: 'ticket',
+        data: { title: 'x'.repeat(300) },
+      },
+    } as unknown as AiChatToolActionItem;
+
+    applyInboundActionDefaults('ticket', action);
+
+    expect((action.arguments?.data as { title: string }).title).toHaveLength(
+      256,
+    );
+  });
+
   it('does not add ticket creation defaults to updates or another target', () => {
     const update = {
       toolName: 'generic_update',

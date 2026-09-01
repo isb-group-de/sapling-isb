@@ -1,0 +1,38 @@
+[
+  {
+    "entity": "aiChat",
+    "property": "ratePositive",
+    "de": "Antwort positiv bewerten",
+    "en": "Rate response positively"
+  },
+  {
+    "entity": "aiChat",
+    "property": "rateNegative",
+    "de": "Antwort negativ bewerten",
+    "en": "Rate response negatively"
+  },
+  {
+    "entity": "aiChat",
+    "property": "ratingUpdateFailed",
+    "de": "Die Bewertung der Songbird-Antwort konnte nicht gespeichert werden.",
+    "en": "The Songbird response rating could not be saved."
+  },
+  {
+    "entity": "aiChat",
+    "property": "ratingAssistantOnly",
+    "de": "Nur Antworten von Songbird können bewertet werden.",
+    "en": "Only Songbird responses can be rated."
+  },
+  {
+    "entity": "aiChatMessage",
+    "property": "rating",
+    "de": "Bewertung",
+    "en": "Rating"
+  },
+  {
+    "entity": "global",
+    "property": "invalidDateRange",
+    "de": "Das Enddatum darf nicht vor dem Startdatum liegen.",
+    "en": "The end date must not be before the start date."
+  }
+]

@@ -108,7 +108,7 @@ Common options:
 | `isCurrentCompany` | Current-company default/filter behavior |
 | `isOrderASC` / `isOrderDESC` | Preferred ordering field |
 | `isDeadline` / `isToday` | Date semantics for work filters |
-| `isDateStart` / `isDateEnd` | Start/end date pairing |
+| `isDateStart` / `isDateEnd` | Start/end date pairing for timelines and generic range validation; paired fields in the same form group require end >= start |
 | `isAutoKey` | Auto-key editor |
 
 ### `@SaplingForm(...)`

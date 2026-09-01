@@ -35,6 +35,7 @@ import type {
   UseSaplingDialogEditProps,
   VuetifyFormRef,
 } from './saplingDialogEdit.types'
+import { findSaplingDateRangePair, isSaplingDateRangeValid } from './saplingDateRangeValidation'
 // #endregion
 
 /**
@@ -70,6 +71,7 @@ export function useSaplingDialogEdit(
 
   // #region Helpers
   const {
+    baseTemplates,
     templates,
     visibleTemplates,
     visibleTemplateGroups,
@@ -358,6 +360,12 @@ export function useSaplingDialogEdit(
     const rules: Array<(v: unknown) => true | string> = []
     if (isTemplateRequired(template)) {
       rules.push(requiredRule(t(`${props.entity?.handle}.${template.name}`)))
+    }
+    const dateRangePair = findSaplingDateRangePair(baseTemplates.value, template.name)
+    if (dateRangePair) {
+      rules.push(() =>
+        isSaplingDateRangeValid(dateRangePair, form.value) ? true : t('global.invalidDateRange'),
+      )
     }
     return rules
   }

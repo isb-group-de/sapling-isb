@@ -94,4 +94,27 @@ describe('ImportPayloadService', () => {
       genericCustomFieldService.collectCustomFieldsFromFlatPayload,
     ).toHaveBeenCalledWith(payload);
   });
+
+  it('truncates ticket titles at the database-backed maximum', async () => {
+    const { service } = createService();
+    const payload = await service.buildPayload(
+      [
+        {
+          name: 'title',
+          type: 'string',
+          length: 256,
+          isPersistent: true,
+          options: [],
+        } as unknown as EntityTemplateDto,
+      ],
+      { Betreff: 'x'.repeat(300) },
+      {
+        entityHandle: 'ticket',
+        mappings: [{ sourceColumn: 'Betreff', targetField: 'title' }],
+      },
+      { handle: 7 } as never,
+    );
+
+    expect(payload.title).toHaveLength(256);
+  });
 });

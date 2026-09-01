@@ -173,6 +173,11 @@ Selection examples:
 
 If a new field behavior is generally useful, add a Sapling option and renderer branch rather than special-casing one entity.
 
+Generated forms also treat `isDateStart` and `isDateEnd` as a range contract.
+Markers are paired within their declared form group and the dialog blocks save
+when the end is before the start. The generic backend enforces the same rule for
+non-UI clients; equal values and incomplete nullable ranges remain valid.
+
 Generated fields render contextual help through the shared
 `SaplingHelpTooltip` control. The renderer first uses
 `formConfig.helpText`; when it is empty, it checks the translation convention

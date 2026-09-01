@@ -485,7 +485,7 @@ export class SaplingMcpGenericToolService {
             .filter(
               (field) =>
                 field.isRequired &&
-                !this.hasMutationPayloadField(data, field.name),
+                !this.hasRequiredMutationPayloadValue(data, field.name),
             )
             .map((field) => field.name)
         : [];
@@ -632,12 +632,12 @@ export class SaplingMcpGenericToolService {
     };
   }
 
-  private hasMutationPayloadField(
+  private hasRequiredMutationPayloadValue(
     data: Record<string, unknown>,
     fieldName: string,
   ): boolean {
     if (Object.prototype.hasOwnProperty.call(data, fieldName)) {
-      return true;
+      return data[fieldName] != null;
     }
 
     if (!fieldName.startsWith('customFields.')) {
@@ -645,7 +645,11 @@ export class SaplingMcpGenericToolService {
     }
 
     const customFields = this.values.asRecord(data.customFields);
-    return Object.hasOwn(customFields, fieldName.slice('customFields.'.length));
+    const customFieldName = fieldName.slice('customFields.'.length);
+    return (
+      Object.hasOwn(customFields, customFieldName) &&
+      customFields[customFieldName] != null
+    );
   }
 
   async executeGenericDelete(

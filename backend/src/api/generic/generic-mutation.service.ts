@@ -18,6 +18,7 @@ import {
 } from '../common/error-diagnostics.util';
 import { normalizeSaplingPhonePayload } from '../common/sapling-phone.util';
 import { getEntityHandleByTableName } from '../common/entity-table-name.util';
+import { assertGenericDateRanges } from './generic-date-range.util';
 
 @Injectable()
 export class GenericMutationService {
@@ -93,6 +94,7 @@ export class GenericMutationService {
     data: T,
     template: EntityTemplateDto[] = [],
   ): Promise<object> {
+    assertGenericDateRanges(template, data);
     return this.runPersistence(entityHandle, 'create', async () => {
       const normalizedData = this.genericFilterService.normalizeDatePayload(
         normalizeSaplingPhonePayload(
@@ -116,6 +118,7 @@ export class GenericMutationService {
     data: T,
     template: EntityTemplateDto[] = [],
   ): Promise<object> {
+    assertGenericDateRanges(template, data, item as Record<string, unknown>);
     return this.runPersistence(entityHandle, 'update', async () => {
       const normalizedData = this.genericFilterService.normalizeDatePayload(
         normalizeSaplingPhonePayload(

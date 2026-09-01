@@ -44,6 +44,7 @@ import {
   ListAiChatMessagesQueryDto,
   PrepareAiMarkdownDto,
   PrepareAiMarkdownResponseDto,
+  UpdateAiChatMessageRatingDto,
   UpdateAiChatSessionDto,
 } from './dto/chat.dto';
 import { AiChatQueueService } from './ai-chat-queue.service';
@@ -500,6 +501,35 @@ export class AiController {
     @Body() body: CreateAiChatMessageDto,
   ): Promise<{ session: AiChatSessionItem; message: AiChatMessageItem }> {
     return this.aiService.createChatMessage(body, req.user);
+  }
+
+  @Patch('chat/messages/:handle/rating')
+  @ApiOperation({
+    summary: 'Rate an assistant chat response',
+    description:
+      "Stores, replaces, or clears the authenticated user's positive or negative rating for a persisted assistant response.",
+  })
+  @ApiParam({
+    name: 'handle',
+    type: Number,
+    description: 'Numeric handle of the assistant chat message to rate.',
+  })
+  @ApiBody({ type: UpdateAiChatMessageRatingDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Updated persisted assistant chat message.',
+    type: AiChatMessageItem,
+  })
+  async updateMessageRating(
+    @Req() req: Request & { user: PersonItem },
+    @Param('handle') handle: number,
+    @Body() body: UpdateAiChatMessageRatingDto,
+  ): Promise<AiChatMessageItem> {
+    return this.aiService.updateChatMessageRating(
+      Number(handle),
+      body,
+      req.user,
+    );
   }
 
   @Post('chat/tool-actions/:handle/confirm')

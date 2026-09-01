@@ -1,4 +1,4 @@
-import { ConflictException } from '@nestjs/common';
+import { BadRequestException, ConflictException } from '@nestjs/common';
 import { describe, expect, it, jest } from '@jest/globals';
 import {
   ScriptResultServer,
@@ -113,6 +113,48 @@ describe('GenericMutationService', () => {
       handle: 7,
       startAt: new Date('2026-04-30T10:00:00.000Z'),
     });
+  });
+
+  it('rejects a metadata-defined end before start before persistence', async () => {
+    const em = {
+      create: jest.fn(),
+      flush: jest.fn(),
+    };
+    const service = new GenericMutationService(
+      em as never,
+      {} as never,
+      new GenericFilterService(),
+    );
+    const template = [
+      createTemplateField({
+        name: 'startDate',
+        type: 'datetime',
+        formGroup: 'event.groupSchedule',
+        formOrder: 100,
+        options: ['isDateStart'],
+      }),
+      createTemplateField({
+        name: 'endDate',
+        type: 'datetime',
+        formGroup: 'event.groupSchedule',
+        formOrder: 200,
+        options: ['isDateEnd'],
+      }),
+    ];
+
+    await expect(
+      service.createAndFlush(
+        'event',
+        class Event {},
+        {
+          startDate: '2026-09-01T11:00:00.000Z',
+          endDate: '2026-09-01T10:00:00.000Z',
+        },
+        template,
+      ),
+    ).rejects.toThrow(BadRequestException);
+    expect(em.create).not.toHaveBeenCalled();
+    expect(em.flush).not.toHaveBeenCalled();
   });
 
   it('returns a distinct payload reference when after scripts overwrite in place', async () => {

@@ -5,6 +5,7 @@ import ApiAiService from './api.ai.service'
 vi.mock('axios', () => ({
   default: {
     post: vi.fn(),
+    patch: vi.fn(),
   },
 }))
 vi.mock('@/services/api.client', () => ({ buildApiUrl: (path: string) => `/api/${path}` }))
@@ -32,5 +33,18 @@ describe('ApiAiService Markdown preparation', () => {
       modelHandle: 'gpt-5',
     })
     expect(result).toEqual({ content: '## Professioneller Text' })
+  })
+
+  it('persists a Songbird response rating', async () => {
+    vi.mocked(axios.patch).mockResolvedValue({
+      data: { handle: 42, role: 'assistant', rating: -1 },
+    })
+
+    const result = await ApiAiService.updateMessageRating(42, { rating: -1 })
+
+    expect(axios.patch).toHaveBeenCalledWith('/api/ai/chat/messages/42/rating', {
+      rating: -1,
+    })
+    expect(result).toMatchObject({ handle: 42, rating: -1 })
   })
 })

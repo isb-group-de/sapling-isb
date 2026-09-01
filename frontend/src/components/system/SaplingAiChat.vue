@@ -109,6 +109,7 @@
                 :pending-attachments="pendingAttachments"
                 :active-tool-action-handles="activeToolActionHandles"
                 :speech-state-by-handle="speechStateByHandle"
+                :rating-state-by-handle="ratingStateByHandle"
                 :title-preview-limit="TITLE_PREVIEW_LIMIT"
                 @update:draft-message="updateDraftMessage"
                 @update:selected-agent="updateSelectedAgent"
@@ -118,6 +119,7 @@
                 @toggle-message-speech="toggleMessageSpeech"
                 @confirm-tool-action="confirmToolAction"
                 @reject-tool-action="rejectToolAction"
+                @update-message-rating="updateMessageRating"
                 @toggle-voice-input="toggleVoiceInput"
                 @upload-import-attachment="uploadImportAttachment"
                 @remove-import-attachment="removeImportAttachment"
@@ -139,7 +141,7 @@ import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useDisplay } from 'vuetify'
-import type { AiChatSessionItem } from '@/entity/entity'
+import type { AiChatMessageItem, AiChatSessionItem } from '@/entity/entity'
 import SaplingSurface from '@/components/common/SaplingSurface.vue'
 import GhostEasterEgg from '@/components/easter-egg/GhostEasterEgg.vue'
 import SaplingAiChatConversation from '@/components/system/ai-chat/SaplingAiChatConversation.vue'
@@ -165,6 +167,7 @@ import {
   type SaplingAiPreferences,
 } from '@/services/ai-preferences.service'
 import { openSaplingAccountDialog } from '@/services/account-dialog.service'
+import ApiAiService from '@/services/api.ai.service'
 
 interface SaplingAiChatPromptEventDetail {
   prompt?: string
@@ -195,6 +198,7 @@ const isCompactHeaderActions = mdAndDown
 const isMobileLayout = computed(() => smAndDown.value)
 const activeSession = ref<AiChatSessionItem | null>(null)
 const draftMessage = ref('')
+const ratingStateByHandle = ref<Record<number, boolean>>({})
 const selectedContextEntityHandle = ref<string | null>(null)
 const selectedContextRecordHandle = ref<string | null>(null)
 const isSessionRailCollapsed = ref(false)
@@ -584,6 +588,23 @@ function applyPromptContext(detail?: SaplingAiChatPromptEventDetail) {
 function updateDraftMessage(value: string) {
   draftMessage.value = value
   if (!value.trim()) activeTranscriptionHandle.value = null
+}
+
+async function updateMessageRating(payload: { message: AiChatMessageItem; rating: -1 | 1 | null }) {
+  const handle = payload.message.handle
+  if (handle == null || handle <= 0 || ratingStateByHandle.value[handle]) return
+
+  ratingStateByHandle.value = { ...ratingStateByHandle.value, [handle]: true }
+  try {
+    const message = await ApiAiService.updateMessageRating(handle, {
+      rating: payload.rating,
+    })
+    upsertMessage(message)
+  } finally {
+    const nextState = { ...ratingStateByHandle.value }
+    delete nextState[handle]
+    ratingStateByHandle.value = nextState
+  }
 }
 
 function toggleSessionRail() {

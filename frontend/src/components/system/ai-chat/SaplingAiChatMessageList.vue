@@ -214,6 +214,28 @@
         class="sapling-chip-row sapling-chat-message__actions sapling-ai-chat__message-links"
       >
         <v-btn
+          v-if="canRateMessage(message)"
+          :icon="message.rating === 1 ? 'mdi-thumb-up' : 'mdi-thumb-up-outline'"
+          size="small"
+          :variant="message.rating === 1 ? 'tonal' : 'text'"
+          :color="message.rating === 1 ? 'success' : undefined"
+          :loading="isMessageRatingLoading(message)"
+          :aria-label="getTranslationLabel('ratePositive', 'Antwort positiv bewerten')"
+          :title="getTranslationLabel('ratePositive', 'Antwort positiv bewerten')"
+          @click="emitMessageRating(message, message.rating === 1 ? null : 1)"
+        />
+        <v-btn
+          v-if="canRateMessage(message)"
+          :icon="message.rating === -1 ? 'mdi-thumb-down' : 'mdi-thumb-down-outline'"
+          size="small"
+          :variant="message.rating === -1 ? 'tonal' : 'text'"
+          :color="message.rating === -1 ? 'error' : undefined"
+          :loading="isMessageRatingLoading(message)"
+          :aria-label="getTranslationLabel('rateNegative', 'Antwort negativ bewerten')"
+          :title="getTranslationLabel('rateNegative', 'Antwort negativ bewerten')"
+          @click="emitMessageRating(message, message.rating === -1 ? null : -1)"
+        />
+        <v-btn
           v-if="canPlayMessageSpeech(message)"
           size="small"
           variant="tonal"
@@ -294,6 +316,7 @@ const props = defineProps<{
   streamingDurationByHandle: Record<number, number>
   activeToolActionHandles: Record<number, boolean>
   speechStateByHandle: Record<number, string>
+  ratingStateByHandle: Record<number, boolean>
 }>()
 
 const emit = defineEmits<{
@@ -304,6 +327,10 @@ const emit = defineEmits<{
   (event: 'toggle-message-speech', message: AiChatMessageItem): void
   (event: 'confirm-tool-action', action: AiChatToolActionItem): void
   (event: 'reject-tool-action', action: AiChatToolActionItem): void
+  (
+    event: 'update-message-rating',
+    payload: { message: AiChatMessageItem; rating: -1 | 1 | null },
+  ): void
 }>()
 
 const { t, te } = useI18n()
@@ -343,10 +370,30 @@ function getMessageSessionKey(message?: AiChatMessageItem) {
 
 function shouldShowMessageActions(message: AiChatMessageItem) {
   return (
+    canRateMessage(message) ||
     canPlayMessageSpeech(message) ||
     getMessageNavigationLinks(message).length > 0 ||
     getMessageWebSources(message).length > 0
   )
+}
+
+function canRateMessage(message: AiChatMessageItem) {
+  return (
+    message.role === 'assistant' &&
+    message.status !== 'streaming' &&
+    message.status !== 'interrupted' &&
+    message.handle != null &&
+    message.handle > 0
+  )
+}
+
+function isMessageRatingLoading(message: AiChatMessageItem) {
+  return message.handle != null && props.ratingStateByHandle[message.handle] === true
+}
+
+function emitMessageRating(message: AiChatMessageItem, rating: -1 | 1 | null) {
+  if (!canRateMessage(message) || isMessageRatingLoading(message)) return
+  emit('update-message-rating', { message, rating })
 }
 
 function getMessageWebSources(message: AiChatMessageItem): ChatWebSource[] {

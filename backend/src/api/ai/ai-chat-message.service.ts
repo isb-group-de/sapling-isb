@@ -1,5 +1,5 @@
 import { EntityManager } from '@mikro-orm/core';
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { AiChatMessageItem } from '../../entity/AiChatMessageItem';
 import { AiChatSessionItem } from '../../entity/AiChatSessionItem';
 import { PersonItem } from '../../entity/PersonItem';
@@ -19,6 +19,7 @@ import {
   AiChatMessageListResponseDto,
   CreateAiChatMessageDto,
   ListAiChatMessagesQueryDto,
+  UpdateAiChatMessageRatingDto,
 } from './dto/chat.dto';
 
 @Injectable()
@@ -176,5 +177,22 @@ export class AiChatMessageService {
       session: sanitizeChatSession(session),
       message: sanitizeChatMessage(message),
     };
+  }
+
+  async updateChatMessageRating(
+    handle: number,
+    dto: UpdateAiChatMessageRatingDto,
+    user: PersonItem,
+  ): Promise<AiChatMessageItem> {
+    const message = await this.chatPersistence.findOwnedMessage(handle, user);
+
+    if (message.role !== 'assistant') {
+      throw new BadRequestException('aiChat.ratingAssistantOnly');
+    }
+
+    message.rating = dto.rating;
+    await this.em.flush();
+
+    return sanitizeChatMessage(message);
   }
 }

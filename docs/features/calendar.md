@@ -48,6 +48,11 @@ frontend/src/utils/__tests__/eventRecurrence.test.ts
 
 `EventItem` represents appointments, meetings, reminders, and related CRM/service events.
 
+The `isDateStart`/`isDateEnd` metadata on `startDate` and `endDate` is an
+enforced range invariant: an Event end may equal or follow its start, but may
+never precede it. Generated dialogs validate the range inline and the generic
+mutation path rejects invalid API, import, MCP, or script payloads as well.
+
 Important fields:
 
 | Field                               | Meaning                                                                                          |

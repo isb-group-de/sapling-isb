@@ -262,6 +262,7 @@ const TestHost = defineComponent({
       selectedFormConfigLabel: dialog.selectedFormConfigLabel,
       visibleTemplates: dialog.visibleTemplates,
       form: dialog.form,
+      getRules: dialog.getRules,
       isFieldDisabled: dialog.isFieldDisabled,
       isTemplateRecommendationActive: dialog.isTemplateRecommendationActive,
       updateFormField: dialog.updateFormField,
@@ -376,6 +377,42 @@ describe('useSaplingDialogEdit', () => {
     expect(vm.isTemplateRecommendationActive({ ...recommendedTemplate, isRequired: true })).toBe(
       false,
     )
+  })
+
+  it('adds the metadata-driven range rule to paired date fields', async () => {
+    const startTemplate = {
+      name: 'startDate',
+      type: 'datetime',
+      options: ['isDateStart'],
+      formGroup: 'event.groupSchedule',
+      formOrder: 100,
+    } as EntityTemplate
+    const endTemplate = {
+      name: 'endDate',
+      type: 'datetime',
+      options: ['isDateEnd'],
+      formGroup: 'event.groupSchedule',
+      formOrder: 200,
+    } as EntityTemplate
+    findAllMock.mockResolvedValue([startTemplate, endTemplate])
+    const wrapper = mount(TestHost, {
+      props: { templates: [startTemplate, endTemplate] },
+    })
+    await flushPromises()
+    const vm = wrapper.vm as unknown as {
+      getRules: (template: EntityTemplate) => Array<() => true | string>
+      updateFormField: (key: string, value: unknown) => void
+    }
+
+    vm.updateFormField('startDate_date', '2026-09-01')
+    vm.updateFormField('startDate_time', '11:00')
+    vm.updateFormField('endDate_date', '2026-09-01')
+    vm.updateFormField('endDate_time', '10:00')
+
+    expect(vm.getRules(endTemplate).at(-1)?.()).toBe('global.invalidDateRange')
+
+    vm.updateFormField('endDate_time', '11:00')
+    expect(vm.getRules(endTemplate).at(-1)?.()).toBe(true)
   })
 
   it('emits saveAndClose without closing the dialog before the save handler runs', async () => {

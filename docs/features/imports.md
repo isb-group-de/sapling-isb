@@ -153,6 +153,10 @@ before execution. This includes source values such as `NULL` in date or datetime
 fields and unsupported boolean values such as `-1`, so those rows are shown as
 invalid in the preview instead of failing later in PostgreSQL or MikroORM.
 
+Ticket titles are deliberately bounded to 256 characters. The initial-import
+workflow truncates longer mapped titles to that limit; additional text belongs
+in the ticket description and must not turn the title into an unbounded summary.
+
 Value mappings are stored as `ImportTemplateValueMappingItem` rows for reusable
 templates and are also copied into the batch `mapping` JSON when a batch is
 validated. They are applied while the batch is validated, before the row payload

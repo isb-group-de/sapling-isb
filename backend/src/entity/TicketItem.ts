@@ -102,7 +102,7 @@ export class TicketItem {
     mobileOrder: 300,
     mobileVisible: true,
   })
-  @Property({ length: 128, nullable: false })
+  @Property({ length: 256, nullable: false })
   title!: string;
 
   /**
