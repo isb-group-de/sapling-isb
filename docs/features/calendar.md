@@ -288,7 +288,8 @@ are arranged. **Stack appointments** uses Vuetify's compact overlapping stack;
 calendar type, combined/person-column layout, standard/extended mode, and
 overlap arrangement are persisted together in local storage. A narrow viewport
 temporarily uses the day and combined layout without overwriting the saved
-desktop preference.
+desktop preference; its menu omits the other period and person-column choices
+because the mobile calendar is intentionally limited to one day.
 
 `SaplingCalendarTutorial.vue` provides first-visit onboarding for `/event` and
 can be restarted independently from the command palette. Its targets cover the

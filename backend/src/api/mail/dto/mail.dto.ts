@@ -217,6 +217,59 @@ export class MailPreviewDto {
 
 export class MailSendDto extends MailPreviewDto {}
 
+export class MailContextCcDto {
+  @ApiProperty({
+    description: 'Entity handle used to resolve the customer context.',
+  })
+  @IsString()
+  @IsNotEmpty()
+  entityHandle!: string;
+
+  @ApiPropertyOptional({
+    description: 'Optional persisted record handle for the customer context.',
+  })
+  @IsOptional()
+  itemHandle?: string | number;
+
+  @ApiPropertyOptional({
+    type: Object,
+    description: 'Optional unsaved values that override the persisted context.',
+  })
+  @IsOptional()
+  @IsObject()
+  draftValues?: Record<string, unknown>;
+
+  @ApiPropertyOptional({ type: [String] })
+  @IsOptional()
+  @Transform(({ value }) => normalizeStringArray(value))
+  @IsArray()
+  @IsString({ each: true })
+  to?: string[];
+
+  @ApiPropertyOptional({ type: [String] })
+  @IsOptional()
+  @Transform(({ value }) => normalizeStringArray(value))
+  @IsArray()
+  @IsString({ each: true })
+  cc?: string[];
+
+  @ApiPropertyOptional({ type: [String] })
+  @IsOptional()
+  @Transform(({ value }) => normalizeStringArray(value))
+  @IsArray()
+  @IsString({ each: true })
+  bcc?: string[];
+}
+
+export class MailContextCcResponseDto {
+  @ApiProperty({
+    type: [String],
+    description:
+      'Configured customer addresses missing from all current recipient lists.',
+  })
+  additionalCc!: string[];
+}
+
 export class MailPreviewResponseDto {
   @ApiProperty({
     description: 'Entity handle that was used to resolve the preview.',

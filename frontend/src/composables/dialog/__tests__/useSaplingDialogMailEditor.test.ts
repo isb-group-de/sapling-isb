@@ -6,6 +6,7 @@ const mocks = vi.hoisted(() => ({
   findAll: vi.fn(),
   getEntityTemplate: vi.fn(),
   listSenders: vi.fn(),
+  resolveContextCc: vi.fn(),
   preview: vi.fn(),
   fetchCurrentPerson: vi.fn(),
   fetchCurrentPermission: vi.fn(),
@@ -64,6 +65,7 @@ vi.mock('@/services/api.mail.service', () => ({
   default: {
     getEntityTemplate: mocks.getEntityTemplate,
     listSenders: mocks.listSenders,
+    resolveContextCc: mocks.resolveContextCc,
     preview: mocks.preview,
     send: vi.fn(),
   },
@@ -87,6 +89,7 @@ describe('useSaplingDialogMailEditor', () => {
     mocks.currentPerson.email = 'sender@example.com'
     mocks.currentPerson.company = { handle: 20 }
     mocks.listSenders.mockResolvedValue({ senders: [] })
+    mocks.resolveContextCc.mockResolvedValue({ additionalCc: [] })
     mocks.preview.mockResolvedValue({
       to: [],
       cc: [],
@@ -177,6 +180,38 @@ describe('useSaplingDialogMailEditor', () => {
     ])
     expect(mocks.findAll).not.toHaveBeenCalledWith('emailTemplate', expect.anything())
     expect(mocks.findAll).not.toHaveBeenCalledWith('document', expect.anything())
+  })
+
+  it('adds configured customer CC recipients once and keeps them removable', async () => {
+    mocks.resolveContextCc.mockResolvedValue({
+      additionalCc: ['audit@example.com'],
+    })
+    const editor = useSaplingDialogMailEditor()
+
+    useSaplingMailDialog().openMailDialog({
+      entityHandle: 'ticket',
+      itemHandle: 99,
+      initialTo: ['customer@example.com'],
+    })
+
+    await vi.waitFor(() => expect(editor.ccRecipients.value).toEqual(['audit@example.com']))
+    expect(mocks.resolveContextCc).toHaveBeenCalledWith(
+      expect.objectContaining({
+        entityHandle: 'ticket',
+        itemHandle: 99,
+        to: ['customer@example.com'],
+        cc: [],
+        bcc: [],
+      }),
+      { reportError: false },
+    )
+
+    mocks.resolveContextCc.mockClear()
+    editor.ccRecipients.value = []
+    await editor.refreshPreview()
+
+    expect(editor.ccRecipients.value).toEqual([])
+    expect(mocks.resolveContextCc).not.toHaveBeenCalled()
   })
 
   it('adds the current user company without context companies and deduplicates contact emails', async () => {

@@ -20,27 +20,37 @@ export class CustomerAssociationResolverService {
     em: EntityManager,
     entityHandle: string,
     referenceHandle?: string | number | null,
+    draftValues?: Record<string, unknown>,
   ): Promise<CustomerAssociation> {
-    if (referenceHandle == null || String(referenceHandle).trim() === '') {
+    if (
+      (referenceHandle == null || String(referenceHandle).trim() === '') &&
+      !draftValues
+    ) {
       return { company: null, person: null };
     }
 
     if (entityHandle === 'company') {
       return {
-        company: await em.findOne(CompanyItem, {
-          handle: referenceHandle as never,
-        }),
+        company: await this.resolveCompany(
+          em,
+          draftValues?.handle ?? referenceHandle,
+        ),
         person: null,
       };
     }
 
     if (entityHandle === 'person') {
-      const person = await em.findOne(
-        PersonItem,
-        { handle: referenceHandle as never },
-        { populate: ['company'] },
+      const person = await this.resolvePerson(
+        em,
+        draftValues?.handle ?? referenceHandle,
       );
-      return { company: person?.company ?? null, person };
+      const company = Object.prototype.hasOwnProperty.call(
+        draftValues ?? {},
+        'company',
+      )
+        ? await this.resolveCompany(em, draftValues?.company)
+        : this.asCompany(person?.company);
+      return { company, person };
     }
 
     const entityClass = ENTITY_MAP[entityHandle] as
@@ -74,19 +84,32 @@ export class CustomerAssociationResolverService {
       return { company: null, person: null };
     }
 
-    const record = await em.findOne(
-      entityClass as never,
-      { handle: referenceHandle },
-      { populate: populate as never[] },
-    );
-    if (!record) {
+    const hasReferenceHandle =
+      referenceHandle != null && String(referenceHandle).trim() !== '';
+    const record = hasReferenceHandle
+      ? await em.findOne(
+          entityClass as never,
+          { handle: referenceHandle },
+          { populate: populate as never[] },
+        )
+      : null;
+    if (!record && !draftValues) {
       return { company: null, person: null };
     }
 
-    const person = this.asPerson(personField ? record[personField] : null);
+    const context = {
+      ...(record ?? {}),
+      ...(draftValues ?? {}),
+    };
+    const person = await this.resolvePerson(
+      em,
+      personField ? context[personField] : null,
+    );
     const company =
-      this.asCompany(companyField ? record[companyField] : null) ??
-      this.asCompany(person?.company);
+      (await this.resolveCompany(
+        em,
+        companyField ? context[companyField] : null,
+      )) ?? this.asCompany(person?.company);
 
     return { company, person };
   }
@@ -97,5 +120,51 @@ export class CustomerAssociationResolverService {
 
   private asPerson(value: unknown): PersonItem | null {
     return value instanceof PersonItem ? value : null;
+  }
+
+  private async resolveCompany(
+    em: EntityManager,
+    value: unknown,
+  ): Promise<CompanyItem | null> {
+    const company = this.asCompany(value);
+    if (company) {
+      return company;
+    }
+
+    const handle = this.extractHandle(value);
+    return handle == null
+      ? null
+      : em.findOne(CompanyItem, { handle: handle as never });
+  }
+
+  private async resolvePerson(
+    em: EntityManager,
+    value: unknown,
+  ): Promise<PersonItem | null> {
+    const person = this.asPerson(value);
+    if (person) {
+      return person;
+    }
+
+    const handle = this.extractHandle(value);
+    return handle == null
+      ? null
+      : em.findOne(
+          PersonItem,
+          { handle: handle as never },
+          { populate: ['company'] },
+        );
+  }
+
+  private extractHandle(value: unknown): string | number | null {
+    if (typeof value === 'string' || typeof value === 'number') {
+      return String(value).trim() === '' ? null : value;
+    }
+
+    if (!value || typeof value !== 'object') {
+      return null;
+    }
+
+    return this.extractHandle((value as { handle?: unknown }).handle);
   }
 }

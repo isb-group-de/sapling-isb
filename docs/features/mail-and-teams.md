@@ -272,6 +272,26 @@ remain visible. Selecting a suggestion stores and displays only its email
 address. Free-form email entry, delimiter handling, CC, and BCC behavior remain
 unchanged. Duplicate email addresses are collapsed case-insensitively.
 
+## Customer-Specific CC Recipients
+
+`CompanyItem.automaticCcPersons` configures Sapling people whose current email
+addresses should accompany customer-related messages. The existing customer
+association resolver identifies the Company directly for Company and Person
+contexts and through `isCustomer` metadata for records such as tickets.
+
+When the manual composer opens, `POST /api/mail/context-cc` returns only
+configured addresses that are not already present in To, CC, or BCC. The
+frontend adds them to the editable CC chips once. Users may remove them in the
+current version; previewing or manually sending the message does not restore
+them.
+
+Email subscription deliveries have no editable composer. For those automated
+messages, `MailService` adds missing configured addresses before rendering and
+persists the effective recipient lists in the delivery and request audit
+payload. Inactive people and people without a valid email address are skipped.
+All address comparisons are case-insensitive, and an address already present in
+any recipient bucket keeps its existing bucket.
+
 When a sender email is requested explicitly, it must match an available sender option. Otherwise `mail.senderNotAllowed` is raised.
 
 Azure shared-mailbox sending additionally requires delegated

@@ -211,6 +211,12 @@
   min-width: 240px;
 }
 
+.sapling-event-toolbar__overflow-divider {
+  margin-block: var(--sapling-space-2xs);
+  border-color: var(--sapling-surface-border);
+  opacity: 1;
+}
+
 .sapling-event-toolbar__nav,
 .sapling-event-toolbar__mode-toggle,
 .sapling-event-toolbar__view-toggle,

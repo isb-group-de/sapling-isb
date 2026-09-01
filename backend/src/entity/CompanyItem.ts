@@ -46,6 +46,7 @@ import { EMailListItem } from './EMailListItem';
  * @property        {boolean}               allowNewsletter     Indicates if newsletters are allowed for the company
  * @property        {CountryItem}           country             Country associated with this company
  * @property        {Collection<PersonItem>} persons            Persons associated with this company
+ * @property        {Collection<PersonItem>} automaticCcPersons Persons automatically suggested in CC for customer-related email
  * @property        {Collection<ContractItem>} contracts        Contracts associated with this company
  * @property        {Collection<ServerLandscapeItem>} serverLandscapes Server landscapes associated with this company
  * @property        {Collection<AddressItem>} addresses          Addresses associated with this company
@@ -801,6 +802,14 @@ export class CompanyItem {
   @ApiPropertyOptional({ type: () => CompanyItem, isArray: true })
   @OneToMany(() => CompanyItem, (x) => x.serviceProvider)
   serviceCustomer: Collection<CompanyItem> = new Collection<CompanyItem>(this);
+
+  /**
+   * Persons whose email addresses are automatically suggested in CC when a
+   * customer-related email is composed for this company.
+   */
+  @ApiPropertyOptional({ type: () => PersonItem, isArray: true })
+  @ManyToMany(() => PersonItem, undefined, { owner: true })
+  automaticCcPersons: Collection<PersonItem> = new Collection<PersonItem>(this);
 
   /**
    * The service provider company associated with this company (optional).

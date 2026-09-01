@@ -111,15 +111,15 @@ describe('MailService facade', () => {
     const rendering = {
       previewEmail: jest
         .fn<(...args: unknown[]) => Promise<Record<string, unknown>>>()
-        .mockResolvedValue({
-          to: ['customer@example.test'],
-          cc: [],
-          bcc: [],
+        .mockImplementation(async (_em, dto) => ({
+          to: (dto as { to?: string[] }).to ?? [],
+          cc: (dto as { cc?: string[] }).cc ?? [],
+          bcc: (dto as { bcc?: string[] }).bcc ?? [],
           subject: 'Status update',
           bodyMarkdown: 'Ready',
           bodyHtml: '<p>Ready</p>',
           attachmentHandles: [],
-        }),
+        })),
     };
     const providerSession = {
       resolveRequestedSender: jest
@@ -133,7 +133,12 @@ describe('MailService facade', () => {
     const customerAssociation = {
       resolve: jest
         .fn<(...args: unknown[]) => Promise<Record<string, unknown>>>()
-        .mockResolvedValue({ company: null, person: null }),
+        .mockResolvedValue({ company: { handle: 8 }, person: null }),
+    };
+    const customerCc = {
+      resolveAdditionalCcForCompany: jest
+        .fn<(...args: unknown[]) => Promise<string[]>>()
+        .mockResolvedValue(['audit@example.test']),
     };
     const service = new MailService(
       em as never,
@@ -145,6 +150,7 @@ describe('MailService facade', () => {
       providerSession as never,
       undefined,
       customerAssociation as never,
+      customerCc as never,
     );
     const subscription = { handle: 12 };
 
@@ -165,8 +171,88 @@ describe('MailService facade', () => {
       subscription,
       automationDeduplicationKey: '12:ticket:101',
       referenceHandle: '101',
+      ccRecipients: ['audit@example.test'],
+      requestPayload: expect.objectContaining({
+        cc: ['audit@example.test'],
+      }),
     });
+    expect(customerCc.resolveAdditionalCcForCompany).toHaveBeenCalled();
     expect(flush).toHaveBeenCalled();
+  });
+
+  it('does not restore configured CC recipients for a manual send', async () => {
+    let previewPayload: { cc?: string[] } | undefined;
+    const flush = jest.fn<() => Promise<void>>().mockResolvedValue();
+    const em = {
+      findOne: jest.fn(
+        (_entityClass: unknown, query: { handle: string | number }) => {
+          if (query.handle === 'ticket') return { handle: 'ticket' };
+          if (query.handle === 'pending') return { handle: 'pending' };
+          return null;
+        },
+      ),
+      persist: jest.fn(() => ({ flush })),
+      findOneOrFail: jest
+        .fn<() => Promise<{ handle: number }>>()
+        .mockResolvedValue({ handle: 1 }),
+    };
+    const rendering = {
+      previewEmail: jest.fn(async (_em: unknown, dto: { cc?: string[] }) => {
+        previewPayload = dto;
+        return {
+          to: ['customer@example.test'],
+          cc: dto.cc ?? [],
+          bcc: [],
+          subject: 'Manual',
+          bodyMarkdown: '',
+          bodyHtml: '',
+          attachmentHandles: [],
+        };
+      }),
+    };
+    const customerAssociation = {
+      resolve: jest
+        .fn<(...args: unknown[]) => Promise<Record<string, unknown>>>()
+        .mockResolvedValue({ company: { handle: 8 }, person: null }),
+    };
+    const customerCc = {
+      resolveAdditionalCcForCompany: jest
+        .fn<(...args: unknown[]) => Promise<string[]>>()
+        .mockResolvedValue(['configured@example.test']),
+    };
+    const service = new MailService(
+      em as never,
+      {} as never,
+      createMessageTemplateServiceMock() as never,
+      { add: jest.fn() } as never,
+      rendering as never,
+      undefined,
+      {
+        resolveRequestedSender: jest
+          .fn<(...args: unknown[]) => Promise<Record<string, unknown>>>()
+          .mockResolvedValue({
+            email: 'agent@example.test',
+            provider: 'azure',
+            source: 'personal',
+          }),
+      } as never,
+      undefined,
+      customerAssociation as never,
+      customerCc as never,
+    );
+
+    await service.sendEmail(
+      {
+        entityHandle: 'ticket',
+        itemHandle: 101,
+        to: ['customer@example.test'],
+        cc: [],
+      },
+      { handle: 42, type: { handle: 'azure' } } as never,
+    );
+
+    expect(previewPayload?.cc).toEqual([]);
+    expect(customerCc.resolveAdditionalCcForCompany).not.toHaveBeenCalled();
   });
 
   it('renders rich markdown in previewEmail', async () => {

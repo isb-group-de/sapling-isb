@@ -41,6 +41,10 @@ export type MailDeliveryResult = {
   responseBody?: object
 }
 
+export type MailContextCcResult = {
+  additionalCc: string[]
+}
+
 class ApiMailService {
   static async getEntityTemplate(
     entityHandle: string,
@@ -81,6 +85,25 @@ class ApiMailService {
       return response.data
     } catch (error) {
       pushApiErrorMessage(error, 'exception.unknownError', 'mail')
+      throw error
+    }
+  }
+
+  static async resolveContextCc(
+    payload: MailPreviewPayload,
+    options: { reportError?: boolean } = {},
+  ): Promise<MailContextCcResult> {
+    try {
+      const response = await axios.post<MailContextCcResult>(
+        buildApiUrl('mail/context-cc'),
+        payload,
+      )
+
+      return response.data
+    } catch (error) {
+      if (options.reportError !== false) {
+        pushApiErrorMessage(error, 'exception.unknownError', 'mail')
+      }
       throw error
     }
   }

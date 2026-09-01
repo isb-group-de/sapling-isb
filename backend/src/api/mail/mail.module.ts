@@ -27,6 +27,7 @@ import { EmailAutomationService } from './email-automation.service';
 import { TemplateModule } from '../template/template.module';
 import { AuthModule } from '../../auth/auth.module';
 import { CustomerAssociationResolverService } from './customer-association-resolver.service';
+import { CustomerCcService } from './customer-cc.service';
 
 const MockQueue = {
   add: (name: string, data: unknown) => {
@@ -76,6 +77,7 @@ const MockQueue = {
     MailProviderTransportService,
     EmailAutomationService,
     CustomerAssociationResolverService,
+    CustomerCcService,
     ...(REDIS_ENABLED ? [MailProcessor] : []),
     ...(REDIS_ENABLED
       ? []
@@ -90,6 +92,7 @@ const MockQueue = {
     MailService,
     EmailAutomationService,
     CustomerAssociationResolverService,
+    CustomerCcService,
   ],
 })
 export class MailModule {}

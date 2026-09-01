@@ -21,6 +21,8 @@ import { PersonItem } from '../../entity/PersonItem';
 import { SessionOrBearerAuthGuard } from '../../auth/guard/session-or-token-auth.guard';
 import { MailService } from './mail.service';
 import {
+  MailContextCcDto,
+  MailContextCcResponseDto,
   MailPreviewDto,
   MailPreviewResponseDto,
   MailSenderListResponseDto,
@@ -106,6 +108,24 @@ export class MailController {
     @Body() previewDto: MailPreviewDto,
   ): Promise<MailPreviewResponseDto> {
     return this.mailService.previewEmail(previewDto, req.user);
+  }
+
+  @Post('context-cc')
+  @ApiOperation({
+    summary: 'Resolve configured customer CC recipients',
+    description:
+      'Returns customer-specific CC addresses that are not already present in To, CC, or BCC.',
+  })
+  @ApiBody({ type: MailContextCcDto })
+  @ApiResponse({ status: 201, type: MailContextCcResponseDto })
+  @UseGuards(GenericPermissionGuard)
+  @GenericPermission('allowRead')
+  @SetMetadata(GENERIC_PERMISSION_RESOLVE_KEY, resolveMailEntityPermission)
+  @ImpersonationReadOnly()
+  async resolveContextCc(
+    @Body() contextDto: MailContextCcDto,
+  ): Promise<MailContextCcResponseDto> {
+    return this.mailService.resolveContextCc(contextDto);
   }
 
   @Post('send')

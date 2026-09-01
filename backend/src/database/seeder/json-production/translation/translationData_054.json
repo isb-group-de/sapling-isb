@@ -1,0 +1,20 @@
+[
+  {
+    "entity": "company",
+    "property": "automaticCcPersons",
+    "de": "Mail CC-Personen",
+    "en": "Mail CC people"
+  },
+  {
+    "entity": "mail",
+    "property": "customerCcLoadFailed",
+    "de": "Automatische Mail CC-Empfänger konnten nicht geladen werden",
+    "en": "Automatic Mail CC recipients could not be loaded"
+  },
+  {
+    "entity": "mail",
+    "property": "customerCcLoadFailedDescription",
+    "de": "Die E-Mail kann weiter bearbeitet werden. Prüfen Sie die CC-Empfänger vor dem Versand.",
+    "en": "The email can still be edited. Check the CC recipients before sending."
+  }
+]

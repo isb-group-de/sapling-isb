@@ -77,6 +77,7 @@ export function useSaplingDialogMailEditor() {
   const isLoadingRecipientOptions = ref(false)
   const isPreviewLoading = ref(false)
   const isSending = ref(false)
+  let initializationSequence = 0
 
   const entityLabel = computed(() => {
     const handle = context.value?.entityHandle
@@ -143,6 +144,7 @@ export function useSaplingDialogMailEditor() {
   watch(
     isOpen,
     async (open) => {
+      const sequence = ++initializationSequence
       if (!open || !context.value) {
         resetState()
         return
@@ -158,7 +160,14 @@ export function useSaplingDialogMailEditor() {
       applyContextDefaultTemplate()
       isLoadingRecipientOptions.value = true
       await loadContextEntityTemplates()
-      await Promise.all([loadPlaceholders(), loadRecipientOptions()])
+      await Promise.all([
+        loadPlaceholders(),
+        loadRecipientOptions(),
+        loadConfiguredCustomerCc(sequence),
+      ])
+      if (sequence !== initializationSequence) {
+        return
+      }
       await refreshPreview()
     },
     { immediate: true },
@@ -533,6 +542,51 @@ export function useSaplingDialogMailEditor() {
     }
   }
 
+  async function loadConfiguredCustomerCc(sequence: number) {
+    const currentContext = context.value
+    if (!currentContext) {
+      return
+    }
+
+    try {
+      const result = await ApiMailService.resolveContextCc(
+        {
+          entityHandle: currentContext.entityHandle,
+          itemHandle: currentContext.itemHandle,
+          draftValues: currentContext.draftValues,
+          to: toRecipients.value,
+          cc: ccRecipients.value,
+          bcc: bccRecipients.value,
+        },
+        { reportError: false },
+      )
+
+      if (sequence !== initializationSequence || !isOpen.value) {
+        return
+      }
+
+      const occupiedRecipients = new Set(
+        [...toRecipients.value, ...ccRecipients.value, ...bccRecipients.value].map((recipient) =>
+          recipient.trim().toLocaleLowerCase(),
+        ),
+      )
+      const additionalCc = normalizeRecipients(result.additionalCc).filter(
+        (recipient) => !occupiedRecipients.has(recipient.toLocaleLowerCase()),
+      )
+      ccRecipients.value = normalizeDistinctRecipients([...ccRecipients.value, ...additionalCc])
+    } catch (error) {
+      console.error('Error loading configured customer CC recipients:', error)
+      if (sequence === initializationSequence && isOpen.value) {
+        pushMessage(
+          'warning',
+          'mail.customerCcLoadFailed',
+          'mail.customerCcLoadFailedDescription',
+          'mail',
+        )
+      }
+    }
+  }
+
   async function refreshPreview() {
     if (!context.value?.entityHandle) {
       return
@@ -687,6 +741,19 @@ export function useSaplingDialogMailEditor() {
     const values = Array.isArray(value) ? value : String(value ?? '').split(/[;,]/)
 
     return values.map((entry) => String(entry).trim()).filter(Boolean)
+  }
+
+  function normalizeDistinctRecipients(values: string[]): string[] {
+    const distinct = new Map<string, string>()
+
+    for (const recipient of normalizeRecipients(values)) {
+      const key = recipient.toLocaleLowerCase()
+      if (!distinct.has(key)) {
+        distinct.set(key, recipient)
+      }
+    }
+
+    return [...distinct.values()]
   }
 
   function getRelationHandle(value: unknown): string | number | null {

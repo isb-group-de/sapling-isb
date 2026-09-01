@@ -91,4 +91,24 @@ describe('CustomerAssociationResolverService', () => {
       person: null,
     });
   });
+
+  it('uses unsaved customer values when no persisted record exists yet', async () => {
+    const customerCompany = Object.assign(new CompanyItem(), { handle: 10 });
+    const templateService = {
+      getEntityTemplate: jest.fn(() => [
+        { name: 'creatorCompany', referenceName: 'company' },
+      ]),
+    };
+    const em = { findOne: jest.fn() };
+    const service = new CustomerAssociationResolverService(
+      templateService as never,
+    );
+
+    await expect(
+      service.resolve(em as never, 'ticket', undefined, {
+        creatorCompany: customerCompany,
+      }),
+    ).resolves.toEqual({ company: customerCompany, person: null });
+    expect(em.findOne).not.toHaveBeenCalled();
+  });
 });

@@ -6584,6 +6584,16 @@
         },
         {
           "columnNames": [
+            "occurred_at"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "ai_usage_event_occurred_at_idx",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "person_handle",
             "occurred_at"
           ],
@@ -6602,16 +6612,6 @@
           "composite": true,
           "constraint": false,
           "keyName": "ai_usage_event_provider_time_idx",
-          "primary": false,
-          "unique": false
-        },
-        {
-          "columnNames": [
-            "occurred_at"
-          ],
-          "composite": false,
-          "constraint": false,
-          "keyName": "ai_usage_event_occurred_at_idx",
           "primary": false,
           "unique": false
         }
@@ -9284,6 +9284,90 @@
           ],
           "referencedTableName": "public.work_hour_week_item",
           "deleteRule": "set null"
+        }
+      },
+      "comment": null
+    },
+    {
+      "name": "company_item_automatic_cc_persons",
+      "schema": "public",
+      "columns": {
+        "company_item_handle": {
+          "name": "company_item_handle",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": true,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
+        "person_item_handle": {
+          "name": "person_item_handle",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": true,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        }
+      },
+      "indexes": [
+        {
+          "columnNames": [
+            "company_item_handle",
+            "person_item_handle"
+          ],
+          "composite": true,
+          "constraint": true,
+          "keyName": "company_item_automatic_cc_persons_pkey",
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "triggers": [],
+      "foreignKeys": {
+        "company_item_automatic_cc_persons_company_item_handle_foreign": {
+          "columnNames": [
+            "company_item_handle"
+          ],
+          "constraintName": "company_item_automatic_cc_persons_company_item_handle_foreign",
+          "localTableName": "public.company_item_automatic_cc_persons",
+          "referencedColumnNames": [
+            "handle"
+          ],
+          "referencedTableName": "public.company_item",
+          "updateRule": "cascade",
+          "deleteRule": "cascade"
+        },
+        "company_item_automatic_cc_persons_person_item_handle_foreign": {
+          "columnNames": [
+            "person_item_handle"
+          ],
+          "constraintName": "company_item_automatic_cc_persons_person_item_handle_foreign",
+          "localTableName": "public.company_item_automatic_cc_persons",
+          "referencedColumnNames": [
+            "handle"
+          ],
+          "referencedTableName": "public.person_item",
+          "updateRule": "cascade",
+          "deleteRule": "cascade"
         }
       },
       "comment": null
@@ -21613,17 +21697,15 @@
         },
         {
           "columnNames": [
-            "bucket_start",
+            "person_handle",
             "resolution",
-            "attribution_key",
-            "route_group",
-            "auth_kind"
+            "bucket_start"
           ],
           "composite": true,
           "constraint": false,
-          "keyName": "http_metric_bucket_unique",
+          "keyName": "http_metric_bucket_person_resolution_time_idx",
           "primary": false,
-          "unique": true
+          "unique": false
         },
         {
           "columnNames": [
@@ -21638,15 +21720,17 @@
         },
         {
           "columnNames": [
-            "person_handle",
+            "bucket_start",
             "resolution",
-            "bucket_start"
+            "attribution_key",
+            "route_group",
+            "auth_kind"
           ],
           "composite": true,
           "constraint": false,
-          "keyName": "http_metric_bucket_person_resolution_time_idx",
+          "keyName": "http_metric_bucket_unique",
           "primary": false,
-          "unique": false
+          "unique": true
         }
       ],
       "checks": [],
@@ -37617,22 +37701,22 @@
         {
           "columnNames": [
             "state",
-            "last_seen_at"
+            "resolved_at"
           ],
           "composite": true,
           "constraint": false,
-          "keyName": "system_alert_incident_state_time_idx",
+          "keyName": "system_alert_incident_state_resolved_idx",
           "primary": false,
           "unique": false
         },
         {
           "columnNames": [
             "state",
-            "resolved_at"
+            "last_seen_at"
           ],
           "composite": true,
           "constraint": false,
-          "keyName": "system_alert_incident_state_resolved_idx",
+          "keyName": "system_alert_incident_state_time_idx",
           "primary": false,
           "unique": false
         }
@@ -38103,6 +38187,17 @@
         },
         {
           "columnNames": [
+            "resolution",
+            "bucket_start"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "system_metric_bucket_resolution_time_idx",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "metric_key",
             "resolution",
             "bucket_start"
@@ -38126,17 +38221,6 @@
           "keyName": "system_metric_bucket_unique",
           "primary": false,
           "unique": true
-        },
-        {
-          "columnNames": [
-            "resolution",
-            "bucket_start"
-          ],
-          "composite": true,
-          "constraint": false,
-          "keyName": "system_metric_bucket_resolution_time_idx",
-          "primary": false,
-          "unique": false
         }
       ],
       "checks": [],

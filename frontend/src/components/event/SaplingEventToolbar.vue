@@ -164,7 +164,7 @@
             </template>
 
             <SaplingSurface :as="VList" class="sapling-event-toolbar__overflow-menu">
-              <template v-if="!showModeInline">
+              <template v-if="showModeOverflow">
                 <v-list-item
                   prepend-icon="mdi-perspective-less"
                   :active="calendarModeModel === 'default'"
@@ -179,11 +179,14 @@
                 >
                   <v-list-item-title>{{ $t('calendar.extended') }}</v-list-item-title>
                 </v-list-item>
-                <v-divider />
               </template>
 
+              <v-divider
+                v-if="showSyncOverflow && showModeOverflow"
+                class="sapling-event-toolbar__overflow-divider"
+              />
               <v-list-item
-                v-if="calendarSyncProvider && !showSyncInline"
+                v-if="showSyncOverflow"
                 :prepend-icon="calendarSyncIcon"
                 :disabled="isSyncingExternalCalendar"
                 @click="emit('syncCalendar')"
@@ -191,7 +194,11 @@
                 <v-list-item-title>{{ calendarSyncLabel }}</v-list-item-title>
               </v-list-item>
 
-              <template v-if="!isNarrowScreen && !showViewInline">
+              <v-divider
+                v-if="showViewOverflow && (showModeOverflow || showSyncOverflow)"
+                class="sapling-event-toolbar__overflow-divider"
+              />
+              <template v-if="showViewOverflow">
                 <v-list-item
                   prepend-icon="mdi-call-merge"
                   :active="calendarViewModeModel === 'single'"
@@ -210,14 +217,12 @@
 
               <v-divider
                 v-if="
-                  !showTypeInline &&
-                  (!showModeInline ||
-                    (calendarSyncProvider && !showSyncInline) ||
-                    (!isNarrowScreen && !showViewInline))
+                  showTypeOverflow && (showModeOverflow || showSyncOverflow || showViewOverflow)
                 "
+                class="sapling-event-toolbar__overflow-divider"
               />
 
-              <template v-if="!showTypeInline">
+              <template v-if="showTypeOverflow">
                 <v-list-item
                   v-for="type in calendarTypeOptions"
                   :key="type"
@@ -229,7 +234,10 @@
                 </v-list-item>
               </template>
 
-              <v-divider v-if="hasOverflowItemsBeforeArrangement" />
+              <v-divider
+                v-if="hasOverflowItemsBeforeArrangement"
+                class="sapling-event-toolbar__overflow-divider"
+              />
               <v-list-item
                 prepend-icon="mdi-layers-outline"
                 :active="eventOverlapModeModel === 'stack'"
@@ -367,12 +375,16 @@ const showViewInline = computed(
 const showTypeInline = computed(
   () => !props.isNarrowScreen && toolbarWidth.value >= TOOLBAR_TYPE_INLINE_MIN_WIDTH,
 )
+const showModeOverflow = computed(() => !showModeInline.value)
+const showSyncOverflow = computed(() => props.calendarSyncProvider != null && !showSyncInline.value)
+const showViewOverflow = computed(() => !props.isNarrowScreen && !showViewInline.value)
+const showTypeOverflow = computed(() => !props.isNarrowScreen && !showTypeInline.value)
 const hasOverflowItemsBeforeArrangement = computed(
   () =>
-    !showModeInline.value ||
-    (props.calendarSyncProvider != null && !showSyncInline.value) ||
-    (!props.isNarrowScreen && !showViewInline.value) ||
-    !showTypeInline.value,
+    showModeOverflow.value ||
+    showSyncOverflow.value ||
+    showViewOverflow.value ||
+    showTypeOverflow.value,
 )
 const hasOverflowActions = true
 const calendarTypeIcons: Record<CalendarType, string> = {

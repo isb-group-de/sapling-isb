@@ -18,6 +18,8 @@ import { PersonSessionItem } from '../../entity/PersonSessionItem';
 import { MessageTemplateService } from '../template/message-template.service';
 import { TemplateService } from '../template/template.service';
 import {
+  MailContextCcDto,
+  MailContextCcResponseDto,
   MailPreviewDto,
   MailPreviewResponseDto,
   MailSenderListResponseDto,
@@ -34,6 +36,7 @@ import { MailProviderSessionService } from './mail-provider-session.service';
 import { MailProviderTransportService } from './mail-provider-transport.service';
 import { MailRenderingService } from './mail-rendering.service';
 import { CustomerAssociationResolverService } from './customer-association-resolver.service';
+import { CustomerCcService } from './customer-cc.service';
 
 /**
  * Stable orchestration facade for mail controllers, processors and inbound
@@ -47,6 +50,7 @@ export class MailService {
   private readonly providerSessionService: MailProviderSessionService;
   private readonly providerTransportService: MailProviderTransportService;
   private readonly customerAssociationResolver: CustomerAssociationResolverService;
+  private readonly customerCcService: CustomerCcService;
 
   constructor(
     private readonly em: EntityManager,
@@ -59,6 +63,7 @@ export class MailService {
     @Optional() providerTransportService?: MailProviderTransportService,
     @Optional()
     customerAssociationResolver?: CustomerAssociationResolverService,
+    @Optional() customerCcService?: CustomerCcService,
   ) {
     this.renderingService =
       renderingService ?? new MailRenderingService(messageTemplateService);
@@ -74,6 +79,9 @@ export class MailService {
     this.customerAssociationResolver =
       customerAssociationResolver ??
       new CustomerAssociationResolverService(templateService);
+    this.customerCcService =
+      customerCcService ??
+      new CustomerCcService(this.customerAssociationResolver);
   }
 
   async listSenderOptions(
@@ -111,6 +119,17 @@ export class MailService {
     return this.renderingService.previewEmail(this.em, previewDto, currentUser);
   }
 
+  async resolveContextCc(
+    contextDto: MailContextCcDto,
+  ): Promise<MailContextCcResponseDto> {
+    return {
+      additionalCc: await this.customerCcService.resolveAdditionalCc(
+        this.em,
+        contextDto,
+      ),
+    };
+  }
+
   async sendEmail(
     sendDto: MailSendDto,
     currentUser: PersonItem,
@@ -119,7 +138,27 @@ export class MailService {
       deduplicationKey?: string;
     },
   ): Promise<EmailDeliveryItem> {
-    const preview = await this.previewEmail(sendDto, currentUser);
+    const customerAssociation = await this.customerAssociationResolver.resolve(
+      this.em,
+      sendDto.entityHandle,
+      sendDto.itemHandle,
+      sendDto.draftValues,
+    );
+    const additionalCc = automation
+      ? await this.customerCcService.resolveAdditionalCcForCompany(
+          this.em,
+          customerAssociation.company,
+          sendDto,
+        )
+      : [];
+    const effectiveSendDto =
+      additionalCc.length > 0
+        ? {
+            ...sendDto,
+            cc: [...(sendDto.cc ?? []), ...additionalCc],
+          }
+        : sendDto;
+    const preview = await this.previewEmail(effectiveSendDto, currentUser);
     if (preview.to.length === 0) {
       throw new BadRequestException('mail.toRequired');
     }
@@ -147,11 +186,6 @@ export class MailService {
       : undefined;
     delivery.referenceHandle =
       sendDto.itemHandle !== undefined ? String(sendDto.itemHandle) : undefined;
-    const customerAssociation = await this.customerAssociationResolver.resolve(
-      this.em,
-      sendDto.entityHandle,
-      sendDto.itemHandle,
-    );
     delivery.customerCompany = customerAssociation.company;
     delivery.customerPerson = customerAssociation.person;
     delivery.provider = currentUser.type?.handle ?? 'sapling';
