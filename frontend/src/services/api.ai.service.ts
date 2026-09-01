@@ -571,7 +571,7 @@ class ApiAiService {
 
     if (!response.ok || !response.body) {
       const errorMessage = `ai.chat.streamFailed (${response.status})`
-      pushApiErrorMessage(new Error(errorMessage), errorMessage, 'aiChat')
+      pushApiErrorMessage(new Error(errorMessage), 'aiChat.streamFailed', 'aiChat')
       throw new Error(errorMessage)
     }
 

@@ -50,9 +50,26 @@ export interface CreateGithubIssuePayload {
   title: string
   description: string
   type: GithubIssueType
+  sourceUrl?: string
+}
+
+export interface GithubRepository {
+  full_name: string
+  html_url: string
 }
 
 class ApiGithubService {
+  static async getRepository(): Promise<GithubRepository> {
+    try {
+      const response = await axios.get<GithubRepository>(buildApiUrl('github/repository'))
+
+      return response.data
+    } catch (error) {
+      pushApiErrorMessage(error, 'exception.unknownError', 'github')
+      throw error
+    }
+  }
+
   static async getIssues(status: GithubIssueStatus): Promise<GithubIssue[]> {
     try {
       const response = await axios.get<GithubIssue[]>(buildApiUrl('github/issues'), {

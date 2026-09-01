@@ -40,14 +40,21 @@ export function createErrorIssuePayload(
   message: Message,
   readableTitle: string,
   exportedAt = new Date(),
+  sourceUrl?: string,
 ): CreateGithubIssuePayload {
   const exportPayload = createMessageCenterExportPayload([message], exportedAt)
 
-  return {
+  const payload: CreateGithubIssuePayload = {
     title: readableTitle.trim().slice(0, MAX_GITHUB_ISSUE_TITLE_LENGTH),
     description: buildGithubIssueDescription(exportPayload, message),
     type: 'bug',
   }
+
+  if (sourceUrl) {
+    payload.sourceUrl = sourceUrl
+  }
+
+  return payload
 }
 
 function buildGithubIssueDescription(

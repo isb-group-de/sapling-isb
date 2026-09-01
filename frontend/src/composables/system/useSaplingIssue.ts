@@ -1,4 +1,5 @@
 import { computed, onMounted, reactive, ref } from 'vue'
+import { useRoute } from 'vue-router'
 import axios from 'axios'
 import { useTranslationLoader } from '../generic/useTranslationLoader'
 import { useSaplingMessageCenter } from './useSaplingMessageCenter'
@@ -6,9 +7,11 @@ import ApiGithubService from '@/services/api.github.service'
 import type {
   CreateGithubIssuePayload,
   GithubIssue,
+  GithubRepository,
   GithubIssueStatus,
   GithubIssueType,
 } from '@/services/api.github.service'
+import { buildGithubNewIssueUrl, resolveGithubIssueSourceUrl } from '@/utils/githubIssueUrl'
 
 export type SaplingIssueStatus = Exclude<GithubIssueStatus, 'all'>
 export type SaplingIssueType = GithubIssueType
@@ -20,8 +23,10 @@ export type SaplingIssueDraft = CreateGithubIssuePayload
  */
 export function useSaplingIssue() {
   //#region State
+  const route = useRoute()
   const openIssues = ref<SaplingIssue[]>([])
   const closedIssues = ref<SaplingIssue[]>([])
+  const repository = ref<GithubRepository | null>(null)
   const isIssueLoading = ref(true)
   const isCreateLoading = ref(false)
   const latestCreatedIssue = ref<SaplingIssue | null>(null)
@@ -33,6 +38,11 @@ export function useSaplingIssue() {
   const { pushMessage } = useSaplingMessageCenter()
   const { isLoading: isTranslationLoading } = useTranslationLoader('global', 'github', 'issue')
   const isLoading = computed(() => isTranslationLoading.value || isIssueLoading.value)
+  const sourceUrl = computed(() => {
+    const source = route.query.source ?? window.history.state?.back
+    return resolveGithubIssueSourceUrl(source, window.location.origin)
+  })
+  const directIssueUrl = computed(() => buildGithubNewIssueUrl(repository.value?.html_url))
   const isCreateDisabled = computed(
     () => isCreateLoading.value || !draft.title.trim() || !draft.description.trim() || !draft.type,
   )
@@ -40,7 +50,7 @@ export function useSaplingIssue() {
 
   //#region Lifecycle
   onMounted(async () => {
-    await fetchIssues()
+    await Promise.all([fetchIssues(), fetchRepository()])
   })
   //#endregion
 
@@ -75,6 +85,14 @@ export function useSaplingIssue() {
     draft.type = 'bug'
   }
 
+  const fetchRepository = async () => {
+    try {
+      repository.value = await ApiGithubService.getRepository()
+    } catch {
+      repository.value = null
+    }
+  }
+
   /**
    * Creates a new GitHub issue and refreshes the dashboard afterwards.
    */
@@ -90,6 +108,7 @@ export function useSaplingIssue() {
         title: draft.title.trim(),
         description: draft.description.trim(),
         type: draft.type,
+        ...(sourceUrl.value ? { sourceUrl: sourceUrl.value } : {}),
       })
 
       latestCreatedIssue.value = createdIssue
@@ -113,12 +132,14 @@ export function useSaplingIssue() {
     openIssues,
     closedIssues,
     latestCreatedIssue,
+    directIssueUrl,
     isCreateDisabled,
     isCreateLoading,
     isTranslationLoading,
     isLoading,
     createIssue,
     fetchIssues,
+    fetchRepository,
     resetDraft,
   }
   //#endregion

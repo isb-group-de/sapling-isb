@@ -323,7 +323,12 @@ lists, insert, and code tools; upload and record-scoped image selection remain
 together in the insert group. Those two document actions are added only when the
 field receives an entity handle, and become enabled once a stable item handle is
 available. Context-free editors such as the GitHub issue composer omit the actions
-entirely without reserving toolbar space.
+entirely without reserving toolbar space. GitHub's documented issue-creation API
+has no attachment upload field, so Sapling does not offer clipboard images or
+document uploads in this composer. The issue page explains that screenshots must
+be added in GitHub and links directly to GitHub's new-issue form. Issues created
+from Sapling include a sanitized backlink to the page from which the report action
+was opened; automatic message-center reports capture their current page directly.
 
 A neighboring toolbar action opens a searchable, multi-select image gallery for
 documents already linked to the current record. The gallery uses the dedicated

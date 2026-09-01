@@ -1,0 +1,8 @@
+[
+  {
+    "entity": "aiChat",
+    "property": "streamFailed",
+    "de": "Die Verbindung zur KI-Antwort wurde unterbrochen. Prüfen Sie den Chat und senden Sie die Anfrage bei Bedarf erneut.",
+    "en": "The connection to the AI response was interrupted. Check the chat and resend the request if necessary."
+  }
+]

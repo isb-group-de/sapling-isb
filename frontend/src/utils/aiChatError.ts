@@ -4,11 +4,11 @@ export function normalizeAiChatErrorMessage(error: unknown): string {
       ? error
       : error instanceof Error
         ? error.message
-        : 'ai.chat.streamFailed'
+        : 'aiChat.streamFailed'
   const trimmedMessage = rawMessage.trim()
 
   if (!trimmedMessage || trimmedMessage.startsWith('ai.chat.streamFailed')) {
-    return 'ai.chat.streamFailed'
+    return 'aiChat.streamFailed'
   }
 
   if (
@@ -20,5 +20,5 @@ export function normalizeAiChatErrorMessage(error: unknown): string {
 
   return /^[a-z]+(?:\.[a-zA-Z0-9_-]+)+$/.test(trimmedMessage)
     ? trimmedMessage
-    : 'ai.chat.streamFailed'
+    : 'aiChat.streamFailed'
 }

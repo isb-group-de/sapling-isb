@@ -1,5 +1,12 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsString, MaxLength } from 'class-validator';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUrl,
+  MaxLength,
+} from 'class-validator';
 
 export enum GithubIssueStatus {
   OPEN = 'open',
@@ -52,6 +59,22 @@ export class CreateGithubIssueDto {
   })
   @IsEnum(GithubIssueType)
   type!: GithubIssueType;
+
+  @ApiPropertyOptional({
+    description:
+      'Absolute Sapling page URL from which the issue was reported. It is added to the issue body as a backlink.',
+    maxLength: 2048,
+    example: 'https://sapling.example.com/table/ticket?search=export',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(2048)
+  @IsUrl({
+    protocols: ['http', 'https'],
+    require_protocol: true,
+    require_tld: false,
+  })
+  sourceUrl?: string;
 }
 
 export class GithubIssueAssigneeDto {

@@ -292,7 +292,12 @@ async function reportError(message: Message) {
 
   try {
     await ApiGithubService.createIssue(
-      createErrorIssuePayload(message, formatErrorIssueTitle(message)),
+      createErrorIssuePayload(
+        message,
+        formatErrorIssueTitle(message),
+        undefined,
+        window.location.href,
+      ),
     )
     reportedErrorIds.value = new Set([...reportedErrorIds.value, message.id])
     pushMessage('success', 'issue.createSuccess', 'issue.createSuccessDescription', 'github')

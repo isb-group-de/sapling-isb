@@ -176,6 +176,8 @@ describe('GithubService', () => {
         title: 'Support queue fails',
         description: 'The queue cannot be saved.',
         type: 'bug' as never,
+        sourceUrl:
+          'https://sapling.test/table/ticket?view=open&access_token=secret',
       },
       {
         handle: 42,
@@ -194,6 +196,7 @@ describe('GithubService', () => {
           '**Type:** Bug',
           '**Reported by:** Ada Lovelace',
           '**Login:** `ada.lovelace`',
+          '**Reported page:** <https://sapling.test/table/ticket?view=open&access_token=%5Bredacted%5D>',
           '',
           'The queue cannot be saved.',
         ].join('\n'),

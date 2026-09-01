@@ -1,0 +1,20 @@
+[
+  {
+    "entity": "issue",
+    "property": "imageTransferHint",
+    "de": "Die GitHub-Schnittstelle bietet die Übertragung von Bildern oder Dokumenten derzeit nicht an. Ergänze Screenshots nach dem Erstellen über „In GitHub öffnen“ oder reiche die Meldung direkt in GitHub ein.",
+    "en": "The GitHub interface does not transfer images or documents. After creating the issue, add screenshots via “Open in GitHub”, or submit the report directly in GitHub."
+  },
+  {
+    "entity": "issue",
+    "property": "createDirectlyOnGithub",
+    "de": "Direkt in GitHub einreichen",
+    "en": "Submit directly in GitHub"
+  },
+  {
+    "entity": "issue",
+    "property": "createSuccessDescription",
+    "de": "Die GitHub-Übersicht wurde aktualisiert. Öffne das Issue in GitHub, um bei Bedarf Screenshots zu ergänzen.",
+    "en": "The GitHub overview has been refreshed. Open the issue in GitHub to add screenshots if needed."
+  }
+]

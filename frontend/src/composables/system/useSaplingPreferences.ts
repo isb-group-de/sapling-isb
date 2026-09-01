@@ -5,6 +5,7 @@ import CookieService from '@/services/cookie.service'
 import { i18n } from '@/i18n'
 import { useSaplingAppearance } from './useSaplingAppearance'
 import { useTranslationLoader } from '../generic/useTranslationLoader'
+import { getGithubIssueSourcePath } from '@/utils/githubIssueUrl'
 
 export interface SaplingPreferenceAction {
   key: string
@@ -135,7 +136,16 @@ export function useSaplingPreferences() {
    * Navigates to the issue management view.
    */
   async function openIssue() {
-    await router.push('/issue')
+    const currentRoute = router.currentRoute.value
+    if (currentRoute.path === '/issue') {
+      return
+    }
+
+    const source = getGithubIssueSourcePath(currentRoute.fullPath)
+    await router.push({
+      path: '/issue',
+      query: source ? { source } : {},
+    })
   }
 
   function mapAction(definition: SaplingPreferenceActionDefinition): SaplingPreferenceAction {

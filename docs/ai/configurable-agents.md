@@ -97,6 +97,8 @@ responses remain new until the owning user opens the conversation and the
 explicit read endpoint advances its read marker. While a response is running,
 the frontend polls persisted activity and message checkpoints so a reloaded
 conversation continues to fill without depending on the original HTTP stream.
+If the live response stream is interrupted, the chat shows a localized
+connection message and reloads already persisted progress when available.
 
 ## Agent Model
 

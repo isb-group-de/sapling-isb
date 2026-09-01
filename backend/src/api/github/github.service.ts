@@ -251,6 +251,7 @@ export class GithubService {
         .join(' ') ||
       reporter.loginName?.trim() ||
       'Unknown Sapling user';
+    const sourceUrl = this.normalizeSourceUrl(issueDto.sourceUrl);
     const metadata = [
       `**Type:** ${typeLabel}`,
       `**Reported by:** ${this.escapeMarkdownText(reporterName)}`,
@@ -259,6 +260,7 @@ export class GithubService {
             `**Login:** \`${this.escapeMarkdownCode(reporter.loginName.trim())}\``,
           ]
         : []),
+      ...(sourceUrl ? [`**Reported page:** <${sourceUrl}>`] : []),
     ];
 
     return `${metadata.join('\n')}\n\n${issueDto.description.trim()}`;
@@ -270,6 +272,39 @@ export class GithubService {
 
   private escapeMarkdownCode(value: string): string {
     return value.replace(/`/g, '\\`');
+  }
+
+  /**
+   * Accepts only browser-safe absolute links and removes credentials or sensitive
+   * query parameters before a Sapling page URL is published in GitHub.
+   */
+  private normalizeSourceUrl(value?: string): string | null {
+    if (!value?.trim()) {
+      return null;
+    }
+
+    try {
+      const url = new URL(value.trim());
+      if (!['http:', 'https:'].includes(url.protocol)) {
+        return null;
+      }
+
+      url.username = '';
+      url.password = '';
+      for (const key of [...url.searchParams.keys()]) {
+        if (
+          /^(?:access_?token|auth(?:orization)?|code|cookie|password|refresh_?token|secret)$/i.test(
+            key,
+          )
+        ) {
+          url.searchParams.set(key, '[redacted]');
+        }
+      }
+
+      return url.toString();
+    } catch {
+      return null;
+    }
   }
 
   /**

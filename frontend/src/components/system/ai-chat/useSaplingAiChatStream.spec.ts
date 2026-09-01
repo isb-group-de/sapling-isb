@@ -101,6 +101,26 @@ describe('useSaplingAiChatStream', () => {
     expect(testState.state.isSending.value).toBe(false)
   })
 
+  it('shows a localized interruption message when the response stream is lost', async () => {
+    api.streamMessage.mockRejectedValue(new Error('network connection terminated'))
+    const testState = setup()
+
+    await testState.state.sendMessage()
+
+    expect(testState.callbacks.reportMessage).toHaveBeenCalledWith(
+      'error',
+      'aiChat.streamFailed',
+      '',
+      'aiChat',
+    )
+    expect(testState.callbacks.appendLocalFailedExchange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        content: 'Analyze this file',
+        errorMessage: 'aiChat.streamFailed',
+      }),
+    )
+  })
+
   it('keeps streaming activity in its source session when another chat is selected', async () => {
     const sourceSession = { handle: 22, title: 'Long answer' } as AiChatSessionItem
     const otherSession = { handle: 23, title: 'Other chat' } as AiChatSessionItem

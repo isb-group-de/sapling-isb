@@ -53,6 +53,11 @@
             <span>{{ $t('issue.submitHint') }}</span>
           </div>
 
+          <div class="sapling-row-md sapling-work-compose__hint sapling-issue-compose__hint">
+            <v-icon icon="mdi-image-off-outline" size="18" />
+            <span>{{ $t('issue.imageTransferHint') }}</span>
+          </div>
+
           <div
             v-if="latestCreatedIssue"
             class="sapling-toolbar-group sapling-work-compose__latest sapling-issue-compose__latest"
@@ -127,6 +132,16 @@
               @click="resetDraft"
             >
               {{ $t('issue.resetAction') }}
+            </v-btn>
+
+            <v-btn
+              v-if="directIssueUrl"
+              :href="directIssueUrl"
+              rel="noopener"
+              variant="text"
+              prepend-icon="mdi-github"
+            >
+              {{ $t('issue.createDirectlyOnGithub') }}
             </v-btn>
 
             <v-spacer />
@@ -235,6 +250,7 @@ const {
   openIssues,
   closedIssues,
   latestCreatedIssue,
+  directIssueUrl,
   isCreateDisabled,
   isCreateLoading,
   isTranslationLoading,

@@ -10,6 +10,11 @@ describe('normalizeAiChatErrorMessage', () => {
 
   it('preserves translation keys and hides arbitrary provider errors', () => {
     expect(normalizeAiChatErrorMessage('ai.providerNotConfigured')).toBe('ai.providerNotConfigured')
-    expect(normalizeAiChatErrorMessage('internal provider detail')).toBe('ai.chat.streamFailed')
+    expect(normalizeAiChatErrorMessage('internal provider detail')).toBe('aiChat.streamFailed')
+  })
+
+  it('maps legacy and status-qualified stream errors to the localized chat key', () => {
+    expect(normalizeAiChatErrorMessage('ai.chat.streamFailed')).toBe('aiChat.streamFailed')
+    expect(normalizeAiChatErrorMessage('ai.chat.streamFailed (503)')).toBe('aiChat.streamFailed')
   })
 })

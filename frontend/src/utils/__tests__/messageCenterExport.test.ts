@@ -72,4 +72,15 @@ describe('messageCenterExport', () => {
     expect(parsed.originalDescriptionLength).toBeGreaterThan(10_000)
     expect(parsed.messages[0]?.diagnosticsPreview.length).toBeGreaterThan(0)
   })
+
+  it('adds the reported Sapling page to automatic error reports', () => {
+    const payload = createErrorIssuePayload(
+      errorMessage,
+      'Tickets: Speichern fehlgeschlagen',
+      exportedAt,
+      'https://sapling.test/table/ticket?view=open',
+    )
+
+    expect(payload.sourceUrl).toBe('https://sapling.test/table/ticket?view=open')
+  })
 })
