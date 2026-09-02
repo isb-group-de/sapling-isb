@@ -114,6 +114,7 @@ export function useSaplingEvent() {
   const eventOverlapMode = ref<CalendarEventOverlapMode>(
     initialCalendarPreferences.eventOverlapMode,
   )
+  const linkedScrolling = ref(initialCalendarPreferences.linkedScrolling)
   const isNarrowScreen = ref(initialWindowSize === 'small')
   const entityEvent = ref<EntityItem | null>(null)
   const editEvent = ref<CalendarEvent | null>(null)
@@ -282,6 +283,7 @@ export function useSaplingEvent() {
     loadPersistedEvent,
     refreshVisibleEvents,
   })
+  const isRefreshingCalendar = ref(false)
   const isSyncingExternalCalendar = ref(false)
   const isCalendarInitializing = ref(true)
 
@@ -380,7 +382,7 @@ export function useSaplingEvent() {
     })
   })
 
-  watch([calendarType, calendarViewMode, calendarMode, eventOverlapMode], () => {
+  watch([calendarType, calendarViewMode, calendarMode, eventOverlapMode, linkedScrolling], () => {
     if (!isNarrowScreen.value) {
       preferredCalendarType.value = calendarType.value
       preferredCalendarViewMode.value = calendarViewMode.value
@@ -391,6 +393,7 @@ export function useSaplingEvent() {
       calendarViewMode: preferredCalendarViewMode.value,
       calendarMode: calendarMode.value,
       eventOverlapMode: eventOverlapMode.value,
+      linkedScrolling: linkedScrolling.value,
     })
   })
 
@@ -540,6 +543,21 @@ export function useSaplingEvent() {
     return personId === ownPersonHandle ? workHours.value : null
   }
 
+  async function refreshCalendar() {
+    if (isRefreshingCalendar.value) {
+      return
+    }
+
+    isRefreshingCalendar.value = true
+    try {
+      await refreshVisibleEvents()
+    } catch {
+      // Shared API handling already publishes the load error.
+    } finally {
+      isRefreshingCalendar.value = false
+    }
+  }
+
   async function syncExternalCalendar() {
     if (
       !calendarDateRange.value ||
@@ -678,8 +696,10 @@ export function useSaplingEvent() {
     goToToday,
     isCalendarDragActive,
     isLoading,
+    isRefreshingCalendar,
     isSyncingExternalCalendar,
     isNarrowScreen,
+    linkedScrolling,
     nowY,
     openEventContextMenu,
     onEditDialogCancel,
@@ -694,6 +714,7 @@ export function useSaplingEvent() {
     openEventEditor,
     onSelectedChipFiltersUpdate,
     onSelectedPeoplesUpdate,
+    refreshCalendar,
     reloadUpdateConflictRecord,
     scrollToCurrentTime,
     selectedPeoples,

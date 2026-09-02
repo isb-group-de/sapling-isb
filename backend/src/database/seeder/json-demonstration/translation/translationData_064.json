@@ -1,0 +1,14 @@
+[
+  {
+    "entity": "calendar",
+    "property": "linkedScrolling",
+    "de": "Scrollen verknüpfen",
+    "en": "Link scrolling"
+  },
+  {
+    "entity": "calendar",
+    "property": "linkedScrollingDescription",
+    "de": "Scrollt alle Kalender der Spaltenansicht gemeinsam.",
+    "en": "Scroll all calendars in the side-by-side view together."
+  }
+]

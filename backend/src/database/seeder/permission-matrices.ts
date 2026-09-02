@@ -265,6 +265,7 @@ export const salesPermissionsInput: PermissionMatrixInput = {
     'holiday',
     'note',
     'phoneCall',
+    'favorite',
     'favoriteTemplate',
     'marketingCampaign',
     'marketingCampaignStatus',

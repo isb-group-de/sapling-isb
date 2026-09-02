@@ -413,6 +413,14 @@
   padding-right: var(--sapling-gap-xs);
 }
 
+.sapling-inbox-section__footer-action {
+  display: flex;
+  flex: 0 0 auto;
+  justify-content: flex-end;
+  padding-top: var(--sapling-gap-md);
+  border-top: 1px solid rgba(var(--v-theme-on-surface), 0.08);
+}
+
 .sapling-attention-card {
   --sapling-attention-card-accent-color: rgb(var(--v-theme-primary));
   position: relative;
@@ -845,6 +853,10 @@
 
   .sapling-attention-card__date {
     text-align: left;
+  }
+
+  .sapling-inbox-section__footer-action .v-btn {
+    width: 100%;
   }
 }
 

@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import type { EventItem } from '@/entity/entity'
 import {
+  appendEventRecurrenceExceptions,
+  buildEventCompletionPlan,
   buildEventCompletionTargetChunks,
   getDefaultEventCompletionCutoff,
   isValidEventCompletionCutoff,
@@ -75,5 +77,69 @@ describe('inboxEventCompletion', () => {
       handle: 1,
       expectedUpdatedAt: '2026-08-15T10:00:00.000Z',
     })
+  })
+
+  it('plans each yearly birthday occurrence through the cutoff without touching the future series', () => {
+    const birthday = createEvent(12, '2022-05-10T08:00:00.000Z', {
+      endDate: new Date('2022-05-10T09:00:00.000Z'),
+      recurrenceRule: 'FREQ=YEARLY;INTERVAL=1',
+      recurrenceExceptionDates: ['2022-05-10T08:00:00.000Z'],
+    })
+
+    const plan = buildEventCompletionPlan([birthday], '2025-12-31', new Date(2026, 0, 2))
+
+    expect(plan).toEqual({
+      standaloneEvents: [],
+      recurringEvents: [
+        {
+          event: birthday,
+          occurrenceStarts: [
+            '2023-05-10T08:00:00.000Z',
+            '2024-05-10T08:00:00.000Z',
+            '2025-05-10T08:00:00.000Z',
+          ],
+        },
+      ],
+      completionCount: 3,
+      isComplete: true,
+    })
+  })
+
+  it('plans weekly recurring occurrences generically through the inclusive cutoff', () => {
+    const weekly = createEvent(13, '2026-08-03T08:00:00.000Z', {
+      endDate: new Date('2026-08-03T09:00:00.000Z'),
+      recurrenceRule: 'FREQ=WEEKLY;INTERVAL=1;BYDAY=MO,WE',
+    })
+
+    const plan = buildEventCompletionPlan([weekly], '2026-08-12', new Date(2026, 7, 13))
+
+    expect(plan.recurringEvents[0]?.occurrenceStarts).toEqual([
+      '2026-08-03T08:00:00.000Z',
+      '2026-08-05T08:00:00.000Z',
+      '2026-08-10T08:00:00.000Z',
+      '2026-08-12T08:00:00.000Z',
+    ])
+    expect(plan.completionCount).toBe(4)
+    expect(plan.isComplete).toBe(true)
+  })
+
+  it('merges processed starts into legacy recurrence exceptions for the next inbox snapshot', () => {
+    const event = createEvent(14, '2026-08-03T08:00:00.000Z', {
+      recurrenceRule: 'FREQ=DAILY;INTERVAL=1',
+      recurrenceExceptionDates: '["2026-08-03T08:00:00.000Z"]' as never,
+      updatedAt: new Date('2026-08-10T12:00:00.000Z'),
+    })
+
+    expect(
+      appendEventRecurrenceExceptions(event, [
+        '2026-08-04T08:00:00.000Z',
+        '2026-08-04T08:00:00.000Z',
+      ]),
+    ).toEqual(
+      expect.objectContaining({
+        recurrenceExceptionDates: ['2026-08-03T08:00:00.000Z', '2026-08-04T08:00:00.000Z'],
+        updatedAt: undefined,
+      }),
+    )
   })
 })

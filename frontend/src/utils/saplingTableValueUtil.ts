@@ -24,6 +24,15 @@ export function getEntityValueLabelLines(
   entityTemplates?: EntityTemplate[],
   referenceTemplates: EntityValueReferenceTemplates = {},
 ): EntityValueLabelLine[] {
+  return buildEntityValueLabelLines(item, entityTemplates, referenceTemplates, true)
+}
+
+function buildEntityValueLabelLines(
+  item: SaplingGenericItem | null | undefined,
+  entityTemplates: EntityTemplate[] | undefined,
+  referenceTemplates: EntityValueReferenceTemplates,
+  allowHandleFallback: boolean,
+): EntityValueLabelLine[] {
   if (!item) return []
 
   const scalarParts: string[] = []
@@ -40,9 +49,14 @@ export function getEntityValueLabelLines(
       const nestedTemplates = template.referenceName
         ? referenceTemplates[template.referenceName]
         : undefined
-      const nestedValue =
-        getEntityValueLabel(referenceItem, nestedTemplates, referenceTemplates) ||
-        formatFilterDisplayValue(referenceItem.handle)
+      const nestedValue = buildEntityValueLabelLines(
+        referenceItem,
+        nestedTemplates,
+        referenceTemplates,
+        false,
+      )
+        .map((line) => line.value)
+        .join('\n')
       if (nestedValue) {
         referenceLines.push({ value: nestedValue, isReference: true })
       }
@@ -71,6 +85,7 @@ export function getEntityValueLabelLines(
   lines.push(...referenceLines)
 
   if (lines.length > 0) return lines
+  if (!allowHandleFallback) return []
 
   const handleValue = item.handle
   if (

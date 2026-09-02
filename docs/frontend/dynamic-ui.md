@@ -784,6 +784,15 @@ tabular reference dropdowns use viewport-relative width and height limits.
 Relation tabs expose the shared table create workflow when the target entity
 and current user allow inserts. A separate header action opens the target
 entity's configured table route, with `/table/<entity>` as fallback.
+Embedded relation tables consume the remaining dialog-body height. When their
+smallest useful height no longer fits, the relation content scrolls vertically
+so the table's horizontal scrollbar and pagination stay reachable. The compact
+desktop layout also keeps only one small gap between relation actions and the
+table search toolbar.
+Their initial sort comes from the first readable `isOrderASC` or `isOrderDESC`
+field on the referenced entity, matching the metadata-driven default used by a
+standalone generic table. A sort selected in the relation table remains active
+while its dialog state is retained.
 Relation tabs are also available while the parent record is being created.
 Selections remain local until the parent save succeeds. Owning many-to-many
 relations (`m:n` and `n:m`) are included in the initial create payload; inverse

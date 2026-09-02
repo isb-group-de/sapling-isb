@@ -137,4 +137,25 @@ describe('Sapling UI architecture', () => {
 
     expect(violations).toEqual([])
   })
+
+  it('keeps embedded relation-table scrolling reachable inside constrained dialogs', () => {
+    const recordDialogStyles = readFileSync(
+      join(sourceRoot, 'assets/styles/framework/SaplingFrameworkRecordDialog.css'),
+      'utf8',
+    )
+    const relationContentRules = [
+      ...recordDialogStyles.matchAll(/\.sapling-record-relation-content\s*\{([^}]+)\}/g),
+    ].map((match) => match[1])
+    const relationTableRule = recordDialogStyles.match(
+      /\.sapling-record-relation-table\s*\{([^}]+)\}/,
+    )?.[1]
+    const relationTableSkeletonRule = recordDialogStyles.match(
+      /\.sapling-record-relation-table-skeleton\s*\{([^}]+)\}/,
+    )?.[1]
+
+    expect(relationContentRules).toContainEqual(expect.stringContaining('overflow-y: auto'))
+    expect(relationTableRule).toContain('min-height: calc(')
+    expect(relationTableRule).toContain('var(--sapling-control-size-2xl) * 4')
+    expect(relationTableSkeletonRule).toContain('min-height: calc(')
+  })
 })

@@ -10,6 +10,7 @@ import type {
   TicketItem,
 } from '@/entity/entity'
 import ApiCurrentService from '@/services/api.current.service'
+import ApiCalendarService from '@/services/api.calendar.service'
 import ApiGenericService from '@/services/api.generic.service'
 import { formatDate, formatDateFromTo, formatDateTimeValue } from '@/utils/saplingFormatUtil'
 import { useRouter, type RouteLocationRaw } from 'vue-router'
@@ -28,11 +29,14 @@ import {
 } from '@/composables/system/useOpenTaskCountEvents'
 import { getOpenTaskEventOccurrence } from '@/utils/openTaskEvent'
 import {
+  appendEventRecurrenceExceptions,
+  buildEventCompletionPlan,
   buildEventCompletionTargetChunks,
+  getEventExpectedUpdatedAt,
   getDefaultEventCompletionCutoff,
   isValidEventCompletionCutoff,
-  selectOverdueEventsThroughDate,
 } from '@/utils/inboxEventCompletion'
+import { findFirstGeneratedRecurrenceOccurrence } from '@/utils/eventRecurrence'
 import { useSaplingMessageCenter } from '@/composables/system/useSaplingMessageCenter'
 
 type CloseEmitter = (event: 'close') => void
@@ -41,6 +45,7 @@ export type InboxEntryKind =
 export type InboxSectionKey = 'overdue' | 'today' | 'upcoming' | 'later' | 'unplanned'
 
 const UPCOMING_DAY_RANGE = 7
+const EVENT_OCCURRENCE_BATCH_SIZE = 200
 
 export interface InboxEntry {
   id: string
@@ -440,22 +445,79 @@ export function useSaplingInbox(emit: CloseEmitter) {
   }
 
   async function completeOverdueEvents() {
-    const candidates = completeEventsCandidates.value
-    if (candidates.length === 0 || isCompletingEvents.value) {
+    const plan = completeEventsPlan.value
+    if (plan.completionCount === 0 || isCompletingEvents.value) {
+      return
+    }
+    if (!plan.isComplete) {
+      messageCenter.pushMessage(
+        'warning',
+        'inbox.completeEventsTooManyOccurrences',
+        'inbox.completeEventsTooManyOccurrencesDescription',
+        'event',
+      )
       return
     }
 
     isCompletingEvents.value = true
     try {
-      for (const targets of buildEventCompletionTargetChunks(candidates)) {
+      const retainedSeries = new Map<string | number, EventItem>()
+      const exhaustedSeries: EventItem[] = []
+
+      for (const recurringTarget of plan.recurringEvents) {
+        const handle = recurringTarget.event.handle
+        if (handle == null) {
+          continue
+        }
+        let updatedSeries = recurringTarget.event
+
+        for (
+          let index = 0;
+          index < recurringTarget.occurrenceStarts.length;
+          index += EVENT_OCCURRENCE_BATCH_SIZE
+        ) {
+          const occurrenceStarts = recurringTarget.occurrenceStarts.slice(
+            index,
+            index + EVENT_OCCURRENCE_BATCH_SIZE,
+          )
+          const expectedUpdatedAt = getEventExpectedUpdatedAt(updatedSeries)
+          const result = await ApiCalendarService.detachEventOccurrences(handle, {
+            occurrenceStarts,
+            event: { status: 'completed' },
+            ...(expectedUpdatedAt ? { expectedUpdatedAt } : {}),
+          })
+          updatedSeries = {
+            ...appendEventRecurrenceExceptions(updatedSeries, occurrenceStarts),
+            updatedAt: result.seriesEvent.updatedAt,
+          }
+          tasks.value = tasks.value.map((event) =>
+            event.handle === handle ? updatedSeries : event,
+          )
+          publishOpenTaskSnapshot()
+        }
+
+        const nextOccurrence = findFirstGeneratedRecurrenceOccurrence(updatedSeries)
+        if (nextOccurrence.occurrence) {
+          retainedSeries.set(handle, updatedSeries)
+        } else if (nextOccurrence.isComplete) {
+          exhaustedSeries.push(updatedSeries)
+        }
+      }
+
+      const completedRecords = [...plan.standaloneEvents, ...exhaustedSeries]
+      for (const targets of buildEventCompletionTargetChunks(completedRecords)) {
         await ApiGenericService.bulkUpdate('event', {
           targets,
           changes: { status: 'completed' },
         })
       }
 
-      const completedHandles = new Set(candidates.map((event) => event.handle))
-      tasks.value = tasks.value.filter((event) => !completedHandles.has(event.handle))
+      const completedHandles = new Set(completedRecords.map((event) => event.handle))
+      tasks.value = tasks.value
+        .filter((event) => !completedHandles.has(event.handle))
+        .map((event) =>
+          event.handle == null ? event : (retainedSeries.get(event.handle) ?? event),
+        )
       publishOpenTaskSnapshot()
       completeEventsDialog.value = false
       messageCenter.pushMessage(
@@ -464,7 +526,7 @@ export function useSaplingInbox(emit: CloseEmitter) {
         'inbox.completeEventsSuccessDescription',
         'event',
         undefined,
-        { count: candidates.length },
+        { count: plan.completionCount },
       )
     } finally {
       isCompletingEvents.value = false
@@ -503,8 +565,8 @@ export function useSaplingInbox(emit: CloseEmitter) {
   const overdueEventCount = computed(
     () => taskEntries.value.filter((entry) => getSectionKey(entry.dateValue) === 'overdue').length,
   )
-  const completeEventsCandidates = computed(() =>
-    selectOverdueEventsThroughDate(tasks.value, completeEventsCutoffDate.value ?? ''),
+  const completeEventsPlan = computed(() =>
+    buildEventCompletionPlan(tasks.value, completeEventsCutoffDate.value ?? ''),
   )
   const todayEntries = computed(() => getSectionItems('today'))
   const upcomingEntries = computed(() => getSectionItems('upcoming'))
@@ -635,7 +697,7 @@ export function useSaplingInbox(emit: CloseEmitter) {
     overdueEventCount,
     completeEventsDialog,
     completeEventsCutoffDate,
-    completeEventsCandidateCount: computed(() => completeEventsCandidates.value.length),
+    completeEventsCandidateCount: computed(() => completeEventsPlan.value.completionCount),
     isCompletingEvents,
     openCompleteEventsDialog,
     closeCompleteEventsDialog,

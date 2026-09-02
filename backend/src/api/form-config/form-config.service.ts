@@ -102,6 +102,23 @@ export class FormConfigService {
     return target;
   }
 
+  async deletePersonalTableView(
+    entityHandle: string,
+    handle: number,
+    personHandle: string,
+  ): Promise<SaplingFormConfigItem> {
+    const target = await this.getConfig(entityHandle, handle);
+    if (
+      target.scope !== 'person' ||
+      target.scopeHandle?.trim() !== personHandle
+    ) {
+      throw new ForbiddenException('exception.forbidden');
+    }
+
+    await this.em.remove(target).flush();
+    return target;
+  }
+
   async getConfig(
     entityHandle: string,
     handle: number,

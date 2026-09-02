@@ -19,6 +19,7 @@ export type {
 
 const DEFAULT_EVENT_COLOR = '#2196F3'
 export const RECURRENCE_MAX_OCCURRENCES = 100
+export const RECURRENCE_BULK_MAX_ITERATIONS = 10_000
 const RECURRENCE_FREQUENCIES = new Set<RecurrenceFrequency>([
   'DAILY',
   'WEEKLY',
@@ -217,6 +218,101 @@ export function expandRecurringEvent(
   }
 
   return occurrences
+}
+
+export interface RecurrenceOccurrenceStartsThroughResult {
+  occurrenceStarts: string[]
+  isComplete: boolean
+}
+
+export interface FirstGeneratedRecurrenceOccurrenceResult {
+  occurrence: RecurringCalendarEvent | null
+  isComplete: boolean
+}
+
+export function getRecurringEventOccurrenceStartsThrough(
+  event: EventItem,
+  rangeEnd: Date,
+  maxIterations = RECURRENCE_BULK_MAX_ITERATIONS,
+): RecurrenceOccurrenceStartsThroughResult {
+  const parsedRule = parseRecurrenceRule(event.recurrenceRule)
+  const baseStart = new Date(event.startDate)
+  if (!parsedRule || !isValidDate(baseStart) || !isValidDate(rangeEnd)) {
+    return { occurrenceStarts: [], isComplete: false }
+  }
+
+  const exceptionTimestamps = getRecurrenceExceptionTimestamps(event)
+  const occurrenceStarts: string[] = []
+  let currentStart = new Date(baseStart)
+  const iterationLimit = Math.max(1, Math.trunc(maxIterations))
+
+  for (let occurrenceIndex = 1; occurrenceIndex <= iterationLimit; occurrenceIndex += 1) {
+    if (parsedRule.count && occurrenceIndex > parsedRule.count) {
+      return { occurrenceStarts, isComplete: true }
+    }
+    if (parsedRule.until && currentStart.getTime() > parsedRule.until.getTime()) {
+      return { occurrenceStarts, isComplete: true }
+    }
+    if (currentStart.getTime() > rangeEnd.getTime()) {
+      return { occurrenceStarts, isComplete: true }
+    }
+    if (!exceptionTimestamps.has(currentStart.getTime())) {
+      occurrenceStarts.push(currentStart.toISOString())
+    }
+
+    const nextOccurrence = getNextOccurrence(currentStart, parsedRule, baseStart, 0)
+    if (!nextOccurrence) {
+      return { occurrenceStarts, isComplete: true }
+    }
+    currentStart = nextOccurrence.start
+  }
+
+  return { occurrenceStarts, isComplete: false }
+}
+
+export function findFirstGeneratedRecurrenceOccurrence(
+  event: EventItem,
+  maxIterations = RECURRENCE_BULK_MAX_ITERATIONS,
+): FirstGeneratedRecurrenceOccurrenceResult {
+  const parsedRule = parseRecurrenceRule(event.recurrenceRule)
+  const baseStart = new Date(event.startDate)
+  const baseEnd = new Date(event.endDate)
+  if (!parsedRule || !isValidDate(baseStart) || !isValidDate(baseEnd)) {
+    return { occurrence: null, isComplete: false }
+  }
+
+  const exceptionTimestamps = getRecurrenceExceptionTimestamps(event)
+  const durationMs = Math.max(baseEnd.getTime() - baseStart.getTime(), 0)
+  let currentStart = new Date(baseStart)
+  const iterationLimit = Math.max(1, Math.trunc(maxIterations))
+
+  for (let occurrenceIndex = 1; occurrenceIndex <= iterationLimit; occurrenceIndex += 1) {
+    if (parsedRule.count && occurrenceIndex > parsedRule.count) {
+      return { occurrence: null, isComplete: true }
+    }
+    if (parsedRule.until && currentStart.getTime() > parsedRule.until.getTime()) {
+      return { occurrence: null, isComplete: true }
+    }
+    if (!exceptionTimestamps.has(currentStart.getTime())) {
+      return {
+        occurrence: buildRecurringCalendarEvent(
+          event,
+          currentStart,
+          new Date(currentStart.getTime() + durationMs),
+          occurrenceIndex,
+        ),
+        isComplete: true,
+      }
+    }
+
+    const nextOccurrence = getNextOccurrence(currentStart, parsedRule, baseStart, durationMs)
+    if (!nextOccurrence) {
+      return { occurrence: null, isComplete: true }
+    }
+    currentStart = nextOccurrence.start
+  }
+
+  return { occurrence: null, isComplete: false }
 }
 
 export function getRecurrenceEndDate({
@@ -614,6 +710,14 @@ function normalizeRecurrenceExceptionDates(value: unknown): unknown[] {
     // Legacy records can contain one ISO value instead of a JSON array.
     return [trimmedValue]
   }
+}
+
+function getRecurrenceExceptionTimestamps(event: EventItem): Set<number> {
+  return new Set(
+    normalizeRecurrenceExceptionDates(event.recurrenceExceptionDates)
+      .map(toDateTimestamp)
+      .filter((value): value is number => value !== null),
+  )
 }
 
 function toDateTimestamp(value: unknown): number | null {

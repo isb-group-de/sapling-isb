@@ -10,6 +10,7 @@ export interface EventCalendarPreferences {
   calendarViewMode: CalendarViewMode
   calendarMode: CalendarMode
   eventOverlapMode: CalendarEventOverlapMode
+  linkedScrolling: boolean
 }
 
 export const DEFAULT_EVENT_CALENDAR_PREFERENCES: EventCalendarPreferences = {
@@ -17,6 +18,7 @@ export const DEFAULT_EVENT_CALENDAR_PREFERENCES: EventCalendarPreferences = {
   calendarViewMode: 'single',
   calendarMode: 'default',
   eventOverlapMode: 'stack',
+  linkedScrolling: true,
 }
 
 const STORAGE_KEY = 'sapling.calendar.preferences'
@@ -50,6 +52,10 @@ export function loadEventCalendarPreferences(): EventCalendarPreferences {
       eventOverlapMode: EVENT_OVERLAP_MODES.has(parsed.eventOverlapMode as CalendarEventOverlapMode)
         ? (parsed.eventOverlapMode as CalendarEventOverlapMode)
         : DEFAULT_EVENT_CALENDAR_PREFERENCES.eventOverlapMode,
+      linkedScrolling:
+        typeof parsed.linkedScrolling === 'boolean'
+          ? parsed.linkedScrolling
+          : DEFAULT_EVENT_CALENDAR_PREFERENCES.linkedScrolling,
     }
   } catch {
     return { ...DEFAULT_EVENT_CALENDAR_PREFERENCES }

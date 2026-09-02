@@ -37,6 +37,19 @@ export interface DetachEventOccurrenceResult {
   detachedEvent: EventItem
 }
 
+export interface DetachEventOccurrencesPayload {
+  occurrenceStarts: string[]
+  event: Record<string, unknown>
+  expectedUpdatedAt?: string
+}
+
+export interface DetachEventOccurrencesResult {
+  seriesHandle: string | number
+  seriesEvent: EventItem
+  detachedCount: number
+  detachedEvents: EventItem[]
+}
+
 class ApiCalendarService {
   static async importEvents(
     provider: CalendarSyncProvider,
@@ -79,6 +92,24 @@ class ApiCalendarService {
 
     try {
       const response = await axios.post<DetachEventOccurrenceResult>(buildApiUrl(endpoint), payload)
+      return response.data
+    } catch (error: unknown) {
+      pushApiErrorMessage(error, 'exception.unknownError', endpoint)
+      throw error
+    }
+  }
+
+  static async detachEventOccurrences(
+    handle: string | number,
+    payload: DetachEventOccurrencesPayload,
+  ): Promise<DetachEventOccurrencesResult> {
+    const endpoint = `calendar/events/${encodeURIComponent(String(handle))}/detach-occurrences`
+
+    try {
+      const response = await axios.post<DetachEventOccurrencesResult>(
+        buildApiUrl(endpoint),
+        payload,
+      )
       return response.data
     } catch (error: unknown) {
       pushApiErrorMessage(error, 'exception.unknownError', endpoint)

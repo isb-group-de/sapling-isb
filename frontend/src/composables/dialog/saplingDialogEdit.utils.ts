@@ -16,6 +16,7 @@ export interface FormConfigMenuItem {
   active: boolean
   isDefault: boolean
   canSetDefault: boolean
+  canDelete: boolean
 }
 
 export function getItemHandle(item?: SaplingGenericItem | null): string | number | null {

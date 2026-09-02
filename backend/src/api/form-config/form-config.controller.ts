@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   ForbiddenException,
   Get,
   Param,
@@ -269,6 +270,26 @@ export class FormConfigController {
     const person = req.user as PersonItem;
     this.assertCanReadEntity(person, entityHandle);
     return this.formConfigService.setPersonalDefault(
+      entityHandle,
+      Number(handle),
+      String(person.handle),
+    );
+  }
+
+  @Delete(':entityHandle/personal-table-view/:handle')
+  @ApiOperation({
+    summary: 'Delete a personal table view',
+    description:
+      'Deletes one table view owned by the authenticated user. Global, role, and other users’ views cannot be deleted through this endpoint.',
+  })
+  async deletePersonalTableView(
+    @Req() req: Request,
+    @Param('entityHandle') entityHandle: string,
+    @Param('handle') handle: string,
+  ): Promise<SaplingFormConfigItem> {
+    const person = req.user as PersonItem;
+    this.assertCanReadEntity(person, entityHandle);
+    return this.formConfigService.deletePersonalTableView(
       entityHandle,
       Number(handle),
       String(person.handle),

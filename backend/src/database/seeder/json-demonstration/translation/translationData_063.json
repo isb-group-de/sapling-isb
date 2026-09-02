@@ -1,0 +1,50 @@
+[
+  {
+    "entity": "global",
+    "property": "deleteFavorite",
+    "de": "Arbeitsliste löschen",
+    "en": "Delete worklist"
+  },
+  {
+    "entity": "global",
+    "property": "deleteFavoriteQuestion",
+    "de": "Möchten Sie die Arbeitsliste „{name}“ wirklich löschen?",
+    "en": "Do you really want to delete the worklist “{name}”?"
+  },
+  {
+    "entity": "global",
+    "property": "favoriteDeleted",
+    "de": "Arbeitsliste gelöscht",
+    "en": "Worklist deleted"
+  },
+  {
+    "entity": "global",
+    "property": "favoriteDeletedDescription",
+    "de": "Die persönliche Arbeitsliste wurde gelöscht.",
+    "en": "The personal worklist was deleted."
+  },
+  {
+    "entity": "formConfig",
+    "property": "deleteView",
+    "de": "Ansicht löschen",
+    "en": "Delete view"
+  },
+  {
+    "entity": "formConfig",
+    "property": "deleteViewQuestion",
+    "de": "Möchten Sie die Ansicht „{name}“ wirklich löschen?",
+    "en": "Do you really want to delete the view “{name}”?"
+  },
+  {
+    "entity": "formConfig",
+    "property": "tableViewDeleted",
+    "de": "Ansicht gelöscht",
+    "en": "View deleted"
+  },
+  {
+    "entity": "formConfig",
+    "property": "tableViewDeletedDescription",
+    "de": "Die persönliche Tabellenansicht wurde gelöscht.",
+    "en": "The personal table view was deleted."
+  }
+]

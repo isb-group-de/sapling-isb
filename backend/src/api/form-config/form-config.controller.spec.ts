@@ -103,6 +103,31 @@ describe('FormConfigController personal table views', () => {
     ).resolves.toBe(savedConfig);
     expect(setPersonalDefault).toHaveBeenCalledWith('person', 17, '42');
   });
+
+  it('deletes personal views through the authenticated person scope', async () => {
+    const deletedConfig = { handle: 17 } as SaplingFormConfigItem;
+    const deletePersonalTableView = jest
+      .fn<FormConfigService['deletePersonalTableView']>()
+      .mockResolvedValue(deletedConfig);
+    const controller = new FormConfigController(
+      { deletePersonalTableView } as unknown as FormConfigService,
+      {} as TemplateService,
+      {
+        getEntityPermissions: jest.fn().mockReturnValue({ allowRead: true }),
+      } as unknown as CurrentService,
+    );
+
+    await expect(
+      controller.deletePersonalTableView(
+        {
+          user: { handle: 42, roles: [] } as unknown as PersonItem,
+        } as unknown as Request,
+        'person',
+        '17',
+      ),
+    ).resolves.toBe(deletedConfig);
+    expect(deletePersonalTableView).toHaveBeenCalledWith('person', 17, '42');
+  });
 });
 
 describe('FormConfigController applicable form configurations', () => {

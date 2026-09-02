@@ -34,6 +34,7 @@
     @update:search="onSearchUpdate"
     @select-form-config="selectFormConfig"
     @set-default-form-config="setDefaultFormConfig"
+    @delete-form-config="deleteFormConfig"
     @save-current-view="saveCurrentView"
     @update:visible-column-keys="onVisibleColumnKeysUpdate"
     @reload="loadData"
@@ -85,6 +86,7 @@ const {
   onVisibleColumnKeysUpdate,
   selectFormConfig,
   setDefaultFormConfig,
+  deletePersonalFormConfig,
   savePersonalTableView,
 } = useSaplingTable(entityHandle, DEFAULT_PAGE_SIZE_MEDIUM, true)
 
@@ -100,6 +102,18 @@ async function saveCurrentView(request: {
       request.orderedColumnKeys,
       request.selectableColumnKeys,
     )
+    request.complete(true)
+  } catch {
+    request.complete(false)
+  }
+}
+
+async function deleteFormConfig(request: {
+  handle: number
+  complete: (deleted: boolean) => void
+}): Promise<void> {
+  try {
+    await deletePersonalFormConfig(request.handle)
     request.complete(true)
   } catch {
     request.complete(false)

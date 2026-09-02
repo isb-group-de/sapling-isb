@@ -181,6 +181,18 @@ estimate requirements, or sales opportunity pain points.
 
 `RoleStarterSeeder` can assign favorite templates to roles through `roleStarterFavorite` seed files.
 
+Personal worklists can be deleted directly from the table toolbar. The frontend
+always asks for confirmation first and removes the `FavoriteItem` through the
+generic API. Because the toolbar query is already restricted to the authenticated
+person, only that person's worklists are offered there.
+
+Personal table-column views are deleted through the dedicated
+`DELETE /api/form-config/:entityHandle/personal-table-view/:handle` endpoint.
+The backend verifies that the saved configuration has `scope = person` and that
+its `scopeHandle` matches the authenticated person. The synthetic standard view,
+global views, role views, and views owned by another person are never deletable
+through this path.
+
 ## Favorite Navigation
 
 `buildFavoritePath()` resolves favorites to an application route:

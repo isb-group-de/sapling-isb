@@ -48,7 +48,9 @@
             v-model:calendar-view-mode="calendarViewMode"
             v-model:calendar-mode="calendarMode"
             v-model:event-overlap-mode="eventOverlapMode"
+            v-model:linked-scrolling="linkedScrolling"
             :is-narrow-screen="isNarrowScreen"
+            :is-refreshing="isRefreshingCalendar"
             :is-syncing-external-calendar="isSyncingExternalCalendar"
             :calendar-sync-provider="calendarSyncProvider"
             :calendar-type-options="calendarTypeOptions"
@@ -59,6 +61,7 @@
             @previous="goToPrevious"
             @today="goToToday"
             @next="goToNext"
+            @refresh="refreshCalendar"
             @select-date="goToDate"
             @sync-calendar="syncExternalCalendar"
           />
@@ -71,6 +74,7 @@
             <SaplingEventCalendarWorkspace
               v-model="value"
               :calendar-view-mode="calendarViewMode"
+              :linked-scrolling="linkedScrolling"
               :event-overlap-mode="eventOverlapMode"
               :events="events"
               :calendar-display-type="calendarDisplayType"
@@ -414,8 +418,10 @@ const {
   handleUpdateConflictVisibility,
   isCalendarDragActive,
   isLoading,
+  isRefreshingCalendar,
   isSyncingExternalCalendar,
   isNarrowScreen,
+  linkedScrolling,
   mergeUpdateConflict,
   nowY,
   openEventContextMenu,
@@ -429,6 +435,7 @@ const {
   onSelectedChipFiltersUpdate,
   onSelectedPeoplesUpdate,
   reloadUpdateConflictRecord,
+  refreshCalendar,
   selectedPeoples,
   selectedChipFilters,
   selectedPeopleOverflowCount,

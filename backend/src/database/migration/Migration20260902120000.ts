@@ -43,6 +43,7 @@ const PARTNER_ENTITY_HANDLES_SQL = [
   'internalCase',
   'salesOpportunity',
   'ticket',
+  'event',
 ]
   .map((handle) => `'${handle}'`)
   .join(', ');

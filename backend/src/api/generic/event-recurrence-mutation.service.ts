@@ -25,6 +25,8 @@ import type {
 import type {
   DetachEventOccurrenceDto,
   DetachEventOccurrenceResponseDto,
+  DetachEventOccurrencesDto,
+  DetachEventOccurrencesResponseDto,
 } from './dto/detach-event-occurrence.dto';
 
 const DETACHED_EVENT_EDITABLE_FIELDS = [
@@ -49,7 +51,7 @@ const DETACHED_EVENT_EDITABLE_FIELDS = [
   'participants',
 ] as const;
 
-/** Converts one finite recurring Event into atomic standalone Event records. */
+/** Applies recurrence mutations atomically through the generic Event lifecycle. */
 @Injectable()
 export class EventRecurrenceMutationService {
   constructor(
@@ -63,14 +65,40 @@ export class EventRecurrenceMutationService {
     currentUser: PersonItem,
     scriptContext: ScriptServerContext,
   ): Promise<DetachEventOccurrenceResponseDto> {
+    const result = await this.detachOccurrences(
+      handle,
+      {
+        occurrenceStarts: [request.occurrenceStart],
+        event: request.event,
+        expectedUpdatedAt: request.expectedUpdatedAt,
+      },
+      currentUser,
+      scriptContext,
+    );
+    const detachedEvent = result.detachedEvents[0];
+    if (!detachedEvent) {
+      throw new BadRequestException('event.recurrenceOccurrenceInvalid');
+    }
+    return { seriesHandle: result.seriesHandle, detachedEvent };
+  }
+
+  async detachOccurrences(
+    handle: string | number,
+    request: DetachEventOccurrencesDto,
+    currentUser: PersonItem,
+    scriptContext: ScriptServerContext,
+  ): Promise<DetachEventOccurrencesResponseDto> {
     const normalizedHandle = Number(handle);
     if (!Number.isInteger(normalizedHandle) || normalizedHandle <= 0) {
       throw new NotFoundException('global.entityNotFound');
     }
 
-    const occurrenceStart = new Date(request.occurrenceStart);
+    const occurrenceStarts = this.normalizeOccurrenceStarts(
+      request.occurrenceStarts,
+    );
     const postCommitTasks: GenericPostCommitTask[] = [];
-    let detachedEvent: object | null = null;
+    const detachedEvents: object[] = [];
+    let seriesEvent: object | null = null;
     const baseContext: ScriptServerContext = {
       ...scriptContext,
       suppressNotificationSubscriptions: true,
@@ -80,67 +108,83 @@ export class EventRecurrenceMutationService {
     await this.em.transactional(
       async () => {
         const event = await this.loadRecurringEvent(normalizedHandle);
-        const occurrence = findRecurrenceOccurrence(
-          new Date(event.startDate),
-          new Date(event.endDate),
-          event.recurrenceRule,
-          occurrenceStart,
-        );
-        if (!occurrence) {
-          throw new BadRequestException('event.recurrenceOccurrenceInvalid');
-        }
-
-        const normalizedOccurrenceStart = occurrence.startDate.toISOString();
-        const existingExceptions = this.normalizeExceptionDates(
+        let existingExceptions = this.normalizeExceptionDates(
           event.recurrenceExceptionDates,
         );
-        if (existingExceptions.includes(normalizedOccurrenceStart)) {
-          throw new BadRequestException('event.recurrenceOccurrenceDetached');
+        for (const [index, occurrenceStart] of occurrenceStarts.entries()) {
+          const occurrence = findRecurrenceOccurrence(
+            new Date(event.startDate),
+            new Date(event.endDate),
+            event.recurrenceRule,
+            occurrenceStart,
+          );
+          if (!occurrence) {
+            throw new BadRequestException('event.recurrenceOccurrenceInvalid');
+          }
+
+          const normalizedOccurrenceStart = occurrence.startDate.toISOString();
+          if (existingExceptions.includes(normalizedOccurrenceStart)) {
+            throw new BadRequestException('event.recurrenceOccurrenceDetached');
+          }
+          existingExceptions = [
+            ...existingExceptions,
+            normalizedOccurrenceStart,
+          ].sort();
+
+          seriesEvent = await this.genericEntityMutationService.update(
+            'event',
+            normalizedHandle,
+            { recurrenceExceptionDates: existingExceptions },
+            currentUser,
+            [],
+            {
+              ...baseContext,
+              calendarDeliveryOperation: 'detach-occurrence',
+              calendarDeliveryOccurrenceStart: normalizedOccurrenceStart,
+            },
+            {
+              expectedUpdatedAt:
+                index === 0 ? request.expectedUpdatedAt : undefined,
+              resolution: 'detect',
+            },
+            { postCommitTasks },
+          );
+
+          detachedEvents.push(
+            await this.genericEntityMutationService.create(
+              'event',
+              this.buildDetachedOccurrencePayload(
+                event,
+                occurrence,
+                request.event,
+              ),
+              currentUser,
+              {
+                ...baseContext,
+                calendarDeliveryOperation: undefined,
+                calendarDeliveryOccurrenceStart: undefined,
+              },
+              { postCommitTasks },
+            ),
+          );
         }
-
-        await this.genericEntityMutationService.update(
-          'event',
-          normalizedHandle,
-          {
-            recurrenceExceptionDates: [
-              ...existingExceptions,
-              normalizedOccurrenceStart,
-            ].sort(),
-          },
-          currentUser,
-          [],
-          {
-            ...baseContext,
-            calendarDeliveryOperation: 'detach-occurrence',
-            calendarDeliveryOccurrenceStart: normalizedOccurrenceStart,
-          },
-          {
-            expectedUpdatedAt: request.expectedUpdatedAt,
-            resolution: 'detect',
-          },
-          { postCommitTasks },
-        );
-
-        detachedEvent = await this.genericEntityMutationService.create(
-          'event',
-          this.buildDetachedOccurrencePayload(event, occurrence, request.event),
-          currentUser,
-          {
-            ...baseContext,
-            calendarDeliveryOperation: undefined,
-            calendarDeliveryOccurrenceStart: undefined,
-          },
-          { postCommitTasks },
-        );
       },
       { propagation: TransactionPropagation.REQUIRED },
     );
 
     this.genericEntityMutationService.schedulePostCommitTasks(postCommitTasks);
-    if (!detachedEvent) {
+    if (
+      detachedEvents.length !== occurrenceStarts.length ||
+      seriesEvent === null
+    ) {
       throw new BadRequestException('event.recurrenceOccurrenceInvalid');
     }
-    return { seriesHandle: normalizedHandle, detachedEvent };
+    return {
+      seriesHandle: normalizedHandle,
+      seriesEvent,
+      detachedCount: detachedEvents.length,
+      detachedEvents,
+    };
   }
 
   async materialize(
@@ -394,6 +438,21 @@ export class EventRecurrenceMutationService {
           .map((value) => value.toISOString()),
       ),
     );
+  }
+
+  private normalizeOccurrenceStarts(values: unknown): Date[] {
+    if (!Array.isArray(values) || values.length === 0 || values.length > 200) {
+      throw new BadRequestException('event.recurrenceOccurrenceInvalid');
+    }
+
+    const normalized = values.map((value) => new Date(String(value)));
+    if (normalized.some((value) => Number.isNaN(value.getTime()))) {
+      throw new BadRequestException('event.recurrenceOccurrenceInvalid');
+    }
+
+    return Array.from(
+      new Map(normalized.map((value) => [value.toISOString(), value])).values(),
+    ).sort((left, right) => left.getTime() - right.getTime());
   }
 
   private getReferenceHandle(value: unknown): string | number | null {

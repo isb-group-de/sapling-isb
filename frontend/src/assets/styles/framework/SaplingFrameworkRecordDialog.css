@@ -700,7 +700,8 @@
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .sapling-record-relation-overview {
@@ -876,7 +877,7 @@
 .sapling-record-relation-table-skeleton {
   flex: 1 1 auto;
   width: 100%;
-  min-height: min(420px, 100%);
+  min-height: calc((var(--sapling-control-size-2xl) * 4) + (var(--sapling-gap-sm) * 2));
   border-radius: var(--sapling-radius-md);
 }
 
@@ -885,7 +886,7 @@
   flex: 1 1 auto;
   width: 100%;
   min-width: 0;
-  min-height: min(420px, 100%);
+  min-height: calc((var(--sapling-control-size-2xl) * 4) + (var(--sapling-gap-sm) * 2));
   overflow: hidden;
 }
 
@@ -975,12 +976,13 @@
   }
 
   .sapling-dialog-edit-relation-content {
+    gap: var(--sapling-gap-sm);
     padding: var(--sapling-space-md);
   }
 
   .sapling-dialog-edit-relation-content .sapling-record-relation-overview {
     gap: var(--sapling-gap-sm);
-    margin-bottom: var(--sapling-gap-sm);
+    margin-bottom: 0;
   }
 }
 

@@ -44,6 +44,14 @@ frontend/src/utils/eventRecurrence.ts
 frontend/src/utils/__tests__/eventRecurrence.test.ts
 ```
 
+## Side-By-Side Calendar Scrolling
+
+The side-by-side person view can link the vertical scroll position of all
+displayed calendars. Linked scrolling is enabled by default and can be toggled
+from the calendar display options; the choice is stored with the other local
+calendar preferences. Horizontal scrolling of the column workspace remains
+independent.
+
 ## Event Model
 
 `EventItem` represents appointments, meetings, reminders, and related CRM/service events.
@@ -153,6 +161,18 @@ creates the edited Event with no recurrence rule. Calendar delivery tasks are
 released only after that transaction commits. The frontend recurrence expander
 omits exception timestamps, so the standalone Event replaces the generated
 occurrence without a duplicate.
+
+The overdue Inbox can apply the same semantics to several generated occurrences:
+
+```text
+POST /api/calendar/events/:handle/detach-occurrences
+```
+
+The request accepts up to 200 original occurrence starts. It validates, excludes,
+and creates all of them in one transaction, applying optimistic concurrency to
+the first master update. The Inbox submits completed status for the detached
+standalone Events. This works for daily, weekly, monthly, and yearly rules; the
+series master and occurrences after the selected cutoff are not completed.
 
 Provider behavior is intentionally provider-specific:
 

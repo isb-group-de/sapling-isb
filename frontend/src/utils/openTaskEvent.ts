@@ -1,5 +1,5 @@
 import type { EventItem } from '@/entity/entity'
-import { expandRecurringEvent } from '@/utils/eventRecurrence'
+import { findFirstGeneratedRecurrenceOccurrence } from '@/utils/eventRecurrence'
 
 export interface OpenTaskEventOccurrence {
   startDate: Date
@@ -27,7 +27,7 @@ export function getOpenTaskEventOccurrence(event: EventItem): OpenTaskEventOccur
     }
   }
 
-  const occurrence = expandRecurringEvent(event, startDate, new Date(8640000000000000))[0]
+  const occurrence = findFirstGeneratedRecurrenceOccurrence(event).occurrence
   if (!occurrence || typeof occurrence.start !== 'number' || typeof occurrence.end !== 'number') {
     return null
   }

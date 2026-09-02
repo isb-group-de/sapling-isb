@@ -217,4 +217,77 @@ describe('EventRecurrenceMutationService', () => {
       expect.any(Object),
     );
   });
+
+  it('atomically detaches multiple occurrences while applying concurrency only once', async () => {
+    const harness = createHarness(createEvent());
+
+    await expect(
+      harness.service.detachOccurrences(
+        42,
+        {
+          occurrenceStarts: [
+            '2026-07-29T11:00:00.000Z',
+            '2026-07-28T11:00:00.000Z',
+            '2026-07-29T11:00:00.000Z',
+          ],
+          event: { status: 'completed' },
+          expectedUpdatedAt: '2026-07-30T08:00:00.000Z',
+        },
+        { handle: 5 } as PersonItem,
+        {},
+      ),
+    ).resolves.toEqual({
+      seriesHandle: 42,
+      seriesEvent: { handle: 42 },
+      detachedCount: 2,
+      detachedEvents: [{ handle: 43 }, { handle: 43 }],
+    });
+
+    expect(harness.em.transactional).toHaveBeenCalledTimes(1);
+    expect(harness.mutationService.update).toHaveBeenNthCalledWith(
+      1,
+      'event',
+      42,
+      { recurrenceExceptionDates: ['2026-07-28T11:00:00.000Z'] },
+      expect.any(Object),
+      [],
+      expect.objectContaining({
+        calendarDeliveryOperation: 'detach-occurrence',
+        calendarDeliveryOccurrenceStart: '2026-07-28T11:00:00.000Z',
+      }),
+      {
+        expectedUpdatedAt: '2026-07-30T08:00:00.000Z',
+        resolution: 'detect',
+      },
+      expect.any(Object),
+    );
+    expect(harness.mutationService.update).toHaveBeenNthCalledWith(
+      2,
+      'event',
+      42,
+      {
+        recurrenceExceptionDates: [
+          '2026-07-28T11:00:00.000Z',
+          '2026-07-29T11:00:00.000Z',
+        ],
+      },
+      expect.any(Object),
+      [],
+      expect.objectContaining({
+        calendarDeliveryOperation: 'detach-occurrence',
+        calendarDeliveryOccurrenceStart: '2026-07-29T11:00:00.000Z',
+      }),
+      { expectedUpdatedAt: undefined, resolution: 'detect' },
+      expect.any(Object),
+    );
+    expect(harness.mutationService.create).toHaveBeenCalledTimes(2);
+    expect(harness.mutationService.create).toHaveBeenNthCalledWith(
+      1,
+      'event',
+      expect.objectContaining({ status: 'completed' }),
+      expect.any(Object),
+      expect.any(Object),
+      expect.any(Object),
+    );
+  });
 });

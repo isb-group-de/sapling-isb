@@ -814,6 +814,34 @@ describe('saplingTableUtil', () => {
     ])
   })
 
+  it('does not expose a raw handle for an unresolved nested isValue reference', () => {
+    const personTemplates = [
+      createTemplate({ name: 'firstName', options: ['isValue'] }),
+      createTemplate({ name: 'lastName', options: ['isValue'] }),
+      createTemplate({
+        name: 'company',
+        type: 'CompanyItem',
+        isReference: true,
+        kind: 'm:1',
+        referenceName: 'company',
+        options: ['isValue'],
+      }),
+    ]
+
+    expect(
+      getEntityValueLabel(
+        {
+          handle: 4772,
+          firstName: null,
+          lastName: 'Hersbach',
+          company: { handle: 1688 },
+        },
+        personTemplates,
+        { company: [] },
+      ),
+    ).toBe('Hersbach')
+  })
+
   it('extracts entity and handle data for generic references', () => {
     const template = createTemplate({
       name: 'reference',

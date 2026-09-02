@@ -235,6 +235,10 @@
   min-width: 0;
 }
 
+.sapling-field-select .v-autocomplete__selection {
+  height: auto;
+}
+
 .sapling-field-select__chip,
 .sapling-field-single-select__chip {
   height: auto;

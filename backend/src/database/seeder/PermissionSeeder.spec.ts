@@ -127,6 +127,48 @@ describe('PermissionSeeder', () => {
   );
 
   it.each([
+    ROLE_HANDLE.SUPPORT,
+    ROLE_HANDLE.SALES,
+    ROLE_HANDLE.CUSTOMER,
+    ROLE_HANDLE.CONTRACTOR,
+  ])(
+    'grants standard role %s full personal favorite lifecycle access',
+    async (roleHandle) => {
+      const entity = {
+        handle: 'favorite',
+        canRead: false,
+        canInsert: true,
+        canUpdate: true,
+        canDelete: true,
+        canShow: true,
+      } as EntityItem;
+      const role = { handle: roleHandle } as RoleItem;
+      const em = {
+        findAll: jest.fn((entityClass: unknown) => {
+          if (entityClass === EntityItem) return Promise.resolve([entity]);
+          if (entityClass === RoleItem) return Promise.resolve([role]);
+          return Promise.resolve([]);
+        }),
+        assign: jest.fn(),
+        create: jest.fn(),
+        flush: jest.fn(() => Promise.resolve()),
+      };
+
+      await new PermissionSeeder().run(em as unknown as EntityManager);
+
+      expect(em.create).toHaveBeenCalledWith(PermissionItem, {
+        entity,
+        role,
+        allowRead: true,
+        allowInsert: true,
+        allowUpdate: true,
+        allowDelete: true,
+        allowShow: false,
+      });
+    },
+  );
+
+  it.each([
     [ROLE_HANDLE.SUPPORT, 'aiProviderType'],
     [ROLE_HANDLE.SUPPORT, 'aiProviderModel'],
     [ROLE_HANDLE.SALES, 'aiProviderType'],

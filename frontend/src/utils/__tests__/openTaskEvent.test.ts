@@ -47,4 +47,27 @@ describe('getOpenTaskEventOccurrence', () => {
       ),
     ).toBeNull()
   })
+
+  it('advances open-ended series beyond the normal 100-occurrence calendar window', () => {
+    const recurrenceExceptionDates = Array.from({ length: 150 }, (_, index) => {
+      const date = new Date('2026-01-01T09:00:00.000Z')
+      date.setUTCDate(date.getUTCDate() + index)
+      return date.toISOString()
+    })
+
+    expect(
+      getOpenTaskEventOccurrence(
+        createEvent({
+          startDate: new Date('2026-01-01T09:00:00.000Z'),
+          endDate: new Date('2026-01-01T10:00:00.000Z'),
+          recurrenceRule: 'FREQ=DAILY;INTERVAL=1',
+          recurrenceExceptionDates,
+        }),
+      ),
+    ).toEqual({
+      startDate: new Date('2026-05-31T09:00:00.000Z'),
+      endDate: new Date('2026-05-31T10:00:00.000Z'),
+      recurrenceOccurrenceStart: '2026-05-31T09:00:00.000Z',
+    })
+  })
 })

@@ -266,6 +266,7 @@ export const supportPermissionsInput: PermissionMatrixInput = {
     'marketingCampaignType',
     'emailSubscription',
     'emailSubscriptionCondition',
+    'favorite',
     'favoriteTemplate',
     'document',
     'information',

@@ -20,6 +20,7 @@ describe('eventCalendarPreferences', () => {
       calendarViewMode: 'sidebyside' as const,
       calendarMode: 'extended' as const,
       eventOverlapMode: 'column' as const,
+      linkedScrolling: false,
     }
 
     saveEventCalendarPreferences(preferences)
@@ -35,6 +36,7 @@ describe('eventCalendarPreferences', () => {
         calendarViewMode: 'tiles',
         calendarMode: 'extended',
         eventOverlapMode: 'cover',
+        linkedScrolling: 'yes',
       }),
     )
 

@@ -95,8 +95,10 @@
               @update:auto-refresh-interval-minutes="setAutoRefreshInterval"
               @favorite="openFavoriteDialog"
               @select-favorite="selectFavorite"
+              @delete-favorite="openFavoriteDeleteDialog"
               @select-form-config="selectFormConfig"
               @set-default-form-config="emit('setDefaultFormConfig', $event)"
+              @delete-form-config="openFormConfigDeleteDialog"
               @begin-column-order-edit="beginColumnOrderEdit"
               @finish-column-order-edit="finishColumnOrderEdit"
               @toggle-column-chooser="isColumnChooserOpen = !isColumnChooserOpen"
@@ -346,6 +348,16 @@
       @save="saveCurrentView"
       @cancel="closeTableViewDialog"
     />
+
+    <SaplingTableSavedItemDeleteDialog
+      :model-value="savedItemDeleteDialog.visible"
+      :kind="savedItemDeleteDialog.kind"
+      :item-title="savedItemDeleteDialog.title"
+      :loading="savedItemDeleteDialog.loading"
+      @update:model-value="updateSavedItemDeleteDialog"
+      @confirm="confirmSavedItemDelete"
+      @cancel="closeSavedItemDeleteDialog"
+    />
   </div>
 </template>
 
@@ -366,6 +378,7 @@ import SaplingTableMultiSelect from './SaplingTableMultiSelect.vue'
 import SaplingTableOverlays from './SaplingTableOverlays.vue'
 import SaplingTableToolbarActions from './SaplingTableToolbarActions.vue'
 import SaplingTableViewDialog from './SaplingTableViewDialog.vue'
+import SaplingTableSavedItemDeleteDialog from './SaplingTableSavedItemDeleteDialog.vue'
 import SaplingTableTutorial from '@/components/system/tutorial/SaplingTableTutorial.vue'
 import {
   useSaplingTableComponent,
@@ -378,6 +391,7 @@ import type {
   FormConfigMenuItem,
   FormConfigSelectionHandle,
 } from '@/composables/dialog/saplingDialogEdit.utils'
+import type { FavoriteItem } from '@/entity/entity'
 import { saplingTableDisplayContextKey } from './saplingTableDisplayContext'
 import type { SaplingTableViewSaveRequest } from '@/composables/table/saplingTableColumnOrder'
 // #endregion
@@ -409,6 +423,7 @@ type SaplingTableEmit = UseSaplingTableEmit & {
   (event: 'toggleSidePanel'): void
   (event: 'selectFormConfig', value: FormConfigSelectionHandle): void
   (event: 'setDefaultFormConfig', value: number): void
+  (event: 'deleteFormConfig', value: { handle: number; complete: (deleted: boolean) => void }): void
   (event: 'saveCurrentView', value: SaplingTableViewSaveRequest): void
 }
 
@@ -431,6 +446,21 @@ const currentPersonStore = useCurrentPersonStore()
 const hasCompletedInitialLoad = ref(!props.isLoading)
 const importInputRef = ref<HTMLInputElement | null>(null)
 const tableViewDialog = ref({ visible: false, name: '', loading: false })
+const savedItemDeleteDialog = ref<{
+  visible: boolean
+  kind: 'favorite' | 'view'
+  title: string
+  loading: boolean
+  favorite: FavoriteItem | null
+  formConfig: FormConfigMenuItem | null
+}>({
+  visible: false,
+  kind: 'favorite',
+  title: '',
+  loading: false,
+  favorite: null,
+  formConfig: null,
+})
 const isColumnOrderEditing = ref(false)
 const isColumnChooserOpen = ref(false)
 
@@ -606,6 +636,7 @@ const {
   closeFavoriteDialog,
   saveFavorite,
   selectFavorite,
+  deleteFavorite,
   openCreateDialog,
   openEditDialog,
   openShowDialog,
@@ -676,6 +707,75 @@ function selectFormConfig(handle: FormConfigSelectionHandle): void {
 function closeTableViewDialog(): void {
   if (tableViewDialog.value.loading || props.isSavingTableView) return
   tableViewDialog.value = { visible: false, name: '', loading: false }
+}
+
+function openFavoriteDeleteDialog(favorite: FavoriteItem): void {
+  savedItemDeleteDialog.value = {
+    visible: true,
+    kind: 'favorite',
+    title: favorite.title,
+    loading: false,
+    favorite,
+    formConfig: null,
+  }
+}
+
+function openFormConfigDeleteDialog(item: FormConfigMenuItem): void {
+  if (!item.canDelete || typeof item.handle !== 'number') return
+
+  savedItemDeleteDialog.value = {
+    visible: true,
+    kind: 'view',
+    title: item.title,
+    loading: false,
+    favorite: null,
+    formConfig: item,
+  }
+}
+
+function closeSavedItemDeleteDialog(): void {
+  if (savedItemDeleteDialog.value.loading) return
+  savedItemDeleteDialog.value = {
+    visible: false,
+    kind: 'favorite',
+    title: '',
+    loading: false,
+    favorite: null,
+    formConfig: null,
+  }
+}
+
+function updateSavedItemDeleteDialog(value: boolean): void {
+  if (!value) closeSavedItemDeleteDialog()
+}
+
+async function confirmSavedItemDelete(): Promise<void> {
+  const dialog = savedItemDeleteDialog.value
+  if (dialog.loading) return
+
+  if (dialog.kind === 'favorite' && dialog.favorite) {
+    dialog.loading = true
+    try {
+      await deleteFavorite(dialog.favorite)
+      dialog.loading = false
+      closeSavedItemDeleteDialog()
+    } catch {
+      dialog.loading = false
+    }
+    return
+  }
+
+  const handle = dialog.formConfig?.handle
+  if (typeof handle !== 'number') return
+
+  dialog.loading = true
+  emit('deleteFormConfig', {
+    handle,
+    complete(deleted) {
+      dialog.loading = false
+      if (deleted) closeSavedItemDeleteDialog()
+    },
+  })
 }
 
 function saveCurrentView(): void {

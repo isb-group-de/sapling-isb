@@ -55,6 +55,7 @@ export function useSaplingTableFormConfig(
         active: selectedFormConfigHandle.value === null,
         isDefault: defaultHandle === null,
         canSetDefault: false,
+        canDelete: false,
       },
       ...selectableConfigs.map((config) => ({
         handle: config.handle ?? null,
@@ -63,6 +64,7 @@ export function useSaplingTableFormConfig(
         active: selectedFormConfigHandle.value === config.handle,
         isDefault: defaultHandle === config.handle,
         canSetDefault: config.scope === 'person',
+        canDelete: config.scope === 'person',
       })),
     ]
   })
@@ -175,6 +177,25 @@ export function useSaplingTableFormConfig(
     }
   }
 
+  async function deletePersonalTableView(handle: number): Promise<void> {
+    isLoadingFormConfigs.value = true
+    try {
+      await ApiFormConfigService.deletePersonalTableView(entityHandle.value, handle)
+      formConfigs.value = await ApiFormConfigService.listTableViews(entityHandle.value, true)
+      if (selectedFormConfigHandle.value === handle) {
+        selectedFormConfigHandle.value = getDefaultFormConfigHandle(formConfigs.value)
+      }
+      pushMessage(
+        'success',
+        i18n.global.t('formConfig.tableViewDeleted'),
+        i18n.global.t('formConfig.tableViewDeletedDescription'),
+        entityHandle.value,
+      )
+    } finally {
+      isLoadingFormConfigs.value = false
+    }
+  }
+
   return {
     entityTemplates,
     menuItems,
@@ -187,6 +208,7 @@ export function useSaplingTableFormConfig(
     scheduleLoad,
     select,
     setPersonalDefault,
+    deletePersonalTableView,
     savePersonalTableView,
   }
 }

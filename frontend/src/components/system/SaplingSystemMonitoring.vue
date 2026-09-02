@@ -339,6 +339,7 @@
                   <th>{{ $t('system.monitoringCategory') }}</th>
                   <th>{{ $t('system.monitoringRequests') }}</th>
                   <th>{{ $t('system.monitoringErrors') }}</th>
+                  <th>{{ $t('system.monitoringTraffic') }}</th>
                   <th>p50</th>
                   <th>p95</th>
                   <th>p99</th>
@@ -349,6 +350,9 @@
                   <td>{{ row.group }}</td>
                   <td>{{ number(row.requestCount) }}</td>
                   <td>{{ number(row.serverErrorCount) }}</td>
+                  <td>
+                    {{ bytes(Number(row.requestBytes ?? 0) + Number(row.responseBytes ?? 0)) }}
+                  </td>
                   <td>{{ number(row.durationP50Ms) }} ms</td>
                   <td>{{ number(row.durationP95Ms) }} ms</td>
                   <td>{{ number(row.durationP99Ms) }} ms</td>
@@ -390,6 +394,7 @@
                     <th>{{ $t('system.monitoringLastLogin') }}</th>
                     <th>{{ $t('system.monitoringRequests') }}</th>
                     <th>{{ $t('system.monitoringErrors') }}</th>
+                    <th>{{ $t('system.monitoringTraffic') }}</th>
                     <th>{{ $t('system.monitoringTokens') }}</th>
                   </tr>
                 </thead>
@@ -406,6 +411,7 @@
                     <td>{{ dateTime(user.lastLoginAt) }}</td>
                     <td>{{ number(user.requests) }}</td>
                     <td>{{ number(user.errors) }}</td>
+                    <td>{{ bytes(user.traffic) }}</td>
                     <td>{{ compactNumber(user.tokens) }}</td>
                   </tr>
                 </tbody>
@@ -683,6 +689,14 @@ function metricPoints(keys: string[]) {
 function number(value: unknown): string {
   const numeric = Number(value ?? 0)
   return n(Number.isFinite(numeric) ? numeric : 0, { maximumFractionDigits: 1 })
+}
+
+function bytes(value: unknown): string {
+  const numeric = Number(value ?? 0)
+  if (!Number.isFinite(numeric) || numeric <= 0) return '0 B'
+  const units = ['B', 'kB', 'MB', 'GB', 'TB']
+  const unitIndex = Math.min(Math.floor(Math.log(numeric) / Math.log(1024)), units.length - 1)
+  return `${number(numeric / 1024 ** unitIndex)} ${units[unitIndex]}`
 }
 
 function compactNumber(value: unknown): string {

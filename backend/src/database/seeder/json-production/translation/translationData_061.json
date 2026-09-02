@@ -32,14 +32,14 @@
   {
     "entity": "inbox",
     "property": "completeEventsSeriesWarning",
-    "de": "Bei Serienterminen wird die gesamte Serie abgeschlossen.",
-    "en": "For recurring events, the entire series will be completed."
+    "de": "Bei Serienterminen werden nur die einzelnen Vorkommen bis zum Stichtag abgeschlossen. Die Serie und spätere Termine bleiben erhalten.",
+    "en": "For recurring events, only individual occurrences through the cutoff are completed. The series and later events remain open."
   },
   {
     "entity": "inbox",
     "property": "completeEventsCandidateCount",
-    "de": "{count} Termin(e) werden abgeschlossen.",
-    "en": "{count} event(s) will be completed."
+    "de": "{count} Termin-Vorkommen werden abgeschlossen.",
+    "en": "{count} event occurrence(s) will be completed."
   },
   {
     "entity": "inbox",
@@ -64,5 +64,23 @@
     "property": "completeEventsSuccessDescription",
     "de": "{count} überfällige(r) Termin(e) wurde(n) abgeschlossen.",
     "en": "{count} overdue event(s) were completed."
+  },
+  {
+    "entity": "inbox",
+    "property": "sectionEntryCount",
+    "de": "{count} offene Einträge in diesem Bereich",
+    "en": "{count} open entries in this section"
+  },
+  {
+    "entity": "inbox",
+    "property": "completeEventsTooManyOccurrences",
+    "de": "Zu viele Serientermine",
+    "en": "Too many recurring events"
+  },
+  {
+    "entity": "inbox",
+    "property": "completeEventsTooManyOccurrencesDescription",
+    "de": "Der gewählte Zeitraum enthält mehr als 10.000 Vorkommen. Bitte wähle einen früheren Stichtag.",
+    "en": "The selected range contains more than 10,000 occurrences. Choose an earlier cutoff."
   }
 ]

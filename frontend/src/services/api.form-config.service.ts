@@ -156,6 +156,22 @@ class ApiFormConfigService {
     }
   }
 
+  static async deletePersonalTableView(
+    entityHandle: string,
+    handle: number,
+  ): Promise<SaplingFormConfigItem> {
+    try {
+      const response = await axios.delete<SaplingFormConfigItem>(
+        buildApiUrl(`form-config/${entityHandle}/personal-table-view/${handle}`),
+      )
+      this.invalidate(entityHandle)
+      return response.data
+    } catch (error: unknown) {
+      pushApiErrorMessage(error, 'exception.unknownError', entityHandle)
+      throw error
+    }
+  }
+
   private static async fetchEffectiveTemplate(entityHandle: string): Promise<EntityTemplate[]> {
     try {
       const response = await axios.get<{ entityTemplates: EntityTemplate[] }>(

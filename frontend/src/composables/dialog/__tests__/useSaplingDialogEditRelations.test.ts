@@ -57,6 +57,11 @@ const entityStates = reactive<Record<string, EntityState>>({
       name: 'subject',
       type: 'string',
     }),
+    createTemplate({
+      name: 'startDate',
+      type: 'datetime',
+      options: ['isOrderDESC'],
+    }),
   ]),
   effortEstimatePosition: createEntityState('effortEstimatePosition', [
     createTemplate({ name: 'title', type: 'string', options: ['isValue'], tableVisible: true }),
@@ -148,6 +153,24 @@ describe('useSaplingDialogEditRelations', () => {
     expect(relations.relationTableItems.value.notes).toEqual([{ handle: 1, title: 'First note' }])
     expect(relations.relationTableTotal.value.notes).toBe(1)
     expect(relations.relationTableLoaded.value.notes).toBe(true)
+  })
+
+  it('uses the referenced entity decorator as the initial relation table sort', async () => {
+    const relations = createRelations()
+    await relations.initializeRelationTables()
+
+    expect(relations.relationTableSortBy.value.events).toEqual([
+      { key: 'startDate', order: 'desc' },
+    ])
+
+    await relations.ensureRelationTableItems('events')
+
+    expect(apiFindMock).toHaveBeenCalledWith(
+      'event',
+      expect.objectContaining({
+        orderBy: { startDate: 'DESC' },
+      }),
+    )
   })
 
   it('loads relation table rows in readonly mode for persisted records', async () => {
@@ -274,6 +297,19 @@ describe('useSaplingDialogEditRelations', () => {
     await relations.removeRelation(relations.relationTemplates.value[0], [participants[0]])
 
     expect(relations.dirtyRelationNames.value).toEqual(['participants'])
+
+    await relations.removeRelation(relations.relationTemplates.value[0], [participants[1]])
+
+    expect(relations.relationTableItems.value.participants).toEqual([])
+    expect(
+      relations.appendPendingRelationsToPayload({
+        title: 'Copy',
+        participants: [5, 7],
+      }),
+    ).toEqual({
+      title: 'Copy',
+      participants: [],
+    })
   })
 
   it('stages relations for an unsaved edit draft instead of loading every reference record', async () => {
@@ -442,12 +478,14 @@ describe('useSaplingDialogEditRelations', () => {
   it('refreshes the persisted parent version after an owning m:n relation is added', async () => {
     const onPersistedItemUpdated = vi.fn()
     const relations = createRelations({
+      entityHandle: 'event',
+      permissions: ['person'],
       templates: [
         createTemplate({
           name: 'participants',
           type: 'Collection<PersonItem>',
           kind: 'm:n',
-          referenceName: 'note',
+          referenceName: 'person',
         }),
       ],
       onPersistedItemUpdated,
@@ -461,7 +499,8 @@ describe('useSaplingDialogEditRelations', () => {
 
     await relations.addRelation(relations.relationTemplates.value[0])
 
-    expect(apiCreateReferenceMock).toHaveBeenCalledWith('ticket', 'participants', 42, 7)
+    expect(apiCreateReferenceMock).toHaveBeenCalledTimes(1)
+    expect(apiCreateReferenceMock).toHaveBeenCalledWith('event', 'participants', 42, 7)
     expect(onPersistedItemUpdated).toHaveBeenCalledWith(persistedItem)
   })
 
@@ -548,6 +587,7 @@ describe('useSaplingDialogEditRelations', () => {
 
 function createRelations(
   overrides: {
+    entityHandle?: string
     mode?: DialogState
     templates?: EntityTemplate[]
     permissions?: string[]
@@ -555,7 +595,7 @@ function createRelations(
     onPersistedItemUpdated?: (item: SaplingGenericItem) => void
   } = {},
 ) {
-  const entity = ref({ handle: 'ticket' } as EntityItem)
+  const entity = ref({ handle: overrides.entityHandle ?? 'ticket' } as EntityItem)
   const item = ref(overrides.item ?? ({ handle: 42 } as SaplingGenericItem))
   const mode = ref<DialogState>(overrides.mode ?? 'edit')
   const permissions = ref<AccumulatedPermission[] | null>(

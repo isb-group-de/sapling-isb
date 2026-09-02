@@ -202,6 +202,19 @@ export function useSaplingTableFavorites({
     }
   }
 
+  async function deleteFavorite(favorite: FavoriteItem): Promise<void> {
+    if (favorite.handle == null) return
+
+    await ApiGenericService.delete('favorite', favorite.handle)
+    await loadCurrentEntityFavorites()
+    pushMessage(
+      'success',
+      t('global.favoriteDeleted'),
+      t('global.favoriteDeletedDescription'),
+      props.entityHandle,
+    )
+  }
+
   return {
     favoriteDialog,
     currentEntityFavorites,
@@ -212,5 +225,6 @@ export function useSaplingTableFavorites({
     closeFavoriteDialog,
     saveFavorite,
     selectFavorite,
+    deleteFavorite,
   }
 }

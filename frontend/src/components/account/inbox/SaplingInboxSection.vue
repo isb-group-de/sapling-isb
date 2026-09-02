@@ -20,21 +20,14 @@
           </div>
         </div>
       </div>
-      <div class="sapling-row-sm">
-        <v-chip size="small" variant="tonal" :color="section.tone">
-          {{ section.count }}
-        </v-chip>
-        <v-btn
-          v-if="showCompleteEventsAction"
-          size="small"
-          variant="tonal"
-          color="warning"
-          prepend-icon="mdi-calendar-check-outline"
-          @click="emit('complete-events')"
-        >
-          {{ $t('inbox.completeEventsAction') }}
-        </v-btn>
-      </div>
+      <v-chip
+        size="small"
+        variant="tonal"
+        :color="section.tone"
+        :title="$t('inbox.sectionEntryCount', { count: section.count })"
+      >
+        {{ section.count }}
+      </v-chip>
     </div>
 
     <div v-if="section.empty" class="sapling-empty-state-panel sapling-empty-state-panel--compact">
@@ -50,6 +43,18 @@
         @open="emit('open', $event)"
         @dismiss="emit('dismiss', $event)"
       />
+    </div>
+
+    <div v-if="showCompleteEventsAction" class="sapling-inbox-section__footer-action">
+      <v-btn
+        size="small"
+        variant="tonal"
+        color="warning"
+        prepend-icon="mdi-calendar-check-outline"
+        @click="emit('complete-events')"
+      >
+        {{ $t('inbox.completeEventsAction') }}
+      </v-btn>
     </div>
   </article>
 </template>

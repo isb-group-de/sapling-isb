@@ -279,4 +279,55 @@ describe('FormConfigService', () => {
       'exception.forbidden',
     );
   });
+
+  it('deletes a table view owned by the authenticated person', async () => {
+    const target = {
+      handle: 2,
+      scope: 'person',
+      scopeHandle: '42',
+    };
+    const em = {
+      findOne: jest.fn<() => Promise<unknown>>().mockResolvedValue(target),
+      remove: jest.fn().mockReturnValue({
+        flush: jest.fn<() => Promise<void>>().mockResolvedValue(undefined),
+      }),
+    };
+    const service = new FormConfigService(em as never);
+
+    await expect(
+      service.deletePersonalTableView('person', 2, '42'),
+    ).resolves.toBe(target);
+    expect(em.remove).toHaveBeenCalledWith(target);
+  });
+
+  it('rejects deleting global, role, or another person’s table view', async () => {
+    const em = {
+      findOne: jest
+        .fn<() => Promise<unknown>>()
+        .mockResolvedValueOnce({ handle: 2, scope: 'global' })
+        .mockResolvedValueOnce({
+          handle: 3,
+          scope: 'role',
+          scopeHandle: 'sales',
+        })
+        .mockResolvedValueOnce({
+          handle: 4,
+          scope: 'person',
+          scopeHandle: '7',
+        }),
+      remove: jest.fn(),
+    };
+    const service = new FormConfigService(em as never);
+
+    await expect(
+      service.deletePersonalTableView('person', 2, '42'),
+    ).rejects.toThrow('exception.forbidden');
+    await expect(
+      service.deletePersonalTableView('person', 3, '42'),
+    ).rejects.toThrow('exception.forbidden');
+    await expect(
+      service.deletePersonalTableView('person', 4, '42'),
+    ).rejects.toThrow('exception.forbidden');
+    expect(em.remove).not.toHaveBeenCalled();
+  });
 });

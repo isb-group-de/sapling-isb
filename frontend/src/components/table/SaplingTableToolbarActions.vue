@@ -183,6 +183,17 @@
               }}</v-icon>
             </template>
             <v-list-item-title>{{ favoriteItem.title }}</v-list-item-title>
+            <template #append>
+              <v-btn
+                icon="mdi-delete-outline"
+                color="error"
+                size="x-small"
+                variant="text"
+                :title="$t('global.deleteFavorite')"
+                :aria-label="`${favoriteItem.title}: ${$t('global.deleteFavorite')}`"
+                @click.stop="deleteFavoriteFromMobileMenu(favoriteItem)"
+              />
+            </template>
           </v-list-item>
         </v-list>
 
@@ -204,20 +215,32 @@
             >
             <v-list-item-title>{{ item.title }}</v-list-item-title>
             <template #append>
-              <v-btn
-                v-if="item.isDefault || item.canSetDefault"
-                :icon="item.isDefault ? 'mdi-star' : 'mdi-star-outline'"
-                :color="item.isDefault ? 'warning' : undefined"
-                size="x-small"
-                variant="text"
-                :disabled="item.isDefault || !item.canSetDefault"
-                :title="
-                  item.isDefault
-                    ? $t('formConfig.openedByDefaultView')
-                    : $t('formConfig.setAsPersonalDefaultView')
-                "
-                @click.stop="setDefaultFormConfigFromMobileMenu(Number(item.handle))"
-              />
+              <div class="d-flex align-center">
+                <v-btn
+                  v-if="item.isDefault || item.canSetDefault"
+                  :icon="item.isDefault ? 'mdi-star' : 'mdi-star-outline'"
+                  :color="item.isDefault ? 'warning' : undefined"
+                  size="x-small"
+                  variant="text"
+                  :disabled="item.isDefault || !item.canSetDefault"
+                  :title="
+                    item.isDefault
+                      ? $t('formConfig.openedByDefaultView')
+                      : $t('formConfig.setAsPersonalDefaultView')
+                  "
+                  @click.stop="setDefaultFormConfigFromMobileMenu(Number(item.handle))"
+                />
+                <v-btn
+                  v-if="item.canDelete"
+                  icon="mdi-delete-outline"
+                  color="error"
+                  size="x-small"
+                  variant="text"
+                  :title="$t('formConfig.deleteView')"
+                  :aria-label="`${item.title}: ${$t('formConfig.deleteView')}`"
+                  @click.stop="deleteFormConfigFromMobileMenu(item)"
+                />
+              </div>
             </template>
           </v-list-item>
         </v-list>
@@ -297,6 +320,17 @@
                   }}</v-icon>
                 </template>
                 <v-list-item-title>{{ favoriteItem.title }}</v-list-item-title>
+                <template #append>
+                  <v-btn
+                    icon="mdi-delete-outline"
+                    color="error"
+                    size="x-small"
+                    variant="text"
+                    :title="$t('global.deleteFavorite')"
+                    :aria-label="`${favoriteItem.title}: ${$t('global.deleteFavorite')}`"
+                    @click.stop="emit('deleteFavorite', favoriteItem)"
+                  />
+                </template>
               </v-list-item>
             </template>
           </v-list>
@@ -331,25 +365,37 @@
               </template>
               <v-list-item-title>{{ item.title }}</v-list-item-title>
               <template #append>
-                <v-btn
-                  v-if="item.isDefault || item.canSetDefault"
-                  :icon="item.isDefault ? 'mdi-star' : 'mdi-star-outline'"
-                  :color="item.isDefault ? 'warning' : undefined"
-                  size="x-small"
-                  variant="text"
-                  :disabled="item.isDefault || !item.canSetDefault"
-                  :title="
-                    item.isDefault
-                      ? $t('formConfig.openedByDefaultView')
-                      : $t('formConfig.setAsPersonalDefaultView')
-                  "
-                  :aria-label="
-                    item.isDefault
-                      ? `${item.title}: ${$t('formConfig.openedByDefaultView')}`
-                      : `${item.title}: ${$t('formConfig.setAsPersonalDefaultView')}`
-                  "
-                  @click.stop="emit('setDefaultFormConfig', Number(item.handle))"
-                />
+                <div class="d-flex align-center">
+                  <v-btn
+                    v-if="item.isDefault || item.canSetDefault"
+                    :icon="item.isDefault ? 'mdi-star' : 'mdi-star-outline'"
+                    :color="item.isDefault ? 'warning' : undefined"
+                    size="x-small"
+                    variant="text"
+                    :disabled="item.isDefault || !item.canSetDefault"
+                    :title="
+                      item.isDefault
+                        ? $t('formConfig.openedByDefaultView')
+                        : $t('formConfig.setAsPersonalDefaultView')
+                    "
+                    :aria-label="
+                      item.isDefault
+                        ? `${item.title}: ${$t('formConfig.openedByDefaultView')}`
+                        : `${item.title}: ${$t('formConfig.setAsPersonalDefaultView')}`
+                    "
+                    @click.stop="emit('setDefaultFormConfig', Number(item.handle))"
+                  />
+                  <v-btn
+                    v-if="item.canDelete"
+                    icon="mdi-delete-outline"
+                    color="error"
+                    size="x-small"
+                    variant="text"
+                    :title="$t('formConfig.deleteView')"
+                    :aria-label="`${item.title}: ${$t('formConfig.deleteView')}`"
+                    @click.stop="emit('deleteFormConfig', item)"
+                  />
+                </div>
               </template>
             </v-list-item>
             <v-divider />
@@ -493,6 +539,7 @@ const emit = defineEmits<{
   'update:autoRefreshIntervalMinutes': [value: SaplingTableAutoRefreshInterval | null]
   favorite: []
   selectFavorite: [favorite: FavoriteItem]
+  deleteFavorite: [favorite: FavoriteItem]
   selectFormConfig: [handle: FormConfigSelectionHandle]
   saveCurrentView: []
   resetTemporaryColumnOrder: []
@@ -500,6 +547,7 @@ const emit = defineEmits<{
   finishColumnOrderEdit: []
   toggleColumnChooser: []
   setDefaultFormConfig: [handle: number]
+  deleteFormConfig: [item: FormConfigMenuItem]
   openFormConfig: []
   add: []
 }>()
@@ -564,6 +612,11 @@ function selectFavoriteFromMobileMenu(favorite: FavoriteItem): void {
   closeMobileMenu()
 }
 
+function deleteFavoriteFromMobileMenu(favorite: FavoriteItem): void {
+  emit('deleteFavorite', favorite)
+  closeMobileMenu()
+}
+
 function selectFormConfigFromMobileMenu(handle: FormConfigSelectionHandle): void {
   emit('selectFormConfig', handle)
   closeMobileMenu()
@@ -571,6 +624,11 @@ function selectFormConfigFromMobileMenu(handle: FormConfigSelectionHandle): void
 
 function setDefaultFormConfigFromMobileMenu(handle: number): void {
   emit('setDefaultFormConfig', handle)
+  closeMobileMenu()
+}
+
+function deleteFormConfigFromMobileMenu(item: FormConfigMenuItem): void {
+  emit('deleteFormConfig', item)
   closeMobileMenu()
 }
 

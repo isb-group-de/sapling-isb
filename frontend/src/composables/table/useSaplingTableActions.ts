@@ -106,6 +106,7 @@ export function useSaplingTableActions({
     closeFavoriteDialog,
     saveFavorite,
     selectFavorite,
+    deleteFavorite,
   } = useSaplingTableFavorites({ props, localColumnFilters })
   const {
     isDownloadingJSON,
@@ -490,6 +491,7 @@ export function useSaplingTableActions({
     closeFavoriteDialog,
     saveFavorite,
     selectFavorite,
+    deleteFavorite,
     openCreateDialog,
     openEditDialog,
     openShowDialog,

@@ -6,6 +6,7 @@ import type { EntityItem, FavoriteItem } from '@/entity/entity'
 const mocks = vi.hoisted(() => ({
   apiFind: vi.fn(),
   apiCreate: vi.fn(),
+  apiDelete: vi.fn(),
   fetchCurrentPerson: vi.fn(),
   routerPush: vi.fn(),
   pushMessage: vi.fn(),
@@ -28,6 +29,7 @@ vi.mock('@/services/api.generic.service', () => ({
   default: {
     findAll: mocks.apiFind,
     create: mocks.apiCreate,
+    delete: mocks.apiDelete,
   },
 }))
 
@@ -104,6 +106,7 @@ beforeEach(() => {
   mocks.route.fullPath = '/table/ticket'
   mocks.apiFind.mockResolvedValue([favorite])
   mocks.apiCreate.mockResolvedValue(favorite)
+  mocks.apiDelete.mockResolvedValue(undefined)
   mocks.fetchCurrentPerson.mockResolvedValue(undefined)
   mocks.routerPush.mockResolvedValue(undefined)
 })
@@ -175,6 +178,23 @@ describe('useSaplingTableFavorites', () => {
         entity: 'ticket',
         entityRoute: 18,
       }),
+    )
+  })
+
+  it('deletes a personal worklist and refreshes the toolbar list', async () => {
+    const { subject } = createSubject()
+    await flushPromises()
+    mocks.apiFind.mockResolvedValueOnce([])
+
+    await subject.deleteFavorite(favorite)
+
+    expect(mocks.apiDelete).toHaveBeenCalledWith('favorite', 12)
+    expect(subject.currentEntityFavorites.value).toEqual([])
+    expect(mocks.pushMessage).toHaveBeenCalledWith(
+      'success',
+      'global.favoriteDeleted',
+      'global.favoriteDeletedDescription',
+      'ticket',
     )
   })
 })

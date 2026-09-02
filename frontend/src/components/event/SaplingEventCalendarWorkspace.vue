@@ -29,7 +29,11 @@
   </template>
 
   <template v-else>
-    <div class="sapling-scroll-region sapling-event-sidebyside-shell">
+    <div
+      ref="sideBySideScrollRoot"
+      class="sapling-scroll-region sapling-event-sidebyside-shell"
+      @scroll.capture.passive="handleCalendarScroll"
+    >
       <div class="sapling-event-sidebyside-grid" :style="sideBySideGridStyle">
         <section
           v-for="personId in selectedPeoples"
@@ -74,12 +78,13 @@
 </template>
 
 <script lang="ts" setup>
-import { computed } from 'vue'
+import { computed, toRef } from 'vue'
 import type { CSSProperties } from 'vue'
 import type { WorkHourWeekItem } from '@/entity/entity'
 import SaplingEventCalendar from '@/components/event/SaplingEventCalendar.vue'
 import type { CalendarEvent } from 'vuetify/lib/components/VCalendar/types.mjs'
 import type { CalendarEventOverlapMode } from '@/composables/event/eventCalendar.utils'
+import { useSaplingCalendarLinkedScroll } from '@/composables/event/useSaplingCalendarLinkedScroll'
 
 interface CalendarDatePair {
   start: CalendarDateItem
@@ -101,6 +106,7 @@ type CalendarViewMode = 'single' | 'sidebyside'
 const props = defineProps<{
   modelValue: string
   calendarViewMode: CalendarViewMode
+  linkedScrolling: boolean
   events: CalendarEvent[]
   calendarDisplayType: CalendarDisplayType
   eventOverlapMode: CalendarEventOverlapMode
@@ -137,6 +143,9 @@ const calendarValue = computed({
   get: () => props.modelValue,
   set: (value: string) => emit('update:modelValue', value),
 })
+const { handleCalendarScroll, sideBySideScrollRoot } = useSaplingCalendarLinkedScroll(
+  toRef(props, 'linkedScrolling'),
+)
 
 function getColumnWorkHourStyle(personId: number, date: string) {
   return props.getWorkHourStyle(date, props.getPersonWorkHours(personId))

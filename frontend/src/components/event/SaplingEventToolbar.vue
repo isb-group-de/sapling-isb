@@ -96,6 +96,42 @@
         </v-btn-group>
       </div>
 
+      <v-btn-group
+        v-if="showDataActionsInline"
+        class="sapling-event-toolbar__data-actions"
+        density="comfortable"
+      >
+        <v-btn
+          data-tutorial="calendar-refresh"
+          :loading="isRefreshing"
+          :disabled="isRefreshing"
+          prepend-icon="mdi-refresh"
+          variant="tonal"
+          :title="$t('global.refresh')"
+          :aria-label="$t('global.refresh')"
+          @click="emit('refresh')"
+        >
+          {{ $t('global.refresh') }}
+        </v-btn>
+
+        <v-tooltip v-if="calendarSyncProvider" :text="calendarSyncDescription" location="bottom">
+          <template #activator="{ props: tooltipProps }">
+            <v-btn
+              v-bind="tooltipProps"
+              :loading="isSyncingExternalCalendar"
+              :disabled="isSyncingExternalCalendar"
+              :prepend-icon="calendarSyncIcon"
+              variant="tonal"
+              :title="calendarSyncLabel"
+              :aria-label="calendarSyncLabel"
+              @click="emit('syncCalendar')"
+            >
+              {{ calendarSyncLabel }}
+            </v-btn>
+          </template>
+        </v-tooltip>
+      </v-btn-group>
+
       <div
         data-tutorial="calendar-display-options"
         class="sapling-toolbar-group sapling-event-toolbar__options"
@@ -115,27 +151,6 @@
           </v-btn>
         </v-btn-toggle>
 
-        <v-tooltip
-          v-if="calendarSyncProvider && showSyncInline"
-          :text="calendarSyncDescription"
-          location="bottom"
-        >
-          <template #activator="{ props: tooltipProps }">
-            <v-btn
-              v-bind="tooltipProps"
-              :loading="isSyncingExternalCalendar"
-              :disabled="isSyncingExternalCalendar"
-              :prepend-icon="calendarSyncIcon"
-              variant="tonal"
-              @click="emit('syncCalendar')"
-            >
-              <template v-if="$vuetify.display.mdAndUp">
-                {{ calendarSyncLabel }}
-              </template>
-            </v-btn>
-          </template>
-        </v-tooltip>
-
         <v-btn-toggle
           v-if="showViewInline"
           v-model="calendarViewModeModel"
@@ -151,6 +166,57 @@
           </v-btn>
         </v-btn-toggle>
 
+        <v-tooltip
+          v-if="showLinkedScrollingInline"
+          :text="$t('calendar.linkedScrollingDescription')"
+          location="bottom"
+        >
+          <template #activator="{ props: tooltipProps }">
+            <v-btn
+              v-bind="tooltipProps"
+              :active="linkedScrollingModel"
+              icon="mdi-link-variant"
+              variant="tonal"
+              :title="$t('calendar.linkedScrolling')"
+              :aria-label="$t('calendar.linkedScrolling')"
+              @click="linkedScrollingModel = !linkedScrollingModel"
+            />
+          </template>
+        </v-tooltip>
+
+        <v-btn-toggle
+          v-if="showArrangementInline"
+          v-model="eventOverlapModeModel"
+          class="sapling-segmented-toggle sapling-toolbar-toggle sapling-event-toolbar__arrangement-toggle"
+          density="comfortable"
+          mandatory
+        >
+          <v-btn prepend-icon="mdi-layers-outline" variant="tonal" value="stack">
+            {{ $t('calendar.overlapStack') }}
+          </v-btn>
+          <v-btn prepend-icon="mdi-view-column-outline" variant="tonal" value="column">
+            {{ $t('calendar.overlapColumns') }}
+          </v-btn>
+        </v-btn-toggle>
+
+        <div
+          v-if="showTypeInline"
+          data-tutorial="calendar-view-types"
+          class="sapling-event-toolbar__type-wrap"
+        >
+          <v-btn-toggle
+            v-model="calendarTypeModel"
+            class="sapling-segmented-toggle sapling-toolbar-toggle sapling-event-toolbar__type-toggle"
+            density="comfortable"
+            mandatory
+          >
+            <v-btn variant="tonal" value="day">{{ $t('calendar.day') }}</v-btn>
+            <v-btn variant="tonal" value="workweek">{{ $t('calendar.workweek') }}</v-btn>
+            <v-btn variant="tonal" value="week">{{ $t('calendar.week') }}</v-btn>
+            <v-btn variant="tonal" value="month">{{ $t('calendar.month') }}</v-btn>
+          </v-btn-toggle>
+        </div>
+
         <div v-if="hasOverflowActions" class="sapling-event-toolbar__overflow">
           <v-menu location="bottom end" offset="8">
             <template #activator="{ props }">
@@ -164,40 +230,6 @@
             </template>
 
             <SaplingSurface :as="VList" class="sapling-event-toolbar__overflow-menu">
-              <template v-if="showModeOverflow">
-                <v-list-item
-                  prepend-icon="mdi-perspective-less"
-                  :active="calendarModeModel === 'default'"
-                  @click="calendarModeModel = 'default'"
-                >
-                  <v-list-item-title>{{ $t('calendar.standard') }}</v-list-item-title>
-                </v-list-item>
-                <v-list-item
-                  prepend-icon="mdi-perspective-more"
-                  :active="calendarModeModel === 'extended'"
-                  @click="calendarModeModel = 'extended'"
-                >
-                  <v-list-item-title>{{ $t('calendar.extended') }}</v-list-item-title>
-                </v-list-item>
-              </template>
-
-              <v-divider
-                v-if="showSyncOverflow && showModeOverflow"
-                class="sapling-event-toolbar__overflow-divider"
-              />
-              <v-list-item
-                v-if="showSyncOverflow"
-                :prepend-icon="calendarSyncIcon"
-                :disabled="isSyncingExternalCalendar"
-                @click="emit('syncCalendar')"
-              >
-                <v-list-item-title>{{ calendarSyncLabel }}</v-list-item-title>
-              </v-list-item>
-
-              <v-divider
-                v-if="showViewOverflow && (showModeOverflow || showSyncOverflow)"
-                class="sapling-event-toolbar__overflow-divider"
-              />
               <template v-if="showViewOverflow">
                 <v-list-item
                   prepend-icon="mdi-call-merge"
@@ -216,9 +248,88 @@
               </template>
 
               <v-divider
-                v-if="
-                  showTypeOverflow && (showModeOverflow || showSyncOverflow || showViewOverflow)
-                "
+                v-if="showViewOverflow && hasOverflowActionsAfterView"
+                class="sapling-event-toolbar__overflow-divider"
+              />
+
+              <v-list-item
+                v-if="showLinkedScrollingOverflow"
+                prepend-icon="mdi-link-variant"
+                :active="linkedScrollingModel"
+                @click="linkedScrollingModel = !linkedScrollingModel"
+              >
+                <v-list-item-title>{{ $t('calendar.linkedScrolling') }}</v-list-item-title>
+              </v-list-item>
+
+              <v-divider
+                v-if="showLinkedScrollingOverflow && hasOverflowActionsAfterLinkedScrolling"
+                class="sapling-event-toolbar__overflow-divider"
+              />
+
+              <template v-if="showModeOverflow">
+                <v-list-item
+                  prepend-icon="mdi-perspective-less"
+                  :active="calendarModeModel === 'default'"
+                  @click="calendarModeModel = 'default'"
+                >
+                  <v-list-item-title>{{ $t('calendar.standard') }}</v-list-item-title>
+                </v-list-item>
+                <v-list-item
+                  prepend-icon="mdi-perspective-more"
+                  :active="calendarModeModel === 'extended'"
+                  @click="calendarModeModel = 'extended'"
+                >
+                  <v-list-item-title>{{ $t('calendar.extended') }}</v-list-item-title>
+                </v-list-item>
+              </template>
+
+              <v-divider
+                v-if="showModeOverflow && hasOverflowActionsAfterMode"
+                class="sapling-event-toolbar__overflow-divider"
+              />
+
+              <template v-if="showDataActionsOverflow">
+                <v-list-item
+                  prepend-icon="mdi-refresh"
+                  :disabled="isRefreshing"
+                  @click="emit('refresh')"
+                >
+                  <v-list-item-title>{{ $t('global.refresh') }}</v-list-item-title>
+                </v-list-item>
+                <v-list-item
+                  v-if="calendarSyncProvider"
+                  :prepend-icon="calendarSyncIcon"
+                  :disabled="isSyncingExternalCalendar"
+                  @click="emit('syncCalendar')"
+                >
+                  <v-list-item-title>{{ calendarSyncLabel }}</v-list-item-title>
+                </v-list-item>
+              </template>
+
+              <v-divider
+                v-if="showDataActionsOverflow && hasOverflowActionsAfterData"
+                class="sapling-event-toolbar__overflow-divider"
+              />
+
+              <template v-if="showArrangementOverflow">
+                <v-list-item
+                  prepend-icon="mdi-layers-outline"
+                  :active="eventOverlapModeModel === 'stack'"
+                  @click="eventOverlapModeModel = 'stack'"
+                >
+                  <v-list-item-title>{{ $t('calendar.overlapStack') }}</v-list-item-title>
+                </v-list-item>
+                <v-list-item
+                  prepend-icon="mdi-view-column-outline"
+                  :active="eventOverlapModeModel === 'column'"
+                  @click="eventOverlapModeModel = 'column'"
+                >
+                  <v-list-item-title>{{ $t('calendar.overlapColumns') }}</v-list-item-title>
+                </v-list-item>
+              </template>
+
+              <v-divider
+                v-if="showArrangementOverflow && showTypeOverflow"
                 class="sapling-event-toolbar__overflow-divider"
               />
 
@@ -233,46 +344,9 @@
                   <v-list-item-title>{{ $t(`calendar.${type}`) }}</v-list-item-title>
                 </v-list-item>
               </template>
-
-              <v-divider
-                v-if="hasOverflowItemsBeforeArrangement"
-                class="sapling-event-toolbar__overflow-divider"
-              />
-              <v-list-item
-                prepend-icon="mdi-layers-outline"
-                :active="eventOverlapModeModel === 'stack'"
-                @click="eventOverlapModeModel = 'stack'"
-              >
-                <v-list-item-title>{{ $t('calendar.overlapStack') }}</v-list-item-title>
-              </v-list-item>
-              <v-list-item
-                prepend-icon="mdi-view-column-outline"
-                :active="eventOverlapModeModel === 'column'"
-                @click="eventOverlapModeModel = 'column'"
-              >
-                <v-list-item-title>{{ $t('calendar.overlapColumns') }}</v-list-item-title>
-              </v-list-item>
             </SaplingSurface>
           </v-menu>
         </div>
-      </div>
-
-      <div
-        v-if="showTypeInline"
-        data-tutorial="calendar-view-types"
-        class="sapling-event-toolbar__type-wrap"
-      >
-        <v-btn-toggle
-          v-model="calendarTypeModel"
-          class="sapling-segmented-toggle sapling-toolbar-toggle sapling-event-toolbar__type-toggle"
-          density="comfortable"
-          mandatory
-        >
-          <v-btn variant="tonal" value="day">{{ $t('calendar.day') }}</v-btn>
-          <v-btn variant="tonal" value="workweek">{{ $t('calendar.workweek') }}</v-btn>
-          <v-btn variant="tonal" value="week">{{ $t('calendar.week') }}</v-btn>
-          <v-btn variant="tonal" value="month">{{ $t('calendar.month') }}</v-btn>
-        </v-btn-toggle>
       </div>
     </div>
   </header>
@@ -290,11 +364,12 @@ type CalendarMode = 'default' | 'extended'
 type CalendarEventOverlapMode = 'stack' | 'column'
 type CalendarSyncProvider = 'azure' | 'google'
 
-const TOOLBAR_TYPE_INLINE_MIN_WIDTH = 1680
-const TOOLBAR_VIEW_INLINE_MIN_WIDTH = 1360
-const TOOLBAR_SYNC_INLINE_MIN_WIDTH = 1080
-const TOOLBAR_MODE_INLINE_MIN_WIDTH = 900
-const TOOLBAR_COMPACT_NAVIGATION_MAX_WIDTH = 680
+const TOOLBAR_VIEW_INLINE_MIN_WIDTH = 2450
+const TOOLBAR_MODE_INLINE_MIN_WIDTH = 2100
+const TOOLBAR_ARRANGEMENT_INLINE_MIN_WIDTH = 1750
+const TOOLBAR_DATA_ACTIONS_INLINE_MIN_WIDTH = 1300
+const TOOLBAR_TYPE_INLINE_MIN_WIDTH = 900
+const TOOLBAR_COMPACT_NAVIGATION_MAX_WIDTH = 1550
 
 const props = defineProps<{
   isNarrowScreen: boolean
@@ -303,7 +378,9 @@ const props = defineProps<{
   calendarViewMode: CalendarViewMode
   calendarMode: CalendarMode
   eventOverlapMode: CalendarEventOverlapMode
+  linkedScrolling: boolean
   modelValue: string
+  isRefreshing: boolean
   isSyncingExternalCalendar: boolean
   calendarSyncProvider: CalendarSyncProvider | null
   periodLabel: string
@@ -318,9 +395,11 @@ const emit = defineEmits<{
   (event: 'update:calendarViewMode', value: CalendarViewMode): void
   (event: 'update:calendarMode', value: CalendarMode): void
   (event: 'update:eventOverlapMode', value: CalendarEventOverlapMode): void
+  (event: 'update:linkedScrolling', value: boolean): void
   (event: 'previous'): void
   (event: 'today'): void
   (event: 'next'): void
+  (event: 'refresh'): void
   (event: 'selectDate', value: string): void
   (event: 'syncCalendar'): void
 }>()
@@ -345,6 +424,11 @@ const eventOverlapModeModel = computed({
   set: (value: CalendarEventOverlapMode) => emit('update:eventOverlapMode', value),
 })
 
+const linkedScrollingModel = computed({
+  get: () => props.linkedScrolling,
+  set: (value: boolean) => emit('update:linkedScrolling', value),
+})
+
 const toolbarElement = ref<HTMLElement | null>(null)
 const toolbarWidth = ref(Number.POSITIVE_INFINITY)
 const pickerMenuOpen = ref(false)
@@ -367,26 +451,60 @@ const calendarSyncIcon = computed(() =>
   props.calendarSyncProvider === 'google' ? 'mdi-google' : 'mdi-microsoft-outlook',
 )
 const compactNavigation = computed(() => toolbarWidth.value < TOOLBAR_COMPACT_NAVIGATION_MAX_WIDTH)
-const showModeInline = computed(() => toolbarWidth.value >= TOOLBAR_MODE_INLINE_MIN_WIDTH)
-const showSyncInline = computed(() => toolbarWidth.value >= TOOLBAR_SYNC_INLINE_MIN_WIDTH)
 const showViewInline = computed(
   () => !props.isNarrowScreen && toolbarWidth.value >= TOOLBAR_VIEW_INLINE_MIN_WIDTH,
+)
+const showLinkedScrollingInline = computed(
+  () => props.calendarViewMode === 'sidebyside' && showViewInline.value,
+)
+const showModeInline = computed(() => toolbarWidth.value >= TOOLBAR_MODE_INLINE_MIN_WIDTH)
+const showDataActionsInline = computed(
+  () => toolbarWidth.value >= TOOLBAR_DATA_ACTIONS_INLINE_MIN_WIDTH,
+)
+const showArrangementInline = computed(
+  () => toolbarWidth.value >= TOOLBAR_ARRANGEMENT_INLINE_MIN_WIDTH,
 )
 const showTypeInline = computed(
   () => !props.isNarrowScreen && toolbarWidth.value >= TOOLBAR_TYPE_INLINE_MIN_WIDTH,
 )
+const showViewOverflow = computed(() => !showViewInline.value)
+const showLinkedScrollingOverflow = computed(
+  () => props.calendarViewMode === 'sidebyside' && !showLinkedScrollingInline.value,
+)
 const showModeOverflow = computed(() => !showModeInline.value)
-const showSyncOverflow = computed(() => props.calendarSyncProvider != null && !showSyncInline.value)
-const showViewOverflow = computed(() => !props.isNarrowScreen && !showViewInline.value)
-const showTypeOverflow = computed(() => !props.isNarrowScreen && !showTypeInline.value)
-const hasOverflowItemsBeforeArrangement = computed(
+const showDataActionsOverflow = computed(() => !showDataActionsInline.value)
+const showArrangementOverflow = computed(() => !showArrangementInline.value)
+const showTypeOverflow = computed(() => !showTypeInline.value)
+const hasOverflowActionsAfterView = computed(
   () =>
+    showLinkedScrollingOverflow.value ||
     showModeOverflow.value ||
-    showSyncOverflow.value ||
-    showViewOverflow.value ||
+    showDataActionsOverflow.value ||
+    showArrangementOverflow.value ||
     showTypeOverflow.value,
 )
-const hasOverflowActions = true
+const hasOverflowActionsAfterLinkedScrolling = computed(
+  () =>
+    showModeOverflow.value ||
+    showDataActionsOverflow.value ||
+    showArrangementOverflow.value ||
+    showTypeOverflow.value,
+)
+const hasOverflowActionsAfterMode = computed(
+  () => showDataActionsOverflow.value || showArrangementOverflow.value || showTypeOverflow.value,
+)
+const hasOverflowActionsAfterData = computed(
+  () => showArrangementOverflow.value || showTypeOverflow.value,
+)
+const hasOverflowActions = computed(
+  () =>
+    showViewOverflow.value ||
+    showLinkedScrollingOverflow.value ||
+    showModeOverflow.value ||
+    showDataActionsOverflow.value ||
+    showArrangementOverflow.value ||
+    showTypeOverflow.value,
+)
 const calendarTypeIcons: Record<CalendarType, string> = {
   day: 'mdi-calendar-today-outline',
   workweek: 'mdi-calendar-week-outline',

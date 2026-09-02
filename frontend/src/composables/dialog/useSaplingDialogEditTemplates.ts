@@ -82,6 +82,7 @@ export function useSaplingDialogEditTemplates({
         active: selectedFormConfigHandle.value === null,
         isDefault: getDefaultFormConfigHandle(selectableConfigs) === null,
         canSetDefault: false,
+        canDelete: false,
       },
       ...selectableConfigs.map((config) => ({
         handle: config.handle ?? null,
@@ -90,6 +91,7 @@ export function useSaplingDialogEditTemplates({
         active: selectedFormConfigHandle.value === config.handle,
         isDefault: getDefaultFormConfigHandle(selectableConfigs) === config.handle,
         canSetDefault: false,
+        canDelete: false,
       })),
     ]
   })

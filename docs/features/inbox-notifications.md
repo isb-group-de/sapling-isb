@@ -206,14 +206,16 @@ occurrence start. Opening such an entry moves to that occurrence and directly
 uses the existing single-occurrence detach workflow, so changing its status to
 completed does not complete or otherwise edit the remaining series.
 
-The overdue section also offers a bulk action for obsolete Event entries. The
-user chooses an inclusive cutoff before today, sees the number of affected
-Events, and confirms before any update is sent. The action uses the generic
-permission-aware bulk mutation endpoint in chunks of at most 200 records, so
-field permissions, change logs, calendar delivery hooks, and open-task refresh
-events remain intact. Because a bulk operation targets persisted Event records,
-a recurring Event is completed as a whole series; the confirmation calls this
-out explicitly.
+The overdue section also offers a bulk action for obsolete Event occurrences.
+The user chooses an inclusive cutoff before today, sees the number of affected
+occurrences, and confirms before any update is sent. Standalone Events use the
+generic permission-aware bulk mutation endpoint. For every supported recurrence
+frequency, generated occurrences through the cutoff use the batch detach endpoint
+in groups of at most 200: each original start becomes a recurrence exception and
+each detached Event is created with completed status. The series master and all
+later occurrences remain open. A finite master is completed only after its last
+generated occurrence was processed. Field permissions, change logs, calendar
+delivery hooks, and open-task refresh events remain intact on both paths.
 
 ## Adding A New Entity To Inbox
 

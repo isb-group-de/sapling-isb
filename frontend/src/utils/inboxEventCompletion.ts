@@ -1,9 +1,22 @@
 import type { EventItem } from '@/entity/entity'
+import { getRecurringEventOccurrenceStartsThrough } from '@/utils/eventRecurrence'
 import { getOpenTaskEventOccurrence } from '@/utils/openTaskEvent'
 
 export interface EventCompletionTarget {
   handle: string | number
   expectedUpdatedAt?: string
+}
+
+export interface RecurringEventCompletionTarget {
+  event: EventItem
+  occurrenceStarts: string[]
+}
+
+export interface EventCompletionPlan {
+  standaloneEvents: EventItem[]
+  recurringEvents: RecurringEventCompletionTarget[]
+  completionCount: number
+  isComplete: boolean
 }
 
 export function getDefaultEventCompletionCutoff(now = new Date()): string {
@@ -67,6 +80,71 @@ export function buildEventCompletionTargetChunks(
   return chunks
 }
 
+export function buildEventCompletionPlan(
+  events: EventItem[],
+  cutoffValue: string,
+  now = new Date(),
+): EventCompletionPlan {
+  const cutoff = parseLocalDateEndOfDay(cutoffValue)
+  const candidates = selectOverdueEventsThroughDate(events, cutoffValue, now)
+  if (!cutoff) {
+    return {
+      standaloneEvents: [],
+      recurringEvents: [],
+      completionCount: 0,
+      isComplete: false,
+    }
+  }
+
+  const standaloneEvents: EventItem[] = []
+  const recurringEvents: RecurringEventCompletionTarget[] = []
+  let isComplete = true
+
+  for (const event of candidates) {
+    if (!event.recurrenceRule?.trim()) {
+      standaloneEvents.push(event)
+      continue
+    }
+
+    const recurrence = getRecurringEventOccurrenceStartsThrough(event, cutoff)
+    recurringEvents.push({
+      event,
+      occurrenceStarts: recurrence.occurrenceStarts,
+    })
+    isComplete = isComplete && recurrence.isComplete
+  }
+
+  return {
+    standaloneEvents,
+    recurringEvents,
+    completionCount:
+      standaloneEvents.length +
+      recurringEvents.reduce((count, item) => count + item.occurrenceStarts.length, 0),
+    isComplete,
+  }
+}
+
+export function appendEventRecurrenceExceptions(
+  event: EventItem,
+  occurrenceStarts: string[],
+): EventItem {
+  const existingExceptions = normalizeRecurrenceExceptionDates(event.recurrenceExceptionDates)
+  return {
+    ...event,
+    recurrenceExceptionDates: Array.from(
+      new Set([
+        ...existingExceptions,
+        ...occurrenceStarts.map((value) => new Date(value).toISOString()),
+      ]),
+    ).sort(),
+    updatedAt: undefined,
+  }
+}
+
+export function getEventExpectedUpdatedAt(event: EventItem): string | undefined {
+  return normalizeUpdatedAt(event.updatedAt) ?? undefined
+}
+
 function parseLocalDateEndOfDay(value: string): Date | null {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value.trim())
   if (!match) {
@@ -100,4 +178,27 @@ function normalizeUpdatedAt(value: Date | string | null | undefined): string | n
   }
   const date = value instanceof Date ? value : new Date(value)
   return Number.isFinite(date.getTime()) ? date.toISOString() : null
+}
+
+function normalizeRecurrenceExceptionDates(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value.flatMap((item) => normalizeDateString(item))
+  }
+  if (typeof value !== 'string') {
+    return []
+  }
+  try {
+    const parsed = JSON.parse(value) as unknown
+    return Array.isArray(parsed) ? parsed.flatMap((item) => normalizeDateString(item)) : []
+  } catch {
+    return normalizeDateString(value)
+  }
+}
+
+function normalizeDateString(value: unknown): string[] {
+  if (!(typeof value === 'string' || typeof value === 'number' || value instanceof Date)) {
+    return []
+  }
+  const date = value instanceof Date ? value : new Date(value)
+  return Number.isFinite(date.getTime()) ? [date.toISOString()] : []
 }

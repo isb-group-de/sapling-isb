@@ -116,6 +116,7 @@ export function useSaplingTable(
     isLoadingFormConfigs,
     isSavingTableView,
     setPersonalDefault,
+    deletePersonalTableView,
   } = formConfigContext
   const isLoading = computed(
     () => genericStore.getState(entityHandle.value).isLoading || isDataLoading.value,
@@ -743,6 +744,10 @@ export function useSaplingTable(
     temporaryVisibleColumnKeys.value = []
     return savedConfig
   }
+  async function deletePersonalFormConfig(handle: number): Promise<void> {
+    temporaryVisibleColumnKeys.value = []
+    await deletePersonalTableView(handle)
+  }
   // #endregion
 
   // #region Return
@@ -777,6 +782,7 @@ export function useSaplingTable(
     onVisibleColumnKeysUpdate,
     selectFormConfig,
     setDefaultFormConfig,
+    deletePersonalFormConfig,
     savePersonalTableView,
     generateHeaders,
     initialSort,

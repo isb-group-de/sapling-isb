@@ -119,10 +119,10 @@
 
 .sapling-event-toolbar__period {
   display: flex;
-  flex: 0 1 220px;
+  flex: 0 0 auto;
   align-items: center;
   gap: var(--sapling-gap-sm);
-  min-width: 180px;
+  min-width: max-content;
   padding-right: var(--sapling-gap-sm);
 }
 
@@ -140,7 +140,6 @@
   gap: var(--sapling-gap-3xs);
 }
 
-.sapling-event-toolbar__period-copy h1,
 .sapling-event-toolbar__period-copy span {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -152,6 +151,7 @@
   font-size: var(--sapling-text-body-size-lg);
   font-weight: 750;
   line-height: 1.1;
+  white-space: nowrap;
 }
 
 .sapling-event-toolbar__period-copy span {
@@ -178,6 +178,7 @@
 }
 
 .sapling-event-toolbar__nav-group,
+.sapling-event-toolbar__data-actions,
 .sapling-event-toolbar__options {
   flex-shrink: 0;
 }
@@ -190,6 +191,7 @@
 }
 
 .sapling-event-toolbar__options .v-btn,
+.sapling-event-toolbar__data-actions .v-btn,
 .sapling-event-toolbar__type-toggle .v-btn {
   font-weight: 500;
 }
@@ -198,7 +200,6 @@
   display: flex;
   flex: 0 0 auto;
   flex-shrink: 0;
-  margin-left: auto;
 }
 
 .sapling-event-toolbar__overflow {
@@ -218,8 +219,10 @@
 }
 
 .sapling-event-toolbar__nav,
+.sapling-event-toolbar__data-actions,
 .sapling-event-toolbar__mode-toggle,
 .sapling-event-toolbar__view-toggle,
+.sapling-event-toolbar__arrangement-toggle,
 .sapling-event-toolbar__type-toggle {
   gap: var(--sapling-space-2xs);
   overflow: visible;
@@ -1137,7 +1140,7 @@
   .sapling-event-toolbar__options {
     flex: 0 1 auto;
     flex-direction: row;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     align-items: center;
   }
 

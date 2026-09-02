@@ -346,7 +346,9 @@ export function useSaplingDialogEditRelations(options: UseSaplingDialogEditRelat
           .map((item) => options.getItemHandle(item))
           .filter((handle): handle is string | number => handle != null)
 
-        if (handles.length > 0) {
+        const hasPayloadValue = Object.prototype.hasOwnProperty.call(output, template.name)
+        const wasChangedInRelationTab = dirtyRelationNames.value.includes(template.name)
+        if (handles.length > 0 || hasPayloadValue || wasChangedInRelationTab) {
           output[template.name] = handles
         }
       })
@@ -566,12 +568,32 @@ export function useSaplingDialogEditRelations(options: UseSaplingDialogEditRelat
     relationTablePage.value[name] ??= 1
     relationTableTotal.value[name] ??= 0
     relationTableItemsPerPage.value[name] ??= DEFAULT_PAGE_SIZE_SMALL
-    relationTableSortBy.value[name] ??= []
+    relationTableSortBy.value[name] ??= getInitialRelationTableSort(name)
     relationTableColumnFilters.value[name] ??= {}
     relationTableRequestId.value[name] ??= 0
     relationTableLoaded.value[name] ??= false
     relationMutationState.value[name] ??= false
     relationTableItems.value[name] ??= []
+  }
+
+  function getInitialRelationTableSort(name: string): SortItem[] {
+    const orderColumn = getRelationTableState(name).entityTemplates?.find(
+      (template) =>
+        template.fieldAccess?.allowRead !== false &&
+        Array.isArray(template.options) &&
+        (template.options.includes('isOrderASC') || template.options.includes('isOrderDESC')),
+    )
+
+    if (!orderColumn || !Array.isArray(orderColumn.options)) {
+      return []
+    }
+
+    return [
+      {
+        key: orderColumn.name,
+        order: orderColumn.options.includes('isOrderDESC') ? 'desc' : 'asc',
+      },
+    ]
   }
 
   async function loadRelationTableTemplates(): Promise<void> {
