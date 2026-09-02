@@ -1,5 +1,6 @@
 import type { Directive, DirectiveBinding } from 'vue'
 import { type TiltOptions } from 'vanilla-tilt'
+import { setCssVariables } from './cssVars'
 
 interface TiltElement extends HTMLElement {
   vanillaTilt?: {
@@ -16,8 +17,10 @@ interface TiltElement extends HTMLElement {
 type TiltBindingValue = TiltOptions | null | false | undefined
 
 function resetTiltStyles(el: HTMLElement) {
-  el.style.transform = ''
-  el.style.boxShadow = ''
+  setCssVariables(el, {
+    '--sapling-tilt-transform': null,
+    '--sapling-tilt-shadow': null,
+  })
 }
 
 function isTiltEnabled() {
@@ -65,17 +68,18 @@ function attachTilt(el: TiltElement, value: TiltBindingValue) {
     const rotateY = ((x - centerX) / centerX) * (settings.max * performanceFactor)
     const scale = 1 + (settings.scale - 1) * performanceFactor
 
-    el.style.transform = `
+    setCssVariables(el, {
+      '--sapling-tilt-transform': `
             perspective(${settings.perspective}px)
             rotateX(${rotateX}deg)
             rotateY(${rotateY}deg)
             scale(${scale})
-        `
-
-    el.style.boxShadow = `
+        `,
+      '--sapling-tilt-shadow': `
             ${-rotateY}px ${rotateX}px ${isReducedPerformance() ? 14 : 20}px rgba(255,255,255,0.1),
             0 8px ${isReducedPerformance() ? 22 : 32}px 0 rgba(0, 0, 0, 0.37)
-        `
+        `,
+    })
   }
 
   el.__saplingTiltMouseMove = (event: MouseEvent) => {

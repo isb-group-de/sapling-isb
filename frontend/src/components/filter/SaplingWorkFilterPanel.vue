@@ -171,7 +171,7 @@
                     <span
                       v-if="option.color"
                       class="sapling-chip-filter__swatch"
-                      :style="{ backgroundColor: option.color }"
+                      v-css-vars="{ '--sapling-chip-filter-swatch-color': option.color }"
                     />
                     <v-icon v-else-if="option.icon" size="18" class="sapling-chip-filter__icon">
                       {{ option.icon }}

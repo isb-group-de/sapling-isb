@@ -157,46 +157,27 @@ import {
   getItemHandle,
 } from '@/composables/table/saplingTableAction.utils'
 import { DEFAULT_PAGE_SIZE_SMALL } from '@/constants/project.constants'
-import ApiGenericService, { type FilterQuery } from '@/services/api.generic.service'
+import ApiGenericService from '@/services/api.generic.service'
 import { useGenericStore } from '@/stores/genericStore'
 import { saplingTableDisplayContextKey } from '@/components/table/saplingTableDisplayContext'
 import { useSaplingMessageCenter } from '@/composables/system/useSaplingMessageCenter'
-import type {
-  DialogSaveAction,
-  DialogSaveContext,
-  DialogState,
-  EntityTemplate,
-} from '@/entity/structure'
+import type { DialogSaveAction, DialogSaveContext, DialogState } from '@/entity/structure'
+import {
+  hasIncompleteValueData,
+  resolveSaplingItem,
+  type SaplingFieldSingleSelectProps,
+} from './saplingFieldSingleSelect.utils'
 // #endregion
 
 // #region Props and Emits
-const props = withDefaults(
-  defineProps<{
-    label: string
-    entityHandle: string
-    modelValue?: SaplingGenericItem | null | undefined
-    rules?: Array<(v: unknown) => true | string>
-    placeholder?: string
-    disabled?: boolean
-    parentFilter?: FilterQuery
-    dependencyTargetField?: string
-    density?: 'default' | 'comfortable' | 'compact'
-    hideDetails?: boolean | 'auto'
-    showOpenAction?: boolean
-    openActionLabel?: string
-    helpText?: string
-    helpAriaLabel?: string
-    reserveHelpSpace?: boolean
-  }>(),
-  {
-    hideDetails: 'auto',
-    showOpenAction: false,
-    openActionLabel: '',
-    helpText: '',
-    helpAriaLabel: '',
-    reserveHelpSpace: false,
-  },
-)
+const props = withDefaults(defineProps<SaplingFieldSingleSelectProps>(), {
+  hideDetails: 'auto',
+  showOpenAction: false,
+  openActionLabel: '',
+  helpText: '',
+  helpAriaLabel: '',
+  reserveHelpSpace: false,
+})
 const emit = defineEmits(['update:modelValue'])
 // #endregion
 
@@ -601,54 +582,11 @@ watch(selectedItem, (val) => {
   emit('update:modelValue', val)
 })
 
-function resolveSaplingItem(item: unknown): SaplingGenericItem | null {
-  if (!item || typeof item !== 'object') {
-    return null
-  }
-
-  if ('raw' in item && item.raw && typeof item.raw === 'object') {
-    return item.raw as SaplingGenericItem
-  }
-
-  return item as SaplingGenericItem
-}
-
 async function ensureEntityMetadataLoaded() {
   if (!props.entityHandle || entityTemplates.value.length > 0) {
     return
   }
 
   await genericStore.loadGeneric(props.entityHandle, 'global', 'filter', 'exception')
-}
-
-function hasIncompleteValueData(item: SaplingGenericItem, templates: EntityTemplate[]): boolean {
-  const hasMissingDirectValue = templates.some(
-    (template) =>
-      template.options?.includes('isValue') &&
-      !Object.prototype.hasOwnProperty.call(item, template.name),
-  )
-  if (hasMissingDirectValue) {
-    return true
-  }
-
-  return templates.some((template) => {
-    if (
-      !template.isReference ||
-      !['m:1', '1:1'].includes(template.kind ?? '') ||
-      !template.options?.includes('isValue')
-    ) {
-      return false
-    }
-
-    const value = item[template.name]
-    if (value == null) {
-      return false
-    }
-    if (typeof value !== 'object' || Array.isArray(value)) {
-      return true
-    }
-
-    return Object.keys(value).every((key) => key === 'handle')
-  })
 }
 </script>

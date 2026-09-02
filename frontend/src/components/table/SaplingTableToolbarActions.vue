@@ -494,7 +494,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { FavoriteItem } from '@/entity/entity'
 import {
@@ -506,6 +506,7 @@ import type {
   FormConfigSelectionHandle,
 } from '@/composables/dialog/saplingDialogEdit.utils'
 import SaplingTableRefreshMenu from './SaplingTableRefreshMenu.vue'
+import { useSaplingTableMobileMenu } from './useSaplingTableMobileMenu'
 
 const props = defineProps<{
   isMobileTable: boolean
@@ -553,8 +554,6 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
-const mobileMenuOpen = ref(false)
-const mobileMenuSection = ref<'main' | 'refresh' | 'favorites' | 'views'>('main')
 const refreshIntervals = SAPLING_TABLE_AUTO_REFRESH_INTERVALS
 const formConfigTitle = computed(() =>
   props.selectedFormConfigLabel?.trim()
@@ -562,85 +561,36 @@ const formConfigTitle = computed(() =>
     : t('formConfig.defaultView'),
 )
 
-type MobileMenuEvent = 'downloadJson' | 'downloadCsv' | 'downloadCsvTemplate' | 'importCsv'
-
-function closeMobileMenu(): void {
-  mobileMenuOpen.value = false
-  mobileMenuSection.value = 'main'
-}
-
-function onMobileMenuToggle(value: boolean): void {
-  if (!value) {
-    mobileMenuSection.value = 'main'
-  }
-}
-
-function showMobileMenuMain(): void {
-  mobileMenuSection.value = 'main'
-}
-
-function emitAndCloseMobileMenu(event: MobileMenuEvent): void {
-  switch (event) {
-    case 'downloadJson':
-      emit('downloadJson')
-      break
-    case 'downloadCsv':
-      emit('downloadCsv')
-      break
-    case 'downloadCsvTemplate':
-      emit('downloadCsvTemplate')
-      break
-    case 'importCsv':
-      emit('importCsv')
-      break
-  }
-  closeMobileMenu()
-}
-
-function refreshFromMobileMenu(): void {
-  emit('refresh')
-  closeMobileMenu()
-}
-
-function favoriteFromMobileMenu(): void {
-  emit('favorite')
-  closeMobileMenu()
-}
-
-function selectFavoriteFromMobileMenu(favorite: FavoriteItem): void {
-  emit('selectFavorite', favorite)
-  closeMobileMenu()
-}
-
-function deleteFavoriteFromMobileMenu(favorite: FavoriteItem): void {
-  emit('deleteFavorite', favorite)
-  closeMobileMenu()
-}
-
-function selectFormConfigFromMobileMenu(handle: FormConfigSelectionHandle): void {
-  emit('selectFormConfig', handle)
-  closeMobileMenu()
-}
-
-function setDefaultFormConfigFromMobileMenu(handle: number): void {
-  emit('setDefaultFormConfig', handle)
-  closeMobileMenu()
-}
-
-function deleteFormConfigFromMobileMenu(item: FormConfigMenuItem): void {
-  emit('deleteFormConfig', item)
-  closeMobileMenu()
-}
-
-function openFormConfigFromMobileMenu(): void {
-  emit('openFormConfig')
-  closeMobileMenu()
-}
-
-function setMobileRefreshInterval(value: SaplingTableAutoRefreshInterval | null): void {
-  emit('update:autoRefreshIntervalMinutes', value)
-  closeMobileMenu()
-}
+const {
+  mobileMenuOpen,
+  mobileMenuSection,
+  onMobileMenuToggle,
+  showMobileMenuMain,
+  emitAndCloseMobileMenu,
+  refreshFromMobileMenu,
+  favoriteFromMobileMenu,
+  selectFavoriteFromMobileMenu,
+  deleteFavoriteFromMobileMenu,
+  selectFormConfigFromMobileMenu,
+  setDefaultFormConfigFromMobileMenu,
+  deleteFormConfigFromMobileMenu,
+  openFormConfigFromMobileMenu,
+  setMobileRefreshInterval,
+} = useSaplingTableMobileMenu({
+  downloadJson: () => emit('downloadJson'),
+  downloadCsv: () => emit('downloadCsv'),
+  downloadCsvTemplate: () => emit('downloadCsvTemplate'),
+  importCsv: () => emit('importCsv'),
+  refresh: () => emit('refresh'),
+  favorite: () => emit('favorite'),
+  selectFavorite: (favorite) => emit('selectFavorite', favorite),
+  deleteFavorite: (favorite) => emit('deleteFavorite', favorite),
+  selectFormConfig: (handle) => emit('selectFormConfig', handle),
+  setDefaultFormConfig: (handle) => emit('setDefaultFormConfig', handle),
+  deleteFormConfig: (item) => emit('deleteFormConfig', item),
+  openFormConfig: () => emit('openFormConfig'),
+  setRefreshInterval: (value) => emit('update:autoRefreshIntervalMinutes', value),
+})
 
 function getRefreshIntervalLabel(intervalMinutes: SaplingTableAutoRefreshInterval): string {
   return intervalMinutes === 1

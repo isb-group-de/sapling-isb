@@ -52,7 +52,7 @@
           <div class="sapling-progress-track sapling-kpi-trend__meter-track">
             <span
               class="sapling-progress-fill sapling-progress-fill--primary sapling-kpi-trend__meter-fill sapling-kpi-trend__meter-fill--current"
-              :style="{ width: `${currentRelativeWidth}%` }"
+              v-css-vars="{ '--sapling-kpi-meter-width': `${currentRelativeWidth}%` }"
             />
           </div>
           <span v-if="currentDrilldown?.label" class="sapling-kpi-trend__drilldown">{{
@@ -79,7 +79,7 @@
           <div class="sapling-progress-track sapling-kpi-trend__meter-track">
             <span
               class="sapling-progress-fill sapling-progress-fill--secondary sapling-kpi-trend__meter-fill sapling-kpi-trend__meter-fill--previous"
-              :style="{ width: `${previousRelativeWidth}%` }"
+              v-css-vars="{ '--sapling-kpi-meter-width': `${previousRelativeWidth}%` }"
             />
           </div>
           <span v-if="previousDrilldown?.label" class="sapling-kpi-trend__drilldown">{{

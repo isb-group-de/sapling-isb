@@ -1,0 +1,56 @@
+/* Framework-owned styles extracted from feature components. */
+
+.sapling-kpi-performance__value {
+  font-size: var(--sapling-text-display-size-md);
+  font-weight: 750;
+  text-align: center;
+}
+.sapling-kpi-performance__progress {
+  text-align: center;
+  color: rgb(var(--v-theme-on-surface-variant));
+}
+
+.sapling-kpi-funnel__stages {
+  align-items: center;
+}
+.sapling-kpi-funnel__stage {
+  align-items: center;
+  background: rgb(var(--v-theme-primary));
+  border: 0;
+  border-radius: 8px;
+  color: rgb(var(--v-theme-on-primary));
+  cursor: pointer;
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 0.75rem;
+  min-height: 2.6rem;
+  padding: 0.55rem 1rem;
+  transition:
+    filter 0.15s ease,
+    width 0.25s ease;
+  width: var(--sapling-kpi-funnel-stage-width);
+}
+
+.sapling-kpi-trend__meter-fill,
+.sapling-kpi-comparison__balance-fill,
+.sapling-kpi-breakdown__fill {
+  width: var(--sapling-kpi-meter-width);
+}
+
+.sapling-kpi-calendar__accent {
+  background-color: var(--sapling-kpi-calendar-accent-color);
+}
+
+.sapling-kpi-sparkline__marker {
+  top: var(--sapling-kpi-sparkline-marker-top);
+  left: var(--sapling-kpi-sparkline-marker-left);
+}
+.sapling-kpi-funnel__stage:not(:disabled):hover {
+  filter: brightness(1.08);
+}
+.sapling-kpi-funnel__stage:disabled {
+  cursor: default;
+}
+.sapling-kpi-funnel__stage small {
+  opacity: 0.8;
+}

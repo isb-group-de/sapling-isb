@@ -16,7 +16,6 @@ import type { EntityItem, EntityRouteItem, FavoriteItem, PersonItem } from '@/en
 import type { AccumulatedPermission } from '@/entity/structure'
 import { canAccessEntityWorkspace } from '@/utils/entityAccess'
 import type {
-  CommandPaletteGroup,
   CommandPaletteGroupKey,
   CommandPaletteItem,
 } from '@/components/system/command-palette/commandPalette.types'
@@ -24,6 +23,11 @@ import {
   COMMAND_PALETTE_RECORD_SEARCH_MIN_LENGTH,
   useSaplingCommandPaletteRecordSearch,
 } from './useSaplingCommandPaletteRecordSearch'
+import {
+  getUniqueEntityRoutes,
+  groupCommandPaletteItems,
+  normalizeRoutePath,
+} from './commandPalette.utils'
 
 export function useSaplingCommandPalette() {
   const router = useRouter()
@@ -511,43 +515,7 @@ export function useSaplingCommandPalette() {
     return withRecordResults(allItems.value.filter((item) => item.haystack.includes(needle)))
   })
 
-  const groupedResults = computed<CommandPaletteGroup[]>(() => {
-    const reindexed = filteredResults.value.map((item, idx) => ({ ...item, flatIndex: idx }))
-    const favoriteGroup = reindexed.filter((item) => item.group === 'favorite')
-    const entityGroup = reindexed.filter((item) => item.group === 'entity')
-    const actionGroup = reindexed.filter((item) => item.group === 'action')
-    const recordGroup = reindexed.filter((item) => item.group === 'record')
-    const groups: CommandPaletteGroup[] = []
-    if (favoriteGroup.length > 0) {
-      groups.push({
-        key: 'favorite',
-        label: t('global.commandPalette.favorites'),
-        items: favoriteGroup,
-      })
-    }
-    if (entityGroup.length > 0) {
-      groups.push({
-        key: 'entity',
-        label: t('global.commandPalette.entities'),
-        items: entityGroup,
-      })
-    }
-    if (actionGroup.length > 0) {
-      groups.push({
-        key: 'action',
-        label: t('global.commandPalette.actions'),
-        items: actionGroup,
-      })
-    }
-    if (recordGroup.length > 0) {
-      groups.push({
-        key: 'record',
-        label: t('global.commandPalette.records'),
-        items: recordGroup,
-      })
-    }
-    return groups
-  })
+  const groupedResults = computed(() => groupCommandPaletteItems(filteredResults.value, t))
 
   watch(filteredResults, () => {
     activeIndex.value = 0
@@ -613,22 +581,4 @@ export function useSaplingCommandPalette() {
     runItem,
     activateCurrent,
   }
-}
-
-function getUniqueEntityRoutes(routes: EntityRouteItem[]): EntityRouteItem[] {
-  const seenPaths = new Set<string>()
-
-  return routes.filter((route) => {
-    const path = normalizeRoutePath(route.route)
-    if (!path || seenPaths.has(path)) {
-      return false
-    }
-
-    seenPaths.add(path)
-    return true
-  })
-}
-
-function normalizeRoutePath(route: EntityRouteItem['route']): string {
-  return (route ?? '').replace(/^\/+/, '')
 }

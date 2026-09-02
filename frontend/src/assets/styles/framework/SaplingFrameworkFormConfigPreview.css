@@ -1,0 +1,476 @@
+.sapling-config-preview-header {
+  gap: var(--sapling-gap-md);
+}
+
+.sapling-form-config-preview__header-actions {
+  display: inline-flex;
+  gap: var(--sapling-gap-xs);
+  align-items: center;
+}
+
+.sapling-config-eyebrow {
+  margin: 0 0 var(--sapling-space-3xs);
+  color: rgb(var(--v-theme-primary));
+  font-size: var(--sapling-text-label-size);
+}
+
+.sapling-config-preview {
+  flex: 1 1 auto;
+  gap: var(--sapling-gap-lg);
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: var(--sapling-space-md);
+  background: var(--sapling-surface-gradient-panel);
+  backdrop-filter: blur(var(--sapling-blur-panel));
+  -webkit-backdrop-filter: blur(var(--sapling-blur-panel));
+}
+
+.sapling-form-config-preview__mode-toggle {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: var(--sapling-space-3xs);
+  border: 1px solid var(--sapling-surface-border-muted);
+  background: var(--sapling-surface-fill-soft);
+  box-shadow: var(--sapling-inset-highlight);
+  flex: 0 0 auto;
+}
+
+.sapling-form-config-preview__mode-toggle .v-btn {
+  flex: 0 0 auto;
+}
+
+.sapling-form-config-preview__stage {
+  display: grid;
+  gap: var(--sapling-gap-md);
+  min-width: 0;
+}
+
+.sapling-form-config-preview__drag-hint {
+  display: flex;
+  align-items: center;
+  gap: var(--sapling-gap-xs);
+  padding: var(--sapling-space-xs) var(--sapling-space-sm-plus);
+  border: 1px dashed var(--sapling-surface-border-accent);
+  border-radius: var(--sapling-radius-sm);
+  color: rgba(var(--v-theme-on-surface), 0.68);
+  background: rgba(var(--v-theme-primary), 0.05);
+  font-size: var(--sapling-text-label-size);
+}
+
+.sapling-config-preview__group {
+  display: grid;
+  gap: var(--sapling-gap-md);
+  padding: var(--sapling-space-sm-plus);
+  border-color: var(--sapling-surface-border-muted);
+  background:
+    linear-gradient(135deg, rgba(var(--v-theme-primary), 0.05), transparent 52%),
+    var(--sapling-surface-fill-soft);
+  box-shadow: var(--sapling-inset-highlight);
+  transition:
+    border-color 140ms ease,
+    opacity 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.sapling-form-config-preview__group--drag-source,
+.sapling-form-config-preview__field--drag-source {
+  opacity: 0.38;
+}
+
+.sapling-form-config-preview__group--layout-hidden,
+.sapling-form-config-preview__field--layout-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.sapling-form-config-preview__group--field-target {
+  border-color: rgba(var(--v-theme-primary), 0.62);
+  box-shadow:
+    var(--sapling-inset-highlight),
+    0 0 0 1px rgba(var(--v-theme-primary), 0.16);
+}
+
+.sapling-form-config-preview__group--empty-drag-target {
+  border-style: dashed;
+}
+
+.sapling-form-config-preview__group-drop-preview {
+  display: flex;
+  min-height: 3.25rem;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sapling-gap-xs);
+  border: 2px dashed rgba(var(--v-theme-primary), 0.68);
+  border-radius: var(--sapling-radius-sm);
+  color: rgb(var(--v-theme-primary));
+  background: rgba(var(--v-theme-primary), 0.09);
+  font-weight: 700;
+}
+
+.sapling-config-preview__group h3 {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.sapling-form-config-preview__group-header,
+.sapling-form-config-preview__group-title {
+  display: flex;
+  align-items: center;
+  gap: var(--sapling-gap-sm);
+}
+
+.sapling-form-config-preview__group-header {
+  justify-content: space-between;
+}
+
+.sapling-form-config-preview__group-title {
+  min-width: 0;
+}
+
+.sapling-form-config-preview__drag-handle,
+.sapling-form-config-preview__field {
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.sapling-form-config-preview__drag-handle:active,
+.sapling-form-config-preview__field:active {
+  cursor: grabbing;
+}
+
+.sapling-form-config-preview__group-title > div {
+  min-width: 0;
+}
+
+.sapling-form-config-preview__group-title h3,
+.sapling-form-config-preview__group-title span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sapling-form-config-preview__group-title span {
+  display: block;
+  margin-top: var(--sapling-space-3xs);
+  color: rgba(var(--v-theme-on-surface), 0.56);
+  font-size: var(--sapling-text-label-size);
+}
+
+.sapling-config-preview__grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--sapling-gap-sm);
+}
+
+.sapling-form-config-preview__grid--empty-drag-target {
+  min-height: 68px;
+}
+
+.sapling-form-config-preview__empty-field-target {
+  display: flex;
+  grid-column: 1 / -1;
+  min-height: 68px;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sapling-gap-xs);
+  border: 1px dashed var(--sapling-surface-border-accent);
+  border-radius: var(--sapling-radius-sm);
+  color: rgba(var(--v-theme-on-surface), 0.64);
+  background: rgba(var(--v-theme-primary), 0.04);
+  font-size: var(--sapling-text-label-size);
+  font-weight: 700;
+}
+
+.sapling-config-preview__field {
+  display: grid;
+  min-height: 68px;
+  align-content: center;
+  gap: var(--sapling-gap-2xs);
+  padding: var(--sapling-space-sm-plus);
+  border-color: var(--sapling-surface-border-muted);
+  background: var(--sapling-surface-fill-soft);
+  box-shadow: var(--sapling-inset-highlight);
+  transition:
+    border-color 140ms ease,
+    opacity 140ms ease,
+    transform 140ms ease;
+}
+
+.sapling-form-config-preview__field:hover {
+  border-color: var(--sapling-surface-border-accent-strong);
+  transform: translateY(-1px);
+}
+
+.sapling-form-config-preview__group--field-target .sapling-form-config-preview__field:hover {
+  transform: none;
+}
+
+.sapling-form-config-preview__field-drop-preview {
+  display: flex;
+  min-height: 68px;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sapling-gap-xs);
+  padding: var(--sapling-space-sm-plus);
+  border: 2px dashed rgba(var(--v-theme-primary), 0.72);
+  border-radius: var(--sapling-radius-sm);
+  color: rgb(var(--v-theme-primary));
+  background: repeating-linear-gradient(
+    -45deg,
+    rgba(var(--v-theme-primary), 0.1),
+    rgba(var(--v-theme-primary), 0.1) 8px,
+    rgba(var(--v-theme-primary), 0.04) 8px,
+    rgba(var(--v-theme-primary), 0.04) 16px
+  );
+  font-size: var(--sapling-text-label-size);
+  font-weight: 700;
+}
+
+.sapling-form-config-drag-image {
+  width: var(--sapling-form-config-drag-width);
+  position: fixed !important;
+  z-index: 9999;
+  top: -10000px !important;
+  left: -10000px !important;
+  max-width: 420px;
+  min-height: 0 !important;
+  opacity: 0.94 !important;
+  pointer-events: none !important;
+  transform: rotate(1.5deg);
+  border: 1px solid rgba(var(--v-theme-primary), 0.72) !important;
+  border-radius: var(--sapling-radius-sm);
+  background: rgb(var(--v-theme-surface)) !important;
+  box-shadow: var(--sapling-shadow-lift) !important;
+}
+
+.sapling-form-config-drag-image--pointer {
+  top: 0 !important;
+  left: 0 !important;
+  transform: translate3d(var(--sapling-form-config-drag-x), var(--sapling-form-config-drag-y), 0)
+    rotate(1.5deg);
+}
+
+.sapling-config-preview__field--w1 {
+  grid-column: span 1;
+}
+
+.sapling-config-preview__field--w2 {
+  grid-column: span 2;
+}
+
+.sapling-config-preview__field--w3,
+.sapling-config-preview__field--w4 {
+  grid-column: span 4;
+}
+
+.sapling-config-preview__field small {
+  display: block;
+  color: rgba(var(--v-theme-on-surface), 0.64);
+  overflow-wrap: anywhere;
+}
+
+.sapling-config-preview__field strong {
+  display: block;
+  color: rgba(var(--v-theme-on-surface), 0.92);
+  overflow-wrap: anywhere;
+}
+
+.sapling-config-preview__field strong span {
+  color: rgba(var(--v-theme-on-surface), 0.62);
+  font-size: 0.82em;
+  font-weight: 600;
+}
+
+.sapling-form-config-preview__empty {
+  display: flex;
+  min-height: 180px;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sapling-gap-sm);
+  color: rgba(var(--v-theme-on-surface), 0.64);
+  text-align: center;
+}
+
+.sapling-form-config-preview-table {
+  max-width: 100%;
+  overflow: hidden;
+  border: 1px solid var(--sapling-surface-border-muted);
+  border-radius: var(--sapling-radius-sm);
+  background: var(--sapling-surface-fill-soft);
+  box-shadow: var(--sapling-inset-highlight);
+}
+
+.sapling-form-config-preview-table__scroll {
+  --sapling-form-config-preview-table-columns: 1;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  scrollbar-gutter: stable;
+}
+
+.sapling-form-config-preview-table table {
+  width: max-content;
+  min-width: max(100%, calc(var(--sapling-form-config-preview-table-columns) * 9.5rem));
+  border-collapse: collapse;
+  table-layout: auto;
+}
+
+.sapling-form-config-preview-table th,
+.sapling-form-config-preview-table td {
+  min-width: 9.5rem;
+  max-width: 16rem;
+  padding: var(--sapling-space-sm) var(--sapling-space-sm-plus);
+  border-bottom: 1px solid var(--sapling-surface-border-muted);
+  text-align: left;
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+.sapling-form-config-preview-table th {
+  color: rgba(var(--v-theme-on-surface), 0.72);
+  font-size: var(--sapling-text-label-size);
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sapling-form-config-preview-table th strong,
+.sapling-form-config-preview-table th small {
+  display: block;
+}
+
+.sapling-form-config-preview-table th strong {
+  color: rgba(var(--v-theme-on-surface), 0.88);
+}
+
+.sapling-form-config-preview-table th small {
+  margin-top: var(--sapling-space-3xs);
+  color: rgba(var(--v-theme-on-surface), 0.56);
+  font-weight: 500;
+}
+
+.sapling-form-config-preview-table td {
+  color: rgba(var(--v-theme-on-surface), 0.86);
+  font-size: 0.88rem;
+}
+
+.sapling-form-config-preview-table__value {
+  display: inline-flex;
+  min-width: 0;
+  max-width: 100%;
+  align-items: center;
+  gap: var(--sapling-gap-2xs);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sapling-form-config-preview-table__value--chip {
+  max-width: 100%;
+  padding: 0.15rem 0.48rem;
+  border-radius: var(--sapling-radius-xs);
+  background: rgba(var(--v-theme-primary), 0.1);
+  color: rgb(var(--v-theme-primary));
+  font-weight: 700;
+}
+
+.sapling-form-config-preview-table__value--color::before {
+  width: 0.85rem;
+  height: 0.85rem;
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.18);
+  border-radius: 50%;
+  background: #3f7f72;
+  content: '';
+  flex: 0 0 auto;
+}
+
+.sapling-form-config-preview-mobile {
+  display: flex;
+  justify-content: center;
+}
+
+.sapling-form-config-preview-phone {
+  width: min(100%, 360px);
+  padding: var(--sapling-space-sm-plus);
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.16);
+  border-radius: var(--sapling-device-preview-radius);
+  background:
+    linear-gradient(180deg, rgba(var(--v-theme-surface), 0.94), rgba(var(--v-theme-surface), 0.8)),
+    var(--sapling-surface-fill-soft);
+  box-shadow: var(--sapling-shadow-md);
+}
+
+.sapling-form-config-preview-phone__status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sapling-gap-sm);
+  padding: var(--sapling-space-2xs) var(--sapling-space-xs) var(--sapling-space-sm);
+  color: rgba(var(--v-theme-on-surface), 0.72);
+  font-size: var(--sapling-text-label-size);
+  font-weight: 700;
+}
+
+.sapling-form-config-preview-phone__status span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sapling-form-config-preview-phone__card {
+  display: grid;
+  gap: var(--sapling-gap-sm);
+  padding: var(--sapling-space-sm-plus);
+  border: 1px solid var(--sapling-surface-border-muted);
+  border-radius: var(--sapling-radius-sm);
+  background: var(--sapling-surface-fill-soft);
+  box-shadow: var(--sapling-inset-highlight);
+}
+
+.sapling-form-config-preview-phone__field {
+  min-width: 0;
+  padding-top: var(--sapling-space-xs);
+  border-top: 1px solid var(--sapling-surface-border-muted);
+}
+
+.sapling-form-config-preview-phone__field:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.sapling-form-config-preview-phone__field span {
+  display: inline-block;
+  margin-top: var(--sapling-space-3xs);
+  padding: 0.12rem 0.42rem;
+  border-radius: var(--sapling-radius-xs);
+  background: rgba(var(--v-theme-primary), 0.1);
+  color: rgb(var(--v-theme-primary));
+  font-size: var(--sapling-text-label-size);
+  overflow-wrap: anywhere;
+}
+
+.sapling-form-config-preview-phone__field strong {
+  display: block;
+  color: rgba(var(--v-theme-on-surface), 0.9);
+  font-size: 0.95rem;
+  overflow-wrap: anywhere;
+}
+
+.sapling-form-config-preview-phone__field small {
+  display: block;
+  margin-top: var(--sapling-space-2xs);
+  color: rgba(var(--v-theme-on-surface), 0.52);
+  overflow-wrap: anywhere;
+}
+
+.sapling-form-config-preview-phone__field--primary strong {
+  font-size: 1.05rem;
+}

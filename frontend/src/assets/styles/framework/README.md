@@ -23,61 +23,92 @@ surface components before adding local CSS.
   structure
 - `SaplingUtilities.css`: generic utility classes, inline clusters, menu
   surfaces, truncation, visibility, shortcut keys, and compact helpers
-- `SaplingSurfaces.css`: shared surfaces, cards, metrics, empty states, detail
-  grids, and reusable panel primitives
+- `SaplingSurfaces.css` and `SaplingSurfacePatterns.css`: shared layout surfaces,
+  cards, metrics, empty states, detail grids, and reusable panel primitives
 - `SaplingFrameworkAppearance.css`: light/dark appearance variables, glass,
   tilt, performance states, background blobs, and Vuetify appearance chrome
 - `SaplingFrameworkActions.css`: action bars, action stacks, toolbar groups,
   button clusters, and semantic button geometry
-- `SaplingFrameworkCalendar.css`: calendar pages, calendar context panels,
-  Vuetify calendar chrome, event cards, and event editor layouts
-- `SaplingFrameworkConfig.css`: configuration forms, config matrices, settings
-  panels, and admin configuration controls
-- `SaplingFrameworkDialogs.css`: dialog shells, dialog cards, widths, account,
-  help, delete, json, template, and access-pending dialogs
+- `SaplingFrameworkCalendar.css`, `SaplingFrameworkCalendarEvents.css`, and
+  `SaplingFrameworkCalendarResponsive.css`: calendar pages, context panels,
+  event cards/tooltips, and responsive layouts
+- `SaplingFrameworkCalendarValues.css`: runtime calendar geometry and colors
+  supplied through framework CSS variables
+- `SaplingFrameworkCustomer360.css`: customer 360 workspace and responsive
+  customer detail presentation
+- `SaplingFrameworkConfig.css` and `SaplingFrameworkFormConfigPreview.css`:
+  configuration forms, editor controls, and preview surfaces
+- `SaplingFrameworkAiAgentBuilder.css` and
+  `SaplingFrameworkAiAgentBuilderResponsive.css`: AI agent-builder workspaces,
+  traces, and responsive behavior
+- `SaplingFrameworkDialogs.css`, `SaplingFrameworkDialogWorkflows.css`, and
+  `SaplingFrameworkDialogFrames.css`: dialog shells, account, help, conflict,
+  template, access-pending, and responsive dialog workflows
+- `SaplingFrameworkDialogUtilities.css`: focused help, delete-impact, and
+  dialog-field action styling
 - `SaplingFrameworkDvelop.css`: d.velop Cloud configuration workspace, sync
   controls, metadata metrics, and preview tables
 - `SaplingFrameworkFiles.css`: document headers, file mail summaries, attachment
   chips, and document body layouts
-- `SaplingFrameworkForms.css`: upload controls, field controls, select fields,
-  CodeMirror, markdown editor/content, and recurrence form layouts
+- `SaplingFrameworkForms.css`, `SaplingFrameworkMarkdown.css`,
+  `SaplingFrameworkRecurrenceFields.css`, and `SaplingFrameworkFormControls.css`:
+  field controls, Markdown, recurrence, and shared form behavior
 - `SaplingFrameworkHeader.css`: app header, profile trigger, action header
   regions, and header responsive behavior
 - `SaplingFrameworkHeroes.css`: page hero and hero media patterns
 - `SaplingFrameworkHistory.css`: change history, record timelines, and history
   detail cards
-- `SaplingFrameworkImports.css`: import workspaces, import status, mapping
-  tables, external-link dialogs, and provider-user import dialogs
-- `SaplingFrameworkKpis.css`: KPI surfaces, KPI cards, widget grids, and KPI
-  dashboard layouts
+- `SaplingFrameworkImports.css` and `SaplingFrameworkProviderImport.css`: import
+  workspaces, mapping/status views, external links, and provider-user imports
+- `SaplingFrameworkKpis.css`, `SaplingFrameworkKpiBreakdown.css`,
+  `SaplingFrameworkKpiSparkline.css`, and `SaplingFrameworkKpiTrend.css`: KPI
+  cards and focused widget families
+- `SaplingFrameworkKpiWidgets.css`: focused funnel and performance widget
+  presentation
 - `SaplingFrameworkLists.css`: list cards, stat cards, note cards, chip rows,
   and interactive list items
 - `SaplingFrameworkMenus.css`: floating previews, identity chips, context menus,
   menu panels, and menu options
-- `SaplingFrameworkMessaging.css`: AI chat, chat rails, message center,
-  transient messages, and message dialog workflows
-- `SaplingFrameworkNavigation.css`: drawer shell, favorites, search panel,
-  navigation cards, routes, and navigation empty states
-- `SaplingFrameworkOperations.css`: admin, permission, attention, system, and
-  inbox-style workflows
+- `SaplingFrameworkMessaging.css`, `SaplingFrameworkChatConversation.css`, and
+  `SaplingFrameworkMessageCenter.css`: AI chat shell/conversations and message
+  center/dialog workflows
+- `SaplingFrameworkMonitoring.css` and `SaplingFrameworkMonitoringCharts.css`:
+  monitoring consoles, charts, and responsive telemetry tables
+- `SaplingFrameworkNavigation.css` and `SaplingFrameworkNavigationResponsive.css`:
+  drawer shell, favorites, routes, and responsive navigation behavior
+- `SaplingFrameworkOperations.css`, `SaplingFrameworkAttention.css`,
+  `SaplingFrameworkSystem.css`, and `SaplingFrameworkOperationsResponsive.css`:
+  admin, attention/inbox, system, and responsive operational workflows
+- `SaplingFrameworkPermissions.css`: permission member and field-permission
+  controls
+- `SaplingFrameworkSystemDialogs.css`: system diagnostics detail dialogs
 - `SaplingFrameworkOverlays.css`: overlay shells, floating panels, command
   palette, vectorization overlays, and overlay motion
 - `SaplingFrameworkPreview.css`: preview viewers, preview panels, embedded
   previews, media cards, and preview player shells
-- `SaplingFrameworkRecordDialog.css`: record edit dialogs, grouped fields,
-  relation tabs, and record dialog layout primitives
+- `SaplingFrameworkRecordDialog.css`, `SaplingFrameworkRecordForm.css`,
+  `SaplingFrameworkRecordRelations.css`, and
+  `SaplingFrameworkRecordDialogResponsive.css`: record shells, grouped fields,
+  relations, and responsive record-dialog behavior
 - `SaplingFrameworkShowcase.css`: component showcase pages, demo frames, and
   launchpads
 - `SaplingFrameworkTableFilters.css`: table filter menus, filter controls, and
   filter-state layout
-- `SaplingFrameworkTables.css`: data tables, sticky table behavior, mobile table
-  cards, table selection, and row states
+- `SaplingFrameworkTables.css`, `SaplingFrameworkTableInteraction.css`, and
+  `SaplingFrameworkTableResponsive.css`: desktop tables, column interaction,
+  mobile cards, responsive toolbars, and reference cells
+- `SaplingFrameworkTableActions.css`: table refresh and action-menu details
 - `SaplingFrameworkTabs.css`: the shared horizontal-tab, vertical-tab, and
   tab-like view-switch contract across workspaces and dialogs
-- `SaplingFrameworkWorkItems.css`: work-item dashboards, issue streams, work
-  cards, filter panels, and compose surfaces
-- `SaplingFrameworkWorkspaces.css`: dashboard shells, page workspaces,
-  browser/partner layouts, tabs, boards, and workspace grids
+- `SaplingFrameworkWorkItems.css` and `SaplingFrameworkWorkFilters.css`:
+  work-item dashboards, issue streams, cards, filters, and compose surfaces
+- `SaplingFrameworkWorkItemValues.css`: runtime work-item and external label
+  colors supplied through framework CSS variables
+- `SaplingFrameworkWorkspaces.css`, `SaplingFrameworkBrowserWorkspaces.css`, and
+  `SaplingFrameworkCrmWorkspace.css`: dashboards, browser/partner layouts, and
+  the CRM workspace
+- `SaplingFrameworkEasterEgg.css`: the self-contained Ghost animation and
+  positioning contract
 
 ## Button Geometry
 
@@ -191,9 +222,10 @@ Use these shared patterns before creating a new class family:
    cannot be expressed by shared patterns.
 5. Allowed local CSS examples: external iframe preview stylesheets, third-party
    rendered content boundaries, and very small behavior-only deltas.
-6. Dynamic `:style` bindings are allowed only for runtime values such as menu
-   coordinates, event geometry, chart widths, external label colors, or CSS
-   custom properties that cannot be known in static CSS.
+6. Do not bind `style` in component templates. Runtime geometry and color values
+   use `v-css-vars` with feature-specific custom properties that are consumed by
+   framework selectors. Position floating Vuetify menus through their `target`
+   API instead of inline coordinates.
 7. Avoid restating spacing, borders, radii, label typography, detail grids,
    card surfaces, empty states, dialog chrome, and toolbar layout in feature
    CSS.
@@ -219,7 +251,7 @@ The active states are:
 ## Completion Status
 
 The framework migration is complete for app-level CSS. The style tree has a
-single app entry point, framework-owned partials, and two intentional isolated
-exceptions: the file-mail preview iframe stylesheet and the self-contained
-Ghost easter-egg animation. Application and dialog components do not own local
-visual CSS.
+single app entry point and framework-owned partials. The file-mail preview
+iframe stylesheet is the only intentional isolated exception because it is
+loaded into a separate document. Application and dialog components do not own
+local visual CSS.

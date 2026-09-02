@@ -7,6 +7,7 @@ jest.mock('../../entity/PersonItem', () => ({ PersonItem: class {} }));
 
 import { PersonItem } from '../../entity/PersonItem';
 import { GenericController } from './generic.controller';
+import { GenericReferenceController } from './generic-reference.controller';
 
 const createMockUser = (): PersonItem =>
   ({ handle: 1, username: 'tester' }) as unknown as PersonItem;
@@ -203,7 +204,7 @@ describe('GenericController', () => {
   it('creates a reference for an entity entry', async () => {
     const expected = { success: true };
     const genericService = { createReference: jest.fn(async () => expected) };
-    const controller = new GenericController(genericService as never);
+    const controller = new GenericReferenceController(genericService as never);
     const req = { user: createMockUser() };
 
     await expect(
@@ -225,7 +226,7 @@ describe('GenericController', () => {
   it('deletes a reference from an entity entry', async () => {
     const expected = { success: true };
     const genericService = { deleteReference: jest.fn(async () => expected) };
-    const controller = new GenericController(genericService as never);
+    const controller = new GenericReferenceController(genericService as never);
     const req = { user: createMockUser() };
 
     await expect(

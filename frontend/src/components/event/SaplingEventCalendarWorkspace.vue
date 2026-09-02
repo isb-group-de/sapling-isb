@@ -34,7 +34,7 @@
       class="sapling-scroll-region sapling-event-sidebyside-shell"
       @scroll.capture.passive="handleCalendarScroll"
     >
-      <div class="sapling-event-sidebyside-grid" :style="sideBySideGridStyle">
+      <div v-css-vars="sideBySideGridStyle" class="sapling-event-sidebyside-grid">
         <section
           v-for="personId in selectedPeoples"
           :key="personId"

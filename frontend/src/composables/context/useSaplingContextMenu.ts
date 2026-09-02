@@ -1,18 +1,9 @@
-import {
-  computed,
-  nextTick,
-  onMounted,
-  onUnmounted,
-  ref,
-  type CSSProperties,
-  type ComputedRef,
-  type Ref,
-} from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, type ComputedRef, type Ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 export interface UseSaplingContextMenuResult {
   menuVisible: Ref<boolean>
-  menuStyle: ComputedRef<CSSProperties>
+  menuTarget: ComputedRef<[number, number]>
   closeMenu: () => void
   goHome: () => Promise<void>
   handleContextMenu: (event: MouseEvent) => void
@@ -29,10 +20,7 @@ export function useSaplingContextMenu(): UseSaplingContextMenuResult {
   const x = ref(0)
   const y = ref(0)
 
-  const menuStyle = computed<CSSProperties>(() => ({
-    top: `${y.value}px`,
-    left: `${x.value}px`,
-  }))
+  const menuTarget = computed<[number, number]>(() => [x.value, y.value])
   //#endregion
 
   //#region Lifecycle
@@ -88,7 +76,7 @@ export function useSaplingContextMenu(): UseSaplingContextMenuResult {
   //#region Return
   return {
     menuVisible,
-    menuStyle,
+    menuTarget,
     closeMenu,
     goHome,
     handleContextMenu,

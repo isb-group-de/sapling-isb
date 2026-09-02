@@ -409,10 +409,10 @@ describe('useSaplingDialogEdit', () => {
     vm.updateFormField('endDate_date', '2026-09-01')
     vm.updateFormField('endDate_time', '10:00')
 
-    expect(vm.getRules(endTemplate).at(-1)?.()).toBe('global.invalidDateRange')
+    expect(vm.getRules(endTemplate).slice(-1)[0]?.()).toBe('global.invalidDateRange')
 
     vm.updateFormField('endDate_time', '11:00')
-    expect(vm.getRules(endTemplate).at(-1)?.()).toBe(true)
+    expect(vm.getRules(endTemplate).slice(-1)[0]?.()).toBe(true)
   })
 
   it('emits saveAndClose without closing the dialog before the save handler runs', async () => {

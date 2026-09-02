@@ -3,7 +3,7 @@
   <span
     v-else
     class="sapling-translation-skeleton"
-    :style="{ '--sapling-translation-skeleton-width': skeletonWidth }"
+    v-css-vars="{ '--sapling-translation-skeleton-width': skeletonWidth }"
     aria-hidden="true"
   />
 </template>

@@ -1,4 +1,5 @@
 import { ref } from 'vue'
+import { setCssVariables } from '@/directives/cssVars'
 
 /** Native drag-and-drop state with a Kanban-style floating preview. */
 export function useSaplingSortableDrag(
@@ -24,7 +25,9 @@ export function useSaplingSortableDrag(
     event.dataTransfer.setData('text/plain', String(handle))
     dragPreview = source.cloneNode(true) as HTMLElement
     dragPreview.classList.add('sapling-sortable-drag-preview')
-    dragPreview.style.width = `${source.getBoundingClientRect().width}px`
+    setCssVariables(dragPreview, {
+      '--sapling-sortable-drag-preview-width': `${source.getBoundingClientRect().width}px`,
+    })
     document.body.appendChild(dragPreview)
     event.dataTransfer.setDragImage(
       dragPreview,

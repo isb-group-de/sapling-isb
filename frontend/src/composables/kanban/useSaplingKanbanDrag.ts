@@ -1,6 +1,7 @@
 import { computed, ref, type ComputedRef, type Ref } from 'vue'
 import type { SaplingGenericItem } from '@/entity/entity'
 import type { EntityTemplateKanban } from '@/entity/structure'
+import { setCssVariables } from '@/directives/cssVars'
 
 type KanbanDragOptions = {
   canUpdateRecord: ComputedRef<boolean>
@@ -72,7 +73,9 @@ export function useSaplingKanbanDrag(options: KanbanDragOptions) {
     clearCardDragImage()
     const dragImage = source.cloneNode(true) as HTMLElement
     dragImage.classList.add('sapling-kanban-card--drag-image')
-    dragImage.style.width = `${source.offsetWidth}px`
+    setCssVariables(dragImage, {
+      '--sapling-kanban-drag-image-width': `${source.offsetWidth}px`,
+    })
     document.body.appendChild(dragImage)
     dragImageElement.value = dragImage
     event.dataTransfer.setDragImage(dragImage, Math.min(source.offsetWidth / 2, 180), 28)

@@ -1,5 +1,6 @@
 import { computed, onBeforeUnmount, ref, type ComputedRef } from 'vue'
 import type { EntityTemplate, EntityTemplateFormWidth } from '@/entity/structure'
+import { setCssVariables } from '@/directives/cssVars'
 
 export interface FormConfigPreviewDragGroup {
   key: string | null
@@ -258,7 +259,9 @@ export function useSaplingFormConfigPreviewDrag(options: UseSaplingFormConfigPre
       'sapling-form-config-drag-image',
       'sapling-form-config-drag-image--pointer',
     )
-    dragImage.style.width = `${Math.min(Math.max(source.offsetWidth, 220), 420)}px`
+    setCssVariables(dragImage, {
+      '--sapling-form-config-drag-width': `${Math.min(Math.max(source.offsetWidth, 220), 420)}px`,
+    })
     document.body.appendChild(dragImage)
     dragImageElement.value = dragImage
     positionDragImage(event.clientX, event.clientY)
@@ -267,8 +270,10 @@ export function useSaplingFormConfigPreviewDrag(options: UseSaplingFormConfigPre
   function positionDragImage(clientX: number, clientY: number): void {
     const dragImage = dragImageElement.value
     if (!dragImage) return
-    dragImage.style.setProperty('--sapling-form-config-drag-x', `${clientX + 16}px`)
-    dragImage.style.setProperty('--sapling-form-config-drag-y', `${clientY + 16}px`)
+    setCssVariables(dragImage, {
+      '--sapling-form-config-drag-x': `${clientX + 16}px`,
+      '--sapling-form-config-drag-y': `${clientY + 16}px`,
+    })
   }
 
   function clearDragImage(): void {

@@ -1,0 +1,247 @@
+.sapling-record-relation-header {
+  align-items: flex-start;
+  gap: var(--sapling-gap-md);
+}
+
+.sapling-record-relation-header__copy {
+  min-width: 0;
+}
+
+.sapling-record-relation-header__eyebrow {
+  margin-bottom: var(--sapling-gap-xs);
+}
+
+.sapling-record-relation-header__title {
+  font-size: var(--sapling-text-body-size-lg);
+}
+
+.sapling-record-relation-card,
+.sapling-record-relation-content {
+  min-height: 0;
+}
+
+.sapling-record-relation-card {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  background: var(--sapling-surface-fill-soft);
+}
+
+.sapling-record-relation-content {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.sapling-record-relation-overview {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  gap: var(--sapling-gap-md);
+  margin-bottom: var(--sapling-gap-md);
+  padding: var(--sapling-space-md);
+  border: 1px solid var(--sapling-surface-border);
+  border-radius: var(--sapling-radius-md);
+  background:
+    linear-gradient(135deg, rgba(var(--v-theme-primary), 0.09), transparent 52%),
+    var(--sapling-surface-fill-soft);
+}
+
+.sapling-record-relation-overview__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sapling-gap-md);
+  min-width: 0;
+}
+
+.sapling-record-relation-overview__actions {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--sapling-gap-xs);
+}
+
+.sapling-record-relation-summary {
+  display: grid;
+  grid-template-columns: var(--sapling-control-size-md) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--sapling-gap-sm);
+  min-width: 0;
+}
+
+.sapling-record-relation-summary__icon {
+  display: grid;
+  width: var(--sapling-control-size-md);
+  height: var(--sapling-control-size-md);
+  place-items: center;
+  border: 1px solid rgba(var(--v-theme-primary), 0.3);
+  border-radius: var(--sapling-radius-sm);
+  background: rgba(var(--v-theme-primary), 0.12);
+  color: rgb(var(--v-theme-primary));
+}
+
+.sapling-record-relation-summary__copy {
+  min-width: 0;
+}
+
+.sapling-record-relation-summary__eyebrow {
+  display: block;
+  color: var(--sapling-surface-text-muted);
+  font-size: var(--sapling-text-label-size-xs);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.sapling-record-relation-summary__title {
+  margin: var(--sapling-gap-2xs) 0 0;
+  overflow: hidden;
+  font-size: var(--sapling-text-body-size-lg);
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sapling-record-relation-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(210px, 0.34fr);
+  align-items: stretch;
+  gap: var(--sapling-gap-sm);
+}
+
+.sapling-record-relation-actions__field {
+  min-width: 0;
+}
+
+.sapling-record-relation-action-section {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--sapling-gap-sm);
+  padding: var(--sapling-space-md);
+  border: 1px solid var(--sapling-surface-border);
+  border-radius: var(--sapling-radius-sm);
+  background: var(--sapling-surface-fill-subtle);
+}
+
+.sapling-record-relation-action-section--add {
+  border-color: rgba(var(--v-theme-primary), 0.24);
+  background: rgba(var(--v-theme-primary), 0.055);
+}
+
+.sapling-record-relation-action-section--remove {
+  border-color: rgba(var(--v-theme-error), 0.2);
+  background: rgba(var(--v-theme-error), 0.035);
+}
+
+.sapling-record-relation-action-section__header {
+  display: flex;
+  min-height: var(--sapling-space-xl);
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sapling-gap-sm);
+}
+
+.sapling-record-relation-action-section__label,
+.sapling-record-relation-action-section__count {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sapling-gap-xs);
+  font-size: var(--sapling-text-label-size-lg);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.sapling-record-relation-action-section__label {
+  color: var(--sapling-surface-text);
+}
+
+.sapling-record-relation-action-section__count {
+  color: var(--sapling-surface-text-muted);
+  white-space: nowrap;
+}
+
+.sapling-record-relation-action-section__count strong {
+  color: rgb(var(--v-theme-primary));
+  font-size: var(--sapling-text-body-size-lg);
+}
+
+.sapling-record-relation-action-section--remove
+  .sapling-record-relation-action-section__count
+  strong {
+  color: rgb(var(--v-theme-error));
+}
+
+.sapling-record-relation-actions__field .sapling-field-select-add {
+  align-items: flex-start;
+}
+
+.sapling-record-relation-actions__field .sapling-field-select-add__field {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.sapling-record-relation-actions__field .sapling-field-select-add__actions {
+  flex: 0 0 auto;
+}
+
+.sapling-record-relation-selection {
+  justify-content: space-between;
+}
+
+.sapling-record-relation-selection__remove {
+  align-self: stretch;
+}
+
+.sapling-record-relation-action-skeleton {
+  flex: 1 1 auto;
+  min-height: 68px;
+  background: transparent;
+}
+
+.sapling-record-relation-table-skeleton {
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: calc((var(--sapling-control-size-2xl) * 4) + (var(--sapling-gap-sm) * 2));
+  border-radius: var(--sapling-radius-md);
+}
+
+.sapling-record-relation-table {
+  display: flex;
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  min-height: calc((var(--sapling-control-size-2xl) * 4) + (var(--sapling-gap-sm) * 2));
+  overflow: hidden;
+}
+
+.sapling-record-relation-table .sapling-table-root {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.sapling-record-relation-table .sapling-table {
+  max-height: none;
+}
+
+.sapling-mobile-action-list {
+  min-width: min(18rem, calc(100vw - 2rem));
+}
+
+.sapling-mobile-primary-action {
+  min-width: 0;
+}
+
+/*
+ * Browser zoom reduces the effective CSS viewport. Move the edit workspace to
+ * its compact desktop layout before it reaches the phone/tablet breakpoint so
+ * navigation and record content keep enough usable width at 120-160% zoom.
+ */

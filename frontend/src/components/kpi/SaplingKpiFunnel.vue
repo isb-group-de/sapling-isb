@@ -11,7 +11,7 @@
         :key="item.key"
         type="button"
         class="sapling-kpi-funnel__stage"
-        :style="{ width: `${item.width}%` }"
+        v-css-vars="{ '--sapling-kpi-funnel-stage-width': `${item.width}%` }"
         :disabled="!canOpenEntity"
         @click="canOpenEntity ? openEntity(item.row) : undefined"
       >
@@ -33,34 +33,3 @@ const { items, loading, hasError, isLoaded, hasData, canOpenEntity, openEntity, 
   useSaplingKpiFunnel(toRef(props, 'kpi'))
 defineExpose({ loadKpiValue, loading, hasError, hasData, isLoaded })
 </script>
-
-<style scoped>
-.sapling-kpi-funnel__stages {
-  align-items: center;
-}
-.sapling-kpi-funnel__stage {
-  align-items: center;
-  background: rgb(var(--v-theme-primary));
-  border: 0;
-  border-radius: 8px;
-  color: rgb(var(--v-theme-on-primary));
-  cursor: pointer;
-  display: grid;
-  grid-template-columns: 1fr auto auto;
-  gap: 0.75rem;
-  min-height: 2.6rem;
-  padding: 0.55rem 1rem;
-  transition:
-    filter 0.15s ease,
-    width 0.25s ease;
-}
-.sapling-kpi-funnel__stage:not(:disabled):hover {
-  filter: brightness(1.08);
-}
-.sapling-kpi-funnel__stage:disabled {
-  cursor: default;
-}
-.sapling-kpi-funnel__stage small {
-  opacity: 0.8;
-}
-</style>

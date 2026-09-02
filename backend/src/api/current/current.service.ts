@@ -26,8 +26,18 @@ import type {
   DashboardLayoutResultDto,
   UpdateDashboardLayoutDto,
 } from './dto/dashboard-layout.dto';
+import {
+  getSessionUserHandle,
+  mapCurrentSession,
+  normalizeColor,
+  normalizeNullableText,
+  normalizeOptionalText,
+  normalizeRequiredText,
+  type CurrentSessionDto,
+} from './current-session.utils';
 
 export type { OpenTaskSnapshot } from './current-open-task.service';
+export type { CurrentSessionDto } from './current-session.utils';
 
 export interface CurrentProfileUpdateDto {
   firstName?: string | null;
@@ -35,24 +45,6 @@ export interface CurrentProfileUpdateDto {
   phone?: string | null;
   mobile?: string | null;
   color?: string | null;
-}
-
-export interface CurrentSessionDto {
-  id: string;
-  isCurrent: boolean;
-  deviceLabel: string;
-  createdAt: Date | null;
-  lastActivityAt: Date | null;
-  expiresAt: Date;
-}
-
-interface StoredSessionPayload {
-  passport?: {
-    user?: {
-      handle?: number | string;
-      impersonatedHandle?: number | string;
-    };
-  };
 }
 
 /**
@@ -197,18 +189,18 @@ export class CurrentService {
       throw new Error('login.userNotFound');
     }
 
-    const firstName = this.normalizeNullableText(
+    const firstName = normalizeNullableText(
       dto.firstName,
       person.firstName,
       64,
     );
-    const lastName = this.normalizeRequiredText(dto.lastName, person.lastName);
+    const lastName = normalizeRequiredText(dto.lastName, person.lastName);
 
     person.firstName = firstName;
     person.lastName = lastName;
-    person.phone = this.normalizeOptionalText(dto.phone, 32);
-    person.mobile = this.normalizeOptionalText(dto.mobile, 32);
-    person.color = this.normalizeColor(dto.color, person.color ?? '#4CAF50');
+    person.phone = normalizeOptionalText(dto.phone, 32);
+    person.mobile = normalizeOptionalText(dto.mobile, 32);
+    person.color = normalizeColor(dto.color, person.color ?? '#4CAF50');
 
     await this.em.flush();
     this.securityPrincipalCache?.invalidate(user.handle);
@@ -297,8 +289,8 @@ export class CurrentService {
     );
 
     return records
-      .filter((record) => this.getSessionUserHandle(record) === user.handle)
-      .map((record) => this.mapCurrentSession(record, currentSessionId))
+      .filter((record) => getSessionUserHandle(record) === user.handle)
+      .map((record) => mapCurrentSession(record, currentSessionId))
       .sort((left, right) => {
         if (left.isCurrent !== right.isCurrent) {
           return left.isCurrent ? -1 : 1;
@@ -379,107 +371,8 @@ export class CurrentService {
     });
 
     return records.filter(
-      (record) => this.getSessionUserHandle(record) === user.handle,
+      (record) => getSessionUserHandle(record) === user.handle,
     );
-  }
-
-  private mapCurrentSession(
-    record: SessionStoreItem,
-    currentSessionId?: string | null,
-  ): CurrentSessionDto {
-    return {
-      id: this.maskSessionId(record.handle),
-      isCurrent: Boolean(
-        currentSessionId && record.handle === currentSessionId,
-      ),
-      deviceLabel: 'Browser-Sitzung',
-      createdAt: record.createdAt ?? null,
-      lastActivityAt: record.updatedAt ?? record.createdAt ?? null,
-      expiresAt: record.expiresAt,
-    };
-  }
-
-  private getSessionUserHandle(record: SessionStoreItem): number | null {
-    const payload = this.parseSessionPayload(record.payload);
-    const handle = payload?.passport?.user?.handle;
-
-    if (typeof handle === 'number' && Number.isFinite(handle)) {
-      return handle;
-    }
-
-    if (typeof handle === 'string') {
-      const parsedHandle = Number(handle);
-      return Number.isFinite(parsedHandle) ? parsedHandle : null;
-    }
-
-    return null;
-  }
-
-  private parseSessionPayload(payload: unknown): StoredSessionPayload | null {
-    try {
-      const parsedPayload =
-        typeof payload === 'string'
-          ? (JSON.parse(payload) as unknown)
-          : payload;
-
-      if (!parsedPayload || typeof parsedPayload !== 'object') {
-        return null;
-      }
-
-      return parsedPayload;
-    } catch {
-      return null;
-    }
-  }
-
-  private maskSessionId(sessionId: string): string {
-    const suffix = sessionId.slice(-8);
-    return suffix ? `...${suffix}` : '...';
-  }
-
-  private normalizeRequiredText(value: unknown, fallback: string): string {
-    if (typeof value !== 'string') {
-      return fallback;
-    }
-
-    const normalizedValue = value.trim().slice(0, 64);
-    return normalizedValue || fallback;
-  }
-
-  private normalizeNullableText(
-    value: unknown,
-    fallback: string | null | undefined,
-    maxLength: number,
-  ): string | null {
-    if (typeof value !== 'string') {
-      return fallback ?? null;
-    }
-
-    const normalizedValue = value.trim().slice(0, maxLength);
-    return normalizedValue || null;
-  }
-
-  private normalizeOptionalText(
-    value: unknown,
-    maxLength: number,
-  ): string | undefined {
-    if (typeof value !== 'string') {
-      return undefined;
-    }
-
-    const normalizedValue = value.trim().slice(0, maxLength);
-    return normalizedValue || undefined;
-  }
-
-  private normalizeColor(value: unknown, fallback: string): string {
-    if (typeof value !== 'string') {
-      return fallback;
-    }
-
-    const normalizedValue = value.trim();
-    return /^#[0-9a-fA-F]{6}$/.test(normalizedValue)
-      ? normalizedValue
-      : fallback;
   }
 
   /**

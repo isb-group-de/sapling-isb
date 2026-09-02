@@ -31,11 +31,11 @@
       <div
         v-if="props.workHours && props.showWorkHourBackground"
         class="workhour-bg"
-        :style="props.getWorkHourStyle(date)"
+        v-css-vars="props.getWorkHourStyle(date)"
       ></div>
       <div
         :class="{ first: date === week?.[0]?.date }"
-        :style="{ top: props.nowY() }"
+        v-css-vars="{ '--sapling-calendar-now-offset': props.nowY() }"
         class="v-current-time"
       ></div>
     </template>
@@ -68,7 +68,7 @@
             <div
               class="sapling-calendar-event-card"
               :class="getEventCardClasses(event)"
-              :style="getEventCardStyle(event)"
+              v-css-vars="getEventCardStyle(event)"
               :role="isInteractiveEvent(event) ? 'button' : undefined"
               :tabindex="isInteractiveEvent(event) ? 0 : undefined"
               @mousedown.left="onEventCardMouseDown($event, event)"
@@ -80,7 +80,7 @@
             >
               <div
                 class="sapling-calendar-event-card__accent"
-                :style="{ background: getEventAccentColor(event) }"
+                v-css-vars="{ '--sapling-calendar-event-accent': getEventAccentColor(event) }"
               ></div>
 
               <div class="sapling-calendar-event-card__content">
@@ -88,7 +88,9 @@
                   <div class="sapling-calendar-event-card__type">
                     <v-icon
                       class="sapling-calendar-event-card__category-icon"
-                      :style="{ color: getEventCategoryColor(event) }"
+                      v-css-vars="{
+                        '--sapling-calendar-event-category-color': getEventCategoryColor(event),
+                      }"
                       size="14"
                     >
                       {{ getEventIcon(event) }}

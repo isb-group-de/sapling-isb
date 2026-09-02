@@ -1,0 +1,28 @@
+/* Runtime calendar values are supplied through the shared css-vars directive. */
+
+.sapling-calendar-frame .workhour-bg {
+  position: absolute;
+  z-index: 0;
+  top: var(--sapling-calendar-workhour-top);
+  right: 0;
+  left: 0;
+  height: var(--sapling-calendar-workhour-height);
+  background: rgba(100, 180, 255, 0.15);
+  pointer-events: none;
+}
+
+.sapling-calendar-frame .v-current-time {
+  top: var(--sapling-calendar-now-offset);
+}
+
+.sapling-calendar-event-card__accent {
+  background: var(--sapling-calendar-event-accent);
+}
+
+.sapling-calendar-event-card__category-icon {
+  color: var(--sapling-calendar-event-category-color);
+}
+
+.sapling-event-sidebyside-grid {
+  grid-template-columns: var(--sapling-event-sidebyside-columns);
+}

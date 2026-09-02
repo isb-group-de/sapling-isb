@@ -1,3 +1,8 @@
+import {
+  formatGoogleExceptionDate,
+  formatUtcDateOnly,
+} from './calendar-recurrence-format.utils';
+
 export type RecurrenceFrequency = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
 
 export type RecurrenceWeekdayCode =
@@ -357,14 +362,6 @@ function normalizeRecurrenceRule(rule: string): string {
     .join(';');
 }
 
-function formatUtcDateOnly(date: Date): string {
-  return [
-    date.getUTCFullYear(),
-    String(date.getUTCMonth() + 1).padStart(2, '0'),
-    String(date.getUTCDate()).padStart(2, '0'),
-  ].join('-');
-}
-
 /** Resolves an exact generated occurrence start without trusting the client. */
 export function findRecurrenceOccurrence(
   startDate: Date,
@@ -427,25 +424,6 @@ export function findRecurrenceOccurrence(
   }
 
   return null;
-}
-
-function formatGoogleExceptionDate(date: Date, isAllDay: boolean): string {
-  const datePart = [
-    date.getUTCFullYear(),
-    String(date.getUTCMonth() + 1).padStart(2, '0'),
-    String(date.getUTCDate()).padStart(2, '0'),
-  ].join('');
-
-  if (isAllDay) {
-    return `EXDATE;VALUE=DATE:${datePart}`;
-  }
-
-  const timePart = [
-    String(date.getUTCHours()).padStart(2, '0'),
-    String(date.getUTCMinutes()).padStart(2, '0'),
-    String(date.getUTCSeconds()).padStart(2, '0'),
-  ].join('');
-  return `EXDATE:${datePart}T${timePart}Z`;
 }
 
 function toWeekdayCode(date: Date): RecurrenceWeekdayCode {

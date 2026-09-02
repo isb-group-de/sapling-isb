@@ -30,7 +30,7 @@
         >
           <span
             class="sapling-kpi-calendar__accent"
-            :style="{ backgroundColor: entry.color }"
+            v-css-vars="{ '--sapling-kpi-calendar-accent-color': entry.color }"
             aria-hidden="true"
           />
           <v-icon class="sapling-kpi-calendar__icon" size="20" :color="entry.color">

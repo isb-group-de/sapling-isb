@@ -1,0 +1,102 @@
+/* Framework-owned styles extracted from feature components. */
+
+.sapling-delete-reference-panel {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: var(--sapling-gap-md);
+  min-height: 0;
+}
+
+.sapling-delete-reference-copy {
+  flex: 0 0 auto;
+  margin: 0;
+  color: rgba(var(--v-theme-on-surface), var(--sapling-opacity-primary));
+  line-height: 1.55;
+}
+
+.sapling-delete-reference-toolbar {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sapling-gap-md);
+}
+
+.sapling-delete-reference-toolbar__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--sapling-gap-xs);
+}
+
+.sapling-delete-reference-list {
+  display: grid;
+  flex: 1 1 auto;
+  align-content: start;
+  gap: 0.25rem;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: var(--sapling-space-2xs);
+  scrollbar-gutter: stable;
+}
+
+@media (max-width: 600px) {
+  .sapling-delete-reference-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .sapling-delete-reference-toolbar__actions {
+    justify-content: flex-start;
+  }
+}
+
+.sapling-help-tooltip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: rgb(var(--v-theme-primary));
+  cursor: help;
+  opacity: var(--sapling-opacity-strong);
+  pointer-events: auto;
+  position: relative;
+  z-index: 2;
+}
+
+.sapling-help-tooltip--compact {
+  width: var(--sapling-field-help-slot-width);
+  height: var(--sapling-field-help-slot-width);
+}
+
+.sapling-help-tooltip:hover,
+.sapling-help-tooltip:focus-visible {
+  background: rgba(var(--v-theme-primary), 0.1);
+  opacity: 1;
+}
+
+.sapling-help-tooltip:focus-visible {
+  outline: 2px solid rgb(var(--v-theme-primary));
+  outline-offset: 1px;
+}
+
+.sapling-help-tooltip--floating {
+  position: absolute;
+  z-index: 3;
+  top: -0.65rem;
+  right: 0.25rem;
+}
+
+.sapling-field-link__action {
+  align-items: center;
+  color: inherit;
+  display: inline-flex;
+  text-decoration: none;
+}

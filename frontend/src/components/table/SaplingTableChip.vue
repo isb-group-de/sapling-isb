@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-chip v-if="showChip" class="sapling-table-chip" :style="chipStyle" size="small">
+    <v-chip v-if="showChip" v-css-vars="chipStyle" class="sapling-table-chip" size="small">
       <v-icon v-if="hasChipIcon" size="small" class="mr-2">
         {{ chipIcon }}
       </v-icon>

@@ -2,7 +2,7 @@
   <article
     class="sapling-attention-card sapling-inbox-entry glass-panel"
     :class="{ 'sapling-attention-card--expanded sapling-inbox-entry--expanded': expanded }"
-    :style="entryStyle(entry)"
+    v-css-vars="entryStyle(entry)"
     role="button"
     tabindex="0"
     @click="emit('open', entry)"

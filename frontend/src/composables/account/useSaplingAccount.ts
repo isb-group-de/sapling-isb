@@ -40,20 +40,19 @@ import {
 import {
   WORK_HOUR_DAY_KEYS,
   appendMissingOutlookCategoryMappings,
-  calculateAge,
-  formatAccountValue,
-  formatBirthDay,
-  formatCalendarSyncResult,
+  buildAccountDetails,
+  buildAccountTabs,
+  buildCalendarSyncDetails,
+  buildCalendarSyncIntervalOptions,
+  buildCalendarSyncRangeOptions,
+  createProfileForm,
   formatDateTime,
   getCurrentWeekday,
   mapModelOptions,
   mapProviderOptions,
   normalizeHandle,
-  type AccountDetailItem,
   type AccountTab,
-  type AccountTabItem,
   type CalendarSyncOption,
-  type CalendarSyncRange,
   type ProfileForm,
   type WorkHourRow,
 } from './saplingAccount.utils'
@@ -121,39 +120,7 @@ export function useSaplingAccount() {
   const aiPreferences = ref<SaplingAiPreferences>(loadSaplingAiPreferences())
   const currentWeekday = getCurrentWeekday()
 
-  const accountDetails = computed<AccountDetailItem[]>(() => {
-    const person = currentPersonStore.person
-    const age = person?.birthDay ? calculateAge(person.birthDay) : null
-
-    return [
-      {
-        key: 'email',
-        icon: 'mdi-mail',
-        value: formatAccountValue(person?.email),
-      },
-      {
-        key: 'mobile',
-        icon: 'mdi-cellphone',
-        value: formatAccountValue(person?.mobile),
-      },
-      {
-        key: 'phone',
-        icon: 'mdi-phone',
-        value: formatAccountValue(person?.phone),
-      },
-      {
-        key: 'birthday',
-        icon: 'mdi-cake-variant',
-        value: formatBirthDay(person?.birthDay),
-      },
-      {
-        key: 'age',
-        icon: 'mdi-account-clock',
-        value: age ?? i18n.global.t('global.notAvailable'),
-        suffixKey: age != null ? 'global.years' : undefined,
-      },
-    ]
-  })
+  const accountDetails = computed(() => buildAccountDetails(currentPersonStore.person))
 
   const workHourRows = computed<WorkHourRow[]>(() =>
     WORK_HOUR_DAY_KEYS.map((dayKey) => ({
@@ -163,18 +130,8 @@ export function useSaplingAccount() {
     })),
   )
 
-  const calendarSyncRangeOptions = computed<CalendarSyncOption<CalendarSyncRange>[]>(() => [
-    { title: i18n.global.t('calendarSyncSubscription.rangeDay'), value: 'day' },
-    { title: i18n.global.t('calendarSyncSubscription.rangeWeek'), value: 'week' },
-    { title: i18n.global.t('calendarSyncSubscription.rangeMonth'), value: 'month' },
-  ])
-
-  const calendarSyncIntervalOptions = computed<CalendarSyncOption<number>[]>(() => [
-    { title: i18n.global.t('calendarSyncSubscription.interval15'), value: 15 },
-    { title: i18n.global.t('calendarSyncSubscription.interval30'), value: 30 },
-    { title: i18n.global.t('calendarSyncSubscription.interval60'), value: 60 },
-    { title: i18n.global.t('calendarSyncSubscription.interval240'), value: 240 },
-  ])
+  const calendarSyncRangeOptions = computed(buildCalendarSyncRangeOptions)
+  const calendarSyncIntervalOptions = computed(buildCalendarSyncIntervalOptions)
 
   const calendarSyncEventTypeOptions = computed<CalendarSyncOption<string>[]>(() =>
     sortSelectOptions(eventTypes.value, (item) => item.title).map((item) => ({
@@ -211,50 +168,9 @@ export function useSaplingAccount() {
       .map((name) => ({ title: name, value: name }))
   })
 
-  const calendarSyncDetails = computed<AccountDetailItem[]>(() => {
-    const subscription = calendarSync.value
+  const calendarSyncDetails = computed(() => buildCalendarSyncDetails(calendarSync.value))
 
-    return [
-      {
-        key: 'lastRunAt',
-        icon: 'mdi-calendar-clock-outline',
-        value: formatDateTime(subscription?.lastRunAt),
-      },
-      {
-        key: 'lastSuccessAt',
-        icon: 'mdi-calendar-check-outline',
-        value: formatDateTime(subscription?.lastSuccessAt),
-      },
-      {
-        key: 'lastImportedCount',
-        icon: 'mdi-calendar-import-outline',
-        value: formatCalendarSyncResult(subscription),
-      },
-      {
-        key: 'lastError',
-        icon: 'mdi-alert-circle-outline',
-        value: subscription?.lastError || i18n.global.t('global.notAvailable'),
-      },
-    ]
-  })
-
-  const accountTabs = computed<AccountTabItem[]>(() => [
-    { key: 'profile', icon: 'mdi-account-outline', label: i18n.global.t('account.profile') },
-    {
-      key: 'notifications',
-      icon: 'mdi-bell-outline',
-      label: i18n.global.t('account.notifications'),
-    },
-    { key: 'sync', icon: 'mdi-sync', label: i18n.global.t('account.synchronizations') },
-    { key: 'security', icon: 'mdi-shield-key-outline', label: i18n.global.t('account.security') },
-    { key: 'sessions', icon: 'mdi-devices', label: i18n.global.t('account.sessions') },
-    {
-      key: 'preferences',
-      icon: 'mdi-palette-outline',
-      label: i18n.global.t('account.preferences'),
-    },
-    { key: 'songbird', icon: 'mdi-creation-outline', label: i18n.global.t('account.songbird') },
-  ])
+  const accountTabs = computed(buildAccountTabs)
 
   const aiProviderOptions = computed(() => mapProviderOptions(aiProviderConfigs.value))
   const aiModelOptions = computed(() =>
@@ -317,10 +233,6 @@ export function useSaplingAccount() {
   }
 
   /**
-   * Formats a nullable account value for direct UI rendering.
-   */
-
-  /**
    * Logs the user out by calling the backend logout endpoint and redirecting to the login page.
    */
   async function logout() {
@@ -342,13 +254,7 @@ export function useSaplingAccount() {
       return
     }
 
-    profileForm.value = {
-      firstName: person.firstName || '',
-      lastName: person.lastName || '',
-      phone: person.phone || '',
-      mobile: person.mobile || '',
-      color: person.color || '#4CAF50',
-    }
+    profileForm.value = createProfileForm(person)
   }
 
   async function saveProfile() {
@@ -668,7 +574,6 @@ export function useSaplingAccount() {
     accountDetails,
     workHourRows,
     changePassword,
-    calculateAge,
     saveProfile,
     saveCalendarSync,
     loadOutlookCalendarCategories,

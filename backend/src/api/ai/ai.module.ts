@@ -24,6 +24,8 @@ import { AiVectorEmbeddingService } from './ai-vector-embedding.service';
 import { AiVectorIndexService } from './ai-vector-index.service';
 import { AiVectorSearchService } from './ai-vector-search.service';
 import { AiController } from './ai.controller';
+import { AiMcpController } from './ai-mcp.controller';
+import { AiVectorizationController } from './ai-vectorization.controller';
 import { AiMediaController } from './ai-media.controller';
 import { AiAgentController } from './ai-agent.controller';
 import { AiAgentItem } from '../../entity/AiAgentItem';
@@ -132,7 +134,13 @@ import { SystemModule } from '../system/system.module';
     SaplingMcpExecutionService,
     SaplingMcpTransportService,
   ],
-  controllers: [AiController, AiMediaController, AiAgentController],
+  controllers: [
+    AiController,
+    AiMcpController,
+    AiVectorizationController,
+    AiMediaController,
+    AiAgentController,
+  ],
   exports: [
     AiService,
     AiProviderRegistryService,

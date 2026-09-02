@@ -69,11 +69,11 @@
       <div class="sapling-progress-track sapling-kpi-comparison__balance">
         <span
           class="sapling-progress-fill sapling-progress-fill--primary sapling-kpi-comparison__balance-fill sapling-kpi-comparison__balance-fill--current"
-          :style="{ width: `${currentShare}%` }"
+          v-css-vars="{ '--sapling-kpi-meter-width': `${currentShare}%` }"
         />
         <span
           class="sapling-progress-fill sapling-progress-fill--secondary sapling-kpi-comparison__balance-fill sapling-kpi-comparison__balance-fill--previous"
-          :style="{ width: `${previousShare}%` }"
+          v-css-vars="{ '--sapling-kpi-meter-width': `${previousShare}%` }"
         />
       </div>
     </div>

@@ -183,11 +183,27 @@ describe('useSaplingEventEditor', () => {
 
   it('opens a concrete standalone draft when editing only one occurrence', async () => {
     const harness = createHarness()
+    const participants = [
+      {
+        handle: 5,
+        lastName: 'First participant',
+        requirePasswordChange: false,
+        isActive: true,
+        createdAt: null,
+      },
+      {
+        handle: 7,
+        lastName: 'Second participant',
+        requirePasswordChange: false,
+        isActive: true,
+        createdAt: null,
+      },
+    ]
     harness.loadPersistedEvent.mockResolvedValue(
       createEventItem({
         recurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=2',
         updatedAt: new Date('2026-07-14T08:00:00.000Z'),
-        participants: [{ handle: 5 }, { handle: 7 }],
+        participants,
       }),
     )
     const laterOccurrence = {
@@ -206,7 +222,7 @@ describe('useSaplingEventEditor', () => {
     expect(harness.editor.isDetachingOccurrence.value).toBe(true)
     expect(harness.editEvent.value?.event?.handle).toBeUndefined()
     expect(harness.editEvent.value?.event?.recurrenceRule).toBeNull()
-    expect(harness.editEvent.value?.event?.participants).toEqual([{ handle: 5 }, { handle: 7 }])
+    expect(harness.editEvent.value?.event?.participants).toEqual(participants)
     expect(harness.editEvent.value?.start).toBe(laterOccurrence.start)
   })
 

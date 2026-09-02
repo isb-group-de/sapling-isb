@@ -51,12 +51,3 @@ const linkHref = computed(() => {
   return /^https?:\/\//i.test(value) ? value : `https://${value}`
 })
 </script>
-
-<style scoped>
-.sapling-field-link__action {
-  align-items: center;
-  color: inherit;
-  display: inline-flex;
-  text-decoration: none;
-}
-</style>

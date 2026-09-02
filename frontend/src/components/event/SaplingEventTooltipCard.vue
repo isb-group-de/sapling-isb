@@ -3,7 +3,7 @@
     <header class="sapling-calendar-event-tooltip-card__header">
       <span
         class="sapling-calendar-event-tooltip-card__icon"
-        :style="{ '--sapling-calendar-event-category-color': iconColor }"
+        v-css-vars="{ '--sapling-calendar-event-category-color': iconColor }"
       >
         <v-icon size="18">{{ eventIcon }}</v-icon>
       </span>

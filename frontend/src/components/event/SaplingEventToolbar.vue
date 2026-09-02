@@ -357,19 +357,22 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { VList } from 'vuetify/components'
 import SaplingSurface from '@/components/common/SaplingSurface.vue'
-
-type CalendarType = 'workweek' | 'month' | 'day' | 'week'
-type CalendarViewMode = 'single' | 'sidebyside'
-type CalendarMode = 'default' | 'extended'
-type CalendarEventOverlapMode = 'stack' | 'column'
-type CalendarSyncProvider = 'azure' | 'google'
-
-const TOOLBAR_VIEW_INLINE_MIN_WIDTH = 2450
-const TOOLBAR_MODE_INLINE_MIN_WIDTH = 2100
-const TOOLBAR_ARRANGEMENT_INLINE_MIN_WIDTH = 1750
-const TOOLBAR_DATA_ACTIONS_INLINE_MIN_WIDTH = 1300
-const TOOLBAR_TYPE_INLINE_MIN_WIDTH = 900
-const TOOLBAR_COMPACT_NAVIGATION_MAX_WIDTH = 1550
+import {
+  formatLocalDate,
+  resolvePickerDate,
+  toDate,
+  TOOLBAR_ARRANGEMENT_INLINE_MIN_WIDTH,
+  TOOLBAR_COMPACT_NAVIGATION_MAX_WIDTH,
+  TOOLBAR_DATA_ACTIONS_INLINE_MIN_WIDTH,
+  TOOLBAR_MODE_INLINE_MIN_WIDTH,
+  TOOLBAR_TYPE_INLINE_MIN_WIDTH,
+  TOOLBAR_VIEW_INLINE_MIN_WIDTH,
+  type CalendarEventOverlapMode,
+  type CalendarMode,
+  type CalendarSyncProvider,
+  type CalendarType,
+  type CalendarViewMode,
+} from './eventToolbar.utils'
 
 const props = defineProps<{
   isNarrowScreen: boolean
@@ -569,36 +572,5 @@ function onPickerYearUpdated(value: unknown) {
   }
 
   pickerYear.value = selectedYear
-}
-
-function toDate(value: unknown) {
-  if (value instanceof Date) {
-    return Number.isNaN(value.getTime()) ? null : value
-  }
-
-  if (typeof value === 'string' || typeof value === 'number') {
-    const parsedDate = new Date(value)
-    return Number.isNaN(parsedDate.getTime()) ? null : parsedDate
-  }
-
-  return null
-}
-
-function resolvePickerDate(input: string) {
-  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(input.trim())
-  if (!match) {
-    const parsedDate = new Date(input)
-    return Number.isNaN(parsedDate.getTime()) ? new Date() : parsedDate
-  }
-
-  const [, year, month, day] = match
-  return new Date(Number(year), Number(month) - 1, Number(day))
-}
-
-function formatLocalDate(date: Date) {
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
 }
 </script>

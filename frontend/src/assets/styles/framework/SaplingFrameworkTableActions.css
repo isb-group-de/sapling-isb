@@ -1,0 +1,26 @@
+/* Framework-owned styles extracted from feature components. */
+
+.sapling-table-refresh-button__content {
+  display: grid;
+  place-items: center;
+  line-height: 1;
+}
+
+.sapling-table-refresh-button__countdown {
+  min-width: 4ch;
+  margin-top: -1px;
+  font-size: 0.56rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1;
+  text-align: center;
+}
+
+.sapling-table-refresh-menu-list {
+  min-width: 260px;
+}
+
+.sapling-table-refresh-menu-list__countdown {
+  font-variant-numeric: tabular-nums;
+}

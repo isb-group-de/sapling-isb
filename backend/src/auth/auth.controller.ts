@@ -32,10 +32,7 @@ import {
 import { SessionOrBearerAuthGuard } from './guard/session-or-token-auth.guard';
 import { AuthService } from './auth.service';
 import { AuthProviderUserImportService } from './auth-provider-user-import.service';
-import {
-  AuthPasskeyService,
-  type PasskeyRequestContext,
-} from './auth-passkey.service';
+import { AuthPasskeyService } from './auth-passkey.service';
 import {
   BeginPasskeyRegistrationDto,
   LocalLoginPasskeyChallengeResponseDto,
@@ -50,24 +47,13 @@ import {
   AuthenticationTelemetryProvider,
   AuthenticationTelemetryService,
 } from './authentication-telemetry.service';
-
-const PASSKEY_CHALLENGE_TTL_MS = 5 * 60 * 1000;
-
-type PasskeyRegistrationSessionPayload = {
-  challenge: string;
-  context: PasskeyRequestContext;
-  createdAt: number;
-};
-
-type PasskeyLoginSessionPayload = PasskeyRegistrationSessionPayload & {
-  personHandle: number;
-  rememberMe: boolean;
-};
-
-type PasskeySessionData = {
-  passkeyRegistration?: PasskeyRegistrationSessionPayload;
-  passkeyLogin?: PasskeyLoginSessionPayload;
-};
+import {
+  assertFreshPasskeyLoginSession,
+  assertFreshPasskeyRegistrationSession,
+  clearPasskeyLoginSession,
+  clearPasskeyRegistrationSession,
+  getPasskeySession,
+} from './auth-passkey-session.utils';
 
 /**
  * @class
@@ -150,10 +136,6 @@ export class AuthController {
     return this.authPasskeyService;
   }
 
-  private getPasskeySession(req: Request): PasskeySessionData {
-    return (req.session ?? {}) as unknown as PasskeySessionData;
-  }
-
   private async saveSession(req: Request): Promise<void> {
     const session = req.session as
       | (Request['session'] & {
@@ -168,36 +150,6 @@ export class AuthController {
     await new Promise<void>((resolve, reject) =>
       session.save((error?: Error) => (error ? reject(error) : resolve())),
     );
-  }
-
-  private assertFreshPasskeyRegistrationSession(
-    req: Request,
-  ): PasskeyRegistrationSessionPayload {
-    const payload = this.getPasskeySession(req).passkeyRegistration;
-    if (!payload || Date.now() - payload.createdAt > PASSKEY_CHALLENGE_TTL_MS) {
-      throw new BadRequestException('login.passkeyChallengeExpired');
-    }
-
-    return payload;
-  }
-
-  private assertFreshPasskeyLoginSession(
-    req: Request,
-  ): PasskeyLoginSessionPayload {
-    const payload = this.getPasskeySession(req).passkeyLogin;
-    if (!payload || Date.now() - payload.createdAt > PASSKEY_CHALLENGE_TTL_MS) {
-      throw new BadRequestException('login.passkeyChallengeExpired');
-    }
-
-    return payload;
-  }
-
-  private clearPasskeyRegistrationSession(req: Request): void {
-    delete this.getPasskeySession(req).passkeyRegistration;
-  }
-
-  private clearPasskeyLoginSession(req: Request): void {
-    delete this.getPasskeySession(req).passkeyLogin;
   }
 
   private setSessionMaxAge(req: Request, rememberMe: boolean): void {
@@ -258,7 +210,7 @@ export class AuthController {
         user.handle,
         context,
       );
-      this.getPasskeySession(req).passkeyLogin = {
+      getPasskeySession(req).passkeyLogin = {
         challenge: options.challenge,
         context,
         createdAt: Date.now(),
@@ -300,8 +252,8 @@ export class AuthController {
     @Body() dto: VerifyPasskeyAuthenticationDto,
   ): Promise<void> {
     const passkeyService = this.getPasskeyService();
-    const sessionPayload = this.assertFreshPasskeyLoginSession(req);
-    this.clearPasskeyLoginSession(req);
+    const sessionPayload = assertFreshPasskeyLoginSession(req);
+    clearPasskeyLoginSession(req);
 
     let user: PersonItem;
     try {
@@ -565,7 +517,7 @@ export class AuthController {
       context,
     );
 
-    this.getPasskeySession(req).passkeyRegistration = {
+    getPasskeySession(req).passkeyRegistration = {
       challenge: options.challenge,
       context,
       createdAt: Date.now(),
@@ -593,8 +545,8 @@ export class AuthController {
     @Req() req: Request & { user: PersonItem },
     @Body() dto: VerifyPasskeyRegistrationDto,
   ): Promise<PasskeyResponseDto> {
-    const sessionPayload = this.assertFreshPasskeyRegistrationSession(req);
-    this.clearPasskeyRegistrationSession(req);
+    const sessionPayload = assertFreshPasskeyRegistrationSession(req);
+    clearPasskeyRegistrationSession(req);
 
     return this.getPasskeyService().verifyRegistration(
       req.user,

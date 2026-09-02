@@ -72,7 +72,7 @@
             :key="item.entry.key"
             type="button"
             class="sapling-kpi-sparkline__marker"
-            :style="item.style"
+            v-css-vars="item.cssVars"
             @click="openDrilldown(item.index)"
           >
             <span class="sapling-kpi-sparkline__marker-dot" />
@@ -91,7 +91,7 @@
 // #region Imports
 import { useSaplingKpiSparkline } from '@/composables/kpi/useSaplingKpiSparkline'
 import type { KPIItem } from '@/entity/entity'
-import { computed, toRef, type CSSProperties } from 'vue'
+import { computed, toRef } from 'vue'
 // #endregion
 
 interface SaplingKpiSparklineProps {
@@ -159,14 +159,14 @@ const sparklineMarkers = computed(() => {
     const pointValue = numericValues[pointIndex] ?? item.value
     const pointX = minX + pointIndex * gridX
     const pointY = maxY - (pointValue - minValue) * gridY
-    const style: CSSProperties = {
-      left: `${(pointX / sparklineWidth) * 100}%`,
-      top: `${(pointY / sparklineHeight) * 100}%`,
+    const cssVars = {
+      '--sapling-kpi-sparkline-marker-left': `${(pointX / sparklineWidth) * 100}%`,
+      '--sapling-kpi-sparkline-marker-top': `${(pointY / sparklineHeight) * 100}%`,
     }
 
     return {
       ...item,
-      style,
+      cssVars,
     }
   })
 })

@@ -177,19 +177,3 @@ async function onImpersonate(person: PersonItem) {
   }
 }
 </script>
-
-<style scoped>
-.sapling-permission-member-add {
-  width: 100%;
-  align-items: flex-start;
-}
-
-.sapling-permission-member-add :deep(.sapling-field-select-add__field) {
-  flex: 1 1 auto;
-  min-width: 0;
-}
-
-.sapling-permission-member-add :deep(.sapling-field-select-add__actions) {
-  flex: 0 0 auto;
-}
-</style>

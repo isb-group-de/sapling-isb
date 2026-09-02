@@ -18,6 +18,7 @@ import { i18n } from './i18n'
 import { createPinia } from 'pinia'
 // Import the tilt directive
 import { vTilt } from './directives/tilt'
+import { vCssVars } from './directives/cssVars'
 import { configureApiClient } from './services/api.client'
 import { installGlobalModifiedLinkNavigation } from './utils/linkNavigation'
 import { installFrontendTelemetry } from './services/frontend.telemetry.service'
@@ -32,6 +33,12 @@ installGlobalModifiedLinkNavigation()
 loadFonts()
 
 // Create the Vue application, register plugins, and mount it to the DOM
-const app = createApp(App).use(pinia).use(router).use(vuetify).use(i18n).directive('tilt', vTilt)
+const app = createApp(App)
+  .use(pinia)
+  .use(router)
+  .use(vuetify)
+  .use(i18n)
+  .directive('tilt', vTilt)
+  .directive('css-vars', vCssVars)
 installFrontendTelemetry(app)
 app.mount('#app')

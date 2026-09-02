@@ -1,5 +1,5 @@
 <template>
-  <div class="sapling-cell-money" :style="cellStyle">
+  <div v-css-vars="cellStyle" class="sapling-cell-money">
     <span>{{ formattedValue }}</span>
   </div>
 </template>

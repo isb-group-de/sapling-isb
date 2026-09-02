@@ -12,7 +12,6 @@ import type {
   WorkHourItem,
   WorkHourWeekItem,
 } from '@/entity/entity'
-import type { EntityTemplate } from '@/entity/structure'
 import {
   getEventDateParts,
   isValidDate,
@@ -66,15 +65,6 @@ export const DEFAULT_EVENT_STATUS_HANDLE = 'scheduled'
 
 const WORKWEEK_DAYS = [1, 2, 3, 4, 5]
 
-export function getItemHandle(item?: SaplingGenericItem | null): string | number | null {
-  if (!item || typeof item !== 'object') {
-    return null
-  }
-
-  const { handle } = item
-  return typeof handle === 'string' || typeof handle === 'number' ? handle : null
-}
-
 export function toEditableEventItem(event: CalendarEvent | null): SaplingGenericItem | null {
   if (!event || isReadonlyCalendarEvent(event)) {
     return null
@@ -86,87 +76,6 @@ export function toEditableEventItem(event: CalendarEvent | null): SaplingGeneric
   }
 
   return event as SaplingGenericItem
-}
-
-export function normalizeConcurrencyTimestamp(value: unknown): string | null {
-  if (value instanceof Date) {
-    return Number.isNaN(value.getTime()) ? null : value.toISOString()
-  }
-
-  if (typeof value !== 'string' && typeof value !== 'number') {
-    return null
-  }
-
-  const rawValue = String(value).trim()
-  if (!rawValue) {
-    return null
-  }
-
-  const parsedDate = new Date(rawValue)
-  return Number.isNaN(parsedDate.getTime()) ? rawValue : parsedDate.toISOString()
-}
-
-export function buildConcurrencyPayload(
-  templates: EntityTemplate[],
-  source: SaplingGenericItem | null,
-): Record<string, unknown> | null {
-  if (!source) {
-    return null
-  }
-
-  const payload: Record<string, unknown> = {}
-
-  templates.filter(isConcurrencyComparableTemplate).forEach((template) => {
-    if (!template.name || !Object.prototype.hasOwnProperty.call(source, template.name)) {
-      return
-    }
-
-    payload[template.name] = normalizeConcurrencyPayloadValue(source[template.name], template)
-  })
-
-  return payload
-}
-
-export function buildConcurrencyOptions(
-  templates: EntityTemplate[],
-  source: SaplingGenericItem | null,
-) {
-  return {
-    expectedUpdatedAt: normalizeConcurrencyTimestamp(source?.updatedAt),
-    basePayload: buildConcurrencyPayload(templates, source),
-    resolution: 'detect' as const,
-  }
-}
-
-export function normalizeConcurrencyPayloadValue(
-  value: unknown,
-  template: EntityTemplate,
-): unknown {
-  if (value instanceof Date) {
-    return Number.isNaN(value.getTime()) ? null : value.toISOString()
-  }
-
-  if (template.type === 'datetime' && typeof value === 'string') {
-    return normalizeConcurrencyTimestamp(value) ?? value
-  }
-
-  return value ?? null
-}
-
-export function isConcurrencyComparableTemplate(template: EntityTemplate): boolean {
-  if (!template.name || template.isPersistent === false) {
-    return false
-  }
-
-  if (template.kind === 'm:1') {
-    return true
-  }
-
-  if (template.isReference) {
-    return false
-  }
-
-  return !['1:m', 'm:n', 'n:m', '1:1'].includes(template.kind ?? '')
 }
 
 export function toCalendarEvent(event: EventItem): SaplingCalendarEvent {

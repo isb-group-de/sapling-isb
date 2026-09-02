@@ -67,7 +67,7 @@
           <div class="sapling-progress-track sapling-kpi-breakdown__bar">
             <span
               class="sapling-progress-fill sapling-progress-fill--primary sapling-kpi-breakdown__fill"
-              :style="{ width: `${item.share}%` }"
+              v-css-vars="{ '--sapling-kpi-meter-width': `${item.share}%` }"
             />
           </div>
         </button>

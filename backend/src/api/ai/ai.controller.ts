@@ -24,10 +24,7 @@ import {
 import type { Request, Response } from 'express';
 import { AiService } from './ai.service';
 import { McpService, type McpToolDescriptor } from './mcp.service';
-import { SaplingMcpService } from './sapling-mcp.service';
 import { SessionOrBearerAuthGuard } from '../../auth/guard/session-or-token-auth.guard';
-import { AdminPermissionGuard } from '../../auth/guard/admin-permission.guard';
-import { AdminPermission } from '../../auth/admin-permission';
 import { PersonItem } from '../../entity/PersonItem';
 import { AiAgentItem } from '../../entity/AiAgentItem';
 import { AiChatSessionItem } from '../../entity/AiChatSessionItem';
@@ -48,10 +45,6 @@ import {
   UpdateAiChatSessionDto,
 } from './dto/chat.dto';
 import { AiChatQueueService } from './ai-chat-queue.service';
-import {
-  VectorizeEntityDto,
-  VectorizeEntityResponseDto,
-} from './dto/vectorization.dto';
 
 /**
  * @class
@@ -76,48 +69,8 @@ export class AiController {
   constructor(
     private readonly aiService: AiService,
     private readonly mcpService: McpService,
-    private readonly saplingMcpService: SaplingMcpService,
     private readonly chatQueueService: AiChatQueueService,
   ) {}
-
-  @Post('mcp')
-  @ApiOperation({
-    summary: 'Forward an MCP POST request',
-    description:
-      'Accepts a streamable HTTP POST request for the authenticated Sapling Model Context Protocol session and forwards it to the MCP runtime.',
-  })
-  async handleMcpPost(
-    @Req() req: Request & { user: PersonItem },
-    @Res() res: Response,
-  ): Promise<void> {
-    await this.saplingMcpService.handlePost(req, res);
-  }
-
-  @Get('mcp')
-  @ApiOperation({
-    summary: 'Forward an MCP GET request',
-    description:
-      'Opens, resumes, or reads a streamable HTTP interaction for the authenticated Sapling Model Context Protocol session.',
-  })
-  async handleMcpGet(
-    @Req() req: Request & { user: PersonItem },
-    @Res() res: Response,
-  ): Promise<void> {
-    await this.saplingMcpService.handleGet(req, res);
-  }
-
-  @Delete('mcp')
-  @ApiOperation({
-    summary: 'Forward an MCP DELETE request',
-    description:
-      'Terminates a streamable HTTP interaction for the authenticated Sapling Model Context Protocol session.',
-  })
-  async handleMcpDelete(
-    @Req() req: Request & { user: PersonItem },
-    @Res() res: Response,
-  ): Promise<void> {
-    await this.saplingMcpService.handleDelete(req, res);
-  }
 
   @Get('chat/providers')
   @ApiOperation({
@@ -247,72 +200,6 @@ export class AiController {
     @Req() req: Request & { user: PersonItem },
   ): Promise<McpToolDescriptor[]> {
     return this.mcpService.listActiveTools(req.user);
-  }
-
-  @Get('vectorization/providers')
-  @AdminPermission()
-  @UseGuards(AdminPermissionGuard)
-  @ApiOperation({
-    summary: 'List available embedding providers',
-    description:
-      'Returns the active AI providers that can currently generate vector embeddings for semantic search.',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Active embedding providers available to administrators.',
-    type: AiProviderTypeItem,
-    isArray: true,
-  })
-  async listVectorizationProviders(): Promise<AiProviderTypeItem[]> {
-    return this.aiService.listActiveProviders('embedding');
-  }
-
-  @Get('vectorization/models')
-  @AdminPermission()
-  @UseGuards(AdminPermissionGuard)
-  @ApiOperation({
-    summary: 'List available embedding models',
-    description:
-      'Returns the active embedding models. When providerHandle is supplied, only models from that provider are returned.',
-  })
-  @ApiQuery({
-    name: 'providerHandle',
-    required: false,
-    type: String,
-    description:
-      'Optional provider handle used to limit the result to one embedding provider.',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Active embedding models available to administrators.',
-    type: AiProviderModelItem,
-    isArray: true,
-  })
-  async listVectorizationModels(
-    @Query('providerHandle') providerHandle?: string,
-  ): Promise<AiProviderModelItem[]> {
-    return this.aiService.listActiveModels(providerHandle, 'embedding');
-  }
-
-  @Post('vectorization')
-  @AdminPermission()
-  @UseGuards(AdminPermissionGuard)
-  @ApiOperation({
-    summary: 'Generate embeddings for one entity type',
-    description:
-      'Runs vectorization for all supported records of the requested entity so they become available for semantic search.',
-  })
-  @ApiBody({ type: VectorizeEntityDto })
-  @ApiResponse({
-    status: 201,
-    description:
-      'Summary of the vectorization run, including processed, skipped, and deleted document counts.',
-    type: VectorizeEntityResponseDto,
-  })
-  async vectorizeEntity(
-    @Body() body: VectorizeEntityDto,
-  ): Promise<VectorizeEntityResponseDto> {
-    return this.aiService.vectorizeEntity(body);
   }
 
   @Get('chat/sessions')

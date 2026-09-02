@@ -1,0 +1,10 @@
+/* Runtime work-item colors are supplied through the shared css-vars directive. */
+
+.sapling-chip-filter__swatch {
+  background-color: var(--sapling-chip-filter-swatch-color);
+}
+
+.sapling-issue-card__label {
+  background-color: var(--sapling-issue-label-background) !important;
+  color: var(--sapling-issue-label-color) !important;
+}

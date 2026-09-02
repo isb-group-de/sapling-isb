@@ -1,0 +1,136 @@
+.sapling-monitor-chart {
+  min-height: 390px;
+  overflow: hidden;
+}
+
+.sapling-monitor-chart .sapling-section-header {
+  margin-bottom: var(--sapling-gap-sm);
+}
+
+.sapling-monitor-chart__canvas {
+  width: 100%;
+  height: 315px;
+}
+
+.monitoring-chart--wide {
+  grid-column: 1 / -1;
+}
+
+.monitoring-dialog__body {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.monitoring-rule-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--sapling-gap-md);
+  padding: var(--sapling-gap-md);
+  border: 1px solid var(--sapling-surface-border-muted);
+  border-radius: var(--sapling-radius-xs);
+  background: var(--sapling-surface-fill-subtle);
+  color: var(--sapling-surface-text);
+}
+
+.monitoring-rule-row > span {
+  display: grid;
+  min-width: 0;
+}
+
+.monitoring-rule-row small,
+.monitoring-incident-detail dd {
+  color: var(--sapling-surface-text-muted);
+}
+
+.monitoring-incident-detail {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sapling-gap-lg);
+  margin: 0;
+}
+
+.monitoring-incident-detail > div {
+  padding: var(--sapling-gap-md);
+  border: 1px solid var(--sapling-surface-border-muted);
+  border-radius: var(--sapling-radius-xs);
+  background: var(--sapling-surface-fill-subtle);
+}
+
+.monitoring-incident-detail dt {
+  color: var(--sapling-surface-text);
+  font-size: var(--sapling-text-label-size);
+  font-weight: 700;
+}
+
+.monitoring-incident-detail dd {
+  margin: var(--sapling-gap-xs) 0 0;
+}
+
+@media (max-width: 1200px) {
+  .monitoring-console__header {
+    grid-template-columns: 1fr;
+  }
+
+  .monitoring-console__controls {
+    grid-template-columns: minmax(180px, 1fr) minmax(120px, 160px) auto;
+  }
+
+  .monitoring-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .monitoring-overview-grid,
+  .monitoring-incident-grid,
+  .monitoring-chart-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .monitoring-navigation {
+    top: 0;
+  }
+
+  .monitoring-console__updated {
+    width: 100%;
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 700px) {
+  .monitoring-console__header,
+  .monitoring-console__content {
+    padding: var(--sapling-space-lg);
+  }
+
+  .monitoring-console__meta,
+  .monitoring-console__notice {
+    padding-inline: var(--sapling-space-lg);
+  }
+
+  .monitoring-console__controls,
+  .monitoring-kpis,
+  .monitoring-presence-summary,
+  .monitoring-incident-detail {
+    grid-template-columns: 1fr;
+  }
+
+  .monitoring-console__controls .v-btn {
+    justify-self: end;
+  }
+
+  .monitoring-service-row {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .monitoring-service-row > span:not(.monitoring-status-dot),
+  .monitoring-service-row time {
+    grid-column: 2;
+  }
+
+  .monitoring-rule-row {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+}

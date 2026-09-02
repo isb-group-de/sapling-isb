@@ -43,10 +43,8 @@ describe('useSaplingCalendarNavigation', () => {
     const navigation = useSaplingCalendarNavigation(ref('week'), workHours)
 
     expect(navigation.getWorkHourStyle('2026-07-15')).toMatchObject({
-      top: `${(8 / 24) * 100}%`,
-      height: `${(8 / 24) * 100}%`,
-      position: 'absolute',
-      pointerEvents: 'none',
+      '--sapling-calendar-workhour-top': `${(8 / 24) * 100}%`,
+      '--sapling-calendar-workhour-height': `${(8 / 24) * 100}%`,
     })
   })
 
@@ -60,8 +58,8 @@ describe('useSaplingCalendarNavigation', () => {
     const navigation = useSaplingCalendarNavigation(ref('week'), ownWorkHours)
 
     expect(navigation.getWorkHourStyle('2026-07-15', otherWorkHours)).toMatchObject({
-      top: `${(10 / 24) * 100}%`,
-      height: `${(4 / 24) * 100}%`,
+      '--sapling-calendar-workhour-top': `${(10 / 24) * 100}%`,
+      '--sapling-calendar-workhour-height': `${(4 / 24) * 100}%`,
     })
   })
 

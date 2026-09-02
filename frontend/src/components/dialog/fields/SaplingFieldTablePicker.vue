@@ -92,7 +92,7 @@
       <div
         ref="menuSurfaceRef"
         class="glass-panel sapling-menu-surface sapling-menu-surface--field-table sapling-nested-backdrop-host"
-        :style="menuSurfaceStyle"
+        v-css-vars="menuSurfaceStyle"
         @focusout="closeMenuWhenFocusLeaves"
         @keydown.tab.capture="closeMenuOnTab"
         @keydown.esc="closeMenuOnEscape"

@@ -58,15 +58,3 @@ const statusColor = computed(() =>
 
 defineExpose({ loadKpiValue, loading, hasError, hasData, isLoaded })
 </script>
-
-<style scoped>
-.sapling-kpi-performance__value {
-  font-size: var(--sapling-text-display-size-md);
-  font-weight: 750;
-  text-align: center;
-}
-.sapling-kpi-performance__progress {
-  text-align: center;
-  color: rgb(var(--v-theme-on-surface-variant));
-}
-</style>

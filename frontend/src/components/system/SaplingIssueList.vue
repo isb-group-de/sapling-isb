@@ -176,7 +176,7 @@
                   size="x-small"
                   variant="flat"
                   class="sapling-work-card__label sapling-issue-card__label"
-                  :style="resolveLabelStyle(label.color)"
+                  v-css-vars="resolveLabelStyle(label.color)"
                 >
                   {{ label.name }}
                 </v-chip>
@@ -456,7 +456,7 @@ function formatDateTime(value: string) {
 }
 
 /**
- * Builds inline styles for GitHub label chips with readable contrast.
+ * Builds framework CSS variables for GitHub label chips with readable contrast.
  */
 function resolveLabelStyle(value: string) {
   const backgroundColor = `#${value}`
@@ -466,8 +466,8 @@ function resolveLabelStyle(value: string) {
   const luminance = (red * 299 + green * 587 + blue * 114) / 1000
 
   return {
-    backgroundColor,
-    color: luminance > 160 ? '#102a43' : '#f8fafc',
+    '--sapling-issue-label-background': backgroundColor,
+    '--sapling-issue-label-color': luminance > 160 ? '#102a43' : '#f8fafc',
   }
 }
 // #endregion

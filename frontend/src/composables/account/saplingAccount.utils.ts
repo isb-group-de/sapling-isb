@@ -1,5 +1,5 @@
 import { i18n } from '@/i18n'
-import type { AiProviderModelItem, AiProviderTypeItem } from '@/entity/entity'
+import type { AiProviderModelItem, AiProviderTypeItem, PersonItem } from '@/entity/entity'
 import { sortSelectOptions } from '@/utils/saplingSelectOptions'
 import type {
   CalendarClassificationMapping,
@@ -113,6 +113,94 @@ export function formatCalendarSyncResult(subscription?: CalendarSyncSubscription
   }
 
   return `${subscription.lastImportedCount} / ${subscription.lastCreatedCount} / ${subscription.lastUpdatedCount} / ${subscription.lastSkippedCount}`
+}
+
+export function buildAccountDetails(person?: PersonItem | null): AccountDetailItem[] {
+  const age = person?.birthDay ? calculateAge(person.birthDay) : null
+  return [
+    { key: 'email', icon: 'mdi-mail', value: formatAccountValue(person?.email) },
+    { key: 'mobile', icon: 'mdi-cellphone', value: formatAccountValue(person?.mobile) },
+    { key: 'phone', icon: 'mdi-phone', value: formatAccountValue(person?.phone) },
+    { key: 'birthday', icon: 'mdi-cake-variant', value: formatBirthDay(person?.birthDay) },
+    {
+      key: 'age',
+      icon: 'mdi-account-clock',
+      value: age ?? i18n.global.t('global.notAvailable'),
+      suffixKey: age != null ? 'global.years' : undefined,
+    },
+  ]
+}
+
+export function buildCalendarSyncDetails(
+  subscription?: CalendarSyncSubscription | null,
+): AccountDetailItem[] {
+  return [
+    {
+      key: 'lastRunAt',
+      icon: 'mdi-calendar-clock-outline',
+      value: formatDateTime(subscription?.lastRunAt),
+    },
+    {
+      key: 'lastSuccessAt',
+      icon: 'mdi-calendar-check-outline',
+      value: formatDateTime(subscription?.lastSuccessAt),
+    },
+    {
+      key: 'lastImportedCount',
+      icon: 'mdi-calendar-import-outline',
+      value: formatCalendarSyncResult(subscription),
+    },
+    {
+      key: 'lastError',
+      icon: 'mdi-alert-circle-outline',
+      value: subscription?.lastError || i18n.global.t('global.notAvailable'),
+    },
+  ]
+}
+
+export function buildAccountTabs(): AccountTabItem[] {
+  return [
+    { key: 'profile', icon: 'mdi-account-outline', label: i18n.global.t('account.profile') },
+    {
+      key: 'notifications',
+      icon: 'mdi-bell-outline',
+      label: i18n.global.t('account.notifications'),
+    },
+    { key: 'sync', icon: 'mdi-sync', label: i18n.global.t('account.synchronizations') },
+    { key: 'security', icon: 'mdi-shield-key-outline', label: i18n.global.t('account.security') },
+    { key: 'sessions', icon: 'mdi-devices', label: i18n.global.t('account.sessions') },
+    {
+      key: 'preferences',
+      icon: 'mdi-palette-outline',
+      label: i18n.global.t('account.preferences'),
+    },
+    { key: 'songbird', icon: 'mdi-creation-outline', label: i18n.global.t('account.songbird') },
+  ]
+}
+
+export function createProfileForm(person: PersonItem): ProfileForm {
+  return {
+    firstName: person.firstName || '',
+    lastName: person.lastName || '',
+    phone: person.phone || '',
+    mobile: person.mobile || '',
+    color: person.color || '#4CAF50',
+  }
+}
+
+export function buildCalendarSyncRangeOptions(): CalendarSyncOption<CalendarSyncRange>[] {
+  return [
+    { title: i18n.global.t('calendarSyncSubscription.rangeDay'), value: 'day' },
+    { title: i18n.global.t('calendarSyncSubscription.rangeWeek'), value: 'week' },
+    { title: i18n.global.t('calendarSyncSubscription.rangeMonth'), value: 'month' },
+  ]
+}
+
+export function buildCalendarSyncIntervalOptions(): CalendarSyncOption<number>[] {
+  return [15, 30, 60, 240].map((value) => ({
+    title: i18n.global.t(`calendarSyncSubscription.interval${value}`),
+    value,
+  }))
 }
 
 export function appendMissingOutlookCategoryMappings(

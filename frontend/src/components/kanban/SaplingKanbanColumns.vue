@@ -10,7 +10,7 @@
     >
       <header class="sapling-kanban-column__header">
         <div class="sapling-kanban-column__title-row">
-          <span class="sapling-kanban-column__icon" :style="getColumnStyle(column)">
+          <span v-css-vars="getColumnStyle(column)" class="sapling-kanban-column__icon">
             <v-icon :icon="getColumnIcon(column)" size="18" />
           </span>
           <div class="sapling-kanban-column__copy">
@@ -32,7 +32,7 @@
         <div
           v-if="shouldShowDropPreview(column)"
           class="sapling-kanban-drop-preview"
-          :style="getColumnStyle(column)"
+          v-css-vars="getColumnStyle(column)"
         >
           <span class="sapling-kanban-drop-preview__title">
             {{ getRecordTitle(draggedRecord) }}
@@ -52,7 +52,7 @@
             'sapling-kanban-card--dragging': draggedRecordHandle === String(record.handle),
           }"
           :draggable="canUpdateRecord"
-          :style="getColumnStyle(column)"
+          v-css-vars="getColumnStyle(column)"
           :aria-label="getRecordTitle(record)"
           @click="emit('open', record)"
           @dragstart="emit('dragStart', $event, record)"

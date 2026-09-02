@@ -106,7 +106,7 @@
           :read-only="disabled || isPreparingWithAi || isTranscribingVoiceInput"
           :line-numbers="false"
           class="sapling-markdown-editor"
-          :style="{ height: editorHeight }"
+          v-css-vars="{ '--sapling-markdown-editor-height': editorHeight }"
           @focus="emit('focus')"
           @update:model-value="emit('update:draftValue', $event)"
         />
@@ -120,7 +120,7 @@
           hide-details
           no-resize
           class="sapling-markdown-editor sapling-markdown-editor--fallback"
-          :style="{ height: editorHeight }"
+          v-css-vars="{ '--sapling-markdown-editor-height': editorHeight }"
           @focus="emit('focus')"
           @update:model-value="emit('update:draftValue', String($event ?? ''))"
         />

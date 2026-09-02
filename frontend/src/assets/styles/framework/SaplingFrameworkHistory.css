@@ -178,7 +178,7 @@
   width: var(--sapling-space-sm);
   height: var(--sapling-space-sm);
   border-radius: var(--sapling-radius-pill);
-  background: currentColor;
+  background: var(--sapling-history-chip-dot-color, currentColor);
   opacity: 0.55;
 }
 

@@ -111,9 +111,9 @@ export class PersonSessionItem {
     group: 'personSession.groupReference',
     groupOrder: 300,
     width: 2,
-    visible: false,
+    visible: true,
     tableOrder: 100,
-    tableVisible: false,
+    tableVisible: true,
     mobileOrder: 100,
     mobileVisible: false,
   })

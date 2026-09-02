@@ -204,6 +204,7 @@ import {
   type SaplingTableColumnMove,
   type SaplingTableColumnPlacement,
 } from '@/composables/table/saplingTableColumnOrder'
+import { setCssVariables } from '@/directives/cssVars'
 
 type FilterOperatorOption = { label: string; value: ColumnFilterOperator }
 type TableColumnLike = Record<string, unknown> & { key?: string | null; title?: string | null }
@@ -337,8 +338,10 @@ function onColumnDragStart(event: DragEvent, column: TableColumnLike): void {
     dragPreviewElement = document.createElement('div')
     dragPreviewElement.className = 'sapling-table-column-drag-preview'
     dragPreviewElement.setAttribute('aria-hidden', 'true')
-    dragPreviewElement.style.width = `${headerRect.width}px`
-    dragPreviewElement.style.height = `${headerRect.height}px`
+    setCssVariables(dragPreviewElement, {
+      '--sapling-table-column-drag-width': `${headerRect.width}px`,
+      '--sapling-table-column-drag-height': `${headerRect.height}px`,
+    })
     dragPreviewElement.innerHTML = headerCell.innerHTML
     document.body.appendChild(dragPreviewElement)
     event.dataTransfer.setDragImage(

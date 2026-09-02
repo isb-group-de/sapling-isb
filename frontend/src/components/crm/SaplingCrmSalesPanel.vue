@@ -14,7 +14,7 @@
         :key="stage.key"
         class="sapling-crm-stage"
         type="button"
-        :style="{ '--sapling-crm-stage-color': stage.color }"
+        v-css-vars="{ '--sapling-crm-stage-color': stage.color }"
         @click="emit('openStage', stage)"
       >
         <div class="sapling-crm-stage__bar" />

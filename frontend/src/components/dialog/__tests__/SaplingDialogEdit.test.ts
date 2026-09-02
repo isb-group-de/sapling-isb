@@ -3,7 +3,7 @@ import { computed, nextTick, ref } from 'vue'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import SaplingDialogEdit from '../SaplingDialogEdit.vue'
-import type { AccumulatedPermission } from '@/entity/structure'
+import { createDialogState } from './SaplingDialogEdit.test-support'
 
 const dialogHarness = vi.hoisted(() => ({
   state: null as Record<string, unknown> | null,
@@ -62,69 +62,6 @@ vi.mock('@/composables/dialog/useSaplingDialogRecordActions', () => ({
     openRecordDeleteDialog: vi.fn(),
   }),
 }))
-
-function createDialogState() {
-  return {
-    isLoading: ref(true),
-    form: ref<Record<string, unknown>>({ title: '' }),
-    formRef: ref(null),
-    activeTab: ref(0),
-    selectedRelations: ref({}),
-    visibleTemplates: computed(() => [{ name: 'title', type: 'string' }]),
-    visibleTemplateGroups: computed(() => [{ id: 'main', label: '', templates: [] }]),
-    relationTemplates: computed(() => []),
-    dirtyRelationNames: computed<string[]>(() => []),
-    relationTableHeaders: ref({}),
-    relationTableState: ref({}),
-    relationTableItems: ref({}),
-    relationTableSearch: ref({}),
-    relationTablePage: ref({}),
-    relationTableTotal: ref({}),
-    relationTableItemsPerPage: ref({}),
-    relationTableSortBy: ref({}),
-    relationTableColumnFilters: ref({}),
-    permissions: ref<AccumulatedPermission[]>([]),
-    iconNames: ref([]),
-    selectedItems: ref([]),
-    isDirty: computed(() => false),
-    canSubmit: computed(() => false),
-    isSaving: computed(() => false),
-    unsavedChangesDialog: ref(false),
-    pendingSaveAction: ref(null),
-    validationFeedback: ref<{
-      action: 'save' | 'saveAndClose'
-      attempt: number
-    } | null>(null),
-    dirtyFieldCount: computed(() => 0),
-    formConfigMenuItems: computed(() => []),
-    selectedFormConfigLabel: computed(() => ''),
-    selectFormConfig: vi.fn(),
-    getRules: vi.fn().mockReturnValue([]),
-    getTemplateColumnProps: vi.fn().mockReturnValue({ cols: 12 }),
-    isTemplateDirty: vi.fn().mockReturnValue(false),
-    getDirtyTemplateCount: vi.fn().mockReturnValue(0),
-    isFieldDisabled: vi.fn().mockReturnValue(false),
-    isReferenceFieldDisabled: vi.fn().mockReturnValue(false),
-    getReferenceParentFilter: vi.fn(),
-    handleDialogUpdate: vi.fn(),
-    onDuplicateSelect: vi.fn(),
-    cancel: vi.fn(),
-    keepEditing: vi.fn(),
-    discardChanges: vi.fn(),
-    saveChangesAndClose: vi.fn(),
-    resetForm: vi.fn(),
-    save: vi.fn(),
-    saveAndClose: vi.fn(),
-    addRelation: vi.fn(),
-    stageNewRelationRecord: vi.fn(),
-    removeRelation: vi.fn(),
-    onRelationTablePage: vi.fn(),
-    onRelationTableItemsPerPage: vi.fn(),
-    onRelationTableSort: vi.fn(),
-    onRelationTableColumnFilters: vi.fn(),
-    onRelationTableReload: vi.fn(),
-  }
-}
 
 function mountDialog(propOverrides: Record<string, unknown> = {}) {
   return mount(SaplingDialogEdit, {

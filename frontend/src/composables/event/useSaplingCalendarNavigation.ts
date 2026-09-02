@@ -268,14 +268,8 @@ export function useSaplingCalendarNavigation(
     const toMin = toHours * 60 + toMinutes
 
     return {
-      position: 'absolute',
-      left: '0px',
-      right: '0px',
-      top: `${(fromMin / (24 * 60)) * 100}%`,
-      height: `${((toMin - fromMin) / (24 * 60)) * 100}%`,
-      background: 'rgba(100,180,255,0.15)',
-      zIndex: '0',
-      pointerEvents: 'none',
+      '--sapling-calendar-workhour-top': `${(fromMin / (24 * 60)) * 100}%`,
+      '--sapling-calendar-workhour-height': `${((toMin - fromMin) / (24 * 60)) * 100}%`,
     }
   }
 

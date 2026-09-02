@@ -30,7 +30,7 @@
         'sapling-dialog-hero__stats--compact': statsLayout === 'compact',
         'sapling-dialog-hero__stats--mobile-hidden': hideStatsOnMobile,
       }"
-      :style="{ '--sapling-dialog-hero-stats-columns': String(statsColumns) }"
+      v-css-vars="{ '--sapling-dialog-hero-stats-columns': String(statsColumns) }"
     >
       <template v-if="loading">
         <slot name="loading-stats">

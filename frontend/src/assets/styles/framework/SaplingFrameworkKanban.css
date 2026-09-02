@@ -253,6 +253,7 @@
 }
 
 .sapling-kanban-card--drag-image {
+  width: var(--sapling-kanban-drag-image-width);
   position: fixed;
   z-index: 9999;
   top: 0;

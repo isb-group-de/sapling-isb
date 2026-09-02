@@ -1,5 +1,5 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { EntityManager, wrap } from '@mikro-orm/core';
+import { Injectable } from '@nestjs/common';
+import { EntityManager } from '@mikro-orm/core';
 import { AiProviderRegistryService } from '../ai/ai-provider-registry.service';
 import { createGeminiClient } from '../ai/gemini-ai.runtime';
 import { createOpenAiClient } from '../ai/openai-ai.runtime';
@@ -24,6 +24,18 @@ import type {
   ImportTemplateSummaryDto,
   ImportValueMappingFallback,
 } from './import.types';
+import {
+  normalizeImportColumns,
+  normalizeImportConfidence,
+  normalizeImportOptionalString,
+  normalizeImportRecord,
+  normalizeImportScalarString,
+  normalizeImportValueMappingFallback,
+  parseImportAiJsonObject,
+  toImportRecordArray,
+  toImportStringArray,
+  toPlainImportRecord,
+} from './import-ai-suggestion-normalization.utils';
 
 const SAMPLE_ROW_LIMIT = 5;
 const AI_REFERENCE_CANDIDATE_LIMIT = 50;
@@ -168,7 +180,7 @@ export class ImportAiSuggestionService {
           );
 
     return {
-      raw: this.parseJsonObject(rawText),
+      raw: parseImportAiJsonObject(rawText),
       providerHandle: runtimeTarget.provider.handle ?? null,
       modelHandle: runtimeTarget.model.handle ?? null,
     };
@@ -223,9 +235,9 @@ export class ImportAiSuggestionService {
     const mappings: ImportAiSuggestedFieldMappingDto[] = [];
     const mappedTargets = new Set<string>();
 
-    for (const entry of this.toRecordArray(rawSuggestion.mappings)) {
-      const sourceColumn = this.normalizeOptionalString(entry.sourceColumn);
-      const targetField = this.normalizeOptionalString(entry.targetField);
+    for (const entry of toImportRecordArray(rawSuggestion.mappings)) {
+      const sourceColumn = normalizeImportOptionalString(entry.sourceColumn);
+      const targetField = normalizeImportOptionalString(entry.targetField);
       if (
         !sourceColumn ||
         !targetField ||
@@ -239,8 +251,8 @@ export class ImportAiSuggestionService {
       mappings.push({
         sourceColumn,
         targetField,
-        confidence: this.normalizeConfidence(entry.confidence),
-        reason: this.normalizeOptionalString(entry.reason),
+        confidence: normalizeImportConfidence(entry.confidence),
+        reason: normalizeImportOptionalString(entry.reason),
       });
       mappedTargets.add(targetField);
     }
@@ -265,7 +277,7 @@ export class ImportAiSuggestionService {
       externalKey,
       referenceFields,
       valueMappings,
-      warnings: this.toStringArray(rawSuggestion.warnings).slice(0, 8),
+      warnings: toImportStringArray(rawSuggestion.warnings).slice(0, 8),
     };
   }
 
@@ -274,14 +286,14 @@ export class ImportAiSuggestionService {
     headers: string[],
   ): ImportAiSuggestedExternalKeyDto | null {
     const headerSet = new Set(headers);
-    const record = this.normalizeRecord(value);
+    const record = normalizeImportRecord(value);
     const rawColumns = record
       ? record.columns
       : Array.isArray(value)
         ? value
         : null;
-    const columns = this.normalizeColumns(
-      this.toStringArray(rawColumns).filter((column) => headerSet.has(column)),
+    const columns = normalizeImportColumns(
+      toImportStringArray(rawColumns).filter((column) => headerSet.has(column)),
     );
 
     if (columns.length === 0) {
@@ -290,8 +302,8 @@ export class ImportAiSuggestionService {
 
     return {
       columns,
-      confidence: this.normalizeConfidence(record?.confidence),
-      reason: this.normalizeOptionalString(record?.reason),
+      confidence: normalizeImportConfidence(record?.confidence),
+      reason: normalizeImportOptionalString(record?.reason),
     };
   }
 
@@ -302,24 +314,24 @@ export class ImportAiSuggestionService {
   ): ImportAiSuggestedReferenceFieldDto[] {
     const referenceFields: ImportAiSuggestedReferenceFieldDto[] = [];
 
-    for (const entry of this.toRecordArray(value)) {
-      const targetField = this.normalizeOptionalString(entry.targetField);
+    for (const entry of toImportRecordArray(value)) {
+      const targetField = normalizeImportOptionalString(entry.targetField);
       if (!targetField || !referenceFieldMap.has(targetField)) {
         continue;
       }
 
       const candidate = referenceFieldMap.get(targetField);
-      const sourceColumn = this.normalizeOptionalString(entry.sourceColumn);
+      const sourceColumn = normalizeImportOptionalString(entry.sourceColumn);
       referenceFields.push({
         targetField,
         referenceName:
-          this.normalizeOptionalString(entry.referenceName) ??
+          normalizeImportOptionalString(entry.referenceName) ??
           candidate?.referenceName ??
           '',
         sourceColumn:
           sourceColumn && headerSet.has(sourceColumn) ? sourceColumn : null,
-        confidence: this.normalizeConfidence(entry.confidence),
-        reason: this.normalizeOptionalString(entry.reason),
+        confidence: normalizeImportConfidence(entry.confidence),
+        reason: normalizeImportOptionalString(entry.reason),
       });
     }
 
@@ -336,9 +348,9 @@ export class ImportAiSuggestionService {
     );
     const valueMappings: ImportAiSuggestedValueMappingDto[] = [];
 
-    for (const entry of this.toRecordArray(value)) {
-      const targetField = this.normalizeOptionalString(entry.targetField);
-      const rawValues = this.normalizeRecord(entry.values);
+    for (const entry of toImportRecordArray(value)) {
+      const targetField = normalizeImportOptionalString(entry.targetField);
+      const rawValues = normalizeImportRecord(entry.values);
       if (!targetField || !rawValues || !mappedTargets.has(targetField)) {
         continue;
       }
@@ -350,7 +362,7 @@ export class ImportAiSuggestionService {
       const normalizedValues = Object.fromEntries(
         Object.entries(rawValues)
           .map(([sourceValue, targetValue]) => {
-            const sourceKey = this.normalizeScalarString(sourceValue);
+            const sourceKey = normalizeImportScalarString(sourceValue);
             const normalizedTarget = this.normalizeSuggestedValueMappingTarget(
               targetValue,
               referenceValueLookup,
@@ -371,11 +383,11 @@ export class ImportAiSuggestionService {
       valueMappings.push({
         targetField,
         values: normalizedValues,
-        fallback: this.normalizeValueMappingFallback(
+        fallback: normalizeImportValueMappingFallback(
           entry.fallback as ImportValueMappingFallback,
         ),
-        confidence: this.normalizeConfidence(entry.confidence),
-        reason: this.normalizeOptionalString(entry.reason),
+        confidence: normalizeImportConfidence(entry.confidence),
+        reason: normalizeImportOptionalString(entry.reason),
       });
     }
 
@@ -391,7 +403,7 @@ export class ImportAiSuggestionService {
     }
 
     if (referenceValueLookup) {
-      const normalized = this.normalizeScalarString(value);
+      const normalized = normalizeImportScalarString(value);
       return normalized ? referenceValueLookup.get(normalized) : undefined;
     }
 
@@ -465,7 +477,7 @@ export class ImportAiSuggestionService {
         targetField: field.name,
         referenceName: field.referenceName,
         values: result.data
-          .map((record) => this.toPlainRecord(record))
+          .map((record) => toPlainImportRecord(record))
           .map((record) => ({
             handle: record.handle,
             label: String(
@@ -523,93 +535,5 @@ export class ImportAiSuggestionService {
         : SAMPLE_ROW_LIMIT;
 
     return rows.slice(0, limit).map((row) => ({ ...row }));
-  }
-
-  private parseJsonObject(rawText: string): Record<string, unknown> {
-    const text = rawText
-      .trim()
-      .replace(/^```(?:json)?/i, '')
-      .replace(/```$/i, '');
-    const jsonStart = text.indexOf('{');
-    const jsonEnd = text.lastIndexOf('}');
-
-    if (jsonStart < 0 || jsonEnd <= jsonStart) {
-      throw new BadRequestException('import.aiInvalidJsonResponse');
-    }
-
-    try {
-      const parsed: unknown = JSON.parse(text.slice(jsonStart, jsonEnd + 1));
-      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
-        throw new Error('Expected JSON object');
-      }
-      return parsed as Record<string, unknown>;
-    } catch {
-      throw new BadRequestException('import.aiInvalidJsonResponse');
-    }
-  }
-
-  private normalizeConfidence(value: unknown): number {
-    const confidence = Number(value);
-    return Number.isFinite(confidence)
-      ? Math.max(0, Math.min(1, confidence))
-      : 0.5;
-  }
-
-  private toRecordArray(value: unknown): Record<string, unknown>[] {
-    return Array.isArray(value)
-      ? value.filter(
-          (entry): entry is Record<string, unknown> =>
-            !!entry && typeof entry === 'object' && !Array.isArray(entry),
-        )
-      : [];
-  }
-
-  private toStringArray(value: unknown): string[] {
-    return Array.isArray(value)
-      ? value
-          .map((entry) => (typeof entry === 'string' ? entry.trim() : ''))
-          .filter(Boolean)
-      : [];
-  }
-
-  private normalizeRecord(value: unknown): Record<string, unknown> | null {
-    return value && typeof value === 'object' && !Array.isArray(value)
-      ? (value as Record<string, unknown>)
-      : null;
-  }
-
-  private normalizeColumns(columns: string[]): string[] {
-    return Array.from(
-      new Set(columns.map((column) => column.trim()).filter(Boolean)),
-    );
-  }
-
-  private normalizeOptionalString(value: unknown): string | null {
-    return typeof value === 'string' && value.trim().length > 0
-      ? value.trim()
-      : null;
-  }
-
-  private normalizeScalarString(value: unknown): string {
-    if (typeof value === 'string') {
-      return value.trim();
-    }
-    return typeof value === 'number' || typeof value === 'boolean'
-      ? value.toString().trim()
-      : '';
-  }
-
-  private normalizeValueMappingFallback(
-    fallback: ImportValueMappingFallback | undefined,
-  ): ImportValueMappingFallback {
-    return fallback === 'empty' || fallback === 'error' ? fallback : 'keep';
-  }
-
-  private toPlainRecord(value: object): Record<string, unknown> {
-    try {
-      return wrap(value).toObject() as Record<string, unknown>;
-    } catch {
-      return { ...(value as Record<string, unknown>) };
-    }
   }
 }

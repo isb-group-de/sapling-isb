@@ -1,4 +1,4 @@
-import { computed, nextTick, ref, type CSSProperties, type Ref } from 'vue'
+import { computed, nextTick, ref, type Ref } from 'vue'
 import type { CalendarEvent } from 'vuetify/lib/components/VCalendar/types.mjs'
 import ApiGenericService from '@/services/api.generic.service'
 import ApiCalendarService from '@/services/api.calendar.service'
@@ -114,10 +114,10 @@ export function useSaplingEventContextMenu(options: UseSaplingEventContextMenuOp
         (permission) => permission.entityHandle === 'information' && permission.allowRead,
       ) ?? false,
   )
-  const eventContextMenuStyle = computed<CSSProperties>(() => ({
-    top: `${eventContextMenu.value.y}px`,
-    left: `${eventContextMenu.value.x}px`,
-  }))
+  const eventContextMenuTarget = computed<[number, number]>(() => [
+    eventContextMenu.value.x,
+    eventContextMenu.value.y,
+  ])
   const eventContextMenuMailActions = computed(() => [
     ...buildMailMenuActions(options.templates.value, eventContextMenu.value.item),
     ...customerContactMailActions.value,
@@ -506,7 +506,7 @@ export function useSaplingEventContextMenu(options: UseSaplingEventContextMenuOp
     confirmMaterializeRecurrence,
     eventContextMenu,
     eventContextMenuItems,
-    eventContextMenuStyle,
+    eventContextMenuTarget,
     handleEventContextMenuAction,
     informationDialogItem,
     loadEventScriptButtons,

@@ -32,6 +32,7 @@ import type {
   VectorizeEntityPayload,
   VectorizeEntityResponse,
 } from '@/services/api.ai.types'
+import { streamAiChatMessage, withClientTimeContext } from './api.ai.utils'
 
 export * from '@/services/api.ai.types'
 
@@ -399,7 +400,7 @@ class ApiAiService {
     try {
       const response = await axios.post<{ session: AiChatSessionItem; message: AiChatMessageItem }>(
         buildApiUrl('ai/chat/messages'),
-        this.withClientTimeContext(payload),
+        withClientTimeContext(payload),
       )
       return response.data
     } catch (error: unknown) {
@@ -429,7 +430,7 @@ class ApiAiService {
   ): Promise<AiChatQueuedInput> {
     const response = await axios.post<AiChatQueuedInput>(
       buildApiUrl('ai/chat/inputs'),
-      this.withClientTimeContext(payload),
+      withClientTimeContext(payload),
     )
     return response.data
   }
@@ -550,7 +551,7 @@ class ApiAiService {
       const formData = new FormData()
       formData.append('file', file, filename)
 
-      const enrichedPayload = this.withClientTimeContext(payload)
+      const enrichedPayload = withClientTimeContext(payload)
 
       for (const [key, value] of Object.entries(enrichedPayload)) {
         if (value == null) {
@@ -576,101 +577,11 @@ class ApiAiService {
     onEvent: (event: AiChatStreamEvent) => void,
     signal?: AbortSignal,
   ): Promise<void> {
-    const response = await fetch(buildApiUrl('ai/chat/stream'), {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-      body: JSON.stringify(this.withClientTimeContext(payload)),
-      signal,
-    })
-
-    if (!response.ok || !response.body) {
-      const errorMessage = `ai.chat.streamFailed (${response.status})`
-      pushApiErrorMessage(new Error(errorMessage), 'aiChat.streamFailed', 'aiChat')
-      throw new Error(errorMessage)
-    }
-
-    const reader = response.body.getReader()
-    const decoder = new TextDecoder()
-    let buffer = ''
-
-    while (true) {
-      const { done, value } = await reader.read()
-
-      if (done) {
-        break
-      }
-
-      buffer += decoder.decode(value, { stream: true })
-      const lines = buffer.split('\n')
-      buffer = lines.pop() ?? ''
-
-      for (const line of lines) {
-        const trimmedLine = line.trim()
-        if (!trimmedLine) {
-          continue
-        }
-
-        onEvent(JSON.parse(trimmedLine) as AiChatStreamEvent)
-      }
-    }
-
-    const remaining = buffer.trim()
-    if (remaining) {
-      onEvent(JSON.parse(remaining) as AiChatStreamEvent)
-    }
+    await streamAiChatMessage(payload, onEvent, signal)
   }
 
   private static handleError(error: unknown, fallbackMessage: string, context = 'aiChat') {
     pushApiErrorMessage(error, fallbackMessage, context)
-  }
-
-  private static withClientTimeContext<
-    T extends {
-      clientCurrentDateTime?: string
-      clientTimeZone?: string
-      clientLocale?: string
-      clientUtcOffsetMinutes?: number
-    },
-  >(payload: T): T {
-    const now = new Date()
-    const resolvedOptions = Intl.DateTimeFormat().resolvedOptions()
-    const timeZone = resolvedOptions.timeZone?.trim()
-    const locale = navigator.language || resolvedOptions.locale
-
-    return {
-      ...payload,
-      clientCurrentDateTime: now.toISOString(),
-      clientTimeZone: timeZone || undefined,
-      clientLocale: locale || undefined,
-      clientUtcOffsetMinutes: -now.getTimezoneOffset(),
-    }
-  }
-
-  private static getProviderHandle(provider?: AiProviderTypeItem | string | null): string | null {
-    if (!provider) {
-      return null
-    }
-
-    if (typeof provider === 'string') {
-      return provider
-    }
-
-    return provider.handle ?? null
-  }
-
-  private static getProviderTitle(provider?: AiProviderTypeItem | string | null): string {
-    if (!provider) {
-      return ''
-    }
-
-    if (typeof provider === 'string') {
-      return provider
-    }
-
-    return provider.title ?? ''
   }
 }
 

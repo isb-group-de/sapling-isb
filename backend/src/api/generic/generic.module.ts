@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { GenericController } from './generic.controller';
+import { GenericReferenceController } from './generic-reference.controller';
 import { GenericImportController } from './generic-import.controller';
 import { GlobalSearchController } from './global-search.controller';
 import { GlobalSearchService } from './global-search.service';
@@ -65,6 +66,7 @@ import { MailModule } from '../mail/mail.module';
   ],
   controllers: [
     GenericController,
+    GenericReferenceController,
     GenericImportController,
     GlobalSearchController,
     EventRecurrenceController,

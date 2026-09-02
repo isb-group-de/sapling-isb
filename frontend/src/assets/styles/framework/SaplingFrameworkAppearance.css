@@ -486,6 +486,16 @@ body {
 .tilt-element {
   transform-style: preserve-3d;
   perspective: 1000px;
+  transform: var(--sapling-tilt-transform, none);
+  box-shadow: var(--sapling-tilt-shadow, none);
+}
+
+:root[data-sapling-theme='light'] {
+  color-scheme: light;
+}
+
+:root[data-sapling-theme='dark'] {
+  color-scheme: dark;
 }
 
 .tilt-content {

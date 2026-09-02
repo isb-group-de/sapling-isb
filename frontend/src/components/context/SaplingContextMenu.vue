@@ -1,7 +1,7 @@
 <template>
   <v-menu
     v-model="menuVisible"
-    :style="menuStyle"
+    :target="menuTarget"
     absolute
     content-class="sapling-context-menu__content"
     transition="slide-y-transition"
@@ -16,5 +16,5 @@
 <script lang="ts" setup>
 import { useSaplingContextMenu } from '@/composables/context/useSaplingContextMenu'
 
-const { menuVisible, menuStyle, closeMenu, goHome } = useSaplingContextMenu()
+const { menuVisible, menuTarget, closeMenu, goHome } = useSaplingContextMenu()
 </script>

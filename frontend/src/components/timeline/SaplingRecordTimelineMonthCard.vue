@@ -120,7 +120,9 @@
                   <v-icon v-if="item.icon" size="14">{{ item.icon }}</v-icon>
                   <span
                     class="sapling-history-card__chip-dot sapling-record-timeline-month-card__chip-dot"
-                    :style="item.color ? { background: item.color } : undefined"
+                    v-css-vars="
+                      item.color ? { '--sapling-history-chip-dot-color': item.color } : undefined
+                    "
                   ></span>
                   <span>{{ item.label }}</span>
                 </span>

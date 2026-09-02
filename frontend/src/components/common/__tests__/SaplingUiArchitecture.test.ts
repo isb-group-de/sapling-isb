@@ -139,10 +139,12 @@ describe('Sapling UI architecture', () => {
   })
 
   it('keeps embedded relation-table scrolling reachable inside constrained dialogs', () => {
-    const recordDialogStyles = readFileSync(
-      join(sourceRoot, 'assets/styles/framework/SaplingFrameworkRecordDialog.css'),
-      'utf8',
-    )
+    const recordDialogStyles = [
+      'SaplingFrameworkRecordDialog.css',
+      'SaplingFrameworkRecordRelations.css',
+    ]
+      .map((file) => readFileSync(join(sourceRoot, 'assets/styles/framework', file), 'utf8'))
+      .join('\n')
     const relationContentRules = [
       ...recordDialogStyles.matchAll(/\.sapling-record-relation-content\s*\{([^}]+)\}/g),
     ].map((match) => match[1])

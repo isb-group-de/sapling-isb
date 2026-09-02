@@ -17,7 +17,6 @@ import { useCurrentPermissionStore } from '@/stores/currentPermissionStore'
 import { useGenericStore } from '@/stores/genericStore'
 import { getItemHandle } from '@/composables/table/saplingTableAction.utils'
 import {
-  canReadReferenceTemplate,
   filterTableHeadersByReferencePermission,
   getMobileTableHeaders,
   getSupportedTableHeaders,
@@ -33,6 +32,8 @@ import {
   selectTableColumns,
   type SaplingTableColumnMove,
 } from '@/composables/table/saplingTableColumnOrder'
+import { useSaplingTableReferencePreload } from './useSaplingTableReferencePreload'
+import { normalizeOpenEditHandle, withCellClass } from './saplingTableComponent.utils'
 
 export interface UseSaplingTableProps {
   items: SaplingGenericItem[]
@@ -88,8 +89,6 @@ export type UseSaplingTableEmit = {
 
 const MOBILE_TABLE_BREAKPOINT = DEFAULT_SMALL_WINDOW_WIDTH
 const COMPACT_TOOLBAR_BREAKPOINT = 760
-const PRELOAD_REFERENCE_KINDS = ['m:1', '1:1']
-const REFERENCE_PRELOAD_DELAY_MS = 150
 
 /**
  * Encapsulates the local UI workflow for the shared data table.
@@ -221,8 +220,6 @@ export function useSaplingTableComponent(props: UseSaplingTableProps, emit: UseS
     typeof window === 'undefined' ? MOBILE_TABLE_BREAKPOINT : window.innerWidth,
   )
 
-  let referencePreloadTimeout: ReturnType<typeof setTimeout> | null = null
-
   const handleWindowResize = () => {
     windowWidth.value = window.innerWidth
   }
@@ -232,6 +229,19 @@ export function useSaplingTableComponent(props: UseSaplingTableProps, emit: UseS
   )
   const showToolbarActionsInline = computed(() => windowWidth.value >= COMPACT_TOOLBAR_BREAKPOINT)
   const currentPermissions = computed(() => currentPermissionStore.accumulatedPermission ?? [])
+  const { cancel: cancelReferencePreload, schedule: scheduleReferencePreload } =
+    useSaplingTableReferencePreload({
+      templates: () => props.entityTemplates,
+      permissions: () => currentPermissions.value,
+      ensurePermissions: () => currentPermissionStore.fetchCurrentPermission(),
+      loadReferences: (referenceNames) =>
+        genericStore.loadGenericMany(
+          referenceNames.map((referenceName) => ({
+            entityHandle: referenceName,
+            namespaces: ['global'],
+          })),
+        ),
+    })
 
   function refreshTable(): void {
     reloadTable()
@@ -250,51 +260,6 @@ export function useSaplingTableComponent(props: UseSaplingTableProps, emit: UseS
     window.removeEventListener('resize', handleWindowResize)
     cancelReferencePreload()
   })
-  // #endregion
-
-  // #region Shared Reference Metadata
-  async function preloadReferenceData() {
-    await currentPermissionStore.fetchCurrentPermission()
-
-    const referenceNames = Array.from(
-      new Set(
-        props.entityTemplates
-          .filter(
-            (template) =>
-              PRELOAD_REFERENCE_KINDS.includes(template.kind ?? '') &&
-              template.referenceName &&
-              canReadReferenceTemplate(template, currentPermissions.value),
-          )
-          .map((template) => template.referenceName as string),
-      ),
-    )
-
-    if (referenceNames.length === 0) {
-      return
-    }
-
-    await genericStore.loadGenericMany(
-      referenceNames.map((referenceName) => ({
-        entityHandle: referenceName,
-        namespaces: ['global'],
-      })),
-    )
-  }
-
-  function cancelReferencePreload() {
-    if (referencePreloadTimeout) {
-      clearTimeout(referencePreloadTimeout)
-      referencePreloadTimeout = null
-    }
-  }
-
-  function scheduleReferencePreload() {
-    cancelReferencePreload()
-    referencePreloadTimeout = setTimeout(() => {
-      referencePreloadTimeout = null
-      void preloadReferenceData()
-    }, REFERENCE_PRELOAD_DELAY_MS)
-  }
   // #endregion
 
   // #region Watchers
@@ -609,34 +574,4 @@ export function useSaplingTableComponent(props: UseSaplingTableProps, emit: UseS
     closeDeleteDialog,
   }
   // #endregion
-}
-
-function withCellClass(header: SaplingTableHeaderItem, className: string): SaplingTableHeaderItem {
-  const existingCellProps =
-    typeof header.cellProps === 'object' && header.cellProps !== null
-      ? (header.cellProps as Record<string, unknown>)
-      : {}
-  const existingClass =
-    typeof existingCellProps.class === 'string' ? existingCellProps.class.trim() : ''
-
-  return {
-    ...header,
-    cellProps: {
-      ...existingCellProps,
-      class: [existingClass, className].filter(Boolean).join(' '),
-    },
-  }
-}
-
-function normalizeOpenEditHandle(value: string | number | null | undefined): string | null {
-  if (typeof value === 'number') {
-    return Number.isFinite(value) ? String(value) : null
-  }
-
-  if (typeof value !== 'string') {
-    return null
-  }
-
-  const normalized = value.trim()
-  return normalized.length > 0 ? normalized : null
 }

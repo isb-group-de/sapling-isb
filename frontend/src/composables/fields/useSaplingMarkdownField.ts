@@ -4,7 +4,6 @@ import CookieService from '@/services/cookie.service'
 import ApiAiService from '@/services/api.ai.service'
 import ApiDocumentService from '@/services/api.document.service'
 import type { ReferencedImageDocument } from '@/services/api.document.service'
-import type { AiProviderModelItem, AiProviderTypeItem } from '@/entity/entity'
 import { resolveRuntimeTarget } from '@/components/system/ai-chat/aiChatRuntimeTargets'
 import {
   loadSaplingAiPreferences,
@@ -13,16 +12,23 @@ import {
 import { useSaplingMarkdownVoiceInput } from '@/composables/fields/useSaplingMarkdownVoiceInput'
 import type {
   MarkdownEditorHandle,
-  MarkdownToolbarAction,
   MarkdownTransformResult,
 } from '@/components/dialog/fields/markdown/markdownField.types'
+import {
+  buildMarkdownToolbarActions,
+  buildSaplingImageEmbed,
+  loadMarkdownPreparationCatalog,
+  normalizeMarkdownMaxLength,
+  truncateMarkdownValue,
+} from './saplingMarkdownField.utils'
+
+export {
+  buildSaplingImageEmbed,
+  normalizeMarkdownMaxLength,
+  truncateMarkdownValue,
+} from './saplingMarkdownField.utils'
 
 const MARKDOWN_SYNC_DEBOUNCE_MS = 120
-
-let activeMarkdownPreparationCatalogRequest: Promise<{
-  providerConfigs: AiProviderTypeItem[]
-  modelConfigs: AiProviderModelItem[]
-}> | null = null
 
 export function useSaplingMarkdownField(options: {
   modelValue: () => string | undefined
@@ -487,120 +493,21 @@ export function useSaplingMarkdownField(options: {
     instance.focus()
   }
 
-  const toolbarActions = computed<MarkdownToolbarAction[]>(() => [
-    {
-      key: 'heading1',
-      group: 'structure',
-      icon: 'mdi-format-header-1',
-      title: t('global.heading1'),
-      run: () => applyHeading(1),
-    },
-    {
-      key: 'heading',
-      group: 'structure',
-      icon: 'mdi-format-header-2',
-      title: t('global.heading2'),
-      run: () => applyHeading(2),
-    },
-    {
-      key: 'heading3',
-      group: 'structure',
-      icon: 'mdi-format-header-3',
-      title: t('global.heading3'),
-      run: () => applyHeading(3),
-    },
-    {
-      key: 'bold',
-      group: 'text',
-      icon: 'mdi-format-bold',
-      title: t('global.bold'),
-      run: () => wrapSelection('**'),
-    },
-    {
-      key: 'italic',
-      group: 'text',
-      icon: 'mdi-format-italic',
-      title: t('global.italic'),
-      run: () => wrapSelection('_'),
-    },
-    {
-      key: 'strike',
-      group: 'text',
-      icon: 'mdi-format-strikethrough',
-      title: t('global.strikethrough'),
-      run: () => wrapSelection('~~'),
-    },
-    {
-      key: 'link',
-      group: 'text',
-      icon: 'mdi-link-variant',
-      title: t('global.link'),
-      run: applyLink,
-    },
-    {
-      key: 'image',
-      group: 'media',
-      icon: 'mdi-image-outline',
-      title: t('global.image'),
-      run: applyImage,
-    },
-    {
-      key: 'list',
-      group: 'lists',
-      icon: 'mdi-format-list-bulleted',
-      title: t('global.bulletList'),
-      run: () => toggleLinePrefix('- ', t('global.listItem')),
-    },
-    {
-      key: 'ordered-list',
-      group: 'lists',
-      icon: 'mdi-format-list-numbered',
-      title: t('global.numberedList'),
-      run: applyOrderedList,
-    },
-    {
-      key: 'checklist',
-      group: 'lists',
-      icon: 'mdi-format-list-checks',
-      title: t('global.checklist'),
-      run: applyChecklist,
-    },
-    {
-      key: 'quote',
-      group: 'structure',
-      icon: 'mdi-format-quote-close',
-      title: t('global.quote'),
-      run: () => toggleLinePrefix('> ', t('global.quote')),
-    },
-    {
-      key: 'inline-code',
-      group: 'code',
-      icon: 'mdi-code-tags',
-      title: t('global.inlineCode'),
-      run: applyInlineCode,
-    },
-    {
-      key: 'code-block',
-      group: 'code',
-      icon: 'mdi-code-braces-box',
-      title: t('global.codeBlock'),
-      run: applyCodeBlock,
-    },
-    {
-      key: 'table',
-      group: 'media',
-      icon: 'mdi-table-large',
-      title: t('global.table'),
-      run: applyTable,
-    },
-    {
-      key: 'divider',
-      group: 'structure',
-      icon: 'mdi-minus',
-      title: t('global.horizontalRule'),
-      run: applyHorizontalRule,
-    },
-  ])
+  const toolbarActions = computed(() =>
+    buildMarkdownToolbarActions(t, {
+      applyHeading,
+      wrapSelection,
+      applyLink,
+      applyImage,
+      toggleLinePrefix,
+      applyOrderedList,
+      applyChecklist,
+      applyInlineCode,
+      applyCodeBlock,
+      applyTable,
+      applyHorizontalRule,
+    }),
+  )
 
   return {
     draftValue,
@@ -629,55 +536,4 @@ export function useSaplingMarkdownField(options: {
     uploadImages,
     insertReferencedImages,
   }
-}
-
-export function buildSaplingImageEmbed(
-  handle: number,
-  filename: string,
-  fallbackLabel: string,
-): string {
-  const label = filename
-    .replace(/\.[^.]+$/, '')
-    .replace(/[}\r\n]/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim()
-
-  return `{{sapling-image:${handle}|${label || fallbackLabel}}}`
-}
-
-export function normalizeMarkdownMaxLength(value: number | undefined): number | undefined {
-  if (!Number.isFinite(value) || !Number.isInteger(value) || (value ?? 0) <= 0) {
-    return undefined
-  }
-
-  return value
-}
-
-export function truncateMarkdownValue(value: string, maxLength?: number): string {
-  if (maxLength == null || value.length <= maxLength) {
-    return value
-  }
-
-  return value.slice(0, maxLength)
-}
-
-function loadMarkdownPreparationCatalog() {
-  if (activeMarkdownPreparationCatalogRequest) {
-    return activeMarkdownPreparationCatalogRequest
-  }
-
-  const request = Promise.all([
-    ApiAiService.listProviders({ suppressErrorMessage: true }),
-    ApiAiService.listModels(undefined, { suppressErrorMessage: true }),
-  ]).then(([providerConfigs, modelConfigs]) => ({ providerConfigs, modelConfigs }))
-
-  activeMarkdownPreparationCatalogRequest = request
-  const clearRequest = () => {
-    if (activeMarkdownPreparationCatalogRequest === request) {
-      activeMarkdownPreparationCatalogRequest = null
-    }
-  }
-  void request.then(clearRequest, clearRequest)
-
-  return request
 }

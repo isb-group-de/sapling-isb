@@ -215,8 +215,12 @@ export function useSaplingEventPresentation(options: UseSaplingEventPresentation
   const sideBySideGridStyle = computed<CSSProperties>(() => {
     const selectedCount = options.selectedPeople.value.length
     return selectedCount <= 2
-      ? { gridTemplateColumns: `repeat(${Math.max(selectedCount, 1)}, minmax(0, 1fr))` }
-      : { gridTemplateColumns: `repeat(${selectedCount}, minmax(420px, 1fr))` }
+      ? {
+          '--sapling-event-sidebyside-columns': `repeat(${Math.max(selectedCount, 1)}, minmax(0, 1fr))`,
+        }
+      : {
+          '--sapling-event-sidebyside-columns': `repeat(${selectedCount}, minmax(420px, 1fr))`,
+        }
   })
 
   function getEventsForPerson(personId: number) {

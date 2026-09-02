@@ -1,0 +1,199 @@
+@media (max-width: 1380px) {
+  .sapling-event-skeleton__context {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1080px) {
+  .sapling-event-page {
+    --sapling-dashboard-page-gap: var(--sapling-gap-md);
+  }
+
+  .sapling-event-skeleton__context {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sapling-event-workspace {
+    display: flex;
+    flex: 0 0 auto;
+    flex-direction: column;
+    gap: var(--sapling-gap-md);
+    height: auto;
+    min-height: 0;
+  }
+
+  .sapling-event-context {
+    flex: 0 0 auto;
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+  }
+
+  .sapling-event-workspace__main,
+  .sapling-event-calendar-body,
+  .sapling-event-context,
+  .sapling-event-sidebyside-shell {
+    overflow: visible;
+    overscroll-behavior: auto;
+  }
+
+  .sapling-event-workspace__main {
+    min-height: calc(var(--sapling-event-calendar-mobile-min-height) + 168px);
+  }
+
+  .sapling-event-calendar-body {
+    display: flex;
+    min-height: var(--sapling-event-calendar-mobile-min-height);
+    overflow: auto;
+  }
+
+  .sapling-event-vcalendar {
+    flex: 1 0 auto;
+    min-height: var(--sapling-event-calendar-mobile-min-height);
+  }
+
+  .sapling-event-vcalendar--week {
+    min-width: var(--sapling-event-calendar-mobile-week-min-width);
+  }
+
+  .sapling-event-vcalendar--month {
+    min-width: var(--sapling-event-calendar-mobile-month-min-width);
+  }
+
+  .sapling-event-context__switcher {
+    margin-bottom: var(--sapling-gap-sm);
+  }
+
+  .sapling-event-context__panel {
+    flex: 0 0 auto;
+    max-height: min(360px, 48dvh);
+    overflow: auto;
+  }
+
+  .sapling-event-context .sapling-event-panel {
+    height: auto;
+    min-height: 0;
+  }
+
+  .sapling-event-context .sapling-empty-state-panel--compact {
+    min-height: var(--sapling-empty-state-min-height-xs);
+  }
+
+  .sapling-event-context .sapling-work-filter-panel {
+    max-height: none;
+  }
+
+  .sapling-event-agenda-item__row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .sapling-event-toolbar__primary {
+    flex: 1 1 auto;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: space-between;
+    min-width: 0;
+  }
+
+  .sapling-event-toolbar__period {
+    flex: 1 1 auto;
+  }
+
+  .sapling-event-toolbar__options {
+    flex: 0 1 auto;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+  }
+
+  .sapling-event-toolbar__nav-group {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: var(--sapling-gap-sm);
+  }
+
+  .sapling-event-toolbar__nav-group {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .sapling-event-toolbar__picker-trigger {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .sapling-event-toolbar__picker-trigger .v-btn__content {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 640px) {
+  .sapling-event-page {
+    --sapling-event-calendar-mobile-min-height: 560px;
+    --sapling-event-calendar-mobile-week-min-width: 720px;
+    --sapling-event-calendar-mobile-month-min-width: 600px;
+  }
+
+  .sapling-event-calendar-body {
+    display: flex;
+  }
+
+  .sapling-event-panel {
+    padding: var(--sapling-gap-xl);
+  }
+
+  .sapling-event-skeleton__context {
+    grid-template-columns: minmax(0, 1fr);
+    justify-self: stretch;
+    width: 100%;
+  }
+
+  .sapling-event-sidebyside-grid {
+    width: 100%;
+  }
+
+  .sapling-event-toolbar__primary {
+    flex-wrap: wrap;
+    width: 100%;
+  }
+
+  .sapling-event-toolbar__period {
+    flex: 1 0 100%;
+    min-width: 0;
+    width: 100%;
+    padding-right: 0;
+  }
+
+  .sapling-event-toolbar__period-copy span {
+    display: block;
+  }
+
+  .sapling-event-toolbar__options {
+    flex: 1 1 auto;
+    justify-content: space-between;
+  }
+
+  .sapling-event-toolbar__nav,
+  .sapling-event-toolbar__nav .v-btn {
+    min-width: 0;
+  }
+
+  .sapling-event-toolbar__nav .v-btn {
+    padding-inline: var(--sapling-gap-sm);
+  }
+
+  .sapling-event-toolbar__mode-toggle .v-btn {
+    min-width: var(--sapling-icon-box-md);
+    padding-inline: var(--sapling-gap-sm);
+  }
+
+  .sapling-event-toolbar__picker-trigger {
+    padding-inline: var(--sapling-gap-md);
+  }
+}

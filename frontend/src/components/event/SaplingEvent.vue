@@ -291,7 +291,7 @@
 
   <v-menu
     v-model="eventContextMenu.visible"
-    :style="eventContextMenuStyle"
+    :target="eventContextMenuTarget"
     absolute
     content-class="sapling-context-menu__content"
     transition="slide-y-transition"
@@ -400,7 +400,7 @@ const {
   currentMonthLabel,
   eventContextMenu,
   eventContextMenuItems,
-  eventContextMenuStyle,
+  eventContextMenuTarget,
   entityEvent,
   chipFilters,
   events,

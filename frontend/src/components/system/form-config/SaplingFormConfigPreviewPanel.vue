@@ -199,7 +199,10 @@
 
       <div v-else-if="previewModeModel === 'table'" class="sapling-form-config-preview__stage">
         <div v-if="previewTableTemplates.length > 0" class="sapling-form-config-preview-table">
-          <div class="sapling-form-config-preview-table__scroll" :style="previewTableScrollStyle">
+          <div
+            v-css-vars="previewTableScrollStyle"
+            class="sapling-form-config-preview-table__scroll"
+          >
             <table>
               <thead>
                 <tr>

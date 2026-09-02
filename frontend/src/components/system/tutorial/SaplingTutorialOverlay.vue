@@ -12,7 +12,7 @@
         v-for="(area, index) in dimmedAreas"
         :key="`area-${index}`"
         class="sapling-tutorial__scrim"
-        :style="area"
+        v-css-vars="area"
         aria-hidden="true"
         @click.stop
       />
@@ -21,7 +21,7 @@
         :key="corner.position"
         class="sapling-tutorial__scrim sapling-tutorial__scrim-corner"
         :class="`sapling-tutorial__scrim-corner--${corner.position}`"
-        :style="corner.style"
+        v-css-vars="corner.cssVars"
         aria-hidden="true"
         @click.stop
       />
@@ -30,7 +30,7 @@
         v-if="isPositioned"
         class="sapling-tutorial__spotlight"
         :class="{ 'sapling-tutorial__spotlight--interactive': currentStep.allowInteraction }"
-        :style="spotlightStyle"
+        v-css-vars="spotlightCssVars"
         aria-hidden="true"
         @click.stop="handleSpotlightClick"
       />
@@ -39,7 +39,7 @@
         ref="panelRef"
         class="sapling-tutorial__panel"
         :class="`sapling-tutorial__panel--${panelPlacement}`"
-        :style="panelStyle"
+        v-css-vars="panelCssVars"
         tabindex="-1"
       >
         <div class="sapling-tutorial__panel-header">
@@ -101,7 +101,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import type { CSSProperties } from 'vue'
+import type { SaplingCssVariables } from '@/directives/cssVars'
 import type { SaplingTutorialStep } from './saplingTutorial.types'
 
 const props = defineProps<{
@@ -121,7 +121,9 @@ const { t } = useI18n()
 const currentIndex = ref(0)
 const panelRef = ref<HTMLElement | null>(null)
 const targetRect = ref<DOMRect | null>(null)
-const panelStyle = ref<CSSProperties>({ visibility: 'hidden' })
+const panelCssVars = ref<SaplingCssVariables>({
+  '--sapling-tutorial-visibility': 'hidden',
+})
 const panelPlacement = ref<'above' | 'below'>('below')
 const resizeObserver = ref<ResizeObserver | null>(null)
 const observedTarget = ref<Element | null>(null)
@@ -137,43 +139,66 @@ const descriptionId = computed(
   () => `sapling-tutorial-${currentStep.value?.id ?? 'step'}-description`,
 )
 
-const spotlightStyle = computed<CSSProperties>(() => {
+const spotlightCssVars = computed<SaplingCssVariables>(() => {
   const rect = targetRect.value
   if (!rect) {
-    return { visibility: 'hidden' }
+    return { '--sapling-tutorial-visibility': 'hidden' }
   }
 
   return {
-    top: `${rect.top}px`,
-    left: `${rect.left}px`,
-    width: `${rect.width}px`,
-    height: `${rect.height}px`,
+    '--sapling-tutorial-top': `${rect.top}px`,
+    '--sapling-tutorial-left': `${rect.left}px`,
+    '--sapling-tutorial-width': `${rect.width}px`,
+    '--sapling-tutorial-height': `${rect.height}px`,
+    '--sapling-tutorial-visibility': 'visible',
   }
 })
 
-const dimmedAreas = computed<CSSProperties[]>(() => {
+const dimmedAreas = computed<SaplingCssVariables[]>(() => {
   const rect = targetRect.value
   if (!rect) {
-    return [{ inset: '0' }]
+    return [
+      {
+        '--sapling-tutorial-top': '0',
+        '--sapling-tutorial-right': '0',
+        '--sapling-tutorial-bottom': '0',
+        '--sapling-tutorial-left': '0',
+      },
+    ]
   }
 
   return [
-    { top: '0', left: '0', right: '0', height: `${rect.top}px` },
-    { top: `${rect.top}px`, left: '0', width: `${rect.left}px`, height: `${rect.height}px` },
     {
-      top: `${rect.top}px`,
-      left: `${rect.right}px`,
-      right: '0',
-      height: `${rect.height}px`,
+      '--sapling-tutorial-top': '0',
+      '--sapling-tutorial-right': '0',
+      '--sapling-tutorial-left': '0',
+      '--sapling-tutorial-height': `${rect.top}px`,
     },
-    { top: `${rect.bottom}px`, left: '0', right: '0', bottom: '0' },
+    {
+      '--sapling-tutorial-top': `${rect.top}px`,
+      '--sapling-tutorial-left': '0',
+      '--sapling-tutorial-width': `${rect.left}px`,
+      '--sapling-tutorial-height': `${rect.height}px`,
+    },
+    {
+      '--sapling-tutorial-top': `${rect.top}px`,
+      '--sapling-tutorial-left': `${rect.right}px`,
+      '--sapling-tutorial-right': '0',
+      '--sapling-tutorial-height': `${rect.height}px`,
+    },
+    {
+      '--sapling-tutorial-top': `${rect.bottom}px`,
+      '--sapling-tutorial-right': '0',
+      '--sapling-tutorial-bottom': '0',
+      '--sapling-tutorial-left': '0',
+    },
   ]
 })
 
 const roundedCornerAreas = computed<
   Array<{
     position: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'
-    style: CSSProperties
+    cssVars: SaplingCssVariables
   }>
 >(() => {
   const rect = targetRect.value
@@ -184,27 +209,30 @@ const roundedCornerAreas = computed<
   return [
     {
       position: 'top-left',
-      style: { top: `${rect.top}px`, left: `${rect.left}px` },
+      cssVars: {
+        '--sapling-tutorial-top': `${rect.top}px`,
+        '--sapling-tutorial-left': `${rect.left}px`,
+      },
     },
     {
       position: 'top-right',
-      style: {
-        top: `${rect.top}px`,
-        left: `calc(${rect.right}px - var(--sapling-radius-md))`,
+      cssVars: {
+        '--sapling-tutorial-top': `${rect.top}px`,
+        '--sapling-tutorial-left': `calc(${rect.right}px - var(--sapling-radius-md))`,
       },
     },
     {
       position: 'bottom-left',
-      style: {
-        top: `calc(${rect.bottom}px - var(--sapling-radius-md))`,
-        left: `${rect.left}px`,
+      cssVars: {
+        '--sapling-tutorial-top': `calc(${rect.bottom}px - var(--sapling-radius-md))`,
+        '--sapling-tutorial-left': `${rect.left}px`,
       },
     },
     {
       position: 'bottom-right',
-      style: {
-        top: `calc(${rect.bottom}px - var(--sapling-radius-md))`,
-        left: `calc(${rect.right}px - var(--sapling-radius-md))`,
+      cssVars: {
+        '--sapling-tutorial-top': `calc(${rect.bottom}px - var(--sapling-radius-md))`,
+        '--sapling-tutorial-left': `calc(${rect.right}px - var(--sapling-radius-md))`,
       },
     },
   ]
@@ -335,11 +363,11 @@ function updatePanelPosition() {
     : Math.max(viewportMargin, rect.top - targetGap - panelHeight)
   const arrowLeft = clamp(rect.left + rect.width / 2 - left, 20, Math.max(20, panelWidth - 20))
 
-  panelStyle.value = {
-    top: `${top}px`,
-    left: `${left}px`,
+  panelCssVars.value = {
+    '--sapling-tutorial-top': `${top}px`,
+    '--sapling-tutorial-left': `${left}px`,
     '--sapling-tutorial-arrow-left': `${arrowLeft}px`,
-    visibility: 'visible',
+    '--sapling-tutorial-visibility': 'visible',
   }
   panel.focus({ preventScroll: true })
 }
@@ -492,7 +520,7 @@ function removeListeners() {
   observedTarget.value = null
   lastObservedBounds = null
   targetRect.value = null
-  panelStyle.value = { visibility: 'hidden' }
+  panelCssVars.value = { '--sapling-tutorial-visibility': 'hidden' }
 }
 
 function clamp(value: number, min: number, max: number) {

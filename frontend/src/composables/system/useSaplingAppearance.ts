@@ -113,8 +113,6 @@ function applyAppearanceAttributes(themeName: SaplingThemeName) {
   root.dataset.saplingGlass = glassEnabled.value ? 'on' : 'off'
   root.dataset.saplingTilt = tiltEnabled.value ? 'on' : 'off'
   root.dataset.saplingPerformance = performanceMode.value
-  root.style.colorScheme = themeName
-
   dispatchAppearanceChange(themeName)
 }
 
