@@ -1,19 +1,9 @@
 // #region Imports
-import {
-  ref,
-  watch,
-  onMounted,
-  onBeforeUnmount,
-  computed,
-  nextTick,
-  type ComputedRef,
-  type Ref,
-} from 'vue'
+import { ref, watch, onMounted, computed, nextTick, type ComputedRef, type Ref } from 'vue'
 import type { AccumulatedPermission, EntityTemplate } from '@/entity/structure'
 import { useI18n } from 'vue-i18n'
 import type { SaplingGenericItem } from '@/entity/entity'
 import { getDialogTemplateColumns } from '@/utils/saplingDialogLayoutUtil'
-import { useCurrentPermissionStore } from '@/stores/currentPermissionStore'
 import { useCurrentPersonStore } from '@/stores/currentPersonStore'
 import { useSaplingDialogEditDirty } from './useSaplingDialogEditDirty'
 import { useSaplingDialogEditForm } from './useSaplingDialogEditForm'
@@ -25,10 +15,14 @@ import { useSaplingDialogEditDraft } from './useSaplingDialogEditDraft'
 import {
   formatLocalDate,
   formatLocalTime,
+  applyReferenceTemplateMappings,
+  buildDialogRecordIdentity,
+  buildDialogTemplatesSignature,
   getItemHandle,
   getLocalDateTimeParts,
   hasFormValue,
   isValidDate,
+  runReferenceHydrationAutomation,
   toUtcIsoString,
 } from './saplingDialogEdit.utils'
 import type {
@@ -36,7 +30,15 @@ import type {
   UseSaplingDialogEditProps,
   VuetifyFormRef,
 } from './saplingDialogEdit.types'
-import { findSaplingDateRangePair, isSaplingDateRangeValid } from './saplingDateRangeValidation'
+import { useSaplingDialogEditFieldRules } from './useSaplingDialogEditFieldRules'
+import {
+  initializeSaplingDialogEdit,
+  initializeDialogFormWithParentContext,
+  loadActiveDialogRelation,
+  loadSaplingDialogPermissions,
+  useSaplingDialogBeforeUnloadGuard,
+} from './useSaplingDialogEditLifecycle'
+import { createDialogRelationMutationIdentityTracker } from './saplingDialogRelationMutationIdentity'
 // #endregion
 
 /**
@@ -66,8 +68,6 @@ export function useSaplingDialogEdit(
   const currentPersonStore = useCurrentPersonStore()
   const isHydratingForm = ref(false)
   const initialFormSnapshot = ref<Record<string, string>>({})
-  let relationMutationRecordIdentity: string | null = null
-  let relationMutationIdentitySkipsRemaining = 0
   // #endregion
 
   // #region Helpers
@@ -98,25 +98,11 @@ export function useSaplingDialogEdit(
 
   // #region Templates
 
-  function handlePersistedRelationMutation(item: SaplingGenericItem): void {
-    relationMutationRecordIdentity = buildRecordIdentity(item)
-    relationMutationIdentitySkipsRemaining = 2
-    emit('update:item', item)
-  }
-
-  function consumeRelationMutationIdentity(identity: string): boolean {
-    if (identity !== relationMutationRecordIdentity) {
-      relationMutationRecordIdentity = null
-      relationMutationIdentitySkipsRemaining = 0
-      return false
-    }
-
-    relationMutationIdentitySkipsRemaining -= 1
-    if (relationMutationIdentitySkipsRemaining <= 0) {
-      relationMutationRecordIdentity = null
-    }
-    return true
-  }
+  const { consumeRelationMutationIdentity, handlePersistedRelationMutation } =
+    createDialogRelationMutationIdentityTracker({
+      buildIdentity: (item) => buildDialogRecordIdentity(props.entity?.handle, item, props.mode),
+      onPersistedItem: (item) => emit('update:item', item),
+    })
 
   const {
     relationTemplates,
@@ -294,147 +280,53 @@ export function useSaplingDialogEdit(
   })
   // #endregion
 
-  function getTemplateColumnProps(template: EntityTemplate) {
-    return getDialogTemplateColumns(template)
-  }
+  const getTemplateColumnProps = getDialogTemplateColumns
 
   async function initialize() {
-    isLoading.value = true
-
-    try {
-      await currentPersonStore.fetchCurrentPerson()
-      await Promise.all([setEntitiesPermissions(), loadFormConfigs(), loadSystemTemplates()])
-      await initializeRelationTables()
-      await loadActiveRelationTableItems()
-    } catch (error) {
-      console.error('Error initializing dialog edit:', error)
-    } finally {
-      isLoading.value = false
-      void nextTick(() => {
-        void prefetchReferenceColumns(
-          templates.value.filter(
-            (template) => template.isReference && canReadReferenceEntity(template.referenceName),
-          ),
-        )
-      })
-    }
+    await initializeSaplingDialogEdit({
+      isLoading,
+      load: async () => {
+        await currentPersonStore.fetchCurrentPerson()
+        await Promise.all([
+          loadSaplingDialogPermissions(permissions),
+          loadFormConfigs(),
+          loadSystemTemplates(),
+        ])
+        await initializeRelationTables()
+        await loadActiveRelationTableItems()
+      },
+      afterLoad: () =>
+        void nextTick(() => {
+          void prefetchReferenceColumns(
+            templates.value.filter(
+              (template) => template.isReference && canReadReferenceEntity(template.referenceName),
+            ),
+          )
+        }),
+      onError: (error) => console.error('Error initializing dialog edit:', error),
+    })
   }
 
-  const requiredRule = (label: string) => (v: unknown) =>
-    v !== null && v !== undefined && v !== '' ? true : `${label} ${t('global.isRequired')}`
-
-  function isTemplateRequired(template: EntityTemplate): boolean {
-    if (template.type === 'boolean' || template.formConfig?.renderer === 'boolean') {
-      return false
-    }
-
-    if (template.formConfig?.required === true) {
-      return true
-    }
-
-    if (template.formConfig?.required === false && template.nullable !== false) {
-      return false
-    }
-
-    return template.isRequired === true
-  }
-
-  function isTemplateRecommended(template: EntityTemplate): boolean {
-    if (
-      template.type === 'boolean' ||
-      template.formConfig?.renderer === 'boolean' ||
-      isTemplateRequired(template)
-    ) {
-      return false
-    }
-
-    if (typeof template.formConfig?.recommended === 'boolean') {
-      return template.formConfig.recommended
-    }
-
-    return template.options?.includes('isRecommended') === true
-  }
-
-  function isTemplateRecommendationActive(template: EntityTemplate): boolean {
-    if (
-      props.mode === 'readonly' ||
-      !isTemplateRecommended(template) ||
-      isFieldDisabled(template) ||
-      hasFormValue(form.value[template.name])
-    ) {
-      return false
-    }
-
-    return !template.isReference || getReferenceAvailability(template) === 'available'
-  }
-
-  function getRecommendationMessage(template: EntityTemplate): string {
-    const field = t(`${props.entity?.handle}.${template.name}`)
-    return template.isReference
-      ? t('global.recommendedReferenceAvailable', { field })
-      : t('global.recommendedFieldMissing', { field })
-  }
-
-  function getRules(template: EntityTemplate): Array<(v: unknown) => true | string> {
-    const rules: Array<(v: unknown) => true | string> = []
-    if (isTemplateRequired(template)) {
-      rules.push(requiredRule(t(`${props.entity?.handle}.${template.name}`)))
-    }
-    const dateRangePair = findSaplingDateRangePair(baseTemplates.value, template.name)
-    if (dateRangePair) {
-      rules.push(() =>
-        isSaplingDateRangeValid(dateRangePair, form.value) ? true : t('global.invalidDateRange'),
-      )
-    }
-    return rules
-  }
-
-  /**
-   * Disables fields that must not be edited in the current dialog mode.
-   */
-  function isFieldDisabled(template: EntityTemplate): boolean {
-    return (
-      (template.name === 'handle' && props.mode !== 'create') ||
-      (props.mode === 'create'
-        ? template.fieldAccess?.allowInsert === false
-        : props.mode === 'edit'
-          ? template.fieldAccess?.allowUpdate === false
-          : template.fieldAccess?.allowRead === false) ||
-      template.options?.includes('isReadOnly') ||
-      template.formConfig?.readonly === true ||
-      props.mode === 'readonly'
-    )
-  }
-
-  function isReferenceFieldDisabled(template: EntityTemplate): boolean {
-    return isFieldDisabled(template) || isReferenceDependencyBlocked(template)
-  }
+  const {
+    getRecommendationMessage,
+    getRules,
+    isFieldDisabled,
+    isReferenceFieldDisabled,
+    isTemplateRecommendationActive,
+    isTemplateRecommended,
+  } = useSaplingDialogEditFieldRules({
+    mode: () => props.mode,
+    entityHandle: () => props.entity?.handle,
+    form,
+    baseTemplates,
+    translate: (key, params) => t(key, params ?? {}),
+    getReferenceAvailability,
+    isReferenceDependencyBlocked,
+  })
 
   function applyReferenceTemplate(key: string, value: unknown): void {
-    if (!value || typeof value !== 'object') {
-      return
-    }
-
     const template = visibleTemplates.value.find((entry) => entry.name === key)
-    const mappings = template?.referenceTemplate?.mappings ?? []
-    const source = value as Record<string, unknown>
-
-    mappings.forEach((mapping) => {
-      if (!mapping.sourceField || !mapping.targetField) {
-        return
-      }
-
-      const nextValue = source[mapping.sourceField]
-      if (nextValue === undefined || nextValue === null) {
-        return
-      }
-
-      if (mapping.overwrite === false && hasFormValue(form.value[mapping.targetField])) {
-        return
-      }
-
-      form.value[mapping.targetField] = nextValue
-    })
+    applyReferenceTemplateMappings(template, value, form.value)
   }
 
   function updateFormField(key: string, value: unknown): void {
@@ -459,59 +351,32 @@ export function useSaplingDialogEdit(
   }
 
   function autoSelectHydratedDependencies(): void {
-    const dependencyTemplates = templates.value.filter((template) => template.referenceDependency)
-    if (props.mode === 'create') {
-      autoSelectSingleDependencies(dependencyTemplates)
-    } else {
-      dependencyTemplates
-        .filter(isTemplateRecommended)
-        .forEach((template) => void inspectRecommendedReference(template))
-    }
-
-    templates.value
-      .filter(
-        (template) =>
-          template.isReference && !template.referenceDependency && isTemplateRecommended(template),
-      )
-      .forEach((template) => void inspectRecommendedReference(template))
+    runReferenceHydrationAutomation({
+      templates: templates.value,
+      mode: props.mode,
+      autoSelect: autoSelectSingleDependencies,
+      inspectRecommended: (template) => void inspectRecommendedReference(template),
+      isRecommended: isTemplateRecommended,
+    })
   }
 
   async function loadActiveRelationTableItems(): Promise<void> {
-    const activeRelationTemplate = relationTemplates.value[activeTab.value - 1]
-    if (!activeRelationTemplate) {
-      return
-    }
-
-    await ensureRelationTableItems(activeRelationTemplate.name)
+    await loadActiveDialogRelation(
+      relationTemplates.value,
+      activeTab.value,
+      ensureRelationTableItems,
+    )
   }
 
   function initializeFormWithParentContext(): void {
-    initializeForm()
-    syncParentReferences()
+    initializeDialogFormWithParentContext(initializeForm, syncParentReferences)
   }
   // #endregion
 
   // #region Lifecycle
   onMounted(initialize)
 
-  // Warn the user before unloading the tab while the dialog has unsaved
-  // changes. Browsers ignore the returned string nowadays but require the
-  // `returnValue` assignment to trigger the native confirmation prompt.
-  function onBeforeUnload(event: BeforeUnloadEvent): string | void {
-    if (!isDirty.value || !props.modelValue) {
-      return
-    }
-    event.preventDefault()
-    event.returnValue = ''
-    return ''
-  }
-
-  if (typeof window !== 'undefined') {
-    window.addEventListener('beforeunload', onBeforeUnload)
-    onBeforeUnmount(() => {
-      window.removeEventListener('beforeunload', onBeforeUnload)
-    })
-  }
+  useSaplingDialogBeforeUnloadGuard(() => isDirty.value && props.modelValue)
 
   /**
    * Stable signature of the structural shape of `props.templates`.
@@ -520,14 +385,7 @@ export function useSaplingDialogEdit(
    * on every parent re-render and was a major cause of the dialog flickering
    * once relation tabs were active).
    */
-  const templatesSignature = computed(() =>
-    templates.value
-      .map(
-        (template) =>
-          `${template.name}|${template.type ?? ''}|${template.kind ?? ''}|${template.referenceName ?? ''}|${template.options?.join(',') ?? ''}`,
-      )
-      .join('::'),
-  )
+  const templatesSignature = computed(() => buildDialogTemplatesSignature(templates.value))
 
   /**
    * Stable record identity. Relation tables only need to reset when we
@@ -536,23 +394,9 @@ export function useSaplingDialogEdit(
    * content. The updatedAt segment lets successful saves and merges rehydrate
    * the form when the server returns a newer version for the same handle.
    */
-  function normalizeRecordVersion(value: unknown): string {
-    if (value instanceof Date) {
-      return Number.isNaN(value.getTime()) ? '' : value.toISOString()
-    }
-
-    if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
-      return String(value)
-    }
-
-    return ''
-  }
-
-  function buildRecordIdentity(item: SaplingGenericItem | null | undefined): string {
-    return `${props.entity?.handle ?? ''}::${getItemHandle(item) ?? ''}::${props.mode}::${normalizeRecordVersion(item?.updatedAt)}`
-  }
-
-  const recordIdentity = computed(() => buildRecordIdentity(props.item))
+  const recordIdentity = computed(() =>
+    buildDialogRecordIdentity(props.entity?.handle, props.item, props.mode),
+  )
 
   watch(recordIdentity, async (next, previous) => {
     if (next === previous) {
@@ -665,14 +509,6 @@ export function useSaplingDialogEdit(
     },
   )
   // #endregion
-
-  // #region Permissions
-  async function setEntitiesPermissions() {
-    const currentPermissionStore = useCurrentPermissionStore() // Access the current permission store
-    await currentPermissionStore.fetchCurrentPermission() // Fetch current permissions
-    permissions.value = currentPermissionStore.accumulatedPermission // Set the permissions
-  }
-  // #region
 
   // #region Return
   return {

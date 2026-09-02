@@ -1,5 +1,6 @@
 import type {
   EntityTemplate,
+  DialogState,
   SaplingFormConfigPayload,
   SaplingFormFieldConfig,
 } from '@/entity/structure'
@@ -26,6 +27,68 @@ export function getItemHandle(item?: SaplingGenericItem | null): string | number
 
   const { handle } = item
   return typeof handle === 'string' || typeof handle === 'number' ? handle : null
+}
+
+export function buildDialogTemplatesSignature(templates: EntityTemplate[]): string {
+  return templates
+    .map(
+      (template) =>
+        `${template.name}|${template.type ?? ''}|${template.kind ?? ''}|${template.referenceName ?? ''}|${template.options?.join(',') ?? ''}`,
+    )
+    .join('::')
+}
+
+export function buildDialogRecordIdentity(
+  entityHandle: string | undefined,
+  item: SaplingGenericItem | null | undefined,
+  mode: DialogState,
+): string {
+  const version = normalizeRecordVersion(item?.updatedAt)
+  return `${entityHandle ?? ''}::${getItemHandle(item) ?? ''}::${mode}::${version}`
+}
+
+export function applyReferenceTemplateMappings(
+  template: EntityTemplate | undefined,
+  value: unknown,
+  form: SaplingGenericItem,
+): void {
+  if (!value || typeof value !== 'object') return
+  const source = value as Record<string, unknown>
+  for (const mapping of template?.referenceTemplate?.mappings ?? []) {
+    if (!mapping.sourceField || !mapping.targetField) continue
+    const nextValue = source[mapping.sourceField]
+    if (nextValue == null) continue
+    if (mapping.overwrite === false && hasFormValue(form[mapping.targetField])) continue
+    form[mapping.targetField] = nextValue
+  }
+}
+
+export function runReferenceHydrationAutomation(options: {
+  templates: EntityTemplate[]
+  mode: DialogState
+  autoSelect: (templates: EntityTemplate[]) => void
+  inspectRecommended: (template: EntityTemplate) => void
+  isRecommended: (template: EntityTemplate) => boolean
+}): void {
+  const dependencies = options.templates.filter((template) => template.referenceDependency)
+  if (options.mode === 'create') {
+    options.autoSelect(dependencies)
+  } else {
+    dependencies.filter(options.isRecommended).forEach(options.inspectRecommended)
+  }
+  options.templates
+    .filter(
+      (template) =>
+        template.isReference && !template.referenceDependency && options.isRecommended(template),
+    )
+    .forEach(options.inspectRecommended)
+}
+
+function normalizeRecordVersion(value: unknown): string {
+  if (value instanceof Date) return Number.isNaN(value.getTime()) ? '' : value.toISOString()
+  return typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean'
+    ? String(value)
+    : ''
 }
 
 export function isFormValid(result: VuetifyFormValidationResult): boolean {

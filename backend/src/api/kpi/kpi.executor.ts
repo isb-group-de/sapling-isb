@@ -6,16 +6,17 @@ import { TrendResultDto } from './dto/trend-result.dto';
 import type { SparklineMonthPointDto } from './dto/sparkline-month-point.dto';
 import type { SparklineDayPointDto } from './dto/sparkline-day-point.dto';
 import type { SparklineWeekPointDto } from './dto/sparkline-week-point.dto';
-import { KpiDrilldownDto, KpiDrilldownEntryDto } from './dto/kpi-drilldown.dto';
+import { KpiDrilldownDto } from './dto/kpi-drilldown.dto';
+import { KpiDrilldownBuilder } from './kpi-drilldown.builder';
+import { calculateKpiFormula, normalizeKpiNumber } from './kpi-formula.utils';
 import {
   KpiTimeframePlanner,
   type SparklinePointDto,
 } from './kpi-timeframe-planner';
+import { combineKpiWhere, normalizeKpiWhere } from './kpi-where.utils';
 
 type KpiAggregateValue =
   number | object | Array<Record<string, unknown>> | null;
-
-type KpiWhere = Record<string, unknown>;
 
 interface AggregateConfig {
   entityHandle?: string;
@@ -54,6 +55,7 @@ export interface KpiTargetResult extends KpiFormulaResult {
  */
 export class KPIExecutor {
   private readonly timeframePlanner = new KpiTimeframePlanner();
+  private readonly drilldownBuilder: KpiDrilldownBuilder;
 
   /**
    * Creates an instance of KPIExecutor.
@@ -63,7 +65,9 @@ export class KPIExecutor {
   constructor(
     private readonly em: SqlEntityManager,
     private readonly kpi: KpiItem,
-  ) {}
+  ) {
+    this.drilldownBuilder = new KpiDrilldownBuilder(kpi, this.timeframePlanner);
+  }
 
   private toColumnName(fieldPath: string): string {
     return fieldPath.replace(/([a-z0-9])([A-Z])/g, '$1_$2').toLowerCase();
@@ -270,149 +274,22 @@ export class KPIExecutor {
     return result;
   }
 
-  private normalizeWhere(where: object): KpiWhere {
-    if (where && typeof where === 'object' && !Array.isArray(where)) {
-      return { ...(where as KpiWhere) };
-    }
-
-    return {};
-  }
-
-  private hasWhere(where: KpiWhere): boolean {
-    return Object.keys(where).length > 0;
-  }
-
-  private combineWhere(baseWhere: object, extraWhere: KpiWhere): KpiWhere {
-    const normalizedBase = this.normalizeWhere(baseWhere);
-
-    if (!this.hasWhere(extraWhere)) {
-      return normalizedBase;
-    }
-
-    if (!this.hasWhere(normalizedBase)) {
-      return { ...extraWhere };
-    }
-
-    return {
-      $and: [normalizedBase, extraWhere],
-    };
-  }
-
-  private getTargetEntityHandle(): string | null {
-    const handle = this.kpi.targetEntity?.handle;
-
-    return typeof handle === 'string' && handle.length > 0 ? handle : null;
-  }
-
-  private createDrilldownEntry(
-    key: string,
-    label: string,
-    filter: KpiWhere,
-    value?: KpiAggregateValue,
-  ): KpiDrilldownEntryDto {
-    const entry = new KpiDrilldownEntryDto();
-    entry.key = key;
-    entry.label = label;
-    entry.filter = filter;
-    entry.value = value;
-    return entry;
-  }
-
   buildBaseDrilldown(baseWhere: object): KpiDrilldownDto | null {
-    const entityHandle = this.getTargetEntityHandle();
-
-    if (!entityHandle) {
-      return null;
-    }
-
-    const drilldown = new KpiDrilldownDto();
-    drilldown.entityHandle = entityHandle;
-    drilldown.baseFilter = this.normalizeWhere(baseWhere);
-    return drilldown;
+    return this.drilldownBuilder.buildBase(baseWhere);
   }
 
   buildTrendDrilldown(
     baseWhere: object,
     trend: TrendResultDto | null,
   ): KpiDrilldownDto | null {
-    const drilldown = this.buildBaseDrilldown(baseWhere);
-    const timeframe = this.kpi.timeframe?.handle;
-    const timeframeField = this.kpi.timeframeField || 'created_at';
-    const now = new Date();
-    const rangeCurrent = this.timeframePlanner.getTimeRange(timeframe, now);
-    const rangePrevious = this.timeframePlanner.getPreviousTimeRange(
-      timeframe,
-      now,
-    );
-
-    if (!drilldown) {
-      return null;
-    }
-
-    if (rangeCurrent) {
-      drilldown.current = this.createDrilldownEntry(
-        'current',
-        `${this.timeframePlanner.formatDate(rangeCurrent.start)} - ${this.timeframePlanner.formatDate(rangeCurrent.end)}`,
-        this.combineWhere(baseWhere, {
-          [timeframeField]: {
-            $gte: rangeCurrent.start,
-            $lte: rangeCurrent.end,
-          },
-        }),
-        trend?.current ?? null,
-      );
-    }
-
-    if (rangePrevious) {
-      drilldown.previous = this.createDrilldownEntry(
-        'previous',
-        `${this.timeframePlanner.formatDate(rangePrevious.start)} - ${this.timeframePlanner.formatDate(rangePrevious.end)}`,
-        this.combineWhere(baseWhere, {
-          [timeframeField]: {
-            $gte: rangePrevious.start,
-            $lte: rangePrevious.end,
-          },
-        }),
-        trend?.previous ?? null,
-      );
-    }
-
-    return drilldown;
+    return this.drilldownBuilder.buildTrend(baseWhere, trend);
   }
 
   buildSparklineDrilldown(
     baseWhere: object,
     points: SparklinePointDto[] = [],
   ): KpiDrilldownDto | null {
-    const drilldown = this.buildBaseDrilldown(baseWhere);
-    const timeframe = this.kpi.timeframe?.handle;
-    const interval = this.kpi.timeframeInterval?.handle;
-    const timeframeField = this.kpi.timeframeField || 'created_at';
-    const buckets = this.timeframePlanner.getSparklineBuckets(
-      timeframe,
-      interval,
-      new Date(),
-    );
-
-    if (!drilldown) {
-      return null;
-    }
-
-    drilldown.items = buckets.map((bucket, index) =>
-      this.createDrilldownEntry(
-        bucket.key,
-        bucket.label,
-        this.combineWhere(baseWhere, {
-          [timeframeField]: {
-            $gte: bucket.start,
-            $lte: bucket.end,
-          },
-        }),
-        (points[index]?.value as KpiAggregateValue | undefined) ?? null,
-      ),
-    );
-
-    return drilldown;
+    return this.drilldownBuilder.buildSparkline(baseWhere, points);
   }
 
   /**
@@ -428,59 +305,13 @@ export class KPIExecutor {
     return (await this.aggregate(baseWhere, groupBy)) as KpiAggregateValue;
   }
 
-  private normalizeNumber(value: unknown): number | null {
-    if (typeof value === 'number' && Number.isFinite(value)) return value;
-    if (typeof value === 'string' && value.trim() !== '') {
-      const parsed = Number(value);
-      return Number.isFinite(parsed) ? parsed : null;
-    }
-    return null;
-  }
-
-  private calculateFormula(
-    primaryValue: number | null,
-    secondaryValue: number | null,
-    operation: string,
-    scale: number,
-  ): number | null {
-    if (primaryValue === null) return null;
-
-    let value: number;
-    switch (operation) {
-      case 'ADD':
-        if (secondaryValue === null) return null;
-        value = primaryValue + secondaryValue;
-        break;
-      case 'SUBTRACT':
-        if (secondaryValue === null) return null;
-        value = primaryValue - secondaryValue;
-        break;
-      case 'MULTIPLY':
-        if (secondaryValue === null) return null;
-        value = primaryValue * secondaryValue;
-        break;
-      case 'DIVIDE':
-        if (secondaryValue === null || secondaryValue === 0) return null;
-        value = primaryValue / secondaryValue;
-        break;
-      case 'IDENTITY':
-        value = primaryValue;
-        break;
-      default:
-        throw new Error(`Unsupported KPI formula operation: ${operation}`);
-    }
-
-    const scaled = value * scale;
-    return Number.isFinite(scaled) ? scaled : null;
-  }
-
   async executeFormula(
     baseWhere: object,
     secondaryWhere?: object,
   ): Promise<KpiFormulaResult> {
     const operation = (this.kpi.formulaOperation ?? 'DIVIDE').toUpperCase();
     const scale = this.kpi.formulaScale ?? (operation === 'DIVIDE' ? 100 : 1);
-    const primaryValue = this.normalizeNumber(
+    const primaryValue = normalizeKpiNumber(
       await this.aggregate(baseWhere, undefined, {
         durationStartField: this.kpi.durationStartField,
       }),
@@ -489,7 +320,7 @@ export class KPIExecutor {
       this.kpi.secondaryField && this.kpi.secondaryAggregation,
     );
     const secondaryValue = hasSecondaryOperand
-      ? this.normalizeNumber(
+      ? normalizeKpiNumber(
           await this.aggregate(secondaryWhere ?? {}, undefined, {
             entityHandle:
               this.kpi.secondaryTargetEntity?.handle ??
@@ -501,7 +332,7 @@ export class KPIExecutor {
       : null;
 
     return {
-      value: this.calculateFormula(
+      value: calculateKpiFormula(
         primaryValue,
         secondaryValue,
         hasSecondaryOperand ? operation : 'IDENTITY',
@@ -590,21 +421,21 @@ export class KPIExecutor {
       now,
     );
     const currentWhere = rangeCurrent
-      ? this.combineWhere(baseWhere, {
+      ? combineKpiWhere(baseWhere, {
           [timeframeField]: {
             $gte: rangeCurrent.start,
             $lte: rangeCurrent.end,
           },
         })
-      : this.normalizeWhere(baseWhere);
+      : normalizeKpiWhere(baseWhere);
     const previousWhere = rangePrev
-      ? this.combineWhere(baseWhere, {
+      ? combineKpiWhere(baseWhere, {
           [timeframeField]: {
             $gte: rangePrev.start,
             $lte: rangePrev.end,
           },
         })
-      : this.normalizeWhere(baseWhere);
+      : normalizeKpiWhere(baseWhere);
 
     return {
       current: await this.aggregate(currentWhere, groupBy),
@@ -712,7 +543,7 @@ export class KPIExecutor {
       groupBy?.map((gb) =>
         resolveField(gb, gb.includes('.') ? gb.split('.')[1] : gb),
       ) ?? [];
-    const where = this.combineWhere(baseWhere, {
+    const where = combineKpiWhere(baseWhere, {
       [timeframeField]: {
         $gte: buckets[0].start,
         $lte: buckets[buckets.length - 1].end,
