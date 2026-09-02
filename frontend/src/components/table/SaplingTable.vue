@@ -362,13 +362,8 @@
 
 <script lang="ts" setup>
 // #region Imports
-import { computed, onMounted, provide, ref, watch } from 'vue'
-import { useI18n } from 'vue-i18n'
-import { useRoute, useRouter } from 'vue-router'
+import { computed, ref, watch } from 'vue'
 import SaplingSearch from '@/components/system/SaplingSearch.vue'
-import { useTranslationLoader } from '@/composables/generic/useTranslationLoader'
-import { useSaplingMailDialog } from '@/composables/dialog/useSaplingMailDialog'
-import type { SaplingBulkMailAction } from '@/utils/saplingMailMenuUtil'
 import SaplingTableDesktopView from './SaplingTableDesktopView.vue'
 import SaplingTableColumnChooser from './SaplingTableColumnChooser.vue'
 import SaplingTableFavoriteDialog from './SaplingTableFavoriteDialog.vue'
@@ -379,54 +374,13 @@ import SaplingTableToolbarActions from './SaplingTableToolbarActions.vue'
 import SaplingTableViewDialog from './SaplingTableViewDialog.vue'
 import SaplingDialogDelete from '@/components/dialog/SaplingDialogDelete.vue'
 import SaplingTableTutorial from '@/components/system/tutorial/SaplingTableTutorial.vue'
-import {
-  useSaplingTableComponent,
-  type UseSaplingTableEmit,
-  type UseSaplingTableProps,
-} from '@/composables/table/useSaplingTableComponent'
-import { useSaplingTableRouteDialogSync } from '@/composables/table/useSaplingTableRouteDialogSync'
-import { useCurrentPersonStore } from '@/stores/currentPersonStore'
-import type {
-  FormConfigMenuItem,
-  FormConfigSelectionHandle,
-} from '@/composables/dialog/saplingDialogEdit.utils'
-import type { FavoriteItem } from '@/entity/entity'
-import { saplingTableDisplayContextKey } from './saplingTableDisplayContext'
-import type { SaplingTableViewSaveRequest } from '@/composables/table/saplingTableColumnOrder'
+import { useSaplingTableComponent } from '@/composables/table/useSaplingTableComponent'
+import { useSaplingTableShellActions } from '@/composables/table/useSaplingTableShellActions'
+import { useSaplingTableCapabilities } from '@/composables/table/useSaplingTableCapabilities'
+import type { SaplingTableEmit, SaplingTableProps } from './SaplingTable.types'
 // #endregion
 
 // #region Props and Emits
-type SaplingTableProps = UseSaplingTableProps & {
-  enableTutorial?: boolean
-  showFavorite?: boolean
-  showAdd?: boolean
-  showImport?: boolean
-  showSearch?: boolean
-  showFormConfig?: boolean
-  showToolbar?: boolean
-  showSelectionToolbar?: boolean
-  isInitialized?: boolean
-  rowInteraction?: boolean
-  showSidePanelToggle?: boolean
-  sidePanelVisible?: boolean
-  sidePanelToggleLabel?: string
-  sidePanelToggleIcon?: string
-  formConfigMenuItems?: FormConfigMenuItem[]
-  selectedFormConfigLabel?: string
-  isLoadingFormConfigs?: boolean
-  isSavingTableView?: boolean
-  syncEditDialogWithRoute?: boolean
-}
-
-type SaplingTableEmit = UseSaplingTableEmit & {
-  (event: 'toggleSidePanel'): void
-  (event: 'resetWorklist'): void
-  (event: 'selectFormConfig', value: FormConfigSelectionHandle): void
-  (event: 'setDefaultFormConfig', value: number): void
-  (event: 'deleteFormConfig', value: { handle: number; complete: (deleted: boolean) => void }): void
-  (event: 'saveCurrentView', value: SaplingTableViewSaveRequest): void
-}
-
 const props = withDefaults(defineProps<SaplingTableProps>(), {
   allowDeleteActions: true,
   enableTutorial: false,
@@ -437,32 +391,7 @@ const props = withDefaults(defineProps<SaplingTableProps>(), {
   syncEditDialogWithRoute: false,
 })
 const emit = defineEmits<SaplingTableEmit>()
-const { t } = useI18n()
-const route = useRoute()
-const router = useRouter()
-const { isLoading: isHeaderTranslationLoading } = useTranslationLoader(props.entityHandle)
-const currentPersonStore = useCurrentPersonStore()
-
 const hasCompletedInitialLoad = ref(!props.isLoading)
-const importInputRef = ref<HTMLInputElement | null>(null)
-const tableViewDialog = ref({ visible: false, name: '', loading: false })
-const savedItemDeleteDialog = ref<{
-  visible: boolean
-  kind: 'favorite' | 'view'
-  title: string
-  loading: boolean
-  favorite: FavoriteItem | null
-  formConfig: FormConfigMenuItem | null
-}>({
-  visible: false,
-  kind: 'favorite',
-  title: '',
-  loading: false,
-  favorite: null,
-  formConfig: null,
-})
-const isColumnOrderEditing = ref(false)
-const isColumnChooserOpen = ref(false)
 
 watch(
   () => props.isLoading,
@@ -478,8 +407,7 @@ watch(
   () => props.tableKey,
   () => {
     hasCompletedInitialLoad.value = !props.isLoading
-    isColumnOrderEditing.value = false
-    isColumnChooserOpen.value = false
+    resetShellState()
   },
 )
 
@@ -502,47 +430,6 @@ const actionEntityPermission = computed(() => {
     ...props.entityPermission,
     allowDelete: false,
   }
-})
-const refreshButtonLabel = computed(() => t('global.refresh'))
-const showFavoriteButton = computed(() => props.showFavorite !== false)
-const showAddButton = computed(
-  () =>
-    props.showAdd !== false &&
-    Boolean(props.entity?.canInsert) &&
-    Boolean(props.entityPermission?.allowInsert),
-)
-const showImportButton = computed(
-  () =>
-    props.showImport !== false &&
-    currentPersonStore.isAdministrator &&
-    (Boolean(props.entityPermission?.allowInsert) || Boolean(props.entityPermission?.allowUpdate)),
-)
-const showFormConfigButton = computed(
-  () =>
-    props.showFormConfig !== false &&
-    currentPersonStore.isAdministrator &&
-    Boolean(props.entityHandle),
-)
-const showSearchField = computed(() => props.showSearch !== false)
-const showToolbar = computed(() => props.showToolbar !== false)
-const showSelectionToolbar = computed(() => props.showSelectionToolbar !== false)
-const showSidePanelToggleButton = computed(() => props.showSidePanelToggle === true)
-const canSaveCurrentView = computed(
-  () =>
-    props.formConfigMenuItems !== undefined &&
-    Boolean(props.entityHandle) &&
-    orderedColumnKeys.value.length > 0,
-)
-const sidePanelVisible = computed(() => props.sidePanelVisible === true)
-const sidePanelToggleLabel = computed(
-  () => props.sidePanelToggleLabel?.trim() || t('global.filter'),
-)
-const sidePanelToggleIcon = computed(
-  () => props.sidePanelToggleIcon?.trim() || 'mdi-account-group-outline',
-)
-
-onMounted(() => {
-  void currentPersonStore.fetchCurrentPerson()
 })
 // #endregion
 
@@ -652,169 +539,58 @@ const {
   closeDeleteDialog,
 } = useSaplingTableComponent(props, emit)
 
-useSaplingTableRouteDialogSync({
-  enabled: () => props.syncEditDialogWithRoute,
+const {
+  isHeaderTranslationLoading,
+  refreshButtonLabel,
+  showFavoriteButton,
+  showAddButton,
+  showImportButton,
+  showFormConfigButton,
+  showSearchField,
+  showToolbar,
+  showSelectionToolbar,
+  showSidePanelToggleButton,
+  canSaveCurrentView,
+  sidePanelVisible,
+  sidePanelToggleLabel,
+  sidePanelToggleIcon,
+} = useSaplingTableCapabilities(props, orderedColumnKeys, isMobileTable)
+
+const {
+  importInputRef,
+  tableViewDialog,
+  savedItemDeleteDialog,
+  isColumnOrderEditing,
+  isColumnChooserOpen,
+  resetShellState,
+  onMailToSelected,
+  openImportFilePicker,
+  openTableViewDialog,
+  beginColumnOrderEdit,
+  finishColumnOrderEdit,
+  selectFormConfig,
+  closeTableViewDialog,
+  openFavoriteDeleteDialog,
+  openFormConfigDeleteDialog,
+  closeSavedItemDeleteDialog,
+  updateSavedItemDeleteDialog,
+  confirmSavedItemDelete,
+  saveCurrentView,
+  openFormConfigForTable,
+  onImportFileInputChange,
+} = useSaplingTableShellActions({
+  props,
+  orderedColumnKeys,
+  selectableColumnKeys,
   editDialog,
-  router,
-  getRoute: () => route,
+  deleteFavorite,
+  importCSVFile,
+  resetColumnOrder,
+  emitDeleteFormConfig: (value) => emit('deleteFormConfig', value),
+  emitSaveCurrentView: (value) => emit('saveCurrentView', value),
+  emitSelectFormConfig: (handle) => emit('selectFormConfig', handle),
 })
 
-provide(saplingTableDisplayContextKey, {
-  isMobileTable,
-})
-
-const { openMailDialog } = useSaplingMailDialog()
-
-function onMailToSelected(action: SaplingBulkMailAction): void {
-  if (action.emails.length === 0) {
-    return
-  }
-
-  openMailDialog({
-    entityHandle: props.entityHandle,
-    initialTo: action.emails,
-  })
-}
-
-function openImportFilePicker(): void {
-  importInputRef.value?.click()
-}
-
-function openTableViewDialog(): void {
-  tableViewDialog.value = {
-    visible: true,
-    name: props.selectedFormConfigLabel?.trim() ?? '',
-    loading: false,
-  }
-}
-
-function beginColumnOrderEdit(): void {
-  isColumnOrderEditing.value = true
-}
-
-function finishColumnOrderEdit(): void {
-  isColumnOrderEditing.value = false
-  isColumnChooserOpen.value = false
-}
-
-function selectFormConfig(handle: FormConfigSelectionHandle): void {
-  isColumnOrderEditing.value = false
-  isColumnChooserOpen.value = false
-  resetColumnOrder()
-  emit('selectFormConfig', handle)
-}
-
-function closeTableViewDialog(): void {
-  if (tableViewDialog.value.loading || props.isSavingTableView) return
-  tableViewDialog.value = { visible: false, name: '', loading: false }
-}
-
-function openFavoriteDeleteDialog(favorite: FavoriteItem): void {
-  savedItemDeleteDialog.value = {
-    visible: true,
-    kind: 'favorite',
-    title: favorite.title,
-    loading: false,
-    favorite,
-    formConfig: null,
-  }
-}
-
-function openFormConfigDeleteDialog(item: FormConfigMenuItem): void {
-  if (!item.canDelete || typeof item.handle !== 'number') return
-
-  savedItemDeleteDialog.value = {
-    visible: true,
-    kind: 'view',
-    title: item.title,
-    loading: false,
-    favorite: null,
-    formConfig: item,
-  }
-}
-
-function closeSavedItemDeleteDialog(): void {
-  if (savedItemDeleteDialog.value.loading) return
-  savedItemDeleteDialog.value = {
-    visible: false,
-    kind: 'favorite',
-    title: '',
-    loading: false,
-    favorite: null,
-    formConfig: null,
-  }
-}
-
-function updateSavedItemDeleteDialog(value: boolean): void {
-  savedItemDeleteDialog.value.visible = value
-}
-
-async function confirmSavedItemDelete(): Promise<void> {
-  const dialog = savedItemDeleteDialog.value
-  if (dialog.loading) return
-
-  if (dialog.kind === 'favorite' && dialog.favorite) {
-    dialog.loading = true
-    try {
-      await deleteFavorite(dialog.favorite)
-      dialog.loading = false
-      closeSavedItemDeleteDialog()
-    } catch {
-      dialog.loading = false
-    }
-    return
-  }
-
-  const handle = dialog.formConfig?.handle
-  if (typeof handle !== 'number') return
-
-  dialog.loading = true
-  emit('deleteFormConfig', {
-    handle,
-    complete(deleted) {
-      dialog.loading = false
-      if (deleted) closeSavedItemDeleteDialog()
-    },
-  })
-}
-
-function saveCurrentView(): void {
-  const name = tableViewDialog.value.name.trim()
-  if (!name || tableViewDialog.value.loading || props.isSavingTableView) return
-
-  tableViewDialog.value.loading = true
-  emit('saveCurrentView', {
-    name,
-    orderedColumnKeys: [...orderedColumnKeys.value],
-    selectableColumnKeys: [...selectableColumnKeys.value],
-    complete(saved) {
-      tableViewDialog.value.loading = false
-      if (saved) {
-        isColumnOrderEditing.value = false
-        isColumnChooserOpen.value = false
-        tableViewDialog.value = { visible: false, name: '', loading: false }
-      }
-    },
-  })
-}
-
-async function openFormConfigForTable(): Promise<void> {
-  if (!props.entityHandle) {
-    return
-  }
-
-  await router.push({ name: 'formConfig', query: { entity: props.entityHandle } })
-}
-
-function onImportFileInputChange(event: Event): void {
-  const target = event.target as HTMLInputElement | null
-  const file = target?.files?.[0] ?? null
-  void importCSVFile(file)
-
-  if (target) {
-    target.value = ''
-  }
-}
 // #endregion
 
 defineExpose({ openCreateDialog })

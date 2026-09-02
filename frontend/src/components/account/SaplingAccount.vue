@@ -205,124 +205,11 @@
                 </v-window-item>
 
                 <v-window-item value="notifications" class="sapling-account-center__panel">
-                  <section class="sapling-account-dialog__panel-stack">
-                    <div class="sapling-account-dialog__section-heading">
-                      <v-icon color="primary">mdi-bell-outline</v-icon>
-                      <span>{{ $t('account.notifications') }}</span>
-                    </div>
-                    <div class="sapling-account-dialog__notification-grid">
-                      <SaplingSwitch
-                        v-model="notificationPreferences.inboxNotificationsEnabled"
-                        color="primary"
-                        hide-details
-                        inset
-                        :label="$t('account.inboxNotificationsEnabled')"
-                      >
-                        <template #label>
-                          <span>{{ $t('account.inboxNotificationsEnabled') }}</span>
-                          <SaplingHelpTooltip
-                            :text="$t('account.inboxNotificationsEnabledTooltip')"
-                            :aria-label="$t('account.inboxNotificationsEnabled')"
-                            icon-size="16"
-                          />
-                        </template>
-                      </SaplingSwitch>
-                      <SaplingSwitch
-                        v-model="notificationPreferences.openTaskNotificationsEnabled"
-                        color="primary"
-                        hide-details
-                        inset
-                        :label="$t('account.openTaskNotificationsEnabled')"
-                      >
-                        <template #label>
-                          <span>{{ $t('account.openTaskNotificationsEnabled') }}</span>
-                          <SaplingHelpTooltip
-                            :text="$t('account.openTaskNotificationsEnabledTooltip')"
-                            :aria-label="$t('account.openTaskNotificationsEnabled')"
-                            icon-size="16"
-                          />
-                        </template>
-                      </SaplingSwitch>
-                      <SaplingSwitch
-                        v-model="notificationPreferences.badgeChannelEnabled"
-                        color="primary"
-                        hide-details
-                        inset
-                        :label="$t('account.badgeChannelEnabled')"
-                      >
-                        <template #label>
-                          <span>{{ $t('account.badgeChannelEnabled') }}</span>
-                          <SaplingHelpTooltip
-                            :text="$t('account.badgeChannelEnabledTooltip')"
-                            :aria-label="$t('account.badgeChannelEnabled')"
-                            icon-size="16"
-                          />
-                        </template>
-                      </SaplingSwitch>
-                      <SaplingSwitch
-                        v-model="notificationPreferences.previewChannelEnabled"
-                        color="primary"
-                        hide-details
-                        inset
-                        :label="$t('account.previewChannelEnabled')"
-                      >
-                        <template #label>
-                          <span>{{ $t('account.previewChannelEnabled') }}</span>
-                          <SaplingHelpTooltip
-                            :text="$t('account.previewChannelEnabledTooltip')"
-                            :aria-label="$t('account.previewChannelEnabled')"
-                            icon-size="16"
-                          />
-                        </template>
-                      </SaplingSwitch>
-                    </div>
-                    <v-divider />
-                    <div class="sapling-account-dialog__quiet-hours-grid">
-                      <SaplingSwitch
-                        v-model="notificationPreferences.quietHoursEnabled"
-                        color="primary"
-                        hide-details
-                        inset
-                        :label="$t('account.quietHoursEnabled')"
-                      >
-                        <template #label>
-                          <span>{{ $t('account.quietHoursEnabled') }}</span>
-                          <SaplingHelpTooltip
-                            :text="$t('account.quietHoursEnabledTooltip')"
-                            :aria-label="$t('account.quietHoursEnabled')"
-                            icon-size="16"
-                          />
-                        </template>
-                      </SaplingSwitch>
-                      <SaplingTextField
-                        v-model="notificationPreferences.quietHoursFrom"
-                        density="comfortable"
-                        variant="outlined"
-                        hide-details
-                        type="time"
-                        :disabled="!notificationPreferences.quietHoursEnabled"
-                        :label="$t('account.quietHoursFrom')"
-                      />
-                      <SaplingTextField
-                        v-model="notificationPreferences.quietHoursTo"
-                        density="comfortable"
-                        variant="outlined"
-                        hide-details
-                        type="time"
-                        :disabled="!notificationPreferences.quietHoursEnabled"
-                        :label="$t('account.quietHoursTo')"
-                      />
-                    </div>
-                    <v-btn
-                      color="primary"
-                      variant="flat"
-                      prepend-icon="mdi-content-save-outline"
-                      :loading="isNotificationPreferencesSaving"
-                      @click="saveNotificationPreferenceSelection"
-                    >
-                      {{ $t('account.saveNotifications') }}
-                    </v-btn>
-                  </section>
+                  <SaplingAccountNotificationPanel
+                    v-model="notificationPreferences"
+                    :is-saving="isNotificationPreferencesSaving"
+                    @save="saveNotificationPreferenceSelection"
+                  />
                 </v-window-item>
 
                 <v-window-item value="sync" class="sapling-account-center__panel">
@@ -504,54 +391,12 @@
                 </v-window-item>
 
                 <v-window-item value="preferences" class="sapling-account-center__panel">
-                  <section class="sapling-account-dialog__panel-stack">
-                    <div class="sapling-account-dialog__section-heading">
-                      <v-icon color="primary">mdi-translate</v-icon>
-                      <span>{{ $t('navigation.language') }}</span>
-                    </div>
-                    <v-btn-toggle
-                      divided
-                      mandatory
-                      :model-value="currentLanguage"
-                      variant="outlined"
-                      class="sapling-segmented-toggle sapling-account-dialog__language-toggle"
-                    >
-                      <v-btn
-                        v-for="language in languageOptions"
-                        :key="language.key"
-                        :value="language.key"
-                        @click="setLanguage(language.key)"
-                      >
-                        {{ language.label }}
-                      </v-btn>
-                    </v-btn-toggle>
-
-                    <v-divider />
-
-                    <div class="sapling-account-dialog__preference-grid">
-                      <button
-                        v-for="action in appearanceActions"
-                        :key="action.key"
-                        type="button"
-                        class="sapling-account-dialog__preference-action"
-                        :class="{
-                          'sapling-account-dialog__preference-action--active': action.isActive,
-                        }"
-                        @click="action.handler()"
-                      >
-                        <span class="sapling-account-dialog__preference-icon">
-                          <v-icon :icon="action.icon" />
-                        </span>
-                        <span class="sapling-account-dialog__preference-label">
-                          {{ action.label }}
-                        </span>
-                        <v-icon
-                          :icon="action.isActive ? 'mdi-check-circle' : 'mdi-chevron-right'"
-                          size="18"
-                        />
-                      </button>
-                    </div>
-                  </section>
+                  <SaplingAccountPreferencesPanel
+                    :current-language="currentLanguage"
+                    :language-options="languageOptions"
+                    :appearance-actions="appearanceActions"
+                    @select-language="setLanguage"
+                  />
                 </v-window-item>
 
                 <v-window-item value="songbird" class="sapling-account-center__panel">
@@ -610,6 +455,8 @@ import SaplingChangePassword from '@/components/account/SaplingChangePassword.vu
 import SaplingPasskeyManager from '@/components/account/SaplingPasskeyManager.vue'
 import SaplingAccountSessionPanel from '@/components/account/SaplingAccountSessionPanel.vue'
 import SaplingAccountSongbirdPanel from '@/components/account/SaplingAccountSongbirdPanel.vue'
+import SaplingAccountNotificationPanel from '@/components/account/SaplingAccountNotificationPanel.vue'
+import SaplingAccountPreferencesPanel from '@/components/account/SaplingAccountPreferencesPanel.vue'
 import SaplingActionAccount from '@/components/actions/SaplingActionAccount.vue'
 import SaplingActionBarSkeleton from '@/components/actions/SaplingActionBarSkeleton.vue'
 import SaplingDialogCard from '@/components/dialog/SaplingDialogCard.vue'
@@ -618,7 +465,6 @@ import SaplingCombobox from '@/components/common/SaplingCombobox.vue'
 import SaplingDialog from '@/components/common/SaplingDialog.vue'
 import SaplingDialogHero from '@/components/common/SaplingDialogHero.vue'
 import SaplingDialogShell from '@/components/common/SaplingDialogShell.vue'
-import SaplingHelpTooltip from '@/components/common/SaplingHelpTooltip.vue'
 import SaplingStaticSelect from '@/components/common/SaplingStaticSelect.vue'
 import SaplingSwitch from '@/components/common/SaplingSwitch.vue'
 import SaplingTextField from '@/components/common/SaplingTextField.vue'

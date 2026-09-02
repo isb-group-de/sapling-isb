@@ -34,12 +34,9 @@ import { normalizeEventBufferMutationPayload } from '../../calendar/event-buffer
 import { SecurityPrincipalCacheService } from '../current/security-principal-cache.service';
 import { GlobalSearchIndexService } from './global-search-index.service';
 import { buildChangeLogDetails } from './generic-change-log.util';
-import {
-  captureStoredDocumentFileDescriptor,
-  deleteStoredDocumentFile,
-} from '../document/document-storage.util';
+import { GenericEntityMutationOperations } from './generic-entity-mutation.operations';
 
-type GenericMutationPayload = {
+export type GenericMutationPayload = {
   createdAt?: Date;
   updatedAt?: Date;
   [key: string]: any;
@@ -53,34 +50,54 @@ export type GenericMutationLifecycleOptions = {
 
 /** Executes complete create, update, and delete entity lifecycles. */
 @Injectable()
-export class GenericEntityMutationService {
+export class GenericEntityMutationService extends GenericEntityMutationOperations {
   constructor(
-    private readonly em: EntityManager,
-    private readonly templateService: TemplateService,
-    private readonly genericQueryService: GenericQueryService,
-    private readonly genericMutationService: GenericMutationService,
-    private readonly genericPayloadService: GenericPayloadService,
-    private readonly genericPermissionService: GenericPermissionService,
-    private readonly genericReferenceService: GenericReferenceService,
-    private readonly genericSanitizerService: GenericSanitizerService,
-    private readonly genericOpenTaskEventsService: GenericOpenTaskEventsService,
-    private readonly genericChangeLogService: GenericChangeLogService,
-    private readonly genericUpdateConflictService: GenericUpdateConflictService,
-    private readonly emailAutomationService: EmailAutomationService,
-    private readonly genericCustomFieldService: GenericCustomFieldService,
-    private readonly genericInlineCollectionService: GenericInlineCollectionService,
-    private readonly fieldPermissions: FieldPermissionService = {
+    em: EntityManager,
+    templateService: TemplateService,
+    genericQueryService: GenericQueryService,
+    genericMutationService: GenericMutationService,
+    genericPayloadService: GenericPayloadService,
+    genericPermissionService: GenericPermissionService,
+    genericReferenceService: GenericReferenceService,
+    genericSanitizerService: GenericSanitizerService,
+    genericOpenTaskEventsService: GenericOpenTaskEventsService,
+    genericChangeLogService: GenericChangeLogService,
+    genericUpdateConflictService: GenericUpdateConflictService,
+    emailAutomationService: EmailAutomationService,
+    genericCustomFieldService: GenericCustomFieldService,
+    genericInlineCollectionService: GenericInlineCollectionService,
+    fieldPermissions: FieldPermissionService = {
       getTemplates: (entityHandle: string) =>
-        Promise.resolve(this.templateService.getEntityTemplate(entityHandle)),
+        Promise.resolve(templateService.getEntityTemplate(entityHandle)),
       assertPayloadAccess: () => Promise.resolve(),
       renameFieldOverrides: () => Promise.resolve(),
       deleteFieldOverrides: () => Promise.resolve(),
     } as unknown as FieldPermissionService,
     @Optional()
-    private readonly securityPrincipalCache?: SecurityPrincipalCacheService,
+    securityPrincipalCache?: SecurityPrincipalCacheService,
     @Optional()
-    private readonly globalSearchIndex?: GlobalSearchIndexService,
-  ) {}
+    globalSearchIndex?: GlobalSearchIndexService,
+  ) {
+    super(
+      em,
+      templateService,
+      genericQueryService,
+      genericMutationService,
+      genericPayloadService,
+      genericPermissionService,
+      genericReferenceService,
+      genericSanitizerService,
+      genericOpenTaskEventsService,
+      genericChangeLogService,
+      genericUpdateConflictService,
+      emailAutomationService,
+      genericCustomFieldService,
+      genericInlineCollectionService,
+      fieldPermissions,
+      securityPrincipalCache,
+      globalSearchIndex,
+    );
+  }
 
   async create(
     entityHandle: string,
@@ -495,285 +512,5 @@ export class GenericEntityMutationService {
       currentUser,
       permissionTemplate,
     );
-  }
-
-  async delete(
-    entityHandle: string,
-    handle: string | number,
-    currentUser: PersonItem,
-    scriptContext: ScriptServerContext,
-    lifecycleOptions: GenericMutationLifecycleOptions = {},
-  ): Promise<void> {
-    const previousOpenTaskUserHandles =
-      await this.genericOpenTaskEventsService.loadUserHandles(
-        entityHandle,
-        handle,
-      );
-    const entityClass = this.genericQueryService.getEntityClass(entityHandle);
-    const template = this.templateService.getEntityTemplate(entityHandle);
-    const handleFilter = this.genericReferenceService.getHandleFilter(
-      entityHandle,
-      handle,
-    );
-    const visibleHandleFilter =
-      this.genericPermissionService.applyEntityVisibilityFilter(
-        handleFilter,
-        currentUser,
-        entityHandle,
-      );
-    let item = await this.em.findOne(entityClass, visibleHandleFilter);
-    const entity = await this.em.findOne(EntityItem, { handle: entityHandle });
-
-    if (!item) {
-      throw new NotFoundException(`global.entityNotFound`);
-    }
-
-    const customFieldOverrideDelete = this.getCustomFieldOverrideChange(
-      entityHandle,
-      item,
-    );
-
-    const oldSnapshot =
-      this.genericChangeLogService.captureEntityChangeLogPayload(
-        entityHandle,
-        item,
-        template,
-      );
-    this.genericPermissionService.checkTopLevelPermission(
-      entityHandle,
-      item,
-      currentUser,
-      'allowDeleteStage',
-    );
-    item = await this.genericMutationService.applyBeforeScript(
-      ScriptMethods.beforeDelete,
-      item,
-      entity,
-      currentUser,
-      scriptContext,
-    );
-    const storedDocumentFile =
-      entityHandle === 'document'
-        ? captureStoredDocumentFileDescriptor(item)
-        : null;
-
-    const affectedRows = await this.genericMutationService.deleteAndFlush(
-      entityHandle,
-      entityClass,
-      handleFilter,
-    );
-    if (affectedRows === 0) {
-      throw new NotFoundException(`global.entityNotFound`);
-    }
-    if (customFieldOverrideDelete) {
-      await this.fieldPermissions.deleteFieldOverrides(
-        customFieldOverrideDelete.entityHandle,
-        customFieldOverrideDelete.oldFieldName,
-      );
-    }
-    this.invalidateSecurityPrincipalAfterMutation(entityHandle, item);
-    this.queueSearchIndexDelete(lifecycleOptions, entityHandle, item);
-    this.invalidateTemplateMetadataAfterMutation(entityHandle);
-    if (storedDocumentFile) {
-      this.queueBackgroundTask(lifecycleOptions, 'documentFileDelete', () =>
-        deleteStoredDocumentFile(storedDocumentFile),
-      );
-    }
-
-    if (entity) {
-      await this.genericMutationService.applyAfterScript(
-        ScriptMethods.afterDelete,
-        item,
-        entity,
-        currentUser,
-        scriptContext,
-      );
-    }
-    this.queueBackgroundTask(lifecycleOptions, 'changeLog', () =>
-      this.genericChangeLogService.safeStoreChangeLog(
-        'delete',
-        entity,
-        currentUser,
-        oldSnapshot,
-        null,
-      ),
-    );
-    this.queueBackgroundTask(lifecycleOptions, 'openTaskCountChanges', () =>
-      this.genericOpenTaskEventsService.notifyUsers(
-        previousOpenTaskUserHandles,
-      ),
-    );
-  }
-
-  private extractEntityHandle(item: object): string | number | null {
-    const handle = (item as { handle?: unknown }).handle;
-    return typeof handle === 'string' || typeof handle === 'number'
-      ? handle
-      : null;
-  }
-
-  private withCustomFields(
-    data: GenericMutationPayload,
-    customFields: Record<string, unknown>,
-  ): GenericMutationPayload {
-    if (Object.keys(customFields).length === 0) {
-      return data;
-    }
-
-    return {
-      ...data,
-      customFields,
-    };
-  }
-
-  private getCustomFieldOverrideChange(
-    entityHandle: string,
-    item: Record<string, unknown>,
-    nextFieldKey?: unknown,
-  ): {
-    entityHandle: string;
-    oldFieldName: string;
-    newFieldName: string;
-  } | null {
-    if (entityHandle !== 'customFieldDefinition') return null;
-    const targetEntity = item.entity;
-    const targetEntityHandle =
-      typeof targetEntity === 'string'
-        ? targetEntity
-        : targetEntity && typeof targetEntity === 'object'
-          ? (targetEntity as { handle?: unknown }).handle
-          : null;
-    const oldFieldKey = item.fieldKey;
-    if (
-      typeof targetEntityHandle !== 'string' ||
-      typeof oldFieldKey !== 'string'
-    ) {
-      return null;
-    }
-    const normalizedNextFieldKey =
-      typeof nextFieldKey === 'string' && nextFieldKey.trim()
-        ? nextFieldKey.trim()
-        : oldFieldKey;
-    return {
-      entityHandle: targetEntityHandle,
-      oldFieldName: `customFields.${oldFieldKey}`,
-      newFieldName: `customFields.${normalizedNextFieldKey}`,
-    };
-  }
-
-  /**
-   * Full-record clients commonly echo the primary handle in PATCH payloads.
-   * When it identifies the same record as the request parameter, it is not an
-   * attempted field change and must not be checked or assigned as one.
-   */
-  private removeMatchingHandleEcho(
-    data: GenericMutationPayload,
-    targetHandle: string | number,
-  ): GenericMutationPayload {
-    if (
-      !Object.prototype.hasOwnProperty.call(data, 'handle') ||
-      data.handle == null ||
-      String(data.handle) !== String(targetHandle)
-    ) {
-      return data;
-    }
-
-    const nextData = { ...data };
-    delete nextData.handle;
-    return nextData;
-  }
-
-  private invalidateTemplateMetadataAfterMutation(entityHandle: string): void {
-    if (
-      entityHandle === 'customFieldDefinition' ||
-      entityHandle === 'customFieldType'
-    ) {
-      this.genericCustomFieldService.invalidateTemplateCache();
-    }
-  }
-
-  private invalidateSecurityPrincipalAfterMutation(
-    entityHandle: string,
-    item: object,
-  ): void {
-    if (!this.securityPrincipalCache) {
-      return;
-    }
-    if (entityHandle === 'person') {
-      const handle = this.extractEntityHandle(item);
-      this.securityPrincipalCache.invalidate(
-        typeof handle === 'number' ? handle : null,
-      );
-      return;
-    }
-    if (
-      entityHandle === 'role' ||
-      entityHandle === 'permission' ||
-      entityHandle === 'fieldPermission'
-    ) {
-      this.securityPrincipalCache.invalidateAll();
-    }
-  }
-
-  private scheduleSearchIndexUpsert(entityHandle: string, item: object): void {
-    const handle = this.extractEntityHandle(item);
-    if (handle == null || !this.globalSearchIndex?.isEnabled()) return;
-    this.scheduleBackgroundTask('globalSearchIndex', () =>
-      this.globalSearchIndex!.handleUpsert(entityHandle, handle),
-    );
-  }
-
-  private queueSearchIndexUpsert(
-    lifecycleOptions: GenericMutationLifecycleOptions,
-    entityHandle: string,
-    item: object,
-  ): void {
-    const handle = this.extractEntityHandle(item);
-    if (handle == null || !this.globalSearchIndex?.isEnabled()) return;
-    this.queueBackgroundTask(lifecycleOptions, 'globalSearchIndex', () =>
-      this.globalSearchIndex!.handleUpsert(entityHandle, handle),
-    );
-  }
-
-  private queueSearchIndexDelete(
-    lifecycleOptions: GenericMutationLifecycleOptions,
-    entityHandle: string,
-    item: object,
-  ): void {
-    const handle = this.extractEntityHandle(item);
-    if (handle == null || !this.globalSearchIndex?.isEnabled()) return;
-    this.queueBackgroundTask(lifecycleOptions, 'globalSearchIndex', () =>
-      this.globalSearchIndex!.handleDelete(entityHandle, handle),
-    );
-  }
-
-  private scheduleBackgroundTask(
-    label: string,
-    operation: () => Promise<void>,
-  ): void {
-    setImmediate(() => {
-      void operation().catch((error) => {
-        global.log?.error?.(`${label}:`, error);
-      });
-    });
-  }
-
-  schedulePostCommitTasks(tasks: GenericPostCommitTask[]): void {
-    for (const task of tasks) {
-      this.scheduleBackgroundTask(task.label, task.operation);
-    }
-  }
-
-  private queueBackgroundTask(
-    lifecycleOptions: GenericMutationLifecycleOptions,
-    label: string,
-    operation: () => Promise<void>,
-  ): void {
-    if (lifecycleOptions.postCommitTasks) {
-      lifecycleOptions.postCommitTasks.push({ label, operation });
-      return;
-    }
-
-    this.scheduleBackgroundTask(label, operation);
   }
 }

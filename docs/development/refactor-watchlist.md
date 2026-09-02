@@ -2,7 +2,22 @@
 
 This note tracks files that are healthy enough to leave as-is for now, but should be watched when nearby work happens. Prefer incremental extraction during feature work over broad refactors without a concrete change driver.
 
-Last reviewed: 2026-07-16
+Last reviewed: 2026-09-02
+
+## Current Quality-Gate Resume Point
+
+The 2026-09-02 audit contains seven files above 600 physical lines, all explicit
+exceptions: the generated MDI catalog, the already-executed baseline migration,
+and the cohesive persisted schemas for `CompanyItem`, `PersonItem`,
+`TicketItem`, `EventItem`, and `SalesOpportunityItem`. Zero actionable source or
+test files remain above the threshold.
+
+The final frontend wave separated monitoring tabs, dashboard layout and query
+state, calendar workspace initialization/actions, mail-recipient and relation
+editing, table projection/query/control/shell state, edit-dialog supplemental
+tabs/presentation/focus management, and Customer-360 loading, activity, related
+panels, and card presentation. Stable route components and public composable
+entry points remain in place.
 
 ## Source File Size Policy
 
@@ -17,26 +32,22 @@ Last reviewed: 2026-07-16
   executed migrations are tracked separately. They are not split merely to meet
   the application-source limit.
 
-The refreshed 2026-07-16 inventory contains 5 TypeScript, JavaScript, and Vue
-files above 600 lines under `backend/src` and `frontend/src`. Two are the
-generated/immutable exceptions above. The other three are the declarative
-`CompanyItem`, `PersonItem`, and `TicketItem` persisted schemas documented as
-cohesion exceptions below. No actionable source or test file remains above the
-policy limit. The inventory is regenerated after each wave rather than inferred
-from the previous count.
+The 2026-07-16 baseline contained five files above the threshold. The current
+inventory is recorded in the resume point above and is regenerated after each
+wave rather than inferred from the previous count.
 
 ## Prioritized Refactoring Waves
 
-No further size-driven wave is queued. New work should keep the zero-actionable
-baseline and use normal responsibility reviews rather than extracting code only
-to change a line count.
+No size-driven extraction is currently queued. Continue applying the 600-line
+review during feature work and keep orchestration out of the documented schema
+exceptions.
 
 ## Resume Point
 
-- No extraction is left half-finished. The final metadata/permission wave is
-  focused-tested, typechecked, inventoried, and documented.
-- All remaining oversized files have an explicit generated, immutable, or
-  persisted-schema cohesion classification.
+- No extraction is left half-finished; the current audit has zero actionable
+  oversized files.
+- The seven remaining files are generated, immutable, or documented schema
+  cohesion exceptions.
 - Form Config administration remains below the limit. Extract entity/scope
   selection only when that workflow changes.
 
@@ -47,6 +58,8 @@ to change a line count.
 | `backend/src/entity/CompanyItem.ts` | Explicit cohesion exception: all persisted/scalar/relation fields plus their ORM, Swagger, and dynamic-form metadata define one company schema. | Retain fields together; extract only future behavior or metadata genuinely reused by another model. |
 | `backend/src/entity/PersonItem.ts` | Explicit cohesion exception: the declarative person/security/relation schema must remain inspectable as one ORM model. Its two password lifecycle methods enforce invariants on that model. | Move new orchestration out immediately; keep field decorators and password invariants colocated. |
 | `backend/src/entity/TicketItem.ts` | Explicit cohesion exception: ticket workflow, SLA, assignment, relation, and UI metadata collectively define one persisted ticket schema. | Extract new behavior into services; do not scatter field declarations across mixins or inheritance solely for size. |
+| `backend/src/entity/EventItem.ts` | Explicit cohesion exception: the calendar record's persisted fields, recurrence metadata, relations, and generated-form decorators form one inspectable ORM schema. | Keep orchestration in calendar services; split only reusable behavior, not field declarations. |
+| `backend/src/entity/SalesOpportunityItem.ts` | Explicit cohesion exception: pipeline fields, forecast/stage relations, ownership, and generated-UI metadata define one persisted opportunity schema. | Extract workflow behavior into services and keep the declarative model intact. |
 
 ## Rule Of Thumb
 

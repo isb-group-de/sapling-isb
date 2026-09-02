@@ -5,8 +5,7 @@ import type {
   AttachmentOption,
   EmailTemplateItem,
   InsertTarget,
-  MailRecipientOption,
-  MailSenderOption,
+  MailComposerPlaceholderTarget,
   PlaceholderItem,
   PlaceholderRelationTemplates,
 } from '@/components/dialog/mail/SaplingDialogMail.types'
@@ -17,16 +16,12 @@ import ApiGenericService from '@/services/api.generic.service'
 import ApiMailService from '@/services/api.mail.service'
 import { useCurrentPermissionStore } from '@/stores/currentPermissionStore'
 import { useCurrentPersonStore } from '@/stores/currentPersonStore'
+import { useSaplingMailEditorRecipients } from './useSaplingMailEditorRecipients'
+import { useSaplingMailEditorTranslations } from './useSaplingMailEditorTranslations'
 import {
-  buildMailRecipientOptions,
-  getContextCompanyHandles,
-  getContextCompanyTemplates,
-  type MailRecipientPerson,
-} from '@/utils/saplingMailRecipientOptions'
-
-type MailComposerPlaceholderTarget = {
-  insertPlaceholderAtCursor?: (target: InsertTarget, token: string) => void
-}
+  isScalarPlaceholderTemplate,
+  isSupportedPlaceholderRelation,
+} from './saplingMailPlaceholder.utils'
 
 type AttachmentItem = {
   handle: number
@@ -42,6 +37,11 @@ export function useSaplingDialogMailEditor() {
   const currentPersonStore = useCurrentPersonStore()
   const currentPermissionStore = useCurrentPermissionStore()
   const { locale, t, te } = useI18n()
+  const { translate, translateIfExists, translateTemplateLabel, translateWithParams } =
+    useSaplingMailEditorTranslations({
+      t: (key, params) => String(t(key, params ?? {})),
+      te,
+    })
   const {
     translationService,
     isLoading: isTranslationLoading,
@@ -52,16 +52,10 @@ export function useSaplingDialogMailEditor() {
   const composer = ref<MailComposerPlaceholderTarget | null>(null)
   const placeholders = ref<PlaceholderItem[]>([])
   const availableAttachments = ref<AttachmentOption[]>([])
-  const senderOptions = ref<MailSenderOption[]>([])
-  const recipientOptions = ref<MailRecipientOption[]>([])
   const contextEntityTemplates = ref<EntityTemplate[]>([])
   const defaultTemplateHandle = ref<number | null>(null)
   const templateHandle = ref<number | null>(null)
   const attachmentHandles = ref<number[]>([])
-  const toRecipients = ref<string[]>([])
-  const ccRecipients = ref<string[]>([])
-  const bccRecipients = ref<string[]>([])
-  const selectedSenderEmail = ref('')
   const subject = ref('')
   const bodyMarkdown = ref('')
   const insertTarget = ref<InsertTarget>('body')
@@ -73,11 +67,33 @@ export function useSaplingDialogMailEditor() {
   const isLoadingTemplates = ref(false)
   const isLoadingPlaceholders = ref(false)
   const isLoadingAttachments = ref(false)
-  const isLoadingSenderOptions = ref(false)
-  const isLoadingRecipientOptions = ref(false)
   const isPreviewLoading = ref(false)
   const isSending = ref(false)
   let initializationSequence = 0
+  const {
+    bccRecipients,
+    ccRecipients,
+    hasEntityPermission,
+    isLoadingRecipientOptions,
+    isLoadingSenderOptions,
+    loadConfiguredCustomerCc,
+    loadRecipientOptions,
+    loadSenderOptions,
+    normalizeRecipients,
+    recipientOptions,
+    selectedSenderEmail,
+    senderOptions,
+    toRecipients,
+  } = useSaplingMailEditorRecipients({
+    context,
+    contextEntityTemplates,
+    currentPermissionStore,
+    currentPersonStore,
+    locale,
+    defaultTemplateHandle,
+    isCurrentSequence: (sequence) => sequence === initializationSequence && isOpen.value,
+    pushMessage,
+  })
 
   const entityLabel = computed(() => {
     const handle = context.value?.entityHandle
@@ -409,184 +425,6 @@ export function useSaplingDialogMailEditor() {
     }
   }
 
-  async function loadRecipientOptions() {
-    recipientOptions.value = []
-
-    const currentContext = context.value
-    const companyTemplates = getContextCompanyTemplates(contextEntityTemplates.value)
-    const currentCompanyHandle = getRelationHandle(currentPersonStore.person?.company)
-    const canReadPeople =
-      currentPermissionStore.accumulatedPermission?.some(
-        (permission) => permission.entityHandle === 'person' && permission.allowRead === true,
-      ) === true
-
-    if (
-      !currentContext ||
-      (companyTemplates.length === 0 && currentCompanyHandle == null) ||
-      !canReadPeople
-    ) {
-      isLoadingRecipientOptions.value = false
-      return
-    }
-
-    isLoadingRecipientOptions.value = true
-
-    try {
-      const contextValues =
-        companyTemplates.length > 0 ? await loadContextCompanyValues(companyTemplates) : {}
-      const companyHandles = distinctHandles([
-        ...getContextCompanyHandles(companyTemplates, contextValues, currentContext.itemHandle),
-        ...(currentCompanyHandle == null ? [] : [currentCompanyHandle]),
-      ])
-
-      if (companyHandles.length === 0) {
-        return
-      }
-
-      const people = await ApiGenericService.findAll<MailRecipientPerson>('person', {
-        filter: {
-          company: {
-            $in: companyHandles,
-          },
-        },
-        orderBy: {
-          lastName: 'ASC',
-          firstName: 'ASC',
-        },
-        relations: ['company', 'department'],
-        fields: [
-          'handle',
-          'firstName',
-          'lastName',
-          'email',
-          'isActive',
-          'company',
-          'company.handle',
-          'company.name',
-          'department',
-          'department.description',
-        ],
-      })
-
-      recipientOptions.value = buildMailRecipientOptions(people, locale.value, currentCompanyHandle)
-    } catch (error) {
-      console.error('Error loading context mail recipients:', error)
-      recipientOptions.value = []
-    } finally {
-      isLoadingRecipientOptions.value = false
-    }
-  }
-
-  async function loadContextCompanyValues(
-    companyTemplates: EntityTemplate[],
-  ): Promise<Record<string, unknown>> {
-    const currentContext = context.value
-    const draftValues = currentContext?.draftValues ?? {}
-    const missingReferences = companyTemplates.filter(
-      (template) =>
-        template.isReference === true &&
-        !Object.prototype.hasOwnProperty.call(draftValues, template.name),
-    )
-
-    if (!currentContext || currentContext.itemHandle == null || missingReferences.length === 0) {
-      return draftValues
-    }
-
-    const relationNames = missingReferences.map((template) => template.name)
-    const response = await ApiGenericService.find<Record<string, unknown>>(
-      currentContext.entityHandle,
-      {
-        filter: { handle: currentContext.itemHandle },
-        page: 1,
-        limit: 1,
-        relations: relationNames,
-        fields: [
-          'handle',
-          ...relationNames,
-          ...relationNames.map((relationName) => `${relationName}.handle`),
-        ],
-      },
-    )
-
-    return {
-      ...(response.data[0] ?? {}),
-      ...draftValues,
-    }
-  }
-
-  async function loadSenderOptions() {
-    isLoadingSenderOptions.value = true
-
-    try {
-      const response = await ApiMailService.listSenders(context.value?.entityHandle)
-      senderOptions.value = response.senders ?? []
-      defaultTemplateHandle.value = response.defaultTemplateHandle ?? null
-      selectedSenderEmail.value =
-        senderOptions.value.find((sender) => sender.isDefault)?.email ??
-        senderOptions.value[0]?.email ??
-        currentPersonStore.person?.email?.trim() ??
-        ''
-    } catch (error) {
-      console.error('Error loading sender options:', error)
-      pushMessage(
-        'warning',
-        'mail.senderOptionsLoadFailed',
-        'mail.senderOptionsLoadFailedDescription',
-        'mail',
-      )
-      senderOptions.value = []
-      defaultTemplateHandle.value = null
-      selectedSenderEmail.value = currentPersonStore.person?.email?.trim() ?? ''
-    } finally {
-      isLoadingSenderOptions.value = false
-    }
-  }
-
-  async function loadConfiguredCustomerCc(sequence: number) {
-    const currentContext = context.value
-    if (!currentContext) {
-      return
-    }
-
-    try {
-      const result = await ApiMailService.resolveContextCc(
-        {
-          entityHandle: currentContext.entityHandle,
-          itemHandle: currentContext.itemHandle,
-          draftValues: currentContext.draftValues,
-          to: toRecipients.value,
-          cc: ccRecipients.value,
-          bcc: bccRecipients.value,
-        },
-        { reportError: false },
-      )
-
-      if (sequence !== initializationSequence || !isOpen.value) {
-        return
-      }
-
-      const occupiedRecipients = new Set(
-        [...toRecipients.value, ...ccRecipients.value, ...bccRecipients.value].map((recipient) =>
-          recipient.trim().toLocaleLowerCase(),
-        ),
-      )
-      const additionalCc = normalizeRecipients(result.additionalCc).filter(
-        (recipient) => !occupiedRecipients.has(recipient.toLocaleLowerCase()),
-      )
-      ccRecipients.value = normalizeDistinctRecipients([...ccRecipients.value, ...additionalCc])
-    } catch (error) {
-      console.error('Error loading configured customer CC recipients:', error)
-      if (sequence === initializationSequence && isOpen.value) {
-        pushMessage(
-          'warning',
-          'mail.customerCcLoadFailed',
-          'mail.customerCcLoadFailedDescription',
-          'mail',
-        )
-      }
-    }
-  }
-
   async function refreshPreview() {
     if (!context.value?.entityHandle) {
       return
@@ -658,21 +496,6 @@ export function useSaplingDialogMailEditor() {
     composer.value?.insertPlaceholderAtCursor?.(insertTarget.value, token)
   }
 
-  function hasEntityPermission(
-    entityHandle: string | null | undefined,
-    action: 'allowRead' | 'allowUpdate',
-  ): boolean {
-    if (!entityHandle) {
-      return false
-    }
-
-    return (
-      currentPermissionStore.accumulatedPermission?.some(
-        (permission) => permission.entityHandle === entityHandle && permission[action] === true,
-      ) === true
-    )
-  }
-
   function buildPlaceholderItems(
     rootTemplates: EntityTemplate[],
     relationTemplates: PlaceholderRelationTemplates[],
@@ -708,14 +531,6 @@ export function useSaplingDialogMailEditor() {
       .sort((left, right) => left.label.localeCompare(right.label))
   }
 
-  function isScalarPlaceholderTemplate(template: EntityTemplate): boolean {
-    return !template.isReference && template.isPersistent !== false
-  }
-
-  function isSupportedPlaceholderRelation(template: EntityTemplate): boolean {
-    return !!template.isReference && !!template.referenceName && template.kind !== '1:m'
-  }
-
   async function loadPlaceholderTranslations(relationTemplates: PlaceholderRelationTemplates[]) {
     const namespaces = new Set<string>()
     const currentEntityHandle = context.value?.entityHandle
@@ -735,71 +550,6 @@ export function useSaplingDialogMailEditor() {
     }
 
     await translationService.value.prepare(...namespaces)
-  }
-
-  function normalizeRecipients(value: string[] | string | null | undefined): string[] {
-    const values = Array.isArray(value) ? value : String(value ?? '').split(/[;,]/)
-
-    return values.map((entry) => String(entry).trim()).filter(Boolean)
-  }
-
-  function normalizeDistinctRecipients(values: string[]): string[] {
-    const distinct = new Map<string, string>()
-
-    for (const recipient of normalizeRecipients(values)) {
-      const key = recipient.toLocaleLowerCase()
-      if (!distinct.has(key)) {
-        distinct.set(key, recipient)
-      }
-    }
-
-    return [...distinct.values()]
-  }
-
-  function getRelationHandle(value: unknown): string | number | null {
-    if (typeof value === 'string' || typeof value === 'number') {
-      return value
-    }
-
-    if (!value || typeof value !== 'object') {
-      return null
-    }
-
-    const handle = (value as { handle?: unknown }).handle
-    return typeof handle === 'string' || typeof handle === 'number' ? handle : null
-  }
-
-  function distinctHandles(handles: Array<string | number>): Array<string | number> {
-    const distinct = new Map<string, string | number>()
-
-    for (const handle of handles) {
-      const key = String(handle).trim()
-      if (key && !distinct.has(key)) {
-        distinct.set(key, handle)
-      }
-    }
-
-    return [...distinct.values()]
-  }
-
-  function translateTemplateLabel(entityHandle: string, property: string): string {
-    if (!entityHandle) {
-      return property
-    }
-
-    return translateIfExists(`${entityHandle}.${property}`, property)
-  }
-
-  function translate(key: string): string {
-    return t(key)
-  }
-
-  function translateIfExists(key: string, fallback: string): string {
-    return te(key) ? t(key) : fallback
-  }
-
-  function translateWithParams(key: string, params: Record<string, unknown>): string {
-    return te(key) ? t(key, params) : key
   }
 
   return {

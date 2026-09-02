@@ -312,29 +312,24 @@
 
 <script lang="ts" setup>
 // #region Imports
-import { computed, getCurrentInstance, nextTick, ref, watch } from 'vue'
+import { computed, getCurrentInstance } from 'vue'
 import { useI18n } from 'vue-i18n'
-import type {
-  DialogSaveAction,
-  DialogSaveContext,
-  DialogState,
-  EntityTemplate,
-} from '@/entity/structure'
 import { DEFAULT_PAGE_SIZE_SMALL } from '@/constants/project.constants'
 import { SAPLING_DIALOG_HEIGHT } from '@/constants/dialog.constants'
-import type { EntityItem, SaplingGenericItem } from '@/entity/entity'
+import type { EntityItem } from '@/entity/entity'
 import { useSaplingDialogEdit } from '@/composables/dialog/useSaplingDialogEdit'
 import { useSaplingDialogKeyboardShortcuts } from '@/composables/dialog/useSaplingDialogKeyboardShortcuts'
 import { useSaplingDialogRecordActions } from '@/composables/dialog/useSaplingDialogRecordActions'
 import { useSaplingViewport } from '@/composables/useSaplingViewport'
 import { useTranslationLoader } from '@/composables/generic/useTranslationLoader'
-import { buildMailMenuActions } from '@/utils/saplingMailMenuUtil'
-import ApiTemplateService from '@/services/api.template.service'
-import type { EntityValueReferenceTemplates } from '@/utils/saplingTableUtil'
-import {
-  getCommunicationOwnerReferenceNames,
-  getCommunicationRecordLabel,
-} from '@/utils/saplingCommunicationRecordUtil'
+import { useSaplingDialogSupplementalTabs } from '@/composables/dialog/useSaplingDialogSupplementalTabs'
+import { useSaplingDialogPresentation } from '@/composables/dialog/useSaplingDialogPresentation'
+import { useSaplingDialogFocusManagement } from '@/composables/dialog/useSaplingDialogFocusManagement'
+import { useSaplingDialogInformationTab } from '@/composables/dialog/useSaplingDialogInformationTab'
+import type {
+  SaplingDialogEditComponentEmit,
+  SaplingDialogEditProps,
+} from '@/composables/dialog/saplingDialogEdit.types'
 import SaplingDialogCard from '@/components/dialog/SaplingDialogCard.vue'
 import SaplingDialog from '@/components/common/SaplingDialog.vue'
 import SaplingDialogEditActions from '@/components/dialog/SaplingDialogEditActions.vue'
@@ -350,33 +345,11 @@ import SaplingDialogEditRelationTab from './SaplingDialogEditRelationTab.vue'
 // #endregion
 
 // #region Props & Emits
-const props = defineProps<{
-  modelValue: boolean
-  mode: DialogState
-  item: SaplingGenericItem | null
-  parent?: SaplingGenericItem | null
-  parentEntity?: EntityItem | null
-  templates: EntityTemplate[]
-  entity: EntityItem | null
-  showReference?: boolean
-  forceDirty?: boolean
-  forceDirtyFields?: string[]
-  allowPristineCreate?: boolean
-}>()
-
-const emit = defineEmits<{
-  (event: 'update:modelValue', value: boolean): void
-  // The edit dialog emits entity-specific payloads that vary by template.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (event: 'save', value: any, action: DialogSaveAction, context: DialogSaveContext): void
-  (event: 'cancel'): void
-  (event: 'update:mode', value: DialogState): void
-  (event: 'update:item', value: SaplingGenericItem | null): void
-  (event: 'deleted', value: SaplingGenericItem | null): void
-}>()
+const props = defineProps<SaplingDialogEditProps>()
+const emit = defineEmits<SaplingDialogEditComponentEmit>()
 // #endregion
 
-const { t, d, te } = useI18n()
+const { t } = useI18n()
 useTranslationLoader('navigationGroup')
 const { isSmallViewport } = useSaplingViewport()
 
@@ -399,30 +372,13 @@ const dialogFieldDefaults = {
   },
 }
 
-interface InformationTabHandle {
-  discardChanges: () => void
-  save: () => Promise<boolean>
-}
-
-const informationTabRef = ref<InformationTabHandle | null>(null)
-const informationDirty = ref(false)
-
-function handleInformationDirtyUpdate(dirty: boolean): void {
-  informationDirty.value = dirty
-}
-
-async function persistInformationChanges(): Promise<boolean> {
-  if (!informationDirty.value) {
-    return true
-  }
-
-  return (await informationTabRef.value?.save()) ?? false
-}
-
-function resetInformationChanges(): void {
-  informationTabRef.value?.discardChanges()
-  informationDirty.value = false
-}
+const {
+  informationTabRef,
+  informationDirty,
+  handleInformationDirtyUpdate,
+  persistInformationChanges,
+  resetInformationChanges,
+} = useSaplingDialogInformationTab()
 
 // #region Composable
 const {
@@ -497,8 +453,6 @@ const {
   resetSupplementalChanges: resetInformationChanges,
 })
 
-const formSurfaceRef = ref<HTMLElement | null>(null)
-const hasFocusedCurrentOpenDialog = ref(false)
 const dialogTabIdPrefix = `sapling-record-dialog-${getCurrentInstance()?.uid ?? 'record'}`
 
 const {
@@ -565,436 +519,74 @@ const relationEntities = computed<Record<string, EntityItem | null>>(() =>
   ),
 )
 
-const itemHandle = computed<string | number | null>(() => {
-  const handle = props.item?.handle
-  return typeof handle === 'string' || typeof handle === 'number' ? handle : null
+const {
+  itemHandle,
+  informationTabIndex,
+  documentsTabIndex,
+  emailsTabIndex,
+  phoneCallsTabIndex,
+  canShowInformationTab,
+  canShowDocumentsTab,
+  canShowEmailsTab,
+  canShowPhoneCallsTab,
+  canUploadDocuments,
+  canComposeEmails,
+  canCreatePhoneCalls,
+  recordPhoneNumber,
+  recordEmailActions,
+  emailRecordDisplayValue,
+  phoneRecordDisplayValue,
+  supplementalTabs,
+  hasOpenedInformationTab,
+  hasOpenedDocumentsTab,
+  hasOpenedEmailsTab,
+  hasOpenedPhoneCallsTab,
+} = useSaplingDialogSupplementalTabs(props, {
+  activeTab,
+  form,
+  informationDirty,
+  isSmallViewport,
+  permissions,
+  relationTemplates,
 })
 
-const informationTabIndex = computed(() => relationTemplates.value.length + 1)
-const documentsTabIndex = computed(() => relationTemplates.value.length + 2)
-const emailsTabIndex = computed(() => relationTemplates.value.length + 3)
-const phoneCallsTabIndex = computed(() => relationTemplates.value.length + 4)
-const hasPersistedItem = computed(() => itemHandle.value != null && props.mode !== 'create')
-const permissionFor = (entity: string) =>
-  permissions.value?.find((permission) => permission.entityHandle === entity)
-const canShowInformationTab = computed(
-  () => !isSmallViewport.value && permissionFor('information')?.allowRead === true,
-)
-const canShowDocumentsTab = computed(
-  () => !isSmallViewport.value && permissionFor('document')?.allowRead === true,
-)
-const canShowEmailsTab = computed(
-  () => !isSmallViewport.value && permissionFor('emailDelivery')?.allowRead === true,
-)
-const canShowPhoneCallsTab = computed(
-  () => !isSmallViewport.value && permissionFor('phoneCall')?.allowRead === true,
-)
-const canUploadDocuments = computed(
-  () => hasPersistedItem.value && props.entity?.canInsert === true,
-)
-const canComposeEmails = computed(() => hasPersistedItem.value && props.entity?.canUpdate === true)
-const canCreatePhoneCalls = computed(
-  () => hasPersistedItem.value && permissionFor('phoneCall')?.allowInsert === true,
-)
-const recordPhoneTemplate = computed(() =>
-  props.templates.find((template) => {
-    const value = form.value[template.name]
-    return template.options?.includes('isPhone') && value != null && String(value).trim().length > 0
-  }),
-)
-
-const recordPhoneNumber = computed(() =>
-  recordPhoneTemplate.value ? String(form.value[recordPhoneTemplate.value.name] ?? '').trim() : '',
-)
-const recordEmailActions = computed(() => buildMailMenuActions(props.templates, form.value))
-const communicationContactTemplateNames = computed(() => [
-  ...new Set([
-    ...recordEmailActions.value.map((action) => action.templateName),
-    ...(recordPhoneTemplate.value ? [recordPhoneTemplate.value.name] : []),
-  ]),
-])
-const communicationReferenceTemplates = ref<EntityValueReferenceTemplates>({})
-let communicationTemplateRequestId = 0
-
-async function loadCommunicationReferenceTemplates(
-  initialReferenceNames: string[],
-): Promise<EntityValueReferenceTemplates> {
-  const loaded: Record<string, EntityTemplate[]> = {}
-  const queued = new Set(initialReferenceNames)
-
-  while (queued.size > 0) {
-    const referenceNames = [...queued]
-    queued.clear()
-    const entries = await Promise.all(
-      referenceNames.map(async (referenceName) => {
-        try {
-          return [referenceName, await ApiTemplateService.getEntityTemplate(referenceName)] as const
-        } catch {
-          return [referenceName, [] as EntityTemplate[]] as const
-        }
-      }),
-    )
-
-    for (const [referenceName, templates] of entries) {
-      loaded[referenceName] = templates
-      for (const template of templates) {
-        const nestedReferenceName = template.referenceName?.trim()
-        if (
-          template.isReference &&
-          template.options?.includes('isValue') &&
-          nestedReferenceName &&
-          !(nestedReferenceName in loaded)
-        ) {
-          queued.add(nestedReferenceName)
-        }
-      }
-    }
-  }
-
-  return loaded
-}
-
-watch(
-  () =>
-    getCommunicationOwnerReferenceNames(communicationContactTemplateNames.value, props.templates),
-  async (referenceNames) => {
-    const requestId = ++communicationTemplateRequestId
-    const loadedTemplates = await loadCommunicationReferenceTemplates(referenceNames)
-
-    if (requestId === communicationTemplateRequestId) {
-      communicationReferenceTemplates.value = loadedTemplates
-    }
-  },
-  { immediate: true },
-)
-
-const emailRecordDisplayValue = computed(() =>
-  getCommunicationRecordLabel(
-    form.value,
-    props.templates,
-    recordEmailActions.value.map((action) => action.templateName),
-    communicationReferenceTemplates.value,
-  ),
-)
-const phoneRecordDisplayValue = computed(() =>
-  getCommunicationRecordLabel(
-    form.value,
-    props.templates,
-    recordPhoneTemplate.value ? [recordPhoneTemplate.value.name] : [],
-    communicationReferenceTemplates.value,
-  ),
-)
-const emailsTabLabel = computed(() => t('navigationGroup.mails'))
-
-const supplementalDisabledReason = computed(() =>
-  hasPersistedItem.value ? '' : t('global.recordContentAvailableAfterSave'),
-)
-
-const supplementalTabs = computed(() => {
-  const tabs = []
-
-  if (canShowInformationTab.value) {
-    tabs.push({
-      value: informationTabIndex.value,
-      label: t('navigation.information'),
-      icon: 'mdi-text-box-edit-outline',
-      disabled: !hasPersistedItem.value,
-      disabledReason: supplementalDisabledReason.value,
-      dirty: informationDirty.value,
-    })
-  }
-
-  if (canShowDocumentsTab.value) {
-    tabs.push({
-      value: documentsTabIndex.value,
-      label: t('navigation.document'),
-      icon: 'mdi-file-document-multiple-outline',
-      disabled: !hasPersistedItem.value,
-      disabledReason: supplementalDisabledReason.value,
-    })
-  }
-
-  if (canShowEmailsTab.value && recordEmailActions.value.length > 0) {
-    tabs.push({
-      value: emailsTabIndex.value,
-      label: emailsTabLabel.value,
-      icon: 'mdi-email-multiple-outline',
-      disabled: !hasPersistedItem.value,
-      disabledReason: supplementalDisabledReason.value,
-    })
-  }
-
-  if (canShowPhoneCallsTab.value && recordPhoneNumber.value) {
-    tabs.push({
-      value: phoneCallsTabIndex.value,
-      label: t('navigation.phoneCall'),
-      icon: 'mdi-phone-log-outline',
-      disabled: !hasPersistedItem.value,
-      disabledReason: supplementalDisabledReason.value,
-    })
-  }
-
-  return tabs
+const {
+  createdAtTitle,
+  updatedAtTitle,
+  createdAtLabel,
+  updatedAtLabel,
+  selectedFormConfigChipLabel,
+  resetButtonLabel,
+  dirtyChangeCount,
+  dirtySummaryLabel,
+  expandedGroupIds,
+  syncExpandedGroups,
+  isGroupExpanded,
+  toggleGroup,
+  isGroupDirty,
+  updateSelectedRelationItems,
+  updateSelectedRelationTableItems,
+  onRelationSearch,
+} = useSaplingDialogPresentation(props, {
+  dirtyFieldCount,
+  dirtyRelationNames,
+  getDirtyTemplateCount,
+  informationDirty,
+  onRelationTablePage,
+  relationTablePage,
+  relationTableSearch,
+  selectedFormConfigLabel,
+  selectedItems,
+  selectedRelations,
+  visibleTemplateGroups,
 })
 
-const hasOpenedInformationTab = ref(false)
-const hasOpenedDocumentsTab = ref(false)
-const hasOpenedEmailsTab = ref(false)
-const hasOpenedPhoneCallsTab = ref(false)
-
-watch(
-  [activeTab, supplementalTabs],
-  ([tab, tabs]) => {
-    if (
-      typeof tab === 'number' &&
-      tab > relationTemplates.value.length &&
-      !tabs.some((supplementalTab) => supplementalTab.value === tab)
-    ) {
-      activeTab.value = 0
-      return
-    }
-
-    if (tab === informationTabIndex.value) {
-      hasOpenedInformationTab.value = true
-    }
-    if (tab === documentsTabIndex.value) {
-      hasOpenedDocumentsTab.value = true
-    }
-    if (tab === emailsTabIndex.value) {
-      hasOpenedEmailsTab.value = true
-    }
-    if (tab === phoneCallsTabIndex.value) {
-      hasOpenedPhoneCallsTab.value = true
-    }
-  },
-  { immediate: true },
-)
-
-function getTimestampTitle(field: 'createdAt' | 'updatedAt'): string {
-  const entityHandle = props.entity?.handle
-  const entityKey = entityHandle ? `${entityHandle}.${field}` : ''
-
-  if (entityKey && te(entityKey)) {
-    return t(entityKey)
-  }
-
-  return t(`global.${field}`)
-}
-
-function formatTimestamp(value: unknown): string {
-  if (!value) {
-    return ''
-  }
-
-  const date = value instanceof Date ? value : new Date(String(value))
-  return Number.isNaN(date.getTime()) ? '' : d(date)
-}
-
-const createdAtTitle = computed(() => getTimestampTitle('createdAt'))
-const updatedAtTitle = computed(() => getTimestampTitle('updatedAt'))
-const createdAtLabel = computed(() => formatTimestamp(props.item?.createdAt))
-const updatedAtLabel = computed(() => formatTimestamp(props.item?.updatedAt))
-const selectedFormConfigChipLabel = computed(() =>
-  selectedFormConfigLabel.value
-    ? `${t('formConfig.currentView')}: ${selectedFormConfigLabel.value}`
-    : '',
-)
-
-const resetButtonLabel = computed(() => t('filter.reset'))
-
-const dirtyChangeCount = computed(
-  () => dirtyFieldCount.value + dirtyRelationNames.value.length + (informationDirty.value ? 1 : 0),
-)
-
-const dirtySummaryLabel = computed(() => {
-  if (dirtyChangeCount.value <= 0) {
-    return ''
-  }
-
-  return t('global.dirtyFieldCount', { count: dirtyChangeCount.value }, dirtyChangeCount.value)
+const { formSurfaceRef } = useSaplingDialogFocusManagement(props, {
+  activeTab,
+  expandedGroupIds,
+  isLoading,
+  syncExpandedGroups,
+  validationFeedback,
 })
-
-const expandedGroupIds = ref<string[]>([])
-
-function syncExpandedGroups(forceOpenAll = false): void {
-  const groupIds = visibleTemplateGroups.value.map((group) => group.id)
-
-  if (forceOpenAll) {
-    expandedGroupIds.value = groupIds
-    return
-  }
-
-  const expandedGroupSet = new Set(expandedGroupIds.value)
-  groupIds.forEach((groupId) => expandedGroupSet.add(groupId))
-  expandedGroupIds.value = groupIds.filter((groupId) => expandedGroupSet.has(groupId))
-}
-
-function isGroupExpanded(groupId: string): boolean {
-  return expandedGroupIds.value.includes(groupId)
-}
-
-function toggleGroup(groupId: string): void {
-  if (isGroupExpanded(groupId)) {
-    expandedGroupIds.value = expandedGroupIds.value.filter((id) => id !== groupId)
-    return
-  }
-
-  expandedGroupIds.value = [...expandedGroupIds.value, groupId]
-}
-
-function isGroupDirty(templates: EntityTemplate[]): boolean {
-  return getDirtyTemplateCount(templates) > 0
-}
-
-function updateSelectedRelationItems(templateName: string, items: SaplingGenericItem[]): void {
-  selectedRelations.value[templateName] = items
-}
-
-function updateSelectedRelationTableItems(items: SaplingGenericItem[]): void {
-  selectedItems.value = items
-}
-
-function onRelationSearch(templateName: string, search: string): void {
-  relationTableSearch.value[templateName] = search
-  relationTablePage.value[templateName] = 1
-  onRelationTablePage(templateName, 1)
-}
-
-watch(visibleTemplateGroups, () => syncExpandedGroups(), { immediate: true })
-
-function findFirstInvalidFieldShell(): HTMLElement | null {
-  const invalidControl = formSurfaceRef.value?.querySelector<HTMLElement>(
-    '[aria-invalid="true"], .v-input--error',
-  )
-  return invalidControl?.closest<HTMLElement>('[data-dialog-field-name]') ?? invalidControl ?? null
-}
-
-function focusInvalidField(fieldShell: HTMLElement): void {
-  const focusableSelector =
-    'input:not([disabled]):not([readonly]), textarea:not([disabled]):not([readonly]), select:not([disabled]), [role="combobox"], [contenteditable="true"]'
-  const validationFocusContainer = fieldShell.querySelector<HTMLElement>(
-    '[data-dialog-validation-focus]',
-  )
-  const validationFocusTarget = validationFocusContainer?.matches(focusableSelector)
-    ? validationFocusContainer
-    : validationFocusContainer?.querySelector<HTMLElement>(focusableSelector)
-  const focusTarget = fieldShell.matches(focusableSelector)
-    ? fieldShell
-    : (validationFocusTarget ??
-      fieldShell.querySelector<HTMLElement>(
-        `[aria-invalid="true"]:not([disabled]):not([readonly]), ${focusableSelector}`,
-      ))
-
-  focusTarget?.focus({ preventScroll: true })
-}
-
-async function waitForValidationLayout(): Promise<void> {
-  await nextTick()
-  if (typeof window === 'undefined' || typeof window.requestAnimationFrame !== 'function') {
-    return
-  }
-
-  await new Promise<void>((resolve) => {
-    window.requestAnimationFrame(() => window.requestAnimationFrame(() => resolve()))
-  })
-}
-
-async function revealFirstInvalidField(): Promise<void> {
-  activeTab.value = 0
-  await nextTick()
-
-  const initialFieldShell = findFirstInvalidFieldShell()
-  if (!initialFieldShell) {
-    return
-  }
-
-  const groupId =
-    initialFieldShell.closest<HTMLElement>('[data-dialog-group-id]')?.dataset.dialogGroupId
-  if (groupId && !isGroupExpanded(groupId)) {
-    expandedGroupIds.value = [...expandedGroupIds.value, groupId]
-  }
-
-  await waitForValidationLayout()
-  const fieldShell = findFirstInvalidFieldShell()
-  if (!fieldShell) {
-    return
-  }
-
-  const prefersReducedMotion =
-    typeof window !== 'undefined' &&
-    typeof window.matchMedia === 'function' &&
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  fieldShell.scrollIntoView({
-    behavior: prefersReducedMotion ? 'auto' : 'smooth',
-    block: 'center',
-    inline: 'nearest',
-  })
-  focusInvalidField(fieldShell)
-}
-
-watch(validationFeedback, (feedback) => {
-  if (feedback) {
-    void revealFirstInvalidField()
-  }
-})
-
-watch(
-  () => props.modelValue,
-  (isOpen) => {
-    if (isOpen) {
-      syncExpandedGroups(true)
-    }
-  },
-)
-
-/**
- * Auto-focus the first editable, non-disabled input once the dialog has
- * finished its initial loading. Saves the user a `Tab` step when entering
- * data and matches typical CRUD UX conventions.
- */
-async function focusFirstField(): Promise<void> {
-  if (props.mode === 'readonly' || hasFocusedCurrentOpenDialog.value) {
-    return
-  }
-
-  hasFocusedCurrentOpenDialog.value = true
-  await nextTick()
-  const surface = formSurfaceRef.value
-  if (!surface) {
-    return
-  }
-
-  const candidates = surface.querySelectorAll<HTMLElement>(
-    'input:not([type=hidden]):not([disabled]):not([readonly]), textarea:not([disabled]):not([readonly])',
-  )
-
-  for (const candidate of Array.from(candidates)) {
-    if (candidate.offsetParent === null) {
-      continue
-    }
-    if (candidate.getAttribute('aria-hidden') === 'true') {
-      continue
-    }
-    candidate.focus({ preventScroll: true })
-    if (candidate instanceof HTMLInputElement && candidate.type === 'text') {
-      candidate.select?.()
-    }
-    return
-  }
-}
-
-watch(
-  () => [props.modelValue, isLoading.value, props.mode] as const,
-  ([isOpen, loading]) => {
-    if (!isOpen) {
-      hasFocusedCurrentOpenDialog.value = false
-      return
-    }
-
-    if (isOpen && !loading) {
-      void focusFirstField()
-    }
-  },
-)
 // #endregion
 </script>

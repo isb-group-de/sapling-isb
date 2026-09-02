@@ -1,11 +1,18 @@
 import { computed, onMounted, ref } from 'vue'
 import ApiGenericService from '@/services/api.generic.service'
 import ApiTemplateService from '@/services/api.template.service'
-import ApiCurrentService from '@/services/api.current.service'
 import { useTranslationLoader } from '@/composables/generic/useTranslationLoader'
 import { useSaplingMessageCenter } from '@/composables/system/useSaplingMessageCenter'
 import { useCurrentPersonStore } from '@/stores/currentPersonStore'
-import { restoreDashboardLayoutSnapshot } from '@/composables/dashboard/saplingDashboardLayout'
+import { useSaplingDashboardLayout } from './useSaplingDashboardLayout'
+import {
+  getNextDashboardSortOrder,
+  getKpiHandles,
+  sortDashboards,
+  toDashboardPayload,
+  withSortedKpis,
+  type DashboardForm,
+} from './saplingDashboard.utils'
 import type {
   DashboardItem,
   DashboardTemplateItem,
@@ -18,16 +25,6 @@ import type {
   EditDialogOptions,
   EntityTemplate,
 } from '@/entity/structure'
-
-interface DashboardForm {
-  name: string
-  kpis?: DashboardItem['kpis'] | number[]
-  [key: string]: unknown
-}
-
-interface KpiRelationSource {
-  kpis?: DashboardItem['kpis'] | DashboardTemplateItem['kpis'] | number[]
-}
 
 type DashboardPayload = Omit<Partial<DashboardItem>, 'kpis' | 'person'> & {
   person: NonNullable<DashboardItem['person']>
@@ -59,9 +56,6 @@ export function useSaplingDashboard() {
   const availableDashboardTemplates = ref<DashboardTemplateItem[]>([])
   const dashboards = ref<DashboardItem[]>([])
   const activeTab = ref(0)
-  const isLayoutEditing = ref(false)
-  const isLayoutSaving = ref(false)
-  const layoutSnapshot = ref<DashboardItem[] | null>(null)
   const currentPersonStore = useCurrentPersonStore()
   const { pushMessage } = useSaplingMessageCenter()
   const { isLoading, loadTranslations } = useTranslationLoader(
@@ -73,6 +67,15 @@ export function useSaplingDashboard() {
     'navigation',
   )
   const currentDashboard = computed(() => dashboards.value[activeTab.value] ?? null)
+  const {
+    isLayoutEditing,
+    isLayoutSaving,
+    updateDashboardKpis,
+    beginLayoutEdit,
+    cancelLayoutEdit,
+    reorderDashboards,
+    saveLayout,
+  } = useSaplingDashboardLayout({ dashboards, activeTab, currentDashboard, pushMessage })
   const hasDashboards = computed(() => dashboards.value.length > 0)
   const isDashboardRemovable = computed(() => dashboards.value.length > 1)
   // #endregion
@@ -199,43 +202,6 @@ export function useSaplingDashboard() {
     activeTab.value = Math.min(Math.max(activeTab.value, 0), dashboards.value.length - 1)
   }
 
-  function cloneDashboardLayout(items: DashboardItem[]): DashboardItem[] {
-    return items.map((dashboard) => ({
-      ...dashboard,
-      kpiOrder: [...(dashboard.kpiOrder ?? [])],
-      kpis: Array.isArray(dashboard.kpis) ? [...dashboard.kpis] : [],
-    }))
-  }
-
-  function sortDashboards(items: DashboardItem[]): DashboardItem[] {
-    return [...items].sort(
-      (left, right) =>
-        (left.sortOrder ?? Number.MAX_SAFE_INTEGER) -
-          (right.sortOrder ?? Number.MAX_SAFE_INTEGER) ||
-        (left.handle ?? Number.MAX_SAFE_INTEGER) - (right.handle ?? Number.MAX_SAFE_INTEGER),
-    )
-  }
-
-  function withSortedKpis(dashboard: DashboardItem): DashboardItem {
-    const order = new Map((dashboard.kpiOrder ?? []).map((handle, index) => [handle, index]))
-    const kpis = Array.isArray(dashboard.kpis) ? [...dashboard.kpis] : []
-    kpis.sort(
-      (left, right) =>
-        (order.get(left.handle) ?? Number.MAX_SAFE_INTEGER) -
-          (order.get(right.handle) ?? Number.MAX_SAFE_INTEGER) || left.handle - right.handle,
-    )
-    return { ...dashboard, kpis, kpiOrder: kpis.map((kpi) => kpi.handle) }
-  }
-
-  function getNextDashboardSortOrder(): number {
-    return (
-      dashboards.value.reduce(
-        (highest, dashboard) => Math.max(highest, dashboard.sortOrder ?? 0),
-        0,
-      ) + 100
-    )
-  }
-
   /**
    * Closes the delete dialog and clears the selected dashboard reference.
    */
@@ -247,38 +213,6 @@ export function useSaplingDashboard() {
   /**
    * Extracts stable KPI handles from template relations for direct dashboard creation.
    */
-  function getKpiHandles(source: KpiRelationSource): number[] {
-    if (!Array.isArray(source.kpis)) {
-      return []
-    }
-
-    return [
-      ...new Set(
-        source.kpis
-          .map((kpi) => {
-            if (typeof kpi === 'number') {
-              return kpi
-            }
-
-            if (kpi && typeof kpi === 'object' && typeof kpi.handle === 'number') {
-              return kpi.handle
-            }
-
-            return null
-          })
-          .filter((handle): handle is number => handle !== null),
-      ),
-    ]
-  }
-
-  /**
-   * Builds a dashboard payload without KPI relations, which are persisted separately.
-   */
-  function toDashboardPayload(form: DashboardForm): Omit<DashboardForm, 'kpis'> {
-    const payload = { ...form }
-    delete payload.kpis
-    return payload
-  }
 
   /**
    * Persists KPI relations for a newly created dashboard through the generic reference endpoint.
@@ -455,7 +389,7 @@ export function useSaplingDashboard() {
       } else {
         dashboard = await ApiGenericService.create<DashboardItem>('dashboard', {
           ...payload,
-          sortOrder: getNextDashboardSortOrder(),
+          sortOrder: getNextDashboardSortOrder(dashboards.value),
         })
         if (dashboard.handle != null) {
           pendingRelationsPersisted =
@@ -571,7 +505,7 @@ export function useSaplingDashboard() {
       const dashboard = await ApiGenericService.create<DashboardItem>('dashboard', {
         name: template.name,
         person: currentPersonStore.person.handle,
-        sortOrder: getNextDashboardSortOrder(),
+        sortOrder: getNextDashboardSortOrder(dashboards.value),
         kpiOrder: getKpiHandles(template),
       })
 
@@ -601,108 +535,6 @@ export function useSaplingDashboard() {
   /**
    * Replaces the KPI collection for a single dashboard without reloading all dashboard data.
    */
-  function updateDashboardKpis(
-    dashboardHandle: DashboardItem['handle'],
-    kpis: DashboardItem['kpis'],
-  ) {
-    const dashboardIndex = dashboards.value.findIndex(
-      (dashboard) => dashboard.handle === dashboardHandle,
-    )
-
-    if (dashboardIndex === -1) {
-      return
-    }
-
-    dashboards.value[dashboardIndex] = {
-      ...dashboards.value[dashboardIndex],
-      kpis: Array.isArray(kpis) ? [...kpis] : [],
-      kpiOrder: Array.isArray(kpis)
-        ? kpis.flatMap((kpi) => (kpi.handle == null ? [] : [kpi.handle]))
-        : [],
-    }
-  }
-
-  function beginLayoutEdit() {
-    if (!dashboards.value.length || isLayoutEditing.value) {
-      return
-    }
-
-    layoutSnapshot.value = cloneDashboardLayout(dashboards.value)
-    isLayoutEditing.value = true
-  }
-
-  function cancelLayoutEdit() {
-    if (layoutSnapshot.value) {
-      const activeHandle = currentDashboard.value?.handle
-      dashboards.value = restoreDashboardLayoutSnapshot(layoutSnapshot.value, dashboards.value)
-      const nextIndex = dashboards.value.findIndex((dashboard) => dashboard.handle === activeHandle)
-      activeTab.value = nextIndex >= 0 ? nextIndex : 0
-    }
-
-    layoutSnapshot.value = null
-    isLayoutEditing.value = false
-  }
-
-  function reorderDashboards(draggedHandle: number, targetHandle: number) {
-    const fromIndex = dashboards.value.findIndex((dashboard) => dashboard.handle === draggedHandle)
-    const targetIndex = dashboards.value.findIndex((dashboard) => dashboard.handle === targetHandle)
-    if (fromIndex < 0 || targetIndex < 0 || fromIndex === targetIndex) {
-      return
-    }
-
-    const activeHandle = currentDashboard.value?.handle
-    const nextDashboards = [...dashboards.value]
-    const [movedDashboard] = nextDashboards.splice(fromIndex, 1)
-    nextDashboards.splice(targetIndex, 0, movedDashboard)
-    dashboards.value = nextDashboards
-    const nextActiveIndex = dashboards.value.findIndex(
-      (dashboard) => dashboard.handle === activeHandle,
-    )
-    activeTab.value = nextActiveIndex >= 0 ? nextActiveIndex : 0
-  }
-
-  async function saveLayout() {
-    if (!isLayoutEditing.value || isLayoutSaving.value) {
-      return
-    }
-
-    const layout = dashboards.value.flatMap((dashboard) =>
-      dashboard.handle == null
-        ? []
-        : [
-            {
-              handle: dashboard.handle,
-              kpiOrder: (dashboard.kpis ?? []).flatMap((kpi) =>
-                kpi.handle == null ? [] : [kpi.handle],
-              ),
-            },
-          ],
-    )
-    if (layout.length !== dashboards.value.length) {
-      return
-    }
-
-    isLayoutSaving.value = true
-    try {
-      await ApiCurrentService.updateDashboardLayout({ dashboards: layout })
-      dashboards.value = dashboards.value.map((dashboard, index) => ({
-        ...dashboard,
-        sortOrder: (index + 1) * 100,
-        kpiOrder: (dashboard.kpis ?? []).flatMap((kpi) => (kpi.handle == null ? [] : [kpi.handle])),
-      }))
-      layoutSnapshot.value = null
-      isLayoutEditing.value = false
-      pushMessage(
-        'success',
-        'dashboard.layoutSaved',
-        'dashboard.layoutSavedDescription',
-        'dashboard',
-      )
-    } finally {
-      isLayoutSaving.value = false
-    }
-  }
-  // #endregion
 
   // #region Return
   return {

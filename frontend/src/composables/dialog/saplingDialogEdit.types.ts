@@ -40,3 +40,20 @@ export interface UseSaplingDialogEditProps {
   templates: EntityTemplate[]
   showReference?: boolean
 }
+
+export interface SaplingDialogEditProps extends UseSaplingDialogEditProps {
+  forceDirty?: boolean
+  forceDirtyFields?: string[]
+  allowPristineCreate?: boolean
+}
+
+export type SaplingDialogEditComponentEmit = {
+  (event: 'update:modelValue', value: boolean): void
+  // Entity-specific dialog payloads may extend SaplingGenericItem with required fields.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (event: 'save', value: any, action: DialogSaveAction, context: DialogSaveContext): void
+  (event: 'cancel'): void
+  (event: 'update:mode', value: DialogState): void
+  (event: 'update:item', value: SaplingGenericItem | null): void
+  (event: 'deleted', value: SaplingGenericItem | null): void
+}

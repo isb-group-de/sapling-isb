@@ -23,252 +23,39 @@
 
     <div class="monitoring-console__content">
       <v-window v-model="tab" class="monitoring-window">
-        <v-window-item class="monitoring-window-item" value="overview">
-          <div class="monitoring-kpis">
-            <SaplingSystemMetricCard
-              icon="mdi-heart-pulse"
-              icon-class="sapling-system-metric__icon--state"
-              :label="$t('system.monitoringHealth')"
-              :value="$t(`system.monitoringHealth_${summary?.health ?? 'unknown'}`)"
-              :detail="`${number(summary?.incidents.openCount)} ${$t('system.monitoringOpenIncidents')}`"
-              :value-loading="loading && !summary"
-            />
-            <SaplingSystemMetricCard
-              icon="mdi-swap-horizontal"
-              icon-class="sapling-system-metric__icon--network"
-              :label="$t('system.monitoringRequests')"
-              :value="compactNumber(summary?.requests.requestCount)"
-              :detail="`SLO ${percent(summary?.slo.apiSuccess.actualPercent)} · p95 ${number(summary?.requests.durationP95Ms)} ms`"
-              :value-loading="loading && !summary"
-            />
-            <SaplingSystemMetricCard
-              icon="mdi-cpu-64-bit"
-              icon-class="sapling-system-metric__icon--cpu"
-              :label="$t('system.cpuUsage')"
-              :value="percent(summary?.metrics['host.cpu.percent'])"
-              :detail="`${$t('system.memory')}: ${percent(summary?.metrics['host.memory.usedPercent'])}`"
-              :value-loading="loading && !summary"
-            />
-            <SaplingSystemMetricCard
-              icon="mdi-account-multiple-check-outline"
-              icon-class="sapling-system-metric__icon--state"
-              :label="$t('system.monitoringOnlineUsers')"
-              :value="number(summary?.users.onlineUsers)"
-              :detail="`${number(summary?.users.usersWithSessions)} ${$t('system.monitoringSession')}`"
-              :value-loading="loading && !summary"
-            />
-          </div>
+        <SaplingMonitoringOverviewTab
+          :summary="summary"
+          :loading="loading"
+          :open-incidents="openIncidents"
+          :service-cards="serviceCards"
+          :healthy-service-count="healthyServiceCount"
+          :number="number"
+          :compact-number="compactNumber"
+          :percent="percent"
+          :date-time="dateTime"
+          :service-label="serviceLabel"
+          :metric-label="metricLabel"
+          :metric-points="metricPoints"
+          @show-incidents="tab = 'incidents'"
+          @open-incident="openIncident"
+        />
 
-          <div class="monitoring-overview-grid">
-            <article class="monitoring-panel">
-              <div class="monitoring-panel__header">
-                <h3>{{ $t('system.monitoringCoreFlows') }}</h3>
-                <span>{{ healthyServiceCount }}/{{ serviceCards.length }}</span>
-              </div>
-              <div class="monitoring-service-matrix">
-                <div
-                  v-for="service in serviceCards"
-                  :key="service.service"
-                  class="monitoring-service-row"
-                >
-                  <span class="monitoring-status-dot" :class="`is-${service.status}`" />
-                  <strong>{{ serviceLabel(service.service) }}</strong>
-                  <span>{{ service.summary || `${number(service.durationMs)} ms` }}</span>
-                  <time>{{ dateTime(service.lastCheckedAt) }}</time>
-                </div>
-                <v-empty-state
-                  v-if="!serviceCards.length"
-                  icon="mdi-shield-search-outline"
-                  :text="$t('system.monitoringNoData')"
-                />
-              </div>
-            </article>
-
-            <article class="monitoring-panel">
-              <div class="monitoring-panel__header">
-                <h3>{{ $t('system.monitoringIncidents') }}</h3>
-                <v-btn size="small" variant="text" @click="tab = 'incidents'">
-                  {{ $t('system.monitoringDetails') }}
-                </v-btn>
-              </div>
-              <div class="monitoring-incident-stack">
-                <button
-                  v-for="incident in openIncidents.slice(0, 5)"
-                  :key="incident.handle"
-                  class="monitoring-incident-row"
-                  type="button"
-                  @click="openIncident(incident.handle)"
-                >
-                  <v-icon
-                    :color="incident.severity === 'critical' ? 'error' : 'warning'"
-                    icon="mdi-alert-circle"
-                  />
-                  <span>
-                    <strong>{{ metricLabel(incident.rule.metricKey) }}</strong>
-                    <small>{{ incident.dimensionKey || $t('system.monitoringGlobal') }}</small>
-                  </span>
-                  <time>{{ dateTime(incident.lastSeenAt) }}</time>
-                </button>
-                <v-empty-state
-                  v-if="!openIncidents.length"
-                  icon="mdi-check-circle-outline"
-                  :text="$t('system.monitoringNoIncidents')"
-                />
-              </div>
-            </article>
-          </div>
-
-          <div class="monitoring-chart-grid">
-            <MonitoringChart
-              :eyebrow="$t('system.monitoringInfrastructure')"
-              :title="$t('system.monitoringCpuMemory')"
-              :points="metricPoints(['host.cpu.percent', 'host.memory.usedPercent'])"
-              unit=" %"
-            />
-            <MonitoringChart
-              :eyebrow="$t('system.monitoringRuntime')"
-              :title="$t('system.monitoringEventLoop')"
-              :points="metricPoints(['process.eventLoop.p95Ms'])"
-              unit=" ms"
-            />
-          </div>
-          <v-alert type="info" variant="tonal" density="compact">
-            {{ $t('system.monitoringSingleHostLimitation') }}
-          </v-alert>
-        </v-window-item>
-
-        <v-window-item class="monitoring-window-item" value="incidents">
-          <div class="monitoring-incident-grid">
-            <article class="monitoring-panel">
-              <div class="monitoring-panel__header">
-                <h3>{{ $t('system.monitoringIncidents') }}</h3>
-                <v-btn
-                  prepend-icon="mdi-tune-variant"
-                  size="small"
-                  variant="tonal"
-                  @click="rulesOpen = true"
-                >
-                  {{ $t('system.monitoringAlertRules') }}
-                </v-btn>
-              </div>
-              <div class="monitoring-incident-stack">
-                <button
-                  v-for="incident in incidents"
-                  :key="incident.handle"
-                  class="monitoring-incident-row"
-                  type="button"
-                  @click="openIncident(incident.handle)"
-                >
-                  <v-icon
-                    :color="incident.state === 'resolved' ? 'success' : incident.severity"
-                    icon="mdi-alert-circle-outline"
-                  />
-                  <span>
-                    <strong>{{ metricLabel(incident.rule.metricKey) }}</strong>
-                    <small
-                      >{{ stateLabel(incident.state) }} ·
-                      {{ humanLabel(incident.incidentType || 'threshold') }}</small
-                    >
-                  </span>
-                  <time>{{ dateTime(incident.lastSeenAt) }}</time>
-                </button>
-              </div>
-            </article>
-
-            <article class="monitoring-panel">
-              <div class="monitoring-panel__header">
-                <h3>{{ $t('system.monitoringErrorsAndCauses') }}</h3>
-                <span>{{ errorGroups.length }}</span>
-              </div>
-              <v-table class="sapling-table monitoring-table" density="compact">
-                <thead>
-                  <tr>
-                    <th>{{ $t('system.monitoringSource') }}</th>
-                    <th>{{ $t('system.monitoringOperation') }}</th>
-                    <th>{{ $t('system.monitoringCount') }}</th>
-                    <th>{{ $t('system.monitoringLastSeen') }}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="group in errorGroups" :key="group.handle">
-                    <td>
-                      <v-chip size="x-small" variant="tonal">{{ group.source }}</v-chip>
-                    </td>
-                    <td>
-                      <strong>{{ group.operation }}</strong
-                      ><small class="monitoring-table__secondary"
-                        >{{ group.latestErrorClass }} · {{ group.latestMessage }}</small
-                      >
-                    </td>
-                    <td>{{ number(group.occurrenceCount) }}</td>
-                    <td>{{ dateTime(group.lastSeenAt) }}</td>
-                  </tr>
-                </tbody>
-              </v-table>
-            </article>
-          </div>
-
-          <div class="monitoring-incident-grid">
-            <article class="monitoring-panel">
-              <div class="monitoring-panel__header">
-                <h3>{{ $t('system.monitoringChecks') }}</h3>
-                <span>{{ checks.length }}</span>
-              </div>
-              <v-table class="sapling-table monitoring-table" density="compact">
-                <thead>
-                  <tr>
-                    <th>{{ $t('system.monitoringCheck') }}</th>
-                    <th>{{ $t('system.monitoringStatus') }}</th>
-                    <th>{{ $t('system.monitoringDuration') }}</th>
-                    <th>{{ $t('system.monitoringTime') }}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="check in checks.slice(0, 20)" :key="check.handle">
-                    <td>{{ checkLabel(check.checkKey) }}</td>
-                    <td>
-                      <v-chip :color="statusColor(check.status)" size="x-small">{{
-                        stateLabel(check.status)
-                      }}</v-chip>
-                    </td>
-                    <td>{{ number(check.durationMs) }} ms</td>
-                    <td>{{ dateTime(check.completedAt) }}</td>
-                  </tr>
-                </tbody>
-              </v-table>
-            </article>
-            <article class="monitoring-panel">
-              <div class="monitoring-panel__header">
-                <h3>{{ $t('system.monitoringRemediationHistory') }}</h3>
-                <span>{{ remediations.length }}</span>
-              </div>
-              <v-table class="sapling-table monitoring-table" density="compact">
-                <thead>
-                  <tr>
-                    <th>{{ $t('system.monitoringAction') }}</th>
-                    <th>{{ $t('system.monitoringMode') }}</th>
-                    <th>{{ $t('system.monitoringResult') }}</th>
-                    <th>{{ $t('system.monitoringTime') }}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="execution in remediations" :key="execution.handle">
-                    <td>{{ remediationLabel(execution.actionKey) }}</td>
-                    <td>{{ stateLabel(execution.mode) }}</td>
-                    <td>
-                      <v-chip
-                        :color="execution.state === 'succeeded' ? 'success' : 'warning'"
-                        size="x-small"
-                        >{{ stateLabel(execution.state) }}</v-chip
-                      >
-                    </td>
-                    <td>{{ dateTime(execution.startedAt) }}</td>
-                  </tr>
-                </tbody>
-              </v-table>
-            </article>
-          </div>
-        </v-window-item>
+        <SaplingMonitoringIncidentsTab
+          :incidents="incidents"
+          :error-groups="errorGroups"
+          :checks="checks"
+          :remediations="remediations"
+          :number="number"
+          :date-time="dateTime"
+          :metric-label="metricLabel"
+          :check-label="checkLabel"
+          :state-label="stateLabel"
+          :human-label="humanLabel"
+          :remediation-label="remediationLabel"
+          :status-color="statusColor"
+          @open-rules="rulesOpen = true"
+          @open-incident="openIncident"
+        />
 
         <v-window-item class="monitoring-window-item" value="services">
           <div class="monitoring-service-cards">
@@ -539,9 +326,10 @@
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import SaplingSystemMetricCard from './SaplingSystemMetricCard.vue'
 import MonitoringChart from './SaplingMonitoringChart.vue'
 import SaplingMonitoringHeader from './SaplingMonitoringHeader.vue'
+import SaplingMonitoringIncidentsTab from './SaplingMonitoringIncidentsTab.vue'
+import SaplingMonitoringOverviewTab from './SaplingMonitoringOverviewTab.vue'
 import SaplingDialog from '@/components/common/SaplingDialog.vue'
 import SaplingSwitch from '@/components/common/SaplingSwitch.vue'
 import SaplingDialogHero from '@/components/common/SaplingDialogHero.vue'

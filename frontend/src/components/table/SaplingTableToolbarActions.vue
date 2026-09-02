@@ -508,63 +508,19 @@
 <script lang="ts" setup>
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import type { FavoriteItem } from '@/entity/entity'
 import {
   SAPLING_TABLE_AUTO_REFRESH_INTERVALS,
   type SaplingTableAutoRefreshInterval,
 } from '@/composables/table/useSaplingTableAutoRefresh'
-import type {
-  FormConfigMenuItem,
-  FormConfigSelectionHandle,
-} from '@/composables/dialog/saplingDialogEdit.utils'
 import SaplingTableRefreshMenu from './SaplingTableRefreshMenu.vue'
 import { useSaplingTableMobileMenu } from './useSaplingTableMobileMenu'
+import type {
+  SaplingTableToolbarActionsEmit,
+  SaplingTableToolbarActionsProps,
+} from './saplingTableToolbar.types'
 
-const props = defineProps<{
-  isMobileTable: boolean
-  isDownloadingJson: boolean
-  isImportingCsv: boolean
-  refreshButtonLabel: string
-  autoRefreshIntervalMinutes: SaplingTableAutoRefreshInterval | null
-  secondsUntilRefresh: number | null
-  showFavorite: boolean
-  showImport: boolean
-  showAdd: boolean
-  favoriteItems: FavoriteItem[]
-  isFavoritesLoading: boolean
-  activeFavoriteHandle?: number | null
-  formConfigMenuItems: FormConfigMenuItem[]
-  selectedFormConfigLabel?: string
-  isLoadingFormConfigs: boolean
-  canSaveCurrentView: boolean
-  showFormConfigButton: boolean
-  hasTemporaryColumnOrder: boolean
-  isColumnOrderEditing: boolean
-  isColumnChooserOpen: boolean
-}>()
-
-const emit = defineEmits<{
-  downloadJson: []
-  downloadCsv: []
-  downloadCsvTemplate: []
-  importCsv: []
-  refresh: []
-  'update:autoRefreshIntervalMinutes': [value: SaplingTableAutoRefreshInterval | null]
-  favorite: []
-  resetWorklist: []
-  selectFavorite: [favorite: FavoriteItem]
-  deleteFavorite: [favorite: FavoriteItem]
-  selectFormConfig: [handle: FormConfigSelectionHandle]
-  saveCurrentView: []
-  resetTemporaryColumnOrder: []
-  beginColumnOrderEdit: []
-  finishColumnOrderEdit: []
-  toggleColumnChooser: []
-  setDefaultFormConfig: [handle: number]
-  deleteFormConfig: [item: FormConfigMenuItem]
-  openFormConfig: []
-  add: []
-}>()
+const props = defineProps<SaplingTableToolbarActionsProps>()
+const emit = defineEmits<SaplingTableToolbarActionsEmit>()
 
 const { t } = useI18n()
 const refreshIntervals = SAPLING_TABLE_AUTO_REFRESH_INTERVALS

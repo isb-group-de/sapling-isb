@@ -1,6 +1,5 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import ApiGenericService from '@/services/api.generic.service'
 import type {
   EntityItem,
   EventCategoryItem,
@@ -11,12 +10,6 @@ import type {
 } from '@/entity/entity'
 import type { EntityTemplate } from '@/entity/structure'
 import { useTranslationLoader } from '@/composables/generic/useTranslationLoader'
-import ApiCalendarService, {
-  type CalendarImportResult,
-  type CalendarSyncProvider,
-} from '@/services/api.calendar.service'
-import ApiCurrentService from '@/services/api.current.service'
-import ApiTemplateService from '@/services/api.template.service'
 import { useCurrentPersonStore } from '@/stores/currentPersonStore'
 import { useCurrentPermissionStore } from '@/stores/currentPermissionStore'
 import { useSaplingFilterWork } from '@/composables/filter/useSaplingFilterWork'
@@ -24,16 +17,8 @@ import { useSaplingMessageCenter } from '@/composables/system/useSaplingMessageC
 import { useSaplingChipFilters } from '@/composables/filter/useSaplingChipFilters'
 import type { CalendarEvent } from 'vuetify/lib/components/VCalendar/types.mjs'
 import { SaplingWindowWatcher } from '@/utils/saplingWindowWatcher'
-import { i18n } from '@/i18n'
+import type { CalendarDatePair, CalendarType } from '@/composables/event/eventDate.utils'
 import {
-  parseLocalCalendarDate,
-  type CalendarDatePair,
-  type CalendarType,
-} from '@/composables/event/eventDate.utils'
-import {
-  DEFAULT_EVENT_CATEGORY_HANDLE,
-  DEFAULT_EVENT_STATUS_HANDLE,
-  DEFAULT_EVENT_TYPE_HANDLE,
   getCalendarEventHandle,
   type CalendarEventOverlapMode,
   type CalendarMode,
@@ -50,10 +35,11 @@ import { useSaplingEventData } from '@/composables/event/useSaplingEventData'
 import { useSaplingEventContextMenu } from '@/composables/event/useSaplingEventContextMenu'
 import { useSaplingEventEditor } from '@/composables/event/useSaplingEventEditor'
 import { useSaplingEventPresentation } from '@/composables/event/useSaplingEventPresentation'
+import { useSaplingEventWorkspaceActions } from '@/composables/event/useSaplingEventWorkspaceActions'
+import { useSaplingEventInitialization } from '@/composables/event/useSaplingEventInitialization'
 import { setRouteQueryParameter } from '@/utils/routerNavigation'
 
 const CALENDAR_TYPE_OPTIONS: CalendarType[] = ['day', 'workweek', 'week', 'month']
-const WORKWEEK_DAYS = [1, 2, 3, 4, 5]
 
 /**
  * Centralizes all state, lifecycle hooks and UI helpers for the event calendar screen.
@@ -283,34 +269,53 @@ export function useSaplingEvent() {
     loadPersistedEvent,
     refreshVisibleEvents,
   })
-  const isRefreshingCalendar = ref(false)
-  const isSyncingExternalCalendar = ref(false)
   const isCalendarInitializing = ref(true)
+  const {
+    calendarDisplayType,
+    calendarSyncProvider,
+    calendarWeekdays,
+    currentCalendarLayoutLabel,
+    currentCalendarViewLabel,
+    getPersonWorkHours,
+    isRefreshingCalendar,
+    isSyncingExternalCalendar,
+    loadWorkHours,
+    onSelectedPeoplesUpdate,
+    queueCalendarFocusScroll,
+    refreshCalendar,
+    showWorkHourBackground,
+    syncExternalCalendar,
+  } = useSaplingEventWorkspaceActions({
+    route,
+    ownPerson,
+    currentPerson: () => currentPersonStore.person,
+    peopleMap,
+    workHours,
+    selectedPeople: selectedPeoples,
+    editEvent,
+    calendarDateRange,
+    calendarType,
+    calendarViewMode,
+    refreshVisibleEvents,
+    queueScrollToTime,
+    queueScrollToCurrentTime,
+    pushMessage,
+  })
+  const { loadOwnPerson, loadTemplates, loadEventDefaults, loadEventEntity } =
+    useSaplingEventInitialization({
+      currentPersonStore,
+      ownPerson,
+      peopleMap,
+      selectedPeople: selectedPeoples,
+      templates,
+      defaultEventType,
+      defaultEventStatus,
+      defaultEventCategory,
+      entityEvent,
+    })
+  const isLoading = computed(() => isTranslationLoading.value || isCalendarInitializing.value)
 
   let stopWindowWatcher: (() => void) | null = null
-
-  const calendarDisplayType = computed(() =>
-    calendarType.value === 'workweek' ? 'week' : calendarType.value,
-  )
-  const isLoading = computed(() => isTranslationLoading.value || isCalendarInitializing.value)
-  const calendarWeekdays = computed(() =>
-    calendarType.value === 'workweek' ? WORKWEEK_DAYS : undefined,
-  )
-  const showWorkHourBackground = computed(() =>
-    ['day', 'week', 'workweek'].includes(calendarType.value),
-  )
-  const currentCalendarViewLabel = computed(() => i18n.global.t(`calendar.${calendarType.value}`))
-  const currentCalendarLayoutLabel = computed(() =>
-    i18n.global.t(
-      calendarViewMode.value === 'single' ? 'calendar.combined' : 'calendar.sideBySide',
-    ),
-  )
-  const calendarSyncProvider = computed<CalendarSyncProvider | null>(() => {
-    const personType = ownPerson.value?.type ?? currentPersonStore.person?.type
-    const typeHandle = typeof personType === 'string' ? personType : personType?.handle
-
-    return typeHandle === 'azure' || typeHandle === 'google' ? typeHandle : null
-  })
 
   //#endregion
 
@@ -453,203 +458,7 @@ export function useSaplingEvent() {
   )
   //#endregion
 
-  //#region Loading
-  /**
-   * Loads the signed-in person and initializes the default participant filter.
-   */
-  async function loadOwnPerson() {
-    await currentPersonStore.fetchCurrentPerson()
-    ownPerson.value = currentPersonStore.person
-
-    if (typeof ownPerson.value?.handle === 'number') {
-      peopleMap.value[ownPerson.value.handle] = ownPerson.value
-    }
-
-    selectedPeoples.value = ownPerson.value?.handle != null ? [ownPerson.value.handle] : []
-  }
-
-  /**
-   * Loads the event templates used by the shared edit dialog.
-   */
-  async function loadTemplates() {
-    templates.value = await ApiTemplateService.getEntityTemplate('event')
-  }
-
-  async function loadEventDefaults() {
-    const [typeResponse, statusResponse, categoryResponse] = await Promise.all([
-      ApiGenericService.find<EventTypeItem>('eventType', {
-        filter: { handle: DEFAULT_EVENT_TYPE_HANDLE },
-        limit: 1,
-        page: 1,
-      }),
-      ApiGenericService.find<EventStatusItem>('eventStatus', {
-        filter: { handle: DEFAULT_EVENT_STATUS_HANDLE },
-        limit: 1,
-        page: 1,
-      }),
-      ApiGenericService.find<EventCategoryItem>('eventCategory', {
-        filter: { handle: DEFAULT_EVENT_CATEGORY_HANDLE },
-        limit: 1,
-        page: 1,
-      }),
-    ])
-
-    defaultEventType.value = typeResponse.data[0] ?? null
-    defaultEventStatus.value = statusResponse.data[0] ?? null
-    defaultEventCategory.value = categoryResponse.data[0] ?? null
-  }
-
-  /**
-   * Loads the entity metadata for the event dialog.
-   */
-  async function loadEventEntity() {
-    entityEvent.value =
-      (
-        await ApiGenericService.find<EntityItem>('entity', {
-          filter: { handle: 'event' },
-          limit: 1,
-          page: 1,
-        })
-      ).data[0] || null
-  }
-
-  /**
-   * Loads the user's work week to render working-hour background blocks.
-   */
-  async function loadWorkHours() {
-    workHours.value = await ApiCurrentService.getWorkWeek()
-  }
-
-  function getPersonWorkHours(personId: number): WorkHourWeekItem | null {
-    const ownPersonHandle = ownPerson.value?.handle
-    const person =
-      peopleMap.value[personId] ?? (personId === ownPersonHandle ? ownPerson.value : null)
-    const personWorkWeek =
-      typeof person?.workWeek === 'object' && person.workWeek ? person.workWeek : null
-
-    if (personWorkWeek) {
-      return personWorkWeek
-    }
-
-    const companyWorkWeek =
-      typeof person?.company?.workWeek === 'object' && person.company.workWeek
-        ? person.company.workWeek
-        : null
-
-    if (companyWorkWeek) {
-      return companyWorkWeek
-    }
-
-    return personId === ownPersonHandle ? workHours.value : null
-  }
-
-  async function refreshCalendar() {
-    if (isRefreshingCalendar.value) {
-      return
-    }
-
-    isRefreshingCalendar.value = true
-    try {
-      await refreshVisibleEvents()
-    } catch {
-      // Shared API handling already publishes the load error.
-    } finally {
-      isRefreshingCalendar.value = false
-    }
-  }
-
-  async function syncExternalCalendar() {
-    if (
-      !calendarDateRange.value ||
-      isSyncingExternalCalendar.value ||
-      !calendarSyncProvider.value
-    ) {
-      return
-    }
-
-    isSyncingExternalCalendar.value = true
-    const provider = calendarSyncProvider.value
-
-    const startDate = parseLocalCalendarDate(calendarDateRange.value.start.date)
-    startDate.setHours(0, 0, 0, 0)
-
-    const endDate = parseLocalCalendarDate(calendarDateRange.value.end.date)
-    endDate.setHours(23, 59, 59, 999)
-
-    try {
-      const result: CalendarImportResult = await ApiCalendarService.importEvents(provider, {
-        startDateTime: startDate.toISOString(),
-        endDateTime: endDate.toISOString(),
-      })
-
-      await refreshVisibleEvents()
-      pushMessage(
-        'success',
-        i18n.global.t(
-          provider === 'azure' ? 'calendar.syncOutlookSuccess' : 'calendar.syncGoogleSuccess',
-        ),
-        i18n.global.t('calendar.syncCalendarSuccessDescription', {
-          imported: result.imported,
-          created: result.created,
-          updated: result.updated,
-          skipped: result.skipped,
-        }),
-        'calendar',
-      )
-    } catch {
-      // Shared API handling already publishes the provider or validation error.
-    } finally {
-      isSyncingExternalCalendar.value = false
-    }
-  }
-  //#endregion
-
   //#region Events
-  function queueCalendarFocusScroll(delay = 300) {
-    const focusTime = getRouteSelectedEventStart()
-    if (focusTime) {
-      queueScrollToTime(focusTime, delay)
-      return
-    }
-
-    queueScrollToCurrentTime(delay)
-  }
-
-  function getRouteSelectedEventStart(): Date | string | null {
-    const routeHandle = Array.isArray(route.query.open) ? route.query.open[0] : route.query.open
-    const selectedHandle = getCalendarEventHandle(editEvent.value)
-    if (
-      routeHandle == null ||
-      selectedHandle == null ||
-      String(routeHandle) !== String(selectedHandle)
-    ) {
-      return null
-    }
-
-    const startDate = editEvent.value?.event?.startDate
-    if (startDate instanceof Date || typeof startDate === 'string') {
-      return startDate
-    }
-
-    const start = editEvent.value?.start
-    if (start instanceof Date || typeof start === 'string') {
-      return start
-    }
-    if (typeof start === 'number' && Number.isFinite(start)) {
-      return new Date(start)
-    }
-
-    return null
-  }
-
-  /**
-   * Updates the selected people from the filter drawer.
-   */
-  function onSelectedPeoplesUpdate(values: string[]) {
-    selectedPeoples.value = values
-      .map((value) => Number.parseInt(value, 10))
-      .filter((value) => !Number.isNaN(value))
-  }
 
   //#region Return
   return {

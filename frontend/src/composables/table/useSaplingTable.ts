@@ -2,47 +2,28 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch, type Ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import ApiGenericService from '@/services/api.generic.service'
-import type { FilterQuery } from '@/services/api.generic.service'
 import { i18n } from '@/i18n'
-import type {
-  ColumnFilterItem,
-  EntityTemplate,
-  SaplingTableHeaderItem,
-  SortItem,
-} from '@/entity/structure'
+import type { ColumnFilterItem, SaplingTableHeaderItem, SortItem } from '@/entity/structure'
 import type { SaplingGenericItem } from '@/entity/entity'
 import { DEFAULT_PAGE_SIZE_MEDIUM, GENERIC_API_MAX_PAGE_SIZE } from '@/constants/project.constants'
 import { useCurrentPermissionStore } from '@/stores/currentPermissionStore'
 import { useGenericStore } from '@/stores/genericStore'
 import {
-  extractColumnFiltersFromFilterQuery,
-  removeMatchingFilterFromFilterQuery,
-  removeRestoredColumnFiltersFromFilterQuery,
-  removeUnavailableFieldFilters,
-} from '@/composables/table/useSaplingTableFilterHelpers'
-import {
-  buildTableFilter,
   buildTableOrderBy,
-  canReadReferenceTemplate,
-  getListProjectionFieldNames,
-  getListProjectionReferenceDependencyNames,
   getReadableReferenceRelationNames,
-  getReferenceChipProjectionFieldNames,
   getTableHeaders,
-  isFilterableTableColumn,
-  isTextSearchableTemplate,
 } from '@/utils/saplingTableUtil'
 import { useSaplingTableFormConfig } from '@/composables/table/useSaplingTableFormConfig'
-import {
-  getSaplingTableRouteStateSignature,
-  readSaplingTableRouteState,
-  replaceSaplingTableUrlState,
-} from '@/composables/table/saplingTableRouteState'
+import { replaceSaplingTableUrlState } from '@/composables/table/saplingTableRouteState'
 import { useSaplingMessageCenter } from '@/composables/system/useSaplingMessageCenter'
+import { useSaplingTableProjection } from './useSaplingTableProjection'
+import { useSaplingTableQueryState } from './useSaplingTableQueryState'
+import { useSaplingTableControls } from './useSaplingTableControls'
+import { useSaplingTableFilterRestoration } from './useSaplingTableFilterRestoration'
+import { isAbortError } from './saplingTableData.utils'
 // #endregion
 
 const TABLE_LOAD_DEBOUNCE_MS = 250
-const TABLE_VALUE_REFERENCE_KINDS = ['m:1', '1:1']
 
 type InitializeEntityStateOptions = {
   initialSearch?: string
@@ -121,166 +102,71 @@ export function useSaplingTable(
     selectedFormConfigHandle,
     isLoadingFormConfigs,
     isSavingTableView,
-    setPersonalDefault,
-    deletePersonalTableView,
   } = formConfigContext
+  const {
+    deletePersonalFormConfig,
+    onColumnFiltersUpdate,
+    onItemsPerPageUpdate,
+    onPageUpdate,
+    onSearchUpdate,
+    onSortByUpdate,
+    onVisibleColumnKeysUpdate,
+    savePersonalTableView,
+    selectFormConfig,
+    setDefaultFormConfig,
+  } = useSaplingTableControls({
+    search,
+    page,
+    itemsPerPage,
+    sortBy,
+    columnFilters,
+    temporaryVisibleColumnKeys,
+    isResettingEntityState,
+    formConfigContext,
+  })
   const isLoading = computed(
     () => genericStore.getState(entityHandle.value).isLoading || isDataLoading.value,
   )
-  function buildListProjectionFields(nextEntityTemplates: EntityTemplate[]) {
-    const permissions = currentPermissionStore.accumulatedPermission ?? []
-    const baseFields = [
-      ...new Set([
-        ...getListProjectionFieldNames(
-          nextEntityTemplates,
-          permissions,
-          (referenceName) => genericStore.getState(referenceName).entityTemplates,
-        ),
-        ...nextEntityTemplates
-          .filter(
-            (template) =>
-              template.name === 'updatedAt' &&
-              template.isPersistent !== false &&
-              template.fieldAccess?.allowRead !== false,
-          )
-          .map((template) => template.name),
-        ...additionalListProjectionFields.filter((fieldName) =>
-          nextEntityTemplates.some(
-            (template) => template.name === fieldName && template.fieldAccess?.allowRead !== false,
-          ),
-        ),
-        ...temporaryVisibleColumnKeys.value.filter((fieldName) =>
-          nextEntityTemplates.some(
-            (template) =>
-              template.name === fieldName &&
-              template.isPersistent !== false &&
-              template.fieldAccess?.allowRead !== false,
-          ),
-        ),
-      ]),
-    ]
-
-    return [
-      ...new Set([
-        ...baseFields,
-        ...getReferenceChipProjectionFieldNames(
-          nextEntityTemplates,
-          permissions,
-          baseFields,
-          (referenceName) => genericStore.getState(referenceName).entityTemplates,
-        ),
-      ]),
-    ]
-  }
-  const listProjectionFields = computed(() => buildListProjectionFields(entityTemplates.value))
-  const readableReferenceRelations = computed(() =>
-    getReadableReferenceRelationNames(
-      entityTemplates.value,
-      currentPermissionStore.accumulatedPermission ?? [],
-      listProjectionFields.value,
-      (referenceName) => genericStore.getState(referenceName).entityTemplates,
-    ),
-  )
-  const referenceSearchTemplates = computed(() =>
-    Object.fromEntries(
-      readableReferenceRelations.value
-        .filter((relationName) => !relationName.includes('.'))
-        .map((relationName) => {
-          const referenceName = entityTemplates.value.find(
-            (template) => template.name === relationName,
-          )?.referenceName
-
-          return referenceName
-            ? [relationName, genericStore.getState(referenceName).entityTemplates]
-            : null
-        })
-        .filter(
-          (entry): entry is [string, EntityTemplate[]] => entry !== null && entry[1].length > 0,
-        ),
-    ),
-  )
+  const {
+    buildListProjectionFields,
+    listProjectionFields,
+    preloadValueReferenceMetadata,
+    readableReferenceRelations,
+    referenceSearchTemplates,
+  } = useSaplingTableProjection({
+    entityTemplates,
+    temporaryVisibleColumnKeys,
+    additionalListProjectionFields,
+    currentPermissionStore,
+    genericStore,
+  })
   // #endregion
 
   // #region Filters and Sorting
-  const getRouteState = () => readSaplingTableRouteState(route.query, Boolean(isUseQueryParameter))
-  const routeStateSignature = computed(() =>
-    getSaplingTableRouteStateSignature(route.query, Boolean(isUseQueryParameter)),
-  )
-
-  const activeFilter = computed(() =>
-    buildTableFilter({
-      search: search.value,
-      columnFilters: columnFilters.value,
-      entityTemplates: entityTemplates.value,
-      referenceSearchTemplates: referenceSearchTemplates.value,
-      searchFieldNames: behaviorOptions.searchFieldNames,
-      parentFilter: parentFilter.value,
-    }),
-  )
-  const urlFilter = computed(() =>
-    buildTableFilter({
-      columnFilters: columnFilters.value,
-      entityTemplates: entityTemplates.value,
-      parentFilter: parentFilter.value,
-    }),
-  )
-
-  const validSortBy = computed(() => {
-    const validTemplateKeys = new Set(
-      entityTemplates.value
-        .filter(
-          (template) =>
-            template.isPersistent !== false && template.fieldAccess?.allowRead !== false,
-        )
-        .map((template) => template.name),
-    )
-    return sortBy.value.filter((sortItem) => validTemplateKeys.has(sortItem.key))
+  const {
+    activeFilter,
+    getRouteState,
+    initialSort,
+    routeStateSignature,
+    syncUrlState,
+    tableQuerySignature,
+    validSortBy,
+  } = useSaplingTableQueryState({
+    route,
+    isUseQueryParameter,
+    entityHandle,
+    search,
+    page,
+    itemsPerPage,
+    itemsPerPageDefault,
+    sortBy,
+    columnFilters,
+    parentFilter,
+    entityTemplates,
+    referenceSearchTemplates,
+    listProjectionFields,
+    searchFieldNames: behaviorOptions.searchFieldNames,
   })
-
-  // Stable serialization of the dynamic query inputs. Watching this avoids
-  // `deep: true` traversal on every keystroke and only fires the reload when
-  // the effective filter/sort/pagination payload truly changes.
-  const tableQuerySignature = computed(() =>
-    JSON.stringify({
-      entityHandle: entityHandle.value,
-      search: search.value,
-      page: page.value,
-      itemsPerPage: itemsPerPage.value,
-      sortBy: validSortBy.value,
-      filter: activeFilter.value,
-      fields: listProjectionFields.value,
-    }),
-  )
-
-  /**
-   * Applies the first template-defined default ordering to the server query.
-   */
-  function initialSort(nextEntityTemplates = entityTemplates.value, useRouteSort = true) {
-    const urlSortBy = useRouteSort ? getRouteState().sortBy : []
-    if (urlSortBy.length > 0) {
-      sortBy.value = urlSortBy
-      return
-    }
-
-    const orderColumn = nextEntityTemplates.find(
-      (template) =>
-        template.fieldAccess?.allowRead !== false &&
-        Array.isArray(template.options) &&
-        (template.options.includes('isOrderASC') || template.options.includes('isOrderDESC')),
-    )
-
-    if (!orderColumn || !Array.isArray(orderColumn.options)) {
-      sortBy.value = []
-      return
-    }
-
-    sortBy.value = [
-      {
-        key: orderColumn.name,
-        order: orderColumn.options.includes('isOrderDESC') ? 'desc' : 'asc',
-      },
-    ]
-  }
   // #endregion
 
   // #region Data Loading
@@ -384,107 +270,15 @@ export function useSaplingTable(
     temporaryVisibleColumnKeys.value = []
   }
 
-  function restoreQueryFilterState(nextEntityTemplates: EntityTemplate[]) {
-    const routeState = getRouteState()
-    const sanitizedRouteFilter = removeUnavailableFieldFilters(
-      routeState.filter,
-      nextEntityTemplates,
-    )
-    const routeFilter = sanitizedRouteFilter.filter ?? {}
-    if (sanitizedRouteFilter.removed) {
-      pushMessage(
-        'info',
-        i18n.global.t('permission.filterAdjusted'),
-        i18n.global.t('permission.filterAdjustedDescription'),
-        entityHandle.value,
-      )
-    }
-    const searchFilters = buildRouteSearchFilterCandidates(
-      routeState.search,
-      nextEntityTemplates,
-      behaviorOptions.searchFieldNames,
-    )
-    const filterWithoutSearch = searchFilters.reduce<unknown>(
-      (filter, searchFilter) => removeMatchingFilterFromFilterQuery(filter, searchFilter),
-      routeFilter,
-    )
-
-    columnFilters.value = extractColumnFiltersFromFilterQuery(nextEntityTemplates, routeFilter)
-    parentFilter.value =
-      removeRestoredColumnFiltersFromFilterQuery(nextEntityTemplates, filterWithoutSearch) ?? {}
-  }
-
-  async function applyDefaultOpenChipColumnFilters(nextEntityTemplates: EntityTemplate[]) {
-    const chipReferenceTemplates = nextEntityTemplates.filter(isOpenChipReferenceTemplate)
-
-    if (chipReferenceTemplates.length === 0) {
-      return
-    }
-
-    const defaultFilters = await Promise.all(
-      chipReferenceTemplates.map((template) => buildDefaultOpenChipColumnFilter(template)),
-    )
-
-    defaultFilters.forEach((filter) => {
-      if (!filter || columnFilters.value[filter.key]) {
-        return
-      }
-
-      columnFilters.value = {
-        ...columnFilters.value,
-        [filter.key]: filter.value,
-      }
+  const { applyDefaultOpenChipColumnFilters, restoreQueryFilterState } =
+    useSaplingTableFilterRestoration({
+      columnFilters,
+      parentFilter,
+      getRouteState,
+      entityHandle,
+      pushMessage,
+      searchFieldNames: behaviorOptions.searchFieldNames,
     })
-  }
-
-  async function preloadValueReferenceMetadata(nextEntityTemplates: EntityTemplate[]) {
-    const permissions = currentPermissionStore.accumulatedPermission ?? []
-    const projectedFields = getListProjectionFieldNames(nextEntityTemplates, permissions)
-    const rootRelations = [
-      ...new Set([
-        ...getReadableReferenceRelationNames(nextEntityTemplates, permissions, projectedFields),
-        ...getListProjectionReferenceDependencyNames(nextEntityTemplates, permissions),
-      ]),
-    ]
-    const rootRelationSet = new Set(rootRelations)
-    const rootReferenceNames = [
-      ...new Set(
-        nextEntityTemplates
-          .filter(
-            (template) => rootRelationSet.has(template.name) && Boolean(template.referenceName),
-          )
-          .map((template) => template.referenceName as string),
-      ),
-    ]
-
-    await Promise.all(
-      rootReferenceNames.map((referenceName) => genericStore.loadGeneric(referenceName, 'global')),
-    )
-
-    const nestedValueReferenceNames = [
-      ...new Set(
-        rootReferenceNames.flatMap((referenceName) =>
-          genericStore
-            .getState(referenceName)
-            .entityTemplates.filter(
-              (template) =>
-                TABLE_VALUE_REFERENCE_KINDS.includes(template.kind ?? '') &&
-                template.options?.includes('isValue') &&
-                template.fieldAccess?.allowRead !== false &&
-                canReadReferenceTemplate(template, permissions) &&
-                Boolean(template.referenceName),
-            )
-            .map((template) => template.referenceName as string),
-        ),
-      ),
-    ]
-
-    await Promise.all(
-      nestedValueReferenceNames.map((referenceName) =>
-        genericStore.loadGeneric(referenceName, 'global'),
-      ),
-    )
-  }
 
   async function initializeEntityState(options: InitializeEntityStateOptions = {}) {
     const currentEntityHandle = entityHandle.value
@@ -668,68 +462,9 @@ export function useSaplingTable(
    * not trigger a full re-initialization for our own writes — browser back/forward
    * still works because popstate updates the effective table route state.
    */
-  function syncUrlState() {
-    replaceSaplingTableUrlState(
-      {
-        search: search.value,
-        page: page.value,
-        itemsPerPage: itemsPerPage.value,
-        defaultItemsPerPage: itemsPerPageDefault.value,
-        sortBy: validSortBy.value,
-        filter: urlFilter.value,
-      },
-      Boolean(isUseQueryParameter),
-    )
-  }
   // #endregion
 
   // #region Event Handlers
-  function onSearchUpdate(value: string) {
-    if (isResettingEntityState.value) {
-      return
-    }
-
-    search.value = value
-    page.value = 1
-  }
-
-  function onPageUpdate(value: number) {
-    if (isResettingEntityState.value) {
-      return
-    }
-
-    page.value = value
-  }
-
-  function onItemsPerPageUpdate(value: number) {
-    if (isResettingEntityState.value) {
-      return
-    }
-
-    itemsPerPage.value = Math.min(Math.max(value, 1), GENERIC_API_MAX_PAGE_SIZE)
-    page.value = 1
-  }
-
-  function onColumnFiltersUpdate(value: Record<string, ColumnFilterItem>) {
-    if (isResettingEntityState.value) {
-      return
-    }
-
-    columnFilters.value = { ...value }
-    page.value = 1
-  }
-
-  function onSortByUpdate(value: SortItem[]) {
-    if (isResettingEntityState.value) {
-      return
-    }
-
-    sortBy.value = value
-  }
-
-  function onVisibleColumnKeysUpdate(value: string[]) {
-    temporaryVisibleColumnKeys.value = [...new Set(value.filter(Boolean))]
-  }
 
   /**
    * Restores only the worklist state. Personal/global column views stay selected.
@@ -790,33 +525,6 @@ export function useSaplingTable(
     await loadData()
   }
 
-  function selectFormConfig(handle: number | null): void {
-    temporaryVisibleColumnKeys.value = []
-    formConfigContext.select(handle)
-  }
-
-  async function setDefaultFormConfig(handle: number): Promise<void> {
-    temporaryVisibleColumnKeys.value = []
-    await setPersonalDefault(handle)
-  }
-
-  async function savePersonalTableView(
-    name: string,
-    orderedColumnKeys: string[],
-    selectableColumnKeys: string[],
-  ) {
-    const savedConfig = await formConfigContext.savePersonalTableView(
-      name,
-      orderedColumnKeys,
-      selectableColumnKeys,
-    )
-    temporaryVisibleColumnKeys.value = []
-    return savedConfig
-  }
-  async function deletePersonalFormConfig(handle: number): Promise<void> {
-    temporaryVisibleColumnKeys.value = []
-    await deletePersonalTableView(handle)
-  }
   // #endregion
 
   // #region Return
@@ -858,92 +566,4 @@ export function useSaplingTable(
     initialSort,
   }
   // #endregion
-}
-
-function buildRouteSearchFilterCandidates(
-  search: string,
-  entityTemplates: EntityTemplate[],
-  searchFieldNames?: string[],
-): FilterQuery[] {
-  const normalizedSearch = search.trim()
-  if (!normalizedSearch) {
-    return []
-  }
-
-  const currentSearchFilter = buildTableFilter({ search, entityTemplates, searchFieldNames })
-  const allowedSearchFieldNames = searchFieldNames ? new Set(searchFieldNames) : null
-  const searchableTemplates = entityTemplates
-    .filter(isFilterableTableColumn)
-    .filter(isTextSearchableTemplate)
-    .filter(
-      (template) => allowedSearchFieldNames === null || allowedSearchFieldNames.has(template.name),
-    )
-  const legacySearchFilter: FilterQuery = searchableTemplates.length
-    ? {
-        $or: searchableTemplates.map((template) => ({
-          [template.name]: { $ilike: `%${normalizedSearch}%` },
-        })),
-      }
-    : {}
-
-  return [currentSearchFilter, legacySearchFilter]
-}
-
-function isAbortError(error: unknown): boolean {
-  return (
-    typeof error === 'object' &&
-    error !== null &&
-    'code' in error &&
-    (error as { code?: string }).code === 'ERR_CANCELED'
-  )
-}
-
-function isOpenChipReferenceTemplate(template: EntityTemplate): boolean {
-  return (
-    template.kind === 'm:1' &&
-    Boolean(template.referenceName) &&
-    template.options?.includes('isChip') === true
-  )
-}
-
-async function buildDefaultOpenChipColumnFilter(
-  template: EntityTemplate,
-): Promise<{ key: string; value: ColumnFilterItem } | null> {
-  const referenceName = template.referenceName
-  if (!referenceName) {
-    return null
-  }
-
-  let referenceItems: SaplingGenericItem[]
-  try {
-    referenceItems = await ApiGenericService.findAll<SaplingGenericItem>(referenceName)
-  } catch {
-    return null
-  }
-
-  if (!referenceItems.some((item) => typeof item.isOpen === 'boolean')) {
-    return null
-  }
-
-  const openItems = referenceItems.filter((item) => item.isOpen !== false)
-  if (openItems.length === referenceItems.length) {
-    return null
-  }
-
-  const relationItems = openItems
-    .map((item): SaplingGenericItem | null => {
-      const value = item.handle
-      return typeof value === 'string' || typeof value === 'number' ? { handle: value } : null
-    })
-    .filter((item): item is SaplingGenericItem => item !== null)
-
-  return {
-    key: template.key ?? template.name,
-    value: {
-      operator: 'eq',
-      value: '',
-      relationItems:
-        relationItems.length > 0 ? relationItems : [{ handle: '__sapling_empty_chip_filter__' }],
-    },
-  }
 }

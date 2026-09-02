@@ -49,6 +49,10 @@ export type PlaceholderGroup = {
 
 export type InsertTarget = 'subject' | 'body'
 
+export type MailComposerPlaceholderTarget = {
+  insertPlaceholderAtCursor?: (target: InsertTarget, token: string) => void
+}
+
 export type PlaceholderRelationTemplates = {
   parent: EntityTemplate
   children: EntityTemplate[]
