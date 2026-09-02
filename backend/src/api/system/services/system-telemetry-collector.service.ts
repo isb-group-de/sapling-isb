@@ -7,7 +7,11 @@ import { EntityManager } from '@mikro-orm/core';
 import systeminformation from 'systeminformation';
 import os from 'os';
 import { randomUUID } from 'crypto';
-import { monitorEventLoopDelay } from 'perf_hooks';
+import {
+  monitorEventLoopDelay,
+  PerformanceObserver,
+  type PerformanceEntry,
+} from 'perf_hooks';
 import { Queue } from 'bullmq';
 import {
   REDIS_ENABLED,
@@ -26,12 +30,11 @@ import { FilesystemService } from './filesystem.service';
 import { SystemTelemetryEnvironmentService } from './system-telemetry-environment.service';
 import { SYSTEM_PROCESS_SLOT } from './system-telemetry-context';
 import { HttpTelemetryService } from './http-telemetry.service';
-
-type NumericMetric = {
-  key: string;
-  value: number;
-  dimension?: string;
-};
+import {
+  type NumericMetric,
+  persistSystemTelemetrySample,
+} from './system-telemetry-persistence';
+import { collectDatabaseRuntimeMetrics } from './database-runtime-telemetry';
 
 @Injectable()
 export class SystemTelemetryCollectorService
@@ -40,6 +43,9 @@ export class SystemTelemetryCollectorService
   readonly bootId = randomUUID();
   readonly instanceId = `${SYSTEM_PROCESS_SLOT}:${this.bootId}`.slice(0, 128);
   private readonly eventLoopDelay = monitorEventLoopDelay({ resolution: 20 });
+  private readonly gcObserver = new PerformanceObserver((items) =>
+    this.recordGarbageCollections(items.getEntries()),
+  );
   private timer?: NodeJS.Timeout;
   private startupTimer?: NodeJS.Timeout;
   private running = false;
@@ -51,6 +57,9 @@ export class SystemTelemetryCollectorService
   private lastMinuteCollectionAt = 0;
   private lastExpensiveCollectionAt = 0;
   private queues: Queue[] = [];
+  private gcCount = 0;
+  private gcPauseTotalMs = 0;
+  private gcPauseMaxMs = 0;
 
   constructor(
     private readonly em: EntityManager,
@@ -80,6 +89,7 @@ export class SystemTelemetryCollectorService
       );
     }
     this.eventLoopDelay.enable();
+    this.gcObserver.observe({ entryTypes: ['gc'] });
     this.startupTimer = setTimeout(() => void this.collect(), 1_000);
     this.startupTimer.unref();
     this.timer = setInterval(
@@ -93,6 +103,7 @@ export class SystemTelemetryCollectorService
     if (this.startupTimer) clearTimeout(this.startupTimer);
     if (this.timer) clearInterval(this.timer);
     this.eventLoopDelay.disable();
+    this.gcObserver.disconnect();
     await this.markStopped();
     await Promise.allSettled(this.queues.map((queue) => queue.close()));
   }
@@ -120,9 +131,13 @@ export class SystemTelemetryCollectorService
     this.running = true;
     const now = new Date();
     try {
+      const collectMinute =
+        now.getTime() - this.lastMinuteCollectionAt >= 60_000;
       const [load, memory, network] = await Promise.all([
         safeSource('cpu', () => systeminformation.currentLoad()),
-        safeSource('memory', () => systeminformation.mem()),
+        collectMinute
+          ? safeSource('memory', () => systeminformation.mem())
+          : Promise.resolve(null),
         safeSource('network', () => systeminformation.networkStats()),
       ]);
       const processMemory = process.memoryUsage();
@@ -152,6 +167,10 @@ export class SystemTelemetryCollectorService
           key: 'http.activeRequests',
           value: this.httpTelemetry.getStatus().activeRequests,
         },
+        {
+          key: 'http.activeStreams',
+          value: this.httpTelemetry.getStatus().activeStreams,
+        },
       ];
 
       if (load) {
@@ -163,17 +182,35 @@ export class SystemTelemetryCollectorService
       }
       if (memory) {
         metrics.push(
-          { key: 'host.memory.totalBytes', value: memory.total },
-          { key: 'host.memory.usedBytes', value: memory.used },
+          {
+            key: 'host.memory.totalBytes',
+            value: memory.total,
+            resolution: '1m',
+          },
+          {
+            key: 'host.memory.usedBytes',
+            value: memory.used,
+            resolution: '1m',
+          },
           {
             key: 'host.memory.usedPercent',
             value: percentage(memory.used, memory.total),
+            resolution: '1m',
           },
-          { key: 'host.memory.availableBytes', value: memory.available },
-          { key: 'host.swap.usedBytes', value: memory.swapused },
+          {
+            key: 'host.memory.availableBytes',
+            value: memory.available,
+            resolution: '1m',
+          },
+          {
+            key: 'host.swap.usedBytes',
+            value: memory.swapused,
+            resolution: '1m',
+          },
           {
             key: 'host.swap.usedPercent',
             value: percentage(memory.swapused, memory.swaptotal),
+            resolution: '1m',
           },
         );
       }
@@ -192,21 +229,67 @@ export class SystemTelemetryCollectorService
             value: item.tx_sec ?? 0,
             dimension,
           },
-          { key: 'network.rxErrors', value: item.rx_errors ?? 0, dimension },
-          { key: 'network.txErrors', value: item.tx_errors ?? 0, dimension },
-          { key: 'network.rxDropped', value: item.rx_dropped ?? 0, dimension },
-          { key: 'network.txDropped', value: item.tx_dropped ?? 0, dimension },
         );
+        if (collectMinute) {
+          metrics.push(
+            {
+              key: 'network.rxErrors',
+              value: item.rx_errors ?? 0,
+              dimension,
+              resolution: '1m',
+            },
+            {
+              key: 'network.txErrors',
+              value: item.tx_errors ?? 0,
+              dimension,
+              resolution: '1m',
+            },
+            {
+              key: 'network.rxDropped',
+              value: item.rx_dropped ?? 0,
+              dimension,
+              resolution: '1m',
+            },
+            {
+              key: 'network.txDropped',
+              value: item.tx_dropped ?? 0,
+              dimension,
+              resolution: '1m',
+            },
+          );
+        }
       }
 
-      if (now.getTime() - this.lastMinuteCollectionAt >= 60_000) {
+      if (collectMinute) {
         this.lastMinuteCollectionAt = now.getTime();
+        metrics.push(
+          {
+            key: 'process.gc.count',
+            value: this.gcCount,
+            resolution: '1m',
+          },
+          {
+            key: 'process.gc.pauseTotalMs',
+            value: this.gcPauseTotalMs,
+            resolution: '1m',
+          },
+          {
+            key: 'process.gc.pauseMaxMs',
+            value: this.gcPauseMaxMs,
+            resolution: '1m',
+          },
+        );
+        this.gcCount = 0;
+        this.gcPauseTotalMs = 0;
+        this.gcPauseMaxMs = 0;
         const [filesystems, database, databaseRuntime] = await Promise.all([
           safeSource('filesystem', () =>
             this.filesystemService.getFilesystem(),
           ),
           safeSource('database', () => this.databaseService.getDatabase()),
-          safeSource('database-runtime', () => this.collectDatabaseRuntime()),
+          safeSource('database-runtime', () =>
+            collectDatabaseRuntimeMetrics(this.em),
+          ),
         ]);
         for (const filesystem of filesystems ?? []) {
           const dimension = sanitizeDimension(
@@ -217,16 +300,19 @@ export class SystemTelemetryCollectorService
               key: 'filesystem.usedPercent',
               value: filesystem.use ?? 0,
               dimension,
+              resolution: '1m',
             },
             {
               key: 'filesystem.usedBytes',
               value: filesystem.used ?? 0,
               dimension,
+              resolution: '1m',
             },
             {
               key: 'filesystem.sizeBytes',
               value: filesystem.size ?? 0,
               dimension,
+              resolution: '1m',
             },
           );
         }
@@ -235,14 +321,20 @@ export class SystemTelemetryCollectorService
             {
               key: 'database.activeConnections',
               value: database.activeConnections,
+              resolution: '1m',
             },
-            { key: 'database.maxConnections', value: database.maxConnections },
+            {
+              key: 'database.maxConnections',
+              value: database.maxConnections,
+              resolution: '1m',
+            },
             {
               key: 'database.connectionUsedPercent',
               value: percentage(
                 database.activeConnections,
                 database.maxConnections,
               ),
+              resolution: '1m',
             },
           );
         }
@@ -298,6 +390,7 @@ export class SystemTelemetryCollectorService
               key: `queue.${state}`,
               value: queue.counts[state] ?? 0,
               dimension: queue.name,
+              resolution: '1m',
             });
           }
           metrics.push(
@@ -305,11 +398,13 @@ export class SystemTelemetryCollectorService
               key: 'queue.connectionLatencyMs',
               value: queue.pingMs,
               dimension: queue.name,
+              resolution: '1m',
             },
             {
               key: 'queue.oldestWaitingSeconds',
               value: queue.oldestWaitingSeconds,
               dimension: queue.name,
+              resolution: '1m',
             },
           );
         }
@@ -319,13 +414,22 @@ export class SystemTelemetryCollectorService
             this.documentStorageService.getDocumentStorage(),
           );
           if (database)
-            metrics.push({ key: 'database.sizeBytes', value: database.size });
+            metrics.push({
+              key: 'database.sizeBytes',
+              value: database.size,
+              resolution: '15m',
+            });
           if (storage) {
             metrics.push(
-              { key: 'documentStorage.sizeBytes', value: storage.totalSize },
+              {
+                key: 'documentStorage.sizeBytes',
+                value: storage.totalSize,
+                resolution: '15m',
+              },
               {
                 key: 'documentStorage.fileCount',
                 value: storage.totalFileCount,
+                resolution: '15m',
               },
             );
           }
@@ -368,57 +472,18 @@ export class SystemTelemetryCollectorService
     now: Date,
     metrics: NumericMetric[],
   ): Promise<void> {
-    const em = this.em.fork();
-    await this.environment.ensure(em);
-    const version = this.versionService.getVersion().version ?? null;
-    await em.getConnection().execute(
-      `insert into "system_telemetry_instance_item" (
-        "handle", "environment_handle", "process_slot", "boot_id", "hostname", "app_version", "process_started_at",
-        "last_sample_at", "collector_enabled", "status", "created_at", "updated_at"
-      ) values (?, ?, ?, ?, ?, ?, ?, ?, true, 'active', now(), now())
-      on conflict ("handle") do update set
-        "hostname" = excluded."hostname",
-        "app_version" = excluded."app_version",
-        "process_started_at" = excluded."process_started_at",
-        "last_sample_at" = excluded."last_sample_at",
-        "collector_enabled" = true,
-        "status" = 'active',
-        "updated_at" = now()`,
-      [
-        this.instanceId,
-        this.environment.currentId,
-        SYSTEM_PROCESS_SLOT,
-        this.bootId,
-        os.hostname(),
-        version,
-        new Date(Date.now() - process.uptime() * 1000),
-        now,
-      ],
-    );
-    const bucketStart = floorDate(now, 10_000);
-    for (const metric of metrics) {
-      await em.getConnection().execute(
-        `insert into "system_metric_bucket_item" (
-          "instance_handle", "bucket_start", "resolution", "metric_key",
-          "dimension_key", "sample_count", "minimum", "maximum", "sum",
-          "last", "created_at"
-        ) values (?, ?, '10s', ?, ?, 1, ?, ?, ?, ?, now())
-        on conflict ("instance_handle", "bucket_start", "resolution", "metric_key", "dimension_key")
-        do update set "sample_count" = 1, "minimum" = excluded."minimum",
-          "maximum" = excluded."maximum", "sum" = excluded."sum",
-          "last" = excluded."last"`,
-        [
-          this.instanceId,
-          bucketStart,
-          metric.key,
-          metric.dimension ?? '',
-          metric.value,
-          metric.value,
-          metric.value,
-          metric.value,
-        ],
-      );
-    }
+    await persistSystemTelemetrySample({
+      em: this.em,
+      environment: this.environment,
+      instanceId: this.instanceId,
+      processSlot: SYSTEM_PROCESS_SLOT,
+      bootId: this.bootId,
+      hostname: os.hostname(),
+      version: this.versionService.getVersion().version ?? null,
+      processStartedAt: new Date(Date.now() - process.uptime() * 1000),
+      capturedAt: now,
+      metrics,
+    });
   }
 
   private async prepareInstance(): Promise<void> {
@@ -481,36 +546,12 @@ export class SystemTelemetryCollectorService
     );
   }
 
-  private async collectDatabaseRuntime(): Promise<NumericMetric[]> {
-    const startedAt = performance.now();
-    const rows = (await this.em
-      .fork()
-      .getConnection()
-      .execute(
-        `select (select count(*) from pg_locks where not granted)::int as "waitingLocks",
-         coalesce(sum("deadlocks"), 0)::bigint as "deadlocks",
-         coalesce(sum("xact_rollback"), 0)::bigint as "rollbacks"
-       from pg_stat_database where "datname" = current_database()`,
-      )) as Array<{
-      waitingLocks: number;
-      deadlocks: number;
-      rollbacks: number;
-    }>;
-    return [
-      { key: 'database.probeLatencyMs', value: performance.now() - startedAt },
-      {
-        key: 'database.waitingLocks',
-        value: Number(rows[0]?.waitingLocks ?? 0),
-      },
-      {
-        key: 'database.deadlocksTotal',
-        value: Number(rows[0]?.deadlocks ?? 0),
-      },
-      {
-        key: 'database.rollbacksTotal',
-        value: Number(rows[0]?.rollbacks ?? 0),
-      },
-    ];
+  private recordGarbageCollections(entries: PerformanceEntry[]): void {
+    for (const entry of entries) {
+      this.gcCount += 1;
+      this.gcPauseTotalMs += entry.duration;
+      this.gcPauseMaxMs = Math.max(this.gcPauseMaxMs, entry.duration);
+    }
   }
 }
 
@@ -524,10 +565,6 @@ function finiteNumber(value: number): number {
 
 function sanitizeDimension(value: string): string {
   return value.replace(/[\r\n\0]/g, '').slice(0, 255);
-}
-
-function floorDate(date: Date, intervalMs: number): Date {
-  return new Date(Math.floor(date.getTime() / intervalMs) * intervalMs);
 }
 
 async function safeSource<T>(

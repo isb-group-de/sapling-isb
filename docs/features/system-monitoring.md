@@ -46,7 +46,8 @@ affected by that cleanup.
 
 ## Metrics And Errors
 
-The collector records CPU, physical and process memory, event-loop lag, network
+The collector records CPU, physical and process memory, event-loop lag, garbage
+collection counts and pauses, network
 interfaces, filesystems, document storage, active HTTP requests, PostgreSQL
 connections, probe latency, waiting locks, cumulative deadlocks/rollbacks, and
 Redis queue depth, state, connection latency, and oldest waiting-job age. Fast
@@ -56,8 +57,12 @@ fifteen minutes.
 HTTP middleware assigns request and correlation IDs before normal request
 processing. It records status classes, aborted/time-out requests, bytes,
 duration histograms, stable controller-route operations, route groups, and
-privacy-safe person/API-token attribution in aggregated minute buckets. It never
-consumes request bodies. Browser telemetry adds boot time, LCP, INP, and CLS.
+privacy-safe person/API-token attribution in aggregated minute buckets. Standard
+requests and long-lived SSE/NDJSON streams are stored separately; expected stream
+disconnects do not affect the standard API SLO. Registered generic resources are
+available as a bounded analysis dimension. The middleware never consumes request
+bodies. Browser telemetry adds final boot, LCP, INP, and CLS values in batches of
+at most 20 measurements.
 
 Backend exceptions, process warnings, uncaught-exception observations, browser
 errors, failed/stalled queue jobs, and telemetry failures are normalized into a
@@ -66,6 +71,11 @@ bounded occurrence evidence with request/correlation IDs. Messages and stacks
 are truncated and redact email addresses, long tokens, numeric identifiers, and
 filesystem paths before persistence. Error capture never changes the original
 failure or crash semantics.
+
+Error-group and occurrence persistence is one atomic statement. Data before the
+application of `Migration20260902170000` is an explicit repair boundary: old
+groups may have no occurrence evidence because an earlier occurrence insert was
+malformed, and that missing evidence cannot be reconstructed.
 
 ## Active Checks And SLOs
 
@@ -81,6 +91,10 @@ stopped and retired process history remains inspectable but cannot create a
 current gap banner. Queue health uses the oldest waiting job plus job failures
 observed during the last five minutes. The retained BullMQ failed-job count is
 historical storage and is not itself a current-health failure.
+
+AI reliability counts only terminal `completed` and `failed` calls and treats only
+`failed` as an error. Running, interrupted, and cancelled work remains visible but
+does not create a transient reliability failure.
 
 The overview currently evaluates an API-success SLO of 99.9 percent and an API
 p95 target of 1,000 ms. Threshold alert rules still support minimum samples,
@@ -136,9 +150,12 @@ session is reported separately. API-token use is never interactive presence.
 - error groups, remediation executions, AI usage, authentication events, and
   resolved incidents: 90 days
 
-Hourly maintenance creates idempotent rollups under a PostgreSQL advisory lock
+Minute maintenance creates idempotent rollups under a PostgreSQL advisory lock
 before bounded deletion. The original environment and stable HTTP operation are
-preserved through every rollup resolution.
+preserved together with request kind and resource through every rollup resolution.
+Automatic chart resolution is ten seconds through two hours, one minute through
+48 hours, fifteen minutes through 30 days, and one hour afterward. Metrics whose
+native collection cadence is slower use the finest available native resolution.
 
 ## Configuration
 

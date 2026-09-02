@@ -16,6 +16,28 @@ export type SystemErrorInput = {
   occurredAt?: Date;
 };
 
+export const RECORD_SYSTEM_ERROR_SQL = `with upserted_group as (
+  insert into "system_error_group_item" (
+    "environment_handle", "fingerprint", "source", "operation", "status",
+    "occurrence_count", "latest_release", "first_seen_at", "last_seen_at"
+  ) values (?, ?, ?, ?, 'open', 1, ?, ?, ?)
+  on conflict ("environment_handle", "fingerprint") do update set
+    "status" = 'open',
+    "occurrence_count" = "system_error_group_item"."occurrence_count" + 1,
+    "latest_release" = excluded."latest_release",
+    "last_seen_at" = excluded."last_seen_at"
+  returning "handle"
+)
+insert into "system_error_occurrence_item" (
+  "group_handle", "environment_handle", "instance_handle", "operation", "source",
+  "error_class", "error_code", "message", "stack", "request_id", "correlation_id",
+  "release", "occurred_at"
+)
+select upserted_group."handle", ?,
+  (select "handle" from "system_telemetry_instance_item" where "handle" = ?),
+  ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+from upserted_group`;
+
 @Injectable()
 export class SystemErrorRecorderService {
   constructor(
@@ -46,16 +68,9 @@ export class SystemErrorRecorderService {
     const em = this.em.fork();
     try {
       await this.environment.ensure(em);
-      const rows = (await em.getConnection().execute(
-        `insert into "system_error_group_item" (
-          "environment_handle", "fingerprint", "source", "operation", "status",
-          "occurrence_count", "latest_release", "first_seen_at", "last_seen_at"
-        ) values (?, ?, ?, ?, 'open', 1, ?, ?, ?)
-        on conflict ("environment_handle", "fingerprint") do update set
-          "status" = 'open', "occurrence_count" = "system_error_group_item"."occurrence_count" + 1,
-          "latest_release" = excluded."latest_release", "last_seen_at" = excluded."last_seen_at"
-        returning "handle"`,
-        [
+      await em
+        .getConnection()
+        .execute(RECORD_SYSTEM_ERROR_SQL, [
           this.environment.currentId,
           fingerprint,
           input.source,
@@ -63,17 +78,6 @@ export class SystemErrorRecorderService {
           release,
           occurredAt,
           occurredAt,
-        ],
-      )) as Array<{ handle: number }>;
-      await em.getConnection().execute(
-        `insert into "system_error_occurrence_item" (
-          "group_handle", "environment_handle", "instance_handle", "operation", "source",
-          "error_class", "error_code", "message", "stack", "request_id", "correlation_id",
-          "release", "occurred_at"
-        ) values (?, ?, (select "handle" from "system_telemetry_instance_item" where "handle" = ?),
-          ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-          rows[0]?.handle,
           this.environment.currentId,
           this.collector.instanceId,
           operation,
@@ -86,8 +90,7 @@ export class SystemErrorRecorderService {
           sanitizeId(input.correlationId ?? context?.correlationId),
           release,
           occurredAt,
-        ],
-      );
+        ]);
     } catch (recordingError) {
       global.log?.warn?.('system error recording failed', recordingError);
     }

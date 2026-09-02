@@ -55,6 +55,13 @@ export const MONITORING_METRIC_DEFINITIONS: Record<string, MonitoringMetricDefin
     'Event-Loop-Verzögerung (p95)',
     'Event loop delay (p95)',
   ),
+  'process.gc.count': metric('ProcessGcCount', 'Garbage Collections', 'Garbage collections'),
+  'process.gc.pauseTotalMs': metric(
+    'ProcessGcPauseTotalMs',
+    'GC-Pausen gesamt',
+    'Total GC pause time',
+  ),
+  'process.gc.pauseMaxMs': metric('ProcessGcPauseMaxMs', 'Längste GC-Pause', 'Longest GC pause'),
   'process.uptimeSeconds': metric('ProcessUptimeSeconds', 'Backend-Laufzeit', 'Backend uptime'),
   'process.startedAtEpochMs': metric(
     'ProcessStartedAtEpochMs',
@@ -171,6 +178,7 @@ export const MONITORING_METRIC_DEFINITIONS: Record<string, MonitoringMetricDefin
     'Aktive HTTP-Requests',
     'Active HTTP requests',
   ),
+  'http.activeStreams': metric('HttpActiveStreams', 'Aktive HTTP-Streams', 'Active HTTP streams'),
   'ai.errorRate': metric('AiErrorRate', 'KI-Fehlerrate', 'AI error rate'),
   'collector.gapSeconds': metric('CollectorGapSeconds', 'Collector-Messlücke', 'Collector gap'),
   'web.lcpMs': metric('WebLcpMs', 'Frontend-Ladezeit (LCP)', 'Frontend load time (LCP)'),

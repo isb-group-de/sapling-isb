@@ -11,6 +11,7 @@ import {
   mountQueryEnabledTestHost,
   mountTestHost,
   resetTableTestMocks,
+  routerReplaceMock,
   routeState,
 } from './useSaplingTable.test-support'
 import { getSaplingTableRouteStateSignature } from '../saplingTableRouteState'
@@ -66,6 +67,51 @@ describe('useSaplingTable filters and route state', () => {
             handle: { $in: ['open', 'waiting'] },
           },
         },
+      }),
+    )
+  })
+
+  it('restores the default worklist without changing table-view configuration', async () => {
+    loadGenericMock.mockResolvedValue(undefined)
+    apiFindAllMock.mockResolvedValue([
+      { handle: 'open', description: 'Open', isOpen: true },
+      { handle: 'closed', description: 'Closed', isOpen: false },
+    ])
+    routeState.query = {
+      search: 'urgent',
+      itemsPerPage: '10',
+      sortBy: JSON.stringify([{ key: 'deadlineDate', order: 'desc' }]),
+      filter: JSON.stringify({ status: { handle: 'closed' } }),
+    }
+    apiFindMock.mockResolvedValue({ data: [], meta: { total: 0 } })
+
+    const wrapper = mountQueryEnabledTestHost(ref('ticket'))
+    await flushPromises()
+
+    await wrapper.vm.resetToDefaultWorklist()
+
+    expect(wrapper.vm.search).toBe('')
+    expect(wrapper.vm.page).toBe(1)
+    expect(wrapper.vm.itemsPerPage).toBe(25)
+    expect(wrapper.vm.sortBy).toEqual([])
+    expect(wrapper.vm.columnFilters).toEqual({
+      status: {
+        operator: 'eq',
+        value: '',
+        relationItems: [{ handle: 'open' }],
+      },
+    })
+    expect(routerReplaceMock).toHaveBeenCalledWith({
+      path: undefined,
+      query: {},
+      hash: undefined,
+    })
+    expect(apiFindMock).toHaveBeenLastCalledWith(
+      'ticket',
+      expect.objectContaining({
+        filter: { status: { handle: 'open' } },
+        limit: 25,
+        page: 1,
       }),
     )
   })

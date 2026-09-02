@@ -9,6 +9,7 @@ import ApiAiService from '@/services/api.ai.service'
 import type { SaplingAiPreferences } from '@/services/ai-preferences.service'
 import { sortSelectOptions } from '@/utils/saplingSelectOptions'
 import { getModelHandle, getProviderHandle, resolveRuntimeTarget } from './aiChatRuntimeTargets'
+import { loadRuntimeCatalogCache } from './runtimeCatalogCache'
 
 const RUNTIME_CATALOG_RETRY_DELAY_MS = 200
 const RUNTIME_CATALOG_REQUEST_TIMEOUT_MS = 6000
@@ -16,6 +17,7 @@ const RUNTIME_CATALOG_REQUEST_TIMEOUT_MS = 6000
 export function useSaplingAiChatRuntimeCatalog(
   activeSession: Ref<AiChatSessionItem | null>,
   preferences: SaplingAiPreferences,
+  getPersonCacheKey: () => string = () => 'anonymous',
 ) {
   const providerConfigs = ref<AiProviderTypeItem[]>([])
   const modelConfigs = ref<AiProviderModelItem[]>([])
@@ -48,6 +50,8 @@ export function useSaplingAiChatRuntimeCatalog(
   const hasLoadedRuntimeCatalog = ref(false)
   const hasRuntimeCatalogLoadError = ref(false)
   let runtimeCatalogPromise: Promise<void> | null = null
+  let transcriptionCatalogPromise: Promise<void> | null = null
+  let speechCatalogPromise: Promise<void> | null = null
 
   const isLoadingRuntimeCatalog = computed(() => Object.values(loading.value).some(Boolean))
   const isLoadingChatRuntimeCatalog = computed(
@@ -60,16 +64,11 @@ export function useSaplingAiChatRuntimeCatalog(
     () =>
       transcriptionProviderConfigs.value.length > 0 && transcriptionModelConfigs.value.length > 0,
   )
-  const hasConfiguredSpeechProviders = computed(
-    () => speechProviderConfigs.value.length > 0 && speechModelConfigs.value.length > 0,
-  )
   const canSendMessage = computed(
     () =>
       hasConfiguredProviders.value && !!selectedProviderHandle.value && !!selectedModelHandle.value,
   )
-  const isVoiceOutputAvailable = computed(
-    () => typeof Audio !== 'undefined' && hasConfiguredSpeechProviders.value,
-  )
+  const isVoiceOutputAvailable = computed(() => typeof Audio !== 'undefined')
   const agentOptions = computed(() =>
     sortSelectOptions(agentConfigs.value, (agent) => agent.title).map((agent) => ({
       label: agent.title,
@@ -107,10 +106,10 @@ export function useSaplingAiChatRuntimeCatalog(
     ),
   )
 
-  function loadRuntimeCatalogs(): Promise<void> {
-    if (runtimeCatalogPromise) return runtimeCatalogPromise
+  function loadRuntimeCatalogs(force = false): Promise<void> {
+    if (runtimeCatalogPromise && !force) return runtimeCatalogPromise
 
-    const request = runRuntimeCatalogLoad()
+    const request = runRuntimeCatalogLoad(force)
     runtimeCatalogPromise = request
     void request.finally(() => {
       if (runtimeCatalogPromise === request) runtimeCatalogPromise = null
@@ -118,48 +117,30 @@ export function useSaplingAiChatRuntimeCatalog(
     return request
   }
 
-  async function runRuntimeCatalogLoad() {
+  async function runRuntimeCatalogLoad(force: boolean) {
     hasRuntimeCatalogLoadError.value = false
 
-    const supplementalCatalogs = Promise.allSettled([
-      loadCatalog('agents', ApiAiService.listAgents, agentConfigs, () => {
-        syncSelectedAgent()
-        syncSelectedPlaybook()
-        syncSelectedRuntimeTarget()
-      }),
+    const [chatCatalogResult, agentCatalogResult] = await Promise.allSettled([
+      loadChatRuntimeCatalog(force),
       loadCatalog(
-        'transcriptionProviders',
-        ApiAiService.listTranscriptionProviders,
-        transcriptionProviderConfigs,
-        syncSelectedTranscriptionTarget,
-      ),
-      loadCatalog(
-        'transcriptionModels',
-        ApiAiService.listTranscriptionModels,
-        transcriptionModelConfigs,
-        syncSelectedTranscriptionTarget,
-      ),
-      loadCatalog(
-        'speechProviders',
-        ApiAiService.listSpeechProviders,
-        speechProviderConfigs,
-        syncSelectedSpeechTarget,
-      ),
-      loadCatalog(
-        'speechModels',
-        ApiAiService.listSpeechModels,
-        speechModelConfigs,
-        syncSelectedSpeechTarget,
+        'agents',
+        ApiAiService.listAgents,
+        agentConfigs,
+        () => {
+          syncSelectedAgent()
+          syncSelectedPlaybook()
+          syncSelectedRuntimeTarget()
+        },
+        force,
       ),
     ])
-    const [chatCatalogResult] = await Promise.allSettled([loadChatRuntimeCatalog()])
 
-    hasRuntimeCatalogLoadError.value = chatCatalogResult.status === 'rejected'
+    hasRuntimeCatalogLoadError.value =
+      chatCatalogResult.status === 'rejected' || agentCatalogResult.status === 'rejected'
     hasLoadedRuntimeCatalog.value = true
-    await supplementalCatalogs
   }
 
-  async function loadChatRuntimeCatalog() {
+  async function loadChatRuntimeCatalog(force: boolean) {
     setLoading('providers', true)
     setLoading('models', true)
 
@@ -170,10 +151,20 @@ export function useSaplingAiChatRuntimeCatalog(
         try {
           const [providers, models] = await Promise.all([
             withRuntimeCatalogTimeout(
-              ApiAiService.listProviders({ suppressErrorMessage: attempt === 0 }),
+              loadRuntimeCatalogCache(
+                getPersonCacheKey(),
+                'providers',
+                () => ApiAiService.listProviders({ suppressErrorMessage: attempt === 0 }),
+                force || attempt > 0,
+              ),
             ),
             withRuntimeCatalogTimeout(
-              ApiAiService.listModels(undefined, { suppressErrorMessage: attempt === 0 }),
+              loadRuntimeCatalogCache(
+                getPersonCacheKey(),
+                'models',
+                () => ApiAiService.listModels(undefined, { suppressErrorMessage: attempt === 0 }),
+                force || attempt > 0,
+              ),
             ),
           ])
           const shouldRetryEmptyCatalog =
@@ -205,14 +196,67 @@ export function useSaplingAiChatRuntimeCatalog(
     loader: () => Promise<T[]>,
     target: Ref<T[]>,
     synchronize: () => void,
+    force = false,
   ) {
     setLoading(key, true)
     try {
-      target.value = await withRuntimeCatalogTimeout(loader())
+      target.value = await withRuntimeCatalogTimeout(
+        loadRuntimeCatalogCache(getPersonCacheKey(), key, loader, force),
+      )
       synchronize()
     } finally {
       setLoading(key, false)
     }
+  }
+
+  function loadTranscriptionCatalogs(force = false): Promise<void> {
+    if (transcriptionCatalogPromise && !force) return transcriptionCatalogPromise
+    const request = Promise.all([
+      loadCatalog(
+        'transcriptionProviders',
+        ApiAiService.listTranscriptionProviders,
+        transcriptionProviderConfigs,
+        syncSelectedTranscriptionTarget,
+        force,
+      ),
+      loadCatalog(
+        'transcriptionModels',
+        ApiAiService.listTranscriptionModels,
+        transcriptionModelConfigs,
+        syncSelectedTranscriptionTarget,
+        force,
+      ),
+    ]).then(() => undefined)
+    transcriptionCatalogPromise = request
+    void request.finally(() => {
+      if (transcriptionCatalogPromise === request) transcriptionCatalogPromise = null
+    })
+    return request
+  }
+
+  function loadSpeechCatalogs(force = false): Promise<void> {
+    if (speechCatalogPromise && !force) return speechCatalogPromise
+    const request = Promise.all([
+      loadCatalog(
+        'speechProviders',
+        ApiAiService.listSpeechProviders,
+        speechProviderConfigs,
+        syncSelectedSpeechTarget,
+        force,
+      ),
+      loadCatalog(
+        'speechModels',
+        ApiAiService.listSpeechModels,
+        speechModelConfigs,
+        syncSelectedSpeechTarget,
+        force,
+      ),
+    ]).then(() => undefined)
+    speechCatalogPromise = request
+    void request.finally(() => {
+      if (speechCatalogPromise === request) speechCatalogPromise = null
+    })
+    return request
   }
 
   function setLoading(key: keyof typeof loading.value, value: boolean) {
@@ -365,6 +409,8 @@ export function useSaplingAiChatRuntimeCatalog(
     isVoiceOutputAvailable,
     canUploadImportAttachment,
     loadRuntimeCatalogs,
+    loadTranscriptionCatalogs,
+    loadSpeechCatalogs,
     applyPreferences,
     applyPromptRuntime,
     updateSelectedAgent,

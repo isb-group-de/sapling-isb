@@ -94,6 +94,7 @@
               @refresh="refreshTable"
               @update:auto-refresh-interval-minutes="setAutoRefreshInterval"
               @favorite="openFavoriteDialog"
+              @reset-worklist="emit('resetWorklist')"
               @select-favorite="selectFavorite"
               @delete-favorite="openFavoriteDeleteDialog"
               @select-form-config="selectFormConfig"
@@ -419,6 +420,7 @@ type SaplingTableProps = UseSaplingTableProps & {
 
 type SaplingTableEmit = UseSaplingTableEmit & {
   (event: 'toggleSidePanel'): void
+  (event: 'resetWorklist'): void
   (event: 'selectFormConfig', value: FormConfigSelectionHandle): void
   (event: 'setDefaultFormConfig', value: number): void
   (event: 'deleteFormConfig', value: { handle: number; complete: (deleted: boolean) => void }): void

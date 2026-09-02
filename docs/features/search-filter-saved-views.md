@@ -186,6 +186,13 @@ always asks for confirmation first and removes the `FavoriteItem` through the
 generic API. Because the toolbar query is already restricted to the authenticated
 person, only that person's worklists are offered there.
 
+The worklist menu also offers a synthetic **Default worklist**. It does not create
+or select a `FavoriteItem` and is separate from table-column views. Selecting it
+clears worklist search, sorting, paging, and filters, then reapplies the same
+metadata defaults as direct navigation: open chip values in generic tables and,
+in the Partner workspace, the current person plus the default open chip values.
+The currently selected table-column view remains unchanged.
+
 Personal table-column views are deleted through the dedicated
 `DELETE /api/form-config/:entityHandle/personal-table-view/:handle` endpoint.
 The backend verifies that the saved configuration has `scope = person` and that

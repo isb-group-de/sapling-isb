@@ -138,14 +138,15 @@ export class SystemCheckService implements OnModuleInit, OnApplicationShutdown {
              coalesce(sum("server_error_count"), 0)::int as "errors",
              coalesce(sum("timeout_count"), 0)::int as "timeouts"
            from "http_metric_bucket_item" where "environment_handle" = ?
-             and "resolution" = '1m' and "bucket_start" >= now() - interval '5 minutes'`,
+             and "resolution" = '1m' and "request_kind" = 'standard'
+             and "bucket_start" >= now() - interval '5 minutes'`,
             [this.environment.currentId],
           ) as Promise<
             Array<{ total: number; errors: number; timeouts: number }>
           >,
           em.getConnection().execute(
-            `select count(*)::int as "total",
-             count(*) filter (where "status" <> 'completed')::int as "errors"
+            `select count(*) filter (where "status" in ('completed', 'failed'))::int as "total",
+             count(*) filter (where "status" = 'failed')::int as "errors"
            from "ai_usage_event_item" where "environment_handle" = ?
              and "occurred_at" >= now() - interval '15 minutes'`,
             [this.environment.currentId],

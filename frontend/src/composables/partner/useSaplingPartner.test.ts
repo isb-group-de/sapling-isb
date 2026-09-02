@@ -6,12 +6,14 @@ import type {
   SaplingChipFilterGroup,
   SaplingFilterHandle,
 } from '@/components/filter/saplingWorkFilter.types'
+import type { SaplingTableInitialLoadContext } from '@/composables/table/useSaplingTable'
 
 const mocks = vi.hoisted(() => ({
   tableReturn: undefined as unknown,
   chipReturn: undefined as unknown,
   routeQuery: {} as Record<string, string | undefined>,
-  beforeInitialLoad: undefined as (() => Promise<void> | void) | undefined,
+  beforeInitialLoad: undefined as
+    ((context?: SaplingTableInitialLoadContext) => Promise<void> | void) | undefined,
 }))
 
 vi.mock('vue-router', () => ({
@@ -28,7 +30,10 @@ vi.mock('@/stores/currentPersonStore', () => ({
 vi.mock('@/composables/table/useSaplingTable', () => ({
   useSaplingTable: (...args: unknown[]) => {
     const optionsFactory = args[4] as
-      (() => { beforeInitialLoad?: () => Promise<void> | void }) | undefined
+      | (() => {
+          beforeInitialLoad?: (context?: SaplingTableInitialLoadContext) => Promise<void> | void
+        })
+      | undefined
     mocks.beforeInitialLoad = optionsFactory?.().beforeInitialLoad
     return mocks.tableReturn
   },
@@ -44,6 +49,7 @@ import {
   combinePartnerFilters,
   extractPartnerHandlesFromFilter,
   getChipSelectionFromColumnFilter,
+  removePartnerSelectionFilter,
   useSaplingPartner,
 } from './useSaplingPartner'
 
@@ -153,6 +159,30 @@ describe('useSaplingPartner filter synchronization helpers', () => {
     expect(combinePartnerFilters(restoredFilter, { ...restoredFilter })).toEqual(restoredFilter)
   })
 
+  it('removes partner selections from a restored worklist filter', () => {
+    const templates = [
+      createPartnerTemplate('assigneePerson'),
+      createPartnerTemplate('creatorPerson'),
+    ]
+
+    expect(
+      removePartnerSelectionFilter(
+        {
+          $and: [
+            { status: { handle: { $in: ['open'] } } },
+            { assigneeCompany: null },
+            {
+              $or: [{ assigneePerson: { $in: [1] } }, { creatorPerson: { $in: [1] } }],
+            },
+          ],
+        },
+        templates,
+      ),
+    ).toEqual({
+      $and: [{ status: { handle: { $in: ['open'] } } }, { assigneeCompany: null }],
+    })
+  })
+
   it('treats chip column filters with the same relation handles as equal', () => {
     expect(
       arePartnerColumnFiltersEqual(
@@ -215,6 +245,50 @@ describe('useSaplingPartner initial person filter', () => {
     expect(tableReturn.parentFilter.value).toEqual({ status: { handle: 'open' } })
   })
 
+  it('lets an unchecked person remove a restored worklist person filter', async () => {
+    const restoredFilter = {
+      $and: [
+        { status: { handle: 'open' } },
+        {
+          $or: [{ assigneePerson: { $in: [1] } }, { creatorPerson: { $in: [1] } }],
+        },
+      ],
+    }
+    mocks.routeQuery = { filter: JSON.stringify(restoredFilter) }
+    tableReturn.entityTemplates.value = [
+      createPartnerTemplate('assigneePerson'),
+      createPartnerTemplate('creatorPerson'),
+    ]
+    tableReturn.parentFilter.value = restoredFilter
+
+    const subject = useSaplingPartner(ref('ticket'))
+    await mocks.beforeInitialLoad?.()
+
+    expect(subject.selectedPeopleHandles.value).toEqual([1])
+    subject.onSelectedPeoplesUpdate([])
+
+    expect(tableReturn.parentFilter.value).toEqual({
+      $and: [{ status: { handle: 'open' } }],
+    })
+  })
+
+  it('drops an empty restored person selection from a worklist', async () => {
+    const restoredFilter = {
+      $and: [{ status: { handle: 'open' } }, { creatorPerson: { $in: [] } }],
+    }
+    mocks.routeQuery = { filter: JSON.stringify(restoredFilter) }
+    tableReturn.entityTemplates.value = [createPartnerTemplate('creatorPerson')]
+    tableReturn.parentFilter.value = restoredFilter
+
+    const subject = useSaplingPartner(ref('ticket'))
+    await mocks.beforeInitialLoad?.()
+
+    expect(subject.selectedPeopleHandles.value).toEqual([])
+    expect(tableReturn.parentFilter.value).toEqual({
+      $and: [{ status: { handle: 'open' } }],
+    })
+  })
+
   it('keeps the current person default for direct partner navigation', async () => {
     tableReturn.entityTemplates.value = [
       createPartnerTemplate('assigneePerson'),
@@ -227,6 +301,22 @@ describe('useSaplingPartner initial person filter', () => {
     expect(subject.selectedPeopleHandles.value).toEqual([1])
     expect(tableReturn.parentFilter.value).toEqual({
       $or: [{ assigneePerson: { $in: [1] } }, { creatorPerson: { $in: [1] } }],
+    })
+  })
+
+  it('restores the current person for the default partner worklist', async () => {
+    mocks.routeQuery = {
+      filter: JSON.stringify({ assigneeCompany: null }),
+    }
+    tableReturn.entityTemplates.value = [createPartnerTemplate('assigneePerson')]
+    tableReturn.parentFilter.value = { assigneeCompany: null }
+
+    const subject = useSaplingPartner(ref('ticket'))
+    await mocks.beforeInitialLoad?.({ isDefaultWorklistReset: true })
+
+    expect(subject.selectedPeopleHandles.value).toEqual([1])
+    expect(tableReturn.parentFilter.value).toEqual({
+      $or: [{ assigneePerson: { $in: [1] } }],
     })
   })
 

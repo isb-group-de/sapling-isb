@@ -217,7 +217,12 @@ const {
   appendLocalFailedExchange,
 } = useSaplingAiChatMessages()
 const { ratingStateByHandle, updateMessageRating } = useSaplingAiChatRatings(upsertMessage)
-const runtime = useSaplingAiChatRuntimeCatalog(activeSession, loadSaplingAiPreferences())
+const runtime = useSaplingAiChatRuntimeCatalog(
+  activeSession,
+  loadSaplingAiPreferences(),
+  () =>
+    `person:${currentPersonStore.person?.handle ?? 'anonymous'}:impersonator:${currentPersonStore.impersonator?.handle ?? 'none'}`,
+)
 const {
   agentOptions,
   playbookOptions,
@@ -242,6 +247,8 @@ const {
   isVoiceOutputAvailable,
   canUploadImportAttachment,
   loadRuntimeCatalogs,
+  loadTranscriptionCatalogs,
+  loadSpeechCatalogs,
   applyPreferences,
   applyPromptRuntime,
   updateSelectedAgent,
@@ -308,6 +315,7 @@ const voiceInput = useSaplingAiChatVoiceInput({
   isResponseActive: () =>
     isLocalStreamSending() || activeSession.value?.responseStatus === 'responding',
   pushMessage: messageCenter.pushMessage,
+  ensureTranscriptionCatalog: loadTranscriptionCatalogs,
 })
 const {
   isRecordingVoiceInput,
@@ -328,6 +336,7 @@ const speechPlayback = useSaplingAiChatSpeechPlayback({
   upsertMessage,
   reportPlaybackError: () =>
     messageCenter.pushMessage('error', 'ai.speech.playbackFailed', '', 'aiChat'),
+  ensureSpeechCatalog: loadSpeechCatalogs,
 })
 const {
   speechStateByHandle,
@@ -478,11 +487,8 @@ async function openPromptFromScriptButton(detail?: SaplingAiChatPromptEventDetai
 }
 
 const runChatInitialization = createAsyncSingleFlight(async () => {
-  await Promise.all([
-    currentPersonStore.fetchCurrentPerson(),
-    loadTranslations(),
-    loadRuntimeCatalogs(),
-  ])
+  await Promise.all([currentPersonStore.fetchCurrentPerson(), loadTranslations()])
+  await loadRuntimeCatalogs()
   if (currentPersonStore.person?.handle) await reloadSessions()
   hasInitialized.value = true
 })
@@ -492,7 +498,7 @@ async function ensureChatInitialized() {
 }
 
 async function refreshChat() {
-  await Promise.all([loadRuntimeCatalogs(), reloadSessions()])
+  await Promise.all([loadRuntimeCatalogs(true), reloadSessions()])
 }
 
 async function selectSession(session: AiChatSessionItem) {

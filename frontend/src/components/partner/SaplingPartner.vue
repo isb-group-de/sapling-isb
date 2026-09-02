@@ -52,6 +52,7 @@
                 @update:items-per-page="onItemsPerPageUpdate"
                 @update:sort-by="onSortByUpdate"
                 @update:column-filters="onColumnFiltersUpdate"
+                @reset-worklist="resetToDefaultWorklist"
                 @toggle-side-panel="toggleFilterPanel"
                 @select-form-config="selectFormConfig"
                 @set-default-form-config="setDefaultFormConfig"
@@ -224,6 +225,7 @@ const {
   onColumnFiltersUpdate,
   onSortByUpdate,
   onVisibleColumnKeysUpdate,
+  resetToDefaultWorklist,
   selectFormConfig,
   setDefaultFormConfig,
   deletePersonalFormConfig,

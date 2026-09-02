@@ -1,6 +1,6 @@
 // #region Imports
-import { computed, onBeforeUnmount, onMounted, ref, watch, type Ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch, type Ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import ApiGenericService from '@/services/api.generic.service'
 import type { FilterQuery } from '@/services/api.generic.service'
 import { i18n } from '@/i18n'
@@ -46,7 +46,11 @@ const TABLE_VALUE_REFERENCE_KINDS = ['m:1', '1:1']
 
 type InitializeEntityStateOptions = {
   initialSearch?: string
-  beforeInitialLoad?: () => Promise<void> | void
+  beforeInitialLoad?: (context?: SaplingTableInitialLoadContext) => Promise<void> | void
+}
+
+export type SaplingTableInitialLoadContext = {
+  isDefaultWorklistReset: boolean
 }
 
 export type SaplingTableBehaviorOptions = {
@@ -88,6 +92,7 @@ export function useSaplingTable(
   const isDataLoading = ref(false)
   const temporaryVisibleColumnKeys = ref<string[]>([])
   const route = useRoute()
+  const router = useRouter()
   const currentPermissionStore = useCurrentPermissionStore()
   const genericStore = useGenericStore()
   const { pushMessage } = useSaplingMessageCenter()
@@ -97,6 +102,7 @@ export function useSaplingTable(
   let latestInitializationId = 0
   let latestFormConfigSelectionId = 0
   let latestLoadedTableQuerySignature = ''
+  let isResettingDefaultWorklist = false
   // #endregion
 
   // #region Entity Metadata
@@ -249,8 +255,8 @@ export function useSaplingTable(
   /**
    * Applies the first template-defined default ordering to the server query.
    */
-  function initialSort(nextEntityTemplates = entityTemplates.value) {
-    const urlSortBy = getRouteState().sortBy
+  function initialSort(nextEntityTemplates = entityTemplates.value, useRouteSort = true) {
+    const urlSortBy = useRouteSort ? getRouteState().sortBy : []
     if (urlSortBy.length > 0) {
       sortBy.value = urlSortBy
       return
@@ -531,7 +537,7 @@ export function useSaplingTable(
       if (behaviorOptions.applyDefaultOpenChipFilters !== false) {
         await applyDefaultOpenChipColumnFilters(nextEntityTemplates)
       }
-      await options.beforeInitialLoad?.()
+      await options.beforeInitialLoad?.({ isDefaultWorklistReset: false })
     } finally {
       if (
         initializationId === latestInitializationId &&
@@ -603,6 +609,10 @@ export function useSaplingTable(
   // table. Reinitialize only when the entity or effective table URL state
   // (search, paging, sorting, filters) changes.
   watch([entityHandle, routeStateSignature], () => {
+    if (isResettingDefaultWorklist) {
+      return
+    }
+
     if (!autoInitialize && !isInitialized.value) {
       return
     }
@@ -721,6 +731,65 @@ export function useSaplingTable(
     temporaryVisibleColumnKeys.value = [...new Set(value.filter(Boolean))]
   }
 
+  /**
+   * Restores only the worklist state. Personal/global column views stay selected.
+   * The defaults match a direct route load: metadata ordering, open chip values,
+   * and any workspace-specific defaults supplied by beforeInitialLoad.
+   */
+  async function resetToDefaultWorklist(): Promise<void> {
+    if (!entityHandle.value || isResettingDefaultWorklist) {
+      return
+    }
+
+    isResettingDefaultWorklist = true
+    isResettingEntityState.value = true
+    cancelScheduledLoad()
+    activeLoadController?.abort()
+    activeLoadController = null
+    latestLoadRequestId += 1
+    latestLoadedTableQuerySignature = ''
+    isDataLoading.value = false
+
+    try {
+      search.value = ''
+      page.value = 1
+      itemsPerPage.value = itemsPerPageDefault.value
+      sortBy.value = []
+      columnFilters.value = {}
+      parentFilter.value = {}
+
+      initialSort(entityTemplates.value, false)
+      if (behaviorOptions.applyDefaultOpenChipFilters !== false) {
+        await applyDefaultOpenChipColumnFilters(entityTemplates.value)
+      }
+      await getInitializeEntityStateOptions().beforeInitialLoad?.({
+        isDefaultWorklistReset: true,
+      })
+
+      const query = { ...route.query }
+      ;['search', 'page', 'itemsPerPage', 'sortBy', 'filter'].forEach((key) => delete query[key])
+      await router.replace({ path: route.path, query, hash: route.hash })
+      await nextTick()
+
+      replaceSaplingTableUrlState(
+        {
+          search: '',
+          page: 1,
+          itemsPerPage: itemsPerPageDefault.value,
+          defaultItemsPerPage: itemsPerPageDefault.value,
+          sortBy: [],
+          filter: null,
+        },
+        Boolean(isUseQueryParameter),
+      )
+    } finally {
+      isResettingEntityState.value = false
+      isResettingDefaultWorklist = false
+    }
+
+    await loadData()
+  }
+
   function selectFormConfig(handle: number | null): void {
     temporaryVisibleColumnKeys.value = []
     formConfigContext.select(handle)
@@ -780,6 +849,7 @@ export function useSaplingTable(
     onColumnFiltersUpdate,
     onSortByUpdate,
     onVisibleColumnKeysUpdate,
+    resetToDefaultWorklist,
     selectFormConfig,
     setDefaultFormConfig,
     deletePersonalFormConfig,

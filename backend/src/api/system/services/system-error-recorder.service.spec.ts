@@ -1,11 +1,11 @@
-import { SystemErrorRecorderService } from './system-error-recorder.service';
+import {
+  RECORD_SYSTEM_ERROR_SQL,
+  SystemErrorRecorderService,
+} from './system-error-recorder.service';
 
 describe('SystemErrorRecorderService', () => {
   it('groups errors with a stable fingerprint and redacts sensitive values', async () => {
-    const execute = jest
-      .fn()
-      .mockResolvedValueOnce([{ handle: 7 }])
-      .mockResolvedValueOnce([]);
+    const execute = jest.fn().mockResolvedValue([]);
     const em = { getConnection: () => ({ execute }) };
     const service = new SystemErrorRecorderService(
       { fork: () => em } as never,
@@ -28,7 +28,12 @@ describe('SystemErrorRecorderService', () => {
       requestId: 'request-12345678',
     });
 
-    expect(execute).toHaveBeenCalledTimes(2);
+    expect(execute).toHaveBeenCalledTimes(1);
+    expect(RECORD_SYSTEM_ERROR_SQL.match(/\?/g)).toHaveLength(19);
+    const calls = execute.mock.calls as unknown as Array<[string, unknown[]]>;
+    expect(calls[0]?.[1]).toHaveLength(19);
+    expect(calls[0]?.[0]).toContain('with upserted_group as');
+    expect(calls[0]?.[0]).toContain('from upserted_group');
     const serialized = JSON.stringify(execute.mock.calls);
     expect(serialized).not.toContain('user@example.org');
     expect(serialized).not.toContain('abcdefghijklmnopqrstuvwxyz123456');

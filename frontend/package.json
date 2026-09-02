@@ -1,6 +1,6 @@
 {
   "name": "frontend",
-  "version": "1.145.1425",
+  "version": "1.146.1435",
   "private": true,
   "scripts": {
     "serve": "vite preview",
@@ -42,6 +42,7 @@
     "vue-markdown-render": "^2.3.1",
     "vue-router": "^5.2.0",
     "vuetify": "^4.1.11",
+    "web-vitals": "^6.2.1",
     "webfontloader": "^1.6.28"
   },
   "devDependencies": {

@@ -4,6 +4,8 @@ import type { Request, Response } from 'express';
 import {
   createHttpTelemetryMiddleware,
   HttpTelemetryService,
+  resolveRequestKind,
+  resolveResourceKey,
   resolveRouteGroup,
 } from './http-telemetry.service';
 
@@ -55,6 +57,7 @@ describe('HTTP telemetry middleware', () => {
       expect.any(Number),
       body.length,
       0,
+      'standard',
     );
   });
 });
@@ -71,6 +74,27 @@ describe('HTTP telemetry privacy grouping', () => {
 
   it('does not persist unknown concrete route segments', () => {
     expect(resolveRouteGroup('/api/private-customer-route/acme')).toBe('other');
+  });
+
+  it('classifies known streaming operations and bounded resources', () => {
+    expect(
+      resolveRequestKind({
+        method: 'GET',
+        baseUrl: '/api/current',
+        route: { path: 'openTaskCountEvents' },
+      } as never),
+    ).toBe('stream');
+    expect(
+      resolveRequestKind({ method: 'GET', path: '/api/current/meta' } as never),
+    ).toBe('standard');
+    expect(
+      resolveResourceKey({ params: { entityHandle: 'person' } } as never),
+    ).toBe('person');
+    expect(
+      resolveResourceKey({
+        params: { entityHandle: 'invalid/value' },
+      } as never),
+    ).toBe('');
   });
 
   it('attributes impersonated and API-token traffic without request details', async () => {
@@ -124,17 +148,50 @@ describe('HTTP telemetry privacy grouping', () => {
       5,
       15,
     );
+    service.record(
+      {
+        method: 'GET',
+        baseUrl: '/api/current',
+        route: { path: 'openTaskCountEvents' },
+      } as never,
+      499,
+      5000,
+      0,
+      20,
+      'stream',
+    );
     await service.flush();
 
-    expect(execute).toHaveBeenCalledTimes(2);
-    const calls = execute.mock.calls.map((call) => call[1]);
-    expect(calls).toEqual(
+    expect(execute).toHaveBeenCalledTimes(1);
+    const parameters = execute.mock.calls[0]?.[1];
+    const buckets = JSON.parse(parameters?.[0] as string) as Array<
+      Record<string, unknown>
+    >;
+    expect(buckets).toEqual(
       expect.arrayContaining([
-        expect.arrayContaining(['person:1', 1, null, 'session', 'generic']),
-        expect.arrayContaining(['token:42', 7, 42, 'apiToken', 'ai']),
+        expect.objectContaining({
+          attributionKey: 'person:1',
+          personHandle: 1,
+          authKind: 'session',
+          routeGroup: 'generic',
+        }),
+        expect.objectContaining({
+          attributionKey: 'token:42',
+          personHandle: 7,
+          apiTokenHandle: 42,
+          authKind: 'apiToken',
+          routeGroup: 'ai',
+        }),
+        expect.objectContaining({
+          operation: 'GET /api/current/openTaskCountEvents',
+          requestKind: 'stream',
+          clientErrorCount: 0,
+          abortedCount: 1,
+        }),
       ]),
     );
-    expect(JSON.stringify(calls)).not.toContain('secret');
-    expect(JSON.stringify(calls)).not.toContain('never-store-this');
+    expect(parameters?.[1]).toBe('test');
+    expect(JSON.stringify(parameters)).not.toContain('secret');
+    expect(JSON.stringify(parameters)).not.toContain('never-store-this');
   });
 });

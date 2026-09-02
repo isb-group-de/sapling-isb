@@ -65,5 +65,9 @@ describe('SystemCheckService', () => {
       expect.stringContaining('delete from "system_canary_record_item"'),
       [expect.stringMatching(/^canary-/)],
     );
+    expect(execute).toHaveBeenCalledWith(
+      expect.stringContaining(`"status" = 'failed'`),
+      ['test'],
+    );
   });
 });

@@ -1,0 +1,68 @@
+[
+  {
+    "handle": "memory-warning",
+    "title": "Memory usage warning",
+    "metricKey": "host.memory.usedPercent",
+    "severity": "warning",
+    "comparator": "gt",
+    "threshold": 85,
+    "windowSeconds": 600,
+    "minimumCount": 5,
+    "isActive": true
+  },
+  {
+    "handle": "memory-critical",
+    "title": "Memory usage critical",
+    "metricKey": "host.memory.usedPercent",
+    "severity": "critical",
+    "comparator": "gt",
+    "threshold": 95,
+    "windowSeconds": 300,
+    "minimumCount": 3,
+    "isActive": true
+  },
+  {
+    "handle": "process-rss-warning",
+    "title": "Process RSS warning",
+    "metricKey": "process.memory.rssBytes",
+    "severity": "warning",
+    "comparator": "gt",
+    "threshold": 838860800,
+    "windowSeconds": 600,
+    "minimumCount": 30,
+    "isActive": true
+  },
+  {
+    "handle": "process-rss-critical",
+    "title": "Process RSS critical",
+    "metricKey": "process.memory.rssBytes",
+    "severity": "critical",
+    "comparator": "gt",
+    "threshold": 996147200,
+    "windowSeconds": 300,
+    "minimumCount": 20,
+    "isActive": true
+  },
+  {
+    "handle": "event-loop-warning",
+    "title": "Event loop delay warning",
+    "metricKey": "process.eventLoop.p95Ms",
+    "severity": "warning",
+    "comparator": "gt",
+    "threshold": 100,
+    "windowSeconds": 300,
+    "minimumCount": 20,
+    "isActive": true
+  },
+  {
+    "handle": "event-loop-critical",
+    "title": "Event loop delay critical",
+    "metricKey": "process.eventLoop.p95Ms",
+    "severity": "critical",
+    "comparator": "gt",
+    "threshold": 250,
+    "windowSeconds": 300,
+    "minimumCount": 20,
+    "isActive": true
+  }
+]

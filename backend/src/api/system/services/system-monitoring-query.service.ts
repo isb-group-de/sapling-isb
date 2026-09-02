@@ -76,7 +76,8 @@ export class SystemMonitoringQueryService {
              coalesce(max("duration_max_ms"), 0)::float8 as "durationMaxMs",
              jsonb_build_array(${histogramSumSql()}) as "durationHistogram"
            from "http_metric_bucket_item"
-           where "bucket_start" between ? and ? and "resolution" = ? and "environment_handle" = ?`,
+            where "bucket_start" between ? and ? and "resolution" = ? and "environment_handle" = ?
+              and "request_kind" = 'standard'`,
             [range.from, range.to, chooseHttpResolution(range), environmentId],
           ),
         () =>
@@ -96,7 +97,9 @@ export class SystemMonitoringQueryService {
             em,
             `select coalesce(sum("total_tokens"), 0)::bigint as "totalTokens",
              count(*)::int as "callCount",
-             count(*) filter (where "status" <> 'completed')::int as "errorCount",
+             count(*) filter (where "status" in ('completed', 'failed'))::int as "terminalCount",
+             count(*) filter (where "status" = 'failed')::int as "errorCount",
+             count(*) filter (where "status" in ('interrupted', 'cancelled'))::int as "interruptedCount",
              count(*) filter (where "usage_reported")::int as "reportedCount"
            from "ai_usage_event_item" where "occurred_at" between ? and ? and "environment_handle" = ?`,
             [range.from, range.to, environmentId],
@@ -116,7 +119,8 @@ export class SystemMonitoringQueryService {
              coalesce(sum("server_error_count"), 0)::int as "serverErrorCount",
              coalesce(sum("request_bytes" + "response_bytes"), 0)::bigint as "trafficBytes"
            from "http_metric_bucket_item"
-           where "bucket_start" between ? and ? and "resolution" = ? and "environment_handle" = ?`,
+            where "bucket_start" between ? and ? and "resolution" = ? and "environment_handle" = ?
+              and "request_kind" = 'standard'`,
             [
               previousRange.from,
               previousRange.to,
@@ -202,35 +206,58 @@ export class SystemMonitoringQueryService {
         ? chooseMetricResolution(range)
         : query.resolution;
     const em = this.em.fork();
+    const requestedResolutionRank = metricResolutionRank(resolution);
     const rows = await executeRows(
       em,
-      `select "metric_key" as "metricKey", "dimension_key" as "dimensionKey",
-         "bucket_start" as "capturedAt", "sample_count" as "sampleCount",
-         "minimum", "maximum", "sum", "last",
-         case when "sample_count" > 0 then "sum" / "sample_count" else null end as "average"
-       from "system_metric_bucket_item" metric
-       join "system_telemetry_instance_item" instance on instance."handle" = metric."instance_handle"
-       where metric."bucket_start" between ? and ? and metric."resolution" = ?
-         and instance."environment_handle" = ?
-         and "metric_key" in (?)
-         and (? = '' or "instance_handle" = ?)
-       order by "bucket_start" asc`,
+      `with candidates as (
+        select metric.*,
+          case metric."resolution" when '10s' then 0 when '1m' then 1 when '15m' then 2 else 3 end as "resolutionRank"
+        from "system_metric_bucket_item" metric
+        join "system_telemetry_instance_item" instance on instance."handle" = metric."instance_handle"
+        where metric."bucket_start" between ? and ? and instance."environment_handle" = ?
+          and metric."metric_key" in (?)
+          and (? = '' or metric."instance_handle" = ?)
+      ), choices as (
+        select "metric_key",
+          coalesce(
+            min("resolutionRank") filter (where "resolutionRank" >= ?),
+            max("resolutionRank") filter (where "resolutionRank" < ?)
+          ) as "resolutionRank"
+        from candidates group by "metric_key"
+      )
+      select candidates."metric_key" as "metricKey",
+        candidates."dimension_key" as "dimensionKey",
+        candidates."bucket_start" as "capturedAt",
+        candidates."resolution", candidates."sample_count" as "sampleCount",
+        candidates."minimum", candidates."maximum", candidates."sum", candidates."last",
+        case when candidates."sample_count" > 0
+          then candidates."sum" / candidates."sample_count" else null end as "average"
+      from candidates join choices using ("metric_key", "resolutionRank")
+      order by candidates."bucket_start" asc`,
       [
         range.from,
         range.to,
-        resolution,
         environmentId,
         query.metrics,
         query.instanceId ?? '',
         query.instanceId ?? '',
+        requestedResolutionRank,
+        requestedResolutionRank,
       ],
     );
     const ignoredFilesystems = new Set(
       this.collector.getStatus().ignoredFilesystems ?? [],
     );
+    const resolutionRows = rows as Array<{
+      metricKey: string;
+      resolution: string;
+    }>;
     return {
       range: serializeRange(range),
       resolution,
+      resolutionByMetric: Object.fromEntries(
+        resolutionRows.map((row) => [row.metricKey, row.resolution]),
+      ),
       series: rows.filter(
         (row) =>
           row.metricKey !== 'filesystem.usedPercent' ||
@@ -243,11 +270,11 @@ export class SystemMonitoringQueryService {
     const range = resolveRange(query);
     const environmentId = query.environment || this.environment.currentId;
     const resolution = chooseHttpResolution(range);
-    const groupColumn = query.groupBy === 'auth' ? 'auth_kind' : 'route_group';
+    const groupExpression = httpGroupSql(query.groupBy);
     const [rows, series] = await Promise.all([
       executeRows(
         this.em.fork(),
-        `select "${groupColumn}" as "group",
+        `select ${groupExpression} as "group",
            sum("request_count")::int as "requestCount",
            sum("client_error_count")::int as "clientErrorCount",
            sum("server_error_count")::int as "serverErrorCount",
@@ -259,18 +286,34 @@ export class SystemMonitoringQueryService {
            max("duration_max_ms")::float8 as "durationMaxMs",
            jsonb_build_array(${histogramSumSql()}) as "durationHistogram"
          from "http_metric_bucket_item"
-         where "bucket_start" between ? and ? and "resolution" = ? and "environment_handle" = ?
-         group by "${groupColumn}" order by "requestCount" desc`,
-        [range.from, range.to, resolution, environmentId],
+          where "bucket_start" between ? and ? and "resolution" = ? and "environment_handle" = ?
+            and (? = 'all' or "request_kind" = ?)
+          group by ${groupExpression} order by "requestCount" desc`,
+        [
+          range.from,
+          range.to,
+          resolution,
+          environmentId,
+          query.requestKind,
+          query.requestKind,
+        ],
       ),
       executeRows(
         this.em.fork(),
         `select 'http.requestCount' as "metricKey", '' as "dimensionKey",
            "bucket_start" as "capturedAt", sum("request_count")::int as "last"
          from "http_metric_bucket_item"
-         where "bucket_start" between ? and ? and "resolution" = ? and "environment_handle" = ?
-         group by "bucket_start" order by "bucket_start" asc`,
-        [range.from, range.to, resolution, environmentId],
+          where "bucket_start" between ? and ? and "resolution" = ? and "environment_handle" = ?
+            and (? = 'all' or "request_kind" = ?)
+          group by "bucket_start" order by "bucket_start" asc`,
+        [
+          range.from,
+          range.to,
+          resolution,
+          environmentId,
+          query.requestKind,
+          query.requestKind,
+        ],
       ),
     ]);
     return {
@@ -323,8 +366,9 @@ export class SystemMonitoringQueryService {
            sum("request_bytes" + "response_bytes") as "traffic",
            max("bucket_start") as "lastActivityAt"
          from "http_metric_bucket_item" h
-         where h."person_handle" = person."handle" and h."resolution" = ?
-           and h."bucket_start" between ? and ? and h."environment_handle" = ?
+          where h."person_handle" = person."handle" and h."resolution" = ?
+            and h."bucket_start" between ? and ? and h."environment_handle" = ?
+            and h."request_kind" = 'standard'
        ) http on true
        left join lateral (
          select sum("total_tokens") as "tokens" from "ai_usage_event_item" a
@@ -342,7 +386,8 @@ export class SystemMonitoringQueryService {
        where exists (
          select 1 from "http_metric_bucket_item" presence
          where presence."person_handle" = person."handle"
-           and presence."resolution" = ? and presence."auth_kind" = 'session'
+            and presence."resolution" = ? and presence."auth_kind" = 'session'
+            and presence."request_kind" = 'standard'
            and presence."environment_handle" = ?
            and presence."bucket_start" between ? and ? and presence."request_count" > 0
        ) or exists (
@@ -380,7 +425,8 @@ export class SystemMonitoringQueryService {
        where exists (
          select 1 from "http_metric_bucket_item" presence
          where presence."person_handle" = person."handle"
-           and presence."resolution" = ? and presence."auth_kind" = 'session'
+            and presence."resolution" = ? and presence."auth_kind" = 'session'
+            and presence."request_kind" = 'standard'
            and presence."environment_handle" = ?
            and presence."bucket_start" between ? and ? and presence."request_count" > 0
        ) or exists (
@@ -430,7 +476,8 @@ export class SystemMonitoringQueryService {
            exists(select 1 from "session_store_item" s where s."person_handle" = person."handle"
              and s."expires_at" > now() and s."last_seen_at" >= ?) as "online"
          from "person_item" person left join "http_metric_bucket_item" h
-           on h."person_handle" = person."handle" and h."resolution" = ? and h."bucket_start" between ? and ? and h."environment_handle" = ?
+            on h."person_handle" = person."handle" and h."resolution" = ? and h."bucket_start" between ? and ? and h."environment_handle" = ?
+              and h."request_kind" = 'standard'
          where person."handle" = ? group by person."handle"`,
         [
           environmentId,
@@ -460,7 +507,8 @@ export class SystemMonitoringQueryService {
            coalesce(sum(h."request_bytes" + h."response_bytes"), 0)::bigint as "traffic"
          from "person_api_token_item" token
          left join "http_metric_bucket_item" h on h."api_token_handle" = token."handle"
-           and h."resolution" = ? and h."bucket_start" between ? and ? and h."environment_handle" = ?
+            and h."resolution" = ? and h."bucket_start" between ? and ? and h."environment_handle" = ?
+            and h."request_kind" = 'standard'
          where token."person_handle" = ?
          group by token."handle" order by token."last_used_at" desc nulls last`,
         [resolution, range.from, range.to, environmentId, personHandle],
@@ -478,7 +526,9 @@ export class SystemMonitoringQueryService {
     const rows = await executeRows(
       this.em.fork(),
       `select ${groupExpression} as "group", count(*)::int as "callCount",
-         count(*) filter (where "status" <> 'completed')::int as "errorCount",
+          count(*) filter (where "status" in ('completed', 'failed'))::int as "terminalCount",
+          count(*) filter (where "status" = 'failed')::int as "errorCount",
+          count(*) filter (where "status" in ('interrupted', 'cancelled'))::int as "interruptedCount",
          count(*) filter (where "usage_reported")::int as "reportedCount",
          coalesce(sum("input_tokens"), 0)::bigint as "inputTokens",
          coalesce(sum("output_tokens"), 0)::bigint as "outputTokens",
@@ -732,10 +782,14 @@ function latestCapturedAt(rows: Array<Record<string, unknown>>): string | null {
 
 function chooseMetricResolution(range: Range): '10s' | '1m' | '15m' | '1h' {
   const duration = range.to.getTime() - range.from.getTime();
-  if (duration <= 48 * 60 * 60 * 1000) return '10s';
-  if (duration <= 7 * 24 * 60 * 60 * 1000) return '1m';
+  if (duration <= 2 * 60 * 60 * 1000) return '10s';
+  if (duration <= 48 * 60 * 60 * 1000) return '1m';
   if (duration <= 30 * 24 * 60 * 60 * 1000) return '15m';
   return '1h';
+}
+
+function metricResolutionRank(resolution: '10s' | '1m' | '15m' | '1h'): number {
+  return { '10s': 0, '1m': 1, '15m': 2, '1h': 3 }[resolution];
 }
 
 function chooseHttpResolution(range: Range): '1m' | '15m' | '1h' {
@@ -763,6 +817,14 @@ function aiGroupSql(groupBy: string): string {
   if (groupBy === 'person') return `coalesce("person_handle"::text, 'system')`;
   if (groupBy === 'day') return `date_trunc('day', "occurred_at")`;
   return `coalesce("provider", 'unknown')`;
+}
+
+function httpGroupSql(groupBy: string): string {
+  if (groupBy === 'auth') return `"auth_kind"`;
+  if (groupBy === 'operation') return `"operation"`;
+  if (groupBy === 'resource')
+    return `coalesce(nullif("resource_key", ''), 'unattributed')`;
+  return `"route_group"`;
 }
 
 function normalizeNumericRecord(record: Record<string, unknown>) {

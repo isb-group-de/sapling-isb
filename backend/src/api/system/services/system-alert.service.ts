@@ -166,7 +166,8 @@ export class SystemAlertService implements OnModuleInit, OnApplicationShutdown {
            case when sum("request_count") > 0
              then sum("server_error_count")::float8 / sum("request_count") * 100 else 0 end as "value",
            coalesce(sum("request_count"), 0)::int as "count"
-         from "http_metric_bucket_item" where "resolution" = '1m' and "bucket_start" >= ? and "environment_handle" = ?`,
+         from "http_metric_bucket_item" where "resolution" = '1m'
+           and "request_kind" = 'standard' and "bucket_start" >= ? and "environment_handle" = ?`,
         [since, this.environment.currentId],
       );
       return normalizeObservations(rows);
@@ -175,9 +176,10 @@ export class SystemAlertService implements OnModuleInit, OnApplicationShutdown {
       const rows = await executeRows(
         em,
         `select '' as "dimension",
-           case when count(*) > 0
-             then count(*) filter (where "status" <> 'completed')::float8 / count(*) * 100 else 0 end as "value",
-           count(*)::int as "count"
+           case when count(*) filter (where "status" in ('completed', 'failed')) > 0
+             then count(*) filter (where "status" = 'failed')::float8 /
+               count(*) filter (where "status" in ('completed', 'failed')) * 100 else 0 end as "value",
+           count(*) filter (where "status" in ('completed', 'failed'))::int as "count"
          from "ai_usage_event_item" where "occurred_at" >= ? and "environment_handle" = ?`,
         [since, this.environment.currentId],
       );
@@ -202,7 +204,8 @@ export class SystemAlertService implements OnModuleInit, OnApplicationShutdown {
            coalesce(sum("request_bytes" + "response_bytes"), 0)::float8 as "value",
            coalesce(sum("request_count"), 0)::int as "count"
          from "http_metric_bucket_item"
-         where "bucket_start" >= ? and "resolution" = '1m' and "person_handle" is not null and "environment_handle" = ?
+          where "bucket_start" >= ? and "resolution" = '1m' and "request_kind" = 'standard'
+            and "person_handle" is not null and "environment_handle" = ?
          group by "person_handle"`,
         [since, this.environment.currentId],
       );
@@ -218,7 +221,8 @@ export class SystemAlertService implements OnModuleInit, OnApplicationShutdown {
         em,
         `select jsonb_build_array(${histogram}) as "histogram",
            coalesce(sum("request_count"), 0)::int as "count"
-         from "http_metric_bucket_item" where "resolution" = '1m' and "bucket_start" >= ? and "environment_handle" = ?`,
+         from "http_metric_bucket_item" where "resolution" = '1m'
+           and "request_kind" = 'standard' and "bucket_start" >= ? and "environment_handle" = ?`,
         [since, this.environment.currentId],
       );
       const count = Number(rows[0]?.count ?? 0);
@@ -243,14 +247,31 @@ export class SystemAlertService implements OnModuleInit, OnApplicationShutdown {
     }
     const rows = await executeRows(
       em,
-      `select "dimension_key" as "dimension", avg("sum" / greatest("sample_count", 1))::float8 as "value",
+      `with chosen_resolution as (
+        select metric."resolution"
+        from "system_metric_bucket_item" metric
+        join "system_telemetry_instance_item" instance on instance."handle" = metric."instance_handle"
+        where metric."metric_key" = ? and metric."bucket_start" >= ?
+          and instance."environment_handle" = ?
+        order by case metric."resolution" when '10s' then 0 when '1m' then 1 when '15m' then 2 else 3 end
+        limit 1
+      )
+      select "dimension_key" as "dimension", avg("sum" / greatest("sample_count", 1))::float8 as "value",
          sum("sample_count")::int as "count"
        from "system_metric_bucket_item" metric
        join "system_telemetry_instance_item" instance on instance."handle" = metric."instance_handle"
-       where "metric_key" = ? and "resolution" = '10s' and "bucket_start" >= ?
+       where "metric_key" = ? and "resolution" = (select "resolution" from chosen_resolution)
+         and "bucket_start" >= ?
          and instance."environment_handle" = ?
        group by "dimension_key"`,
-      [rule.metricKey, since, this.environment.currentId],
+      [
+        rule.metricKey,
+        since,
+        this.environment.currentId,
+        rule.metricKey,
+        since,
+        this.environment.currentId,
+      ],
     );
     return normalizeObservations(rows);
   }

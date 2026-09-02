@@ -1,6 +1,7 @@
 import { Transform, Type, type TransformFnParams } from 'class-transformer';
 import {
   ArrayMaxSize,
+  ArrayMinSize,
   IsArray,
   IsBoolean,
   IsIn,
@@ -12,6 +13,7 @@ import {
   MaxLength,
   Max,
   Min,
+  ValidateNested,
 } from 'class-validator';
 
 export class MonitoringRangeQueryDto {
@@ -83,8 +85,21 @@ export class MonitoringUsersQueryDto extends MonitoringRangeQueryDto {
 
 export class MonitoringGroupQueryDto extends MonitoringRangeQueryDto {
   @IsOptional()
-  @IsIn(['route', 'auth', 'provider', 'model', 'person', 'day'])
+  @IsIn([
+    'route',
+    'operation',
+    'resource',
+    'auth',
+    'provider',
+    'model',
+    'person',
+    'day',
+  ])
   groupBy = 'route';
+
+  @IsOptional()
+  @IsIn(['standard', 'stream', 'all'])
+  requestKind: 'standard' | 'stream' | 'all' = 'standard';
 }
 
 export class UpdateSystemAlertRuleDto {
@@ -165,4 +180,13 @@ export class ClientMetricTelemetryDto {
   @IsString()
   @MaxLength(64)
   page!: string;
+}
+
+export class ClientMetricTelemetryBatchDto {
+  @IsArray()
+  @ArrayMinSize(1)
+  @ArrayMaxSize(20)
+  @ValidateNested({ each: true })
+  @Type(() => ClientMetricTelemetryDto)
+  metrics!: ClientMetricTelemetryDto[];
 }

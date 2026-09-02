@@ -16,6 +16,7 @@ interface SaplingTableMobileMenuCallbacks {
   importCsv: () => void
   refresh: () => void
   favorite: () => void
+  resetWorklist: () => void
   selectFavorite: (favorite: FavoriteItem) => void
   deleteFavorite: (favorite: FavoriteItem) => void
   selectFormConfig: (handle: FormConfigSelectionHandle) => void
@@ -55,6 +56,7 @@ export function useSaplingTableMobileMenu(callbacks: SaplingTableMobileMenuCallb
     emitAndCloseMobileMenu: (event: MobileMenuUtilityEvent) => runAndClose(callbacks[event]),
     refreshFromMobileMenu: () => runAndClose(callbacks.refresh),
     favoriteFromMobileMenu: () => runAndClose(callbacks.favorite),
+    resetWorklistFromMobileMenu: () => runAndClose(callbacks.resetWorklist),
     selectFavoriteFromMobileMenu: (favorite: FavoriteItem) =>
       runAndClose(() => callbacks.selectFavorite(favorite)),
     deleteFavoriteFromMobileMenu: (favorite: FavoriteItem) =>

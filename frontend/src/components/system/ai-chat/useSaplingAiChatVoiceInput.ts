@@ -18,6 +18,7 @@ interface SaplingAiChatVoiceInputOptions {
   route: RouteLocationNormalizedLoaded
   sendMessage: () => Promise<void> | void
   isResponseActive: () => boolean
+  ensureTranscriptionCatalog: () => Promise<void>
   pushMessage: (
     type: 'error' | 'info' | 'success' | 'warning',
     message: string,
@@ -36,6 +37,7 @@ export function useSaplingAiChatVoiceInput({
   route,
   sendMessage,
   isResponseActive,
+  ensureTranscriptionCatalog,
   pushMessage,
 }: SaplingAiChatVoiceInputOptions) {
   const isRecordingVoiceInput = ref(false)
@@ -57,8 +59,7 @@ export function useSaplingAiChatVoiceInput({
     () =>
       typeof window !== 'undefined' &&
       typeof MediaRecorder !== 'undefined' &&
-      !!navigator.mediaDevices?.getUserMedia &&
-      hasConfiguredTranscriptionProviders.value,
+      !!navigator.mediaDevices?.getUserMedia,
   )
 
   async function toggleVoiceInput() {
@@ -72,6 +73,13 @@ export function useSaplingAiChatVoiceInput({
     }
 
     if (!isVoiceInputAvailable.value) {
+      pushMessage('info', 'aiChat.voiceInputUnavailable', '', 'aiChat')
+      return
+    }
+
+    try {
+      await ensureTranscriptionCatalog()
+    } catch {
       pushMessage('info', 'aiChat.voiceInputUnavailable', '', 'aiChat')
       return
     }

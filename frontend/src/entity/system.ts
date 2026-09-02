@@ -170,7 +170,14 @@ export interface MonitoringSummary {
     serverErrorRate: number
   }
   users: { onlineUsers: number; usersWithSessions: number }
-  ai: { totalTokens: number; callCount: number; errorCount: number; reportedCount: number }
+  ai: {
+    totalTokens: number
+    callCount: number
+    terminalCount: number
+    errorCount: number
+    interruptedCount: number
+    reportedCount: number
+  }
   incidents: { openCount: number; criticalCount: number }
   slo: {
     apiSuccess: { targetPercent: number; actualPercent: number; met: boolean }
@@ -244,6 +251,7 @@ export interface MonitoringChartPoint {
 }
 
 export interface MonitoringSeriesPoint extends MonitoringChartPoint {
+  resolution: '10s' | '1m' | '15m' | '1h'
   sampleCount: number
   minimum: number
   maximum: number

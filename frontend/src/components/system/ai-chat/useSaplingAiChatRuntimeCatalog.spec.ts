@@ -8,6 +8,7 @@ import type {
 } from '@/entity/entity'
 import type { SaplingAiPreferences } from '@/services/ai-preferences.service'
 import { useSaplingAiChatRuntimeCatalog } from './useSaplingAiChatRuntimeCatalog'
+import { clearRuntimeCatalogCache } from './runtimeCatalogCache'
 
 const api = vi.hoisted(() => ({
   listProviders: vi.fn(),
@@ -67,6 +68,7 @@ function createPreferences(overrides: Partial<SaplingAiPreferences> = {}): Sapli
 
 describe('useSaplingAiChatRuntimeCatalog', () => {
   beforeEach(() => {
+    clearRuntimeCatalogCache()
     vi.clearAllMocks()
     api.listProviders.mockResolvedValue(providers)
     api.listModels.mockResolvedValue(models)
@@ -147,8 +149,7 @@ describe('useSaplingAiChatRuntimeCatalog', () => {
     expect(runtime.hasRuntimeCatalogLoadError.value).toBe(false)
   })
 
-  it('keeps chat available when an optional speech catalog fails', async () => {
-    api.listSpeechProviders.mockRejectedValue(new Error('temporary speech failure'))
+  it('loads voice catalogs only when the matching capability is requested', async () => {
     const runtime = useSaplingAiChatRuntimeCatalog(ref(null), createPreferences())
 
     await runtime.loadRuntimeCatalogs()
@@ -156,6 +157,16 @@ describe('useSaplingAiChatRuntimeCatalog', () => {
     expect(runtime.hasConfiguredProviders.value).toBe(true)
     expect(runtime.hasLoadedRuntimeCatalog.value).toBe(true)
     expect(runtime.hasRuntimeCatalogLoadError.value).toBe(false)
+    expect(api.listTranscriptionProviders).not.toHaveBeenCalled()
+    expect(api.listSpeechProviders).not.toHaveBeenCalled()
+
+    await runtime.loadTranscriptionCatalogs()
+    await runtime.loadSpeechCatalogs()
+
+    expect(api.listTranscriptionProviders).toHaveBeenCalledTimes(1)
+    expect(api.listTranscriptionModels).toHaveBeenCalledTimes(1)
+    expect(api.listSpeechProviders).toHaveBeenCalledTimes(1)
+    expect(api.listSpeechModels).toHaveBeenCalledTimes(1)
   })
 
   it('exposes a recoverable load error after both core catalog attempts fail', async () => {

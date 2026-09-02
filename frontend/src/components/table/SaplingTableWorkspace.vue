@@ -32,6 +32,7 @@
     @update:sort-by="onSortByUpdate"
     @update:column-filters="onColumnFiltersUpdate"
     @update:search="onSearchUpdate"
+    @reset-worklist="resetToDefaultWorklist"
     @select-form-config="selectFormConfig"
     @set-default-form-config="setDefaultFormConfig"
     @delete-form-config="deleteFormConfig"
@@ -84,6 +85,7 @@ const {
   onColumnFiltersUpdate,
   onSortByUpdate,
   onVisibleColumnKeysUpdate,
+  resetToDefaultWorklist,
   selectFormConfig,
   setDefaultFormConfig,
   deletePersonalFormConfig,

@@ -39,7 +39,7 @@ describe('monitoring query ranges', () => {
     );
     const metrics = ['host.cpu.percent', 'host.memory.usedPercent'];
 
-    await service.getSeries({
+    const result = await service.getSeries({
       metrics,
       resolution: 'auto',
       from: '2026-08-29T00:00:00.000Z',
@@ -50,6 +50,9 @@ describe('monitoring query ranges', () => {
       expect.stringContaining('"metric_key" in (?)'),
       expect.arrayContaining([metrics]),
     );
+    expect(result.resolution).toBe('1m');
+    const calls = execute.mock.calls as unknown as Array<[string, unknown[]]>;
+    expect(calls[0]?.[0]).toContain('choices as');
   });
 
   it('lists only users with interactive activity in the selected range', async () => {
@@ -112,6 +115,7 @@ describe('monitoring query ranges', () => {
 
     const result = await service.getRequests({
       groupBy: 'route',
+      requestKind: 'standard',
       from: '2026-08-29T11:00:00.000Z',
       to: '2026-08-29T13:00:00.000Z',
     });
@@ -125,6 +129,28 @@ describe('monitoring query ranges', () => {
       2,
       expect.stringContaining('group by "bucket_start"'),
       expect.arrayContaining(['1m']),
+    );
+  });
+
+  it('groups standard request telemetry by bounded resources', async () => {
+    const execute = jest.fn().mockResolvedValue([]);
+    const service = new SystemMonitoringQueryService(
+      { fork: () => ({ getConnection: () => ({ execute }) }) } as never,
+      { getStatus: () => ({ lastSampleAt: null }) } as never,
+      { getStatus: () => ({}) } as never,
+      { currentId: 'test' } as never,
+    );
+
+    await service.getRequests({
+      groupBy: 'resource',
+      requestKind: 'standard',
+      from: '2026-08-29T11:00:00.000Z',
+      to: '2026-08-29T13:00:00.000Z',
+    });
+
+    expect(execute).toHaveBeenCalledWith(
+      expect.stringContaining(`nullif("resource_key", '')`),
+      expect.arrayContaining(['standard']),
     );
   });
 

@@ -20,6 +20,8 @@ import { Sapling, SaplingForm } from './global/entity.decorator';
     'attributionKey',
     'routeGroup',
     'operation',
+    'requestKind',
+    'resourceKey',
     'authKind',
   ],
   options: { unique: true },
@@ -149,6 +151,14 @@ export class HttpMetricBucketItem {
   @Sapling(['isReadOnly'])
   @Property({ length: 192, default: '' })
   operation = '';
+
+  @Sapling(['isReadOnly', 'isChip'])
+  @Property({ length: 16, default: 'standard' })
+  requestKind: 'standard' | 'stream' = 'standard';
+
+  @Sapling(['isReadOnly'])
+  @Property({ length: 64, default: '' })
+  resourceKey = '';
 
   @Sapling(['isReadOnly', 'isNumeric'])
   @SaplingForm({

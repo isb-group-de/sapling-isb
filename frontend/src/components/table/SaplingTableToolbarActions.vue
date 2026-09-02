@@ -165,6 +165,12 @@
           />
           <v-divider />
           <v-list-item
+            prepend-icon="mdi-bookmark-off-outline"
+            :title="$t('global.defaultWorklist')"
+            @click="resetWorklistFromMobileMenu"
+          />
+          <v-divider />
+          <v-list-item
             prepend-icon="mdi-bookmark-plus"
             :title="$t('global.saveAsFavorite')"
             @click="favoriteFromMobileMenu"
@@ -296,6 +302,12 @@
           </template>
 
           <v-list density="compact" class="glass-panel" nav>
+            <v-list-item
+              prepend-icon="mdi-bookmark-off-outline"
+              :title="$t('global.defaultWorklist')"
+              @click="emit('resetWorklist')"
+            />
+            <v-divider />
             <v-list-item
               prepend-icon="mdi-bookmark-plus"
               :title="$t('global.saveAsFavorite')"
@@ -539,6 +551,7 @@ const emit = defineEmits<{
   refresh: []
   'update:autoRefreshIntervalMinutes': [value: SaplingTableAutoRefreshInterval | null]
   favorite: []
+  resetWorklist: []
   selectFavorite: [favorite: FavoriteItem]
   deleteFavorite: [favorite: FavoriteItem]
   selectFormConfig: [handle: FormConfigSelectionHandle]
@@ -569,6 +582,7 @@ const {
   emitAndCloseMobileMenu,
   refreshFromMobileMenu,
   favoriteFromMobileMenu,
+  resetWorklistFromMobileMenu,
   selectFavoriteFromMobileMenu,
   deleteFavoriteFromMobileMenu,
   selectFormConfigFromMobileMenu,
@@ -583,6 +597,7 @@ const {
   importCsv: () => emit('importCsv'),
   refresh: () => emit('refresh'),
   favorite: () => emit('favorite'),
+  resetWorklist: () => emit('resetWorklist'),
   selectFavorite: (favorite) => emit('selectFavorite', favorite),
   deleteFavorite: (favorite) => emit('deleteFavorite', favorite),
   selectFormConfig: (handle) => emit('selectFormConfig', handle),

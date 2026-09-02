@@ -68,6 +68,8 @@ async function bootstrap() {
   // Create the NestJS application
   const app = await NestFactory.create(AppModule, { bodyParser: false });
 
+  app.enableShutdownHooks(['SIGTERM', 'SIGINT']);
+
   app.use(createSystemRequestContextMiddleware());
   app.use(createHttpTelemetryMiddleware(app.get(HttpTelemetryService)));
 

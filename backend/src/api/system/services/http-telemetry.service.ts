@@ -10,12 +10,36 @@ import { appendServerTiming } from '../../common/performance-timing.interceptor'
 import { SYSTEM_TELEMETRY_ENABLED } from '../../../constants/project.constants';
 import { TelemetrySpoolService } from './telemetry-spool.service';
 import { SystemTelemetryEnvironmentService } from './system-telemetry-environment.service';
+import { ENTITY_REGISTRY } from '../../../entity/global/entity.registry';
 
 export const HTTP_DURATION_BUCKETS_MS = [
   25, 50, 100, 250, 500, 1000, 2500, 5000, 10000,
 ] as const;
 
 type AuthKind = 'session' | 'apiToken' | 'anonymous' | 'system';
+export type HttpRequestKind = 'standard' | 'stream';
+
+const ROUTE_GROUPS = new Set([
+  'ai',
+  'auth',
+  'calendar',
+  'current',
+  'customer-360',
+  'document',
+  'form-config',
+  'generic',
+  'github',
+  'inbox',
+  'mail',
+  'script',
+  'system',
+  'teams',
+  'template',
+  'webhook',
+]);
+const REGISTERED_ENTITY_HANDLES = new Set(
+  ENTITY_REGISTRY.map((entry) => entry.name),
+);
 
 export type TelemetryRequestContext = {
   authKind?: AuthKind;
@@ -38,6 +62,8 @@ type HttpBucket = {
   authKind: AuthKind;
   routeGroup: string;
   operation: string;
+  requestKind: HttpRequestKind;
+  resourceKey: string;
   requestCount: number;
   clientErrorCount: number;
   serverErrorCount: number;
@@ -61,6 +87,7 @@ export class HttpTelemetryService
   private lastFlushAt: Date | null = null;
   private lastFlushError: string | null = null;
   private activeRequests = 0;
+  private activeStreams = 0;
 
   constructor(
     private readonly em: EntityManager,
@@ -85,6 +112,7 @@ export class HttpTelemetryService
     durationMs: number,
     requestBytes: number,
     responseBytes: number,
+    requestKind: HttpRequestKind = resolveRequestKind(request),
   ): void {
     if (!SYSTEM_TELEMETRY_ENABLED) return;
     const impersonatorHandle = request.user?._impersonator?.handle;
@@ -108,12 +136,15 @@ export class HttpTelemetryService
     const bucketStart = floorDate(new Date(), 60_000);
     const routeGroup = resolveRouteGroup(request.path || request.url || '');
     const operation = resolveOperation(request);
+    const resourceKey = resolveResourceKey(request);
     const key = [
       bucketStart.toISOString(),
       attributionKey,
       authKind,
       routeGroup,
       operation,
+      requestKind,
+      resourceKey,
     ].join('|');
     const bucket =
       this.buckets.get(key) ??
@@ -125,10 +156,13 @@ export class HttpTelemetryService
         authKind,
         routeGroup,
         operation,
+        requestKind,
+        resourceKey,
       });
 
     bucket.requestCount += 1;
-    if (statusCode >= 400 && statusCode < 500) bucket.clientErrorCount += 1;
+    if (statusCode >= 400 && statusCode < 500 && statusCode !== 499)
+      bucket.clientErrorCount += 1;
     if (statusCode >= 500) bucket.serverErrorCount += 1;
     if (statusCode === 499) bucket.abortedCount += 1;
     if (statusCode === 408 || statusCode === 504) bucket.timeoutCount += 1;
@@ -147,16 +181,20 @@ export class HttpTelemetryService
       lastFlushAt: this.lastFlushAt?.toISOString() ?? null,
       lastFlushError: this.lastFlushError,
       activeRequests: this.activeRequests,
+      activeStreams: this.activeStreams,
       spool: this.spool.getStatus(),
     };
   }
 
-  requestStarted(): void {
-    this.activeRequests += 1;
+  requestStarted(kind: HttpRequestKind = 'standard'): void {
+    if (kind === 'stream') this.activeStreams += 1;
+    else this.activeRequests += 1;
   }
 
-  requestFinished(): void {
-    this.activeRequests = Math.max(0, this.activeRequests - 1);
+  requestFinished(kind: HttpRequestKind = 'standard'): void {
+    if (kind === 'stream')
+      this.activeStreams = Math.max(0, this.activeStreams - 1);
+    else this.activeRequests = Math.max(0, this.activeRequests - 1);
   }
 
   async flush(): Promise<void> {
@@ -182,41 +220,24 @@ export class HttpTelemetryService
   }
 
   private async persistBuckets(buckets: HttpBucket[]): Promise<void> {
+    if (buckets.length === 0) return;
     const em = this.em.fork();
     await this.environment.ensure(em);
-    await em.transactional(async (transaction) => {
-      for (const bucket of buckets) {
-        await transaction
-          .getConnection()
-          .execute(buildHttpBucketUpsertSql(), [
-            new Date(bucket.bucketStart),
-            this.environment.currentId,
-            bucket.attributionKey,
-            bucket.personHandle,
-            bucket.apiTokenHandle,
-            bucket.authKind,
-            bucket.routeGroup,
-            bucket.operation,
-            bucket.requestCount,
-            bucket.clientErrorCount,
-            bucket.serverErrorCount,
-            bucket.abortedCount,
-            bucket.timeoutCount,
-            bucket.requestBytes,
-            bucket.responseBytes,
-            bucket.durationSumMs,
-            bucket.durationMaxMs,
-            JSON.stringify(bucket.durationHistogram),
-            bucket.impersonatedCount,
-          ]);
-      }
-    });
+    await em.transactional((transaction) =>
+      transaction
+        .getConnection()
+        .execute(buildHttpBucketUpsertSql(), [
+          JSON.stringify(buckets),
+          this.environment.currentId,
+        ]),
+    );
   }
 }
 
 export function createHttpTelemetryMiddleware(service: HttpTelemetryService) {
   return (request: Request, response: Response, next: NextFunction): void => {
-    service.requestStarted();
+    const startedKind = resolveRequestKind(request);
+    service.requestStarted(startedKind);
     const startedAt = performance.now();
     const declaredRequestBytes = parseContentLength(
       request.headers['content-length'],
@@ -250,13 +271,15 @@ export function createHttpTelemetryMiddleware(service: HttpTelemetryService) {
     const finalize = (statusCode = response.statusCode) => {
       if (finalized) return;
       finalized = true;
-      service.requestFinished();
+      service.requestFinished(startedKind);
+      const requestKind = resolveRequestKind(request, response);
       service.record(
         request as TelemetryRequest,
         statusCode,
         performance.now() - startedAt,
         declaredRequestBytes,
         responseBytes,
+        requestKind,
       );
     };
     response.once('finish', finalize);
@@ -271,23 +294,7 @@ export function resolveRouteGroup(path: string): string {
   const normalized = path.split('?', 1)[0].replace(/^\/+/, '');
   const parts = normalized.split('/').filter(Boolean);
   const candidate = parts[0] === 'api' ? parts[1] : parts[0];
-  const allowed = new Set([
-    'ai',
-    'auth',
-    'calendar',
-    'current',
-    'document',
-    'generic',
-    'github',
-    'inbox',
-    'mail',
-    'script',
-    'system',
-    'teams',
-    'template',
-    'webhook',
-  ]);
-  return candidate && allowed.has(candidate) ? candidate : 'other';
+  return candidate && ROUTE_GROUPS.has(candidate) ? candidate : 'other';
 }
 
 function createBucket(
@@ -300,6 +307,8 @@ function createBucket(
     | 'authKind'
     | 'routeGroup'
     | 'operation'
+    | 'requestKind'
+    | 'resourceKey'
   >,
 ): HttpBucket {
   return {
@@ -341,20 +350,35 @@ function byteLength(value: unknown): number {
   return typeof value === 'string' ? Buffer.byteLength(value) : 0;
 }
 
-function buildHttpBucketUpsertSql(): string {
+export function buildHttpBucketUpsertSql(): string {
   const histogram = Array.from(
     { length: 10 },
     (_, index) =>
       `coalesce(("http_metric_bucket_item"."duration_histogram"->>${index})::int, 0) + coalesce((excluded."duration_histogram"->>${index})::int, 0)`,
   ).join(', ');
-  return `insert into "http_metric_bucket_item" (
-      "bucket_start", "environment_handle", "resolution", "attribution_key", "person_handle",
-      "api_token_handle", "auth_kind", "route_group", "operation", "request_count",
+  return `with buckets as (
+      select * from jsonb_to_recordset(cast(? as jsonb)) as bucket(
+        "bucketStart" timestamptz, "attributionKey" varchar, "personHandle" int,
+        "apiTokenHandle" int, "authKind" varchar, "routeGroup" varchar,
+        "operation" varchar, "requestKind" varchar, "resourceKey" varchar,
+        "requestCount" int, "clientErrorCount" int, "serverErrorCount" int,
+        "abortedCount" int, "timeoutCount" int, "requestBytes" bigint,
+        "responseBytes" bigint, "durationSumMs" float8, "durationMaxMs" float8,
+        "durationHistogram" jsonb, "impersonatedCount" int
+      )
+    )
+    insert into "http_metric_bucket_item" (
+      "environment_handle", "bucket_start", "resolution", "attribution_key", "person_handle",
+      "api_token_handle", "auth_kind", "route_group", "operation", "request_kind", "resource_key", "request_count",
       "client_error_count", "server_error_count", "aborted_count", "timeout_count", "request_bytes",
       "response_bytes", "duration_sum_ms", "duration_max_ms",
       "duration_histogram", "impersonated_count", "created_at"
-    ) values (?, ?, '1m', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, cast(? as jsonb), ?, now())
-    on conflict ("environment_handle", "bucket_start", "resolution", "attribution_key", "route_group", "operation", "auth_kind")
+    ) select ?, "bucketStart", '1m', "attributionKey", "personHandle", "apiTokenHandle",
+      "authKind", "routeGroup", "operation", "requestKind", "resourceKey", "requestCount",
+      "clientErrorCount", "serverErrorCount", "abortedCount", "timeoutCount", "requestBytes",
+      "responseBytes", "durationSumMs", "durationMaxMs", "durationHistogram", "impersonatedCount", now()
+    from buckets
+    on conflict ("environment_handle", "bucket_start", "resolution", "attribution_key", "route_group", "operation", "request_kind", "resource_key", "auth_kind")
     do update set
       "request_count" = "http_metric_bucket_item"."request_count" + excluded."request_count",
       "client_error_count" = "http_metric_bucket_item"."client_error_count" + excluded."client_error_count",
@@ -369,6 +393,33 @@ function buildHttpBucketUpsertSql(): string {
       "impersonated_count" = "http_metric_bucket_item"."impersonated_count" + excluded."impersonated_count"`;
 }
 
+export function resolveRequestKind(
+  request: Request,
+  response?: Response,
+): HttpRequestKind {
+  const operation = resolveOperation(request);
+  if (
+    operation === 'GET /api/current/openTaskCountEvents' ||
+    operation === 'POST /api/ai/chat/stream'
+  )
+    return 'stream';
+  const contentType = response?.getHeader?.('content-type');
+  const serialized = Array.isArray(contentType)
+    ? contentType.join(';')
+    : String(contentType ?? '');
+  return /(?:text\/event-stream|application\/x-ndjson)/i.test(serialized)
+    ? 'stream'
+    : 'standard';
+}
+
+export function resolveResourceKey(request: Request): string {
+  const raw = (request.params as Record<string, unknown> | undefined)
+    ?.entityHandle;
+  return typeof raw === 'string' && REGISTERED_ENTITY_HANDLES.has(raw)
+    ? raw
+    : '';
+}
+
 function resolveOperation(request: Request): string {
   const routePath = (request.route as { path?: unknown } | undefined)?.path;
   const path =
@@ -379,7 +430,7 @@ function resolveOperation(request: Request): string {
           .replace(/\/[0-9]+(?=\/|$)/g, '/:id')
           .replace(/\/[0-9a-f]{8}-[0-9a-f-]{27,36}(?=\/|$)/gi, '/:id');
   const base = request.baseUrl || '';
-  return `${(request.method || 'UNKNOWN').toUpperCase()} ${base}${path}`
+  return `${(request.method || 'UNKNOWN').toUpperCase()} ${base}/${path}`
     .replace(/\/+/g, '/')
     .replace(/[\r\n\0]/g, '')
     .slice(0, 192);

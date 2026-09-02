@@ -19,14 +19,15 @@ export class SystemTelemetryRetentionService
   private timer?: NodeJS.Timeout;
   private startupTimer?: NodeJS.Timeout;
   private running = false;
+  private lastPurgeAt = 0;
 
   constructor(private readonly em: EntityManager) {}
 
   onModuleInit(): void {
     if (!SYSTEM_TELEMETRY_ENABLED) return;
-    this.startupTimer = setTimeout(() => void this.runMaintenance(), 120_000);
+    this.startupTimer = setTimeout(() => void this.runMaintenance(), 60_000);
     this.startupTimer.unref();
-    this.timer = setInterval(() => void this.runMaintenance(), 60 * 60_000);
+    this.timer = setInterval(() => void this.runMaintenance(), 60_000);
     this.timer.unref();
   }
 
@@ -61,7 +62,10 @@ export class SystemTelemetryRetentionService
             await this.rollupSystem(em, '15m', '1h', '1 hour', '30 days');
             await this.rollupHttp(em, '1m', '15m', '15 minutes', '7 days');
             await this.rollupHttp(em, '15m', '1h', '1 hour', '30 days');
-            await this.purge(em);
+            if (Date.now() - this.lastPurgeAt >= 60 * 60_000) {
+              await this.purge(em);
+              this.lastPurgeAt = Date.now();
+            }
           } finally {
             await lockConnection
               .selectNoFrom((builder) =>
@@ -136,12 +140,12 @@ export class SystemTelemetryRetentionService
     await em.getConnection().execute(
       `insert into "http_metric_bucket_item" (
         "environment_handle", "bucket_start", "resolution", "attribution_key", "person_handle", "api_token_handle",
-        "auth_kind", "route_group", "operation", "request_count", "client_error_count", "server_error_count", "aborted_count", "timeout_count",
+        "auth_kind", "route_group", "operation", "request_kind", "resource_key", "request_count", "client_error_count", "server_error_count", "aborted_count", "timeout_count",
         "request_bytes", "response_bytes", "duration_sum_ms", "duration_max_ms",
         "duration_histogram", "impersonated_count", "created_at"
       )
       select "environment_handle", date_bin(interval '${interval}', "bucket_start", timestamp '2000-01-01'), ?,
-        "attribution_key", max("person_handle"), max("api_token_handle"), "auth_kind", "route_group", "operation",
+        "attribution_key", max("person_handle"), max("api_token_handle"), "auth_kind", "route_group", "operation", "request_kind", "resource_key",
         sum("request_count")::int, sum("client_error_count")::int, sum("server_error_count")::int,
         sum("aborted_count")::int, sum("timeout_count")::int,
         sum("request_bytes"), sum("response_bytes"), sum("duration_sum_ms"), max("duration_max_ms"),
@@ -161,12 +165,14 @@ export class SystemTelemetryRetentionService
               and target_bucket."environment_handle" = source."environment_handle"
               and target_bucket."route_group" = source."route_group"
               and target_bucket."operation" = source."operation"
+              and target_bucket."request_kind" = source."request_kind"
+              and target_bucket."resource_key" = source."resource_key"
               and target_bucket."auth_kind" = source."auth_kind"
           )
         )
       group by source."environment_handle", date_bin(interval '${interval}', source."bucket_start", timestamp '2000-01-01'),
-        source."attribution_key", source."auth_kind", source."route_group", source."operation"
-      on conflict ("environment_handle", "bucket_start", "resolution", "attribution_key", "route_group", "operation", "auth_kind")
+        source."attribution_key", source."auth_kind", source."route_group", source."operation", source."request_kind", source."resource_key"
+      on conflict ("environment_handle", "bucket_start", "resolution", "attribution_key", "route_group", "operation", "request_kind", "resource_key", "auth_kind")
       do update set "person_handle" = excluded."person_handle", "api_token_handle" = excluded."api_token_handle",
         "request_count" = excluded."request_count", "client_error_count" = excluded."client_error_count",
         "server_error_count" = excluded."server_error_count", "request_bytes" = excluded."request_bytes",

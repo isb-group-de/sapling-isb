@@ -1,0 +1,14 @@
+[
+  {
+    "entity": "httpMetricBucket",
+    "property": "requestKind",
+    "de": "Anfrageart",
+    "en": "Request kind"
+  },
+  {
+    "entity": "httpMetricBucket",
+    "property": "resourceKey",
+    "de": "Ressource",
+    "en": "Resource"
+  }
+]

@@ -16,6 +16,7 @@ interface UseSaplingAiChatSpeechPlaybackOptions {
   speechModelConfigs: Ref<AiProviderModelItem[]>
   upsertMessage: (message: AiChatMessageItem) => void
   reportPlaybackError: () => void
+  ensureSpeechCatalog: () => Promise<void>
 }
 
 export function useSaplingAiChatSpeechPlayback({
@@ -28,6 +29,7 @@ export function useSaplingAiChatSpeechPlayback({
   speechModelConfigs,
   upsertMessage,
   reportPlaybackError,
+  ensureSpeechCatalog,
 }: UseSaplingAiChatSpeechPlaybackOptions) {
   const activeSpeechAudio = ref<HTMLAudioElement | null>(null)
   const activeSpeechMessageHandle = ref<number | null>(null)
@@ -103,6 +105,12 @@ export function useSaplingAiChatSpeechPlayback({
       return
     }
 
+    try {
+      await ensureSpeechCatalog()
+    } catch {
+      return
+    }
+
     autoRequestedSpeechHandles.add(message.handle)
 
     try {
@@ -123,6 +131,12 @@ export function useSaplingAiChatSpeechPlayback({
   }
 
   async function toggleMessageSpeech(message: AiChatMessageItem) {
+    try {
+      await ensureSpeechCatalog()
+    } catch {
+      reportPlaybackError()
+      return
+    }
     if (message.handle == null) {
       return
     }

@@ -12,6 +12,7 @@ const {
   getEntityTemplateMock,
   listFormConfigsMock,
   setPersonalTableViewDefaultMock,
+  routerReplaceMock,
   routeState,
 } = vi.hoisted(() => ({
   apiFindMock: vi.fn(),
@@ -21,11 +22,13 @@ const {
   getEntityTemplateMock: vi.fn(),
   listFormConfigsMock: vi.fn(),
   setPersonalTableViewDefaultMock: vi.fn(),
+  routerReplaceMock: vi.fn(),
   routeState: { query: {} as Record<string, unknown> },
 }))
 
 vi.mock('vue-router', () => ({
   useRoute: () => routeState,
+  useRouter: () => ({ replace: routerReplaceMock }),
 }))
 
 vi.mock('@/services/api.generic.service', () => ({
@@ -364,6 +367,7 @@ export {
   getEntityTemplateMock,
   listFormConfigsMock,
   setPersonalTableViewDefaultMock,
+  routerReplaceMock,
   routeState,
   mountTestHost,
   mountQueryEnabledTestHost,
@@ -382,6 +386,8 @@ export function resetTableTestMocks(): void {
   getEntityTemplateMock.mockReset()
   listFormConfigsMock.mockReset()
   setPersonalTableViewDefaultMock.mockReset()
+  routerReplaceMock.mockReset()
+  routerReplaceMock.mockResolvedValue(undefined)
   routeState.query = {}
   entityStates.projectionPerson = createEntityState()
 

@@ -10,6 +10,7 @@ import type {
 } from '@/components/filter/saplingWorkFilter.types'
 import { useCurrentPersonStore } from '@/stores/currentPersonStore'
 import { readSaplingTableRouteState } from '@/composables/table/saplingTableRouteState'
+import type { SaplingTableInitialLoadContext } from '@/composables/table/useSaplingTable'
 
 type PartnerHandle = number
 type PartnerFilterClause = Record<string, { $in: PartnerHandle[] }>
@@ -56,6 +57,7 @@ export function useSaplingPartner(entityHandle: Ref<string>) {
     onColumnFiltersUpdate,
     onSortByUpdate,
     onVisibleColumnKeysUpdate,
+    resetToDefaultWorklist,
     selectFormConfig,
     setDefaultFormConfig,
     deletePersonalFormConfig,
@@ -171,19 +173,28 @@ export function useSaplingPartner(entityHandle: Ref<string>) {
   /**
    * Prepares the default partner filter before the first table query is sent.
    */
-  async function prepareInitialPartnerFilter() {
+  async function prepareInitialPartnerFilter(context?: SaplingTableInitialLoadContext) {
     await currentPersonStore.fetchCurrentPerson()
-    restoredParentFilter.value = cloneFilter(parentFilter.value)
+    const isDefaultWorklistReset = context?.isDefaultWorklistReset === true
+    restoredParentFilter.value = isDefaultWorklistReset ? {} : cloneFilter(parentFilter.value)
     const routeFilter = readSaplingTableRouteState(route.query, true).filter
-    const hasExplicitRouteFilter = routeFilter !== null
+    const hasExplicitRouteFilter = !isDefaultWorklistReset && routeFilter !== null
     selectedPeopleHandles.value =
-      hasExplicitRouteFilter || hasOpenHandleQuery() || currentPersonStore.person?.handle == null
+      hasExplicitRouteFilter ||
+      (!isDefaultWorklistReset && hasOpenHandleQuery()) ||
+      currentPersonStore.person?.handle == null
         ? []
         : [currentPersonStore.person.handle]
 
-    hydratePartnerSelectionFromFilter(
-      isFilterRecord(routeFilter) ? routeFilter : restoredParentFilter.value,
-    )
+    if (!isDefaultWorklistReset) {
+      hydratePartnerSelectionFromFilter(
+        isFilterRecord(routeFilter) ? routeFilter : restoredParentFilter.value,
+      )
+      restoredParentFilter.value = removePartnerSelectionFilter(
+        restoredParentFilter.value,
+        partnerTemplates.value,
+      )
+    }
     applyPartnerFilter()
   }
 
@@ -296,6 +307,7 @@ export function useSaplingPartner(entityHandle: Ref<string>) {
     onColumnFiltersUpdate,
     onSortByUpdate,
     onVisibleColumnKeysUpdate,
+    resetToDefaultWorklist,
     selectFormConfig,
     setDefaultFormConfig,
     deletePersonalFormConfig,
@@ -417,6 +429,103 @@ export function extractPartnerHandlesFromFilter(
 
   const handles = collectPartnerHandles(filter, new Set(partnerFieldNames))
   return Array.from(new Set(handles)).sort((left, right) => left - right)
+}
+
+/**
+ * Removes partner-drawer clauses from a restored table filter.
+ * The selected people state owns these clauses after hydration; retaining the
+ * restored copy would make an unchecked person keep filtering saved worklists.
+ */
+export function removePartnerSelectionFilter(
+  filter: Record<string, unknown>,
+  templates: EntityTemplate[],
+): Record<string, unknown> {
+  const partnerFieldNames = new Set(
+    templates
+      .map((template) => template.name?.trim())
+      .filter((name): name is string => Boolean(name)),
+  )
+
+  if (partnerFieldNames.size === 0) {
+    return cloneFilter(filter)
+  }
+
+  return stripPartnerSelectionNode(filter, partnerFieldNames)
+}
+
+function stripPartnerSelectionNode(
+  filter: Record<string, unknown>,
+  partnerFieldNames: Set<string>,
+): Record<string, unknown> {
+  const result: Record<string, unknown> = {}
+
+  Object.entries(filter).forEach(([key, value]) => {
+    if (partnerFieldNames.has(key)) {
+      return
+    }
+
+    if (key === '$and' && Array.isArray(value)) {
+      const clauses = value
+        .map((clause) =>
+          isFilterRecord(clause) ? stripPartnerSelectionNode(clause, partnerFieldNames) : clause,
+        )
+        .filter((clause) => !isEmptyFilterRecord(clause))
+
+      if (clauses.length > 0) {
+        result[key] = clauses
+      }
+      return
+    }
+
+    if (
+      key === '$or' &&
+      Array.isArray(value) &&
+      value.length > 0 &&
+      value.every(
+        (clause) =>
+          isFilterRecord(clause) && isPartnerSelectionOnlyFilter(clause, partnerFieldNames),
+      )
+    ) {
+      return
+    }
+
+    result[key] = cloneFilterValue(value)
+  })
+
+  return result
+}
+
+function isPartnerSelectionOnlyFilter(
+  filter: Record<string, unknown>,
+  partnerFieldNames: Set<string>,
+): boolean {
+  const entries = Object.entries(filter)
+  if (entries.length === 0) {
+    return false
+  }
+
+  return entries.every(([key, value]) => {
+    if (partnerFieldNames.has(key)) {
+      return true
+    }
+
+    if ((key === '$and' || key === '$or') && Array.isArray(value) && value.length > 0) {
+      return value.every(
+        (clause) =>
+          isFilterRecord(clause) && isPartnerSelectionOnlyFilter(clause, partnerFieldNames),
+      )
+    }
+
+    return false
+  })
+}
+
+function isEmptyFilterRecord(value: unknown): boolean {
+  return isFilterRecord(value) && Object.keys(value).length === 0
+}
+
+function cloneFilterValue<T>(value: T): T {
+  return JSON.parse(JSON.stringify(value)) as T
 }
 
 function collectPartnerHandles(filter: unknown, partnerFieldNames: Set<string>): PartnerHandle[] {
