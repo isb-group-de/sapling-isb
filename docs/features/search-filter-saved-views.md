@@ -217,6 +217,8 @@ The default seeded route for worklists of `effortEstimate`, `internalCase`,
 opened with an explicit `filter` query treats that saved filter as authoritative
 and does not additionally select the current person. Direct Partner navigation
 without an explicit filter still starts with the current person selected.
+This also applies to client-side navigation from an already open Partner table:
+asynchronously loaded chip metadata must not reapply the previous person filter.
 
 ## Entity Routes
 

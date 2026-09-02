@@ -162,7 +162,6 @@ export function useSaplingPartner(entityHandle: Ref<string>) {
     try {
       await loadChipFilters()
       syncSelectedChipFiltersFromColumnFilters()
-      applyPartnerFilter()
       await nextTick()
     } finally {
       isHydratingChipFilters = false

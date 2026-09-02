@@ -58,6 +58,7 @@ type MockTableReturn = {
 type MockChipReturn = {
   chipFilters: Ref<SaplingChipFilterGroup[]>
   selectedChipFilters: Ref<Record<string, SaplingFilterHandle[]>>
+  loadChipFilters: ReturnType<typeof vi.fn>
 }
 
 let tableReturn: MockTableReturn
@@ -227,6 +228,36 @@ describe('useSaplingPartner initial person filter', () => {
     expect(tableReturn.parentFilter.value).toEqual({
       $or: [{ assigneePerson: { $in: [1] } }, { creatorPerson: { $in: [1] } }],
     })
+  })
+
+  it('does not reapply a stale person filter while a worklist route is initializing', async () => {
+    let completeChipHydration: (() => void) | undefined
+    chipReturn.loadChipFilters = vi.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          completeChipHydration = resolve
+        }),
+    )
+    tableReturn.entityTemplates.value = [
+      createPartnerTemplate('assigneePerson'),
+      createPartnerTemplate('creatorPerson'),
+    ]
+
+    const subject = useSaplingPartner(ref('ticket'))
+    await mocks.beforeInitialLoad?.()
+    tableReturn.isInitialized.value = true
+    await nextTick()
+
+    mocks.routeQuery.filter = JSON.stringify({
+      $and: [{ status: { handle: { $in: ['open', 'qualify'] } } }, { assigneePerson: null }],
+    })
+    tableReturn.parentFilter.value = {}
+    completeChipHydration?.()
+    await flushPromises()
+    await mocks.beforeInitialLoad?.()
+
+    expect(subject.selectedPeopleHandles.value).toEqual([])
+    expect(tableReturn.parentFilter.value).toEqual({})
   })
 })
 

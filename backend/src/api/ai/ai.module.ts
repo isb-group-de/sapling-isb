@@ -45,6 +45,7 @@ import { SaplingMcpResultFormatterService } from './sapling-mcp-result-formatter
 import { SaplingMcpValueService } from './sapling-mcp-value.service';
 import { SaplingMcpMetadataService } from './sapling-mcp-metadata.service';
 import { SaplingMcpGenericToolService } from './sapling-mcp-generic-tool.service';
+import { SaplingMcpReferenceValueService } from './sapling-mcp-reference-value.service';
 import { SaplingMcpSearchToolService } from './sapling-mcp-search-tool.service';
 import { SaplingMcpImportToolService } from './sapling-mcp-import-tool.service';
 import { SaplingMcpExecutionService } from './sapling-mcp-execution.service';
@@ -129,6 +130,7 @@ import { SystemModule } from '../system/system.module';
     SaplingMcpValueService,
     SaplingMcpMetadataService,
     SaplingMcpGenericToolService,
+    SaplingMcpReferenceValueService,
     SaplingMcpSearchToolService,
     SaplingMcpImportToolService,
     SaplingMcpExecutionService,

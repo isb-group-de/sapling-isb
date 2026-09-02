@@ -41,7 +41,8 @@ surface components before adding local CSS.
 - `SaplingFrameworkAiAgentBuilder.css` and
   `SaplingFrameworkAiAgentBuilderResponsive.css`: AI agent-builder workspaces,
   traces, and responsive behavior
-- `SaplingFrameworkDialogs.css`, `SaplingFrameworkDialogWorkflows.css`, and
+- `SaplingFrameworkDialogs.css`, `SaplingFrameworkAccountSecurity.css`,
+  `SaplingFrameworkDialogWorkflows.css`, and
   `SaplingFrameworkDialogFrames.css`: dialog shells, account, help, conflict,
   template, access-pending, and responsive dialog workflows
 - `SaplingFrameworkDialogUtilities.css`: focused help, delete-impact, and

@@ -137,11 +137,11 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useDisplay } from 'vuetify'
-import type { AiChatMessageItem, AiChatSessionItem } from '@/entity/entity'
+import type { AiChatSessionItem } from '@/entity/entity'
 import SaplingSurface from '@/components/common/SaplingSurface.vue'
 import GhostEasterEgg from '@/components/easter-egg/GhostEasterEgg.vue'
 import SaplingAiChatConversation from '@/components/system/ai-chat/SaplingAiChatConversation.vue'
@@ -155,33 +155,23 @@ import { useSaplingAiChatSessions } from '@/components/system/ai-chat/useSapling
 import { useSaplingAiChatSpeechPlayback } from '@/components/system/ai-chat/useSaplingAiChatSpeechPlayback'
 import { useSaplingAiChatStream } from '@/components/system/ai-chat/useSaplingAiChatStream'
 import { useSaplingAiChatVoiceInput } from '@/components/system/ai-chat/useSaplingAiChatVoiceInput'
+import { useSaplingAiChatRatings } from '@/components/system/ai-chat/useSaplingAiChatRatings'
+import { useSaplingAiChatLifecycle } from '@/components/system/ai-chat/useSaplingAiChatLifecycle'
+import {
+  createAsyncSingleFlight,
+  SAPLING_AI_CHAT_OVERLAY_Z_INDEX,
+  SAPLING_AI_CHAT_TITLE_PREVIEW_LIMIT as TITLE_PREVIEW_LIMIT,
+  type SaplingAiChatPromptEventDetail,
+} from '@/components/system/ai-chat/saplingAiChat.utils'
 import { useTranslationLoader } from '@/composables/generic/useTranslationLoader'
 import { useGhostEasterEgg } from '@/composables/easter-egg/useGhostEasterEgg'
 import { useSaplingAiChat } from '@/composables/system/useSaplingAiChat'
 import { useSaplingMessageCenter } from '@/composables/system/useSaplingMessageCenter'
 import { useCurrentPersonStore } from '@/stores/currentPersonStore'
-import { SAPLING_AI_CHAT_PROMPT_EVENT } from '@/utils/saplingScriptResultUtil'
-import {
-  SAPLING_AI_PREFERENCES_UPDATED_EVENT,
-  loadSaplingAiPreferences,
-  type SaplingAiPreferences,
-} from '@/services/ai-preferences.service'
+import { loadSaplingAiPreferences } from '@/services/ai-preferences.service'
 import { openSaplingAccountDialog } from '@/services/account-dialog.service'
-import ApiAiService from '@/services/api.ai.service'
-
-interface SaplingAiChatPromptEventDetail {
-  prompt?: string
-  autoSend?: boolean
-  newChat?: boolean
-  agentHandle?: string
-  playbookHandle?: string
-  contextEntityHandle?: string
-  contextRecordHandle?: string
-}
 
 const assistantName = 'Songbird'
-const TITLE_PREVIEW_LIMIT = 30
-const SAPLING_AI_CHAT_OVERLAY_Z_INDEX = 13000
 const route = useRoute()
 const currentPersonStore = useCurrentPersonStore()
 const messageCenter = useSaplingMessageCenter()
@@ -198,14 +188,10 @@ const isCompactHeaderActions = mdAndDown
 const isMobileLayout = computed(() => smAndDown.value)
 const activeSession = ref<AiChatSessionItem | null>(null)
 const draftMessage = ref('')
-const ratingStateByHandle = ref<Record<number, boolean>>({})
 const selectedContextEntityHandle = ref<string | null>(null)
 const selectedContextRecordHandle = ref<string | null>(null)
 const isSessionRailCollapsed = ref(false)
 const hasInitialized = ref(false)
-let initializationPromise: Promise<void> | null = null
-let streamingClockTimer: number | null = null
-let persistedActivityTimer: number | null = null
 let persistedActivityRefresh: Promise<void> | null = null
 let isLocalStreamSending = () => false
 
@@ -230,6 +216,7 @@ const {
   appendMessageDelta,
   appendLocalFailedExchange,
 } = useSaplingAiChatMessages()
+const { ratingStateByHandle, updateMessageRating } = useSaplingAiChatRatings(upsertMessage)
 const runtime = useSaplingAiChatRuntimeCatalog(activeSession, loadSaplingAiPreferences())
 const {
   agentOptions,
@@ -455,43 +442,17 @@ watch(
   (handle) => void loadQueuedInputs(handle).catch(() => undefined),
 )
 
-onMounted(() => {
-  window.addEventListener('keydown', handleKeydown)
-  window.addEventListener(SAPLING_AI_CHAT_PROMPT_EVENT, handleAiChatPromptEvent as EventListener)
-  window.addEventListener(
-    SAPLING_AI_PREFERENCES_UPDATED_EVENT,
-    handleAiPreferencesUpdated as EventListener,
-  )
-  streamingClockTimer = window.setInterval(() => (streamingClock.value = Date.now()), 1000)
-  persistedActivityTimer = window.setInterval(pollPersistedChatActivity, 1250)
+useSaplingAiChatLifecycle({
+  streamingClock,
+  closePanel,
+  openPrompt: openPromptFromScriptButton,
+  applyPreferences,
+  pollPersistedActivity: pollPersistedChatActivity,
+  abortStream,
+  cancelVoiceInput,
+  stopSpeechPlayback,
+  revokeSpeechObjectUrls,
 })
-
-onUnmounted(() => {
-  window.removeEventListener('keydown', handleKeydown)
-  window.removeEventListener(SAPLING_AI_CHAT_PROMPT_EVENT, handleAiChatPromptEvent as EventListener)
-  window.removeEventListener(
-    SAPLING_AI_PREFERENCES_UPDATED_EVENT,
-    handleAiPreferencesUpdated as EventListener,
-  )
-  abortStream()
-  cancelVoiceInput()
-  stopSpeechPlayback()
-  revokeSpeechObjectUrls()
-  if (streamingClockTimer != null) window.clearInterval(streamingClockTimer)
-  if (persistedActivityTimer != null) window.clearInterval(persistedActivityTimer)
-})
-
-function handleKeydown(event: KeyboardEvent) {
-  if (event.key === 'Escape') closePanel()
-}
-
-function handleAiChatPromptEvent(event: CustomEvent<SaplingAiChatPromptEventDetail>) {
-  void openPromptFromScriptButton(event.detail)
-}
-
-function handleAiPreferencesUpdated(event: CustomEvent<SaplingAiPreferences>) {
-  applyPreferences(event.detail)
-}
 
 function handleDialogModelUpdate(nextIsOpen: boolean) {
   if (!nextIsOpen) closePanel()
@@ -516,25 +477,18 @@ async function openPromptFromScriptButton(detail?: SaplingAiChatPromptEventDetai
   }
 }
 
+const runChatInitialization = createAsyncSingleFlight(async () => {
+  await Promise.all([
+    currentPersonStore.fetchCurrentPerson(),
+    loadTranslations(),
+    loadRuntimeCatalogs(),
+  ])
+  if (currentPersonStore.person?.handle) await reloadSessions()
+  hasInitialized.value = true
+})
+
 async function ensureChatInitialized() {
-  if (hasInitialized.value && hasLoadedRuntimeCatalog.value) return
-  if (initializationPromise) return initializationPromise
-
-  initializationPromise = (async () => {
-    await Promise.all([
-      currentPersonStore.fetchCurrentPerson(),
-      loadTranslations(),
-      loadRuntimeCatalogs(),
-    ])
-    if (currentPersonStore.person?.handle) await reloadSessions()
-    hasInitialized.value = true
-  })()
-
-  try {
-    await initializationPromise
-  } finally {
-    initializationPromise = null
-  }
+  if (!hasInitialized.value || !hasLoadedRuntimeCatalog.value) await runChatInitialization()
 }
 
 async function refreshChat() {
@@ -588,23 +542,6 @@ function applyPromptContext(detail?: SaplingAiChatPromptEventDetail) {
 function updateDraftMessage(value: string) {
   draftMessage.value = value
   if (!value.trim()) activeTranscriptionHandle.value = null
-}
-
-async function updateMessageRating(payload: { message: AiChatMessageItem; rating: -1 | 1 | null }) {
-  const handle = payload.message.handle
-  if (handle == null || handle <= 0 || ratingStateByHandle.value[handle]) return
-
-  ratingStateByHandle.value = { ...ratingStateByHandle.value, [handle]: true }
-  try {
-    const message = await ApiAiService.updateMessageRating(handle, {
-      rating: payload.rating,
-    })
-    upsertMessage(message)
-  } finally {
-    const nextState = { ...ratingStateByHandle.value }
-    delete nextState[handle]
-    ratingStateByHandle.value = nextState
-  }
 }
 
 function toggleSessionRail() {
