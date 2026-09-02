@@ -1,0 +1,4 @@
+interface:
+  display_name: "Sapling Quality Gate"
+  short_description: "Ordnet Module und bereinigt das gesamte Projekt"
+  default_prompt: "Use $sapling-quality-gate to organize related files into cohesive directories, split oversized files, eliminate inline CSS and duplicate styling, and repair and run Sapling's complete frontend and backend quality gate, including all test code."
