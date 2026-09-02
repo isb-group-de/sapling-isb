@@ -3,7 +3,7 @@
 set -Eeuo pipefail
 
 readonly SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-readonly PM2_PROCESS_NAME="sapling-backend"
+readonly PM2_PROCESS_NAME="Sapling"
 readonly CLEANER_PATH="$SCRIPT_DIR/backend/dist/maintenance/clear-failed-queue-jobs.js"
 
 cd "$SCRIPT_DIR"
