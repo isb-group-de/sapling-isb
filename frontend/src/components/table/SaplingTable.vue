@@ -349,11 +349,9 @@
       @cancel="closeTableViewDialog"
     />
 
-    <SaplingTableSavedItemDeleteDialog
+    <SaplingDialogDelete
       :model-value="savedItemDeleteDialog.visible"
-      :kind="savedItemDeleteDialog.kind"
-      :item-title="savedItemDeleteDialog.title"
-      :loading="savedItemDeleteDialog.loading"
+      :item="savedItemDeleteDialog.favorite ?? savedItemDeleteDialog.formConfig"
       @update:model-value="updateSavedItemDeleteDialog"
       @confirm="confirmSavedItemDelete"
       @cancel="closeSavedItemDeleteDialog"
@@ -378,7 +376,7 @@ import SaplingTableMultiSelect from './SaplingTableMultiSelect.vue'
 import SaplingTableOverlays from './SaplingTableOverlays.vue'
 import SaplingTableToolbarActions from './SaplingTableToolbarActions.vue'
 import SaplingTableViewDialog from './SaplingTableViewDialog.vue'
-import SaplingTableSavedItemDeleteDialog from './SaplingTableSavedItemDeleteDialog.vue'
+import SaplingDialogDelete from '@/components/dialog/SaplingDialogDelete.vue'
 import SaplingTableTutorial from '@/components/system/tutorial/SaplingTableTutorial.vue'
 import {
   useSaplingTableComponent,
@@ -746,7 +744,7 @@ function closeSavedItemDeleteDialog(): void {
 }
 
 function updateSavedItemDeleteDialog(value: boolean): void {
-  if (!value) closeSavedItemDeleteDialog()
+  savedItemDeleteDialog.value.visible = value
 }
 
 async function confirmSavedItemDelete(): Promise<void> {

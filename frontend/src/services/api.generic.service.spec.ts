@@ -5,6 +5,7 @@ import { pushApiErrorMessage } from '@/services/api.error.service'
 
 vi.mock('axios', () => ({
   default: {
+    delete: vi.fn(),
     get: vi.fn(),
     isCancel: vi.fn(() => false),
   },
@@ -142,5 +143,24 @@ describe('ApiGenericService pagination', () => {
     ).rejects.toBe(error)
 
     expect(pushApiErrorMessage).not.toHaveBeenCalled()
+  })
+
+  it('treats an explicitly ignored delete 404 as an already reached delete state', async () => {
+    vi.mocked(axios.delete).mockRejectedValueOnce({ response: { status: 404 } })
+
+    await expect(
+      ApiGenericService.delete('favorite', 308, { ignoreNotFound: true }),
+    ).resolves.toEqual({ action: 'deleted' })
+
+    expect(pushApiErrorMessage).not.toHaveBeenCalled()
+  })
+
+  it('still reports and rejects delete failures that were not explicitly ignored', async () => {
+    const error = { response: { status: 404 } }
+    vi.mocked(axios.delete).mockRejectedValueOnce(error)
+
+    await expect(ApiGenericService.delete('ticket', 308)).rejects.toBe(error)
+
+    expect(pushApiErrorMessage).toHaveBeenCalledWith(error, 'exception.unknownError', 'ticket')
   })
 })

@@ -276,7 +276,9 @@ export function useSaplingFavorites() {
     }
 
     if (favorite.handle != null) {
-      await ApiGenericService.delete(FAVORITE_ENTITY_HANDLE, favorite.handle)
+      await ApiGenericService.delete(FAVORITE_ENTITY_HANDLE, favorite.handle, {
+        ignoreNotFound: true,
+      })
     }
 
     favorites.value.splice(favoriteIndex, 1)

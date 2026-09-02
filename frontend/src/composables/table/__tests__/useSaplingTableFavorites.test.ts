@@ -188,7 +188,7 @@ describe('useSaplingTableFavorites', () => {
 
     await subject.deleteFavorite(favorite)
 
-    expect(mocks.apiDelete).toHaveBeenCalledWith('favorite', 12)
+    expect(mocks.apiDelete).toHaveBeenCalledWith('favorite', 12, { ignoreNotFound: true })
     expect(subject.currentEntityFavorites.value).toEqual([])
     expect(mocks.pushMessage).toHaveBeenCalledWith(
       'success',

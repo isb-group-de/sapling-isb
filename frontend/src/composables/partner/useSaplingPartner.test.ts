@@ -52,6 +52,7 @@ type MockTableReturn = {
   entityTemplates: Ref<EntityTemplate[]>
   parentFilter: Ref<Record<string, unknown>>
   isInitialized: Ref<boolean>
+  deletePersonalFormConfig: ReturnType<typeof vi.fn>
 }
 
 type MockChipReturn = {
@@ -229,6 +230,16 @@ describe('useSaplingPartner initial person filter', () => {
   })
 })
 
+describe('useSaplingPartner table-view actions', () => {
+  it('exposes personal table-view deletion to the partner workspace', async () => {
+    const subject = useSaplingPartner(ref('ticket'))
+
+    await subject.deletePersonalFormConfig(17)
+
+    expect(tableReturn.deletePersonalFormConfig).toHaveBeenCalledWith(17)
+  })
+})
+
 function createChipFilter(): SaplingChipFilterGroup {
   return {
     key: 'status',
@@ -318,6 +329,7 @@ function createMockTableReturn() {
     onItemsPerPageUpdate: vi.fn(),
     onColumnFiltersUpdate: vi.fn(),
     onSortByUpdate: vi.fn(),
+    deletePersonalFormConfig: vi.fn().mockResolvedValue(undefined),
   }
 }
 

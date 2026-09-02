@@ -191,7 +191,9 @@ Personal table-column views are deleted through the dedicated
 The backend verifies that the saved configuration has `scope = person` and that
 its `scopeHandle` matches the authenticated person. The synthetic standard view,
 global views, role views, and views owned by another person are never deletable
-through this path.
+through this path. The table toolbar uses the shared `SaplingDialogDelete`
+confirmation UI for both personal worklists and personal table views; the
+dedicated endpoint remains responsible for the table-view ownership check.
 
 ## Favorite Navigation
 

@@ -10,7 +10,10 @@
       isCancelAction ? $t('global.cancelSyncedEventQuestion') : $t('global.confirmDeleteQuestion')
     "
     :tilt="tilt"
-    card-class="sapling-dialog-delete-card"
+    :card-class="{
+      'sapling-dialog-delete-card': true,
+      'sapling-dialog-delete-card--compact': !hasDeleteDetails && !isImpactLoading,
+    }"
     persistent
     @update:model-value="handleDialogUpdate"
     @enter="handleConfirm"
@@ -157,6 +160,7 @@ const {
   },
   emit,
 )
+const hasDeleteDetails = computed(() => isCancelAction.value || hasReferenceOptions.value)
 
 function getRequiredReferenceLabel(referenceName: string): string {
   const label = t(`${props.entityHandle}.${referenceName}`)

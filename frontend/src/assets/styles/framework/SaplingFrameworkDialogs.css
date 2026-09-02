@@ -54,6 +54,53 @@
   padding-top: var(--sapling-dialog-field-label-clearance);
 }
 
+.sapling-phone-call-dialog__form {
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: column;
+  min-height: 100%;
+  padding-top: var(--sapling-dialog-field-label-clearance);
+}
+
+.sapling-phone-call-dialog__form > :not(.sapling-markdown-field) {
+  flex: 0 0 auto;
+}
+
+.sapling-phone-call-dialog__form > .sapling-markdown-field,
+.sapling-phone-call-dialog__form .sapling-markdown-pane,
+.sapling-phone-call-dialog__form .sapling-markdown-input,
+.sapling-phone-call-dialog__form .sapling-markdown-editor-shell {
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.sapling-phone-call-dialog__form .sapling-markdown-workspace {
+  flex: 1 0 auto;
+  grid-template-rows: minmax(0, 1fr);
+  min-height: 0;
+}
+
+.sapling-phone-call-dialog__form .sapling-markdown-pane__header,
+.sapling-phone-call-dialog__form .sapling-markdown-toolbar {
+  flex: 0 0 auto;
+}
+
+.sapling-phone-call-dialog__form .sapling-markdown-editor,
+.sapling-phone-call-dialog__form .sapling-markdown-preview {
+  flex: 1 0 auto;
+  min-height: var(--sapling-markdown-editor-height);
+}
+
+.sapling-phone-call-dialog__form .sapling-markdown-editor {
+  height: 100% !important;
+}
+
+.sapling-phone-call-dialog__form .sapling-markdown-preview {
+  overflow-y: auto;
+}
+
 .sapling-dialog-compact-card .sapling-dialog-form-body {
   flex: 1 1 auto;
   min-height: 0;
@@ -121,6 +168,23 @@
 
 .sapling-dialog-delete-card .sapling-dialog__footer {
   margin-top: auto;
+}
+
+.sapling-dialog-delete-card--compact {
+  flex: 0 1 auto;
+  height: auto;
+  min-height: 0;
+  max-height: calc(
+    100dvh - var(--sapling-dialog-viewport-inset) - var(--sapling-dialog-viewport-inset)
+  );
+}
+
+.sapling-dialog-delete-card--compact .sapling-dialog-shell {
+  height: auto;
+}
+
+.sapling-dialog-delete-card--compact .sapling-dialog__footer {
+  margin-top: 0;
 }
 
 .sapling-inbox-dialog,

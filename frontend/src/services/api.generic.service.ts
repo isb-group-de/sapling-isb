@@ -62,6 +62,7 @@ export interface GenericDeleteResult {
 
 export interface GenericDeleteOptions {
   cascadeRelations?: string[]
+  ignoreNotFound?: boolean
 }
 
 export interface GenericUpdateConcurrency {
@@ -484,6 +485,10 @@ class ApiGenericService {
       )
       return response.data
     } catch (error: unknown) {
+      if (options.ignoreNotFound && getHttpStatus(error) === 404) {
+        return { action: 'deleted' }
+      }
+
       pushApiErrorMessage(error, 'exception.unknownError', entityHandle)
       throw error
     }
@@ -543,6 +548,14 @@ function getItemHandle(item: unknown): EntityHandleValue | null {
 
   const handle = (item as { handle?: unknown }).handle
   return typeof handle === 'string' || typeof handle === 'number' ? handle : null
+}
+
+function getHttpStatus(error: unknown): number | undefined {
+  if (typeof error !== 'object' || error === null || !('response' in error)) {
+    return undefined
+  }
+
+  return (error as { response?: { status?: number } }).response?.status
 }
 
 function isRequestCanceled(error: unknown): boolean {

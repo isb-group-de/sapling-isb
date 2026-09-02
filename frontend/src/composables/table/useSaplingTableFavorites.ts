@@ -205,7 +205,7 @@ export function useSaplingTableFavorites({
   async function deleteFavorite(favorite: FavoriteItem): Promise<void> {
     if (favorite.handle == null) return
 
-    await ApiGenericService.delete('favorite', favorite.handle)
+    await ApiGenericService.delete('favorite', favorite.handle, { ignoreNotFound: true })
     await loadCurrentEntityFavorites()
     pushMessage(
       'success',

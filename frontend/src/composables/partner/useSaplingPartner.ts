@@ -58,6 +58,7 @@ export function useSaplingPartner(entityHandle: Ref<string>) {
     onVisibleColumnKeysUpdate,
     selectFormConfig,
     setDefaultFormConfig,
+    deletePersonalFormConfig,
     savePersonalTableView,
   } = useSaplingTable(entityHandle, undefined, true, true, () => ({
     beforeInitialLoad: prepareInitialPartnerFilter,
@@ -298,6 +299,7 @@ export function useSaplingPartner(entityHandle: Ref<string>) {
     onVisibleColumnKeysUpdate,
     selectFormConfig,
     setDefaultFormConfig,
+    deletePersonalFormConfig,
     savePersonalTableView,
     onSelectedPeoplesUpdate,
     onSelectedChipFiltersUpdate,

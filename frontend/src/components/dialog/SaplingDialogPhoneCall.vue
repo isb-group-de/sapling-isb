@@ -1,49 +1,56 @@
 <template>
-  <SaplingDialog :model-value="isOpen" size="lg" @update:model-value="handleVisibilityChange">
+  <SaplingDialog
+    :model-value="isOpen"
+    size="xxl"
+    :height="SAPLING_DIALOG_HEIGHT.xl"
+    @update:model-value="handleVisibilityChange"
+  >
     <SaplingDialogCard
-      class="sapling-dialog-compact-card"
+      class="sapling-message-dialog sapling-phone-call-dialog"
       :tilt="false"
       :close="closePhoneDialogAndDiscard"
     >
-      <div class="sapling-dialog-shell">
-        <SaplingDialogHero
-          :loading="isTranslationLoading"
-          :eyebrow="translate('phoneCall.title')"
-          :title="dialogTitle"
-          :subtitle="dialogSubtitle"
-        />
-
-        <div v-if="isTranslationLoading" class="sapling-dialog-form-body">
-          <v-skeleton-loader type="article, article, article" />
-        </div>
-
-        <div v-else class="sapling-dialog-form-body">
-          <v-alert v-if="warningMessage" class="mb-4" type="info" variant="tonal">
-            {{ warningMessage }}
-          </v-alert>
-
-          <SaplingTextField
-            :model-value="phoneNumber"
-            :label="translate('phoneCall.phoneNumber')"
-            prepend-inner-icon="mdi-phone"
-            readonly
-            hide-details="auto"
+      <div class="sapling-message-dialog__shell sapling-phone-call-dialog__shell">
+        <v-card-title class="sapling-message-dialog__header sapling-phone-call-dialog__header">
+          <SaplingDialogHero
+            :loading="isTranslationLoading"
+            :eyebrow="translate('phoneCall.title')"
+            :title="dialogTitle"
+            :subtitle="dialogSubtitle"
           />
+        </v-card-title>
 
-          <SaplingMarkdownField
-            v-model="note"
-            class="mt-4"
-            :label="translate('phoneCall.note')"
-            :rows="6"
-          />
+        <v-card-text class="sapling-message-dialog__content sapling-phone-call-dialog__content">
+          <div class="sapling-message-dialog__scroll sapling-phone-call-dialog__scroll">
+            <v-skeleton-loader
+              v-if="isTranslationLoading"
+              class="sapling-message-dialog__form sapling-phone-call-dialog__form"
+              type="article, article, article"
+            />
 
-          <SaplingCheckbox
-            v-model="reached"
-            class="mt-2"
-            :label="translate('phoneCall.reached')"
-            hide-details
-          />
-        </div>
+            <div v-else class="sapling-message-dialog__form sapling-phone-call-dialog__form">
+              <v-alert v-if="warningMessage" type="info" variant="tonal">
+                {{ warningMessage }}
+              </v-alert>
+
+              <SaplingTextField
+                :model-value="phoneNumber"
+                :label="translate('phoneCall.phoneNumber')"
+                prepend-inner-icon="mdi-phone"
+                readonly
+                hide-details="auto"
+              />
+
+              <SaplingMarkdownField v-model="note" :label="translate('phoneCall.note')" :rows="6" />
+
+              <SaplingCheckbox
+                v-model="reached"
+                :label="translate('phoneCall.reached')"
+                hide-details
+              />
+            </div>
+          </div>
+        </v-card-text>
 
         <SaplingActionBar v-if="!isTranslationLoading">
           <template #leading>
@@ -90,6 +97,7 @@ import SaplingDialogCard from '@/components/dialog/SaplingDialogCard.vue'
 import SaplingDialogHero from '@/components/common/SaplingDialogHero.vue'
 import SaplingDialog from '@/components/common/SaplingDialog.vue'
 import SaplingMarkdownField from '@/components/dialog/fields/SaplingFieldMarkdown.vue'
+import { SAPLING_DIALOG_HEIGHT } from '@/constants/dialog.constants'
 import {
   resolvePhoneDialogSubject,
   useSaplingPhoneDialog,
