@@ -326,14 +326,20 @@ export class MailService {
       created.description = 'Success';
       created.icon = 'mdi-email-check-outline';
       created.color = '#4CAF50';
+      created.isOpen = false;
+      created.sortOrder = 30;
     } else if (handle === 'failed') {
       created.description = 'Failed';
       created.icon = 'mdi-email-remove-outline';
       created.color = '#F44336';
+      created.isOpen = false;
+      created.sortOrder = 10;
     } else {
       created.description = 'Pending';
       created.icon = 'mdi-email-fast-outline';
       created.color = '#FF9800';
+      created.isOpen = true;
+      created.sortOrder = 20;
     }
     await em.persist(created).flush();
     return created;

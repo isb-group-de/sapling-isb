@@ -5,12 +5,11 @@ import { Sapling, SaplingForm } from './global/entity.decorator';
 @Entity()
 export class SalesOpportunityResultStatusItem {
   @ApiProperty()
-  @Sapling(['isOrderASC'])
   @Property({ primary: true, length: 64 })
   handle!: string;
 
   @ApiProperty()
-  @Sapling(['isValue', 'isOrderASC'])
+  @Sapling(['isValue'])
   @SaplingForm({
     order: 100,
     group: 'salesOpportunityResultStatus.groupBasics',

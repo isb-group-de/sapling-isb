@@ -446,7 +446,12 @@ multi-select group for each `m:1` or `1:1` reference marked with
 initial selection uses records where `isOpen` is `true`; other chip filters
 start with all reference records selected. Generic tables apply the same
 `isOpen` convention to `m:1` chip references as a visible default column filter;
-references without an `isOpen` field keep the previous all-values behavior.
+references without an `isOpen` field keep the previous all-values behavior. An
+all-closed catalog intentionally starts with no checkbox selected and a
+no-match filter; it must never fall back to selecting the closed values. Status
+catalogs expose `sortOrder` as their only ordering marker, and seeded values are
+initially numbered alphabetically in steps of ten so administrators can adjust
+their order later.
 
 The employee area also provides one compact segmented control directly below its
 accordion header. Its `Alle`, `Nur ich`, and `Keine` presets use the shared

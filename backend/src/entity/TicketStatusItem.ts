@@ -35,7 +35,7 @@ export class TicketStatusItem {
    * @type {string}
    */
   @ApiProperty()
-  @Sapling(['isValue', 'isOrderASC'])
+  @Sapling(['isValue'])
   @SaplingForm({
     order: 100,
     group: 'ticketStatus.groupContent',
@@ -108,6 +108,22 @@ export class TicketStatusItem {
   })
   @Property({ default: true, nullable: false })
   isOpen?: boolean = true;
+
+  @ApiPropertyOptional({ default: 100 })
+  @Sapling(['isOrderASC'])
+  @SaplingForm({
+    order: 200,
+    group: 'ticketStatus.groupConfiguration',
+    groupOrder: 300,
+    width: 1,
+    visible: true,
+    tableOrder: 200,
+    tableVisible: true,
+    mobileOrder: 200,
+    mobileVisible: false,
+  })
+  @Property({ default: 100, nullable: false })
+  sortOrder?: number = 100;
   //#endregion
 
   //#region Properties: Relation

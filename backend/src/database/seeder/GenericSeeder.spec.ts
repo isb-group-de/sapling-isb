@@ -159,6 +159,63 @@ describe('GenericSeeder', () => {
     );
   });
 
+  it.each(['effortEstimate', 'internalCase', 'salesOpportunity', 'ticket'])(
+    'uses the partner route for seeded %s worklists',
+    async (entityHandle) => {
+      const partnerRoute = { handle: 42, route: `partner/${entityHandle}` };
+      const em = {
+        findOne: jest.fn<(...args: unknown[]) => Promise<typeof partnerRoute>>(
+          () => Promise.resolve(partnerRoute),
+        ),
+      };
+      const seeder = new GenericSeeder() as unknown as SeedItemUpdater;
+
+      const prepared = await seeder.prepareSeedItem(
+        'favoriteTemplate',
+        { name: 'Worklist', entity: entityHandle },
+        em as unknown as EntityManager,
+      );
+
+      expect(em.findOne).toHaveBeenCalledWith(EntityRouteItem, {
+        entity: { handle: entityHandle },
+        route: `partner/${entityHandle}`,
+        group: null,
+      });
+      expect(prepared).toEqual({
+        name: 'Worklist',
+        entity: entityHandle,
+        entityRoute: 42,
+      });
+    },
+  );
+
+  it('keeps the table route as the seeded worklist default for other entities', async () => {
+    const tableRoute = { handle: 17, route: 'table/company' };
+    const em = {
+      findOne: jest.fn<(...args: unknown[]) => Promise<typeof tableRoute>>(() =>
+        Promise.resolve(tableRoute),
+      ),
+    };
+    const seeder = new GenericSeeder() as unknown as SeedItemUpdater;
+
+    const prepared = await seeder.prepareSeedItem(
+      'favoriteTemplate',
+      { name: 'Companies', entity: 'company' },
+      em as unknown as EntityManager,
+    );
+
+    expect(em.findOne).toHaveBeenCalledWith(EntityRouteItem, {
+      entity: { handle: 'company' },
+      route: 'table/company',
+      group: null,
+    });
+    expect(prepared).toEqual({
+      name: 'Companies',
+      entity: 'company',
+      entityRoute: 17,
+    });
+  });
+
   it('updates an existing handle-keyed seed item', async () => {
     class ReferenceItem {}
 

@@ -10,10 +10,12 @@ import type {
 const mocks = vi.hoisted(() => ({
   tableReturn: undefined as unknown,
   chipReturn: undefined as unknown,
+  routeQuery: {} as Record<string, string | undefined>,
+  beforeInitialLoad: undefined as (() => Promise<void> | void) | undefined,
 }))
 
 vi.mock('vue-router', () => ({
-  useRoute: () => ({ query: {} }),
+  useRoute: () => ({ query: mocks.routeQuery }),
 }))
 
 vi.mock('@/stores/currentPersonStore', () => ({
@@ -24,7 +26,12 @@ vi.mock('@/stores/currentPersonStore', () => ({
 }))
 
 vi.mock('@/composables/table/useSaplingTable', () => ({
-  useSaplingTable: () => mocks.tableReturn,
+  useSaplingTable: (...args: unknown[]) => {
+    const optionsFactory = args[4] as
+      (() => { beforeInitialLoad?: () => Promise<void> | void }) | undefined
+    mocks.beforeInitialLoad = optionsFactory?.().beforeInitialLoad
+    return mocks.tableReturn
+  },
 }))
 
 vi.mock('@/composables/filter/useSaplingChipFilters', () => ({
@@ -42,6 +49,8 @@ import {
 
 type MockTableReturn = {
   columnFilters: Ref<Record<string, ColumnFilterItem>>
+  entityTemplates: Ref<EntityTemplate[]>
+  parentFilter: Ref<Record<string, unknown>>
   isInitialized: Ref<boolean>
 }
 
@@ -54,6 +63,8 @@ let tableReturn: MockTableReturn
 let chipReturn: MockChipReturn
 
 beforeEach(() => {
+  mocks.routeQuery = {}
+  mocks.beforeInitialLoad = undefined
   tableReturn = createMockTableReturn()
   chipReturn = createMockChipReturn()
   mocks.tableReturn = tableReturn
@@ -78,6 +89,14 @@ describe('useSaplingPartner filter synchronization helpers', () => {
         'waiting',
       ]),
     ).toBeNull()
+  })
+
+  it('keeps an empty chip selection as an explicit no-match filter', () => {
+    expect(buildChipColumnFilterFromSelection(createChipFilter(), [])).toEqual({
+      operator: 'eq',
+      value: '',
+      relationItems: [{ handle: '__sapling_empty_chip_filter__' }],
+    })
   })
 
   it('hydrates chip selections from table column filters', () => {
@@ -176,6 +195,37 @@ describe('useSaplingPartner chip filter hydration', () => {
       relationItems: [{ handle: 'high' }],
     })
     expect(chipReturn.selectedChipFilters.value.priority).toEqual(['high'])
+  })
+})
+
+describe('useSaplingPartner initial person filter', () => {
+  it('does not add the current person when a worklist supplies an explicit filter', async () => {
+    mocks.routeQuery = {
+      filter: JSON.stringify({ status: { handle: 'open' } }),
+    }
+    tableReturn.entityTemplates.value = [createPartnerTemplate('assigneePerson')]
+    tableReturn.parentFilter.value = { status: { handle: 'open' } }
+
+    const subject = useSaplingPartner(ref('ticket'))
+    await mocks.beforeInitialLoad?.()
+
+    expect(subject.selectedPeopleHandles.value).toEqual([])
+    expect(tableReturn.parentFilter.value).toEqual({ status: { handle: 'open' } })
+  })
+
+  it('keeps the current person default for direct partner navigation', async () => {
+    tableReturn.entityTemplates.value = [
+      createPartnerTemplate('assigneePerson'),
+      createPartnerTemplate('creatorPerson'),
+    ]
+
+    const subject = useSaplingPartner(ref('ticket'))
+    await mocks.beforeInitialLoad?.()
+
+    expect(subject.selectedPeopleHandles.value).toEqual([1])
+    expect(tableReturn.parentFilter.value).toEqual({
+      $or: [{ assigneePerson: { $in: [1] } }, { creatorPerson: { $in: [1] } }],
+    })
   })
 })
 

@@ -20,9 +20,21 @@
           </div>
         </div>
       </div>
-      <v-chip size="small" variant="tonal" :color="section.tone">
-        {{ section.count }}
-      </v-chip>
+      <div class="sapling-row-sm">
+        <v-chip size="small" variant="tonal" :color="section.tone">
+          {{ section.count }}
+        </v-chip>
+        <v-btn
+          v-if="showCompleteEventsAction"
+          size="small"
+          variant="tonal"
+          color="warning"
+          prepend-icon="mdi-calendar-check-outline"
+          @click="emit('complete-events')"
+        >
+          {{ $t('inbox.completeEventsAction') }}
+        </v-btn>
+      </div>
     </div>
 
     <div v-if="section.empty" class="sapling-empty-state-panel sapling-empty-state-panel--compact">
@@ -48,10 +60,12 @@ import SaplingInboxEntryCard from '@/components/account/inbox/SaplingInboxEntryC
 
 defineProps<{
   section: InboxSection
+  showCompleteEventsAction?: boolean
 }>()
 
 const emit = defineEmits<{
   (event: 'open', entry: InboxEntry): void
   (event: 'dismiss', entry: InboxEntry): void
+  (event: 'complete-events'): void
 }>()
 </script>

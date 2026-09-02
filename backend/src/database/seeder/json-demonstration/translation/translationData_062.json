@@ -1,0 +1,22 @@
+[
+  { "entity": "effortEstimateStatus", "property": "isOpen", "de": "Offen", "en": "Open" },
+  { "entity": "effortEstimateStatus", "property": "sortOrder", "de": "Sortierung", "en": "Sort order" },
+  { "entity": "emailDeliveryStatus", "property": "isOpen", "de": "Offen", "en": "Open" },
+  { "entity": "emailDeliveryStatus", "property": "sortOrder", "de": "Sortierung", "en": "Sort order" },
+  { "entity": "eventDeliveryStatus", "property": "isOpen", "de": "Offen", "en": "Open" },
+  { "entity": "eventDeliveryStatus", "property": "sortOrder", "de": "Sortierung", "en": "Sort order" },
+  { "entity": "eventStatus", "property": "sortOrder", "de": "Sortierung", "en": "Sort order" },
+  { "entity": "inboundEmailStatus", "property": "isOpen", "de": "Offen", "en": "Open" },
+  { "entity": "inboundEmailStatus", "property": "sortOrder", "de": "Sortierung", "en": "Sort order" },
+  { "entity": "internalCaseStatus", "property": "sortOrder", "de": "Sortierung", "en": "Sort order" },
+  { "entity": "knowledgeArticleStatus", "property": "isOpen", "de": "Offen", "en": "Open" },
+  { "entity": "marketingCampaignStatus", "property": "isOpen", "de": "Offen", "en": "Open" },
+  { "entity": "marketingCampaignStatus", "property": "sortOrder", "de": "Sortierung", "en": "Sort order" },
+  { "entity": "salesOpportunityResultStatus", "property": "sortOrder", "de": "Sortierung", "en": "Sort order" },
+  { "entity": "salesOpportunityStage", "property": "isOpen", "de": "Offen", "en": "Open" },
+  { "entity": "teamsDeliveryStatus", "property": "isOpen", "de": "Offen", "en": "Open" },
+  { "entity": "teamsDeliveryStatus", "property": "sortOrder", "de": "Sortierung", "en": "Sort order" },
+  { "entity": "ticketStatus", "property": "sortOrder", "de": "Sortierung", "en": "Sort order" },
+  { "entity": "webhookDeliveryStatus", "property": "isOpen", "de": "Offen", "en": "Open" },
+  { "entity": "webhookDeliveryStatus", "property": "sortOrder", "de": "Sortierung", "en": "Sort order" }
+]

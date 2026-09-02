@@ -57,6 +57,14 @@ export function useSaplingDialogEditRelations(options: UseSaplingDialogEditRelat
   const pendingRelationCreateContexts = new Map<string, DialogSaveContext>()
   let nextPendingRelationDraftId = 1
 
+  const hasPendingRelationParent = computed(
+    () =>
+      options.mode.value === 'create' ||
+      (options.mode.value === 'edit' &&
+        options.item.value != null &&
+        options.getItemHandle(options.item.value) == null),
+  )
+
   const relationTemplates = computed(() => {
     if (!options.showReference.value) {
       return []
@@ -76,7 +84,7 @@ export function useSaplingDialogEditRelations(options: UseSaplingDialogEditRelat
   })
 
   const dirtyRelationNames = computed(() =>
-    options.mode.value === 'create'
+    hasPendingRelationParent.value
       ? relationTemplates.value
           .filter(
             (template) =>
@@ -91,7 +99,7 @@ export function useSaplingDialogEditRelations(options: UseSaplingDialogEditRelat
   const hasPendingRelationChanges = computed(
     () =>
       dirtyRelationNames.value.length > 0 ||
-      (options.mode.value === 'create' &&
+      (hasPendingRelationParent.value &&
         relationTemplates.value.some(
           (template) => (relationTableItems.value[template.name]?.length ?? 0) > 0,
         )),
@@ -121,7 +129,7 @@ export function useSaplingDialogEditRelations(options: UseSaplingDialogEditRelat
     relationMutationState.value[template.name] = true
 
     try {
-      if (options.mode.value === 'create') {
+      if (hasPendingRelationParent.value) {
         stageRelations(template, items)
         selectedRelations.value[template.name] = []
         selectedItems.value = []
@@ -191,7 +199,7 @@ export function useSaplingDialogEditRelations(options: UseSaplingDialogEditRelat
     relationMutationState.value[template.name] = true
 
     try {
-      if (options.mode.value === 'create') {
+      if (hasPendingRelationParent.value) {
         const removedIdentities = new Set(
           itemsToRemove
             .map(getStagedRelationIdentity)
@@ -240,7 +248,7 @@ export function useSaplingDialogEditRelations(options: UseSaplingDialogEditRelat
     item: SaplingGenericItem,
     context?: DialogSaveContext,
   ): void {
-    if (options.mode.value !== 'create' || template.kind !== '1:m') {
+    if (!hasPendingRelationParent.value || template.kind !== '1:m') {
       return
     }
 
@@ -326,7 +334,7 @@ export function useSaplingDialogEditRelations(options: UseSaplingDialogEditRelat
   }
 
   function appendPendingRelationsToPayload(payload: SaplingGenericItem): SaplingGenericItem {
-    if (options.mode.value !== 'create') {
+    if (!hasPendingRelationParent.value) {
       return payload
     }
 
@@ -501,7 +509,7 @@ export function useSaplingDialogEditRelations(options: UseSaplingDialogEditRelat
   }
 
   function initializeCreateRelationItems(): void {
-    if (options.mode.value !== 'create' || !options.item.value) {
+    if (!hasPendingRelationParent.value || !options.item.value) {
       return
     }
 
@@ -671,7 +679,7 @@ export function useSaplingDialogEditRelations(options: UseSaplingDialogEditRelat
       const columns = relationTableState.value[template.name]?.entityTemplates ?? []
       const columnFilters = relationTableColumnFilters.value[template.name] || {}
 
-      if (options.mode.value !== 'create' && options.item.value && template.referenceName) {
+      if (!hasPendingRelationParent.value && options.item.value && template.referenceName) {
         const permissions = options.permissions.value ?? []
         const projectedFields = getListProjectionFieldNames(columns, permissions)
         const relations = getReadableReferenceRelationNames(
@@ -709,7 +717,7 @@ export function useSaplingDialogEditRelations(options: UseSaplingDialogEditRelat
         return
       }
 
-      if (options.mode.value !== 'create') {
+      if (!hasPendingRelationParent.value) {
         relationTableItems.value[template.name] = []
         relationTableTotal.value[template.name] = 0
       } else {
@@ -809,7 +817,7 @@ export function useSaplingDialogEditRelations(options: UseSaplingDialogEditRelat
     selectedItems.value = []
     selectedRelations.value = {}
     pendingRelationCreateContexts.clear()
-    if (options.mode.value === 'create') {
+    if (hasPendingRelationParent.value) {
       resetRelationTableItems()
     }
   }

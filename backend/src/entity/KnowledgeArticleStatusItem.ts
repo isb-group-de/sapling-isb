@@ -11,7 +11,7 @@ export class KnowledgeArticleStatusItem {
   handle!: string;
 
   @ApiProperty()
-  @Sapling(['isValue', 'isOrderASC'])
+  @Sapling(['isValue'])
   @SaplingForm({
     order: 100,
     group: 'knowledgeArticleStatus.groupBasics',
@@ -77,6 +77,21 @@ export class KnowledgeArticleStatusItem {
   })
   @Property({ default: 100, nullable: false })
   sortOrder = 100;
+
+  @ApiPropertyOptional({ default: true })
+  @SaplingForm({
+    order: 50,
+    group: 'knowledgeArticleStatus.groupConfiguration',
+    groupOrder: 300,
+    width: 1,
+    visible: true,
+    tableOrder: 50,
+    tableVisible: true,
+    mobileOrder: 50,
+    mobileVisible: false,
+  })
+  @Property({ default: true, nullable: false })
+  isOpen?: boolean = true;
 
   @ApiPropertyOptional({ default: false })
   @SaplingForm({

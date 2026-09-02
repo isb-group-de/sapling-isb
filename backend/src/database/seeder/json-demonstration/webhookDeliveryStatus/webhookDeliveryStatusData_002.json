@@ -1,0 +1,6 @@
+[
+  { "handle": "pending", "isOpen": true, "sortOrder": 10 },
+  { "handle": "success", "isOpen": false, "sortOrder": 20 },
+  { "handle": "failed", "isOpen": false, "sortOrder": 30 },
+  { "handle": "retried", "isOpen": false, "sortOrder": 40 }
+]

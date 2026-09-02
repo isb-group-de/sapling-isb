@@ -187,6 +187,7 @@ describe('useSaplingEventEditor', () => {
       createEventItem({
         recurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=2',
         updatedAt: new Date('2026-07-14T08:00:00.000Z'),
+        participants: [{ handle: 5 }, { handle: 7 }],
       }),
     )
     const laterOccurrence = {
@@ -205,6 +206,7 @@ describe('useSaplingEventEditor', () => {
     expect(harness.editor.isDetachingOccurrence.value).toBe(true)
     expect(harness.editEvent.value?.event?.handle).toBeUndefined()
     expect(harness.editEvent.value?.event?.recurrenceRule).toBeNull()
+    expect(harness.editEvent.value?.event?.participants).toEqual([{ handle: 5 }, { handle: 7 }])
     expect(harness.editEvent.value?.start).toBe(laterOccurrence.start)
   })
 

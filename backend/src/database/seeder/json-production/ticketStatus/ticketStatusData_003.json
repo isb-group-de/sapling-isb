@@ -1,0 +1,9 @@
+[
+  { "handle": "closed", "isOpen": false, "sortOrder": 10 },
+  { "handle": "in_progress", "isOpen": true, "sortOrder": 20 },
+  { "handle": "in_development", "isOpen": true, "sortOrder": 30 },
+  { "handle": "open", "isOpen": true, "sortOrder": 40 },
+  { "handle": "waiting_for_customer_feedback", "isOpen": true, "sortOrder": 50 },
+  { "handle": "waiting_for_supplier_feedback", "isOpen": true, "sortOrder": 60 },
+  { "handle": "waiting", "isOpen": true, "sortOrder": 70 }
+]

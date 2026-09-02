@@ -1,0 +1,68 @@
+[
+  {
+    "entity": "inbox",
+    "property": "completeEventsAction",
+    "de": "Alte Termine abschließen",
+    "en": "Complete old events"
+  },
+  {
+    "entity": "inbox",
+    "property": "completeEventsTitle",
+    "de": "Überfällige Termine abschließen",
+    "en": "Complete overdue events"
+  },
+  {
+    "entity": "inbox",
+    "property": "completeEventsSubtitle",
+    "de": "Wähle den Stichtag, bis zu dem alle überfälligen Termine abgeschlossen werden sollen.",
+    "en": "Choose the cutoff through which all overdue events should be completed."
+  },
+  {
+    "entity": "inbox",
+    "property": "completeEventsCutoffLabel",
+    "de": "Abschließen bis einschließlich",
+    "en": "Complete through and including"
+  },
+  {
+    "entity": "inbox",
+    "property": "completeEventsCutoffInvalid",
+    "de": "Bitte wähle ein gültiges Datum vor heute.",
+    "en": "Choose a valid date before today."
+  },
+  {
+    "entity": "inbox",
+    "property": "completeEventsSeriesWarning",
+    "de": "Bei Serienterminen wird die gesamte Serie abgeschlossen.",
+    "en": "For recurring events, the entire series will be completed."
+  },
+  {
+    "entity": "inbox",
+    "property": "completeEventsCandidateCount",
+    "de": "{count} Termin(e) werden abgeschlossen.",
+    "en": "{count} event(s) will be completed."
+  },
+  {
+    "entity": "inbox",
+    "property": "completeEventsNoCandidates",
+    "de": "Für diesen Stichtag gibt es keine passenden überfälligen Termine.",
+    "en": "There are no matching overdue events for this cutoff."
+  },
+  {
+    "entity": "inbox",
+    "property": "completeEventsConfirm",
+    "de": "Termine abschließen",
+    "en": "Complete events"
+  },
+  {
+    "entity": "inbox",
+    "property": "completeEventsSuccess",
+    "de": "Termine abgeschlossen",
+    "en": "Events completed"
+  },
+  {
+    "entity": "inbox",
+    "property": "completeEventsSuccessDescription",
+    "de": "{count} überfällige(r) Termin(e) wurde(n) abgeschlossen.",
+    "en": "{count} overdue event(s) were completed."
+  }
+]

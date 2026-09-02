@@ -1,0 +1,6 @@
+[
+  { "handle": "archived", "isOpen": false, "sortOrder": 10 },
+  { "handle": "draft", "isOpen": true, "sortOrder": 20 },
+  { "handle": "review", "isOpen": true, "sortOrder": 30 },
+  { "handle": "published", "isOpen": true, "sortOrder": 40 }
+]

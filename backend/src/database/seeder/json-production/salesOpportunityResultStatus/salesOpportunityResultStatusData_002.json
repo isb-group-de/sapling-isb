@@ -1,0 +1,6 @@
+[
+  { "handle": "won", "isOpen": false, "sortOrder": 10 },
+  { "handle": "no_decision", "isOpen": true, "sortOrder": 20 },
+  { "handle": "open", "isOpen": true, "sortOrder": 30 },
+  { "handle": "lost", "isOpen": false, "sortOrder": 40 }
+]

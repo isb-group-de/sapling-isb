@@ -262,16 +262,22 @@ export class TeamsGraphDeliveryService {
         created.description = 'Success';
         created.icon = 'mdi-microsoft-teams';
         created.color = '#4CAF50';
+        created.isOpen = false;
+        created.sortOrder = 30;
         break;
       case 'failed':
         created.description = 'Failed';
         created.icon = 'mdi-microsoft-teams';
         created.color = '#F44336';
+        created.isOpen = false;
+        created.sortOrder = 10;
         break;
       default:
         created.description = 'Pending';
         created.icon = 'mdi-microsoft-teams';
         created.color = '#FF9800';
+        created.isOpen = true;
+        created.sortOrder = 20;
         break;
     }
 

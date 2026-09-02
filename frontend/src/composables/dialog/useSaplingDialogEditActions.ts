@@ -27,6 +27,7 @@ export function useSaplingDialogEditActions({
   hasSupplementalChanges,
   persistSupplementalChanges,
   resetSupplementalChanges,
+  clearDraft,
 }: {
   mode: ComputedRef<DialogState>
   entity: ComputedRef<EntityItem | null>
@@ -45,6 +46,7 @@ export function useSaplingDialogEditActions({
   hasSupplementalChanges?: ComputedRef<boolean>
   persistSupplementalChanges?: () => Promise<boolean>
   resetSupplementalChanges?: () => void
+  clearDraft?: () => void
 }) {
   const pendingSaveAction = ref<DialogSaveAction | null>(null)
   const validationFeedback = ref<SaplingDialogValidationFeedback | null>(null)
@@ -78,6 +80,7 @@ export function useSaplingDialogEditActions({
         relations: ['m:1'],
       },
     )
+    clearDraft?.()
     emit('update:mode', 'edit')
     emit('update:modelValue', true)
     emit('update:item', fullItemResult.data[0] ?? null)
@@ -104,7 +107,10 @@ export function useSaplingDialogEditActions({
       persistPendingRelations,
       complete: (didSave = true) => {
         completeSave(action)
-        if (didSave) syncInitialFormSnapshot()
+        if (didSave) {
+          clearDraft?.()
+          syncInitialFormSnapshot()
+        }
       },
     })
   }
@@ -146,6 +152,7 @@ export function useSaplingDialogEditActions({
   function resetForm(): void {
     if (!isDirty.value) return
     validationFeedback.value = null
+    clearDraft?.()
     resetRelationSelections()
     resetSupplementalChanges?.()
     activeTab.value = 0
@@ -154,6 +161,7 @@ export function useSaplingDialogEditActions({
   }
 
   function closeDialog(): void {
+    clearDraft?.()
     pendingSaveAction.value = null
     validationFeedback.value = null
     unsavedChangesDialog.value = false

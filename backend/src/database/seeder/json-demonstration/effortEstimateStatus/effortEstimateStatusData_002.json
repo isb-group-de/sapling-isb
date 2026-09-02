@@ -1,0 +1,7 @@
+[
+  { "handle": "cancelled", "isOpen": false, "sortOrder": 10 },
+  { "handle": "completed", "isOpen": false, "sortOrder": 20 },
+  { "handle": "in_progress", "isOpen": true, "sortOrder": 30 },
+  { "handle": "new", "isOpen": true, "sortOrder": 40 },
+  { "handle": "open", "isOpen": true, "sortOrder": 50 }
+]

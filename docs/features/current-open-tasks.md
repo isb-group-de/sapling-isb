@@ -116,6 +116,13 @@ occurrence can therefore remain visibly overdue and be completed directly from
 the Inbox. After it is detached and completed, the next generated occurrence
 becomes the Event's open-task date.
 
+From the overdue Inbox section, users can bulk-complete Event records through an
+inclusive cutoff date before today. Selection is based on the same effective
+open-task occurrence used for grouping. The operation runs through generic bulk
+updates, is chunked at 200 records, and therefore preserves the normal update
+permissions and lifecycle hooks. Recurring Events are completed as whole series
+in this explicit bulk workflow.
+
 `useOpenTaskCountEvents()` maps snapshot records to route-aware stream items:
 
 | Kind | Route utility |

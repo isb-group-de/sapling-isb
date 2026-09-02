@@ -70,6 +70,36 @@ describe('useSaplingTable filters and route state', () => {
     )
   })
 
+  it('applies an empty default filter when every chip reference is closed', async () => {
+    loadGenericMock.mockResolvedValue(undefined)
+    apiFindAllMock.mockResolvedValue([
+      { handle: 'completed', description: 'Completed', isOpen: false },
+      { handle: 'cancelled', description: 'Cancelled', isOpen: false },
+    ])
+    apiFindMock.mockResolvedValue({ data: [], meta: { total: 0 } })
+
+    const wrapper = mountTestHost(ref('ticket'))
+    await flushPromises()
+
+    expect(wrapper.vm.columnFilters).toEqual({
+      status: {
+        operator: 'eq',
+        value: '',
+        relationItems: [{ handle: '__sapling_empty_chip_filter__' }],
+      },
+    })
+    expect(apiFindMock).toHaveBeenLastCalledWith(
+      'ticket',
+      expect.objectContaining({
+        filter: {
+          status: {
+            handle: '__sapling_empty_chip_filter__',
+          },
+        },
+      }),
+    )
+  })
+
   it('can skip default open filters for duplicate-check result tables', async () => {
     loadGenericMock.mockResolvedValue(undefined)
     apiFindAllMock.mockResolvedValue([

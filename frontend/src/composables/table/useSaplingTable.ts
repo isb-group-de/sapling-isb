@@ -850,7 +850,7 @@ async function buildDefaultOpenChipColumnFilter(
   }
 
   const openItems = referenceItems.filter((item) => item.isOpen !== false)
-  if (openItems.length === 0 || openItems.length === referenceItems.length) {
+  if (openItems.length === referenceItems.length) {
     return null
   }
 
@@ -861,16 +861,13 @@ async function buildDefaultOpenChipColumnFilter(
     })
     .filter((item): item is SaplingGenericItem => item !== null)
 
-  if (relationItems.length === 0) {
-    return null
-  }
-
   return {
     key: template.key ?? template.name,
     value: {
       operator: 'eq',
       value: '',
-      relationItems,
+      relationItems:
+        relationItems.length > 0 ? relationItems : [{ handle: '__sapling_empty_chip_filter__' }],
     },
   }
 }

@@ -38,7 +38,7 @@ export class SalesOpportunityStageItem {
    * Title or name of the event type.
    */
   @ApiProperty()
-  @Sapling(['isValue', 'isOrderASC'])
+  @Sapling(['isValue'])
   @SaplingForm({
     order: 100,
     group: 'salesOpportunityStage.groupBasics',
@@ -146,6 +146,24 @@ export class SalesOpportunityStageItem {
   })
   @Property({ default: 0, nullable: false, type: 'float' })
   defaultProbability?: number = 0;
+
+  /**
+   * Indicates whether opportunities in this stage belong to the default open view.
+   */
+  @ApiPropertyOptional({ default: true })
+  @SaplingForm({
+    order: 250,
+    group: 'salesOpportunityStage.groupConfiguration',
+    groupOrder: 400,
+    width: 1,
+    visible: true,
+    tableOrder: 250,
+    tableVisible: true,
+    mobileOrder: 250,
+    mobileVisible: false,
+  })
+  @Property({ default: true, nullable: false })
+  isOpen?: boolean = true;
 
   /**
    * Indicates whether this stage closes the opportunity.

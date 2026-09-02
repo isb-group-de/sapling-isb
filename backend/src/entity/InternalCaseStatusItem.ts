@@ -11,7 +11,7 @@ export class InternalCaseStatusItem {
   handle!: string;
 
   @ApiProperty()
-  @Sapling(['isValue', 'isOrderASC'])
+  @Sapling(['isValue'])
   @SaplingForm({
     order: 100,
     group: 'internalCaseStatus.groupContent',
@@ -76,6 +76,22 @@ export class InternalCaseStatusItem {
   })
   @Property({ default: true, nullable: false })
   isOpen?: boolean = true;
+
+  @ApiPropertyOptional({ default: 100 })
+  @Sapling(['isOrderASC'])
+  @SaplingForm({
+    order: 200,
+    group: 'internalCaseStatus.groupConfiguration',
+    groupOrder: 300,
+    width: 1,
+    visible: true,
+    tableOrder: 200,
+    tableVisible: true,
+    mobileOrder: 200,
+    mobileVisible: false,
+  })
+  @Property({ default: 100, nullable: false })
+  sortOrder?: number = 100;
 
   @ApiPropertyOptional({ type: () => InternalCaseItem, isArray: true })
   @OneToMany(() => InternalCaseItem, (internalCase) => internalCase.status)

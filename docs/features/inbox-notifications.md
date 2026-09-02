@@ -206,6 +206,15 @@ occurrence start. Opening such an entry moves to that occurrence and directly
 uses the existing single-occurrence detach workflow, so changing its status to
 completed does not complete or otherwise edit the remaining series.
 
+The overdue section also offers a bulk action for obsolete Event entries. The
+user chooses an inclusive cutoff before today, sees the number of affected
+Events, and confirms before any update is sent. The action uses the generic
+permission-aware bulk mutation endpoint in chunks of at most 200 records, so
+field permissions, change logs, calendar delivery hooks, and open-task refresh
+events remain intact. Because a bulk operation targets persisted Event records,
+a recurring Event is completed as a whole series; the confirmation calls this
+out explicitly.
+
 ## Adding A New Entity To Inbox
 
 1. Ensure the entity has a useful recipient relation such as `assigneePerson`, `creatorPerson`, or a participants collection.

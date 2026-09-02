@@ -15,6 +15,13 @@ import { formatSaplingPhoneNumber } from '../../api/common/sapling-phone.util';
 import fs from 'fs';
 import path from 'path';
 
+const DEFAULT_PARTNER_ROUTE_ENTITIES = new Set([
+  'effortEstimate',
+  'internalCase',
+  'salesOpportunity',
+  'ticket',
+]);
+
 /**
  * @class
  * @version         1.0
@@ -174,9 +181,12 @@ export class GenericSeeder extends Seeder {
       return item;
     }
 
+    const defaultRoute = DEFAULT_PARTNER_ROUTE_ENTITIES.has(relatedEntityHandle)
+      ? `partner/${relatedEntityHandle}`
+      : `table/${relatedEntityHandle}`;
     const entityRoute = await em.findOne(EntityRouteItem, {
       entity: { handle: relatedEntityHandle },
-      route: `table/${relatedEntityHandle}`,
+      route: defaultRoute,
       group: null,
     });
 

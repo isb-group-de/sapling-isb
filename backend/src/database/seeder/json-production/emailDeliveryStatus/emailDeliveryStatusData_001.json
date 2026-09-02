@@ -1,0 +1,5 @@
+[
+  { "handle": "failed", "description": "Failed", "icon": "mdi-email-remove-outline", "color": "#F44336", "isOpen": false, "sortOrder": 10 },
+  { "handle": "pending", "description": "Pending", "icon": "mdi-email-fast-outline", "color": "#FF9800", "isOpen": true, "sortOrder": 20 },
+  { "handle": "success", "description": "Success", "icon": "mdi-email-check-outline", "color": "#4CAF50", "isOpen": false, "sortOrder": 30 }
+]

@@ -10,6 +10,7 @@ import type {
   TicketItem,
 } from '@/entity/entity'
 import ApiCurrentService from '@/services/api.current.service'
+import ApiGenericService from '@/services/api.generic.service'
 import { formatDate, formatDateFromTo, formatDateTimeValue } from '@/utils/saplingFormatUtil'
 import { useRouter, type RouteLocationRaw } from 'vue-router'
 import {
@@ -26,6 +27,13 @@ import {
   type OpenTaskSnapshot,
 } from '@/composables/system/useOpenTaskCountEvents'
 import { getOpenTaskEventOccurrence } from '@/utils/openTaskEvent'
+import {
+  buildEventCompletionTargetChunks,
+  getDefaultEventCompletionCutoff,
+  isValidEventCompletionCutoff,
+  selectOverdueEventsThroughDate,
+} from '@/utils/inboxEventCompletion'
+import { useSaplingMessageCenter } from '@/composables/system/useSaplingMessageCenter'
 
 type CloseEmitter = (event: 'close') => void
 export type InboxEntryKind =
@@ -107,7 +115,11 @@ export function useSaplingInbox(emit: CloseEmitter) {
   const effortEstimates = ref<EffortEstimateItem[]>([])
   const internalCases = ref<InternalCaseItem[]>([])
   const notifications = ref<InboxNotificationItem[]>([])
+  const completeEventsDialog = ref(false)
+  const completeEventsCutoffDate = ref<string | null>(getDefaultEventCompletionCutoff())
+  const isCompletingEvents = ref(false)
   const router = useRouter()
+  const messageCenter = useSaplingMessageCenter()
   const isLoading = computed(() => isTranslationLoading.value || isDataLoading.value)
   //#endregion
 
@@ -409,6 +421,56 @@ export function useSaplingInbox(emit: CloseEmitter) {
     )
     publishOpenTaskSnapshot()
   }
+
+  function openCompleteEventsDialog() {
+    completeEventsCutoffDate.value = getDefaultEventCompletionCutoff()
+    completeEventsDialog.value = true
+  }
+
+  function closeCompleteEventsDialog() {
+    if (!isCompletingEvents.value) {
+      completeEventsDialog.value = false
+    }
+  }
+
+  function validateCompleteEventsCutoff(value: string | null): boolean | string {
+    return value != null && isValidEventCompletionCutoff(value)
+      ? true
+      : t('inbox.completeEventsCutoffInvalid')
+  }
+
+  async function completeOverdueEvents() {
+    const candidates = completeEventsCandidates.value
+    if (candidates.length === 0 || isCompletingEvents.value) {
+      return
+    }
+
+    isCompletingEvents.value = true
+    try {
+      for (const targets of buildEventCompletionTargetChunks(candidates)) {
+        await ApiGenericService.bulkUpdate('event', {
+          targets,
+          changes: { status: 'completed' },
+        })
+      }
+
+      const completedHandles = new Set(candidates.map((event) => event.handle))
+      tasks.value = tasks.value.filter((event) => !completedHandles.has(event.handle))
+      publishOpenTaskSnapshot()
+      completeEventsDialog.value = false
+      messageCenter.pushMessage(
+        'success',
+        'inbox.completeEventsSuccess',
+        'inbox.completeEventsSuccessDescription',
+        'event',
+        undefined,
+        { count: candidates.length },
+      )
+    } finally {
+      isCompletingEvents.value = false
+    }
+  }
+
   //#endregion
 
   //#region Derived State
@@ -438,6 +500,12 @@ export function useSaplingInbox(emit: CloseEmitter) {
   }
 
   const overdueEntries = computed(() => getSectionItems('overdue'))
+  const overdueEventCount = computed(
+    () => taskEntries.value.filter((entry) => getSectionKey(entry.dateValue) === 'overdue').length,
+  )
+  const completeEventsCandidates = computed(() =>
+    selectOverdueEventsThroughDate(tasks.value, completeEventsCutoffDate.value ?? ''),
+  )
   const todayEntries = computed(() => getSectionItems('today'))
   const upcomingEntries = computed(() => getSectionItems('upcoming'))
   const laterEntries = computed(() => getSectionItems('later'))
@@ -564,6 +632,15 @@ export function useSaplingInbox(emit: CloseEmitter) {
     hasInboxItems,
     summaryCards,
     sections,
+    overdueEventCount,
+    completeEventsDialog,
+    completeEventsCutoffDate,
+    completeEventsCandidateCount: computed(() => completeEventsCandidates.value.length),
+    isCompletingEvents,
+    openCompleteEventsDialog,
+    closeCompleteEventsDialog,
+    validateCompleteEventsCutoff,
+    completeOverdueEvents,
     openEntry,
     dismissEntry,
     closeDialog,

@@ -63,6 +63,10 @@ export interface WebhookDeliveryStatusItem extends SaplingGenericItem {
   icon?: string
   /** Color associated with the webhook delivery status */
   color: string
+  /** Whether deliveries with this status belong to the default open view */
+  isOpen?: boolean | null
+  /** Configurable display order */
+  sortOrder?: number | null
   /** Webhook deliveries belonging to this status */
   deliveries?: WebhookDeliveryItem[]
   /** Date and time when the status was created */

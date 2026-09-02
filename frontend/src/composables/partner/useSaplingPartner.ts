@@ -9,6 +9,7 @@ import type {
   SaplingFilterHandle,
 } from '@/components/filter/saplingWorkFilter.types'
 import { useCurrentPersonStore } from '@/stores/currentPersonStore'
+import { readSaplingTableRouteState } from '@/composables/table/saplingTableRouteState'
 
 type PartnerHandle = number
 type PartnerFilterClause = Record<string, { $in: PartnerHandle[] }>
@@ -173,12 +174,16 @@ export function useSaplingPartner(entityHandle: Ref<string>) {
   async function prepareInitialPartnerFilter() {
     await currentPersonStore.fetchCurrentPerson()
     restoredParentFilter.value = cloneFilter(parentFilter.value)
+    const routeFilter = readSaplingTableRouteState(route.query, true).filter
+    const hasExplicitRouteFilter = routeFilter !== null
     selectedPeopleHandles.value =
-      hasOpenHandleQuery() || currentPersonStore.person?.handle == null
+      hasExplicitRouteFilter || hasOpenHandleQuery() || currentPersonStore.person?.handle == null
         ? []
         : [currentPersonStore.person.handle]
 
-    hydratePartnerSelectionFromRestoredFilter()
+    hydratePartnerSelectionFromFilter(
+      isFilterRecord(routeFilter) ? routeFilter : restoredParentFilter.value,
+    )
     applyPartnerFilter()
   }
 
@@ -194,11 +199,8 @@ export function useSaplingPartner(entityHandle: Ref<string>) {
     )
   }
 
-  function hydratePartnerSelectionFromRestoredFilter() {
-    const restoredPeopleHandles = extractPartnerHandlesFromFilter(
-      restoredParentFilter.value,
-      partnerTemplates.value,
-    )
+  function hydratePartnerSelectionFromFilter(filter: Record<string, unknown>) {
+    const restoredPeopleHandles = extractPartnerHandlesFromFilter(filter, partnerTemplates.value)
 
     if (restoredPeopleHandles.length > 0) {
       selectedPeopleHandles.value = restoredPeopleHandles
@@ -351,6 +353,10 @@ export function combinePartnerFilters(
 
 function cloneFilter(filter: Record<string, unknown>): Record<string, unknown> {
   return JSON.parse(JSON.stringify(filter)) as Record<string, unknown>
+}
+
+function isFilterRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
 }
 
 export function buildChipColumnFilterFromSelection(

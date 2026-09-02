@@ -34,7 +34,7 @@ export class WebhookDeliveryStatusItem {
    * @type {string}
    */
   @ApiProperty()
-  @Sapling(['isValue', 'isOrderASC'])
+  @Sapling(['isValue'])
   @SaplingForm({
     order: 100,
     group: 'webhookDeliveryStatus.groupContent',
@@ -88,6 +88,37 @@ export class WebhookDeliveryStatusItem {
   })
   @Property({ default: '#4CAF50', length: 32, nullable: false })
   color!: string;
+
+  @ApiPropertyOptional({ default: true })
+  @SaplingForm({
+    order: 100,
+    group: 'webhookDeliveryStatus.groupConfiguration',
+    groupOrder: 300,
+    width: 1,
+    visible: true,
+    tableOrder: 100,
+    tableVisible: true,
+    mobileOrder: 100,
+    mobileVisible: false,
+  })
+  @Property({ default: true, nullable: false })
+  isOpen?: boolean = true;
+
+  @ApiPropertyOptional({ default: 100 })
+  @Sapling(['isOrderASC'])
+  @SaplingForm({
+    order: 200,
+    group: 'webhookDeliveryStatus.groupConfiguration',
+    groupOrder: 300,
+    width: 1,
+    visible: true,
+    tableOrder: 200,
+    tableVisible: true,
+    mobileOrder: 200,
+    mobileVisible: false,
+  })
+  @Property({ default: 100, nullable: false })
+  sortOrder?: number = 100;
   // #endregion
 
   // #region Properties: Relation

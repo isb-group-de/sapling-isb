@@ -198,6 +198,12 @@ workspace while one created in `table/ticket` returns to the generic table.
 Existing favorites without `entityRoute` remain compatible and continue to use
 the `table/<entityHandle>` fallback.
 
+The default seeded route for worklists of `effortEstimate`, `internalCase`,
+`salesOpportunity`, and `ticket` is the Partner workspace. A Partner workspace
+opened with an explicit `filter` query treats that saved filter as authoritative
+and does not additionally select the current person. Direct Partner navigation
+without an explicit filter still starts with the current person selected.
+
 ## Entity Routes
 
 `EntityRouteItem` lets one entity open through different views. Favorites can point to the default table route or a more specific route such as partner/file views.

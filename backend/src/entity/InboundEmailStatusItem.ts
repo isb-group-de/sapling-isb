@@ -11,7 +11,7 @@ export class InboundEmailStatusItem {
   handle!: string;
 
   @ApiProperty()
-  @Sapling(['isValue', 'isOrderASC'])
+  @Sapling(['isValue'])
   @SaplingForm({
     order: 100,
     group: 'inboundEmailStatus.groupContent',
@@ -57,6 +57,37 @@ export class InboundEmailStatusItem {
   })
   @Property({ length: 32, nullable: false, default: '#607D8B' })
   color = '#607D8B';
+
+  @ApiPropertyOptional({ default: true })
+  @SaplingForm({
+    order: 100,
+    group: 'inboundEmailStatus.groupConfiguration',
+    groupOrder: 300,
+    width: 1,
+    visible: true,
+    tableOrder: 100,
+    tableVisible: true,
+    mobileOrder: 100,
+    mobileVisible: false,
+  })
+  @Property({ default: true, nullable: false })
+  isOpen?: boolean = true;
+
+  @ApiPropertyOptional({ default: 100 })
+  @Sapling(['isOrderASC'])
+  @SaplingForm({
+    order: 200,
+    group: 'inboundEmailStatus.groupConfiguration',
+    groupOrder: 300,
+    width: 1,
+    visible: true,
+    tableOrder: 200,
+    tableVisible: true,
+    mobileOrder: 200,
+    mobileVisible: false,
+  })
+  @Property({ default: 100, nullable: false })
+  sortOrder?: number = 100;
 
   @ApiPropertyOptional({ type: () => InboundEmailItem, isArray: true })
   @OneToMany(() => InboundEmailItem, (email) => email.status)

@@ -5,12 +5,11 @@ import { Sapling, SaplingForm } from './global/entity.decorator';
 @Entity()
 export class MarketingCampaignStatusItem {
   @ApiProperty()
-  @Sapling(['isOrderASC'])
   @Property({ primary: true, length: 64 })
   handle!: string;
 
   @ApiProperty()
-  @Sapling(['isValue', 'isOrderASC'])
+  @Sapling(['isValue'])
   @SaplingForm({
     order: 100,
     group: 'marketingCampaignStatus.groupBasics',
@@ -72,6 +71,21 @@ export class MarketingCampaignStatusItem {
   })
   @Property({ default: 0, nullable: false })
   sortOrder?: number = 0;
+
+  @ApiPropertyOptional({ default: true })
+  @SaplingForm({
+    order: 300,
+    group: 'marketingCampaignStatus.groupConfiguration',
+    groupOrder: 300,
+    width: 1,
+    visible: true,
+    tableOrder: 300,
+    tableVisible: true,
+    mobileOrder: 300,
+    mobileVisible: false,
+  })
+  @Property({ default: true, nullable: false })
+  isOpen?: boolean = true;
 
   @ApiPropertyOptional({ type: 'string', format: 'date-time' })
   @Sapling(['isReadOnly', 'isSystem'])

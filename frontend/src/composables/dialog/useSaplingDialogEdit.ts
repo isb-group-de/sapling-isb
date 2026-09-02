@@ -21,6 +21,7 @@ import { useSaplingDialogEditRelations } from './useSaplingDialogEditRelations'
 import { useSaplingDialogEditReferences } from './useSaplingDialogEditReferences'
 import { useSaplingDialogEditTemplates } from './useSaplingDialogEditTemplates'
 import { useSaplingDialogEditActions } from './useSaplingDialogEditActions'
+import { useSaplingDialogEditDraft } from './useSaplingDialogEditDraft'
 import {
   formatLocalDate,
   formatLocalTime,
@@ -217,6 +218,20 @@ export function useSaplingDialogEdit(
       (props.mode === 'create' && options?.allowPristineCreate?.value === true),
   )
 
+  const { restoreDraft, clearDraft } = useSaplingDialogEditDraft({
+    form,
+    templates,
+    mode: computed(() => props.mode),
+    entity: computed(() => props.entity),
+    item: computed(() => props.item),
+    parent: computed(() => props.parent),
+    parentEntity: computed(() => props.parentEntity),
+    person: computed(() => currentPersonStore.person),
+    modelValue: computed(() => props.modelValue),
+    isDirty,
+    isHydratingForm,
+  })
+
   const { applyCurrentDefaults, initializeForm, syncParentReferences, buildSavePayload } =
     useSaplingDialogEditForm({
       form,
@@ -236,7 +251,10 @@ export function useSaplingDialogEdit(
       formatLocalTime,
       getLocalDateTimeParts,
       toUtcIsoString,
-      onHydrated: autoSelectHydratedDependencies,
+      onHydrated: () => {
+        restoreDraft()
+        autoSelectHydratedDependencies()
+      },
     })
 
   const {
@@ -272,6 +290,7 @@ export function useSaplingDialogEdit(
     hasSupplementalChanges: options?.hasSupplementalChanges,
     persistSupplementalChanges: options?.persistSupplementalChanges,
     resetSupplementalChanges: options?.resetSupplementalChanges,
+    clearDraft,
   })
   // #endregion
 
@@ -609,7 +628,15 @@ export function useSaplingDialogEdit(
     },
   )
 
-  watch(() => currentPersonStore.person, applyCurrentDefaults)
+  watch(
+    () => currentPersonStore.person,
+    () => {
+      applyCurrentDefaults()
+      if (props.modelValue && !isHydratingForm.value) {
+        restoreDraft()
+      }
+    },
+  )
 
   watch(
     () => [props.parent, props.parentEntity, props.mode, templatesSignature.value] as const,

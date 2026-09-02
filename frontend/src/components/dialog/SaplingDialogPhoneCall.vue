@@ -1,6 +1,10 @@
 <template>
   <SaplingDialog :model-value="isOpen" size="lg" @update:model-value="handleVisibilityChange">
-    <SaplingDialogCard class="sapling-dialog-compact-card" :tilt="false" :close="closePhoneDialog">
+    <SaplingDialogCard
+      class="sapling-dialog-compact-card"
+      :tilt="false"
+      :close="closePhoneDialogAndDiscard"
+    >
       <div class="sapling-dialog-shell">
         <SaplingDialogHero
           :loading="isTranslationLoading"
@@ -43,7 +47,7 @@
 
         <SaplingActionBar v-if="!isTranslationLoading">
           <template #leading>
-            <v-btn variant="text" prepend-icon="mdi-close" @click="closePhoneDialog">
+            <v-btn variant="text" prepend-icon="mdi-close" @click="closePhoneDialogAndDiscard">
               <template v-if="$vuetify.display.mdAndUp">{{ translate('global.close') }}</template>
             </v-btn>
           </template>
@@ -96,6 +100,14 @@ import type { PhoneCallItem } from '@/entity/entity'
 import ApiGenericService from '@/services/api.generic.service'
 import { useCurrentPersonStore } from '@/stores/currentPersonStore'
 import { useSaplingMessageCenter } from '@/composables/system/useSaplingMessageCenter'
+import {
+  clearSaplingDialogDraft,
+  getCurrentDialogDraftRoute,
+  normalizeDialogDraftIdentifier,
+  readSaplingDialogDraft,
+  writeSaplingDialogDraft,
+  type SaplingDialogDraftContext,
+} from '@/composables/dialog/saplingDialogDraftStorage'
 
 const { t, te } = useI18n()
 const { isOpen, context, closePhoneDialog } = useSaplingPhoneDialog()
@@ -111,6 +123,8 @@ const { formatPhoneNumber } = useSaplingPhoneNumber()
 const note = ref('')
 const reached = ref(false)
 const isSaving = ref(false)
+const activeDraftContext = ref<SaplingDialogDraftContext | null>(null)
+let restoreRequestId = 0
 
 const phoneNumber = computed(() => formatPhoneNumber(context.value?.phoneNumber ?? ''))
 const hasPhoneNumber = computed(() => phoneNumber.value.length > 0)
@@ -150,19 +164,72 @@ const warningMessage = computed(() => {
 })
 
 watch(
-  () => isOpen.value,
-  async (open) => {
+  () => [isOpen.value, context.value] as const,
+  async ([open]) => {
+    const requestId = ++restoreRequestId
     if (open) {
+      const route = getCurrentDialogDraftRoute()
       await Promise.all([loadTranslations(), currentPersonStore.fetchCurrentPerson()])
+      if (requestId !== restoreRequestId || !isOpen.value) {
+        return
+      }
+
+      const draftContext = createDraftContext(route)
+      activeDraftContext.value = draftContext
+      const draft = readSaplingDialogDraft('phoneCall', draftContext)
+      note.value = typeof draft?.note === 'string' ? draft.note : ''
+      reached.value = draft?.reached === true
       return
     }
 
     note.value = ''
     reached.value = false
     isSaving.value = false
+    activeDraftContext.value = null
   },
   { immediate: true },
 )
+
+watch(
+  [note, reached],
+  () => {
+    const draftContext = activeDraftContext.value
+    if (!isOpen.value || !draftContext) {
+      return
+    }
+
+    if (!note.value && !reached.value) {
+      clearSaplingDialogDraft('phoneCall', draftContext)
+      return
+    }
+
+    writeSaplingDialogDraft('phoneCall', draftContext, {
+      note: note.value,
+      reached: reached.value,
+    })
+  },
+  { flush: 'post' },
+)
+
+function createDraftContext(route = getCurrentDialogDraftRoute()): SaplingDialogDraftContext {
+  return {
+    route,
+    personHandle: normalizeDialogDraftIdentifier(currentPersonStore.person?.handle),
+    entityHandle: context.value?.entityHandle ?? '',
+    mode: 'create',
+    recordHandle: normalizeDialogDraftIdentifier(context.value?.itemHandle),
+    recordVersion: normalizeDialogDraftIdentifier(context.value?.draftValues?.updatedAt),
+    parentEntityHandle: '',
+    parentRecordHandle: '',
+    detailHandle: phoneNumber.value,
+    detailVersion: '',
+  }
+}
+
+function closePhoneDialogAndDiscard() {
+  clearSaplingDialogDraft('phoneCall', activeDraftContext.value)
+  closePhoneDialog()
+}
 
 function translate(key: string) {
   return t(key)
@@ -174,7 +241,7 @@ function translateIfExists(key: string, fallback: string) {
 
 function handleVisibilityChange(value: boolean) {
   if (!value) {
-    closePhoneDialog()
+    closePhoneDialogAndDiscard()
   }
 }
 
@@ -211,6 +278,7 @@ async function savePhoneCall() {
       person: personHandle,
     })
 
+    clearSaplingDialogDraft('phoneCall', activeDraftContext.value)
     closePhoneDialog()
   } catch {
     return

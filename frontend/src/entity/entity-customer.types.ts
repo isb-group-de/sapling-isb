@@ -175,6 +175,8 @@ export interface SalesOpportunityStageItem extends SaplingGenericItem {
   sortOrder?: number | null
   /** Suggested probability for this stage */
   defaultProbability?: number | null
+  /** Whether opportunities in this stage belong to the default open view */
+  isOpen?: boolean | null
   /** Whether the stage closes the opportunity */
   isClosed?: boolean | null
   /** Whether the stage counts as a success */
@@ -301,6 +303,10 @@ export interface EffortEstimateStatusItem extends SaplingGenericItem {
   color: string
   /** UI icon */
   icon?: string | null
+  /** Whether estimates in this status belong to the default open view */
+  isOpen?: boolean | null
+  /** Configurable display order */
+  sortOrder?: number | null
   /** Estimates in this status */
   effortEstimates?: EffortEstimateItem[]
   /** Creation date */

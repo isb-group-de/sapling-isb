@@ -262,6 +262,15 @@ Saving refreshes the selected reference object without changing its identity;
 deleting the referenced record clears the field. The outer draft remains open
 throughout the nested workflow.
 
+Unsaved edit-dialog values are also mirrored into a bounded browser-local draft
+store. Recovery requires an exact match for the signed-in person, route, entity,
+mode, record handle and version, plus parent context for create dialogs. The
+same bounded store covers the supplemental internal-information editor and the
+phone-call note. Only the latest draft per surface is retained; save, reset,
+discard, duplicate selection, or an explicit close removes the matching draft.
+Navigation or browser teardown leaves it available so reopening the exact same
+context restores the values as normal dirty changes.
+
 When a custom workflow needs an initial selected reference, pass the full item when available and ensure the target entity metadata can load before the user opens the menu. The fallback to handles is intentional for unknown metadata and should not be hidden with hard-coded field-name guesses.
 
 Static option lists should use `frontend/src/components/common/SaplingStaticSelect.vue`
@@ -788,6 +797,11 @@ or create keeps the parent record and returns the failed selection to the edit
 dialog for retry, so retrying cannot create a duplicate parent. Resetting or
 discarding the create form clears all staged relation selections and child
 drafts.
+Handle-less edit drafts use the same local relation staging. This is required
+for workflows such as detaching one recurring Event occurrence: the draft is
+presented as an edit, but its standalone parent record does not exist until the
+workflow save succeeds. Relation tables must never issue an unfiltered lookup
+when that parent handle is absent.
 For persisted records, relation actions remain immediate. When an owning
 many-to-many action advances the parent record's concurrency version, the dialog
 adopts the returned persisted version without rehydrating or discarding other

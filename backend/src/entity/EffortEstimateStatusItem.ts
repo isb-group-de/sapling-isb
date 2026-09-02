@@ -11,7 +11,7 @@ export class EffortEstimateStatusItem {
   handle!: string;
 
   @ApiProperty()
-  @Sapling(['isValue', 'isOrderASC'])
+  @Sapling(['isValue'])
   @SaplingForm({
     order: 100,
     group: 'effortEstimateStatus.groupContent',
@@ -57,6 +57,37 @@ export class EffortEstimateStatusItem {
   })
   @Property({ default: 'mdi-new-box', length: 64, nullable: false })
   icon?: string = 'mdi-new-box';
+
+  @ApiPropertyOptional({ default: true })
+  @SaplingForm({
+    order: 100,
+    group: 'effortEstimateStatus.groupConfiguration',
+    groupOrder: 300,
+    width: 1,
+    visible: true,
+    tableOrder: 100,
+    tableVisible: true,
+    mobileOrder: 100,
+    mobileVisible: false,
+  })
+  @Property({ default: true, nullable: false })
+  isOpen?: boolean = true;
+
+  @ApiPropertyOptional({ default: 100 })
+  @Sapling(['isOrderASC'])
+  @SaplingForm({
+    order: 200,
+    group: 'effortEstimateStatus.groupConfiguration',
+    groupOrder: 300,
+    width: 1,
+    visible: true,
+    tableOrder: 200,
+    tableVisible: true,
+    mobileOrder: 200,
+    mobileVisible: false,
+  })
+  @Property({ default: 100, nullable: false })
+  sortOrder?: number = 100;
 
   @ApiPropertyOptional({ type: () => EffortEstimateItem, isArray: true })
   @OneToMany(() => EffortEstimateItem, (estimate) => estimate.status)

@@ -5,6 +5,38 @@ import type { SaplingDialogEditEmit, VuetifyFormRef } from '../saplingDialogEdit
 import { useSaplingDialogEditActions } from '../useSaplingDialogEditActions'
 
 describe('useSaplingDialogEditActions', () => {
+  it('clears the matching draft only after a successful record save', async () => {
+    const emitMock = vi.fn()
+    const clearDraft = vi.fn()
+    const actions = useSaplingDialogEditActions({
+      mode: computed(() => 'edit'),
+      entity: computed(() => null),
+      isDirty: computed(() => true),
+      canSubmit: computed(() => true),
+      formRef: ref<VuetifyFormRef | null>({
+        validate: vi.fn().mockResolvedValue({ valid: true }),
+      }),
+      activeTab: ref(0),
+      emit: emitMock as unknown as SaplingDialogEditEmit,
+      buildSavePayload: () => ({ title: 'Draft' }),
+      appendPendingRelationsToPayload: (value) => value,
+      persistPendingRelations: vi.fn().mockResolvedValue(true),
+      syncInitialFormSnapshot: vi.fn(),
+      resetRelationSelections: vi.fn(),
+      initializeFormWithParentContext: vi.fn(),
+      clearDraft,
+    })
+
+    await actions.save()
+
+    expect(clearDraft).not.toHaveBeenCalled()
+    const saveContext = emitMock.mock.calls[0]?.[3] as { complete: (didSave?: boolean) => void }
+    saveContext.complete(false)
+    expect(clearDraft).not.toHaveBeenCalled()
+    saveContext.complete(true)
+    expect(clearDraft).toHaveBeenCalledOnce()
+  })
+
   it('submits a pristine prefilled create record and cancels it without a discard prompt', async () => {
     const emitMock = vi.fn()
     const validate = vi.fn().mockResolvedValue({ valid: true })

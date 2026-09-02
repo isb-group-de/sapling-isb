@@ -11,7 +11,7 @@ export class TeamsDeliveryStatusItem {
   handle!: string;
 
   @ApiProperty()
-  @Sapling(['isValue', 'isOrderASC'])
+  @Sapling(['isValue'])
   @SaplingForm({
     order: 100,
     group: 'teamsDeliveryStatus.groupContent',
@@ -57,6 +57,37 @@ export class TeamsDeliveryStatusItem {
   })
   @Property({ default: '#4CAF50', length: 32, nullable: false })
   color!: string;
+
+  @ApiPropertyOptional({ default: true })
+  @SaplingForm({
+    order: 100,
+    group: 'teamsDeliveryStatus.groupConfiguration',
+    groupOrder: 300,
+    width: 1,
+    visible: true,
+    tableOrder: 100,
+    tableVisible: true,
+    mobileOrder: 100,
+    mobileVisible: false,
+  })
+  @Property({ default: true, nullable: false })
+  isOpen?: boolean = true;
+
+  @ApiPropertyOptional({ default: 100 })
+  @Sapling(['isOrderASC'])
+  @SaplingForm({
+    order: 200,
+    group: 'teamsDeliveryStatus.groupConfiguration',
+    groupOrder: 300,
+    width: 1,
+    visible: true,
+    tableOrder: 200,
+    tableVisible: true,
+    mobileOrder: 200,
+    mobileVisible: false,
+  })
+  @Property({ default: 100, nullable: false })
+  sortOrder?: number = 100;
 
   @ApiPropertyOptional({ type: () => TeamsDeliveryItem, isArray: true })
   @OneToMany(() => TeamsDeliveryItem, (x) => x.status)

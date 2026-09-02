@@ -143,8 +143,12 @@
                     v-for="section in sections"
                     :key="section.key"
                     :section="section"
+                    :show-complete-events-action="
+                      section.key === 'overdue' && overdueEventCount > 0
+                    "
                     @open="openEntry"
                     @dismiss="dismissEntry"
+                    @complete-events="openCompleteEventsDialog"
                   />
                 </section>
               </template>
@@ -206,6 +210,70 @@
       </SaplingDialogShell>
     </SaplingDialogCard>
   </SaplingDialog>
+
+  <SaplingDialogConfirm
+    v-model="completeEventsDialog"
+    :eyebrow="$t('navigation.inbox')"
+    :title="$t('inbox.completeEventsTitle')"
+    :subtitle="$t('inbox.completeEventsSubtitle')"
+    :close-disabled="isCompletingEvents"
+    @escape="closeCompleteEventsDialog"
+    @enter="completeOverdueEvents"
+  >
+    <template #body>
+      <div class="sapling-stack-lg">
+        <SaplingFieldDateType
+          v-model="completeEventsCutoffDate"
+          :label="$t('inbox.completeEventsCutoffLabel')"
+          :disabled="isCompletingEvents"
+          :rules="[validateCompleteEventsCutoff]"
+        />
+        <v-alert
+          type="warning"
+          variant="tonal"
+          icon="mdi-calendar-check-outline"
+          :text="$t('inbox.completeEventsSeriesWarning')"
+        />
+        <v-alert
+          type="info"
+          variant="tonal"
+          icon="mdi-information-outline"
+          :text="
+            completeEventsCandidateCount > 0
+              ? $t('inbox.completeEventsCandidateCount', {
+                  count: completeEventsCandidateCount,
+                })
+              : $t('inbox.completeEventsNoCandidates')
+          "
+        />
+      </div>
+    </template>
+    <template #actions>
+      <SaplingActionBar>
+        <template #leading>
+          <v-btn
+            variant="text"
+            prepend-icon="mdi-close"
+            :disabled="isCompletingEvents"
+            @click="closeCompleteEventsDialog"
+          >
+            {{ $t('global.cancel') }}
+          </v-btn>
+        </template>
+        <template #trailing>
+          <v-btn
+            color="warning"
+            append-icon="mdi-calendar-check-outline"
+            :disabled="completeEventsCandidateCount === 0 || isCompletingEvents"
+            :loading="isCompletingEvents"
+            @click="completeOverdueEvents"
+          >
+            {{ $t('inbox.completeEventsConfirm') }}
+          </v-btn>
+        </template>
+      </SaplingActionBar>
+    </template>
+  </SaplingDialogConfirm>
 </template>
 
 <script setup lang="ts">
@@ -220,6 +288,9 @@ import SaplingDialogShell from '@/components/common/SaplingDialogShell.vue'
 import SaplingInboxEntryCard from '@/components/account/inbox/SaplingInboxEntryCard.vue'
 import SaplingInboxSection from '@/components/account/inbox/SaplingInboxSection.vue'
 import SaplingInboxSummaryCard from '@/components/account/inbox/SaplingInboxSummaryCard.vue'
+import SaplingDialogConfirm from '@/components/dialog/SaplingDialogConfirm.vue'
+import SaplingFieldDateType from '@/components/dialog/fields/SaplingFieldDateType.vue'
+import SaplingActionBar from '@/components/actions/SaplingActionBar.vue'
 //#endregion
 
 //#region Composable
@@ -243,6 +314,15 @@ const {
   openEntry,
   dismissEntry,
   closeDialog,
+  overdueEventCount,
+  completeEventsDialog,
+  completeEventsCutoffDate,
+  completeEventsCandidateCount,
+  isCompletingEvents,
+  openCompleteEventsDialog,
+  closeCompleteEventsDialog,
+  validateCompleteEventsCutoff,
+  completeOverdueEvents,
 } = useSaplingInbox(emit)
 
 const overviewCount = computed(

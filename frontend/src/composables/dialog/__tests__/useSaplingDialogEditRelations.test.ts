@@ -276,6 +276,36 @@ describe('useSaplingDialogEditRelations', () => {
     expect(relations.dirtyRelationNames.value).toEqual(['participants'])
   })
 
+  it('stages relations for an unsaved edit draft instead of loading every reference record', async () => {
+    const participants = [
+      { handle: 5, firstName: 'Max' },
+      { handle: 7, firstName: 'Ada' },
+    ]
+    const relations = createRelations({
+      mode: 'edit',
+      item: { participants },
+      templates: [
+        createTemplate({
+          name: 'participants',
+          type: 'Collection<PersonItem>',
+          kind: 'm:n',
+          referenceName: 'note',
+        }),
+      ],
+    })
+
+    await relations.initializeRelationTables()
+    await relations.ensureRelationTableItems('participants')
+
+    expect(apiFindMock).not.toHaveBeenCalled()
+    expect(relations.relationTableItems.value.participants).toEqual(participants)
+    expect(relations.relationTableTotal.value.participants).toBe(2)
+    expect(relations.appendPendingRelationsToPayload({ title: 'Detached occurrence' })).toEqual({
+      title: 'Detached occurrence',
+      participants: [5, 7],
+    })
+  })
+
   it('stages and removes 1:m relations locally while creating a record', async () => {
     const relations = createRelations({ mode: 'create' })
     const selected = { handle: 7, title: 'Existing note' }

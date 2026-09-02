@@ -1,0 +1,8 @@
+[
+  { "handle": "proposal", "isOpen": true, "sortOrder": 10 },
+  { "handle": "won", "isOpen": false, "sortOrder": 20 },
+  { "handle": "new", "isOpen": true, "sortOrder": 30 },
+  { "handle": "qualified", "isOpen": true, "sortOrder": 40 },
+  { "handle": "negotiation", "isOpen": true, "sortOrder": 50 },
+  { "handle": "lost", "isOpen": false, "sortOrder": 60 }
+]

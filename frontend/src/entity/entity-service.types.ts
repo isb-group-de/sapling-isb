@@ -71,6 +71,8 @@ export interface KnowledgeArticleStatusItem extends SaplingGenericItem {
   icon?: string | null
   /** Sort order */
   sortOrder?: number | null
+  /** Whether articles in this status belong to the default open view */
+  isOpen?: boolean | null
   /** Whether this status means published */
   isPublished?: boolean
   /** Whether this status means archived */
@@ -177,6 +179,8 @@ export interface InternalCaseStatusItem extends SaplingGenericItem {
   icon?: string | null
   /** Whether cases in this status are open tasks */
   isOpen?: boolean | null
+  /** Configurable display order */
+  sortOrder?: number | null
   /** Cases using this status */
   internalCases?: InternalCaseItem[]
   /** Creation date */
@@ -269,6 +273,8 @@ export interface TicketStatusItem extends SaplingGenericItem {
   color: string
   /** Whether tickets with this status are treated as open */
   isOpen?: boolean | null
+  /** Configurable display order */
+  sortOrder?: number | null
   /** List of tickets with this status */
   tickets?: TicketItem[]
   /** Creation date */

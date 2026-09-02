@@ -201,12 +201,10 @@ function getChipReferenceOptionValue(
   return typeof value === 'string' && value.trim().length > 0 ? value : undefined
 }
 
-function getDefaultChipFilterHandles(filter: SaplingChipFilterGroup): SaplingFilterHandle[] {
-  const defaultHandles = filter.options
+export function getDefaultChipFilterHandles(filter: SaplingChipFilterGroup): SaplingFilterHandle[] {
+  return filter.options
     .filter((option) => option.isDefaultSelected !== false)
     .map((option) => option.handle)
-
-  return defaultHandles.length > 0 ? defaultHandles : filter.options.map((option) => option.handle)
 }
 
 function isFullChipFilterSelection(

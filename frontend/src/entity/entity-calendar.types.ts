@@ -62,6 +62,10 @@ export interface EventDeliveryStatusItem extends SaplingGenericItem {
   icon?: string
   /** Color associated with the webhook delivery status */
   color: string
+  /** Whether deliveries with this status belong to the default open view */
+  isOpen?: boolean | null
+  /** Configurable display order */
+  sortOrder?: number | null
   /** Webhook deliveries belonging to this status */
   deliveries?: EventDeliveryItem[]
   /** Date and time when the status was created */
@@ -198,6 +202,8 @@ export interface EventStatusItem extends SaplingGenericItem {
   color: string
   /** Indicates whether events with this status are treated as open. */
   isOpen?: boolean
+  /** Configurable display order. */
+  sortOrder?: number | null
   /** All events that have this status. */
   events?: EventItem[]
   /** Date and time when the status was created. */

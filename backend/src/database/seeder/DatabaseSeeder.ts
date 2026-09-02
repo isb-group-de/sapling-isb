@@ -71,6 +71,7 @@ import { ServerLandscapeTypeUsageItem } from '../../entity/ServerLandscapeTypeUs
 import { SocialMediaItem } from '../../entity/SocialMediaItem';
 import { SocialMediaTypeItem } from '../../entity/SocialMediaTypeItem';
 import { EmailTemplateItem } from '../../entity/EmailTemplateItem';
+import { EmailDeliveryStatusItem } from '../../entity/EmailDeliveryStatusItem';
 import { EMailListItem } from '../../entity/EMailListItem';
 import { ScriptButtonItem } from '../../entity/ScriptButtonItem';
 import { AiChatTranscriptionItem } from '../../entity/AiChatTranscriptionItem';
@@ -228,6 +229,7 @@ const SEED_ORDER: Array<EntityName<object> | (new () => Seeder)> = [
   DocumentTypeItem,
   EmailInboxProcessingModeItem,
   InboundEmailStatusItem,
+  EmailDeliveryStatusItem,
   EmailTemplateItem,
   EMailListItem,
   MarketingCampaignStatusItem,
