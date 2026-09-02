@@ -354,6 +354,7 @@ sudo saplingctl doctor
 Vor Migrationen wird zwingend ein Datenbank-Backup erstellt. Uploads, Logs, Konfiguration und Infrastruktur liegen persistent außerhalb der Code-Releases. Details zu Erstinstallation, Zertifikaten, Rollback und Restore stehen in [deploy/README.md](./deploy/README.md).
 
 Das Skript `deploy.sh` im Repository-Root ist ein unveränderter Legacy-Weg für bereits damit betriebene Bestandssysteme und nicht für Neuinstallationen vorgesehen.
+Für diese Bestandssysteme bereinigt `bash ./redis-clear.sh` nach einer Vorschau gezielt nur fehlgeschlagene Sapling-Queue-Jobs; andere Redis-Daten bleiben erhalten.
 
 ## Logging
 

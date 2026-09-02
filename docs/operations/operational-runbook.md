@@ -157,6 +157,31 @@ When `REDIS_ENABLED=true`, verify:
 
 Queue-backed areas include mail, Teams, calendar/event delivery, webhooks, and AI/vectorization-style background processing depending on the feature path.
 
+The monitoring queue check treats only job failures observed during the last
+five minutes as a current health signal. BullMQ's retained failed-job count is
+still collected as telemetry, but it is historical storage and must not keep
+the queue health permanently critical. To inspect and deliberately remove only
+retained failed jobs from Sapling's known queues, first build the backend and
+run:
+
+```bash
+npm run queues:clear-failed --prefix backend
+npm run queues:clear-failed --prefix backend -- --confirm
+```
+
+On existing installations that still use the historical root deployment, the
+same targeted maintenance flow can be started interactively with
+`bash ./redis-clear.sh`. Run the script as the same Unix user that owns the
+`sapling-backend` PM2 process. It first shows a preview, stops only that backend
+process, and restarts it after cleanup if it was running beforehand. It never
+runs a global Redis `FLUSHDB` or `FLUSHALL`.
+
+The first command is a preview. The confirmed command removes only failed jobs
+from `emails`, `email-inbox-sync`, `imports`, `teams`, `webhooks`, `calendar`,
+and `calendar-sync`. It does not flush Redis and does not touch waiting, active,
+delayed, or completed jobs. Stop the Sapling backend during the confirmed run;
+Redis itself must remain available.
+
 Inbound mailbox polling uses queue `email-inbox-sync`. Active inbox
 subscriptions are checked once per minute; each subscription controls its own
 polling interval. Recurring polling is disabled when `REDIS_ENABLED=false`,

@@ -121,45 +121,52 @@ export class SystemCheckService implements OnModuleInit, OnApplicationShutdown {
     em: EntityManager,
   ): Promise<CheckResult[]> {
     try {
-      const [metrics, http, ai, frontendErrors] = await Promise.all([
-        em.getConnection().execute(
-          `select "metric_key" as "metricKey", max("last")::float8 as "value"
+      const [metrics, http, ai, queueErrors, frontendErrors] =
+        await Promise.all([
+          em.getConnection().execute(
+            `select "metric_key" as "metricKey", max("last")::float8 as "value"
            from "system_metric_bucket_item" metric
            join "system_telemetry_instance_item" instance on instance."handle" = metric."instance_handle"
            where instance."environment_handle" = ? and metric."bucket_start" >= now() - interval '3 minutes'
-             and metric."metric_key" in ('queue.failed', 'queue.oldestWaitingSeconds',
+             and metric."metric_key" in ('queue.oldestWaitingSeconds',
                'filesystem.usedPercent', 'database.connectionUsedPercent', 'web.lcpMs', 'web.inpMs', 'web.cls')
            group by "metric_key"`,
-          [this.environment.currentId],
-        ) as Promise<Array<{ metricKey: string; value: number }>>,
-        em.getConnection().execute(
-          `select coalesce(sum("request_count"), 0)::int as "total",
+            [this.environment.currentId],
+          ) as Promise<Array<{ metricKey: string; value: number }>>,
+          em.getConnection().execute(
+            `select coalesce(sum("request_count"), 0)::int as "total",
              coalesce(sum("server_error_count"), 0)::int as "errors",
              coalesce(sum("timeout_count"), 0)::int as "timeouts"
            from "http_metric_bucket_item" where "environment_handle" = ?
              and "resolution" = '1m' and "bucket_start" >= now() - interval '5 minutes'`,
-          [this.environment.currentId],
-        ) as Promise<
-          Array<{ total: number; errors: number; timeouts: number }>
-        >,
-        em.getConnection().execute(
-          `select count(*)::int as "total",
+            [this.environment.currentId],
+          ) as Promise<
+            Array<{ total: number; errors: number; timeouts: number }>
+          >,
+          em.getConnection().execute(
+            `select count(*)::int as "total",
              count(*) filter (where "status" <> 'completed')::int as "errors"
            from "ai_usage_event_item" where "environment_handle" = ?
              and "occurred_at" >= now() - interval '15 minutes'`,
-          [this.environment.currentId],
-        ) as Promise<Array<{ total: number; errors: number }>>,
-        em.getConnection().execute(
-          `select count(*)::int as "errors" from "system_error_occurrence_item"
+            [this.environment.currentId],
+          ) as Promise<Array<{ total: number; errors: number }>>,
+          em.getConnection().execute(
+            `select count(*)::int as "errors" from "system_error_occurrence_item"
+           where "environment_handle" = ? and "source" = 'job'
+             and "occurred_at" >= now() - interval '5 minutes'`,
+            [this.environment.currentId],
+          ) as Promise<Array<{ errors: number }>>,
+          em.getConnection().execute(
+            `select count(*)::int as "errors" from "system_error_occurrence_item"
            where "environment_handle" = ? and "source" = 'frontend'
              and "occurred_at" >= now() - interval '5 minutes'`,
-          [this.environment.currentId],
-        ) as Promise<Array<{ errors: number }>>,
-      ]);
+            [this.environment.currentId],
+          ) as Promise<Array<{ errors: number }>>,
+        ]);
       const values = new Map(
         metrics.map((row) => [row.metricKey, Number(row.value)]),
       );
-      const queueFailed = values.get('queue.failed') ?? 0;
+      const recentQueueFailures = Number(queueErrors[0]?.errors ?? 0);
       const queueAge = values.get('queue.oldestWaitingSeconds') ?? 0;
       const filesystem = values.get('filesystem.usedPercent') ?? 0;
       const connectionUsage = values.get('database.connectionUsedPercent') ?? 0;
@@ -186,8 +193,8 @@ export class SystemCheckService implements OnModuleInit, OnApplicationShutdown {
         combinedCheck(
           'queue.flow',
           'queue',
-          [severity(queueFailed, 1, 25), severity(queueAge, 300, 900)],
-          `${Math.round(queueAge)}s oldest · ${Math.round(queueFailed)} failed`,
+          [severity(recentQueueFailures, 1, 25), severity(queueAge, 300, 900)],
+          `${Math.round(queueAge)}s oldest · ${Math.round(recentQueueFailures)} recent failures`,
         ),
         signalCheck(
           'storage.capacity',

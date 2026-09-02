@@ -552,6 +552,7 @@ import {
   monitoringServiceLabel,
   monitoringStateLabel,
 } from './systemMonitoringLabels'
+import { maximumActiveCollectorGapSeconds } from './systemMonitoringStatus'
 
 defineProps<{
   systemTitle: string
@@ -631,14 +632,7 @@ const collectorEnabled = computed(() => {
   const collector = collectorStatus.value?.collector as Record<string, unknown> | undefined
   return typeof collector?.enabled === 'boolean' ? collector.enabled : undefined
 })
-const maximumGapSeconds = computed(() => {
-  const instances = collectorStatus.value?.instances
-  if (!Array.isArray(instances)) return 0
-  return Math.max(
-    0,
-    ...instances.map((item) => Number((item as Record<string, unknown>).gapSeconds ?? 0)),
-  )
-})
+const maximumGapSeconds = computed(() => maximumActiveCollectorGapSeconds(collectorStatus.value))
 const lastUpdatedLabel = computed(() =>
   summary.value?.lastSampleAt ? dateTime(summary.value.lastSampleAt) : t('global.notAvailable'),
 )

@@ -29,7 +29,8 @@
     "orm:migrate": "cross-env NODE_OPTIONS=--max-old-space-size=4096 npm run build && cross-env UPDATE_MODE=migrate node dist/update.js",
     "orm:seed": "cross-env NODE_OPTIONS=--max-old-space-size=4096 npm run build && cross-env UPDATE_MODE=seed node dist/update.js",
     "orm:deploy": "cross-env NODE_OPTIONS=--max-old-space-size=4096 npm run build && cross-env UPDATE_MODE=all node dist/update.js",
-    "admin:bootstrap": "cross-env NODE_ENV=production node dist/bootstrap-admin.js"
+    "admin:bootstrap": "cross-env NODE_ENV=production node dist/bootstrap-admin.js",
+    "queues:clear-failed": "node dist/maintenance/clear-failed-queue-jobs.js"
   },
   "dependencies": {
     "@google/genai": "^2.19.0",

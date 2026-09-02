@@ -76,6 +76,12 @@ reliability. Every five minutes a hidden canary record is inserted, read, and
 deleted inside one transaction to verify the application write path without
 touching business records.
 
+Collector-gap warnings consider only active, enabled collector instances;
+stopped and retired process history remains inspectable but cannot create a
+current gap banner. Queue health uses the oldest waiting job plus job failures
+observed during the last five minutes. The retained BullMQ failed-job count is
+historical storage and is not itself a current-health failure.
+
 The overview currently evaluates an API-success SLO of 99.9 percent and an API
 p95 target of 1,000 ms. Threshold alert rules still support minimum samples,
 deduplicated incidents, severity escalation, and three healthy evaluations

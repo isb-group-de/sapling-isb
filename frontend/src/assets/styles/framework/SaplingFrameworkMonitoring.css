@@ -452,6 +452,19 @@
   background: transparent;
 }
 
+.monitoring-console .monitoring-table {
+  flex: 0 0 auto;
+  height: auto;
+  overflow: visible;
+}
+
+.monitoring-console .monitoring-table .v-table__wrapper {
+  flex: 0 0 auto;
+  height: auto;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
 .monitoring-console .v-table th {
   color: var(--sapling-surface-text-muted);
   font-size: var(--sapling-text-label-size);
