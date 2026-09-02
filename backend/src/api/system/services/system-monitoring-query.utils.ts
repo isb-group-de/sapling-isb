@@ -124,9 +124,18 @@ export function toDimension(value: unknown): string {
 export function resolveHealth(
   metrics: Record<string, number>,
   incidents: Record<string, unknown> | undefined,
+  checkStatuses: string[] = [],
 ): 'healthy' | 'warning' | 'critical' | 'unknown' {
-  if (Number(incidents?.criticalCount ?? 0) > 0) return 'critical';
-  if (Number(incidents?.openCount ?? 0) > 0) return 'warning';
+  if (
+    Number(incidents?.criticalCount ?? 0) > 0 ||
+    checkStatuses.includes('critical')
+  )
+    return 'critical';
+  if (
+    Number(incidents?.openCount ?? 0) > 0 ||
+    checkStatuses.includes('warning')
+  )
+    return 'warning';
   return Object.keys(metrics).length > 0 ? 'healthy' : 'unknown';
 }
 

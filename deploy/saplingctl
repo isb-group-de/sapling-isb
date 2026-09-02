@@ -65,6 +65,11 @@ render_environment_files() {
       "$(dotenv_value "$APP_ROOT/shared/log")"
     printf 'LOG_NAME_REQUESTS=requests.log\nLOG_NAME_SERVER=server.log\nLOG_APPENDERS=console,file\n'
     printf 'LOG_REQUESTS_CONSOLE_ENABLED=true\nLOG_REQUESTS_FILE_ENABLED=true\n'
+    printf 'SYSTEM_TELEMETRY_ENABLED=true\n'
+    printf 'SYSTEM_TELEMETRY_ENVIRONMENT_ID=%s\n' "$(dotenv_value "host:$DOMAIN")"
+    printf 'SYSTEM_TELEMETRY_ENVIRONMENT_NAME=%s\n' "$(dotenv_value "$DOMAIN")"
+    printf 'SYSTEM_TELEMETRY_PROCESS_SLOT=backend:0\nSYSTEM_MONITORING_CHECKS_ENABLED=true\n'
+    printf 'SYSTEM_TELEMETRY_SAMPLE_INTERVAL_MS=10000\nSYSTEM_TELEMETRY_SPOOL_MAX_MB=100\n'
     printf 'SESSION_COOKIE_NAME=sapling.sid\nSESSION_MAX_AGE=86400000\n'
     printf 'SESSION_REMEMBER_ME_MAX_AGE=2592000000\nSESSION_COOKIE_SECURE=true\n'
     printf 'SESSION_COOKIE_SAME_SITE=lax\nSESSION_TRUST_PROXY=1\nGENERIC_DOWNLOAD_LIMIT=5000\n'

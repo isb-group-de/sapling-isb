@@ -9,10 +9,12 @@ describe('SystemTelemetryCollectorService', () => {
       {} as never,
       {} as never,
       { getVersion: () => ({ version: '1.2.3' }) },
-      {} as never,
+      { getStatus: () => ({ pendingSamples: 0, overflowCount: 0 }) } as never,
       { getIgnoredFilesystemDimensions: () => [] } as never,
       {
         currentId: 'test',
+        currentKind: 'test',
+        isExplicitlyConfigured: true,
         ensure: jest.fn().mockResolvedValue(undefined),
       } as never,
       { getStatus: () => ({ activeRequests: 0, activeStreams: 0 }) } as never,
@@ -65,5 +67,15 @@ describe('SystemTelemetryCollectorService', () => {
       expect.stringContaining(`"lifecycle_reason" = 'gracefulShutdown'`),
       [service.instanceId],
     );
+  });
+
+  it('exposes whether the environment identity was explicitly configured', () => {
+    const { service } = createService();
+
+    expect(service.getStatus()).toMatchObject({
+      environmentId: 'test',
+      environmentKind: 'test',
+      environmentIdExplicit: true,
+    });
   });
 });

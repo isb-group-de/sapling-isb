@@ -17,6 +17,10 @@ import { SystemTelemetryEnvironmentService } from './system-telemetry-environmen
 import { SystemTelemetryCollectorService } from './system-telemetry-collector.service';
 import { SystemMonitoringOperationsQuery } from './system-monitoring-operations.query';
 import {
+  loadLatestCheckStatuses,
+  toCheckStatuses,
+} from './system-monitoring-health.query';
+import {
   chooseHttpResolution,
   chooseMetricResolution,
   histogramSumSql,
@@ -31,11 +35,6 @@ import {
   serializeRange,
   toDimension,
   userSortSql,
-} from './system-monitoring-query.utils';
-
-export {
-  resolveRange,
-  runWithConcurrency,
 } from './system-monitoring-query.utils';
 
 const ONLINE_WINDOW_MS = 5 * 60 * 1000;
@@ -73,6 +72,7 @@ export class SystemMonitoringQueryService {
       userRows,
       aiRows,
       incidentRows,
+      checkRows,
       previousHttpRows,
       previousAiRows,
     ] = await runWithConcurrency(
@@ -138,6 +138,7 @@ export class SystemMonitoringQueryService {
            from "system_alert_incident_item" where "environment_handle" = ?`,
             [environmentId],
           ),
+        () => loadLatestCheckStatuses(em, environmentId, range),
         () =>
           executeRows(
             em,
@@ -186,7 +187,11 @@ export class SystemMonitoringQueryService {
         environmentId === this.environment.currentId
           ? this.collector.getStatus().lastSampleAt
           : latestCapturedAt(metricRows),
-      health: resolveHealth(metrics, incidentRows[0]),
+      health: resolveHealth(
+        metrics,
+        incidentRows[0],
+        toCheckStatuses(checkRows),
+      ),
       metrics,
       requests: {
         ...http,

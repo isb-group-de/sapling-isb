@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { maximumActiveCollectorGapSeconds } from './systemMonitoringStatus'
+import { maximumActiveCollectorGapSeconds, monitoringStatusColor } from './systemMonitoringStatus'
 
 describe('system monitoring collector status', () => {
   it('ignores gaps from stopped and retired collector instances', () => {
@@ -20,5 +20,12 @@ describe('system monitoring collector status', () => {
         instances: [{ status: 'stopped', enabled: false, gapSeconds: 120 }],
       }),
     ).toBe(0)
+  })
+
+  it('uses a neutral color for unknown health', () => {
+    expect(monitoringStatusColor('healthy')).toBe('success')
+    expect(monitoringStatusColor('warning')).toBe('warning')
+    expect(monitoringStatusColor('critical')).toBe('error')
+    expect(monitoringStatusColor('unknown')).toBe('default')
   })
 })

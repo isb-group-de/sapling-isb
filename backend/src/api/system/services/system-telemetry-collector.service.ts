@@ -113,6 +113,8 @@ export class SystemTelemetryCollectorService
       enabled: SYSTEM_TELEMETRY_ENABLED,
       instanceId: this.instanceId,
       environmentId: this.environment.currentId,
+      environmentKind: this.environment.currentKind,
+      environmentIdExplicit: this.environment.isExplicitlyConfigured,
       processSlot: SYSTEM_PROCESS_SLOT,
       bootId: this.bootId,
       sampleIntervalMs: SYSTEM_TELEMETRY_SAMPLE_INTERVAL_MS,

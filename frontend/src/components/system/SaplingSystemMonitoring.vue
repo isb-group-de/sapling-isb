@@ -347,6 +347,7 @@ import {
   monitoringStateLabel,
 } from './systemMonitoringLabels'
 import { maximumActiveCollectorGapSeconds } from './systemMonitoringStatus'
+import { monitoringStatusColor } from './systemMonitoringStatus'
 
 defineProps<{
   systemTitle: string
@@ -538,7 +539,7 @@ function ruleCondition(rule: MonitoringAlertRule): string {
 }
 
 function statusColor(value: string): string {
-  return value === 'healthy' ? 'success' : value === 'critical' ? 'error' : 'warning'
+  return monitoringStatusColor(value)
 }
 
 function userPresenceLabel(user: MonitoringUser): string {

@@ -17,6 +17,12 @@ describe('SystemRemediationService', () => {
           status: 'healthy',
           durationMs: 0,
         },
+        {
+          checkKey: 'frontend.experience',
+          category: 'frontend',
+          status: 'unknown',
+          durationMs: 0,
+        },
       ]),
     };
     const collector = {

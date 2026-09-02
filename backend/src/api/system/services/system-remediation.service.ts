@@ -112,7 +112,10 @@ export class SystemRemediationService {
       verification.push({ evaluation, checks: relevant });
       if (
         relevant.length === 0 ||
-        relevant.some((check) => check.status !== 'healthy')
+        relevant.some(
+          (check) => check.status === 'warning' || check.status === 'critical',
+        ) ||
+        !relevant.some((check) => check.status === 'healthy')
       ) {
         throw new Error('remediation verification failed');
       }

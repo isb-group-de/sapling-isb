@@ -31,6 +31,9 @@ grep -q "127.0.0.1:\${REDIS_PORT}:6379" "$DEPLOY_DIR/templates/docker-compose.ym
 grep -q 'postgres-data:/var/lib/postgresql$' "$DEPLOY_DIR/templates/docker-compose.yml"
 grep -q 'proxy_buffering off' "$DEPLOY_DIR/templates/nginx-https.conf"
 grep -q 'DB_NAME' "$DEPLOY_DIR/saplingctl"
+grep -q 'SYSTEM_TELEMETRY_ENVIRONMENT_ID' "$DEPLOY_DIR/saplingctl"
+grep -q 'SYSTEM_TELEMETRY_PROCESS_SLOT=backend:0' "$DEPLOY_DIR/saplingctl"
+grep -q 'SYSTEM_MONITORING_CHECKS_ENABLED=true' "$DEPLOY_DIR/saplingctl"
 if grep -qE 'DB_DATABASE|VITE_DEBUG_(USERNAME|PASSWORD)' "$DEPLOY_DIR/saplingctl"; then
   printf 'A deprecated database name or frontend debug credential leaked into saplingctl.\n' >&2
   exit 1

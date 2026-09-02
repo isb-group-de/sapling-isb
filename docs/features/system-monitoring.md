@@ -31,6 +31,12 @@ and remediation record belongs to a `SystemTelemetryEnvironmentItem`. Configure
 processes of one installation. If it is omitted, the sanitized hostname is used,
 which is safe but deliberately keeps different hosts separate.
 
+The environment name and kind are refreshed on every collector start while the
+stable handle and its history remain unchanged. Production processes expose a
+warning check when they still use the hostname fallback. The Ubuntu deployment
+uses `host:<domain>` explicitly so upgrades retain the existing single-host
+history.
+
 A process slot is stable across restarts; a boot ID is not. The effective
 instance handle is `<process-slot>:<boot-id>`. Startup retires a still-active
 instance in the same slot as an unclean restart, while graceful shutdown marks
@@ -95,6 +101,12 @@ historical storage and is not itself a current-health failure.
 AI reliability counts only terminal `completed` and `failed` calls and treats only
 `failed` as an error. Running, interrupted, and cancelled work remains visible but
 does not create a transient reliability failure.
+
+Frontend experience uses the worst browser value observed during the last 15
+minutes. LCP is the required freshness signal; without a recent LCP the check is
+`unknown`, not a synthetic healthy zero. INP and CLS are displayed as unavailable
+when absent and can only worsen the result when they have actually been observed.
+An unknown check is neutral for aggregate health and remediation verification.
 
 The overview currently evaluates an API-success SLO of 99.9 percent and an API
 p95 target of 1,000 ms. Threshold alert rules still support minimum samples,

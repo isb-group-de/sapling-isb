@@ -12,9 +12,16 @@ import { SystemTelemetryEnvironmentService } from './system-telemetry-environmen
 type CheckResult = {
   checkKey: string;
   category: string;
-  status: 'healthy' | 'warning' | 'critical';
+  status: 'healthy' | 'warning' | 'critical' | 'unknown';
   durationMs: number;
   summary?: string;
+};
+
+type BrowserMetricRow = {
+  metricKey: string;
+  value: number;
+  sampleCount: number;
+  capturedAt: Date | string;
 };
 
 @Injectable()
@@ -57,6 +64,7 @@ export class SystemCheckService implements OnModuleInit, OnApplicationShutdown {
         const results = [
           await this.checkDatabase(transaction),
           this.checkCollector(),
+          this.checkConfiguration(),
           ...(await this.checkOperationalSignals(transaction)),
         ];
         if (Date.now() - this.lastCanaryAt >= 5 * 60_000) {
@@ -117,22 +125,49 @@ export class SystemCheckService implements OnModuleInit, OnApplicationShutdown {
     };
   }
 
+  private checkConfiguration(): CheckResult {
+    const requiresExplicitId = this.environment.currentKind === 'production';
+    const configured = this.environment.isExplicitlyConfigured;
+    return {
+      checkKey: 'telemetry.configuration',
+      category: 'telemetry',
+      status: requiresExplicitId && !configured ? 'warning' : 'healthy',
+      durationMs: 0,
+      summary: configured
+        ? `explicit environment ${this.environment.currentId}`
+        : requiresExplicitId
+          ? 'production uses hostname fallback'
+          : 'hostname fallback allowed outside production',
+    };
+  }
+
   private async checkOperationalSignals(
     em: EntityManager,
   ): Promise<CheckResult[]> {
     try {
-      const [metrics, http, ai, queueErrors, frontendErrors] =
+      const [metrics, browserMetrics, http, ai, queueErrors, frontendErrors] =
         await Promise.all([
           em.getConnection().execute(
-            `select "metric_key" as "metricKey", max("last")::float8 as "value"
+            `select "metric_key" as "metricKey", max("maximum")::float8 as "value"
            from "system_metric_bucket_item" metric
            join "system_telemetry_instance_item" instance on instance."handle" = metric."instance_handle"
            where instance."environment_handle" = ? and metric."bucket_start" >= now() - interval '3 minutes'
              and metric."metric_key" in ('queue.oldestWaitingSeconds',
-               'filesystem.usedPercent', 'database.connectionUsedPercent', 'web.lcpMs', 'web.inpMs', 'web.cls')
+               'filesystem.usedPercent', 'database.connectionUsedPercent')
            group by "metric_key"`,
             [this.environment.currentId],
           ) as Promise<Array<{ metricKey: string; value: number }>>,
+          em.getConnection().execute(
+            `select "metric_key" as "metricKey", max("maximum")::float8 as "value",
+               sum("sample_count")::int as "sampleCount", max("bucket_start") as "capturedAt"
+             from "system_metric_bucket_item" metric
+             join "system_telemetry_instance_item" instance on instance."handle" = metric."instance_handle"
+             where instance."environment_handle" = ?
+               and metric."bucket_start" >= now() - interval '15 minutes'
+               and metric."metric_key" in ('web.lcpMs', 'web.inpMs', 'web.cls')
+             group by "metric_key"`,
+            [this.environment.currentId],
+          ) as Promise<BrowserMetricRow[]>,
           em.getConnection().execute(
             `select coalesce(sum("request_count"), 0)::int as "total",
              coalesce(sum("server_error_count"), 0)::int as "errors",
@@ -178,9 +213,6 @@ export class SystemCheckService implements OnModuleInit, OnApplicationShutdown {
       const aiTotal = Number(ai[0]?.total ?? 0);
       const aiErrors = Number(ai[0]?.errors ?? 0);
       const aiRate = aiTotal > 0 ? (aiErrors / aiTotal) * 100 : 0;
-      const lcp = values.get('web.lcpMs') ?? 0;
-      const inp = values.get('web.inpMs') ?? 0;
-      const cls = values.get('web.cls') ?? 0;
       const browserErrors = Number(frontendErrors[0]?.errors ?? 0);
       return [
         signalCheck(
@@ -206,17 +238,7 @@ export class SystemCheckService implements OnModuleInit, OnApplicationShutdown {
           '% filesystem',
         ),
         signalCheck('http.reliability', 'http', httpRate, 1, 5, '% failures'),
-        combinedCheck(
-          'frontend.experience',
-          'frontend',
-          [
-            severity(lcp, 2500, 4000),
-            severity(inp, 200, 500),
-            severity(cls, 0.1, 0.25),
-            severity(browserErrors, 1, 10),
-          ],
-          `LCP ${Math.round(lcp)}ms · INP ${Math.round(inp)}ms · ${browserErrors} errors`,
-        ),
+        frontendExperienceCheck(browserMetrics, browserErrors),
         signalCheck('ai.reliability', 'ai', aiRate, 5, 20, '% failures'),
       ];
     } catch (error) {
@@ -344,4 +366,61 @@ function combinedCheck(
       ? 'warning'
       : 'healthy';
   return { checkKey, category, status, durationMs: 0, summary };
+}
+
+function frontendExperienceCheck(
+  rows: BrowserMetricRow[],
+  browserErrors: number,
+  now = Date.now(),
+): CheckResult {
+  const metrics = new Map(rows.map((row) => [row.metricKey, row]));
+  const lcp = metrics.get('web.lcpMs');
+  const inp = metrics.get('web.inpMs');
+  const cls = metrics.get('web.cls');
+  const errorStatus = severity(browserErrors, 1, 10);
+  const states = [
+    ...(lcp ? [severity(Number(lcp.value), 2500, 4000)] : []),
+    ...(inp ? [severity(Number(inp.value), 200, 500)] : []),
+    ...(cls ? [severity(Number(cls.value), 0.1, 0.25)] : []),
+    errorStatus,
+  ];
+  const status =
+    !lcp && errorStatus === 'healthy' ? 'unknown' : combinedStatus(states);
+  return {
+    checkKey: 'frontend.experience',
+    category: 'frontend',
+    status,
+    durationMs: 0,
+    summary: [
+      `LCP ${browserMetricSummary(lcp, 'ms', now)}`,
+      `INP ${browserMetricSummary(inp, 'ms', now)}`,
+      `CLS ${browserMetricSummary(cls, '', now)}`,
+      `${browserErrors} errors`,
+    ].join(' · '),
+  };
+}
+
+function combinedStatus(
+  states: CheckResult['status'][],
+): CheckResult['status'] {
+  if (states.includes('critical')) return 'critical';
+  if (states.includes('warning')) return 'warning';
+  if (states.includes('healthy')) return 'healthy';
+  return 'unknown';
+}
+
+function browserMetricSummary(
+  metric: BrowserMetricRow | undefined,
+  unit: string,
+  now: number,
+): string {
+  if (!metric) return 'n/a';
+  const capturedAt = new Date(metric.capturedAt).getTime();
+  const ageMinutes = Number.isFinite(capturedAt)
+    ? Math.max(0, Math.floor((now - capturedAt) / 60_000))
+    : 0;
+  const value = Number(metric.value);
+  const formatted =
+    unit === 'ms' ? Math.round(value) : Number(value.toFixed(3));
+  return `${formatted}${unit} (n=${Number(metric.sampleCount)}, ${ageMinutes}m old)`;
 }

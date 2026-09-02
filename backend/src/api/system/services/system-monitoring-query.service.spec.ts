@@ -1,9 +1,10 @@
 import { BadRequestException } from '@nestjs/common';
+import { SystemMonitoringQueryService } from './system-monitoring-query.service';
 import {
+  resolveHealth,
   resolveRange,
   runWithConcurrency,
-  SystemMonitoringQueryService,
-} from './system-monitoring-query.service';
+} from './system-monitoring-query.utils';
 
 describe('monitoring query ranges', () => {
   it('accepts a valid UTC range', () => {
@@ -169,5 +170,17 @@ describe('monitoring query ranges', () => {
       0, 1, 2, 3, 4,
     ]);
     expect(maximumActive).toBe(2);
+  });
+
+  it('lets latest critical and warning checks influence overall health', () => {
+    expect(resolveHealth({ cpu: 1 }, { openCount: 0 }, ['critical'])).toBe(
+      'critical',
+    );
+    expect(resolveHealth({ cpu: 1 }, { openCount: 0 }, ['warning'])).toBe(
+      'warning',
+    );
+    expect(resolveHealth({ cpu: 1 }, { openCount: 0 }, ['unknown'])).toBe(
+      'healthy',
+    );
   });
 });

@@ -14,3 +14,10 @@ export function maximumActiveCollectorGapSeconds(
 
   return Math.max(0, ...gaps)
 }
+
+export function monitoringStatusColor(value: string): string {
+  if (value === 'healthy') return 'success'
+  if (value === 'critical') return 'error'
+  if (value === 'warning') return 'warning'
+  return 'default'
+}

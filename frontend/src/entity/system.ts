@@ -197,7 +197,7 @@ export interface MonitoringEnvironment {
 
 export interface MonitoringServiceHealth {
   service: string
-  status: 'healthy' | 'warning' | 'critical'
+  status: 'healthy' | 'warning' | 'critical' | 'unknown'
   durationMs: number
   summary?: string | null
   lastCheckedAt: string
@@ -223,7 +223,7 @@ export interface MonitoringCheckRun {
   handle: number
   checkKey: string
   category: string
-  status: 'healthy' | 'warning' | 'critical'
+  status: 'healthy' | 'warning' | 'critical' | 'unknown'
   durationMs: number
   summary?: string | null
   startedAt: string

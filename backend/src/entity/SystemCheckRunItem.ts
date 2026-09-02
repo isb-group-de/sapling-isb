@@ -35,7 +35,7 @@ export class SystemCheckRunItem {
 
   @Sapling(['isReadOnly', 'isChip'])
   @Property({ length: 16 })
-  status!: 'healthy' | 'warning' | 'critical';
+  status!: 'healthy' | 'warning' | 'critical' | 'unknown';
 
   @Sapling(['isReadOnly', 'isNumeric'])
   @Property({ type: 'integer' })

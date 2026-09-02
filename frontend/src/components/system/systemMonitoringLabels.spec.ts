@@ -33,5 +33,9 @@ describe('system monitoring metric labels', () => {
     expect(monitoringServiceLabel('de-DE', 'database')).toBe('Datenbank')
     expect(monitoringCheckLabel('de-DE', 'frontend.experience')).toBe('Frontend-Erlebnis')
     expect(monitoringStateLabel('de-DE', 'healthy')).toBe('Fehlerfrei')
+    expect(monitoringCheckLabel('de-DE', 'telemetry.configuration')).toBe(
+      'Telemetrie-Konfiguration',
+    )
+    expect(monitoringStateLabel('de-DE', 'unknown')).toBe('Keine Daten')
   })
 })

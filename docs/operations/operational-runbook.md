@@ -276,6 +276,14 @@ of one installation and give each process a stable
 only after restart because this deployment deliberately has no external
 watchdog.
 
+The Ubuntu deployment writes `host:<domain>` as an explicit environment ID,
+the domain as its display name, and `backend:0` as the process slot. This keeps
+the history of installations that previously used the hostname fallback. Run
+`saplingctl configure` once after upgrading an older installation so the shared
+backend environment file receives these values. The
+`telemetry.configuration` check must then be healthy and the environment kind
+must be `production`.
+
 After deployment or an update:
 
 1. Backend starts without migration errors.
