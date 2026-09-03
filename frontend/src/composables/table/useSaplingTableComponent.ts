@@ -55,6 +55,7 @@ export interface UseSaplingTableProps {
   activeFilter?: FilterQuery
   showActions: boolean
   rowInteraction?: boolean
+  allowRowDoubleClick?: boolean
   tableKey: string
   headers?: SaplingTableHeaderItem[]
   multiSelect?: boolean
@@ -84,6 +85,7 @@ export type UseSaplingTableEmit = {
     value: SaplingGenericItem,
     action: DialogSaveAction,
     context?: DialogSaveContext,
+    sourceDraft?: SaplingGenericItem,
   ): void
 }
 

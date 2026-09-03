@@ -390,8 +390,11 @@ export class AzureCalendarOperations {
     }
     event.recurrenceRule = values.recurrenceRule;
     event.isAllDay = graphEvent.isAllDay === true;
-    event.onlineMeetingURL =
-      resolveAzureOnlineMeetingUrl(graphEvent) ?? event.onlineMeetingURL;
+    const onlineMeetingURL = resolveAzureOnlineMeetingUrl(graphEvent);
+    event.onlineMeetingURL = onlineMeetingURL ?? event.onlineMeetingURL;
+    event.createOnlineMeeting = Boolean(
+      graphEvent.isOnlineMeeting || onlineMeetingURL,
+    );
     event.status = values.status;
     await replaceCalendarEventParticipants(event, values.participants);
   }
@@ -459,9 +462,11 @@ export class AzureCalendarOperations {
       EventAzureItem,
       {
         event: {
-          participants: { handle: user.handle },
-          creatorPerson: { handle: user.handle },
           status: { handle: 'scheduled' },
+          $or: [
+            { participants: { handle: user.handle } },
+            { creatorPerson: { handle: user.handle } },
+          ],
         },
       },
       { populate: ['event', 'event.participants', 'event.status'] } as never,
@@ -615,7 +620,7 @@ export class AzureCalendarOperations {
     reference.iCalUId = created.iCalUId?.trim() || null;
     await emFork.persist(reference).flush();
 
-    if (event.type?.handle === 'online' && created.onlineMeeting?.joinUrl) {
+    if (event.createOnlineMeeting && created.onlineMeeting?.joinUrl) {
       event.onlineMeetingURL = created.onlineMeeting.joinUrl;
       await emFork.persist(event).flush();
     }
@@ -666,7 +671,7 @@ export class AzureCalendarOperations {
       onlineMeeting: { joinUrl: string };
     };
 
-    if (event.type?.handle === 'online' && patchResult.onlineMeeting?.joinUrl) {
+    if (event.createOnlineMeeting && patchResult.onlineMeeting?.joinUrl) {
       event.onlineMeetingURL = patchResult.onlineMeeting.joinUrl;
       await emFork.persist(event).flush();
     }

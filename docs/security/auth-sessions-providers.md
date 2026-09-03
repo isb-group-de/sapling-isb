@@ -127,6 +127,8 @@ If a user loses all passkeys, an administrator can delete the user's `personPass
 
 `PersonSessionItem` stores provider access and refresh tokens for Azure/Google integrations. Outgoing and incoming mail, Teams, and calendar services use these tokens for provider APIs and refresh them when possible.
 
+Administrators can delete individual `personSession` and `sessionStore` records through the generic entity pages. The default permission seed grants delete access for these two security-sensitive entities only to the administrator role. Deleting a person also deletes the person's provider session and all persisted browser sessions through database-level cascades.
+
 `PersonPasskeyItem` stores WebAuthn credentials for local logins:
 
 - `credentialId`

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import {
   buildRecurrenceRule,
   expandRecurringEvent,
@@ -80,6 +80,7 @@ describe('eventRecurrence', () => {
         endDate: new Date('2026-05-04T10:30:00.000Z'),
         isAllDay: false,
         isPrivate: false,
+        createOnlineMeeting: false,
         recurrenceRule: 'FREQ=WEEKLY;INTERVAL=1;BYDAY=MO,WE;COUNT=5',
         type: { color: '#00897B' } as never,
         status: { color: '#43A047' } as never,
@@ -100,6 +101,42 @@ describe('eventRecurrence', () => {
     expect(occurrences.every((item) => item.isRecurringOccurrence === true)).toBe(true)
   })
 
+  it('keeps the local event time across the daylight-saving transition', () => {
+    vi.stubEnv('TZ', 'Europe/Berlin')
+
+    try {
+      const occurrences = expandRecurringEvent(
+        {
+          handle: 260,
+          title: 'Morning round',
+          startDate: new Date('2026-09-21T06:00:00.000Z'),
+          endDate: new Date('2026-09-21T15:00:00.000Z'),
+          isAllDay: false,
+          isPrivate: false,
+          createOnlineMeeting: false,
+          recurrenceRule: 'FREQ=WEEKLY;INTERVAL=1;BYDAY=MO;COUNT=6',
+          creatorPerson: {} as never,
+          creatorCompany: {} as never,
+          transactionHandle: 'dst260',
+        },
+        new Date('2026-09-21T00:00:00.000Z'),
+        new Date('2026-10-27T00:00:00.000Z'),
+      )
+
+      expect(occurrences.map((item) => new Date(item.start).toISOString())).toEqual([
+        '2026-09-21T06:00:00.000Z',
+        '2026-09-28T06:00:00.000Z',
+        '2026-10-05T06:00:00.000Z',
+        '2026-10-12T06:00:00.000Z',
+        '2026-10-19T06:00:00.000Z',
+        '2026-10-26T07:00:00.000Z',
+      ])
+      expect(occurrences.at(-1)?.end).toBe(new Date('2026-10-26T16:00:00.000Z').getTime())
+    } finally {
+      vi.unstubAllEnvs()
+    }
+  })
+
   it('suppresses occurrences that were detached from the series', () => {
     const occurrences = expandRecurringEvent(
       {
@@ -109,6 +146,7 @@ describe('eventRecurrence', () => {
         endDate: new Date('2026-05-04T10:30:00.000Z'),
         isAllDay: false,
         isPrivate: false,
+        createOnlineMeeting: false,
         recurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=3',
         recurrenceExceptionDates: ['2026-05-05T09:30:00.000Z'],
         creatorPerson: {} as never,
@@ -134,6 +172,7 @@ describe('eventRecurrence', () => {
         endDate: new Date('2026-05-04T10:30:00.000Z'),
         isAllDay: false,
         isPrivate: false,
+        createOnlineMeeting: false,
         recurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=3',
         recurrenceExceptionDates: '["2026-05-05T09:30:00.000Z"]' as never,
         creatorPerson: {} as never,
@@ -159,6 +198,7 @@ describe('eventRecurrence', () => {
         endDate: new Date('2026-05-04T10:30:00.000Z'),
         isAllDay: false,
         isPrivate: false,
+        createOnlineMeeting: false,
         recurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=3',
         recurrenceExceptionDates: { unexpected: true } as never,
         creatorPerson: {} as never,

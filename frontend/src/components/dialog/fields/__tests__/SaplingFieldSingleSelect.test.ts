@@ -137,6 +137,7 @@ const SaplingTableStub = defineComponent({
   props: {
     multiSelect: Boolean,
     showToolbar: Boolean,
+    allowRowDoubleClick: Boolean,
   },
   emits: ['update:selected'],
   template: '<div />',
@@ -236,6 +237,14 @@ describe('SaplingFieldSingleSelect reference dialog', () => {
         options: ['isValue'],
       },
     ])
+  })
+
+  it('disables row double-click actions in the dropdown table', async () => {
+    const wrapper = mountField()
+
+    await wrapper.findComponent(VAutocompleteStub).vm.$emit('focus')
+
+    expect(wrapper.findComponent(SaplingTableStub).props('allowRowDoubleClick')).toBe(false)
   })
 
   it('hides the dropdown toolbar for a single-select table', async () => {
@@ -401,6 +410,35 @@ describe('SaplingFieldSingleSelect reference dialog', () => {
     )
     expect(wrapper.getComponent(VAutocompleteStub).props('modelValue')).toEqual(hydratedLanguage)
     expect(wrapper.emitted('update:modelValue')).toBeUndefined()
+  })
+
+  it('does not hydrate an unsaved parent draft with a blank handle', async () => {
+    tableState.entityTemplates.value = [
+      {
+        key: 'name',
+        name: 'name',
+        type: 'string',
+        isPersistent: true,
+        options: ['isValue'],
+      },
+      {
+        key: 'status',
+        name: 'status',
+        type: 'StatusItem',
+        isPersistent: true,
+        isReference: true,
+        kind: 'm:1',
+        referenceName: 'status',
+        options: ['isValue'],
+      },
+    ]
+
+    const unsavedParent = { handle: '', name: 'Unsaved parent' }
+    const wrapper = mountField(unsavedParent)
+    await flushPromises()
+
+    expect(findMock).not.toHaveBeenCalled()
+    expect(wrapper.getComponent(VAutocompleteStub).props('modelValue')).toEqual(unsavedParent)
   })
 
   it('reserves multiline height from metadata independently of the current selection', async () => {

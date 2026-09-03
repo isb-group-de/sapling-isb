@@ -41,6 +41,7 @@ import {
   type AzureOutlookMasterCategory,
   type ImportAzureCalendarEventsRange,
   clampAzureImportRangeToFuture,
+  isAzureAuthenticationError,
   isAzureForbiddenError,
   isAzureNotFoundError,
 } from './azure-calendar.utils';
@@ -100,6 +101,55 @@ export class AzureCalendarService extends AzureCalendarOperations {
       ...(changedFields ? { changedFields } : {}),
       ...(occurrenceStart ? { occurrenceStart } : {}),
     });
+  }
+
+  /**
+   * Deletes an existing Outlook projection before its Sapling Event is
+   * physically removed. The Event creator owns the mailbox projection and its
+   * persisted session therefore supplies the provider credentials.
+   */
+  async deleteSynchronizedEvent(
+    eventHandle: number,
+    ownerPersonHandle: number,
+  ): Promise<boolean> {
+    const emFork = this.em.fork();
+    const reference = await emFork.findOne(EventAzureItem, {
+      event: eventHandle as never,
+    });
+    if (!reference) {
+      return false;
+    }
+
+    const session = await emFork.findOne(PersonSessionItem, {
+      person: { handle: ownerPersonHandle },
+    });
+    if (!session) {
+      throw new UnauthorizedException('calendar.azureSessionNotFound');
+    }
+
+    const accessToken = await this.resolveAzureAccessToken(session);
+    if (!accessToken) {
+      throw new UnauthorizedException('calendar.azureTokenNotAvailable');
+    }
+
+    try {
+      await this.deleteEvent(this.createClient(accessToken), reference, emFork);
+    } catch (error) {
+      if (!isAzureAuthenticationError(error)) {
+        throw error;
+      }
+      const refreshedToken = await this.refreshAzureAccessToken(session);
+      if (!refreshedToken) {
+        throw error;
+      }
+      await this.deleteEvent(
+        this.createClient(refreshedToken),
+        reference,
+        emFork,
+      );
+    }
+
+    return true;
   }
 
   /**

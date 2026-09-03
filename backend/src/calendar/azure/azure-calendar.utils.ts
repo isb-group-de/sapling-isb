@@ -504,14 +504,14 @@ export function buildAzureCalendarEvent(
     eventResource.categories = categories;
   }
 
-  if (event.type?.handle === 'online' && !event.onlineMeetingURL) {
+  eventResource.body = {
+    contentType: 'HTML',
+    content: event.description,
+  };
+
+  if (event.createOnlineMeeting) {
     eventResource.isOnlineMeeting = true;
     eventResource.onlineMeetingProvider = 'teamsForBusiness';
-  } else if (event.type?.handle !== 'online') {
-    eventResource.body = {
-      contentType: 'HTML',
-      content: event.description,
-    };
   }
 
   return eventResource;
@@ -544,6 +544,10 @@ export function buildAzureCalendarEventPatch(
   if (changed.has('recurrenceRule')) copy('recurrence');
   if (changed.has('participants')) copy('attendees');
   if (changed.has('description')) copy('body');
+  if (changed.has('createOnlineMeeting') && event.createOnlineMeeting) {
+    copy('isOnlineMeeting');
+    copy('onlineMeetingProvider');
+  }
   if (changed.has('type') || changed.has('category')) copy('categories');
 
   return patch;

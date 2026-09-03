@@ -64,6 +64,7 @@ export interface UseSaplingTableRowProps {
   canShowExternalRecordLinks?: boolean
   showActions: boolean
   rowInteraction?: boolean
+  allowRowDoubleClick?: boolean
 }
 
 export type UseSaplingTableRowEmit = {

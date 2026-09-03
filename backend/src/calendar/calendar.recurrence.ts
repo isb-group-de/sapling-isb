@@ -2,6 +2,13 @@ import {
   formatGoogleExceptionDate,
   formatUtcDateOnly,
 } from './calendar-recurrence-format.utils';
+import {
+  addCalendarDays,
+  fromCalendarDateTime,
+  normalizeCalendarTimeZone,
+  toCalendarDateTime,
+  type CalendarDateTime,
+} from './calendar-time-zone.utils';
 
 export type RecurrenceFrequency = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
 
@@ -174,6 +181,7 @@ export function expandFiniteRecurrence(
   endDate: Date,
   recurrenceRule?: string | null,
   maxOccurrences = RECURRENCE_MAX_OCCURRENCES,
+  timeZone = 'UTC',
 ): ExpandedFiniteRecurrence {
   const parsedRule = parseRecurrenceRule(recurrenceRule);
   if (
@@ -222,6 +230,7 @@ export function expandFiniteRecurrence(
       currentStart,
       parsedRule,
       startDate,
+      timeZone,
     );
     if (!nextStart) {
       return { occurrences, isFinite: true, isComplete: true };
@@ -369,6 +378,7 @@ export function findRecurrenceOccurrence(
   recurrenceRule: string | null | undefined,
   occurrenceStart: Date,
   maxIterations = 10_000,
+  timeZone = 'UTC',
 ): RecurrenceOccurrenceMatch | null {
   const parsedRule = parseRecurrenceRule(recurrenceRule);
   if (
@@ -416,6 +426,7 @@ export function findRecurrenceOccurrence(
       currentStart,
       parsedRule,
       startDate,
+      timeZone,
     );
     if (!nextStart) {
       return null;
@@ -524,23 +535,36 @@ function getNextOccurrenceStart(
   currentStart: Date,
   parsedRule: ParsedRecurrenceRule,
   baseStart: Date,
+  timeZone = 'UTC',
 ): Date | null {
+  const normalizedTimeZone = normalizeCalendarTimeZone(timeZone);
   switch (parsedRule.frequency) {
     case 'DAILY':
-      return addUtcDays(currentStart, parsedRule.interval);
+      return addCalendarDays(
+        currentStart,
+        parsedRule.interval,
+        normalizedTimeZone,
+      );
     case 'WEEKLY':
-      return advanceWeeklyOccurrence(currentStart, parsedRule, baseStart);
+      return advanceWeeklyOccurrence(
+        currentStart,
+        parsedRule,
+        baseStart,
+        normalizedTimeZone,
+      );
     case 'MONTHLY':
       return advanceMonthlyOccurrence(
         currentStart,
         parsedRule.interval,
         baseStart,
+        normalizedTimeZone,
       );
     case 'YEARLY':
       return advanceYearlyOccurrence(
         currentStart,
         parsedRule.interval,
         baseStart,
+        normalizedTimeZone,
       );
     default:
       return null;
@@ -551,16 +575,21 @@ function advanceWeeklyOccurrence(
   currentStart: Date,
   parsedRule: ParsedRecurrenceRule,
   baseStart: Date,
+  timeZone: string,
 ): Date | null {
   const allowedWeekdays =
-    parsedRule.byDay.length > 0 ? parsedRule.byDay : [toWeekdayCode(baseStart)];
+    parsedRule.byDay.length > 0
+      ? parsedRule.byDay
+      : [toZonedWeekdayCode(baseStart, timeZone)];
   let candidate = new Date(currentStart);
 
   for (let index = 0; index < 370; index += 1) {
-    candidate = addUtcDays(candidate, 1);
+    candidate = addCalendarDays(candidate, 1, timeZone);
     if (
-      allowedWeekdays.includes(toWeekdayCode(candidate)) &&
-      diffWeeksFromMonday(baseStart, candidate) % parsedRule.interval === 0
+      allowedWeekdays.includes(toZonedWeekdayCode(candidate, timeZone)) &&
+      diffZonedWeeksFromMonday(baseStart, candidate, timeZone) %
+        parsedRule.interval ===
+        0
     ) {
       return candidate;
     }
@@ -573,19 +602,23 @@ function advanceMonthlyOccurrence(
   currentStart: Date,
   interval: number,
   baseStart: Date,
+  timeZone: string,
 ): Date | null {
+  const currentParts = toCalendarDateTime(currentStart, timeZone);
+  const baseParts = toCalendarDateTime(baseStart, timeZone);
   for (
     let monthsToAdd = interval;
     monthsToAdd <= 1200;
     monthsToAdd += interval
   ) {
-    const candidate = createUtcDateWithBaseTime(
-      currentStart.getUTCFullYear(),
-      currentStart.getUTCMonth() + monthsToAdd,
-      baseStart.getUTCDate(),
-      baseStart,
+    const candidate = createZonedDateWithBaseTime(
+      currentParts.year,
+      currentParts.month - 1 + monthsToAdd,
+      baseParts.day,
+      baseParts,
+      timeZone,
     );
-    if (candidate.getUTCDate() === baseStart.getUTCDate()) {
+    if (toCalendarDateTime(candidate, timeZone).day === baseParts.day) {
       return candidate;
     }
   }
@@ -597,17 +630,22 @@ function advanceYearlyOccurrence(
   currentStart: Date,
   interval: number,
   baseStart: Date,
+  timeZone: string,
 ): Date | null {
+  const currentParts = toCalendarDateTime(currentStart, timeZone);
+  const baseParts = toCalendarDateTime(baseStart, timeZone);
   for (let yearsToAdd = interval; yearsToAdd <= 200; yearsToAdd += interval) {
-    const candidate = createUtcDateWithBaseTime(
-      currentStart.getUTCFullYear() + yearsToAdd,
-      baseStart.getUTCMonth(),
-      baseStart.getUTCDate(),
-      baseStart,
+    const candidate = createZonedDateWithBaseTime(
+      currentParts.year + yearsToAdd,
+      baseParts.month - 1,
+      baseParts.day,
+      baseParts,
+      timeZone,
     );
+    const candidateParts = toCalendarDateTime(candidate, timeZone);
     if (
-      candidate.getUTCMonth() === baseStart.getUTCMonth() &&
-      candidate.getUTCDate() === baseStart.getUTCDate()
+      candidateParts.month === baseParts.month &&
+      candidateParts.day === baseParts.day
     ) {
       return candidate;
     }
@@ -616,45 +654,68 @@ function advanceYearlyOccurrence(
   return null;
 }
 
-function addUtcDays(date: Date, days: number): Date {
-  const candidate = new Date(date);
-  candidate.setUTCDate(candidate.getUTCDate() + days);
-  return candidate;
-}
-
-function diffWeeksFromMonday(baseDate: Date, candidateDate: Date): number {
+function diffZonedWeeksFromMonday(
+  baseDate: Date,
+  candidateDate: Date,
+  timeZone: string,
+): number {
   const millisecondsPerWeek = 604_800_000;
   return Math.floor(
-    (startOfUtcWeekMonday(candidateDate).getTime() -
-      startOfUtcWeekMonday(baseDate).getTime()) /
+    (startOfZonedWeekMonday(candidateDate, timeZone) -
+      startOfZonedWeekMonday(baseDate, timeZone)) /
       millisecondsPerWeek,
   );
 }
 
-function startOfUtcWeekMonday(date: Date): Date {
-  const candidate = new Date(
-    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()),
+function startOfZonedWeekMonday(date: Date, timeZone: string): number {
+  const parts = toCalendarDateTime(date, timeZone);
+  const localDate = new Date(Date.UTC(parts.year, parts.month - 1, parts.day));
+  const day = localDate.getUTCDay();
+  return Date.UTC(
+    parts.year,
+    parts.month - 1,
+    parts.day + (day === 0 ? -6 : 1 - day),
   );
-  const day = candidate.getUTCDay();
-  candidate.setUTCDate(candidate.getUTCDate() + (day === 0 ? -6 : 1 - day));
-  return candidate;
 }
 
-function createUtcDateWithBaseTime(
+function createZonedDateWithBaseTime(
   year: number,
   month: number,
   day: number,
-  baseTime: Date,
+  baseTime: CalendarDateTime,
+  timeZone: string,
 ): Date {
-  return new Date(
+  const normalizedLocalDate = new Date(
     Date.UTC(
       year,
       month,
       day,
-      baseTime.getUTCHours(),
-      baseTime.getUTCMinutes(),
-      baseTime.getUTCSeconds(),
-      baseTime.getUTCMilliseconds(),
+      baseTime.hour,
+      baseTime.minute,
+      baseTime.second,
+      baseTime.millisecond,
     ),
+  );
+  return fromCalendarDateTime(
+    {
+      year: normalizedLocalDate.getUTCFullYear(),
+      month: normalizedLocalDate.getUTCMonth() + 1,
+      day: normalizedLocalDate.getUTCDate(),
+      hour: normalizedLocalDate.getUTCHours(),
+      minute: normalizedLocalDate.getUTCMinutes(),
+      second: normalizedLocalDate.getUTCSeconds(),
+      millisecond: normalizedLocalDate.getUTCMilliseconds(),
+    },
+    timeZone,
+  );
+}
+
+function toZonedWeekdayCode(
+  date: Date,
+  timeZone: string,
+): RecurrenceWeekdayCode {
+  const parts = toCalendarDateTime(date, timeZone);
+  return toWeekdayCode(
+    new Date(Date.UTC(parts.year, parts.month - 1, parts.day)),
   );
 }

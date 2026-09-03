@@ -93,6 +93,7 @@ const SaplingTableStub = defineComponent({
     disableMobileView: Boolean,
     multiSelect: Boolean,
     showToolbar: Boolean,
+    allowRowDoubleClick: Boolean,
   },
   emits: ['update:selected'],
   template:
@@ -200,6 +201,7 @@ describe('SaplingFieldSelect', () => {
     const table = wrapper.findComponent(SaplingTableStub)
     expect(table.props('showToolbar')).toBe(false)
     expect(table.props('multiSelect')).toBe(true)
+    expect(table.props('allowRowDoubleClick')).toBe(false)
   })
 
   it('keeps nested header blur outside the menu backdrop root', () => {

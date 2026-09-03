@@ -23,6 +23,7 @@ The documentation should stay close to the code, but not duplicate every class o
 - [KPI And Dashboard System](features/kpi-dashboard.md)
 - [Scripts And Script Buttons](development/scripts-and-buttons.md)
 - [Mail And Teams Communication](features/mail-and-teams.md)
+- [Ticket Email Automation](features/ticket-email-automation.md)
 - [Customer 360°](features/customer-360.md)
 - [SLA Deadlines And Business Calendars](features/sla-deadlines.md)
 - [Inbound Email Synchronization And AI Processing](features/inbound-email.md)

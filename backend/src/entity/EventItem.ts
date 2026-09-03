@@ -39,6 +39,7 @@ import { EventCategoryItem } from './EventCategoryItem';
  * @property        {Date}                  startDate           Start date and time of the event
  * @property        {Date}                  endDate             End date and time of the event
  * @property        {boolean}               isAllDay            Indicates if the event lasts all day
+ * @property        {boolean}               createOnlineMeeting Whether the calendar provider should create a meeting link
  * @property        {string}                onlineMeetingURL    URL for the online meeting (optional)
  * @property        {EventTypeItem}         type                The appointment type of the event
  * @property        {EventCategoryItem}     category            The business category of the event
@@ -180,6 +181,26 @@ export class EventItem {
   })
   @Property({ default: false, nullable: false })
   isPrivate!: boolean;
+
+  /**
+   * Requests creation of a provider-native meeting link (Teams or Google Meet).
+   * This is intentionally independent from the event type.
+   * @type {boolean}
+   */
+  @ApiPropertyOptional({ default: false })
+  @SaplingForm({
+    order: 350,
+    group: 'event.groupBasics',
+    groupOrder: 100,
+    width: 1,
+    visible: true,
+    tableOrder: 350,
+    tableVisible: false,
+    mobileOrder: 350,
+    mobileVisible: false,
+  })
+  @Property({ default: false, nullable: false })
+  createOnlineMeeting: boolean = false;
 
   /**
    * RFC5545 recurrence rule describing a repeating series (optional).

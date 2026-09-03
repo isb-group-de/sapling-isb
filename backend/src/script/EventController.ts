@@ -6,6 +6,7 @@ import { PersonItem } from '../entity/PersonItem.js';
 import { ScriptClass } from './core/script.class.js';
 import { ScriptResultServer } from './core/script.result.server.js';
 import { EventItem } from '../entity/EventItem.js';
+import { EventDeliveryItem } from '../entity/EventDeliveryItem.js';
 import type { ScriptServerContext } from './core/script.interface.js';
 
 const CALENDAR_PROVIDER_RELEVANT_EVENT_FIELDS = new Set([
@@ -16,6 +17,7 @@ const CALENDAR_PROVIDER_RELEVANT_EVENT_FIELDS = new Set([
   'recurrenceRule',
   'recurrenceExceptionDates',
   'participants',
+  'createOnlineMeeting',
   'type',
   'category',
   'status',
@@ -74,6 +76,43 @@ export class EventController extends ScriptClass {
       itemCount: items.length,
     });
     return this.sendEvent('afterUpdate', items, context);
+  }
+
+  /**
+   * Removes provider projections before an Event is physically deleted. This
+   * also covers Events deleted as children of another record.
+   */
+  async beforeDelete(items: EventItem[]): Promise<ScriptResultServer> {
+    if (!this.em || !this.azureCalendarService || !this.googleCalendarService) {
+      throw new Error('calendar.serviceOrSessionRequired');
+    }
+
+    for (const event of items) {
+      if (typeof event.handle !== 'number') {
+        throw new Error('calendar.eventHandleRequired');
+      }
+
+      const ownerPersonHandle =
+        event.creatorPerson?.handle ?? this.user?.handle;
+      if (typeof ownerPersonHandle !== 'number') {
+        throw new Error('calendar.eventOwnerRequired');
+      }
+
+      await this.azureCalendarService.deleteSynchronizedEvent(
+        event.handle,
+        ownerPersonHandle,
+      );
+      await this.googleCalendarService.deleteSynchronizedEvent(
+        event.handle,
+        ownerPersonHandle,
+      );
+
+      await this.em.nativeDelete(EventDeliveryItem, {
+        event: event.handle,
+      } as never);
+    }
+
+    return new ScriptResultServer(items);
   }
 
   /**

@@ -8,6 +8,9 @@ jest.mock('../calendar/google/google.calendar.service', () => ({
 }));
 jest.mock('../entity/EntityItem', () => ({ EntityItem: class {} }));
 jest.mock('../entity/EventItem', () => ({ EventItem: class {} }));
+jest.mock('../entity/EventDeliveryItem', () => ({
+  EventDeliveryItem: class {},
+}));
 jest.mock('../entity/PersonItem', () => ({ PersonItem: class {} }));
 
 import { EventController } from './EventController';
@@ -245,5 +248,66 @@ describe('EventController', () => {
       undefined,
       ['participants'],
     );
+  });
+
+  it('deletes external projections and delivery history before deleting an Event', async () => {
+    const azureDelete = jest.fn<
+      (eventHandle: number, ownerPersonHandle: number) => Promise<boolean>
+    >(() => Promise.resolve(true));
+    const googleDelete = jest.fn<
+      (eventHandle: number, ownerPersonHandle: number) => Promise<boolean>
+    >(() => Promise.resolve(false));
+    const nativeDelete = jest.fn<
+      (entity: unknown, where: object) => Promise<number>
+    >(() => Promise.resolve(2));
+    const user = { handle: 4 } as PersonItem;
+    const event = {
+      handle: 23,
+      creatorPerson: { handle: 7 },
+    } as EventItem;
+    const controller = new EventController(
+      { handle: 'event' } as never,
+      user,
+      { nativeDelete } as never,
+      { deleteSynchronizedEvent: azureDelete } as never,
+      { deleteSynchronizedEvent: googleDelete } as never,
+    );
+
+    await expect(controller.beforeDelete([event])).resolves.toMatchObject({
+      items: [event],
+    });
+
+    expect(azureDelete).toHaveBeenCalledWith(23, 7);
+    expect(googleDelete).toHaveBeenCalledWith(23, 7);
+    expect(nativeDelete).toHaveBeenCalledWith(expect.any(Function), {
+      event: 23,
+    });
+    expect(nativeDelete.mock.invocationCallOrder[0]).toBeGreaterThan(
+      googleDelete.mock.invocationCallOrder[0] ?? 0,
+    );
+  });
+
+  it('keeps local delivery data when a provider deletion fails', async () => {
+    const providerError = new Error('provider unavailable');
+    const nativeDelete = jest.fn<
+      (entity: unknown, where: object) => Promise<number>
+    >(() => Promise.resolve(1));
+    const controller = new EventController(
+      { handle: 'event' } as never,
+      { handle: 4 } as PersonItem,
+      { nativeDelete } as never,
+      {
+        deleteSynchronizedEvent: jest.fn(() => Promise.reject(providerError)),
+      } as never,
+      { deleteSynchronizedEvent: jest.fn() } as never,
+    );
+
+    await expect(
+      controller.beforeDelete([
+        { handle: 23, creatorPerson: { handle: 7 } } as EventItem,
+      ]),
+    ).rejects.toBe(providerError);
+
+    expect(nativeDelete).not.toHaveBeenCalled();
   });
 });

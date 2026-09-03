@@ -2,7 +2,10 @@ import { describe, expect, it } from 'vitest'
 import {
   MONITORING_METRIC_DEFINITIONS,
   monitoringCheckLabel,
+  monitoringIncidentText,
+  monitoringIncidentTypeLabel,
   monitoringMetricLabel,
+  monitoringMetricValue,
   monitoringServiceLabel,
   monitoringStateLabel,
 } from './systemMonitoringLabels'
@@ -37,5 +40,17 @@ describe('system monitoring metric labels', () => {
       'Telemetrie-Konfiguration',
     )
     expect(monitoringStateLabel('de-DE', 'unknown')).toBe('Keine Daten')
+  })
+
+  it('formats incident values in the native metric unit', () => {
+    expect(monitoringMetricValue('de-DE', 'http.p95Ms', 3000)).toBe('3.000 ms')
+    expect(monitoringMetricValue('de-DE', 'host.cpu.percent', 92.45)).toBe('92,5 %')
+    expect(monitoringMetricValue('en-US', 'process.memory.rssBytes', 1048576)).toBe('1 MB')
+  })
+
+  it('provides localized incident terminology when translations are not loaded yet', () => {
+    expect(monitoringIncidentTypeLabel('de-DE', 'threshold')).toBe('Schwellenwertalarm')
+    expect(monitoringIncidentTypeLabel('en-US', 'collectorGap')).toBe('Collector gap')
+    expect(monitoringIncidentText((key) => key, 'de-DE', 'samples')).toBe('Ausgewertete Messpunkte')
   })
 })

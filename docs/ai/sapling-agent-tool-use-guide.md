@@ -213,7 +213,8 @@ Use the import tools in this order:
 
 `import_configure_batch` and `import_execute_batch` are mutating tools. For
 confirm-gated agents they create pending tool actions and are not complete until
-the user confirms the action in Sapling.
+the user confirms the action in Sapling. Pending tool actions remain valid for
+ten hours after they are prepared; confirmation after that deadline is rejected.
 
 ## Working With Schemas
 

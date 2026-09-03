@@ -117,7 +117,11 @@ export class PersonSessionItem {
     mobileOrder: 100,
     mobileVisible: false,
   })
-  @OneToOne(() => PersonItem, { nullable: false, unique: true })
+  @OneToOne(() => PersonItem, {
+    nullable: false,
+    unique: true,
+    deleteRule: 'cascade',
+  })
   person!: Rel<PersonItem>;
   //#endregion
 

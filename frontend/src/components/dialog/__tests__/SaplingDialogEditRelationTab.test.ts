@@ -42,6 +42,8 @@ const SaplingTableStub = defineComponent({
       type: Boolean,
       default: true,
     },
+    deferCreate: Boolean,
+    parent: Object,
   },
   setup(_, { expose }) {
     expose({ openCreateDialog: openCreateDialogMock })
@@ -73,6 +75,7 @@ function mountRelationTab(
     entityPermission?: AccumulatedPermission | null
     mode?: 'create' | 'edit' | 'readonly'
     relationKind?: '1:m' | 'm:n'
+    item?: SaplingGenericItem
   } = {},
 ) {
   const template = {
@@ -100,7 +103,7 @@ function mountRelationTab(
       mode: overrides.mode ?? 'edit',
       entityHandle: 'company',
       entityLabel: 'Companies',
-      item: { handle: 1 } as SaplingGenericItem,
+      item: overrides.item ?? ({ handle: 1 } as SaplingGenericItem),
       parentDraft: { name: 'Draft company' } as SaplingGenericItem,
       entity: { handle: 'company' } as EntityItem,
       headers: [] as SaplingTableHeaderItem[],
@@ -189,5 +192,18 @@ describe('SaplingDialogEditRelationTab', () => {
     await wrapper.get('[data-testid="relation-create-record"]').trigger('click')
 
     expect(openCreateDialogMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('keeps child creation deferred for a handle-less edit parent', () => {
+    const wrapper = mountRelationTab({
+      mode: 'edit',
+      relationKind: '1:m',
+      item: { handle: '', name: 'Detached draft' },
+    })
+    const table = wrapper.getComponent(SaplingTableStub)
+
+    expect(table.props('deferCreate')).toBe(true)
+    expect(table.props('parent')).toEqual({ name: 'Draft company' })
+    expect(wrapper.find('[data-testid="relation-create-record"]').exists()).toBe(true)
   })
 })

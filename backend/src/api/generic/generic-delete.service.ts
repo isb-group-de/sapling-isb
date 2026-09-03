@@ -1,13 +1,9 @@
 import {
   BadRequestException,
-  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { EntityManager, TransactionPropagation } from '@mikro-orm/core';
-import { EventAzureItem } from '../../entity/EventAzureItem';
-import { EventDeliveryItem } from '../../entity/EventDeliveryItem';
-import { EventGoogleItem } from '../../entity/EventGoogleItem';
 import { PersonItem } from '../../entity/PersonItem';
 import type { ScriptServerContext } from '../../script/core/script.interface';
 import { TemplateService } from '../template/template.service';
@@ -27,7 +23,7 @@ import type {
 
 type CascadeReference = GenericDeleteReferenceDto & { mappedBy: string };
 
-/** Coordinates delete previews, selected child cascades, and Event cancellation. */
+/** Coordinates delete previews and selected child cascades. */
 @Injectable()
 export class GenericDeleteService {
   constructor(
@@ -45,10 +41,6 @@ export class GenericDeleteService {
     currentUser: PersonItem,
   ): Promise<GenericDeleteImpactDto> {
     await this.assertDeleteAccess(entityHandle, handle, currentUser);
-
-    if (await this.isSynchronizedEvent(entityHandle, handle)) {
-      return { action: 'cancel', references: [] };
-    }
 
     return {
       action: 'delete',
@@ -71,19 +63,6 @@ export class GenericDeleteService {
     cascadeRelations: string[] = [],
   ): Promise<GenericDeleteResultDto> {
     await this.assertDeleteAccess(entityHandle, handle, currentUser);
-
-    if (await this.isSynchronizedEvent(entityHandle, handle)) {
-      await this.genericEntityMutationService.update(
-        'event',
-        handle,
-        { status: 'canceled' },
-        currentUser,
-        [],
-        scriptContext,
-        { resolution: 'overwrite' },
-      );
-      return { action: 'canceled' };
-    }
 
     const selectedReferences = this.resolveSelectedReferences(
       entityHandle,
@@ -157,10 +136,6 @@ export class GenericDeleteService {
       );
 
     for (const childHandle of childHandles) {
-      if (await this.isSynchronizedEvent(reference.entityHandle, childHandle)) {
-        throw new ConflictException('global.syncedEventBlocksCascadeDelete');
-      }
-
       await this.genericEntityMutationService.delete(
         reference.entityHandle,
         childHandle,
@@ -275,23 +250,6 @@ export class GenericDeleteService {
     return normalizedNames.map(
       (name) => available.get(name) as CascadeReference,
     );
-  }
-
-  private async isSynchronizedEvent(
-    entityHandle: string,
-    handle: string | number,
-  ): Promise<boolean> {
-    if (entityHandle !== 'event') return false;
-    const normalizedHandle = this.genericReferenceService.normalizeHandleValue(
-      'event',
-      handle,
-    );
-    const [azure, google, delivery] = await Promise.all([
-      this.em.findOne(EventAzureItem, { event: normalizedHandle } as never),
-      this.em.findOne(EventGoogleItem, { event: normalizedHandle } as never),
-      this.em.findOne(EventDeliveryItem, { event: normalizedHandle } as never),
-    ]);
-    return Boolean(azure || google || delivery);
   }
 
   private extractHandle(item: unknown): string | number | null {

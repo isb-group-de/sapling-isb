@@ -60,14 +60,22 @@ export function useSaplingPendingRelations(options: {
     template: EntityTemplate,
     item: SaplingGenericItem,
     context?: DialogSaveContext,
+    sourceDraft?: SaplingGenericItem,
   ): void {
     if (!options.hasPendingRelationParent.value || template.kind !== '1:m') return
-    const draftId = `${template.name}:${nextPendingRelationDraftId++}`
+    const existingDraftId = sourceDraft ? getPendingRelationDraftId(sourceDraft) : null
+    const draftId = existingDraftId ?? `${template.name}:${nextPendingRelationDraftId++}`
     const draft = { ...item, [PENDING_RELATION_DRAFT_KEY]: draftId }
-    options.relationTableItems.value[template.name] = [
-      ...(options.relationTableItems.value[template.name] ?? []),
-      draft,
-    ]
+    const stagedItems = options.relationTableItems.value[template.name] ?? []
+    const existingIndex = existingDraftId
+      ? stagedItems.findIndex(
+          (stagedItem) => getPendingRelationDraftId(stagedItem) === existingDraftId,
+        )
+      : -1
+    options.relationTableItems.value[template.name] =
+      existingIndex >= 0
+        ? stagedItems.map((stagedItem, index) => (index === existingIndex ? draft : stagedItem))
+        : [...stagedItems, draft]
     options.relationTableTotal.value[template.name] =
       options.relationTableItems.value[template.name].length
     options.relationTableLoaded.value[template.name] = true

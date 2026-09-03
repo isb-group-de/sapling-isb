@@ -25,6 +25,7 @@ const createEvent = (): EventItem =>
     startDate: new Date('2026-07-16T08:00:00.000Z'),
     endDate: new Date('2026-07-16T09:00:00.000Z'),
     recurrenceRule: 'FREQ=WEEKLY;BYDAY=TH',
+    createOnlineMeeting: true,
     participants: [
       { email: 'ada@example.com', firstName: 'Ada', lastName: 'Lovelace' },
     ],

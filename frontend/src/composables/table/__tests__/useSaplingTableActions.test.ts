@@ -120,6 +120,43 @@ describe('useSaplingTableActions', () => {
       },
     })
   })
+
+  it('reopens and resaves a handle-less deferred row as the same local draft', async () => {
+    const emit = vi.fn()
+    const actions = useSaplingTableActions({
+      props: {
+        items: [],
+        search: '',
+        sortBy: [],
+        entityHandle: 'effortEstimatePosition',
+        entity: null,
+        entityPermission: null,
+        entityTemplates: [template('title')],
+        deferCreate: true,
+      },
+      emit,
+      localColumnFilters: ref({}),
+      selectedItems: ref([]),
+      selectedRows: ref([]),
+      clearSelection: vi.fn(),
+    })
+    const stagedDraft = { handle: '', title: 'Initial draft' }
+    const saveContext = { complete: vi.fn() }
+
+    await actions.openEditDialog(stagedDraft)
+    await actions.saveDialog({ title: 'Edited draft' }, 'saveAndClose', saveContext)
+
+    expect(apiFindMock).not.toHaveBeenCalled()
+    expect(emit).toHaveBeenCalledWith(
+      'createDraft',
+      { title: 'Edited draft' },
+      'saveAndClose',
+      saveContext,
+      stagedDraft,
+    )
+    expect(saveContext.complete).toHaveBeenCalledWith(true)
+    expect(actions.editDialog.value).toMatchObject({ visible: false, mode: 'create' })
+  })
 })
 
 function template(name: string, overrides: Partial<EntityTemplate> = {}): EntityTemplate {

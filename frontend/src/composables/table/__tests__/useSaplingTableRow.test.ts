@@ -49,7 +49,11 @@ vi.mock('@/composables/system/useSaplingMessageCenter', () => ({
 
 import { useSaplingTableRow, type UseSaplingTableRowProps } from '../useSaplingTableRow'
 
-function createRow(column: SaplingTableHeaderItem, referenceValue: SaplingGenericItem) {
+function createRow(
+  column: SaplingTableHeaderItem,
+  referenceValue: SaplingGenericItem,
+  overrides: Partial<UseSaplingTableRowProps> = {},
+) {
   const emit = vi.fn()
   const props: UseSaplingTableRowProps = {
     item: { handle: 1, [String(column.key)]: referenceValue },
@@ -62,6 +66,7 @@ function createRow(column: SaplingTableHeaderItem, referenceValue: SaplingGeneri
     canNavigate: false,
     canShowInformation: false,
     showActions: false,
+    ...overrides,
   }
 
   return { emit, row: useSaplingTableRow(props, emit) }
@@ -89,6 +94,61 @@ describe('useSaplingTableRow relation dialogs', () => {
         referenceName: 'countryProfile',
       } as EntityTemplate,
     ]
+  })
+
+  it('keeps row double-click enabled by default', () => {
+    const column = {
+      key: 'country',
+      name: 'country',
+      title: 'Country',
+      type: 'CountryItem',
+    } as SaplingTableHeaderItem
+    const { emit, row } = createRow(column, { handle: 'DE' })
+
+    row.onRowDoubleClick(new MouseEvent('dblclick', { button: 0 }))
+
+    expect(emit).toHaveBeenCalledWith('show', { handle: 1, country: { handle: 'DE' } })
+  })
+
+  it('suppresses row double-click when the consumer disables it', () => {
+    const column = {
+      key: 'country',
+      name: 'country',
+      title: 'Country',
+      type: 'CountryItem',
+    } as SaplingTableHeaderItem
+    const { emit, row } = createRow(column, { handle: 'DE' }, { allowRowDoubleClick: false })
+
+    const event = new MouseEvent('dblclick', { button: 0, cancelable: true })
+    const stopPropagation = vi.spyOn(event, 'stopPropagation')
+
+    row.onRowDoubleClick(event)
+
+    expect(emit).not.toHaveBeenCalled()
+    expect(event.defaultPrevented).toBe(true)
+    expect(stopPropagation).toHaveBeenCalledOnce()
+  })
+
+  it('suppresses the second pointer down before a disabled row double-click', () => {
+    const column = {
+      key: 'country',
+      name: 'country',
+      title: 'Country',
+      type: 'CountryItem',
+    } as SaplingTableHeaderItem
+    const { emit, row } = createRow(column, { handle: 'DE' }, { allowRowDoubleClick: false })
+    const event = new MouseEvent('mousedown', {
+      button: 0,
+      detail: 2,
+      cancelable: true,
+    })
+    const stopPropagation = vi.spyOn(event, 'stopPropagation')
+
+    row.onRowMouseDown(event, 0)
+
+    expect(emit).not.toHaveBeenCalled()
+    expect(event.defaultPrevented).toBe(true)
+    expect(stopPropagation).toHaveBeenCalledOnce()
   })
 
   it('resolves a circular value reference from the current table record', () => {

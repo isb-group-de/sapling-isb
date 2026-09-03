@@ -29,7 +29,7 @@
               <strong>{{ metricLabel(incident.rule.metricKey) }}</strong>
               <small
                 >{{ stateLabel(incident.state) }} ·
-                {{ humanLabel(incident.incidentType || 'threshold') }}</small
+                {{ incidentTypeLabel(incident.incidentType || 'threshold') }}</small
               >
             </span>
             <time>{{ dateTime(incident.lastSeenAt) }}</time>
@@ -151,7 +151,7 @@ defineProps<{
   metricLabel: (value: string) => string
   checkLabel: (value: string) => string
   stateLabel: (value: string) => string
-  humanLabel: (value: string) => string
+  incidentTypeLabel: (value: string) => string
   remediationLabel: (value: string) => string
   statusColor: (value: string) => string
 }>()

@@ -315,7 +315,7 @@ function getNextOccurrence(
 ): { start: Date; end: Date } | null {
   switch (parsedRule.frequency) {
     case 'DAILY':
-      return buildOccurrence(addUtcDays(currentStart, parsedRule.interval), durationMs)
+      return buildOccurrence(addLocalDays(currentStart, parsedRule.interval), durationMs)
     case 'WEEKLY':
       return advanceWeeklyOccurrence(currentStart, parsedRule, baseStart, durationMs)
     case 'MONTHLY':
@@ -338,7 +338,7 @@ function advanceWeeklyOccurrence(
   let candidate = new Date(currentStart)
 
   for (let index = 0; index < 370; index += 1) {
-    candidate = addUtcDays(candidate, 1)
+    candidate = addLocalDays(candidate, 1)
     if (candidate.getTime() < baseStart.getTime()) {
       continue
     }
@@ -347,7 +347,7 @@ function advanceWeeklyOccurrence(
       continue
     }
 
-    if (diffWeeksFromMonday(baseStart, candidate) % parsedRule.interval !== 0) {
+    if (diffLocalWeeksFromMonday(baseStart, candidate) % parsedRule.interval !== 0) {
       continue
     }
 
@@ -364,14 +364,14 @@ function advanceMonthlyOccurrence(
   durationMs: number,
 ): { start: Date; end: Date } | null {
   for (let monthsToAdd = interval; monthsToAdd <= 1200; monthsToAdd += interval) {
-    const candidate = createUtcDateWithBaseTime(
-      currentStart.getUTCFullYear(),
-      currentStart.getUTCMonth() + monthsToAdd,
-      baseStart.getUTCDate(),
+    const candidate = createLocalDateWithBaseTime(
+      currentStart.getFullYear(),
+      currentStart.getMonth() + monthsToAdd,
+      baseStart.getDate(),
       baseStart,
     )
 
-    if (candidate.getUTCDate() !== baseStart.getUTCDate()) {
+    if (candidate.getDate() !== baseStart.getDate()) {
       continue
     }
 
@@ -388,16 +388,16 @@ function advanceYearlyOccurrence(
   durationMs: number,
 ): { start: Date; end: Date } | null {
   for (let yearsToAdd = interval; yearsToAdd <= 200; yearsToAdd += interval) {
-    const candidate = createUtcDateWithBaseTime(
-      currentStart.getUTCFullYear() + yearsToAdd,
-      baseStart.getUTCMonth(),
-      baseStart.getUTCDate(),
+    const candidate = createLocalDateWithBaseTime(
+      currentStart.getFullYear() + yearsToAdd,
+      baseStart.getMonth(),
+      baseStart.getDate(),
       baseStart,
     )
 
     if (
-      candidate.getUTCMonth() !== baseStart.getUTCMonth() ||
-      candidate.getUTCDate() !== baseStart.getUTCDate()
+      candidate.getMonth() !== baseStart.getMonth() ||
+      candidate.getDate() !== baseStart.getDate()
     ) {
       continue
     }
@@ -415,37 +415,38 @@ function buildOccurrence(start: Date, durationMs: number) {
   }
 }
 
-function addUtcDays(date: Date, days: number): Date {
+function addLocalDays(date: Date, days: number): Date {
   const candidate = new Date(date)
-  candidate.setUTCDate(candidate.getUTCDate() + days)
+  candidate.setDate(candidate.getDate() + days)
   return candidate
 }
 
-function diffWeeksFromMonday(baseDate: Date, candidateDate: Date): number {
-  const baseWeekStart = startOfUtcWeekMonday(baseDate)
-  const candidateWeekStart = startOfUtcWeekMonday(candidateDate)
-  return Math.floor((candidateWeekStart.getTime() - baseWeekStart.getTime()) / 604800000)
+function diffLocalWeeksFromMonday(baseDate: Date, candidateDate: Date): number {
+  const baseWeekStart = startOfLocalWeekMonday(baseDate)
+  const candidateWeekStart = startOfLocalWeekMonday(candidateDate)
+  return Math.floor((candidateWeekStart - baseWeekStart) / 604800000)
 }
 
-function startOfUtcWeekMonday(date: Date): Date {
-  const candidate = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()))
-  const day = candidate.getUTCDay()
+function startOfLocalWeekMonday(date: Date): number {
+  const day = date.getDay()
   const delta = day === 0 ? -6 : 1 - day
-  candidate.setUTCDate(candidate.getUTCDate() + delta)
-  return candidate
+  return Date.UTC(date.getFullYear(), date.getMonth(), date.getDate() + delta)
 }
 
-function createUtcDateWithBaseTime(year: number, month: number, day: number, baseTime: Date): Date {
+function createLocalDateWithBaseTime(
+  year: number,
+  month: number,
+  day: number,
+  baseTime: Date,
+): Date {
   return new Date(
-    Date.UTC(
-      year,
-      month,
-      day,
-      baseTime.getUTCHours(),
-      baseTime.getUTCMinutes(),
-      baseTime.getUTCSeconds(),
-      baseTime.getUTCMilliseconds(),
-    ),
+    year,
+    month,
+    day,
+    baseTime.getHours(),
+    baseTime.getMinutes(),
+    baseTime.getSeconds(),
+    baseTime.getMilliseconds(),
   )
 }
 

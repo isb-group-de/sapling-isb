@@ -92,6 +92,7 @@
         :show-search="false"
         :show-toolbar="false"
         :multi-select="true"
+        :allow-row-double-click="false"
         :disable-mobile-view="disableDropdownMobileView"
         :table-key="entityHandle"
         :selected="selectedItems"

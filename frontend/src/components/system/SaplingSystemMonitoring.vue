@@ -50,7 +50,7 @@
           :metric-label="metricLabel"
           :check-label="checkLabel"
           :state-label="stateLabel"
-          :human-label="humanLabel"
+          :incident-type-label="incidentTypeLabel"
           :remediation-label="remediationLabel"
           :status-color="statusColor"
           @open-rules="rulesOpen = true"
@@ -269,16 +269,16 @@
       </SaplingDialogCard>
     </SaplingDialog>
 
-    <SaplingDialog v-model="incidentOpen" size="md" @after-leave="closeIncident">
+    <SaplingDialog v-model="incidentOpen" size="lg" @after-leave="closeIncident">
       <SaplingDialogCard
         v-if="selectedIncident"
-        class="sapling-dialog-compact-card"
+        class="sapling-dialog-compact-card monitoring-incident-dialog"
         :close="closeIncidentDialog"
       >
         <SaplingDialogShell body-class="monitoring-dialog__body">
           <template #hero>
             <SaplingDialogHero
-              :eyebrow="`${stateLabel(selectedIncident.state)} · ${stateLabel(selectedIncident.severity)}`"
+              :eyebrow="incidentEyebrow"
               :title="metricLabel(selectedIncident.rule.metricKey)"
               :stats="incidentStats"
               :stats-columns="2"
@@ -286,12 +286,48 @@
             />
           </template>
           <template #body>
-            <dl class="monitoring-diagnosis">
-              <template v-for="(value, key) in selectedIncident.diagnosis || {}" :key="key">
-                <dt>{{ humanLabel(String(key)) }}</dt>
-                <dd>{{ value }}</dd>
-              </template>
-            </dl>
+            <div class="monitoring-incident-detail">
+              <section class="monitoring-incident-detail__section">
+                <header class="monitoring-incident-detail__header">
+                  <span class="monitoring-incident-detail__icon">
+                    <v-icon icon="mdi-timeline-clock-outline" />
+                  </span>
+                  <span>
+                    <strong>{{ incidentText('timeline') }}</strong>
+                    <small>{{ incidentText('timelineDescription') }}</small>
+                  </span>
+                </header>
+                <dl
+                  class="monitoring-incident-detail__grid monitoring-incident-detail__grid--timeline"
+                >
+                  <div v-for="item in incidentTimeline" :key="item.label">
+                    <dt>{{ item.label }}</dt>
+                    <dd>{{ item.value }}</dd>
+                  </div>
+                </dl>
+              </section>
+
+              <section class="monitoring-incident-detail__section">
+                <header class="monitoring-incident-detail__header">
+                  <span class="monitoring-incident-detail__icon">
+                    <v-icon icon="mdi-clipboard-text-search-outline" />
+                  </span>
+                  <span>
+                    <strong>{{ incidentText('evaluation') }}</strong>
+                    <small>{{ incidentText('evaluationDescription') }}</small>
+                  </span>
+                </header>
+                <dl class="monitoring-incident-detail__grid">
+                  <div v-for="item in incidentDiagnosis" :key="item.key">
+                    <dt>{{ item.label }}</dt>
+                    <dd :class="{ 'monitoring-incident-detail__code': item.code }">
+                      {{ item.value }}
+                    </dd>
+                    <small>{{ item.description }}</small>
+                  </div>
+                </dl>
+              </section>
+            </div>
           </template>
           <template #actions>
             <SaplingActionBar>
@@ -341,7 +377,10 @@ import { useSaplingSystemMonitoring } from '@/composables/system/useSaplingSyste
 import type { MonitoringAlertRule, MonitoringUser } from '@/entity/system'
 import {
   monitoringCheckLabel,
+  monitoringIncidentText,
+  monitoringIncidentTypeLabel,
   monitoringMetricLabel,
+  monitoringMetricValue,
   monitoringRemediationLabel,
   monitoringServiceLabel,
   monitoringStateLabel,
@@ -459,10 +498,72 @@ const incidentStats = computed(() => {
   const incident = selectedIncident.value
   if (!incident) return []
   return [
+    {
+      label: t('system.monitoringIncidentObserved'),
+      value: monitoringMetricValue(locale.value, incident.rule.metricKey, incident.observedValue),
+    },
+    {
+      label: incidentText('triggerThreshold'),
+      value: `${comparatorSymbol(incident.rule.comparator)} ${monitoringMetricValue(locale.value, incident.rule.metricKey, incident.threshold)}`,
+    },
+  ]
+})
+const incidentEyebrow = computed(() => {
+  const incident = selectedIncident.value
+  if (!incident) return ''
+  return [
+    stateLabel(incident.state),
+    stateLabel(incident.severity),
+    monitoringIncidentTypeLabel(locale.value, incident.incidentType || 'threshold'),
+  ].join(' · ')
+})
+const incidentTimeline = computed(() => {
+  const incident = selectedIncident.value
+  if (!incident) return []
+  const items = [
+    { label: incidentText('firstSeen'), value: dateTime(incident.firstSeenAt) },
     { label: t('system.monitoringLastSeen'), value: dateTime(incident.lastSeenAt) },
     {
-      label: locale.value.toLowerCase().startsWith('de') ? 'Schwellenwert' : 'Threshold',
-      value: number(incident.threshold),
+      label: t('system.monitoringDuration'),
+      value: `${number(incident.rule.windowSeconds / 60)} min`,
+    },
+  ]
+  if (incident.resolvedAt) {
+    items.push({ label: stateLabel('resolved'), value: dateTime(incident.resolvedAt) })
+  }
+  return items
+})
+const incidentDiagnosis = computed(() => {
+  const incident = selectedIncident.value
+  if (!incident) return []
+  const diagnosis = incident.diagnosis || {}
+  const dimension = diagnosis.dimension ?? incident.dimensionKey
+  const sampleCount = diagnosis.count
+  const metricKey = diagnosis.metricKey ?? incident.rule.metricKey
+  return [
+    {
+      key: 'scope',
+      label: incidentText('scope'),
+      value:
+        dimension == null || String(dimension).trim() === ''
+          ? incidentText('globalScope')
+          : String(dimension),
+      description: incidentText('scopeDescription'),
+      code: false,
+    },
+    {
+      key: 'samples',
+      label: incidentText('samples'),
+      value: sampleCount == null ? t('global.notAvailable') : number(sampleCount),
+      description: incidentText('samplesDescription'),
+      code: false,
+    },
+    {
+      key: 'metricKey',
+      label: incidentText('metricKey'),
+      value: String(metricKey),
+      description: incidentText('metricKeyDescription'),
+      code: true,
     },
   ]
 })
@@ -526,16 +627,20 @@ function stateLabel(value: string): string {
   return monitoringStateLabel(locale.value, value)
 }
 
-function humanLabel(value: string): string {
-  return value
-    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
-    .replace(/[._-]+/g, ' ')
-    .replace(/^./, (character) => character.toUpperCase())
+function incidentTypeLabel(value: string): string {
+  return monitoringIncidentTypeLabel(locale.value, value)
+}
+
+function incidentText(key: Parameters<typeof monitoringIncidentText>[2]): string {
+  return monitoringIncidentText(t, locale.value, key)
+}
+
+function comparatorSymbol(comparator: MonitoringAlertRule['comparator']): string {
+  return { gt: '>', gte: '≥', lt: '<', lte: '≤' }[comparator]
 }
 
 function ruleCondition(rule: MonitoringAlertRule): string {
-  const comparator = { gt: '>', gte: '≥', lt: '<', lte: '≤' }[rule.comparator]
-  return `${comparator} ${number(rule.threshold)} · ${number(rule.windowSeconds / 60)} min · n ≥ ${number(rule.minimumCount)}`
+  return `${comparatorSymbol(rule.comparator)} ${monitoringMetricValue(locale.value, rule.metricKey, rule.threshold)} · ${number(rule.windowSeconds / 60)} min · n ≥ ${number(rule.minimumCount)}`
 }
 
 function statusColor(value: string): string {

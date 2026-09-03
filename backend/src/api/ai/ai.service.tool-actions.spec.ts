@@ -353,6 +353,12 @@ describe('AiService tool actions', () => {
     );
     expect(em.persist).toHaveBeenCalled();
     expect(em.flush).toHaveBeenCalled();
+    expect(em.create).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        expiresAt: new Date('2026-04-20T18:15:30.000Z'),
+      }),
+    );
     expect(result.modelResult).toMatchObject({
       pendingToolAction: true,
       actionHandle: 41,

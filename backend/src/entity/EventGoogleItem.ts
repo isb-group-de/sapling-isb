@@ -44,6 +44,29 @@ export class EventGoogleItem {
   })
   @Property({ length: 1024, nullable: false, hidden: true })
   referenceHandle!: string;
+
+  /** Calendar-wide identifier shared by copies of the same Google event. */
+  @ApiPropertyOptional()
+  @Sapling(['isSecurity'])
+  @SaplingForm({
+    order: 110,
+    group: 'eventGoogle.groupSecurity',
+    groupOrder: 100,
+    width: 4,
+    visible: false,
+    tableOrder: 110,
+    tableVisible: false,
+    mobileOrder: 110,
+    mobileVisible: false,
+  })
+  @Property({
+    fieldName: 'ical_uid',
+    length: 1024,
+    nullable: true,
+    unique: true,
+    hidden: true,
+  })
+  iCalUId?: string | null;
   // #endregion
 
   // #region Properties: Relation

@@ -1,0 +1,10 @@
+[
+  {
+    "handle": "personSession",
+    "canDelete": true
+  },
+  {
+    "handle": "sessionStore",
+    "canDelete": true
+  }
+]

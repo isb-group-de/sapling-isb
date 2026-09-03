@@ -36,6 +36,7 @@ const DETACHED_EVENT_EDITABLE_FIELDS = [
   'endDate',
   'isAllDay',
   'isPrivate',
+  'createOnlineMeeting',
   'preparationDuration',
   'followUpDuration',
   'onlineMeetingURL',
@@ -117,6 +118,8 @@ export class EventRecurrenceMutationService {
             new Date(event.endDate),
             event.recurrenceRule,
             occurrenceStart,
+            10_000,
+            scriptContext.clientTimeZone,
           );
           if (!occurrence) {
             throw new BadRequestException('event.recurrenceOccurrenceInvalid');
@@ -243,6 +246,7 @@ export class EventRecurrenceMutationService {
           new Date(event.endDate),
           event.recurrenceRule,
           RECURRENCE_MAX_OCCURRENCES,
+          scriptContext.clientTimeZone,
         );
         if (!parseRecurrenceRule(event.recurrenceRule)) {
           throw new BadRequestException('event.recurrenceRequired');
@@ -326,6 +330,7 @@ export class EventRecurrenceMutationService {
       endDate: occurrence.endDate,
       isAllDay: event.isAllDay,
       isPrivate: event.isPrivate,
+      createOnlineMeeting: event.createOnlineMeeting,
       recurrenceRule: null,
       preparationDuration: event.preparationDuration,
       followUpDuration: event.followUpDuration,

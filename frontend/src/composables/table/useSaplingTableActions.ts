@@ -65,6 +65,7 @@ type UseSaplingTableActionsEmit = {
     value: SaplingGenericItem,
     action: DialogSaveAction,
     context?: DialogSaveContext,
+    sourceDraft?: SaplingGenericItem,
   ): void
 }
 
@@ -198,7 +199,8 @@ export function useSaplingTableActions({
 
   async function openEditDialog(item: SaplingGenericItem) {
     const dialogItem = await loadDialogItem(item)
-    editDialog.value = { visible: true, mode: 'edit', item: dialogItem }
+    const mode = props.deferCreate && getItemHandle(dialogItem) == null ? 'create' : 'edit'
+    editDialog.value = { visible: true, mode, item: dialogItem }
   }
 
   async function openShowDialog(item: SaplingGenericItem) {
@@ -268,7 +270,7 @@ export function useSaplingTableActions({
     }
 
     if (editDialog.value.mode === 'create' && props.deferCreate) {
-      emit('createDraft', item, action, context)
+      emit('createDraft', item, action, context, editDialog.value.item ?? undefined)
       closeDialog()
       context?.complete(true)
       return

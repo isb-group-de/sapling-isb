@@ -1,6 +1,7 @@
-import { Entity, Property } from '@mikro-orm/decorators/legacy';
+import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Sapling, SaplingForm } from './global/entity.decorator';
+import { PersonItem } from './PersonItem';
 
 /**
  * @class SessionStoreItem
@@ -67,7 +68,14 @@ export class SessionStoreItem {
   /** Numeric person handle denormalized from the Passport session payload. */
   @ApiPropertyOptional()
   @Sapling(['isReadOnly', 'isSystem'])
-  @Property({ nullable: true, type: 'integer', index: true })
+  @ManyToOne(() => PersonItem, {
+    nullable: true,
+    mapToPk: true,
+    fieldName: 'person_handle',
+    foreignKeyName: 'session_store_person_fk',
+    deleteRule: 'cascade',
+    index: 'session_store_person_idx',
+  })
   personHandle?: number | null;
 
   /** Last authenticated activity observed for this interactive session. */

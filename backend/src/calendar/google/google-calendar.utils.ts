@@ -14,16 +14,39 @@ export type ImportGoogleCalendarEventsRange = {
   endDateTime: Date;
 };
 
+export type GoogleCalendarImportEvent = calendar_v3.Schema$Event & {
+  /** First expanded instance returned for a recurring series. */
+  saplingImportOccurrence?: {
+    start?: calendar_v3.Schema$EventDateTime | null;
+    end?: calendar_v3.Schema$EventDateTime | null;
+  };
+};
+
+/** Limits imports to the still-active part of the requested calendar window. */
+export function clampGoogleImportRangeToFuture(
+  range: ImportGoogleCalendarEventsRange,
+  now: Date = new Date(),
+): ImportGoogleCalendarEventsRange | null {
+  const startDateTime = new Date(
+    Math.max(range.startDateTime.getTime(), now.getTime()),
+  );
+  if (startDateTime >= range.endDateTime) {
+    return null;
+  }
+  return { startDateTime, endDateTime: range.endDateTime };
+}
+
 /** Collapses expanded Google instances back to one series master per import. */
 export async function resolveGoogleSeriesImportEvents(
-  events: calendar_v3.Schema$Event[],
+  events: GoogleCalendarImportEvent[],
   loadMaster: (
     recurringEventId: string,
-  ) => Promise<calendar_v3.Schema$Event | null>,
-): Promise<calendar_v3.Schema$Event[]> {
-  const standaloneEvents: calendar_v3.Schema$Event[] = [];
+  ) => Promise<GoogleCalendarImportEvent | null>,
+): Promise<GoogleCalendarImportEvent[]> {
+  const standaloneEvents: GoogleCalendarImportEvent[] = [];
   const recurringEventIds: string[] = [];
   const seenRecurringEventIds = new Set<string>();
+  const firstOccurrenceBySeries = new Map<string, GoogleCalendarImportEvent>();
 
   for (const event of events) {
     const recurringEventId = event.recurringEventId?.trim();
@@ -35,6 +58,18 @@ export async function resolveGoogleSeriesImportEvents(
       seenRecurringEventIds.add(recurringEventId);
       recurringEventIds.push(recurringEventId);
     }
+    const existingOccurrence = firstOccurrenceBySeries.get(recurringEventId);
+    const eventStart = normalizeGoogleDateTime(event.start)?.getTime();
+    const existingStart = normalizeGoogleDateTime(
+      existingOccurrence?.start,
+    )?.getTime();
+    if (
+      !existingOccurrence ||
+      (eventStart != null &&
+        (existingStart == null || eventStart < existingStart))
+    ) {
+      firstOccurrenceBySeries.set(recurringEventId, event);
+    }
   }
 
   const masters = await Promise.all(
@@ -42,9 +77,27 @@ export async function resolveGoogleSeriesImportEvents(
   );
   return [
     ...standaloneEvents,
-    ...masters.filter((event): event is calendar_v3.Schema$Event =>
-      Boolean(event),
-    ),
+    ...masters.flatMap((event, index) => {
+      if (!event) {
+        return [];
+      }
+      const recurringEventId = recurringEventIds[index];
+      const firstOccurrence = firstOccurrenceBySeries.get(recurringEventId);
+      return [
+        {
+          ...event,
+          id: event.id?.trim() || recurringEventId,
+          ...(firstOccurrence?.start
+            ? {
+                saplingImportOccurrence: {
+                  start: firstOccurrence.start,
+                  end: firstOccurrence.end,
+                },
+              }
+            : {}),
+        },
+      ];
+    }),
   ];
 }
 
@@ -166,10 +219,11 @@ export function normalizeGoogleRecurrence(recurrence?: string[] | null): {
 export function buildGoogleCalendarEvent(
   event: EventItem,
   classificationMappings?: CalendarClassificationMapping[] | null,
+  conferenceRequestId?: string,
 ): calendar_v3.Schema$Event {
   const colorId = resolveGoogleCalendarColorId(event, classificationMappings);
 
-  return {
+  const resource: calendar_v3.Schema$Event = {
     summary: event.title,
     description: event.description,
     start: { dateTime: event.startDate.toISOString() },
@@ -191,17 +245,48 @@ export function buildGoogleCalendarEvent(
       displayName: `${participant.firstName} ${participant.lastName}`,
     })),
   };
+
+  if (event.createOnlineMeeting && conferenceRequestId) {
+    resource.conferenceData = {
+      createRequest: {
+        requestId: conferenceRequestId,
+        conferenceSolutionKey: { type: 'hangoutsMeet' },
+      },
+    };
+  }
+
+  return resource;
+}
+
+export function isGoogleNotFoundError(error: unknown): boolean {
+  if (!isRecord(error)) {
+    return false;
+  }
+  const status =
+    typeof error.status === 'number'
+      ? error.status
+      : typeof error.code === 'number'
+        ? error.code
+        : isRecord(error.response) && typeof error.response.status === 'number'
+          ? error.response.status
+          : undefined;
+  return status === 404 || status === 410;
 }
 
 export function buildGoogleCalendarEventPatch(
   event: EventItem,
   classificationMappings?: CalendarClassificationMapping[] | null,
   changedFields?: string[],
+  conferenceRequestId?: string,
 ): {
   patch: calendar_v3.Schema$Event;
   sendUpdates: 'all' | 'none';
 } {
-  const eventResource = buildGoogleCalendarEvent(event, classificationMappings);
+  const eventResource = buildGoogleCalendarEvent(
+    event,
+    classificationMappings,
+    conferenceRequestId,
+  );
   if (!changedFields) {
     return { patch: eventResource, sendUpdates: 'all' };
   }
@@ -225,6 +310,9 @@ export function buildGoogleCalendarEventPatch(
     copy('recurrence');
   }
   if (changed.has('participants')) copy('attendees');
+  if (changed.has('createOnlineMeeting') && event.createOnlineMeeting) {
+    copy('conferenceData');
+  }
   if (changed.has('type') || changed.has('category')) {
     copy('colorId');
     copy('extendedProperties');

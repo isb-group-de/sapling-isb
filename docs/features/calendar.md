@@ -13,6 +13,10 @@ for the organizer and attendees of the same meeting. `EventAzureItem` keeps the
 Graph `id` in `referenceHandle` for provider updates and stores the shared
 `iCalUId` for import upserts. The database enforces uniqueness for non-null
 `iCalUId` values; legacy projection rows are backfilled on their next import.
+Google imports apply the equivalent `iCalUID` identity so organizer and attendee
+copies of one Google event also converge on one Sapling Event. Google keeps the
+provider-specific `id` for updates and backfills legacy projection rows during
+the next import.
 
 ## Main Files
 
@@ -63,27 +67,28 @@ mutation path rejects invalid API, import, MCP, or script payloads as well.
 
 Important fields:
 
-| Field                               | Meaning                                                                                          |
-| ----------------------------------- | ------------------------------------------------------------------------------------------------ |
-| `title`                             | Display title and primary value                                                                  |
-| `description`                       | Markdown description; also part of AI vectorization                                              |
-| `startDate`, `endDate`              | Event time range                                                                                 |
-| `isAllDay`                          | Marks all-day events                                                                             |
-| `isPrivate`                         | Marks owner-only events, including Outlook events imported with private sensitivity              |
-| `recurrenceRule`                    | Optional RRULE string for recurring events                                                       |
-| `recurrenceExceptionDates`          | Original occurrence starts removed from the series and represented by standalone Events          |
-| `preparationDuration`               | Optional preparation block duration in 15-minute increments; defaults to `00:00`                 |
-| `followUpDuration`                  | Optional follow-up block duration in 15-minute increments; defaults to `00:00`                   |
-| `onlineMeetingURL`                  | Optional meeting link                                                                            |
-| `type`                              | Appointment type; defaults to `Online` and controls default-calendar and online-meeting behavior |
-| `category`                          | Business category combined with the appointment type; defaults to `Intern`                       |
-| `status`                            | Current event status; `EventStatusItem.isOpen` controls the default open-status calendar filter  |
-| `assigneeCompany`, `assigneePerson` | Internal owner                                                                                   |
-| `creatorCompany`, `creatorPerson`   | Creator context                                                                                  |
-| `ticket`                            | Optional ticket relation                                                                         |
-| `salesOpportunity`                  | Optional sales opportunity relation                                                              |
-| `participants`                      | Person collection for attendees                                                                  |
-| `azure`, `google`                   | External calendar projection records                                                             |
+| Field                               | Meaning                                                                                         |
+| ----------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `title`                             | Display title and primary value                                                                 |
+| `description`                       | Markdown description; also part of AI vectorization                                             |
+| `startDate`, `endDate`              | Event time range                                                                                |
+| `isAllDay`                          | Marks all-day events                                                                            |
+| `isPrivate`                         | Marks owner-only events, including Outlook events imported with private sensitivity             |
+| `createOnlineMeeting`               | Requests a provider-native Teams or Google Meet link; defaults to `false`                       |
+| `recurrenceRule`                    | Optional RRULE string for recurring events                                                      |
+| `recurrenceExceptionDates`          | Original occurrence starts removed from the series and represented by standalone Events         |
+| `preparationDuration`               | Optional preparation block duration in 15-minute increments; defaults to `00:00`                |
+| `followUpDuration`                  | Optional follow-up block duration in 15-minute increments; defaults to `00:00`                  |
+| `onlineMeetingURL`                  | Optional meeting link                                                                           |
+| `type`                              | Appointment type; defaults to `Online` and controls default-calendar behavior                   |
+| `category`                          | Business category combined with the appointment type; defaults to `Intern`                      |
+| `status`                            | Current event status; `EventStatusItem.isOpen` controls the default open-status calendar filter |
+| `assigneeCompany`, `assigneePerson` | Internal owner                                                                                  |
+| `creatorCompany`, `creatorPerson`   | Creator context                                                                                 |
+| `ticket`                            | Optional ticket relation                                                                        |
+| `salesOpportunity`                  | Optional sales opportunity relation                                                             |
+| `participants`                      | Person collection for attendees                                                                 |
+| `azure`, `google`                   | External calendar projection records                                                            |
 
 A ticket-linked Event may retain the Ticket's exact `creatorCompany` and
 `creatorPerson` pair when a contact's current Company has changed since the
@@ -142,6 +147,11 @@ Azure conversion maps:
 | `YEARLY`  | `absoluteYearly` pattern on the start date month/day                                             |
 
 The frontend recurrence UI builds the same persisted RRULE string. Keep frontend and backend parsers aligned whenever recurrence semantics change.
+
+Timed occurrences follow the local wall-clock time of the user who expands or
+edits the series. Calendar-day arithmetic uses that user's IANA time zone, so a
+series at 08:00 remains at 08:00 when daylight-saving time starts or ends; only
+the corresponding UTC offset changes.
 
 ### Editing One Occurrence
 
@@ -220,12 +230,22 @@ guest-visible changes, creation, and cancellation. This distinction prevents
 an unchanged attendee list from being interpreted as attendee removal and
 generating misleading cancellation mail.
 
+Meeting creation is independent from the Event type. The `createOnlineMeeting`
+checkbox appears in the Basics group directly after Status and defaults to off.
+When enabled, Azure requests a Teams meeting and Google sends a
+`conferenceData.createRequest` for Google Meet with `conferenceDataVersion=1`.
+The generated join URL is persisted in `onlineMeetingURL`. Provider-side online
+meeting conversion is effectively one-way, especially in Microsoft Graph, so
+clearing the checkbox does not delete an already generated conference or
+recreate the calendar item.
+
 The Event lifecycle filters internal-only updates before delivery creation.
 Ticket, sales-opportunity, ownership, preparation/follow-up, custom-field, and
 other Sapling-only changes therefore create no `EventDeliveryItem`, do not
 resolve a provider token, and do not call Outlook or Google. Provider-relevant
 updates are currently limited to title, description, start/end, recurrence,
-participants, type/category classification, and status lifecycle changes.
+participants, meeting-link creation, type/category classification, and status
+lifecycle changes.
 
 Retries use `EventDeliveryService.retryDelivery(handle)`. The delivery is reset to pending, `nextRetryAt` is cleared, and the same queue-or-direct execution path is used.
 
@@ -244,7 +264,7 @@ POST /api/azure/events/import
 POST /api/google/events/import
 ```
 
-The Azure endpoint uses the signed-in user's stored Microsoft session (`PersonSessionItem`) and Microsoft Graph calendar view. Returned Outlook items are matched by `EventAzureItem.referenceHandle`. The Google endpoint uses the signed-in user's stored Google session and Google Calendar events list. Returned Google items are matched by `EventGoogleItem.referenceHandle`.
+The Azure endpoint uses the signed-in user's stored Microsoft session (`PersonSessionItem`) and Microsoft Graph calendar view. Returned Outlook items are matched by `EventAzureItem.iCalUId` with a legacy `referenceHandle` fallback. The Google endpoint uses the signed-in user's stored Google session and Google Calendar events list. Returned Google items are matched by `EventGoogleItem.iCalUId` with the same reference fallback.
 
 The provider services own network calls, token refresh, orchestration, and
 persistence. `azure-calendar.utils.ts` and `google-calendar.utils.ts` keep each
@@ -263,11 +283,15 @@ exceptions created outside Sapling are not materialized as separate Sapling
 Events. Occurrences explicitly detached in Sapling are standalone provider
 events and therefore remain standalone on later imports.
 
-Existing Sapling events are updated and unknown provider items are created with the user's configured default type (`online` by default) and category (`internal` by default). Outlook updates preserve the existing Sapling event type and category; Outlook classification mappings and defaults are applied only when an external item is imported for the first time. Known attendee email addresses are linked as participants through an exact, case-insensitive match. A provider attendee is linked only when that normalized email belongs to exactly one `PersonItem`; ambiguous duplicate addresses are skipped. Outlook does not list the organizer among an event's attendees. Sapling therefore adds the importing user only for a personal appointment whose Outlook attendee list is empty. A meeting organized exclusively for other people no longer makes the organizer a Sapling participant.
+Existing Sapling events are updated and unknown provider items are created with the user's configured default type (`online` by default) and category (`internal` by default). Provider updates preserve the existing Sapling event type and category; classification mappings and defaults are applied only when an external item is imported for the first time. Known attendee email addresses are linked as participants through an exact, case-insensitive match. A provider attendee is linked only when that normalized email belongs to exactly one `PersonItem`; ambiguous duplicate addresses are skipped. Outlook and Google imports add the importing user only for a personal appointment whose provider attendee list is empty. A meeting organized exclusively for other people therefore does not make the organizer a Sapling participant.
 
-Outlook import windows are clamped to the current instant. Fully elapsed items are never created or updated by a later manual or automatic import. Because Microsoft Graph returns the historical master of a recurring series even when `calendarView` was queried for a future window, Sapling anchors the imported series at the first occurrence actually returned inside that future window. Numbered recurrence rules reduce their remaining `COUNT` accordingly, preventing old birthdays or other long-running series from generating years of overdue Sapling occurrences.
+Participant reconciliation keeps one complete owning-side relation snapshot per
+person during an import. This lets several Events add or remove the same person
+in one unit of work without scheduling duplicate pivot-table inserts.
 
-After all pages of an Outlook `calendarView` have been loaded, Sapling also reconciles active linked events owned by the importing user and expected inside that complete window. If a linked item is absent by `iCalUId` (or by its legacy Graph id), Sapling loads its Graph resource directly before changing local state. A moved item is immediately updated from that complete resource, including its new dates and participants. For a recurring master Sapling also loads its next concrete occurrence and uses it as the new future anchor. Once Graph confirms the item no longer exists, Sapling removes that user from the participant collection; if no participant remains, it marks the Event `completed`. Shared events therefore remain active for other participants. Recurring events are reconciled only when their local recurrence rule proves that an occurrence overlaps the queried window, which avoids treating a quiet week of a monthly or yearly series as deletion. Provider failures or incomplete requests never run this absence reconciliation.
+Outlook and Google import windows are clamped to the current instant. Fully elapsed items are never created or updated by a later manual or automatic import. Because both providers return the historical master of a recurring series for a future window, Sapling anchors the imported series at the first occurrence actually returned inside that window. Numbered recurrence rules reduce their remaining `COUNT` accordingly, preventing old birthdays or other long-running series from generating years of overdue Sapling occurrences.
+
+After all pages of an Outlook or Google calendar window have been loaded, Sapling also reconciles active linked events owned by the importing user and expected inside that complete window. If a linked item is absent, Sapling loads its provider resource directly before changing local state. A moved item is immediately updated from that complete resource, including its new dates and participants. For a recurring master Sapling also loads its next concrete occurrence and uses it as the new future anchor. Once the provider confirms the item no longer exists, Sapling removes that user from the participant collection; if no participant remains, it marks the Event `completed`. Shared events therefore remain active for other participants. Recurring events are reconciled only when their local recurrence rule proves that an occurrence overlaps the queried window, which avoids treating a quiet week of a monthly or yearly series as deletion. Provider failures or incomplete requests never run this absence reconciliation.
 
 Outlook events whose Microsoft Graph `sensitivity` is `private` are imported with `EventItem.isPrivate = true`. Sapling still stores the full event details for the importing owner, but generic Event reads, exports, relation mutations, updates, deletes, KPIs, and timeline anchor loads must only expose private events when `creatorPerson` is the current user. Non-private events keep the normal Event permission behavior.
 
@@ -297,8 +321,8 @@ When Redis is enabled, `CalendarSyncModule` registers a BullMQ `calendar-sync` q
 The account dialog also configures fallback type/category values and provider classification mappings:
 
 - Outlook maps its native category names to a Sapling event type, category, or both when the Outlook item is first imported. Later imports update the linked event's provider-owned fields but preserve the event type and category selected in Sapling. The account dialog can load `/me/outlook/masterCategories` and add missing display names as mapping rows; this requires the delegated `MailboxSettings.Read` scope. Matching names are written back to Outlook when Sapling creates or updates the event.
-- Google maps calendar color IDs (`1` through `11`) to a Sapling event type, category, or both. Sapling-created Google events additionally carry the exact handles in private `extendedProperties`, so a later import does not lose the classification even when a color represents only one combined mapping.
-- Provider items without a matching mapping use the configured defaults. Existing linked Google events are reclassified when a later import reads them again; existing linked Outlook events retain their Sapling classification.
+- Google maps calendar color IDs (`1` through `11`) to a Sapling event type, category, or both. Sapling-created Google events additionally carry the exact handles in private `extendedProperties`, so a later import does not lose the classification even when a color represents only one combined mapping. Existing linked Google events retain their Sapling classification, matching Outlook behavior.
+- Provider items without a matching mapping use the configured defaults.
 
 Private Outlook events use the same automatic import path as manual imports, so privacy behavior is identical for both flows.
 
@@ -441,23 +465,23 @@ assignee or creator. An explicitly emptied participant list stays empty. The
 signed-in person is therefore included only when they remain in the participant
 list copied from the current calendar filter selection.
 
-Deleting an Event through the generic record UI first inspects whether it has an
-Azure/Google reference or Event delivery history. Synchronized Events are not
-physically deleted. The delete action updates their status to `canceled`, which
-runs the standard `afterUpdate` delivery and removes the provider-side Outlook
-or Google appointment. The Sapling Event and its delivery history remain for
-auditability, while closed-status calendar filters hide it from the normal
-calendar view. Unsynchronized Events retain the normal physical delete path.
-An Outlook `404 ErrorItemNotFound` during cancellation means the provider item
-is already absent: Sapling treats that response as a successful, idempotent
-deletion and removes the stale Azure projection instead of failing the delivery.
+Deleting an Event through the generic record UI physically removes it even when
+it has an Azure or Google projection. Before the local delete, Sapling sends the
+provider delete request with the Event creator's persisted calendar session.
+Only after that request succeeds does it remove the provider reference, prior
+Event delivery history, and the Event itself. The same lifecycle runs when an
+Event is selected as a child record during a parent cascade delete. If the
+provider request fails, the local Event remains so that deletion can be retried
+without leaving the external appointment behind. Provider `404` responses mean
+the appointment is already absent and count as an idempotent success.
 
 Completing and canceling an Event have intentionally different external
 calendar semantics. Status `completed` is an internal Sapling workflow action:
 it creates no calendar delivery, leaves an existing Outlook/Google appointment
 and its provider reference untouched, and therefore sends no cancellation or
-meeting update to attendees. Status `canceled` keeps the external deletion path
-described above. Azure and Google imports preserve an existing Sapling
+meeting update to attendees. Setting status `canceled` without deleting the
+Event continues to use the regular delivery-based provider deletion path.
+Azure and Google imports preserve an existing Sapling
 `completed` status while the provider item remains active, so polling cannot
 reopen the completed Event as `scheduled`; an actual provider-side cancellation
 may still change it to `canceled`.

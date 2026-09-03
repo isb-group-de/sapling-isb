@@ -1,0 +1,14 @@
+[
+  {
+    "entity": "event",
+    "property": "createOnlineMeeting",
+    "de": "Meeting-Link erstellen",
+    "en": "Create meeting link"
+  },
+  {
+    "entity": "event",
+    "property": "createOnlineMeetingTooltip",
+    "de": "Erstellt beim verbundenen Kalenderanbieter einen Teams- oder Google-Meet-Link. Ein bereits erstellter Link kann beim Anbieter nicht zuverlässig entfernt werden.",
+    "en": "Creates a Teams or Google Meet link with the connected calendar provider. An existing provider link cannot be removed reliably."
+  }
+]

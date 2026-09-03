@@ -1,5 +1,10 @@
 import { type calendar_v3, google } from 'googleapis';
 import type { EntityManager } from '@mikro-orm/core';
+import { randomUUID } from 'node:crypto';
+import {
+  findRecurrenceOccurrence,
+  hasRecurrenceOccurrenceInRange,
+} from '../calendar.recurrence';
 import {
   GOOGLE_CALLBACK_URL,
   GOOGLE_CLIENT_ID,
@@ -22,8 +27,10 @@ import {
 import {
   buildGoogleCalendarEvent,
   buildGoogleCalendarEventPatch,
+  type GoogleCalendarImportEvent,
   type ImportGoogleCalendarEventsRange,
   isGoogleAuthenticationError,
+  isGoogleNotFoundError,
   normalizeGoogleDateTime,
   normalizeGoogleEmail,
   normalizeGoogleRecurrence,
@@ -31,12 +38,14 @@ import {
   truncateGoogleText,
 } from './google-calendar.utils';
 
+type MissingProviderItemResolution = 'missing' | 'updated' | 'unchanged';
+
 export class GoogleCalendarOperations {
   protected async fetchCalendarEventsWithRetry(
     session: PersonSessionItem,
     accessToken: string,
     range: ImportGoogleCalendarEventsRange,
-  ): Promise<calendar_v3.Schema$Event[]> {
+  ): Promise<GoogleCalendarImportEvent[]> {
     try {
       return await this.fetchCalendarEvents(accessToken, range);
     } catch (error) {
@@ -56,9 +65,9 @@ export class GoogleCalendarOperations {
   protected async fetchCalendarEvents(
     accessToken: string,
     range: ImportGoogleCalendarEventsRange,
-  ): Promise<calendar_v3.Schema$Event[]> {
+  ): Promise<GoogleCalendarImportEvent[]> {
     const calendar = google.calendar({ version: 'v3' });
-    const events: calendar_v3.Schema$Event[] = [];
+    const events: GoogleCalendarImportEvent[] = [];
     let pageToken: string | undefined;
 
     do {
@@ -87,14 +96,7 @@ export class GoogleCalendarOperations {
         });
         return response.data;
       } catch (error) {
-        const status =
-          typeof error === 'object' &&
-          error !== null &&
-          'code' in error &&
-          typeof error.code === 'number'
-            ? error.code
-            : undefined;
-        if (status === 404 || status === 410) {
+        if (isGoogleNotFoundError(error)) {
           return null;
         }
         throw error;
@@ -159,7 +161,7 @@ export class GoogleCalendarOperations {
 
   protected async upsertImportedEvent(
     emFork: EntityManager,
-    graphEvent: calendar_v3.Schema$Event,
+    graphEvent: GoogleCalendarImportEvent,
     defaults: {
       user: PersonItem;
       type: EventTypeItem;
@@ -169,18 +171,46 @@ export class GoogleCalendarOperations {
     },
   ): Promise<'created' | 'updated' | 'skipped'> {
     const referenceHandle = graphEvent.id?.trim();
-    const startDate = normalizeGoogleDateTime(graphEvent.start);
-    const endDate = normalizeGoogleDateTime(graphEvent.end);
+    const iCalUId = graphEvent.iCalUID?.trim() || null;
+    const providerStartDate = normalizeGoogleDateTime(graphEvent.start);
+    const providerEndDate = normalizeGoogleDateTime(graphEvent.end);
+    const occurrenceStartDate = normalizeGoogleDateTime(
+      graphEvent.saplingImportOccurrence?.start,
+    );
+    const occurrenceEndDate = normalizeGoogleDateTime(
+      graphEvent.saplingImportOccurrence?.end,
+    );
+    const startDate = occurrenceStartDate ?? providerStartDate;
+    const endDate = occurrenceEndDate ?? providerEndDate;
+    const normalizedRecurrence = normalizeGoogleRecurrence(
+      graphEvent.recurrence,
+    );
+    const recurrenceRule = rebaseImportedRecurrenceRule(
+      normalizedRecurrence.recurrenceRule,
+      providerStartDate,
+      occurrenceStartDate,
+    );
 
     if (!referenceHandle || !startDate || !endDate) {
       return 'skipped';
     }
 
-    const reference = await emFork.findOne(
-      EventGoogleItem,
-      { referenceHandle },
-      { populate: ['event', 'event.participants', 'event.status'] },
-    );
+    const populateOptions = {
+      populate: ['event', 'event.participants', 'event.status'],
+    } as const;
+    const reference =
+      (iCalUId
+        ? await emFork.findOne(
+            EventGoogleItem,
+            { iCalUId },
+            populateOptions as never,
+          )
+        : null) ??
+      (await emFork.findOne(
+        EventGoogleItem,
+        { referenceHandle },
+        populateOptions as never,
+      ));
 
     if (graphEvent.status === 'cancelled' && !reference) {
       return 'skipped';
@@ -197,6 +227,9 @@ export class GoogleCalendarOperations {
     );
 
     if (reference?.event && typeof reference.event === 'object') {
+      if (iCalUId && !reference.iCalUId) {
+        reference.iCalUId = iCalUId;
+      }
       const importedStatus =
         status.handle === 'scheduled' &&
         getRelationHandle(reference.event.status) === 'completed'
@@ -205,10 +238,10 @@ export class GoogleCalendarOperations {
       await this.assignImportedEvent(reference.event, graphEvent, {
         startDate,
         endDate,
-        type: defaults.type,
-        category: defaults.category,
         status: importedStatus,
         participants: participantPeople,
+        recurrenceRule,
+        exceptionDates: normalizedRecurrence.exceptionDates,
       });
       return 'updated';
     }
@@ -221,15 +254,17 @@ export class GoogleCalendarOperations {
     await this.assignImportedEvent(event, graphEvent, {
       startDate,
       endDate,
-      type: defaults.type,
-      category: defaults.category,
       status,
       participants: participantPeople,
+      recurrenceRule,
+      exceptionDates: normalizedRecurrence.exceptionDates,
+      classification: { type: defaults.type, category: defaults.category },
     });
 
     const newReference = new EventGoogleItem();
     newReference.event = event;
     newReference.referenceHandle = referenceHandle;
+    newReference.iCalUId = iCalUId;
 
     emFork.persist(event);
     emFork.persist(newReference);
@@ -238,17 +273,20 @@ export class GoogleCalendarOperations {
 
   protected async assignImportedEvent(
     event: EventItem,
-    graphEvent: calendar_v3.Schema$Event,
+    graphEvent: GoogleCalendarImportEvent,
     values: {
       startDate: Date;
       endDate: Date;
-      type: EventTypeItem;
-      category: EventCategoryItem;
       status: EventStatusItem;
       participants: PersonItem[];
+      recurrenceRule: string | null;
+      exceptionDates: string[];
+      classification?: {
+        type: EventTypeItem;
+        category: EventCategoryItem;
+      };
     },
   ): Promise<void> {
-    const recurrence = normalizeGoogleRecurrence(graphEvent.recurrence);
     event.title = truncateGoogleText(
       graphEvent.summary?.trim() || 'Google event',
       128,
@@ -256,31 +294,39 @@ export class GoogleCalendarOperations {
     event.description = graphEvent.description?.trim() || undefined;
     event.startDate = values.startDate;
     event.endDate = values.endDate;
-    event.recurrenceRule = recurrence.recurrenceRule;
-    event.recurrenceExceptionDates = recurrence.exceptionDates;
-    event.type = values.type;
-    event.category = values.category;
+    event.recurrenceRule = values.recurrenceRule;
+    event.recurrenceExceptionDates = values.exceptionDates;
+    if (values.classification) {
+      event.type = values.classification.type;
+      event.category = values.classification.category;
+    }
     event.isAllDay = Boolean(
       graphEvent.start?.date && !graphEvent.start?.dateTime,
     );
-    event.onlineMeetingURL =
+    const onlineMeetingURL =
       graphEvent.hangoutLink ??
       graphEvent.conferenceData?.entryPoints?.find(
         (entryPoint) => entryPoint.entryPointType === 'video',
-      )?.uri ??
-      event.onlineMeetingURL;
+      )?.uri;
+    event.onlineMeetingURL = onlineMeetingURL ?? event.onlineMeetingURL;
+    event.createOnlineMeeting = Boolean(
+      onlineMeetingURL ||
+      graphEvent.conferenceData?.conferenceSolution ||
+      graphEvent.conferenceData?.createRequest,
+    );
     event.status = values.status;
     await replaceCalendarEventParticipants(event, values.participants);
   }
 
   protected async resolveImportedParticipants(
     emFork: EntityManager,
-    graphEvent: calendar_v3.Schema$Event,
+    graphEvent: GoogleCalendarImportEvent,
     user: PersonItem,
   ): Promise<PersonItem[]> {
     const attendeeEmails = Array.from(
       new Set(
         (graphEvent.attendees ?? [])
+          .filter((attendee) => attendee.organizer !== true)
           .map((attendee) => normalizeGoogleEmail(attendee.email))
           .filter((email): email is string => Boolean(email)),
       ),
@@ -299,7 +345,7 @@ export class GoogleCalendarOperations {
     );
     const participantsByHandle = new Map<number, PersonItem>();
 
-    if (typeof user.handle === 'number') {
+    if (attendeeEmails.length === 0 && typeof user.handle === 'number') {
       participantsByHandle.set(user.handle, user);
     }
 
@@ -310,6 +356,152 @@ export class GoogleCalendarOperations {
     }
 
     return Array.from(participantsByHandle.values());
+  }
+
+  protected async reconcileMissingImportedEvents(
+    emFork: EntityManager,
+    graphEvents: GoogleCalendarImportEvent[],
+    range: ImportGoogleCalendarEventsRange,
+    user: PersonItem,
+    completedStatus: EventStatusItem,
+    resolveMissingProviderItem: (
+      reference: EventGoogleItem,
+    ) => Promise<MissingProviderItemResolution>,
+  ): Promise<number> {
+    if (typeof user.handle !== 'number') {
+      return 0;
+    }
+
+    const references = await emFork.find(
+      EventGoogleItem,
+      {
+        event: {
+          status: { handle: 'scheduled' },
+          $or: [
+            { participants: { handle: user.handle } },
+            { creatorPerson: { handle: user.handle } },
+          ],
+        },
+      },
+      { populate: ['event', 'event.participants', 'event.status'] } as never,
+    );
+    const returnedReferenceHandles = new Set(
+      graphEvents
+        .filter((event) => event.status !== 'cancelled')
+        .map((event) => event.id?.trim())
+        .filter((value): value is string => Boolean(value)),
+    );
+    const returnedICalUIds = new Set(
+      graphEvents
+        .filter((event) => event.status !== 'cancelled')
+        .map((event) => event.iCalUID?.trim())
+        .filter((value): value is string => Boolean(value)),
+    );
+    let reconciled = 0;
+
+    for (const reference of references) {
+      const event = reference.event;
+      if (!event || typeof event !== 'object') {
+        continue;
+      }
+      const expectedInRange = event.recurrenceRule
+        ? hasRecurrenceOccurrenceInRange(
+            event.startDate,
+            event.endDate,
+            event.recurrenceRule,
+            range.startDateTime,
+            range.endDateTime,
+          )
+        : event.startDate < range.endDateTime &&
+          event.endDate > range.startDateTime;
+      if (
+        !expectedInRange ||
+        (reference.iCalUId
+          ? returnedICalUIds.has(reference.iCalUId)
+          : returnedReferenceHandles.has(reference.referenceHandle))
+      ) {
+        continue;
+      }
+
+      const resolution = await resolveMissingProviderItem(reference);
+      if (resolution === 'updated') {
+        reconciled += 1;
+        continue;
+      }
+      if (resolution === 'unchanged') {
+        continue;
+      }
+
+      const participants = await getInitializedParticipants(event);
+      const remainingParticipants = participants.filter(
+        (participant) => participant.handle !== user.handle,
+      );
+      await replaceCalendarEventParticipants(event, remainingParticipants);
+      if (remainingParticipants.length === 0) {
+        event.status = completedStatus;
+      }
+      reconciled += 1;
+    }
+
+    return reconciled;
+  }
+
+  protected async fetchGoogleEventByReference(
+    accessToken: string,
+    referenceHandle: string,
+    futureStart: Date,
+  ): Promise<GoogleCalendarImportEvent | null> {
+    const calendar = google.calendar({ version: 'v3' });
+    let graphEvent: GoogleCalendarImportEvent;
+    try {
+      const response = await calendar.events.get({
+        calendarId: 'primary',
+        eventId: referenceHandle,
+        auth: accessToken,
+      });
+      graphEvent = response.data;
+    } catch (error) {
+      if (isGoogleNotFoundError(error)) {
+        return null;
+      }
+      throw error;
+    }
+
+    if (graphEvent.status === 'cancelled') {
+      return null;
+    }
+    if (!graphEvent.recurrence?.length) {
+      return graphEvent;
+    }
+
+    const futureEnd = new Date(futureStart);
+    futureEnd.setUTCFullYear(futureEnd.getUTCFullYear() + 5);
+    const instances = await calendar.events.instances({
+      calendarId: 'primary',
+      eventId: referenceHandle,
+      auth: accessToken,
+      timeMin: futureStart.toISOString(),
+      timeMax: futureEnd.toISOString(),
+      maxResults: 1,
+      showDeleted: false,
+    });
+    const nextOccurrence = (instances.data.items ?? [])
+      .filter((event) => normalizeGoogleDateTime(event.start))
+      .sort(
+        (left, right) =>
+          normalizeGoogleDateTime(left.start)!.getTime() -
+          normalizeGoogleDateTime(right.start)!.getTime(),
+      )[0];
+
+    return nextOccurrence
+      ? {
+          ...graphEvent,
+          saplingImportOccurrence: {
+            start: nextOccurrence.start,
+            end: nextOccurrence.end,
+          },
+        }
+      : graphEvent;
   }
 
   /**
@@ -330,6 +522,9 @@ export class GoogleCalendarOperations {
     const eventResource = buildGoogleCalendarEvent(
       event,
       classificationMappings,
+      event.createOnlineMeeting
+        ? buildGoogleConferenceRequestId(event)
+        : undefined,
     );
 
     // Create event in Google Calendar
@@ -338,6 +533,7 @@ export class GoogleCalendarOperations {
       requestBody: eventResource,
       auth: accessToken,
       sendUpdates: 'all',
+      conferenceDataVersion: 1,
     });
 
     // Create EventGoogleItem with Google event ID and save
@@ -345,7 +541,14 @@ export class GoogleCalendarOperations {
       const reference = new EventGoogleItem();
       reference.event = event;
       reference.referenceHandle = created.data.id;
+      reference.iCalUId = created.data.iCalUID?.trim() || null;
       await emFork.persist(reference).flush();
+    }
+
+    const onlineMeetingURL = resolveGoogleOnlineMeetingUrl(created?.data);
+    if (event.createOnlineMeeting && onlineMeetingURL) {
+      event.onlineMeetingURL = onlineMeetingURL;
+      await emFork.persist(event).flush();
     }
 
     return created;
@@ -364,6 +567,7 @@ export class GoogleCalendarOperations {
     event: EventItem,
     reference: EventGoogleItem,
     accessToken: string,
+    emFork: EntityManager,
     classificationMappings?: CalendarClassificationMapping[] | null,
     operation?: 'remove-recurrence' | 'detach-occurrence',
     changedFields?: string[],
@@ -395,10 +599,15 @@ export class GoogleCalendarOperations {
       });
     }
 
+    const requestConference =
+      Boolean(event.createOnlineMeeting) &&
+      !event.onlineMeetingURL &&
+      (!changedFields || changedFields.includes('createOnlineMeeting'));
     const { patch: eventResource, sendUpdates } = buildGoogleCalendarEventPatch(
       event,
       classificationMappings,
       changedFields,
+      requestConference ? buildGoogleConferenceRequestId(event) : undefined,
     );
 
     if (Object.keys(eventResource).length === 0) {
@@ -406,13 +615,20 @@ export class GoogleCalendarOperations {
     }
 
     // reference.referenceHandle should contain the Google event id
-    return await calendar.events.patch({
+    const updated = await calendar.events.patch({
       calendarId: 'primary',
       eventId: reference.referenceHandle,
       requestBody: eventResource,
       auth: accessToken,
       sendUpdates,
+      conferenceDataVersion: 1,
     });
+    const onlineMeetingURL = resolveGoogleOnlineMeetingUrl(updated?.data);
+    if (event.createOnlineMeeting && onlineMeetingURL) {
+      event.onlineMeetingURL = onlineMeetingURL;
+      await emFork.persist(event).flush();
+    }
+    return updated;
   }
 
   /**
@@ -429,12 +645,18 @@ export class GoogleCalendarOperations {
     accessToken: string,
     emFork: EntityManager,
   ): Promise<any> {
-    await calendar.events.delete({
-      calendarId: 'primary',
-      eventId: reference.referenceHandle,
-      auth: accessToken,
-      sendUpdates: 'all',
-    });
+    try {
+      await calendar.events.delete({
+        calendarId: 'primary',
+        eventId: reference.referenceHandle,
+        auth: accessToken,
+        sendUpdates: 'all',
+      });
+    } catch (error) {
+      if (!isGoogleNotFoundError(error)) {
+        throw error;
+      }
+    }
     // Remove the EventGoogleItem from the database
     await emFork.remove(reference).flush();
     return { success: true };
@@ -445,4 +667,73 @@ export function getRelationHandle(
   value?: string | { handle?: string } | null,
 ): string {
   return typeof value === 'string' ? value : (value?.handle ?? '');
+}
+
+async function getInitializedParticipants(
+  event: EventItem,
+): Promise<PersonItem[]> {
+  const collection = event.participants as typeof event.participants & {
+    getItems?: () => PersonItem[];
+    init?: () => Promise<unknown>;
+    isInitialized?: () => boolean;
+  };
+  if (
+    typeof collection.isInitialized === 'function' &&
+    typeof collection.init === 'function' &&
+    !collection.isInitialized()
+  ) {
+    await collection.init();
+  }
+  if (typeof collection.getItems === 'function') {
+    return collection.getItems();
+  }
+  return Array.from(collection as Iterable<PersonItem>);
+}
+
+function rebaseImportedRecurrenceRule(
+  recurrenceRule: string | null,
+  providerStartDate: Date | null,
+  occurrenceStartDate: Date | null,
+): string | null {
+  if (!recurrenceRule || !providerStartDate || !occurrenceStartDate) {
+    return recurrenceRule;
+  }
+  const countMatch = /(?:^|;)COUNT=(\d+)(?:;|$)/.exec(recurrenceRule);
+  if (!countMatch) {
+    return recurrenceRule;
+  }
+  const occurrence = findRecurrenceOccurrence(
+    providerStartDate,
+    providerStartDate,
+    recurrenceRule,
+    occurrenceStartDate,
+  );
+  if (!occurrence) {
+    return recurrenceRule;
+  }
+  const originalCount = Number.parseInt(countMatch[1], 10);
+  const remainingCount = Math.max(
+    1,
+    originalCount - occurrence.occurrenceIndex + 1,
+  );
+  return recurrenceRule.replace(
+    /(^|;)COUNT=\d+(?=;|$)/,
+    `$1COUNT=${remainingCount}`,
+  );
+}
+
+function resolveGoogleOnlineMeetingUrl(
+  event?: calendar_v3.Schema$Event | null,
+): string | null {
+  return (
+    event?.hangoutLink?.trim() ||
+    event?.conferenceData?.entryPoints
+      ?.find((entryPoint) => entryPoint.entryPointType === 'video')
+      ?.uri?.trim() ||
+    null
+  );
+}
+
+function buildGoogleConferenceRequestId(event: EventItem): string {
+  return `sapling-event-${event.handle ?? randomUUID()}`;
 }

@@ -109,6 +109,59 @@ describe('calendar.recurrence', () => {
     ]);
   });
 
+  it('keeps the local event time across a daylight-saving transition', () => {
+    const result = expandFiniteRecurrence(
+      new Date('2026-09-21T06:00:00.000Z'),
+      new Date('2026-09-21T15:00:00.000Z'),
+      'FREQ=WEEKLY;INTERVAL=1;BYDAY=MO;COUNT=6',
+      100,
+      'Europe/Berlin',
+    );
+
+    expect(
+      result.occurrences.map((occurrence) => ({
+        start: occurrence.startDate.toISOString(),
+        end: occurrence.endDate.toISOString(),
+      })),
+    ).toEqual([
+      {
+        start: '2026-09-21T06:00:00.000Z',
+        end: '2026-09-21T15:00:00.000Z',
+      },
+      {
+        start: '2026-09-28T06:00:00.000Z',
+        end: '2026-09-28T15:00:00.000Z',
+      },
+      {
+        start: '2026-10-05T06:00:00.000Z',
+        end: '2026-10-05T15:00:00.000Z',
+      },
+      {
+        start: '2026-10-12T06:00:00.000Z',
+        end: '2026-10-12T15:00:00.000Z',
+      },
+      {
+        start: '2026-10-19T06:00:00.000Z',
+        end: '2026-10-19T15:00:00.000Z',
+      },
+      {
+        start: '2026-10-26T07:00:00.000Z',
+        end: '2026-10-26T16:00:00.000Z',
+      },
+    ]);
+
+    expect(
+      findRecurrenceOccurrence(
+        new Date('2026-09-21T06:00:00.000Z'),
+        new Date('2026-09-21T15:00:00.000Z'),
+        'FREQ=WEEKLY;INTERVAL=1;BYDAY=MO;COUNT=6',
+        new Date('2026-10-26T07:00:00.000Z'),
+        10_000,
+        'Europe/Berlin',
+      ),
+    ).toMatchObject({ occurrenceIndex: 6 });
+  });
+
   it('refuses to represent an open-ended or over-limit series as complete', () => {
     expect(
       expandFiniteRecurrence(

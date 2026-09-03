@@ -19,6 +19,8 @@ import type { AiToolRegistryEntry } from './ai.types';
 import { McpService, type McpInlineToolExecution } from './mcp.service';
 import type { McpToolPolicy } from './mcp-policy.types';
 
+const TOOL_ACTION_VALIDITY_MS = 10 * 60 * 60 * 1000;
+
 @Injectable()
 export class AiChatToolActionService {
   constructor(
@@ -415,7 +417,7 @@ export class AiChatToolActionService {
       toolName,
       arguments: args,
       status: 'pending',
-      expiresAt: new Date(Date.now() + 30 * 60 * 1000),
+      expiresAt: new Date(Date.now() + TOOL_ACTION_VALIDITY_MS),
     });
 
     this.em.persist(action);

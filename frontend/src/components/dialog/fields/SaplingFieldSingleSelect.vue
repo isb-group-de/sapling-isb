@@ -76,6 +76,7 @@
         :show-search="false"
         :show-toolbar="false"
         :multi-select="false"
+        :allow-row-double-click="false"
         :disable-mobile-view="disableDropdownMobileView"
         :table-key="entityHandle"
         :selected="selectedItem ? [selectedItem] : []"
@@ -231,6 +232,7 @@ const recordDialogMode = computed<DialogState>(() =>
   entityPermission.value?.allowUpdate ? 'edit' : 'readonly',
 )
 const displayedSelectedItem = computed(() =>
+  hydratedSelectedItem.value &&
   getItemHandle(hydratedSelectedItem.value) === getItemHandle(selectedItem.value)
     ? hydratedSelectedItem.value
     : selectedItem.value,

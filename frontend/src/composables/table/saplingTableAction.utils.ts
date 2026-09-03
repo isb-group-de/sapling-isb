@@ -34,7 +34,11 @@ export function getItemHandle(item?: SaplingGenericItem | null) {
   }
 
   const { handle } = item
-  return typeof handle === 'string' || typeof handle === 'number' ? handle : null
+  if (typeof handle === 'string') {
+    return handle.trim() ? handle : null
+  }
+
+  return typeof handle === 'number' ? handle : null
 }
 
 export function buildConcurrencyOptions(

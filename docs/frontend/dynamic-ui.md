@@ -842,8 +842,10 @@ relation tables keep edit and double-click workflows, but must not expose the
 target record's destructive delete action: unlinking a relation is performed
 explicitly through row selection and the relation tab's remove action.
 Reference dropdown tables hide the complete table toolbar explicitly while keeping
-their configured row-selection mode. `SaplingTable` itself keeps the toolbar visible
-by default so full table views and other existing consumers do not opt out accidentally.
+their configured row-selection mode. They also disable row double-click actions because
+opening a nested record dialog conflicts with the picker's focus-driven close behavior.
+`SaplingTable` keeps both its toolbar and row double-click actions enabled by default so
+full table views and other existing consumers do not opt out accidentally.
 Glass dialog cards and reference dropdown surfaces paint their outer blur on a sibling
 underlay. This avoids creating an ancestor Backdrop Root, allowing sticky table headers
 and action columns to blur scrolling rows consistently inside overlays as well as pages.

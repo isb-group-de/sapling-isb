@@ -1,9 +1,20 @@
 import { describe, expect, it } from 'vitest'
 import type { EntityTemplate, SaplingFormConfigPayload } from '@/entity/structure'
-import { applyFormConfigOverlay, getDefaultFormConfigHandle } from '../saplingDialogEdit.utils'
+import {
+  applyFormConfigOverlay,
+  getDefaultFormConfigHandle,
+  getItemHandle,
+} from '../saplingDialogEdit.utils'
 import type { SaplingFormConfigItem } from '@/services/api.form-config.service'
 
 describe('saplingDialogEdit utils', () => {
+  it('treats blank handles as unsaved records', () => {
+    expect(getItemHandle({ handle: '' })).toBeNull()
+    expect(getItemHandle({ handle: '   ' })).toBeNull()
+    expect(getItemHandle({ handle: 'open' })).toBe('open')
+    expect(getItemHandle({ handle: 0 })).toBe(0)
+  })
+
   it('applies central group metadata without repeating it on every field', () => {
     const templates = [
       {

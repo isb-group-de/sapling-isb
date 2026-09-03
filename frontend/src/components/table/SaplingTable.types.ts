@@ -19,6 +19,7 @@ export type SaplingTableProps = UseSaplingTableProps & {
   showSelectionToolbar?: boolean
   isInitialized?: boolean
   rowInteraction?: boolean
+  allowRowDoubleClick?: boolean
   showSidePanelToggle?: boolean
   sidePanelVisible?: boolean
   sidePanelToggleLabel?: string

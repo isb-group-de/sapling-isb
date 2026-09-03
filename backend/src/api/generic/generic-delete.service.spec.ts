@@ -1,12 +1,8 @@
 import { GenericDeleteService } from './generic-delete.service';
-import { EventAzureItem } from '../../entity/EventAzureItem';
-import { EventDeliveryItem } from '../../entity/EventDeliveryItem';
-import { EventGoogleItem } from '../../entity/EventGoogleItem';
 
 describe('GenericDeleteService', () => {
   function createHarness(
     options: {
-      synchronizedEvent?: boolean;
       children?: Array<{ handle: number }>;
     } = {},
   ) {
@@ -15,15 +11,7 @@ describe('GenericDeleteService', () => {
     class HiddenChildEntity {}
     class EventEntity {}
 
-    const findOne = jest.fn(async (entity: unknown) => {
-      if (entity === EventAzureItem) {
-        return options.synchronizedEvent ? { handle: 91 } : null;
-      }
-      if (entity === EventGoogleItem || entity === EventDeliveryItem) {
-        return null;
-      }
-      return { handle: 4 };
-    });
+    const findOne = jest.fn(async () => ({ handle: 4 }));
     const find = jest.fn(async () => options.children ?? []);
     const transactional = jest.fn(async (operation: () => Promise<void>) =>
       operation(),
@@ -57,6 +45,14 @@ describe('GenericDeleteService', () => {
             kind: 'm:n',
             referenceName: 'person',
             mappedBy: 'companies',
+            options: [],
+          },
+          {
+            name: 'assignedEvents',
+            isReference: true,
+            kind: '1:m',
+            referenceName: 'event',
+            mappedBy: 'assigneePerson',
             options: [],
           },
           {
@@ -132,6 +128,12 @@ describe('GenericDeleteService', () => {
           required: false,
         },
         {
+          name: 'assignedEvents',
+          entityHandle: 'event',
+          kind: '1:m',
+          required: false,
+        },
+        {
           name: 'hiddenChildren',
           entityHandle: 'hiddenChild',
           kind: '1:m',
@@ -149,22 +151,19 @@ describe('GenericDeleteService', () => {
     );
   });
 
-  it('cancels a synchronized Event through the normal update lifecycle', async () => {
-    const harness = createHarness({ synchronizedEvent: true });
+  it('physically deletes Events through the normal delete lifecycle', async () => {
+    const harness = createHarness();
 
     await expect(
       harness.service.delete('event', 22, { handle: 1 } as never, {}),
-    ).resolves.toEqual({ action: 'canceled' });
-    expect(harness.genericEntityMutationService.update).toHaveBeenCalledWith(
+    ).resolves.toEqual({ action: 'deleted' });
+    expect(harness.genericEntityMutationService.delete).toHaveBeenCalledWith(
       'event',
       22,
-      { status: 'canceled' },
       expect.objectContaining({ handle: 1 }),
-      [],
       {},
-      { resolution: 'overwrite' },
     );
-    expect(harness.genericEntityMutationService.delete).not.toHaveBeenCalled();
+    expect(harness.genericEntityMutationService.update).not.toHaveBeenCalled();
   });
 
   it('physically deletes an Event without provider references or delivery history', async () => {
@@ -205,5 +204,24 @@ describe('GenericDeleteService', () => {
     expect(
       harness.genericEntityMutationService.schedulePostCommitTasks,
     ).toHaveBeenCalledTimes(1);
+  });
+
+  it('allows selected Event children to run their physical delete lifecycle', async () => {
+    const harness = createHarness({ children: [{ handle: 14 }] });
+
+    await expect(
+      harness.service.delete('company', 4, { handle: 1 } as never, {}, [
+        'assignedEvents',
+      ]),
+    ).resolves.toEqual({ action: 'deleted' });
+
+    expect(harness.genericEntityMutationService.delete).toHaveBeenNthCalledWith(
+      1,
+      'event',
+      14,
+      expect.objectContaining({ handle: 1 }),
+      expect.objectContaining({ postCommitTasks: expect.any(Array) }),
+      expect.objectContaining({ postCommitTasks: expect.any(Array) }),
+    );
   });
 });

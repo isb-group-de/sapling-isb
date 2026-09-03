@@ -1,0 +1,80 @@
+[
+  {
+    "entity": "system",
+    "property": "monitoringIncidentEvaluation",
+    "de": "Auswertung",
+    "en": "Evaluation"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringIncidentEvaluationDescription",
+    "de": "Diese Angaben erklären, wie der Vorfall ermittelt und zugeordnet wurde.",
+    "en": "These details explain how the incident was detected and assigned."
+  },
+  {
+    "entity": "system",
+    "property": "monitoringIncidentFirstSeen",
+    "de": "Erstmals erkannt",
+    "en": "First detected"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringIncidentGlobalScope",
+    "de": "Gesamtes System",
+    "en": "Entire system"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringIncidentMetricKey",
+    "de": "Technischer Messschlüssel",
+    "en": "Technical metric key"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringIncidentMetricKeyDescription",
+    "de": "Eindeutige interne Kennung der überwachten Messgröße.",
+    "en": "Unique internal identifier of the monitored metric."
+  },
+  {
+    "entity": "system",
+    "property": "monitoringIncidentSamples",
+    "de": "Ausgewertete Messpunkte",
+    "en": "Evaluated data points"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringIncidentSamplesDescription",
+    "de": "Anzahl der Messwerte, die im Prüfzeitraum in die Auswertung eingeflossen sind.",
+    "en": "Number of measurements included in the evaluation window."
+  },
+  {
+    "entity": "system",
+    "property": "monitoringIncidentScope",
+    "de": "Geltungsbereich",
+    "en": "Scope"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringIncidentScopeDescription",
+    "de": "Teil des Systems, für den die Warnregel ausgewertet wurde.",
+    "en": "Part of the system for which the alert rule was evaluated."
+  },
+  {
+    "entity": "system",
+    "property": "monitoringIncidentTimeline",
+    "de": "Zeitlicher Verlauf",
+    "en": "Timeline"
+  },
+  {
+    "entity": "system",
+    "property": "monitoringIncidentTimelineDescription",
+    "de": "Beginn, letzte Beobachtung und Prüfzeitraum des Vorfalls.",
+    "en": "Start, latest observation, and evaluation window of the incident."
+  },
+  {
+    "entity": "system",
+    "property": "monitoringIncidentTriggerThreshold",
+    "de": "Auslösegrenze",
+    "en": "Trigger threshold"
+  }
+]

@@ -4,6 +4,7 @@ import { AzureCalendarService } from './azure.calendar.service';
 import { EventItem } from '../../entity/EventItem';
 import { EventAzureItem } from '../../entity/EventAzureItem';
 import { PersonItem } from '../../entity/PersonItem';
+import { PersonSessionItem } from '../../entity/PersonSessionItem';
 import {
   createGraphEvent,
   createService,
@@ -716,5 +717,48 @@ describe('AzureCalendarService completion delivery', () => {
     expect(remove.mock.calls[0]?.[0]).toBe(reference);
     expect(flush).toHaveBeenCalledTimes(1);
     expect(harness.createEvent).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('AzureCalendarService physical Event deletion', () => {
+  it('deletes the Outlook projection with the Event owners session', async () => {
+    const reference = {
+      referenceHandle: 'outlook-event-23',
+    } as EventAzureItem;
+    const session = {
+      handle: 81,
+      accessToken: 'access-token',
+    } as PersonSessionItem;
+    const emFork = {
+      findOne: jest.fn<(...args: unknown[]) => Promise<unknown>>((entity) =>
+        Promise.resolve(entity === EventAzureItem ? reference : session),
+      ),
+    };
+    const service = new AzureCalendarService(
+      {} as never,
+      { fork: () => emFork } as never,
+    );
+    const harness = service as unknown as {
+      createClient: jest.Mock;
+      deleteEvent: jest.Mock;
+      resolveAzureAccessToken: jest.Mock;
+    };
+    const client = { provider: 'azure' };
+    harness.createClient = jest.fn(() => client);
+    harness.resolveAzureAccessToken = jest.fn(() =>
+      Promise.resolve('access-token'),
+    );
+    harness.deleteEvent = jest.fn(() => Promise.resolve({ success: true }));
+
+    await expect(service.deleteSynchronizedEvent(23, 7)).resolves.toBe(true);
+
+    expect(emFork.findOne).toHaveBeenNthCalledWith(1, EventAzureItem, {
+      event: 23,
+    });
+    expect(emFork.findOne).toHaveBeenNthCalledWith(2, PersonSessionItem, {
+      person: { handle: 7 },
+    });
+    expect(harness.deleteEvent).toHaveBeenCalledTimes(1);
+    expect(harness.deleteEvent).toHaveBeenCalledWith(client, reference, emFork);
   });
 });

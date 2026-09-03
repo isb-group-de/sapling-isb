@@ -373,6 +373,31 @@ describe('useSaplingDialogEditRelations', () => {
     expect(relations.relationTableItems.value.notes).toEqual([])
   })
 
+  it('replaces an edited staged 1:m draft before creating it with the parent', async () => {
+    const relations = createRelations({ mode: 'create' })
+    const template = relations.relationTemplates.value[0]
+    const editedContext = {
+      persistPendingRelations: vi.fn().mockResolvedValue(true),
+      complete: vi.fn(),
+    } as DialogSaveContext
+
+    relations.stageNewRelationRecord(template, { title: 'Initial note' })
+    const stagedDraft = relations.relationTableItems.value.notes[0]
+    relations.stageNewRelationRecord(template, { title: 'Edited note' }, editedContext, stagedDraft)
+
+    expect(relations.relationTableItems.value.notes).toHaveLength(1)
+    expect(relations.relationTableItems.value.notes[0]).toMatchObject({ title: 'Edited note' })
+
+    await expect(relations.persistPendingRelations(99)).resolves.toBe(true)
+
+    expect(apiCreateMock).toHaveBeenCalledTimes(1)
+    expect(apiCreateMock).toHaveBeenCalledWith('note', {
+      title: 'Edited note',
+      ticket: 99,
+    })
+    expect(editedContext.persistPendingRelations).toHaveBeenCalledWith(101)
+  })
+
   it('removes a staged new 1:m record without calling the API', async () => {
     const relations = createRelations({ mode: 'create' })
     const template = relations.relationTemplates.value[0]

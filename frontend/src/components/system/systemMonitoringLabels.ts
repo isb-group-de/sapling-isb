@@ -4,6 +4,23 @@ type MonitoringMetricDefinition = {
   en: string
 }
 
+type MonitoringIncidentTextDefinition = MonitoringMetricDefinition
+
+export type MonitoringIncidentTextKey =
+  | 'evaluation'
+  | 'evaluationDescription'
+  | 'firstSeen'
+  | 'globalScope'
+  | 'metricKey'
+  | 'metricKeyDescription'
+  | 'samples'
+  | 'samplesDescription'
+  | 'scope'
+  | 'scopeDescription'
+  | 'timeline'
+  | 'timelineDescription'
+  | 'triggerThreshold'
+
 export const MONITORING_METRIC_DEFINITIONS: Record<string, MonitoringMetricDefinition> = {
   'host.cpu.percent': metric('HostCpuPercent', 'CPU-Auslastung', 'CPU utilization'),
   'host.cpu.userPercent': metric('HostCpuUserPercent', 'CPU-Benutzeranteil', 'CPU user time'),
@@ -259,6 +276,53 @@ const REMEDIATION_LABELS: Record<string, [string, string]> = {
   'checks.retry': ['Systemprüfungen wiederholen', 'Retry system checks'],
 }
 
+const INCIDENT_TYPE_LABELS: Record<string, [string, string]> = {
+  threshold: ['Schwellenwertalarm', 'Threshold alert'],
+  anomaly: ['Anomalie', 'Anomaly'],
+  canary: ['Canary-Fehler', 'Canary failure'],
+  errorSpike: ['Fehlerhäufung', 'Error spike'],
+  collectorGap: ['Collector-Messlücke', 'Collector gap'],
+}
+
+const INCIDENT_TEXT_DEFINITIONS: Record<
+  MonitoringIncidentTextKey,
+  MonitoringIncidentTextDefinition
+> = {
+  evaluation: incidentText('Evaluation', 'Auswertung', 'Evaluation'),
+  evaluationDescription: incidentText(
+    'EvaluationDescription',
+    'Diese Angaben erklären, wie der Vorfall ermittelt und zugeordnet wurde.',
+    'These details explain how the incident was detected and assigned.',
+  ),
+  firstSeen: incidentText('FirstSeen', 'Erstmals erkannt', 'First detected'),
+  globalScope: incidentText('GlobalScope', 'Gesamtes System', 'Entire system'),
+  metricKey: incidentText('MetricKey', 'Technischer Messschlüssel', 'Technical metric key'),
+  metricKeyDescription: incidentText(
+    'MetricKeyDescription',
+    'Eindeutige interne Kennung der überwachten Messgröße.',
+    'Unique internal identifier of the monitored metric.',
+  ),
+  samples: incidentText('Samples', 'Ausgewertete Messpunkte', 'Evaluated data points'),
+  samplesDescription: incidentText(
+    'SamplesDescription',
+    'Anzahl der Messwerte, die im Prüfzeitraum in die Auswertung eingeflossen sind.',
+    'Number of measurements included in the evaluation window.',
+  ),
+  scope: incidentText('Scope', 'Geltungsbereich', 'Scope'),
+  scopeDescription: incidentText(
+    'ScopeDescription',
+    'Teil des Systems, für den die Warnregel ausgewertet wurde.',
+    'Part of the system for which the alert rule was evaluated.',
+  ),
+  timeline: incidentText('Timeline', 'Zeitlicher Verlauf', 'Timeline'),
+  timelineDescription: incidentText(
+    'TimelineDescription',
+    'Beginn, letzte Beobachtung und Prüfzeitraum des Vorfalls.',
+    'Start, latest observation, and evaluation window of the incident.',
+  ),
+  triggerThreshold: incidentText('TriggerThreshold', 'Auslösegrenze', 'Trigger threshold'),
+}
+
 export function monitoringServiceLabel(locale: string, value: string): string {
   return localizedLabel(locale, SERVICE_LABELS[value]) ?? humanizeMetricKey(value)
 }
@@ -275,6 +339,35 @@ export function monitoringRemediationLabel(locale: string, value: string): strin
   return localizedLabel(locale, REMEDIATION_LABELS[value]) ?? humanizeMetricKey(value)
 }
 
+export function monitoringIncidentTypeLabel(locale: string, value: string): string {
+  return localizedLabel(locale, INCIDENT_TYPE_LABELS[value]) ?? humanizeMetricKey(value)
+}
+
+export function monitoringIncidentText(
+  translate: (key: string) => string,
+  locale: string,
+  key: MonitoringIncidentTextKey,
+): string {
+  const definition = INCIDENT_TEXT_DEFINITIONS[key]
+  const translated = translate(definition.translationKey)
+  if (translated.trim() && translated !== definition.translationKey) return translated
+  return locale.toLowerCase().startsWith('de') ? definition.de : definition.en
+}
+
+export function monitoringMetricValue(locale: string, metricKey: string, value: unknown): string {
+  const numeric = Number(value)
+  if (!Number.isFinite(numeric)) return '–'
+
+  if (/bytes$/i.test(metricKey)) return formatBytes(locale, numeric)
+  if (/(?:percent|rate)$/i.test(metricKey)) return `${formatNumber(locale, numeric)} %`
+  if (/seconds$/i.test(metricKey)) return `${formatNumber(locale, numeric)} s`
+  if (/ms$/i.test(metricKey) && !/epochms$/i.test(metricKey)) {
+    return `${formatNumber(locale, numeric)} ms`
+  }
+  if (metricKey === 'web.cls') return formatNumber(locale, numeric, 3)
+  return formatNumber(locale, numeric)
+}
+
 function localizedLabel(locale: string, labels?: [string, string]): string | undefined {
   if (!labels) return undefined
   return locale.toLowerCase().startsWith('de') ? labels[0] : labels[1]
@@ -282,6 +375,25 @@ function localizedLabel(locale: string, labels?: [string, string]): string | und
 
 function metric(suffix: string, de: string, en: string): MonitoringMetricDefinition {
   return { translationKey: `system.monitoringMetric${suffix}`, de, en }
+}
+
+function incidentText(suffix: string, de: string, en: string): MonitoringIncidentTextDefinition {
+  return { translationKey: `system.monitoringIncident${suffix}`, de, en }
+}
+
+function formatNumber(locale: string, value: number, maximumFractionDigits = 1): string {
+  return new Intl.NumberFormat(locale, { maximumFractionDigits }).format(value)
+}
+
+function formatBytes(locale: string, value: number): string {
+  if (value === 0) return '0 B'
+  const units = ['B', 'kB', 'MB', 'GB', 'TB']
+  const unitIndex = Math.min(
+    Math.floor(Math.log(Math.abs(value)) / Math.log(1024)),
+    units.length - 1,
+  )
+  const safeUnitIndex = Math.max(unitIndex, 0)
+  return `${formatNumber(locale, value / 1024 ** safeUnitIndex)} ${units[safeUnitIndex]}`
 }
 
 function humanizeMetricKey(metricKey: string) {

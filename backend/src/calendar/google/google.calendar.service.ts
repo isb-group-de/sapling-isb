@@ -37,7 +37,10 @@ import { EventCategoryItem } from '../../entity/EventCategoryItem';
 import { CalendarSyncSubscriptionItem } from '../../entity/CalendarSyncSubscriptionItem';
 import { ImportGoogleCalendarEventsResponseDto } from './dto/import-google-calendar-events.dto';
 import {
+  clampGoogleImportRangeToFuture,
   type ImportGoogleCalendarEventsRange,
+  isGoogleAuthenticationError,
+  isGoogleNotFoundError,
   SAPLING_GOOGLE_EVENT_CATEGORY_KEY,
   SAPLING_GOOGLE_EVENT_TYPE_KEY,
 } from './google-calendar.utils';
@@ -97,6 +100,59 @@ export class GoogleCalendarService extends GoogleCalendarOperations {
       ...(changedFields ? { changedFields } : {}),
       ...(occurrenceStart ? { occurrenceStart } : {}),
     });
+  }
+
+  /**
+   * Deletes an existing Google projection before its Sapling Event is
+   * physically removed. The Event creator owns the calendar projection and its
+   * persisted session therefore supplies the provider credentials.
+   */
+  async deleteSynchronizedEvent(
+    eventHandle: number,
+    ownerPersonHandle: number,
+  ): Promise<boolean> {
+    const emFork = this.em.fork();
+    const reference = await emFork.findOne(EventGoogleItem, {
+      event: eventHandle as never,
+    });
+    if (!reference) {
+      return false;
+    }
+
+    const session = await emFork.findOne(PersonSessionItem, {
+      person: { handle: ownerPersonHandle },
+    });
+    if (!session) {
+      throw new UnauthorizedException('calendar.googleSessionNotFound');
+    }
+
+    const accessToken = await this.resolveGoogleAccessToken(session);
+    if (!accessToken) {
+      throw new UnauthorizedException('calendar.googleTokenNotAvailable');
+    }
+
+    const deleteWithToken = (token: string) =>
+      this.deleteEvent(
+        google.calendar({ version: 'v3' }),
+        reference,
+        token,
+        emFork,
+      );
+
+    try {
+      await deleteWithToken(accessToken);
+    } catch (error) {
+      if (!isGoogleAuthenticationError(error)) {
+        throw error;
+      }
+      const refreshedToken = await this.refreshGoogleAccessToken(session);
+      if (!refreshedToken) {
+        throw error;
+      }
+      await deleteWithToken(refreshedToken);
+    }
+
+    return true;
   }
 
   /**
@@ -164,15 +220,30 @@ export class GoogleCalendarService extends GoogleCalendarOperations {
         return null;
       default:
         if (reference) {
-          return await this.updateEvent(
-            calendar,
-            event,
-            reference,
-            accessToken,
-            classificationMappings,
-            operation,
-            changedFields,
-          );
+          try {
+            return await this.updateEvent(
+              calendar,
+              event,
+              reference,
+              accessToken,
+              emFork,
+              classificationMappings,
+              operation,
+              changedFields,
+            );
+          } catch (error) {
+            if (!isGoogleNotFoundError(error)) {
+              throw error;
+            }
+            await emFork.remove(reference).flush();
+            return await this.createEvent(
+              calendar,
+              event,
+              accessToken,
+              emFork,
+              classificationMappings,
+            );
+          }
         } else {
           return await this.createEvent(
             calendar,
@@ -201,6 +272,11 @@ export class GoogleCalendarService extends GoogleCalendarOperations {
       throw new ForbiddenException('calendar.googleUserRequired');
     }
 
+    const importRange = clampGoogleImportRangeToFuture(range);
+    if (!importRange) {
+      return { imported: 0, created: 0, updated: 0, skipped: 0 };
+    }
+
     const emFork = this.em.fork();
     const session = await emFork.findOne(PersonSessionItem, {
       person: { handle: currentUser.handle },
@@ -218,7 +294,7 @@ export class GoogleCalendarService extends GoogleCalendarOperations {
     const graphEvents = await this.fetchCalendarEventsWithRetry(
       session,
       accessToken,
-      range,
+      importRange,
     );
 
     const user = await emFork.findOne(
@@ -232,6 +308,7 @@ export class GoogleCalendarService extends GoogleCalendarOperations {
       eventCategories,
       scheduledStatus,
       canceledStatus,
+      completedStatus,
     ] = await Promise.all([
       emFork.findOne(
         CalendarSyncSubscriptionItem,
@@ -242,6 +319,7 @@ export class GoogleCalendarService extends GoogleCalendarOperations {
       emFork.find(EventCategoryItem, {}),
       emFork.findOne(EventStatusItem, { handle: 'scheduled' }),
       emFork.findOne(EventStatusItem, { handle: 'canceled' }),
+      emFork.findOne(EventStatusItem, { handle: 'completed' }),
     ]);
     const eventTypesByHandle = new Map(
       eventTypes.map((eventType) => [eventType.handle, eventType]),
@@ -280,13 +358,17 @@ export class GoogleCalendarService extends GoogleCalendarOperations {
       !defaultType ||
       !defaultCategory ||
       !scheduledStatus ||
-      !canceledStatus
+      !canceledStatus ||
+      !completedStatus
     ) {
       result.skipped = graphEvents.length;
       return result;
     }
 
-    for (const graphEvent of graphEvents) {
+    const activeGraphEvents = graphEvents.filter(
+      (graphEvent) => graphEvent.status !== 'cancelled',
+    );
+    for (const graphEvent of activeGraphEvents) {
       const privateProperties = graphEvent.extendedProperties?.private;
       const classification = resolveImportedCalendarClassification({
         mappings: subscription?.classificationMappings,
@@ -321,6 +403,58 @@ export class GoogleCalendarService extends GoogleCalendarOperations {
         result.skipped += 1;
       }
     }
+
+    const reconciled = await this.reconcileMissingImportedEvents(
+      emFork,
+      activeGraphEvents,
+      importRange,
+      user,
+      completedStatus,
+      async (reference) => {
+        const movedGraphEvent = await this.fetchGoogleEventByReference(
+          accessToken,
+          reference.referenceHandle,
+          importRange.startDateTime,
+        );
+        if (!movedGraphEvent) {
+          return 'missing';
+        }
+        if (
+          movedGraphEvent.recurrence?.length &&
+          !movedGraphEvent.saplingImportOccurrence
+        ) {
+          return 'unchanged';
+        }
+
+        const privateProperties = movedGraphEvent.extendedProperties?.private;
+        const classification = resolveImportedCalendarClassification({
+          mappings: subscription?.classificationMappings,
+          externalValues: [movedGraphEvent.colorId],
+          embeddedEventTypeHandle:
+            privateProperties?.[SAPLING_GOOGLE_EVENT_TYPE_KEY],
+          embeddedEventCategoryHandle:
+            privateProperties?.[SAPLING_GOOGLE_EVENT_CATEGORY_KEY],
+          defaults: {
+            eventTypeHandle: defaultType.handle,
+            eventCategoryHandle: defaultCategory.handle,
+          },
+        });
+        const saved = await this.upsertImportedEvent(emFork, movedGraphEvent, {
+          user,
+          type:
+            eventTypesByHandle.get(classification.eventTypeHandle) ??
+            defaultType,
+          category:
+            eventCategoriesByHandle.get(classification.eventCategoryHandle) ??
+            defaultCategory,
+          scheduledStatus,
+          canceledStatus,
+        });
+        return saved === 'updated' ? 'updated' : 'unchanged';
+      },
+    );
+    result.updated += reconciled;
+    result.imported += reconciled;
 
     await emFork.flush();
     return result;

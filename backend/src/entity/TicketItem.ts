@@ -421,9 +421,9 @@ export class TicketItem {
     width: 2,
     visible: true,
     tableOrder: 700,
-    tableVisible: false,
+    tableVisible: true,
     mobileOrder: 700,
-    mobileVisible: false,
+    mobileVisible: true,
   })
   @ManyToOne(() => CompanyItem, { nullable: false })
   creatorCompany?: Rel<CompanyItem>;
@@ -488,9 +488,9 @@ export class TicketItem {
     width: 2,
     visible: true,
     tableOrder: 800,
-    tableVisible: false,
+    tableVisible: true,
     mobileOrder: 800,
-    mobileVisible: false,
+    mobileVisible: true,
   })
   @ManyToOne(() => PersonItem, { nullable: false })
   creatorPerson?: Rel<PersonItem>;

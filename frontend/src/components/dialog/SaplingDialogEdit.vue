@@ -164,7 +164,8 @@
                     @add-relation="addRelation(template)"
                     @remove-relation="removeRelation(template, selectedItems)"
                     @create-relation-record="
-                      (value, context) => stageNewRelationRecord(template, value, context)
+                      (value, context, sourceDraft) =>
+                        stageNewRelationRecord(template, value, context, sourceDraft)
                     "
                     @update:search="(val) => onRelationSearch(template.name, val)"
                     @update:page="(val) => onRelationTablePage(template.name, val)"

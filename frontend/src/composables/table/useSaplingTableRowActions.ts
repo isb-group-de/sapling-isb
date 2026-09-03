@@ -42,6 +42,12 @@ export function useSaplingTableRowActions(
   }
 
   function onRowMouseDown(event: MouseEvent, index: number) {
+    if (props.allowRowDoubleClick === false && event.button === 0 && event.detail > 1) {
+      event.preventDefault()
+      event.stopPropagation()
+      return
+    }
+
     if (props.rowInteraction === false) return
     if (event.button === 0 && !isInteractiveRowTarget(event.target)) {
       emit('activate-row', index)
@@ -50,6 +56,12 @@ export function useSaplingTableRowActions(
   }
 
   function onRowDoubleClick(event: MouseEvent) {
+    if (props.allowRowDoubleClick === false) {
+      event.preventDefault()
+      event.stopPropagation()
+      return
+    }
+
     if (
       props.rowInteraction === false ||
       event.button !== 0 ||

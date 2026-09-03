@@ -80,6 +80,8 @@ export interface EventDeliveryStatusItem extends SaplingGenericItem {
 export interface EventGoogleItem extends SaplingGenericItem {
   /** Session number for the session (not primary key) */
   referenceHandle: string
+  /** Calendar-wide identifier shared by Google event copies */
+  iCalUId?: string | null
   /** The event associated with this Google item */
   event: EventItem
   /** Date and time when the entity was created */
@@ -112,6 +114,8 @@ export interface EventItem extends SaplingGenericItem {
   isAllDay: boolean
   /** Indicates whether the event is visible only to its creator */
   isPrivate: boolean
+  /** Whether the connected calendar should create a Teams or Google Meet link */
+  createOnlineMeeting: boolean
   /** Optional RFC5545 recurrence rule for repeating events */
   recurrenceRule?: string | null
   /** Original occurrence starts that have been detached from the series */

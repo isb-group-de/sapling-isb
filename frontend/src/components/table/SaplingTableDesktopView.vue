@@ -141,6 +141,7 @@
           isRowActive(index),
           multiSelect,
           showActions,
+          props.allowRowDoubleClick,
           visibleHeaders,
         ]"
         :item="item"
@@ -159,6 +160,7 @@
         :can-show-external-record-links="canShowExternalRecordLinks"
         :show-actions="showActions"
         :row-interaction="rowInteraction"
+        :allow-row-double-click="props.allowRowDoubleClick"
         @select-row="emit('select-row', $event)"
         @activate-row="emit('activate-row', $event)"
         @change-log="emit('change-log', $event)"
@@ -243,6 +245,7 @@ const props = defineProps<{
   canShowExternalRecordLinks?: boolean
   showActions: boolean
   rowInteraction?: boolean
+  allowRowDoubleClick?: boolean
   selectedRows: number[]
   selectedRow: number | null
   activeRow?: number | null

@@ -120,9 +120,25 @@ export async function replaceCalendarEventParticipants(
     .map(([, participant]) => participant);
 
   await Promise.all(
-    [...removed, ...added].map((participant) =>
-      participant.events.init({ where: { handle: event.handle } }),
-    ),
+    [...removed, ...added].map(async (participant) => {
+      const events = participant.events as typeof participant.events & {
+        isInitialized?: () => boolean;
+        isPartial?: () => boolean;
+      };
+
+      // Keep one complete owning-side snapshot for the whole import unit of
+      // work. Reloading this collection with a per-event filter replaces its
+      // snapshot on every imported Event. A later flush can then interpret an
+      // existing pivot row from an earlier snapshot as a new row and violate
+      // person_item_events_pkey.
+      if (
+        typeof events.isInitialized !== 'function' ||
+        !events.isInitialized() ||
+        events.isPartial?.()
+      ) {
+        await events.init();
+      }
+    }),
   );
 
   for (const participant of removed) {

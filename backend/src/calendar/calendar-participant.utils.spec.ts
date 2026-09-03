@@ -7,17 +7,28 @@ import { replaceCalendarEventParticipants } from './calendar-participant.utils';
 type EventsCollectionStub = {
   add: jest.Mock;
   init: jest.Mock;
+  isInitialized: jest.Mock;
+  isPartial: jest.Mock;
   remove: jest.Mock;
 };
 
-function createPerson(handle: number): PersonItem & {
+function createPerson(
+  handle: number,
+  initialized = false,
+): PersonItem & {
   events: EventsCollectionStub;
 } {
+  let collectionInitialized = initialized;
   return {
     handle,
     events: {
       add: jest.fn(),
-      init: jest.fn(() => Promise.resolve()),
+      init: jest.fn(() => {
+        collectionInitialized = true;
+        return Promise.resolve();
+      }),
+      isInitialized: jest.fn(() => collectionInitialized),
+      isPartial: jest.fn(() => false),
       remove: jest.fn(),
     },
   } as unknown as PersonItem & { events: EventsCollectionStub };
@@ -64,9 +75,7 @@ describe('replaceCalendarEventParticipants', () => {
     await replaceCalendarEventParticipants(event, [owner, attendee]);
 
     expect(owner.events.init).not.toHaveBeenCalled();
-    expect(attendee.events.init).toHaveBeenCalledWith({
-      where: { handle: 42 },
-    });
+    expect(attendee.events.init).toHaveBeenCalledWith();
     expect(attendee.events.add).toHaveBeenCalledWith(event);
     expect(event.participants.set).toHaveBeenCalledWith([owner, attendee]);
     expect(event.participants.setDirty).toHaveBeenCalledWith(false);
@@ -79,9 +88,7 @@ describe('replaceCalendarEventParticipants', () => {
 
     await replaceCalendarEventParticipants(event, [owner]);
 
-    expect(staleAttendee.events.init).toHaveBeenCalledWith({
-      where: { handle: 42 },
-    });
+    expect(staleAttendee.events.init).toHaveBeenCalledWith();
     expect(staleAttendee.events.remove).toHaveBeenCalledWith(event);
     expect(event.participants.set).toHaveBeenCalledWith([owner]);
     expect(event.participants.setDirty).toHaveBeenCalledWith(false);
@@ -97,5 +104,30 @@ describe('replaceCalendarEventParticipants', () => {
     expect(attendee.events.add).not.toHaveBeenCalled();
     expect(event.participants.set).toHaveBeenCalledWith([attendee]);
     expect(event.participants.setDirty).not.toHaveBeenCalled();
+  });
+
+  it('keeps one complete owning-side snapshot across multiple imported events', async () => {
+    const attendee = createPerson(8);
+    const firstEvent = createEvent(42, []);
+    const secondEvent = createEvent(43, []);
+
+    await replaceCalendarEventParticipants(firstEvent, [attendee]);
+    await replaceCalendarEventParticipants(secondEvent, [attendee]);
+
+    expect(attendee.events.init).toHaveBeenCalledTimes(1);
+    expect(attendee.events.init).toHaveBeenCalledWith();
+    expect(attendee.events.add).toHaveBeenNthCalledWith(1, firstEvent);
+    expect(attendee.events.add).toHaveBeenNthCalledWith(2, secondEvent);
+  });
+
+  it('refreshes a partial owning-side collection before changing it', async () => {
+    const attendee = createPerson(8, true);
+    attendee.events.isPartial.mockReturnValue(true);
+    const event = createEvent(42, []);
+
+    await replaceCalendarEventParticipants(event, [attendee]);
+
+    expect(attendee.events.init).toHaveBeenCalledWith();
+    expect(attendee.events.add).toHaveBeenCalledWith(event);
   });
 });

@@ -160,7 +160,7 @@
               :show-import="false"
               :show-form-config="false"
               :show-selection-toolbar="false"
-              :defer-create="mode === 'create'"
+              :defer-create="hasPendingRelationParent"
               :allow-delete-actions="true"
               :table-key="template.name"
               :selected="selectedItems"
@@ -174,7 +174,8 @@
               "
               @reload="emit('reload')"
               @create-draft="
-                (value, action, context) => emit('create-relation-record', value, context)
+                (value, action, context, sourceDraft) =>
+                  emit('create-relation-record', value, context, sourceDraft)
               "
             />
           </div>
@@ -200,6 +201,7 @@ import type {
   SortItem,
   SaplingTableHeaderItem,
 } from '@/entity/structure'
+import { getItemHandle } from '@/composables/table/saplingTableAction.utils'
 
 const props = defineProps<{
   template: EntityTemplate
@@ -238,15 +240,21 @@ const isReadOnlyRelation = computed(
     (props.template.options?.includes('isReadOnly') ?? false),
 )
 const targetEntityHandle = computed(() => props.template.referenceName?.trim() ?? '')
+const hasPendingRelationParent = computed(
+  () => props.mode === 'create' || (props.mode === 'edit' && getItemHandle(props.item) == null),
+)
 const canCreateRelationRecord = computed(
   () =>
-    (props.mode === 'edit' || (props.mode === 'create' && props.template.kind === '1:m')) &&
+    ((props.mode === 'edit' && !hasPendingRelationParent.value) ||
+      (hasPendingRelationParent.value && props.template.kind === '1:m')) &&
     !isReadOnlyRelation.value &&
     Boolean(targetEntityHandle.value) &&
     Boolean(props.relationEntity?.canInsert) &&
     Boolean(props.entityPermission?.allowInsert),
 )
-const relationParent = computed(() => (props.mode === 'create' ? props.parentDraft : props.item))
+const relationParent = computed(() =>
+  hasPendingRelationParent.value ? props.parentDraft : props.item,
+)
 const relationEntityPath = computed(() => {
   const entityHandle = targetEntityHandle.value
   if (!entityHandle || props.entityPermission?.allowRead === false) {
@@ -283,7 +291,12 @@ const emit = defineEmits<{
   (event: 'update:selected-items', value: SaplingGenericItem[]): void
   (event: 'add-relation'): void
   (event: 'remove-relation'): void
-  (event: 'create-relation-record', value: SaplingGenericItem, context?: DialogSaveContext): void
+  (
+    event: 'create-relation-record',
+    value: SaplingGenericItem,
+    context?: DialogSaveContext,
+    sourceDraft?: SaplingGenericItem,
+  ): void
   (event: 'update:search', value: string): void
   (event: 'update:page', value: number): void
   (event: 'update:items-per-page', value: number): void

@@ -55,6 +55,7 @@ export class EffortEstimateItem {
   })
   @ManyToOne(() => EffortEstimateStatusItem, {
     nullable: true,
+    default: 'open',
     deleteRule: 'set null',
   })
   status?: Rel<EffortEstimateStatusItem> | null;

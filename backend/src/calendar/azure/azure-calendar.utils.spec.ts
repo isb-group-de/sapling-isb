@@ -1,12 +1,47 @@
 import { describe, expect, it, jest } from '@jest/globals';
+import { EventItem } from '../../entity/EventItem';
 
 import {
+  buildAzureCalendarEvent,
+  buildAzureCalendarEventPatch,
   clampAzureImportRangeToFuture,
   isAzureNotFoundError,
   normalizeAzureRecurrenceRule,
   resolveAzureOnlineMeetingUrl,
   resolveAzureSeriesImportEvents,
 } from './azure-calendar.utils';
+
+describe('Azure meeting link creation', () => {
+  const event = {
+    title: 'Customer appointment',
+    description: 'Details',
+    startDate: new Date('2026-09-10T09:00:00.000Z'),
+    endDate: new Date('2026-09-10T10:00:00.000Z'),
+    participants: [],
+    type: { handle: 'online' },
+    createOnlineMeeting: false,
+  } as unknown as EventItem;
+
+  it('does not derive a Teams meeting from the event type', () => {
+    expect(buildAzureCalendarEvent(event)).not.toHaveProperty(
+      'isOnlineMeeting',
+    );
+  });
+
+  it('requests a Teams meeting only when the checkbox is enabled', () => {
+    const enabled = { ...event, createOnlineMeeting: true } as EventItem;
+    expect(buildAzureCalendarEvent(enabled)).toMatchObject({
+      isOnlineMeeting: true,
+      onlineMeetingProvider: 'teamsForBusiness',
+    });
+    expect(
+      buildAzureCalendarEventPatch(enabled, [], ['createOnlineMeeting']),
+    ).toEqual({
+      isOnlineMeeting: true,
+      onlineMeetingProvider: 'teamsForBusiness',
+    });
+  });
+});
 
 describe('clampAzureImportRangeToFuture', () => {
   it('removes the elapsed part of an Outlook import window', () => {

@@ -184,6 +184,7 @@
         :can-show-external-record-links="canShowExternalRecordLinks"
         :show-actions="showActions"
         :row-interaction="rowInteraction"
+        :allow-row-double-click="props.allowRowDoubleClick"
         :selected-rows="selectedRows"
         :selected-row="selectedRow"
         :active-row="activeRow"
@@ -232,6 +233,7 @@
         :can-show-external-record-links="canShowExternalRecordLinks"
         :show-actions="showActions"
         :row-interaction="rowInteraction"
+        :allow-row-double-click="props.allowRowDoubleClick"
         :selected-rows="selectedRows"
         :selected-row="selectedRow"
         :active-row="activeRow"
@@ -388,6 +390,7 @@ const props = withDefaults(defineProps<SaplingTableProps>(), {
   showToolbar: true,
   showSelectionToolbar: true,
   rowInteraction: true,
+  allowRowDoubleClick: true,
   syncEditDialogWithRoute: false,
 })
 const emit = defineEmits<SaplingTableEmit>()

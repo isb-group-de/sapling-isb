@@ -23,6 +23,13 @@ The selected time range, environment, active area, and incident deep link are
 shareable URL state. The first range is one hour. Summary data loads first and
 detail requests run with a concurrency limit of two.
 
+The incident drill-down uses the shared large Sapling detail-dialog pattern. Its
+hero contrasts the observed value with the comparator and trigger threshold in
+the metric's native unit. The body separates the incident timeline from the
+evaluation context. Empty dimensions are presented as the entire system, sample
+count is explained as the number of measurements in the evaluation window, and
+the internal metric key remains visible as explicitly technical information.
+
 ## Environment And Process Lifecycle
 
 Every persisted telemetry, HTTP, authentication, AI, error, check, incident,

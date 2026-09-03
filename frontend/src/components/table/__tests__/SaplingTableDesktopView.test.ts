@@ -61,6 +61,7 @@ const SaplingTableRowStub = defineComponent({
       type: Object,
       required: true,
     },
+    allowRowDoubleClick: Boolean,
   },
   template: '<tr><td data-testid="projected-email">{{ item.creatorPersonEmail ?? "" }}</td></tr>',
 })
@@ -183,6 +184,14 @@ describe('SaplingTableDesktopView page selection', () => {
     })
 
     expect(wrapper.get('[data-testid="projected-email"]').text()).toBe('customer@example.com')
+  })
+
+  it('forwards disabled row double-click handling to every row', async () => {
+    const wrapper = mountDesktopTable([])
+
+    await wrapper.setProps({ allowRowDoubleClick: false })
+
+    expect(wrapper.getComponent(SaplingTableRowStub).props('allowRowDoubleClick')).toBe(false)
   })
 
   it('uses a global field tooltip when the entity has no specific tooltip', () => {

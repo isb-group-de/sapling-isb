@@ -10,6 +10,7 @@ function event(overrides: Partial<EventItem>): EventItem {
     endDate: new Date('2026-08-18T11:00:00.000Z'),
     isAllDay: false,
     isPrivate: false,
+    createOnlineMeeting: false,
     creatorPerson: {} as never,
     creatorCompany: {} as never,
     transactionHandle: 'test',
