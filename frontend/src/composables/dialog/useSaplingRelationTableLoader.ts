@@ -16,6 +16,11 @@ import type { UseSaplingDialogEditRelationsOptions } from './useSaplingDialogEdi
 
 const TABLE_VALUE_REFERENCE_KINDS = ['m:1', '1:1']
 
+export function isHandleOnlyRelationItem(item: SaplingGenericItem): boolean {
+  const keys = Object.keys(item)
+  return keys.length === 1 && keys[0] === 'handle'
+}
+
 export function useSaplingRelationTableLoader(context: {
   options: UseSaplingDialogEditRelationsOptions
   genericStore: ReturnType<typeof useGenericStore>
@@ -156,6 +161,10 @@ export function useSaplingRelationTableLoader(context: {
       const columns = relationTableState.value[template.name]?.entityTemplates ?? []
       const columnFilters = relationTableColumnFilters.value[template.name] || {}
 
+      if (hasPendingRelationParent.value) {
+        await hydratePendingRelationItems(template, columns, requestId)
+      }
+
       if (!hasPendingRelationParent.value && options.item.value && template.referenceName) {
         const permissions = options.permissions.value ?? []
         const projectedFields = getListProjectionFieldNames(columns, permissions)
@@ -204,8 +213,13 @@ export function useSaplingRelationTableLoader(context: {
       relationTableLoaded.value[template.name] = true
     } catch (error) {
       if (relationTableRequestId.value[template.name] === requestId) {
-        relationTableItems.value[template.name] = []
-        relationTableTotal.value[template.name] = 0
+        if (!hasPendingRelationParent.value) {
+          relationTableItems.value[template.name] = []
+          relationTableTotal.value[template.name] = 0
+        } else {
+          relationTableTotal.value[template.name] =
+            relationTableItems.value[template.name]?.length ?? 0
+        }
         relationTableLoaded.value[template.name] = true
       }
       console.error(`Error loading relation table items for ${template.name}:`, error)
@@ -214,6 +228,62 @@ export function useSaplingRelationTableLoader(context: {
         relState.isLoading = false
       }
     }
+  }
+
+  async function hydratePendingRelationItems(
+    template: EntityTemplate,
+    columns: EntityTemplate[],
+    requestId: number,
+  ): Promise<void> {
+    const referenceName = template.referenceName?.trim()
+    const items = relationTableItems.value[template.name] ?? []
+    if (!referenceName || items.length === 0) {
+      return
+    }
+
+    const placeholderHandles = items.flatMap((item) => {
+      if (!isHandleOnlyRelationItem(item)) {
+        return []
+      }
+      const handle = options.getItemHandle(item)
+      return handle == null ? [] : [handle]
+    })
+    if (placeholderHandles.length === 0) {
+      return
+    }
+
+    const permissions = options.permissions.value ?? []
+    const projectedFields = getListProjectionFieldNames(columns, permissions)
+    const relations = getReadableReferenceRelationNames(
+      columns,
+      permissions,
+      projectedFields,
+      (entityHandle) => genericStore.getState(entityHandle).entityTemplates,
+    )
+    const hydratedItems = await ApiGenericService.findByHandles<SaplingGenericItem>(
+      referenceName,
+      placeholderHandles,
+      { relations, suppressErrorMessage: true },
+    )
+    if (relationTableRequestId.value[template.name] !== requestId) {
+      return
+    }
+    const hydratedByHandle = new Map(
+      hydratedItems.flatMap((item) => {
+        const handle = options.getItemHandle(item)
+        return handle == null ? [] : [[String(handle), item] as const]
+      }),
+    )
+
+    relationTableItems.value[template.name] = (relationTableItems.value[template.name] ?? []).map(
+      (item) => {
+        if (!isHandleOnlyRelationItem(item)) {
+          return item
+        }
+        const handle = options.getItemHandle(item)
+        return handle == null ? item : (hydratedByHandle.get(String(handle)) ?? item)
+      },
+    )
   }
 
   return { loadRelationTableItem, loadRelationTableTemplates }

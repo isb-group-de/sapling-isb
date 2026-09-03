@@ -63,6 +63,72 @@ describe('useSaplingCalendarNavigation', () => {
     })
   })
 
+  it('projects work hours relative to the configured working-time range', () => {
+    const workHours = ref({
+      monday: { timeFrom: '08:00', timeTo: '17:00' },
+    } as unknown as WorkHourWeekItem)
+    const navigation = useSaplingCalendarNavigation(
+      ref('week'),
+      workHours,
+      ref<'workHours'>('workHours'),
+    )
+
+    expect(navigation.calendarTimeGrid.value).toEqual({
+      firstTime: 420,
+      intervalCount: 11,
+      startMinute: 420,
+      endMinute: 1080,
+    })
+    expect(navigation.getWorkHourStyle('2026-07-13')).toMatchObject({
+      '--sapling-calendar-workhour-top': `${(1 / 11) * 100}%`,
+      '--sapling-calendar-workhour-height': `${(9 / 11) * 100}%`,
+    })
+  })
+
+  it('centers a selected time relative to the working-time range', () => {
+    const outer = document.createElement('div')
+    const container = document.createElement('div')
+    container.className = 'v-calendar-weekly__scroll-area'
+    outer.append(container)
+    document.body.append(outer)
+
+    Object.defineProperties(container, {
+      clientHeight: { configurable: true, value: 400 },
+      scrollHeight: { configurable: true, value: 1100 },
+    })
+
+    const workHours = ref({
+      monday: { timeFrom: '08:00', timeTo: '17:00' },
+    } as unknown as WorkHourWeekItem)
+    const navigation = useSaplingCalendarNavigation(
+      ref('week'),
+      workHours,
+      ref<'workHours'>('workHours'),
+    )
+    navigation.calendarScrollContainer.value = outer
+    navigation.scrollToTime(new Date(2026, 6, 13, 12))
+
+    expect(container.scrollTop).toBe(300)
+  })
+
+  it('positions the current-time marker relative to the visible range and hides it outside', () => {
+    vi.useFakeTimers()
+    const workHours = ref({
+      monday: { timeFrom: '08:00', timeTo: '17:00' },
+    } as unknown as WorkHourWeekItem)
+    const navigation = useSaplingCalendarNavigation(
+      ref('week'),
+      workHours,
+      ref<'workHours'>('workHours'),
+    )
+
+    vi.setSystemTime(new Date(2026, 6, 13, 12))
+    expect(navigation.nowY()).toBe(`${(5 / 11) * 100}%`)
+
+    vi.setSystemTime(new Date(2026, 6, 13, 20))
+    expect(navigation.nowY()).toBeNull()
+  })
+
   it('centers the current-time marker in the inner calendar scroll area', () => {
     const outer = document.createElement('div')
     outer.className = 'sapling-calendar-frame'

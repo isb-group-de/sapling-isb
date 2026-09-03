@@ -27,6 +27,7 @@ import {
 } from '@/composables/event/eventCalendar.utils'
 import {
   loadEventCalendarPreferences,
+  resolveCalendarIntervalHeight,
   saveEventCalendarPreferences,
 } from '@/composables/event/eventCalendarPreferences'
 import { useSaplingCalendarDrag } from '@/composables/event/useSaplingCalendarDrag'
@@ -101,6 +102,9 @@ export function useSaplingEvent() {
     initialCalendarPreferences.eventOverlapMode,
   )
   const linkedScrolling = ref(initialCalendarPreferences.linkedScrolling)
+  const timeGridScale = ref(initialCalendarPreferences.timeGridScale)
+  const timeRangeMode = ref(initialCalendarPreferences.timeRangeMode)
+  const calendarIntervalHeight = computed(() => resolveCalendarIntervalHeight(timeGridScale.value))
   const isNarrowScreen = ref(initialWindowSize === 'small')
   const entityEvent = ref<EntityItem | null>(null)
   const editEvent = ref<CalendarEvent | null>(null)
@@ -147,6 +151,7 @@ export function useSaplingEvent() {
   const workHours = ref<WorkHourWeekItem | null>(null)
   const {
     calendarScrollContainer,
+    calendarTimeGrid,
     getWorkHourStyle,
     goToDate,
     goToNext,
@@ -157,7 +162,7 @@ export function useSaplingEvent() {
     queueScrollToTime,
     scrollToCurrentTime,
     value,
-  } = useSaplingCalendarNavigation(calendarType, workHours)
+  } = useSaplingCalendarNavigation(calendarType, workHours, timeRangeMode)
   const {
     currentDateRangeLabel,
     currentMonthLabel,
@@ -381,26 +386,39 @@ export function useSaplingEvent() {
     { deep: true },
   )
 
-  watch([calendarType, calendarViewMode, value], () => {
+  watch([calendarType, calendarViewMode, value, timeGridScale, timeRangeMode], () => {
     void nextTick(() => {
       queueCalendarFocusScroll()
     })
   })
 
-  watch([calendarType, calendarViewMode, calendarMode, eventOverlapMode, linkedScrolling], () => {
-    if (!isNarrowScreen.value) {
-      preferredCalendarType.value = calendarType.value
-      preferredCalendarViewMode.value = calendarViewMode.value
-    }
+  watch(
+    [
+      calendarType,
+      calendarViewMode,
+      calendarMode,
+      eventOverlapMode,
+      linkedScrolling,
+      timeGridScale,
+      timeRangeMode,
+    ],
+    () => {
+      if (!isNarrowScreen.value) {
+        preferredCalendarType.value = calendarType.value
+        preferredCalendarViewMode.value = calendarViewMode.value
+      }
 
-    saveEventCalendarPreferences({
-      calendarType: preferredCalendarType.value,
-      calendarViewMode: preferredCalendarViewMode.value,
-      calendarMode: calendarMode.value,
-      eventOverlapMode: eventOverlapMode.value,
-      linkedScrolling: linkedScrolling.value,
-    })
-  })
+      saveEventCalendarPreferences({
+        calendarType: preferredCalendarType.value,
+        calendarViewMode: preferredCalendarViewMode.value,
+        calendarMode: calendarMode.value,
+        eventOverlapMode: eventOverlapMode.value,
+        linkedScrolling: linkedScrolling.value,
+        timeGridScale: timeGridScale.value,
+        timeRangeMode: timeRangeMode.value,
+      })
+    },
+  )
 
   watch(calendarMode, async () => {
     await refreshVisibleEvents()
@@ -468,6 +486,8 @@ export function useSaplingEvent() {
     forceEditDialogDirtyFields,
     calendarScrollContainer,
     calendarDisplayType,
+    calendarIntervalHeight,
+    calendarTimeGrid,
     calendarType,
     calendarTypeOptions: CALENDAR_TYPE_OPTIONS,
     calendarViewMode,
@@ -509,6 +529,8 @@ export function useSaplingEvent() {
     isSyncingExternalCalendar,
     isNarrowScreen,
     linkedScrolling,
+    timeGridScale,
+    timeRangeMode,
     nowY,
     openEventContextMenu,
     onEditDialogCancel,

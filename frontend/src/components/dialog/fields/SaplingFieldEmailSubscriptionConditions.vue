@@ -1,111 +1,163 @@
 <template>
   <div class="sapling-email-conditions">
     <div
-      v-for="(condition, index) in localConditions"
-      :key="condition.key"
-      class="sapling-email-conditions__row"
+      v-for="(group, groupIndex) in conditionGroups"
+      :key="group.groupOrder"
+      class="sapling-email-conditions__group"
     >
-      <SaplingAutocomplete
-        :menu="isConditionMenuOpen(condition.key, 'field')"
-        :label="t('emailSubscriptionCondition.observedField')"
-        :items="conditionFields"
-        :model-value="condition.observedField"
-        item-title="label"
-        item-value="value"
-        hide-details="auto"
-        density="compact"
-        clearable
-        :disabled="disabled || !selectedEntityHandle"
-        @update:menu="(open) => setConditionMenuOpen(condition.key, 'field', open)"
-        @keydown.tab="setConditionMenuOpen(condition.key, 'field', false)"
-        @update:model-value="(value) => updateObservedField(index, normalizeString(value))"
-      />
+      <div v-if="groupIndex > 0" class="d-flex align-center ga-2 my-3">
+        <v-divider />
+        <span class="text-caption font-weight-bold">
+          {{ t('emailSubscriptionCondition.or') }}
+        </span>
+        <v-divider />
+      </div>
 
-      <SaplingAutocomplete
-        v-if="isValueSelectionField(condition.observedField)"
-        :menu="isConditionMenuOpen(condition.key, 'oldValue')"
-        :label="t('emailSubscriptionCondition.oldValue')"
-        :model-value="condition.oldValue ?? null"
-        :items="getValueOptions(condition.observedField)"
-        item-title="label"
-        item-value="value"
-        hide-details="auto"
-        density="compact"
-        clearable
-        :type="getValueInputType(condition.observedField)"
-        :disabled="disabled || !condition.observedField"
-        @update:menu="(open) => setConditionMenuOpen(condition.key, 'oldValue', open)"
-        @keydown.tab="setConditionMenuOpen(condition.key, 'oldValue', false)"
-        @update:model-value="
-          (value: unknown) => updateCondition(index, { oldValue: normalizeConditionValue(value) })
-        "
-      />
-      <SaplingTextField
-        v-else
-        :label="t('emailSubscriptionCondition.oldValue')"
-        :model-value="condition.oldValue ?? null"
-        hide-details="auto"
-        density="compact"
-        clearable
-        :type="getValueInputType(condition.observedField)"
-        :disabled="disabled || !condition.observedField"
-        @update:model-value="
-          (value: unknown) => updateCondition(index, { oldValue: normalizeConditionValue(value) })
-        "
-      />
+      <div class="border rounded pa-3">
+        <div class="d-flex align-center justify-space-between ga-2 mb-3">
+          <span class="text-subtitle-2">
+            {{ t('emailSubscriptionCondition.conditionGroup', { number: groupIndex + 1 }) }}
+          </span>
+          <v-btn
+            class="sapling-email-conditions__add-and"
+            prepend-icon="mdi-plus"
+            variant="text"
+            density="comfortable"
+            :disabled="disabled || !selectedEntityHandle"
+            @click="addCondition(group.groupOrder)"
+          >
+            {{ t('emailSubscriptionCondition.addAndCondition') }}
+          </v-btn>
+        </div>
 
-      <SaplingAutocomplete
-        v-if="isValueSelectionField(condition.observedField)"
-        :menu="isConditionMenuOpen(condition.key, 'newValue')"
-        :label="t('emailSubscriptionCondition.newValue')"
-        :model-value="condition.newValue ?? null"
-        :items="getValueOptions(condition.observedField)"
-        item-title="label"
-        item-value="value"
-        hide-details="auto"
-        density="compact"
-        clearable
-        :type="getValueInputType(condition.observedField)"
-        :disabled="disabled || !condition.observedField"
-        @update:menu="(open) => setConditionMenuOpen(condition.key, 'newValue', open)"
-        @keydown.tab="setConditionMenuOpen(condition.key, 'newValue', false)"
-        @update:model-value="
-          (value: unknown) => updateCondition(index, { newValue: normalizeConditionValue(value) })
-        "
-      />
-      <SaplingTextField
-        v-else
-        :label="t('emailSubscriptionCondition.newValue')"
-        :model-value="condition.newValue ?? null"
-        hide-details="auto"
-        density="compact"
-        clearable
-        :type="getValueInputType(condition.observedField)"
-        :disabled="disabled || !condition.observedField"
-        @update:model-value="
-          (value: unknown) => updateCondition(index, { newValue: normalizeConditionValue(value) })
-        "
-      />
+        <div
+          v-for="({ condition, index }, conditionIndex) in group.conditions"
+          :key="condition.key"
+        >
+          <div v-if="conditionIndex > 0" class="text-caption font-weight-bold my-2">
+            {{ t('emailSubscriptionCondition.and') }}
+          </div>
 
-      <v-btn
-        icon="mdi-delete-outline"
-        variant="text"
-        density="comfortable"
-        :title="t('emailSubscriptionCondition.removeCondition')"
-        :aria-label="t('emailSubscriptionCondition.removeCondition')"
-        :disabled="disabled"
-        @click="removeCondition(index)"
-      />
+          <div class="sapling-email-conditions__row">
+            <SaplingAutocomplete
+              :menu="isConditionMenuOpen(condition.key, 'field')"
+              :label="t('emailSubscriptionCondition.observedField')"
+              :items="conditionFields"
+              :model-value="condition.observedField"
+              item-title="label"
+              item-value="value"
+              hide-details="auto"
+              density="compact"
+              clearable
+              :disabled="disabled || !selectedEntityHandle"
+              @update:menu="(open) => setConditionMenuOpen(condition.key, 'field', open)"
+              @keydown.tab="setConditionMenuOpen(condition.key, 'field', false)"
+              @update:model-value="(value) => updateObservedField(index, normalizeString(value))"
+            />
+
+            <SaplingAutocomplete
+              v-if="isValueSelectionField(condition.observedField)"
+              :menu="isConditionMenuOpen(condition.key, 'oldValue')"
+              :label="t('emailSubscriptionCondition.oldValue')"
+              :model-value="condition.oldValue ?? null"
+              :items="getValueOptions(condition.observedField)"
+              item-title="label"
+              item-value="value"
+              hide-details="auto"
+              density="compact"
+              clearable
+              :type="getValueInputType(condition.observedField)"
+              :disabled="disabled || !condition.observedField"
+              @update:menu="(open) => setConditionMenuOpen(condition.key, 'oldValue', open)"
+              @keydown.tab="setConditionMenuOpen(condition.key, 'oldValue', false)"
+              @update:model-value="
+                (value: unknown) =>
+                  updateCondition(index, { oldValue: normalizeConditionValue(value) })
+              "
+            />
+            <SaplingTextField
+              v-else
+              :label="t('emailSubscriptionCondition.oldValue')"
+              :model-value="condition.oldValue ?? null"
+              hide-details="auto"
+              density="compact"
+              clearable
+              :type="getValueInputType(condition.observedField)"
+              :disabled="disabled || !condition.observedField"
+              @update:model-value="
+                (value: unknown) =>
+                  updateCondition(index, { oldValue: normalizeConditionValue(value) })
+              "
+            />
+
+            <SaplingAutocomplete
+              v-if="isValueSelectionField(condition.observedField)"
+              :menu="isConditionMenuOpen(condition.key, 'newValue')"
+              :label="t('emailSubscriptionCondition.newValue')"
+              :model-value="condition.newValue ?? null"
+              :items="getValueOptions(condition.observedField)"
+              item-title="label"
+              item-value="value"
+              hide-details="auto"
+              density="compact"
+              clearable
+              :type="getValueInputType(condition.observedField)"
+              :disabled="disabled || !condition.observedField"
+              @update:menu="(open) => setConditionMenuOpen(condition.key, 'newValue', open)"
+              @keydown.tab="setConditionMenuOpen(condition.key, 'newValue', false)"
+              @update:model-value="
+                (value: unknown) =>
+                  updateCondition(index, { newValue: normalizeConditionValue(value) })
+              "
+            />
+            <SaplingTextField
+              v-else
+              :label="t('emailSubscriptionCondition.newValue')"
+              :model-value="condition.newValue ?? null"
+              hide-details="auto"
+              density="compact"
+              clearable
+              :type="getValueInputType(condition.observedField)"
+              :disabled="disabled || !condition.observedField"
+              @update:model-value="
+                (value: unknown) =>
+                  updateCondition(index, { newValue: normalizeConditionValue(value) })
+              "
+            />
+
+            <v-btn
+              icon="mdi-delete-outline"
+              variant="text"
+              density="comfortable"
+              :title="t('emailSubscriptionCondition.removeCondition')"
+              :aria-label="t('emailSubscriptionCondition.removeCondition')"
+              :disabled="disabled"
+              @click="removeCondition(index)"
+            />
+          </div>
+        </div>
+      </div>
     </div>
 
     <v-btn
+      v-if="conditionGroups.length === 0"
       class="sapling-email-conditions__add"
       prepend-icon="mdi-plus"
       variant="tonal"
       :disabled="disabled || !selectedEntityHandle"
-      @click="addCondition"
+      @click="addCondition(0)"
     >
       {{ t('emailSubscriptionCondition.addCondition') }}
+    </v-btn>
+    <v-btn
+      v-else
+      class="sapling-email-conditions__add-or mt-3"
+      prepend-icon="mdi-plus"
+      variant="tonal"
+      :disabled="disabled || !selectedEntityHandle"
+      @click="addConditionGroup"
+    >
+      {{ t('emailSubscriptionCondition.addOrGroup') }}
     </v-btn>
   </div>
 </template>
@@ -137,7 +189,13 @@ type EmailCondition = {
   observedField: string
   oldValue?: string | null
   newValue?: string | null
+  groupOrder: number
   sortOrder?: number
+}
+
+type EmailConditionGroup = {
+  groupOrder: number
+  conditions: Array<{ condition: EmailCondition; index: number }>
 }
 
 const props = defineProps<{
@@ -154,6 +212,7 @@ const emit = defineEmits<{
       observedField: string
       oldValue?: string | null
       newValue?: string | null
+      groupOrder: number
       sortOrder: number
     }>,
   ): void
@@ -198,6 +257,20 @@ const conditionFields = computed<ConditionFieldOption[]>(() =>
     .sort((left, right) => left.label.localeCompare(right.label)),
 )
 
+const conditionGroups = computed<EmailConditionGroup[]>(() => {
+  const groups = new Map<number, EmailConditionGroup['conditions']>()
+
+  localConditions.value.forEach((condition, index) => {
+    const conditions = groups.get(condition.groupOrder) ?? []
+    conditions.push({ condition, index })
+    groups.set(condition.groupOrder, conditions)
+  })
+
+  return [...groups.entries()]
+    .sort(([left], [right]) => left - right)
+    .map(([groupOrder, conditions]) => ({ groupOrder, conditions }))
+})
+
 watch(
   () => props.modelValue,
   (value) => {
@@ -239,15 +312,23 @@ watch(
   },
 )
 
-function addCondition(): void {
+function addCondition(groupOrder: number): void {
   localConditions.value = [
     ...localConditions.value,
     {
       key: createConditionKey(),
       observedField: '',
+      groupOrder,
       sortOrder: localConditions.value.length,
     },
   ]
+}
+
+function addConditionGroup(): void {
+  const nextGroupOrder = conditionGroups.value.length
+    ? Math.max(...conditionGroups.value.map((group) => group.groupOrder)) + 1
+    : 0
+  addCondition(nextGroupOrder)
 }
 
 function updateObservedField(index: number, observedField: string): void {
@@ -275,7 +356,23 @@ function removeCondition(index: number): void {
       .filter((key) => key.startsWith(`${removedKey}:`))
       .forEach((key) => delete conditionMenus[key])
   }
+  normalizeGroupOrders()
   emitConditions()
+}
+
+function normalizeGroupOrders(): void {
+  const groupOrderMap = new Map<number, number>()
+
+  localConditions.value
+    .map((condition) => condition.groupOrder)
+    .filter((groupOrder, index, values) => values.indexOf(groupOrder) === index)
+    .sort((left, right) => left - right)
+    .forEach((groupOrder, index) => groupOrderMap.set(groupOrder, index))
+
+  localConditions.value = localConditions.value.map((condition) => ({
+    ...condition,
+    groupOrder: groupOrderMap.get(condition.groupOrder) ?? 0,
+  }))
 }
 
 function conditionMenuKey(conditionKey: string, field: string): string {
@@ -300,6 +397,7 @@ function emitConditions(): void {
         observedField: condition.observedField.trim(),
         oldValue: normalizeOptionalValue(condition.oldValue),
         newValue: normalizeOptionalValue(condition.newValue),
+        groupOrder: condition.groupOrder,
         sortOrder: index,
       })),
   )
@@ -320,10 +418,16 @@ function normalizeConditions(value: unknown): EmailCondition[] {
       observedField: normalizeString(entry.observedField || entry.field),
       oldValue: normalizeNullableString(entry.oldValue),
       newValue: normalizeNullableString(entry.newValue),
+      groupOrder: normalizeGroupOrder(entry.groupOrder),
       sortOrder: typeof entry.sortOrder === 'number' ? entry.sortOrder : index,
     }))
     .filter((condition) => condition.observedField.length > 0)
     .sort((left, right) => (left.sortOrder ?? 0) - (right.sortOrder ?? 0))
+}
+
+function normalizeGroupOrder(value: unknown): number {
+  const numericValue = typeof value === 'number' ? value : Number(value ?? 0)
+  return Number.isInteger(numericValue) && numericValue >= 0 ? numericValue : 0
 }
 
 function createConditionKey(): string {

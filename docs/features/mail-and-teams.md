@@ -194,10 +194,14 @@ options.
 
 Automatic email subscriptions are executed by the generic create/update flow
 after a record was saved. A rule without conditions always sends when its
-lifecycle trigger matches, which is useful for create confirmations. Rules with
-conditions require every configured condition to match. On updates, each
-condition also requires the observed field to have changed. For example, a
-ticket rule can require both `solutionDescription` to change and `status` to
+lifecycle trigger matches, which is useful for create confirmations. Conditions
+inside one condition group are AND-linked, while separate groups are OR-linked.
+This allows one non-repeatable subscription to cover several transitions, for
+example `(incognito = false AND open -> inProgress) OR (incognito = false AND
+waiting -> inProgress)`. Existing subscriptions remain one condition group and
+therefore keep their previous all-conditions-must-match behavior. On updates,
+each condition also requires the observed field to have changed. For example,
+a ticket rule can require both `solutionDescription` to change and `status` to
 change to `closed`. Custom fields are available as `customFields.<fieldKey>`;
 their configured labels and select options are used by the condition editor,
 and their hydrated old/new values participate in update matching.

@@ -19,6 +19,7 @@ type EmailSubscriptionConditionConfig = {
   observedField: string;
   oldValue?: string | null;
   newValue?: string | null;
+  groupOrder: number;
 };
 
 function normalizeConditionValue(value: unknown): string | null {
@@ -171,8 +172,21 @@ export class EmailAutomationService {
       return true;
     }
 
-    return conditions.every((condition) =>
-      this.matchesSingleCondition(condition, options),
+    const conditionGroups = new Map<
+      number,
+      EmailSubscriptionConditionConfig[]
+    >();
+
+    for (const condition of conditions) {
+      const group = conditionGroups.get(condition.groupOrder) ?? [];
+      group.push(condition);
+      conditionGroups.set(condition.groupOrder, group);
+    }
+
+    return [...conditionGroups.values()].some((group) =>
+      group.every((condition) =>
+        this.matchesSingleCondition(condition, options),
+      ),
     );
   }
 
@@ -368,7 +382,21 @@ export class EmailAutomationService {
       observedField,
       oldValue: normalizeConditionValue(condition.oldValue),
       newValue: normalizeConditionValue(condition.newValue),
+      groupOrder: this.normalizeGroupOrder(condition.groupOrder),
     };
+  }
+
+  private normalizeGroupOrder(value: unknown): number {
+    const numericValue =
+      typeof value === 'number'
+        ? value
+        : typeof value === 'string' && value.trim()
+          ? Number(value)
+          : 0;
+
+    return Number.isInteger(numericValue) && numericValue >= 0
+      ? numericValue
+      : 0;
   }
 
   private async resolveSender(value: unknown): Promise<PersonItem | null> {

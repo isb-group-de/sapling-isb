@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import {
   DEFAULT_EVENT_CALENDAR_PREFERENCES,
   loadEventCalendarPreferences,
+  resolveCalendarIntervalHeight,
   saveEventCalendarPreferences,
 } from '../eventCalendarPreferences'
 
@@ -21,6 +22,8 @@ describe('eventCalendarPreferences', () => {
       calendarMode: 'extended' as const,
       eventOverlapMode: 'column' as const,
       linkedScrolling: false,
+      timeGridScale: 'double' as const,
+      timeRangeMode: 'workHours' as const,
     }
 
     saveEventCalendarPreferences(preferences)
@@ -37,6 +40,8 @@ describe('eventCalendarPreferences', () => {
         calendarMode: 'extended',
         eventOverlapMode: 'cover',
         linkedScrolling: 'yes',
+        timeGridScale: 'large',
+        timeRangeMode: 'office',
       }),
     )
 
@@ -51,5 +56,10 @@ describe('eventCalendarPreferences', () => {
     window.localStorage.setItem('sapling.calendar.preferences', '{broken')
 
     expect(loadEventCalendarPreferences()).toEqual(DEFAULT_EVENT_CALENDAR_PREFERENCES)
+  })
+
+  it('maps the supported time-grid scales to the existing and doubled interval height', () => {
+    expect(resolveCalendarIntervalHeight('standard')).toBe(48)
+    expect(resolveCalendarIntervalHeight('double')).toBe(96)
   })
 })

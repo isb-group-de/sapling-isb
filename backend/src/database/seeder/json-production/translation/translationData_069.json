@@ -1,0 +1,1334 @@
+[
+  {
+    "entity": "aiAgent",
+    "property": "createdAt",
+    "de": "Erstellt am",
+    "en": "Created at"
+  },
+  {
+    "entity": "aiAgent",
+    "property": "sessions",
+    "de": "Chat-Sitzungen",
+    "en": "Chat sessions"
+  },
+  {
+    "entity": "aiAgent",
+    "property": "updatedAt",
+    "de": "Aktualisiert am",
+    "en": "Updated at"
+  },
+  {
+    "entity": "aiAgentEvaluation",
+    "property": "createdAt",
+    "de": "Erstellt am",
+    "en": "Created at"
+  },
+  {
+    "entity": "aiAgentEvaluation",
+    "property": "targetEntityHandle",
+    "de": "Ziel-Entität",
+    "en": "Target entity"
+  },
+  {
+    "entity": "aiAgentEvaluation",
+    "property": "targetRecordHandle",
+    "de": "Ziel-Datensatz",
+    "en": "Target record"
+  },
+  {
+    "entity": "aiAgentEvaluation",
+    "property": "updatedAt",
+    "de": "Aktualisiert am",
+    "en": "Updated at"
+  },
+  {
+    "entity": "aiAgentMemory",
+    "property": "createdAt",
+    "de": "Erstellt am",
+    "en": "Created at"
+  },
+  {
+    "entity": "aiAgentMemory",
+    "property": "updatedAt",
+    "de": "Aktualisiert am",
+    "en": "Updated at"
+  },
+  {
+    "entity": "aiAgentPlaybook",
+    "property": "createdAt",
+    "de": "Erstellt am",
+    "en": "Created at"
+  },
+  {
+    "entity": "aiAgentPlaybook",
+    "property": "updatedAt",
+    "de": "Aktualisiert am",
+    "en": "Updated at"
+  },
+  {
+    "entity": "aiAgentRun",
+    "property": "completedAt",
+    "de": "Abgeschlossen am",
+    "en": "Completed at"
+  },
+  {
+    "entity": "aiAgentRun",
+    "property": "contextEntityHandle",
+    "de": "Kontext-Entität",
+    "en": "Context entity"
+  },
+  {
+    "entity": "aiAgentRun",
+    "property": "contextRecordHandle",
+    "de": "Kontext-Datensatz",
+    "en": "Context record"
+  },
+  {
+    "entity": "aiAgentRun",
+    "property": "createdAt",
+    "de": "Erstellt am",
+    "en": "Created at"
+  },
+  {
+    "entity": "aiAgentRun",
+    "property": "errorPayload",
+    "de": "Fehlerdetails",
+    "en": "Error details"
+  },
+  {
+    "entity": "aiAgentRun",
+    "property": "startedAt",
+    "de": "Gestartet am",
+    "en": "Started at"
+  },
+  {
+    "entity": "aiAgentRun",
+    "property": "updatedAt",
+    "de": "Aktualisiert am",
+    "en": "Updated at"
+  },
+  {
+    "entity": "aiAgentRun",
+    "property": "usagePayload",
+    "de": "Nutzungsdaten",
+    "en": "Usage data"
+  },
+  {
+    "entity": "aiAgentVersion",
+    "property": "createdAt",
+    "de": "Erstellt am",
+    "en": "Created at"
+  },
+  {
+    "entity": "aiAgentVersion",
+    "property": "updatedAt",
+    "de": "Aktualisiert am",
+    "en": "Updated at"
+  },
+  {
+    "entity": "aiChatAttachment",
+    "property": "createdAt",
+    "de": "Erstellt am",
+    "en": "Created at"
+  },
+  {
+    "entity": "aiChatAttachment",
+    "property": "updatedAt",
+    "de": "Aktualisiert am",
+    "en": "Updated at"
+  },
+  {
+    "entity": "aiChatQueuedInput",
+    "property": "assistantMessage",
+    "de": "Antwort des Assistenten",
+    "en": "Assistant message"
+  },
+  {
+    "entity": "aiChatQueuedInput",
+    "property": "completedAt",
+    "de": "Abgeschlossen am",
+    "en": "Completed at"
+  },
+  {
+    "entity": "aiChatQueuedInput",
+    "property": "content",
+    "de": "Inhalt",
+    "en": "Content"
+  },
+  {
+    "entity": "aiChatQueuedInput",
+    "property": "createdAt",
+    "de": "Erstellt am",
+    "en": "Created at"
+  },
+  {
+    "entity": "aiChatQueuedInput",
+    "property": "errorPayload",
+    "de": "Fehlerdetails",
+    "en": "Error details"
+  },
+  {
+    "entity": "aiChatQueuedInput",
+    "property": "handle",
+    "de": "Kennung",
+    "en": "Handle"
+  },
+  {
+    "entity": "aiChatQueuedInput",
+    "property": "mode",
+    "de": "Modus",
+    "en": "Mode"
+  },
+  {
+    "entity": "aiChatQueuedInput",
+    "property": "person",
+    "de": "Person",
+    "en": "Person"
+  },
+  {
+    "entity": "aiChatQueuedInput",
+    "property": "requestPayload",
+    "de": "Anfragedaten",
+    "en": "Request payload"
+  },
+  {
+    "entity": "aiChatQueuedInput",
+    "property": "session",
+    "de": "Sitzung",
+    "en": "Session"
+  },
+  {
+    "entity": "aiChatQueuedInput",
+    "property": "startedAt",
+    "de": "Gestartet am",
+    "en": "Started at"
+  },
+  {
+    "entity": "aiChatQueuedInput",
+    "property": "status",
+    "de": "Status",
+    "en": "Status"
+  },
+  {
+    "entity": "aiChatQueuedInput",
+    "property": "updatedAt",
+    "de": "Aktualisiert am",
+    "en": "Updated at"
+  },
+  {
+    "entity": "aiChatQueuedInput",
+    "property": "userMessage",
+    "de": "Benutzernachricht",
+    "en": "User message"
+  },
+  {
+    "entity": "aiChatToolAction",
+    "property": "createdAt",
+    "de": "Erstellt am",
+    "en": "Created at"
+  },
+  {
+    "entity": "aiChatToolAction",
+    "property": "updatedAt",
+    "de": "Aktualisiert am",
+    "en": "Updated at"
+  },
+  {
+    "entity": "aiUsageEvent",
+    "property": "environment",
+    "de": "Umgebung",
+    "en": "Environment"
+  },
+  {
+    "entity": "authenticationEvent",
+    "property": "environment",
+    "de": "Umgebung",
+    "en": "Environment"
+  },
+  {
+    "entity": "calendarSyncSubscription",
+    "property": "classificationMappings",
+    "de": "Klassifizierungszuordnungen",
+    "en": "Classification mappings"
+  },
+  {
+    "entity": "calendarSyncSubscription",
+    "property": "createdAt",
+    "de": "Erstellt am",
+    "en": "Created at"
+  },
+  {
+    "entity": "calendarSyncSubscription",
+    "property": "handle",
+    "de": "Kennung",
+    "en": "Handle"
+  },
+  {
+    "entity": "calendarSyncSubscription",
+    "property": "updatedAt",
+    "de": "Aktualisiert am",
+    "en": "Updated at"
+  },
+  {
+    "entity": "company",
+    "property": "competitorSalesOpportunities",
+    "de": "Verkaufschancen als Wettbewerber",
+    "en": "Sales opportunities as competitor"
+  },
+  {
+    "entity": "companyAnnualRevenueClass",
+    "property": "createdAt",
+    "de": "Erstellt am",
+    "en": "Created at"
+  },
+  {
+    "entity": "companyAnnualRevenueClass",
+    "property": "updatedAt",
+    "de": "Aktualisiert am",
+    "en": "Updated at"
+  },
+  {
+    "entity": "companyChurnRiskReason",
+    "property": "createdAt",
+    "de": "Erstellt am",
+    "en": "Created at"
+  },
+  {
+    "entity": "companyChurnRiskReason",
+    "property": "updatedAt",
+    "de": "Aktualisiert am",
+    "en": "Updated at"
+  },
+  {
+    "entity": "companyIndustry",
+    "property": "createdAt",
+    "de": "Erstellt am",
+    "en": "Created at"
+  },
+  {
+    "entity": "companyIndustry",
+    "property": "updatedAt",
+    "de": "Aktualisiert am",
+    "en": "Updated at"
+  },
+  {
+    "entity": "companySegment",
+    "property": "createdAt",
+    "de": "Erstellt am",
+    "en": "Created at"
+  },
+  {
+    "entity": "companySegment",
+    "property": "updatedAt",
+    "de": "Aktualisiert am",
+    "en": "Updated at"
+  },
+  {
+    "entity": "companySize",
+    "property": "createdAt",
+    "de": "Erstellt am",
+    "en": "Created at"
+  },
+  {
+    "entity": "companySize",
+    "property": "updatedAt",
+    "de": "Aktualisiert am",
+    "en": "Updated at"
+  },
+  {
+    "entity": "country",
+    "property": "addresses",
+    "de": "Adressen",
+    "en": "Addresses"
+  },
+  {
+    "entity": "customFieldDefinition",
+    "property": "createdAt",
+    "de": "Erstellt am",
+    "en": "Created at"
+  },
+  {
+    "entity": "customFieldDefinition",
+    "property": "handle",
+    "de": "Kennung",
+    "en": "Handle"
+  },
+  {
+    "entity": "customFieldDefinition",
+    "property": "updatedAt",
+    "de": "Aktualisiert am",
+    "en": "Updated at"
+  },
+  {
+    "entity": "customFieldDefinition",
+    "property": "values",
+    "de": "Werte",
+    "en": "Values"
+  },
+  {
+    "entity": "customFieldType",
+    "property": "createdAt",
+    "de": "Erstellt am",
+    "en": "Created at"
+  },
+  {
+    "entity": "customFieldType",
+    "property": "definitions",
+    "de": "Felddefinitionen",
+    "en": "Field definitions"
+  },
+  {
+    "entity": "customFieldType",
+    "property": "handle",
+    "de": "Kennung",
+    "en": "Handle"
+  },
+  {
+    "entity": "customFieldType",
+    "property": "updatedAt",
+    "de": "Aktualisiert am",
+    "en": "Updated at"
+  },
+  {
+    "entity": "customFieldValue",
+    "property": "createdAt",
+    "de": "Erstellt am",
+    "en": "Created at"
+  },
+  {
+    "entity": "customFieldValue",
+    "property": "groupReference",
+    "de": "Referenz",
+    "en": "Reference"
+  },
+  {
+    "entity": "customFieldValue",
+    "property": "handle",
+    "de": "Kennung",
+    "en": "Handle"
+  },
+  {
+    "entity": "customFieldValue",
+    "property": "updatedAt",
+    "de": "Aktualisiert am",
+    "en": "Updated at"
+  },
+  {
+    "entity": "customFieldValue",
+    "property": "valueBoolean",
+    "de": "Wahrheitswert",
+    "en": "Boolean value"
+  },
+  {
+    "entity": "customFieldValue",
+    "property": "valueDate",
+    "de": "Datumswert",
+    "en": "Date value"
+  },
+  {
+    "entity": "customFieldValue",
+    "property": "valueDateTime",
+    "de": "Datum und Uhrzeit",
+    "en": "Date and time"
+  },
+  {
+    "entity": "customFieldValue",
+    "property": "valueJson",
+    "de": "JSON-Wert",
+    "en": "JSON value"
+  },
+  {
+    "entity": "customFieldValue",
+    "property": "valueNumber",
+    "de": "Zahlenwert",
+    "en": "Number value"
+  },
+  {
+    "entity": "customFieldValue",
+    "property": "valueString",
+    "de": "Textwert",
+    "en": "Text value"
+  },
+  {
+    "entity": "dvelopObjectDefinition",
+    "property": "properties",
+    "de": "Eigenschaften",
+    "en": "Properties"
+  },
+  {
+    "entity": "effortEstimateStatus",
+    "property": "groupConfiguration",
+    "de": "Konfiguration",
+    "en": "Configuration"
+  },
+  {
+    "entity": "emailDelivery",
+    "property": "automationDeduplicationKey",
+    "de": "Automatisierungs-Deduplizierungsschlüssel",
+    "en": "Automation deduplication key"
+  },
+  {
+    "entity": "emailDelivery",
+    "property": "responseHeaders",
+    "de": "Antwort-Header",
+    "en": "Response headers"
+  },
+  {
+    "entity": "emailDeliveryStatus",
+    "property": "groupConfiguration",
+    "de": "Konfiguration",
+    "en": "Configuration"
+  },
+  {
+    "entity": "emailInboxProcessingMode",
+    "property": "createdAt",
+    "de": "Erstellt am",
+    "en": "Created at"
+  },
+  {
+    "entity": "emailInboxProcessingMode",
+    "property": "subscriptions",
+    "de": "Abonnements",
+    "en": "Subscriptions"
+  },
+  {
+    "entity": "emailInboxProcessingMode",
+    "property": "updatedAt",
+    "de": "Aktualisiert am",
+    "en": "Updated at"
+  },
+  {
+    "entity": "emailSubscription",
+    "property": "handle",
+    "de": "Kennung",
+    "en": "Handle"
+  },
+  {
+    "entity": "emailSubscriptionCondition",
+    "property": "createdAt",
+    "de": "Erstellt am",
+    "en": "Created at"
+  },
+  {
+    "entity": "emailSubscriptionCondition",
+    "property": "handle",
+    "de": "Kennung",
+    "en": "Handle"
+  },
+  {
+    "entity": "emailSubscriptionCondition",
+    "property": "updatedAt",
+    "de": "Aktualisiert am",
+    "en": "Updated at"
+  },
+  {
+    "entity": "entity",
+    "property": "order",
+    "de": "Reihenfolge",
+    "en": "Order"
+  },
+  {
+    "entity": "entity",
+    "property": "scriptButtons",
+    "de": "Skriptaktionen",
+    "en": "Script actions"
+  },
+  {
+    "entity": "entityGroup",
+    "property": "children",
+    "de": "Untergeordnete Gruppen",
+    "en": "Child groups"
+  },
+  {
+    "entity": "eventAzure",
+    "property": "handle",
+    "de": "Kennung",
+    "en": "Handle"
+  },
+  {
+    "entity": "eventAzure",
+    "property": "iCalUId",
+    "de": "iCal-UID",
+    "en": "iCal UID"
+  },
+  {
+    "entity": "eventDeliveryStatus",
+    "property": "groupConfiguration",
+    "de": "Konfiguration",
+    "en": "Configuration"
+  },
+  {
+    "entity": "eventGoogle",
+    "property": "handle",
+    "de": "Kennung",
+    "en": "Handle"
+  },
+  {
+    "entity": "eventGoogle",
+    "property": "iCalUId",
+    "de": "iCal-UID",
+    "en": "iCal UID"
+  },
+  {
+    "entity": "externalRecordLink",
+    "property": "createdAt",
+    "de": "Erstellt am",
+    "en": "Created at"
+  },
+  {
+    "entity": "externalRecordLink",
+    "property": "handle",
+    "de": "Kennung",
+    "en": "Handle"
+  },
+  {
+    "entity": "externalRecordLink",
+    "property": "updatedAt",
+    "de": "Aktualisiert am",
+    "en": "Updated at"
+  },
+  {
+    "entity": "favorite",
+    "property": "search",
+    "de": "Suche",
+    "en": "Search"
+  },
+  {
+    "entity": "favorite",
+    "property": "sortBy",
+    "de": "Sortierung",
+    "en": "Sort by"
+  },
+  {
+    "entity": "holiday",
+    "property": "handle",
+    "de": "Kennung",
+    "en": "Handle"
+  },
+  {
+    "entity": "holidayGroup",
+    "property": "companies",
+    "de": "Unternehmen",
+    "en": "Companies"
+  },
+  {
+    "entity": "holidayGroup",
+    "property": "handle",
+    "de": "Kennung",
+    "en": "Handle"
+  },
+  {
+    "entity": "holidayGroup",
+    "property": "holidays",
+    "de": "Feiertage",
+    "en": "Holidays"
+  },
+  {
+    "entity": "holidayGroup",
+    "property": "persons",
+    "de": "Personen",
+    "en": "Persons"
+  },
+  {
+    "entity": "httpMetricBucket",
+    "property": "environment",
+    "de": "Umgebung",
+    "en": "Environment"
+  },
+  {
+    "entity": "importBatch",
+    "property": "createdAt",
+    "de": "Erstellt am",
+    "en": "Created at"
+  },
+  {
+    "entity": "importBatch",
+    "property": "createdCount",
+    "de": "Neu angelegt",
+    "en": "Created"
+  },
+  {
+    "entity": "importBatch",
+    "property": "delimiter",
+    "de": "Trennzeichen",
+    "en": "Delimiter"
+  },
+  {
+    "entity": "importBatch",
+    "property": "externalKeyColumns",
+    "de": "Eindeutige Fremdschlüssel",
+    "en": "Unique external keys"
+  },
+  {
+    "entity": "importBatch",
+    "property": "failedCount",
+    "de": "Fehlgeschlagen",
+    "en": "Failed"
+  },
+  {
+    "entity": "importBatch",
+    "property": "fileSize",
+    "de": "Dateigröße",
+    "en": "File size"
+  },
+  {
+    "entity": "importBatch",
+    "property": "genericReferenceMapping",
+    "de": "Generische Zielreferenz",
+    "en": "Generic target reference"
+  },
+  {
+    "entity": "importBatch",
+    "property": "handle",
+    "de": "Kennung",
+    "en": "Handle"
+  },
+  {
+    "entity": "importBatch",
+    "property": "headers",
+    "de": "Spaltenüberschriften",
+    "en": "Column headers"
+  },
+  {
+    "entity": "importBatch",
+    "property": "mapping",
+    "de": "Zuordnung",
+    "en": "Mapping"
+  },
+  {
+    "entity": "importBatch",
+    "property": "mimetype",
+    "de": "MIME-Typ",
+    "en": "MIME type"
+  },
+  {
+    "entity": "importBatch",
+    "property": "sampleRows",
+    "de": "Beispielzeilen",
+    "en": "Sample rows"
+  },
+  {
+    "entity": "importBatch",
+    "property": "skippedCount",
+    "de": "Übersprungen",
+    "en": "Skipped"
+  },
+  {
+    "entity": "importBatch",
+    "property": "updatedAt",
+    "de": "Aktualisiert am",
+    "en": "Updated at"
+  },
+  {
+    "entity": "importBatch",
+    "property": "updatedCount",
+    "de": "Aktualisiert",
+    "en": "Updated"
+  },
+  {
+    "entity": "importBatchRow",
+    "property": "batch",
+    "de": "Importvorgang",
+    "en": "Import batch"
+  },
+  {
+    "entity": "importBatchRow",
+    "property": "createdAt",
+    "de": "Erstellt am",
+    "en": "Created at"
+  },
+  {
+    "entity": "importBatchRow",
+    "property": "externalKeyHash",
+    "de": "Hash des externen Schlüssels",
+    "en": "External key hash"
+  },
+  {
+    "entity": "importBatchRow",
+    "property": "externalKeyParts",
+    "de": "Bestandteile des externen Schlüssels",
+    "en": "External key parts"
+  },
+  {
+    "entity": "importBatchRow",
+    "property": "handle",
+    "de": "Kennung",
+    "en": "Handle"
+  },
+  {
+    "entity": "importBatchRow",
+    "property": "payload",
+    "de": "Nutzdaten",
+    "en": "Payload"
+  },
+  {
+    "entity": "importBatchRow",
+    "property": "rawData",
+    "de": "Rohdaten",
+    "en": "Raw data"
+  },
+  {
+    "entity": "importBatchRow",
+    "property": "updatedAt",
+    "de": "Aktualisiert am",
+    "en": "Updated at"
+  },
+  {
+    "entity": "importSource",
+    "property": "createdAt",
+    "de": "Erstellt am",
+    "en": "Created at"
+  },
+  {
+    "entity": "importSource",
+    "property": "updatedAt",
+    "de": "Aktualisiert am",
+    "en": "Updated at"
+  },
+  {
+    "entity": "importTemplate",
+    "property": "createdAt",
+    "de": "Erstellt am",
+    "en": "Created at"
+  },
+  {
+    "entity": "importTemplate",
+    "property": "handle",
+    "de": "Kennung",
+    "en": "Handle"
+  },
+  {
+    "entity": "importTemplate",
+    "property": "updatedAt",
+    "de": "Aktualisiert am",
+    "en": "Updated at"
+  },
+  {
+    "entity": "importTemplateValueMapping",
+    "property": "createdAt",
+    "de": "Erstellt am",
+    "en": "Created at"
+  },
+  {
+    "entity": "importTemplateValueMapping",
+    "property": "handle",
+    "de": "Kennung",
+    "en": "Handle"
+  },
+  {
+    "entity": "importTemplateValueMapping",
+    "property": "updatedAt",
+    "de": "Aktualisiert am",
+    "en": "Updated at"
+  },
+  {
+    "entity": "inboundEmailStatus",
+    "property": "createdAt",
+    "de": "Erstellt am",
+    "en": "Created at"
+  },
+  {
+    "entity": "inboundEmailStatus",
+    "property": "emails",
+    "de": "E-Mails",
+    "en": "Emails"
+  },
+  {
+    "entity": "inboundEmailStatus",
+    "property": "groupConfiguration",
+    "de": "Konfiguration",
+    "en": "Configuration"
+  },
+  {
+    "entity": "inboundEmailStatus",
+    "property": "updatedAt",
+    "de": "Aktualisiert am",
+    "en": "Updated at"
+  },
+  {
+    "entity": "marketingCampaignStatus",
+    "property": "color",
+    "de": "Farbe",
+    "en": "Color"
+  },
+  {
+    "entity": "marketingCampaignStatus",
+    "property": "createdAt",
+    "de": "Erstellt am",
+    "en": "Created at"
+  },
+  {
+    "entity": "marketingCampaignStatus",
+    "property": "icon",
+    "de": "Icon",
+    "en": "Icon"
+  },
+  {
+    "entity": "marketingCampaignStatus",
+    "property": "updatedAt",
+    "de": "Aktualisiert am",
+    "en": "Updated at"
+  },
+  {
+    "entity": "marketingCampaignType",
+    "property": "color",
+    "de": "Farbe",
+    "en": "Color"
+  },
+  {
+    "entity": "marketingCampaignType",
+    "property": "createdAt",
+    "de": "Erstellt am",
+    "en": "Created at"
+  },
+  {
+    "entity": "marketingCampaignType",
+    "property": "icon",
+    "de": "Icon",
+    "en": "Icon"
+  },
+  {
+    "entity": "marketingCampaignType",
+    "property": "sortOrder",
+    "de": "Reihenfolge",
+    "en": "Sort order"
+  },
+  {
+    "entity": "marketingCampaignType",
+    "property": "updatedAt",
+    "de": "Aktualisiert am",
+    "en": "Updated at"
+  },
+  {
+    "entity": "navigation",
+    "property": "aiChatQueuedInput",
+    "de": "Wartende Chat-Eingaben",
+    "en": "Queued chat inputs"
+  },
+  {
+    "entity": "navigation",
+    "property": "customFieldValue",
+    "de": "Benutzerdefinierte Feldwerte",
+    "en": "Custom field values"
+  },
+  {
+    "entity": "permission",
+    "property": "handle",
+    "de": "Kennung",
+    "en": "Handle"
+  },
+  {
+    "entity": "personDecisionRole",
+    "property": "createdAt",
+    "de": "Erstellt am",
+    "en": "Created at"
+  },
+  {
+    "entity": "personDecisionRole",
+    "property": "updatedAt",
+    "de": "Aktualisiert am",
+    "en": "Updated at"
+  },
+  {
+    "entity": "personFunction",
+    "property": "createdAt",
+    "de": "Erstellt am",
+    "en": "Created at"
+  },
+  {
+    "entity": "personFunction",
+    "property": "updatedAt",
+    "de": "Aktualisiert am",
+    "en": "Updated at"
+  },
+  {
+    "entity": "personJobTitle",
+    "property": "createdAt",
+    "de": "Erstellt am",
+    "en": "Created at"
+  },
+  {
+    "entity": "personJobTitle",
+    "property": "updatedAt",
+    "de": "Aktualisiert am",
+    "en": "Updated at"
+  },
+  {
+    "entity": "personSalutation",
+    "property": "createdAt",
+    "de": "Erstellt am",
+    "en": "Created at"
+  },
+  {
+    "entity": "personSalutation",
+    "property": "updatedAt",
+    "de": "Aktualisiert am",
+    "en": "Updated at"
+  },
+  {
+    "entity": "personSession",
+    "property": "handle",
+    "de": "Kennung",
+    "en": "Handle"
+  },
+  {
+    "entity": "personTitle",
+    "property": "createdAt",
+    "de": "Erstellt am",
+    "en": "Created at"
+  },
+  {
+    "entity": "personTitle",
+    "property": "updatedAt",
+    "de": "Aktualisiert am",
+    "en": "Updated at"
+  },
+  {
+    "entity": "personType",
+    "property": "sharedMailboxes",
+    "de": "Gemeinsame Postfächer",
+    "en": "Shared mailboxes"
+  },
+  {
+    "entity": "salesOpportunityLossReason",
+    "property": "color",
+    "de": "Farbe",
+    "en": "Color"
+  },
+  {
+    "entity": "salesOpportunityLossReason",
+    "property": "createdAt",
+    "de": "Erstellt am",
+    "en": "Created at"
+  },
+  {
+    "entity": "salesOpportunityLossReason",
+    "property": "icon",
+    "de": "Icon",
+    "en": "Icon"
+  },
+  {
+    "entity": "salesOpportunityLossReason",
+    "property": "sortOrder",
+    "de": "Reihenfolge",
+    "en": "Sort order"
+  },
+  {
+    "entity": "salesOpportunityLossReason",
+    "property": "updatedAt",
+    "de": "Aktualisiert am",
+    "en": "Updated at"
+  },
+  {
+    "entity": "salesOpportunityResultStatus",
+    "property": "color",
+    "de": "Farbe",
+    "en": "Color"
+  },
+  {
+    "entity": "salesOpportunityResultStatus",
+    "property": "createdAt",
+    "de": "Erstellt am",
+    "en": "Created at"
+  },
+  {
+    "entity": "salesOpportunityResultStatus",
+    "property": "icon",
+    "de": "Icon",
+    "en": "Icon"
+  },
+  {
+    "entity": "salesOpportunityResultStatus",
+    "property": "updatedAt",
+    "de": "Aktualisiert am",
+    "en": "Updated at"
+  },
+  {
+    "entity": "saplingFormConfig",
+    "property": "handle",
+    "de": "Kennung",
+    "en": "Handle"
+  },
+  {
+    "entity": "sessionStore",
+    "property": "lastSeenAt",
+    "de": "Zuletzt gesehen",
+    "en": "Last seen"
+  },
+  {
+    "entity": "sessionStore",
+    "property": "personHandle",
+    "de": "Personenkennung",
+    "en": "Person handle"
+  },
+  {
+    "entity": "sharedMailboxContext",
+    "property": "handle",
+    "de": "Kennung",
+    "en": "Handle"
+  },
+  {
+    "entity": "systemAlertIncident",
+    "property": "correlationKey",
+    "de": "Korrelationsschlüssel",
+    "en": "Correlation key"
+  },
+  {
+    "entity": "systemAlertIncident",
+    "property": "diagnosis",
+    "de": "Diagnose",
+    "en": "Diagnosis"
+  },
+  {
+    "entity": "systemAlertIncident",
+    "property": "environment",
+    "de": "Umgebung",
+    "en": "Environment"
+  },
+  {
+    "entity": "systemAlertIncident",
+    "property": "incidentType",
+    "de": "Vorfallstyp",
+    "en": "Incident type"
+  },
+  {
+    "entity": "systemAlertIncident",
+    "property": "resolvedReason",
+    "de": "Lösungsgrund",
+    "en": "Resolution reason"
+  },
+  {
+    "entity": "systemAlertRule",
+    "property": "evaluationConfig",
+    "de": "Auswertungskonfiguration",
+    "en": "Evaluation configuration"
+  },
+  {
+    "entity": "systemAlertRule",
+    "property": "evaluationType",
+    "de": "Auswertungsart",
+    "en": "Evaluation type"
+  },
+  {
+    "entity": "systemAlertRule",
+    "property": "remediationActionKey",
+    "de": "Behebungsaktion",
+    "en": "Remediation action"
+  },
+  {
+    "entity": "systemAlertRule",
+    "property": "remediationMode",
+    "de": "Behebungsmodus",
+    "en": "Remediation mode"
+  },
+  {
+    "entity": "systemAlertRule",
+    "property": "shadowMode",
+    "de": "Schattenmodus",
+    "en": "Shadow mode"
+  },
+  {
+    "entity": "systemCanaryRecord",
+    "property": "createdAt",
+    "de": "Erstellt am",
+    "en": "Created at"
+  },
+  {
+    "entity": "systemCanaryRecord",
+    "property": "handle",
+    "de": "Kennung",
+    "en": "Handle"
+  },
+  {
+    "entity": "systemCanaryRecord",
+    "property": "marker",
+    "de": "Markierung",
+    "en": "Marker"
+  },
+  {
+    "entity": "systemCheckRun",
+    "property": "completedAt",
+    "de": "Abgeschlossen am",
+    "en": "Completed at"
+  },
+  {
+    "entity": "systemCheckRun",
+    "property": "environment",
+    "de": "Umgebung",
+    "en": "Environment"
+  },
+  {
+    "entity": "systemCheckRun",
+    "property": "handle",
+    "de": "Kennung",
+    "en": "Handle"
+  },
+  {
+    "entity": "systemCheckRun",
+    "property": "startedAt",
+    "de": "Gestartet am",
+    "en": "Started at"
+  },
+  {
+    "entity": "systemCheckRun",
+    "property": "steps",
+    "de": "Schritte",
+    "en": "Steps"
+  },
+  {
+    "entity": "systemErrorGroup",
+    "property": "environment",
+    "de": "Umgebung",
+    "en": "Environment"
+  },
+  {
+    "entity": "systemErrorGroup",
+    "property": "firstSeenAt",
+    "de": "Erstmals erkannt",
+    "en": "First seen at"
+  },
+  {
+    "entity": "systemErrorGroup",
+    "property": "handle",
+    "de": "Kennung",
+    "en": "Handle"
+  },
+  {
+    "entity": "systemErrorGroup",
+    "property": "lastSeenAt",
+    "de": "Zuletzt gesehen",
+    "en": "Last seen"
+  },
+  {
+    "entity": "systemErrorOccurrence",
+    "property": "environment",
+    "de": "Umgebung",
+    "en": "Environment"
+  },
+  {
+    "entity": "systemErrorOccurrence",
+    "property": "handle",
+    "de": "Kennung",
+    "en": "Handle"
+  },
+  {
+    "entity": "systemErrorOccurrence",
+    "property": "instance",
+    "de": "Instanz",
+    "en": "Instance"
+  },
+  {
+    "entity": "systemErrorOccurrence",
+    "property": "occurredAt",
+    "de": "Aufgetreten am",
+    "en": "Occurred at"
+  },
+  {
+    "entity": "systemErrorOccurrence",
+    "property": "operation",
+    "de": "Vorgang",
+    "en": "Operation"
+  },
+  {
+    "entity": "systemErrorOccurrence",
+    "property": "release",
+    "de": "Release",
+    "en": "Release"
+  },
+  {
+    "entity": "systemErrorOccurrence",
+    "property": "source",
+    "de": "Quelle",
+    "en": "Source"
+  },
+  {
+    "entity": "systemRemediationExecution",
+    "property": "approvedBy",
+    "de": "Genehmigt von",
+    "en": "Approved by"
+  },
+  {
+    "entity": "systemRemediationExecution",
+    "property": "completedAt",
+    "de": "Abgeschlossen am",
+    "en": "Completed at"
+  },
+  {
+    "entity": "systemRemediationExecution",
+    "property": "environment",
+    "de": "Umgebung",
+    "en": "Environment"
+  },
+  {
+    "entity": "systemRemediationExecution",
+    "property": "evidence",
+    "de": "Nachweise",
+    "en": "Evidence"
+  },
+  {
+    "entity": "systemRemediationExecution",
+    "property": "handle",
+    "de": "Kennung",
+    "en": "Handle"
+  },
+  {
+    "entity": "systemRemediationExecution",
+    "property": "idempotencyKey",
+    "de": "Idempotenzschlüssel",
+    "en": "Idempotency key"
+  },
+  {
+    "entity": "systemRemediationExecution",
+    "property": "incident",
+    "de": "Vorfall",
+    "en": "Incident"
+  },
+  {
+    "entity": "systemRemediationExecution",
+    "property": "startedAt",
+    "de": "Gestartet am",
+    "en": "Started at"
+  },
+  {
+    "entity": "systemTelemetryInstance",
+    "property": "lifecycleReason",
+    "de": "Lebenszyklusgrund",
+    "en": "Lifecycle reason"
+  },
+  {
+    "entity": "systemTelemetryInstance",
+    "property": "retiredAt",
+    "de": "Außer Betrieb seit",
+    "en": "Retired at"
+  },
+  {
+    "entity": "systemTelemetryInstance",
+    "property": "status",
+    "de": "Status",
+    "en": "Status"
+  },
+  {
+    "entity": "systemTelemetryInstance",
+    "property": "stoppedAt",
+    "de": "Gestoppt am",
+    "en": "Stopped at"
+  },
+  {
+    "entity": "teamsDeliveryStatus",
+    "property": "groupConfiguration",
+    "de": "Konfiguration",
+    "en": "Configuration"
+  },
+  {
+    "entity": "translation",
+    "property": "handle",
+    "de": "Kennung",
+    "en": "Handle"
+  },
+  {
+    "entity": "webhookDeliveryStatus",
+    "property": "groupConfiguration",
+    "de": "Konfiguration",
+    "en": "Configuration"
+  }
+]

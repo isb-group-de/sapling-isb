@@ -230,6 +230,45 @@
             </template>
 
             <SaplingSurface :as="VList" class="sapling-event-toolbar__overflow-menu">
+              <v-list-subheader>{{ $t('calendar.timeGridHeight') }}</v-list-subheader>
+              <v-list-item
+                prepend-icon="mdi-arrow-collapse-vertical"
+                :active="timeGridScaleModel === 'standard'"
+                @click="timeGridScaleModel = 'standard'"
+              >
+                <v-list-item-title>{{ $t('calendar.timeGridHeightStandard') }}</v-list-item-title>
+              </v-list-item>
+              <v-list-item
+                prepend-icon="mdi-arrow-expand-vertical"
+                :active="timeGridScaleModel === 'double'"
+                @click="timeGridScaleModel = 'double'"
+              >
+                <v-list-item-title>{{ $t('calendar.timeGridHeightDouble') }}</v-list-item-title>
+              </v-list-item>
+
+              <v-divider class="sapling-event-toolbar__overflow-divider" />
+
+              <v-list-subheader>{{ $t('calendar.timeRange') }}</v-list-subheader>
+              <v-list-item
+                prepend-icon="mdi-hours-24"
+                :active="timeRangeModeModel === 'fullDay'"
+                @click="timeRangeModeModel = 'fullDay'"
+              >
+                <v-list-item-title>{{ $t('calendar.timeRangeFullDay') }}</v-list-item-title>
+              </v-list-item>
+              <v-list-item
+                prepend-icon="mdi-briefcase-clock-outline"
+                :active="timeRangeModeModel === 'workHours'"
+                @click="timeRangeModeModel = 'workHours'"
+              >
+                <v-list-item-title>{{ $t('calendar.timeRangeWorkHours') }}</v-list-item-title>
+              </v-list-item>
+
+              <v-divider
+                v-if="hasOtherOverflowActions"
+                class="sapling-event-toolbar__overflow-divider"
+              />
+
               <template v-if="showViewOverflow">
                 <v-list-item
                   prepend-icon="mdi-call-merge"
@@ -357,6 +396,10 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { VList } from 'vuetify/components'
 import SaplingSurface from '@/components/common/SaplingSurface.vue'
+import type {
+  CalendarTimeGridScale,
+  CalendarTimeRangeMode,
+} from '@/composables/event/eventCalendarPreferences'
 import {
   formatLocalDate,
   resolvePickerDate,
@@ -382,6 +425,8 @@ const props = defineProps<{
   calendarMode: CalendarMode
   eventOverlapMode: CalendarEventOverlapMode
   linkedScrolling: boolean
+  timeGridScale: CalendarTimeGridScale
+  timeRangeMode: CalendarTimeRangeMode
   modelValue: string
   isRefreshing: boolean
   isSyncingExternalCalendar: boolean
@@ -399,6 +444,8 @@ const emit = defineEmits<{
   (event: 'update:calendarMode', value: CalendarMode): void
   (event: 'update:eventOverlapMode', value: CalendarEventOverlapMode): void
   (event: 'update:linkedScrolling', value: boolean): void
+  (event: 'update:timeGridScale', value: CalendarTimeGridScale): void
+  (event: 'update:timeRangeMode', value: CalendarTimeRangeMode): void
   (event: 'previous'): void
   (event: 'today'): void
   (event: 'next'): void
@@ -430,6 +477,16 @@ const eventOverlapModeModel = computed({
 const linkedScrollingModel = computed({
   get: () => props.linkedScrolling,
   set: (value: boolean) => emit('update:linkedScrolling', value),
+})
+
+const timeGridScaleModel = computed({
+  get: () => props.timeGridScale,
+  set: (value: CalendarTimeGridScale) => emit('update:timeGridScale', value),
+})
+
+const timeRangeModeModel = computed({
+  get: () => props.timeRangeMode,
+  set: (value: CalendarTimeRangeMode) => emit('update:timeRangeMode', value),
 })
 
 const toolbarElement = ref<HTMLElement | null>(null)
@@ -499,7 +556,8 @@ const hasOverflowActionsAfterMode = computed(
 const hasOverflowActionsAfterData = computed(
   () => showArrangementOverflow.value || showTypeOverflow.value,
 )
-const hasOverflowActions = computed(
+const hasOverflowActions = true
+const hasOtherOverflowActions = computed(
   () =>
     showViewOverflow.value ||
     showLinkedScrollingOverflow.value ||

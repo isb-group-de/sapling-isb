@@ -56,6 +56,31 @@ from the calendar display options; the choice is stored with the other local
 calendar preferences. Horizontal scrolling of the column workspace remains
 independent.
 
+## Time Grid Height
+
+The calendar overflow menu offers a persistent time-grid height preference.
+`Standard height` keeps Vuetify's existing 48-pixel hourly interval, while
+`Double height` uses a 96-pixel interval. The setting applies to the combined
+and side-by-side day and week views; the month view is unaffected.
+
+The height is supplied through `VCalendar`'s `interval-height` prop. Event
+placement and drag/resize time calculations therefore use the same scale as the
+rendered grid. Work-hour and current-time overlays remain percentage-based, and
+changing the preference queues the existing current/event-focus scroll after
+the resized calendar has rendered.
+
+The same overflow menu also stores a displayed-time-range preference. `Full
+day` remains the default and renders all 24 hours. `My working hours` derives a
+shared time window from the signed-in user's configured work week, adding one
+hour before the earliest start and one hour after the latest end. For example,
+08:00–17:00 becomes 07:00–18:00. Invalid or missing work-hour data safely falls
+back to the full day.
+
+All combined and side-by-side calendars use the same signed-in-user range so
+their time axes and linked scrolling stay aligned. Current-time and work-hour
+positions, event-focus scrolling, event placement, dragging, and resizing are
+calculated relative to the displayed range.
+
 ## Event Model
 
 `EventItem` represents appointments, meetings, reminders, and related CRM/service events.

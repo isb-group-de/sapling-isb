@@ -49,6 +49,8 @@
             v-model:calendar-mode="calendarMode"
             v-model:event-overlap-mode="eventOverlapMode"
             v-model:linked-scrolling="linkedScrolling"
+            v-model:time-grid-scale="timeGridScale"
+            v-model:time-range-mode="timeRangeMode"
             :is-narrow-screen="isNarrowScreen"
             :is-refreshing="isRefreshingCalendar"
             :is-syncing-external-calendar="isSyncingExternalCalendar"
@@ -76,6 +78,9 @@
               :calendar-view-mode="calendarViewMode"
               :linked-scrolling="linkedScrolling"
               :event-overlap-mode="eventOverlapMode"
+              :interval-height="calendarIntervalHeight"
+              :first-time="calendarTimeGrid.firstTime"
+              :interval-count="calendarTimeGrid.intervalCount"
               :events="events"
               :calendar-display-type="calendarDisplayType"
               :calendar-weekdays="calendarWeekdays"
@@ -389,6 +394,8 @@ const {
   closeRecurrenceEditScopeDialog,
   forceEditDialogDirtyFields,
   calendarDisplayType,
+  calendarIntervalHeight,
+  calendarTimeGrid,
   calendarType,
   calendarTypeOptions,
   calendarMode,
@@ -422,6 +429,8 @@ const {
   isSyncingExternalCalendar,
   isNarrowScreen,
   linkedScrolling,
+  timeGridScale,
+  timeRangeMode,
   mergeUpdateConflict,
   nowY,
   openEventContextMenu,

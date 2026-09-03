@@ -64,6 +64,15 @@ export class EmailSubscriptionConditionItem {
   @Property({ length: 256, nullable: true })
   newValue?: string | null;
 
+  @ApiPropertyOptional({
+    default: 0,
+    description:
+      'Conditions in the same group are AND-linked; different groups are OR-linked.',
+  })
+  @Sapling(['isSystem'])
+  @Property({ default: 0, nullable: false })
+  groupOrder: number = 0;
+
   @ApiPropertyOptional({ default: 0 })
   @Sapling(['isSystem'])
   @Property({ default: 0, nullable: false })

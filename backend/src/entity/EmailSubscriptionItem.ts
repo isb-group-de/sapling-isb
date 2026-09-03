@@ -133,7 +133,7 @@ export class EmailSubscriptionItem {
     type: () => EmailSubscriptionConditionItem,
     isArray: true,
     description:
-      'Conditions that must match before an automatic email is sent. Empty means always.',
+      'AND-linked condition groups that are OR-linked with each other. Empty means always.',
   })
   @SaplingInlineCollection({
     renderer: 'conditionBuilder',

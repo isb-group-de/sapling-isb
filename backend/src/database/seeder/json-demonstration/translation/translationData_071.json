@@ -1,0 +1,38 @@
+[
+  {
+    "entity": "calendar",
+    "property": "timeGridHeight",
+    "de": "Zeitrasterhöhe",
+    "en": "Time grid height"
+  },
+  {
+    "entity": "calendar",
+    "property": "timeGridHeightStandard",
+    "de": "Standardhöhe",
+    "en": "Standard height"
+  },
+  {
+    "entity": "calendar",
+    "property": "timeGridHeightDouble",
+    "de": "Doppelte Höhe",
+    "en": "Double height"
+  },
+  {
+    "entity": "calendar",
+    "property": "timeRange",
+    "de": "Angezeigter Zeitraum",
+    "en": "Displayed time range"
+  },
+  {
+    "entity": "calendar",
+    "property": "timeRangeFullDay",
+    "de": "Vollständiger Tag",
+    "en": "Full day"
+  },
+  {
+    "entity": "calendar",
+    "property": "timeRangeWorkHours",
+    "de": "Meine Arbeitszeit",
+    "en": "My working hours"
+  }
+]

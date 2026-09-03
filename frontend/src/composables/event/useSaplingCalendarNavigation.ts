@@ -1,4 +1,5 @@
 import {
+  computed,
   getCurrentInstance,
   onBeforeUnmount,
   ref,
@@ -7,6 +8,8 @@ import {
   type Ref,
 } from 'vue'
 import type { WorkHourWeekItem } from '@/entity/entity'
+import type { CalendarTimeRangeMode } from './eventCalendarPreferences'
+import { resolveCalendarTimeGrid } from './eventCalendarTimeGrid'
 import {
   formatLocalDate,
   isValidDate,
@@ -25,9 +28,13 @@ const CALENDAR_SCROLL_MAX_ATTEMPTS = 5
 export function useSaplingCalendarNavigation(
   calendarType: Ref<CalendarType>,
   workHours: Ref<WorkHourWeekItem | null>,
+  timeRangeMode: Ref<CalendarTimeRangeMode> = ref('fullDay'),
 ) {
   const value = ref(formatLocalDate(new Date()))
   const calendarScrollContainer = ref<CalendarScrollContainerRef>(null)
+  const calendarTimeGrid = computed(() =>
+    resolveCalendarTimeGrid(workHours.value, timeRangeMode.value),
+  )
   let scrollTimeoutId: number | null = null
 
   if (getCurrentInstance()) {
@@ -41,7 +48,12 @@ export function useSaplingCalendarNavigation(
   function nowY() {
     const now = new Date()
     const minutes = now.getHours() * 60 + now.getMinutes()
-    return `${(minutes / (24 * 60)) * 100}%`
+    const timeGrid = calendarTimeGrid.value
+    if (minutes < timeGrid.startMinute || minutes >= timeGrid.endMinute) {
+      return null
+    }
+
+    return `${((minutes - timeGrid.startMinute) / (timeGrid.endMinute - timeGrid.startMinute)) * 100}%`
   }
 
   function goToDate(target: Date | string) {
@@ -96,6 +108,12 @@ export function useSaplingCalendarNavigation(
   }
 
   function scrollToCurrentTime(attempt = 0) {
+    const now = new Date()
+    const currentMinute = now.getHours() * 60 + now.getMinutes()
+    if (!isMinuteVisible(currentMinute)) {
+      return
+    }
+
     const outer = resolveCalendarScrollOuter()
     if (!outer) {
       retryScrollToCurrentTime(attempt)
@@ -139,6 +157,11 @@ export function useSaplingCalendarNavigation(
 
     const resolvedContainers = resolveCalendarScrollContainers(outer)
     const minutes = targetDate.getHours() * 60 + targetDate.getMinutes()
+    if (!isMinuteVisible(minutes)) {
+      return
+    }
+
+    const timeGrid = calendarTimeGrid.value
     let hasScrollableContainer = false
 
     resolvedContainers.forEach((container) => {
@@ -148,7 +171,9 @@ export function useSaplingCalendarNavigation(
 
       hasScrollableContainer = true
       const targetOffset =
-        (minutes / (24 * 60)) * container.scrollHeight - container.clientHeight / 2
+        ((minutes - timeGrid.startMinute) / (timeGrid.endMinute - timeGrid.startMinute)) *
+          container.scrollHeight -
+        container.clientHeight / 2
       container.scrollTop = Math.max(targetOffset, 0)
     })
 
@@ -266,15 +291,29 @@ export function useSaplingCalendarNavigation(
     const [toHours = 0, toMinutes = 0] = weekDay.timeTo.split(':').map(Number)
     const fromMin = fromHours * 60 + fromMinutes
     const toMin = toHours * 60 + toMinutes
+    const timeGrid = calendarTimeGrid.value
+    const visibleFrom = Math.max(fromMin, timeGrid.startMinute)
+    const visibleTo = Math.min(toMin, timeGrid.endMinute)
+    if (visibleTo <= visibleFrom) {
+      return {}
+    }
+
+    const visibleDuration = timeGrid.endMinute - timeGrid.startMinute
 
     return {
-      '--sapling-calendar-workhour-top': `${(fromMin / (24 * 60)) * 100}%`,
-      '--sapling-calendar-workhour-height': `${((toMin - fromMin) / (24 * 60)) * 100}%`,
+      '--sapling-calendar-workhour-top': `${((visibleFrom - timeGrid.startMinute) / visibleDuration) * 100}%`,
+      '--sapling-calendar-workhour-height': `${((visibleTo - visibleFrom) / visibleDuration) * 100}%`,
     }
+  }
+
+  function isMinuteVisible(minute: number) {
+    const timeGrid = calendarTimeGrid.value
+    return minute >= timeGrid.startMinute && minute < timeGrid.endMinute
   }
 
   return {
     calendarScrollContainer,
+    calendarTimeGrid,
     getWorkHourStyle,
     goToDate,
     goToNext,

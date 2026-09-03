@@ -60,6 +60,11 @@ vi.mock('vue-i18n', () => ({
           'emailSubscriptionCondition.oldValue': 'Old value',
           'emailSubscriptionCondition.newValue': 'New value',
           'emailSubscriptionCondition.addCondition': 'Add condition',
+          'emailSubscriptionCondition.addAndCondition': 'Add AND condition',
+          'emailSubscriptionCondition.addOrGroup': 'Add OR group',
+          'emailSubscriptionCondition.conditionGroup': 'Condition group',
+          'emailSubscriptionCondition.and': 'AND',
+          'emailSubscriptionCondition.or': 'OR',
           'emailSubscriptionCondition.removeCondition': 'Remove condition',
           'ticket.title': 'Title',
           'ticket.solutionDescription': 'Solution',
@@ -151,6 +156,7 @@ describe('SaplingFieldEmailSubscriptionConditions', () => {
           'v-autocomplete': VAutocompleteStub,
           'v-text-field': VTextFieldStub,
           'v-btn': VBtnStub,
+          'v-divider': true,
         },
       },
     })
@@ -177,6 +183,7 @@ describe('SaplingFieldEmailSubscriptionConditions', () => {
           'v-autocomplete': VAutocompleteStub,
           'v-text-field': VTextFieldStub,
           'v-btn': VBtnStub,
+          'v-divider': true,
         },
       },
     })
@@ -202,21 +209,73 @@ describe('SaplingFieldEmailSubscriptionConditions', () => {
           'v-autocomplete': VAutocompleteStub,
           'v-text-field': VTextFieldStub,
           'v-btn': VBtnStub,
+          'v-divider': true,
         },
       },
     })
 
     await flushPromises()
 
-    const buttons = wrapper.findAllComponents(VBtnStub)
-    await buttons[buttons.length - 1].trigger('click')
+    await wrapper.find('.sapling-email-conditions__add-and').trigger('click')
     const selects = wrapper.findAllComponents(VAutocompleteStub)
     await selects[3].vm.$emit('update:modelValue', 'solutionDescription')
 
     const emittedUpdates = wrapper.emitted('update:modelValue') ?? []
     expect(emittedUpdates[emittedUpdates.length - 1]?.[0]).toEqual([
-      { observedField: 'status', oldValue: null, newValue: 'closed', sortOrder: 0 },
-      { observedField: 'solutionDescription', oldValue: null, newValue: null, sortOrder: 1 },
+      {
+        observedField: 'status',
+        oldValue: null,
+        newValue: 'closed',
+        groupOrder: 0,
+        sortOrder: 0,
+      },
+      {
+        observedField: 'solutionDescription',
+        oldValue: null,
+        newValue: null,
+        groupOrder: 0,
+        sortOrder: 1,
+      },
+    ])
+  })
+
+  it('emits a separate OR-linked group', async () => {
+    const wrapper = mount(SaplingFieldEmailSubscriptionConditions, {
+      props: {
+        sourceEntityReference: { handle: 'ticket' },
+        modelValue: [{ observedField: 'status', newValue: 'closed' }],
+      },
+      global: {
+        stubs: {
+          'v-autocomplete': VAutocompleteStub,
+          'v-text-field': VTextFieldStub,
+          'v-btn': VBtnStub,
+          'v-divider': true,
+        },
+      },
+    })
+
+    await flushPromises()
+    await wrapper.find('.sapling-email-conditions__add-or').trigger('click')
+    const selects = wrapper.findAllComponents(VAutocompleteStub)
+    await selects[3].vm.$emit('update:modelValue', 'solutionDescription')
+
+    const emittedUpdates = wrapper.emitted('update:modelValue') ?? []
+    expect(emittedUpdates[emittedUpdates.length - 1]?.[0]).toEqual([
+      {
+        observedField: 'status',
+        oldValue: null,
+        newValue: 'closed',
+        groupOrder: 0,
+        sortOrder: 0,
+      },
+      {
+        observedField: 'solutionDescription',
+        oldValue: null,
+        newValue: null,
+        groupOrder: 1,
+        sortOrder: 1,
+      },
     ])
   })
 })

@@ -5,6 +5,9 @@
       :events="events"
       :calendar-display-type="calendarDisplayType"
       :event-overlap-mode="eventOverlapMode"
+      :interval-height="intervalHeight"
+      :first-time="firstTime"
+      :interval-count="intervalCount"
       :calendar-weekdays="calendarWeekdays"
       :is-drag-active="isDragActive"
       :is-tooltip-blocked="isTooltipBlocked"
@@ -50,6 +53,9 @@
               :events="getSideBySideEvents(personId)"
               :calendar-display-type="calendarDisplayType"
               :event-overlap-mode="eventOverlapMode"
+              :interval-height="intervalHeight"
+              :first-time="firstTime"
+              :interval-count="intervalCount"
               :calendar-weekdays="calendarWeekdays"
               :is-drag-active="isDragActive"
               :is-tooltip-blocked="isTooltipBlocked"
@@ -110,6 +116,9 @@ const props = defineProps<{
   events: CalendarEvent[]
   calendarDisplayType: CalendarDisplayType
   eventOverlapMode: CalendarEventOverlapMode
+  intervalHeight: number
+  firstTime: number
+  intervalCount: number
   calendarWeekdays?: number[]
   isDragActive: boolean
   isTooltipBlocked: boolean
@@ -120,7 +129,7 @@ const props = defineProps<{
   getWorkHourStyle: (date: string, workHours?: WorkHourWeekItem | null) => CSSProperties
   getEventColor: (event: CalendarEvent) => string
   getEventParticipants: (event: CalendarEvent) => string[]
-  nowY: () => string
+  nowY: () => string | null
   getEvents: (value: CalendarDatePair) => void | Promise<void>
   openEvent: (event: CalendarEvent) => void
   openContextMenu: (nativeEvent: MouseEvent, event: CalendarEvent) => void

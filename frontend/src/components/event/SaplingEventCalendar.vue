@@ -16,6 +16,9 @@
     color="primary"
     :event-color="props.getEventColor"
     :event-overlap-mode="props.eventOverlapMode"
+    :interval-height="props.intervalHeight"
+    :first-time="props.firstTime"
+    :interval-count="props.intervalCount"
     :event-ripple="false"
     :events="props.events"
     :type="props.calendarDisplayType"
@@ -34,6 +37,7 @@
         v-css-vars="props.getWorkHourStyle(date)"
       ></div>
       <div
+        v-if="props.nowY() !== null"
         :class="{ first: date === week?.[0]?.date }"
         v-css-vars="{ '--sapling-calendar-now-offset': props.nowY() }"
         class="v-current-time"
@@ -187,6 +191,9 @@ const props = withDefaults(
     events: CalendarEvent[]
     calendarDisplayType: CalendarDisplayType
     eventOverlapMode: CalendarEventOverlapMode
+    intervalHeight: number
+    firstTime: number
+    intervalCount: number
     calendarWeekdays?: number[]
     isDragActive?: boolean
     isTooltipBlocked?: boolean
@@ -197,7 +204,7 @@ const props = withDefaults(
     getWorkHourStyle: (date: string) => CSSProperties
     getEventColor: (event: CalendarEvent) => string
     getEventParticipants: (event: CalendarEvent) => string[]
-    nowY: () => string
+    nowY: () => string | null
     getEvents: (value: CalendarDatePair) => void | Promise<void>
     openEvent: (event: CalendarEvent) => void
     openContextMenu: (nativeEvent: MouseEvent, event: CalendarEvent) => void

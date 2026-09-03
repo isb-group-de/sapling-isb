@@ -211,6 +211,74 @@ describe('EmailAutomationService', () => {
     );
   });
 
+  it('sends when every condition in any OR-linked group matches', async () => {
+    const subscription = createSubscription({
+      conditions: [
+        { observedField: 'incognito', newValue: 'false', groupOrder: 0 },
+        {
+          observedField: 'status',
+          oldValue: 'open',
+          newValue: 'inProgress',
+          groupOrder: 0,
+        },
+        { observedField: 'incognito', newValue: 'false', groupOrder: 1 },
+        {
+          observedField: 'status',
+          oldValue: 'waiting',
+          newValue: 'inProgress',
+          groupOrder: 1,
+        },
+      ],
+    });
+    const { mailService, service } = createService({
+      subscriptions: [subscription],
+    });
+
+    await service.handleAfterUpdate(
+      'ticket',
+      101,
+      { incognito: false, status: 'waiting' },
+      { incognito: false, status: 'inProgress' },
+      { handle: 1 } as never,
+    );
+
+    expect(mailService.sendEmail).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not combine matching conditions from different groups', async () => {
+    const subscription = createSubscription({
+      conditions: [
+        { observedField: 'incognito', newValue: 'false', groupOrder: 0 },
+        {
+          observedField: 'status',
+          oldValue: 'open',
+          newValue: 'inProgress',
+          groupOrder: 0,
+        },
+        { observedField: 'priority', newValue: 'high', groupOrder: 1 },
+        {
+          observedField: 'status',
+          oldValue: 'waiting',
+          newValue: 'inProgress',
+          groupOrder: 1,
+        },
+      ],
+    });
+    const { mailService, service } = createService({
+      subscriptions: [subscription],
+    });
+
+    await service.handleAfterUpdate(
+      'ticket',
+      101,
+      { incognito: false, priority: 'normal', status: 'waiting' },
+      { incognito: false, priority: 'normal', status: 'inProgress' },
+      { handle: 1 } as never,
+    );
+
+    expect(mailService.sendEmail).not.toHaveBeenCalled();
+  });
+
   it.each([false, null, undefined, 0, 'false'])(
     'treats an unchanged non-true boolean value (%p) as false when only the new value is configured',
     async (incognito) => {

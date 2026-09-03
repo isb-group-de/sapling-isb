@@ -14,7 +14,10 @@ import { useGenericStore } from '@/stores/genericStore'
 import { getRelationTableHeaders } from '@/utils/saplingTableUtil'
 import { sortDialogTemplates } from '@/utils/saplingDialogLayoutUtil'
 import { useSaplingPendingRelations } from './useSaplingPendingRelations'
-import { useSaplingRelationTableLoader } from './useSaplingRelationTableLoader'
+import {
+  isHandleOnlyRelationItem,
+  useSaplingRelationTableLoader,
+} from './useSaplingRelationTableLoader'
 
 type GetItemHandle = (item?: SaplingGenericItem | null) => string | number | null
 
@@ -384,6 +387,9 @@ export function useSaplingDialogEditRelations(options: UseSaplingDialogEditRelat
           : []
       })
       stageRelations(template, initialItems)
+      if ((relationTableItems.value[template.name] ?? []).some(isHandleOnlyRelationItem)) {
+        relationTableLoaded.value[template.name] = false
+      }
     })
   }
 

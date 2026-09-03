@@ -23,6 +23,17 @@ Auch diese Nachricht wird nur einmal pro Ticket versendet. Andere
 Statuswechsel lösen sie nicht aus. Bei einem als „Incognito“ gekennzeichneten
 Ticket wird keine automatische E-Mail gesendet.
 
+Administratoren können für dieselbe Automatisierung weitere Statusübergänge als
+ODER-Gruppe ergänzen. Innerhalb jeder Gruppe werden die Bedingungen mit UND
+verknüpft. Damit kann eine einzige, nicht wiederholbare Automatisierung zum
+Beispiel sowohl `(Incognito = Nein UND Offen -> In Bearbeitung)` als auch
+`(Incognito = Nein UND Warten -> In Bearbeitung)` abdecken. Die Prüfung „nur
+einmal senden“ gilt weiterhin für die gesamte Automatisierung und nicht einzeln
+pro ODER-Gruppe.
+
+Bestehende Automatisierungen werden bei der Migration vollständig als erste
+UND-Gruppe übernommen und behalten dadurch ihr bisheriges Verhalten.
+
 ## 3. Ticket gelöst
 
 Wechselt ein Ticket vom Status „In Bearbeitung“ in den Status „Geschlossen“,
@@ -55,4 +66,3 @@ Dienstleister hinterlegt. Soll er kontaktiert werden, kann dafür die bei der
 Kundenfirma angezeigte Dienstleister-E-Mail-Adresse verwendet werden. Dadurch
 bleibt der Kunde Besitzer des Tickets und automatische Statusmeldungen gehen
 weiterhin an den richtigen Kundenkontakt.
-

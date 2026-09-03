@@ -827,6 +827,9 @@ or create keeps the parent record and returns the failed selection to the edit
 dialog for retry, so retrying cannot create a duplicate parent. Resetting or
 discarding the create form clears all staged relation selections and child
 drafts.
+Initial relation selections that contain only record handles are hydrated when
+their relation tab opens. This keeps copied, defaulted, and workflow-provided
+rows readable without issuing relation-list queries for an unsaved parent.
 Handle-less edit drafts use the same local relation staging. This is required
 for workflows such as detaching one recurring Event occurrence: the draft is
 presented as an edit, but its standalone parent record does not exist until the

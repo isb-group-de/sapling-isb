@@ -14,6 +14,7 @@ const {
   apiCreateReferenceMock,
   apiDeleteReferenceMock,
   apiFindMock,
+  apiFindByHandlesMock,
   apiUpdateMock,
   loadGenericManyMock,
 } = vi.hoisted(() => ({
@@ -21,6 +22,7 @@ const {
   apiCreateReferenceMock: vi.fn(),
   apiDeleteReferenceMock: vi.fn(),
   apiFindMock: vi.fn(),
+  apiFindByHandlesMock: vi.fn(),
   apiUpdateMock: vi.fn(),
   loadGenericManyMock: vi.fn(),
 }))
@@ -31,6 +33,7 @@ vi.mock('@/services/api.generic.service', () => ({
     createReference: apiCreateReferenceMock,
     deleteReference: apiDeleteReferenceMock,
     find: apiFindMock,
+    findByHandles: apiFindByHandlesMock,
     update: apiUpdateMock,
   },
 }))
@@ -48,6 +51,7 @@ describe('useSaplingDialogEditRelations', () => {
     apiCreateReferenceMock.mockReset()
     apiDeleteReferenceMock.mockReset()
     apiFindMock.mockReset()
+    apiFindByHandlesMock.mockReset()
     apiUpdateMock.mockReset()
     loadGenericManyMock.mockReset()
     loadGenericManyMock.mockResolvedValue(undefined)
@@ -59,6 +63,7 @@ describe('useSaplingDialogEditRelations', () => {
       data: [{ handle: 1, title: 'First note' }],
       meta: { total: 1 },
     })
+    apiFindByHandlesMock.mockResolvedValue([])
   })
 
   it('initializes relation metadata without loading relation table rows', async () => {
@@ -251,6 +256,43 @@ describe('useSaplingDialogEditRelations', () => {
       title: 'Copy',
       participants: [],
     })
+  })
+
+  it('hydrates handle-only create relations before rendering their table rows', async () => {
+    const relations = createRelations({
+      mode: 'create',
+      item: { participants: [5, 7] },
+      templates: [
+        createTemplate({
+          name: 'participants',
+          type: 'Collection<PersonItem>',
+          kind: 'm:n',
+          referenceName: 'note',
+        }),
+      ],
+    })
+    apiFindByHandlesMock.mockResolvedValueOnce([
+      { handle: 5, title: 'Max' },
+      { handle: 7, title: 'Ada' },
+    ])
+
+    await relations.initializeRelationTables()
+
+    expect(relations.relationTableItems.value.participants).toEqual([{ handle: 5 }, { handle: 7 }])
+    expect(relations.relationTableLoaded.value.participants).toBe(false)
+
+    await relations.ensureRelationTableItems('participants')
+
+    expect(apiFindByHandlesMock).toHaveBeenCalledWith('note', [5, 7], {
+      relations: [],
+      suppressErrorMessage: true,
+    })
+    expect(relations.relationTableItems.value.participants).toEqual([
+      { handle: 5, title: 'Max' },
+      { handle: 7, title: 'Ada' },
+    ])
+    expect(relations.relationTableTotal.value.participants).toBe(2)
+    expect(relations.relationTableLoaded.value.participants).toBe(true)
   })
 
   it('stages relations for an unsaved edit draft instead of loading every reference record', async () => {

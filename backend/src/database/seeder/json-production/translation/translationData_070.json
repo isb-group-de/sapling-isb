@@ -1,0 +1,44 @@
+[
+  {
+    "entity": "emailSubscription",
+    "property": "conditionsTooltip",
+    "de": "Bedingungen innerhalb einer Gruppe werden mit UND verknüpft; zwischen Gruppen gilt ODER.",
+    "en": "Conditions within a group are AND-linked; groups are OR-linked."
+  },
+  {
+    "entity": "emailSubscriptionCondition",
+    "property": "groupOrder",
+    "de": "Bedingungsgruppe",
+    "en": "Condition group"
+  },
+  {
+    "entity": "emailSubscriptionCondition",
+    "property": "conditionGroup",
+    "de": "Bedingungsgruppe {number}",
+    "en": "Condition group {number}"
+  },
+  {
+    "entity": "emailSubscriptionCondition",
+    "property": "and",
+    "de": "UND",
+    "en": "AND"
+  },
+  {
+    "entity": "emailSubscriptionCondition",
+    "property": "or",
+    "de": "ODER",
+    "en": "OR"
+  },
+  {
+    "entity": "emailSubscriptionCondition",
+    "property": "addAndCondition",
+    "de": "UND-Bedingung hinzufügen",
+    "en": "Add AND condition"
+  },
+  {
+    "entity": "emailSubscriptionCondition",
+    "property": "addOrGroup",
+    "de": "ODER-Gruppe hinzufügen",
+    "en": "Add OR group"
+  }
+]
