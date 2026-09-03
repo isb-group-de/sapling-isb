@@ -110,8 +110,9 @@ export class GoogleCalendarService extends GoogleCalendarOperations {
   async deleteSynchronizedEvent(
     eventHandle: number,
     ownerPersonHandle: number,
+    entityManager?: EntityManager,
   ): Promise<boolean> {
-    const emFork = this.em.fork();
+    const emFork = entityManager ?? this.em.fork();
     const reference = await emFork.findOne(EventGoogleItem, {
       event: eventHandle as never,
     });

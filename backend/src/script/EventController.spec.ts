@@ -252,10 +252,18 @@ describe('EventController', () => {
 
   it('deletes external projections and delivery history before deleting an Event', async () => {
     const azureDelete = jest.fn<
-      (eventHandle: number, ownerPersonHandle: number) => Promise<boolean>
+      (
+        eventHandle: number,
+        ownerPersonHandle: number,
+        entityManager?: unknown,
+      ) => Promise<boolean>
     >(() => Promise.resolve(true));
     const googleDelete = jest.fn<
-      (eventHandle: number, ownerPersonHandle: number) => Promise<boolean>
+      (
+        eventHandle: number,
+        ownerPersonHandle: number,
+        entityManager?: unknown,
+      ) => Promise<boolean>
     >(() => Promise.resolve(false));
     const nativeDelete = jest.fn<
       (entity: unknown, where: object) => Promise<number>
@@ -277,8 +285,8 @@ describe('EventController', () => {
       items: [event],
     });
 
-    expect(azureDelete).toHaveBeenCalledWith(23, 7);
-    expect(googleDelete).toHaveBeenCalledWith(23, 7);
+    expect(azureDelete).toHaveBeenCalledWith(23, 7, expect.anything());
+    expect(googleDelete).toHaveBeenCalledWith(23, 7, expect.anything());
     expect(nativeDelete).toHaveBeenCalledWith(expect.any(Function), {
       event: 23,
     });

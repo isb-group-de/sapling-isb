@@ -734,10 +734,8 @@ describe('AzureCalendarService physical Event deletion', () => {
         Promise.resolve(entity === EventAzureItem ? reference : session),
       ),
     };
-    const service = new AzureCalendarService(
-      {} as never,
-      { fork: () => emFork } as never,
-    );
+    const fork = jest.fn(() => emFork);
+    const service = new AzureCalendarService({} as never, { fork } as never);
     const harness = service as unknown as {
       createClient: jest.Mock;
       deleteEvent: jest.Mock;
@@ -750,8 +748,11 @@ describe('AzureCalendarService physical Event deletion', () => {
     );
     harness.deleteEvent = jest.fn(() => Promise.resolve({ success: true }));
 
-    await expect(service.deleteSynchronizedEvent(23, 7)).resolves.toBe(true);
+    await expect(
+      service.deleteSynchronizedEvent(23, 7, emFork as never),
+    ).resolves.toBe(true);
 
+    expect(fork).not.toHaveBeenCalled();
     expect(emFork.findOne).toHaveBeenNthCalledWith(1, EventAzureItem, {
       event: 23,
     });

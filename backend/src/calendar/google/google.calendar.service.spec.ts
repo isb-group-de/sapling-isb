@@ -526,10 +526,8 @@ describe('GoogleCalendarService physical Event deletion', () => {
         Promise.resolve(entity === EventGoogleItem ? reference : session),
       ),
     };
-    const service = new GoogleCalendarService(
-      {} as never,
-      { fork: () => emFork } as never,
-    );
+    const fork = jest.fn(() => emFork);
+    const service = new GoogleCalendarService({} as never, { fork } as never);
     const harness = service as unknown as {
       deleteEvent: jest.Mock;
       resolveGoogleAccessToken: jest.Mock;
@@ -539,8 +537,11 @@ describe('GoogleCalendarService physical Event deletion', () => {
     );
     harness.deleteEvent = jest.fn(() => Promise.resolve({ success: true }));
 
-    await expect(service.deleteSynchronizedEvent(23, 7)).resolves.toBe(true);
+    await expect(
+      service.deleteSynchronizedEvent(23, 7, emFork as never),
+    ).resolves.toBe(true);
 
+    expect(fork).not.toHaveBeenCalled();
     expect(emFork.findOne).toHaveBeenNthCalledWith(1, EventGoogleItem, {
       event: 23,
     });

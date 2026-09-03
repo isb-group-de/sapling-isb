@@ -500,6 +500,11 @@ provider request fails, the local Event remains so that deletion can be retried
 without leaving the external appointment behind. Provider `404` responses mean
 the appointment is already absent and count as an idempotent success.
 
+Provider references and delivery history also use database-level delete
+cascades. Their explicit cleanup runs in the same transaction as the Event
+delete, while the foreign keys guarantee that stale dependent rows cannot block
+the final physical removal.
+
 Completing and canceling an Event have intentionally different external
 calendar semantics. Status `completed` is an internal Sapling workflow action:
 it creates no calendar delivery, leaves an existing Outlook/Google appointment

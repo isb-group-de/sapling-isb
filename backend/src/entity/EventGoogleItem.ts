@@ -86,7 +86,11 @@ export class EventGoogleItem {
     mobileOrder: 100,
     mobileVisible: false,
   })
-  @OneToOne(() => EventItem, { nullable: false, unique: true })
+  @OneToOne(() => EventItem, {
+    nullable: false,
+    unique: true,
+    deleteRule: 'cascade',
+  })
   event!: Rel<EventItem>;
   // #endregion
 

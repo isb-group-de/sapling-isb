@@ -101,10 +101,12 @@ export class EventController extends ScriptClass {
       await this.azureCalendarService.deleteSynchronizedEvent(
         event.handle,
         ownerPersonHandle,
+        this.em,
       );
       await this.googleCalendarService.deleteSynchronizedEvent(
         event.handle,
         ownerPersonHandle,
+        this.em,
       );
 
       await this.em.nativeDelete(EventDeliveryItem, {

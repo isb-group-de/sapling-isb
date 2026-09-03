@@ -111,8 +111,9 @@ export class AzureCalendarService extends AzureCalendarOperations {
   async deleteSynchronizedEvent(
     eventHandle: number,
     ownerPersonHandle: number,
+    entityManager?: EntityManager,
   ): Promise<boolean> {
-    const emFork = this.em.fork();
+    const emFork = entityManager ?? this.em.fork();
     const reference = await emFork.findOne(EventAzureItem, {
       event: eventHandle as never,
     });

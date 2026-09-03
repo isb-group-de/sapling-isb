@@ -77,7 +77,10 @@ export class InboxNotificationItem {
     mobileOrder: 400,
     mobileVisible: false,
   })
-  @ManyToOne(() => PersonItem, { nullable: false })
+  @ManyToOne(() => PersonItem, {
+    nullable: false,
+    deleteRule: 'cascade',
+  })
   recipientPerson!: Rel<PersonItem>;
 
   /**
@@ -135,7 +138,10 @@ export class InboxNotificationItem {
     mobileOrder: 500,
     mobileVisible: false,
   })
-  @ManyToOne(() => PersonItem, { nullable: false })
+  @ManyToOne(() => PersonItem, {
+    nullable: false,
+    deleteRule: 'cascade',
+  })
   createdBy!: Rel<PersonItem>;
 
   /**

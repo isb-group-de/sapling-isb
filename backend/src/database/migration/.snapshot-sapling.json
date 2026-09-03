@@ -18459,7 +18459,8 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.event_item"
+          "referencedTableName": "public.event_item",
+          "deleteRule": "cascade"
         }
       },
       "comment": null
@@ -18859,7 +18860,8 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.event_item"
+          "referencedTableName": "public.event_item",
+          "deleteRule": "cascade"
         },
         "event_delivery_item_status_handle_foreign": {
           "columnNames": [
@@ -19185,7 +19187,8 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.event_item"
+          "referencedTableName": "public.event_item",
+          "deleteRule": "cascade"
         }
       },
       "comment": null
@@ -25015,7 +25018,8 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.person_item"
+          "referencedTableName": "public.person_item",
+          "deleteRule": "cascade"
         },
         "inbox_notification_item_entity_handle_foreign": {
           "columnNames": [
@@ -25037,7 +25041,8 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.person_item"
+          "referencedTableName": "public.person_item",
+          "deleteRule": "cascade"
         },
         "inbox_notification_item_subscription_handle_foreign": {
           "columnNames": [

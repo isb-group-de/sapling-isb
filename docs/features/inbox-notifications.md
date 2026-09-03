@@ -91,6 +91,11 @@ flow. The `inboxNotification` entity enables `canDelete`; consequently,
 `PermissionSeeder` grants and synchronizes `allowDelete` for the administrator
 role by default.
 
+Inbox notifications are dependent delivery records. Deleting either their
+recipient or their creating Person therefore deletes the notification through
+database-level cascades; historical notifications must not prevent a Person
+from being removed.
+
 ## Notification Creation Flow
 
 `InboxService.querySubscription(...)` is the main entry point.

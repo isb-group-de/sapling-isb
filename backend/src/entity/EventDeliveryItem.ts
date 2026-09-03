@@ -69,7 +69,10 @@ export class EventDeliveryItem {
     mobileOrder: 200,
     mobileVisible: false,
   })
-  @ManyToOne(() => EventItem, { nullable: false })
+  @ManyToOne(() => EventItem, {
+    nullable: false,
+    deleteRule: 'cascade',
+  })
   event!: EventItem;
   // #endregion
 
