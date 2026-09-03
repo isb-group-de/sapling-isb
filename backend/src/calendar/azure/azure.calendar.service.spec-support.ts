@@ -1,6 +1,7 @@
 import type { jest } from '@jest/globals';
 import { PersonItem } from '../../entity/PersonItem';
 import { AzureCalendarService } from './azure.calendar.service';
+import type { EventStatusItem } from '../../entity/EventStatusItem';
 
 type UpsertResult = 'created' | 'updated' | 'skipped';
 
@@ -15,6 +16,16 @@ export type AzureCalendarServiceTestHarness = {
     graphEvent: object,
     user: PersonItem,
   ) => Promise<PersonItem[]>;
+  reconcileMissingImportedEvents: (
+    emFork: object,
+    graphEvents: object[],
+    range: { startDateTime: Date; endDateTime: Date },
+    user: PersonItem,
+    completedStatus: EventStatusItem,
+    resolveMissingProviderItem: () => Promise<
+      'missing' | 'updated' | 'unchanged'
+    >,
+  ) => Promise<number>;
 };
 
 export type AzureCategoryServiceTestHarness = {
@@ -48,6 +59,11 @@ export type AzureDeliveryServiceTestHarness = {
     reference: object,
     occurrenceStart: string,
   ) => Promise<unknown>;
+  fetchAzureEventByReference: (
+    accessToken: string,
+    referenceHandle: string,
+    futureStart: Date,
+  ) => Promise<object | null>;
 };
 
 export type AzureSetEventTestHarness = {

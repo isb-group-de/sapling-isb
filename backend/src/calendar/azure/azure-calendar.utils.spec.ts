@@ -1,11 +1,41 @@
 import { describe, expect, it, jest } from '@jest/globals';
 
 import {
+  clampAzureImportRangeToFuture,
   isAzureNotFoundError,
   normalizeAzureRecurrenceRule,
   resolveAzureOnlineMeetingUrl,
   resolveAzureSeriesImportEvents,
 } from './azure-calendar.utils';
+
+describe('clampAzureImportRangeToFuture', () => {
+  it('removes the elapsed part of an Outlook import window', () => {
+    expect(
+      clampAzureImportRangeToFuture(
+        {
+          startDateTime: new Date('2026-06-01T00:00:00.000Z'),
+          endDateTime: new Date('2026-06-08T00:00:00.000Z'),
+        },
+        new Date('2026-06-03T15:30:00.000Z'),
+      ),
+    ).toEqual({
+      startDateTime: new Date('2026-06-03T15:30:00.000Z'),
+      endDateTime: new Date('2026-06-08T00:00:00.000Z'),
+    });
+  });
+
+  it('skips a calendar window that is entirely in the past', () => {
+    expect(
+      clampAzureImportRangeToFuture(
+        {
+          startDateTime: new Date('2026-06-01T00:00:00.000Z'),
+          endDateTime: new Date('2026-06-02T00:00:00.000Z'),
+        },
+        new Date('2026-06-03T15:30:00.000Z'),
+      ),
+    ).toBeNull();
+  });
+});
 
 describe('resolveAzureSeriesImportEvents', () => {
   it('collapses all calendar-view occurrences into one series master', async () => {
@@ -74,6 +104,38 @@ describe('resolveAzureSeriesImportEvents', () => {
         async () => null,
       ),
     ).resolves.toEqual([]);
+  });
+
+  it('keeps the first visible occurrence as the import anchor', async () => {
+    const results = await resolveAzureSeriesImportEvents(
+      [
+        {
+          id: 'later',
+          type: 'occurrence',
+          seriesMasterId: 'series-1',
+          start: { dateTime: '2026-07-08T09:00:00.000Z' },
+          end: { dateTime: '2026-07-08T10:00:00.000Z' },
+        },
+        {
+          id: 'first',
+          type: 'occurrence',
+          seriesMasterId: 'series-1',
+          start: { dateTime: '2026-07-01T09:00:00.000Z' },
+          end: { dateTime: '2026-07-01T10:00:00.000Z' },
+        },
+      ],
+      async () => ({
+        id: 'series-1',
+        type: 'seriesMaster',
+        start: { dateTime: '1960-07-01T09:00:00.000Z' },
+        end: { dateTime: '1960-07-01T10:00:00.000Z' },
+      }),
+    );
+
+    expect(results[0]?.saplingImportOccurrence).toEqual({
+      start: { dateTime: '2026-07-01T09:00:00.000Z' },
+      end: { dateTime: '2026-07-01T10:00:00.000Z' },
+    });
   });
 });
 

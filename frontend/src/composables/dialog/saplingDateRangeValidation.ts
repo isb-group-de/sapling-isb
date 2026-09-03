@@ -60,6 +60,51 @@ export function isSaplingDateRangeValid(
   return start === null || end === null || end >= start
 }
 
+/**
+ * Preserves the current interval when a generated form changes the start of a
+ * metadata-driven date range. The returned values belong to the paired end
+ * field and can be applied before the edited start value itself.
+ */
+export function getSaplingDateRangeEndShift(
+  templates: EntityTemplate[],
+  form: Record<string, unknown>,
+  changedField: string,
+  changedValue: unknown,
+): Record<string, string> | null {
+  const pair = getSaplingDateRangePairs(templates).find(({ start }) =>
+    isStartFieldChange(start, changedField),
+  )
+  if (
+    !pair ||
+    !hasCompleteTemplateValue(pair.start, form) ||
+    !hasCompleteTemplateValue(pair.end, form)
+  ) {
+    return null
+  }
+
+  const previousStart = getTemplateTimestamp(pair.start, form)
+  const previousEnd = getTemplateTimestamp(pair.end, form)
+  const nextStart = getTemplateTimestamp(pair.start, { ...form, [changedField]: changedValue })
+  if (
+    previousStart === null ||
+    previousEnd === null ||
+    nextStart === null ||
+    previousEnd < previousStart
+  ) {
+    return null
+  }
+
+  const shiftedEnd = new Date(previousEnd + (nextStart - previousStart))
+  if (pair.end.type === 'datetime') {
+    return {
+      [`${pair.end.name}_date`]: formatLocalDate(shiftedEnd),
+      [`${pair.end.name}_time`]: formatLocalTime(shiftedEnd),
+    }
+  }
+
+  return { [pair.end.name]: formatUtcDate(shiftedEnd) }
+}
+
 function getTemplateTimestamp(
   template: EntityTemplate,
   form: Record<string, unknown>,
@@ -84,8 +129,54 @@ function getTemplateTimestamp(
 }
 
 function joinLocalDateTime(dateValue: unknown, timeValue: unknown): string | null {
-  if (typeof dateValue !== 'string' || dateValue.trim() === '') return null
-  const date = dateValue.trim()
+  const date =
+    dateValue instanceof Date && !Number.isNaN(dateValue.getTime())
+      ? formatLocalDate(dateValue)
+      : typeof dateValue === 'string'
+        ? dateValue.trim()
+        : ''
+  if (!date) return null
   const time = typeof timeValue === 'string' ? timeValue.trim() : ''
   return time ? `${date}T${time}` : date
+}
+
+function isStartFieldChange(template: EntityTemplate, changedField: string): boolean {
+  return template.type === 'datetime'
+    ? changedField === `${template.name}_date` || changedField === `${template.name}_time`
+    : changedField === template.name
+}
+
+function hasCompleteTemplateValue(
+  template: EntityTemplate,
+  form: Record<string, unknown>,
+): boolean {
+  if (template.type === 'datetime') {
+    return hasValue(form[`${template.name}_date`]) && hasValue(form[`${template.name}_time`])
+  }
+
+  return hasValue(form[template.name])
+}
+
+function hasValue(value: unknown): boolean {
+  return value !== null && value !== undefined && String(value).trim() !== ''
+}
+
+function formatLocalDate(value: Date): string {
+  const year = value.getFullYear()
+  const month = String(value.getMonth() + 1).padStart(2, '0')
+  const day = String(value.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+function formatLocalTime(value: Date): string {
+  const hours = String(value.getHours()).padStart(2, '0')
+  const minutes = String(value.getMinutes()).padStart(2, '0')
+  return `${hours}:${minutes}`
+}
+
+function formatUtcDate(value: Date): string {
+  const year = value.getUTCFullYear()
+  const month = String(value.getUTCMonth() + 1).padStart(2, '0')
+  const day = String(value.getUTCDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
 }

@@ -4,6 +4,7 @@
     :model-value="modelValue"
     :disabled="disabled"
     :rules="rules"
+    :error="error"
     prepend-icon=""
     prepend-inner-icon="mdi-calendar"
     autocomplete="off"
@@ -19,6 +20,7 @@ defineProps<{
   modelValue: string | null
   disabled?: boolean
   rules?: Array<(value: string | null) => boolean | string>
+  error?: boolean
 }>()
 
 const emit = defineEmits<{

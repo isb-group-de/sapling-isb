@@ -173,6 +173,7 @@
       :disabled="fieldDisabled"
       :rules="rules"
       :required="isRequired"
+      :error="dateRangeError"
       @update:dateValue="(val: string) => updateField(`${template.name}_date`, val)"
       @update:timeValue="(val: string) => updateField(`${template.name}_time`, val)"
     />
@@ -192,6 +193,7 @@
       :model-value="stringValue(template.name)"
       :disabled="fieldDisabled"
       :rules="rules"
+      :error="dateRangeError"
       @update:model-value="(val: string | null) => updateField(template.name, val)"
     />
     <SaplingFieldEventBufferDuration
@@ -425,6 +427,7 @@ const props = withDefaults(
     iconNames: Array<{ name: string; unicode?: string }>
     isReferenceVisible: boolean
     rules: Array<(v: unknown) => true | string>
+    dateRangeError?: boolean
     fieldDisabled: boolean
     referenceFieldDisabled: boolean
     referenceParentFilter?: FilterQuery

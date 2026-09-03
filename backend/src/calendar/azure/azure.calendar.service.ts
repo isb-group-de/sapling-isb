@@ -40,6 +40,7 @@ import {
   type AzureOutlookCategory,
   type AzureOutlookMasterCategory,
   type ImportAzureCalendarEventsRange,
+  clampAzureImportRangeToFuture,
   isAzureForbiddenError,
   isAzureNotFoundError,
 } from './azure-calendar.utils';
@@ -236,6 +237,11 @@ export class AzureCalendarService extends AzureCalendarOperations {
       throw new ForbiddenException('calendar.azureUserRequired');
     }
 
+    const importRange = clampAzureImportRangeToFuture(range);
+    if (!importRange) {
+      return { imported: 0, created: 0, updated: 0, skipped: 0 };
+    }
+
     const emFork = this.em.fork();
     const session = await emFork.findOne(PersonSessionItem, {
       person: { handle: currentUser.handle },
@@ -253,7 +259,7 @@ export class AzureCalendarService extends AzureCalendarOperations {
     const graphEvents = await this.fetchCalendarViewWithRetry(
       session,
       accessToken,
-      range,
+      importRange,
     );
 
     const user = await emFork.findOne(
@@ -267,6 +273,7 @@ export class AzureCalendarService extends AzureCalendarOperations {
       eventCategories,
       scheduledStatus,
       canceledStatus,
+      completedStatus,
     ] = await Promise.all([
       emFork.findOne(
         CalendarSyncSubscriptionItem,
@@ -277,6 +284,7 @@ export class AzureCalendarService extends AzureCalendarOperations {
       emFork.find(EventCategoryItem, {}),
       emFork.findOne(EventStatusItem, { handle: 'scheduled' }),
       emFork.findOne(EventStatusItem, { handle: 'canceled' }),
+      emFork.findOne(EventStatusItem, { handle: 'completed' }),
     ]);
     const eventTypesByHandle = new Map(
       eventTypes.map((eventType) => [eventType.handle, eventType]),
@@ -315,7 +323,8 @@ export class AzureCalendarService extends AzureCalendarOperations {
       !defaultType ||
       !defaultCategory ||
       !scheduledStatus ||
-      !canceledStatus
+      !canceledStatus ||
+      !completedStatus
     ) {
       result.skipped = graphEvents.length;
       return result;
@@ -351,6 +360,53 @@ export class AzureCalendarService extends AzureCalendarOperations {
         result.skipped += 1;
       }
     }
+
+    const reconciled = await this.reconcileMissingImportedEvents(
+      emFork,
+      graphEvents,
+      importRange,
+      user,
+      completedStatus,
+      async (reference) => {
+        const movedGraphEvent = await this.fetchAzureEventByReference(
+          accessToken,
+          reference.referenceHandle,
+          importRange.startDateTime,
+        );
+        if (!movedGraphEvent) {
+          return 'missing';
+        }
+        if (
+          movedGraphEvent.recurrence &&
+          !movedGraphEvent.saplingImportOccurrence
+        ) {
+          return 'unchanged';
+        }
+
+        const classification = resolveImportedCalendarClassification({
+          mappings: subscription?.classificationMappings,
+          externalValues: movedGraphEvent.categories,
+          defaults: {
+            eventTypeHandle: defaultType.handle,
+            eventCategoryHandle: defaultCategory.handle,
+          },
+        });
+        const saved = await this.upsertImportedEvent(emFork, movedGraphEvent, {
+          user,
+          type:
+            eventTypesByHandle.get(classification.eventTypeHandle) ??
+            defaultType,
+          category:
+            eventCategoriesByHandle.get(classification.eventCategoryHandle) ??
+            defaultCategory,
+          scheduledStatus,
+          canceledStatus,
+        });
+        return saved === 'updated' ? 'updated' : 'unchanged';
+      },
+    );
+    result.updated += reconciled;
+    result.imported += reconciled;
 
     await emFork.flush();
     return result;

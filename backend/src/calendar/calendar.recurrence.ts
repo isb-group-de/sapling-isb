@@ -426,6 +426,77 @@ export function findRecurrenceOccurrence(
   return null;
 }
 
+/**
+ * Reports whether a recurring Event has an occurrence overlapping a range.
+ * Calendar imports use this before treating an absent provider item as removed.
+ */
+export function hasRecurrenceOccurrenceInRange(
+  startDate: Date,
+  endDate: Date,
+  recurrenceRule: string | null | undefined,
+  rangeStart: Date,
+  rangeEnd: Date,
+  maxIterations = 100_000,
+): boolean {
+  const parsedRule = parseRecurrenceRule(recurrenceRule);
+  if (
+    !parsedRule ||
+    [startDate, endDate, rangeStart, rangeEnd].some((date) =>
+      Number.isNaN(date.getTime()),
+    ) ||
+    rangeStart >= rangeEnd
+  ) {
+    return false;
+  }
+
+  const durationMilliseconds = Math.max(
+    endDate.getTime() - startDate.getTime(),
+    0,
+  );
+  let currentStart = new Date(startDate);
+
+  for (
+    let occurrenceIndex = 1;
+    occurrenceIndex <= maxIterations;
+    occurrenceIndex += 1
+  ) {
+    if (parsedRule.count && occurrenceIndex > parsedRule.count) {
+      return false;
+    }
+    if (
+      parsedRule.until &&
+      currentStart.getTime() > parsedRule.until.getTime()
+    ) {
+      return false;
+    }
+
+    const currentEnd = new Date(currentStart.getTime() + durationMilliseconds);
+    if (
+      currentStart.getTime() < rangeEnd.getTime() &&
+      currentEnd.getTime() > rangeStart.getTime()
+    ) {
+      return true;
+    }
+    if (currentStart.getTime() >= rangeEnd.getTime()) {
+      return false;
+    }
+
+    const nextStart = getNextOccurrenceStart(
+      currentStart,
+      parsedRule,
+      startDate,
+    );
+    if (!nextStart) {
+      return false;
+    }
+    currentStart = nextStart;
+  }
+
+  // If a pathological series predates the range by more than the safety cap,
+  // do not infer a deletion from an incomplete local calculation.
+  return false;
+}
+
 function toWeekdayCode(date: Date): RecurrenceWeekdayCode {
   const weekdayIndex = date.getUTCDay();
 

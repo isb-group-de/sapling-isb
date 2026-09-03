@@ -96,9 +96,15 @@ export function useSaplingDialogEditFieldRules(options: SaplingDialogEditFieldRu
     return rules
   }
 
+  function hasDateRangeError(template: EntityTemplate): boolean {
+    const pair = findSaplingDateRangePair(options.baseTemplates.value, template.name)
+    return pair?.end.name === template.name && !isSaplingDateRangeValid(pair, options.form.value)
+  }
+
   return {
     getRecommendationMessage,
     getRules,
+    hasDateRangeError,
     isFieldDisabled,
     isReferenceFieldDisabled,
     isTemplateRecommendationActive,

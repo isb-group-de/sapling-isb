@@ -33,10 +33,30 @@
 }
 
 .sapling-work-hero-pulse__value {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  height: 1.4em;
   margin-top: var(--sapling-gap-md);
   font-size: 1.05rem;
   font-weight: 700;
   line-height: 1.4;
+}
+
+.sapling-issue-hero__pulse-skeleton {
+  width: 8.5rem;
+  height: 100%;
+  overflow: hidden;
+  background: transparent;
+}
+
+.sapling-issue-hero__pulse-skeleton .v-skeleton-loader__bone {
+  margin: 0;
+}
+
+.sapling-issue-hero__pulse-skeleton .v-skeleton-loader__text {
+  height: 0.75em;
+  border-radius: var(--sapling-radius-pill);
 }
 
 .sapling-work-compose {
@@ -97,8 +117,17 @@
   align-content: start;
 }
 
-.sapling-work-compose__type-field {
-  gap: var(--sapling-gap-md);
+.sapling-issue-compose__primary-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--sapling-gap-lg);
+  align-items: start;
+}
+
+.sapling-issue-compose__type-field {
+  display: flex;
+  align-items: center;
+  min-height: var(--sapling-control-height-comfortable);
 }
 
 .sapling-work-compose__type-toggle {

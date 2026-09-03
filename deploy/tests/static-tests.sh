@@ -30,6 +30,8 @@ grep -q "127.0.0.1:\${POSTGRES_PORT}:5432" "$DEPLOY_DIR/templates/docker-compose
 grep -q "127.0.0.1:\${REDIS_PORT}:6379" "$DEPLOY_DIR/templates/docker-compose.yml"
 grep -q 'postgres-data:/var/lib/postgresql$' "$DEPLOY_DIR/templates/docker-compose.yml"
 grep -q 'proxy_buffering off' "$DEPLOY_DIR/templates/nginx-https.conf"
+grep -A 10 -F 'location = /api/ai/markdown/prepare' "$DEPLOY_DIR/templates/nginx-https.conf" \
+  | grep -q -F 'proxy_read_timeout 1h;'
 grep -q 'DB_NAME' "$DEPLOY_DIR/saplingctl"
 grep -q 'SYSTEM_TELEMETRY_ENVIRONMENT_ID' "$DEPLOY_DIR/saplingctl"
 grep -q 'SYSTEM_TELEMETRY_PROCESS_SLOT=backend:0' "$DEPLOY_DIR/saplingctl"

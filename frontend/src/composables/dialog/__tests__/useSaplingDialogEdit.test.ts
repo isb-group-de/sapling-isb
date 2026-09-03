@@ -263,6 +263,7 @@ const TestHost = defineComponent({
       visibleTemplates: dialog.visibleTemplates,
       form: dialog.form,
       getRules: dialog.getRules,
+      hasDateRangeError: dialog.hasDateRangeError,
       isFieldDisabled: dialog.isFieldDisabled,
       isTemplateRecommendationActive: dialog.isTemplateRecommendationActive,
       updateFormField: dialog.updateFormField,
@@ -401,6 +402,7 @@ describe('useSaplingDialogEdit', () => {
     await flushPromises()
     const vm = wrapper.vm as unknown as {
       getRules: (template: EntityTemplate) => Array<() => true | string>
+      hasDateRangeError: (template: EntityTemplate) => boolean
       updateFormField: (key: string, value: unknown) => void
     }
 
@@ -410,9 +412,51 @@ describe('useSaplingDialogEdit', () => {
     vm.updateFormField('endDate_time', '10:00')
 
     expect(vm.getRules(endTemplate).slice(-1)[0]?.()).toBe('global.invalidDateRange')
+    expect(vm.hasDateRangeError(startTemplate)).toBe(false)
+    expect(vm.hasDateRangeError(endTemplate)).toBe(true)
 
     vm.updateFormField('endDate_time', '11:00')
     expect(vm.getRules(endTemplate).slice(-1)[0]?.()).toBe(true)
+    expect(vm.hasDateRangeError(endTemplate)).toBe(false)
+  })
+
+  it('preserves a paired date range interval when the start changes', async () => {
+    const startTemplate = {
+      name: 'startDate',
+      type: 'datetime',
+      options: ['isDateStart'],
+      formGroup: 'event.groupSchedule',
+      formOrder: 100,
+    } as EntityTemplate
+    const endTemplate = {
+      name: 'endDate',
+      type: 'datetime',
+      options: ['isDateEnd'],
+      formGroup: 'event.groupSchedule',
+      formOrder: 200,
+    } as EntityTemplate
+    findAllMock.mockResolvedValue([startTemplate, endTemplate])
+    const wrapper = mount(TestHost, {
+      props: { templates: [startTemplate, endTemplate] },
+    })
+    await flushPromises()
+    const vm = wrapper.vm as unknown as {
+      form: Record<string, unknown>
+      updateFormField: (key: string, value: unknown) => void
+    }
+
+    vm.updateFormField('startDate_date', '2026-09-01')
+    vm.updateFormField('startDate_time', '10:00')
+    vm.updateFormField('endDate_date', '2026-09-01')
+    vm.updateFormField('endDate_time', '12:00')
+    vm.updateFormField('startDate_date', '2026-09-02')
+
+    expect(vm.form).toMatchObject({
+      startDate_date: '2026-09-02',
+      startDate_time: '10:00',
+      endDate_date: '2026-09-02',
+      endDate_time: '12:00',
+    })
   })
 
   it('emits saveAndClose without closing the dialog before the save handler runs', async () => {

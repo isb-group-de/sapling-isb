@@ -39,6 +39,7 @@ import {
   useSaplingDialogBeforeUnloadGuard,
 } from './useSaplingDialogEditLifecycle'
 import { createDialogRelationMutationIdentityTracker } from './saplingDialogRelationMutationIdentity'
+import { getSaplingDateRangeEndShift } from './saplingDateRangeValidation'
 // #endregion
 
 /**
@@ -310,6 +311,7 @@ export function useSaplingDialogEdit(
   const {
     getRecommendationMessage,
     getRules,
+    hasDateRangeError,
     isFieldDisabled,
     isReferenceFieldDisabled,
     isTemplateRecommendationActive,
@@ -330,6 +332,17 @@ export function useSaplingDialogEdit(
   }
 
   function updateFormField(key: string, value: unknown): void {
+    const endShift = getSaplingDateRangeEndShift(baseTemplates.value, form.value, key, value)
+    if (endShift) {
+      Object.entries(endShift).forEach(([endKey, endValue]) => {
+        const endTemplateName = endKey.replace(/_(date|time)$/, '')
+        const endTemplate = templates.value.find((entry) => entry.name === endTemplateName)
+        if (endTemplate && !isFieldDisabled(endTemplate)) {
+          form.value[endKey] = endValue
+        }
+      })
+    }
+
     form.value[key] = value
     applyReferenceDependencyParent(key, value)
     applyReferenceTemplate(key, value)
@@ -547,6 +560,7 @@ export function useSaplingDialogEdit(
     isLoadingFormConfigs,
     selectFormConfig,
     getRules,
+    hasDateRangeError,
     isTemplateRecommendationActive,
     getRecommendationMessage,
     getTemplateColumnProps,

@@ -69,6 +69,7 @@
                   :icon-names="iconNames"
                   :is-reference-visible="isReferenceVisible"
                   :rules="getRules(template)"
+                  :date-range-error="hasDateRangeError(template)"
                   :field-disabled="isFieldDisabled(template)"
                   :reference-field-disabled="isReferenceFieldDisabled(template)"
                   :reference-parent-filter="
@@ -121,6 +122,7 @@ defineProps<{
   isTemplateDirty: (template: EntityTemplate) => boolean
   getTemplateColumnProps: (template: EntityTemplate) => SaplingDialogColumnProps
   getRules: (template: EntityTemplate) => ValidationRule[]
+  hasDateRangeError: (template: EntityTemplate) => boolean
   isTemplateRecommendationActive: (template: EntityTemplate) => boolean
   getRecommendationMessage: (template: EntityTemplate) => string
   isFieldDisabled: (template: EntityTemplate) => boolean

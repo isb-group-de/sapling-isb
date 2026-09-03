@@ -343,6 +343,12 @@ Check:
 - CORS origin via `SAPLING_FRONTEND_URL`
 - reverse proxy `/api/` routing
 
+The generated HTTPS Nginx configuration gives
+`POST /api/ai/markdown/prepare` a one-hour upstream read timeout. This matches
+the long-running AI routes and allows local models to finish a cold start before
+returning the prepared Markdown. After updating an existing installation, run
+`sudo saplingctl configure` to render and reload the current Nginx template.
+
 ### Login Fails
 
 Check:

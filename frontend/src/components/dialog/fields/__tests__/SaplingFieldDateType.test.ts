@@ -30,4 +30,25 @@ describe('SaplingFieldDateType', () => {
 
     expect(wrapper.emitted('update:modelValue')).toEqual([['2026-06-20']])
   })
+
+  it('forwards the range error state to the date input', () => {
+    const VDateInputStub = defineComponent({
+      props: { error: Boolean },
+      template: '<div data-test="date-input" />',
+    })
+    const wrapper = mount(SaplingFieldDateType, {
+      props: {
+        label: 'End date',
+        modelValue: '2026-06-20',
+        error: true,
+      },
+      global: {
+        stubs: {
+          VDateInput: VDateInputStub,
+        },
+      },
+    })
+
+    expect(wrapper.getComponent(VDateInputStub).props('error')).toBe(true)
+  })
 })

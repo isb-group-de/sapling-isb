@@ -355,8 +355,6 @@ export function useSaplingAiChatStream(options: SaplingAiChatStreamOptions) {
 
   function handleChatRequestFailure(error: unknown, reportToMessageCenter = true) {
     const messageKey = normalizeAiChatErrorMessage(error)
-    if (reportToMessageCenter) options.reportMessage('error', messageKey, '', 'aiChat')
-
     const attemptSessionHandle = activeSendAttempt.value?.sessionHandle ?? null
     if (
       activeSendAttempt.value?.receivedServerEvents &&
@@ -366,6 +364,8 @@ export function useSaplingAiChatStream(options: SaplingAiChatStreamOptions) {
       void options.loadMessages(attemptSessionHandle).catch(() => undefined)
       return
     }
+
+    if (reportToMessageCenter) options.reportMessage('error', messageKey, '', 'aiChat')
 
     if (
       attemptSessionHandle == null ||

@@ -31,7 +31,11 @@
           <div class="sapling-data-card sapling-work-hero-pulse sapling-issue-hero__pulse">
             <div class="sapling-label">{{ $t('issue.updatedAt') }}</div>
             <div class="sapling-work-hero-pulse__value sapling-issue-hero__pulse-value">
-              <v-skeleton-loader v-if="isLoading && !lastUpdatedDisplay" type="text" width="160" />
+              <v-skeleton-loader
+                v-if="isLoading && !lastUpdatedDisplay"
+                class="sapling-issue-hero__pulse-skeleton"
+                type="text"
+              />
               <span v-else>{{ lastUpdatedDisplay || $t('global.notAvailable') }}</span>
             </div>
           </div>
@@ -79,16 +83,39 @@
           class="sapling-stack-lg sapling-work-compose__form sapling-issue-compose__form"
           @submit.prevent="handleCreateIssue"
         >
-          <SaplingTextField
-            v-model="draft.title"
-            :label="$t('issue.titleFieldLabel')"
-            variant="outlined"
-            density="comfortable"
-            autocomplete="off"
-            hide-details="auto"
-            maxlength="256"
-            counter="256"
-          />
+          <div class="sapling-issue-compose__primary-row">
+            <SaplingTextField
+              v-model="draft.title"
+              data-test="issue-title-field"
+              :label="$t('issue.titleFieldLabel')"
+              variant="outlined"
+              density="comfortable"
+              autocomplete="off"
+              :hide-details="false"
+              maxlength="256"
+              counter="256"
+              persistent-counter
+            />
+
+            <div class="sapling-issue-compose__type-field">
+              <v-btn-toggle
+                v-model="draft.type"
+                class="sapling-segmented-toggle sapling-work-compose__type-toggle sapling-issue-compose__type-toggle"
+                :aria-label="$t('issue.typeFieldLabel')"
+                color="primary"
+                density="comfortable"
+                divided
+                mandatory
+              >
+                <v-btn value="bug" prepend-icon="mdi-bug-outline" variant="tonal">
+                  {{ $t('issue.typeBug') }}
+                </v-btn>
+                <v-btn value="feature" prepend-icon="mdi-lightbulb-outline" variant="tonal">
+                  {{ $t('issue.typeFeature') }}
+                </v-btn>
+              </v-btn-toggle>
+            </div>
+          </div>
 
           <SaplingMarkdownField
             v-model="draft.description"
@@ -98,28 +125,6 @@
             :show-preview="false"
             :maxlength="10000"
           />
-
-          <div
-            class="sapling-stack-md sapling-work-compose__type-field sapling-issue-compose__type-field"
-          >
-            <div class="sapling-label">{{ $t('issue.typeFieldLabel') }}</div>
-
-            <v-btn-toggle
-              v-model="draft.type"
-              class="sapling-segmented-toggle sapling-work-compose__type-toggle sapling-issue-compose__type-toggle"
-              color="primary"
-              density="comfortable"
-              divided
-              mandatory
-            >
-              <v-btn value="bug" prepend-icon="mdi-bug-outline" variant="tonal">
-                {{ $t('issue.typeBug') }}
-              </v-btn>
-              <v-btn value="feature" prepend-icon="mdi-lightbulb-outline" variant="tonal">
-                {{ $t('issue.typeFeature') }}
-              </v-btn>
-            </v-btn-toggle>
-          </div>
 
           <div
             class="sapling-toolbar-group sapling-work-compose__actions sapling-issue-compose__actions"

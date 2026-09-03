@@ -4,6 +4,7 @@ import {
   buildGoogleRecurrence,
   expandFiniteRecurrence,
   findRecurrenceOccurrence,
+  hasRecurrenceOccurrenceInRange,
   parseRecurrenceRule,
 } from './calendar.recurrence';
 
@@ -124,5 +125,30 @@ describe('calendar.recurrence', () => {
     );
     expect(overLimit.occurrences).toHaveLength(100);
     expect(overLimit.isComplete).toBe(false);
+  });
+
+  it('detects only recurring occurrences that overlap the import window', () => {
+    const start = new Date('1960-06-01T09:00:00.000Z');
+    const end = new Date('1960-06-01T10:00:00.000Z');
+    const rule = 'FREQ=YEARLY;INTERVAL=1';
+
+    expect(
+      hasRecurrenceOccurrenceInRange(
+        start,
+        end,
+        rule,
+        new Date('2026-06-01T09:30:00.000Z'),
+        new Date('2026-06-02T00:00:00.000Z'),
+      ),
+    ).toBe(true);
+    expect(
+      hasRecurrenceOccurrenceInRange(
+        start,
+        end,
+        rule,
+        new Date('2026-06-02T00:00:00.000Z'),
+        new Date('2026-06-08T00:00:00.000Z'),
+      ),
+    ).toBe(false);
   });
 });

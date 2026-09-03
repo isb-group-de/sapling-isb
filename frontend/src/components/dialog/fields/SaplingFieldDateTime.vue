@@ -6,6 +6,7 @@
         :model-value="dateValue"
         :disabled="isDisabled"
         :rules="rules"
+        :error="error"
         density="compact"
         hide-details="auto"
         prepend-icon=""
@@ -21,6 +22,7 @@
         :model-value="timeValue"
         :disabled="isDisabled"
         :rules="rules"
+        :error="error"
         density="compact"
         hide-details="auto"
         @update:model-value="updateTime"
@@ -41,6 +43,7 @@ const props = defineProps<{
   disabled?: boolean
   rules?: ((value: string) => boolean | string)[]
   required?: boolean
+  error?: boolean
 }>()
 
 const emit = defineEmits(['update:dateValue', 'update:timeValue'])

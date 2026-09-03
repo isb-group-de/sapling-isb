@@ -121,6 +121,27 @@ describe('useSaplingAiChatStream', () => {
     )
   })
 
+  it('silently resumes from persisted activity when an established stream is lost', async () => {
+    const session = {
+      handle: 22,
+      title: 'Long answer',
+      responseStatus: 'responding',
+    } as AiChatSessionItem
+    api.streamMessage.mockImplementation(
+      async (_payload: unknown, onEvent: (event: Record<string, unknown>) => void) => {
+        onEvent({ type: 'session.upsert', session })
+        throw new Error('network connection terminated')
+      },
+    )
+    const testState = setup()
+
+    await testState.state.sendMessage()
+
+    expect(testState.callbacks.reportMessage).not.toHaveBeenCalled()
+    expect(testState.callbacks.appendLocalFailedExchange).not.toHaveBeenCalled()
+    expect(testState.callbacks.loadMessages).toHaveBeenCalledWith(22)
+  })
+
   it('keeps streaming activity in its source session when another chat is selected', async () => {
     const sourceSession = { handle: 22, title: 'Long answer' } as AiChatSessionItem
     const otherSession = { handle: 23, title: 'Other chat' } as AiChatSessionItem

@@ -76,7 +76,10 @@ its response lifecycle and read marker, while streamed message content is
 checkpointed at a bounded interval and before tool execution. Completion and
 failure are terminal persisted states. Session listing also recovers abandoned
 responses after the configured stale timeout, preventing permanent responding
-indicators after a process interruption.
+indicators after a process interruption. If the browser transport disconnects
+after a response has started, the frontend silently continues from these
+persisted checkpoints instead of reporting a premature stream failure; terminal
+failures remain visible on the persisted assistant message.
 
 All of these services are registered by `AiModule`; consumers should continue
 to depend on `AiService` unless they are implementing an internal AI lifecycle

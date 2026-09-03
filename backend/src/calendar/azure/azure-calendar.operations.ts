@@ -17,6 +17,10 @@ import { PersonItem } from '../../entity/PersonItem';
 import { PersonSessionItem } from '../../entity/PersonSessionItem';
 import type { CalendarClassificationMapping } from '../calendar-classification.utils';
 import {
+  findRecurrenceOccurrence,
+  hasRecurrenceOccurrenceInRange,
+} from '../calendar.recurrence';
+import {
   buildCalendarParticipantEmailFilter,
   replaceCalendarEventParticipants,
   selectUniqueCalendarParticipantsByEmail,
@@ -39,6 +43,11 @@ import {
   resolveAzureSeriesImportEvents,
   truncateAzureText,
 } from './azure-calendar.utils';
+
+const AZURE_EVENT_SELECT =
+  'id,iCalUId,type,seriesMasterId,subject,bodyPreview,body,sensitivity,start,end,isAllDay,isCancelled,attendees,categories,isOnlineMeeting,onlineMeetingProvider,onlineMeeting,onlineMeetingUrl,locations,recurrence';
+
+type MissingProviderItemResolution = 'missing' | 'updated' | 'unchanged';
 
 export class AzureCalendarOperations {
   protected createClient(accessToken: string): Client {
@@ -105,14 +114,12 @@ export class AzureCalendarOperations {
   ): Promise<AzureGraphCalendarEvent[]> {
     const client = this.createClient(accessToken);
     const events: AzureGraphCalendarEvent[] = [];
-    const eventSelect =
-      'id,iCalUId,type,seriesMasterId,subject,bodyPreview,body,sensitivity,start,end,isAllDay,isCancelled,attendees,categories,isOnlineMeeting,onlineMeetingProvider,onlineMeeting,onlineMeetingUrl,locations,recurrence';
     let response = (await client
       .api('/me/calendarView')
       .query({
         startDateTime: range.startDateTime.toISOString(),
         endDateTime: range.endDateTime.toISOString(),
-        $select: eventSelect,
+        $select: AZURE_EVENT_SELECT,
         $top: '100',
       })
       .header('Prefer', 'outlook.timezone="UTC"')
@@ -132,7 +139,7 @@ export class AzureCalendarOperations {
       try {
         return (await client
           .api(`/me/events/${seriesMasterId}`)
-          .query({ $select: eventSelect })
+          .query({ $select: AZURE_EVENT_SELECT })
           .header('Prefer', 'outlook.timezone="UTC"')
           .get()) as AzureGraphCalendarEvent;
       } catch (error) {
@@ -252,8 +259,21 @@ export class AzureCalendarOperations {
   ): Promise<'created' | 'updated' | 'skipped'> {
     const referenceHandle = graphEvent.id?.trim();
     const iCalUId = graphEvent.iCalUId?.trim() || null;
-    const startDate = normalizeAzureDateTime(graphEvent.start);
-    const endDate = normalizeAzureDateTime(graphEvent.end);
+    const providerStartDate = normalizeAzureDateTime(graphEvent.start);
+    const providerEndDate = normalizeAzureDateTime(graphEvent.end);
+    const occurrenceStartDate = normalizeAzureDateTime(
+      graphEvent.saplingImportOccurrence?.start,
+    );
+    const occurrenceEndDate = normalizeAzureDateTime(
+      graphEvent.saplingImportOccurrence?.end,
+    );
+    const startDate = occurrenceStartDate ?? providerStartDate;
+    const endDate = occurrenceEndDate ?? providerEndDate;
+    const recurrenceRule = rebaseImportedRecurrenceRule(
+      normalizeAzureRecurrenceRule(graphEvent.recurrence),
+      providerStartDate,
+      occurrenceStartDate,
+    );
 
     if (!referenceHandle || !startDate || !endDate) {
       return 'skipped';
@@ -309,6 +329,7 @@ export class AzureCalendarOperations {
         endDate,
         status: importedStatus,
         participants: participantPeople,
+        recurrenceRule,
       });
       return 'updated';
     }
@@ -323,6 +344,7 @@ export class AzureCalendarOperations {
       endDate,
       status,
       participants: participantPeople,
+      recurrenceRule,
       classification: {
         type: defaults.type,
         category: defaults.category,
@@ -347,6 +369,7 @@ export class AzureCalendarOperations {
       endDate: Date;
       status: EventStatusItem;
       participants: PersonItem[];
+      recurrenceRule: string | null;
       classification?: {
         type: EventTypeItem;
         category: EventCategoryItem;
@@ -364,10 +387,8 @@ export class AzureCalendarOperations {
     if (values.classification) {
       event.type = values.classification.type;
       event.category = values.classification.category;
-      event.recurrenceRule = normalizeAzureRecurrenceRule(
-        graphEvent.recurrence,
-      );
     }
+    event.recurrenceRule = values.recurrenceRule;
     event.isAllDay = graphEvent.isAllDay === true;
     event.onlineMeetingURL =
       resolveAzureOnlineMeetingUrl(graphEvent) ?? event.onlineMeetingURL;
@@ -403,7 +424,11 @@ export class AzureCalendarOperations {
     );
     const participantsByHandle = new Map<number, PersonItem>();
 
-    if (typeof user.handle === 'number') {
+    // Graph does not list the organizer as an attendee. Keep a participant
+    // fallback only for personal appointments without an attendee list. A
+    // meeting organized for other people must not silently add the organizer
+    // to Sapling's participant collection.
+    if (attendeeEmails.length === 0 && typeof user.handle === 'number') {
       participantsByHandle.set(user.handle, user);
     }
 
@@ -414,6 +439,148 @@ export class AzureCalendarOperations {
     }
 
     return Array.from(participantsByHandle.values());
+  }
+
+  protected async reconcileMissingImportedEvents(
+    emFork: EntityManager,
+    graphEvents: AzureGraphCalendarEvent[],
+    range: ImportAzureCalendarEventsRange,
+    user: PersonItem,
+    completedStatus: EventStatusItem,
+    resolveMissingProviderItem: (
+      reference: EventAzureItem,
+    ) => Promise<MissingProviderItemResolution>,
+  ): Promise<number> {
+    if (typeof user.handle !== 'number') {
+      return 0;
+    }
+
+    const references = await emFork.find(
+      EventAzureItem,
+      {
+        event: {
+          participants: { handle: user.handle },
+          creatorPerson: { handle: user.handle },
+          status: { handle: 'scheduled' },
+        },
+      },
+      { populate: ['event', 'event.participants', 'event.status'] } as never,
+    );
+    const returnedICalUIds = new Set(
+      graphEvents
+        .map((event) => event.iCalUId?.trim())
+        .filter((value): value is string => Boolean(value)),
+    );
+    const returnedReferenceHandles = new Set(
+      graphEvents
+        .map((event) => event.id?.trim())
+        .filter((value): value is string => Boolean(value)),
+    );
+    let reconciled = 0;
+
+    for (const reference of references) {
+      const event = reference.event;
+      if (!event || typeof event !== 'object') {
+        continue;
+      }
+      const expectedInRange = event.recurrenceRule
+        ? hasRecurrenceOccurrenceInRange(
+            event.startDate,
+            event.endDate,
+            event.recurrenceRule,
+            range.startDateTime,
+            range.endDateTime,
+          )
+        : event.startDate < range.endDateTime &&
+          event.endDate > range.startDateTime;
+      if (!expectedInRange) {
+        continue;
+      }
+
+      const providerItemReturned = reference.iCalUId
+        ? returnedICalUIds.has(reference.iCalUId)
+        : returnedReferenceHandles.has(reference.referenceHandle);
+      if (providerItemReturned) {
+        continue;
+      }
+      const resolution = await resolveMissingProviderItem(reference);
+      if (resolution === 'updated') {
+        reconciled += 1;
+        continue;
+      }
+      if (resolution === 'unchanged') {
+        continue;
+      }
+
+      const participants = await getInitializedParticipants(event);
+      const remainingParticipants = participants.filter(
+        (participant) => participant.handle !== user.handle,
+      );
+      await replaceCalendarEventParticipants(event, remainingParticipants);
+      if (remainingParticipants.length === 0) {
+        event.status = completedStatus;
+      }
+      reconciled += 1;
+    }
+
+    return reconciled;
+  }
+
+  protected async fetchAzureEventByReference(
+    accessToken: string,
+    referenceHandle: string,
+    futureStart: Date,
+  ): Promise<AzureGraphCalendarEvent | null> {
+    const client = this.createClient(accessToken);
+    let graphEvent: AzureGraphCalendarEvent;
+    try {
+      graphEvent = (await client
+        .api(`/me/events/${referenceHandle}`)
+        .query({ $select: AZURE_EVENT_SELECT })
+        .header('Prefer', 'outlook.timezone="UTC"')
+        .get()) as AzureGraphCalendarEvent;
+    } catch (error) {
+      if (isAzureNotFoundError(error)) {
+        return null;
+      }
+      throw error;
+    }
+
+    if (!graphEvent.recurrence) {
+      return graphEvent;
+    }
+
+    // A series master carries its historical start. Load its next concrete
+    // occurrence so a moved series is immediately anchored at a future date.
+    const futureEnd = new Date(futureStart);
+    futureEnd.setUTCFullYear(futureEnd.getUTCFullYear() + 5);
+    const instances = (await client
+      .api(`/me/events/${referenceHandle}/instances`)
+      .query({
+        startDateTime: futureStart.toISOString(),
+        endDateTime: futureEnd.toISOString(),
+        $select: 'id,start,end,type',
+        $top: '1',
+      })
+      .header('Prefer', 'outlook.timezone="UTC"')
+      .get()) as AzureCalendarViewResponse;
+    const nextOccurrence = (instances.value ?? [])
+      .filter((event) => normalizeAzureDateTime(event.start))
+      .sort(
+        (left, right) =>
+          normalizeAzureDateTime(left.start)!.getTime() -
+          normalizeAzureDateTime(right.start)!.getTime(),
+      )[0];
+
+    return nextOccurrence
+      ? {
+          ...graphEvent,
+          saplingImportOccurrence: {
+            start: nextOccurrence.start,
+            end: nextOccurrence.end,
+          },
+        }
+      : graphEvent;
   }
 
   /**
@@ -573,6 +740,61 @@ export class AzureCalendarOperations {
     await client.api(`/me/events/${occurrence.id}`).delete();
     return { success: true, detachedOccurrenceId: occurrence.id };
   }
+}
+
+async function getInitializedParticipants(
+  event: EventItem,
+): Promise<PersonItem[]> {
+  const collection = event.participants as typeof event.participants & {
+    getItems?: () => PersonItem[];
+    init?: () => Promise<unknown>;
+    isInitialized?: () => boolean;
+  };
+  if (
+    typeof collection.isInitialized === 'function' &&
+    typeof collection.init === 'function' &&
+    !collection.isInitialized()
+  ) {
+    await collection.init();
+  }
+  if (typeof collection.getItems === 'function') {
+    return collection.getItems();
+  }
+  return Array.from(collection as Iterable<PersonItem>);
+}
+
+function rebaseImportedRecurrenceRule(
+  recurrenceRule: string | null,
+  providerStartDate: Date | null,
+  occurrenceStartDate: Date | null,
+): string | null {
+  if (!recurrenceRule || !providerStartDate || !occurrenceStartDate) {
+    return recurrenceRule;
+  }
+
+  const countMatch = /(?:^|;)COUNT=(\d+)(?:;|$)/.exec(recurrenceRule);
+  if (!countMatch) {
+    return recurrenceRule;
+  }
+  const occurrence = findRecurrenceOccurrence(
+    providerStartDate,
+    providerStartDate,
+    recurrenceRule,
+    occurrenceStartDate,
+  );
+  if (!occurrence) {
+    return recurrenceRule;
+  }
+
+  const originalCount = Number.parseInt(countMatch[1], 10);
+  const remainingCount = Math.max(
+    1,
+    originalCount - occurrence.occurrenceIndex + 1,
+  );
+  return recurrenceRule.replace(
+    /(^|;)COUNT=\d+(?=;|$)/,
+    `$1COUNT=${remainingCount}`,
+  );
 }
 
 function normalizeAzureOccurrenceStart(value?: string | null): Date | null {

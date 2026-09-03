@@ -145,6 +145,10 @@
 }
 
 @media (max-width: 600px) {
+  .sapling-issue-compose__primary-row {
+    grid-template-columns: 1fr;
+  }
+
   .sapling-work-stream__header,
   .sapling-work-stream__empty,
   .sapling-work-card {

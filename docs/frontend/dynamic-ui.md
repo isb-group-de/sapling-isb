@@ -177,6 +177,9 @@ Generated forms also treat `isDateStart` and `isDateEnd` as a range contract.
 Markers are paired within their declared form group and the dialog blocks save
 when the end is before the start. The generic backend enforces the same rule for
 non-UI clients; equal values and incomplete nullable ranges remain valid.
+Changing a complete range's start in a writable generated form shifts the paired
+end by the same delta, preserving the existing interval. An end before its start
+is highlighted immediately on the paired end field.
 
 Generated fields render contextual help through the shared
 `SaplingHelpTooltip` control. The renderer first uses

@@ -104,6 +104,7 @@
                             :is-template-dirty="isTemplateDirty"
                             :get-template-column-props="getTemplateColumnProps"
                             :get-rules="getRules"
+                            :has-date-range-error="hasDateRangeError"
                             :is-template-recommendation-active="isTemplateRecommendationActive"
                             :get-recommendation-message="getRecommendationMessage"
                             :is-field-disabled="isFieldDisabled"
@@ -416,6 +417,7 @@ const {
   selectedFormConfigLabel,
   selectFormConfig,
   getRules,
+  hasDateRangeError,
   isTemplateRecommendationActive,
   getRecommendationMessage,
   getTemplateColumnProps,

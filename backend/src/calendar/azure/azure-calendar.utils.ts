@@ -10,6 +10,20 @@ export type ImportAzureCalendarEventsRange = {
   endDateTime: Date;
 };
 
+/** Limits imports to the still-active part of the requested calendar window. */
+export function clampAzureImportRangeToFuture(
+  range: ImportAzureCalendarEventsRange,
+  now: Date = new Date(),
+): ImportAzureCalendarEventsRange | null {
+  const startDateTime = new Date(
+    Math.max(range.startDateTime.getTime(), now.getTime()),
+  );
+  if (startDateTime >= range.endDateTime) {
+    return null;
+  }
+  return { startDateTime, endDateTime: range.endDateTime };
+}
+
 type AzureGraphDateTime = {
   dateTime?: string | null;
   timeZone?: string | null;
@@ -50,6 +64,14 @@ export type AzureGraphCalendarEvent = {
     locationUri?: string | null;
   }> | null;
   recurrence?: AzureGraphPatternedRecurrence | null;
+  /**
+   * First expanded occurrence returned by calendarView for a series master.
+   * This is internal import metadata and is never sent back to Graph.
+   */
+  saplingImportOccurrence?: {
+    start?: AzureGraphDateTime | null;
+    end?: AzureGraphDateTime | null;
+  } | null;
 };
 
 type AzureGraphPatternedRecurrence = {
@@ -111,11 +133,24 @@ export async function resolveAzureSeriesImportEvents(
   const resolvedByReference = new Map<string, AzureGraphCalendarEvent>();
   const unkeyedEvents: AzureGraphCalendarEvent[] = [];
   const seriesMasterIds = new Set<string>();
+  const firstOccurrenceBySeries = new Map<string, AzureGraphCalendarEvent>();
 
   for (const event of events) {
     const seriesMasterId = event.seriesMasterId?.trim();
     if (seriesMasterId) {
       seriesMasterIds.add(seriesMasterId);
+      const existingOccurrence = firstOccurrenceBySeries.get(seriesMasterId);
+      const eventStart = normalizeAzureDateTime(event.start)?.getTime();
+      const existingStart = normalizeAzureDateTime(
+        existingOccurrence?.start,
+      )?.getTime();
+      if (
+        !existingOccurrence ||
+        (eventStart != null &&
+          (existingStart == null || eventStart < existingStart))
+      ) {
+        firstOccurrenceBySeries.set(seriesMasterId, event);
+      }
       continue;
     }
 
@@ -137,11 +172,20 @@ export async function resolveAzureSeriesImportEvents(
 
       const seriesMaster = await loadSeriesMaster(seriesMasterId);
       if (seriesMaster) {
+        const firstOccurrence = firstOccurrenceBySeries.get(seriesMasterId);
         resolvedByReference.set(seriesMasterId, {
           ...seriesMaster,
           id: seriesMaster.id?.trim() || seriesMasterId,
           type: seriesMaster.type ?? 'seriesMaster',
           seriesMasterId: null,
+          ...(firstOccurrence?.start
+            ? {
+                saplingImportOccurrence: {
+                  start: firstOccurrence.start,
+                  end: firstOccurrence.end,
+                },
+              }
+            : {}),
         });
       }
     }),

@@ -45,7 +45,7 @@ describe('AzureCalendarService Outlook import privacy', () => {
         }),
         owner,
       ),
-    ).resolves.toEqual([owner, uniqueMatch]);
+    ).resolves.toEqual([uniqueMatch]);
 
     expect(emFork.find).toHaveBeenCalledWith(PersonItem, {
       $or: [
@@ -53,6 +53,19 @@ describe('AzureCalendarService Outlook import privacy', () => {
         { email: { $ilike: 'duplicate@example.com' } },
       ],
     });
+  });
+
+  it('keeps the current user for a personal appointment without attendees', async () => {
+    const owner = { handle: 7 } as PersonItem;
+    const service = createService();
+
+    await expect(
+      service.resolveImportedParticipants(
+        { find: jest.fn(() => Promise.resolve([])) },
+        createGraphEvent({ attendees: [] }),
+        owner,
+      ),
+    ).resolves.toEqual([owner]);
   });
 
   it('imports private Outlook sensitivity as a private Sapling event', async () => {
@@ -127,6 +140,126 @@ describe('AzureCalendarService Outlook import privacy', () => {
     expect(reference?.iCalUId).toBe('ical-planning-1');
   });
 
+  it('starts an imported old Outlook series at its first future occurrence', async () => {
+    const persisted: unknown[] = [];
+    const emFork = {
+      findOne: jest.fn<(...args: unknown[]) => Promise<unknown>>(() =>
+        Promise.resolve(null),
+      ),
+      find: jest.fn<(...args: unknown[]) => Promise<unknown[]>>(() =>
+        Promise.resolve([]),
+      ),
+      persist: jest.fn((item: unknown) => persisted.push(item)),
+    };
+    const service = createService();
+
+    await expect(
+      service.upsertImportedEvent(
+        emFork,
+        createGraphEvent({
+          type: 'seriesMaster',
+          start: { dateTime: '2020-06-29T09:00:00.000Z' },
+          end: { dateTime: '2020-06-29T10:00:00.000Z' },
+          recurrence: {
+            pattern: { type: 'weekly', interval: 1, daysOfWeek: ['monday'] },
+            range: { type: 'numbered', numberOfOccurrences: 320 },
+          },
+          saplingImportOccurrence: {
+            start: { dateTime: '2026-06-29T09:00:00.000Z' },
+            end: { dateTime: '2026-06-29T10:00:00.000Z' },
+          },
+        }),
+        defaults,
+      ),
+    ).resolves.toBe('created');
+
+    const event = persisted.find((item) => item instanceof EventItem);
+    expect(event?.startDate.toISOString()).toBe('2026-06-29T09:00:00.000Z');
+    expect(event?.recurrenceRule).toBe(
+      'FREQ=WEEKLY;INTERVAL=1;BYDAY=MO;COUNT=7',
+    );
+  });
+
+  it('completes a sole-participant event missing from the full Outlook range', async () => {
+    const user = { handle: 7 } as PersonItem;
+    const completedStatus = { handle: 'completed' } as never;
+    const participants = [user];
+    const event = {
+      handle: 42,
+      startDate: new Date('2026-06-29T09:00:00.000Z'),
+      endDate: new Date('2026-06-29T10:00:00.000Z'),
+      recurrenceRule: null,
+      status: { handle: 'scheduled' },
+      participants: {
+        getItems: () => participants,
+        removeAll: () => participants.splice(0),
+        add: (...items: PersonItem[]) => participants.push(...items),
+      },
+    } as unknown as EventItem;
+    const service = createService();
+
+    await expect(
+      service.reconcileMissingImportedEvents(
+        {
+          find: jest.fn(() =>
+            Promise.resolve([
+              {
+                referenceHandle: 'missing-outlook-id',
+                iCalUId: 'missing-ical-id',
+                event,
+              },
+            ]),
+          ),
+        },
+        [],
+        {
+          startDateTime: new Date('2026-06-29T08:00:00.000Z'),
+          endDateTime: new Date('2026-06-30T00:00:00.000Z'),
+        },
+        user,
+        completedStatus,
+        async () => 'missing',
+      ),
+    ).resolves.toBe(1);
+
+    expect(participants).toEqual([]);
+    expect(event.status).toBe(completedStatus);
+  });
+
+  it('keeps an absent range item active when Outlook confirms it still exists', async () => {
+    const user = { handle: 7 } as PersonItem;
+    const scheduledStatus = { handle: 'scheduled' } as never;
+    const event = {
+      handle: 42,
+      startDate: new Date('2026-06-29T09:00:00.000Z'),
+      endDate: new Date('2026-06-29T10:00:00.000Z'),
+      recurrenceRule: null,
+      status: scheduledStatus,
+      participants: { getItems: () => [user] },
+    } as unknown as EventItem;
+    const service = createService();
+
+    await expect(
+      service.reconcileMissingImportedEvents(
+        {
+          find: jest.fn(() =>
+            Promise.resolve([{ referenceHandle: 'moved-outlook-id', event }]),
+          ),
+        },
+        [],
+        {
+          startDateTime: new Date('2026-06-29T08:00:00.000Z'),
+          endDateTime: new Date('2026-06-30T00:00:00.000Z'),
+        },
+        user,
+        { handle: 'completed' } as never,
+        async () => 'unchanged',
+      ),
+    ).resolves.toBe(0);
+
+    expect(event.status).toBe(scheduledStatus);
+  });
+
   it('updates one Sapling event for mailbox-specific ids of the same Outlook meeting', async () => {
     const existingEvent = new EventItem();
     existingEvent.title = 'Old title';
@@ -164,6 +297,12 @@ describe('AzureCalendarService Outlook import privacy', () => {
     ).resolves.toBe('updated');
 
     expect(existingEvent.title).toBe('Shared planning');
+    expect(existingEvent.startDate.toISOString()).toBe(
+      '2026-06-29T09:00:00.000Z',
+    );
+    expect(existingEvent.endDate.toISOString()).toBe(
+      '2026-06-29T10:00:00.000Z',
+    );
     expect(sharedReference.referenceHandle).toBe('organizer-mailbox-id');
     expect(emFork.persist).not.toHaveBeenCalled();
   });
@@ -286,6 +425,99 @@ describe('AzureCalendarService Outlook import privacy', () => {
 });
 
 describe('AzureCalendarService completion delivery', () => {
+  it('loads a moved Outlook event completely and distinguishes deletion', async () => {
+    const get = jest
+      .fn<(...args: unknown[]) => Promise<unknown>>()
+      .mockResolvedValueOnce({
+        id: 'existing',
+        subject: 'Moved appointment',
+        start: { dateTime: '2026-07-06T09:00:00.000Z' },
+        end: { dateTime: '2026-07-06T10:00:00.000Z' },
+      })
+      .mockRejectedValueOnce({ statusCode: 404 });
+    const service = new AzureCalendarService(
+      {} as never,
+      {} as never,
+    ) as unknown as AzureDeliveryServiceTestHarness;
+    (service as unknown as { createClient: () => unknown }).createClient =
+      jest.fn(() => ({
+        api: () => ({ query: () => ({ header: () => ({ get }) }) }),
+      }));
+
+    await expect(
+      service.fetchAzureEventByReference(
+        'access-token',
+        'existing',
+        new Date('2026-06-29T08:00:00.000Z'),
+      ),
+    ).resolves.toMatchObject({
+      subject: 'Moved appointment',
+      start: { dateTime: '2026-07-06T09:00:00.000Z' },
+    });
+    await expect(
+      service.fetchAzureEventByReference(
+        'access-token',
+        'deleted',
+        new Date('2026-06-29T08:00:00.000Z'),
+      ),
+    ).resolves.toBeNull();
+  });
+
+  it('anchors a moved Outlook series at its next future instance', async () => {
+    const masterGet = jest.fn(() =>
+      Promise.resolve({
+        id: 'series-1',
+        type: 'seriesMaster',
+        start: { dateTime: '2020-06-29T09:00:00.000Z' },
+        end: { dateTime: '2020-06-29T10:00:00.000Z' },
+        recurrence: {
+          pattern: { type: 'weekly', interval: 1 },
+          range: { type: 'noEnd' },
+        },
+      }),
+    );
+    const instancesGet = jest.fn(() =>
+      Promise.resolve({
+        value: [
+          {
+            id: 'occurrence-1',
+            type: 'occurrence',
+            start: { dateTime: '2026-07-13T09:00:00.000Z' },
+            end: { dateTime: '2026-07-13T10:00:00.000Z' },
+          },
+        ],
+      }),
+    );
+    const service = new AzureCalendarService(
+      {} as never,
+      {} as never,
+    ) as unknown as AzureDeliveryServiceTestHarness;
+    (service as unknown as { createClient: () => unknown }).createClient =
+      jest.fn(() => ({
+        api: (path: string) => ({
+          query: () => ({
+            header: () => ({
+              get: path.endsWith('/instances') ? instancesGet : masterGet,
+            }),
+          }),
+        }),
+      }));
+
+    await expect(
+      service.fetchAzureEventByReference(
+        'access-token',
+        'series-1',
+        new Date('2026-07-06T00:00:00.000Z'),
+      ),
+    ).resolves.toMatchObject({
+      id: 'series-1',
+      saplingImportOccurrence: {
+        start: { dateTime: '2026-07-13T09:00:00.000Z' },
+        end: { dateTime: '2026-07-13T10:00:00.000Z' },
+      },
+    });
+  });
+
   it('stores the calendar-wide id returned for a Sapling-created Outlook event', async () => {
     const post = jest.fn(() =>
       Promise.resolve({
