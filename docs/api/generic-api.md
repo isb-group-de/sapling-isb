@@ -202,6 +202,14 @@ The generic mutation service handles:
 - special payload normalization
 - change log creation
 
+Dependent references declared through `@SaplingDependsOn(...)` are validated
+against the resulting record on create and update. A mismatch returns
+`exception.referenceDependencyMismatch` in `details.summaryKey` together with
+`entityHandle`, `fieldName`, and `parentFieldName` in `details.summaryParams`.
+Clients can therefore name both affected fields using their entity translations
+without exposing raw backend property names to users. The backend rejects the
+save and does not rewrite either relation automatically.
+
 Fields marked with `isDateStart` and `isDateEnd` are paired within the same
 declared form group. Generic create and update mutations reject a complete or
 partial payload when the resulting end value is before its start value. Equal

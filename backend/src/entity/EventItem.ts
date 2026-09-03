@@ -163,7 +163,7 @@ export class EventItem {
   isAllDay!: boolean;
 
   /**
-   * Indicates whether this event should only be visible to its creator.
+   * Indicates whether this event should only be visible to its creator and participants.
    * Outlook imports set this from Microsoft Graph event sensitivity.
    * @type {boolean}
    */

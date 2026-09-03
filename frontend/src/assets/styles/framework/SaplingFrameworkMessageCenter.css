@@ -120,6 +120,7 @@
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
+  padding-top: var(--sapling-dialog-field-label-clearance);
   padding-right: var(--sapling-space-3xs);
 }
 

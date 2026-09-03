@@ -13,6 +13,10 @@ const translations: Record<string, string> = {
   'exception.unknownError': 'Unbekannter Fehler',
   'messageCenter.detailsUnavailable': 'Weitere Informationen sind derzeit nicht verfügbar.',
   'navigation.eventDelivery': 'Kalenderübertragungen',
+  'exception.referenceDependencyMismatch':
+    '„{field}“ gehört nicht mehr zu „{parentField}“. Bitte passen Sie eines der beiden Felder an.',
+  'ticket.creatorPerson': 'Kunde (Person)',
+  'ticket.creatorCompany': 'Kunde (Firma)',
 }
 const translationExists = (key: string) => key in translations
 const translate: MessageTranslator = (key, params) =>
@@ -31,6 +35,25 @@ describe('messageCenterPresentation', () => {
       ),
     ).toBe(
       'Der Datensatz kann nicht gelöscht werden, weil er noch von „Kalenderübertragungen“ verwendet wird.',
+    )
+  })
+
+  it('renders reference dependency errors with localized field labels', () => {
+    expect(
+      formatMessageDescription(
+        {
+          description: 'exception.referenceDependencyMismatch',
+          descriptionParams: {
+            entityHandle: 'ticket',
+            fieldName: 'creatorPerson',
+            parentFieldName: 'creatorCompany',
+          },
+        },
+        translate,
+        translationExists,
+      ),
+    ).toBe(
+      '„Kunde (Person)“ gehört nicht mehr zu „Kunde (Firma)“. Bitte passen Sie eines der beiden Felder an.',
     )
   })
 

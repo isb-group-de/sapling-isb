@@ -98,7 +98,7 @@ Important fields:
 | `description`                       | Markdown description; also part of AI vectorization                                             |
 | `startDate`, `endDate`              | Event time range                                                                                |
 | `isAllDay`                          | Marks all-day events                                                                            |
-| `isPrivate`                         | Marks owner-only events, including Outlook events imported with private sensitivity             |
+| `isPrivate`                         | Limits access to creator and participants; includes private Outlook imports                     |
 | `createOnlineMeeting`               | Requests a provider-native Teams or Google Meet link; defaults to `false`                       |
 | `recurrenceRule`                    | Optional RRULE string for recurring events                                                      |
 | `recurrenceExceptionDates`          | Original occurrence starts removed from the series and represented by standalone Events         |
@@ -318,7 +318,7 @@ Outlook and Google import windows are clamped to the current instant. Fully elap
 
 After all pages of an Outlook or Google calendar window have been loaded, Sapling also reconciles active linked events owned by the importing user and expected inside that complete window. If a linked item is absent, Sapling loads its provider resource directly before changing local state. A moved item is immediately updated from that complete resource, including its new dates and participants. For a recurring master Sapling also loads its next concrete occurrence and uses it as the new future anchor. Once the provider confirms the item no longer exists, Sapling removes that user from the participant collection; if no participant remains, it marks the Event `completed`. Shared events therefore remain active for other participants. Recurring events are reconciled only when their local recurrence rule proves that an occurrence overlaps the queried window, which avoids treating a quiet week of a monthly or yearly series as deletion. Provider failures or incomplete requests never run this absence reconciliation.
 
-Outlook events whose Microsoft Graph `sensitivity` is `private` are imported with `EventItem.isPrivate = true`. Sapling still stores the full event details for the importing owner, but generic Event reads, exports, relation mutations, updates, deletes, KPIs, and timeline anchor loads must only expose private events when `creatorPerson` is the current user. Non-private events keep the normal Event permission behavior.
+Outlook events whose Microsoft Graph `sensitivity` is `private` are imported with `EventItem.isPrivate = true`. Sapling still stores the full event details, but generic Event reads, exports, relation mutations, updates, deletes, KPIs, and timeline anchor loads expose a private event only when the current user is its `creatorPerson` or belongs to its `participants` collection. This also allows manually created private appointments to be shared with several explicitly selected people. Non-private events keep the normal Event permission behavior.
 
 Outlook imports store the direct online-meeting join link in
 `EventItem.onlineMeetingURL`. The structured Microsoft Graph

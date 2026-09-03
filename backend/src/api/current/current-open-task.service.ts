@@ -44,7 +44,13 @@ export class CurrentOpenTaskService {
         {
           $or: [
             { isPrivate: false, participants: { handle: user.handle } },
-            { isPrivate: true, creatorPerson: { handle: user.handle } },
+            {
+              isPrivate: true,
+              $or: [
+                { creatorPerson: { handle: user.handle } },
+                { participants: { handle: user.handle } },
+              ],
+            },
           ],
           status: { handle: { $nin: ['canceled', 'completed'] } },
         },

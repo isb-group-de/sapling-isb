@@ -59,7 +59,6 @@
   flex: 1 0 auto;
   flex-direction: column;
   min-height: 100%;
-  padding-top: var(--sapling-dialog-field-label-clearance);
 }
 
 .sapling-phone-call-dialog__form > :not(.sapling-markdown-field) {

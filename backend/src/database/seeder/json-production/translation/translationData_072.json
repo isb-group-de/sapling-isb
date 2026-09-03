@@ -1,0 +1,8 @@
+[
+  {
+    "entity": "exception",
+    "property": "referenceDependencyMismatch",
+    "de": "„{field}“ gehört nicht mehr zu „{parentField}“. Bitte passen Sie eines der beiden Felder an.",
+    "en": "“{field}” no longer belongs to “{parentField}”. Please update one of the two fields."
+  }
+]

@@ -201,10 +201,28 @@ export class GenericReferenceService {
             currentUser,
           ))
         ) {
-          throw new BadRequestException(
-            'exception.badRequest',
-            `${field.name} is not valid for ${dependency.parentField}`,
-          );
+          const summaryKey = 'exception.referenceDependencyMismatch';
+
+          throw new BadRequestException({
+            message: 'exception.badRequest',
+            error: summaryKey,
+            details: {
+              summary: summaryKey,
+              summaryKey,
+              summaryParams: {
+                entityHandle,
+                fieldName: field.name,
+                parentFieldName: dependency.parentField,
+              },
+              entityHandle,
+            },
+            technical: {
+              validation: 'referenceDependency',
+              entityHandle,
+              fieldName: field.name,
+              parentFieldName: dependency.parentField,
+            },
+          });
         }
       }),
     );

@@ -160,4 +160,18 @@ describe('Sapling UI architecture', () => {
     expect(relationTableRule).toContain('var(--sapling-control-size-2xl) * 4')
     expect(relationTableSkeletonRule).toContain('min-height: calc(')
   })
+
+  it('keeps floating field labels inside scrollable message dialogs visible', () => {
+    const messageDialogStyles = readFileSync(
+      join(sourceRoot, 'assets/styles/framework/SaplingFrameworkMessageCenter.css'),
+      'utf8',
+    )
+    const messageDialogScrollRules = [
+      ...messageDialogStyles.matchAll(/\.sapling-message-dialog__scroll\s*\{([^}]+)\}/g),
+    ].map((match) => match[1])
+
+    expect(messageDialogScrollRules).toContainEqual(
+      expect.stringContaining('padding-top: var(--sapling-dialog-field-label-clearance)'),
+    )
+  })
 })

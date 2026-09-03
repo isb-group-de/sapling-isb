@@ -96,7 +96,7 @@ describe('GenericPermissionService', () => {
     );
   });
 
-  it('keeps private events visible only for the event creator even with global read permission', () => {
+  it('keeps private events visible for their creator and participants with global read permission', () => {
     const currentService = {
       getEntityPermissions: jest.fn(() => ({
         allowReadStage: 'global',
@@ -133,7 +133,11 @@ describe('GenericPermissionService', () => {
       $and: [
         { handle: 99 },
         {
-          $or: [{ isPrivate: false }, { creatorPerson: 7 }],
+          $or: [
+            { isPrivate: false },
+            { creatorPerson: 7 },
+            { participants: { handle: 7 } },
+          ],
         },
       ],
     });

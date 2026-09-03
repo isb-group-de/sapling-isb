@@ -32,7 +32,7 @@ Current markers include:
 - Person master data includes a compact company context when it is readable.
 - Sections and metrics are omitted when the current user cannot read the source entity.
 - Generic row-level filters, security scripts, field projection, and Company/Person scope remain in force.
-- Private events are visible only to their creator.
+- Private events are visible only to their creator and participants.
 
 ## API
 

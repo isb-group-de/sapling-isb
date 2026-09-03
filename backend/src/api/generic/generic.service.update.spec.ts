@@ -198,12 +198,13 @@ describe('GenericService update workflows', () => {
     });
   });
 
-  it('limits direct event updates to records visible under private-event rules', async () => {
+  it('allows a private-event participant to update the event when permitted', async () => {
     const item = {
       handle: 101,
       title: 'Old title',
       isPrivate: true,
-      creatorPerson: { handle: 7 },
+      creatorPerson: { handle: 8 },
+      participants: [{ handle: 7 }, { handle: 9 }],
     };
     const findOne = jest
       .fn<(...args: unknown[]) => Promise<object | null>>()
@@ -230,7 +231,11 @@ describe('GenericService update workflows', () => {
             $and: [
               { handle: 101 },
               {
-                $or: [{ isPrivate: false }, { creatorPerson: 7 }],
+                $or: [
+                  { isPrivate: false },
+                  { creatorPerson: 7 },
+                  { participants: { handle: 7 } },
+                ],
               },
             ],
           })
@@ -285,7 +290,11 @@ describe('GenericService update workflows', () => {
         $and: [
           { handle: 101 },
           {
-            $or: [{ isPrivate: false }, { creatorPerson: 7 }],
+            $or: [
+              { isPrivate: false },
+              { creatorPerson: 7 },
+              { participants: { handle: 7 } },
+            ],
           },
         ],
       },

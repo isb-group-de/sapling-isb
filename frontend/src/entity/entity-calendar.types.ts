@@ -112,7 +112,7 @@ export interface EventItem extends SaplingGenericItem {
   endDate: Date
   /** Indicates if the event lasts all day */
   isAllDay: boolean
-  /** Indicates whether the event is visible only to its creator */
+  /** Indicates whether the event is visible only to its creator and participants */
   isPrivate: boolean
   /** Whether the connected calendar should create a Teams or Google Meet link */
   createOnlineMeeting: boolean

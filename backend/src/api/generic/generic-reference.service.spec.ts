@@ -80,6 +80,63 @@ describe('GenericReferenceService', () => {
     },
   );
 
+  it('returns localized field metadata when a ticket contact no longer belongs to its company', async () => {
+    const dependencyService = new GenericReferenceService(
+      {
+        findOne: jest.fn().mockResolvedValue({
+          handle: 1742,
+          company: { handle: 149 },
+        }),
+      } as never,
+      {
+        getEntityTemplate: jest.fn(() => [
+          { name: 'handle', type: 'number' } as EntityTemplateDto,
+        ]),
+      } as never,
+      { setTopLevelFilter: (where: object) => where } as never,
+      { getEntityClass: () => class Person {} } as never,
+    );
+
+    let thrown: unknown;
+
+    try {
+      await dependencyService.validateReferenceDependencies(
+        'ticket',
+        {
+          creatorCompany: 105,
+          creatorPerson: 1742,
+        },
+        [
+          {
+            name: 'creatorPerson',
+            isReference: true,
+            referenceName: 'person',
+            referenceDependency: {
+              parentField: 'creatorCompany',
+              targetField: 'company',
+            },
+          } as EntityTemplateDto,
+        ],
+        { handle: 7 } as never,
+      );
+    } catch (error) {
+      thrown = error;
+    }
+
+    expect(thrown).toBeInstanceOf(BadRequestException);
+    expect((thrown as BadRequestException).getResponse()).toMatchObject({
+      message: 'exception.badRequest',
+      details: {
+        summaryKey: 'exception.referenceDependencyMismatch',
+        summaryParams: {
+          entityHandle: 'ticket',
+          fieldName: 'creatorPerson',
+          parentFieldName: 'creatorCompany',
+        },
+      },
+    });
+  });
+
   it('preserves a ticket-linked event customer context after the contact company changes', async () => {
     const em = {
       findOne: jest
@@ -168,8 +225,10 @@ describe('GenericReferenceService', () => {
       } as never,
     );
 
-    await expect(
-      dependencyService.validateReferenceDependencies(
+    let thrown: unknown;
+
+    try {
+      await dependencyService.validateReferenceDependencies(
         'event',
         {
           creatorCompany: 105,
@@ -188,7 +247,31 @@ describe('GenericReferenceService', () => {
           } as EntityTemplateDto,
         ],
         { handle: 7 } as never,
-      ),
-    ).rejects.toBeInstanceOf(BadRequestException);
+      );
+    } catch (error) {
+      thrown = error;
+    }
+
+    expect(thrown).toBeInstanceOf(BadRequestException);
+    expect((thrown as BadRequestException).getResponse()).toEqual({
+      message: 'exception.badRequest',
+      error: 'exception.referenceDependencyMismatch',
+      details: {
+        summary: 'exception.referenceDependencyMismatch',
+        summaryKey: 'exception.referenceDependencyMismatch',
+        summaryParams: {
+          entityHandle: 'event',
+          fieldName: 'creatorPerson',
+          parentFieldName: 'creatorCompany',
+        },
+        entityHandle: 'event',
+      },
+      technical: {
+        validation: 'referenceDependency',
+        entityHandle: 'event',
+        fieldName: 'creatorPerson',
+        parentFieldName: 'creatorCompany',
+      },
+    });
   });
 });

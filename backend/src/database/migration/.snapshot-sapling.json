@@ -20719,7 +20719,8 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.person_item"
+          "referencedTableName": "public.person_item",
+          "deleteRule": "cascade"
         }
       },
       "comment": null

@@ -295,7 +295,10 @@ describe('CurrentService', () => {
           },
           {
             isPrivate: true,
-            creatorPerson: { handle: 7 },
+            $or: [
+              { creatorPerson: { handle: 7 } },
+              { participants: { handle: 7 } },
+            ],
           },
         ],
         status: { handle: { $nin: ['canceled', 'completed'] } },

@@ -184,7 +184,8 @@ estimate requirements, or sales opportunity pain points.
 Personal worklists can be deleted directly from the table toolbar. The frontend
 always asks for confirmation first and removes the `FavoriteItem` through the
 generic API. Because the toolbar query is already restricted to the authenticated
-person, only that person's worklists are offered there.
+person, only that person's worklists are offered there. Deleting a person also
+deletes all of that person's worklists through a database-level cascade.
 
 The worklist menu also offers a synthetic **Default worklist**. It does not create
 or select a `FavoriteItem` and is separate from table-column views. Selecting it

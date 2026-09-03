@@ -105,12 +105,43 @@ function resolveDescriptionParams(
     return undefined
   }
 
-  const { entityHandle, ...resolvedParams } = params
+  const { entityHandle, fieldName, parentFieldName, ...resolvedParams } = params
   if (typeof entityHandle === 'string' && entityHandle.trim()) {
     resolvedParams.entity = getMessageEntityLabel(entityHandle, translate, translationExists)
+
+    if (typeof fieldName === 'string' && fieldName.trim()) {
+      resolvedParams.field = getMessageFieldLabel(
+        entityHandle,
+        fieldName,
+        translate,
+        translationExists,
+      )
+    }
+
+    if (typeof parentFieldName === 'string' && parentFieldName.trim()) {
+      resolvedParams.parentField = getMessageFieldLabel(
+        entityHandle,
+        parentFieldName,
+        translate,
+        translationExists,
+      )
+    }
   }
 
   return resolvedParams
+}
+
+function getMessageFieldLabel(
+  entityHandle: string,
+  fieldName: string,
+  translate: MessageTranslator,
+  translationExists: TranslationExists,
+): string {
+  const translationKey = `${normalizeEntityHandle(entityHandle)}.${fieldName}`
+
+  return translationExists(translationKey)
+    ? translate(translationKey)
+    : humanizeEntityHandle(fieldName)
 }
 
 function replaceLegacyTableReferences(

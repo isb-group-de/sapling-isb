@@ -937,6 +937,11 @@ API errors may provide a translation key plus `descriptionParams`. Entity
 parameters use the stable `entityHandle`; the message center resolves them
 through `navigation.<handle>` before interpolation. It loads the `global`,
 `navigation`, `exception`, and `messageCenter` namespaces before rendering.
+Reference-dependency errors additionally provide `fieldName` and
+`parentFieldName`; when an `entityHandle` is present, the message center resolves
+both through `<entityHandle>.<fieldName>` and falls back to a humanized field
+name. Entity views already load their own namespace, so dependency errors can
+identify both fields in the user's language.
 
 Missing translation keys and generic HTTP-client errors must not be shown as
 user text. They fall back to localized generic wording while the original

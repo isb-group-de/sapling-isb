@@ -159,6 +159,9 @@ export class GenericPermissionService {
 
     if (currentUser.handle != null) {
       visibilityConditions.push({ creatorPerson: currentUser.handle });
+      visibilityConditions.push({
+        participants: { handle: currentUser.handle },
+      });
     }
 
     const privacyFilter = {

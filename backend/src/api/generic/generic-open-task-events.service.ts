@@ -159,14 +159,7 @@ export class GenericOpenTaskEventsService {
       return new Set<number>();
     }
 
-    if (event.isPrivate === true) {
-      const ownerHandle = this.extractReferenceHandle(event.creatorPerson);
-      return typeof ownerHandle === 'number'
-        ? new Set<number>([ownerHandle])
-        : new Set<number>();
-    }
-
-    return new Set<number>(
+    const userHandles = new Set<number>(
       event.participants
         .getItems()
         .map((participant) => participant.handle)
@@ -175,6 +168,15 @@ export class GenericOpenTaskEventsService {
             typeof participantHandle === 'number',
         ),
     );
+
+    if (event.isPrivate === true) {
+      const ownerHandle = this.extractReferenceHandle(event.creatorPerson);
+      if (typeof ownerHandle === 'number') {
+        userHandles.add(ownerHandle);
+      }
+    }
+
+    return userHandles;
   }
 
   private async loadSalesOpportunityUserHandles(

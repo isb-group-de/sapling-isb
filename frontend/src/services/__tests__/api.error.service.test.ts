@@ -71,6 +71,34 @@ describe('api.error.service', () => {
     })
   })
 
+  it('keeps reference dependency field parameters for localized presentation', () => {
+    const result = resolveApiError({
+      response: {
+        status: 400,
+        data: {
+          message: 'exception.badRequest',
+          error: 'exception.referenceDependencyMismatch',
+          details: {
+            summaryKey: 'exception.referenceDependencyMismatch',
+            summaryParams: {
+              entityHandle: 'ticket',
+              fieldName: 'creatorPerson',
+              parentFieldName: 'creatorCompany',
+            },
+          },
+        },
+      },
+    })
+
+    expect(result.message).toBe('exception.badRequest')
+    expect(result.description).toBe('exception.referenceDependencyMismatch')
+    expect(result.descriptionParams).toEqual({
+      entityHandle: 'ticket',
+      fieldName: 'creatorPerson',
+      parentFieldName: 'creatorCompany',
+    })
+  })
+
   it('does not show generic HTTP client text as a user description', () => {
     const result = resolveApiError({
       message: 'Request failed with status code 500',

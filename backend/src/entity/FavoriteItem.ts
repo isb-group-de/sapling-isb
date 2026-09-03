@@ -131,7 +131,11 @@ export class FavoriteItem {
     mobileOrder: 100,
     mobileVisible: false,
   })
-  @ManyToOne(() => PersonItem, { nullable: false })
+  @ManyToOne(() => PersonItem, {
+    nullable: false,
+    foreignKeyName: 'favorite_item_person_handle_foreign',
+    deleteRule: 'cascade',
+  })
   person!: Rel<PersonItem>;
 
   /**
