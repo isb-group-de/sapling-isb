@@ -126,8 +126,8 @@
         auto-grow
         density="comfortable"
         hide-details
-        rows="3"
-        max-rows="8"
+        :rows="xs ? 2 : 3"
+        :max-rows="xs ? 6 : 8"
         variant="outlined"
         @keydown.enter.exact.prevent="emit('send')"
       />
@@ -228,6 +228,7 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useDisplay } from 'vuetify'
 import SaplingAutocomplete from '@/components/common/SaplingAutocomplete.vue'
 import SaplingTextarea from '@/components/common/SaplingTextarea.vue'
 import SaplingAiChatConversationTitle from '@/components/system/ai-chat/SaplingAiChatConversationTitle.vue'
@@ -319,6 +320,7 @@ const emit = defineEmits<{
 }>()
 
 const { t, te } = useI18n()
+const { xs } = useDisplay()
 const importFileInput = ref<HTMLInputElement | null>(null)
 const messageInput = ref<{ focus: () => void } | null>(null)
 

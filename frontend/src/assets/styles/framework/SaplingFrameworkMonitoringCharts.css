@@ -110,7 +110,14 @@
     padding-inline: var(--sapling-space-lg);
   }
 
-  .monitoring-console__controls,
+  .monitoring-console__controls {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .monitoring-console__controls > .v-select:first-child {
+    grid-column: 1 / -1;
+  }
+
   .monitoring-kpis,
   .monitoring-presence-summary,
   .monitoring-incident-detail {
@@ -119,6 +126,16 @@
 
   .monitoring-console__controls .v-btn {
     justify-self: end;
+  }
+
+  .monitoring-console__meta > .monitoring-console__meta-item--architecture,
+  .monitoring-console__meta > .monitoring-console__meta-item--server-time {
+    display: none;
+  }
+
+  .monitoring-console__updated {
+    width: auto;
+    margin-left: 0;
   }
 
   .monitoring-service-row {

@@ -69,9 +69,11 @@
                   :key="tab.key"
                   :value="tab.key"
                   class="sapling-account-center__tab"
+                  :aria-label="tab.label"
+                  :title="tab.label"
                 >
                   <v-icon :icon="tab.icon" />
-                  <span>{{ tab.label }}</span>
+                  <span class="sapling-account-center__tab-label">{{ tab.label }}</span>
                 </v-tab>
               </v-tabs>
 

@@ -9,7 +9,7 @@
       :eyebrow="$t('formConfig.eyebrow')"
       :title="$t('formConfig.title')"
     >
-      <p>{{ $t('formConfig.subtitle') }}</p>
+      <p class="sapling-form-config__hero-description">{{ $t('formConfig.subtitle') }}</p>
 
       <template #meta>
         <v-chip size="small" color="primary" variant="tonal" prepend-icon="mdi-table-cog">
@@ -28,23 +28,36 @@
           class="sapling-action-cluster sapling-config-hero-actions sapling-form-config__hero-actions"
         >
           <v-btn
+            class="sapling-form-config__hero-action"
             prepend-icon="mdi-content-save"
             color="primary"
             :disabled="!canSave"
             :loading="isSaving"
+            :aria-label="$t('global.save')"
+            :title="$t('global.save')"
             @click="saveConfig"
           >
             {{ $t('global.save') }}
           </v-btn>
           <v-btn
+            class="sapling-form-config__hero-action"
             prepend-icon="mdi-file-export-outline"
             variant="tonal"
             :disabled="!selectedEntityHandle"
+            :aria-label="$t('formConfig.export')"
+            :title="$t('formConfig.export')"
             @click="exportDraft"
           >
             {{ $t('formConfig.export') }}
           </v-btn>
-          <v-btn prepend-icon="mdi-file-import-outline" variant="text" @click="openImportFile">
+          <v-btn
+            class="sapling-form-config__hero-action"
+            prepend-icon="mdi-file-import-outline"
+            variant="text"
+            :aria-label="$t('formConfig.import')"
+            :title="$t('formConfig.import')"
+            @click="openImportFile"
+          >
             {{ $t('formConfig.import') }}
           </v-btn>
           <input

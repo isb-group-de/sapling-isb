@@ -52,10 +52,31 @@ describe('SaplingDialogEditHeader', () => {
         .find('.v-chip')
         .exists(),
     ).toBe(false)
+    const dirtyWrapper = mountHeader(false, {
+      dirtyChangeCount: 1,
+      dirtySummaryLabel: '1 Änderung',
+    })
+    expect(dirtyWrapper.get('.sapling-dialog-edit-hero__metadata-dirty-label').text()).toBe(
+      '1 Änderung',
+    )
+    expect(dirtyWrapper.get('.sapling-dialog-edit-hero__metadata-dirty-count').text()).toBe('1')
+  })
+
+  it('keeps compact metadata chips fully described for hover and assistive technology', () => {
+    const wrapper = mountHeader(true, {
+      createdAtTitle: 'Erstellt am',
+      createdAtLabel: '20.7.2026',
+      updatedAtTitle: 'Aktualisiert am',
+      updatedAtLabel: '21.7.2026',
+      selectedFormConfigChipLabel: 'Aktuelle Ansicht: Kompakt',
+    })
+
+    expect(wrapper.findAll('.sapling-dialog-edit-hero__metadata-chip')).toHaveLength(3)
     expect(
-      mountHeader(false, { dirtyChangeCount: 1, dirtySummaryLabel: '1 Änderung' })
-        .get('.v-chip')
-        .text(),
-    ).toBe('1 Änderung')
+      wrapper.findAll('.sapling-dialog-edit-hero__metadata-chip')[0]?.attributes('title'),
+    ).toBe('Erstellt am: 20.7.2026')
+    expect(
+      wrapper.find('.sapling-dialog-edit-hero__metadata-chip--view').attributes('aria-label'),
+    ).toBe('Aktuelle Ansicht: Kompakt')
   })
 })

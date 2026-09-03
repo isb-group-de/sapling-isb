@@ -513,7 +513,7 @@
 
 @media (max-width: 600px) {
   .sapling-ai-chat__header {
-    gap: var(--sapling-gap-xl);
+    gap: var(--sapling-gap-sm);
   }
 
   .sapling-chat-rail {
@@ -545,9 +545,18 @@
     padding: var(--sapling-space-md);
   }
 
+  .sapling-chat-conversation__header {
+    gap: var(--sapling-gap-sm);
+  }
+
   .sapling-chat-composer {
+    gap: var(--sapling-gap-sm);
     padding: var(--sapling-space-md) var(--sapling-space-md)
       calc(var(--sapling-space-md) + env(safe-area-inset-bottom, 0px));
+  }
+
+  .sapling-chat-composer__hint {
+    display: none;
   }
 
   .sapling-chat-message {

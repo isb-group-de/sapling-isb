@@ -70,6 +70,9 @@
 
           <div
             class="sapling-action-cluster sapling-admin-hero__actions sapling-permission-hero-actions"
+            :class="{
+              'sapling-permission-hero-actions--inactive': !hasUnsavedPermissionChanges,
+            }"
           >
             <v-chip
               v-if="hasUnsavedPermissionChanges"

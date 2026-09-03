@@ -317,14 +317,11 @@
       @update:model-value="(val: string) => updateField(template.name, val)"
     />
   </template>
-  <div v-if="showLabel && !usesEmbeddedReferenceHelp" class="sapling-record-field-help-action">
-    <SaplingHelpTooltip
-      v-if="helpText"
-      :text="helpText"
-      :aria-label="plainLabel"
-      icon-size="16"
-      compact
-    />
+  <div
+    v-if="showLabel && helpText && !usesEmbeddedReferenceHelp"
+    class="sapling-record-field-help-action"
+  >
+    <SaplingHelpTooltip :text="helpText" :aria-label="plainLabel" icon-size="16" compact />
   </div>
 </template>
 

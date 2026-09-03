@@ -278,6 +278,22 @@
   }
 }
 
+@media (max-width: 520px) {
+  .sapling-account-center__tabs .v-slide-group__content {
+    width: 100%;
+  }
+
+  .sapling-account-center__tab {
+    min-width: var(--sapling-control-size-md);
+    flex: 1 1 0;
+    padding-inline: var(--sapling-gap-xs);
+  }
+
+  .sapling-account-center__tab-label {
+    display: none;
+  }
+}
+
 @media (min-width: 901px) and (max-width: 960px) {
   .sapling-record-dialog-nav-item--active,
   .sapling-record-dialog-nav-item--record.sapling-record-dialog-nav-item--active {

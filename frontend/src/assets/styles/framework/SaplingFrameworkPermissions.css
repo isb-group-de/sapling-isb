@@ -53,3 +53,101 @@
   outline: 2px solid rgb(var(--v-theme-warning));
   outline-offset: 1px;
 }
+
+.sapling-field-permission-mobile {
+  display: grid;
+  gap: var(--sapling-gap-md);
+}
+
+.sapling-field-permission-mobile__bulk {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sapling-gap-xs);
+}
+
+.sapling-field-permission-mobile__bulk-action {
+  display: grid;
+  min-width: 0;
+  gap: var(--sapling-gap-xs);
+  padding: var(--sapling-gap-xs);
+  border: 1px solid var(--sapling-surface-border-muted);
+  border-radius: var(--sapling-radius-xs);
+  background: var(--sapling-surface-fill-subtle);
+}
+
+.sapling-field-permission-mobile__action-title,
+.sapling-field-permission-mobile__bulk-buttons,
+.sapling-field-permission-mobile__field-heading,
+.sapling-field-permission-mobile__permissions,
+.sapling-field-permission-mobile__permission {
+  display: flex;
+  align-items: center;
+}
+
+.sapling-field-permission-mobile__action-title {
+  min-width: 0;
+  justify-content: center;
+  gap: var(--sapling-gap-xs);
+  color: rgb(var(--v-theme-primary));
+}
+
+.sapling-field-permission-mobile__bulk-buttons {
+  justify-content: space-around;
+}
+
+.sapling-field-permission-mobile__group {
+  overflow: hidden;
+  border: 1px solid var(--sapling-surface-border-muted);
+  border-radius: var(--sapling-radius-sm);
+  background: var(--sapling-surface-fill-subtle);
+}
+
+.sapling-field-permission-mobile__group > h3 {
+  margin: 0;
+  padding: var(--sapling-gap-sm) var(--sapling-gap-md);
+  background: rgba(var(--v-theme-primary), 0.14);
+  font-size: var(--sapling-text-meta-size);
+  font-weight: 600;
+  letter-spacing: 0.025em;
+}
+
+.sapling-field-permission-mobile__field {
+  display: grid;
+  gap: var(--sapling-gap-sm);
+  padding: var(--sapling-gap-sm) var(--sapling-gap-md);
+}
+
+.sapling-field-permission-mobile__field + .sapling-field-permission-mobile__field {
+  border-top: 1px solid var(--sapling-surface-border-muted);
+}
+
+.sapling-field-permission-mobile__field-heading {
+  min-width: 0;
+}
+
+.sapling-field-permission-mobile__field-heading .sapling-field-warning {
+  margin-left: auto;
+}
+
+.sapling-field-permission-mobile__permissions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sapling-gap-xs);
+}
+
+.sapling-field-permission-mobile__permission {
+  min-width: 0;
+  justify-content: space-between;
+  gap: var(--sapling-gap-xs);
+  font-size: var(--sapling-text-label-size-xs);
+}
+
+.sapling-field-permission-mobile__permission > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sapling-field-permission-mobile__permission .v-input {
+  flex: 0 0 auto;
+}

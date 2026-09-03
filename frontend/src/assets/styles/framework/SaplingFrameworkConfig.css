@@ -9,6 +9,11 @@
   width: auto;
 }
 
+.sapling-form-config__hero-description {
+  margin: 0;
+  line-height: 1.5;
+}
+
 .sapling-config-alert {
   margin-bottom: var(--sapling-space-lg);
 }
@@ -293,4 +298,112 @@
 
 .sapling-form-config__scope-handle {
   min-width: 0;
+}
+
+@media (max-width: 1180px) {
+  .sapling-config-workspace,
+  .sapling-config-settings,
+  .sapling-config-field__controls,
+  .sapling-form-config-group__header {
+    grid-template-columns: 1fr;
+  }
+
+  .sapling-config-workspace {
+    height: auto;
+    min-height: auto;
+  }
+
+  .sapling-form-config {
+    overflow-y: auto;
+  }
+
+  .sapling-form-config__workspace {
+    flex: 0 0 auto;
+  }
+
+  .sapling-config-panel,
+  .sapling-form-config__panel--editor {
+    overflow: visible;
+  }
+
+  .sapling-form-config__panel--editor > .sapling-form-config__field-tools {
+    position: static;
+    box-shadow: none;
+  }
+
+  .sapling-config-field-list,
+  .sapling-config-preview {
+    overflow: visible;
+    padding-right: 0;
+  }
+
+  .sapling-config-field__control--label,
+  .sapling-config-field__control--placeholder,
+  .sapling-config-field__control--help-text {
+    grid-column: auto;
+  }
+
+  .sapling-config-panel--sticky {
+    position: static;
+  }
+
+  .sapling-config-switches {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 720px) {
+  .sapling-config-toolbar,
+  .sapling-config-field-tools {
+    grid-template-columns: 1fr;
+  }
+
+  .sapling-config-hero-actions {
+    justify-content: flex-start;
+  }
+
+  .sapling-form-config__hero .sapling-page-hero__title {
+    font-size: var(--sapling-text-title-size-md);
+    line-height: 1.1;
+  }
+
+  .sapling-form-config__hero-actions {
+    flex-wrap: nowrap;
+  }
+
+  .sapling-form-config__hero-actions .sapling-form-config__hero-action.v-btn {
+    --sapling-button-radius: 50%;
+    width: var(--v-btn-height);
+    min-width: var(--v-btn-height);
+    padding-inline: 0;
+    flex: 0 0 var(--v-btn-height);
+  }
+
+  .sapling-form-config__hero-action > .v-btn__content {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .sapling-form-config__hero-action .v-btn__prepend {
+    margin-inline: 0;
+  }
+
+  .sapling-config-preview__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sapling-config-preview__field {
+    grid-column: span 1;
+  }
+
+  .sapling-form-config-preview__mode-toggle {
+    width: 100%;
+  }
 }

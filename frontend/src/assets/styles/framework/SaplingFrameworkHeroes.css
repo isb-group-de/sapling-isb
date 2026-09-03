@@ -261,6 +261,14 @@
   align-items: center;
 }
 
+.sapling-dialog-edit-hero__metadata-label {
+  margin-inline-end: 0.25em;
+}
+
+.sapling-dialog-edit-hero__metadata-dirty-count {
+  display: none;
+}
+
 .sapling-dialog-edit-hero__actions {
   display: flex;
   flex: 0 0 auto;
@@ -364,6 +372,26 @@
     width: auto;
     margin-left: auto;
   }
+
+  .sapling-dialog-edit-hero__metadata-view-label {
+    display: none;
+  }
+
+  .sapling-dialog-edit-hero__metadata-chip--view {
+    justify-content: center;
+    width: var(--sapling-control-size-sm);
+    min-width: var(--sapling-control-size-sm);
+    padding-inline: 0;
+  }
+
+  .sapling-dialog-edit-hero__metadata-chip--view .v-chip__content {
+    display: none;
+  }
+
+  .sapling-dialog-edit-hero__metadata-chip--view .v-chip__prepend,
+  .sapling-dialog-edit-hero__metadata-chip--view .v-chip__prepend .v-icon {
+    margin-inline: 0;
+  }
 }
 
 @media (max-width: 640px) {
@@ -405,6 +433,21 @@
   .sapling-dialog-edit-hero__meta {
     flex-direction: row;
     align-items: center;
+  }
+
+  .sapling-dialog-edit-hero__timestamps {
+    align-items: center;
+    gap: var(--sapling-gap-xs);
+  }
+
+  .sapling-dialog-edit-hero__metadata-label,
+  .sapling-dialog-edit-hero__metadata-view-label,
+  .sapling-dialog-edit-hero__metadata-dirty-label {
+    display: none;
+  }
+
+  .sapling-dialog-edit-hero__metadata-dirty-count {
+    display: inline;
   }
 
   .sapling-dialog-hero__actions,

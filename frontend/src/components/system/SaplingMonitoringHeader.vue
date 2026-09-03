@@ -54,11 +54,25 @@
     </header>
 
     <div class="monitoring-console__meta">
-      <span><v-icon icon="mdi-monitor" size="16" />{{ platform }}</span>
-      <span><v-icon icon="mdi-memory" size="16" />{{ architecture }}</span>
-      <span><v-icon icon="mdi-source-branch" size="16" />{{ version }}</span>
-      <span><v-icon icon="mdi-server" size="16" />{{ serverTime }}</span>
-      <span class="monitoring-console__updated">
+      <span class="monitoring-console__meta-item" :title="platform">
+        <v-icon icon="mdi-monitor" size="16" />{{ platform }}
+      </span>
+      <span
+        class="monitoring-console__meta-item monitoring-console__meta-item--architecture"
+        :title="architecture"
+      >
+        <v-icon icon="mdi-memory" size="16" />{{ architecture }}
+      </span>
+      <span class="monitoring-console__meta-item" :title="version">
+        <v-icon icon="mdi-source-branch" size="16" />{{ version }}
+      </span>
+      <span
+        class="monitoring-console__meta-item monitoring-console__meta-item--server-time"
+        :title="serverTime"
+      >
+        <v-icon icon="mdi-server" size="16" />{{ serverTime }}
+      </span>
+      <span class="monitoring-console__updated" :title="lastUpdatedLabel">
         <v-icon icon="mdi-database-clock-outline" size="16" />
         {{ lastUpdatedLabel }}
       </span>

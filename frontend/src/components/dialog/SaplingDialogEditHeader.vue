@@ -4,39 +4,58 @@
       <template #timestamps>
         <v-chip
           v-if="createdAtLabel"
+          class="sapling-dialog-edit-hero__metadata-chip sapling-dialog-edit-hero__metadata-chip--timestamp"
           size="small"
           color="primary"
           variant="tonal"
           prepend-icon="mdi-calendar-plus-outline"
+          :aria-label="`${createdAtTitle}: ${createdAtLabel}`"
+          :title="`${createdAtTitle}: ${createdAtLabel}`"
         >
-          {{ createdAtTitle }}: {{ createdAtLabel }}
+          <span class="sapling-dialog-edit-hero__metadata-label">{{ createdAtTitle }}:</span>
+          <span>{{ createdAtLabel }}</span>
         </v-chip>
         <v-chip
           v-if="updatedAtLabel"
+          class="sapling-dialog-edit-hero__metadata-chip sapling-dialog-edit-hero__metadata-chip--timestamp"
           size="small"
           color="primary"
           variant="tonal"
           prepend-icon="mdi-calendar-edit-outline"
+          :aria-label="`${updatedAtTitle}: ${updatedAtLabel}`"
+          :title="`${updatedAtTitle}: ${updatedAtLabel}`"
         >
-          {{ updatedAtTitle }}: {{ updatedAtLabel }}
+          <span class="sapling-dialog-edit-hero__metadata-label">{{ updatedAtTitle }}:</span>
+          <span>{{ updatedAtLabel }}</span>
         </v-chip>
         <v-chip
           v-if="selectedFormConfigChipLabel"
+          class="sapling-dialog-edit-hero__metadata-chip sapling-dialog-edit-hero__metadata-chip--view"
           size="small"
           color="primary"
           variant="tonal"
           prepend-icon="mdi-table-cog"
+          :aria-label="selectedFormConfigChipLabel"
+          :title="selectedFormConfigChipLabel"
         >
-          {{ selectedFormConfigChipLabel }}
+          <span class="sapling-dialog-edit-hero__metadata-view-label">
+            {{ selectedFormConfigChipLabel }}
+          </span>
         </v-chip>
         <v-chip
           v-if="dirtyChangeCount > 0 && mode !== 'readonly'"
+          class="sapling-dialog-edit-hero__metadata-chip sapling-dialog-edit-hero__metadata-chip--dirty"
           size="small"
           color="warning"
           variant="tonal"
           prepend-icon="mdi-pencil"
+          :aria-label="dirtySummaryLabel"
+          :title="dirtySummaryLabel"
         >
-          {{ dirtySummaryLabel }}
+          <span class="sapling-dialog-edit-hero__metadata-dirty-label">
+            {{ dirtySummaryLabel }}
+          </span>
+          <span class="sapling-dialog-edit-hero__metadata-dirty-count">{{ dirtyChangeCount }}</span>
         </v-chip>
       </template>
 

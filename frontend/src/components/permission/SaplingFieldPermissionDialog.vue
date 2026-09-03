@@ -32,7 +32,11 @@
             </div>
 
             <v-progress-linear v-if="loading" indeterminate />
-            <v-table v-else density="comfortable" class="sapling-admin-matrix">
+            <v-table
+              v-if="!loading && !$vuetify.display.smAndDown"
+              density="comfortable"
+              class="sapling-admin-matrix"
+            >
               <thead>
                 <tr>
                   <th>{{ $t('fieldPermission.fieldName') }}</th>
@@ -91,6 +95,7 @@
                     >
                       <SaplingCheckbox
                         v-model="draft[field.name][action.key]"
+                        :aria-label="`${fieldLabel(field.name)}: ${$t(action.label)}`"
                         :disabled="
                           !field.structural[action.key] || !catalog?.entityPermission[action.key]
                         "
@@ -124,6 +129,120 @@
                 </template>
               </tbody>
             </v-table>
+
+            <div v-else-if="!loading" class="sapling-field-permission-mobile">
+              <div class="sapling-field-permission-mobile__bulk">
+                <section
+                  v-for="action in actions"
+                  :key="action.key"
+                  class="sapling-field-permission-mobile__bulk-action"
+                >
+                  <div
+                    class="sapling-field-permission-mobile__action-title"
+                    :title="$t(action.label)"
+                  >
+                    <v-icon :icon="action.icon" size="18" />
+                    <span class="sapling-visually-hidden">{{ $t(action.label) }}</span>
+                    <SaplingHelpTooltip
+                      :text="$t(`${action.label}Tooltip`)"
+                      :aria-label="$t(action.label)"
+                      icon-size="16"
+                      compact
+                    />
+                  </div>
+                  <div class="sapling-field-permission-mobile__bulk-buttons">
+                    <v-btn
+                      size="x-small"
+                      variant="text"
+                      icon="mdi-check-all"
+                      :aria-label="`${$t(action.label)}: ${$t('right.all')}`"
+                      :title="$t('right.all')"
+                      @click="setAll(action.key, true)"
+                    />
+                    <v-btn
+                      size="x-small"
+                      variant="text"
+                      icon="mdi-close-box-multiple-outline"
+                      :aria-label="`${$t(action.label)}: ${$t('right.none')}`"
+                      :title="$t('right.none')"
+                      @click="setAll(action.key, false)"
+                    />
+                    <v-btn
+                      size="x-small"
+                      variant="text"
+                      icon="mdi-restore"
+                      :aria-label="`${$t(action.label)}: ${$t('permission.inherit')}`"
+                      :title="$t('permission.inherit')"
+                      @click="restoreColumn(action.key)"
+                    />
+                  </div>
+                </section>
+              </div>
+
+              <section
+                v-for="group in filteredFieldGroups"
+                :key="group.name"
+                class="sapling-field-permission-mobile__group"
+              >
+                <h3>{{ group.label }}</h3>
+                <article
+                  v-for="field in group.fields"
+                  :key="field.name"
+                  class="sapling-field-permission-mobile__field"
+                >
+                  <div class="sapling-field-permission-mobile__field-heading">
+                    <span class="font-weight-medium">{{ fieldLabel(field.name) }}</span>
+                    <v-chip
+                      v-if="field.isHandle || field.isRequired"
+                      class="sapling-field-required-marker"
+                      color="error"
+                      size="x-small"
+                      :title="$t('global.isRequired')"
+                    >
+                      *
+                    </v-chip>
+                    <SaplingHelpTooltip
+                      v-if="hasRiskyRestriction(field)"
+                      :text="$t('permission.fieldPermissionWarning')"
+                      :aria-label="$t('permission.fieldPermissionWarning')"
+                      :max-width="320"
+                      compact
+                    >
+                      <template #activator="{ props: tooltipProps }">
+                        <button
+                          v-bind="tooltipProps"
+                          type="button"
+                          class="sapling-field-warning"
+                          :aria-label="$t('permission.fieldPermissionWarning')"
+                          @click.stop
+                        >
+                          <v-icon icon="mdi-alert-circle" color="warning" size="20" />
+                        </button>
+                      </template>
+                    </SaplingHelpTooltip>
+                  </div>
+
+                  <div class="sapling-field-permission-mobile__permissions">
+                    <label
+                      v-for="action in actions"
+                      :key="`${field.name}-${action.key}`"
+                      class="sapling-field-permission-mobile__permission"
+                    >
+                      <span>{{ $t(action.label) }}</span>
+                      <SaplingCheckbox
+                        v-model="draft[field.name][action.key]"
+                        :aria-label="`${fieldLabel(field.name)}: ${$t(action.label)}`"
+                        :disabled="
+                          !field.structural[action.key] || !catalog?.entityPermission[action.key]
+                        "
+                        hide-details
+                        density="compact"
+                      />
+                    </label>
+                  </div>
+                </article>
+              </section>
+            </div>
           </div>
         </template>
 
@@ -179,9 +298,9 @@ const search = ref('')
 const loading = ref(false)
 const saving = ref(false)
 const actions = [
-  { key: 'allowRead', label: 'right.canRead' },
-  { key: 'allowInsert', label: 'right.canInsert' },
-  { key: 'allowUpdate', label: 'right.canUpdate' },
+  { key: 'allowRead', label: 'right.canRead', icon: 'mdi-eye-outline' },
+  { key: 'allowInsert', label: 'right.canInsert', icon: 'mdi-plus-box-outline' },
+  { key: 'allowUpdate', label: 'right.canUpdate', icon: 'mdi-pencil-outline' },
 ] as const
 
 const visible = computed({

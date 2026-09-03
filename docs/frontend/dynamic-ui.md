@@ -586,6 +586,17 @@ was already active when the viewport became narrow. Horizontally paged knowledge
 loading skeletons share the same fixed-height list viewport so page changes do
 not move the reader or pagination controls.
 
+Mobile density reductions keep the information itself available. Generic record
+heroes hide the repeated timestamp prefixes while retaining the dates, and show
+the selected form configuration as an icon-only chip. The complete timestamp and
+view descriptions remain available through `title` and accessible names. Account
+tabs and form-configuration hero actions follow the same icon-only contract on
+phone widths. Inactive permission save/cancel actions are omitted until a draft
+change exists. Monitoring keeps the active platform, version, and refresh state
+visible while omitting architecture and server time from the compact phone
+summary. Songbird uses a two-row composer and omits its desktop keyboard hint on
+phones so message history retains the available height.
+
 ## Button Geometry
 
 Button shape is semantic and independent from Vuetify's `text`, `tonal`,
@@ -609,7 +620,10 @@ Icon actions attached directly to a form field use
 `sapling-field-action-button`. This keeps reference-record, mapping, and future
 field utilities on the same compact square geometry regardless of their
 surrounding dialog or field height. Field actions align with the top edge of
-their control, including beside multi-line reference values.
+their control, including beside multi-line reference values. Empty help
+affordances must not reserve a second control-height row. When help text exists,
+its action shares the field's row; otherwise the generated control uses the full
+field-shell width. This compact field rhythm applies at every viewport width.
 
 ## Dialogs
 
@@ -662,6 +676,10 @@ bottom viewport edges, keeps only its top corner radii, and owns the remaining
 viewport height. Workflows that switch to a mobile dialog above the standard
 phone breakpoint use the `docked` `SaplingDialog` option. Songbird follows the
 same mobile geometry while retaining its positioned overlay implementation.
+Field-permission editing is a documented exception to the desktop table layout:
+small and medium viewports render grouped field cards with simultaneous read,
+insert, and update controls. Column-wide all, none, and inheritance operations
+remain available as accessible icon actions, avoiding horizontal scrolling.
 
 Do not hand-roll dialog footers with ad hoc `<div class="sapling-dialog-actions">` blocks. Use the action components so spacing, mobile behavior, icons, and button ordering stay consistent:
 

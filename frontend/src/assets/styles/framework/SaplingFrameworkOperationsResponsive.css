@@ -71,6 +71,10 @@
     gap: var(--sapling-gap-xs);
   }
 
+  .sapling-action-cluster.sapling-permission-hero-actions--inactive {
+    display: none;
+  }
+
   .sapling-admin-stat-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--sapling-gap-xs);
