@@ -97,7 +97,10 @@ export function useSaplingDialogSupplementalTabs(
     () => !isSmallViewport.value && permissionFor('emailDelivery')?.allowRead === true,
   )
   const canShowPhoneCallsTab = computed(
-    () => !isSmallViewport.value && permissionFor('phoneCall')?.allowRead === true,
+    () =>
+      !isSmallViewport.value &&
+      props.entity?.handle !== 'phoneCall' &&
+      permissionFor('phoneCall')?.allowRead === true,
   )
   const canUploadDocuments = computed(
     () => hasPersistedItem.value && props.entity?.canInsert === true,

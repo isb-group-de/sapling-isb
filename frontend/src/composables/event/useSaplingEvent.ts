@@ -38,6 +38,7 @@ import { useSaplingEventEditor } from '@/composables/event/useSaplingEventEditor
 import { useSaplingEventPresentation } from '@/composables/event/useSaplingEventPresentation'
 import { useSaplingEventWorkspaceActions } from '@/composables/event/useSaplingEventWorkspaceActions'
 import { useSaplingEventInitialization } from '@/composables/event/useSaplingEventInitialization'
+import { resolvePersonWorkHours } from '@/composables/event/eventWorkHours'
 import { setRouteQueryParameter } from '@/utils/routerNavigation'
 
 const CALENDAR_TYPE_OPTIONS: CalendarType[] = ['day', 'workweek', 'week', 'month']
@@ -148,7 +149,15 @@ export function useSaplingEvent() {
     openPersistedEventEditor: (calendarEvent, forcedDirtyFields) =>
       openPersistedEventEditorDelegate(calendarEvent, forcedDirtyFields),
   })
-  const workHours = ref<WorkHourWeekItem | null>(null)
+  const fetchedWorkHours = ref<WorkHourWeekItem | null>(null)
+  const workHours = computed(() => {
+    const ownPersonHandle = ownPerson.value?.handle
+    const person =
+      typeof ownPersonHandle === 'number'
+        ? (peopleMap.value[ownPersonHandle] ?? ownPerson.value)
+        : ownPerson.value
+    return resolvePersonWorkHours(person, fetchedWorkHours.value)
+  })
   const {
     calendarScrollContainer,
     calendarTimeGrid,
@@ -295,7 +304,7 @@ export function useSaplingEvent() {
     ownPerson,
     currentPerson: () => currentPersonStore.person,
     peopleMap,
-    workHours,
+    workHours: fetchedWorkHours,
     selectedPeople: selectedPeoples,
     editEvent,
     calendarDateRange,
@@ -351,15 +360,16 @@ export function useSaplingEvent() {
     isCalendarInitializing.value = true
 
     try {
+      await loadOwnPerson()
       await Promise.all([
         loadTranslations(),
         currentPermissionStore.fetchCurrentPermission(),
-        loadOwnPerson(),
         loadEventDefaults(),
         loadEventEntity(),
         loadEventScriptButtons(),
         loadTemplates(),
         loadWorkHours(),
+        loadSelectedPeopleDetails(),
       ])
       await loadChipFilters()
     } finally {
@@ -380,6 +390,10 @@ export function useSaplingEvent() {
   watch(
     selectedPeoples,
     async () => {
+      if (isCalendarInitializing.value) {
+        return
+      }
+
       await loadSelectedPeopleDetails()
       await refreshVisibleEvents()
     },

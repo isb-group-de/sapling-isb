@@ -63,7 +63,7 @@ export class PhoneCallItem {
   reached = false;
 
   @ApiProperty({ type: () => EntityItem })
-  @Sapling(['isEntity'])
+  @Sapling(['isEntity', 'isReadOnly'])
   @SaplingForm({
     order: 100,
     group: 'phoneCall.groupReference',
@@ -81,6 +81,17 @@ export class PhoneCallItem {
   @ApiProperty()
   @Sapling(['isSystem', 'isValue'])
   @SaplingGenericReference({ entityField: 'entity', handleField: 'reference' })
+  @SaplingForm({
+    order: 100,
+    group: 'phoneCall.groupReference',
+    groupOrder: 400,
+    width: 2,
+    visible: true,
+    tableOrder: 100,
+    tableVisible: true,
+    mobileOrder: 100,
+    mobileVisible: true,
+  })
   @Property({ length: 128, nullable: false })
   reference!: string;
 

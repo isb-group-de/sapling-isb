@@ -47,13 +47,18 @@ export class GenericTimelineDescriptorService {
         candidateRelationFields,
         mainEntityHandle,
       );
+      const dateFields = this.getDateFieldConfig(template);
+
+      if (!dateFields) {
+        return [];
+      }
 
       return relationFieldGroups.map((relationFields) => ({
         entityHandle: name,
         template,
         relationFields,
         relationCategory: relationFields.length > 1 ? 'reference' : null,
-        dateFields: this.getDateFieldConfig(template),
+        dateFields,
         chipFields: template.filter(
           (field) =>
             field.options?.includes('isChip') &&
@@ -88,21 +93,46 @@ export class GenericTimelineDescriptorService {
     return clauses.length === 1 ? clauses[0] : { $or: clauses };
   }
 
-  getDateFieldConfig(template: EntityTemplateDto[]): TimelineDateFieldConfig {
+  getDateFieldConfig(
+    template: EntityTemplateDto[],
+  ): TimelineDateFieldConfig | null {
+    const persistentFields = template.filter(
+      (field) => field.isPersistent !== false,
+    );
+    const temporalFields = persistentFields.filter((field) => {
+      const type = field.type.toLowerCase();
+      return (
+        ['date', 'datetime', 'datetype'].includes(type) ||
+        type.startsWith('timestamp')
+      );
+    });
+    const createdAtField = temporalFields.find(
+      (field) => field.name === 'createdAt',
+    );
+    const updatedAtField = temporalFields.find(
+      (field) => field.name === 'updatedAt',
+    );
     const startField =
-      template.find((field) => field.options?.includes('isDateStart')) ??
-      template.find((field) => field.name === 'createdAt') ??
-      null;
+      temporalFields.find((field) => field.options?.includes('isDateStart')) ??
+      temporalFields.find((field) => field.options?.includes('isOrderDESC')) ??
+      createdAtField ??
+      temporalFields[0] ??
+      updatedAtField;
+
+    if (!startField) {
+      return null;
+    }
+
     const endField =
-      template.find((field) => field.options?.includes('isDateEnd')) ??
-      template.find((field) => field.name === 'updatedAt') ??
-      null;
+      temporalFields.find((field) => field.options?.includes('isDateEnd')) ??
+      updatedAtField ??
+      startField;
 
     return {
-      startFieldName: startField?.name ?? 'createdAt',
-      endFieldName: endField?.name ?? 'updatedAt',
-      startFallbackFieldName: 'createdAt',
-      endFallbackFieldName: 'updatedAt',
+      startFieldName: startField.name,
+      endFieldName: endField.name,
+      startFallbackFieldName: createdAtField?.name ?? startField.name,
+      endFallbackFieldName: updatedAtField?.name ?? endField.name,
     };
   }
 

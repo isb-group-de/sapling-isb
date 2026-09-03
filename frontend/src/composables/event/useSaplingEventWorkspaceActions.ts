@@ -10,6 +10,7 @@ import ApiCurrentService from '@/services/api.current.service'
 import { i18n } from '@/i18n'
 import { parseLocalCalendarDate, type CalendarDatePair, type CalendarType } from './eventDate.utils'
 import { getCalendarEventHandle, type CalendarViewMode } from './eventCalendar.utils'
+import { resolvePersonWorkHours } from './eventWorkHours'
 
 type PushMessage = (
   type: 'success' | 'info' | 'warning' | 'error',
@@ -62,7 +63,11 @@ export function useSaplingEventWorkspaceActions(options: {
   })
 
   async function loadWorkHours() {
-    options.workHours.value = await ApiCurrentService.getWorkWeek()
+    try {
+      options.workHours.value = await ApiCurrentService.getWorkWeek()
+    } catch {
+      options.workHours.value = null
+    }
   }
 
   function getPersonWorkHours(personId: number): WorkHourWeekItem | null {
@@ -70,16 +75,10 @@ export function useSaplingEventWorkspaceActions(options: {
     const person =
       options.peopleMap.value[personId] ??
       (personId === ownPersonHandle ? options.ownPerson.value : null)
-    const personWorkWeek =
-      typeof person?.workWeek === 'object' && person.workWeek ? person.workWeek : null
-    if (personWorkWeek) return personWorkWeek
-
-    const companyWorkWeek =
-      typeof person?.company?.workWeek === 'object' && person.company.workWeek
-        ? person.company.workWeek
-        : null
-    if (companyWorkWeek) return companyWorkWeek
-    return personId === ownPersonHandle ? options.workHours.value : null
+    return resolvePersonWorkHours(
+      person,
+      personId === ownPersonHandle ? options.workHours.value : null,
+    )
   }
 
   async function refreshCalendar() {

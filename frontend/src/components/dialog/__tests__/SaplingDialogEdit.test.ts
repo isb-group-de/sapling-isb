@@ -227,6 +227,34 @@ describe('SaplingDialogEdit', () => {
     ])
   })
 
+  it('does not append a recursive phone-call tab to phone-call records', async () => {
+    const state = createDialogState()
+    state.isLoading.value = false
+    state.permissions.value = [{ entityHandle: 'phoneCall', allowRead: true, allowInsert: true }]
+    state.form.value = {
+      phoneNumber: '+49 30 1234567',
+      reference: '42',
+    }
+    dialogHarness.state = state
+
+    const wrapper = mountDialog({
+      entity: { handle: 'phoneCall' } as never,
+      templates: [
+        {
+          key: 'phoneNumber',
+          name: 'phoneNumber',
+          type: 'string',
+          options: ['isPhone', 'isValue'],
+        },
+      ],
+    })
+    await nextTick()
+
+    expect(wrapper.findAll('[role="tab"]').map((tab) => tab.text())).toEqual([
+      expect.stringContaining('navigation.phoneCall'),
+    ])
+  })
+
   it('omits supplemental record tabs below the mobile table breakpoint', async () => {
     const originalWidth = window.innerWidth
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: 899 })

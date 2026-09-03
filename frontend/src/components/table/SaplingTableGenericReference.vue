@@ -6,7 +6,7 @@
       :max-height="32"
       class="glass-panel sapling-button-truncate sapling-table-generic-reference__button"
       :loading="isLoading"
-      @click.stop="openTarget"
+      @click.stop="openTargetDialog"
     >
       <v-icon class="sapling-table-generic-reference__icon">mdi-eye</v-icon>
       <span v-if="displayLabel" class="sapling-text-truncate sapling-button-truncate__label">
@@ -27,19 +27,17 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, toRef } from 'vue'
-import { useRouter } from 'vue-router'
+import { toRef } from 'vue'
 import type { SaplingGenericItem } from '@/entity/entity'
 import type { EntityTemplate } from '@/entity/structure'
 import SaplingDialogEdit from '@/components/dialog/SaplingDialogEdit.vue'
+import { useSaplingGenericReferenceDialog } from '@/composables/reference/useSaplingGenericReferenceDialog'
 import { useSaplingGenericReferenceTarget } from '@/composables/reference/useSaplingGenericReferenceTarget'
 
 const props = defineProps<{
   item: SaplingGenericItem
   col: EntityTemplate
 }>()
-const router = useRouter()
-const dialogOpen = ref(false)
 
 const {
   displayLabel,
@@ -54,19 +52,8 @@ const {
   template: toRef(props, 'col'),
 })
 
-async function openTarget() {
-  const targetRecord = await ensureTargetResolved()
-  if (!targetRecord || !targetEntity.value) return
-  if (['company', 'person'].includes(targetEntity.value.handle) && targetRecord.handle != null) {
-    await router.push({
-      name: 'customer360',
-      params: {
-        entityHandle: targetEntity.value.handle,
-        handle: String(targetRecord.handle),
-      },
-    })
-    return
-  }
-  dialogOpen.value = true
-}
+const { dialogOpen, openTargetDialog } = useSaplingGenericReferenceDialog({
+  ensureTargetResolved,
+  targetEntity,
+})
 </script>

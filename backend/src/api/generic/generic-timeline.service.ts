@@ -114,7 +114,7 @@ export class GenericTimelineService {
 
   getTimelineDateFieldConfig(
     template: EntityTemplateDto[],
-  ): TimelineDateFieldConfig {
+  ): TimelineDateFieldConfig | null {
     return this.descriptorService.getDateFieldConfig(template);
   }
 

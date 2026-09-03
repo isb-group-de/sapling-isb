@@ -31,16 +31,14 @@ describe('GenericService timeline workflows', () => {
         title: 'April ticket',
         assigneePerson: { handle: 7 },
         isEscalated: true,
-        createdAt: new Date('2026-04-12T09:00:00.000Z'),
-        updatedAt: new Date('2026-04-15T09:00:00.000Z'),
+        occurredAt: new Date('2026-04-12T09:00:00.000Z'),
       },
       {
         handle: 102,
         title: 'March ticket',
         assigneePerson: { handle: 7 },
         isEscalated: false,
-        createdAt: new Date('2026-03-05T09:00:00.000Z'),
-        updatedAt: new Date('2026-03-08T09:00:00.000Z'),
+        occurredAt: new Date('2026-03-05T09:00:00.000Z'),
       },
     ];
     const find = jest.fn((...args: unknown[]) => {
@@ -67,8 +65,11 @@ describe('GenericService timeline workflows', () => {
             return [
               createTemplateField({ name: 'handle', type: 'number' }),
               createTemplateField({ name: 'title', type: 'string' }),
-              createTemplateField({ name: 'createdAt', type: 'date' }),
-              createTemplateField({ name: 'updatedAt', type: 'date' }),
+              createTemplateField({
+                name: 'occurredAt',
+                type: 'datetime',
+                options: ['isOrderDESC'],
+              }),
               createTemplateField({
                 name: 'assigneePerson',
                 isReference: true,
@@ -125,6 +126,12 @@ describe('GenericService timeline workflows', () => {
     expect(JSON.stringify(recordQuery?.[1])).toContain('$lte');
     expect(JSON.stringify(recordQuery?.[1])).toContain('$gte');
     expect(JSON.stringify(olderRecordQuery?.[1])).toContain('$lt');
+    expect(JSON.stringify(recordQuery?.[1])).toContain('occurredAt');
+    expect(JSON.stringify(recordQuery?.[1])).not.toContain('createdAt');
+    expect(JSON.stringify(recordQuery?.[1])).not.toContain('updatedAt');
+    expect(recordQuery?.[2]).toEqual(
+      expect.objectContaining({ orderBy: { occurredAt: 'DESC' } }),
+    );
     expect(result.months).toHaveLength(2);
     expect(result.months.map((month) => month.key)).toEqual([
       '2026-04',
@@ -136,6 +143,25 @@ describe('GenericService timeline workflows', () => {
     expect(result.nextBefore).toBe('2026-02');
 
     ENTITY_REGISTRY.splice(0, ENTITY_REGISTRY.length);
+  });
+
+  it('reuses a lone creation timestamp as both timeline boundaries', () => {
+    const timelineService = new GenericTimelineService(
+      { getEntityTemplate: jest.fn(() => []) } as never,
+      { getEntityPermissions: jest.fn() } as never,
+    );
+
+    expect(
+      timelineService.getTimelineDateFieldConfig([
+        createTemplateField({ name: 'handle', type: 'number' }),
+        createTemplateField({ name: 'createdAt', type: 'datetime' }),
+      ]),
+    ).toEqual({
+      startFieldName: 'createdAt',
+      endFieldName: 'createdAt',
+      startFallbackFieldName: 'createdAt',
+      endFallbackFieldName: 'createdAt',
+    });
   });
 
   it('builds table-friendly timeline drilldown filters for primary date fields', () => {

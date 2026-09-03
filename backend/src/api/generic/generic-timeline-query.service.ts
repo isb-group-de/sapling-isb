@@ -13,6 +13,7 @@ import { GenericReferenceService } from './generic-reference.service';
 import { GenericSanitizerService } from './generic-sanitizer.service';
 import {
   GenericTimelineService,
+  TimelineDateFieldConfig,
   TimelineDescriptorDataset,
   TimelineRecordResult,
   TimelineRelationDescriptor,
@@ -65,7 +66,12 @@ export class GenericTimelineQueryService {
       await this.fieldPermissions.getTemplates(entityHandle),
     );
     const mainDateFields =
-      this.genericTimelineService.getTimelineDateFieldConfig(mainTemplate);
+      this.genericTimelineService.getTimelineDateFieldConfig(mainTemplate) ?? {
+        startFieldName: 'createdAt',
+        endFieldName: 'updatedAt',
+        startFallbackFieldName: 'createdAt',
+        endFallbackFieldName: 'updatedAt',
+      };
     const mainRecord = await this.findTimelineRecord(
       entityHandle,
       this.genericReferenceService.getHandleFilter(
@@ -205,6 +211,7 @@ export class GenericTimelineQueryService {
             ),
             descriptor.template,
             currentUser,
+            descriptor.dateFields,
           ),
           this.hasTimelineRecordsBefore(
             descriptor.entityHandle,
@@ -251,6 +258,7 @@ export class GenericTimelineQueryService {
     where: object,
     template: EntityTemplateDto[],
     currentUser: PersonItem,
+    dateFields: TimelineDateFieldConfig,
   ): Promise<Record<string, unknown>[]> {
     const entityClass =
       this.genericQueryService.getEntityClass<TimelineRecordResult>(
@@ -265,7 +273,7 @@ export class GenericTimelineQueryService {
       template,
       {
         populate,
-        orderBy: { updatedAt: 'DESC', createdAt: 'DESC' },
+        orderBy: this.buildTimelineOrderBy(dateFields),
       },
     );
 
@@ -275,6 +283,17 @@ export class GenericTimelineQueryService {
       currentUser,
       template,
     );
+  }
+
+  private buildTimelineOrderBy(
+    dateFields: TimelineDateFieldConfig,
+  ): Record<string, 'DESC'> {
+    return [dateFields.endFieldName, dateFields.startFieldName].reduce<
+      Record<string, 'DESC'>
+    >((orderBy, fieldName) => {
+      orderBy[fieldName] = 'DESC';
+      return orderBy;
+    }, {});
   }
 
   private async prepareDescriptors(
@@ -287,6 +306,8 @@ export class GenericTimelineQueryService {
         ...descriptor.relationFields.map((field) => field.name),
         descriptor.dateFields.startFieldName,
         descriptor.dateFields.endFieldName,
+        descriptor.dateFields.startFallbackFieldName,
+        descriptor.dateFields.endFallbackFieldName,
         ...descriptor.chipFields.map((field) => field.name),
         ...descriptor.booleanFields.map((field) => field.name),
         ...(descriptor.moneyField ? [descriptor.moneyField.name] : []),

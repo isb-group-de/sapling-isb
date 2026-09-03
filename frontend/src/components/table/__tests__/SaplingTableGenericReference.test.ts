@@ -15,9 +15,15 @@ const mocks = vi.hoisted(() => {
   ]
 
   return {
-    findByHandles: vi.fn().mockResolvedValue([{ handle: 5, ticketNumber: 'T-0005' }]),
-    getState: vi.fn(() => ({
-      entity: { handle: 'ticket' },
+    findByHandles: vi.fn(async (entityHandle: string, handles: Array<string | number>) =>
+      handles.map((handle) =>
+        entityHandle === 'company'
+          ? { handle, name: 'Acme GmbH' }
+          : { handle, ticketNumber: 'T-0005' },
+      ),
+    ),
+    getState: vi.fn((entityHandle: string) => ({
+      entity: { handle: entityHandle },
       entityTemplates: targetTemplates,
     })),
     loadGeneric: vi.fn().mockResolvedValue(undefined),
@@ -94,5 +100,34 @@ describe('SaplingTableGenericReference', () => {
 
     wrapper.unmount()
     vi.useRealTimers()
+  })
+
+  it('opens company references in the normal record dialog instead of Customer 360', async () => {
+    const wrapper = mount(SaplingTableGenericReference, {
+      props: {
+        item: { handle: 1, entity: 'company', reference: 77 },
+        col: genericReferenceTemplate,
+      },
+      global: {
+        stubs: {
+          SaplingDialogEdit: {
+            name: 'SaplingDialogEdit',
+            props: ['modelValue', 'mode', 'item', 'entity', 'templates'],
+            template: '<div data-test="reference-dialog" />',
+          },
+          VBtn: { template: '<button><slot /></button>' },
+          VIcon: { template: '<i><slot /></i>' },
+        },
+      },
+    })
+
+    await wrapper.get('button').trigger('click')
+    await flushPromises()
+
+    const dialog = wrapper.getComponent({ name: 'SaplingDialogEdit' })
+    expect(dialog.props('mode')).toBe('readonly')
+    expect(dialog.props('item')).toEqual({ handle: 77, name: 'Acme GmbH' })
+    expect(dialog.props('entity')).toEqual({ handle: 'company' })
+    expect(mocks.routerPush).not.toHaveBeenCalled()
   })
 })

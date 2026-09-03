@@ -3,8 +3,8 @@ import { EntityTemplateDto } from '../template/dto/entity-template.dto';
 export type TimelineDateFieldConfig = {
   startFieldName: string;
   endFieldName: string;
-  startFallbackFieldName: 'createdAt';
-  endFallbackFieldName: 'updatedAt';
+  startFallbackFieldName: string;
+  endFallbackFieldName: string;
 };
 
 export type TimelineRelationDescriptor = {

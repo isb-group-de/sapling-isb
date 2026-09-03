@@ -401,6 +401,12 @@ Only universally readable relation, date, grouping, and amount fields
 participate. Change-log payloads and detail properties are filtered against the
 source entity and property name.
 
+Timeline start dates prefer an explicit `isDateStart`, then a temporal
+`isOrderDESC` field, and then an available `createdAt` timestamp. End dates use
+an explicit `isDateEnd`, `updatedAt`, or the selected start date. Every fallback
+must exist as a persistent field; entities without one are omitted from related
+timeline datasets.
+
 ## Cross-cutting Projection
 
 Authenticated specialized controllers are covered by the global
