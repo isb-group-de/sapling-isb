@@ -417,12 +417,12 @@ export function getSaplingPropertyNamesWithOption(
   target: object,
   option: SaplingOption,
 ): string[] {
-  const metadataTarget =
+  const metadataTarget: object =
     typeof target === 'function'
-      ? target.prototype
+      ? (target as unknown as { prototype: object }).prototype
       : Reflect.getOwnMetadata(SAPLING_PROPERTY_KEYS_METADATA_KEY, target)
         ? target
-        : Object.getPrototypeOf(target);
+        : (Object.getPrototypeOf(target) as object);
   const prototypeChain: object[] = [];
   let current = metadataTarget as object | null;
 

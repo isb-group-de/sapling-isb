@@ -12,7 +12,7 @@ import {
   verifyAuthenticationResponse,
   verifyRegistrationResponse,
   type AuthenticationResponseJSON,
-  type AuthenticatorTransportFuture,
+  type AuthenticatorTransport,
   type PublicKeyCredentialCreationOptionsJSON,
   type PublicKeyCredentialRequestOptionsJSON,
   type RegistrationResponseJSON,
@@ -280,13 +280,13 @@ export class AuthPasskeyService {
 
   private normalizeTransports(
     transports?: string[],
-  ): AuthenticatorTransportFuture[] | undefined {
+  ): AuthenticatorTransport[] | undefined {
     const normalized = transports
       ?.map((transport) => transport.trim())
       .filter((transport) => transport.length > 0);
 
     return normalized?.length
-      ? (normalized as AuthenticatorTransportFuture[])
+      ? (normalized as AuthenticatorTransport[])
       : undefined;
   }
 

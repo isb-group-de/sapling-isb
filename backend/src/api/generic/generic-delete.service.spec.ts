@@ -220,8 +220,12 @@ describe('GenericDeleteService', () => {
       'event',
       14,
       expect.objectContaining({ handle: 1 }),
-      expect.objectContaining({ postCommitTasks: expect.any(Array) }),
-      expect.objectContaining({ postCommitTasks: expect.any(Array) }),
+      expect.objectContaining({
+        postCommitTasks: expect.any(Array) as unknown,
+      }),
+      expect.objectContaining({
+        postCommitTasks: expect.any(Array) as unknown,
+      }),
     );
   });
 });

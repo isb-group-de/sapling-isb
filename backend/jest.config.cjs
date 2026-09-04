@@ -3,8 +3,16 @@ module.exports = {
   rootDir: 'src',
   testRegex: '.*\\.spec\\.ts$',
   transform: {
-    '^.+\\.(t|j)s$': 'ts-jest',
+    '^.+\\.ts$': 'ts-jest',
+    '^.+\\.js$': [
+      '@swc/jest',
+      {
+        jsc: { target: 'es2022' },
+        module: { type: 'commonjs' },
+      },
+    ],
   },
+  transformIgnorePatterns: ['/node_modules/(?!@nestjs/)'],
   collectCoverageFrom: ['**/*.(t|j)s'],
   coverageDirectory: '../coverage',
   testEnvironment: 'node',

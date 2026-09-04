@@ -58,9 +58,10 @@ describe('SaplingFieldNumber', () => {
     })
 
     const incrementButton = wrapper.find('[data-testid="increment"]')
+    const details = wrapper.get('.v-input__details')
 
     expect(incrementButton.exists()).toBe(true)
-    expect(wrapper.find('.v-input__details').exists()).toBe(false)
+    expect(details.classes()).toContain('v-input__details--hidden')
 
     await incrementButton.trigger('pointerdown', { pointerId: 1 })
     await nextTick()
@@ -92,7 +93,9 @@ describe('SaplingFieldNumber', () => {
     await (numberInput.vm as unknown as { validate: () => Promise<unknown> }).validate()
     await nextTick()
 
-    expect(wrapper.get('.v-input__details').text()).toContain('Pflichtfeld')
+    const details = wrapper.get('.v-input__details')
+    expect(details.classes()).not.toContain('v-input__details--hidden')
+    expect(details.text()).toContain('Pflichtfeld')
 
     wrapper.unmount()
   })
