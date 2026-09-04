@@ -1,7 +1,10 @@
 import { describe, expect, it, jest } from '@jest/globals';
 import { EventItem } from '../../entity/EventItem';
+import { CompanyItem } from '../../entity/CompanyItem';
+import { CountryItem } from '../../entity/CountryItem';
 import {
   buildGoogleCalendarEvent,
+  buildGoogleCalendarEventPatch,
   clampGoogleImportRangeToFuture,
   normalizeGoogleRecurrence,
   resolveGoogleSeriesImportEvents,
@@ -105,6 +108,31 @@ describe('google-calendar.utils', () => {
         },
       },
     });
+  });
+
+  it('sends and updates the customer address as Google Calendar location', () => {
+    const company = Object.assign(new CompanyItem(), {
+      name: 'Muster GmbH',
+      street: 'Musterstraße 1',
+      zip: '10115',
+      city: 'Berlin',
+      country: Object.assign(new CountryItem(), { name: 'Deutschland' }),
+    });
+    const event = {
+      title: 'Customer appointment',
+      description: 'Details',
+      startDate: new Date('2026-09-10T09:00:00.000Z'),
+      endDate: new Date('2026-09-10T10:00:00.000Z'),
+      participants: [],
+      creatorCompany: company,
+      createOnlineMeeting: false,
+    } as unknown as EventItem;
+    const location = 'Muster GmbH, Musterstraße 1, 10115, Berlin, Deutschland';
+
+    expect(buildGoogleCalendarEvent(event)).toMatchObject({ location });
+    expect(
+      buildGoogleCalendarEventPatch(event, [], ['creatorCompany']),
+    ).toEqual({ patch: { location }, sendUpdates: 'all' });
   });
 
   it('normalizes RRULE and EXDATE lines from a Google series master', () => {

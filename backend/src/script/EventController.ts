@@ -20,6 +20,7 @@ const CALENDAR_PROVIDER_RELEVANT_EVENT_FIELDS = new Set([
   'createOnlineMeeting',
   'type',
   'category',
+  'creatorCompany',
   'status',
 ]);
 

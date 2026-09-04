@@ -174,4 +174,20 @@ describe('Sapling UI architecture', () => {
       expect.stringContaining('padding-top: var(--sapling-dialog-field-label-clearance)'),
     )
   })
+
+  it('keeps generated field recommendations on a separate row below their controls', () => {
+    const recordFormStyles = readFileSync(
+      join(sourceRoot, 'assets/styles/framework/SaplingFrameworkRecordForm.css'),
+      'utf8',
+    )
+    const fieldShellRule = recordFormStyles.match(/\.sapling-record-field-shell\s*\{([^}]+)\}/)?.[1]
+    const recommendationRule = recordFormStyles.match(
+      /\.sapling-record-field-recommendation\s*\{([^}]+)\}/,
+    )?.[1]
+
+    expect(fieldShellRule).toContain('display: grid')
+    expect(fieldShellRule).toContain('grid-template-columns: minmax(0, 1fr) auto')
+    expect(recommendationRule).toContain('grid-column: 1 / -1')
+    expect(recommendationRule).toContain('margin-block-start: var(--sapling-space-2xs)')
+  })
 })

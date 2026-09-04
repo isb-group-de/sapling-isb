@@ -1,5 +1,6 @@
 import { calendar_v3 } from 'googleapis';
 import { EventItem } from '../../entity/EventItem';
+import { resolveCalendarEventLocation } from '../calendar-address.utils';
 import { buildGoogleRecurrence } from '../calendar.recurrence';
 import {
   type CalendarClassificationMapping,
@@ -222,6 +223,7 @@ export function buildGoogleCalendarEvent(
   conferenceRequestId?: string,
 ): calendar_v3.Schema$Event {
   const colorId = resolveGoogleCalendarColorId(event, classificationMappings);
+  const location = resolveCalendarEventLocation(event);
 
   const resource: calendar_v3.Schema$Event = {
     summary: event.title,
@@ -244,6 +246,7 @@ export function buildGoogleCalendarEvent(
       email: participant.email,
       displayName: `${participant.firstName} ${participant.lastName}`,
     })),
+    ...(location ? { location } : {}),
   };
 
   if (event.createOnlineMeeting && conferenceRequestId) {
@@ -317,6 +320,7 @@ export function buildGoogleCalendarEventPatch(
     copy('colorId');
     copy('extendedProperties');
   }
+  if (changed.has('creatorCompany')) copy('location');
 
   const attendeeVisibleFields = [
     'summary',
@@ -325,6 +329,7 @@ export function buildGoogleCalendarEventPatch(
     'end',
     'recurrence',
     'attendees',
+    'location',
   ];
   const sendUpdates = attendeeVisibleFields.some((field) => field in patch)
     ? 'all'

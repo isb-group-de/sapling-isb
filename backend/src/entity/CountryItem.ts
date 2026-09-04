@@ -45,7 +45,7 @@ export class CountryItem {
    * @type {string}
    */
   @ApiProperty()
-  @Sapling(['isValue'])
+  @Sapling(['isValue', 'isAddress'])
   @SaplingForm({
     order: 100,
     group: 'country.groupBasics',

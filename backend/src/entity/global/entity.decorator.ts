@@ -27,6 +27,7 @@ export type {
 } from './entity-metadata.types';
 
 const SAPLING_OPTIONS_METADATA_KEY = 'sapling:options';
+const SAPLING_PROPERTY_KEYS_METADATA_KEY = 'sapling:propertyKeys';
 const SAPLING_REFERENCE_DEPENDENCY_METADATA_KEY = 'sapling:referenceDependency';
 const SAPLING_FORM_LAYOUT_METADATA_KEY = 'sapling:formLayout';
 const SAPLING_GENERIC_REFERENCE_METADATA_KEY = 'sapling:genericReference';
@@ -49,7 +50,7 @@ const SAPLING_KANBAN_METADATA_KEY = 'sapling:kanban';
 /**
  * Enumeration of all Sapling metadata options.
  *
- * @typedef {('isCompany'|'isPerson'|'isEntity'|'isSecurity'|'isSearchExcluded'|'isValue'|'isHideAsReference'|'isColor'|'isIcon'|'isChip'|'isReadOnly'|'isLink'|'isMail'|'isPhone'|'isOrderASC'|'isOrderDESC'|'isNavigation'|'isMarkdown'|'isSystem'|'isPercent'|'isMoney'|'isNumeric'|'isDuplicateCheck')} SaplingOption
+ * @typedef {('isCompany'|'isPerson'|'isEntity'|'isSecurity'|'isSearchExcluded'|'isValue'|'isHideAsReference'|'isColor'|'isIcon'|'isChip'|'isReadOnly'|'isLink'|'isMail'|'isPhone'|'isOrderASC'|'isOrderDESC'|'isNavigation'|'isAddress'|'isMarkdown'|'isSystem'|'isPercent'|'isMoney'|'isNumeric'|'isDuplicateCheck')} SaplingOption
  *
  * @property isCompany           Marks property as company-related
  * @property isPerson            Marks property as person-related
@@ -69,6 +70,7 @@ const SAPLING_KANBAN_METADATA_KEY = 'sapling:kanban';
  * @property isOrderASC          Property is used for ascending order
  * @property isOrderDESC         Property is used for descending order
  * @property isNavigation        Property is used for navigation
+ * @property isAddress           Property contributes to a formatted postal address
  * @property isMarkdown          Property contains markdown content
  * @property isSystem            Property is a system field
  * @property isPercent           Property is a percentage value
@@ -159,6 +161,17 @@ function defineSaplingFormLayout(
  */
 export function Sapling(options: SaplingOption[]) {
   return function (target: object, propertyKey: string | symbol) {
+    const ownPropertyKeys = (Reflect.getOwnMetadata(
+      SAPLING_PROPERTY_KEYS_METADATA_KEY,
+      target,
+    ) ?? []) as (string | symbol)[];
+    if (!ownPropertyKeys.includes(propertyKey)) {
+      Reflect.defineMetadata(
+        SAPLING_PROPERTY_KEYS_METADATA_KEY,
+        [...ownPropertyKeys, propertyKey],
+        target,
+      );
+    }
     Reflect.defineMetadata(
       SAPLING_OPTIONS_METADATA_KEY,
       options,
@@ -393,6 +406,49 @@ export function getSaplingOptions(
     target,
     propertyKey,
   ) || []) as SaplingOption[];
+}
+
+/**
+ * Returns decorated property names carrying one Sapling option in declaration
+ * order. Registering the property names alongside the per-property metadata
+ * keeps option-driven consumers independent from ORM metadata.
+ */
+export function getSaplingPropertyNamesWithOption(
+  target: object,
+  option: SaplingOption,
+): string[] {
+  const metadataTarget =
+    typeof target === 'function'
+      ? target.prototype
+      : Reflect.getOwnMetadata(SAPLING_PROPERTY_KEYS_METADATA_KEY, target)
+        ? target
+        : Object.getPrototypeOf(target);
+  const prototypeChain: object[] = [];
+  let current = metadataTarget as object | null;
+
+  while (current && current !== Object.prototype) {
+    prototypeChain.unshift(current);
+    current = Object.getPrototypeOf(current) as object | null;
+  }
+
+  const propertyNames: string[] = [];
+  for (const prototype of prototypeChain) {
+    const keys = (Reflect.getOwnMetadata(
+      SAPLING_PROPERTY_KEYS_METADATA_KEY,
+      prototype,
+    ) ?? []) as (string | symbol)[];
+    for (const key of keys) {
+      if (
+        typeof key === 'string' &&
+        !propertyNames.includes(key) &&
+        hasSaplingOption(metadataTarget, key, option)
+      ) {
+        propertyNames.push(key);
+      }
+    }
+  }
+
+  return propertyNames;
 }
 
 export function getSaplingReferenceDependency(

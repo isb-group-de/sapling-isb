@@ -248,6 +248,16 @@ describe('EventController', () => {
       undefined,
       ['participants'],
     );
+
+    await controller.afterUpdate([event], {
+      referenceName: 'creatorCompany',
+    });
+    expect(asMock(azureQueueEvent)).toHaveBeenLastCalledWith(
+      event,
+      user.session,
+      undefined,
+      ['creatorCompany'],
+    );
   });
 
   it('deletes external projections and delivery history before deleting an Event', async () => {

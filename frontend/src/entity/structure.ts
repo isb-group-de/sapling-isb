@@ -42,6 +42,7 @@ export type SaplingOption =
   | 'isOrderASC'
   | 'isOrderDESC'
   | 'isNavigation'
+  | 'isAddress'
   | 'isMarkdown'
   | 'isSystem'
   | 'isPercent'

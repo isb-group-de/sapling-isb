@@ -10,6 +10,7 @@ import {
   getSaplingGenericReference,
   getSaplingKanban,
   getSaplingOptions,
+  getSaplingPropertyNamesWithOption,
   getSaplingReferenceTemplate,
 } from './entity.decorator';
 
@@ -33,6 +34,12 @@ describe('entity.decorator', () => {
 
     @SaplingForm({ width: 2 })
     compact!: string;
+
+    @Sapling(['isAddress'])
+    street!: string;
+
+    @Sapling(['isAddress'])
+    city!: string;
 
     @SaplingGenericReference({
       entityField: ' entity ',
@@ -83,6 +90,12 @@ describe('entity.decorator', () => {
       mobileOrder: 3,
       mobileVisible: true,
     });
+  });
+
+  it('lists properties for an option in declaration order', () => {
+    expect(
+      getSaplingPropertyNamesWithOption(new ExampleEntity(), 'isAddress'),
+    ).toEqual(['street', 'city']);
   });
 
   it('returns sane defaults for missing or invalid form layout metadata', () => {

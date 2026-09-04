@@ -95,6 +95,7 @@ Common options:
 | `isLink` | Link field |
 | `isMail` | Email field |
 | `isPhone` | Phone field |
+| `isAddress` | Address component; address consumers concatenate all marked values in declaration order |
 | `isColor` | Color picker |
 | `isIcon` | Icon selector |
 | `isChip` | Chip-like status/type display |

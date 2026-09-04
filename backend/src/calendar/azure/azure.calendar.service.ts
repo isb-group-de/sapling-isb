@@ -176,7 +176,16 @@ export class AzureCalendarService extends AzureCalendarOperations {
     const event = await emFork.findOne(
       EventItem,
       { handle: eventHandle },
-      { populate: ['participants', 'status', 'type', 'category'] },
+      {
+        populate: [
+          'participants',
+          'status',
+          'type',
+          'category',
+          'creatorCompany',
+          'creatorCompany.country',
+        ],
+      },
     );
     const classificationMappings = await this.loadClassificationMappings(
       emFork,

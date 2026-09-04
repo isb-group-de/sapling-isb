@@ -1,5 +1,7 @@
 import { describe, expect, it, jest } from '@jest/globals';
 import { EventItem } from '../../entity/EventItem';
+import { CompanyItem } from '../../entity/CompanyItem';
+import { CountryItem } from '../../entity/CountryItem';
 
 import {
   buildAzureCalendarEvent,
@@ -40,6 +42,44 @@ describe('Azure meeting link creation', () => {
       isOnlineMeeting: true,
       onlineMeetingProvider: 'teamsForBusiness',
     });
+  });
+});
+
+describe('Azure physical location', () => {
+  const company = Object.assign(new CompanyItem(), {
+    name: 'Muster GmbH',
+    street: 'Musterstraße 1',
+    zip: '10115',
+    city: 'Berlin',
+    country: Object.assign(new CountryItem(), { name: 'Deutschland' }),
+  });
+  const event = {
+    title: 'Customer appointment',
+    description: 'Details',
+    startDate: new Date('2026-09-10T09:00:00.000Z'),
+    endDate: new Date('2026-09-10T10:00:00.000Z'),
+    participants: [],
+    creatorCompany: company,
+    createOnlineMeeting: false,
+  } as unknown as EventItem;
+
+  it('sends the customer address as Outlook location', () => {
+    expect(buildAzureCalendarEvent(event)).toMatchObject({
+      location: {
+        displayName: 'Muster GmbH, Musterstraße 1, 10115, Berlin, Deutschland',
+      },
+    });
+  });
+
+  it('updates the Outlook location when the customer changes', () => {
+    expect(buildAzureCalendarEventPatch(event, [], ['creatorCompany'])).toEqual(
+      {
+        location: {
+          displayName:
+            'Muster GmbH, Musterstraße 1, 10115, Berlin, Deutschland',
+        },
+      },
+    );
   });
 });
 

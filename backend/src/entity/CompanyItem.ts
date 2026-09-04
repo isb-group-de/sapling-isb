@@ -82,7 +82,13 @@ export class CompanyItem {
    * @type {string}
    */
   @ApiProperty()
-  @Sapling(['isValue', 'isNavigation', 'isOrderASC', 'isDuplicateCheck'])
+  @Sapling([
+    'isValue',
+    'isNavigation',
+    'isAddress',
+    'isOrderASC',
+    'isDuplicateCheck',
+  ])
   @SaplingForm({
     order: 100,
     group: 'company.groupBasics',
@@ -102,7 +108,7 @@ export class CompanyItem {
    * @type {string}
    */
   @ApiPropertyOptional()
-  @Sapling(['isNavigation'])
+  @Sapling(['isNavigation', 'isAddress'])
   @SaplingForm({
     order: 100,
     group: 'company.groupAddress',
@@ -122,7 +128,7 @@ export class CompanyItem {
    * @type {string}
    */
   @ApiPropertyOptional()
-  @Sapling(['isNavigation'])
+  @Sapling(['isNavigation', 'isAddress'])
   @SaplingForm({
     order: 200,
     group: 'company.groupAddress',
@@ -142,7 +148,7 @@ export class CompanyItem {
    * @type {string}
    */
   @ApiPropertyOptional()
-  @Sapling(['isNavigation'])
+  @Sapling(['isNavigation', 'isAddress'])
   @SaplingForm({
     order: 300,
     group: 'company.groupAddress',
@@ -397,6 +403,7 @@ export class CompanyItem {
     type: () => CountryItem,
     default: 'DE',
   })
+  @Sapling(['isAddress'])
   @SaplingForm({
     order: 400,
     group: 'company.groupAddress',

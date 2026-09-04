@@ -66,8 +66,9 @@
 }
 
 .sapling-record-field-shell {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: var(--sapling-gap-2xs);
   flex: 1 1 auto;
   align-self: flex-start;
   align-items: flex-start;
@@ -83,31 +84,27 @@
 }
 
 .sapling-record-field-shell > * {
-  flex: 1 1 auto;
   width: 100%;
+  min-width: 0;
 }
 
 .sapling-record-field-shell
   > :not(.sapling-record-field-help-action):not(.sapling-record-field-recommendation) {
-  flex: 1 1 0;
-  width: auto;
-  min-width: 0;
+  grid-column: 1;
 }
 
 .sapling-record-field-shell > .sapling-control--checkbox {
-  flex: 0 1 auto;
   width: auto;
 }
 
 .sapling-record-field-help-action {
   display: flex;
-  flex: 0 0 var(--sapling-field-help-slot-width);
+  grid-column: 2;
   align-self: flex-start;
   align-items: center;
   justify-content: center;
   width: var(--sapling-field-help-slot-width);
   height: var(--sapling-control-height-comfortable);
-  margin-inline-start: var(--sapling-gap-2xs);
 }
 
 .sapling-record-field-shell--dirty {
@@ -124,10 +121,11 @@
 
 .sapling-record-field-recommendation {
   display: flex;
-  flex: 1 0 100%;
+  grid-column: 1 / -1;
   align-items: flex-start;
   gap: var(--sapling-gap-2xs);
   width: 100%;
+  margin-block-start: var(--sapling-space-2xs);
   padding-block: var(--sapling-space-3xs);
   padding-inline: var(--sapling-space-2xs);
   color: rgb(var(--v-theme-warning));

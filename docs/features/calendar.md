@@ -115,6 +115,13 @@ Important fields:
 | `participants`                      | Person collection for attendees                                                                 |
 | `azure`, `google`                   | External calendar projection records                                                            |
 
+Outlook and Google calendar projections receive their physical location from
+the Event's customer-side `creatorCompany`. Sapling concatenates every
+non-empty Company value marked with `isAddress` in declaration order, including
+the nested country name. The resulting string is sent as the Outlook location
+display name and the Google Calendar location. Changing `creatorCompany`
+updates that provider location as well.
+
 A ticket-linked Event may retain the Ticket's exact `creatorCompany` and
 `creatorPerson` pair when a contact's current Company has changed since the
 Ticket was recorded. The backend verifies that both submitted references still
@@ -248,9 +255,9 @@ Update deliveries carry the fields whose persisted values actually changed.
 Provider updates are built as focused patches from that list instead of
 resending the complete Event. In particular, category/type classification or a
 date move does not resend the unchanged attendee collection. Participant
-changes send an attendee-only patch, while title, description, time, and
-recurrence changes send only their corresponding provider fields. Google uses
-`sendUpdates: none` for classification-only patches and `sendUpdates: all` for
+changes send an attendee-only patch, while title, description, time, location,
+and recurrence changes send only their corresponding provider fields. Google
+uses `sendUpdates: none` for classification-only patches and `sendUpdates: all` for
 guest-visible changes, creation, and cancellation. This distinction prevents
 an unchanged attendee list from being interpreted as attendee removal and
 generating misleading cancellation mail.
@@ -265,12 +272,13 @@ clearing the checkbox does not delete an already generated conference or
 recreate the calendar item.
 
 The Event lifecycle filters internal-only updates before delivery creation.
-Ticket, sales-opportunity, ownership, preparation/follow-up, custom-field, and
-other Sapling-only changes therefore create no `EventDeliveryItem`, do not
+Ticket, sales-opportunity, internal ownership, preparation/follow-up,
+custom-field, and other Sapling-only changes therefore create no
+`EventDeliveryItem`, do not
 resolve a provider token, and do not call Outlook or Google. Provider-relevant
 updates are currently limited to title, description, start/end, recurrence,
-participants, meeting-link creation, type/category classification, and status
-lifecycle changes.
+participants, the customer company used for the physical location, meeting-link
+creation, type/category classification, and status lifecycle changes.
 
 Retries use `EventDeliveryService.retryDelivery(handle)`. The delivery is reset to pending, `nextRetryAt` is cleared, and the same queue-or-direct execution path is used.
 

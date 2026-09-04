@@ -1,4 +1,5 @@
 import { EventItem } from '../../entity/EventItem';
+import { resolveCalendarEventLocation } from '../calendar-address.utils';
 import { buildAzureRecurrence } from '../calendar.recurrence';
 import {
   type CalendarClassificationMapping,
@@ -486,6 +487,7 @@ export function buildAzureCalendarEvent(
     event,
     classificationMappings,
   );
+  const location = resolveCalendarEventLocation(event);
   const eventResource: Record<string, unknown> = {
     subject: event.title,
     start: { dateTime: event.startDate.toISOString(), timeZone: 'UTC' },
@@ -498,6 +500,7 @@ export function buildAzureCalendarEvent(
       },
       type: 'required',
     })),
+    ...(location ? { location: { displayName: location } } : {}),
   };
 
   if (categories.length > 0) {
@@ -549,6 +552,7 @@ export function buildAzureCalendarEventPatch(
     copy('onlineMeetingProvider');
   }
   if (changed.has('type') || changed.has('category')) copy('categories');
+  if (changed.has('creatorCompany')) copy('location');
 
   return patch;
 }
