@@ -52,6 +52,12 @@ import type {
   GenericBulkUpdateDto,
   GenericBulkUpdateResponseDto,
 } from './dto/bulk-update.dto';
+import { AutomationReferenceResolverService } from '../automation/automation-reference-resolver.service';
+import type {
+  AutomationAssignment,
+  AutomationCondition,
+  AutomationPathStep,
+} from '../../entity/FieldAutomationItem';
 export type { GenericImportResponse } from './generic-import.util';
 export type { GenericUpdateConcurrencyOptions } from './generic-update-conflict.service';
 
@@ -194,6 +200,8 @@ export class GenericService {
     ),
     @Optional()
     private readonly genericDeleteService?: GenericDeleteService,
+    @Optional()
+    private readonly automationPaths?: AutomationReferenceResolverService,
   ) {}
   // #endregion
 
@@ -415,11 +423,14 @@ export class GenericService {
     currentUser: PersonItem,
     scriptContext: ScriptServerContext = {},
   ): Promise<object> {
-    return this.genericEntityMutationService.create(
-      entityHandle,
-      data,
-      currentUser,
-      scriptContext,
+    this.validateAutomationRule(entityHandle, data);
+    return this.runAtomic(() =>
+      this.genericEntityMutationService.create(
+        entityHandle,
+        data,
+        currentUser,
+        scriptContext,
+      ),
     );
   }
 
@@ -444,14 +455,17 @@ export class GenericService {
     scriptContext: ScriptServerContext = {},
     concurrencyOptions: GenericUpdateConcurrencyOptions = {},
   ): Promise<object> {
-    return this.genericEntityMutationService.update(
-      entityHandle,
-      handle,
-      data,
-      currentUser,
-      relations,
-      scriptContext,
-      concurrencyOptions,
+    await this.validateAutomationRuleUpdate(entityHandle, handle, data);
+    return this.runAtomic(() =>
+      this.genericEntityMutationService.update(
+        entityHandle,
+        handle,
+        data,
+        currentUser,
+        relations,
+        scriptContext,
+        concurrencyOptions,
+      ),
     );
   }
 
@@ -502,20 +516,24 @@ export class GenericService {
     cascadeRelations: string[] = [],
   ): Promise<GenericDeleteResultDto> {
     if (this.genericDeleteService) {
-      return this.genericDeleteService.delete(
+      return this.runAtomic(() =>
+        this.genericDeleteService!.delete(
+          entityHandle,
+          handle,
+          currentUser,
+          scriptContext,
+          cascadeRelations,
+        ),
+      );
+    }
+
+    await this.runAtomic(() =>
+      this.genericEntityMutationService.delete(
         entityHandle,
         handle,
         currentUser,
         scriptContext,
-        cascadeRelations,
-      );
-    }
-
-    await this.genericEntityMutationService.delete(
-      entityHandle,
-      handle,
-      currentUser,
-      scriptContext,
+      ),
     );
     return { action: 'deleted' };
   }
@@ -540,13 +558,15 @@ export class GenericService {
     currentUser: PersonItem,
     scriptContext: ScriptServerContext = {},
   ): Promise<object> {
-    return this.genericRelationMutationService.createReference(
-      entityHandle,
-      referenceName,
-      entityHandleValue,
-      referenceHandleValue,
-      currentUser,
-      scriptContext,
+    return this.runAtomic(() =>
+      this.genericRelationMutationService.createReference(
+        entityHandle,
+        referenceName,
+        entityHandleValue,
+        referenceHandleValue,
+        currentUser,
+        scriptContext,
+      ),
     );
   }
 
@@ -567,14 +587,83 @@ export class GenericService {
     currentUser: PersonItem,
     scriptContext: ScriptServerContext = {},
   ): Promise<object> {
-    return this.genericRelationMutationService.deleteReference(
-      entityHandle,
-      referenceName,
-      entityHandleValue,
-      referenceHandleValue,
-      currentUser,
-      scriptContext,
+    return this.runAtomic(() =>
+      this.genericRelationMutationService.deleteReference(
+        entityHandle,
+        referenceName,
+        entityHandleValue,
+        referenceHandleValue,
+        currentUser,
+        scriptContext,
+      ),
     );
+  }
+
+  private async validateAutomationRuleUpdate(
+    entityHandle: string,
+    handle: string | number,
+    data: Record<string, unknown>,
+  ): Promise<void> {
+    if (!this.isAutomationRule(entityHandle)) return;
+    const entityClass = this.genericQueryService.getEntityClass(entityHandle);
+    const current = await this.em.findOne(entityClass, { handle });
+    this.validateAutomationRule(entityHandle, {
+      ...(current ?? {}),
+      ...data,
+    });
+  }
+
+  private validateAutomationRule(
+    entityHandle: string,
+    data: Record<string, unknown>,
+  ): void {
+    if (!this.automationPaths || !this.isAutomationRule(entityHandle)) return;
+    const source = this.referenceHandle(data.sourceEntity);
+    const target = this.referenceHandle(
+      entityHandle === 'fieldAutomation' ? data.targetEntity : data.entity,
+    );
+    if (!source || !target) return;
+    const path = Array.isArray(data.referencePath)
+      ? (data.referencePath as AutomationPathStep[])
+      : [];
+    const conditions = Array.isArray(data.conditions)
+      ? (data.conditions as AutomationCondition[])
+      : [];
+    const assignments = Array.isArray(data.assignments)
+      ? (data.assignments as AutomationAssignment[])
+      : [];
+    this.automationPaths.validate(source, target, path);
+    this.automationPaths.validateConfiguration(
+      source,
+      target,
+      path,
+      conditions,
+      entityHandle === 'fieldAutomation' ? assignments : [],
+    );
+  }
+
+  private referenceHandle(value: unknown): string {
+    if (typeof value === 'string') return value;
+    if (!value || typeof value !== 'object') return '';
+    const handle = (value as { handle?: unknown }).handle;
+    return typeof handle === 'string' || typeof handle === 'number'
+      ? String(handle)
+      : '';
+  }
+
+  private isAutomationRule(entityHandle: string): boolean {
+    return [
+      'fieldAutomation',
+      'inboxSubscription',
+      'teamsSubscription',
+      'webhookSubscription',
+    ].includes(entityHandle);
+  }
+
+  private runAtomic<T>(operation: () => Promise<T>): Promise<T> {
+    return typeof this.em.transactional === 'function'
+      ? this.em.transactional(operation)
+      : operation();
   }
   // #endregion
 

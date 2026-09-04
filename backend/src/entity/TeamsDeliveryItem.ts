@@ -213,6 +213,11 @@ export class TeamsDeliveryItem {
   @Property({ nullable: true, length: 64 })
   referenceHandle?: string;
 
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly', 'isSystem'])
+  @Property({ nullable: true, length: 190, unique: true, hidden: true })
+  automationDeduplicationKey?: string;
+
   @ApiPropertyOptional({ default: 'azure' })
   @Sapling(['isChip'])
   @SaplingForm({

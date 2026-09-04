@@ -1,5 +1,5 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { EntityManager } from '@mikro-orm/core';
+import { BadRequestException, Injectable, Optional } from '@nestjs/common';
+import { EntityManager, wrap } from '@mikro-orm/core';
 import { PersonItem } from '../../entity/PersonItem';
 import { TemplateService } from '../template/template.service';
 import { EntityTemplateDto } from '../template/dto/entity-template.dto';
@@ -8,6 +8,8 @@ import { GenericPermissionService } from './generic-permission.service';
 import { GenericQueryService } from './generic-query.service';
 import { GenericReferenceService } from './generic-reference.service';
 import { FieldPermissionService } from '../current/field-permission.service';
+import { AutomationEventService } from '../automation/automation-event.service';
+import type { AutomationOperation } from '../../entity/AutomationEventItem';
 
 export interface InlineCollectionMutation {
   field: EntityTemplateDto;
@@ -29,6 +31,8 @@ export class GenericInlineCollectionService {
         Promise.resolve(this.templateService.getEntityTemplate(entityHandle)),
       assertPayloadAccess: () => Promise.resolve(),
     } as unknown as FieldPermissionService,
+    @Optional()
+    private readonly automationEvents?: AutomationEventService,
   ) {}
 
   extractPayload(
@@ -74,16 +78,36 @@ export class GenericInlineCollectionService {
       throw new BadRequestException('global.invalidPayload');
     }
 
+    const pending: Array<{
+      entity: string;
+      item: object;
+      operation: AutomationOperation;
+      oldSnapshot?: Record<string, unknown>;
+    }> = [];
     for (const mutation of mutations) {
       await this.syncCollection(
         entityHandle,
         ownerHandle,
         mutation,
         currentUser,
+        pending,
       );
     }
 
     await this.em.flush();
+    for (const change of pending) {
+      await this.automationEvents?.record({
+        entityHandle: change.entity,
+        sourceHandle: this.extractEntityHandle(change.item),
+        operation: change.operation,
+        actor: currentUser,
+        oldSnapshot: change.oldSnapshot ?? null,
+        newSnapshot:
+          change.operation === 'afterDelete'
+            ? null
+            : this.snapshot(change.item),
+      });
+    }
   }
 
   private async syncCollection(
@@ -91,6 +115,12 @@ export class GenericInlineCollectionService {
     ownerHandle: string | number,
     mutation: InlineCollectionMutation,
     currentUser: PersonItem,
+    pending: Array<{
+      entity: string;
+      item: object;
+      operation: AutomationOperation;
+      oldSnapshot?: Record<string, unknown>;
+    }>,
   ): Promise<void> {
     const { field } = mutation;
     const referenceEntityHandle = field.referenceName;
@@ -147,6 +177,9 @@ export class GenericInlineCollectionService {
       );
 
       if (existing) {
+        const oldSnapshot = this.automationEvents
+          ? this.snapshot(existing)
+          : undefined;
         await this.fieldPermissions.assertPayloadAccess(
           currentUser,
           referenceEntityHandle,
@@ -169,6 +202,12 @@ export class GenericInlineCollectionService {
             payload,
           ) as never,
         );
+        pending.push({
+          entity: referenceEntityHandle,
+          item: existing,
+          operation: 'afterUpdate',
+          oldSnapshot,
+        });
         continue;
       }
 
@@ -186,13 +225,18 @@ export class GenericInlineCollectionService {
         currentUser,
         'allowInsertStage',
       );
-      this.em.create(
+      const created = this.em.create(
         referenceClass,
         this.genericPayloadService.prepareCreatePayload(
           referenceTemplate,
           payload,
         ) as never,
       );
+      pending.push({
+        entity: referenceEntityHandle,
+        item: created,
+        operation: 'afterInsert',
+      });
     }
 
     existingByHandle.forEach((item, handle) => {
@@ -207,6 +251,12 @@ export class GenericInlineCollectionService {
         'allowDeleteStage',
       );
       this.em.remove(item);
+      pending.push({
+        entity: referenceEntityHandle,
+        item,
+        operation: 'afterDelete',
+        oldSnapshot: this.automationEvents ? this.snapshot(item) : undefined,
+      });
     });
   }
 
@@ -242,5 +292,13 @@ export class GenericInlineCollectionService {
     return typeof handle === 'string' || typeof handle === 'number'
       ? handle
       : null;
+  }
+
+  private snapshot(item: object): Record<string, unknown> {
+    const wrapped = wrap(item);
+    const value = wrapped?.toObject?.();
+    return value && typeof value === 'object'
+      ? (value as Record<string, unknown>)
+      : { ...(item as Record<string, unknown>) };
   }
 }

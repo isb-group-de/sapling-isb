@@ -307,6 +307,9 @@ send-as aliases for the authenticated Google account.
 
 ## Teams Model
 
+Teams subscriptions participate in the shared conditional reference automation
+contract described in [Reference Automations](reference-automations.md).
+
 `TeamsTemplateItem` stores reusable Teams message markdown.
 
 `TeamsSubscriptionItem` decides when a Teams message is created.

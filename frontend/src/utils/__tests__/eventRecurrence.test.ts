@@ -131,7 +131,9 @@ describe('eventRecurrence', () => {
         '2026-10-19T06:00:00.000Z',
         '2026-10-26T07:00:00.000Z',
       ])
-      expect(occurrences.at(-1)?.end).toBe(new Date('2026-10-26T16:00:00.000Z').getTime())
+      expect(occurrences[occurrences.length - 1]?.end).toBe(
+        new Date('2026-10-26T16:00:00.000Z').getTime(),
+      )
     } finally {
       vi.unstubAllEnvs()
     }

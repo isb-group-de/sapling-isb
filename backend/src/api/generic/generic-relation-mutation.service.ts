@@ -13,6 +13,7 @@ import { GenericSanitizerService } from './generic-sanitizer.service';
 import { FieldPermissionService } from '../current/field-permission.service';
 import { SecurityPrincipalCacheService } from '../current/security-principal-cache.service';
 import { GlobalSearchIndexService } from './global-search-index.service';
+import { AutomationEventService } from '../automation/automation-event.service';
 
 type RelationMutationContext = Awaited<
   ReturnType<GenericRelationService['addReferenceAndFlush']>
@@ -39,6 +40,8 @@ export class GenericRelationMutationService {
     private readonly securityPrincipalCache?: SecurityPrincipalCacheService,
     @Optional()
     private readonly globalSearchIndex?: GlobalSearchIndexService,
+    @Optional()
+    private readonly automationEvents?: AutomationEventService,
   ) {}
 
   createReference(
@@ -174,12 +177,26 @@ export class GenericRelationMutationService {
       });
     }
 
-    return this.genericSanitizerService.projectEntityResult(
+    const result = this.genericSanitizerService.projectEntityResult(
       entityHandle,
       newData,
       currentUser,
       permissionTemplate,
     );
+    await this.automationEvents?.record({
+      entityHandle,
+      sourceHandle: entityHandleValue,
+      operation: action === 'create' ? 'addReference' : 'deleteReference',
+      actor: currentUser,
+      oldSnapshot: action === 'delete' ? result : null,
+      newSnapshot: action === 'create' ? result : null,
+      context: {
+        referenceName,
+        referenceEntity: mutation.referenceEntityHandle,
+        referenceHandle: String(referenceHandleValue),
+      },
+    });
+    return result;
   }
 
   private executeMutation(

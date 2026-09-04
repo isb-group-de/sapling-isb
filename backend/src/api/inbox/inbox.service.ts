@@ -6,6 +6,7 @@ import { InboxSubscriptionItem } from '../../entity/InboxSubscriptionItem';
 import { PersonItem } from '../../entity/PersonItem';
 import { OpenTaskEventsService } from '../current/open-task-events.service';
 import type { ClientFormattingContext } from '../common/client-formatting-context.util';
+import type { AutomationEventItem } from '../../entity/AutomationEventItem';
 
 type JsonRecord = Record<string, unknown>;
 
@@ -104,6 +105,102 @@ export class InboxService {
       this.openTaskEventsService.notifyUsers(affectedUserHandles);
     }
 
+    return notifications;
+  }
+
+  async queryAutomationSubscription(
+    subscription: InboxSubscriptionItem,
+    target: JsonRecord,
+    event: AutomationEventItem,
+    deduplicationKey: string,
+    canRead: (recipient: PersonItem) => Promise<boolean> = () =>
+      Promise.resolve(true),
+    projectContext: (
+      recipient: PersonItem,
+    ) => Promise<Record<string, unknown>> = () => Promise.resolve({}),
+  ): Promise<InboxNotificationItem[]> {
+    const template = subscription.template;
+    if (!subscription.isActive || !template.isActive) return [];
+    const context = {
+      ...target,
+      target,
+      source: event.newSnapshot ?? event.oldSnapshot ?? {},
+      oldSource: event.oldSnapshot ?? {},
+      newSource: event.newSnapshot ?? {},
+      currentUser: event.actor,
+      event: { operation: event.operation, context: event.context ?? {} },
+    };
+    const recipients = await this.resolveRecipients(
+      this.messageTemplateService.getContextValue(
+        context,
+        subscription.recipientField,
+      ),
+    );
+    const notifications: InboxNotificationItem[] = [];
+    const affected = new Set<number>();
+    for (const recipient of recipients) {
+      if (recipient.handle == null || recipient.handle === event.actor?.handle)
+        continue;
+      if (!(await canRead(recipient))) continue;
+      const recipientDeduplicationKey = `${deduplicationKey}:${recipient.handle}`;
+      const existing = await this.em.findOne(InboxNotificationItem, {
+        automationDeduplicationKey: recipientDeduplicationKey,
+      });
+      if (existing) {
+        notifications.push(existing);
+        continue;
+      }
+      const projected = await projectContext(recipient);
+      const projectedTarget = projected.target ?? target;
+      const recipientContext = {
+        ...(projectedTarget as JsonRecord),
+        target: projectedTarget,
+        source: projected.source ?? context.source,
+        oldSource: projected.oldSource ?? context.oldSource,
+        newSource: projected.newSource ?? context.newSource,
+        currentUser: event.actor,
+        event: context.event,
+      };
+      affected.add(recipient.handle);
+      const title = this.messageTemplateService.replacePlaceholders(
+        template.titleTemplate ?? template.name ?? '',
+        recipientContext,
+        { entityHandle: subscription.entity.handle, currentUser: event.actor },
+      );
+      const bodyMarkdown = this.messageTemplateService.replacePlaceholders(
+        template.bodyMarkdown ?? '',
+        recipientContext,
+        { entityHandle: subscription.entity.handle, currentUser: event.actor },
+      );
+      notifications.push(
+        this.em.create(InboxNotificationItem, {
+          subscription,
+          template,
+          entity: subscription.entity,
+          createdBy: event.actor,
+          recipientPerson: recipient,
+          referenceHandle:
+            typeof target.handle === 'string' ||
+            typeof target.handle === 'number'
+              ? String(target.handle)
+              : '',
+          title,
+          bodyMarkdown,
+          bodyText: this.messageTemplateService.stripMarkdown(bodyMarkdown),
+          requestPayload: {
+            automationEventId: event.eventId,
+            recipientField: subscription.recipientField,
+          },
+          automationDeduplicationKey: recipientDeduplicationKey,
+          isRead: false,
+        } as never),
+      );
+    }
+    if (notifications.length) {
+      this.em.persist(notifications);
+      await this.em.flush();
+      this.openTaskEventsService.notifyUsers(affected);
+    }
     return notifications;
   }
 
@@ -261,7 +358,19 @@ export class InboxService {
       return [];
     }
 
-    return this.em.find(PersonItem, { handle: { $in: handles } });
+    return this.em.find(
+      PersonItem,
+      { handle: { $in: handles } },
+      {
+        populate: [
+          'roles',
+          'roles.stage',
+          'roles.permissions',
+          'roles.permissions.entity',
+          'roles.permissions.fieldPermissions',
+        ],
+      },
+    );
   }
 
   private extractPersonHandles(value: unknown): number[] {

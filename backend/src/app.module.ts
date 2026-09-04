@@ -36,6 +36,8 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
 import { FieldPermissionProjectionInterceptor } from './security/field-permission-projection.interceptor';
 import { Customer360Module } from './api/customer-360/customer-360.module';
 import { PerformanceTimingInterceptor } from './api/common/performance-timing.interceptor';
+import { AutomationEventsModule } from './api/automation/automation-events.module';
+import { AutomationModule } from './api/automation/automation.module';
 
 /**
  * @class AppModule
@@ -59,6 +61,7 @@ import { PerformanceTimingInterceptor } from './api/common/performance-timing.in
      * MikroORM module for database connection and entity management.
      */
     MikroOrmModule.forRoot(mikroOrmConfig),
+    AutomationEventsModule,
 
     /**
      * BullMQ module for queue management (enabled if REDIS_ENABLED).
@@ -99,6 +102,7 @@ import { PerformanceTimingInterceptor } from './api/common/performance-timing.in
     FormConfigModule,
     ImportModule,
     Customer360Module,
+    AutomationModule,
   ],
   controllers: [AppController],
   providers: [

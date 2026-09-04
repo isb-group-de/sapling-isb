@@ -184,3 +184,9 @@ npm run type-check:backend
 ```
 
 For production integrations, also test against a controlled receiver that verifies headers, signature, payload shape, and retry behavior.
+## Conditional reference triggers
+
+Webhook subscriptions participate in the shared conditional reference
+automation contract described in
+[Reference Automations](../features/reference-automations.md). Their delivered
+payload includes an `automation` object when a reference rule triggered it.

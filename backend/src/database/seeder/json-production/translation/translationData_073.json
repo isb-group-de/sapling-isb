@@ -1,0 +1,428 @@
+[
+  {
+    "entity": "entityGroup",
+    "property": "automation",
+    "de": "Automatisierung",
+    "en": "Automation"
+  },
+  {
+    "entity": "fieldAutomation",
+    "property": "fieldAutomation",
+    "de": "Feldautomatisierungen",
+    "en": "Field automations"
+  },
+  {
+    "entity": "fieldAutomation",
+    "property": "description",
+    "de": "Beschreibung",
+    "en": "Description"
+  },
+  {
+    "entity": "fieldAutomation",
+    "property": "sourceEntity",
+    "de": "Auslösende Entität",
+    "en": "Source entity"
+  },
+  {
+    "entity": "fieldAutomation",
+    "property": "targetEntity",
+    "de": "Ziel-Entität",
+    "en": "Target entity"
+  },
+  {
+    "entity": "fieldAutomation",
+    "property": "operation",
+    "de": "Ereignis",
+    "en": "Event"
+  },
+  {
+    "entity": "fieldAutomation",
+    "property": "referencePath",
+    "de": "Referenzpfad",
+    "en": "Reference path"
+  },
+  {
+    "entity": "fieldAutomation",
+    "property": "conditions",
+    "de": "Bedingungen",
+    "en": "Conditions"
+  },
+  {
+    "entity": "fieldAutomation",
+    "property": "assignments",
+    "de": "Feldzuweisungen",
+    "en": "Field assignments"
+  },
+  {
+    "entity": "fieldAutomation",
+    "property": "priority",
+    "de": "Priorität",
+    "en": "Priority"
+  },
+  {
+    "entity": "fieldAutomation",
+    "property": "isActive",
+    "de": "Aktiv",
+    "en": "Active"
+  },
+  {
+    "entity": "automationEvent",
+    "property": "automationEvent",
+    "de": "Automatisierungsereignisse",
+    "en": "Automation events"
+  },
+  {
+    "entity": "automationExecution",
+    "property": "automationExecution",
+    "de": "Automatisierungsausführungen",
+    "en": "Automation executions"
+  },
+  {
+    "entity": "inboxSubscription",
+    "property": "sourceEntity",
+    "de": "Auslösende Entität",
+    "en": "Source entity"
+  },
+  {
+    "entity": "teamsSubscription",
+    "property": "sourceEntity",
+    "de": "Auslösende Entität",
+    "en": "Source entity"
+  },
+  {
+    "entity": "webhookSubscription",
+    "property": "sourceEntity",
+    "de": "Auslösende Entität",
+    "en": "Source entity"
+  },
+  {
+    "entity": "fieldAutomation",
+    "property": "conditionScope",
+    "de": "Geltungsbereich",
+    "en": "Scope"
+  },
+  {
+    "entity": "fieldAutomation",
+    "property": "conditionField",
+    "de": "Beobachtetes Feld",
+    "en": "Observed field"
+  },
+  {
+    "entity": "fieldAutomation",
+    "property": "conditionMode",
+    "de": "Prüfung",
+    "en": "Check"
+  },
+  {
+    "entity": "fieldAutomation",
+    "property": "conditionValue",
+    "de": "Wert",
+    "en": "Value"
+  },
+  {
+    "entity": "fieldAutomation",
+    "property": "conditionGroup",
+    "de": "ODER-Gruppe",
+    "en": "OR group"
+  },
+  {
+    "entity": "fieldAutomation",
+    "property": "assignmentField",
+    "de": "Zielfeld",
+    "en": "Target field"
+  },
+  {
+    "entity": "fieldAutomation",
+    "property": "assignmentValue",
+    "de": "Neuer Wert",
+    "en": "New value"
+  },
+  {
+    "entity": "fieldAutomation",
+    "property": "changed",
+    "de": "hat sich geändert",
+    "en": "changed"
+  },
+  {
+    "entity": "fieldAutomation",
+    "property": "hasValue",
+    "de": "hat den Wert",
+    "en": "has value"
+  },
+  {
+    "entity": "fieldAutomation",
+    "property": "changesTo",
+    "de": "wechselt auf",
+    "en": "changes to"
+  },
+  {
+    "entity": "fieldAutomation",
+    "property": "changesFrom",
+    "de": "wechselt von",
+    "en": "changes from"
+  },
+  {
+    "entity": "fieldAutomation",
+    "property": "transition",
+    "de": "wechselt von … auf …",
+    "en": "changes from … to …"
+  },
+  {
+    "entity": "automation",
+    "property": "invalidReferencePath",
+    "de": "Der ausgewählte Referenzpfad erreicht die Ziel-Entität nicht.",
+    "en": "The selected reference path does not reach the target entity."
+  },
+  {
+    "entity": "automation",
+    "property": "assignmentConflict",
+    "de": "Eine Regel mit höherer Priorität belegt bereits mindestens eines der Zielfelder.",
+    "en": "A higher-priority rule already owns at least one target field."
+  },
+  {
+    "entity": "automation",
+    "property": "chainDepthExceeded",
+    "de": "Die Automatisierungskette hat die Höchstlänge erreicht.",
+    "en": "The automation chain reached its maximum length."
+  },
+  {
+    "entity": "inboxSubscription",
+    "property": "priority",
+    "de": "Priorität",
+    "en": "Priority"
+  },
+  {
+    "entity": "teamsSubscription",
+    "property": "priority",
+    "de": "Priorität",
+    "en": "Priority"
+  },
+  {
+    "entity": "webhookSubscription",
+    "property": "priority",
+    "de": "Priorität",
+    "en": "Priority"
+  },
+  {
+    "entity": "fieldAutomation",
+    "property": "groupBasics",
+    "de": "Grundlagen",
+    "en": "Basics"
+  },
+  {
+    "entity": "fieldAutomation",
+    "property": "groupConfiguration",
+    "de": "Regelkonfiguration",
+    "en": "Rule configuration"
+  },
+  {
+    "entity": "fieldAutomation",
+    "property": "oldValue",
+    "de": "Alter Wert",
+    "en": "Old value"
+  },
+  {
+    "entity": "fieldAutomation",
+    "property": "newValue",
+    "de": "Neuer Wert",
+    "en": "New value"
+  },
+  {
+    "entity": "fieldAutomation",
+    "property": "addCondition",
+    "de": "Bedingung hinzufügen",
+    "en": "Add condition"
+  },
+  {
+    "entity": "navigationGroup",
+    "property": "automation",
+    "de": "Automatisierungen",
+    "en": "Automations"
+  },
+  {
+    "entity": "navigation",
+    "property": "fieldAutomation",
+    "de": "Feldautomatisierungen",
+    "en": "Field automations"
+  },
+  {
+    "entity": "navigation",
+    "property": "automationEvent",
+    "de": "Automatisierungsereignisse",
+    "en": "Automation events"
+  },
+  {
+    "entity": "navigation",
+    "property": "automationExecution",
+    "de": "Automatisierungsausführungen",
+    "en": "Automation executions"
+  },
+  {
+    "entity": "automationEvent",
+    "property": "handle",
+    "de": "ID",
+    "en": "ID"
+  },
+  {
+    "entity": "automationEvent",
+    "property": "eventId",
+    "de": "Ereignis-ID",
+    "en": "Event ID"
+  },
+  {
+    "entity": "automationEvent",
+    "property": "sourceEntity",
+    "de": "Quell-Entität",
+    "en": "Source entity"
+  },
+  {
+    "entity": "automationEvent",
+    "property": "sourceHandle",
+    "de": "Quell-Datensatz",
+    "en": "Source record"
+  },
+  {
+    "entity": "automationEvent",
+    "property": "operation",
+    "de": "Ereignis",
+    "en": "Event"
+  },
+  {
+    "entity": "automationEvent",
+    "property": "actor",
+    "de": "Auslösender Benutzer",
+    "en": "Triggering user"
+  },
+  {
+    "entity": "automationEvent",
+    "property": "chainId",
+    "de": "Ausführungskette",
+    "en": "Execution chain"
+  },
+  {
+    "entity": "automationEvent",
+    "property": "chainDepth",
+    "de": "Kettentiefe",
+    "en": "Chain depth"
+  },
+  {
+    "entity": "automationEvent",
+    "property": "oldSnapshot",
+    "de": "Vorherige Werte",
+    "en": "Previous values"
+  },
+  {
+    "entity": "automationEvent",
+    "property": "newSnapshot",
+    "de": "Neue Werte",
+    "en": "New values"
+  },
+  {
+    "entity": "automationEvent",
+    "property": "context",
+    "de": "Kontext",
+    "en": "Context"
+  },
+  {
+    "entity": "automationEvent",
+    "property": "status",
+    "de": "Status",
+    "en": "Status"
+  },
+  {
+    "entity": "automationEvent",
+    "property": "attemptCount",
+    "de": "Versuche",
+    "en": "Attempts"
+  },
+  {
+    "entity": "automationEvent",
+    "property": "error",
+    "de": "Fehler",
+    "en": "Error"
+  },
+  {
+    "entity": "automationEvent",
+    "property": "nextAttemptAt",
+    "de": "Nächster Versuch",
+    "en": "Next attempt"
+  },
+  {
+    "entity": "automationEvent",
+    "property": "processingStartedAt",
+    "de": "Verarbeitungsbeginn",
+    "en": "Processing started"
+  },
+  {
+    "entity": "automationEvent",
+    "property": "createdAt",
+    "de": "Erstellt am",
+    "en": "Created at"
+  },
+  {
+    "entity": "automationEvent",
+    "property": "completedAt",
+    "de": "Abgeschlossen am",
+    "en": "Completed at"
+  },
+  {
+    "entity": "automationExecution",
+    "property": "handle",
+    "de": "ID",
+    "en": "ID"
+  },
+  {
+    "entity": "automationExecution",
+    "property": "deduplicationKey",
+    "de": "Deduplizierungsschlüssel",
+    "en": "Deduplication key"
+  },
+  {
+    "entity": "automationExecution",
+    "property": "event",
+    "de": "Automatisierungsereignis",
+    "en": "Automation event"
+  },
+  {
+    "entity": "automationExecution",
+    "property": "targetEntity",
+    "de": "Ziel-Entität",
+    "en": "Target entity"
+  },
+  {
+    "entity": "automationExecution",
+    "property": "targetHandle",
+    "de": "Ziel-Datensatz",
+    "en": "Target record"
+  },
+  {
+    "entity": "automationExecution",
+    "property": "actionType",
+    "de": "Aktionstyp",
+    "en": "Action type"
+  },
+  {
+    "entity": "automationExecution",
+    "property": "ruleHandle",
+    "de": "Regel-ID",
+    "en": "Rule ID"
+  },
+  {
+    "entity": "automationExecution",
+    "property": "status",
+    "de": "Status",
+    "en": "Status"
+  },
+  {
+    "entity": "automationExecution",
+    "property": "message",
+    "de": "Meldung",
+    "en": "Message"
+  },
+  {
+    "entity": "automationExecution",
+    "property": "createdAt",
+    "de": "Erstellt am",
+    "en": "Created at"
+  }
+]

@@ -24,7 +24,25 @@ export class WebhookService {
   async querySubscription(
     handle: number,
     payload: object,
+    automationContext?: object,
+    automationDeduplicationKey?: string,
   ): Promise<WebhookDeliveryItem> {
+    if (automationDeduplicationKey) {
+      const existing = await this.em.findOne(
+        WebhookDeliveryItem,
+        { automationDeduplicationKey },
+        { populate: ['status'] },
+      );
+      if (existing) {
+        if (
+          REDIS_ENABLED &&
+          existing.handle &&
+          existing.status?.handle === 'pending'
+        )
+          await this.enqueueDelivery(existing.handle, true);
+        return existing;
+      }
+    }
     const subscription = await this.em.findOne(
       WebhookSubscriptionItem,
       { handle },
@@ -42,19 +60,28 @@ export class WebhookService {
       throw new Error('global.notFound');
     }
 
-    const preparedPayload = await this.preparePayload(subscription, payload);
+    const prepared = await this.preparePayload(subscription, payload);
+    const preparedPayload =
+      automationContext && prepared && typeof prepared === 'object'
+        ? {
+            ...(prepared as Record<string, unknown>),
+            automation: automationContext,
+          }
+        : prepared;
 
     const delivery = new WebhookDeliveryItem();
     delivery.subscription = subscription;
     delivery.payload = preparedPayload;
     delivery.status = pending;
+    delivery.automationDeduplicationKey = automationDeduplicationKey;
 
     await this.em.persist(delivery).flush();
 
     if (REDIS_ENABLED) {
-      await this.webhookQueue.add('deliver-webhook', {
-        deliveryId: delivery.handle,
-      });
+      await this.enqueueDelivery(
+        delivery.handle!,
+        Boolean(automationDeduplicationKey),
+      );
       return delivery;
     }
 
@@ -96,6 +123,18 @@ export class WebhookService {
     }
 
     return delivery;
+  }
+
+  private enqueueDelivery(
+    deliveryId: number,
+    automation: boolean,
+  ): Promise<unknown> {
+    const payload = { deliveryId };
+    return automation
+      ? this.webhookQueue.add('deliver-webhook', payload, {
+          jobId: `automation-webhook-${deliveryId}`,
+        })
+      : this.webhookQueue.add('deliver-webhook', payload);
   }
 
   private async preparePayload(

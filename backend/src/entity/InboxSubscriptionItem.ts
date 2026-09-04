@@ -15,6 +15,10 @@ import {
 import { InboxTemplateItem } from './InboxTemplateItem';
 import { InboxNotificationItem } from './InboxNotificationItem';
 import { WebhookSubscriptionTypeItem } from './WebhookSubscriptionTypeItem';
+import type {
+  AutomationCondition,
+  AutomationPathStep,
+} from './FieldAutomationItem';
 
 @Entity()
 export class InboxSubscriptionItem {
@@ -61,7 +65,7 @@ export class InboxSubscriptionItem {
   @Property({ length: 64, nullable: false })
   recipientField!: string;
 
-  @ApiPropertyOptional({ default: true })
+  @ApiPropertyOptional({ default: false })
   @SaplingForm({
     order: 100,
     group: 'inboxSubscription.groupConfiguration',
@@ -73,8 +77,56 @@ export class InboxSubscriptionItem {
     mobileOrder: 100,
     mobileVisible: false,
   })
-  @Property({ default: true, nullable: false })
-  isActive: boolean = true;
+  @Property({ default: false, nullable: false })
+  isActive: boolean = false;
+
+  @ApiPropertyOptional({
+    description:
+      'Entity whose lifecycle event starts this rule. Empty keeps the legacy direct-entity behavior.',
+  })
+  @Sapling(['isEntity'])
+  @SaplingForm({
+    order: 200,
+    group: 'inboxSubscription.groupConfiguration',
+    groupOrder: 200,
+    width: 1,
+    visible: true,
+  })
+  @ManyToOne(() => EntityItem, { nullable: true })
+  sourceEntity?: Rel<EntityItem> | null;
+
+  @ApiPropertyOptional()
+  @SaplingForm({
+    order: 300,
+    group: 'inboxSubscription.groupConfiguration',
+    groupOrder: 200,
+    width: 4,
+    visible: true,
+  })
+  @Property({ type: 'json', default: '[]' })
+  referencePath: AutomationPathStep[] = [];
+
+  @ApiPropertyOptional()
+  @SaplingForm({
+    order: 400,
+    group: 'inboxSubscription.groupConfiguration',
+    groupOrder: 200,
+    width: 4,
+    visible: true,
+  })
+  @Property({ type: 'json', default: '[]' })
+  conditions: AutomationCondition[] = [];
+
+  @ApiPropertyOptional({ default: 0 })
+  @SaplingForm({
+    order: 500,
+    group: 'inboxSubscription.groupConfiguration',
+    groupOrder: 200,
+    width: 1,
+    visible: true,
+  })
+  @Property({ default: 0 })
+  priority = 0;
 
   @ApiProperty({ type: () => EntityItem })
   @Sapling(['isEntity'])

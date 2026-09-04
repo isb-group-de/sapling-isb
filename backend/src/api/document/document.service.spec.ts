@@ -107,11 +107,20 @@ describe('DocumentService', () => {
           return null;
         },
       ),
-      persist: jest.fn((documents: DocumentItem[]) =>
-        persisted.push(documents),
-      ),
+      persist: jest.fn((documents: DocumentItem[]) => {
+        documents.forEach((document, index) => {
+          document.handle = index + 1;
+        });
+        persisted.push(documents);
+      }),
       flush: jest.fn(async () => undefined),
     } as unknown as EntityManager;
+    const automationEvents = {
+      record: jest.fn(async (options: Record<string, unknown>) => {
+        void options;
+        return null;
+      }),
+    };
     const rawMessage = Buffer.from(
       [
         'From: sender@example.com',
@@ -134,7 +143,10 @@ describe('DocumentService', () => {
       ].join('\r\n'),
     );
 
-    const result = await new DocumentService(em).uploadDocument(
+    const result = await new DocumentService(
+      em,
+      automationEvents as never,
+    ).uploadDocument(
       {
         buffer: rawMessage,
         originalname: 'message.eml',
@@ -166,6 +178,22 @@ describe('DocumentService', () => {
     });
     expect(fs.writeFileSync).toHaveBeenCalledTimes(2);
     expect(em.flush).toHaveBeenCalledTimes(1);
+    expect(automationEvents.record.mock.calls[0]?.[0]).toMatchObject({
+      entityHandle: 'document',
+      sourceHandle: 1,
+      operation: 'afterInsert',
+      newSnapshot: {
+        type: { handle: 'email' },
+        entity: { handle: 'ticket' },
+        reference: '123',
+      },
+    });
+    expect(automationEvents.record.mock.calls[1]?.[0]).toMatchObject({
+      sourceHandle: 2,
+      newSnapshot: {
+        type: { handle: 'document' },
+      },
+    });
   });
 
   it('stores extracted MSG attachments using the same document link', async () => {

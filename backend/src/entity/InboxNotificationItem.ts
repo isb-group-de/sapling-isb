@@ -206,6 +206,11 @@ export class InboxNotificationItem {
   @Property({ nullable: true, length: 64 })
   referenceHandle?: string | null;
 
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly', 'isSystem'])
+  @Property({ nullable: true, length: 190, unique: true, hidden: true })
+  automationDeduplicationKey?: string | null;
+
   @ApiProperty()
   @Sapling(['isValue'])
   @SaplingForm({

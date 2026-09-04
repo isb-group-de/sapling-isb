@@ -51,9 +51,12 @@ describe('getOpenTaskEventOccurrence', () => {
   it('advances open-ended series beyond the normal 100-occurrence calendar window', () => {
     const recurrenceExceptionDates = Array.from({ length: 150 }, (_, index) => {
       const date = new Date('2026-01-01T09:00:00.000Z')
-      date.setUTCDate(date.getUTCDate() + index)
+      date.setDate(date.getDate() + index)
       return date.toISOString()
     })
+    const expectedStart = new Date('2026-01-01T09:00:00.000Z')
+    expectedStart.setDate(expectedStart.getDate() + 150)
+    const expectedEnd = new Date(expectedStart.getTime() + 60 * 60 * 1000)
 
     expect(
       getOpenTaskEventOccurrence(
@@ -65,9 +68,9 @@ describe('getOpenTaskEventOccurrence', () => {
         }),
       ),
     ).toEqual({
-      startDate: new Date('2026-05-31T09:00:00.000Z'),
-      endDate: new Date('2026-05-31T10:00:00.000Z'),
-      recurrenceOccurrenceStart: '2026-05-31T09:00:00.000Z',
+      startDate: expectedStart,
+      endDate: expectedEnd,
+      recurrenceOccurrenceStart: expectedStart.toISOString(),
     })
   })
 })

@@ -17,6 +17,10 @@ import { WebhookSubscriptionMethodItem } from './WebhookSubscriptionMethodItem';
 import { WebhookAuthenticationBasicItem } from './WebhookAuthenticationBasicItem';
 import { WebhookSubscriptionPayloadType } from './WebhookSubscriptionPayloadType';
 import { type Rel } from '@mikro-orm/core';
+import type {
+  AutomationCondition,
+  AutomationPathStep,
+} from './FieldAutomationItem';
 
 /**
  * @class
@@ -197,7 +201,7 @@ export class WebhookSubscriptionItem {
    * Indicates whether the webhook subscription is active.
    * @type {boolean}
    */
-  @ApiPropertyOptional({ default: true })
+  @ApiPropertyOptional({ default: false })
   @SaplingForm({
     order: 100,
     group: 'webhookSubscription.groupConfiguration',
@@ -209,8 +213,50 @@ export class WebhookSubscriptionItem {
     mobileOrder: 100,
     mobileVisible: false,
   })
-  @Property({ default: true, nullable: false })
-  isActive: boolean = true;
+  @Property({ default: false, nullable: false })
+  isActive: boolean = false;
+
+  @ApiPropertyOptional()
+  @Sapling(['isEntity'])
+  @SaplingForm({
+    order: 200,
+    group: 'webhookSubscription.groupConfiguration',
+    groupOrder: 300,
+    width: 1,
+    visible: true,
+  })
+  @ManyToOne(() => EntityItem, { nullable: true })
+  sourceEntity?: Rel<EntityItem> | null;
+
+  @SaplingForm({
+    order: 300,
+    group: 'webhookSubscription.groupConfiguration',
+    groupOrder: 300,
+    width: 4,
+    visible: true,
+  })
+  @Property({ type: 'json', default: '[]' })
+  referencePath: AutomationPathStep[] = [];
+
+  @SaplingForm({
+    order: 400,
+    group: 'webhookSubscription.groupConfiguration',
+    groupOrder: 300,
+    width: 4,
+    visible: true,
+  })
+  @Property({ type: 'json', default: '[]' })
+  conditions: AutomationCondition[] = [];
+
+  @SaplingForm({
+    order: 500,
+    group: 'webhookSubscription.groupConfiguration',
+    groupOrder: 300,
+    width: 1,
+    visible: true,
+  })
+  @Property({ default: 0 })
+  priority = 0;
   // #endregion
 
   // #region Group: Security

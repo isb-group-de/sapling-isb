@@ -37,6 +37,7 @@ export class ScriptSubscriptionService {
               entity: { handle: entity.handle },
               type: { handle: ScriptMethods[method] },
               isActive: true,
+              sourceEntity: null,
             },
           },
         );
@@ -47,6 +48,7 @@ export class ScriptSubscriptionService {
               entity: { handle: entity.handle },
               type: { handle: ScriptMethods[method] },
               isActive: true,
+              sourceEntity: null,
             },
           },
         );
@@ -162,6 +164,7 @@ export class ScriptSubscriptionService {
             entity: { handle: entity.handle },
             type: { handle: ScriptMethods[method] },
             isActive: true,
+            sourceEntity: null,
           },
         },
       );

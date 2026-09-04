@@ -14,6 +14,9 @@ import { CompanySizeItem } from '../CompanySizeItem';
 import { ContractServiceItem } from '../ContractServiceItem';
 import { PersonItem } from '../PersonItem';
 import { NoteItem } from '../NoteItem';
+import { AutomationEventItem } from '../AutomationEventItem';
+import { AutomationExecutionItem } from '../AutomationExecutionItem';
+import { FieldAutomationItem } from '../FieldAutomationItem';
 import { EntityItem } from '../EntityItem';
 import { RoleItem } from '../RoleItem';
 import { PermissionItem } from '../PermissionItem';
@@ -216,6 +219,9 @@ export interface EntityRegistryEntry {
 }
 
 const ENTITY_REGISTRY_ENTRIES: EntityRegistryEntry[] = [
+  { name: 'automationEvent', class: AutomationEventItem },
+  { name: 'automationExecution', class: AutomationExecutionItem },
+  { name: 'fieldAutomation', class: FieldAutomationItem },
   { name: 'country', class: CountryItem },
   { name: 'customFieldDefinition', class: CustomFieldDefinitionItem },
   { name: 'customFieldType', class: CustomFieldTypeItem },

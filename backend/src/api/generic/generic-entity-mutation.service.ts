@@ -35,6 +35,7 @@ import { SecurityPrincipalCacheService } from '../current/security-principal-cac
 import { GlobalSearchIndexService } from './global-search-index.service';
 import { buildChangeLogDetails } from './generic-change-log.util';
 import { GenericEntityMutationOperations } from './generic-entity-mutation.operations';
+import { AutomationEventService } from '../automation/automation-event.service';
 
 export type GenericMutationPayload = {
   createdAt?: Date;
@@ -77,6 +78,8 @@ export class GenericEntityMutationService extends GenericEntityMutationOperation
     securityPrincipalCache?: SecurityPrincipalCacheService,
     @Optional()
     globalSearchIndex?: GlobalSearchIndexService,
+    @Optional()
+    automationEvents?: AutomationEventService,
   ) {
     super(
       em,
@@ -96,6 +99,7 @@ export class GenericEntityMutationService extends GenericEntityMutationOperation
       fieldPermissions,
       securityPrincipalCache,
       globalSearchIndex,
+      automationEvents,
     );
   }
 
@@ -234,6 +238,21 @@ export class GenericEntityMutationService extends GenericEntityMutationOperation
         ),
       );
     }
+
+    const newAutomationSnapshot =
+      this.genericChangeLogService.captureEntityChangeLogPayload(
+        entityHandle,
+        hydrated,
+        permissionTemplate,
+      );
+    await this.automationEvents?.record({
+      entityHandle,
+      sourceHandle: this.extractEntityHandle(hydrated),
+      operation: 'afterInsert',
+      actor: currentUser,
+      oldSnapshot: null,
+      newSnapshot: newAutomationSnapshot,
+    });
 
     return this.genericSanitizerService.projectEntityResult(
       entityHandle,
@@ -504,6 +523,14 @@ export class GenericEntityMutationService extends GenericEntityMutationOperation
         customFieldOverrideRename.newFieldName,
       );
     }
+    await this.automationEvents?.record({
+      entityHandle,
+      sourceHandle: updatedRecordReference,
+      operation: 'afterUpdate',
+      actor: currentUser,
+      oldSnapshot: oldAutomationSnapshot,
+      newSnapshot: newAutomationSnapshot,
+    });
     this.invalidateSecurityPrincipalAfterMutation(entityHandle, newData);
     this.queueSearchIndexUpsert(lifecycleOptions, entityHandle, newData);
     return this.genericSanitizerService.projectEntityResult(

@@ -2,6 +2,11 @@
 
 Sapling's inbox is a data-driven notification system. It creates persistent inbox notifications from entity events and template/subscription configuration, then pushes open-task refresh events to connected users.
 
+Inbox subscriptions also support the shared conditional reference automation
+contract described in [Reference Automations](reference-automations.md). This
+allows a source such as a Document to notify recipients on its referenced
+record without entity-specific code.
+
 ## Main Files
 
 ```text

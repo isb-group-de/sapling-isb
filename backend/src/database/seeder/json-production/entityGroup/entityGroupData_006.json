@@ -1,0 +1,9 @@
+[
+  {
+    "handle": "automation",
+    "icon": "mdi-state-machine",
+    "isExpanded": false,
+    "sortOrder": 90,
+    "parent": "systemOperations"
+  }
+]

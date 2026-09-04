@@ -34,7 +34,27 @@ export class TeamsService {
     currentUser: PersonItem,
     relationExpressions: string[] = [],
     clientFormattingContext: ClientFormattingContext = {},
+    automationContext: JsonRecord = {},
+    automationDeduplicationKey?: string,
+    canRead?: (recipient: PersonItem) => Promise<boolean>,
+    projectContext?: (recipient: PersonItem) => Promise<JsonRecord>,
   ): Promise<TeamsDeliveryItem[]> {
+    if (automationDeduplicationKey) {
+      const existing = await this.em.findOne(
+        TeamsDeliveryItem,
+        { automationDeduplicationKey },
+        { populate: ['status'] },
+      );
+      if (existing) {
+        if (
+          REDIS_ENABLED &&
+          existing.handle &&
+          existing.status?.handle === 'pending'
+        )
+          await this.enqueueDelivery(existing.handle, true);
+        return [existing];
+      }
+    }
     const subscription = await this.em.findOne(
       TeamsSubscriptionItem,
       { handle },
@@ -75,6 +95,9 @@ export class TeamsService {
         sender,
         relationExpressions,
         clientFormattingContext,
+        automationContext,
+        canRead,
+        projectContext,
       });
 
       const delivery = new TeamsDeliveryItem();
@@ -89,6 +112,7 @@ export class TeamsService {
       delivery.bodyHtml = prepared.bodyHtml;
       delivery.requestPayload = prepared.requestPayload;
       delivery.attemptCount = 0;
+      delivery.automationDeduplicationKey = automationDeduplicationKey;
 
       if (prepared.failure) {
         delivery.status = await this.graphDeliveryService.ensureStatus(
@@ -109,9 +133,10 @@ export class TeamsService {
 
       if (!prepared.failure) {
         if (REDIS_ENABLED) {
-          await this.teamsQueue.add('deliver-teams-message', {
-            deliveryId: delivery.handle,
-          });
+          await this.enqueueDelivery(
+            delivery.handle!,
+            Boolean(automationDeduplicationKey),
+          );
         } else if (delivery.handle) {
           await this.dispatchDelivery(delivery.handle);
         }
@@ -125,6 +150,18 @@ export class TeamsService {
 
   dispatchDelivery(deliveryId: number): Promise<TeamsDeliveryItem> {
     return this.graphDeliveryService.dispatchDelivery(deliveryId);
+  }
+
+  private enqueueDelivery(
+    deliveryId: number,
+    automation: boolean,
+  ): Promise<unknown> {
+    const payload = { deliveryId };
+    return automation
+      ? this.teamsQueue.add('deliver-teams-message', payload, {
+          jobId: `automation-teams-${deliveryId}`,
+        })
+      : this.teamsQueue.add('deliver-teams-message', payload);
   }
 
   async retryDelivery(handle: number): Promise<TeamsDeliveryItem> {
@@ -167,6 +204,9 @@ export class TeamsService {
     sender: PersonItem | null;
     relationExpressions: string[];
     clientFormattingContext: ClientFormattingContext;
+    automationContext?: JsonRecord;
+    canRead?: (recipient: PersonItem) => Promise<boolean>;
+    projectContext?: (recipient: PersonItem) => Promise<JsonRecord>;
   }): Promise<{
     createdBy: PersonItem;
     recipientPerson?: PersonItem;
@@ -198,15 +238,29 @@ export class TeamsService {
           )
         : (options.item as JsonRecord);
 
-    const context = {
+    const baseAutomationContext = {
       currentUser: options.currentUser,
       ...baseContext,
+      ...(options.automationContext ?? {}),
     };
     const recipientValue = this.messageTemplateService.getContextValue(
-      context,
+      baseAutomationContext,
       options.subscription.recipientField,
     );
     const recipientPerson = await this.resolveRecipient(recipientValue);
+    const projected =
+      recipientPerson && options.projectContext
+        ? await options.projectContext(recipientPerson)
+        : null;
+    const projectedTarget = projected?.target;
+    const context = projected
+      ? {
+          currentUser: options.currentUser,
+          ...(isRecord(projectedTarget) ? projectedTarget : {}),
+          ...projected,
+          target: projectedTarget,
+        }
+      : baseAutomationContext;
     const bodySource = template?.bodyMarkdown ?? '';
     const bodyMarkdown = this.messageTemplateService.replacePlaceholders(
       bodySource,
@@ -219,6 +273,26 @@ export class TeamsService {
       },
     );
     const bodyHtml = this.messageTemplateService.renderMarkdown(bodyMarkdown);
+
+    if (
+      recipientPerson &&
+      options.canRead &&
+      !(await options.canRead(recipientPerson))
+    ) {
+      return {
+        createdBy,
+        recipientPerson,
+        referenceHandle,
+        bodyMarkdown,
+        bodyHtml,
+        requestPayload: {
+          recipientField: options.subscription.recipientField,
+          referenceHandle,
+          recipientPersonHandle: recipientPerson.handle,
+        },
+        failure: { message: 'global.permissionDenied', statusCode: 403 },
+      };
+    }
 
     if (!options.sender || options.sender.type?.handle !== 'azure') {
       return {
@@ -323,7 +397,16 @@ export class TeamsService {
     return await this.em.findOne(
       PersonItem,
       { handle },
-      { populate: ['type'] },
+      {
+        populate: [
+          'type',
+          'roles',
+          'roles.stage',
+          'roles.permissions',
+          'roles.permissions.entity',
+          'roles.permissions.fieldPermissions',
+        ],
+      },
     );
   }
 

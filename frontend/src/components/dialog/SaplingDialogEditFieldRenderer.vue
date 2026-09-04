@@ -35,8 +35,17 @@
     />
   </template>
   <template v-else>
+    <SaplingFieldAutomationRule
+      v-if="isAutomationConfigurationField"
+      :model-value="formValues[template.name]"
+      :disabled="fieldDisabled"
+      :kind="automationConfigurationKind"
+      :source-entity="formValues.sourceEntity ?? formValues.entity"
+      :target-entity="formValues.targetEntity ?? formValues.entity"
+      @update:model-value="(val: unknown[]) => updateField(template.name, val)"
+    />
     <SaplingPhoneField
-      v-if="template.options?.includes('isPhone') || isRenderer('phone')"
+      v-else-if="template.options?.includes('isPhone') || isRenderer('phone')"
       :label="requiredLabel"
       :model-value="stringValue(template.name)"
       :maxlength="template.length"
@@ -342,6 +351,9 @@ import SaplingHelpTooltip from '@/components/common/SaplingHelpTooltip.vue'
 const SaplingSingleSelectField = defineAsyncComponent(
   () => import('@/components/dialog/fields/SaplingFieldSingleSelect.vue'),
 )
+const SaplingFieldAutomationRule = defineAsyncComponent(
+  () => import('@/components/dialog/fields/SaplingFieldAutomationRule.vue'),
+)
 const SaplingBooleanField = defineAsyncComponent(
   () => import('@/components/dialog/fields/SaplingFieldBoolean.vue'),
 )
@@ -436,6 +448,16 @@ const props = withDefaults(
   {
     showLabel: true,
   },
+)
+
+const isAutomationConfigurationField = computed(
+  () =>
+    ['fieldAutomation', 'inboxSubscription', 'teamsSubscription', 'webhookSubscription'].includes(
+      props.entityHandle,
+    ) && ['referencePath', 'conditions', 'assignments'].includes(props.template.name),
+)
+const automationConfigurationKind = computed(
+  () => props.template.name as 'referencePath' | 'conditions' | 'assignments',
 )
 
 const emit = defineEmits<{

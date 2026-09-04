@@ -1,4 +1,9 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  Optional,
+} from '@nestjs/common';
 import { DocumentItem } from '../../entity/DocumentItem';
 import * as uuid from 'uuid';
 import * as fs from 'fs';
@@ -20,6 +25,7 @@ import {
   getDocumentStorageDirectory,
   getDocumentStorageFilePath,
 } from './document-storage.util';
+import { AutomationEventService } from '../automation/automation-event.service';
 
 export interface ReferencedImageDocument {
   handle: number;
@@ -48,7 +54,11 @@ export class DocumentService {
    * Entity manager for database operations.
    * @type {EntityManager}
    */
-  constructor(private readonly em: EntityManager) {}
+  constructor(
+    private readonly em: EntityManager,
+    @Optional()
+    private readonly automationEvents?: AutomationEventService,
+  ) {}
 
   async findReferencedImages(
     entityHandle: string,
@@ -161,8 +171,28 @@ export class DocumentService {
       }
     }
 
-    this.em.persist(documents);
-    await this.em.flush();
+    await this.runAtomic(async () => {
+      this.em.persist(documents);
+      await this.em.flush();
+      for (const stored of documents) {
+        await this.automationEvents?.record({
+          entityHandle: 'document',
+          sourceHandle: stored.handle,
+          operation: 'afterInsert',
+          actor: currentUser,
+          newSnapshot: {
+            handle: stored.handle,
+            filename: stored.filename,
+            mimetype: stored.mimetype,
+            description: stored.description,
+            reference: stored.reference,
+            entity: { handle: entity.handle },
+            type: { handle: stored.type.handle },
+            person: { handle: currentUser.handle },
+          },
+        });
+      }
+    });
     return document;
   }
 
@@ -194,6 +224,12 @@ export class DocumentService {
     document.type = options.type;
     document.person = { handle: options.currentUser.handle } as PersonItem;
     return document;
+  }
+
+  private runAtomic<T>(operation: () => Promise<T>): Promise<T> {
+    return typeof this.em.transactional === 'function'
+      ? this.em.transactional(operation)
+      : operation();
   }
 
   /**

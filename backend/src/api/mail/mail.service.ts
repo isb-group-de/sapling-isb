@@ -37,6 +37,7 @@ import { MailProviderTransportService } from './mail-provider-transport.service'
 import { MailRenderingService } from './mail-rendering.service';
 import { CustomerAssociationResolverService } from './customer-association-resolver.service';
 import { CustomerCcService } from './customer-cc.service';
+import { AutomationEventService } from '../automation/automation-event.service';
 
 /**
  * Stable orchestration facade for mail controllers, processors and inbound
@@ -51,6 +52,7 @@ export class MailService {
   private readonly providerTransportService: MailProviderTransportService;
   private readonly customerAssociationResolver: CustomerAssociationResolverService;
   private readonly customerCcService: CustomerCcService;
+  private readonly automationEvents?: AutomationEventService;
 
   constructor(
     private readonly em: EntityManager,
@@ -64,6 +66,7 @@ export class MailService {
     @Optional()
     customerAssociationResolver?: CustomerAssociationResolverService,
     @Optional() customerCcService?: CustomerCcService,
+    @Optional() automationEvents?: AutomationEventService,
   ) {
     this.renderingService =
       renderingService ?? new MailRenderingService(messageTemplateService);
@@ -76,6 +79,7 @@ export class MailService {
         messageTemplateService,
         this.providerSessionService,
       );
+    this.automationEvents = automationEvents;
     this.customerAssociationResolver =
       customerAssociationResolver ??
       new CustomerAssociationResolverService(templateService);
@@ -210,7 +214,28 @@ export class MailService {
       attachmentHandles: preview.attachmentHandles ?? [],
     };
     delivery.attemptCount = 0;
-    await this.em.persist(delivery).flush();
+    await this.runAtomic(async () => {
+      await this.em.persist(delivery).flush();
+      await this.automationEvents?.record({
+        entityHandle: 'emailDelivery',
+        sourceHandle: delivery.handle,
+        operation: 'afterInsert',
+        actor: currentUser,
+        newSnapshot: {
+          handle: delivery.handle,
+          entity: { handle: entity.handle },
+          referenceHandle: delivery.referenceHandle,
+          template: delivery.template
+            ? { handle: delivery.template.handle }
+            : null,
+          subscription: delivery.subscription
+            ? { handle: delivery.subscription.handle }
+            : null,
+          subject: delivery.subject,
+          toRecipients: delivery.toRecipients,
+        },
+      });
+    });
 
     if (REDIS_ENABLED) {
       await this.emailQueue.add('deliver-email', {
@@ -343,5 +368,11 @@ export class MailService {
     }
     await em.persist(created).flush();
     return created;
+  }
+
+  private runAtomic<T>(operation: () => Promise<T>): Promise<T> {
+    return typeof this.em.transactional === 'function'
+      ? this.em.transactional(operation)
+      : operation();
   }
 }

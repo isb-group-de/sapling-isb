@@ -7,7 +7,11 @@ import { EmailTemplateItem } from './EmailTemplateItem';
 import { EntityItem } from './EntityItem';
 import { PersonItem } from './PersonItem';
 import { CompanyItem } from './CompanyItem';
-import { Sapling, SaplingForm } from './global/entity.decorator';
+import {
+  Sapling,
+  SaplingForm,
+  SaplingGenericReference,
+} from './global/entity.decorator';
 
 @Entity()
 export class EmailDeliveryItem {
@@ -271,6 +275,10 @@ export class EmailDeliveryItem {
   handle?: number;
 
   @ApiPropertyOptional()
+  @SaplingGenericReference({
+    entityField: 'entity',
+    handleField: 'referenceHandle',
+  })
   @SaplingForm({
     order: 100,
     group: 'emailDelivery.groupBasics',

@@ -7197,6 +7197,607 @@
       "comment": null
     },
     {
+      "name": "automation_event_item",
+      "schema": "public",
+      "columns": {
+        "actor_handle": {
+          "name": "actor_handle",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
+        "attempt_count": {
+          "name": "attempt_count",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": "0",
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
+        "chain_depth": {
+          "name": "chain_depth",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": "0",
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
+        "chain_id": {
+          "name": "chain_id",
+          "type": "varchar(36)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 36,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "completed_at": {
+          "name": "completed_at",
+          "type": "timestamptz(6)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
+        "context": {
+          "name": "context",
+          "type": "jsonb",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "json"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamptz(6)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
+        "error": {
+          "name": "error",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "text"
+        },
+        "event_id": {
+          "name": "event_id",
+          "type": "varchar(36)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": true,
+          "length": 36,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "handle": {
+          "name": "handle",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": true,
+          "primary": true,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
+        "new_snapshot": {
+          "name": "new_snapshot",
+          "type": "jsonb",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "json"
+        },
+        "next_attempt_at": {
+          "name": "next_attempt_at",
+          "type": "timestamptz(6)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
+        "old_snapshot": {
+          "name": "old_snapshot",
+          "type": "jsonb",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "json"
+        },
+        "operation": {
+          "name": "operation",
+          "type": "varchar(32)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 32,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "processing_started_at": {
+          "name": "processing_started_at",
+          "type": "timestamptz(6)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
+        "source_entity_handle": {
+          "name": "source_entity_handle",
+          "type": "varchar(64)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 64,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "source_handle": {
+          "name": "source_handle",
+          "type": "varchar(64)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 64,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "status": {
+          "name": "status",
+          "type": "varchar(16)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 16,
+          "precision": null,
+          "scale": null,
+          "default": "'pending'",
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        }
+      },
+      "indexes": [
+        {
+          "columnNames": [
+            "event_id"
+          ],
+          "composite": false,
+          "constraint": true,
+          "keyName": "automation_event_item_event_id_unique",
+          "primary": false,
+          "unique": true
+        },
+        {
+          "columnNames": [
+            "status",
+            "handle"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "automation_event_item_pending_idx",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "handle"
+          ],
+          "composite": false,
+          "constraint": true,
+          "keyName": "automation_event_item_pkey",
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "triggers": [],
+      "foreignKeys": {
+        "automation_event_item_actor_handle_foreign": {
+          "columnNames": [
+            "actor_handle"
+          ],
+          "constraintName": "automation_event_item_actor_handle_foreign",
+          "localTableName": "public.automation_event_item",
+          "referencedColumnNames": [
+            "handle"
+          ],
+          "referencedTableName": "public.person_item",
+          "updateRule": "cascade"
+        },
+        "automation_event_item_source_entity_handle_foreign": {
+          "columnNames": [
+            "source_entity_handle"
+          ],
+          "constraintName": "automation_event_item_source_entity_handle_foreign",
+          "localTableName": "public.automation_event_item",
+          "referencedColumnNames": [
+            "handle"
+          ],
+          "referencedTableName": "public.entity_item",
+          "updateRule": "cascade"
+        }
+      },
+      "comment": null
+    },
+    {
+      "name": "automation_execution_item",
+      "schema": "public",
+      "columns": {
+        "action_type": {
+          "name": "action_type",
+          "type": "varchar(16)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 16,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamptz(6)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
+        "deduplication_key": {
+          "name": "deduplication_key",
+          "type": "varchar(190)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": true,
+          "length": 190,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "event_handle": {
+          "name": "event_handle",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
+        "handle": {
+          "name": "handle",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": true,
+          "primary": true,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
+        "message": {
+          "name": "message",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "text"
+        },
+        "rule_handle": {
+          "name": "rule_handle",
+          "type": "varchar(32)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 32,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "status": {
+          "name": "status",
+          "type": "varchar(16)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 16,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "target_entity_handle": {
+          "name": "target_entity_handle",
+          "type": "varchar(64)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 64,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "target_handle": {
+          "name": "target_handle",
+          "type": "varchar(64)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 64,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        }
+      },
+      "indexes": [
+        {
+          "columnNames": [
+            "deduplication_key"
+          ],
+          "composite": false,
+          "constraint": true,
+          "keyName": "automation_execution_item_deduplication_key_unique",
+          "primary": false,
+          "unique": true
+        },
+        {
+          "columnNames": [
+            "handle"
+          ],
+          "composite": false,
+          "constraint": true,
+          "keyName": "automation_execution_item_pkey",
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "triggers": [],
+      "foreignKeys": {
+        "automation_execution_item_event_handle_foreign": {
+          "columnNames": [
+            "event_handle"
+          ],
+          "constraintName": "automation_execution_item_event_handle_foreign",
+          "localTableName": "public.automation_execution_item",
+          "referencedColumnNames": [
+            "handle"
+          ],
+          "referencedTableName": "public.automation_event_item",
+          "deleteRule": "cascade"
+        },
+        "automation_execution_item_target_entity_handle_foreign": {
+          "columnNames": [
+            "target_entity_handle"
+          ],
+          "constraintName": "automation_execution_item_target_entity_handle_foreign",
+          "localTableName": "public.automation_execution_item",
+          "referencedColumnNames": [
+            "handle"
+          ],
+          "referencedTableName": "public.entity_item",
+          "updateRule": "cascade"
+        }
+      },
+      "comment": null
+    },
+    {
       "name": "calendar_sync_subscription_item",
       "schema": "public",
       "columns": {
@@ -20931,6 +21532,269 @@
       "comment": null
     },
     {
+      "name": "field_automation_item",
+      "schema": "public",
+      "columns": {
+        "assignments": {
+          "name": "assignments",
+          "type": "jsonb",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": "'[]'",
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "json"
+        },
+        "conditions": {
+          "name": "conditions",
+          "type": "jsonb",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": "'[]'",
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "json"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamptz(6)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
+        "description": {
+          "name": "description",
+          "type": "varchar(128)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 128,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "handle": {
+          "name": "handle",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": true,
+          "primary": true,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
+        "is_active": {
+          "name": "is_active",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": "false",
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "boolean"
+        },
+        "operation_handle": {
+          "name": "operation_handle",
+          "type": "varchar(64)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 64,
+          "precision": null,
+          "scale": null,
+          "default": "'afterUpdate'",
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "priority": {
+          "name": "priority",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": "0",
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
+        "reference_path": {
+          "name": "reference_path",
+          "type": "jsonb",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": "'[]'",
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "json"
+        },
+        "source_entity_handle": {
+          "name": "source_entity_handle",
+          "type": "varchar(64)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 64,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "target_entity_handle": {
+          "name": "target_entity_handle",
+          "type": "varchar(64)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 64,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamptz(6)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        }
+      },
+      "indexes": [
+        {
+          "columnNames": [
+            "handle"
+          ],
+          "composite": false,
+          "constraint": true,
+          "keyName": "field_automation_item_pkey",
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "triggers": [],
+      "foreignKeys": {
+        "field_automation_item_operation_handle_foreign": {
+          "columnNames": [
+            "operation_handle"
+          ],
+          "constraintName": "field_automation_item_operation_handle_foreign",
+          "localTableName": "public.field_automation_item",
+          "referencedColumnNames": [
+            "handle"
+          ],
+          "referencedTableName": "public.webhook_subscription_type_item",
+          "updateRule": "cascade"
+        },
+        "field_automation_item_source_entity_handle_foreign": {
+          "columnNames": [
+            "source_entity_handle"
+          ],
+          "constraintName": "field_automation_item_source_entity_handle_foreign",
+          "localTableName": "public.field_automation_item",
+          "referencedColumnNames": [
+            "handle"
+          ],
+          "referencedTableName": "public.entity_item",
+          "updateRule": "cascade"
+        },
+        "field_automation_item_target_entity_handle_foreign": {
+          "columnNames": [
+            "target_entity_handle"
+          ],
+          "constraintName": "field_automation_item_target_entity_handle_foreign",
+          "localTableName": "public.field_automation_item",
+          "referencedColumnNames": [
+            "handle"
+          ],
+          "referencedTableName": "public.entity_item",
+          "updateRule": "cascade"
+        }
+      },
+      "comment": null
+    },
+    {
       "name": "field_permission_item",
       "schema": "public",
       "columns": {
@@ -24684,6 +25548,23 @@
       "name": "inbox_notification_item",
       "schema": "public",
       "columns": {
+        "automation_deduplication_key": {
+          "name": "automation_deduplication_key",
+          "type": "varchar(190)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": true,
+          "length": 190,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
         "body_markdown": {
           "name": "body_markdown",
           "type": "varchar(8192)",
@@ -24956,6 +25837,16 @@
         },
         {
           "columnNames": [
+            "automation_deduplication_key"
+          ],
+          "composite": false,
+          "constraint": true,
+          "keyName": "inbox_notification_item_automation_deduplication_key_unique",
+          "primary": false,
+          "unique": true
+        },
+        {
+          "columnNames": [
             "created_by_handle"
           ],
           "composite": false,
@@ -25074,6 +25965,23 @@
       "name": "inbox_subscription_item",
       "schema": "public",
       "columns": {
+        "conditions": {
+          "name": "conditions",
+          "type": "jsonb",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": "'[]'",
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "json"
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamptz(6)",
@@ -25153,11 +26061,28 @@
           "length": null,
           "precision": null,
           "scale": null,
-          "default": "true",
+          "default": "false",
           "comment": null,
           "collation": null,
           "enumItems": [],
           "mappedType": "boolean"
+        },
+        "priority": {
+          "name": "priority",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": "0",
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
         },
         "recipient_field": {
           "name": "recipient_field",
@@ -25166,6 +26091,40 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "unique": false,
+          "length": 64,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "reference_path": {
+          "name": "reference_path",
+          "type": "jsonb",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": "'[]'",
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "json"
+        },
+        "source_entity_handle": {
+          "name": "source_entity_handle",
+          "type": "varchar(64)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
           "unique": false,
           "length": 64,
           "precision": null,
@@ -25283,6 +26242,19 @@
             "handle"
           ],
           "referencedTableName": "public.entity_item"
+        },
+        "inbox_subscription_item_source_entity_handle_foreign": {
+          "columnNames": [
+            "source_entity_handle"
+          ],
+          "constraintName": "inbox_subscription_item_source_entity_handle_foreign",
+          "localTableName": "public.inbox_subscription_item",
+          "referencedColumnNames": [
+            "handle"
+          ],
+          "referencedTableName": "public.entity_item",
+          "updateRule": "cascade",
+          "deleteRule": "set null"
         },
         "inbox_subscription_item_template_handle_foreign": {
           "columnNames": [
@@ -40635,6 +41607,23 @@
           "enumItems": [],
           "mappedType": "integer"
         },
+        "automation_deduplication_key": {
+          "name": "automation_deduplication_key",
+          "type": "varchar(190)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": true,
+          "length": 190,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
         "body_html": {
           "name": "body_html",
           "type": "varchar(16384)",
@@ -40962,6 +41951,16 @@
       "indexes": [
         {
           "columnNames": [
+            "automation_deduplication_key"
+          ],
+          "composite": false,
+          "constraint": true,
+          "keyName": "teams_delivery_item_automation_deduplication_key_unique",
+          "primary": false,
+          "unique": true
+        },
+        {
+          "columnNames": [
             "created_by_handle"
           ],
           "composite": false,
@@ -41269,6 +42268,23 @@
       "name": "teams_subscription_item",
       "schema": "public",
       "columns": {
+        "conditions": {
+          "name": "conditions",
+          "type": "jsonb",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": "'[]'",
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "json"
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamptz(6)",
@@ -41348,11 +42364,28 @@
           "length": null,
           "precision": null,
           "scale": null,
-          "default": "true",
+          "default": "false",
           "comment": null,
           "collation": null,
           "enumItems": [],
           "mappedType": "boolean"
+        },
+        "priority": {
+          "name": "priority",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": "0",
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
         },
         "recipient_field": {
           "name": "recipient_field",
@@ -41361,6 +42394,40 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "unique": false,
+          "length": 64,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "reference_path": {
+          "name": "reference_path",
+          "type": "jsonb",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": "'[]'",
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "json"
+        },
+        "source_entity_handle": {
+          "name": "source_entity_handle",
+          "type": "varchar(64)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
           "unique": false,
           "length": 64,
           "precision": null,
@@ -41478,6 +42545,19 @@
             "handle"
           ],
           "referencedTableName": "public.entity_item"
+        },
+        "teams_subscription_item_source_entity_handle_foreign": {
+          "columnNames": [
+            "source_entity_handle"
+          ],
+          "constraintName": "teams_subscription_item_source_entity_handle_foreign",
+          "localTableName": "public.teams_subscription_item",
+          "referencedColumnNames": [
+            "handle"
+          ],
+          "referencedTableName": "public.entity_item",
+          "updateRule": "cascade",
+          "deleteRule": "set null"
         },
         "teams_subscription_item_template_handle_foreign": {
           "columnNames": [
@@ -44268,6 +45348,23 @@
           "enumItems": [],
           "mappedType": "integer"
         },
+        "automation_deduplication_key": {
+          "name": "automation_deduplication_key",
+          "type": "varchar(190)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": true,
+          "length": 190,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
         "completed_at": {
           "name": "completed_at",
           "type": "timestamptz(6)",
@@ -44474,6 +45571,16 @@
         }
       },
       "indexes": [
+        {
+          "columnNames": [
+            "automation_deduplication_key"
+          ],
+          "composite": false,
+          "constraint": true,
+          "keyName": "webhook_delivery_item_automation_deduplication_key_unique",
+          "primary": false,
+          "unique": true
+        },
         {
           "columnNames": [
             "handle"
@@ -44765,6 +45872,23 @@
           "enumItems": [],
           "mappedType": "string"
         },
+        "conditions": {
+          "name": "conditions",
+          "type": "jsonb",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": "'[]'",
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "json"
+        },
         "container_name": {
           "name": "container_name",
           "type": "varchar(128)",
@@ -44878,7 +46002,7 @@
           "length": null,
           "precision": null,
           "scale": null,
-          "default": "true",
+          "default": "false",
           "comment": null,
           "collation": null,
           "enumItems": [],
@@ -44918,6 +46042,40 @@
           "enumItems": [],
           "mappedType": "string"
         },
+        "priority": {
+          "name": "priority",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": "0",
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
+        "reference_path": {
+          "name": "reference_path",
+          "type": "jsonb",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": "'[]'",
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "json"
+        },
         "relations": {
           "name": "relations",
           "type": "jsonb",
@@ -44944,6 +46102,23 @@
           "nullable": true,
           "unique": false,
           "length": 128,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "source_entity_handle": {
+          "name": "source_entity_handle",
+          "type": "varchar(64)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": 64,
           "precision": null,
           "scale": null,
           "default": null,
@@ -45179,6 +46354,19 @@
             "handle"
           ],
           "referencedTableName": "public.webhook_subscription_payload_type"
+        },
+        "webhook_subscription_item_source_entity_handle_foreign": {
+          "columnNames": [
+            "source_entity_handle"
+          ],
+          "constraintName": "webhook_subscription_item_source_entity_handle_foreign",
+          "localTableName": "public.webhook_subscription_item",
+          "referencedColumnNames": [
+            "handle"
+          ],
+          "referencedTableName": "public.entity_item",
+          "updateRule": "cascade",
+          "deleteRule": "set null"
         },
         "webhook_subscription_item_type_handle_foreign": {
           "columnNames": [

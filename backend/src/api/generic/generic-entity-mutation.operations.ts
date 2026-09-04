@@ -20,6 +20,7 @@ import type { GenericUpdateConflictService } from './generic-update-conflict.ser
 import type { FieldPermissionService } from '../current/field-permission.service';
 import type { SecurityPrincipalCacheService } from '../current/security-principal-cache.service';
 import type { GlobalSearchIndexService } from './global-search-index.service';
+import type { AutomationEventService } from '../automation/automation-event.service';
 import {
   captureStoredDocumentFileDescriptor,
   deleteStoredDocumentFile,
@@ -49,6 +50,7 @@ export class GenericEntityMutationOperations {
     protected readonly fieldPermissions: FieldPermissionService,
     protected readonly securityPrincipalCache?: SecurityPrincipalCacheService,
     protected readonly globalSearchIndex?: GlobalSearchIndexService,
+    protected readonly automationEvents?: AutomationEventService,
   ) {}
 
   async delete(
@@ -157,6 +159,14 @@ export class GenericEntityMutationOperations {
         previousOpenTaskUserHandles,
       ),
     );
+    await this.automationEvents?.record({
+      entityHandle,
+      sourceHandle: handle,
+      operation: 'afterDelete',
+      actor: currentUser,
+      oldSnapshot,
+      newSnapshot: null,
+    });
   }
 
   protected extractEntityHandle(item: object): string | number | null {

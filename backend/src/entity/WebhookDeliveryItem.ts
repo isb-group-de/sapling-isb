@@ -83,6 +83,11 @@ export class WebhookDeliveryItem {
   @Property({ primary: true, autoincrement: true })
   handle?: number;
 
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly', 'isSystem'])
+  @Property({ nullable: true, length: 190, unique: true, hidden: true })
+  automationDeduplicationKey?: string;
+
   /**
    * Payload of the webhook delivery.
    * @type {object}

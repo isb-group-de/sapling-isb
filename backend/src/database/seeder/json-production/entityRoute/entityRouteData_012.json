@@ -1,0 +1,5 @@
+[
+  { "entity": "fieldAutomation", "route": "table/fieldAutomation" },
+  { "entity": "automationEvent", "route": "table/automationEvent" },
+  { "entity": "automationExecution", "route": "table/automationExecution" }
+]
