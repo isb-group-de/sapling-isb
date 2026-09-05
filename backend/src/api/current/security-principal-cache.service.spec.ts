@@ -15,7 +15,7 @@ describe('SecurityPrincipalCacheService', () => {
 
     const first = service.get(7);
     const second = service.get(7);
-    resolveLoad({ handle: 7, loginPassword: 'hidden', roles: [] });
+    resolveLoad({ handle: 7, roles: [] });
 
     await expect(Promise.all([first, second])).resolves.toEqual([
       { handle: 7, roles: [] },
@@ -26,6 +26,11 @@ describe('SecurityPrincipalCacheService', () => {
       roles: [],
     });
     expect(findOne).toHaveBeenCalledTimes(1);
+    expect(findOne).toHaveBeenCalledWith(
+      expect.anything(),
+      { handle: 7 },
+      expect.objectContaining({ exclude: ['loginPassword'] }),
+    );
   });
 
   it('reloads a principal after targeted invalidation', async () => {

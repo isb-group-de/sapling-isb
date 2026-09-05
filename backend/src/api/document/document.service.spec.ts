@@ -32,6 +32,75 @@ describe('DocumentService', () => {
     jest.restoreAllMocks();
   });
 
+  it.each([
+    ['mail.EML', '', 'document', 'email'],
+    ['mail.MSG', 'application/octet-stream', 'document', 'email'],
+    ['report.pdf', '', 'document', 'document'],
+    ['image.png', 'image/png', 'document', 'document'],
+    ['archive.zip', 'application/octet-stream', 'document', 'document'],
+    ['recording.webm', 'audio/webm', 'document', 'document'],
+    ['recording.webm', 'audio/webm', 'aiChatAudio', 'aiChatAudio'],
+    ['mail.eml', 'message/rfc822', 'email', 'email'],
+  ])(
+    'classifies %s uploaded as %s with type %s before recording its event',
+    async (filename, mimetype, requestedType, expectedType) => {
+      const entity = { handle: 'ticket' } as EntityItem;
+      const em = {
+        findOne: jest.fn(
+          async (
+            model: typeof EntityItem | typeof DocumentTypeItem,
+            where: { handle: string },
+          ) => (model === EntityItem ? entity : { handle: where.handle }),
+        ),
+        persist: jest.fn((documents: DocumentItem[]) => {
+          documents[0].handle = 1;
+        }),
+        flush: jest.fn(async () => undefined),
+      } as unknown as EntityManager;
+      const automationEvents = {
+        record: jest.fn(async (options: Record<string, unknown>) => {
+          void options;
+          return null;
+        }),
+      };
+      jest
+        .spyOn(mailAttachmentUtil, 'extractEmlAttachments')
+        .mockResolvedValue([]);
+      jest
+        .spyOn(mailAttachmentUtil, 'extractMsgAttachments')
+        .mockReturnValue([]);
+
+      const result = await new DocumentService(
+        em,
+        automationEvents as never,
+      ).uploadDocument(
+        {
+          buffer: Buffer.from('content'),
+          originalname: filename,
+          mimetype,
+        } as Express.Multer.File,
+        'ticket',
+        '123',
+        requestedType,
+        { handle: 42 } as PersonItem,
+      );
+
+      expect(result.type.handle).toBe(expectedType);
+      expect(em.persist).toHaveBeenCalledWith([
+        expect.objectContaining({ type: { handle: expectedType } }),
+      ]);
+      expect(automationEvents.record.mock.calls[0]?.[0]).toMatchObject({
+        entityHandle: 'document',
+        operation: 'afterInsert',
+        newSnapshot: {
+          type: { handle: expectedType },
+          entity: { handle: 'ticket' },
+          reference: '123',
+        },
+      });
+    },
+  );
+
   it('returns only images linked to the exact requested record without storage paths', async () => {
     const documents = [
       {
@@ -155,7 +224,7 @@ describe('DocumentService', () => {
       } as Express.Multer.File,
       'ticket',
       '123',
-      'email',
+      'document',
       { handle: 42 } as PersonItem,
       'E-Mail',
     );
@@ -235,12 +304,13 @@ describe('DocumentService', () => {
       } as Express.Multer.File,
       'ticket',
       '123',
-      'email',
+      'document',
       { handle: 42 } as PersonItem,
       'E-Mail',
     );
 
     expect(result.mimetype).toBe('application/vnd.ms-outlook');
+    expect(result.type).toBe(emailType);
     expect(mailAttachmentUtil.extractMsgAttachments).toHaveBeenCalledWith(
       Buffer.from('msg-content'),
     );

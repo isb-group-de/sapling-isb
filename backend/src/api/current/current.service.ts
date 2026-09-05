@@ -125,7 +125,7 @@ export class CurrentService {
     this.securityPrincipalCache?.invalidate(user.handle);
     return this.securityPrincipalCache
       ? this.securityPrincipalCache.get(user.handle)
-      : this.loadPerson(em, user.handle);
+      : this.loadPerson(this.forkEntityManager(), user.handle);
   }
 
   private async loadPerson(
@@ -136,6 +136,8 @@ export class CurrentService {
       PersonItem,
       { handle: personHandle },
       {
+        // Load a partial entity instead of deleting a tracked password field.
+        exclude: ['loginPassword'],
         populate: [
           'company',
           'company.country',
@@ -152,7 +154,6 @@ export class CurrentService {
       },
     );
 
-    delete person?.loginPassword; // Remove password before returning
     return person || null;
   }
 

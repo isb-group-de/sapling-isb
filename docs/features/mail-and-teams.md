@@ -314,6 +314,14 @@ contract described in [Reference Automations](reference-automations.md).
 
 `TeamsSubscriptionItem` decides when a Teams message is created.
 
+Its **Notify also about own changes** (`notifyActor`) checkbox controls whether
+the resolved recipient can be the person who triggered the event. When disabled,
+such events create no delivery or queue job. This applies to direct subscriptions
+and reference automations; recipient permissions and Azure prerequisites still
+apply when enabled. The option does not add the actor to the configured recipients.
+New subscriptions default to off. Migration enables the option on existing Teams
+subscriptions to preserve their previous self-delivery behavior.
+
 | Field            | Meaning                                    |
 | ---------------- | ------------------------------------------ |
 | `description`    | Human-readable subscription name           |

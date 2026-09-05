@@ -79,9 +79,8 @@ export class AuthService {
         if (hydratedPerson) {
           return hydratedPerson;
         }
-
-        delete person.loginPassword;
-        return person;
+        // The account may have disappeared while provisioning its profile.
+        // Never fall back to the password-bearing authentication entity.
       }
     }
     throw new UnauthorizedException();

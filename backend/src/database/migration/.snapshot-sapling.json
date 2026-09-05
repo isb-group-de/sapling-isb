@@ -26067,6 +26067,23 @@
           "enumItems": [],
           "mappedType": "boolean"
         },
+        "notify_actor": {
+          "name": "notify_actor",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": "false",
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "boolean"
+        },
         "priority": {
           "name": "priority",
           "type": "int",
@@ -42355,6 +42372,23 @@
         },
         "is_active": {
           "name": "is_active",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": "false",
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "boolean"
+        },
+        "notify_actor": {
+          "name": "notify_actor",
           "type": "boolean",
           "unsigned": false,
           "autoincrement": false,

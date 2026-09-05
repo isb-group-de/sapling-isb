@@ -10,10 +10,14 @@ jest.mock('../../entity/PersonItem', () => ({ PersonItem: class {} }));
 
 import { InboxService } from './inbox.service';
 
-function createService(recipients: Array<{ handle: number }>) {
+function createService(
+  recipients: Array<{ handle: number }>,
+  notifyActor = false,
+) {
   const subscription = {
     handle: 5,
     isActive: true,
+    notifyActor,
     recipientField: 'assigneePerson',
     entity: { handle: 'ticket' },
     type: { handle: 'afterUpdate' },
@@ -35,6 +39,7 @@ function createService(recipients: Array<{ handle: number }>) {
       .fn<(...args: unknown[]) => Promise<unknown>>()
       .mockResolvedValue(recipients),
     create,
+    persist: jest.fn(),
     flush,
   };
   const messageTemplateService = {
@@ -54,10 +59,83 @@ function createService(recipients: Array<{ handle: number }>) {
     openTaskEventsService as never,
   );
 
-  return { service, em, openTaskEventsService };
+  return { service, em, openTaskEventsService, subscription };
 }
 
 describe('InboxService', () => {
+  it('includes the actor alongside other recipients when enabled', async () => {
+    const { service, em, openTaskEventsService } = createService(
+      [{ handle: 7 }, { handle: 11 }],
+      true,
+    );
+
+    const notifications = await service.querySubscription(5, { handle: 23 }, {
+      handle: 7,
+    } as never);
+
+    expect(notifications.map((item) => item.recipientPerson)).toEqual([7, 11]);
+    expect(em.flush).toHaveBeenCalledTimes(1);
+    expect(openTaskEventsService.notifyUsers).toHaveBeenCalledWith(
+      new Set([7, 11]),
+    );
+  });
+
+  it.each([false, true])(
+    'uses notifyActor=%s for reference automation recipients',
+    async (notifyActor) => {
+      const { service, em, openTaskEventsService, subscription } =
+        createService([{ handle: 7 }, { handle: 11 }], notifyActor);
+      em.findOne.mockResolvedValue(null);
+      const canRead = jest.fn<() => Promise<boolean>>().mockResolvedValue(true);
+
+      const notifications = await service.queryAutomationSubscription(
+        subscription as never,
+        { handle: 23 },
+        {
+          actor: { handle: 7 },
+          eventId: 'event-1',
+          operation: 'afterUpdate',
+        } as never,
+        'event-1:inbox:5:23',
+        canRead,
+      );
+
+      const handles = notifyActor ? [7, 11] : [11];
+      expect(
+        notifications.map(
+          (item) => (item.recipientPerson as { handle: number }).handle,
+        ),
+      ).toEqual(handles);
+      expect(canRead).toHaveBeenCalledTimes(handles.length);
+      expect(openTaskEventsService.notifyUsers).toHaveBeenCalledWith(
+        new Set(handles),
+      );
+      expect(em.create).toHaveBeenCalledWith(
+        expect.any(Function),
+        expect.objectContaining({
+          automationDeduplicationKey: 'event-1:inbox:5:23:11',
+        }),
+      );
+    },
+  );
+
+  it('still checks actor permissions when self-notification is enabled', async () => {
+    const { service, em, subscription, openTaskEventsService } = createService(
+      [{ handle: 7 }],
+      true,
+    );
+    const notifications = await service.queryAutomationSubscription(
+      subscription as never,
+      { handle: 23 },
+      { actor: { handle: 7 } } as never,
+      'denied',
+      () => Promise.resolve(false),
+    );
+    expect(notifications).toEqual([]);
+    expect(em.create).not.toHaveBeenCalled();
+    expect(openTaskEventsService.notifyUsers).not.toHaveBeenCalled();
+  });
+
   it('does not create or announce a notification for the acting user', async () => {
     const { service, em, openTaskEventsService } = createService([
       { handle: 7 },

@@ -1,6 +1,35 @@
 import { describe, expect, it, jest } from '@jest/globals';
 import { AuthService } from './auth.service';
 
+describe('AuthService local login principal', () => {
+  it.each([true, false])(
+    'preserves the authentication entity when profile loading succeeds: %s',
+    async (profileAvailable) => {
+      const person = {
+        handle: 7,
+        loginPassword: 'stored-hash',
+        comparePassword: jest.fn(() => true),
+      };
+      const principal = { handle: 7, roles: [] };
+      const service = new AuthService(
+        { fork: () => ({ findOne: async () => person }) } as never,
+        {
+          getPersonWithStarterWorkspace: async () =>
+            profileAvailable ? principal : null,
+        } as never,
+      );
+
+      const login = service.validate('max-mustermann', 'test-password');
+      if (profileAvailable) {
+        await expect(login).resolves.toBe(principal);
+      } else {
+        await expect(login).rejects.toThrow('Unauthorized');
+      }
+      expect(person.loginPassword).toBe('stored-hash');
+    },
+  );
+});
+
 function createApiTokenService(lastUsedAt?: Date) {
   const token = {
     handle: 11,

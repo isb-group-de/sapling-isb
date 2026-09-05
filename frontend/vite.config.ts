@@ -216,6 +216,9 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         '@': fileURLToPath(new URL('./src', import.meta.url)),
+        // MSG decoding uses iconv-lite's Buffer and StringDecoder APIs in browsers.
+        buffer: 'buffer/',
+        string_decoder: 'string_decoder/',
       },
     },
   }

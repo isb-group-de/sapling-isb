@@ -70,7 +70,10 @@ export class InboxService {
       });
 
       for (const recipient of prepared.recipients) {
-        if (recipient.handle === currentUser.handle) {
+        if (
+          !subscription.notifyActor &&
+          recipient.handle === currentUser.handle
+        ) {
           continue;
         }
 
@@ -139,7 +142,10 @@ export class InboxService {
     const notifications: InboxNotificationItem[] = [];
     const affected = new Set<number>();
     for (const recipient of recipients) {
-      if (recipient.handle == null || recipient.handle === event.actor?.handle)
+      if (
+        recipient.handle == null ||
+        (!subscription.notifyActor && recipient.handle === event.actor?.handle)
+      )
         continue;
       if (!(await canRead(recipient))) continue;
       const recipientDeduplicationKey = `${deduplicationKey}:${recipient.handle}`;

@@ -63,6 +63,7 @@ Important fields:
 | `description`    | Human-readable subscription name                             |
 | `recipientField` | Context path that resolves recipient person(s)               |
 | `isActive`       | Enables/disables the subscription                            |
+| `notifyActor`    | Also notify the person who triggered the event (default off) |
 | `entity`         | Entity being watched                                         |
 | `type`           | Event type, e.g. `afterInsert`, `afterUpdate`, `afterDelete` |
 | `template`       | Template used for generated notifications                    |
@@ -166,8 +167,12 @@ participants
 If no person handles are found, no notification is created.
 
 The person who triggered the entity change is excluded from the resolved
-recipients. For subscriptions with multiple recipients, notifications are still
-created for every other person. Existing inbox entries are not affected.
+recipients unless the subscription's **Notify also about own changes**
+(`notifyActor`) checkbox is enabled. This applies to direct subscriptions and
+reference automations. The option does not add recipients: the actor must be
+selected by `recipientField` and still pass the automation's read-permission
+check. Other recipients and existing inbox entries are not affected. New and
+migrated Inbox subscriptions default to `notifyActor = false`.
 
 ## Open Task Events
 

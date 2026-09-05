@@ -55,7 +55,7 @@ import { CurrentService } from './current.service';
 
 describe('CurrentService', () => {
   it('loads authorization relations without provisioning starter content', async () => {
-    const person = { handle: 7, roles: [], loginPassword: 'secret' };
+    const person = { handle: 7, roles: [] };
     const findOne = jest
       .fn<(...args: unknown[]) => Promise<unknown>>()
       .mockResolvedValue(person);
@@ -74,6 +74,11 @@ describe('CurrentService', () => {
     });
 
     expect(findOne).toHaveBeenCalledTimes(1);
+    expect(findOne).toHaveBeenCalledWith(
+      expect.anything(),
+      { handle: 7 },
+      expect.objectContaining({ exclude: ['loginPassword'] }),
+    );
     expect(count).not.toHaveBeenCalled();
     expect(persist).not.toHaveBeenCalled();
   });
@@ -114,7 +119,6 @@ describe('CurrentService', () => {
       .mockResolvedValueOnce({
         handle: 7,
         roles: [],
-        loginPassword: 'secret',
       });
     const fork = jest.fn(() => ({
       findOne,
@@ -162,6 +166,7 @@ describe('CurrentService', () => {
       }),
     );
     expect(flush).toHaveBeenCalledTimes(1);
+    expect(fork).toHaveBeenCalledTimes(2);
     expect(result).toEqual({ handle: 7, roles: [] });
   });
 

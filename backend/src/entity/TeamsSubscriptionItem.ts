@@ -78,6 +78,19 @@ export class TeamsSubscriptionItem {
   @Property({ default: false, nullable: false })
   isActive: boolean = false;
 
+  @ApiPropertyOptional({ default: false })
+  @SaplingForm({
+    order: 150,
+    group: 'teamsSubscription.groupConfiguration',
+    groupOrder: 200,
+    width: 2,
+    visible: true,
+    tableVisible: false,
+    mobileVisible: false,
+  })
+  @Property({ default: false, nullable: false })
+  notifyActor: boolean = false;
+
   @ApiPropertyOptional()
   @Sapling(['isEntity'])
   @SaplingForm({

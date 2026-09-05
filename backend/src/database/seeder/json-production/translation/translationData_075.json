@@ -1,0 +1,14 @@
+[
+  {
+    "entity": "inboxSubscription",
+    "property": "notifyActor",
+    "de": "Auch bei eigenen Änderungen benachrichtigen",
+    "en": "Notify also about own changes"
+  },
+  {
+    "entity": "teamsSubscription",
+    "property": "notifyActor",
+    "de": "Auch bei eigenen Änderungen benachrichtigen",
+    "en": "Notify also about own changes"
+  }
+]

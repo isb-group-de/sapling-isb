@@ -1,4 +1,4 @@
-import { EntityManager } from '@mikro-orm/core';
+import { EntityManager, RequestContext } from '@mikro-orm/core';
 import { AutomationEventItem } from '../../entity/AutomationEventItem';
 import { FieldAutomationItem } from '../../entity/FieldAutomationItem';
 import { InboxSubscriptionItem } from '../../entity/InboxSubscriptionItem';
@@ -9,6 +9,54 @@ import { AutomationConditionService } from './automation-condition.service';
 import { AutomationProcessorService } from './automation-processor.service';
 
 describe('AutomationProcessorService', () => {
+  it('creates a database context for every background scan, including recovery', async () => {
+    let inContext = false;
+    const context = jest
+      .spyOn(RequestContext, 'create')
+      .mockImplementation(async (_em, next) => {
+        inContext = true;
+        try {
+          return await next();
+        } finally {
+          inContext = false;
+        }
+      });
+    const em = {
+      nativeUpdate: jest.fn(async () => {
+        expect(inContext).toBe(true);
+        return 0;
+      }),
+      findOne: jest.fn(async () => {
+        expect(inContext).toBe(true);
+        return null;
+      }),
+    };
+    const service = new AutomationProcessorService(
+      em as unknown as EntityManager,
+      {} as never,
+      {} as never,
+      {} as never,
+      {} as never,
+      {} as never,
+      {} as never,
+      {} as never,
+      {} as never,
+      {} as never,
+      {} as never,
+      {} as never,
+    );
+    try {
+      await service.processPending();
+      await service.processPending();
+      expect(context).toHaveBeenCalledTimes(2);
+      expect(em.nativeUpdate).toHaveBeenCalledTimes(2);
+      expect(em.findOne).toHaveBeenCalledTimes(2);
+      expect(inContext).toBe(false);
+    } finally {
+      context.mockRestore();
+    }
+  });
+
   it('uses one conditional reference event for Inbox, Teams, webhooks, and field updates', async () => {
     const actor = { handle: 7 };
     const event = {

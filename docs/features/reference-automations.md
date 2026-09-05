@@ -52,6 +52,13 @@ Redis process the same database-backed events in-process and scan for pending
 work after startup. Interrupted events are reclaimed, and technical failures
 use persisted retry times with exponential backoff.
 
+Every background processing scan creates its own MikroORM request context,
+including recovery and calls from both the Redis worker and the in-process
+timer. All participating services share that context. Without it, queue jobs
+fail with the global EntityManager validation error before claiming an event;
+the database event then remains `pending` with `attemptCount = 0`. For this
+symptom, inspect the automation queue's job errors as well as the event rows.
+
 `AutomationExecutionItem` provides idempotency and the per-rule result. Field
 actions use the original actor's current permissions. Higher-priority field
 rules own conflicting fields; a lower-priority conflicting rule is skipped as

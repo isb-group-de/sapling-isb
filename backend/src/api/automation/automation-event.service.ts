@@ -73,7 +73,9 @@ export class AutomationEventService implements OnModuleInit {
       sourceEntity,
       sourceHandle: String(options.sourceHandle),
       operation: options.operation,
-      actor: options.actor,
+      // Request principals belong to a separate read context. Attaching the
+      // instance would cascade its in-memory changes into this write.
+      actor: options.actor.handle,
       chainId: current?.chainId,
       chainDepth: current ? current.depth + 1 : 0,
       oldSnapshot: this.jsonSafe(options.oldSnapshot),

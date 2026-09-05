@@ -104,8 +104,13 @@ export class DocumentService {
   ): Promise<DocumentItem> {
     const entity = await this.em.findOne(EntityItem, { handle: entityHandle });
     if (!entity) throw new NotFoundException('global.entityNotFound');
+    const filename = resolveUploadedDocumentFilename(file.originalname);
+    const mimetype = resolveUploadedDocumentMimeType(filename, file.mimetype);
+    const isEml = mimetype === 'message/rfc822';
+    const isMsg = mimetype === 'application/vnd.ms-outlook';
     const type = await this.em.findOne(DocumentTypeItem, {
-      handle: typeHandle,
+      handle:
+        typeHandle === 'document' && (isEml || isMsg) ? 'email' : typeHandle,
     });
     if (!type) throw new NotFoundException('document.documentTypeNotFound');
 
@@ -116,11 +121,8 @@ export class DocumentService {
 
     const document = this.createStoredDocument({
       buffer: file.buffer,
-      filename: resolveUploadedDocumentFilename(file.originalname),
-      mimetype: resolveUploadedDocumentMimeType(
-        file.originalname,
-        file.mimetype,
-      ),
+      filename,
+      mimetype,
       description,
       reference,
       entity,
@@ -130,8 +132,6 @@ export class DocumentService {
     });
     const documents = [document];
 
-    const isEml = document.mimetype === 'message/rfc822';
-    const isMsg = document.mimetype === 'application/vnd.ms-outlook';
     if (isEml || isMsg) {
       try {
         const attachmentType = await this.em.findOne(DocumentTypeItem, {

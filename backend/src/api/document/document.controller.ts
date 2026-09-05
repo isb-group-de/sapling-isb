@@ -132,7 +132,7 @@ export class DocumentController {
         typeHandle: {
           type: 'string',
           description:
-            'Document type handle that classifies the uploaded file.',
+            'Document type handle. With "document", EML and MSG uploads are automatically classified as "email"; explicit specialized types are preserved.',
           default: 'document',
           nullable: false,
         },

@@ -100,6 +100,8 @@ export class TeamsService {
         projectContext,
       });
 
+      if (!prepared) continue;
+
       const delivery = new TeamsDeliveryItem();
       delivery.subscription = subscription;
       delivery.template = template;
@@ -215,7 +217,7 @@ export class TeamsService {
     bodyHtml: string;
     requestPayload: object;
     failure?: { message: string; statusCode?: number };
-  }> {
+  } | null> {
     const entityHandle =
       typeof options.subscription.entity === 'object'
         ? options.subscription.entity.handle
@@ -248,6 +250,13 @@ export class TeamsService {
       options.subscription.recipientField,
     );
     const recipientPerson = await this.resolveRecipient(recipientValue);
+    if (
+      !options.subscription.notifyActor &&
+      recipientPerson?.handle != null &&
+      recipientPerson.handle === options.currentUser.handle
+    ) {
+      return null;
+    }
     const projected =
       recipientPerson && options.projectContext
         ? await options.projectContext(recipientPerson)

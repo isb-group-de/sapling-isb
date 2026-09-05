@@ -48,6 +48,14 @@ browser reports an empty or generic binary MIME type during a multi-file upload.
 Multipart filenames that arrive as reversible UTF-8/Latin-1 mojibake are also
 decoded before storage, so names containing umlauts remain intact after upload.
 
+Standard uploads using `typeHandle = document` are automatically classified as
+`email` for EML and MSG files (case-insensitive extensions, using the normalized
+MIME type). Other standard uploads remain `document`. Explicit specialized types,
+such as `aiChatAudio` for chat recordings, are preserved. Classification happens
+before persistence and the `afterInsert` automation event, so Inbox rules with a
+source condition of Document type = E-Mail can match the new upload immediately.
+Existing documents are not reclassified retroactively.
+
 `DocumentTypeItem` is reference data for classifying documents. Use stable handles such as `document`, `offer`, or `contract` rather than changing them after seed data is in use.
 
 ## d.velop Cloud Overlay
@@ -133,6 +141,11 @@ locally, sanitizes HTML, resolves embedded CID images, and exposes non-inline
 mail attachments as download chips. Attachment bytes remain local to the
 browser and retain their filename and MIME type when downloaded.
 
+MSG decoding uses `@kenjiuno/msgreader` and `iconv-lite`. The frontend declares
+browser implementations of `buffer` and `string_decoder` and aliases both in
+Vite for development and production. Without these aliases Vite externalizes
+the Node built-ins, causing the MSG parser to fail before showing the message.
+
 When an EML or Outlook MSG file is uploaded, the backend additionally extracts
 each user-visible attachment as its own `DocumentItem` of type `document`. The
 extracted files use the same entity/reference link and uploading person as the
@@ -147,7 +160,7 @@ Upload expects multipart form data:
 | Field         | Meaning                                                   |
 | ------------- | --------------------------------------------------------- |
 | `file`        | Binary file                                               |
-| `typeHandle`  | Document type handle                                      |
+| `typeHandle`  | Document type handle; `document` automatically becomes `email` for EML/MSG |
 | `description` | Optional description; defaults to the normalized filename |
 
 Download and preview resolve the document first, then derive permission from `document.entity.handle` through `GenericPermissionGuard`.
@@ -185,6 +198,10 @@ opaque storage file only after the database delete succeeds. Bulk deletion uses
 the same lifecycle for every selected document. Missing files are tolerated so
 an already inconsistent record can still be removed; unsafe storage paths are
 rejected instead of being resolved outside the document storage directory.
+This is implemented directly in the generic mutation lifecycle
+(`generic-entity-mutation.operations.ts` and `document-storage.util.ts`); no
+Document `afterDelete` script or subscription needs to be configured. The file
+table and the record dialog's Documents tab use this same generic delete API.
 
 When changing d.velop Cloud overlay behavior:
 

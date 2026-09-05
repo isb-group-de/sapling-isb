@@ -80,6 +80,19 @@ export class InboxSubscriptionItem {
   @Property({ default: false, nullable: false })
   isActive: boolean = false;
 
+  @ApiPropertyOptional({ default: false })
+  @SaplingForm({
+    order: 150,
+    group: 'inboxSubscription.groupConfiguration',
+    groupOrder: 200,
+    width: 2,
+    visible: true,
+    tableVisible: false,
+    mobileVisible: false,
+  })
+  @Property({ default: false, nullable: false })
+  notifyActor: boolean = false;
+
   @ApiPropertyOptional({
     description:
       'Entity whose lifecycle event starts this rule. Empty keeps the legacy direct-entity behavior.',

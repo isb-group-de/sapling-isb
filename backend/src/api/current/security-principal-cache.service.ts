@@ -80,6 +80,9 @@ export class SecurityPrincipalCacheService {
       PersonItem,
       { handle: personHandle },
       {
+        // Never redact a managed entity by deleting a persistent property:
+        // a later cascade/flush can interpret the deletion as a database update.
+        exclude: ['loginPassword'],
         populate: [
           'company',
           'company.country',
@@ -96,7 +99,6 @@ export class SecurityPrincipalCacheService {
       },
     );
 
-    delete person?.loginPassword;
     return person ?? null;
   }
 

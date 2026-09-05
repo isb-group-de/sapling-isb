@@ -40,6 +40,8 @@ export interface InboxSubscriptionItem extends SaplingGenericItem {
   description: string
   /** Recipient field path resolved from the entity context */
   recipientField: string
+  /** Also notify the actor when selected by the recipient field */
+  notifyActor: boolean
   /** Whether the subscription is active */
   isActive: boolean
   /** Linked entity */

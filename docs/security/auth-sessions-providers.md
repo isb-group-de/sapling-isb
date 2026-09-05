@@ -96,6 +96,21 @@ login and when the explicit current-person profile is loaded. Session
 deserialization deliberately skips this provisioning so ordinary API requests
 only reload the user relations required for authorization.
 
+Security-principal and current-profile queries exclude `loginPassword` at the
+database projection. Never remove a persistent secret from a managed entity
+with `delete` or by assigning `undefined` just to prepare a response: MikroORM
+can persist that removal during a later cascade or flush. Profile loading after
+starter provisioning uses a fresh entity manager so a previously loaded hash
+cannot remain in its identity map. If the profile disappears during local login,
+authentication fails instead of returning the password-bearing login entity.
+
+When persisting an actor/owner relation from a request or cached principal, pass
+the person's handle or a reference obtained from the writing entity manager.
+Do not attach the cached entity instance or its permission graph. Automation
+events enforce this for all operations, including mutations triggered by merges.
+Explicit password changes and deliberate pseudonymization still use the normal
+persistence lifecycle.
+
 Local passkeys:
 
 ```text

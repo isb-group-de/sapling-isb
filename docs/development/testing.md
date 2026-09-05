@@ -75,6 +75,14 @@ Test support mocks:
 backend/test-support/
 ```
 
+`security-principal-persistence.spec.ts` also starts an isolated Node process
+with the installed MikroORM and the actual entity metadata. Its offline helper
+in `backend/test-support/security-principal-persistence.cjs` intercepts database
+reads and inspects real UnitOfWork change sets without connecting or writing to
+a database. It covers password-free cached/current profiles, starter profile
+loading, and actor references across all automation operations. This avoids
+relying on the ordinary Jest ORM mocks for persistence regressions.
+
 ## Frontend Tests
 
 Frontend test runner:

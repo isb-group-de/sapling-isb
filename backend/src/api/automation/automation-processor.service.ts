@@ -1,4 +1,8 @@
-import { EntityManager, type EntityClass } from '@mikro-orm/core';
+import {
+  EntityManager,
+  RequestContext,
+  type EntityClass,
+} from '@mikro-orm/core';
 import { HttpException, Injectable, OnModuleInit } from '@nestjs/common';
 import { AutomationEventItem } from '../../entity/AutomationEventItem';
 import { AutomationExecutionItem } from '../../entity/AutomationExecutionItem';
@@ -44,6 +48,10 @@ export class AutomationProcessorService implements OnModuleInit {
   }
 
   async processPending(): Promise<void> {
+    await RequestContext.create(this.em, () => this.processPendingInContext());
+  }
+
+  private async processPendingInContext(): Promise<void> {
     if (this.running) return;
     this.running = true;
     try {
