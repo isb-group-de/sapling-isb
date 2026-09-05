@@ -40,6 +40,11 @@ import { CurrentModule } from '../current/current.module';
 import { OpenTaskEventsModule } from '../current/open-task-events.module';
 import { AuthModule } from '../../auth/auth.module';
 import { MailModule } from '../mail/mail.module';
+import { GenericMergeController } from './merge/generic-merge.controller';
+import { GenericMergeService } from './merge/generic-merge.service';
+import { GenericMergeAccessService } from './merge/generic-merge-access.service';
+import { GenericMergeReferencesService } from './merge/generic-merge-references.service';
+import { GenericMergeSystemReferencesService } from './merge/generic-merge-system-references.service';
 
 /**
  * @class
@@ -65,6 +70,7 @@ import { MailModule } from '../mail/mail.module';
     MailModule,
   ],
   controllers: [
+    GenericMergeController,
     GenericController,
     GenericReferenceController,
     GenericImportController,
@@ -72,6 +78,10 @@ import { MailModule } from '../mail/mail.module';
     EventRecurrenceController,
   ],
   providers: [
+    GenericMergeService,
+    GenericMergeAccessService,
+    GenericMergeReferencesService,
+    GenericMergeSystemReferencesService,
     GenericService,
     GlobalSearchService,
     GlobalSearchIndexService,

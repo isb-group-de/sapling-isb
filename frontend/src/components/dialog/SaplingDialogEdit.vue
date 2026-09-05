@@ -288,6 +288,7 @@
   </SaplingDialog>
 
   <SaplingDialogRecordActionDialogs
+    :record-merge-dialog="recordMergeDialog"
     :record-delete-dialog="recordDeleteDialog"
     :show-upload-dialog="showUploadDialog"
     :show-information-dialog="showInformationDialog"
@@ -295,6 +296,8 @@
     :item="item"
     :entity-handle="entityHandle"
     @set-record-delete-dialog="recordDeleteDialog = $event"
+    @set-record-merge-dialog="recordMergeDialog = $event"
+    @merged="handleRecordMerged"
     @confirm-delete="confirmRecordDelete"
     @cancel-delete="closeRecordDeleteDialog"
     @close-upload="closeUploadDialog"
@@ -467,6 +470,8 @@ const {
   recordActionButtonsDisabled,
   recordActionMenuItems,
   recordDeleteDialog,
+  recordMergeDialog,
+  handleRecordMerged,
   showExternalRecordLinksDialog,
   showInformationDialog,
   showUploadDialog,

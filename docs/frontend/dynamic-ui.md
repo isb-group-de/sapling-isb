@@ -1,5 +1,9 @@
 # Frontend Dynamic UI
 
+Saved generic records also expose [record merging](../features/record-merging.md)
+through their action menu. Its field comparison component is shared with the
+concurrent-update conflict dialog.
+
 Sapling's frontend renders much of the application from backend entity metadata. This allows new entities to appear in generic tables and dialogs without building one custom screen per entity.
 
 ## Main Files

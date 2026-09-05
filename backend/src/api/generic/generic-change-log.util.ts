@@ -1,7 +1,7 @@
 import { EntityTemplateDto } from '../template/dto/entity-template.dto';
 
 export type ChangeLogPayload = Record<string, unknown> | null;
-export type ChangeLogAction = 'create' | 'update' | 'delete';
+export type ChangeLogAction = 'create' | 'update' | 'delete' | 'merge';
 export type ChangeLogDetail = {
   property: string;
   oldValue: unknown;

@@ -11,6 +11,7 @@ export type SaplingContextMenuTableAction =
   | 'edit'
   | 'formConfig'
   | 'mail'
+  | 'merge'
   | 'navigate'
   | 'script'
   | 'show'
@@ -71,6 +72,7 @@ export type SaplingContextMenuTableMenuEntry =
   SaplingContextMenuTableMenuItem | SaplingContextMenuTableMenuGroup
 
 export interface SaplingContextMenuTableMenuOptions {
+  canMerge?: boolean
   canChangeLog: boolean
   canCustomer360?: boolean
   canShowInformation: boolean
@@ -118,6 +120,14 @@ export function getSaplingContextMenuTableItems(
   }
   if (options.entityPermission?.allowInsert) {
     group1.push({ type: 'copy', icon: 'mdi-content-copy', titleKey: 'global.copy' })
+  }
+  if (
+    options.canMerge &&
+    options.entityPermission?.allowRead &&
+    options.entityPermission.allowUpdate &&
+    options.entityPermission.allowDelete
+  ) {
+    group1.push({ type: 'merge', icon: 'mdi-source-merge', titleKey: 'global.mergeRecords' })
   }
 
   const group2: SaplingContextMenuTableMenuItem[] = []

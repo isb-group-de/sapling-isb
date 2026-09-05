@@ -34,17 +34,26 @@
         </p>
 
         <div class="sapling-update-conflict__fields">
-          <section
+          <SaplingMergeFieldChoice
             v-for="field in visibleFields"
             :key="field.property"
-            class="sapling-update-conflict__field"
-            :class="{ 'sapling-update-conflict__field--conflict': field.conflict }"
+            :model-value="selectedSources[field.property]"
+            :entity-handle="conflict?.entityHandle ?? entityHandle"
+            :label="getPropertyLabel(field.property)"
+            :template="getTemplate(field.property)"
+            :conflict="field.conflict"
+            :disabled="isSaving"
+            left-source="current"
+            right-source="attempted"
+            :left-label="$t('updateConflict.currentVersion')"
+            :right-label="$t('updateConflict.yourVersion')"
+            :left-value="field.currentValue"
+            :right-value="field.attemptedValue"
+            :left-payload="conflict?.current ?? null"
+            :right-payload="conflict?.attempted ?? null"
+            @update:model-value="selectSource(field.property, $event)"
           >
-            <div class="sapling-update-conflict__field-header">
-              <div>
-                <h3>{{ getPropertyLabel(field.property) }}</h3>
-                <span>{{ field.property }}</span>
-              </div>
+            <template #status>
               <v-chip
                 size="small"
                 :color="field.conflict ? 'warning' : 'primary'"
@@ -55,57 +64,8 @@
                   field.conflict ? $t('updateConflict.conflict') : $t('updateConflict.mergeable')
                 }}
               </v-chip>
-            </div>
-
-            <v-btn-toggle
-              v-model="selectedSources[field.property]"
-              class="sapling-segmented-toggle sapling-update-conflict__toggle"
-              color="primary"
-              density="comfortable"
-              divided
-              mandatory
-            >
-              <v-btn value="current" prepend-icon="mdi-cloud-outline" class="glass-panel">
-                {{ $t('updateConflict.currentVersion') }}
-              </v-btn>
-              <v-btn value="attempted" prepend-icon="mdi-account-edit-outline" class="glass-panel">
-                {{ $t('updateConflict.yourVersion') }}
-              </v-btn>
-            </v-btn-toggle>
-
-            <div class="sapling-update-conflict__values">
-              <div
-                class="sapling-update-conflict__value"
-                :class="{
-                  'sapling-update-conflict__value--selected':
-                    selectedSources[field.property] === 'current',
-                }"
-              >
-                <span>{{ $t('updateConflict.currentVersion') }}</span>
-                <SaplingChangeLogDetailValue
-                  :entity-handle="conflict?.entityHandle ?? entityHandle"
-                  :template="getTemplate(field.property)"
-                  :value="field.currentValue"
-                  :payload="conflict?.current ?? null"
-                />
-              </div>
-              <div
-                class="sapling-update-conflict__value"
-                :class="{
-                  'sapling-update-conflict__value--selected':
-                    selectedSources[field.property] === 'attempted',
-                }"
-              >
-                <span>{{ $t('updateConflict.yourVersion') }}</span>
-                <SaplingChangeLogDetailValue
-                  :entity-handle="conflict?.entityHandle ?? entityHandle"
-                  :template="getTemplate(field.property)"
-                  :value="field.attemptedValue"
-                  :payload="conflict?.attempted ?? null"
-                />
-              </div>
-            </div>
-          </section>
+            </template>
+          </SaplingMergeFieldChoice>
         </div>
       </div>
     </template>
@@ -169,7 +129,7 @@ import {
   type UpdateConflictSource,
 } from '@/components/dialog/saplingDialogUpdateConflict.utils'
 import SaplingActionBar from '@/components/actions/SaplingActionBar.vue'
-import SaplingChangeLogDetailValue from '@/components/changeLog/SaplingChangeLogDetailValue.vue'
+import SaplingMergeFieldChoice from '@/components/dialog/SaplingMergeFieldChoice.vue'
 import SaplingDialogConfirm from '@/components/dialog/SaplingDialogConfirm.vue'
 
 const props = withDefaults(
@@ -237,6 +197,10 @@ watch(
   },
   { immediate: true },
 )
+
+function selectSource(property: string, source: string): void {
+  if (source === 'current' || source === 'attempted') selectedSources.value[property] = source
+}
 
 function getTemplate(property: string): EntityTemplate | null {
   return props.entityTemplates.find((template) => template.name === property) ?? null

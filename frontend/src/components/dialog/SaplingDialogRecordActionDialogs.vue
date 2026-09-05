@@ -1,4 +1,12 @@
 <template>
+  <SaplingDialogRecordMerge
+    v-if="recordMergeDialog"
+    :model-value="recordMergeDialog"
+    :entity-handle="entityHandle"
+    :item="item"
+    @update:model-value="emit('set-record-merge-dialog', $event)"
+    @merged="emit('merged', $event)"
+  />
   <SaplingDialogDelete
     persistent
     :model-value="recordDeleteDialog"
@@ -39,6 +47,8 @@
 
 <script lang="ts" setup>
 import type { SaplingGenericItem } from '@/entity/entity'
+import type { RecordMergeResult } from '@/services/api.merge.service'
+import SaplingDialogRecordMerge from '@/components/dialog/SaplingDialogRecordMerge.vue'
 import SaplingDialogDelete from '@/components/dialog/SaplingDialogDelete.vue'
 import SaplingExternalRecordLinksDialog from '@/components/import/SaplingExternalRecordLinksDialog.vue'
 import SaplingTableRowInformation from '@/components/table/SaplingTableRowInformation.vue'
@@ -46,6 +56,7 @@ import SaplingTableRowUpload from '@/components/table/SaplingTableRowUpload.vue'
 
 defineProps<{
   recordDeleteDialog: boolean
+  recordMergeDialog?: boolean
   showUploadDialog: boolean
   showInformationDialog: boolean
   showExternalRecordLinksDialog: boolean
@@ -55,6 +66,8 @@ defineProps<{
 
 const emit = defineEmits<{
   (event: 'set-record-delete-dialog', value: boolean): void
+  (event: 'set-record-merge-dialog', value: boolean): void
+  (event: 'merged', value: RecordMergeResult): void
   (event: 'confirm-delete', value: { cascadeRelations: string[] }): void
   (event: 'cancel-delete'): void
   (event: 'close-upload'): void

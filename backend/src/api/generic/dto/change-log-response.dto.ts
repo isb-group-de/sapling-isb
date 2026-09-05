@@ -38,7 +38,7 @@ export class ChangeLogResponseDto {
   handle!: number;
 
   @ApiProperty()
-  action!: 'create' | 'update' | 'delete';
+  action!: 'create' | 'update' | 'delete' | 'merge';
 
   @ApiProperty()
   reference!: string;

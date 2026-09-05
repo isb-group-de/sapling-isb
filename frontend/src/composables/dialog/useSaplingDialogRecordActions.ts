@@ -32,6 +32,7 @@ import { openDocumentView, openDvelopUploadDialog } from '@/utils/saplingDocumen
 import { createSaplingRecordCopy } from '@/utils/saplingRecordCopy'
 import { getDialogRecordCopyRelations } from './saplingDialogRecordLoader'
 import type { FormConfigMenuItem, FormConfigSelectionHandle } from './saplingDialogEdit.utils'
+import { useSaplingDialogRecordRemoval } from './useSaplingDialogRecordRemoval'
 
 interface UseSaplingDialogRecordActionsProps {
   modelValue: boolean
@@ -72,7 +73,6 @@ export function useSaplingDialogRecordActions(
   const changeLogDialogStore = useChangeLogDialogStore()
   const { openMailDialog } = useSaplingMailDialog()
 
-  const recordDeleteDialog = ref(false)
   const showUploadDialog = ref(false)
   const showInformationDialog = ref(false)
   const showExternalRecordLinksDialog = ref(false)
@@ -129,10 +129,6 @@ export function useSaplingDialogRecordActions(
     getCustomerCompanyHandle(props.templates, options.form.value),
   )
 
-  const canDeleteRecord = computed(
-    () => hasPersistedItem.value && Boolean(entityPermission.value?.allowDelete),
-  )
-
   const recordActionButtonsDisabled = computed(
     () =>
       options.isSaving.value ||
@@ -140,11 +136,28 @@ export function useSaplingDialogRecordActions(
       (props.mode === 'edit' && options.isDirty.value),
   )
 
+  const {
+    recordDeleteDialog,
+    recordMergeDialog,
+    canDeleteRecord,
+    openRecordDeleteDialog,
+    closeRecordDeleteDialog,
+    openRecordMergeDialog,
+    handleRecordMerged,
+    confirmRecordDelete,
+  } = useSaplingDialogRecordRemoval(
+    props,
+    entityHandle,
+    entityPermission,
+    recordActionButtonsDisabled,
+    emit,
+  )
   const recordActionMenuItems = computed<SaplingContextMenuTableMenuEntry[]>(() => {
     const groups: SaplingContextMenuTableMenuEntry[] =
       !hasPersistedItem.value || props.mode === 'create'
         ? []
         : getSaplingContextMenuTableItems({
+            canMerge: true,
             canChangeLog: hasPersistedItem.value,
             canCustomer360: ['company', 'person'].includes(entityHandle.value),
             canShowInformation: canShowInformation.value,
@@ -223,18 +236,6 @@ export function useSaplingDialogRecordActions(
 
   function closeExternalRecordLinksDialog(): void {
     showExternalRecordLinksDialog.value = false
-  }
-
-  function openRecordDeleteDialog(): void {
-    if (!canDeleteRecord.value) {
-      return
-    }
-
-    recordDeleteDialog.value = true
-  }
-
-  function closeRecordDeleteDialog(): void {
-    recordDeleteDialog.value = false
   }
 
   async function openCopyDialogFromRecord(): Promise<void> {
@@ -417,6 +418,9 @@ export function useSaplingDialogRecordActions(
 
   async function handleRecordAction(menuItem: SaplingContextMenuTableMenuItem): Promise<void> {
     switch (menuItem.type) {
+      case 'merge':
+        openRecordMergeDialog()
+        break
       case 'customer360':
         if (entityHandle.value && itemHandle.value != null) {
           await router.push({
@@ -515,37 +519,6 @@ export function useSaplingDialogRecordActions(
     }
   }
 
-  async function confirmRecordDelete(
-    confirmation: { cascadeRelations: string[] } = { cascadeRelations: [] },
-  ): Promise<void> {
-    if (!entityHandle.value || itemHandle.value == null) {
-      return
-    }
-
-    try {
-      const result = await ApiGenericService.delete(entityHandle.value, itemHandle.value, {
-        cascadeRelations: confirmation.cascadeRelations,
-      })
-      const action = result?.action ?? 'deleted'
-      closeRecordDeleteDialog()
-      pushMessage(
-        'success',
-        t(action === 'canceled' ? 'global.eventCanceled' : 'global.recordDeleted'),
-        t(
-          action === 'canceled'
-            ? 'global.eventCanceledDescription'
-            : 'global.recordDeletedDescription',
-        ),
-        entityHandle.value,
-      )
-      emit('deleted', props.item)
-      emit('update:modelValue', false)
-      emit('cancel')
-    } catch {
-      // API errors are already routed through the shared message center.
-    }
-  }
-
   watch(
     () => [props.modelValue, entityHandle.value, itemHandle.value, props.mode] as const,
     ([isOpen]) => {
@@ -576,6 +549,8 @@ export function useSaplingDialogRecordActions(
   )
 
   return {
+    recordMergeDialog,
+    handleRecordMerged,
     canDeleteRecord,
     canOpenFormConfigEditor,
     editMobileSecondaryActionsDisabled,

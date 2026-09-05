@@ -40,6 +40,7 @@ import SaplingMarkdownContent from '@/components/common/SaplingMarkdownContent.v
 import SaplingDialogEditFieldRenderer from '@/components/dialog/SaplingDialogEditFieldRenderer.vue'
 import { formatValue } from '@/utils/saplingFormatUtil'
 import { getEntityValueLabel } from '@/utils/saplingTableUtil'
+import { getLocalDateTimeParts } from '@/composables/dialog/saplingDialogEdit.utils'
 
 const props = defineProps<{
   entityHandle: string
@@ -97,8 +98,9 @@ const fieldValues = computed<SaplingGenericItem>(() => {
   payload[template.name] = nextValue
 
   if (template.type === 'datetime') {
-    payload[`${template.name}_date`] = extractDateInputValue(nextValue)
-    payload[`${template.name}_time`] = extractTimeInputValue(nextValue)
+    const { date, time } = getLocalDateTimeParts(nextValue)
+    payload[`${template.name}_date`] = date
+    payload[`${template.name}_time`] = time
   }
 
   return payload
@@ -135,44 +137,6 @@ function normalizeFieldValue(template: EntityTemplate, value: unknown): unknown 
   }
 
   return value
-}
-
-function extractDateInputValue(value: unknown): string {
-  if (typeof value === 'string') {
-    const trimmed = value.trim()
-    const dateMatch = trimmed.match(/^(\d{4}-\d{2}-\d{2})/)
-    return dateMatch?.[1] ?? ''
-  }
-
-  if (value instanceof Date && !Number.isNaN(value.getTime())) {
-    const year = value.getFullYear()
-    const month = String(value.getMonth() + 1).padStart(2, '0')
-    const day = String(value.getDate()).padStart(2, '0')
-    return `${year}-${month}-${day}`
-  }
-
-  return ''
-}
-
-function extractTimeInputValue(value: unknown): string {
-  if (typeof value === 'string') {
-    const trimmed = value.trim()
-    const timeMatch = trimmed.match(/(?:T|\s)(\d{2}:\d{2})/)
-    if (timeMatch?.[1]) {
-      return timeMatch[1]
-    }
-
-    const plainTimeMatch = trimmed.match(/^(\d{2}:\d{2})(?::\d{2})?$/)
-    return plainTimeMatch?.[1] ?? ''
-  }
-
-  if (value instanceof Date && !Number.isNaN(value.getTime())) {
-    const hours = String(value.getHours()).padStart(2, '0')
-    const minutes = String(value.getMinutes()).padStart(2, '0')
-    return `${hours}:${minutes}`
-  }
-
-  return ''
 }
 
 function formatFallbackValue(value: unknown, template: EntityTemplate | null): string {

@@ -123,6 +123,7 @@
   display: flex;
   flex: 1 1 auto;
   min-height: 0;
+  min-width: 0;
 }
 
 .sapling-update-conflict-dialog .sapling-dialog__footer {
@@ -135,6 +136,7 @@
   flex-direction: column;
   gap: var(--sapling-gap-lg);
   min-height: 0;
+  min-width: 0;
 }
 
 .sapling-update-conflict__summary {
@@ -148,6 +150,7 @@
   flex-direction: column;
   gap: var(--sapling-gap-md-plus);
   min-height: 0;
+  min-width: 0;
   max-height: none;
   overflow: auto;
   padding-right: var(--sapling-space-2xs);
@@ -157,6 +160,7 @@
 
 .sapling-update-conflict__field {
   display: flex;
+  flex: 0 0 auto;
   flex-direction: column;
   gap: var(--sapling-gap-md-plus);
   padding: var(--sapling-space-lg);
@@ -198,6 +202,7 @@
 
 .sapling-update-conflict__values {
   display: grid;
+  min-width: 0;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--sapling-gap-xl);
 }
@@ -223,6 +228,24 @@
   font-size: var(--sapling-text-label-size);
   font-weight: 700;
   text-transform: uppercase;
+}
+
+.sapling-record-merge__notice {
+  flex: 0 0 auto;
+}
+
+.sapling-record-merge__submit.v-btn {
+  min-width: 0;
+  min-height: var(--v-btn-height);
+  height: auto;
+  padding-block: var(--sapling-space-xs);
+  white-space: normal;
+}
+
+.sapling-record-merge__submit .v-btn__content {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
 .sapling-dialog-width--sm {

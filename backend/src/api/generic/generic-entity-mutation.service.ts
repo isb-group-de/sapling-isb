@@ -36,6 +36,7 @@ import { GlobalSearchIndexService } from './global-search-index.service';
 import { buildChangeLogDetails } from './generic-change-log.util';
 import { GenericEntityMutationOperations } from './generic-entity-mutation.operations';
 import { AutomationEventService } from '../automation/automation-event.service';
+import { identityReferenceTemplates } from './generic-reference-identity.util';
 
 export type GenericMutationPayload = {
   createdAt?: Date;
@@ -47,6 +48,15 @@ export type GenericPostCommitTask = ScriptPostCommitTask;
 
 export type GenericMutationLifecycleOptions = {
   postCommitTasks?: GenericPostCommitTask[];
+  /** Internal graph rewrites validate all resulting references before commit. */
+  deferReferenceValidation?: boolean;
+  /** Internal merge: check references after beforeDelete hooks, before removal. */
+  assertDeleteIntegrity?: () => Promise<void>;
+  mergeTargetHandle?: string | number;
+  /** Internal merge only; never populated from client mutation payloads. */
+  identityReferenceFields?: string[];
+  /** Surviving audit identity if the initiating person is merged away. */
+  effectActor?: PersonItem;
 };
 
 /** Executes complete create, update, and delete entity lifecycles. */
@@ -282,11 +292,16 @@ export class GenericEntityMutationService extends GenericEntityMutationOperation
         concurrencyOptions,
       );
     data = updatePayload.data;
-    const template = this.templateService.getEntityTemplate(entityHandle);
+    const template = identityReferenceTemplates(
+      this.templateService.getEntityTemplate(entityHandle),
+      lifecycleOptions.identityReferenceFields,
+    );
     data = this.removeMatchingHandleEcho(data, handle);
     const submittedPermissionPayload = { ...data };
-    const permissionTemplate =
-      await this.fieldPermissions.getTemplates(entityHandle);
+    const permissionTemplate = identityReferenceTemplates(
+      await this.fieldPermissions.getTemplates(entityHandle),
+      lifecycleOptions.identityReferenceFields,
+    );
     data = normalizeSaplingPhonePayload(template, data);
     const splitPayload = this.genericCustomFieldService.splitPayload(data);
     data = splitPayload.data;
@@ -422,12 +437,14 @@ export class GenericEntityMutationService extends GenericEntityMutationOperation
       currentUser,
       { ...scriptContext, currentItems: [item] },
     );
-    await this.genericReferenceService.validateReferenceDependencies(
-      entityHandle,
-      this.genericPayloadService.buildDependencyValidationPayload(item, data),
-      template,
-      currentUser,
-    );
+    if (!lifecycleOptions.deferReferenceValidation) {
+      await this.genericReferenceService.validateReferenceDependencies(
+        entityHandle,
+        this.genericPayloadService.buildDependencyValidationPayload(item, data),
+        template,
+        currentUser,
+      );
+    }
 
     let newData = await this.genericMutationService.assignAndFlush(
       entityHandle,
@@ -477,7 +494,7 @@ export class GenericEntityMutationService extends GenericEntityMutationOperation
       this.genericChangeLogService.safeStoreChangeLog(
         'update',
         entity,
-        currentUser,
+        lifecycleOptions.effectActor ?? currentUser,
         oldChangeLogSnapshot,
         newChangeLogSnapshot,
       ),
@@ -511,7 +528,7 @@ export class GenericEntityMutationService extends GenericEntityMutationOperation
           handle,
           oldAutomationSnapshot,
           newAutomationSnapshot,
-          currentUser,
+          lifecycleOptions.effectActor ?? currentUser,
         ),
       );
     }
@@ -527,7 +544,7 @@ export class GenericEntityMutationService extends GenericEntityMutationOperation
       entityHandle,
       sourceHandle: updatedRecordReference,
       operation: 'afterUpdate',
-      actor: currentUser,
+      actor: lifecycleOptions.effectActor ?? currentUser,
       oldSnapshot: oldAutomationSnapshot,
       newSnapshot: newAutomationSnapshot,
     });

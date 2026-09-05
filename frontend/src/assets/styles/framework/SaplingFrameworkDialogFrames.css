@@ -324,16 +324,41 @@
 
 @media (max-width: 960px) {
   .sapling-update-conflict__values {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .sapling-update-conflict__toggle {
     align-self: stretch;
+    height: auto;
   }
 
   .sapling-update-conflict__toggle .v-btn {
     min-width: 0;
+    min-height: var(--v-btn-height);
+    height: auto;
+    padding-block: var(--sapling-space-xs);
     flex: 1 1 0;
+    white-space: normal;
+  }
+
+  .sapling-update-conflict__toggle .v-btn__content {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+}
+
+@media (max-width: 960px), (max-height: 700px) {
+  .sapling-record-merge-dialog .sapling-dialog__body {
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+
+  .sapling-record-merge-dialog .sapling-update-conflict,
+  .sapling-record-merge-dialog .sapling-update-conflict__fields {
+    flex: 0 0 auto;
+    width: 100%;
+    overflow: visible;
   }
 }
 .sapling-instance-booting__skeleton {

@@ -471,7 +471,7 @@ export type TimelineResponse = {
   months: TimelineMonth[]
 }
 
-export type ChangeLogAction = 'create' | 'update' | 'delete'
+export type ChangeLogAction = 'create' | 'update' | 'delete' | 'merge'
 
 export type ChangeLogDetail = {
   property: string

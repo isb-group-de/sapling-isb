@@ -99,4 +99,27 @@ describe('useSaplingDialogRecordActions', () => {
 
     expect(actions.canDeleteRecord.value).toBe(true)
   })
+
+  it('offers merging only with read, update and delete permissions', () => {
+    for (const denied of ['allowRead', 'allowUpdate', 'allowDelete', null]) {
+      const permission: AccumulatedPermission = {
+        entityHandle: 'ticket',
+        allowRead: true,
+        allowUpdate: true,
+        allowDelete: true,
+      }
+      if (denied) Object.assign(permission, { [denied]: false })
+      const actions = createRecordActions([permission])
+      const menu = actions.recordActionMenuItems.value.flat()
+      expect(menu.some((entry) => entry.type === 'merge')).toBe(denied === null)
+    }
+  })
+
+  it('opens the merge workflow from a persisted record action', async () => {
+    const actions = createRecordActions([
+      { entityHandle: 'ticket', allowRead: true, allowUpdate: true, allowDelete: true },
+    ])
+    await actions.handleRecordAction({ type: 'merge', icon: 'mdi-source-merge' })
+    expect(actions.recordMergeDialog.value).toBe(true)
+  })
 })

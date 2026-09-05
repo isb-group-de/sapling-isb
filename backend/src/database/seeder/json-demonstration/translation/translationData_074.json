@@ -1,0 +1,22 @@
+[
+  { "entity": "global", "property": "mergeRecords", "de": "Zusammenführen", "en": "Merge records" },
+  { "entity": "changeLog", "property": "action.merge", "de": "Zusammengeführt", "en": "Merged" },
+  { "entity": "recordMerge", "property": "title", "de": "Datensätze zusammenführen", "en": "Merge records" },
+  { "entity": "recordMerge", "property": "eyebrow", "de": "Dubletten bereinigen", "en": "Resolve duplicates" },
+  { "entity": "recordMerge", "property": "summary", "de": "Wähle den verlierenden und den gewinnenden Datensatz. Der Gewinner behält seine Werte; leere Felder werden vom Verlierer vorselektiert. Prüfe anschließend die Auswahl für jedes Feld.", "en": "Choose the losing and winning records. Winner values are retained; empty fields are preselected from the loser. Then review the selection for each field." },
+  { "entity": "recordMerge", "property": "loser", "de": "Verlierer · wird gelöscht", "en": "Loser · will be deleted" },
+  { "entity": "recordMerge", "property": "winner", "de": "Gewinner · bleibt bestehen", "en": "Winner · will be retained" },
+  { "entity": "recordMerge", "property": "swap", "de": "Gewinner und Verlierer tauschen", "en": "Swap winner and loser" },
+  { "entity": "recordMerge", "property": "compare", "de": "Werte vergleichen", "en": "Compare values" },
+  { "entity": "recordMerge", "property": "deleteNotice", "de": "Beim Speichern werden alle zugehörigen Datensätze und Verknüpfungen auf den Gewinner übertragen. Gemeinsame Zuordnungen bleiben einmal erhalten. Informationstexte werden zusammengefügt. Anschließend wird der Verlierer endgültig gelöscht.", "en": "Saving transfers all related records and links to the winner. Shared links are retained once. Information notes are combined. The loser is then permanently deleted." },
+  { "entity": "recordMerge", "property": "mergeAndDelete", "de": "Zusammenführen und Verlierer löschen", "en": "Merge and delete loser" },
+  { "entity": "recordMerge", "property": "keptFromWinner", "de": "Bleibt vom Gewinner erhalten", "en": "Retained from winner" },
+  { "entity": "recordMerge", "property": "success", "de": "Datensätze zusammengeführt", "en": "Records merged" },
+  { "entity": "recordMerge", "property": "successDescription", "de": "Die ausgewählten Werte und alle Verknüpfungen wurden übernommen. Der verlierende Datensatz wurde gelöscht.", "en": "The selected values and all links were transferred. The losing record was deleted." },
+  { "entity": "recordMerge", "property": "invalidPair", "de": "Bitte zwei unterschiedliche Datensätze desselben Typs auswählen.", "en": "Choose two different records of the same type." },
+  { "entity": "recordMerge", "property": "invalidSelection", "de": "Die Feldauswahl ist nicht mehr gültig. Bitte die Werte erneut vergleichen.", "en": "The field selection is no longer valid. Compare the values again." },
+  { "entity": "recordMerge", "property": "stalePreview", "de": "Mindestens ein Datensatz wurde inzwischen geändert. Es wurde nichts zusammengeführt. Bitte die Werte erneut vergleichen.", "en": "At least one record has changed. Nothing was merged. Compare the values again." },
+  { "entity": "recordMerge", "property": "referenceConflict", "de": "Eine eindeutige Zuordnung würde mit einer bestehenden Zuordnung kollidieren. Es wurde nichts zusammengeführt. Bitte die betroffenen Zuordnungen zuerst bereinigen.", "en": "A unique relationship would conflict with an existing one. Nothing was merged. Resolve the conflicting relationships first." },
+  { "entity": "recordMerge", "property": "referencePermissionDenied", "de": "Für mindestens einen verknüpften Datensatz fehlen die nötigen Berechtigungen. Es wurde nichts zusammengeführt.", "en": "You lack the required permissions for at least one linked record. Nothing was merged." },
+  { "entity": "recordMerge", "property": "referencesChanged", "de": "Während der Zusammenführung wurde eine Verknüpfung erneut angelegt. Es wurde nichts zusammengeführt. Bitte erneut vergleichen und versuchen.", "en": "A link was recreated during the merge. Nothing was merged. Compare again and retry." }
+]

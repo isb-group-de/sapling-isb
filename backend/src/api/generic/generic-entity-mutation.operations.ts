@@ -113,6 +113,7 @@ export class GenericEntityMutationOperations {
         ? captureStoredDocumentFileDescriptor(item)
         : null;
 
+    await lifecycleOptions.assertDeleteIntegrity?.();
     const affectedRows = await this.genericMutationService.deleteAndFlush(
       entityHandle,
       entityClass,
@@ -147,11 +148,13 @@ export class GenericEntityMutationOperations {
     }
     this.queueBackgroundTask(lifecycleOptions, 'changeLog', () =>
       this.genericChangeLogService.safeStoreChangeLog(
-        'delete',
+        lifecycleOptions.mergeTargetHandle == null ? 'delete' : 'merge',
         entity,
-        currentUser,
+        lifecycleOptions.effectActor ?? currentUser,
         oldSnapshot,
-        null,
+        lifecycleOptions.mergeTargetHandle == null
+          ? null
+          : { handle: lifecycleOptions.mergeTargetHandle },
       ),
     );
     this.queueBackgroundTask(lifecycleOptions, 'openTaskCountChanges', () =>
@@ -159,14 +162,18 @@ export class GenericEntityMutationOperations {
         previousOpenTaskUserHandles,
       ),
     );
-    await this.automationEvents?.record({
-      entityHandle,
-      sourceHandle: handle,
-      operation: 'afterDelete',
-      actor: currentUser,
-      oldSnapshot,
-      newSnapshot: null,
-    });
+    // A merge has a surviving identity. Its final update drives automations;
+    // a delete event must not later run deletion rules against that survivor.
+    if (lifecycleOptions.mergeTargetHandle == null) {
+      await this.automationEvents?.record({
+        entityHandle,
+        sourceHandle: handle,
+        operation: 'afterDelete',
+        actor: currentUser,
+        oldSnapshot,
+        newSnapshot: null,
+      });
+    }
   }
 
   protected extractEntityHandle(item: object): string | number | null {

@@ -220,6 +220,8 @@ function closeDialog() {
 
 function getActionIcon(action: ChangeLogAction): string {
   switch (action) {
+    case 'merge':
+      return 'mdi-source-merge'
     case 'create':
       return 'mdi-plus-circle-outline'
     case 'delete':

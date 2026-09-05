@@ -10,6 +10,7 @@ The documentation should stay close to the code, but not duplicate every class o
 - [Entity And Metadata System](architecture/entity-metadata.md)
 - [Seeders, Migrations, And Reference Data](development/seeding-and-migrations.md)
 - [Generic API Contract](api/generic-api.md)
+- [Generic Record Merging](features/record-merging.md)
 - [Frontend Dynamic UI](frontend/dynamic-ui.md)
 - [Permissions And Roles](security/permissions.md)
 - [AI, MCP, And Vectorization](ai/ai-mcp-vectorization.md)

@@ -38,6 +38,11 @@ the internal create mutation also enforces Event insert access.
 
 All generic routes use `SessionOrBearerAuthGuard`. Most routes also use `GenericPermissionGuard`.
 
+Record consolidation uses `POST /api/generic/:entityHandle/merge/preview` and
+`POST /api/generic/:entityHandle/merge`. Both require read, update and delete
+access. See [Generic Record Merging](../features/record-merging.md) for field
+selection, reference transfer, concurrency and transaction guarantees.
+
 ## Entity Handles
 
 Every generic route takes an `entityHandle`.
