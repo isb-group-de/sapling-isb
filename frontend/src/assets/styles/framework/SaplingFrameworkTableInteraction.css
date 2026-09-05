@@ -115,7 +115,8 @@
 }
 
 .sapling-table .v-table__wrapper {
-  background: var(--sapling-surface-fill-soft);
+  /* The table shell owns the fill and rounded clip, including its border. */
+  border-radius: 0;
   flex: 1 1 auto;
   max-width: 100%;
   min-height: 0;

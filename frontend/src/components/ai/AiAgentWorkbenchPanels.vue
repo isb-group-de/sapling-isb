@@ -16,18 +16,30 @@
           {{ t('aiAgentBuilder.createVersion') }}
         </v-btn>
       </div>
-      <v-table density="comfortable">
-        <thead>
+      <SaplingDataTable
+        :items="versions"
+        :columns="[
+          { key: 'c0', title: t('global.version'), value: (version) => version.version },
+          { key: 'c1', title: t('global.status'), value: (version) => version.status },
+          {
+            key: 'c2',
+            title: t('aiAgentBuilder.fieldProvider'),
+            value: (version) => getProviderHandle(version.provider),
+          },
+          {
+            key: 'c3',
+            title: t('aiAgentBuilder.fieldModel'),
+            value: (version) => getModelHandle(version.model),
+          },
+          {
+            key: 'c4',
+            title: t('aiAgentBuilder.updatedAt'),
+            value: (version) => version.updatedAt,
+          },
+        ]"
+      >
+        <template #row="{ item: version }">
           <tr>
-            <th>{{ t('global.version') }}</th>
-            <th>{{ t('global.status') }}</th>
-            <th>{{ t('aiAgentBuilder.fieldProvider') }}</th>
-            <th>{{ t('aiAgentBuilder.fieldModel') }}</th>
-            <th>{{ t('aiAgentBuilder.updatedAt') }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="version in versions" :key="version.handle ?? version.version">
             <td>v{{ version.version }}</td>
             <td>
               <v-chip size="small" variant="tonal">{{ version.status }}</v-chip>
@@ -36,8 +48,8 @@
             <td>{{ getModelHandle(version.model) || t('global.notAvailable') }}</td>
             <td>{{ formatDate(version.updatedAt) }}</td>
           </tr>
-        </tbody>
-      </v-table>
+        </template>
+      </SaplingDataTable>
     </div>
   </v-window-item>
 
@@ -168,24 +180,32 @@
       >
         {{ t('aiAgentBuilder.createEvaluation') }}
       </v-btn>
-      <v-table density="comfortable">
-        <thead>
+      <SaplingDataTable
+        :items="evaluations"
+        :columns="[
+          {
+            key: 'c0',
+            title: t('aiAgentBuilder.evaluationTitle'),
+            value: (evaluation) => evaluation.title,
+          },
+          { key: 'c1', title: t('global.status'), value: (evaluation) => evaluation.status },
+          {
+            key: 'c2',
+            title: t('aiAgentBuilder.updatedAt'),
+            value: (evaluation) => evaluation.updatedAt,
+          },
+        ]"
+      >
+        <template #row="{ item: evaluation }">
           <tr>
-            <th>{{ t('aiAgentBuilder.evaluationTitle') }}</th>
-            <th>{{ t('global.status') }}</th>
-            <th>{{ t('aiAgentBuilder.updatedAt') }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="evaluation in evaluations" :key="evaluation.handle ?? evaluation.title">
             <td>{{ evaluation.title }}</td>
             <td>
               <v-chip size="small" variant="tonal">{{ evaluation.status }}</v-chip>
             </td>
             <td>{{ formatDate(evaluation.updatedAt) }}</td>
           </tr>
-        </tbody>
-      </v-table>
+        </template>
+      </SaplingDataTable>
     </div>
   </v-window-item>
 
@@ -227,6 +247,7 @@
 </template>
 
 <script setup lang="ts">
+import SaplingDataTable from '@/components/table/SaplingDataTable.vue'
 import { useI18n } from 'vue-i18n'
 import type {
   AiAgentEvaluationItem,

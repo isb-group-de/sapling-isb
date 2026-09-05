@@ -319,7 +319,8 @@
 
 .sapling-event-context {
   height: 100%;
-  overflow: hidden;
+  /* The agenda/filter panels scroll internally; preserve their outer shadows. */
+  overflow: visible;
   overscroll-behavior: contain;
 }
 

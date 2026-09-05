@@ -2,7 +2,7 @@
   <div class="sapling-dialog-shell" :class="{ 'sapling-fill-shell': fillShell }">
     <slot name="hero" />
 
-    <div v-if="$slots.body" :class="bodyClass">
+    <div v-if="$slots.body" class="sapling-dialog-shell__body" :class="bodyClass">
       <slot name="body" />
     </div>
 

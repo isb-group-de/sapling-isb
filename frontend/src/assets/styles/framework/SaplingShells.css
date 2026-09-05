@@ -182,6 +182,8 @@
 }
 
 .sapling-page-shell {
+  /* Keep panel shadows inside the compact 8px page gutter. */
+  --glass-shadow: var(--sapling-shadow-panel);
   --sapling-page-shell-padding-inline-current: var(--sapling-page-shell-padding-inline);
   --sapling-page-shell-padding-block-start-current: var(--sapling-space-sm);
   --sapling-page-shell-padding-block-end-current: var(--sapling-page-shell-padding-block-end);

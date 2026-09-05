@@ -71,18 +71,35 @@
         />
       </div>
 
-      <v-table v-if="previewRows.length > 0" density="compact" class="sapling-import__table">
-        <thead>
+      <SaplingDataTable
+        v-if="previewRows.length > 0"
+        class="sapling-import__table"
+        :items="previewRows"
+        :columns="[
+          { key: 'row', title: t('importBatchRow.rowNumber'), value: (row) => row.rowNumber },
+          {
+            key: 'status',
+            title: t('importBatchRow.status'),
+            value: (row) => importStatusLabel(row.status),
+          },
+          {
+            key: 'action',
+            title: t('importBatchRow.action'),
+            value: (row) => (row.action ? importActionLabel(row.action) : null),
+          },
+          {
+            key: 'reference',
+            title: t('importBatchRow.targetReference'),
+            value: (row) => row.targetReference,
+          },
+          {
+            key: 'message',
+            title: t('importBatchRow.message'),
+            value: (row) => importMessageLabel(row.message),
+          },
+        ]"
+        ><template #row="{ item: row }">
           <tr>
-            <th>{{ t('importBatchRow.rowNumber') }}</th>
-            <th>{{ t('importBatchRow.status') }}</th>
-            <th>{{ t('importBatchRow.action') }}</th>
-            <th>{{ t('importBatchRow.targetReference') }}</th>
-            <th>{{ t('importBatchRow.message') }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="row in previewRows" :key="row.rowNumber">
             <td>{{ row.rowNumber }}</td>
             <td>
               <v-chip size="small" :color="row.status === 'error' ? 'warning' : 'primary'">
@@ -93,23 +110,28 @@
             <td>{{ row.targetReference ?? '-' }}</td>
             <td>{{ importMessageLabel(row.message) }}</td>
           </tr>
-        </tbody>
-      </v-table>
+        </template></SaplingDataTable
+      >
 
-      <v-table v-else-if="sampleHeaders.length > 0" density="compact" class="sapling-import__table">
-        <thead>
+      <SaplingDataTable
+        v-else-if="sampleHeaders.length > 0"
+        class="sapling-import__table"
+        :items="batch?.sampleRows ?? []"
+        :columns="
+          sampleHeaders.map((header) => ({
+            key: header,
+            title: header,
+            value: (row: Record<string, unknown>) => row[header],
+          }))
+        "
+        ><template #row="{ item: row }">
           <tr>
-            <th v-for="header in sampleHeaders" :key="header">{{ header }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(row, index) in batch?.sampleRows ?? []" :key="index">
             <td v-for="header in sampleHeaders" :key="header">
               {{ row[header] ?? '' }}
             </td>
           </tr>
-        </tbody>
-      </v-table>
+        </template></SaplingDataTable
+      >
 
       <section
         v-else
@@ -124,6 +146,7 @@
 </template>
 
 <script lang="ts" setup>
+import SaplingDataTable from '@/components/table/SaplingDataTable.vue'
 import { useI18n } from 'vue-i18n'
 import SaplingSurface from '@/components/common/SaplingSurface.vue'
 import SaplingTable from '@/components/table/SaplingTable.vue'

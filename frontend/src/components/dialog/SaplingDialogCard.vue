@@ -2,6 +2,7 @@
   <SaplingSurface
     v-bind="$attrs"
     :as="VCard"
+    variant="solid"
     class="sapling-dialog-card sapling-nested-backdrop-host"
     :tilt="tilt"
     :elevation="elevation"

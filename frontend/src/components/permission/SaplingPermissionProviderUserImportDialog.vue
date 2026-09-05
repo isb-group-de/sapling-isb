@@ -87,25 +87,43 @@
             <div class="sapling-permission-provider-dialog__list sapling-scrollable">
               <v-progress-linear v-if="isLoading" indeterminate color="primary" />
 
-              <v-table v-if="users.length" density="comfortable">
-                <thead>
+              <SaplingDataTable
+                v-if="users.length"
+                :items="users"
+                :item-key="(user) => user.id"
+                :columns="[
+                  { key: 'select', title: '', sortable: false },
+                  {
+                    key: 'name',
+                    title: $t('providerUserImport.user'),
+                    value: (user) => user.displayName,
+                  },
+                  {
+                    key: 'email',
+                    title: $t('person.email'),
+                    value: (user) => user.email || user.userPrincipalName,
+                  },
+                  {
+                    key: 'type',
+                    title: $t('person.type'),
+                    value: (user) =>
+                      $t(
+                        user.existingPersonHandle
+                          ? 'providerUserImport.existingPerson'
+                          : 'providerUserImport.newPerson',
+                      ),
+                  },
+                ]"
+              >
+                <template #[`header.select`]
+                  ><SaplingCheckbox
+                    :model-value="allVisibleUsersSelected"
+                    hide-details
+                    density="compact"
+                    :disabled="isBusy"
+                    @update:model-value="toggleAllVisibleUsers(!!$event)" /></template
+                ><template #row="{ item: user }">
                   <tr>
-                    <th class="sapling-permission-provider-dialog__select-cell">
-                      <SaplingCheckbox
-                        :model-value="allVisibleUsersSelected"
-                        hide-details
-                        density="compact"
-                        :disabled="isBusy"
-                        @update:model-value="toggleAllVisibleUsers(!!$event)"
-                      />
-                    </th>
-                    <th>{{ $t('providerUserImport.user') }}</th>
-                    <th>{{ $t('person.email') }}</th>
-                    <th>{{ $t('person.type') }}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="user in users" :key="user.id">
                     <td>
                       <SaplingCheckbox
                         :model-value="selectedUserIds.includes(user.id)"
@@ -136,8 +154,8 @@
                       </v-chip>
                     </td>
                   </tr>
-                </tbody>
-              </v-table>
+                </template></SaplingDataTable
+              >
 
               <div
                 v-else-if="!isLoading"
@@ -176,6 +194,7 @@
 </template>
 
 <script setup lang="ts">
+import SaplingDataTable from '@/components/table/SaplingDataTable.vue'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import SaplingCheckbox from '@/components/common/SaplingCheckbox.vue'
 import SaplingTextField from '@/components/common/SaplingTextField.vue'

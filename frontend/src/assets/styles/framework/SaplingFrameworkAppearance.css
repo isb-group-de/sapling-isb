@@ -114,7 +114,7 @@
   --sapling-tilt-blob-1: var(--sapling-brand-primary);
   --sapling-tilt-blob-2: var(--sapling-brand-accent);
   --sapling-tilt-blob-3: #525966;
-  --sapling-tilt-blob-opacity: 0.55;
+  --sapling-tilt-blob-opacity: 0.2;
   --sapling-tilt-text-color: #f3f5f7;
   --sapling-tilt-footer-border: rgba(var(--sapling-brand-accent-rgb), 0.18);
   --sapling-tilt-table-header-bg: rgba(var(--sapling-brand-primary-rgb), 0.16);
@@ -422,6 +422,10 @@ body {
 .v-table {
   background: transparent !important;
   color: var(--sapling-tilt-text-color) !important;
+}
+
+.sapling-table.v-table {
+  background: var(--sapling-surface-fill-soft) !important;
 }
 
 .v-table th {

@@ -95,54 +95,11 @@
                         </v-list-item>
                       </v-list>
                     </section>
-                    <section v-if="workHours" class="sapling-account-dialog__workhours">
-                      <div v-if="$vuetify.display.smAndDown" class="sapling-workhours-list mt-4">
-                        <article
-                          v-for="(workHourRow, index) in workHourRows"
-                          :key="workHourRow.key"
-                          class="sapling-workhours-card"
-                          :class="{ 'sapling-selected-item': currentWeekday === index }"
-                        >
-                          <div class="sapling-workhours-card__day">
-                            {{ $t(`workHourWeek.${workHourRow.key}`) }}
-                          </div>
-                          <div class="sapling-workhours-card__times">
-                            <div class="sapling-workhours-card__time-row">
-                              <span class="sapling-workhours-card__label">{{
-                                $t('workHour.timeFrom')
-                              }}</span>
-                              <span>{{ workHourRow.timeFrom }}</span>
-                            </div>
-                            <div class="sapling-workhours-card__time-row">
-                              <span class="sapling-workhours-card__label">{{
-                                $t('workHour.timeTo')
-                              }}</span>
-                              <span>{{ workHourRow.timeTo }}</span>
-                            </div>
-                          </div>
-                        </article>
-                      </div>
-                      <v-table v-else density="compact" class="sapling-workhours-table mt-4">
-                        <thead>
-                          <tr>
-                            <th>{{ $t('workHour.workTime') }}</th>
-                            <th>{{ $t('workHour.timeFrom') }}</th>
-                            <th>{{ $t('workHour.timeTo') }}</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr
-                            v-for="(workHourRow, index) in workHourRows"
-                            :key="workHourRow.key"
-                            :class="{ 'sapling-selected-item': currentWeekday === index }"
-                          >
-                            <td>{{ $t(`workHourWeek.${workHourRow.key}`) }}</td>
-                            <td>{{ workHourRow.timeFrom }}</td>
-                            <td>{{ workHourRow.timeTo }}</td>
-                          </tr>
-                        </tbody>
-                      </v-table>
-                    </section>
+                    <SaplingAccountWorkHours
+                      v-if="workHours"
+                      :work-hour-rows="workHourRows"
+                      :current-weekday="currentWeekday"
+                    />
                     <section
                       class="sapling-account-dialog__panel-stack sapling-account-dialog__profile-edit"
                     >
@@ -448,6 +405,7 @@
 </template>
 
 <script setup lang="ts">
+import SaplingAccountWorkHours from './SaplingAccountWorkHours.vue'
 // #region Imports
 import { computed, watch } from 'vue'
 import { useRouter } from 'vue-router'

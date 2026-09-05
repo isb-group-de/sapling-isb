@@ -10,7 +10,6 @@
 }
 
 .sapling-kpi-grid {
-  margin: 0;
   margin: var(--sapling-gap-sm);
 }
 

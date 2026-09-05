@@ -32,14 +32,42 @@
             </div>
 
             <v-progress-linear v-if="loading" indeterminate />
-            <v-table
+            <SaplingTableSurface
               v-if="!loading && !$vuetify.display.smAndDown"
-              density="comfortable"
               class="sapling-admin-matrix"
             >
               <thead>
                 <tr>
-                  <th>{{ $t('fieldPermission.fieldName') }}</th>
+                  <th
+                    :aria-sort="
+                      fieldSort === 'asc'
+                        ? 'ascending'
+                        : fieldSort === 'desc'
+                          ? 'descending'
+                          : 'none'
+                    "
+                  >
+                    <button
+                      type="button"
+                      class="sapling-data-table__sort"
+                      :aria-label="$t('fieldPermission.fieldName')"
+                      @click="
+                        fieldSort = fieldSort === null ? 'asc' : fieldSort === 'asc' ? 'desc' : null
+                      "
+                    >
+                      {{ $t('fieldPermission.fieldName') }}
+                      <v-icon
+                        :icon="
+                          fieldSort === 'asc'
+                            ? 'mdi-arrow-up'
+                            : fieldSort === 'desc'
+                              ? 'mdi-arrow-down'
+                              : 'mdi-swap-vertical'
+                        "
+                        size="16"
+                      />
+                    </button>
+                  </th>
                   <th v-for="action in actions" :key="action.key" class="text-center">
                     <div class="d-inline-flex align-center ga-1">
                       {{ $t(action.label) }}
@@ -128,7 +156,7 @@
                   </tr>
                 </template>
               </tbody>
-            </v-table>
+            </SaplingTableSurface>
 
             <div v-else-if="!loading" class="sapling-field-permission-mobile">
               <div class="sapling-field-permission-mobile__bulk">
@@ -260,6 +288,8 @@
 </template>
 
 <script setup lang="ts">
+import SaplingTableSurface from '@/components/table/SaplingTableSurface.vue'
+import { sortDataRows } from '@/components/table/saplingDataTable.types'
 import { computed, reactive, ref, watch } from 'vue'
 import type { EntityItem, RoleItem } from '@/entity/entity'
 import { useI18n } from 'vue-i18n'
@@ -283,7 +313,7 @@ const emit = defineEmits<{
   (event: 'update:modelValue', value: boolean): void
   (event: 'saved', restrictedCount: number): void
 }>()
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const { pushMessage } = useSaplingMessageCenter()
 const { translationService } = useTranslationLoader(
   'global',
@@ -295,6 +325,7 @@ const { translationService } = useTranslationLoader(
 const catalog = ref<FieldPermissionCatalog | null>(null)
 const draft = reactive<Record<string, Record<FieldPermissionActionKey, boolean>>>({})
 const search = ref('')
+const fieldSort = ref<'asc' | 'desc' | null>(null)
 const loading = ref(false)
 const saving = ref(false)
 const actions = [
@@ -327,7 +358,9 @@ const filteredFieldGroups = computed(() => {
   return [...groups.entries()].map(([name, fields]) => ({
     name,
     label: groupLabel(name),
-    fields,
+    fields: fieldSort.value
+      ? sortDataRows(fields, (field) => fieldLabel(field.name), fieldSort.value, locale.value)
+      : fields,
   }))
 })
 const restrictedCount = computed(

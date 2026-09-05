@@ -27,17 +27,17 @@
 
 .sapling-dashboard__hero {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--sapling-gap-lg);
   min-height: 126px;
   padding: var(--sapling-space-panel-md) var(--sapling-space-panel-xl);
   border-radius: var(--sapling-panel-radius-compact);
-  align-items: center;
+  align-items: stretch;
 }
 
 .sapling-dashboard__hero.sapling-page-hero {
   grid-template-columns: minmax(0, 1fr) auto;
-  padding: var(--sapling-space-panel-xl);
+  padding: var(--sapling-space-md) var(--sapling-space-lg);
 }
 
 .sapling-dashboard__hero--loading {
@@ -106,15 +106,15 @@
   width: max-content;
   display: flex;
   flex-direction: column;
-  flex-wrap: nowrap;
   justify-content: flex-end;
   gap: var(--sapling-space-sm);
-  max-width: min(100%, 250px);
+  max-width: 100%;
   margin-left: auto;
   align-items: flex-end;
 }
 
 .sapling-dashboard__hero .sapling-page-hero__side {
+  align-items: flex-end;
   justify-content: flex-end;
 }
 
@@ -124,6 +124,10 @@
 }
 
 .sapling-dashboard__hero .sapling-page-hero__body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sapling-gap-xs);
   margin-top: auto;
   padding-top: var(--sapling-gap-md);
 }
@@ -143,12 +147,14 @@
 
 .sapling-dashboard__hero .sapling-action-cluster {
   flex-direction: column;
-  align-items: flex-end;
+  flex-wrap: nowrap;
+  align-items: stretch;
   justify-content: flex-start;
+  gap: var(--sapling-gap-xs);
 }
 
 .sapling-dashboard__hero .sapling-action-cluster > .v-btn {
-  justify-content: flex-end;
+  justify-content: flex-start;
 }
 
 .sapling-dashboard__action-skeleton {

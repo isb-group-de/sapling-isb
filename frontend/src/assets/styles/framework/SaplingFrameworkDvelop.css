@@ -1,7 +1,7 @@
 .sapling-dvelop-cloud {
   display: flex;
   flex-direction: column;
-  gap: var(--sapling-gap-xl);
+  gap: var(--sapling-gap-md);
   overflow: hidden;
 }
 
@@ -26,7 +26,7 @@
 
 .sapling-dvelop-cloud__control-band {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--sapling-gap-lg);
   align-items: flex-start;
 }
@@ -54,16 +54,17 @@
 
 .sapling-dvelop-cloud__sync-actions {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  flex-wrap: wrap;
   align-content: stretch;
   align-items: stretch;
   justify-content: flex-start;
-  width: min(260px, 100%);
+  width: 100%;
   max-width: 100%;
 }
 
 .sapling-dvelop-cloud__sync-actions > .v-btn {
-  width: 100%;
+  width: auto;
   min-width: 0;
   justify-content: flex-start;
 }
@@ -87,6 +88,7 @@
 
 .sapling-dvelop-cloud__health-capabilities {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   min-width: 0;
   gap: var(--sapling-gap-xs);
@@ -116,7 +118,7 @@
   flex: 1 1 auto;
   gap: var(--sapling-gap-lg);
   min-height: 0;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .sapling-dvelop-cloud__table-panel {
@@ -147,34 +149,13 @@
   overflow: auto;
 }
 
-.sapling-dvelop-cloud__table .v-table__wrapper > table > tbody > tr > td,
-.sapling-dvelop-cloud__table .v-table__wrapper > table > thead > tr > th {
-  max-width: 260px;
-  overflow-wrap: anywhere;
-  white-space: normal;
-}
-
 @media (max-width: 1100px) {
-  .sapling-dvelop-cloud__control-band {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .sapling-dvelop-cloud__sync-actions {
-    justify-content: flex-start;
-    width: min(320px, 100%);
-    max-width: 100%;
-  }
-
   .sapling-dvelop-cloud__health-strip {
     grid-template-columns: minmax(0, 1fr);
   }
 
   .sapling-dvelop-cloud__health-summary {
     min-width: 0;
-  }
-
-  .sapling-dvelop-cloud__health-capabilities {
-    flex-wrap: wrap;
   }
 }
 

@@ -227,6 +227,14 @@
   font-weight: var(--sapling-tab-font-weight);
 }
 
+.v-theme--light.sapling-table-chip {
+  color: color-mix(
+    in srgb,
+    var(--sapling-soft-badge-accent, rgb(var(--v-theme-primary))) 45%,
+    black
+  ) !important;
+}
+
 .sapling-table-chip .v-chip__content,
 .sapling-table-chip .v-icon {
   color: inherit;

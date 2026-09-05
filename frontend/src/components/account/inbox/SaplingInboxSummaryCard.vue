@@ -1,7 +1,5 @@
 <template>
-  <article
-    class="sapling-metric-card sapling-metric-card--large sapling-metric-card--interactive glass-panel"
-  >
+  <article class="sapling-metric-card sapling-inbox-summary-card glass-panel">
     <div
       class="sapling-icon-tile"
       :class="[

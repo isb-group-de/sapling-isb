@@ -31,7 +31,7 @@
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: var(--sapling-gap-xl);
-  padding: var(--sapling-space-xl) var(--sapling-space-2xl);
+  padding: var(--sapling-space-md) var(--sapling-space-lg);
   border-radius: var(--sapling-radius-card-lg) var(--sapling-radius-card-lg) 0 0;
   background:
     radial-gradient(circle at 8% 0%, rgba(var(--v-theme-primary), 0.1), transparent 32%),
@@ -173,7 +173,7 @@
 }
 
 .monitoring-console__content {
-  padding: var(--sapling-space-xl) var(--sapling-space-xl) var(--sapling-space-2xl);
+  padding: var(--sapling-space-md);
 }
 
 .monitoring-window,
@@ -249,7 +249,7 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--sapling-gap-md);
-  margin-bottom: var(--sapling-gap-lg);
+  margin-bottom: var(--sapling-gap-sm);
 }
 
 .monitoring-panel__header h3 {
@@ -434,7 +434,7 @@
 }
 
 .monitoring-console .sapling-metric-card {
-  min-height: 132px;
+  min-height: 96px;
   border: 1px solid var(--sapling-surface-border-muted);
   background: var(--sapling-surface-fill-subtle);
   color: var(--sapling-surface-text);
@@ -452,31 +452,10 @@
   background: transparent;
 }
 
-.monitoring-console .monitoring-table {
-  flex: 0 0 auto;
-  height: auto;
-  overflow: visible;
-}
-
-.monitoring-console .monitoring-table .v-table__wrapper {
-  flex: 0 0 auto;
-  height: auto;
-  overflow-x: auto;
-  overflow-y: hidden;
-}
-
-.monitoring-console .v-table th {
-  color: var(--sapling-surface-text-muted);
-  font-size: var(--sapling-text-label-size);
-  font-weight: 700;
-  white-space: nowrap;
-}
-
 .monitoring-table__secondary {
   display: block;
   max-width: 40rem;
   margin-top: var(--sapling-gap-xs);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }

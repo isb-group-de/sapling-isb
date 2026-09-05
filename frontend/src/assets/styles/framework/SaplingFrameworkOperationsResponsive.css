@@ -20,10 +20,6 @@
   .sapling-admin-hero__actions {
     justify-content: flex-start;
   }
-
-  .sapling-admin-summary-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
 }
 
 @media (max-width: 1400px) {
@@ -58,8 +54,7 @@
   .sapling-admin-sidebar,
   .sapling-admin-selection,
   .sapling-admin-workspace,
-  .sapling-admin-members,
-  .sapling-admin-summary {
+  .sapling-admin-members {
     padding: var(--sapling-gap-md);
   }
 
@@ -91,10 +86,6 @@
 
   .sapling-admin-stat-card strong {
     font-size: 1.08rem;
-  }
-
-  .sapling-admin-summary-grid {
-    grid-template-columns: 1fr;
   }
 
   .sapling-admin-mobile-card__header,
@@ -177,8 +168,7 @@
   .sapling-admin-sidebar,
   .sapling-admin-selection,
   .sapling-admin-workspace,
-  .sapling-admin-members,
-  .sapling-admin-summary {
+  .sapling-admin-members {
     padding: var(--sapling-gap-md);
     border-radius: var(--sapling-radius-sm);
   }

@@ -6,7 +6,7 @@
     :class="[`sapling-page-hero--${variant}`, { 'sapling-page-hero--copy-only': !$slots.side }]"
   >
     <div class="sapling-page-hero__copy">
-      <p v-if="eyebrow" class="sapling-page-hero__eyebrow">{{ eyebrow }}</p>
+      <p v-if="eyebrow && eyebrow !== title" class="sapling-page-hero__eyebrow">{{ eyebrow }}</p>
 
       <div class="sapling-page-hero__title-row">
         <div v-if="$slots['title-prefix']" class="sapling-page-hero__title-prefix">

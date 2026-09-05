@@ -50,6 +50,11 @@
   opacity: var(--sapling-opacity-disabled);
 }
 
+/* Embedded editor panes meet their field boundary without an outer shadow gutter. */
+.sapling-markdown-pane.glass-panel {
+  box-shadow: var(--sapling-inset-highlight);
+}
+
 .sapling-markdown-pane__header {
   margin-bottom: var(--sapling-gap-xl);
 }

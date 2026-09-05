@@ -55,25 +55,34 @@
       v-if="entities.length && lgAndUp"
       class="sapling-admin-matrix-shell sapling-permission-matrix-shell"
     >
-      <v-table class="sapling-admin-matrix sapling-permission-matrix" density="comfortable">
-        <thead>
-          <tr>
-            <th>{{ $t('navigation.entity') }}</th>
-            <th v-for="column in permissionColumns" :key="column.key">
-              <span class="d-inline-flex align-center ga-1">
-                {{ $t(column.labelKey) }}
-                <SaplingHelpTooltip
-                  :text="$t(`${column.labelKey}Tooltip`)"
-                  :aria-label="$t(column.labelKey)"
-                  icon-size="16"
-                />
-              </span>
-            </th>
-            <th class="text-right">{{ $t('right.actions') }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="item in entities" :key="item.handle" :class="rowClasses(item)">
+      <SaplingDataTable
+        class="sapling-admin-matrix sapling-permission-matrix"
+        :items="entities"
+        :item-key="(item) => item.handle"
+        :columns="[
+          {
+            key: 'entity',
+            title: $t('navigation.entity'),
+            value: (item) => $t(`navigation.${item.handle}`),
+          },
+          ...permissionColumns.map((column) => ({
+            key: column.key,
+            title: $t(column.labelKey),
+            value: (item: EntityItem) => getPermission(selectedRole, item, column.key),
+            align: 'center' as const,
+          })),
+          { key: 'actions', title: $t('right.actions'), sortable: false, align: 'end' },
+        ]"
+      >
+        <template v-for="column in permissionColumns" :key="column.key" #[`header.${column.key}`]>
+          <SaplingHelpTooltip
+            :text="$t(`${column.labelKey}Tooltip`)"
+            :aria-label="$t(column.labelKey)"
+            icon-size="16"
+          />
+        </template>
+        <template #row="{ item }">
+          <tr :class="rowClasses(item)">
             <td>
               <div
                 class="sapling-row-between-xs sapling-admin-item-cell sapling-permission-entity-cell"
@@ -135,8 +144,8 @@
               </div>
             </td>
           </tr>
-        </tbody>
-      </v-table>
+        </template></SaplingDataTable
+      >
     </div>
 
     <div
@@ -207,6 +216,7 @@
 </template>
 
 <script lang="ts" setup>
+import SaplingDataTable from '@/components/table/SaplingDataTable.vue'
 import { computed } from 'vue'
 import { useDisplay } from 'vuetify'
 import type { EntityItem, RoleItem } from '@/entity/entity'

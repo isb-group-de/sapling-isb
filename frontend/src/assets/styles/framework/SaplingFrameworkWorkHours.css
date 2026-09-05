@@ -1,0 +1,52 @@
+.sapling-workhours-list {
+  display: grid;
+  gap: var(--sapling-gap-md);
+}
+
+.sapling-workhours-card {
+  display: grid;
+  gap: var(--sapling-gap-sm);
+  padding: var(--sapling-gap-md);
+  border: 1px solid var(--sapling-surface-border-muted);
+  border-radius: var(--sapling-radius-md);
+  background: var(--sapling-surface-fill);
+}
+
+.sapling-workhours-card__day,
+.sapling-workhours-card__label {
+  font-size: var(--sapling-text-label-size);
+  font-weight: 700;
+  letter-spacing: var(--sapling-letter-spacing-label);
+  text-transform: uppercase;
+  opacity: var(--sapling-opacity-secondary);
+}
+
+.sapling-workhours-card__times {
+  display: grid;
+  gap: var(--sapling-gap-sm);
+}
+
+.sapling-workhours-card__time-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sapling-gap-md);
+}
+
+.sapling-workhours-card__time-row > span:last-child {
+  overflow-wrap: anywhere;
+  text-align: right;
+}
+
+.sapling-workhours-table {
+  min-width: 0;
+}
+
+.sapling-workhours-table .v-table__wrapper {
+  overflow-x: auto;
+}
+
+.sapling-workhours-table table {
+  min-width: 360px;
+}

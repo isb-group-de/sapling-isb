@@ -17,7 +17,7 @@
 .sapling-import__toolbar,
 .sapling-import__settings {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
   gap: var(--sapling-gap-md);
 }
 
@@ -306,18 +306,8 @@
   background: transparent;
 }
 
-.sapling-import__value-mapping-table .v-table__wrapper {
-  overflow: visible;
-}
-
-.sapling-import__value-mapping-table thead th {
-  position: sticky;
-  top: 0;
-  z-index: 1;
-}
-
 .sapling-import__value-mapping-table td:first-child {
-  max-width: 0;
+  min-width: 10rem;
   overflow-wrap: anywhere;
 }
 

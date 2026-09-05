@@ -329,36 +329,6 @@
   .sapling-dashboard__overview {
     grid-template-columns: minmax(0, 1fr);
   }
-
-  .sapling-dashboard__hero.sapling-page-hero,
-  .sapling-dashboard__hero {
-    grid-template-columns: 1fr;
-  }
-
-  .sapling-dashboard__actions-skeleton,
-  .sapling-dashboard__hero .sapling-action-stack {
-    width: 100%;
-    max-width: 100%;
-    align-items: flex-start;
-    justify-content: flex-start;
-    margin-left: 0;
-  }
-
-  .sapling-dashboard__hero .sapling-page-hero__side,
-  .sapling-dashboard__hero .sapling-action-cluster {
-    align-items: flex-start;
-    justify-content: flex-start;
-  }
-
-  .sapling-dashboard__hero .sapling-action-stack,
-  .sapling-dashboard__hero .sapling-action-cluster {
-    flex-direction: row;
-    flex-wrap: wrap;
-  }
-
-  .sapling-dashboard__hero .sapling-action-cluster > .v-btn {
-    justify-content: flex-start;
-  }
 }
 
 @media (max-width: 1080px) {

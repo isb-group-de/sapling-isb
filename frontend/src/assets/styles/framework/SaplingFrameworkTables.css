@@ -48,6 +48,7 @@
 }
 
 .sapling-table {
+  isolation: isolate;
   flex: 1 1 auto;
   width: 100%;
   max-width: 100%;
@@ -56,6 +57,8 @@
   height: 100%;
   max-height: none;
   border-radius: var(--sapling-radius-sm);
+  /* Explicitly clip composited sticky/backdrop layers at the shell corners. */
+  clip-path: inset(0 round var(--sapling-radius-sm));
   overflow: hidden;
 }
 

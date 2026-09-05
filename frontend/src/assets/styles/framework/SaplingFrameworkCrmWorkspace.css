@@ -17,8 +17,8 @@
 }
 
 .sapling-crm-workspace__hero .sapling-page-hero__title {
-  font-size: var(--sapling-text-title-size-lg);
-  line-height: 1.08;
+  font-size: var(--sapling-text-title-size-md);
+  line-height: 1.2;
 }
 
 .sapling-crm-workspace__hero .sapling-page-hero__eyebrow {
@@ -33,7 +33,7 @@
 
 .sapling-crm-workspace__hero-side {
   display: grid;
-  grid-template-columns: repeat(2, minmax(130px, 1fr));
+  grid-template-columns: repeat(4, minmax(100px, 1fr));
   gap: var(--sapling-gap-xs);
   min-width: min(420px, 100%);
 }
@@ -514,6 +514,10 @@
 }
 
 @media (max-width: 900px) {
+  .sapling-crm-workspace__hero-side {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    min-width: 0;
+  }
   .sapling-crm-workspace__toolbar,
   .sapling-crm-workspace__toolbar-fields {
     grid-template-columns: 1fr;

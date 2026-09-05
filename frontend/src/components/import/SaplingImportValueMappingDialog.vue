@@ -37,18 +37,24 @@
               v-else-if="sourceValues.length > 0"
               class="sapling-import__value-mapping-table-region sapling-scrollable"
             >
-              <v-table
-                density="compact"
+              <SaplingDataTable
                 class="sapling-import__table sapling-import__value-mapping-table"
+                :items="sourceValues"
+                :columns="[
+                  {
+                    key: 'c0',
+                    title: t('import.sourceValue'),
+                    value: (sourceValue) => sourceValue,
+                  },
+                  {
+                    key: 'c1',
+                    title: t('import.targetValue'),
+                    sortable: false,
+                  },
+                ]"
               >
-                <thead>
+                <template #row="{ item: sourceValue }">
                   <tr>
-                    <th>{{ t('import.sourceValue') }}</th>
-                    <th>{{ t('import.targetValue') }}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="sourceValue in sourceValues" :key="sourceValue">
                     <td>{{ sourceValue }}</td>
                     <td>
                       <SaplingTemplateValueField
@@ -62,8 +68,8 @@
                       />
                     </td>
                   </tr>
-                </tbody>
-              </v-table>
+                </template>
+              </SaplingDataTable>
             </div>
 
             <p v-else class="sapling-muted-text">
@@ -93,6 +99,7 @@
 </template>
 
 <script lang="ts" setup>
+import SaplingDataTable from '@/components/table/SaplingDataTable.vue'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import SaplingAutocomplete from '@/components/common/SaplingAutocomplete.vue'

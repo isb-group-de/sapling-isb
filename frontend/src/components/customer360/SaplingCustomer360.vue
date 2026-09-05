@@ -132,7 +132,7 @@
       </section>
 
       <section class="sapling-workspace-panel customer360__workspace glass-panel">
-        <v-tabs v-model="tab" class="customer360__tabs" show-arrows>
+        <v-tabs v-model="tab" class="customer360__tabs sapling-admin-tabs" show-arrows>
           <v-tab value="overview">{{ $t('customer360.tabOverview') }}</v-tab>
           <v-tab value="activity">{{ $t('customer360.tabActivity') }}</v-tab>
           <v-tab v-if="hasSection('tickets')" value="service">{{

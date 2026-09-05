@@ -189,11 +189,10 @@
 
 .sapling-record-dialog-nav-item__label {
   min-width: 0;
-  overflow: hidden;
   font-size: var(--sapling-text-body-size-sm);
   line-height: 1.25;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
 .sapling-dialog-edit-save-action--validation-error {

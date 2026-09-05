@@ -507,23 +507,3 @@ function addAssignment() {
   emit('update:modelValue', assignments.value)
 }
 </script>
-<style scoped>
-.sapling-automation-rule,
-.sapling-automation-rule__condition {
-  display: grid;
-  gap: 12px;
-}
-.sapling-automation-rule__row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
-  gap: 12px;
-  align-items: start;
-}
-.sapling-automation-rule__condition {
-  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
-  align-items: start;
-  padding: 12px;
-  border: 1px solid rgb(var(--v-theme-outline-variant));
-  border-radius: 8px;
-}
-</style>

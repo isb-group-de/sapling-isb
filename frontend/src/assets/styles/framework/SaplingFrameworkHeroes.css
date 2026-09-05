@@ -3,7 +3,7 @@
   align-items: stretch;
   justify-content: space-between;
   gap: var(--sapling-gap-xl);
-  padding: var(--sapling-space-panel-xl);
+  padding: var(--sapling-space-md) var(--sapling-space-lg);
   border-radius: var(--sapling-panel-radius-compact);
   background: var(--secondary-gradient), var(--glass-bg);
   box-shadow: var(--sapling-inset-highlight);
@@ -120,7 +120,7 @@
   grid-template-columns: minmax(0, 1.25fr) minmax(var(--sapling-hero-stats-min-width), 0.95fr);
   gap: var(--sapling-gap-xl);
   align-items: stretch;
-  padding: var(--sapling-space-panel-xl);
+  padding: var(--sapling-space-md) var(--sapling-space-lg);
   border-radius: var(--sapling-panel-radius-compact);
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, var(--sapling-surface-fill) 100%),
@@ -184,9 +184,9 @@
 
 .sapling-page-hero__title {
   margin: 0;
-  font-size: var(--sapling-text-title-size-lg);
-  line-height: 1.04;
-  font-weight: 800;
+  font-size: var(--sapling-text-title-size-md);
+  line-height: 1.2;
+  font-weight: 700;
   letter-spacing: 0;
 }
 
@@ -202,11 +202,11 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--sapling-gap-xs);
-  margin-top: var(--sapling-gap-lg);
+  margin-top: var(--sapling-gap-sm);
 }
 
 .sapling-page-hero__body {
-  margin-top: var(--sapling-gap-lg);
+  margin-top: var(--sapling-gap-sm);
 }
 
 .sapling-page-hero__side {
@@ -220,7 +220,7 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--sapling-gap-xl);
-  padding: var(--sapling-space-panel-xl);
+  padding: var(--sapling-space-md) var(--sapling-space-lg);
   border-radius: var(--sapling-panel-radius-compact);
   background: var(--secondary-gradient), var(--glass-bg);
   box-shadow: var(--sapling-inset-highlight);

@@ -43,48 +43,17 @@
       </div>
     </section>
 
-    <section
-      class="sapling-section-panel sapling-page-panel sapling-page-panel-stack sapling-admin-panel-stack sapling-admin-summary sapling-permission-summary glass-panel"
-    >
-      <div class="sapling-stack-md sapling-permission-summary-header">
-        <p class="sapling-eyebrow sapling-admin-section-eyebrow sapling-permission-section-eyebrow">
-          {{ $t('permission.workingSet') }}
-        </p>
-        <h2 class="sapling-section-title">{{ $t('permission.changeSummary') }}</h2>
-      </div>
-
-      <div class="sapling-admin-summary-grid sapling-permission-summary-grid">
-        <article
-          class="sapling-panel-shell sapling-stack-md sapling-admin-summary-card sapling-permission-summary-card"
-        >
-          <span>{{ $t('right.currentGroup') }}</span>
-          <strong>{{
-            selectedGroup ? $t(`navigationGroup.${selectedGroup}`) : $t('roleStage.none')
-          }}</strong>
-        </article>
-        <article
-          class="sapling-panel-shell sapling-stack-md sapling-admin-summary-card sapling-permission-summary-card"
-        >
-          <span>{{ $t('permission.visibleEntities') }}</span>
-          <strong>{{ visibleEntityCount }}</strong>
-        </article>
-        <article
-          class="sapling-panel-shell sapling-stack-md sapling-admin-summary-card sapling-permission-summary-card"
-        >
-          <span>{{ $t('permission.dirtyEntities') }}</span>
-          <strong>{{ selectedRoleStats.dirtyEntityCount }}</strong>
-        </article>
-        <article
-          class="sapling-panel-shell sapling-stack-md sapling-admin-summary-card sapling-permission-summary-card"
-        >
-          <span>{{ $t('permission.saveMode') }}</span>
-          <strong>{{ $t('right.manual') }}</strong>
-        </article>
-      </div>
-
-      <p class="sapling-admin-summary-note sapling-permission-summary-note">
-        {{ $t('permission.summaryNote') }}
-      </p>
+    <section class="sapling-permission-summary" :aria-label="$t('permission.changeSummary')">
+      <span
+        >{{ $t('permission.visibleEntities') }}: <strong>{{ visibleEntityCount }}</strong></span
+      >
+      <span
+        >{{ $t('permission.dirtyEntities') }}:
+        <strong>{{ selectedRoleStats.dirtyEntityCount }}</strong></span
+      >
+      <span :title="$t('permission.summaryNote')"
+        >{{ $t('permission.saveMode') }}: <strong>{{ $t('right.manual') }}</strong></span
+      >
     </section>
   </div>
 </template>

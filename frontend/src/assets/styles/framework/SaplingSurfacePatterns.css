@@ -13,7 +13,7 @@
 .sapling-record-card:focus-within {
   transform: translateY(var(--sapling-hover-lift-sm));
   border-color: var(--sapling-surface-border-accent-strong);
-  box-shadow: var(--sapling-inset-highlight), var(--sapling-shadow-soft-md);
+  box-shadow: var(--sapling-inset-highlight), var(--sapling-shadow-panel);
 }
 
 :root[data-sapling-glass='off'] .sapling-record-card:hover,
@@ -124,7 +124,7 @@
 .sapling-metric-card--interactive:hover {
   transform: translateY(var(--sapling-hover-lift-md));
   border-color: var(--sapling-surface-border-accent-strong);
-  box-shadow: var(--sapling-shadow-lift);
+  box-shadow: var(--sapling-shadow-panel);
 }
 
 .sapling-metric-card--large {
@@ -206,7 +206,7 @@
 .sapling-add-note-card:hover,
 .sapling-note-card:hover {
   transform: translateY(var(--sapling-hover-lift-md));
-  box-shadow: var(--sapling-shadow-lift);
+  box-shadow: var(--sapling-shadow-panel);
 }
 
 .sapling-empty-state-panel {
@@ -245,6 +245,8 @@
 .sapling-empty-state-panel--compact {
   display: grid;
   place-items: center;
+  align-content: center;
+  padding: var(--sapling-space-md);
   min-height: var(--sapling-empty-state-min-height-sm);
   border: 1px dashed var(--sapling-surface-border);
   border-radius: var(--sapling-radius-sm);

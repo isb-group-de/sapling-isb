@@ -1,0 +1,69 @@
+/* Lightweight tables share SaplingTable surfaces, hover states and scroll behavior. */
+.sapling-data-table.v-table {
+  flex: 0 1 auto;
+  height: auto;
+  max-height: 32rem;
+  border: 1px solid var(--sapling-surface-border-muted);
+}
+
+.sapling-data-table .v-table__wrapper {
+  overflow: auto;
+}
+
+.sapling-data-table .v-table__wrapper > table {
+  width: 100%;
+}
+
+.sapling-data-table .v-table__wrapper > table > tbody > tr > td {
+  height: var(--sapling-control-size-xl);
+  padding: var(--sapling-gap-xs) var(--sapling-gap-md);
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.sapling-data-table .v-table__wrapper > table > thead > tr > th {
+  height: var(--sapling-control-size-xl);
+  padding: var(--sapling-gap-xs) var(--sapling-gap-md);
+  font-size: var(--sapling-text-label-size);
+  font-weight: 700;
+}
+
+.sapling-data-table__heading {
+  display: flex;
+  align-items: center;
+  gap: var(--sapling-gap-xs);
+}
+
+.sapling-data-table__sort {
+  display: inline-flex;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sapling-gap-sm);
+  min-height: var(--sapling-control-size-sm);
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: inherit;
+  text-transform: uppercase;
+  white-space: normal;
+  overflow-wrap: normal;
+  word-break: normal;
+  cursor: pointer;
+}
+
+.sapling-data-table__sort:focus-visible {
+  outline: 2px solid rgb(var(--v-theme-primary));
+  outline-offset: 2px;
+  border-radius: var(--sapling-radius-xs);
+}
+
+.sapling-data-table__empty {
+  color: var(--sapling-surface-text-muted);
+  text-align: center;
+}
+
+.sapling-data-table td.text-center .v-selection-control {
+  justify-content: center;
+}

@@ -94,7 +94,7 @@
   z-index: 1;
 }
 
-.sapling-permission-provider-dialog__select-cell {
+.sapling-permission-provider-dialog__list th:first-child {
   width: 64px;
 }
 

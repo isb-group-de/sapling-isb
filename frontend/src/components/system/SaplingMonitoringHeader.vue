@@ -94,7 +94,7 @@
     </div>
 
     <nav class="monitoring-navigation" :aria-label="$t('system.monitoringTitle')">
-      <v-tabs v-model="tab" grow show-arrows>
+      <v-tabs v-model="tab" class="sapling-admin-tabs" show-arrows>
         <v-tab prepend-icon="mdi-view-dashboard-outline" value="overview">
           {{ $t('system.monitoringOverview') }}
         </v-tab>

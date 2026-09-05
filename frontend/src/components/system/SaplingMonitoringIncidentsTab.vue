@@ -14,6 +14,7 @@
           </v-btn>
         </div>
         <div class="monitoring-incident-stack">
+          <p v-if="!incidents.length" class="sapling-muted-text">{{ $t('global.noData') }}</p>
           <button
             v-for="incident in incidents"
             :key="incident.handle"
@@ -42,17 +43,30 @@
           <h3>{{ $t('system.monitoringErrorsAndCauses') }}</h3>
           <span>{{ errorGroups.length }}</span>
         </div>
-        <v-table class="sapling-table monitoring-table" density="compact">
-          <thead>
+        <SaplingDataTable
+          class="sapling-table monitoring-table"
+          :items="errorGroups"
+          :columns="[
+            { key: 'c0', title: $t('system.monitoringSource'), value: (group) => group.source },
+            {
+              key: 'c1',
+              title: $t('system.monitoringOperation'),
+              value: (group) => group.operation,
+            },
+            {
+              key: 'c2',
+              title: $t('system.monitoringCount'),
+              value: (group) => group.occurrenceCount,
+            },
+            {
+              key: 'c3',
+              title: $t('system.monitoringLastSeen'),
+              value: (group) => group.lastSeenAt,
+            },
+          ]"
+        >
+          <template #row="{ item: group }">
             <tr>
-              <th>{{ $t('system.monitoringSource') }}</th>
-              <th>{{ $t('system.monitoringOperation') }}</th>
-              <th>{{ $t('system.monitoringCount') }}</th>
-              <th>{{ $t('system.monitoringLastSeen') }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="group in errorGroups" :key="group.handle">
               <td>
                 <v-chip size="x-small" variant="tonal">{{ group.source }}</v-chip>
               </td>
@@ -65,8 +79,8 @@
               <td>{{ number(group.occurrenceCount) }}</td>
               <td>{{ dateTime(group.lastSeenAt) }}</td>
             </tr>
-          </tbody>
-        </v-table>
+          </template>
+        </SaplingDataTable>
       </article>
     </div>
 
@@ -76,17 +90,30 @@
           <h3>{{ $t('system.monitoringChecks') }}</h3>
           <span>{{ checks.length }}</span>
         </div>
-        <v-table class="sapling-table monitoring-table" density="compact">
-          <thead>
+        <SaplingDataTable
+          class="sapling-table monitoring-table"
+          :items="checks"
+          :columns="[
+            {
+              key: 'c0',
+              title: $t('system.monitoringCheck'),
+              value: (check) => checkLabel(check.checkKey),
+            },
+            {
+              key: 'c1',
+              title: $t('system.monitoringStatus'),
+              value: (check) => stateLabel(check.status),
+            },
+            {
+              key: 'c2',
+              title: $t('system.monitoringDuration'),
+              value: (check) => check.durationMs,
+            },
+            { key: 'c3', title: $t('system.monitoringTime'), value: (check) => check.completedAt },
+          ]"
+        >
+          <template #row="{ item: check }">
             <tr>
-              <th>{{ $t('system.monitoringCheck') }}</th>
-              <th>{{ $t('system.monitoringStatus') }}</th>
-              <th>{{ $t('system.monitoringDuration') }}</th>
-              <th>{{ $t('system.monitoringTime') }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="check in checks.slice(0, 20)" :key="check.handle">
               <td>{{ checkLabel(check.checkKey) }}</td>
               <td>
                 <v-chip :color="statusColor(check.status)" size="x-small">{{
@@ -96,25 +123,42 @@
               <td>{{ number(check.durationMs) }} ms</td>
               <td>{{ dateTime(check.completedAt) }}</td>
             </tr>
-          </tbody>
-        </v-table>
+          </template>
+        </SaplingDataTable>
       </article>
       <article class="monitoring-panel">
         <div class="monitoring-panel__header">
           <h3>{{ $t('system.monitoringRemediationHistory') }}</h3>
           <span>{{ remediations.length }}</span>
         </div>
-        <v-table class="sapling-table monitoring-table" density="compact">
-          <thead>
+        <SaplingDataTable
+          class="sapling-table monitoring-table"
+          :items="remediations"
+          :columns="[
+            {
+              key: 'c0',
+              title: $t('system.monitoringAction'),
+              value: (execution) => remediationLabel(execution.actionKey),
+            },
+            {
+              key: 'c1',
+              title: $t('system.monitoringMode'),
+              value: (execution) => stateLabel(execution.mode),
+            },
+            {
+              key: 'c2',
+              title: $t('system.monitoringResult'),
+              value: (execution) => stateLabel(execution.state),
+            },
+            {
+              key: 'c3',
+              title: $t('system.monitoringTime'),
+              value: (execution) => execution.startedAt,
+            },
+          ]"
+        >
+          <template #row="{ item: execution }">
             <tr>
-              <th>{{ $t('system.monitoringAction') }}</th>
-              <th>{{ $t('system.monitoringMode') }}</th>
-              <th>{{ $t('system.monitoringResult') }}</th>
-              <th>{{ $t('system.monitoringTime') }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="execution in remediations" :key="execution.handle">
               <td>{{ remediationLabel(execution.actionKey) }}</td>
               <td>{{ stateLabel(execution.mode) }}</td>
               <td>
@@ -126,14 +170,15 @@
               </td>
               <td>{{ dateTime(execution.startedAt) }}</td>
             </tr>
-          </tbody>
-        </v-table>
+          </template>
+        </SaplingDataTable>
       </article>
     </div>
   </v-window-item>
 </template>
 
 <script setup lang="ts">
+import SaplingDataTable from '@/components/table/SaplingDataTable.vue'
 import type {
   MonitoringCheckRun,
   MonitoringErrorGroup,

@@ -14,7 +14,9 @@
         </slot>
       </template>
       <template v-else>
-        <div v-if="eyebrow" class="sapling-dialog-hero__eyebrow">{{ eyebrow }}</div>
+        <div v-if="eyebrow && eyebrow !== title" class="sapling-dialog-hero__eyebrow">
+          {{ eyebrow }}
+        </div>
         <div class="sapling-dialog-hero__title-row">
           <component :is="titleTag" class="sapling-dialog-hero__title">{{ title }}</component>
           <slot name="title-trailing" />

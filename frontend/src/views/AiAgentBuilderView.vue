@@ -45,14 +45,6 @@
         >
           <div class="sapling-ai-agent-builder__rail-header">
             <span>{{ t('aiAgentBuilder.agentList') }}</span>
-            <v-btn
-              class="sapling-button--icon"
-              icon="mdi-plus"
-              variant="tonal"
-              size="small"
-              :title="t('aiAgentBuilder.newAgent')"
-              @click="startNewAgent"
-            />
           </div>
           <v-list class="sapling-ai-agent-builder__list" density="comfortable" nav>
             <v-list-item
@@ -73,7 +65,7 @@
         >
           <v-tabs
             v-model="activeTab"
-            class="sapling-ai-agent-builder__tabs"
+            class="sapling-ai-agent-builder__tabs sapling-admin-tabs"
             density="comfortable"
             show-arrows
           >

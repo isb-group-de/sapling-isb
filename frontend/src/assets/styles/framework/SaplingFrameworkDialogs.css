@@ -18,13 +18,36 @@
  * classes are still used for layout-specific overrides further down.
  */
 .sapling-dialog-card {
+  --glass-shadow: var(--sapling-shadow-panel);
   display: flex;
   flex-direction: column;
   width: 100%;
   min-width: 0;
+  min-height: 0;
+  max-height: calc(100dvh - 2 * var(--sapling-dialog-viewport-inset));
   overflow: hidden;
   border: 1px solid var(--sapling-surface-border);
   border-radius: var(--sapling-panel-radius-compact);
+}
+
+.sapling-dialog-shell {
+  overflow: hidden;
+}
+
+.sapling-dialog-shell > :not(.sapling-dialog-shell__body) {
+  flex-shrink: 0;
+}
+
+.sapling-dialog-shell__body {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  /* Borrow space from the shell gap without moving or narrowing the content. */
+  margin: calc(-1 * var(--sapling-space-sm));
+  padding: var(--sapling-space-sm);
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
 }
 
 .sapling-dialog-card--fill {
@@ -115,9 +138,6 @@
 
 .sapling-dialog-json-content {
   padding: 0;
-}
-
-.sapling-dialog-json-content {
   display: flex;
   flex: 1 1 auto;
   min-height: 0;
@@ -516,59 +536,6 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--sapling-gap-md);
   min-width: 0;
-}
-
-.sapling-workhours-list {
-  display: grid;
-  gap: var(--sapling-gap-md);
-}
-
-.sapling-workhours-card {
-  display: grid;
-  gap: var(--sapling-gap-sm);
-  padding: var(--sapling-gap-md);
-  border: 1px solid var(--sapling-surface-border-muted);
-  border-radius: var(--sapling-radius-md);
-  background: var(--sapling-surface-fill);
-}
-
-.sapling-workhours-card__day,
-.sapling-workhours-card__label {
-  font-size: var(--sapling-text-label-size);
-  font-weight: 700;
-  letter-spacing: var(--sapling-letter-spacing-label);
-  text-transform: uppercase;
-  opacity: var(--sapling-opacity-secondary);
-}
-
-.sapling-workhours-card__times {
-  display: grid;
-  gap: var(--sapling-gap-sm);
-}
-
-.sapling-workhours-card__time-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--sapling-gap-md);
-}
-
-.sapling-workhours-card__time-row > span:last-child {
-  overflow-wrap: anywhere;
-  text-align: right;
-}
-
-.sapling-workhours-table {
-  min-width: 0;
-}
-
-.sapling-workhours-table .v-table__wrapper {
-  overflow-x: auto;
-}
-
-.sapling-workhours-table table {
-  min-width: 360px;
 }
 
 .sapling-change-password-dialog,

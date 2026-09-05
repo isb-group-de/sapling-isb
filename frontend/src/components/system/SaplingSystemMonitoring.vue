@@ -120,20 +120,33 @@
               <h3>{{ $t('system.monitoringRequestAnalysis') }}</h3>
               <span>{{ requestGroups.length }}</span>
             </div>
-            <v-table class="sapling-table monitoring-table" density="compact">
-              <thead>
+            <SaplingDataTable
+              class="sapling-table monitoring-table"
+              :items="requestGroups"
+              :columns="[
+                { key: 'c0', title: $t('system.monitoringCategory'), value: (row) => row.group },
+                {
+                  key: 'c1',
+                  title: $t('system.monitoringRequests'),
+                  value: (row) => row.requestCount,
+                },
+                {
+                  key: 'c2',
+                  title: $t('system.monitoringErrors'),
+                  value: (row) => row.serverErrorCount,
+                },
+                {
+                  key: 'c3',
+                  title: $t('system.monitoringTraffic'),
+                  value: (row) => Number(row.requestBytes ?? 0) + Number(row.responseBytes ?? 0),
+                },
+                { key: 'c4', title: 'p50', value: (row) => row.durationP50Ms },
+                { key: 'c5', title: 'p95', value: (row) => row.durationP95Ms },
+                { key: 'c6', title: 'p99', value: (row) => row.durationP99Ms },
+              ]"
+            >
+              <template #row="{ item: row }">
                 <tr>
-                  <th>{{ $t('system.monitoringCategory') }}</th>
-                  <th>{{ $t('system.monitoringRequests') }}</th>
-                  <th>{{ $t('system.monitoringErrors') }}</th>
-                  <th>{{ $t('system.monitoringTraffic') }}</th>
-                  <th>p50</th>
-                  <th>p95</th>
-                  <th>p99</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="row in requestGroups" :key="String(row.group)">
                   <td>{{ row.group }}</td>
                   <td>{{ number(row.requestCount) }}</td>
                   <td>{{ number(row.serverErrorCount) }}</td>
@@ -144,92 +157,21 @@
                   <td>{{ number(row.durationP95Ms) }} ms</td>
                   <td>{{ number(row.durationP99Ms) }} ms</td>
                 </tr>
-              </tbody>
-            </v-table>
+              </template>
+            </SaplingDataTable>
           </article>
         </v-window-item>
 
-        <v-window-item class="monitoring-window-item" value="usage">
-          <div class="monitoring-presence-summary">
-            <article
-              v-for="presence in presenceSummary"
-              :key="presence.key"
-              class="monitoring-presence-card"
-            >
-              <span class="monitoring-presence-card__icon" :class="`is-${presence.key}`">
-                <v-icon :icon="presence.icon" />
-              </span>
-              <div>
-                <strong>{{ presence.value }}</strong>
-                <span>{{ presence.label }}</span>
-              </div>
-            </article>
-          </div>
-          <div class="monitoring-usage-grid">
-            <article class="monitoring-panel monitoring-panel--users">
-              <div class="monitoring-panel__header">
-                <h3>{{ $t('system.monitoringUsers') }}</h3>
-                <span>{{ usersTotal }}</span>
-              </div>
-              <v-table class="sapling-table monitoring-table" density="compact">
-                <thead>
-                  <tr>
-                    <th>{{ $t('system.monitoringUser') }}</th>
-                    <th>{{ $t('system.monitoringPresence') }}</th>
-                    <th>{{ $t('system.monitoringValidSessions') }}</th>
-                    <th>{{ $t('system.monitoringLastSeen') }}</th>
-                    <th>{{ $t('system.monitoringLastLogin') }}</th>
-                    <th>{{ $t('system.monitoringRequests') }}</th>
-                    <th>{{ $t('system.monitoringErrors') }}</th>
-                    <th>{{ $t('system.monitoringTraffic') }}</th>
-                    <th>{{ $t('system.monitoringTokens') }}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="user in users" :key="user.handle">
-                    <td>{{ [user.firstName, user.lastName].filter(Boolean).join(' ') }}</td>
-                    <td>
-                      <v-chip :color="userPresenceColor(user)" size="x-small" variant="tonal">
-                        {{ userPresenceLabel(user) }}
-                      </v-chip>
-                    </td>
-                    <td>{{ number(user.sessionCount) }}</td>
-                    <td>{{ dateTime(user.lastActivityAt) }}</td>
-                    <td>{{ dateTime(user.lastLoginAt) }}</td>
-                    <td>{{ number(user.requests) }}</td>
-                    <td>{{ number(user.errors) }}</td>
-                    <td>{{ bytes(user.traffic) }}</td>
-                    <td>{{ compactNumber(user.tokens) }}</td>
-                  </tr>
-                </tbody>
-              </v-table>
-            </article>
-            <article class="monitoring-panel monitoring-panel--ai">
-              <div class="monitoring-panel__header">
-                <h3>{{ $t('system.monitoringAiTokens') }}</h3>
-                <span>{{ aiGroups.length }}</span>
-              </div>
-              <v-table class="sapling-table monitoring-table" density="compact">
-                <thead>
-                  <tr>
-                    <th>{{ $t('system.monitoringProvider') }}</th>
-                    <th>{{ $t('system.monitoringCalls') }}</th>
-                    <th>{{ $t('system.monitoringErrors') }}</th>
-                    <th>{{ $t('system.monitoringTokens') }}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="row in aiGroups" :key="String(row.group)">
-                    <td>{{ row.group }}</td>
-                    <td>{{ number(row.callCount) }}</td>
-                    <td>{{ number(row.errorCount) }}</td>
-                    <td>{{ compactNumber(row.totalTokens) }}</td>
-                  </tr>
-                </tbody>
-              </v-table>
-            </article>
-          </div>
-        </v-window-item>
+        <SaplingMonitoringUsageTab
+          :users="users"
+          :users-total="usersTotal"
+          :ai-groups="aiGroups"
+          :summary="summary"
+          :number="number"
+          :bytes="bytes"
+          :compact-number="compactNumber"
+          :date-time="dateTime"
+        />
       </v-window>
     </div>
 
@@ -359,10 +301,13 @@
 </template>
 
 <script setup lang="ts">
+import SaplingDataTable from '@/components/table/SaplingDataTable.vue'
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { useMonitoringFormatters } from './useMonitoringFormatters'
 import MonitoringChart from './SaplingMonitoringChart.vue'
+import SaplingMonitoringUsageTab from './SaplingMonitoringUsageTab.vue'
 import SaplingMonitoringHeader from './SaplingMonitoringHeader.vue'
 import SaplingMonitoringIncidentsTab from './SaplingMonitoringIncidentsTab.vue'
 import SaplingMonitoringOverviewTab from './SaplingMonitoringOverviewTab.vue'
@@ -374,7 +319,7 @@ import SaplingDialogCard from '@/components/dialog/SaplingDialogCard.vue'
 import SaplingActionBar from '@/components/actions/SaplingActionBar.vue'
 import SaplingActionClose from '@/components/actions/SaplingActionClose.vue'
 import { useSaplingSystemMonitoring } from '@/composables/system/useSaplingSystemMonitoring'
-import type { MonitoringAlertRule, MonitoringUser } from '@/entity/system'
+import type { MonitoringAlertRule } from '@/entity/system'
 import {
   monitoringCheckLabel,
   monitoringIncidentText,
@@ -402,7 +347,8 @@ const emit = defineEmits<{ refreshSystem: [] }>()
 
 const route = useRoute()
 const router = useRouter()
-const { t, n, locale } = useI18n()
+const { t, locale } = useI18n()
+const { number, bytes, compactNumber, percent, dateTime } = useMonitoringFormatters()
 const validAreas = new Set(['overview', 'incidents', 'services', 'performance', 'usage'])
 const initialArea =
   typeof route.query.area === 'string' && validAreas.has(route.query.area)
@@ -470,30 +416,6 @@ const maximumGapSeconds = computed(() => maximumActiveCollectorGapSeconds(collec
 const lastUpdatedLabel = computed(() =>
   summary.value?.lastSampleAt ? dateTime(summary.value.lastSampleAt) : t('global.notAvailable'),
 )
-const presenceSummary = computed(() => {
-  const online = summary.value?.users.onlineUsers ?? 0
-  const signedIn = summary.value?.users.usersWithSessions ?? 0
-  return [
-    {
-      key: 'online',
-      icon: 'mdi-circle-medium',
-      label: t('system.monitoringOnline'),
-      value: number(online),
-    },
-    {
-      key: 'session',
-      icon: 'mdi-account-clock-outline',
-      label: t('system.monitoringSession'),
-      value: number(Math.max(signedIn - online, 0)),
-    },
-    {
-      key: 'offline',
-      icon: 'mdi-account-off-outline',
-      label: t('system.monitoringOffline'),
-      value: number(Math.max(usersTotal.value - signedIn, 0)),
-    },
-  ]
-})
 const incidentStats = computed(() => {
   const incident = selectedIncident.value
   if (!incident) return []
@@ -576,37 +498,6 @@ function metricPoints(keys: string[]) {
   return series.value.filter((point) => keys.includes(point.metricKey))
 }
 
-function number(value: unknown): string {
-  const numeric = Number(value ?? 0)
-  return n(Number.isFinite(numeric) ? numeric : 0, { maximumFractionDigits: 1 })
-}
-
-function bytes(value: unknown): string {
-  const numeric = Number(value ?? 0)
-  if (!Number.isFinite(numeric) || numeric <= 0) return '0 B'
-  const units = ['B', 'kB', 'MB', 'GB', 'TB']
-  const unitIndex = Math.min(Math.floor(Math.log(numeric) / Math.log(1024)), units.length - 1)
-  return `${number(numeric / 1024 ** unitIndex)} ${units[unitIndex]}`
-}
-
-function compactNumber(value: unknown): string {
-  return new Intl.NumberFormat(locale.value, {
-    notation: 'compact',
-    maximumFractionDigits: 1,
-  }).format(Number(value ?? 0))
-}
-
-function percent(value: unknown): string {
-  return `${number(value)} %`
-}
-
-function dateTime(value: string | null | undefined): string {
-  if (!value) return t('global.notAvailable')
-  return new Intl.DateTimeFormat(locale.value, { dateStyle: 'short', timeStyle: 'short' }).format(
-    new Date(value),
-  )
-}
-
 function serviceLabel(value: string): string {
   return monitoringServiceLabel(locale.value, value)
 }
@@ -645,18 +536,6 @@ function ruleCondition(rule: MonitoringAlertRule): string {
 
 function statusColor(value: string): string {
   return monitoringStatusColor(value)
-}
-
-function userPresenceLabel(user: MonitoringUser): string {
-  if (user.online) return t('system.monitoringOnline')
-  if (user.sessionCount > 0) return t('system.monitoringSession')
-  return t('system.monitoringOffline')
-}
-
-function userPresenceColor(user: MonitoringUser): string {
-  if (user.online) return 'success'
-  if (user.sessionCount > 0) return 'info'
-  return 'default'
 }
 
 function refreshWorkspace(): void {

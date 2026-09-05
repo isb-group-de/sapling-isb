@@ -67,20 +67,26 @@
             auto-draw
           />
 
-          <button
-            v-for="item in sparklineMarkers"
-            :key="item.entry.key"
-            type="button"
-            class="sapling-kpi-sparkline__marker"
-            v-css-vars="item.cssVars"
-            @click="openDrilldown(item.index)"
-          >
-            <span class="sapling-kpi-sparkline__marker-dot" />
-            <span class="sapling-kpi-sparkline__marker-copy glass-panel">
+          <template v-for="item in sparklineMarkers" :key="item.entry.key">
+            <button
+              type="button"
+              class="sapling-kpi-sparkline__marker"
+              v-css-vars="item.cssVars"
+              :aria-label="`${item.label}: ${item.value}`"
+              @click="openDrilldown(item.index)"
+            >
+              <span class="sapling-kpi-sparkline__marker-dot" />
+            </button>
+            <span
+              class="sapling-kpi-sparkline__marker-copy"
+              :class="{ 'sapling-kpi-sparkline__marker-copy--below': item.tooltipBelow }"
+              v-css-vars="item.cssVars"
+              aria-hidden="true"
+            >
               <span class="sapling-kpi-sparkline__marker-label">{{ item.label }}</span>
               <strong class="sapling-kpi-sparkline__marker-value">{{ item.value }}</strong>
             </span>
-          </button>
+          </template>
         </div>
       </div>
     </div>
@@ -167,6 +173,7 @@ const sparklineMarkers = computed(() => {
     return {
       ...item,
       cssVars,
+      tooltipBelow: pointY < sparklineHeight / 2,
     }
   })
 })

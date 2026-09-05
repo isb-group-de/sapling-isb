@@ -34,6 +34,7 @@
 }
 
 .sapling-kpi-sparkline__stats {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr));
   gap: var(--sapling-gap-sm);
 }
 
@@ -46,6 +47,7 @@
   position: relative;
   width: 100%;
   aspect-ratio: 4 / 1;
+  min-height: 5rem;
   overflow: visible;
 }
 
@@ -64,18 +66,23 @@
   gap: var(--sapling-gap-2xs);
   border: 0;
   background: transparent;
+  color: var(--sapling-surface-text);
+  padding: 0.4rem;
   transform: translate(-50%, -50%);
   transition: transform var(--sapling-motion-fast) ease;
   cursor: pointer;
 }
 
-.sapling-kpi-sparkline__marker:hover {
-  transform: translate(-50%, calc(-50% - 2px));
+.sapling-kpi-sparkline__marker:hover,
+.sapling-kpi-sparkline__marker:focus-visible {
+  z-index: 3;
+  outline: 2px solid rgb(var(--v-theme-primary));
+  border-radius: var(--sapling-radius-xs);
 }
 
 .sapling-kpi-sparkline__marker-dot {
-  width: var(--sapling-space-md);
-  height: var(--sapling-space-md);
+  width: 0.4rem;
+  height: 0.4rem;
   border-radius: 50%;
   background: rgb(var(--v-theme-primary));
   box-shadow:
@@ -84,26 +91,52 @@
 }
 
 .sapling-kpi-sparkline__marker-copy {
-  display: flex;
+  display: none;
+  position: absolute;
+  z-index: 4;
+  top: 0;
+  left: clamp(
+    0px,
+    calc(var(--sapling-kpi-sparkline-marker-left) - 4rem),
+    max(0px, calc(100% - 8rem))
+  );
+  width: min(8rem, 100%);
+  max-height: 100%;
+  overflow: auto;
   flex-direction: column;
-  align-items: center;
-  gap: var(--sapling-gap-3xs);
-  padding: var(--sapling-space-3xs);
-  border-radius: var(--sapling-radius-sm);
-  background: rgba(var(--v-theme-surface), 0.9);
+  gap: var(--sapling-gap-xs);
+  padding: var(--sapling-gap-sm) var(--sapling-gap-md);
+  border: 1px solid var(--sapling-surface-border);
+  border-radius: var(--sapling-radius-xs);
+  background: var(--sapling-tilt-shell-solid-bg);
+  color: var(--sapling-surface-text);
   box-shadow: var(--sapling-shadow-soft);
+  text-align: left;
+  overflow-wrap: anywhere;
+  pointer-events: none;
+}
+
+.sapling-kpi-sparkline__marker-copy--below {
+  top: auto;
+  bottom: 0;
+}
+
+.sapling-kpi-sparkline__marker:hover + .sapling-kpi-sparkline__marker-copy,
+.sapling-kpi-sparkline__marker:focus-visible + .sapling-kpi-sparkline__marker-copy {
+  display: flex;
 }
 
 .sapling-kpi-sparkline__marker-label {
-  font-size: 0.5rem;
-  line-height: 1;
+  font-size: var(--sapling-text-label-size);
+  line-height: 1.35;
   opacity: var(--sapling-opacity-secondary);
-  white-space: nowrap;
+  white-space: normal;
 }
 
 .sapling-kpi-sparkline__marker-value {
-  font-size: var(--sapling-text-meta-size);
-  line-height: 1;
+  font-size: var(--sapling-text-body-size-md);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.35;
 }
 
 .sapling-kpi-sparkline__meta {

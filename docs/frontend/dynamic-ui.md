@@ -998,3 +998,30 @@ and optional open/closed metadata.
 - Keep translations loaded explicitly per feature.
 - Keep fields responsive through template `formWidth`.
 - Keep custom views for workflow-heavy features, not basic CRUD.
+
+### Shared compact tables and dialogs
+
+Use `SaplingTable` for metadata-driven entity CRUD. For local datasets such as
+monitoring aggregates, permission matrices, import previews and work hours, use
+`components/table/SaplingDataTable.vue`. It shares the `sapling-table` surface,
+compact spacing, sticky headers and scroll behavior. Define columns with a stable
+key, translated title and a raw value accessor. Sort numbers and dates before
+formatting them. Sorting cycles ascending, descending and original order; empty
+values remain last and the input array is never mutated. Mark action columns
+`sortable: false`; retain editing controls in the row slot and use `itemKey` when
+records have a stable identifier. Header slots are named `header.<column key>`.
+
+Grouped layouts may use `SaplingTableSurface` directly, as field permissions do,
+while preserving group actions and sorting fields inside their groups. The
+form-config table preview is a structural mock rather than a dataset and does
+not offer sorting. Do not introduce another independently styled `v-table`.
+
+Dialogs use `SaplingDialogCard`, `SaplingDialogShell`, a hero and an action footer.
+The card uses a solid theme surface to keep background content from interfering
+with form readability. The shell keeps hero/footer outside the scrollable body;
+complex tab panels may own their inner scroll region. Keep `min-height: 0` on
+flex descendants and verify long content at desktop and mobile sizes. Shared
+styles belong in the framework stylesheets, including dynamic CSS variables.
+
+See the [2026-09-05 frontend audit](frontend-audit-2026-09-05.md) for coverage,
+visual changes and verification limits.
