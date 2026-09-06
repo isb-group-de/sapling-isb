@@ -1,4 +1,5 @@
-import { onBeforeUnmount, onMounted } from 'vue'
+import { onBeforeUnmount, onMounted, readonly, ref } from 'vue'
+import { useSaplingMessageCenter } from '@/composables/system/useSaplingMessageCenter'
 import { BACKEND_URL } from '@/constants/project.constants'
 import type {
   EffortEstimateItem,
@@ -53,6 +54,7 @@ type OpenTaskCountListener = (snapshot: OpenTaskSnapshot, context?: OpenTaskUpda
 const listeners = new Set<OpenTaskCountListener>()
 let eventSource: EventSource | null = null
 let latestSnapshot: OpenTaskSnapshot | null = null
+const streamError = ref<string | null>(null)
 
 function toTimestamp(value: Date | string | null | undefined) {
   if (!value) {
@@ -211,6 +213,9 @@ function notifyListeners(snapshot: OpenTaskSnapshot, context: OpenTaskUpdateCont
 }
 
 function applySnapshot(snapshot: OpenTaskSnapshot, source: OpenTaskUpdateContext['source']) {
+  if (source === 'stream') {
+    streamError.value = null
+  }
   const previousSnapshot = latestSnapshot
   latestSnapshot = snapshot
   notifyListeners(snapshot, {
@@ -222,19 +227,52 @@ function applySnapshot(snapshot: OpenTaskSnapshot, source: OpenTaskUpdateContext
 
 function handleSnapshotEvent(event: Event) {
   const messageEvent = event as MessageEvent<string | OpenTaskSnapshot>
+  let rawPayload: unknown
 
   try {
-    const rawPayload =
+    rawPayload =
       typeof messageEvent.data === 'string' ? JSON.parse(messageEvent.data) : messageEvent.data
-
-    if (!rawPayload || typeof rawPayload !== 'object') {
-      return
-    }
-
-    applySnapshot(rawPayload as OpenTaskSnapshot, 'stream')
   } catch {
-    // Ignore malformed SSE payloads and wait for the next event.
+    reportStreamError('exception.serverException', 'Invalid inbox snapshot JSON')
+    return
   }
+
+  if (!isOpenTaskSnapshot(rawPayload)) {
+    reportStreamError('exception.serverException', 'Invalid inbox snapshot structure')
+    return
+  }
+
+  applySnapshot(rawPayload, 'stream')
+}
+
+function isOpenTaskSnapshot(value: unknown): value is OpenTaskSnapshot {
+  if (!value || typeof value !== 'object') return false
+  const snapshot = value as Partial<OpenTaskSnapshot>
+  return (
+    typeof snapshot.count === 'number' &&
+    Number.isFinite(snapshot.count) &&
+    ['tickets', 'tasks', 'salesOpportunities', 'notifications'].every((key) =>
+      Array.isArray(snapshot[key as keyof OpenTaskSnapshot]),
+    ) &&
+    (snapshot.effortEstimates == null || Array.isArray(snapshot.effortEstimates)) &&
+    (snapshot.internalCases == null || Array.isArray(snapshot.internalCases))
+  )
+}
+
+function reportStreamError(message: string, technical?: unknown) {
+  console.warn('Inbox diagnostic', technical)
+  // EventSource retries automatically. Report each outage once, until data arrives.
+  if (streamError.value) return
+  streamError.value = message
+  useSaplingMessageCenter().pushMessage('error', message, '', 'inbox', technical)
+}
+
+function handleStreamError(event: Event) {
+  const data = (event as MessageEvent<unknown>).data
+  reportStreamError(
+    data == null ? 'exception.connectionException' : 'exception.serverException',
+    data,
+  )
 }
 
 function ensureEventSource() {
@@ -246,6 +284,7 @@ function ensureEventSource() {
     withCredentials: true,
   })
   eventSource.addEventListener(OPEN_TASK_SNAPSHOT_EVENT, handleSnapshotEvent)
+  eventSource.addEventListener('error', handleStreamError)
 }
 
 function disposeEventSource() {
@@ -254,8 +293,10 @@ function disposeEventSource() {
   }
 
   eventSource.removeEventListener(OPEN_TASK_SNAPSHOT_EVENT, handleSnapshotEvent)
+  eventSource.removeEventListener('error', handleStreamError)
   eventSource.close()
   eventSource = null
+  streamError.value = null
 }
 
 export function updateOpenTaskSnapshot(snapshot: OpenTaskSnapshot) {
@@ -281,4 +322,6 @@ export function useOpenTaskCountEvents(listener: OpenTaskCountListener) {
     listeners.delete(listener)
     disposeEventSource()
   })
+
+  return { streamError: readonly(streamError) }
 }

@@ -11,10 +11,6 @@ type GenericLoadRequest = {
   namespaces?: string[] | null
 }
 
-function getTranslationBatchCacheKey(entityHandles: string[], locale: string) {
-  return ['translation', [...new Set(entityHandles)].sort().join(','), locale].join('|')
-}
-
 function normalizeNamespaces(namespaces?: string[] | null) {
   if (!Array.isArray(namespaces)) {
     return []
@@ -31,7 +27,6 @@ export const useGenericStore = defineStore('genericLoader', () => {
   const entityStates = reactive(new Map<string, EntityState>())
 
   // Caches pro Key
-  const genericTranslationLoadCache = new Map<string, Promise<void>>()
   const genericLoadCache = new Map<string, Promise<void>>()
   const loadingCounter = reactive(new Map<string, number>())
   const queuedTranslationKeys = new Set<string>()
@@ -100,22 +95,7 @@ export const useGenericStore = defineStore('genericLoader', () => {
       return
     }
 
-    const locale = i18n.global.locale.value
-    const cacheKey = getTranslationBatchCacheKey(translationHandles, locale)
-    let promise = genericTranslationLoadCache.get(cacheKey)
-
-    if (!promise) {
-      promise = new TranslationService()
-        .prepare(...translationHandles)
-        .then(() => undefined)
-        .catch((error) => {
-          genericTranslationLoadCache.delete(cacheKey)
-          throw error
-        })
-      genericTranslationLoadCache.set(cacheKey, promise)
-    }
-
-    await promise
+    await new TranslationService().prepare(...translationHandles)
   }
 
   function queueTranslationLoad(...keys: string[]) {

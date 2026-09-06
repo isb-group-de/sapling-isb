@@ -311,6 +311,9 @@
   min-height: 0;
   min-width: 0;
   width: 100%;
+  border: 1px solid var(--sapling-surface-border-muted);
+  border-radius: var(--sapling-radius-sm);
+  background: var(--sapling-surface-fill-subtle);
 }
 
 .sapling-account-center__panels .v-window__container,
@@ -323,7 +326,7 @@
 
 .sapling-account-center__panel {
   overflow-y: auto;
-  padding-right: var(--sapling-gap-xs);
+  padding: var(--sapling-gap-lg);
   overscroll-behavior: contain;
 }
 

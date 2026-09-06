@@ -83,6 +83,15 @@ component.
 
 ## Data Sources
 
+Translation loading is coordinated by `TranslationService` per Pinia translation
+store, language, and namespace. Calls in one microtask share a batch; overlapping
+calls reuse namespaces already in flight. The service loads all generic pages
+with a page size of 100, and each caller receives only its requested newly loaded
+namespaces. Completed namespaces are cached in the store, not in individual
+composables. Failed loads remain retryable. Clearing/resetting the translation
+store or changing language invalidates older requests so late responses cannot
+overwrite the new messages or mark the new state loaded.
+
 The dynamic UI depends on:
 
 - generic records from `/api/generic/:entityHandle`
@@ -906,6 +915,12 @@ assembles account tabs, while active-session presentation and Songbird runtime
 preferences live in reusable account panel components. Account formatting,
 catalog options, and shared contracts live in `saplingAccount.utils.ts`; the
 account composable owns remote loading and mutations.
+
+Account tab content sits inside a shared bordered surface with inner padding and
+independent scrolling. The security tab, passkey manager, and password-change
+actions are available only for local (`sapling`) accounts. Azure and Google
+accounts retain session management; requests to open their unavailable security
+tab fall back to the profile tab.
 
 Important files:
 

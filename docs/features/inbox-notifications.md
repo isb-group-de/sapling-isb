@@ -189,6 +189,18 @@ This is a refresh signal, not the notification payload itself. Clients reload cu
 
 ## Frontend Behavior
 
+The shared `useOpenTaskCountEvents` connection receives full snapshots through
+the `open-task-snapshot` SSE event. Transport errors, server-sent `error` events,
+and malformed snapshots stop the initial loading display and show an inbox error.
+The message center records one error per outage, including server diagnostics;
+automatic reconnects do not create duplicate messages. A valid streamed snapshot
+clears the error and restores the inbox automatically.
+
+If the inbox stays empty after an update, inspect the SSE error details and check
+pending database migrations. In particular, `Migration20260905120000` adds
+`notify_actor` to inbox and Teams subscriptions; without it, loading notifications
+fails and the server cannot deliver the first snapshot.
+
 The inbox UI is split into:
 
 ```text

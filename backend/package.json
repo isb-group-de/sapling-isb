@@ -1,6 +1,6 @@
 {
   "name": "backend",
-  "version": "1.153.1445",
+  "version": "1.155.1450",
   "description": "",
   "author": "",
   "private": true,
@@ -30,7 +30,8 @@
     "orm:seed": "cross-env NODE_OPTIONS=--max-old-space-size=4096 npm run build && cross-env UPDATE_MODE=seed node dist/update.js",
     "orm:deploy": "cross-env NODE_OPTIONS=--max-old-space-size=4096 npm run build && cross-env UPDATE_MODE=all node dist/update.js",
     "admin:bootstrap": "cross-env NODE_ENV=production node dist/bootstrap-admin.js",
-    "queues:clear-failed": "node dist/maintenance/clear-failed-queue-jobs.js"
+    "queues:clear-failed": "node dist/maintenance/clear-failed-queue-jobs.js",
+    "telemetry:repair": "node dist/maintenance/repair-telemetry.js"
   },
   "dependencies": {
     "@google/genai": "^2.21.0",

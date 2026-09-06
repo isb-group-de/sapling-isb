@@ -57,6 +57,14 @@
               </section>
             </template>
 
+            <v-alert
+              v-else-if="streamError"
+              type="error"
+              variant="tonal"
+              :title="$t('navigation.inbox')"
+              :text="$t(streamError)"
+            />
+
             <template v-else>
               <section
                 class="sapling-responsive-grid sapling-attention-summary-grid sapling-inbox-summary-grid"
@@ -302,6 +310,7 @@ const activeView = ref<'overview' | 'notifications'>('overview')
 
 const {
   isLoading,
+  streamError,
   dialog,
   notificationEntries,
   ticketEntries,

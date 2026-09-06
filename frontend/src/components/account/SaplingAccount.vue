@@ -324,9 +324,13 @@
                   </section>
                 </v-window-item>
 
-                <v-window-item value="security" class="sapling-account-center__panel">
+                <v-window-item
+                  v-if="isSaplingAccount"
+                  value="security"
+                  class="sapling-account-center__panel"
+                >
                   <section class="sapling-account-dialog__panel-stack">
-                    <SaplingPasskeyManager v-if="isSaplingAccount" />
+                    <SaplingPasskeyManager />
                     <v-btn
                       color="primary"
                       variant="tonal"
@@ -393,14 +397,14 @@
           <SaplingActionAccount
             v-else
             :handleClose="handleClose"
-            :handleChangePassword="changePassword"
+            :handleChangePassword="isSaplingAccount ? changePassword : undefined"
             :handleLogout="logout"
           />
         </template>
       </SaplingDialogShell>
     </SaplingDialogCard>
     <!-- Password change dialog -->
-    <SaplingChangePassword v-model="showPasswordChange" />
+    <SaplingChangePassword v-if="isSaplingAccount" v-model="showPasswordChange" />
   </SaplingDialog>
 </template>
 
@@ -460,6 +464,7 @@ const {
   isSessionsTerminating,
   activeAccountTab,
   accountTabs,
+  isSaplingAccount,
   calendarSyncRangeOptions,
   calendarSyncIntervalOptions,
   calendarSyncDetails,
@@ -507,9 +512,9 @@ const {
 } = useSaplingAccount()
 
 watch(
-  () => props.initialTab,
-  (tab) => {
-    activeAccountTab.value = tab
+  [() => props.initialTab, accountTabs],
+  ([tab, tabs]) => {
+    activeAccountTab.value = tabs.some((item) => item.key === tab) ? tab : 'profile'
   },
   { immediate: true },
 )
@@ -527,14 +532,6 @@ const accountTitle = computed(() => {
 const accountSubtitle = computed(
   () => currentPersonStore.person?.email || currentPersonStore.person?.mobile || '',
 )
-
-const isSaplingAccount = computed(() => {
-  const personType = currentPersonStore.person?.type
-
-  return typeof personType === 'string'
-    ? personType === 'sapling'
-    : personType?.handle === 'sapling'
-})
 
 function handleClose() {
   emit('close')

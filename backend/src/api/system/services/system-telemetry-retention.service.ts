@@ -8,7 +8,11 @@ import { executeRows } from './sql-query.utils';
 import { PostgreSqlConnection } from '@mikro-orm/postgresql';
 import { SYSTEM_TELEMETRY_ENABLED } from '../../../constants/project.constants';
 
-const ADVISORY_LOCK_ID = 7_324_905_191;
+import {
+  buildTelemetryRollup,
+  TELEMETRY_MAINTENANCE_LOCK_ID,
+  TELEMETRY_ROLLUPS,
+} from './system-telemetry-rollup.sql';
 const PURGE_BATCH_SIZE = 5_000;
 const MAX_PURGE_BATCHES = 100;
 
@@ -50,18 +54,18 @@ export class SystemTelemetryRetentionService
             .selectNoFrom((builder) =>
               builder
                 .fn<boolean>('pg_try_advisory_lock', [
-                  builder.val(ADVISORY_LOCK_ID),
+                  builder.val(TELEMETRY_MAINTENANCE_LOCK_ID),
                 ])
                 .as('locked'),
             )
             .executeTakeFirst();
           if (lock?.locked !== true) return;
           try {
-            await this.rollupSystem(em, '10s', '1m', '1 minute', '48 hours');
-            await this.rollupSystem(em, '1m', '15m', '15 minutes', '7 days');
-            await this.rollupSystem(em, '15m', '1h', '1 hour', '30 days');
-            await this.rollupHttp(em, '1m', '15m', '15 minutes', '7 days');
-            await this.rollupHttp(em, '15m', '1h', '1 hour', '30 days');
+            const now = new Date();
+            for (const definition of TELEMETRY_ROLLUPS) {
+              const query = buildTelemetryRollup(definition, { now });
+              await em.getConnection().execute(query.upsert, query.params);
+            }
             if (Date.now() - this.lastPurgeAt >= 60 * 60_000) {
               await this.purge(em);
               this.lastPurgeAt = Date.now();
@@ -71,7 +75,7 @@ export class SystemTelemetryRetentionService
               .selectNoFrom((builder) =>
                 builder
                   .fn<boolean>('pg_advisory_unlock', [
-                    builder.val(ADVISORY_LOCK_ID),
+                    builder.val(TELEMETRY_MAINTENANCE_LOCK_ID),
                   ])
                   .as('unlocked'),
               )
@@ -83,105 +87,6 @@ export class SystemTelemetryRetentionService
     } finally {
       this.running = false;
     }
-  }
-
-  private async rollupSystem(
-    em: EntityManager,
-    source: string,
-    target: string,
-    interval: string,
-    sourceRetention: string,
-  ) {
-    await em.getConnection().execute(
-      `insert into "system_metric_bucket_item" (
-        "instance_handle", "bucket_start", "resolution", "metric_key",
-        "dimension_key", "sample_count", "minimum", "maximum", "sum", "last", "created_at"
-      )
-      select "instance_handle", date_bin(interval '${interval}', "bucket_start", timestamp '2000-01-01'),
-        ?, "metric_key", "dimension_key", sum("sample_count")::int,
-        min("minimum"), max("maximum"), sum("sum"),
-        (array_agg("last" order by "bucket_start" desc))[1], now()
-      from "system_metric_bucket_item" source where source."resolution" = ?
-        and source."bucket_start" >= now() - interval '${sourceRetention}'
-        and source."bucket_start" < date_bin(interval '${interval}', now(), timestamp '2000-01-01')
-        and (
-          source."bucket_start" >= now() - interval '2 hours'
-          or not exists (
-            select 1 from "system_metric_bucket_item" target_bucket
-            where target_bucket."resolution" = ?
-              and target_bucket."instance_handle" = source."instance_handle"
-              and target_bucket."bucket_start" = date_bin(
-                interval '${interval}', source."bucket_start", timestamp '2000-01-01'
-              )
-              and target_bucket."metric_key" = source."metric_key"
-              and target_bucket."dimension_key" = source."dimension_key"
-          )
-        )
-      group by source."instance_handle", date_bin(interval '${interval}', source."bucket_start", timestamp '2000-01-01'),
-        source."metric_key", source."dimension_key"
-      on conflict ("instance_handle", "bucket_start", "resolution", "metric_key", "dimension_key")
-      do update set "sample_count" = excluded."sample_count", "minimum" = excluded."minimum",
-        "maximum" = excluded."maximum", "sum" = excluded."sum", "last" = excluded."last"`,
-      [target, source, target],
-    );
-  }
-
-  private async rollupHttp(
-    em: EntityManager,
-    source: string,
-    target: string,
-    interval: string,
-    sourceRetention: string,
-  ) {
-    const histogramExpressions = Array.from(
-      { length: 10 },
-      (_, index) => `sum(coalesce(("duration_histogram"->>${index})::int, 0))`,
-    ).join(', ');
-    await em.getConnection().execute(
-      `insert into "http_metric_bucket_item" (
-        "environment_handle", "bucket_start", "resolution", "attribution_key", "person_handle", "api_token_handle",
-        "auth_kind", "route_group", "operation", "request_kind", "resource_key", "request_count", "client_error_count", "server_error_count", "aborted_count", "timeout_count",
-        "request_bytes", "response_bytes", "duration_sum_ms", "duration_max_ms",
-        "duration_histogram", "impersonated_count", "created_at"
-      )
-      select "environment_handle", date_bin(interval '${interval}', "bucket_start", timestamp '2000-01-01'), ?,
-        "attribution_key", max("person_handle"), max("api_token_handle"), "auth_kind", "route_group", "operation", "request_kind", "resource_key",
-        sum("request_count")::int, sum("client_error_count")::int, sum("server_error_count")::int,
-        sum("aborted_count")::int, sum("timeout_count")::int,
-        sum("request_bytes"), sum("response_bytes"), sum("duration_sum_ms"), max("duration_max_ms"),
-        jsonb_build_array(${histogramExpressions}), sum("impersonated_count")::int, now()
-      from "http_metric_bucket_item" source where source."resolution" = ?
-        and source."bucket_start" >= now() - interval '${sourceRetention}'
-        and source."bucket_start" < date_bin(interval '${interval}', now(), timestamp '2000-01-01')
-        and (
-          source."bucket_start" >= now() - interval '2 hours'
-          or not exists (
-            select 1 from "http_metric_bucket_item" target_bucket
-            where target_bucket."resolution" = ?
-              and target_bucket."bucket_start" = date_bin(
-                interval '${interval}', source."bucket_start", timestamp '2000-01-01'
-              )
-              and target_bucket."attribution_key" = source."attribution_key"
-              and target_bucket."environment_handle" = source."environment_handle"
-              and target_bucket."route_group" = source."route_group"
-              and target_bucket."operation" = source."operation"
-              and target_bucket."request_kind" = source."request_kind"
-              and target_bucket."resource_key" = source."resource_key"
-              and target_bucket."auth_kind" = source."auth_kind"
-          )
-        )
-      group by source."environment_handle", date_bin(interval '${interval}', source."bucket_start", timestamp '2000-01-01'),
-        source."attribution_key", source."auth_kind", source."route_group", source."operation", source."request_kind", source."resource_key"
-      on conflict ("environment_handle", "bucket_start", "resolution", "attribution_key", "route_group", "operation", "request_kind", "resource_key", "auth_kind")
-      do update set "person_handle" = excluded."person_handle", "api_token_handle" = excluded."api_token_handle",
-        "request_count" = excluded."request_count", "client_error_count" = excluded."client_error_count",
-        "server_error_count" = excluded."server_error_count", "request_bytes" = excluded."request_bytes",
-        "aborted_count" = excluded."aborted_count", "timeout_count" = excluded."timeout_count",
-        "response_bytes" = excluded."response_bytes", "duration_sum_ms" = excluded."duration_sum_ms",
-        "duration_max_ms" = excluded."duration_max_ms", "duration_histogram" = excluded."duration_histogram",
-        "impersonated_count" = excluded."impersonated_count"`,
-      [target, source, target],
-    );
   }
 
   private async purge(em: EntityManager) {

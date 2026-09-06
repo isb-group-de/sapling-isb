@@ -54,6 +54,7 @@ describe('TranslationService', () => {
         language: 'de',
       },
       suppressErrorMessage: true,
+      pageSize: 100,
     })
     expect(result).toEqual(response)
     expect(i18n.global.getLocaleMessage('de')).toEqual({
@@ -82,6 +83,7 @@ describe('TranslationService', () => {
         language: 'de',
       },
       suppressErrorMessage: true,
+      pageSize: 100,
     })
     expect(result).toEqual(translations)
     expect(i18n.global.getLocaleMessage('de')).toEqual({
@@ -99,4 +101,88 @@ describe('TranslationService', () => {
       ] as TranslationItem[]),
     ).toEqual({ 'ticket.title': 'Ticket' })
   })
+
+  it('batches overlapping namespaces across instances and returns only each callers entries', async () => {
+    const ticket = { entity: 'ticket', property: 'title', value: 'Ticket' } as TranslationItem
+    const company = { entity: 'company', property: 'name', value: 'Firma' } as TranslationItem
+    findAllMock.mockResolvedValue([ticket, company])
+    const first = new TranslationService().prepare(' ticket ', 'ticket', '')
+    const second = new TranslationService().prepare('ticket', 'company')
+    expect(findAllMock).not.toHaveBeenCalled()
+    await expect(first).resolves.toEqual([ticket])
+    await expect(second).resolves.toEqual([ticket, company])
+    expect(findAllMock).toHaveBeenCalledTimes(1)
+    expect(findAllMock.mock.calls[0][1].filter.entity.$in).toEqual(['ticket', 'company'])
+    await expect(new TranslationService().prepare('ticket')).resolves.toEqual([])
+  })
+
+  it('shares in-flight namespaces while loading additional namespaces', async () => {
+    const pending = deferredTranslations()
+    const ticket = { entity: 'ticket', property: 'title', value: 'Ticket' } as TranslationItem
+    const company = { entity: 'company', property: 'name', value: 'Firma' } as TranslationItem
+    findAllMock.mockReturnValueOnce(pending.promise).mockResolvedValueOnce([company])
+    const first = new TranslationService().prepare('ticket')
+    await Promise.resolve()
+    const second = new TranslationService().prepare('ticket', 'company')
+    await Promise.resolve()
+    expect(findAllMock).toHaveBeenCalledTimes(2)
+    expect(findAllMock.mock.calls[1][1].filter.entity.$in).toEqual(['company'])
+    expect(useTranslationStore().has('ticket')).toBe(false)
+    pending.resolve([ticket])
+    await expect(first).resolves.toEqual([ticket])
+    await expect(second).resolves.toEqual([ticket, company])
+  })
+
+  it('releases failed namespaces for all waiting callers and permits a retry', async () => {
+    findAllMock.mockRejectedValueOnce(new Error('offline')).mockResolvedValueOnce([])
+    const results = await Promise.allSettled([
+      new TranslationService().prepare('ticket'),
+      new TranslationService().prepare('ticket'),
+    ])
+    expect(results.map((result) => result.status)).toEqual(['rejected', 'rejected'])
+    expect(useTranslationStore().has('ticket')).toBe(false)
+    await expect(new TranslationService().prepare('ticket')).resolves.toEqual([])
+    expect(findAllMock).toHaveBeenCalledTimes(2)
+    expect(useTranslationStore().has('ticket')).toBe(true)
+  })
+
+  it.each(['clear', '$reset', 'language'] as const)(
+    'ignores a late response after %s and allows a fresh request',
+    async (reset) => {
+      const pending = deferredTranslations()
+      const old = { entity: 'ticket', property: 'title', value: 'Old' } as TranslationItem
+      const fresh = { ...old, value: 'New' }
+      findAllMock.mockReturnValueOnce(pending.promise).mockResolvedValueOnce([fresh])
+      const first = new TranslationService().prepare('ticket')
+      await Promise.resolve()
+      const store = useTranslationStore()
+      if (reset === 'language') {
+        i18n.global.locale.value = 'en'
+        store.setLanguage('en')
+        i18n.global.locale.value = 'de'
+        store.setLanguage('de')
+      } else store[reset]()
+      await expect(new TranslationService().prepare('ticket')).resolves.toEqual([fresh])
+      pending.resolve([old])
+      await expect(first).resolves.toEqual([])
+      expect(i18n.global.getLocaleMessage('de')).toEqual({ 'ticket.title': 'New' })
+      expect(store.has('ticket')).toBe(true)
+    },
+  )
+
+  it('isolates different Pinia stores', async () => {
+    findAllMock.mockResolvedValue([])
+    const first = new TranslationService().prepare('ticket')
+    setActivePinia(createPinia())
+    await Promise.all([first, new TranslationService().prepare('ticket')])
+    expect(findAllMock).toHaveBeenCalledTimes(2)
+  })
 })
+
+function deferredTranslations() {
+  let resolve!: (items: TranslationItem[]) => void
+  const promise = new Promise<TranslationItem[]>((accept) => {
+    resolve = accept
+  })
+  return { promise, resolve }
+}

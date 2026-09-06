@@ -2,14 +2,39 @@ import { describe, expect, it } from 'vitest'
 import type { AiProviderModelItem, AiProviderTypeItem } from '@/entity/entity'
 import {
   appendMissingOutlookCategoryMappings,
+  buildAccountTabs,
   calculateAge,
   getCurrentWeekday,
+  isSaplingAccountType,
   mapModelOptions,
   mapProviderOptions,
   normalizeHandle,
 } from './saplingAccount.utils'
 
 describe('saplingAccount utils', () => {
+  it.each(['sapling', { handle: 'sapling' }])(
+    'offers local account security for %j',
+    (personType) => {
+      expect(isSaplingAccountType(personType)).toBe(true)
+      expect(buildAccountTabs(personType).map((tab) => tab.key)).toContain('security')
+    },
+  )
+
+  it.each(['azure', 'google', { handle: 'azure' }, { handle: 'google' }, null, undefined])(
+    'omits local security but keeps sessions for %j',
+    (personType) => {
+      expect(isSaplingAccountType(personType)).toBe(false)
+      expect(buildAccountTabs(personType).map((tab) => tab.key)).toEqual([
+        'profile',
+        'notifications',
+        'sync',
+        'sessions',
+        'preferences',
+        'songbird',
+      ])
+    },
+  )
+
   it('maps provider and model catalogs into select options', () => {
     expect(
       mapProviderOptions([{ handle: 'openai', title: 'OpenAI' } as AiProviderTypeItem]),

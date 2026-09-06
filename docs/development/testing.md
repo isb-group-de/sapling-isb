@@ -63,6 +63,21 @@ backend/src/auth/guard/*.spec.ts
 backend/src/entity/global/*.spec.ts
 ```
 
+Telemetry rollup SQL also has an opt-in PostgreSQL regression test. It uses the
+local backend `.env` connection, creates only session-local temporary tables,
+removes `public` from the session search path, and rolls back all fixture writes:
+
+```powershell
+$env:SAPLING_TELEMETRY_SQL_TESTS = '1'
+npm test --prefix backend -- system-telemetry-rollup.sql.spec.ts --runInBand
+Remove-Item Env:SAPLING_TELEMETRY_SQL_TESTS
+```
+
+The test covers all five maintenance stages, the moving refresh/retention
+boundaries, unchanged writes, native resolutions, dimensions, and repair
+preview/apply/repeat behavior with missing or expired sources. Without this flag,
+the database test is skipped; ordinary unit tests do not require PostgreSQL.
+
 Backend Jest config:
 
 ```text

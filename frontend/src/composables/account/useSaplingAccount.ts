@@ -48,6 +48,7 @@ import {
   createProfileForm,
   formatDateTime,
   getCurrentWeekday,
+  isSaplingAccountType,
   mapModelOptions,
   mapProviderOptions,
   normalizeHandle,
@@ -170,7 +171,8 @@ export function useSaplingAccount() {
 
   const calendarSyncDetails = computed(() => buildCalendarSyncDetails(calendarSync.value))
 
-  const accountTabs = computed(buildAccountTabs)
+  const isSaplingAccount = computed(() => isSaplingAccountType(currentPersonStore.person?.type))
+  const accountTabs = computed(() => buildAccountTabs(currentPersonStore.person?.type))
 
   const aiProviderOptions = computed(() => mapProviderOptions(aiProviderConfigs.value))
   const aiModelOptions = computed(() =>
@@ -229,7 +231,9 @@ export function useSaplingAccount() {
    * Opens the password change dialog.
    */
   function changePassword() {
-    showPasswordChange.value = true
+    if (isSaplingAccount.value) {
+      showPasswordChange.value = true
+    }
   }
 
   /**
@@ -548,6 +552,7 @@ export function useSaplingAccount() {
     isSessionsTerminating,
     activeAccountTab,
     accountTabs,
+    isSaplingAccount,
     calendarSyncRangeOptions,
     calendarSyncIntervalOptions,
     calendarSyncDetails,

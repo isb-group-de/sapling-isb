@@ -43,7 +43,9 @@ export const useTranslationStore = defineStore('translationStore', {
      * Clears the set of loaded entities.
      */
     clear() {
-      this.entities.clear()
+      // Replacing the set invalidates requests started before this reset, including
+      // a language switch away and back while an older request is still pending.
+      this.entities = new Set<string>()
     },
     /**
      * Sets the current language. If the language changes, resets loaded entities.

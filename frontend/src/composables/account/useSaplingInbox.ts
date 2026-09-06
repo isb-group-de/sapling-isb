@@ -64,7 +64,12 @@ const EVENT_OCCURRENCE_BATCH_SIZE = 200
 export function useSaplingInbox(emit: CloseEmitter) {
   //#region State
   const { t } = useI18n()
-  const { isLoading: isTranslationLoading } = useTranslationLoader('global', 'inbox', 'navigation')
+  const { isLoading: isTranslationLoading } = useTranslationLoader(
+    'global',
+    'inbox',
+    'navigation',
+    'exception',
+  )
   const dialog = ref(true)
   const isDataLoading = ref(true)
   const tickets = ref<TicketItem[]>([])
@@ -78,10 +83,12 @@ export function useSaplingInbox(emit: CloseEmitter) {
   const isCompletingEvents = ref(false)
   const router = useRouter()
   const messageCenter = useSaplingMessageCenter()
-  const isLoading = computed(() => isTranslationLoading.value || isDataLoading.value)
+  const isLoading = computed(
+    () => isTranslationLoading.value || (isDataLoading.value && !streamError.value),
+  )
   //#endregion
 
-  useOpenTaskCountEvents((snapshot) => {
+  const { streamError } = useOpenTaskCountEvents((snapshot) => {
     applyOpenTaskSnapshot(snapshot)
   })
 
@@ -561,6 +568,7 @@ export function useSaplingInbox(emit: CloseEmitter) {
   //#region Return
   return {
     isLoading,
+    streamError,
     dialog,
     notificationEntries,
     ticketEntries,

@@ -158,8 +158,14 @@ export function buildCalendarSyncDetails(
   ]
 }
 
-export function buildAccountTabs(): AccountTabItem[] {
-  return [
+export function isSaplingAccountType(personType?: string | { handle: string } | null): boolean {
+  return (typeof personType === 'string' ? personType : personType?.handle) === 'sapling'
+}
+
+export function buildAccountTabs(
+  personType?: string | { handle: string } | null,
+): AccountTabItem[] {
+  const tabs: AccountTabItem[] = [
     { key: 'profile', icon: 'mdi-account-outline', label: i18n.global.t('account.profile') },
     {
       key: 'notifications',
@@ -176,6 +182,7 @@ export function buildAccountTabs(): AccountTabItem[] {
     },
     { key: 'songbird', icon: 'mdi-creation-outline', label: i18n.global.t('account.songbird') },
   ]
+  return tabs.filter((tab) => tab.key !== 'security' || isSaplingAccountType(personType))
 }
 
 export function createProfileForm(person: PersonItem): ProfileForm {

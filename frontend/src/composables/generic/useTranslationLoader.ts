@@ -1,14 +1,6 @@
 import { ref, onMounted, watch } from 'vue'
 import TranslationService from '@/services/translation.service'
 import { i18n } from '@/i18n'
-import type { TranslationItem } from '@/entity/entity'
-
-// Cache für geladene Übersetzungen: Map<key, Promise<TranslationItem[]>>
-const translationLoadCache = new Map<string, Promise<TranslationItem[]>>()
-
-function getCacheKey(namespaces: string[], locale: string) {
-  return namespaces.sort().join(',') + '|' + locale
-}
 
 type UseTranslationLoaderOptions = {
   autoLoad?: boolean
@@ -32,20 +24,8 @@ export function useTranslationLoader(...args: Array<string | UseTranslationLoade
 
   async function loadTranslations() {
     isLoading.value = true
-    const locale = i18n.global.locale.value
-    const cacheKey = getCacheKey(namespaces, locale)
-    let promise = translationLoadCache.get(cacheKey)
-    if (!promise) {
-      promise = translationService.value.prepare(...namespaces)
-      promise = promise.catch((error) => {
-        translationLoadCache.delete(cacheKey)
-        throw error
-      })
-      translationLoadCache.set(cacheKey, promise)
-    }
-
     try {
-      await promise
+      await translationService.value.prepare(...namespaces)
     } finally {
       isLoading.value = false
     }

@@ -7,7 +7,12 @@
     </template>
 
     <template #trailing>
-      <v-btn color="primary" append-icon="mdi-lock-reset" @click="handleChangePassword">
+      <v-btn
+        v-if="handleChangePassword"
+        color="primary"
+        append-icon="mdi-lock-reset"
+        @click="handleChangePassword"
+      >
         <template v-if="$vuetify.display.mdAndUp">{{ $t('login.changePassword') }}</template>
       </v-btn>
       <v-btn color="error" append-icon="mdi-logout" @click="handleLogout">
@@ -23,7 +28,7 @@ import SaplingActionBar from '@/components/actions/SaplingActionBar.vue'
 //#region Props
 defineProps<{
   handleClose: () => void // Method to handle close action
-  handleChangePassword: () => void // Method to handle password change
+  handleChangePassword?: () => void // Available only for local Sapling accounts
   handleLogout: () => void // Method to handle logout
 }>()
 //#endregion

@@ -42,14 +42,14 @@ describe('SystemTelemetryRetentionService', () => {
 
     const rollups = execute.mock.calls
       .map(([sql]) => sql)
-      .filter((sql) => sql.startsWith('insert into'));
+      .filter((sql) => sql.includes('insert into'));
     expect(rollups).toHaveLength(5);
     expect(rollups[0]).toContain(
-      `source."bucket_start" >= now() - interval '48 hours'`,
+      `source.bucket_start >= (select at from settings) - interval '48 hours'`,
     );
     expect(rollups[0]).toContain('or not exists');
     expect(rollups[0]).toContain(
-      `source."bucket_start" < date_bin(interval '1 minute', now()`,
+      `source.bucket_start < date_bin(interval '1 minutes', (select at from settings)`,
     );
     const rawBucketPurges = execute.mock.calls.filter(
       ([sql]) =>

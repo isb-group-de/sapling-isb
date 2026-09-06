@@ -176,6 +176,67 @@ Automatic chart resolution is ten seconds through two hours, one minute through
 48 hours, fifteen minutes through 30 days, and one hour afterward. Metrics whose
 native collection cadence is slower use the finest available native resolution.
 
+### Rollup Integrity And Historical Repair
+
+Maintenance selects whole target buckets for its two-hour refresh window and
+aggregates every retained source row in those buckets. It excludes open buckets
+and buckets crossing the source-retention boundary. Repeated runs do not rewrite
+unchanged aggregates. Native minute and fifteen-minute measurements are retained
+at their original resolution.
+
+The September 6, 2026 investigation found that the previous moving refresh cutoff
+could overwrite a complete bucket with only its remaining source rows. This
+affected infrastructure minute/quarter-hour/hour values and HTTP quarter-hour/hour
+values. Updating the collector code does not automatically repair all older data.
+
+After building the backend, preview a bounded repair from the repository root:
+
+```powershell
+npm run telemetry:repair --prefix backend -- --environment host:sapling.isb-solutions.de --from 2026-09-03T13:17:00+02:00 --to 2026-09-06T12:00:00+02:00
+```
+
+The command requires an existing environment and explicit ISO timestamps with a
+time zone, accepts at most 90 days, and uses a read-only transaction by default.
+It starts no collectors, migrations, seeders, or application jobs. It shares the
+maintenance advisory lock and fails if maintenance is busy. Add `--apply` to the
+same command to explicitly apply the repair in one transaction; any failure rolls
+it back. No repair is run automatically on deployment.
+
+The report lists `reconstructible`, `changes`, `unreconstructible`, and `written`
+per source/target, plus unsupported metrics. Repairs read original native samples
+directly, including for hourly targets, rather than trusting damaged intermediate
+rollups. System buckets require one original sample in every expected native
+time slot, so gaps, partial process lifetimes, and slower configured cadences are
+conservatively skipped. Unknown metric keys and sparse browser samples are also
+skipped. HTTP repairs use retained original minute buckets; absence of an HTTP
+bucket means no recorded requests, not proof that the service was available.
+All repairs exclude open buckets, partial requested buckets, and expired source
+ranges. Missing original evidence cannot be reconstructed, even if an old
+aggregate still exists. Entirely missing sources and targets cannot be counted.
+
+The native-key allowlist in `backend/src/maintenance/telemetry-repair.ts` must be
+reviewed when collector metrics or their native cadence change. The command uses
+the current database clock and retention windows, so old imported snapshots may
+have fewer safely repairable buckets than they had when the backup was taken.
+
+### September 2026 Performance Findings
+
+For the server environment after the September 3 restart at 13:16:57 Europe/Berlin
+(release 1.150.1440), the imported data through September 6 around 12:15 contained
+40,673 standard requests averaging 54.9 ms, without HTTP 500-class errors. The
+histogram placed p95 at or below 250 ms and p99 at or below 500 ms. Streams were
+evaluated separately. Translation reads contributed 12,450 requests; this includes
+pagination and does not establish how many were redundant.
+
+Calendar recurrence detachment remains a separate performance follow-up: ten
+calls averaged 24.6 seconds and reached 47 seconds. The calendar queue reached
+903 waiting jobs and an oldest waiting age of approximately twelve minutes.
+Those observations warrant profiling the repeated generic mutation lifecycle
+and provider deliveries; they do not establish that queued delivery time caused
+the HTTP latency. This change does not alter calendar behavior. Low activity,
+the environment's `development` classification, and damaged historical rollups
+limit broader load or before/after conclusions.
+
 ## Configuration
 
 ```text

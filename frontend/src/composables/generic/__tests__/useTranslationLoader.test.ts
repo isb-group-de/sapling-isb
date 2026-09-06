@@ -45,7 +45,7 @@ describe('useTranslationLoader', () => {
     }
   })
 
-  it('loads translations on mount and reuses the same locale cache', async () => {
+  it('delegates every load to the store-aware service cache', async () => {
     prepareMock.mockResolvedValue([])
 
     const wrapper = mountTestHost('ticket', 'company')
@@ -54,7 +54,7 @@ describe('useTranslationLoader', () => {
     await wrapper.vm.loadTranslations()
     await flushPromises()
 
-    expect(prepareMock).toHaveBeenCalledTimes(1)
+    expect(prepareMock).toHaveBeenCalledTimes(2)
     expect(wrapper.vm.isLoading).toBe(false)
   })
 
