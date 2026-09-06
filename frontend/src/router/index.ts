@@ -3,6 +3,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
 import { useCurrentPersonStore } from '@/stores/currentPersonStore'
 import { hasAssignedRoles } from '@/utils/authRouting'
+import SystemView from '@/views/SystemView.vue'
 
 const SaplingAuthLayout = () => import('@/layouts/SaplingAuthLayout.vue')
 const SaplingPublicLayout = () => import('@/layouts/SaplingPublicLayout.vue')
@@ -66,8 +67,8 @@ const router = createRouter({
           name: 'playground',
           component: () => import('@/views/PlaygroundView.vue'),
         },
-        // System view (lazy loaded)
-        { path: 'system', name: 'system', component: () => import('@/views/SystemView.vue') },
+        // The small shell is ready immediately; monitoring code loads after mounting.
+        { path: 'system', name: 'system', component: SystemView },
         {
           path: 'knowledge',
           name: 'knowledgeBase',

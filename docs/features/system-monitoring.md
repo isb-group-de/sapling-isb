@@ -23,6 +23,13 @@ The selected time range, environment, active area, and incident deep link are
 shareable URL state. The first range is one hour. Summary data loads first and
 detail requests run with a concurrency limit of two.
 
+The router includes only the lightweight system page shell. It displays the
+shared system skeleton immediately after the normal authentication guard and
+loads the monitoring components (including ECharts) after mounting. These module
+downloads must not block route navigation or the authenticated layout's Suspense.
+Translation loading reuses the same skeleton; module-load failures show a retry
+action instead of leaving the previous page visible.
+
 The incident drill-down uses the shared large Sapling detail-dialog pattern. Its
 hero contrasts the observed value with the comparator and trigger threshold in
 the metric's native unit. The body separates the incident timeline from the

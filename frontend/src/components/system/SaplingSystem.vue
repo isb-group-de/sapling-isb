@@ -4,16 +4,7 @@
     fluid
   >
     <template v-if="isLoading">
-      <div class="sapling-system-skeleton">
-        <v-skeleton-loader type="article" />
-        <div class="sapling-system-skeleton__metrics">
-          <v-skeleton-loader v-for="item in 4" :key="item" type="article" />
-        </div>
-        <div class="sapling-system-skeleton__sections">
-          <v-skeleton-loader type="article" />
-          <v-skeleton-loader type="article" />
-        </div>
-      </div>
+      <SaplingSystemSkeleton />
     </template>
 
     <template v-else>
@@ -122,6 +113,7 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { Database, NetworkInterface } from '@/entity/system'
 import { useSaplingSystem } from '@/composables/system/useSaplingSystem'
+import SaplingSystemSkeleton from '@/components/system/SaplingSystemSkeleton.vue'
 import SaplingSystemDatabasePanel from '@/components/system/SaplingSystemDatabasePanel.vue'
 import SaplingSystemDocumentStoragePanel from '@/components/system/SaplingSystemDocumentStoragePanel.vue'
 import SaplingSystemNetworkPanel from '@/components/system/SaplingSystemNetworkPanel.vue'
