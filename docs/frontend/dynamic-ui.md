@@ -1032,8 +1032,15 @@ form-config table preview is a structural mock rather than a dataset and does
 not offer sorting. Do not introduce another independently styled `v-table`.
 
 Dialogs use `SaplingDialogCard`, `SaplingDialogShell`, a hero and an action footer.
-The card uses a solid theme surface to keep background content from interfering
-with form readability. The shell keeps hero/footer outside the scrollable body;
+The card uses a solid theme surface with a restrained brand-colored gradient to
+keep background content from interfering with form readability while retaining
+the corporate identity. Full dialog transparency is intentionally avoided, even
+in glass mode. KPI cards use a small pointer-driven tilt (at most 3 degrees,
+without scaling); reduced-motion and touch clients keep surfaces static. The
+`tilt-content` depth rule must not override the transform on a `tilt-element`.
+Pointer positions use stable card bounds during hover to avoid animation feedback;
+leaving, scrolling, or resizing resets those bounds and the tilt.
+The shell keeps hero/footer outside the scrollable body;
 complex tab panels may own their inner scroll region. Keep `min-height: 0` on
 flex descendants and verify long content at desktop and mobile sizes. Shared
 styles belong in the framework stylesheets, including dynamic CSS variables.

@@ -9,6 +9,11 @@
   --sapling-brand-warning: #d98e00;
   --sapling-brand-error: #a6192e;
   --sapling-panel-border: rgba(255, 255, 250, 0.1);
+  --sapling-dialog-surface: linear-gradient(
+    145deg,
+    rgba(var(--sapling-brand-primary-rgb), 0.12),
+    rgba(var(--sapling-brand-accent-rgb), 0.03) 65%
+  );
   --sapling-panel-radius: 20px;
   --sapling-panel-radius-compact: 16px;
   --sapling-radius-xs: 8px;

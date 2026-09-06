@@ -492,6 +492,7 @@ body {
   perspective: 1000px;
   transform: var(--sapling-tilt-transform, none);
   box-shadow: var(--sapling-tilt-shadow, none);
+  transition: transform var(--sapling-motion-fast) ease-out;
 }
 
 :root[data-sapling-theme='light'] {
@@ -502,8 +503,16 @@ body {
   color-scheme: dark;
 }
 
-.tilt-content {
+.tilt-content:not(.tilt-element) {
   transform: translateZ(var(--sapling-space-xl));
+}
+
+@media (prefers-reduced-motion: reduce), (hover: none), (pointer: coarse) {
+  .tilt-element,
+  .tilt-content {
+    transform: none !important;
+    transition: none;
+  }
 }
 
 :root[data-sapling-tilt='off'] .tilt-element,

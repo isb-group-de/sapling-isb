@@ -54,9 +54,13 @@ function attachTilt(el: TiltElement, value: TiltBindingValue) {
   // entire card subtree on each event, which caused visible flicker on cards
   // that contain heavy children (tables, virtual lists, overlays).
   let pendingEvent: MouseEvent | null = null
+  let hoverRect: DOMRect | null = null
 
   function applyTransform(event: MouseEvent) {
-    const rect = el.getBoundingClientRect()
+    // Keep a stable input plane: measuring the already tilted card on every
+    // frame feeds its own animation back into the pointer position and jitters.
+    const rect = (hoverRect ??= el.getBoundingClientRect())
+    if (!rect.width || !rect.height) return
     const x = event.clientX - rect.left
     const y = event.clientY - rect.top
     const performanceFactor = isReducedPerformance() ? 0.55 : 1
@@ -64,8 +68,10 @@ function attachTilt(el: TiltElement, value: TiltBindingValue) {
     const centerX = rect.width / 2
     const centerY = rect.height / 2
 
-    const rotateX = ((y - centerY) / centerY) * -(settings.max * performanceFactor)
-    const rotateY = ((x - centerX) / centerX) * (settings.max * performanceFactor)
+    const normalizedX = Math.max(-1, Math.min(1, (x - centerX) / centerX))
+    const normalizedY = Math.max(-1, Math.min(1, (y - centerY) / centerY))
+    const rotateX = normalizedY * -(settings.max * performanceFactor)
+    const rotateY = normalizedX * (settings.max * performanceFactor)
     const scale = 1 + (settings.scale - 1) * performanceFactor
 
     setCssVariables(el, {
@@ -109,17 +115,20 @@ function attachTilt(el: TiltElement, value: TiltBindingValue) {
       el.__saplingTiltRafId = undefined
     }
     pendingEvent = null
+    hoverRect = null
     resetTiltStyles(el)
   }
 
   el.__saplingTiltAppearanceChange = () => {
     if (!isTiltEnabled()) {
-      resetTiltStyles(el)
+      el.__saplingTiltMouseLeave?.()
     }
   }
 
   el.addEventListener('mousemove', el.__saplingTiltMouseMove)
   el.addEventListener('mouseleave', el.__saplingTiltMouseLeave)
+  window.addEventListener('scroll', el.__saplingTiltMouseLeave, true)
+  window.addEventListener('resize', el.__saplingTiltMouseLeave)
   window.addEventListener(
     'sapling:appearance-change',
     el.__saplingTiltAppearanceChange as EventListener,
@@ -141,6 +150,8 @@ function detachTilt(el: TiltElement) {
 
   if (el.__saplingTiltMouseLeave) {
     el.removeEventListener('mouseleave', el.__saplingTiltMouseLeave)
+    window.removeEventListener('scroll', el.__saplingTiltMouseLeave, true)
+    window.removeEventListener('resize', el.__saplingTiltMouseLeave)
     el.__saplingTiltMouseLeave = undefined
   }
 

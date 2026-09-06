@@ -1,5 +1,11 @@
 <template>
-  <SaplingSurface :as="VCard" outlined class="sapling-kpi-card" :tilt="tilt">
+  <SaplingSurface
+    :as="VCard"
+    outlined
+    class="sapling-kpi-card"
+    :tilt="tilt"
+    :tilt-options="TILT_KPI_OPTIONS"
+  >
     <div class="sapling-section-header sapling-kpi-card__header">
       <div class="sapling-kpi-card__headline">
         <div class="sapling-chip-row sapling-kpi-card__meta-row">
@@ -87,6 +93,7 @@
 <script setup lang="ts">
 // #region Imports
 import { VCard } from 'vuetify/components'
+import { TILT_KPI_OPTIONS } from '@/constants/tilt.constants'
 import SaplingSurface from '@/components/common/SaplingSurface.vue'
 import SaplingKpiBreakdown from '@/components/kpi/SaplingKpiBreakdown.vue'
 import SaplingKpiComparison from '@/components/kpi/SaplingKpiComparison.vue'

@@ -30,6 +30,11 @@
   border-radius: var(--sapling-panel-radius-compact);
 }
 
+/* Opaque backing keeps forms readable; the tint carries the brand into dialogs. */
+.sapling-dialog-card.sapling-surface--solid {
+  background: var(--sapling-dialog-surface), rgb(var(--v-theme-surface));
+}
+
 .sapling-dialog-shell {
   overflow: hidden;
 }
