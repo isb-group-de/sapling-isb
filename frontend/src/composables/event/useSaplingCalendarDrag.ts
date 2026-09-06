@@ -50,6 +50,16 @@ export function useSaplingCalendarDrag(options: UseSaplingCalendarDragOptions) {
   const extendOriginal = ref<number | null>(null)
   const suppressNextEventClick = ref(false)
   const dragSnapshots = ref<CalendarDragSnapshot[]>([])
+  let clickSuppressionTimer: ReturnType<typeof setTimeout> | undefined
+
+  function suppressPointerClick() {
+    suppressNextEventClick.value = true
+    clearTimeout(clickSuppressionTimer)
+    // Mouseup can happen on empty space, so a follow-up event click is not guaranteed.
+    clickSuppressionTimer = setTimeout(() => {
+      suppressNextEventClick.value = false
+    }, 0)
+  }
 
   const isCalendarDragActive = computed(
     () => dragEvent.value != null || createEvent.value != null || extendOriginal.value != null,
@@ -168,7 +178,7 @@ export function useSaplingCalendarDrag(options: UseSaplingCalendarDragOptions) {
         wasResized,
       })
       options.showEditDialog.value = true
-      suppressNextEventClick.value = true
+      suppressPointerClick()
     } else if (wasDragged || wasResized) {
       const draggedEvent = dragEvent.value ?? createEvent.value
       const forcedDirtyFields = getCalendarInteractionForcedDirtyFields({
@@ -179,7 +189,7 @@ export function useSaplingCalendarDrag(options: UseSaplingCalendarDragOptions) {
       if (draggedEvent) {
         void options.openPersistedEventEditor(draggedEvent, forcedDirtyFields)
       }
-      suppressNextEventClick.value = true
+      suppressPointerClick()
     }
 
     resetPointerState()
@@ -225,6 +235,7 @@ export function useSaplingCalendarDrag(options: UseSaplingCalendarDragOptions) {
   }
 
   function cancelDrag() {
+    restoreDragSnapshot()
     if (createEvent.value) {
       if (extendOriginal.value != null) {
         createEvent.value.end = extendOriginal.value

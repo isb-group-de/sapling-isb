@@ -609,12 +609,14 @@ describe('useSaplingDialogEdit', () => {
     expect(vm.selectedFormConfigLabel).toBe('Default view')
     expect(vm.formConfigMenuItems.find((item) => item.handle === 7)?.active).toBe(true)
     expect(vm.visibleTemplates[0]?.formConfig?.label).toBe('Default title')
+    expect(listFormConfigsMock).toHaveBeenCalledTimes(1)
 
     vm.selectFormConfig(null)
-    await nextTick()
+    await flushPromises()
 
     expect(vm.selectedFormConfigLabel).toBe('')
     expect(vm.formConfigMenuItems.find((item) => item.handle === null)?.active).toBe(true)
+    expect(listFormConfigsMock).toHaveBeenCalledTimes(1)
 
     await wrapper.setProps({ modelValue: false })
     await nextTick()

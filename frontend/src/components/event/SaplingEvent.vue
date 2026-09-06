@@ -48,6 +48,9 @@
             v-model:calendar-view-mode="calendarViewMode"
             v-model:calendar-mode="calendarMode"
             v-model:event-overlap-mode="eventOverlapMode"
+            v-model:open-click-mode="openClickMode"
+            v-model:create-click-mode="createClickMode"
+            v-model:drag-click-mode="dragClickMode"
             v-model:linked-scrolling="linkedScrolling"
             v-model:time-grid-scale="timeGridScale"
             v-model:time-range-mode="timeRangeMode"
@@ -68,7 +71,10 @@
             @sync-calendar="syncExternalCalendar"
           />
 
+          <v-progress-linear v-if="isOpeningEvent" indeterminate color="primary" />
+
           <div
+            :aria-busy="isOpeningEvent"
             ref="calendarScrollContainer"
             data-tutorial="calendar-grid"
             class="sapling-calendar-frame sapling-event-calendar-body"
@@ -76,6 +82,9 @@
             <SaplingEventCalendarWorkspace
               v-model="value"
               :calendar-view-mode="calendarViewMode"
+              :open-click-mode="openClickMode"
+              :create-click-mode="createClickMode"
+              :drag-click-mode="dragClickMode"
               :linked-scrolling="linkedScrolling"
               :event-overlap-mode="eventOverlapMode"
               :interval-height="calendarIntervalHeight"
@@ -423,11 +432,15 @@ const {
   goToPrevious,
   goToToday,
   handleUpdateConflictVisibility,
+  isOpeningEvent,
   isCalendarDragActive,
   isLoading,
   isRefreshingCalendar,
   isSyncingExternalCalendar,
   isNarrowScreen,
+  openClickMode,
+  createClickMode,
+  dragClickMode,
   linkedScrolling,
   timeGridScale,
   timeRangeMode,

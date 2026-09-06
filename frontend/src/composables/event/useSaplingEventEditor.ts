@@ -48,6 +48,7 @@ export function useSaplingEventEditor(options: UseSaplingEventEditorOptions) {
   })
   const detachOccurrenceContext = ref<DetachOccurrenceContext | null>(null)
   const isDetachingOccurrence = computed(() => detachOccurrenceContext.value !== null)
+  const isOpeningEvent = ref(false)
   let lastAutoOpenedEventHandle: string | null = null
 
   async function openEventEditor(event: CalendarEvent) {
@@ -356,6 +357,7 @@ export function useSaplingEventEditor(options: UseSaplingEventEditorOptions) {
     calendarEvent: CalendarEvent,
     forcedDirtyFields: string[],
   ) {
+    if (isOpeningEvent.value) return
     if (isRecurringCalendarEvent(calendarEvent)) {
       recurrenceEditScopeDialog.value = {
         visible: true,
@@ -420,62 +422,71 @@ export function useSaplingEventEditor(options: UseSaplingEventEditorOptions) {
     scope: 'series' | 'occurrence',
     loadedPersistedEvent?: EventItem | null,
   ) {
-    const handle = getCalendarEventHandle(calendarEvent)
-    const persistedEvent =
-      loadedPersistedEvent === undefined
-        ? handle == null
-          ? null
-          : await options.loadPersistedEvent(handle)
-        : loadedPersistedEvent
-    const baseEvent = persistedEvent
-      ? toCalendarEvent(persistedEvent)
-      : isRecurringCalendarEvent(calendarEvent) && calendarEvent.event
-        ? toCalendarEvent(calendarEvent.event as EventItem)
-        : calendarEvent
+    if (isOpeningEvent.value) return
+    isOpeningEvent.value = true
+    try {
+      const handle = getCalendarEventHandle(calendarEvent)
+      const persistedEvent =
+        loadedPersistedEvent === undefined
+          ? handle == null
+            ? null
+            : await options.loadPersistedEvent(handle)
+          : loadedPersistedEvent
+      const baseEvent = persistedEvent
+        ? toCalendarEvent(persistedEvent)
+        : isRecurringCalendarEvent(calendarEvent) && calendarEvent.event
+          ? toCalendarEvent(calendarEvent.event as EventItem)
+          : calendarEvent
 
-    if (scope === 'occurrence' && persistedEvent && handle != null) {
-      const occurrence = calendarEvent as CalendarEvent & {
-        recurrenceOccurrenceStart?: string
+      if (scope === 'occurrence' && persistedEvent && handle != null) {
+        const occurrence = calendarEvent as CalendarEvent & {
+          recurrenceOccurrenceStart?: string
+        }
+        if (!occurrence.recurrenceOccurrenceStart) {
+          return
+        }
+        const detachedItem: EventItem = {
+          ...persistedEvent,
+          handle: undefined,
+          recurrenceRule: null,
+          recurrenceExceptionDates: [],
+          startDate: new Date(calendarEvent.start),
+          endDate: new Date(calendarEvent.end),
+        }
+        options.editEvent.value = {
+          ...toCalendarEvent(detachedItem),
+          start: calendarEvent.start,
+          end: calendarEvent.end,
+        }
+        detachOccurrenceContext.value = {
+          seriesHandle: handle,
+          occurrenceStart: occurrence.recurrenceOccurrenceStart,
+          expectedUpdatedAt: normalizeConcurrencyTimestamp(persistedEvent.updatedAt) ?? undefined,
+        }
+      } else {
+        detachOccurrenceContext.value = null
+        options.editEvent.value = isRecurringCalendarEvent(calendarEvent)
+          ? applyRecurringInteractionToSeries(baseEvent, calendarEvent, forcedDirtyFields)
+          : { ...baseEvent, start: calendarEvent.start, end: calendarEvent.end }
       }
-      if (!occurrence.recurrenceOccurrenceStart) {
-        return
+      applyCalendarEventDateParts(options.editEvent.value)
+      options.forceEditDialogDirtyFields.value = forcedDirtyFields
+      if (forcedDirtyFields.length === 0) {
+        options.clearDragSnapshot()
       }
-      const detachedItem: EventItem = {
-        ...persistedEvent,
-        handle: undefined,
-        recurrenceRule: null,
-        recurrenceExceptionDates: [],
-        startDate: new Date(calendarEvent.start),
-        endDate: new Date(calendarEvent.end),
+      // Opening the editor synchronizes the handle into the route. Mark this
+      // handle as handled before the route watcher runs, otherwise it opens the
+      // same record a second time and clears calendar-interaction dirty fields.
+      if (handle != null) {
+        lastAutoOpenedEventHandle = String(handle)
       }
-      options.editEvent.value = {
-        ...toCalendarEvent(detachedItem),
-        start: calendarEvent.start,
-        end: calendarEvent.end,
-      }
-      detachOccurrenceContext.value = {
-        seriesHandle: handle,
-        occurrenceStart: occurrence.recurrenceOccurrenceStart,
-        expectedUpdatedAt: normalizeConcurrencyTimestamp(persistedEvent.updatedAt) ?? undefined,
-      }
-    } else {
-      detachOccurrenceContext.value = null
-      options.editEvent.value = isRecurringCalendarEvent(calendarEvent)
-        ? applyRecurringInteractionToSeries(baseEvent, calendarEvent, forcedDirtyFields)
-        : { ...baseEvent, start: calendarEvent.start, end: calendarEvent.end }
+      options.showEditDialog.value = true
+    } catch {
+      // The shared API handler reports the error; keep the calendar dates intact.
+      options.restoreDragSnapshot()
+    } finally {
+      isOpeningEvent.value = false
     }
-    applyCalendarEventDateParts(options.editEvent.value)
-    options.forceEditDialogDirtyFields.value = forcedDirtyFields
-    if (forcedDirtyFields.length === 0) {
-      options.clearDragSnapshot()
-    }
-    // Opening the editor synchronizes the handle into the route. Mark this
-    // handle as handled before the route watcher runs, otherwise it opens the
-    // same record a second time and clears calendar-interaction dirty fields.
-    if (handle != null) {
-      lastAutoOpenedEventHandle = String(handle)
-    }
-    options.showEditDialog.value = true
   }
 
   function applyRecurringInteractionToSeries(
@@ -559,6 +570,7 @@ export function useSaplingEventEditor(options: UseSaplingEventEditorOptions) {
   }
 
   return {
+    isOpeningEvent,
     chooseRecurrenceEditOccurrence,
     chooseRecurrenceEditSeries,
     closeRecurrenceEditScopeDialog,

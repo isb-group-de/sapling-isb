@@ -41,6 +41,7 @@ function openCallDialog() {
     entityHandle: props.entityHandle,
     itemHandle: props.itemHandle,
     draftValues: props.item,
+    entityTemplates: props.entityTemplates,
     phoneNumber: formattedPhoneNumber.value,
     recordLabel: recordLabel.value,
   })

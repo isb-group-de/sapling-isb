@@ -210,6 +210,18 @@
 
 .sapling-event-toolbar__overflow-menu {
   min-width: 240px;
+  max-width: min(360px, calc(100vw - 24px));
+  background: rgb(var(--v-theme-surface-bright));
+  color: rgb(var(--v-theme-on-surface));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.sapling-event-toolbar__overflow-menu .v-list-item-subtitle {
+  display: block;
+  overflow: visible;
+  -webkit-line-clamp: unset;
+  white-space: normal;
 }
 
 .sapling-event-toolbar__overflow-divider {

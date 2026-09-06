@@ -26,7 +26,7 @@
     @change="props.getEvents"
     @mousedown:event="onEventMouseDown"
     @mousedown:time="onTimeMouseDown"
-    @mouseleave="props.cancelDrag"
+    @mouseleave="clicks.cancel"
     @mousemove:time="onTimeMouseMove"
     @mouseup:time="onTimeMouseUp"
   >
@@ -76,8 +76,7 @@
               :role="isInteractiveEvent(event) ? 'button' : undefined"
               :tabindex="isInteractiveEvent(event) ? 0 : undefined"
               @mousedown.left="onEventCardMouseDown($event, event)"
-              @pointerup="onEventCardPointerUp($event, event)"
-              @click.left.stop="onEventClick(event)"
+              @click.left.stop="onEventClick($event, event)"
               @contextmenu.stop.prevent="onEventContextMenu($event, event)"
               @keydown.enter.stop.prevent="onEventActivate(event)"
               @keydown.space.stop.prevent="onEventActivate(event)"
@@ -128,7 +127,8 @@
                 v-if="shouldShowResizeHandle(event)"
                 class="sapling-calendar-event-card__resize v-event-drag-bottom"
                 type="button"
-                @mousedown.left.stop="onEventResizeMouseDown(event)"
+                @mousedown.left.stop="onEventResizeMouseDown($event, event)"
+                @click.stop
               >
                 <span class="sapling-calendar-event-card__resize-grip" aria-hidden="true"></span>
               </button>
@@ -150,6 +150,8 @@
 </template>
 
 <script lang="ts" setup>
+import type { CalendarClickMode } from '@/composables/event/eventCalendarPreferences'
+import { useSaplingCalendarClicks } from '@/composables/event/useSaplingCalendarClicks'
 import { computed, ref, shallowRef, watch } from 'vue'
 import { VCalendar } from 'vuetify/components'
 import type { CSSProperties } from 'vue'
@@ -195,6 +197,9 @@ const props = withDefaults(
     firstTime: number
     intervalCount: number
     calendarWeekdays?: number[]
+    openClickMode?: CalendarClickMode
+    createClickMode?: CalendarClickMode
+    dragClickMode?: CalendarClickMode
     isDragActive?: boolean
     isTooltipBlocked?: boolean
     workHours: WorkHourWeekItem | null
@@ -218,6 +223,9 @@ const props = withDefaults(
   {
     calendarWeekdays: undefined,
     calendarClass: '',
+    openClickMode: 'single',
+    createClickMode: 'single',
+    dragClickMode: 'single',
     isDragActive: false,
     isTooltipBlocked: false,
     showResizeHandle: false,
@@ -231,6 +239,17 @@ const emit = defineEmits<{
 const calendarValue = computed({
   get: () => props.modelValue,
   set: (value: string) => emit('update:modelValue', value),
+})
+const clicks = useSaplingCalendarClicks({
+  openClickMode: () => props.openClickMode,
+  createClickMode: () => props.createClickMode,
+  dragClickMode: () => props.dragClickMode,
+  openEvent: onEventActivate,
+  startDrag: (...args) => props.startDrag(...args),
+  startTime: (...args) => props.startTime(...args),
+  mouseMove: (...args) => props.mouseMove(...args),
+  endDrag: () => props.endDrag(),
+  cancelDrag: () => props.cancelDrag(),
 })
 const hasAllDayEvents = computed(() => props.events.some((event) => !event.timed))
 const activeTooltipEvent = shallowRef<CalendarEvent | null>(null)
@@ -397,23 +416,13 @@ function onEventActivate(event: CalendarEvent) {
 
 function onEventCardMouseDown(nativeEvent: MouseEvent, event: CalendarEvent) {
   if (!isDraggableEvent(event)) {
+    clicks.eventDown(nativeEvent, { event, timed: false })
     nativeEvent.stopPropagation()
   }
 }
 
-function onEventCardPointerUp(nativeEvent: PointerEvent, event: CalendarEvent) {
-  if (!nativeEvent.isPrimary || isDraggableEvent(event) || !isInteractiveEvent(event)) {
-    return
-  }
-
-  nativeEvent.stopPropagation()
-  onEventActivate(event)
-}
-
-function onEventClick(event: CalendarEvent) {
-  if (isDraggableEvent(event)) {
-    onEventActivate(event)
-  }
+function onEventClick(nativeEvent: MouseEvent, event: CalendarEvent) {
+  if (isInteractiveEvent(event)) clicks.eventClick(nativeEvent, event)
 }
 
 function onEventContextMenu(nativeEvent: MouseEvent, event: CalendarEvent) {
@@ -438,7 +447,7 @@ function onEventMouseDown(nativeEvent: Event, payload: { event: CalendarEvent; t
     return
   }
 
-  props.startDrag(nativeEvent, payload)
+  clicks.eventDown(nativeEvent as MouseEvent, payload)
 }
 
 function onTimeMouseDown(nativeEvent: Event, timeSlot: CalendarDateItem) {
@@ -448,12 +457,12 @@ function onTimeMouseDown(nativeEvent: Event, timeSlot: CalendarDateItem) {
     return
   }
 
-  props.startTime(nativeEvent, timeSlot)
+  clicks.timeMouseDown(nativeEvent as MouseEvent, timeSlot)
 }
 
-function onEventResizeMouseDown(event: CalendarEvent) {
+function onEventResizeMouseDown(nativeEvent: MouseEvent, event: CalendarEvent) {
   suppressEventTooltip()
-  props.extendBottom(event)
+  clicks.beginResize(nativeEvent, () => props.extendBottom(event))
 }
 
 function onTimeMouseMove(nativeEvent: Event, timeSlot: CalendarDateItem) {
@@ -461,7 +470,7 @@ function onTimeMouseMove(nativeEvent: Event, timeSlot: CalendarDateItem) {
     return
   }
 
-  props.mouseMove(nativeEvent, timeSlot)
+  clicks.timeMouseMove(nativeEvent as MouseEvent, timeSlot)
 }
 
 function onTimeMouseUp(nativeEvent: Event) {
@@ -469,7 +478,7 @@ function onTimeMouseUp(nativeEvent: Event) {
     return
   }
 
-  props.endDrag()
+  clicks.timeMouseUp(nativeEvent as MouseEvent)
 }
 
 function isRecurringOccurrence(event: CalendarEvent) {

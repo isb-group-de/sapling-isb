@@ -117,6 +117,18 @@ describe('useSaplingCalendarDrag', () => {
     expect(event.end).toBe(originalEnd)
   })
 
+  it('expires click suppression when mouseup had no following event click', async () => {
+    const harness = createHarness()
+    const event = createPersistedEvent()
+    harness.events.value.push(event as SaplingCalendarEvent)
+    harness.drag.startDrag(new Event('mousedown'), { event, timed: true })
+    harness.drag.startTime(new Event('mousedown'), createTimeSlot(9))
+    harness.drag.mouseMove(new Event('mousemove'), createTimeSlot(10))
+    harness.drag.endDrag()
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    expect(harness.drag.consumeSuppressedEventClick()).toBe(false)
+  })
+
   it('leaves a pure click on an existing event to the normal click handler', () => {
     const harness = createHarness()
     const event = createPersistedEvent()

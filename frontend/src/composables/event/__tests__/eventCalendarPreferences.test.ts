@@ -17,6 +17,10 @@ describe('eventCalendarPreferences', () => {
 
   it('stores and restores the supported calendar preferences', () => {
     const preferences = {
+      ...DEFAULT_EVENT_CALENDAR_PREFERENCES,
+      openClickMode: 'double' as const,
+      createClickMode: 'double' as const,
+      dragClickMode: 'double' as const,
       calendarType: 'day' as const,
       calendarViewMode: 'sidebyside' as const,
       calendarMode: 'extended' as const,

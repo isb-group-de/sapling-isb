@@ -102,6 +102,9 @@ export function useSaplingEvent() {
   const eventOverlapMode = ref<CalendarEventOverlapMode>(
     initialCalendarPreferences.eventOverlapMode,
   )
+  const openClickMode = ref(initialCalendarPreferences.openClickMode)
+  const createClickMode = ref(initialCalendarPreferences.createClickMode)
+  const dragClickMode = ref(initialCalendarPreferences.dragClickMode)
   const linkedScrolling = ref(initialCalendarPreferences.linkedScrolling)
   const timeGridScale = ref(initialCalendarPreferences.timeGridScale)
   const timeRangeMode = ref(initialCalendarPreferences.timeRangeMode)
@@ -254,6 +257,7 @@ export function useSaplingEvent() {
     reloadUpdateConflictRecord,
     updateConflictDialog,
     recurrenceEditScopeDialog,
+    isOpeningEvent,
     isDetachingOccurrence,
   } = eventEditor
   const {
@@ -412,6 +416,9 @@ export function useSaplingEvent() {
       calendarViewMode,
       calendarMode,
       eventOverlapMode,
+      openClickMode,
+      createClickMode,
+      dragClickMode,
       linkedScrolling,
       timeGridScale,
       timeRangeMode,
@@ -427,6 +434,9 @@ export function useSaplingEvent() {
         calendarViewMode: preferredCalendarViewMode.value,
         calendarMode: calendarMode.value,
         eventOverlapMode: eventOverlapMode.value,
+        openClickMode: openClickMode.value,
+        createClickMode: createClickMode.value,
+        dragClickMode: dragClickMode.value,
         linkedScrolling: linkedScrolling.value,
         timeGridScale: timeGridScale.value,
         timeRangeMode: timeRangeMode.value,
@@ -519,6 +529,7 @@ export function useSaplingEvent() {
     eventContextMenuTarget,
     materializeRecurrenceDialog,
     recurrenceEditScopeDialog,
+    isOpeningEvent,
     isDetachingOccurrence,
     editEvent,
     entityEvent,
@@ -542,6 +553,9 @@ export function useSaplingEvent() {
     isRefreshingCalendar,
     isSyncingExternalCalendar,
     isNarrowScreen,
+    openClickMode,
+    createClickMode,
+    dragClickMode,
     linkedScrolling,
     timeGridScale,
     timeRangeMode,

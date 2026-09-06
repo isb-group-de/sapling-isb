@@ -69,8 +69,6 @@ export function useSaplingRelationTableLoader(context: {
       await genericStore.loadGenericMany(relationLoadRequests)
     }
 
-    await preloadRelationValueReferenceMetadata()
-
     for (const template of relationTemplates.value) {
       const tableState = getRelationTableState(template.name)
       const state = genericStore.getState(template.referenceName ?? '')
@@ -80,9 +78,11 @@ export function useSaplingRelationTableLoader(context: {
     }
   }
 
-  async function preloadRelationValueReferenceMetadata(): Promise<void> {
+  async function preloadRelationValueReferenceMetadata(
+    activeTemplates: EntityTemplate[],
+  ): Promise<void> {
     const permissions = options.permissions.value ?? []
-    const relationEntityTemplates = relationTemplates.value.flatMap((template) => {
+    const relationEntityTemplates = activeTemplates.flatMap((template) => {
       const templates = genericStore.getState(template.referenceName ?? '').entityTemplates
       const projectedFields = getListProjectionFieldNames(templates, permissions)
       const rootRelations = [
@@ -145,6 +145,9 @@ export function useSaplingRelationTableLoader(context: {
     relState.isLoading = true
 
     try {
+      // Hidden relation tabs do not need their nested display-label metadata yet.
+      await preloadRelationValueReferenceMetadata([template])
+      if (relationTableRequestId.value[template.name] !== requestId) return
       const filter: Record<string, unknown> = {}
       if (options.item.value && (template.mappedBy || template.inversedBy)) {
         const itemHandle = options.getItemHandle(options.item.value)

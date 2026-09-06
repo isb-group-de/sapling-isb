@@ -74,6 +74,7 @@ function onPhoneClick() {
       entityHandle: props.entityHandle,
       itemHandle: props.itemHandle,
       draftValues: props.draftValues,
+      entityTemplates: props.entityTemplates,
       phoneNumber: formattedValue,
       recordLabel: recordLabel.value,
     })

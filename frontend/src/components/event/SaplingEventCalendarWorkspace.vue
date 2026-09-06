@@ -2,6 +2,9 @@
   <template v-if="calendarViewMode === 'single'">
     <SaplingEventCalendar
       v-model="calendarValue"
+      :open-click-mode="openClickMode"
+      :create-click-mode="createClickMode"
+      :drag-click-mode="dragClickMode"
       :events="events"
       :calendar-display-type="calendarDisplayType"
       :event-overlap-mode="eventOverlapMode"
@@ -50,6 +53,9 @@
           <div class="sapling-fill-shell sapling-event-sidebyside-column__calendar">
             <SaplingEventCalendar
               v-model="calendarValue"
+              :open-click-mode="openClickMode"
+              :create-click-mode="createClickMode"
+              :drag-click-mode="dragClickMode"
               :events="getSideBySideEvents(personId)"
               :calendar-display-type="calendarDisplayType"
               :event-overlap-mode="eventOverlapMode"
@@ -84,6 +90,7 @@
 </template>
 
 <script lang="ts" setup>
+import type { CalendarClickMode } from '@/composables/event/eventCalendarPreferences'
 import { computed, toRef } from 'vue'
 import type { CSSProperties } from 'vue'
 import type { WorkHourWeekItem } from '@/entity/entity'
@@ -112,6 +119,9 @@ type CalendarViewMode = 'single' | 'sidebyside'
 const props = defineProps<{
   modelValue: string
   calendarViewMode: CalendarViewMode
+  openClickMode: CalendarClickMode
+  createClickMode: CalendarClickMode
+  dragClickMode: CalendarClickMode
   linkedScrolling: boolean
   events: CalendarEvent[]
   calendarDisplayType: CalendarDisplayType

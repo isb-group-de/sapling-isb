@@ -69,6 +69,37 @@
             >
               <template v-if="$vuetify.display.mdAndUp">{{ translate('phoneCall.call') }}</template>
             </v-btn>
+            <v-menu
+              v-if="canComposeEmail"
+              :disabled="emailRecipients.length === 1"
+              location="top end"
+            >
+              <template #activator="{ props: activatorProps }">
+                <v-btn
+                  v-bind="activatorProps"
+                  color="primary"
+                  variant="tonal"
+                  prepend-icon="mdi-email-outline"
+                  :aria-label="translate('mail.compose')"
+                  :title="translate('mail.compose')"
+                  :disabled="isSaving"
+                  @click="emailRecipients.length === 1 && composeEmail(emailRecipients[0])"
+                >
+                  <template v-if="$vuetify.display.mdAndUp">{{
+                    translate('mail.compose')
+                  }}</template>
+                </v-btn>
+              </template>
+              <v-list class="glass-panel" density="compact">
+                <v-list-item
+                  v-for="email in emailRecipients"
+                  :key="email"
+                  :title="email"
+                  prepend-icon="mdi-email-outline"
+                  @click="composeEmail(email)"
+                />
+              </v-list>
+            </v-menu>
             <v-btn
               color="primary"
               prepend-icon="mdi-content-save"
@@ -107,6 +138,7 @@ import { useTranslationLoader } from '@/composables/generic/useTranslationLoader
 import type { PhoneCallItem } from '@/entity/entity'
 import ApiGenericService from '@/services/api.generic.service'
 import { useCurrentPersonStore } from '@/stores/currentPersonStore'
+import { useCurrentPermissionStore } from '@/stores/currentPermissionStore'
 import { useSaplingMessageCenter } from '@/composables/system/useSaplingMessageCenter'
 import {
   clearSaplingDialogDraft,
@@ -118,13 +150,15 @@ import {
 } from '@/composables/dialog/saplingDialogDraftStorage'
 
 const { t, te } = useI18n()
-const { isOpen, context, closePhoneDialog } = useSaplingPhoneDialog()
+const { isOpen, context, closePhoneDialog, emailRecipients, composeEmail } = useSaplingPhoneDialog()
 const currentPersonStore = useCurrentPersonStore()
+const currentPermissionStore = useCurrentPermissionStore()
 const { pushMessage } = useSaplingMessageCenter()
 const { isLoading: isTranslationLoading, loadTranslations } = useTranslationLoader(
   'global',
   'navigation',
   'phoneCall',
+  'mail',
 )
 const { formatPhoneNumber } = useSaplingPhoneNumber()
 
@@ -141,6 +175,14 @@ const hasEntityContext = computed(
   () => typeof context.value?.entityHandle === 'string' && context.value.entityHandle.length > 0,
 )
 const canCall = computed(() => hasPhoneNumber.value)
+const canComposeEmail = computed(
+  () =>
+    emailRecipients.value.length > 0 &&
+    currentPermissionStore.accumulatedPermission?.some(
+      (permission) =>
+        permission.entityHandle === context.value?.entityHandle && permission.allowRead === true,
+    ) === true,
+)
 const canSave = computed(
   () => hasPhoneNumber.value && hasSavedRecord.value && hasEntityContext.value && !isSaving.value,
 )
@@ -177,7 +219,11 @@ watch(
     const requestId = ++restoreRequestId
     if (open) {
       const route = getCurrentDialogDraftRoute()
-      await Promise.all([loadTranslations(), currentPersonStore.fetchCurrentPerson()])
+      await Promise.all([
+        loadTranslations(),
+        currentPersonStore.fetchCurrentPerson(),
+        currentPermissionStore.fetchCurrentPermission(),
+      ])
       if (requestId !== restoreRequestId || !isOpen.value) {
         return
       }

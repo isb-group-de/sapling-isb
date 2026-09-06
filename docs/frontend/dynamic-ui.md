@@ -1,5 +1,12 @@
 # Frontend Dynamic UI
 
+Record-dialog initialization loads the current person, permissions, form
+configurations and system templates concurrently. Loading or selecting a form
+configuration updates the effective layout without fetching the configurations
+again. Relation tabs load their nested display-label metadata only when their
+rows are requested; unopened tabs do not block the initial form on those
+additional metadata requests.
+
 Saved generic records also expose [record merging](../features/record-merging.md)
 through their action menu. Its field comparison component is shared with the
 concurrent-update conflict dialog.
@@ -865,6 +872,16 @@ full table views and other existing consumers do not opt out accidentally.
 Glass dialog cards and reference dropdown surfaces paint their outer blur on a sibling
 underlay. This avoids creating an ancestor Backdrop Root, allowing sticky table headers
 and action columns to blur scrolling rows consistently inside overlays as well as pages.
+The shared `.sapling-table` shell clips rounded corners with `border-radius` and
+`overflow: hidden`. Do not add `clip-path`, masks, or filters to this ancestor:
+they create a Backdrop Root and break the blur behind sticky headers, selection
+checkboxes, and action cells. Verify both horizontal and vertical scrolling on
+a page table and an embedded relation table when changing this clipping.
+In glass mode, sticky selection and action cells paint their blur on a separate
+pseudo-element. Only that underlay is masked over `--sapling-gap-md` at the
+content-facing edge, blending from clear content to blur without fading controls
+or creating a Backdrop Root on the cell itself. Browsers without mask support
+retain the full-cell blur; solid mode keeps its existing opaque cells.
 Compact `v-btn-toggle` controls use `sapling-segmented-toggle`; only the shared
 `--small` and `--field` modifiers may change their height to match a compact
 helper row or a full-height form control.

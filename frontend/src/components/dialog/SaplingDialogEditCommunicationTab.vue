@@ -114,6 +114,7 @@ import { useTranslationLoader } from '@/composables/generic/useTranslationLoader
 import { useSaplingTable } from '@/composables/table/useSaplingTable'
 import type { SaplingMailMenuAction } from '@/composables/context/useSaplingContextMenuTable'
 import type { SaplingGenericItem } from '@/entity/entity'
+import type { EntityTemplate } from '@/entity/structure'
 
 const SaplingTable = defineAsyncComponent(() => import('@/components/table/SaplingTable.vue'))
 
@@ -123,6 +124,7 @@ const props = withDefaults(
     item: SaplingGenericItem | null
     draftValues?: Record<string, unknown>
     recordEntityHandle: string
+    recordEntityTemplates?: EntityTemplate[]
     canCreate: boolean
     phoneNumber?: string
     emailActions?: SaplingMailMenuAction[]
@@ -257,6 +259,7 @@ function createCommunication(mailAction?: SaplingMailMenuAction) {
       entityHandle: props.recordEntityHandle,
       itemHandle: referenceHandle.value,
       draftValues: props.draftValues,
+      entityTemplates: props.recordEntityTemplates,
       recordLabel: props.recordLabel,
     })
     return

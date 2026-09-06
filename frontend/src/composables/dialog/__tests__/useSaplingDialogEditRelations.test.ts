@@ -150,6 +150,7 @@ describe('useSaplingDialogEditRelations', () => {
     })
 
     await relations.initializeRelationTables()
+    expect(loadGenericManyMock).toHaveBeenCalledTimes(1)
     await relations.ensureRelationTableItems('positions')
 
     expect(loadGenericManyMock).toHaveBeenNthCalledWith(2, [

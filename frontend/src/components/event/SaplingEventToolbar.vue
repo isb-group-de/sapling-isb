@@ -217,8 +217,19 @@
           </v-btn-toggle>
         </div>
 
-        <div v-if="hasOverflowActions" class="sapling-event-toolbar__overflow">
-          <v-menu location="bottom end" offset="8">
+        <div
+          v-if="hasOverflowActions"
+          ref="overflowMenuAnchor"
+          class="sapling-event-toolbar__overflow"
+        >
+          <v-menu
+            location="bottom end"
+            origin="top end"
+            offset="8"
+            :max-height="overflowMenuMaxHeight"
+            :close-on-content-click="false"
+            @update:model-value="updateOverflowMenuHeight"
+          >
             <template #activator="{ props }">
               <v-btn
                 v-bind="props"
@@ -229,7 +240,54 @@
               />
             </template>
 
-            <SaplingSurface :as="VList" class="sapling-event-toolbar__overflow-menu">
+            <SaplingSurface
+              :as="VList"
+              variant="solid"
+              density="compact"
+              nav
+              class="sapling-event-toolbar__overflow-menu"
+            >
+              <v-list-item>
+                <v-list-item-title>{{ $t('calendar.openRecord') }}</v-list-item-title>
+                <v-btn-toggle
+                  v-model="openClickMode"
+                  class="sapling-segmented-toggle"
+                  density="compact"
+                  mandatory
+                  :aria-label="$t('calendar.openRecord')"
+                >
+                  <v-btn value="single" variant="tonal">{{ $t('calendar.singleClick') }}</v-btn>
+                  <v-btn value="double" variant="tonal">{{ $t('calendar.doubleClick') }}</v-btn>
+                </v-btn-toggle>
+              </v-list-item>
+              <v-list-item>
+                <v-list-item-title>{{ $t('calendar.createAppointment') }}</v-list-item-title>
+                <v-btn-toggle
+                  v-model="createClickMode"
+                  class="sapling-segmented-toggle"
+                  density="compact"
+                  mandatory
+                  :aria-label="$t('calendar.createAppointment')"
+                >
+                  <v-btn value="single" variant="tonal">{{ $t('calendar.singleClick') }}</v-btn>
+                  <v-btn value="double" variant="tonal">{{ $t('calendar.doubleClick') }}</v-btn>
+                </v-btn-toggle>
+              </v-list-item>
+              <v-list-item>
+                <v-list-item-title>{{ $t('calendar.dragAppointments') }}</v-list-item-title>
+                <v-btn-toggle
+                  v-model="dragClickMode"
+                  class="sapling-segmented-toggle"
+                  density="compact"
+                  mandatory
+                  :aria-label="$t('calendar.dragAppointments')"
+                >
+                  <v-btn value="single" variant="tonal">{{ $t('calendar.singleClick') }}</v-btn>
+                  <v-btn value="double" variant="tonal">{{ $t('calendar.doubleClick') }}</v-btn>
+                </v-btn-toggle>
+              </v-list-item>
+              <v-list-item :subtitle="$t('calendar.dragClickHint')" />
+              <v-divider class="sapling-event-toolbar__overflow-divider" />
               <v-list-subheader>{{ $t('calendar.timeGridHeight') }}</v-list-subheader>
               <v-list-item
                 prepend-icon="mdi-arrow-collapse-vertical"
@@ -270,6 +328,7 @@
               />
 
               <template v-if="showViewOverflow">
+                <v-list-subheader>{{ $t('calendar.viewLayout') }}</v-list-subheader>
                 <v-list-item
                   prepend-icon="mdi-call-merge"
                   :active="calendarViewModeModel === 'single'"
@@ -306,6 +365,7 @@
               />
 
               <template v-if="showModeOverflow">
+                <v-list-subheader>{{ $t('calendar.displayMode') }}</v-list-subheader>
                 <v-list-item
                   prepend-icon="mdi-perspective-less"
                   :active="calendarModeModel === 'default'"
@@ -328,6 +388,7 @@
               />
 
               <template v-if="showDataActionsOverflow">
+                <v-list-subheader>{{ $t('calendar.dataActions') }}</v-list-subheader>
                 <v-list-item
                   prepend-icon="mdi-refresh"
                   :disabled="isRefreshing"
@@ -351,6 +412,7 @@
               />
 
               <template v-if="showArrangementOverflow">
+                <v-list-subheader>{{ $t('calendar.eventArrangement') }}</v-list-subheader>
                 <v-list-item
                   prepend-icon="mdi-layers-outline"
                   :active="eventOverlapModeModel === 'stack'"
@@ -373,6 +435,7 @@
               />
 
               <template v-if="showTypeOverflow">
+                <v-list-subheader>{{ $t('calendar.viewPeriod') }}</v-list-subheader>
                 <v-list-item
                   v-for="type in calendarTypeOptions"
                   :key="type"
@@ -397,6 +460,7 @@ import { useI18n } from 'vue-i18n'
 import { VList } from 'vuetify/components'
 import SaplingSurface from '@/components/common/SaplingSurface.vue'
 import type {
+  CalendarClickMode,
   CalendarTimeGridScale,
   CalendarTimeRangeMode,
 } from '@/composables/event/eventCalendarPreferences'
@@ -436,6 +500,9 @@ const props = defineProps<{
   periodIcon: string
 }>()
 
+const openClickMode = defineModel<CalendarClickMode>('openClickMode', { default: 'single' })
+const createClickMode = defineModel<CalendarClickMode>('createClickMode', { default: 'single' })
+const dragClickMode = defineModel<CalendarClickMode>('dragClickMode', { default: 'single' })
 const { t } = useI18n()
 
 const emit = defineEmits<{
@@ -490,6 +557,8 @@ const timeRangeModeModel = computed({
 })
 
 const toolbarElement = ref<HTMLElement | null>(null)
+const overflowMenuAnchor = ref<HTMLElement | null>(null)
+const overflowMenuMaxHeight = ref(480)
 const toolbarWidth = ref(Number.POSITIVE_INFINITY)
 const pickerMenuOpen = ref(false)
 const pickerYear = ref(resolvePickerDate(props.modelValue).getFullYear())
@@ -575,6 +644,8 @@ const calendarTypeIcons: Record<CalendarType, string> = {
 
 onMounted(() => {
   updateToolbarWidth()
+  window.addEventListener('resize', updateOverflowMenuHeight)
+  window.visualViewport?.addEventListener('resize', updateOverflowMenuHeight)
 
   if (typeof ResizeObserver !== 'undefined' && toolbarElement.value) {
     toolbarResizeObserver = new ResizeObserver(updateToolbarWidth)
@@ -583,6 +654,8 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  window.removeEventListener('resize', updateOverflowMenuHeight)
+  window.visualViewport?.removeEventListener('resize', updateOverflowMenuHeight)
   toolbarResizeObserver?.disconnect()
   toolbarResizeObserver = null
 })
@@ -606,10 +679,21 @@ function onDatePicked(value: unknown) {
 }
 
 function updateToolbarWidth() {
+  updateOverflowMenuHeight()
   const nextWidth = toolbarElement.value?.getBoundingClientRect().width
   if (nextWidth && nextWidth > 0) {
     toolbarWidth.value = nextWidth
   }
+}
+
+function updateOverflowMenuHeight() {
+  const anchor = overflowMenuAnchor.value
+  if (!anchor) return
+  const viewport = window.visualViewport
+  const height = viewport?.height ?? window.innerHeight
+  const bottom = (viewport?.offsetTop ?? 0) + height
+  const available = bottom - anchor.getBoundingClientRect().bottom - 8 - 12
+  overflowMenuMaxHeight.value = Math.max(0, Math.min(480, height * 0.6, available))
 }
 
 function onMonthPicked(value: unknown) {

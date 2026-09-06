@@ -58,6 +58,25 @@ independent.
 
 ## Time Grid Height
 
+The overflow menu groups calendar layout, display detail, event arrangement,
+time-grid height and displayed time range under translated headings. It also
+stores three independent local preferences for opening records, creating
+appointments on empty time slots, and dragging/resizing. Each supports single
+or double click; existing preferences default to single click for all three.
+Double-click dragging means holding the second press while moving. Keyboard
+activation with Enter/Space and explicit context-menu actions remain immediate.
+
+Dragging starts only after four pixels of movement, so a normal record click
+does not capture drag snapshots or update the calendar. When a single-click
+action is combined with double-click dragging, the action waits 350 ms to let
+the second press start a drag. Other combinations have no intentional opening
+delay. Empty-grid creation and drag selection use independent preferences.
+
+The post-drag click suppression expires after the mouseup/click event sequence,
+even when the pointer is released on empty space. Repeated opening clicks while
+the record request is pending do not start duplicate loads; the calendar shows
+a progress indicator while loading fresh editable data.
+
 The calendar overflow menu offers a persistent time-grid height preference.
 `Standard height` keeps Vuetify's existing 48-pixel hourly interval, while
 `Double height` uses a 96-pixel interval. The setting applies to the combined

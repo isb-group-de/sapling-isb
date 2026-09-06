@@ -5,6 +5,8 @@ import type {
   CalendarViewMode,
 } from './eventCalendar.utils'
 
+export type CalendarClickMode = 'single' | 'double'
+
 export type CalendarTimeGridScale = 'standard' | 'double'
 export type CalendarTimeRangeMode = 'fullDay' | 'workHours'
 
@@ -13,6 +15,9 @@ export interface EventCalendarPreferences {
   calendarViewMode: CalendarViewMode
   calendarMode: CalendarMode
   eventOverlapMode: CalendarEventOverlapMode
+  openClickMode: CalendarClickMode
+  createClickMode: CalendarClickMode
+  dragClickMode: CalendarClickMode
   linkedScrolling: boolean
   timeGridScale: CalendarTimeGridScale
   timeRangeMode: CalendarTimeRangeMode
@@ -23,6 +28,9 @@ export const DEFAULT_EVENT_CALENDAR_PREFERENCES: EventCalendarPreferences = {
   calendarViewMode: 'single',
   calendarMode: 'default',
   eventOverlapMode: 'stack',
+  openClickMode: 'single',
+  createClickMode: 'single',
+  dragClickMode: 'single',
   linkedScrolling: true,
   timeGridScale: 'standard',
   timeRangeMode: 'fullDay',
@@ -66,6 +74,9 @@ export function loadEventCalendarPreferences(): EventCalendarPreferences {
       eventOverlapMode: EVENT_OVERLAP_MODES.has(parsed.eventOverlapMode as CalendarEventOverlapMode)
         ? (parsed.eventOverlapMode as CalendarEventOverlapMode)
         : DEFAULT_EVENT_CALENDAR_PREFERENCES.eventOverlapMode,
+      openClickMode: parsed.openClickMode === 'double' ? 'double' : 'single',
+      createClickMode: parsed.createClickMode === 'double' ? 'double' : 'single',
+      dragClickMode: parsed.dragClickMode === 'double' ? 'double' : 'single',
       linkedScrolling:
         typeof parsed.linkedScrolling === 'boolean'
           ? parsed.linkedScrolling

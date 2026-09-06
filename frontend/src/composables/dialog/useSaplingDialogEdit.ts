@@ -287,8 +287,8 @@ export function useSaplingDialogEdit(
     await initializeSaplingDialogEdit({
       isLoading,
       load: async () => {
-        await currentPersonStore.fetchCurrentPerson()
         await Promise.all([
+          currentPersonStore.fetchCurrentPerson(),
           loadSaplingDialogPermissions(permissions),
           loadFormConfigs(),
           loadSystemTemplates(),
@@ -431,13 +431,18 @@ export function useSaplingDialogEdit(
 
   watch(
     () => props.entity?.handle ?? '',
-    () => {
+    async () => {
       resetTemplateSources()
+      await initialize()
     },
   )
 
   watch(templatesSignature, async () => {
-    await initialize()
+    // Loading/selecting a form changes this signature. Re-fetching the form
+    // configurations here repeats initialization and resets the selected form.
+    if (isLoading.value) return
+    await initializeRelationTables()
+    await loadActiveRelationTableItems()
   })
 
   watch(

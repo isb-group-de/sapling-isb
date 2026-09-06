@@ -108,6 +108,31 @@ describe('useSaplingEventEditor', () => {
     mocks.update.mockReset()
   })
 
+  it('loads a record only once while repeated clicks are still waiting for the API', async () => {
+    const harness = createHarness()
+    let resolveLoad!: (item: EventItem) => void
+    harness.loadPersistedEvent.mockReturnValue(
+      new Promise((resolve) => {
+        resolveLoad = resolve
+      }),
+    )
+    const item = createEventItem()
+    const event = {
+      start: new Date(item.startDate).getTime(),
+      end: new Date(item.endDate).getTime(),
+      timed: true,
+      event: item,
+    } as CalendarEvent
+    const opening = harness.editor.openEventEditor(event)
+    expect(harness.editor.isOpeningEvent.value).toBe(true)
+    await harness.editor.openEventEditor(event)
+    expect(harness.loadPersistedEvent).toHaveBeenCalledTimes(1)
+    resolveLoad(item)
+    await opening
+    expect(harness.editor.isOpeningEvent.value).toBe(false)
+    expect(harness.showEditDialog.value).toBe(true)
+  })
+
   it('hydrates persisted data while preserving dragged times and dirty fields', async () => {
     const harness = createHarness()
     harness.loadPersistedEvent.mockResolvedValue(createEventItem())

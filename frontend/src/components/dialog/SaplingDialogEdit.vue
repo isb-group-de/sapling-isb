@@ -253,6 +253,7 @@
                     :record-entity-handle="entityHandle"
                     :can-create="canCreatePhoneCalls"
                     :phone-number="recordPhoneNumber"
+                    :record-entity-templates="templates"
                     :record-label="phoneRecordDisplayValue"
                   />
                 </v-window-item>

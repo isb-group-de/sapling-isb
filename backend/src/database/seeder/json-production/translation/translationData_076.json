@@ -1,0 +1,68 @@
+[
+  {
+    "entity": "calendar",
+    "property": "openRecord",
+    "de": "Datensatz öffnen",
+    "en": "Open record"
+  },
+  {
+    "entity": "calendar",
+    "property": "createAppointment",
+    "de": "Termin erstellen",
+    "en": "Create appointment"
+  },
+  {
+    "entity": "calendar",
+    "property": "dragAppointments",
+    "de": "Ziehen und Größe ändern",
+    "en": "Drag and resize"
+  },
+  {
+    "entity": "calendar",
+    "property": "singleClick",
+    "de": "Einfachklick",
+    "en": "Single click"
+  },
+  {
+    "entity": "calendar",
+    "property": "doubleClick",
+    "de": "Doppelklick",
+    "en": "Double click"
+  },
+  {
+    "entity": "calendar",
+    "property": "dragClickHint",
+    "de": "Zum Ziehen die Maustaste beim gewählten Klick gedrückt halten.",
+    "en": "To drag, hold the mouse button on the selected click."
+  },
+  {
+    "entity": "calendar",
+    "property": "viewLayout",
+    "de": "Kalenderansicht",
+    "en": "Calendar layout"
+  },
+  {
+    "entity": "calendar",
+    "property": "displayMode",
+    "de": "Darstellungsumfang",
+    "en": "Display detail"
+  },
+  {
+    "entity": "calendar",
+    "property": "eventArrangement",
+    "de": "Terminanordnung",
+    "en": "Event arrangement"
+  },
+  {
+    "entity": "calendar",
+    "property": "viewPeriod",
+    "de": "Kalenderzeitraum",
+    "en": "Calendar period"
+  },
+  {
+    "entity": "calendar",
+    "property": "dataActions",
+    "de": "Daten aktualisieren",
+    "en": "Refresh data"
+  }
+]

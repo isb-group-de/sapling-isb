@@ -21,6 +21,11 @@ const i18n = createI18n({
       },
       event: { today: 'Today' },
       calendar: {
+        openRecord: 'Open record',
+        createAppointment: 'Create appointment',
+        dragAppointments: 'Drag and resize',
+        singleClick: 'Single click',
+        doubleClick: 'Double click',
         combined: 'Combined',
         day: 'Day',
         extended: 'Extended',
@@ -124,6 +129,20 @@ describe('SaplingEventToolbar', () => {
     await nextTick()
 
     expect(wrapper.emitted('update:timeRangeMode')).toEqual([['workHours']])
+    for (const [label, model] of [
+      ['Open record', 'openClickMode'],
+      ['Create appointment', 'createClickMode'],
+      ['Drag and resize', 'dragClickMode'],
+    ]) {
+      const toggle = menu?.querySelector(`[aria-label="${label}"]`)
+      const button = Array.from(toggle?.querySelectorAll('button') ?? []).find((button) =>
+        button.textContent?.includes('Double click'),
+      )
+      expect(button).toBeDefined()
+      button?.click()
+      await nextTick()
+      expect(wrapper.emitted(`update:${model}`)).toEqual([['double']])
+    }
     wrapper.unmount()
   })
 })

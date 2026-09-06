@@ -192,6 +192,15 @@ populated `isPhone` field exists. Non-persistent named-assistant fields such as
 projected ticket contact mail/phone values participate through the same metadata
 options.
 
+The shared phone-call dialog offers **Compose email** beside **Call** when the
+same record has a populated persistent `isMail` field and the user can read the
+record. A single address opens the existing composer directly; multiple addresses
+offer an explicit recipient choice. Projected addresses from related records
+(such as a Person's Company email) never serve as a fallback. The composer keeps
+the record context and preselects only the chosen address. Opening it leaves the
+phone-call note and reached state intact; no call is saved or email sent by this
+shortcut. Normal composer permissions still apply.
+
 Automatic email subscriptions are executed by the generic create/update flow
 after a record was saved. A rule without conditions always sends when its
 lifecycle trigger matches, which is useful for create confirmations. Conditions
