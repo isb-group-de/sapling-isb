@@ -34,6 +34,32 @@ const axiosGet = mockedAxios.get;
 const axiosPost = mockedAxios.post;
 
 describe('GithubService', () => {
+  it('invalidates repository and issue caches after issue creation even when labels fail', async () => {
+    axiosGet.mockReset();
+    axiosPost.mockReset();
+    const service = new GithubService();
+    axiosGet
+      .mockResolvedValueOnce({ data: { name: 'repo' } })
+      .mockResolvedValueOnce({ data: [] });
+    await service.getRepository();
+    await service.getIssues();
+    await service.getIssues();
+    expect(axiosGet).toHaveBeenCalledTimes(2);
+    axiosPost.mockResolvedValueOnce({ data: { number: 42, labels: [] } });
+    axiosGet.mockRejectedValueOnce(new Error('label unavailable'));
+    await service.createIssue(
+      { title: 'Test', description: 'Body', type: 'bug' } as never,
+      { firstName: 'Test', lastName: 'User' } as never,
+    );
+    axiosGet
+      .mockResolvedValueOnce({ data: { name: 'updated' } })
+      .mockResolvedValueOnce({ data: [] });
+    await expect(service.getRepository()).resolves.toMatchObject({
+      name: 'updated',
+    });
+    await service.getIssues();
+    expect(axiosGet).toHaveBeenCalledTimes(5);
+  });
   beforeEach(() => {
     jest.clearAllMocks();
   });

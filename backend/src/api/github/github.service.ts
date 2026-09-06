@@ -20,6 +20,7 @@ import {
   GithubRepositoryDto,
 } from './dto/github.dto';
 import { PersonItem } from '../../entity/PersonItem';
+import { GithubReadCache } from './github-read-cache';
 
 type GithubIssueApiResponse = Omit<
   GithubIssueDto,
@@ -53,6 +54,7 @@ type GithubLabelConfig = {
  */
 @Injectable()
 export class GithubService {
+  private readonly reads = new GithubReadCache();
   private readonly logger = new Logger(GithubService.name);
   private readonly repo: string;
   private readonly apiUrl: string;
@@ -366,6 +368,10 @@ export class GithubService {
    * @returns {Promise<GithubRepositoryDto>} Repository object
    */
   async getRepository(): Promise<GithubRepositoryDto> {
+    return this.reads.get('repository', () => this.loadRepository());
+  }
+
+  private async loadRepository(): Promise<GithubRepositoryDto> {
     const { data } = await axios.get<GithubRepositoryDto>(
       this.buildRepositoryUrl(),
       {
@@ -381,6 +387,10 @@ export class GithubService {
    * @returns {Promise<GithubReleaseDto[]>} Array of release objects
    */
   async getReleases(): Promise<GithubReleaseDto[]> {
+    return this.reads.get('releases', () => this.loadReleases());
+  }
+
+  private async loadReleases(): Promise<GithubReleaseDto[]> {
     const { data } = await axios.get<GithubReleaseDto[]>(
       this.buildRepositoryUrl('/releases'),
       {
@@ -399,6 +409,12 @@ export class GithubService {
    */
   async getIssues(
     status: GithubIssueStatus = GithubIssueStatus.OPEN,
+  ): Promise<GithubIssueDto[]> {
+    return this.reads.get(`issues:${status}`, () => this.loadIssues(status));
+  }
+
+  private async loadIssues(
+    status: GithubIssueStatus,
   ): Promise<GithubIssueDto[]> {
     const recentlyClosedCutoff =
       status === GithubIssueStatus.CLOSED
@@ -454,6 +470,7 @@ export class GithubService {
       },
     );
 
+    this.reads.invalidate();
     const createdIssue = this.normalizeIssue(data);
     const labelConfig = this.getTypeLabelConfig(issueDto.type);
 
@@ -471,6 +488,8 @@ export class GithubService {
       );
     }
 
+    // Reads started during label synchronization must not remain cached either.
+    this.reads.invalidate();
     return createdIssue;
   }
 }

@@ -21,6 +21,75 @@ import { ScriptResultServerMethods } from './core/script.result.server';
 const asMock = (value: unknown): jest.Mock => value as jest.Mock;
 
 describe('EventController', () => {
+  it.each(['azure', 'google'])(
+    'reloads a batch master once and attempts every %s detach even after one failure',
+    async (provider) => {
+      const failure = new Error('one delivery failed');
+      const queueEvent = jest
+        .fn(async () => undefined)
+        .mockRejectedValueOnce(failure);
+      const event = { handle: 42 } as EventItem;
+      const em = { findOne: jest.fn(async () => event) };
+      const user = {
+        type: { handle: provider },
+        session: { handle: 8 },
+      } as unknown as PersonItem;
+      const controller = new EventController(
+        { handle: 'event' } as never,
+        user,
+        em as never,
+        { queueEvent } as never,
+        { queueEvent } as never,
+      );
+      const tasks: Array<{ label: string; operation: () => Promise<void> }> =
+        [];
+      const starts = ['2026-07-28T11:00:00.000Z', '2026-07-29T11:00:00.000Z'];
+      await controller.afterUpdate([event], {
+        postCommitTasks: tasks,
+        changedFields: ['recurrenceExceptionDates'],
+        calendarDeliveryOperation: 'detach-occurrence',
+        calendarDeliveryOccurrenceStarts: starts,
+      });
+      expect(tasks).toHaveLength(1);
+      expect(queueEvent).not.toHaveBeenCalled();
+      await expect(tasks[0].operation()).rejects.toBe(failure);
+      expect(em.findOne).toHaveBeenCalledTimes(1);
+      starts.forEach((start, index) =>
+        expect(asMock(queueEvent)).toHaveBeenNthCalledWith(
+          index + 1,
+          event,
+          user.session,
+          'detach-occurrence',
+          ['recurrenceExceptionDates'],
+          start,
+        ),
+      );
+    },
+  );
+
+  it('does not schedule provider work for completed or internal-only detached events', async () => {
+    const queueEvent = jest.fn(async () => undefined);
+    const controller = new EventController(
+      { handle: 'event' } as never,
+      {
+        type: { handle: 'azure' },
+        session: { handle: 8 },
+      } as unknown as PersonItem,
+      {} as never,
+      { queueEvent } as never,
+      {} as never,
+    );
+    const tasks: Array<{ label: string; operation: () => Promise<void> }> = [];
+    await controller.afterInsert(
+      [
+        { handle: 1, status: { handle: 'completed' } },
+        { handle: 2, type: { showInDefaultCalendar: false } },
+      ] as EventItem[],
+      { postCommitTasks: tasks },
+    );
+    expect(tasks).toHaveLength(0);
+    expect(queueEvent).not.toHaveBeenCalled();
+  });
   beforeEach(() => {
     global.log = {
       trace: jest.fn(),

@@ -335,9 +335,23 @@ export class GenericEntityMutationOperations {
   }
 
   schedulePostCommitTasks(tasks: GenericPostCommitTask[]): void {
-    for (const task of tasks) {
-      this.scheduleBackgroundTask(task.label, task.operation);
-    }
+    if (tasks.length === 0) return;
+    const pending = [...tasks];
+    this.scheduleBackgroundTask('postCommit', async () => {
+      let next = 0;
+      await Promise.all(
+        Array.from({ length: Math.min(4, pending.length) }, async () => {
+          while (next < pending.length) {
+            const task = pending[next++];
+            try {
+              await task.operation();
+            } catch (error) {
+              global.log?.error?.(`${task.label}:`, error);
+            }
+          }
+        }),
+      );
+    });
   }
 
   protected queueBackgroundTask(

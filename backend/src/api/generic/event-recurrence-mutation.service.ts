@@ -12,7 +12,7 @@ import {
   parseRecurrenceRule,
   RECURRENCE_MAX_OCCURRENCES,
   type RecurrenceOccurrence,
-  findRecurrenceOccurrence,
+  findRecurrenceOccurrences,
 } from '../../calendar/calendar.recurrence';
 import {
   GenericEntityMutationService,
@@ -109,50 +109,49 @@ export class EventRecurrenceMutationService {
     await this.em.transactional(
       async () => {
         const event = await this.loadRecurringEvent(normalizedHandle);
-        let existingExceptions = this.normalizeExceptionDates(
+        const existingExceptions = this.normalizeExceptionDates(
           event.recurrenceExceptionDates,
         );
-        for (const [index, occurrenceStart] of occurrenceStarts.entries()) {
-          const occurrence = findRecurrenceOccurrence(
-            new Date(event.startDate),
-            new Date(event.endDate),
-            event.recurrenceRule,
-            occurrenceStart,
-            10_000,
-            scriptContext.clientTimeZone,
-          );
-          if (!occurrence) {
-            throw new BadRequestException('event.recurrenceOccurrenceInvalid');
-          }
-
-          const normalizedOccurrenceStart = occurrence.startDate.toISOString();
-          if (existingExceptions.includes(normalizedOccurrenceStart)) {
-            throw new BadRequestException('event.recurrenceOccurrenceDetached');
-          }
-          existingExceptions = [
-            ...existingExceptions,
-            normalizedOccurrenceStart,
-          ].sort();
-
-          seriesEvent = await this.genericEntityMutationService.update(
-            'event',
-            normalizedHandle,
-            { recurrenceExceptionDates: existingExceptions },
-            currentUser,
-            [],
-            {
-              ...baseContext,
-              calendarDeliveryOperation: 'detach-occurrence',
-              calendarDeliveryOccurrenceStart: normalizedOccurrenceStart,
-            },
-            {
-              expectedUpdatedAt:
-                index === 0 ? request.expectedUpdatedAt : undefined,
-              resolution: 'detect',
-            },
-            { postCommitTasks },
-          );
-
+        const occurrences = findRecurrenceOccurrences(
+          new Date(event.startDate),
+          new Date(event.endDate),
+          event.recurrenceRule,
+          occurrenceStarts,
+          10_000,
+          scriptContext.clientTimeZone,
+        );
+        if (!occurrences)
+          throw new BadRequestException('event.recurrenceOccurrenceInvalid');
+        const starts = occurrences.map((occurrence) =>
+          occurrence.startDate.toISOString(),
+        );
+        const exceptions = new Set(existingExceptions);
+        if (starts.some((start) => exceptions.has(start))) {
+          throw new BadRequestException('event.recurrenceOccurrenceDetached');
+        }
+        starts.forEach((start) => exceptions.add(start));
+        // Validate the entire selection before running the master's lifecycle once.
+        seriesEvent = await this.genericEntityMutationService.update(
+          'event',
+          normalizedHandle,
+          { recurrenceExceptionDates: [...exceptions].sort() },
+          currentUser,
+          [],
+          {
+            ...baseContext,
+            calendarDeliveryOperation: 'detach-occurrence',
+            calendarDeliveryOccurrenceStart:
+              starts.length === 1 ? starts[0] : undefined,
+            calendarDeliveryOccurrenceStarts:
+              starts.length > 1 ? starts : undefined,
+          },
+          {
+            expectedUpdatedAt: request.expectedUpdatedAt,
+            resolution: 'detect',
+          },
+          { postCommitTasks },
+        );
+        for (const occurrence of occurrences) {
           detachedEvents.push(
             await this.genericEntityMutationService.create(
               'event',
@@ -166,6 +165,7 @@ export class EventRecurrenceMutationService {
                 ...baseContext,
                 calendarDeliveryOperation: undefined,
                 calendarDeliveryOccurrenceStart: undefined,
+                calendarDeliveryOccurrenceStarts: undefined,
               },
               { postCommitTasks },
             ),

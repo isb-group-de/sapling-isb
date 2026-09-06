@@ -87,11 +87,17 @@ Flow:
 
 1. Frontend calls `new EventSource(BACKEND_URL + 'current/openTaskCountEvents', { withCredentials: true })`.
 2. Backend subscribes through `streamForUser(user.handle)`.
-3. The stream emits an initial snapshot immediately.
+3. The stream starts loading the initial snapshot immediately.
 4. Other services call `notifyUsers([...handles])` when open-task-relevant data changes.
 5. The controller reloads a fresh snapshot and emits event type `open-task-snapshot`.
 6. The frontend computes newly appearing items by comparing snapshot item ids.
 7. `SaplingHeader` updates the badge and optional incoming preview.
+
+Subsequent notifications are coalesced per user over 25 ms. An SSE connection
+keeps at most one active snapshot query and one trailing refresh, so a burst of
+calendar or inbox changes does not enqueue a full snapshot per mutation. Errors
+retain the existing stream termination/reconnect behavior, and unsubscribing
+prevents pending follow-up work from starting.
 
 The SSE stream is process-local. In multi-instance deployments, open-task notifications need shared event transport or sticky sessions if live updates must cross instances.
 

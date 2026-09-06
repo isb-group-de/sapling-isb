@@ -4,11 +4,47 @@ import {
   buildGoogleRecurrence,
   expandFiniteRecurrence,
   findRecurrenceOccurrence,
+  findRecurrenceOccurrences,
   hasRecurrenceOccurrenceInRange,
   parseRecurrenceRule,
 } from './calendar.recurrence';
 
 describe('calendar.recurrence', () => {
+  it('resolves a batch across daylight saving time in requested order', () => {
+    const start = new Date('2026-03-28T09:00:00Z');
+    const end = new Date('2026-03-28T10:00:00Z');
+    const requested = [
+      new Date('2026-03-30T08:00:00Z'),
+      new Date('2026-03-29T08:00:00Z'),
+    ];
+    const matches = findRecurrenceOccurrences(
+      start,
+      end,
+      'FREQ=DAILY;COUNT=3',
+      requested,
+      10000,
+      'Europe/Berlin',
+    );
+    expect(
+      matches?.map((match) => [
+        match.occurrenceIndex,
+        match.startDate.toISOString(),
+      ]),
+    ).toEqual([
+      [3, '2026-03-30T08:00:00.000Z'],
+      [2, '2026-03-29T08:00:00.000Z'],
+    ]);
+    expect(
+      findRecurrenceOccurrences(
+        start,
+        end,
+        'FREQ=DAILY;COUNT=3',
+        requested,
+        2,
+        'Europe/Berlin',
+      ),
+    ).toBeNull();
+  });
   it('parses weekly recurrence rules with interval, weekdays, and count', () => {
     const parsed = parseRecurrenceRule(
       'FREQ=WEEKLY;INTERVAL=2;BYDAY=MO,WE,FR;COUNT=8',

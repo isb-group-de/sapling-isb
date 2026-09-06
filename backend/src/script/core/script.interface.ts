@@ -28,6 +28,8 @@ export type ScriptServerContext = {
   calendarDeliveryOperation?: 'remove-recurrence' | 'detach-occurrence';
   /** Original generated start of the occurrence targeted by a detach delivery. */
   calendarDeliveryOccurrenceStart?: string;
+  /** Internal batch detach: one master update still delivers every original start. */
+  calendarDeliveryOccurrenceStarts?: string[];
   /**
    * Work that must only start after an enclosing transaction has committed.
    * Calendar materialization uses this to keep Redis workers from observing

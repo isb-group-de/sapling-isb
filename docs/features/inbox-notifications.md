@@ -176,6 +176,14 @@ migrated Inbox subscriptions default to `notifyActor = false`.
 
 ## Open Task Events
 
+Read acknowledgements use a conditional update scoped to the current recipient
+and `isRead = false`, with an isolated entity manager. They do not flush unrelated
+managed records. Repeating an acknowledgement preserves `readAt` and does not
+emit another refresh event. Invalid or unowned handles return the existing
+not-found error. The endpoint still returns the populated notification record.
+The Inbox shares concurrent clicks on the same notification and removes the
+entry only after success; failed acknowledgements remain retryable.
+
 `OpenTaskEventsService` provides in-memory user-specific refresh notifications.
 
 Behavior:
@@ -186,6 +194,12 @@ Behavior:
 - listeners are removed when the observable unsubscribes
 
 This is a refresh signal, not the notification payload itself. Clients reload current inbox/open-task state after receiving it.
+
+Change signals are deferred and coalesced per user over 25 ms, keeping snapshot
+work out of the synchronous notification call. Initial subscriptions still emit
+immediately. Each SSE connection runs at most one snapshot read at a time and
+retains only one trailing refresh if more changes arrive while loading. This
+preserves the latest state without accumulating stale full-snapshot reads.
 
 ## Frontend Behavior
 

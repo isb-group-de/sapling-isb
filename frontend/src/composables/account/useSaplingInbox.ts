@@ -78,6 +78,7 @@ export function useSaplingInbox(emit: CloseEmitter) {
   const effortEstimates = ref<EffortEstimateItem[]>([])
   const internalCases = ref<InternalCaseItem[]>([])
   const notifications = ref<InboxNotificationItem[]>([])
+  const pendingDismissals = new Map<number, Promise<void>>()
   const completeEventsDialog = ref(false)
   const completeEventsCutoffDate = ref<string | null>(getDefaultEventCompletionCutoff())
   const isCompletingEvents = ref(false)
@@ -305,11 +306,19 @@ export function useSaplingInbox(emit: CloseEmitter) {
       return
     }
 
-    await ApiCurrentService.markInboxNotificationRead(entry.notificationHandle)
-    notifications.value = notifications.value.filter(
-      (notification) => notification.handle !== entry.notificationHandle,
-    )
-    publishOpenTaskSnapshot()
+    const handle = entry.notificationHandle
+    const existing = pendingDismissals.get(handle)
+    if (existing) return existing
+    const pending = ApiCurrentService.markInboxNotificationRead(handle)
+      .then(() => {
+        notifications.value = notifications.value.filter(
+          (notification) => notification.handle !== handle,
+        )
+        publishOpenTaskSnapshot()
+      })
+      .finally(() => pendingDismissals.delete(handle))
+    pendingDismissals.set(handle, pending)
+    await pending
   }
 
   function openCompleteEventsDialog() {

@@ -45,6 +45,93 @@ function createHarness(event: EventItem) {
 }
 
 describe('EventRecurrenceMutationService', () => {
+  it('updates one master for 200 completed occurrences', async () => {
+    const start = new Date('2026-01-01T11:00:00Z');
+    const harness = createHarness(
+      createEvent({
+        startDate: start,
+        endDate: new Date('2026-01-01T12:00:00Z'),
+        recurrenceRule: 'FREQ=DAILY;COUNT=200',
+      }),
+    );
+    const starts = Array.from({ length: 200 }, (_, index) =>
+      new Date(start.getTime() + index * 86400000).toISOString(),
+    );
+    await harness.service.detachOccurrences(
+      42,
+      { occurrenceStarts: starts, event: { status: 'completed' } },
+      { handle: 5 } as PersonItem,
+      {},
+    );
+    expect(harness.mutationService.update).toHaveBeenCalledTimes(1);
+    expect(harness.mutationService.create).toHaveBeenCalledTimes(200);
+    expect(
+      harness.mutationService.schedulePostCommitTasks,
+    ).toHaveBeenCalledTimes(1);
+  });
+
+  it.each(['2026-07-29T12:00:00Z', '2026-07-30T11:00:00Z'])(
+    'rejects an invalid selection before any write: %s',
+    async (invalid) => {
+      const harness = createHarness(createEvent());
+      await expect(
+        harness.service.detachOccurrences(
+          42,
+          {
+            occurrenceStarts: ['2026-07-28T11:00:00Z', invalid],
+            event: {},
+          },
+          { handle: 5 } as PersonItem,
+          {},
+        ),
+      ).rejects.toThrow('event.recurrenceOccurrenceInvalid');
+      expect(harness.mutationService.update).not.toHaveBeenCalled();
+      expect(harness.mutationService.create).not.toHaveBeenCalled();
+    },
+  );
+
+  it('does not create or schedule deliveries when concurrency or permission validation rejects the master', async () => {
+    const harness = createHarness(createEvent());
+    jest
+      .mocked(harness.mutationService.update)
+      .mockRejectedValueOnce(new Error('conflict'));
+    await expect(
+      harness.service.detachOccurrences(
+        42,
+        {
+          occurrenceStarts: ['2026-07-28T11:00:00Z'],
+          event: {},
+        },
+        { handle: 5 } as PersonItem,
+        {},
+      ),
+    ).rejects.toThrow('conflict');
+    expect(harness.mutationService.create).not.toHaveBeenCalled();
+    expect(
+      harness.mutationService.schedulePostCommitTasks,
+    ).not.toHaveBeenCalled();
+  });
+
+  it('does not schedule effects when a child create fails inside the transaction', async () => {
+    const harness = createHarness(createEvent());
+    jest
+      .mocked(harness.mutationService.create)
+      .mockRejectedValueOnce(new Error('insert denied'));
+    await expect(
+      harness.service.detachOccurrences(
+        42,
+        {
+          occurrenceStarts: ['2026-07-28T11:00:00Z'],
+          event: {},
+        },
+        { handle: 5 } as PersonItem,
+        {},
+      ),
+    ).rejects.toThrow('insert denied');
+    expect(
+      harness.mutationService.schedulePostCommitTasks,
+    ).not.toHaveBeenCalled();
+  });
   it('atomically clears the source recurrence and creates later standalone events', async () => {
     const harness = createHarness(createEvent());
 
@@ -244,25 +331,8 @@ describe('EventRecurrenceMutationService', () => {
     });
 
     expect(harness.em.transactional).toHaveBeenCalledTimes(1);
-    expect(harness.mutationService.update).toHaveBeenNthCalledWith(
-      1,
-      'event',
-      42,
-      { recurrenceExceptionDates: ['2026-07-28T11:00:00.000Z'] },
-      expect.any(Object),
-      [],
-      expect.objectContaining({
-        calendarDeliveryOperation: 'detach-occurrence',
-        calendarDeliveryOccurrenceStart: '2026-07-28T11:00:00.000Z',
-      }),
-      {
-        expectedUpdatedAt: '2026-07-30T08:00:00.000Z',
-        resolution: 'detect',
-      },
-      expect.any(Object),
-    );
-    expect(harness.mutationService.update).toHaveBeenNthCalledWith(
-      2,
+    expect(harness.mutationService.update).toHaveBeenCalledTimes(1);
+    expect(harness.mutationService.update).toHaveBeenCalledWith(
       'event',
       42,
       {
@@ -275,9 +345,12 @@ describe('EventRecurrenceMutationService', () => {
       [],
       expect.objectContaining({
         calendarDeliveryOperation: 'detach-occurrence',
-        calendarDeliveryOccurrenceStart: '2026-07-29T11:00:00.000Z',
+        calendarDeliveryOccurrenceStarts: [
+          '2026-07-28T11:00:00.000Z',
+          '2026-07-29T11:00:00.000Z',
+        ],
       }),
-      { expectedUpdatedAt: undefined, resolution: 'detect' },
+      { expectedUpdatedAt: '2026-07-30T08:00:00.000Z', resolution: 'detect' },
       expect.any(Object),
     );
     expect(harness.mutationService.create).toHaveBeenCalledTimes(2);

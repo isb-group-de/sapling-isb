@@ -240,7 +240,28 @@ export class InboxService {
     handle: number,
     user: Pick<PersonItem, 'handle'>,
   ): Promise<InboxNotificationItem> {
-    const notification = await this.em.findOne(
+    if (
+      !Number.isSafeInteger(handle) ||
+      handle <= 0 ||
+      !Number.isSafeInteger(user.handle) ||
+      (user.handle ?? 0) <= 0
+    ) {
+      throw new NotFoundException('global.entityNotFound');
+    }
+    const em = this.em.fork();
+    const now = new Date();
+    // A conditional update is idempotent and does not flush an unrelated graph.
+    const changed = await em.nativeUpdate(
+      InboxNotificationItem,
+      {
+        handle,
+        recipientPerson: { handle: user.handle },
+        isRead: false,
+      },
+      { isRead: true, readAt: now, updatedAt: now },
+    );
+    if (changed > 0) this.openTaskEventsService.notifyUsers([user.handle]);
+    const notification = await em.findOne(
       InboxNotificationItem,
       {
         handle,
@@ -261,10 +282,6 @@ export class InboxService {
       throw new NotFoundException('global.entityNotFound');
     }
 
-    notification.isRead = true;
-    notification.readAt = new Date();
-    await this.em.flush();
-    this.openTaskEventsService.notifyUsers([user.handle]);
     return notification;
   }
 

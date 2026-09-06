@@ -212,9 +212,24 @@ POST /api/calendar/events/:handle/detach-occurrences
 
 The request accepts up to 200 original occurrence starts. It validates, excludes,
 and creates all of them in one transaction, applying optimistic concurrency to
-the first master update. The Inbox submits completed status for the detached
+the master update. The Inbox submits completed status for the detached
 standalone Events. This works for daily, weekly, monthly, and yearly rules; the
 series master and occurrences after the selected cutoff are not completed.
+
+Batch detachment resolves the requested starts in one recurrence traversal, then
+updates the complete exception set through the generic master lifecycle once.
+Each standalone Event still uses the normal create lifecycle, including field
+permissions, hooks, and audit records. Invalid/already-detached occurrences are
+rejected before the first write. The master produces one update audit entry per
+batch rather than one per selected occurrence; child audit entries remain individual.
+
+The internal `calendarDeliveryOccurrenceStarts` context carries the original
+starts to the provider hook. After commit, that hook reloads the master once and
+queues every required detach separately. One failed queue attempt does not skip
+the remaining starts. Completed/internal-only Events are excluded before provider
+work is scheduled, matching the existing delivery rules. Post-commit task batches
+run with at most four concurrent operations; failures are logged per task and do
+not prevent the remaining tasks from running.
 
 Provider behavior is intentionally provider-specific:
 

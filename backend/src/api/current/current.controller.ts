@@ -19,7 +19,8 @@ import { OpenTaskEventsService } from './open-task-events.service';
 import { PersonItem } from '../../entity/PersonItem';
 import { ENTITY_HANDLES } from '../../entity/global/entity.registry';
 import type { Request } from 'express';
-import { concatMap, from, map, Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
+import { latestSnapshotOnChange } from './open-task-snapshot-stream';
 import {
   ApiBearerAuth,
   ApiParam,
@@ -324,7 +325,9 @@ export class CurrentController {
   streamOpenTaskCountEvents(@Req() req: Request): Observable<MessageEvent> {
     const user = req.user as PersonItem;
     return this.openTaskEventsService.streamForUser(user?.handle).pipe(
-      concatMap(() => from(this.currentService.getOpenTaskSnapshot(user))),
+      latestSnapshotOnChange(() =>
+        this.currentService.getOpenTaskSnapshot(user),
+      ),
       map((snapshot): MessageEvent => ({
         type: 'open-task-snapshot',
         retry: 5000,

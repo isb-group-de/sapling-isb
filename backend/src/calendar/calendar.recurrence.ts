@@ -380,13 +380,35 @@ export function findRecurrenceOccurrence(
   maxIterations = 10_000,
   timeZone = 'UTC',
 ): RecurrenceOccurrenceMatch | null {
+  return (
+    findRecurrenceOccurrences(
+      startDate,
+      endDate,
+      recurrenceRule,
+      [occurrenceStart],
+      maxIterations,
+      timeZone,
+    )?.[0] ?? null
+  );
+}
+
+/** Resolves a batch with one traversal, preserving the requested order. */
+export function findRecurrenceOccurrences(
+  startDate: Date,
+  endDate: Date,
+  recurrenceRule: string | null | undefined,
+  occurrenceStarts: Date[],
+  maxIterations = 10_000,
+  timeZone = 'UTC',
+): RecurrenceOccurrenceMatch[] | null {
   const parsedRule = parseRecurrenceRule(recurrenceRule);
   if (
     !parsedRule ||
-    [startDate, endDate, occurrenceStart].some((date) =>
+    occurrenceStarts.length === 0 ||
+    [startDate, endDate, ...occurrenceStarts].some((date) =>
       Number.isNaN(date.getTime()),
     ) ||
-    occurrenceStart.getTime() < startDate.getTime()
+    occurrenceStarts.some((date) => date.getTime() < startDate.getTime())
   ) {
     return null;
   }
@@ -396,6 +418,9 @@ export function findRecurrenceOccurrence(
     0,
   );
   let currentStart = new Date(startDate);
+  const pending = new Set(occurrenceStarts.map((date) => date.getTime()));
+  const lastRequested = Math.max(...pending);
+  const matches = new Map<number, RecurrenceOccurrenceMatch>();
 
   for (
     let occurrenceIndex = 1;
@@ -411,14 +436,17 @@ export function findRecurrenceOccurrence(
     ) {
       return null;
     }
-    if (currentStart.getTime() === occurrenceStart.getTime()) {
-      return {
+    if (pending.delete(currentStart.getTime())) {
+      matches.set(currentStart.getTime(), {
         occurrenceIndex,
         startDate: new Date(currentStart),
         endDate: new Date(currentStart.getTime() + durationMilliseconds),
-      };
+      });
+      if (pending.size === 0) {
+        return occurrenceStarts.map((date) => matches.get(date.getTime())!);
+      }
     }
-    if (currentStart.getTime() > occurrenceStart.getTime()) {
+    if (currentStart.getTime() > lastRequested) {
       return null;
     }
 

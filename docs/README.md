@@ -18,6 +18,7 @@ The documentation should stay close to the code, but not duplicate every class o
 - [Inbox And Open Task Notifications](features/inbox-notifications.md)
 - [Reference Automations](features/reference-automations.md)
 - [Integrations And Deliveries](integrations/deliveries.md)
+- [GitHub Repository View](integrations/github.md)
 - [Testing And Verification](development/testing.md)
 - [Refactor Watchlist](development/refactor-watchlist.md)
 - [API Refactor Decision Matrix](development/api-refactor-decision-matrix.md)
