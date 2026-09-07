@@ -52,6 +52,7 @@
 }
 
 .sapling-message-center-list {
+  flex: 0 0 auto;
   padding: 0;
   background: transparent;
 }
@@ -282,12 +283,7 @@
     width: calc(100vw - (var(--sapling-space-md) * 2));
   }
 
-  .sapling-message-center-dialog {
-    overflow: auto;
-  }
-
   .sapling-message-center-dialog__body {
-    overflow: visible;
     padding-right: 0;
   }
 }

@@ -84,7 +84,7 @@
         <div class="sapling-dialog-shell sapling-fill-shell">
           <template v-if="isTranslationLoading">
             <SaplingDialogHero loading />
-            <div class="sapling-message-center-dialog__body">
+            <div class="sapling-dialog-shell__body sapling-message-center-dialog__body">
               <SaplingSurface :as="VSkeletonLoader" type="article, article, article" />
             </div>
             <SaplingActionBarSkeleton />
@@ -95,7 +95,7 @@
               :title="$t('global.messageCenter')"
             />
 
-            <div class="sapling-message-center-dialog__body">
+            <div class="sapling-dialog-shell__body sapling-message-center-dialog__body">
               <SaplingSurface
                 as="section"
                 v-if="messages.length === 0"

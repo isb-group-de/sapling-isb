@@ -978,6 +978,11 @@ The frontend should hide or disable actions based on permissions, but backend gu
 
 ## Message Center
 
+The message-center dialog keeps its hero and action bar outside the shared
+scrollable dialog body at every viewport width. The message list retains its
+content height inside that body, so long histories scroll while download and
+clear-all actions remain visible.
+
 General operational feedback belongs exclusively in the message center. Pages,
 dialogs, panels, KPI widgets, and system cards must not render their own HTTP,
 network, loading, saving, or action-result alerts/snackbars. API services report
