@@ -7,6 +7,8 @@ export type InboxSectionKey = 'overdue' | 'today' | 'upcoming' | 'later' | 'unpl
 export interface InboxEntry {
   id: string
   kind: InboxEntryKind
+  sourceEntity?: string
+  referenceHandle?: string
   kindLabelKey:
     | 'navigation.ticket'
     | 'navigation.event'
@@ -16,6 +18,7 @@ export interface InboxEntry {
     | 'navigation.inboxNotification'
   title: string
   description: string
+  descriptionMarkdown?: string
   dateText: string
   dateValue: Date | null
   icon: string

@@ -122,6 +122,13 @@ export class CurrentOpenTaskService {
   }
 
   async getSnapshot(user: PersonItem): Promise<OpenTaskSnapshot> {
+    // Deferred SSE signals inherit the writer's async transaction context, which
+    // may already be committed. Reload every section in one fresh, isolated EM.
+    const em = this.em.fork({
+      useContext: false,
+      keepTransactionContext: false,
+    });
+    const reader = new CurrentOpenTaskService(em, this.inboxService);
     const [
       tickets,
       tasks,
@@ -130,12 +137,12 @@ export class CurrentOpenTaskService {
       internalCases,
       notifications,
     ] = await Promise.all([
-      this.getOpenTickets(user),
-      this.getOpenEvents(user),
-      this.getOpenSalesOpportunities(user),
-      this.getOpenEffortEstimates(user),
-      this.getOpenInternalCases(user),
-      this.inboxService.getUnreadNotifications(user),
+      reader.getOpenTickets(user),
+      reader.getOpenEvents(user),
+      reader.getOpenSalesOpportunities(user),
+      reader.getOpenEffortEstimates(user),
+      reader.getOpenInternalCases(user),
+      this.inboxService.getUnreadNotifications(user, em),
     ]);
 
     return {

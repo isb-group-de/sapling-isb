@@ -212,12 +212,13 @@ export class InboxService {
 
   async getUnreadNotifications(
     user: Pick<PersonItem, 'handle'>,
+    em: EntityManager = this.em,
   ): Promise<InboxNotificationItem[]> {
     if (user.handle == null) {
       return [];
     }
 
-    return this.em.find(
+    return em.find(
       InboxNotificationItem,
       {
         recipientPerson: { handle: user.handle },

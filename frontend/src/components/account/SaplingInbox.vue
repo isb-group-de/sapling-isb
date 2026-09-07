@@ -3,18 +3,19 @@
     v-if="dialog"
     v-model="dialog"
     persistent
-    size="xl"
+    size="3xl"
+    :height="SAPLING_DIALOG_HEIGHT.xl"
     @keydown.esc.stop.prevent="closeDialog"
   >
     <SaplingDialogCard
-      class="sapling-inbox-dialog"
+      class="sapling-dialog-card--fill sapling-inbox-workspace-dialog"
       data-tutorial="inbox-dialog"
       :tilt="false"
       :close="closeDialog"
     >
       <SaplingDialogShell
         fill-shell
-        body-class="sapling-dialog-fill-body sapling-dialog-transparent-loaders sapling-inbox-dialog__body sapling-scrollable"
+        body-class="sapling-inbox-workspace-dialog__body"
         :show-divider="false"
       >
         <template #hero>
@@ -28,188 +29,25 @@
         </template>
 
         <template #body>
-          <div
-            class="sapling-stack-xl sapling-dialog-fill-content sapling-attention-content sapling-inbox-dialog__content"
-          >
-            <template v-if="isLoading">
-              <section
-                class="sapling-responsive-grid sapling-attention-summary-grid sapling-inbox-summary-grid"
-              >
-                <v-skeleton-loader
-                  v-for="item in 5"
-                  :key="item"
-                  class="sapling-attention-loading-summary sapling-inbox-loading-summary"
-                  elevation="12"
-                  type="article"
-                />
-              </section>
-
-              <section
-                class="sapling-card-board sapling-card-board--collapse-lg sapling-inbox-board"
-              >
-                <v-skeleton-loader
-                  v-for="item in 5"
-                  :key="item"
-                  class="sapling-attention-loading-section sapling-inbox-loading-section glass-panel"
-                  elevation="12"
-                  type="article, article"
-                />
-              </section>
-            </template>
-
-            <v-alert
-              v-else-if="streamError"
-              type="error"
-              variant="tonal"
-              :title="$t('navigation.inbox')"
-              :text="$t(streamError)"
-            />
-
-            <template v-else>
-              <section
-                class="sapling-responsive-grid sapling-attention-summary-grid sapling-inbox-summary-grid"
-              >
-                <SaplingInboxSummaryCard
-                  v-for="card in summaryCards"
-                  :key="card.key"
-                  :card="card"
-                />
-              </section>
-
-              <section
-                class="sapling-attention-view-switch sapling-inbox-view-switch sapling-panel-shell-muted"
-              >
-                <v-btn-toggle
-                  v-model="activeView"
-                  class="sapling-toolbar-group sapling-attention-view-switch__toggle sapling-inbox-view-switch__toggle"
-                  color="primary"
-                  divided
-                  mandatory
-                >
-                  <v-btn
-                    value="overview"
-                    class="sapling-attention-view-switch__button sapling-inbox-view-switch__button glass-panel"
-                  >
-                    <span
-                      class="sapling-attention-view-switch__label sapling-inbox-view-switch__button-label"
-                    >
-                      <v-icon icon="mdi-view-dashboard-outline" size="18" />
-                      <span>{{ $t('navigation.inbox') }}</span>
-                    </span>
-                    <span
-                      class="sapling-attention-view-switch__count sapling-attention-view-switch__count--idle sapling-inbox-view-switch__count sapling-inbox-view-switch__count--idle"
-                    >
-                      {{ overviewCount }}
-                    </span>
-                  </v-btn>
-                  <v-btn
-                    value="notifications"
-                    class="sapling-attention-view-switch__button sapling-inbox-view-switch__button glass-panel"
-                  >
-                    <span
-                      class="sapling-attention-view-switch__label sapling-inbox-view-switch__button-label"
-                    >
-                      <v-icon icon="mdi-bell-outline" size="18" />
-                      <span>{{ $t('navigation.inboxNotification') }}</span>
-                    </span>
-                    <span
-                      :class="[
-                        'sapling-attention-view-switch__count',
-                        'sapling-inbox-view-switch__count',
-                        hasUnreadNotifications
-                          ? 'sapling-attention-view-switch__count--alert sapling-inbox-view-switch__count--alert'
-                          : 'sapling-attention-view-switch__count--idle sapling-inbox-view-switch__count--idle',
-                      ]"
-                    >
-                      {{ notificationEntries.length }}
-                    </span>
-                  </v-btn>
-                </v-btn-toggle>
-              </section>
-
-              <template v-if="activeView === 'overview'">
-                <section
-                  v-if="!hasOverviewItems"
-                  class="sapling-empty-state-panel sapling-empty-state-panel--large glass-panel"
-                >
-                  <div
-                    class="sapling-empty-state-panel__icon sapling-empty-state-panel__icon--success"
-                  >
-                    <v-icon icon="mdi-check-circle-outline" size="42" />
-                  </div>
-                  <h3 class="sapling-empty-state-panel__title">
-                    {{ $t('inbox.allCaughtUpTitle') }}
-                  </h3>
-                  <p class="sapling-empty-state-panel__text">{{ $t('inbox.allCaughtUp') }}</p>
-                </section>
-
-                <section
-                  v-else
-                  class="sapling-card-board sapling-card-board--collapse-lg sapling-inbox-board"
-                >
-                  <SaplingInboxSection
-                    v-for="section in sections"
-                    :key="section.key"
-                    :section="section"
-                    :show-complete-events-action="
-                      section.key === 'overdue' && overdueEventCount > 0
-                    "
-                    @open="openEntry"
-                    @dismiss="dismissEntry"
-                    @complete-events="openCompleteEventsDialog"
-                  />
-                </section>
-              </template>
-
-              <template v-else>
-                <section
-                  v-if="!hasNotificationItems"
-                  class="sapling-empty-state-panel sapling-empty-state-panel--large glass-panel"
-                >
-                  <div
-                    class="sapling-empty-state-panel__icon sapling-empty-state-panel__icon--success"
-                  >
-                    <v-icon icon="mdi-check-circle-outline" size="42" />
-                  </div>
-                  <h3 class="sapling-empty-state-panel__title">
-                    {{ $t('inbox.allCaughtUpTitle') }}
-                  </h3>
-                  <p class="sapling-empty-state-panel__text">{{ $t('inbox.allCaughtUp') }}</p>
-                </section>
-
-                <section v-else class="sapling-section-panel glass-panel">
-                  <div class="sapling-section-header">
-                    <div
-                      class="sapling-row-md sapling-attention-panel__title-row sapling-inbox-notification-panel__title-row"
-                    >
-                      <div
-                        class="sapling-icon-tile sapling-icon-tile--sm sapling-icon-tile--info-soft"
-                      >
-                        <v-icon icon="mdi-bell-outline" size="18" />
-                      </div>
-                      <h3 class="sapling-section-title">
-                        {{ $t('navigation.inboxNotification') }}
-                      </h3>
-                    </div>
-                    <v-chip size="small" variant="tonal" color="info">
-                      {{ sortedNotificationEntries.length }}
-                    </v-chip>
-                  </div>
-
-                  <div class="sapling-section-stack sapling-section-stack--md">
-                    <SaplingInboxEntryCard
-                      v-for="entry in sortedNotificationEntries"
-                      :key="entry.id"
-                      :entry="entry"
-                      expanded
-                      @open="openEntry"
-                      @dismiss="dismissEntry"
-                    />
-                  </div>
-                </section>
-              </template>
-            </template>
-          </div>
+          <v-skeleton-loader v-if="isLoading" type="article, list-item-three-line@5" />
+          <v-alert
+            v-else-if="streamError"
+            type="error"
+            variant="tonal"
+            :title="$t('navigation.inbox')"
+            :text="$t(streamError)"
+          />
+          <SaplingInboxWorkspace
+            v-else
+            :sections="sections"
+            :notifications="notificationEntries"
+            :cards="summaryCards"
+            :overdue-event-count="overdueEventCount"
+            :dismiss="dismissEntry"
+            @open="openEntry"
+            @change-log="openEntryChangeLog"
+            @complete-events="openCompleteEventsDialog"
+          />
         </template>
 
         <template #actions>
@@ -286,19 +124,17 @@
 
 <script setup lang="ts">
 //#region Import
-import { computed, ref } from 'vue'
-import { useSaplingInbox, type InboxEntry } from '@/composables/account/useSaplingInbox'
+import { useSaplingInbox } from '@/composables/account/useSaplingInbox'
 import SaplingActionClose from '@/components/actions/SaplingActionClose.vue'
 import SaplingDialogCard from '@/components/dialog/SaplingDialogCard.vue'
 import SaplingDialog from '@/components/common/SaplingDialog.vue'
 import SaplingDialogHero from '@/components/common/SaplingDialogHero.vue'
 import SaplingDialogShell from '@/components/common/SaplingDialogShell.vue'
-import SaplingInboxEntryCard from '@/components/account/inbox/SaplingInboxEntryCard.vue'
-import SaplingInboxSection from '@/components/account/inbox/SaplingInboxSection.vue'
-import SaplingInboxSummaryCard from '@/components/account/inbox/SaplingInboxSummaryCard.vue'
 import SaplingDialogConfirm from '@/components/dialog/SaplingDialogConfirm.vue'
 import SaplingFieldDateType from '@/components/dialog/fields/SaplingFieldDateType.vue'
 import SaplingActionBar from '@/components/actions/SaplingActionBar.vue'
+import SaplingInboxWorkspace from '@/components/account/inbox/SaplingInboxWorkspace.vue'
+import { SAPLING_DIALOG_HEIGHT } from '@/constants/dialog.constants'
 //#endregion
 
 //#region Composable
@@ -306,21 +142,15 @@ const emit = defineEmits<{
   (event: 'close'): void
 }>()
 
-const activeView = ref<'overview' | 'notifications'>('overview')
-
 const {
   isLoading,
   streamError,
   dialog,
   notificationEntries,
-  ticketEntries,
-  taskEntries,
-  salesOpportunityEntries,
-  effortEstimateEntries,
-  internalCaseEntries,
   summaryCards,
   sections,
   openEntry,
+  openEntryChangeLog,
   dismissEntry,
   closeDialog,
   overdueEventCount,
@@ -333,29 +163,5 @@ const {
   validateCompleteEventsCutoff,
   completeOverdueEvents,
 } = useSaplingInbox(emit)
-
-const overviewCount = computed(
-  () =>
-    ticketEntries.value.length +
-    taskEntries.value.length +
-    salesOpportunityEntries.value.length +
-    effortEstimateEntries.value.length +
-    internalCaseEntries.value.length,
-)
-const hasOverviewItems = computed(() => overviewCount.value > 0)
-const hasUnreadNotifications = computed(() => notificationEntries.value.length > 0)
-const sortedNotificationEntries = computed<InboxEntry[]>(() =>
-  [...notificationEntries.value].sort((left, right) => {
-    const leftTime = left.dateValue?.getTime() ?? Number.MIN_SAFE_INTEGER
-    const rightTime = right.dateValue?.getTime() ?? Number.MIN_SAFE_INTEGER
-
-    if (leftTime !== rightTime) {
-      return rightTime - leftTime
-    }
-
-    return left.title.localeCompare(right.title)
-  }),
-)
-const hasNotificationItems = computed(() => sortedNotificationEntries.value.length > 0)
 //#endregion
 </script>

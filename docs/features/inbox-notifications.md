@@ -201,7 +201,49 @@ immediately. Each SSE connection runs at most one snapshot read at a time and
 retains only one trailing refresh if more changes arrive while loading. This
 preserves the latest state without accumulating stale full-snapshot reads.
 
+Each snapshot reloads all task sections and unread notifications through a fresh
+entity manager with request/transaction context resolution disabled and no
+inherited transaction. Deferred signals can retain the triggering writer's async
+context even after commit; reusing that context causes `Transaction is already
+committed` and terminates the SSE stream. Snapshot reads must stay isolated from
+the writer and from previously loaded snapshot entities.
+
 ## Frontend Behavior
+
+The inbox uses the same `3xl` width and `90vh` height as the entity edit dialog.
+`SaplingInboxWorkspace` presents a compact, paginated list with an independent
+detail preview; selecting a row does not open or acknowledge the record. The
+explicit open action keeps the existing entity routes, and marking a notification
+read waits for success and remains retryable on failure.
+Both actions sit in a fixed footer at the bottom right of the detail panel while
+the content scrolls independently. Details use the shared Markdown renderer;
+notifications retain `bodyText` for list previews and use `bodyMarkdown` for the
+formatted detail view. Selected categories have a solid primary background and
+a checkmark; view and period buttons also display a checkmark and solid fill.
+
+Category cards toggle a single type filter with a visible pressed state. They
+filter both open tasks and notifications (using the notification's source entity).
+Counts on the cards reflect the active task/notification view before other filters.
+Open tasks additionally offer all, overdue, today, upcoming, later and unplanned
+views. Search matches all words across the title, description, date and context
+labels. Filters combine; an empty result differs from an empty inbox and offers
+a reset. Result counts expose the filtered and total number, so a daily view
+does not imply the backlog has been completed. SSE refreshes retain filters and
+keep selection and pagination within the current results.
+
+The overdue-event bulk action is available in the overdue task view with no
+category filter or the Events filter, and no text search. Its existing cutoff,
+candidate count and confirmation still apply to all eligible overdue events.
+On narrow screens, the detail preview appears below the scrollable list.
+
+Selected notifications with an entity and record reference offer a quiet
+**Change log** text action alongside **Open entry** in the detail footer. It
+opens the existing record change-log dialog above the inbox, preserving selection,
+filters and unread state. Old/new values are loaded only on demand through the
+existing permission-aware change-log endpoint. The action opens the record's
+history (newest first), not an assumed match between the latest change and the
+notification. Task entries and notifications without a target reference do not
+offer this action; no inline diff or automatic field highlighting is added.
 
 The shared `useOpenTaskCountEvents` connection receives full snapshots through
 the `open-task-snapshot` SSE event. Transport errors, server-sent `error` events,
@@ -220,10 +262,10 @@ The inbox UI is split into:
 ```text
 frontend/src/components/account/SaplingInbox.vue
 frontend/src/components/account/inbox/SaplingInboxSummaryCard.vue
-frontend/src/components/account/inbox/SaplingInboxSection.vue
-frontend/src/components/account/inbox/SaplingInboxEntryCard.vue
+frontend/src/components/account/inbox/SaplingInboxWorkspace.vue
 frontend/src/components/system/header/SaplingHeaderInboxPreview.vue
 frontend/src/composables/account/useSaplingInbox.ts
+frontend/src/composables/account/useSaplingInboxWorkspace.ts
 ```
 
 Navigation from a notification is built through `frontend/src/utils/inboxRoute.util.ts`, using `entity` and `referenceHandle`.

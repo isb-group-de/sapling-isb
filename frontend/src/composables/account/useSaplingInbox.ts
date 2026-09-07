@@ -14,6 +14,7 @@ import ApiCalendarService from '@/services/api.calendar.service'
 import ApiGenericService from '@/services/api.generic.service'
 import { formatDate, formatDateFromTo, formatDateTimeValue } from '@/utils/saplingFormatUtil'
 import { useRouter } from 'vue-router'
+import { useChangeLogDialogStore } from '@/stores/changeLogDialogStore'
 import {
   getEffortEstimateInboxRoute,
   getInternalCaseInboxRoute,
@@ -83,6 +84,7 @@ export function useSaplingInbox(emit: CloseEmitter) {
   const completeEventsCutoffDate = ref<string | null>(getDefaultEventCompletionCutoff())
   const isCompletingEvents = ref(false)
   const router = useRouter()
+  const changeLogDialogStore = useChangeLogDialogStore()
   const messageCenter = useSaplingMessageCenter()
   const isLoading = computed(
     () => isTranslationLoading.value || (isDataLoading.value && !streamError.value),
@@ -97,6 +99,11 @@ export function useSaplingInbox(emit: CloseEmitter) {
   function openEntry(entry: InboxEntry) {
     closeDialog()
     void router.push(entry.route)
+  }
+
+  function openEntryChangeLog(entry: InboxEntry) {
+    if (entry.kind !== 'notification' || !entry.sourceEntity || !entry.referenceHandle) return
+    changeLogDialogStore.openChangeLog(entry.sourceEntity, entry.referenceHandle)
   }
 
   function applyOpenTaskSnapshot(snapshot: OpenTaskSnapshot) {
@@ -280,9 +287,12 @@ export function useSaplingInbox(emit: CloseEmitter) {
     return {
       id: `notification-${notification.handle ?? notification.title}`,
       kind: 'notification',
+      sourceEntity: entityHandle,
+      referenceHandle: notification.referenceHandle?.trim() || undefined,
       kindLabelKey: 'navigation.inboxNotification',
       title: notification.title,
       description: notification.bodyText ?? '',
+      descriptionMarkdown: notification.bodyMarkdown ?? undefined,
       dateText: notification.createdAt ? formatDateTimeValue(notification.createdAt) : '',
       dateValue,
       icon:
@@ -599,6 +609,7 @@ export function useSaplingInbox(emit: CloseEmitter) {
     validateCompleteEventsCutoff,
     completeOverdueEvents,
     openEntry,
+    openEntryChangeLog,
     dismissEntry,
     closeDialog,
   }

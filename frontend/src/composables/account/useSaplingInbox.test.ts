@@ -1,10 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { createPinia, setActivePinia } from 'pinia'
+import { useChangeLogDialogStore } from '@/stores/changeLogDialogStore'
 import type { OpenTaskSnapshot } from '@/composables/system/useOpenTaskCountEvents'
 import type { InboxEntry } from './saplingInbox.utils'
 
-const { markRead, publish, state } = vi.hoisted(() => ({
+const { markRead, publish, navigate, state } = vi.hoisted(() => ({
   markRead: vi.fn(),
   publish: vi.fn(),
+  navigate: vi.fn(),
   state: { snapshot: {} as OpenTaskSnapshot },
 }))
 vi.mock('@/services/api.current.service', () => ({
@@ -19,7 +22,7 @@ vi.mock('vue-i18n', async (importOriginal) => ({
 }))
 vi.mock('vue-router', async (importOriginal) => ({
   ...(await importOriginal<typeof import('vue-router')>()),
-  useRouter: () => ({ push: vi.fn() }),
+  useRouter: () => ({ push: navigate }),
 }))
 vi.mock('@/composables/system/useSaplingMessageCenter', () => ({
   useSaplingMessageCenter: () => ({}),
@@ -35,8 +38,10 @@ import { useSaplingInbox } from './useSaplingInbox'
 
 describe('inbox read actions', () => {
   beforeEach(() => {
+    setActivePinia(createPinia())
     markRead.mockReset()
     publish.mockReset()
+    navigate.mockReset()
     state.snapshot = {
       count: 1,
       tickets: [],
@@ -74,5 +79,65 @@ describe('inbox read actions', () => {
     await inbox.dismissEntry(entry)
     expect(markRead).toHaveBeenCalledTimes(2)
     expect(publish).toHaveBeenCalledTimes(1)
+  })
+
+  it('exposes the source entity for both populated and scalar notification references', () => {
+    state.snapshot.notifications = [
+      {
+        handle: 1,
+        title: 'Ticket',
+        entity: { handle: 'ticket' },
+        bodyText: 'Plain text',
+        bodyMarkdown: '**Plain text**',
+      },
+      { handle: 2, title: 'Event', entity: 'event' },
+    ] as unknown as OpenTaskSnapshot['notifications']
+    const inbox = useSaplingInbox(vi.fn())
+    expect(inbox.notificationEntries.value.map((entry) => entry.sourceEntity)).toEqual([
+      'ticket',
+      'event',
+    ])
+    expect(inbox.notificationEntries.value[0]).toMatchObject({
+      description: 'Plain text',
+      descriptionMarkdown: '**Plain text**',
+    })
+  })
+
+  it.each([{ handle: 'ticket' }, 'event'])(
+    'opens the referenced record history on demand and keeps the inbox unread and open (%j)',
+    (entity) => {
+      state.snapshot.notifications = [
+        { handle: 7, title: 'Changed', entity, referenceHandle: ' 76 ', isRead: false },
+      ] as unknown as OpenTaskSnapshot['notifications']
+      const emit = vi.fn()
+      const inbox = useSaplingInbox(emit)
+      const history = useChangeLogDialogStore()
+      const entry = inbox.notificationEntries.value[0]!
+      expect(history.dialog).toBe(false)
+      inbox.openEntryChangeLog(entry)
+      expect(history.dialog).toBe(true)
+      expect(history.entityHandle).toBe(typeof entity === 'string' ? entity : entity.handle)
+      expect(history.recordHandle).toBe('76')
+      history.closeChangeLog()
+      expect(inbox.dialog.value).toBe(true)
+      expect(inbox.notificationEntries.value).toHaveLength(1)
+      expect(markRead).not.toHaveBeenCalled()
+      expect(publish).not.toHaveBeenCalled()
+      expect(navigate).not.toHaveBeenCalled()
+      expect(emit).not.toHaveBeenCalled()
+    },
+  )
+
+  it.each([
+    { entity: 'ticket', referenceHandle: undefined },
+    { entity: 'ticket', referenceHandle: '   ' },
+    { entity: undefined, referenceHandle: '76' },
+  ])('does not fall back to the notification record history for missing targets (%j)', (target) => {
+    state.snapshot.notifications = [
+      { handle: 7, title: 'Notice', ...target },
+    ] as unknown as OpenTaskSnapshot['notifications']
+    const inbox = useSaplingInbox(vi.fn())
+    inbox.openEntryChangeLog(inbox.notificationEntries.value[0]!)
+    expect(useChangeLogDialogStore().dialog).toBe(false)
   })
 })

@@ -262,11 +262,11 @@ describe('CurrentService', () => {
       .mockResolvedValueOnce([effortEstimate])
       .mockResolvedValueOnce([internalCase]);
     const em = {
-      find,
+      fork: jest.fn().mockReturnValue({ find }),
     };
     const inboxService = {
       getUnreadNotifications: jest
-        .fn<(_user: { handle: number }) => Promise<unknown[]>>()
+        .fn<(_user: { handle: number }, _em?: unknown) => Promise<unknown[]>>()
         .mockResolvedValue([notification]),
     };
     const service = new CurrentService(em as never, inboxService as never);
@@ -328,8 +328,9 @@ describe('CurrentService', () => {
         status: { isOpen: true },
       }),
     );
-    expect(inboxService.getUnreadNotifications).toHaveBeenCalledWith({
-      handle: 7,
-    });
+    expect(inboxService.getUnreadNotifications).toHaveBeenCalledWith(
+      { handle: 7 },
+      { find },
+    );
   });
 });
