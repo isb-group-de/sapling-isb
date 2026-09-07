@@ -142,6 +142,14 @@ If a user loses all passkeys, an administrator can delete the user's `personPass
 
 `PersonSessionItem` stores provider access and refresh tokens for Azure/Google integrations. Outgoing and incoming mail, Teams, and calendar services use these tokens for provider APIs and refresh them when possible.
 
+Outlook calendar imports use the latest session access token for both the
+calendar view and subsequent lookups of missing or moved events. Each read can
+refresh and retry once on an authentication error, including expiry during an
+import. Azure calendar refreshes also retain a replacement refresh token when
+Microsoft returns one; otherwise the existing refresh token is preserved. The
+successful import flush persists the updated session tokens. A failed provider
+lookup must not be treated as a deleted event unless Graph reports it missing.
+
 Administrators can delete individual `personSession` and `sessionStore` records through the generic entity pages. The default permission seed grants delete access for these two security-sensitive entities only to the administrator role. Deleting a person also deletes the person's provider session and all persisted browser sessions through database-level cascades.
 
 `PersonPasskeyItem` stores WebAuthn credentials for local logins:

@@ -198,19 +198,22 @@ export class AzureCalendarOperations {
       params.set('scope', AZURE_AD_SCOPE.join(' '));
     }
 
-    const response = await axios.post<{ access_token?: string }>(
-      tokenEndpoint,
-      params.toString(),
-      {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
+    const response = await axios.post<{
+      access_token?: string;
+      refresh_token?: string;
+    }>(tokenEndpoint, params.toString(), {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
       },
-    );
+    });
 
     const accessToken = response.data.access_token?.trim() ?? null;
     if (accessToken) {
       session.accessToken = accessToken;
+      const rotatedRefreshToken = response.data.refresh_token?.trim();
+      if (rotatedRefreshToken) {
+        session.refreshToken = rotatedRefreshToken;
+      }
     }
 
     return accessToken;
@@ -529,6 +532,34 @@ export class AzureCalendarOperations {
     }
 
     return reconciled;
+  }
+
+  protected async fetchAzureEventByReferenceWithRetry(
+    session: PersonSessionItem,
+    referenceHandle: string,
+    futureStart: Date,
+  ): Promise<AzureGraphCalendarEvent | null> {
+    try {
+      // calendarView may already have refreshed the session during this import.
+      return await this.fetchAzureEventByReference(
+        session.accessToken,
+        referenceHandle,
+        futureStart,
+      );
+    } catch (error) {
+      if (!isAzureAuthenticationError(error)) {
+        throw error;
+      }
+      const refreshedToken = await this.refreshAzureAccessToken(session);
+      if (!refreshedToken) {
+        throw error;
+      }
+      return this.fetchAzureEventByReference(
+        refreshedToken,
+        referenceHandle,
+        futureStart,
+      );
+    }
   }
 
   protected async fetchAzureEventByReference(

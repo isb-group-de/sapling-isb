@@ -49,6 +49,7 @@ describe('GenericService relation workflows', () => {
 
         if (method === ScriptMethods.addReference) {
           expect(context).toEqual({
+            postCommitTasks: expect.any(Array),
             referenceName: 'tags',
             referenceItems: [referenceItem],
           });
@@ -67,6 +68,7 @@ describe('GenericService relation workflows', () => {
 
         expect(method).toBe(ScriptMethods.afterUpdate);
         expect(context).toEqual({
+          postCommitTasks: expect.any(Array),
           currentItems: [item],
           referenceName: 'tags',
           referenceItems: [referenceItem],
@@ -169,6 +171,7 @@ describe('GenericService relation workflows', () => {
       ) => {
         if (method === ScriptMethods.deleteReference) {
           expect(context).toEqual({
+            postCommitTasks: expect.any(Array),
             referenceName: 'tags',
             referenceItems: [referenceItem],
           });
@@ -177,6 +180,7 @@ describe('GenericService relation workflows', () => {
 
         expect(method).toBe(ScriptMethods.afterUpdate);
         expect(context).toEqual({
+          postCommitTasks: expect.any(Array),
           currentItems: [item],
           referenceName: 'tags',
           referenceItems: [referenceItem],
@@ -282,6 +286,7 @@ describe('GenericService relation workflows', () => {
         if (method === ScriptMethods.addReference) {
           expect(entity).toEqual(personEntity);
           expect(context).toEqual({
+            postCommitTasks: expect.any(Array),
             referenceName: 'events',
             referenceItems: [event],
           });
@@ -291,6 +296,7 @@ describe('GenericService relation workflows', () => {
         expect(method).toBe(ScriptMethods.afterUpdate);
         expect(entity).toEqual(eventEntity);
         expect(context).toEqual({
+          postCommitTasks: expect.any(Array),
           currentItems: [event],
           referenceName: 'participants',
           referenceItems: [person],

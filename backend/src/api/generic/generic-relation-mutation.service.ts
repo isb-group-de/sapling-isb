@@ -170,11 +170,20 @@ export class GenericRelationMutationService {
       this.securityPrincipalCache?.invalidateAll();
     }
     if (this.globalSearchIndex?.isEnabled()) {
-      setImmediate(() => {
-        void this.globalSearchIndex
-          ?.handleUpsert(entityHandle, entityHandleValue)
-          .catch((error) => global.log?.error?.('globalSearchIndex:', error));
-      });
+      const operation = () =>
+        this.globalSearchIndex!.handleUpsert(entityHandle, entityHandleValue);
+      if (scriptContext.postCommitTasks) {
+        scriptContext.postCommitTasks.push({
+          label: 'globalSearchIndex',
+          operation,
+        });
+      } else {
+        setImmediate(() => {
+          void operation().catch((error) =>
+            global.log?.error?.('globalSearchIndex:', error),
+          );
+        });
+      }
     }
 
     const result = this.genericSanitizerService.projectEntityResult(

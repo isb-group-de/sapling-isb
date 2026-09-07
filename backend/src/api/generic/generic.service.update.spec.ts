@@ -38,7 +38,10 @@ describe('GenericService update workflows', () => {
             _user: unknown,
             context?: { currentItems?: object[]; changedFields?: string[] },
           ) => {
-            expect(context).toEqual({ currentItems: [item] });
+            expect(context).toEqual({
+              postCommitTasks: expect.any(Array),
+              currentItems: [item],
+            });
             const nextItem = (
               Array.isArray(items) ? items[0] : items
             ) as Record<string, unknown>;

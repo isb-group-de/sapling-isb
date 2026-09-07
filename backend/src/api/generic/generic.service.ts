@@ -23,7 +23,10 @@ import {
 } from './generic-list-query.service';
 import { GenericInlineCollectionService } from './generic-inline-collection.service';
 import { GenericRelationMutationService } from './generic-relation-mutation.service';
-import { GenericEntityMutationService } from './generic-entity-mutation.service';
+import {
+  GenericEntityMutationService,
+  type GenericPostCommitTask,
+} from './generic-entity-mutation.service';
 import {
   extractImportHandle,
   getImportErrorMessage,
@@ -424,12 +427,13 @@ export class GenericService {
     scriptContext: ScriptServerContext = {},
   ): Promise<object> {
     this.validateAutomationRule(entityHandle, data);
-    return this.runAtomic(() =>
+    return this.runAtomic(scriptContext, (transactionalContext) =>
       this.genericEntityMutationService.create(
         entityHandle,
         data,
         currentUser,
-        scriptContext,
+        transactionalContext,
+        { postCommitTasks: transactionalContext.postCommitTasks },
       ),
     );
   }
@@ -456,15 +460,16 @@ export class GenericService {
     concurrencyOptions: GenericUpdateConcurrencyOptions = {},
   ): Promise<object> {
     await this.validateAutomationRuleUpdate(entityHandle, handle, data);
-    return this.runAtomic(() =>
+    return this.runAtomic(scriptContext, (transactionalContext) =>
       this.genericEntityMutationService.update(
         entityHandle,
         handle,
         data,
         currentUser,
         relations,
-        scriptContext,
+        transactionalContext,
         concurrencyOptions,
+        { postCommitTasks: transactionalContext.postCommitTasks },
       ),
     );
   }
@@ -516,23 +521,24 @@ export class GenericService {
     cascadeRelations: string[] = [],
   ): Promise<GenericDeleteResultDto> {
     if (this.genericDeleteService) {
-      return this.runAtomic(() =>
+      return this.runAtomic(scriptContext, (transactionalContext) =>
         this.genericDeleteService!.delete(
           entityHandle,
           handle,
           currentUser,
-          scriptContext,
+          transactionalContext,
           cascadeRelations,
         ),
       );
     }
 
-    await this.runAtomic(() =>
+    await this.runAtomic(scriptContext, (transactionalContext) =>
       this.genericEntityMutationService.delete(
         entityHandle,
         handle,
         currentUser,
-        scriptContext,
+        transactionalContext,
+        { postCommitTasks: transactionalContext.postCommitTasks },
       ),
     );
     return { action: 'deleted' };
@@ -558,14 +564,14 @@ export class GenericService {
     currentUser: PersonItem,
     scriptContext: ScriptServerContext = {},
   ): Promise<object> {
-    return this.runAtomic(() =>
+    return this.runAtomic(scriptContext, (transactionalContext) =>
       this.genericRelationMutationService.createReference(
         entityHandle,
         referenceName,
         entityHandleValue,
         referenceHandleValue,
         currentUser,
-        scriptContext,
+        transactionalContext,
       ),
     );
   }
@@ -587,14 +593,14 @@ export class GenericService {
     currentUser: PersonItem,
     scriptContext: ScriptServerContext = {},
   ): Promise<object> {
-    return this.runAtomic(() =>
+    return this.runAtomic(scriptContext, (transactionalContext) =>
       this.genericRelationMutationService.deleteReference(
         entityHandle,
         referenceName,
         entityHandleValue,
         referenceHandleValue,
         currentUser,
-        scriptContext,
+        transactionalContext,
       ),
     );
   }
@@ -660,10 +666,26 @@ export class GenericService {
     ].includes(entityHandle);
   }
 
-  private runAtomic<T>(operation: () => Promise<T>): Promise<T> {
-    return typeof this.em.transactional === 'function'
-      ? this.em.transactional(operation)
-      : operation();
+  private async runAtomic<T>(
+    scriptContext: ScriptServerContext,
+    operation: (context: ScriptServerContext) => Promise<T>,
+  ): Promise<T> {
+    const postCommitTasks: GenericPostCommitTask[] = [];
+    const transactionalContext = { ...scriptContext, postCommitTasks };
+    const result = await (typeof this.em.transactional === 'function'
+      ? this.em.transactional(() => operation(transactionalContext))
+      : operation(transactionalContext));
+
+    // Release effects only after their database records commit. An enclosing
+    // lifecycle owns scheduling when it supplies a post-commit task buffer.
+    if (scriptContext.postCommitTasks) {
+      scriptContext.postCommitTasks.push(...postCommitTasks);
+    } else {
+      this.genericEntityMutationService.schedulePostCommitTasks(
+        postCommitTasks,
+      );
+    }
+    return result;
   }
   // #endregion
 

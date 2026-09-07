@@ -428,8 +428,8 @@ export class AzureCalendarService extends AzureCalendarOperations {
       user,
       completedStatus,
       async (reference) => {
-        const movedGraphEvent = await this.fetchAzureEventByReference(
-          accessToken,
+        const movedGraphEvent = await this.fetchAzureEventByReferenceWithRetry(
+          session,
           reference.referenceHandle,
           importRange.startDateTime,
         );

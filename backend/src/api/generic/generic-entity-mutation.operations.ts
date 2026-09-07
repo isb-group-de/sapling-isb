@@ -1,5 +1,5 @@
 import { NotFoundException } from '@nestjs/common';
-import type { EntityManager } from '@mikro-orm/core';
+import { type EntityManager, RequestContext } from '@mikro-orm/core';
 import { EntityItem } from '../../entity/EntityItem';
 import type { PersonItem } from '../../entity/PersonItem';
 import type { ScriptServerContext } from '../../script/core/script.interface';
@@ -344,7 +344,7 @@ export class GenericEntityMutationOperations {
           while (next < pending.length) {
             const task = pending[next++];
             try {
-              await task.operation();
+              await RequestContext.create(this.em, task.operation);
             } catch (error) {
               global.log?.error?.(`${task.label}:`, error);
             }

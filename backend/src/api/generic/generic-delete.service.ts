@@ -74,11 +74,13 @@ export class GenericDeleteService {
         handle,
         currentUser,
         scriptContext,
+        { postCommitTasks: scriptContext.postCommitTasks },
       );
       return { action: 'deleted' };
     }
 
-    const postCommitTasks: GenericPostCommitTask[] = [];
+    const postCommitTasks: GenericPostCommitTask[] =
+      scriptContext.postCommitTasks ?? [];
     const normalizedParentHandle =
       this.genericReferenceService.normalizeHandleValue(entityHandle, handle);
     const transactionalContext: ScriptServerContext = {
@@ -109,7 +111,11 @@ export class GenericDeleteService {
       { propagation: TransactionPropagation.REQUIRED },
     );
 
-    this.genericEntityMutationService.schedulePostCommitTasks(postCommitTasks);
+    if (!scriptContext.postCommitTasks) {
+      this.genericEntityMutationService.schedulePostCommitTasks(
+        postCommitTasks,
+      );
+    }
     return { action: 'deleted' };
   }
 

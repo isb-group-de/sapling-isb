@@ -7,6 +7,17 @@ import { PersonSessionItem } from '../entity/PersonSessionItem';
 const asMock = (value: unknown): jest.Mock => value as jest.Mock;
 
 describe('CalendarDeliveryExecutor', () => {
+  it('rejects a not-yet-visible delivery so BullMQ can retry it', async () => {
+    const executor = new CalendarDeliveryExecutor(
+      { fork: () => ({ findOne: async () => null }) } as never,
+      { setEvent: jest.fn() } as never,
+      { setEvent: jest.fn() } as never,
+    );
+    await expect(executor.execute(2276, 1)).rejects.toThrow(
+      'Calendar delivery #2276 not found in DB',
+    );
+  });
+
   it('resolves the session and forwards focused changed fields to Azure', async () => {
     const delivery = {
       handle: 21,

@@ -162,6 +162,7 @@ describe('GenericDeleteService', () => {
       22,
       expect.objectContaining({ handle: 1 }),
       {},
+      { postCommitTasks: undefined },
     );
     expect(harness.genericEntityMutationService.update).not.toHaveBeenCalled();
   });
@@ -177,6 +178,7 @@ describe('GenericDeleteService', () => {
       23,
       expect.objectContaining({ handle: 1 }),
       {},
+      { postCommitTasks: undefined },
     );
     expect(harness.genericEntityMutationService.update).not.toHaveBeenCalled();
   });
@@ -204,6 +206,27 @@ describe('GenericDeleteService', () => {
     expect(
       harness.genericEntityMutationService.schedulePostCommitTasks,
     ).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps cascade effects in the enclosing transaction task buffer', async () => {
+    const harness = createHarness({ children: [{ handle: 8 }] });
+    const postCommitTasks: import('./generic-entity-mutation.service').GenericPostCommitTask[] =
+      [];
+    await harness.service.delete(
+      'company',
+      4,
+      { handle: 1 } as never,
+      { postCommitTasks },
+      ['persons'],
+    );
+    expect(
+      harness.genericEntityMutationService.schedulePostCommitTasks,
+    ).not.toHaveBeenCalled();
+    for (const call of harness.genericEntityMutationService.delete.mock
+      .calls as unknown[][]) {
+      expect(call[3]).toEqual({ postCommitTasks });
+      expect(call[4]).toEqual({ postCommitTasks });
+    }
   });
 
   it('allows selected Event children to run their physical delete lifecycle', async () => {

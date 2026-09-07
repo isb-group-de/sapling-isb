@@ -181,8 +181,7 @@ export class CalendarDeliveryExecutor {
       },
     );
     if (!delivery) {
-      this.logger.error(`Delivery #${deliveryId} not found in DB`);
-      return;
+      throw new Error(`Calendar delivery #${deliveryId} not found in DB`);
     }
 
     delivery.attemptCount = attemptCount;

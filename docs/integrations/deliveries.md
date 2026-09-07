@@ -268,6 +268,21 @@ Use status entities instead of ad hoc string fields so translations, filters, co
 
 ## Error Handling
 
+### Manual Retries From Tables
+
+Mail, Teams, calendar, and webhook delivery tables offer **Repeat delivery**
+both on individual rows and in the selection actions menu. Select the delivery
+records to retry, then run the action once for the selection. Each selected
+record is passed to the existing `retryDelivery` service in sequence; the action
+does not automatically filter the selection to failed records.
+
+The multi-select buttons are added by `scriptButtonData_004.json` in both seed
+datasets. Apply the seeders on existing installations to make them available.
+The original single-row buttons remain available because table script buttons
+use separate entries for single-row and multi-select actions.
+
+### Delivery Service Behavior
+
 Delivery services should:
 
 - persist failures on the delivery row

@@ -285,6 +285,19 @@ Calendar delivery starts after an event change asks for synchronization.
 5. `CalendarProcessor` executes queued jobs and passes the delivery id to the executor.
 6. Azure and Google services update or create provider-side calendar items and persist `EventAzureItem` / `EventGoogleItem` references.
 
+Generic create/update/delete and participant mutations collect calendar work
+until their enclosing database transaction commits. A rollback discards that
+work. Each post-commit operation runs in a separate ORM request context, so
+calendar delivery and search indexing do not share a completed transaction or
+a concurrently flushed identity map. A delivery that is not visible to the
+worker raises an error for BullMQ retry instead of completing the job silently.
+
+On older versions, a fast worker could log `Delivery #... not found in DB`
+before the transaction committed, leaving the delivery `pending` with zero
+attempts even though its queue job completed. After updating, retry the affected
+delivery through `EventDeliveryService.retryDelivery`; saving an unchanged
+Event does not recreate its missing synchronization work.
+
 Update deliveries carry the fields whose persisted values actually changed.
 Provider updates are built as focused patches from that list instead of
 resending the complete Event. In particular, category/type classification or a

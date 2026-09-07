@@ -7,10 +7,12 @@ jest.mock('@mikro-orm/core', () => ({
     INITIALLY_IMMEDIATE: 'immediate',
   },
   EntityManager: class {},
+  RequestContext: { create: (_em: unknown, next: () => unknown) => next() },
 }));
 jest.mock('../../entity/global/entity.decorator', () => ({
   Sapling: jest.fn(() => () => undefined),
   SaplingForm: jest.fn(() => () => undefined),
+  SaplingNumeric: jest.fn(() => () => undefined),
   SaplingDependsOn: jest.fn(() => () => undefined),
   SaplingGenericReference: jest.fn(() => () => undefined),
   SaplingInlineCollection: jest.fn(() => () => undefined),

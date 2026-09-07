@@ -1,0 +1,26 @@
+[
+  {
+    "name": "retryDelivery",
+    "title": "emailDelivery.scriptRepeatDelivery",
+    "entity": "emailDelivery",
+    "isMultiSelect": true
+  },
+  {
+    "name": "retryDelivery",
+    "title": "webhookDelivery.scriptRepeatDelivery",
+    "entity": "webhookDelivery",
+    "isMultiSelect": true
+  },
+  {
+    "name": "retryDelivery",
+    "title": "eventDelivery.scriptRepeatDelivery",
+    "entity": "eventDelivery",
+    "isMultiSelect": true
+  },
+  {
+    "name": "retryDelivery",
+    "title": "teamsDelivery.scriptRepeatDelivery",
+    "entity": "teamsDelivery",
+    "isMultiSelect": true
+  }
+]
