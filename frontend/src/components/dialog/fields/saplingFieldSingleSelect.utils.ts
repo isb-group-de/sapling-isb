@@ -11,6 +11,8 @@ export interface SaplingFieldSingleSelectProps {
   disabled?: boolean
   parentFilter?: FilterQuery
   dependencyTargetField?: string
+  additionalListProjectionFields?: string[]
+  defaultCurrentPersonFilter?: boolean
   density?: 'default' | 'comfortable' | 'compact'
   hideDetails?: boolean | 'auto'
   showOpenAction?: boolean

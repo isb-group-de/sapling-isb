@@ -20,6 +20,8 @@ import {
 } from '@/utils/inboxRoute.util'
 
 const OPEN_TASK_SNAPSHOT_EVENT = 'open-task-snapshot'
+// Allow three normal 5-second reconnect attempts before reporting an outage.
+const TRANSPORT_RECOVERY_MS = 15_000
 
 export interface OpenTaskSnapshot {
   count: number
@@ -55,6 +57,16 @@ const listeners = new Set<OpenTaskCountListener>()
 let eventSource: EventSource | null = null
 let latestSnapshot: OpenTaskSnapshot | null = null
 const streamError = ref<string | null>(null)
+let recoveryTimer: ReturnType<typeof setTimeout> | undefined
+let recoveryStartedAt: number | null = null
+let failedAttempts = 0
+
+function clearTransportRecovery() {
+  if (recoveryTimer !== undefined) clearTimeout(recoveryTimer)
+  recoveryTimer = undefined
+  recoveryStartedAt = null
+  failedAttempts = 0
+}
 
 function toTimestamp(value: Date | string | null | undefined) {
   if (!value) {
@@ -214,6 +226,7 @@ function notifyListeners(snapshot: OpenTaskSnapshot, context: OpenTaskUpdateCont
 
 function applySnapshot(snapshot: OpenTaskSnapshot, source: OpenTaskUpdateContext['source']) {
   if (source === 'stream') {
+    clearTransportRecovery()
     streamError.value = null
   }
   const previousSnapshot = latestSnapshot
@@ -260,19 +273,40 @@ function isOpenTaskSnapshot(value: unknown): value is OpenTaskSnapshot {
 }
 
 function reportStreamError(message: string, technical?: unknown) {
-  console.warn('Inbox diagnostic', technical)
+  clearTransportRecovery()
   // EventSource retries automatically. Report each outage once, until data arrives.
   if (streamError.value) return
+  console.warn('Inbox diagnostic', technical)
   streamError.value = message
   useSaplingMessageCenter().pushMessage('error', message, '', 'inbox', technical)
 }
 
 function handleStreamError(event: Event) {
   const data = (event as MessageEvent<unknown>).data
-  reportStreamError(
-    data == null ? 'exception.connectionException' : 'exception.serverException',
-    data,
-  )
+  if (data != null) {
+    reportStreamError('exception.serverException', data)
+    return
+  }
+  if (!eventSource || streamError.value) return
+
+  recoveryStartedAt ??= Date.now()
+  failedAttempts++
+  const reportOutage = () =>
+    reportStreamError('exception.connectionException', {
+      transport: 'EventSource',
+      readyState: eventSource?.readyState,
+      online: window.navigator.onLine,
+      elapsedMs: Date.now() - recoveryStartedAt!,
+      failedAttempts,
+    })
+
+  if (eventSource.readyState === EventSource.CLOSED) {
+    reportOutage()
+  } else {
+    // Neither retries nor an open event prove that inbox data is available.
+    // Only a valid streamed snapshot cancels this fixed recovery deadline.
+    recoveryTimer ??= setTimeout(reportOutage, TRANSPORT_RECOVERY_MS)
+  }
 }
 
 function ensureEventSource() {
@@ -296,6 +330,7 @@ function disposeEventSource() {
   eventSource.removeEventListener('error', handleStreamError)
   eventSource.close()
   eventSource = null
+  clearTransportRecovery()
   streamError.value = null
 }
 

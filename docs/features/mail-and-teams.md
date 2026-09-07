@@ -192,6 +192,12 @@ populated `isPhone` field exists. Non-persistent named-assistant fields such as
 projected ticket contact mail/phone values participate through the same metadata
 options.
 
+Saving a phone-call note requires insert permission on `phoneCall` (German:
+**Telefonate**). Its `entity` and `reference` fields are supplied by the dialog
+to link the note to the source record and inherit the normal field permissions.
+The `entity` field must remain structurally writable; marking it `isReadOnly`
+rejects every dialog submission even when the role grants insert access.
+
 The shared phone-call dialog offers **Compose email** beside **Call** when the
 same record has a populated persistent `isMail` field and the user can read the
 record. A single address opens the existing composer directly; multiple addresses

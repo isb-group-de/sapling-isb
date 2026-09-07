@@ -1,11 +1,13 @@
 import type { PersonItem } from './entity-account.types'
 import type { SaplingGenericItem } from './entity-base.types'
 import type { TranslationItem } from './entity-integration.types'
+import type { DashboardWidget } from './dashboard-widget.types'
 
 /**
  * Represents a dashboard entity.
  */
 export interface DashboardItem extends SaplingGenericItem {
+  widgets?: DashboardWidget[] | null
   /** Unique identifier for the dashboard */
   handle: number | null
   /** Name of the dashboard */
@@ -28,6 +30,7 @@ export interface DashboardItem extends SaplingGenericItem {
  * Represents a reusable dashboard template.
  */
 export interface DashboardTemplateItem extends SaplingGenericItem {
+  widgets?: DashboardWidget[] | null
   /** Unique identifier for the template */
   handle: number | null
   /** Name of the template */

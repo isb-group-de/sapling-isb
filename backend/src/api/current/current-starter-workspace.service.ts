@@ -85,6 +85,7 @@ export class CurrentStarterWorkspaceService {
     dashboard.name = template.name;
     dashboard.person = person;
     dashboard.sortOrder = (index + 1) * 100;
+    dashboard.widgets = cloneJsonValue(template.widgets);
     const kpis = this.getCollectionItems<KpiItem>(template.kpis);
     dashboard.kpiOrder = kpis.flatMap((kpi) =>
       kpi.handle == null ? [] : [kpi.handle],

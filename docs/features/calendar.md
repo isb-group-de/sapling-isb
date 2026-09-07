@@ -432,7 +432,9 @@ suppression, translucent drag colors, cancellation, and rollback snapshots. It
 accepts calendar/dialog refs plus one persisted-editor callback, so the gesture
 logic can be reused independently of calendar loading and persistence.
 Resizable timed events expose their complete lower card edge as the resize
-target. The hit area remains inside the individual card so overlapping events
+target in both the combined calendar and side-by-side person columns. Both
+layouts use the same resize, editor, and cancellation workflow. The hit area
+remains inside the individual card so overlapping events
 retain their normal hover and click stacking order.
 Event detail tooltips close immediately when dragging, resizing, opening the
 editor, or opening the context menu starts. Their teleported overlay also stops

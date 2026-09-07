@@ -3,6 +3,8 @@ import ApiCurrentService from '@/services/api.current.service'
 import { restoreDashboardLayoutSnapshot } from './saplingDashboardLayout'
 import { cloneDashboardLayout } from './saplingDashboard.utils'
 import type { DashboardItem } from '@/entity/entity'
+import type { DashboardWidget } from '@/entity/dashboard-widget.types'
+import { getDashboardWidgets, cloneDashboardWidgets } from './saplingDashboardWidgets'
 
 type PushMessage = (
   type: 'success' | 'info' | 'warning' | 'error',
@@ -23,6 +25,11 @@ export function useSaplingDashboardLayout(options: {
   const isLayoutEditing = ref(false)
   const isLayoutSaving = ref(false)
   const layoutSnapshot = ref<DashboardItem[] | null>(null)
+
+  function updateDashboardWidgets(handle: DashboardItem['handle'], widgets: DashboardWidget[]) {
+    const dashboard = dashboards.value.find((entry) => entry.handle === handle)
+    if (dashboard) dashboard.widgets = cloneDashboardWidgets(widgets)
+  }
 
   function updateDashboardKpis(
     dashboardHandle: DashboardItem['handle'],
@@ -95,6 +102,7 @@ export function useSaplingDashboardLayout(options: {
         : [
             {
               handle: dashboard.handle,
+              widgets: getDashboardWidgets(dashboard),
               kpiOrder: (dashboard.kpis ?? []).flatMap((kpi) =>
                 kpi.handle == null ? [] : [kpi.handle],
               ),
@@ -131,6 +139,7 @@ export function useSaplingDashboardLayout(options: {
     isLayoutEditing,
     isLayoutSaving,
     updateDashboardKpis,
+    updateDashboardWidgets,
     beginLayoutEdit,
     cancelLayoutEdit,
     reorderDashboards,

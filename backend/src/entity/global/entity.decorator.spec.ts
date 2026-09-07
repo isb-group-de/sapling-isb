@@ -5,6 +5,8 @@ import {
   SaplingForm,
   SaplingGenericReference,
   SaplingKanban,
+  SaplingNumeric,
+  getSaplingNumeric,
   SaplingReferenceTemplate,
   getSaplingFormLayout,
   getSaplingGenericReference,
@@ -15,6 +17,27 @@ import {
 } from './entity.decorator';
 
 describe('entity.decorator', () => {
+  it.each([0.5, 1, 10, 100])(
+    'stores a numeric step of %s independently per field',
+    (step) => {
+      class NumericEntity {
+        @SaplingNumeric({ step })
+        amount!: number;
+      }
+      expect(getSaplingNumeric(NumericEntity.prototype, 'amount')).toEqual({
+        step,
+      });
+      expect(getSaplingNumeric(NumericEntity.prototype, 'other')).toBeNull();
+    },
+  );
+
+  it.each([0, -1, Number.NaN, Number.POSITIVE_INFINITY])(
+    'rejects invalid numeric step %s',
+    (step) => {
+      expect(() => SaplingNumeric({ step })).toThrow('finite positive number');
+    },
+  );
+
   class ExampleEntity {
     @Sapling(['isValue'])
     @SaplingForm({

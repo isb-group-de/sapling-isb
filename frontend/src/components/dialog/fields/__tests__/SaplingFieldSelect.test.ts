@@ -30,6 +30,7 @@ const { loadDataMock, onSearchUpdateMock, tableState } = vi.hoisted(() => {
 
   const onSearchUpdate = vi.fn((value: string) => {
     state.search.value = value
+    state.page.value = 1
   })
 
   return {
@@ -45,7 +46,9 @@ vi.mock('@/composables/table/useSaplingTable', () => ({
     initializeEntityState: vi.fn(),
     loadData: loadDataMock,
     onSearchUpdate: onSearchUpdateMock,
-    onPageUpdate: vi.fn(),
+    onPageUpdate: (value: number) => {
+      tableState.page.value = value
+    },
     onItemsPerPageUpdate: vi.fn(),
     onColumnFiltersUpdate: vi.fn(),
     onSortByUpdate: vi.fn(),
@@ -78,13 +81,14 @@ const VAutocompleteStub = defineComponent({
   },
   emits: [
     'update:search',
+    'update:focused',
     'update:modelValue',
     'focus',
     'mousedown:control',
     'click:clear',
     'click:append-inner',
   ],
-  template: '<div><slot name="append-inner" /></div>',
+  template: '<div><input /><slot name="append-inner" /></div>',
 })
 
 const SaplingTableStub = defineComponent({
@@ -95,7 +99,7 @@ const SaplingTableStub = defineComponent({
     showToolbar: Boolean,
     allowRowDoubleClick: Boolean,
   },
-  emits: ['update:selected'],
+  emits: ['update:selected', 'update:page'],
   template:
     '<div><button class="sapling-table-row" data-test="result-row-1" /><button class="sapling-table-row" data-test="result-row-2" /></div>',
 })
@@ -145,6 +149,7 @@ describe('SaplingFieldSelect', () => {
     const wrapper = mountSelectField()
 
     const autocomplete = wrapper.findComponent(VAutocompleteStub)
+    await autocomplete.vm.$emit('update:focused', true)
     await autocomplete.vm.$emit('update:search', 'bat')
 
     expect(onSearchUpdateMock).toHaveBeenLastCalledWith('bat')
@@ -166,6 +171,29 @@ describe('SaplingFieldSelect', () => {
     expect(onSearchUpdateMock).toHaveBeenLastCalledWith('Batch 1')
     expect(tableState.search.value).toBe('Batch 1')
   })
+
+  it.each(['mouse', 'keyboard'])(
+    'preserves search while moving focus to the table by %s and allows clearing it afterwards',
+    async (navigation) => {
+      const wrapper = mountSelectField()
+      const input = wrapper.getComponent(VAutocompleteStub)
+      await input.vm.$emit('focus')
+      await input.vm.$emit('update:focused', true)
+      await input.vm.$emit('update:search', 'bat')
+      if (navigation === 'mouse') await wrapper.find('.sapling-menu-surface').trigger('mousedown')
+      await input.vm.$emit('update:focused', false)
+      await input.vm.$emit('update:search', '')
+      await wrapper.getComponent(SaplingTableStub).vm.$emit('update:page', 2)
+      expect(tableState.search.value).toBe('bat')
+      expect(tableState.page.value).toBe(2)
+
+      await input.vm.$emit('update:focused', true)
+      await input.get('input').setValue('')
+      expect(tableState.search.value).toBe('')
+      expect(tableState.page.value).toBe(1)
+      wrapper.unmount()
+    },
+  )
 
   it('keeps selections that are not part of the currently filtered table items', async () => {
     const existingBatch = { handle: 'batch-1', description: 'Batch 1' }

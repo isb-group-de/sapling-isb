@@ -193,6 +193,10 @@ export interface EntityTemplate {
   name: string
   /** Data type of the property */
   type: string
+  /** Whether the database column stores whole numbers only */
+  isInteger?: boolean
+  /** Numeric input configuration from SaplingNumeric */
+  numeric?: { step: number } | null
   /** Length of the property (if applicable) */
   length?: number
   /** Default value (can be string, number, boolean, null, or object) */

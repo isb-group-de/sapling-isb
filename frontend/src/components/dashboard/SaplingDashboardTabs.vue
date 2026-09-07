@@ -1,6 +1,6 @@
 <template>
   <section
-    class="sapling-dashboard__board glass-panel"
+    class="sapling-dashboard__board glass-panel sapling-nested-backdrop-host"
     data-tutorial="dashboard-board"
     :class="{ 'sapling-dashboard__board--layout-editing': layoutEditing }"
   >
@@ -46,7 +46,7 @@
             <div class="sapling-dashboard__tab-copy">
               <span class="sapling-dashboard__tab-title">{{ dashboard.name }}</span>
               <span class="sapling-dashboard__tab-meta"
-                >{{ dashboard.kpis?.length ?? 0 }} {{ $t('dashboard.kpis') }}</span
+                >{{ getDashboardWidgets(dashboard).length }} {{ $t('dashboard.widgets') }}</span
               >
             </div>
             <v-btn
@@ -73,13 +73,13 @@
           :key="String(dashboard.handle ?? dashboardIndex)"
           :value="dashboardIndex"
         >
-          <SaplingDashboardKpis
+          <SaplingDashboardWidgets
             :dashboard="dashboard"
             :open-add-request="
               dashboard.handle === addKpiRequestDashboardHandle ? addKpiRequestKey : 0
             "
             :layout-editing="layoutEditing"
-            @update:kpis="emit('updateKpis', dashboard.handle, $event)"
+            @update:widgets="emit('updateWidgets', dashboard.handle, $event)"
           />
         </v-window-item>
       </v-window>
@@ -90,7 +90,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { DashboardItem } from '@/entity/entity'
-import SaplingDashboardKpis from '@/components/dashboard/SaplingKpis.vue'
+import SaplingDashboardWidgets from '@/components/dashboard/SaplingDashboardWidgets.vue'
+import { getDashboardWidgets } from '@/composables/dashboard/saplingDashboardWidgets'
+import type { DashboardWidget } from '@/entity/dashboard-widget.types'
 import { useSaplingSortableDrag } from '@/composables/dashboard/useSaplingSortableDrag'
 
 const props = defineProps<{
@@ -103,6 +105,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
+  (event: 'updateWidgets', handle: DashboardItem['handle'], widgets: DashboardWidget[]): void
   (event: 'update:activeTab', value: number): void
   (event: 'removeDashboard', handle: NonNullable<DashboardItem['handle']>): void
   (event: 'updateKpis', dashboardHandle: DashboardItem['handle'], kpis: DashboardItem['kpis']): void

@@ -6,6 +6,7 @@ import { EffortEstimatePositionTemplateItem } from './EffortEstimatePositionTemp
 import {
   Sapling,
   SaplingForm,
+  SaplingNumeric,
   SaplingReferenceTemplate,
 } from './global/entity.decorator';
 
@@ -33,6 +34,7 @@ export class EffortEstimatePositionItem {
 
   @ApiPropertyOptional({ type: 'number' })
   @Sapling(['isNumeric'])
+  @SaplingNumeric({ step: 0.5 })
   @SaplingForm({
     order: 200,
     group: 'effortEstimatePosition.groupBasics',

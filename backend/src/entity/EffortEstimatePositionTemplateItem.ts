@@ -1,7 +1,11 @@
 import { Collection } from '@mikro-orm/core';
 import { Entity, OneToMany, Property } from '@mikro-orm/decorators/legacy';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Sapling, SaplingForm } from './global/entity.decorator';
+import {
+  Sapling,
+  SaplingForm,
+  SaplingNumeric,
+} from './global/entity.decorator';
 import { EffortEstimatePositionItem } from './EffortEstimatePositionItem';
 
 @Entity()
@@ -43,6 +47,7 @@ export class EffortEstimatePositionTemplateItem {
 
   @ApiPropertyOptional({ type: 'number' })
   @Sapling(['isNumeric'])
+  @SaplingNumeric({ step: 0.5 })
   @SaplingForm({
     order: 300,
     group: 'effortEstimatePositionTemplate.groupBasics',

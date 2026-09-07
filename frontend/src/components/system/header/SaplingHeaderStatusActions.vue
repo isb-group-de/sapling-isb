@@ -34,7 +34,7 @@
         <v-btn
           v-bind="tooltipProps"
           data-tutorial="header-inbox"
-          class="sapling-button--icon sapling-header__icon-action text-none"
+          class="sapling-button--icon sapling-header__icon-action sapling-header__count-action text-none"
           variant="text"
           :aria-label="inboxActionLabel"
           @click="emit('openInbox')"
@@ -42,7 +42,7 @@
           <v-badge
             location="top right"
             :color="inboxBadgeColor"
-            :content="inboxCount"
+            :content="inboxDisplayCount"
             :model-value="true"
           >
             <v-icon icon="mdi-email" />
@@ -56,7 +56,7 @@
         <v-btn
           v-bind="tooltipProps"
           data-tutorial="header-message-center"
-          class="sapling-button--icon sapling-header__icon-action text-none"
+          class="sapling-button--icon sapling-header__icon-action sapling-header__count-action text-none"
           variant="text"
           :aria-label="messageCenterActionLabel"
           @click="emit('openMessageCenter')"
@@ -64,7 +64,7 @@
           <v-badge
             location="top right"
             :color="messageBadgeColor"
-            :content="messageCount"
+            :content="messageDisplayCount"
             :value="messageCount > 0"
           >
             <v-icon icon="mdi-cloud-alert" />
@@ -96,7 +96,12 @@
           <v-icon icon="mdi-email" />
         </template>
         <template #append>
-          <v-badge :color="inboxBadgeColor" inline :content="inboxCount" :model-value="true" />
+          <v-badge
+            :color="inboxBadgeColor"
+            inline
+            :content="inboxDisplayCount"
+            :model-value="true"
+          />
         </template>
       </v-list-item>
 
@@ -108,7 +113,7 @@
           <v-badge
             :color="messageBadgeColor"
             inline
-            :content="messageCount"
+            :content="messageDisplayCount"
             :model-value="messageCount > 0"
           />
         </template>
@@ -147,9 +152,11 @@ const props = defineProps<{
   searchLabel: string
 }>()
 
-const inboxActionLabel = computed(() => `${props.inboxLabel}: ${props.inboxCount}`)
+const inboxDisplayCount = computed(() => Math.min(99, props.inboxCount))
+const messageDisplayCount = computed(() => Math.min(99, props.messageCount))
+const inboxActionLabel = computed(() => `${props.inboxLabel}: ${inboxDisplayCount.value}`)
 const messageCenterActionLabel = computed(
-  () => `${props.messageCenterLabel}: ${props.messageCount}`,
+  () => `${props.messageCenterLabel}: ${messageDisplayCount.value}`,
 )
 
 const emit = defineEmits<{

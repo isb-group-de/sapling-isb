@@ -4,6 +4,7 @@ jest.mock('../../entity/global/entity.registry', () => ({
   ENTITY_MAP: {
     ticket: class TicketItem {},
     ticketStatus: class TicketStatusItem {},
+    numericInteger: class NumericIntegerItem {},
   },
 }));
 jest.mock('../../entity/global/entity.decorator', () => ({
@@ -24,6 +25,9 @@ jest.mock('../../entity/global/entity.decorator', () => ({
   getSaplingReferenceTemplate: jest.fn(() => null),
   getSaplingReferenceDependency: jest.fn(() => null),
   getSaplingOptions: jest.fn(() => []),
+  getSaplingNumeric: jest.fn((_target: object, name: string) =>
+    name === 'estimatedHours' || name === 'badStep' ? { step: 0.5 } : null,
+  ),
   hasSaplingOption: jest.fn(() => false),
 }));
 
@@ -38,6 +42,7 @@ describe('TemplateService', () => {
           type: 'number',
           primary: true,
           autoincrement: true,
+          columnTypes: ['integer'],
         },
         externalHandle: {
           name: 'externalHandle',
@@ -57,6 +62,12 @@ describe('TemplateService', () => {
           type: 'string',
           nullable: false,
         },
+        estimatedHours: {
+          name: 'estimatedHours',
+          type: 'number',
+          columnTypes: ['real'],
+          nullable: true,
+        },
       },
     }));
     const service = new TemplateService({
@@ -68,7 +79,12 @@ describe('TemplateService', () => {
     const second = service.getEntityTemplate('ticket');
 
     expect(get).toHaveBeenCalledTimes(1);
-    expect(second).toHaveLength(4);
+    expect(second).toHaveLength(5);
+    expect(second[0]).toMatchObject({ isInteger: true, numeric: null });
+    expect(second[4]).toMatchObject({
+      isInteger: false,
+      numeric: { step: 0.5 },
+    });
     expect(second[1]).toMatchObject({
       name: 'externalHandle',
       isAutoIncrement: false,
@@ -108,6 +124,26 @@ describe('TemplateService', () => {
 
     expect(() => service.getEntityTemplate('ticketStatus')).toThrow(
       'expected exactly one primary key named "handle"',
+    );
+  });
+
+  it('rejects fractional step configuration on integer database columns', () => {
+    const service = new TemplateService({
+      getMetadata: () => ({
+        get: () => ({
+          properties: {
+            handle: { name: 'handle', type: 'number', primary: true },
+            badStep: {
+              name: 'badStep',
+              type: 'number',
+              columnTypes: ['smallint'],
+            },
+          },
+        }),
+      }),
+    } as never);
+    expect(() => service.getEntityTemplate('numericInteger')).toThrow(
+      'must be a whole number',
     );
   });
 });

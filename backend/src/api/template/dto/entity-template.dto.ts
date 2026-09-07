@@ -7,6 +7,7 @@ import {
   type SaplingKanbanMetadata,
   type SaplingReferenceTemplateMetadata,
   type SaplingReferenceDependency,
+  type SaplingNumericMetadata,
 } from '../../../entity/global/entity.decorator';
 import type {
   SaplingFormFieldConfig,
@@ -62,6 +63,20 @@ export class EntityTemplateDto {
       'The data type of the property (e.g., string, number, boolean, date, etc.).',
   })
   type!: string;
+
+  @ApiProperty({
+    description: 'Whether the database column stores whole numbers only.',
+    required: false,
+  })
+  isInteger?: boolean = false;
+
+  @ApiProperty({
+    description: 'Optional numeric input configuration from SaplingNumeric.',
+    nullable: true,
+    required: false,
+    type: Object,
+  })
+  numeric?: SaplingNumericMetadata | null;
 
   @ApiProperty({
     description:

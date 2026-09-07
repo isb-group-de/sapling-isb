@@ -1,58 +1,53 @@
 <template>
   <div class="sapling-dashboard-kpi-scroll">
-    <div class="sapling-kpi-surface" data-tutorial="dashboard-kpis">
-      <v-row class="sapling-kpi-grid" density="comfortable">
-        <template v-if="kpis.length > 0">
-          <v-col
-            v-for="(kpi, kpiIdx) in kpis"
-            :key="kpi.handle"
-            cols="12"
-            sm="6"
-            md="6"
-            lg="4"
-            xl="3"
-            class="d-flex sapling-dashboard__kpi-sortable"
-            :class="{
-              'sapling-dashboard__kpi-sortable--active': layoutEditing,
-              'sapling-dashboard__kpi-sortable--dragging': draggedHandle === kpi.handle,
-              'sapling-dashboard__kpi-sortable--drop-target': dropTargetHandle === kpi.handle,
-            }"
-            :draggable="layoutEditing"
-            @dragstart="layoutEditing && start($event, kpi.handle)"
-            @dragenter="layoutEditing && enter($event, kpi.handle)"
-            @dragover="layoutEditing && over($event)"
-            @drop="finish"
-            @dragend="finish"
-          >
-            <div v-if="layoutEditing" class="sapling-dashboard__kpi-drag-handle">
-              <v-icon size="small">mdi-drag-variant</v-icon>
-              <span>{{ $t('dashboard.dragKpi') }}</span>
-            </div>
-            <SaplingKpiCard
-              :kpi="kpi"
-              :kpiIdx="kpiIdx"
-              :onDelete="
-                layoutEditing && kpi.handle != null
-                  ? () => openKpiDeleteDialog(kpi.handle as number)
-                  : undefined
-              "
-            />
-          </v-col>
-        </template>
-
-        <v-col v-else cols="12">
-          <div class="sapling-empty-state-panel sapling-empty-state-panel--large glass-panel">
-            <v-icon size="52" color="primary">mdi-chart-box-plus-outline</v-icon>
-            <h3 class="sapling-empty-state-panel__title">{{ $t('kpi.emptyTitle') }}</h3>
-            <p class="sapling-empty-state-panel__text">
-              {{ $t('kpi.emptyText') }}
-            </p>
-            <v-btn color="primary" prepend-icon="mdi-plus-circle-outline" @click="openAddKpiDialog">
-              {{ $t('kpi.addKpi') }}
-            </v-btn>
+    <div data-tutorial="dashboard-kpis">
+      <SaplingKpiGrid v-if="kpis.length > 0">
+        <SaplingKpiTile
+          v-for="(kpi, kpiIdx) in kpis"
+          :key="kpi.handle"
+          :rows="getKpiTileRows(kpi)"
+          class="sapling-dashboard__kpi-sortable"
+          :class="{
+            'sapling-dashboard__kpi-sortable--active': layoutEditing,
+            'sapling-dashboard__kpi-sortable--dragging': draggedHandle === kpi.handle,
+            'sapling-dashboard__kpi-sortable--drop-target': dropTargetHandle === kpi.handle,
+          }"
+          :draggable="layoutEditing"
+          @dragstart="layoutEditing && start($event, kpi.handle)"
+          @dragenter="layoutEditing && enter($event, kpi.handle)"
+          @dragover="layoutEditing && over($event)"
+          @drop="finish"
+          @dragend="finish"
+        >
+          <div v-if="layoutEditing" class="sapling-dashboard__kpi-drag-handle">
+            <v-icon size="small">mdi-drag-variant</v-icon>
+            <span>{{ $t('dashboard.dragKpi') }}</span>
           </div>
-        </v-col>
-      </v-row>
+          <SaplingKpiCard
+            :kpi="kpi"
+            :kpiIdx="kpiIdx"
+            :tilt="!layoutEditing"
+            :onDelete="
+              layoutEditing && kpi.handle != null
+                ? () => openKpiDeleteDialog(kpi.handle as number)
+                : undefined
+            "
+          />
+        </SaplingKpiTile>
+      </SaplingKpiGrid>
+
+      <div v-else class="sapling-kpi-surface">
+        <div class="sapling-empty-state-panel sapling-empty-state-panel--large glass-panel">
+          <v-icon size="52" color="primary">mdi-chart-box-plus-outline</v-icon>
+          <h3 class="sapling-empty-state-panel__title">{{ $t('kpi.emptyTitle') }}</h3>
+          <p class="sapling-empty-state-panel__text">
+            {{ $t('kpi.emptyText') }}
+          </p>
+          <v-btn color="primary" prepend-icon="mdi-plus-circle-outline" @click="openAddKpiDialog">
+            {{ $t('kpi.addKpi') }}
+          </v-btn>
+        </div>
+      </div>
     </div>
 
     <SaplingDialogKpi
@@ -76,9 +71,12 @@
 // #region Imports
 import type { DashboardItem } from '@/entity/entity'
 import SaplingKpiCard from '@/components/kpi/SaplingKpiCard.vue'
+import SaplingKpiGrid from '@/components/dashboard/SaplingKpiGrid.vue'
+import SaplingKpiTile from '@/components/dashboard/SaplingKpiTile.vue'
 import SaplingDialogDelete from '@/components/dialog/SaplingDialogDelete.vue'
 import { useSaplingKpis } from '@/composables/dashboard/useSaplingKpis'
 import { useSaplingSortableDrag } from '@/composables/dashboard/useSaplingSortableDrag'
+import { getKpiTileRows } from '@/composables/dashboard/saplingKpiTileSize'
 import SaplingDialogKpi from '@/components/dialog/SaplingDialogKpi.vue'
 import { computed, ref, toRef, watch } from 'vue'
 // #endregion

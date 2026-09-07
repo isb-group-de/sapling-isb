@@ -12482,6 +12482,23 @@
           "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
+        },
+        "widgets": {
+          "name": "widgets",
+          "type": "jsonb",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "json"
         }
       },
       "indexes": [
@@ -12753,6 +12770,23 @@
           "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
+        },
+        "widgets": {
+          "name": "widgets",
+          "type": "jsonb",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "json"
         }
       },
       "indexes": [

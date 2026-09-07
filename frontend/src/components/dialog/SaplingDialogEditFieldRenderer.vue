@@ -155,6 +155,7 @@
     <SaplingNumberField
       v-else-if="
         template.options?.includes('isNumeric') ||
+        template.numeric != null ||
         template.type === 'number' ||
         isRenderer('number')
       "
@@ -165,6 +166,7 @@
       :placeholder="defaultPlaceholder"
       :rules="rules"
       :step="numberStep"
+      :precision="template.isInteger ? 0 : null"
       @update:model-value="(val: unknown) => updateField(template.name, val)"
     />
     <SaplingBooleanField
@@ -546,7 +548,9 @@ const canComposeMail = computed(
 )
 const jsonValue = computed(() => props.formValues[props.template.name])
 const customFieldOptions = computed(() => props.template.customField?.options ?? [])
-const numberStep = computed(() => (props.template.options?.includes('isNumeric') ? 1 : undefined))
+const numberStep = computed(
+  () => props.template.numeric?.step ?? (props.template.isInteger ? 1 : 0.5),
+)
 const senderPersonFilter: FilterQuery = {
   isActive: true,
   session: {

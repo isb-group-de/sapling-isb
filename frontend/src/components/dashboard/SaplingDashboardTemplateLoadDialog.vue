@@ -88,7 +88,7 @@
                   </v-chip>
 
                   <v-chip size="small" variant="outlined" color="default">
-                    {{ template.kpis?.length ?? 0 }} {{ $t('dashboard.kpis') }}
+                    {{ getDashboardWidgets(template).length }} {{ $t('dashboard.widgets') }}
                   </v-chip>
 
                   <span
@@ -118,6 +118,7 @@ import SaplingDialog from '@/components/common/SaplingDialog.vue'
 import SaplingDialogHero from '@/components/common/SaplingDialogHero.vue'
 import SaplingDialogShell from '@/components/common/SaplingDialogShell.vue'
 import type { DashboardTemplateItem } from '@/entity/entity'
+import { getDashboardWidgets } from '@/composables/dashboard/saplingDashboardWidgets'
 import { computed } from 'vue'
 
 const props = defineProps<{

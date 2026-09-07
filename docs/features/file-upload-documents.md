@@ -58,6 +58,67 @@ Existing documents are not reclassified retroactively.
 
 `DocumentTypeItem` is reference data for classifying documents. Use stable handles such as `document`, `offer`, or `contract` rather than changing them after seed data is in use.
 
+## Profile Pictures
+
+Account uploads open a crop dialog before sending any file. Users can drag with
+mouse/touch, move with arrow keys, and zoom from 1× to 4×. A circular overlay
+previews the header avatar; the saved document contains the actual square crop
+as PNG, at most 1024×1024 pixels without upscaling. Browser image decoding applies
+EXIF orientation; animated input becomes a still image. Multiple files are
+processed one at a time with skip/cancel controls. An upload failure keeps the
+current crop open for retry. Generic document uploads remain unchanged and do
+not use this account-only crop flow. No additional image-editing dependency is
+required.
+
+The account's separate Profile picture tab supports multiple profile pictures;
+the default Profile tab focuses on contact details and working hours. These are ordinary
+local `DocumentItem` records with `entity = person`, `reference = String(person.handle)`
+and `type = profilePicture`. `person` still records the uploader; selection uses
+the target reference, not the uploader. No person column or schema migration is
+needed. Production and demonstration seeders add the type in
+`documentTypeData_002.json` and the German/English labels in `translationData_080.json`.
+Run the normal seed update and restart the backend when deploying this feature.
+
+Authenticated self-service endpoints under `/api/current/profile-pictures`:
+
+| Method/path | Purpose |
+| --- | --- |
+| `GET /` | Safe image metadata for the current person's profile pictures |
+| `POST /` | Multipart `file`, with the person and type fixed by the server |
+| `GET /:handle` | Protected image response after checking person, reference and type |
+| `DELETE /:handle` | Delete an own profile picture and then its stored file |
+
+Self-service does not require generic Person or Document editing permissions.
+Every lookup is scoped to the authenticated person's target reference and the
+profile picture type; these routes do not grant access to other documents or
+people. Impersonation remains read-only. Metadata and image responses are private
+and use `no-store`; image responses also send `nosniff`. Ordinary document routes
+retain their existing permission checks.
+
+Uploads accept JPEG, PNG, GIF and WebP up to 5 MiB per file. The server checks
+binary signatures and sets the MIME type from the bytes. SVG and non-image files
+are rejected. The same validation applies to generic document uploads explicitly
+classified as `profilePicture`, which may only target an existing person.
+Upload reuses `DocumentService` and its automation events; removal records an
+`afterDelete` event and uses the shared storage cleanup after committing the
+metadata deletion. Deleting through the existing document browser also continues
+to work. The d.velop overlay does not redirect profile picture uploads: these
+remain locally available for use by the app header.
+
+`profilePictureStore` shares image selection across the account and header.
+Protected image downloads are shared as in-memory blob URLs (up to eight files),
+so a slideshow does not download the same full image on every change. Removed
+images and account changes revoke these URLs and discard outstanding downloads.
+Images are ordered newest first, with document handle as a stable tie-breaker.
+Two or more images rotate every minute; the Profile picture tab provides previous,
+next, pause/resume and a deletion confirmation naming the selected file.
+Reduced-motion preferences disable automatic rotation, and hidden browser tabs
+do not advance. Missing or broken images fall back to initials. Successful files
+from a partially failed multi-upload remain visible, while failed filenames are
+reported. Opening the Profile picture tab refreshes the document list, including changes
+made through the document browser. Changing the authenticated person clears
+the image state and discards outstanding results from the previous person.
+
 ## d.velop Cloud Overlay
 
 The local `DocumentItem` storage path remains the default and is intentionally unchanged.

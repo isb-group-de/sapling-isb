@@ -18,7 +18,7 @@
         <div class="sapling-identity-chip sapling-header__account">
           <div class="sapling-identity-avatar sapling-header__account-avatar">
             <v-icon v-if="isImpersonating" icon="mdi-eye-outline" size="18" />
-            <template v-else>{{ profileInitials }}</template>
+            <SaplingProfileAvatar v-else :name="profileName" :initials="profileInitials" />
           </div>
           <div class="sapling-identity-copy sapling-header__account-copy">
             <div class="sapling-identity-title sapling-header__account-name">{{ profileName }}</div>
@@ -41,7 +41,9 @@
       :elevation="12"
     >
       <div class="sapling-menu-hero sapling-profile-menu__hero">
-        <div class="sapling-menu-avatar sapling-profile-menu__avatar">{{ profileInitials }}</div>
+        <div class="sapling-menu-avatar sapling-profile-menu__avatar">
+          <SaplingProfileAvatar :name="profileName" :initials="profileInitials" />
+        </div>
         <div class="sapling-menu-identity sapling-profile-menu__identity">
           <div class="sapling-menu-eyebrow sapling-profile-menu__eyebrow">
             {{ accountLabel }}
@@ -193,6 +195,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { VCard } from 'vuetify/components'
 import SaplingSurface from '@/components/common/SaplingSurface.vue'
+import SaplingProfileAvatar from '@/components/account/SaplingProfileAvatar.vue'
 import type {
   SaplingLanguage,
   SaplingLanguageOption,

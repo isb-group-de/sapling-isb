@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import SaplingDashboardTabs from '../SaplingDashboardTabs.vue'
 import SaplingKpis from '../SaplingKpis.vue'
+import SaplingDashboardWidgets from '../SaplingDashboardWidgets.vue'
 import SaplingKpiCard from '@/components/kpi/SaplingKpiCard.vue'
 
 const mocks = vi.hoisted(() => ({
@@ -168,12 +169,16 @@ describe('dashboard layout removal actions', () => {
     })
 
     expect(
-      wrapper.findAllComponents(SaplingKpis).map((kpis) => kpis.props('openAddRequest')),
+      wrapper
+        .findAllComponents(SaplingDashboardWidgets)
+        .map((kpis) => kpis.props('openAddRequest')),
     ).toEqual([1, 0])
 
     await wrapper.setProps({ activeTab: 1 })
     expect(
-      wrapper.findAllComponents(SaplingKpis).map((kpis) => kpis.props('openAddRequest')),
+      wrapper
+        .findAllComponents(SaplingDashboardWidgets)
+        .map((kpis) => kpis.props('openAddRequest')),
     ).toEqual([1, 0])
   })
 

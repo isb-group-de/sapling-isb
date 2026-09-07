@@ -68,6 +68,7 @@
               :work-hours="getPersonWorkHours(personId)"
               :show-work-hour-background="showWorkHourBackground"
               calendar-class="sapling-event-vcalendar--column"
+              :show-resize-handle="true"
               :get-work-hour-style="(date) => getColumnWorkHourStyle(personId, date)"
               :get-event-color="getEventColor"
               :get-event-participants="getEventParticipants"

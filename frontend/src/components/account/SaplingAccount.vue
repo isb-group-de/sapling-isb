@@ -163,6 +163,10 @@
                   </div>
                 </v-window-item>
 
+                <v-window-item value="profilePicture" class="sapling-account-center__panel">
+                  <SaplingAccountProfilePictures />
+                </v-window-item>
+
                 <v-window-item value="notifications" class="sapling-account-center__panel">
                   <SaplingAccountNotificationPanel
                     v-model="notificationPreferences"
@@ -410,6 +414,7 @@
 
 <script setup lang="ts">
 import SaplingAccountWorkHours from './SaplingAccountWorkHours.vue'
+import SaplingAccountProfilePictures from './SaplingAccountProfilePictures.vue'
 // #region Imports
 import { computed, watch } from 'vue'
 import { useRouter } from 'vue-router'

@@ -10,6 +10,7 @@ import {
   getSaplingReferenceTemplate,
   getSaplingReferenceDependency,
   getSaplingOptions,
+  getSaplingNumeric,
   hasSaplingOption,
 } from '../../entity/global/entity.decorator';
 
@@ -118,9 +119,25 @@ export class TemplateService {
         const entityHandleFromType =
           entityHandleByTypeName.get(prop.type) ?? null;
 
+        const isInteger =
+          /^(?:tinyint|smallint|mediumint|int|integer|bigint|int2|int4|int8|smallserial|serial|bigserial)\b/i.test(
+            prop.columnTypes?.[0] ?? prop.type,
+          );
+        const numeric = getSaplingNumeric(
+          entityClass.prototype as object,
+          prop.name,
+        );
+        if (isInteger && numeric && !Number.isInteger(numeric.step)) {
+          throw new Error(
+            `SaplingNumeric step for "${entityHandle}.${prop.name}" must be a whole number for an integer column.`,
+          );
+        }
+
         return {
           name: prop.name,
           type: prop.type,
+          isInteger,
+          numeric,
           referenceName: entityHandleFromType ?? '',
           length: prop.length ?? null,
           nullable: prop.nullable ?? true,

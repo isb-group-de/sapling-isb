@@ -14,7 +14,11 @@
       @update:search="onActivatorSearchUpdate"
     >
       <template #activator="{ props: activatorProps, focusFirstResult }">
-        <div v-bind="activatorProps" class="sapling-field-select__activator">
+        <div
+          v-bind="activatorProps"
+          class="sapling-field-select__activator"
+          @input.capture="onAutocompleteInput"
+        >
           <SaplingAutocomplete
             :disabled="props.disabled"
             :label="props.label"
@@ -37,7 +41,8 @@
             @click:clear="clearSelection"
             @update:menu="closeAutocompleteMenu"
             @update:model-value="onActivatorModelUpdate"
-            @update:search="onActivatorSearchUpdate"
+            @update:focused="isAutocompleteFocused = $event"
+            @update:search="onAutocompleteSearchUpdate"
           >
             <template #selection="{ item }">
               <span class="sapling-field-single-select__selection">
@@ -160,6 +165,7 @@ import {
 import { DEFAULT_PAGE_SIZE_SMALL } from '@/constants/project.constants'
 import ApiGenericService from '@/services/api.generic.service'
 import { useGenericStore } from '@/stores/genericStore'
+import { useCurrentPersonStore } from '@/stores/currentPersonStore'
 import { saplingTableDisplayContextKey } from '@/components/table/saplingTableDisplayContext'
 import { useSaplingMessageCenter } from '@/composables/system/useSaplingMessageCenter'
 import type { DialogSaveAction, DialogSaveContext, DialogState } from '@/entity/structure'
@@ -207,12 +213,14 @@ const {
   onSortByUpdate,
 } = useSaplingTable(ref(props.entityHandle), DEFAULT_PAGE_SIZE_SMALL, false, false, () => ({}), [
   ...(props.dependencyTargetField ? [props.dependencyTargetField] : []),
+  ...(props.additionalListProjectionFields ?? []),
 ])
 
 const { selectedItem, menuOpen } = useSaplingSingleSelectField(props)
 const { getValueLabel, getValueLabelLines } = useSaplingEntityValueLabel(entityTemplates)
 const { combineFilters, normalizeFilter, areFiltersEqual } = useSaplingReferenceFilter()
 const fieldSearch = ref('')
+const isAutocompleteFocused = ref(false)
 const autocompleteItems = ref<SaplingGenericItem[]>([])
 const genericStore = useGenericStore()
 const tableDisplayContext = inject(saplingTableDisplayContextKey, null)
@@ -281,6 +289,18 @@ function onActivatorModelUpdate(value: SaplingGenericItem | null) {
   if (resolvedItem) {
     selectedItem.value = resolvedItem
   }
+}
+
+function onAutocompleteSearchUpdate(value: string) {
+  // Vuetify replaces search with the selection label on blur. Moving to the
+  // result table (pagination, filters or keyboard navigation) is not a new query.
+  if (isAutocompleteFocused.value) onActivatorSearchUpdate(value)
+}
+
+function onAutocompleteInput(event: Event) {
+  // After an ignored blur reset, Vuetify can suppress an identical next search
+  // update (notably deleting all text). Native input still represents that edit.
+  if (event.target instanceof HTMLInputElement) onActivatorSearchUpdate(event.target.value)
 }
 
 function onActivatorSearchUpdate(value: string) {
@@ -438,11 +458,30 @@ function isSelectedItemDisplayText(value: string) {
 function initializeReferenceEntityState() {
   return initializeEntityState({
     initialSearch: getTableSearchValue(),
-    beforeInitialLoad: () => {
+    beforeInitialLoad: async () => {
       // Table initialization restores URL filters. Reference fields do not use
       // URL state, so reapply the latest dependency filter before the very
       // first request instead of briefly (or permanently) loading all rows.
       parentFilter.value = normalizeFilter(props.parentFilter)
+      if (props.defaultCurrentPersonFilter) {
+        const personField = entityTemplates.value.find(
+          (field) => field.options?.includes('isPerson') && field.fieldAccess?.allowRead !== false,
+        )
+        if (personField) {
+          const currentPerson = useCurrentPersonStore()
+          await currentPerson.fetchCurrentPerson()
+          if (currentPerson.person?.handle != null) {
+            columnFilters.value = {
+              ...columnFilters.value,
+              [personField.name]: {
+                operator: 'eq',
+                value: '',
+                relationItems: [currentPerson.person],
+              },
+            }
+          }
+        }
+      }
     },
   })
 }

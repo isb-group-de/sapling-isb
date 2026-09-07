@@ -3,6 +3,7 @@ import {
   Logger,
   NotFoundException,
   Optional,
+  BadRequestException,
 } from '@nestjs/common';
 import { DocumentItem } from '../../entity/DocumentItem';
 import * as uuid from 'uuid';
@@ -24,8 +25,13 @@ import {
 import {
   getDocumentStorageDirectory,
   getDocumentStorageFilePath,
+  deleteStoredDocumentFile,
 } from './document-storage.util';
 import { AutomationEventService } from '../automation/automation-event.service';
+import {
+  PROFILE_PICTURE_TYPE,
+  validateProfilePicture,
+} from './profile-picture.util';
 
 export interface ReferencedImageDocument {
   handle: number;
@@ -102,10 +108,25 @@ export class DocumentService {
     currentUser: PersonItem,
     description?: string,
   ): Promise<DocumentItem> {
+    if (typeHandle === PROFILE_PICTURE_TYPE) {
+      if (entityHandle !== 'person') {
+        throw new BadRequestException('account.profilePicturePersonOnly');
+      }
+      file = { ...file, mimetype: validateProfilePicture(file) };
+      const person = await this.em.findOne(PersonItem, {
+        handle: Number(reference),
+      });
+      if (!person || String(person.handle) !== reference) {
+        throw new NotFoundException('global.entityNotFound');
+      }
+    }
     const entity = await this.em.findOne(EntityItem, { handle: entityHandle });
     if (!entity) throw new NotFoundException('global.entityNotFound');
     const filename = resolveUploadedDocumentFilename(file.originalname);
-    const mimetype = resolveUploadedDocumentMimeType(filename, file.mimetype);
+    const mimetype =
+      typeHandle === PROFILE_PICTURE_TYPE
+        ? file.mimetype
+        : resolveUploadedDocumentMimeType(filename, file.mimetype);
     const isEml = mimetype === 'message/rfc822';
     const isMsg = mimetype === 'application/vnd.ms-outlook';
     const type = await this.em.findOne(DocumentTypeItem, {
@@ -192,6 +213,21 @@ export class DocumentService {
           },
         });
       }
+    }).catch(async (error: unknown) => {
+      if (typeHandle === PROFILE_PICTURE_TYPE) {
+        try {
+          await deleteStoredDocumentFile({
+            entityHandle,
+            storedPath: document.path,
+          });
+        } catch (cleanupError) {
+          this.logger.error(
+            'Failed to remove an uncommitted profile picture',
+            cleanupError,
+          );
+        }
+      }
+      throw error;
     });
     return document;
   }

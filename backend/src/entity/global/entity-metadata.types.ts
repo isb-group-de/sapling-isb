@@ -101,3 +101,8 @@ export interface SaplingKanbanMetadata {
   cardFooterFields?: string[];
   columnDescriptionField?: string;
 }
+
+export interface SaplingNumericMetadata {
+  /** Positive increment for numeric input controls. */
+  step: number;
+}

@@ -24,6 +24,36 @@ describe('useSaplingTable initialization and loading', () => {
   beforeEach(resetTableTestMocks)
   afterEach(cleanupTableTestWrappers)
 
+  it('keeps search, column and dependency filters in paginated requests and resets the page only when filters change', async () => {
+    vi.useFakeTimers()
+    loadGenericMock.mockResolvedValue(undefined)
+    apiFindMock.mockResolvedValue({ data: [], meta: { total: 20 } })
+    const wrapper = mountManualTestHost(ref('partner'))
+    await wrapper.vm.initializeEntityState({ initialSearch: 'aktiv' })
+    wrapper.vm.parentFilter = { handle: { $gt: 0 } }
+    wrapper.vm.onColumnFiltersUpdate({ name: { operator: 'like', value: 'e' } })
+    await nextTick()
+    await vi.advanceTimersByTimeAsync(250)
+    const filter = JSON.parse(JSON.stringify(wrapper.vm.activeFilter))
+
+    wrapper.vm.onPageUpdate(2)
+    await nextTick()
+    await vi.advanceTimersByTimeAsync(250)
+    expect(apiFindMock).toHaveBeenLastCalledWith(
+      'partner',
+      expect.objectContaining({ page: 2, filter }),
+    )
+    expect(wrapper.vm.search).toBe('aktiv')
+    expect(wrapper.vm.totalItems).toBe(20)
+    wrapper.vm.onColumnFiltersUpdate({ name: { operator: 'like', value: 'changed' } })
+    expect(wrapper.vm.page).toBe(1)
+    wrapper.vm.onPageUpdate(2)
+    wrapper.vm.onSearchUpdate('')
+    expect(wrapper.vm.page).toBe(1)
+    expect(wrapper.vm.columnFilters).toEqual({ name: { operator: 'like', value: 'changed' } })
+    expect(wrapper.vm.parentFilter).toEqual({ handle: { $gt: 0 } })
+  })
+
   it('loads nested isValue relations needed by reference labels', async () => {
     loadGenericMock.mockResolvedValue(undefined)
     apiFindMock.mockResolvedValue({

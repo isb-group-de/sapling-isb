@@ -12,6 +12,7 @@ const {
   pushMessageMock,
   initializeEntityStateMock,
   loadDataMock,
+  onSearchUpdateMock,
   useSaplingTableMock,
   tableState,
 } = vi.hoisted(() => {
@@ -24,6 +25,7 @@ const {
     pushMessageMock: vi.fn(),
     initializeEntityStateMock: vi.fn(),
     loadDataMock: vi.fn(),
+    onSearchUpdateMock: vi.fn(),
     useSaplingTableMock: vi.fn(),
     tableState: {
       items: makeRef<Array<Record<string, unknown>>>([]),
@@ -72,8 +74,10 @@ vi.mock('@/composables/table/useSaplingTable', () => ({
       ...tableState,
       initializeEntityState: initializeEntityStateMock,
       loadData: loadDataMock,
-      onSearchUpdate: vi.fn(),
-      onPageUpdate: vi.fn(),
+      onSearchUpdate: onSearchUpdateMock,
+      onPageUpdate: (value: number) => {
+        tableState.page.value = value
+      },
       onItemsPerPageUpdate: vi.fn(),
       onColumnFiltersUpdate: vi.fn(),
       onSortByUpdate: vi.fn(),
@@ -92,6 +96,10 @@ vi.mock('@/services/api.template.service', () => ({
   default: {
     getEntityTemplate: getEntityTemplateMock,
   },
+}))
+
+vi.mock('@/stores/currentPersonStore', () => ({
+  useCurrentPersonStore: () => ({ person: { handle: 42 }, fetchCurrentPerson: vi.fn() }),
 }))
 
 vi.mock('@/stores/genericStore', () => ({
@@ -116,8 +124,15 @@ const VMenuStub = defineComponent({
 const VAutocompleteStub = defineComponent({
   name: 'VAutocomplete',
   props: { modelValue: Object },
-  emits: ['update:search', 'update:modelValue', 'focus', 'mousedown:control', 'click:clear'],
-  template: '<div />',
+  emits: [
+    'update:search',
+    'update:focused',
+    'update:modelValue',
+    'focus',
+    'mousedown:control',
+    'click:clear',
+  ],
+  template: '<div><input /></div>',
 })
 
 const VTooltipStub = defineComponent({
@@ -139,7 +154,7 @@ const SaplingTableStub = defineComponent({
     showToolbar: Boolean,
     allowRowDoubleClick: Boolean,
   },
-  emits: ['update:selected'],
+  emits: ['update:selected', 'update:page'],
   template: '<div />',
 })
 
@@ -205,6 +220,13 @@ describe('SaplingFieldSingleSelect reference dialog', () => {
     loadDataMock.mockResolvedValue(undefined)
     tableState.parentFilter.value = null
     tableState.isInitialized.value = true
+    tableState.search.value = ''
+    tableState.page.value = 1
+    tableState.columnFilters.value = {}
+    onSearchUpdateMock.mockImplementation((value: string) => {
+      tableState.search.value = value
+      tableState.page.value = 1
+    })
     tableState.entityTemplates.value = [
       {
         key: 'name',
@@ -237,6 +259,39 @@ describe('SaplingFieldSingleSelect reference dialog', () => {
         options: ['isValue'],
       },
     ])
+  })
+
+  it.each([null, { handle: 10, name: 'Existing company' }])(
+    'keeps a typed query when focus moves to pagination, with selection %s',
+    async (selected) => {
+      const wrapper = mountField(selected)
+      const input = wrapper.getComponent(VAutocompleteStub)
+      await input.vm.$emit('focus')
+      await input.vm.$emit('update:focused', true)
+      await input.vm.$emit('update:search', 'aktiv')
+      await input.vm.$emit('update:focused', false)
+      await input.vm.$emit('update:search', selected?.name ?? '')
+      await wrapper.getComponent(SaplingTableStub).vm.$emit('update:page', 2)
+      expect(tableState.search.value).toBe('aktiv')
+      expect(tableState.page.value).toBe(2)
+      expect(onSearchUpdateMock).toHaveBeenLastCalledWith('aktiv')
+
+      await input.vm.$emit('update:focused', true)
+      await input.vm.$emit('update:search', 'changed')
+      expect(tableState.page.value).toBe(1)
+      await input.get('input').setValue('')
+      expect(tableState.search.value).toBe('')
+      wrapper.unmount()
+    },
+  )
+
+  it('accepts fullscreen picker search while the autocomplete is not focused', async () => {
+    const wrapper = mountField()
+    await wrapper
+      .findComponent({ name: 'SaplingFieldTablePicker' })
+      .vm.$emit('update:search', 'mobile search')
+    expect(tableState.search.value).toBe('mobile search')
+    wrapper.unmount()
   })
 
   it('disables row double-click actions in the dropdown table', async () => {
@@ -317,6 +372,7 @@ describe('SaplingFieldSingleSelect reference dialog', () => {
     const wrapper = mountField(null, {
       parentFilter: companyFilter,
       dependencyTargetField: 'company',
+      additionalListProjectionFields: ['filter', 'search', 'sortBy'],
     })
 
     wrapper.getComponent(VAutocompleteStub).vm.$emit('focus')
@@ -324,8 +380,42 @@ describe('SaplingFieldSingleSelect reference dialog', () => {
 
     expect(initializeEntityStateMock).toHaveBeenCalledTimes(1)
     expect(tableState.parentFilter.value).toEqual(companyFilter)
-    expect(useSaplingTableMock.mock.calls[0]?.[5]).toEqual(['company'])
+    expect(useSaplingTableMock.mock.calls[0]?.[5]).toEqual([
+      'company',
+      'filter',
+      'search',
+      'sortBy',
+    ])
   })
+
+  it.each([true, false])(
+    'defaults a readable person column when present: %s',
+    async (hasPersonField) => {
+      if (hasPersonField)
+        tableState.entityTemplates.value.push({ name: 'owner', options: ['isPerson'] })
+      tableState.isInitialized.value = false
+      initializeEntityStateMock.mockImplementation(
+        async (options: { beforeInitialLoad: () => Promise<void> }) => {
+          await options.beforeInitialLoad()
+          tableState.isInitialized.value = true
+        },
+      )
+      const wrapper = mountField(null, { defaultCurrentPersonFilter: true })
+      wrapper.getComponent(VAutocompleteStub).vm.$emit('focus')
+      await flushPromises()
+      expect(tableState.columnFilters.value).toEqual(
+        hasPersonField
+          ? { owner: { operator: 'eq', value: '', relationItems: [{ handle: 42 }] } }
+          : {},
+      )
+      // Clearing the default and reopening must not force it back onto the user.
+      tableState.columnFilters.value = {}
+      wrapper.getComponent(VAutocompleteStub).vm.$emit('focus')
+      await flushPromises()
+      expect(tableState.columnFilters.value).toEqual({})
+      wrapper.unmount()
+    },
+  )
 
   it('loads the complete reference and opens an edit dialog above the field', async () => {
     const selected = { handle: 'company-1', name: 'Sapling GmbH' }

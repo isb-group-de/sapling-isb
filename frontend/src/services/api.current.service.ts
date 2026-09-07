@@ -75,7 +75,8 @@ export interface TerminateSessionsResult {
 
 export interface DashboardLayoutEntry {
   handle: number
-  kpiOrder: number[]
+  kpiOrder?: number[]
+  widgets?: import('@/entity/dashboard-widget.types').DashboardWidget[]
 }
 
 export interface UpdateDashboardLayoutPayload {

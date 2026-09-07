@@ -54,6 +54,67 @@ jest.mock('../../entity/WorkHourWeekItem', () => ({
 import { CurrentService } from './current.service';
 
 describe('CurrentService', () => {
+  it('persists widget settings without requiring legacy KPI assignments and rejects foreign dashboards', async () => {
+    const widget = {
+      id: 'table',
+      title: 'Tickets',
+      columns: 2,
+      rows: 4,
+      kind: 'TABLE' as const,
+      config: {
+        entity: 'ticket',
+        filter: { status: 'open' },
+        columns: ['title'],
+        sortBy: [],
+        search: '',
+        pageSize: 10,
+      },
+    };
+    const dashboard = {
+      handle: 3,
+      person: { handle: 7 },
+      widgets: [] as unknown[],
+      sortOrder: 300,
+    };
+    const flush = jest.fn<() => Promise<void>>().mockResolvedValue();
+    const service = new CurrentService(
+      {
+        transactional: async (callback: (em: unknown) => Promise<unknown>) =>
+          callback({
+            find: jest
+              .fn<() => Promise<unknown[]>>()
+              .mockResolvedValue([dashboard]),
+            flush,
+          }),
+      } as never,
+      {} as never,
+    );
+    await service.updateDashboardLayout(
+      { handle: 7 },
+      { dashboards: [{ handle: 3, widgets: [widget] }] },
+    );
+    expect(dashboard.widgets).toEqual([widget]);
+    widget.config.columns.push('status');
+    expect(dashboard.widgets[0]).toMatchObject({
+      config: { columns: ['title'] },
+    });
+    expect(dashboard.sortOrder).toBe(100);
+    expect(flush).toHaveBeenCalledTimes(1);
+    await expect(
+      service.updateDashboardLayout(
+        { handle: 7 },
+        { dashboards: [{ handle: 99, widgets: [] }] },
+      ),
+    ).rejects.toThrow('dashboard.invalidLayout');
+    await expect(
+      service.updateDashboardLayout(
+        { handle: 7 },
+        { dashboards: [{ handle: 3, widgets: [{ ...widget, rows: 5 }] }] },
+      ),
+    ).rejects.toThrow('dashboard.invalidWidget');
+    expect(flush).toHaveBeenCalledTimes(1);
+  });
+
   it('loads authorization relations without provisioning starter content', async () => {
     const person = { handle: 7, roles: [] };
     const findOne = jest
@@ -99,6 +160,16 @@ describe('CurrentService', () => {
               handle: 11,
               name: 'Support Cockpit',
               kpis: [{ handle: 101 }, { handle: 102 }],
+              widgets: [
+                {
+                  id: 'site',
+                  title: 'Site',
+                  kind: 'WEBSITE',
+                  columns: 1,
+                  rows: 2,
+                  config: { url: 'https://example.com', mode: 'link' },
+                },
+              ],
             },
           ],
           starterFavoriteTemplates: [
@@ -150,6 +221,16 @@ describe('CurrentService', () => {
         person: hydratedPerson,
         sortOrder: 100,
         kpiOrder: [101, 102],
+        widgets: [
+          {
+            id: 'site',
+            title: 'Site',
+            kind: 'WEBSITE',
+            columns: 1,
+            rows: 2,
+            config: { url: 'https://example.com', mode: 'link' },
+          },
+        ],
       }),
     );
     expect(persistedDashboard?.kpis.items).toEqual([

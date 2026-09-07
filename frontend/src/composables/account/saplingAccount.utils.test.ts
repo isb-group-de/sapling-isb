@@ -26,6 +26,7 @@ describe('saplingAccount utils', () => {
       expect(isSaplingAccountType(personType)).toBe(false)
       expect(buildAccountTabs(personType).map((tab) => tab.key)).toEqual([
         'profile',
+        'profilePicture',
         'notifications',
         'sync',
         'sessions',

@@ -239,8 +239,7 @@
 }
 
 .sapling-kpi-list__table {
-  max-height: 190px;
-  overflow-y: auto;
+  flex: 0 0 auto;
 }
 
 .sapling-kpi-calendar {

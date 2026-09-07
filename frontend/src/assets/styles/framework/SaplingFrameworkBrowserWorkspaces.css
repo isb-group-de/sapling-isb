@@ -543,10 +543,6 @@
     background: var(--sapling-surface-fill);
   }
 
-  .sapling-dashboard__board .sapling-kpi-grid {
-    margin: 0;
-  }
-
   .sapling-dashboard__favorites .sapling-card-strip__track {
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   }

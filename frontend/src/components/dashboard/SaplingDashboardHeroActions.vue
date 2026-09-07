@@ -4,14 +4,14 @@
       <v-btn
         color="primary"
         variant="plain"
-        prepend-icon="mdi-chart-box-plus-outline"
-        :aria-label="$t('kpi.addKpi')"
-        :title="$t('kpi.addKpi')"
+        prepend-icon="mdi-widgets-outline"
+        :aria-label="$t('dashboard.addWidget')"
+        :title="$t('dashboard.addWidget')"
         :disabled="isLayoutEditing || !hasDashboards || !currentPersonLoaded"
         @click="emit('addKpi')"
       >
         <template v-if="$vuetify.display.mdAndUp">
-          {{ $t('kpi.addKpi') }}
+          {{ $t('dashboard.addWidget') }}
         </template>
       </v-btn>
       <v-btn

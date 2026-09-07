@@ -8,7 +8,11 @@
       @surface-mousedown="suppressNextActivatorSearchUpdate"
     >
       <template #activator="{ props: activatorProps, focusFirstResult }">
-        <div v-bind="activatorProps" class="sapling-field-select__activator">
+        <div
+          v-bind="activatorProps"
+          class="sapling-field-select__activator"
+          @input.capture="onAutocompleteInput"
+        >
           <SaplingAutocomplete
             :disabled="props.disabled"
             :label="props.label"
@@ -35,7 +39,8 @@
             @click:clear="clearSelection"
             @update:menu="closeAutocompleteMenu"
             @update:model-value="onActivatorModelUpdate"
-            @update:search="onActivatorSearchUpdate"
+            @update:focused="isAutocompleteFocused = $event"
+            @update:search="onAutocompleteSearchUpdate"
           >
             <template #chip="{ props: chipProps, item }">
               <v-chip v-bind="chipProps" class="sapling-field-select__chip">
@@ -173,6 +178,7 @@ const { selectedItems, menuOpen } = useSaplingSelectField(props)
 const { getValueLabel, getValueLabelLines } = useSaplingEntityValueLabel(entityTemplates)
 const { combineFilters, normalizeFilter, areFiltersEqual } = useSaplingReferenceFilter()
 const fieldSearch = ref('')
+const isAutocompleteFocused = ref(false)
 const autocompleteItems = ref<SaplingGenericItem[]>([])
 const genericStore = useGenericStore()
 const suppressNextSelectedItemSearch = ref(false)
@@ -194,6 +200,21 @@ function onActivatorModelUpdate(value: readonly SaplingGenericItem[] | null) {
   const normalizedSelection = normalizeSelectedItems(value)
   if (!areSameItemCollections(normalizedSelection, selectedItems.value)) {
     selectedItems.value = normalizedSelection
+  }
+}
+
+function onAutocompleteSearchUpdate(value: string) {
+  // The autocomplete's blur/selection-label updates must not replace the query
+  // while focus is in the result table, including keyboard navigation.
+  if (isAutocompleteFocused.value) onActivatorSearchUpdate(value)
+}
+
+function onAutocompleteInput(event: Event) {
+  // An explicit edit must work even when Vuetify suppresses a repeated search
+  // update after its internal blur reset.
+  if (event.target instanceof HTMLInputElement) {
+    suppressNextSelectedItemSearch.value = false
+    onActivatorSearchUpdate(event.target.value)
   }
 }
 

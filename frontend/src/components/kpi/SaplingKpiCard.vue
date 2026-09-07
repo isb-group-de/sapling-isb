@@ -21,6 +21,7 @@
 
       <div class="sapling-stack-md sapling-kpi-card__header-tools">
         <v-btn-group density="compact" class="sapling-kpi-card__actions">
+          <slot name="actions" />
           <v-btn
             variant="text"
             class="sapling-kpi-card__action"

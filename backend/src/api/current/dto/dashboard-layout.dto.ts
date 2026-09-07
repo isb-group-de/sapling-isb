@@ -6,9 +6,11 @@ import {
   IsArray,
   IsInt,
   IsPositive,
+  IsOptional,
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import type { DashboardWidget } from '../../../entity/dashboard-widget.types';
 
 export class DashboardLayoutEntryDto {
   @ApiProperty({ example: 42 })
@@ -17,12 +19,19 @@ export class DashboardLayoutEntryDto {
   handle!: number;
 
   @ApiProperty({ type: [Number], example: [101, 102, 103] })
+  @IsOptional()
   @IsArray()
   @ArrayMaxSize(500)
   @ArrayUnique()
   @IsInt({ each: true })
   @IsPositive({ each: true })
-  kpiOrder!: number[];
+  kpiOrder?: number[];
+
+  @ApiProperty({ type: 'array', items: { type: 'object' }, required: false })
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(100)
+  widgets?: DashboardWidget[];
 }
 
 export class UpdateDashboardLayoutDto {

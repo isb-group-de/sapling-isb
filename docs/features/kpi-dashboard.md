@@ -1,6 +1,6 @@
 # KPI And Dashboard System
 
-Sapling KPIs are persisted definitions that aggregate any registered entity through the generic metadata model. Dashboards and favorites arrange those definitions into user-facing work surfaces.
+The Sapling workspace arranges KPIs, agendas, native entity tables, and website/link widgets into personal dashboards. KPI definitions still aggregate registered entities through the generic metadata model.
 
 ## Main Files
 
@@ -34,25 +34,25 @@ backend/src/database/seeder/json-demonstration/kpi/
 
 Important fields:
 
-| Field               | Meaning                                                                                                       |
-| ------------------- | ------------------------------------------------------------------------------------------------------------- |
-| `name`              | Human-readable KPI name                                                                                       |
-| `description`       | Optional explanatory text                                                                                     |
-| `targetEntity`      | `EntityItem` that resolves through `ENTITY_MAP`                                                               |
-| `aggregation`       | Aggregation handle such as `COUNT`, `SUM`, `AVG`, `MIN`, `MAX`                                                |
-| `field`             | Field path to aggregate; relation paths such as `type.handle` are supported                                   |
-| `type`              | Rendering/execution shape, including scalar, grouped, formula, target, funnel, trend, and calendar variants  |
-| `timeframeField`    | Date field for time-based KPIs; defaults to `created_at` in executor logic                                    |
-| `timeframe`         | Current period such as `DAY`, `WEEK`, `MONTH`, `QUARTER`, `YEAR`                                              |
-| `timeframeInterval` | Sparkline bucket interval, for example `MONTH` within `YEAR`                                                  |
-| `filter`            | Persisted generic filter JSON                                                                                 |
-| `groupBy`           | Optional list of field paths used for grouped output                                                          |
-| `relation`          | Optional relation entity context                                                                              |
-| `relationField`     | Field used for relation drilldowns/grouping                                                                   |
-| `secondary*`        | Optional independently filtered aggregation/entity/field used as the second formula operand                  |
-| `durationStartField`| Start/comparison column for duration and field-to-field aggregations                                           |
-| `formula*`          | Operation, scale, and display unit for calculated KPIs                                                         |
-| `target*`           | Plan value, direction, warning boundary, and critical boundary for target/progress KPIs                        |
+| Field                | Meaning                                                                                                     |
+| -------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `name`               | Human-readable KPI name                                                                                     |
+| `description`        | Optional explanatory text                                                                                   |
+| `targetEntity`       | `EntityItem` that resolves through `ENTITY_MAP`                                                             |
+| `aggregation`        | Aggregation handle such as `COUNT`, `SUM`, `AVG`, `MIN`, `MAX`                                              |
+| `field`              | Field path to aggregate; relation paths such as `type.handle` are supported                                 |
+| `type`               | Rendering/execution shape, including scalar, grouped, formula, target, funnel, trend, and calendar variants |
+| `timeframeField`     | Date field for time-based KPIs; defaults to `created_at` in executor logic                                  |
+| `timeframe`          | Current period such as `DAY`, `WEEK`, `MONTH`, `QUARTER`, `YEAR`                                            |
+| `timeframeInterval`  | Sparkline bucket interval, for example `MONTH` within `YEAR`                                                |
+| `filter`             | Persisted generic filter JSON                                                                               |
+| `groupBy`            | Optional list of field paths used for grouped output                                                        |
+| `relation`           | Optional relation entity context                                                                            |
+| `relationField`      | Field used for relation drilldowns/grouping                                                                 |
+| `secondary*`         | Optional independently filtered aggregation/entity/field used as the second formula operand                 |
+| `durationStartField` | Start/comparison column for duration and field-to-field aggregations                                        |
+| `formula*`           | Operation, scale, and display unit for calculated KPIs                                                      |
+| `target*`            | Plan value, direction, warning boundary, and critical boundary for target/progress KPIs                     |
 
 Reference handles are seeded in:
 
@@ -86,20 +86,20 @@ This means KPI results are not a bypass around normal entity permissions. If a u
 
 ## KPI Types
 
-| Type         | Runtime method                       | Typical frontend component |
-| ------------ | ------------------------------------ | -------------------------- |
-| `ITEM`       | `executeItemOrList()`                | `SaplingKpiItem.vue`       |
-| `LIST`       | `executeItemOrList()`                | `SaplingKpiList.vue`       |
-| `BREAKDOWN`  | `executeItemOrList()` with grouping  | `SaplingKpiBreakdown.vue`  |
-| `TREND`      | `executeTrend()`                     | `SaplingKpiTrend.vue`      |
-| `COMPARISON` | `executeTrend()`                     | `SaplingKpiComparison.vue` |
-| `SPARKLINE`  | `executeSparkline()`                 | `SaplingKpiSparkline.vue`  |
-| `CALENDAR`   | permission-aware generic Event query | `SaplingKpiCalendar.vue`   |
-| `RATIO`      | `executeFormula()`                   | `SaplingKpiPerformance.vue`|
-| `FORMULA`    | `executeFormula()`                   | `SaplingKpiPerformance.vue`|
-| `TARGET`     | `executeTarget()`                    | `SaplingKpiPerformance.vue`|
-| `PROGRESS`   | `executeTarget()`                    | `SaplingKpiPerformance.vue`|
-| `FUNNEL`     | `executeItemOrList()` with grouping  | `SaplingKpiFunnel.vue`     |
+| Type         | Runtime method                       | Typical frontend component  |
+| ------------ | ------------------------------------ | --------------------------- |
+| `ITEM`       | `executeItemOrList()`                | `SaplingKpiItem.vue`        |
+| `LIST`       | `executeItemOrList()`                | `SaplingKpiList.vue`        |
+| `BREAKDOWN`  | `executeItemOrList()` with grouping  | `SaplingKpiBreakdown.vue`   |
+| `TREND`      | `executeTrend()`                     | `SaplingKpiTrend.vue`       |
+| `COMPARISON` | `executeTrend()`                     | `SaplingKpiComparison.vue`  |
+| `SPARKLINE`  | `executeSparkline()`                 | `SaplingKpiSparkline.vue`   |
+| `CALENDAR`   | permission-aware generic Event query | `SaplingKpiCalendar.vue`    |
+| `RATIO`      | `executeFormula()`                   | `SaplingKpiPerformance.vue` |
+| `FORMULA`    | `executeFormula()`                   | `SaplingKpiPerformance.vue` |
+| `TARGET`     | `executeTarget()`                    | `SaplingKpiPerformance.vue` |
+| `PROGRESS`   | `executeTarget()`                    | `SaplingKpiPerformance.vue` |
+| `FUNNEL`     | `executeItemOrList()` with grouping  | `SaplingKpiFunnel.vue`      |
 
 `TREND` and `COMPARISON` compare the current timeframe with the previous equivalent timeframe. `SPARKLINE` creates bucketed values inside a timeframe, for example months within a year or days within a month.
 
@@ -131,22 +131,14 @@ calendar definitions: the next open appointments, the next confirmed
 appointments, and the next online appointments for the signed-in participant.
 They are intentionally not assigned to a dashboard template automatically.
 
-### Appointment Worklist Versus Calendar KPI
+### Appointment Worklists And Agenda Widgets
 
-Sapling provides two separate appointment surfaces on the dashboard:
-
-- **Meine heutigen Termine** is a worklist (`FavoriteTemplateItem`). Select the
-  matching quick link on the dashboard to open the Event table filtered to the
-  signed-in participant, today's start range, and non-canceled/non-completed
-  statuses.
-- **Meine nächsten Termine** is a calendar KPI (`KpiItem` with type `CALENDAR`).
-  Select **KPI hinzufügen** on the target dashboard, choose this KPI, and save.
-  The card shows the next five open appointments within 90 days. The confirmed
-  and online variants can be added in the same way.
-
-Worklists are therefore intentionally not offered in the **KPI hinzufügen**
-dialog. A KPI already assigned to the current dashboard is also excluded from
-that dialog; it remains available for assignment to another dashboard.
+**Meine heutigen Termine** remains a saved Event worklist. New agenda cards are
+added through **Widget hinzufügen → Agenda** and have their own title, date
+horizon, appointment limit, optional status, and copied worklist filter.
+Existing CALENDAR KPI assignments are rendered as equivalent agenda widgets.
+They retain the original filter, the current participant, and the 90-day/five-entry
+limits. Other KPI definitions are selected through the KPI widget type.
 
 ## Aggregation And Grouping
 
@@ -196,34 +188,117 @@ Drilldowns should always carry enough context to reproduce the KPI subset in the
 
 ## Dashboard And Favorites
 
-`DashboardItem` stores a person-owned dashboard with a many-to-many list of KPIs.
-Its `sortOrder` defines the dashboard position in the tab strip and its
-`kpiOrder` JSON array stores the KPI handles in card order. Consumers append
-assigned KPI handles that are missing from `kpiOrder`, which keeps migrated or
-partially configured records usable.
+The page is named **Sapling Arbeitsbereich**. Each person-owned DashboardItem
+and reusable DashboardTemplateItem has an ordered nullable JSON widgets array.
+Each instance stores a stable ID, title, columns (1–4), rows (1–4), kind, and config:
 
-The dashboard page keeps its normal read-only presentation until the user
-opens layout editing. During editing, dashboard tabs and KPI cards are reordered
-locally with drag-and-drop, and the removal controls for dashboards and KPI cards
-are shown only in this mode. Cancel restores the previous ordering while keeping
-already confirmed removals removed. Save sends all owned dashboards to
-`PATCH /api/current/dashboardLayout`; the backend
-validates dashboard ownership and the exact KPI assignments and persists both
-orders atomically. Adding KPIs outside layout editing and removing them during
-layout editing also update `kpiOrder`, so there is one ordering model rather than
-a separate legacy path. An add-KPI request is scoped to the dashboard from which
-it was started and consumed only once, so changing dashboard tabs cannot replay a
-completed or cancelled dialog.
-The dashboard tab strip keeps the shared tab height for each two-line label and
-adds a dedicated scrollbar row to Vuetify's horizontal slide container. The
-native scrollbar therefore stays below the title and KPI-count lines instead of
-reducing their usable height.
+| Kind    | Persisted configuration                                                                  |
+| ------- | ---------------------------------------------------------------------------------------- |
+| KPI     | Existing KPI handle; its definition remains centrally managed                            |
+| AGENDA  | Generic filter, days ahead, occurrence limit; always scoped to the viewer as participant |
+| TABLE   | Entity handle, copied filter, visible columns in order, sorting, search, page size       |
+| WEBSITE | HTTPS URL and link/embed display mode                                                    |
+| NOTE    | Markdown content (up to 20,000 characters), shared editor and safe Markdown renderer      |
+| ACTIONS | One to twelve labelled buttons opening generic create dialogs for configured entities   |
+
+Notes can be edited directly with the card's pencil; outside layout editing,
+save persists immediately. In layout editing, changes remain in the draft.
+Quick actions require read and insert permission plus the entity's `canInsert`
+capability. Clicking loads metadata and opens the existing record dialog; no
+record is created until the user saves. The standard table save workflow handles
+pending relations, save-and-close, subsequent edits and concurrency conflicts.
+Actions are disabled during layout editing. Both types are copied with templates
+and restored when cancelling a layout draft. No additional schema migration is
+needed because their configuration uses the existing widgets JSON column.
+
+Website widgets open their URL in a new tab from both the header action and
+the link button, preserving the CRM tab. The iframe stays embedded in embed mode.
+
+The worklist picker for table and agenda widgets explicitly loads `filter`,
+`search`, and `sortBy`, even though those fields are hidden in the list. It
+defaults its `isPerson` column filter to the signed-in person; users can change
+or clear that column filter. Imported widget filters retain dynamic user tokens
+so they continue to resolve for the viewer when copied through templates.
+
+Null or absent widgets denotes a legacy dashboard. The frontend converts its
+KPI relations in kpiOrder order, with CALENDAR definitions becoming agendas.
+An explicit empty array stays empty. Existing KPI relations remain for legacy
+seed/provisioning compatibility; new workspace saves use the complete widget
+array. Migration20260907120000 adds the JSON columns without rewriting old data.
+
+Adding a widget saves immediately. Layout editing allows reordering, resizing,
+configuration changes and widget removal in a local draft. Cancel restores the
+widget snapshot, including removed widgets and their settings. Confirmed whole
+dashboard deletions remain deleted. Save sends all owned dashboards to
+PATCH /api/current/dashboardLayout; ownership, completeness, IDs, dimensions and
+kind-specific settings are validated and persisted in one transaction. The
+legacy exact-KPI-order payload is still accepted. ORM hooks apply the same widget
+validation to generic dashboard and template writes.
+
+Saving a template captures the originating dashboard's complete widget array.
+Loading it creates a new dashboard with a deep copy in one create request;
+role-based starter provisioning also copies widgets. Configurations, sizes and
+order are independent after copying. KPI definitions remain referenced, so their
+central definition changes still apply to every KPI widget. Worklist filters are
+copied, rather than dynamically linked to later favorite edits.
+
+Tables reuse SaplingTable and the generic permission-enforced API, with separate
+pagination, search and filter state for each widget and no URL-state syncing.
+The widget editor defines the saved initial view. Interactive table changes are
+local to that rendered view; edit the widget to change its saved defaults.
+Agendas use the same generic Event API and recurrence expansion as calendar KPIs.
+Website embeds use a sandboxed iframe with no referrer. The destination's
+frame-ancestors/X-Frame-Options policy and browser login/cookie restrictions can
+prevent embedding; the card always provides a direct link. Only HTTPS URLs
+without embedded credentials are accepted. Sapling does not proxy external pages.
+
+The add dialog request is consumed once and scoped to the originating dashboard.
+The tab scrollbar has a dedicated row beneath tab titles and widget counts.
+
+### KPI Grid Geometry
+
+`SaplingKpiGrid.vue` and `SaplingKpiTile.vue` provide the shared dashboard,
+loading-placeholder, and playground layout. The grid uses the available content
+width (container queries), with one column below 600px, two from 600px, three
+from 960px, and four from 1280px. It never stretches a partial row to fill the
+remaining columns. A two-row tile is **square**. One row has height
+`(column width - row gap) / 2`, so two one-row tiles and their intervening gap
+align exactly with a two-row tile. Content cannot enlarge a row.
+The KPI header and its actions stay outside the
+card's scrollable body. Lists use that body instead of a separate 190px limit.
+
+Current value KPIs (`ITEM`) use `columns=1` and `rows=1`; all other KPI types
+use the square tile defaults `columns=1` and `rows=2`. The shared
+`getKpiTileRows` resolver also sizes the playground. Compact value cards reduce
+header/body spacing so their value remains usable in a half-height tile.
+Widgets
+can span one to four columns and rows, for example:
+
+```vue
+<SaplingKpiGrid>
+  <SaplingKpiTile :columns="2" :rows="2">...</SaplingKpiTile>
+  <SaplingKpiTile :columns="3" :rows="1">...</SaplingKpiTile>
+</SaplingKpiGrid>
+```
+
+Spanning sizes include the gaps between their cells, so adjacent tiles stay
+aligned. CSS Grid uses dense row placement to fill half-height holes with later
+tiles, allowing two value KPIs to stack alongside a calendar. Saved order and
+DOM/keyboard order remain unchanged; visual order can differ when filling gaps.
+A tile wider than the available
+column count is hidden instead of compressed or creating implicit columns; it
+reappears when enough width is available. Height spans remain scrollable with
+the dashboard page. Widget size is edited in the shared widget dialog and persisted with its configuration. Layout editing
+keeps the same tile dimensions and reserves drag-handle space inside the card.
+Native drag previews preserve both source dimensions and the pointer's actual
+position inside the source bounds. Preview transforms are disabled to keep the
+grab point stable, including when a tile is picked up in a right-hand column.
 
 The first-visit dashboard tutorial is the second group orchestrated by
-`SaplingDashboardTutorials.vue`. It explains the KPI workspace, creation and
-template actions, permission-aware quick links, dashboard tabs, KPI cards, and
+`SaplingDashboardTutorials.vue`. It explains the Sapling workspace, creation and
+template actions, permission-aware quick links, dashboard tabs, widgets, and
 layout editing. Its final step temporarily enters the existing layout editor so
-the user sees draggable/resizable cards; finishing or dismissing the tutorial
+the user sees draggable cards; finishing or dismissing the tutorial
 cancels that tutorial-started edit and restores the previous local layout.
 
 `Migration20260803120000` adds both fields, backfills existing dashboards in a
@@ -262,17 +337,25 @@ demonstration dashboard-template seeds use the same name-based contract.
 
 Frontend dashboard components:
 
-| Component                                  | Responsibility            |
-| ------------------------------------------ | ------------------------- |
-| `SaplingDashboard.vue`                     | Main dashboard surface    |
-| `SaplingDashboardTabs.vue`                 | Tab switching and sorting |
-| `SaplingKpis.vue`                          | KPI rendering and sorting |
-| `SaplingFavorites.vue`                     | Favorite list renderer    |
-| `SaplingDashboardTemplateLoadDialog.vue`   | Load dashboard templates  |
-| `SaplingFavoriteTemplateLoadDialog.vue`    | Load favorite templates   |
-| `SaplingDashboardRecommendedFavorites.vue` | Suggested favorites       |
+| Component                                  | Responsibility                          |
+| ------------------------------------------ | --------------------------------------- |
+| `SaplingDashboard.vue`                     | Main dashboard surface                  |
+| `SaplingDashboardTabs.vue`                 | Tab switching and sorting               |
+| `SaplingDashboardWidgets.vue`              | Widget rendering, editing, and sorting  |
+| `SaplingWidgetDialog.vue`                  | Kind-specific settings and grid sizes   |
+| `SaplingTableWidget.vue`                   | Independent native entity table         |
+| `SaplingAgendaWidget.vue`                  | Participant-scoped upcoming occurrences |
+| `SaplingFavorites.vue`                     | Favorite list renderer                  |
+| `SaplingDashboardTemplateLoadDialog.vue`   | Load dashboard templates                |
+| `SaplingFavoriteTemplateLoadDialog.vue`    | Load favorite templates                 |
+| `SaplingDashboardRecommendedFavorites.vue` | Suggested favorites                     |
 
 ## Extension Checklist
+
+For a new widget kind, extend both widget unions and backend validation, add its
+renderer and editor, and verify generic writes, layout save/cancel, template
+copying and starter provisioning. Widget configuration must remain serializable
+and must never bypass entity or field permissions.
 
 When adding a new KPI:
 

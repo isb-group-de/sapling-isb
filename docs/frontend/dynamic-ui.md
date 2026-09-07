@@ -193,6 +193,21 @@ Selection examples:
 
 If a new field behavior is generally useful, add a Sapling option and renderer branch rather than special-casing one entity.
 
+Generic numeric steppers use the template's `isInteger` flag, derived from the
+database column type. Integer columns use whole-number input and steps of 1;
+other numeric columns allow decimals and use steps of 0.5. The step size does
+not round manually entered decimal values. Decimal separators follow the active
+UI language (for example, `0,5` in German). This also applies to estimated hours
+on effort-estimate positions and their templates.
+
+Use `@SaplingNumeric({ step: 10 })` on an entity property to override the step
+per field; `0.5`, `1`, `10`, and `100` are examples. The template exposes this
+as `numeric.step`. Steps must be finite and positive; integer database columns
+also require a whole-number step. The decorator selects the generic numeric
+renderer even without `isNumeric`. It controls the increment, not a restriction
+to multiples of that increment. Money and percent fields keep their specialized
+renderers. Estimated hours explicitly declare `@SaplingNumeric({ step: 0.5 })`.
+
 Generated forms also treat `isDateStart` and `isDateEnd` as a range contract.
 Markers are paired within their declared form group and the dialog blocks save
 when the end is before the start. The generic backend enforces the same rule for
@@ -246,6 +261,14 @@ ORM cardinalities such as `1:m` and `m:n` are intentionally not exposed as
 visible, hover, or accessibility text.
 
 ### Reference Field Components
+
+Single- and multi-select table pickers keep their query when focus moves into
+pagination, sorting, column filters, or result rows. Vuetify's autocomplete
+emits a selection-label/empty search update on blur; the fields accept those
+search events only while the autocomplete is focused. The fullscreen picker's
+own search input updates the query independently. Explicit typing or clearing
+still resets pagination to page one. Collection-add and generic-reference
+wrappers inherit this behavior from the shared reference fields.
 
 Reference fields should use the existing Sapling field components instead of raw Vuetify selects:
 
@@ -872,6 +895,9 @@ full table views and other existing consumers do not opt out accidentally.
 Glass dialog cards and reference dropdown surfaces paint their outer blur on a sibling
 underlay. This avoids creating an ancestor Backdrop Root, allowing sticky table headers
 and action columns to blur scrolling rows consistently inside overlays as well as pages.
+Dashboard boards and embedded table widget cards use the same
+`sapling-nested-backdrop-host` underlay. Both ancestors must stay free of a
+backdrop filter so widget table headers and action cells can sample scrolling rows.
 The shared `.sapling-table` shell clips rounded corners with `border-radius` and
 `overflow: hidden`. Do not add `clip-path`, masks, or filters to this ancestor:
 they create a Backdrop Root and break the blur behind sticky headers, selection

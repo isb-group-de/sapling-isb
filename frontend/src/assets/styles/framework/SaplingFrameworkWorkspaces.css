@@ -376,15 +376,21 @@
 
 .sapling-sortable-drag-preview {
   width: var(--sapling-sortable-drag-preview-width);
+  height: var(--sapling-sortable-drag-preview-height);
+  margin: 0 !important;
   position: fixed !important;
   z-index: 99999 !important;
   top: -10000px !important;
   left: -10000px !important;
   pointer-events: none !important;
   opacity: 0.92 !important;
-  transform: rotate(1deg) scale(0.98);
+  transform: none !important;
   border-radius: var(--sapling-radius-sm);
   box-shadow: var(--sapling-shadow-soft-strong);
+}
+
+.sapling-sortable-drag-preview .sapling-kpi-card {
+  transform: none !important;
 }
 
 .sapling-dashboard__tab .v-btn__content {
@@ -473,16 +479,14 @@
   height: var(--sapling-space-sm-plus);
 }
 
-.sapling-dashboard__kpi-skeleton-grid {
-  width: 100%;
-  margin: 0;
-}
-
 .sapling-dashboard__loading-card {
   display: flex;
+  flex: 1 1 auto;
   flex-direction: column;
   gap: var(--sapling-gap-sm);
-  min-height: var(--sapling-card-min-height);
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
   padding: var(--sapling-space-panel-md);
   border-radius: var(--sapling-radius-sm);
   background: rgba(var(--v-theme-surface), 0.3);

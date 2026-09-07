@@ -1,5 +1,7 @@
 import { Collection } from '@mikro-orm/core';
 import {
+  BeforeCreate,
+  BeforeUpdate,
   Entity,
   Index,
   ManyToMany,
@@ -11,6 +13,8 @@ import { KpiItem } from './KpiItem';
 import { Sapling, SaplingForm } from './global/entity.decorator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { type Rel } from '@mikro-orm/core';
+import type { DashboardWidget } from './dashboard-widget.types';
+import { validateDashboardWidgets } from './dashboard-widget.validation';
 
 /**
  * @class
@@ -93,6 +97,18 @@ export class DashboardItem {
   })
   @Property({ type: 'json', nullable: false, default: '[]' })
   kpiOrder: number[] = [];
+
+  /** Ordered, independently configured widget instances; null denotes a legacy KPI dashboard. */
+  @ApiPropertyOptional({ type: 'array', items: { type: 'object' } })
+  @SaplingForm({ visible: false, tableVisible: false, mobileVisible: false })
+  @Property({ type: 'json', nullable: true })
+  widgets?: DashboardWidget[] | null;
+
+  @BeforeCreate()
+  @BeforeUpdate()
+  validateWidgets() {
+    if (this.widgets != null) validateDashboardWidgets(this.widgets);
+  }
   // #endregion
 
   // #region Properties: Relation

@@ -9,6 +9,8 @@ import { DvelopDocumentService } from './dvelop-document.service';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { ENTITY_REGISTRY } from '../../entity/global/entity.registry';
 import { AuthModule } from '../../auth/auth.module';
+import { ProfilePictureController } from './profile-picture.controller';
+import { ProfilePictureService } from './profile-picture.service';
 
 /**
  * @class
@@ -26,9 +28,10 @@ import { AuthModule } from '../../auth/auth.module';
       ENTITY_REGISTRY.map((e) => e.class as new (...args: any[]) => unknown),
     ),
   ],
-  controllers: [DocumentController],
+  controllers: [DocumentController, ProfilePictureController],
   providers: [
     DocumentService,
+    ProfilePictureService,
     DvelopDocumentService,
     DvelopCloudClientService,
     DvelopCloudMetadataService,

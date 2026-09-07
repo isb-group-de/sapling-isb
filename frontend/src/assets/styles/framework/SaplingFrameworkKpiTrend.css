@@ -94,10 +94,6 @@
     padding-bottom: var(--sapling-gap-xl);
   }
 
-  .sapling-kpi-card {
-    min-height: var(--sapling-empty-state-min-height);
-  }
-
   .sapling-kpi-card__header {
     flex-direction: column;
   }

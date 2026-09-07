@@ -1,4 +1,5 @@
 import type { DashboardItem, DashboardTemplateItem } from '@/entity/entity'
+import { getDashboardWidgets } from './saplingDashboardWidgets'
 
 export interface DashboardForm {
   name: string
@@ -13,6 +14,7 @@ export interface KpiRelationSource {
 export function cloneDashboardLayout(items: DashboardItem[]): DashboardItem[] {
   return items.map((dashboard) => ({
     ...dashboard,
+    widgets: getDashboardWidgets(dashboard),
     kpiOrder: [...(dashboard.kpiOrder ?? [])],
     kpis: Array.isArray(dashboard.kpis) ? [...dashboard.kpis] : [],
   }))

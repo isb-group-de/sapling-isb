@@ -44,7 +44,7 @@
         </div>
       </section>
 
-      <section class="sapling-dashboard__board glass-panel">
+      <section class="sapling-dashboard__board glass-panel sapling-nested-backdrop-host">
         <div
           class="sapling-tabs-shell sapling-dashboard__tabs-shell sapling-dashboard__tabs-shell--loading"
         >
@@ -54,8 +54,8 @@
           </div>
         </div>
 
-        <v-row class="sapling-kpi-grid sapling-dashboard__kpi-skeleton-grid" density="comfortable">
-          <v-col v-for="item in 8" :key="item" cols="12" sm="6" lg="4" xl="3">
+        <SaplingKpiGrid>
+          <SaplingKpiTile v-for="item in 8" :key="item">
             <div class="sapling-dashboard__loading-card">
               <div class="sapling-dashboard__loading-card-header">
                 <v-skeleton-loader type="text" class="sapling-dashboard__loading-chip" />
@@ -71,8 +71,8 @@
               <v-skeleton-loader type="paragraph" class="sapling-dashboard__loading-copy" />
               <v-skeleton-loader type="image" class="sapling-dashboard__loading-visual" />
             </div>
-          </v-col>
-        </v-row>
+          </SaplingKpiTile>
+        </SaplingKpiGrid>
       </section>
     </template>
     <template v-else>
@@ -162,6 +162,7 @@
         :layout-editing="isLayoutEditing"
         @remove-dashboard="removeDashboard"
         @update-kpis="updateDashboardKpis"
+        @update-widgets="updateDashboardWidgets"
         @reorder-dashboards="reorderDashboards"
       />
 
@@ -175,7 +176,7 @@
         :model-value="dashboardDialog.visible"
         :mode="dashboardDialog.mode"
         :item="dashboardDialog.item"
-        :templates="dashboardEntityTemplates"
+        :templates="dashboardEntityTemplates.filter((field) => field.name !== 'kpis')"
         :entity="dashboardEntity"
         @update:model-value="updateDashboardDialogVisibility"
         @update:mode="updateDashboardDialogMode"
@@ -188,7 +189,7 @@
         :model-value="dashboardTemplateDialog.visible"
         :mode="dashboardTemplateDialog.mode"
         :item="dashboardTemplateDialog.item"
-        :templates="dashboardTemplateEntityTemplates"
+        :templates="dashboardTemplateEntityTemplates.filter((field) => field.name !== 'kpis')"
         :entity="dashboardTemplateEntity"
         allow-pristine-create
         @update:model-value="updateDashboardTemplateDialogVisibility"
@@ -225,6 +226,8 @@ import SaplingDashboardHeroActions from '@/components/dashboard/SaplingDashboard
 import SaplingDashboardRecommendedFavorites from '@/components/dashboard/SaplingDashboardRecommendedFavorites.vue'
 import SaplingDashboardTemplateLoadDialog from '@/components/dashboard/SaplingDashboardTemplateLoadDialog.vue'
 import SaplingDashboardTabs from '@/components/dashboard/SaplingDashboardTabs.vue'
+import SaplingKpiGrid from '@/components/dashboard/SaplingKpiGrid.vue'
+import SaplingKpiTile from '@/components/dashboard/SaplingKpiTile.vue'
 import SaplingDialogDelete from '@/components/dialog/SaplingDialogDelete.vue'
 import SaplingDialogEdit from '@/components/dialog/SaplingDialogEdit.vue'
 import SaplingPageHero from '@/components/common/SaplingPageHero.vue'
@@ -274,6 +277,7 @@ const {
   onDashboardTemplateSave,
   removeDashboard,
   updateDashboardKpis,
+  updateDashboardWidgets,
   beginLayoutEdit,
   cancelLayoutEdit,
   reorderDashboards,

@@ -1,5 +1,7 @@
 import { Collection, type Rel } from '@mikro-orm/core';
 import {
+  BeforeCreate,
+  BeforeUpdate,
   Entity,
   ManyToMany,
   ManyToOne,
@@ -9,6 +11,8 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { KpiItem } from './KpiItem';
 import { PersonItem } from './PersonItem';
 import { Sapling, SaplingForm } from './global/entity.decorator';
+import type { DashboardWidget } from './dashboard-widget.types';
+import { validateDashboardWidgets } from './dashboard-widget.validation';
 
 /**
  * Persisted dashboard template configuration that can either be shared globally
@@ -35,6 +39,17 @@ export class DashboardTemplateItem {
   })
   @Property({ length: 128, nullable: false })
   name!: string;
+
+  @ApiPropertyOptional({ type: 'array', items: { type: 'object' } })
+  @SaplingForm({ visible: false, tableVisible: false, mobileVisible: false })
+  @Property({ type: 'json', nullable: true })
+  widgets?: DashboardWidget[] | null;
+
+  @BeforeCreate()
+  @BeforeUpdate()
+  validateWidgets() {
+    if (this.widgets != null) validateDashboardWidgets(this.widgets);
+  }
 
   @ApiPropertyOptional()
   @SaplingForm({

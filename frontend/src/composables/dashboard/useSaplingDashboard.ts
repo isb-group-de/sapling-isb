@@ -5,6 +5,8 @@ import { useTranslationLoader } from '@/composables/generic/useTranslationLoader
 import { useSaplingMessageCenter } from '@/composables/system/useSaplingMessageCenter'
 import { useCurrentPersonStore } from '@/stores/currentPersonStore'
 import { useSaplingDashboardLayout } from './useSaplingDashboardLayout'
+import type { DashboardWidget } from '@/entity/dashboard-widget.types'
+import { getDashboardWidgets } from './saplingDashboardWidgets'
 import {
   getNextDashboardSortOrder,
   getKpiHandles,
@@ -30,9 +32,7 @@ type DashboardPayload = Omit<Partial<DashboardItem>, 'kpis' | 'person'> & {
   person: NonNullable<DashboardItem['person']>
 }
 
-type DashboardTemplatePayload = Omit<Partial<DashboardTemplateItem>, 'kpis' | 'person'> & {
-  person: NonNullable<DashboardTemplateItem['person']>
-}
+type DashboardTemplatePayload = Omit<Partial<DashboardTemplateItem>, 'kpis' | 'person'>
 
 /**
  * Encapsulates dashboard loading, CRUD state, and dashboard-template workflows.
@@ -47,6 +47,7 @@ export function useSaplingDashboard() {
     mode: 'create',
     item: null,
   })
+  const templateWidgetSnapshot = ref<DashboardWidget[]>([])
   const dashboardTemplateLoadDialog = ref(false)
   const applyingDashboardTemplateHandle = ref<DashboardTemplateItem['handle'] | null>(null)
   const dashboardEntity = ref<EntityItem | null>(null)
@@ -71,6 +72,7 @@ export function useSaplingDashboard() {
     isLayoutEditing,
     isLayoutSaving,
     updateDashboardKpis,
+    updateDashboardWidgets,
     beginLayoutEdit,
     cancelLayoutEdit,
     reorderDashboards,
@@ -210,38 +212,6 @@ export function useSaplingDashboard() {
     dashboardToDelete.value = null
   }
 
-  /**
-   * Extracts stable KPI handles from template relations for direct dashboard creation.
-   */
-
-  /**
-   * Persists KPI relations for a newly created dashboard through the generic reference endpoint.
-   */
-  async function createDashboardKpiReferences(
-    dashboardHandle: NonNullable<DashboardItem['handle']>,
-    kpiHandles: number[],
-  ) {
-    for (const kpiHandle of kpiHandles) {
-      await ApiGenericService.createReference('dashboard', 'kpis', dashboardHandle, kpiHandle)
-    }
-  }
-
-  /**
-   * Persists KPI relations for a newly created dashboard template.
-   */
-  async function createDashboardTemplateKpiReferences(
-    dashboardTemplateHandle: NonNullable<DashboardTemplateItem['handle']>,
-    kpiHandles: number[],
-  ) {
-    for (const kpiHandle of kpiHandles) {
-      await ApiGenericService.createReference(
-        'dashboardTemplate',
-        'kpis',
-        dashboardTemplateHandle,
-        kpiHandle,
-      )
-    }
-  }
   // #endregion
 
   // #region Dialogs
@@ -267,6 +237,7 @@ export function useSaplingDashboard() {
       return
     }
 
+    templateWidgetSnapshot.value = getDashboardWidgets(currentDashboard.value)
     dashboardTemplateDialog.value = {
       visible: true,
       mode: 'create',
@@ -276,6 +247,7 @@ export function useSaplingDashboard() {
         isShared: false,
         person: currentPersonStore.person,
         kpis: currentDashboard.value.kpis ?? [],
+        widgets: getDashboardWidgets(currentDashboard.value),
       },
     }
   }
@@ -378,6 +350,12 @@ export function useSaplingDashboard() {
         ...formWithoutKpis,
         person: currentPersonStore.person.handle,
         kpiOrder: kpiHandles,
+        widgets: getDashboardWidgets({
+          widgets:
+            (form.widgets as DashboardItem['widgets']) ??
+            (dashboardDialog.value.item?.widgets as DashboardItem['widgets']),
+          kpis: (form.kpis ?? dashboardDialog.value.item?.kpis ?? []) as DashboardItem['kpis'],
+        }),
       }
 
       if (isEditing && dashboardDialog.value.item?.handle != null) {
@@ -394,9 +372,6 @@ export function useSaplingDashboard() {
         if (dashboard.handle != null) {
           pendingRelationsPersisted =
             (await context?.persistPendingRelations?.(dashboard.handle)) ?? true
-        }
-        if (dashboard.handle != null) {
-          await createDashboardKpiReferences(dashboard.handle, kpiHandles)
         }
       }
 
@@ -439,9 +414,11 @@ export function useSaplingDashboard() {
 
     try {
       const formWithoutKpis = toDashboardPayload(form)
+      // The template beforeInsert script stamps the owner; its read-only field must not be submitted.
+      delete formWithoutKpis.person
       const payload: DashboardTemplatePayload = {
         ...formWithoutKpis,
-        person: currentPersonStore.person.handle,
+        widgets: getDashboardWidgets({ widgets: templateWidgetSnapshot.value }),
       }
       const dashboardTemplate = await ApiGenericService.create<DashboardTemplateItem>(
         'dashboardTemplate',
@@ -452,10 +429,6 @@ export function useSaplingDashboard() {
         dashboardTemplate.handle == null
           ? true
           : ((await context?.persistPendingRelations?.(dashboardTemplate.handle)) ?? true)
-
-      if (dashboardTemplate.handle != null) {
-        await createDashboardTemplateKpiReferences(dashboardTemplate.handle, getKpiHandles(form))
-      }
 
       await loadAvailableDashboardTemplates()
       if (pendingRelationsPersisted) {
@@ -507,12 +480,8 @@ export function useSaplingDashboard() {
         person: currentPersonStore.person.handle,
         sortOrder: getNextDashboardSortOrder(dashboards.value),
         kpiOrder: getKpiHandles(template),
+        widgets: getDashboardWidgets(template),
       })
-
-      if (dashboard.handle != null) {
-        const templateKpis = getKpiHandles(template)
-        await createDashboardKpiReferences(dashboard.handle, templateKpis)
-      }
 
       await loadDashboards()
 
@@ -577,6 +546,7 @@ export function useSaplingDashboard() {
     onDashboardTemplateSave,
     removeDashboard,
     updateDashboardKpis,
+    updateDashboardWidgets,
     beginLayoutEdit,
     cancelLayoutEdit,
     reorderDashboards,

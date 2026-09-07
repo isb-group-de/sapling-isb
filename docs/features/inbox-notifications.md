@@ -246,11 +246,16 @@ notification. Task entries and notifications without a target reference do not
 offer this action; no inline diff or automatic field highlighting is added.
 
 The shared `useOpenTaskCountEvents` connection receives full snapshots through
-the `open-task-snapshot` SSE event. Transport errors, server-sent `error` events,
-and malformed snapshots stop the initial loading display and show an inbox error.
-The message center records one error per outage, including server diagnostics;
-automatic reconnects do not create duplicate messages. A valid streamed snapshot
-clears the error and restores the inbox automatically.
+the `open-task-snapshot` SSE event. A reconnectable transport interruption gets
+15 seconds to recover automatically, so a brief backend restart does not produce
+a persistent error message. Retries and `open` events do not extend that deadline;
+only a valid streamed snapshot cancels it. A terminal connection failure,
+server-sent `error`, or malformed snapshot is reported immediately. Reported
+failures stop the initial loading display and show an inbox error.
+The message center records one error per outage, including server diagnostics or
+transport state, elapsed time, failed attempts, and browser online status.
+A valid streamed snapshot clears the error and restores the inbox automatically.
+The recovery timer is removed when the last subscriber unmounts.
 
 If the inbox stays empty after an update, inspect the SSE error details and check
 pending database migrations. In particular, `Migration20260905120000` adds

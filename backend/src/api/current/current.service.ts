@@ -22,6 +22,7 @@ import {
 import { CurrentStarterWorkspaceService } from './current-starter-workspace.service';
 import { SecurityPrincipalCacheService } from './security-principal-cache.service';
 import { DashboardItem } from '../../entity/DashboardItem';
+import { validateDashboardWidgets } from '../../entity/dashboard-widget.validation';
 import type {
   DashboardLayoutResultDto,
   UpdateDashboardLayoutDto,
@@ -246,6 +247,12 @@ export class CurrentService {
 
       dto.dashboards.forEach((entry, index) => {
         const dashboard = dashboardByHandle.get(entry.handle);
+        if (dashboard && entry.widgets != null) {
+          validateDashboardWidgets(entry.widgets);
+          dashboard.widgets = structuredClone(entry.widgets);
+          dashboard.sortOrder = (index + 1) * 100;
+          return;
+        }
         if (!dashboard || !Array.isArray(entry.kpiOrder)) {
           throw new BadRequestException('dashboard.invalidLayout');
         }
