@@ -27,12 +27,7 @@
       "Bereite aus dieser Anfrage eine Office-Aufgabe vor.",
       "Welche bestehenden Termine gehören zu dieser Anfrage?"
     ],
-    "allowedEntityHandles": [
-      "event",
-      "company",
-      "person",
-      "document"
-    ],
+    "allowedEntityHandles": ["event", "company", "person", "document"],
     "allowedInternalTools": [
       "current_person",
       "entity_search",

@@ -1,5 +1,20 @@
 [
-  { "handle": "pending", "description": "Pending", "icon": "mdi-microsoft-teams", "color": "#FF9800" },
-  { "handle": "success", "description": "Success", "icon": "mdi-microsoft-teams", "color": "#4CAF50" },
-  { "handle": "failed", "description": "Failed", "icon": "mdi-microsoft-teams", "color": "#F44336" }
+  {
+    "handle": "pending",
+    "description": "Pending",
+    "icon": "mdi-microsoft-teams",
+    "color": "#FF9800"
+  },
+  {
+    "handle": "success",
+    "description": "Success",
+    "icon": "mdi-microsoft-teams",
+    "color": "#4CAF50"
+  },
+  {
+    "handle": "failed",
+    "description": "Failed",
+    "icon": "mdi-microsoft-teams",
+    "color": "#F44336"
+  }
 ]

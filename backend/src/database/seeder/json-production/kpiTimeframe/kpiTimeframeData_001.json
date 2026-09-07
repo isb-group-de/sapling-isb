@@ -1,5 +1,5 @@
 [
-  { "handle": "YEAR"},
+  { "handle": "YEAR" },
   { "handle": "QUARTER" },
   { "handle": "MONTH" },
   { "handle": "WEEK" },

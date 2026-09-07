@@ -17,10 +17,7 @@
     "assigneeCompany": 1,
     "assigneePerson": 1,
     "resultStatus": "open",
-    "competitors": [
-      9,
-      15
-    ]
+    "competitors": [9, 15]
   },
   {
     "number": "SO-2026-00002",
@@ -40,10 +37,7 @@
     "assigneeCompany": 2,
     "assigneePerson": 2,
     "resultStatus": "open",
-    "competitors": [
-      10,
-      16
-    ]
+    "competitors": [10, 16]
   },
   {
     "number": "SO-2026-00003",
@@ -64,10 +58,7 @@
     "assigneePerson": 3,
     "resultStatus": "lost",
     "lossReason": "no_budget",
-    "competitors": [
-      11,
-      17
-    ]
+    "competitors": [11, 17]
   },
   {
     "number": "SO-2026-00004",
@@ -87,10 +78,7 @@
     "assigneeCompany": 4,
     "assigneePerson": 4,
     "resultStatus": "open",
-    "competitors": [
-      12,
-      18
-    ]
+    "competitors": [12, 18]
   },
   {
     "number": "SO-2026-00005",
@@ -110,10 +98,7 @@
     "assigneeCompany": 5,
     "assigneePerson": 5,
     "resultStatus": "won",
-    "competitors": [
-      13,
-      19
-    ]
+    "competitors": [13, 19]
   },
   {
     "number": "SO-2026-00006",
@@ -133,10 +118,7 @@
     "assigneeCompany": 6,
     "assigneePerson": 6,
     "resultStatus": "open",
-    "competitors": [
-      14,
-      20
-    ]
+    "competitors": [14, 20]
   },
   {
     "number": "SO-2026-00007",
@@ -156,10 +138,7 @@
     "assigneeCompany": 7,
     "assigneePerson": 7,
     "resultStatus": "open",
-    "competitors": [
-      15,
-      21
-    ]
+    "competitors": [15, 21]
   },
   {
     "number": "SO-2026-00008",
@@ -180,10 +159,7 @@
     "assigneePerson": 8,
     "resultStatus": "no_decision",
     "lossReason": "no_budget",
-    "competitors": [
-      16,
-      22
-    ]
+    "competitors": [16, 22]
   },
   {
     "number": "SO-2026-00009",
@@ -203,10 +179,7 @@
     "assigneeCompany": 9,
     "assigneePerson": 9,
     "resultStatus": "open",
-    "competitors": [
-      17,
-      23
-    ]
+    "competitors": [17, 23]
   },
   {
     "number": "SO-2026-00010",
@@ -226,10 +199,7 @@
     "assigneeCompany": 10,
     "assigneePerson": 10,
     "resultStatus": "open",
-    "competitors": [
-      18,
-      24
-    ]
+    "competitors": [18, 24]
   },
   {
     "number": "SO-2026-00011",
@@ -250,10 +220,7 @@
     "assigneePerson": 11,
     "resultStatus": "lost",
     "lossReason": "price",
-    "competitors": [
-      19,
-      25
-    ]
+    "competitors": [19, 25]
   },
   {
     "number": "SO-2026-00012",
@@ -273,10 +240,7 @@
     "assigneeCompany": 12,
     "assigneePerson": 12,
     "resultStatus": "open",
-    "competitors": [
-      20,
-      26
-    ]
+    "competitors": [20, 26]
   },
   {
     "number": "SO-2026-00013",
@@ -296,10 +260,7 @@
     "assigneeCompany": 13,
     "assigneePerson": 13,
     "resultStatus": "open",
-    "competitors": [
-      21,
-      1
-    ]
+    "competitors": [21, 1]
   },
   {
     "number": "SO-2026-00014",
@@ -320,10 +281,7 @@
     "assigneePerson": 14,
     "resultStatus": "no_decision",
     "lossReason": "timing",
-    "competitors": [
-      22,
-      2
-    ]
+    "competitors": [22, 2]
   },
   {
     "number": "SO-2026-00015",
@@ -343,10 +301,7 @@
     "assigneeCompany": 15,
     "assigneePerson": 15,
     "resultStatus": "open",
-    "competitors": [
-      23,
-      3
-    ]
+    "competitors": [23, 3]
   },
   {
     "number": "SO-2026-00016",
@@ -366,10 +321,7 @@
     "assigneeCompany": 16,
     "assigneePerson": 16,
     "resultStatus": "open",
-    "competitors": [
-      24,
-      4
-    ]
+    "competitors": [24, 4]
   },
   {
     "number": "SO-2026-00017",
@@ -389,10 +341,7 @@
     "assigneeCompany": 17,
     "assigneePerson": 17,
     "resultStatus": "won",
-    "competitors": [
-      25,
-      5
-    ]
+    "competitors": [25, 5]
   },
   {
     "number": "SO-2026-00018",
@@ -413,10 +362,7 @@
     "assigneePerson": 18,
     "resultStatus": "lost",
     "lossReason": "no_budget",
-    "competitors": [
-      26,
-      6
-    ]
+    "competitors": [26, 6]
   },
   {
     "number": "SO-2026-00019",
@@ -436,10 +382,7 @@
     "assigneeCompany": 19,
     "assigneePerson": 19,
     "resultStatus": "open",
-    "competitors": [
-      1,
-      7
-    ]
+    "competitors": [1, 7]
   },
   {
     "number": "SO-2026-00020",
@@ -459,10 +402,7 @@
     "assigneeCompany": 20,
     "assigneePerson": 20,
     "resultStatus": "open",
-    "competitors": [
-      2,
-      8
-    ]
+    "competitors": [2, 8]
   },
   {
     "number": "SO-2026-00021",
@@ -482,10 +422,7 @@
     "assigneeCompany": 1,
     "assigneePerson": 1,
     "resultStatus": "open",
-    "competitors": [
-      9,
-      15
-    ]
+    "competitors": [9, 15]
   },
   {
     "number": "SO-2026-00022",
@@ -505,10 +442,7 @@
     "assigneeCompany": 2,
     "assigneePerson": 2,
     "resultStatus": "open",
-    "competitors": [
-      10,
-      16
-    ]
+    "competitors": [10, 16]
   },
   {
     "number": "SO-2026-00023",
@@ -529,10 +463,7 @@
     "assigneePerson": 3,
     "resultStatus": "no_decision",
     "lossReason": "no_budget",
-    "competitors": [
-      11,
-      17
-    ]
+    "competitors": [11, 17]
   },
   {
     "number": "SO-2026-00024",
@@ -552,10 +483,7 @@
     "assigneeCompany": 4,
     "assigneePerson": 4,
     "resultStatus": "open",
-    "competitors": [
-      12,
-      18
-    ]
+    "competitors": [12, 18]
   },
   {
     "number": "SO-2026-00025",
@@ -575,9 +503,6 @@
     "assigneeCompany": 5,
     "assigneePerson": 5,
     "resultStatus": "won",
-    "competitors": [
-      13,
-      19
-    ]
+    "competitors": [13, 19]
   }
 ]

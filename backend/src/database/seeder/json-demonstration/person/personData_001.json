@@ -14,9 +14,7 @@
     "workWeek": 1,
     "holidayGroup": 2,
     "company": 1,
-    "roles": [
-      1
-    ],
+    "roles": [1],
     "salutation": "mr",
     "title": "doctor",
     "jobTitle": "cfo",
@@ -39,10 +37,7 @@
     "workWeek": 1,
     "holidayGroup": 1,
     "company": 2,
-    "roles": [
-      2,
-      3
-    ],
+    "roles": [2, 3],
     "salutation": "ms",
     "title": "professor_doctor",
     "jobTitle": "cto",
@@ -63,9 +58,7 @@
     "isActive": true,
     "language": "de",
     "company": 3,
-    "roles": [
-      2
-    ],
+    "roles": [2],
     "salutation": "ms",
     "title": "professor_doctor",
     "jobTitle": "head_of_it",
@@ -86,9 +79,7 @@
     "isActive": true,
     "language": "en",
     "company": 4,
-    "roles": [
-      3
-    ],
+    "roles": [3],
     "salutation": "mr",
     "title": "doctor",
     "jobTitle": "procurement_manager",
@@ -109,9 +100,7 @@
     "isActive": true,
     "language": "de",
     "company": 5,
-    "roles": [
-      4
-    ],
+    "roles": [4],
     "salutation": "ms",
     "title": "professor_doctor",
     "jobTitle": "project_manager",
@@ -132,9 +121,7 @@
     "isActive": true,
     "language": "en",
     "company": 6,
-    "roles": [
-      5
-    ],
+    "roles": [5],
     "salutation": "mr",
     "title": "professor_doctor",
     "jobTitle": "ceo",
@@ -155,9 +142,7 @@
     "isActive": true,
     "language": "de",
     "company": 7,
-    "roles": [
-      4
-    ],
+    "roles": [4],
     "salutation": "ms",
     "title": "doctor",
     "jobTitle": "cfo",
@@ -199,9 +184,7 @@
     "isActive": true,
     "language": "de",
     "company": 9,
-    "roles": [
-      2
-    ],
+    "roles": [2],
     "salutation": "ms",
     "title": "professor_doctor",
     "jobTitle": "head_of_it",
@@ -264,9 +247,7 @@
     "isActive": true,
     "language": "en",
     "company": 12,
-    "roles": [
-      1
-    ],
+    "roles": [1],
     "salutation": "mr",
     "title": "professor_doctor",
     "jobTitle": "ceo",
@@ -287,9 +268,7 @@
     "isActive": true,
     "language": "de",
     "company": 13,
-    "roles": [
-      3
-    ],
+    "roles": [3],
     "salutation": "ms",
     "title": "doctor",
     "jobTitle": "cfo",
@@ -352,9 +331,7 @@
     "isActive": true,
     "language": "en",
     "company": 16,
-    "roles": [
-      4
-    ],
+    "roles": [4],
     "salutation": "mr",
     "title": "doctor",
     "jobTitle": "procurement_manager",
@@ -396,9 +373,7 @@
     "isActive": true,
     "language": "en",
     "company": 18,
-    "roles": [
-      2
-    ],
+    "roles": [2],
     "salutation": "ms",
     "title": "professor_doctor",
     "jobTitle": "ceo",
@@ -461,9 +436,7 @@
     "isActive": true,
     "language": "de",
     "company": 21,
-    "roles": [
-      1
-    ],
+    "roles": [1],
     "salutation": "ms",
     "title": "professor_doctor",
     "jobTitle": "head_of_it",
@@ -484,9 +457,7 @@
     "isActive": true,
     "language": "en",
     "company": 22,
-    "roles": [
-      3
-    ],
+    "roles": [3],
     "salutation": "mr",
     "title": "doctor",
     "jobTitle": "procurement_manager",
@@ -549,9 +520,7 @@
     "isActive": true,
     "language": "de",
     "company": 25,
-    "roles": [
-      4
-    ],
+    "roles": [4],
     "salutation": "ms",
     "title": "doctor",
     "jobTitle": "cfo",
@@ -593,9 +562,7 @@
     "isActive": true,
     "language": "de",
     "company": 2,
-    "roles": [
-      2
-    ],
+    "roles": [2],
     "salutation": "ms",
     "title": "professor_doctor",
     "jobTitle": "head_of_it",
@@ -658,9 +625,7 @@
     "isActive": true,
     "language": "en",
     "company": 5,
-    "roles": [
-      1
-    ],
+    "roles": [1],
     "salutation": "mr",
     "title": "professor_doctor",
     "jobTitle": "ceo",
@@ -681,9 +646,7 @@
     "isActive": true,
     "language": "de",
     "company": 6,
-    "roles": [
-      3
-    ],
+    "roles": [3],
     "salutation": "mr",
     "title": "doctor",
     "jobTitle": "cfo",
@@ -746,9 +709,7 @@
     "isActive": true,
     "language": "en",
     "company": 9,
-    "roles": [
-      4
-    ],
+    "roles": [4],
     "salutation": "mr",
     "title": "doctor",
     "jobTitle": "procurement_manager",
@@ -790,9 +751,7 @@
     "isActive": true,
     "language": "en",
     "company": 11,
-    "roles": [
-      2
-    ],
+    "roles": [2],
     "salutation": "mr",
     "title": "professor_doctor",
     "jobTitle": "ceo",
@@ -855,9 +814,7 @@
     "isActive": true,
     "language": "de",
     "company": 14,
-    "roles": [
-      1
-    ],
+    "roles": [1],
     "salutation": "mr",
     "title": "professor_doctor",
     "jobTitle": "head_of_it",
@@ -878,9 +835,7 @@
     "isActive": true,
     "language": "en",
     "company": 15,
-    "roles": [
-      3
-    ],
+    "roles": [3],
     "salutation": "mr",
     "title": "doctor",
     "jobTitle": "procurement_manager",
@@ -943,9 +898,7 @@
     "isActive": true,
     "language": "de",
     "company": 18,
-    "roles": [
-      4
-    ],
+    "roles": [4],
     "salutation": "ms",
     "title": "doctor",
     "jobTitle": "cfo",
@@ -987,9 +940,7 @@
     "isActive": true,
     "language": "de",
     "company": 20,
-    "roles": [
-      2
-    ],
+    "roles": [2],
     "salutation": "ms",
     "title": "professor_doctor",
     "jobTitle": "head_of_it",
@@ -1052,9 +1003,7 @@
     "isActive": true,
     "language": "en",
     "company": 23,
-    "roles": [
-      1
-    ],
+    "roles": [1],
     "salutation": "mr",
     "title": "professor_doctor",
     "jobTitle": "ceo",
@@ -1075,9 +1024,7 @@
     "isActive": true,
     "language": "de",
     "company": 24,
-    "roles": [
-      3
-    ],
+    "roles": [3],
     "salutation": "mr",
     "title": "doctor",
     "jobTitle": "cfo",
@@ -1140,9 +1087,7 @@
     "isActive": true,
     "language": "en",
     "company": 2,
-    "roles": [
-      4
-    ],
+    "roles": [4],
     "salutation": "neutral",
     "title": "doctor",
     "jobTitle": "procurement_manager",
@@ -1184,9 +1129,7 @@
     "isActive": true,
     "language": "en",
     "company": 4,
-    "roles": [
-      2
-    ],
+    "roles": [2],
     "salutation": "mr",
     "title": "professor_doctor",
     "jobTitle": "ceo",
@@ -1249,9 +1192,7 @@
     "isActive": true,
     "language": "de",
     "company": 7,
-    "roles": [
-      1
-    ],
+    "roles": [1],
     "salutation": "mr",
     "title": "professor_doctor",
     "jobTitle": "head_of_it",
@@ -1272,9 +1213,7 @@
     "isActive": true,
     "language": "en",
     "company": 8,
-    "roles": [
-      3
-    ],
+    "roles": [3],
     "salutation": "mr",
     "title": "doctor",
     "jobTitle": "procurement_manager",
@@ -1337,9 +1276,7 @@
     "isActive": true,
     "language": "de",
     "company": 11,
-    "roles": [
-      4
-    ],
+    "roles": [4],
     "salutation": "mr",
     "title": "doctor",
     "jobTitle": "cfo",
@@ -1381,9 +1318,7 @@
     "isActive": true,
     "language": "de",
     "company": 13,
-    "roles": [
-      2
-    ],
+    "roles": [2],
     "salutation": "mr",
     "title": "professor_doctor",
     "jobTitle": "head_of_it",
@@ -1446,9 +1381,7 @@
     "isActive": true,
     "language": "en",
     "company": 16,
-    "roles": [
-      1
-    ],
+    "roles": [1],
     "salutation": "mr",
     "title": "professor_doctor",
     "jobTitle": "ceo",
@@ -1469,9 +1402,7 @@
     "isActive": true,
     "language": "de",
     "company": 17,
-    "roles": [
-      3
-    ],
+    "roles": [3],
     "salutation": "mr",
     "title": "doctor",
     "jobTitle": "cfo",
@@ -1534,9 +1465,7 @@
     "isActive": true,
     "language": "en",
     "company": 20,
-    "roles": [
-      4
-    ],
+    "roles": [4],
     "salutation": "mr",
     "title": "doctor",
     "jobTitle": "procurement_manager",
@@ -1578,9 +1507,7 @@
     "isActive": true,
     "language": "en",
     "company": 22,
-    "roles": [
-      2
-    ],
+    "roles": [2],
     "salutation": "mr",
     "title": "professor_doctor",
     "jobTitle": "ceo",
@@ -1643,9 +1570,7 @@
     "isActive": true,
     "language": "de",
     "company": 25,
-    "roles": [
-      1
-    ],
+    "roles": [1],
     "salutation": "mr",
     "title": "professor_doctor",
     "jobTitle": "head_of_it",
@@ -1666,9 +1591,7 @@
     "isActive": true,
     "language": "en",
     "company": 1,
-    "roles": [
-      3
-    ],
+    "roles": [3],
     "salutation": "mr",
     "title": "doctor",
     "jobTitle": "procurement_manager",
@@ -1731,9 +1654,7 @@
     "isActive": true,
     "language": "de",
     "company": 4,
-    "roles": [
-      4
-    ],
+    "roles": [4],
     "salutation": "mr",
     "title": "doctor",
     "jobTitle": "cfo",
@@ -1775,9 +1696,7 @@
     "isActive": true,
     "language": "de",
     "company": 6,
-    "roles": [
-      2
-    ],
+    "roles": [2],
     "salutation": "mr",
     "title": "professor_doctor",
     "jobTitle": "head_of_it",
@@ -1840,9 +1759,7 @@
     "isActive": true,
     "language": "en",
     "company": 9,
-    "roles": [
-      1
-    ],
+    "roles": [1],
     "salutation": "mr",
     "title": "professor_doctor",
     "jobTitle": "ceo",
@@ -1863,9 +1780,7 @@
     "isActive": true,
     "language": "de",
     "company": 10,
-    "roles": [
-      3
-    ],
+    "roles": [3],
     "salutation": "mr",
     "title": "doctor",
     "jobTitle": "cfo",
@@ -1928,9 +1843,7 @@
     "isActive": true,
     "language": "en",
     "company": 13,
-    "roles": [
-      4
-    ],
+    "roles": [4],
     "salutation": "mr",
     "title": "doctor",
     "jobTitle": "procurement_manager",
@@ -1972,9 +1885,7 @@
     "isActive": true,
     "language": "en",
     "company": 15,
-    "roles": [
-      2
-    ],
+    "roles": [2],
     "salutation": "mr",
     "title": "professor_doctor",
     "jobTitle": "ceo",
@@ -2037,9 +1948,7 @@
     "isActive": true,
     "language": "de",
     "company": 18,
-    "roles": [
-      1
-    ],
+    "roles": [1],
     "salutation": "mr",
     "title": "professor_doctor",
     "jobTitle": "head_of_it",
@@ -2060,9 +1969,7 @@
     "isActive": true,
     "language": "en",
     "company": 19,
-    "roles": [
-      3
-    ],
+    "roles": [3],
     "salutation": "mr",
     "title": "doctor",
     "jobTitle": "procurement_manager",
@@ -2125,9 +2032,7 @@
     "isActive": true,
     "language": "de",
     "company": 22,
-    "roles": [
-      4
-    ],
+    "roles": [4],
     "salutation": "mr",
     "title": "doctor",
     "jobTitle": "cfo",
@@ -2169,9 +2074,7 @@
     "isActive": true,
     "language": "de",
     "company": 24,
-    "roles": [
-      2
-    ],
+    "roles": [2],
     "salutation": "mr",
     "title": "professor_doctor",
     "jobTitle": "head_of_it",

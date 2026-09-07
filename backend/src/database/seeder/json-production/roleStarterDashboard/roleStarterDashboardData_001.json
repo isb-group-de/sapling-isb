@@ -12,10 +12,7 @@
   },
   {
     "role": "Support",
-    "templates": [
-      "Support Operations",
-      "Event Coordination"
-    ]
+    "templates": ["Support Operations", "Event Coordination"]
   },
   {
     "role": "Vertrieb",
@@ -27,10 +24,7 @@
   },
   {
     "role": "Kunde",
-    "templates": [
-      "Event Coordination",
-      "Contracts & Products"
-    ]
+    "templates": ["Event Coordination", "Contracts & Products"]
   },
   {
     "role": "Dienstleister",

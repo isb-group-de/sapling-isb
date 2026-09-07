@@ -4,9 +4,7 @@
     "title": "OpenAI",
     "icon": "mdi-chat",
     "color": "#10A37F",
-    "credentialTypes": [
-      "openAiApiKey"
-    ],
+    "credentialTypes": ["openAiApiKey"],
     "isActive": true
   },
   {
@@ -14,9 +12,7 @@
     "title": "Gemini",
     "icon": "mdi-google",
     "color": "#4285F4",
-    "credentialTypes": [
-      "geminiApiKey"
-    ],
+    "credentialTypes": ["geminiApiKey"],
     "isActive": true
   },
   {
@@ -24,9 +20,7 @@
     "title": "LM Studio",
     "icon": "mdi-desktop-tower-monitor",
     "color": "#4B6BFB",
-    "credentialTypes": [
-      "lmStudioBaseUrl"
-    ],
+    "credentialTypes": ["lmStudioBaseUrl"],
     "isActive": true
   },
   {
@@ -34,9 +28,7 @@
     "title": "Ollama",
     "icon": "mdi-server",
     "color": "#1F2937",
-    "credentialTypes": [
-      "ollamaBaseUrl"
-    ],
+    "credentialTypes": ["ollamaBaseUrl"],
     "isActive": true
   }
 ]

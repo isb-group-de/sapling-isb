@@ -20,9 +20,7 @@
     "field": "priority.description",
     "type": "LIST",
     "targetEntity": "ticket",
-    "groupBy": [
-      "priority"
-    ],
+    "groupBy": ["priority"],
     "timeframe": null,
     "timeframeField": null,
     "relationField": "handle"
@@ -62,9 +60,7 @@
     "field": "status.description",
     "type": "BREAKDOWN",
     "targetEntity": "ticket",
-    "groupBy": [
-      "status"
-    ],
+    "groupBy": ["status"],
     "timeframe": null,
     "timeframeField": null,
     "relationField": "handle"
@@ -101,9 +97,7 @@
     "field": "forecast.title",
     "type": "LIST",
     "targetEntity": "salesOpportunity",
-    "groupBy": [
-      "forecast"
-    ],
+    "groupBy": ["forecast"],
     "timeframe": null,
     "timeframeField": null,
     "relationField": "handle"
@@ -138,9 +132,7 @@
     "field": "type.title",
     "type": "BREAKDOWN",
     "targetEntity": "salesOpportunity",
-    "groupBy": [
-      "type"
-    ],
+    "groupBy": ["type"],
     "timeframe": null,
     "timeframeField": null,
     "filter": {
@@ -180,9 +172,7 @@
     "field": "status.description",
     "type": "LIST",
     "targetEntity": "event",
-    "groupBy": [
-      "status"
-    ],
+    "groupBy": ["status"],
     "timeframe": null,
     "timeframeField": null,
     "relationField": "handle"
@@ -217,9 +207,7 @@
     "field": "type.title",
     "type": "BREAKDOWN",
     "targetEntity": "event",
-    "groupBy": [
-      "type"
-    ],
+    "groupBy": ["type"],
     "timeframe": null,
     "timeframeField": null,
     "relationField": "handle"
@@ -256,9 +244,7 @@
     "field": "version",
     "type": "LIST",
     "targetEntity": "product",
-    "groupBy": [
-      "version"
-    ],
+    "groupBy": ["version"],
     "timeframe": null,
     "timeframeField": null
   },
@@ -292,9 +278,7 @@
     "field": "company.name",
     "type": "BREAKDOWN",
     "targetEntity": "contract",
-    "groupBy": [
-      "company"
-    ],
+    "groupBy": ["company"],
     "timeframe": null,
     "timeframeField": null,
     "relationField": "title"
@@ -345,9 +329,7 @@
     "field": "country.name",
     "type": "LIST",
     "targetEntity": "company",
-    "groupBy": [
-      "country"
-    ],
+    "groupBy": ["country"],
     "timeframe": null,
     "timeframeField": null,
     "relationField": "handle"
@@ -359,9 +341,7 @@
     "field": "language.name",
     "type": "LIST",
     "targetEntity": "person",
-    "groupBy": [
-      "language"
-    ],
+    "groupBy": ["language"],
     "timeframe": null,
     "timeframeField": null,
     "relationField": "handle"
@@ -396,9 +376,7 @@
     "field": "type.handle",
     "type": "BREAKDOWN",
     "targetEntity": "person",
-    "groupBy": [
-      "type"
-    ],
+    "groupBy": ["type"],
     "timeframe": null,
     "timeframeField": null,
     "relationField": "handle"
@@ -410,9 +388,7 @@
     "field": "handle",
     "type": "BREAKDOWN",
     "targetEntity": "company",
-    "groupBy": [
-      "country"
-    ],
+    "groupBy": ["country"],
     "timeframe": null,
     "timeframeField": null,
     "filter": {
@@ -486,9 +462,7 @@
     "field": "method.description",
     "type": "LIST",
     "targetEntity": "webhookSubscription",
-    "groupBy": [
-      "method"
-    ],
+    "groupBy": ["method"],
     "timeframe": null,
     "timeframeField": null,
     "filter": {
@@ -503,9 +477,7 @@
     "field": "status.description",
     "type": "LIST",
     "targetEntity": "emailDelivery",
-    "groupBy": [
-      "status"
-    ],
+    "groupBy": ["status"],
     "timeframe": null,
     "timeframeField": null,
     "relationField": "handle"
@@ -540,9 +512,7 @@
     "field": "authenticationType.description",
     "type": "BREAKDOWN",
     "targetEntity": "webhookSubscription",
-    "groupBy": [
-      "authenticationType"
-    ],
+    "groupBy": ["authenticationType"],
     "timeframe": null,
     "timeframeField": null,
     "filter": {
@@ -600,9 +570,7 @@
     "field": "priority.description",
     "type": "LIST",
     "targetEntity": "ticket",
-    "groupBy": [
-      "priority"
-    ],
+    "groupBy": ["priority"],
     "timeframe": null,
     "timeframeField": null,
     "relationField": "handle",
@@ -632,9 +600,7 @@
     "field": "status.description",
     "type": "BREAKDOWN",
     "targetEntity": "ticket",
-    "groupBy": [
-      "status"
-    ],
+    "groupBy": ["status"],
     "timeframe": null,
     "timeframeField": null,
     "relationField": "handle",
@@ -663,9 +629,7 @@
     "field": "forecast.title",
     "type": "LIST",
     "targetEntity": "salesOpportunity",
-    "groupBy": [
-      "forecast"
-    ],
+    "groupBy": ["forecast"],
     "timeframe": null,
     "timeframeField": null,
     "relationField": "handle",
@@ -723,9 +687,7 @@
     "field": "status.description",
     "type": "LIST",
     "targetEntity": "event",
-    "groupBy": [
-      "status"
-    ],
+    "groupBy": ["status"],
     "timeframe": null,
     "timeframeField": null,
     "relationField": "handle",
@@ -769,9 +731,7 @@
     "field": "type.title",
     "type": "BREAKDOWN",
     "targetEntity": "event",
-    "groupBy": [
-      "type"
-    ],
+    "groupBy": ["type"],
     "timeframe": null,
     "timeframeField": null,
     "relationField": "handle",
@@ -865,9 +825,7 @@
     "field": "type.title",
     "type": "BREAKDOWN",
     "targetEntity": "salesOpportunity",
-    "groupBy": [
-      "type"
-    ],
+    "groupBy": ["type"],
     "timeframe": null,
     "timeframeField": null,
     "filter": {
