@@ -108,7 +108,7 @@
         <v-tab prepend-icon="mdi-chart-timeline-variant" value="performance">
           {{ $t('system.monitoringPerformanceArea') }}
         </v-tab>
-        <v-tab prepend-icon="mdi-account-chart-outline" value="usage">
+        <v-tab prepend-icon="mdi-chart-bar" value="usage">
           {{ $t('system.monitoringUsageArea') }}
         </v-tab>
       </v-tabs>
