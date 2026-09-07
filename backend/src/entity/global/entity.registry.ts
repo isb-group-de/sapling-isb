@@ -1,3 +1,4 @@
+import { EmailSignatureItem } from '../EmailSignatureItem';
 import type { EntityClass } from '@mikro-orm/core';
 import { LanguageItem } from '../LanguageItem';
 import { TranslationItem } from '../TranslationItem';
@@ -308,6 +309,7 @@ const ENTITY_REGISTRY_ENTRIES: EntityRegistryEntry[] = [
   { name: 'person', class: PersonItem },
   { name: 'socialMediaType', class: SocialMediaTypeItem },
   { name: 'socialMedia', class: SocialMediaItem },
+  { name: 'emailSignature', class: EmailSignatureItem },
   { name: 'emailTemplate', class: EmailTemplateItem },
   { name: 'emailSubscription', class: EmailSubscriptionItem },
   { name: 'emailSubscriptionCondition', class: EmailSubscriptionConditionItem },

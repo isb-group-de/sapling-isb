@@ -157,6 +157,61 @@ describe('GenericMutationService', () => {
     expect(em.flush).not.toHaveBeenCalled();
   });
 
+  it('completes a legacy Event without rewriting its invalid date range', async () => {
+    const item = {
+      handle: 408,
+      status: 'scheduled',
+      startDate: new Date('2026-09-01T11:00:00.000Z'),
+      endDate: new Date('2026-09-01T10:00:00.000Z'),
+    };
+    const em = {
+      assign: jest.fn((record: object, data: object) =>
+        Object.assign(record, data),
+      ),
+      flush: jest.fn(() => Promise.resolve()),
+    };
+    const service = new GenericMutationService(
+      em as never,
+      {} as never,
+      new GenericFilterService(),
+    );
+    const template = [
+      createTemplateField({ name: 'status' }),
+      createTemplateField({
+        name: 'startDate',
+        type: 'datetime',
+        options: ['isDateStart'],
+      }),
+      createTemplateField({
+        name: 'endDate',
+        type: 'datetime',
+        options: ['isDateEnd'],
+      }),
+    ];
+
+    await expect(
+      service.assignAndFlush('event', item, { status: 'completed' }, template),
+    ).resolves.toEqual({
+      handle: 408,
+      status: 'completed',
+      startDate: new Date('2026-09-01T11:00:00.000Z'),
+      endDate: new Date('2026-09-01T10:00:00.000Z'),
+    });
+    expect(em.assign).toHaveBeenCalledWith(item, { status: 'completed' });
+    expect(em.flush).toHaveBeenCalledTimes(1);
+
+    await expect(
+      service.assignAndFlush(
+        'event',
+        item,
+        { endDate: '2026-09-01T09:00:00.000Z' },
+        template,
+      ),
+    ).rejects.toThrow('global.invalidDateRange');
+    expect(em.assign).toHaveBeenCalledTimes(1);
+    expect(em.flush).toHaveBeenCalledTimes(1);
+  });
+
   it('returns a distinct payload reference when after scripts overwrite in place', async () => {
     const item = {
       handle: 7,

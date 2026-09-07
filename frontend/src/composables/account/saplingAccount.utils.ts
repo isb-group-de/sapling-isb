@@ -32,6 +32,7 @@ export interface CalendarSyncOption<T> {
 
 export type AccountTab =
   | 'profile'
+  | 'emailSignatures'
   | 'profilePicture'
   | 'notifications'
   | 'sync'
@@ -174,6 +175,11 @@ export function buildAccountTabs(
 ): AccountTabItem[] {
   const tabs: AccountTabItem[] = [
     { key: 'profile', icon: 'mdi-account-outline', label: i18n.global.t('account.profile') },
+    {
+      key: 'emailSignatures',
+      icon: 'mdi-signature-text',
+      label: i18n.global.t('account.emailSignatures'),
+    },
     {
       key: 'profilePicture',
       icon: 'mdi-account-box-outline',

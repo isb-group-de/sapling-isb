@@ -22,6 +22,14 @@ export class GenericPermissionService {
     currentUser: PersonItem,
     stage: 'allowInsertStage' | 'allowUpdateStage' | 'allowDeleteStage',
   ): void {
+    if (entityHandle === 'emailSignature') {
+      if (currentUser.handle == null)
+        throw new ForbiddenException('global.permissionDenied');
+      if (stage === 'allowInsertStage') data.person = currentUser.handle;
+      if (this.extractHandleValue(data.person) !== currentUser.handle) {
+        throw new ForbiddenException('global.permissionDenied');
+      }
+    }
     const template = this.templateService.getEntityTemplate(entityHandle);
     const permission = this.currentService.getEntityPermissions(
       currentUser,
@@ -151,6 +159,11 @@ export class GenericPermissionService {
     currentUser: PersonItem,
     entityHandle: string,
   ): object {
+    if (entityHandle === 'emailSignature') {
+      if (currentUser.handle == null)
+        throw new ForbiddenException('global.permissionDenied');
+      return this.combineWhere(where, { person: currentUser.handle });
+    }
     if (entityHandle !== 'event') {
       return where;
     }

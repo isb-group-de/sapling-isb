@@ -216,10 +216,14 @@ without exposing raw backend property names to users. The backend rejects the
 save and does not rewrite either relation automatically.
 
 Fields marked with `isDateStart` and `isDateEnd` are paired within the same
-declared form group. Generic create and update mutations reject a complete or
-partial payload when the resulting end value is before its start value. Equal
-values are valid, nullable incomplete ranges stay allowed, and unmatched date
-markers remain usable as standalone timeline anchors.
+declared form group. Generic create mutations and updates that change either
+boundary reject a complete or partial payload when the resulting end value is
+before its start value. Updates that leave both boundaries unchanged preserve
+historical invalid ranges, so unrelated changes such as completing an Event
+(including bulk updates) remain possible. Equivalent date representations count
+as unchanged when they describe the same instant. Dates are never automatically
+repaired. Equal values are valid, nullable incomplete ranges stay allowed, and
+unmatched date markers remain usable as standalone timeline anchors.
 
 For both create and update mutations, an empty or whitespace-only client value
 for a nullable unique scalar field is normalized to `null`. This keeps the

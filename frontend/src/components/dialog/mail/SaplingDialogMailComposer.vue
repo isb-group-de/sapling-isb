@@ -145,6 +145,24 @@
       @update:model-value="handleBodyMarkdownUpdate"
     />
 
+    <SaplingMailSignatureSelection
+      :rotation="signatureRotation ?? true"
+      :signature-handle="signatureHandle ?? null"
+      :signatures="signatures ?? []"
+      :disabled="signaturesDisabled"
+      @update:rotation="emit('update:signatureRotation', $event)"
+      @update:signature-handle="emit('update:signatureHandle', $event)"
+    />
+
+    <v-btn
+      variant="text"
+      prepend-icon="mdi-content-save-outline"
+      :disabled="signaturesDisabled"
+      @click="emit('save-signature-defaults')"
+    >
+      {{ translate('mail.saveCurrentSignatureDefaults') }}
+    </v-btn>
+
     <v-card class="sapling-mail-dialog__helper-card glass-panel">
       <v-card-text
         class="sapling-message-dialog__helper-card-text sapling-mail-dialog__helper-card-text"
@@ -192,6 +210,8 @@
 </template>
 
 <script lang="ts" setup>
+import SaplingMailSignatureSelection from './SaplingMailSignatureSelection.vue'
+import type { EmailSignature } from '@/services/api.mail-signature.service'
 import { computed, nextTick, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import SaplingAutocomplete from '@/components/common/SaplingAutocomplete.vue'
@@ -222,6 +242,10 @@ type MarkdownFieldInstance = InstanceType<typeof SaplingMarkdownField> & {
 }
 
 const props = defineProps<{
+  signatures?: EmailSignature[]
+  signatureRotation?: boolean
+  signatureHandle?: number | null
+  signaturesDisabled?: boolean
   templates: EmailTemplateItem[]
   templateHandle: number | null
   toRecipients: string[]
@@ -245,6 +269,9 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
+  (event: 'save-signature-defaults'): void
+  (event: 'update:signatureRotation', value: boolean): void
+  (event: 'update:signatureHandle', value: number | null): void
   (event: 'update:templateHandle', value: number | null): void
   (event: 'update:toRecipients', value: string[]): void
   (event: 'update:ccRecipients', value: string[]): void

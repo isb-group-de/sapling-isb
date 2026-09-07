@@ -1,3 +1,4 @@
+import { useMailSignatures } from './useMailSignatures'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { EntityTemplate } from '@/entity/structure'
@@ -48,6 +49,19 @@ export function useSaplingDialogMailEditor() {
     loadTranslations,
   } = useTranslationLoader('global', 'navigation', 'document', 'mail')
 
+  const {
+    signatures,
+    signatureRotation,
+    signatureHandle,
+    resolvedSignatureHandle,
+    isSavingSignatureDefaults,
+    saveSignatureDefaults,
+    signaturesReady,
+    loadSignatures,
+    resetSignatures,
+    signaturePayload,
+  } = useMailSignatures()
+  let previewSequence = 0
   const templates = ref<EmailTemplateItem[]>([])
   const composer = ref<MailComposerPlaceholderTarget | null>(null)
   const placeholders = ref<PlaceholderItem[]>([])
@@ -111,6 +125,10 @@ export function useSaplingDialogMailEditor() {
 
   const canSendMail = computed(
     () =>
+      signaturesReady.value &&
+      (signatureRotation.value || signatureHandle.value != null) &&
+      !isPreviewLoading.value &&
+      !isSending.value &&
       !currentPersonStore.isImpersonating &&
       hasEntityPermission(context.value?.entityHandle, 'allowUpdate'),
   )
@@ -172,6 +190,13 @@ export function useSaplingDialogMailEditor() {
         currentPersonStore.fetchCurrentPerson(),
         currentPermissionStore.fetchCurrentPermission(),
       ])
+      if (sequence !== initializationSequence) return
+      try {
+        await loadSignatures(hasEntityPermission('emailSignature', 'allowRead'))
+      } catch {
+        return
+      }
+      if (sequence !== initializationSequence) return
       await Promise.all([loadTemplates(), loadAttachments(), loadSenderOptions()])
       applyContextDefaultTemplate()
       isLoadingRecipientOptions.value = true
@@ -207,6 +232,8 @@ export function useSaplingDialogMailEditor() {
   }
 
   function resetState() {
+    resetSignatures()
+    previewSequence++
     templates.value = []
     placeholders.value = []
     availableAttachments.value = []
@@ -430,10 +457,16 @@ export function useSaplingDialogMailEditor() {
       return
     }
 
+    const sequence = ++previewSequence
     isPreviewLoading.value = true
 
     try {
+      if (!signaturesReady.value) {
+        await loadSignatures(hasEntityPermission('emailSignature', 'allowRead'))
+        if (sequence !== previewSequence || !context.value?.entityHandle) return
+      }
       const preview = await ApiMailService.preview({
+        ...signaturePayload(),
         entityHandle: context.value.entityHandle,
         itemHandle: context.value.itemHandle,
         templateHandle: templateHandle.value ?? undefined,
@@ -447,6 +480,8 @@ export function useSaplingDialogMailEditor() {
         attachmentHandles: attachmentHandles.value,
       })
 
+      if (sequence !== previewSequence) return
+      resolvedSignatureHandle.value = preview.signatureHandle ?? null
       previewMarkdown.value = preview.bodyMarkdown
       previewSubject.value = preview.subject
       previewTo.value = preview.to.join(', ')
@@ -456,7 +491,7 @@ export function useSaplingDialogMailEditor() {
       console.error('Error previewing email:', error)
       pushMessage('error', 'mail.previewFailed', 'mail.previewFailedDescription', 'mail')
     } finally {
-      isPreviewLoading.value = false
+      if (sequence === previewSequence) isPreviewLoading.value = false
     }
   }
 
@@ -469,6 +504,7 @@ export function useSaplingDialogMailEditor() {
 
     try {
       await ApiMailService.send({
+        ...signaturePayload(),
         entityHandle: context.value.entityHandle,
         itemHandle: context.value.itemHandle,
         templateHandle: templateHandle.value ?? undefined,
@@ -490,6 +526,28 @@ export function useSaplingDialogMailEditor() {
     } finally {
       isSending.value = false
     }
+  }
+
+  async function saveCurrentSignatureDefaults() {
+    if (currentPersonStore.isImpersonating) return
+    try {
+      await saveSignatureDefaults()
+      pushMessage('success', 'mail.signatureSettingsSaved', 'mail.signatureSettingsSaved', 'mail')
+    } catch {
+      /* The API service reports the error. */
+    }
+  }
+
+  async function changeSignatureRotation(value: boolean) {
+    signatureRotation.value = value
+    resolvedSignatureHandle.value = null
+    await refreshPreview()
+  }
+
+  async function changeSignatureHandle(value: number | null) {
+    signatureHandle.value = value
+    resolvedSignatureHandle.value = null
+    await refreshPreview()
   }
 
   function insertPlaceholder(token: string) {
@@ -553,6 +611,14 @@ export function useSaplingDialogMailEditor() {
   }
 
   return {
+    saveCurrentSignatureDefaults,
+    isSavingSignatureDefaults,
+    signatures,
+    signatureRotation,
+    signatureHandle,
+    signaturesReady,
+    changeSignatureRotation,
+    changeSignatureHandle,
     applyTemplate,
     availableAttachments,
     attachmentHandles,

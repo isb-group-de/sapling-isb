@@ -1,3 +1,4 @@
+import { EmailSignatureItem } from './EmailSignatureItem';
 import { Collection, DeferMode } from '@mikro-orm/core';
 import {
   Entity,
@@ -86,6 +87,19 @@ import { SharedMailboxGroupItem } from './SharedMailboxGroupItem';
  */
 @Entity()
 export class PersonItem {
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly', 'isSystem'])
+  @Property({ default: true })
+  emailSignatureRotation?: boolean = true;
+
+  @ApiPropertyOptional({ type: () => EmailSignatureItem })
+  @Sapling(['isReadOnly', 'isSystem'])
+  @ManyToOne(() => EmailSignatureItem, {
+    nullable: true,
+    deleteRule: 'set null',
+  })
+  defaultEmailSignature?: Rel<EmailSignatureItem> | null;
+
   //#region Properties: Persisted
   /**
    * Unique identifier for the person (primary key).

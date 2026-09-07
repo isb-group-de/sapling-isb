@@ -1,3 +1,4 @@
+import { MailSignatureService } from './mail-signature.service';
 import { EntityManager } from '@mikro-orm/core';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { EmailTemplateItem } from '../../entity/EmailTemplateItem';
@@ -39,7 +40,16 @@ export class MailRenderingService {
       draftValues: previewDto.draftValues,
     });
     const subjectSource = previewDto.subject ?? template?.subjectTemplate ?? '';
-    const bodySource = previewDto.bodyMarkdown ?? template?.bodyMarkdown ?? '';
+    const signature = await new MailSignatureService(em).resolve(
+      previewDto,
+      currentUser,
+    );
+    const content = previewDto.bodyMarkdown ?? template?.bodyMarkdown ?? '';
+    const bodySource = signature
+      ? [content.trimEnd(), signature.bodyMarkdown.trim()]
+          .filter(Boolean)
+          .join('\n\n')
+      : content;
     const renderOptions = {
       entityHandle: previewDto.entityHandle,
       locale: previewDto.clientLocale,
@@ -58,6 +68,7 @@ export class MailRenderingService {
     );
 
     return {
+      signatureHandle: signature?.handle,
       entityHandle: previewDto.entityHandle,
       itemHandle: previewDto.itemHandle,
       templateHandle: previewDto.templateHandle,

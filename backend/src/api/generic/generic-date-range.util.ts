@@ -71,6 +71,17 @@ export function assertGenericDateRanges(
     const startTimestamp = toTimestamp(start);
     const endTimestamp = toTimestamp(end);
 
+    // Historical invalid ranges must not block unrelated updates such as
+    // completing an Event. Compare instants so echoed date strings count as
+    // unchanged too; newly created or changed ranges still require validation.
+    if (
+      currentItem &&
+      startTimestamp === toTimestamp(currentItem[pair.start.name]) &&
+      endTimestamp === toTimestamp(currentItem[pair.end.name])
+    ) {
+      continue;
+    }
+
     if (
       startTimestamp !== null &&
       endTimestamp !== null &&

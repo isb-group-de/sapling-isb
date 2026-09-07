@@ -1,0 +1,6 @@
+[
+  {
+    "entity": "emailSignature",
+    "route": "table/emailSignature"
+  }
+]

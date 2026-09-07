@@ -1,0 +1,13 @@
+[
+  {
+    "handle": "emailSignature",
+    "icon": "mdi-signature-text",
+    "canShow": true,
+    "group": "mails",
+    "order": 75,
+    "canRead": true,
+    "canInsert": true,
+    "canUpdate": true,
+    "canDelete": true
+  }
+]

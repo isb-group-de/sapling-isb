@@ -5,6 +5,8 @@ import { pushApiErrorMessage } from '@/services/api.error.service'
 import type { MailSenderListResult } from '@/components/dialog/mail/SaplingDialogMail.types'
 
 export type MailPreviewPayload = {
+  signatureMode?: 'none' | 'fixed' | 'rotation'
+  signatureHandle?: number
   entityHandle: string
   itemHandle?: string | number
   templateHandle?: number
@@ -21,6 +23,7 @@ export type MailPreviewPayload = {
 }
 
 export type MailPreviewResult = {
+  signatureHandle?: number
   entityHandle: string
   itemHandle?: string | number
   templateHandle?: number

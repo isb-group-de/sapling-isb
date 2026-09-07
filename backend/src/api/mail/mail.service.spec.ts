@@ -36,6 +36,7 @@ jest.mock('../../entity/PersonSessionItem', () => ({
 
 import { NotFoundException } from '@nestjs/common';
 import { MailService } from './mail.service';
+import { EmailSignatureItem } from '../../entity/EmailSignatureItem';
 
 function getValue(
   context: Record<string, unknown>,
@@ -87,6 +88,31 @@ function createMessageTemplateServiceMock(
 }
 
 describe('MailService facade', () => {
+  it('persists the signed preview and records usage only when creating the delivery', async () => {
+    let saved: Record<string, unknown> | undefined;
+    const flush = jest.fn<() => Promise<void>>().mockResolvedValue();
+    const em = {
+      findOne: jest.fn(async (_entity: unknown, where: { handle: string }) => ({ handle: where.handle })),
+      nativeUpdate: jest.fn<(...args: unknown[]) => Promise<number>>().mockResolvedValue(1),
+      persist: jest.fn((delivery: Record<string, unknown>) => { saved = delivery; return { flush }; }),
+      findOneOrFail: jest.fn(async () => saved),
+    };
+    const preview = { signatureHandle: 12, to: ['recipient@example.test'], cc: [], bcc: [],
+      subject: 'Hello', bodyMarkdown: 'Message\n\nRegards, Ada', bodyHtml: '<p>Message</p><p>Regards, Ada</p>', attachmentHandles: [] };
+    const rendering = { previewEmail: jest.fn(async () => preview) };
+    const service = new MailService(em as never, {} as never, {} as never, { add: jest.fn() } as never,
+      rendering as never, undefined, { resolveRequestedSender: async () => ({ email: 'ada@example.test' }) } as never,
+      undefined, { resolve: async () => ({ company: null, person: null }) } as never);
+    const dto = { entityHandle: 'ticket', signatureMode: 'rotation' as const, signatureHandle: 12 };
+    await service.previewEmail(dto, { handle: 7 } as never);
+    expect(em.nativeUpdate).not.toHaveBeenCalled();
+    await service.sendEmail(dto, { handle: 7 } as never);
+    expect(saved).toMatchObject({ bodyMarkdown: preview.bodyMarkdown, bodyHtml: preview.bodyHtml,
+      requestPayload: expect.objectContaining({ signatureHandle: 12, signatureMode: 'rotation' }) });
+    expect(em.nativeUpdate).toHaveBeenCalledWith(EmailSignatureItem,
+      { handle: 12, person: { handle: 7 } }, { lastUsedAt: expect.any(Date) });
+  });
+
   it('persists automation provenance and deduplication data on the delivery', async () => {
     let persistedDelivery: Record<string, unknown> | undefined;
     const flush = jest.fn<() => Promise<void>>().mockResolvedValue();

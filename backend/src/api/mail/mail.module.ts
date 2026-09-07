@@ -1,3 +1,5 @@
+import { MailSignatureController } from './mail-signature.controller';
+import { MailSignatureService } from './mail-signature.service';
 import { Module } from '@nestjs/common';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { BullModule, getQueueToken } from '@nestjs/bullmq';
@@ -14,6 +16,7 @@ import { EmailDeliveryStatusItem } from '../../entity/EmailDeliveryStatusItem';
 import { EmailSubscriptionConditionItem } from '../../entity/EmailSubscriptionConditionItem';
 import { EmailSubscriptionItem } from '../../entity/EmailSubscriptionItem';
 import { EmailTemplateItem } from '../../entity/EmailTemplateItem';
+import { EmailSignatureItem } from '../../entity/EmailSignatureItem';
 import { DocumentItem } from '../../entity/DocumentItem';
 import { EntityItem } from '../../entity/EntityItem';
 import { MailController } from './mail.controller';
@@ -47,6 +50,7 @@ const MockQueue = {
       EmailSubscriptionConditionItem,
       EmailSubscriptionItem,
       EmailTemplateItem,
+      EmailSignatureItem,
       DocumentItem,
       EntityItem,
     ]),
@@ -68,8 +72,9 @@ const MockQueue = {
         ]
       : []),
   ],
-  controllers: [MailController],
+  controllers: [MailController, MailSignatureController],
   providers: [
+    MailSignatureService,
     MailService,
     MailRenderingService,
     MailFollowUpService,

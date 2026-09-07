@@ -239,6 +239,51 @@ the same allow-list validation as manual delivery. Existing subscriptions
 without `senderMailbox` continue to send from the sender person's default
 address.
 
+
+## Personal Email Signatures
+
+Manual composition uses the same `3xl` dialog width as the generic edit dialog.
+Each user manages private `emailSignature` records through **Mail → Email
+signatures** (`/table/emailSignature`) or the **Email signatures** tab in their
+profile. Both editors use the generic CRUD API. Signatures have a name, Markdown
+body, active flag, and a separate inclusion flag for automatic rotation.
+The backend assigns ownership on insert, hides other users' records (including
+from administrators), and enforces ownership on update/delete. The owner and
+usage timestamp are system-managed fields.
+
+The profile saves the rotation preference and an optional fixed default on the
+Person through `GET/PATCH /api/mail/signature-settings`. This authenticated
+endpoint always edits the current user's settings and validates that the chosen
+default is active and belongs to that user. Deleting a default clears its foreign
+key; inactive defaults are omitted from the effective settings. These settings
+are shared across devices. A fixed default can be retained while rotation is on
+and is preselected when rotation is switched off in the composer.
+
+The composer explicitly sends `signatureMode: rotation|fixed|none` plus an
+optional `signatureHandle`. In the UI, fixed mode requires a selected active
+signature; `none` remains an explicit API mode for integrations that intentionally
+want an unsigned message.
+Rotation selects active included signatures by least recent use, with unused
+signatures first and the handle breaking ties. With no eligible signature the
+message remains unsigned and the composer displays an explanation. Existing
+integration/subscription calls that omit the mode retain their existing behavior.
+
+Preview returns the chosen handle; the composer reuses it for further previews
+and sending. An explicit handle is checked again for ownership, active state, and
+rotation eligibility. Editing or refreshing the draft does not consume a turn.
+The rendering service appends the signature to the original body before the
+normal placeholder, Markdown, HTML and plain-text rendering. It never writes the
+combined body back into the editable draft. The selected handle and mode are
+recorded in the delivery audit payload, and usage advances in the transaction
+that persists the delivery. Delivery retries use the persisted body. Simultaneous
+open drafts may select the same next signature; each keeps its preview selection.
+
+Apply `Migration20260907150000` and run the normal seeders before deploying the
+new application version. Additive entity, route and German/English translation
+seeds are provided for production and demonstration modes. Standard-role
+permission matrices grant CRUD/navigation for this private entity; custom roles
+can be configured using the normal permission administration.
+
 ## Sender Resolution
 
 Sender options are resolved from the current person:

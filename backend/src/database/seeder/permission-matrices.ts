@@ -19,11 +19,11 @@ export type PermissionMatrixInput = Record<keyof PermissionMatrix, string[]>;
 
 export function createMatrix(input: PermissionMatrixInput): PermissionMatrix {
   return {
-    read: new Set(input.read),
-    insert: new Set(input.insert),
-    update: new Set(input.update),
-    delete: new Set(input.delete),
-    show: new Set(input.show),
+    read: new Set([...input.read, 'emailSignature']),
+    insert: new Set([...input.insert, 'emailSignature']),
+    update: new Set([...input.update, 'emailSignature']),
+    delete: new Set([...input.delete, 'emailSignature']),
+    show: new Set([...input.show, 'emailSignature']),
   };
 }
 

@@ -163,6 +163,10 @@
                   </div>
                 </v-window-item>
 
+                <v-window-item value="emailSignatures" class="sapling-account-center__panel">
+                  <SaplingAccountEmailSignatures />
+                </v-window-item>
+
                 <v-window-item value="profilePicture" class="sapling-account-center__panel">
                   <SaplingAccountProfilePictures />
                 </v-window-item>
@@ -414,6 +418,7 @@
 
 <script setup lang="ts">
 import SaplingAccountWorkHours from './SaplingAccountWorkHours.vue'
+import SaplingAccountEmailSignatures from './SaplingAccountEmailSignatures.vue'
 import SaplingAccountProfilePictures from './SaplingAccountProfilePictures.vue'
 // #region Imports
 import { computed, watch } from 'vue'

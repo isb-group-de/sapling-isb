@@ -105,9 +105,13 @@ calculated relative to the displayed range.
 `EventItem` represents appointments, meetings, reminders, and related CRM/service events.
 
 The `isDateStart`/`isDateEnd` metadata on `startDate` and `endDate` is an
-enforced range invariant: an Event end may equal or follow its start, but may
-never precede it. Generated dialogs validate the range inline and the generic
-mutation path rejects invalid API, import, MCP, or script payloads as well.
+enforced range rule for new or changed times: an Event end may equal or follow
+its start, but may not precede it. Generated dialogs validate the range inline
+and the generic mutation path rejects invalid new or changed ranges from API,
+import, MCP, or script payloads as well. A status update that leaves both dates
+unchanged can complete a historical Event with an invalid stored range. This
+also applies to the Inbox bulk completion action and does not repair or shift
+the original dates.
 
 Important fields:
 

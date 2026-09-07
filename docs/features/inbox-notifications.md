@@ -305,6 +305,11 @@ later occurrences remain open. A finite master is completed only after its last
 generated occurrence was processed. Field permissions, change logs, calendar
 delivery hooks, and open-task refresh events remain intact on both paths.
 
+Completing existing Events changes only their status. An invalid historical
+start/end range does not block that update when both dates remain unchanged;
+the original dates are preserved rather than automatically corrected. Creating
+Events or changing either date still requires a valid resulting range.
+
 ## Adding A New Entity To Inbox
 
 1. Ensure the entity has a useful recipient relation such as `assigneePerson`, `creatorPerson`, or a participants collection.

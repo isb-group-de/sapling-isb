@@ -2,6 +2,8 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import {
   IsArray,
+  IsIn,
+  Min,
   IsInt,
   IsNotEmpty,
   IsObject,
@@ -99,6 +101,17 @@ export class MailSenderListResponseDto {
 }
 
 export class MailPreviewDto {
+  @ApiPropertyOptional({ enum: ['none', 'fixed', 'rotation'] })
+  @IsOptional()
+  @IsIn(['none', 'fixed', 'rotation'])
+  signatureMode?: 'none' | 'fixed' | 'rotation';
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  signatureHandle?: number;
+
   @ApiProperty({
     description: 'Entity handle used to resolve template data and permissions.',
   })
@@ -271,6 +284,9 @@ export class MailContextCcResponseDto {
 }
 
 export class MailPreviewResponseDto {
+  @ApiPropertyOptional()
+  signatureHandle?: number;
+
   @ApiProperty({
     description: 'Entity handle that was used to resolve the preview.',
   })

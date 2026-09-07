@@ -1,3 +1,4 @@
+import { EmailSignatureItem } from '../../entity/EmailSignatureItem';
 import { EntityManager } from '@mikro-orm/core';
 import { InjectQueue } from '@nestjs/bullmq';
 import {
@@ -201,6 +202,8 @@ export class MailService {
     delivery.bodyHtml = preview.bodyHtml;
     delivery.attachmentHandles = preview.attachmentHandles ?? [];
     delivery.requestPayload = {
+      signatureHandle: preview.signatureHandle,
+      signatureMode: sendDto.signatureMode,
       from: resolvedSender?.email,
       requestedFrom: normalizeEmailAddress(sendDto.senderEmail),
       senderDisplayName: resolvedSender?.displayName,
@@ -215,6 +218,16 @@ export class MailService {
     };
     delivery.attemptCount = 0;
     await this.runAtomic(async () => {
+      if (preview.signatureHandle != null) {
+        await this.em.nativeUpdate(
+          EmailSignatureItem,
+          {
+            handle: preview.signatureHandle,
+            person: { handle: currentUser.handle },
+          },
+          { lastUsedAt: new Date() },
+        );
+      }
       await this.em.persist(delivery).flush();
       await this.automationEvents?.record({
         entityHandle: 'emailDelivery',

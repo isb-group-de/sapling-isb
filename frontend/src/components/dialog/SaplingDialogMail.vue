@@ -1,7 +1,7 @@
 <template>
   <SaplingDialog
     :model-value="isOpen"
-    size="xxl"
+    size="3xl"
     :height="SAPLING_DIALOG_HEIGHT.xl"
     persistent
     @update:model-value="handleVisibilityChange"
@@ -39,6 +39,13 @@
             <div class="sapling-message-dialog__grid sapling-mail-dialog__grid">
               <SaplingDialogMailComposer
                 ref="composer"
+                :signatures="signatures"
+                :signature-rotation="signatureRotation"
+                :signature-handle="signatureHandle"
+                :signatures-disabled="!signaturesReady || isSending || isSavingSignatureDefaults"
+                @save-signature-defaults="saveCurrentSignatureDefaults"
+                @update:signature-rotation="changeSignatureRotation"
+                @update:signature-handle="changeSignatureHandle"
                 :templates="templates"
                 :template-handle="templateHandle"
                 :to-recipients="toRecipients"
@@ -120,6 +127,14 @@ import SaplingDialogMailPreview from '@/components/dialog/mail/SaplingDialogMail
 import { useSaplingDialogMailEditor } from '@/composables/dialog/useSaplingDialogMailEditor'
 
 const {
+  saveCurrentSignatureDefaults,
+  isSavingSignatureDefaults,
+  signatures,
+  signatureRotation,
+  signatureHandle,
+  signaturesReady,
+  changeSignatureRotation,
+  changeSignatureHandle,
   applyTemplate,
   availableAttachments,
   attachmentHandles,

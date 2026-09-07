@@ -61,6 +61,12 @@ vi.mock('@/services/api.generic.service', () => ({
   },
 }))
 
+vi.mock('@/services/api.mail-signature.service', () => ({
+  loadMailSignatureSettings: vi
+    .fn()
+    .mockResolvedValue({ signatureRotation: true, defaultSignatureHandle: null }),
+}))
+
 vi.mock('@/services/api.mail.service', () => ({
   default: {
     getEntityTemplate: mocks.getEntityTemplate,

@@ -70,6 +70,56 @@ const createTemplateField = (
 });
 
 describe('GenericPermissionService', () => {
+  it('enforces private signature ownership even with global permissions', () => {
+    const service = new GenericPermissionService(
+      {
+        getEntityPermissions: () => ({ allowReadStage: 'global' }),
+        getAllEntityPermissions: () => [],
+      } as never,
+      { getEntityTemplate: () => [] } as never,
+    );
+    expect(
+      service.setTopLevelFilter(
+        { handle: 12 },
+        { handle: 7 } as never,
+        'emailSignature',
+      ),
+    ).toEqual({ $and: [{ handle: 12 }, { person: 7 }] });
+    expect(() =>
+      service.checkTopLevelPermission(
+        'emailSignature',
+        { person: { handle: 8 } },
+        { handle: 7 } as never,
+        'allowUpdateStage',
+      ),
+    ).toThrow('global.permissionDenied');
+    expect(() =>
+      service.checkTopLevelPermission(
+        'emailSignature',
+        { person: { handle: 8 } },
+        { handle: 7 } as never,
+        'allowDeleteStage',
+      ),
+    ).toThrow('global.permissionDenied');
+  });
+
+  it('assigns the authenticated owner when creating a signature', () => {
+    const service = new GenericPermissionService(
+      {
+        getEntityPermissions: () => ({ allowInsertStage: 'global' }),
+      } as never,
+      { getEntityTemplate: () => [] } as never,
+    );
+    const data: Record<string, unknown> = { name: 'Bonn' };
+    service.checkTopLevelPermission(
+      'emailSignature',
+      data,
+      { handle: 7 } as never,
+      'allowInsertStage',
+    );
+    expect(data.person).toBe(7);
+  });
+
   it('does not apply user scope filters to anonymous public bootstrap reads', () => {
     const currentService = {
       getEntityPermissions: jest.fn(),
