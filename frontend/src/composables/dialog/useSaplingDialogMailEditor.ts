@@ -1,4 +1,7 @@
 import { useMailSignatures } from './useMailSignatures'
+import { useMailDraft, type MailDraft } from './useMailDraft'
+import { useMailSendGuard, inspectMail } from './useMailSendGuard'
+import { useMailAttachmentUpload } from './useMailAttachmentUpload'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { EntityTemplate } from '@/entity/structure'
@@ -14,7 +17,7 @@ import { useTranslationLoader } from '@/composables/generic/useTranslationLoader
 import { useSaplingMailDialog } from '@/composables/dialog/useSaplingMailDialog'
 import { useSaplingMessageCenter } from '@/composables/system/useSaplingMessageCenter'
 import ApiGenericService from '@/services/api.generic.service'
-import ApiMailService from '@/services/api.mail.service'
+import ApiMailService, { type MailPreviewPayload } from '@/services/api.mail.service'
 import { useCurrentPermissionStore } from '@/stores/currentPermissionStore'
 import { useCurrentPersonStore } from '@/stores/currentPersonStore'
 import { useSaplingMailEditorRecipients } from './useSaplingMailEditorRecipients'
@@ -33,7 +36,7 @@ type AttachmentItem = {
 }
 
 export function useSaplingDialogMailEditor() {
-  const { isOpen, context, closeMailDialog } = useSaplingMailDialog()
+  const { isOpen, context, closeMailDialog: closeDialog } = useSaplingMailDialog()
   const { pushMessage } = useSaplingMessageCenter()
   const currentPersonStore = useCurrentPersonStore()
   const currentPermissionStore = useCurrentPermissionStore()
@@ -84,6 +87,12 @@ export function useSaplingDialogMailEditor() {
   const isPreviewLoading = ref(false)
   const isSending = ref(false)
   let initializationSequence = 0
+  const editorReady = ref(false)
+  const { draftStatus, openDraft, saveDraft, clearDraft, detachDraft } = useMailDraft()
+  const { remainingSeconds, isHolding, sendIssues, holdSend, cancelPendingSend } =
+    useMailSendGuard()
+  let reviewedPayload: MailPreviewPayload | null = null
+  const isCheckingSend = ref(false)
   const {
     bccRecipients,
     ccRecipients,
@@ -123,12 +132,84 @@ export function useSaplingDialogMailEditor() {
     () => selectedSenderEmail.value || currentPersonStore.person?.email?.trim() || '',
   )
 
+  const senderSummary = computed(() => {
+    const sender = senderOptions.value.find((item) => item.email === senderEmail.value)
+    return [
+      sender?.displayName,
+      senderEmail.value,
+      sender?.source === 'configured' ? translate('mail.sharedMailbox') : '',
+    ]
+      .filter(Boolean)
+      .join(' · ')
+  })
+  const composerLocked = computed(
+    () => !editorReady.value || isCheckingSend.value || isHolding.value || isSending.value,
+  )
+  const canUpload = computed(
+    () =>
+      isOpen.value &&
+      editorReady.value &&
+      context.value?.itemHandle != null &&
+      !composerLocked.value &&
+      !currentPersonStore.isImpersonating &&
+      hasEntityPermission('document', 'allowRead') &&
+      hasEntityPermission(context.value.entityHandle, 'allowUpdate'),
+  )
+  const { isUploading, failedUploads, uploadAttachments } = useMailAttachmentUpload({
+    target: () =>
+      canUpload.value && context.value
+        ? {
+            entity: context.value.entityHandle,
+            reference: String(context.value.itemHandle),
+            generation: initializationSequence,
+          }
+        : null,
+    accept: (attachment) => {
+      availableAttachments.value.push(attachment)
+      attachmentHandles.value.push(attachment.handle)
+    },
+  })
+
+  const draft = computed<MailDraft>(() => ({
+    subject: subject.value,
+    bodyMarkdown: bodyMarkdown.value,
+    to: [...toRecipients.value],
+    cc: [...ccRecipients.value],
+    bcc: [...bccRecipients.value],
+    senderEmail: selectedSenderEmail.value,
+    templateHandle: templateHandle.value,
+    attachmentHandles: [...attachmentHandles.value],
+    signatureRotation: signatureRotation.value,
+    signatureHandle: signatureHandle.value,
+  }))
+  watch(
+    draft,
+    (value) => {
+      if (!editorReady.value || !isOpen.value) return
+      cancelPendingSend()
+      reviewedPayload = null
+      if (!currentPersonStore.isImpersonating) saveDraft(value)
+    },
+    { flush: 'sync' },
+  )
+  watch(
+    () => [currentPersonStore.person?.handle, currentPersonStore.isImpersonating],
+    () => {
+      if (!editorReady.value) return
+      cancelPendingSend()
+      detachDraft()
+      if (isOpen.value) closeMailDialog()
+    },
+  )
+
   const canSendMail = computed(
     () =>
       signaturesReady.value &&
       (signatureRotation.value || signatureHandle.value != null) &&
       !isPreviewLoading.value &&
       !isSending.value &&
+      !composerLocked.value &&
+      !isUploading.value &&
       !currentPersonStore.isImpersonating &&
       hasEntityPermission(context.value?.entityHandle, 'allowUpdate'),
   )
@@ -179,6 +260,9 @@ export function useSaplingDialogMailEditor() {
     isOpen,
     async (open) => {
       const sequence = ++initializationSequence
+      editorReady.value = false
+      cancelPendingSend()
+      detachDraft()
       if (!open || !context.value) {
         resetState()
         return
@@ -209,10 +293,51 @@ export function useSaplingDialogMailEditor() {
       if (sequence !== initializationSequence) {
         return
       }
+      if (!currentPersonStore.isImpersonating && currentPersonStore.person?.handle != null) {
+        const saved = openDraft([
+          currentPersonStore.person.handle,
+          context.value?.entityHandle,
+          context.value?.itemHandle ?? null,
+          context.value?.initialTo ?? [],
+          context.value?.initialSubject ?? '',
+        ])
+        if (saved) restoreDraft(saved)
+      }
+      editorReady.value = true
       await refreshPreview()
     },
     { immediate: true },
   )
+
+  function restoreDraft(saved: MailDraft) {
+    subject.value = saved.subject
+    bodyMarkdown.value = saved.bodyMarkdown
+    toRecipients.value = saved.to
+    ccRecipients.value = saved.cc
+    bccRecipients.value = saved.bcc
+    // Preserve the recorded sender; the send API rechecks its authorization.
+    selectedSenderEmail.value = saved.senderEmail
+    templateHandle.value = templates.value.some((item) => item.handle === saved.templateHandle)
+      ? saved.templateHandle
+      : null
+    attachmentHandles.value = saved.attachmentHandles
+    signatureRotation.value = saved.signatureRotation
+    signatureHandle.value = saved.signatureHandle
+    resolvedSignatureHandle.value = null
+  }
+
+  function closeMailDialog() {
+    if (isSending.value) return
+    cancelPendingSend()
+    closeDialog()
+  }
+
+  function discardDraft() {
+    if (isSending.value) return
+    editorReady.value = false
+    clearDraft()
+    closeMailDialog()
+  }
 
   function handleVisibilityChange(value: boolean) {
     if (!value) {
@@ -232,6 +357,7 @@ export function useSaplingDialogMailEditor() {
   }
 
   function resetState() {
+    failedUploads.value = []
     resetSignatures()
     previewSequence++
     templates.value = []
@@ -487,6 +613,7 @@ export function useSaplingDialogMailEditor() {
       previewTo.value = preview.to.join(', ')
       previewCc.value = preview.cc.join(', ')
       previewBcc.value = preview.bcc.join(', ')
+      return preview
     } catch (error) {
       console.error('Error previewing email:', error)
       pushMessage('error', 'mail.previewFailed', 'mail.previewFailedDescription', 'mail')
@@ -500,32 +627,79 @@ export function useSaplingDialogMailEditor() {
       return
     }
 
-    isSending.value = true
-
+    const sequence = initializationSequence
+    cancelPendingSend()
+    reviewedPayload = null
+    isCheckingSend.value = true
     try {
-      await ApiMailService.send({
-        ...signaturePayload(),
-        entityHandle: context.value.entityHandle,
-        itemHandle: context.value.itemHandle,
-        templateHandle: templateHandle.value ?? undefined,
-        senderEmail: selectedSenderEmail.value || undefined,
-        subject: subject.value,
-        bodyMarkdown: bodyMarkdown.value,
-        to: toRecipients.value,
-        cc: ccRecipients.value,
-        bcc: bccRecipients.value,
-        draftValues: context.value.draftValues,
-        attachmentHandles: attachmentHandles.value,
-      })
-
-      pushMessage('success', 'mail.sendQueued', 'mail.sendQueuedDescription', 'mail')
-      closeMailDialog()
-    } catch (error) {
-      console.error('Error sending email:', error)
-      pushMessage('error', 'mail.sendFailed', 'mail.sendFailedDescription', 'mail')
+      const preview = await refreshPreview()
+      if (!preview || sequence !== initializationSequence || !isOpen.value) return
+      reviewedPayload = JSON.parse(
+        JSON.stringify({
+          ...signaturePayload(),
+          entityHandle: context.value.entityHandle,
+          itemHandle: context.value.itemHandle,
+          templateHandle: templateHandle.value ?? undefined,
+          senderEmail: selectedSenderEmail.value || undefined,
+          subject: subject.value,
+          bodyMarkdown: bodyMarkdown.value,
+          to: toRecipients.value,
+          cc: ccRecipients.value,
+          bcc: bccRecipients.value,
+          draftValues: context.value.draftValues,
+          attachmentHandles: attachmentHandles.value,
+        }),
+      ) as MailPreviewPayload
+      sendIssues.value = inspectMail(preview)
+      if (
+        attachmentHandles.value.some(
+          (handle) => !availableAttachments.value.some((item) => item.handle === handle),
+        )
+      ) {
+        sendIssues.value.push({ key: 'mail.checkUnavailableAttachments', blocking: true })
+      }
+      saveDraft(draft.value)
+      if (!sendIssues.value.length) confirmSend()
     } finally {
-      isSending.value = false
+      isCheckingSend.value = false
     }
+  }
+
+  function confirmSend() {
+    if (
+      !reviewedPayload ||
+      sendIssues.value.some((issue) => issue.blocking) ||
+      isHolding.value ||
+      isSending.value
+    )
+      return
+    const payload = reviewedPayload
+    const sentDraft = JSON.parse(JSON.stringify(draft.value)) as MailDraft
+    const sequence = initializationSequence
+    const userHandle = currentPersonStore.person?.handle
+    holdSend(async () => {
+      if (
+        !isOpen.value ||
+        sequence !== initializationSequence ||
+        currentPersonStore.isImpersonating ||
+        currentPersonStore.person?.handle !== userHandle ||
+        !hasEntityPermission(payload.entityHandle, 'allowUpdate')
+      )
+        return
+      isSending.value = true
+      try {
+        await ApiMailService.send(payload)
+        editorReady.value = false
+        clearDraft(sentDraft)
+        pushMessage('success', 'mail.sendQueued', 'mail.sendQueuedDescription', 'mail')
+        closeDialog()
+      } catch (error) {
+        console.error('Error sending email:', error)
+        pushMessage('error', 'mail.sendFailed', 'mail.sendFailedDescription', 'mail')
+      } finally {
+        isSending.value = false
+      }
+    })
   }
 
   async function saveCurrentSignatureDefaults() {
@@ -611,6 +785,20 @@ export function useSaplingDialogMailEditor() {
   }
 
   return {
+    draftStatus,
+    discardDraft,
+    composerLocked,
+    senderSummary,
+    canUpload,
+    isUploading,
+    failedUploads,
+    uploadAttachments,
+    remainingSeconds,
+    isHolding,
+    sendIssues,
+    confirmSend,
+    cancelPendingSend,
+    isCheckingSend,
     saveCurrentSignatureDefaults,
     isSavingSignatureDefaults,
     signatures,

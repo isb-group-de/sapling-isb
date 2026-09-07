@@ -239,7 +239,6 @@ the same allow-list validation as manual delivery. Existing subscriptions
 without `senderMailbox` continue to send from the sender person's default
 address.
 
-
 ## Personal Email Signatures
 
 Manual composition uses the same `3xl` dialog width as the generic edit dialog.
@@ -450,7 +449,7 @@ relation, email-template catalog, contact catalog, or document catalog must not
 fail the composer or trigger a forbidden request; the corresponding optional
 choices are simply omitted. Sending still requires update access to the context
 entity. Preview rendering is read-only and remains available during
-impersonation, while the send action is hidden and remains blocked server-side.
+impersonation, while the send action is disabled and remains blocked server-side.
 
 When adding a new automatic email subscription:
 
@@ -483,6 +482,39 @@ When adding a new Teams subscription:
 5. Verify sender and recipient Azure prerequisites.
 
 ## Verification
+
+### Manual composer convenience and send review
+
+- Drafts are saved to local browser storage on each edit, scoped to the signed-in
+  person, entity, record and initial recipient/subject context. Reopening that
+  context restores recipients, sender, content, attachments and signature choices
+  after defaults have loaded. They do not synchronize across devices. Impersonation
+  never loads or saves drafts. Successful queuing or explicit discard removes the
+  draft; cancellation and failures preserve it. Storage failures are visible.
+- The text snippet selector inserts an existing active context email template's
+  body at the markdown cursor without replacing the subject or existing body.
+  Templates remain managed through the existing generic email-template route and
+  permissions.
+- File selection and drag and drop upload documents through the normal record
+  upload endpoint and select successful uploads as attachments. Upload requires a
+  saved record, document read permission and update access to the record. Uploaded
+  documents remain on the record even when the draft is discarded. Partial failures
+  show filenames to retry; pending uploads prevent sending.
+  The delivery worker also rejects missing document records instead of silently
+  sending without a selected attachment deleted after the preview.
+- Send first refreshes the server preview. Missing To recipients, invalid addresses,
+  duplicate recipients across To/Cc/Bcc and unavailable selected documents block
+  dispatch. Empty subject, empty rendered placeholders (including signatures) and
+  attachment wording without an attachment require explicit acknowledgement.
+  Preview responses expose these empty tokens as `unresolvedPlaceholders`.
+- After review, a ten-second client-side grace period precedes the send API call.
+  Cancel, close, page reload or component disposal stops that pending call. The
+  composer is locked while checking, waiting and dispatching. This is not a recall
+  of an already transmitted message: after the timer, the existing delivery queue
+  and retry behavior apply. There is no background or scheduled send if the page
+  is closed. The chosen sender/shared mailbox remains visible beside Send.
+- New controls disable browser autocomplete. Translation seed 081 adds German and
+  English labels and is applied by the normal seeder deployment.
 
 Useful targeted commands:
 

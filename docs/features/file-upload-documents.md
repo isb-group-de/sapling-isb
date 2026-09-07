@@ -196,6 +196,15 @@ All document endpoints require `SessionOrBearerAuthGuard`.
 | `GET /api/document/download/:handle`                              | `allowRead` on the document's target entity | Downloads original file as attachment                                     |
 | `GET /api/document/preview/:handle`                               | `allowRead` on the document's target entity | Previews PDFs inline, other files as attachment                           |
 
+The frontend file browser previews SVG and ICO documents alongside PNG and JPEG.
+SVG (`image/svg+xml`) and ICO (`image/x-icon` or `image/vnd.microsoft.icon`) are
+recognized by MIME type, with a case-insensitive `.svg`/`.ico` filename fallback.
+The protected download is loaded as a blob with the appropriate image MIME type,
+so existing uploads with generic MIME metadata also work. SVG is rendered through
+an `img` element, never inline markup or an embedded document. Preview blob URLs
+are released when the selection changes or the preview closes. Download or image
+decoding failures show the existing unavailable-preview state.
+
 The frontend file browser also previews EML and Outlook MSG mail files. It
 loads the protected download response with the current session, parses the mail
 locally, sanitizes HTML, resolves embedded CID images, and exposes non-inline

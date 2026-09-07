@@ -68,6 +68,24 @@ export class MailRenderingService {
     );
 
     return {
+      unresolvedPlaceholders: [
+        ...new Set(
+          [
+            subjectSource,
+            bodySource,
+            ...[previewDto.to, previewDto.cc, previewDto.bcc].flatMap(
+              (value) => value ?? [],
+            ),
+          ]
+            .flatMap((source) => source.match(/\{\{\s*([^}]+?)\s*\}\}/g) ?? [])
+            .filter(
+              (token) =>
+                !this.messageTemplateService
+                  .replacePlaceholders(token, context, renderOptions)
+                  .trim(),
+            ),
+        ),
+      ],
       signatureHandle: signature?.handle,
       entityHandle: previewDto.entityHandle,
       itemHandle: previewDto.itemHandle,

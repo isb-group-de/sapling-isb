@@ -45,6 +45,12 @@ export class MailProviderTransportService {
       { handle: { $in: handles } },
       { populate: ['entity'] },
     );
+    if (
+      new Set(documents.map((document) => document.handle)).size !==
+      new Set(handles).size
+    ) {
+      throw new BadRequestException('mail.checkUnavailableAttachments');
+    }
     return documents.map((document) => ({
       handle: document.handle ?? 0,
       filename: document.filename,

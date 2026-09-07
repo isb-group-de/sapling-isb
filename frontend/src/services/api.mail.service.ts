@@ -23,6 +23,7 @@ export type MailPreviewPayload = {
 }
 
 export type MailPreviewResult = {
+  unresolvedPlaceholders?: string[]
   signatureHandle?: number
   entityHandle: string
   itemHandle?: string | number

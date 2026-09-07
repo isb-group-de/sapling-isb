@@ -36,9 +36,29 @@
             </div>
           </div>
           <div v-else class="sapling-message-dialog__scroll sapling-mail-dialog__scroll">
+            <v-alert
+              v-if="draftStatus !== 'none'"
+              :type="draftStatus === 'failed' ? 'warning' : 'info'"
+              variant="tonal"
+              class="mb-3"
+            >
+              {{
+                translate(
+                  `mail.draft${draftStatus === 'failed' ? 'Failed' : draftStatus === 'restored' ? 'Restored' : 'Saved'}`,
+                )
+              }}
+              <v-btn variant="text" :disabled="composerLocked" @click="discardDraft">{{
+                translate('mail.discardDraft')
+              }}</v-btn>
+            </v-alert>
             <div class="sapling-message-dialog__grid sapling-mail-dialog__grid">
               <SaplingDialogMailComposer
                 ref="composer"
+                :inert="composerLocked"
+                :can-upload="canUpload"
+                :is-uploading="isUploading"
+                :failed-uploads="failedUploads"
+                @upload-attachments="uploadAttachments"
                 :signatures="signatures"
                 :signature-rotation="signatureRotation"
                 :signature-handle="signatureHandle"
@@ -80,6 +100,7 @@
               />
 
               <SaplingDialogMailPreview
+                :inert="composerLocked"
                 :placeholder-groups="placeholderGroups"
                 :insert-target="insertTarget"
                 :is-loading-placeholders="isLoadingPlaceholders"
@@ -100,6 +121,37 @@
           </div>
         </v-card-text>
 
+        <v-alert
+          v-if="sendIssues.length"
+          type="warning"
+          variant="tonal"
+          class="mx-4 mb-3"
+          role="alert"
+        >
+          <strong>{{ translate('mail.checkBeforeSend') }}</strong>
+          <ul class="ms-5 my-2">
+            <li v-for="issue in sendIssues" :key="issue.key">
+              {{ translate(issue.key) }} <span v-if="issue.detail">{{ issue.detail }}</span>
+            </li>
+          </ul>
+          <v-btn
+            v-if="!sendIssues.some((issue) => issue.blocking)"
+            variant="tonal"
+            @click="confirmSend"
+            >{{ translate('mail.sendAnyway') }}</v-btn
+          >
+          <v-btn variant="text" @click="cancelPendingSend">{{
+            translate('mail.continueEditing')
+          }}</v-btn>
+        </v-alert>
+        <v-alert v-if="isHolding" type="info" variant="tonal" class="mx-4 mb-3" role="status">
+          {{ $t('mail.sendCountdown', { seconds: remainingSeconds }) }}
+          <v-btn variant="tonal" @click="cancelPendingSend">{{
+            translate('mail.cancelSend')
+          }}</v-btn>
+          <div class="text-caption">{{ translate('mail.sendCountdownHint') }}</div>
+        </v-alert>
+
         <SaplingActionBarSkeleton v-if="isTranslationLoading" :leading="1" :trailing="2" />
         <SaplingActionMail
           v-else
@@ -109,6 +161,8 @@
           :can-send="canSendMail"
           :is-preview-loading="isPreviewLoading"
           :is-sending="isSending"
+          :sender-summary="senderSummary"
+          :locked="composerLocked"
         />
       </div>
     </SaplingDialogCard>
@@ -127,6 +181,19 @@ import SaplingDialogMailPreview from '@/components/dialog/mail/SaplingDialogMail
 import { useSaplingDialogMailEditor } from '@/composables/dialog/useSaplingDialogMailEditor'
 
 const {
+  draftStatus,
+  discardDraft,
+  composerLocked,
+  senderSummary,
+  canUpload,
+  isUploading,
+  failedUploads,
+  uploadAttachments,
+  remainingSeconds,
+  isHolding,
+  sendIssues,
+  confirmSend,
+  cancelPendingSend,
   saveCurrentSignatureDefaults,
   isSavingSignatureDefaults,
   signatures,

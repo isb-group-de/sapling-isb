@@ -1,5 +1,5 @@
-import { nextTick, ref } from 'vue'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { effectScope, nextTick, ref } from 'vue'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
   find: vi.fn(),
@@ -8,12 +8,14 @@ const mocks = vi.hoisted(() => ({
   listSenders: vi.fn(),
   resolveContextCc: vi.fn(),
   preview: vi.fn(),
+  send: vi.fn(),
   fetchCurrentPerson: vi.fn(),
   fetchCurrentPermission: vi.fn(),
   pushMessage: vi.fn(),
   permissions: [] as Array<Record<string, unknown>>,
   isImpersonating: false,
   currentPerson: {
+    handle: 7,
     email: 'sender@example.com',
     company: { handle: 20 },
   },
@@ -73,16 +75,31 @@ vi.mock('@/services/api.mail.service', () => ({
     listSenders: mocks.listSenders,
     resolveContextCc: mocks.resolveContextCc,
     preview: mocks.preview,
-    send: vi.fn(),
+    send: mocks.send,
   },
 }))
 
-import { useSaplingDialogMailEditor } from '@/composables/dialog/useSaplingDialogMailEditor'
+import { useSaplingDialogMailEditor as createMailEditor } from '@/composables/dialog/useSaplingDialogMailEditor'
 import { useSaplingMailDialog } from '@/composables/dialog/useSaplingMailDialog'
+
+const scopes: ReturnType<typeof effectScope>[] = []
+function useSaplingDialogMailEditor() {
+  const scope = effectScope()
+  scopes.push(scope)
+  return scope.run(createMailEditor)!
+}
+afterEach(() => {
+  scopes.splice(0).forEach((scope) => scope.stop())
+  useSaplingMailDialog().closeMailDialog()
+  vi.useRealTimers()
+  vi.restoreAllMocks()
+})
 
 describe('useSaplingDialogMailEditor', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    localStorage.clear()
+    mocks.send.mockResolvedValue({ handle: 1 })
     useSaplingMailDialog().closeMailDialog()
     mocks.fetchCurrentPerson.mockResolvedValue(undefined)
     mocks.fetchCurrentPermission.mockResolvedValue(undefined)
@@ -323,5 +340,95 @@ describe('useSaplingDialogMailEditor', () => {
     await vi.waitFor(() => expect(mocks.fetchCurrentPermission).toHaveBeenCalled())
 
     expect(editor.canSendMail.value).toBe(false)
+  })
+
+  it('restores edits after reopening and keeps them when the grace period is cancelled', async () => {
+    const editor = useSaplingDialogMailEditor()
+    const dialog = useSaplingMailDialog()
+    const context = { entityHandle: 'ticket', itemHandle: 99 }
+    dialog.openMailDialog(context)
+    await vi.waitFor(() => expect(editor.canSendMail.value).toBe(true))
+    editor.subject.value = 'Saved subject'
+    editor.bodyMarkdown.value = 'Saved text'
+    editor.toRecipients.value = ['to@example.com']
+    editor.closeMailDialog()
+    await nextTick()
+    dialog.openMailDialog(context)
+    await vi.waitFor(() => expect(editor.canSendMail.value).toBe(true))
+    expect(editor.subject.value).toBe('Saved subject')
+    expect(editor.bodyMarkdown.value).toBe('Saved text')
+    expect(editor.toRecipients.value).toEqual(['to@example.com'])
+    mocks.preview.mockResolvedValue({
+      to: ['to@example.com'],
+      cc: [],
+      bcc: [],
+      subject: 'Saved subject',
+      bodyMarkdown: 'Saved text',
+    })
+    vi.useFakeTimers()
+    await editor.sendMail()
+    expect(editor.isHolding.value).toBe(true)
+    editor.closeMailDialog()
+    await vi.advanceTimersByTimeAsync(11000)
+    expect(mocks.send).not.toHaveBeenCalled()
+    expect(localStorage.length).toBe(1)
+  })
+
+  it('requires warning acknowledgement and clears the draft only after successful queuing', async () => {
+    const editor = useSaplingDialogMailEditor()
+    useSaplingMailDialog().openMailDialog({ entityHandle: 'ticket', itemHandle: 99 })
+    await vi.waitFor(() => expect(editor.canSendMail.value).toBe(true))
+    editor.toRecipients.value = ['to@example.com']
+    editor.bodyMarkdown.value = 'Please see attached'
+    mocks.preview.mockResolvedValue({
+      to: ['to@example.com'],
+      cc: [],
+      bcc: [],
+      subject: '',
+      bodyMarkdown: 'Please see attached',
+      signatureHandle: 12,
+    })
+    vi.useFakeTimers()
+    await editor.sendMail()
+    expect(editor.isHolding.value).toBe(false)
+    expect(editor.sendIssues.value).toHaveLength(2)
+    await vi.advanceTimersByTimeAsync(11000)
+    expect(mocks.send).not.toHaveBeenCalled()
+    editor.confirmSend()
+    await vi.advanceTimersByTimeAsync(9999)
+    expect(mocks.send).not.toHaveBeenCalled()
+    await vi.advanceTimersByTimeAsync(1)
+    expect(mocks.send).toHaveBeenCalledWith(
+      expect.objectContaining({ signatureHandle: 12, bodyMarkdown: 'Please see attached' }),
+    )
+    expect(localStorage.length).toBe(0)
+    expect(editor.isOpen.value).toBe(false)
+  })
+
+  it('retains the draft after a send failure and invalidates an acknowledged review on edits', async () => {
+    const editor = useSaplingDialogMailEditor()
+    useSaplingMailDialog().openMailDialog({ entityHandle: 'ticket', itemHandle: 99 })
+    await vi.waitFor(() => expect(editor.canSendMail.value).toBe(true))
+    editor.toRecipients.value = ['to@example.com']
+    mocks.preview.mockResolvedValue({
+      to: ['to@example.com'],
+      cc: [],
+      bcc: [],
+      subject: 'Test',
+      bodyMarkdown: 'Text',
+    })
+    mocks.send.mockRejectedValueOnce(new Error('offline'))
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    vi.useFakeTimers()
+    await editor.sendMail()
+    editor.bodyMarkdown.value = 'Changed'
+    await vi.advanceTimersByTimeAsync(11000)
+    expect(mocks.send).not.toHaveBeenCalled()
+    await editor.sendMail()
+    await vi.advanceTimersByTimeAsync(10000)
+    expect(mocks.send).toHaveBeenCalledTimes(1)
+    expect(editor.isOpen.value).toBe(true)
+    expect(localStorage.length).toBe(1)
+    expect(editor.canSendMail.value).toBe(true)
   })
 })

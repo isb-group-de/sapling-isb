@@ -1,7 +1,7 @@
 <template>
   <SaplingActionBar>
     <template #leading>
-      <v-btn variant="text" prepend-icon="mdi-close" @click="close">
+      <v-btn variant="text" prepend-icon="mdi-close" :disabled="isSending" @click="close">
         <template v-if="$vuetify.display.mdAndUp">
           {{ $t('global.close') }}
         </template>
@@ -9,11 +9,13 @@
     </template>
 
     <template #trailing>
+      <span class="text-caption text-break">{{ $t('document.from') }}: {{ senderSummary }}</span>
       <v-btn
         color="primary"
         variant="tonal"
         prepend-icon="mdi-eye-outline"
         :loading="isPreviewLoading"
+        :disabled="locked"
         @click="refreshPreview"
       >
         <template v-if="$vuetify.display.mdAndUp">
@@ -21,7 +23,7 @@
         </template>
       </v-btn>
       <v-btn
-        v-if="canSend"
+        :disabled="!canSend"
         color="primary"
         prepend-icon="mdi-send"
         :loading="isSending"
@@ -39,6 +41,8 @@
 import SaplingActionBar from '@/components/actions/SaplingActionBar.vue'
 
 defineProps<{
+  senderSummary?: string
+  locked?: boolean
   close: () => void
   refreshPreview: () => void
   send: () => void

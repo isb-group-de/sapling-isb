@@ -284,6 +284,8 @@ export class MailContextCcResponseDto {
 }
 
 export class MailPreviewResponseDto {
+  @ApiPropertyOptional({ type: [String] })
+  unresolvedPlaceholders?: string[];
   @ApiPropertyOptional()
   signatureHandle?: number;
 

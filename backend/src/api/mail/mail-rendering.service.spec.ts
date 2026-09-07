@@ -18,6 +18,46 @@ import { MailRenderingService } from './mail-rendering.service';
 import { EmailSignatureItem } from '../../entity/EmailSignatureItem';
 
 describe('MailRenderingService signatures', () => {
+  it('reports empty placeholders in subject, body, signature and recipients before they disappear', async () => {
+    const em = {
+      findOne: jest.fn(async (entity: unknown) =>
+        entity === EmailSignatureItem
+          ? { handle: 12, bodyMarkdown: '{{signatureName}}' }
+          : { handle: 'ticket' },
+      ),
+      findOneOrFail: jest.fn(async () => ({
+        handle: 7,
+        emailSignatureRotation: true,
+      })),
+    };
+    const renderer = new MailRenderingService({
+      buildContext: async () => ({}),
+      replaceRecipients: (value: string[]) => value ?? [],
+      replacePlaceholders: (value: string) =>
+        value.replace(/\{\{.*?\}\}/g, (token) =>
+          token === '{{count}}' ? '0' : '',
+        ),
+    } as never);
+    const result = await renderer.previewEmail(
+      em as never,
+      {
+        entityHandle: 'ticket',
+        signatureMode: 'rotation',
+        signatureHandle: 12,
+        subject: '{{name}}',
+        bodyMarkdown: '{{name}} {{date | date}} {{count}}',
+        to: ['{{email}}'],
+      },
+      { handle: 7 } as never,
+    );
+    expect(result.unresolvedPlaceholders).toEqual([
+      '{{name}}',
+      '{{date | date}}',
+      '{{signatureName}}',
+      '{{email}}',
+    ]);
+    expect(result.bodyMarkdown).not.toContain('{{');
+  });
   it('appends and renders the signature once without mutating the editable body', async () => {
     const signature = {
       handle: 12,

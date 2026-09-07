@@ -57,6 +57,29 @@ function createTransport() {
 }
 
 describe('MailProviderTransportService', () => {
+  it('fails delivery instead of silently omitting a deleted attachment', async () => {
+    const { service } = createTransport();
+    const em = { find: jest.fn(async () => [{ handle: 1 }]) };
+    await expect(service.loadAttachments(em as never, [1, 2])).rejects.toThrow(
+      'mail.checkUnavailableAttachments',
+    );
+  });
+
+  it('accepts repeated handles without treating them as missing attachments', async () => {
+    const { service } = createTransport();
+    const em = {
+      find: jest.fn(async () => [
+        {
+          handle: 1,
+          filename: 'test.txt',
+          mimetype: 'text/plain',
+          path: 'test.txt',
+          entity: { handle: 'ticket' },
+        },
+      ]),
+    };
+    expect(await service.loadAttachments(em as never, [1, 1])).toHaveLength(1);
+  });
   it('retries delivery after structured authentication failures', async () => {
     const { service, sessionService, sendWithAccessToken } = createTransport();
     const delivery = createDelivery('stale-token');

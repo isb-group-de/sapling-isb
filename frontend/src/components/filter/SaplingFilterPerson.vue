@@ -4,6 +4,7 @@
       :model-value="peopleSearch ?? ''"
       :label="$t('global.search')"
       prepend-inner-icon="mdi-magnify"
+      clearable
       variant="outlined"
       hide-details
       single-line

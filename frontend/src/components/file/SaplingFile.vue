@@ -103,6 +103,8 @@ import SaplingSurface from '@/components/common/SaplingSurface.vue'
 import SaplingFilePDF from './SaplingFilePDF.vue'
 import SaplingFilePNG from './SaplingFilePNG.vue'
 import SaplingFileJPEG from './SaplingFileJPEG.vue'
+import SaplingFileImage from './SaplingFileImage.vue'
+import { getPreviewType } from '@/utils/documentPreview'
 import SaplingFileAudio from './SaplingFileAudio.vue'
 import SaplingFileVideo from './SaplingFileVideo.vue'
 import SaplingFileNoPreview from './SaplingFileNoPreview.vue'
@@ -254,6 +256,7 @@ const previewComponent = computed(() => {
   if (previewType.value === 'pdf') return SaplingFilePDF
   if (previewType.value === 'png') return SaplingFilePNG
   if (previewType.value === 'jpeg') return SaplingFileJPEG
+  if (previewType.value === 'svg' || previewType.value === 'ico') return SaplingFileImage
   if (previewType.value === 'audio') return SaplingFileAudio
   if (previewType.value === 'video') return SaplingFileVideo
   if (previewType.value === 'json') return SaplingFileJSON
@@ -276,6 +279,12 @@ const previewProps = computed(() => {
   const url = `${BACKEND_URL}document/download/${selectedHandle.value}`
   if (previewType.value === 'png') return { pngUrl: url }
   if (previewType.value === 'jpeg') return { jpegUrl: url }
+  if (previewType.value === 'svg' || previewType.value === 'ico') {
+    return {
+      imageUrl: url,
+      mimeType: previewType.value === 'svg' ? 'image/svg+xml' : 'image/vnd.microsoft.icon',
+    }
+  }
   if (previewType.value === 'audio') {
     return {
       audioUrl: url,
@@ -301,30 +310,6 @@ const previewProps = computed(() => {
   return {}
 })
 
-function getPreviewType(mimetype: string, filename: string) {
-  const normalizedMimeType = (mimetype || '').toLowerCase()
-  const normalizedFilename = (filename || '').toLowerCase()
-
-  if (normalizedMimeType === 'application/pdf') return 'pdf'
-  if (normalizedMimeType === 'image/png') return 'png'
-  if (normalizedMimeType === 'image/jpeg' || normalizedMimeType === 'image/jpg') return 'jpeg'
-  if (isAudioFile(normalizedMimeType, normalizedFilename)) return 'audio'
-  if (isVideoFile(normalizedMimeType, normalizedFilename)) return 'video'
-  if (normalizedMimeType === 'application/json') return 'json'
-  if (isMailFile(normalizedMimeType, normalizedFilename)) return 'mail'
-  return 'none'
-}
-
-function isMailFile(mimetype: string, filename: string) {
-  return (
-    mimetype === 'message/rfc822' ||
-    mimetype === 'application/vnd.ms-outlook' ||
-    mimetype === 'application/x-msg' ||
-    filename.endsWith('.eml') ||
-    filename.endsWith('.msg')
-  )
-}
-
 function normalizeStoredFilename(filename: string) {
   if (!filename || [...filename].some((character) => character.charCodeAt(0) > 0xff)) {
     return filename
@@ -337,17 +322,5 @@ function normalizeStoredFilename(filename: string) {
   } catch {
     return filename
   }
-}
-
-function isAudioFile(mimetype: string, filename: string) {
-  return mimetype === 'audio/mpeg' || mimetype === 'audio/mp3' || filename.endsWith('.mp3')
-}
-
-function isVideoFile(mimetype: string, filename: string) {
-  return mimetype === 'video/mp4' || mimetype === 'video/webm' || hasVideoExtension(filename)
-}
-
-function hasVideoExtension(filename: string) {
-  return filename.endsWith('.mp4') || filename.endsWith('.webm')
 }
 </script>

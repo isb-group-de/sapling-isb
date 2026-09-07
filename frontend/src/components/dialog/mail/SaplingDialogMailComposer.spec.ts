@@ -52,6 +52,60 @@ const baseProps = {
 }
 
 describe('SaplingDialogMailComposer', () => {
+  it('inserts a template body at the cursor without replacing the subject or existing message', async () => {
+    const insert = vi.fn()
+    const wrapper = mount(SaplingDialogMailComposer, {
+      props: {
+        ...baseProps,
+        subject: 'Existing subject',
+        bodyMarkdown: 'Existing text',
+        templates: [
+          {
+            handle: 5,
+            name: 'Paragraph',
+            subjectTemplate: 'Unused',
+            bodyMarkdown: 'Extra paragraph',
+          },
+        ],
+      },
+      global: {
+        plugins: [vuetify, i18n],
+        stubs: {
+          SaplingMarkdownField: defineComponent({
+            setup(_, { expose }) {
+              expose({ insertTextAtCursor: insert })
+              return () => h('div')
+            },
+          }),
+        },
+      },
+    })
+    const selector = wrapper
+      .findAllComponents(components.VAutocomplete)
+      .find((field) => field.props('label') === 'mail.insertSnippet')!
+    selector.vm.$emit('update:modelValue', 5)
+    await nextTick()
+    expect(insert).toHaveBeenCalledWith('Extra paragraph')
+    expect(wrapper.emitted('update:subject')).toBeUndefined()
+    expect(wrapper.emitted('update:bodyMarkdown')).toBeUndefined()
+  })
+
+  it('accepts dropped attachments and ignores drops during an upload', async () => {
+    const wrapper = mount(SaplingDialogMailComposer, {
+      props: { ...baseProps, hasItemHandle: true, canUpload: true },
+      global: { plugins: [vuetify, i18n] },
+    })
+    const file = new File(['text'], 'test.txt')
+    await wrapper
+      .find('.sapling-mail-dialog__upload')
+      .trigger('drop', { dataTransfer: { files: [file] } })
+    expect(wrapper.emitted('upload-attachments')).toEqual([[[file]]])
+    await wrapper.setProps({ isUploading: true })
+    await wrapper
+      .find('.sapling-mail-dialog__upload')
+      .trigger('drop', { dataTransfer: { files: [file] } })
+    expect(wrapper.emitted('upload-attachments')).toHaveLength(1)
+  })
   it('renders with a stubbed markdown field', () => {
     const wrapper = mount(SaplingDialogMailComposer, {
       props: baseProps,

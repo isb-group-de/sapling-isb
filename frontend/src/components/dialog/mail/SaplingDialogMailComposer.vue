@@ -12,6 +12,19 @@
       @update:model-value="handleTemplateUpdate"
     />
 
+    <SaplingAutocomplete
+      v-model="snippetHandle"
+      :items="sortedTemplates"
+      item-title="name"
+      item-value="handle"
+      :label="translate('mail.insertSnippet')"
+      :hint="translate('mail.snippetHint')"
+      persistent-hint
+      autocomplete="off"
+      clearable
+      @update:model-value="insertSnippet"
+    />
+
     <div class="sapling-message-dialog__sender sapling-mail-dialog__sender">
       <span class="sapling-message-dialog__sender-label sapling-mail-dialog__sender-label">{{
         translate('document.from')
@@ -183,6 +196,27 @@
         />
 
         <template v-else>
+          <div
+            v-if="canUpload"
+            class="sapling-mail-dialog__upload mb-3 pa-3 border rounded"
+            @dragover.prevent
+            @drop.prevent="onDrop"
+          >
+            <v-file-input
+              :model-value="[]"
+              multiple
+              autocomplete="off"
+              :label="translate('mail.uploadAttachments')"
+              :hint="translate('mail.uploadHint')"
+              persistent-hint
+              :loading="isUploading"
+              :disabled="isUploading"
+              @update:model-value="onFilesSelected"
+            />
+          </div>
+          <v-alert v-if="failedUploads?.length" type="error" variant="tonal" class="mb-3">
+            {{ translate('mail.uploadFailed') }}: {{ failedUploads.join(', ') }}
+          </v-alert>
           <SaplingAutocomplete
             :model-value="attachmentHandles"
             :items="availableAttachments"
@@ -242,6 +276,9 @@ type MarkdownFieldInstance = InstanceType<typeof SaplingMarkdownField> & {
 }
 
 const props = defineProps<{
+  canUpload?: boolean
+  isUploading?: boolean
+  failedUploads?: string[]
   signatures?: EmailSignature[]
   signatureRotation?: boolean
   signatureHandle?: number | null
@@ -269,6 +306,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
+  (event: 'upload-attachments', files: File[]): void
   (event: 'save-signature-defaults'): void
   (event: 'update:signatureRotation', value: boolean): void
   (event: 'update:signatureHandle', value: number | null): void
@@ -286,6 +324,23 @@ const emit = defineEmits<{
 }>()
 
 const { locale } = useI18n()
+const snippetHandle = ref<number | null>(null)
+function insertSnippet(handle: number | null) {
+  const snippet = props.templates.find((template) => template.handle === handle)
+  if (snippet) markdownField.value?.insertTextAtCursor?.(snippet.bodyMarkdown)
+  void nextTick(() => {
+    snippetHandle.value = null
+  })
+}
+function onFilesSelected(files: File | File[] | null) {
+  if (!props.isUploading && files)
+    emit('upload-attachments', Array.isArray(files) ? files : [files])
+}
+function onDrop(event: DragEvent) {
+  if (props.canUpload && !props.isUploading && event.dataTransfer) {
+    emit('upload-attachments', Array.from(event.dataTransfer.files))
+  }
+}
 const subjectField = ref<SubjectFieldInstance | null>(null)
 const markdownField = ref<MarkdownFieldInstance | null>(null)
 const subjectSelectionStart = ref(0)
