@@ -138,7 +138,9 @@ export class ApiExceptionFilter implements ExceptionFilter {
       statusCode: payload.statusCode,
       user: this.getRequestUserHandle(request),
       query: request.query,
-      body: this.redactValue(request.body),
+      body: /^\/api\/(ai\/prompts|generic\/aiPrompt)/.test(request.path)
+        ? '[prompt payload redacted]'
+        : this.redactValue(request.body),
       error: errorPayload,
     };
 

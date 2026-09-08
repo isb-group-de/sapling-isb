@@ -1,3 +1,4 @@
+import { promptText } from '../api/ai/prompts/ai-prompt-context';
 import {
   ScriptResultClient,
   ScriptResultClientMethods,
@@ -60,26 +61,29 @@ function buildEffortEstimatePrompt(
   const requirements = normalizeString(item.requirementsMarkdown);
 
   return [
-    'Bitte analysiere diese Sapling-Aufwandsschätzung und mache Phase-4-Vorschläge.',
+    promptText('estimate.detail1'),
     '',
-    `Aktuelle Aufwandsschätzung: ${String(handle)}${title ? ` - ${title}` : ''}`,
+    promptText('estimate.detail2', {
+      value0: String(handle),
+      value1: title ? ` - ${title}` : '',
+    }),
     requirements
-      ? `Bekannte Anforderungen aus der Liste: ${requirements}`
+      ? promptText('estimate.detail3', { value0: requirements })
       : null,
     '',
     'Arbeitsweise:',
-    '1. Lade die aktuelle Aufwandsschätzung mit generic_get.',
-    `   entityHandle: effortEstimate, handle: ${JSON.stringify(handle)}, relations: ["status", "ticket", "salesOpportunity", "positions"]`,
-    '2. Baue aus Titel, Anforderungen, Ticket, Verkaufschance und vorhandenen Positionen eine Suchanfrage.',
-    '3. Nutze knowledge_search mit entityHandles ["effortEstimate", "effortEstimatePosition", "knowledgeArticle", "ticket"].',
-    '4. Wenn ein Vektorindex fehlt, nenne ihn kurz und nutze die verfügbaren Quellen weiter.',
+    promptText('estimate.detail4'),
+    promptText('estimate.text1', { value0: JSON.stringify(handle) }),
+    promptText('estimate.text2'),
+    promptText('estimate.text3'),
+    promptText('estimate.text4'),
     '',
-    'Gib mir kompakt:',
-    '- ähnliche vergangene Schätzungen und passende Positionen',
-    '- typische Positionen, die hier wahrscheinlich gebraucht werden',
-    '- sinnvolle Stundenbereiche je Position und insgesamt',
-    '- Risiken, Annahmen und offene Fragen',
-    '- welche Treffer als Referenz für Angebotstext oder Scope besonders taugen',
+    promptText('estimate.detail5'),
+    promptText('estimate.detail6'),
+    promptText('estimate.detail7'),
+    promptText('estimate.detail8'),
+    promptText('estimate.detail9'),
+    promptText('estimate.detail10'),
   ]
     .filter(
       (line): line is string => typeof line === 'string' && line.length > 0,

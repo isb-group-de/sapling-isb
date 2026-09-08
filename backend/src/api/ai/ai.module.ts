@@ -1,3 +1,5 @@
+import { AiEvaluationService } from './ai-evaluation.service';
+import { AiEvaluationController } from './ai-evaluation.controller';
 import { Module, forwardRef } from '@nestjs/common';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { AuthModule } from '../../auth/auth.module';
@@ -101,6 +103,7 @@ import { SystemModule } from '../system/system.module';
     ]),
   ],
   providers: [
+    AiEvaluationService,
     AiService,
     AiChatRuntimeService,
     AiAgentRunLifecycleService,
@@ -137,6 +140,7 @@ import { SystemModule } from '../system/system.module';
     SaplingMcpTransportService,
   ],
   controllers: [
+    AiEvaluationController,
     AiController,
     AiMcpController,
     AiVectorizationController,

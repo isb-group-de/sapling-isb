@@ -102,6 +102,7 @@ export type AiChatMessageSpeechDescriptor = {
 };
 
 export type AiChatMessageSpeechPayload = AiChatMessageSpeechDescriptor & {
+  promptManifest?: Record<string, number> | null;
   status: 'completed' | 'failed';
   documentHandle: number | null;
   mimeType: string | null;

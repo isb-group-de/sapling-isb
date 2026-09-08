@@ -1,0 +1,944 @@
+[
+  {
+    "entity": "global",
+    "property": "automations",
+    "de": "Automatisierungen",
+    "en": "Automations"
+  },
+  {
+    "entity": "global",
+    "property": "aiPrompts",
+    "de": "AI-Prompts und Qualität",
+    "en": "AI prompts and quality"
+  },
+  {
+    "entity": "navigation",
+    "property": "aiPromptTemplate",
+    "de": "AI-Promptvorlagen",
+    "en": "AI prompt templates"
+  },
+  {
+    "entity": "navigation",
+    "property": "aiPromptVersion",
+    "de": "AI-Promptversionen",
+    "en": "AI prompt versions"
+  },
+  {
+    "entity": "aiPrompt",
+    "property": "title",
+    "de": "AI-Prompts und Qualität",
+    "en": "AI prompts and quality"
+  },
+  {
+    "entity": "aiPrompt",
+    "property": "library",
+    "de": "Promptbibliothek",
+    "en": "Prompt library"
+  },
+  {
+    "entity": "aiPrompt",
+    "property": "quality",
+    "de": "Qualitätstests",
+    "en": "Quality tests"
+  },
+  {
+    "entity": "aiPrompt",
+    "property": "effectiveContext",
+    "de": "Zusammengesetzter Kontext",
+    "en": "Effective context"
+  },
+  {
+    "entity": "aiPrompt",
+    "property": "draft",
+    "de": "Entwurf",
+    "en": "Draft"
+  },
+  {
+    "entity": "aiPrompt",
+    "property": "variables",
+    "de": "Pflichtplatzhalter",
+    "en": "Required placeholders"
+  },
+  {
+    "entity": "aiPrompt",
+    "property": "previewValues",
+    "de": "Vorschauwerte (JSON)",
+    "en": "Preview values (JSON)"
+  },
+  {
+    "entity": "aiPrompt",
+    "property": "changeNote",
+    "de": "Änderungsnotiz",
+    "en": "Change note"
+  },
+  {
+    "entity": "aiPrompt",
+    "property": "saveDraft",
+    "de": "Entwurf speichern",
+    "en": "Save draft"
+  },
+  {
+    "entity": "aiPrompt",
+    "property": "preview",
+    "de": "Vorschau",
+    "en": "Preview"
+  },
+  {
+    "entity": "aiPrompt",
+    "property": "publish",
+    "de": "Veröffentlichen",
+    "en": "Publish"
+  },
+  {
+    "entity": "aiPrompt",
+    "property": "publishExplanation",
+    "de": "Neue Chats und Läufe verwenden den veröffentlichten Stand. Bestehende Chats behalten ihre Versionen.",
+    "en": "New chats and runs use the published version. Existing chats retain their versions."
+  },
+  {
+    "entity": "aiPrompt",
+    "property": "version",
+    "de": "Version zum Vergleich",
+    "en": "Comparison version"
+  },
+  {
+    "entity": "aiPrompt",
+    "property": "publishedText",
+    "de": "Veröffentlichter Text zum Vergleich mit dem Entwurf",
+    "en": "Published text for comparison with the draft"
+  },
+  {
+    "entity": "aiPrompt",
+    "property": "restore",
+    "de": "Diesen Stand erneut veröffentlichen",
+    "en": "Publish this version again"
+  },
+  {
+    "entity": "aiPrompt",
+    "property": "qualityExplanation",
+    "de": "Tests verwenden ausschließlich hinterlegte Tool-Antworten. Es werden keine realen Tool-Aktionen ausgeführt. Freitextkriterien müssen manuell bewertet werden.",
+    "en": "Tests use only stored tool fixtures. No real tool actions are executed. Free-text criteria require manual assessment."
+  },
+  {
+    "entity": "aiPrompt",
+    "property": "testCase",
+    "de": "Testfall",
+    "en": "Test case"
+  },
+  {
+    "entity": "aiPrompt",
+    "property": "testPrompt",
+    "de": "Testeingabe",
+    "en": "Test input"
+  },
+  {
+    "entity": "aiPrompt",
+    "property": "expectations",
+    "de": "Strukturierte Erwartungen (JSON)",
+    "en": "Structured expectations (JSON)"
+  },
+  {
+    "entity": "aiPrompt",
+    "property": "fixtures",
+    "de": "Kontrollierte Tool-Antworten (JSON)",
+    "en": "Controlled tool responses (JSON)"
+  },
+  {
+    "entity": "aiPrompt",
+    "property": "manifestOverride",
+    "de": "Promptmanifest für den Vergleich (JSON; leer = aktuell)",
+    "en": "Prompt manifest for comparison (JSON; empty = current)"
+  },
+  {
+    "entity": "aiPrompt",
+    "property": "runTests",
+    "de": "Tests ausführen",
+    "en": "Run tests"
+  },
+  {
+    "entity": "aiPrompt",
+    "property": "noTests",
+    "de": "Zuerst einen Testfall im Bereich Evaluationen anlegen.",
+    "en": "Create a test case in Evaluations first."
+  },
+  {
+    "entity": "aiPrompt",
+    "property": "passed",
+    "de": "Automatische Prüfungen bestanden",
+    "en": "Automatic checks passed"
+  },
+  {
+    "entity": "aiPrompt",
+    "property": "failed",
+    "de": "Fehlgeschlagen",
+    "en": "Failed"
+  },
+  {
+    "entity": "aiPrompt",
+    "property": "contextExplanation",
+    "de": "Vorschau des aktuellen Agenten mit seinen zentralen Prompts, Playbook- und Memory-Inhalten. Datensatzkontext und Zeitwerte werden beim tatsächlichen Aufruf ergänzt.",
+    "en": "Preview of the current agent with central prompts, playbook and memory content. Record context and time values are supplied by the actual call."
+  },
+  {
+    "entity": "automation",
+    "property": "title",
+    "de": "Automatisierungen",
+    "en": "Automations"
+  },
+  {
+    "entity": "automation",
+    "property": "plan",
+    "de": "Regelplan",
+    "en": "Rule plan"
+  },
+  {
+    "entity": "automation",
+    "property": "history",
+    "de": "Verlauf",
+    "en": "History"
+  },
+  {
+    "entity": "automation",
+    "property": "planExplanation",
+    "de": "Der Plan zeigt mögliche fachliche Abhängigkeiten. Er garantiert weder eine gemeinsame Transaktion noch eine Zustellreihenfolge.",
+    "en": "The plan shows possible dependencies. It guarantees neither a shared transaction nor delivery order."
+  },
+  {
+    "entity": "automation",
+    "property": "includeInactive",
+    "de": "Inaktive Regeln anzeigen",
+    "en": "Include inactive rules"
+  },
+  {
+    "entity": "automation",
+    "property": "graph",
+    "de": "Grafik",
+    "en": "Graph"
+  },
+  {
+    "entity": "automation",
+    "property": "list",
+    "de": "Listenansicht",
+    "en": "List view"
+  },
+  {
+    "entity": "automation",
+    "property": "expand",
+    "de": "Weitere Folgeketten anzeigen",
+    "en": "Expand subsequent rules"
+  },
+  {
+    "entity": "automation",
+    "property": "continuations",
+    "de": "Der Plan hat weitere Fortsetzungen. Die Antwort ist auf 200 Knoten begrenzt.",
+    "en": "Further branches are available. Each response is limited to 200 nodes."
+  },
+  {
+    "entity": "automation",
+    "property": "noRules",
+    "de": "Keine passenden Regeln dokumentiert.",
+    "en": "No matching rules documented."
+  },
+  {
+    "entity": "automation",
+    "property": "priority",
+    "de": "Priorität",
+    "en": "Priority"
+  },
+  {
+    "entity": "automation",
+    "property": "active",
+    "de": "Aktiv",
+    "en": "Active"
+  },
+  {
+    "entity": "automation",
+    "property": "inactive",
+    "de": "Inaktiv",
+    "en": "Inactive"
+  },
+  {
+    "entity": "automation",
+    "property": "repeated",
+    "de": "Wiederholte Zustellung erlaubt",
+    "en": "Repeated delivery allowed"
+  },
+  {
+    "entity": "automation",
+    "property": "once",
+    "de": "Wiederholungssperre aktiv",
+    "en": "Repeat suppression enabled"
+  },
+  {
+    "entity": "automation",
+    "property": "recipient",
+    "de": "Empfängerfeld",
+    "en": "Recipient field"
+  },
+  {
+    "entity": "automation",
+    "property": "template",
+    "de": "Vorlage",
+    "en": "Template"
+  },
+  {
+    "entity": "automation",
+    "property": "notifyActor",
+    "de": "Auslösende Person benachrichtigen",
+    "en": "Notify actor"
+  },
+  {
+    "entity": "automation",
+    "property": "excludeActor",
+    "de": "Auslösende Person ausschließen",
+    "en": "Exclude actor"
+  },
+  {
+    "entity": "automation",
+    "property": "always",
+    "de": "Keine zusätzlichen Bedingungen",
+    "en": "No additional conditions"
+  },
+  {
+    "entity": "automation",
+    "property": "or",
+    "de": "ODER",
+    "en": "OR"
+  },
+  {
+    "entity": "automation",
+    "property": "and",
+    "de": "UND",
+    "en": "AND"
+  },
+  {
+    "entity": "automation",
+    "property": "reference",
+    "de": "Referenzweg",
+    "en": "Reference path"
+  },
+  {
+    "entity": "automation",
+    "property": "editRule",
+    "de": "Regel öffnen",
+    "en": "Open rule"
+  },
+  {
+    "entity": "automation",
+    "property": "historyExplanation",
+    "de": "Regelverarbeitung und tatsächliche Zustellung sind getrennt. Fehlende Protokolle bedeuten „nicht dokumentiert“.",
+    "en": "Rule processing and actual delivery are separate. Missing logs mean “not documented”."
+  },
+  {
+    "entity": "automation",
+    "property": "notDocumented",
+    "de": "Keine Ausführungen dokumentiert.",
+    "en": "No executions documented."
+  },
+  {
+    "entity": "automation",
+    "property": "chain",
+    "de": "Ereigniskette",
+    "en": "Event chain"
+  },
+  {
+    "entity": "automation",
+    "property": "oldRuleUnknown",
+    "de": "Für diesen älteren Eintrag ist kein damaliger Regelstand gespeichert.",
+    "en": "The rule snapshot was not stored for this older entry."
+  },
+  {
+    "entity": "automation",
+    "property": "deliveryUnknown",
+    "de": "Zustellergebnis nicht dokumentiert.",
+    "en": "Delivery result not documented."
+  },
+  {
+    "entity": "automation",
+    "property": "delivery",
+    "de": "Zustellung",
+    "en": "Delivery"
+  },
+  {
+    "entity": "automation",
+    "property": "attempts",
+    "de": "Versuche",
+    "en": "Attempts"
+  },
+  {
+    "entity": "automation",
+    "property": "independentEmails",
+    "de": "E-Mail-Zustellungen ohne eindeutigen Kettenbezug",
+    "en": "Email deliveries without a reliable chain link"
+  },
+  {
+    "entity": "automation",
+    "property": "loadFailed",
+    "de": "Automatisierungen konnten nicht geladen werden.",
+    "en": "Could not load automations."
+  },
+  {
+    "entity": "automation",
+    "property": "changed",
+    "de": "Wert geändert",
+    "en": "Value changed"
+  },
+  {
+    "entity": "automation",
+    "property": "afterInsert",
+    "de": "Datensatz angelegt",
+    "en": "Record created"
+  },
+  {
+    "entity": "automation",
+    "property": "afterUpdate",
+    "de": "Datensatz geändert",
+    "en": "Record updated"
+  },
+  {
+    "entity": "automation",
+    "property": "afterDelete",
+    "de": "Datensatz gelöscht",
+    "en": "Record deleted"
+  },
+  {
+    "entity": "automation",
+    "property": "cycle",
+    "de": "Zyklus / wiederholtes Ereignis",
+    "en": "Cycle / repeated event"
+  },
+  {
+    "entity": "automation",
+    "property": "condition",
+    "de": "Bedingungen",
+    "en": "Conditions"
+  },
+  {
+    "entity": "automation",
+    "property": "rule",
+    "de": "Regel",
+    "en": "Rule"
+  },
+  {
+    "entity": "automation",
+    "property": "action",
+    "de": "Aktion",
+    "en": "Action"
+  },
+  {
+    "entity": "automation",
+    "property": "event",
+    "de": "Ereignis",
+    "en": "Event"
+  },
+  {
+    "entity": "automation",
+    "property": "requires",
+    "de": "Abhängigkeit",
+    "en": "Dependency"
+  },
+  {
+    "entity": "automation",
+    "property": "possible",
+    "de": "Mögliche Folge",
+    "en": "Possible consequence"
+  },
+  {
+    "entity": "automation",
+    "property": "equals",
+    "de": "ist gleich",
+    "en": "equals"
+  },
+  {
+    "entity": "automation",
+    "property": "changesTo",
+    "de": "ändert sich zu",
+    "en": "changes to"
+  },
+  {
+    "entity": "automation",
+    "property": "changesFrom",
+    "de": "ändert sich von",
+    "en": "changes from"
+  },
+  {
+    "entity": "automation",
+    "property": "notEquals",
+    "de": "ist ungleich",
+    "en": "does not equal"
+  },
+  {
+    "entity": "automation",
+    "property": "contains",
+    "de": "enthält",
+    "en": "contains"
+  },
+  {
+    "entity": "automation",
+    "property": "kind.field",
+    "de": "Feldänderung",
+    "en": "Field update"
+  },
+  {
+    "entity": "automation",
+    "property": "kind.inbox",
+    "de": "Inbox-Benachrichtigung",
+    "en": "Inbox notification"
+  },
+  {
+    "entity": "automation",
+    "property": "kind.email",
+    "de": "E-Mail",
+    "en": "Email"
+  },
+  {
+    "entity": "automation",
+    "property": "kind.teams",
+    "de": "Teams-Nachricht",
+    "en": "Teams message"
+  },
+  {
+    "entity": "automation",
+    "property": "kind.webhook",
+    "de": "Webhook",
+    "en": "Webhook"
+  },
+  {
+    "entity": "automation",
+    "property": "result.completed",
+    "de": "Regel verarbeitet",
+    "en": "Rule processed"
+  },
+  {
+    "entity": "automation",
+    "property": "result.queued",
+    "de": "Zustellung eingeplant",
+    "en": "Delivery queued"
+  },
+  {
+    "entity": "automation",
+    "property": "result.skipped",
+    "de": "Übersprungen (protokolliert)",
+    "en": "Skipped (documented)"
+  },
+  {
+    "entity": "automation",
+    "property": "result.failed",
+    "de": "Verarbeitung fehlgeschlagen",
+    "en": "Processing failed"
+  },
+  {
+    "entity": "automation",
+    "property": "result.pending",
+    "de": "Verarbeitung ausstehend",
+    "en": "Processing pending"
+  },
+  {
+    "entity": "automation",
+    "property": "result.processing",
+    "de": "In Verarbeitung",
+    "en": "Processing"
+  },
+  {
+    "entity": "automation",
+    "property": "deliveryStatus.pending",
+    "de": "Ausstehend",
+    "en": "Pending"
+  },
+  {
+    "entity": "automation",
+    "property": "deliveryStatus.queued",
+    "de": "Eingeplant",
+    "en": "Queued"
+  },
+  {
+    "entity": "automation",
+    "property": "deliveryStatus.processing",
+    "de": "Wird zugestellt",
+    "en": "Delivering"
+  },
+  {
+    "entity": "automation",
+    "property": "deliveryStatus.sent",
+    "de": "Zugestellt",
+    "en": "Delivered"
+  },
+  {
+    "entity": "automation",
+    "property": "deliveryStatus.completed",
+    "de": "Zugestellt",
+    "en": "Delivered"
+  },
+  {
+    "entity": "automation",
+    "property": "deliveryStatus.succeeded",
+    "de": "Zugestellt",
+    "en": "Delivered"
+  },
+  {
+    "entity": "automation",
+    "property": "deliveryStatus.failed",
+    "de": "Fehlgeschlagen",
+    "en": "Failed"
+  },
+  {
+    "entity": "automation",
+    "property": "deliveryStatus.cancelled",
+    "de": "Abgebrochen",
+    "en": "Cancelled"
+  },
+  {
+    "entity": "automation",
+    "property": "deliveryStatus.unknown",
+    "de": "Nicht dokumentiert",
+    "en": "Not documented"
+  },
+  {
+    "entity": "automation",
+    "property": "deliveryStatus.retrying",
+    "de": "Wiederholung geplant",
+    "en": "Retry scheduled"
+  },
+  {
+    "entity": "aiPromptTemplate",
+    "property": "handle",
+    "de": "Schlüssel",
+    "en": "Key"
+  },
+  {
+    "entity": "aiPromptTemplate",
+    "property": "title",
+    "de": "Titel",
+    "en": "Title"
+  },
+  {
+    "entity": "aiPromptTemplate",
+    "property": "description",
+    "de": "Beschreibung",
+    "en": "Description"
+  },
+  {
+    "entity": "aiPromptTemplate",
+    "property": "purpose",
+    "de": "Einsatzbereich",
+    "en": "Purpose"
+  },
+  {
+    "entity": "aiPromptTemplate",
+    "property": "draft",
+    "de": "Entwurf",
+    "en": "Draft"
+  },
+  {
+    "entity": "aiPromptTemplate",
+    "property": "variables",
+    "de": "Platzhalter",
+    "en": "Placeholders"
+  },
+  {
+    "entity": "aiPromptTemplate",
+    "property": "publishedVersion",
+    "de": "Veröffentlichte Version",
+    "en": "Published version"
+  },
+  {
+    "entity": "aiPromptTemplate",
+    "property": "updatedAt",
+    "de": "Geändert am",
+    "en": "Updated at"
+  },
+  {
+    "entity": "aiPromptTemplate",
+    "property": "template",
+    "de": "Promptvorlage",
+    "en": "Prompt template"
+  },
+  {
+    "entity": "aiPromptTemplate",
+    "property": "version",
+    "de": "Versionsnummer",
+    "en": "Version number"
+  },
+  {
+    "entity": "aiPromptTemplate",
+    "property": "content",
+    "de": "Inhalt",
+    "en": "Content"
+  },
+  {
+    "entity": "aiPromptTemplate",
+    "property": "changeNote",
+    "de": "Änderungsnotiz",
+    "en": "Change note"
+  },
+  {
+    "entity": "aiPromptTemplate",
+    "property": "author",
+    "de": "Autor",
+    "en": "Author"
+  },
+  {
+    "entity": "aiPromptTemplate",
+    "property": "publishedAt",
+    "de": "Veröffentlicht am",
+    "en": "Published at"
+  },
+  {
+    "entity": "aiPromptTemplate",
+    "property": "checksum",
+    "de": "Prüfsumme",
+    "en": "Checksum"
+  },
+  {
+    "entity": "aiPromptVersion",
+    "property": "handle",
+    "de": "Schlüssel",
+    "en": "Key"
+  },
+  {
+    "entity": "aiPromptVersion",
+    "property": "title",
+    "de": "Titel",
+    "en": "Title"
+  },
+  {
+    "entity": "aiPromptVersion",
+    "property": "description",
+    "de": "Beschreibung",
+    "en": "Description"
+  },
+  {
+    "entity": "aiPromptVersion",
+    "property": "purpose",
+    "de": "Einsatzbereich",
+    "en": "Purpose"
+  },
+  {
+    "entity": "aiPromptVersion",
+    "property": "draft",
+    "de": "Entwurf",
+    "en": "Draft"
+  },
+  {
+    "entity": "aiPromptVersion",
+    "property": "variables",
+    "de": "Platzhalter",
+    "en": "Placeholders"
+  },
+  {
+    "entity": "aiPromptVersion",
+    "property": "publishedVersion",
+    "de": "Veröffentlichte Version",
+    "en": "Published version"
+  },
+  {
+    "entity": "aiPromptVersion",
+    "property": "updatedAt",
+    "de": "Geändert am",
+    "en": "Updated at"
+  },
+  {
+    "entity": "aiPromptVersion",
+    "property": "template",
+    "de": "Promptvorlage",
+    "en": "Prompt template"
+  },
+  {
+    "entity": "aiPromptVersion",
+    "property": "version",
+    "de": "Versionsnummer",
+    "en": "Version number"
+  },
+  {
+    "entity": "aiPromptVersion",
+    "property": "content",
+    "de": "Inhalt",
+    "en": "Content"
+  },
+  {
+    "entity": "aiPromptVersion",
+    "property": "changeNote",
+    "de": "Änderungsnotiz",
+    "en": "Change note"
+  },
+  {
+    "entity": "aiPromptVersion",
+    "property": "author",
+    "de": "Autor",
+    "en": "Author"
+  },
+  {
+    "entity": "aiPromptVersion",
+    "property": "publishedAt",
+    "de": "Veröffentlicht am",
+    "en": "Published at"
+  },
+  {
+    "entity": "aiPromptVersion",
+    "property": "checksum",
+    "de": "Prüfsumme",
+    "en": "Checksum"
+  },
+  {
+    "entity": "aiProviderModel",
+    "property": "isDefaultMarkdown",
+    "de": "Standard für Markdown-Überarbeitung",
+    "en": "Default for Markdown revision"
+  },
+  {
+    "entity": "aiAgentRun",
+    "property": "purpose",
+    "de": "Einsatzbereich",
+    "en": "Purpose"
+  },
+  {
+    "entity": "aiAgentRun",
+    "property": "promptManifest",
+    "de": "Promptversionen",
+    "en": "Prompt versions"
+  },
+  {
+    "entity": "aiAgentRun",
+    "property": "evaluationResult",
+    "de": "Testergebnis",
+    "en": "Test result"
+  },
+  {
+    "entity": "aiAgentEvaluation",
+    "property": "expectations",
+    "de": "Strukturierte Erwartungen",
+    "en": "Structured expectations"
+  },
+  {
+    "entity": "aiAgentEvaluation",
+    "property": "toolFixtures",
+    "de": "Kontrollierte Tool-Antworten",
+    "en": "Controlled tool responses"
+  },
+  {
+    "entity": "ai",
+    "property": "promptNotFound",
+    "de": "Promptvorlage nicht gefunden.",
+    "en": "Prompt template not found."
+  },
+  {
+    "entity": "ai",
+    "property": "promptVersionNotFound",
+    "de": "Promptversion nicht gefunden.",
+    "en": "Prompt version not found."
+  },
+  {
+    "entity": "ai",
+    "property": "promptVersionUnavailable",
+    "de": "Ein benötigter veröffentlichter Promptstand fehlt. Bitte die AI-Promptkonfiguration prüfen.",
+    "en": "A required published prompt version is unavailable. Check the AI prompt configuration."
+  },
+  {
+    "entity": "ai",
+    "property": "promptManifestInvalid",
+    "de": "Das Promptmanifest passt nicht zu den gewählten Versionen.",
+    "en": "The prompt manifest does not match the selected versions."
+  },
+  {
+    "entity": "ai",
+    "property": "promptContentInvalid",
+    "de": "Der Prompt muss Text enthalten und darf höchstens 100.000 Zeichen lang sein.",
+    "en": "The prompt must contain text and cannot exceed 100,000 characters."
+  },
+  {
+    "entity": "ai",
+    "property": "promptVariablesInvalid",
+    "de": "Unbekannte, fehlende oder ungültige Platzhalter.",
+    "en": "Unknown, missing or invalid placeholders."
+  },
+  {
+    "entity": "ai",
+    "property": "promptVariableMissing",
+    "de": "Ein erforderlicher Vorschau- oder Kontextwert fehlt.",
+    "en": "A required preview or context value is missing."
+  },
+  {
+    "entity": "ai",
+    "property": "promptManagedPublicationRequired",
+    "de": "Dieser Wert darf nur über die Prompt-Veröffentlichung geändert werden.",
+    "en": "This value can only be changed through prompt publication."
+  },
+  {
+    "entity": "ai",
+    "property": "evaluationSelectionInvalid",
+    "de": "Bitte 1 bis 20 unterschiedliche Testfälle auswählen.",
+    "en": "Select 1 to 20 distinct test cases."
+  },
+  {
+    "entity": "ai",
+    "property": "evaluationNotFound",
+    "de": "Testfall nicht gefunden.",
+    "en": "Test case not found."
+  },
+  {
+    "entity": "mail",
+    "property": "invalidRecipient",
+    "de": "Mindestens eine Empfängeradresse ist ungültig.",
+    "en": "At least one recipient address is invalid."
+  },
+  {
+    "entity": "automation",
+    "property": "deliveryStatus.success",
+    "de": "Zugestellt",
+    "en": "Delivered"
+  },
+  {
+    "entity": "automation",
+    "property": "transition",
+    "de": "Wertwechsel",
+    "en": "Transition"
+  },
+  {
+    "entity": "translation",
+    "property": "invalidBundleRequest",
+    "de": "Ungültige Anfrage für Übersetzungen.",
+    "en": "Invalid translation bundle request."
+  },
+  {
+    "entity": "aiPrompt",
+    "property": "usage",
+    "de": "Verwendung im Backend",
+    "en": "Backend usage"
+  },
+  {
+    "entity": "aiPrompt",
+    "property": "noDifference",
+    "de": "Der Entwurf entspricht dieser Version.",
+    "en": "The draft matches this version."
+  },
+  {
+    "entity": "aiPrompt",
+    "property": "compareDraft",
+    "de": "Versionsvergleich: Der bearbeitbare Entwurf oben unterscheidet sich von diesem veröffentlichten Stand.",
+    "en": "Version comparison: the editable draft above differs from this published version."
+  },
+  {
+    "entity": "automation",
+    "property": "cycle",
+    "de": "Zyklus",
+    "en": "Cycle"
+  },
+  {
+    "entity": "automation",
+    "property": "cycleExplanation",
+    "de": "Der Plan enthält einen möglichen Zyklus. Eine erneute Ausführung hängt von den Bedingungen und Wiederholungssperren ab.",
+    "en": "The plan contains a possible cycle. Conditions and repetition guards determine whether another execution occurs."
+  },
+  {
+    "entity": "ai",
+    "property": "promptNotPublished",
+    "de": "Ein benötigter Prompt ist nicht veröffentlicht. Bitte den angegebenen Prompt in der AI-Promptverwaltung veröffentlichen.",
+    "en": "A required prompt is not published. Publish the indicated prompt in AI prompt management."
+  },
+  {
+    "entity": "ai",
+    "property": "promptVariableInvalid",
+    "de": "Platzhalterwerte müssen Text, Zahl oder Wahrheitswert sein.",
+    "en": "Placeholder values must be text, numbers or booleans."
+  }
+]

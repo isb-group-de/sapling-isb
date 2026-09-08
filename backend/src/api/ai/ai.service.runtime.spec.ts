@@ -90,7 +90,7 @@ describe('AiService runtime and navigation', () => {
 
   it('prepares Markdown with the selected runtime and removes an outer response fence', async () => {
     const providerRegistry = {
-      resolveRuntimeTarget: jest
+      resolveMarkdownRuntimeTarget: jest
         .fn<
           (
             providerHandle?: string,
@@ -123,7 +123,7 @@ describe('AiService runtime and navigation', () => {
       modelHandle: 'gpt-5',
     });
 
-    expect(providerRegistry.resolveRuntimeTarget).toHaveBeenCalledWith(
+    expect(providerRegistry.resolveMarkdownRuntimeTarget).toHaveBeenCalledWith(
       'openai',
       'gpt-5',
     );

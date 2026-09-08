@@ -51,7 +51,10 @@ describe('translation fallback audit', () => {
       const source = readSource(file)
       expect(source).not.toMatch(/isLoading\s*\?\s*['"`]\.\.\.['"`]/)
       expect(source).not.toMatch(/return\s+['"`]\.\.\.['"`]/)
-      expect(source).toContain('v-skeleton-loader')
+      const loadingSource = source.includes('<SaplingSystemSkeleton')
+        ? readSource('components/system/SaplingSystemSkeleton.vue')
+        : source
+      expect(loadingSource).toContain('v-skeleton-loader')
     }
   })
 })

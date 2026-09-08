@@ -1,3 +1,5 @@
+import { TranslationBundleController } from './translation-bundle.controller';
+import { TranslationBundleService } from './translation-bundle.service';
 import { Module, forwardRef } from '@nestjs/common';
 import { TemplateController } from './template.controller';
 import { MessageTemplateService } from './message-template.service';
@@ -19,8 +21,9 @@ import { FieldPermissionService } from '../current/field-permission.service';
 
 @Module({
   imports: [forwardRef(() => AuthModule)],
-  controllers: [TemplateController],
+  controllers: [TemplateController, TranslationBundleController],
   providers: [
+    TranslationBundleService,
     TemplateService,
     MessageTemplateService,
     GenericCustomFieldService,

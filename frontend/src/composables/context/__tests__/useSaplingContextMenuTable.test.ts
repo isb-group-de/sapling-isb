@@ -167,3 +167,7 @@ describe('Sapling table context menu', () => {
     expect(actions().some((action) => action.type === 'showExternalRecordLinks')).toBe(true)
   })
 })
+
+vi.mock('@/stores/currentPersonStore', () => ({
+  useCurrentPersonStore: () => ({ isAdministrator: false }),
+}))

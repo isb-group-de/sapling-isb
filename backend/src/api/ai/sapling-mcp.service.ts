@@ -1,11 +1,11 @@
-import { Inject, Injectable, forwardRef } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { PersonItem } from '../../entity/PersonItem';
 import { CurrentService } from '../current/current.service';
 import { GenericService } from '../generic/generic.service';
 import { ImportService } from '../import/import.service';
 import { TemplateService } from '../template/template.service';
-import { AiService } from './ai.service';
+import { AiVectorService } from './ai-vector.service';
 import type { McpToolPolicy } from './mcp-policy.types';
 import { SaplingMcpCriteriaService } from './sapling-mcp-criteria.service';
 import { SaplingMcpExecutionService } from './sapling-mcp-execution.service';
@@ -26,8 +26,7 @@ export class SaplingMcpService {
     private readonly currentService: CurrentService,
     private readonly templateService: TemplateService,
     private readonly importService: ImportService,
-    @Inject(forwardRef(() => AiService))
-    private readonly aiService: AiService,
+    private readonly vectorService: AiVectorService,
     private readonly criteriaService: SaplingMcpCriteriaService,
     private readonly permissionService: SaplingMcpPermissionService,
     private readonly resultFormatter: SaplingMcpResultFormatterService,
@@ -49,7 +48,7 @@ export class SaplingMcpService {
     ),
     private readonly searchTools: SaplingMcpSearchToolService = new SaplingMcpSearchToolService(
       genericService,
-      aiService,
+      vectorService,
       permissionService,
       values,
     ),

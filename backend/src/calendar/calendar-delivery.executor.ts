@@ -1,3 +1,4 @@
+import { performance } from 'perf_hooks';
 import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import { EntityManager } from '@mikro-orm/core';
 import axios from 'axios';
@@ -185,13 +186,20 @@ export class CalendarDeliveryExecutor {
     }
 
     delivery.attemptCount = attemptCount;
+    delivery.providerDurationMs = 0;
+    if (attemptCount === 1 && delivery.createdAt)
+      delivery.queueWaitMs = Math.max(
+        0,
+        Date.now() - new Date(delivery.createdAt).getTime(),
+      );
 
     if (!isCalendarDeliveryPayload(delivery.payload)) {
       throw new Error('calendar.invalidPayload');
     }
 
-    const { provider } = delivery.payload;
-    const sessionContext = await resolveSessionTokens(em, delivery.payload);
+    const payload = delivery.payload;
+    const { provider } = payload;
+    const sessionContext = await resolveSessionTokens(em, payload);
     const eventHandle = delivery.event.handle;
 
     if (typeof eventHandle !== 'number') {
@@ -210,14 +218,16 @@ export class CalendarDeliveryExecutor {
     }
 
     try {
-      const providerResponse = await this.executeProviderDelivery(
-        provider,
-        eventHandle,
-        accessToken,
-        sessionContext.personHandle,
-        delivery.payload.operation,
-        delivery.payload.changedFields,
-        delivery.payload.occurrenceStart,
+      const providerResponse = await this.measureProvider(delivery, () =>
+        this.executeProviderDelivery(
+          provider,
+          eventHandle,
+          accessToken,
+          sessionContext.personHandle,
+          payload.operation,
+          payload.changedFields,
+          payload.occurrenceStart,
+        ),
       );
 
       if (await this.persistSuccess(em, delivery, providerResponse)) {
@@ -241,6 +251,20 @@ export class CalendarDeliveryExecutor {
 
       await this.persistFailure(em, delivery, error);
       this.logger.error(`Calendar delivery #${deliveryId} failed.`, error);
+    }
+  }
+
+  private async measureProvider<T>(
+    delivery: EventDeliveryItem,
+    operation: () => Promise<T>,
+  ): Promise<T> {
+    const started = performance.now();
+    try {
+      return await operation();
+    } finally {
+      delivery.providerDurationMs =
+        (delivery.providerDurationMs ?? 0) +
+        Math.round(performance.now() - started);
     }
   }
 
@@ -478,14 +502,16 @@ export class CalendarDeliveryExecutor {
       }
       sessionContext.accessToken = refreshedToken;
 
-      const providerResponse = await this.executeProviderDelivery(
-        provider,
-        eventHandle,
-        refreshedToken,
-        sessionContext.personHandle,
-        operation,
-        changedFields,
-        occurrenceStart,
+      const providerResponse = await this.measureProvider(delivery, () =>
+        this.executeProviderDelivery(
+          provider,
+          eventHandle,
+          refreshedToken,
+          sessionContext.personHandle,
+          operation,
+          changedFields,
+          occurrenceStart,
+        ),
       );
 
       const persisted = await this.persistSuccess(

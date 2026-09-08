@@ -1,3 +1,4 @@
+import { AiPromptSeeder } from './AiPromptSeeder';
 import { EntityManager } from '@mikro-orm/core';
 import { Seeder } from '@mikro-orm/seeder';
 import { TranslationSeeder } from './TranslationSeeder';
@@ -140,6 +141,7 @@ const SEED_ORDER: Array<EntityName<object> | (new () => Seeder)> = [
   LanguageItem,
   MoneyItem,
   CountryItem,
+  AiPromptSeeder,
   TranslationSeeder,
   WorkHourItem,
   WorkHourWeekItem,

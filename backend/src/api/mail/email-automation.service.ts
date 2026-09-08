@@ -1,3 +1,4 @@
+import { matchesConfiguredValue } from './email-condition-values';
 import { EntityManager } from '@mikro-orm/core';
 import { Injectable, Logger } from '@nestjs/common';
 import { EmailSubscriptionItem } from '../../entity/EmailSubscriptionItem';
@@ -320,14 +321,14 @@ export class EmailAutomationService {
 
     if (
       expectedOldValue !== undefined &&
-      !this.matchesConfiguredValue(oldValue, expectedOldValue)
+      !matchesConfiguredValue(oldValue, expectedOldValue)
     ) {
       return false;
     }
 
     if (
       expectedNewValue !== undefined &&
-      !this.matchesConfiguredValue(newValue, expectedNewValue)
+      !matchesConfiguredValue(newValue, expectedNewValue)
     ) {
       return false;
     }
@@ -429,7 +430,17 @@ export class EmailAutomationService {
 
   private async resolveRecipientEmails(value: unknown): Promise<string[]> {
     const emails = await this.resolveRecipientEmailEntries(value);
-    return [...new Set(emails.map((email) => email.toLowerCase()))];
+    const normalized = emails
+      .flatMap((email) => email.split(/[;,\r\n]+/))
+      .map((email) => email.trim().toLowerCase())
+      .filter(Boolean);
+    if (
+      normalized.some(
+        (email) => !/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(email),
+      )
+    )
+      throw new Error('mail.invalidRecipient');
+    return [...new Set(normalized)];
   }
 
   private async resolveRecipientEmailEntries(
@@ -512,84 +523,6 @@ export class EmailAutomationService {
       },
       asChangeLogRecord(snapshot ?? null),
     );
-  }
-
-  private matchesConfiguredValue(value: unknown, expected: string): boolean {
-    const expectedBoolean = this.parseConfiguredBoolean(expected);
-    if (expectedBoolean !== null) {
-      return this.isBooleanTrue(value) === expectedBoolean;
-    }
-
-    return this.valueCandidates(value).some(
-      (candidate) => candidate === expected,
-    );
-  }
-
-  private parseConfiguredBoolean(value: string): boolean | null {
-    const normalized = value.trim().toLowerCase();
-    if (normalized === 'true') {
-      return true;
-    }
-
-    if (normalized === 'false') {
-      return false;
-    }
-
-    return null;
-  }
-
-  private isBooleanTrue(value: unknown): boolean {
-    if (value === true) {
-      return true;
-    }
-
-    if (typeof value === 'string') {
-      return value.trim().toLowerCase() === 'true';
-    }
-
-    if (Array.isArray(value)) {
-      return value.some((entry) => this.isBooleanTrue(entry));
-    }
-
-    if (
-      isRecord(value) &&
-      Object.prototype.hasOwnProperty.call(value, 'handle')
-    ) {
-      return this.isBooleanTrue(value.handle);
-    }
-
-    return false;
-  }
-
-  private valueCandidates(value: unknown): string[] {
-    if (value == null) {
-      return [''];
-    }
-
-    if (Array.isArray(value)) {
-      return value.flatMap((entry) => this.valueCandidates(entry));
-    }
-
-    if (
-      typeof value === 'string' ||
-      typeof value === 'number' ||
-      typeof value === 'boolean'
-    ) {
-      return [String(value)];
-    }
-
-    if (isRecord(value)) {
-      const handle = value.handle;
-      if (
-        typeof handle === 'string' ||
-        typeof handle === 'number' ||
-        typeof handle === 'boolean'
-      ) {
-        return [String(handle)];
-      }
-    }
-
-    return [JSON.stringify(value)];
   }
 
   private extractReferenceHandle(item: object): string | number | null {

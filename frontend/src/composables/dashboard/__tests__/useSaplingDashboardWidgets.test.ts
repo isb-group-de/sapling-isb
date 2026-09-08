@@ -104,7 +104,7 @@ describe('complete widget dashboard workflows', () => {
       { handle: 1, name: 'Original', widgets: structuredClone(widgets) } as DashboardItem,
       { handle: 2, name: 'Other', widgets: [], person: 7, createdAt: null },
     ]
-    workspace.openDashboardTemplateSaveDialog()
+    await workspace.openDashboardTemplateSaveDialog()
     workspace.activeTab.value = 1
     workspace.dashboards.value[0]!.widgets![0]!.title = 'Later edit'
     await workspace.onDashboardTemplateSave({ name: 'Template' }, 'saveAndClose')

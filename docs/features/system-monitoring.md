@@ -266,3 +266,5 @@ Sapling intentionally has no external watchdog in this implementation. A full
 outage of the only host cannot notify while that host is down. Boot lifecycle
 and sample gaps reconstruct the outage after restart, but real-time detection of
 that one condition requires a separately operated uptime monitor in the future.
+
+For the September 2026 baseline, translation bundles and bounded operation phases, see the [Performance Comparison Protocol](../development/performance-comparison-protocol.md).

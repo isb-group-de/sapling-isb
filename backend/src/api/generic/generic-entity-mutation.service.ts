@@ -1,3 +1,6 @@
+import { measureOperationPhase } from '../common/operation-timing';
+import { GenericMutationMetadata } from './generic-mutation-metadata';
+import { assertPromptMutation } from '../ai/prompts/ai-prompt-mutation-policy';
 import {
   ConflictException,
   Injectable,
@@ -47,6 +50,7 @@ export type GenericMutationPayload = {
 export type GenericPostCommitTask = ScriptPostCommitTask;
 
 export type GenericMutationLifecycleOptions = {
+  metadata?: GenericMutationMetadata;
   postCommitTasks?: GenericPostCommitTask[];
   /** Internal graph rewrites validate all resulting references before commit. */
   deferReferenceValidation?: boolean;
@@ -120,21 +124,26 @@ export class GenericEntityMutationService extends GenericEntityMutationOperation
     scriptContext: ScriptServerContext,
     lifecycleOptions: GenericMutationLifecycleOptions = {},
   ): Promise<object> {
+    assertPromptMutation(entityHandle, 'create', currentUser, data);
     data = normalizeEventBufferMutationPayload(
       entityHandle,
       this.genericPayloadService.sanitizeClientMutationPayload(data),
     );
     const template = this.templateService.getEntityTemplate(entityHandle);
-    const permissionTemplate =
-      await this.fieldPermissions.getTemplates(entityHandle);
-    data = normalizeSaplingPhonePayload(template, data);
-    await this.fieldPermissions.assertPayloadAccess(
-      currentUser,
+    const permissionTemplate = await (lifecycleOptions.metadata?.getTemplates(
       entityHandle,
-      data,
-      'insert',
-      data,
-      permissionTemplate,
+      () => this.fieldPermissions.getTemplates(entityHandle),
+    ) ?? this.fieldPermissions.getTemplates(entityHandle));
+    data = normalizeSaplingPhonePayload(template, data);
+    await measureOperationPhase('permissions', async () =>
+      this.fieldPermissions.assertPayloadAccess(
+        currentUser,
+        entityHandle,
+        data,
+        'insert',
+        data,
+        permissionTemplate,
+      ),
     );
     const splitPayload = this.genericCustomFieldService.splitPayload(data);
     data = splitPayload.data;
@@ -174,11 +183,13 @@ export class GenericEntityMutationService extends GenericEntityMutationOperation
     );
 
     const entityClass = this.genericQueryService.getEntityClass(entityHandle);
-    let newData = await this.genericMutationService.createAndFlush(
-      entityHandle,
-      entityClass,
-      data,
-      template,
+    let newData = await measureOperationPhase('database', async () =>
+      this.genericMutationService.createAndFlush(
+        entityHandle,
+        entityClass,
+        data,
+        template,
+      ),
     );
     this.invalidateTemplateMetadataAfterMutation(entityHandle);
 
@@ -193,11 +204,13 @@ export class GenericEntityMutationService extends GenericEntityMutationOperation
         );
 
       if (overwrittenData !== newData) {
-        newData = await this.genericMutationService.assignAndFlush(
-          entityHandle,
-          newData,
-          overwrittenData,
-          template,
+        newData = await measureOperationPhase('database', async () =>
+          this.genericMutationService.assignAndFlush(
+            entityHandle,
+            newData,
+            overwrittenData,
+            template,
+          ),
         );
       }
     }
@@ -264,11 +277,13 @@ export class GenericEntityMutationService extends GenericEntityMutationOperation
       newSnapshot: newAutomationSnapshot,
     });
 
-    return this.genericSanitizerService.projectEntityResult(
-      entityHandle,
-      hydrated,
-      currentUser,
-      permissionTemplate,
+    return measureOperationPhase('projection', () =>
+      this.genericSanitizerService.projectEntityResult(
+        entityHandle,
+        hydrated,
+        currentUser,
+        permissionTemplate,
+      ),
     );
   }
 
@@ -297,9 +312,12 @@ export class GenericEntityMutationService extends GenericEntityMutationOperation
       lifecycleOptions.identityReferenceFields,
     );
     data = this.removeMatchingHandleEcho(data, handle);
+    assertPromptMutation(entityHandle, 'update', currentUser, data);
     const submittedPermissionPayload = { ...data };
     const permissionTemplate = identityReferenceTemplates(
-      await this.fieldPermissions.getTemplates(entityHandle),
+      await (lifecycleOptions.metadata?.getTemplates(entityHandle, () =>
+        this.fieldPermissions.getTemplates(entityHandle),
+      ) ?? this.fieldPermissions.getTemplates(entityHandle)),
       lifecycleOptions.identityReferenceFields,
     );
     data = normalizeSaplingPhonePayload(template, data);
@@ -359,13 +377,15 @@ export class GenericEntityMutationService extends GenericEntityMutationOperation
       submittedPermissionPayload.fieldKey,
     );
 
-    await this.fieldPermissions.assertPayloadAccess(
-      currentUser,
-      entityHandle,
-      submittedPermissionPayload,
-      'update',
-      { ...(item as Record<string, unknown>), ...submittedPermissionPayload },
-      permissionTemplate,
+    await measureOperationPhase('permissions', async () =>
+      this.fieldPermissions.assertPayloadAccess(
+        currentUser,
+        entityHandle,
+        submittedPermissionPayload,
+        'update',
+        { ...(item as Record<string, unknown>), ...submittedPermissionPayload },
+        permissionTemplate,
+      ),
     );
 
     const oldSnapshot =
@@ -446,11 +466,13 @@ export class GenericEntityMutationService extends GenericEntityMutationOperation
       );
     }
 
-    let newData = await this.genericMutationService.assignAndFlush(
-      entityHandle,
-      item,
-      data,
-      template,
+    let newData = await measureOperationPhase('database', async () =>
+      this.genericMutationService.assignAndFlush(
+        entityHandle,
+        item,
+        data,
+        template,
+      ),
     );
     this.invalidateTemplateMetadataAfterMutation(entityHandle);
 
@@ -464,11 +486,13 @@ export class GenericEntityMutationService extends GenericEntityMutationOperation
           { ...scriptContext, changedFields },
         );
       if (overwrittenData !== newData) {
-        newData = await this.genericMutationService.assignAndFlush(
-          entityHandle,
-          item,
-          overwrittenData,
-          template,
+        newData = await measureOperationPhase('database', async () =>
+          this.genericMutationService.assignAndFlush(
+            entityHandle,
+            item,
+            overwrittenData,
+            template,
+          ),
         );
       }
     }
@@ -550,11 +574,13 @@ export class GenericEntityMutationService extends GenericEntityMutationOperation
     });
     this.invalidateSecurityPrincipalAfterMutation(entityHandle, newData);
     this.queueSearchIndexUpsert(lifecycleOptions, entityHandle, newData);
-    return this.genericSanitizerService.projectEntityResult(
-      entityHandle,
-      hydrated,
-      currentUser,
-      permissionTemplate,
+    return measureOperationPhase('projection', () =>
+      this.genericSanitizerService.projectEntityResult(
+        entityHandle,
+        hydrated,
+        currentUser,
+        permissionTemplate,
+      ),
     );
   }
 }

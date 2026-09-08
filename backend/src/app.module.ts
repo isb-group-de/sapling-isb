@@ -1,3 +1,4 @@
+import { AiPromptModule } from './api/ai/prompts/ai-prompt.module';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { GithubModule } from './api/github/github.module';
@@ -99,6 +100,7 @@ import { AutomationModule } from './api/automation/automation.module';
     TeamsModule,
     InboxModule,
     AiModule,
+    AiPromptModule,
     FormConfigModule,
     ImportModule,
     Customer360Module,

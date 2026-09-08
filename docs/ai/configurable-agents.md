@@ -204,3 +204,5 @@ focused sibling rather than returning workflow logic to the route component.
 - Add domain playbooks for repeated work before introducing automation. A
   playbook should describe steps and expected output; tools and writes stay
   governed by the agent policy.
+
+Published application-level instructions, pinned chat manifests and controlled quality tests are documented in [Published AI Prompts](published-prompts.md).

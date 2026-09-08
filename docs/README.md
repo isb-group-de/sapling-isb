@@ -42,6 +42,10 @@ The documentation should stay close to the code, but not duplicate every class o
 - [Import Batches And External Record Links](features/imports.md)
 - [AI Prompting And Tool Use Guide For Sapling Agents](ai/sapling-agent-tool-use-guide.md)
 - [Configurable AI Agents](ai/configurable-agents.md)
+- [Published AI Prompts And Evaluations](ai/published-prompts.md)
+- [Automation Inspection](development/automation-inspection.md)
+- [Performance Comparison Protocol](development/performance-comparison-protocol.md)
+- [AI, Performance And Automation Implementation](development/ai-performance-automation-implementation.md)
 - [Operational Runbook](operations/operational-runbook.md)
 - [System Monitoring And Telemetry](features/system-monitoring.md)
 

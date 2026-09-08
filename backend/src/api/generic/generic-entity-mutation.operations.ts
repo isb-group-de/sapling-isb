@@ -1,3 +1,4 @@
+import { assertPromptMutation } from '../ai/prompts/ai-prompt-mutation-policy';
 import { NotFoundException } from '@nestjs/common';
 import { type EntityManager, RequestContext } from '@mikro-orm/core';
 import { EntityItem } from '../../entity/EntityItem';
@@ -60,6 +61,7 @@ export class GenericEntityMutationOperations {
     scriptContext: ScriptServerContext,
     lifecycleOptions: GenericMutationLifecycleOptions = {},
   ): Promise<void> {
+    assertPromptMutation(entityHandle, 'delete', currentUser);
     const previousOpenTaskUserHandles =
       await this.genericOpenTaskEventsService.loadUserHandles(
         entityHandle,

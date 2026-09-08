@@ -31,6 +31,21 @@ export type InboundEmailLogEntry = {
 @Entity()
 @Unique({ properties: ['mailbox', 'providerMessageId'] })
 export class InboundEmailItem {
+  @SaplingForm({
+    order: 100,
+    group: 'inboundEmail.groupDiagnostics',
+    groupOrder: 600,
+    width: 4,
+    visible: true,
+    tableOrder: 100,
+    tableVisible: false,
+    mobileOrder: 100,
+    mobileVisible: false,
+  })
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @Property({ type: 'json', nullable: true })
+  promptManifest?: Record<string, number> | null;
   @ApiProperty()
   @Property({ primary: true, autoincrement: true })
   handle?: number;

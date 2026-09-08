@@ -1,3 +1,4 @@
+import { promptText } from '../api/ai/prompts/ai-prompt-context';
 import {
   ScriptResultClient,
   ScriptResultClientMethods,
@@ -80,25 +81,32 @@ function buildSalesOpportunityPrompt(
   const painPoints = normalizeString(item.painPoints);
 
   return [
-    'Bitte analysiere diese Sapling-Verkaufschance und finde nutzbare Referenzen.',
+    promptText('opportunity.detail1'),
     '',
-    `Aktuelle Verkaufschance: ${number || String(handle)}${title ? ` - ${title}` : ''}`,
-    description ? `Bekannte Beschreibung aus der Liste: ${description}` : null,
-    painPoints ? `Bekannte Pain Points aus der Liste: ${painPoints}` : null,
+    promptText('opportunity.text1', {
+      value0: number || String(handle),
+      value1: title ? ` - ${title}` : '',
+    }),
+    description
+      ? promptText('opportunity.detail2', { value0: description })
+      : null,
+    painPoints
+      ? promptText('opportunity.detail3', { value0: painPoints })
+      : null,
     '',
     'Arbeitsweise:',
-    '1. Lade die aktuelle Verkaufschance mit generic_get.',
-    `   entityHandle: salesOpportunity, handle: ${JSON.stringify(handle)}, relations: ["type", "forecast", "source", "tickets", "effortEstimates"]`,
-    '2. Baue aus Titel, Beschreibung, Pain Points, Kundensituation und verknüpften Datensätzen eine Suchanfrage.',
-    '3. Nutze knowledge_search mit entityHandles ["salesOpportunity", "ticket", "effortEstimate", "effortEstimatePosition", "knowledgeArticle"].',
-    '4. Wenn ein Vektorindex fehlt, nenne ihn kurz und nutze die verfügbaren Quellen weiter.',
+    promptText('opportunity.detail4'),
+    promptText('opportunity.text2', { value0: JSON.stringify(handle) }),
+    promptText('opportunity.text3'),
+    promptText('opportunity.text4'),
+    promptText('opportunity.text5'),
     '',
-    'Gib mir kompakt:',
-    '- ähnliche Pain Points und wie sie gelöst wurden',
-    '- passende Tickets, Schätzungen und Positionen',
-    '- Argumente, Referenzlösungen und wiederverwendbare Angebotsbausteine',
-    '- Risiken, Einwände und nächste Fragen für Sales',
-    '- eine kurze Antwort auf: Welche Tickets/Schätzungen passen zu dieser Chance?',
+    promptText('opportunity.detail5'),
+    promptText('opportunity.detail6'),
+    promptText('opportunity.detail7'),
+    promptText('opportunity.detail8'),
+    promptText('opportunity.detail9'),
+    promptText('opportunity.detail10'),
   ]
     .filter(
       (line): line is string => typeof line === 'string' && line.length > 0,

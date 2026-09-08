@@ -21,6 +21,22 @@ import { AiChatMessageItem } from './AiChatMessageItem';
 
 @Entity()
 export class AiChatSessionItem {
+  @ApiPropertyOptional()
+  @SaplingForm({
+    order: 100,
+    group: 'aiChatSession.groupDiagnostics',
+    groupOrder: 600,
+    width: 4,
+    visible: true,
+    tableOrder: 100,
+    tableVisible: false,
+    mobileOrder: 100,
+    mobileVisible: false,
+  })
+  @Sapling(['isReadOnly'])
+  @Property({ type: 'json', nullable: true })
+  promptManifest?: Record<string, number> | null;
+
   @ApiProperty()
   @Property({ primary: true, autoincrement: true })
   handle?: number;

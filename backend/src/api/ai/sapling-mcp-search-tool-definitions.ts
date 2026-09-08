@@ -6,7 +6,9 @@ export const SAPLING_MCP_SEARCH_TOOL_DEFINITIONS: readonly SaplingMcpToolDefinit
   [
     {
       toolName: 'web_search',
-      description: SAPLING_MCP_TOOL_DESCRIPTIONS.webSearch,
+      get description() {
+        return SAPLING_MCP_TOOL_DESCRIPTIONS.webSearch;
+      },
       jsonSchema: {
         type: 'object',
         properties: {
@@ -70,7 +72,9 @@ export const SAPLING_MCP_SEARCH_TOOL_DEFINITIONS: readonly SaplingMcpToolDefinit
     },
     {
       toolName: 'ticket_search',
-      description: SAPLING_MCP_TOOL_DESCRIPTIONS.ticketSearch,
+      get description() {
+        return SAPLING_MCP_TOOL_DESCRIPTIONS.ticketSearch;
+      },
       jsonSchema: {
         type: 'object',
         properties: {
@@ -113,7 +117,9 @@ export const SAPLING_MCP_SEARCH_TOOL_DEFINITIONS: readonly SaplingMcpToolDefinit
     },
     {
       toolName: 'semantic_search',
-      description: SAPLING_MCP_TOOL_DESCRIPTIONS.semanticSearch,
+      get description() {
+        return SAPLING_MCP_TOOL_DESCRIPTIONS.semanticSearch;
+      },
       jsonSchema: {
         type: 'object',
         properties: {
@@ -158,7 +164,9 @@ export const SAPLING_MCP_SEARCH_TOOL_DEFINITIONS: readonly SaplingMcpToolDefinit
     },
     {
       toolName: 'knowledge_search',
-      description: SAPLING_MCP_TOOL_DESCRIPTIONS.knowledgeSearch,
+      get description() {
+        return SAPLING_MCP_TOOL_DESCRIPTIONS.knowledgeSearch;
+      },
       jsonSchema: {
         type: 'object',
         properties: {

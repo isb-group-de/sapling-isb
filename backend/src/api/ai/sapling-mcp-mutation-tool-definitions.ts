@@ -6,7 +6,9 @@ export const SAPLING_MCP_MUTATION_TOOL_DEFINITIONS: readonly SaplingMcpToolDefin
   [
     {
       toolName: 'generic_create',
-      description: SAPLING_MCP_TOOL_DESCRIPTIONS.genericCreate,
+      get description() {
+        return SAPLING_MCP_TOOL_DESCRIPTIONS.genericCreate;
+      },
       jsonSchema: {
         type: 'object',
         properties: {
@@ -32,7 +34,9 @@ export const SAPLING_MCP_MUTATION_TOOL_DEFINITIONS: readonly SaplingMcpToolDefin
     },
     {
       toolName: 'generic_update',
-      description: SAPLING_MCP_TOOL_DESCRIPTIONS.genericUpdate,
+      get description() {
+        return SAPLING_MCP_TOOL_DESCRIPTIONS.genericUpdate;
+      },
       jsonSchema: {
         type: 'object',
         properties: {
@@ -74,7 +78,9 @@ export const SAPLING_MCP_MUTATION_TOOL_DEFINITIONS: readonly SaplingMcpToolDefin
     },
     {
       toolName: 'generic_delete',
-      description: SAPLING_MCP_TOOL_DESCRIPTIONS.genericDelete,
+      get description() {
+        return SAPLING_MCP_TOOL_DESCRIPTIONS.genericDelete;
+      },
       jsonSchema: {
         type: 'object',
         properties: {

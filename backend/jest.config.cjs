@@ -15,6 +15,7 @@ module.exports = {
   transformIgnorePatterns: ['/node_modules/(?!@nestjs/)'],
   collectCoverageFrom: ['**/*.(t|j)s'],
   coverageDirectory: '../coverage',
+  setupFilesAfterEnv: ['<rootDir>/api/ai/prompts/ai-prompt.test-support.ts'],
   testEnvironment: 'node',
   moduleNameMapper: {
     '^@mikro-orm/core$': '<rootDir>/../test-support/mikro-orm-core.mock.cjs',

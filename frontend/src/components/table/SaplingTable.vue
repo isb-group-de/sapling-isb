@@ -67,6 +67,7 @@
             :class="{ 'sapling-table-toolbar-actions--compact': !showToolbarActionsInline }"
           >
             <SaplingTableToolbarActions
+              :entity-handle="entityHandle"
               :is-mobile-table="isMobileTable"
               :is-downloading-json="isDownloadingJSON"
               :is-importing-csv="isImportingCSV"

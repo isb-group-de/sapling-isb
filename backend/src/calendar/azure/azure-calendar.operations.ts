@@ -1,5 +1,6 @@
 import { Client } from '@microsoft/microsoft-graph-client';
 import type { EntityManager } from '@mikro-orm/core';
+import { azureTokenNeedsRefresh } from './azure-token-expiry';
 import axios from 'axios';
 import {
   AZURE_AD_CLIENT_ID,
@@ -223,7 +224,7 @@ export class AzureCalendarOperations {
     session: PersonSessionItem,
   ): Promise<string | null> {
     const directToken = session.accessToken?.trim();
-    if (directToken) {
+    if (directToken && !azureTokenNeedsRefresh(directToken)) {
       return directToken;
     }
 

@@ -3,6 +3,13 @@
     class="sapling-table-toolbar-action-group"
     :class="{ 'sapling-table-toolbar-action-group--mobile': isMobileTable }"
   >
+    <v-btn
+      v-if="automationPerson.isAdministrator && entityHandle"
+      prepend-icon="mdi-transit-connection-variant"
+      variant="tonal"
+      @click="openAutomationInspector(entityHandle)"
+      >{{ t('global.automations') }}</v-btn
+    >
     <v-btn-group
       v-if="isMobileTable"
       class="sapling-action-button-group sapling-table-toolbar-action-group__mobile"
@@ -507,6 +514,8 @@
 
 <script lang="ts" setup>
 import { computed } from 'vue'
+import { useCurrentPersonStore } from '@/stores/currentPersonStore'
+import { openAutomationInspector } from '@/components/automation/automationInspector'
 import { useI18n } from 'vue-i18n'
 import {
   SAPLING_TABLE_AUTO_REFRESH_INTERVALS,
@@ -523,6 +532,7 @@ const props = defineProps<SaplingTableToolbarActionsProps>()
 const emit = defineEmits<SaplingTableToolbarActionsEmit>()
 
 const { t } = useI18n()
+const automationPerson = useCurrentPersonStore()
 const refreshIntervals = SAPLING_TABLE_AUTO_REFRESH_INTERVALS
 const formConfigTitle = computed(() =>
   props.selectedFormConfigLabel?.trim()

@@ -345,6 +345,9 @@ export function sanitizeAgentMemory(
 export function sanitizeAgentRun(run: AiAgentRunItem): AiAgentRunItem {
   return {
     handle: run.handle,
+    promptManifest: run.promptManifest ?? null,
+    evaluationResult: run.evaluationResult ?? null,
+    purpose: run.purpose ?? null,
     session:
       run.session && typeof run.session !== 'number'
         ? (run.session.handle ?? null)
@@ -398,6 +401,8 @@ export function sanitizeAgentEvaluation(
         ? sanitizeAgentVersion(evaluation.agentVersion)
         : (evaluation.agentVersion ?? null),
     title: evaluation.title,
+    expectations: evaluation.expectations ?? null,
+    toolFixtures: evaluation.toolFixtures ?? null,
     prompt: evaluation.prompt,
     expectedCriteria: evaluation.expectedCriteria ?? null,
     targetEntityHandle: evaluation.targetEntityHandle ?? null,

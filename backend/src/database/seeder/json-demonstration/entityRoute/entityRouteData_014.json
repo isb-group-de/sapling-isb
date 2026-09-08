@@ -1,0 +1,10 @@
+[
+  {
+    "entity": "aiPromptTemplate",
+    "route": "table/aiPromptTemplate"
+  },
+  {
+    "entity": "aiPromptVersion",
+    "route": "table/aiPromptVersion"
+  }
+]

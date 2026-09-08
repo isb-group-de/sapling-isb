@@ -1,3 +1,5 @@
+import { annotatePromptInvocation } from '../ai/prompts/ai-prompt-context';
+import { AiPromptService } from '../ai/prompts/ai-prompt.service';
 import { Injectable } from '@nestjs/common';
 import { EntityManager } from '@mikro-orm/core';
 import { AiProviderRegistryService } from '../ai/ai-provider-registry.service';
@@ -114,40 +116,49 @@ export class ImportAiSuggestionService {
     request: ImportAiSuggestionRequest,
     dto: ImportAiSuggestDto,
   ): Promise<ImportAiSuggestionDto> {
-    const template = this.fieldPermissions.applyTemplateAccess(
+    return new AiPromptService(this.em).record(
+      'import-suggestion',
       request.currentUser,
-      request.entityHandle,
-      await this.fieldPermissions.getTemplates(request.entityHandle),
-    );
-    const importableFields = this.getImportableFields(template);
-    const context: ImportAiSuggestionContext = {
-      entityHandle: request.entityHandle,
-      sourceHandle: request.sourceHandle,
-      headers: request.headers,
-      sampleRows: this.limitSampleRows(request.sampleRows, dto.maxSampleRows),
-      fields: importableFields.map((field) => ({
-        name: field.name,
-        type: field.type,
-        kind: field.kind ?? null,
-        isRequired: field.isRequired,
-        isReference: field.isReference,
-        referenceName: field.referenceName || null,
-        options: field.options ?? [],
-        genericReference: field.genericReference ?? null,
-      })),
-      referenceCandidates: await this.buildImportReferenceCandidates(
-        importableFields,
-        request.currentUser,
-      ),
-      templates: request.templates.slice(0, AI_TEMPLATE_CONTEXT_LIMIT),
-    };
-    const generation = await this.generateSuggestion(context, dto);
+      async () => {
+        const template = this.fieldPermissions.applyTemplateAccess(
+          request.currentUser,
+          request.entityHandle,
+          await this.fieldPermissions.getTemplates(request.entityHandle),
+        );
+        const importableFields = this.getImportableFields(template);
+        const context: ImportAiSuggestionContext = {
+          entityHandle: request.entityHandle,
+          sourceHandle: request.sourceHandle,
+          headers: request.headers,
+          sampleRows: this.limitSampleRows(
+            request.sampleRows,
+            dto.maxSampleRows,
+          ),
+          fields: importableFields.map((field) => ({
+            name: field.name,
+            type: field.type,
+            kind: field.kind ?? null,
+            isRequired: field.isRequired,
+            isReference: field.isReference,
+            referenceName: field.referenceName || null,
+            options: field.options ?? [],
+            genericReference: field.genericReference ?? null,
+          })),
+          referenceCandidates: await this.buildImportReferenceCandidates(
+            importableFields,
+            request.currentUser,
+          ),
+          templates: request.templates.slice(0, AI_TEMPLATE_CONTEXT_LIMIT),
+        };
+        const generation = await this.generateSuggestion(context, dto);
 
-    return {
-      ...this.normalizeSuggestion(generation.raw, context),
-      providerHandle: generation.providerHandle,
-      modelHandle: generation.modelHandle,
-    };
+        return {
+          ...this.normalizeSuggestion(generation.raw, context),
+          providerHandle: generation.providerHandle,
+          modelHandle: generation.modelHandle,
+        };
+      },
+    );
   }
 
   private async generateSuggestion(
@@ -162,6 +173,10 @@ export class ImportAiSuggestionService {
       dto.providerHandle ?? null,
       dto.modelHandle ?? null,
     );
+    annotatePromptInvocation({
+      provider: runtimeTarget.provider.handle,
+      model: runtimeTarget.model.providerModel,
+    });
     const systemPrompt = buildImportAiSuggestionSystemPrompt();
     const userPrompt = buildImportAiSuggestionUserPrompt(context);
     const rawText =
@@ -202,6 +217,7 @@ export class ImportAiSuggestionService {
       },
     );
 
+    annotatePromptInvocation({ usagePayload: { ...response.usage } });
     return response.choices[0]?.message?.content ?? '';
   }
 

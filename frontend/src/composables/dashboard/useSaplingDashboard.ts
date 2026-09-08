@@ -84,16 +84,9 @@ export function useSaplingDashboard() {
 
   // #region Lifecycle
   onMounted(async () => {
-    await Promise.all([
-      loadTranslations(),
-      loadDashboardEntity(true),
-      loadDashboardEntityTemplates(true),
-      loadDashboardTemplateEntity(true),
-      loadDashboardTemplateEntityTemplates(true),
-      currentPersonStore.fetchCurrentPerson(),
-    ])
+    await Promise.all([loadTranslations(), currentPersonStore.fetchCurrentPerson()])
 
-    await Promise.all([loadDashboards(true), loadAvailableDashboardTemplates(true)])
+    await loadDashboards(true)
   })
   // #endregion
 
@@ -218,7 +211,8 @@ export function useSaplingDashboard() {
   /**
    * Opens the dashboard creation dialog, optionally prefilled from a template.
    */
-  function openDashboardDialog(item: DashboardItem | null = null) {
+  async function openDashboardDialog(item: DashboardItem | null = null) {
+    await Promise.all([loadDashboardEntity(), loadDashboardEntityTemplates()])
     dashboardDialog.value = { visible: true, mode: 'create', item }
   }
 
@@ -232,22 +226,27 @@ export function useSaplingDashboard() {
   /**
    * Opens the template creation dialog for the current dashboard.
    */
-  function openDashboardTemplateSaveDialog() {
+  async function openDashboardTemplateSaveDialog() {
     if (!currentDashboard.value || !currentPersonStore.person) {
       return
     }
 
-    templateWidgetSnapshot.value = getDashboardWidgets(currentDashboard.value)
+    const dashboardSnapshot = {
+      ...currentDashboard.value,
+      widgets: getDashboardWidgets(currentDashboard.value),
+    }
+    templateWidgetSnapshot.value = dashboardSnapshot.widgets
+    await Promise.all([loadDashboardTemplateEntity(), loadDashboardTemplateEntityTemplates()])
     dashboardTemplateDialog.value = {
       visible: true,
       mode: 'create',
       item: {
-        name: currentDashboard.value.name,
+        name: dashboardSnapshot.name,
         description: '',
         isShared: false,
         person: currentPersonStore.person,
-        kpis: currentDashboard.value.kpis ?? [],
-        widgets: getDashboardWidgets(currentDashboard.value),
+        kpis: dashboardSnapshot.kpis ?? [],
+        widgets: dashboardSnapshot.widgets,
       },
     }
   }

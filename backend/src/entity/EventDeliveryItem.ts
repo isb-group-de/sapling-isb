@@ -26,6 +26,37 @@ import { EventDeliveryStatusItem } from './EventDeliveryStatusItem';
  */
 @Entity()
 export class EventDeliveryItem {
+  @SaplingForm({
+    order: 100,
+    group: 'eventDelivery.groupPerformance',
+    groupOrder: 600,
+    width: 2,
+    visible: true,
+    tableOrder: 100,
+    tableVisible: true,
+    mobileOrder: 100,
+    mobileVisible: true,
+  })
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @Property({ type: 'integer', nullable: true })
+  queueWaitMs?: number | null;
+
+  @SaplingForm({
+    order: 200,
+    group: 'eventDelivery.groupPerformance',
+    groupOrder: 600,
+    width: 2,
+    visible: true,
+    tableOrder: 200,
+    tableVisible: true,
+    mobileOrder: 200,
+    mobileVisible: true,
+  })
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @Property({ type: 'integer', nullable: true })
+  providerDurationMs?: number | null;
   // #region Properties: Relation
   /**
    * Status of the webhook delivery.

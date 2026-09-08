@@ -26,6 +26,9 @@
           </v-chip>
         </template>
         <template #side>
+          <v-btn prepend-icon="mdi-text-box-edit-outline" @click="showPromptWorkbench = true">{{
+            t('global.aiPrompts')
+          }}</v-btn>
           <div class="sapling-action-cluster sapling-ai-agent-builder__hero-actions">
             <v-btn
               class="sapling-button--action"
@@ -141,10 +144,20 @@
         </SaplingSurface>
       </section>
     </template>
+    <AiPromptWorkbench
+      v-if="showPromptWorkbench"
+      :agent-handle="selectedAgent?.handle"
+      @close="showPromptWorkbench = false"
+    />
   </v-container>
 </template>
 
 <script lang="ts" setup>
+import { defineAsyncComponent, ref as promptRef } from 'vue'
+const showPromptWorkbench = promptRef(false)
+const AiPromptWorkbench = defineAsyncComponent(
+  () => import('@/components/ai/AiPromptWorkbench.vue'),
+)
 import { useI18n } from 'vue-i18n'
 import SaplingPageHero from '@/components/common/SaplingPageHero.vue'
 import SaplingSurface from '@/components/common/SaplingSurface.vue'

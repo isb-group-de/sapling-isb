@@ -9,9 +9,9 @@ const { findAllMock } = vi.hoisted(() => ({
   findAllMock: vi.fn(),
 }))
 
-vi.mock('../api.generic.service', () => ({
+vi.mock('../api.translation.service', () => ({
   default: {
-    findAll: findAllMock,
+    load: findAllMock,
   },
 }))
 
@@ -48,14 +48,7 @@ describe('TranslationService', () => {
     const service = new TranslationService()
     const result = await service.prepare('ticket', ' ', 'company')
 
-    expect(findAllMock).toHaveBeenCalledWith('translation', {
-      filter: {
-        entity: { $in: ['ticket', 'company'] },
-        language: 'de',
-      },
-      suppressErrorMessage: true,
-      pageSize: 100,
-    })
+    expect(findAllMock).toHaveBeenCalledWith(['ticket', 'company'], 'de')
     expect(result).toEqual(response)
     expect(i18n.global.getLocaleMessage('de')).toEqual({
       existing: 'Vorhanden',
@@ -66,7 +59,7 @@ describe('TranslationService', () => {
     expect(useTranslationStore().has('company')).toBe(true)
   })
 
-  it('loads the complete translation set through the stable generic paginator', async () => {
+  it('loads the complete translation bundle', async () => {
     const translations: TranslationItem[] = [
       { entity: 'ticket', property: 'title', value: 'Ticket' },
       { entity: 'ticket', property: 'description', value: 'Beschreibung' },
@@ -77,14 +70,7 @@ describe('TranslationService', () => {
     const service = new TranslationService()
     const result = await service.prepare('ticket')
 
-    expect(findAllMock).toHaveBeenCalledExactlyOnceWith('translation', {
-      filter: {
-        entity: { $in: ['ticket'] },
-        language: 'de',
-      },
-      suppressErrorMessage: true,
-      pageSize: 100,
-    })
+    expect(findAllMock).toHaveBeenCalledExactlyOnceWith(['ticket'], 'de')
     expect(result).toEqual(translations)
     expect(i18n.global.getLocaleMessage('de')).toEqual({
       'ticket.title': 'Ticket',
@@ -112,7 +98,7 @@ describe('TranslationService', () => {
     await expect(first).resolves.toEqual([ticket])
     await expect(second).resolves.toEqual([ticket, company])
     expect(findAllMock).toHaveBeenCalledTimes(1)
-    expect(findAllMock.mock.calls[0][1].filter.entity.$in).toEqual(['ticket', 'company'])
+    expect(findAllMock.mock.calls[0][0]).toEqual(['ticket', 'company'])
     await expect(new TranslationService().prepare('ticket')).resolves.toEqual([])
   })
 
@@ -126,7 +112,7 @@ describe('TranslationService', () => {
     const second = new TranslationService().prepare('ticket', 'company')
     await Promise.resolve()
     expect(findAllMock).toHaveBeenCalledTimes(2)
-    expect(findAllMock.mock.calls[1][1].filter.entity.$in).toEqual(['company'])
+    expect(findAllMock.mock.calls[1][0]).toEqual(['company'])
     expect(useTranslationStore().has('ticket')).toBe(false)
     pending.resolve([ticket])
     await expect(first).resolves.toEqual([ticket])

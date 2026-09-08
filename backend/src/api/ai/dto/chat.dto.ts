@@ -493,6 +493,15 @@ export class CreateAiAgentTestRunDto {
 }
 
 export class CreateAiAgentEvaluationDto {
+  @ApiPropertyOptional() @IsOptional() @IsObject() expectations?: Record<
+    string,
+    unknown
+  >;
+  @ApiPropertyOptional() @IsOptional() @IsObject() toolFixtures?: Record<
+    string,
+    unknown
+  >;
+
   @ApiProperty()
   @IsString()
   @MaxLength(160)

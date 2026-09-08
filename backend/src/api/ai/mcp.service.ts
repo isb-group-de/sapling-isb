@@ -1,3 +1,4 @@
+import { AiPromptService } from './prompts/ai-prompt.service';
 import { EntityManager } from '@mikro-orm/core';
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { Client } from '@modelcontextprotocol/sdk/client';
@@ -37,36 +38,38 @@ export class McpService {
     user?: PersonItem,
     policy?: McpToolPolicy,
   ): Promise<McpToolDescriptor[]> {
-    const configs = await this.em.find(
-      McpServerConfigItem,
-      { isActive: true },
-      { orderBy: { sortOrder: 'ASC', name: 'ASC' } },
-    );
+    return new AiPromptService(this.em).run(async () => {
+      const configs = await this.em.find(
+        McpServerConfigItem,
+        { isActive: true },
+        { orderBy: { sortOrder: 'ASC', name: 'ASC' } },
+      );
 
-    const descriptors: McpToolDescriptor[] = user
-      ? (await this.saplingMcpService.listTools(policy))
-          .map((tool) => ({
-            serverHandle: 0,
-            serverName: this.saplingMcpService.getServerName(),
-            toolName: tool.toolName,
-            description: tool.description,
-            inputSchema: tool.inputSchema,
-          }))
-          .filter((tool) => this.isToolAllowedByPolicy(tool, policy))
-      : [];
+      const descriptors: McpToolDescriptor[] = user
+        ? (await this.saplingMcpService.listTools(policy))
+            .map((tool) => ({
+              serverHandle: 0,
+              serverName: this.saplingMcpService.getServerName(),
+              toolName: tool.toolName,
+              description: tool.description,
+              inputSchema: tool.inputSchema,
+            }))
+            .filter((tool) => this.isToolAllowedByPolicy(tool, policy))
+        : [];
 
-    for (const config of configs) {
-      try {
-        const tools = await this.listToolsForConfig(config);
-        descriptors.push(
-          ...tools.filter((tool) => this.isToolAllowedByPolicy(tool, policy)),
-        );
-      } catch {
-        continue;
+      for (const config of configs) {
+        try {
+          const tools = await this.listToolsForConfig(config);
+          descriptors.push(
+            ...tools.filter((tool) => this.isToolAllowedByPolicy(tool, policy)),
+          );
+        } catch {
+          continue;
+        }
       }
-    }
 
-    return descriptors;
+      return descriptors;
+    });
   }
 
   async tryExecuteInlineToolCommand(
@@ -133,92 +136,94 @@ export class McpService {
     user?: PersonItem,
     policy?: McpToolPolicy,
   ): Promise<McpInlineToolExecution> {
-    if (user) {
-      const internalServerName = this.saplingMcpService.getServerName();
-      const internalTools = await this.saplingMcpService.listTools(policy);
-      const internalTool = internalTools.find(
-        (tool) => tool.toolName === toolName,
-      );
-      const targetsInternal =
-        !serverName || serverName.trim().toLowerCase() === internalServerName;
+    return new AiPromptService(this.em).run(async () => {
+      if (user) {
+        const internalServerName = this.saplingMcpService.getServerName();
+        const internalTools = await this.saplingMcpService.listTools(policy);
+        const internalTool = internalTools.find(
+          (tool) => tool.toolName === toolName,
+        );
+        const targetsInternal =
+          !serverName || serverName.trim().toLowerCase() === internalServerName;
 
-      if (targetsInternal && internalTool) {
-        this.assertToolAllowed(
-          {
+        if (targetsInternal && internalTool) {
+          this.assertToolAllowed(
+            {
+              serverName: internalServerName,
+              toolName,
+            },
+            policy,
+          );
+
+          const result = await this.saplingMcpService.executeTool(
+            toolName,
+            args,
+            user,
+            policy,
+          );
+
+          return {
+            serverHandle: 0,
             serverName: internalServerName,
             toolName,
-          },
-          policy,
-        );
+            arguments: args,
+            content: result.content,
+            modelResult: result.modelResult,
+            rawResult: result.rawResult,
+          };
+        }
 
-        const result = await this.saplingMcpService.executeTool(
-          toolName,
-          args,
-          user,
-          policy,
-        );
-
-        return {
-          serverHandle: 0,
-          serverName: internalServerName,
-          toolName,
-          arguments: args,
-          content: result.content,
-          modelResult: result.modelResult,
-          rawResult: result.rawResult,
-        };
+        if (
+          serverName?.trim().toLowerCase() === internalServerName &&
+          !internalTool
+        ) {
+          throw new Error('tool_not_found');
+        }
       }
 
-      if (
-        serverName?.trim().toLowerCase() === internalServerName &&
-        !internalTool
-      ) {
-        throw new Error('tool_not_found');
-      }
-    }
+      const configs = await this.em.find(
+        McpServerConfigItem,
+        { isActive: true },
+        { orderBy: { sortOrder: 'ASC', name: 'ASC' } },
+      );
 
-    const configs = await this.em.find(
-      McpServerConfigItem,
-      { isActive: true },
-      { orderBy: { sortOrder: 'ASC', name: 'ASC' } },
-    );
+      const targetConfig = serverName
+        ? configs.find(
+            (config) =>
+              config.name.trim().toLowerCase() ===
+              serverName.trim().toLowerCase(),
+          )
+        : undefined;
 
-    const targetConfig = serverName
-      ? configs.find(
-          (config) =>
-            config.name.trim().toLowerCase() ===
-            serverName.trim().toLowerCase(),
-        )
-      : undefined;
+      const candidateConfigs = targetConfig ? [targetConfig] : configs;
 
-    const candidateConfigs = targetConfig ? [targetConfig] : configs;
-
-    for (const config of candidateConfigs) {
-      try {
-        this.assertServerConfigAllowsTool(config, toolName);
-        this.assertToolAllowed(
-          {
+      for (const config of candidateConfigs) {
+        try {
+          this.assertServerConfigAllowsTool(config, toolName);
+          this.assertToolAllowed(
+            {
+              serverName: config.name,
+              toolName,
+            },
+            policy,
+          );
+          const result = await this.callTool(config, toolName, args);
+          return {
+            serverHandle: config.handle ?? 0,
             serverName: config.name,
             toolName,
-          },
-          policy,
-        );
-        const result = await this.callTool(config, toolName, args);
-        return {
-          serverHandle: config.handle ?? 0,
-          serverName: config.name,
-          toolName,
-          arguments: args,
-          content: result.content,
-          modelResult: result.rawResult,
-          rawResult: result.rawResult,
-        };
-      } catch {
-        continue;
+            arguments: args,
+            content: result.content,
+            modelResult: result.rawResult,
+            rawResult: result.rawResult,
+          };
+        } catch {
+          continue;
+        }
       }
-    }
 
-    throw new Error('tool_not_found');
+      throw new Error('tool_not_found');
+    });
   }
 
   async preflightTool(

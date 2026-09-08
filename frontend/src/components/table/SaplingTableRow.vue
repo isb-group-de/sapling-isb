@@ -235,6 +235,7 @@
 
 <script lang="ts" setup>
 // #region Imports
+import { openAutomationInspector } from '@/components/automation/automationInspector'
 import { computed } from 'vue'
 import type { SaplingContextMenuTableMenuItem } from '@/composables/context/useSaplingContextMenuTable'
 import type { SaplingTableHeaderItem } from '@/entity/structure'
@@ -346,6 +347,10 @@ const rowLabel = computed(() => {
 
 function onMenuItemClick(menuItem: SaplingContextMenuTableMenuItem) {
   switch (menuItem.type) {
+    case 'automations':
+      openAutomationInspector(props.entityHandle, props.item.handle as string | number)
+      closeMenu()
+      break
     case 'edit':
       requestEdit(props.item)
       break

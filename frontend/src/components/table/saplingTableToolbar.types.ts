@@ -6,6 +6,7 @@ import type { SaplingTableAutoRefreshInterval } from '@/composables/table/useSap
 import type { FavoriteItem } from '@/entity/entity'
 
 export interface SaplingTableToolbarActionsProps {
+  entityHandle?: string
   isMobileTable: boolean
   isDownloadingJson: boolean
   isImportingCsv: boolean

@@ -25,7 +25,7 @@ function normalizeStringArray(value: unknown): string[] | undefined {
 
   if (typeof value === 'string') {
     return value
-      .split(/[;,]/)
+      .split(/[;,\r\n]/)
       .map((entry) => entry.trim())
       .filter(Boolean);
   }

@@ -1,3 +1,4 @@
+import { promptText } from '../api/ai/prompts/ai-prompt-context';
 export function buildGeneratedArticleDescription(
   item: Record<string, unknown>,
 ): string {
@@ -20,31 +21,37 @@ export function buildTicketReferencePrompt(
   const solutionDescription = normalizeString(item.solutionDescription);
 
   return [
-    'Bitte analysiere dieses Sapling-Ticket und finde passende Faelle, Lösungen und Referenzen.',
+    promptText('ticket.text1'),
     '',
-    `Aktuelles Ticket: ${String(handle)}${number ? ` - ${number}` : ''}${title ? ` - ${title}` : ''}`,
-    externalNumber ? `Externe Referenz aus der Liste: ${externalNumber}` : null,
+    promptText('ticket.text2', {
+      value0: String(handle),
+      value1: number ? ` - ${number}` : '',
+      value2: title ? ` - ${title}` : '',
+    }),
+    externalNumber
+      ? promptText('ticket.detail1', { value0: externalNumber })
+      : null,
     problemDescription
-      ? `Bekannte Problembeschreibung aus der Liste: ${problemDescription}`
+      ? promptText('ticket.detail2', { value0: problemDescription })
       : null,
     solutionDescription
-      ? `Bekannte Lösung aus der Liste: ${solutionDescription}`
+      ? promptText('ticket.detail3', { value0: solutionDescription })
       : null,
     '',
     'Arbeitsweise:',
-    '1. Lade das aktuelle Ticket mit generic_get.',
-    `   entityHandle: ticket, handle: ${JSON.stringify(handle)}, relations: ["status", "priority", "type", "category", "source", "contract", "supportTeam", "supportQueue", "creatorCompany", "creatorPerson", "assigneeCompany", "assigneePerson", "salesOpportunity", "events", "effortEstimates"]`,
-    '2. Baue aus Titel, Problem, Lösung, Status, Priorität, Kunde, Vertrag und verknüpften Datensätzen eine Suchanfrage.',
-    '3. Nutze knowledge_search mit entityHandles ["ticket", "knowledgeArticle", "effortEstimate", "effortEstimatePosition", "salesOpportunity"].',
-    '4. Nutze ticket_search ergänzend, wenn Ticketnummern, externe Referenzen oder exakte Begriffe relevant sind.',
-    '5. Wenn ein Vektorindex fehlt, nenne ihn kurz und nutze die verfügbaren Quellen weiter.',
+    promptText('ticket.detail4'),
+    promptText('ticket.text3', { value0: JSON.stringify(handle) }),
+    promptText('ticket.text4'),
+    promptText('ticket.text5'),
+    promptText('ticket.text6'),
+    promptText('ticket.text7'),
     '',
-    'Gib mir kompakt:',
-    '- ähnliche Tickets und deren Lösungen oder Workarounds',
-    '- passende Wissensartikel und wiederverwendbare Lösungsschritte',
-    '- verwandte Schätzungen, Positionen oder Verkaufschancen, falls sie fachlich passen',
-    '- Risiken, offene Rückfragen und nächste sinnvolle Support-Schritte',
-    '- eine kurze Antwort auf: Welche Faelle passen zu diesem Ticket?',
+    promptText('ticket.detail5'),
+    promptText('ticket.detail6'),
+    promptText('ticket.detail7'),
+    promptText('ticket.text8'),
+    promptText('ticket.detail8'),
+    promptText('ticket.detail9'),
   ]
     .filter(
       (line): line is string => typeof line === 'string' && line.length > 0,

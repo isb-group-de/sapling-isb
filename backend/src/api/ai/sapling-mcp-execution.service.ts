@@ -42,7 +42,7 @@ export class SaplingMcpExecutionService {
       (tool) => tool.toolName !== 'web_search' || hasWebSearch,
     ).map((tool) => ({
       toolName: tool.toolName,
-      description: `${tool.description} ${SAPLING_MCP_UNTRUSTED_RESULT_NOTICE}`,
+      description: `${tool.description} ${SAPLING_MCP_UNTRUSTED_RESULT_NOTICE()}`,
       inputSchema: { ...tool.jsonSchema },
     }));
   }

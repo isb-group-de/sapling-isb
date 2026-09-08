@@ -1,7 +1,7 @@
-import { Inject, Injectable, forwardRef } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PersonItem } from '../../entity/PersonItem';
 import { GenericService } from '../generic/generic.service';
-import { AiService } from './ai.service';
+import { AiVectorService } from './ai-vector.service';
 import type { McpToolPolicy } from './mcp-policy.types';
 import { SaplingMcpPermissionService } from './sapling-mcp-permission.service';
 import { SaplingMcpValueService } from './sapling-mcp-value.service';
@@ -18,8 +18,7 @@ export class SaplingMcpSearchToolService {
 
   constructor(
     private readonly genericService: GenericService,
-    @Inject(forwardRef(() => AiService))
-    private readonly aiService: AiService,
+    private readonly vectorService: AiVectorService,
     private readonly permissionService: SaplingMcpPermissionService,
     private readonly values: SaplingMcpValueService,
   ) {}
@@ -82,7 +81,7 @@ export class SaplingMcpSearchToolService {
     );
     const query = this.values.requireStringArg(args.query, 'query');
     const limit = Math.min(this.values.asPositiveNumber(args.limit) ?? 5, 20);
-    const result = await this.aiService.searchVectorDocuments(
+    const result = await this.vectorService.searchVectorDocuments(
       entityHandle,
       query,
       user,
@@ -136,7 +135,7 @@ export class SaplingMcpSearchToolService {
       }
 
       try {
-        const result = await this.aiService.searchVectorDocuments(
+        const result = await this.vectorService.searchVectorDocuments(
           entityHandle,
           query,
           user,

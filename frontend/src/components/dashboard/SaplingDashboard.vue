@@ -173,6 +173,7 @@
       />
 
       <SaplingDialogEdit
+        v-if="dashboardDialog.visible"
         :model-value="dashboardDialog.visible"
         :mode="dashboardDialog.mode"
         :item="dashboardDialog.item"
@@ -186,6 +187,7 @@
       />
 
       <SaplingDialogEdit
+        v-if="dashboardTemplateDialog.visible"
         :model-value="dashboardTemplateDialog.visible"
         :mode="dashboardTemplateDialog.mode"
         :item="dashboardTemplateDialog.item"
@@ -200,6 +202,7 @@
       />
 
       <SaplingDashboardTemplateLoadDialog
+        v-if="dashboardTemplateLoadDialog"
         :model-value="dashboardTemplateLoadDialog"
         :templates="availableDashboardTemplates"
         :busy="applyingDashboardTemplateHandle !== null"
@@ -229,9 +232,11 @@ import SaplingDashboardTabs from '@/components/dashboard/SaplingDashboardTabs.vu
 import SaplingKpiGrid from '@/components/dashboard/SaplingKpiGrid.vue'
 import SaplingKpiTile from '@/components/dashboard/SaplingKpiTile.vue'
 import SaplingDialogDelete from '@/components/dialog/SaplingDialogDelete.vue'
-import SaplingDialogEdit from '@/components/dialog/SaplingDialogEdit.vue'
+const SaplingDialogEdit = defineAsyncComponent(
+  () => import('@/components/dialog/SaplingDialogEdit.vue'),
+)
 import SaplingPageHero from '@/components/common/SaplingPageHero.vue'
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { defineAsyncComponent, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useSaplingViewport } from '@/composables/useSaplingViewport'
 import { SAPLING_SET_DASHBOARD_TUTORIAL_LAYOUT_EVENT } from '@/services/dashboard-tutorial.service'
 // #endregion

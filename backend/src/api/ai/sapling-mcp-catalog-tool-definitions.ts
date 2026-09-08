@@ -7,7 +7,9 @@ export const SAPLING_MCP_CATALOG_TOOL_DEFINITIONS: readonly SaplingMcpToolDefini
   [
     {
       toolName: 'current_person',
-      description: SAPLING_MCP_TOOL_DESCRIPTIONS.currentPerson,
+      get description() {
+        return SAPLING_MCP_TOOL_DESCRIPTIONS.currentPerson;
+      },
       jsonSchema: {
         type: 'object',
         properties: {},
@@ -17,7 +19,9 @@ export const SAPLING_MCP_CATALOG_TOOL_DEFINITIONS: readonly SaplingMcpToolDefini
     },
     {
       toolName: 'entity_catalog',
-      description: SAPLING_MCP_TOOL_DESCRIPTIONS.entityCatalog,
+      get description() {
+        return SAPLING_MCP_TOOL_DESCRIPTIONS.entityCatalog;
+      },
       jsonSchema: {
         type: 'object',
         properties: {},
@@ -27,7 +31,9 @@ export const SAPLING_MCP_CATALOG_TOOL_DEFINITIONS: readonly SaplingMcpToolDefini
     },
     {
       toolName: 'entity_schema',
-      description: SAPLING_MCP_TOOL_DESCRIPTIONS.entitySchema,
+      get description() {
+        return SAPLING_MCP_TOOL_DESCRIPTIONS.entitySchema;
+      },
       jsonSchema: {
         type: 'object',
         properties: {
@@ -47,7 +53,9 @@ export const SAPLING_MCP_CATALOG_TOOL_DEFINITIONS: readonly SaplingMcpToolDefini
     },
     {
       toolName: 'entity_search',
-      description: SAPLING_MCP_TOOL_DESCRIPTIONS.entitySearch,
+      get description() {
+        return SAPLING_MCP_TOOL_DESCRIPTIONS.entitySearch;
+      },
       jsonSchema: {
         type: 'object',
         properties: {
@@ -81,7 +89,9 @@ export const SAPLING_MCP_CATALOG_TOOL_DEFINITIONS: readonly SaplingMcpToolDefini
     },
     {
       toolName: 'generic_list',
-      description: SAPLING_MCP_TOOL_DESCRIPTIONS.genericList,
+      get description() {
+        return SAPLING_MCP_TOOL_DESCRIPTIONS.genericList;
+      },
       jsonSchema: {
         type: 'object',
         properties: {
@@ -150,7 +160,9 @@ export const SAPLING_MCP_CATALOG_TOOL_DEFINITIONS: readonly SaplingMcpToolDefini
     },
     {
       toolName: 'generic_get',
-      description: SAPLING_MCP_TOOL_DESCRIPTIONS.genericGet,
+      get description() {
+        return SAPLING_MCP_TOOL_DESCRIPTIONS.genericGet;
+      },
       jsonSchema: {
         type: 'object',
         properties: {
@@ -184,7 +196,9 @@ export const SAPLING_MCP_CATALOG_TOOL_DEFINITIONS: readonly SaplingMcpToolDefini
     },
     {
       toolName: 'generic_timeline',
-      description: SAPLING_MCP_TOOL_DESCRIPTIONS.genericTimeline,
+      get description() {
+        return SAPLING_MCP_TOOL_DESCRIPTIONS.genericTimeline;
+      },
       jsonSchema: {
         type: 'object',
         properties: {

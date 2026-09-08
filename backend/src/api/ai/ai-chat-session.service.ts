@@ -1,3 +1,5 @@
+import { AiPromptService } from './prompts/ai-prompt.service';
+import { currentPromptManifest } from './prompts/ai-prompt-context';
 import { EntityManager } from '@mikro-orm/core';
 import { Injectable } from '@nestjs/common';
 import { AI_CHAT_RESPONSE_STALE_AFTER_MS } from '../../constants/project.constants';
@@ -101,57 +103,62 @@ export class AiChatSessionService {
     dto: CreateAiChatSessionDto,
     user: PersonItem,
   ): Promise<AiChatSessionItem> {
-    const person = await this.chatPersistence.requireManagedUser(user);
-    const agent = await this.agentPolicy.resolveAgentForChat(
-      dto.agentHandle,
-      null,
-      user,
-    );
-    const agentVersion = await this.agentContext.resolveAgentVersionForChat(
-      agent,
-      dto.agentVersionHandle,
-      null,
-    );
-    const playbook = await this.agentContext.resolveAgentPlaybookForChat(
-      agent,
-      dto.playbookHandle,
-      null,
-    );
-    const runtimeTarget = await this.providerRegistry.resolveRuntimeTarget(
-      dto.providerHandle ??
-        extractProviderHandle(agentVersion?.provider) ??
-        extractProviderHandle(agent?.provider) ??
+    return new AiPromptService(this.em).run(async () => {
+      const person = await this.chatPersistence.requireManagedUser(user);
+      const agent = await this.agentPolicy.resolveAgentForChat(
+        dto.agentHandle,
         null,
-      dto.modelHandle ??
-        extractModelHandle(agentVersion?.model) ??
-        extractModelHandle(agent?.model) ??
+        user,
+      );
+      const agentVersion = await this.agentContext.resolveAgentVersionForChat(
+        agent,
+        dto.agentVersionHandle,
         null,
-    );
-    const session = this.em.create(AiChatSessionItem, {
-      title: dto.title?.trim() || 'New Chat',
-      isArchived: false,
-      provider: runtimeTarget.provider,
-      model: runtimeTarget.model,
-      agent,
-      agentVersion,
-      playbook,
-      contextEntityHandle: dto.contextEntityHandle?.trim() || null,
-      contextRecordHandle:
-        dto.contextRecordHandle != null
-          ? String(dto.contextRecordHandle).trim() || null
-          : null,
-      person,
-      lastMessageAt: null,
-      responseStatus: 'idle',
-      responseActivityAt: null,
-      lastResponseAt: null,
-      lastReadAt: new Date(),
-    });
+      );
+      const playbook = await this.agentContext.resolveAgentPlaybookForChat(
+        agent,
+        dto.playbookHandle,
+        null,
+      );
+      const runtimeTarget = await this.providerRegistry.resolveRuntimeTarget(
+        dto.providerHandle ??
+          extractProviderHandle(agentVersion?.provider) ??
+          extractProviderHandle(agent?.provider) ??
+          null,
+        dto.modelHandle ??
+          extractModelHandle(agentVersion?.model) ??
+          extractModelHandle(agent?.model) ??
+          null,
+      );
+      const session = this.em.create(AiChatSessionItem, {
+        promptManifest:
+          currentPromptManifest() ??
+          (await new AiPromptService(this.em).load()).manifest,
+        title: dto.title?.trim() || 'New Chat',
+        isArchived: false,
+        provider: runtimeTarget.provider,
+        model: runtimeTarget.model,
+        agent,
+        agentVersion,
+        playbook,
+        contextEntityHandle: dto.contextEntityHandle?.trim() || null,
+        contextRecordHandle:
+          dto.contextRecordHandle != null
+            ? String(dto.contextRecordHandle).trim() || null
+            : null,
+        person,
+        lastMessageAt: null,
+        responseStatus: 'idle',
+        responseActivityAt: null,
+        lastResponseAt: null,
+        lastReadAt: new Date(),
+      });
 
-    this.em.persist(session);
-    await this.em.flush();
-    await this.chatPersistence.populateChatSession(session);
-    return session;
+      this.em.persist(session);
+      await this.em.flush();
+      await this.chatPersistence.populateChatSession(session);
+      return session;
+    });
   }
 
   async updateChatSession(

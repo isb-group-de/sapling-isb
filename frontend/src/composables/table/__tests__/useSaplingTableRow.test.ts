@@ -424,3 +424,7 @@ describe('useSaplingTableRow relation dialogs', () => {
     expect(emit).not.toHaveBeenCalledWith('select-row', 0)
   })
 })
+
+vi.mock('@/stores/currentPersonStore', () => ({
+  useCurrentPersonStore: () => ({ isAdministrator: false }),
+}))

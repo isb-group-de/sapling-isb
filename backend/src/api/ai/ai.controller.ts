@@ -168,8 +168,9 @@ export class AiController {
   })
   async prepareMarkdown(
     @Body() body: PrepareAiMarkdownDto,
+    @Req() request: Request,
   ): Promise<PrepareAiMarkdownResponseDto> {
-    return this.aiService.prepareMarkdown(body);
+    return this.aiService.prepareMarkdown(body, request.user as PersonItem);
   }
 
   @Get('chat/agents')

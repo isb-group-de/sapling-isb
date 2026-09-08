@@ -21,7 +21,7 @@
           {{ $t('navigation.inboxNotification') }} · {{ notifications.length }}
         </v-btn>
       </div>
-      <v-text-field
+      <SaplingTextField
         v-model="search"
         class="sapling-inbox-workspace__search"
         :label="$t('inbox.searchEntries')"
@@ -241,6 +241,7 @@
 </template>
 
 <script setup lang="ts">
+import SaplingTextField from '@/components/common/SaplingTextField.vue'
 import { computed, ref, toRef } from 'vue'
 import SaplingInboxSummaryCard from './SaplingInboxSummaryCard.vue'
 import SaplingMarkdownContent from '@/components/common/SaplingMarkdownContent.vue'

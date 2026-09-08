@@ -1,3 +1,4 @@
+import { countOperationQuery } from '../api/common/operation-timing';
 import { Options } from '@mikro-orm/core';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import 'dotenv/config';
@@ -48,6 +49,10 @@ const config: Partial<Options> = {
   pool: {
     min: DB_POOL_MIN,
     max: DB_POOL_MAX,
+  },
+  onQuery: (sql) => {
+    countOperationQuery();
+    return sql;
   },
   debug: DB_LOGGING,
   logger: (message: string) => {

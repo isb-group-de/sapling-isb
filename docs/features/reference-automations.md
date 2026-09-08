@@ -70,3 +70,5 @@ create or send the same action twice.
 Existing subscriptions are backfilled to use their previous entity as source.
 Older seed installations where `sourceEntity` is still empty continue through
 the legacy direct-event path, which avoids duplicate delivery.
+
+The administrator-only rule graph, incoming dependencies and execution evidence are documented in [Automation Inspection](../development/automation-inspection.md).

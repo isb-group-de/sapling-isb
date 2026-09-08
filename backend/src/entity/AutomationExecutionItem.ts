@@ -8,11 +8,31 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { type Rel } from '@mikro-orm/core';
 import { AutomationEventItem } from './AutomationEventItem';
 import { EntityItem } from './EntityItem';
-import { Sapling, SaplingGenericReference } from './global/entity.decorator';
+import {
+  Sapling,
+  SaplingForm,
+  SaplingGenericReference,
+} from './global/entity.decorator';
 
 @Entity()
 @Unique({ properties: ['deduplicationKey'] })
 export class AutomationExecutionItem {
+  @ApiPropertyOptional()
+  @SaplingForm({
+    order: 100,
+    group: 'automationExecution.groupDiagnostics',
+    groupOrder: 600,
+    width: 4,
+    visible: true,
+    tableOrder: 100,
+    tableVisible: false,
+    mobileOrder: 100,
+    mobileVisible: false,
+  })
+  @Sapling(['isReadOnly'])
+  @Property({ type: 'json', nullable: true })
+  ruleSnapshot?: Record<string, unknown> | null;
+
   @ApiProperty()
   @Property({ primary: true, autoincrement: true })
   handle?: number;

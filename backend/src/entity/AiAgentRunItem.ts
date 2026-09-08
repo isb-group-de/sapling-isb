@@ -11,6 +11,53 @@ import { Sapling, SaplingForm } from './global/entity.decorator';
 
 @Entity()
 export class AiAgentRunItem {
+  @SaplingForm({
+    order: 600,
+    group: 'aiAgentRun.groupBasics',
+    groupOrder: 100,
+    width: 2,
+    visible: true,
+    tableOrder: 600,
+    tableVisible: true,
+    mobileOrder: 600,
+    mobileVisible: true,
+  })
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @Property({ length: 128, nullable: true })
+  purpose?: string | null;
+  @ApiPropertyOptional()
+  @SaplingForm({
+    order: 100,
+    group: 'aiAgentRun.groupDiagnostics',
+    groupOrder: 600,
+    width: 4,
+    visible: true,
+    tableOrder: 100,
+    tableVisible: false,
+    mobileOrder: 100,
+    mobileVisible: false,
+  })
+  @Sapling(['isReadOnly'])
+  @Property({ type: 'json', nullable: true })
+  evaluationResult?: Record<string, unknown> | null;
+
+  @ApiPropertyOptional()
+  @SaplingForm({
+    order: 200,
+    group: 'aiAgentRun.groupDiagnostics',
+    groupOrder: 600,
+    width: 4,
+    visible: true,
+    tableOrder: 200,
+    tableVisible: false,
+    mobileOrder: 200,
+    mobileVisible: false,
+  })
+  @Sapling(['isReadOnly'])
+  @Property({ type: 'json', nullable: true })
+  promptManifest?: Record<string, number> | null;
+
   @ApiProperty()
   @Property({ primary: true, autoincrement: true })
   handle?: number;

@@ -92,25 +92,63 @@ describe('MailService facade', () => {
     let saved: Record<string, unknown> | undefined;
     const flush = jest.fn<() => Promise<void>>().mockResolvedValue();
     const em = {
-      findOne: jest.fn(async (_entity: unknown, where: { handle: string }) => ({ handle: where.handle })),
-      nativeUpdate: jest.fn<(...args: unknown[]) => Promise<number>>().mockResolvedValue(1),
-      persist: jest.fn((delivery: Record<string, unknown>) => { saved = delivery; return { flush }; }),
+      findOne: jest.fn(async (_entity: unknown, where: { handle: string }) => ({
+        handle: where.handle,
+      })),
+      nativeUpdate: jest
+        .fn<(...args: unknown[]) => Promise<number>>()
+        .mockResolvedValue(1),
+      persist: jest.fn((delivery: Record<string, unknown>) => {
+        saved = delivery;
+        return { flush };
+      }),
       findOneOrFail: jest.fn(async () => saved),
     };
-    const preview = { signatureHandle: 12, to: ['recipient@example.test'], cc: [], bcc: [],
-      subject: 'Hello', bodyMarkdown: 'Message\n\nRegards, Ada', bodyHtml: '<p>Message</p><p>Regards, Ada</p>', attachmentHandles: [] };
+    const preview = {
+      signatureHandle: 12,
+      to: ['recipient@example.test'],
+      cc: [],
+      bcc: [],
+      subject: 'Hello',
+      bodyMarkdown: 'Message\n\nRegards, Ada',
+      bodyHtml: '<p>Message</p><p>Regards, Ada</p>',
+      attachmentHandles: [],
+    };
     const rendering = { previewEmail: jest.fn(async () => preview) };
-    const service = new MailService(em as never, {} as never, {} as never, { add: jest.fn() } as never,
-      rendering as never, undefined, { resolveRequestedSender: async () => ({ email: 'ada@example.test' }) } as never,
-      undefined, { resolve: async () => ({ company: null, person: null }) } as never);
-    const dto = { entityHandle: 'ticket', signatureMode: 'rotation' as const, signatureHandle: 12 };
+    const service = new MailService(
+      em as never,
+      {} as never,
+      {} as never,
+      { add: jest.fn() } as never,
+      rendering as never,
+      undefined,
+      {
+        resolveRequestedSender: async () => ({ email: 'ada@example.test' }),
+      } as never,
+      undefined,
+      { resolve: async () => ({ company: null, person: null }) } as never,
+    );
+    const dto = {
+      entityHandle: 'ticket',
+      signatureMode: 'rotation' as const,
+      signatureHandle: 12,
+    };
     await service.previewEmail(dto, { handle: 7 } as never);
     expect(em.nativeUpdate).not.toHaveBeenCalled();
     await service.sendEmail(dto, { handle: 7 } as never);
-    expect(saved).toMatchObject({ bodyMarkdown: preview.bodyMarkdown, bodyHtml: preview.bodyHtml,
-      requestPayload: expect.objectContaining({ signatureHandle: 12, signatureMode: 'rotation' }) });
-    expect(em.nativeUpdate).toHaveBeenCalledWith(EmailSignatureItem,
-      { handle: 12, person: { handle: 7 } }, { lastUsedAt: expect.any(Date) });
+    expect(saved).toMatchObject({
+      bodyMarkdown: preview.bodyMarkdown,
+      bodyHtml: preview.bodyHtml,
+      requestPayload: expect.objectContaining({
+        signatureHandle: 12,
+        signatureMode: 'rotation',
+      }),
+    });
+    expect(em.nativeUpdate).toHaveBeenCalledWith(
+      EmailSignatureItem,
+      { handle: 12, person: { handle: 7 } },
+      { lastUsedAt: expect.any(Date) },
+    );
   });
 
   it('persists automation provenance and deduplication data on the delivery', async () => {

@@ -15,6 +15,21 @@ import {
 
 @Entity()
 export class EmailDeliveryItem {
+  @SaplingForm({
+    order: 100,
+    group: 'emailDelivery.groupDiagnostics',
+    groupOrder: 600,
+    width: 4,
+    visible: true,
+    tableOrder: 100,
+    tableVisible: false,
+    mobileOrder: 100,
+    mobileVisible: false,
+  })
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @Property({ type: 'json', nullable: true })
+  ruleSnapshot?: Record<string, unknown> | null;
   @ApiPropertyOptional({
     type: () => EmailDeliveryStatusItem,
     default: 'pending',

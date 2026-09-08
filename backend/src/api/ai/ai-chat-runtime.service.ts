@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { annotatePromptInvocation } from './prompts/ai-prompt-context';
 import type { FunctionCall, Part } from '@google/generative-ai';
 import type { AiChatMessageItem } from '../../entity/AiChatMessageItem';
 import type { AiProviderTypeItem } from '../../entity/AiProviderTypeItem';
@@ -66,6 +67,10 @@ export class AiChatRuntimeService extends AiChatRuntimeOperations {
     systemInstruction: string;
     prompt: string;
   }): Promise<string> {
+    annotatePromptInvocation({
+      provider: options.provider.handle,
+      model: options.model,
+    });
     if (options.providerKind === 'gemini') {
       const generativeModel = createGeminiClient(
         options.provider,
@@ -74,6 +79,9 @@ export class AiChatRuntimeService extends AiChatRuntimeOperations {
         systemInstruction: options.systemInstruction,
       });
       const result = await generativeModel.generateContent(options.prompt);
+      annotatePromptInvocation({
+        usagePayload: { ...result.response.usageMetadata },
+      });
       return result.response.text();
     }
 
@@ -87,6 +95,7 @@ export class AiChatRuntimeService extends AiChatRuntimeOperations {
       ],
     });
     const content = response.choices[0]?.message?.content;
+    annotatePromptInvocation({ usagePayload: { ...response.usage } });
     if (!content) throw new Error('ai.emptyResponse');
     return content;
   }
@@ -244,7 +253,7 @@ export class AiChatRuntimeService extends AiChatRuntimeOperations {
           repeatedCallCounts.set(signature, repeatedCount);
           if (repeatedCount > 2) {
             await callbacks.onTextDelta(
-              AI_GEMINI_REPEATED_TOOL_CALL_ABORT_MESSAGE,
+              AI_GEMINI_REPEATED_TOOL_CALL_ABORT_MESSAGE(),
             );
             return {
               toolCalls: executedToolCalls,
@@ -302,7 +311,7 @@ export class AiChatRuntimeService extends AiChatRuntimeOperations {
         }
         conversation.push({ role: 'user', parts: functionResponses });
       }
-      await callbacks.onTextDelta(AI_GEMINI_TOOL_CALL_LIMIT_MESSAGE);
+      await callbacks.onTextDelta(AI_GEMINI_TOOL_CALL_LIMIT_MESSAGE());
       return {
         toolCalls: executedToolCalls,
         usagePayload: buildUsagePayload(usageEntries),

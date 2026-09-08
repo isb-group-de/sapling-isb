@@ -1,3 +1,5 @@
+import { AiPromptService } from './prompts/ai-prompt.service';
+import { currentPromptManifest } from './prompts/ai-prompt-context';
 import { EntityManager } from '@mikro-orm/core';
 import {
   BadRequestException,
@@ -128,108 +130,126 @@ export class AiChatMediaService {
       );
     }
 
-    const existingSpeechPayload = extractMessageSpeechPayload(
-      message.responsePayload,
+    return new AiPromptService(this.em).runSession(
+      await this.chatPersistence.findOwnedSession(
+        typeof message.session === 'number'
+          ? message.session
+          : message.session.handle!,
+        user,
+      ),
+      async () => {
+        const existingSpeechPayload = extractMessageSpeechPayload(
+          message.responsePayload,
+        );
+        const existingDocumentHandle =
+          existingSpeechPayload?.documentHandle ?? null;
+        const requestedSpeechTarget =
+          dto.providerHandle?.trim() || dto.modelHandle?.trim()
+            ? await this.providerRegistry.resolveSpeechTarget(
+                dto.providerHandle ?? null,
+                dto.modelHandle ?? null,
+              )
+            : null;
+        const requestedSpeechDescriptor = buildAssistantSpeechDescriptor(
+          requestedSpeechTarget,
+        );
+
+        if (existingDocumentHandle != null) {
+          const existingDocument = await this.em.findOne(DocumentItem, {
+            handle: existingDocumentHandle,
+          });
+
+          if (
+            existingDocument &&
+            shouldReuseAssistantSpeech(
+              existingSpeechPayload,
+              requestedSpeechTarget ? requestedSpeechDescriptor : null,
+            )
+          ) {
+            return sanitizeChatMessage(message);
+          }
+        }
+
+        const normalizedSpeechText = normalizeAssistantSpeechText(
+          message.content,
+        );
+        let preparedSpeechText: AiPreparedSpeechText = {
+          text: normalizedSpeechText,
+          sourceTextLength: normalizedSpeechText.length,
+          wasTruncated: false,
+        };
+        let speechDescriptor = buildAssistantSpeechDescriptor(null);
+
+        try {
+          const speechTarget =
+            requestedSpeechTarget ??
+            (await this.providerRegistry.resolveSpeechTarget());
+          speechDescriptor = buildAssistantSpeechDescriptor(speechTarget);
+          preparedSpeechText = prepareAssistantSpeechText(
+            message.content,
+            speechTarget.maxInputLength,
+          );
+
+          if (!preparedSpeechText.text) {
+            throw new BadRequestException('ai.speechInputEmpty');
+          }
+
+          const audioBuffer = await synthesizeOpenAiSpeech({
+            provider: speechTarget.provider,
+            model: speechTarget.model.providerModel,
+            voice: speechTarget.voice,
+            input: preparedSpeechText.text,
+            responseFormat: speechTarget.fileExtension,
+            instructions: String(AI_ASSISTANT_SPEECH_INSTRUCTIONS()),
+            speed: speechTarget.speed,
+          });
+          const document = await this.documentService.uploadDocument(
+            {
+              buffer: audioBuffer,
+              originalname: buildAssistantSpeechFilename(
+                message,
+                speechTarget.fileExtension,
+              ),
+              mimetype: speechTarget.mimeType,
+              size: audioBuffer.length,
+            } as Express.Multer.File,
+            'aiChatMessage',
+            String(message.handle ?? ''),
+            'aiChatAudio',
+            person,
+            buildAssistantSpeechDescription(message),
+          );
+
+          message.responsePayload = withMessageSpeechPayload(
+            message.responsePayload,
+            {
+              ...buildAssistantSpeechPayload(
+                preparedSpeechText,
+                document,
+                speechDescriptor,
+              ),
+              promptManifest: currentPromptManifest(),
+            },
+          );
+          await this.em.flush();
+          return sanitizeChatMessage(message);
+        } catch (error) {
+          message.responsePayload = withMessageSpeechPayload(
+            message.responsePayload,
+            {
+              ...buildAssistantSpeechFailurePayload(
+                preparedSpeechText,
+                error,
+                speechDescriptor,
+              ),
+              promptManifest: currentPromptManifest(),
+            },
+          );
+          await this.em.flush();
+          throw error;
+        }
+      },
     );
-    const existingDocumentHandle =
-      existingSpeechPayload?.documentHandle ?? null;
-    const requestedSpeechTarget =
-      dto.providerHandle?.trim() || dto.modelHandle?.trim()
-        ? await this.providerRegistry.resolveSpeechTarget(
-            dto.providerHandle ?? null,
-            dto.modelHandle ?? null,
-          )
-        : null;
-    const requestedSpeechDescriptor = buildAssistantSpeechDescriptor(
-      requestedSpeechTarget,
-    );
-
-    if (existingDocumentHandle != null) {
-      const existingDocument = await this.em.findOne(DocumentItem, {
-        handle: existingDocumentHandle,
-      });
-
-      if (
-        existingDocument &&
-        shouldReuseAssistantSpeech(
-          existingSpeechPayload,
-          requestedSpeechTarget ? requestedSpeechDescriptor : null,
-        )
-      ) {
-        return sanitizeChatMessage(message);
-      }
-    }
-
-    const normalizedSpeechText = normalizeAssistantSpeechText(message.content);
-    let preparedSpeechText: AiPreparedSpeechText = {
-      text: normalizedSpeechText,
-      sourceTextLength: normalizedSpeechText.length,
-      wasTruncated: false,
-    };
-    let speechDescriptor = buildAssistantSpeechDescriptor(null);
-
-    try {
-      const speechTarget =
-        requestedSpeechTarget ??
-        (await this.providerRegistry.resolveSpeechTarget());
-      speechDescriptor = buildAssistantSpeechDescriptor(speechTarget);
-      preparedSpeechText = prepareAssistantSpeechText(
-        message.content,
-        speechTarget.maxInputLength,
-      );
-
-      if (!preparedSpeechText.text) {
-        throw new BadRequestException('ai.speechInputEmpty');
-      }
-
-      const audioBuffer = await synthesizeOpenAiSpeech({
-        provider: speechTarget.provider,
-        model: speechTarget.model.providerModel,
-        voice: speechTarget.voice,
-        input: preparedSpeechText.text,
-        responseFormat: speechTarget.fileExtension,
-        instructions: String(AI_ASSISTANT_SPEECH_INSTRUCTIONS),
-        speed: speechTarget.speed,
-      });
-      const document = await this.documentService.uploadDocument(
-        {
-          buffer: audioBuffer,
-          originalname: buildAssistantSpeechFilename(
-            message,
-            speechTarget.fileExtension,
-          ),
-          mimetype: speechTarget.mimeType,
-          size: audioBuffer.length,
-        } as Express.Multer.File,
-        'aiChatMessage',
-        String(message.handle ?? ''),
-        'aiChatAudio',
-        person,
-        buildAssistantSpeechDescription(message),
-      );
-
-      message.responsePayload = withMessageSpeechPayload(
-        message.responsePayload,
-        buildAssistantSpeechPayload(
-          preparedSpeechText,
-          document,
-          speechDescriptor,
-        ),
-      );
-      await this.em.flush();
-      return sanitizeChatMessage(message);
-    } catch (error) {
-      message.responsePayload = withMessageSpeechPayload(
-        message.responsePayload,
-        buildAssistantSpeechFailurePayload(
-          preparedSpeechText,
-          error,
-          speechDescriptor,
-        ),
-      );
-      await this.em.flush();
-      throw error;
-    }
   }
 
   async createChatTranscription(
@@ -262,6 +282,7 @@ export class AiChatMediaService {
       transcript: null,
       detectedLanguage: null,
       requestPayload: {
+        promptManifest: currentPromptManifest(),
         routeName: dto.routeName ?? null,
         url: dto.url ?? null,
         pageTitle: dto.pageTitle ?? null,

@@ -34,7 +34,6 @@ vi.mock('@/composables/system/useSaplingMessageCenter', () => ({
   useSaplingMessageCenter: () => ({ pushMessage: vi.fn() }),
 }))
 import SaplingAccountEmailSignatures from '../SaplingAccountEmailSignatures.vue'
-import SaplingTextField from '@/components/common/SaplingTextField.vue'
 import SaplingFieldMarkdown from '@/components/dialog/fields/SaplingFieldMarkdown.vue'
 import SaplingMailSignatureSelection from '@/components/dialog/mail/SaplingMailSignatureSelection.vue'
 
@@ -77,11 +76,8 @@ describe('profile email signatures', () => {
       .findAll('button')
       .find((button) => button.text() === 'mail.addSignature')!
       .trigger('click')
-    ;(wrapper.findComponent(SaplingTextField) as any).vm.$emit('update:modelValue', 'Persönlich')
-    ;(wrapper.findComponent(SaplingFieldMarkdown) as any).vm.$emit(
-      'update:modelValue',
-      'Beste Grüße',
-    )
+    wrapper.findComponent({ name: 'SaplingTextField' }).vm.$emit('update:modelValue', 'Persönlich')
+    wrapper.findComponent(SaplingFieldMarkdown).vm.$emit('update:modelValue', 'Beste Grüße')
     await flushPromises()
     await wrapper.get('form').trigger('submit')
     await flushPromises()

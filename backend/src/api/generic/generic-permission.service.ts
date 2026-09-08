@@ -1,4 +1,5 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
+import { assertPromptRead } from '../ai/prompts/ai-prompt-mutation-policy';
 import { hasSaplingOption } from '../../entity/global/entity.decorator';
 import { ENTITY_MAP } from '../../entity/global/entity.registry';
 import { PersonItem } from '../../entity/PersonItem';
@@ -73,6 +74,7 @@ export class GenericPermissionService {
     entityHandle: string,
     currentUser: PersonItem | null | undefined,
   ): void {
+    assertPromptRead(entityHandle, currentUser);
     if (!currentUser) {
       throw new ForbiddenException('global.permissionDenied');
     }
@@ -92,6 +94,7 @@ export class GenericPermissionService {
     currentUser: PersonItem | null | undefined,
     entityHandle: string,
   ): object {
+    assertPromptRead(entityHandle, currentUser);
     if (!currentUser) {
       if (isPublicGenericReadEntity(entityHandle)) {
         return where;

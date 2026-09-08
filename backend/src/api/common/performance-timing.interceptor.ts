@@ -1,3 +1,4 @@
+import { operationTiming } from './operation-timing';
 import {
   CallHandler,
   ExecutionContext,
@@ -13,13 +14,30 @@ export class PerformanceTimingInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const startedAt = performance.now();
     const response = context.switchToHttp().getResponse<Response>();
-    return next.handle().pipe(
-      tap(() => {
-        appendServerTiming(
-          response,
-          `handler;dur=${(performance.now() - startedAt).toFixed(1)}`,
-        );
-      }),
+    const scope = { phases: {}, queryCount: 0 };
+    return new Observable((subscriber) =>
+      operationTiming.run(scope, () =>
+        next
+          .handle()
+          .pipe(
+            tap(() => {
+              for (const [phase, duration] of Object.entries(scope.phases))
+                appendServerTiming(
+                  response,
+                  `${phase};dur=${Number(duration).toFixed(1)}`,
+                );
+              appendServerTiming(
+                response,
+                `db-queries;desc="${scope.queryCount}"`,
+              );
+              appendServerTiming(
+                response,
+                `handler;dur=${(performance.now() - startedAt).toFixed(1)}`,
+              );
+            }),
+          )
+          .subscribe(subscriber),
+      ),
     );
   }
 }

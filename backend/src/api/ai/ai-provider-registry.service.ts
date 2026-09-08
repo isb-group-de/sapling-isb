@@ -22,6 +22,20 @@ import type {
 export class AiProviderRegistryService {
   constructor(private readonly em: EntityManager) {}
 
+  async resolveMarkdownRuntimeTarget(
+    providerHandle?: string | null,
+    modelHandle?: string | null,
+  ) {
+    if (providerHandle || modelHandle)
+      return this.resolveRuntimeTarget(providerHandle, modelHandle);
+    const model = await this.em.findOne(
+      AiProviderModelItem,
+      { isDefaultMarkdown: true, isActive: true, provider: { isActive: true } },
+      { orderBy: { sortOrder: 'ASC', handle: 'ASC' } },
+    );
+    return this.resolveRuntimeTarget(undefined, model?.handle);
+  }
+
   async listActiveProviders(
     capability: AiProviderCapability = 'chat',
     configuredOnly = false,

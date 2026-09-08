@@ -1,5 +1,6 @@
 <template>
   <SaplingDialogDelete
+    v-if="deleteDialog.visible"
     persistent
     :model-value="deleteDialog.visible"
     :item="deleteDialog.item"
@@ -10,6 +11,7 @@
   />
 
   <SaplingDialogBulkUpdate
+    v-if="bulkUpdateDialog.visible"
     :model-value="bulkUpdateDialog.visible"
     :entity-handle="entityHandle"
     :templates="entityTemplates"
@@ -21,6 +23,7 @@
   />
 
   <SaplingDialogDelete
+    v-if="bulkDeleteDialog.visible"
     persistent
     :model-value="bulkDeleteDialog.visible"
     :item="bulkDeleteDialog.items"
@@ -31,6 +34,7 @@
   />
 
   <SaplingDialogEdit
+    v-if="editDialog.visible"
     :model-value="editDialog.visible"
     :mode="editDialog.mode"
     :item="editDialog.item"
@@ -48,6 +52,7 @@
   />
 
   <SaplingDialogUpdateConflict
+    v-if="updateConflictDialog.visible"
     :model-value="updateConflictDialog.visible"
     :conflict="updateConflictDialog.conflict"
     :entity-handle="entityHandle"
@@ -104,6 +109,7 @@
 </template>
 
 <script lang="ts" setup>
+import { defineAsyncComponent } from 'vue'
 import { computed } from 'vue'
 import type {
   EditDialogOptions,
@@ -122,9 +128,15 @@ import type {
 } from '@/composables/context/useSaplingContextMenuTable'
 import SaplingContextMenuTable from '@/components/context/SaplingContextMenuTable.vue'
 import SaplingDialogDelete from '@/components/dialog/SaplingDialogDelete.vue'
-import SaplingDialogEdit from '@/components/dialog/SaplingDialogEdit.vue'
-import SaplingDialogUpdateConflict from '@/components/dialog/SaplingDialogUpdateConflict.vue'
-import SaplingDialogBulkUpdate from '@/components/dialog/SaplingDialogBulkUpdate.vue'
+const SaplingDialogEdit = defineAsyncComponent(
+  () => import('@/components/dialog/SaplingDialogEdit.vue'),
+)
+const SaplingDialogUpdateConflict = defineAsyncComponent(
+  () => import('@/components/dialog/SaplingDialogUpdateConflict.vue'),
+)
+const SaplingDialogBulkUpdate = defineAsyncComponent(
+  () => import('@/components/dialog/SaplingDialogBulkUpdate.vue'),
+)
 import SaplingExternalRecordLinksDialog from '@/components/import/SaplingExternalRecordLinksDialog.vue'
 import SaplingTableRowInformation from './SaplingTableRowInformation.vue'
 import SaplingTableRowUpload from './SaplingTableRowUpload.vue'

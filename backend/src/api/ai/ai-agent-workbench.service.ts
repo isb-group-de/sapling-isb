@@ -149,6 +149,8 @@ export class AiAgentWorkbenchService {
     const evaluation = this.em.create(AiAgentEvaluationItem, {
       agent,
       agentVersion: version,
+      expectations: dto.expectations ?? null,
+      toolFixtures: dto.toolFixtures ?? null,
       title: dto.title.trim(),
       prompt: dto.prompt.trim(),
       expectedCriteria: dto.expectedCriteria?.trim() || null,

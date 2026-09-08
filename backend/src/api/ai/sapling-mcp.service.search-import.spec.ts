@@ -68,8 +68,8 @@ describe('SaplingMcpService search and import tools', () => {
     });
   });
 
-  it('forwards semantic_search to AiService with normalized limits', async () => {
-    const aiService = {
+  it('forwards semantic_search to AiVectorService with normalized limits', async () => {
+    const vectorService = {
       searchVectorDocuments: jest
         .fn<(...args: unknown[]) => Promise<unknown>>()
         .mockResolvedValue({
@@ -78,7 +78,7 @@ describe('SaplingMcpService search and import tools', () => {
           results: [],
         }),
     };
-    const service = createService({ aiService });
+    const service = createService({ vectorService });
     const user = { handle: 1 } as never;
 
     const result = await service.executeTool(
@@ -91,7 +91,7 @@ describe('SaplingMcpService search and import tools', () => {
       user,
     );
 
-    expect(aiService.searchVectorDocuments).toHaveBeenCalledWith(
+    expect(vectorService.searchVectorDocuments).toHaveBeenCalledWith(
       'effortEstimate',
       'Anforderungen fuer Portal-Synchronisation',
       user,
@@ -105,7 +105,7 @@ describe('SaplingMcpService search and import tools', () => {
   });
 
   it('combines readable sources for knowledge_search', async () => {
-    const aiService = {
+    const vectorService = {
       searchVectorDocuments: jest
         .fn<(...args: unknown[]) => Promise<unknown>>()
         .mockImplementation((entityHandle: unknown) =>
@@ -128,7 +128,7 @@ describe('SaplingMcpService search and import tools', () => {
         .fn<(...args: unknown[]) => Promise<void>>()
         .mockResolvedValue(undefined),
     };
-    const service = createService({ aiService, permissionService });
+    const service = createService({ vectorService, permissionService });
     const user = { handle: 1 } as never;
 
     const result = await service.executeTool(
@@ -146,13 +146,13 @@ describe('SaplingMcpService search and import tools', () => {
       'knowledgeArticle',
       'allowRead',
     );
-    expect(aiService.searchVectorDocuments).toHaveBeenCalledWith(
+    expect(vectorService.searchVectorDocuments).toHaveBeenCalledWith(
       'knowledgeArticle',
       'Sage startet nach Update nicht',
       user,
       5,
     );
-    expect(aiService.searchVectorDocuments).toHaveBeenCalledWith(
+    expect(vectorService.searchVectorDocuments).toHaveBeenCalledWith(
       'ticket',
       'Sage startet nach Update nicht',
       user,

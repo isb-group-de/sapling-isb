@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
-import { Observable, of } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
+import { UnrecoverableError } from 'bullmq';
 import { WebhookDeliveryExecutor } from './webhook-delivery.executor';
 
 jest.mock('../../entity/WebhookDeliveryItem', () => ({
@@ -35,6 +36,47 @@ type PostResponse = {
 };
 
 describe('WebhookDeliveryExecutor', () => {
+  it.each([403, 408, 429, 500])(
+    'preserves retry classification and failure evidence for HTTP %i',
+    async (status) => {
+      const delivery = {
+        payload: {},
+        subscription: {
+          url: 'https://example.invalid/webhook',
+          signingSecret: '',
+          payloadType: { handle: 'item' },
+          type: { handle: 'afterInsert' },
+          method: { handle: 'post' },
+          authenticationType: { handle: 'none' },
+        },
+      };
+      const failure = Object.assign(new Error('provider rejected request'), {
+        response: { status },
+      });
+      const em = {
+        findOne: jest
+          .fn<() => Promise<unknown>>()
+          .mockResolvedValueOnce(delivery)
+          .mockResolvedValueOnce({ handle: 'failed' }),
+        flush: jest.fn<() => Promise<void>>().mockResolvedValue(undefined),
+      };
+      const executor = new WebhookDeliveryExecutor(
+        { fork: () => em } as never,
+        { post: () => throwError(() => failure) } as never,
+      );
+      if (status === 403)
+        await expect(executor.execute(42, 1)).rejects.toBeInstanceOf(
+          UnrecoverableError,
+        );
+      else await expect(executor.execute(42, 1)).rejects.toBe(failure);
+      expect(delivery).toMatchObject({
+        status: { handle: 'failed' },
+        responseStatusCode: status,
+        attemptCount: 1,
+      });
+      expect(em.flush).toHaveBeenCalledTimes(1);
+    },
+  );
   beforeEach(() => {
     jest.clearAllMocks();
   });

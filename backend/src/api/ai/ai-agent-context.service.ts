@@ -1,3 +1,4 @@
+import { promptText } from './prompts/ai-prompt-context';
 import { EntityManager } from '@mikro-orm/core';
 import {
   BadRequestException,
@@ -322,12 +323,17 @@ export class AiAgentContextService {
       ? version.promptMarkdown.trim()
       : agent.promptMarkdown?.trim();
     const lines = [
-      `You are currently acting as the Sapling AI agent "${agent.title}".`,
+      promptText('agent-context.fragment1', { value0: agent.title }),
       agent.description?.trim()
-        ? `Agent description: ${agent.description.trim()}`
+        ? promptText('agent-context.fragment2', {
+            value0: agent.description.trim(),
+          })
         : null,
       version
-        ? `Agent version: v${version.version} (${version.status}).`
+        ? promptText('agent-context.fragment3', {
+            value0: version.version,
+            value1: version.status,
+          })
         : null,
       promptMarkdown || null,
       this.buildRuntimeScopeInstruction(agent, version),
@@ -335,8 +341,8 @@ export class AiAgentContextService {
       memories.length > 0 ? this.buildMemoryInstruction(memories) : null,
       contextInstruction,
       agent.mutationMode === 'readOnly'
-        ? 'This agent is read-only. Do not create, update, or delete Sapling records.'
-        : 'When the user clearly requests a create, update, delete, or import execution, call the matching mutating tool directly and let Sapling create the confirmation dialog. Do not ask an extra text confirmation before preparing the tool action unless the target record or required payload is ambiguous. Treat the action as executed only after Sapling reports user confirmation.',
+        ? promptText('agent-context.fragment4')
+        : promptText('agent-context.text1'),
     ].filter((line): line is string => !!line);
 
     return lines.join('\n\n');
@@ -362,10 +368,14 @@ export class AiAgentContextService {
 
     return [
       entityHandles.length > 0
-        ? `Allowed Sapling entities: ${entityHandles.join(', ')}.`
+        ? promptText('agent-context.fragment5', {
+            value0: entityHandles.join(', '),
+          })
         : null,
       knowledgeHandles.length > 0
-        ? `Allowed knowledge search sources: ${knowledgeHandles.join(', ')}.`
+        ? promptText('agent-context.fragment6', {
+            value0: knowledgeHandles.join(', '),
+          })
         : null,
     ]
       .filter((line): line is string => !!line)
@@ -378,13 +388,17 @@ export class AiAgentContextService {
       .join('\n');
 
     return [
-      `Selected playbook: ${playbook.title}.`,
+      promptText('agent-context.fragment7', { value0: playbook.title }),
       playbook.description?.trim()
-        ? `Playbook description: ${playbook.description.trim()}`
+        ? promptText('agent-context.fragment8', {
+            value0: playbook.description.trim(),
+          })
         : null,
-      steps ? `Follow these steps:\n${steps}` : null,
+      steps ? promptText('agent-context.fragment9', { value0: steps }) : null,
       playbook.expectedOutput?.trim()
-        ? `Expected output: ${playbook.expectedOutput.trim()}`
+        ? promptText('agent-context.fragment10', {
+            value0: playbook.expectedOutput.trim(),
+          })
         : null,
     ]
       .filter((line): line is string => !!line)
@@ -397,7 +411,9 @@ export class AiAgentContextService {
         `- [${memory.type}] ${memory.title}: ${memory.contentMarkdown.trim()}`,
     );
 
-    return `Relevant admin-managed agent memory:\n${memoryLines.join('\n')}`;
+    return promptText('agent-context.fragment11', {
+      value0: memoryLines.join('\n'),
+    });
   }
 
   private async buildContextInstruction(
@@ -428,15 +444,17 @@ export class AiAgentContextService {
         policy,
       );
 
-      return `Current record context (${entityHandle} ${recordHandle}):\n${JSON.stringify(
-        result.modelResult ?? result.rawResult,
-        null,
-        2,
-      )}`;
+      return promptText('agent-context.text2', {
+        value0: entityHandle,
+        value1: recordHandle,
+        value2: JSON.stringify(result.modelResult ?? result.rawResult, null, 2),
+      });
     } catch (error) {
-      return `Current record context was requested for ${entityHandle} ${recordHandle}, but Sapling could not load it with the current user's permissions. Error: ${
-        error instanceof Error ? error.message : 'unknown'
-      }`;
+      return promptText('agent-context.text3', {
+        value0: entityHandle,
+        value1: recordHandle,
+        value2: error instanceof Error ? error.message : 'unknown',
+      });
     }
   }
 

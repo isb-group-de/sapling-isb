@@ -1,3 +1,4 @@
+import { openAutomationInspector } from '@/components/automation/automationInspector'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import type { EntityTemplate } from '@/entity/structure'
@@ -212,6 +213,8 @@ export function useSaplingTableContextActions({
     mailAction,
   }: SaplingContextMenuTableActionPayload) {
     const actions: Partial<Record<SaplingContextMenuTableActionPayload['type'], () => void>> = {
+      automations: () =>
+        openAutomationInspector(props.entityHandle, item.handle as string | number),
       edit: () => void editItem(item),
       changeLog: () => openChangeLog(item),
       show: () => void showItem(item),

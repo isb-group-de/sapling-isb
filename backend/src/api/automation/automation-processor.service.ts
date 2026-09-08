@@ -1,3 +1,8 @@
+import { loadAutomationRules } from './automation-rule-loader';
+import {
+  automationRuleView,
+  type AutomationRuleView,
+} from './automation-graph';
 import {
   EntityManager,
   RequestContext,
@@ -28,6 +33,7 @@ export class AutomationProcessorService implements OnModuleInit {
   private static readonly MAX_ATTEMPTS = 5;
   private static readonly RETRY_DELAY_MS = 30_000;
   private running = false;
+  private ruleSnapshots = new Map<string, AutomationRuleView>();
   constructor(
     private readonly em: EntityManager,
     private readonly events: AutomationEventService,
@@ -159,54 +165,19 @@ export class AutomationProcessorService implements OnModuleInit {
   }
 
   private async processEvent(event: AutomationEventItem): Promise<void> {
-    const source = event.sourceEntity.handle;
-    const inboxRules = await this.em.find(
-      InboxSubscriptionItem,
-      {
-        isActive: true,
-        sourceEntity: { handle: source },
-        type: { handle: event.operation },
-      },
-      {
-        populate: ['sourceEntity', 'entity', 'template', 'type'],
-        orderBy: { priority: 'DESC', handle: 'ASC' },
-      },
-    );
-    const fieldRules = await this.em.find(
-      FieldAutomationItem,
-      {
-        isActive: true,
-        sourceEntity: { handle: source },
-        operation: { handle: event.operation },
-      },
-      {
-        populate: ['sourceEntity', 'targetEntity', 'operation'],
-        orderBy: { priority: 'DESC', handle: 'ASC' },
-      },
-    );
-    const teamsRules = await this.em.find(
-      TeamsSubscriptionItem,
-      {
-        isActive: true,
-        sourceEntity: { handle: source },
-        type: { handle: event.operation },
-      },
-      {
-        populate: ['sourceEntity', 'entity', 'template', 'type'],
-        orderBy: { priority: 'DESC', handle: 'ASC' },
-      },
-    );
-    const webhookRules = await this.em.find(
-      WebhookSubscriptionItem,
-      {
-        isActive: true,
-        sourceEntity: { handle: source },
-        type: { handle: event.operation },
-      },
-      {
-        populate: ['sourceEntity', 'entity', 'type'],
-        orderBy: { priority: 'DESC', handle: 'ASC' },
-      },
+    const { inboxRules, fieldRules, teamsRules, webhookRules } =
+      await loadAutomationRules(
+        this.em,
+        event.sourceEntity.handle,
+        event.operation,
+      );
+    this.ruleSnapshots = new Map(
+      [
+        ...inboxRules.map((rule) => automationRuleView(rule, 'inbox')),
+        ...fieldRules.map((rule) => automationRuleView(rule, 'field')),
+        ...teamsRules.map((rule) => automationRuleView(rule, 'teams')),
+        ...webhookRules.map((rule) => automationRuleView(rule, 'webhook')),
+      ].map((rule) => [rule.id, rule]),
     );
     const claimedFields = new Map<string, number>();
     for (const rule of inboxRules) await this.processInboxRule(event, rule);
@@ -603,6 +574,8 @@ export class AutomationProcessorService implements OnModuleInit {
     message?: string,
   ): Promise<void> {
     const execution = this.em.create(AutomationExecutionItem, {
+      ruleSnapshot:
+        this.ruleSnapshots.get(`${actionType}:${ruleHandle}`) ?? null,
       event,
       deduplicationKey,
       actionType,

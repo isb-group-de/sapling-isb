@@ -1,3 +1,4 @@
+import { useCurrentPersonStore } from '@/stores/currentPersonStore'
 // #region Imports
 import { computed, ref, watch } from 'vue'
 import { useGenericStore } from '@/stores/genericStore'
@@ -151,10 +152,12 @@ export function useSaplingTableRow(props: UseSaplingTableRowProps, emit: UseSapl
       )
     })
   })
+  const automationPerson = useCurrentPersonStore()
   const rowMenuItems = computed<SaplingContextMenuTableMenuEntry[]>(() =>
     !menuActive.value
       ? []
       : getSaplingContextMenuTableItems({
+          canAutomations: automationPerson.isAdministrator,
           canChangeLog: props.item?.handle != null,
           canCustomer360:
             props.item?.handle != null && ['company', 'person'].includes(props.entityHandle),

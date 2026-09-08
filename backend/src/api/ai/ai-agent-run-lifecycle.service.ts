@@ -1,3 +1,4 @@
+import { currentPromptManifest } from './prompts/ai-prompt-context';
 import { Injectable } from '@nestjs/common';
 import { EntityManager } from '@mikro-orm/core';
 import { AiAgentItem } from '../../entity/AiAgentItem';
@@ -44,6 +45,7 @@ export class AiAgentRunLifecycleService {
 
   async createRun(input: CreateAiAgentRunInput): Promise<AiAgentRunItem> {
     const run = this.em.create(AiAgentRunItem, {
+      promptManifest: currentPromptManifest(),
       session: input.session,
       message: input.message,
       person: input.person,

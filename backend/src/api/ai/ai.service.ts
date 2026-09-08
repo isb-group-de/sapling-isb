@@ -1,3 +1,6 @@
+import { promptText } from './prompts/ai-prompt-context';
+import { measureOperationPhase } from '../common/operation-timing';
+import { AiPromptService } from './prompts/ai-prompt.service';
 import { EntityManager } from '@mikro-orm/core';
 import {
   BadRequestException,
@@ -198,32 +201,48 @@ export class AiService {
 
   async prepareMarkdown(
     dto: PrepareAiMarkdownDto,
+    user?: PersonItem,
   ): Promise<PrepareAiMarkdownResponseDto> {
-    const content = dto.content;
+    const prompts = new AiPromptService(this.em);
+    const execute = async () => {
+      const content = dto.content;
 
-    if (!content.trim()) {
-      throw new BadRequestException('ai.markdownContentRequired');
-    }
+      if (!content.trim()) {
+        throw new BadRequestException('ai.markdownContentRequired');
+      }
 
-    const runtimeTarget = await this.providerRegistry.resolveRuntimeTarget(
-      dto.providerHandle,
-      dto.modelHandle,
-    );
-    const revisedContent = await this.chatRuntime.completeText({
-      provider: runtimeTarget.provider,
-      providerKind: runtimeTarget.providerKind,
-      model: runtimeTarget.model.providerModel,
-      systemInstruction: AI_MARKDOWN_PREPARATION_INSTRUCTIONS,
-      prompt: `Revise the following source Markdown according to the system instructions.\n\n<source_markdown>\n${content}\n</source_markdown>`,
-    });
+      const runtimeTarget = await measureOperationPhase(
+        'preparation',
+        async () =>
+          this.providerRegistry.resolveMarkdownRuntimeTarget(
+            dto.providerHandle,
+            dto.modelHandle,
+          ),
+      );
+      const revisedContent = await measureOperationPhase('provider', async () =>
+        this.chatRuntime.completeText({
+          provider: runtimeTarget.provider,
+          providerKind: runtimeTarget.providerKind,
+          model: runtimeTarget.model.providerModel,
+          systemInstruction: AI_MARKDOWN_PREPARATION_INSTRUCTIONS(),
+          prompt: promptText('text-assistance.text1', { value0: content }),
+        }),
+      );
 
-    const normalizedContent = this.normalizePreparedMarkdown(revisedContent);
+      const normalizedContent = await measureOperationPhase(
+        'postprocessing',
+        () => this.normalizePreparedMarkdown(revisedContent),
+      );
 
-    if (!normalizedContent) {
-      throw new Error('ai.emptyResponse');
-    }
+      if (!normalizedContent) {
+        throw new Error('ai.emptyResponse');
+      }
 
-    return { content: normalizedContent };
+      return { content: normalizedContent };
+    };
+    return user
+      ? prompts.record('markdown', user, execute)
+      : prompts.run(execute);
   }
 
   async createChatAttachment(

@@ -1,3 +1,4 @@
+import { AiPromptService } from './prompts/ai-prompt.service';
 import { EntityManager } from '@mikro-orm/core';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { AiChatMessageItem } from '../../entity/AiChatMessageItem';
@@ -77,106 +78,108 @@ export class AiChatMessageService {
           user,
         );
 
-    const runtimeContext = await this.agentContext.resolveAgentRuntimeContext(
-      dto.agentHandle,
-      dto.agentVersionHandle,
-      dto.playbookHandle,
-      dto.contextEntityHandle ?? session.contextEntityHandle ?? null,
-      dto.contextRecordHandle ?? session.contextRecordHandle ?? null,
-      session,
-      user,
-    );
-    const runtimeTarget = await this.providerRegistry.resolveRuntimeTarget(
-      dto.providerHandle ??
-        extractProviderHandle(runtimeContext.version?.provider) ??
-        extractProviderHandle(runtimeContext.agent?.provider) ??
-        extractProviderHandle(session.provider),
-      dto.modelHandle ??
-        extractModelHandle(runtimeContext.version?.model) ??
-        extractModelHandle(runtimeContext.agent?.model) ??
-        extractModelHandle(session.model),
-    );
-    const clientTimeContext = extractClientTimeContext(dto);
-    const attachments =
-      await this.chatPersistence.resolveChatAttachmentsForMessage(
-        dto.attachmentHandles,
+    return new AiPromptService(this.em).runSession(session, async () => {
+      const runtimeContext = await this.agentContext.resolveAgentRuntimeContext(
+        dto.agentHandle,
+        dto.agentVersionHandle,
+        dto.playbookHandle,
+        dto.contextEntityHandle ?? session.contextEntityHandle ?? null,
+        dto.contextRecordHandle ?? session.contextRecordHandle ?? null,
         session,
         user,
       );
-    const attachmentContext =
-      this.chatPersistence.buildChatAttachmentContext(attachments);
-    const latestMessage = await this.em.find(
-      AiChatMessageItem,
-      { session: { handle: session.handle } },
-      { orderBy: { sequence: 'DESC' }, limit: 1 },
-    );
-    const contextPayload = this.chatPersistence.mergeMessageContextPayload(
-      dto.contextPayload,
-      attachmentContext,
-    );
-    const message = this.em.create(AiChatMessageItem, {
-      session,
-      person,
-      role: 'user',
-      status: 'persisted',
-      sequence: (latestMessage[0]?.sequence ?? 0) + 1,
-      content: dto.content,
-      contextPayload,
-      provider: runtimeTarget.provider.handle,
-      model: runtimeTarget.model.providerModel,
-      url: dto.url ?? null,
-      routeName: dto.routeName ?? null,
-      pageTitle: dto.pageTitle ?? null,
-      requestPayload: {
-        routeName: dto.routeName ?? null,
-        url: dto.url ?? null,
-        pageTitle: dto.pageTitle ?? null,
-        transcriptionHandle: dto.transcriptionHandle ?? null,
-        attachmentHandles: attachments.map(
-          (attachment) => attachment.handle ?? 0,
-        ),
-        importAttachments: attachmentContext,
-        clientCurrentDateTime:
-          clientTimeContext?.currentDate?.toISOString() ?? null,
-        clientTimeZone: clientTimeContext?.timeZone ?? null,
-        clientLocale: clientTimeContext?.locale ?? null,
-        clientUtcOffsetMinutes: clientTimeContext?.utcOffsetMinutes ?? null,
+      const runtimeTarget = await this.providerRegistry.resolveRuntimeTarget(
+        dto.providerHandle ??
+          extractProviderHandle(runtimeContext.version?.provider) ??
+          extractProviderHandle(runtimeContext.agent?.provider) ??
+          extractProviderHandle(session.provider),
+        dto.modelHandle ??
+          extractModelHandle(runtimeContext.version?.model) ??
+          extractModelHandle(runtimeContext.agent?.model) ??
+          extractModelHandle(session.model),
+      );
+      const clientTimeContext = extractClientTimeContext(dto);
+      const attachments =
+        await this.chatPersistence.resolveChatAttachmentsForMessage(
+          dto.attachmentHandles,
+          session,
+          user,
+        );
+      const attachmentContext =
+        this.chatPersistence.buildChatAttachmentContext(attachments);
+      const latestMessage = await this.em.find(
+        AiChatMessageItem,
+        { session: { handle: session.handle } },
+        { orderBy: { sequence: 'DESC' }, limit: 1 },
+      );
+      const contextPayload = this.chatPersistence.mergeMessageContextPayload(
+        dto.contextPayload,
+        attachmentContext,
+      );
+      const message = this.em.create(AiChatMessageItem, {
+        session,
+        person,
+        role: 'user',
+        status: 'persisted',
+        sequence: (latestMessage[0]?.sequence ?? 0) + 1,
+        content: dto.content,
         contextPayload,
-      },
+        provider: runtimeTarget.provider.handle,
+        model: runtimeTarget.model.providerModel,
+        url: dto.url ?? null,
+        routeName: dto.routeName ?? null,
+        pageTitle: dto.pageTitle ?? null,
+        requestPayload: {
+          routeName: dto.routeName ?? null,
+          url: dto.url ?? null,
+          pageTitle: dto.pageTitle ?? null,
+          transcriptionHandle: dto.transcriptionHandle ?? null,
+          attachmentHandles: attachments.map(
+            (attachment) => attachment.handle ?? 0,
+          ),
+          importAttachments: attachmentContext,
+          clientCurrentDateTime:
+            clientTimeContext?.currentDate?.toISOString() ?? null,
+          clientTimeZone: clientTimeContext?.timeZone ?? null,
+          clientLocale: clientTimeContext?.locale ?? null,
+          clientUtcOffsetMinutes: clientTimeContext?.utcOffsetMinutes ?? null,
+          contextPayload,
+        },
+      });
+
+      session.lastMessageAt = new Date();
+      session.provider = runtimeTarget.provider;
+      session.model = runtimeTarget.model;
+      session.agent = runtimeContext.agent;
+      session.agentVersion = runtimeContext.version;
+      session.playbook = runtimeContext.playbook;
+      session.contextEntityHandle =
+        dto.contextEntityHandle ?? session.contextEntityHandle ?? null;
+      session.contextRecordHandle =
+        dto.contextRecordHandle ?? session.contextRecordHandle ?? null;
+      if (this.chatSession.isUntitledSessionTitle(session.title)) {
+        session.title = this.chatSession.buildSessionTitle(dto.content);
+      }
+
+      this.em.persist(message);
+      await this.em.flush();
+      await this.chatPersistence.linkAttachmentsToMessage(
+        attachments,
+        session,
+        message,
+      );
+      await this.chatPersistence.linkTranscriptionToMessage(
+        dto.transcriptionHandle,
+        session,
+        message,
+        user,
+      );
+      await this.chatPersistence.populateChatSession(session);
+      return {
+        session: sanitizeChatSession(session),
+        message: sanitizeChatMessage(message),
+      };
     });
-
-    session.lastMessageAt = new Date();
-    session.provider = runtimeTarget.provider;
-    session.model = runtimeTarget.model;
-    session.agent = runtimeContext.agent;
-    session.agentVersion = runtimeContext.version;
-    session.playbook = runtimeContext.playbook;
-    session.contextEntityHandle =
-      dto.contextEntityHandle ?? session.contextEntityHandle ?? null;
-    session.contextRecordHandle =
-      dto.contextRecordHandle ?? session.contextRecordHandle ?? null;
-    if (this.chatSession.isUntitledSessionTitle(session.title)) {
-      session.title = this.chatSession.buildSessionTitle(dto.content);
-    }
-
-    this.em.persist(message);
-    await this.em.flush();
-    await this.chatPersistence.linkAttachmentsToMessage(
-      attachments,
-      session,
-      message,
-    );
-    await this.chatPersistence.linkTranscriptionToMessage(
-      dto.transcriptionHandle,
-      session,
-      message,
-      user,
-    );
-    await this.chatPersistence.populateChatSession(session);
-    return {
-      session: sanitizeChatSession(session),
-      message: sanitizeChatMessage(message),
-    };
   }
 
   async updateChatMessageRating(

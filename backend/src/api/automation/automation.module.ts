@@ -1,3 +1,6 @@
+import { AuthModule } from '../../auth/auth.module';
+import { AutomationInspectionService } from './automation-inspection.service';
+import { AutomationInspectionController } from './automation-inspection.controller';
 import { Module } from '@nestjs/common';
 import { GenericModule } from '../generic/generic.module';
 import { InboxModule } from '../inbox/inbox.module';
@@ -12,6 +15,7 @@ import { CurrentModule } from '../current/current.module';
 
 @Module({
   imports: [
+    AuthModule,
     AutomationEventsModule,
     GenericModule,
     InboxModule,
@@ -19,7 +23,9 @@ import { CurrentModule } from '../current/current.module';
     WebhookModule,
     CurrentModule,
   ],
+  controllers: [AutomationInspectionController],
   providers: [
+    AutomationInspectionService,
     AutomationConditionService,
     AutomationProcessorService,
     ...(REDIS_ENABLED ? [AutomationQueueProcessor] : []),

@@ -18,7 +18,7 @@
               :label="$t('dashboard.widgetType')"
               :disabled="!!widget"
             />
-            <v-text-field
+            <SaplingTextField
               v-model="title"
               :label="$t('dashboard.widgetTitle')"
               :rules="[required]"
@@ -60,13 +60,13 @@
                 entity-handle="eventStatus"
                 :label="$t('event.status')"
               />
-              <v-text-field
+              <SaplingTextField
                 v-model.number="days"
                 type="number"
                 :label="$t('dashboard.widgetDays')"
                 :rules="[rangeRule(1, 365)]"
               />
-              <v-text-field
+              <SaplingTextField
                 v-model.number="limit"
                 type="number"
                 :label="$t('dashboard.widgetLimit')"
@@ -100,8 +100,8 @@
                 ]"
                 :label="$t('dashboard.widgetDirection')"
               />
-              <v-text-field v-model="search" :label="$t('global.search')" maxlength="256" />
-              <v-text-field
+              <SaplingTextField v-model="search" :label="$t('global.search')" maxlength="256" />
+              <SaplingTextField
                 v-model.number="pageSize"
                 type="number"
                 :label="$t('dashboard.widgetPageSize')"
@@ -109,7 +109,7 @@
               />
             </template>
             <template v-if="kind === 'WEBSITE'">
-              <v-text-field
+              <SaplingTextField
                 v-model="url"
                 :label="$t('dashboard.widgetUrl')"
                 :rules="[urlRule]"
@@ -158,6 +158,7 @@
   </SaplingDialog>
 </template>
 <script setup lang="ts">
+import SaplingTextField from '@/components/common/SaplingTextField.vue'
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { DashboardWidget } from '@/entity/dashboard-widget.types'

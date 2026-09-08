@@ -1,3 +1,4 @@
+import { openAutomationInspector } from '@/components/automation/automationInspector'
 import { computed, ref, watch, type ComputedRef, type Ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
@@ -157,6 +158,7 @@ export function useSaplingDialogRecordActions(
       !hasPersistedItem.value || props.mode === 'create'
         ? []
         : getSaplingContextMenuTableItems({
+            canAutomations: currentPersonStore.isAdministrator,
             canMerge: true,
             canChangeLog: hasPersistedItem.value,
             canCustomer360: ['company', 'person'].includes(entityHandle.value),
@@ -434,6 +436,9 @@ export function useSaplingDialogRecordActions(
         break
       case 'changeLog':
         openChangeLogFromRecord()
+        break
+      case 'automations':
+        openAutomationInspector(entityHandle.value, itemHandle.value)
         break
       case 'timeline':
         openTimelineFromRecord()

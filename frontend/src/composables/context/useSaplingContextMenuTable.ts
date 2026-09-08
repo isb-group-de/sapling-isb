@@ -1,8 +1,10 @@
+import { useCurrentPersonStore } from '@/stores/currentPersonStore'
 import { computed, ref, watch, type ComputedRef, type Ref } from 'vue'
 import type { SaplingGenericItem, ScriptButtonItem } from '@/entity/entity'
 import type { AccumulatedPermission } from '@/entity/structure'
 
 export type SaplingContextMenuTableAction =
+  | 'automations'
   | 'changeLog'
   | 'copy'
   | 'customer360'
@@ -72,6 +74,7 @@ export type SaplingContextMenuTableMenuEntry =
   SaplingContextMenuTableMenuItem | SaplingContextMenuTableMenuGroup
 
 export interface SaplingContextMenuTableMenuOptions {
+  canAutomations?: boolean
   canMerge?: boolean
   canChangeLog: boolean
   canCustomer360?: boolean
@@ -131,6 +134,12 @@ export function getSaplingContextMenuTableItems(
   }
 
   const group2: SaplingContextMenuTableMenuItem[] = []
+  if (options.canAutomations)
+    group2.push({
+      type: 'automations',
+      icon: 'mdi-transit-connection-variant',
+      titleKey: 'global.automations',
+    })
   if (options.canCustomer360) {
     group2.push({
       type: 'customer360',
@@ -265,6 +274,7 @@ export function useSaplingContextMenuTable(
   emit: SaplingContextMenuTableEmit,
 ): UseSaplingContextMenuTableResult {
   //#region State
+  const personStore = useCurrentPersonStore()
   const menuVisible = ref(Boolean(props.show))
   const x = ref(props.x)
   const y = ref(props.y)
@@ -273,6 +283,7 @@ export function useSaplingContextMenuTable(
 
   const menuItems = computed<SaplingContextMenuTableMenuEntry[]>(() =>
     getSaplingContextMenuTableItems({
+      canAutomations: personStore.isAdministrator,
       canChangeLog: props.item?.handle != null,
       canCustomer360: props.canCustomer360,
       canShowInformation: props.canShowInformation,

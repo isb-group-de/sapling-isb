@@ -168,6 +168,7 @@ function createFixture() {
   let assistantMessage: Record<string, unknown> | null = null;
   const flushSnapshots: Record<string, unknown>[] = [];
   const em = {
+    nativeUpdate: jest.fn<() => Promise<number>>().mockResolvedValue(1),
     create: jest.fn((_entity: unknown, data: Record<string, unknown>) => {
       const item = {
         ...data,

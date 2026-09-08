@@ -24,6 +24,13 @@ const rawControlOwners: Record<string, string[]> = {
 }
 
 const contextualInlineErrorAlertOwners = [
+  // Persisted upload errors, stream disconnects and lazy-page retry states are local evidence, not general feedback.
+  'components/account/inbox/SaplingInboxWorkspace.vue',
+  'components/account/SaplingAccountProfilePictures.vue',
+  'components/account/SaplingInbox.vue',
+  'components/account/SaplingProfilePictureCropDialog.vue',
+  'components/dialog/mail/SaplingDialogMailComposer.vue',
+  'views/SystemView.vue',
   // JSON syntax feedback belongs to the field being edited.
   'components/dialog/fields/SaplingFieldJson.vue',
   // Tool-action failures are part of the persisted chat action itself.

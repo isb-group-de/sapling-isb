@@ -1,3 +1,4 @@
+import { automationRuleView } from '../automation/automation-graph';
 import { EmailSignatureItem } from '../../entity/EmailSignatureItem';
 import { EntityManager } from '@mikro-orm/core';
 import { InjectQueue } from '@nestjs/bullmq';
@@ -183,6 +184,9 @@ export class MailService {
     delivery.entity = entity;
     delivery.createdBy = currentUser;
     delivery.subscription = automation?.subscription;
+    delivery.ruleSnapshot = automation?.subscription
+      ? { ...automationRuleView(automation.subscription, 'email') }
+      : null;
     delivery.automationDeduplicationKey = automation?.deduplicationKey;
     delivery.template = sendDto.templateHandle
       ? ((await this.em.findOne(EmailTemplateItem, {

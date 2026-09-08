@@ -1,3 +1,4 @@
+import { UnrecoverableError } from 'bullmq';
 import { Injectable, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { EntityManager } from '@mikro-orm/core';
@@ -289,6 +290,16 @@ export class WebhookDeliveryExecutor {
         await em.flush();
       }
 
+      const status = getErrorResponse(error)?.status;
+      if (
+        status &&
+        status >= 400 &&
+        status < 500 &&
+        ![408, 429].includes(status)
+      )
+        throw new UnrecoverableError(
+          'Webhook rejected the request permanently: ' + status,
+        );
       throw error;
     }
   }

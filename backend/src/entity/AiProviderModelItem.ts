@@ -12,6 +12,21 @@ import { Sapling, SaplingForm } from './global/entity.decorator';
 
 @Entity()
 export class AiProviderModelItem {
+  @SaplingForm({
+    order: 450,
+    group: 'aiProviderModel.groupIntegration',
+    groupOrder: 400,
+    width: 2,
+    visible: true,
+    tableOrder: 450,
+    tableVisible: true,
+    mobileOrder: 450,
+    mobileVisible: true,
+  })
+  @ApiPropertyOptional({ default: false })
+  @Property({ default: false })
+  isDefaultMarkdown = false;
+
   @ApiProperty()
   @Sapling(['isValue', 'isOrderASC'])
   @SaplingForm({

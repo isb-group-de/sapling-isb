@@ -88,7 +88,7 @@ export class AiUsageTelemetryService
           "provider", "model", "status", "duration_ms", "input_tokens",
           "output_tokens", "total_tokens", "usage_reported", "occurred_at", "created_at"
         )
-        select ?, 'agentRun:' || run."handle", run."person_handle", 'agent',
+        select ?, 'agentRun:' || run."handle", run."person_handle", coalesce(run."purpose", 'agent'),
           case when run."session_handle" is null then 'background' else 'interactive' end,
           coalesce(run."provider", run."usage_payload"->>'provider'),
           coalesce(run."model", run."usage_payload"->>'model'), run."status",

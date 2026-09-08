@@ -11,14 +11,18 @@
         <router-view />
       </div>
     </v-main>
-    <!--<SaplingContextMenu />-->
+    <SaplingAutomationDialog v-if="automationInspector.visible" />
   </v-app>
 </template>
 
 <script lang="ts" setup>
-import { onMounted, onUnmounted } from 'vue'
+import { defineAsyncComponent, onMounted, onUnmounted } from 'vue'
+import { automationInspector } from '@/components/automation/automationInspector'
 import { useSaplingAppearance } from '@/composables/system/useSaplingAppearance'
 
+const SaplingAutomationDialog = defineAsyncComponent(
+  () => import('@/components/automation/SaplingAutomationDialog.vue'),
+)
 useSaplingAppearance()
 
 function handleContextMenu(event: MouseEvent) {

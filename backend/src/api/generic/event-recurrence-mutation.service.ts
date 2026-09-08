@@ -1,3 +1,8 @@
+import { GenericMutationMetadata } from './generic-mutation-metadata';
+import {
+  measureOperationPhase,
+  measureRecurrence,
+} from '../common/operation-timing';
 import {
   BadRequestException,
   Injectable,
@@ -98,6 +103,7 @@ export class EventRecurrenceMutationService {
       request.occurrenceStarts,
     );
     const postCommitTasks: GenericPostCommitTask[] = [];
+    const metadata = new GenericMutationMetadata();
     const detachedEvents: object[] = [];
     let seriesEvent: object | null = null;
     const baseContext: ScriptServerContext = {
@@ -112,13 +118,15 @@ export class EventRecurrenceMutationService {
         const existingExceptions = this.normalizeExceptionDates(
           event.recurrenceExceptionDates,
         );
-        const occurrences = findRecurrenceOccurrences(
-          new Date(event.startDate),
-          new Date(event.endDate),
-          event.recurrenceRule,
-          occurrenceStarts,
-          10_000,
-          scriptContext.clientTimeZone,
+        const occurrences = measureRecurrence(() =>
+          findRecurrenceOccurrences(
+            new Date(event.startDate),
+            new Date(event.endDate),
+            event.recurrenceRule,
+            occurrenceStarts,
+            10_000,
+            scriptContext.clientTimeZone,
+          ),
         );
         if (!occurrences)
           throw new BadRequestException('event.recurrenceOccurrenceInvalid');
@@ -131,43 +139,47 @@ export class EventRecurrenceMutationService {
         }
         starts.forEach((start) => exceptions.add(start));
         // Validate the entire selection before running the master's lifecycle once.
-        seriesEvent = await this.genericEntityMutationService.update(
-          'event',
-          normalizedHandle,
-          { recurrenceExceptionDates: [...exceptions].sort() },
-          currentUser,
-          [],
-          {
-            ...baseContext,
-            calendarDeliveryOperation: 'detach-occurrence',
-            calendarDeliveryOccurrenceStart:
-              starts.length === 1 ? starts[0] : undefined,
-            calendarDeliveryOccurrenceStarts:
-              starts.length > 1 ? starts : undefined,
-          },
-          {
-            expectedUpdatedAt: request.expectedUpdatedAt,
-            resolution: 'detect',
-          },
-          { postCommitTasks },
+        seriesEvent = await measureOperationPhase('mutation', async () =>
+          this.genericEntityMutationService.update(
+            'event',
+            normalizedHandle,
+            { recurrenceExceptionDates: [...exceptions].sort() },
+            currentUser,
+            [],
+            {
+              ...baseContext,
+              calendarDeliveryOperation: 'detach-occurrence',
+              calendarDeliveryOccurrenceStart:
+                starts.length === 1 ? starts[0] : undefined,
+              calendarDeliveryOccurrenceStarts:
+                starts.length > 1 ? starts : undefined,
+            },
+            {
+              expectedUpdatedAt: request.expectedUpdatedAt,
+              resolution: 'detect',
+            },
+            { postCommitTasks, metadata },
+          ),
         );
         for (const occurrence of occurrences) {
           detachedEvents.push(
-            await this.genericEntityMutationService.create(
-              'event',
-              this.buildDetachedOccurrencePayload(
-                event,
-                occurrence,
-                request.event,
+            await measureOperationPhase('mutation', async () =>
+              this.genericEntityMutationService.create(
+                'event',
+                this.buildDetachedOccurrencePayload(
+                  event,
+                  occurrence,
+                  request.event,
+                ),
+                currentUser,
+                {
+                  ...baseContext,
+                  calendarDeliveryOperation: undefined,
+                  calendarDeliveryOccurrenceStart: undefined,
+                  calendarDeliveryOccurrenceStarts: undefined,
+                },
+                { postCommitTasks, metadata },
               ),
-              currentUser,
-              {
-                ...baseContext,
-                calendarDeliveryOperation: undefined,
-                calendarDeliveryOccurrenceStart: undefined,
-                calendarDeliveryOccurrenceStarts: undefined,
-              },
-              { postCommitTasks },
             ),
           );
         }
@@ -202,6 +214,7 @@ export class EventRecurrenceMutationService {
     }
 
     const postCommitTasks: GenericPostCommitTask[] = [];
+    const metadata = new GenericMutationMetadata();
     const handles: Array<string | number> = [];
     const materializationContext: ScriptServerContext = {
       ...scriptContext,
@@ -241,12 +254,14 @@ export class EventRecurrenceMutationService {
           throw new NotFoundException('global.entityNotFound');
         }
 
-        const expansion = expandFiniteRecurrence(
-          new Date(event.startDate),
-          new Date(event.endDate),
-          event.recurrenceRule,
-          RECURRENCE_MAX_OCCURRENCES,
-          scriptContext.clientTimeZone,
+        const expansion = measureRecurrence(() =>
+          expandFiniteRecurrence(
+            new Date(event.startDate),
+            new Date(event.endDate),
+            event.recurrenceRule,
+            RECURRENCE_MAX_OCCURRENCES,
+            scriptContext.clientTimeZone,
+          ),
         );
         if (!parseRecurrenceRule(event.recurrenceRule)) {
           throw new BadRequestException('event.recurrenceRequired');
@@ -275,33 +290,37 @@ export class EventRecurrenceMutationService {
         }
         const [firstOccurrence, ...laterOccurrences] = remainingOccurrences;
 
-        const updated = await this.genericEntityMutationService.update(
-          'event',
-          normalizedHandle,
-          {
-            startDate: firstOccurrence.startDate,
-            endDate: firstOccurrence.endDate,
-            recurrenceRule: null,
-            recurrenceExceptionDates: [],
-          },
-          currentUser,
-          [],
-          sourceMaterializationContext,
-          {
-            expectedUpdatedAt: request.expectedUpdatedAt,
-            resolution: 'detect',
-          },
-          { postCommitTasks },
+        const updated = await measureOperationPhase('mutation', async () =>
+          this.genericEntityMutationService.update(
+            'event',
+            normalizedHandle,
+            {
+              startDate: firstOccurrence.startDate,
+              endDate: firstOccurrence.endDate,
+              recurrenceRule: null,
+              recurrenceExceptionDates: [],
+            },
+            currentUser,
+            [],
+            sourceMaterializationContext,
+            {
+              expectedUpdatedAt: request.expectedUpdatedAt,
+              resolution: 'detect',
+            },
+            { postCommitTasks, metadata },
+          ),
         );
         handles.push(this.extractHandle(updated) ?? normalizedHandle);
 
         for (const occurrence of laterOccurrences) {
-          const created = await this.genericEntityMutationService.create(
-            'event',
-            this.buildOccurrencePayload(event, occurrence),
-            currentUser,
-            occurrenceMaterializationContext,
-            { postCommitTasks },
+          const created = await measureOperationPhase('mutation', async () =>
+            this.genericEntityMutationService.create(
+              'event',
+              this.buildOccurrencePayload(event, occurrence),
+              currentUser,
+              occurrenceMaterializationContext,
+              { postCommitTasks, metadata },
+            ),
           );
           const createdHandle = this.extractHandle(created);
           if (createdHandle != null) {

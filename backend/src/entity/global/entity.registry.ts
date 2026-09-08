@@ -1,3 +1,5 @@
+import { AiPromptTemplateItem } from '../AiPromptTemplateItem';
+import { AiPromptVersionItem } from '../AiPromptVersionItem';
 import { EmailSignatureItem } from '../EmailSignatureItem';
 import type { EntityClass } from '@mikro-orm/core';
 import { LanguageItem } from '../LanguageItem';
@@ -220,6 +222,8 @@ export interface EntityRegistryEntry {
 }
 
 const ENTITY_REGISTRY_ENTRIES: EntityRegistryEntry[] = [
+  { name: 'aiPromptTemplate', class: AiPromptTemplateItem },
+  { name: 'aiPromptVersion', class: AiPromptVersionItem },
   { name: 'automationEvent', class: AutomationEventItem },
   { name: 'automationExecution', class: AutomationExecutionItem },
   { name: 'fieldAutomation', class: FieldAutomationItem },

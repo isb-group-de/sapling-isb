@@ -23,7 +23,7 @@ jest.mock('../template/template.service', () => ({
   TemplateService: class {},
 }));
 jest.mock('../import/import.service', () => ({ ImportService: class {} }));
-jest.mock('./ai.service', () => ({ AiService: class {} }));
+jest.mock('./ai-vector.service', () => ({ AiVectorService: class {} }));
 jest.mock('../../entity/PersonItem', () => ({ PersonItem: class {} }));
 jest.mock('../../entity/global/entity.registry', () => ({
   ENTITY_HANDLES: [
@@ -75,14 +75,14 @@ export const createService = ({
   currentService = { getPerson: jest.fn() },
   templateService = { getEntityTemplate: jest.fn().mockReturnValue([]) },
   importService = {},
-  aiService = { searchVectorDocuments: jest.fn() },
+  vectorService = { searchVectorDocuments: jest.fn() },
   permissionService = { assertEntityPermission: jest.fn() },
 }: {
   genericService?: Record<string, jest.Mock>;
   currentService?: Record<string, jest.Mock>;
   templateService?: { getEntityTemplate: jest.Mock<any> };
   importService?: Record<string, jest.Mock> | Record<string, unknown>;
-  aiService?: { searchVectorDocuments: jest.Mock };
+  vectorService?: { searchVectorDocuments: jest.Mock };
   permissionService?: { assertEntityPermission: jest.Mock };
 } = {}) =>
   new SaplingMcpService(
@@ -90,7 +90,7 @@ export const createService = ({
     currentService as never,
     templateService as never,
     importService as never,
-    aiService as never,
+    vectorService as never,
     new SaplingMcpCriteriaService(templateService as never),
     permissionService as never,
     new SaplingMcpResultFormatterService(templateService as never),

@@ -6,7 +6,9 @@ export const SAPLING_MCP_IMPORT_TOOL_DEFINITIONS: readonly SaplingMcpToolDefinit
   [
     {
       toolName: 'import_get_batch',
-      description: SAPLING_MCP_TOOL_DESCRIPTIONS.importGetBatch,
+      get description() {
+        return SAPLING_MCP_TOOL_DESCRIPTIONS.importGetBatch;
+      },
       jsonSchema: {
         type: 'object',
         properties: {
@@ -28,7 +30,9 @@ export const SAPLING_MCP_IMPORT_TOOL_DEFINITIONS: readonly SaplingMcpToolDefinit
     },
     {
       toolName: 'import_list_templates',
-      description: SAPLING_MCP_TOOL_DESCRIPTIONS.importListTemplates,
+      get description() {
+        return SAPLING_MCP_TOOL_DESCRIPTIONS.importListTemplates;
+      },
       jsonSchema: {
         type: 'object',
         properties: {
@@ -56,7 +60,9 @@ export const SAPLING_MCP_IMPORT_TOOL_DEFINITIONS: readonly SaplingMcpToolDefinit
     },
     {
       toolName: 'import_suggest_mapping',
-      description: SAPLING_MCP_TOOL_DESCRIPTIONS.importSuggestMapping,
+      get description() {
+        return SAPLING_MCP_TOOL_DESCRIPTIONS.importSuggestMapping;
+      },
       jsonSchema: {
         type: 'object',
         properties: {
@@ -105,7 +111,9 @@ export const SAPLING_MCP_IMPORT_TOOL_DEFINITIONS: readonly SaplingMcpToolDefinit
     },
     {
       toolName: 'import_match_existing_records',
-      description: SAPLING_MCP_TOOL_DESCRIPTIONS.importMatchExistingRecords,
+      get description() {
+        return SAPLING_MCP_TOOL_DESCRIPTIONS.importMatchExistingRecords;
+      },
       jsonSchema: {
         type: 'object',
         properties: {
@@ -177,7 +185,9 @@ export const SAPLING_MCP_IMPORT_TOOL_DEFINITIONS: readonly SaplingMcpToolDefinit
     },
     {
       toolName: 'import_configure_batch',
-      description: SAPLING_MCP_TOOL_DESCRIPTIONS.importConfigureBatch,
+      get description() {
+        return SAPLING_MCP_TOOL_DESCRIPTIONS.importConfigureBatch;
+      },
       jsonSchema: {
         type: 'object',
         properties: {
@@ -247,7 +257,9 @@ export const SAPLING_MCP_IMPORT_TOOL_DEFINITIONS: readonly SaplingMcpToolDefinit
     },
     {
       toolName: 'import_execute_batch',
-      description: SAPLING_MCP_TOOL_DESCRIPTIONS.importExecuteBatch,
+      get description() {
+        return SAPLING_MCP_TOOL_DESCRIPTIONS.importExecuteBatch;
+      },
       jsonSchema: {
         type: 'object',
         properties: {

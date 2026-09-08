@@ -90,6 +90,9 @@ describe('AutomationProcessorService', () => {
     const targetEntity = { handle: 'ticket' };
     const inboxRule = {
       handle: 1,
+      sourceEntity: { handle: 'document' },
+      type: { handle: 'afterInsert' },
+      isActive: true,
       entity: targetEntity,
       conditions: condition,
       referencePath: [{ field: 'reference', entity: 'ticket' }],
@@ -104,6 +107,9 @@ describe('AutomationProcessorService', () => {
     } as unknown as WebhookSubscriptionItem;
     const fieldRule = {
       handle: 4,
+      sourceEntity: { handle: 'document' },
+      operation: { handle: 'afterInsert' },
+      isActive: true,
       targetEntity,
       conditions: condition,
       referencePath: inboxRule.referencePath,
@@ -191,6 +197,17 @@ describe('AutomationProcessorService', () => {
       { suppressNotificationSubscriptions: true },
     );
     expect(em.create).toHaveBeenCalledTimes(4);
+    expect(em.create).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        actionType: 'field',
+        ruleSnapshot: expect.objectContaining({
+          sourceEntity: 'document',
+          targetEntity: 'ticket',
+          assignments: [{ field: 'status', value: 'open' }],
+        }) as unknown,
+      }),
+    );
     expect(em.nativeUpdate).toHaveBeenLastCalledWith(
       AutomationEventItem,
       { handle: 41, status: 'processing' },

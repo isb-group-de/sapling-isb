@@ -1,3 +1,4 @@
+import { promptText } from './prompts/ai-prompt-context';
 import { EntityManager } from '@mikro-orm/core';
 import {
   ForbiddenException,
@@ -144,15 +145,17 @@ export class AiAgentPolicyService {
     }
 
     const lines = [
-      `You are currently acting as the Sapling AI agent "${agent.title}".`,
+      promptText('agent-policy.fragment1', { value0: agent.title }),
       agent.description?.trim()
-        ? `Agent description: ${agent.description.trim()}`
+        ? promptText('agent-policy.fragment2', {
+            value0: agent.description.trim(),
+          })
         : null,
       agent.promptMarkdown?.trim() ?? null,
       this.buildScopeInstruction(agent),
       agent.mutationMode === 'readOnly'
-        ? 'This agent is read-only. Do not create, update, or delete Sapling records.'
-        : 'When the user clearly requests a create, update, delete, or import execution, call the matching mutating tool directly and let Sapling create the confirmation dialog. Do not ask an extra text confirmation before preparing the tool action unless the target record or required payload is ambiguous. Treat the action as executed only after Sapling reports user confirmation.',
+        ? promptText('agent-policy.fragment3')
+        : promptText('agent-policy.text1'),
     ].filter((line): line is string => !!line);
 
     return lines.join('\n\n');
@@ -180,10 +183,14 @@ export class AiAgentPolicyService {
 
     return [
       entityHandles.length > 0
-        ? `Allowed Sapling entities: ${entityHandles.join(', ')}.`
+        ? promptText('agent-policy.fragment4', {
+            value0: entityHandles.join(', '),
+          })
         : null,
       knowledgeHandles.length > 0
-        ? `Allowed knowledge search sources: ${knowledgeHandles.join(', ')}.`
+        ? promptText('agent-policy.fragment5', {
+            value0: knowledgeHandles.join(', '),
+          })
         : null,
     ]
       .filter((line): line is string => !!line)

@@ -1,3 +1,4 @@
+import { promptText } from './prompts/ai-prompt-context';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PersonItem } from '../../entity/PersonItem';
 import { CurrentService } from '../current/current.service';
@@ -161,7 +162,11 @@ export class SaplingMcpReferenceValueService {
     field: EntityTemplateDto,
   ): never {
     throw new BadRequestException(
-      `Reference field "${field.name}" on "${entityHandle}" requires the ${field.referenceName}.handle value. Do not send a display label; look up the referenced record with generic_list first.`,
+      promptText('mcp.reference-value-repair', {
+        field: field.name,
+        entity: entityHandle,
+        reference: field.referenceName,
+      }),
     );
   }
 }

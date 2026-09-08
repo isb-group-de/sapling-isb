@@ -8,6 +8,9 @@ const mocks = vi.hoisted(() => ({
   initializeEntityState: vi.fn(),
 }))
 
+// The table is intentionally outside this recipient-selection test, including its async loader.
+vi.mock('@/components/table/SaplingTable.vue', () => ({ default: { template: '<div />' } }))
+
 vi.mock('vue-i18n', () => ({
   useI18n: () => ({
     t: (key: string) =>
@@ -140,6 +143,7 @@ describe('SaplingDialogEditCommunicationTab', () => {
       initialTo: ['billing@example.com'],
       recordLabel: '2026#00010 Testticket',
     })
+    wrapper.unmount()
   })
 
   it('uses the selected recipient name as the composer label', async () => {
@@ -181,5 +185,6 @@ describe('SaplingDialogEditCommunicationTab', () => {
         recordLabel: 'Ada Lovelace',
       }),
     )
+    wrapper.unmount()
   })
 })

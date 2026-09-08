@@ -40,6 +40,8 @@ export type GenericPermissionGuardRequest = Pick<
 };
 
 const ADMIN_ONLY_GENERIC_ENTITIES = new Set([
+  'aiPromptTemplate',
+  'aiPromptVersion',
   'systemTelemetryEnvironment',
   'systemErrorGroup',
   'systemErrorOccurrence',

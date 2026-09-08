@@ -1,0 +1,376 @@
+{
+  "generatedAt": "2026-09-08T08:07:57.698Z",
+  "day": "2026-09-07",
+  "timezone": "Europe/Berlin",
+  "environment": "host:sapling.isb-solutions.de",
+  "updateWindow": "12:55–13:15",
+  "standardOutsideUpdate": {
+    "requests": 62380,
+    "mean_ms": "53.95",
+    "max_ms": 109834.37640099972,
+    "recorded_response_bytes": "914065615",
+    "server_errors": 1,
+    "client_errors": 24
+  },
+  "update": {
+    "requests": 1895,
+    "mean_ms": "5351.62",
+    "max_ms": 3600932.2475899905,
+    "recorded_response_bytes": "67110666",
+    "server_errors": 0,
+    "client_errors": 0
+  },
+  "routes": [
+    {
+      "route_group": "current",
+      "operation": "GET /api/current/openTaskCountEvents",
+      "resource_key": "",
+      "requests": 718,
+      "mean_ms": "786201.06",
+      "max_ms": 11988955.424341,
+      "recorded_response_bytes": "708746653",
+      "server_errors": 0,
+      "client_errors": 2
+    },
+    {
+      "route_group": "ai",
+      "operation": "POST /api/ai/chat/stream",
+      "resource_key": "",
+      "requests": 12,
+      "mean_ms": "110170.10",
+      "max_ms": 456664.3028590083,
+      "recorded_response_bytes": "1073163",
+      "server_errors": 0,
+      "client_errors": 0
+    },
+    {
+      "route_group": "generic",
+      "operation": "GET /api/generic/:entityHandle",
+      "resource_key": "translation",
+      "requests": 15747,
+      "mean_ms": "39.13",
+      "max_ms": 1620.3299150019884,
+      "recorded_response_bytes": "473281190",
+      "server_errors": 0,
+      "client_errors": 0
+    },
+    {
+      "route_group": "generic",
+      "operation": "GET /api/generic/:entityHandle",
+      "resource_key": "person",
+      "requests": 2879,
+      "mean_ms": "102.82",
+      "max_ms": 8697.044094000012,
+      "recorded_response_bytes": "59837044",
+      "server_errors": 0,
+      "client_errors": 0
+    },
+    {
+      "route_group": "generic",
+      "operation": "GET /api/generic/:entityHandle",
+      "resource_key": "event",
+      "requests": 1541,
+      "mean_ms": "140.16",
+      "max_ms": 2319.137786000967,
+      "recorded_response_bytes": "121478508",
+      "server_errors": 0,
+      "client_errors": 0
+    },
+    {
+      "route_group": "calendar",
+      "operation": "POST /api/calendar/events/:handle/detach-occurrences",
+      "resource_key": "",
+      "requests": 11,
+      "mean_ms": "18268.46",
+      "max_ms": 47176.74745699763,
+      "recorded_response_bytes": "6151909",
+      "server_errors": 0,
+      "client_errors": 0
+    },
+    {
+      "route_group": "ai",
+      "operation": "POST /api/ai/markdown/prepare",
+      "resource_key": "",
+      "requests": 3,
+      "mean_ms": "63004.41",
+      "max_ms": 109834.37640099972,
+      "recorded_response_bytes": "3159",
+      "server_errors": 0,
+      "client_errors": 0
+    },
+    {
+      "route_group": "generic",
+      "operation": "GET /api/generic/:entityHandle",
+      "resource_key": "ticket",
+      "requests": 1366,
+      "mean_ms": "127.82",
+      "max_ms": 2144.634388998151,
+      "recorded_response_bytes": "40330633",
+      "server_errors": 0,
+      "client_errors": 0
+    },
+    {
+      "route_group": "current",
+      "operation": "GET /api/current/meta",
+      "resource_key": "",
+      "requests": 2830,
+      "mean_ms": "48.26",
+      "max_ms": 1290.4677869975567,
+      "recorded_response_bytes": "16662113",
+      "server_errors": 0,
+      "client_errors": 0
+    },
+    {
+      "route_group": "generic",
+      "operation": "GET /api/generic/:entityHandle",
+      "resource_key": "entity",
+      "requests": 1459,
+      "mean_ms": "62.54",
+      "max_ms": 1171.037689998746,
+      "recorded_response_bytes": "29981100",
+      "server_errors": 0,
+      "client_errors": 0
+    },
+    {
+      "route_group": "generic",
+      "operation": "GET /api/generic/:entityHandle",
+      "resource_key": "favorite",
+      "requests": 1298,
+      "mean_ms": "61.53",
+      "max_ms": 680.3737490028143,
+      "recorded_response_bytes": "17918199",
+      "server_errors": 0,
+      "client_errors": 1
+    },
+    {
+      "route_group": "other",
+      "operation": "POST /api/azure/events/import",
+      "resource_key": "",
+      "requests": 20,
+      "mean_ms": "3811.96",
+      "max_ms": 11833.018839001656,
+      "recorded_response_bytes": "2457",
+      "server_errors": 1,
+      "client_errors": 0
+    },
+    {
+      "route_group": "generic",
+      "operation": "GET /api/generic/:entityHandle",
+      "resource_key": "scriptButton",
+      "requests": 1844,
+      "mean_ms": "34.63",
+      "max_ms": 1502.3383670002222,
+      "recorded_response_bytes": "896054",
+      "server_errors": 0,
+      "client_errors": 1
+    },
+    {
+      "route_group": "github",
+      "operation": "GET /api/github/issues",
+      "resource_key": "",
+      "requests": 58,
+      "mean_ms": "927.61",
+      "max_ms": 1673.1149429995567,
+      "recorded_response_bytes": "2598292",
+      "server_errors": 0,
+      "client_errors": 0
+    },
+    {
+      "route_group": "generic",
+      "operation": "GET /api/generic/:entityHandle",
+      "resource_key": "dashboardTemplate",
+      "requests": 246,
+      "mean_ms": "210.92",
+      "max_ms": 688.6099199950695,
+      "recorded_response_bytes": "28735901",
+      "server_errors": 0,
+      "client_errors": 0
+    },
+    {
+      "route_group": "github",
+      "operation": "POST /api/github/issues",
+      "resource_key": "",
+      "requests": 32,
+      "mean_ms": "1617.54",
+      "max_ms": 3900.248186007142,
+      "recorded_response_bytes": "116320",
+      "server_errors": 0,
+      "client_errors": 0
+    },
+    {
+      "route_group": "generic",
+      "operation": "GET /api/generic/:entityHandle",
+      "resource_key": "eventType",
+      "requests": 1186,
+      "mean_ms": "41.34",
+      "max_ms": 1144.6390280127525,
+      "recorded_response_bytes": "2865508",
+      "server_errors": 0,
+      "client_errors": 0
+    },
+    {
+      "route_group": "generic",
+      "operation": "GET /api/generic/:entityHandle",
+      "resource_key": "eventCategory",
+      "requests": 1146,
+      "mean_ms": "42.06",
+      "max_ms": 1138.1980480104685,
+      "recorded_response_bytes": "1486983",
+      "server_errors": 0,
+      "client_errors": 0
+    },
+    {
+      "route_group": "generic",
+      "operation": "GET /api/generic/:entityHandle",
+      "resource_key": "company",
+      "requests": 759,
+      "mean_ms": "60.71",
+      "max_ms": 1624.6947990059853,
+      "recorded_response_bytes": "8041646",
+      "server_errors": 0,
+      "client_errors": 0
+    },
+    {
+      "route_group": "generic",
+      "operation": "GET /api/generic/:entityHandle",
+      "resource_key": "holiday",
+      "requests": 1000,
+      "mean_ms": "42.03",
+      "max_ms": 1316.1690820008516,
+      "recorded_response_bytes": "105694",
+      "server_errors": 0,
+      "client_errors": 0
+    },
+    {
+      "route_group": "generic",
+      "operation": "GET /api/generic/:entityHandle",
+      "resource_key": "favoriteTemplate",
+      "requests": 245,
+      "mean_ms": "139.07",
+      "max_ms": 478.85373099148273,
+      "recorded_response_bytes": "11864612",
+      "server_errors": 0,
+      "client_errors": 0
+    },
+    {
+      "route_group": "generic",
+      "operation": "GET /api/generic/:entityHandle",
+      "resource_key": "eventStatus",
+      "requests": 761,
+      "mean_ms": "44.68",
+      "max_ms": 1263.7724239975214,
+      "recorded_response_bytes": "507507",
+      "server_errors": 0,
+      "client_errors": 0
+    },
+    {
+      "route_group": "generic",
+      "operation": "GET /api/generic/:entityHandle",
+      "resource_key": "kpi",
+      "requests": 617,
+      "mean_ms": "54.66",
+      "max_ms": 279.38779799826443,
+      "recorded_response_bytes": "665300",
+      "server_errors": 0,
+      "client_errors": 0
+    },
+    {
+      "route_group": "current",
+      "operation": "GET /api/current/workWeek",
+      "resource_key": "",
+      "requests": 768,
+      "mean_ms": "41.46",
+      "max_ms": 1243.1063959896564,
+      "recorded_response_bytes": "4539",
+      "server_errors": 0,
+      "client_errors": 0
+    },
+    {
+      "route_group": "other",
+      "operation": "GET /api/command-palette/records",
+      "resource_key": "",
+      "requests": 171,
+      "mean_ms": "160.53",
+      "max_ms": 1191.0610699951649,
+      "recorded_response_bytes": "530316",
+      "server_errors": 0,
+      "client_errors": 0
+    },
+    {
+      "route_group": "generic",
+      "operation": "GET /api/generic/:entityHandle",
+      "resource_key": "ticketStatus",
+      "requests": 892,
+      "mean_ms": "29.31",
+      "max_ms": 1236.7918069958687,
+      "recorded_response_bytes": "1780154",
+      "server_errors": 0,
+      "client_errors": 0
+    },
+    {
+      "route_group": "auth",
+      "operation": "GET /api/auth/isAuthenticated",
+      "resource_key": "",
+      "requests": 885,
+      "mean_ms": "28.58",
+      "max_ms": 1126.239072009921,
+      "recorded_response_bytes": "385",
+      "server_errors": 0,
+      "client_errors": 11
+    },
+    {
+      "route_group": "ai",
+      "operation": "GET /api/ai/chat/providers",
+      "resource_key": "",
+      "requests": 1260,
+      "mean_ms": "19.74",
+      "max_ms": 807.9044419974089,
+      "recorded_response_bytes": "618",
+      "server_errors": 0,
+      "client_errors": 0
+    },
+    {
+      "route_group": "ai",
+      "operation": "GET /api/ai/chat/sessions",
+      "resource_key": "",
+      "requests": 936,
+      "mean_ms": "26.42",
+      "max_ms": 911.8522569984198,
+      "recorded_response_bytes": "6383262",
+      "server_errors": 0,
+      "client_errors": 0
+    },
+    {
+      "route_group": "generic",
+      "operation": "GET /api/generic/:entityHandle",
+      "resource_key": "dashboard",
+      "requests": 246,
+      "mean_ms": "100.11",
+      "max_ms": 615.7960930019617,
+      "recorded_response_bytes": "14839736",
+      "server_errors": 0,
+      "client_errors": 0
+    }
+  ],
+  "translationColdStart": [
+    {
+      "language": "de",
+      "namespaces": 224,
+      "keys": 5947,
+      "legacyPaginatedRequests": 236,
+      "bundleRequestsAt100Namespaces": 3
+    },
+    {
+      "language": "en",
+      "namespaces": 224,
+      "keys": 5947,
+      "legacyPaginatedRequests": 236,
+      "bundleRequestsAt100Namespaces": 3
+    }
+  ],
+  "limitations": [
+    "Recorded bytes are not compressed network bytes.",
+    "Historical usage before and after deployment differs.",
+    "Cold-start calculation loads all namespaces; use the browser protocol for the visible-page workload."
+  ]
+}

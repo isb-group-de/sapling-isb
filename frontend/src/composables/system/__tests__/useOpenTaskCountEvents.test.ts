@@ -238,10 +238,10 @@ describe('open-task streaming', () => {
         source.serverError()
       } else {
         source.dispatchEvent(new Event('error'))
-        await nextTick()
-        expect(wrapper.vm.isLoading).toBe(true)
-        vi.advanceTimersByTime(15000)
       }
+      await nextTick()
+      expect(wrapper.vm.isLoading).toBe(kind === 'transport')
+      if (kind === 'transport') vi.advanceTimersByTime(15000)
       await nextTick()
       expect(wrapper.vm.isLoading).toBe(false)
       expect(wrapper.vm.streamError).toBe(

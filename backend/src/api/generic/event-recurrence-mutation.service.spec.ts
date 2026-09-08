@@ -45,30 +45,33 @@ function createHarness(event: EventItem) {
 }
 
 describe('EventRecurrenceMutationService', () => {
-  it('updates one master for 200 completed occurrences', async () => {
-    const start = new Date('2026-01-01T11:00:00Z');
-    const harness = createHarness(
-      createEvent({
-        startDate: start,
-        endDate: new Date('2026-01-01T12:00:00Z'),
-        recurrenceRule: 'FREQ=DAILY;COUNT=200',
-      }),
-    );
-    const starts = Array.from({ length: 200 }, (_, index) =>
-      new Date(start.getTime() + index * 86400000).toISOString(),
-    );
-    await harness.service.detachOccurrences(
-      42,
-      { occurrenceStarts: starts, event: { status: 'completed' } },
-      { handle: 5 } as PersonItem,
-      {},
-    );
-    expect(harness.mutationService.update).toHaveBeenCalledTimes(1);
-    expect(harness.mutationService.create).toHaveBeenCalledTimes(200);
-    expect(
-      harness.mutationService.schedulePostCommitTasks,
-    ).toHaveBeenCalledTimes(1);
-  });
+  it.each([1, 10, 50, 200])(
+    'updates one master for %i completed occurrences',
+    async (count) => {
+      const start = new Date('2026-01-01T11:00:00Z');
+      const harness = createHarness(
+        createEvent({
+          startDate: start,
+          endDate: new Date('2026-01-01T12:00:00Z'),
+          recurrenceRule: `FREQ=DAILY;COUNT=${count}`,
+        }),
+      );
+      const starts = Array.from({ length: count }, (_, index) =>
+        new Date(start.getTime() + index * 86400000).toISOString(),
+      );
+      await harness.service.detachOccurrences(
+        42,
+        { occurrenceStarts: starts, event: { status: 'completed' } },
+        { handle: 5 } as PersonItem,
+        {},
+      );
+      expect(harness.mutationService.update).toHaveBeenCalledTimes(1);
+      expect(harness.mutationService.create).toHaveBeenCalledTimes(count);
+      expect(
+        harness.mutationService.schedulePostCommitTasks,
+      ).toHaveBeenCalledTimes(1);
+    },
+  );
 
   it.each(['2026-07-29T12:00:00Z', '2026-07-30T11:00:00Z'])(
     'rejects an invalid selection before any write: %s',

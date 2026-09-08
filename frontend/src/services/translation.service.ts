@@ -1,8 +1,7 @@
-import ApiGenericService from './api.generic.service'
+import ApiTranslationService from './api.translation.service'
 import type { TranslationItem } from '@/entity/entity'
 import { i18n } from '@/i18n'
 import { useTranslationStore } from '@/stores/translationStore'
-import { GENERIC_API_MAX_PAGE_SIZE } from '@/constants/project.constants'
 
 type TranslationStore = ReturnType<typeof useTranslationStore>
 type PendingNamespace = {
@@ -25,16 +24,7 @@ class TranslationService {
     entityHandle: string[],
     currentLanguage: string,
   ): Promise<TranslationItem[]> {
-    return ApiGenericService.findAll<TranslationItem>('translation', {
-      filter: {
-        entity: { $in: entityHandle },
-        language: currentLanguage,
-      },
-      pageSize: GENERIC_API_MAX_PAGE_SIZE,
-      // Translation loading is part of the application bootstrap. A temporarily
-      // unavailable backend is represented by the surrounding skeleton/retry flow.
-      suppressErrorMessage: true,
-    })
+    return ApiTranslationService.load(entityHandle, currentLanguage)
   }
 
   /**

@@ -7,6 +7,36 @@ import { Sapling, SaplingForm } from './global/entity.decorator';
 
 @Entity()
 export class AiAgentEvaluationItem {
+  @ApiPropertyOptional()
+  @SaplingForm({
+    order: 200,
+    group: 'aiAgentEvaluation.groupTests',
+    groupOrder: 500,
+    width: 4,
+    visible: true,
+    tableOrder: 200,
+    tableVisible: false,
+    mobileOrder: 200,
+    mobileVisible: false,
+  })
+  @Property({ type: 'json', nullable: true })
+  toolFixtures?: Record<string, unknown> | null;
+
+  @ApiPropertyOptional()
+  @SaplingForm({
+    order: 100,
+    group: 'aiAgentEvaluation.groupTests',
+    groupOrder: 500,
+    width: 4,
+    visible: true,
+    tableOrder: 100,
+    tableVisible: false,
+    mobileOrder: 100,
+    mobileVisible: false,
+  })
+  @Property({ type: 'json', nullable: true })
+  expectations?: Record<string, unknown> | null;
+
   @ApiProperty()
   @Property({ primary: true, autoincrement: true })
   handle?: number;
