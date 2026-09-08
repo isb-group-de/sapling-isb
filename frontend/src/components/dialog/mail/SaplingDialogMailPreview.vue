@@ -1,13 +1,13 @@
 <template>
   <div class="sapling-message-dialog__preview-shell sapling-mail-dialog__preview-shell">
-    <v-card class="sapling-mail-dialog__helper-card glass-panel">
+    <v-card tag="details" class="sapling-mail-dialog__helper-card glass-panel">
+      <summary class="sapling-mail-dialog__placeholder-toggle">
+        {{ translate('mail.placeholders') }}
+      </summary>
       <v-card-text
         class="sapling-message-dialog__helper-card-text sapling-mail-dialog__helper-card-text"
       >
         <div class="sapling-message-dialog__helper-header sapling-mail-dialog__helper-header">
-          <span class="sapling-message-dialog__helper-title sapling-mail-dialog__helper-title">{{
-            translate('mail.placeholders')
-          }}</span>
           <v-btn-toggle
             :model-value="insertTarget"
             class="sapling-segmented-toggle sapling-segmented-toggle--small"

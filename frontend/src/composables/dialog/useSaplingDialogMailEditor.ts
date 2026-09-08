@@ -88,8 +88,9 @@ export function useSaplingDialogMailEditor() {
   const isSending = ref(false)
   let initializationSequence = 0
   const editorReady = ref(false)
-  const { draftStatus, openDraft, saveDraft, clearDraft, detachDraft } = useMailDraft()
-  const { remainingSeconds, isHolding, sendIssues, holdSend, cancelPendingSend } =
+  const { draftStatus, openDraft, saveDraft, clearDraft, detachDraft, captureDraftCleanup } =
+    useMailDraft()
+  const { remainingSeconds, isHolding, sendIssues, holdSend, cancelPendingSend, sendPendingNow } =
     useMailSendGuard()
   let reviewedPayload: MailPreviewPayload | null = null
   const isCheckingSend = ref(false)
@@ -328,7 +329,7 @@ export function useSaplingDialogMailEditor() {
 
   function closeMailDialog() {
     if (isSending.value) return
-    cancelPendingSend()
+    sendPendingNow()
     closeDialog()
   }
 
@@ -675,6 +676,7 @@ export function useSaplingDialogMailEditor() {
       return
     const payload = reviewedPayload
     const sentDraft = JSON.parse(JSON.stringify(draft.value)) as MailDraft
+    const clearSentDraft = captureDraftCleanup(sentDraft)
     const sequence = initializationSequence
     const userHandle = currentPersonStore.person?.handle
     holdSend(async () => {
@@ -689,15 +691,17 @@ export function useSaplingDialogMailEditor() {
       isSending.value = true
       try {
         await ApiMailService.send(payload)
-        editorReady.value = false
-        clearDraft(sentDraft)
+        clearSentDraft()
         pushMessage('success', 'mail.sendQueued', 'mail.sendQueuedDescription', 'mail')
-        closeDialog()
+        if (sequence === initializationSequence) {
+          editorReady.value = false
+          closeDialog()
+        }
       } catch (error) {
         console.error('Error sending email:', error)
         pushMessage('error', 'mail.sendFailed', 'mail.sendFailedDescription', 'mail')
       } finally {
-        isSending.value = false
+        if (sequence === initializationSequence) isSending.value = false
       }
     })
   }

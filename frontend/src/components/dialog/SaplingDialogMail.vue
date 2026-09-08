@@ -40,16 +40,18 @@
               v-if="draftStatus !== 'none'"
               :type="draftStatus === 'failed' ? 'warning' : 'info'"
               variant="tonal"
-              class="mb-3"
+              class="sapling-mail-dialog__draft mb-3"
             >
-              {{
-                translate(
-                  `mail.draft${draftStatus === 'failed' ? 'Failed' : draftStatus === 'restored' ? 'Restored' : 'Saved'}`,
-                )
-              }}
-              <v-btn variant="text" :disabled="composerLocked" @click="discardDraft">{{
-                translate('mail.discardDraft')
-              }}</v-btn>
+              <div class="sapling-mail-dialog__countdown-row">
+                <span>{{
+                  translate(
+                    `mail.draft${draftStatus === 'failed' ? 'Failed' : draftStatus === 'restored' ? 'Restored' : 'Saved'}`,
+                  )
+                }}</span>
+                <v-btn variant="text" :disabled="composerLocked" @click="discardDraft">{{
+                  translate('mail.discardDraft')
+                }}</v-btn>
+              </div>
             </v-alert>
             <div class="sapling-message-dialog__grid sapling-mail-dialog__grid">
               <SaplingDialogMailComposer
@@ -146,12 +148,22 @@
             translate('mail.continueEditing')
           }}</v-btn>
         </v-alert>
-        <v-alert v-if="isHolding" type="info" variant="tonal" class="mx-4 mb-3" role="status">
-          {{ $t('mail.sendCountdown', { seconds: remainingSeconds }) }}
-          <v-btn variant="tonal" @click="cancelPendingSend">{{
-            translate('mail.cancelSend')
-          }}</v-btn>
-          <div class="text-caption">{{ translate('mail.sendCountdownHint') }}</div>
+        <v-alert
+          v-if="isHolding"
+          type="info"
+          variant="tonal"
+          class="sapling-mail-dialog__countdown"
+          role="status"
+        >
+          <div class="sapling-mail-dialog__countdown-row">
+            <div>
+              {{ $t('mail.sendCountdown', { seconds: remainingSeconds }) }}
+              <div class="text-caption">{{ translate('mail.sendCountdownHint') }}</div>
+            </div>
+            <v-btn variant="tonal" @click="cancelPendingSend">{{
+              translate('mail.cancelSend')
+            }}</v-btn>
+          </div>
         </v-alert>
 
         <SaplingActionBarSkeleton v-if="isTranslationLoading" :leading="1" :trailing="2" />

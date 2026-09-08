@@ -1,0 +1,8 @@
+[
+  {
+    "entity": "mail",
+    "property": "sendCountdownHint",
+    "de": "Sie können den Versand jetzt noch abbrechen. Beim Schließen dieses Dialogs wird die E-Mail sofort versendet.",
+    "en": "You can still cancel sending now. Closing this dialog sends the email immediately."
+  }
+]

@@ -368,11 +368,61 @@ describe('useSaplingDialogMailEditor', () => {
     vi.useFakeTimers()
     await editor.sendMail()
     expect(editor.isHolding.value).toBe(true)
+    editor.cancelPendingSend()
     editor.closeMailDialog()
     await vi.advanceTimersByTimeAsync(11000)
     expect(mocks.send).not.toHaveBeenCalled()
     expect(localStorage.length).toBe(1)
   })
+
+  it.each([false, true])(
+    'sends immediately on close and preserves the next composer (failure: %s)',
+    async (fails) => {
+      const editor = useSaplingDialogMailEditor()
+      const dialog = useSaplingMailDialog()
+      dialog.openMailDialog({ entityHandle: 'ticket', itemHandle: 99 })
+      await vi.waitFor(() => expect(editor.canSendMail.value).toBe(true))
+      editor.subject.value = 'Original'
+      editor.toRecipients.value = ['to@example.com']
+      mocks.preview.mockResolvedValue({
+        to: ['to@example.com'],
+        cc: [],
+        bcc: [],
+        subject: 'Original',
+        bodyMarkdown: 'Text',
+      })
+      let finish!: () => void
+      mocks.send.mockImplementationOnce(
+        () =>
+          new Promise((resolve, reject) => {
+            finish = () => (fails ? reject(new Error('offline')) : resolve({}))
+          }),
+      )
+      vi.spyOn(console, 'error').mockImplementation(() => {})
+      await editor.sendMail()
+      expect(editor.isHolding.value).toBe(true)
+      editor.closeMailDialog()
+      expect(mocks.send).toHaveBeenCalledTimes(1)
+      expect(dialog.isOpen.value).toBe(false)
+      await nextTick()
+      dialog.openMailDialog({ entityHandle: 'ticket', itemHandle: 100 })
+      await vi.waitFor(() => expect(editor.canSendMail.value).toBe(true))
+      editor.subject.value = 'Next message'
+      finish()
+      await vi.waitFor(() =>
+        expect(mocks.pushMessage).toHaveBeenCalledWith(
+          fails ? 'error' : 'success',
+          fails ? 'mail.sendFailed' : 'mail.sendQueued',
+          expect.anything(),
+          'mail',
+        ),
+      )
+      expect(dialog.isOpen.value).toBe(true)
+      expect(editor.subject.value).toBe('Next message')
+      expect(localStorage.length).toBe(fails ? 2 : 1)
+      expect(mocks.send).toHaveBeenCalledTimes(1)
+    },
+  )
 
   it('requires warning acknowledgement and clears the draft only after successful queuing', async () => {
     const editor = useSaplingDialogMailEditor()

@@ -1,0 +1,14 @@
+[
+  {
+    "entity": "mail",
+    "property": "messageTab",
+    "de": "Nachricht",
+    "en": "Message"
+  },
+  {
+    "entity": "mail",
+    "property": "optionsTab",
+    "de": "Signatur & Anhänge",
+    "en": "Signature & attachments"
+  }
+]

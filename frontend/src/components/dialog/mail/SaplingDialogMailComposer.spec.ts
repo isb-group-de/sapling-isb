@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent, h, nextTick } from 'vue'
 import { createVuetify } from 'vuetify'
@@ -28,6 +28,18 @@ const vuetify = createVuetify({
   directives,
 })
 
+beforeEach(() => {
+  vi.stubGlobal(
+    'ResizeObserver',
+    class {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    },
+  )
+})
+afterEach(() => vi.unstubAllGlobals())
+
 const baseProps = {
   templates: [],
   templateHandle: null,
@@ -52,6 +64,24 @@ const baseProps = {
 }
 
 describe('SaplingDialogMailComposer', () => {
+  it('keeps the editor mounted and its text intact while switching to signature and attachments', async () => {
+    const wrapper = mount(SaplingDialogMailComposer, {
+      props: { ...baseProps, bodyMarkdown: 'Draft text' },
+      global: { plugins: [vuetify, i18n], stubs: { SaplingMarkdownField: true } },
+    })
+    const panels = wrapper.findAll('[role="tabpanel"]')
+    const editor = wrapper.findComponent({ ref: 'markdownField' })
+    expect(panels[0].isVisible()).toBe(true)
+    expect(panels[1].isVisible()).toBe(false)
+    wrapper.findComponent(components.VTabs).vm.$emit('update:modelValue', 'options')
+    await nextTick()
+    expect(panels[0].attributes('style')).toContain('display: none')
+    expect(panels[1].attributes('style') ?? '').not.toContain('display: none')
+    wrapper.findComponent(components.VTabs).vm.$emit('update:modelValue', 'message')
+    await nextTick()
+    expect(wrapper.findComponent({ ref: 'markdownField' }).vm).toBe(editor.vm)
+    expect(editor.props('modelValue')).toBe('Draft text')
+  })
   it('passes the record context to the image-capable Markdown editor', () => {
     const wrapper = mount(SaplingDialogMailComposer, {
       props: { ...baseProps, entityHandle: 'ticket', itemHandle: 7 },

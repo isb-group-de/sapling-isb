@@ -58,19 +58,28 @@ export function useMailDraft() {
   }
 
   function clearDraft(expected?: MailDraft) {
-    if (!key) return
+    clearDraftAtKey(key, expected)
+  }
+
+  function captureDraftCleanup(expected: MailDraft) {
+    const sentKey = key
+    return () => clearDraftAtKey(sentKey, expected)
+  }
+
+  function clearDraftAtKey(targetKey: string | null, expected?: MailDraft) {
+    if (!targetKey) return
     try {
       // A different tab or a newly opened composer may already have saved a newer draft.
-      if (expected && localStorage.getItem(key) !== JSON.stringify(expected)) return
-      localStorage.removeItem(key)
-      draftStatus.value = 'none'
+      if (expected && localStorage.getItem(targetKey) !== JSON.stringify(expected)) return
+      localStorage.removeItem(targetKey)
+      if (key === targetKey) draftStatus.value = 'none'
     } catch {
-      draftStatus.value = 'failed'
+      if (key === targetKey) draftStatus.value = 'failed'
     }
   }
 
   function detachDraft() {
     key = null
   }
-  return { draftStatus, openDraft, saveDraft, clearDraft, detachDraft }
+  return { draftStatus, openDraft, saveDraft, clearDraft, detachDraft, captureDraftCleanup }
 }

@@ -41,6 +41,17 @@ afterEach(() => {
 })
 
 describe('mail drafts', () => {
+  it('cleans the captured draft after close without deleting a newer draft for the same record', () => {
+    const storage = useMailDraft()
+    storage.openDraft([1, 'ticket', 4])
+    storage.saveDraft(draft)
+    const cleanup = storage.captureDraftCleanup(draft)
+    storage.detachDraft()
+    storage.openDraft([1, 'ticket', 4])
+    storage.saveDraft({ ...draft, subject: 'Next message' })
+    cleanup()
+    expect(storage.openDraft([1, 'ticket', 4])?.subject).toBe('Next message')
+  })
   it('does not erase a newer draft when an earlier send completes', () => {
     const storage = useMailDraft()
     storage.openDraft([1])
@@ -141,6 +152,20 @@ describe('mail send review and grace period', () => {
     expect(send).not.toHaveBeenCalled()
     expect(guard.isHolding.value).toBe(false)
     scope.stop()
+  })
+
+  it('flushes the countdown once and never sends again when its timer expires', async () => {
+    vi.useFakeTimers()
+    const guard = useMailSendGuard()
+    const send = vi.fn().mockResolvedValue(undefined)
+    guard.holdSend(send)
+    await vi.advanceTimersByTimeAsync(3000)
+    guard.sendPendingNow()
+    guard.sendPendingNow()
+    expect(send).toHaveBeenCalledTimes(1)
+    await vi.advanceTimersByTimeAsync(11000)
+    expect(send).toHaveBeenCalledTimes(1)
+    expect(guard.isHolding.value).toBe(false)
   })
 })
 

@@ -252,6 +252,14 @@ The stored body retains internal references for Sapling's preview and retries;
 the file must still exist when dispatch runs. External image URLs stay unchanged.
 
 Manual composition uses the same `3xl` dialog width as the generic edit dialog.
+The composer opens on the **Message** tab with template and snippet selection
+side by side, followed by sender, recipients, subject and body. **Signature &
+attachments** holds the less frequent settings and shows the attachment count.
+Switching tabs keeps the Markdown editor mounted, preserving text and selection.
+Field groups use a consistent compact gap; paired fields stack on small screens.
+The preview remains alongside the editor, with placeholders initially collapsed.
+Draft and send notices retain their full height instead of shrinking in the flex
+layout. Translation seed 086 supplies the tab labels.
 Each user manages private `emailSignature` records through **Mail → Email
 signatures** (`/table/emailSignature`) or the **Email signatures** tab in their
 profile. Both editors use the generic CRUD API. Signatures have a name, Markdown
@@ -518,7 +526,13 @@ When adding a new Teams subscription:
   attachment wording without an attachment require explicit acknowledgement.
   Preview responses expose these empty tokens as `unresolvedPlaceholders`.
 - After review, a ten-second client-side grace period precedes the send API call.
-  Cancel, close, page reload or component disposal stops that pending call. The
+  Cancel stops that pending call. Closing the dialog during the countdown starts
+  the confirmed send immediately and closes the composer without waiting for the
+  API response. Completion clears only the matching original draft and does not
+  close or reset a subsequently opened composer. Failures retain the draft and
+  appear in the message center. The full countdown row stays outside the scrolling
+  content with its cancel action on the right. Translation seed 085 updates its hint.
+  Page reload or component disposal still stops an unsubmitted pending call. The
   composer is locked while checking, waiting and dispatching. This is not a recall
   of an already transmitted message: after the timer, the existing delivery queue
   and retry behavior apply. There is no background or scheduled send if the page

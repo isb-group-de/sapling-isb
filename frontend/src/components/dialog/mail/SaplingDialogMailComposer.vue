@@ -1,254 +1,283 @@
 <template>
   <div class="sapling-message-dialog__form sapling-mail-dialog__form">
-    <SaplingAutocomplete
-      :model-value="templateHandle"
-      :items="sortedTemplates"
-      item-title="name"
-      item-value="handle"
-      :label="translate('mail.template')"
-      clearable
-      :loading="isLoadingTemplates"
-      hide-details="auto"
-      @update:model-value="handleTemplateUpdate"
-    />
-
-    <SaplingAutocomplete
-      v-model="snippetHandle"
-      :items="sortedTemplates"
-      item-title="name"
-      item-value="handle"
-      :label="translate('mail.insertSnippet')"
-      :hint="translate('mail.snippetHint')"
-      persistent-hint
-      autocomplete="off"
-      clearable
-      @update:model-value="insertSnippet"
-    />
-
-    <div class="sapling-message-dialog__sender sapling-mail-dialog__sender">
-      <span class="sapling-message-dialog__sender-label sapling-mail-dialog__sender-label">{{
-        translate('document.from')
-      }}</span>
-      <SaplingAutocomplete
-        v-if="senderOptions.length > 1"
-        class="sapling-message-dialog__sender-select sapling-mail-dialog__sender-select"
-        :model-value="selectedSenderEmail"
-        :items="senderItems"
-        item-title="title"
-        item-value="value"
-        density="comfortable"
-        hide-details
-        :loading="isLoadingSenderOptions"
-        variant="underlined"
-        @update:model-value="handleSenderUpdate"
-      />
-      <v-chip v-else size="small" variant="tonal" color="primary">
-        {{ selectedSenderEmail || senderEmail || senderFallbackLabel }}
-      </v-chip>
-    </div>
-
-    <SaplingCombobox
-      :model-value="toRecipients"
-      :items="recipientItems"
-      item-title="title"
-      item-value="value"
-      :label="translate('document.to')"
-      multiple
-      chips
-      closable-chips
-      clearable
-      hide-selected
-      hide-details="auto"
-      :loading="isLoadingRecipientOptions"
-      :delimiters="[',', ';']"
-      @update:model-value="handleToUpdate"
+    <v-tabs v-model="activeTab" color="primary" density="compact" show-arrows>
+      <v-tab :id="`${tabId}-message-tab`" value="message" :aria-controls="`${tabId}-message`">{{
+        translate('mail.messageTab') || translate('document.content')
+      }}</v-tab>
+      <v-tab :id="`${tabId}-options-tab`" value="options" :aria-controls="`${tabId}-options`">
+        {{ translate('mail.optionsTab') || translate('document.attachments') }}
+        <v-chip v-if="attachmentHandles.length" size="x-small" class="ms-2">{{
+          attachmentHandles.length
+        }}</v-chip>
+      </v-tab>
+    </v-tabs>
+    <div
+      v-show="activeTab === 'message'"
+      :id="`${tabId}-message`"
+      role="tabpanel"
+      :aria-labelledby="`${tabId}-message-tab`"
+      class="sapling-mail-dialog__fields"
     >
-      <template #item="{ props: itemProps, item }">
-        <v-divider v-if="item.showDivider" class="my-1" />
-        <v-list-subheader v-if="item.showCompanyHeader">
-          <v-icon start size="small">mdi-domain</v-icon>
-          {{ item.companyLabel }}
-        </v-list-subheader>
-        <v-list-item v-bind="itemProps" />
-      </template>
-      <template #chip="{ props: chipProps, item }">
-        <v-chip v-bind="chipProps">{{ getRecipientSelectionEmail(item) }}</v-chip>
-      </template>
-    </SaplingCombobox>
-
-    <div class="sapling-message-dialog__meta-grid sapling-mail-dialog__meta-grid">
-      <SaplingCombobox
-        :model-value="ccRecipients"
-        :items="recipientItems"
-        item-title="title"
-        item-value="value"
-        :label="translate('document.cc')"
-        multiple
-        chips
-        closable-chips
-        clearable
-        hide-selected
-        hide-details="auto"
-        :loading="isLoadingRecipientOptions"
-        :delimiters="[',', ';']"
-        @update:model-value="handleCcUpdate"
-      >
-        <template #item="{ props: itemProps, item }">
-          <v-divider v-if="item.showDivider" class="my-1" />
-          <v-list-subheader v-if="item.showCompanyHeader">
-            <v-icon start size="small">mdi-domain</v-icon>
-            {{ item.companyLabel }}
-          </v-list-subheader>
-          <v-list-item v-bind="itemProps" />
-        </template>
-        <template #chip="{ props: chipProps, item }">
-          <v-chip v-bind="chipProps">{{ getRecipientSelectionEmail(item) }}</v-chip>
-        </template>
-      </SaplingCombobox>
-      <SaplingCombobox
-        :model-value="bccRecipients"
-        :items="recipientItems"
-        item-title="title"
-        item-value="value"
-        :label="translate('document.bcc')"
-        multiple
-        chips
-        closable-chips
-        clearable
-        hide-selected
-        hide-details="auto"
-        :loading="isLoadingRecipientOptions"
-        :delimiters="[',', ';']"
-        @update:model-value="handleBccUpdate"
-      >
-        <template #item="{ props: itemProps, item }">
-          <v-divider v-if="item.showDivider" class="my-1" />
-          <v-list-subheader v-if="item.showCompanyHeader">
-            <v-icon start size="small">mdi-domain</v-icon>
-            {{ item.companyLabel }}
-          </v-list-subheader>
-          <v-list-item v-bind="itemProps" />
-        </template>
-        <template #chip="{ props: chipProps, item }">
-          <v-chip v-bind="chipProps">{{ getRecipientSelectionEmail(item) }}</v-chip>
-        </template>
-      </SaplingCombobox>
-    </div>
-
-    <SaplingTextField
-      ref="subjectField"
-      :model-value="subject"
-      :label="translate('document.subject')"
-      hide-details="auto"
-      @focus="handleSubjectFocus"
-      @click="captureSubjectSelection"
-      @keyup="captureSubjectSelection"
-      @select="captureSubjectSelection"
-      @blur="captureSubjectSelection"
-      @update:model-value="handleSubjectUpdate"
-    />
-
-    <SaplingMarkdownField
-      ref="markdownField"
-      :entity-handle="entityHandle"
-      :item-handle="itemHandle"
-      :model-value="bodyMarkdown"
-      :label="translate('document.content')"
-      :rows="10"
-      :show-preview="false"
-      @focus="emit('focus-body')"
-      @update:model-value="handleBodyMarkdownUpdate"
-    />
-
-    <SaplingMailSignatureSelection
-      :rotation="signatureRotation ?? true"
-      :signature-handle="signatureHandle ?? null"
-      :signatures="signatures ?? []"
-      :disabled="signaturesDisabled"
-      @update:rotation="emit('update:signatureRotation', $event)"
-      @update:signature-handle="emit('update:signatureHandle', $event)"
-    />
-
-    <v-btn
-      variant="text"
-      prepend-icon="mdi-content-save-outline"
-      :disabled="signaturesDisabled"
-      @click="emit('save-signature-defaults')"
-    >
-      {{ translate('mail.saveCurrentSignatureDefaults') }}
-    </v-btn>
-
-    <v-card class="sapling-mail-dialog__helper-card glass-panel">
-      <v-card-text
-        class="sapling-message-dialog__helper-card-text sapling-mail-dialog__helper-card-text"
-      >
-        <div class="sapling-message-dialog__helper-header sapling-mail-dialog__helper-header">
-          <span class="sapling-message-dialog__helper-title sapling-mail-dialog__helper-title">{{
-            translate('document.attachments')
-          }}</span>
-          <v-chip size="small" variant="tonal">{{ attachmentHandles.length }}</v-chip>
-        </div>
-
-        <v-alert
-          v-if="!hasItemHandle"
-          type="info"
-          variant="tonal"
-          density="compact"
-          :text="translate('mail.attachmentsAvailableAfterSave')"
+      <div class="sapling-mail-dialog__field-pair">
+        <SaplingAutocomplete
+          :model-value="templateHandle"
+          :items="sortedTemplates"
+          item-title="name"
+          item-value="handle"
+          :label="translate('mail.template')"
+          clearable
+          :loading="isLoadingTemplates"
+          hide-details="auto"
+          @update:model-value="handleTemplateUpdate"
         />
 
-        <template v-else>
-          <div
-            v-if="canUpload"
-            class="sapling-mail-dialog__upload mb-3 pa-3 border rounded"
-            @dragover.prevent
-            @drop.prevent="onDrop"
-          >
-            <v-file-input
-              :model-value="[]"
-              multiple
-              autocomplete="off"
-              :label="translate('mail.uploadAttachments')"
-              :hint="translate('mail.uploadHint')"
-              persistent-hint
-              :loading="isUploading"
-              :disabled="isUploading"
-              @update:model-value="onFilesSelected"
-            />
-          </div>
-          <v-alert v-if="failedUploads?.length" type="error" variant="tonal" class="mb-3">
-            {{ translate('mail.uploadFailed') }}: {{ failedUploads.join(', ') }}
-          </v-alert>
-          <SaplingAutocomplete
-            :model-value="attachmentHandles"
-            :items="availableAttachments"
-            item-title="title"
-            item-value="handle"
-            :label="translate('mail.attachDocuments')"
-            multiple
-            chips
-            closable-chips
-            clearable
-            :loading="isLoadingAttachments"
-            hide-details="auto"
-            @update:model-value="handleAttachmentUpdate"
-          />
-          <div
-            v-if="attachmentSelectionSummary"
-            class="sapling-message-dialog__attachment-summary sapling-mail-dialog__attachment-summary"
-          >
-            {{ attachmentSelectionSummary }}
-          </div>
+        <SaplingAutocomplete
+          v-model="snippetHandle"
+          :items="sortedTemplates"
+          item-title="name"
+          item-value="handle"
+          :label="translate('mail.insertSnippet')"
+          :hint="translate('mail.snippetHint')"
+          hide-details="auto"
+          autocomplete="off"
+          clearable
+          @update:model-value="insertSnippet"
+        />
+      </div>
+
+      <div class="sapling-message-dialog__sender sapling-mail-dialog__sender">
+        <span class="sapling-message-dialog__sender-label sapling-mail-dialog__sender-label">{{
+          translate('document.from')
+        }}</span>
+        <SaplingAutocomplete
+          v-if="senderOptions.length > 1"
+          class="sapling-message-dialog__sender-select sapling-mail-dialog__sender-select"
+          :model-value="selectedSenderEmail"
+          :items="senderItems"
+          item-title="title"
+          item-value="value"
+          density="comfortable"
+          hide-details
+          :loading="isLoadingSenderOptions"
+          variant="underlined"
+          @update:model-value="handleSenderUpdate"
+        />
+        <v-chip v-else size="small" variant="tonal" color="primary">
+          {{ selectedSenderEmail || senderEmail || senderFallbackLabel }}
+        </v-chip>
+      </div>
+
+      <SaplingCombobox
+        :model-value="toRecipients"
+        :items="recipientItems"
+        item-title="title"
+        item-value="value"
+        :label="translate('document.to')"
+        multiple
+        chips
+        closable-chips
+        clearable
+        hide-selected
+        hide-details="auto"
+        :loading="isLoadingRecipientOptions"
+        :delimiters="[',', ';']"
+        @update:model-value="handleToUpdate"
+      >
+        <template #item="{ props: itemProps, item }">
+          <v-divider v-if="item.showDivider" class="my-1" />
+          <v-list-subheader v-if="item.showCompanyHeader">
+            <v-icon start size="small">mdi-domain</v-icon>
+            {{ item.companyLabel }}
+          </v-list-subheader>
+          <v-list-item v-bind="itemProps" />
         </template>
-      </v-card-text>
-    </v-card>
+        <template #chip="{ props: chipProps, item }">
+          <v-chip v-bind="chipProps">{{ getRecipientSelectionEmail(item) }}</v-chip>
+        </template>
+      </SaplingCombobox>
+
+      <div class="sapling-message-dialog__meta-grid sapling-mail-dialog__meta-grid">
+        <SaplingCombobox
+          :model-value="ccRecipients"
+          :items="recipientItems"
+          item-title="title"
+          item-value="value"
+          :label="translate('document.cc')"
+          multiple
+          chips
+          closable-chips
+          clearable
+          hide-selected
+          hide-details="auto"
+          :loading="isLoadingRecipientOptions"
+          :delimiters="[',', ';']"
+          @update:model-value="handleCcUpdate"
+        >
+          <template #item="{ props: itemProps, item }">
+            <v-divider v-if="item.showDivider" class="my-1" />
+            <v-list-subheader v-if="item.showCompanyHeader">
+              <v-icon start size="small">mdi-domain</v-icon>
+              {{ item.companyLabel }}
+            </v-list-subheader>
+            <v-list-item v-bind="itemProps" />
+          </template>
+          <template #chip="{ props: chipProps, item }">
+            <v-chip v-bind="chipProps">{{ getRecipientSelectionEmail(item) }}</v-chip>
+          </template>
+        </SaplingCombobox>
+        <SaplingCombobox
+          :model-value="bccRecipients"
+          :items="recipientItems"
+          item-title="title"
+          item-value="value"
+          :label="translate('document.bcc')"
+          multiple
+          chips
+          closable-chips
+          clearable
+          hide-selected
+          hide-details="auto"
+          :loading="isLoadingRecipientOptions"
+          :delimiters="[',', ';']"
+          @update:model-value="handleBccUpdate"
+        >
+          <template #item="{ props: itemProps, item }">
+            <v-divider v-if="item.showDivider" class="my-1" />
+            <v-list-subheader v-if="item.showCompanyHeader">
+              <v-icon start size="small">mdi-domain</v-icon>
+              {{ item.companyLabel }}
+            </v-list-subheader>
+            <v-list-item v-bind="itemProps" />
+          </template>
+          <template #chip="{ props: chipProps, item }">
+            <v-chip v-bind="chipProps">{{ getRecipientSelectionEmail(item) }}</v-chip>
+          </template>
+        </SaplingCombobox>
+      </div>
+
+      <SaplingTextField
+        ref="subjectField"
+        :model-value="subject"
+        :label="translate('document.subject')"
+        hide-details="auto"
+        @focus="handleSubjectFocus"
+        @click="captureSubjectSelection"
+        @keyup="captureSubjectSelection"
+        @select="captureSubjectSelection"
+        @blur="captureSubjectSelection"
+        @update:model-value="handleSubjectUpdate"
+      />
+
+      <SaplingMarkdownField
+        ref="markdownField"
+        :entity-handle="entityHandle"
+        :item-handle="itemHandle"
+        :model-value="bodyMarkdown"
+        :label="translate('document.content')"
+        :rows="10"
+        :show-preview="false"
+        @focus="emit('focus-body')"
+        @update:model-value="handleBodyMarkdownUpdate"
+      />
+    </div>
+
+    <div
+      v-show="activeTab === 'options'"
+      :id="`${tabId}-options`"
+      role="tabpanel"
+      :aria-labelledby="`${tabId}-options-tab`"
+      class="sapling-mail-dialog__fields"
+    >
+      <SaplingMailSignatureSelection
+        :rotation="signatureRotation ?? true"
+        :signature-handle="signatureHandle ?? null"
+        :signatures="signatures ?? []"
+        :disabled="signaturesDisabled"
+        @update:rotation="emit('update:signatureRotation', $event)"
+        @update:signature-handle="emit('update:signatureHandle', $event)"
+      />
+
+      <v-btn
+        variant="text"
+        prepend-icon="mdi-content-save-outline"
+        :disabled="signaturesDisabled"
+        @click="emit('save-signature-defaults')"
+      >
+        {{ translate('mail.saveCurrentSignatureDefaults') }}
+      </v-btn>
+
+      <v-card class="sapling-mail-dialog__helper-card glass-panel">
+        <v-card-text
+          class="sapling-message-dialog__helper-card-text sapling-mail-dialog__helper-card-text"
+        >
+          <div class="sapling-message-dialog__helper-header sapling-mail-dialog__helper-header">
+            <span class="sapling-message-dialog__helper-title sapling-mail-dialog__helper-title">{{
+              translate('document.attachments')
+            }}</span>
+            <v-chip size="small" variant="tonal">{{ attachmentHandles.length }}</v-chip>
+          </div>
+
+          <v-alert
+            v-if="!hasItemHandle"
+            type="info"
+            variant="tonal"
+            density="compact"
+            :text="translate('mail.attachmentsAvailableAfterSave')"
+          />
+
+          <template v-else>
+            <div
+              v-if="canUpload"
+              class="sapling-mail-dialog__upload mb-3 pa-3 border rounded"
+              @dragover.prevent
+              @drop.prevent="onDrop"
+            >
+              <v-file-input
+                :model-value="[]"
+                multiple
+                autocomplete="off"
+                :label="translate('mail.uploadAttachments')"
+                :hint="translate('mail.uploadHint')"
+                persistent-hint
+                :loading="isUploading"
+                :disabled="isUploading"
+                @update:model-value="onFilesSelected"
+              />
+            </div>
+            <v-alert v-if="failedUploads?.length" type="error" variant="tonal" class="mb-3">
+              {{ translate('mail.uploadFailed') }}: {{ failedUploads.join(', ') }}
+            </v-alert>
+            <SaplingAutocomplete
+              :model-value="attachmentHandles"
+              :items="availableAttachments"
+              item-title="title"
+              item-value="handle"
+              :label="translate('mail.attachDocuments')"
+              multiple
+              chips
+              closable-chips
+              clearable
+              :loading="isLoadingAttachments"
+              hide-details="auto"
+              @update:model-value="handleAttachmentUpdate"
+            />
+            <div
+              v-if="attachmentSelectionSummary"
+              class="sapling-message-dialog__attachment-summary sapling-mail-dialog__attachment-summary"
+            >
+              {{ attachmentSelectionSummary }}
+            </div>
+          </template>
+        </v-card-text>
+      </v-card>
+    </div>
   </div>
 </template>
 
 <script lang="ts" setup>
 import SaplingMailSignatureSelection from './SaplingMailSignatureSelection.vue'
 import type { EmailSignature } from '@/services/api.mail-signature.service'
-import { computed, nextTick, ref } from 'vue'
+import { computed, nextTick, ref, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
 import SaplingAutocomplete from '@/components/common/SaplingAutocomplete.vue'
 import SaplingCombobox from '@/components/common/SaplingCombobox.vue'
@@ -308,6 +337,9 @@ const props = defineProps<{
   hasItemHandle: boolean
   translate: (key: string) => string
 }>()
+
+const activeTab = ref('message')
+const tabId = useId()
 
 const emit = defineEmits<{
   (event: 'upload-attachments', files: File[]): void

@@ -38,23 +38,31 @@ export function useMailSendGuard() {
   const isHolding = computed(() => remainingSeconds.value > 0)
   const sendIssues = ref<MailSendIssue[]>([])
   let timer: ReturnType<typeof setInterval> | undefined
+  let pendingSend: (() => Promise<void>) | undefined
 
   function cancelPendingSend() {
     if (timer) clearInterval(timer)
     timer = undefined
+    pendingSend = undefined
     remainingSeconds.value = 0
     sendIssues.value = []
   }
 
+  function sendPendingNow() {
+    const send = pendingSend
+    cancelPendingSend()
+    if (send) void send()
+  }
+
   function holdSend(send: () => Promise<void>) {
     cancelPendingSend()
+    pendingSend = send
     const deadline = Date.now() + 10_000
     remainingSeconds.value = 10
     timer = setInterval(() => {
       remainingSeconds.value = Math.max(0, Math.ceil((deadline - Date.now()) / 1000))
       if (remainingSeconds.value === 0) {
-        cancelPendingSend()
-        void send()
+        sendPendingNow()
       }
     }, 250)
   }
@@ -66,5 +74,5 @@ export function useMailSendGuard() {
       window.removeEventListener('pagehide', cancelPendingSend)
     })
   }
-  return { remainingSeconds, isHolding, sendIssues, holdSend, cancelPendingSend }
+  return { remainingSeconds, isHolding, sendIssues, holdSend, cancelPendingSend, sendPendingNow }
 }
