@@ -503,6 +503,21 @@ When adding a new Teams subscription:
 
 ### Manual composer convenience and send review
 
+- The composer separates **Content**, **Attachments**, and **Email signatures**
+  into persistent tabs. Content groups the collapsible template/snippet tools,
+  sender/recipients, and message into bordered panels. Empty CC/BCC fields can be
+  expanded explicitly; populated fields always remain visible.
+- The adjacent workspace has **Preview**, **Information**, and **Placeholders**
+  tabs. Draft recovery/storage notices, signature availability, attachment
+  requirements, upload failures, and send checks are collected in Information.
+  Its badge indicates notice count and warning severity; actionable errors open
+  that tab automatically. Send-review actions remain usable while the editor is
+  locked. The countdown remains outside scrolling content.
+- Both workspaces have independently scrolling panes with reserved scrollbar
+  space and fixed tab bars. Switching tabs or adding a notice keeps the dialog,
+  preview column, and footer in place. Narrow viewports stack the workspaces in
+  bounded rows. The footer shows a compact sender badge with the complete sender
+  in its tooltip and accessible label; preview refresh is offered in Preview.
 - Drafts are saved to local browser storage on each edit, scoped to the signed-in
   person, entity, record and initial recipient/subject context. Reopening that
   context restores recipients, sender, content, attachments and signature choices

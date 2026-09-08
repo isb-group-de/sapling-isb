@@ -1,7 +1,13 @@
 <template>
-  <SaplingActionBar>
+  <SaplingActionBar class="sapling-mail-dialog__actions">
     <template #leading>
-      <v-btn variant="text" prepend-icon="mdi-close" :disabled="isSending" @click="close">
+      <v-btn
+        variant="text"
+        prepend-icon="mdi-close"
+        :disabled="isSending"
+        :aria-label="$t('global.close')"
+        @click="close"
+      >
         <template v-if="$vuetify.display.mdAndUp">
           {{ $t('global.close') }}
         </template>
@@ -9,21 +15,22 @@
     </template>
 
     <template #trailing>
-      <span class="text-caption text-break">{{ $t('document.from') }}: {{ senderSummary }}</span>
-      <v-btn
-        color="primary"
+      <v-chip
+        v-if="senderSummary"
+        size="small"
         variant="tonal"
-        prepend-icon="mdi-eye-outline"
-        :loading="isPreviewLoading"
-        :disabled="locked"
-        @click="refreshPreview"
+        color="primary"
+        prepend-icon="mdi-email-outline"
+        class="sapling-mail-dialog__sender-badge"
+        :title="senderSummary"
+        :aria-label="`${$t('document.from')}: ${senderSummary}`"
       >
-        <template v-if="$vuetify.display.mdAndUp">
-          {{ $t('mail.reloadPreview') }}
-        </template>
-      </v-btn>
+        {{ senderSummary }}
+      </v-chip>
       <v-btn
-        :disabled="!canSend"
+        :disabled="!canSend || locked"
+        :aria-label="$t('mail.send')"
+        variant="flat"
         color="primary"
         prepend-icon="mdi-send"
         :loading="isSending"
@@ -44,10 +51,8 @@ defineProps<{
   senderSummary?: string
   locked?: boolean
   close: () => void
-  refreshPreview: () => void
   send: () => void
   canSend: boolean
-  isPreviewLoading: boolean
   isSending: boolean
 }>()
 </script>

@@ -21,7 +21,7 @@
       @update:model-value="$emit('update:signatureHandle', $event ?? null)"
     />
     <v-alert
-      v-else-if="!signatures.some((item) => item.isActive && item.useInRotation)"
+      v-else-if="!hideStatus && !signatures.some((item) => item.isActive && item.useInRotation)"
       type="info"
       variant="tonal"
       density="compact"
@@ -39,6 +39,7 @@ defineProps<{
   rotation: boolean
   signatureHandle: number | null
   signatures: EmailSignature[]
+  hideStatus?: boolean
   disabled?: boolean
 }>()
 defineEmits<{

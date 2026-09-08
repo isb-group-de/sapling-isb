@@ -1,108 +1,121 @@
 <template>
-  <div class="sapling-message-dialog__form sapling-mail-dialog__form">
+  <div
+    class="sapling-message-dialog__form sapling-mail-dialog__form sapling-mail-dialog__workspace"
+  >
     <v-tabs v-model="activeTab" color="primary" density="compact" show-arrows>
       <v-tab :id="`${tabId}-message-tab`" value="message" :aria-controls="`${tabId}-message`">{{
-        translate('mail.messageTab') || translate('document.content')
+        translate('document.content')
       }}</v-tab>
       <v-tab :id="`${tabId}-options-tab`" value="options" :aria-controls="`${tabId}-options`">
-        {{ translate('mail.optionsTab') || translate('document.attachments') }}
+        {{ translate('document.attachments') }}
         <v-chip v-if="attachmentHandles.length" size="x-small" class="ms-2">{{
           attachmentHandles.length
         }}</v-chip>
       </v-tab>
+      <v-tab
+        :id="`${tabId}-signature-tab`"
+        value="signature"
+        :aria-controls="`${tabId}-signature`"
+        >{{ translate('navigation.emailSignature') }}</v-tab
+      >
     </v-tabs>
     <div
       v-show="activeTab === 'message'"
       :id="`${tabId}-message`"
       role="tabpanel"
       :aria-labelledby="`${tabId}-message-tab`"
-      class="sapling-mail-dialog__fields"
+      class="sapling-mail-dialog__fields sapling-mail-dialog__pane"
     >
-      <div class="sapling-mail-dialog__field-pair">
-        <SaplingAutocomplete
-          :model-value="templateHandle"
-          :items="sortedTemplates"
-          item-title="name"
-          item-value="handle"
-          :label="translate('mail.template')"
-          clearable
-          :loading="isLoadingTemplates"
-          hide-details="auto"
-          @update:model-value="handleTemplateUpdate"
-        />
+      <details class="sapling-mail-dialog__section sapling-mail-dialog__templates">
+        <summary class="sapling-mail-dialog__section-title">
+          <v-icon size="18">mdi-text-box-outline</v-icon>{{ translate('mail.template') }}
+          <v-chip v-if="selectedTemplate" size="x-small" variant="tonal">{{
+            selectedTemplate.name
+          }}</v-chip>
+        </summary>
+        <div class="sapling-mail-dialog__field-pair">
+          <SaplingAutocomplete
+            :model-value="templateHandle"
+            :items="sortedTemplates"
+            item-title="name"
+            item-value="handle"
+            :label="translate('mail.template')"
+            clearable
+            :loading="isLoadingTemplates"
+            hide-details="auto"
+            @update:model-value="handleTemplateUpdate"
+          />
 
-        <SaplingAutocomplete
-          v-model="snippetHandle"
-          :items="sortedTemplates"
-          item-title="name"
-          item-value="handle"
-          :label="translate('mail.insertSnippet')"
-          :hint="translate('mail.snippetHint')"
-          hide-details="auto"
-          autocomplete="off"
-          clearable
-          @update:model-value="insertSnippet"
-        />
-      </div>
+          <SaplingAutocomplete
+            v-model="snippetHandle"
+            :items="sortedTemplates"
+            item-title="name"
+            item-value="handle"
+            :label="translate('mail.insertSnippet')"
+            :hint="translate('mail.snippetHint')"
+            hide-details="auto"
+            autocomplete="off"
+            clearable
+            @update:model-value="insertSnippet"
+          />
+        </div>
+      </details>
+      <section class="sapling-mail-dialog__section">
+        <h3 class="sapling-mail-dialog__section-title">
+          <v-icon size="18">mdi-account-multiple-outline</v-icon
+          >{{ translate('mail.recipientsStat') }}
+          <span class="sapling-mail-dialog__recipient-toggles">
+            <v-btn
+              size="x-small"
+              :variant="showCc ? 'tonal' : 'text'"
+              :aria-pressed="showCc"
+              @click="ccExpanded = !showCc"
+              >{{ translate('document.cc') }}</v-btn
+            >
+            <v-btn
+              size="x-small"
+              :variant="showBcc ? 'tonal' : 'text'"
+              :aria-pressed="showBcc"
+              @click="bccExpanded = !showBcc"
+              >{{ translate('document.bcc') }}</v-btn
+            >
+          </span>
+        </h3>
+        <div class="sapling-message-dialog__sender sapling-mail-dialog__sender">
+          <span
+            v-if="senderOptions.length <= 1"
+            class="sapling-message-dialog__sender-label sapling-mail-dialog__sender-label"
+            >{{ translate('document.from') }}</span
+          >
+          <SaplingAutocomplete
+            v-if="senderOptions.length > 1"
+            class="sapling-message-dialog__sender-select sapling-mail-dialog__sender-select"
+            :label="translate('document.from')"
+            :model-value="selectedSenderEmail"
+            :items="senderItems"
+            item-title="title"
+            item-value="value"
+            chips
+            density="comfortable"
+            hide-details
+            :loading="isLoadingSenderOptions"
+            @update:model-value="handleSenderUpdate"
+          >
+            <template #chip="{ props: chipProps, item }">
+              <v-chip v-bind="chipProps" :title="item.title">{{ item.value }}</v-chip>
+            </template>
+          </SaplingAutocomplete>
+          <v-chip v-else size="small" variant="tonal" color="primary">
+            {{ selectedSenderEmail || senderEmail || senderFallbackLabel }}
+          </v-chip>
+        </div>
 
-      <div class="sapling-message-dialog__sender sapling-mail-dialog__sender">
-        <span class="sapling-message-dialog__sender-label sapling-mail-dialog__sender-label">{{
-          translate('document.from')
-        }}</span>
-        <SaplingAutocomplete
-          v-if="senderOptions.length > 1"
-          class="sapling-message-dialog__sender-select sapling-mail-dialog__sender-select"
-          :model-value="selectedSenderEmail"
-          :items="senderItems"
-          item-title="title"
-          item-value="value"
-          density="comfortable"
-          hide-details
-          :loading="isLoadingSenderOptions"
-          variant="underlined"
-          @update:model-value="handleSenderUpdate"
-        />
-        <v-chip v-else size="small" variant="tonal" color="primary">
-          {{ selectedSenderEmail || senderEmail || senderFallbackLabel }}
-        </v-chip>
-      </div>
-
-      <SaplingCombobox
-        :model-value="toRecipients"
-        :items="recipientItems"
-        item-title="title"
-        item-value="value"
-        :label="translate('document.to')"
-        multiple
-        chips
-        closable-chips
-        clearable
-        hide-selected
-        hide-details="auto"
-        :loading="isLoadingRecipientOptions"
-        :delimiters="[',', ';']"
-        @update:model-value="handleToUpdate"
-      >
-        <template #item="{ props: itemProps, item }">
-          <v-divider v-if="item.showDivider" class="my-1" />
-          <v-list-subheader v-if="item.showCompanyHeader">
-            <v-icon start size="small">mdi-domain</v-icon>
-            {{ item.companyLabel }}
-          </v-list-subheader>
-          <v-list-item v-bind="itemProps" />
-        </template>
-        <template #chip="{ props: chipProps, item }">
-          <v-chip v-bind="chipProps">{{ getRecipientSelectionEmail(item) }}</v-chip>
-        </template>
-      </SaplingCombobox>
-
-      <div class="sapling-message-dialog__meta-grid sapling-mail-dialog__meta-grid">
         <SaplingCombobox
-          :model-value="ccRecipients"
+          :model-value="toRecipients"
           :items="recipientItems"
           item-title="title"
           item-value="value"
-          :label="translate('document.cc')"
+          :label="translate('document.to')"
           multiple
           chips
           closable-chips
@@ -111,7 +124,7 @@
           hide-details="auto"
           :loading="isLoadingRecipientOptions"
           :delimiters="[',', ';']"
-          @update:model-value="handleCcUpdate"
+          @update:model-value="handleToUpdate"
         >
           <template #item="{ props: itemProps, item }">
             <v-divider v-if="item.showDivider" class="my-1" />
@@ -125,60 +138,98 @@
             <v-chip v-bind="chipProps">{{ getRecipientSelectionEmail(item) }}</v-chip>
           </template>
         </SaplingCombobox>
-        <SaplingCombobox
-          :model-value="bccRecipients"
-          :items="recipientItems"
-          item-title="title"
-          item-value="value"
-          :label="translate('document.bcc')"
-          multiple
-          chips
-          closable-chips
-          clearable
-          hide-selected
-          hide-details="auto"
-          :loading="isLoadingRecipientOptions"
-          :delimiters="[',', ';']"
-          @update:model-value="handleBccUpdate"
+
+        <div
+          v-show="showCc || showBcc"
+          class="sapling-message-dialog__meta-grid sapling-mail-dialog__meta-grid"
+          :class="{ 'sapling-mail-dialog__meta-grid--single': !showCc || !showBcc }"
         >
-          <template #item="{ props: itemProps, item }">
-            <v-divider v-if="item.showDivider" class="my-1" />
-            <v-list-subheader v-if="item.showCompanyHeader">
-              <v-icon start size="small">mdi-domain</v-icon>
-              {{ item.companyLabel }}
-            </v-list-subheader>
-            <v-list-item v-bind="itemProps" />
-          </template>
-          <template #chip="{ props: chipProps, item }">
-            <v-chip v-bind="chipProps">{{ getRecipientSelectionEmail(item) }}</v-chip>
-          </template>
-        </SaplingCombobox>
-      </div>
+          <SaplingCombobox
+            v-show="showCc"
+            :model-value="ccRecipients"
+            :items="recipientItems"
+            item-title="title"
+            item-value="value"
+            :label="translate('document.cc')"
+            multiple
+            chips
+            closable-chips
+            clearable
+            hide-selected
+            hide-details="auto"
+            :loading="isLoadingRecipientOptions"
+            :delimiters="[',', ';']"
+            @update:model-value="handleCcUpdate"
+          >
+            <template #item="{ props: itemProps, item }">
+              <v-divider v-if="item.showDivider" class="my-1" />
+              <v-list-subheader v-if="item.showCompanyHeader">
+                <v-icon start size="small">mdi-domain</v-icon>
+                {{ item.companyLabel }}
+              </v-list-subheader>
+              <v-list-item v-bind="itemProps" />
+            </template>
+            <template #chip="{ props: chipProps, item }">
+              <v-chip v-bind="chipProps">{{ getRecipientSelectionEmail(item) }}</v-chip>
+            </template>
+          </SaplingCombobox>
+          <SaplingCombobox
+            v-show="showBcc"
+            :model-value="bccRecipients"
+            :items="recipientItems"
+            item-title="title"
+            item-value="value"
+            :label="translate('document.bcc')"
+            multiple
+            chips
+            closable-chips
+            clearable
+            hide-selected
+            hide-details="auto"
+            :loading="isLoadingRecipientOptions"
+            :delimiters="[',', ';']"
+            @update:model-value="handleBccUpdate"
+          >
+            <template #item="{ props: itemProps, item }">
+              <v-divider v-if="item.showDivider" class="my-1" />
+              <v-list-subheader v-if="item.showCompanyHeader">
+                <v-icon start size="small">mdi-domain</v-icon>
+                {{ item.companyLabel }}
+              </v-list-subheader>
+              <v-list-item v-bind="itemProps" />
+            </template>
+            <template #chip="{ props: chipProps, item }">
+              <v-chip v-bind="chipProps">{{ getRecipientSelectionEmail(item) }}</v-chip>
+            </template>
+          </SaplingCombobox>
+        </div>
+      </section>
+      <section class="sapling-mail-dialog__section">
+        <SaplingTextField
+          ref="subjectField"
+          :model-value="subject"
+          :label="translate('document.subject')"
+          hide-details="auto"
+          @focus="handleSubjectFocus"
+          @click="captureSubjectSelection"
+          @keyup="captureSubjectSelection"
+          @select="captureSubjectSelection"
+          @blur="captureSubjectSelection"
+          @update:model-value="handleSubjectUpdate"
+        />
 
-      <SaplingTextField
-        ref="subjectField"
-        :model-value="subject"
-        :label="translate('document.subject')"
-        hide-details="auto"
-        @focus="handleSubjectFocus"
-        @click="captureSubjectSelection"
-        @keyup="captureSubjectSelection"
-        @select="captureSubjectSelection"
-        @blur="captureSubjectSelection"
-        @update:model-value="handleSubjectUpdate"
-      />
-
-      <SaplingMarkdownField
-        ref="markdownField"
-        :entity-handle="entityHandle"
-        :item-handle="itemHandle"
-        :model-value="bodyMarkdown"
-        :label="translate('document.content')"
-        :rows="10"
-        :show-preview="false"
-        @focus="emit('focus-body')"
-        @update:model-value="handleBodyMarkdownUpdate"
-      />
+        <SaplingMarkdownField
+          ref="markdownField"
+          :entity-handle="entityHandle"
+          :item-handle="itemHandle"
+          :model-value="bodyMarkdown"
+          :label="translate('document.content')"
+          :rows="10"
+          :show-preview="false"
+          @focus="emit('focus-body')"
+          @update:model-value="handleBodyMarkdownUpdate"
+        />
+      </section>
     </div>
 
     <div
@@ -186,26 +237,8 @@
       :id="`${tabId}-options`"
       role="tabpanel"
       :aria-labelledby="`${tabId}-options-tab`"
-      class="sapling-mail-dialog__fields"
+      class="sapling-mail-dialog__fields sapling-mail-dialog__pane"
     >
-      <SaplingMailSignatureSelection
-        :rotation="signatureRotation ?? true"
-        :signature-handle="signatureHandle ?? null"
-        :signatures="signatures ?? []"
-        :disabled="signaturesDisabled"
-        @update:rotation="emit('update:signatureRotation', $event)"
-        @update:signature-handle="emit('update:signatureHandle', $event)"
-      />
-
-      <v-btn
-        variant="text"
-        prepend-icon="mdi-content-save-outline"
-        :disabled="signaturesDisabled"
-        @click="emit('save-signature-defaults')"
-      >
-        {{ translate('mail.saveCurrentSignatureDefaults') }}
-      </v-btn>
-
       <v-card class="sapling-mail-dialog__helper-card glass-panel">
         <v-card-text
           class="sapling-message-dialog__helper-card-text sapling-mail-dialog__helper-card-text"
@@ -217,14 +250,9 @@
             <v-chip size="small" variant="tonal">{{ attachmentHandles.length }}</v-chip>
           </div>
 
-          <v-alert
-            v-if="!hasItemHandle"
-            type="info"
-            variant="tonal"
-            density="compact"
-            :text="translate('mail.attachmentsAvailableAfterSave')"
-          />
-
+          <p v-if="!hasItemHandle" class="text-medium-emphasis">
+            {{ translate('mail.attachmentsAvailableAfterSave') }}
+          </p>
           <template v-else>
             <div
               v-if="canUpload"
@@ -244,9 +272,6 @@
                 @update:model-value="onFilesSelected"
               />
             </div>
-            <v-alert v-if="failedUploads?.length" type="error" variant="tonal" class="mb-3">
-              {{ translate('mail.uploadFailed') }}: {{ failedUploads.join(', ') }}
-            </v-alert>
             <SaplingAutocomplete
               :model-value="attachmentHandles"
               :items="availableAttachments"
@@ -270,6 +295,39 @@
           </template>
         </v-card-text>
       </v-card>
+    </div>
+    <div
+      v-show="activeTab === 'signature'"
+      :id="`${tabId}-signature`"
+      role="tabpanel"
+      :aria-labelledby="`${tabId}-signature-tab`"
+      class="sapling-mail-dialog__fields sapling-mail-dialog__pane"
+    >
+      <section class="sapling-mail-dialog__section">
+        <h3 class="sapling-mail-dialog__section-title">
+          <v-icon size="18">mdi-fountain-pen-tip</v-icon
+          >{{ translate('navigation.emailSignature') }}
+        </h3>
+        <SaplingMailSignatureSelection
+          hide-status
+          :rotation="signatureRotation ?? true"
+          :signature-handle="signatureHandle ?? null"
+          :signatures="signatures ?? []"
+          :disabled="signaturesDisabled"
+          @update:rotation="emit('update:signatureRotation', $event)"
+          @update:signature-handle="emit('update:signatureHandle', $event)"
+        />
+
+        <v-btn
+          class="sapling-mail-dialog__secondary-action"
+          variant="text"
+          prepend-icon="mdi-content-save-outline"
+          :disabled="signaturesDisabled"
+          @click="emit('save-signature-defaults')"
+        >
+          {{ translate('mail.saveCurrentSignatureDefaults') }}
+        </v-btn>
+      </section>
     </div>
   </div>
 </template>
@@ -311,7 +369,6 @@ const props = defineProps<{
   itemHandle?: string | number
   canUpload?: boolean
   isUploading?: boolean
-  failedUploads?: string[]
   signatures?: EmailSignature[]
   signatureRotation?: boolean
   signatureHandle?: number | null
@@ -338,6 +395,13 @@ const props = defineProps<{
   translate: (key: string) => string
 }>()
 
+const ccExpanded = ref(false)
+const bccExpanded = ref(false)
+const showCc = computed(() => ccExpanded.value || props.ccRecipients.length > 0)
+const showBcc = computed(() => bccExpanded.value || props.bccRecipients.length > 0)
+const selectedTemplate = computed(() =>
+  props.templates.find((template) => template.handle === props.templateHandle),
+)
 const activeTab = ref('message')
 const tabId = useId()
 
@@ -473,12 +537,11 @@ function captureSubjectSelection() {
 }
 
 function insertPlaceholderAtCursor(target: InsertTarget, token: string) {
-  if (target === 'subject') {
-    insertIntoSubject(token)
-    return
-  }
-
-  markdownField.value?.insertTextAtCursor?.(token)
+  activeTab.value = 'message'
+  void nextTick(() => {
+    if (target === 'subject') insertIntoSubject(token)
+    else markdownField.value?.insertTextAtCursor?.(token)
+  })
 }
 
 function insertIntoSubject(token: string) {

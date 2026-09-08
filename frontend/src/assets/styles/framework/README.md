@@ -73,6 +73,8 @@ surface components before adding local CSS.
 - `SaplingFrameworkMessaging.css`, `SaplingFrameworkChatConversation.css`, and
   `SaplingFrameworkMessageCenter.css`: AI chat shell/conversations and message
   center/dialog workflows
+- `SaplingFrameworkMail.css`: mail composer panels, stable scrolling tabs,
+  information workspace, and sender badge
 - `SaplingFrameworkMonitoring.css` and `SaplingFrameworkMonitoringCharts.css`:
   monitoring consoles, charts, and responsive telemetry tables
 - `SaplingFrameworkNavigation.css` and `SaplingFrameworkNavigationResponsive.css`:

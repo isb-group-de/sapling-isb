@@ -1,5 +1,5 @@
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { flushPromises, mount } from '@vue/test-utils'
 import { defineComponent, h, nextTick } from 'vue'
 import { createVuetify } from 'vuetify'
 import * as components from 'vuetify/components'
@@ -77,10 +77,31 @@ describe('SaplingDialogMailComposer', () => {
     await nextTick()
     expect(panels[0].attributes('style')).toContain('display: none')
     expect(panels[1].attributes('style') ?? '').not.toContain('display: none')
+    expect(panels[1].findComponent({ name: 'SaplingMailSignatureSelection' }).exists()).toBe(false)
+    wrapper.findComponent(components.VTabs).vm.$emit('update:modelValue', 'signature')
+    await nextTick()
+    expect(panels[1].attributes('style')).toContain('display: none')
+    expect(panels[2].attributes('style') ?? '').not.toContain('display: none')
+    expect(panels[2].findComponent({ name: 'SaplingMailSignatureSelection' }).exists()).toBe(true)
     wrapper.findComponent(components.VTabs).vm.$emit('update:modelValue', 'message')
     await nextTick()
     expect(wrapper.findComponent({ ref: 'markdownField' }).vm).toBe(editor.vm)
     expect(editor.props('modelValue')).toBe('Draft text')
+  })
+  it('reveals populated CC and BCC fields and allows opening empty fields', async () => {
+    const wrapper = mount(SaplingDialogMailComposer, {
+      props: { ...baseProps, ccRecipients: ['copy@example.com'] },
+      global: { plugins: [vuetify, i18n], stubs: { SaplingMarkdownField: true } },
+    })
+    const fields = wrapper.findAllComponents(components.VCombobox)
+    const cc = fields.find((field) => field.props('label') === 'document.cc')!
+    const bcc = fields.find((field) => field.props('label') === 'document.bcc')!
+    expect(cc.isVisible()).toBe(true)
+    expect(bcc.isVisible()).toBe(false)
+    await wrapper.findAll('.sapling-mail-dialog__recipient-toggles button')[1].trigger('click')
+    await flushPromises()
+    expect(bcc.attributes('style') ?? '').not.toContain('display: none')
+    expect(cc.props('modelValue')).toEqual(['copy@example.com'])
   })
   it('passes the record context to the image-capable Markdown editor', () => {
     const wrapper = mount(SaplingDialogMailComposer, {
