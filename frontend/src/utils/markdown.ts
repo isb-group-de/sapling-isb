@@ -93,6 +93,9 @@ function saplingDocumentMarkdownPlugin(markdown: MarkdownParserLike): void {
     self: unknown,
   ) => {
     rewriteSaplingDocumentUrl(tokens[index], 'src')
+    tokens[index]?.attrSet?.('tabindex', '0')
+    tokens[index]?.attrSet?.('role', 'button')
+    tokens[index]?.attrSet?.('aria-haspopup', 'dialog')
     return typeof defaultImageRule === 'function'
       ? defaultImageRule(tokens, index, options, env, self)
       : renderMarkdownToken(markdown, tokens, index, options, env, self)
@@ -134,7 +137,7 @@ function renderSaplingDocumentEmbed(meta: unknown): string {
   if (meta.kind === 'image') {
     return [
       '<figure class="sapling-markdown-document sapling-markdown-document--image">',
-      `<img src="${escapeAttribute(downloadUrl)}" alt="${escapeAttribute(label)}" loading="lazy" />`,
+      `<img src="${escapeAttribute(downloadUrl)}" alt="${escapeAttribute(label)}" loading="lazy" tabindex="0" role="button" aria-haspopup="dialog" />`,
       meta.label ? `<figcaption>${escapeHtml(meta.label)}</figcaption>` : '',
       '</figure>',
     ].join('')

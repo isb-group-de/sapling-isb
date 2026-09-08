@@ -197,6 +197,22 @@ All document endpoints require `SessionOrBearerAuthGuard`.
 | `GET /api/document/preview/:handle`                               | `allowRead` on the document's target entity | Previews PDFs inline, other files as attachment                           |
 
 The frontend file browser previews SVG and ICO documents alongside PNG and JPEG.
+All image previews share `SaplingImageViewer`: zoom ranges from 50% to 200%,
+starts at 100% of the image's natural dimensions, and resets when selecting a
+different document. Overflow can be scrolled or panned by dragging with mouse or
+touch; the focused viewport also supports native arrow-key scrolling. Clicking
+the percentage resets zoom and position. The expand button or a double-click
+opens the image in `SaplingImagePreviewDialog`, using the same `3xl` width and
+`90vh` height as the record edit dialog. Escape, the close button, or the backdrop
+closes only the image dialog.
+
+Other `image/*` MIME types (including GIF, WebP, AVIF and BMP) use the same viewer;
+common image filename extensions repair missing/generic MIME metadata. Actual
+decoding support depends on the browser; unsupported or corrupt images show the
+unavailable-preview state. Animation is preserved and preview zoom never modifies
+the stored file. New UI labels are supplied by `translationData_087.json` in both
+seed datasets and require the normal seed update.
+
 SVG (`image/svg+xml`) and ICO (`image/x-icon` or `image/vnd.microsoft.icon`) are
 recognized by MIME type, with a case-insensitive `.svg`/`.ico` filename fallback.
 The protected download is loaded as a blob with the appropriate image MIME type,

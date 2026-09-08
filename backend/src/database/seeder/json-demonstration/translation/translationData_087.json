@@ -1,0 +1,21 @@
+[
+  { "entity": "document", "property": "imageZoom", "de": "Zoom", "en": "Zoom" },
+  {
+    "entity": "document",
+    "property": "enlargeImage",
+    "de": "Bild vergrößern",
+    "en": "Enlarge image"
+  },
+  {
+    "entity": "document",
+    "property": "imagePreview",
+    "de": "Bild",
+    "en": "Image"
+  },
+  {
+    "entity": "document",
+    "property": "imagePanHint",
+    "de": "Bildausschnitt durch Ziehen oder mit den Pfeiltasten verschieben",
+    "en": "Pan the image by dragging or using the arrow keys"
+  }
+]

@@ -4,29 +4,37 @@
     v-else
     class="sapling-file-preview sapling-preview-viewer sapling-file-viewer sapling-preview-fullheight sapling-file-preview-fullheight"
   >
-    <div class="sapling-preview-media-surface sapling-file-media-surface">
-      <img
-        v-if="source"
-        :key="source"
-        :src="source"
-        :alt="$t('document.preview')"
-        class="sapling-preview-media sapling-file-media"
-        @error="failed = true"
-      />
-    </div>
+    <SaplingImageViewer
+      v-if="source"
+      :src="source"
+      :alt="fileName || $t('document.preview')"
+      expandable
+      @expand="expanded = true"
+      @error="failed = true"
+    />
+    <SaplingImagePreviewDialog
+      v-if="expanded && source"
+      :src="source"
+      :alt="fileName || $t('document.preview')"
+      @close="expanded = false"
+    />
   </div>
 </template>
 
 <script lang="ts" setup>
 import { ref, watch } from 'vue'
 import SaplingFileNoPreview from './SaplingFileNoPreview.vue'
+import SaplingImageViewer from '@/components/common/SaplingImageViewer.vue'
+import SaplingImagePreviewDialog from '@/components/common/SaplingImagePreviewDialog.vue'
 
 const props = defineProps<{
   imageUrl: string
-  mimeType: 'image/svg+xml' | 'image/vnd.microsoft.icon'
+  mimeType: string
+  fileName?: string
 }>()
 const source = ref('')
 const failed = ref(false)
+const expanded = ref(false)
 
 watch(
   [() => props.imageUrl, () => props.mimeType],
@@ -35,6 +43,7 @@ watch(
     let objectUrl = ''
     source.value = ''
     failed.value = false
+    expanded.value = false
     onCleanup(() => {
       controller.abort()
       if (objectUrl) URL.revokeObjectURL(objectUrl)

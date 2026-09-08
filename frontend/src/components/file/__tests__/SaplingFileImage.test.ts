@@ -2,12 +2,19 @@ import { flushPromises, mount } from '@vue/test-utils'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import SaplingFileImage from '../SaplingFileImage.vue'
 
+vi.mock('@/composables/generic/useTranslationLoader', () => ({ useTranslationLoader: vi.fn() }))
+
 function mountImage() {
   return mount(SaplingFileImage, {
     props: { imageUrl: '/document/download/1', mimeType: 'image/svg+xml' },
     global: {
       mocks: { $t: (key: string) => key },
-      stubs: { SaplingFileNoPreview: true },
+      stubs: {
+        SaplingFileNoPreview: true,
+        SaplingImagePreviewDialog: true,
+        'v-slider': true,
+        'v-btn': true,
+      },
     },
   })
 }
@@ -93,6 +100,24 @@ describe('SaplingFileImage', () => {
     await flushPromises()
     await wrapper.get('img').trigger('error')
     expect(wrapper.findComponent({ name: 'SaplingFileNoPreview' }).exists()).toBe(true)
+    wrapper.unmount()
+  })
+
+  it('shares the downloaded image with the enlarged dialog and closes it when selection changes', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, blob: async () => new Blob(['image']) })
+    vi.stubGlobal('fetch', fetchMock)
+    vi.stubGlobal('URL', { createObjectURL: () => 'blob:preview', revokeObjectURL: vi.fn() })
+    const wrapper = mountImage()
+    await flushPromises()
+    wrapper.getComponent({ name: 'SaplingImageViewer' }).vm.$emit('expand')
+    await flushPromises()
+    expect(wrapper.getComponent({ name: 'SaplingImagePreviewDialog' }).attributes('src')).toBe(
+      'blob:preview',
+    )
+    expect(fetchMock).toHaveBeenCalledOnce()
+    await wrapper.setProps({ imageUrl: '/document/download/2', mimeType: 'image/gif' })
+    await flushPromises()
+    expect(wrapper.findComponent({ name: 'SaplingImagePreviewDialog' }).exists()).toBe(false)
     wrapper.unmount()
   })
 })

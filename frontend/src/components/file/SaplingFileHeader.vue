@@ -66,6 +66,7 @@ const props = defineProps<{
 }>()
 
 const previewBadge = computed(() => {
+  if (props.previewType === 'image') return i18n.global.t('document.imagePreview')
   if (props.previewType === 'none') {
     return i18n.global.t('document.file')
   }

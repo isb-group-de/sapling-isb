@@ -330,6 +330,16 @@
   min-width: 0;
 }
 
+.sapling-markdown-content img {
+  max-width: 100%;
+  cursor: zoom-in;
+}
+
+.sapling-markdown-content img:focus-visible {
+  outline: 2px solid rgb(var(--v-theme-primary));
+  outline-offset: 2px;
+}
+
 .sapling-markdown-content * {
   overflow-wrap: anywhere;
 }

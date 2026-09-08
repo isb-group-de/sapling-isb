@@ -431,6 +431,15 @@ Markdown preparation. The action is not rendered when no usable transcription
 target is available. If preparation fails after a successful transcription,
 the raw transcript remains in the draft so the recording is not lost.
 
+Rendered Markdown images in `SaplingMarkdownContent` open the shared
+`SaplingImagePreviewDialog` on click or Enter/Space. This includes ordinary
+Markdown images, linked images, and Sapling document-image embeds. The dialog
+matches the edit dialog's size and supports 50–200% zoom, initially 100% of the
+original dimensions, plus drag/scroll panning. This interaction is confined to
+the rendered preview; Markdown source editing is unchanged. The renderer gives
+images keyboard focus and dialog-button semantics, while the wrapper handles
+events without adding executable HTML or changing document access rules.
+
 ## Tables
 
 Table behavior is split across composables in:

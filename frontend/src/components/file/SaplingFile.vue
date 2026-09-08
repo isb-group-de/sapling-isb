@@ -101,10 +101,8 @@ import type { SaplingGenericItem } from '@/entity/entity'
 import { defineAsyncComponent, ref, computed, onMounted, watch } from 'vue'
 import SaplingSurface from '@/components/common/SaplingSurface.vue'
 import SaplingFilePDF from './SaplingFilePDF.vue'
-import SaplingFilePNG from './SaplingFilePNG.vue'
-import SaplingFileJPEG from './SaplingFileJPEG.vue'
 import SaplingFileImage from './SaplingFileImage.vue'
-import { getPreviewType } from '@/utils/documentPreview'
+import { getImagePreviewMimeType, getPreviewType } from '@/utils/documentPreview'
 import SaplingFileAudio from './SaplingFileAudio.vue'
 import SaplingFileVideo from './SaplingFileVideo.vue'
 import SaplingFileNoPreview from './SaplingFileNoPreview.vue'
@@ -251,12 +249,13 @@ function onDownloadDocument() {
 }
 
 const previewType = computed(() => getPreviewType(selectedMimeType.value, selectedFilename.value))
+const isImagePreview = computed(() =>
+  ['png', 'jpeg', 'svg', 'ico', 'image'].includes(previewType.value),
+)
 
 const previewComponent = computed(() => {
   if (previewType.value === 'pdf') return SaplingFilePDF
-  if (previewType.value === 'png') return SaplingFilePNG
-  if (previewType.value === 'jpeg') return SaplingFileJPEG
-  if (previewType.value === 'svg' || previewType.value === 'ico') return SaplingFileImage
+  if (isImagePreview.value) return SaplingFileImage
   if (previewType.value === 'audio') return SaplingFileAudio
   if (previewType.value === 'video') return SaplingFileVideo
   if (previewType.value === 'json') return SaplingFileJSON
@@ -277,12 +276,11 @@ const previewProps = computed(() => {
   }
 
   const url = `${BACKEND_URL}document/download/${selectedHandle.value}`
-  if (previewType.value === 'png') return { pngUrl: url }
-  if (previewType.value === 'jpeg') return { jpegUrl: url }
-  if (previewType.value === 'svg' || previewType.value === 'ico') {
+  if (isImagePreview.value) {
     return {
       imageUrl: url,
-      mimeType: previewType.value === 'svg' ? 'image/svg+xml' : 'image/vnd.microsoft.icon',
+      mimeType: getImagePreviewMimeType(selectedMimeType.value, selectedFilename.value),
+      fileName: selectedFilename.value,
     }
   }
   if (previewType.value === 'audio') {
