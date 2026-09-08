@@ -165,6 +165,8 @@ export interface FavoriteItem extends SaplingGenericItem {
   entityRoute?: EntityRouteItem | number | null
   /** Optional persisted free-text search */
   search?: string | null
+  /** Ordered grouping levels and grouping-area visibility. */
+  grouping?: { fields: string[]; visible: boolean } | null
   /** Optional persisted sorting configuration */
   sortBy?: Array<{ key: string; order?: 'asc' | 'desc' }> | null
   /** Optional filter */

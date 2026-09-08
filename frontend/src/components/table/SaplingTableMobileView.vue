@@ -99,52 +99,50 @@
     </v-expand-transition>
 
     <div v-if="items.length > 0" class="sapling-scroll-list sapling-table-mobile-list">
-      <SaplingTableMobileCard
-        v-for="(item, index) in items"
-        :key="String(item.handle ?? index)"
-        v-memo="[
-          item.handle,
-          item.updatedAt,
-          isRowSelected(index),
-          isRowActive(index),
-          multiSelect,
-          showActions,
-          props.allowRowDoubleClick,
-          mobileCardHeaders,
-        ]"
-        :item="item"
-        :columns="mobileCardHeaders"
-        :index="index"
-        :is-selected="isRowSelected(index)"
-        :is-active="isRowActive(index)"
-        :multi-select="multiSelect"
-        :entity="entity"
-        :entity-permission="entityPermission"
-        :entity-templates="entityTemplates"
-        :entity-handle="entityHandle"
-        :script-buttons="rowScriptButtons"
-        :can-navigate="canNavigate"
-        :can-show-information="canShowInformation"
-        :can-show-external-record-links="canShowExternalRecordLinks"
-        :show-actions="showActions"
-        :row-interaction="rowInteraction"
-        :allow-row-double-click="props.allowRowDoubleClick"
-        @select-row="emit('select-row', $event)"
-        @activate-row="emit('activate-row', $event)"
-        @change-log="emit('change-log', $event)"
-        @delete="emit('delete', $event)"
-        @edit="emit('edit', $event)"
-        @show="emit('show', $event)"
-        @copy="emit('copy', $event)"
-        @script="emit('script', $event)"
-        @navigate="emit('navigate', $event)"
-        @timeline="emit('timeline', $event)"
-        @upload-document="emit('upload-document', $event)"
-        @show-documents="emit('show-documents', $event)"
-        @show-information="emit('show-information', $event)"
-        @show-external-record-links="emit('show-external-record-links', $event)"
-        @reload="emit('reload')"
-      />
+      <template v-for="(item, index) in items" :key="String(item.handle ?? index)">
+        <h3
+          v-for="group in presentation?.groupHeadings(index) ?? []"
+          :key="group.key"
+          class="sapling-table-group-heading"
+          v-css-vars="{ '--sapling-group-level': String(group.level) }"
+        >
+          {{ group.label }}
+        </h3>
+        <SaplingTableMobileCard
+          :item="item"
+          :columns="mobileCardHeaders"
+          :index="index"
+          :is-selected="isRowSelected(index)"
+          :is-active="isRowActive(index)"
+          :multi-select="multiSelect"
+          :entity="entity"
+          :entity-permission="entityPermission"
+          :entity-templates="entityTemplates"
+          :entity-handle="entityHandle"
+          :script-buttons="rowScriptButtons"
+          :can-navigate="canNavigate"
+          :can-show-information="canShowInformation"
+          :can-show-external-record-links="canShowExternalRecordLinks"
+          :show-actions="showActions"
+          :row-interaction="rowInteraction"
+          :allow-row-double-click="props.allowRowDoubleClick"
+          @select-row="emit('select-row', $event)"
+          @activate-row="emit('activate-row', $event)"
+          @change-log="emit('change-log', $event)"
+          @delete="emit('delete', $event)"
+          @edit="emit('edit', $event)"
+          @show="emit('show', $event)"
+          @copy="emit('copy', $event)"
+          @script="emit('script', $event)"
+          @navigate="emit('navigate', $event)"
+          @timeline="emit('timeline', $event)"
+          @upload-document="emit('upload-document', $event)"
+          @show-documents="emit('show-documents', $event)"
+          @show-information="emit('show-information', $event)"
+          @show-external-record-links="emit('show-external-record-links', $event)"
+          @reload="emit('reload')"
+        />
+      </template>
     </div>
     <div v-else-if="isLoading" class="sapling-scroll-list sapling-table-mobile-list">
       <v-skeleton-loader
@@ -177,6 +175,9 @@
 </template>
 
 <script lang="ts" setup>
+import { inject } from 'vue'
+import { tablePresentationKey } from './saplingTablePresentation'
+const presentation = inject(tablePresentationKey, null)
 import { computed, defineAsyncComponent, ref } from 'vue'
 import SaplingSurface from '@/components/common/SaplingSurface.vue'
 import type { EntityItem, SaplingGenericItem, ScriptButtonItem } from '@/entity/entity'

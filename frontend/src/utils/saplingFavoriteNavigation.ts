@@ -1,3 +1,4 @@
+import { normalizeTableGrouping } from '@/composables/table/saplingTableRouteState'
 import type {
   EntityItem,
   EntityRouteItem,
@@ -10,6 +11,7 @@ type FavoriteNavigationTarget = {
   entityRoute?: FavoriteItem['entityRoute'] | FavoriteTemplateItem['entityRoute']
   search?: FavoriteItem['search']
   sortBy?: FavoriteItem['sortBy']
+  grouping?: FavoriteItem['grouping']
   filter?: FavoriteItem['filter'] | FavoriteTemplateItem['filter']
 }
 
@@ -79,6 +81,12 @@ export function buildFavoritePath(
   if (favorite.filter) {
     const serializedFilter = serializeFavoriteFilter(favorite.filter)
     queryParts.push(`filter=${encodeURIComponent(serializedFilter)}`)
+  }
+
+  if (favorite.grouping != null) {
+    queryParts.push(
+      `grouping=${encodeURIComponent(JSON.stringify(normalizeTableGrouping(favorite.grouping)))}`,
+    )
   }
 
   if (queryParts.length === 0) {

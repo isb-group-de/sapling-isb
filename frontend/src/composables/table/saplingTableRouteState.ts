@@ -3,6 +3,7 @@ import type { SortItem } from '@/entity/structure'
 import { GENERIC_API_MAX_PAGE_SIZE } from '@/constants/project.constants'
 
 export type SaplingTableRouteState = {
+  grouping: TableGroupingState | null
   filter: unknown
   search: string
   sortBy: SortItem[]
@@ -11,6 +12,7 @@ export type SaplingTableRouteState = {
 }
 
 export type SaplingTableUrlState = {
+  grouping?: TableGroupingState
   search: string
   page: number
   itemsPerPage: number
@@ -24,10 +26,14 @@ export function readSaplingTableRouteState(
   enabled: boolean,
 ): SaplingTableRouteState {
   if (!enabled) {
-    return { filter: null, search: '', sortBy: [], page: 1, itemsPerPage: null }
+    return { grouping: null, filter: null, search: '', sortBy: [], page: 1, itemsPerPage: null }
   }
 
   return {
+    grouping:
+      query.grouping === undefined
+        ? null
+        : normalizeTableGrouping(parseFilter(firstQueryValue(query.grouping))),
     filter: parseFilter(firstQueryValue(query.filter)),
     search: firstQueryValue(query.search) ?? '',
     sortBy: parseSortBy(firstQueryValue(query.sortBy)),
@@ -46,6 +52,7 @@ export function replaceSaplingTableUrlState(state: SaplingTableUrlState, enabled
   }
 
   const params = new URLSearchParams(window.location.search)
+  setOptionalParam(params, 'grouping', state.grouping ? JSON.stringify(state.grouping) : null)
   setOptionalParam(params, 'search', state.search.trim() || null)
   setOptionalParam(params, 'page', state.page > 1 ? String(state.page) : null)
   setOptionalParam(
@@ -65,6 +72,24 @@ export function replaceSaplingTableUrlState(state: SaplingTableUrlState, enabled
   const currentUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`
   if (nextUrl !== currentUrl) {
     window.history.replaceState(window.history.state, '', nextUrl)
+  }
+}
+
+export type TableGroupingState = { fields: string[]; visible: boolean }
+
+export function normalizeTableGrouping(value: unknown): TableGroupingState {
+  const state = value && typeof value === 'object' ? (value as Partial<TableGroupingState>) : {}
+  return {
+    fields: Array.isArray(state.fields)
+      ? [
+          ...new Set(
+            state.fields.filter(
+              (field): field is string => typeof field === 'string' && field.length > 0,
+            ),
+          ),
+        ]
+      : [],
+    visible: state.visible === true,
   }
 }
 

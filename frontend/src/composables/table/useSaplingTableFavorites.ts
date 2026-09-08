@@ -1,3 +1,5 @@
+import { useTablePreferences, getActiveGroupFields } from './saplingTablePreferences'
+import { normalizeTableGrouping } from './saplingTableRouteState'
 import { computed, ref, watch, type Ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
@@ -15,6 +17,7 @@ interface FavoriteDialogState {
 }
 
 interface SaplingTableFavoritesProps {
+  allowGrouping?: boolean
   search: string
   sortBy: SortItem[]
   entityHandle: string
@@ -25,6 +28,7 @@ interface SaplingTableFavoritesProps {
 
 interface UseSaplingTableFavoritesOptions {
   props: SaplingTableFavoritesProps
+  getGroupableColumnKeys?: () => string[]
   localColumnFilters: Ref<Record<string, ColumnFilterItem>>
 }
 
@@ -32,8 +36,10 @@ interface UseSaplingTableFavoritesOptions {
 export function useSaplingTableFavorites({
   props,
   localColumnFilters,
+  getGroupableColumnKeys,
 }: UseSaplingTableFavoritesOptions) {
   const { t } = useI18n()
+  const preferences = useTablePreferences(computed(() => props.entityHandle))
   const route = useRoute()
   const router = useRouter()
   const currentPersonStore = useCurrentPersonStore()
@@ -124,6 +130,21 @@ export function useSaplingTableFavorites({
         search: getCurrentFavoriteSearch(),
         sortBy: getCurrentFavoriteSortBy(),
         filter: getCurrentFavoriteFilter(),
+        ...(props.allowGrouping
+          ? {
+              grouping: {
+                fields: getActiveGroupFields(
+                  preferences.value,
+                  props.entityTemplates.filter(
+                    (template) =>
+                      !getGroupableColumnKeys || getGroupableColumnKeys().includes(template.name),
+                  ),
+                  true,
+                ),
+                visible: preferences.value.showGrouping,
+              },
+            }
+          : {}),
       })
 
       closeFavoriteDialog()
@@ -198,6 +219,17 @@ export function useSaplingTableFavorites({
   async function selectFavorite(favorite: FavoriteItem) {
     const targetPath = buildFavoritePath(favorite)
     if (targetPath) {
+      // The router can still hold this worklist's URL after local history-only
+      // changes. Restore grouping even when pushing that same route is a no-op.
+      if (props.allowGrouping && favorite.grouping != null) {
+        const grouping = normalizeTableGrouping(favorite.grouping)
+        preferences.value = {
+          ...preferences.value,
+          groupField: '',
+          groupFields: grouping.fields,
+          showGrouping: grouping.visible,
+        }
+      }
       await router.push(targetPath)
     }
   }

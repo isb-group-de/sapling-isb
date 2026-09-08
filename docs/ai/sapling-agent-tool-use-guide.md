@@ -274,6 +274,12 @@ Before creating:
 4. Do not send generated primary keys or read-only fields.
 5. Send only meaningful business fields.
 
+Omit optional fields when the user has not provided a value; do not ask extra
+questions just to fill them. Declared `default`/`defaultRaw` values are applied
+by the backend when creating a record, including when a tool submits `null`
+for such a field. Optional fields without defaults remain empty. Send `null`
+in an update only when the user intends to clear a nullable field.
+
 Before updating:
 
 1. Load the current record with `generic_get`.

@@ -10,6 +10,12 @@ export function buildMimeMessage(
 ): string {
   const mixedBoundary = `mixed_${Date.now()}`;
   const alternativeBoundary = `alt_${Date.now()}`;
+  const relatedBoundary = `related_${Date.now()}`;
+  const inline = attachments.filter((attachment) => attachment.contentId);
+  const regular = attachments.filter((attachment) => !attachment.contentId);
+  const bodyType = inline.length
+    ? `multipart/related; boundary="${relatedBoundary}"`
+    : `multipart/alternative; boundary="${alternativeBoundary}"`;
   const headers = [
     ...(senderEmail ? [`From: ${senderEmail}`] : []),
     `To: ${delivery.toRecipients.join(', ')}`,
@@ -21,9 +27,10 @@ export function buildMimeMessage(
       : []),
     `Subject: ${encodeMimeHeader(delivery.subject)}`,
     'MIME-Version: 1.0',
-    attachments.length > 0
+    regular.length > 0
       ? `Content-Type: multipart/mixed; boundary="${mixedBoundary}"`
-      : `Content-Type: multipart/alternative; boundary="${alternativeBoundary}"`,
+      : `Content-Type: ${bodyType}`,
+    '',
     '',
   ];
 
@@ -44,33 +51,49 @@ export function buildMimeMessage(
     '',
   ].join('\r\n');
 
-  if (attachments.length === 0) {
-    return `${headers.join('\r\n')}${alternativeBody}`;
+  const body = inline.length
+    ? [
+        `--${relatedBoundary}`,
+        `Content-Type: multipart/alternative; boundary="${alternativeBoundary}"`,
+        '',
+        alternativeBody,
+        ...inline.map((attachment) =>
+          renderAttachment(attachment, relatedBoundary),
+        ),
+        `--${relatedBoundary}--`,
+        '',
+      ].join('\r\n')
+    : alternativeBody;
+  if (regular.length === 0) {
+    return `${headers.join('\r\n')}${body}`;
   }
 
-  const parts = [
-    `--${mixedBoundary}`,
-    `Content-Type: multipart/alternative; boundary="${alternativeBoundary}"`,
-    '',
-    alternativeBody,
-  ];
+  const parts = [`--${mixedBoundary}`, `Content-Type: ${bodyType}`, '', body];
 
-  for (const attachment of attachments) {
-    const content = fs.readFileSync(attachment.filePath).toString('base64');
-    parts.push(
-      `--${mixedBoundary}`,
-      `Content-Type: ${attachment.mimetype}; name="${escapeMimeValue(attachment.filename)}"`,
-      'Content-Transfer-Encoding: base64',
-      `Content-Disposition: attachment; filename="${escapeMimeValue(attachment.filename)}"`,
-      '',
-      content,
-      '',
-    );
+  for (const attachment of regular) {
+    parts.push(renderAttachment(attachment, mixedBoundary));
   }
 
   parts.push(`--${mixedBoundary}--`, '');
 
   return `${headers.join('\r\n')}${parts.join('\r\n')}`;
+}
+
+function renderAttachment(
+  attachment: MailAttachment,
+  boundary: string,
+): string {
+  const content = fs.readFileSync(attachment.filePath).toString('base64');
+  return [
+    `--${boundary}`,
+    `Content-Type: ${attachment.mimetype}; name="${escapeMimeValue(attachment.filename)}"`,
+    'Content-Transfer-Encoding: base64',
+    `Content-Disposition: ${attachment.contentId ? 'inline' : 'attachment'}; filename="${escapeMimeValue(attachment.filename)}"`,
+    ...(attachment.contentId ? [`Content-ID: <${attachment.contentId}>`] : []),
+    '',
+    content.match(/.{1,76}/g)?.join('\r\n') ?? '',
+    '',
+  ].join('\r\n');
 }
 
 function encodeMimeHeader(value: string): string {

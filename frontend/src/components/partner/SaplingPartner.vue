@@ -17,6 +17,7 @@
           <v-card-text class="sapling-stack-md sapling-partner-table-text pa-0 flex-grow-1">
             <div class="sapling-scroll-region sapling-partner-table-scroll">
               <SaplingTable
+                allow-grouping
                 :items="items"
                 :search="search ?? ''"
                 :page="page"
@@ -59,6 +60,7 @@
                 @delete-form-config="deleteFormConfig"
                 @save-current-view="saveCurrentView"
                 @update:visible-column-keys="onVisibleColumnKeysUpdate"
+                @update:groupable-column-keys="onGroupableColumnKeysUpdate"
                 @reload="loadData"
               />
             </div>
@@ -225,6 +227,7 @@ const {
   onColumnFiltersUpdate,
   onSortByUpdate,
   onVisibleColumnKeysUpdate,
+  onGroupableColumnKeysUpdate,
   resetToDefaultWorklist,
   selectFormConfig,
   setDefaultFormConfig,

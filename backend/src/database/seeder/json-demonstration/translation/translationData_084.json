@@ -1,0 +1,86 @@
+[
+  {
+    "entity": "global",
+    "property": "tableSettings",
+    "de": "Tabelleneinstellungen",
+    "en": "Table settings"
+  },
+  {
+    "entity": "global",
+    "property": "tableDeadlineHint",
+    "de": "Fristfärbung pro Feld. Bei mehreren Zeilenregeln hat überfällig Vorrang.",
+    "en": "Deadline coloring per field. Overdue takes precedence when multiple row rules apply."
+  },
+  {
+    "entity": "global",
+    "property": "tableDeadlineField",
+    "de": "Nur das Feld",
+    "en": "Field only"
+  },
+  {
+    "entity": "global",
+    "property": "tableDeadlineRow",
+    "de": "Zeilenhintergrund",
+    "en": "Row background"
+  },
+  {
+    "entity": "global",
+    "property": "tableShowGrouping",
+    "de": "Gruppierungsfeld einblenden",
+    "en": "Show grouping field"
+  },
+  {
+    "entity": "global",
+    "property": "tableGroupField",
+    "de": "Gruppieren nach",
+    "en": "Group by"
+  },
+  {
+    "entity": "global",
+    "property": "tableGroupEmpty",
+    "de": "Ohne Wert",
+    "en": "No value"
+  },
+  {
+    "entity": "global",
+    "property": "tableGroupPaging",
+    "de": "Gruppen können über mehrere Seiten verteilt sein.",
+    "en": "Groups can span multiple pages."
+  },
+  {
+    "entity": "global",
+    "property": "tableGroupDragHint",
+    "de": "Sichtbare Spaltenüberschriften zum Gruppieren hierher ziehen.",
+    "en": "Drag visible column headers here to group."
+  },
+  {
+    "entity": "global",
+    "property": "tableGroupAdd",
+    "de": "Gruppierung hinzufügen",
+    "en": "Add grouping"
+  },
+  {
+    "entity": "global",
+    "property": "tableGroupEarlier",
+    "de": "Gruppierung nach vorne",
+    "en": "Move grouping earlier"
+  },
+  {
+    "entity": "global",
+    "property": "tableGroupLater",
+    "de": "Gruppierung nach hinten",
+    "en": "Move grouping later"
+  },
+  {
+    "entity": "global",
+    "property": "tableGroupRemove",
+    "de": "Gruppierung entfernen",
+    "en": "Remove grouping"
+  },
+  {
+    "entity": "favorite",
+    "property": "grouping",
+    "de": "Gruppierung",
+    "en": "Grouping"
+  }
+]

@@ -150,6 +150,8 @@
 
     <SaplingMarkdownField
       ref="markdownField"
+      :entity-handle="entityHandle"
+      :item-handle="itemHandle"
       :model-value="bodyMarkdown"
       :label="translate('document.content')"
       :rows="10"
@@ -276,6 +278,8 @@ type MarkdownFieldInstance = InstanceType<typeof SaplingMarkdownField> & {
 }
 
 const props = defineProps<{
+  entityHandle?: string
+  itemHandle?: string | number
   canUpload?: boolean
   isUploading?: boolean
   failedUploads?: string[]

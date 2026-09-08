@@ -196,6 +196,10 @@ export function useSaplingTableComponent(props: UseSaplingTableProps, emit: UseS
     runSelectionScriptButton,
     runRowScriptButton,
   } = useSaplingTableActions({
+    getGroupableColumnKeys: () =>
+      (isMobileTable.value ? mobileCardHeaders.value : visibleHeaders.value).map(
+        (header) => header.key,
+      ),
     props,
     emit,
     localColumnFilters,

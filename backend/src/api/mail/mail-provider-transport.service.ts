@@ -23,6 +23,7 @@ import {
   type SupportedMailProvider,
 } from './mail-delivery.util';
 import { buildMimeMessage } from './mail-mime.util';
+import { resolveMailInlineImages } from './mail-inline-images.util';
 import { parseSupportedProvider } from './mail-sender-options.util';
 import { MailProviderSessionService } from './mail-provider-session.service';
 
@@ -69,6 +70,19 @@ export class MailProviderTransportService {
     attachments: MailAttachment[],
     em: EntityManager,
   ): Promise<SendResult> {
+    const inline = await resolveMailInlineImages(
+      em,
+      delivery.bodyHtml ?? '',
+      delivery.entity?.handle,
+      delivery.referenceHandle,
+    );
+    if (inline.attachments.length) {
+      delivery = {
+        ...delivery,
+        bodyHtml: inline.bodyHtml,
+      } as EmailDeliveryItem;
+      attachments = [...attachments, ...inline.attachments];
+    }
     const session = delivery.createdBy.session;
     if (!session) {
       throw new BadRequestException('mail.sessionNotFound');
@@ -185,6 +199,9 @@ export class MailProviderTransportService {
           '@odata.type': '#microsoft.graph.fileAttachment',
           name: attachment.filename,
           contentType: attachment.mimetype,
+          ...(attachment.contentId
+            ? { contentId: attachment.contentId, isInline: true }
+            : {}),
           contentBytes: fs.readFileSync(attachment.filePath).toString('base64'),
         })),
       },

@@ -54,6 +54,8 @@
             <div class="sapling-message-dialog__grid sapling-mail-dialog__grid">
               <SaplingDialogMailComposer
                 ref="composer"
+                :entity-handle="context?.entityHandle"
+                :item-handle="context?.itemHandle ?? undefined"
                 :inert="composerLocked"
                 :can-upload="canUpload"
                 :is-uploading="isUploading"

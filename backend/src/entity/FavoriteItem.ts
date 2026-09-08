@@ -93,6 +93,12 @@ export class FavoriteItem {
   @Property({ type: 'json', nullable: true })
   sortBy?: object;
 
+  /** Ordered grouping levels and grouping-area visibility. */
+  @ApiPropertyOptional()
+  @SaplingForm({ visible: false, tableVisible: false, mobileVisible: false })
+  @Property({ type: 'json', nullable: true })
+  grouping?: { fields: string[]; visible: boolean };
+
   /**
    * Optional query parameter (nullable).
    * @type {object}

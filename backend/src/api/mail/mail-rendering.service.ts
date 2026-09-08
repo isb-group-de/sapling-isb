@@ -8,6 +8,10 @@ import { MessageTemplateService } from '../template/message-template.service';
 import { MailPreviewDto, MailPreviewResponseDto } from './dto/mail.dto';
 import { normalizeEmailAddress } from './mail-delivery.util';
 import { renderMarkdownBlocks } from './markdown.util';
+import {
+  normalizeMailImageEmbeds,
+  resolveMailInlineImages,
+} from './mail-inline-images.util';
 
 @Injectable()
 export class MailRenderingService {
@@ -45,11 +49,13 @@ export class MailRenderingService {
       currentUser,
     );
     const content = previewDto.bodyMarkdown ?? template?.bodyMarkdown ?? '';
-    const bodySource = signature
-      ? [content.trimEnd(), signature.bodyMarkdown.trim()]
-          .filter(Boolean)
-          .join('\n\n')
-      : content;
+    const bodySource = normalizeMailImageEmbeds(
+      signature
+        ? [content.trimEnd(), signature.bodyMarkdown.trim()]
+            .filter(Boolean)
+            .join('\n\n')
+        : content,
+    );
     const renderOptions = {
       entityHandle: previewDto.entityHandle,
       locale: previewDto.clientLocale,
@@ -61,10 +67,20 @@ export class MailRenderingService {
       context,
       renderOptions,
     );
-    const bodyMarkdown = this.messageTemplateService.replacePlaceholders(
-      bodySource,
-      context,
-      renderOptions,
+    const bodyMarkdown = normalizeMailImageEmbeds(
+      this.messageTemplateService.replacePlaceholders(
+        bodySource,
+        context,
+        renderOptions,
+      ),
+    );
+
+    const bodyHtml = renderMarkdownBlocks(bodyMarkdown);
+    await resolveMailInlineImages(
+      em,
+      bodyHtml,
+      previewDto.entityHandle,
+      previewDto.itemHandle,
     );
 
     return {
@@ -102,7 +118,7 @@ export class MailRenderingService {
       ),
       subject,
       bodyMarkdown,
-      bodyHtml: renderMarkdownBlocks(bodyMarkdown),
+      bodyHtml,
       attachmentHandles: previewDto.attachmentHandles ?? [],
     };
   }

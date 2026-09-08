@@ -109,6 +109,44 @@
               @open-form-config="openFormConfigForTable"
               @add="openCreateDialog"
             >
+              <template #settings>
+                <SaplingTableSettings
+                  v-if="
+                    allowGrouping ||
+                    entityTemplates.some(
+                      (template) =>
+                        template.options?.includes('isDeadline') &&
+                        template.fieldAccess?.allowRead !== false,
+                    )
+                  "
+                  :entity-handle="entityHandle"
+                  :entity-templates="entityTemplates"
+                  :allow-grouping="allowGrouping === true"
+                />
+              </template>
+              <template
+                v-if="
+                  allowGrouping ||
+                  entityTemplates.some((template) => template.options?.includes('isDeadline'))
+                "
+                #mobile-settings="{ back }"
+              >
+                <SaplingTableSettingsPanel
+                  show-back
+                  @back="back"
+                  v-if="
+                    allowGrouping ||
+                    entityTemplates.some(
+                      (template) =>
+                        template.options?.includes('isDeadline') &&
+                        template.fieldAccess?.allowRead !== false,
+                    )
+                  "
+                  :entity-handle="entityHandle"
+                  :entity-templates="entityTemplates"
+                  :allow-grouping="allowGrouping === true"
+                />
+              </template>
               <template v-if="showSidePanelToggleButton" #mobile-leading>
                 <v-btn
                   data-tutorial="partner-filter-toggle"
@@ -155,6 +193,12 @@
         </div>
       </div>
     </div>
+
+    <SaplingTableGrouping
+      v-if="allowGrouping && preferences.showGrouping"
+      v-model="selectedGroups"
+      :fields="groupFields"
+    />
 
     <input
       ref="importInputRef"
@@ -365,6 +409,10 @@
 
 <script lang="ts" setup>
 // #region Imports
+import SaplingTableSettings from './SaplingTableSettings.vue'
+import SaplingTableSettingsPanel from './SaplingTableSettingsPanel.vue'
+import SaplingTableGrouping from './SaplingTableGrouping.vue'
+import { useSaplingTablePresentation } from '@/composables/table/useSaplingTablePresentation'
 import { computed, ref, watch } from 'vue'
 import SaplingSearch from '@/components/system/SaplingSearch.vue'
 import SaplingTableDesktopView from './SaplingTableDesktopView.vue'
@@ -542,6 +590,11 @@ const {
   openDeleteDialog,
   closeDeleteDialog,
 } = useSaplingTableComponent(props, emit)
+const { preferences, groupFields, selectedGroups } = useSaplingTablePresentation(
+  props,
+  computed(() => (isMobileTable.value ? mobileCardHeaders.value : visibleHeaders.value)),
+  emit,
+)
 
 const {
   isHeaderTranslationLoading,

@@ -24,6 +24,84 @@ const createTemplateField = (
 });
 
 describe('GenericPayloadService', () => {
+  const defaultTemplate = [
+    createTemplateField({
+      name: 'status',
+      isReference: true,
+      kind: 'm:1',
+      referenceName: 'effortEstimateStatus',
+      nullable: true,
+      default: 'open',
+    }),
+    createTemplateField({ name: 'isActive', type: 'boolean', default: true }),
+    createTemplateField({ name: 'count', type: 'number', default: 0 }),
+    createTemplateField({ name: 'enabled', type: 'boolean', default: false }),
+    createTemplateField({ name: 'label', default: '' }),
+    createTemplateField({ name: 'code', defaultRaw: 'gen_random_uuid()' }),
+    createTemplateField({ name: 'description', nullable: true, default: null }),
+  ];
+  const createPayloadService = () =>
+    new GenericPayloadService(
+      new GenericReferenceService(
+        undefined!,
+        undefined!,
+        undefined!,
+        undefined!,
+      ),
+    );
+
+  it.each([
+    {},
+    { status: null },
+    { status: undefined },
+    { status: { handle: null } },
+  ])(
+    'preserves the effort estimate status default for an unspecified status: %p',
+    (data) => {
+      expect(
+        createPayloadService().prepareCreatePayload(defaultTemplate, {
+          title: 'Estimate',
+          ...data,
+        }),
+      ).toStrictEqual({ title: 'Estimate' });
+    },
+  );
+
+  it('preserves scalar and SQL defaults while keeping optional fields without defaults empty', () => {
+    expect(
+      createPayloadService().prepareCreatePayload(defaultTemplate, {
+        isActive: null,
+        count: null,
+        enabled: null,
+        label: null,
+        code: null,
+        description: null,
+      }),
+    ).toEqual({ description: null });
+  });
+
+  it('retains explicit create values including false, zero, and empty strings', () => {
+    const data = {
+      status: 'closed',
+      isActive: false,
+      count: 0,
+      enabled: true,
+      label: '',
+    };
+    expect(
+      createPayloadService().prepareCreatePayload(defaultTemplate, { ...data }),
+    ).toEqual(data);
+  });
+
+  it('allows updates to clear nullable fields even when they have defaults', () => {
+    expect(
+      createPayloadService().prepareUpdatePayload(defaultTemplate, {
+        status: null,
+        description: null,
+      }),
+    ).toEqual({ status: null, description: null });
+  });
+
   it('removes client-managed timestamps and a null handle from mutation payloads', () => {
     const referenceService = {
       reduceReferenceFields: jest.fn(),

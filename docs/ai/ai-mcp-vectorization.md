@@ -71,6 +71,11 @@ The implementation is divided by lifecycle responsibility:
 - `AiChatQueueService` persists queued and steer inputs, applies steer-first
   then FIFO ordering, and resumes queued work after a restart.
 
+Before each queued input runs, the queue reloads the person's security principal
+through `CurrentService`, including roles, stages, entity permissions, and field
+permissions. The queued item's person relation alone is not an authorization
+context. Missing or inactive people cannot execute queued AI work.
+
 Assistant responses are durable from the beginning of a run. The session stores
 its response lifecycle and read marker, while streamed message content is
 checkpointed at a bounded interval and before tool execution. Completion and

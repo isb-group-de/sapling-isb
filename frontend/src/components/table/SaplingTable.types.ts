@@ -9,6 +9,7 @@ import type {
 } from '@/composables/table/useSaplingTableComponent'
 
 export type SaplingTableProps = UseSaplingTableProps & {
+  allowGrouping?: boolean
   enableTutorial?: boolean
   showFavorite?: boolean
   showAdd?: boolean
@@ -32,6 +33,7 @@ export type SaplingTableProps = UseSaplingTableProps & {
 }
 
 export type SaplingTableEmit = UseSaplingTableEmit & {
+  (event: 'update:groupableColumnKeys', value: string[]): void
   (event: 'toggleSidePanel'): void
   (event: 'resetWorklist'): void
   (event: 'selectFormConfig', value: FormConfigSelectionHandle): void

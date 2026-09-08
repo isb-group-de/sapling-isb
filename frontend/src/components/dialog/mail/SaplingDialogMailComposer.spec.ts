@@ -52,6 +52,15 @@ const baseProps = {
 }
 
 describe('SaplingDialogMailComposer', () => {
+  it('passes the record context to the image-capable Markdown editor', () => {
+    const wrapper = mount(SaplingDialogMailComposer, {
+      props: { ...baseProps, entityHandle: 'ticket', itemHandle: 7 },
+      global: { plugins: [vuetify, i18n], stubs: { SaplingMarkdownField: true } },
+    })
+    const editor = wrapper.findComponent({ ref: 'markdownField' })
+    expect(editor.props('entityHandle')).toBe('ticket')
+    expect(editor.props('itemHandle')).toBe(7)
+  })
   it('inserts a template body at the cursor without replacing the subject or existing message', async () => {
     const insert = vi.fn()
     const wrapper = mount(SaplingDialogMailComposer, {

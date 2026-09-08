@@ -24,7 +24,10 @@
         <template v-for="column in columns" :key="String(column.key ?? column.title ?? '')">
           <th
             :class="getHeaderCellClasses(column)"
-            :draggable="columnOrderEditing && isDataColumn(column)"
+            :draggable="
+              isDataColumn(column) &&
+              (columnOrderEditing || presentation?.canGroup(String(column.key)))
+            "
             @dragstart="onColumnDragStart($event, column)"
             @dragend="clearColumnDrag"
             @dragover="onColumnDragOver($event, column)"
@@ -132,6 +135,16 @@
     </template>
 
     <template #item="{ item, index }">
+      <tr
+        v-for="group in presentation?.groupHeadings(index) ?? []"
+        :key="group.key"
+        class="sapling-table-group-heading"
+        v-css-vars="{ '--sapling-group-level': String(group.level) }"
+      >
+        <th :colspan="visibleHeaders.length" scope="rowgroup">
+          {{ group.label }}
+        </th>
+      </tr>
       <SaplingTableRow
         v-memo="[
           item,
@@ -143,6 +156,7 @@
           showActions,
           props.allowRowDoubleClick,
           visibleHeaders,
+          presentation?.preferences.value,
         ]"
         :item="item"
         :columns="visibleHeaders"
@@ -183,7 +197,9 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, defineAsyncComponent, ref } from 'vue'
+import { TABLE_GROUP_DRAG_TYPE } from '@/composables/table/saplingTablePreferences'
+import { tablePresentationKey } from './saplingTablePresentation'
+import { computed, defineAsyncComponent, inject, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { DEFAULT_PAGE_SIZE_OPTIONS } from '@/constants/project.constants'
 import type { EntityItem, SaplingGenericItem, ScriptButtonItem } from '@/entity/entity'
@@ -258,6 +274,7 @@ const props = defineProps<{
 
 const emit = defineEmits<SaplingTableDesktopViewEmit>()
 const { t, te } = useI18n()
+const presentation = inject(tablePresentationKey, null)
 const draggedColumnKey = ref<string | null>(null)
 const dragTarget = ref<{ key: string; placement: SaplingTableColumnPlacement } | null>(null)
 let dragPreviewElement: HTMLElement | null = null
@@ -327,9 +344,13 @@ function getColumnHelpText(column: TableColumnLike): string {
 }
 
 function onColumnDragStart(event: DragEvent, column: TableColumnLike): void {
-  if (!props.columnOrderEditing || !isDataColumn(column)) return
-
+  if (!isDataColumn(column)) return
   const key = String(column.key)
+  if (presentation?.canGroup(key)) event.dataTransfer?.setData(TABLE_GROUP_DRAG_TYPE, key)
+  if (!props.columnOrderEditing) {
+    if (event.dataTransfer) event.dataTransfer.effectAllowed = 'copy'
+    return
+  }
   draggedColumnKey.value = key
   event.dataTransfer?.setData(SAPLING_TABLE_COLUMN_DRAG_TYPE, key)
   event.dataTransfer?.setData('text/plain', key)

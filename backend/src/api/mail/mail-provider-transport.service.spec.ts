@@ -1,4 +1,8 @@
 import { describe, expect, it, jest } from '@jest/globals';
+jest.mock('fs', () => ({
+  ...jest.requireActual<typeof import('fs')>('fs'),
+  readFileSync: () => Buffer.from('png-bytes'),
+}));
 
 jest.mock('@mikro-orm/core', () => ({
   DeferMode: {
@@ -25,6 +29,7 @@ jest.mock('./mail-provider-session.service', () => ({
 }));
 
 import { MailProviderTransportService } from './mail-provider-transport.service';
+import { Client } from '@microsoft/microsoft-graph-client';
 
 function createDelivery(accessToken?: string) {
   return {
@@ -57,6 +62,61 @@ function createTransport() {
 }
 
 describe('MailProviderTransportService', () => {
+  it('sends real Graph inline attachments without replacing the persisted body', async () => {
+    const post = jest.fn<(...args: unknown[]) => Promise<undefined>>(
+      async () => undefined,
+    );
+    const client = jest
+      .spyOn(Client, 'init')
+      .mockReturnValue({ api: () => ({ post }) } as never);
+    try {
+      const service = new MailProviderTransportService(
+        {} as never,
+        {} as never,
+      );
+      const delivery = {
+        ...createDelivery('token'),
+        entity: { handle: 'ticket' },
+        referenceHandle: '7',
+        subject: 'Screenshot',
+        toRecipients: ['customer@example.com'],
+        bodyHtml: '<p>Before<img src="sapling-document:42" />After</p>',
+      };
+      await service.send(delivery as never, [], {
+        find: async () => [
+          {
+            handle: 42,
+            entity: { handle: 'ticket' },
+            reference: '7',
+            filename: 'image.png',
+            mimetype: 'image/png',
+            path: 'image',
+          },
+        ],
+      } as never);
+      expect(post).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: expect.objectContaining({
+            body: {
+              contentType: 'HTML',
+              content:
+                '<p>Before<img src="cid:sapling-image-42@sapling" />After</p>',
+            },
+            attachments: [
+              expect.objectContaining({
+                contentId: 'sapling-image-42@sapling',
+                isInline: true,
+                contentBytes: Buffer.from('png-bytes').toString('base64'),
+              }),
+            ],
+          }),
+        }),
+      );
+      expect(delivery.bodyHtml).toContain('sapling-document:42');
+    } finally {
+      client.mockRestore();
+    }
+  });
   it('fails delivery instead of silently omitting a deleted attachment', async () => {
     const { service } = createTransport();
     const em = { find: jest.fn(async () => [{ handle: 1 }]) };

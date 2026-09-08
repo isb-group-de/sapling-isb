@@ -1,3 +1,4 @@
+import { isDeadlineTemplate } from './saplingTablePreferences'
 import { computed, type ComputedRef, type Ref } from 'vue'
 import type { EntityTemplate } from '@/entity/structure'
 import { useCurrentPermissionStore } from '@/stores/currentPermissionStore'
@@ -15,6 +16,7 @@ const TABLE_VALUE_REFERENCE_KINDS = ['m:1', '1:1']
 export function useSaplingTableProjection(options: {
   entityTemplates: ComputedRef<EntityTemplate[]>
   temporaryVisibleColumnKeys: Ref<string[]>
+  groupFields?: ComputedRef<string[]>
   additionalListProjectionFields: string[]
   currentPermissionStore: ReturnType<typeof useCurrentPermissionStore>
   genericStore: ReturnType<typeof useGenericStore>
@@ -29,7 +31,10 @@ export function useSaplingTableProjection(options: {
 
   async function preloadValueReferenceMetadata(nextEntityTemplates: EntityTemplate[]) {
     const permissions = currentPermissionStore.accumulatedPermission ?? []
-    const projectedFields = getListProjectionFieldNames(nextEntityTemplates, permissions)
+    const projectedFields = [
+      ...getListProjectionFieldNames(nextEntityTemplates, permissions),
+      ...(options.groupFields?.value ?? []),
+    ]
     const rootRelations = [
       ...new Set([
         ...getReadableReferenceRelationNames(nextEntityTemplates, permissions, projectedFields),
@@ -91,6 +96,16 @@ export function useSaplingTableProjection(options: {
               template.name === 'updatedAt' &&
               template.isPersistent !== false &&
               template.fieldAccess?.allowRead !== false,
+          )
+          .map((template) => template.name),
+        ...nextEntityTemplates
+          .filter(
+            (template) =>
+              (isDeadlineTemplate(template) ||
+                options.groupFields?.value.includes(template.name)) &&
+              template.isPersistent !== false &&
+              template.fieldAccess?.allowRead !== false &&
+              canReadReferenceTemplate(template, permissions),
           )
           .map((template) => template.name),
         ...additionalListProjectionFields.filter((fieldName) =>

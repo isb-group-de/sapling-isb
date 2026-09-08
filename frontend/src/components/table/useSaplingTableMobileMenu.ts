@@ -6,7 +6,7 @@ import type {
 } from '@/composables/dialog/saplingDialogEdit.utils'
 import type { SaplingTableAutoRefreshInterval } from '@/composables/table/useSaplingTableAutoRefresh'
 
-type MobileMenuSection = 'main' | 'refresh' | 'favorites' | 'views'
+type MobileMenuSection = 'main' | 'refresh' | 'favorites' | 'views' | 'settings'
 type MobileMenuUtilityEvent = 'downloadJson' | 'downloadCsv' | 'downloadCsvTemplate' | 'importCsv'
 
 interface SaplingTableMobileMenuCallbacks {

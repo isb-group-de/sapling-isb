@@ -44,6 +44,7 @@ export interface UpdateConflictDialogState {
 }
 
 interface UseSaplingTableActionsProps {
+  allowGrouping?: boolean
   items: SaplingGenericItem[]
   search: string
   sortBy: SortItem[]
@@ -70,6 +71,7 @@ type UseSaplingTableActionsEmit = {
 }
 
 interface UseSaplingTableActionsOptions {
+  getGroupableColumnKeys?: () => string[]
   props: UseSaplingTableActionsProps
   emit: UseSaplingTableActionsEmit
   localColumnFilters: Ref<Record<string, ColumnFilterItem>>
@@ -85,6 +87,7 @@ export function useSaplingTableActions({
   selectedItems,
   selectedRows,
   clearSelection,
+  getGroupableColumnKeys,
 }: UseSaplingTableActionsOptions) {
   const { t } = useI18n()
   const changeLogDialogStore = useChangeLogDialogStore()
@@ -108,7 +111,7 @@ export function useSaplingTableActions({
     saveFavorite,
     selectFavorite,
     deleteFavorite,
-  } = useSaplingTableFavorites({ props, localColumnFilters })
+  } = useSaplingTableFavorites({ props, localColumnFilters, getGroupableColumnKeys })
   const {
     isDownloadingJSON,
     isImportingCSV,

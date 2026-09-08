@@ -239,3 +239,88 @@
 .sapling-table-chip .v-icon {
   color: inherit;
 }
+
+.sapling-table-settings {
+  width: min(24rem, calc(100vw - 2 * var(--sapling-gap-md)));
+  max-height: 75vh;
+  overflow-y: auto;
+}
+
+.sapling-table-group-heading {
+  padding: var(--sapling-gap-sm) var(--sapling-gap-md);
+  background: var(--sapling-surface-fill);
+  color: var(--sapling-surface-text);
+  font-size: var(--sapling-text-label-size-sm);
+  text-align: start;
+}
+
+.sapling-table-deadline--past {
+  --sapling-table-deadline-color: var(--v-theme-error);
+}
+
+.sapling-table-deadline--upcoming {
+  --sapling-table-deadline-color: var(--v-theme-warning);
+}
+
+/* Dense desktop rows need more contrast than the large mobile card surface.
+   Paint on every cell above its glass underlay, including sticky edge cells. */
+:root
+  .sapling-table
+  tbody
+  tr.sapling-table-row:is(.sapling-table-deadline--past, .sapling-table-deadline--upcoming)
+  > td {
+  --sapling-table-deadline-opacity: 0.28;
+  background-image: linear-gradient(
+    rgba(var(--sapling-table-deadline-color), var(--sapling-table-deadline-opacity)),
+    rgba(var(--sapling-table-deadline-color), var(--sapling-table-deadline-opacity))
+  ) !important;
+}
+
+.sapling-table-mobile-card:is(.sapling-table-deadline--past, .sapling-table-deadline--upcoming) {
+  background-image: linear-gradient(
+    rgba(var(--sapling-table-deadline-color), var(--v-activated-opacity)),
+    rgba(var(--sapling-table-deadline-color), var(--v-activated-opacity))
+  ) !important;
+}
+
+.sapling-table-settings__hint .v-list-item-subtitle {
+  -webkit-line-clamp: unset;
+  white-space: normal;
+}
+
+.sapling-table-grouping {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 auto;
+  gap: var(--sapling-gap-xs);
+  padding: var(--sapling-gap-sm);
+  border: 1px dashed var(--sapling-surface-border-muted);
+  border-radius: var(--sapling-radius-sm);
+}
+.sapling-table-grouping--over {
+  border-color: rgb(var(--v-theme-primary));
+  background: var(--sapling-interactive-hover-fill);
+}
+.sapling-table-grouping__levels,
+.sapling-table-grouping__level {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sapling-gap-xs);
+}
+.sapling-table-grouping__level {
+  padding: var(--sapling-gap-xs);
+  border-radius: var(--sapling-radius-sm);
+  background: var(--sapling-interactive-hover-fill);
+  cursor: grab;
+}
+.sapling-table-grouping__hint {
+  font-size: var(--sapling-text-label-size-sm);
+  opacity: var(--sapling-opacity-secondary);
+}
+.sapling-table-group-heading > th,
+h3.sapling-table-group-heading {
+  padding-inline-start: calc(
+    var(--sapling-gap-md) * (1 + var(--sapling-group-level, 0))
+  ) !important;
+}

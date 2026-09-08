@@ -1,6 +1,7 @@
 <template>
   <SaplingTable
     enable-tutorial
+    allow-grouping
     :key="entityHandle"
     :entity-handle="entityHandle"
     :items="items"
@@ -38,6 +39,7 @@
     @delete-form-config="deleteFormConfig"
     @save-current-view="saveCurrentView"
     @update:visible-column-keys="onVisibleColumnKeysUpdate"
+    @update:groupable-column-keys="onGroupableColumnKeysUpdate"
     @reload="loadData"
   />
 </template>
@@ -85,12 +87,15 @@ const {
   onColumnFiltersUpdate,
   onSortByUpdate,
   onVisibleColumnKeysUpdate,
+  onGroupableColumnKeysUpdate,
   resetToDefaultWorklist,
   selectFormConfig,
   setDefaultFormConfig,
   deletePersonalFormConfig,
   savePersonalTableView,
-} = useSaplingTable(entityHandle, DEFAULT_PAGE_SIZE_MEDIUM, true)
+} = useSaplingTable(entityHandle, DEFAULT_PAGE_SIZE_MEDIUM, true, true, () => ({}), [], {
+  allowGrouping: true,
+})
 
 async function saveCurrentView(request: {
   name: string

@@ -1,3 +1,7 @@
+import { useTablePreferences } from '../saplingTablePreferences'
+import { buildFavoritePath } from '@/utils/saplingFavoriteNavigation'
+import { readSaplingTableRouteState } from '../saplingTableRouteState'
+import type { EntityTemplate } from '@/entity/structure'
 import { flushPromises } from '@vue/test-utils'
 import { reactive, ref } from 'vue'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -82,11 +86,12 @@ function createEntity(): EntityItem {
 
 function createSubject() {
   const props = reactive({
+    allowGrouping: false,
     search: ' open ',
     sortBy: [{ key: 'title', order: 'asc' as const }],
     entityHandle: 'ticket',
     entity: createEntity(),
-    entityTemplates: [],
+    entityTemplates: [] as EntityTemplate[],
     parentFilter: undefined,
   })
 
@@ -112,6 +117,34 @@ beforeEach(() => {
 })
 
 describe('useSaplingTableFavorites', () => {
+  it('saves ordered grouping and restores it through the worklist URL, including no grouping', async () => {
+    const { props, subject } = createSubject()
+    props.allowGrouping = true
+    props.entityTemplates = ['status', 'priority'].map(
+      (name) => ({ name, type: 'string' }) as EntityTemplate,
+    )
+    const prefs = useTablePreferences(ref('ticket'))
+    prefs.value = { ...prefs.value, showGrouping: true, groupFields: ['status', 'priority'] }
+    subject.favoriteDialog.value.title = 'Grouped tickets'
+    await subject.saveFavorite()
+    const saved = mocks.apiCreate.mock.calls[mocks.apiCreate.mock.calls.length - 1]![1]
+    expect(saved.grouping).toEqual({ fields: ['status', 'priority'], visible: true })
+    const path = buildFavoritePath({ ...favorite, ...saved })!
+    const query = Object.fromEntries(new URLSearchParams(path.split('?')[1]))
+    expect(readSaplingTableRouteState(query, true).grouping).toEqual(saved.grouping)
+    prefs.value = { ...prefs.value, showGrouping: false }
+    await subject.selectFavorite({ ...favorite, ...saved })
+    expect(prefs.value.showGrouping).toBe(true)
+    expect(prefs.value.groupFields).toEqual(['status', 'priority'])
+    prefs.value = { ...prefs.value, showGrouping: false }
+    subject.favoriteDialog.value.title = 'Ungrouped tickets'
+    await subject.saveFavorite()
+    expect(mocks.apiCreate.mock.calls[mocks.apiCreate.mock.calls.length - 1]![1].grouping).toEqual({
+      fields: [],
+      visible: false,
+    })
+  })
+
   it('loads the current entity favorites and marks the matching route active', async () => {
     const { subject } = createSubject()
     await flushPromises()

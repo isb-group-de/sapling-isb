@@ -8,6 +8,7 @@ export type MailAttachment = {
   filename: string;
   mimetype: string;
   filePath: string;
+  contentId?: string;
 };
 
 export type SendResult = {

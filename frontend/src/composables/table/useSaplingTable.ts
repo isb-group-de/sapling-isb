@@ -20,6 +20,8 @@ import { useSaplingTableProjection } from './useSaplingTableProjection'
 import { useSaplingTableQueryState } from './useSaplingTableQueryState'
 import { useSaplingTableControls } from './useSaplingTableControls'
 import { useSaplingTableFilterRestoration } from './useSaplingTableFilterRestoration'
+import { getActiveGroupFields, useTablePreferences } from './saplingTablePreferences'
+import { canReadReferenceTemplate, isVisibleTableTemplate } from '@/utils/saplingTableUtil'
 import { isAbortError } from './saplingTableData.utils'
 // #endregion
 
@@ -35,6 +37,7 @@ export type SaplingTableInitialLoadContext = {
 }
 
 export type SaplingTableBehaviorOptions = {
+  allowGrouping?: boolean
   searchFieldNames?: string[]
   applyDefaultOpenChipFilters?: boolean
 }
@@ -127,6 +130,32 @@ export function useSaplingTable(
   const isLoading = computed(
     () => genericStore.getState(entityHandle.value).isLoading || isDataLoading.value,
   )
+  const preferences = useTablePreferences(entityHandle)
+  const groupableColumnKeys = ref<string[] | null>(null)
+  const onGroupableColumnKeysUpdate = (keys: string[]) => {
+    groupableColumnKeys.value = keys
+  }
+  const groupFields = computed(() =>
+    getActiveGroupFields(
+      preferences.value,
+      entityTemplates.value.filter(
+        (template) =>
+          canReadReferenceTemplate(template, currentPermissionStore.accumulatedPermission ?? []) &&
+          (groupableColumnKeys.value
+            ? groupableColumnKeys.value.includes(template.name)
+            : isVisibleTableTemplate(template, currentPermissionStore.accumulatedPermission ?? [])),
+      ),
+      behaviorOptions.allowGrouping === true,
+    ),
+  )
+  watch(
+    () => groupFields.value.join('|'),
+    () => {
+      if (!isInitialized.value || isResettingEntityState.value) return
+      page.value = 1
+      void preloadValueReferenceMetadata(entityTemplates.value)
+    },
+  )
   const {
     buildListProjectionFields,
     listProjectionFields,
@@ -136,6 +165,7 @@ export function useSaplingTable(
   } = useSaplingTableProjection({
     entityTemplates,
     temporaryVisibleColumnKeys,
+    groupFields,
     additionalListProjectionFields,
     currentPermissionStore,
     genericStore,
@@ -164,6 +194,12 @@ export function useSaplingTable(
     parentFilter,
     entityTemplates,
     referenceSearchTemplates,
+    groupFields,
+    grouping: computed(() =>
+      behaviorOptions.allowGrouping
+        ? { fields: groupFields.value, visible: preferences.value.showGrouping }
+        : undefined,
+    ),
     listProjectionFields,
     searchFieldNames: behaviorOptions.searchFieldNames,
   })
@@ -257,6 +293,14 @@ export function useSaplingTable(
 
   function resetEntityState() {
     const routeState = getRouteState()
+    if (behaviorOptions.allowGrouping && routeState.grouping) {
+      preferences.value = {
+        ...preferences.value,
+        groupField: '',
+        groupFields: routeState.grouping.fields,
+        showGrouping: routeState.grouping.visible,
+      }
+    }
     items.value = []
     totalItems.value = 0
     headers.value = []
@@ -486,6 +530,13 @@ export function useSaplingTable(
     isDataLoading.value = false
 
     try {
+      if (behaviorOptions.allowGrouping)
+        preferences.value = {
+          ...preferences.value,
+          groupField: '',
+          groupFields: [],
+          showGrouping: false,
+        }
       search.value = ''
       page.value = 1
       itemsPerPage.value = itemsPerPageDefault.value
@@ -502,7 +553,9 @@ export function useSaplingTable(
       })
 
       const query = { ...route.query }
-      ;['search', 'page', 'itemsPerPage', 'sortBy', 'filter'].forEach((key) => delete query[key])
+      ;['search', 'page', 'itemsPerPage', 'sortBy', 'filter', 'grouping'].forEach(
+        (key) => delete query[key],
+      )
       await router.replace({ path: route.path, query, hash: route.hash })
       await nextTick()
 
@@ -514,6 +567,7 @@ export function useSaplingTable(
           defaultItemsPerPage: itemsPerPageDefault.value,
           sortBy: [],
           filter: null,
+          grouping: behaviorOptions.allowGrouping ? { fields: [], visible: false } : undefined,
         },
         Boolean(isUseQueryParameter),
       )
@@ -557,6 +611,7 @@ export function useSaplingTable(
     onColumnFiltersUpdate,
     onSortByUpdate,
     onVisibleColumnKeysUpdate,
+    onGroupableColumnKeysUpdate,
     resetToDefaultWorklist,
     selectFormConfig,
     setDefaultFormConfig,

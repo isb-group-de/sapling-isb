@@ -3,13 +3,6 @@
     class="sapling-table-toolbar-action-group"
     :class="{ 'sapling-table-toolbar-action-group--mobile': isMobileTable }"
   >
-    <v-btn
-      v-if="automationPerson.isAdministrator && entityHandle"
-      prepend-icon="mdi-transit-connection-variant"
-      variant="tonal"
-      @click="openAutomationInspector(entityHandle)"
-      >{{ t('global.automations') }}</v-btn
-    >
     <v-btn-group
       v-if="isMobileTable"
       class="sapling-action-button-group sapling-table-toolbar-action-group__mobile"
@@ -46,6 +39,20 @@
           class="glass-panel sapling-table-mobile-overflow-menu"
           nav
         >
+          <v-list-item
+            v-if="$slots['mobile-settings']"
+            prepend-icon="mdi-cog-outline"
+            :title="$t('global.tableSettings')"
+            @click="mobileMenuSection = 'settings'"
+          >
+            <template #append><v-icon>mdi-chevron-right</v-icon></template>
+          </v-list-item>
+          <v-list-item
+            v-if="automationPerson.isAdministrator && entityHandle"
+            prepend-icon="mdi-transit-connection-variant"
+            :title="t('global.automations')"
+            @click="openMobileAutomations"
+          />
           <v-list-item
             data-tutorial="table-refresh"
             prepend-icon="mdi-refresh"
@@ -112,6 +119,9 @@
           />
         </v-list>
 
+        <template v-else-if="mobileMenuSection === 'settings'">
+          <slot name="mobile-settings" :back="showMobileMenuMain" />
+        </template>
         <v-list
           v-else-if="mobileMenuSection === 'refresh'"
           density="compact"
@@ -282,6 +292,7 @@
         divided
       >
         <slot name="leading" />
+        <slot name="settings" />
 
         <SaplingTableRefreshMenu
           data-tutorial="table-refresh"
@@ -471,6 +482,12 @@
 
           <v-list density="compact" class="glass-panel" nav>
             <v-list-item
+              v-if="automationPerson.isAdministrator && entityHandle"
+              prepend-icon="mdi-transit-connection-variant"
+              :title="t('global.automations')"
+              @click="openAutomationInspector(entityHandle)"
+            />
+            <v-list-item
               prepend-icon="mdi-code-json"
               :title="$t('global.downloadJson')"
               @click="emit('downloadJson')"
@@ -577,5 +594,9 @@ function getRefreshIntervalLabel(intervalMinutes: SaplingTableAutoRefreshInterva
   return intervalMinutes === 1
     ? t('global.refreshEveryMinute')
     : t('global.refreshEveryMinutes', { count: intervalMinutes })
+}
+function openMobileAutomations() {
+  mobileMenuOpen.value = false
+  if (props.entityHandle) openAutomationInspector(props.entityHandle)
 }
 </script>

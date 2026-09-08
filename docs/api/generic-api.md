@@ -181,6 +181,13 @@ Rules:
   server-managed timestamp cleanup. Their owner field is also ignored and
   rebound to the parent record by the backend before field-permission checks.
 - Required fields come from template metadata.
+- On create, omitted or null values for fields with a declared `default` or
+  `defaultRaw` leave the ORM/database default in effect. For example, an effort
+  estimate created with no status or with `status: null` receives status `open`.
+  Explicit values, including `false`, `0`, and empty strings, are preserved;
+  nullable numeric/unique blank-string normalization still applies. Optional
+  fields without a default stay empty. Updates can still explicitly clear a
+  nullable field with `null`.
 - Relation fields can usually be sent as handles or relation-like values accepted by the payload service.
   Collection relations accept arrays of handles,
   so related records can be persisted as part of the initial create lifecycle.

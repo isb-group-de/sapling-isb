@@ -22,6 +22,8 @@ export function useSaplingTableQueryState(options: {
   entityTemplates: ComputedRef<EntityTemplate[]>
   referenceSearchTemplates: ComputedRef<Record<string, EntityTemplate[]>>
   listProjectionFields: ComputedRef<string[]>
+  groupFields?: ComputedRef<string[]>
+  grouping?: ComputedRef<import('./saplingTableRouteState').TableGroupingState | undefined>
   searchFieldNames?: string[]
 }) {
   const {
@@ -74,7 +76,15 @@ export function useSaplingTableQueryState(options: {
         )
         .map((template) => template.name),
     )
-    return sortBy.value.filter((sortItem) => validTemplateKeys.has(sortItem.key))
+    const sorts = sortBy.value.filter((sortItem) => validTemplateKeys.has(sortItem.key))
+    const groups = options.groupFields?.value ?? []
+    return [
+      ...groups.map(
+        (key) =>
+          ({ key, order: sorts.find((sort) => sort.key === key)?.order ?? 'asc' }) as SortItem,
+      ),
+      ...sorts.filter((sort) => !groups.includes(sort.key)),
+    ]
   })
 
   // Stable serialization of the dynamic query inputs. Watching this avoids
@@ -87,6 +97,7 @@ export function useSaplingTableQueryState(options: {
       page: page.value,
       itemsPerPage: itemsPerPage.value,
       sortBy: validSortBy.value,
+      grouping: options.grouping?.value,
       filter: activeFilter.value,
       fields: listProjectionFields.value,
     }),
@@ -130,6 +141,7 @@ export function useSaplingTableQueryState(options: {
         itemsPerPage: itemsPerPage.value,
         defaultItemsPerPage: itemsPerPageDefault.value,
         sortBy: validSortBy.value,
+        grouping: options.grouping?.value,
         filter: urlFilter.value,
       },
       Boolean(isUseQueryParameter),

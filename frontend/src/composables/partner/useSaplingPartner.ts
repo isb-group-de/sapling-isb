@@ -74,14 +74,23 @@ export function useSaplingPartner(entityHandle: Ref<string>) {
     onColumnFiltersUpdate,
     onSortByUpdate,
     onVisibleColumnKeysUpdate,
+    onGroupableColumnKeysUpdate,
     resetToDefaultWorklist,
     selectFormConfig,
     setDefaultFormConfig,
     deletePersonalFormConfig,
     savePersonalTableView,
-  } = useSaplingTable(entityHandle, undefined, true, true, () => ({
-    beforeInitialLoad: prepareInitialPartnerFilter,
-  }))
+  } = useSaplingTable(
+    entityHandle,
+    undefined,
+    true,
+    true,
+    () => ({
+      beforeInitialLoad: prepareInitialPartnerFilter,
+    }),
+    [],
+    { allowGrouping: true },
+  )
 
   const tableKey = computed(() => `${entityHandle.value}-table`)
   const filterDrawerKey = computed(() => `${entityHandle.value}-filter`)
@@ -324,6 +333,7 @@ export function useSaplingPartner(entityHandle: Ref<string>) {
     onColumnFiltersUpdate,
     onSortByUpdate,
     onVisibleColumnKeysUpdate,
+    onGroupableColumnKeysUpdate,
     resetToDefaultWorklist,
     selectFormConfig,
     setDefaultFormConfig,

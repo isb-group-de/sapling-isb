@@ -3,11 +3,14 @@
   <tr
     :data-tutorial="index === 0 ? 'table-first-row' : undefined"
     class="sapling-table-row"
-    :class="{
-      'active-row': props.isActive,
-      'selected-row': !props.multiSelect && props.isSelected,
-      'multi-selected-row': props.multiSelect && props.isSelected,
-    }"
+    :class="[
+      deadlineClass,
+      {
+        'active-row': props.isActive,
+        'selected-row': !props.multiSelect && props.isSelected,
+        'multi-selected-row': props.multiSelect && props.isSelected,
+      },
+    ]"
     tabindex="0"
     :aria-label="rowLabel"
     @mousedown="onRowMouseDown($event, index)"
@@ -167,12 +170,16 @@
           :value="getCellValue(item, col.key)"
           :date-value="getCellValue(item, `${String(col.key ?? '')}_date`)"
           :time-value="getCellValue(item, `${String(col.key ?? '')}_time`)"
-          :is-deadline="'options' in col && col.options?.includes('isDeadline')"
+          :is-deadline="
+            'options' in col && col.options?.includes('isDeadline') && isFieldDeadline(col.name)
+          "
         />
         <SaplingCellDate
           v-else-if="isDateColumn(col)"
           :value="getCellValue(item, col.key)"
-          :is-deadline="'options' in col && col.options?.includes('isDeadline')"
+          :is-deadline="
+            'options' in col && col.options?.includes('isDeadline') && isFieldDeadline(col.name)
+          "
         />
         <SaplingCellTime v-else-if="isTimeColumn(col)" :value="getCellValue(item, col.key)" />
         <SaplingTableJson
@@ -234,6 +241,7 @@
 </template>
 
 <script lang="ts" setup>
+import { useTableRowPresentation } from './saplingTablePresentation'
 // #region Imports
 import { openAutomationInspector } from '@/components/automation/automationInspector'
 import { computed } from 'vue'
@@ -268,6 +276,7 @@ import SaplingCellDateTime from './cells/SaplingCellDateTime.vue'
 
 // #region Props and Emits
 const props = defineProps<UseSaplingTableRowProps>()
+const { deadlineClass, isFieldDeadline } = useTableRowPresentation(props)
 const emit = defineEmits<UseSaplingTableRowEmit>()
 
 function getCellTutorialTarget(column: SaplingTableHeaderItem) {

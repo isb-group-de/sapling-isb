@@ -1,8 +1,14 @@
 import { EntityManager, LockMode, RequestContext } from '@mikro-orm/core';
-import { Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  OnModuleInit,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { AiChatQueuedInputItem } from '../../entity/AiChatQueuedInputItem';
 import { AiChatSessionItem } from '../../entity/AiChatSessionItem';
 import type { PersonItem } from '../../entity/PersonItem';
+import { CurrentService } from '../current/current.service';
 import { AiChatCoordinatorService } from './ai-chat-coordinator.service';
 import { AiChatPersistenceService } from './ai-chat-persistence.service';
 import { AiChatStreamService } from './ai-chat-stream.service';
@@ -20,6 +26,7 @@ export class AiChatQueueService implements OnModuleInit {
     private readonly persistence: AiChatPersistenceService,
     private readonly streamService: AiChatStreamService,
     private readonly coordinator: AiChatCoordinatorService,
+    private readonly currentService: CurrentService,
   ) {
     this.coordinator.onIdle((sessionHandle) => this.kick(sessionHandle));
   }
@@ -127,6 +134,12 @@ export class AiChatQueueService implements OnModuleInit {
         const item = await this.claimNext(sessionHandle);
         if (!item) break;
         try {
+          // Queue records carry a persistence relation, not an authenticated
+          // principal. Reload the security graph before running any AI tools.
+          const user = await this.currentService.getPerson(item.person);
+          if (!user?.isActive) {
+            throw new UnauthorizedException('auth.userNotFoundOrInactive');
+          }
           const payload = {
             ...(item.requestPayload ?? {}),
             sessionHandle,
@@ -135,7 +148,7 @@ export class AiChatQueueService implements OnModuleInit {
           const result = await this.coordinator.run(sessionHandle, (signal) =>
             this.streamService.streamChatMessage(
               payload,
-              item.person,
+              user,
               () => undefined,
               {
                 coordinated: true,

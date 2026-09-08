@@ -4,13 +4,16 @@
     class="sapling-record-card sapling-table-mobile-card"
     variant="subtle"
     :interactive="rowInteraction !== false"
-    :class="{
-      'sapling-record-card--selected': isSelected,
-      'sapling-table-mobile-card--active': props.isActive,
-      'sapling-table-mobile-card--with-controls': hasHeaderControls,
-      'sapling-table-mobile-card--with-select': props.multiSelect,
-      'sapling-table-mobile-card--with-actions': hasRowActions,
-    }"
+    :class="[
+      deadlineClass,
+      {
+        'sapling-record-card--selected': isSelected,
+        'sapling-table-mobile-card--active': props.isActive,
+        'sapling-table-mobile-card--with-controls': hasHeaderControls,
+        'sapling-table-mobile-card--with-select': props.multiSelect,
+        'sapling-table-mobile-card--with-actions': hasRowActions,
+      },
+    ]"
     tabindex="0"
     :aria-label="cardLabel"
     @click="handleCardClick"
@@ -242,12 +245,16 @@
             :value="getCellValue(item, col.key)"
             :date-value="getCellValue(item, `${String(col.key ?? '')}_date`)"
             :time-value="getCellValue(item, `${String(col.key ?? '')}_time`)"
-            :is-deadline="'options' in col && col.options?.includes('isDeadline')"
+            :is-deadline="
+              'options' in col && col.options?.includes('isDeadline') && isFieldDeadline(col.name)
+            "
           />
           <SaplingCellDate
             v-else-if="isDateColumn(col)"
             :value="getCellValue(item, col.key)"
-            :is-deadline="'options' in col && col.options?.includes('isDeadline')"
+            :is-deadline="
+              'options' in col && col.options?.includes('isDeadline') && isFieldDeadline(col.name)
+            "
           />
           <SaplingCellTime v-else-if="isTimeColumn(col)" :value="getCellValue(item, col.key)" />
           <SaplingTableJson
@@ -272,6 +279,7 @@
 </template>
 
 <script lang="ts" setup>
+import { useTableRowPresentation } from './saplingTablePresentation'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import SaplingSurface from '@/components/common/SaplingSurface.vue'
@@ -304,6 +312,7 @@ import SaplingCellTime from './cells/SaplingCellTime.vue'
 import SaplingCellDateTime from './cells/SaplingCellDateTime.vue'
 
 const props = defineProps<UseSaplingTableRowProps>()
+const { deadlineClass, isFieldDeadline } = useTableRowPresentation(props)
 const emit = defineEmits<UseSaplingTableRowEmit>()
 const detailsOpen = ref(false)
 const { t, te } = useI18n()

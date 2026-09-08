@@ -18,6 +18,40 @@ import { MailRenderingService } from './mail-rendering.service';
 import { EmailSignatureItem } from '../../entity/EmailSignatureItem';
 
 describe('MailRenderingService signatures', () => {
+  it('preserves editor image embeds through placeholder rendering and preview', async () => {
+    const em = {
+      findOne: async () => ({ handle: 'ticket' }),
+      find: async () => [
+        {
+          handle: 42,
+          entity: { handle: 'ticket' },
+          reference: '7',
+          filename: 'image.png',
+          mimetype: 'image/png',
+          path: 'image',
+        },
+      ],
+    };
+    const renderer = new MailRenderingService({
+      buildContext: async () => ({}),
+      replaceRecipients: (value: string[]) => value ?? [],
+      replacePlaceholders: (value: string) => value.replace(/\{\{.*?\}\}/g, ''),
+    } as never);
+    const result = await renderer.previewEmail(
+      em as never,
+      {
+        entityHandle: 'ticket',
+        itemHandle: 7,
+        signatureMode: 'none',
+        bodyMarkdown: 'Before {{sapling-image:42|Screenshot}} after',
+      },
+      {} as never,
+    );
+    expect(result.bodyHtml).toContain(
+      'Before <img src="sapling-document:42" alt="Screenshot" /> after',
+    );
+    expect(result.unresolvedPlaceholders).toEqual([]);
+  });
   it('reports empty placeholders in subject, body, signature and recipients before they disappear', async () => {
     const em = {
       findOne: jest.fn(async (entity: unknown) =>

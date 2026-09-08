@@ -4,6 +4,9 @@ import { NotFoundException } from '@nestjs/common';
 jest.mock('./ai-chat-stream.service', () => ({
   AiChatStreamService: class {},
 }));
+jest.mock('../current/current.service', () => ({
+  CurrentService: class {},
+}));
 jest.mock('./ai-chat-persistence.service', () => ({
   AiChatPersistenceService: class {},
 }));
@@ -27,6 +30,8 @@ describe('AiChatQueueService', () => {
   let em: Record<string, jest.Mock>;
   let persistence: Record<string, jest.Mock>;
   let coordinator: Record<string, jest.Mock>;
+  let currentService: Record<string, jest.Mock>;
+  let streamService: Record<string, jest.Mock>;
 
   beforeEach(() => {
     em = {
@@ -52,14 +57,17 @@ describe('AiChatQueueService', () => {
       isRunning: jest.fn().mockReturnValue(true),
       run: jest.fn(),
     };
+    currentService = { getPerson: jest.fn() };
+    streamService = { streamChatMessage: jest.fn() };
   });
 
   function createService() {
     return new AiChatQueueService(
       em as never,
       persistence as never,
-      {} as never,
+      streamService as never,
       coordinator as never,
+      currentService as never,
     );
   }
 
@@ -167,4 +175,90 @@ describe('AiChatQueueService', () => {
       createService().cancel(99, person as never),
     ).rejects.toBeInstanceOf(NotFoundException);
   });
+
+  async function processQueuedInput() {
+    coordinator.isRunning.mockReturnValue(false);
+    coordinator.run.mockImplementation((_handle, callback) =>
+      (callback as (signal: AbortSignal) => unknown)(
+        new AbortController().signal,
+      ),
+    );
+    em.transactional.mockImplementation((callback) =>
+      (callback as (manager: unknown) => unknown)(em),
+    );
+    em.findOne
+      .mockResolvedValueOnce(asNever(session))
+      .mockResolvedValueOnce(asNever(null))
+      .mockResolvedValueOnce(
+        asNever({
+          handle: 12,
+          person,
+          session,
+          content: 'Lege einen Termin an.',
+        }),
+      )
+      .mockResolvedValueOnce(asNever(null));
+    createService();
+    const onIdle = coordinator.onIdle.mock.calls[0][0] as (
+      handle: number,
+    ) => void;
+    onIdle(42);
+    await jest.runAllTimersAsync();
+  }
+
+  it('runs queued tools with the reloaded security principal instead of the person relation', async () => {
+    jest.useFakeTimers();
+    try {
+      const principal = {
+        handle: 7,
+        isActive: true,
+        roles: [{ permissions: [] }],
+      };
+      currentService.getPerson.mockResolvedValue(asNever(principal));
+      streamService.streamChatMessage.mockImplementation((_dto, user) => {
+        // A queue's bare person relation has no loaded role graph.
+        expect(user).toBe(principal);
+        return Promise.resolve({
+          userMessage: { handle: 20 },
+          assistantMessage: { handle: 21, status: 'completed' },
+        });
+      });
+
+      await processQueuedInput();
+
+      expect(currentService.getPerson).toHaveBeenCalledWith(person);
+      expect(streamService.streamChatMessage).toHaveBeenCalledTimes(1);
+      expect(em.nativeUpdate).toHaveBeenCalledWith(
+        expect.any(Function),
+        { handle: 12, status: 'running' },
+        expect.objectContaining({ status: 'completed' }),
+      );
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it.each([null, { handle: 7, isActive: false }])(
+    'rejects queued work for an unavailable principal: %j',
+    async (principal) => {
+      jest.useFakeTimers();
+      try {
+        currentService.getPerson.mockResolvedValue(asNever(principal));
+
+        await processQueuedInput();
+
+        expect(streamService.streamChatMessage).not.toHaveBeenCalled();
+        expect(em.nativeUpdate).toHaveBeenCalledWith(
+          expect.any(Function),
+          { handle: 12, status: 'running' },
+          expect.objectContaining({
+            status: 'failed',
+            errorPayload: { error: 'auth.userNotFoundOrInactive' },
+          }),
+        );
+      } finally {
+        jest.useRealTimers();
+      }
+    },
+  );
 });

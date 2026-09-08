@@ -472,6 +472,29 @@ tabular-numeric seconds countdown and the open menu shows the same remaining
 time as a full localized label.
 
 Table columns are driven by template metadata and translations.
+The settings button belongs to the desktop utility button group. On mobile it is
+a submenu of the table overflow menu. Automation inspection appears only inside
+the overflow menu on both layouts. Settings use the shared glass list surface,
+with expandable deadline choices. Translation seeds must exist in both production
+and demonstration datasets.
+The table settings menu stores preferences per entity in browser local storage
+(`sapling.table.preferences.<entity>`). Every readable `isDeadline` date field
+can color its own text (default) or the row/card background. Hidden deadline
+fields are included in list projections. Existing date/date-time thresholds
+apply; overdue wins over upcoming when multiple fields color the same row.
+Grouping is explicitly enabled only by the primary table and partner workspaces.
+The grouping selector is hidden by default; hiding it also suspends grouping.
+Only currently visible, readable persistent scalar and single-reference columns
+are eligible (desktop columns or mobile card fields, respectively). Drag a column
+header into the grouping area to add a level, or use its accessible add menu.
+Group chips support drag reordering, move buttons and removal. The ordered levels
+lead server sorting; subsequent sorts apply within groups. Hidden columns suspend
+their grouping. The legacy single-field preference is restored as the first level. Group headers
+repeat at page boundaries, and selection/actions retain the original page indices.
+Embedded relation tables and reference pickers cannot enable grouping, even when
+the same entity has a saved grouping preference. These browser preferences are
+independent of saved server-side column views.
+
 Visible non-persistent read-only getters that mirror a direct reference field
 follow the `<reference><TargetField>` naming convention, for example
 `creatorPersonEmail` for `creatorPerson.email`. The table projection resolves
@@ -1095,3 +1118,14 @@ styles belong in the framework stylesheets, including dynamic CSS variables.
 
 See the [2026-09-05 frontend audit](frontend-audit-2026-09-05.md) for coverage,
 visual changes and verification limits.
+
+### Worklist grouping state
+
+Table and Partner pages serialize ordered grouping fields and grouping-area visibility
+as `grouping={"fields":["status","priority"],"visible":true}` in the URL. Personal
+worklists persist this state in `FavoriteItem.grouping` and restore it when opened,
+including an explicitly disabled grouping. URL state takes precedence over local
+preferences; older links without grouping retain the local preference. Hidden or
+unreadable fields remain ineligible when restoring a group. Resetting the default
+worklist clears grouping. Apply migration `Migration20260908150000` before saving
+worklists with this field.

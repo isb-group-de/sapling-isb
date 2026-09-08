@@ -241,6 +241,16 @@ address.
 
 ## Personal Email Signatures
 
+The mail body editor supports uploading, selecting and pasting images for the
+current saved record through the shared Markdown image controls. Outgoing mail
+resolves internal image embeds after template rendering and transfers the actual
+files at their body positions using CID references: Graph inline attachments for
+Microsoft 365 and multipart/related MIME parts for Gmail. Repeated references
+share one inline file; explicitly selected regular attachments remain separate.
+Preview and dispatch reject missing, non-image or foreign-record references.
+The stored body retains internal references for Sapling's preview and retries;
+the file must still exist when dispatch runs. External image URLs stay unchanged.
+
 Manual composition uses the same `3xl` dialog width as the generic edit dialog.
 Each user manages private `emailSignature` records through **Mail → Email
 signatures** (`/table/emailSignature`) or the **Email signatures** tab in their

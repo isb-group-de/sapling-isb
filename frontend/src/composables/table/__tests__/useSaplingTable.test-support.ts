@@ -245,10 +245,13 @@ function createTestHost(entityHandle: Ref<string>) {
   })
 }
 
-function createQueryEnabledTestHost(entityHandle: Ref<string>) {
+function createQueryEnabledTestHost(
+  entityHandle: Ref<string>,
+  behaviorOptions: SaplingTableBehaviorOptions = {},
+) {
   return defineComponent({
     setup() {
-      return useSaplingTable(entityHandle, 25, true, true)
+      return useSaplingTable(entityHandle, 25, true, true, undefined, [], behaviorOptions)
     },
     template: '<div />',
   })
@@ -318,8 +321,11 @@ function mountTestHost(entityHandle: Ref<string>) {
   return wrapper
 }
 
-function mountQueryEnabledTestHost(entityHandle: Ref<string>) {
-  const wrapper = mount(createQueryEnabledTestHost(entityHandle))
+function mountQueryEnabledTestHost(
+  entityHandle: Ref<string>,
+  behaviorOptions: SaplingTableBehaviorOptions = {},
+) {
+  const wrapper = mount(createQueryEnabledTestHost(entityHandle, behaviorOptions))
   mountedWrappers.push(wrapper)
   return wrapper
 }
