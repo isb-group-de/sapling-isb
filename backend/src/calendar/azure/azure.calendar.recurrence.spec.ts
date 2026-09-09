@@ -79,8 +79,8 @@ describe('AzureCalendarService recurrence materialization', () => {
     expect(api).toHaveBeenCalledTimes(1);
     expect(api).toHaveBeenNthCalledWith(1, '/me/events/outlook-1');
     expect(patch).toHaveBeenNthCalledWith(1, {
-      start: { dateTime: '2026-07-28T11:00:00.000Z', timeZone: 'UTC' },
-      end: { dateTime: '2026-07-28T12:00:00.000Z', timeZone: 'UTC' },
+      start: { dateTime: '2026-07-28T11:00:00.000', timeZone: 'UTC' },
+      end: { dateTime: '2026-07-28T12:00:00.000', timeZone: 'UTC' },
       recurrence: null,
     });
   });

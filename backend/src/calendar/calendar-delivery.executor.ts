@@ -26,6 +26,7 @@ type CalendarDeliveryPayload = {
   operation?: 'remove-recurrence' | 'detach-occurrence';
   occurrenceStart?: string;
   changedFields?: string[];
+  timeZone?: string;
   sessionHandle?: number;
   session?: {
     accessToken?: string;
@@ -67,6 +68,8 @@ function isCalendarDeliveryPayload(
     (payload.changedFields === undefined ||
       (Array.isArray(payload.changedFields) &&
         payload.changedFields.every((field) => typeof field === 'string'))) &&
+    (payload.timeZone === undefined ||
+      (typeof payload.timeZone === 'string' && payload.timeZone.length > 0)) &&
     ((typeof payload.sessionHandle === 'number' && payload.sessionHandle > 0) ||
       (isRecord(payload.session) &&
         ((typeof payload.session.accessToken === 'string' &&
@@ -227,6 +230,7 @@ export class CalendarDeliveryExecutor {
           payload.operation,
           payload.changedFields,
           payload.occurrenceStart,
+          payload.timeZone,
         ),
       );
 
@@ -244,6 +248,7 @@ export class CalendarDeliveryExecutor {
         delivery.payload.operation,
         delivery.payload.changedFields,
         delivery.payload.occurrenceStart,
+        delivery.payload.timeZone,
       );
       if (retried) {
         return;
@@ -345,6 +350,7 @@ export class CalendarDeliveryExecutor {
     operation?: 'remove-recurrence' | 'detach-occurrence',
     changedFields?: string[],
     occurrenceStart?: string,
+    timeZone?: string,
   ): Promise<unknown> {
     if (occurrenceStart) {
       return provider === 'google'
@@ -363,6 +369,7 @@ export class CalendarDeliveryExecutor {
             operation,
             changedFields,
             occurrenceStart,
+            timeZone,
           );
     }
 
@@ -390,6 +397,17 @@ export class CalendarDeliveryExecutor {
           );
     }
 
+    if (timeZone) {
+      return this.azureCalendarService.setEvent(
+        eventHandle,
+        accessToken,
+        personHandle,
+        operation,
+        changedFields,
+        occurrenceStart,
+        timeZone,
+      );
+    }
     if (changedFields) {
       return this.azureCalendarService.setEvent(
         eventHandle,
@@ -482,6 +500,7 @@ export class CalendarDeliveryExecutor {
     operation?: 'remove-recurrence' | 'detach-occurrence',
     changedFields?: string[],
     occurrenceStart?: string,
+    timeZone?: string,
   ): Promise<boolean> {
     if (!sessionContext.refreshToken) {
       return false;
@@ -511,6 +530,7 @@ export class CalendarDeliveryExecutor {
           operation,
           changedFields,
           occurrenceStart,
+          timeZone,
         ),
       );
 

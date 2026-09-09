@@ -26,6 +26,7 @@ describe('CalendarDeliveryExecutor', () => {
         provider: 'azure',
         sessionHandle: 8,
         changedFields: ['category'],
+        timeZone: 'Europe/Berlin',
       },
       attemptCount: 0,
     } as EventDeliveryItem;
@@ -73,6 +74,8 @@ describe('CalendarDeliveryExecutor', () => {
       7,
       undefined,
       ['category'],
+      undefined,
+      'Europe/Berlin',
     );
     expect(asMock(googleCalendarService.setEvent)).not.toHaveBeenCalled();
     expect(delivery.status).toBe(success);

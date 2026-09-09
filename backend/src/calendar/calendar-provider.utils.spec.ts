@@ -120,11 +120,11 @@ describe('calendar provider utilities', () => {
       buildAzureCalendarEventPatch(createEvent(), [], ['startDate', 'endDate']),
     ).toEqual({
       start: {
-        dateTime: '2026-07-16T08:00:00.000Z',
+        dateTime: '2026-07-16T08:00:00.000',
         timeZone: 'UTC',
       },
       end: {
-        dateTime: '2026-07-16T09:00:00.000Z',
+        dateTime: '2026-07-16T09:00:00.000',
         timeZone: 'UTC',
       },
       recurrence: expect.any(Object),

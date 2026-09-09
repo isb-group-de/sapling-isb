@@ -136,6 +136,36 @@ describe('EventController', () => {
     expect(result.method).toBe(ScriptResultServerMethods.none);
   });
 
+  it('preserves the client time zone in an Azure event delivery', async () => {
+    const azureQueueEvent = jest.fn(() => Promise.resolve(undefined));
+    const user = {
+      type: { handle: 'azure' },
+      session: { handle: 8 },
+    } as unknown as PersonItem;
+    const event = { handle: 1 } as EventItem;
+    const controller = new EventController(
+      { handle: 'event' } as never,
+      user,
+      {} as never,
+      { queueEvent: azureQueueEvent } as never,
+      {} as never,
+    );
+
+    await controller.afterUpdate([event], {
+      changedFields: ['startDate', 'endDate'],
+      clientTimeZone: 'Europe/Berlin',
+    });
+
+    expect(asMock(azureQueueEvent)).toHaveBeenCalledWith(
+      event,
+      user.session,
+      undefined,
+      ['startDate', 'endDate'],
+      undefined,
+      'Europe/Berlin',
+    );
+  });
+
   it('defers materialized event deliveries until after commit and reloads their ids', async () => {
     const azureQueueEvent = jest.fn(() => Promise.resolve(undefined));
     const persistedItems = new Map<number, EventItem>([

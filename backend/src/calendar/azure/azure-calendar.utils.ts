@@ -2,6 +2,10 @@ import { EventItem } from '../../entity/EventItem';
 import { resolveCalendarEventLocation } from '../calendar-address.utils';
 import { buildAzureRecurrence } from '../calendar.recurrence';
 import {
+  normalizeCalendarTimeZone,
+  toCalendarDateTime,
+} from '../calendar-time-zone.utils';
+import {
   type CalendarClassificationMapping,
   resolveOutboundCalendarValues,
 } from '../calendar-classification.utils';
@@ -482,6 +486,7 @@ export function resolveAzureOnlineMeetingUrl(
 export function buildAzureCalendarEvent(
   event: EventItem,
   classificationMappings?: CalendarClassificationMapping[] | null,
+  timeZone?: string,
 ): Record<string, unknown> {
   const categories = resolveOutboundCalendarValues(
     event,
@@ -490,8 +495,8 @@ export function buildAzureCalendarEvent(
   const location = resolveCalendarEventLocation(event);
   const eventResource: Record<string, unknown> = {
     subject: event.title,
-    start: { dateTime: event.startDate.toISOString(), timeZone: 'UTC' },
-    end: { dateTime: event.endDate.toISOString(), timeZone: 'UTC' },
+    start: buildAzureDateTime(event.startDate, timeZone),
+    end: buildAzureDateTime(event.endDate, timeZone),
     recurrence: buildAzureRecurrence(event.startDate, event.recurrenceRule),
     attendees: event.participants.map((participant) => ({
       emailAddress: {
@@ -524,8 +529,13 @@ export function buildAzureCalendarEventPatch(
   event: EventItem,
   classificationMappings?: CalendarClassificationMapping[] | null,
   changedFields?: string[],
+  timeZone?: string,
 ): Record<string, unknown> {
-  const eventResource = buildAzureCalendarEvent(event, classificationMappings);
+  const eventResource = buildAzureCalendarEvent(
+    event,
+    classificationMappings,
+    timeZone,
+  );
   if (!changedFields) {
     return eventResource;
   }
@@ -555,4 +565,22 @@ export function buildAzureCalendarEventPatch(
   if (changed.has('creatorCompany')) copy('location');
 
   return patch;
+}
+
+function buildAzureDateTime(
+  date: Date,
+  timeZone: string | null | undefined,
+): { dateTime: string; timeZone: string } {
+  const normalizedTimeZone = normalizeCalendarTimeZone(timeZone);
+  const value = toCalendarDateTime(date, normalizedTimeZone);
+  const pad = (part: number, length = 2) =>
+    part.toString().padStart(length, '0');
+
+  return {
+    // Microsoft Graph's dateTimeTimeZone contract expects a wall-clock value
+    // without a trailing offset. The separate timeZone field supplies the
+    // interpretation and preserves Outlook's editable display time.
+    dateTime: `${pad(value.year, 4)}-${pad(value.month)}-${pad(value.day)}T${pad(value.hour)}:${pad(value.minute)}:${pad(value.second)}.${pad(value.millisecond, 3)}`,
+    timeZone: normalizedTimeZone,
+  };
 }

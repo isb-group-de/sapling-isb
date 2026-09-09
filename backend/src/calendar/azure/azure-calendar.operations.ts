@@ -632,10 +632,12 @@ export class AzureCalendarOperations {
     event: EventItem,
     emFork: EntityManager,
     classificationMappings?: CalendarClassificationMapping[] | null,
+    timeZone?: string,
   ): Promise<any> {
     const eventResource = buildAzureCalendarEvent(
       event,
       classificationMappings,
+      timeZone,
     );
 
     // Create event in Azure
@@ -675,9 +677,14 @@ export class AzureCalendarOperations {
     classificationMappings?: CalendarClassificationMapping[] | null,
     operation?: 'remove-recurrence' | 'detach-occurrence',
     changedFields?: string[],
+    timeZone?: string,
   ): Promise<any> {
     if (operation === 'remove-recurrence') {
-      const resource = buildAzureCalendarEvent(event, classificationMappings);
+      const resource = buildAzureCalendarEvent(
+        event,
+        classificationMappings,
+        timeZone,
+      );
       return await client.api(`/me/events/${reference.referenceHandle}`).patch({
         start: resource.start,
         end: resource.end,
@@ -689,6 +696,7 @@ export class AzureCalendarOperations {
       event,
       classificationMappings,
       changedFields,
+      timeZone,
     );
 
     if (Object.keys(eventResource).length === 0) {

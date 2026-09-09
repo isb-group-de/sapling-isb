@@ -265,9 +265,52 @@ export class EventController extends ScriptClass {
         provider === 'azure'
           ? this.azureCalendarService
           : this.googleCalendarService;
-      if (!calendarService || !this.user.session) {
+      const session = this.user.session;
+      if (!calendarService || !session) {
         throw new Error('calendar.serviceOrSessionRequired');
       }
+
+      const queuePersistedEvent = async (
+        deliveryOperation?: 'remove-recurrence' | 'detach-occurrence',
+        deliveryChangedFields?: string[],
+        occurrenceStart?: string,
+      ) => {
+        if (context?.clientTimeZone) {
+          return calendarService.queueEvent(
+            persistedEvent,
+            session,
+            deliveryOperation,
+            deliveryChangedFields,
+            occurrenceStart,
+            context.clientTimeZone,
+          );
+        }
+        if (occurrenceStart) {
+          return calendarService.queueEvent(
+            persistedEvent,
+            session,
+            deliveryOperation,
+            deliveryChangedFields,
+            occurrenceStart,
+          );
+        }
+        if (deliveryChangedFields) {
+          return calendarService.queueEvent(
+            persistedEvent,
+            session,
+            deliveryOperation,
+            deliveryChangedFields,
+          );
+        }
+        if (deliveryOperation) {
+          return calendarService.queueEvent(
+            persistedEvent,
+            session,
+            deliveryOperation,
+          );
+        }
+        return calendarService.queueEvent(persistedEvent, session);
+      };
 
       if (context?.calendarDeliveryOperation) {
         const occurrenceStarts = context.calendarDeliveryOccurrenceStarts ?? [
@@ -276,28 +319,11 @@ export class EventController extends ScriptClass {
         const failures: unknown[] = [];
         for (const occurrenceStart of occurrenceStarts) {
           try {
-            if (occurrenceStart) {
-              await calendarService.queueEvent(
-                persistedEvent,
-                this.user.session,
-                context.calendarDeliveryOperation,
-                changedFields,
-                occurrenceStart,
-              );
-            } else if (changedFields) {
-              await calendarService.queueEvent(
-                persistedEvent,
-                this.user.session,
-                context.calendarDeliveryOperation,
-                changedFields,
-              );
-            } else {
-              await calendarService.queueEvent(
-                persistedEvent,
-                this.user.session,
-                context.calendarDeliveryOperation,
-              );
-            }
+            await queuePersistedEvent(
+              context.calendarDeliveryOperation,
+              changedFields,
+              occurrenceStart,
+            );
           } catch (error) {
             failures.push(error);
           }
@@ -305,15 +331,8 @@ export class EventController extends ScriptClass {
         if (failures.length === 1) throw failures[0];
         if (failures.length > 1)
           throw new AggregateError(failures, 'calendar.detachDeliveriesFailed');
-      } else if (changedFields) {
-        await calendarService.queueEvent(
-          persistedEvent,
-          this.user.session,
-          undefined,
-          changedFields,
-        );
       } else {
-        await calendarService.queueEvent(persistedEvent, this.user.session);
+        await queuePersistedEvent(undefined, changedFields);
       }
     };
 

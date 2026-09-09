@@ -45,6 +45,50 @@ describe('Azure meeting link creation', () => {
   });
 });
 
+describe('Azure event time zone serialization', () => {
+  const event = {
+    title: 'Test',
+    description: '',
+    startDate: new Date('2026-09-08T10:30:00.000Z'),
+    endDate: new Date('2026-09-08T11:00:00.000Z'),
+    participants: [],
+    createOnlineMeeting: false,
+  } as unknown as EventItem;
+
+  it('sends local wall-clock times with the client time zone to Outlook', () => {
+    expect(buildAzureCalendarEvent(event, [], 'Europe/Berlin')).toMatchObject({
+      start: {
+        dateTime: '2026-09-08T12:30:00.000',
+        timeZone: 'Europe/Berlin',
+      },
+      end: {
+        dateTime: '2026-09-08T13:00:00.000',
+        timeZone: 'Europe/Berlin',
+      },
+    });
+  });
+
+  it('uses the same time-zone representation for a moved event patch', () => {
+    expect(
+      buildAzureCalendarEventPatch(
+        event,
+        [],
+        ['startDate', 'endDate'],
+        'Europe/Berlin',
+      ),
+    ).toMatchObject({
+      start: {
+        dateTime: '2026-09-08T12:30:00.000',
+        timeZone: 'Europe/Berlin',
+      },
+      end: {
+        dateTime: '2026-09-08T13:00:00.000',
+        timeZone: 'Europe/Berlin',
+      },
+    });
+  });
+});
+
 describe('Azure physical location', () => {
   const company = Object.assign(new CompanyItem(), {
     name: 'Muster GmbH',

@@ -145,6 +145,13 @@ the nested country name. The resulting string is sent as the Outlook location
 display name and the Google Calendar location. Changing `creatorCompany`
 updates that provider location as well.
 
+Outlook projections serialize timed starts and ends as local wall-clock values
+with the IANA time zone reported by the Sapling client. The time-zone value is
+stored in the asynchronous delivery payload so create and update jobs preserve
+the user's display time. If no valid client time zone is available, delivery
+falls back to UTC. This keeps the event's absolute instant and Outlook's
+editable time field aligned across daylight-saving changes.
+
 A ticket-linked Event may retain the Ticket's exact `creatorCompany` and
 `creatorPerson` pair when a contact's current Company has changed since the
 Ticket was recorded. The backend verifies that both submitted references still

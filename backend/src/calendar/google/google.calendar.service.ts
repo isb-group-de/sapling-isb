@@ -87,6 +87,7 @@ export class GoogleCalendarService extends GoogleCalendarOperations {
     operation?: 'remove-recurrence' | 'detach-occurrence',
     changedFields?: string[],
     occurrenceStart?: string,
+    _timeZone?: string,
   ) {
     if (typeof session.handle !== 'number') {
       throw new Error('calendar.sessionHandleRequired');

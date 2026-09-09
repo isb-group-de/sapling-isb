@@ -13,6 +13,38 @@ import {
   type AzureSetEventTestHarness,
 } from './azure.calendar.service.spec-support';
 
+describe('AzureCalendarService delivery context', () => {
+  it('stores the client time zone in the asynchronous delivery payload', async () => {
+    const queueEventDelivery = jest.fn(() => Promise.resolve({ handle: 1 }));
+    const service = new AzureCalendarService(
+      { queueEventDelivery } as never,
+      {} as never,
+    );
+    const event = { handle: 3 } as EventItem;
+    const session = { handle: 8 } as PersonSessionItem;
+
+    await service.queueEvent(
+      event,
+      session,
+      undefined,
+      ['startDate'],
+      undefined,
+      'Europe/Berlin',
+    );
+
+    expect(asMock(queueEventDelivery)).toHaveBeenCalledWith(event, {
+      provider: 'azure',
+      sessionHandle: 8,
+      changedFields: ['startDate'],
+      timeZone: 'Europe/Berlin',
+    });
+  });
+});
+
+function asMock(value: unknown): jest.Mock {
+  return value as jest.Mock;
+}
+
 describe('AzureCalendarService Outlook import privacy', () => {
   it('links only unique case-insensitive attendee email matches', async () => {
     const owner = { handle: 7 } as PersonItem;

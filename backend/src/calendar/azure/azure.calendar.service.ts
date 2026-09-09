@@ -88,6 +88,7 @@ export class AzureCalendarService extends AzureCalendarOperations {
     operation?: 'remove-recurrence' | 'detach-occurrence',
     changedFields?: string[],
     occurrenceStart?: string,
+    timeZone?: string,
   ) {
     if (typeof session.handle !== 'number') {
       throw new Error('calendar.sessionHandleRequired');
@@ -100,6 +101,7 @@ export class AzureCalendarService extends AzureCalendarOperations {
       ...(operation ? { operation } : {}),
       ...(changedFields ? { changedFields } : {}),
       ...(occurrenceStart ? { occurrenceStart } : {}),
+      ...(timeZone ? { timeZone } : {}),
     });
   }
 
@@ -169,6 +171,7 @@ export class AzureCalendarService extends AzureCalendarOperations {
     operation?: 'remove-recurrence' | 'detach-occurrence',
     changedFields?: string[],
     occurrenceStart?: string,
+    timeZone?: string,
   ): Promise<any> {
     const client = this.createClient(accessToken);
     // Fork EntityManager for context-specific actions
@@ -219,6 +222,7 @@ export class AzureCalendarService extends AzureCalendarOperations {
           event,
           emFork,
           classificationMappings,
+          timeZone,
         )) as { id?: string };
         if (!created.id) {
           throw new Error('calendar.recurrenceOccurrenceReferenceMissing');
@@ -253,6 +257,7 @@ export class AzureCalendarService extends AzureCalendarOperations {
               classificationMappings,
               operation,
               changedFields,
+              timeZone,
             );
           } catch (error) {
             if (!isAzureNotFoundError(error)) {
@@ -268,6 +273,7 @@ export class AzureCalendarService extends AzureCalendarOperations {
               event,
               emFork,
               classificationMappings,
+              timeZone,
             );
           }
         } else {
@@ -276,6 +282,7 @@ export class AzureCalendarService extends AzureCalendarOperations {
             event,
             emFork,
             classificationMappings,
+            timeZone,
           );
         }
     }
