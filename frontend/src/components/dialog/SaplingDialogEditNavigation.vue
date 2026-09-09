@@ -81,6 +81,13 @@
           class="sapling-record-dialog-nav-item__dirty-indicator"
           aria-hidden="true"
         />
+        <span
+          v-if="typeof relationCounts?.[template.name] === 'number'"
+          class="sapling-record-dialog-nav-item__count"
+          aria-hidden="true"
+        >
+          {{ relationCounts[template.name] }}
+        </span>
       </span>
     </button>
     <button
@@ -110,7 +117,10 @@
         {{ tab.icon }}
       </v-icon>
       <span class="sapling-record-dialog-nav-item__label">{{ tab.label }}</span>
-      <span v-if="tab.disabled || tab.dirty" class="sapling-record-dialog-nav-item__meta">
+      <span
+        v-if="tab.disabled || tab.dirty || typeof tab.count === 'number'"
+        class="sapling-record-dialog-nav-item__meta"
+      >
         <v-icon
           v-if="tab.disabled"
           class="sapling-record-dialog-nav-item__lock"
@@ -124,6 +134,13 @@
           class="sapling-record-dialog-nav-item__dirty-indicator"
           aria-hidden="true"
         />
+        <span
+          v-if="typeof tab.count === 'number'"
+          class="sapling-record-dialog-nav-item__count"
+          aria-hidden="true"
+        >
+          {{ tab.count }}
+        </span>
       </span>
     </button>
   </nav>
@@ -142,6 +159,7 @@ interface SupplementalTab {
   disabled?: boolean
   disabledReason?: string
   dirty?: boolean
+  count?: number
 }
 
 const props = defineProps<{
@@ -150,6 +168,7 @@ const props = defineProps<{
   mode: DialogState
   relationTemplates: EntityTemplate[]
   relationEntities?: Record<string, EntityItem | null>
+  relationCounts?: Record<string, number | undefined>
   tabIdPrefix?: string
   relationsLocked?: boolean
   dirtyFieldCount?: number
@@ -259,6 +278,9 @@ function selectSupplementalTab(tab: SupplementalTab): void {
 
 function supplementalAriaLabel(tab: SupplementalTab): string {
   const labels = [tab.label]
+  if (typeof tab.count === 'number') {
+    labels.push(String(tab.count))
+  }
   if (tab.dirty) {
     labels.push(String(t('global.dirtyFieldCount', { count: 1 }, 1)))
   }
@@ -270,9 +292,15 @@ function supplementalAriaLabel(tab: SupplementalTab): string {
 
 function relationAriaLabel(template: EntityTemplate): string {
   const translatedLabel = String(t(`${props.entityHandle}.${template.name}`))
-  const accessibleLabel = isRelationDirty(template)
-    ? `${translatedLabel}. ${String(t('global.dirtyFieldCount', { count: 1 }, 1))}`
-    : translatedLabel
+  const labels = [translatedLabel]
+  const count = props.relationCounts?.[template.name]
+  if (typeof count === 'number') {
+    labels.push(String(count))
+  }
+  if (isRelationDirty(template)) {
+    labels.push(String(t('global.dirtyFieldCount', { count: 1 }, 1)))
+  }
+  const accessibleLabel = labels.join('. ')
 
   return relationsLocked.value
     ? `${accessibleLabel}. ${String(t('global.referencesAvailableAfterSave'))}`

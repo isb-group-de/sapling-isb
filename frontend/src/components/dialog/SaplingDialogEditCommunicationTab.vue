@@ -137,6 +137,9 @@ const props = withDefaults(
     recordLabel: '',
   },
 )
+const emit = defineEmits<{
+  (event: 'update:count', value: number): void
+}>()
 
 const { t, te } = useI18n()
 const { isLoading: isTranslationLoading } = useTranslationLoader(
@@ -209,6 +212,16 @@ const {
   onSortByUpdate,
   parentFilter,
 } = table
+
+watch(
+  [isInitialized, totalItems],
+  ([initialized, total]) => {
+    if (initialized) {
+      emit('update:count', total)
+    }
+  },
+  { immediate: true },
+)
 
 onMounted(() => {
   void initializeEntityState({

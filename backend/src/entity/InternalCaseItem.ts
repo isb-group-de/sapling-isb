@@ -3,6 +3,8 @@ import { type Rel } from '@mikro-orm/core';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { CompanyItem } from './CompanyItem';
 import { PersonItem } from './PersonItem';
+import { SalesOpportunityItem } from './SalesOpportunityItem';
+import { TicketItem } from './TicketItem';
 import { InternalCaseStatusItem } from './InternalCaseStatusItem';
 import { InternalCaseCategoryItem } from './InternalCaseCategoryItem';
 import {
@@ -369,6 +371,36 @@ export class InternalCaseItem {
   get responsiblePersonLastName(): string | undefined {
     return this.responsiblePerson?.lastName;
   }
+
+  @ApiPropertyOptional({ type: () => SalesOpportunityItem })
+  @SaplingForm({
+    order: 500,
+    group: 'internalCase.groupReference',
+    groupOrder: 300,
+    width: 2,
+    visible: true,
+    tableOrder: 500,
+    tableVisible: false,
+    mobileOrder: 500,
+    mobileVisible: false,
+  })
+  @ManyToOne(() => SalesOpportunityItem, { nullable: true })
+  salesOpportunity?: Rel<SalesOpportunityItem>;
+
+  @ApiPropertyOptional({ type: () => TicketItem })
+  @SaplingForm({
+    order: 600,
+    group: 'internalCase.groupReference',
+    groupOrder: 300,
+    width: 2,
+    visible: true,
+    tableOrder: 600,
+    tableVisible: false,
+    mobileOrder: 600,
+    mobileVisible: false,
+  })
+  @ManyToOne(() => TicketItem, { nullable: true })
+  ticket?: Rel<TicketItem>;
 
   @ApiProperty()
   @Property({ primary: true, autoincrement: true })

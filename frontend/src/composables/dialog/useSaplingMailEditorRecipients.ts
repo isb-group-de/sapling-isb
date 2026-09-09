@@ -74,8 +74,16 @@ export function useSaplingMailEditorRecipients(options: {
     try {
       const contextValues =
         companyTemplates.length > 0 ? await loadContextCompanyValues(companyTemplates) : {}
+      const customerCompanyHandles = getContextCompanyHandles(
+        companyTemplates.filter((template) => template.options?.includes('isCustomer') === true),
+        contextValues,
+        currentContext.itemHandle,
+      )
+      const serviceProviderCompanyHandles =
+        await loadServiceProviderCompanyHandles(customerCompanyHandles)
       const companyHandles = distinctHandles([
         ...getContextCompanyHandles(companyTemplates, contextValues, currentContext.itemHandle),
+        ...serviceProviderCompanyHandles,
         ...(currentCompanyHandle == null ? [] : [currentCompanyHandle]),
       ])
       if (companyHandles.length === 0) return
@@ -106,6 +114,34 @@ export function useSaplingMailEditorRecipients(options: {
       recipientOptions.value = []
     } finally {
       isLoadingRecipientOptions.value = false
+    }
+  }
+
+  async function loadServiceProviderCompanyHandles(
+    customerCompanyHandles: Array<string | number>,
+  ): Promise<Array<string | number>> {
+    if (customerCompanyHandles.length === 0 || !hasEntityPermission('company', 'allowRead')) {
+      return []
+    }
+
+    try {
+      const customerCompanies = await ApiGenericService.findAll<{
+        serviceProvider?: unknown
+      }>('company', {
+        filter: { handle: { $in: customerCompanyHandles } },
+        relations: ['serviceProvider'],
+        fields: ['handle', 'serviceProvider', 'serviceProvider.handle'],
+        suppressErrorMessage: true,
+      })
+
+      return distinctHandles(
+        customerCompanies
+          .map((company) => getRelationHandle(company.serviceProvider))
+          .filter((handle): handle is string | number => handle != null),
+      )
+    } catch (error) {
+      console.error('Error loading customer service provider companies:', error)
+      return []
     }
   }
 

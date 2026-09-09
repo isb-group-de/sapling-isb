@@ -322,6 +322,33 @@ describe('EventController', () => {
     expect(azureQueueEvent).not.toHaveBeenCalled();
   });
 
+  it('queues a calendar body update when the customer person changes', async () => {
+    const azureQueueEvent = jest.fn(() => Promise.resolve(undefined));
+    const user = {
+      type: { handle: 'azure' },
+      session: { provider: 'azure' },
+    } as unknown as PersonItem;
+    const event = { handle: 5 } as EventItem;
+    const controller = new EventController(
+      { handle: 'event' } as never,
+      user,
+      {} as never,
+      { queueEvent: azureQueueEvent } as never,
+      {} as never,
+    );
+
+    await controller.afterUpdate([event], {
+      changedFields: ['creatorPerson'],
+    });
+
+    expect(asMock(azureQueueEvent)).toHaveBeenCalledWith(
+      event,
+      user.session,
+      undefined,
+      ['creatorPerson'],
+    );
+  });
+
   it('queues participant relation changes but skips internal relations', async () => {
     const azureQueueEvent = jest.fn(() => Promise.resolve(undefined));
     const user = {

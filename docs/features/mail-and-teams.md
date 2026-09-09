@@ -343,14 +343,21 @@ user's own Company and part of the record context is queried only once.
 
 When the current user can read Person records, active people with an email
 address from all resolved companies are offered in the **To**, **CC**, and
-**BCC** comboboxes. The dropdown groups entries by Company, places the current
-user's Company first, and separates subsequent Company groups visually. The
-current Company header is marked explicitly. Companies and the people within
-each Company are sorted alphabetically. Entries are shown as:
+**BCC** comboboxes. The dropdown groups entries by Company, places context
+Companies before the current user's Company, and separates subsequent Company
+groups visually. The current Company header is marked explicitly. Context
+Companies and the people within each Company are sorted alphabetically. Entries
+are shown as:
 
 ```text
 Ada Lovelace (Acme GmbH, Entwicklung) – ada@example.com
 ```
+
+For Company references marked as customer context, the composer also resolves
+the customer's configured `serviceProvider` and includes active people with an
+email address from that service-provider Company. The lookup follows the normal
+Company and Person read permissions; if Company access is unavailable, the
+existing context and current-Company suggestions remain available.
 
 Missing company or department labels use an em dash so both context positions
 remain visible. Selecting a suggestion stores and displays only its email
@@ -510,7 +517,9 @@ When adding a new Teams subscription:
 - The composer separates **Content**, **Attachments**, and **Email signatures**
   into persistent tabs. Content groups the collapsible template/snippet tools,
   sender/recipients, and message into bordered panels. Empty CC/BCC fields can be
-  expanded explicitly; populated fields always remain visible.
+  expanded explicitly; populated fields always remain visible. The CC/BCC
+  toggles sit right-aligned in the recipient section header, and sender, To,
+  CC, and BCC fields use the same vertical spacing.
 - The adjacent workspace has **Preview**, **Information**, and **Placeholders**
   tabs. Draft recovery/storage notices, signature availability, attachment
   requirements, upload failures, and send checks are collected in Information.
@@ -549,12 +558,13 @@ When adding a new Teams subscription:
   attachment wording without an attachment require explicit acknowledgement.
   Preview responses expose these empty tokens as `unresolvedPlaceholders`.
 - After review, a ten-second client-side grace period precedes the send API call.
-  Cancel stops that pending call. Closing the dialog during the countdown starts
-  the confirmed send immediately and closes the composer without waiting for the
-  API response. Completion clears only the matching original draft and does not
-  close or reset a subsequently opened composer. Failures retain the draft and
-  appear in the message center. The full countdown row stays outside the scrolling
-  content with its cancel action on the right. Translation seed 085 updates its hint.
+  Cancel stops that pending call. **Send now** skips the remaining countdown and
+  starts the same confirmed send exactly once. Closing the dialog during the
+  countdown also starts the confirmed send immediately and closes the composer
+  without waiting for the API response. Completion clears only the matching
+  original draft and does not close or reset a subsequently opened composer.
+  Failures retain the draft and appear in the message center. The full countdown
+  row stays outside the scrolling content with both actions on the right.
   Page reload or component disposal still stops an unsubmitted pending call. The
   composer is locked while checking, waiting and dispatching. This is not a recall
   of an already transmitted message: after the timer, the existing delivery queue

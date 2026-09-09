@@ -145,6 +145,16 @@ the nested country name. The resulting string is sent as the Outlook location
 display name and the Google Calendar location. Changing `creatorCompany`
 updates that provider location as well.
 
+The provider description also receives a generated contact block for every
+Event relation marked with `isCustomer`. The block lists all non-empty values
+marked with `isPhone` on the related Company and Person records, using their
+`isValue` fields as the label. This keeps the projection metadata-driven: a new
+phone field or customer relation participates through decorators rather than a
+calendar-specific property list. Outlook receives clickable `tel:` links;
+Google receives the same information as plain text. Sapling removes its marked
+contact block again during provider imports so repeated synchronization does
+not copy or duplicate generated content in `EventItem.description`.
+
 Outlook projections serialize timed starts and ends as local wall-clock values
 with the IANA time zone reported by the Sapling client. The time-zone value is
 stored in the asynchronous delivery payload so create and update jobs preserve
@@ -335,8 +345,9 @@ custom-field, and other Sapling-only changes therefore create no
 `EventDeliveryItem`, do not
 resolve a provider token, and do not call Outlook or Google. Provider-relevant
 updates are currently limited to title, description, start/end, recurrence,
-participants, the customer company used for the physical location, meeting-link
-creation, type/category classification, and status lifecycle changes.
+participants, the customer company used for the physical location and contact
+details, the customer person used for contact details, meeting-link creation,
+type/category classification, and status lifecycle changes.
 
 Retries use `EventDeliveryService.retryDelivery(handle)`. The delivery is reset to pending, `nextRetryAt` is cleared, and the same queue-or-direct execution path is used.
 

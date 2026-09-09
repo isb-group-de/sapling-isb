@@ -1,5 +1,6 @@
 import { EventItem } from '../../entity/EventItem';
 import { resolveCalendarEventLocation } from '../calendar-address.utils';
+import { buildCalendarHtmlDescription } from '../calendar-contact.utils';
 import { buildAzureRecurrence } from '../calendar.recurrence';
 import {
   normalizeCalendarTimeZone,
@@ -514,7 +515,7 @@ export function buildAzureCalendarEvent(
 
   eventResource.body = {
     contentType: 'HTML',
-    content: event.description,
+    content: buildCalendarHtmlDescription(event),
   };
 
   if (event.createOnlineMeeting) {
@@ -556,7 +557,12 @@ export function buildAzureCalendarEventPatch(
   if (changed.has('endDate')) copy('end');
   if (changed.has('recurrenceRule')) copy('recurrence');
   if (changed.has('participants')) copy('attendees');
-  if (changed.has('description')) copy('body');
+  if (
+    changed.has('description') ||
+    changed.has('creatorCompany') ||
+    changed.has('creatorPerson')
+  )
+    copy('body');
   if (changed.has('createOnlineMeeting') && event.createOnlineMeeting) {
     copy('isOnlineMeeting');
     copy('onlineMeetingProvider');

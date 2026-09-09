@@ -94,8 +94,16 @@ describe('SaplingDialogMailComposer', () => {
       global: { plugins: [vuetify, i18n], stubs: { SaplingMarkdownField: true } },
     })
     const fields = wrapper.findAllComponents(components.VCombobox)
+    const recipientHeader = wrapper.find('.sapling-mail-dialog__recipients-header')
     const cc = fields.find((field) => field.props('label') === 'document.cc')!
     const bcc = fields.find((field) => field.props('label') === 'document.bcc')!
+    expect(recipientHeader.find('.sapling-mail-dialog__section-title').exists()).toBe(true)
+    expect(recipientHeader.find('.sapling-mail-dialog__recipient-toggles').exists()).toBe(true)
+    expect(
+      recipientHeader
+        .find('.sapling-mail-dialog__section-title .sapling-mail-dialog__recipient-toggles')
+        .exists(),
+    ).toBe(false)
     expect(cc.isVisible()).toBe(true)
     expect(bcc.isVisible()).toBe(false)
     await wrapper.findAll('.sapling-mail-dialog__recipient-toggles button')[1].trigger('click')
@@ -198,7 +206,7 @@ describe('SaplingDialogMailComposer', () => {
     expect(wrapper.exists()).toBe(true)
   })
 
-  it('shows alphabetically sorted context contacts while selected chips stay email-only', () => {
+  it('shows target-company contacts before current-company contacts while chips stay email-only', () => {
     const wrapper = mount(SaplingDialogMailComposer, {
       props: {
         ...baseProps,
@@ -229,16 +237,16 @@ describe('SaplingDialogMailComposer', () => {
     const recipientFields = wrapper.findAllComponents(components.VCombobox)
     const expectedItems = [
       {
-        title: 'Ada Lovelace (Acme GmbH, Entwicklung) – ada@example.com',
-        value: 'ada@example.com',
-        companyLabel: 'Acme GmbH · mail.currentCompany',
+        title: 'Zoë Zimmer (Beta AG, Support) – zoe@example.com',
+        value: 'zoe@example.com',
+        companyLabel: 'Beta AG',
         showCompanyHeader: true,
         showDivider: false,
       },
       {
-        title: 'Zoë Zimmer (Beta AG, Support) – zoe@example.com',
-        value: 'zoe@example.com',
-        companyLabel: 'Beta AG',
+        title: 'Ada Lovelace (Acme GmbH, Entwicklung) – ada@example.com',
+        value: 'ada@example.com',
+        companyLabel: 'Acme GmbH · mail.currentCompany',
         showCompanyHeader: true,
         showDivider: true,
       },

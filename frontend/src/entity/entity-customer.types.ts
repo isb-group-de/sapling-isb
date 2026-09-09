@@ -1,7 +1,7 @@
 import type { PersonItem } from './entity-account.types'
 import type { SaplingGenericItem } from './entity-base.types'
 import type { EventItem, HolidayGroupItem, WorkHourWeekItem } from './entity-calendar.types'
-import type { TicketItem } from './entity-service.types'
+import type { InternalCaseItem, TicketItem } from './entity-service.types'
 
 /**
  * Represents a company entity.
@@ -151,6 +151,8 @@ export interface SalesOpportunityItem extends SaplingGenericItem {
   events?: EventItem[]
   /** Related effort estimates */
   effortEstimates?: EffortEstimateItem[]
+  /** Related internal cases */
+  internalCases?: InternalCaseItem[]
   /** Creation date */
   createdAt?: Date | null
   /** Last update date */

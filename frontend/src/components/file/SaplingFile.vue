@@ -125,6 +125,9 @@ const props = withDefaults(
     reloadKey: 0,
   },
 )
+const emit = defineEmits<{
+  (event: 'update:total', value: number): void
+}>()
 const entityHandleRef = ref(props.entityHandle)
 const { isLoading: isTranslationLoading } = useTranslationLoader('document', 'global')
 
@@ -159,6 +162,16 @@ const {
   onSortByUpdate,
   parentFilter,
 } = table
+
+watch(
+  [isInitialized, totalItems],
+  ([initialized, total]) => {
+    if (initialized) {
+      emit('update:total', total)
+    }
+  },
+  { immediate: true },
+)
 
 onMounted(() => {
   void table.initializeEntityState({

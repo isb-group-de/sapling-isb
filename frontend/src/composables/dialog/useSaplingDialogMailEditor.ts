@@ -830,6 +830,7 @@ export function useSaplingDialogMailEditor() {
     sendIssues,
     confirmSend,
     cancelPendingSend,
+    sendPendingNow,
     isCheckingSend,
     saveCurrentSignatureDefaults,
     isSavingSignatureDefaults,

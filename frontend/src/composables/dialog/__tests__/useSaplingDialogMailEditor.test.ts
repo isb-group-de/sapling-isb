@@ -205,6 +205,62 @@ describe('useSaplingDialogMailEditor', () => {
     expect(mocks.findAll).not.toHaveBeenCalledWith('document', expect.anything())
   })
 
+  it('includes contacts from the customer company service provider', async () => {
+    mocks.currentPerson.company = { handle: 10 }
+    mocks.findAll.mockImplementation(async (entityHandle: string) => {
+      if (entityHandle === 'company') {
+        return [{ handle: 20, serviceProvider: { handle: 30 } }]
+      }
+      if (entityHandle === 'person') {
+        return [
+          {
+            firstName: 'Clara',
+            lastName: 'Customer',
+            email: 'clara@customer.example',
+            company: { handle: 20, name: 'Customer GmbH' },
+          },
+          {
+            firstName: 'Dora',
+            lastName: 'Provider',
+            email: 'dora@provider.example',
+            company: { handle: 30, name: 'Provider GmbH' },
+          },
+        ]
+      }
+      return []
+    })
+    const editor = useSaplingDialogMailEditor()
+
+    useSaplingMailDialog().openMailDialog({
+      entityHandle: 'ticket',
+      itemHandle: 99,
+    })
+
+    await vi.waitFor(() => expect(editor.recipientOptions.value).toHaveLength(2))
+
+    expect(mocks.findAll).toHaveBeenCalledWith('company', {
+      filter: { handle: { $in: [20] } },
+      relations: ['serviceProvider'],
+      fields: ['handle', 'serviceProvider', 'serviceProvider.handle'],
+      suppressErrorMessage: true,
+    })
+    expect(mocks.findAll).toHaveBeenCalledWith(
+      'person',
+      expect.objectContaining({
+        filter: { company: { $in: [10, 20, 30] } },
+      }),
+    )
+    expect(editor.recipientOptions.value).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          email: 'dora@provider.example',
+          companyHandle: 30,
+          companyName: 'Provider GmbH',
+        }),
+      ]),
+    )
+  })
+
   it('adds configured customer CC recipients once and keeps them removable', async () => {
     mocks.resolveContextCc.mockResolvedValue({
       additionalCc: ['audit@example.com'],
@@ -423,6 +479,31 @@ describe('useSaplingDialogMailEditor', () => {
       expect(mocks.send).toHaveBeenCalledTimes(1)
     },
   )
+
+  it('sends immediately when the pending countdown is confirmed', async () => {
+    const editor = useSaplingDialogMailEditor()
+    useSaplingMailDialog().openMailDialog({ entityHandle: 'ticket', itemHandle: 99 })
+    await vi.waitFor(() => expect(editor.canSendMail.value).toBe(true))
+    editor.toRecipients.value = ['to@example.com']
+    mocks.preview.mockResolvedValue({
+      to: ['to@example.com'],
+      cc: [],
+      bcc: [],
+      subject: 'Test',
+      bodyMarkdown: 'Text',
+    })
+    vi.useFakeTimers()
+
+    await editor.sendMail()
+    expect(editor.isHolding.value).toBe(true)
+
+    editor.sendPendingNow()
+
+    expect(editor.isHolding.value).toBe(false)
+    expect(mocks.send).toHaveBeenCalledTimes(1)
+    await vi.advanceTimersByTimeAsync(11000)
+    expect(mocks.send).toHaveBeenCalledTimes(1)
+  })
 
   it('requires warning acknowledgement and clears the draft only after successful queuing', async () => {
     const editor = useSaplingDialogMailEditor()

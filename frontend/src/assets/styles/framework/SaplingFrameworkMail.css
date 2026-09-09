@@ -39,8 +39,12 @@
   gap: var(--sapling-gap-md);
 }
 
-.sapling-mail-dialog__countdown-row > .v-btn {
+.sapling-mail-dialog__countdown-actions {
+  display: flex;
   flex: 0 0 auto;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--sapling-gap-sm);
   margin-left: auto;
 }
 
@@ -133,6 +137,25 @@
   font-weight: 600;
 }
 
+.sapling-mail-dialog__recipients {
+  display: grid;
+  gap: var(--sapling-gap-md);
+}
+
+.sapling-mail-dialog__recipients-header {
+  display: flex;
+  align-items: center;
+  gap: var(--sapling-gap-sm);
+  min-width: 0;
+}
+
+.sapling-mail-dialog__recipients-header .sapling-mail-dialog__section-title {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sapling-gap-xs);
+  min-width: 0;
+}
+
 .sapling-mail-dialog__templates {
   display: block;
 }
@@ -155,6 +178,7 @@
 
 .sapling-mail-dialog__recipient-toggles {
   display: flex;
+  flex: 0 0 auto;
   gap: var(--sapling-gap-xs);
   margin-left: auto;
 }

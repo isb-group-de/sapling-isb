@@ -162,6 +162,48 @@ describe('SaplingDialogEditNavigation', () => {
     expect(relationButtons[1].classes()).not.toContain('sapling-record-dialog-nav-item--dirty')
   })
 
+  it('renders right-aligned zero and non-zero counts alongside dirty indicators', () => {
+    const wrapper = mount(SaplingDialogEditNavigation, {
+      props: {
+        activeTab: 0,
+        entityHandle: 'event',
+        entityLabel: 'Events',
+        mode: 'edit' as const,
+        relationTemplates: [{ name: 'participants', type: 'collection', kind: 'm:n' }] as never,
+        relationCounts: { participants: 1 },
+        dirtyRelationNames: ['participants'],
+        supplementalTabs: [
+          {
+            value: 2,
+            label: 'Information',
+            icon: 'mdi-text-box-edit-outline',
+            count: 1,
+            dirty: true,
+          },
+          {
+            value: 3,
+            label: 'Documents',
+            icon: 'mdi-file-document-multiple-outline',
+            count: 0,
+          },
+        ],
+      },
+      global: {
+        mocks: { $t: (key: string) => key },
+        stubs: { VIcon: { template: '<span><slot /></span>' } },
+      },
+    })
+
+    const tabs = wrapper.findAll('[role="tab"]')
+    expect(tabs[1].get('.sapling-record-dialog-nav-item__count').text()).toBe('1')
+    expect(tabs[1].find('.sapling-record-dialog-nav-item__dirty-indicator').exists()).toBe(true)
+    expect(tabs[1].attributes('aria-label')).toContain('event.participants. 1')
+    expect(tabs[2].get('.sapling-record-dialog-nav-item__count').text()).toBe('1')
+    expect(tabs[2].find('.sapling-record-dialog-nav-item__dirty-indicator').exists()).toBe(true)
+    expect(tabs[3].get('.sapling-record-dialog-nav-item__count').text()).toBe('0')
+    expect(tabs[3].attributes('aria-label')).toBe('Documents. 0')
+  })
+
   it('locks relation tabs in a deferred child create dialog', async () => {
     const wrapper = mount(SaplingDialogEditNavigation, {
       props: {

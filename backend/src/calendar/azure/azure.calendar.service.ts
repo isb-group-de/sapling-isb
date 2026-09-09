@@ -187,6 +187,7 @@ export class AzureCalendarService extends AzureCalendarOperations {
           'category',
           'creatorCompany',
           'creatorCompany.country',
+          'creatorPerson',
         ],
       },
     );

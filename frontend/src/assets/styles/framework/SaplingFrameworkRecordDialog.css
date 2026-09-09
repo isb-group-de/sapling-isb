@@ -172,6 +172,23 @@
   box-shadow: 0 0 0 1px rgba(var(--v-theme-warning), 0.35);
 }
 
+.sapling-record-dialog-nav-item__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--sapling-control-size-xs);
+  height: var(--sapling-control-size-xs);
+  padding: 0 var(--sapling-space-2xs);
+  border: 1px solid rgba(var(--sapling-record-dialog-relation-rgb, var(--v-theme-primary)), 0.24);
+  border-radius: var(--sapling-radius-pill);
+  background: rgba(var(--sapling-record-dialog-relation-rgb, var(--v-theme-primary)), 0.1);
+  color: rgb(var(--sapling-record-dialog-relation-rgb, var(--v-theme-primary)));
+  font-size: var(--sapling-text-body-size-xs);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  line-height: 1;
+}
+
 .sapling-record-dialog-nav-item--dirty:not(.sapling-record-dialog-nav-item--active) {
   border-color: rgba(var(--v-theme-warning), 0.42);
   background: rgba(var(--v-theme-warning), 0.07);

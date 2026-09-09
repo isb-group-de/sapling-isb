@@ -13,6 +13,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { SalesOpportunityStageItem } from './SalesOpportunityStageItem';
 import { EventItem } from './EventItem';
 import { EffortEstimateItem } from './EffortEstimateItem';
+import { InternalCaseItem } from './InternalCaseItem';
 import {
   Sapling,
   SaplingDependsOn,
@@ -671,6 +672,17 @@ export class SalesOpportunityItem {
   )
   effortEstimates: Collection<EffortEstimateItem> =
     new Collection<EffortEstimateItem>(this);
+
+  /**
+   * Internal cases associated with this sales opportunity.
+   */
+  @ApiPropertyOptional({ type: () => InternalCaseItem, isArray: true })
+  @OneToMany(
+    () => InternalCaseItem,
+    (internalCase) => internalCase.salesOpportunity,
+  )
+  internalCases: Collection<InternalCaseItem> =
+    new Collection<InternalCaseItem>(this);
 
   /**
    * Competitors that are relevant for this opportunity.

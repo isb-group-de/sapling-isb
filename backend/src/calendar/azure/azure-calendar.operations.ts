@@ -10,6 +10,7 @@ import {
 } from '../../constants/project.constants';
 import { CalendarSyncSubscriptionItem } from '../../entity/CalendarSyncSubscriptionItem';
 import { EventAzureItem } from '../../entity/EventAzureItem';
+import { stripCalendarContactDetails } from '../calendar-contact.utils';
 import { EventCategoryItem } from '../../entity/EventCategoryItem';
 import { EventItem } from '../../entity/EventItem';
 import { EventStatusItem } from '../../entity/EventStatusItem';
@@ -384,7 +385,7 @@ export class AzureCalendarOperations {
       graphEvent.subject?.trim() || 'Outlook event',
       128,
     );
-    event.description = graphEvent.bodyPreview?.trim() || undefined;
+    event.description = stripCalendarContactDetails(graphEvent.bodyPreview);
     event.isPrivate = graphEvent.sensitivity === 'private';
     event.startDate = values.startDate;
     event.endDate = values.endDate;

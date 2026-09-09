@@ -1,6 +1,7 @@
 import { calendar_v3 } from 'googleapis';
 import { EventItem } from '../../entity/EventItem';
 import { resolveCalendarEventLocation } from '../calendar-address.utils';
+import { buildCalendarTextDescription } from '../calendar-contact.utils';
 import { buildGoogleRecurrence } from '../calendar.recurrence';
 import {
   type CalendarClassificationMapping,
@@ -227,7 +228,7 @@ export function buildGoogleCalendarEvent(
 
   const resource: calendar_v3.Schema$Event = {
     summary: event.title,
-    description: event.description,
+    description: buildCalendarTextDescription(event),
     start: { dateTime: event.startDate.toISOString() },
     end: { dateTime: event.endDate.toISOString() },
     recurrence: buildGoogleRecurrence(
@@ -303,7 +304,12 @@ export function buildGoogleCalendarEventPatch(
   };
 
   if (changed.has('title')) copy('summary');
-  if (changed.has('description')) copy('description');
+  if (
+    changed.has('description') ||
+    changed.has('creatorCompany') ||
+    changed.has('creatorPerson')
+  )
+    copy('description');
   if (changed.has('startDate')) copy('start');
   if (changed.has('endDate')) copy('end');
   if (

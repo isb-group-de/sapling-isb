@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { EntityManager, TransactionPropagation } from '@mikro-orm/core';
 import { PersonItem } from '../../entity/PersonItem';
 import type { ScriptServerContext } from '../../script/core/script.interface';
@@ -40,7 +36,14 @@ export class GenericDeleteService {
     handle: string | number,
     currentUser: PersonItem,
   ): Promise<GenericDeleteImpactDto> {
-    await this.assertDeleteAccess(entityHandle, handle, currentUser);
+    const exists = await this.assertDeleteAccess(
+      entityHandle,
+      handle,
+      currentUser,
+    );
+    if (!exists) {
+      return { action: 'delete', references: [] };
+    }
 
     return {
       action: 'delete',
@@ -62,7 +65,14 @@ export class GenericDeleteService {
     scriptContext: ScriptServerContext,
     cascadeRelations: string[] = [],
   ): Promise<GenericDeleteResultDto> {
-    await this.assertDeleteAccess(entityHandle, handle, currentUser);
+    const exists = await this.assertDeleteAccess(
+      entityHandle,
+      handle,
+      currentUser,
+    );
+    if (!exists) {
+      return { action: 'deleted' };
+    }
 
     const selectedReferences = this.resolveSelectedReferences(
       entityHandle,
@@ -156,7 +166,7 @@ export class GenericDeleteService {
     entityHandle: string,
     handle: string | number,
     currentUser: PersonItem,
-  ): Promise<void> {
+  ): Promise<boolean> {
     const entityClass = this.genericQueryService.getEntityClass(entityHandle);
     const handleFilter = this.genericReferenceService.getHandleFilter(
       entityHandle,
@@ -170,7 +180,7 @@ export class GenericDeleteService {
       );
     const item = await this.em.findOne(entityClass, visibleFilter);
     if (!item) {
-      throw new NotFoundException('global.entityNotFound');
+      return false;
     }
 
     this.genericPermissionService.checkTopLevelPermission(
@@ -179,6 +189,7 @@ export class GenericDeleteService {
       currentUser,
       'allowDeleteStage',
     );
+    return true;
   }
 
   private getCascadeReferences(entityHandle: string): CascadeReference[] {

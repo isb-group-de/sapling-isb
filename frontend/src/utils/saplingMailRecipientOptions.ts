@@ -87,7 +87,7 @@ export function sortMailRecipientOptions(
 
   return [...options].sort(
     (left, right) =>
-      Number(Boolean(right.isCurrentCompany)) - Number(Boolean(left.isCurrentCompany)) ||
+      Number(Boolean(left.isCurrentCompany)) - Number(Boolean(right.isCurrentCompany)) ||
       collator.compare(left.companyName, right.companyName) ||
       collator.compare(left.name, right.name) ||
       collator.compare(left.departmentName, right.departmentName) ||

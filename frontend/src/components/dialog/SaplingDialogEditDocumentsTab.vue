@@ -60,6 +60,7 @@
         entity-handle="document"
         :record-filter="recordFilter"
         :reload-key="reloadKey"
+        @update:total="(count) => emit('update:count', count)"
       >
         <template #table-header>
           <header class="sapling-record-documents__panel-header">
@@ -116,6 +117,10 @@ const props = defineProps<{
   item: SaplingGenericItem | null
   entityHandle: string
   canUpload: boolean
+}>()
+
+const emit = defineEmits<{
+  (event: 'update:count', value: number): void
 }>()
 
 const { t, te } = useI18n()

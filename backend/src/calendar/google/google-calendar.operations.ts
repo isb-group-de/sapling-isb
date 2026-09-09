@@ -13,6 +13,7 @@ import {
 import { CalendarSyncSubscriptionItem } from '../../entity/CalendarSyncSubscriptionItem';
 import { EventCategoryItem } from '../../entity/EventCategoryItem';
 import { EventGoogleItem } from '../../entity/EventGoogleItem';
+import { stripCalendarContactDetails } from '../calendar-contact.utils';
 import { EventItem } from '../../entity/EventItem';
 import { EventStatusItem } from '../../entity/EventStatusItem';
 import { EventTypeItem } from '../../entity/EventTypeItem';
@@ -291,7 +292,7 @@ export class GoogleCalendarOperations {
       graphEvent.summary?.trim() || 'Google event',
       128,
     );
-    event.description = graphEvent.description?.trim() || undefined;
+    event.description = stripCalendarContactDetails(graphEvent.description);
     event.startDate = values.startDate;
     event.endDate = values.endDate;
     event.recurrenceRule = values.recurrenceRule;

@@ -21,6 +21,7 @@ const CALENDAR_PROVIDER_RELEVANT_EVENT_FIELDS = new Set([
   'type',
   'category',
   'creatorCompany',
+  'creatorPerson',
   'status',
 ]);
 

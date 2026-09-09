@@ -4,6 +4,7 @@ describe('GenericDeleteService', () => {
   function createHarness(
     options: {
       children?: Array<{ handle: number }>;
+      item?: { handle: number } | null;
     } = {},
   ) {
     class CompanyEntity {}
@@ -11,7 +12,9 @@ describe('GenericDeleteService', () => {
     class HiddenChildEntity {}
     class EventEntity {}
 
-    const findOne = jest.fn(async () => ({ handle: 4 }));
+    const findOne = jest.fn(async () =>
+      options.item === undefined ? { handle: 4 } : options.item,
+    );
     const find = jest.fn(async () => options.children ?? []);
     const transactional = jest.fn(async (operation: () => Promise<void>) =>
       operation(),
@@ -149,6 +152,29 @@ describe('GenericDeleteService', () => {
       expect.objectContaining({ handle: 1 }),
       'allowDeleteStage',
     );
+  });
+
+  it('treats an already missing record as deleted in the impact preview', async () => {
+    const harness = createHarness({ item: null });
+
+    await expect(
+      harness.service.getImpact('company', '4', { handle: 1 } as never),
+    ).resolves.toEqual({ action: 'delete', references: [] });
+    expect(
+      harness.genericPermissionService.checkTopLevelPermission,
+    ).not.toHaveBeenCalled();
+  });
+
+  it('treats an already missing record as a successful no-op deletion', async () => {
+    const harness = createHarness({ item: null });
+
+    await expect(
+      harness.service.delete('company', '4', { handle: 1 } as never, {}, [
+        'persons',
+      ]),
+    ).resolves.toEqual({ action: 'deleted' });
+    expect(harness.em.transactional).not.toHaveBeenCalled();
+    expect(harness.genericEntityMutationService.delete).not.toHaveBeenCalled();
   });
 
   it('physically deletes Events through the normal delete lifecycle', async () => {

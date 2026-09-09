@@ -2,6 +2,7 @@ import { describe, expect, it, jest } from '@jest/globals';
 import { EventItem } from '../../entity/EventItem';
 import { CompanyItem } from '../../entity/CompanyItem';
 import { CountryItem } from '../../entity/CountryItem';
+import { PersonItem } from '../../entity/PersonItem';
 
 import {
   buildAzureCalendarEvent,
@@ -118,12 +119,52 @@ describe('Azure physical location', () => {
   it('updates the Outlook location when the customer changes', () => {
     expect(buildAzureCalendarEventPatch(event, [], ['creatorCompany'])).toEqual(
       {
+        body: {
+          contentType: 'HTML',
+          content: 'Details',
+        },
         location: {
           displayName:
             'Muster GmbH, Musterstraße 1, 10115, Berlin, Deutschland',
         },
       },
     );
+  });
+});
+
+describe('Azure customer contact details', () => {
+  const event = {
+    title: 'Customer appointment',
+    description: 'Details',
+    startDate: new Date('2026-09-10T09:00:00.000Z'),
+    endDate: new Date('2026-09-10T10:00:00.000Z'),
+    participants: [],
+    creatorPerson: Object.assign(new PersonItem(), {
+      firstName: 'Ada',
+      lastName: 'Lovelace',
+      phone: '+49 30 123456',
+    }),
+    createOnlineMeeting: false,
+  } as unknown as EventItem;
+
+  it('adds decorated customer phone fields to the Outlook body', () => {
+    expect(buildAzureCalendarEvent(event)).toMatchObject({
+      body: {
+        contentType: 'HTML',
+        content: expect.stringContaining(
+          '<strong>Ada Lovelace</strong>: <a href="tel:+49 30 123456">+49 30 123456</a>',
+        ),
+      },
+    });
+  });
+
+  it('updates the Outlook body when the customer person changes', () => {
+    expect(buildAzureCalendarEventPatch(event, [], ['creatorPerson'])).toEqual({
+      body: {
+        contentType: 'HTML',
+        content: expect.stringContaining('+49 30 123456'),
+      },
+    });
   });
 });
 

@@ -9,6 +9,7 @@ import {
   getCommunicationOwnerReferenceNames,
   getCommunicationRecordLabel,
 } from '@/utils/saplingCommunicationRecordUtil'
+import { useSaplingDialogTabCounts, type SupplementalTabKind } from './useSaplingDialogTabCounts'
 
 interface SupplementalTabProps {
   mode: DialogState
@@ -21,9 +22,23 @@ interface SupplementalTabOptions {
   activeTab: Ref<number>
   form: Ref<SaplingGenericItem>
   informationDirty: Ref<boolean>
+  isDialogLoading: Ref<boolean>
   isSmallViewport: ComputedRef<boolean>
   permissions: Ref<AccumulatedPermission[] | null>
   relationTemplates: ComputedRef<EntityTemplate[]>
+  relationTableLoaded: Ref<Record<string, boolean>>
+  relationTableTotal: Ref<Record<string, number>>
+}
+
+interface SupplementalTabDefinition {
+  value: number
+  kind: SupplementalTabKind
+  label: string
+  icon: string
+  disabled: boolean
+  disabledReason: string
+  dirty?: boolean
+  count?: number
 }
 
 async function loadCommunicationReferenceTemplates(
@@ -70,9 +85,12 @@ export function useSaplingDialogSupplementalTabs(
     activeTab,
     form,
     informationDirty,
+    isDialogLoading,
     isSmallViewport,
     permissions,
     relationTemplates,
+    relationTableLoaded,
+    relationTableTotal,
   }: SupplementalTabOptions,
 ) {
   const { t } = useI18n()
@@ -167,47 +185,77 @@ export function useSaplingDialogSupplementalTabs(
   const supplementalDisabledReason = computed(() =>
     hasPersistedItem.value ? '' : t('global.recordContentAvailableAfterSave'),
   )
-  const supplementalTabs = computed(() => {
-    const tabs = []
+  const supplementalKinds = computed<SupplementalTabKind[]>(() => [
+    ...(canShowInformationTab.value ? (['information'] as const) : []),
+    ...(canShowDocumentsTab.value ? (['document'] as const) : []),
+    ...(canShowEmailsTab.value && recordEmailActions.value.length > 0 ? (['email'] as const) : []),
+    ...(canShowPhoneCallsTab.value && recordPhoneNumber.value ? (['phoneCall'] as const) : []),
+  ])
+  const {
+    relationCounts,
+    supplementalCounts,
+    refreshSupplementalTabCount,
+    updateSupplementalTabCount,
+  } = useSaplingDialogTabCounts({
+    entityHandle: computed(() => props.entity?.handle ?? ''),
+    hasPersistedItem,
+    isDialogLoading,
+    itemHandle,
+    relationTemplates,
+    relationTableLoaded,
+    relationTableTotal,
+    supplementalKinds,
+  })
+  const supplementalTabs = computed<SupplementalTabDefinition[]>(() => {
+    const tabs: SupplementalTabDefinition[] = []
     if (canShowInformationTab.value) {
       tabs.push({
         value: informationTabIndex.value,
+        kind: 'information',
         label: t('navigation.information'),
         icon: 'mdi-text-box-edit-outline',
         disabled: !hasPersistedItem.value,
         disabledReason: supplementalDisabledReason.value,
         dirty: informationDirty.value,
+        count: supplementalCounts.value.information,
       })
     }
     if (canShowDocumentsTab.value) {
       tabs.push({
         value: documentsTabIndex.value,
+        kind: 'document',
         label: t('navigation.document'),
         icon: 'mdi-file-document-multiple-outline',
         disabled: !hasPersistedItem.value,
         disabledReason: supplementalDisabledReason.value,
+        count: supplementalCounts.value.document,
       })
     }
     if (canShowEmailsTab.value && recordEmailActions.value.length > 0) {
       tabs.push({
         value: emailsTabIndex.value,
+        kind: 'email',
         label: emailsTabLabel.value,
         icon: 'mdi-email-multiple-outline',
         disabled: !hasPersistedItem.value,
         disabledReason: supplementalDisabledReason.value,
+        count: supplementalCounts.value.email,
       })
     }
     if (canShowPhoneCallsTab.value && recordPhoneNumber.value) {
       tabs.push({
         value: phoneCallsTabIndex.value,
+        kind: 'phoneCall',
         label: t('navigation.phoneCall'),
         icon: 'mdi-phone-log-outline',
         disabled: !hasPersistedItem.value,
         disabledReason: supplementalDisabledReason.value,
+        count: supplementalCounts.value.phoneCall,
       })
     }
     return tabs
   })
+
   const hasOpenedInformationTab = ref(false)
   const hasOpenedDocumentsTab = ref(false)
   const hasOpenedEmailsTab = ref(false)
@@ -251,6 +299,9 @@ export function useSaplingDialogSupplementalTabs(
     emailRecordDisplayValue,
     phoneRecordDisplayValue,
     supplementalTabs,
+    relationCounts,
+    refreshSupplementalTabCount,
+    updateSupplementalTabCount,
     hasOpenedInformationTab,
     hasOpenedDocumentsTab,
     hasOpenedEmailsTab,

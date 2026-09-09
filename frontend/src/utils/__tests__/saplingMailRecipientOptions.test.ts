@@ -101,12 +101,12 @@ describe('saplingMailRecipientOptions', () => {
     )
   })
 
-  it('places the current company first and prefers it when duplicate emails exist', () => {
+  it('places target companies before the current company and prefers them for duplicate emails', () => {
     const options = buildMailRecipientOptions(
       [
         {
           firstName: 'Ada',
-          lastName: 'Other',
+          lastName: 'Target',
           email: 'shared@example.com',
           company: { handle: 1, name: 'Acme GmbH' },
         },
@@ -116,6 +116,12 @@ describe('saplingMailRecipientOptions', () => {
           email: 'SHARED@example.com',
           company: { handle: 2, name: 'Beta AG' },
         },
+        {
+          firstName: 'Max',
+          lastName: 'Current',
+          email: 'max@example.com',
+          company: { handle: 2, name: 'Beta AG' },
+        },
       ],
       'de',
       2,
@@ -123,8 +129,15 @@ describe('saplingMailRecipientOptions', () => {
 
     expect(options).toEqual([
       expect.objectContaining({
-        email: 'SHARED@example.com',
-        name: 'Zoe Current',
+        email: 'shared@example.com',
+        name: 'Ada Target',
+        companyHandle: 1,
+        companyName: 'Acme GmbH',
+        isCurrentCompany: false,
+      }),
+      expect.objectContaining({
+        email: 'max@example.com',
+        name: 'Max Current',
         companyHandle: 2,
         companyName: 'Beta AG',
         isCurrentCompany: true,

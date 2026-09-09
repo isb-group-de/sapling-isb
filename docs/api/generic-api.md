@@ -371,6 +371,12 @@ so clients can disclose unavoidable side effects. Shared `m:n` targets are
 never offered for record deletion; their join-table links follow the normal
 ORM/DB relation behavior.
 
+Deletion is idempotent for records that are already absent or no longer visible
+to the caller. The impact endpoint returns the ordinary delete action without
+reference groups, and the delete endpoint returns `{ "action": "deleted" }`
+without running delete scripts or cascades. This lets stale UI selections finish
+cleanly when another request has already removed the record.
+
 When `cascadeRelations` is supplied, the selected child records are deleted
 before the parent in one transaction. Every child still runs its normal generic
 delete permissions and lifecycle. A failure rolls back the complete operation.

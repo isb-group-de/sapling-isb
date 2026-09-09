@@ -1,12 +1,14 @@
 import { computed, ref, watch, type ComputedRef, type Ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { EntityItem, SaplingGenericItem } from '@/entity/entity'
-import type { EntityTemplate } from '@/entity/structure'
+import type { DialogState, EntityState, EntityTemplate } from '@/entity/structure'
 import type { SaplingDialogTemplateGroup } from '@/utils/saplingDialogLayoutUtil'
 
 interface DialogPresentationProps {
   entity: EntityItem | null
   item: SaplingGenericItem | null
+  mode: DialogState
+  showReference?: boolean
 }
 
 interface DialogPresentationOptions {
@@ -17,6 +19,8 @@ interface DialogPresentationOptions {
   onRelationTablePage: (templateName: string, page: number) => void
   relationTablePage: Ref<Record<string, number>>
   relationTableSearch: Ref<Record<string, string>>
+  relationTableState: Ref<Record<string, EntityState>>
+  relationTemplates: ComputedRef<EntityTemplate[]>
   selectedFormConfigLabel: ComputedRef<string>
   selectedItems: Ref<SaplingGenericItem[]>
   selectedRelations: Ref<Record<string, SaplingGenericItem[]>>
@@ -28,6 +32,24 @@ export function useSaplingDialogPresentation(
   options: DialogPresentationOptions,
 ) {
   const { d, t, te } = useI18n()
+  const entityHandle = computed(() => props.entity?.handle ?? '')
+  const entityLabel = computed(() =>
+    entityHandle.value ? t(`navigation.${entityHandle.value}`) : '',
+  )
+  const isReferenceVisible = computed(() => props.showReference !== false)
+  const dialogTitle = computed(() => {
+    if (props.mode === 'create') return t('global.createRecord')
+    if (props.mode === 'edit') return t('global.editRecord')
+    return entityLabel.value
+  })
+  const relationEntities = computed<Record<string, EntityItem | null>>(() =>
+    Object.fromEntries(
+      options.relationTemplates.value.map((template) => [
+        template.name,
+        options.relationTableState.value[template.name]?.entity ?? null,
+      ]),
+    ),
+  )
 
   function getTimestampTitle(field: 'createdAt' | 'updatedAt'): string {
     const entityHandle = props.entity?.handle
@@ -106,6 +128,11 @@ export function useSaplingDialogPresentation(
   watch(options.visibleTemplateGroups, () => syncExpandedGroups(), { immediate: true })
 
   return {
+    entityHandle,
+    entityLabel,
+    isReferenceVisible,
+    dialogTitle,
+    relationEntities,
     createdAtTitle,
     updatedAtTitle,
     createdAtLabel,

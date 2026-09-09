@@ -60,10 +60,12 @@
           />
         </div>
       </details>
-      <section class="sapling-mail-dialog__section">
-        <h3 class="sapling-mail-dialog__section-title">
-          <v-icon size="18">mdi-account-multiple-outline</v-icon
-          >{{ translate('mail.recipientsStat') }}
+      <section class="sapling-mail-dialog__section sapling-mail-dialog__recipients">
+        <div class="sapling-mail-dialog__recipients-header">
+          <h3 class="sapling-mail-dialog__section-title">
+            <v-icon size="18">mdi-account-multiple-outline</v-icon
+            >{{ translate('mail.recipientsStat') }}
+          </h3>
           <span class="sapling-mail-dialog__recipient-toggles">
             <v-btn
               size="x-small"
@@ -80,7 +82,7 @@
               >{{ translate('document.bcc') }}</v-btn
             >
           </span>
-        </h3>
+        </div>
         <div class="sapling-message-dialog__sender sapling-mail-dialog__sender">
           <span
             v-if="senderOptions.length <= 1"
@@ -121,7 +123,7 @@
           closable-chips
           clearable
           hide-selected
-          hide-details="auto"
+          hide-details
           :loading="isLoadingRecipientOptions"
           :delimiters="[',', ';']"
           @update:model-value="handleToUpdate"
@@ -156,7 +158,7 @@
             closable-chips
             clearable
             hide-selected
-            hide-details="auto"
+            hide-details
             :loading="isLoadingRecipientOptions"
             :delimiters="[',', ';']"
             @update:model-value="handleCcUpdate"
@@ -185,7 +187,7 @@
             closable-chips
             clearable
             hide-selected
-            hide-details="auto"
+            hide-details
             :loading="isLoadingRecipientOptions"
             :delimiters="[',', ';']"
             @update:model-value="handleBccUpdate"

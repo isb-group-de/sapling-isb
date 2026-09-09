@@ -133,9 +133,14 @@
               {{ $t('mail.sendCountdown', { seconds: remainingSeconds }) }}
               <div class="text-caption">{{ translate('mail.sendCountdownHint') }}</div>
             </div>
-            <v-btn variant="tonal" @click="cancelPendingSend">{{
-              translate('mail.cancelSend')
-            }}</v-btn>
+            <div class="sapling-mail-dialog__countdown-actions">
+              <v-btn variant="tonal" @click="cancelPendingSend">{{
+                translate('mail.cancelSend')
+              }}</v-btn>
+              <v-btn color="primary" variant="flat" @click="sendPendingNow">{{
+                translate('mail.sendNow')
+              }}</v-btn>
+            </div>
           </div>
         </v-alert>
 
@@ -180,6 +185,7 @@ const {
   sendIssues,
   confirmSend,
   cancelPendingSend,
+  sendPendingNow,
   saveCurrentSignatureDefaults,
   isSavingSignatureDefaults,
   signatures,

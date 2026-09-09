@@ -190,6 +190,7 @@ export class GoogleCalendarService extends GoogleCalendarOperations {
           'category',
           'creatorCompany',
           'creatorCompany.country',
+          'creatorPerson',
         ],
       },
     );

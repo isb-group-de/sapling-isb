@@ -27863,6 +27863,23 @@
           "enumItems": [],
           "mappedType": "integer"
         },
+        "sales_opportunity_handle": {
+          "name": "sales_opportunity_handle",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
         "status_handle": {
           "name": "status_handle",
           "type": "varchar(64)",
@@ -27879,6 +27896,23 @@
           "collation": null,
           "enumItems": [],
           "mappedType": "string"
+        },
+        "ticket_handle": {
+          "name": "ticket_handle",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
         },
         "title": {
           "name": "title",
@@ -27970,11 +28004,33 @@
         },
         {
           "columnNames": [
+            "sales_opportunity_handle",
+            "updated_at"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "internal_case_item_sales_opportunity_handle_updated_at_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "status_handle"
           ],
           "composite": false,
           "constraint": false,
           "keyName": "internal_case_item_status_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "ticket_handle",
+            "updated_at"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "internal_case_item_ticket_handle_updated_at_index",
           "primary": false,
           "unique": false
         },
@@ -28052,6 +28108,18 @@
           "referencedTableName": "public.person_item",
           "deleteRule": "set null"
         },
+        "internal_case_item_sales_opportunity_handle_foreign": {
+          "columnNames": [
+            "sales_opportunity_handle"
+          ],
+          "constraintName": "internal_case_item_sales_opportunity_handle_foreign",
+          "localTableName": "public.internal_case_item",
+          "referencedColumnNames": [
+            "handle"
+          ],
+          "referencedTableName": "public.sales_opportunity_item",
+          "deleteRule": "set null"
+        },
         "internal_case_item_status_handle_foreign": {
           "columnNames": [
             "status_handle"
@@ -28062,6 +28130,18 @@
             "handle"
           ],
           "referencedTableName": "public.internal_case_status_item",
+          "deleteRule": "set null"
+        },
+        "internal_case_item_ticket_handle_foreign": {
+          "columnNames": [
+            "ticket_handle"
+          ],
+          "constraintName": "internal_case_item_ticket_handle_foreign",
+          "localTableName": "public.internal_case_item",
+          "referencedColumnNames": [
+            "handle"
+          ],
+          "referencedTableName": "public.ticket_item",
           "deleteRule": "set null"
         }
       },

@@ -2,6 +2,7 @@ import { describe, expect, it, jest } from '@jest/globals';
 import { EventItem } from '../../entity/EventItem';
 import { CompanyItem } from '../../entity/CompanyItem';
 import { CountryItem } from '../../entity/CountryItem';
+import { PersonItem } from '../../entity/PersonItem';
 import {
   buildGoogleCalendarEvent,
   buildGoogleCalendarEventPatch,
@@ -132,7 +133,38 @@ describe('google-calendar.utils', () => {
     expect(buildGoogleCalendarEvent(event)).toMatchObject({ location });
     expect(
       buildGoogleCalendarEventPatch(event, [], ['creatorCompany']),
-    ).toEqual({ patch: { location }, sendUpdates: 'all' });
+    ).toEqual({
+      patch: { description: 'Details', location },
+      sendUpdates: 'all',
+    });
+  });
+
+  it('sends decorated customer phone fields in the Google description', () => {
+    const event = {
+      title: 'Customer appointment',
+      description: 'Details',
+      startDate: new Date('2026-09-10T09:00:00.000Z'),
+      endDate: new Date('2026-09-10T10:00:00.000Z'),
+      participants: [],
+      creatorPerson: Object.assign(new PersonItem(), {
+        firstName: 'Ada',
+        lastName: 'Lovelace',
+        phone: '+49 30 123456',
+      }),
+      createOnlineMeeting: false,
+    } as unknown as EventItem;
+
+    expect(buildGoogleCalendarEvent(event).description).toContain(
+      'Ada Lovelace: +49 30 123456',
+    );
+    expect(buildGoogleCalendarEventPatch(event, [], ['creatorPerson'])).toEqual(
+      {
+        patch: {
+          description: expect.stringContaining('+49 30 123456'),
+        },
+        sendUpdates: 'all',
+      },
+    );
   });
 
   it('normalizes RRULE and EXDATE lines from a Google series master', () => {

@@ -56,6 +56,7 @@
                 :entity-label="entityLabel"
                 :mode="mode"
                 :relation-templates="relationTemplates"
+                :relation-counts="relationCounts"
                 :dirty-field-count="dirtyFieldCount"
                 :dirty-relation-names="dirtyRelationNames"
                 :relation-entities="relationEntities"
@@ -195,6 +196,7 @@
                     :item="item"
                     :entity-handle="entityHandle"
                     @update:dirty="handleInformationDirtyUpdate"
+                    @saved="refreshSupplementalTabCount('information')"
                   />
                 </v-window-item>
                 <v-window-item
@@ -212,6 +214,7 @@
                     :item="item"
                     :entity-handle="entityHandle"
                     :can-upload="canUploadDocuments"
+                    @update:count="(count) => updateSupplementalTabCount('document', count)"
                   />
                 </v-window-item>
                 <v-window-item
@@ -233,6 +236,7 @@
                     :can-create="canComposeEmails"
                     :email-actions="recordEmailActions"
                     :record-label="emailRecordDisplayValue"
+                    @update:count="(count) => updateSupplementalTabCount('email', count)"
                   />
                 </v-window-item>
                 <v-window-item
@@ -255,6 +259,7 @@
                     :phone-number="recordPhoneNumber"
                     :record-entity-templates="templates"
                     :record-label="phoneRecordDisplayValue"
+                    @update:count="(count) => updateSupplementalTabCount('phoneCall', count)"
                   />
                 </v-window-item>
               </v-window>
@@ -319,10 +324,8 @@
 <script lang="ts" setup>
 // #region Imports
 import { computed, getCurrentInstance } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { DEFAULT_PAGE_SIZE_SMALL } from '@/constants/project.constants'
 import { SAPLING_DIALOG_HEIGHT } from '@/constants/dialog.constants'
-import type { EntityItem } from '@/entity/entity'
 import { useSaplingDialogEdit } from '@/composables/dialog/useSaplingDialogEdit'
 import { useSaplingDialogKeyboardShortcuts } from '@/composables/dialog/useSaplingDialogKeyboardShortcuts'
 import { useSaplingDialogRecordActions } from '@/composables/dialog/useSaplingDialogRecordActions'
@@ -355,7 +358,6 @@ const props = defineProps<SaplingDialogEditProps>()
 const emit = defineEmits<SaplingDialogEditComponentEmit>()
 // #endregion
 
-const { t } = useI18n()
 useTranslationLoader('navigationGroup')
 const { isSmallViewport } = useSaplingViewport()
 
@@ -500,34 +502,6 @@ const { onDialogKeydown } = useSaplingDialogKeyboardShortcuts({
   saveAndClose,
 })
 
-const entityLabel = computed(() =>
-  props.entity?.handle ? t(`navigation.${props.entity.handle}`) : '',
-)
-
-const isReferenceVisible = computed(() => props.showReference !== false)
-
-const dialogTitle = computed(() => {
-  switch (props.mode) {
-    case 'create':
-      return t('global.createRecord')
-    case 'edit':
-      return t('global.editRecord')
-    default:
-      return entityLabel.value
-  }
-})
-
-const entityHandle = computed(() => props.entity?.handle ?? '')
-
-const relationEntities = computed<Record<string, EntityItem | null>>(() =>
-  Object.fromEntries(
-    relationTemplates.value.map((template) => [
-      template.name,
-      relationTableState.value[template.name]?.entity ?? null,
-    ]),
-  ),
-)
-
 const {
   itemHandle,
   informationTabIndex,
@@ -546,6 +520,9 @@ const {
   emailRecordDisplayValue,
   phoneRecordDisplayValue,
   supplementalTabs,
+  relationCounts,
+  refreshSupplementalTabCount,
+  updateSupplementalTabCount,
   hasOpenedInformationTab,
   hasOpenedDocumentsTab,
   hasOpenedEmailsTab,
@@ -554,12 +531,20 @@ const {
   activeTab,
   form,
   informationDirty,
+  isDialogLoading: isLoading,
   isSmallViewport,
   permissions,
   relationTemplates,
+  relationTableLoaded,
+  relationTableTotal,
 })
 
 const {
+  entityHandle,
+  entityLabel,
+  isReferenceVisible,
+  dialogTitle,
+  relationEntities,
   createdAtTitle,
   updatedAtTitle,
   createdAtLabel,
@@ -584,6 +569,8 @@ const {
   onRelationTablePage,
   relationTablePage,
   relationTableSearch,
+  relationTableState,
+  relationTemplates,
   selectedFormConfigLabel,
   selectedItems,
   selectedRelations,

@@ -28,6 +28,7 @@ import { TicketCategoryItem } from './TicketCategoryItem';
 import { TicketSourceItem } from './TicketSourceItem';
 import { TicketTypeItem } from './TicketTypeItem';
 import { EffortEstimateItem } from './EffortEstimateItem';
+import { InternalCaseItem } from './InternalCaseItem';
 
 /**
  * @class
@@ -874,6 +875,15 @@ export class TicketItem {
   @OneToMany(() => EffortEstimateItem, (x) => x.ticket)
   effortEstimates: Collection<EffortEstimateItem> =
     new Collection<EffortEstimateItem>(this);
+
+  /**
+   * Internal cases related to this ticket.
+   * @type {Collection<InternalCaseItem>}
+   */
+  @ApiPropertyOptional({ type: () => InternalCaseItem, isArray: true })
+  @OneToMany(() => InternalCaseItem, (internalCase) => internalCase.ticket)
+  internalCases: Collection<InternalCaseItem> =
+    new Collection<InternalCaseItem>(this);
 
   /**
    * Date and time when the ticket was created.

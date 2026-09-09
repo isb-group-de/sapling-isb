@@ -260,6 +260,14 @@ Relation tabs use translated business labels and entity icons only. Technical
 ORM cardinalities such as `1:m` and `m:n` are intentionally not exposed as
 visible, hover, or accessibility text.
 
+After a persisted record dialog becomes usable, its visible relation and
+supplemental tabs load lightweight record counts in parallel through the
+permission-aware generic API. These requests project only `handle`, request a
+single row, and use `meta.total`; they are not part of the dialog's blocking
+initialization. A count of zero remains visible. Opening a tab replaces its
+background result with the table's live total, while information saves and
+document, email, or phone-call table refreshes update the matching badge.
+
 ### Reference Field Components
 
 Single- and multi-select table pickers keep their query when focus moves into

@@ -159,6 +159,10 @@ export interface InternalCaseItem extends SaplingGenericItem {
   responsibleCompany?: CompanyItem | number | null
   /** Responsible person */
   responsiblePerson?: PersonItem | number | null
+  /** Related sales opportunity */
+  salesOpportunity?: SalesOpportunityItem | number | null
+  /** Related ticket */
+  ticket?: TicketItem | number | null
   /** Creation date */
   createdAt?: Date | null
   /** Last update date */
@@ -237,6 +241,8 @@ export interface TicketItem extends SaplingGenericItem {
   priority?: TicketPriorityItem | null
   /** Related effort estimates */
   effortEstimates?: EffortEstimateItem[]
+  /** Related internal cases */
+  internalCases?: InternalCaseItem[]
   /** Creation date */
   createdAt: Date | null
   /** Last update date */
