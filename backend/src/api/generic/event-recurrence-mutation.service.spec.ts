@@ -45,6 +45,30 @@ function createHarness(event: EventItem) {
 }
 
 describe('EventRecurrenceMutationService', () => {
+  it('retains estimate and case links when detaching an occurrence', async () => {
+    const harness = createHarness(
+      createEvent({
+        effortEstimate: { handle: 21 } as EventItem['effortEstimate'],
+        internalCase: { handle: 22 } as EventItem['internalCase'],
+      }),
+    );
+    await harness.service.detachOccurrences(
+      42,
+      {
+        occurrenceStarts: ['2026-07-28T11:00:00Z'],
+        event: {},
+      },
+      { handle: 5 } as PersonItem,
+      {},
+    );
+    expect(harness.mutationService.create).toHaveBeenCalledWith(
+      'event',
+      expect.objectContaining({ effortEstimate: 21, internalCase: 22 }),
+      expect.anything(),
+      expect.anything(),
+      expect.anything(),
+    );
+  });
   it.each([1, 10, 50, 200])(
     'updates one master for %i completed occurrences',
     async (count) => {

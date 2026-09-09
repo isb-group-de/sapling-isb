@@ -1520,14 +1520,14 @@
   {
     "entity": "company",
     "property": "assignedEvents",
-    "de": "Zugewiesene Ereignisse",
-    "en": "Assigned events"
+    "de": "Zugewiesene Termine",
+    "en": "Assigned appointments"
   },
   {
     "entity": "company",
     "property": "createdEvents",
-    "de": "Erstellte Ereignisse",
-    "en": "Created events"
+    "de": "Erstellte Termine",
+    "en": "Created appointments"
   },
   {
     "entity": "company",
@@ -2456,14 +2456,14 @@
   {
     "entity": "person",
     "property": "assignedEvents",
-    "de": "Zugewiesene Ereignisse",
-    "en": "Assigned events"
+    "de": "Zugewiesene Termine",
+    "en": "Assigned appointments"
   },
   {
     "entity": "person",
     "property": "createdEvents",
-    "de": "Erstellte Ereignisse",
-    "en": "Created events"
+    "de": "Erstellte Termine",
+    "en": "Created appointments"
   },
   {
     "entity": "person",
@@ -2493,7 +2493,7 @@
     "entity": "person",
     "property": "events",
     "de": "Termine",
-    "en": "Events"
+    "en": "Appointments"
   },
   {
     "entity": "person",
@@ -3224,8 +3224,8 @@
   {
     "entity": "ticket",
     "property": "events",
-    "de": "Ereignisse",
-    "en": "Events"
+    "de": "Termine",
+    "en": "Appointments"
   },
   {
     "entity": "ticket",
@@ -3537,7 +3537,7 @@
     "entity": "eventType",
     "property": "events",
     "de": "Termine",
-    "en": "Events"
+    "en": "Appointments"
   },
   {
     "entity": "eventType",
@@ -3578,8 +3578,8 @@
   {
     "entity": "eventStatus",
     "property": "events",
-    "de": "Ereignisse",
-    "en": "Events"
+    "de": "Termine",
+    "en": "Appointments"
   },
   {
     "entity": "eventStatus",
@@ -3602,8 +3602,8 @@
   {
     "entity": "eventGoogle",
     "property": "event",
-    "de": "Ereignis",
-    "en": "Event"
+    "de": "Termin",
+    "en": "Appointment"
   },
   {
     "entity": "eventGoogle",
@@ -3626,8 +3626,8 @@
   {
     "entity": "eventAzure",
     "property": "event",
-    "de": "Ereignis",
-    "en": "Event"
+    "de": "Termin",
+    "en": "Appointment"
   },
   {
     "entity": "eventAzure",
@@ -4064,8 +4064,8 @@
   {
     "entity": "eventDelivery",
     "property": "event",
-    "de": "Event",
-    "en": "Event"
+    "de": "Termin",
+    "en": "Appointment"
   },
   {
     "entity": "eventDelivery",
@@ -4791,7 +4791,7 @@
     "entity": "inbox",
     "property": "heroSummary",
     "de": "{ticketCount} Tickets / {eventCount} Termine",
-    "en": "{ticketCount} tickets / {eventCount} events"
+    "en": "{ticketCount} tickets / {eventCount} appointments"
   },
   {
     "entity": "inbox",
@@ -6512,8 +6512,8 @@
   {
     "entity": "salesOpportunity",
     "property": "events",
-    "de": "Ereignisse",
-    "en": "Events"
+    "de": "Termine",
+    "en": "Appointments"
   },
   {
     "entity": "salesOpportunity",
@@ -9530,8 +9530,8 @@
   {
     "entity": "navigation",
     "property": "event",
-    "de": "Ereignis",
-    "en": "Event"
+    "de": "Termin",
+    "en": "Appointment"
   },
   {
     "entity": "navigation",
@@ -9542,38 +9542,38 @@
   {
     "entity": "navigation",
     "property": "eventStatus",
-    "de": "Ereignisstatus",
-    "en": "Event status"
+    "de": "Terminstatus",
+    "en": "Appointment status"
   },
   {
     "entity": "navigation",
     "property": "eventType",
-    "de": "Ereignistyp",
-    "en": "Event type"
+    "de": "Terminart",
+    "en": "Appointment type"
   },
   {
     "entity": "navigation",
     "property": "eventDelivery",
-    "de": "Ereignis Sendung",
-    "en": "Event Delivery"
+    "de": "Terminversand",
+    "en": "Appointment delivery"
   },
   {
     "entity": "navigation",
     "property": "eventAzure",
-    "de": "Ereignis Azure",
-    "en": "Event Azure"
+    "de": "Azure-Termin",
+    "en": "Azure appointment"
   },
   {
     "entity": "navigation",
     "property": "eventGoogle",
-    "de": "Ereignis Google",
-    "en": "Event Google"
+    "de": "Google-Termin",
+    "en": "Google appointment"
   },
   {
     "entity": "navigation",
     "property": "eventDeliveryStatus",
-    "de": "Ereignis Sendungsstatus",
-    "en": "Event Delivery Status"
+    "de": "Terminversandstatus",
+    "en": "Appointment delivery status"
   },
   {
     "entity": "navigation",
@@ -14367,7 +14367,7 @@
     "entity": "aiVectorization",
     "property": "entityEvent",
     "de": "Termin",
-    "en": "Event"
+    "en": "Appointment"
   },
   {
     "entity": "aiVectorization",
@@ -15591,7 +15591,7 @@
     "entity": "calendar",
     "property": "syncOutlookDescription",
     "de": "Termine aus Outlook für den sichtbaren Zeitraum abrufen und Sapling aktualisieren.",
-    "en": "Fetch events from Outlook for the visible range and update Sapling."
+    "en": "Fetch appointments from Outlook for the visible range and update Sapling."
   },
   {
     "entity": "calendar",
@@ -15609,7 +15609,7 @@
     "entity": "calendar",
     "property": "syncGoogleDescription",
     "de": "Termine aus Google für den sichtbaren Zeitraum abrufen und Sapling aktualisieren.",
-    "en": "Fetch events from Google for the visible range and update Sapling."
+    "en": "Fetch appointments from Google for the visible range and update Sapling."
   },
   {
     "entity": "calendar",
@@ -15621,7 +15621,7 @@
     "entity": "calendar",
     "property": "syncCalendarSuccessDescription",
     "de": "{imported} Termine importiert ({created} neu, {updated} aktualisiert, {skipped} übersprungen).",
-    "en": "{imported} events imported ({created} new, {updated} updated, {skipped} skipped)."
+    "en": "{imported} appointments imported ({created} new, {updated} updated, {skipped} skipped)."
   },
   {
     "entity": "calendar",

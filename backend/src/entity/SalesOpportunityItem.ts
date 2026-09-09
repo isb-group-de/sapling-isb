@@ -18,6 +18,8 @@ import {
   Sapling,
   SaplingDependsOn,
   SaplingForm,
+  SaplingRelatedRecords,
+  SaplingReferenceCreate,
   SaplingKanban,
 } from './global/entity.decorator';
 import { SalesOpportunityForecastItem } from './SalesOpportunityForecastItem';
@@ -408,6 +410,7 @@ export class SalesOpportunityItem {
     mobileOrder: 400,
     mobileVisible: true,
   })
+  @SaplingReferenceCreate()
   @ManyToOne(() => CompanyItem, { nullable: true })
   assigneeCompany?: Rel<CompanyItem>;
 
@@ -474,6 +477,7 @@ export class SalesOpportunityItem {
     mobileOrder: 500,
     mobileVisible: false,
   })
+  @SaplingReferenceCreate({ defaults: { company: 'assigneeCompany' } })
   @ManyToOne(() => PersonItem, { nullable: true })
   assigneePerson?: Rel<PersonItem>;
 
@@ -536,6 +540,7 @@ export class SalesOpportunityItem {
     mobileOrder: 600,
     mobileVisible: false,
   })
+  @SaplingReferenceCreate()
   @ManyToOne(() => CompanyItem, { nullable: false })
   creatorCompany?: Rel<CompanyItem>;
 
@@ -603,6 +608,7 @@ export class SalesOpportunityItem {
     mobileOrder: 700,
     mobileVisible: false,
   })
+  @SaplingReferenceCreate({ defaults: { company: 'creatorCompany' } })
   @ManyToOne(() => PersonItem, { nullable: false })
   creatorPerson?: Rel<PersonItem>;
 
@@ -659,6 +665,17 @@ export class SalesOpportunityItem {
    * Events associated with this sales opportunity.
    */
   @ApiPropertyOptional({ type: () => EventItem, isArray: true })
+  @SaplingRelatedRecords({
+    paths: [
+      'ticket.salesOpportunity',
+      'effortEstimate.salesOpportunity',
+      'effortEstimate.ticket.salesOpportunity',
+      'internalCase.salesOpportunity',
+      'internalCase.ticket.salesOpportunity',
+      'internalCase.effortEstimate.salesOpportunity',
+      'internalCase.effortEstimate.ticket.salesOpportunity',
+    ],
+  })
   @OneToMany(() => EventItem, (event) => event.salesOpportunity)
   events: Collection<EventItem> = new Collection<EventItem>(this);
 
@@ -666,6 +683,7 @@ export class SalesOpportunityItem {
    * Effort estimates associated with this sales opportunity.
    */
   @ApiPropertyOptional({ type: () => EffortEstimateItem, isArray: true })
+  @SaplingRelatedRecords({ paths: ['ticket.salesOpportunity'] })
   @OneToMany(
     () => EffortEstimateItem,
     (effortEstimate) => effortEstimate.salesOpportunity,
@@ -677,6 +695,13 @@ export class SalesOpportunityItem {
    * Internal cases associated with this sales opportunity.
    */
   @ApiPropertyOptional({ type: () => InternalCaseItem, isArray: true })
+  @SaplingRelatedRecords({
+    paths: [
+      'ticket.salesOpportunity',
+      'effortEstimate.salesOpportunity',
+      'effortEstimate.ticket.salesOpportunity',
+    ],
+  })
   @OneToMany(
     () => InternalCaseItem,
     (internalCase) => internalCase.salesOpportunity,

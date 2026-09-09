@@ -1,3 +1,4 @@
+import type { EventItem } from './entity-calendar.types'
 import type { PersonItem } from './entity-account.types'
 import type { SaplingGenericItem } from './entity-base.types'
 import type {
@@ -137,6 +138,8 @@ export interface KnowledgeArticleCategoryItem extends SaplingGenericItem {
  * Represents an internal office case.
  */
 export interface InternalCaseItem extends SaplingGenericItem {
+  effortEstimate?: EffortEstimateItem | null
+  events?: EventItem[]
   /** Unique identifier for the internal case */
   handle?: number | null
   /** Generated visible case number */

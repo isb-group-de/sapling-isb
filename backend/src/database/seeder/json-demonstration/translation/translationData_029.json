@@ -27,13 +27,13 @@
     "entity": "global",
     "property": "cancelSyncedEvent",
     "de": "Synchronisierten Termin abbrechen",
-    "en": "Cancel synchronized event"
+    "en": "Cancel synchronized appointment"
   },
   {
     "entity": "global",
     "property": "cancelSyncedEventQuestion",
     "de": "Soll dieser synchronisierte Termin abgebrochen werden?",
-    "en": "Do you want to cancel this synchronized event?"
+    "en": "Do you want to cancel this synchronized appointment?"
   },
   {
     "entity": "global",
@@ -45,19 +45,19 @@
     "entity": "global",
     "property": "cancelEvent",
     "de": "Termin abbrechen",
-    "en": "Cancel event"
+    "en": "Cancel appointment"
   },
   {
     "entity": "global",
     "property": "eventCanceled",
     "de": "Termin abgebrochen",
-    "en": "Event canceled"
+    "en": "Appointment canceled"
   },
   {
     "entity": "global",
     "property": "eventCanceledDescription",
     "de": "Der Termin wurde auf Abgebrochen gesetzt und wird mit dem verbundenen Kalender synchronisiert.",
-    "en": "The event was set to Canceled and will be synchronized with the connected calendar."
+    "en": "The appointment was set to Canceled and will be synchronized with the connected calendar."
   },
   {
     "entity": "global",
@@ -75,6 +75,6 @@
     "entity": "global",
     "property": "syncedEventBlocksCascadeDelete",
     "de": "Ein synchronisierter Termin kann nicht als untergeordneter Datensatz mitgelöscht werden. Brechen Sie den Termin zuerst ab und ordnen Sie seine Pflichtreferenzen neu zu.",
-    "en": "A synchronized event cannot be cascade-deleted as a dependent record. Cancel the event first and reassign its required references."
+    "en": "A synchronized appointment cannot be cascade-deleted as a dependent record. Cancel the appointment first and reassign its required references."
   }
 ]

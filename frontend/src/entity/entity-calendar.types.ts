@@ -1,7 +1,7 @@
 import type { PersonItem } from './entity-account.types'
 import type { SaplingGenericItem } from './entity-base.types'
-import type { CompanyItem } from './entity-customer.types'
-import type { TicketItem } from './entity-service.types'
+import type { CompanyItem, EffortEstimateItem } from './entity-customer.types'
+import type { TicketItem, InternalCaseItem } from './entity-service.types'
 
 /**
  * Entity representing an event type or category.
@@ -94,6 +94,8 @@ export interface EventGoogleItem extends SaplingGenericItem {
  * Represents a calendar event entity.
  */
 export interface EventItem extends SaplingGenericItem {
+  effortEstimate?: EffortEstimateItem | null
+  internalCase?: InternalCaseItem | null
   /** Unique identifier for the event (primary key) */
   handle?: number
   /** Title of the event */

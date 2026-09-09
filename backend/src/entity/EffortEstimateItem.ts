@@ -1,3 +1,5 @@
+import { InternalCaseItem } from './InternalCaseItem';
+import { EventItem } from './EventItem';
 import { Collection, type Rel } from '@mikro-orm/core';
 import {
   Entity,
@@ -16,6 +18,9 @@ import {
   Sapling,
   SaplingDependsOn,
   SaplingForm,
+  SaplingRelatedRecords,
+  SaplingReferenceCreate,
+  SaplingReferenceTemplate,
 } from './global/entity.decorator';
 
 @Entity()
@@ -133,6 +138,7 @@ export class EffortEstimateItem {
     mobileOrder: 100,
     mobileVisible: true,
   })
+  @SaplingReferenceCreate()
   @ManyToOne(() => CompanyItem, { nullable: true })
   assigneeCompany?: Rel<CompanyItem>;
 
@@ -196,6 +202,7 @@ export class EffortEstimateItem {
     mobileOrder: 200,
     mobileVisible: false,
   })
+  @SaplingReferenceCreate({ defaults: { company: 'assigneeCompany' } })
   @ManyToOne(() => PersonItem, { nullable: true })
   assigneePerson?: Rel<PersonItem>;
 
@@ -254,6 +261,7 @@ export class EffortEstimateItem {
     mobileOrder: 300,
     mobileVisible: false,
   })
+  @SaplingReferenceCreate()
   @ManyToOne(() => CompanyItem, { nullable: true })
   creatorCompany?: Rel<CompanyItem>;
 
@@ -317,6 +325,7 @@ export class EffortEstimateItem {
     mobileOrder: 400,
     mobileVisible: false,
   })
+  @SaplingReferenceCreate({ defaults: { company: 'creatorCompany' } })
   @ManyToOne(() => PersonItem, { nullable: true })
   creatorPerson?: Rel<PersonItem>;
 
@@ -416,6 +425,28 @@ export class EffortEstimateItem {
     mobileOrder: 500,
     mobileVisible: false,
   })
+  @SaplingReferenceCreate({
+    defaults: {
+      creatorCompany: 'creatorCompany',
+      creatorPerson: 'creatorPerson',
+      assigneeCompany: 'assigneeCompany',
+      assigneePerson: 'assigneePerson',
+    },
+  })
+  @SaplingReferenceTemplate([
+    {
+      sourceField: 'creatorCompany',
+      targetField: 'creatorCompany',
+      overwrite: false,
+      validate: true,
+    },
+    {
+      sourceField: 'creatorPerson',
+      targetField: 'creatorPerson',
+      overwrite: false,
+      validate: false,
+    },
+  ])
   @ManyToOne(() => SalesOpportunityItem, { nullable: true })
   salesOpportunity?: Rel<SalesOpportunityItem>;
 
@@ -431,6 +462,35 @@ export class EffortEstimateItem {
     mobileOrder: 600,
     mobileVisible: false,
   })
+  @SaplingReferenceCreate({
+    defaults: {
+      creatorCompany: 'creatorCompany',
+      creatorPerson: 'creatorPerson',
+      assigneeCompany: 'assigneeCompany',
+      assigneePerson: 'assigneePerson',
+      salesOpportunity: 'salesOpportunity',
+    },
+  })
+  @SaplingReferenceTemplate([
+    {
+      sourceField: 'salesOpportunity',
+      targetField: 'salesOpportunity',
+      overwrite: false,
+      validate: true,
+    },
+    {
+      sourceField: 'creatorCompany',
+      targetField: 'creatorCompany',
+      overwrite: false,
+      validate: true,
+    },
+    {
+      sourceField: 'creatorPerson',
+      targetField: 'creatorPerson',
+      overwrite: false,
+      validate: false,
+    },
+  ])
   @ManyToOne(() => TicketItem, { nullable: true })
   ticket?: Rel<TicketItem>;
 
@@ -451,4 +511,13 @@ export class EffortEstimateItem {
   @Sapling(['isReadOnly', 'isSystem'])
   @Property({ nullable: false, type: 'datetime', onUpdate: () => new Date() })
   updatedAt?: Date = new Date();
+  @ApiPropertyOptional({ type: () => EventItem, isArray: true })
+  @SaplingRelatedRecords({ paths: ['internalCase.effortEstimate'] })
+  @OneToMany(() => EventItem, (item) => item.effortEstimate)
+  events: Collection<EventItem> = new Collection<EventItem>(this);
+
+  @ApiPropertyOptional({ type: () => InternalCaseItem, isArray: true })
+  @OneToMany(() => InternalCaseItem, (item) => item.effortEstimate)
+  internalCases: Collection<InternalCaseItem> =
+    new Collection<InternalCaseItem>(this);
 }

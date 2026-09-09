@@ -139,6 +139,7 @@ export interface EntityTemplateReferenceTemplateMapping {
   sourceField: string
   targetField: string
   overwrite?: boolean
+  validate?: boolean
 }
 
 export interface EntityTemplateReferenceTemplate {
@@ -257,6 +258,10 @@ export interface EntityTemplate {
   genericReference?: EntityTemplateGenericReference | null
   /** Declarative metadata for applying values from selected reference records */
   referenceTemplate?: EntityTemplateReferenceTemplate | null
+  referenceCreate?: { defaults?: Record<string, string> } | null
+  relatedRecords?: { paths: string[] } | null
+  /** Derived read-only relation tab, never an ORM mutation field. */
+  relatedRecordPaths?: string[]
   /** Declarative metadata for inline collection rendering and sync */
   inlineCollection?: EntityTemplateInlineCollection | null
   /** Declarative metadata for generic Kanban rendering */

@@ -55,11 +55,13 @@ export function applyReferenceTemplateMappings(
   template: EntityTemplate | undefined,
   value: unknown,
   form: SaplingGenericItem,
+  canWrite: (field: string) => boolean = () => true,
 ): void {
   if (!value || typeof value !== 'object') return
   const source = value as Record<string, unknown>
   for (const mapping of template?.referenceTemplate?.mappings ?? []) {
     if (!mapping.sourceField || !mapping.targetField) continue
+    if (!canWrite(mapping.targetField)) continue
     const nextValue = source[mapping.sourceField]
     if (nextValue == null) continue
     if (mapping.overwrite === false && hasFormValue(form[mapping.targetField])) continue

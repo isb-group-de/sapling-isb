@@ -3,19 +3,19 @@
     "entity": "inbox",
     "property": "completeEventsAction",
     "de": "Alte Termine abschließen",
-    "en": "Complete old events"
+    "en": "Complete old appointments"
   },
   {
     "entity": "inbox",
     "property": "completeEventsTitle",
     "de": "Überfällige Termine abschließen",
-    "en": "Complete overdue events"
+    "en": "Complete overdue appointments"
   },
   {
     "entity": "inbox",
     "property": "completeEventsSubtitle",
     "de": "Wähle den Stichtag, bis zu dem alle überfälligen Termine abgeschlossen werden sollen.",
-    "en": "Choose the cutoff through which all overdue events should be completed."
+    "en": "Choose the cutoff through which all overdue appointments should be completed."
   },
   {
     "entity": "inbox",
@@ -33,37 +33,37 @@
     "entity": "inbox",
     "property": "completeEventsSeriesWarning",
     "de": "Bei Serienterminen werden nur die einzelnen Vorkommen bis zum Stichtag abgeschlossen. Die Serie und spätere Termine bleiben erhalten.",
-    "en": "For recurring events, only individual occurrences through the cutoff are completed. The series and later events remain open."
+    "en": "For recurring appointments, only individual occurrences through the cutoff are completed. The series and later appointments remain open."
   },
   {
     "entity": "inbox",
     "property": "completeEventsCandidateCount",
     "de": "{count} Termin-Vorkommen werden abgeschlossen.",
-    "en": "{count} event occurrence(s) will be completed."
+    "en": "{count} appointment occurrence(s) will be completed."
   },
   {
     "entity": "inbox",
     "property": "completeEventsNoCandidates",
     "de": "Für diesen Stichtag gibt es keine passenden überfälligen Termine.",
-    "en": "There are no matching overdue events for this cutoff."
+    "en": "There are no matching overdue appointments for this cutoff."
   },
   {
     "entity": "inbox",
     "property": "completeEventsConfirm",
     "de": "Termine abschließen",
-    "en": "Complete events"
+    "en": "Complete appointments"
   },
   {
     "entity": "inbox",
     "property": "completeEventsSuccess",
     "de": "Termine abgeschlossen",
-    "en": "Events completed"
+    "en": "Appointments completed"
   },
   {
     "entity": "inbox",
     "property": "completeEventsSuccessDescription",
     "de": "{count} überfällige(r) Termin(e) wurde(n) abgeschlossen.",
-    "en": "{count} overdue event(s) were completed."
+    "en": "{count} overdue appointment(s) were completed."
   },
   {
     "entity": "inbox",
@@ -75,7 +75,7 @@
     "entity": "inbox",
     "property": "completeEventsTooManyOccurrences",
     "de": "Zu viele Serientermine",
-    "en": "Too many recurring events"
+    "en": "Too many recurring appointments"
   },
   {
     "entity": "inbox",

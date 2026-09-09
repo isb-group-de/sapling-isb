@@ -53,6 +53,8 @@ const DETACHED_EVENT_EDITABLE_FIELDS = [
   'creatorPerson',
   'ticket',
   'salesOpportunity',
+  'effortEstimate',
+  'internalCase',
   'status',
   'participants',
 ] as const;
@@ -245,6 +247,8 @@ export class EventRecurrenceMutationService {
               'creatorPerson',
               'ticket',
               'salesOpportunity',
+              'effortEstimate',
+              'internalCase',
               'status',
               'participants',
             ],
@@ -362,6 +366,8 @@ export class EventRecurrenceMutationService {
       creatorPerson: this.getReferenceHandle(event.creatorPerson),
       ticket: this.getReferenceHandle(event.ticket),
       salesOpportunity: this.getReferenceHandle(event.salesOpportunity),
+      effortEstimate: this.getReferenceHandle(event.effortEstimate),
+      internalCase: this.getReferenceHandle(event.internalCase),
       status: this.getReferenceHandle(event.status),
       participants: event.participants
         .getItems()
@@ -386,6 +392,8 @@ export class EventRecurrenceMutationService {
           'creatorPerson',
           'ticket',
           'salesOpportunity',
+          'effortEstimate',
+          'internalCase',
           'status',
           'participants',
         ],

@@ -73,8 +73,13 @@ Azure tenant consent may also be required.
 The scheduler checks active subscriptions once per minute and queues due
 imports. Polls overlap by five minutes so delayed provider results are not
 missed. Only one automatic import job per subscription may be active, waiting,
-or delayed at a time. A database uniqueness constraint on mailbox plus provider
-message ID makes poll overlap, provider retries, and manual runs idempotent.
+or prioritized at a time. Failed imports use the queue-wide retry count and
+backoff configured through `REDIS_ATTEMPTS`, `REDIS_BACKOFF_STRATEGY`, and
+`REDIS_BACKOFF_DELAY`. Once the subscription's own polling interval is due, a
+remaining delayed retry is replaced so the queue backoff cannot postpone that
+scheduled run and corrected mailbox authorization takes effect promptly. A
+database uniqueness constraint on mailbox plus provider message ID makes poll
+overlap, provider retries, and manual runs idempotent.
 
 For every new message Sapling:
 
@@ -166,6 +171,9 @@ POST /api/email-inbox/messages/:handle/reprocess
 The subscription table also exposes **Fetch mailbox now** in its record action
 menu. A manual fetch runs exactly once even when automatic polling is disabled;
 the scheduler continues to ignore disabled subscriptions.
+The edit dialog of a persisted subscription exposes its imported inbound emails
+as a read-only relation tab, including the current record count. Selecting a row
+opens the regular inbound-email record dialog.
 
 The same reprocessing operation is available as **Retry Processing** in an
 inbound email record's dynamic action menu. Viewing linked documents is also

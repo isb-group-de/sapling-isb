@@ -13,6 +13,7 @@ import {
   getReadableReferenceRelationNames,
 } from '@/utils/saplingTableUtil'
 import type { UseSaplingDialogEditRelationsOptions } from './useSaplingDialogEditRelations'
+import { getRelationRecordFilter } from './saplingRelatedRecords'
 
 const TABLE_VALUE_REFERENCE_KINDS = ['m:1', '1:1']
 
@@ -153,7 +154,7 @@ export function useSaplingRelationTableLoader(context: {
         const itemHandle = options.getItemHandle(options.item.value)
         const indexKey = template.mappedBy ?? template.inversedBy
         if (indexKey && itemHandle != null) {
-          filter[indexKey] = itemHandle
+          Object.assign(filter, getRelationRecordFilter(template, itemHandle))
         }
       }
 

@@ -337,6 +337,7 @@ export function SaplingReferenceTemplate(
             sourceField: mapping.sourceField.trim(),
             targetField: mapping.targetField.trim(),
             overwrite: mapping.overwrite,
+            validate: mapping.validate,
           }))
           .filter((mapping) => mapping.sourceField && mapping.targetField),
       } satisfies SaplingReferenceTemplateMetadata,
@@ -590,6 +591,7 @@ export function getSaplingReferenceTemplate(
           ? mapping.targetField.trim()
           : '',
       overwrite: mapping.overwrite,
+      validate: mapping.validate,
     }))
     .filter((mapping) => mapping.sourceField && mapping.targetField);
 
@@ -665,3 +667,14 @@ export function getSaplingKanban(
         : undefined,
   };
 }
+
+export {
+  SaplingReferenceCreate,
+  SaplingRelatedRecords,
+  getSaplingReferenceCreate,
+  getSaplingRelatedRecords,
+} from './entity-reference-actions.decorator';
+export type {
+  SaplingReferenceCreateMetadata,
+  SaplingRelatedRecordsMetadata,
+} from './entity-reference-actions.decorator';

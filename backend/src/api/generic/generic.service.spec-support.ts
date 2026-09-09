@@ -18,6 +18,8 @@ jest.mock('../../entity/global/entity.decorator', () => ({
   SaplingInlineCollection: jest.fn(() => () => undefined),
   SaplingKanban: jest.fn(() => () => undefined),
   SaplingReferenceTemplate: jest.fn(() => () => undefined),
+  SaplingReferenceCreate: jest.fn(() => () => undefined),
+  SaplingRelatedRecords: jest.fn(() => () => undefined),
   hasSaplingOption: jest.fn(() => false),
 }));
 jest.mock('../../entity/global/entity.registry', () => ({

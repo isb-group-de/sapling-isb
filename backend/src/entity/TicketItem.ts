@@ -13,6 +13,9 @@ import {
   Sapling,
   SaplingDependsOn,
   SaplingForm,
+  SaplingRelatedRecords,
+  SaplingReferenceCreate,
+  SaplingReferenceTemplate,
   SaplingKanban,
 } from './global/entity.decorator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
@@ -297,6 +300,7 @@ export class TicketItem {
     mobileOrder: 300,
     mobileVisible: false,
   })
+  @SaplingReferenceCreate()
   @ManyToOne(() => CompanyItem, { nullable: true })
   assigneeCompany?: Rel<CompanyItem>;
 
@@ -364,6 +368,7 @@ export class TicketItem {
     mobileOrder: 600,
     mobileVisible: false,
   })
+  @SaplingReferenceCreate({ defaults: { company: 'assigneeCompany' } })
   @ManyToOne(() => PersonItem, { nullable: true })
   assigneePerson?: Rel<PersonItem>;
 
@@ -426,6 +431,7 @@ export class TicketItem {
     mobileOrder: 700,
     mobileVisible: true,
   })
+  @SaplingReferenceCreate()
   @ManyToOne(() => CompanyItem, { nullable: false })
   creatorCompany?: Rel<CompanyItem>;
 
@@ -493,6 +499,7 @@ export class TicketItem {
     mobileOrder: 800,
     mobileVisible: true,
   })
+  @SaplingReferenceCreate({ defaults: { company: 'creatorCompany' } })
   @ManyToOne(() => PersonItem, { nullable: false })
   creatorPerson?: Rel<PersonItem>;
 
@@ -554,6 +561,28 @@ export class TicketItem {
     mobileOrder: 900,
     mobileVisible: false,
   })
+  @SaplingReferenceCreate({
+    defaults: {
+      creatorCompany: 'creatorCompany',
+      creatorPerson: 'creatorPerson',
+      assigneeCompany: 'assigneeCompany',
+      assigneePerson: 'assigneePerson',
+    },
+  })
+  @SaplingReferenceTemplate([
+    {
+      sourceField: 'creatorCompany',
+      targetField: 'creatorCompany',
+      overwrite: false,
+      validate: true,
+    },
+    {
+      sourceField: 'creatorPerson',
+      targetField: 'creatorPerson',
+      overwrite: false,
+      validate: false,
+    },
+  ])
   @ManyToOne(() => SalesOpportunityItem, { nullable: true })
   salesOpportunity?: SalesOpportunityItem;
   // #endregion
@@ -793,6 +822,7 @@ export class TicketItem {
     mobileOrder: 50,
     mobileVisible: false,
   })
+  @SaplingReferenceCreate({ defaults: { company: 'creatorCompany' } })
   @ManyToOne(() => ContractItem, { nullable: true })
   contract?: Rel<ContractItem>;
   // #endregion
@@ -864,6 +894,13 @@ export class TicketItem {
    * @type {Collection<EventItem>}
    */
   @ApiPropertyOptional({ type: () => EventItem, isArray: true })
+  @SaplingRelatedRecords({
+    paths: [
+      'effortEstimate.ticket',
+      'internalCase.ticket',
+      'internalCase.effortEstimate.ticket',
+    ],
+  })
   @OneToMany(() => EventItem, (x) => x.ticket)
   events: Collection<EventItem> = new Collection<EventItem>(this);
 
@@ -881,6 +918,7 @@ export class TicketItem {
    * @type {Collection<InternalCaseItem>}
    */
   @ApiPropertyOptional({ type: () => InternalCaseItem, isArray: true })
+  @SaplingRelatedRecords({ paths: ['effortEstimate.ticket'] })
   @OneToMany(() => InternalCaseItem, (internalCase) => internalCase.ticket)
   internalCases: Collection<InternalCaseItem> =
     new Collection<InternalCaseItem>(this);

@@ -1,3 +1,4 @@
+import { validateReferenceContext } from './generic-reference-context';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { EntityManager } from '@mikro-orm/core';
 import { PersonItem } from '../../entity/PersonItem';
@@ -118,6 +119,22 @@ export class GenericReferenceService {
     template: EntityTemplateDto[],
     currentUser: PersonItem,
   ): Promise<void> {
+    await validateReferenceContext({
+      entityHandle,
+      data,
+      templates: template,
+      getTemplates: (entity) => this.templateService.getEntityTemplate(entity),
+      load: async (entity, handle) =>
+        this.em.findOne(
+          this.genericQueryService.getEntityClass(entity),
+          this.genericPermissionService.setTopLevelFilter(
+            this.getHandleFilter(entity, handle),
+            currentUser,
+            entity,
+          ),
+          {},
+        ),
+    });
     const dependencyFields = template.filter(
       (field) =>
         field.isReference &&

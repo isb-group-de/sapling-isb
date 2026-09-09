@@ -1,6 +1,7 @@
 import { nextTick, type ComputedRef, type Ref } from 'vue'
 import type { DialogState, EntityTemplate } from '@/entity/structure'
 import type { EntityItem, SaplingGenericItem } from '@/entity/entity'
+import { applyReferenceTemplateMappings } from './saplingDialogEdit.utils'
 
 interface UseSaplingDialogEditFormOptions {
   form: Ref<SaplingGenericItem>
@@ -110,6 +111,8 @@ export function useSaplingDialogEditForm(options: UseSaplingDialogEditFormOption
 
       initializeScalarTemplate(template, now)
     })
+
+    if (options.mode.value === 'create') applyContextDefaults()
 
     void nextTick(() => {
       options.isHydratingForm.value = false
@@ -271,8 +274,26 @@ export function useSaplingDialogEditForm(options: UseSaplingDialogEditFormOption
         didSyncParentReferences = true
       })
 
+    if (didSyncParentReferences) applyContextDefaults()
     if (didSyncParentReferences && (options.isHydratingForm.value || options.isLoading.value)) {
       void nextTick(() => options.syncInitialFormSnapshot())
+    }
+  }
+
+  function applyContextDefaults(): void {
+    for (const template of options.templates.value) {
+      // Only context suggestions participate in initialization. Existing content
+      // templates keep their explicit selection/overwrite behavior.
+      if (!template.referenceTemplate?.mappings.some((mapping) => mapping.validate)) continue
+      applyReferenceTemplateMappings(
+        template,
+        options.form.value[template.name],
+        options.form.value,
+        (name) =>
+          options.templates.value.some(
+            (target) => target.name === name && isWritableForCurrentMode(target),
+          ),
+      )
     }
   }
 

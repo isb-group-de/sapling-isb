@@ -17,6 +17,7 @@ The documentation should stay close to the code, but not duplicate every class o
 - [Local AI Provider Setup](ai/local-ai-provider-setup.md)
 - [Inbox And Open Task Notifications](features/inbox-notifications.md)
 - [Reference Automations](features/reference-automations.md)
+- [Business Record Links and Reference Creation](features/business-record-links.md)
 - [Integrations And Deliveries](integrations/deliveries.md)
 - [GitHub Repository View](integrations/github.md)
 - [Testing And Verification](development/testing.md)

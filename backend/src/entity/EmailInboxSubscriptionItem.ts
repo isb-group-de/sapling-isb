@@ -1,8 +1,14 @@
-import { type Rel } from '@mikro-orm/core';
-import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
+import { Collection, type Rel } from '@mikro-orm/core';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  Property,
+} from '@mikro-orm/decorators/legacy';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { AiAgentItem } from './AiAgentItem';
 import { EmailInboxProcessingModeItem } from './EmailInboxProcessingModeItem';
+import { InboundEmailItem } from './InboundEmailItem';
 import { PersonItem } from './PersonItem';
 import { SharedMailboxItem } from './SharedMailboxItem';
 import { Sapling, SaplingForm } from './global/entity.decorator';
@@ -15,6 +21,12 @@ export class EmailInboxSubscriptionItem {
   @ApiProperty()
   @Property({ primary: true, autoincrement: true })
   handle?: number;
+
+  @ApiPropertyOptional({ type: () => InboundEmailItem, isArray: true })
+  @Sapling(['isReadOnly'])
+  @OneToMany(() => InboundEmailItem, (email) => email.subscription)
+  inboundEmails: Collection<InboundEmailItem> =
+    new Collection<InboundEmailItem>(this);
 
   @ApiProperty()
   @Sapling(['isValue', 'isOrderASC'])

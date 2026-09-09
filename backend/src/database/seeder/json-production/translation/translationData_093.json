@@ -1,0 +1,98 @@
+[
+  {
+    "entity": "event",
+    "property": "effortEstimate",
+    "de": "Aufwandsschätzung",
+    "en": "Effort estimate"
+  },
+  {
+    "entity": "event",
+    "property": "internalCase",
+    "de": "Vorgang",
+    "en": "Case"
+  },
+  {
+    "entity": "internalCase",
+    "property": "effortEstimate",
+    "de": "Aufwandsschätzung",
+    "en": "Effort estimate"
+  },
+  {
+    "entity": "internalCase",
+    "property": "events",
+    "de": "Termine",
+    "en": "Appointments"
+  },
+  {
+    "entity": "effortEstimate",
+    "property": "events",
+    "de": "Termine",
+    "en": "Appointments"
+  },
+  {
+    "entity": "effortEstimate",
+    "property": "internalCases",
+    "de": "Vorgänge",
+    "en": "Cases"
+  },
+  {
+    "entity": "global",
+    "property": "indirectRelationsDescription",
+    "de": "Diese Datensätze sind über verknüpfte Datensätze zugeordnet. Die Zuordnung wird am jeweiligen Ursprungsdatensatz bearbeitet.",
+    "en": "These records are associated through linked records. Edit the association on the originating record."
+  },
+  {
+    "entity": "salesOpportunity",
+    "property": "eventsRelated",
+    "de": "Termine (indirekt)",
+    "en": "Appointments (indirect)"
+  },
+  {
+    "entity": "salesOpportunity",
+    "property": "effortEstimatesRelated",
+    "de": "Schätzungen (indirekt)",
+    "en": "Estimates (indirect)"
+  },
+  {
+    "entity": "salesOpportunity",
+    "property": "internalCasesRelated",
+    "de": "Vorgänge (indirekt)",
+    "en": "Cases (indirect)"
+  },
+  {
+    "entity": "ticket",
+    "property": "eventsRelated",
+    "de": "Termine (indirekt)",
+    "en": "Appointments (indirect)"
+  },
+  {
+    "entity": "ticket",
+    "property": "effortEstimatesRelated",
+    "de": "Schätzungen (indirekt)",
+    "en": "Estimates (indirect)"
+  },
+  {
+    "entity": "ticket",
+    "property": "internalCasesRelated",
+    "de": "Vorgänge (indirekt)",
+    "en": "Cases (indirect)"
+  },
+  {
+    "entity": "effortEstimate",
+    "property": "eventsRelated",
+    "de": "Termine (indirekt)",
+    "en": "Appointments (indirect)"
+  },
+  {
+    "entity": "effortEstimate",
+    "property": "effortEstimatesRelated",
+    "de": "Schätzungen (indirekt)",
+    "en": "Estimates (indirect)"
+  },
+  {
+    "entity": "effortEstimate",
+    "property": "internalCasesRelated",
+    "de": "Vorgänge (indirekt)",
+    "en": "Cases (indirect)"
+  }
+]

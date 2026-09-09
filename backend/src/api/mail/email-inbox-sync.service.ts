@@ -5,6 +5,7 @@ import { Queue } from 'bullmq';
 import { AiService } from '../ai/ai.service';
 import { DocumentService } from '../document/document.service';
 import {
+  REDIS_ATTEMPTS,
   REDIS_ENABLED,
   REDIS_REMOVE_ON_COMPLETE,
   REDIS_REMOVE_ON_FAIL,
@@ -117,7 +118,6 @@ export class EmailInboxSyncService implements OnModuleInit {
         if (
           state === 'active' ||
           state === 'waiting' ||
-          state === 'delayed' ||
           state === 'prioritized' ||
           state === 'waiting-children'
         ) {
@@ -136,6 +136,7 @@ export class EmailInboxSyncService implements OnModuleInit {
         },
         {
           jobId,
+          attempts: REDIS_ATTEMPTS,
           removeOnComplete: REDIS_REMOVE_ON_COMPLETE,
           removeOnFail: REDIS_REMOVE_ON_FAIL,
         },
@@ -291,6 +292,7 @@ export class EmailInboxSyncService implements OnModuleInit {
         },
         {
           jobId: `email-inbox-${subscriptionHandle}-manual-${Date.now()}`,
+          attempts: REDIS_ATTEMPTS,
           removeOnComplete: REDIS_REMOVE_ON_COMPLETE,
           removeOnFail: REDIS_REMOVE_ON_FAIL,
         },

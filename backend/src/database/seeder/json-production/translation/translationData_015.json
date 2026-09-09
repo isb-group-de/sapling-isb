@@ -93,7 +93,7 @@
     "entity": "calendarSyncSubscription",
     "property": "googleMappingHint",
     "de": "Google-Farben können einer Terminart und Kategorie zugeordnet werden. Von Sapling angelegte Termine behalten zusätzlich ihre exakte Zuordnung.",
-    "en": "Google colors can be mapped to an appointment type and category. Events created by Sapling additionally retain their exact classification."
+    "en": "Google colors can be mapped to an appointment type and category. Appointments created by Sapling additionally retain their exact classification."
   },
   {
     "entity": "calendarSyncSubscription",

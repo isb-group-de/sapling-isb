@@ -9,6 +9,9 @@
           class="sapling-section-panel sapling-record-relation-content sapling-dialog-edit-relation-content"
         >
           <div class="sapling-record-relation-overview">
+            <p v-if="template.relatedRecordPaths" data-testid="indirect-relation-description">
+              {{ t('global.indirectRelationsDescription') }}
+            </p>
             <div class="sapling-record-relation-overview__header">
               <div class="sapling-record-relation-summary">
                 <div class="sapling-record-relation-summary__icon" aria-hidden="true">

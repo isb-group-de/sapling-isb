@@ -1,6 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
   SaplingOption,
+  type SaplingReferenceCreateMetadata,
+  type SaplingRelatedRecordsMetadata,
   type SaplingFormWidthSpan,
   type SaplingGenericReferenceMetadata,
   type SaplingInlineCollectionMetadata,
@@ -292,6 +294,12 @@ export class EntityTemplateDto {
     type: Object,
   })
   referenceTemplate?: SaplingReferenceTemplateMetadata | null;
+
+  @ApiProperty({ required: false, nullable: true })
+  referenceCreate?: SaplingReferenceCreateMetadata | null;
+
+  @ApiProperty({ required: false, nullable: true })
+  relatedRecords?: SaplingRelatedRecordsMetadata | null;
 
   @ApiProperty({
     description:

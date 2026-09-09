@@ -20768,6 +20768,23 @@
           "enumItems": [],
           "mappedType": "text"
         },
+        "effort_estimate_handle": {
+          "name": "effort_estimate_handle",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
         "end_date": {
           "name": "end_date",
           "type": "timestamptz(6)",
@@ -20809,6 +20826,23 @@
           "autoincrement": true,
           "primary": true,
           "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
+        "internal_case_handle": {
+          "name": "internal_case_handle",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
           "unique": false,
           "length": null,
           "precision": null,
@@ -21106,11 +21140,31 @@
         },
         {
           "columnNames": [
+            "effort_estimate_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "event_item_effort_estimate_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "end_date"
           ],
           "composite": false,
           "constraint": false,
           "keyName": "event_item_end_date_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "internal_case_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "event_item_internal_case_handle_index",
           "primary": false,
           "unique": false
         },
@@ -21260,6 +21314,32 @@
             "handle"
           ],
           "referencedTableName": "public.person_item"
+        },
+        "event_item_effort_estimate_handle_foreign": {
+          "columnNames": [
+            "effort_estimate_handle"
+          ],
+          "constraintName": "event_item_effort_estimate_handle_foreign",
+          "localTableName": "public.event_item",
+          "referencedColumnNames": [
+            "handle"
+          ],
+          "referencedTableName": "public.effort_estimate_item",
+          "updateRule": "cascade",
+          "deleteRule": "set null"
+        },
+        "event_item_internal_case_handle_foreign": {
+          "columnNames": [
+            "internal_case_handle"
+          ],
+          "constraintName": "event_item_internal_case_handle_foreign",
+          "localTableName": "public.event_item",
+          "referencedColumnNames": [
+            "handle"
+          ],
+          "referencedTableName": "public.internal_case_item",
+          "updateRule": "cascade",
+          "deleteRule": "set null"
         },
         "event_item_sales_opportunity_handle_foreign": {
           "columnNames": [
@@ -27761,6 +27841,23 @@
           "enumItems": [],
           "mappedType": "integer"
         },
+        "effort_estimate_handle": {
+          "name": "effort_estimate_handle",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
         "handle": {
           "name": "handle",
           "type": "int",
@@ -27984,6 +28081,16 @@
         },
         {
           "columnNames": [
+            "effort_estimate_handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "internal_case_item_effort_estimate_handle_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "handle"
           ],
           "composite": false,
@@ -28082,6 +28189,19 @@
             "handle"
           ],
           "referencedTableName": "public.person_item",
+          "deleteRule": "set null"
+        },
+        "internal_case_item_effort_estimate_handle_foreign": {
+          "columnNames": [
+            "effort_estimate_handle"
+          ],
+          "constraintName": "internal_case_item_effort_estimate_handle_foreign",
+          "localTableName": "public.internal_case_item",
+          "referencedColumnNames": [
+            "handle"
+          ],
+          "referencedTableName": "public.effort_estimate_item",
+          "updateRule": "cascade",
           "deleteRule": "set null"
         },
         "internal_case_item_responsible_company_handle_foreign": {

@@ -328,7 +328,10 @@ export function useSaplingDialogEdit(
 
   function applyReferenceTemplate(key: string, value: unknown): void {
     const template = visibleTemplates.value.find((entry) => entry.name === key)
-    applyReferenceTemplateMappings(template, value, form.value)
+    applyReferenceTemplateMappings(template, value, form.value, (name) => {
+      const target = visibleTemplates.value.find((entry) => entry.name === name)
+      return Boolean(target && !isFieldDisabled(target))
+    })
   }
 
   function updateFormField(key: string, value: unknown): void {

@@ -3,6 +3,8 @@ import { Injectable } from '@nestjs/common';
 import { ENTITY_MAP } from '../../entity/global/entity.registry';
 import { EntityTemplateDto } from './dto/entity-template.dto';
 import {
+  getSaplingReferenceCreate,
+  getSaplingRelatedRecords,
   getSaplingFormLayout,
   getSaplingGenericReference,
   getSaplingInlineCollection,
@@ -178,6 +180,14 @@ export class TemplateService {
             prop.name,
           ),
           genericReference: getSaplingGenericReference(
+            entityClass.prototype as object,
+            prop.name,
+          ),
+          referenceCreate: getSaplingReferenceCreate(
+            entityClass.prototype as object,
+            prop.name,
+          ),
+          relatedRecords: getSaplingRelatedRecords(
             entityClass.prototype as object,
             prop.name,
           ),

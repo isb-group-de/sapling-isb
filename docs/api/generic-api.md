@@ -222,6 +222,11 @@ Clients can therefore name both affected fields using their entity translations
 without exposing raw backend property names to users. The backend rejects the
 save and does not rewrite either relation automatically.
 
+Reference-template mappings with `validate: true` additionally validate shared
+business context through optional intermediate links. See
+[Business Record Links](../features/business-record-links.md). This rejects
+contradictory nonempty context without automatically persisting derived links.
+
 Fields marked with `isDateStart` and `isDateEnd` are paired within the same
 declared form group. Generic create mutations and updates that change either
 boundary reject a complete or partial payload when the resulting end value is

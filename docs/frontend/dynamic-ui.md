@@ -1,5 +1,8 @@
 # Frontend Dynamic UI
 
+Business reference creation, context suggestions, and indirect relation tabs are
+documented in [Business Record Links](../features/business-record-links.md).
+
 Record-dialog initialization loads the current person, permissions, form
 configurations and system templates concurrently. Loading or selecting a form
 configuration updates the effective layout without fetching the configurations

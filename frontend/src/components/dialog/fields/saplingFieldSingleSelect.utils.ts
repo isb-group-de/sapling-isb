@@ -15,6 +15,8 @@ export interface SaplingFieldSingleSelectProps {
   defaultCurrentPersonFilter?: boolean
   density?: 'default' | 'comfortable' | 'compact'
   hideDetails?: boolean | 'auto'
+  allowCreate?: boolean
+  createDefaults?: SaplingGenericItem
   showOpenAction?: boolean
   openActionLabel?: string
   helpText?: string

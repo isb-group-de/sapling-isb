@@ -3,7 +3,7 @@
     "entity": "calendar",
     "property": "recurrenceEditScope",
     "de": "Wiederkehrender Termin",
-    "en": "Recurring event"
+    "en": "Recurring appointment"
   },
   {
     "entity": "calendar",
@@ -21,7 +21,7 @@
     "entity": "calendar",
     "property": "editOccurrence",
     "de": "Diesen Termin",
-    "en": "This event"
+    "en": "This appointment"
   },
   {
     "entity": "calendar",
@@ -51,7 +51,7 @@
     "entity": "event",
     "property": "invalidOccurrenceRange",
     "de": "Beginn und Ende des Einzeltermins sind ungültig.",
-    "en": "The standalone event start and end are invalid."
+    "en": "The standalone appointment start and end are invalid."
   },
   {
     "entity": "event",

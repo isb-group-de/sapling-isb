@@ -795,19 +795,19 @@
     "entity": "calendarSyncSubscription",
     "property": "providerTooltip",
     "de": "Kalenderdienst, aus dem Termine für diese Person synchronisiert werden.",
-    "en": "Calendar service from which events are synchronized for this person."
+    "en": "Calendar service from which appointments are synchronized for this person."
   },
   {
     "entity": "calendarSyncSubscription",
     "property": "isActiveTooltip",
     "de": "Ruft Termine automatisch im festgelegten Intervall ab. Deaktivieren pausiert die Synchronisierung, ohne die Konfiguration zu löschen.",
-    "en": "Automatically retrieves events at the configured interval. Disabling pauses synchronization without deleting its configuration."
+    "en": "Automatically retrieves appointments at the configured interval. Disabling pauses synchronization without deleting its configuration."
   },
   {
     "entity": "calendarSyncSubscription",
     "property": "syncRangeTooltip",
     "de": "Zeitraum um das aktuelle Datum, für den Termine importiert und aktualisiert werden.",
-    "en": "Time range around the current date for which events are imported and updated."
+    "en": "Time range around the current date for which appointments are imported and updated."
   },
   {
     "entity": "calendarSyncSubscription",
@@ -819,13 +819,13 @@
     "entity": "calendarSyncSubscription",
     "property": "defaultEventTypeTooltip",
     "de": "Terminart, die synchronisierten Terminen zugewiesen wird, wenn der Anbieter keine passende Zuordnung liefert.",
-    "en": "Event type assigned to synchronized events when the provider does not supply a matching value."
+    "en": "Appointment type assigned to synchronized appointments when the provider does not supply a matching value."
   },
   {
     "entity": "calendarSyncSubscription",
     "property": "defaultEventCategoryTooltip",
     "de": "Kategorie, die synchronisierten Terminen ohne anderweitige Zuordnung zugewiesen wird.",
-    "en": "Category assigned to synchronized events when no other mapping is available."
+    "en": "Category assigned to synchronized appointments when no other mapping is available."
   },
   {
     "entity": "favorite",
@@ -2025,49 +2025,49 @@
     "entity": "event",
     "property": "isAllDayTooltip",
     "de": "Behandelt den Termin als ganztägig; konkrete Uhrzeiten werden dann nicht für die Anzeige verwendet.",
-    "en": "Treats the event as all-day; specific times are then not used for display."
+    "en": "Treats the appointment as all-day; specific times are then not used for display."
   },
   {
     "entity": "event",
     "property": "isPrivateTooltip",
     "de": "Kennzeichnet vertrauliche Termine, deren Details nur berechtigten Personen angezeigt werden sollen.",
-    "en": "Marks confidential events whose details should only be shown to authorized people."
+    "en": "Marks confidential appointments whose details should only be shown to authorized people."
   },
   {
     "entity": "event",
     "property": "recurrenceRuleTooltip",
     "de": "Wiederholungsregel des Termins. Sie bestimmt Rhythmus, Ausnahmen und Ende einer Terminserie.",
-    "en": "Recurrence rule for the event. It controls frequency, exceptions, and the end of an event series."
+    "en": "Recurrence rule for the appointment. It controls frequency, exceptions, and the end of an appointment series."
   },
   {
     "entity": "event",
     "property": "preparationDurationTooltip",
     "de": "Zusätzliche Pufferzeit vor dem Termin, die bei Verfügbarkeitsprüfungen blockiert wird.",
-    "en": "Additional buffer before the event that is blocked in availability checks."
+    "en": "Additional buffer before the appointment that is blocked in availability checks."
   },
   {
     "entity": "event",
     "property": "followUpDurationTooltip",
     "de": "Zusätzliche Pufferzeit nach dem Termin, die bei Verfügbarkeitsprüfungen blockiert wird.",
-    "en": "Additional buffer after the event that is blocked in availability checks."
+    "en": "Additional buffer after the appointment that is blocked in availability checks."
   },
   {
     "entity": "event",
     "property": "onlineMeetingURLTooltip",
     "de": "Direkter Teilnahmelink für den Online-Termin, beispielsweise zu Teams oder Google Meet.",
-    "en": "Direct participation link for the online event, such as Teams or Google Meet."
+    "en": "Direct participation link for the online appointment, such as Teams or Google Meet."
   },
   {
     "entity": "eventType",
     "property": "showInDefaultCalendarTooltip",
     "de": "Termine dieser Art werden in der Standard-Kalenderansicht ohne zusätzlichen Filter angezeigt.",
-    "en": "Events of this type are shown in the default calendar view without an additional filter."
+    "en": "Appointments of this type are shown in the default calendar view without an additional filter."
   },
   {
     "entity": "eventStatus",
     "property": "isOpenTooltip",
     "de": "Termine mit diesem Status gelten als offen beziehungsweise noch nicht abgeschlossen.",
-    "en": "Events with this status are considered open or not yet completed."
+    "en": "Appointments with this status are considered open or not yet completed."
   },
   {
     "entity": "workHour",
@@ -2264,8 +2264,8 @@
   {
     "entity": "eventDelivery",
     "property": "payloadTooltip",
-    "de": "Nutzdaten, die für diese Ereigniszustellung erzeugt wurden.",
-    "en": "Payload generated for this event delivery."
+    "de": "Nutzdaten, die für diese Terminzustellung erzeugt wurden.",
+    "en": "Payload generated for this appointment delivery."
   },
   {
     "entity": "eventDelivery",

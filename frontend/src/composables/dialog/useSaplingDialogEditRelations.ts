@@ -13,6 +13,7 @@ import ApiGenericService from '@/services/api.generic.service'
 import { useGenericStore } from '@/stores/genericStore'
 import { getRelationTableHeaders } from '@/utils/saplingTableUtil'
 import { sortDialogTemplates } from '@/utils/saplingDialogLayoutUtil'
+import { expandRelatedRecordTabs } from './saplingRelatedRecords'
 import { useSaplingPendingRelations } from './useSaplingPendingRelations'
 import {
   isHandleOnlyRelationItem,
@@ -62,16 +63,19 @@ export function useSaplingDialogEditRelations(options: UseSaplingDialogEditRelat
       return []
     }
 
-    return sortDialogTemplates(
-      options.templates.value.filter(
-        (template) =>
-          ['1:m', 'm:n', 'n:m'].includes(template.kind || '') &&
-          !template.inlineCollection &&
-          !template.options?.includes('isHideAsReference') &&
-          options.permissions.value?.find(
-            (permission) => permission.entityHandle === template.referenceName,
-          )?.allowRead,
+    return expandRelatedRecordTabs(
+      sortDialogTemplates(
+        options.templates.value.filter(
+          (template) =>
+            ['1:m', 'm:n', 'n:m'].includes(template.kind || '') &&
+            !template.inlineCollection &&
+            !template.options?.includes('isHideAsReference') &&
+            options.permissions.value?.find(
+              (permission) => permission.entityHandle === template.referenceName,
+            )?.allowRead,
+        ),
       ),
+      !hasPendingRelationParent.value,
     )
   })
 
@@ -148,6 +152,7 @@ export function useSaplingDialogEditRelations(options: UseSaplingDialogEditRelat
   })
 
   async function addRelation(template: EntityTemplate): Promise<void> {
+    if (template.relatedRecordPaths) return
     const items = Array.isArray(selectedRelations.value[template.name])
       ? selectedRelations.value[template.name]
       : []
@@ -222,6 +227,7 @@ export function useSaplingDialogEditRelations(options: UseSaplingDialogEditRelat
     template: EntityTemplate,
     itemsToRemove: SaplingGenericItem[],
   ): Promise<void> {
+    if (template.relatedRecordPaths) return
     if (itemsToRemove.length === 0 || relationMutationState.value[template.name]) {
       return
     }

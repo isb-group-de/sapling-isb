@@ -26,6 +26,11 @@
       :dependency-target-field="template.referenceDependency?.targetField"
       :placeholder="defaultRawPlaceholder"
       :show-open-action="true"
+      :allow-create="Boolean(template.referenceCreate)"
+      :create-defaults="referenceCreateDefaults"
+      :additional-list-projection-fields="
+        template.referenceTemplate?.mappings.map((mapping) => mapping.sourceField)
+      "
       :open-action-label="t('global.editRecord')"
       :help-text="helpText"
       :help-aria-label="plainLabel"
@@ -601,4 +606,12 @@ function isRenderer(renderer: string): boolean {
 function updateField(key: string, value: unknown): void {
   emit('update-field', key, value)
 }
+const referenceCreateDefaults = computed(() =>
+  Object.fromEntries(
+    Object.entries(props.template.referenceCreate?.defaults ?? {}).map(([target, source]) => [
+      target,
+      props.formValues[source],
+    ]),
+  ),
+)
 </script>

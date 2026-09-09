@@ -2,6 +2,7 @@ import { computed, nextTick, ref, watch, type ComputedRef, type Ref } from 'vue'
 import type { SaplingGenericItem } from '@/entity/entity'
 import type { EntityTemplate } from '@/entity/structure'
 import ApiGenericService from '@/services/api.generic.service'
+import { getRelationRecordFilter } from './saplingRelatedRecords'
 
 export type SupplementalTabKind = 'information' | 'document' | 'email' | 'phoneCall'
 
@@ -46,6 +47,7 @@ export function useSaplingDialogTabCounts(options: DialogTabCountOptions) {
         template.referenceName,
         template.mappedBy,
         template.inversedBy,
+        template.relatedRecordPaths,
       ]),
       supplemental: options.supplementalKinds.value,
     }),
@@ -119,7 +121,7 @@ export function useSaplingDialogTabCounts(options: DialogTabCountOptions) {
     const referenceName = template.referenceName?.trim()
     const handle = options.itemHandle.value
     if (!indexKey || !referenceName || handle == null) return null
-    return { entityHandle: referenceName, filter: { [indexKey]: handle } }
+    return { entityHandle: referenceName, filter: getRelationRecordFilter(template, handle) }
   }
 
   function getSupplementalCountTarget(kind: SupplementalTabKind): CountTarget | null {

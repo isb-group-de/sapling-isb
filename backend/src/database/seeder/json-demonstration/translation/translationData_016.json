@@ -9,13 +9,13 @@
     "entity": "calendar",
     "property": "materializeRecurrenceQuestion",
     "de": "Soll diese Terminserie in einzelne Termine aufgelöst werden?",
-    "en": "Do you want to resolve this recurring series into standalone events?"
+    "en": "Do you want to resolve this recurring series into standalone appointments?"
   },
   {
     "entity": "calendar",
     "property": "materializeRecurrenceHint",
     "de": "Jedes Vorkommen wird als eigener Termin gespeichert. Die Termine können danach unabhängig bearbeitet und abgeschlossen werden. Dieser Vorgang lässt sich nicht automatisch rückgängig machen.",
-    "en": "Each occurrence will be saved as a standalone event. The events can then be edited and completed independently. This action cannot be undone automatically."
+    "en": "Each occurrence will be saved as a standalone appointment. The appointments can then be edited and completed independently. This action cannot be undone automatically."
   },
   {
     "entity": "calendar",
@@ -33,13 +33,13 @@
     "entity": "calendar",
     "property": "materializeRecurrenceSuccessDescription",
     "de": "{count} eigenständige Termine wurden erstellt.",
-    "en": "{count} standalone events were created."
+    "en": "{count} standalone appointments were created."
   },
   {
     "entity": "event",
     "property": "recurrenceRequired",
     "de": "Der Termin enthält keine gültige Wiederholungsregel.",
-    "en": "The event does not contain a valid recurrence rule."
+    "en": "The appointment does not contain a valid recurrence rule."
   },
   {
     "entity": "event",

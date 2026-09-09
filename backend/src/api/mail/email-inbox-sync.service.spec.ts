@@ -7,6 +7,7 @@ jest.mock('../../constants/project.constants', () => ({
   ...jest.requireActual<typeof import('../../constants/project.constants')>(
     '../../constants/project.constants',
   ),
+  REDIS_ATTEMPTS: 5,
   REDIS_ENABLED: true,
   REDIS_REMOVE_ON_COMPLETE: true,
   REDIS_REMOVE_ON_FAIL: 100,
@@ -45,7 +46,7 @@ describe('EmailInboxSyncService', () => {
     );
   });
 
-  it('does not enqueue a second import while the subscription job is delayed', async () => {
+  it('replaces a delayed retry when the subscription interval is due again', async () => {
     const lastRunAt = new Date('2026-07-13T12:00:00.000Z');
     const subscription = {
       handle: 3,
@@ -79,12 +80,19 @@ describe('EmailInboxSyncService', () => {
       new Date('2026-07-13T12:10:00.000Z'),
     );
 
-    expect(queued).toBe(0);
+    expect(queued).toBe(1);
     expect(queue.getJob).toHaveBeenCalledWith('email-inbox-3');
-    expect(queue.add).not.toHaveBeenCalled();
-    expect(existingJob.remove).not.toHaveBeenCalled();
-    expect(subscription.lastRunAt).toBe(lastRunAt);
-    expect(em.flush).not.toHaveBeenCalled();
+    expect(existingJob.remove).toHaveBeenCalledTimes(1);
+    expect(queue.add).toHaveBeenCalledWith(
+      'import-email-inbox',
+      expect.objectContaining({ subscriptionHandle: 3 }),
+      expect.objectContaining({
+        jobId: 'email-inbox-3',
+        attempts: 5,
+      }),
+    );
+    expect(subscription.lastRunAt).not.toBe(lastRunAt);
+    expect(em.flush).toHaveBeenCalledTimes(1);
   });
 
   it('replaces a terminal import job with one stable subscription job', async () => {
@@ -195,6 +203,7 @@ describe('EmailInboxSyncService', () => {
       expect.objectContaining({ subscriptionHandle: 3, manual: true }),
       expect.objectContaining({
         jobId: expect.stringMatching(/^email-inbox-3-manual-/) as unknown,
+        attempts: 5,
       }),
     );
   });

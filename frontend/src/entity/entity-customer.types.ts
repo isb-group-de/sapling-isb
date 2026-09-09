@@ -259,6 +259,8 @@ export interface SalesOpportunitySourceItem extends SaplingGenericItem {
  * Represents an effort estimate.
  */
 export interface EffortEstimateItem extends SaplingGenericItem {
+  events?: EventItem[]
+  internalCases?: InternalCaseItem[]
   /** Unique identifier for the effort estimate */
   handle?: number | null
   /** Title of the estimate */

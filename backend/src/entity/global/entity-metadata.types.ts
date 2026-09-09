@@ -77,6 +77,8 @@ export interface SaplingReferenceTemplateMapping {
   sourceField: string;
   targetField: string;
   overwrite?: boolean;
+  /** Require matching nonempty context references when saving. */
+  validate?: boolean;
 }
 
 export interface SaplingReferenceTemplateMetadata {

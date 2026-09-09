@@ -115,7 +115,7 @@
           v-bind="tooltipProps"
           class="sapling-button--icon sapling-field-action-button sapling-field-single-select__open-action"
           data-test="open-reference-record"
-          icon="mdi-open-in-new"
+          :icon="isCreateAction ? 'mdi-plus' : 'mdi-open-in-new'"
           variant="tonal"
           size="small"
           :aria-label="openActionLabel"
@@ -153,22 +153,17 @@ import SaplingDialogEdit from '@/components/dialog/SaplingDialogEdit.vue'
 import type { SaplingGenericItem } from '@/entity/entity'
 import { useSaplingTable } from '@/composables/table/useSaplingTable'
 import { computed, inject, ref, watch } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { useSaplingSingleSelectField } from '@/composables/fields/useSaplingSingleSelectField'
 import { useSaplingEntityValueLabel } from '@/composables/fields/useSaplingEntityValueLabel'
 import { useSaplingReferenceFilter } from '@/composables/fields/useSaplingReferenceFilter'
+import { useSaplingReferenceRecordDialog } from '@/composables/fields/useSaplingReferenceRecordDialog'
 import { getDialogRecordRelations } from '@/composables/dialog/saplingDialogRecordLoader'
-import {
-  buildConcurrencyOptions,
-  getItemHandle,
-} from '@/composables/table/saplingTableAction.utils'
+import { getItemHandle } from '@/composables/table/saplingTableAction.utils'
 import { DEFAULT_PAGE_SIZE_SMALL } from '@/constants/project.constants'
 import ApiGenericService from '@/services/api.generic.service'
 import { useGenericStore } from '@/stores/genericStore'
 import { useCurrentPersonStore } from '@/stores/currentPersonStore'
 import { saplingTableDisplayContextKey } from '@/components/table/saplingTableDisplayContext'
-import { useSaplingMessageCenter } from '@/composables/system/useSaplingMessageCenter'
-import type { DialogSaveAction, DialogSaveContext, DialogState } from '@/entity/structure'
 import {
   hasIncompleteValueData,
   resolveSaplingItem,
@@ -225,19 +220,11 @@ const autocompleteItems = ref<SaplingGenericItem[]>([])
 const genericStore = useGenericStore()
 const tableDisplayContext = inject(saplingTableDisplayContextKey, null)
 const disableDropdownMobileView = computed(() => tableDisplayContext?.isMobileTable.value === false)
-const { t } = useI18n()
-const { pushMessage } = useSaplingMessageCenter()
-const recordDialogOpen = ref(false)
-const recordDialogItem = ref<SaplingGenericItem | null>(null)
 const hydratedSelectedItem = ref<SaplingGenericItem | null>(null)
-const isRecordDialogLoading = ref(false)
 let selectedItemHydrationRequestId = 0
 const placeholderSelectionKey = computed(() => `${props.entityHandle}:${props.placeholder ?? ''}`)
 const resolvedPlaceholderSelectionKey = ref<string | null>(
   !props.placeholder || props.modelValue ? placeholderSelectionKey.value : null,
-)
-const recordDialogMode = computed<DialogState>(() =>
-  entityPermission.value?.allowUpdate ? 'edit' : 'readonly',
 )
 const displayedSelectedItem = computed(() =>
   hydratedSelectedItem.value &&
@@ -260,23 +247,56 @@ const reservesMultilineSelection = computed(() => {
   // so clearing or selecting a record never changes the control height.
   return scalarLineCount + referenceLineCount > 1 || hasMultilineSelection.value
 })
-const openActionLabel = computed(() => props.openActionLabel || t('global.editRecord'))
-const canOpenSelectedRecord = computed(
-  () =>
-    Boolean(props.entityHandle) &&
-    getItemHandle(selectedItem.value) != null &&
-    !isRecordDialogLoading.value,
-)
+const {
+  recordDialogOpen,
+  recordDialogItem,
+  recordDialogMode,
+  isRecordDialogLoading,
+  isCreateAction,
+  openActionLabel,
+  canOpenSelectedRecord,
+  openSelectedRecord,
+  handleRecordDialogVisibility,
+  saveRecordDialog,
+  handleRecordDeleted,
+} = useSaplingReferenceRecordDialog({
+  props,
+  selectedItem,
+  menuOpen,
+  entity,
+  entityPermission,
+  entityTemplates,
+  ensureEntityMetadataLoaded,
+  clearSelection,
+})
 // #endregion
 
 // #region Selection State
-function onTableSelect(newSelected: SaplingGenericItem[]) {
-  selectedItem.value = newSelected[0] ?? null
-  clearSearch()
-
-  if (newSelected[0]) {
-    menuOpen.value = false
+let selectionRequest = 0
+async function onTableSelect(newSelected: SaplingGenericItem[]) {
+  const request = ++selectionRequest
+  let nextItem = newSelected[0] ?? null
+  menuOpen.value = false
+  if (nextItem && props.additionalListProjectionFields?.length) {
+    // Picker rows are projections. Load readable context before suggesting it
+    // to the parent form, so hidden table columns do not lose their values.
+    const handle = getItemHandle(nextItem)
+    if (handle != null) {
+      try {
+        const response = await ApiGenericService.find<SaplingGenericItem>(props.entityHandle, {
+          filter: { handle },
+          limit: 1,
+          relations: getDialogRecordRelations(entityTemplates.value),
+        })
+        nextItem = response.data[0] ?? null
+      } catch {
+        return
+      }
+    }
   }
+  if (request !== selectionRequest || props.disabled) return
+  selectedItem.value = nextItem
+  clearSearch()
 }
 
 function onActivatorModelUpdate(value: SaplingGenericItem | null) {
@@ -324,94 +344,9 @@ function onActivatorSearchUpdate(value: string) {
 }
 
 function clearSelection() {
+  selectionRequest++
   selectedItem.value = null
   clearSearch()
-}
-
-async function openSelectedRecord() {
-  const handle = getItemHandle(selectedItem.value)
-  if (!props.entityHandle || handle == null || isRecordDialogLoading.value) {
-    return
-  }
-
-  menuOpen.value = false
-  isRecordDialogLoading.value = true
-
-  try {
-    await ensureEntityMetadataLoaded()
-    const response = await ApiGenericService.find<SaplingGenericItem>(props.entityHandle, {
-      filter: { handle },
-      limit: 1,
-      relations: getDialogRecordRelations(entityTemplates.value),
-    })
-    const resolvedItem = response.data[0] ?? null
-    if (!resolvedItem) {
-      return
-    }
-
-    recordDialogItem.value = resolvedItem
-    recordDialogOpen.value = true
-  } catch {
-    recordDialogItem.value = null
-  } finally {
-    isRecordDialogLoading.value = false
-  }
-}
-
-function handleRecordDialogVisibility(value: boolean) {
-  recordDialogOpen.value = value
-  if (!value) {
-    recordDialogItem.value = null
-  }
-}
-
-async function saveRecordDialog(
-  value: SaplingGenericItem,
-  action: DialogSaveAction,
-  context: DialogSaveContext,
-) {
-  const handle = getItemHandle(recordDialogItem.value)
-  if (!props.entityHandle || handle == null || recordDialogMode.value !== 'edit') {
-    context.complete(false)
-    return
-  }
-
-  let didSave = false
-  try {
-    const updatedItem = await ApiGenericService.update<SaplingGenericItem>(
-      props.entityHandle,
-      handle,
-      value,
-      {
-        relations: getDialogRecordRelations(entityTemplates.value),
-        concurrency: buildConcurrencyOptions(entityTemplates.value, recordDialogItem.value),
-      },
-    )
-
-    recordDialogItem.value = updatedItem
-    selectedItem.value = updatedItem
-    didSave = true
-
-    pushMessage(
-      'success',
-      t('global.recordSaved'),
-      t('global.recordSavedDescription'),
-      props.entityHandle,
-    )
-
-    if (action === 'saveAndClose') {
-      handleRecordDialogVisibility(false)
-    }
-  } catch {
-    // ApiGenericService already reports the error. Keep the nested draft open for retrying.
-  } finally {
-    context.complete(didSave)
-  }
-}
-
-function handleRecordDeleted() {
-  handleRecordDialogVisibility(false)
-  clearSelection()
 }
 
 function openMenu() {
