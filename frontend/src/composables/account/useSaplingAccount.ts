@@ -497,10 +497,6 @@ export function useSaplingAccount() {
     }
   }
 
-  /**
-   * Maps the native JavaScript weekday to the Monday-first representation used in the UI.
-   */
-
   function syncAiPreferenceTargets() {
     const chatTarget = resolveRuntimeTarget({
       providerConfigs: aiProviderConfigs.value,

@@ -1,5 +1,5 @@
 // #region Imports
-import { ref, watch, onMounted, computed, nextTick, type ComputedRef, type Ref } from 'vue'
+import { ref, watch, onMounted, computed, nextTick, type Ref } from 'vue'
 import type { AccumulatedPermission, EntityTemplate } from '@/entity/structure'
 import { useI18n } from 'vue-i18n'
 import type { SaplingGenericItem } from '@/entity/entity'
@@ -27,6 +27,7 @@ import {
 } from './saplingDialogEdit.utils'
 import type {
   SaplingDialogEditEmit,
+  UseSaplingDialogEditOptions,
   UseSaplingDialogEditProps,
   VuetifyFormRef,
 } from './saplingDialogEdit.types'
@@ -49,14 +50,7 @@ import { getSaplingDateRangeEndShift } from './saplingDateRangeValidation'
 export function useSaplingDialogEdit(
   props: UseSaplingDialogEditProps,
   emit: SaplingDialogEditEmit,
-  options?: {
-    forceDirty?: ComputedRef<boolean>
-    forceDirtyFields?: ComputedRef<string[]>
-    allowPristineCreate?: ComputedRef<boolean>
-    hasSupplementalChanges?: ComputedRef<boolean>
-    persistSupplementalChanges?: () => Promise<boolean>
-    resetSupplementalChanges?: () => void
-  },
+  options?: UseSaplingDialogEditOptions,
 ) {
   // #region State
   const { t, te } = useI18n()

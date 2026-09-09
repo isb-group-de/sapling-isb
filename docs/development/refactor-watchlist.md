@@ -2,15 +2,15 @@
 
 This note tracks files that are healthy enough to leave as-is for now, but should be watched when nearby work happens. Prefer incremental extraction during feature work over broad refactors without a concrete change driver.
 
-Last reviewed: 2026-09-02
+Last reviewed: 2026-09-09
 
 ## Current Quality-Gate Resume Point
 
-The 2026-09-02 audit contains seven files above 600 physical lines, all explicit
-exceptions: the generated MDI catalog, the already-executed baseline migration,
-and the cohesive persisted schemas for `CompanyItem`, `PersonItem`,
-`TicketItem`, `EventItem`, and `SalesOpportunityItem`. Zero actionable source or
-test files remain above the threshold.
+The 2026-09-09 audit contains 17 files above 600 physical lines. Seven remain
+the established generated, immutable, or persisted-schema exceptions. Ten are
+explicit composition and provider-adapter cohesion exceptions reviewed in the
+forty-fourth wave below. Zero unreviewed source or test files remain above the
+threshold.
 
 The final frontend wave separated monitoring tabs, dashboard layout and query
 state, calendar workspace initialization/actions, mail-recipient and relation
@@ -39,15 +39,15 @@ wave rather than inferred from the previous count.
 ## Prioritized Refactoring Waves
 
 No size-driven extraction is currently queued. Continue applying the 600-line
-review during feature work and keep orchestration out of the documented schema
+review during feature work and keep new orchestration out of the documented
 exceptions.
 
 ## Resume Point
 
 - No extraction is left half-finished; the current audit has zero actionable
   oversized files.
-- The seven remaining files are generated, immutable, or documented schema
-  cohesion exceptions.
+- The 17 remaining files are generated, immutable, or documented cohesion
+  exceptions.
 - Form Config administration remains below the limit. Extract entity/scope
   selection only when that workflow changes.
 
@@ -811,3 +811,35 @@ exceptions.
   frontend 89 files / 303 tests, both typechecks, the combined production build,
   and `git diff --check`. The full frontend audit also caught and removed a
   technical entity/field-handle fallback from the extracted Form Config preview.
+
+## Completed Forty-Fourth Wave
+
+- Split recurrence progression and timezone arithmetic from recurrence parsing
+  and provider payload construction. Split numeric and Kanban decorator families
+  from the central entity metadata entry point while preserving its public
+  exports.
+- Extracted generic import-row execution, automation rule validation and
+  automation processor value/error helpers. Webhook graph sanitization now has a
+  focused injectable service, and Azure delivery/deletion tests are separate
+  from Outlook import tests.
+- Extracted AI media transport from the stable AI API facade, mail composer and
+  email-condition normalization helpers, lazy dialog field registrations,
+  inbox-entry projection, and appearance effects. Duplicate table refresh-label
+  formatting is now shared.
+- The refreshed inventory has 17 files above 600 lines. In addition to the seven
+  established exceptions, the reviewed composition exceptions are:
+  `useSaplingDialogMailEditor.ts` (886), `azure-calendar.operations.ts` (860),
+  `google-calendar.operations.ts` (740), `SaplingEventToolbar.vue` (718),
+  `SaplingFieldSingleSelect.test.ts` (697), `SaplingTable.vue` (654),
+  `useSaplingDialogEdit.test.ts` (629), `SaplingAiChat.vue` (625),
+  `useSaplingEvent.ts` (611), and `useSaplingTable.ts` (607).
+- The two provider adapters deliberately keep each provider's protected import,
+  reconciliation and delivery contract in one inheritance boundary used by the
+  concrete service and its test harnesses. The Vue files are declarative
+  composition roots whose remaining size is dominated by one public
+  template/prop/event surface or lifecycle wiring already delegated to focused
+  children and composables. The two test suites retain one stateful hoisted-mock
+  harness each; splitting them would duplicate setup or expose private test
+  state. The mail editor retains one atomic draft/preview/send/signature state
+  machine so cancellation, send guarding and preview sequencing cannot drift
+  across independently owned stores.

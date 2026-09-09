@@ -344,95 +344,41 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, defineAsyncComponent, ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { FilterQuery } from '@/services/api.generic.service'
 import type { AccumulatedPermission, DialogState, EntityTemplate } from '@/entity/structure'
 import type { SaplingGenericItem } from '@/entity/entity'
 import SaplingAutocomplete from '@/components/common/SaplingAutocomplete.vue'
 import SaplingHelpTooltip from '@/components/common/SaplingHelpTooltip.vue'
-
-// Field components are loaded on demand. A typical edit dialog only renders a
-// small subset of these per template, so lazy-loading keeps the initial bundle
-// of any view that pulls in SaplingDialogEdit (TableView, EventView, ...) small.
-const SaplingSingleSelectField = defineAsyncComponent(
-  () => import('@/components/dialog/fields/SaplingFieldSingleSelect.vue'),
-)
-const SaplingFieldAutomationRule = defineAsyncComponent(
-  () => import('@/components/dialog/fields/SaplingFieldAutomationRule.vue'),
-)
-const SaplingBooleanField = defineAsyncComponent(
-  () => import('@/components/dialog/fields/SaplingFieldBoolean.vue'),
-)
-const SaplingNumberField = defineAsyncComponent(
-  () => import('@/components/dialog/fields/SaplingFieldNumber.vue'),
-)
-const SaplingFieldPercent = defineAsyncComponent(
-  () => import('@/components/dialog/fields/SaplingFieldPercent.vue'),
-)
-const SaplingFieldMoney = defineAsyncComponent(
-  () => import('@/components/dialog/fields/SaplingFieldMoney.vue'),
-)
-const SaplingDateTypeField = defineAsyncComponent(
-  () => import('@/components/dialog/fields/SaplingFieldDateType.vue'),
-)
-const SaplingTimeField = defineAsyncComponent(
-  () => import('@/components/dialog/fields/SaplingFieldTime.vue'),
-)
-const SaplingFieldEventBufferDuration = defineAsyncComponent(
-  () => import('@/components/dialog/fields/SaplingFieldEventBufferDuration.vue'),
-)
-const SaplingShortTextField = defineAsyncComponent(
-  () => import('@/components/dialog/fields/SaplingFieldShortText.vue'),
-)
-const SaplingLongTextField = defineAsyncComponent(
-  () => import('@/components/dialog/fields/SaplingFieldLongText.vue'),
-)
-const SaplingColorField = defineAsyncComponent(
-  () => import('@/components/dialog/fields/SaplingFieldColor.vue'),
-)
-const SaplingIconField = defineAsyncComponent(
-  () => import('@/components/dialog/fields/SaplingFieldIcon.vue'),
-)
-const SaplingDateTimeField = defineAsyncComponent(
-  () => import('@/components/dialog/fields/SaplingFieldDateTime.vue'),
-)
-const SaplingPhoneField = defineAsyncComponent(
-  () => import('@/components/dialog/fields/SaplingFieldPhone.vue'),
-)
-const SaplingMailField = defineAsyncComponent(
-  () => import('@/components/dialog/fields/SaplingFieldMail.vue'),
-)
-const SaplingLinkField = defineAsyncComponent(
-  () => import('@/components/dialog/fields/SaplingFieldLink.vue'),
-)
-const SaplingPasswordField = defineAsyncComponent(
-  () => import('@/components/dialog/fields/SaplingFieldPassword.vue'),
-)
-const SaplingMarkdownField = defineAsyncComponent(
-  () => import('@/components/dialog/fields/SaplingFieldMarkdown.vue'),
-)
-const SaplingJsonField = defineAsyncComponent(
-  () => import('@/components/dialog/fields/SaplingFieldJson.vue'),
-)
-const SaplingFieldCellDuplicateCheck = defineAsyncComponent(
-  () => import('@/components/dialog/fields/SaplingFieldCellDuplicateCheck.vue'),
-)
-const SaplingFieldAutoKey = defineAsyncComponent(
-  () => import('@/components/dialog/fields/SaplingFieldAutoKey.vue'),
-)
-const SaplingFieldTeamsRecipient = defineAsyncComponent(
-  () => import('@/components/dialog/fields/SaplingFieldTeamsRecipient.vue'),
-)
-const SaplingFieldEventRecurrence = defineAsyncComponent(
-  () => import('@/components/dialog/fields/SaplingFieldEventRecurrence.vue'),
-)
-const SaplingFieldEmailSubscriptionConditions = defineAsyncComponent(
-  () => import('@/components/dialog/fields/SaplingFieldEmailSubscriptionConditions.vue'),
-)
-const SaplingFieldGenericReference = defineAsyncComponent(
-  () => import('@/components/dialog/fields/SaplingFieldGenericReference.vue'),
-)
+import {
+  SaplingBooleanField,
+  SaplingColorField,
+  SaplingDateTimeField,
+  SaplingDateTypeField,
+  SaplingFieldAutomationRule,
+  SaplingFieldAutoKey,
+  SaplingFieldCellDuplicateCheck,
+  SaplingFieldEmailSubscriptionConditions,
+  SaplingFieldEventBufferDuration,
+  SaplingFieldEventRecurrence,
+  SaplingFieldGenericReference,
+  SaplingFieldMoney,
+  SaplingFieldPercent,
+  SaplingFieldTeamsRecipient,
+  SaplingIconField,
+  SaplingJsonField,
+  SaplingLinkField,
+  SaplingLongTextField,
+  SaplingMailField,
+  SaplingMarkdownField,
+  SaplingNumberField,
+  SaplingPasswordField,
+  SaplingPhoneField,
+  SaplingShortTextField,
+  SaplingSingleSelectField,
+  SaplingTimeField,
+} from './saplingDialogFieldRenderers'
 
 const props = withDefaults(
   defineProps<{

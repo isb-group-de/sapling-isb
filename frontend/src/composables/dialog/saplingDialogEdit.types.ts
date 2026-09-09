@@ -6,6 +6,16 @@ import type {
   EntityTemplate,
 } from '@/entity/structure'
 import type { VuetifyFormValidationResult } from './saplingDialogEdit.utils'
+import type { ComputedRef } from 'vue'
+
+export interface UseSaplingDialogEditOptions {
+  forceDirty?: ComputedRef<boolean>
+  forceDirtyFields?: ComputedRef<string[]>
+  allowPristineCreate?: ComputedRef<boolean>
+  hasSupplementalChanges?: ComputedRef<boolean>
+  persistSupplementalChanges?: () => Promise<boolean>
+  resetSupplementalChanges?: () => void
+}
 
 export type VuetifyFormRef = {
   validate: () => Promise<VuetifyFormValidationResult>

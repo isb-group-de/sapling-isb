@@ -53,7 +53,9 @@
               :disabled="disabled || !selectedEntityHandle"
               @update:menu="(open) => setConditionMenuOpen(condition.key, 'field', open)"
               @keydown.tab="setConditionMenuOpen(condition.key, 'field', false)"
-              @update:model-value="(value) => updateObservedField(index, normalizeString(value))"
+              @update:model-value="
+                (value) => updateObservedField(index, normalizeEmailConditionString(value))
+              "
             />
 
             <SaplingAutocomplete
@@ -73,7 +75,7 @@
               @keydown.tab="setConditionMenuOpen(condition.key, 'oldValue', false)"
               @update:model-value="
                 (value: unknown) =>
-                  updateCondition(index, { oldValue: normalizeConditionValue(value) })
+                  updateCondition(index, { oldValue: normalizeEmailConditionValue(value) })
               "
             />
             <SaplingTextField
@@ -87,7 +89,7 @@
               :disabled="disabled || !condition.observedField"
               @update:model-value="
                 (value: unknown) =>
-                  updateCondition(index, { oldValue: normalizeConditionValue(value) })
+                  updateCondition(index, { oldValue: normalizeEmailConditionValue(value) })
               "
             />
 
@@ -108,7 +110,7 @@
               @keydown.tab="setConditionMenuOpen(condition.key, 'newValue', false)"
               @update:model-value="
                 (value: unknown) =>
-                  updateCondition(index, { newValue: normalizeConditionValue(value) })
+                  updateCondition(index, { newValue: normalizeEmailConditionValue(value) })
               "
             />
             <SaplingTextField
@@ -122,7 +124,7 @@
               :disabled="disabled || !condition.observedField"
               @update:model-value="
                 (value: unknown) =>
-                  updateCondition(index, { newValue: normalizeConditionValue(value) })
+                  updateCondition(index, { newValue: normalizeEmailConditionValue(value) })
               "
             />
 
@@ -173,6 +175,14 @@ import type { SaplingGenericItem } from '@/entity/entity'
 import ApiGenericService from '@/services/api.generic.service'
 import { useGenericStore } from '@/stores/genericStore'
 import { getEntityValueLabel } from '@/utils/saplingTableUtil'
+import {
+  normalizeEmailConditions,
+  normalizeEmailConditionString,
+  normalizeEmailConditionValue,
+  normalizeOptionalEmailConditionValue,
+  type EmailCondition,
+  type EmailConditionGroup,
+} from './saplingEmailSubscriptionConditions.utils'
 
 type ConditionFieldOption = {
   label: string
@@ -182,21 +192,6 @@ type ConditionFieldOption = {
 type ValueOption = {
   label: string
   value: string
-}
-
-type EmailCondition = {
-  key: string
-  handle?: string | number
-  observedField: string
-  oldValue?: string | null
-  newValue?: string | null
-  groupOrder: number
-  sortOrder?: number
-}
-
-type EmailConditionGroup = {
-  groupOrder: number
-  conditions: Array<{ condition: EmailCondition; index: number }>
 }
 
 const props = defineProps<{
@@ -280,7 +275,7 @@ const conditionGroups = computed<EmailConditionGroup[]>(() => {
 watch(
   () => props.modelValue,
   (value) => {
-    localConditions.value = normalizeConditions(value)
+    localConditions.value = normalizeEmailConditions(value, createConditionKey)
   },
   { immediate: true, deep: true },
 )
@@ -400,76 +395,17 @@ function emitConditions(): void {
     localConditions.value.map((condition, index) => ({
       ...(condition.handle != null ? { handle: condition.handle } : {}),
       observedField: condition.observedField.trim(),
-      oldValue: normalizeOptionalValue(condition.oldValue),
-      newValue: normalizeOptionalValue(condition.newValue),
+      oldValue: normalizeOptionalEmailConditionValue(condition.oldValue),
+      newValue: normalizeOptionalEmailConditionValue(condition.newValue),
       groupOrder: condition.groupOrder,
       sortOrder: index,
     })),
   )
 }
 
-function normalizeConditions(value: unknown): EmailCondition[] {
-  if (!Array.isArray(value)) {
-    return []
-  }
-
-  return value
-    .filter(
-      (entry): entry is Record<string, unknown> => Boolean(entry) && typeof entry === 'object',
-    )
-    .map((entry, index) => ({
-      key: createConditionKey(),
-      handle: normalizeHandle(entry.handle),
-      observedField: normalizeString(entry.observedField || entry.field),
-      oldValue: normalizeNullableString(entry.oldValue),
-      newValue: normalizeNullableString(entry.newValue),
-      groupOrder: normalizeGroupOrder(entry.groupOrder),
-      sortOrder: typeof entry.sortOrder === 'number' ? entry.sortOrder : index,
-    }))
-    .sort((left, right) => (left.sortOrder ?? 0) - (right.sortOrder ?? 0))
-}
-
-function normalizeGroupOrder(value: unknown): number {
-  const numericValue = typeof value === 'number' ? value : Number(value ?? 0)
-  return Number.isInteger(numericValue) && numericValue >= 0 ? numericValue : 0
-}
-
 function createConditionKey(): string {
   conditionKeyCounter += 1
   return `condition-${conditionKeyCounter}`
-}
-
-function normalizeString(value: unknown): string {
-  return typeof value === 'string' ? value : ''
-}
-
-function normalizeNullableString(value: unknown): string | null {
-  if (value === null || value === undefined || value === '') {
-    return null
-  }
-
-  return String(value)
-}
-
-function normalizeOptionalValue(value: unknown): string | null {
-  const normalized = normalizeNullableString(value)
-  return normalized && normalized.trim().length > 0 ? normalized : null
-}
-
-function normalizeConditionValue(value: unknown): string | null {
-  if (value === null || value === undefined || value === '') {
-    return null
-  }
-
-  return String(value)
-}
-
-function normalizeHandle(value: unknown): string | number | undefined {
-  if (typeof value === 'string' || typeof value === 'number') {
-    return value
-  }
-
-  return undefined
 }
 
 function translateFieldLabel(entityHandle: string, fieldName: string): string {

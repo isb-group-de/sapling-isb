@@ -355,6 +355,13 @@ import {
   buildMailRecipientTitle,
   sortMailRecipientOptions,
 } from '@/utils/saplingMailRecipientOptions'
+import {
+  buildMailSenderTitle,
+  clampMailSelection,
+  getMailRecipientCompanyKey,
+  normalizeMailRecipients,
+  readMailRecipientValue,
+} from './saplingMailComposer.utils'
 
 type TextSelectionInput = HTMLInputElement | HTMLTextAreaElement
 
@@ -454,8 +461,8 @@ const sortedTemplates = computed(() =>
   sortSelectOptions(props.templates, (template) => template.name),
 )
 const senderItems = computed(() =>
-  sortSelectOptions(props.senderOptions, buildSenderTitle).map((option) => ({
-    title: buildSenderTitle(option),
+  sortSelectOptions(props.senderOptions, buildMailSenderTitle).map((option) => ({
+    title: buildMailSenderTitle(option),
     value: option.email,
   })),
 )
@@ -465,7 +472,8 @@ const recipientItems = computed(() => {
   return options.map((option, index) => {
     const previousOption = options[index - 1]
     const showCompanyHeader =
-      index === 0 || getRecipientCompanyKey(previousOption) !== getRecipientCompanyKey(option)
+      index === 0 ||
+      getMailRecipientCompanyKey(previousOption) !== getMailRecipientCompanyKey(option)
 
     return {
       title: buildMailRecipientTitle(option),
@@ -482,28 +490,16 @@ function handleTemplateUpdate(value: number | null | undefined) {
   emit('apply-template')
 }
 
-function normalizeRecipients(value: unknown): string[] {
-  if (!Array.isArray(value)) {
-    return []
-  }
-
-  return value
-    .flatMap((entry) => readRecipientValue(entry).split(/[;,]/))
-    .map((entry) => entry.trim())
-    .filter(Boolean)
-    .filter((entry, index, array) => array.indexOf(entry) === index)
-}
-
 function handleToUpdate(value: unknown) {
-  emit('update:toRecipients', normalizeRecipients(value))
+  emit('update:toRecipients', normalizeMailRecipients(value))
 }
 
 function handleCcUpdate(value: unknown) {
-  emit('update:ccRecipients', normalizeRecipients(value))
+  emit('update:ccRecipients', normalizeMailRecipients(value))
 }
 
 function handleBccUpdate(value: unknown) {
-  emit('update:bccRecipients', normalizeRecipients(value))
+  emit('update:bccRecipients', normalizeMailRecipients(value))
 }
 
 function handleSenderUpdate(value: string | null | undefined) {
@@ -548,8 +544,8 @@ function insertPlaceholderAtCursor(target: InsertTarget, token: string) {
 
 function insertIntoSubject(token: string) {
   const currentValue = props.subject ?? ''
-  const start = clampSelection(subjectSelectionStart.value, currentValue.length)
-  const end = clampSelection(subjectSelectionEnd.value, currentValue.length)
+  const start = clampMailSelection(subjectSelectionStart.value, currentValue.length)
+  const end = clampMailSelection(subjectSelectionEnd.value, currentValue.length)
   const nextValue = `${currentValue.slice(0, start)}${token}${currentValue.slice(end)}`
   const nextCursor = start + token.length
 
@@ -579,30 +575,6 @@ function getSubjectInput(): TextSelectionInput | null {
   return root.querySelector('input, textarea')
 }
 
-function clampSelection(value: number, max: number): number {
-  return Math.max(0, Math.min(value, max))
-}
-
-function buildSenderTitle(option: MailSenderOption): string {
-  const displayName = option.displayName?.trim()
-
-  if (displayName && displayName !== option.email) {
-    return `${displayName} <${option.email}>`
-  }
-
-  return option.email
-}
-
-function getRecipientCompanyKey(option: MailRecipientOption | undefined): string {
-  if (!option) {
-    return ''
-  }
-
-  return option.companyHandle == null
-    ? option.companyName.trim().toLocaleLowerCase()
-    : String(option.companyHandle).trim()
-}
-
 function buildRecipientCompanyLabel(option: MailRecipientOption): string {
   const companyName = option.companyName || '—'
   return option.isCurrentCompany
@@ -611,29 +583,7 @@ function buildRecipientCompanyLabel(option: MailRecipientOption): string {
 }
 
 function getRecipientSelectionEmail(item: unknown): string {
-  return readRecipientValue(item)
-}
-
-function readRecipientValue(value: unknown, seen = new Set<object>()): string {
-  if (typeof value === 'string' || typeof value === 'number') {
-    return String(value)
-  }
-
-  if (!value || typeof value !== 'object' || seen.has(value)) {
-    return ''
-  }
-
-  seen.add(value)
-  const option = value as { value?: unknown; email?: unknown; raw?: unknown }
-
-  for (const candidate of [option.value, option.email, option.raw]) {
-    const recipient = readRecipientValue(candidate, seen).trim()
-    if (recipient) {
-      return recipient
-    }
-  }
-
-  return ''
+  return readMailRecipientValue(item)
 }
 
 defineExpose({

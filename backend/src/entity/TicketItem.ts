@@ -13,11 +13,13 @@ import {
   Sapling,
   SaplingDependsOn,
   SaplingForm,
-  SaplingRelatedRecords,
-  SaplingReferenceCreate,
   SaplingReferenceTemplate,
   SaplingKanban,
 } from './global/entity.decorator';
+import {
+  SaplingReferenceCreate,
+  SaplingRelatedRecords,
+} from './global/entity-reference-actions.decorator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { EventItem } from './EventItem';
 import { SalesOpportunityItem } from './SalesOpportunityItem';
@@ -885,7 +887,7 @@ export class TicketItem {
    * @type {Collection<TicketTimeTrackingItem>}
    */
   @ApiPropertyOptional({ type: () => TicketTimeTrackingItem, isArray: true })
-  @OneToMany(() => TicketTimeTrackingItem, (x) => x.ticket)
+  @OneToMany(() => TicketTimeTrackingItem, 'ticket')
   timeTrackings: Collection<TicketTimeTrackingItem> =
     new Collection<TicketTimeTrackingItem>(this);
 
@@ -901,7 +903,7 @@ export class TicketItem {
       'internalCase.effortEstimate.ticket',
     ],
   })
-  @OneToMany(() => EventItem, (x) => x.ticket)
+  @OneToMany(() => EventItem, 'ticket')
   events: Collection<EventItem> = new Collection<EventItem>(this);
 
   /**
@@ -909,7 +911,7 @@ export class TicketItem {
    * @type {Collection<EffortEstimateItem>}
    */
   @ApiPropertyOptional({ type: () => EffortEstimateItem, isArray: true })
-  @OneToMany(() => EffortEstimateItem, (x) => x.ticket)
+  @OneToMany(() => EffortEstimateItem, 'ticket')
   effortEstimates: Collection<EffortEstimateItem> =
     new Collection<EffortEstimateItem>(this);
 
@@ -919,7 +921,7 @@ export class TicketItem {
    */
   @ApiPropertyOptional({ type: () => InternalCaseItem, isArray: true })
   @SaplingRelatedRecords({ paths: ['effortEstimate.ticket'] })
-  @OneToMany(() => InternalCaseItem, (internalCase) => internalCase.ticket)
+  @OneToMany(() => InternalCaseItem, 'ticket')
   internalCases: Collection<InternalCaseItem> =
     new Collection<InternalCaseItem>(this);
 

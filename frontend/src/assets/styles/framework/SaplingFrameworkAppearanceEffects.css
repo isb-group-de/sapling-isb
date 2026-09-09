@@ -1,0 +1,48 @@
+::-webkit-scrollbar {
+  width: var(--sapling-space-md);
+  height: var(--sapling-space-md);
+  background: var(--sapling-scrollbar-track);
+}
+
+::-webkit-scrollbar-track {
+  background: var(--sapling-scrollbar-track);
+}
+
+::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: var(--sapling-radius-md);
+  background-color: var(--sapling-scrollbar-thumb);
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover,
+::-webkit-scrollbar-thumb:window-inactive {
+  background-color: var(--sapling-scrollbar-thumb-hover);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+* {
+  scrollbar-color: var(--sapling-scrollbar-thumb) var(--sapling-scrollbar-track);
+  scrollbar-width: thin;
+}
+
+@keyframes float {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
+  }
+
+  66% {
+    transform: translate(calc(var(--sapling-space-xl) * -1), var(--sapling-space-xl)) scale(0.9);
+  }
+
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+}

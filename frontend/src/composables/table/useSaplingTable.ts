@@ -23,24 +23,17 @@ import { useSaplingTableFilterRestoration } from './useSaplingTableFilterRestora
 import { getActiveGroupFields, useTablePreferences } from './saplingTablePreferences'
 import { canReadReferenceTemplate, isVisibleTableTemplate } from '@/utils/saplingTableUtil'
 import { isAbortError } from './saplingTableData.utils'
+import type {
+  InitializeEntityStateOptions,
+  SaplingTableBehaviorOptions,
+} from './saplingTableBehavior.types'
+export type {
+  SaplingTableBehaviorOptions,
+  SaplingTableInitialLoadContext,
+} from './saplingTableBehavior.types'
 // #endregion
 
 const TABLE_LOAD_DEBOUNCE_MS = 250
-
-type InitializeEntityStateOptions = {
-  initialSearch?: string
-  beforeInitialLoad?: (context?: SaplingTableInitialLoadContext) => Promise<void> | void
-}
-
-export type SaplingTableInitialLoadContext = {
-  isDefaultWorklistReset: boolean
-}
-
-export type SaplingTableBehaviorOptions = {
-  allowGrouping?: boolean
-  searchFieldNames?: string[]
-  applyDefaultOpenChipFilters?: boolean
-}
 
 /**
  * Shared table state for entity-backed data tables.
@@ -496,16 +489,6 @@ export function useSaplingTable(
         })
     },
   )
-  // #endregion
-
-  // #region URL Sync
-  /**
-   * Persists user-controlled table state (search, page, itemsPerPage, sortBy, filter)
-   * into the location bar via history.replaceState. We bypass vue-router's
-   * `router.replace` here on purpose so the table route-state watcher does
-   * not trigger a full re-initialization for our own writes — browser back/forward
-   * still works because popstate updates the effective table route state.
-   */
   // #endregion
 
   // #region Event Handlers

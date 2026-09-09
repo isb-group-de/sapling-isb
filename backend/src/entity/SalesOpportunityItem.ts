@@ -18,10 +18,12 @@ import {
   Sapling,
   SaplingDependsOn,
   SaplingForm,
-  SaplingRelatedRecords,
-  SaplingReferenceCreate,
   SaplingKanban,
 } from './global/entity.decorator';
+import {
+  SaplingReferenceCreate,
+  SaplingRelatedRecords,
+} from './global/entity-reference-actions.decorator';
 import { SalesOpportunityForecastItem } from './SalesOpportunityForecastItem';
 import { SalesOpportunitySourceItem } from './SalesOpportunitySourceItem';
 import { type Rel } from '@mikro-orm/core';
@@ -658,7 +660,7 @@ export class SalesOpportunityItem {
    * Tickets related to this sales opportunity.
    */
   @ApiPropertyOptional({ type: () => TicketItem, isArray: true })
-  @OneToMany(() => TicketItem, (ticket) => ticket.salesOpportunity)
+  @OneToMany(() => TicketItem, 'salesOpportunity')
   tickets: Collection<TicketItem> = new Collection<TicketItem>(this);
 
   /**
@@ -676,7 +678,7 @@ export class SalesOpportunityItem {
       'internalCase.effortEstimate.ticket.salesOpportunity',
     ],
   })
-  @OneToMany(() => EventItem, (event) => event.salesOpportunity)
+  @OneToMany(() => EventItem, 'salesOpportunity')
   events: Collection<EventItem> = new Collection<EventItem>(this);
 
   /**
@@ -684,10 +686,7 @@ export class SalesOpportunityItem {
    */
   @ApiPropertyOptional({ type: () => EffortEstimateItem, isArray: true })
   @SaplingRelatedRecords({ paths: ['ticket.salesOpportunity'] })
-  @OneToMany(
-    () => EffortEstimateItem,
-    (effortEstimate) => effortEstimate.salesOpportunity,
-  )
+  @OneToMany(() => EffortEstimateItem, 'salesOpportunity')
   effortEstimates: Collection<EffortEstimateItem> =
     new Collection<EffortEstimateItem>(this);
 
@@ -702,10 +701,7 @@ export class SalesOpportunityItem {
       'effortEstimate.ticket.salesOpportunity',
     ],
   })
-  @OneToMany(
-    () => InternalCaseItem,
-    (internalCase) => internalCase.salesOpportunity,
-  )
+  @OneToMany(() => InternalCaseItem, 'salesOpportunity')
   internalCases: Collection<InternalCaseItem> =
     new Collection<InternalCaseItem>(this);
 

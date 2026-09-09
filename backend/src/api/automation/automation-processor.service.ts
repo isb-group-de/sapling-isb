@@ -8,7 +8,7 @@ import {
   RequestContext,
   type EntityClass,
 } from '@mikro-orm/core';
-import { HttpException, Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { AutomationEventItem } from '../../entity/AutomationEventItem';
 import { AutomationExecutionItem } from '../../entity/AutomationExecutionItem';
 import { FieldAutomationItem } from '../../entity/FieldAutomationItem';
@@ -27,6 +27,11 @@ import { WebhookService } from '../webhook/webhook.service';
 import { AutomationConditionService } from './automation-condition.service';
 import { AutomationEventService } from './automation-event.service';
 import { AutomationReferenceResolverService } from './automation-reference-resolver.service';
+import {
+  automationErrorMessage,
+  automationValuesEqual,
+  isTerminalAutomationActionError,
+} from './automation-processor.utils';
 
 @Injectable()
 export class AutomationProcessorService implements OnModuleInit {
@@ -264,7 +269,7 @@ export class AutomationProcessorService implements OnModuleInit {
           'completed',
         );
       } catch (error) {
-        if (!this.isTerminalActionError(error)) throw error;
+        if (!isTerminalAutomationActionError(error)) throw error;
         await this.log(
           event,
           key,
@@ -273,7 +278,7 @@ export class AutomationProcessorService implements OnModuleInit {
           targetEntity,
           handle,
           'failed',
-          this.message(error),
+          automationErrorMessage(error),
         );
       }
     }
@@ -338,7 +343,7 @@ export class AutomationProcessorService implements OnModuleInit {
           );
         });
       } catch (error) {
-        if (!this.isTerminalActionError(error)) throw error;
+        if (!isTerminalAutomationActionError(error)) throw error;
         await this.log(
           event,
           key,
@@ -347,7 +352,7 @@ export class AutomationProcessorService implements OnModuleInit {
           targetEntity,
           handle,
           'failed',
-          this.message(error),
+          automationErrorMessage(error),
         );
       }
     }
@@ -403,7 +408,7 @@ export class AutomationProcessorService implements OnModuleInit {
       if (
         !Object.keys(changes).length ||
         Object.entries(changes).every(([field, value]) =>
-          this.equal(this.conditions.value(target, field), value),
+          automationValuesEqual(this.conditions.value(target, field), value),
         )
       )
         continue;
@@ -435,7 +440,7 @@ export class AutomationProcessorService implements OnModuleInit {
           claimed.set(`${targetEntity}:${handle}:${field}`, rule.priority),
         );
       } catch (error) {
-        if (!this.isTerminalActionError(error)) throw error;
+        if (!isTerminalAutomationActionError(error)) throw error;
         await this.log(
           event,
           key,
@@ -444,7 +449,7 @@ export class AutomationProcessorService implements OnModuleInit {
           targetEntity,
           handle,
           'failed',
-          this.message(error),
+          automationErrorMessage(error),
         );
       }
     }
@@ -459,7 +464,7 @@ export class AutomationProcessorService implements OnModuleInit {
     const record = await this.em.findOne(
       entityClass as EntityClass<object>,
       { handle },
-      { populate: this.pathsFor(entity) as never[] },
+      { populate: this.paths.population(entity) as never[] },
     );
     if (!record) return null;
     return this.customFields.hydrateRecords(entity, record);
@@ -501,9 +506,6 @@ export class AutomationProcessorService implements OnModuleInit {
       ),
     );
     return [...new Set(resolved.flat())];
-  }
-  private pathsFor(entity: string): string[] {
-    return this.paths.population(entity);
   }
   private async canRecipientRead(
     entity: string,
@@ -588,31 +590,9 @@ export class AutomationProcessorService implements OnModuleInit {
     this.em.persist(execution);
     await this.em.flush();
   }
-  private message(error: unknown): string {
-    return error instanceof Error ? error.message : String(error);
-  }
-  private isTerminalActionError(error: unknown): boolean {
-    if (error instanceof HttpException) {
-      const status = error.getStatus();
-      return status >= 400 && status < 500;
-    }
-    return (
-      error instanceof Error &&
-      ['global.notActive', 'global.entityNotFound', 'global.notFound'].includes(
-        error.message,
-      )
-    );
-  }
   private runAtomic<T>(operation: () => Promise<T>): Promise<T> {
     return typeof this.em.transactional === 'function'
       ? this.em.transactional(operation)
       : operation();
-  }
-  private equal(left: unknown, right: unknown): boolean {
-    const normalize = (value: unknown): unknown =>
-      value && typeof value === 'object' && 'handle' in value
-        ? (value as { handle?: unknown }).handle
-        : value;
-    return JSON.stringify(normalize(left)) === JSON.stringify(normalize(right));
   }
 }

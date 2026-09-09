@@ -23,6 +23,10 @@ interface EntityClass {
   prototype: Record<string, unknown>;
 }
 
+const tableVisibleDisplayFields = new Set([
+  'effortEstimate.creatorCompanyName',
+]);
+
 const entityRegistry = ENTITY_REGISTRY as unknown as {
   name: string;
   class: EntityClass;
@@ -154,7 +158,9 @@ describe('company and person reference display fields', () => {
         groupOrder: referenceLayout.groupOrder,
         mobileVisible: false,
         order: (referenceLayout.order ?? 0) + expectation.orderOffset,
-        tableVisible: false,
+        tableVisible: tableVisibleDisplayFields.has(
+          `${displayField.entity}.${displayField.property}`,
+        ),
         width: expectation.width,
       });
 

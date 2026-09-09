@@ -1,6 +1,5 @@
 import axios from 'axios'
 import type {
-  AiChatAttachmentItem,
   AiAgentItem,
   AiAgentEvaluationItem,
   AiAgentRunItem,
@@ -11,21 +10,16 @@ import type {
   AiProviderTypeItem,
 } from '@/entity/entity'
 import { buildApiUrl } from '@/services/api.client'
-import { pushApiErrorMessage } from '@/services/api.error.service'
 import type {
   AiAgentWorkbenchResponse,
-  AiChatAttachmentUploadResponse,
   AiChatMessageListResponse,
   AiChatStreamEvent,
   AiChatQueuedInput,
-  AiChatTranscriptionResponse,
   AiMcpToolDescriptor,
   CreateAiAgentEvaluationPayload,
   CreateAiAgentTestRunPayload,
   CreateAiChatMessagePayload,
-  CreateAiChatMessageSpeechPayload,
   CreateAiChatSessionPayload,
-  CreateAiChatTranscriptionPayload,
   PrepareAiMarkdownPayload,
   PrepareAiMarkdownResponse,
   UpdateAiChatMessageRatingPayload,
@@ -34,33 +28,11 @@ import type {
   VectorizeEntityResponse,
 } from '@/services/api.ai.types'
 import { streamAiChatMessage, withClientTimeContext } from './api.ai.utils'
+import { ApiAiMediaService } from './api.ai.media.service'
 
 export * from '@/services/api.ai.types'
 
-class ApiAiService {
-  static async createChatImage(
-    file: File,
-    payload: { sessionHandle?: number; providerHandle?: string; modelHandle?: string },
-  ) {
-    try {
-      const form = new FormData()
-      form.append('file', file, file.name)
-      for (const [key, value] of Object.entries(payload)) {
-        if (value != null) form.append(key, String(value))
-      }
-      return (
-        await axios.post<{ attachment: AiChatAttachmentItem }>(buildApiUrl('ai/chat/images'), form)
-      ).data
-    } catch (error) {
-      this.handleError(error, 'aiChat.attachmentUploadFailed')
-      throw error
-    }
-  }
-
-  static async getChatImage(handle: number): Promise<Blob> {
-    return (await axios.get(buildApiUrl(`ai/chat/images/${handle}`), { responseType: 'blob' })).data
-  }
-
+class ApiAiService extends ApiAiMediaService {
   static async listProviders(options?: {
     suppressErrorMessage?: boolean
   }): Promise<AiProviderTypeItem[]> {
@@ -471,27 +443,6 @@ class ApiAiService {
     return response.data
   }
 
-  static async ensureMessageSpeech(
-    handle: number,
-    payload?: CreateAiChatMessageSpeechPayload,
-    options?: {
-      suppressErrorMessage?: boolean
-    },
-  ): Promise<AiChatMessageItem> {
-    try {
-      const response = await axios.post<AiChatMessageItem>(
-        buildApiUrl(`ai/chat/messages/${handle}/speech`),
-        payload ?? {},
-      )
-      return response.data
-    } catch (error: unknown) {
-      if (!options?.suppressErrorMessage) {
-        this.handleError(error, 'ai.speech.createFailed')
-      }
-      throw error
-    }
-  }
-
   static async confirmToolAction(handle: number): Promise<AiChatToolActionItem> {
     try {
       const response = await axios.post<AiChatToolActionItem>(
@@ -516,96 +467,12 @@ class ApiAiService {
     }
   }
 
-  static async downloadMessageSpeechAudio(
-    documentHandle: number,
-    options?: {
-      suppressErrorMessage?: boolean
-    },
-  ): Promise<Blob> {
-    try {
-      const response = await axios.get<Blob>(buildApiUrl(`document/download/${documentHandle}`), {
-        responseType: 'blob',
-        withCredentials: true,
-      })
-      return response.data
-    } catch (error: unknown) {
-      if (!options?.suppressErrorMessage) {
-        this.handleError(error, 'ai.speech.playbackFailed')
-      }
-      throw error
-    }
-  }
-
-  static async createChatAttachment(
-    file: File,
-    payload: {
-      sessionHandle?: number
-      purpose?: string
-    } = {},
-  ): Promise<AiChatAttachmentUploadResponse> {
-    try {
-      const formData = new FormData()
-      formData.append('file', file, file.name)
-
-      for (const [key, value] of Object.entries(payload)) {
-        if (value == null) {
-          continue
-        }
-
-        formData.append(key, String(value))
-      }
-
-      const response = await axios.post<AiChatAttachmentUploadResponse>(
-        buildApiUrl('ai/chat/attachments'),
-        formData,
-      )
-      return response.data
-    } catch (error: unknown) {
-      this.handleError(error, 'aiChat.attachmentUploadFailed')
-      throw error
-    }
-  }
-
-  static async createTranscription(
-    file: File | Blob,
-    payload: CreateAiChatTranscriptionPayload = {},
-    filename = 'sapling-chat-audio.webm',
-  ): Promise<AiChatTranscriptionResponse> {
-    try {
-      const formData = new FormData()
-      formData.append('file', file, filename)
-
-      const enrichedPayload = withClientTimeContext(payload)
-
-      for (const [key, value] of Object.entries(enrichedPayload)) {
-        if (value == null) {
-          continue
-        }
-
-        formData.append(key, String(value))
-      }
-
-      const response = await axios.post<AiChatTranscriptionResponse>(
-        buildApiUrl('ai/chat/transcriptions'),
-        formData,
-      )
-      return response.data
-    } catch (error: unknown) {
-      this.handleError(error, 'ai.transcription.createFailed')
-      throw error
-    }
-  }
-
   static async streamMessage(
     payload: CreateAiChatMessagePayload,
     onEvent: (event: AiChatStreamEvent) => void,
     signal?: AbortSignal,
   ): Promise<void> {
     await streamAiChatMessage(payload, onEvent, signal)
-  }
-
-  private static handleError(error: unknown, fallbackMessage: string, context = 'aiChat') {
-    pushApiErrorMessage(error, fallbackMessage, context)
   }
 }
 

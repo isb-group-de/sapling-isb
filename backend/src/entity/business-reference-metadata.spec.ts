@@ -1,8 +1,8 @@
+import { getSaplingReferenceTemplate } from './global/entity.decorator';
 import {
   getSaplingReferenceCreate,
-  getSaplingReferenceTemplate,
   getSaplingRelatedRecords,
-} from './global/entity.decorator';
+} from './global/entity-reference-actions.decorator';
 import { TicketItem } from './TicketItem';
 import { EventItem } from './EventItem';
 import { EffortEstimateItem } from './EffortEstimateItem';

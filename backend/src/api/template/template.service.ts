@@ -3,8 +3,6 @@ import { Injectable } from '@nestjs/common';
 import { ENTITY_MAP } from '../../entity/global/entity.registry';
 import { EntityTemplateDto } from './dto/entity-template.dto';
 import {
-  getSaplingReferenceCreate,
-  getSaplingRelatedRecords,
   getSaplingFormLayout,
   getSaplingGenericReference,
   getSaplingInlineCollection,
@@ -15,6 +13,10 @@ import {
   getSaplingNumeric,
   hasSaplingOption,
 } from '../../entity/global/entity.decorator';
+import {
+  getSaplingReferenceCreate,
+  getSaplingRelatedRecords,
+} from '../../entity/global/entity-reference-actions.decorator';
 
 // Mapping of entity handles to their classes
 const entityMap = ENTITY_MAP ?? {};

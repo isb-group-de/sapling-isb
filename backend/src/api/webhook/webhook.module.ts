@@ -8,6 +8,7 @@ import { WebhookService } from './webhook.service';
 import { WebhookController } from './webhook.controller';
 import { WebhookProcessor } from './webhook.processor';
 import { WebhookDeliveryExecutor } from './webhook-delivery.executor';
+import { WebhookPayloadSanitizerService } from './webhook-payload-sanitizer.service';
 import * as https from 'https';
 import { AuthModule } from '../../auth/auth.module';
 import { TemplateModule } from '../template/template.module';
@@ -80,6 +81,7 @@ const MockQueue = {
   providers: [
     WebhookService,
     WebhookDeliveryExecutor,
+    WebhookPayloadSanitizerService,
     ...(REDIS_ENABLED ? [WebhookProcessor] : []),
     ...(REDIS_ENABLED
       ? []

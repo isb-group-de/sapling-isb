@@ -5,13 +5,14 @@ import type {
   SaplingFormWidthSpan,
   SaplingGenericReferenceMetadata,
   SaplingInlineCollectionMetadata,
-  SaplingKanbanMetadata,
   SaplingOption,
-  SaplingNumericMetadata,
   SaplingReferenceDependency,
   SaplingReferenceTemplateMapping,
   SaplingReferenceTemplateMetadata,
 } from './entity-metadata.types';
+
+export { SaplingNumeric, getSaplingNumeric } from './entity-numeric.decorator';
+export { SaplingKanban, getSaplingKanban } from './entity-kanban.decorator';
 
 export type {
   SaplingFormLayoutMetadata,
@@ -35,34 +36,6 @@ const SAPLING_FORM_LAYOUT_METADATA_KEY = 'sapling:formLayout';
 const SAPLING_GENERIC_REFERENCE_METADATA_KEY = 'sapling:genericReference';
 const SAPLING_REFERENCE_TEMPLATE_METADATA_KEY = 'sapling:referenceTemplate';
 const SAPLING_INLINE_COLLECTION_METADATA_KEY = 'sapling:inlineCollection';
-const SAPLING_KANBAN_METADATA_KEY = 'sapling:kanban';
-const SAPLING_NUMERIC_METADATA_KEY = 'sapling:numeric';
-
-export function SaplingNumeric(metadata: SaplingNumericMetadata) {
-  if (!Number.isFinite(metadata.step) || metadata.step <= 0) {
-    throw new Error('SaplingNumeric step must be a finite positive number.');
-  }
-  return function (target: object, propertyKey: string | symbol) {
-    Reflect.defineMetadata(
-      SAPLING_NUMERIC_METADATA_KEY,
-      { step: metadata.step },
-      target,
-      propertyKey,
-    );
-  };
-}
-
-export function getSaplingNumeric(
-  target: object,
-  propertyKey: string | symbol,
-): SaplingNumericMetadata | null {
-  return (Reflect.getMetadata(
-    SAPLING_NUMERIC_METADATA_KEY,
-    target,
-    propertyKey,
-  ) ?? null) as SaplingNumericMetadata | null;
-}
-
 /**
  * @file entity.decorator.ts
  * @version     1.0
@@ -363,45 +336,6 @@ export function SaplingInlineCollection(
   };
 }
 
-export function SaplingKanban(metadata: SaplingKanbanMetadata) {
-  return function (target: object, propertyKey: string | symbol) {
-    Reflect.defineMetadata(
-      SAPLING_KANBAN_METADATA_KEY,
-      {
-        columnField: metadata.columnField.trim(),
-        scopeOpenField: metadata.scopeOpenField?.trim() || undefined,
-        scopeOpenValue:
-          typeof metadata.scopeOpenValue === 'boolean'
-            ? metadata.scopeOpenValue
-            : undefined,
-        recordScopeOpenField:
-          metadata.recordScopeOpenField?.trim() || undefined,
-        recordScopeOpenValue:
-          typeof metadata.recordScopeOpenValue === 'boolean'
-            ? metadata.recordScopeOpenValue
-            : undefined,
-        cardSubtitleFields: normalizeKanbanFieldList(
-          metadata.cardSubtitleFields,
-        ),
-        cardMetaFields: normalizeKanbanFieldList(metadata.cardMetaFields),
-        cardFooterFields: normalizeKanbanFieldList(metadata.cardFooterFields),
-        columnDescriptionField:
-          metadata.columnDescriptionField?.trim() || undefined,
-      } satisfies SaplingKanbanMetadata,
-      target,
-      propertyKey,
-    );
-  };
-}
-
-function normalizeKanbanFieldList(fields?: string[]): string[] | undefined {
-  const normalizedFields = Array.isArray(fields)
-    ? fields.map((field) => field.trim()).filter(Boolean)
-    : [];
-
-  return normalizedFields.length > 0 ? normalizedFields : undefined;
-}
-
 /**
  * Checks if a specific Sapling option is present on a property.
  *
@@ -617,53 +551,6 @@ export function getSaplingInlineCollection(
     sourceEntityField:
       typeof metadata.sourceEntityField === 'string'
         ? metadata.sourceEntityField.trim()
-        : undefined,
-  };
-}
-
-export function getSaplingKanban(
-  target: object,
-  propertyKey: string | symbol,
-): SaplingKanbanMetadata | null {
-  const metadata = Reflect.getMetadata(
-    SAPLING_KANBAN_METADATA_KEY,
-    target,
-    propertyKey,
-  ) as Partial<SaplingKanbanMetadata> | null;
-
-  if (!metadata || typeof metadata.columnField !== 'string') {
-    return null;
-  }
-
-  const columnField = metadata.columnField.trim();
-  if (!columnField) {
-    return null;
-  }
-
-  return {
-    columnField,
-    scopeOpenField:
-      typeof metadata.scopeOpenField === 'string'
-        ? metadata.scopeOpenField.trim() || undefined
-        : undefined,
-    scopeOpenValue:
-      typeof metadata.scopeOpenValue === 'boolean'
-        ? metadata.scopeOpenValue
-        : undefined,
-    recordScopeOpenField:
-      typeof metadata.recordScopeOpenField === 'string'
-        ? metadata.recordScopeOpenField.trim() || undefined
-        : undefined,
-    recordScopeOpenValue:
-      typeof metadata.recordScopeOpenValue === 'boolean'
-        ? metadata.recordScopeOpenValue
-        : undefined,
-    cardSubtitleFields: normalizeKanbanFieldList(metadata.cardSubtitleFields),
-    cardMetaFields: normalizeKanbanFieldList(metadata.cardMetaFields),
-    cardFooterFields: normalizeKanbanFieldList(metadata.cardFooterFields),
-    columnDescriptionField:
-      typeof metadata.columnDescriptionField === 'string'
-        ? metadata.columnDescriptionField.trim() || undefined
         : undefined,
   };
 }

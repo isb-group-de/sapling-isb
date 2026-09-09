@@ -52,6 +52,7 @@ import {
 import { CreateAiChatMessageDto } from './dto/chat.dto';
 import { McpService } from './mcp.service';
 import { assertChatImageSupport } from './ai-chat-images.utils';
+import { completeAiChatSessionResponse } from './ai-chat-session-response.utils';
 
 @Injectable()
 export class AiChatStreamService {
@@ -318,7 +319,7 @@ export class AiChatStreamService {
           assistantMessage.content = inlineToolExecution.content;
           assistantMessage.status = 'completed';
           completeProgress(progress, 'completed');
-          this.completeSessionResponse(session);
+          completeAiChatSessionResponse(session);
           assistantMessage.toolCalls = [inlineToolTrace];
           const usagePayload = buildChatUsagePayload(
             runtimeTarget.provider.handle,
@@ -495,7 +496,7 @@ export class AiChatStreamService {
 
         assistantMessage.status = 'completed';
         completeProgress(progress, 'completed');
-        this.completeSessionResponse(session);
+        completeAiChatSessionResponse(session);
         const navigationLinks = buildNavigationLinks(streamResult.toolCalls);
         const sources = this.agentRunLifecycle.buildSources(
           streamResult.toolCalls,
@@ -564,7 +565,7 @@ export class AiChatStreamService {
         assistantMessage.status = interrupted ? 'interrupted' : 'failed';
         const progress = getProgress(assistantMessage);
         completeProgress(progress, interrupted ? 'interrupted' : 'failed');
-        this.completeSessionResponse(session);
+        completeAiChatSessionResponse(session);
         if (run) {
           this.agentRunLifecycle.completeRun(run, {
             status: interrupted ? 'cancelled' : 'failed',
@@ -591,12 +592,5 @@ export class AiChatStreamService {
         return { session, userMessage, assistantMessage };
       }
     });
-  }
-
-  private completeSessionResponse(session: AiChatSessionItem): void {
-    const completedAt = new Date();
-    session.responseStatus = 'idle';
-    session.responseActivityAt = completedAt;
-    session.lastResponseAt = completedAt;
   }
 }

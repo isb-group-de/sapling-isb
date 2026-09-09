@@ -59,7 +59,7 @@
         v-for="intervalMinutes in intervals"
         :key="intervalMinutes"
         prepend-icon="mdi-timer-outline"
-        :title="getIntervalLabel(intervalMinutes)"
+        :title="getTableRefreshIntervalLabel(intervalMinutes, t)"
         :active="modelValue === intervalMinutes"
         @click="emit('update:modelValue', intervalMinutes)"
       >
@@ -78,6 +78,7 @@ import {
   SAPLING_TABLE_AUTO_REFRESH_INTERVALS,
   type SaplingTableAutoRefreshInterval,
 } from '@/composables/table/useSaplingTableAutoRefresh'
+import { getTableRefreshIntervalLabel } from './saplingTableRefreshLabel'
 
 const props = defineProps<{
   refreshButtonLabel: string
@@ -96,7 +97,7 @@ const buttonTitle = computed(() =>
   props.modelValue === null
     ? props.refreshButtonLabel
     : [
-        `${props.refreshButtonLabel}: ${getIntervalLabel(props.modelValue)}`,
+        `${props.refreshButtonLabel}: ${getTableRefreshIntervalLabel(props.modelValue, t)}`,
         props.secondsUntilRefresh === null
           ? null
           : t('global.nextRefreshInSeconds', { count: props.secondsUntilRefresh }),
@@ -104,10 +105,4 @@ const buttonTitle = computed(() =>
         .filter(Boolean)
         .join(' · '),
 )
-
-function getIntervalLabel(intervalMinutes: SaplingTableAutoRefreshInterval): string {
-  return intervalMinutes === 1
-    ? t('global.refreshEveryMinute')
-    : t('global.refreshEveryMinutes', { count: intervalMinutes })
-}
 </script>

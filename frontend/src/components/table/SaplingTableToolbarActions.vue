@@ -157,7 +157,7 @@
             v-for="intervalMinutes in refreshIntervals"
             :key="intervalMinutes"
             prepend-icon="mdi-timer-outline"
-            :title="getRefreshIntervalLabel(intervalMinutes)"
+            :title="getTableRefreshIntervalLabel(intervalMinutes, t)"
             :active="autoRefreshIntervalMinutes === intervalMinutes"
             @click="setMobileRefreshInterval(intervalMinutes)"
           >
@@ -534,16 +534,14 @@ import { computed } from 'vue'
 import { useCurrentPersonStore } from '@/stores/currentPersonStore'
 import { openAutomationInspector } from '@/components/automation/automationInspector'
 import { useI18n } from 'vue-i18n'
-import {
-  SAPLING_TABLE_AUTO_REFRESH_INTERVALS,
-  type SaplingTableAutoRefreshInterval,
-} from '@/composables/table/useSaplingTableAutoRefresh'
+import { SAPLING_TABLE_AUTO_REFRESH_INTERVALS } from '@/composables/table/useSaplingTableAutoRefresh'
 import SaplingTableRefreshMenu from './SaplingTableRefreshMenu.vue'
 import { useSaplingTableMobileMenu } from './useSaplingTableMobileMenu'
 import type {
   SaplingTableToolbarActionsEmit,
   SaplingTableToolbarActionsProps,
 } from './saplingTableToolbar.types'
+import { getTableRefreshIntervalLabel } from './saplingTableRefreshLabel'
 
 const props = defineProps<SaplingTableToolbarActionsProps>()
 const emit = defineEmits<SaplingTableToolbarActionsEmit>()
@@ -590,11 +588,6 @@ const {
   setRefreshInterval: (value) => emit('update:autoRefreshIntervalMinutes', value),
 })
 
-function getRefreshIntervalLabel(intervalMinutes: SaplingTableAutoRefreshInterval): string {
-  return intervalMinutes === 1
-    ? t('global.refreshEveryMinute')
-    : t('global.refreshEveryMinutes', { count: intervalMinutes })
-}
 function openMobileAutomations() {
   mobileMenuOpen.value = false
   if (props.entityHandle) openAutomationInspector(props.entityHandle)

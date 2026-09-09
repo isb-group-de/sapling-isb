@@ -25,8 +25,9 @@ surface components before adding local CSS.
   surfaces, truncation, visibility, shortcut keys, and compact helpers
 - `SaplingSurfaces.css` and `SaplingSurfacePatterns.css`: shared layout surfaces,
   cards, metrics, empty states, detail grids, and reusable panel primitives
-- `SaplingFrameworkAppearance.css`: light/dark appearance variables, glass,
-  tilt, performance states, background blobs, and Vuetify appearance chrome
+- `SaplingFrameworkAppearance.css` and `SaplingFrameworkAppearanceEffects.css`:
+  light/dark appearance variables, glass, tilt, performance states, scrollbar
+  chrome, background motion, and Vuetify appearance chrome
 - `SaplingFrameworkActions.css`: action bars, action stacks, toolbar groups,
   button clusters, and semantic button geometry
 - `SaplingFrameworkCalendar.css`, `SaplingFrameworkCalendarEvents.css`, and

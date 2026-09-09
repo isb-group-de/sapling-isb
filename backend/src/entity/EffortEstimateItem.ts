@@ -18,10 +18,12 @@ import {
   Sapling,
   SaplingDependsOn,
   SaplingForm,
-  SaplingRelatedRecords,
-  SaplingReferenceCreate,
   SaplingReferenceTemplate,
 } from './global/entity.decorator';
+import {
+  SaplingReferenceCreate,
+  SaplingRelatedRecords,
+} from './global/entity-reference-actions.decorator';
 
 @Entity()
 export class EffortEstimateItem {
@@ -257,7 +259,7 @@ export class EffortEstimateItem {
     width: 2,
     visible: true,
     tableOrder: 300,
-    tableVisible: false,
+    tableVisible: true,
     mobileOrder: 300,
     mobileVisible: false,
   })
@@ -277,7 +279,7 @@ export class EffortEstimateItem {
     width: 2,
     visible: false,
     tableOrder: 301,
-    tableVisible: false,
+    tableVisible: true,
     mobileOrder: 301,
     mobileVisible: false,
   })
@@ -498,7 +500,7 @@ export class EffortEstimateItem {
     type: () => EffortEstimatePositionItem,
     isArray: true,
   })
-  @OneToMany(() => EffortEstimatePositionItem, (position) => position.estimate)
+  @OneToMany(() => EffortEstimatePositionItem, 'estimate')
   positions: Collection<EffortEstimatePositionItem> =
     new Collection<EffortEstimatePositionItem>(this);
 
@@ -513,11 +515,11 @@ export class EffortEstimateItem {
   updatedAt?: Date = new Date();
   @ApiPropertyOptional({ type: () => EventItem, isArray: true })
   @SaplingRelatedRecords({ paths: ['internalCase.effortEstimate'] })
-  @OneToMany(() => EventItem, (item) => item.effortEstimate)
+  @OneToMany(() => EventItem, 'effortEstimate')
   events: Collection<EventItem> = new Collection<EventItem>(this);
 
   @ApiPropertyOptional({ type: () => InternalCaseItem, isArray: true })
-  @OneToMany(() => InternalCaseItem, (item) => item.effortEstimate)
+  @OneToMany(() => InternalCaseItem, 'effortEstimate')
   internalCases: Collection<InternalCaseItem> =
     new Collection<InternalCaseItem>(this);
 }

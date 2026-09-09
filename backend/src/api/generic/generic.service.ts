@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Optional } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import { EntityManager } from '@mikro-orm/core';
 import { TemplateService } from '../template/template.service';
 import { PersonItem } from '../../entity/PersonItem';
@@ -27,23 +27,13 @@ import {
   GenericEntityMutationService,
   type GenericPostCommitTask,
 } from './generic-entity-mutation.service';
-import {
-  extractImportHandle,
-  getImportErrorMessage,
-  hasImportableRowValues,
-  normalizeImportRow,
-  omitImportHandle,
-} from './generic-import.util';
 import { GenericChangeLogService } from './generic-change-log.service';
 import {
   GenericUpdateConflictService,
   type GenericUpdateConcurrencyOptions,
 } from './generic-update-conflict.service';
 import { EmailAutomationService } from '../mail/email-automation.service';
-import type {
-  GenericImportResponse,
-  GenericImportRowResult,
-} from './generic-import.util';
+import type { GenericImportResponse } from './generic-import.util';
 import { FieldPermissionService } from '../current/field-permission.service';
 import { GenericBulkMutationService } from './generic-bulk-mutation.service';
 import { GenericDeleteService } from './generic-delete.service';
@@ -56,11 +46,11 @@ import type {
   GenericBulkUpdateResponseDto,
 } from './dto/bulk-update.dto';
 import { AutomationReferenceResolverService } from '../automation/automation-reference-resolver.service';
-import type {
-  AutomationAssignment,
-  AutomationCondition,
-  AutomationPathStep,
-} from '../../entity/FieldAutomationItem';
+import {
+  isAutomationRuleEntity,
+  validateAutomationRuleConfiguration,
+} from './automation-rule-validation.util';
+import { GenericImportRowsService } from './generic-import-rows.service';
 export type { GenericImportResponse } from './generic-import.util';
 export type { GenericUpdateConcurrencyOptions } from './generic-update-conflict.service';
 
@@ -197,6 +187,9 @@ export class GenericService {
         Promise.resolve(this.templateService.getEntityTemplate(entityHandle)),
       assertPayloadAccess: () => Promise.resolve(),
     } as unknown as FieldPermissionService,
+    private readonly genericImportRowsService: GenericImportRowsService = new GenericImportRowsService(
+      fieldPermissions,
+    ),
     private readonly genericBulkMutationService: GenericBulkMutationService = new GenericBulkMutationService(
       em,
       genericEntityMutationService,
@@ -298,81 +291,24 @@ export class GenericService {
     currentUser: PersonItem,
     scriptContext: ScriptServerContext = {},
   ): Promise<GenericImportResponse> {
-    if (!Array.isArray(rows)) {
-      throw new BadRequestException('global.invalidPayload');
-    }
-
-    const template = await this.fieldPermissions.getTemplates(entityHandle);
-    const results: GenericImportRowResult[] = [];
-
-    for (const [index, row] of rows.entries()) {
-      const rowNumber = index + 2;
-
-      if (!hasImportableRowValues(row)) {
-        results.push({ rowNumber, action: 'skipped' });
-        continue;
-      }
-
-      let handle: string | number | null = extractImportHandle(row);
-
-      try {
-        await this.fieldPermissions.assertPayloadAccess(
-          currentUser,
-          entityHandle,
-          omitImportHandle(row),
-          handle == null ? 'insert' : 'update',
-          undefined,
-          template,
-        );
-        const payload = normalizeImportRow(template, row);
-        handle = extractImportHandle(payload);
-        const writablePayload = omitImportHandle(payload);
-        if (handle == null) {
-          const created = await this.create(
-            entityHandle,
-            writablePayload,
-            currentUser,
-            scriptContext,
-          );
-          results.push({
-            rowNumber,
-            action: 'created',
-            handle: this.extractEntityHandle(created),
-          });
-        } else {
-          const updated = await this.update(
-            entityHandle,
-            handle,
-            writablePayload,
-            currentUser,
-            [],
-            scriptContext,
-            { resolution: 'overwrite' },
-          );
-          results.push({
-            rowNumber,
-            action: 'updated',
-            handle: this.extractEntityHandle(updated) ?? handle,
-          });
-        }
-      } catch (error) {
-        results.push({
-          rowNumber,
-          action: 'failed',
+    return this.genericImportRowsService.execute(
+      entityHandle,
+      rows,
+      currentUser,
+      scriptContext,
+      (targetEntity, data, user, context) =>
+        this.create(targetEntity, data, user, context),
+      (targetEntity, handle, data, user, relations, context, concurrency) =>
+        this.update(
+          targetEntity,
           handle,
-          message: getImportErrorMessage(error),
-        });
-      }
-    }
-
-    return {
-      totalRows: rows.length,
-      created: results.filter((result) => result.action === 'created').length,
-      updated: results.filter((result) => result.action === 'updated').length,
-      skipped: results.filter((result) => result.action === 'skipped').length,
-      failed: results.filter((result) => result.action === 'failed').length,
-      rows: results,
-    };
+          data,
+          user,
+          relations,
+          context,
+          concurrency,
+        ),
+    );
   }
   // #endregion
 
@@ -426,7 +362,11 @@ export class GenericService {
     currentUser: PersonItem,
     scriptContext: ScriptServerContext = {},
   ): Promise<object> {
-    this.validateAutomationRule(entityHandle, data);
+    validateAutomationRuleConfiguration(
+      this.automationPaths,
+      entityHandle,
+      data,
+    );
     return this.runAtomic(scriptContext, (transactionalContext) =>
       this.genericEntityMutationService.create(
         entityHandle,
@@ -610,60 +550,13 @@ export class GenericService {
     handle: string | number,
     data: Record<string, unknown>,
   ): Promise<void> {
-    if (!this.isAutomationRule(entityHandle)) return;
+    if (!isAutomationRuleEntity(entityHandle)) return;
     const entityClass = this.genericQueryService.getEntityClass(entityHandle);
     const current = await this.em.findOne(entityClass, { handle });
-    this.validateAutomationRule(entityHandle, {
+    validateAutomationRuleConfiguration(this.automationPaths, entityHandle, {
       ...(current ?? {}),
       ...data,
     });
-  }
-
-  private validateAutomationRule(
-    entityHandle: string,
-    data: Record<string, unknown>,
-  ): void {
-    if (!this.automationPaths || !this.isAutomationRule(entityHandle)) return;
-    const source = this.referenceHandle(data.sourceEntity);
-    const target = this.referenceHandle(
-      entityHandle === 'fieldAutomation' ? data.targetEntity : data.entity,
-    );
-    if (!source || !target) return;
-    const path = Array.isArray(data.referencePath)
-      ? (data.referencePath as AutomationPathStep[])
-      : [];
-    const conditions = Array.isArray(data.conditions)
-      ? (data.conditions as AutomationCondition[])
-      : [];
-    const assignments = Array.isArray(data.assignments)
-      ? (data.assignments as AutomationAssignment[])
-      : [];
-    this.automationPaths.validate(source, target, path);
-    this.automationPaths.validateConfiguration(
-      source,
-      target,
-      path,
-      conditions,
-      entityHandle === 'fieldAutomation' ? assignments : [],
-    );
-  }
-
-  private referenceHandle(value: unknown): string {
-    if (typeof value === 'string') return value;
-    if (!value || typeof value !== 'object') return '';
-    const handle = (value as { handle?: unknown }).handle;
-    return typeof handle === 'string' || typeof handle === 'number'
-      ? String(handle)
-      : '';
-  }
-
-  private isAutomationRule(entityHandle: string): boolean {
-    return [
-      'fieldAutomation',
-      'inboxSubscription',
-      'teamsSubscription',
-      'webhookSubscription',
-    ].includes(entityHandle);
   }
 
   private async runAtomic<T>(
@@ -688,16 +581,6 @@ export class GenericService {
     return result;
   }
   // #endregion
-
-  private extractEntityHandle(item: object): string | number | null {
-    const handle = (item as { handle?: unknown }).handle;
-
-    if (typeof handle === 'string' || typeof handle === 'number') {
-      return handle;
-    }
-
-    return null;
-  }
 
   // #endregion
 }

@@ -18,10 +18,10 @@ import {
   Sapling,
   SaplingDependsOn,
   SaplingForm,
-  SaplingReferenceCreate,
   SaplingReferenceTemplate,
   SaplingKanban,
 } from './global/entity.decorator';
+import { SaplingReferenceCreate } from './global/entity-reference-actions.decorator';
 
 @Entity()
 export class InternalCaseItem {
@@ -531,6 +531,6 @@ export class InternalCaseItem {
   effortEstimate?: Rel<EffortEstimateItem>;
 
   @ApiPropertyOptional({ type: () => EventItem, isArray: true })
-  @OneToMany(() => EventItem, (item) => item.internalCase)
+  @OneToMany(() => EventItem, 'internalCase')
   events: Collection<EventItem> = new Collection<EventItem>(this);
 }
