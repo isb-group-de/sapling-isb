@@ -563,6 +563,11 @@ export class TicketItem {
     mobileOrder: 900,
     mobileVisible: false,
   })
+  @SaplingDependsOn({
+    parentField: 'creatorCompany',
+    targetField: 'creatorCompany',
+    clearOnParentChange: true,
+  })
   @SaplingReferenceCreate({
     defaults: {
       creatorCompany: 'creatorCompany',

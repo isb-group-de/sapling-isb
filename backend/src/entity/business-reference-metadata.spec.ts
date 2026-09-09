@@ -1,4 +1,7 @@
-import { getSaplingReferenceTemplate } from './global/entity.decorator';
+import {
+  getSaplingReferenceDependency,
+  getSaplingReferenceTemplate,
+} from './global/entity.decorator';
 import {
   getSaplingReferenceCreate,
   getSaplingRelatedRecords,
@@ -10,6 +13,32 @@ import { InternalCaseItem } from './InternalCaseItem';
 import { SalesOpportunityItem } from './SalesOpportunityItem';
 
 describe('business reference actions', () => {
+  it.each([
+    [TicketItem, 'salesOpportunity', 'creatorCompany', 'creatorCompany'],
+    [
+      EffortEstimateItem,
+      'salesOpportunity',
+      'creatorCompany',
+      'creatorCompany',
+    ],
+    [EffortEstimateItem, 'ticket', 'creatorCompany', 'creatorCompany'],
+    [InternalCaseItem, 'salesOpportunity', 'customerCompany', 'creatorCompany'],
+    [InternalCaseItem, 'ticket', 'customerCompany', 'creatorCompany'],
+    [InternalCaseItem, 'effortEstimate', 'customerCompany', 'creatorCompany'],
+    [EventItem, 'salesOpportunity', 'creatorCompany', 'creatorCompany'],
+    [EventItem, 'ticket', 'creatorCompany', 'creatorCompany'],
+    [EventItem, 'effortEstimate', 'creatorCompany', 'creatorCompany'],
+    [EventItem, 'internalCase', 'creatorCompany', 'customerCompany'],
+  ] as const)(
+    'filters %p.%s through the existing customer dependency',
+    (model, field, parentField, targetField) => {
+      expect(getSaplingReferenceDependency(model.prototype, field)).toEqual({
+        parentField,
+        targetField,
+        clearOnParentChange: true,
+      });
+    },
+  );
   it.each([TicketItem, EventItem, EffortEstimateItem, SalesOpportunityItem])(
     'opts business contacts into creation on %p',
     (model) => {

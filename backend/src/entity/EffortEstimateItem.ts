@@ -427,6 +427,11 @@ export class EffortEstimateItem {
     mobileOrder: 500,
     mobileVisible: false,
   })
+  @SaplingDependsOn({
+    parentField: 'creatorCompany',
+    targetField: 'creatorCompany',
+    clearOnParentChange: true,
+  })
   @SaplingReferenceCreate({
     defaults: {
       creatorCompany: 'creatorCompany',
@@ -463,6 +468,11 @@ export class EffortEstimateItem {
     tableVisible: false,
     mobileOrder: 600,
     mobileVisible: false,
+  })
+  @SaplingDependsOn({
+    parentField: 'creatorCompany',
+    targetField: 'creatorCompany',
+    clearOnParentChange: true,
   })
   @SaplingReferenceCreate({
     defaults: {

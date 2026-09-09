@@ -397,6 +397,11 @@ export class InternalCaseItem {
     mobileOrder: 500,
     mobileVisible: false,
   })
+  @SaplingDependsOn({
+    parentField: 'customerCompany',
+    targetField: 'creatorCompany',
+    clearOnParentChange: true,
+  })
   @SaplingReferenceCreate({
     defaults: {
       creatorCompany: 'customerCompany',
@@ -433,6 +438,11 @@ export class InternalCaseItem {
     tableVisible: false,
     mobileOrder: 600,
     mobileVisible: false,
+  })
+  @SaplingDependsOn({
+    parentField: 'customerCompany',
+    targetField: 'creatorCompany',
+    clearOnParentChange: true,
   })
   @SaplingReferenceCreate({
     defaults: {
@@ -487,6 +497,11 @@ export class InternalCaseItem {
     width: 2,
     visible: true,
     tableVisible: false,
+  })
+  @SaplingDependsOn({
+    parentField: 'customerCompany',
+    targetField: 'creatorCompany',
+    clearOnParentChange: true,
   })
   @SaplingReferenceCreate({
     defaults: {

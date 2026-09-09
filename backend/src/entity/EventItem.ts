@@ -653,6 +653,11 @@ export class EventItem {
     mobileOrder: 600,
     mobileVisible: false,
   })
+  @SaplingDependsOn({
+    parentField: 'creatorCompany',
+    targetField: 'creatorCompany',
+    clearOnParentChange: true,
+  })
   @SaplingReferenceCreate({
     defaults: {
       creatorCompany: 'creatorCompany',
@@ -708,6 +713,11 @@ export class EventItem {
     tableVisible: false,
     mobileOrder: 700,
     mobileVisible: false,
+  })
+  @SaplingDependsOn({
+    parentField: 'creatorCompany',
+    targetField: 'creatorCompany',
+    clearOnParentChange: true,
   })
   @SaplingReferenceCreate({
     defaults: {
@@ -826,6 +836,11 @@ export class EventItem {
     visible: true,
     tableVisible: false,
   })
+  @SaplingDependsOn({
+    parentField: 'creatorCompany',
+    targetField: 'customerCompany',
+    clearOnParentChange: true,
+  })
   @SaplingReferenceCreate({
     defaults: {
       customerCompany: 'creatorCompany',
@@ -880,6 +895,11 @@ export class EventItem {
     width: 2,
     visible: true,
     tableVisible: false,
+  })
+  @SaplingDependsOn({
+    parentField: 'creatorCompany',
+    targetField: 'creatorCompany',
+    clearOnParentChange: true,
   })
   @SaplingReferenceCreate({
     defaults: {

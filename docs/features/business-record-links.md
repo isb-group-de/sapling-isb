@@ -20,6 +20,14 @@ delete appointments or work records. The new links are introduced by
 
 ## Context suggestions and validation
 
+Business references declare `@SaplingDependsOn` against the customer company,
+using the same generic filtering, parent derivation, single-result selection,
+and clearing on company changes as person and contract references. Internal
+cases map their `customerCompany` field to the other entities' `creatorCompany`.
+Contact people are deliberately not the dependency: different contacts at the
+same company remain valid. The decorator filters by company; consistency of
+additional ticket/opportunity/estimate links remains a separate save validation.
+
 `@SaplingReferenceTemplate` mappings with `overwrite: false` suggest customer
 and business context into empty, writable fields when selecting a reference or
 creating a child from a relation tab. Picker rows are reloaded with readable
