@@ -35,6 +35,16 @@ type AttachmentItem = {
   createdAt?: string | null
 }
 
+function cloneDraft(value: MailDraft): MailDraft {
+  return {
+    ...value,
+    to: [...value.to],
+    cc: [...value.cc],
+    bcc: [...value.bcc],
+    attachmentHandles: [...value.attachmentHandles],
+  }
+}
+
 export function useSaplingDialogMailEditor() {
   const { isOpen, context, closeMailDialog: closeDialog } = useSaplingMailDialog()
   const { pushMessage } = useSaplingMessageCenter()
@@ -87,6 +97,7 @@ export function useSaplingDialogMailEditor() {
   const isPreviewLoading = ref(false)
   const isSending = ref(false)
   let initializationSequence = 0
+  let initialDraft: MailDraft | null = null
   const editorReady = ref(false)
   const { draftStatus, openDraft, saveDraft, clearDraft, detachDraft, captureDraftCleanup } =
     useMailDraft()
@@ -294,6 +305,7 @@ export function useSaplingDialogMailEditor() {
       if (sequence !== initializationSequence) {
         return
       }
+      initialDraft = cloneDraft(draft.value)
       if (!currentPersonStore.isImpersonating && currentPersonStore.person?.handle != null) {
         const saved = openDraft([
           currentPersonStore.person.handle,
@@ -313,15 +325,15 @@ export function useSaplingDialogMailEditor() {
   function restoreDraft(saved: MailDraft) {
     subject.value = saved.subject
     bodyMarkdown.value = saved.bodyMarkdown
-    toRecipients.value = saved.to
-    ccRecipients.value = saved.cc
-    bccRecipients.value = saved.bcc
+    toRecipients.value = [...saved.to]
+    ccRecipients.value = [...saved.cc]
+    bccRecipients.value = [...saved.bcc]
     // Preserve the recorded sender; the send API rechecks its authorization.
     selectedSenderEmail.value = saved.senderEmail
     templateHandle.value = templates.value.some((item) => item.handle === saved.templateHandle)
       ? saved.templateHandle
       : null
-    attachmentHandles.value = saved.attachmentHandles
+    attachmentHandles.value = [...saved.attachmentHandles]
     signatureRotation.value = saved.signatureRotation
     signatureHandle.value = saved.signatureHandle
     resolvedSignatureHandle.value = null
@@ -333,7 +345,21 @@ export function useSaplingDialogMailEditor() {
     closeDialog()
   }
 
-  function discardDraft() {
+  async function resetDraft() {
+    if (isSending.value || !initialDraft) return
+    const sequence = initializationSequence
+    editorReady.value = false
+    cancelPendingSend()
+    reviewedPayload = null
+    clearDraft()
+    restoreDraft(initialDraft)
+    await refreshPreview()
+    if (sequence === initializationSequence && isOpen.value) {
+      editorReady.value = true
+    }
+  }
+
+  function resetDraftAndClose() {
     if (isSending.value) return
     editorReady.value = false
     clearDraft()
@@ -358,6 +384,7 @@ export function useSaplingDialogMailEditor() {
   }
 
   function resetState() {
+    initialDraft = null
     failedUploads.value = []
     resetSignatures()
     previewSequence++
@@ -790,7 +817,8 @@ export function useSaplingDialogMailEditor() {
 
   return {
     draftStatus,
-    discardDraft,
+    resetDraft,
+    resetDraftAndClose,
     composerLocked,
     senderSummary,
     canUpload,

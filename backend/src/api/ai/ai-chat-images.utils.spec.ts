@@ -22,7 +22,10 @@ describe('chat image inputs', () => {
       'ai.chatVisionRequired',
     );
     expect(() =>
-      assertChatImageSupport(Array(6).fill({ purpose: 'vision' }), true),
+      assertChatImageSupport(
+        Array(6).fill({ purpose: 'vision' }) as never,
+        true,
+      ),
     ).toThrow('ai.chatImageCountLimit');
     expect(() => assertChatImageSupport(images, true)).not.toThrow();
     expect(() =>

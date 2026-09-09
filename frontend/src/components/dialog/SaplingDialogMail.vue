@@ -97,7 +97,8 @@
                   !signatures.some((item) => item.isActive && item.useInRotation)
                 "
                 :has-item-handle="context?.itemHandle != null"
-                @discard-draft="discardDraft"
+                @reset-draft="resetDraft"
+                @reset-draft-and-close="resetDraftAndClose"
                 @confirm-send="confirmSend"
                 @continue-editing="cancelPendingSend"
                 :placeholder-groups="placeholderGroups"
@@ -166,7 +167,8 @@ import { useSaplingDialogMailEditor } from '@/composables/dialog/useSaplingDialo
 
 const {
   draftStatus,
-  discardDraft,
+  resetDraft,
+  resetDraftAndClose,
   composerLocked,
   senderSummary,
   canUpload,

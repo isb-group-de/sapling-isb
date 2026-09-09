@@ -44,7 +44,8 @@
         :has-item-handle="hasItemHandle"
         :composer-locked="composerLocked"
         :translate="translate"
-        @discard-draft="$emit('discard-draft')"
+        @reset-draft="$emit('reset-draft')"
+        @reset-draft-and-close="$emit('reset-draft-and-close')"
         @confirm-send="$emit('confirm-send')"
         @continue-editing="$emit('continue-editing')"
       />
@@ -232,7 +233,8 @@ watch(
 )
 
 const emit = defineEmits<{
-  (event: 'discard-draft'): void
+  (event: 'reset-draft'): void
+  (event: 'reset-draft-and-close'): void
   (event: 'confirm-send'): void
   (event: 'continue-editing'): void
   (event: 'update:insertTarget', value: InsertTarget): void

@@ -89,6 +89,7 @@ export class GoogleCalendarService extends GoogleCalendarOperations {
     occurrenceStart?: string,
     _timeZone?: string,
   ) {
+    void _timeZone;
     if (typeof session.handle !== 'number') {
       throw new Error('calendar.sessionHandleRequired');
     }

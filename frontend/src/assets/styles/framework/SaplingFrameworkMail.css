@@ -90,10 +90,9 @@
   align-content: start;
 }
 
-.sapling-mail-dialog__section,
 .sapling-mail-dialog__information {
   display: grid;
-  gap: var(--sapling-gap-lg);
+  gap: var(--sapling-gap-md);
   min-width: 0;
   overflow-wrap: anywhere;
 }
@@ -105,11 +104,31 @@
   background: var(--sapling-surface-fill-soft);
 }
 
-.sapling-mail-dialog__section-title,
-.sapling-mail-dialog__information-row {
-  display: flex;
-  align-items: center;
+.sapling-mail-dialog__notice {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: var(--sapling-gap-md);
+}
+
+.sapling-mail-dialog__notice-icon {
+  margin-top: 0;
+}
+
+.sapling-mail-dialog__notice-content {
+  display: grid;
   gap: var(--sapling-gap-sm);
+  min-width: 0;
+}
+
+.sapling-mail-dialog__notice-content > p,
+.sapling-mail-dialog__notice-content > ul {
+  margin: 0;
+}
+
+.sapling-mail-dialog__section-title {
+  margin: 0;
+  line-height: 1.5;
   font-size: var(--sapling-text-meta-size);
   font-weight: 600;
 }
@@ -144,20 +163,10 @@
   grid-template-columns: minmax(0, 1fr);
 }
 
-.sapling-mail-dialog__information-row {
-  align-items: flex-start;
-  font-weight: 400;
-}
-
 .sapling-mail-dialog__information-actions {
   display: flex;
   flex-wrap: wrap;
   gap: var(--sapling-gap-sm);
-}
-
-.sapling-mail-dialog__secondary-action {
-  justify-self: start;
-  max-width: 100%;
 }
 
 .sapling-mail-dialog__sender {

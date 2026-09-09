@@ -32,6 +32,34 @@ function isTableSeparatorLine(line: string): boolean {
   return cells.length > 0 && cells.every((cell) => /^:?-{3,}:?$/.test(cell));
 }
 
+type TableColumnAlignment = 'left' | 'center' | 'right';
+
+const EMAIL_TABLE_STYLE =
+  'border-collapse: collapse; border-spacing: 0; width: 100%; margin: 0 0 16px;';
+const EMAIL_TABLE_CELL_STYLE =
+  'padding: 8px 10px; border: 1px solid #d1d5db; vertical-align: top; overflow-wrap: break-word; word-break: normal;';
+const EMAIL_TABLE_HEADER_STYLE = 'background-color: #f3f4f6; font-weight: 600;';
+
+function getTableColumnAlignments(line: string): TableColumnAlignment[] {
+  return tokenizeTableRow(line).map((cell) => {
+    const leftAligned = cell.startsWith(':');
+    const rightAligned = cell.endsWith(':');
+
+    if (leftAligned && rightAligned) return 'center';
+    if (rightAligned) return 'right';
+    return 'left';
+  });
+}
+
+function renderTableCell(
+  tagName: 'th' | 'td',
+  content: string,
+  alignment: TableColumnAlignment,
+): string {
+  const headerStyle = tagName === 'th' ? ` ${EMAIL_TABLE_HEADER_STYLE}` : '';
+  return `<${tagName} align="${alignment}" style="${EMAIL_TABLE_CELL_STYLE}${headerStyle} text-align: ${alignment};">${renderInlineMarkdown(content)}</${tagName}>`;
+}
+
 function isHorizontalRuleLine(line: string): boolean {
   return /^\s*(?:---+|\*\*\*+|___+)\s*$/.test(line);
 }
@@ -145,6 +173,7 @@ export function renderMarkdownBlocks(markdown: string): string {
     const nextLine = lines[index + 1] ?? '';
     if (currentLine.includes('|') && isTableSeparatorLine(nextLine)) {
       const headerCells = tokenizeTableRow(currentLine);
+      const columnAlignments = getTableColumnAlignments(nextLine);
       const bodyRows: string[][] = [];
 
       index += 2;
@@ -154,18 +183,30 @@ export function renderMarkdownBlocks(markdown: string): string {
       }
 
       const head = `<thead><tr>${headerCells
-        .map((cell) => `<th>${renderInlineMarkdown(cell)}</th>`)
+        .map((cell, cellIndex) =>
+          renderTableCell('th', cell, columnAlignments[cellIndex] ?? 'left'),
+        )
         .join('')}</tr></thead>`;
       const body = bodyRows.length
         ? `<tbody>${bodyRows
             .map(
               (row) =>
-                `<tr>${row.map((cell) => `<td>${renderInlineMarkdown(cell)}</td>`).join('')}</tr>`,
+                `<tr>${row
+                  .map((cell, cellIndex) =>
+                    renderTableCell(
+                      'td',
+                      cell,
+                      columnAlignments[cellIndex] ?? 'left',
+                    ),
+                  )
+                  .join('')}</tr>`,
             )
             .join('')}</tbody>`
         : '';
 
-      html.push(`<table>${head}${body}</table>`);
+      html.push(
+        `<table cellpadding="0" cellspacing="0" style="${EMAIL_TABLE_STYLE}">${head}${body}</table>`,
+      );
       continue;
     }
 

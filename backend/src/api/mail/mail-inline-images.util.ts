@@ -8,7 +8,7 @@ export function normalizeMailImageEmbeds(markdown: string): string {
   return markdown.replace(
     /\{\{sapling-image:(\d+)(?:\|([^}]*))?\}\}/g,
     (_match, handle: string, label: string | undefined) =>
-      `![${(label ?? '').replace(/[\[\]\\\r\n]/g, ' ')}](sapling-document:${handle})`,
+      `![${(label ?? '').replace(/[[\]\\\r\n]/g, ' ')}](sapling-document:${handle})`,
   );
 }
 
@@ -51,7 +51,7 @@ export async function resolveMailInlineImages(
   return {
     bodyHtml: bodyHtml.replace(pattern, '$1cid:sapling-image-$2@sapling$3'),
     attachments: documents.map((document) => ({
-      handle: document.handle!,
+      handle: document.handle,
       filename: document.filename,
       mimetype: document.mimetype,
       filePath: getDocumentStorageFilePath(

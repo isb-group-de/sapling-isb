@@ -68,16 +68,24 @@
         <div class="sapling-file-mail-label">{{ $t('document.content') }}</div>
         <iframe
           v-if="htmlPreviewDoc"
+          ref="htmlPreviewFrame"
           :srcdoc="htmlPreviewDoc"
           class="sapling-file-mail-iframe"
-          sandbox="allow-popups allow-popups-to-escape-sandbox"
+          sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox"
           :title="t('document.preview')"
+          @load="activateMailImagePreview"
         />
         <pre v-else class="sapling-file-mail-text">{{
           mailPreview.bodyText || $t('document.noReadableContent')
         }}</pre>
       </div>
     </div>
+    <SaplingImagePreviewDialog
+      v-if="selectedImage"
+      :src="selectedImage.src"
+      :alt="selectedImage.alt"
+      @close="closeImagePreview"
+    />
   </div>
 </template>
 
@@ -85,10 +93,18 @@
 import DOMPurify from 'dompurify'
 import PostalMime, { type Address, type Email } from 'postal-mime'
 import type { FieldsData } from '@kenjiuno/msgreader'
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { i18n } from '@/i18n'
 import saplingFileMailPreviewStylesHref from '@/assets/styles/components/SaplingFileMailPreview.css?url'
+import {
+  installMailPreviewImageInteractions,
+  type MailPreviewImageSelection,
+} from './saplingFileMailPreviewImages'
+
+const SaplingImagePreviewDialog = defineAsyncComponent(
+  () => import('@/components/common/SaplingImagePreviewDialog.vue'),
+)
 
 type MailAttachmentData = {
   filename: string
@@ -119,6 +135,10 @@ const { locale, t } = useI18n()
 
 const isLoading = ref(false)
 const errorMessage = ref('')
+const htmlPreviewFrame = ref<HTMLIFrameElement | null>(null)
+const selectedImage = ref<MailPreviewImageSelection | null>(null)
+let selectedImageElement: HTMLImageElement | null = null
+let detachMailImagePreview: (() => void) | null = null
 let requestToken = 0
 const mailPreview = ref<MailPreviewData>({
   subject: '',
@@ -158,6 +178,9 @@ const htmlPreviewDoc = computed(() => {
 watch(
   () => props.mailUrl,
   () => {
+    releaseMailImagePreview()
+    selectedImage.value = null
+    selectedImageElement = null
     void loadPreview()
   },
   { immediate: true },
@@ -179,7 +202,37 @@ function resetPreview() {
   }
 }
 
-onBeforeUnmount(releaseAttachmentUrls)
+onBeforeUnmount(() => {
+  releaseMailImagePreview()
+  releaseAttachmentUrls()
+})
+
+function activateMailImagePreview() {
+  releaseMailImagePreview()
+  const previewDocument = htmlPreviewFrame.value?.contentDocument
+  if (!previewDocument) return
+
+  detachMailImagePreview = installMailPreviewImageInteractions(
+    previewDocument,
+    t('document.preview'),
+    (selection, image) => {
+      selectedImageElement = image
+      selectedImage.value = selection
+    },
+  )
+}
+
+async function closeImagePreview() {
+  selectedImage.value = null
+  await nextTick()
+  selectedImageElement?.focus({ preventScroll: true })
+  selectedImageElement = null
+}
+
+function releaseMailImagePreview() {
+  detachMailImagePreview?.()
+  detachMailImagePreview = null
+}
 
 async function loadPreview() {
   const currentToken = ++requestToken

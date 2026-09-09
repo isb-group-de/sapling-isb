@@ -433,7 +433,9 @@
 .sapling-markdown-content td {
   padding: 0.55rem 0.7rem;
   border: 1px solid var(--sapling-surface-border);
+  overflow-wrap: break-word;
   text-align: left;
+  word-break: normal;
 }
 
 .sapling-markdown-content th {

@@ -58,11 +58,19 @@ describe('mail preview and information workspace', () => {
     expect(information.attributes('style') ?? '').not.toContain('display: none')
     expect(information.text()).toContain('mail.draftRestored')
     expect(information.text()).toContain('mail.noRotationSignatures')
-    const discard = information
+    const reset = information
       .findAll('button')
-      .find((button) => button.text() === 'mail.discardDraft')!
-    await discard.trigger('click')
-    expect(wrapper.emitted('discard-draft')).toHaveLength(1)
+      .find((button) => button.text() === 'mail.resetDraft')!
+    const resetAndClose = information
+      .findAll('button')
+      .find((button) => button.text() === 'mail.resetDraftAndClose')!
+    await reset.trigger('click')
+    await resetAndClose.trigger('click')
+    expect(wrapper.emitted('reset-draft')).toHaveLength(1)
+    expect(wrapper.emitted('reset-draft-and-close')).toHaveLength(1)
+    expect(information.findAll('.sapling-mail-dialog__notice')).toHaveLength(2)
+    expect(information.findAll('.sapling-mail-dialog__section-title')).toHaveLength(2)
+    expect(resetAndClose.classes()).toContain('v-btn--variant-outlined')
   })
 
   it('opens send checks automatically and keeps blocking checks unconfirmable', async () => {

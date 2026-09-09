@@ -1,9 +1,44 @@
 [
-  { "entity": "aiProviderModel", "property": "supportsVision", "de": "Unterstützt Bilder (Vision)", "en": "Supports images (Vision)" },
-  { "entity": "aiChat", "property": "attachImage", "de": "Bild anhängen", "en": "Attach image" },
-  { "entity": "aiChat", "property": "attachImageHint", "de": "Bilder auswählen oder mit Strg+V einfügen · maximal 5 Bilder mit je 5 MB", "en": "Select images or paste with Ctrl+V · up to 5 images, 5 MB each" },
-  { "entity": "aiChat", "property": "defaultImagePrompt", "de": "Bitte analysiere die angehängten Bilder.", "en": "Please analyze the attached images." },
-  { "entity": "ai", "property": "chatVisionRequired", "de": "Bitte wähle ein Modell mit aktivierter Vision-Unterstützung, um Bilder in dieser Unterhaltung zu verwenden.", "en": "Please select a model with Vision enabled to use images in this conversation." },
-  { "entity": "ai", "property": "chatImageInvalid", "de": "Bitte lade ein PNG-, JPEG-, GIF- oder WebP-Bild mit maximal 5 MB hoch.", "en": "Please upload a PNG, JPEG, GIF or WebP image no larger than 5 MB." },
-  { "entity": "ai", "property": "chatImageCountLimit", "de": "Pro Nachricht sind maximal 5 Bilder möglich.", "en": "A message can contain at most 5 images." }
+  {
+    "entity": "aiProviderModel",
+    "property": "supportsVision",
+    "de": "Unterstützt Bilder (Vision)",
+    "en": "Supports images (Vision)"
+  },
+  {
+    "entity": "aiChat",
+    "property": "attachImage",
+    "de": "Bild anhängen",
+    "en": "Attach image"
+  },
+  {
+    "entity": "aiChat",
+    "property": "attachImageHint",
+    "de": "Bilder auswählen oder mit Strg+V einfügen · maximal 5 Bilder mit je 5 MB",
+    "en": "Select images or paste with Ctrl+V · up to 5 images, 5 MB each"
+  },
+  {
+    "entity": "aiChat",
+    "property": "defaultImagePrompt",
+    "de": "Bitte analysiere die angehängten Bilder.",
+    "en": "Please analyze the attached images."
+  },
+  {
+    "entity": "ai",
+    "property": "chatVisionRequired",
+    "de": "Bitte wähle ein Modell mit aktivierter Vision-Unterstützung, um Bilder in dieser Unterhaltung zu verwenden.",
+    "en": "Please select a model with Vision enabled to use images in this conversation."
+  },
+  {
+    "entity": "ai",
+    "property": "chatImageInvalid",
+    "de": "Bitte lade ein PNG-, JPEG-, GIF- oder WebP-Bild mit maximal 5 MB hoch.",
+    "en": "Please upload a PNG, JPEG, GIF or WebP image no larger than 5 MB."
+  },
+  {
+    "entity": "ai",
+    "property": "chatImageCountLimit",
+    "de": "Pro Nachricht sind maximal 5 Bilder möglich.",
+    "en": "A message can contain at most 5 images."
+  }
 ]

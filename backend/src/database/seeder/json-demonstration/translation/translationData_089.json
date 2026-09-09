@@ -1,0 +1,20 @@
+[
+  {
+    "entity": "mail",
+    "property": "draftNoticeTitle",
+    "de": "Gespeicherte E-Mail-Vorlage",
+    "en": "Saved email template"
+  },
+  {
+    "entity": "mail",
+    "property": "resetDraft",
+    "de": "Vorlage zurücksetzen",
+    "en": "Reset template"
+  },
+  {
+    "entity": "mail",
+    "property": "resetDraftAndClose",
+    "de": "Vorlage zurücksetzen und schließen",
+    "en": "Reset template and close"
+  }
+]

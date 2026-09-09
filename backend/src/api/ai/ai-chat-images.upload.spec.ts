@@ -28,11 +28,15 @@ describe('chat image uploads', () => {
       persist: jest.fn(),
       flush: jest.fn(async () => {}),
     };
-    const uploadDocument = jest.fn(async (..._args: unknown[]) => document);
+    const uploadDocument = jest.fn(async (...args: unknown[]) => {
+      void args;
+      return document;
+    });
     const analyzeCsv = jest.fn();
-    const findOwnedSession = jest.fn(async (..._args: unknown[]) => ({
-      handle: 7,
-    }));
+    const findOwnedSession = jest.fn(async (...args: unknown[]) => {
+      void args;
+      return { handle: 7 };
+    });
     const service = new AiChatMediaService(
       em as never,
       { uploadDocument } as never,

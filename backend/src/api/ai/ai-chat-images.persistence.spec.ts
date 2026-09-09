@@ -23,7 +23,10 @@ describe('owned image history', () => {
   });
 
   it('reloads images using owned attachment rows and leaves stored context untouched', async () => {
-    const find = jest.fn(async (..._args: unknown[]) => [attachment]);
+    const find = jest.fn(async (...args: unknown[]) => {
+      void args;
+      return [attachment];
+    });
     const service = new AiChatPersistenceService({ find } as never);
     const message = {
       handle: 2,
@@ -47,7 +50,7 @@ describe('owned image history', () => {
       },
       expect.anything(),
     );
-    expect(chatMessageImages.get(history[0]!)).toEqual([
+    expect(chatMessageImages.get(history[0])).toEqual([
       { mimeType: 'image/png', data: png.toString('base64') },
     ]);
     expect(chatMessageImages.get(message)).toBeUndefined();
@@ -68,7 +71,10 @@ describe('owned image history', () => {
     expect(readFile).not.toHaveBeenCalled();
   });
   it('does not resolve a preview belonging to another person', async () => {
-    const findOne = jest.fn(async (..._args: unknown[]) => null);
+    const findOne = jest.fn(async (...args: unknown[]) => {
+      void args;
+      return null;
+    });
     const service = new AiChatPersistenceService({ findOne } as never);
     await expect(service.findOwnedChatImage(9, user)).rejects.toThrow(
       'ai.chatAttachmentNotFound',

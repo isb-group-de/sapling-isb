@@ -366,7 +366,9 @@ describe('MailService facade', () => {
     expect(preview.subject).toBe('Update Launch Plan');
     expect(preview.bodyHtml).toContain('<h1>Launch Plan</h1>');
     expect(preview.bodyHtml).toContain('type="checkbox"');
-    expect(preview.bodyHtml).toContain('<table>');
+    expect(preview.bodyHtml).toContain(
+      '<table cellpadding="0" cellspacing="0"',
+    );
     expect(preview.bodyHtml).toContain(
       '<code class="language-ts">const ready = true;',
     );

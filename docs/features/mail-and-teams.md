@@ -72,6 +72,10 @@ Placeholders use `{{path.to.value}}` syntax. Date fields can be formatted throug
 ```
 
 Markdown is rendered to HTML by the shared renderer. Mail additionally creates a plain-text representation for MIME messages.
+Markdown tables receive their borders, cell spacing, header background, and
+column alignment as inline styles. This keeps the sent result consistent with
+the composer preview in clients such as Outlook, which cannot load Sapling's
+frontend stylesheet.
 
 ## Email Model
 
@@ -522,8 +526,12 @@ When adding a new Teams subscription:
   person, entity, record and initial recipient/subject context. Reopening that
   context restores recipients, sender, content, attachments and signature choices
   after defaults have loaded. They do not synchronize across devices. Impersonation
-  never loads or saves drafts. Successful queuing or explicit discard removes the
-  draft; cancellation and failures preserve it. Storage failures are visible.
+  never loads or saves drafts. The Information tab presents every notice with the
+  same icon, heading, description and optional action layout. A restored draft can
+  be reset to the fully loaded initial composer state while the dialog remains open,
+  or reset and closed in one action. Successful queuing and either reset action
+  remove the browser draft; cancellation and failures preserve it. Storage failures
+  are visible.
 - The text snippet selector inserts an existing active context email template's
   body at the markdown cursor without replacing the subject or existing body.
   Templates remain managed through the existing generic email-template route and
@@ -552,8 +560,9 @@ When adding a new Teams subscription:
   of an already transmitted message: after the timer, the existing delivery queue
   and retry behavior apply. There is no background or scheduled send if the page
   is closed. The chosen sender/shared mailbox remains visible beside Send.
-- New controls disable browser autocomplete. Translation seed 081 adds German and
-  English labels and is applied by the normal seeder deployment.
+- New controls disable browser autocomplete. Translation seed 081 adds the original
+  German and English labels; seed 089 adds the separate reset actions and notice
+  heading. Both are applied by the normal seeder deployment.
 
 Useful targeted commands:
 

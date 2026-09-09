@@ -308,5 +308,10 @@ npm test --prefix backend -- generic-permission.guard.spec.ts --runInBand
 
 For UI changes, manually verify upload from a table context menu, preview a PDF,
 preview both EML and MSG files, download an attachment from each mail preview,
-download a non-PDF file, and send an email with an attached document in a test
-environment.
+open an inline mail image in the shared image preview, download a non-PDF file,
+and send an email with an attached document in a test environment. The mail
+preview constrains images without changing their aspect ratio, even when the
+original message contains inline width and height styles. Inline MIME images
+remain inside the original mail document instead of becoming standalone
+documents; otherwise signatures and tracking assets would clutter the linked
+document list.
