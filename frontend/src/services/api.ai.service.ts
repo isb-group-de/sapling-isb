@@ -1,5 +1,6 @@
 import axios from 'axios'
 import type {
+  AiChatAttachmentItem,
   AiAgentItem,
   AiAgentEvaluationItem,
   AiAgentRunItem,
@@ -37,6 +38,29 @@ import { streamAiChatMessage, withClientTimeContext } from './api.ai.utils'
 export * from '@/services/api.ai.types'
 
 class ApiAiService {
+  static async createChatImage(
+    file: File,
+    payload: { sessionHandle?: number; providerHandle?: string; modelHandle?: string },
+  ) {
+    try {
+      const form = new FormData()
+      form.append('file', file, file.name)
+      for (const [key, value] of Object.entries(payload)) {
+        if (value != null) form.append(key, String(value))
+      }
+      return (
+        await axios.post<{ attachment: AiChatAttachmentItem }>(buildApiUrl('ai/chat/images'), form)
+      ).data
+    } catch (error) {
+      this.handleError(error, 'aiChat.attachmentUploadFailed')
+      throw error
+    }
+  }
+
+  static async getChatImage(handle: number): Promise<Blob> {
+    return (await axios.get(buildApiUrl(`ai/chat/images/${handle}`), { responseType: 'blob' })).data
+  }
+
   static async listProviders(options?: {
     suppressErrorMessage?: boolean
   }): Promise<AiProviderTypeItem[]> {

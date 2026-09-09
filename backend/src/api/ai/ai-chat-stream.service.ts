@@ -51,6 +51,7 @@ import {
 } from './ai-chat-progress.utils';
 import { CreateAiChatMessageDto } from './dto/chat.dto';
 import { McpService } from './mcp.service';
+import { assertChatImageSupport } from './ai-chat-images.utils';
 
 @Injectable()
 export class AiChatStreamService {
@@ -145,6 +146,7 @@ export class AiChatStreamService {
         );
       const attachmentContext =
         this.chatPersistence.buildChatAttachmentContext(attachments);
+      assertChatImageSupport(attachments, runtimeTarget.model.supportsVision);
 
       const userMessage = this.em.create(AiChatMessageItem, {
         session,
@@ -353,9 +355,15 @@ export class AiChatStreamService {
           return { session, userMessage, assistantMessage };
         }
 
-        const history = await this.chatPersistence.loadSessionHistory(
+        let history = await this.chatPersistence.loadSessionHistory(
           session.handle ?? 0,
           this.chatPersistence.requireUserHandle(person),
+        );
+        history = await this.chatPersistence.prepareVisionHistory(
+          history,
+          session,
+          person,
+          runtimeTarget.model.supportsVision,
         );
 
         let streamResult: AiStreamResult;

@@ -70,15 +70,14 @@ export function useSaplingDialogEditDirty(options: UseSaplingDialogEditDirtyOpti
     return JSON.stringify(left).localeCompare(JSON.stringify(right))
   }
 
-  function normalizeComparableValue(value: unknown): unknown {
+  function normalizeComparableValue(value: unknown, preserveArrayOrder = false): unknown {
     if (value instanceof Date) {
       return options.isValidDate(value) ? value.toISOString() : null
     }
 
     if (Array.isArray(value)) {
-      return [...value]
-        .map((entry) => normalizeComparableValue(entry))
-        .sort(compareComparableValues)
+      const entries = value.map((entry) => normalizeComparableValue(entry, preserveArrayOrder))
+      return preserveArrayOrder ? entries : entries.sort(compareComparableValues)
     }
 
     if (typeof value === 'number') {
@@ -90,7 +89,10 @@ export function useSaplingDialogEditDirty(options: UseSaplingDialogEditDirtyOpti
         Object.entries(value as Record<string, unknown>)
           .filter(([, entryValue]) => entryValue !== undefined)
           .sort(([leftKey], [rightKey]) => leftKey.localeCompare(rightKey))
-          .map(([key, entryValue]) => [key, normalizeComparableValue(entryValue)]),
+          .map(([key, entryValue]) => [
+            key,
+            normalizeComparableValue(entryValue, preserveArrayOrder),
+          ]),
       )
     }
 
@@ -153,11 +155,20 @@ export function useSaplingDialogEditDirty(options: UseSaplingDialogEditDirtyOpti
     }
 
     if (template.type === 'JsonType') {
-      return serializeComparableValue(
-        normalizeComparableValue(
-          typeof source[template.name] === 'string' ? null : source[template.name],
-        ),
-      )
+      let value = source[template.name]
+      if (typeof value === 'string') {
+        try {
+          value = value.trim() ? JSON.parse(value) : null
+        } catch {
+          // Keep invalid/raw text visible to dirty tracking instead of losing the edit.
+        }
+      }
+      return serializeComparableValue(normalizeComparableValue(value, true))
+    }
+
+    if (template.inlineCollection) {
+      // Inline editors change child fields, not just the selected record handles.
+      return serializeComparableValue(normalizeComparableValue(source[template.name], true))
     }
 
     if (template.isReference || ['1:m', 'm:1', 'm:n', 'n:m'].includes(template.kind ?? '')) {

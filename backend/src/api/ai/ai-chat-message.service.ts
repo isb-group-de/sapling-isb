@@ -1,6 +1,7 @@
 import { AiPromptService } from './prompts/ai-prompt.service';
 import { EntityManager } from '@mikro-orm/core';
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { assertChatImageSupport } from './ai-chat-images.utils';
 import { AiChatMessageItem } from '../../entity/AiChatMessageItem';
 import { AiChatSessionItem } from '../../entity/AiChatSessionItem';
 import { PersonItem } from '../../entity/PersonItem';
@@ -107,6 +108,7 @@ export class AiChatMessageService {
         );
       const attachmentContext =
         this.chatPersistence.buildChatAttachmentContext(attachments);
+      assertChatImageSupport(attachments, runtimeTarget.model.supportsVision);
       const latestMessage = await this.em.find(
         AiChatMessageItem,
         { session: { handle: session.handle } },

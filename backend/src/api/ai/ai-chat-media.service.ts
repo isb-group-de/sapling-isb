@@ -1,4 +1,5 @@
 import { AiPromptService } from './prompts/ai-prompt.service';
+import { validateChatImage } from './ai-chat-images.utils';
 import { currentPromptManifest } from './prompts/ai-prompt-context';
 import { EntityManager } from '@mikro-orm/core';
 import {
@@ -64,6 +65,54 @@ export class AiChatMediaService {
     private readonly importService: ImportService,
     private readonly chatPersistence: AiChatPersistenceService,
   ) {}
+
+  async createChatImageAttachment(
+    file: Express.Multer.File | undefined,
+    user: PersonItem,
+    options: {
+      sessionHandle?: number;
+      providerHandle?: string;
+      modelHandle?: string;
+    } = {},
+  ) {
+    const mimeType = validateChatImage(file);
+    const target = await this.providerRegistry.resolveRuntimeTarget(
+      options.providerHandle,
+      options.modelHandle,
+    );
+    if (!target.model.supportsVision)
+      throw new BadRequestException('ai.chatVisionRequired');
+    const person = await this.chatPersistence.requireManagedUser(user);
+    const session = options.sessionHandle
+      ? await this.chatPersistence.findOwnedSession(options.sessionHandle, user)
+      : null;
+    const document = await this.documentService.uploadDocument(
+      { ...file!, mimetype: mimeType },
+      'aiChatAttachment',
+      '',
+      'document',
+      person,
+    );
+    const attachment = this.em.create(AiChatAttachmentItem, {
+      session,
+      message: null,
+      person,
+      document,
+      importBatch: null,
+      purpose: 'vision',
+      filename: file!.originalname,
+      mimeType,
+      byteLength: file!.buffer.length,
+      status: 'uploaded',
+      summaryPayload: null,
+      errorPayload: null,
+    });
+    this.em.persist(attachment);
+    await this.em.flush();
+    document.reference = String(attachment.handle);
+    await this.em.flush();
+    return { attachment: sanitizeChatAttachment(attachment) };
+  }
 
   async createChatAttachment(
     file: Express.Multer.File | undefined,

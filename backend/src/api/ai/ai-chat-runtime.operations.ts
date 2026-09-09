@@ -1,4 +1,8 @@
 import type { Content } from '@google/generative-ai';
+import {
+  buildOpenAiImageContent,
+  chatMessageImages,
+} from './ai-chat-images.utils';
 import type { AiChatMessageItem } from '../../entity/AiChatMessageItem';
 import type { AiProviderTypeItem } from '../../entity/AiProviderTypeItem';
 import type { PersonItem } from '../../entity/PersonItem';
@@ -86,7 +90,11 @@ export class AiChatRuntimeOperations {
       : [];
     const input = this.normalizeHistory(options.history).map((message) => ({
       role: message.role,
-      content: this.buildMessageContent(message),
+      content: buildOpenAiImageContent(
+        message,
+        this.buildMessageContent(message),
+        true,
+      ),
     })) as Array<Record<string, unknown>>;
     const executedToolCalls: AiExecutedToolCall[] = [];
     const usageEntries: Record<string, unknown>[] = [];
@@ -416,7 +424,10 @@ export class AiChatRuntimeOperations {
     for (const message of this.normalizeHistory(history)) {
       messages.push({
         role: message.role,
-        content: this.buildMessageContent(message),
+        content: buildOpenAiImageContent(
+          message,
+          this.buildMessageContent(message),
+        ),
       });
     }
     return messages;
@@ -425,7 +436,15 @@ export class AiChatRuntimeOperations {
   protected buildGeminiConversation(history: AiChatMessageItem[]): Content[] {
     return this.normalizeHistory(history).map((message) => ({
       role: message.role === 'assistant' ? 'model' : 'user',
-      parts: [{ text: this.buildMessageContent(message) }],
+      parts: [
+        { text: this.buildMessageContent(message) },
+        ...(message.role === 'user'
+          ? (chatMessageImages.get(message) ?? [])
+          : []
+        ).map((image) => ({
+          inlineData: { mimeType: image.mimeType, data: image.data },
+        })),
+      ],
     }));
   }
 

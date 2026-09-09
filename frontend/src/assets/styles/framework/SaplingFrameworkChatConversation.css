@@ -458,6 +458,36 @@
   max-width: 100%;
 }
 
+.sapling-ai-chat__composer-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sapling-gap-xs);
+  min-width: 0;
+}
+
+.sapling-ai-chat__composer-attachments {
+  height: 28px;
+  flex: 0 0 28px;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.sapling-ai-chat__composer-attachments .sapling-ai-chat__image-chips {
+  flex-wrap: nowrap;
+}
+
+.sapling-ai-chat__image-chips .v-chip {
+  flex-shrink: 0;
+  max-width: min(16rem, 75vw);
+}
+
+.sapling-ai-chat__image-chip-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .sapling-ai-chat__work-log,
 .sapling-ai-chat__queued-inputs {
   border: 1px solid var(--sapling-surface-border);

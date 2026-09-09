@@ -245,6 +245,22 @@ export class AiService {
       : prompts.run(execute);
   }
 
+  async createChatImageAttachment(
+    file: Express.Multer.File | undefined,
+    user: PersonItem,
+    options: {
+      sessionHandle?: number;
+      providerHandle?: string;
+      modelHandle?: string;
+    } = {},
+  ) {
+    return this.chatMedia.createChatImageAttachment(file, user, options);
+  }
+
+  async getChatImage(handle: number, user: PersonItem) {
+    return this.chatPersistence.findOwnedChatImage(handle, user);
+  }
+
   async createChatAttachment(
     file: Express.Multer.File | undefined,
     user: PersonItem,

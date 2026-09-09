@@ -274,6 +274,7 @@ function createFixture() {
     linkTranscriptionToMessage: jest.fn(() => Promise.resolve(undefined)),
     populateChatSession: jest.fn(() => Promise.resolve(undefined)),
     loadSessionHistory: jest.fn(() => Promise.resolve([])),
+    prepareVisionHistory: jest.fn(() => Promise.resolve([])),
     requireUserHandle: jest.fn(() => 42),
   };
   const service = new AiChatStreamService(

@@ -20,18 +20,18 @@
         @activate="openChatFromGhost"
       />
 
-      <v-dialog
+      <SaplingDialog
         :model-value="isDialogOpen"
+        size="3xl"
+        :height="SAPLING_DIALOG_HEIGHT.xl"
         class="sapling-ai-chat-dialog"
         content-class="sapling-ai-chat-dialog__content"
         scrim="transparent"
         :z-index="SAPLING_AI_CHAT_OVERLAY_Z_INDEX"
         @update:model-value="handleDialogModelUpdate"
       >
-        <SaplingSurface
-          as="section"
-          variant="solid"
-          class="sapling-floating-panel sapling-floating-panel--top-center sapling-floating-panel--mobile-sheet sapling-nested-backdrop-host sapling-ai-chat"
+        <SaplingDialogCard
+          class="sapling-dialog-card--fill sapling-ai-chat"
           data-tutorial="songbird-chat"
           @click.stop
         >
@@ -106,6 +106,7 @@
                 :is-recording-voice-input="isRecordingVoiceInput"
                 :is-transcribing-voice-input="isTranscribingVoiceInput"
                 :can-upload-import-attachment="canUploadImportAttachment"
+                :can-upload-image="canUploadImage"
                 :is-uploading-import-attachment="isUploadingImportAttachment"
                 :pending-attachments="pendingAttachments"
                 :active-tool-action-handles="activeToolActionHandles"
@@ -123,6 +124,7 @@
                 @update-message-rating="updateMessageRating"
                 @toggle-voice-input="toggleVoiceInput"
                 @upload-import-attachment="uploadImportAttachment"
+                @upload-images="uploadImageAttachments"
                 @remove-import-attachment="removeImportAttachment"
                 @send="sendMessage"
                 @steer="steerMessage"
@@ -131,8 +133,8 @@
               />
             </div>
           </template>
-        </SaplingSurface>
-      </v-dialog>
+        </SaplingDialogCard>
+      </SaplingDialog>
     </div>
   </Teleport>
 </template>
@@ -143,7 +145,9 @@ import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useDisplay } from 'vuetify'
 import type { AiChatSessionItem } from '@/entity/entity'
-import SaplingSurface from '@/components/common/SaplingSurface.vue'
+import SaplingDialog from '@/components/common/SaplingDialog.vue'
+import SaplingDialogCard from '@/components/dialog/SaplingDialogCard.vue'
+import { SAPLING_DIALOG_HEIGHT } from '@/constants/dialog.constants'
 import GhostEasterEgg from '@/components/easter-egg/GhostEasterEgg.vue'
 import SaplingAiChatConversation from '@/components/system/ai-chat/SaplingAiChatConversation.vue'
 import SaplingAiChatHeader from '@/components/system/ai-chat/SaplingAiChatHeader.vue'
@@ -181,6 +185,7 @@ const { mdAndDown, smAndDown } = useDisplay()
 const { isLoading: isTranslationLoading, loadTranslations } = useTranslationLoader(
   'aiChat',
   'ai',
+  'document',
   'import',
   'navigation',
   'global',
@@ -244,7 +249,7 @@ const {
   hasRuntimeCatalogLoadError,
   hasConfiguredProviders,
   hasConfiguredTranscriptionProviders,
-  canSendMessage,
+  canSendMessage: runtimeCanSendMessage,
   isVoiceOutputAvailable,
   canUploadImportAttachment,
   loadRuntimeCatalogs,
@@ -299,9 +304,25 @@ const {
   uploadImportAttachment,
   removeImportAttachment,
   resetImportAttachments,
+  uploadImageAttachments,
 } = useSaplingAiChatAttachments(
   canUploadImportAttachment,
   () => activeSession.value?.handle ?? null,
+  {
+    canUpload: computed(() => !!selectedModelConfig.value?.supportsVision),
+    target: () => ({
+      providerHandle: selectedProviderHandle.value ?? undefined,
+      modelHandle: selectedModelHandle.value ?? undefined,
+    }),
+    reportError: (key) => messageCenter.pushMessage('error', key, '', 'aiChat'),
+  },
+)
+const canUploadImage = computed(() => !!selectedModelConfig.value?.supportsVision)
+const canSendMessage = computed(
+  () =>
+    runtimeCanSendMessage.value &&
+    !isUploadingImportAttachment.value &&
+    (canUploadImage.value || !pendingAttachments.value.some((item) => item.purpose === 'vision')),
 )
 
 const voiceInput = useSaplingAiChatVoiceInput({
@@ -372,7 +393,12 @@ const {
   selectedContextRecordHandle,
   activeTranscriptionHandle,
   pendingAttachments,
-  defaultAttachmentPrompt: () => t('aiChat.defaultImportAttachmentPrompt'),
+  defaultAttachmentPrompt: () =>
+    t(
+      pendingAttachments.value.some((item) => item.purpose === 'vision')
+        ? 'aiChat.defaultImagePrompt'
+        : 'aiChat.defaultImportAttachmentPrompt',
+    ),
   currentPersonHandle: () => currentPersonStore.person?.handle ?? 0,
   reportMessage: messageCenter.pushMessage,
   upsertMessage,

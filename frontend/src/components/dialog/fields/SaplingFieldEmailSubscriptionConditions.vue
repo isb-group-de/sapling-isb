@@ -44,6 +44,7 @@
               :label="t('emailSubscriptionCondition.observedField')"
               :items="conditionFields"
               :model-value="condition.observedField"
+              :rules="observedFieldRules"
               item-title="label"
               item-value="value"
               hide-details="auto"
@@ -219,6 +220,11 @@ const emit = defineEmits<{
 }>()
 
 const { t, te } = useI18n()
+const observedFieldRules = [
+  (value: unknown) =>
+    (typeof value === 'string' && value.trim().length > 0) ||
+    `${t('emailSubscriptionCondition.observedField')} ${t('global.isRequired')}`,
+]
 const genericStore = useGenericStore()
 const loadedEntityHandle = ref('')
 const localConditions = ref<EmailCondition[]>([])
@@ -292,8 +298,8 @@ watch(
     await genericStore.loadGeneric(value, 'global')
 
     const allowedFields = new Set(conditionFields.value.map((entry) => entry.value))
-    const filtered = localConditions.value.filter((condition) =>
-      allowedFields.has(condition.observedField),
+    const filtered = localConditions.value.filter(
+      (condition) => !condition.observedField || allowedFields.has(condition.observedField),
     )
     if (filtered.length !== localConditions.value.length) {
       localConditions.value = filtered
@@ -322,6 +328,7 @@ function addCondition(groupOrder: number): void {
       sortOrder: localConditions.value.length,
     },
   ]
+  emitConditions()
 }
 
 function addConditionGroup(): void {
@@ -390,16 +397,14 @@ function setConditionMenuOpen(conditionKey: string, field: string, open: boolean
 function emitConditions(): void {
   emit(
     'update:modelValue',
-    localConditions.value
-      .filter((condition) => condition.observedField.trim().length > 0)
-      .map((condition, index) => ({
-        ...(condition.handle != null ? { handle: condition.handle } : {}),
-        observedField: condition.observedField.trim(),
-        oldValue: normalizeOptionalValue(condition.oldValue),
-        newValue: normalizeOptionalValue(condition.newValue),
-        groupOrder: condition.groupOrder,
-        sortOrder: index,
-      })),
+    localConditions.value.map((condition, index) => ({
+      ...(condition.handle != null ? { handle: condition.handle } : {}),
+      observedField: condition.observedField.trim(),
+      oldValue: normalizeOptionalValue(condition.oldValue),
+      newValue: normalizeOptionalValue(condition.newValue),
+      groupOrder: condition.groupOrder,
+      sortOrder: index,
+    })),
   )
 }
 
@@ -421,7 +426,6 @@ function normalizeConditions(value: unknown): EmailCondition[] {
       groupOrder: normalizeGroupOrder(entry.groupOrder),
       sortOrder: typeof entry.sortOrder === 'number' ? entry.sortOrder : index,
     }))
-    .filter((condition) => condition.observedField.length > 0)
     .sort((left, right) => (left.sortOrder ?? 0) - (right.sortOrder ?? 0))
 }
 

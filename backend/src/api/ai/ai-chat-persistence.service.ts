@@ -1,4 +1,11 @@
 import { EntityManager } from '@mikro-orm/core';
+import { readFile } from 'node:fs/promises';
+import { getDocumentStorageFilePath } from '../document/document-storage.util';
+import {
+  AI_CHAT_IMAGE_MAX_COUNT,
+  chatMessageImages,
+  validateChatImage,
+} from './ai-chat-images.utils';
 import {
   BadRequestException,
   Injectable,
@@ -27,6 +34,76 @@ export type AiChatMessagePage = {
 @Injectable()
 export class AiChatPersistenceService {
   constructor(private readonly em: EntityManager) {}
+
+  async findOwnedChatImage(handle: number, user: PersonItem) {
+    const attachment = await this.em.findOne(
+      AiChatAttachmentItem,
+      {
+        handle,
+        person: { handle: this.requireUserHandle(user) },
+        purpose: 'vision',
+      },
+      { populate: ['document', 'document.entity'] },
+    );
+    if (!attachment) throw new NotFoundException('ai.chatAttachmentNotFound');
+    return {
+      filePath: getDocumentStorageFilePath(
+        attachment.document.entity.handle,
+        attachment.document.path,
+      ),
+      mimeType: attachment.mimeType!,
+    };
+  }
+
+  async prepareVisionHistory(
+    history: AiChatMessageItem[],
+    session: AiChatSessionItem,
+    user: PersonItem,
+    supportsVision: boolean,
+  ): Promise<AiChatMessageItem[]> {
+    const handles = history
+      .filter((message) => message.role === 'user')
+      .map((message) => message.handle!)
+      .filter(Boolean);
+    if (!handles.length) return history;
+    const attachments = await this.em.find(
+      AiChatAttachmentItem,
+      {
+        session: { handle: session.handle },
+        person: { handle: this.requireUserHandle(user) },
+        message: { handle: { $in: handles } },
+        purpose: 'vision',
+      },
+      {
+        populate: ['document', 'document.entity', 'message'],
+        orderBy: { handle: 'ASC' },
+      },
+    );
+    if (!attachments.length) return history;
+    if (!supportsVision) throw new BadRequestException('ai.chatVisionRequired');
+    const result = history.map(
+      (message) => ({ ...message }) as AiChatMessageItem,
+    );
+    for (const attachment of attachments) {
+      const message = result.find(
+        (item) => item.handle === attachment.message?.handle,
+      );
+      if (!message) continue;
+      const images = chatMessageImages.get(message) ?? [];
+      if (images.length >= AI_CHAT_IMAGE_MAX_COUNT)
+        throw new BadRequestException('ai.chatImageCountLimit');
+      const buffer = await readFile(
+        getDocumentStorageFilePath(
+          attachment.document.entity.handle,
+          attachment.document.path,
+        ),
+      );
+      const mimeType = validateChatImage({ buffer } as Express.Multer.File);
+      images.push({ mimeType, data: buffer.toString('base64') });
+      chatMessageImages.set(message, images);
+    }
+    return result;
+  }
 
   async findOwnedSession(
     handle: number,

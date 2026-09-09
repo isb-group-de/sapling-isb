@@ -136,6 +136,10 @@
         />
       </div>
       <div class="sapling-chat-message__content sapling-ai-chat__message-content">
+        <SaplingAiChatImages
+          v-if="message.role === 'user'"
+          :images="messageImages(message.contextPayload)"
+        />
         <div
           v-if="isMessageContentLoading(message)"
           class="sapling-chat-message__typing sapling-ai-chat__message-typing"
@@ -276,6 +280,8 @@
 import { nextTick, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import SaplingMarkdownContent from '@/components/common/SaplingMarkdownContent.vue'
+import SaplingAiChatImages from './SaplingAiChatImages.vue'
+import { messageImages } from './aiChatImages'
 import type { AiChatMessageItem, AiChatToolActionItem } from '@/entity/entity'
 import SaplingAiChatToolActions from './SaplingAiChatToolActions.vue'
 import { getMessageNavigationLinks, getMessageToolActions } from './aiChatNavigation'

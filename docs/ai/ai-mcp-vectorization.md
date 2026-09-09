@@ -124,6 +124,38 @@ automatic GitHub issues.
 
 ## Streaming, Work Log, Queue, And Steer
 
+### Image inputs (Vision)
+
+Songbird uses the shared `SaplingDialog` and `SaplingDialogCard` surface, with
+the same 90vh desktop height and mobile viewport behavior as the entity edit
+dialog. Its responsive chat width stays independent of the wider entity editor.
+
+`AiProviderModelItem.supportsVision` enables image inputs in Songbird. Apply
+`Migration20260909120000` and the new translation seeder, then enable the flag
+only for models that support image inputs; existing models default to false.
+The composer offers a paperclip button (also on mobile), clipboard image paste,
+compact filename badges, and removal before sending. A reserved single-line
+badge strip above the input prevents attachments from shifting the composer;
+additional badges scroll horizontally. Clicking a badge in the composer or
+history loads the owned image on demand into the shared zoom/pan preview dialog.
+PNG, JPEG, GIF and WebP are accepted,
+up to five images per message and 5 MB per file. Text-only pastes stay unchanged.
+
+`POST /api/ai/chat/images` stores images as documents and owned chat attachments
+with purpose `vision`. Unlike the separate CSV import endpoint, it does not
+require administrator access. `GET /api/ai/chat/images/:handle` checks attachment
+ownership before returning a private preview. File signatures and size are
+validated on the server. Sending checks the effective model's Vision flag;
+switching to a text-only model cannot silently discard existing image context.
+
+Attachment handles participate in the existing queue/steer and message-linking
+lifecycle. Runtime history loads binaries from owned persisted attachments,
+never from document handles supplied in arbitrary context JSON. Image content
+is sent as OpenAI Responses input images, OpenAI-compatible Chat Completions
+image URLs, or Gemini inline data. Binary content stays out of persisted JSON
+request/progress payloads. Reloaded messages retain authenticated previews, and
+follow-up turns retain images within the normal chat history window.
+
 Chat runtimes emit one normalized contract: `message.delta` for answer text,
 `progress.delta` for provider-generated reasoning summaries, and
 `progress.step` for localized Sapling and tool activity. OpenAI chat uses the

@@ -178,6 +178,7 @@ export function sanitizeModel(model: AiProviderModelItem): AiProviderModelItem {
     providerModel: model.providerModel,
     supportsStreaming: model.supportsStreaming,
     supportsTools: model.supportsTools,
+    supportsVision: model.supportsVision === true,
     supportsWebSearch: model.supportsWebSearch,
     supportsEmbeddings: model.supportsEmbeddings,
     supportsTranscription: model.supportsTranscription,

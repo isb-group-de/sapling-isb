@@ -844,6 +844,11 @@ only when the current effective dependency filter has selectable records. The
 warning clears after a value is selected and never prevents saving. Form
 configuration can override the decorator default with its `recommended` field;
 required semantics always take precedence.
+JSON configuration fields compare their full content, including ordered
+arrays such as automation reference paths. Inline condition collections compare
+child values and groups, not only their record handles. Newly added inline condition
+rows participate in dirty tracking immediately; incomplete rows must be completed
+or removed before saving. Reverting all edits clears the dirty state.
 Changed form fields use a content-sized warning ring around the complete field
 surface, including attached actions. The ring follows the control radius and
 must not stretch to a taller neighbor in the same grid row or tint the field's

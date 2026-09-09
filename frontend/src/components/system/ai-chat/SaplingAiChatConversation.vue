@@ -110,32 +110,67 @@
           </v-list-item>
         </v-list>
       </div>
-      <SaplingTextarea
-        ref="messageInput"
-        v-model="draftMessageModel"
-        :disabled="!hasConfiguredProviders"
-        :placeholder="
-          isLoadingRuntimeCatalog
-            ? getTranslationLabel('loadingConfiguration', 'KI-Konfiguration wird geladen …')
-            : !hasLoadedRuntimeCatalog || runtimeCatalogLoadFailed
-              ? ''
-              : hasConfiguredProviders
-                ? t('aiChat.inputPlaceholder')
-                : t('aiChat.noConfiguredProviders')
-        "
-        auto-grow
-        density="comfortable"
-        hide-details
-        :rows="xs ? 2 : 3"
-        :max-rows="xs ? 6 : 8"
-        variant="outlined"
-        @keydown.enter.exact.prevent="emit('send')"
-      />
+      <div class="sapling-ai-chat__composer-input-group">
+        <div class="sapling-ai-chat__composer-attachments">
+          <SaplingAiChatImages
+            :images="pendingAttachments.filter((item) => item.purpose === 'vision')"
+            closable
+            @remove="emit('remove-import-attachment', $event)"
+          >
+            <v-chip
+              v-for="attachment in pendingAttachments.filter((item) => item.purpose !== 'vision')"
+              :key="attachment.handle"
+              size="small"
+              variant="tonal"
+              prepend-icon="mdi-file-delimited-outline"
+              closable
+              @click:close="emit('remove-import-attachment', attachment.handle)"
+              >{{ formatAttachmentChip(attachment) }}</v-chip
+            >
+          </SaplingAiChatImages>
+        </div>
+        <SaplingTextarea
+          ref="messageInput"
+          v-model="draftMessageModel"
+          :disabled="!hasConfiguredProviders"
+          :placeholder="
+            isLoadingRuntimeCatalog
+              ? getTranslationLabel('loadingConfiguration', 'KI-Konfiguration wird geladen …')
+              : !hasLoadedRuntimeCatalog || runtimeCatalogLoadFailed
+                ? ''
+                : hasConfiguredProviders
+                  ? t('aiChat.inputPlaceholder')
+                  : t('aiChat.noConfiguredProviders')
+          "
+          auto-grow
+          density="comfortable"
+          hide-details
+          :rows="xs ? 2 : 3"
+          :max-rows="xs ? 6 : 8"
+          variant="outlined"
+          @keydown.enter.exact.prevent="emit('send')"
+          @paste="handleImagePaste"
+        />
+      </div>
 
       <div class="sapling-chat-composer__hint sapling-ai-chat__composer-hint">
         {{ getTranslationLabel('composerHint', 'Enter senden · Shift+Enter Zeilenumbruch') }}
       </div>
 
+      <input
+        ref="imageFileInput"
+        class="sapling-ai-chat__attachment-input"
+        type="file"
+        accept="image/png,image/jpeg,image/gif,image/webp"
+        multiple
+        @change="handleImageFileChange"
+      />
+      <div
+        v-if="pendingAttachments.some((item) => item.purpose === 'vision') && !canUploadImage"
+        role="alert"
+      >
+        {{ t('ai.chatVisionRequired') }}
+      </div>
       <input
         ref="importFileInput"
         class="sapling-ai-chat__attachment-input"
@@ -145,26 +180,21 @@
       />
 
       <div
-        v-if="pendingAttachments.length > 0"
-        class="sapling-chip-row sapling-ai-chat__attachment-chips"
-      >
-        <v-chip
-          v-for="attachment in pendingAttachments"
-          :key="attachment.handle"
-          size="small"
-          variant="tonal"
-          prepend-icon="mdi-file-delimited-outline"
-          closable
-          @click:close="emit('remove-import-attachment', attachment.handle)"
-        >
-          {{ formatAttachmentChip(attachment) }}
-        </v-chip>
-      </div>
-
-      <div
         class="sapling-row-between-md sapling-chat-composer__actions sapling-ai-chat__composer-actions"
       >
         <div class="sapling-ai-chat__composer-action-buttons">
+          <v-btn
+            v-if="canUploadImage"
+            class="sapling-ai-chat__composer-action"
+            variant="tonal"
+            prepend-icon="mdi-paperclip"
+            :disabled="isUploadingImportAttachment"
+            :loading="isUploadingImportAttachment"
+            :title="t('aiChat.attachImageHint')"
+            :aria-label="t('aiChat.attachImage')"
+            @click="imageFileInput?.click()"
+            >{{ t('aiChat.attachImage') }}</v-btn
+          >
           <v-btn
             v-if="canUploadImportAttachment"
             class="sapling-ai-chat__composer-action"
@@ -234,6 +264,8 @@ import SaplingTextarea from '@/components/common/SaplingTextarea.vue'
 import SaplingAiChatConversationTitle from '@/components/system/ai-chat/SaplingAiChatConversationTitle.vue'
 import SaplingAiChatMessageList from '@/components/system/ai-chat/SaplingAiChatMessageList.vue'
 import SaplingHelpTooltip from '@/components/common/SaplingHelpTooltip.vue'
+import SaplingAiChatImages from './SaplingAiChatImages.vue'
+import { clipboardImageFiles } from './aiChatImages'
 import type { AiAgentItem, AiChatMessageItem, AiChatToolActionItem } from '@/entity/entity'
 
 type SelectOption = {
@@ -242,6 +274,7 @@ type SelectOption = {
 }
 
 type PendingImportAttachment = {
+  purpose?: string
   handle: number
   filename: string
   rowCount: number
@@ -284,6 +317,7 @@ const props = withDefaults(
     isRecordingVoiceInput: boolean
     isTranscribingVoiceInput: boolean
     canUploadImportAttachment: boolean
+    canUploadImage: boolean
     isUploadingImportAttachment: boolean
     pendingAttachments: PendingImportAttachment[]
     queuedInputs: QueuedInput[]
@@ -316,12 +350,14 @@ const emit = defineEmits<{
   ): void
   (event: 'toggle-voice-input'): void
   (event: 'upload-import-attachment', file: File): void
+  (event: 'upload-images', files: File[]): void
   (event: 'remove-import-attachment', handle: number): void
 }>()
 
 const { t, te } = useI18n()
 const { xs } = useDisplay()
 const importFileInput = ref<HTMLInputElement | null>(null)
+const imageFileInput = ref<HTMLInputElement | null>(null)
 const messageInput = ref<{ focus: () => void } | null>(null)
 
 const draftMessageModel = computed({
@@ -373,10 +409,26 @@ function handleImportFileChange(event: Event) {
 }
 
 function formatAttachmentChip(attachment: PendingImportAttachment) {
+  if (attachment.purpose === 'vision') return attachment.filename
   return [
     attachment.filename,
     t('aiChat.attachmentRows', { count: attachment.rowCount }),
     t('aiChat.attachmentHeaders', { count: attachment.headerCount }),
   ].join(' · ')
+}
+
+function handleImagePaste(event: ClipboardEvent) {
+  const files = clipboardImageFiles(event)
+  if (!files.length) return
+  // Keep mixed text/image pastes intact; suppress only a purely binary paste.
+  if (!event.clipboardData?.getData('text/plain')) event.preventDefault()
+  emit('upload-images', files)
+}
+
+function handleImageFileChange(event: Event) {
+  const input = event.target as HTMLInputElement
+  const files = Array.from(input.files ?? [])
+  input.value = ''
+  if (files.length) emit('upload-images', files)
 }
 </script>

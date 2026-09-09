@@ -6058,12 +6058,11 @@
           "name": "immutable_prompt_version",
           "timing": "before",
           "events": [
-            "update",
-            "delete"
+            "delete",
+            "update"
           ],
           "forEach": "row",
-          "body": "",
-          "expression": "create trigger immutable_prompt_version before update or delete on ai_prompt_version_item for each row execute function sapling_immutable_prompt_version();"
+          "body": ""
         }
       ],
       "foreignKeys": {
@@ -6474,6 +6473,23 @@
         },
         "supports_transcription": {
           "name": "supports_transcription",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": "false",
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "boolean"
+        },
+        "supports_vision": {
+          "name": "supports_vision",
           "type": "boolean",
           "unsigned": false,
           "autoincrement": false,

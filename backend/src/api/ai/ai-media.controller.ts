@@ -6,6 +6,8 @@ import {
   Post,
   Query,
   Req,
+  Res,
+  ParseIntPipe,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -21,7 +23,9 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
+import { AI_CHAT_IMAGE_MAX_BYTES } from './ai-chat-images.utils';
+import { CreateAiChatImageDto } from './dto/chat-image.dto';
 import { AiService } from './ai.service';
 import { SessionOrBearerAuthGuard } from '../../auth/guard/session-or-token-auth.guard';
 import { AdminPermissionGuard } from '../../auth/guard/admin-permission.guard';
@@ -42,6 +46,50 @@ import {
 @UseGuards(SessionOrBearerAuthGuard)
 export class AiMediaController {
   constructor(private readonly aiService: AiService) {}
+
+  @Post('chat/images')
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['file'],
+      properties: {
+        file: { type: 'string', format: 'binary' },
+        sessionHandle: { type: 'integer' },
+        providerHandle: { type: 'string' },
+        modelHandle: { type: 'string' },
+      },
+    },
+  })
+  @ApiOperation({
+    summary:
+      'Upload a PNG, JPEG, GIF or WebP image for a vision-capable chat model',
+  })
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { fileSize: AI_CHAT_IMAGE_MAX_BYTES, files: 1 },
+    }),
+  )
+  async createChatImage(
+    @Req() req: Request & { user: PersonItem },
+    @UploadedFile() file: Express.Multer.File,
+    @Body() body: CreateAiChatImageDto,
+  ) {
+    return this.aiService.createChatImageAttachment(file, req.user, body);
+  }
+
+  @Get('chat/images/:handle')
+  async getChatImage(
+    @Param('handle', ParseIntPipe) handle: number,
+    @Req() req: Request & { user: PersonItem },
+    @Res() response: Response,
+  ) {
+    const image = await this.aiService.getChatImage(handle, req.user);
+    response.setHeader('Content-Type', image.mimeType);
+    response.setHeader('Cache-Control', 'private, no-store');
+    response.setHeader('X-Content-Type-Options', 'nosniff');
+    return response.sendFile(image.filePath);
+  }
 
   @Get('transcription/providers')
   @ApiOperation({

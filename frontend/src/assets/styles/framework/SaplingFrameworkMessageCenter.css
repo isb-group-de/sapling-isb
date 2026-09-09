@@ -265,13 +265,16 @@
 }
 
 @media (min-width: 1280px) {
-  .sapling-ai-chat {
-    --sapling-floating-panel-width: min(72vw, 1320px);
-    --sapling-floating-panel-max-width: calc(100vw - var(--sapling-space-2xl));
-    --sapling-floating-panel-height: min(
-      90vh,
-      calc(100dvh - var(--v-layout-top, 0px) - var(--sapling-space-md))
-    );
+  .sapling-ai-chat-dialog__content {
+    width: min(72vw, 1320px) !important;
+    max-width: calc(100vw - var(--sapling-space-2xl)) !important;
+  }
+}
+
+@media (max-width: 960px) {
+  .sapling-ai-chat-dialog__content {
+    width: 100vw !important;
+    max-width: 100vw !important;
   }
 }
 
@@ -289,15 +292,6 @@
 }
 
 @media (max-width: 959px) {
-  .sapling-ai-chat {
-    --sapling-floating-panel-width: calc(100vw - (var(--sapling-space-md) * 2));
-    --sapling-floating-panel-max-width: calc(100vw - (var(--sapling-space-md) * 2));
-    --sapling-floating-panel-height: min(
-      92vh,
-      calc(100dvh - var(--v-layout-top, 0px) - var(--sapling-space-md))
-    );
-  }
-
   .sapling-ai-chat__header {
     align-items: flex-start;
     padding: var(--sapling-space-lg);

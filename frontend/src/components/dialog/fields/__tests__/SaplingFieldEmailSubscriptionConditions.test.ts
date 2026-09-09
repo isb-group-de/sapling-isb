@@ -172,6 +172,32 @@ describe('SaplingFieldEmailSubscriptionConditions', () => {
     ])
   })
 
+  it('emits new empty rows immediately and retains them after the model update', async () => {
+    const wrapper = mount(SaplingFieldEmailSubscriptionConditions, {
+      props: { sourceEntityReference: { handle: 'ticket' }, modelValue: [] },
+      global: {
+        stubs: {
+          'v-autocomplete': VAutocompleteStub,
+          'v-text-field': VTextFieldStub,
+          'v-btn': VBtnStub,
+          'v-divider': true,
+        },
+      },
+    })
+    await flushPromises()
+    await wrapper.get('.sapling-email-conditions__add').trigger('click')
+    const updates = wrapper.emitted('update:modelValue') ?? []
+    const value = updates[updates.length - 1]?.[0]
+    expect(value).toEqual([
+      { observedField: '', oldValue: null, newValue: null, groupOrder: 0, sortOrder: 0 },
+    ])
+    await wrapper.setProps({ modelValue: value })
+    expect(wrapper.findAll('.sapling-email-conditions__row')).toHaveLength(1)
+    await wrapper.get('.sapling-email-conditions__row button').trigger('click')
+    const removalUpdates = wrapper.emitted('update:modelValue') ?? []
+    expect(removalUpdates[removalUpdates.length - 1]?.[0]).toEqual([])
+  })
+
   it('uses configured options for custom select fields', async () => {
     const wrapper = mount(SaplingFieldEmailSubscriptionConditions, {
       props: {
