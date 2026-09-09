@@ -84,7 +84,7 @@ describe('AiService tool actions', () => {
 
     expect(result.status).toBe('failed');
     expect(action.status).toBe('failed');
-    expect(action.errorPayload).toEqual({ error: 'import.failed' });
+    expect(action.errorPayload).toMatchObject({ error: 'import.failed' });
     expect(action.message.responsePayload).toMatchObject({
       pendingToolActions: [
         {
@@ -95,6 +95,74 @@ describe('AiService tool actions', () => {
       ],
     });
     expect(em.flush).toHaveBeenCalled();
+    expect(em.clear).toHaveBeenCalled();
+  });
+
+  it('marks a confirmed schema-repair result as failed with field details', async () => {
+    const action = {
+      handle: 1,
+      status: 'pending',
+      session: { handle: 2 },
+      message: { handle: 3, responsePayload: { pendingToolActions: [] } },
+      person: { handle: 9 },
+      agent: 'songbirdGeneral',
+      serverName: 'sapling',
+      toolName: 'generic_create',
+      arguments: { entityHandle: 'event', data: { assigneePerson: 3 } },
+      errorPayload: null as unknown,
+      createdAt: new Date('2026-04-20T08:15:30.000Z'),
+      updatedAt: new Date('2026-04-20T08:15:30.000Z'),
+    };
+    const repair = {
+      status: 'needs_schema_retry',
+      mutationExecuted: false,
+      pendingToolAction: false,
+      invalidReferences: [
+        {
+          fieldName: 'assigneePerson',
+          parentFieldName: 'assigneeCompany',
+          reason: 'referenceDependencyMismatch',
+        },
+      ],
+    };
+    const em = {
+      clear: jest.fn(),
+      findOne: jest
+        .fn<() => Promise<typeof action | null>>()
+        .mockResolvedValue(action),
+      flush: jest.fn<() => Promise<void>>().mockResolvedValue(undefined),
+    };
+    const mcpService = {
+      executeTool: jest
+        .fn<() => Promise<ExecuteToolResult>>()
+        .mockResolvedValue({
+          serverHandle: 0,
+          serverName: 'sapling',
+          toolName: 'generic_create',
+          content: JSON.stringify(repair),
+          rawResult: repair,
+          modelResult: repair,
+        }),
+    };
+    const agentPolicy = { buildToolPolicy: jest.fn().mockReturnValue({}) };
+    const service = createService(
+      em,
+      mcpService,
+      {},
+      {},
+      {},
+      undefined,
+      agentPolicy,
+    );
+
+    const result = await service.confirmToolAction(1, { handle: 9 } as never);
+
+    expect(result.status).toBe('failed');
+    expect(action.errorPayload).toMatchObject({
+      error: 'ai.toolActionSchemaRetryRequired',
+      status: 'needs_schema_retry',
+      invalidReferences: repair.invalidReferences,
+    });
     expect(em.clear).toHaveBeenCalled();
   });
 

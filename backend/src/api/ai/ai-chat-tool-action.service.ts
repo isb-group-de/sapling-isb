@@ -70,9 +70,9 @@ export class AiChatToolActionService {
         user,
         policy,
       );
-      const failureMessage = this.getConfirmedToolExecutionFailure(result);
+      const failure = this.getConfirmedToolExecutionFailure(result);
 
-      if (failureMessage) {
+      if (failure) {
         const failedAction = await this.reloadAfterFailedToolExecution(
           action,
           user,
@@ -83,7 +83,7 @@ export class AiChatToolActionService {
           modelResult: result.modelResult,
           rawResult: result.rawResult,
         };
-        failedAction.errorPayload = { error: failureMessage };
+        failedAction.errorPayload = failure;
         failedAction.executedAt = new Date();
         this.syncToolActionIntoMessagePayload(failedAction);
         await this.em.flush();
@@ -487,10 +487,10 @@ export class AiChatToolActionService {
     content?: string;
     modelResult?: unknown;
     rawResult?: unknown;
-  }): string | null {
+  }): Record<string, unknown> | null {
     const structuredFailure =
-      this.extractToolFailureMessage(result.modelResult) ??
-      this.extractToolFailureMessage(result.rawResult);
+      this.extractToolFailure(result.modelResult) ??
+      this.extractToolFailure(result.rawResult);
 
     if (structuredFailure) {
       return structuredFailure;
@@ -501,27 +501,36 @@ export class AiChatToolActionService {
     }
 
     try {
-      return this.extractToolFailureMessage(JSON.parse(result.content));
+      return this.extractToolFailure(JSON.parse(result.content));
     } catch {
       return null;
     }
   }
 
-  private extractToolFailureMessage(value: unknown): string | null {
+  private extractToolFailure(value: unknown): Record<string, unknown> | null {
     if (!value || typeof value !== 'object') {
       return null;
     }
 
     const record = value as Record<string, unknown>;
 
-    if (record.ok !== false) {
+    const isSchemaRepair =
+      record.status === 'needs_schema_retry' ||
+      (record.mutationExecuted === false && record.pendingToolAction === false);
+    if (record.ok !== false && !isSchemaRepair) {
       return null;
     }
 
     const message = record.error ?? record.message;
-    return typeof message === 'string' && message.trim()
-      ? message.trim()
-      : 'ai.toolActionExecutionFailed';
+    return {
+      ...record,
+      error:
+        typeof message === 'string' && message.trim()
+          ? message.trim()
+          : isSchemaRepair
+            ? 'ai.toolActionSchemaRetryRequired'
+            : 'ai.toolActionExecutionFailed',
+    };
   }
 
   private asPositiveInteger(value: unknown): number | null {

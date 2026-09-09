@@ -299,13 +299,16 @@ Before deleting:
 For confirm-gated generic creates and updates, Sapling validates the proposed
 payload against the current user's entity schema before creating a confirmation
 action. Unknown or non-writable fields, invalid numeric values, missing required
-fields (including explicitly submitted `null` values), and unresolved reference
-keys return `status: needs_schema_retry` with
+fields (including explicitly submitted `null` values), unresolved reference
+keys, invalid to-many reference lists, and dependency mismatches such as a
+person that does not belong to the submitted company return
+`status: needs_schema_retry` with
 `mutationExecuted: false` and `pendingToolAction: false`. Inspect
 `invalidFields`, `invalidValues`, and `invalidReferences`, call `entity_schema`
 or resolve the referenced record as indicated, and retry with a corrected
 payload. Do not tell the user to confirm an action until Sapling actually
-returns a pending tool action.
+returns a pending tool action. Confirmation re-runs this validation so changes
+to referenced records cannot turn a stale proposal into a silent success.
 
 ## Prompting Guidance
 

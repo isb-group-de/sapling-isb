@@ -1,4 +1,5 @@
 import { describe, expect, it, jest } from '@jest/globals';
+import { BadRequestException } from '@nestjs/common';
 import {
   createService,
   createTemplateField,
@@ -424,6 +425,54 @@ describe('SaplingMcpService generic reads and criteria', () => {
       ok: false,
       toolName: 'generic_list',
       error: 'global.permissionDenied',
+    });
+  });
+
+  it('preserves structured mutation error details for field-specific feedback', async () => {
+    const genericService = {
+      create: jest.fn<() => Promise<void>>().mockRejectedValue(
+        new BadRequestException({
+          message: 'exception.badRequest',
+          error: 'exception.referenceDependencyMismatch',
+          details: {
+            summaryParams: {
+              entityHandle: 'event',
+              fieldName: 'assigneePerson',
+              parentFieldName: 'assigneeCompany',
+            },
+          },
+        }),
+      ),
+      update: jest.fn(),
+      delete: jest.fn(),
+      getRecordTimeline: jest.fn(),
+      findAndCount: jest.fn(),
+    };
+    const templateService = {
+      getEntityTemplate: jest
+        .fn()
+        .mockReturnValue([createTemplateField({ name: 'title' })]),
+    };
+    const service = createService({ genericService, templateService });
+
+    const result = await service.executeTool(
+      'generic_create',
+      { entityHandle: 'event', data: { title: 'Termin' } },
+      { handle: 1 } as never,
+    );
+
+    expect(result.rawResult).toMatchObject({
+      ok: false,
+      toolName: 'generic_create',
+      error: 'exception.referenceDependencyMismatch',
+      message: 'exception.badRequest',
+      details: {
+        summaryParams: {
+          entityHandle: 'event',
+          fieldName: 'assigneePerson',
+          parentFieldName: 'assigneeCompany',
+        },
+      },
     });
   });
 

@@ -406,11 +406,58 @@ function getToolActionError(action: AiChatToolActionItem) {
   }
 
   const payload = asRecord(action.errorPayload)
+  const repairFields = getSchemaRepairFieldNames(payload)
+  if (repairFields.length > 0 && te('aiChat.toolActionInvalidFields')) {
+    const entityHandle = extractEntityHandle(action.arguments)
+    const labels = repairFields.map(
+      (fieldName) => getToolActionFieldLabel(entityHandle, fieldName) || fieldName,
+    )
+    return t('aiChat.toolActionInvalidFields', { fields: labels.join(', ') })
+  }
+
   const value =
     typeof payload?.error === 'string' && payload.error.trim() ? payload.error : payload?.message
 
   if (typeof value !== 'string' || !value.trim()) return null
   const key = value.trim()
-  return te(key) ? t(key) : ''
+  if (!te(key)) return ''
+
+  const details = asRecord(payload?.details)
+  const summaryParams = asRecord(details?.summaryParams)
+  const entityHandle =
+    (typeof summaryParams?.entityHandle === 'string' ? summaryParams.entityHandle : null) ??
+    extractEntityHandle(action.arguments)
+  const fieldName = typeof summaryParams?.fieldName === 'string' ? summaryParams.fieldName : null
+  const parentFieldName =
+    typeof summaryParams?.parentFieldName === 'string' ? summaryParams.parentFieldName : null
+
+  return t(key, {
+    field: fieldName ? getToolActionFieldLabel(entityHandle, fieldName) || fieldName : '',
+    parentField: parentFieldName
+      ? getToolActionFieldLabel(entityHandle, parentFieldName) || parentFieldName
+      : '',
+  })
+}
+
+function getSchemaRepairFieldNames(payload: Record<string, unknown> | null) {
+  if (payload?.status !== 'needs_schema_retry') return []
+
+  const fieldNames = new Set<string>()
+  for (const key of ['invalidFields', 'invalidValues', 'invalidReferences']) {
+    const entries = payload[key]
+    if (!Array.isArray(entries)) continue
+    for (const entry of entries) {
+      const fieldName = asRecord(entry)?.fieldName
+      if (typeof fieldName === 'string' && fieldName.trim()) fieldNames.add(fieldName.trim())
+    }
+  }
+  const missingRequiredFields = payload.missingRequiredFields
+  if (Array.isArray(missingRequiredFields)) {
+    for (const fieldName of missingRequiredFields) {
+      if (typeof fieldName === 'string' && fieldName.trim()) fieldNames.add(fieldName.trim())
+    }
+  }
+
+  return [...fieldNames]
 }
 </script>

@@ -333,10 +333,7 @@ export class SaplingMcpGenericToolService {
         field.referenceName &&
         (field.kind === 'm:1' || field.kind === '1:1')
       ) {
-        const submittedValue =
-          value && typeof value === 'object' && !Array.isArray(value)
-            ? (value as Record<string, unknown>).handle
-            : value;
+        const submittedValue = this.extractReferenceHandle(value);
 
         if (
           (typeof submittedValue !== 'string' || !submittedValue.trim()) &&
@@ -385,10 +382,11 @@ export class SaplingMcpGenericToolService {
             {
               entityHandle: field.referenceName,
               handle: submittedValue,
+              relations: this.getDependencyRelations(field),
             },
             user,
             policy,
-          )) as { found?: unknown };
+          )) as { found?: unknown; record?: unknown };
 
           if (referencedRecord.found !== true) {
             invalidReferences.push({
@@ -398,6 +396,15 @@ export class SaplingMcpGenericToolService {
               submittedValue,
               reason: 'referenceRecordNotFound',
             });
+          } else {
+            this.validateReferenceDependency(
+              entityHandle,
+              field,
+              data,
+              submittedValue,
+              referencedRecord.record,
+              invalidReferences,
+            );
           }
         } catch {
           invalidReferences.push({
@@ -408,6 +415,21 @@ export class SaplingMcpGenericToolService {
             reason: 'referenceCouldNotBeValidated',
           });
         }
+        continue;
+      }
+
+      if (
+        field.isReference &&
+        field.referenceName &&
+        (field.kind === 'm:n' || field.kind === 'n:m')
+      ) {
+        await this.validateReferenceCollection(
+          field,
+          value,
+          user,
+          policy,
+          invalidReferences,
+        );
         continue;
       }
 
@@ -480,6 +502,196 @@ export class SaplingMcpGenericToolService {
       Object.hasOwn(customFields, customFieldName) &&
       customFields[customFieldName] != null
     );
+  }
+
+  private async validateReferenceCollection(
+    field: {
+      name: string;
+      referenceName: string;
+      referenceHandleType: string | null;
+    },
+    value: unknown,
+    user: PersonItem,
+    policy: McpToolPolicy | undefined,
+    invalidReferences: Array<Record<string, unknown>>,
+  ): Promise<void> {
+    if (!Array.isArray(value)) {
+      invalidReferences.push({
+        fieldName: field.name,
+        referenceName: field.referenceName,
+        reason: 'referenceHandleArrayRequired',
+      });
+      return;
+    }
+
+    for (const [index, entry] of value.entries()) {
+      const submittedValue = this.extractReferenceHandle(entry);
+      if (
+        !this.isValidReferenceHandle(submittedValue, field.referenceHandleType)
+      ) {
+        invalidReferences.push({
+          fieldName: field.name,
+          referenceName: field.referenceName,
+          itemIndex: index,
+          submittedValue,
+          reason: 'referenceHandleRequired',
+        });
+        continue;
+      }
+
+      try {
+        const referencedRecord = (await this.executeGenericGet(
+          {
+            entityHandle: field.referenceName,
+            handle: submittedValue,
+          },
+          user,
+          policy,
+        )) as { found?: unknown };
+
+        if (referencedRecord.found !== true) {
+          invalidReferences.push({
+            fieldName: field.name,
+            referenceName: field.referenceName,
+            itemIndex: index,
+            submittedValue,
+            reason: 'referenceRecordNotFound',
+          });
+        }
+      } catch {
+        invalidReferences.push({
+          fieldName: field.name,
+          referenceName: field.referenceName,
+          itemIndex: index,
+          submittedValue,
+          reason: 'referenceCouldNotBeValidated',
+        });
+      }
+    }
+  }
+
+  private validateReferenceDependency(
+    entityHandle: string,
+    field: {
+      name: string;
+      referenceName: string;
+      referenceDependency?: Record<string, unknown> | null;
+    },
+    data: Record<string, unknown>,
+    submittedValue: unknown,
+    referencedRecord: unknown,
+    invalidReferences: Array<Record<string, unknown>>,
+  ): void {
+    const dependency = field.referenceDependency;
+    const parentFieldName =
+      typeof dependency?.parentField === 'string'
+        ? dependency.parentField
+        : null;
+    const targetFieldName =
+      typeof dependency?.targetField === 'string'
+        ? dependency.targetField
+        : null;
+
+    if (!parentFieldName || !targetFieldName) {
+      return;
+    }
+
+    // Generic reference validation has a ticket-specific compatibility rule
+    // for event creators. Leave that exceptional case to the authoritative
+    // validator instead of rejecting a valid ticket-derived event here.
+    if (
+      entityHandle === 'event' &&
+      field.name === 'creatorPerson' &&
+      parentFieldName === 'creatorCompany' &&
+      data.ticket != null
+    ) {
+      return;
+    }
+
+    const parentValue = this.extractReferenceHandle(data[parentFieldName]);
+    if (parentValue == null) {
+      if (dependency?.requireParent === true) {
+        invalidReferences.push({
+          fieldName: field.name,
+          referenceName: field.referenceName,
+          submittedValue,
+          parentFieldName,
+          reason: 'referenceDependencyParentRequired',
+        });
+      }
+      return;
+    }
+
+    const record =
+      referencedRecord &&
+      typeof referencedRecord === 'object' &&
+      !Array.isArray(referencedRecord)
+        ? (referencedRecord as Record<string, unknown>)
+        : null;
+    const targetValue = this.extractReferenceHandle(record?.[targetFieldName]);
+
+    if (targetValue == null || String(parentValue) !== String(targetValue)) {
+      invalidReferences.push({
+        fieldName: field.name,
+        referenceName: field.referenceName,
+        submittedValue,
+        parentFieldName,
+        parentSubmittedValue: parentValue,
+        targetFieldName,
+        targetValue,
+        reason:
+          targetValue == null
+            ? 'referenceDependencyCouldNotBeValidated'
+            : 'referenceDependencyMismatch',
+      });
+    }
+  }
+
+  private getDependencyRelations(field: {
+    referenceDependency?: Record<string, unknown> | null;
+  }): string[] {
+    const targetField = field.referenceDependency?.targetField;
+    return typeof targetField === 'string' && targetField.trim()
+      ? [targetField]
+      : [];
+  }
+
+  private extractReferenceHandle(value: unknown): unknown {
+    return value && typeof value === 'object' && !Array.isArray(value)
+      ? (value as Record<string, unknown>).handle
+      : value;
+  }
+
+  private isValidReferenceHandle(
+    value: unknown,
+    referenceHandleType: string | null,
+  ): value is string | number {
+    if (
+      (typeof value !== 'string' || !value.trim()) &&
+      (typeof value !== 'number' || !Number.isFinite(value))
+    ) {
+      return false;
+    }
+
+    const normalizedType = referenceHandleType?.toLowerCase();
+    if (
+      normalizedType &&
+      [
+        'number',
+        'float',
+        'double',
+        'decimal',
+        'real',
+        'int',
+        'integer',
+        'smallint',
+        'bigint',
+      ].includes(normalizedType)
+    ) {
+      return Number.isFinite(Number(value));
+    }
+
+    return true;
   }
 
   async executeGenericDelete(

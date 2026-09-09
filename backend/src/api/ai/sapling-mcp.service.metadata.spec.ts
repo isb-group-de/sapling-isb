@@ -351,6 +351,164 @@ describe('SaplingMcpService metadata and payload security', () => {
     });
   });
 
+  it('reports event reference dependency mismatches before creating', async () => {
+    const genericService = {
+      create: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+      getRecordTimeline: jest.fn(),
+      findAndCount: jest.fn((entityHandle: unknown, filter: unknown) => {
+        const entityName = String(entityHandle);
+        const handle = (filter as Record<string, unknown>).handle;
+        const records: Record<string, Record<string, unknown>> = {
+          eventType: { handle: String(handle) },
+          eventCategory: { handle: String(handle) },
+          company: { handle: Number(handle) },
+          person:
+            Number(handle) === 3
+              ? { handle: 3, company: { handle: 105 } }
+              : { handle: Number(handle), company: { handle: 2 } },
+        };
+        const record =
+          entityName === 'person' && Number(handle) === 999
+            ? undefined
+            : records[entityName];
+
+        return Promise.resolve({
+          data: record ? [record] : [],
+          meta: { total: record ? 1 : 0 },
+        } as never);
+      }),
+    };
+    const templateService = {
+      getEntityTemplate: jest.fn((entityHandle: string) => {
+        if (entityHandle === 'event') {
+          return [
+            createTemplateField({ name: 'title', isRequired: true }),
+            createTemplateField({
+              name: 'startDate',
+              type: 'Date',
+              isRequired: true,
+            }),
+            createTemplateField({
+              name: 'endDate',
+              type: 'Date',
+              isRequired: true,
+            }),
+            createTemplateField({
+              name: 'type',
+              kind: 'm:1',
+              isReference: true,
+              referenceName: 'eventType',
+            }),
+            createTemplateField({
+              name: 'category',
+              kind: 'm:1',
+              isReference: true,
+              referenceName: 'eventCategory',
+            }),
+            createTemplateField({
+              name: 'creatorCompany',
+              kind: 'm:1',
+              isReference: true,
+              referenceName: 'company',
+            }),
+            createTemplateField({
+              name: 'creatorPerson',
+              kind: 'm:1',
+              isReference: true,
+              referenceName: 'person',
+              referenceDependency: {
+                parentField: 'creatorCompany',
+                targetField: 'company',
+              },
+            }),
+            createTemplateField({
+              name: 'assigneeCompany',
+              kind: 'm:1',
+              isReference: true,
+              referenceName: 'company',
+            }),
+            createTemplateField({
+              name: 'assigneePerson',
+              kind: 'm:1',
+              isReference: true,
+              referenceName: 'person',
+              referenceDependency: {
+                parentField: 'assigneeCompany',
+                targetField: 'company',
+              },
+            }),
+            createTemplateField({
+              name: 'participants',
+              kind: 'm:n',
+              isReference: true,
+              referenceName: 'person',
+            }),
+          ];
+        }
+
+        if (entityHandle === 'person') {
+          return [
+            createTemplateField({ name: 'handle', type: 'number' }),
+            createTemplateField({
+              name: 'company',
+              kind: 'm:1',
+              isReference: true,
+              referenceName: 'company',
+            }),
+          ];
+        }
+
+        return [
+          createTemplateField({
+            name: 'handle',
+            type: entityHandle === 'company' ? 'number' : 'string',
+          }),
+        ];
+      }),
+    };
+    const service = createService({ genericService, templateService });
+
+    const result = await service.executeTool(
+      'generic_create',
+      {
+        entityHandle: 'event',
+        data: {
+          type: 'development',
+          title: 'Prüfung & Qualitätssicherung',
+          startDate: '2026-09-10T16:00:00',
+          endDate: '2026-09-10T17:00:00',
+          category: 'internal',
+          participants: [3, 999],
+          creatorPerson: 17,
+          assigneePerson: 3,
+          creatorCompany: 2,
+          assigneeCompany: 644,
+        },
+      },
+      { handle: 17 } as never,
+    );
+
+    expect(genericService.create).not.toHaveBeenCalled();
+    expect(result.rawResult).toMatchObject({
+      status: 'needs_schema_retry',
+      mutationExecuted: false,
+      invalidReferences: expect.arrayContaining([
+        expect.objectContaining({
+          fieldName: 'assigneePerson',
+          parentFieldName: 'assigneeCompany',
+          reason: 'referenceDependencyMismatch',
+        }),
+        expect.objectContaining({
+          fieldName: 'participants',
+          itemIndex: 1,
+          reason: 'referenceRecordNotFound',
+        }),
+      ]),
+    });
+  });
+
   it('adds current reference defaults before generic ticket creates', async () => {
     const genericService = {
       create: jest.fn().mockResolvedValue({

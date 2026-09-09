@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { ForbiddenException, HttpException, Injectable } from '@nestjs/common';
 import { PersonItem } from '../../entity/PersonItem';
 import type { McpToolPolicy } from './mcp-policy.types';
 import { SAPLING_MCP_TOOL_DEFINITIONS } from './sapling-mcp-tool-definitions';
@@ -271,11 +271,27 @@ export class SaplingMcpExecutionService {
 
   private createToolErrorPayload(toolName: string, error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
+    const response =
+      error instanceof HttpException ? error.getResponse() : undefined;
+    const responseRecord =
+      response && typeof response === 'object' && !Array.isArray(response)
+        ? (response as Record<string, unknown>)
+        : null;
 
     return {
       ok: false,
       toolName,
-      error: message,
+      error:
+        typeof responseRecord?.error === 'string'
+          ? responseRecord.error
+          : message,
+      message:
+        typeof responseRecord?.message === 'string'
+          ? responseRecord.message
+          : message,
+      ...(responseRecord?.details != null
+        ? { details: responseRecord.details }
+        : {}),
       hints: [...SAPLING_MCP_USAGE_HINTS.toolError],
     };
   }
