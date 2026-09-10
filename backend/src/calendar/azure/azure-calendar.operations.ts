@@ -284,27 +284,25 @@ export class AzureCalendarOperations {
       return 'skipped';
     }
 
-    // Microsoft Graph event ids identify one mailbox copy. Invitations shared
-    // by an organizer and attendees therefore have different ids, while
-    // iCalUId identifies the meeting across those calendars. Prefer that
-    // calendar-wide identity and fall back to the legacy mailbox id so existing
-    // projection rows are backfilled on their next import.
+    // Match the exact mailbox item first so provider-native series exceptions
+    // keep their detached Sapling Event. Fall back to iCalUId to converge
+    // organizer and attendee copies whose mailbox ids differ.
     const populateOptions = {
       populate: ['event', 'event.participants', 'event.status'],
     } as const;
     const reference =
+      (await emFork.findOne(
+        EventAzureItem,
+        { referenceHandle },
+        populateOptions as never,
+      )) ??
       (iCalUId
         ? await emFork.findOne(
             EventAzureItem,
             { iCalUId },
             populateOptions as never,
           )
-        : null) ??
-      (await emFork.findOne(
-        EventAzureItem,
-        { referenceHandle },
-        populateOptions as never,
-      ));
+        : null);
 
     if (graphEvent.isCancelled === true && !reference) {
       return 'skipped';
@@ -321,7 +319,7 @@ export class AzureCalendarOperations {
     );
 
     if (reference?.event && typeof reference.event === 'object') {
-      if (iCalUId && !reference.iCalUId) {
+      if (iCalUId && !reference.iCalUId && !graphEvent.seriesMasterId) {
         reference.iCalUId = iCalUId;
       }
       const importedStatus =
@@ -747,8 +745,12 @@ export class AzureCalendarOperations {
 
   protected async detachOccurrence(
     client: Client,
-    reference: EventAzureItem,
+    event: EventItem,
+    seriesReference: EventAzureItem,
     occurrenceStartValue: string,
+    emFork: EntityManager,
+    classificationMappings?: CalendarClassificationMapping[] | null,
+    timeZone?: string,
   ): Promise<Record<string, unknown>> {
     const occurrenceStart = new Date(occurrenceStartValue);
     if (Number.isNaN(occurrenceStart.getTime())) {
@@ -758,7 +760,7 @@ export class AzureCalendarOperations {
     const rangeStart = new Date(occurrenceStart.getTime() - 60_000);
     const rangeEnd = new Date(occurrenceStart.getTime() + 24 * 60 * 60_000);
     const response = (await client
-      .api(`/me/events/${reference.referenceHandle}/instances`)
+      .api(`/me/events/${seriesReference.referenceHandle}/instances`)
       .query({
         startDateTime: rangeStart.toISOString(),
         endDateTime: rangeEnd.toISOString(),
@@ -780,11 +782,46 @@ export class AzureCalendarOperations {
     });
 
     if (!occurrence?.id) {
-      return { success: true, unchanged: true };
+      throw new Error('calendar.recurrenceOccurrenceReferenceMissing');
     }
 
-    await client.api(`/me/events/${occurrence.id}`).delete();
-    return { success: true, detachedOccurrenceId: occurrence.id };
+    if (
+      event.status?.handle === 'completed' ||
+      event.status?.handle === 'canceled'
+    ) {
+      await client.api(`/me/events/${occurrence.id}`).delete();
+      return { success: true, detachedOccurrenceId: occurrence.id };
+    }
+
+    const eventResource = buildAzureCalendarEvent(
+      event,
+      classificationMappings,
+      timeZone,
+    );
+    delete eventResource.recurrence;
+    delete eventResource.isOnlineMeeting;
+    delete eventResource.onlineMeetingProvider;
+    const updated = (await client
+      .api(`/me/events/${occurrence.id}`)
+      .patch(eventResource)) as { id?: string };
+
+    let reference = await emFork.findOne(EventAzureItem, {
+      event: event.handle as never,
+    });
+    if (!reference) {
+      reference = new EventAzureItem();
+      reference.event = event;
+    }
+    reference.referenceHandle = updated.id ?? occurrence.id;
+    // Outlook exceptions share the master's iCalUId, so the unique import
+    // identity remains attached to the master projection.
+    reference.iCalUId = null;
+    await emFork.persist(reference).flush();
+    return {
+      ...updated,
+      id: reference.referenceHandle,
+      detachedOccurrenceId: occurrence.id,
+    };
   }
 }
 

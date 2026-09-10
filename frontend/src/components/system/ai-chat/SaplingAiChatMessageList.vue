@@ -219,25 +219,25 @@
       >
         <v-btn
           v-if="canRateMessage(message)"
-          :icon="message.rating === 1 ? 'mdi-thumb-up' : 'mdi-thumb-up-outline'"
+          :icon="message.rating === true ? 'mdi-thumb-up' : 'mdi-thumb-up-outline'"
           size="small"
-          :variant="message.rating === 1 ? 'tonal' : 'text'"
-          :color="message.rating === 1 ? 'success' : undefined"
+          :variant="message.rating === true ? 'tonal' : 'text'"
+          :color="message.rating === true ? 'success' : undefined"
           :loading="isMessageRatingLoading(message)"
           :aria-label="getTranslationLabel('ratePositive', 'Antwort positiv bewerten')"
           :title="getTranslationLabel('ratePositive', 'Antwort positiv bewerten')"
-          @click="emitMessageRating(message, message.rating === 1 ? null : 1)"
+          @click="emitMessageRating(message, message.rating === true ? null : true)"
         />
         <v-btn
           v-if="canRateMessage(message)"
-          :icon="message.rating === -1 ? 'mdi-thumb-down' : 'mdi-thumb-down-outline'"
+          :icon="message.rating === false ? 'mdi-thumb-down' : 'mdi-thumb-down-outline'"
           size="small"
-          :variant="message.rating === -1 ? 'tonal' : 'text'"
-          :color="message.rating === -1 ? 'error' : undefined"
+          :variant="message.rating === false ? 'tonal' : 'text'"
+          :color="message.rating === false ? 'error' : undefined"
           :loading="isMessageRatingLoading(message)"
           :aria-label="getTranslationLabel('rateNegative', 'Antwort negativ bewerten')"
           :title="getTranslationLabel('rateNegative', 'Antwort negativ bewerten')"
-          @click="emitMessageRating(message, message.rating === -1 ? null : -1)"
+          @click="emitMessageRating(message, message.rating === false ? null : false)"
         />
         <v-btn
           v-if="canPlayMessageSpeech(message)"
@@ -319,7 +319,7 @@ const emit = defineEmits<{
   (event: 'reject-tool-action', action: AiChatToolActionItem): void
   (
     event: 'update-message-rating',
-    payload: { message: AiChatMessageItem; rating: -1 | 1 | null },
+    payload: { message: AiChatMessageItem; rating: boolean | null },
   ): void
 }>()
 
@@ -396,7 +396,7 @@ function isMessageRatingLoading(message: AiChatMessageItem) {
   return message.handle != null && props.ratingStateByHandle[message.handle] === true
 }
 
-function emitMessageRating(message: AiChatMessageItem, rating: -1 | 1 | null) {
+function emitMessageRating(message: AiChatMessageItem, rating: boolean | null) {
   if (!canRateMessage(message) || isMessageRatingLoading(message)) return
   emit('update-message-rating', { message, rating })
 }

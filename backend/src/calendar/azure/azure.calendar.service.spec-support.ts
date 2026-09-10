@@ -56,8 +56,11 @@ export type AzureDeliveryServiceTestHarness = {
   ) => Promise<unknown>;
   detachOccurrence: (
     client: object,
-    reference: object,
+    event: object,
+    seriesReference: object,
     occurrenceStart: string,
+    emFork: object,
+    classificationMappings: [],
   ) => Promise<unknown>;
   fetchAzureEventByReference: (
     accessToken: string,

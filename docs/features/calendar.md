@@ -120,28 +120,28 @@ the original dates.
 
 Important fields:
 
-| Field                               | Meaning                                                                                         |
-| ----------------------------------- | ----------------------------------------------------------------------------------------------- |
-| `title`                             | Display title and primary value                                                                 |
-| `description`                       | Markdown description; also part of AI vectorization                                             |
-| `startDate`, `endDate`              | Event time range                                                                                |
-| `isAllDay`                          | Marks all-day events                                                                            |
-| `isPrivate`                         | Limits access to creator and participants; includes private Outlook imports                     |
-| `createOnlineMeeting`               | Requests a provider-native Teams or Google Meet link; defaults to `false`                       |
-| `recurrenceRule`                    | Optional RRULE string for recurring events                                                      |
-| `recurrenceExceptionDates`          | Original occurrence starts removed from the series and represented by standalone Events         |
-| `preparationDuration`               | Optional preparation block duration in 15-minute increments; defaults to `00:00`                |
-| `followUpDuration`                  | Optional follow-up block duration in 15-minute increments; defaults to `00:00`                  |
-| `onlineMeetingURL`                  | Optional meeting link                                                                           |
-| `type`                              | Appointment type; defaults to `Online` and controls default-calendar behavior                   |
-| `category`                          | Business category combined with the appointment type; defaults to `Intern`                      |
-| `status`                            | Current status; defaults to `scheduled`; `isOpen` controls the open-status calendar filter      |
-| `assigneeCompany`, `assigneePerson` | Internal owner                                                                                  |
-| `creatorCompany`, `creatorPerson`   | Creator context                                                                                 |
-| `ticket`                            | Optional ticket relation                                                                        |
-| `salesOpportunity`                  | Optional sales opportunity relation                                                             |
-| `participants`                      | Person collection for attendees                                                                 |
-| `azure`, `google`                   | External calendar projection records                                                            |
+| Field                               | Meaning                                                                                    |
+| ----------------------------------- | ------------------------------------------------------------------------------------------ |
+| `title`                             | Display title and primary value                                                            |
+| `description`                       | Markdown description; also part of AI vectorization                                        |
+| `startDate`, `endDate`              | Event time range                                                                           |
+| `isAllDay`                          | Marks all-day events                                                                       |
+| `isPrivate`                         | Limits access to creator and participants; includes private Outlook imports                |
+| `createOnlineMeeting`               | Requests a provider-native Teams or Google Meet link; defaults to `false`                  |
+| `recurrenceRule`                    | Optional RRULE string for recurring events                                                 |
+| `recurrenceExceptionDates`          | Original occurrence starts removed from the series and represented by standalone Events    |
+| `preparationDuration`               | Optional preparation block duration in 15-minute increments; defaults to `00:00`           |
+| `followUpDuration`                  | Optional follow-up block duration in 15-minute increments; defaults to `00:00`             |
+| `onlineMeetingURL`                  | Optional meeting link                                                                      |
+| `type`                              | Appointment type; defaults to `Online` and controls default-calendar behavior              |
+| `category`                          | Business category combined with the appointment type; defaults to `Intern`                 |
+| `status`                            | Current status; defaults to `scheduled`; `isOpen` controls the open-status calendar filter |
+| `assigneeCompany`, `assigneePerson` | Internal owner                                                                             |
+| `creatorCompany`, `creatorPerson`   | Creator context                                                                            |
+| `ticket`                            | Optional ticket relation                                                                   |
+| `salesOpportunity`                  | Optional sales opportunity relation                                                        |
+| `participants`                      | Person collection for attendees                                                            |
+| `azure`, `google`                   | External calendar projection records                                                       |
 
 Outlook and Google calendar projections receive their physical location from
 the Event's customer-side `creatorCompany`. Sapling concatenates every
@@ -268,29 +268,28 @@ permissions, hooks, and audit records. Invalid/already-detached occurrences are
 rejected before the first write. The master produces one update audit entry per
 batch rather than one per selected occurrence; child audit entries remain individual.
 
-The internal `calendarDeliveryOccurrenceStarts` context carries the original
-starts to the provider hook. After commit, that hook reloads the master once and
-queues every required detach separately. One failed queue attempt does not skip
-the remaining starts. Completed/internal-only Events are excluded before provider
-work is scheduled, matching the existing delivery rules. Post-commit task batches
-run with at most four concurrent operations; failures are logged per task and do
-not prevent the remaining tasks from running.
+Each detached child carries its original start and source-series handle to the
+provider hook. After commit, the hook reloads and queues each child separately.
+Internal-only Event types are excluded before provider work is scheduled. A
+completed detached occurrence still receives a provider delivery so the matching
+external instance can be removed. Post-commit task batches run with at most four
+concurrent operations; failures are logged per task and do not prevent the
+remaining tasks from running.
 
-Provider behavior is intentionally provider-specific:
+Google and Outlook both keep an edited occurrence inside the provider series.
+Sapling locates the external instance by its original generated start and updates
+that instance into a provider-native exception. The internal master update does
+not send a separate provider request, and the detached Sapling Event stores the
+exception instance id in its `EventGoogleItem` or `EventAzureItem`. If no master
+projection exists yet, Sapling creates it first and then updates its selected
+instance. Google does not apply a detach-specific `sendUpdates` override.
 
-- Google receives the master RRULE plus RFC5545 `EXDATE` lines and the detached
-  Event is inserted as a normal standalone Google event.
-- Outlook lists the master event's instances through Microsoft Graph, deletes
-  the instance matching the original start, and creates the detached Event as a
-  normal standalone Outlook event. When no master projection exists yet, it is
-  created first and the selected instance is removed immediately.
-
-Provider imports collapse expanded recurring instances back to their master.
-Sapling-created detached provider events remain standalone and continue to match
-their own `EventAzureItem` or `EventGoogleItem` reference. Google master imports
-also restore RRULE and EXDATE data, while Outlook imports preserve Sapling's
-persisted exception timestamps because Graph recurrence patterns do not expose
-EXDATE on the master.
+Provider imports collapse ordinary expanded instances back to their master.
+Known Sapling-created exceptions continue to match their detached Event by the
+exact provider instance id before the shared series `iCalUID`/`iCalUId` fallback
+is considered. Outlook preserves Sapling's persisted exception timestamps;
+Google restores a native exception's original start on the Sapling master when
+the exception projection is imported.
 
 Open-task Inbox entries resolve a recurring Event to its first occurrence that
 is not listed in `recurrenceExceptionDates`. The Inbox route carries that exact

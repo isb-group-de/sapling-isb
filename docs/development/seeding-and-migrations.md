@@ -209,6 +209,11 @@ index, unique constraint, foreign-key name, or foreign-key rule that exists only
 in an old/manual migration is therefore interpreted as obsolete and can be
 dropped by a later generated migration.
 
+Sapling uses the fixed snapshot `backend/src/database/migration/.snapshot-sapling.json`
+for every environment. Do not create database-name-specific copies: migrations
+describe one shared schema, and parallel snapshots can silently drift when
+`DB_NAME` changes.
+
 The entity classes are the complete schema source of truth. Declare persistent
 indexes with `@Index` or `@Unique`, set `index: true` on an owning
 `@ManyToMany` when its generated pivot table needs the inverse-column index, and

@@ -37,14 +37,14 @@ describe('ApiAiService Markdown preparation', () => {
 
   it('persists a Songbird response rating', async () => {
     vi.mocked(axios.patch).mockResolvedValue({
-      data: { handle: 42, role: 'assistant', rating: -1 },
+      data: { handle: 42, role: 'assistant', rating: false },
     })
 
-    const result = await ApiAiService.updateMessageRating(42, { rating: -1 })
+    const result = await ApiAiService.updateMessageRating(42, { rating: false })
 
     expect(axios.patch).toHaveBeenCalledWith('/api/ai/chat/messages/42/rating', {
-      rating: -1,
+      rating: false,
     })
-    expect(result).toMatchObject({ handle: 42, rating: -1 })
+    expect(result).toMatchObject({ handle: 42, rating: false })
   })
 })

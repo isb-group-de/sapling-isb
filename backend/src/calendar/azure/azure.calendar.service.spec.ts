@@ -338,6 +338,47 @@ describe('AzureCalendarService Outlook import privacy', () => {
     expect(emFork.persist).not.toHaveBeenCalled();
   });
 
+  it('keeps a native Outlook exception on its exact Sapling projection', async () => {
+    const event = new EventItem();
+    event.participants = {
+      removeAll: jest.fn(),
+      add: jest.fn(),
+    } as never;
+    const exceptionReference = {
+      referenceHandle: 'outlook-exception-id',
+      iCalUId: null,
+      event,
+    } as EventAzureItem;
+    const service = createService();
+
+    await expect(
+      service.upsertImportedEvent(
+        {
+          findOne: jest.fn((_entity, where: { referenceHandle?: string }) =>
+            Promise.resolve(
+              where.referenceHandle === 'outlook-exception-id'
+                ? exceptionReference
+                : null,
+            ),
+          ),
+          find: jest.fn(() => Promise.resolve([])),
+          persist: jest.fn(),
+        },
+        createGraphEvent({
+          id: 'outlook-exception-id',
+          iCalUId: 'shared-outlook-series',
+          seriesMasterId: 'outlook-master-id',
+          type: 'exception',
+          subject: 'Edited occurrence',
+        }),
+        defaults,
+      ),
+    ).resolves.toBe('updated');
+
+    expect(event.title).toBe('Edited occurrence');
+    expect(exceptionReference.iCalUId).toBeNull();
+  });
+
   it('backfills the calendar-wide id on a legacy mailbox reference', async () => {
     const existingEvent = new EventItem();
     const legacyReference = {

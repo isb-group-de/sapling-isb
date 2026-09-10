@@ -85,7 +85,7 @@ describe('AzureCalendarService recurrence materialization', () => {
     });
   });
 
-  it('deletes exactly the matching Outlook series instance', async () => {
+  it('updates exactly the matching Outlook series instance as an exception', async () => {
     const get = jest.fn(() =>
       Promise.resolve({
         value: [
@@ -98,11 +98,13 @@ describe('AzureCalendarService recurrence materialization', () => {
         ],
       }),
     );
-    const remove = jest.fn(() => Promise.resolve(undefined));
+    const patch = jest.fn(() => Promise.resolve({ id: 'occurrence-2' }));
     const query = jest.fn(() => ({ header: jest.fn(() => ({ get })) }));
     const api = jest.fn((path: string) =>
-      path.endsWith('/instances') ? { query } : { delete: remove },
+      path.endsWith('/instances') ? { query } : { patch },
     );
+    const flush = jest.fn(() => Promise.resolve());
+    const persist = jest.fn(() => ({ flush }));
     const service = new AzureCalendarService(
       {} as never,
       {} as never,
@@ -111,16 +113,41 @@ describe('AzureCalendarService recurrence materialization', () => {
     await expect(
       service.detachOccurrence(
         { api },
+        {
+          handle: 43,
+          title: 'Edited occurrence',
+          startDate: new Date('2026-07-29T13:00:00.000Z'),
+          endDate: new Date('2026-07-29T14:00:00.000Z'),
+          participants: [],
+          status: { handle: 'scheduled' },
+        },
         { referenceHandle: 'outlook-master' },
         '2026-07-29T11:00:00.000Z',
+        { findOne: jest.fn(() => null), persist },
+        [],
       ),
-    ).resolves.toEqual({ success: true, detachedOccurrenceId: 'occurrence-2' });
+    ).resolves.toEqual({
+      id: 'occurrence-2',
+      detachedOccurrenceId: 'occurrence-2',
+    });
 
     expect(api).toHaveBeenNthCalledWith(
       1,
       '/me/events/outlook-master/instances',
     );
     expect(api).toHaveBeenNthCalledWith(2, '/me/events/occurrence-2');
-    expect(remove).toHaveBeenCalledTimes(1);
+    expect(patch as jest.Mock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        subject: 'Edited occurrence',
+        start: { dateTime: '2026-07-29T13:00:00.000', timeZone: 'UTC' },
+        end: { dateTime: '2026-07-29T14:00:00.000', timeZone: 'UTC' },
+      }),
+    );
+    expect(persist as jest.Mock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        referenceHandle: 'occurrence-2',
+        iCalUId: null,
+      }),
+    );
   });
 });

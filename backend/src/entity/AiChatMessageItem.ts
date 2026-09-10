@@ -1,6 +1,5 @@
 import { type Rel } from '@mikro-orm/core';
 import {
-  Check,
   Entity,
   ManyToOne,
   Property,
@@ -18,10 +17,6 @@ import { Sapling, SaplingForm } from './global/entity.decorator';
 @Index({
   name: 'ai_chat_message_item_session_handle_sequence_index',
   properties: ['session', 'sequence'],
-})
-@Check({
-  name: 'ai_chat_message_item_rating_check',
-  expression: (columns) => `${columns.rating} in (-1, 1)`,
 })
 @Entity()
 export class AiChatMessageItem {
@@ -303,13 +298,13 @@ export class AiChatMessageItem {
   pageTitle?: string | null;
 
   @ApiPropertyOptional({
-    enum: [-1, 1],
+    type: Boolean,
     nullable: true,
     description:
-      'User rating for an assistant response: 1 for positive and -1 for negative',
+      'User rating for an assistant response: true for positive, false for negative, and null when unrated',
   })
-  @Property({ type: 'integer', nullable: true })
-  rating?: number | null;
+  @Property({ type: 'boolean', nullable: true })
+  rating?: boolean | null;
 
   @ApiPropertyOptional({ type: 'string', format: 'date-time' })
   @Sapling(['isReadOnly', 'isSystem'])

@@ -214,10 +214,18 @@ export class EventController extends ScriptClass {
     event: EventItem,
     context?: ScriptServerContext,
   ): Promise<void> {
-    // Completed events are internal-only, including detached overdue occurrences.
-    // Avoid scheduling/reloading them just to skip them in EventDeliveryService.
+    if (context?.suppressCalendarDelivery) {
+      this.logDebug(operation, 'Skipping suppressed calendar delivery', {
+        eventHandle: event.handle,
+      });
+      return;
+    }
+
+    // Ordinary completed events are internal-only. A completed detached
+    // occurrence still removes the matching instance from the provider series.
     if (
-      event.status?.handle === 'completed' ||
+      (event.status?.handle === 'completed' &&
+        context?.calendarDeliveryOperation !== 'detach-occurrence') ||
       event.type?.showInDefaultCalendar === false
     )
       return;
@@ -277,6 +285,17 @@ export class EventController extends ScriptClass {
         occurrenceStart?: string,
       ) => {
         if (context?.clientTimeZone) {
+          if (context.calendarDeliverySeriesEventHandle) {
+            return calendarService.queueEvent(
+              persistedEvent,
+              session,
+              deliveryOperation,
+              deliveryChangedFields,
+              occurrenceStart,
+              context.clientTimeZone,
+              context.calendarDeliverySeriesEventHandle,
+            );
+          }
           return calendarService.queueEvent(
             persistedEvent,
             session,
@@ -287,6 +306,17 @@ export class EventController extends ScriptClass {
           );
         }
         if (occurrenceStart) {
+          if (context?.calendarDeliverySeriesEventHandle) {
+            return calendarService.queueEvent(
+              persistedEvent,
+              session,
+              deliveryOperation,
+              deliveryChangedFields,
+              occurrenceStart,
+              undefined,
+              context.calendarDeliverySeriesEventHandle,
+            );
+          }
           return calendarService.queueEvent(
             persistedEvent,
             session,
@@ -314,24 +344,11 @@ export class EventController extends ScriptClass {
       };
 
       if (context?.calendarDeliveryOperation) {
-        const occurrenceStarts = context.calendarDeliveryOccurrenceStarts ?? [
+        await queuePersistedEvent(
+          context.calendarDeliveryOperation,
+          changedFields,
           context.calendarDeliveryOccurrenceStart,
-        ];
-        const failures: unknown[] = [];
-        for (const occurrenceStart of occurrenceStarts) {
-          try {
-            await queuePersistedEvent(
-              context.calendarDeliveryOperation,
-              changedFields,
-              occurrenceStart,
-            );
-          } catch (error) {
-            failures.push(error);
-          }
-        }
-        if (failures.length === 1) throw failures[0];
-        if (failures.length > 1)
-          throw new AggregateError(failures, 'calendar.detachDeliveriesFailed');
+        );
       } else {
         await queuePersistedEvent(undefined, changedFields);
       }

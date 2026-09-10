@@ -58,7 +58,7 @@ export interface CreateAiChatMessagePayload {
 }
 
 export interface UpdateAiChatMessageRatingPayload {
-  rating: -1 | 1 | null
+  rating: boolean | null
 }
 
 export interface AiChatQueuedInput {

@@ -7,7 +7,7 @@ export function useSaplingAiChatRatings(upsertMessage: (message: AiChatMessageIt
 
   async function updateMessageRating(payload: {
     message: AiChatMessageItem
-    rating: -1 | 1 | null
+    rating: boolean | null
   }) {
     const handle = payload.message.handle
     if (handle == null || handle <= 0 || ratingStateByHandle.value[handle]) return

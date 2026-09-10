@@ -187,6 +187,58 @@ describe('CalendarDeliveryExecutor', () => {
     expect(delivery.status).toBe(success);
   });
 
+  it('forwards the source series for a detached Google occurrence', async () => {
+    const delivery = {
+      handle: 25,
+      event: { handle: 43 },
+      payload: {
+        provider: 'google',
+        sessionHandle: 8,
+        operation: 'detach-occurrence',
+        occurrenceStart: '2026-07-29T11:00:00.000Z',
+        seriesEventHandle: 42,
+      },
+      attemptCount: 0,
+    } as EventDeliveryItem;
+    const success = { handle: 'success' } as EventDeliveryStatusItem;
+    const session = {
+      handle: 8,
+      accessToken: 'google-token',
+      person: { handle: 7 },
+    } as PersonSessionItem;
+    const emFork = {
+      findOne: jest.fn((entity: unknown, where: { handle?: unknown }) => {
+        if (entity === EventDeliveryItem) return delivery;
+        if (entity === PersonSessionItem) return session;
+        if (entity === EventDeliveryStatusItem && where.handle === 'success')
+          return success;
+        return null;
+      }),
+      flush: jest.fn(() => undefined),
+    };
+    const googleCalendarService = {
+      setEvent: jest.fn(() => ({ id: 'google-exception' })),
+    };
+    const executor = new CalendarDeliveryExecutor(
+      { fork: jest.fn(() => emFork) } as never,
+      googleCalendarService as never,
+      { setEvent: jest.fn() } as never,
+    );
+
+    await executor.execute(25, 1);
+
+    expect(asMock(googleCalendarService.setEvent)).toHaveBeenCalledWith(
+      43,
+      'google-token',
+      7,
+      'detach-occurrence',
+      undefined,
+      '2026-07-29T11:00:00.000Z',
+      42,
+    );
+    expect(delivery.status).toBe(success);
+  });
+
   it('persists provider failures without a non-executable email fallback', async () => {
     const delivery = {
       handle: 24,

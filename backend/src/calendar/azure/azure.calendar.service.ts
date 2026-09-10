@@ -89,6 +89,7 @@ export class AzureCalendarService extends AzureCalendarOperations {
     changedFields?: string[],
     occurrenceStart?: string,
     timeZone?: string,
+    seriesEventHandle?: number,
   ) {
     if (typeof session.handle !== 'number') {
       throw new Error('calendar.sessionHandleRequired');
@@ -102,6 +103,7 @@ export class AzureCalendarService extends AzureCalendarOperations {
       ...(changedFields ? { changedFields } : {}),
       ...(occurrenceStart ? { occurrenceStart } : {}),
       ...(timeZone ? { timeZone } : {}),
+      ...(seriesEventHandle ? { seriesEventHandle } : {}),
     });
   }
 
@@ -172,6 +174,7 @@ export class AzureCalendarService extends AzureCalendarOperations {
     changedFields?: string[],
     occurrenceStart?: string,
     timeZone?: string,
+    seriesEventHandle?: number,
   ): Promise<any> {
     const client = this.createClient(accessToken);
     // Fork EntityManager for context-specific actions
@@ -213,27 +216,54 @@ export class AzureCalendarService extends AzureCalendarOperations {
     });
 
     if (operation === 'detach-occurrence') {
-      if (!occurrenceStart) {
+      if (!occurrenceStart || !seriesEventHandle) {
         throw new Error('calendar.recurrenceOccurrenceReferenceMissing');
       }
-      let targetReference = reference;
-      if (!targetReference) {
-        const created = (await this.createEvent(
+      const seriesEvent = await emFork.findOne(
+        EventItem,
+        { handle: seriesEventHandle },
+        {
+          populate: [
+            'participants',
+            'status',
+            'type',
+            'category',
+            'creatorCompany',
+            'creatorCompany.country',
+            'creatorPerson',
+          ],
+        },
+      );
+      if (!seriesEvent) {
+        throw new Error('calendar.eventNotFound');
+      }
+      let seriesReference = await emFork.findOne(EventAzureItem, {
+        event: seriesEvent.handle as never,
+      });
+      if (!seriesReference) {
+        await this.createEvent(
           client,
-          event,
+          seriesEvent,
           emFork,
           classificationMappings,
           timeZone,
-        )) as { id?: string };
-        if (!created.id) {
-          throw new Error('calendar.recurrenceOccurrenceReferenceMissing');
-        }
-        targetReference = {
-          event,
-          referenceHandle: created.id,
-        };
+        );
+        seriesReference = await emFork.findOne(EventAzureItem, {
+          event: seriesEvent.handle as never,
+        });
       }
-      return this.detachOccurrence(client, targetReference, occurrenceStart);
+      if (!seriesReference) {
+        throw new Error('calendar.recurrenceOccurrenceReferenceMissing');
+      }
+      return this.detachOccurrence(
+        client,
+        event,
+        seriesReference,
+        occurrenceStart,
+        emFork,
+        classificationMappings,
+        timeZone,
+      );
     }
 
     switch (event.status.handle) {

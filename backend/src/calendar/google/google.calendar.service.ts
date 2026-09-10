@@ -88,6 +88,7 @@ export class GoogleCalendarService extends GoogleCalendarOperations {
     changedFields?: string[],
     occurrenceStart?: string,
     _timeZone?: string,
+    seriesEventHandle?: number,
   ) {
     void _timeZone;
     if (typeof session.handle !== 'number') {
@@ -101,6 +102,7 @@ export class GoogleCalendarService extends GoogleCalendarOperations {
       ...(operation ? { operation } : {}),
       ...(changedFields ? { changedFields } : {}),
       ...(occurrenceStart ? { occurrenceStart } : {}),
+      ...(seriesEventHandle ? { seriesEventHandle } : {}),
     });
   }
 
@@ -174,8 +176,8 @@ export class GoogleCalendarService extends GoogleCalendarOperations {
     operation?: 'remove-recurrence' | 'detach-occurrence',
     changedFields?: string[],
     occurrenceStart?: string,
+    seriesEventHandle?: number,
   ): Promise<unknown> {
-    void occurrenceStart;
     const calendar = google.calendar({ version: 'v3' });
     // Fork EntityManager for context-specific actions
     const emFork = this.em.fork();
@@ -214,6 +216,57 @@ export class GoogleCalendarService extends GoogleCalendarOperations {
     const reference = await emFork.findOne(EventGoogleItem, {
       event: event.handle as never,
     });
+
+    if (operation === 'detach-occurrence') {
+      if (!occurrenceStart || !seriesEventHandle) {
+        throw new Error('calendar.recurrenceOccurrenceReferenceMissing');
+      }
+      const seriesEvent = await emFork.findOne(
+        EventItem,
+        { handle: seriesEventHandle },
+        {
+          populate: [
+            'participants',
+            'status',
+            'type',
+            'category',
+            'creatorCompany',
+            'creatorCompany.country',
+            'creatorPerson',
+          ],
+        },
+      );
+      if (!seriesEvent) {
+        throw new Error('calendar.eventNotFound');
+      }
+      let seriesReference = await emFork.findOne(EventGoogleItem, {
+        event: seriesEvent.handle as never,
+      });
+      if (!seriesReference) {
+        await this.createEvent(
+          calendar,
+          seriesEvent,
+          accessToken,
+          emFork,
+          classificationMappings,
+        );
+        seriesReference = await emFork.findOne(EventGoogleItem, {
+          event: seriesEvent.handle as never,
+        });
+      }
+      if (!seriesReference) {
+        throw new Error('calendar.recurrenceOccurrenceReferenceMissing');
+      }
+      return this.detachOccurrence(
+        calendar,
+        event,
+        seriesReference,
+        occurrenceStart,
+        accessToken,
+        emFork,
+        classificationMappings,
+      );
+    }
 
     switch (event.status.handle) {
       case 'canceled':

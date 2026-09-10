@@ -346,7 +346,7 @@ const emit = defineEmits<{
   (event: 'reject-tool-action', action: AiChatToolActionItem): void
   (
     event: 'update-message-rating',
-    payload: { message: AiChatMessageItem; rating: -1 | 1 | null },
+    payload: { message: AiChatMessageItem; rating: boolean | null },
   ): void
   (event: 'toggle-voice-input'): void
   (event: 'upload-import-attachment', file: File): void

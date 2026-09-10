@@ -64,9 +64,13 @@ export class EventDeliveryService {
       return null;
     }
 
-    // Completing an event is an internal Sapling workflow action. The linked
-    // provider event stays untouched so Outlook/Google do not notify attendees.
-    if (eventStatus?.handle === 'completed') {
+    // Ordinary completion is internal to Sapling. A completion produced while
+    // detaching an occurrence is different: its provider instance must be
+    // removed from the still-active external series.
+    if (
+      eventStatus?.handle === 'completed' &&
+      payload.operation !== 'detach-occurrence'
+    ) {
       return null;
     }
 

@@ -43,13 +43,13 @@ describe('AiChatMessageService ratings', () => {
 
     const result = await service.updateChatMessageRating(
       17,
-      { rating: -1 },
+      { rating: false },
       user,
     );
 
     expect(findOwnedMessage).toHaveBeenCalledWith(17, user);
-    expect(message.rating).toBe(-1);
-    expect(result.rating).toBe(-1);
+    expect(message.rating).toBe(false);
+    expect(result.rating).toBe(false);
     expect(flush).toHaveBeenCalledTimes(1);
   });
 
@@ -78,7 +78,7 @@ describe('AiChatMessageService ratings', () => {
     );
 
     await expect(
-      service.updateChatMessageRating(18, { rating: 1 }, {
+      service.updateChatMessageRating(18, { rating: true }, {
         handle: 42,
       } as never),
     ).rejects.toBeInstanceOf(BadRequestException);

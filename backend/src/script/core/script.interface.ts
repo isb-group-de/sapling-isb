@@ -20,16 +20,18 @@ export type ScriptServerContext = {
    * Integration hooks use this to avoid resending unchanged provider fields.
    */
   changedFields?: string[];
+  /** Skip the external calendar projection for this lifecycle invocation. */
+  suppressCalendarDelivery?: boolean;
   /**
    * Calendar-specific intent that must survive asynchronous delivery.
-   * Recurrence materialization uses this to convert the provider series
-   * master into the first standalone event.
+   * Recurrence workflows use this for series materialization and native
+   * provider exceptions.
    */
   calendarDeliveryOperation?: 'remove-recurrence' | 'detach-occurrence';
   /** Original generated start of the occurrence targeted by a detach delivery. */
   calendarDeliveryOccurrenceStart?: string;
-  /** Internal batch detach: one master update still delivers every original start. */
-  calendarDeliveryOccurrenceStarts?: string[];
+  /** Series master whose provider instance becomes the detached Event projection. */
+  calendarDeliverySeriesEventHandle?: number;
   /**
    * Work that must only start after an enclosing transaction has committed.
    * Calendar materialization uses this to keep Redis workers from observing

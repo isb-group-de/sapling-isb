@@ -199,19 +199,21 @@ export class GoogleCalendarOperations {
     const populateOptions = {
       populate: ['event', 'event.participants', 'event.status'],
     } as const;
+    // Match a provider-native exception by its exact instance id before using
+    // the calendar-wide iCalUID shared by all members of the series.
     const reference =
+      (await emFork.findOne(
+        EventGoogleItem,
+        { referenceHandle },
+        populateOptions as never,
+      )) ??
       (iCalUId
         ? await emFork.findOne(
             EventGoogleItem,
             { iCalUId },
             populateOptions as never,
           )
-        : null) ??
-      (await emFork.findOne(
-        EventGoogleItem,
-        { referenceHandle },
-        populateOptions as never,
-      ));
+        : null);
 
     if (graphEvent.status === 'cancelled' && !reference) {
       return 'skipped';
@@ -228,7 +230,7 @@ export class GoogleCalendarOperations {
     );
 
     if (reference?.event && typeof reference.event === 'object') {
-      if (iCalUId && !reference.iCalUId) {
+      if (iCalUId && !reference.iCalUId && !graphEvent.recurringEventId) {
         reference.iCalUId = iCalUId;
       }
       const importedStatus =
@@ -244,6 +246,7 @@ export class GoogleCalendarOperations {
         recurrenceRule,
         exceptionDates: normalizedRecurrence.exceptionDates,
       });
+      await this.preserveProviderExceptionOnMaster(emFork, graphEvent);
       return 'updated';
     }
 
@@ -270,6 +273,57 @@ export class GoogleCalendarOperations {
     emFork.persist(event);
     emFork.persist(newReference);
     return 'created';
+  }
+
+  private async preserveProviderExceptionOnMaster(
+    emFork: EntityManager,
+    graphEvent: GoogleCalendarImportEvent,
+  ): Promise<void> {
+    const recurringEventId = graphEvent.recurringEventId?.trim();
+    const originalStart = normalizeGoogleDateTime(graphEvent.originalStartTime);
+    if (!recurringEventId || !originalStart) {
+      return;
+    }
+
+    const masterReference = await emFork.findOne(
+      EventGoogleItem,
+      { referenceHandle: recurringEventId },
+      { populate: ['event'] } as never,
+    );
+    if (!masterReference?.event || typeof masterReference.event !== 'object') {
+      return;
+    }
+
+    const currentValues = masterReference.event.recurrenceExceptionDates;
+    const parsedValues = Array.isArray(currentValues)
+      ? currentValues
+      : typeof currentValues === 'string'
+        ? this.parseStoredExceptionDates(currentValues)
+        : [];
+    masterReference.event.recurrenceExceptionDates = Array.from(
+      new Set([
+        ...parsedValues
+          .map((value) =>
+            typeof value === 'string' || typeof value === 'number'
+              ? new Date(value)
+              : value instanceof Date
+                ? value
+                : new Date(Number.NaN),
+          )
+          .filter((value) => !Number.isNaN(value.getTime()))
+          .map((value) => value.toISOString()),
+        originalStart.toISOString(),
+      ]),
+    ).sort();
+  }
+
+  private parseStoredExceptionDates(value: string): unknown[] {
+    try {
+      const parsed: unknown = JSON.parse(value);
+      return Array.isArray(parsed) ? parsed : [parsed];
+    } catch {
+      return [value];
+    }
   }
 
   protected async assignImportedEvent(
@@ -587,19 +641,6 @@ export class GoogleCalendarOperations {
       });
     }
 
-    if (operation === 'detach-occurrence') {
-      return await calendar.events.patch({
-        calendarId: 'primary',
-        eventId: reference.referenceHandle,
-        requestBody: {
-          recurrence: buildGoogleCalendarEvent(event, classificationMappings)
-            .recurrence,
-        },
-        auth: accessToken,
-        sendUpdates: 'all',
-      });
-    }
-
     const requestConference =
       Boolean(event.createOnlineMeeting) &&
       !event.onlineMeetingURL &&
@@ -629,6 +670,88 @@ export class GoogleCalendarOperations {
       event.onlineMeetingURL = onlineMeetingURL;
       await emFork.persist(event).flush();
     }
+    return updated;
+  }
+
+  /** Maps a detached Sapling Event onto its existing Google series instance. */
+  protected async detachOccurrence(
+    calendar: calendar_v3.Calendar,
+    event: EventItem,
+    seriesReference: EventGoogleItem,
+    occurrenceStartValue: string,
+    accessToken: string,
+    emFork: EntityManager,
+    classificationMappings?: CalendarClassificationMapping[] | null,
+  ): Promise<unknown> {
+    const occurrenceStart = new Date(occurrenceStartValue);
+    if (Number.isNaN(occurrenceStart.getTime())) {
+      throw new Error('calendar.invalidOccurrenceStart');
+    }
+
+    const rangeStart = new Date(occurrenceStart.getTime() - 60_000);
+    const rangeEnd = new Date(occurrenceStart.getTime() + 24 * 60 * 60_000);
+    const instances = await calendar.events.instances({
+      calendarId: 'primary',
+      eventId: seriesReference.referenceHandle,
+      auth: accessToken,
+      timeMin: rangeStart.toISOString(),
+      timeMax: rangeEnd.toISOString(),
+      showDeleted: true,
+    });
+    const targetTimestamp = occurrenceStart.getTime();
+    const occurrence = (instances.data.items ?? []).find((candidate) => {
+      const originalStart = normalizeGoogleDateTime(
+        candidate.originalStartTime,
+      );
+      const currentStart = normalizeGoogleDateTime(candidate.start);
+      return (
+        originalStart?.getTime() === targetTimestamp ||
+        currentStart?.getTime() === targetTimestamp
+      );
+    });
+
+    if (!occurrence?.id) {
+      throw new Error('calendar.recurrenceOccurrenceReferenceMissing');
+    }
+
+    if (
+      event.status?.handle === 'completed' ||
+      event.status?.handle === 'canceled'
+    ) {
+      await calendar.events.delete({
+        calendarId: 'primary',
+        eventId: occurrence.id,
+        auth: accessToken,
+      });
+      return { success: true, detachedOccurrenceId: occurrence.id };
+    }
+
+    const eventResource = buildGoogleCalendarEvent(
+      event,
+      classificationMappings,
+    );
+    delete eventResource.recurrence;
+    delete eventResource.conferenceData;
+    const updated = await calendar.events.patch({
+      calendarId: 'primary',
+      eventId: occurrence.id,
+      requestBody: eventResource,
+      auth: accessToken,
+      conferenceDataVersion: 1,
+    });
+
+    let reference = await emFork.findOne(EventGoogleItem, {
+      event: event.handle as never,
+    });
+    if (!reference) {
+      reference = new EventGoogleItem();
+      reference.event = event;
+    }
+    reference.referenceHandle = updated.data.id ?? occurrence.id;
+    // Exceptions share the master's iCalUID; keep the unique import identity
+    // on the master and identify this projection by its provider instance id.
+    reference.iCalUId = null;
+    await emFork.persist(reference).flush();
     return updated;
   }
 

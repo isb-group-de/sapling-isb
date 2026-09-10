@@ -38,6 +38,44 @@ describe('EventDeliveryService', () => {
     expect(calendarDeliveryExecutor.execute).not.toHaveBeenCalled();
   });
 
+  it('keeps a completed detached occurrence delivery so the provider instance is removed', async () => {
+    const pending = { handle: 'pending' } as EventDeliveryStatusItem;
+    const queue = { add: jest.fn(() => undefined) };
+    const calendarDeliveryExecutor = { execute: jest.fn(() => undefined) };
+    const em = {
+      findOne: jest.fn(() => pending),
+      findOneOrFail: jest.fn(() => ({ handle: 15 })),
+      persist: jest.fn((entity: { handle?: number }) => ({
+        flush: jest.fn(() => {
+          entity.handle = 15;
+        }),
+      })),
+    };
+    const service = new EventDeliveryService(
+      em as never,
+      queue as never,
+      calendarDeliveryExecutor as never,
+    );
+
+    await expect(
+      service.queueEventDelivery(
+        {
+          handle: 43,
+          type: { showInDefaultCalendar: true },
+          status: { handle: 'completed' },
+        } as EventItem,
+        {
+          provider: 'azure',
+          sessionHandle: 7,
+          operation: 'detach-occurrence',
+          occurrenceStart: '2026-07-29T11:00:00.000Z',
+          seriesEventHandle: 42,
+        },
+      ),
+    ).resolves.not.toBeNull();
+    expect(em.persist).toHaveBeenCalled();
+  });
+
   it('stores only the explicit calendar payload and executes the delivery directly without Redis', async () => {
     const pending = { handle: 'pending' } as EventDeliveryStatusItem;
     const queue = {

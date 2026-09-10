@@ -115,8 +115,9 @@ McpServerConfigItem
 Provider/model records are stored in the database. Runtime credentials and provider behavior are resolved by backend AI provider services.
 
 Persisted assistant messages can be rated directly in Songbird with a positive
-or negative response. The rating is stored as `AiChatMessageItem.rating` (`1`
-or `-1`, nullable when no rating is selected) and can be changed or cleared by
+or negative response. The rating is stored as nullable boolean
+`AiChatMessageItem.rating` (`true` for positive, `false` for negative, and
+`null` when no rating is selected) and can be changed or cleared by
 the owning user. This feedback remains attached to the complete durable message,
 including its provider/model, run payload, sources, tool traces, and failure
 state, so negative AI-generated answers can be evaluated later without creating

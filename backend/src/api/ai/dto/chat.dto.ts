@@ -326,13 +326,13 @@ export class CreateAiChatMessageDto {
 
 export class UpdateAiChatMessageRatingDto {
   @ApiProperty({
-    enum: [-1, 1, null],
+    enum: [true, false, null],
     nullable: true,
     description:
-      'Assistant response rating: 1 for positive, -1 for negative, or null to clear it',
+      'Assistant response rating: true for positive, false for negative, or null to clear it',
   })
-  @IsIn([-1, 1, null])
-  rating!: -1 | 1 | null;
+  @IsIn([true, false, null])
+  rating!: boolean | null;
 }
 
 export class CreateAiChatInputDto extends CreateAiChatMessageDto {

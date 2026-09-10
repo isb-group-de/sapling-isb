@@ -264,8 +264,7 @@ describe('EventRecurrenceMutationService', () => {
       expect.any(Object),
       [],
       expect.objectContaining({
-        calendarDeliveryOperation: 'detach-occurrence',
-        calendarDeliveryOccurrenceStart: '2026-07-29T11:00:00.000Z',
+        suppressCalendarDelivery: true,
       }),
       {
         expectedUpdatedAt: '2026-07-30T08:00:00.000Z',
@@ -283,7 +282,11 @@ describe('EventRecurrenceMutationService', () => {
         recurrenceExceptionDates: [],
       }),
       expect.any(Object),
-      expect.objectContaining({ calendarDeliveryOperation: undefined }),
+      expect.objectContaining({
+        calendarDeliveryOperation: 'detach-occurrence',
+        calendarDeliveryOccurrenceStart: '2026-07-29T11:00:00.000Z',
+        calendarDeliverySeriesEventHandle: 42,
+      }),
       expect.any(Object),
     );
   });
@@ -371,11 +374,7 @@ describe('EventRecurrenceMutationService', () => {
       expect.any(Object),
       [],
       expect.objectContaining({
-        calendarDeliveryOperation: 'detach-occurrence',
-        calendarDeliveryOccurrenceStarts: [
-          '2026-07-28T11:00:00.000Z',
-          '2026-07-29T11:00:00.000Z',
-        ],
+        suppressCalendarDelivery: true,
       }),
       { expectedUpdatedAt: '2026-07-30T08:00:00.000Z', resolution: 'detect' },
       expect.any(Object),
@@ -386,7 +385,11 @@ describe('EventRecurrenceMutationService', () => {
       'event',
       expect.objectContaining({ status: 'completed' }),
       expect.any(Object),
-      expect.any(Object),
+      expect.objectContaining({
+        calendarDeliveryOperation: 'detach-occurrence',
+        calendarDeliveryOccurrenceStart: '2026-07-28T11:00:00.000Z',
+        calendarDeliverySeriesEventHandle: 42,
+      }),
       expect.any(Object),
     );
   });

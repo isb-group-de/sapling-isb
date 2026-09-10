@@ -3383,7 +3383,7 @@
         },
         "rating": {
           "name": "rating",
-          "type": "int",
+          "type": "boolean",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
@@ -3396,7 +3396,7 @@
           "comment": null,
           "collation": null,
           "enumItems": [],
-          "mappedType": "integer"
+          "mappedType": "boolean"
         },
         "request_payload": {
           "name": "request_payload",
@@ -3602,13 +3602,7 @@
           "unique": false
         }
       ],
-      "checks": [
-        {
-          "name": "ai_chat_message_item_rating_check",
-          "expression": "rating in (-1, 1)",
-          "definition": "check (rating in (-1, 1))"
-        }
-      ],
+      "checks": [],
       "triggers": [],
       "foreignKeys": {
         "ai_chat_message_item_person_handle_foreign": {

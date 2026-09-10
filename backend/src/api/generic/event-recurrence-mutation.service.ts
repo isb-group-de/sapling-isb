@@ -150,11 +150,7 @@ export class EventRecurrenceMutationService {
             [],
             {
               ...baseContext,
-              calendarDeliveryOperation: 'detach-occurrence',
-              calendarDeliveryOccurrenceStart:
-                starts.length === 1 ? starts[0] : undefined,
-              calendarDeliveryOccurrenceStarts:
-                starts.length > 1 ? starts : undefined,
+              suppressCalendarDelivery: true,
             },
             {
               expectedUpdatedAt: request.expectedUpdatedAt,
@@ -176,9 +172,10 @@ export class EventRecurrenceMutationService {
                 currentUser,
                 {
                   ...baseContext,
-                  calendarDeliveryOperation: undefined,
-                  calendarDeliveryOccurrenceStart: undefined,
-                  calendarDeliveryOccurrenceStarts: undefined,
+                  calendarDeliveryOperation: 'detach-occurrence',
+                  calendarDeliveryOccurrenceStart:
+                    occurrence.startDate.toISOString(),
+                  calendarDeliverySeriesEventHandle: normalizedHandle,
                 },
                 { postCommitTasks, metadata },
               ),

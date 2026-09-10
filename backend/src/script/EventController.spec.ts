@@ -22,13 +22,10 @@ const asMock = (value: unknown): jest.Mock => value as jest.Mock;
 
 describe('EventController', () => {
   it.each(['azure', 'google'])(
-    'reloads a batch master once and attempts every %s detach even after one failure',
+    'queues a detached child as a native %s series exception',
     async (provider) => {
-      const failure = new Error('one delivery failed');
-      const queueEvent = jest
-        .fn(async () => undefined)
-        .mockRejectedValueOnce(failure);
-      const event = { handle: 42 } as EventItem;
+      const queueEvent = jest.fn(async () => undefined);
+      const event = { handle: 43 } as EventItem;
       const em = { findOne: jest.fn(async () => event) };
       const user = {
         type: { handle: provider },
@@ -43,31 +40,51 @@ describe('EventController', () => {
       );
       const tasks: Array<{ label: string; operation: () => Promise<void> }> =
         [];
-      const starts = ['2026-07-28T11:00:00.000Z', '2026-07-29T11:00:00.000Z'];
-      await controller.afterUpdate([event], {
+      await controller.afterInsert([event], {
         postCommitTasks: tasks,
-        changedFields: ['recurrenceExceptionDates'],
         calendarDeliveryOperation: 'detach-occurrence',
-        calendarDeliveryOccurrenceStarts: starts,
+        calendarDeliveryOccurrenceStart: '2026-07-29T11:00:00.000Z',
+        calendarDeliverySeriesEventHandle: 42,
       });
       expect(tasks).toHaveLength(1);
       expect(queueEvent).not.toHaveBeenCalled();
-      await expect(tasks[0].operation()).rejects.toBe(failure);
+      await tasks[0].operation();
       expect(em.findOne).toHaveBeenCalledTimes(1);
-      starts.forEach((start, index) =>
-        expect(asMock(queueEvent)).toHaveBeenNthCalledWith(
-          index + 1,
-          event,
-          user.session,
-          'detach-occurrence',
-          ['recurrenceExceptionDates'],
-          start,
-        ),
+      expect(asMock(queueEvent)).toHaveBeenCalledWith(
+        event,
+        user.session,
+        'detach-occurrence',
+        undefined,
+        '2026-07-29T11:00:00.000Z',
+        undefined,
+        42,
       );
     },
   );
 
-  it('does not schedule provider work for completed or internal-only detached events', async () => {
+  it('does not schedule provider work for a suppressed series-master update', async () => {
+    const queueEvent = jest.fn(async () => undefined);
+    const controller = new EventController(
+      { handle: 'event' } as never,
+      {
+        type: { handle: 'azure' },
+        session: { handle: 8 },
+      } as unknown as PersonItem,
+      {} as never,
+      { queueEvent } as never,
+      {} as never,
+    );
+    const tasks: Array<{ label: string; operation: () => Promise<void> }> = [];
+    await controller.afterUpdate([{ handle: 42 } as EventItem], {
+      postCommitTasks: tasks,
+      changedFields: ['recurrenceExceptionDates'],
+      suppressCalendarDelivery: true,
+    });
+    expect(tasks).toHaveLength(0);
+    expect(queueEvent).not.toHaveBeenCalled();
+  });
+
+  it('does not schedule provider work for ordinary completed or internal-only events', async () => {
     const queueEvent = jest.fn(async () => undefined);
     const controller = new EventController(
       { handle: 'event' } as never,

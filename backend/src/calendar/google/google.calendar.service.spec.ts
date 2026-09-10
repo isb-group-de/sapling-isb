@@ -43,6 +43,15 @@ type GoogleDeliveryServiceTestHarness = {
     classificationMappings: [],
     operation: 'remove-recurrence' | 'detach-occurrence',
   ) => Promise<unknown>;
+  detachOccurrence: (
+    calendar: object,
+    event: EventItem,
+    seriesReference: EventGoogleItem,
+    occurrenceStart: string,
+    accessToken: string,
+    emFork: object,
+    classificationMappings: [],
+  ) => Promise<unknown>;
 };
 
 type GoogleProviderMutationHarness = {
@@ -324,6 +333,72 @@ describe('GoogleCalendarService completion synchronization', () => {
     expect(sharedReference.referenceHandle).toBe('organizer-calendar-id');
   });
 
+  it('keeps a native Google exception on its exact Sapling projection', async () => {
+    const event = new EventItem();
+    event.participants = {
+      removeAll: jest.fn(),
+      add: jest.fn(),
+    } as never;
+    const exceptionReference = {
+      referenceHandle: 'google-exception-id',
+      iCalUId: null,
+      event,
+    } as EventGoogleItem;
+    const masterEvent = {
+      recurrenceExceptionDates: [],
+    } as unknown as EventItem;
+    const masterReference = {
+      referenceHandle: 'google-master-id',
+      event: masterEvent,
+    } as EventGoogleItem;
+    const service = new GoogleCalendarService(
+      {} as never,
+      {} as never,
+    ) as unknown as GoogleCalendarServiceTestHarness;
+
+    await expect(
+      service.upsertImportedEvent(
+        {
+          findOne: jest.fn((_entity, where: { referenceHandle?: string }) =>
+            Promise.resolve(
+              where.referenceHandle === 'google-exception-id'
+                ? exceptionReference
+                : where.referenceHandle === 'google-master-id'
+                  ? masterReference
+                  : null,
+            ),
+          ),
+          find: jest.fn(() => Promise.resolve([])),
+          persist: jest.fn(),
+        },
+        {
+          id: 'google-exception-id',
+          iCalUID: 'shared-google-series@example.com',
+          recurringEventId: 'google-master-id',
+          originalStartTime: {
+            dateTime: '2026-09-10T11:00:00.000Z',
+          },
+          summary: 'Edited occurrence',
+          start: { dateTime: '2026-09-10T11:00:00.000Z' },
+          end: { dateTime: '2026-09-10T12:00:00.000Z' },
+        },
+        {
+          user: { handle: 7, company: { handle: 42 } },
+          type: { handle: 'online' },
+          category: { handle: 'internal' },
+          scheduledStatus: { handle: 'scheduled' },
+          canceledStatus: { handle: 'canceled' },
+        },
+      ),
+    ).resolves.toBe('updated');
+
+    expect(event.title).toBe('Edited occurrence');
+    expect(exceptionReference.iCalUId).toBeNull();
+    expect(masterEvent.recurrenceExceptionDates).toEqual([
+      '2026-09-10T11:00:00.000Z',
+    ]);
+  });
+
   it('completes a sole-participant event deleted from Google', async () => {
     const user = { handle: 7 } as PersonItem;
     const participants = [user];
@@ -410,45 +485,71 @@ describe('GoogleCalendarService recurrence materialization', () => {
     });
   });
 
-  it('patches the series master with the detached occurrence exclusion', async () => {
-    const patch = jest.fn<(...args: unknown[]) => Promise<unknown>>(() =>
-      Promise.resolve({ data: { id: 'google-1' } }),
+  it('updates the matching Google series instance without a sendUpdates override', async () => {
+    const instances = jest.fn(() =>
+      Promise.resolve({
+        data: {
+          items: [
+            {
+              id: 'occurrence-2',
+              originalStartTime: {
+                dateTime: '2026-07-29T11:00:00.000Z',
+              },
+              start: { dateTime: '2026-07-29T11:00:00.000Z' },
+            },
+          ],
+        },
+      }),
     );
+    const patch = jest.fn<(...args: unknown[]) => Promise<unknown>>(() =>
+      Promise.resolve({ data: { id: 'occurrence-2' } }),
+    );
+    const flush = jest.fn(() => Promise.resolve());
+    const persist = jest.fn(() => ({ flush }));
     const service = new GoogleCalendarService(
       {} as never,
       {} as never,
     ) as unknown as GoogleDeliveryServiceTestHarness;
     const event = {
-      handle: 42,
-      title: 'Planning',
-      startDate: new Date('2026-07-28T11:00:00.000Z'),
-      endDate: new Date('2026-07-28T12:00:00.000Z'),
+      handle: 43,
+      title: 'Edited occurrence',
+      startDate: new Date('2026-07-29T13:00:00.000Z'),
+      endDate: new Date('2026-07-29T14:00:00.000Z'),
       isAllDay: false,
-      recurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=3',
-      recurrenceExceptionDates: ['2026-07-29T11:00:00.000Z'],
+      recurrenceRule: null,
+      recurrenceExceptionDates: [],
       participants: [],
+      status: { handle: 'scheduled' },
     } as unknown as EventItem;
 
-    await service.updateEvent(
-      { events: { patch } },
+    await service.detachOccurrence(
+      { events: { instances, patch } },
       event,
-      { referenceHandle: 'google-1' } as EventGoogleItem,
+      { referenceHandle: 'google-master' } as EventGoogleItem,
+      '2026-07-29T11:00:00.000Z',
       'access-token',
-      { persist: jest.fn() },
+      { findOne: jest.fn(() => null), persist },
       [],
-      'detach-occurrence',
     );
 
-    expect(patch).toHaveBeenCalledWith(
+    expect(instances as jest.Mock).toHaveBeenCalledWith(
+      expect.objectContaining({ eventId: 'google-master' }),
+    );
+    expect(patch).toHaveBeenCalledWith({
+      calendarId: 'primary',
+      eventId: 'occurrence-2',
+      requestBody: expect.objectContaining({
+        summary: 'Edited occurrence',
+        start: { dateTime: '2026-07-29T13:00:00.000Z' },
+        end: { dateTime: '2026-07-29T14:00:00.000Z' },
+      }),
+      auth: 'access-token',
+      conferenceDataVersion: 1,
+    });
+    expect(persist as jest.Mock).toHaveBeenCalledWith(
       expect.objectContaining({
-        calendarId: 'primary',
-        eventId: 'google-1',
-        requestBody: {
-          recurrence: [
-            'RRULE:FREQ=DAILY;INTERVAL=1;COUNT=3',
-            'EXDATE:20260729T110000Z',
-          ],
-        },
+        referenceHandle: 'occurrence-2',
+        iCalUId: null,
       }),
     );
   });
