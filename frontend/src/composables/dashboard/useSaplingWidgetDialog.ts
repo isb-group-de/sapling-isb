@@ -13,6 +13,9 @@ export function useSaplingWidgetDialog(widget: DashboardWidget | null) {
   const permissions = useCurrentPermissionStore()
   const metadata = useGenericStore()
   const kind = ref<DashboardWidgetKind>(widget?.kind ?? 'KPI')
+  const aiConfig = ref<Extract<DashboardWidget, { kind: 'AI' }>['config']>(
+    widget?.kind === 'AI' ? { ...widget.config } : {},
+  )
   const title = ref(widget?.title ?? '')
   const columns = ref(widget?.columns ?? 1)
   const rows = ref(widget?.rows ?? 2)
@@ -61,7 +64,7 @@ export function useSaplingWidgetDialog(widget: DashboardWidget | null) {
       })),
   )
   const kindOptions = computed(() =>
-    ['KPI', 'AGENDA', 'TABLE', 'WEBSITE', 'NOTE', 'ACTIONS'].map((value) => ({
+    ['KPI', 'AGENDA', 'TABLE', 'WEBSITE', 'NOTE', 'ACTIONS', 'AI'].map((value) => ({
       value,
       title: t(`dashboard.widget${value}`),
     })),
@@ -79,8 +82,8 @@ export function useSaplingWidgetDialog(widget: DashboardWidget | null) {
     if (entityHandle.value) await metadata.loadGeneric(entityHandle.value, 'global')
   })
   watch(kind, (value) => {
-    columns.value = value === 'TABLE' ? 2 : 1
-    rows.value = value === 'TABLE' ? 4 : value === 'ACTIONS' ? 1 : 2
+    columns.value = value === 'TABLE' || value === 'AI' ? 2 : 1
+    rows.value = value === 'TABLE' || value === 'AI' ? 4 : value === 'ACTIONS' ? 1 : 2
     favorite.value = null
     filter.value = {}
     status.value = null
@@ -141,6 +144,8 @@ export function useSaplingWidgetDialog(widget: DashboardWidget | null) {
       rows: Number(rows.value),
     }
     switch (kind.value) {
+      case 'AI':
+        return { ...base, kind: 'AI', config: { ...aiConfig.value } }
       case 'KPI':
         return { ...base, kind: 'KPI', config: { kpiHandle: Number(kpi.value?.handle) } }
       case 'AGENDA':
@@ -183,6 +188,7 @@ export function useSaplingWidgetDialog(widget: DashboardWidget | null) {
     }
   }
   return {
+    aiConfig,
     kind,
     title,
     columns,

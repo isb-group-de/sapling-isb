@@ -135,6 +135,18 @@
           @click="copyMessage(message)"
         />
       </div>
+      <SaplingAiChatToolActions
+        :actions="getMessageToolActions(message).filter((action) => action.status === 'pending')"
+        :active-tool-action-handles="activeToolActionHandles"
+        @confirm="emit('confirm-tool-action', $event)"
+        @reject="emit('reject-tool-action', $event)"
+        @close="emit('close')"
+      />
+      <SongbirdFormProposal
+        v-for="proposal in getSongbirdFormProposals(message)"
+        :key="proposal.id"
+        :proposal="proposal"
+      />
       <div class="sapling-chat-message__content sapling-ai-chat__message-content">
         <SaplingAiChatImages
           v-if="message.role === 'user'"
@@ -152,7 +164,10 @@
         </div>
         <SaplingMarkdownContent v-else :source="getMessageDisplayContent(message)" />
       </div>
-      <div v-if="getMessageProgress(message)" class="sapling-ai-chat__work-log">
+      <div
+        v-if="getMessageProgress(message) || getTransparencyChips(message).length > 0"
+        class="sapling-ai-chat__work-log"
+      >
         <v-btn
           size="small"
           variant="text"
@@ -176,6 +191,20 @@
               :title="getProgressStepLabel(step)"
             />
           </v-list>
+          <details v-if="getTransparencyChips(message).length > 0" class="songbird-message-details">
+            <summary>{{ t('aiChat.responseDetails') }}</summary>
+            <div class="sapling-chip-row sapling-ai-chat__transparency">
+              <v-chip
+                v-for="chip in getTransparencyChips(message)"
+                :key="chip"
+                size="small"
+                variant="tonal"
+                prepend-icon="mdi-eye-outline"
+              >
+                {{ chip }}
+              </v-chip>
+            </div>
+          </details>
         </div>
       </div>
       <div
@@ -193,26 +222,13 @@
         </v-chip>
       </div>
       <SaplingAiChatToolActions
-        :actions="getMessageToolActions(message)"
+        :actions="getMessageToolActions(message).filter((action) => action.status !== 'pending')"
         :active-tool-action-handles="activeToolActionHandles"
         @confirm="emit('confirm-tool-action', $event)"
         @reject="emit('reject-tool-action', $event)"
         @close="emit('close')"
       />
-      <div
-        v-if="getTransparencyChips(message).length > 0"
-        class="sapling-chip-row sapling-ai-chat__transparency"
-      >
-        <v-chip
-          v-for="chip in getTransparencyChips(message)"
-          :key="chip"
-          size="small"
-          variant="tonal"
-          prepend-icon="mdi-eye-outline"
-        >
-          {{ chip }}
-        </v-chip>
-      </div>
+
       <div
         v-if="shouldShowMessageActions(message)"
         class="sapling-chip-row sapling-chat-message__actions sapling-ai-chat__message-links"
@@ -239,16 +255,7 @@
           :title="getTranslationLabel('rateNegative', 'Antwort negativ bewerten')"
           @click="emitMessageRating(message, message.rating === false ? null : false)"
         />
-        <v-btn
-          v-if="canPlayMessageSpeech(message)"
-          size="small"
-          variant="tonal"
-          :loading="getMessageSpeechState(message) === 'loading'"
-          :prepend-icon="getMessageSpeechButtonIcon(message)"
-          @click="emit('toggle-message-speech', message)"
-        >
-          {{ getMessageSpeechButtonLabel(message) }}
-        </v-btn>
+
         <v-btn
           v-for="link in getMessageNavigationLinks(message)"
           :key="`${message.handle ?? message.sequence}-${link.path}`"
@@ -271,6 +278,17 @@
         >
           {{ source.title }}
         </v-btn>
+        <v-btn
+          v-if="canPlayMessageSpeech(message)"
+          class="songbird-message-speech"
+          size="small"
+          variant="text"
+          :loading="getMessageSpeechState(message) === 'loading'"
+          :icon="getMessageSpeechButtonIcon(message)"
+          :title="getMessageSpeechButtonLabel(message)"
+          :aria-label="getMessageSpeechButtonLabel(message)"
+          @click="emit('toggle-message-speech', message)"
+        />
       </div>
     </div>
   </div>
@@ -284,6 +302,8 @@ import SaplingAiChatImages from './SaplingAiChatImages.vue'
 import { messageImages } from './aiChatImages'
 import type { AiChatMessageItem, AiChatToolActionItem } from '@/entity/entity'
 import SaplingAiChatToolActions from './SaplingAiChatToolActions.vue'
+import SongbirdFormProposal from './SongbirdFormProposal.vue'
+import { getSongbirdFormProposals } from './songbirdFormProposals'
 import { getMessageNavigationLinks, getMessageToolActions } from './aiChatNavigation'
 import { useSaplingAiChatNavigation } from './useSaplingAiChatNavigation'
 import { useSaplingAiChatMessagePresentation } from './useSaplingAiChatMessagePresentation'

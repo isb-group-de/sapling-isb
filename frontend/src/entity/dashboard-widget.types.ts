@@ -1,4 +1,4 @@
-export type DashboardWidgetKind = 'KPI' | 'AGENDA' | 'TABLE' | 'WEBSITE' | 'NOTE' | 'ACTIONS'
+export type DashboardWidgetKind = 'KPI' | 'AGENDA' | 'TABLE' | 'WEBSITE' | 'NOTE' | 'ACTIONS' | 'AI'
 export interface DashboardWidgetBase {
   id: string
   title: string
@@ -7,6 +7,15 @@ export interface DashboardWidgetBase {
 }
 export type DashboardWidget = DashboardWidgetBase &
   (
+    | {
+        kind: 'AI'
+        config: {
+          agentHandle?: string
+          providerHandle?: string
+          modelHandle?: string
+          instruction?: string
+        }
+      }
     | { kind: 'KPI'; config: { kpiHandle: number } }
     | { kind: 'AGENDA'; config: { filter: Record<string, unknown>; days: number; limit: number } }
     | {

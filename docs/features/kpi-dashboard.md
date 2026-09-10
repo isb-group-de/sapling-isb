@@ -196,8 +196,8 @@ Each instance stores a stable ID, title, columns (1–4), rows (1–4), kind, an
 | AGENDA  | Generic filter, days ahead, occurrence limit; always scoped to the viewer as participant |
 | TABLE   | Entity handle, copied filter, visible columns in order, sorting, search, page size       |
 | WEBSITE | HTTPS URL and link/embed display mode                                                    |
-| NOTE    | Markdown content (up to 20,000 characters), shared editor and safe Markdown renderer      |
-| ACTIONS | One to twelve labelled buttons opening generic create dialogs for configured entities   |
+| NOTE    | Markdown content (up to 20,000 characters), shared editor and safe Markdown renderer     |
+| ACTIONS | One to twelve labelled buttons opening generic create dialogs for configured entities    |
 
 Notes can be edited directly with the card's pencil; outside layout editing,
 save persists immediately. In layout editing, changes remain in the draft.
@@ -391,3 +391,29 @@ npm run type-check:frontend
 ```
 
 For executor changes, prefer adding backend tests around `KpiService`/`KPIExecutor` with seeded entities and filters. For dashboard UI changes, add focused frontend tests around the affected KPI component or dashboard component.
+
+## AI workspace widgets
+
+The AI widget uses the same grid, sizing, layout save and dashboard-template flow
+as other widgets. Its default size is two columns by four rows. Configuration
+contains only optional agent/provider/model handles and an instruction (maximum
+8,000 characters), plus the usual title and grid fields. Personal session handles
+and messages must never be copied into dashboard templates.
+
+The first submission creates a normal owned Songbird session. Follow-ups remain
+in that operation; New operation creates a fresh draft without cancelling the
+previous run. Open in Songbird shares the controller with the side panel.
+Configuration changes apply to subsequent operations. Sessions keep the task
+instruction and resolved runtime from their creation. Source dashboard/widget
+identifiers allow restoration of the latest unarchived operation for the current
+user. Removing a widget does not delete its conversation history.
+
+Explicit runtime choices override the agent defaults. Unavailable references are
+shown as a recoverable configuration error rather than silently changing the
+requested runtime.
+
+AI conversations sit inside a rounded, themed frame, with operation actions in
+the title row. Dashboard tools, including Markdown notes and website links, use
+the same inset and badge/title spacing regardless of row count. Compact spacing
+is reserved for one-row KPI value cards. One-row website links keep their open
+action visible; the URL is shown in configuration rather than on the tile.

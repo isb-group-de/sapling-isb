@@ -1160,3 +1160,68 @@ preferences; older links without grouping retain the local preference. Hidden or
 unreadable fields remain ineligible when restoring a group. Resetting the default
 worklist clears grouping. Apply migration `Migration20260908150000` before saving
 worklists with this field.
+
+## Songbird side panel
+
+Songbird is hosted by the authenticated shell rather than a modal chat dialog.
+The panel starts at 420px and can be resized from 360px to 640px; widths are stored
+per user. It docks only when at least 720px remain for the main workspace.
+Otherwise it uses a full-area view with Back to work. Changing the view does not
+unmount the underlying route or its edit state.
+
+Shared record editors register their persisted entity/record reference with the
+Songbird page-context composable. Registration is removed when the dialog closes.
+When docked, editors reserve the panel width and release their modal focus trap
+so both surfaces remain usable. Field contents are not included automatically.
+
+Workspace controllers belong to the authenticated shell and are cleared on a
+person/impersonation change. Avoid instantiating independent stream controllers
+for two views of the same session. Confirmation cards display existing field
+previews inline and keep diagnostic arguments collapsed.
+
+The operation selector is an overlay dropdown with grouped history, search and
+an archive toggle on the same header row. Provider/model, agent and the saved
+task instruction are behind Workspace settings. In full-area mode the working
+page and existing editors are hidden without unmounting; returning restores them.
+Tutorial cleanup must only close Songbird while a tutorial was actually active.
+The dropdown spans the panel width. Full-area view at 1200px and wider displays
+the history permanently on the left. Response diagnostics are nested in the
+work log; the optional read-aloud icon sits at the right of the action row.
+
+The docked editor keeps its normal maximum width and consumes empty side margins
+before narrowing. Its scrim blocks the entire application, including the header,
+while leaving Songbird interactive. The context label uses the first metadata
+field marked `isValue` from the saved record; unsaved form values stay private to
+the editor. Songbird surfaces use the same themed background as Sapling dialogs
+in light and dark mode. Read-aloud is available only when a compatible speech
+provider and model are configured and browser audio playback is supported.
+
+## Songbird form proposals
+
+The shared record editor registers a form instance through `useSongbirdForm`.
+When a conversation follows or pins that instance, each submitted/queued input
+captures an immutable `openedForm` descriptor with an instance ID, request ID,
+entity/record identity and the currently writable fields. Current draft values
+remain in the browser. New-record forms are supported as well as edit forms.
+
+The chat tool `frontend_form_propose` produces structured field proposals without
+calling CRUD. Proposals appear in the conversation and the matching form; field
+selection, dismissal and apply status are shared between those views. Applying
+selected fields uses `updateFormField`, including normal reference mappings and
+date-range behavior, then expands the form and runs its existing validation.
+Invalid forms remain editable and unsaved. Persistence is always a separate
+normal Save action with the existing backend permission and validation checks.
+
+The adapter rechecks field access and resolves references through the generic
+read API before touching the draft. It supports scalar/custom fields, dates,
+local date-times, JSON, choices and single-record references. Password/security,
+write-only, generated, readonly and hidden fields, relation tabs, generic
+reference pairs and specialized inline child collections are not exposed as
+ordinary writable proposal fields.
+
+Closing/reopening or saving a form invalidates its old instance. Any draft
+change after submission blocks applying that snapshot; request a new proposal
+instead of overwriting intervening edits. Proposals remain in chat history after
+reload, but a new form instance never silently adopts an old proposal. Local
+apply/dismiss state is shared for the current page lifetime and reset on user
+or impersonation changes.

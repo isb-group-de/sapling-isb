@@ -6,6 +6,9 @@ import type { EntityItem } from './entity-platform.types'
  * Represents a persisted AI chat session.
  */
 export interface AiChatSessionItem extends SaplingGenericItem {
+  workspaceInstruction?: string | null
+  sourceDashboardHandle?: number | null
+  sourceWidgetId?: string | null
   /** Numeric primary key */
   handle?: number | null
   /** Visible title of the chat */

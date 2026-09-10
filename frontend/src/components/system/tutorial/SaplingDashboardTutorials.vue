@@ -464,10 +464,11 @@ async function restartTutorials() {
 }
 
 function stopActiveTutorials() {
+  const wasActive = activeGroup.value !== null
   navigationTutorial.stop()
   dashboardTutorial.stop()
   activeGroup.value = null
-  cleanupInteractiveSurfaces()
+  if (wasActive) cleanupInteractiveSurfaces()
 }
 
 function cleanupInteractiveSurfaces() {

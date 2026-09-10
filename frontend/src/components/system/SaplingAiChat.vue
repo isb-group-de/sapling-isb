@@ -1,625 +1,220 @@
 <template>
+  <SongbirdWorkspaceController
+    v-for="entry in songbirdWorkspaces"
+    :key="entry.key"
+    :entry="entry"
+  />
   <Teleport to="body">
-    <div class="sapling-overlay-shell sapling-ai-chat-shell">
-      <v-btn
-        data-tutorial="songbird"
-        v-if="hasSaplingAiChatAccess && !isOpen && !isGhostEasterEggActive"
-        class="sapling-button--round sapling-ai-chat-fab"
-        color="primary"
-        size="large"
-        variant="elevated"
-        aria-label="Songbird"
-        icon="mdi-bird"
-        title="Songbird"
-        @click="toggleSaplingAiChat"
-      >
-      </v-btn>
-      <GhostEasterEgg
-        v-else-if="hasSaplingAiChatAccess && !isOpen"
-        placement="ai-fab"
-        @activate="openChatFromGhost"
+    <v-btn
+      v-if="hasSaplingAiChatAccess && !isOpen"
+      data-tutorial="songbird"
+      class="sapling-button--round sapling-ai-chat-fab"
+      color="primary"
+      size="large"
+      icon="mdi-bird"
+      aria-label="Songbird"
+      @click="openSaplingAiChat"
+    />
+    <aside
+      v-if="isOpen && hasSaplingAiChatAccess"
+      class="songbird-panel sapling-ai-chat"
+      :class="{ 'songbird-panel--fullscreen': fullscreen }"
+      aria-label="Songbird"
+      data-tutorial="songbird-chat"
+    >
+      <div
+        v-if="!fullscreen"
+        role="separator"
+        tabindex="0"
+        aria-orientation="vertical"
+        :aria-label="$t('aiChat.resizePanel')"
+        :aria-valuenow="width"
+        :aria-valuemin="360"
+        :aria-valuemax="640"
+        class="songbird-panel__resize"
+        @pointerdown="startResize"
+        @keydown.left.prevent="setWidth(width + 20)"
+        @keydown.right.prevent="setWidth(width - 20)"
       />
-
-      <SaplingDialog
-        :model-value="isDialogOpen"
-        size="3xl"
-        :height="SAPLING_DIALOG_HEIGHT.xl"
-        class="sapling-ai-chat-dialog"
-        content-class="sapling-ai-chat-dialog__content"
-        scrim="transparent"
-        :z-index="SAPLING_AI_CHAT_OVERLAY_Z_INDEX"
-        @update:model-value="handleDialogModelUpdate"
-      >
-        <SaplingDialogCard
-          class="sapling-dialog-card--fill sapling-ai-chat"
-          data-tutorial="songbird-chat"
-          @click.stop
-        >
-          <SaplingAiChatLoadingState v-if="isTranslationLoading" />
-
-          <template v-else>
-            <SaplingAiChatHeader
-              :assistant-name="assistantName"
-              :is-compact-header-actions="isCompactHeaderActions"
-              @close="closePanel"
-              @new-chat="startNewChat"
-              @open-account-settings="openAccountSettings"
-              @refresh="refreshChat"
-            />
-
-            <div class="sapling-floating-panel__progress-slot sapling-ai-chat__progress-slot">
-              <v-progress-linear
-                v-if="isBusy"
-                indeterminate
-                color="primary"
-                class="sapling-floating-panel__progress sapling-ai-chat__progress"
-              />
-            </div>
-
-            <div class="sapling-chat-layout sapling-ai-chat__layout">
-              <SaplingAiChatSessions
-                :sessions="sessions"
-                :active-session-handle="activeSession?.handle ?? null"
-                :active-session-title="activeSession?.title ?? ''"
-                :include-archived="includeArchived"
-                :editing-session-handle="editingSessionHandle"
-                :editing-session-title="editingSessionTitle"
-                :is-collapsible="isMobileLayout"
-                :is-collapsed="isSessionRailCollapsed"
-                :title-preview-limit="TITLE_PREVIEW_LIMIT"
-                @toggle-collapse="toggleSessionRail"
-                @update:include-archived="updateIncludeArchived"
-                @update:editing-session-title="editingSessionTitle = $event"
-                @select="selectSession"
-                @begin-rename="beginRename"
-                @cancel-rename="cancelRename"
-                @save-title="saveSessionTitle"
-                @toggle-archive="toggleArchive"
-              />
-
-              <SaplingAiChatConversation
-                :active-conversation-title="activeConversationTitle"
-                :active-runtime-summary="activeRuntimeSummary"
-                :agent-options="agentOptions"
-                :selected-agent-config="selectedAgentConfig"
-                :selected-agent-handle="selectedAgentHandle"
-                :playbook-options="playbookOptions"
-                :selected-playbook-handle="selectedPlaybookHandle"
-                :is-agent-locked="!!activeSession?.handle"
-                :has-configured-providers="hasConfiguredProviders"
-                :is-loading-runtime-catalog="isLoadingChatRuntimeCatalog"
-                :has-loaded-runtime-catalog="hasLoadedRuntimeCatalog"
-                :runtime-catalog-load-failed="hasRuntimeCatalogLoadError"
-                :has-configured-transcription-providers="hasConfiguredTranscriptionProviders"
-                :can-send-message="canSendMessage"
-                :is-sending="isResponseActive"
-                :queued-inputs="queuedInputs"
-                :messages="messages"
-                :draft-message="draftMessage"
-                :assistant-name="assistantName"
-                :current-person-display-name="currentPersonDisplayName"
-                :streaming-duration-by-handle="streamingDurationByHandle"
-                :has-more-messages="hasMoreMessages"
-                :is-loading-older-messages="isLoadingOlderMessages"
-                :is-voice-input-available="isVoiceInputAvailable"
-                :is-voice-output-available="isVoiceOutputAvailable"
-                :is-recording-voice-input="isRecordingVoiceInput"
-                :is-transcribing-voice-input="isTranscribingVoiceInput"
-                :can-upload-import-attachment="canUploadImportAttachment"
-                :can-upload-image="canUploadImage"
-                :is-uploading-import-attachment="isUploadingImportAttachment"
-                :pending-attachments="pendingAttachments"
-                :active-tool-action-handles="activeToolActionHandles"
-                :speech-state-by-handle="speechStateByHandle"
-                :rating-state-by-handle="ratingStateByHandle"
-                :title-preview-limit="TITLE_PREVIEW_LIMIT"
-                @update:draft-message="updateDraftMessage"
-                @update:selected-agent="updateSelectedAgent"
-                @update:selected-playbook="updateSelectedPlaybook"
-                @close="closePanel"
-                @load-older-messages="loadOlderMessages"
-                @toggle-message-speech="toggleMessageSpeech"
-                @confirm-tool-action="confirmToolAction"
-                @reject-tool-action="rejectToolAction"
-                @update-message-rating="updateMessageRating"
-                @toggle-voice-input="toggleVoiceInput"
-                @upload-import-attachment="uploadImportAttachment"
-                @upload-images="uploadImageAttachments"
-                @remove-import-attachment="removeImportAttachment"
-                @send="sendMessage"
-                @steer="steerMessage"
-                @cancel-queued-input="cancelQueuedInput"
-                @retry-runtime-catalog="loadRuntimeCatalogs"
-              />
-            </div>
-          </template>
-        </SaplingDialogCard>
-      </SaplingDialog>
-    </div>
+      <header class="songbird-panel__toolbar">
+        <strong>Songbird</strong>
+        <v-btn
+          size="small"
+          variant="text"
+          :title="$t('aiChat.newOperation')"
+          :aria-label="$t('aiChat.newOperation')"
+          icon="mdi-plus"
+          @click="newSongbirdWorkspace()"
+        />
+        <v-btn
+          size="small"
+          variant="text"
+          :title="$t('aiChat.openAccountSettings')"
+          :aria-label="$t('aiChat.openAccountSettings')"
+          icon="mdi-account-cog-outline"
+          @click="c?.openAccountSettings()"
+        />
+        <v-btn
+          size="small"
+          variant="text"
+          :title="$t('aiChat.expandWorkspace')"
+          :aria-label="$t('aiChat.expandWorkspace')"
+          :icon="expanded ? 'mdi-arrow-collapse' : 'mdi-arrow-expand'"
+          @click="expanded = !expanded"
+        />
+        <v-btn size="small" variant="text" @click="closeSaplingAiChat">{{
+          $t('aiChat.backToWork')
+        }}</v-btn>
+      </header>
+      <template v-if="c">
+        <div class="songbird-panel__context">
+          <span :title="c.contextLabel">{{ c.contextLabel }}</span>
+          <v-btn
+            size="small"
+            variant="text"
+            :icon="c.followPage ? 'mdi-pin-outline' : 'mdi-pin-off-outline'"
+            :aria-label="$t(c.followPage ? 'aiChat.pinContext' : 'aiChat.followContext')"
+            :title="$t(c.followPage ? 'aiChat.pinContext' : 'aiChat.followContext')"
+            @click="c.toggleContext()"
+          />
+        </div>
+        <div class="songbird-panel__body">
+          <div v-if="showSessionSidebar" class="songbird-session-sidebar songbird-session-history">
+            <SongbirdSessionHistory :c="c" />
+          </div>
+          <div class="songbird-panel__operation">
+            <SongbirdSessionMenu v-if="!showSessionSidebar" :c="c" />
+            <SongbirdWorkspaceSurface :key="songbirdSelection.key" :c="c" />
+          </div>
+        </div>
+      </template>
+      <v-progress-linear v-else indeterminate />
+    </aside>
   </Teleport>
 </template>
-
-<script lang="ts" setup>
-import { computed, nextTick, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
-import { useI18n } from 'vue-i18n'
-import { useDisplay } from 'vuetify'
-import type { AiChatSessionItem } from '@/entity/entity'
-import SaplingDialog from '@/components/common/SaplingDialog.vue'
-import SaplingDialogCard from '@/components/dialog/SaplingDialogCard.vue'
-import { SAPLING_DIALOG_HEIGHT } from '@/constants/dialog.constants'
-import GhostEasterEgg from '@/components/easter-egg/GhostEasterEgg.vue'
-import SaplingAiChatConversation from '@/components/system/ai-chat/SaplingAiChatConversation.vue'
-import SaplingAiChatHeader from '@/components/system/ai-chat/SaplingAiChatHeader.vue'
-import SaplingAiChatLoadingState from '@/components/system/ai-chat/SaplingAiChatLoadingState.vue'
-import SaplingAiChatSessions from '@/components/system/ai-chat/SaplingAiChatSessions.vue'
-import { useSaplingAiChatAttachments } from '@/components/system/ai-chat/useSaplingAiChatAttachments'
-import { useSaplingAiChatMessages } from '@/components/system/ai-chat/useSaplingAiChatMessages'
-import { useSaplingAiChatRuntimeCatalog } from '@/components/system/ai-chat/useSaplingAiChatRuntimeCatalog'
-import { useSaplingAiChatSessions } from '@/components/system/ai-chat/useSaplingAiChatSessions'
-import { useSaplingAiChatSpeechPlayback } from '@/components/system/ai-chat/useSaplingAiChatSpeechPlayback'
-import { useSaplingAiChatStream } from '@/components/system/ai-chat/useSaplingAiChatStream'
-import { useSaplingAiChatVoiceInput } from '@/components/system/ai-chat/useSaplingAiChatVoiceInput'
-import { useSaplingAiChatRatings } from '@/components/system/ai-chat/useSaplingAiChatRatings'
-import { useSaplingAiChatLifecycle } from '@/components/system/ai-chat/useSaplingAiChatLifecycle'
-import {
-  createAsyncSingleFlight,
-  SAPLING_AI_CHAT_OVERLAY_Z_INDEX,
-  SAPLING_AI_CHAT_TITLE_PREVIEW_LIMIT as TITLE_PREVIEW_LIMIT,
-  type SaplingAiChatPromptEventDetail,
-} from '@/components/system/ai-chat/saplingAiChat.utils'
-import { useTranslationLoader } from '@/composables/generic/useTranslationLoader'
-import { useGhostEasterEgg } from '@/composables/easter-egg/useGhostEasterEgg'
-import { useSaplingAiChat } from '@/composables/system/useSaplingAiChat'
-import { useSaplingMessageCenter } from '@/composables/system/useSaplingMessageCenter'
+<script setup lang="ts">
+import { computed, nextTick, onMounted, onUnmounted, watch } from 'vue'
 import { useCurrentPersonStore } from '@/stores/currentPersonStore'
-import { loadSaplingAiPreferences } from '@/services/ai-preferences.service'
-import { openSaplingAccountDialog } from '@/services/account-dialog.service'
-
-const assistantName = 'Songbird'
-const route = useRoute()
-const currentPersonStore = useCurrentPersonStore()
-const messageCenter = useSaplingMessageCenter()
-const { t } = useI18n()
-const { mdAndDown, smAndDown } = useDisplay()
-const { isLoading: isTranslationLoading, loadTranslations } = useTranslationLoader(
-  'aiChat',
-  'ai',
-  'document',
-  'import',
-  'navigation',
-  'global',
+import { useSaplingAiChat } from '@/composables/system/useSaplingAiChat'
+import { useSongbirdDock } from '@/composables/system/useSongbirdDock'
+import { hasSongbirdRecordDialog } from '@/composables/system/songbirdPageContext'
+import ApiAiService from '@/services/api.ai.service'
+import { SAPLING_AI_CHAT_PROMPT_EVENT } from '@/utils/saplingScriptResultUtil'
+import type { SaplingAiChatPromptEventDetail } from './ai-chat/saplingAiChat.utils'
+import {
+  songbirdWorkspaces,
+  songbirdSelection,
+  createSongbirdWorkspace,
+  selectSongbirdSession,
+  newSongbirdWorkspace,
+  resetSongbirdWorkspaces,
+} from './ai-chat/songbirdWorkspaceRegistry'
+import SongbirdWorkspaceController from './ai-chat/SongbirdWorkspaceController.vue'
+import SongbirdWorkspaceSurface from './ai-chat/SongbirdWorkspaceSurface.vue'
+import SongbirdSessionMenu from './ai-chat/SongbirdSessionMenu.vue'
+import SongbirdSessionHistory from './ai-chat/SongbirdSessionHistory.vue'
+const person = useCurrentPersonStore()
+const { isOpen, hasSaplingAiChatAccess, openSaplingAiChat, closeSaplingAiChat } = useSaplingAiChat()
+const { width, fullscreen, docked, expanded, setWidth, showSessionSidebar } = useSongbirdDock()
+const c = computed(() => songbirdWorkspaces[songbirdSelection.key]?.state)
+const principal = computed(
+  () => String(person.person?.handle ?? '') + ':' + String(person.impersonator?.handle ?? ''),
 )
-const isCompactHeaderActions = mdAndDown
-const isMobileLayout = computed(() => smAndDown.value)
-const activeSession = ref<AiChatSessionItem | null>(null)
-const draftMessage = ref('')
-const selectedContextEntityHandle = ref<string | null>(null)
-const selectedContextRecordHandle = ref<string | null>(null)
-const isSessionRailCollapsed = ref(false)
-const hasInitialized = ref(false)
-let persistedActivityRefresh: Promise<void> | null = null
-let isLocalStreamSending = () => false
-
-const {
-  isOpen,
-  hasSaplingAiChatAccess,
-  ensureSaplingAiChatAccess,
-  closeSaplingAiChat,
-  toggleSaplingAiChat,
-  openSaplingAiChat,
-} = useSaplingAiChat()
-const { isActive: isGhostEasterEggActive } = useGhostEasterEgg()
-const {
-  messages,
-  hasMoreMessages,
-  nextMessageBeforeSequence,
-  streamingClock,
-  streamingDurationByHandle,
-  resetMessageWindow,
-  mergeMessages,
-  upsertMessage,
-  appendMessageDelta,
-  appendLocalFailedExchange,
-} = useSaplingAiChatMessages()
-const { ratingStateByHandle, updateMessageRating } = useSaplingAiChatRatings(upsertMessage)
-const runtime = useSaplingAiChatRuntimeCatalog(
-  activeSession,
-  loadSaplingAiPreferences(),
-  () =>
-    `person:${currentPersonStore.person?.handle ?? 'anonymous'}:impersonator:${currentPersonStore.impersonator?.handle ?? 'none'}`,
-)
-const {
-  agentOptions,
-  playbookOptions,
-  speechModelConfigs,
-  selectedAgentConfig,
-  selectedProviderConfig,
-  selectedModelConfig,
-  selectedProviderHandle,
-  selectedModelHandle,
-  selectedAgentHandle,
-  selectedPlaybookHandle,
-  selectedTranscriptionProviderHandle,
-  selectedTranscriptionModelHandle,
-  selectedSpeechProviderHandle,
-  selectedSpeechModelHandle,
-  isLoadingChatRuntimeCatalog,
-  hasLoadedRuntimeCatalog,
-  hasRuntimeCatalogLoadError,
-  hasConfiguredProviders,
-  hasConfiguredTranscriptionProviders,
-  canSendMessage: runtimeCanSendMessage,
-  isVoiceOutputAvailable,
-  canUploadImportAttachment,
-  loadRuntimeCatalogs,
-  loadTranscriptionCatalogs,
-  loadSpeechCatalogs,
-  applyPreferences,
-  applyPromptRuntime,
-  updateSelectedAgent,
-  updateSelectedPlaybook,
-  syncSelectedAgent,
-  syncSelectedPlaybook,
-  syncSelectedRuntimeTarget,
-  getAgentHandle,
-  getPlaybookHandle,
-} = runtime
-const sessionState = useSaplingAiChatSessions({
-  activeSession,
-  messages,
-  hasMoreMessages,
-  nextMessageBeforeSequence,
-  selectedPlaybookHandle,
-  resetMessageWindow,
-  mergeMessages,
-  syncSelectedAgent,
-  syncSelectedPlaybook,
-  getPlaybookHandle,
-  onActiveSessionArchived: () => startNewChat(),
-})
-const {
-  sessions,
-  includeArchived,
-  isLoadingSessions,
-  isLoadingMessages,
-  isLoadingOlderMessages,
-  editingSessionHandle,
-  editingSessionTitle,
-  reloadSessions,
-  loadMessages,
-  loadOlderMessages,
-  refreshPersistedActivity,
-  markSessionRead,
-  updateIncludeArchived,
-  beginRename,
-  cancelRename,
-  saveSessionTitle,
-  toggleArchive,
-  replaceSession,
-} = sessionState
-const {
-  pendingAttachments,
-  isUploadingImportAttachment,
-  uploadImportAttachment,
-  removeImportAttachment,
-  resetImportAttachments,
-  uploadImageAttachments,
-} = useSaplingAiChatAttachments(
-  canUploadImportAttachment,
-  () => activeSession.value?.handle ?? null,
-  {
-    canUpload: computed(() => !!selectedModelConfig.value?.supportsVision),
-    target: () => ({
-      providerHandle: selectedProviderHandle.value ?? undefined,
-      modelHandle: selectedModelHandle.value ?? undefined,
-    }),
-    reportError: (key) => messageCenter.pushMessage('error', key, '', 'aiChat'),
-  },
-)
-const canUploadImage = computed(() => !!selectedModelConfig.value?.supportsVision)
-const canSendMessage = computed(
-  () =>
-    runtimeCanSendMessage.value &&
-    !isUploadingImportAttachment.value &&
-    (canUploadImage.value || !pendingAttachments.value.some((item) => item.purpose === 'vision')),
-)
-
-const voiceInput = useSaplingAiChatVoiceInput({
-  activeSession,
-  draftMessage,
-  selectedTranscriptionProviderHandle,
-  selectedTranscriptionModelHandle,
-  hasConfiguredProviders,
-  hasConfiguredTranscriptionProviders,
-  route,
-  sendMessage: () => sendMessage(),
-  isResponseActive: () =>
-    isLocalStreamSending() || activeSession.value?.responseStatus === 'responding',
-  pushMessage: messageCenter.pushMessage,
-  ensureTranscriptionCatalog: loadTranscriptionCatalogs,
-})
-const {
-  isRecordingVoiceInput,
-  isTranscribingVoiceInput,
-  isVoiceInputAvailable,
-  activeTranscriptionHandle,
-  toggleVoiceInput,
-  cancelVoiceInput,
-} = voiceInput
-const speechPlayback = useSaplingAiChatSpeechPlayback({
-  isOpen,
-  isVoiceOutputAvailable,
-  activeSession,
-  messages,
-  selectedSpeechProviderHandle,
-  selectedSpeechModelHandle,
-  speechModelConfigs,
-  upsertMessage,
-  reportPlaybackError: () =>
-    messageCenter.pushMessage('error', 'ai.speech.playbackFailed', '', 'aiChat'),
-  ensureSpeechCatalog: loadSpeechCatalogs,
-})
-const {
-  speechStateByHandle,
-  autoPlayAssistantSpeech,
-  toggleMessageSpeech,
-  stopSpeechPlayback,
-  revokeSpeechObjectUrls,
-} = speechPlayback
-const {
-  isSending,
-  queuedInputs,
-  activeToolActionHandles,
-  sendMessage,
-  steerMessage,
-  loadQueuedInputs,
-  cancelQueuedInput,
-  confirmToolAction,
-  rejectToolAction,
-  abortStream,
-} = useSaplingAiChatStream({
-  route,
-  isOpen,
-  activeSession,
-  messages,
-  draftMessage,
-  canSendMessage,
-  selectedProviderHandle,
-  selectedModelHandle,
-  selectedAgentHandle,
-  selectedPlaybookHandle,
-  selectedContextEntityHandle,
-  selectedContextRecordHandle,
-  activeTranscriptionHandle,
-  pendingAttachments,
-  defaultAttachmentPrompt: () =>
-    t(
-      pendingAttachments.value.some((item) => item.purpose === 'vision')
-        ? 'aiChat.defaultImagePrompt'
-        : 'aiChat.defaultImportAttachmentPrompt',
-    ),
-  currentPersonHandle: () => currentPersonStore.person?.handle ?? 0,
-  reportMessage: messageCenter.pushMessage,
-  upsertMessage,
-  appendMessageDelta,
-  appendLocalFailedExchange,
-  replaceSession,
-  loadMessages,
-  autoPlayAssistantSpeech,
-  onSessionResponseFinished: markSessionResponseFinished,
-})
-isLocalStreamSending = () => isSending.value
-
-const isBusy = computed(
-  () =>
-    isLoadingChatRuntimeCatalog.value ||
-    isLoadingSessions.value ||
-    isLoadingMessages.value ||
-    isSending.value,
-)
-const isResponseActive = computed(
-  () => isSending.value || activeSession.value?.responseStatus === 'responding',
-)
-const isDialogOpen = computed(() => isOpen.value && hasSaplingAiChatAccess.value)
-const activeConversationTitle = computed(
-  () => activeSession.value?.title || t('aiChat.draftConversation'),
-)
-const activeRuntimeSummary = computed(() =>
-  [
-    selectedAgentConfig.value?.title ?? selectedAgentHandle.value,
-    selectedProviderConfig.value?.title ?? selectedProviderHandle.value,
-    selectedModelConfig.value?.title ?? selectedModelHandle.value,
-  ]
-    .filter((part): part is string => typeof part === 'string' && part.trim().length > 0)
-    .join(' / '),
-)
-const currentPersonDisplayName = computed(() => {
-  const person = currentPersonStore.person
-  if (!person) return t('aiChat.user')
-  const fullName = [person.firstName, person.lastName]
-    .filter((part): part is string => typeof part === 'string' && part.trim().length > 0)
-    .join(' ')
-  return fullName || person.loginName || t('aiChat.user')
-})
-
-watch(isMobileLayout, (isMobile) => (isSessionRailCollapsed.value = isMobile), {
-  immediate: true,
+const storageKey = computed(() => 'songbird-active-session:' + principal.value)
+watch(principal, () => {
+  resetSongbirdWorkspaces()
+  closeSaplingAiChat()
 })
 watch(
-  () => currentPersonStore.person?.handle,
-  async (handle) => {
-    if (handle && hasInitialized.value) await reloadSessions()
-  },
-)
-watch(
-  () => isOpen.value,
-  async (nextIsOpen) => {
-    if (!nextIsOpen) return
-    if (!(await ensureSaplingAiChatAccess())) {
-      closePanel()
-      return
-    }
+  () => c.value?.activeSession?.handle,
+  (handle) => {
     try {
-      await ensureChatInitialized()
-      await markSessionRead(activeSession.value?.handle)
+      if (handle) localStorage.setItem(storageKey.value, String(handle))
     } catch {
-      // Underlying services already report initialization failures.
+      /* Optional browser preference. */
+    }
+  },
+)
+watch(
+  [isOpen, () => songbirdSelection.key],
+  async ([open]) => {
+    if (!open || songbirdSelection.key) return
+    const identity = principal.value
+    try {
+      const handle = Number(localStorage.getItem(storageKey.value))
+      const session = handle
+        ? (await ApiAiService.listSessions()).find((s) => s.handle === handle)
+        : null
+      if (identity !== principal.value || songbirdSelection.key) return
+      if (session) selectSongbirdSession(session)
+      else songbirdSelection.key = createSongbirdWorkspace()
+    } catch {
+      if (identity === principal.value && !songbirdSelection.key)
+        songbirdSelection.key = createSongbirdWorkspace()
     }
   },
   { immediate: true },
 )
-watch(hasSaplingAiChatAccess, (hasAccess) => {
-  if (!hasAccess && isOpen.value) closePanel()
-})
-watch(activeSession, syncSelectedRuntimeTarget, { immediate: true })
 watch(
-  () => activeSession.value?.handle ?? null,
-  (handle) => void loadQueuedInputs(handle).catch(() => undefined),
+  [docked, width, fullscreen, isOpen, hasSaplingAiChatAccess],
+  () => {
+    document.documentElement.style.setProperty('--songbird-panel-width', width.value + 'px')
+    document.documentElement.style.setProperty(
+      '--songbird-reserved-width',
+      docked.value ? width.value + 'px' : '0px',
+    )
+    document.documentElement.classList.toggle('songbird-docked', docked.value)
+    document.documentElement.classList.toggle(
+      'songbird-fullscreen',
+      isOpen.value && hasSaplingAiChatAccess.value && fullscreen.value,
+    )
+  },
+  { immediate: true },
 )
-
-useSaplingAiChatLifecycle({
-  streamingClock,
-  closePanel,
-  openPrompt: openPromptFromScriptButton,
-  applyPreferences,
-  pollPersistedActivity: pollPersistedChatActivity,
-  abortStream,
-  cancelVoiceInput,
-  stopSpeechPlayback,
-  revokeSpeechObjectUrls,
-})
-
-function handleDialogModelUpdate(nextIsOpen: boolean) {
-  if (!nextIsOpen) closePanel()
-}
-
-async function openPromptFromScriptButton(detail?: SaplingAiChatPromptEventDetail) {
-  const prompt = detail?.prompt?.trim()
-  if (!prompt) return
-  if (!(await ensureSaplingAiChatAccess())) {
-    messageCenter.pushMessage('warning', 'global.permissionDenied', '', 'aiChat')
-    return
-  }
-
-  isOpen.value = true
-  await ensureChatInitialized()
-  if (detail?.newChat !== false) startNewChat()
-  applyPromptContext(detail)
-  draftMessage.value = prompt
-  if (detail?.autoSend !== false) {
-    await nextTick()
-    await sendMessage()
-  }
-}
-
-const runChatInitialization = createAsyncSingleFlight(async () => {
-  await Promise.all([currentPersonStore.fetchCurrentPerson(), loadTranslations()])
-  await loadRuntimeCatalogs()
-  if (currentPersonStore.person?.handle) await reloadSessions()
-  hasInitialized.value = true
-})
-
-async function ensureChatInitialized() {
-  if (!hasInitialized.value || !hasLoadedRuntimeCatalog.value) await runChatInitialization()
-}
-
-async function refreshChat() {
-  await Promise.all([loadRuntimeCatalogs(true), reloadSessions()])
-}
-
-async function selectSession(session: AiChatSessionItem) {
-  cancelVoiceInput()
-  stopSpeechPlayback()
-  activeSession.value = session
-  selectedAgentHandle.value = getAgentHandle(session.agent)
-  selectedPlaybookHandle.value = getPlaybookHandle(session.playbook)
-  activeTranscriptionHandle.value = null
-  resetImportAttachments()
-  editingSessionHandle.value = null
-  isOpen.value = true
-  await Promise.all([
-    loadMessages(session.handle),
-    loadQueuedInputs(session.handle),
-    markSessionRead(session.handle),
-  ])
-  if (isMobileLayout.value) isSessionRailCollapsed.value = true
-}
-
-function startNewChat() {
-  cancelVoiceInput()
-  stopSpeechPlayback()
-  activeSession.value = null
-  messages.value = []
-  resetMessageWindow()
-  draftMessage.value = ''
-  activeTranscriptionHandle.value = null
-  resetImportAttachments()
-  queuedInputs.value = []
-  editingSessionHandle.value = null
-  selectedContextEntityHandle.value = null
-  selectedContextRecordHandle.value = null
-  isOpen.value = true
-  syncSelectedAgent()
-  syncSelectedPlaybook()
-  syncSelectedRuntimeTarget()
-  if (isMobileLayout.value) isSessionRailCollapsed.value = true
-}
-
-function applyPromptContext(detail?: SaplingAiChatPromptEventDetail) {
-  applyPromptRuntime(detail?.agentHandle, detail?.playbookHandle)
-  selectedContextEntityHandle.value = detail?.contextEntityHandle?.trim() || null
-  selectedContextRecordHandle.value = detail?.contextRecordHandle?.trim() || null
-}
-
-function updateDraftMessage(value: string) {
-  draftMessage.value = value
-  if (!value.trim()) activeTranscriptionHandle.value = null
-}
-
-function toggleSessionRail() {
-  if (isMobileLayout.value) isSessionRailCollapsed.value = !isSessionRailCollapsed.value
-}
-
-function markSessionResponseFinished(sessionHandle: number) {
-  if (!isOpen.value || activeSession.value?.handle !== sessionHandle) return
-  void markSessionRead(sessionHandle).catch(() => undefined)
-}
-
-function pollPersistedChatActivity() {
-  if (
-    persistedActivityRefresh ||
-    !isOpen.value ||
-    (!sessions.value.some((session) => session.responseStatus === 'responding') &&
-      queuedInputs.value.length === 0)
-  ) {
-    return
-  }
-
-  persistedActivityRefresh = (async () => {
-    const activeResponseCompleted = await refreshPersistedActivity()
-    await loadQueuedInputs(activeSession.value?.handle ?? null)
-    if (activeResponseCompleted && activeSession.value?.handle) {
-      await markSessionRead(activeSession.value.handle)
-    }
-  })()
-    .catch(() => undefined)
-    .finally(() => {
-      persistedActivityRefresh = null
+function setWorkInert(inert: boolean) {
+  document
+    .querySelectorAll<HTMLElement>('.sapling-auth-layout__body, .sapling-app-layout__header')
+    .forEach((element) => {
+      element.inert = inert
     })
 }
-
-function closePanel() {
-  cancelVoiceInput()
-  stopSpeechPlayback()
-  closeSaplingAiChat()
+watch(
+  [hasSongbirdRecordDialog, isOpen, fullscreen, hasSaplingAiChatAccess],
+  () => {
+    setWorkInert(
+      isOpen.value &&
+        hasSaplingAiChatAccess.value &&
+        (fullscreen.value || hasSongbirdRecordDialog.value),
+    )
+  },
+  { immediate: true, flush: 'post' },
+)
+function resize(event: PointerEvent) {
+  setWidth(window.innerWidth - event.clientX)
 }
-
-async function openChatFromGhost() {
-  await openSaplingAiChat()
+function stopResize() {
+  window.removeEventListener('pointermove', resize)
+  window.removeEventListener('pointerup', stopResize)
 }
-
-function openAccountSettings() {
-  openSaplingAccountDialog('songbird')
+function startResize(event: PointerEvent) {
+  event.preventDefault()
+  window.addEventListener('pointermove', resize)
+  window.addEventListener('pointerup', stopResize, { once: true })
 }
+async function prompt(event: Event) {
+  const detail = (event as CustomEvent<SaplingAiChatPromptEventDetail>).detail
+  if (!detail?.prompt || !(await openSaplingAiChat())) return
+  if (detail.newChat !== false || !songbirdSelection.key) newSongbirdWorkspace()
+  await nextTick()
+  await c.value?.openPromptFromScriptButton(detail)
+}
+onMounted(() => window.addEventListener(SAPLING_AI_CHAT_PROMPT_EVENT, prompt))
+onUnmounted(() => {
+  window.removeEventListener(SAPLING_AI_CHAT_PROMPT_EVENT, prompt)
+  stopResize()
+  setWorkInert(false)
+  document.documentElement.classList.remove('songbird-docked', 'songbird-fullscreen')
+  document.documentElement.style.removeProperty('--songbird-reserved-width')
+  resetSongbirdWorkspaces()
+})
 </script>

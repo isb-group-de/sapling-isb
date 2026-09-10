@@ -271,6 +271,10 @@ export class Migration20260910125036_PersonDeleteRules extends Migration {
     this.addSql(
       'alter table "event_item" add column "send_calendar_invitations" boolean not null default false;',
     );
+
+    this.addSql(
+      'alter table "ai_chat_session_item" add column "workspace_instruction" text null, add column "source_dashboard_handle" int null, add column "source_widget_id" varchar(80) null;',
+    );
   }
 
   override down(): void | Promise<void> {
@@ -540,6 +544,10 @@ export class Migration20260910125036_PersonDeleteRules extends Migration {
 
     this.addSql(
       'alter table "event_item" drop column "send_calendar_invitations";',
+    );
+
+    this.addSql(
+      'alter table "ai_chat_session_item" drop column "workspace_instruction", drop column "source_dashboard_handle", drop column "source_widget_id";',
     );
   }
 }

@@ -34,12 +34,19 @@ export class AiChatSessionService {
   async listChatSessions(
     user: PersonItem,
     includeArchived = false,
+    source?: { sourceDashboardHandle?: number; sourceWidgetId?: string },
   ): Promise<AiChatSessionItem[]> {
     const userHandle = this.chatPersistence.requireUserHandle(user);
     const sessions = await this.em.find(
       AiChatSessionItem,
       {
         person: { handle: userHandle },
+        ...(source?.sourceDashboardHandle != null
+          ? { sourceDashboardHandle: source.sourceDashboardHandle }
+          : {}),
+        ...(source?.sourceWidgetId
+          ? { sourceWidgetId: source.sourceWidgetId }
+          : {}),
         ...(includeArchived ? {} : { isArchived: false }),
       },
       {
@@ -135,6 +142,9 @@ export class AiChatSessionService {
           currentPromptManifest() ??
           (await new AiPromptService(this.em).load()).manifest,
         title: dto.title?.trim() || 'New Chat',
+        workspaceInstruction: dto.workspaceInstruction?.trim() || null,
+        sourceDashboardHandle: dto.sourceDashboardHandle ?? null,
+        sourceWidgetId: dto.sourceWidgetId?.trim() || null,
         isArchived: false,
         provider: runtimeTarget.provider,
         model: runtimeTarget.model,

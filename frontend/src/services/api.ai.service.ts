@@ -299,11 +299,19 @@ class ApiAiService extends ApiAiMediaService {
 
   static async listSessions(
     includeArchived = false,
-    options?: { suppressErrorMessage?: boolean },
+    options?: {
+      suppressErrorMessage?: boolean
+      sourceDashboardHandle?: number
+      sourceWidgetId?: string
+    },
   ): Promise<AiChatSessionItem[]> {
     try {
       const response = await axios.get<AiChatSessionItem[]>(buildApiUrl('ai/chat/sessions'), {
-        params: { includeArchived },
+        params: {
+          includeArchived,
+          sourceDashboardHandle: options?.sourceDashboardHandle,
+          sourceWidgetId: options?.sourceWidgetId,
+        },
       })
       return response.data
     } catch (error: unknown) {

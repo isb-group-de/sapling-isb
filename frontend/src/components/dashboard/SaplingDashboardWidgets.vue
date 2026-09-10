@@ -25,6 +25,7 @@
         <SaplingDashboardWidgetCard
           :key="widget.id + JSON.stringify(widget.config)"
           :widget="widget"
+          :dashboard-handle="dashboard.handle ?? undefined"
           :editing="layoutEditing"
           @edit="editWidget(widget)"
           @remove="openDelete(widget)"

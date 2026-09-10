@@ -12,14 +12,17 @@ import type {
 } from '@/entity/entity'
 
 export interface CreateAiChatSessionPayload {
+  workspaceInstruction?: string
+  sourceDashboardHandle?: number
+  sourceWidgetId?: string
   title?: string
   providerHandle?: string
   modelHandle?: string
   agentHandle?: string
   agentVersionHandle?: number
   playbookHandle?: string
-  contextEntityHandle?: string
-  contextRecordHandle?: string
+  contextEntityHandle?: string | null
+  contextRecordHandle?: string | null
 }
 
 export interface UpdateAiChatSessionPayload {
@@ -30,11 +33,14 @@ export interface UpdateAiChatSessionPayload {
   agentHandle?: string
   agentVersionHandle?: number
   playbookHandle?: string
-  contextEntityHandle?: string
-  contextRecordHandle?: string
+  contextEntityHandle?: string | null
+  contextRecordHandle?: string | null
 }
 
 export interface CreateAiChatMessagePayload {
+  workspaceInstruction?: string
+  sourceDashboardHandle?: number
+  sourceWidgetId?: string
   sessionHandle?: number
   sessionTitle?: string
   content: string
@@ -46,8 +52,8 @@ export interface CreateAiChatMessagePayload {
   agentHandle?: string
   agentVersionHandle?: number
   playbookHandle?: string
-  contextEntityHandle?: string
-  contextRecordHandle?: string
+  contextEntityHandle?: string | null
+  contextRecordHandle?: string | null
   transcriptionHandle?: number
   attachmentHandles?: number[]
   contextPayload?: Record<string, unknown>
@@ -190,8 +196,8 @@ export interface CreateAiAgentTestRunPayload {
   prompt: string
   agentVersionHandle?: number
   playbookHandle?: string
-  contextEntityHandle?: string
-  contextRecordHandle?: string
+  contextEntityHandle?: string | null
+  contextRecordHandle?: string | null
 }
 
 export interface CreateAiAgentEvaluationPayload {

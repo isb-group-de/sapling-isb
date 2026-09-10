@@ -32,6 +32,33 @@ describe('AiChatStreamService persistence lifecycle', () => {
     jest.useRealTimers();
   });
 
+  it('clears stale record context with explicit null and persists the submitted snapshot', async () => {
+    const fixture = createFixture();
+    Object.assign(fixture.session, {
+      contextEntityHandle: 'ticket',
+      contextRecordHandle: 'old',
+    });
+    fixture.chatRuntime.streamOpenAi.mockResolvedValue({
+      toolCalls: [],
+      usagePayload: {},
+    });
+    const result = await fixture.service.streamChatMessage(
+      {
+        sessionHandle: 7,
+        content: 'Next',
+        contextEntityHandle: null,
+        contextRecordHandle: null,
+      },
+      fixture.person as never,
+      fixture.onEvent,
+    );
+    expect(result.session.contextEntityHandle).toBeNull();
+    expect(result.session.contextRecordHandle).toBeNull();
+    expect(result.userMessage.requestPayload).toMatchObject({
+      contextPayload: { contextEntityHandle: null, contextRecordHandle: null },
+    });
+  });
+
   it('checkpoints partial assistant text and persists terminal session state', async () => {
     jest.useFakeTimers();
     jest.setSystemTime(new Date('2026-07-21T10:00:00Z'));

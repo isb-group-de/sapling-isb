@@ -127,9 +127,9 @@ automatic GitHub issues.
 
 ### Image inputs (Vision)
 
-Songbird uses the shared `SaplingDialog` and `SaplingDialogCard` surface, with
-the same 90vh desktop height and mobile viewport behavior as the entity edit
-dialog. Its responsive chat width stays independent of the wider entity editor.
+Songbird uses a persistent workspace controller with shared conversation surfaces
+in dashboard widgets and the docked panel. On narrow screens, the panel becomes
+a full-viewport workspace; hiding it retains the conversation and pending inputs.
 
 `AiProviderModelItem.supportsVision` enables image inputs in Songbird. Apply
 the consolidated database baseline and shared translation seeds (which include the former `Migration20260909120000`), then enable the flag
@@ -593,3 +593,41 @@ hard-coding the target fields into `TicketController`.
 - Treating `ticket_search` as a semantic search replacement.
 - Adding a long-text entity to prompts but not to `VECTOR_ENTITY_HANDLES`.
 - Hard-coding tool payloads instead of reading MCP schemas.
+
+## Embedded Songbird workspaces
+
+Songbird's authenticated-shell host retains a controller for each open operation.
+Dashboard widgets, the side panel and the expanded view use the same workspace
+surface. Switching or hiding surfaces preserves drafts, attachments, streaming
+and confirmation state. The existing queue/steer, ownership and tool policies
+continue to apply. Persisted sessions and response checkpoints restore runs after
+reload; unsent drafts and attachments are retained within the current page lifetime.
+
+Session creation and first-message requests accept optional workspaceInstruction,
+sourceDashboardHandle and sourceWidgetId. The saved instruction is appended as a
+supplementary user task to the existing runtime instructions on every turn; it
+does not change policy or authorize bypassing tool confirmation. Configuration is
+snapshotted at creation. Existing-session requests cannot replace this snapshot.
+Session list requests accept sourceDashboardHandle/sourceWidgetId filters while
+always retaining current-user ownership filtering.
+
+Context fields now distinguish omitted (retain prior context) from explicit null
+(clear prior context). The frontend snapshots context on submission, including
+queued and steer inputs. The panel normally follows the current page; pinning
+freezes its reference. Saved records in active shared edit dialogs take precedence.
+Unsubmitted field edits are never scraped into context. Widget operations start
+without page context and keep that mode when opened in the panel.
+
+Apply Migration20260910160000 and the registered additive translation seeds before using the
+new frontend. No existing dashboard configuration or chat history needs rewriting.
+
+For an open editable record form, Songbird additionally offers the local
+`frontend_form_propose` tool. It is bound to the submitted `contextPayload.openedForm`
+snapshot, respects the agent entity/tool restrictions and returns a draft
+proposal rather than invoking a mutation. The user explicitly selects fields to
+apply in the frontend, validates them in the existing form and saves separately.
+Proposals are persisted in the assistant response payload, including streaming
+checkpoints, and share their visible state between the form and conversation.
+The context descriptor includes field metadata but no unsaved values. Queue and
+steer retain the original descriptor. No schema migration is needed; apply the
+registered `translationData_0006_insert.json` seed for the additional labels.

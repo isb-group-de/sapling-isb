@@ -422,6 +422,9 @@ export function sanitizeChatSession(
   return {
     handle: session.handle,
     title: session.title,
+    workspaceInstruction: session.workspaceInstruction ?? null,
+    sourceDashboardHandle: session.sourceDashboardHandle ?? null,
+    sourceWidgetId: session.sourceWidgetId ?? null,
     isArchived: session.isArchived,
     provider:
       session.provider && typeof session.provider !== 'string'

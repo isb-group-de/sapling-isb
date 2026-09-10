@@ -14,10 +14,16 @@ import { PersonItem } from '../../entity/PersonItem';
 import { ImportService } from '../import/import.service';
 import { AiAgentPolicyService } from './ai-agent-policy.service';
 import { AiChatPersistenceService } from './ai-chat-persistence.service';
-import { sanitizeToolAction } from './ai-response.utils';
+import { sanitizeToolAction, sanitizeChatMessage } from './ai-response.utils';
 import type { AiToolRegistryEntry } from './ai.types';
 import { McpService, type McpInlineToolExecution } from './mcp.service';
 import type { McpToolPolicy } from './mcp-policy.types';
+import {
+  FORM_PROPOSAL_SERVER,
+  FORM_PROPOSAL_TOOL,
+  executeFormProposal,
+  readFormContext,
+} from './ai-form-proposal';
 
 const TOOL_ACTION_VALIDITY_MS = 10 * 60 * 60 * 1000;
 
@@ -210,6 +216,39 @@ export class AiChatToolActionService {
     onEvent: (event: Record<string, unknown>) => Promise<void> | void,
   ): Promise<McpInlineToolExecution> {
     const descriptor = entry.descriptor;
+
+    if (
+      descriptor.serverName === FORM_PROPOSAL_SERVER &&
+      descriptor.toolName === FORM_PROPOSAL_TOOL
+    ) {
+      const result = executeFormProposal(
+        readFormContext(
+          (message?.contextPayload as Record<string, unknown> | null)
+            ?.openedForm,
+          policy,
+        ),
+        args,
+      );
+      const raw = result.rawResult as Record<string, unknown>;
+      if (message && raw.ok === true) {
+        const existing = (
+          message.responsePayload as Record<string, unknown> | null
+        )?.formProposals;
+        message.responsePayload = {
+          ...message.responsePayload,
+          formProposals: [
+            ...(Array.isArray(existing) ? (existing as unknown[]) : []),
+            raw.formProposal,
+          ],
+        };
+        await this.em.flush();
+        await onEvent({
+          type: 'message.assistant',
+          message: sanitizeChatMessage(message),
+        });
+      }
+      return result;
+    }
 
     if (agent && this.agentPolicy.isMutatingTool(descriptor.toolName)) {
       if (agent.mutationMode === 'readOnly') {

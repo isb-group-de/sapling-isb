@@ -61,6 +61,7 @@ export function startProgressStep(
 
 export function getProgressToolLabelKey(toolName: string): string {
   const labelKeys: Record<string, string> = {
+    frontend_form_propose: 'aiChat.formProposalTitle',
     current_person: 'aiChat.progressCurrentPerson',
     entity_catalog: 'aiChat.progressEntityCatalog',
     entity_schema: 'aiChat.progressEntitySchema',

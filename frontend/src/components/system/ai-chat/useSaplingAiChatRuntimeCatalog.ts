@@ -8,7 +8,12 @@ import type {
 import ApiAiService from '@/services/api.ai.service'
 import type { SaplingAiPreferences } from '@/services/ai-preferences.service'
 import { sortSelectOptions } from '@/utils/saplingSelectOptions'
-import { getModelHandle, getProviderHandle, resolveRuntimeTarget } from './aiChatRuntimeTargets'
+import {
+  getModelHandle,
+  getProviderHandle,
+  getModelProviderHandle,
+  resolveRuntimeTarget,
+} from './aiChatRuntimeTargets'
 import { loadRuntimeCatalogCache } from './runtimeCatalogCache'
 
 const RUNTIME_CATALOG_RETRY_DELAY_MS = 200
@@ -68,7 +73,18 @@ export function useSaplingAiChatRuntimeCatalog(
     () =>
       hasConfiguredProviders.value && !!selectedProviderHandle.value && !!selectedModelHandle.value,
   )
-  const isVoiceOutputAvailable = computed(() => typeof Audio !== 'undefined')
+  const isVoiceOutputAvailable = computed(
+    () =>
+      typeof Audio !== 'undefined' &&
+      speechProviderConfigs.value.some(
+        (provider) => provider.handle === selectedSpeechProviderHandle.value,
+      ) &&
+      speechModelConfigs.value.some(
+        (model) =>
+          model.handle === selectedSpeechModelHandle.value &&
+          getModelProviderHandle(model) === selectedSpeechProviderHandle.value,
+      ),
+  )
   const agentOptions = computed(() =>
     sortSelectOptions(agentConfigs.value, (agent) => agent.title).map((agent) => ({
       label: agent.title,
@@ -385,6 +401,8 @@ export function useSaplingAiChatRuntimeCatalog(
   }
 
   return {
+    providerConfigs,
+    modelConfigs,
     agentOptions,
     playbookOptions,
     speechModelConfigs,

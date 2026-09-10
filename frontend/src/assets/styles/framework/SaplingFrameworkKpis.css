@@ -301,7 +301,7 @@
 }
 
 /* Half-height value cards retain room for their value at narrow widths. */
-.sapling-kpi-tile[data-rows='1'] .sapling-kpi-card {
+.sapling-kpi-tile[data-rows='1'] .sapling-kpi-card:not(.sapling-widget-card) {
   padding: var(--sapling-space-sm);
 }
 
@@ -325,11 +325,15 @@
   width: auto;
 }
 
-.sapling-kpi-tile[data-rows='1'] .sapling-kpi-card__meta-row {
+.sapling-kpi-tile[data-rows='1']
+  .sapling-kpi-card:not(.sapling-widget-card)
+  .sapling-kpi-card__meta-row {
   margin-bottom: var(--sapling-gap-xs);
 }
 
-.sapling-kpi-tile[data-rows='1'] .sapling-kpi-card__body {
+.sapling-kpi-tile[data-rows='1']
+  .sapling-kpi-card:not(.sapling-widget-card)
+  .sapling-kpi-card__body {
   padding-top: var(--sapling-gap-xs);
 }
 
@@ -445,4 +449,17 @@
 
 .sapling-dashboard__kpi-sortable--active .sapling-widget-frame {
   pointer-events: none;
+}
+
+.sapling-kpi-tile[data-rows='1'] .sapling-widget-link {
+  flex-direction: row;
+  min-width: 0;
+}
+
+.sapling-kpi-tile[data-rows='1'] .sapling-widget-link > .v-icon {
+  display: none;
+}
+
+.sapling-kpi-tile[data-rows='1'] .sapling-widget-link > .v-btn {
+  flex-shrink: 0;
 }

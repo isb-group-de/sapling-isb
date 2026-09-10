@@ -15,7 +15,9 @@ const api = vi.hoisted(() => ({
 
 vi.mock('@/services/api.ai.service', () => ({ default: api }))
 
-function setup() {
+function setup(
+  payloadExtras?: () => Partial<import('@/services/api.ai.types').CreateAiChatMessagePayload>,
+) {
   const activeSession = ref<AiChatSessionItem | null>(null)
   const messages = ref<AiChatMessageItem[]>([])
   const pendingAttachments = ref([
@@ -32,6 +34,7 @@ function setup() {
     onSessionResponseFinished: vi.fn(),
   }
   const state = useSaplingAiChatStream({
+    payloadExtras,
     route: {
       name: 'tickets',
       params: {},
@@ -59,7 +62,81 @@ function setup() {
 }
 
 describe('useSaplingAiChatStream', () => {
-  beforeEach(() => vi.clearAllMocks())
+  beforeEach(() => {
+    vi.resetAllMocks()
+    api.listQueuedInputs.mockResolvedValue([])
+  })
+
+  it('captures widget instructions and explicit empty context when submitting', async () => {
+    api.streamMessage.mockResolvedValue(undefined)
+    const test = setup(() => ({
+      workspaceInstruction: 'Prepare customer',
+      sourceDashboardHandle: 7,
+      sourceWidgetId: 'customers',
+      contextEntityHandle: null,
+      contextRecordHandle: null,
+      contextPayload: {},
+    }))
+    await test.state.sendMessage()
+    expect(api.streamMessage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        workspaceInstruction: 'Prepare customer',
+        sourceWidgetId: 'customers',
+        contextEntityHandle: null,
+        contextRecordHandle: null,
+        contextPayload: {},
+      }),
+      expect.any(Function),
+      expect.any(AbortSignal),
+    )
+  })
+
+  it.each(['queue', 'steer'] as const)(
+    'captures the context before %s waits or navigation changes',
+    async (mode) => {
+      const context = ref({ contextEntityHandle: 'company', contextRecordHandle: '42' })
+      const test = setup(() => ({ ...context.value }))
+      test.activeSession.value = { handle: 22, responseStatus: 'responding' } as AiChatSessionItem
+      let resolve!: () => void
+      api.queueInput.mockImplementation(
+        () =>
+          new Promise<void>((done) => {
+            resolve = done
+          }),
+      )
+      const request = mode === 'queue' ? test.state.sendMessage() : test.state.steerMessage()
+      context.value = { contextEntityHandle: 'ticket', contextRecordHandle: '81' }
+      expect(api.queueInput).toHaveBeenCalledWith(
+        expect.objectContaining({
+          mode,
+          contextEntityHandle: 'company',
+          contextRecordHandle: '42',
+        }),
+      )
+      resolve()
+      await request
+    },
+  )
+
+  it('serializes duplicate confirmation and rejection across shared surfaces', async () => {
+    const test = setup()
+    const action = { handle: 7, message: 44, status: 'pending' } as AiChatToolActionItem
+    let resolve!: (action: AiChatToolActionItem) => void
+    api.confirmToolAction.mockImplementation(
+      () =>
+        new Promise<AiChatToolActionItem>((done) => {
+          resolve = done
+        }),
+    )
+    const first = test.state.confirmToolAction(action)
+    await test.state.confirmToolAction(action)
+    await test.state.rejectToolAction(action)
+    expect(api.confirmToolAction).toHaveBeenCalledTimes(1)
+    expect(api.rejectToolAction).not.toHaveBeenCalled()
+    resolve({ ...action, status: 'executed' })
+    await first
+    expect(test.state.activeToolActionHandles.value).toEqual({})
+  })
 
   it('streams the selected runtime/context and clears attachments after success', async () => {
     const session = { handle: 22, title: 'Imported data' } as AiChatSessionItem

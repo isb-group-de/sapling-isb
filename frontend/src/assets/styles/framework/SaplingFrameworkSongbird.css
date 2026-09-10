@@ -1,0 +1,358 @@
+.songbird-panel {
+  position: fixed;
+  inset: 64px 0 0 auto;
+  z-index: 1900;
+  width: var(--songbird-panel-width, 420px);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--sapling-dialog-surface), rgb(var(--v-theme-surface));
+  border-left: 1px solid rgba(var(--v-theme-on-surface), 0.15);
+  box-shadow: -4px 0 16px rgba(0, 0, 0, 0.08);
+}
+.songbird-panel--fullscreen {
+  inset: 0;
+  width: 100%;
+}
+.songbird-panel__body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+.songbird-panel__operation {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+}
+.songbird-session-sidebar {
+  flex: 0 0 320px;
+  min-height: 0;
+  overflow: auto;
+  border-right: 1px solid var(--sapling-surface-border);
+}
+.songbird-message-speech {
+  margin-left: auto;
+}
+.songbird-message-details {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--sapling-surface-border);
+}
+.songbird-panel__toolbar,
+.songbird-panel__context {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+}
+.sapling-widget-card--ai {
+  container: songbird-widget-card / inline-size;
+}
+.sapling-widget-card--ai .sapling-kpi-card__header {
+  flex-direction: row;
+  align-items: flex-end;
+  gap: var(--sapling-gap-sm);
+}
+.sapling-widget-card--ai .sapling-kpi-card__header-tools {
+  display: flex;
+  flex-direction: row;
+  width: auto;
+  align-self: flex-end;
+}
+.songbird-widget__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+}
+.songbird-widget__action-icon {
+  display: none;
+}
+@container songbird-widget-card (max-width: 520px) {
+  .songbird-widget__action-label {
+    display: none;
+  }
+  .songbird-widget__action-icon {
+    display: inline-flex;
+  }
+  .songbird-widget__actions .v-btn {
+    min-width: 32px;
+    padding-inline: 6px;
+  }
+}
+.songbird-panel__toolbar strong {
+  margin-right: auto;
+}
+.songbird-panel__context {
+  border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.12);
+}
+.songbird-panel__context > span {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.songbird-panel__resize {
+  position: absolute;
+  left: -4px;
+  top: 0;
+  bottom: 0;
+  width: 8px;
+  cursor: col-resize;
+  touch-action: none;
+}
+.songbird-panel__resize:focus-visible {
+  outline: 2px solid rgb(var(--v-theme-primary));
+}
+.songbird-panel__sessions {
+  flex: 0 0 auto;
+  max-height: 35%;
+  overflow: auto;
+}
+.songbird-panel__sessions .sapling-chat-sessions {
+  width: 100%;
+}
+.songbird-workspace,
+.songbird-widget {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  height: 100%;
+  overflow: hidden;
+}
+.songbird-workspace .sapling-chat-conversation {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  width: 100%;
+}
+.songbird-workspace .sapling-chat-conversation__header {
+  padding: 8px;
+}
+.songbird-workspace .sapling-ai-chat__message--user {
+  padding: 8px;
+}
+.songbird-workspace .sapling-ai-chat__tool-action {
+  border: 1px solid rgba(var(--v-theme-primary), 0.35);
+  border-radius: 8px;
+  padding: 12px;
+  background: rgba(var(--v-theme-primary), 0.04);
+}
+.songbird-workspace .sapling-ai-chat__tool-action-preview {
+  margin-block: 8px;
+}
+.songbird-workspace .sapling-ai-chat__tool-action-preview-value {
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+.songbird-docked .sapling-auth-layout__body {
+  margin-right: var(--songbird-reserved-width);
+}
+.songbird-docked .songbird-aware-dialog {
+  inset: 0;
+  width: 100%;
+  max-width: none;
+}
+.songbird-docked .songbird-aware-dialog > .v-overlay__scrim {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    100% 64px,
+    calc(100% - var(--songbird-reserved-width)) 64px,
+    calc(100% - var(--songbird-reserved-width)) 100%,
+    0 100%
+  );
+}
+.songbird-docked .songbird-aware-dialog > .v-overlay__content {
+  left: 0;
+  right: var(--songbird-reserved-width);
+  margin-inline: auto;
+  width: calc(100% - var(--songbird-reserved-width) - 48px);
+  max-width: min(
+    var(--sapling-dialog-width-3xl),
+    calc(100% - var(--songbird-reserved-width) - 48px)
+  ) !important;
+}
+
+.songbird-workspace .sapling-chat-message--assistant {
+  border: 1px solid var(--sapling-surface-border);
+  border-radius: 10px;
+  padding: 12px;
+  background: var(--sapling-surface-fill-subtle);
+}
+.songbird-workspace .sapling-chat-message--user {
+  background: var(--sapling-surface-fill-strong);
+  border: 1px solid var(--sapling-surface-border);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+.songbird-workspace .sapling-chat-message-list {
+  gap: 12px;
+  padding: 12px;
+}
+.songbird-workspace .songbird-message-details summary {
+  cursor: pointer;
+  font-size: 0.8rem;
+  opacity: 0.75;
+}
+.songbird-panel__sessions .sapling-chat-rail {
+  padding: 8px;
+  border-right: 0;
+}
+.songbird-widget .sapling-chat-welcome__icon,
+.songbird-widget .sapling-chat-welcome__starters {
+  display: none;
+}
+.songbird-widget .sapling-chat-empty-state.sapling-chat-welcome {
+  padding: 8px;
+  gap: 4px;
+}
+
+.songbird-workspace__instruction {
+  flex: 0 0 auto;
+  padding: 4px 12px;
+  font-size: 0.8rem;
+  max-height: 30%;
+  overflow: auto;
+}
+.songbird-workspace__instruction summary {
+  cursor: pointer;
+}
+.songbird-workspace__instruction p {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.songbird-widget {
+  overflow-y: auto;
+}
+.songbird-widget .songbird-workspace {
+  min-height: 220px;
+}
+
+.songbird-workspace .sapling-chat-conversation {
+  background: var(--sapling-dialog-surface), rgb(var(--v-theme-surface));
+}
+.songbird-workspace-settings {
+  flex: 0 0 auto;
+  display: block;
+  max-height: 35%;
+  overflow: auto;
+}
+.songbird-workspace-settings summary {
+  cursor: pointer;
+  font-size: 0.8rem;
+  color: var(--sapling-surface-text-muted);
+}
+.songbird-workspace-settings[open] > :not(summary) {
+  margin-top: 12px;
+}
+.songbird-session-trigger {
+  flex: 0 0 auto;
+  justify-content: flex-start;
+  width: 100%;
+  margin: 0;
+  border-radius: 0;
+  border-bottom: 1px solid var(--sapling-surface-border);
+  min-height: 44px;
+  text-transform: none;
+}
+.songbird-session-trigger .v-btn__content {
+  display: block;
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.songbird-session-menu {
+  width: 100%;
+  max-height: min(65vh, 680px);
+  overflow: auto;
+  border: 1px solid var(--sapling-surface-border);
+  border-radius: 0;
+  background: var(--sapling-dialog-surface), rgb(var(--v-theme-surface));
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+}
+.songbird-session-history .sapling-chat-rail {
+  width: 100%;
+  padding: 12px;
+}
+.songbird-session-history .sapling-chat-rail__header {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+.songbird-session-history .sapling-chat-rail__item-runtime {
+  display: none;
+}
+
+.songbird-fullscreen .sapling-auth-layout__body,
+.songbird-fullscreen .sapling-app-layout__header,
+.songbird-fullscreen .songbird-aware-dialog {
+  visibility: hidden;
+}
+
+.songbird-session-history .sapling-chat-rail__list {
+  display: flex;
+  flex-direction: column;
+  overflow: visible;
+}
+.songbird-session-history .sapling-chat-rail__group,
+.songbird-session-history .sapling-chat-rail__group-items {
+  display: grid;
+  gap: 8px;
+}
+.songbird-session-history .sapling-chat-rail__group-label {
+  display: block;
+}
+.songbird-session-history .sapling-chat-rail__item {
+  min-height: 0;
+}
+
+.songbird-widget .songbird-workspace {
+  border: 1px solid var(--sapling-surface-border);
+  border-radius: var(--sapling-panel-radius-compact);
+}
+.songbird-panel {
+  color: var(--sapling-surface-text);
+}
+.songbird-form-proposal {
+  padding: var(--sapling-space-panel-md);
+  border: 1px solid rgba(var(--v-theme-primary), 0.4);
+  border-radius: var(--sapling-radius-sm);
+  background: var(--sapling-surface-fill-subtle);
+}
+.songbird-form-proposal__field {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  grid-template-areas: 'control value';
+  align-items: start;
+  gap: var(--sapling-gap-sm);
+  margin-block: var(--sapling-gap-md);
+}
+.songbird-form-proposal__field-content {
+  grid-area: value;
+  min-width: 0;
+}
+.songbird-form-proposal__value {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.songbird-form-proposal__actions {
+  display: flex;
+  gap: var(--sapling-gap-sm);
+  flex-wrap: wrap;
+  margin-top: var(--sapling-gap-md);
+}

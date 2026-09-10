@@ -1,5 +1,7 @@
 <template>
   <SaplingDialog
+    class="songbird-aware-dialog"
+    :retain-focus="!songbirdActive"
     :model-value="modelValue"
     @update:model-value="handleDialogUpdate"
     @after-enter="onDialogAfterEnter"
@@ -85,6 +87,11 @@
                       ref="formSurfaceRef"
                       class="sapling-stack-lg sapling-record-dialog-surface sapling-dialog-edit-form-surface"
                     >
+                      <SongbirdFormProposal
+                        v-for="proposalState in formProposals"
+                        :key="proposalState.proposal.id"
+                        :proposal="proposalState.proposal"
+                      />
                       <v-form
                         ref="formRef"
                         class="sapling-record-dialog-form sapling-dialog-edit-form"
@@ -323,6 +330,12 @@
 </template>
 
 <script lang="ts" setup>
+import { useSongbirdDock } from '@/composables/system/useSongbirdDock'
+import { getEntityValueLabel } from '@/utils/saplingTableValueUtil'
+import { useI18n } from 'vue-i18n'
+import { useSongbirdForm } from '@/composables/dialog/useSongbirdForm'
+import SongbirdFormProposal from '@/components/system/ai-chat/SongbirdFormProposal.vue'
+import { useSongbirdRecordContext } from '@/composables/system/songbirdPageContext'
 // #region Imports
 import { computed, getCurrentInstance } from 'vue'
 import { DEFAULT_PAGE_SIZE_SMALL } from '@/constants/project.constants'
@@ -356,6 +369,9 @@ import SaplingDialogEditRelationTab from './SaplingDialogEditRelationTab.vue'
 
 // #region Props & Emits
 const props = defineProps<SaplingDialogEditProps>()
+const { t } = useI18n()
+const { active: songbirdActive } = useSongbirdDock()
+
 const emit = defineEmits<SaplingDialogEditComponentEmit>()
 // #endregion
 
@@ -585,5 +601,40 @@ const { formSurfaceRef, onDialogAfterEnter } = useSaplingDialogFocusManagement(p
   syncExpandedGroups,
   validationFeedback,
 })
+const { formId: songbirdFormId, proposals: formProposals } = useSongbirdForm({
+  props,
+  form,
+  templates: visibleTemplates,
+  permissions,
+  isLoading,
+  isSaving,
+  formRef,
+  isFieldDisabled,
+  updateFormField,
+  translate: (key) => String(t(key)),
+  focus: () => {
+    activeTab.value = 0
+    syncExpandedGroups(true)
+  },
+})
+useSongbirdRecordContext(
+  () =>
+    props.modelValue && props.entity?.handle
+      ? {
+          entityHandle: props.entity.handle,
+          recordHandle: props.item?.handle == null ? null : String(props.item.handle),
+          formId: songbirdFormId.value,
+          label: props.item
+            ? getEntityValueLabel(
+                props.item,
+                props.templates
+                  .filter((template) => template.options?.includes('isValue'))
+                  .slice(0, 1),
+              )
+            : '',
+        }
+      : null,
+  () => props.modelValue,
+)
 // #endregion
 </script>

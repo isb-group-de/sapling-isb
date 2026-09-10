@@ -19,10 +19,12 @@
   </SaplingKpiCard>
   <SaplingSurface
     v-else
-    class="sapling-kpi-card"
+    class="sapling-kpi-card sapling-widget-card"
     :class="{
-      'sapling-widget-card--embedded': widget.kind === 'TABLE' || widget.kind === 'WEBSITE',
+      'sapling-widget-card--embedded':
+        widget.kind === 'AI' || widget.kind === 'TABLE' || widget.kind === 'WEBSITE',
       'sapling-nested-backdrop-host': widget.kind === 'TABLE',
+      'sapling-widget-card--ai': widget.kind === 'AI',
     }"
   >
     <div class="sapling-section-header sapling-kpi-card__header">
@@ -35,6 +37,30 @@
         <h3 class="sapling-kpi-card__title" :title="widget.title">{{ widget.title }}</h3>
       </div>
       <div class="sapling-kpi-card__header-tools">
+        <div v-if="widget.kind === 'AI'" class="songbird-widget__actions">
+          <v-btn
+            size="small"
+            variant="text"
+            :disabled="!aiContent?.canUseActions"
+            :title="$t('aiChat.newOperation')"
+            :aria-label="$t('aiChat.newOperation')"
+            @click="aiContent?.startNewChat()"
+          >
+            <v-icon class="songbird-widget__action-icon" icon="mdi-plus" />
+            <span class="songbird-widget__action-label">{{ $t('aiChat.newOperation') }}</span>
+          </v-btn>
+          <v-btn
+            size="small"
+            variant="tonal"
+            :disabled="!aiContent?.canUseActions"
+            :title="$t('aiChat.openWorkspace')"
+            :aria-label="$t('aiChat.openWorkspace')"
+            @click="aiContent?.openPanel()"
+          >
+            <v-icon class="songbird-widget__action-icon" icon="mdi-open-in-app" />
+            <span class="songbird-widget__action-label">{{ $t('aiChat.openWorkspace') }}</span>
+          </v-btn>
+        </div>
         <v-btn-group density="compact" class="sapling-kpi-card__actions">
           <v-btn
             v-if="editing || widget.kind === 'NOTE'"
@@ -81,6 +107,13 @@
       <div v-else-if="widget.kind === 'KPI'" class="sapling-kpi-widget__state">
         {{ $t('dashboard.widgetUnavailable') }}
       </div>
+      <SaplingAiWidget
+        v-else-if="widget.kind === 'AI' && dashboardHandle"
+        ref="aiContent"
+        :widget="widget"
+        :dashboard-handle="dashboardHandle"
+        :editing="editing"
+      />
       <SaplingAgendaWidget v-else-if="widget.kind === 'AGENDA'" ref="content" :widget="widget" />
       <SaplingTableWidget v-else-if="widget.kind === 'TABLE'" ref="content" :widget="widget" />
       <SaplingMarkdownContent
@@ -118,7 +151,6 @@
             append-icon="mdi-open-in-new"
             >{{ $t('dashboard.widgetOpen') }}</v-btn
           >
-          <span class="text-caption">{{ websiteHost }}</span>
         </div>
       </template>
     </div>
@@ -135,8 +167,10 @@ import SaplingKpiCard from '@/components/kpi/SaplingKpiCard.vue'
 import SaplingAgendaWidget from './SaplingAgendaWidget.vue'
 import SaplingTableWidget from './SaplingTableWidget.vue'
 import SaplingMarkdownContent from '@/components/common/SaplingMarkdownContent.vue'
+import SaplingAiWidget from './SaplingAiWidget.vue'
 import SaplingQuickActionsWidget from './SaplingQuickActionsWidget.vue'
-const props = defineProps<{ widget: DashboardWidget; editing: boolean }>()
+const aiContent = ref<InstanceType<typeof SaplingAiWidget> | null>(null)
+const props = defineProps<{ widget: DashboardWidget; editing: boolean; dashboardHandle?: number }>()
 const emit = defineEmits<{ (event: 'edit'): void; (event: 'remove'): void }>()
 const kpi = ref<KPIItem | null>(null)
 const loading = ref(false)
@@ -144,11 +178,6 @@ const content = ref<{ refresh: () => unknown } | null>(null)
 const frameKey = ref(0)
 const validUrl = computed(
   () => props.widget.kind === 'WEBSITE' && isDashboardWebsiteUrl(props.widget.config.url),
-)
-const websiteHost = computed(() =>
-  validUrl.value && props.widget.kind === 'WEBSITE'
-    ? new URL(props.widget.config.url).hostname
-    : '',
 )
 const openUrl = computed(() =>
   props.widget.kind === 'WEBSITE' && validUrl.value

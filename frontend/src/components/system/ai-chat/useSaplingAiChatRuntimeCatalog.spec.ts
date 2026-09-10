@@ -81,6 +81,20 @@ describe('useSaplingAiChatRuntimeCatalog', () => {
 
   afterEach(() => vi.useRealTimers())
 
+  it('enables speech only after a compatible speech provider and model have loaded', async () => {
+    const runtime = useSaplingAiChatRuntimeCatalog(ref(null), createPreferences())
+    expect(runtime.isVoiceOutputAvailable.value).toBe(false)
+    await runtime.loadSpeechCatalogs()
+    expect(runtime.isVoiceOutputAvailable.value).toBe(false)
+    api.listSpeechProviders.mockResolvedValue(providers)
+    api.listSpeechModels.mockResolvedValue(models)
+    await runtime.loadSpeechCatalogs(true)
+    expect(runtime.isVoiceOutputAvailable.value).toBe(true)
+    api.listSpeechModels.mockResolvedValue([])
+    await runtime.loadSpeechCatalogs(true)
+    expect(runtime.isVoiceOutputAvailable.value).toBe(false)
+  })
+
   it('prefers the saved chat runtime over the default agent runtime for new chats', async () => {
     const runtime = useSaplingAiChatRuntimeCatalog(
       ref(null),

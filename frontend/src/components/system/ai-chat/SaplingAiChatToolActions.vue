@@ -15,6 +15,19 @@
           </span>
         </div>
       </div>
+      <div
+        v-if="action.status === 'pending' && getToolActionPreviewRows(action).length"
+        class="sapling-ai-chat__tool-action-preview"
+      >
+        <div
+          v-for="row in getToolActionPreviewRows(action)"
+          :key="row.key"
+          class="sapling-ai-chat__tool-action-preview-row"
+        >
+          <span class="sapling-ai-chat__tool-action-preview-label">{{ row.label }}</span>
+          <span class="sapling-ai-chat__tool-action-preview-value">{{ row.value }}</span>
+        </div>
+      </div>
       <v-alert
         v-if="getToolActionError(action)"
         class="sapling-ai-chat__tool-action-error"

@@ -55,6 +55,21 @@ import { AiChatMessageItem } from './AiChatMessageItem';
 @Entity()
 export class AiChatSessionItem {
   @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @Property({ type: 'text', nullable: true })
+  workspaceInstruction?: string | null;
+
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @Property({ type: 'integer', nullable: true })
+  sourceDashboardHandle?: number | null;
+
+  @ApiPropertyOptional()
+  @Sapling(['isReadOnly'])
+  @Property({ length: 80, nullable: true })
+  sourceWidgetId?: string | null;
+
+  @ApiPropertyOptional()
   @SaplingForm({
     order: 100,
     group: 'aiChatSession.groupDiagnostics',

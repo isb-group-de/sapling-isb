@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -225,10 +226,29 @@ export class AiController {
   async listSessions(
     @Req() req: Request & { user: PersonItem },
     @Query('includeArchived') includeArchived?: string,
+    @Query('sourceDashboardHandle') sourceDashboardHandle?: string,
+    @Query('sourceWidgetId') sourceWidgetId?: string,
   ): Promise<AiChatSessionItem[]> {
+    if (
+      sourceDashboardHandle !== undefined &&
+      (!/^[1-9][0-9]*$/.test(sourceDashboardHandle) ||
+        !Number.isSafeInteger(Number(sourceDashboardHandle)))
+    )
+      throw new BadRequestException('Invalid sourceDashboardHandle');
+    if (
+      sourceWidgetId !== undefined &&
+      !/^[a-zA-Z0-9_-]{1,80}$/.test(sourceWidgetId)
+    )
+      throw new BadRequestException('Invalid sourceWidgetId');
     return this.aiService.listChatSessions(
       req.user,
       includeArchived === 'true' || includeArchived === '1',
+      {
+        sourceDashboardHandle: sourceDashboardHandle
+          ? Number(sourceDashboardHandle)
+          : undefined,
+        sourceWidgetId,
+      },
     );
   }
 
@@ -514,6 +534,9 @@ export class AiController {
           playbookHandle: body.playbookHandle,
           contextEntityHandle: body.contextEntityHandle,
           contextRecordHandle: body.contextRecordHandle,
+          workspaceInstruction: body.workspaceInstruction,
+          sourceDashboardHandle: body.sourceDashboardHandle,
+          sourceWidgetId: body.sourceWidgetId,
         },
         req.user,
       );

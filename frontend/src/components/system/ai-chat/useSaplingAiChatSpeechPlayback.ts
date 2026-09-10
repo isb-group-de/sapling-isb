@@ -137,7 +137,7 @@ export function useSaplingAiChatSpeechPlayback({
       reportPlaybackError()
       return
     }
-    if (message.handle == null) {
+    if (!isVoiceOutputAvailable.value || message.handle == null) {
       return
     }
 

@@ -24,6 +24,29 @@ vi.mock('./useSaplingAiChatNavigation', () => ({
 }))
 
 describe('SaplingAiChatToolActions', () => {
+  it('shows proposal fields in the pending card without opening diagnostics', () => {
+    const wrapper = shallowMount(SaplingAiChatToolActions, {
+      props: {
+        actions: [
+          {
+            handle: 9,
+            session: 1,
+            person: 17,
+            serverName: 'sapling',
+            toolName: 'generic_create',
+            status: 'pending',
+            arguments: { entityHandle: 'company', data: { name: 'Example GmbH', city: 'Berlin' } },
+          },
+        ],
+        activeToolActionHandles: {},
+      },
+    })
+    const preview = wrapper.find('.sapling-ai-chat__tool-action-preview')
+    expect(preview.text()).toContain('Example GmbH')
+    expect(preview.text()).toContain('Berlin')
+    expect(wrapper.find('.sapling-ai-chat__tool-action-details').exists()).toBe(false)
+  })
+
   it('shows the affected field for a failed schema-repair action', () => {
     const wrapper = shallowMount(SaplingAiChatToolActions, {
       props: {

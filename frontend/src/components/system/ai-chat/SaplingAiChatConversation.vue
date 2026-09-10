@@ -1,6 +1,10 @@
 <template>
   <section class="sapling-min-size-0 sapling-chat-conversation sapling-ai-chat__conversation">
-    <div class="sapling-chat-conversation__header">
+    <details class="sapling-chat-conversation__header songbird-workspace-settings">
+      <summary>
+        <v-icon icon="mdi-tune-variant" size="small" />
+        {{ getTranslationLabel('workspaceSettings', 'Vorgangseinstellungen') }}
+      </summary>
       <SaplingAiChatConversationTitle
         :title="activeConversationTitle"
         :runtime-summary="activeRuntimeSummary"
@@ -58,7 +62,10 @@
           </template>
         </SaplingAutocomplete>
       </div>
-    </div>
+      <p v-if="workspaceInstruction" class="songbird-workspace__instruction">
+        {{ workspaceInstruction }}
+      </p>
+    </details>
 
     <SaplingAiChatMessageList
       :messages="messages"
@@ -324,6 +331,7 @@ const props = withDefaults(
     activeToolActionHandles: Record<number, boolean>
     speechStateByHandle: Record<number, string>
     ratingStateByHandle: Record<number, boolean>
+    workspaceInstruction?: string | null
     titlePreviewLimit?: number
   }>(),
   {

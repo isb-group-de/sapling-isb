@@ -65,6 +65,29 @@ describe('AiChatSessionService', () => {
     });
   });
 
+  it('filters widget history within the current user scope', async () => {
+    const find = jest
+      .fn<(...args: unknown[]) => Promise<unknown[]>>()
+      .mockResolvedValue([]);
+    const service = new AiChatSessionService(
+      { find } as never,
+      {} as never,
+      {} as never,
+      {} as never,
+      { requireUserHandle: () => 42 } as never,
+    );
+    await service.listChatSessions({ handle: 42 } as never, false, {
+      sourceDashboardHandle: 8,
+      sourceWidgetId: 'customer',
+    });
+    expect(find.mock.calls[0]?.[1]).toEqual({
+      person: { handle: 42 },
+      isArchived: false,
+      sourceDashboardHandle: 8,
+      sourceWidgetId: 'customer',
+    });
+  });
+
   it('recovers stale persisted responses and their streaming messages', async () => {
     const staleSession = {
       handle: 9,

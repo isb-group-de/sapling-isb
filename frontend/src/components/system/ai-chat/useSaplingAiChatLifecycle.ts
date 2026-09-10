@@ -7,6 +7,7 @@ import { SAPLING_AI_CHAT_PROMPT_EVENT } from '@/utils/saplingScriptResultUtil'
 import type { SaplingAiChatPromptEventDetail } from './saplingAiChat.utils'
 
 interface SaplingAiChatLifecycleOptions {
+  listenForPrompts?: boolean
   streamingClock: Ref<number>
   closePanel: () => void
   openPrompt: (detail?: SaplingAiChatPromptEventDetail) => Promise<void>
@@ -33,8 +34,9 @@ export function useSaplingAiChatLifecycle(options: SaplingAiChatLifecycleOptions
   }
 
   onMounted(() => {
-    window.addEventListener('keydown', handleKeydown)
-    window.addEventListener(SAPLING_AI_CHAT_PROMPT_EVENT, handlePrompt as EventListener)
+    if (options.listenForPrompts !== false) window.addEventListener('keydown', handleKeydown)
+    if (options.listenForPrompts !== false)
+      window.addEventListener(SAPLING_AI_CHAT_PROMPT_EVENT, handlePrompt as EventListener)
     window.addEventListener(
       SAPLING_AI_PREFERENCES_UPDATED_EVENT,
       handlePreferences as EventListener,

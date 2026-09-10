@@ -22,5 +22,353 @@
     "property": "sendCalendarInvitationsTooltip",
     "value": "Shares participants with Outlook or Google, allowing the calendar provider to send invitations and event updates.",
     "language": "en"
+  },
+  {
+    "entity": "dashboard",
+    "property": "widgetAI",
+    "language": "de",
+    "value": "KI-Assistent"
+  },
+  {
+    "entity": "dashboard",
+    "property": "widgetAI",
+    "language": "en",
+    "value": "AI assistant"
+  },
+  {
+    "entity": "aiChat",
+    "property": "newOperation",
+    "language": "de",
+    "value": "Neuer Vorgang"
+  },
+  {
+    "entity": "aiChat",
+    "property": "newOperation",
+    "language": "en",
+    "value": "New operation"
+  },
+  {
+    "entity": "aiChat",
+    "property": "openWorkspace",
+    "language": "de",
+    "value": "In Songbird öffnen"
+  },
+  {
+    "entity": "aiChat",
+    "property": "openWorkspace",
+    "language": "en",
+    "value": "Open in Songbird"
+  },
+  {
+    "entity": "aiChat",
+    "property": "backToWork",
+    "language": "de",
+    "value": "Zurück zur Arbeit"
+  },
+  {
+    "entity": "aiChat",
+    "property": "backToWork",
+    "language": "en",
+    "value": "Back to work"
+  },
+  {
+    "entity": "aiChat",
+    "property": "expandWorkspace",
+    "language": "de",
+    "value": "Ansicht vergrößern / verkleinern"
+  },
+  {
+    "entity": "aiChat",
+    "property": "expandWorkspace",
+    "language": "en",
+    "value": "Expand / reduce workspace"
+  },
+  {
+    "entity": "aiChat",
+    "property": "resizePanel",
+    "language": "de",
+    "value": "Songbird-Breite ändern"
+  },
+  {
+    "entity": "aiChat",
+    "property": "resizePanel",
+    "language": "en",
+    "value": "Resize Songbird panel"
+  },
+  {
+    "entity": "aiChat",
+    "property": "pinContext",
+    "language": "de",
+    "value": "Bezug festhalten"
+  },
+  {
+    "entity": "aiChat",
+    "property": "pinContext",
+    "language": "en",
+    "value": "Pin context"
+  },
+  {
+    "entity": "aiChat",
+    "property": "followContext",
+    "language": "de",
+    "value": "Aktueller Seite folgen"
+  },
+  {
+    "entity": "aiChat",
+    "property": "followContext",
+    "language": "en",
+    "value": "Follow current page"
+  },
+  {
+    "entity": "aiChat",
+    "property": "noPageContext",
+    "language": "de",
+    "value": "Ohne Seitenbezug"
+  },
+  {
+    "entity": "aiChat",
+    "property": "noPageContext",
+    "language": "en",
+    "value": "No page context"
+  },
+  {
+    "entity": "aiChat",
+    "property": "workspaceInstruction",
+    "language": "de",
+    "value": "Arbeitsauftrag"
+  },
+  {
+    "entity": "aiChat",
+    "property": "workspaceInstruction",
+    "language": "en",
+    "value": "Workspace instruction"
+  },
+  {
+    "entity": "aiChat",
+    "property": "workspaceInstructionHint",
+    "language": "de",
+    "value": "Gilt für jeden neuen Vorgang dieses Widgets. Bestehende Vorgänge behalten ihren bisherigen Auftrag."
+  },
+  {
+    "entity": "aiChat",
+    "property": "workspaceInstructionHint",
+    "language": "en",
+    "value": "Applies to each new operation in this widget. Existing operations keep their original instruction."
+  },
+  {
+    "entity": "aiChat",
+    "property": "widgetConfigurationError",
+    "language": "de",
+    "value": "Agent, Provider oder Modell ist nicht verfügbar. Bitte die Widget-Einstellungen korrigieren."
+  },
+  {
+    "entity": "aiChat",
+    "property": "widgetConfigurationError",
+    "language": "en",
+    "value": "The agent, provider or model is unavailable. Please correct the widget settings."
+  },
+  {
+    "entity": "aiChat",
+    "property": "widgetLoadFailed",
+    "language": "de",
+    "value": "Songbird konnte nicht geladen werden. Bitte erneut versuchen."
+  },
+  {
+    "entity": "aiChat",
+    "property": "widgetLoadFailed",
+    "language": "en",
+    "value": "Songbird could not be loaded. Please try again."
+  },
+  {
+    "entity": "aiChat",
+    "property": "responseDetails",
+    "language": "de",
+    "value": "Details zur Antwort"
+  },
+  {
+    "entity": "aiChat",
+    "property": "responseDetails",
+    "language": "en",
+    "value": "Response details"
+  },
+  {
+    "entity": "aiChat",
+    "property": "workspaceSettings",
+    "language": "de",
+    "value": "Vorgangseinstellungen"
+  },
+  {
+    "entity": "aiChat",
+    "property": "workspaceSettings",
+    "language": "en",
+    "value": "Workspace settings"
+  },
+  {
+    "entity": "aiChat",
+    "property": "formProposalTitle",
+    "language": "de",
+    "value": "Formularvorschlag"
+  },
+  {
+    "entity": "aiChat",
+    "property": "formProposalTitle",
+    "language": "en",
+    "value": "Form proposal"
+  },
+  {
+    "entity": "aiChat",
+    "property": "formProposalHelp",
+    "language": "de",
+    "value": "Felder prüfen und übernehmen. Gespeichert wird anschließend über das Formular."
+  },
+  {
+    "entity": "aiChat",
+    "property": "formProposalHelp",
+    "language": "en",
+    "value": "Review and apply fields. Save afterwards using the form."
+  },
+  {
+    "entity": "aiChat",
+    "property": "formApply",
+    "language": "de",
+    "value": "Ins Formular übernehmen"
+  },
+  {
+    "entity": "aiChat",
+    "property": "formApply",
+    "language": "en",
+    "value": "Apply to form"
+  },
+  {
+    "entity": "aiChat",
+    "property": "formReject",
+    "language": "de",
+    "value": "Verwerfen"
+  },
+  {
+    "entity": "aiChat",
+    "property": "formReject",
+    "language": "en",
+    "value": "Dismiss"
+  },
+  {
+    "entity": "aiChat",
+    "property": "formRejected",
+    "language": "de",
+    "value": "Vorschlag verworfen."
+  },
+  {
+    "entity": "aiChat",
+    "property": "formRejected",
+    "language": "en",
+    "value": "Proposal dismissed."
+  },
+  {
+    "entity": "aiChat",
+    "property": "formApplied",
+    "language": "de",
+    "value": "Ins Formular übernommen. Noch nicht gespeichert."
+  },
+  {
+    "entity": "aiChat",
+    "property": "formApplied",
+    "language": "en",
+    "value": "Applied to the form. Not saved yet."
+  },
+  {
+    "entity": "aiChat",
+    "property": "formAppliedInvalid",
+    "language": "de",
+    "value": "Übernommen. Bitte die markierten Formularfehler korrigieren, bevor du speicherst."
+  },
+  {
+    "entity": "aiChat",
+    "property": "formAppliedInvalid",
+    "language": "en",
+    "value": "Applied. Please correct the highlighted form errors before saving."
+  },
+  {
+    "entity": "aiChat",
+    "property": "formUnavailable",
+    "language": "de",
+    "value": "Diese Formularöffnung ist nicht mehr verfügbar oder nicht bearbeitbar. Öffne das Formular und frage Songbird erneut."
+  },
+  {
+    "entity": "aiChat",
+    "property": "formUnavailable",
+    "language": "en",
+    "value": "This form instance is no longer available or editable. Open the form and ask Songbird again."
+  },
+  {
+    "entity": "aiChat",
+    "property": "formChanged",
+    "language": "de",
+    "value": "Das Formular wurde seit der Anfrage geändert. Bitte einen neuen Vorschlag anfordern, damit deine Änderungen erhalten bleiben."
+  },
+  {
+    "entity": "aiChat",
+    "property": "formChanged",
+    "language": "en",
+    "value": "The form changed since this request. Ask for a new proposal to preserve your edits."
+  },
+  {
+    "entity": "aiChat",
+    "property": "formFieldUnavailable",
+    "language": "de",
+    "value": "Ein vorgeschlagenes Feld ist nicht mehr bearbeitbar. Bitte einen neuen Vorschlag anfordern."
+  },
+  {
+    "entity": "aiChat",
+    "property": "formFieldUnavailable",
+    "language": "en",
+    "value": "A proposed field is no longer editable. Please request a new proposal."
+  },
+  {
+    "entity": "aiChat",
+    "property": "formInvalidValue",
+    "language": "de",
+    "value": "Ein Vorschlag enthält einen ungültigen Feldwert. Bitte Songbird um Korrektur bitten."
+  },
+  {
+    "entity": "aiChat",
+    "property": "formInvalidValue",
+    "language": "en",
+    "value": "A proposal contains an invalid field value. Please ask Songbird to correct it."
+  },
+  {
+    "entity": "aiChat",
+    "property": "formReferenceUnavailable",
+    "language": "de",
+    "value": "Ein verknüpfter Datensatz ist nicht verfügbar oder nicht lesbar. Bitte den Vorschlag korrigieren lassen."
+  },
+  {
+    "entity": "aiChat",
+    "property": "formReferenceUnavailable",
+    "language": "en",
+    "value": "A related record is unavailable or unreadable. Please request a corrected proposal."
+  },
+  {
+    "entity": "aiChat",
+    "property": "formApplyFailed",
+    "language": "de",
+    "value": "Der Vorschlag konnte nicht übernommen werden. Bitte erneut versuchen."
+  },
+  {
+    "entity": "aiChat",
+    "property": "formApplyFailed",
+    "language": "en",
+    "value": "The proposal could not be applied. Please try again."
+  },
+  {
+    "entity": "aiChat",
+    "property": "formClearValue",
+    "language": "de",
+    "value": "Wert leeren"
+  },
+  {
+    "entity": "aiChat",
+    "property": "formClearValue",
+    "language": "en",
+    "value": "Clear value"
   }
 ]

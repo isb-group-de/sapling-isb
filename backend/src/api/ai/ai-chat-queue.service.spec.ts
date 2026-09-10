@@ -176,7 +176,7 @@ describe('AiChatQueueService', () => {
     ).rejects.toBeInstanceOf(NotFoundException);
   });
 
-  async function processQueuedInput() {
+  async function processQueuedInput(requestPayload?: Record<string, unknown>) {
     coordinator.isRunning.mockReturnValue(false);
     coordinator.run.mockImplementation((_handle, callback) =>
       (callback as (signal: AbortSignal) => unknown)(
@@ -195,6 +195,7 @@ describe('AiChatQueueService', () => {
           person,
           session,
           content: 'Lege einen Termin an.',
+          requestPayload,
         }),
       )
       .mockResolvedValueOnce(asNever(null));
@@ -205,6 +206,39 @@ describe('AiChatQueueService', () => {
     onIdle(42);
     await jest.runAllTimersAsync();
   }
+
+  it.each([null, '42'])(
+    'retains the queued record snapshot including explicit removal: %s',
+    async (record) => {
+      jest.useFakeTimers();
+      try {
+        currentService.getPerson.mockResolvedValue(
+          asNever({ handle: 7, isActive: true }),
+        );
+        streamService.streamChatMessage.mockResolvedValue(
+          asNever({
+            userMessage: { handle: 20 },
+            assistantMessage: { handle: 21, status: 'completed' },
+          }),
+        );
+        await processQueuedInput({
+          contextEntityHandle: record ? 'company' : null,
+          contextRecordHandle: record,
+        });
+        expect(streamService.streamChatMessage).toHaveBeenCalledWith(
+          expect.objectContaining({
+            contextEntityHandle: record ? 'company' : null,
+            contextRecordHandle: record,
+          }),
+          expect.anything(),
+          expect.any(Function),
+          expect.objectContaining({ coordinated: true }),
+        );
+      } finally {
+        jest.useRealTimers();
+      }
+    },
+  );
 
   it('runs queued tools with the reloaded security principal instead of the person relation', async () => {
     jest.useFakeTimers();

@@ -377,8 +377,9 @@ export class AiService {
   async listChatSessions(
     user: PersonItem,
     includeArchived = false,
+    source?: { sourceDashboardHandle?: number; sourceWidgetId?: string },
   ): Promise<AiChatSessionItem[]> {
-    return this.chatSession.listChatSessions(user, includeArchived);
+    return this.chatSession.listChatSessions(user, includeArchived, source);
   }
 
   async createChatSession(

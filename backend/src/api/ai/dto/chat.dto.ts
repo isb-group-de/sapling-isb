@@ -17,6 +17,25 @@ import {
 import { AiChatMessageItem } from '../../../entity/AiChatMessageItem';
 
 export class CreateAiChatSessionDto {
+  @ApiPropertyOptional({ maxLength: 8000 })
+  @IsOptional()
+  @IsString()
+  @MaxLength(8000)
+  workspaceInstruction?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  sourceDashboardHandle?: number;
+
+  @ApiPropertyOptional({ maxLength: 80 })
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  sourceWidgetId?: string;
+
   @ApiPropertyOptional({
     description: 'Optional title for the new chat session',
   })
@@ -71,7 +90,7 @@ export class CreateAiChatSessionDto {
   @IsOptional()
   @IsString()
   @MaxLength(64)
-  contextEntityHandle?: string;
+  contextEntityHandle?: string | null;
 
   @ApiPropertyOptional({
     description: 'Optional context record handle for the chat session',
@@ -79,7 +98,7 @@ export class CreateAiChatSessionDto {
   @IsOptional()
   @IsString()
   @MaxLength(128)
-  contextRecordHandle?: string;
+  contextRecordHandle?: string | null;
 }
 
 export class UpdateAiChatSessionDto {
@@ -142,7 +161,7 @@ export class UpdateAiChatSessionDto {
   @IsOptional()
   @IsString()
   @MaxLength(64)
-  contextEntityHandle?: string;
+  contextEntityHandle?: string | null;
 
   @ApiPropertyOptional({
     description: 'Optional context record handle for this chat session',
@@ -150,10 +169,29 @@ export class UpdateAiChatSessionDto {
   @IsOptional()
   @IsString()
   @MaxLength(128)
-  contextRecordHandle?: string;
+  contextRecordHandle?: string | null;
 }
 
 export class CreateAiChatMessageDto {
+  @ApiPropertyOptional({ maxLength: 8000 })
+  @IsOptional()
+  @IsString()
+  @MaxLength(8000)
+  workspaceInstruction?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  sourceDashboardHandle?: number;
+
+  @ApiPropertyOptional({ maxLength: 80 })
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  sourceWidgetId?: string;
+
   @ApiPropertyOptional({
     description:
       'Existing session handle. If omitted, a new session is created.',
@@ -247,7 +285,7 @@ export class CreateAiChatMessageDto {
   @IsOptional()
   @IsString()
   @MaxLength(64)
-  contextEntityHandle?: string;
+  contextEntityHandle?: string | null;
 
   @ApiPropertyOptional({
     description: 'Optional context record handle for this message/session',
@@ -255,7 +293,7 @@ export class CreateAiChatMessageDto {
   @IsOptional()
   @IsString()
   @MaxLength(128)
-  contextRecordHandle?: string;
+  contextRecordHandle?: string | null;
 
   @ApiPropertyOptional({
     description: 'Optional transcription handle linked to this message',
@@ -483,13 +521,13 @@ export class CreateAiAgentTestRunDto {
   @IsOptional()
   @IsString()
   @MaxLength(64)
-  contextEntityHandle?: string;
+  contextEntityHandle?: string | null;
 
   @ApiPropertyOptional({ description: 'Optional context record handle' })
   @IsOptional()
   @IsString()
   @MaxLength(128)
-  contextRecordHandle?: string;
+  contextRecordHandle?: string | null;
 }
 
 export class CreateAiAgentEvaluationDto {

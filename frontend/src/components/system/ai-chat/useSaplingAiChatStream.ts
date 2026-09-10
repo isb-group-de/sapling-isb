@@ -11,6 +11,7 @@ import { isToolAction } from './aiChatNavigation'
 import type { PendingImportAttachment } from './useSaplingAiChatAttachments'
 
 interface SaplingAiChatStreamOptions {
+  payloadExtras?: () => Partial<CreateAiChatMessagePayload>
   route: RouteLocationNormalizedLoaded
   isOpen: Ref<boolean>
   activeSession: Ref<AiChatSessionItem | null>
@@ -172,6 +173,7 @@ export function useSaplingAiChatStream(options: SaplingAiChatStreamOptions) {
         query: options.route.query,
         fullPath: options.route.fullPath,
       },
+      ...options.payloadExtras?.(),
     }
   }
 

@@ -1,7 +1,7 @@
 <template>
   <SaplingDialog
     :model-value="true"
-    :size="kind === 'NOTE' || kind === 'ACTIONS' ? 'lg' : 'md'"
+    :size="kind === 'NOTE' || kind === 'ACTIONS' || kind === 'AI' ? 'lg' : 'md'"
     :persistent="busy"
     @update:model-value="!$event && close()"
   >
@@ -133,6 +133,7 @@
               :label="$t('dashboard.widgetNoteContent')"
               :maxlength="20000"
             />
+            <SaplingWidgetAiEditor v-if="kind === 'AI'" v-model="aiConfig" />
             <SaplingWidgetActionsEditor v-if="kind === 'ACTIONS'" v-model="actions" />
             <div class="sapling-two-column-grid">
               <v-select
@@ -170,6 +171,7 @@ import SaplingDialogHero from '@/components/common/SaplingDialogHero.vue'
 import SaplingActionSave from '@/components/actions/SaplingActionSave.vue'
 import SaplingFieldSingleSelect from '@/components/dialog/fields/SaplingFieldSingleSelect.vue'
 import SaplingFieldMarkdown from '@/components/dialog/fields/SaplingFieldMarkdown.vue'
+import SaplingWidgetAiEditor from './SaplingWidgetAiEditor.vue'
 import SaplingWidgetActionsEditor from './SaplingWidgetActionsEditor.vue'
 const props = defineProps<{ widget: DashboardWidget | null; busy: boolean }>()
 const emit = defineEmits<{
@@ -179,6 +181,7 @@ const emit = defineEmits<{
 const { t } = useI18n()
 const form = ref<{ validate: () => Promise<{ valid: boolean }> } | null>(null)
 const {
+  aiConfig,
   kind,
   title,
   columns,

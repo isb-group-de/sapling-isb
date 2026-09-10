@@ -120,3 +120,41 @@ describe('dashboard widget validation', () => {
       );
   });
 });
+
+describe('AI dashboard widgets', () => {
+  const widget = {
+    id: 'ai-customer',
+    title: 'Customer',
+    rows: 4,
+    columns: 2,
+    kind: 'AI',
+  };
+  it('accepts an optional task and runtime references', () => {
+    expect(() =>
+      validateDashboardWidgets([
+        {
+          ...widget,
+          config: {
+            instruction: 'Prepare customer',
+            modelHandle: 'model',
+            providerHandle: 'provider',
+            agentHandle: 'agent',
+          },
+        },
+      ]),
+    ).not.toThrow();
+    expect(() =>
+      validateDashboardWidgets([{ ...widget, config: {} }]),
+    ).not.toThrow();
+  });
+  it('rejects embedded personal session state and excessive instructions', () => {
+    expect(() =>
+      validateDashboardWidgets([{ ...widget, config: { sessionHandle: 22 } }]),
+    ).toThrow();
+    expect(() =>
+      validateDashboardWidgets([
+        { ...widget, config: { instruction: 'x'.repeat(8001) } },
+      ]),
+    ).toThrow();
+  });
+});

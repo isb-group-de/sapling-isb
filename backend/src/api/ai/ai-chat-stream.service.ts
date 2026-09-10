@@ -53,6 +53,7 @@ import { CreateAiChatMessageDto } from './dto/chat.dto';
 import { McpService } from './mcp.service';
 import { assertChatImageSupport } from './ai-chat-images.utils';
 import { completeAiChatSessionResponse } from './ai-chat-session-response.utils';
+import { readFormContext, formProposalDescriptor } from './ai-form-proposal';
 
 @Injectable()
 export class AiChatStreamService {
@@ -104,6 +105,9 @@ export class AiChatStreamService {
             playbookHandle: dto.playbookHandle,
             contextEntityHandle: dto.contextEntityHandle,
             contextRecordHandle: dto.contextRecordHandle,
+            workspaceInstruction: dto.workspaceInstruction,
+            sourceDashboardHandle: dto.sourceDashboardHandle,
+            sourceWidgetId: dto.sourceWidgetId,
           },
           user,
         );
@@ -119,25 +123,34 @@ export class AiChatStreamService {
         dto.agentHandle,
         dto.agentVersionHandle,
         dto.playbookHandle,
-        dto.contextEntityHandle ?? session.contextEntityHandle ?? null,
-        dto.contextRecordHandle ?? session.contextRecordHandle ?? null,
+        (dto.contextEntityHandle !== undefined
+          ? dto.contextEntityHandle
+          : session.contextEntityHandle) ?? null,
+        (dto.contextRecordHandle !== undefined
+          ? dto.contextRecordHandle
+          : session.contextRecordHandle) ?? null,
         session,
         user,
       );
       const runtimeTarget = await this.providerRegistry.resolveRuntimeTarget(
         dto.providerHandle ??
+          extractProviderHandle(session.provider) ??
           extractProviderHandle(runtimeContext.version?.provider) ??
-          extractProviderHandle(runtimeContext.agent?.provider) ??
-          extractProviderHandle(session.provider),
+          extractProviderHandle(runtimeContext.agent?.provider),
         dto.modelHandle ??
+          extractModelHandle(session.model) ??
           extractModelHandle(runtimeContext.version?.model) ??
-          extractModelHandle(runtimeContext.agent?.model) ??
-          extractModelHandle(session.model),
+          extractModelHandle(runtimeContext.agent?.model),
       );
       const availableTools = await this.mcpService.listActiveTools(
         user,
         runtimeContext.toolPolicy,
       );
+      const formContext = readFormContext(
+        dto.contextPayload?.openedForm,
+        runtimeContext.toolPolicy,
+      );
+      if (formContext) availableTools.push(formProposalDescriptor(formContext));
       const clientTimeContext = extractClientTimeContext(dto);
       const attachments =
         await this.chatPersistence.resolveChatAttachmentsForMessage(
@@ -183,9 +196,13 @@ export class AiChatStreamService {
             ...(dto.contextPayload ?? {}),
             importAttachments: attachmentContext,
             contextEntityHandle:
-              dto.contextEntityHandle ?? session.contextEntityHandle ?? null,
+              (dto.contextEntityHandle !== undefined
+                ? dto.contextEntityHandle
+                : session.contextEntityHandle) ?? null,
             contextRecordHandle:
-              dto.contextRecordHandle ?? session.contextRecordHandle ?? null,
+              (dto.contextRecordHandle !== undefined
+                ? dto.contextRecordHandle
+                : session.contextRecordHandle) ?? null,
             playbookHandle: runtimeContext.playbook?.handle ?? null,
             agentVersionHandle: runtimeContext.version?.handle ?? null,
           },
@@ -219,9 +236,13 @@ export class AiChatStreamService {
       session.agentVersion = runtimeContext.version;
       session.playbook = runtimeContext.playbook;
       session.contextEntityHandle =
-        dto.contextEntityHandle ?? session.contextEntityHandle ?? null;
+        (dto.contextEntityHandle !== undefined
+          ? dto.contextEntityHandle
+          : session.contextEntityHandle) ?? null;
       session.contextRecordHandle =
-        dto.contextRecordHandle ?? session.contextRecordHandle ?? null;
+        (dto.contextRecordHandle !== undefined
+          ? dto.contextRecordHandle
+          : session.contextRecordHandle) ?? null;
       if (this.chatSession.isUntitledSessionTitle(session.title)) {
         session.title = this.chatSession.buildSessionTitle(dto.content);
       }
@@ -539,6 +560,9 @@ export class AiChatStreamService {
             ...toAiToolCallRunTrace(toolCall),
             rawResult: toolCall.rawResult,
           })),
+          formProposals:
+            (assistantMessage.responsePayload as Record<string, unknown> | null)
+              ?.formProposals ?? [],
           pendingToolActions: pendingToolActions.map((action) =>
             sanitizeToolAction(action),
           ),

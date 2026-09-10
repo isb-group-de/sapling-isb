@@ -75,6 +75,9 @@ export class AiChatMessageService {
             playbookHandle: dto.playbookHandle,
             contextEntityHandle: dto.contextEntityHandle,
             contextRecordHandle: dto.contextRecordHandle,
+            workspaceInstruction: dto.workspaceInstruction,
+            sourceDashboardHandle: dto.sourceDashboardHandle,
+            sourceWidgetId: dto.sourceWidgetId,
           },
           user,
         );
@@ -84,20 +87,24 @@ export class AiChatMessageService {
         dto.agentHandle,
         dto.agentVersionHandle,
         dto.playbookHandle,
-        dto.contextEntityHandle ?? session.contextEntityHandle ?? null,
-        dto.contextRecordHandle ?? session.contextRecordHandle ?? null,
+        (dto.contextEntityHandle !== undefined
+          ? dto.contextEntityHandle
+          : session.contextEntityHandle) ?? null,
+        (dto.contextRecordHandle !== undefined
+          ? dto.contextRecordHandle
+          : session.contextRecordHandle) ?? null,
         session,
         user,
       );
       const runtimeTarget = await this.providerRegistry.resolveRuntimeTarget(
         dto.providerHandle ??
+          extractProviderHandle(session.provider) ??
           extractProviderHandle(runtimeContext.version?.provider) ??
-          extractProviderHandle(runtimeContext.agent?.provider) ??
-          extractProviderHandle(session.provider),
+          extractProviderHandle(runtimeContext.agent?.provider),
         dto.modelHandle ??
+          extractModelHandle(session.model) ??
           extractModelHandle(runtimeContext.version?.model) ??
-          extractModelHandle(runtimeContext.agent?.model) ??
-          extractModelHandle(session.model),
+          extractModelHandle(runtimeContext.agent?.model),
       );
       const clientTimeContext = extractClientTimeContext(dto);
       const attachments =
@@ -156,9 +163,13 @@ export class AiChatMessageService {
       session.agentVersion = runtimeContext.version;
       session.playbook = runtimeContext.playbook;
       session.contextEntityHandle =
-        dto.contextEntityHandle ?? session.contextEntityHandle ?? null;
+        (dto.contextEntityHandle !== undefined
+          ? dto.contextEntityHandle
+          : session.contextEntityHandle) ?? null;
       session.contextRecordHandle =
-        dto.contextRecordHandle ?? session.contextRecordHandle ?? null;
+        (dto.contextRecordHandle !== undefined
+          ? dto.contextRecordHandle
+          : session.contextRecordHandle) ?? null;
       if (this.chatSession.isUntitledSessionTitle(session.title)) {
         session.title = this.chatSession.buildSessionTitle(dto.content);
       }

@@ -61,6 +61,27 @@ export function validateDashboardWidgets(
     ids.add(widget.id);
     const config = widget.config;
     switch (widget.kind) {
+      case 'AI':
+        if (
+          Object.keys(config).some(
+            (key) =>
+              ![
+                'agentHandle',
+                'providerHandle',
+                'modelHandle',
+                'instruction',
+              ].includes(key),
+          )
+        )
+          return fail();
+        if (
+          (config.agentHandle != null && !text(config.agentHandle, 64)) ||
+          (config.providerHandle != null && !text(config.providerHandle, 64)) ||
+          (config.modelHandle != null && !text(config.modelHandle, 128)) ||
+          (config.instruction != null && !text(config.instruction, 8000, true))
+        )
+          return fail();
+        break;
       case 'KPI':
         if (!integer(config.kpiHandle, 1, Number.MAX_SAFE_INTEGER))
           return fail();
