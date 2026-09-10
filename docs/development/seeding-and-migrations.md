@@ -204,6 +204,20 @@ authorized baseline correction, review the file diff and update only its manifes
 entry using SHA-256 of `JSON.stringify(JSON.parse(fileContent))`, then rebuild the
 backend. Do not disable verification or refresh unrelated hashes to hide mismatches.
 
+For `Database schema does not match the baseline cutoff`, run
+`npm run orm:baseline-check` from the repository root (or with `--prefix backend`).
+This builds the diagnostic and compares the configured database in a PostgreSQL
+read-only transaction. It never adopts history, runs migrations or executes seeders.
+On mismatch, it reports the database name, PostgreSQL version, search path, both
+hashes and every missing, additional or changed schema definition with expected
+and actual values. Adoption now reports the same details before changing history.
+The expected catalog is bundled as `baseline/schema-reference.json` and must match
+the existing manifest hash. It comes from the original baseline capture, not from
+the current development database. Diagnose the reported differences before changing
+the schema or baseline; a hash mismatch alone does not identify its cause.
+This command checks the historical cutoff specifically. A database that has already
+adopted the baseline and applied later migrations is expected to differ from it.
+
 ## Adopt An Existing Database Once
 
 1. Deploy the old history completely through the baseline cutoff on each system.

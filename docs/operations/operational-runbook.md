@@ -142,6 +142,7 @@ Seeder behavior:
 - Four-digit filenames end in `_insert`, `_update` or `_delete`; each file performs only that operation.
 - Translation updates use explicit `entity + property + language` keys.
 - Existing pre-baseline databases require one `orm:deploy` with `DB_BASELINE_ADOPT=true`; see [the baseline adoption procedure](../development/seeding-and-migrations.md#adopt-an-existing-database-once). The procedure preserves application records and atomically replaces only migration/seed tracking. Return the flag to false afterwards.
+- If baseline schema validation fails, run `npm run orm:baseline-check` from the repository root. It reports PostgreSQL version and exact schema differences in a read-only transaction without running deployment steps.
 
 If a seed file must be rerun intentionally, inspect `seed_script_item` first and decide whether to remove only the matching script marker. Do not broadly truncate seed tracking in an environment with real data.
 

@@ -28,6 +28,7 @@
     "orm:create-migration": "cross-env NODE_OPTIONS=--max-old-space-size=4096 npm run build && node dist/database/create-migration.js",
     "orm:migrate": "cross-env NODE_OPTIONS=--max-old-space-size=4096 npm run build && cross-env UPDATE_MODE=migrate node dist/update.js",
     "orm:seed": "cross-env NODE_OPTIONS=--max-old-space-size=4096 npm run build && cross-env UPDATE_MODE=seed node dist/update.js",
+    "orm:baseline-check": "npm run build && node dist/database/baseline/check-baseline.js",
     "orm:deploy": "cross-env NODE_OPTIONS=--max-old-space-size=4096 npm run build && cross-env UPDATE_MODE=all node dist/update.js",
     "admin:bootstrap": "cross-env NODE_ENV=production node dist/bootstrap-admin.js",
     "queues:clear-failed": "node dist/maintenance/clear-failed-queue-jobs.js",

@@ -306,6 +306,10 @@ function main() {
     path.join(baselineRoot, 'manifest.json'),
     JSON.stringify(manifest, null, 2) + '\n',
   );
+  fs.writeFileSync(
+    path.join(baselineRoot, 'schema-reference.json'),
+    JSON.stringify(snapshots.production.catalog, null, 2) + '\n',
+  );
   // Preserve exact PostgreSQL details that ORM schema comparisons normalize away
   // (standalone unique indexes, timestamp precision and extension operator classes).
   const schemaSQL = fs

@@ -5,6 +5,8 @@ import { join } from 'node:path';
 import { SeedScriptItem } from '../../entity/SeedScriptItem';
 import type { SeedDataset } from '../seeder/seed-catalog';
 import manifest from './manifest.json';
+import { readSchemaCatalog } from './schema-validation';
+import { schemaHash } from './schema-comparison';
 
 export const BASELINE_ENTITY = '__baseline';
 export const baselineName = (dataset: SeedDataset) =>
@@ -100,9 +102,5 @@ export function verifyBaselineFiles(dataset: SeedDataset): void {
 }
 
 export async function readSchemaHash(em: EntityManager): Promise<string> {
-  const sql = readFileSync(join(__dirname, 'schema-catalog.sql'), 'utf8');
-  const rows: unknown = await em
-    .getConnection('write')
-    .execute(sql, [], 'all', em.getTransactionContext());
-  return createHash('sha256').update(JSON.stringify(rows)).digest('hex');
+  return schemaHash(await readSchemaCatalog(em));
 }

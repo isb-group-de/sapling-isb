@@ -6,11 +6,11 @@ import {
   baselineMarkers,
   baselineName,
   markFreshBaseline,
-  readSchemaHash,
   verifyBaselineFiles,
 } from './baseline-state';
 import manifest from './manifest.json';
 import { validateLegacySeedHistory } from './legacy-seed-history';
+import { assertBaselineSchema } from './schema-validation';
 
 /** Runs before the migrator: replacing old history must never replay baseline data. */
 export async function prepareDatabaseBaseline(
@@ -84,8 +84,7 @@ export async function prepareDatabaseBaseline(
         `Additional legacy seed history will be removed: ${additional.join(', ')}. Adoption retains the configured dataset ${dataset} and does not change application records.`,
       );
     verifyBaselineFiles(dataset);
-    if ((await readSchemaHash(tx)) !== manifest.schemaHash)
-      throw new Error('Database schema does not match the baseline cutoff.');
+    await assertBaselineSchema(tx);
     await execute(
       'lock table mikro_orm_migrations, seed_script_item in access exclusive mode',
     );
