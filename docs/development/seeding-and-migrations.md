@@ -161,6 +161,11 @@ renumber released baseline files or regenerate their manifest to distribute chan
 
 Before migration/seeding, adoption checks the complete old migration list, successful
 seed history for the selected dataset, frozen baseline files and schema fingerprint.
+Old seed tracking did not store the dataset. Additional entries, including unknown
+script names and failed extra attempts, do not block adoption. They are logged and
+removed with the entire old seed history, never copied into the new history or replayed.
+All required seeds of the selected dataset must still have a successful execution.
+Rejected histories list missing successful seeds and the configured `DB_DATA_SEEDER`.
 The old role-starter files were not tracked and therefore are not required as old
 history entries; their final assignments are included in the new baseline.
 
@@ -170,8 +175,11 @@ environment baseline files as successful, and writes a durable `__baseline` mark
 It executes no application data operations. Later files are never included merely
 because they exist on disk: only the frozen manifest is adopted.
 
-Incomplete, unknown/newer legacy histories, changed schemas and incorrect dataset
-selection fail before cleanup. An old database without the flag fails with instructions.
+Missing successful required seeds, mismatched migration histories and changed schemas
+fail before cleanup.
+Choose the intended dataset explicitly: old history alone cannot reliably identify it
+because the old system allowed both datasets to run against one database.
+An old database without the flag fails with instructions.
 A retained `true` flag on an already adopted database does not clear anything again;
 normal new migrations and seeds still run. Fresh databases use `false`, execute the
 baseline and write the same dataset-specific completion marker after successful seeding.

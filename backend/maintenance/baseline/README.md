@@ -18,6 +18,10 @@ They do not alter either source database.
   their schema, data, credentials, tracking and repeat behavior. It also checks
   rejection of missing history and schema drift. Only test databases recorded in
   the local ownership file may be replaced on later runs.
+  Adoption tests include additional known, unknown and failed legacy seed entries
+  and verify that the resulting history contains only the new baseline identities.
+  Use `--run-id=<lowercase letters or digits, max 12>` for separate test databases
+  when the default test databases are in use; their active sessions are not terminated.
 - `exercise.cjs` runs after `verify.cjs`. It exercises insert/update/delete,
   protected prompts, foreign keys, transaction rollback, sequences, new scripts
   and new migrations. It deliberately changes the disposable production test

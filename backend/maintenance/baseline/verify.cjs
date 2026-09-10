@@ -10,6 +10,13 @@ const output = path.resolve('../test-results/database-baseline');
 const capture = JSON.parse(
   fs.readFileSync(path.join(output, 'capture.json'), 'utf8'),
 );
+const manifest = require('../../src/database/baseline/manifest.json');
+const runIdArgument = process.argv.find((value) =>
+  value.startsWith('--run-id='),
+);
+const runId = runIdArgument?.slice('--run-id='.length);
+if (runId !== undefined) assert.match(runId, /^[a-z0-9]{1,12}$/);
+const suffix = runId ? `_${runId}` : '';
 const statePath = path.join(output, 'test-databases.json');
 const owned = fs.existsSync(statePath)
   ? JSON.parse(fs.readFileSync(statePath, 'utf8'))
@@ -36,7 +43,7 @@ const stable = (value) =>
 async function provision(database, dataset, restore) {
   assert.match(
     database,
-    /^sapling_baseline_(production|demonstration)_(fresh|adopt)_test$/,
+    /^sapling_baseline_(production|demonstration)_(fresh|adopt)_test(?:_[a-z0-9]{1,12})?$/,
   );
   const admin = connection('postgres');
   await admin.connect();
@@ -240,7 +247,11 @@ async function rejectIncompleteAdoption(database, dataset) {
     );
     const seed = (
       await client.query(
-        'delete from seed_script_item where handle=(select max(handle) from seed_script_item) returning *',
+        'delete from seed_script_item where entity_handle=$1 and script_name=$2 returning *',
+        [
+          manifest.legacySeeds[dataset][0].entity,
+          manifest.legacySeeds[dataset][0].script,
+        ],
       )
     ).rows[0];
     const missingSeed = await readState(database);
@@ -275,7 +286,7 @@ async function main() {
     : ['production', 'demonstration'];
   for (const dataset of modes) {
     const source = capture.snapshots[dataset];
-    const freshDb = `sapling_baseline_${dataset}_fresh_test`;
+    const freshDb = `sapling_baseline_${dataset}_fresh_test${suffix}`;
     await provision(freshDb, dataset, false);
     deploy(freshDb, dataset, false, 'fresh');
     const fresh = await readState(freshDb);
@@ -298,8 +309,34 @@ async function main() {
       stable(fresh.data.seed_script_item),
       stable(repeated.data.seed_script_item),
     );
-    const adoptDb = `sapling_baseline_${dataset}_adopt_test`;
+    const adoptDb = `sapling_baseline_${dataset}_adopt_test${suffix}`;
     await provision(adoptDb, dataset, true);
+    // Reproduce legacy databases containing both datasets and arbitrary extra history.
+    const client = connection(adoptDb);
+    await client.connect();
+    try {
+      const expected = new Set(
+        manifest.legacySeeds[dataset].map(
+          (row) => `${row.entity}:${row.script}`,
+        ),
+      );
+      const other = dataset === 'production' ? 'demonstration' : 'production';
+      const extra = manifest.legacySeeds[other].filter(
+        (row) => !expected.has(`${row.entity}:${row.script}`),
+      );
+      for (const row of [
+        ...extra,
+        { entity: 'translation', script: 'unknown-success.json' },
+        { entity: 'translation', script: 'unknown-failure.json' },
+      ]) {
+        await client.query(
+          'insert into seed_script_item (entity_handle, script_name, is_success, executed_at, created_at, updated_at) values ($1, $2, $3, now(), now(), now())',
+          [row.entity, row.script, row.script !== 'unknown-failure.json'],
+        );
+      }
+    } finally {
+      await client.end();
+    }
     await rejectIncompleteAdoption(adoptDb, dataset);
     const before = await readState(adoptDb);
     deploy(adoptDb, dataset, false, 'adopt-without-flag', false);
@@ -317,6 +354,13 @@ async function main() {
     assert.equal(
       after.data.seed_script_item.length,
       fresh.data.seed_script_item.length,
+    );
+    const identities = (rows) =>
+      rows.map((row) => `${row.entity_handle}:${row.script_name}`).sort();
+    assert.deepEqual(
+      identities(after.data.seed_script_item),
+      identities(fresh.data.seed_script_item),
+      'All additional old history must disappear; only the frozen baseline remains',
     );
     deploy(adoptDb, dataset, true, 'adopt-repeat');
     assert.equal(stable(after), stable(await readState(adoptDb)));

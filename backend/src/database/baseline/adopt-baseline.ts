@@ -10,6 +10,7 @@ import {
   verifyBaselineFiles,
 } from './baseline-state';
 import manifest from './manifest.json';
+import { validateLegacySeedHistory } from './legacy-seed-history';
 
 /** Runs before the migrator: replacing old history must never replay baseline data. */
 export async function prepareDatabaseBaseline(
@@ -77,25 +78,11 @@ export async function prepareDatabaseBaseline(
         'Migration history does not match the baseline cutoff; no history was changed.',
       );
     }
-    const expected = manifest.legacySeeds[dataset];
-    const successful = new Set(
-      history
-        .filter((row) => row.isSuccess)
-        .map((row) => `${row.entityHandle}:${row.scriptName}`),
-    );
-    const expectedNames = new Set(
-      expected.map((row) => `${row.entity}:${row.script}`),
-    );
-    if (
-      expected.some((row) => !successful.has(`${row.entity}:${row.script}`)) ||
-      history.some(
-        (row) => !expectedNames.has(`${row.entityHandle}:${row.scriptName}`),
-      )
-    ) {
-      throw new Error(
-        'Seed history does not match the baseline cutoff; no history was changed.',
+    const additional = validateLegacySeedHistory(history, dataset);
+    if (additional.length)
+      global.log.info(
+        `Additional legacy seed history will be removed: ${additional.join(', ')}. Adoption retains the configured dataset ${dataset} and does not change application records.`,
       );
-    }
     verifyBaselineFiles(dataset);
     if ((await readSchemaHash(tx)) !== manifest.schemaHash)
       throw new Error('Database schema does not match the baseline cutoff.');
