@@ -2716,7 +2716,7 @@
     {
       "path": "json-default/product/productData_0001_insert.json",
       "entity": "product",
-      "sha256": "95c3f7e090021aaaad759c7eba70eb73adbc058ae4d5d462e7cfbcecbcea32d4"
+      "sha256": "b4c723c9f988616349c8e82e44fbc39c93cb3c174997529a92cc37c8fc70ad4a"
     },
     {
       "path": "json-default/role/roleData_0001_insert.json",

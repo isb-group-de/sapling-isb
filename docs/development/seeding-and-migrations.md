@@ -195,6 +195,15 @@ Review the SQL and run the command again: it must report no schema changes. Afte
 baseline release, migration and seed history is additive again. Do not edit or
 renumber released baseline files or regenerate their manifest to distribute changes.
 
+`Baseline file changed: ...` reports a mismatch between a seed JSON file and its
+SHA-256 entry in `backend/src/database/baseline/manifest.json`. It does not compare
+database rows or seed tracking. Even a release-version change in the shared product
+seed changes this hash. Release tooling must leave frozen baseline files unchanged;
+use a new registered seed file for later product-version updates. During an explicitly
+authorized baseline correction, review the file diff and update only its manifest
+entry using SHA-256 of `JSON.stringify(JSON.parse(fileContent))`, then rebuild the
+backend. Do not disable verification or refresh unrelated hashes to hide mismatches.
+
 ## Adopt An Existing Database Once
 
 1. Deploy the old history completely through the baseline cutoff on each system.
