@@ -218,6 +218,18 @@ the schema or baseline; a hash mismatch alone does not identify its cause.
 This command checks the historical cutoff specifically. A database that has already
 adopted the baseline and applied later migrations is expected to differ from it.
 
+PostgreSQL 18 additionally records named column `NOT NULL` constraints in
+`pg_constraint`; older versions represent column nullability through
+`pg_attribute.attnotnull`. The comparison excludes plain duplicate `NOT NULL`
+constraint entries only when their corresponding column is present and already
+marked not-null in the same catalog. Actual column nullability remains compared,
+as do foreign keys, CHECK constraints, indexes, extensions and other definitions.
+Special definitions such as `NOT VALID` or `NO INHERIT` are not normalized away.
+This avoids thousands of false missing-constraint messages across PostgreSQL
+versions without adding constraints or changing the database. The bundled reference
+and its original integrity hash remain unchanged.
+See the [PostgreSQL 18 release notes](https://www.postgresql.org/docs/18/release-18.html).
+
 ## Adopt An Existing Database Once
 
 1. Deploy the old history completely through the baseline cutoff on each system.

@@ -40,6 +40,51 @@ describe('Baseline schema verification', () => {
     expect(execute).toHaveBeenCalledTimes(1);
   });
 
+  const pre18 = reference.filter(
+    (row) =>
+      !(row.key.startsWith('constraint:') && row.value.startsWith('NOT NULL ')),
+  );
+
+  it('accepts the same baseline without PostgreSQL 18 NOT NULL catalog entries', async () => {
+    expect(reference.length - pre18.length).toBeGreaterThan(1000);
+    const { em, execute } = manager(pre18);
+    await expect(assertBaselineSchema(em)).resolves.toBeUndefined();
+    expect(execute).toHaveBeenCalledTimes(1);
+  });
+
+  it('still rejects a real nullable column on a pre-18 catalog', async () => {
+    const rows = pre18.map((row) =>
+      row.key === 'column:address_item:street'
+        ? { ...row, value: row.value.replace('|true|', '|false|') }
+        : row,
+    );
+    expect(rows).not.toEqual(pre18);
+    await expect(assertBaselineSchema(manager(rows).em)).rejects.toThrow(
+      'Changed column:address_item:street',
+    );
+  });
+
+  it('still rejects a missing column and foreign key on a pre-18 catalog', async () => {
+    const key = reference.find(
+      (row) =>
+        row.key.startsWith('constraint:') &&
+        row.value.startsWith('FOREIGN KEY'),
+    )!.key;
+    const rows = pre18.filter(
+      (row) => row.key !== key && row.key !== 'column:person_item:first_name',
+    );
+    const error: unknown = await assertBaselineSchema(manager(rows).em).catch(
+      (reason: unknown) => reason,
+    );
+    expect((error as Error).message).toContain(`Missing ${key}`);
+    expect((error as Error).message).toContain(
+      'Missing column:person_item:first_name',
+    );
+    expect((error as Error).message).not.toContain(
+      'Missing constraint:person_item:person_item_first_name_not_null',
+    );
+  });
+
   it('rejects drift with database context and exact differences, using only selects', async () => {
     const missing = reference.find((row) => row.key === 'extension:vector')!;
     const { em, execute } = manager(reference.filter((row) => row !== missing));

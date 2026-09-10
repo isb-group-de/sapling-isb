@@ -5,6 +5,7 @@ import manifest from './manifest.json';
 import {
   compareSchema,
   formatSchemaDifferences,
+  normalizeSchemaCatalog,
   schemaHash,
   type SchemaEntry,
 } from './schema-comparison';
@@ -33,6 +34,11 @@ export async function assertBaselineSchema(em: EntityManager): Promise<void> {
     throw new Error(
       'Bundled baseline schema reference does not match manifest.schemaHash. Rebuild the backend with matching baseline assets.',
     );
+  const differences = compareSchema(
+    normalizeSchemaCatalog(expected),
+    normalizeSchemaCatalog(actual),
+  );
+  if (!differences.length) return;
   const environment = await (em
     .getConnection('write')
     .execute(
@@ -41,7 +47,6 @@ export async function assertBaselineSchema(em: EntityManager): Promise<void> {
       'all',
       em.getTransactionContext(),
     ) as Promise<Array<Record<string, string | null>>>);
-  const differences = compareSchema(expected, actual);
   throw new Error(
     [
       'Database schema does not match the baseline cutoff; no history was changed.',

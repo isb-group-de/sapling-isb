@@ -2,9 +2,52 @@ import {
   compareSchema,
   formatSchemaDifferences,
   schemaHash,
+  normalizeSchemaCatalog,
 } from './schema-comparison';
 
 describe('Baseline schema diagnostics', () => {
+  it('normalizes only redundant plain NOT NULL catalog entries', () => {
+    const column = { key: 'column:person:name', value: 'varchar(64)|true|||' };
+    const extra = [
+      { key: 'constraint:person:any_name', value: 'NOT NULL name' },
+      { key: 'constraint:person:quoted', value: 'NOT NULL "name"' },
+    ];
+    expect(normalizeSchemaCatalog([column, ...extra])).toEqual([column]);
+    const quotedColumn = {
+      key: 'column:person:display"Name',
+      value: 'text|true|||',
+    };
+    expect(
+      normalizeSchemaCatalog([
+        quotedColumn,
+        { key: 'constraint:person:quoted', value: 'NOT NULL "display""Name"' },
+      ]),
+    ).toEqual([quotedColumn]);
+  });
+
+  it('keeps unsupported or nonredundant constraints for diagnosis', () => {
+    const rows = [
+      { key: 'column:person:name', value: 'text|false|||' },
+      { key: 'constraint:person:nullable', value: 'NOT NULL name' },
+      { key: 'constraint:person:missing', value: 'NOT NULL missing_column' },
+      {
+        key: 'constraint:person:name_not_null',
+        value: 'CHECK (name IS NOT NULL)',
+      },
+      {
+        key: 'constraint:person:foreign',
+        value: 'FOREIGN KEY (role) REFERENCES role(handle)',
+      },
+      { key: 'column:person:handle', value: 'integer|true|||' },
+      { key: 'constraint:person:special', value: 'NOT NULL handle NO INHERIT' },
+      {
+        key: 'constraint:person:unvalidated',
+        value: 'NOT NULL handle NOT VALID',
+      },
+    ];
+    expect(normalizeSchemaCatalog(rows)).toEqual(rows);
+  });
+
   it('identifies missing, additional and changed definitions', () => {
     const differences = compareSchema(
       [
