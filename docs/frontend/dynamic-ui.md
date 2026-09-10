@@ -944,6 +944,8 @@ explicitly through row selection and the relation tab's remove action.
 Reference dropdown tables hide the complete table toolbar explicitly while keeping
 their configured row-selection mode. They also disable row double-click actions because
 opening a nested record dialog conflicts with the picker's focus-driven close behavior.
+When row double-click is disabled, clicking a row also toggles its multi-selection
+checkbox in both desktop and mobile layouts.
 `SaplingTable` keeps both its toolbar and row double-click actions enabled by default so
 full table views and other existing consumers do not opt out accidentally.
 Glass dialog cards and reference dropdown surfaces paint their outer blur on a sibling
@@ -1164,7 +1166,7 @@ worklists with this field.
 ## Songbird side panel
 
 Songbird is hosted by the authenticated shell rather than a modal chat dialog.
-The panel starts at 420px and can be resized from 360px to 640px; widths are stored
+The panel starts at 420px and can be resized from 360px to 715px; widths are stored
 per user. It docks only when at least 720px remain for the main workspace.
 Otherwise it uses a full-area view with Back to work. Changing the view does not
 unmount the underlying route or its edit state.
@@ -1176,8 +1178,14 @@ so both surfaces remain usable. Field contents are not included automatically.
 
 Workspace controllers belong to the authenticated shell and are cleared on a
 person/impersonation change. Avoid instantiating independent stream controllers
-for two views of the same session. Confirmation cards display existing field
-previews inline and keep diagnostic arguments collapsed.
+for two views of the same session. Tool actions use compact single-line summaries
+with status and accessible icon buttons for confirmation, rejection, navigation
+and information. Field previews open as a table in the information dialog; raw
+diagnostic arguments remain collapsed. Long summaries truncate with the full
+text available on hover, while errors occupy a separate row. The shared layout
+keeps previews out of the chat flow, including narrow panels and dashboard widgets.
+Action rows have an 8px gap, with 12px spacing around the group to separate them
+from the answer text and work log.
 
 The operation selector is an overlay dropdown with grouped history, search and
 an archive toggle on the same header row. Provider/model, agent and the saved

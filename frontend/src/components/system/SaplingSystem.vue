@@ -4,7 +4,7 @@
     fluid
   >
     <template v-if="isLoading">
-      <SaplingSystemSkeleton />
+      <SaplingSystemSkeleton :area="String($route.query.area || 'overview')" />
     </template>
 
     <template v-else>

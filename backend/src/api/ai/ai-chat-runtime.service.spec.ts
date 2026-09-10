@@ -18,7 +18,14 @@ jest.mock('./openai-ai.runtime', () => ({ createOpenAiClient: jest.fn() }));
 jest.mock('./mcp.service', () => ({ McpService: class {} }));
 
 import { AiChatRuntimeService } from './ai-chat-runtime.service';
-import { createGeminiStreamingClient } from './gemini-ai.runtime';
+import {
+  createGeminiClient,
+  createGeminiStreamingClient,
+} from './gemini-ai.runtime';
+import {
+  aiPromptContext,
+  type AiPromptScope,
+} from './prompts/ai-prompt-context';
 import { createOpenAiClient } from './openai-ai.runtime';
 import { AiChatInterruptedError } from './ai.types';
 import {
@@ -32,6 +39,82 @@ describe('AiChatRuntimeService streaming', () => {
   beforeEach(() => {
     asMock(createOpenAiClient).mockReset();
     asMock(createGeminiStreamingClient).mockReset();
+  });
+
+  it.each(['openai', 'gemini'] as const)(
+    'records canonical usage for standalone %s text preparation',
+    async (providerKind) => {
+      const create = jest.fn().mockResolvedValue(
+        asNever({
+          choices: [{ message: { content: 'Prepared' } }],
+          usage: { prompt_tokens: 8, completion_tokens: 4, total_tokens: 12 },
+        }),
+      );
+      asMock(createOpenAiClient).mockReturnValue({
+        chat: { completions: { create } },
+      });
+      asMock(createGeminiClient).mockReturnValue({
+        getGenerativeModel: () => ({
+          generateContent: async () => ({
+            response: {
+              text: () => 'Prepared',
+              usageMetadata: {
+                promptTokenCount: 8,
+                candidatesTokenCount: 4,
+                totalTokenCount: 12,
+              },
+            },
+          }),
+        }),
+      });
+      const diagnostics: NonNullable<AiPromptScope['diagnostics']> = {};
+      const result = await aiPromptContext.run(
+        { manifest: {}, prompts: {}, diagnostics },
+        () =>
+          new AiChatRuntimeService({} as never).completeText({
+            provider: { handle: providerKind } as never,
+            providerKind,
+            model: 'model',
+            systemInstruction: 'Prepare',
+            prompt: 'Draft',
+          }),
+      );
+      expect(result).toBe('Prepared');
+      expect(diagnostics).toMatchObject({
+        provider: providerKind,
+        model: 'model',
+        usagePayload: { inputTokens: 8, outputTokens: 4, totalTokens: 12 },
+      });
+    },
+  );
+
+  it('keeps standalone token usage when the provider returns an empty answer', async () => {
+    const create = jest.fn().mockResolvedValue(
+      asNever({
+        choices: [],
+        usage: { prompt_tokens: 8, completion_tokens: 0, total_tokens: 8 },
+      }),
+    );
+    asMock(createOpenAiClient).mockReturnValue({
+      chat: { completions: { create } },
+    });
+    const diagnostics: NonNullable<AiPromptScope['diagnostics']> = {};
+    await expect(
+      aiPromptContext.run({ manifest: {}, prompts: {}, diagnostics }, () =>
+        new AiChatRuntimeService({} as never).completeText({
+          provider: { handle: 'openai' } as never,
+          providerKind: 'openai',
+          model: 'model',
+          systemInstruction: 'Prepare',
+          prompt: 'Draft',
+        }),
+      ),
+    ).rejects.toThrow('ai.emptyResponse');
+    expect(diagnostics.usagePayload).toMatchObject({
+      inputTokens: 8,
+      outputTokens: 0,
+      totalTokens: 8,
+    });
   });
 
   it('streams incremental text for OpenAI-compatible providers without reasoning events', async () => {

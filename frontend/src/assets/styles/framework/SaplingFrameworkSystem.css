@@ -1,20 +1,48 @@
-.sapling-system-skeleton,
-.sapling-system-skeleton__metrics,
-.sapling-system-skeleton__sections {
-  display: grid;
-  gap: var(--sapling-gap-xl);
+.sapling-system-skeleton .v-skeleton-loader {
+  background: transparent;
 }
 
-.sapling-system-skeleton__metrics {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+.sapling-system-skeleton__identity {
+  flex: 1;
+  max-width: 360px;
 }
 
-.sapling-system-skeleton__sections {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+.sapling-system-skeleton .monitoring-console__meta .v-skeleton-loader {
+  width: 120px;
+  max-width: 20%;
+}
+
+.sapling-system-skeleton__navigation {
+  display: flex;
+  gap: var(--sapling-gap-md);
+  overflow: hidden;
+}
+
+.sapling-system-skeleton__navigation .v-skeleton-loader {
+  flex: 0 0 120px;
+}
+
+.sapling-system-skeleton .v-skeleton-loader__button {
+  width: 100%;
+  max-width: none;
+}
+
+.sapling-system-skeleton .v-skeleton-loader__bone:has(> .v-skeleton-loader__bone)::after {
+  display: none;
+}
+
+.sapling-system-skeleton__chart .v-skeleton-loader__image {
+  height: 220px;
 }
 
 .sapling-system-skeleton .v-skeleton-loader__bone {
   border-radius: var(--sapling-radius-sm);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sapling-system-skeleton .v-skeleton-loader__bone::after {
+    animation: none;
+  }
 }
 
 .sapling-system-hero__side {

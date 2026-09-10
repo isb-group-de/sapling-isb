@@ -274,6 +274,15 @@ factual, and professional without changing the underlying message. The response
 contains only the revised Markdown; it does not create a Songbird chat session
 or message.
 
+The recorded Markdown run retains its provider usage and initiating person.
+Monitoring reconciles those counts, including native OpenAI/Gemini field names,
+under the interactive `markdown` operation. The recording flow first creates a
+separate `transcription` usage event from its stored transcription result, then
+uses this same Markdown endpoint. Each step contributes its own reported tokens;
+providers that return no token counts remain explicitly unreported. Historical
+stored usage is reconciled for the monitoring retention window. No per-user token
+quota enforcement is currently provided by these monitoring counters.
+
 ## MCP Layers
 
 Sapling has two MCP-related layers.

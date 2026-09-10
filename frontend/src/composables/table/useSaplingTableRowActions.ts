@@ -51,7 +51,7 @@ export function useSaplingTableRowActions(
     if (props.rowInteraction === false) return
     if (event.button === 0 && !isInteractiveRowTarget(event.target)) {
       emit('activate-row', index)
-      if (!props.multiSelect) emit('select-row', index)
+      if (!props.multiSelect || props.allowRowDoubleClick === false) emit('select-row', index)
     }
   }
 

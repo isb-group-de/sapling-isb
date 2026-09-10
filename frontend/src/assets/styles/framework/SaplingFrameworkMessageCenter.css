@@ -554,18 +554,6 @@
     max-width: 100%;
   }
 
-  .sapling-ai-chat__tool-action {
-    grid-template-columns: 1fr;
-  }
-
-  .sapling-ai-chat__tool-action-controls {
-    justify-content: flex-start;
-  }
-
-  .sapling-ai-chat__tool-action-actions {
-    flex-wrap: wrap;
-  }
-
   .sapling-chat-welcome {
     padding: var(--sapling-space-lg) 0;
   }

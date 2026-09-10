@@ -53,6 +53,43 @@ describe('system monitoring request scheduling', () => {
     expect(monitoringDetailsForArea('services')).toEqual(['services', 'series'])
   })
 
+  it('keeps the area skeleton until first details load but preserves data during refresh', async () => {
+    let releaseSeries!: (value: { series: [] }) => void
+    apiGet.mockImplementation(async (path: string) => {
+      if (path === 'monitoring/environments') return { current: 'test', environments: [] }
+      if (path.startsWith('monitoring/series?')) {
+        return new Promise((resolve) => {
+          releaseSeries = resolve
+        })
+      }
+      if (path.startsWith('monitoring/services?')) return { services: [] }
+      if (path.startsWith('monitoring/incidents?')) return []
+      return {}
+    })
+    let state!: ReturnType<typeof useSaplingSystemMonitoring>
+    const wrapper = mount(
+      defineComponent({
+        setup() {
+          state = useSaplingSystemMonitoring(ref('overview'))
+          return () => h('div')
+        },
+      }),
+    )
+    await flushPromises()
+    expect(state.loading.value).toBe(false)
+    expect(state.areaLoading.value).toBe(true)
+    releaseSeries({ series: [] })
+    await flushPromises()
+    expect(state.areaLoading.value).toBe(false)
+    const refreshing = state.loadAll()
+    await flushPromises()
+    expect(state.detailsLoading.value).toBeGreaterThan(0)
+    expect(state.areaLoading.value).toBe(false)
+    releaseSeries({ series: [] })
+    await refreshing
+    wrapper.unmount()
+  })
+
   it('initializes the environment before loading the active area', async () => {
     apiGet.mockImplementation(async (path: string) => {
       if (path === 'monitoring/environments') {

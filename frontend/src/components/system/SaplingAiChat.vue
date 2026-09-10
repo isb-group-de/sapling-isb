@@ -30,7 +30,7 @@
         :aria-label="$t('aiChat.resizePanel')"
         :aria-valuenow="width"
         :aria-valuemin="360"
-        :aria-valuemax="640"
+        :aria-valuemax="715"
         class="songbird-panel__resize"
         @pointerdown="startResize"
         @keydown.left.prevent="setWidth(width + 20)"

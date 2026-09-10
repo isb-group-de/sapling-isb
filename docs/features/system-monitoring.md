@@ -30,6 +30,13 @@ downloads must not block route navigation or the authenticated layout's Suspense
 Translation loading reuses the same skeleton; module-load failures show a retry
 action instead of leaving the previous page visible.
 
+Loading placeholders mirror the current monitoring header, filters, five-area
+navigation and each area's KPI, table and chart layout. Initial detail requests
+use the same area skeleton without replacing the header. Background refreshes
+keep existing data visible. Incident navigation writes the area and incident
+handle in one URL update; the modal opens only when its incident data is available,
+including for direct links and browser history navigation.
+
 The incident drill-down uses the shared large Sapling detail-dialog pattern. Its
 hero contrasts the observed value with the comparator and trigger threshold in
 the metric's native unit. The body separates the incident timeline from the
@@ -165,6 +172,22 @@ visibility.
 
 `online` means authenticated activity during the last five minutes. A valid
 session is reported separately. API-token use is never interactive presence.
+
+AI usage includes Markdown preparation (`markdown`) and audio transcription
+(`transcription`), both attributed to the initiating person as interactive work.
+Recording followed by Markdown preparation contributes two distinct operations.
+The 30-second reconciliation reads normalized, OpenAI-compatible and Gemini token
+fields, derives missing totals from reported input/output counts, and corrects
+existing usage events within the 90-day window without duplicating them.
+The reconciliation also adds canonical token fields to the retained agent-run
+usage payloads while preserving the original provider fields. This allows older
+collectors running during a rolling update to read the same totals rather than
+overwriting repaired events with missing values. Unchanged payloads are not rewritten.
+Provider totals take precedence, including any additional reasoning tokens.
+Missing or duration-only transcription usage remains unreported, never an
+invented zero-token value. Prompts, transcripts and Markdown content are not
+copied into monitoring. These counters report consumption; they do not implement
+per-person token quotas or block requests.
 
 ## Retention
 

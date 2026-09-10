@@ -1,4 +1,4 @@
-import { computed, nextTick, onMounted, ref, watch, type Ref } from 'vue'
+import { computed, nextTick, onMounted, reactive, ref, watch, type Ref } from 'vue'
 import ApiSystemService from '@/services/api.system.service'
 import type {
   MonitoringAlertRule,
@@ -73,7 +73,16 @@ export function useSaplingSystemMonitoring(activeTab?: Readonly<Ref<string>>) {
   const loading = ref(false)
   const detailsLoading = ref(0)
   const error = ref<string | null>(null)
-  const detailLoadedFor = new Map<MonitoringDetail, string>()
+  const detailLoadedFor = reactive(new Map<MonitoringDetail, string>())
+  const areaLoading = computed(() => {
+    if (loading.value && !summary.value) return true
+    if (!detailsLoading.value) return false
+    const area = activeTab?.value ?? 'overview'
+    const required = monitoringDetailsForArea(area)
+    if (area === 'overview') required.push('services', 'incidents')
+    // Keep already visible data during polling and manual refreshes.
+    return required.some((detail) => !detailLoadedFor.has(detail))
+  })
   const detailInFlight = new Map<string, Promise<void>>()
   let loadGeneration = 0
   let usersRequest = 0
@@ -411,6 +420,7 @@ export function useSaplingSystemMonitoring(activeTab?: Readonly<Ref<string>>) {
     selectedUser,
     loading,
     detailsLoading,
+    areaLoading,
     error,
     loadAll,
     loadUser,

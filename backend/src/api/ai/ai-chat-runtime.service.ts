@@ -80,7 +80,8 @@ export class AiChatRuntimeService extends AiChatRuntimeOperations {
       });
       const result = await generativeModel.generateContent(options.prompt);
       annotatePromptInvocation({
-        usagePayload: { ...result.response.usageMetadata },
+        usagePayload:
+          buildUsagePayload([{ ...result.response.usageMetadata }]) ?? {},
       });
       return result.response.text();
     }
@@ -95,7 +96,9 @@ export class AiChatRuntimeService extends AiChatRuntimeOperations {
       ],
     });
     const content = response.choices[0]?.message?.content;
-    annotatePromptInvocation({ usagePayload: { ...response.usage } });
+    annotatePromptInvocation({
+      usagePayload: buildUsagePayload([{ ...response.usage }]) ?? {},
+    });
     if (!content) throw new Error('ai.emptyResponse');
     return content;
   }

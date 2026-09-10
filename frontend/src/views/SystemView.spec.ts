@@ -36,6 +36,7 @@ describe('system page navigation', () => {
       {
         global: {
           plugins: [router],
+          mocks: { $t: (key: string) => key },
           stubs: { VContainer: { template: '<main><slot /></main>' }, VSkeletonLoader: true },
         },
       },

@@ -5,29 +5,9 @@
       :key="action.handle ?? `${action.serverName}.${action.toolName}`"
       class="sapling-ai-chat__tool-action"
     >
-      <div class="sapling-ai-chat__tool-action-header">
-        <div class="sapling-ai-chat__tool-action-copy">
-          <strong class="sapling-ai-chat__tool-action-title">{{
-            getToolActionTitle(action)
-          }}</strong>
-          <span v-if="getToolActionSummary(action)" class="sapling-ai-chat__tool-action-summary">
-            {{ getToolActionSummary(action) }}
-          </span>
-        </div>
-      </div>
-      <div
-        v-if="action.status === 'pending' && getToolActionPreviewRows(action).length"
-        class="sapling-ai-chat__tool-action-preview"
-      >
-        <div
-          v-for="row in getToolActionPreviewRows(action)"
-          :key="row.key"
-          class="sapling-ai-chat__tool-action-preview-row"
-        >
-          <span class="sapling-ai-chat__tool-action-preview-label">{{ row.label }}</span>
-          <span class="sapling-ai-chat__tool-action-preview-value">{{ row.value }}</span>
-        </div>
-      </div>
+      <strong class="sapling-ai-chat__tool-action-title" :title="getToolActionLine(action)">
+        {{ getToolActionLine(action) }}
+      </strong>
       <v-alert
         v-if="getToolActionError(action)"
         class="sapling-ai-chat__tool-action-error"
@@ -38,69 +18,56 @@
         {{ getToolActionError(action) }}
       </v-alert>
       <div class="sapling-ai-chat__tool-action-controls">
-        <div class="sapling-ai-chat__tool-action-meta">
-          <v-chip size="small" variant="tonal">{{ getToolActionStatusLabel(action) }}</v-chip>
-        </div>
-        <div
-          v-if="action.status === 'pending' && action.handle"
-          class="sapling-row-xs sapling-ai-chat__tool-action-actions"
-        >
+        <v-icon
+          :icon="getToolActionStatusIcon(action)"
+          size="small"
+          role="img"
+          :aria-label="getToolActionStatusLabel(action)"
+          :title="getToolActionStatusLabel(action)"
+        />
+        <template v-if="action.status === 'pending' && action.handle">
           <v-btn
             size="small"
             color="primary"
             variant="tonal"
-            prepend-icon="mdi-check"
+            icon="mdi-check"
+            :aria-label="t('aiChat.confirmToolAction')"
+            :title="t('aiChat.confirmToolAction')"
             :disabled="isToolActionSubmitting(action)"
             :loading="isToolActionSubmitting(action)"
             @click="emit('confirm', action)"
-          >
-            {{ t('aiChat.confirmToolAction') }}
-          </v-btn>
+          />
           <v-btn
             size="small"
             variant="text"
-            prepend-icon="mdi-close"
+            icon="mdi-close"
+            :aria-label="t('aiChat.rejectToolAction')"
+            :title="t('aiChat.rejectToolAction')"
             :disabled="isToolActionSubmitting(action)"
             @click="emit('reject', action)"
-          >
-            {{ t('aiChat.rejectToolAction') }}
-          </v-btn>
-          <v-btn
-            v-if="hasToolActionTechnicalDetails(action)"
-            size="small"
-            variant="text"
-            prepend-icon="mdi-information-outline"
-            @click="openToolActionTechnicalDetails(action)"
-          >
-            {{ getToolActionDetailsButtonLabel() }}
-          </v-btn>
-        </div>
-        <div
-          v-else-if="
-            hasToolActionTechnicalDetails(action) || getToolActionNavigationLinks(action).length > 0
-          "
-          class="sapling-row-xs sapling-ai-chat__tool-action-actions"
-        >
+          />
+        </template>
+        <template v-else>
           <v-btn
             v-for="link in getToolActionNavigationLinks(action)"
             :key="`${action.handle ?? `${action.serverName}.${action.toolName}`}-${link.path}`"
             size="small"
             variant="tonal"
-            prepend-icon="mdi-open-in-app"
+            icon="mdi-open-in-app"
+            :aria-label="getNavigationLinkLabel(link)"
+            :title="getNavigationLinkLabel(link)"
             @click="openNavigationLink(link.path)"
-          >
-            {{ getNavigationLinkLabel(link) }}
-          </v-btn>
-          <v-btn
-            v-if="hasToolActionTechnicalDetails(action)"
-            size="small"
-            variant="text"
-            prepend-icon="mdi-information-outline"
-            @click="openToolActionTechnicalDetails(action)"
-          >
-            {{ getToolActionDetailsButtonLabel() }}
-          </v-btn>
-        </div>
+          />
+        </template>
+        <v-btn
+          v-if="hasToolActionTechnicalDetails(action)"
+          size="small"
+          variant="text"
+          icon="mdi-information-outline"
+          :aria-label="getToolActionDetailsButtonLabel()"
+          :title="getToolActionDetailsButtonLabel()"
+          @click="openToolActionTechnicalDetails(action)"
+        />
       </div>
     </div>
     <SaplingDialog
@@ -123,22 +90,26 @@
             <p v-if="activeToolActionDetails" class="sapling-ai-chat__tool-action-details-intro">
               {{ getToolActionTechnicalDetailsIntro(activeToolActionDetails) }}
             </p>
-            <div
+            <table
               v-if="
                 activeToolActionDetails &&
                 getToolActionPreviewRows(activeToolActionDetails).length > 0
               "
               class="sapling-ai-chat__tool-action-preview"
             >
-              <div
-                v-for="row in getToolActionPreviewRows(activeToolActionDetails)"
-                :key="row.key"
-                class="sapling-ai-chat__tool-action-preview-row"
-              >
-                <span class="sapling-ai-chat__tool-action-preview-label">{{ row.label }}</span>
-                <span class="sapling-ai-chat__tool-action-preview-value">{{ row.value }}</span>
-              </div>
-            </div>
+              <tbody>
+                <tr
+                  v-for="row in getToolActionPreviewRows(activeToolActionDetails)"
+                  :key="row.key"
+                  class="sapling-ai-chat__tool-action-preview-row"
+                >
+                  <th scope="row" class="sapling-ai-chat__tool-action-preview-label">
+                    {{ row.label }}
+                  </th>
+                  <td class="sapling-ai-chat__tool-action-preview-value">{{ row.value }}</td>
+                </tr>
+              </tbody>
+            </table>
             <v-expansion-panels
               v-if="activeToolActionDetails"
               class="sapling-ai-chat__tool-action-technical-panel"
@@ -216,6 +187,31 @@ function isToolActionSubmitting(action: AiChatToolActionItem) {
 function getToolActionStatusLabel(action: AiChatToolActionItem) {
   const key = `aiChat.toolActionStatus.${action.status}`
   return te(key) ? t(key) : ''
+}
+
+function getToolActionStatusIcon(action: AiChatToolActionItem) {
+  const icons: Record<string, string> = {
+    pending: 'mdi-clock-outline',
+    executed: 'mdi-check-circle-outline',
+    rejected: 'mdi-close-circle-outline',
+    failed: 'mdi-alert-circle-outline',
+    expired: 'mdi-timer-off-outline',
+  }
+  return icons[action.status] ?? 'mdi-circle-outline'
+}
+
+function getToolActionLine(action: AiChatToolActionItem) {
+  const data = asRecord(asRecord(action.arguments)?.data)
+  const recordTitle = [data?.title, data?.name, data?.subject].find(
+    (value) => typeof value === 'string' && value.trim(),
+  )
+  return (
+    recordTitle
+      ? [recordTitle, getToolActionTitle(action)]
+      : [getToolActionTitle(action), getToolActionSummary(action)]
+  )
+    .filter(Boolean)
+    .join(' · ')
 }
 
 function getToolActionTitle(action: AiChatToolActionItem) {
@@ -354,7 +350,7 @@ function getToolActionPreviewRows(action: AiChatToolActionItem): ToolActionPrevi
     }
   }
 
-  return rows.slice(0, 24)
+  return rows
 }
 
 function getToolActionFieldLabel(entityHandle: string | null, fieldName: string) {

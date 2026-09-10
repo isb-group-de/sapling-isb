@@ -407,7 +407,7 @@ function handleCardClick() {
 
   emit('activate-row', props.index)
 
-  if (!props.multiSelect) {
+  if (!props.multiSelect || props.allowRowDoubleClick === false) {
     emit('select-row', props.index)
   }
 }

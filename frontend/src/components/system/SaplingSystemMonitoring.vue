@@ -22,7 +22,8 @@
     />
 
     <div class="monitoring-console__content">
-      <v-window v-model="tab" class="monitoring-window">
+      <SaplingSystemSkeleton v-if="areaLoading" :area="tab" content-only />
+      <v-window v-else v-model="tab" class="monitoring-window">
         <SaplingMonitoringOverviewTab
           :summary="summary"
           :loading="loading"
@@ -211,7 +212,7 @@
       </SaplingDialogCard>
     </SaplingDialog>
 
-    <SaplingDialog v-model="incidentOpen" size="lg" @after-leave="closeIncident">
+    <SaplingDialog v-model="incidentOpen" size="lg">
       <SaplingDialogCard
         v-if="selectedIncident"
         class="sapling-dialog-compact-card monitoring-incident-dialog"
@@ -302,7 +303,7 @@
 
 <script setup lang="ts">
 import SaplingDataTable from '@/components/table/SaplingDataTable.vue'
-import { computed, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useMonitoringFormatters } from './useMonitoringFormatters'
@@ -311,6 +312,7 @@ import SaplingMonitoringUsageTab from './SaplingMonitoringUsageTab.vue'
 import SaplingMonitoringHeader from './SaplingMonitoringHeader.vue'
 import SaplingMonitoringIncidentsTab from './SaplingMonitoringIncidentsTab.vue'
 import SaplingMonitoringOverviewTab from './SaplingMonitoringOverviewTab.vue'
+import SaplingSystemSkeleton from './SaplingSystemSkeleton.vue'
 import SaplingDialog from '@/components/common/SaplingDialog.vue'
 import SaplingSwitch from '@/components/common/SaplingSwitch.vue'
 import SaplingDialogHero from '@/components/common/SaplingDialogHero.vue'
@@ -350,13 +352,16 @@ const router = useRouter()
 const { t, locale } = useI18n()
 const { number, bytes, compactNumber, percent, dateTime } = useMonitoringFormatters()
 const validAreas = new Set(['overview', 'incidents', 'services', 'performance', 'usage'])
-const initialArea =
-  typeof route.query.area === 'string' && validAreas.has(route.query.area)
-    ? route.query.area
-    : 'overview'
-const tab = ref(initialArea)
+const tab = computed({
+  get: () =>
+    typeof route.query.area === 'string' && validAreas.has(route.query.area)
+      ? route.query.area
+      : 'overview',
+  set: (area: string) => {
+    void router.replace({ query: { ...route.query, area } })
+  },
+})
 const rulesOpen = ref(false)
-const incidentOpen = ref(typeof route.query.incident === 'string')
 const remediationPending = ref(false)
 
 const {
@@ -378,6 +383,7 @@ const {
   checks,
   remediations,
   loading,
+  areaLoading,
   loadAll,
   updateRule,
   executeRemediation,
@@ -403,6 +409,13 @@ const selectedIncident = computed(() => {
   return Number.isSafeInteger(handle)
     ? (incidents.value.find((incident) => incident.handle === handle) ?? null)
     : null
+})
+const incidentOpen = computed({
+  // Never show an empty modal while a deep-linked incident is still loading.
+  get: () => selectedIncident.value !== null,
+  set: (open: boolean) => {
+    if (!open) closeIncident()
+  },
 })
 const serviceCards = computed(() => services.value)
 const healthyServiceCount = computed(
@@ -490,10 +503,6 @@ const incidentDiagnosis = computed(() => {
   ]
 })
 
-watch(tab, (area) => {
-  void router.replace({ query: { ...route.query, area } })
-})
-
 function metricPoints(keys: string[]) {
   return series.value.filter((point) => keys.includes(point.metricKey))
 }
@@ -544,8 +553,7 @@ function refreshWorkspace(): void {
 }
 
 function openIncident(handle: number): void {
-  tab.value = 'incidents'
-  incidentOpen.value = true
+  // Commit the area and selection together; competing replacements lose the handle.
   void router.replace({ query: { ...route.query, area: 'incidents', incident: String(handle) } })
 }
 

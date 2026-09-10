@@ -6,6 +6,7 @@ import {
 import { EntityManager } from '@mikro-orm/core';
 import { SYSTEM_TELEMETRY_ENABLED } from '../../../constants/project.constants';
 import { SystemTelemetryEnvironmentService } from './system-telemetry-environment.service';
+import { AI_USAGE_BACKFILL_SQL } from './ai-usage-backfill.sql';
 
 export type AiUsageTelemetryInput = {
   sourceKey: string;
@@ -82,34 +83,9 @@ export class AiUsageTelemetryService
     try {
       const em = this.em.fork();
       await this.environment.ensure(em);
-      await em.getConnection().execute(
-        `insert into "ai_usage_event_item" (
-          "environment_handle", "source_key", "person_handle", "operation", "execution_type",
-          "provider", "model", "status", "duration_ms", "input_tokens",
-          "output_tokens", "total_tokens", "usage_reported", "occurred_at", "created_at"
-        )
-        select ?, 'agentRun:' || run."handle", run."person_handle", coalesce(run."purpose", 'agent'),
-          case when run."session_handle" is null then 'background' else 'interactive' end,
-          coalesce(run."provider", run."usage_payload"->>'provider'),
-          coalesce(run."model", run."usage_payload"->>'model'), run."status",
-          run."duration_ms",
-          nullif(run."usage_payload"->>'inputTokens', '')::int,
-          nullif(run."usage_payload"->>'outputTokens', '')::int,
-          nullif(run."usage_payload"->>'totalTokens', '')::int,
-          run."usage_payload" is not null and (
-            jsonb_exists(run."usage_payload", 'inputTokens')
-            or jsonb_exists(run."usage_payload", 'outputTokens')
-            or jsonb_exists(run."usage_payload", 'totalTokens')
-          ),
-          coalesce(run."completed_at", run."started_at", run."created_at"), now()
-        from "ai_agent_run_item" run
-        where coalesce(run."completed_at", run."started_at", run."created_at") >= now() - interval '90 days'
-        on conflict ("source_key") do update set
-          "status" = excluded."status", "duration_ms" = excluded."duration_ms",
-          "input_tokens" = excluded."input_tokens", "output_tokens" = excluded."output_tokens",
-          "total_tokens" = excluded."total_tokens", "usage_reported" = excluded."usage_reported"`,
-        [this.environment.currentId],
-      );
+      await em
+        .getConnection()
+        .execute(AI_USAGE_BACKFILL_SQL, [this.environment.currentId]);
     } catch (error) {
       global.log?.error?.('AI usage telemetry backfill failed', error);
     }

@@ -11,7 +11,7 @@
         <v-btn variant="text" @click="loadSystem">{{ $t('global.refresh') }}</v-btn>
       </template>
     </v-alert>
-    <SaplingSystemSkeleton v-else />
+    <SaplingSystemSkeleton v-else :area="String($route.query.area || 'overview')" />
   </v-container>
 </template>
 

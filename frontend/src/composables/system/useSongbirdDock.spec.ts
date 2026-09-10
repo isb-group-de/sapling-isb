@@ -30,7 +30,7 @@ describe('Songbird docking', () => {
     window.dispatchEvent(new Event('resize'))
     expect(dock.fullscreen.value).toBe(true)
     dock.setWidth(1000)
-    expect(dock.width.value).toBe(640)
+    expect(dock.width.value).toBe(715)
     dock.setWidth(100)
     expect(dock.width.value).toBe(360)
     expect(localStorage.getItem('songbird-panel-width:42')).toBe('360')

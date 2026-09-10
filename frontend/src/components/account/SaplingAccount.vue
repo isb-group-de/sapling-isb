@@ -522,12 +522,18 @@ const {
 } = useSaplingAccount()
 
 watch(
-  [() => props.initialTab, accountTabs],
-  ([tab, tabs]) => {
-    activeAccountTab.value = tabs.some((item) => item.key === tab) ? tab : 'profile'
+  () => props.initialTab,
+  (tab) => {
+    activeAccountTab.value = accountTabs.value.some((item) => item.key === tab) ? tab : 'profile'
   },
   { immediate: true },
 )
+
+watch(accountTabs, (tabs) => {
+  if (!tabs.some((item) => item.key === activeAccountTab.value)) {
+    activeAccountTab.value = 'profile'
+  }
+})
 
 const accountTitle = computed(() => {
   const person = currentPersonStore.person

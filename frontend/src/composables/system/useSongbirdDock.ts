@@ -14,7 +14,7 @@ export function useSongbirdDock() {
   const docked = computed(() => active.value && !fullscreen.value)
   const showSessionSidebar = computed(() => fullscreen.value && viewport.value >= 1200)
   function setWidth(value: number) {
-    width.value = Math.round(Math.min(640, Math.max(360, value)))
+    width.value = Math.round(Math.min(715, Math.max(360, value)))
     try {
       localStorage.setItem(storageKey.value, String(width.value))
     } catch {
@@ -31,7 +31,7 @@ export function useSongbirdDock() {
     (key) => {
       try {
         const stored = Number(localStorage.getItem(key))
-        width.value = stored >= 360 && stored <= 640 ? stored : 420
+        width.value = stored >= 360 && stored <= 715 ? stored : 420
       } catch {
         width.value = 420
       }
