@@ -23131,15 +23131,13 @@
           "unique": false
         },
         {
-          "columnNames": [
-            "normalized_value"
-          ],
+          "columnNames": [],
           "composite": false,
           "constraint": false,
           "keyName": "global_search_index_item_value_trgm_idx",
           "primary": false,
           "unique": false,
-          "type": "gin"
+          "expression": "create index \"global_search_index_item_value_trgm_idx\" on \"global_search_index_item\" using gin (\"normalized_value\" gin_trgm_ops)"
         }
       ],
       "checks": [],

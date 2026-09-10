@@ -19,8 +19,7 @@ frontend/src/composables/dialog/useSaplingDialogMailEditor.ts
 Seed files:
 
 ```text
-backend/src/database/seeder/json-production/documentType/
-backend/src/database/seeder/json-demonstration/documentType/
+backend/src/database/seeder/json-default/documentType/
 ```
 
 ## Data Model
@@ -76,7 +75,7 @@ local `DocumentItem` records with `entity = person`, `reference = String(person.
 and `type = profilePicture`. `person` still records the uploader; selection uses
 the target reference, not the uploader. No person column or schema migration is
 needed. Production and demonstration seeders add the type in
-`documentTypeData_002.json` and the German/English labels in `translationData_080.json`.
+`documentTypeData_0001_insert.json` and the German/English labels in `translationData_0001_insert.json`.
 Run the normal seed update and restart the backend when deploying this feature.
 
 Authenticated self-service endpoints under `/api/current/profile-pictures`:
@@ -210,7 +209,7 @@ Other `image/*` MIME types (including GIF, WebP, AVIF and BMP) use the same view
 common image filename extensions repair missing/generic MIME metadata. Actual
 decoding support depends on the browser; unsupported or corrupt images show the
 unavailable-preview state. Animation is preserved and preview zoom never modifies
-the stored file. New UI labels are supplied by `translationData_087.json` in both
+the stored file. New UI labels are supplied by `translationData_0001_insert.json` in both
 seed datasets and require the normal seed update.
 
 SVG (`image/svg+xml`) and ICO (`image/x-icon` or `image/vnd.microsoft.icon`) are
@@ -266,7 +265,7 @@ This means attachment handles are metadata references; the actual binary file mu
 
 When adding a new document type:
 
-1. Add `documentTypeData_XXX.json` seed files in production and demonstration if needed.
+1. Add a `documentTypeData_NNNN_insert.json` seed in `json-default`, with environment differences only when needed.
 2. Add translations for the document type.
 3. Confirm permissions for `document` and `documentType`.
 4. Verify upload, preview, download, and mail attachment selection.

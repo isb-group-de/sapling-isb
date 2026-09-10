@@ -1,0 +1,172 @@
+[
+  {
+    "handle": 1,
+    "title": "IXIS Organisationen",
+    "description": null,
+    "source": "ixis",
+    "targetEntity": "company",
+    "isActive": true,
+    "mapping": {
+      "mappings": [
+        {
+          "targetField": "name",
+          "sourceColumn": "Matchcode"
+        },
+        {
+          "targetField": "street",
+          "sourceColumn": "Strasse"
+        },
+        {
+          "targetField": "zip",
+          "sourceColumn": "PLZ"
+        },
+        {
+          "targetField": "city",
+          "sourceColumn": "Stadt"
+        },
+        {
+          "targetField": "phone",
+          "sourceColumn": "Telefon"
+        },
+        {
+          "targetField": "mobile",
+          "sourceColumn": "Mobiltelefon"
+        },
+        {
+          "targetField": "email",
+          "sourceColumn": "Email"
+        },
+        {
+          "targetField": "website",
+          "sourceColumn": "Homepage"
+        },
+        {
+          "targetField": "isActive",
+          "sourceColumn": "Aktiv"
+        },
+        {
+          "targetField": "allowNewsletter",
+          "sourceColumn": "MarketingInaktiv"
+        },
+        {
+          "targetField": "dataPrivacyConsentGiven",
+          "sourceColumn": "MarketingInaktiv"
+        },
+        {
+          "targetField": "country",
+          "sourceColumn": "Land"
+        }
+      ],
+      "fieldDefaults": [
+        {
+          "value": "",
+          "targetField": "street"
+        }
+      ],
+      "relationMappings": []
+    },
+    "externalKeyColumns": ["iXISAdresse"],
+    "genericReferenceMapping": null,
+    "createdAt": "2026-09-10T10:49:36.221+00:00",
+    "updatedAt": "2026-09-10T10:49:36.221+00:00"
+  },
+  {
+    "handle": 2,
+    "title": "IXIS Kontakte",
+    "description": null,
+    "source": "ixis",
+    "targetEntity": "person",
+    "isActive": true,
+    "mapping": {
+      "mappings": [
+        {
+          "targetField": "firstName",
+          "sourceColumn": "Vorname"
+        },
+        {
+          "targetField": "lastName",
+          "sourceColumn": "Nachname"
+        },
+        {
+          "targetField": "phone",
+          "sourceColumn": "Telefon"
+        },
+        {
+          "targetField": "mobile",
+          "sourceColumn": "Mobiltelefon"
+        },
+        {
+          "targetField": "email",
+          "sourceColumn": "EMail"
+        },
+        {
+          "targetField": "isActive",
+          "sourceColumn": "Aktiv"
+        },
+        {
+          "targetField": "sendNewsletter",
+          "sourceColumn": "MarketingInaktiv"
+        },
+        {
+          "targetField": "salutation",
+          "sourceColumn": "Geschlecht"
+        },
+        {
+          "targetField": "title",
+          "sourceColumn": "Titel"
+        },
+        {
+          "targetField": "jobFunction",
+          "sourceColumn": "Position"
+        },
+        {
+          "targetField": "department",
+          "sourceColumn": "Abteilung"
+        }
+      ],
+      "fieldDefaults": [
+        {
+          "value": "",
+          "targetField": "firstName"
+        },
+        {
+          "value": "false",
+          "targetField": "requirePasswordChange"
+        },
+        {
+          "value": true,
+          "targetField": "isActive"
+        },
+        {
+          "value": true,
+          "targetField": "sendNewsletter"
+        },
+        {
+          "value": "#4CAF50",
+          "targetField": "color"
+        },
+        {
+          "value": "sapling",
+          "targetField": "type"
+        },
+        {
+          "value": "de",
+          "targetField": "language"
+        }
+      ],
+      "relationMappings": [
+        {
+          "mode": "externalKey",
+          "targetField": "company",
+          "sourceColumn": "iXISFirma",
+          "sourceHandle": "ixis",
+          "sourceColumns": ["iXISFirma"]
+        }
+      ]
+    },
+    "externalKeyColumns": ["iXISKontakt"],
+    "genericReferenceMapping": null,
+    "createdAt": "2026-09-10T10:49:36.221+00:00",
+    "updatedAt": "2026-09-10T10:49:36.221+00:00"
+  }
+]

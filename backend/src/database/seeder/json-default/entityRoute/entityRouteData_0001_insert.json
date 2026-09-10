@@ -1,0 +1,2045 @@
+[
+  {
+    "handle": 1,
+    "route": "table/company",
+    "navigation": null,
+    "entity": "company",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.626+00:00",
+    "updatedAt": "2026-09-10T10:49:34.626+00:00"
+  },
+  {
+    "handle": 2,
+    "route": "table/address",
+    "navigation": null,
+    "entity": "address",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.628+00:00",
+    "updatedAt": "2026-09-10T10:49:34.628+00:00"
+  },
+  {
+    "handle": 3,
+    "route": "table/addressType",
+    "navigation": null,
+    "entity": "addressType",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.629+00:00",
+    "updatedAt": "2026-09-10T10:49:34.629+00:00"
+  },
+  {
+    "handle": 4,
+    "route": "table/companyRelationship",
+    "navigation": null,
+    "entity": "companyRelationship",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.63+00:00",
+    "updatedAt": "2026-09-10T10:49:34.63+00:00"
+  },
+  {
+    "handle": 5,
+    "route": "table/companyRelationshipType",
+    "navigation": null,
+    "entity": "companyRelationshipType",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.631+00:00",
+    "updatedAt": "2026-09-10T10:49:34.631+00:00"
+  },
+  {
+    "handle": 6,
+    "route": "table/person",
+    "navigation": null,
+    "entity": "person",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.632+00:00",
+    "updatedAt": "2026-09-10T10:49:34.632+00:00"
+  },
+  {
+    "handle": 7,
+    "route": "table/socialMedia",
+    "navigation": null,
+    "entity": "socialMedia",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.633+00:00",
+    "updatedAt": "2026-09-10T10:49:34.633+00:00"
+  },
+  {
+    "handle": 8,
+    "route": "table/socialMediaType",
+    "navigation": null,
+    "entity": "socialMediaType",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.634+00:00",
+    "updatedAt": "2026-09-10T10:49:34.634+00:00"
+  },
+  {
+    "handle": 9,
+    "route": "table/contract",
+    "navigation": null,
+    "entity": "contract",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.634+00:00",
+    "updatedAt": "2026-09-10T10:49:34.634+00:00"
+  },
+  {
+    "handle": 10,
+    "route": "table/contractService",
+    "navigation": null,
+    "entity": "contractService",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.635+00:00",
+    "updatedAt": "2026-09-10T10:49:34.635+00:00"
+  },
+  {
+    "handle": 11,
+    "route": "table/serverLandscape",
+    "navigation": null,
+    "entity": "serverLandscape",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.637+00:00",
+    "updatedAt": "2026-09-10T10:49:34.637+00:00"
+  },
+  {
+    "handle": 12,
+    "route": "table/serverLandscapeType",
+    "navigation": null,
+    "entity": "serverLandscapeType",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.638+00:00",
+    "updatedAt": "2026-09-10T10:49:34.638+00:00"
+  },
+  {
+    "handle": 13,
+    "route": "table/serverLandscapeTypeUsage",
+    "navigation": null,
+    "entity": "serverLandscapeTypeUsage",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.639+00:00",
+    "updatedAt": "2026-09-10T10:49:34.639+00:00"
+  },
+  {
+    "handle": 14,
+    "route": "table/product",
+    "navigation": null,
+    "entity": "product",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.64+00:00",
+    "updatedAt": "2026-09-10T10:49:34.64+00:00"
+  },
+  {
+    "handle": 15,
+    "route": "table/workHour",
+    "navigation": null,
+    "entity": "workHour",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.641+00:00",
+    "updatedAt": "2026-09-10T10:49:34.641+00:00"
+  },
+  {
+    "handle": 16,
+    "route": "table/workHourWeek",
+    "navigation": null,
+    "entity": "workHourWeek",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.642+00:00",
+    "updatedAt": "2026-09-10T10:49:34.642+00:00"
+  },
+  {
+    "handle": 17,
+    "route": "partner/phoneCall",
+    "navigation": null,
+    "entity": "phoneCall",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.643+00:00",
+    "updatedAt": "2026-09-10T10:49:34.643+00:00"
+  },
+  {
+    "handle": 18,
+    "route": "event",
+    "navigation": "calendar",
+    "entity": "event",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.643+00:00",
+    "updatedAt": "2026-09-10T10:49:34.643+00:00"
+  },
+  {
+    "handle": 19,
+    "route": "partner/event",
+    "navigation": null,
+    "entity": "event",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.644+00:00",
+    "updatedAt": "2026-09-10T10:49:34.644+00:00"
+  },
+  {
+    "handle": 20,
+    "route": "table/holidayGroup",
+    "navigation": null,
+    "entity": "holidayGroup",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.645+00:00",
+    "updatedAt": "2026-09-10T10:49:34.645+00:00"
+  },
+  {
+    "handle": 21,
+    "route": "table/holiday",
+    "navigation": null,
+    "entity": "holiday",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.646+00:00",
+    "updatedAt": "2026-09-10T10:49:34.646+00:00"
+  },
+  {
+    "handle": 22,
+    "route": "table/eventStatus",
+    "navigation": null,
+    "entity": "eventStatus",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.647+00:00",
+    "updatedAt": "2026-09-10T10:49:34.647+00:00"
+  },
+  {
+    "handle": 23,
+    "route": "table/eventType",
+    "navigation": null,
+    "entity": "eventType",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.648+00:00",
+    "updatedAt": "2026-09-10T10:49:34.648+00:00"
+  },
+  {
+    "handle": 24,
+    "route": "table/eventDelivery",
+    "navigation": null,
+    "entity": "eventDelivery",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.649+00:00",
+    "updatedAt": "2026-09-10T10:49:34.649+00:00"
+  },
+  {
+    "handle": 25,
+    "route": "table/eventDeliveryStatus",
+    "navigation": null,
+    "entity": "eventDeliveryStatus",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.65+00:00",
+    "updatedAt": "2026-09-10T10:49:34.65+00:00"
+  },
+  {
+    "handle": 26,
+    "route": "partner/ticket",
+    "navigation": null,
+    "entity": "ticket",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.651+00:00",
+    "updatedAt": "2026-09-10T10:49:34.651+00:00"
+  },
+  {
+    "handle": 27,
+    "route": "partner/ticketTimeTracking",
+    "navigation": null,
+    "entity": "ticketTimeTracking",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.653+00:00",
+    "updatedAt": "2026-09-10T10:49:34.653+00:00"
+  },
+  {
+    "handle": 28,
+    "route": "table/ticketPriority",
+    "navigation": null,
+    "entity": "ticketPriority",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.654+00:00",
+    "updatedAt": "2026-09-10T10:49:34.654+00:00"
+  },
+  {
+    "handle": 29,
+    "route": "table/ticketStatus",
+    "navigation": null,
+    "entity": "ticketStatus",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.656+00:00",
+    "updatedAt": "2026-09-10T10:49:34.656+00:00"
+  },
+  {
+    "handle": 30,
+    "route": "table/ticketType",
+    "navigation": null,
+    "entity": "ticketType",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.657+00:00",
+    "updatedAt": "2026-09-10T10:49:34.657+00:00"
+  },
+  {
+    "handle": 31,
+    "route": "table/ticketCategory",
+    "navigation": null,
+    "entity": "ticketCategory",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.658+00:00",
+    "updatedAt": "2026-09-10T10:49:34.658+00:00"
+  },
+  {
+    "handle": 32,
+    "route": "table/ticketSource",
+    "navigation": null,
+    "entity": "ticketSource",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.659+00:00",
+    "updatedAt": "2026-09-10T10:49:34.659+00:00"
+  },
+  {
+    "handle": 33,
+    "route": "table/supportTeam",
+    "navigation": null,
+    "entity": "supportTeam",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.661+00:00",
+    "updatedAt": "2026-09-10T10:49:34.661+00:00"
+  },
+  {
+    "handle": 34,
+    "route": "table/supportQueue",
+    "navigation": null,
+    "entity": "supportQueue",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.662+00:00",
+    "updatedAt": "2026-09-10T10:49:34.662+00:00"
+  },
+  {
+    "handle": 35,
+    "route": "table/slaPolicy",
+    "navigation": null,
+    "entity": "slaPolicy",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.663+00:00",
+    "updatedAt": "2026-09-10T10:49:34.663+00:00"
+  },
+  {
+    "handle": 36,
+    "route": "note",
+    "navigation": null,
+    "entity": "note",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.664+00:00",
+    "updatedAt": "2026-09-10T10:49:34.664+00:00"
+  },
+  {
+    "handle": 37,
+    "route": "table/noteGroup",
+    "navigation": null,
+    "entity": "noteGroup",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.665+00:00",
+    "updatedAt": "2026-09-10T10:49:34.665+00:00"
+  },
+  {
+    "handle": 38,
+    "route": "table/language",
+    "navigation": null,
+    "entity": "language",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.667+00:00",
+    "updatedAt": "2026-09-10T10:49:34.667+00:00"
+  },
+  {
+    "handle": 39,
+    "route": "table/country",
+    "navigation": null,
+    "entity": "country",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.668+00:00",
+    "updatedAt": "2026-09-10T10:49:34.668+00:00"
+  },
+  {
+    "handle": 40,
+    "route": "table/money",
+    "navigation": null,
+    "entity": "money",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.669+00:00",
+    "updatedAt": "2026-09-10T10:49:34.669+00:00"
+  },
+  {
+    "handle": 41,
+    "route": "table/translation",
+    "navigation": null,
+    "entity": "translation",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.67+00:00",
+    "updatedAt": "2026-09-10T10:49:34.67+00:00"
+  },
+  {
+    "handle": 42,
+    "route": "table/role",
+    "navigation": null,
+    "entity": "role",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.672+00:00",
+    "updatedAt": "2026-09-10T10:49:34.672+00:00"
+  },
+  {
+    "handle": 43,
+    "route": "permission",
+    "navigation": "right",
+    "entity": "permission",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.673+00:00",
+    "updatedAt": "2026-09-10T10:49:34.673+00:00"
+  },
+  {
+    "handle": 44,
+    "route": "table/permission",
+    "navigation": null,
+    "entity": "permission",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.674+00:00",
+    "updatedAt": "2026-09-10T10:49:34.674+00:00"
+  },
+  {
+    "handle": 45,
+    "route": "table/entity",
+    "navigation": null,
+    "entity": "entity",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.675+00:00",
+    "updatedAt": "2026-09-10T10:49:34.675+00:00"
+  },
+  {
+    "handle": 46,
+    "route": "table/entityRoute",
+    "navigation": null,
+    "entity": "entityRoute",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.677+00:00",
+    "updatedAt": "2026-09-10T10:49:34.677+00:00"
+  },
+  {
+    "handle": 47,
+    "route": "table/entityGroup",
+    "navigation": null,
+    "entity": "entityGroup",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.678+00:00",
+    "updatedAt": "2026-09-10T10:49:34.678+00:00"
+  },
+  {
+    "handle": 48,
+    "route": "partner/dashboard",
+    "navigation": null,
+    "entity": "dashboard",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.679+00:00",
+    "updatedAt": "2026-09-10T10:49:34.679+00:00"
+  },
+  {
+    "handle": 49,
+    "route": "table/dashboardTemplate",
+    "navigation": null,
+    "entity": "dashboardTemplate",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.681+00:00",
+    "updatedAt": "2026-09-10T10:49:34.681+00:00"
+  },
+  {
+    "handle": 50,
+    "route": "partner/favorite",
+    "navigation": null,
+    "entity": "favorite",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.682+00:00",
+    "updatedAt": "2026-09-10T10:49:34.682+00:00"
+  },
+  {
+    "handle": 51,
+    "route": "table/favoriteTemplate",
+    "navigation": null,
+    "entity": "favoriteTemplate",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.683+00:00",
+    "updatedAt": "2026-09-10T10:49:34.683+00:00"
+  },
+  {
+    "handle": 52,
+    "route": "table/webhookSubscription",
+    "navigation": null,
+    "entity": "webhookSubscription",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.685+00:00",
+    "updatedAt": "2026-09-10T10:49:34.685+00:00"
+  },
+  {
+    "handle": 53,
+    "route": "table/webhookSubscriptionType",
+    "navigation": null,
+    "entity": "webhookSubscriptionType",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.686+00:00",
+    "updatedAt": "2026-09-10T10:49:34.686+00:00"
+  },
+  {
+    "handle": 54,
+    "route": "table/webhookSubscriptionPayloadType",
+    "navigation": null,
+    "entity": "webhookSubscriptionPayloadType",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.688+00:00",
+    "updatedAt": "2026-09-10T10:49:34.688+00:00"
+  },
+  {
+    "handle": 55,
+    "route": "table/webhookSubscriptionMethod",
+    "navigation": null,
+    "entity": "webhookSubscriptionMethod",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.69+00:00",
+    "updatedAt": "2026-09-10T10:49:34.69+00:00"
+  },
+  {
+    "handle": 56,
+    "route": "table/webhookAuthenticationType",
+    "navigation": null,
+    "entity": "webhookAuthenticationType",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.691+00:00",
+    "updatedAt": "2026-09-10T10:49:34.691+00:00"
+  },
+  {
+    "handle": 57,
+    "route": "table/personApiToken",
+    "navigation": null,
+    "entity": "personApiToken",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.693+00:00",
+    "updatedAt": "2026-09-10T10:49:34.693+00:00"
+  },
+  {
+    "handle": 58,
+    "route": "table/webhookAuthenticationBasic",
+    "navigation": null,
+    "entity": "webhookAuthenticationBasic",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.695+00:00",
+    "updatedAt": "2026-09-10T10:49:34.695+00:00"
+  },
+  {
+    "handle": 59,
+    "route": "table/webhookAuthenticationApiKey",
+    "navigation": null,
+    "entity": "webhookAuthenticationApiKey",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.696+00:00",
+    "updatedAt": "2026-09-10T10:49:34.696+00:00"
+  },
+  {
+    "handle": 60,
+    "route": "table/webhookAuthenticationOAuth2",
+    "navigation": null,
+    "entity": "webhookAuthenticationOAuth2",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.698+00:00",
+    "updatedAt": "2026-09-10T10:49:34.698+00:00"
+  },
+  {
+    "handle": 61,
+    "route": "table/webhookDelivery",
+    "navigation": null,
+    "entity": "webhookDelivery",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.699+00:00",
+    "updatedAt": "2026-09-10T10:49:34.699+00:00"
+  },
+  {
+    "handle": 62,
+    "route": "table/webhookDeliveryStatus",
+    "navigation": null,
+    "entity": "webhookDeliveryStatus",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.701+00:00",
+    "updatedAt": "2026-09-10T10:49:34.701+00:00"
+  },
+  {
+    "handle": 63,
+    "route": "partner/salesOpportunity",
+    "navigation": null,
+    "entity": "salesOpportunity",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.702+00:00",
+    "updatedAt": "2026-09-10T10:49:34.702+00:00"
+  },
+  {
+    "handle": 64,
+    "route": "table/salesOpportunityStage",
+    "navigation": null,
+    "entity": "salesOpportunityStage",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.704+00:00",
+    "updatedAt": "2026-09-10T10:49:34.704+00:00"
+  },
+  {
+    "handle": 65,
+    "route": "table/salesOpportunityForecast",
+    "navigation": null,
+    "entity": "salesOpportunityForecast",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.706+00:00",
+    "updatedAt": "2026-09-10T10:49:34.706+00:00"
+  },
+  {
+    "handle": 66,
+    "route": "table/salesOpportunitySource",
+    "navigation": null,
+    "entity": "salesOpportunitySource",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.707+00:00",
+    "updatedAt": "2026-09-10T10:49:34.707+00:00"
+  },
+  {
+    "handle": 67,
+    "route": "table/kpi",
+    "navigation": null,
+    "entity": "kpi",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.709+00:00",
+    "updatedAt": "2026-09-10T10:49:34.709+00:00"
+  },
+  {
+    "handle": 68,
+    "route": "table/kpiType",
+    "navigation": null,
+    "entity": "kpiType",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.71+00:00",
+    "updatedAt": "2026-09-10T10:49:34.71+00:00"
+  },
+  {
+    "handle": 69,
+    "route": "table/kpiAggregation",
+    "navigation": null,
+    "entity": "kpiAggregation",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.711+00:00",
+    "updatedAt": "2026-09-10T10:49:34.711+00:00"
+  },
+  {
+    "handle": 70,
+    "route": "table/kpiTimeframe",
+    "navigation": null,
+    "entity": "kpiTimeframe",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.713+00:00",
+    "updatedAt": "2026-09-10T10:49:34.713+00:00"
+  },
+  {
+    "handle": 71,
+    "route": "file/document",
+    "navigation": null,
+    "entity": "document",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.714+00:00",
+    "updatedAt": "2026-09-10T10:49:34.714+00:00"
+  },
+  {
+    "handle": 72,
+    "route": "table/documentType",
+    "navigation": null,
+    "entity": "documentType",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.715+00:00",
+    "updatedAt": "2026-09-10T10:49:34.715+00:00"
+  },
+  {
+    "handle": 73,
+    "route": "table/information",
+    "navigation": null,
+    "entity": "information",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.717+00:00",
+    "updatedAt": "2026-09-10T10:49:34.717+00:00"
+  },
+  {
+    "handle": 74,
+    "route": "table/emailTemplate",
+    "navigation": null,
+    "entity": "emailTemplate",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.718+00:00",
+    "updatedAt": "2026-09-10T10:49:34.718+00:00"
+  },
+  {
+    "handle": 75,
+    "route": "table/emailDelivery",
+    "navigation": null,
+    "entity": "emailDelivery",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.719+00:00",
+    "updatedAt": "2026-09-10T10:49:34.719+00:00"
+  },
+  {
+    "handle": 76,
+    "route": "table/emailDeliveryStatus",
+    "navigation": null,
+    "entity": "emailDeliveryStatus",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.72+00:00",
+    "updatedAt": "2026-09-10T10:49:34.72+00:00"
+  },
+  {
+    "handle": 77,
+    "route": "table/emailList",
+    "navigation": null,
+    "entity": "emailList",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.722+00:00",
+    "updatedAt": "2026-09-10T10:49:34.722+00:00"
+  },
+  {
+    "handle": 78,
+    "route": "table/teamsTemplate",
+    "navigation": null,
+    "entity": "teamsTemplate",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.724+00:00",
+    "updatedAt": "2026-09-10T10:49:34.724+00:00"
+  },
+  {
+    "handle": 79,
+    "route": "table/teamsSubscription",
+    "navigation": null,
+    "entity": "teamsSubscription",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.725+00:00",
+    "updatedAt": "2026-09-10T10:49:34.725+00:00"
+  },
+  {
+    "handle": 80,
+    "route": "table/teamsDelivery",
+    "navigation": null,
+    "entity": "teamsDelivery",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.726+00:00",
+    "updatedAt": "2026-09-10T10:49:34.726+00:00"
+  },
+  {
+    "handle": 81,
+    "route": "table/teamsDeliveryStatus",
+    "navigation": null,
+    "entity": "teamsDeliveryStatus",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.727+00:00",
+    "updatedAt": "2026-09-10T10:49:34.727+00:00"
+  },
+  {
+    "handle": 82,
+    "route": "table/seedScript",
+    "navigation": null,
+    "entity": "seedScript",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.729+00:00",
+    "updatedAt": "2026-09-10T10:49:34.729+00:00"
+  },
+  {
+    "handle": 83,
+    "route": "table/scriptButton",
+    "navigation": null,
+    "entity": "scriptButton",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.73+00:00",
+    "updatedAt": "2026-09-10T10:49:34.73+00:00"
+  },
+  {
+    "handle": 84,
+    "route": "table/roleStage",
+    "navigation": null,
+    "entity": "roleStage",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.731+00:00",
+    "updatedAt": "2026-09-10T10:49:34.731+00:00"
+  },
+  {
+    "handle": 85,
+    "route": "table/personDepartment",
+    "navigation": null,
+    "entity": "personDepartment",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.733+00:00",
+    "updatedAt": "2026-09-10T10:49:34.733+00:00"
+  },
+  {
+    "handle": 86,
+    "route": "table/personType",
+    "navigation": null,
+    "entity": "personType",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.734+00:00",
+    "updatedAt": "2026-09-10T10:49:34.734+00:00"
+  },
+  {
+    "handle": 87,
+    "route": "table/personSession",
+    "navigation": null,
+    "entity": "personSession",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.735+00:00",
+    "updatedAt": "2026-09-10T10:49:34.735+00:00"
+  },
+  {
+    "handle": 88,
+    "route": "table/sessionStore",
+    "navigation": null,
+    "entity": "sessionStore",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.737+00:00",
+    "updatedAt": "2026-09-10T10:49:34.737+00:00"
+  },
+  {
+    "handle": 89,
+    "route": "table/aiChatSession",
+    "navigation": null,
+    "entity": "aiChatSession",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.739+00:00",
+    "updatedAt": "2026-09-10T10:49:34.739+00:00"
+  },
+  {
+    "handle": 90,
+    "route": "table/aiChatMessage",
+    "navigation": null,
+    "entity": "aiChatMessage",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.74+00:00",
+    "updatedAt": "2026-09-10T10:49:34.74+00:00"
+  },
+  {
+    "handle": 91,
+    "route": "table/aiProviderType",
+    "navigation": null,
+    "entity": "aiProviderType",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.741+00:00",
+    "updatedAt": "2026-09-10T10:49:34.741+00:00"
+  },
+  {
+    "handle": 92,
+    "route": "table/aiProviderModel",
+    "navigation": null,
+    "entity": "aiProviderModel",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.743+00:00",
+    "updatedAt": "2026-09-10T10:49:34.743+00:00"
+  },
+  {
+    "handle": 93,
+    "route": "table/aiChatTranscription",
+    "navigation": null,
+    "entity": "aiChatTranscription",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.744+00:00",
+    "updatedAt": "2026-09-10T10:49:34.744+00:00"
+  },
+  {
+    "handle": 94,
+    "route": "table/mcpServerConfig",
+    "navigation": null,
+    "entity": "mcpServerConfig",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.745+00:00",
+    "updatedAt": "2026-09-10T10:49:34.745+00:00"
+  },
+  {
+    "handle": 95,
+    "route": "table/changeLog",
+    "navigation": null,
+    "entity": "changeLog",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.747+00:00",
+    "updatedAt": "2026-09-10T10:49:34.747+00:00"
+  },
+  {
+    "handle": 96,
+    "route": "table/changeLogDetail",
+    "navigation": null,
+    "entity": "changeLogDetail",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.749+00:00",
+    "updatedAt": "2026-09-10T10:49:34.749+00:00"
+  },
+  {
+    "handle": 97,
+    "route": "table/changeLogAction",
+    "navigation": null,
+    "entity": "changeLogAction",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.75+00:00",
+    "updatedAt": "2026-09-10T10:49:34.75+00:00"
+  },
+  {
+    "handle": 98,
+    "route": "table/inboxTemplate",
+    "navigation": null,
+    "entity": "inboxTemplate",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.751+00:00",
+    "updatedAt": "2026-09-10T10:49:34.751+00:00"
+  },
+  {
+    "handle": 99,
+    "route": "table/inboxSubscription",
+    "navigation": null,
+    "entity": "inboxSubscription",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.753+00:00",
+    "updatedAt": "2026-09-10T10:49:34.753+00:00"
+  },
+  {
+    "handle": 100,
+    "route": "table/inboxNotification",
+    "navigation": null,
+    "entity": "inboxNotification",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.755+00:00",
+    "updatedAt": "2026-09-10T10:49:34.755+00:00"
+  },
+  {
+    "handle": 101,
+    "route": "table/eventAzure",
+    "navigation": null,
+    "entity": "eventAzure",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.757+00:00",
+    "updatedAt": "2026-09-10T10:49:34.757+00:00"
+  },
+  {
+    "handle": 102,
+    "route": "table/eventGoogle",
+    "navigation": null,
+    "entity": "eventGoogle",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.759+00:00",
+    "updatedAt": "2026-09-10T10:49:34.759+00:00"
+  },
+  {
+    "handle": 103,
+    "route": "form-config",
+    "navigation": "formEditor",
+    "entity": "saplingFormConfig",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.76+00:00",
+    "updatedAt": "2026-09-10T10:49:34.76+00:00"
+  },
+  {
+    "handle": 104,
+    "route": "table/saplingFormConfig",
+    "navigation": null,
+    "entity": "saplingFormConfig",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.762+00:00",
+    "updatedAt": "2026-09-10T10:49:34.762+00:00"
+  },
+  {
+    "handle": 105,
+    "route": "partner/effortEstimate",
+    "navigation": null,
+    "entity": "effortEstimate",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.764+00:00",
+    "updatedAt": "2026-09-10T10:49:34.764+00:00"
+  },
+  {
+    "handle": 106,
+    "route": "table/effortEstimateStatus",
+    "navigation": null,
+    "entity": "effortEstimateStatus",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.765+00:00",
+    "updatedAt": "2026-09-10T10:49:34.765+00:00"
+  },
+  {
+    "handle": 107,
+    "route": "table/effortEstimatePosition",
+    "navigation": null,
+    "entity": "effortEstimatePosition",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.766+00:00",
+    "updatedAt": "2026-09-10T10:49:34.766+00:00"
+  },
+  {
+    "handle": 108,
+    "route": "table/effortEstimatePositionTemplate",
+    "navigation": null,
+    "entity": "effortEstimatePositionTemplate",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.768+00:00",
+    "updatedAt": "2026-09-10T10:49:34.768+00:00"
+  },
+  {
+    "handle": 109,
+    "route": "table/personPasskey",
+    "navigation": null,
+    "entity": "personPasskey",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.769+00:00",
+    "updatedAt": "2026-09-10T10:49:34.769+00:00"
+  },
+  {
+    "handle": 110,
+    "route": "table/knowledgeArticle",
+    "navigation": null,
+    "entity": "knowledgeArticle",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.772+00:00",
+    "updatedAt": "2026-09-10T10:49:34.772+00:00"
+  },
+  {
+    "handle": 111,
+    "route": "table/knowledgeArticleCategory",
+    "navigation": null,
+    "entity": "knowledgeArticleCategory",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.774+00:00",
+    "updatedAt": "2026-09-10T10:49:34.774+00:00"
+  },
+  {
+    "handle": 112,
+    "route": "table/knowledgeArticleStatus",
+    "navigation": null,
+    "entity": "knowledgeArticleStatus",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.775+00:00",
+    "updatedAt": "2026-09-10T10:49:34.775+00:00"
+  },
+  {
+    "handle": 113,
+    "route": "table/knowledgeArticleVisibility",
+    "navigation": null,
+    "entity": "knowledgeArticleVisibility",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.777+00:00",
+    "updatedAt": "2026-09-10T10:49:34.777+00:00"
+  },
+  {
+    "handle": 114,
+    "route": "table/aiEntityGenerationTemplate",
+    "navigation": null,
+    "entity": "aiEntityGenerationTemplate",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.778+00:00",
+    "updatedAt": "2026-09-10T10:49:34.778+00:00"
+  },
+  {
+    "handle": 115,
+    "route": "knowledge",
+    "navigation": "knowledgeBase",
+    "entity": "knowledgeArticle",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.78+00:00",
+    "updatedAt": "2026-09-10T10:49:34.78+00:00"
+  },
+  {
+    "handle": 116,
+    "route": "table/calendarSyncSubscription",
+    "navigation": null,
+    "entity": "calendarSyncSubscription",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.781+00:00",
+    "updatedAt": "2026-09-10T10:49:34.781+00:00"
+  },
+  {
+    "handle": 117,
+    "route": "table/companyIndustry",
+    "navigation": null,
+    "entity": "companyIndustry",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.782+00:00",
+    "updatedAt": "2026-09-10T10:49:34.782+00:00"
+  },
+  {
+    "handle": 118,
+    "route": "table/companySegment",
+    "navigation": null,
+    "entity": "companySegment",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.784+00:00",
+    "updatedAt": "2026-09-10T10:49:34.784+00:00"
+  },
+  {
+    "handle": 119,
+    "route": "table/companySize",
+    "navigation": null,
+    "entity": "companySize",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.785+00:00",
+    "updatedAt": "2026-09-10T10:49:34.785+00:00"
+  },
+  {
+    "handle": 120,
+    "route": "table/companyAnnualRevenueClass",
+    "navigation": null,
+    "entity": "companyAnnualRevenueClass",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.786+00:00",
+    "updatedAt": "2026-09-10T10:49:34.786+00:00"
+  },
+  {
+    "handle": 121,
+    "route": "table/companyChurnRiskReason",
+    "navigation": null,
+    "entity": "companyChurnRiskReason",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.788+00:00",
+    "updatedAt": "2026-09-10T10:49:34.788+00:00"
+  },
+  {
+    "handle": 122,
+    "route": "table/personSalutation",
+    "navigation": null,
+    "entity": "personSalutation",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.79+00:00",
+    "updatedAt": "2026-09-10T10:49:34.79+00:00"
+  },
+  {
+    "handle": 123,
+    "route": "table/personTitle",
+    "navigation": null,
+    "entity": "personTitle",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.792+00:00",
+    "updatedAt": "2026-09-10T10:49:34.792+00:00"
+  },
+  {
+    "handle": 124,
+    "route": "table/personJobTitle",
+    "navigation": null,
+    "entity": "personJobTitle",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.793+00:00",
+    "updatedAt": "2026-09-10T10:49:34.793+00:00"
+  },
+  {
+    "handle": 125,
+    "route": "table/personFunction",
+    "navigation": null,
+    "entity": "personFunction",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.795+00:00",
+    "updatedAt": "2026-09-10T10:49:34.795+00:00"
+  },
+  {
+    "handle": 126,
+    "route": "table/personDecisionRole",
+    "navigation": null,
+    "entity": "personDecisionRole",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.796+00:00",
+    "updatedAt": "2026-09-10T10:49:34.796+00:00"
+  },
+  {
+    "handle": 127,
+    "route": "table/salesOpportunityResultStatus",
+    "navigation": null,
+    "entity": "salesOpportunityResultStatus",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.797+00:00",
+    "updatedAt": "2026-09-10T10:49:34.797+00:00"
+  },
+  {
+    "handle": 128,
+    "route": "table/salesOpportunityLossReason",
+    "navigation": null,
+    "entity": "salesOpportunityLossReason",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.799+00:00",
+    "updatedAt": "2026-09-10T10:49:34.799+00:00"
+  },
+  {
+    "handle": 129,
+    "route": "table/marketingCampaign",
+    "navigation": null,
+    "entity": "marketingCampaign",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.801+00:00",
+    "updatedAt": "2026-09-10T10:49:34.801+00:00"
+  },
+  {
+    "handle": 130,
+    "route": "table/marketingCampaignStatus",
+    "navigation": null,
+    "entity": "marketingCampaignStatus",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.802+00:00",
+    "updatedAt": "2026-09-10T10:49:34.802+00:00"
+  },
+  {
+    "handle": 131,
+    "route": "table/marketingCampaignType",
+    "navigation": null,
+    "entity": "marketingCampaignType",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.804+00:00",
+    "updatedAt": "2026-09-10T10:49:34.804+00:00"
+  },
+  {
+    "handle": 132,
+    "route": "crm-workspace",
+    "navigation": "crmWorkspace",
+    "entity": "salesOpportunity",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.806+00:00",
+    "updatedAt": "2026-09-10T10:49:34.806+00:00"
+  },
+  {
+    "handle": 133,
+    "route": "import",
+    "navigation": "import",
+    "entity": "importBatch",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.807+00:00",
+    "updatedAt": "2026-09-10T10:49:34.807+00:00"
+  },
+  {
+    "handle": 134,
+    "route": "table/importSource",
+    "navigation": null,
+    "entity": "importSource",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.809+00:00",
+    "updatedAt": "2026-09-10T10:49:34.809+00:00"
+  },
+  {
+    "handle": 135,
+    "route": "table/importTemplate",
+    "navigation": null,
+    "entity": "importTemplate",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.811+00:00",
+    "updatedAt": "2026-09-10T10:49:34.811+00:00"
+  },
+  {
+    "handle": 136,
+    "route": "table/importTemplateValueMapping",
+    "navigation": null,
+    "entity": "importTemplateValueMapping",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.812+00:00",
+    "updatedAt": "2026-09-10T10:49:34.812+00:00"
+  },
+  {
+    "handle": 137,
+    "route": "table/importBatch",
+    "navigation": null,
+    "entity": "importBatch",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.814+00:00",
+    "updatedAt": "2026-09-10T10:49:34.814+00:00"
+  },
+  {
+    "handle": 138,
+    "route": "table/importBatchRow",
+    "navigation": null,
+    "entity": "importBatchRow",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.815+00:00",
+    "updatedAt": "2026-09-10T10:49:34.815+00:00"
+  },
+  {
+    "handle": 139,
+    "route": "table/externalRecordLink",
+    "navigation": null,
+    "entity": "externalRecordLink",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.817+00:00",
+    "updatedAt": "2026-09-10T10:49:34.817+00:00"
+  },
+  {
+    "handle": 140,
+    "route": "ai-agents",
+    "navigation": "aiAgents",
+    "entity": "aiAgent",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.818+00:00",
+    "updatedAt": "2026-09-10T10:49:34.818+00:00"
+  },
+  {
+    "handle": 141,
+    "route": "table/aiAgent",
+    "navigation": null,
+    "entity": "aiAgent",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.82+00:00",
+    "updatedAt": "2026-09-10T10:49:34.82+00:00"
+  },
+  {
+    "handle": 142,
+    "route": "table/aiAgentVersion",
+    "navigation": null,
+    "entity": "aiAgentVersion",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.822+00:00",
+    "updatedAt": "2026-09-10T10:49:34.822+00:00"
+  },
+  {
+    "handle": 143,
+    "route": "table/aiAgentPlaybook",
+    "navigation": null,
+    "entity": "aiAgentPlaybook",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.824+00:00",
+    "updatedAt": "2026-09-10T10:49:34.824+00:00"
+  },
+  {
+    "handle": 144,
+    "route": "table/aiAgentMemory",
+    "navigation": null,
+    "entity": "aiAgentMemory",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.826+00:00",
+    "updatedAt": "2026-09-10T10:49:34.826+00:00"
+  },
+  {
+    "handle": 145,
+    "route": "table/aiAgentRun",
+    "navigation": null,
+    "entity": "aiAgentRun",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.827+00:00",
+    "updatedAt": "2026-09-10T10:49:34.827+00:00"
+  },
+  {
+    "handle": 146,
+    "route": "table/aiAgentEvaluation",
+    "navigation": null,
+    "entity": "aiAgentEvaluation",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.829+00:00",
+    "updatedAt": "2026-09-10T10:49:34.829+00:00"
+  },
+  {
+    "handle": 147,
+    "route": "table/aiChatToolAction",
+    "navigation": null,
+    "entity": "aiChatToolAction",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.83+00:00",
+    "updatedAt": "2026-09-10T10:49:34.83+00:00"
+  },
+  {
+    "handle": 148,
+    "route": "table/customFieldDefinition",
+    "navigation": null,
+    "entity": "customFieldDefinition",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.832+00:00",
+    "updatedAt": "2026-09-10T10:49:34.832+00:00"
+  },
+  {
+    "handle": 149,
+    "route": "table/customFieldType",
+    "navigation": null,
+    "entity": "customFieldType",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.833+00:00",
+    "updatedAt": "2026-09-10T10:49:34.833+00:00"
+  },
+  {
+    "handle": 150,
+    "route": "table/customFieldValue",
+    "navigation": null,
+    "entity": "customFieldValue",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.835+00:00",
+    "updatedAt": "2026-09-10T10:49:34.835+00:00"
+  },
+  {
+    "handle": 151,
+    "route": "table/emailSubscription",
+    "navigation": null,
+    "entity": "emailSubscription",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.837+00:00",
+    "updatedAt": "2026-09-10T10:49:34.837+00:00"
+  },
+  {
+    "handle": 152,
+    "route": "partner/internalCase",
+    "navigation": null,
+    "entity": "internalCase",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.839+00:00",
+    "updatedAt": "2026-09-10T10:49:34.839+00:00"
+  },
+  {
+    "handle": 153,
+    "route": "table/internalCaseStatus",
+    "navigation": null,
+    "entity": "internalCaseStatus",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.84+00:00",
+    "updatedAt": "2026-09-10T10:49:34.84+00:00"
+  },
+  {
+    "handle": 154,
+    "route": "table/internalCaseCategory",
+    "navigation": null,
+    "entity": "internalCaseCategory",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.842+00:00",
+    "updatedAt": "2026-09-10T10:49:34.842+00:00"
+  },
+  {
+    "handle": 155,
+    "route": "event",
+    "navigation": "calendar",
+    "entity": "event",
+    "group": "salesCalendar",
+    "createdAt": "2026-09-10T10:49:34.844+00:00",
+    "updatedAt": "2026-09-10T10:49:34.844+00:00"
+  },
+  {
+    "handle": 156,
+    "route": "partner/event",
+    "navigation": null,
+    "entity": "event",
+    "group": "salesCalendar",
+    "createdAt": "2026-09-10T10:49:34.845+00:00",
+    "updatedAt": "2026-09-10T10:49:34.845+00:00"
+  },
+  {
+    "handle": 157,
+    "route": "table/holidayGroup",
+    "navigation": null,
+    "entity": "holidayGroup",
+    "group": "salesCalendar",
+    "createdAt": "2026-09-10T10:49:34.847+00:00",
+    "updatedAt": "2026-09-10T10:49:34.847+00:00"
+  },
+  {
+    "handle": 158,
+    "route": "table/holiday",
+    "navigation": null,
+    "entity": "holiday",
+    "group": "salesCalendar",
+    "createdAt": "2026-09-10T10:49:34.85+00:00",
+    "updatedAt": "2026-09-10T10:49:34.85+00:00"
+  },
+  {
+    "handle": 159,
+    "route": "table/eventStatus",
+    "navigation": null,
+    "entity": "eventStatus",
+    "group": "salesCalendar",
+    "createdAt": "2026-09-10T10:49:34.851+00:00",
+    "updatedAt": "2026-09-10T10:49:34.851+00:00"
+  },
+  {
+    "handle": 160,
+    "route": "table/eventType",
+    "navigation": null,
+    "entity": "eventType",
+    "group": "salesCalendar",
+    "createdAt": "2026-09-10T10:49:34.853+00:00",
+    "updatedAt": "2026-09-10T10:49:34.853+00:00"
+  },
+  {
+    "handle": 161,
+    "route": "table/eventDelivery",
+    "navigation": null,
+    "entity": "eventDelivery",
+    "group": "salesCalendar",
+    "createdAt": "2026-09-10T10:49:34.856+00:00",
+    "updatedAt": "2026-09-10T10:49:34.856+00:00"
+  },
+  {
+    "handle": 162,
+    "route": "table/eventDeliveryStatus",
+    "navigation": null,
+    "entity": "eventDeliveryStatus",
+    "group": "salesCalendar",
+    "createdAt": "2026-09-10T10:49:34.859+00:00",
+    "updatedAt": "2026-09-10T10:49:34.859+00:00"
+  },
+  {
+    "handle": 163,
+    "route": "table/eventAzure",
+    "navigation": null,
+    "entity": "eventAzure",
+    "group": "salesCalendar",
+    "createdAt": "2026-09-10T10:49:34.861+00:00",
+    "updatedAt": "2026-09-10T10:49:34.861+00:00"
+  },
+  {
+    "handle": 164,
+    "route": "table/eventGoogle",
+    "navigation": null,
+    "entity": "eventGoogle",
+    "group": "salesCalendar",
+    "createdAt": "2026-09-10T10:49:34.863+00:00",
+    "updatedAt": "2026-09-10T10:49:34.863+00:00"
+  },
+  {
+    "handle": 165,
+    "route": "table/calendarSyncSubscription",
+    "navigation": null,
+    "entity": "calendarSyncSubscription",
+    "group": "salesCalendar",
+    "createdAt": "2026-09-10T10:49:34.864+00:00",
+    "updatedAt": "2026-09-10T10:49:34.864+00:00"
+  },
+  {
+    "handle": 166,
+    "route": "event",
+    "navigation": "calendar",
+    "entity": "event",
+    "group": "officeCalendar",
+    "createdAt": "2026-09-10T10:49:34.866+00:00",
+    "updatedAt": "2026-09-10T10:49:34.866+00:00"
+  },
+  {
+    "handle": 167,
+    "route": "partner/event",
+    "navigation": null,
+    "entity": "event",
+    "group": "officeCalendar",
+    "createdAt": "2026-09-10T10:49:34.868+00:00",
+    "updatedAt": "2026-09-10T10:49:34.868+00:00"
+  },
+  {
+    "handle": 168,
+    "route": "table/holidayGroup",
+    "navigation": null,
+    "entity": "holidayGroup",
+    "group": "officeCalendar",
+    "createdAt": "2026-09-10T10:49:34.87+00:00",
+    "updatedAt": "2026-09-10T10:49:34.87+00:00"
+  },
+  {
+    "handle": 169,
+    "route": "table/holiday",
+    "navigation": null,
+    "entity": "holiday",
+    "group": "officeCalendar",
+    "createdAt": "2026-09-10T10:49:34.872+00:00",
+    "updatedAt": "2026-09-10T10:49:34.872+00:00"
+  },
+  {
+    "handle": 170,
+    "route": "table/eventStatus",
+    "navigation": null,
+    "entity": "eventStatus",
+    "group": "officeCalendar",
+    "createdAt": "2026-09-10T10:49:34.874+00:00",
+    "updatedAt": "2026-09-10T10:49:34.874+00:00"
+  },
+  {
+    "handle": 171,
+    "route": "table/eventType",
+    "navigation": null,
+    "entity": "eventType",
+    "group": "officeCalendar",
+    "createdAt": "2026-09-10T10:49:34.875+00:00",
+    "updatedAt": "2026-09-10T10:49:34.875+00:00"
+  },
+  {
+    "handle": 172,
+    "route": "table/eventDelivery",
+    "navigation": null,
+    "entity": "eventDelivery",
+    "group": "officeCalendar",
+    "createdAt": "2026-09-10T10:49:34.877+00:00",
+    "updatedAt": "2026-09-10T10:49:34.877+00:00"
+  },
+  {
+    "handle": 173,
+    "route": "table/eventDeliveryStatus",
+    "navigation": null,
+    "entity": "eventDeliveryStatus",
+    "group": "officeCalendar",
+    "createdAt": "2026-09-10T10:49:34.879+00:00",
+    "updatedAt": "2026-09-10T10:49:34.879+00:00"
+  },
+  {
+    "handle": 174,
+    "route": "table/eventAzure",
+    "navigation": null,
+    "entity": "eventAzure",
+    "group": "officeCalendar",
+    "createdAt": "2026-09-10T10:49:34.88+00:00",
+    "updatedAt": "2026-09-10T10:49:34.88+00:00"
+  },
+  {
+    "handle": 175,
+    "route": "table/eventGoogle",
+    "navigation": null,
+    "entity": "eventGoogle",
+    "group": "officeCalendar",
+    "createdAt": "2026-09-10T10:49:34.882+00:00",
+    "updatedAt": "2026-09-10T10:49:34.882+00:00"
+  },
+  {
+    "handle": 176,
+    "route": "table/calendarSyncSubscription",
+    "navigation": null,
+    "entity": "calendarSyncSubscription",
+    "group": "officeCalendar",
+    "createdAt": "2026-09-10T10:49:34.884+00:00",
+    "updatedAt": "2026-09-10T10:49:34.884+00:00"
+  },
+  {
+    "handle": 177,
+    "route": "kanban/salesOpportunity",
+    "navigation": "salesOpportunityKanban",
+    "entity": "salesOpportunity",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.886+00:00",
+    "updatedAt": "2026-09-10T10:49:34.886+00:00"
+  },
+  {
+    "handle": 178,
+    "route": "kanban/ticket",
+    "navigation": "ticketKanban",
+    "entity": "ticket",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.889+00:00",
+    "updatedAt": "2026-09-10T10:49:34.889+00:00"
+  },
+  {
+    "handle": 179,
+    "route": "kanban/internalCase",
+    "navigation": "internalCaseKanban",
+    "entity": "internalCase",
+    "group": "internalCase",
+    "createdAt": "2026-09-10T10:49:34.891+00:00",
+    "updatedAt": "2026-09-10T10:49:34.891+00:00"
+  },
+  {
+    "handle": 180,
+    "route": "dvelop-cloud",
+    "navigation": "dvelopCloudConfiguration",
+    "entity": "dvelopConnection",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.895+00:00",
+    "updatedAt": "2026-09-10T10:49:34.895+00:00"
+  },
+  {
+    "handle": 181,
+    "route": "table/dvelopConnection",
+    "navigation": null,
+    "entity": "dvelopConnection",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.898+00:00",
+    "updatedAt": "2026-09-10T10:49:34.898+00:00"
+  },
+  {
+    "handle": 182,
+    "route": "table/dvelopRepository",
+    "navigation": null,
+    "entity": "dvelopRepository",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.899+00:00",
+    "updatedAt": "2026-09-10T10:49:34.899+00:00"
+  },
+  {
+    "handle": 183,
+    "route": "table/dvelopObjectDefinition",
+    "navigation": null,
+    "entity": "dvelopObjectDefinition",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.901+00:00",
+    "updatedAt": "2026-09-10T10:49:34.901+00:00"
+  },
+  {
+    "handle": 184,
+    "route": "table/dvelopProperty",
+    "navigation": null,
+    "entity": "dvelopProperty",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.903+00:00",
+    "updatedAt": "2026-09-10T10:49:34.903+00:00"
+  },
+  {
+    "handle": 185,
+    "route": "table/dvelopEntityMapping",
+    "navigation": null,
+    "entity": "dvelopEntityMapping",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.905+00:00",
+    "updatedAt": "2026-09-10T10:49:34.905+00:00"
+  },
+  {
+    "handle": 186,
+    "route": "table/dvelopEntityMappingSearchCategory",
+    "navigation": null,
+    "entity": "dvelopEntityMappingSearchCategory",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.907+00:00",
+    "updatedAt": "2026-09-10T10:49:34.907+00:00"
+  },
+  {
+    "handle": 187,
+    "route": "table/dvelopEntityMappingProperty",
+    "navigation": null,
+    "entity": "dvelopEntityMappingProperty",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.909+00:00",
+    "updatedAt": "2026-09-10T10:49:34.909+00:00"
+  },
+  {
+    "handle": 188,
+    "route": "table/emailInboxSubscription",
+    "navigation": null,
+    "entity": "emailInboxSubscription",
+    "group": "emailOutbound",
+    "createdAt": "2026-09-10T10:49:34.914+00:00",
+    "updatedAt": "2026-09-10T10:49:34.914+00:00"
+  },
+  {
+    "handle": 189,
+    "route": "table/emailInboxProcessingMode",
+    "navigation": null,
+    "entity": "emailInboxProcessingMode",
+    "group": "emailOutbound",
+    "createdAt": "2026-09-10T10:49:34.916+00:00",
+    "updatedAt": "2026-09-10T10:49:34.916+00:00"
+  },
+  {
+    "handle": 190,
+    "route": "table/inboundEmailStatus",
+    "navigation": null,
+    "entity": "inboundEmailStatus",
+    "group": "emailOutbound",
+    "createdAt": "2026-09-10T10:49:34.918+00:00",
+    "updatedAt": "2026-09-10T10:49:34.918+00:00"
+  },
+  {
+    "handle": 191,
+    "route": "table/inboundEmail",
+    "navigation": null,
+    "entity": "inboundEmail",
+    "group": "emailOutbound",
+    "createdAt": "2026-09-10T10:49:34.919+00:00",
+    "updatedAt": "2026-09-10T10:49:34.919+00:00"
+  },
+  {
+    "handle": 192,
+    "route": "table/emailTemplate",
+    "navigation": null,
+    "entity": "emailTemplate",
+    "group": "emailInbound",
+    "createdAt": "2026-09-10T10:49:34.923+00:00",
+    "updatedAt": "2026-09-10T10:49:34.923+00:00"
+  },
+  {
+    "handle": 193,
+    "route": "table/emailSubscription",
+    "navigation": null,
+    "entity": "emailSubscription",
+    "group": "emailInbound",
+    "createdAt": "2026-09-10T10:49:34.925+00:00",
+    "updatedAt": "2026-09-10T10:49:34.925+00:00"
+  },
+  {
+    "handle": 194,
+    "route": "table/emailDelivery",
+    "navigation": null,
+    "entity": "emailDelivery",
+    "group": "emailInbound",
+    "createdAt": "2026-09-10T10:49:34.927+00:00",
+    "updatedAt": "2026-09-10T10:49:34.927+00:00"
+  },
+  {
+    "handle": 195,
+    "route": "table/emailDeliveryStatus",
+    "navigation": null,
+    "entity": "emailDeliveryStatus",
+    "group": "emailInbound",
+    "createdAt": "2026-09-10T10:49:34.929+00:00",
+    "updatedAt": "2026-09-10T10:49:34.929+00:00"
+  },
+  {
+    "handle": 196,
+    "route": "table/emailList",
+    "navigation": null,
+    "entity": "emailList",
+    "group": "emailInbound",
+    "createdAt": "2026-09-10T10:49:34.931+00:00",
+    "updatedAt": "2026-09-10T10:49:34.931+00:00"
+  },
+  {
+    "handle": 197,
+    "route": "table/marketingCampaign",
+    "navigation": null,
+    "entity": "marketingCampaign",
+    "group": "emailCampaigns",
+    "createdAt": "2026-09-10T10:49:34.933+00:00",
+    "updatedAt": "2026-09-10T10:49:34.933+00:00"
+  },
+  {
+    "handle": 198,
+    "route": "table/marketingCampaignStatus",
+    "navigation": null,
+    "entity": "marketingCampaignStatus",
+    "group": "emailCampaigns",
+    "createdAt": "2026-09-10T10:49:34.935+00:00",
+    "updatedAt": "2026-09-10T10:49:34.935+00:00"
+  },
+  {
+    "handle": 199,
+    "route": "table/marketingCampaignType",
+    "navigation": null,
+    "entity": "marketingCampaignType",
+    "group": "emailCampaigns",
+    "createdAt": "2026-09-10T10:49:34.936+00:00",
+    "updatedAt": "2026-09-10T10:49:34.936+00:00"
+  },
+  {
+    "handle": 200,
+    "route": "table/sharedMailboxGroup",
+    "navigation": null,
+    "entity": "sharedMailboxGroup",
+    "group": "emailSharedAccounts",
+    "createdAt": "2026-09-10T10:49:34.939+00:00",
+    "updatedAt": "2026-09-10T10:49:34.939+00:00"
+  },
+  {
+    "handle": 201,
+    "route": "table/sharedMailbox",
+    "navigation": null,
+    "entity": "sharedMailbox",
+    "group": "emailSharedAccounts",
+    "createdAt": "2026-09-10T10:49:34.941+00:00",
+    "updatedAt": "2026-09-10T10:49:34.941+00:00"
+  },
+  {
+    "handle": 202,
+    "route": "table/fieldPermission",
+    "navigation": null,
+    "entity": "fieldPermission",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.946+00:00",
+    "updatedAt": "2026-09-10T10:49:34.946+00:00"
+  },
+  {
+    "handle": 203,
+    "route": "table/globalSearchIndex",
+    "navigation": null,
+    "entity": "globalSearchIndex",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.951+00:00",
+    "updatedAt": "2026-09-10T10:49:34.951+00:00"
+  },
+  {
+    "handle": 204,
+    "route": "table/eventCategory",
+    "navigation": null,
+    "entity": "eventCategory",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.978+00:00",
+    "updatedAt": "2026-09-10T10:49:34.978+00:00"
+  },
+  {
+    "handle": 205,
+    "route": "table/eventCategory",
+    "navigation": null,
+    "entity": "eventCategory",
+    "group": "salesCalendar",
+    "createdAt": "2026-09-10T10:49:34.981+00:00",
+    "updatedAt": "2026-09-10T10:49:34.981+00:00"
+  },
+  {
+    "handle": 206,
+    "route": "table/eventCategory",
+    "navigation": null,
+    "entity": "eventCategory",
+    "group": "officeCalendar",
+    "createdAt": "2026-09-10T10:49:34.982+00:00",
+    "updatedAt": "2026-09-10T10:49:34.982+00:00"
+  },
+  {
+    "handle": 207,
+    "route": "table/sharedMailboxContext",
+    "navigation": null,
+    "entity": "sharedMailboxContext",
+    "group": "emailSharedAccounts",
+    "createdAt": "2026-09-10T10:49:34.988+00:00",
+    "updatedAt": "2026-09-10T10:49:34.988+00:00"
+  },
+  {
+    "handle": 208,
+    "route": "system",
+    "navigation": "systemMonitoringOverview",
+    "entity": "systemAlertIncident",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:34.994+00:00",
+    "updatedAt": "2026-09-10T10:49:35.002+00:00"
+  },
+  {
+    "handle": 209,
+    "route": "table/systemTelemetryInstance",
+    "navigation": null,
+    "entity": "systemTelemetryInstance",
+    "group": "telemetry",
+    "createdAt": "2026-09-10T10:49:35+00:00",
+    "updatedAt": "2026-09-10T10:49:35+00:00"
+  },
+  {
+    "handle": 210,
+    "route": "table/systemMetricBucket",
+    "navigation": null,
+    "entity": "systemMetricBucket",
+    "group": "telemetry",
+    "createdAt": "2026-09-10T10:49:35.003+00:00",
+    "updatedAt": "2026-09-10T10:49:35.003+00:00"
+  },
+  {
+    "handle": 211,
+    "route": "table/httpMetricBucket",
+    "navigation": null,
+    "entity": "httpMetricBucket",
+    "group": "telemetry",
+    "createdAt": "2026-09-10T10:49:35.007+00:00",
+    "updatedAt": "2026-09-10T10:49:35.007+00:00"
+  },
+  {
+    "handle": 212,
+    "route": "table/aiUsageEvent",
+    "navigation": null,
+    "entity": "aiUsageEvent",
+    "group": "telemetry",
+    "createdAt": "2026-09-10T10:49:35.009+00:00",
+    "updatedAt": "2026-09-10T10:49:35.009+00:00"
+  },
+  {
+    "handle": 213,
+    "route": "table/authenticationEvent",
+    "navigation": null,
+    "entity": "authenticationEvent",
+    "group": "telemetry",
+    "createdAt": "2026-09-10T10:49:35.011+00:00",
+    "updatedAt": "2026-09-10T10:49:35.011+00:00"
+  },
+  {
+    "handle": 214,
+    "route": "table/systemAlertRule",
+    "navigation": null,
+    "entity": "systemAlertRule",
+    "group": "telemetry",
+    "createdAt": "2026-09-10T10:49:35.013+00:00",
+    "updatedAt": "2026-09-10T10:49:35.013+00:00"
+  },
+  {
+    "handle": 215,
+    "route": "table/systemAlertIncident",
+    "navigation": null,
+    "entity": "systemAlertIncident",
+    "group": "telemetry",
+    "createdAt": "2026-09-10T10:49:35.015+00:00",
+    "updatedAt": "2026-09-10T10:49:35.015+00:00"
+  },
+  {
+    "handle": 216,
+    "route": "table/systemTelemetryEnvironment",
+    "navigation": null,
+    "entity": "systemTelemetryEnvironment",
+    "group": "telemetry",
+    "createdAt": "2026-09-10T10:49:35.021+00:00",
+    "updatedAt": "2026-09-10T10:49:35.021+00:00"
+  },
+  {
+    "handle": 217,
+    "route": "table/systemErrorGroup",
+    "navigation": null,
+    "entity": "systemErrorGroup",
+    "group": "telemetry",
+    "createdAt": "2026-09-10T10:49:35.024+00:00",
+    "updatedAt": "2026-09-10T10:49:35.024+00:00"
+  },
+  {
+    "handle": 218,
+    "route": "table/systemErrorOccurrence",
+    "navigation": null,
+    "entity": "systemErrorOccurrence",
+    "group": "telemetry",
+    "createdAt": "2026-09-10T10:49:35.026+00:00",
+    "updatedAt": "2026-09-10T10:49:35.026+00:00"
+  },
+  {
+    "handle": 219,
+    "route": "table/systemCheckRun",
+    "navigation": null,
+    "entity": "systemCheckRun",
+    "group": "telemetry",
+    "createdAt": "2026-09-10T10:49:35.028+00:00",
+    "updatedAt": "2026-09-10T10:49:35.028+00:00"
+  },
+  {
+    "handle": 220,
+    "route": "table/systemRemediationExecution",
+    "navigation": null,
+    "entity": "systemRemediationExecution",
+    "group": "telemetry",
+    "createdAt": "2026-09-10T10:49:35.03+00:00",
+    "updatedAt": "2026-09-10T10:49:35.03+00:00"
+  },
+  {
+    "handle": 221,
+    "route": "table/systemCanaryRecord",
+    "navigation": null,
+    "entity": "systemCanaryRecord",
+    "group": "telemetry",
+    "createdAt": "2026-09-10T10:49:35.032+00:00",
+    "updatedAt": "2026-09-10T10:49:35.032+00:00"
+  },
+  {
+    "handle": 222,
+    "route": "table/fieldAutomation",
+    "navigation": null,
+    "entity": "fieldAutomation",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:35.037+00:00",
+    "updatedAt": "2026-09-10T10:49:35.037+00:00"
+  },
+  {
+    "handle": 223,
+    "route": "table/automationEvent",
+    "navigation": null,
+    "entity": "automationEvent",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:35.04+00:00",
+    "updatedAt": "2026-09-10T10:49:35.04+00:00"
+  },
+  {
+    "handle": 224,
+    "route": "table/automationExecution",
+    "navigation": null,
+    "entity": "automationExecution",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:35.043+00:00",
+    "updatedAt": "2026-09-10T10:49:35.043+00:00"
+  },
+  {
+    "handle": 225,
+    "route": "table/emailSignature",
+    "navigation": null,
+    "entity": "emailSignature",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:35.048+00:00",
+    "updatedAt": "2026-09-10T10:49:35.048+00:00"
+  },
+  {
+    "handle": 226,
+    "route": "table/aiPromptTemplate",
+    "navigation": null,
+    "entity": "aiPromptTemplate",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:35.054+00:00",
+    "updatedAt": "2026-09-10T10:49:35.054+00:00"
+  },
+  {
+    "handle": 227,
+    "route": "table/aiPromptVersion",
+    "navigation": null,
+    "entity": "aiPromptVersion",
+    "group": null,
+    "createdAt": "2026-09-10T10:49:35.058+00:00",
+    "updatedAt": "2026-09-10T10:49:35.058+00:00"
+  }
+]

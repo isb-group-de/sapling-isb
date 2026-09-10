@@ -29,10 +29,8 @@ frontend/src/utils/inboxRoute.util.ts
 Seed files:
 
 ```text
-backend/src/database/seeder/json-production/inboxTemplate/
-backend/src/database/seeder/json-production/inboxSubscription/
-backend/src/database/seeder/json-demonstration/inboxTemplate/
-backend/src/database/seeder/json-demonstration/inboxSubscription/
+backend/src/database/seeder/json-default/inboxTemplate/
+backend/src/database/seeder/json-default/inboxSubscription/
 ```
 
 ## Data Model
@@ -93,8 +91,8 @@ Important fields:
 `referenceHandle` uses `@SaplingGenericReference` together with `entity`, so the UI can navigate back to the referenced record.
 
 Inbox notifications support deletion through the normal generic permission
-flow. The `inboxNotification` entity enables `canDelete`; consequently,
-`PermissionSeeder` grants and synchronizes `allowDelete` for the administrator
+flow. The `inboxNotification` entity enables `canDelete`; the explicit
+permission baseline grants `allowDelete` for the administrator
 role by default.
 
 Inbox notifications are dependent delivery records. Deleting either their
@@ -258,7 +256,7 @@ A valid streamed snapshot clears the error and restores the inbox automatically.
 The recovery timer is removed when the last subscriber unmounts.
 
 If the inbox stays empty after an update, inspect the SSE error details and check
-pending database migrations. In particular, `Migration20260905120000` adds
+pending database migrations (or the consolidated baseline). Historically, `Migration20260905120000` added
 `notify_actor` to inbox and Teams subscriptions; without it, loading notifications
 fails and the server cannot deliver the first snapshot.
 
@@ -313,8 +311,8 @@ Events or changing either date still requires a valid resulting range.
 ## Adding A New Entity To Inbox
 
 1. Ensure the entity has a useful recipient relation such as `assigneePerson`, `creatorPerson`, or a participants collection.
-2. Add an inbox template seed file in both production and demonstration when relevant.
-3. Add an inbox subscription seed file in both production and demonstration.
+2. Add the shared inbox template in `json-default`; use environment files only for differences.
+3. Add the shared inbox subscription in `json-default`.
 4. Include relation expressions wherever notifications are triggered so placeholders can resolve needed fields.
 5. Ensure frontend inbox route logic can navigate to the entity route.
 6. Verify permissions allow recipients to open the referenced record.
@@ -323,8 +321,8 @@ Events or changing either date still requires a valid resulting range.
 Recommended seed naming:
 
 ```text
-inboxTemplate/inboxTemplateData_XXX.json
-inboxSubscription/inboxSubscriptionData_XXX.json
+inboxTemplate/inboxTemplateData_NNNN_insert.json
+inboxSubscription/inboxSubscriptionData_NNNN_insert.json
 ```
 
 ## Common Mistakes

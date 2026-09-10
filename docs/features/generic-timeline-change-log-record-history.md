@@ -38,12 +38,9 @@ frontend/src/stores/timelineDialogStore.ts
 Seed/reference data:
 
 ```text
-backend/src/database/seeder/json-production/entity/entityData_002.json
-backend/src/database/seeder/json-production/entity/entityData_003.json
-backend/src/database/seeder/json-production/entityRoute/entityRouteData_002.json
-backend/src/database/seeder/json-production/entityRoute/entityRouteData_003.json
-backend/src/database/seeder/json-production/translation/translationData_009.json
-backend/src/database/seeder/json-production/translation/translationData_010.json
+backend/src/database/seeder/json-default/entity/entityData_0001_insert.json
+backend/src/database/seeder/json-default/entityRoute/entityRouteData_0001_insert.json
+backend/src/database/seeder/json-default/translation/translationData_0001_insert.json
 ```
 
 ## API Contract
@@ -83,7 +80,7 @@ The write is intentionally tolerant. `safeStoreChangeLog` catches errors and log
 Change-log records and individual detail rows support deletion through the
 normal generic API permission flow. The `changeLog` and `changeLogDetail`
 entities enable `canDelete`, so the administrator role receives `allowDelete`
-from `PermissionSeeder` by default. Deleting a log also deletes all of its
+from the explicit default permission seeds. Deleting a log also deletes all of its
 owned detail rows through the database foreign-key cascade. Mutations of
 `changeLog` and `changeLogDetail` themselves are deliberately excluded from
 audit creation so deleting audit data cannot recursively create replacement

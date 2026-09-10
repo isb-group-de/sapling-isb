@@ -4,6 +4,14 @@ Dieser Ordner enthält das lokale, interaktive Deployment für neue Sapling-Syst
 
 Das historische Skript [`../deploy.sh`](../deploy.sh) bleibt ausschließlich für Bestandssysteme erhalten.
 
+Beim Wechsel auf die konsolidierte Datenbank-Baseline müssen Bestandssysteme
+zuerst alle bisherigen Migrationen bis `Migration20260910103733` und Seeder
+ausgeführt haben. Danach einmalig `DB_BASELINE_ADOPT=true` in der gemeinsamen
+Backend-Umgebung setzen und das Update ausführen; anschließend wieder auf `false`
+setzen. Neuinstallationen verwenden immer `false`. Beide Deployment-Wege rufen
+denselben Einstieg mit `UPDATE_MODE=all` auf. Details zu Backup, Prüfungen und
+Rückkehr zum Altstand stehen in der [Baseline-Anleitung](../docs/development/seeding-and-migrations.md#adopt-an-existing-database-once).
+
 Der Installer ist für Neuinstallationen gedacht. Erkennt er unter dem gewählten Zielpfad ein vorhandenes Deployment oder Datenverzeichnis ohne seine eigene Konfiguration, bricht er ab; eine Bestandsmigration muss mit gesichertem Datenbank- und Storage-Backup separat geplant werden.
 
 ## Voraussetzungen

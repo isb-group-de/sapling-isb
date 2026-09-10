@@ -1,0 +1,306 @@
+[
+  {
+    "key": {
+      "handle": "administration"
+    },
+    "values": {
+      "parent": "rightsManagement"
+    }
+  },
+  {
+    "key": {
+      "handle": "auditTrail"
+    },
+    "values": {
+      "parent": "systemOperations"
+    }
+  },
+  {
+    "key": {
+      "handle": "authentication"
+    },
+    "values": {
+      "parent": "rightsManagement"
+    }
+  },
+  {
+    "key": {
+      "handle": "automation"
+    },
+    "values": {
+      "parent": "systemOperations"
+    }
+  },
+  {
+    "key": {
+      "handle": "chat"
+    },
+    "values": {
+      "parent": "ai"
+    }
+  },
+  {
+    "key": {
+      "handle": "company"
+    },
+    "values": {
+      "parent": "workspace"
+    }
+  },
+  {
+    "key": {
+      "handle": "contract"
+    },
+    "values": {
+      "parent": "salesArea"
+    }
+  },
+  {
+    "key": {
+      "handle": "document"
+    },
+    "values": {
+      "parent": "knowledgePool"
+    }
+  },
+  {
+    "key": {
+      "handle": "dvelopCloud"
+    },
+    "values": {
+      "parent": "knowledgePool"
+    }
+  },
+  {
+    "key": {
+      "handle": "effortEstimate"
+    },
+    "values": {
+      "parent": "salesArea"
+    }
+  },
+  {
+    "key": {
+      "handle": "emailCampaigns"
+    },
+    "values": {
+      "parent": "communication"
+    }
+  },
+  {
+    "key": {
+      "handle": "emailInbound"
+    },
+    "values": {
+      "parent": "communication"
+    }
+  },
+  {
+    "key": {
+      "handle": "emailOutbound"
+    },
+    "values": {
+      "parent": "communication"
+    }
+  },
+  {
+    "key": {
+      "handle": "emailSharedAccounts"
+    },
+    "values": {
+      "parent": "communication"
+    }
+  },
+  {
+    "key": {
+      "handle": "event"
+    },
+    "values": {
+      "parent": "operations"
+    }
+  },
+  {
+    "key": {
+      "handle": "import"
+    },
+    "values": {
+      "parent": "systemOperations"
+    }
+  },
+  {
+    "key": {
+      "handle": "inbox"
+    },
+    "values": {
+      "parent": "communication"
+    }
+  },
+  {
+    "key": {
+      "handle": "internalCase"
+    },
+    "values": {
+      "parent": "office"
+    }
+  },
+  {
+    "key": {
+      "handle": "knowledge"
+    },
+    "values": {
+      "parent": "knowledgePool"
+    }
+  },
+  {
+    "key": {
+      "handle": "kpi"
+    },
+    "values": {
+      "parent": "insights"
+    }
+  },
+  {
+    "key": {
+      "handle": "landscape"
+    },
+    "values": {
+      "parent": "workspace"
+    }
+  },
+  {
+    "key": {
+      "handle": "localisation"
+    },
+    "values": {
+      "parent": "platform"
+    }
+  },
+  {
+    "key": {
+      "handle": "mails"
+    },
+    "values": {
+      "parent": "communication"
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp"
+    },
+    "values": {
+      "parent": "ai"
+    }
+  },
+  {
+    "key": {
+      "handle": "metadata"
+    },
+    "values": {
+      "parent": "platform"
+    }
+  },
+  {
+    "key": {
+      "handle": "note"
+    },
+    "values": {
+      "parent": "knowledgePool"
+    }
+  },
+  {
+    "key": {
+      "handle": "officeCalendar"
+    },
+    "values": {
+      "parent": "office"
+    }
+  },
+  {
+    "key": {
+      "handle": "person"
+    },
+    "values": {
+      "parent": "workspace"
+    }
+  },
+  {
+    "key": {
+      "handle": "relationship"
+    },
+    "values": {
+      "parent": "workspace"
+    }
+  },
+  {
+    "key": {
+      "handle": "sales"
+    },
+    "values": {
+      "parent": "salesArea"
+    }
+  },
+  {
+    "key": {
+      "handle": "salesCalendar"
+    },
+    "values": {
+      "parent": "salesArea"
+    }
+  },
+  {
+    "key": {
+      "handle": "support"
+    },
+    "values": {
+      "parent": "operations"
+    }
+  },
+  {
+    "key": {
+      "handle": "system"
+    },
+    "values": {
+      "parent": "systemOperations"
+    }
+  },
+  {
+    "key": {
+      "handle": "teams"
+    },
+    "values": {
+      "parent": "communication"
+    }
+  },
+  {
+    "key": {
+      "handle": "telemetry"
+    },
+    "values": {
+      "parent": "systemOperations"
+    }
+  },
+  {
+    "key": {
+      "handle": "ticket"
+    },
+    "values": {
+      "parent": "operations"
+    }
+  },
+  {
+    "key": {
+      "handle": "webhook"
+    },
+    "values": {
+      "parent": "systemOperations"
+    }
+  },
+  {
+    "key": {
+      "handle": "workspaceTools"
+    },
+    "values": {
+      "parent": "platform"
+    }
+  }
+]

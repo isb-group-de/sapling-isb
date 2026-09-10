@@ -1,0 +1,26 @@
+[
+  {
+    "handle": "delivery",
+    "title": "Lieferadresse",
+    "icon": "mdi-truck-delivery-outline",
+    "color": "#2E7D32",
+    "createdAt": "2026-09-10T10:49:34.083+00:00",
+    "updatedAt": "2026-09-10T10:49:34.083+00:00"
+  },
+  {
+    "handle": "invoice",
+    "title": "Rechnungsadresse",
+    "icon": "mdi-receipt-text-outline",
+    "color": "#1565C0",
+    "createdAt": "2026-09-10T10:49:34.082+00:00",
+    "updatedAt": "2026-09-10T10:49:34.082+00:00"
+  },
+  {
+    "handle": "location",
+    "title": "Standort",
+    "icon": "mdi-map-marker-outline",
+    "color": "#6D4C41",
+    "createdAt": "2026-09-10T10:49:34.084+00:00",
+    "updatedAt": "2026-09-10T10:49:34.084+00:00"
+  }
+]

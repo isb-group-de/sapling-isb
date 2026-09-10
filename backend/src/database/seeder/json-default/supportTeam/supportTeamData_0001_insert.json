@@ -1,0 +1,42 @@
+[
+  {
+    "handle": "consulting",
+    "title": "Consulting",
+    "description": "Beratung, Prozesse und geplante Leistungen.",
+    "icon": "mdi-account-tie-voice-outline",
+    "color": "#FB8C00",
+    "isActive": true,
+    "createdAt": "2026-09-10T10:49:35.583+00:00",
+    "updatedAt": "2026-09-10T10:49:35.583+00:00"
+  },
+  {
+    "handle": "development",
+    "title": "Development",
+    "description": "Produkt- und Integrationsentwicklung für tiefergehende Fälle.",
+    "icon": "mdi-code-braces",
+    "color": "#8E24AA",
+    "isActive": true,
+    "createdAt": "2026-09-10T10:49:35.584+00:00",
+    "updatedAt": "2026-09-10T10:49:35.584+00:00"
+  },
+  {
+    "handle": "platform",
+    "title": "Platform Operations",
+    "description": "Betrieb, Infrastruktur und kritische Plattformthemen.",
+    "icon": "mdi-server-network",
+    "color": "#6D4C41",
+    "isActive": true,
+    "createdAt": "2026-09-10T10:49:35.584+00:00",
+    "updatedAt": "2026-09-10T10:49:35.584+00:00"
+  },
+  {
+    "handle": "service_desk",
+    "title": "Service Desk",
+    "description": "Erste Anlaufstelle für eingehende Supportfälle.",
+    "icon": "mdi-headset",
+    "color": "#1E88E5",
+    "isActive": true,
+    "createdAt": "2026-09-10T10:49:35.581+00:00",
+    "updatedAt": "2026-09-10T10:49:35.581+00:00"
+  }
+]

@@ -98,8 +98,7 @@ Do not add a migration for pure seed changes, translations, permission changes, 
 Add entity metadata in a new numbered file:
 
 ```text
-backend/src/database/seeder/json-production/entity/entityData_XXX.json
-backend/src/database/seeder/json-demonstration/entity/entityData_XXX.json
+backend/src/database/seeder/json-default/entity/entityData_NNNN_insert.json
 ```
 
 Set the capability flags intentionally:
@@ -112,15 +111,14 @@ Set the capability flags intentionally:
 | `canDelete` | Entity can be deleted |
 | `canShow` | Entity can be shown in navigation/UI |
 
-Use demonstration seed files for rich sample records. Use production seed files for reference data and default configuration.
+Use demonstration seed files for rich sample records. Put shared reference data and configuration in `json-default`; production holds only its differences. Register newly seeded entities in `seed-order.json` with their dependency phases.
 
 ## 5. Add Routes
 
 Add an entity route in a new numbered file:
 
 ```text
-backend/src/database/seeder/json-production/entityRoute/entityRouteData_XXX.json
-backend/src/database/seeder/json-demonstration/entityRoute/entityRouteData_XXX.json
+backend/src/database/seeder/json-default/entityRoute/entityRouteData_NNNN_insert.json
 ```
 
 Common route patterns:
@@ -138,8 +136,7 @@ The route should match an existing frontend route. For most entities, start with
 Add translations in a new numbered file:
 
 ```text
-backend/src/database/seeder/json-production/translation/translationData_XXX.json
-backend/src/database/seeder/json-demonstration/translation/translationData_XXX.json
+backend/src/database/seeder/json-default/translation/translationData_NNNN_insert.json
 ```
 
 Include at least:
@@ -150,14 +147,14 @@ Include at least:
 - status/reference labels when needed
 - action labels when user-visible
 
-`TranslationSeeder` upserts by entity, property, and language. Prefer adding new files over editing old numbered files unless you are correcting bad seed data intentionally.
+Translations are one row per language: `{ "entity": "ticket", "property": "title", "language": "de", "value": "Titel" }`. Use `_insert` for new keys and `_update` with explicit `key` and `values` for changes. Add new numbered files rather than editing executed files.
 
 ## 7. Add Permissions
 
 Update:
 
 ```text
-backend/src/database/seeder/permission-matrices.ts
+backend/src/database/seeder/json-default/permission/permissionData_NNNN_insert.json
 ```
 
 Choose role access deliberately. For a user-facing entity, decide:
@@ -168,7 +165,7 @@ Choose role access deliberately. For a user-facing entity, decide:
 - who can delete it
 - whether admins only should manage configuration entities
 
-Then run or review the permission seeder output in a test database.
+Supply explicit rows for every intended role/entity combination, including administrator capabilities. Existing permissions change only through an explicit update file. Verify both fresh datasets and an existing database.
 
 ## 8. Add Reference Data
 
@@ -238,27 +235,23 @@ For a normal entity:
 backend/src/entity/<Name>Item.ts
 backend/src/entity/global/entity.registry.ts
 backend/src/database/migration/MigrationYYYYMMDDHHMMSS.ts
-backend/src/database/seeder/json-production/entity/entityData_XXX.json
-backend/src/database/seeder/json-demonstration/entity/entityData_XXX.json
-backend/src/database/seeder/json-production/entityRoute/entityRouteData_XXX.json
-backend/src/database/seeder/json-demonstration/entityRoute/entityRouteData_XXX.json
-backend/src/database/seeder/json-production/translation/translationData_XXX.json
-backend/src/database/seeder/json-demonstration/translation/translationData_XXX.json
-backend/src/database/seeder/permission-matrices.ts
+backend/src/database/seeder/json-default/entity/entityData_NNNN_insert.json
+backend/src/database/seeder/json-default/entityRoute/entityRouteData_NNNN_insert.json
+backend/src/database/seeder/json-default/translation/translationData_NNNN_insert.json
+backend/src/database/seeder/json-default/permission/permissionData_NNNN_insert.json
 ```
 
 For demo data:
 
 ```text
-backend/src/database/seeder/json-demonstration/<entityHandle>/<entityHandle>Data_001.json
+backend/src/database/seeder/json-demonstration/<entityHandle>/<entityHandle>Data_0001_insert.json
 ```
 
 For reference data:
 
 ```text
 backend/src/entity/<ReferenceName>Item.ts
-backend/src/database/seeder/json-production/<referenceHandle>/<referenceHandle>Data_001.json
-backend/src/database/seeder/json-demonstration/<referenceHandle>/<referenceHandle>Data_001.json
+backend/src/database/seeder/json-default/<referenceHandle>/<referenceHandle>Data_0001_insert.json
 ```
 
 ## Verification

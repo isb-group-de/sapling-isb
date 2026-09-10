@@ -1,7 +1,0 @@
-[
-  { "title": "Administrator", "isAdministrator": true, "stage": "global" },
-  { "title": "Support", "stage": "global" },
-  { "title": "Vertrieb", "stage": "global" },
-  { "title": "Kunde", "stage": "company" },
-  { "title": "Dienstleister", "stage": "person" }
-]

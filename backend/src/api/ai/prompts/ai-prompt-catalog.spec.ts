@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
 import * as ts from 'typescript';
-import definitions from '../../../database/seeder/prompts/promptData_001.json';
+import definitions from '../../../database/seeder/json-default/aiPromptTemplate/aiPromptTemplateData_0001_insert.json';
 import { AI_PROMPT_USAGE } from './ai-prompt-usage';
 import { validatePrompt } from './ai-prompt-context';
 

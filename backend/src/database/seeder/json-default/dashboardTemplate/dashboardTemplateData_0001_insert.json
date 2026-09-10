@@ -1,0 +1,152 @@
+[
+  {
+    "handle": 1,
+    "name": "Support Operations",
+    "widgets": null,
+    "description": "Standardvorlage für Support-Kennzahlen einschließlich SLA, Abschlussdauer und Ticketfluss.",
+    "isShared": true,
+    "person": 1,
+    "createdAt": "2026-08-19T12:10:00+00:00",
+    "updatedAt": "2026-09-10T10:49:35.802+00:00"
+  },
+  {
+    "handle": 2,
+    "name": "Sales Pipeline",
+    "widgets": null,
+    "description": "Standardvorlage für Vertriebs-Kennzahlen einschließlich Gewinnquote, Wert, Zielen und Funnel.",
+    "isShared": true,
+    "person": 1,
+    "createdAt": "2026-08-19T12:11:00+00:00",
+    "updatedAt": "2026-09-10T10:49:35.802+00:00"
+  },
+  {
+    "handle": 3,
+    "name": "Event Coordination",
+    "widgets": null,
+    "description": "Standardvorlage für Event-Kennzahlen.",
+    "isShared": true,
+    "person": 1,
+    "createdAt": "2026-04-19T09:02:00+00:00",
+    "updatedAt": "2026-04-19T09:02:00+00:00"
+  },
+  {
+    "handle": 4,
+    "name": "Contracts & Products",
+    "widgets": null,
+    "description": "Standardvorlage für Vertrags- und Produkt-Kennzahlen.",
+    "isShared": true,
+    "person": 1,
+    "createdAt": "2026-04-19T09:03:00+00:00",
+    "updatedAt": "2026-04-19T09:03:00+00:00"
+  },
+  {
+    "handle": 5,
+    "name": "Master Data Quality",
+    "widgets": null,
+    "description": "Standardvorlage für Stammdatenqualität.",
+    "isShared": true,
+    "person": 1,
+    "createdAt": "2026-04-19T09:04:00+00:00",
+    "updatedAt": "2026-04-19T09:04:00+00:00"
+  },
+  {
+    "handle": 6,
+    "name": "System Operations",
+    "widgets": null,
+    "description": "Aktualisierte Systemvorlage für Automatisierungsvolumen, Fehlerbestände und Zustellquoten.",
+    "isShared": true,
+    "person": 1,
+    "createdAt": "2026-08-19T12:12:00+00:00",
+    "updatedAt": "2026-09-10T10:49:35.802+00:00"
+  },
+  {
+    "handle": 7,
+    "name": "My Support Operations",
+    "widgets": null,
+    "description": "Persönliche Alternative der Support-Vorlage mit auf den aktuellen Benutzer gefilterten Tickets.",
+    "isShared": true,
+    "person": 1,
+    "createdAt": "2026-08-03T09:00:00+00:00",
+    "updatedAt": "2026-08-03T09:00:00+00:00"
+  },
+  {
+    "handle": 8,
+    "name": "My Sales Pipeline",
+    "widgets": null,
+    "description": "Persönliche Alternative der Vertriebs-Vorlage mit den zugewiesenen Vertriebschancen.",
+    "isShared": true,
+    "person": 1,
+    "createdAt": "2026-08-03T09:01:00+00:00",
+    "updatedAt": "2026-08-03T09:01:00+00:00"
+  },
+  {
+    "handle": 9,
+    "name": "My Event Coordination",
+    "widgets": null,
+    "description": "Persönliche Alternative der Event-Vorlage mit den zugewiesenen Terminen.",
+    "isShared": true,
+    "person": 1,
+    "createdAt": "2026-08-03T09:02:00+00:00",
+    "updatedAt": "2026-08-03T09:02:00+00:00"
+  },
+  {
+    "handle": 10,
+    "name": "My Contracts & Products",
+    "widgets": null,
+    "description": "Persönliche Firmensicht auf Verträge und die damit verbundenen Produkte.",
+    "isShared": true,
+    "person": 1,
+    "createdAt": "2026-08-03T09:03:00+00:00",
+    "updatedAt": "2026-08-03T09:03:00+00:00"
+  },
+  {
+    "handle": 11,
+    "name": "Internal Operations",
+    "widgets": null,
+    "description": "Allgemeine Vorlage für Volumen, Status, Kategorien und Entwicklung interner Vorgänge.",
+    "isShared": true,
+    "person": 1,
+    "createdAt": "2026-08-03T09:04:00+00:00",
+    "updatedAt": "2026-08-03T09:04:00+00:00"
+  },
+  {
+    "handle": 12,
+    "name": "My Internal Operations",
+    "widgets": null,
+    "description": "Persönliche Vorlage für die dem aktuellen Benutzer zugewiesenen internen Vorgänge.",
+    "isShared": true,
+    "person": 1,
+    "createdAt": "2026-08-03T09:05:00+00:00",
+    "updatedAt": "2026-08-03T09:05:00+00:00"
+  },
+  {
+    "handle": 13,
+    "name": "Effort Estimation",
+    "widgets": null,
+    "description": "Allgemeine Vorlage für aktive Aufwandsschätzungen, Stunden, Status und Entwicklung.",
+    "isShared": true,
+    "person": 1,
+    "createdAt": "2026-08-03T09:06:00+00:00",
+    "updatedAt": "2026-08-03T09:06:00+00:00"
+  },
+  {
+    "handle": 14,
+    "name": "My Effort Estimation",
+    "widgets": null,
+    "description": "Persönliche Vorlage für die dem aktuellen Benutzer zugewiesenen Aufwandsschätzungen.",
+    "isShared": true,
+    "person": 1,
+    "createdAt": "2026-08-03T09:07:00+00:00",
+    "updatedAt": "2026-08-03T09:07:00+00:00"
+  },
+  {
+    "handle": 15,
+    "name": "Performance & Ziele",
+    "widgets": null,
+    "description": "Vorlage für Quoten, Formeln, Zielerreichung und Ampelschwellen in Vertrieb, Support und Automatisierung.",
+    "isShared": true,
+    "person": 1,
+    "createdAt": "2026-08-19T12:00:00+00:00",
+    "updatedAt": "2026-08-19T12:00:00+00:00"
+  }
+]

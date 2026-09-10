@@ -118,9 +118,10 @@ Should include:
 
 - `DB_DATA_SEEDER=production|demonstration`.
 - `DatabaseSeeder` order and dependency rules.
-- Generic seeder naming: `{entityData_NNN.json}`.
+- Seed naming: `{entityData_NNNN_insert|update|delete.json}`.
+- Shared defaults plus one environment and one-time baseline adoption.
 - Specialized seeders: translations, permissions, role starters.
-- Translation upsert behavior.
+- Explicit translation insert/update/delete behavior.
 - SeedScript tracking.
 - When to add a migration.
 - When to add new seed files versus changing existing demo data.
@@ -193,7 +194,7 @@ Should include:
 
 - Entity capability flags: canRead/canInsert/canUpdate/canDelete/canShow.
 - Permission matrix seed structure.
-- `PermissionSeeder`.
+- Explicit permission seeds.
 - Guards: session/bearer, generic permission, admin permission, impersonation read-only.
 - How frontend permission metadata is loaded.
 - Service-account considerations for MCP/API consumers.

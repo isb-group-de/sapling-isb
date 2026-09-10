@@ -1,0 +1,26 @@
+[
+  {
+    "handle": "ixis",
+    "title": "IXIS",
+    "description": null,
+    "isActive": true,
+    "createdAt": "2026-09-10T10:49:36.217+00:00",
+    "updatedAt": "2026-09-10T10:49:36.217+00:00"
+  },
+  {
+    "handle": "sage100",
+    "title": "Sage 100",
+    "description": null,
+    "isActive": true,
+    "createdAt": "2026-09-10T10:49:36.216+00:00",
+    "updatedAt": "2026-09-10T10:49:36.216+00:00"
+  },
+  {
+    "handle": "sapling",
+    "title": "Sapling",
+    "description": null,
+    "isActive": true,
+    "createdAt": "2026-09-10T10:49:36.219+00:00",
+    "updatedAt": "2026-09-10T10:49:36.219+00:00"
+  }
+]

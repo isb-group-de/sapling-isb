@@ -1,0 +1,101 @@
+[
+  {
+    "handle": "account_manager",
+    "title": "Kundenbetreuer",
+    "icon": "mdi-account-heart-outline",
+    "color": "#00897B",
+    "sortOrder": 60,
+    "createdAt": "2026-09-10T10:49:35.44+00:00",
+    "updatedAt": "2026-09-10T10:49:35.44+00:00"
+  },
+  {
+    "handle": "authorized_signatory",
+    "title": "Prokurist",
+    "icon": "mdi-file-sign",
+    "color": "#757575",
+    "sortOrder": 100,
+    "createdAt": "2026-09-10T10:49:35.442+00:00",
+    "updatedAt": "2026-09-10T10:49:35.442+00:00"
+  },
+  {
+    "handle": "board_member",
+    "title": "Vorstand",
+    "icon": "mdi-account-supervisor-circle-outline",
+    "color": "#F4511E",
+    "sortOrder": 110,
+    "createdAt": "2026-09-10T10:49:35.443+00:00",
+    "updatedAt": "2026-09-10T10:49:35.443+00:00"
+  },
+  {
+    "handle": "chairperson",
+    "title": "Vorstandsvorsitzender",
+    "icon": "mdi-account-star-outline",
+    "color": "#6D4C41",
+    "sortOrder": 40,
+    "createdAt": "2026-09-10T10:49:35.438+00:00",
+    "updatedAt": "2026-09-10T10:49:35.438+00:00"
+  },
+  {
+    "handle": "department_head",
+    "title": "Abteilungsleiter",
+    "icon": "mdi-account-supervisor-outline",
+    "color": "#3949AB",
+    "sortOrder": 50,
+    "createdAt": "2026-09-10T10:49:35.439+00:00",
+    "updatedAt": "2026-09-10T10:49:35.439+00:00"
+  },
+  {
+    "handle": "employee",
+    "title": "Mitarbeiter",
+    "icon": "mdi-account-outline",
+    "color": "#546E7A",
+    "sortOrder": 30,
+    "createdAt": "2026-09-10T10:49:35.437+00:00",
+    "updatedAt": "2026-09-10T10:49:35.437+00:00"
+  },
+  {
+    "handle": "executive_assistant",
+    "title": "Assistenz der Geschäftsführung",
+    "icon": "mdi-account-clock-outline",
+    "color": "#8E24AA",
+    "sortOrder": 70,
+    "createdAt": "2026-09-10T10:49:35.44+00:00",
+    "updatedAt": "2026-09-10T10:49:35.44+00:00"
+  },
+  {
+    "handle": "managing_director",
+    "title": "Geschäftsführer",
+    "icon": "mdi-account-tie",
+    "color": "#5E35B1",
+    "sortOrder": 20,
+    "createdAt": "2026-09-10T10:49:35.436+00:00",
+    "updatedAt": "2026-09-10T10:49:35.436+00:00"
+  },
+  {
+    "handle": "software_developer",
+    "title": "Programmierer / Entwickler",
+    "icon": "mdi-code-tags",
+    "color": "#1976D2",
+    "sortOrder": 80,
+    "createdAt": "2026-09-10T10:49:35.441+00:00",
+    "updatedAt": "2026-09-10T10:49:35.441+00:00"
+  },
+  {
+    "handle": "support",
+    "title": "Support",
+    "icon": "mdi-lifebuoy",
+    "color": "#039BE5",
+    "sortOrder": 10,
+    "createdAt": "2026-09-10T10:49:35.435+00:00",
+    "updatedAt": "2026-09-10T10:49:35.435+00:00"
+  },
+  {
+    "handle": "trainee",
+    "title": "Auszubildender",
+    "icon": "mdi-school-outline",
+    "color": "#F9A825",
+    "sortOrder": 90,
+    "createdAt": "2026-09-10T10:49:35.442+00:00",
+    "updatedAt": "2026-09-10T10:49:35.442+00:00"
+  }
+]

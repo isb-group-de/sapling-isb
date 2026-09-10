@@ -1,0 +1,66 @@
+[
+  {
+    "handle": "facebook",
+    "title": "Facebook",
+    "icon": "mdi-facebook",
+    "color": "#1877F2",
+    "createdAt": "2026-09-10T10:49:35.533+00:00",
+    "updatedAt": "2026-09-10T10:49:35.533+00:00"
+  },
+  {
+    "handle": "github",
+    "title": "GitHub",
+    "icon": "mdi-github",
+    "color": "#24292F",
+    "createdAt": "2026-09-10T10:49:35.537+00:00",
+    "updatedAt": "2026-09-10T10:49:35.537+00:00"
+  },
+  {
+    "handle": "instagram",
+    "title": "Instagram",
+    "icon": "mdi-instagram",
+    "color": "#E4405F",
+    "createdAt": "2026-09-10T10:49:35.534+00:00",
+    "updatedAt": "2026-09-10T10:49:35.534+00:00"
+  },
+  {
+    "handle": "linkedin",
+    "title": "LinkedIn",
+    "icon": "mdi-linkedin",
+    "color": "#0A66C2",
+    "createdAt": "2026-09-10T10:49:35.531+00:00",
+    "updatedAt": "2026-09-10T10:49:35.531+00:00"
+  },
+  {
+    "handle": "tiktok",
+    "title": "TikTok",
+    "icon": "mdi-music-note-outline",
+    "color": "#111111",
+    "createdAt": "2026-09-10T10:49:35.538+00:00",
+    "updatedAt": "2026-09-10T10:49:35.538+00:00"
+  },
+  {
+    "handle": "x",
+    "title": "X",
+    "icon": "mdi-alpha-x-box-outline",
+    "color": "#111111",
+    "createdAt": "2026-09-10T10:49:35.535+00:00",
+    "updatedAt": "2026-09-10T10:49:35.535+00:00"
+  },
+  {
+    "handle": "xing",
+    "title": "XING",
+    "icon": "mdi-domain",
+    "color": "#126567",
+    "createdAt": "2026-09-10T10:49:35.535+00:00",
+    "updatedAt": "2026-09-10T10:49:35.535+00:00"
+  },
+  {
+    "handle": "youtube",
+    "title": "YouTube",
+    "icon": "mdi-youtube",
+    "color": "#FF0000",
+    "createdAt": "2026-09-10T10:49:35.536+00:00",
+    "updatedAt": "2026-09-10T10:49:35.536+00:00"
+  }
+]

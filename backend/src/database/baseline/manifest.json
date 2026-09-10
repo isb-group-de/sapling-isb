@@ -1,0 +1,3087 @@
+{
+  "version": "2026-09-baseline-v1",
+  "firstMigration": "Migration20260708104812",
+  "schemaHash": "f3e47b0726128fc1111ac8d5a06b3fdc94e163cfc800c346ae528351e36cc86f",
+  "legacyMigrations": [
+    "Migration20260708104812",
+    "Migration20260708153000",
+    "Migration20260713120000",
+    "Migration20260713180000",
+    "Migration20260716120000",
+    "Migration20260716153000",
+    "Migration20260720120000",
+    "Migration20260721120000",
+    "Migration20260721143000",
+    "Migration20260721163000",
+    "Migration20260722120000",
+    "Migration20260727120000",
+    "Migration20260728120000",
+    "Migration20260729120000",
+    "Migration20260730120000",
+    "Migration20260803120000",
+    "Migration20260812120000",
+    "Migration20260819120000",
+    "Migration20260819140000",
+    "Migration20260820120000",
+    "Migration20260824120000",
+    "Migration20260826120000",
+    "Migration20260827120000",
+    "Migration20260827140000",
+    "Migration20260828120000",
+    "Migration20260828150000",
+    "Migration20260830120000",
+    "Migration20260830170000",
+    "Migration20260830195000",
+    "Migration20260831120000",
+    "Migration20260831150000",
+    "Migration20260901120000",
+    "Migration20260901150000",
+    "Migration20260901180000",
+    "Migration20260901190000",
+    "Migration20260902080000",
+    "Migration20260902120000",
+    "Migration20260902170000",
+    "Migration20260903110000",
+    "Migration20260903130000",
+    "Migration20260903160000",
+    "Migration20260903170000",
+    "Migration20260903180000",
+    "Migration20260904100000",
+    "Migration20260905120000",
+    "Migration20260907120000",
+    "Migration20260907150000",
+    "Migration20260908120000",
+    "Migration20260908150000",
+    "Migration20260909120000",
+    "Migration20260909150000",
+    "Migration20260909180000",
+    "Migration20260910081900",
+    "Migration20260910103733"
+  ],
+  "legacySeeds": {
+    "demonstration": [
+      {
+        "entity": "language",
+        "script": "languageData_001.json"
+      },
+      {
+        "entity": "money",
+        "script": "moneyData_001.json"
+      },
+      {
+        "entity": "country",
+        "script": "countryData_001.json"
+      },
+      {
+        "entity": "aiPromptTemplate",
+        "script": "promptData_001.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_001.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_002.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_003.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_004.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_005.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_006.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_007.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_008.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_009.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_010.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_011.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_012.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_013.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_014.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_015.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_016.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_017.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_018.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_019.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_020.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_021.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_022.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_023.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_024.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_025.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_026.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_027.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_028.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_029.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_030.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_031.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_032.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_033.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_034.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_035.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_036.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_037.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_038.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_039.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_040.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_041.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_042.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_043.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_044.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_045.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_046.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_047.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_048.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_049.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_050.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_051.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_052.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_053.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_054.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_055.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_056.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_057.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_058.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_059.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_060.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_061.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_062.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_063.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_064.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_065.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_066.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_067.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_068.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_069.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_070.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_071.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_072.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_073.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_074.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_075.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_076.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_077.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_078.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_079.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_080.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_081.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_082.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_083.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_084.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_087.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_088.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_089.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_090.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_091.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_092.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_093.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_094.json"
+      },
+      {
+        "entity": "workHour",
+        "script": "workHourData_001.json"
+      },
+      {
+        "entity": "workHourWeek",
+        "script": "workHourWeekData_001.json"
+      },
+      {
+        "entity": "holidayGroup",
+        "script": "holidayGroupData_001.json"
+      },
+      {
+        "entity": "addressType",
+        "script": "addressTypeData_001.json"
+      },
+      {
+        "entity": "companyIndustry",
+        "script": "companyIndustryData_001.json"
+      },
+      {
+        "entity": "companySegment",
+        "script": "companySegmentData_001.json"
+      },
+      {
+        "entity": "companySize",
+        "script": "companySizeData_001.json"
+      },
+      {
+        "entity": "companyAnnualRevenueClass",
+        "script": "companyAnnualRevenueClassData_001.json"
+      },
+      {
+        "entity": "companyChurnRiskReason",
+        "script": "companyChurnRiskReasonData_001.json"
+      },
+      {
+        "entity": "company",
+        "script": "companyData_001.json"
+      },
+      {
+        "entity": "address",
+        "script": "addressData_001.json"
+      },
+      {
+        "entity": "companyRelationshipType",
+        "script": "companyRelationshipTypeData_001.json"
+      },
+      {
+        "entity": "companyRelationship",
+        "script": "companyRelationshipData_001.json"
+      },
+      {
+        "entity": "entityGroup",
+        "script": "entityGroupData_001.json"
+      },
+      {
+        "entity": "entityGroup",
+        "script": "entityGroupData_002.json"
+      },
+      {
+        "entity": "entityGroup",
+        "script": "entityGroupData_003.json"
+      },
+      {
+        "entity": "entityGroup",
+        "script": "entityGroupData_004.json"
+      },
+      {
+        "entity": "entityGroup",
+        "script": "entityGroupData_005.json"
+      },
+      {
+        "entity": "entityGroup",
+        "script": "entityGroupData_006.json"
+      },
+      {
+        "entity": "entity",
+        "script": "entityData_001.json"
+      },
+      {
+        "entity": "entity",
+        "script": "entityData_002.json"
+      },
+      {
+        "entity": "entity",
+        "script": "entityData_003.json"
+      },
+      {
+        "entity": "entity",
+        "script": "entityData_004.json"
+      },
+      {
+        "entity": "entity",
+        "script": "entityData_005.json"
+      },
+      {
+        "entity": "entity",
+        "script": "entityData_006.json"
+      },
+      {
+        "entity": "entity",
+        "script": "entityData_007.json"
+      },
+      {
+        "entity": "entity",
+        "script": "entityData_008.json"
+      },
+      {
+        "entity": "entity",
+        "script": "entityData_009.json"
+      },
+      {
+        "entity": "entity",
+        "script": "entityData_010.json"
+      },
+      {
+        "entity": "entity",
+        "script": "entityData_011.json"
+      },
+      {
+        "entity": "entity",
+        "script": "entityData_012.json"
+      },
+      {
+        "entity": "entity",
+        "script": "entityData_013.json"
+      },
+      {
+        "entity": "entity",
+        "script": "entityData_014.json"
+      },
+      {
+        "entity": "entity",
+        "script": "entityData_015.json"
+      },
+      {
+        "entity": "entity",
+        "script": "entityData_016.json"
+      },
+      {
+        "entity": "entity",
+        "script": "entityData_017.json"
+      },
+      {
+        "entity": "entity",
+        "script": "entityData_018.json"
+      },
+      {
+        "entity": "entity",
+        "script": "entityData_019.json"
+      },
+      {
+        "entity": "entity",
+        "script": "entityData_020.json"
+      },
+      {
+        "entity": "systemAlertRule",
+        "script": "systemAlertRuleData_001.json"
+      },
+      {
+        "entity": "systemAlertRule",
+        "script": "systemAlertRuleData_002.json"
+      },
+      {
+        "entity": "systemAlertRule",
+        "script": "systemAlertRuleData_003.json"
+      },
+      {
+        "entity": "entityRoute",
+        "script": "entityRouteData_001.json"
+      },
+      {
+        "entity": "entityRoute",
+        "script": "entityRouteData_002.json"
+      },
+      {
+        "entity": "entityRoute",
+        "script": "entityRouteData_003.json"
+      },
+      {
+        "entity": "entityRoute",
+        "script": "entityRouteData_004.json"
+      },
+      {
+        "entity": "entityRoute",
+        "script": "entityRouteData_005.json"
+      },
+      {
+        "entity": "entityRoute",
+        "script": "entityRouteData_006.json"
+      },
+      {
+        "entity": "entityRoute",
+        "script": "entityRouteData_007.json"
+      },
+      {
+        "entity": "entityRoute",
+        "script": "entityRouteData_008.json"
+      },
+      {
+        "entity": "entityRoute",
+        "script": "entityRouteData_009.json"
+      },
+      {
+        "entity": "entityRoute",
+        "script": "entityRouteData_010.json"
+      },
+      {
+        "entity": "entityRoute",
+        "script": "entityRouteData_011.json"
+      },
+      {
+        "entity": "entityRoute",
+        "script": "entityRouteData_012.json"
+      },
+      {
+        "entity": "entityRoute",
+        "script": "entityRouteData_013.json"
+      },
+      {
+        "entity": "entityRoute",
+        "script": "entityRouteData_014.json"
+      },
+      {
+        "entity": "changeLogAction",
+        "script": "changeLogActionData_001.json"
+      },
+      {
+        "entity": "changeLogAction",
+        "script": "changeLogActionData_002.json"
+      },
+      {
+        "entity": "scriptButton",
+        "script": "scriptButtonData_001.json"
+      },
+      {
+        "entity": "scriptButton",
+        "script": "scriptButtonData_002.json"
+      },
+      {
+        "entity": "scriptButton",
+        "script": "scriptButtonData_003.json"
+      },
+      {
+        "entity": "scriptButton",
+        "script": "scriptButtonData_004.json"
+      },
+      {
+        "entity": "kpiAggregation",
+        "script": "kpiAggregationData_001.json"
+      },
+      {
+        "entity": "kpiAggregation",
+        "script": "kpiAggregationData_002.json"
+      },
+      {
+        "entity": "kpiTimeframe",
+        "script": "kpiTimeframeData_001.json"
+      },
+      {
+        "entity": "kpiType",
+        "script": "kpiTypeData_001.json"
+      },
+      {
+        "entity": "kpiType",
+        "script": "kpiTypeData_002.json"
+      },
+      {
+        "entity": "kpiType",
+        "script": "kpiTypeData_003.json"
+      },
+      {
+        "entity": "kpi",
+        "script": "kpiData_001.json"
+      },
+      {
+        "entity": "kpi",
+        "script": "kpiData_002.json"
+      },
+      {
+        "entity": "kpi",
+        "script": "kpiData_003.json"
+      },
+      {
+        "entity": "kpi",
+        "script": "kpiData_004.json"
+      },
+      {
+        "entity": "kpi",
+        "script": "kpiData_005.json"
+      },
+      {
+        "entity": "roleStage",
+        "script": "roleStageData_001.json"
+      },
+      {
+        "entity": "role",
+        "script": "roleData_001.json"
+      },
+      {
+        "entity": "personDepartment",
+        "script": "personDepartmentData_001.json"
+      },
+      {
+        "entity": "personDecisionRole",
+        "script": "personDecisionRoleData_001.json"
+      },
+      {
+        "entity": "personFunction",
+        "script": "personFunctionData_001.json"
+      },
+      {
+        "entity": "personJobTitle",
+        "script": "personJobTitleData_001.json"
+      },
+      {
+        "entity": "personSalutation",
+        "script": "personSalutationData_001.json"
+      },
+      {
+        "entity": "personTitle",
+        "script": "personTitleData_001.json"
+      },
+      {
+        "entity": "personType",
+        "script": "personTypeData_001.json"
+      },
+      {
+        "entity": "person",
+        "script": "personData_001.json"
+      },
+      {
+        "entity": "phoneCall",
+        "script": "phoneCallData_001.json"
+      },
+      {
+        "entity": "socialMediaType",
+        "script": "socialMediaTypeData_001.json"
+      },
+      {
+        "entity": "socialMedia",
+        "script": "socialMediaData_001.json"
+      },
+      {
+        "entity": "ticketPriority",
+        "script": "ticketPriorityData_001.json"
+      },
+      {
+        "entity": "ticketStatus",
+        "script": "ticketStatusData_001.json"
+      },
+      {
+        "entity": "ticketStatus",
+        "script": "ticketStatusData_002.json"
+      },
+      {
+        "entity": "ticketStatus",
+        "script": "ticketStatusData_003.json"
+      },
+      {
+        "entity": "ticketType",
+        "script": "ticketTypeData_001.json"
+      },
+      {
+        "entity": "ticketCategory",
+        "script": "ticketCategoryData_001.json"
+      },
+      {
+        "entity": "ticketSource",
+        "script": "ticketSourceData_001.json"
+      },
+      {
+        "entity": "supportTeam",
+        "script": "supportTeamData_001.json"
+      },
+      {
+        "entity": "slaPolicy",
+        "script": "slaPolicyData_001.json"
+      },
+      {
+        "entity": "supportQueue",
+        "script": "supportQueueData_001.json"
+      },
+      {
+        "entity": "noteGroup",
+        "script": "noteGroupData_001.json"
+      },
+      {
+        "entity": "eventStatus",
+        "script": "eventStatusData_001.json"
+      },
+      {
+        "entity": "eventStatus",
+        "script": "eventStatusData_002.json"
+      },
+      {
+        "entity": "eventDeliveryStatus",
+        "script": "eventDeliveryStatusData_001.json"
+      },
+      {
+        "entity": "eventDeliveryStatus",
+        "script": "eventDeliveryStatusData_002.json"
+      },
+      {
+        "entity": "eventType",
+        "script": "eventTypeData_001.json"
+      },
+      {
+        "entity": "eventCategory",
+        "script": "eventCategoryData_001.json"
+      },
+      {
+        "entity": "holiday",
+        "script": "holidayData_001.json"
+      },
+      {
+        "entity": "contractService",
+        "script": "contractServiceData_001.json"
+      },
+      {
+        "entity": "contract",
+        "script": "contractData_001.json"
+      },
+      {
+        "entity": "ticket",
+        "script": "ticketData_001.json"
+      },
+      {
+        "entity": "event",
+        "script": "eventData_001.json"
+      },
+      {
+        "entity": "dashboardTemplate",
+        "script": "dashboardTemplateData_001.json"
+      },
+      {
+        "entity": "dashboardTemplate",
+        "script": "dashboardTemplateData_002.json"
+      },
+      {
+        "entity": "dashboardTemplate",
+        "script": "dashboardTemplateData_003.json"
+      },
+      {
+        "entity": "dashboardTemplate",
+        "script": "dashboardTemplateData_004.json"
+      },
+      {
+        "entity": "dashboardTemplate",
+        "script": "dashboardTemplateData_005.json"
+      },
+      {
+        "entity": "favoriteTemplate",
+        "script": "favoriteTemplateData_001.json"
+      },
+      {
+        "entity": "serverLandscapeType",
+        "script": "serverLandscapeTypeData_001.json"
+      },
+      {
+        "entity": "serverLandscapeTypeUsage",
+        "script": "serverLandscapeTypeUsageData_001.json"
+      },
+      {
+        "entity": "serverLandscape",
+        "script": "serverLandscapeData_001.json"
+      },
+      {
+        "entity": "product",
+        "script": "productData_001.json"
+      },
+      {
+        "entity": "note",
+        "script": "noteData_001.json"
+      },
+      {
+        "entity": "webhookAuthenticationType",
+        "script": "webhookAuthenticationTypeData_001.json"
+      },
+      {
+        "entity": "webhookSubscriptionType",
+        "script": "webhookSubscriptionTypeData_001.json"
+      },
+      {
+        "entity": "webhookSubscriptionPayloadType",
+        "script": "webhookSubscriptionPayloadTypeData_001.json"
+      },
+      {
+        "entity": "webhookSubscriptionMethod",
+        "script": "webhookSubscriptionMethodData_001.json"
+      },
+      {
+        "entity": "webhookDeliveryStatus",
+        "script": "webhookDeliveryStatusData_001.json"
+      },
+      {
+        "entity": "webhookDeliveryStatus",
+        "script": "webhookDeliveryStatusData_002.json"
+      },
+      {
+        "entity": "webhookSubscription",
+        "script": "webhookSubscriptionData_001.json"
+      },
+      {
+        "entity": "salesOpportunityStage",
+        "script": "salesOpportunityStageData_001.json"
+      },
+      {
+        "entity": "salesOpportunityStage",
+        "script": "salesOpportunityStageData_002.json"
+      },
+      {
+        "entity": "salesOpportunityForecast",
+        "script": "salesOpportunityForecastData_001.json"
+      },
+      {
+        "entity": "salesOpportunitySource",
+        "script": "salesOpportunitySourceData_001.json"
+      },
+      {
+        "entity": "salesOpportunityLossReason",
+        "script": "salesOpportunityLossReasonData_001.json"
+      },
+      {
+        "entity": "salesOpportunityResultStatus",
+        "script": "salesOpportunityResultStatusData_001.json"
+      },
+      {
+        "entity": "salesOpportunityResultStatus",
+        "script": "salesOpportunityResultStatusData_002.json"
+      },
+      {
+        "entity": "salesOpportunity",
+        "script": "salesOpportunityData_001.json"
+      },
+      {
+        "entity": "effortEstimateStatus",
+        "script": "effortEstimateStatusData_001.json"
+      },
+      {
+        "entity": "effortEstimateStatus",
+        "script": "effortEstimateStatusData_002.json"
+      },
+      {
+        "entity": "effortEstimatePositionTemplate",
+        "script": "effortEstimatePositionTemplateData_001.json"
+      },
+      {
+        "entity": "effortEstimate",
+        "script": "effortEstimateData_001.json"
+      },
+      {
+        "entity": "effortEstimatePosition",
+        "script": "effortEstimatePositionData_001.json"
+      },
+      {
+        "entity": "internalCaseStatus",
+        "script": "internalCaseStatusData_001.json"
+      },
+      {
+        "entity": "internalCaseStatus",
+        "script": "internalCaseStatusData_002.json"
+      },
+      {
+        "entity": "internalCaseCategory",
+        "script": "internalCaseCategoryData_001.json"
+      },
+      {
+        "entity": "internalCase",
+        "script": "internalCaseData_001.json"
+      },
+      {
+        "entity": "knowledgeArticleStatus",
+        "script": "knowledgeArticleStatusData_001.json"
+      },
+      {
+        "entity": "knowledgeArticleStatus",
+        "script": "knowledgeArticleStatusData_002.json"
+      },
+      {
+        "entity": "knowledgeArticleVisibility",
+        "script": "knowledgeArticleVisibilityData_001.json"
+      },
+      {
+        "entity": "knowledgeArticleCategory",
+        "script": "knowledgeArticleCategoryData_001.json"
+      },
+      {
+        "entity": "knowledgeArticle",
+        "script": "knowledgeArticleData_001.json"
+      },
+      {
+        "entity": "knowledgeArticle",
+        "script": "knowledgeArticleData_002.json"
+      },
+      {
+        "entity": "documentType",
+        "script": "documentTypeData_001.json"
+      },
+      {
+        "entity": "documentType",
+        "script": "documentTypeData_002.json"
+      },
+      {
+        "entity": "emailInboxProcessingMode",
+        "script": "emailInboxProcessingModeData_001.json"
+      },
+      {
+        "entity": "inboundEmailStatus",
+        "script": "inboundEmailStatusData_001.json"
+      },
+      {
+        "entity": "inboundEmailStatus",
+        "script": "inboundEmailStatusData_002.json"
+      },
+      {
+        "entity": "emailDeliveryStatus",
+        "script": "emailDeliveryStatusData_001.json"
+      },
+      {
+        "entity": "emailTemplate",
+        "script": "emailTemplateData_001.json"
+      },
+      {
+        "entity": "emailList",
+        "script": "emailListData_001.json"
+      },
+      {
+        "entity": "marketingCampaignStatus",
+        "script": "marketingCampaignStatusData_001.json"
+      },
+      {
+        "entity": "marketingCampaignStatus",
+        "script": "marketingCampaignStatusData_002.json"
+      },
+      {
+        "entity": "marketingCampaignType",
+        "script": "marketingCampaignTypeData_001.json"
+      },
+      {
+        "entity": "marketingCampaign",
+        "script": "marketingCampaignData_001.json"
+      },
+      {
+        "entity": "teamsTemplate",
+        "script": "teamsTemplateData_001.json"
+      },
+      {
+        "entity": "teamsDeliveryStatus",
+        "script": "teamsDeliveryStatusData_001.json"
+      },
+      {
+        "entity": "teamsDeliveryStatus",
+        "script": "teamsDeliveryStatusData_002.json"
+      },
+      {
+        "entity": "teamsSubscription",
+        "script": "teamsSubscriptionData_001.json"
+      },
+      {
+        "entity": "teamsDelivery",
+        "script": "teamsDeliveryData_001.json"
+      },
+      {
+        "entity": "inboxTemplate",
+        "script": "inboxTemplateData_001.json"
+      },
+      {
+        "entity": "inboxTemplate",
+        "script": "inboxTemplateData_002.json"
+      },
+      {
+        "entity": "inboxSubscription",
+        "script": "inboxSubscriptionData_001.json"
+      },
+      {
+        "entity": "inboxSubscription",
+        "script": "inboxSubscriptionData_002.json"
+      },
+      {
+        "entity": "inboxNotification",
+        "script": "inboxNotificationData_001.json"
+      },
+      {
+        "entity": "aiChatTranscription",
+        "script": "aiChatTranscriptionData_001.json"
+      },
+      {
+        "entity": "aiProviderType",
+        "script": "aiProviderTypeData_001.json"
+      },
+      {
+        "entity": "aiProviderModel",
+        "script": "aiProviderModelData_001.json"
+      },
+      {
+        "entity": "aiProviderModel",
+        "script": "aiProviderModelData_002.json"
+      },
+      {
+        "entity": "aiProviderModel",
+        "script": "aiProviderModelData_003.json"
+      },
+      {
+        "entity": "aiProviderModel",
+        "script": "aiProviderModelData_004.json"
+      },
+      {
+        "entity": "aiEntityGenerationTemplate",
+        "script": "aiEntityGenerationTemplateData_001.json"
+      },
+      {
+        "entity": "mcpServerConfig",
+        "script": "mcpServerConfigData_001.json"
+      },
+      {
+        "entity": "importSource",
+        "script": "importSourceData_001.json"
+      },
+      {
+        "entity": "importTemplate",
+        "script": "importTemplateData_001.json"
+      },
+      {
+        "entity": "importTemplateValueMapping",
+        "script": "importTemplateValueMappingData_001.json"
+      },
+      {
+        "entity": "aiAgent",
+        "script": "aiAgentData_001.json"
+      },
+      {
+        "entity": "aiAgent",
+        "script": "aiAgentData_002.json"
+      },
+      {
+        "entity": "aiAgent",
+        "script": "aiAgentData_003.json"
+      },
+      {
+        "entity": "aiAgentVersion",
+        "script": "aiAgentVersionData_001.json"
+      },
+      {
+        "entity": "aiAgentPlaybook",
+        "script": "aiAgentPlaybookData_001.json"
+      },
+      {
+        "entity": "aiAgentMemory",
+        "script": "aiAgentMemoryData_001.json"
+      },
+      {
+        "entity": "customFieldType",
+        "script": "customFieldTypeData_001.json"
+      }
+    ],
+    "production": [
+      {
+        "entity": "language",
+        "script": "languageData_001.json"
+      },
+      {
+        "entity": "money",
+        "script": "moneyData_001.json"
+      },
+      {
+        "entity": "country",
+        "script": "countryData_001.json"
+      },
+      {
+        "entity": "aiPromptTemplate",
+        "script": "promptData_001.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_001.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_002.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_003.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_004.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_005.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_006.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_007.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_008.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_009.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_010.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_011.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_012.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_013.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_014.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_015.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_016.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_017.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_018.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_019.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_020.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_021.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_022.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_023.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_024.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_025.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_026.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_027.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_028.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_029.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_030.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_031.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_032.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_033.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_034.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_035.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_036.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_037.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_038.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_039.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_040.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_041.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_042.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_043.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_044.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_045.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_046.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_047.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_048.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_049.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_050.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_051.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_052.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_053.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_054.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_055.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_056.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_057.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_058.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_059.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_060.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_061.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_062.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_063.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_064.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_065.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_066.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_067.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_068.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_069.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_070.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_071.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_072.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_073.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_074.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_075.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_076.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_077.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_078.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_079.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_080.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_081.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_082.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_083.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_084.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_085.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_086.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_087.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_088.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_089.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_090.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_091.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_092.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_093.json"
+      },
+      {
+        "entity": "translation",
+        "script": "translationData_094.json"
+      },
+      {
+        "entity": "workHour",
+        "script": "workHourData_001.json"
+      },
+      {
+        "entity": "workHourWeek",
+        "script": "workHourWeekData_001.json"
+      },
+      {
+        "entity": "holidayGroup",
+        "script": "holidayGroupData_001.json"
+      },
+      {
+        "entity": "addressType",
+        "script": "addressTypeData_001.json"
+      },
+      {
+        "entity": "companyIndustry",
+        "script": "companyIndustryData_001.json"
+      },
+      {
+        "entity": "companySegment",
+        "script": "companySegmentData_001.json"
+      },
+      {
+        "entity": "companySize",
+        "script": "companySizeData_001.json"
+      },
+      {
+        "entity": "companyAnnualRevenueClass",
+        "script": "companyAnnualRevenueClassData_001.json"
+      },
+      {
+        "entity": "companyChurnRiskReason",
+        "script": "companyChurnRiskReasonData_001.json"
+      },
+      {
+        "entity": "company",
+        "script": "companyData_001.json"
+      },
+      {
+        "entity": "address",
+        "script": "addressData_001.json"
+      },
+      {
+        "entity": "companyRelationshipType",
+        "script": "companyRelationshipTypeData_001.json"
+      },
+      {
+        "entity": "companyRelationship",
+        "script": "companyRelationshipData_001.json"
+      },
+      {
+        "entity": "entityGroup",
+        "script": "entityGroupData_001.json"
+      },
+      {
+        "entity": "entityGroup",
+        "script": "entityGroupData_002.json"
+      },
+      {
+        "entity": "entityGroup",
+        "script": "entityGroupData_003.json"
+      },
+      {
+        "entity": "entityGroup",
+        "script": "entityGroupData_004.json"
+      },
+      {
+        "entity": "entityGroup",
+        "script": "entityGroupData_005.json"
+      },
+      {
+        "entity": "entityGroup",
+        "script": "entityGroupData_006.json"
+      },
+      {
+        "entity": "entity",
+        "script": "entityData_001.json"
+      },
+      {
+        "entity": "entity",
+        "script": "entityData_002.json"
+      },
+      {
+        "entity": "entity",
+        "script": "entityData_003.json"
+      },
+      {
+        "entity": "entity",
+        "script": "entityData_004.json"
+      },
+      {
+        "entity": "entity",
+        "script": "entityData_005.json"
+      },
+      {
+        "entity": "entity",
+        "script": "entityData_006.json"
+      },
+      {
+        "entity": "entity",
+        "script": "entityData_007.json"
+      },
+      {
+        "entity": "entity",
+        "script": "entityData_008.json"
+      },
+      {
+        "entity": "entity",
+        "script": "entityData_009.json"
+      },
+      {
+        "entity": "entity",
+        "script": "entityData_010.json"
+      },
+      {
+        "entity": "entity",
+        "script": "entityData_011.json"
+      },
+      {
+        "entity": "entity",
+        "script": "entityData_012.json"
+      },
+      {
+        "entity": "entity",
+        "script": "entityData_013.json"
+      },
+      {
+        "entity": "entity",
+        "script": "entityData_014.json"
+      },
+      {
+        "entity": "entity",
+        "script": "entityData_015.json"
+      },
+      {
+        "entity": "entity",
+        "script": "entityData_016.json"
+      },
+      {
+        "entity": "entity",
+        "script": "entityData_017.json"
+      },
+      {
+        "entity": "entity",
+        "script": "entityData_018.json"
+      },
+      {
+        "entity": "entity",
+        "script": "entityData_019.json"
+      },
+      {
+        "entity": "entity",
+        "script": "entityData_020.json"
+      },
+      {
+        "entity": "systemAlertRule",
+        "script": "systemAlertRuleData_001.json"
+      },
+      {
+        "entity": "systemAlertRule",
+        "script": "systemAlertRuleData_002.json"
+      },
+      {
+        "entity": "systemAlertRule",
+        "script": "systemAlertRuleData_003.json"
+      },
+      {
+        "entity": "entityRoute",
+        "script": "entityRouteData_001.json"
+      },
+      {
+        "entity": "entityRoute",
+        "script": "entityRouteData_002.json"
+      },
+      {
+        "entity": "entityRoute",
+        "script": "entityRouteData_003.json"
+      },
+      {
+        "entity": "entityRoute",
+        "script": "entityRouteData_004.json"
+      },
+      {
+        "entity": "entityRoute",
+        "script": "entityRouteData_005.json"
+      },
+      {
+        "entity": "entityRoute",
+        "script": "entityRouteData_006.json"
+      },
+      {
+        "entity": "entityRoute",
+        "script": "entityRouteData_007.json"
+      },
+      {
+        "entity": "entityRoute",
+        "script": "entityRouteData_008.json"
+      },
+      {
+        "entity": "entityRoute",
+        "script": "entityRouteData_009.json"
+      },
+      {
+        "entity": "entityRoute",
+        "script": "entityRouteData_010.json"
+      },
+      {
+        "entity": "entityRoute",
+        "script": "entityRouteData_011.json"
+      },
+      {
+        "entity": "entityRoute",
+        "script": "entityRouteData_012.json"
+      },
+      {
+        "entity": "entityRoute",
+        "script": "entityRouteData_013.json"
+      },
+      {
+        "entity": "entityRoute",
+        "script": "entityRouteData_014.json"
+      },
+      {
+        "entity": "changeLogAction",
+        "script": "changeLogActionData_001.json"
+      },
+      {
+        "entity": "changeLogAction",
+        "script": "changeLogActionData_002.json"
+      },
+      {
+        "entity": "scriptButton",
+        "script": "scriptButtonData_001.json"
+      },
+      {
+        "entity": "scriptButton",
+        "script": "scriptButtonData_002.json"
+      },
+      {
+        "entity": "scriptButton",
+        "script": "scriptButtonData_003.json"
+      },
+      {
+        "entity": "scriptButton",
+        "script": "scriptButtonData_004.json"
+      },
+      {
+        "entity": "kpiAggregation",
+        "script": "kpiAggregationData_001.json"
+      },
+      {
+        "entity": "kpiAggregation",
+        "script": "kpiAggregationData_002.json"
+      },
+      {
+        "entity": "kpiTimeframe",
+        "script": "kpiTimeframeData_001.json"
+      },
+      {
+        "entity": "kpiType",
+        "script": "kpiTypeData_001.json"
+      },
+      {
+        "entity": "kpiType",
+        "script": "kpiTypeData_002.json"
+      },
+      {
+        "entity": "kpiType",
+        "script": "kpiTypeData_003.json"
+      },
+      {
+        "entity": "kpi",
+        "script": "kpiData_001.json"
+      },
+      {
+        "entity": "kpi",
+        "script": "kpiData_002.json"
+      },
+      {
+        "entity": "kpi",
+        "script": "kpiData_003.json"
+      },
+      {
+        "entity": "kpi",
+        "script": "kpiData_004.json"
+      },
+      {
+        "entity": "kpi",
+        "script": "kpiData_005.json"
+      },
+      {
+        "entity": "roleStage",
+        "script": "roleStageData_001.json"
+      },
+      {
+        "entity": "role",
+        "script": "roleData_001.json"
+      },
+      {
+        "entity": "personDepartment",
+        "script": "personDepartmentData_001.json"
+      },
+      {
+        "entity": "personDecisionRole",
+        "script": "personDecisionRoleData_001.json"
+      },
+      {
+        "entity": "personFunction",
+        "script": "personFunctionData_001.json"
+      },
+      {
+        "entity": "personJobTitle",
+        "script": "personJobTitleData_001.json"
+      },
+      {
+        "entity": "personSalutation",
+        "script": "personSalutationData_001.json"
+      },
+      {
+        "entity": "personTitle",
+        "script": "personTitleData_001.json"
+      },
+      {
+        "entity": "personType",
+        "script": "personTypeData_001.json"
+      },
+      {
+        "entity": "person",
+        "script": "personData_001.json"
+      },
+      {
+        "entity": "phoneCall",
+        "script": "phoneCallData_001.json"
+      },
+      {
+        "entity": "socialMediaType",
+        "script": "socialMediaTypeData_001.json"
+      },
+      {
+        "entity": "socialMedia",
+        "script": "socialMediaData_001.json"
+      },
+      {
+        "entity": "ticketPriority",
+        "script": "ticketPriorityData_001.json"
+      },
+      {
+        "entity": "ticketStatus",
+        "script": "ticketStatusData_001.json"
+      },
+      {
+        "entity": "ticketStatus",
+        "script": "ticketStatusData_002.json"
+      },
+      {
+        "entity": "ticketStatus",
+        "script": "ticketStatusData_003.json"
+      },
+      {
+        "entity": "ticketType",
+        "script": "ticketTypeData_001.json"
+      },
+      {
+        "entity": "ticketCategory",
+        "script": "ticketCategoryData_001.json"
+      },
+      {
+        "entity": "ticketSource",
+        "script": "ticketSourceData_001.json"
+      },
+      {
+        "entity": "supportTeam",
+        "script": "supportTeamData_001.json"
+      },
+      {
+        "entity": "slaPolicy",
+        "script": "slaPolicyData_001.json"
+      },
+      {
+        "entity": "supportQueue",
+        "script": "supportQueueData_001.json"
+      },
+      {
+        "entity": "noteGroup",
+        "script": "noteGroupData_001.json"
+      },
+      {
+        "entity": "eventStatus",
+        "script": "eventStatusData_001.json"
+      },
+      {
+        "entity": "eventStatus",
+        "script": "eventStatusData_002.json"
+      },
+      {
+        "entity": "eventDeliveryStatus",
+        "script": "eventDeliveryStatusData_001.json"
+      },
+      {
+        "entity": "eventDeliveryStatus",
+        "script": "eventDeliveryStatusData_002.json"
+      },
+      {
+        "entity": "eventType",
+        "script": "eventTypeData_001.json"
+      },
+      {
+        "entity": "eventCategory",
+        "script": "eventCategoryData_001.json"
+      },
+      {
+        "entity": "holiday",
+        "script": "holidayData_001.json"
+      },
+      {
+        "entity": "contractService",
+        "script": "contractServiceData_001.json"
+      },
+      {
+        "entity": "contract",
+        "script": "contractData_001.json"
+      },
+      {
+        "entity": "ticket",
+        "script": "ticketData_001.json"
+      },
+      {
+        "entity": "event",
+        "script": "eventData_001.json"
+      },
+      {
+        "entity": "dashboardTemplate",
+        "script": "dashboardTemplateData_001.json"
+      },
+      {
+        "entity": "dashboardTemplate",
+        "script": "dashboardTemplateData_002.json"
+      },
+      {
+        "entity": "dashboardTemplate",
+        "script": "dashboardTemplateData_003.json"
+      },
+      {
+        "entity": "dashboardTemplate",
+        "script": "dashboardTemplateData_004.json"
+      },
+      {
+        "entity": "dashboardTemplate",
+        "script": "dashboardTemplateData_005.json"
+      },
+      {
+        "entity": "favoriteTemplate",
+        "script": "favoriteTemplateData_001.json"
+      },
+      {
+        "entity": "serverLandscapeType",
+        "script": "serverLandscapeTypeData_001.json"
+      },
+      {
+        "entity": "serverLandscapeTypeUsage",
+        "script": "serverLandscapeTypeUsageData_001.json"
+      },
+      {
+        "entity": "serverLandscape",
+        "script": "serverLandscapeData_001.json"
+      },
+      {
+        "entity": "product",
+        "script": "productData_001.json"
+      },
+      {
+        "entity": "note",
+        "script": "noteData_001.json"
+      },
+      {
+        "entity": "webhookAuthenticationType",
+        "script": "webhookAuthenticationTypeData_001.json"
+      },
+      {
+        "entity": "webhookSubscriptionType",
+        "script": "webhookSubscriptionTypeData_001.json"
+      },
+      {
+        "entity": "webhookSubscriptionPayloadType",
+        "script": "webhookSubscriptionPayloadTypeData_001.json"
+      },
+      {
+        "entity": "webhookSubscriptionMethod",
+        "script": "webhookSubscriptionMethodData_001.json"
+      },
+      {
+        "entity": "webhookDeliveryStatus",
+        "script": "webhookDeliveryStatusData_001.json"
+      },
+      {
+        "entity": "webhookDeliveryStatus",
+        "script": "webhookDeliveryStatusData_002.json"
+      },
+      {
+        "entity": "webhookSubscription",
+        "script": "webhookSubscriptionData_001.json"
+      },
+      {
+        "entity": "salesOpportunityStage",
+        "script": "salesOpportunityStageData_001.json"
+      },
+      {
+        "entity": "salesOpportunityStage",
+        "script": "salesOpportunityStageData_002.json"
+      },
+      {
+        "entity": "salesOpportunityForecast",
+        "script": "salesOpportunityForecastData_001.json"
+      },
+      {
+        "entity": "salesOpportunitySource",
+        "script": "salesOpportunitySourceData_001.json"
+      },
+      {
+        "entity": "salesOpportunityLossReason",
+        "script": "salesOpportunityLossReasonData_001.json"
+      },
+      {
+        "entity": "salesOpportunityResultStatus",
+        "script": "salesOpportunityResultStatusData_001.json"
+      },
+      {
+        "entity": "salesOpportunityResultStatus",
+        "script": "salesOpportunityResultStatusData_002.json"
+      },
+      {
+        "entity": "salesOpportunity",
+        "script": "salesOpportunityData_001.json"
+      },
+      {
+        "entity": "effortEstimateStatus",
+        "script": "effortEstimateStatusData_001.json"
+      },
+      {
+        "entity": "effortEstimateStatus",
+        "script": "effortEstimateStatusData_002.json"
+      },
+      {
+        "entity": "effortEstimatePositionTemplate",
+        "script": "effortEstimatePositionTemplateData_001.json"
+      },
+      {
+        "entity": "effortEstimate",
+        "script": "effortEstimateData_001.json"
+      },
+      {
+        "entity": "effortEstimatePosition",
+        "script": "effortEstimatePositionData_001.json"
+      },
+      {
+        "entity": "internalCaseStatus",
+        "script": "internalCaseStatusData_001.json"
+      },
+      {
+        "entity": "internalCaseStatus",
+        "script": "internalCaseStatusData_002.json"
+      },
+      {
+        "entity": "internalCaseCategory",
+        "script": "internalCaseCategoryData_001.json"
+      },
+      {
+        "entity": "internalCase",
+        "script": "internalCaseData_001.json"
+      },
+      {
+        "entity": "knowledgeArticleStatus",
+        "script": "knowledgeArticleStatusData_001.json"
+      },
+      {
+        "entity": "knowledgeArticleStatus",
+        "script": "knowledgeArticleStatusData_002.json"
+      },
+      {
+        "entity": "knowledgeArticleVisibility",
+        "script": "knowledgeArticleVisibilityData_001.json"
+      },
+      {
+        "entity": "knowledgeArticleCategory",
+        "script": "knowledgeArticleCategoryData_001.json"
+      },
+      {
+        "entity": "knowledgeArticle",
+        "script": "knowledgeArticleData_001.json"
+      },
+      {
+        "entity": "knowledgeArticle",
+        "script": "knowledgeArticleData_002.json"
+      },
+      {
+        "entity": "documentType",
+        "script": "documentTypeData_001.json"
+      },
+      {
+        "entity": "documentType",
+        "script": "documentTypeData_002.json"
+      },
+      {
+        "entity": "emailInboxProcessingMode",
+        "script": "emailInboxProcessingModeData_001.json"
+      },
+      {
+        "entity": "inboundEmailStatus",
+        "script": "inboundEmailStatusData_001.json"
+      },
+      {
+        "entity": "inboundEmailStatus",
+        "script": "inboundEmailStatusData_002.json"
+      },
+      {
+        "entity": "emailDeliveryStatus",
+        "script": "emailDeliveryStatusData_001.json"
+      },
+      {
+        "entity": "emailTemplate",
+        "script": "emailTemplateData_001.json"
+      },
+      {
+        "entity": "emailList",
+        "script": "emailListData_001.json"
+      },
+      {
+        "entity": "marketingCampaignStatus",
+        "script": "marketingCampaignStatusData_001.json"
+      },
+      {
+        "entity": "marketingCampaignStatus",
+        "script": "marketingCampaignStatusData_002.json"
+      },
+      {
+        "entity": "marketingCampaignType",
+        "script": "marketingCampaignTypeData_001.json"
+      },
+      {
+        "entity": "marketingCampaign",
+        "script": "marketingCampaignData_001.json"
+      },
+      {
+        "entity": "teamsTemplate",
+        "script": "teamsTemplateData_001.json"
+      },
+      {
+        "entity": "teamsDeliveryStatus",
+        "script": "teamsDeliveryStatusData_001.json"
+      },
+      {
+        "entity": "teamsDeliveryStatus",
+        "script": "teamsDeliveryStatusData_002.json"
+      },
+      {
+        "entity": "teamsSubscription",
+        "script": "teamsSubscriptionData_001.json"
+      },
+      {
+        "entity": "teamsDelivery",
+        "script": "teamsDeliveryData_001.json"
+      },
+      {
+        "entity": "inboxTemplate",
+        "script": "inboxTemplateData_001.json"
+      },
+      {
+        "entity": "inboxTemplate",
+        "script": "inboxTemplateData_002.json"
+      },
+      {
+        "entity": "inboxSubscription",
+        "script": "inboxSubscriptionData_001.json"
+      },
+      {
+        "entity": "inboxSubscription",
+        "script": "inboxSubscriptionData_002.json"
+      },
+      {
+        "entity": "inboxNotification",
+        "script": "inboxNotificationData_001.json"
+      },
+      {
+        "entity": "aiChatTranscription",
+        "script": "aiChatTranscriptionData_001.json"
+      },
+      {
+        "entity": "aiProviderType",
+        "script": "aiProviderTypeData_001.json"
+      },
+      {
+        "entity": "aiProviderModel",
+        "script": "aiProviderModelData_001.json"
+      },
+      {
+        "entity": "aiProviderModel",
+        "script": "aiProviderModelData_002.json"
+      },
+      {
+        "entity": "aiProviderModel",
+        "script": "aiProviderModelData_003.json"
+      },
+      {
+        "entity": "aiProviderModel",
+        "script": "aiProviderModelData_004.json"
+      },
+      {
+        "entity": "aiProviderModel",
+        "script": "aiProviderModelData_005.json"
+      },
+      {
+        "entity": "aiEntityGenerationTemplate",
+        "script": "aiEntityGenerationTemplateData_001.json"
+      },
+      {
+        "entity": "mcpServerConfig",
+        "script": "mcpServerConfigData_001.json"
+      },
+      {
+        "entity": "importSource",
+        "script": "importSourceData_001.json"
+      },
+      {
+        "entity": "importTemplate",
+        "script": "importTemplateData_001.json"
+      },
+      {
+        "entity": "importTemplateValueMapping",
+        "script": "importTemplateValueMappingData_001.json"
+      },
+      {
+        "entity": "aiAgent",
+        "script": "aiAgentData_001.json"
+      },
+      {
+        "entity": "aiAgent",
+        "script": "aiAgentData_002.json"
+      },
+      {
+        "entity": "aiAgentVersion",
+        "script": "aiAgentVersionData_001.json"
+      },
+      {
+        "entity": "aiAgentPlaybook",
+        "script": "aiAgentPlaybookData_001.json"
+      },
+      {
+        "entity": "aiAgentMemory",
+        "script": "aiAgentMemoryData_001.json"
+      },
+      {
+        "entity": "customFieldType",
+        "script": "customFieldTypeData_001.json"
+      }
+    ]
+  },
+  "files": [
+    {
+      "path": "json-default/addressType/addressTypeData_0001_insert.json",
+      "entity": "addressType",
+      "sha256": "10254d2abb5435add7f5b86f8a7fd70683bfa5b0c6c4df545c55701a37db3bb7"
+    },
+    {
+      "path": "json-default/aiAgent/aiAgentData_0001_insert.json",
+      "entity": "aiAgent",
+      "sha256": "7f0e9c0fb1ac75ae612f564a1bb28515b81dd6a4f84a396a123d535c968c1efa"
+    },
+    {
+      "path": "json-default/aiAgentMemory/aiAgentMemoryData_0001_insert.json",
+      "entity": "aiAgentMemory",
+      "sha256": "c10ace032063b0ac2bebf85aa99bb08a1dc21691d3ae008a7f81bb0239bf99a8"
+    },
+    {
+      "path": "json-default/aiAgentPlaybook/aiAgentPlaybookData_0001_insert.json",
+      "entity": "aiAgentPlaybook",
+      "sha256": "76740aae46d93f6d1e2e1403050f52074b058be15e7b5de593198bc253d38b4e"
+    },
+    {
+      "path": "json-default/aiAgentVersion/aiAgentVersionData_0001_insert.json",
+      "entity": "aiAgentVersion",
+      "sha256": "ce924e352c87fef6d328836a8b99824a829eb539c57e640f3c864e1c54f183e8"
+    },
+    {
+      "path": "json-default/aiEntityGenerationTemplate/aiEntityGenerationTemplateData_0001_insert.json",
+      "entity": "aiEntityGenerationTemplate",
+      "sha256": "7737f21cd1532fb33083f417ee4176ad55c642e2d3b1e11843d65a75a92b5a31"
+    },
+    {
+      "path": "json-default/aiPromptTemplate/aiPromptTemplateData_0001_insert.json",
+      "entity": "aiPromptTemplate",
+      "sha256": "81060f9f99e9e9f60663f94033685844d15bb5e2551d1a61ea923b9843b2e7a6"
+    },
+    {
+      "path": "json-default/aiPromptTemplate/aiPromptTemplateData_0003_update.json",
+      "entity": "aiPromptTemplate",
+      "sha256": "301d719c9c207290287b8bf07ffcb6a22fc35010c4609ac67aefa60c1bd25ad2"
+    },
+    {
+      "path": "json-default/aiPromptVersion/aiPromptVersionData_0001_insert.json",
+      "entity": "aiPromptVersion",
+      "sha256": "157567b7e646c9cf9919b51c1656b08943a17f71f0fb9c6203c10308b31cb43d"
+    },
+    {
+      "path": "json-default/aiProviderModel/aiProviderModelData_0001_insert.json",
+      "entity": "aiProviderModel",
+      "sha256": "ecbd092c4d1342f6bc1465ee785b7dd4c351ad6402ab232e80153b702c761aac"
+    },
+    {
+      "path": "json-default/aiProviderType/aiProviderTypeData_0001_insert.json",
+      "entity": "aiProviderType",
+      "sha256": "6c9f44098f864b728b62286117d193196e73bfc0c2d70de35597e50ed7bfbb07"
+    },
+    {
+      "path": "json-default/changeLogAction/changeLogActionData_0001_insert.json",
+      "entity": "changeLogAction",
+      "sha256": "25a037249dc8332273cda48ce0a3416a4d229874d6558a05ff1e032a55cf7298"
+    },
+    {
+      "path": "json-default/company/companyData_0001_insert.json",
+      "entity": "company",
+      "sha256": "7bffd6b1999ae960517056068006abdf2094e226d05a3d2ea7fcd85f233f47b7"
+    },
+    {
+      "path": "json-default/companyAnnualRevenueClass/companyAnnualRevenueClassData_0001_insert.json",
+      "entity": "companyAnnualRevenueClass",
+      "sha256": "2ddc90475fedabcc3d15be265f6a93a3c51c1a0e98337ea23b21181ebfe116ea"
+    },
+    {
+      "path": "json-default/companyChurnRiskReason/companyChurnRiskReasonData_0001_insert.json",
+      "entity": "companyChurnRiskReason",
+      "sha256": "d2ad7b3425578184303ef7bd8f1180bda73b80808e7ba69a8801271a604442e9"
+    },
+    {
+      "path": "json-default/companyIndustry/companyIndustryData_0001_insert.json",
+      "entity": "companyIndustry",
+      "sha256": "d1efd0d3005a7f23f262889ee1803bbf07745b8801a205a39927cff9ebd6e809"
+    },
+    {
+      "path": "json-default/companyRelationshipType/companyRelationshipTypeData_0001_insert.json",
+      "entity": "companyRelationshipType",
+      "sha256": "f0445c93e19875bce3c04e5bbf26d97e140724eb2c2df9a967c4604062bce497"
+    },
+    {
+      "path": "json-default/companySegment/companySegmentData_0001_insert.json",
+      "entity": "companySegment",
+      "sha256": "c358f784f3250c2c8ee1a6af54917e30448465a726a5c5441f5900c3647fa715"
+    },
+    {
+      "path": "json-default/companySize/companySizeData_0001_insert.json",
+      "entity": "companySize",
+      "sha256": "b453b1daa97c926eb3b3d6e1ca8ee67d02ce458cef18a946bef3e6a6e8664017"
+    },
+    {
+      "path": "json-default/contractService/contractServiceData_0001_insert.json",
+      "entity": "contractService",
+      "sha256": "86acdb983bf079792b5bf5fc39828fffa247355948d696f8dd7cea2f2f621cbc"
+    },
+    {
+      "path": "json-default/country/countryData_0001_insert.json",
+      "entity": "country",
+      "sha256": "d2557e18567306bcd1b8bdbd19aa523caabfbf03445cc171b1ec19949c8d273d"
+    },
+    {
+      "path": "json-default/customFieldType/customFieldTypeData_0001_insert.json",
+      "entity": "customFieldType",
+      "sha256": "8178fc1f5898ba2b868a9eadd9ac4883a0d56bf8aaff5db05e2350e3c16964ea"
+    },
+    {
+      "path": "json-default/dashboardTemplate/dashboardTemplateData_0001_insert.json",
+      "entity": "dashboardTemplate",
+      "sha256": "18e5e07a5a8b2f73a65955186dfcc0f33721ecca6f8bbd7e096df9a1dcd4db8c"
+    },
+    {
+      "path": "json-default/dashboardTemplate/dashboardTemplateData_0003_update.json",
+      "entity": "dashboardTemplate",
+      "sha256": "aeb682ced5ae4cde569d3e7edc4a0a99d0b25f2a79aa6c85d57f53f90502a057"
+    },
+    {
+      "path": "json-default/documentType/documentTypeData_0001_insert.json",
+      "entity": "documentType",
+      "sha256": "00eb01fd6dadd28ee9c798d44f9541a2231cc628031cd4cf07afa64bd6ff594e"
+    },
+    {
+      "path": "json-default/effortEstimatePositionTemplate/effortEstimatePositionTemplateData_0001_insert.json",
+      "entity": "effortEstimatePositionTemplate",
+      "sha256": "bf0c4ec285be557eaa3656eb2dd060d3073b2b4d30bc54183ef8c4b25334c7a9"
+    },
+    {
+      "path": "json-default/effortEstimateStatus/effortEstimateStatusData_0001_insert.json",
+      "entity": "effortEstimateStatus",
+      "sha256": "5830a43129674c17c2e2e2dc3546b8a39e591963b44b4a6be93024fb1f5aa3e8"
+    },
+    {
+      "path": "json-default/emailDeliveryStatus/emailDeliveryStatusData_0001_insert.json",
+      "entity": "emailDeliveryStatus",
+      "sha256": "761e910d7db2b848b143f2536d3672f5d9d172ccf5fe38cba02799412870f632"
+    },
+    {
+      "path": "json-default/emailInboxProcessingMode/emailInboxProcessingModeData_0001_insert.json",
+      "entity": "emailInboxProcessingMode",
+      "sha256": "34b80e4e6b6116beda2348057543e5cf7f0084c1303ad608bf75afa3233e0447"
+    },
+    {
+      "path": "json-default/emailList/emailListData_0001_insert.json",
+      "entity": "emailList",
+      "sha256": "905808c920bbba20c23f8f767aaccc8e35f14a346baf6efa43821984a1bd3f7c"
+    },
+    {
+      "path": "json-default/emailTemplate/emailTemplateData_0001_insert.json",
+      "entity": "emailTemplate",
+      "sha256": "6410ad443a208a5a014e1fd37bff578a0a72fb560363688bb2bc51ed9e4ad278"
+    },
+    {
+      "path": "json-default/entity/entityData_0001_insert.json",
+      "entity": "entity",
+      "sha256": "b234f444fb8c8cc0d697cfe6188c62a3bacd9d2a8b3ba278c9c95109e2c27fb4"
+    },
+    {
+      "path": "json-default/entityGroup/entityGroupData_0001_insert.json",
+      "entity": "entityGroup",
+      "sha256": "74244d1c08f884ba70e211a38ac0f09b9699a99b7b41f91be07568788ed6734c"
+    },
+    {
+      "path": "json-default/entityGroup/entityGroupData_0003_update.json",
+      "entity": "entityGroup",
+      "sha256": "fcc1f23a5b3e8c025c9bcbdca62852420398aebbccd1e222760578c815084e0a"
+    },
+    {
+      "path": "json-default/entityRoute/entityRouteData_0001_insert.json",
+      "entity": "entityRoute",
+      "sha256": "a390e5faf89c3e215c2358c8a81a9340befb9cc9e936c5f61b02ddda8b0cc123"
+    },
+    {
+      "path": "json-default/eventCategory/eventCategoryData_0001_insert.json",
+      "entity": "eventCategory",
+      "sha256": "7c029e8c555b6dacf663374536ae74987bf556c78bcbf60cdd408a43a0f1f0bf"
+    },
+    {
+      "path": "json-default/eventDeliveryStatus/eventDeliveryStatusData_0001_insert.json",
+      "entity": "eventDeliveryStatus",
+      "sha256": "44928c8ae5227127a02ec4070478643737db8ab6d1355824815305074e949341"
+    },
+    {
+      "path": "json-default/eventStatus/eventStatusData_0001_insert.json",
+      "entity": "eventStatus",
+      "sha256": "336883603dce7f3ce833f6efba1cf9ebaf662ee04d76dd5f6d7d260d6237cc46"
+    },
+    {
+      "path": "json-default/eventType/eventTypeData_0001_insert.json",
+      "entity": "eventType",
+      "sha256": "36a099c33edbe8d51532dd5a47ceab28857e092566df264f66aa4ff7d4abc07f"
+    },
+    {
+      "path": "json-default/favoriteTemplate/favoriteTemplateData_0001_insert.json",
+      "entity": "favoriteTemplate",
+      "sha256": "46c219a11054390db969d01048bf68c332c9c16a52c8d5951d472c9f38324586"
+    },
+    {
+      "path": "json-default/holiday/holidayData_0001_insert.json",
+      "entity": "holiday",
+      "sha256": "756fe06c516bb704edd525f6a9ac7580c21f964027248768be312eee58dbeff1"
+    },
+    {
+      "path": "json-default/holidayGroup/holidayGroupData_0001_insert.json",
+      "entity": "holidayGroup",
+      "sha256": "164886e3e0978ba74505c0d958729fca21a4b22f060fc0559a84cbf5613417e3"
+    },
+    {
+      "path": "json-default/importSource/importSourceData_0001_insert.json",
+      "entity": "importSource",
+      "sha256": "698fdea00a67bc384ff8e61fd54201c1a93951b8c79a2e77e7563652d7cb1371"
+    },
+    {
+      "path": "json-default/importTemplate/importTemplateData_0001_insert.json",
+      "entity": "importTemplate",
+      "sha256": "f7df38b8b68ca7d4e5606451b79cfc6c52e638268934b6eceab5e2dc46c57ec1"
+    },
+    {
+      "path": "json-default/importTemplateValueMapping/importTemplateValueMappingData_0001_insert.json",
+      "entity": "importTemplateValueMapping",
+      "sha256": "cb5792f26be46307c032f868793bccfb1cb4d15a59f24252dc371d59a31debbc"
+    },
+    {
+      "path": "json-default/inboundEmailStatus/inboundEmailStatusData_0001_insert.json",
+      "entity": "inboundEmailStatus",
+      "sha256": "6258a4e145dde61be8911ef22f98dd2f692d4a1be5fcaaff978e760199ab6393"
+    },
+    {
+      "path": "json-default/inboxSubscription/inboxSubscriptionData_0001_insert.json",
+      "entity": "inboxSubscription",
+      "sha256": "df4f05883106cf85ab5023bb28179cf2f19ac53fea2fd7782110c10f5e76a653"
+    },
+    {
+      "path": "json-default/inboxTemplate/inboxTemplateData_0001_insert.json",
+      "entity": "inboxTemplate",
+      "sha256": "64f21ebb1ea0573b8be23113cbdc1971c1525e34850c4fe1ca0baac69e6c4beb"
+    },
+    {
+      "path": "json-default/internalCaseCategory/internalCaseCategoryData_0001_insert.json",
+      "entity": "internalCaseCategory",
+      "sha256": "e0d563ad6687a65206db11a204787475b264c152e98e0effab8c2415914e2ae2"
+    },
+    {
+      "path": "json-default/internalCaseStatus/internalCaseStatusData_0001_insert.json",
+      "entity": "internalCaseStatus",
+      "sha256": "02b23de5bce8e40231cb084623a28d6f76844368596d3f41e9b31c8e38fd539f"
+    },
+    {
+      "path": "json-default/knowledgeArticle/knowledgeArticleData_0001_insert.json",
+      "entity": "knowledgeArticle",
+      "sha256": "6fe6675cd135ddb58c560cc980385cf8139fdbaf0bb5747aece6e988ffa405d5"
+    },
+    {
+      "path": "json-default/knowledgeArticleCategory/knowledgeArticleCategoryData_0001_insert.json",
+      "entity": "knowledgeArticleCategory",
+      "sha256": "e7ec13120a810e3a18df181534eea9b0a418c65c07bb483c7e65d22ef97bbd2b"
+    },
+    {
+      "path": "json-default/knowledgeArticleStatus/knowledgeArticleStatusData_0001_insert.json",
+      "entity": "knowledgeArticleStatus",
+      "sha256": "38a6a5e0a3f8a18702eb63229f3f64ae7fa4b92f5d9cfaa2d07dd66ba15713dc"
+    },
+    {
+      "path": "json-default/knowledgeArticleVisibility/knowledgeArticleVisibilityData_0001_insert.json",
+      "entity": "knowledgeArticleVisibility",
+      "sha256": "91c742252521012912aec8190c0782f8443b699680965dc40aae075c6a913609"
+    },
+    {
+      "path": "json-default/kpi/kpiData_0001_insert.json",
+      "entity": "kpi",
+      "sha256": "4c309986fb54aa0412b0dda31d743c14bd6beb9967cd36dae232c8f6f7cbdfb5"
+    },
+    {
+      "path": "json-default/kpiAggregation/kpiAggregationData_0001_insert.json",
+      "entity": "kpiAggregation",
+      "sha256": "bfac6db625034ce2fddc8eaa40e9f4b99a34141562f3e3e991d9e058b351b734"
+    },
+    {
+      "path": "json-default/kpiTimeframe/kpiTimeframeData_0001_insert.json",
+      "entity": "kpiTimeframe",
+      "sha256": "55e4dbdb730d5a386dcb6cc861d3d8ff5511883620a30a836b2c20f5c83070f7"
+    },
+    {
+      "path": "json-default/kpiType/kpiTypeData_0001_insert.json",
+      "entity": "kpiType",
+      "sha256": "95753844f470d75dd2381cd91f124e590f82240b19bf54f33c02cd7d6b3dfd0d"
+    },
+    {
+      "path": "json-default/language/languageData_0001_insert.json",
+      "entity": "language",
+      "sha256": "dc4b25b989b88d3d6b7d394d5978d2d34fe231fc95b951dd30ac6f683a9b4d7b"
+    },
+    {
+      "path": "json-default/marketingCampaignStatus/marketingCampaignStatusData_0001_insert.json",
+      "entity": "marketingCampaignStatus",
+      "sha256": "f7f7c77ff4bdf220726977475f0524bc8c2dca411f78198162409a457b56d4fe"
+    },
+    {
+      "path": "json-default/marketingCampaignType/marketingCampaignTypeData_0001_insert.json",
+      "entity": "marketingCampaignType",
+      "sha256": "4607fed4a22bae5591c3ef59f2228be7d75e5ab41dc5f6a0bad2d16d98e023ac"
+    },
+    {
+      "path": "json-default/money/moneyData_0001_insert.json",
+      "entity": "money",
+      "sha256": "f6fa63a0c6d559ee26d59f3362322ca0121a948def5c26e4f11ca2a63ad19303"
+    },
+    {
+      "path": "json-default/note/noteData_0001_insert.json",
+      "entity": "note",
+      "sha256": "008d2d003621fde69ee971c25c2d89ee1aaff0a85c7f9fd90ef4d446121ad536"
+    },
+    {
+      "path": "json-default/noteGroup/noteGroupData_0001_insert.json",
+      "entity": "noteGroup",
+      "sha256": "d315c9a5adb8b2f3b0ef17a27a586608f194b8bc971c301b6498e4b1d8d4bbe2"
+    },
+    {
+      "path": "json-default/permission/permissionData_0001_insert.json",
+      "entity": "permission",
+      "sha256": "5fc28203131083756b684b1e98cf37261509e12f7e38684cbcb8b462640da51e"
+    },
+    {
+      "path": "json-default/personDecisionRole/personDecisionRoleData_0001_insert.json",
+      "entity": "personDecisionRole",
+      "sha256": "57787d01cdfd0862d4cb29f2013cc1b4a65dedf445a7c774b92f343d03b4e9f5"
+    },
+    {
+      "path": "json-default/personDepartment/personDepartmentData_0001_insert.json",
+      "entity": "personDepartment",
+      "sha256": "5c061abc04bcced064cd00e27a2af79289b548ce7741858d2a8f2bcc9b4b25bd"
+    },
+    {
+      "path": "json-default/personFunction/personFunctionData_0001_insert.json",
+      "entity": "personFunction",
+      "sha256": "e11eb7b1a14f5e64ecdace21922809eadb0ce745c2bf20d641e88ca374600b2a"
+    },
+    {
+      "path": "json-default/personJobTitle/personJobTitleData_0001_insert.json",
+      "entity": "personJobTitle",
+      "sha256": "fa578cce9ba79b62e98831cf1e1e4cb65e313a0f44316aa3d5154b824b211dc9"
+    },
+    {
+      "path": "json-default/personSalutation/personSalutationData_0001_insert.json",
+      "entity": "personSalutation",
+      "sha256": "6bff0e64a15c6b4e791de136c5ec4fb401deceabb35f5a9bbfd90751cd1b6d49"
+    },
+    {
+      "path": "json-default/personTitle/personTitleData_0001_insert.json",
+      "entity": "personTitle",
+      "sha256": "2e9b06e626fd6ecafb7a43a73996daaf3120e0905878d60a4deb20a6c4f4fdf7"
+    },
+    {
+      "path": "json-default/personType/personTypeData_0001_insert.json",
+      "entity": "personType",
+      "sha256": "f19597f3ee59e639285e39b6852b21606f2003a5440468f2708b22ef637ef074"
+    },
+    {
+      "path": "json-default/product/productData_0001_insert.json",
+      "entity": "product",
+      "sha256": "95c3f7e090021aaaad759c7eba70eb73adbc058ae4d5d462e7cfbcecbcea32d4"
+    },
+    {
+      "path": "json-default/role/roleData_0001_insert.json",
+      "entity": "role",
+      "sha256": "a814056781302ee7f6472d8332c884d3c266fb16ae6d12005458928ce2beb08a"
+    },
+    {
+      "path": "json-default/role/roleData_0003_update.json",
+      "entity": "role",
+      "sha256": "a0b9e0b2708e1a040f1418dbd8f90734e32b31488981f414f4f5733a94cd03fe"
+    },
+    {
+      "path": "json-default/roleStage/roleStageData_0001_insert.json",
+      "entity": "roleStage",
+      "sha256": "123d9642f71ebc8aa5ef0bff58f96aa1cd8b12f6a11d54f4548dc61ba12b59ec"
+    },
+    {
+      "path": "json-default/salesOpportunityForecast/salesOpportunityForecastData_0001_insert.json",
+      "entity": "salesOpportunityForecast",
+      "sha256": "37c3e486e59dadc8d799799a591175db9a9c33eb5d335b9cb4b0bbeed79d4898"
+    },
+    {
+      "path": "json-default/salesOpportunityLossReason/salesOpportunityLossReasonData_0001_insert.json",
+      "entity": "salesOpportunityLossReason",
+      "sha256": "39d9405608ec81fb74eb77f90258e429214b933fd841dfcd806b4216aa40d50a"
+    },
+    {
+      "path": "json-default/salesOpportunityResultStatus/salesOpportunityResultStatusData_0001_insert.json",
+      "entity": "salesOpportunityResultStatus",
+      "sha256": "2b52bad0bc83be07531e83d616a8e6b5eea82f68ab50fa888782f97e5109e3c9"
+    },
+    {
+      "path": "json-default/salesOpportunitySource/salesOpportunitySourceData_0001_insert.json",
+      "entity": "salesOpportunitySource",
+      "sha256": "ddffed8124380964277d4fad96fc3e0c737a0bad4874aa3c47dc9eb81b10454a"
+    },
+    {
+      "path": "json-default/salesOpportunityStage/salesOpportunityStageData_0001_insert.json",
+      "entity": "salesOpportunityStage",
+      "sha256": "4482e71f52eec813e0b04641c89a202757f16431a6ccae79b87cff3f78fcffda"
+    },
+    {
+      "path": "json-default/scriptButton/scriptButtonData_0001_insert.json",
+      "entity": "scriptButton",
+      "sha256": "17da12c9523ddd98a4d73f538ed52f0bf98e8611d503e2ef4d93253dc3322b52"
+    },
+    {
+      "path": "json-default/slaPolicy/slaPolicyData_0001_insert.json",
+      "entity": "slaPolicy",
+      "sha256": "45b877cd0e767180b46c521e21b3369b9286287cebbb35f35f830aaaf462385b"
+    },
+    {
+      "path": "json-default/socialMediaType/socialMediaTypeData_0001_insert.json",
+      "entity": "socialMediaType",
+      "sha256": "44be7f7a718ffc960abdc102a76fe12fe58a2b72c9759807a6f5eea7d452318d"
+    },
+    {
+      "path": "json-default/supportQueue/supportQueueData_0001_insert.json",
+      "entity": "supportQueue",
+      "sha256": "8116dc181c190c92a0b49c9a81b64902aa690e3fb0529f2fbde7b54d5fcd4af4"
+    },
+    {
+      "path": "json-default/supportTeam/supportTeamData_0001_insert.json",
+      "entity": "supportTeam",
+      "sha256": "aa809d720b0a49572a20f9e219a9adf5d648379481e878373c43e718f77e59d2"
+    },
+    {
+      "path": "json-default/systemAlertRule/systemAlertRuleData_0001_insert.json",
+      "entity": "systemAlertRule",
+      "sha256": "0228a6663b7dfaa4ecda1327c84555c32c57c4d51eeb722c561205185418e32c"
+    },
+    {
+      "path": "json-default/teamsDeliveryStatus/teamsDeliveryStatusData_0001_insert.json",
+      "entity": "teamsDeliveryStatus",
+      "sha256": "5042239e45ecfe75aeef8316980f1912bb32af79a5d05646ca0a3140ef687165"
+    },
+    {
+      "path": "json-default/teamsTemplate/teamsTemplateData_0001_insert.json",
+      "entity": "teamsTemplate",
+      "sha256": "d65a5650a112c1b475caf27028139785c9848ae0a36cad684595299c28bff28f"
+    },
+    {
+      "path": "json-default/ticketCategory/ticketCategoryData_0001_insert.json",
+      "entity": "ticketCategory",
+      "sha256": "d7c12ddd9b2a42254e1d949dcfe449a0c6fffce1e6a73c5e6a5df965e58ce485"
+    },
+    {
+      "path": "json-default/ticketPriority/ticketPriorityData_0001_insert.json",
+      "entity": "ticketPriority",
+      "sha256": "e6f097e946ede1ec0780e942b6767d6e601f52a0844d57626867fae5827c7aa9"
+    },
+    {
+      "path": "json-default/ticketSource/ticketSourceData_0001_insert.json",
+      "entity": "ticketSource",
+      "sha256": "26a45247da828308f75d01fcc2f63837552be62ec1cf940a38b2693b56e46921"
+    },
+    {
+      "path": "json-default/ticketStatus/ticketStatusData_0001_insert.json",
+      "entity": "ticketStatus",
+      "sha256": "a06f78143d95ad088ac2ee24198a9520015e8889b3d2e89df920368ce6f05c26"
+    },
+    {
+      "path": "json-default/ticketType/ticketTypeData_0001_insert.json",
+      "entity": "ticketType",
+      "sha256": "80348333b2da22f28d9829aad056df1d9f09cfd9bc54b4c1e73a662f423be6d7"
+    },
+    {
+      "path": "json-default/translation/translationData_0001_insert.json",
+      "entity": "translation",
+      "sha256": "9e1fc92e8016e071913a7bc0d0d27690728f162d606b0ba4146b07ca09931c81"
+    },
+    {
+      "path": "json-default/webhookAuthenticationType/webhookAuthenticationTypeData_0001_insert.json",
+      "entity": "webhookAuthenticationType",
+      "sha256": "734a2c3066496f718325286178a42a8e8b2c11afad444a25df44dd0b07a8987c"
+    },
+    {
+      "path": "json-default/webhookDeliveryStatus/webhookDeliveryStatusData_0001_insert.json",
+      "entity": "webhookDeliveryStatus",
+      "sha256": "6ed0ebb5408e17594f4b9a51c60de8a77cc311dee2f63ac8d7d1f31fe6c89d97"
+    },
+    {
+      "path": "json-default/webhookSubscription/webhookSubscriptionData_0001_insert.json",
+      "entity": "webhookSubscription",
+      "sha256": "6e3585c2d500bfc965f7614d8c9118e48b8f0a7905f4b133259168c0fedbaad5"
+    },
+    {
+      "path": "json-default/webhookSubscriptionMethod/webhookSubscriptionMethodData_0001_insert.json",
+      "entity": "webhookSubscriptionMethod",
+      "sha256": "e80cd221faa6d3a4e266262e90f11b8b2093a406b57095f3fc6fc843eb9995e3"
+    },
+    {
+      "path": "json-default/webhookSubscriptionPayloadType/webhookSubscriptionPayloadTypeData_0001_insert.json",
+      "entity": "webhookSubscriptionPayloadType",
+      "sha256": "5be41266ff51442e4ad39abff669447203a2b28fcbc589ab996bb954398d6982"
+    },
+    {
+      "path": "json-default/webhookSubscriptionType/webhookSubscriptionTypeData_0001_insert.json",
+      "entity": "webhookSubscriptionType",
+      "sha256": "16bf6315c77741f4517a1c97de027ccce8c6dee333046c18999d6f52470920ba"
+    },
+    {
+      "path": "json-default/workHour/workHourData_0001_insert.json",
+      "entity": "workHour",
+      "sha256": "e29a48aeb15fc24727a508db41d23dd65ecd60860ab9867d0c54f2e7e1273af5"
+    },
+    {
+      "path": "json-default/workHourWeek/workHourWeekData_0001_insert.json",
+      "entity": "workHourWeek",
+      "sha256": "649d3ae974f6bd39f55fe83c6ff6a64cd047a9d2655fe05120c1dcb5f9b7088b"
+    },
+    {
+      "path": "json-demonstration/address/addressData_0001_insert.json",
+      "entity": "address",
+      "sha256": "90ffdf72e4ae2310409173953c49c14c9d888c6ce55bcf8b3228cfaeb0252868"
+    },
+    {
+      "path": "json-demonstration/aiAgent/aiAgentData_0002_update.json",
+      "entity": "aiAgent",
+      "sha256": "77ade530ce0e257f0fdb927a421895c70d23f6e52757a494ed94cae18144be6a"
+    },
+    {
+      "path": "json-demonstration/aiProviderModel/aiProviderModelData_0002_update.json",
+      "entity": "aiProviderModel",
+      "sha256": "1a9fb27ef38c06f9b7a818d3a30f00c43db32df6cd50514ca6ce3a54bc1efffe"
+    },
+    {
+      "path": "json-demonstration/company/companyData_0001_insert.json",
+      "entity": "company",
+      "sha256": "9a42b8eb27474c6e980fbf46e50d60c85bbea4e1988a08be548835cb4a4dcd8c"
+    },
+    {
+      "path": "json-demonstration/company/companyData_0002_update.json",
+      "entity": "company",
+      "sha256": "5b9a2908f5ee3757b7f87809075a41128af0621be508e7a4686b2c8afe264008"
+    },
+    {
+      "path": "json-demonstration/company/companyData_0003_update.json",
+      "entity": "company",
+      "sha256": "52b8d0056fb5f2b85600fb3391916b266e5b4850ebfd22de29a2984b3844b370"
+    },
+    {
+      "path": "json-demonstration/companyRelationship/companyRelationshipData_0001_insert.json",
+      "entity": "companyRelationship",
+      "sha256": "361ac4d676f7d9ae2eed1f006a49b5b2c1ac75b185f8ee37c9afa22b6b74a016"
+    },
+    {
+      "path": "json-demonstration/contract/contractData_0001_insert.json",
+      "entity": "contract",
+      "sha256": "cce186474a28a9bfc04d09cc502ce4efc27babefff77efaa571ce3bde5ff8240"
+    },
+    {
+      "path": "json-demonstration/contract/contractData_0003_update.json",
+      "entity": "contract",
+      "sha256": "c277bbdde8a7d5a6b5528a71d703bad3e3e7c9db2395809dcf2e30d62052ed7b"
+    },
+    {
+      "path": "json-demonstration/effortEstimate/effortEstimateData_0001_insert.json",
+      "entity": "effortEstimate",
+      "sha256": "de63c8b9e2c9b132441e4b07923c1c51b39e163d8d4c851f52b017118bc9a287"
+    },
+    {
+      "path": "json-demonstration/effortEstimatePosition/effortEstimatePositionData_0001_insert.json",
+      "entity": "effortEstimatePosition",
+      "sha256": "0e15555011011617791a675947ca4a61df0f2e02a2a9e61a4e6db1da22d12219"
+    },
+    {
+      "path": "json-demonstration/emailList/emailListData_0002_update.json",
+      "entity": "emailList",
+      "sha256": "aaf1496d4cd59cb002dcc4a36d21f3ec66800666b4673469de756fcc0752289b"
+    },
+    {
+      "path": "json-demonstration/emailList/emailListData_0003_update.json",
+      "entity": "emailList",
+      "sha256": "13093c2bca05010bad895e98ed11c499991ed4d300c3163958af92eca456b592"
+    },
+    {
+      "path": "json-demonstration/emailTemplate/emailTemplateData_0002_update.json",
+      "entity": "emailTemplate",
+      "sha256": "c81a62a6f7d5be55f2a31458264578805378880768c113f913d28f299f7759ea"
+    },
+    {
+      "path": "json-demonstration/event/eventData_0001_insert.json",
+      "entity": "event",
+      "sha256": "9159123dac101f3c4abc549112effc21ea151ae37339518a563f2b5b79481613"
+    },
+    {
+      "path": "json-demonstration/holiday/holidayData_0002_update.json",
+      "entity": "holiday",
+      "sha256": "acd58186c0734836942988a438844e59a06a9a22cd20cb2caeafeec6d0bc8e9d"
+    },
+    {
+      "path": "json-demonstration/holidayGroup/holidayGroupData_0001_insert.json",
+      "entity": "holidayGroup",
+      "sha256": "7927d9849a9c839c99752bd366bdeb2708ce79b5b6d1c2b84f96cc55668bf986"
+    },
+    {
+      "path": "json-demonstration/holidayGroup/holidayGroupData_0002_update.json",
+      "entity": "holidayGroup",
+      "sha256": "e5bd691a1afd46f62e7196b802895687ca37faa65cd9f13ae84bc32072b5dbd9"
+    },
+    {
+      "path": "json-demonstration/internalCase/internalCaseData_0001_insert.json",
+      "entity": "internalCase",
+      "sha256": "734980174c99b69f584fa8bad9e04555f54db973fe181e73c55e92eaeec6d283"
+    },
+    {
+      "path": "json-demonstration/knowledgeArticle/knowledgeArticleData_0001_insert.json",
+      "entity": "knowledgeArticle",
+      "sha256": "8b47916aa0f14dde6a4750a0a7ff2db35ac0d076ec149cfa0b36b4562d6f9be2"
+    },
+    {
+      "path": "json-demonstration/knowledgeArticle/knowledgeArticleData_0002_update.json",
+      "entity": "knowledgeArticle",
+      "sha256": "a903c2ce8ad19c0ed93982470a83d25106afbdd2e70c88a63087b4817eb881cb"
+    },
+    {
+      "path": "json-demonstration/marketingCampaign/marketingCampaignData_0001_insert.json",
+      "entity": "marketingCampaign",
+      "sha256": "a917fc1c56ca89b85bfc33fc6cdf5eca84f86c38b8e652dff18debbb69709aee"
+    },
+    {
+      "path": "json-demonstration/note/noteData_0001_insert.json",
+      "entity": "note",
+      "sha256": "b0b62aa44b821d0dc339b97d16dbf05d794ad34248e0c5b3c42d8fa95565b111"
+    },
+    {
+      "path": "json-demonstration/note/noteData_0002_update.json",
+      "entity": "note",
+      "sha256": "6c1600589110b600cca7243e340e1b50e6ac694a350065492ac5259345738c97"
+    },
+    {
+      "path": "json-demonstration/person/personData_0001_insert.json",
+      "entity": "person",
+      "sha256": "d4793a54539164ec8da017972791ce500cf1d28b6615fe40c7c08a562d61b7fc"
+    },
+    {
+      "path": "json-demonstration/person/personData_0003_update.json",
+      "entity": "person",
+      "sha256": "5f8d119d5f819bd990275cf008f7c2fcd80bf01763d99c8ad3f4b5840fb5a6f0"
+    },
+    {
+      "path": "json-demonstration/phoneCall/phoneCallData_0001_insert.json",
+      "entity": "phoneCall",
+      "sha256": "5900ed552debecd41dcc964378e5ed7e99b2f8a0a492a34dd325efa5e6013168"
+    },
+    {
+      "path": "json-demonstration/product/productData_0001_insert.json",
+      "entity": "product",
+      "sha256": "3da90f5c38cf1054a33d9b305d522e5a1ddb8a6cebfd3fcd73e7f3fe66626384"
+    },
+    {
+      "path": "json-demonstration/product/productData_0002_update.json",
+      "entity": "product",
+      "sha256": "0c7271fac53b200dfcee9e7c8fc8aa847292fe557ec4fcecf0040383e5587b04"
+    },
+    {
+      "path": "json-demonstration/role/roleData_0003_update.json",
+      "entity": "role",
+      "sha256": "f1ed279b910aa21b539e276b681b7a5db6668dd599bafecada653ce8c0892673"
+    },
+    {
+      "path": "json-demonstration/salesOpportunity/salesOpportunityData_0001_insert.json",
+      "entity": "salesOpportunity",
+      "sha256": "64cc00a38473b804c4588385c1d69a179de12d17dad03817979238453efcb976"
+    },
+    {
+      "path": "json-demonstration/salesOpportunity/salesOpportunityData_0003_update.json",
+      "entity": "salesOpportunity",
+      "sha256": "569ccca8789def8060813c42b12d7b5ec7825303aaa41cdd98a9e2258b66db14"
+    },
+    {
+      "path": "json-demonstration/serverLandscape/serverLandscapeData_0001_insert.json",
+      "entity": "serverLandscape",
+      "sha256": "ac8560efdfbab675892ab24d700661e079fc9067c2ea831412a7a96f45eec634"
+    },
+    {
+      "path": "json-demonstration/serverLandscapeType/serverLandscapeTypeData_0001_insert.json",
+      "entity": "serverLandscapeType",
+      "sha256": "03900538f040bdd60873d4e5c26d2dd4445f00b2309108226e7d50c2cd7195a7"
+    },
+    {
+      "path": "json-demonstration/serverLandscapeTypeUsage/serverLandscapeTypeUsageData_0001_insert.json",
+      "entity": "serverLandscapeTypeUsage",
+      "sha256": "0f972b6dc76b325ee346ade96f634248143464271433601213b417bbc1741a63"
+    },
+    {
+      "path": "json-demonstration/socialMedia/socialMediaData_0001_insert.json",
+      "entity": "socialMedia",
+      "sha256": "8940ed0a6858f4774f51b7c21a2ec70831c1d8203f5e4099ec6c9b322ab2ecab"
+    },
+    {
+      "path": "json-demonstration/teamsTemplate/teamsTemplateData_0002_update.json",
+      "entity": "teamsTemplate",
+      "sha256": "f056a96122388ab764b20a8425f3258bc6dc5720dbb08fc8028725d1f322d805"
+    },
+    {
+      "path": "json-demonstration/ticket/ticketData_0001_insert.json",
+      "entity": "ticket",
+      "sha256": "47ce70b171b0d855603b04798f96f413fbaa03d328710f8d9172d68cd82d03ea"
+    },
+    {
+      "path": "json-demonstration/translation/translationData_0002_update.json",
+      "entity": "translation",
+      "sha256": "7a5bceb2e721fe76932a2ae90e96267b32537fb9ee681afcd9f417ef1ee01f91"
+    },
+    {
+      "path": "json-demonstration/webhookAuthenticationType/webhookAuthenticationTypeData_0001_insert.json",
+      "entity": "webhookAuthenticationType",
+      "sha256": "806f6a70169463940a2bdffd9b2cbf0c9e1f835b9c0b72f5be0a6672d9a1707b"
+    },
+    {
+      "path": "json-production/person/personData_0001_insert.json",
+      "entity": "person",
+      "sha256": "db71c96aafdb92200963b7ea500c9cef7de64b39a731637c1894309346ac27c9"
+    },
+    {
+      "path": "json-production/person/personData_0003_update.json",
+      "entity": "person",
+      "sha256": "8872486a21bc44dc7e4031c806da09985cad39cf3598dce43b6f51129bdb0342"
+    },
+    {
+      "path": "json-production/translation/translationData_0001_insert.json",
+      "entity": "translation",
+      "sha256": "fbec134e6446104065371e0ef2e802c965778e2655c9f8886a91aa5a10fe52de"
+    }
+  ]
+}

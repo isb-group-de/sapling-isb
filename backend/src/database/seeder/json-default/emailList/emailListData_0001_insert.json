@@ -1,0 +1,37 @@
+[
+  {
+    "handle": 1,
+    "title": "Newsletter Bestandskunden",
+    "mailTemplate": null,
+    "createdAt": "2026-09-10T10:49:36.098+00:00",
+    "updatedAt": "2026-09-10T10:49:36.098+00:00"
+  },
+  {
+    "handle": 2,
+    "title": "Wartungsinfos IT-Kunden",
+    "mailTemplate": null,
+    "createdAt": "2026-09-10T10:49:36.098+00:00",
+    "updatedAt": "2026-09-10T10:49:36.098+00:00"
+  },
+  {
+    "handle": 3,
+    "title": "Vertriebskontakte",
+    "mailTemplate": null,
+    "createdAt": "2026-09-10T10:49:36.098+00:00",
+    "updatedAt": "2026-09-10T10:49:36.098+00:00"
+  },
+  {
+    "handle": 4,
+    "title": "Support-Empfänger",
+    "mailTemplate": null,
+    "createdAt": "2026-09-10T10:49:36.098+00:00",
+    "updatedAt": "2026-09-10T10:49:36.098+00:00"
+  },
+  {
+    "handle": 5,
+    "title": "Allgemeiner Verteiler",
+    "mailTemplate": null,
+    "createdAt": "2026-09-10T10:49:36.098+00:00",
+    "updatedAt": "2026-09-10T10:49:36.098+00:00"
+  }
+]

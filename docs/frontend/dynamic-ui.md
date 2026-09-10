@@ -1081,8 +1081,8 @@ Usually no frontend route is needed.
 Backend/seed requirements:
 
 1. Entity registered in `ENTITY_REGISTRY`.
-2. Entity seeded in `entityData_XXX.json`.
-3. Route seeded in `entityRouteData_XXX.json`.
+2. Entity seeded in `entityData_NNNN_insert.json`.
+3. Route seeded in `entityRouteData_NNNN_insert.json`.
 4. Navigation group exists.
 5. Translations exist.
 6. Permissions allow show/read for relevant roles.

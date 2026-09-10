@@ -1,0 +1,74 @@
+[
+  {
+    "handle": "access_request",
+    "title": "Access Request",
+    "icon": "mdi-key-outline",
+    "color": "#1E88E5",
+    "type": "service_request",
+    "createdAt": "2026-09-10T10:49:35.568+00:00",
+    "updatedAt": "2026-09-10T10:49:35.568+00:00"
+  },
+  {
+    "handle": "application",
+    "title": "Application",
+    "icon": "mdi-application-cog-outline",
+    "color": "#3949AB",
+    "type": "incident",
+    "createdAt": "2026-09-10T10:49:35.565+00:00",
+    "updatedAt": "2026-09-10T10:49:35.565+00:00"
+  },
+  {
+    "handle": "consulting",
+    "title": "Consulting",
+    "icon": "mdi-account-tie-voice-outline",
+    "color": "#FB8C00",
+    "type": "question",
+    "createdAt": "2026-09-10T10:49:35.57+00:00",
+    "updatedAt": "2026-09-10T10:49:35.57+00:00"
+  },
+  {
+    "handle": "integration",
+    "title": "Integration",
+    "icon": "mdi-connection",
+    "color": "#00897B",
+    "type": "incident",
+    "createdAt": "2026-09-10T10:49:35.567+00:00",
+    "updatedAt": "2026-09-10T10:49:35.567+00:00"
+  },
+  {
+    "handle": "planned_service",
+    "title": "Planned Service",
+    "icon": "mdi-calendar-check-outline",
+    "color": "#43A047",
+    "type": "service_request",
+    "createdAt": "2026-09-10T10:49:35.569+00:00",
+    "updatedAt": "2026-09-10T10:49:35.569+00:00"
+  },
+  {
+    "handle": "platform",
+    "title": "Platform",
+    "icon": "mdi-server-network",
+    "color": "#6D4C41",
+    "type": "incident",
+    "createdAt": "2026-09-10T10:49:35.568+00:00",
+    "updatedAt": "2026-09-10T10:49:35.568+00:00"
+  },
+  {
+    "handle": "release_change",
+    "title": "Release Change",
+    "icon": "mdi-rocket-launch-outline",
+    "color": "#5E35B1",
+    "type": "change",
+    "createdAt": "2026-09-10T10:49:35.572+00:00",
+    "updatedAt": "2026-09-10T10:49:35.572+00:00"
+  },
+  {
+    "handle": "root_cause",
+    "title": "Root Cause",
+    "icon": "mdi-layers-search-outline",
+    "color": "#8E24AA",
+    "type": "problem",
+    "createdAt": "2026-09-10T10:49:35.571+00:00",
+    "updatedAt": "2026-09-10T10:49:35.571+00:00"
+  }
+]

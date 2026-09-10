@@ -1,4 +1,4 @@
-import definitions from '../../../database/seeder/prompts/promptData_001.json';
+import definitions from '../../../database/seeder/json-default/aiPromptTemplate/aiPromptTemplateData_0001_insert.json';
 import { aiPromptContext, type AiPromptScope } from './ai-prompt-context';
 const scope: AiPromptScope = { manifest: {}, prompts: {} };
 definitions.forEach((row, index) => {

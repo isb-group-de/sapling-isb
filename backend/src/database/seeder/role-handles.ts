@@ -1,10 +1,10 @@
 /**
  * Named handles for the seeded {@link RoleItem}s. Used by the
- * {@link PermissionSeeder} to map roles to their permission matrices and to
+ * explicit permission seeds and administrator features to
  * avoid magic numbers throughout the seeder logic.
  *
  * IMPORTANT: These values must match `RoleItem.handle` of the records seeded
- * by `seeder/json-{env}/role/`.
+ * by `seeder/json-default/role/`.
  */
 export const ROLE_HANDLE = {
   ADMIN: 1,

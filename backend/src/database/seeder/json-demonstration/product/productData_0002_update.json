@@ -1,0 +1,13 @@
+[
+  {
+    "key": {
+      "handle": 1
+    },
+    "values": {
+      "title": "Solaris CRM Suite",
+      "name": "solaris-crm",
+      "version": "1.0.0",
+      "description": "Komplettlösung für Kundenmanagement und Vertrieb."
+    }
+  }
+]

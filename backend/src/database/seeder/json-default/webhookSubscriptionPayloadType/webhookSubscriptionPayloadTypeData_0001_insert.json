@@ -1,0 +1,18 @@
+[
+  {
+    "handle": "item",
+    "description": "Einzelnes Element",
+    "icon": "mdi-code-braces",
+    "color": "#1976d2",
+    "createdAt": "2026-09-10T10:49:35.866+00:00",
+    "updatedAt": "2026-09-10T10:49:35.866+00:00"
+  },
+  {
+    "handle": "list",
+    "description": "Liste",
+    "icon": "mdi-code-brackets",
+    "color": "#90caf9",
+    "createdAt": "2026-09-10T10:49:35.865+00:00",
+    "updatedAt": "2026-09-10T10:49:35.865+00:00"
+  }
+]

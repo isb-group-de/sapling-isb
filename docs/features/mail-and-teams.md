@@ -299,10 +299,10 @@ recorded in the delivery audit payload, and usage advances in the transaction
 that persists the delivery. Delivery retries use the persisted body. Simultaneous
 open drafts may select the same next signature; each keeps its preview selection.
 
-Apply `Migration20260907150000` and run the normal seeders before deploying the
-new application version. Additive entity, route and German/English translation
-seeds are provided for production and demonstration modes. Standard-role
-permission matrices grant CRUD/navigation for this private entity; custom roles
+The schema from the former `Migration20260907150000` is included in the
+consolidated baseline. Shared entity, route and translation seeds live in
+`json-default`. Explicit standard-role permission seeds grant CRUD/navigation
+for this private entity; custom roles
 can be configured using the normal permission administration.
 
 ## Sender Resolution

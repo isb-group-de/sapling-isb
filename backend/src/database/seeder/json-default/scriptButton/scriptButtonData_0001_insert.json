@@ -1,0 +1,204 @@
+[
+  {
+    "handle": 1,
+    "name": "sendMail",
+    "title": "emailList.scriptSendEmail",
+    "parameter": null,
+    "isMultiSelect": false,
+    "entity": "emailList",
+    "createdAt": "2026-09-10T10:49:35.074+00:00",
+    "updatedAt": "2026-09-10T10:49:35.074+00:00"
+  },
+  {
+    "handle": 2,
+    "name": "pseudonymize",
+    "title": "person.scriptPseudonymize",
+    "parameter": null,
+    "isMultiSelect": false,
+    "entity": "person",
+    "createdAt": "2026-09-10T10:49:35.075+00:00",
+    "updatedAt": "2026-09-10T10:49:35.075+00:00"
+  },
+  {
+    "handle": 3,
+    "name": "retryDelivery",
+    "title": "emailDelivery.scriptRepeatDelivery",
+    "parameter": null,
+    "isMultiSelect": false,
+    "entity": "emailDelivery",
+    "createdAt": "2026-09-10T10:49:35.075+00:00",
+    "updatedAt": "2026-09-10T10:49:35.075+00:00"
+  },
+  {
+    "handle": 4,
+    "name": "retryDelivery",
+    "title": "webhookDelivery.scriptRepeatDelivery",
+    "parameter": null,
+    "isMultiSelect": false,
+    "entity": "webhookDelivery",
+    "createdAt": "2026-09-10T10:49:35.075+00:00",
+    "updatedAt": "2026-09-10T10:49:35.075+00:00"
+  },
+  {
+    "handle": 5,
+    "name": "retryDelivery",
+    "title": "eventDelivery.scriptRepeatDelivery",
+    "parameter": null,
+    "isMultiSelect": false,
+    "entity": "eventDelivery",
+    "createdAt": "2026-09-10T10:49:35.075+00:00",
+    "updatedAt": "2026-09-10T10:49:35.075+00:00"
+  },
+  {
+    "handle": 6,
+    "name": "retryDelivery",
+    "title": "teamsDelivery.scriptRepeatDelivery",
+    "parameter": null,
+    "isMultiSelect": false,
+    "entity": "teamsDelivery",
+    "createdAt": "2026-09-10T10:49:35.075+00:00",
+    "updatedAt": "2026-09-10T10:49:35.075+00:00"
+  },
+  {
+    "handle": 7,
+    "name": "aiCreateKnowledgeArticle",
+    "title": "ticket.scriptAiCreateKnowledgeArticle",
+    "parameter": {
+      "template": "ticketKnowledgeArticle"
+    },
+    "isMultiSelect": false,
+    "entity": "ticket",
+    "createdAt": "2026-09-10T10:49:35.075+00:00",
+    "updatedAt": "2026-09-10T10:49:35.075+00:00"
+  },
+  {
+    "handle": 8,
+    "name": "aiSuggestSimilarEstimates",
+    "title": "effortEstimate.scriptAiSuggestSimilarEstimates",
+    "parameter": null,
+    "isMultiSelect": false,
+    "entity": "effortEstimate",
+    "createdAt": "2026-09-10T10:49:35.075+00:00",
+    "updatedAt": "2026-09-10T10:49:35.075+00:00"
+  },
+  {
+    "handle": 9,
+    "name": "aiFindOpportunityReferences",
+    "title": "salesOpportunity.scriptAiFindOpportunityReferences",
+    "parameter": null,
+    "isMultiSelect": false,
+    "entity": "salesOpportunity",
+    "createdAt": "2026-09-10T10:49:35.075+00:00",
+    "updatedAt": "2026-09-10T10:49:35.075+00:00"
+  },
+  {
+    "handle": 10,
+    "name": "aiFindTicketReferences",
+    "title": "ticket.scriptAiFindTicketReferences",
+    "parameter": null,
+    "isMultiSelect": false,
+    "entity": "ticket",
+    "createdAt": "2026-09-10T10:49:35.075+00:00",
+    "updatedAt": "2026-09-10T10:49:35.075+00:00"
+  },
+  {
+    "handle": 11,
+    "name": "syncRepositories",
+    "title": "dvelopConnection.scriptSyncRepositories",
+    "parameter": null,
+    "isMultiSelect": false,
+    "entity": "dvelopConnection",
+    "createdAt": "2026-09-10T10:49:35.075+00:00",
+    "updatedAt": "2026-09-10T10:49:35.075+00:00"
+  },
+  {
+    "handle": 12,
+    "name": "syncObjectDefinitions",
+    "title": "dvelopConnection.scriptSyncObjectDefinitions",
+    "parameter": null,
+    "isMultiSelect": false,
+    "entity": "dvelopConnection",
+    "createdAt": "2026-09-10T10:49:35.075+00:00",
+    "updatedAt": "2026-09-10T10:49:35.075+00:00"
+  },
+  {
+    "handle": 13,
+    "name": "syncProperties",
+    "title": "dvelopConnection.scriptSyncProperties",
+    "parameter": null,
+    "isMultiSelect": false,
+    "entity": "dvelopConnection",
+    "createdAt": "2026-09-10T10:49:35.075+00:00",
+    "updatedAt": "2026-09-10T10:49:35.075+00:00"
+  },
+  {
+    "handle": 14,
+    "name": "aiCreatePropertyMappings",
+    "title": "dvelopEntityMapping.scriptAiCreatePropertyMappings",
+    "parameter": null,
+    "isMultiSelect": false,
+    "entity": "dvelopEntityMapping",
+    "createdAt": "2026-09-10T10:49:35.075+00:00",
+    "updatedAt": "2026-09-10T10:49:35.075+00:00"
+  },
+  {
+    "handle": 15,
+    "name": "reprocessInboundEmail",
+    "title": "inboundEmail.scriptReprocess",
+    "parameter": null,
+    "isMultiSelect": false,
+    "entity": "inboundEmail",
+    "createdAt": "2026-09-10T10:49:35.079+00:00",
+    "updatedAt": "2026-09-10T10:49:35.079+00:00"
+  },
+  {
+    "handle": 16,
+    "name": "synchronizeEmailInbox",
+    "title": "emailInboxSubscription.scriptSynchronize",
+    "parameter": null,
+    "isMultiSelect": false,
+    "entity": "emailInboxSubscription",
+    "createdAt": "2026-09-10T10:49:35.081+00:00",
+    "updatedAt": "2026-09-10T10:49:35.081+00:00"
+  },
+  {
+    "handle": 17,
+    "name": "retryDelivery",
+    "title": "emailDelivery.scriptRepeatDelivery",
+    "parameter": null,
+    "isMultiSelect": true,
+    "entity": "emailDelivery",
+    "createdAt": "2026-09-10T10:49:35.083+00:00",
+    "updatedAt": "2026-09-10T10:49:35.083+00:00"
+  },
+  {
+    "handle": 18,
+    "name": "retryDelivery",
+    "title": "webhookDelivery.scriptRepeatDelivery",
+    "parameter": null,
+    "isMultiSelect": true,
+    "entity": "webhookDelivery",
+    "createdAt": "2026-09-10T10:49:35.083+00:00",
+    "updatedAt": "2026-09-10T10:49:35.083+00:00"
+  },
+  {
+    "handle": 19,
+    "name": "retryDelivery",
+    "title": "eventDelivery.scriptRepeatDelivery",
+    "parameter": null,
+    "isMultiSelect": true,
+    "entity": "eventDelivery",
+    "createdAt": "2026-09-10T10:49:35.083+00:00",
+    "updatedAt": "2026-09-10T10:49:35.083+00:00"
+  },
+  {
+    "handle": 20,
+    "name": "retryDelivery",
+    "title": "teamsDelivery.scriptRepeatDelivery",
+    "parameter": null,
+    "isMultiSelect": true,
+    "entity": "teamsDelivery",
+    "createdAt": "2026-09-10T10:49:35.083+00:00",
+    "updatedAt": "2026-09-10T10:49:35.083+00:00"
+  }
+]

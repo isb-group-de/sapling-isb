@@ -1,0 +1,42 @@
+[
+  {
+    "handle": "change",
+    "title": "Change",
+    "icon": "mdi-source-branch",
+    "color": "#8E24AA",
+    "createdAt": "2026-09-10T10:49:35.563+00:00",
+    "updatedAt": "2026-09-10T10:49:35.563+00:00"
+  },
+  {
+    "handle": "incident",
+    "title": "Incident",
+    "icon": "mdi-alert-circle-outline",
+    "color": "#E53935",
+    "createdAt": "2026-09-10T10:49:35.559+00:00",
+    "updatedAt": "2026-09-10T10:49:35.559+00:00"
+  },
+  {
+    "handle": "problem",
+    "title": "Problem",
+    "icon": "mdi-lan-disconnect",
+    "color": "#FB8C00",
+    "createdAt": "2026-09-10T10:49:35.562+00:00",
+    "updatedAt": "2026-09-10T10:49:35.562+00:00"
+  },
+  {
+    "handle": "question",
+    "title": "Question",
+    "icon": "mdi-help-circle-outline",
+    "color": "#43A047",
+    "createdAt": "2026-09-10T10:49:35.561+00:00",
+    "updatedAt": "2026-09-10T10:49:35.561+00:00"
+  },
+  {
+    "handle": "service_request",
+    "title": "Service Request",
+    "icon": "mdi-clipboard-plus-outline",
+    "color": "#1E88E5",
+    "createdAt": "2026-09-10T10:49:35.56+00:00",
+    "updatedAt": "2026-09-10T10:49:35.56+00:00"
+  }
+]

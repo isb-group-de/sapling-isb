@@ -1,0 +1,42 @@
+[
+  {
+    "handle": "email",
+    "title": "Email",
+    "icon": "mdi-email-outline",
+    "color": "#00897B",
+    "createdAt": "2026-09-10T10:49:35.575+00:00",
+    "updatedAt": "2026-09-10T10:49:35.575+00:00"
+  },
+  {
+    "handle": "internal",
+    "title": "Internal",
+    "icon": "mdi-account-group-outline",
+    "color": "#5E35B1",
+    "createdAt": "2026-09-10T10:49:35.579+00:00",
+    "updatedAt": "2026-09-10T10:49:35.579+00:00"
+  },
+  {
+    "handle": "monitoring",
+    "title": "Monitoring",
+    "icon": "mdi-bell-alert-outline",
+    "color": "#E53935",
+    "createdAt": "2026-09-10T10:49:35.578+00:00",
+    "updatedAt": "2026-09-10T10:49:35.578+00:00"
+  },
+  {
+    "handle": "phone",
+    "title": "Phone",
+    "icon": "mdi-phone-outline",
+    "color": "#6D4C41",
+    "createdAt": "2026-09-10T10:49:35.576+00:00",
+    "updatedAt": "2026-09-10T10:49:35.576+00:00"
+  },
+  {
+    "handle": "portal",
+    "title": "Portal",
+    "icon": "mdi-monitor-dashboard",
+    "color": "#1E88E5",
+    "createdAt": "2026-09-10T10:49:35.577+00:00",
+    "updatedAt": "2026-09-10T10:49:35.577+00:00"
+  }
+]

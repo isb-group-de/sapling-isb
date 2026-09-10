@@ -1,0 +1,14 @@
+[
+  {
+    "handle": "de",
+    "name": "Deutsch (Deutschland)",
+    "createdAt": "2026-09-10T10:49:09.097+00:00",
+    "updatedAt": "2026-09-10T10:49:09.097+00:00"
+  },
+  {
+    "handle": "en",
+    "name": "Englisch (USA)",
+    "createdAt": "2026-09-10T10:49:09.11+00:00",
+    "updatedAt": "2026-09-10T10:49:09.11+00:00"
+  }
+]

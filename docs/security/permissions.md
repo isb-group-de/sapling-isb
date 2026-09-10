@@ -16,8 +16,8 @@ backend/src/entity/FieldPermissionItem.ts
 backend/src/api/current/field-permission.service.ts
 backend/src/api/current/permission-admin.controller.ts
 backend/src/entity/EntityItem.ts
-backend/src/database/seeder/PermissionSeeder.ts
-backend/src/database/seeder/permission-matrices.ts
+backend/src/database/seeder/seed-executor.ts
+backend/src/database/seeder/json-default/permission/permissionData_0001_insert.json
 frontend/src/stores/currentPermissionStore.ts
 frontend/src/utils/entityAccess.ts
 ```
@@ -162,50 +162,21 @@ entityGroup
 
 Event privacy is enforced after the normal entity permission check. `event` records with `isPrivate = true` are visible only to the record's `creatorPerson` and the people in its `participants` collection, including when a user's role grants global Event read permission. This lets several explicitly selected people share one private appointment while protecting it from everyone else across generic lists, exports, relation/reference checks, KPIs using generic filters, MCP generic reads, timelines, and direct update/delete operations.
 
-## Permission Seeder
+## Permission Seeds
 
-File:
+Permissions are explicit, numbered seed records in
+`backend/src/database/seeder/json-default/permission/`.
+The initial baseline supplies one row per shipped entity and role. Administrator
+rows capture the entity capability flags; business roles retain their previous
+matrices. There is no automatic resynchronization at deployment.
 
-```text
-backend/src/database/seeder/PermissionSeeder.ts
-```
+Add an `_insert` file for a new role/entity combination, or an `_update` file
+with `key: { entity, role }` and the changed flags. Existing inserts are skipped
+without changing configured permissions. Changes to administrator capabilities
+must also be shipped explicitly. Unknown roles receive no grants automatically.
 
-Permission matrices:
-
-```text
-backend/src/database/seeder/permission-matrices.ts
-backend/src/database/seeder/permission-matrix-support.ts
-```
-
-`permission-matrices.ts` owns the shared matrix contract/conversion plus the
-sales, customer, and contractor role data. The larger support-role dataset is a
-separate module and is compatibility-re-exported from `permission-matrices.ts`,
-so existing seeder imports remain stable.
-
-The seeder creates missing permissions for every entity/role combination. It
-preserves existing permissions for normal roles. Existing administrator
-permissions are synchronized with the entity capability flags so newly enabled
-entity operations become available after deployment.
-
-Known role handles live in:
-
-```text
-backend/src/database/seeder/role-handles.ts
-```
-
-Admin role behavior:
-
-- reads all entities
-- inherits insert/update/delete/show from entity capability flags
-
-Other known roles use permission matrices.
-
-Unknown roles default to deny all.
-
-`emailDeliveryStatus` is shared reference data required by mail delivery UI.
-The Support and Sales standard roles receive read access without navigation
-visibility on newly seeded systems. Existing non-administrator permissions are
-left untouched by the permission seeder.
+Stable role handles remain in `backend/src/database/seeder/role-handles.ts`.
+See [seeding and baseline adoption](../development/seeding-and-migrations.md).
 
 ## Frontend Permission Usage
 
@@ -293,6 +264,6 @@ to these tables or the local fallback spool.
 
 - Granting frontend visibility without backend read permission.
 - Adding an entity but forgetting permission matrices.
-- Expecting `PermissionSeeder` to update already-existing permissions.
+- Expecting insert seeds or a normal deployment to update already-existing permissions without an explicit update file.
 - Giving external products admin roles instead of purpose-specific service roles.
 - Treating `allowShow` as a backend read grant. It is not; `allowRead` is still required.

@@ -13,7 +13,7 @@ version, content, placeholders, change note, author, publication time and checks
 as read-only fields. The draft uses the normal Markdown editor and preview.
 The added evaluation, manifest, delivery-timing and rule-snapshot fields also have
 explicit layouts. Long diagnostic JSON stays in forms rather than default tables.
-`translationData_083.json` supplies the additional German and English labels.
+The shared translation baseline supplies the German and English labels.
 These are UI metadata changes and require no database schema migration.
 
 ## Publication and runtime
@@ -54,10 +54,13 @@ actions and provider-list reads do not load the prompt catalogue. Speech payload
 transcription request metadata retain version references. Prompt-management request
 bodies are excluded from general HTTP error logs.
 
-Numbered files in `database/seeder/prompts` install the original application texts.
-The initial seed leaves existing templates untouched. Subsequent seed files can offer
-updated drafts when no unpublished edits exist, and never change published references.
-Add new numbered seed files; do not edit an executed seed to distribute updates.
+Numbered files under `database/seeder/json-default/aiPromptTemplate` and
+`aiPromptVersion` contain the consolidated application texts. Explicit insert
+files create templates and immutable versions; a later template update establishes
+the active reference. Existing template inserts leave administrator edits unchanged.
+There is no automatic draft update during deployment. New drafts, versions and
+reference changes must be delivered as separate explicit operations. Add new
+numbered files; never edit an executed baseline seed to distribute updates.
 
 ## Workbench and evaluation
 

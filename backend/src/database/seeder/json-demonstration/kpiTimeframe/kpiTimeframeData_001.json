@@ -1,7 +1,0 @@
-[
-  { "handle": "YEAR" },
-  { "handle": "QUARTER" },
-  { "handle": "MONTH" },
-  { "handle": "WEEK" },
-  { "handle": "DAY" }
-]

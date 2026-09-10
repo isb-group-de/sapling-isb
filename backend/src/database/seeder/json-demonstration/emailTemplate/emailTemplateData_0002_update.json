@@ -1,0 +1,59 @@
+[
+  {
+    "key": {
+      "handle": 4
+    },
+    "values": {
+      "bodyMarkdown": "Hallo,\n\nIhr Anliegen **{{title}}** wurde unter der Ticketnummer **{{number}}** erfasst.\n\n**Aktueller Status**: {{status.description}}\n**Priorität**: {{priority.description}}\n**Startdatum**: {{startDate | dateTime}}\n\nWir melden uns, sobald die nächste Bearbeitungsstufe erreicht ist.\n\nBeste Grüße\nIhr Support-Team"
+    }
+  },
+  {
+    "key": {
+      "handle": 5
+    },
+    "values": {
+      "bodyMarkdown": "Guten Tag,\n\nzu Ihrem Ticket **{{title}}** gibt es ein Update.\n\n- Status: {{status.description}}\n- Priorität: {{priority.description}}\n- Deadline: {{deadlineDate | dateTime}}\n\nUnsere Bearbeitung läuft bereits. Falls Sie zusätzliche Informationen haben, antworten Sie bitte direkt auf diese E-Mail.\n\nFreundliche Grüße\nIhr Support-Team"
+    }
+  },
+  {
+    "key": {
+      "handle": 7
+    },
+    "values": {
+      "bodyMarkdown": "Guten Tag,\n\nIhr Vertragsentwurf **{{title}}** liegt zur Prüfung bereit.\n\n- Vertragsbeginn: {{startDate | dateTime}}\n- Vertragsende: {{endDate | dateTime}}\n- Unternehmen: {{company.name}}\n\nBitte geben Sie uns eine kurze Freigabe oder senden Sie Ihre Änderungswünsche.\n\nBeste Grüße\nIhr Vertragsmanagement"
+    }
+  },
+  {
+    "key": {
+      "handle": 8
+    },
+    "values": {
+      "bodyMarkdown": "Hallo,\n\nder Vertrag **{{title}}** für **{{company.name}}** läuft zum **{{endDate | dateTime}}** aus.\n\nBitte teilen Sie uns mit, ob eine Verlängerung, Anpassung oder Beendigung gewünscht ist.\n\nFreundliche Grüße\nIhr Vertragsmanagement"
+    }
+  },
+  {
+    "key": {
+      "handle": 12
+    },
+    "values": {
+      "subjectTemplate": "Einladung: {{title}} am {{startDate | dateTime}}",
+      "bodyMarkdown": "Hallo,\n\nSie sind zum Termin **{{title}}** eingeladen.\n\n- Beginn: {{startDate | dateTime}}\n- Ende: {{endDate | dateTime}}\n- Teilnehmer: {{participants.email}}\n\nBitte prüfen Sie den Termin im Kalender und geben Sie bei Bedarf Rückmeldung.\n\nViele Grüße\nIhr Organisationsteam"
+    }
+  },
+  {
+    "key": {
+      "handle": 13
+    },
+    "values": {
+      "bodyMarkdown": "Guten Tag,\n\nwir erinnern Sie an den Termin **{{title}}**.\n\n- Start: {{startDate | dateTime}}\n- Ende: {{endDate | dateTime}}\n- Beschreibung: {{description}}\n\nFalls Sie Fragen oder Änderungen haben, antworten Sie bitte direkt auf diese Nachricht.\n\nFreundliche Grüße\nIhr Projektteam"
+    }
+  },
+  {
+    "key": {
+      "handle": 25
+    },
+    "values": {
+      "bodyMarkdown": "Hallo,\n\nIhre Abwesenheit **{{title}}** wurde eingetragen.\n\n- Von: {{startDate | dateTime}}\n- Bis: {{endDate | dateTime}}\n- Status: {{status.description}}\n\nBitte prüfen Sie den Eintrag in Ihrem Kalender und stimmen Sie Vertretungen gegebenenfalls intern ab.\n\nViele Grüße\nHR Operations"
+    }
+  }
+]

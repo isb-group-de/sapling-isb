@@ -1,0 +1,218 @@
+[
+  {
+    "handle": 2,
+    "title": "Ideensammlung Produktlaunch",
+    "description": "Brainstorming für neue Features und Marketingmaßnahmen zum Launch.",
+    "person": 2,
+    "group": "note-check",
+    "createdAt": "2026-09-10T10:45:54.661+00:00",
+    "updatedAt": "2026-09-10T10:45:54.661+00:00"
+  },
+  {
+    "handle": 3,
+    "title": "Kundengespräch Müller GmbH",
+    "description": "Feedback des Kunden aufgenommen, Anpassungen an Dashboard gewünscht.",
+    "person": 3,
+    "group": "note-general",
+    "createdAt": "2026-09-10T10:45:54.661+00:00",
+    "updatedAt": "2026-09-10T10:45:54.661+00:00"
+  },
+  {
+    "handle": 4,
+    "title": "Onboarding Checkliste",
+    "description": "Alle neuen Mitarbeiter müssen die Checkliste bis Freitag abarbeiten.",
+    "person": 1,
+    "group": "note-check",
+    "createdAt": "2026-09-10T10:45:54.661+00:00",
+    "updatedAt": "2026-09-10T10:45:54.661+00:00"
+  },
+  {
+    "handle": 5,
+    "title": "Bugreport: Login Fehler",
+    "description": "Fehler beim Login mit bestimmten Browsern festgestellt. Ticket erstellt.",
+    "person": 2,
+    "group": "note-general",
+    "createdAt": "2026-09-10T10:45:54.661+00:00",
+    "updatedAt": "2026-09-10T10:45:54.661+00:00"
+  },
+  {
+    "handle": 6,
+    "title": "Protokoll: Teammeeting 24.10.",
+    "description": "Kurzes Update zu allen Projekten, keine Blocker gemeldet.",
+    "person": 3,
+    "group": "note-alert",
+    "createdAt": "2026-09-10T10:45:54.661+00:00",
+    "updatedAt": "2026-09-10T10:45:54.661+00:00"
+  },
+  {
+    "handle": 7,
+    "title": "Feature Request: Dunkelmodus",
+    "description": "Mehrere Nutzer wünschen sich einen Dark Mode für die App.",
+    "person": 1,
+    "group": "note-general",
+    "createdAt": "2026-09-10T10:45:54.661+00:00",
+    "updatedAt": "2026-09-10T10:45:54.661+00:00"
+  },
+  {
+    "handle": 8,
+    "title": "Urlaubsplanung 2026",
+    "description": "Bitte alle Urlaubsanträge bis Ende November einreichen.",
+    "person": 2,
+    "group": "note-alert",
+    "createdAt": "2026-09-10T10:45:54.661+00:00",
+    "updatedAt": "2026-09-10T10:45:54.661+00:00"
+  },
+  {
+    "handle": 9,
+    "title": "Release Notes v2.1",
+    "description": "Neue Version veröffentlicht, Changelog im Wiki ergänzt.",
+    "person": 3,
+    "group": "note-check",
+    "createdAt": "2026-09-10T10:45:54.661+00:00",
+    "updatedAt": "2026-09-10T10:45:54.661+00:00"
+  },
+  {
+    "handle": 10,
+    "title": "Telefonnotiz: Rückruf Herr Klein",
+    "description": "Herr Klein bittet um Rückruf bezüglich Angebot 2025-10.",
+    "person": 1,
+    "group": "note-alert",
+    "createdAt": "2026-09-10T10:45:54.661+00:00",
+    "updatedAt": "2026-09-10T10:45:54.661+00:00"
+  },
+  {
+    "handle": 11,
+    "title": "Workshop Vorbereitung",
+    "description": "Materialien für den Workshop am Montag zusammengestellt.",
+    "person": 2,
+    "group": "note-check",
+    "createdAt": "2026-09-10T10:45:54.661+00:00",
+    "updatedAt": "2026-09-10T10:45:54.661+00:00"
+  },
+  {
+    "handle": 12,
+    "title": "Feedbackrunde Sprint 12",
+    "description": "Team war zufrieden, Verbesserungsvorschläge dokumentiert.",
+    "person": 3,
+    "group": "note-general",
+    "createdAt": "2026-09-10T10:45:54.661+00:00",
+    "updatedAt": "2026-09-10T10:45:54.661+00:00"
+  },
+  {
+    "handle": 13,
+    "title": "Kundenumfrage Ergebnisse",
+    "description": "Auswertung der Umfrage zeigt hohe Zufriedenheit.",
+    "person": 1,
+    "group": "note-check",
+    "createdAt": "2026-09-10T10:45:54.661+00:00",
+    "updatedAt": "2026-09-10T10:45:54.661+00:00"
+  },
+  {
+    "handle": 14,
+    "title": "Serverwartung geplant",
+    "description": "Wartungsfenster am Samstag von 22-24 Uhr angekündigt.",
+    "person": 2,
+    "group": "note-general",
+    "createdAt": "2026-09-10T10:45:54.661+00:00",
+    "updatedAt": "2026-09-10T10:45:54.661+00:00"
+  },
+  {
+    "handle": 15,
+    "title": "Designentwurf Dashboard",
+    "description": "Erster Entwurf für das neue Dashboard im Anhang.",
+    "person": 3,
+    "group": "note-alert",
+    "createdAt": "2026-09-10T10:45:54.661+00:00",
+    "updatedAt": "2026-09-10T10:45:54.661+00:00"
+  },
+  {
+    "handle": 16,
+    "title": "ToDo: Datenschutz prüfen",
+    "description": "Prüfen, ob alle neuen Features DSGVO-konform sind.",
+    "person": 1,
+    "group": "note-general",
+    "createdAt": "2026-09-10T10:45:54.661+00:00",
+    "updatedAt": "2026-09-10T10:45:54.661+00:00"
+  },
+  {
+    "handle": 17,
+    "title": "Projektabschluss: CRM Migration",
+    "description": "Migration erfolgreich abgeschlossen, Abschlussbericht folgt.",
+    "person": 2,
+    "group": "note-alert",
+    "createdAt": "2026-09-10T10:45:54.661+00:00",
+    "updatedAt": "2026-09-10T10:45:54.661+00:00"
+  },
+  {
+    "handle": 18,
+    "title": "Notiz: API Schlüssel erneuern",
+    "description": "API Key läuft am 31.12. ab, rechtzeitig erneuern.",
+    "person": 3,
+    "group": "note-check",
+    "createdAt": "2026-09-10T10:45:54.661+00:00",
+    "updatedAt": "2026-09-10T10:45:54.661+00:00"
+  },
+  {
+    "handle": 19,
+    "title": "Kundentermin bestätigen",
+    "description": "Termin mit Frau Schmitt am 28.10. bestätigt.",
+    "person": 1,
+    "group": "note-alert",
+    "createdAt": "2026-09-10T10:45:54.661+00:00",
+    "updatedAt": "2026-09-10T10:45:54.661+00:00"
+  },
+  {
+    "handle": 20,
+    "title": "Testprotokoll Mobile App",
+    "description": "Alle Testfälle für die mobile App erfolgreich bestanden.",
+    "person": 2,
+    "group": "note-check",
+    "createdAt": "2026-09-10T10:45:54.661+00:00",
+    "updatedAt": "2026-09-10T10:45:54.661+00:00"
+  },
+  {
+    "handle": 21,
+    "title": "Entwurf: Newsletter Oktober",
+    "description": "Newsletter-Entwurf zur Freigabe an Marketing gesendet.",
+    "person": 3,
+    "group": "note-general",
+    "createdAt": "2026-09-10T10:45:54.661+00:00",
+    "updatedAt": "2026-09-10T10:45:54.661+00:00"
+  },
+  {
+    "handle": 22,
+    "title": "Supportanfrage: Passwort Reset",
+    "description": "Nutzer benötigt Hilfe beim Zurücksetzen des Passworts.",
+    "person": 1,
+    "group": "note-check",
+    "createdAt": "2026-09-10T10:45:54.661+00:00",
+    "updatedAt": "2026-09-10T10:45:54.661+00:00"
+  },
+  {
+    "handle": 23,
+    "title": "Datenbank-Backup prüfen",
+    "description": "Letztes Backup vom 23.10. erfolgreich, keine Fehler.",
+    "person": 2,
+    "group": "note-general",
+    "createdAt": "2026-09-10T10:45:54.661+00:00",
+    "updatedAt": "2026-09-10T10:45:54.661+00:00"
+  },
+  {
+    "handle": 24,
+    "title": "Entwicklernotiz: Refactoring",
+    "description": "Code für die Authentifizierung wurde überarbeitet.",
+    "person": 3,
+    "group": "note-alert",
+    "createdAt": "2026-09-10T10:45:54.661+00:00",
+    "updatedAt": "2026-09-10T10:45:54.661+00:00"
+  },
+  {
+    "handle": 25,
+    "title": "Abstimmung: Weihnachtsfeier",
+    "description": "Bitte bis 15.11. für einen Termin abstimmen.",
+    "person": 1,
+    "group": "note-general",
+    "createdAt": "2026-09-10T10:45:54.661+00:00",
+    "updatedAt": "2026-09-10T10:45:54.661+00:00"
+  }
+]

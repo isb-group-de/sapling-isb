@@ -1,0 +1,173 @@
+[
+  {
+    "handle": 2,
+    "title": "InventoX Warenwirtschaft",
+    "name": "inventox",
+    "version": "1.1.0",
+    "description": "Moderne Warenwirtschaft für KMU und Großhandel.",
+    "createdAt": "2026-09-10T10:45:54.653+00:00",
+    "updatedAt": "2026-09-10T10:45:54.653+00:00"
+  },
+  {
+    "handle": 3,
+    "title": "CloudDesk Office",
+    "name": "clouddesk",
+    "version": "2.0.0",
+    "description": "Cloudbasierte Office-Suite für Teams.",
+    "createdAt": "2026-09-10T10:45:54.653+00:00",
+    "updatedAt": "2026-09-10T10:45:54.653+00:00"
+  },
+  {
+    "handle": 4,
+    "title": "FleetMaster Pro",
+    "name": "fleetmaster",
+    "version": "2.1.3",
+    "description": "Fuhrparkmanagement für Unternehmen jeder Größe.",
+    "createdAt": "2026-09-10T10:45:54.653+00:00",
+    "updatedAt": "2026-09-10T10:45:54.653+00:00"
+  },
+  {
+    "handle": 5,
+    "title": "MediPlan Health",
+    "name": "mediplan",
+    "version": "1.2.0",
+    "description": "Digitale Patientenakte und Terminverwaltung.",
+    "createdAt": "2026-09-10T10:45:54.653+00:00",
+    "updatedAt": "2026-09-10T10:45:54.653+00:00"
+  },
+  {
+    "handle": 6,
+    "title": "EcoTrack Analytics",
+    "name": "ecotrack",
+    "version": "2.0.1",
+    "description": "Nachhaltigkeits- und Umweltkennzahlen im Blick.",
+    "createdAt": "2026-09-10T10:45:54.653+00:00",
+    "updatedAt": "2026-09-10T10:45:54.653+00:00"
+  },
+  {
+    "handle": 7,
+    "title": "EventPilot Manager",
+    "name": "eventpilot",
+    "version": "1.3.0",
+    "description": "Event- und Teilnehmermanagement für Konferenzen.",
+    "createdAt": "2026-09-10T10:45:54.653+00:00",
+    "updatedAt": "2026-09-10T10:45:54.653+00:00"
+  },
+  {
+    "handle": 8,
+    "title": "SmartHome Control",
+    "name": "smarthome-control",
+    "version": "2.2.0",
+    "description": "Zentrale Steuerung für Smart-Home-Geräte.",
+    "createdAt": "2026-09-10T10:45:54.653+00:00",
+    "updatedAt": "2026-09-10T10:45:54.653+00:00"
+  },
+  {
+    "handle": 9,
+    "title": "PayFlex Billing",
+    "name": "payflex",
+    "version": "1.0.5",
+    "description": "Rechnungsstellung und Zahlungsabwicklung digital.",
+    "createdAt": "2026-09-10T10:45:54.653+00:00",
+    "updatedAt": "2026-09-10T10:45:54.653+00:00"
+  },
+  {
+    "handle": 10,
+    "title": "VisionFlow ERP",
+    "name": "visionflow",
+    "version": "2.3.0",
+    "description": "Integriertes ERP-System für wachsende Unternehmen.",
+    "createdAt": "2026-09-10T10:45:54.653+00:00",
+    "updatedAt": "2026-09-10T10:45:54.653+00:00"
+  },
+  {
+    "handle": 11,
+    "title": "LegalDoc Suite",
+    "name": "legaldoc",
+    "version": "1.4.2",
+    "description": "Dokumentenmanagement für Kanzleien und Juristen.",
+    "createdAt": "2026-09-10T10:45:54.653+00:00",
+    "updatedAt": "2026-09-10T10:45:54.653+00:00"
+  },
+  {
+    "handle": 12,
+    "title": "AgroBase Farm",
+    "name": "agrobase",
+    "version": "2.0.2",
+    "description": "Digitale Betriebsführung für die Landwirtschaft.",
+    "createdAt": "2026-09-10T10:45:54.653+00:00",
+    "updatedAt": "2026-09-10T10:45:54.653+00:00"
+  },
+  {
+    "handle": 13,
+    "title": "TravelSync Portal",
+    "name": "travelsync",
+    "version": "1.5.0",
+    "description": "Reisebuchung und -verwaltung für Unternehmen.",
+    "createdAt": "2026-09-10T10:45:54.653+00:00",
+    "updatedAt": "2026-09-10T10:45:54.653+00:00"
+  },
+  {
+    "handle": 14,
+    "title": "BuildIT Project",
+    "name": "buildit",
+    "version": "2.4.0",
+    "description": "Projektmanagement für Bau- und Handwerksbetriebe.",
+    "createdAt": "2026-09-10T10:45:54.653+00:00",
+    "updatedAt": "2026-09-10T10:45:54.653+00:00"
+  },
+  {
+    "handle": 15,
+    "title": "ShopEase Commerce",
+    "name": "shopease",
+    "version": "1.6.1",
+    "description": "E-Commerce-Plattform für den Mittelstand.",
+    "createdAt": "2026-09-10T10:45:54.653+00:00",
+    "updatedAt": "2026-09-10T10:45:54.653+00:00"
+  },
+  {
+    "handle": 16,
+    "title": "EduSphere LMS",
+    "name": "edusphere",
+    "version": "2.5.0",
+    "description": "Lernmanagementsystem für Schulen und Akademien.",
+    "createdAt": "2026-09-10T10:45:54.653+00:00",
+    "updatedAt": "2026-09-10T10:45:54.653+00:00"
+  },
+  {
+    "handle": 17,
+    "title": "LogiChain Transport",
+    "name": "logichain",
+    "version": "1.7.0",
+    "description": "Transport- und Lieferkettenmanagement.",
+    "createdAt": "2026-09-10T10:45:54.653+00:00",
+    "updatedAt": "2026-09-10T10:45:54.653+00:00"
+  },
+  {
+    "handle": 18,
+    "title": "FinGuard Risk",
+    "name": "finguard",
+    "version": "2.6.0",
+    "description": "Risikomanagement für Finanzdienstleister.",
+    "createdAt": "2026-09-10T10:45:54.653+00:00",
+    "updatedAt": "2026-09-10T10:45:54.653+00:00"
+  },
+  {
+    "handle": 19,
+    "title": "GreenPower Monitor",
+    "name": "greenpower",
+    "version": "1.8.0",
+    "description": "Überwachungslösung für erneuerbare Energien.",
+    "createdAt": "2026-09-10T10:45:54.654+00:00",
+    "updatedAt": "2026-09-10T10:45:54.654+00:00"
+  },
+  {
+    "handle": 20,
+    "title": "CareConnect Assist",
+    "name": "careconnect",
+    "version": "2.7.0",
+    "description": "Assistenzsystem für Pflegeeinrichtungen.",
+    "createdAt": "2026-09-10T10:45:54.654+00:00",
+    "updatedAt": "2026-09-10T10:45:54.654+00:00"
+  }
+]

@@ -1,0 +1,402 @@
+[
+  {
+    "key": {
+      "handle": 1
+    },
+    "values": {
+      "products": [8]
+    }
+  },
+  {
+    "key": {
+      "handle": 2
+    },
+    "values": {
+      "products": [3, 18]
+    }
+  },
+  {
+    "key": {
+      "handle": 3
+    },
+    "values": {
+      "products": [6]
+    }
+  },
+  {
+    "key": {
+      "handle": 4
+    },
+    "values": {
+      "products": [10]
+    }
+  },
+  {
+    "key": {
+      "handle": 5
+    },
+    "values": {
+      "products": [2, 20]
+    }
+  },
+  {
+    "key": {
+      "handle": 6
+    },
+    "values": {
+      "products": [8]
+    }
+  },
+  {
+    "key": {
+      "handle": 7
+    },
+    "values": {
+      "products": [1]
+    }
+  },
+  {
+    "key": {
+      "handle": 8
+    },
+    "values": {
+      "products": [5, 19]
+    }
+  },
+  {
+    "key": {
+      "handle": 9
+    },
+    "values": {
+      "products": [4]
+    }
+  },
+  {
+    "key": {
+      "handle": 10
+    },
+    "values": {
+      "products": [11]
+    }
+  },
+  {
+    "key": {
+      "handle": 11
+    },
+    "values": {
+      "products": [9]
+    }
+  },
+  {
+    "key": {
+      "handle": 12
+    },
+    "values": {
+      "products": [1]
+    }
+  },
+  {
+    "key": {
+      "handle": 13
+    },
+    "values": {
+      "products": [11]
+    }
+  },
+  {
+    "key": {
+      "handle": 14
+    },
+    "values": {
+      "products": [7]
+    }
+  },
+  {
+    "key": {
+      "handle": 15
+    },
+    "values": {
+      "products": [14]
+    }
+  },
+  {
+    "key": {
+      "handle": 16
+    },
+    "values": {
+      "products": [5]
+    }
+  },
+  {
+    "key": {
+      "handle": 17
+    },
+    "values": {
+      "products": [12, 20]
+    }
+  },
+  {
+    "key": {
+      "handle": 18
+    },
+    "values": {
+      "products": [3]
+    }
+  },
+  {
+    "key": {
+      "handle": 19
+    },
+    "values": {
+      "products": [8]
+    }
+  },
+  {
+    "key": {
+      "handle": 20
+    },
+    "values": {
+      "products": [15]
+    }
+  },
+  {
+    "key": {
+      "handle": 21
+    },
+    "values": {
+      "products": [2]
+    }
+  },
+  {
+    "key": {
+      "handle": 22
+    },
+    "values": {
+      "products": [10, 20]
+    }
+  },
+  {
+    "key": {
+      "handle": 23
+    },
+    "values": {
+      "products": [5, 18]
+    }
+  },
+  {
+    "key": {
+      "handle": 24
+    },
+    "values": {
+      "products": [13]
+    }
+  },
+  {
+    "key": {
+      "handle": 25
+    },
+    "values": {
+      "products": [6]
+    }
+  },
+  {
+    "key": {
+      "handle": 26
+    },
+    "values": {
+      "products": [15]
+    }
+  },
+  {
+    "key": {
+      "handle": 27
+    },
+    "values": {
+      "products": [3, 20]
+    }
+  },
+  {
+    "key": {
+      "handle": 28
+    },
+    "values": {
+      "products": [12]
+    }
+  },
+  {
+    "key": {
+      "handle": 29
+    },
+    "values": {
+      "products": [5]
+    }
+  },
+  {
+    "key": {
+      "handle": 30
+    },
+    "values": {
+      "products": [15]
+    }
+  },
+  {
+    "key": {
+      "handle": 31
+    },
+    "values": {
+      "products": [16]
+    }
+  },
+  {
+    "key": {
+      "handle": 32
+    },
+    "values": {
+      "products": [10]
+    }
+  },
+  {
+    "key": {
+      "handle": 33
+    },
+    "values": {
+      "products": [1]
+    }
+  },
+  {
+    "key": {
+      "handle": 34
+    },
+    "values": {
+      "products": [17]
+    }
+  },
+  {
+    "key": {
+      "handle": 35
+    },
+    "values": {
+      "products": [13]
+    }
+  },
+  {
+    "key": {
+      "handle": 36
+    },
+    "values": {
+      "products": [11]
+    }
+  },
+  {
+    "key": {
+      "handle": 37
+    },
+    "values": {
+      "products": [18]
+    }
+  },
+  {
+    "key": {
+      "handle": 38
+    },
+    "values": {
+      "products": [7]
+    }
+  },
+  {
+    "key": {
+      "handle": 39
+    },
+    "values": {
+      "products": [15]
+    }
+  },
+  {
+    "key": {
+      "handle": 40
+    },
+    "values": {
+      "products": [13]
+    }
+  },
+  {
+    "key": {
+      "handle": 41
+    },
+    "values": {
+      "products": [5]
+    }
+  },
+  {
+    "key": {
+      "handle": 42
+    },
+    "values": {
+      "products": [17]
+    }
+  },
+  {
+    "key": {
+      "handle": 43
+    },
+    "values": {
+      "products": [15]
+    }
+  },
+  {
+    "key": {
+      "handle": 44
+    },
+    "values": {
+      "products": [3]
+    }
+  },
+  {
+    "key": {
+      "handle": 45
+    },
+    "values": {
+      "products": [11]
+    }
+  },
+  {
+    "key": {
+      "handle": 46
+    },
+    "values": {
+      "products": [16]
+    }
+  },
+  {
+    "key": {
+      "handle": 47
+    },
+    "values": {
+      "products": [7]
+    }
+  },
+  {
+    "key": {
+      "handle": 48
+    },
+    "values": {
+      "products": [17]
+    }
+  },
+  {
+    "key": {
+      "handle": 49
+    },
+    "values": {
+      "products": [18]
+    }
+  },
+  {
+    "key": {
+      "handle": 50
+    },
+    "values": {
+      "products": [8]
+    }
+  }
+]

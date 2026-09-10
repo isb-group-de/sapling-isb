@@ -1,0 +1,52 @@
+[
+  {
+    "handle": "cancelled",
+    "description": "Abgebrochen",
+    "color": "#9e9e9e",
+    "icon": "mdi-cancel",
+    "isOpen": false,
+    "sortOrder": 10,
+    "createdAt": "2026-09-10T10:49:35.929+00:00",
+    "updatedAt": "2026-09-10T10:49:35.931+00:00"
+  },
+  {
+    "handle": "completed",
+    "description": "Abgeschlossen",
+    "color": "#4caf50",
+    "icon": "mdi-check-circle-outline",
+    "isOpen": false,
+    "sortOrder": 20,
+    "createdAt": "2026-09-10T10:49:35.929+00:00",
+    "updatedAt": "2026-09-10T10:49:35.931+00:00"
+  },
+  {
+    "handle": "in_progress",
+    "description": "In Bearbeitung",
+    "color": "#ff9800",
+    "icon": "mdi-play",
+    "isOpen": true,
+    "sortOrder": 30,
+    "createdAt": "2026-09-10T10:49:35.928+00:00",
+    "updatedAt": "2026-09-10T10:49:35.931+00:00"
+  },
+  {
+    "handle": "new",
+    "description": "Neu",
+    "color": "#2196f3",
+    "icon": "mdi-star-outline",
+    "isOpen": true,
+    "sortOrder": 40,
+    "createdAt": "2026-09-10T10:49:35.927+00:00",
+    "updatedAt": "2026-09-10T10:49:35.931+00:00"
+  },
+  {
+    "handle": "open",
+    "description": "Offen",
+    "color": "#f44336",
+    "icon": "mdi-new-box",
+    "isOpen": true,
+    "sortOrder": 50,
+    "createdAt": "2026-09-10T10:49:35.926+00:00",
+    "updatedAt": "2026-09-10T10:49:35.931+00:00"
+  }
+]

@@ -15,8 +15,7 @@ backend/src/script/core/script.result.server.ts
 backend/src/script/*Controller.ts
 frontend/src/services/api.script.service.ts
 frontend/src/composables/context/useSaplingContextMenuTable.ts
-backend/src/database/seeder/json-production/scriptButton/
-backend/src/database/seeder/json-demonstration/scriptButton/
+backend/src/database/seeder/json-default/scriptButton/
 ```
 
 ## Script Button Model

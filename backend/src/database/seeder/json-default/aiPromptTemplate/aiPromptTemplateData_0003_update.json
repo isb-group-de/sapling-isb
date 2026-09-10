@@ -1,0 +1,1890 @@
+[
+  {
+    "key": {
+      "handle": "agent-context.fragment1"
+    },
+    "values": {
+      "publishedVersion": 169
+    }
+  },
+  {
+    "key": {
+      "handle": "agent-context.fragment2"
+    },
+    "values": {
+      "publishedVersion": 170
+    }
+  },
+  {
+    "key": {
+      "handle": "agent-context.fragment3"
+    },
+    "values": {
+      "publishedVersion": 171
+    }
+  },
+  {
+    "key": {
+      "handle": "agent-context.fragment4"
+    },
+    "values": {
+      "publishedVersion": 172
+    }
+  },
+  {
+    "key": {
+      "handle": "agent-context.fragment5"
+    },
+    "values": {
+      "publishedVersion": 173
+    }
+  },
+  {
+    "key": {
+      "handle": "agent-context.fragment6"
+    },
+    "values": {
+      "publishedVersion": 174
+    }
+  },
+  {
+    "key": {
+      "handle": "agent-context.fragment7"
+    },
+    "values": {
+      "publishedVersion": 175
+    }
+  },
+  {
+    "key": {
+      "handle": "agent-context.fragment8"
+    },
+    "values": {
+      "publishedVersion": 176
+    }
+  },
+  {
+    "key": {
+      "handle": "agent-context.fragment9"
+    },
+    "values": {
+      "publishedVersion": 177
+    }
+  },
+  {
+    "key": {
+      "handle": "agent-context.fragment10"
+    },
+    "values": {
+      "publishedVersion": 178
+    }
+  },
+  {
+    "key": {
+      "handle": "agent-context.fragment11"
+    },
+    "values": {
+      "publishedVersion": 179
+    }
+  },
+  {
+    "key": {
+      "handle": "agent-context.text1"
+    },
+    "values": {
+      "publishedVersion": 156
+    }
+  },
+  {
+    "key": {
+      "handle": "agent-context.text2"
+    },
+    "values": {
+      "publishedVersion": 157
+    }
+  },
+  {
+    "key": {
+      "handle": "agent-context.text3"
+    },
+    "values": {
+      "publishedVersion": 158
+    }
+  },
+  {
+    "key": {
+      "handle": "agent-policy.fragment1"
+    },
+    "values": {
+      "publishedVersion": 180
+    }
+  },
+  {
+    "key": {
+      "handle": "agent-policy.fragment2"
+    },
+    "values": {
+      "publishedVersion": 181
+    }
+  },
+  {
+    "key": {
+      "handle": "agent-policy.fragment3"
+    },
+    "values": {
+      "publishedVersion": 182
+    }
+  },
+  {
+    "key": {
+      "handle": "agent-policy.fragment4"
+    },
+    "values": {
+      "publishedVersion": 183
+    }
+  },
+  {
+    "key": {
+      "handle": "agent-policy.fragment5"
+    },
+    "values": {
+      "publishedVersion": 184
+    }
+  },
+  {
+    "key": {
+      "handle": "agent-policy.text1"
+    },
+    "values": {
+      "publishedVersion": 159
+    }
+  },
+  {
+    "key": {
+      "handle": "chat.ai_assistant_speech_instructions"
+    },
+    "values": {
+      "publishedVersion": 7
+    }
+  },
+  {
+    "key": {
+      "handle": "chat.ai_gemini_repeated_tool_call_abort_message"
+    },
+    "values": {
+      "publishedVersion": 9
+    }
+  },
+  {
+    "key": {
+      "handle": "chat.ai_gemini_tool_call_limit_message"
+    },
+    "values": {
+      "publishedVersion": 10
+    }
+  },
+  {
+    "key": {
+      "handle": "chat.ai_markdown_preparation_instructions"
+    },
+    "values": {
+      "publishedVersion": 8
+    }
+  },
+  {
+    "key": {
+      "handle": "chat.ai_system_prompt_base"
+    },
+    "values": {
+      "publishedVersion": 1
+    }
+  },
+  {
+    "key": {
+      "handle": "chat.ai_system_prompt_knowledge_guidance"
+    },
+    "values": {
+      "publishedVersion": 5
+    }
+  },
+  {
+    "key": {
+      "handle": "chat.ai_system_prompt_tool_guidance"
+    },
+    "values": {
+      "publishedVersion": 2
+    }
+  },
+  {
+    "key": {
+      "handle": "chat.ai_system_prompt_vector_guidance"
+    },
+    "values": {
+      "publishedVersion": 4
+    }
+  },
+  {
+    "key": {
+      "handle": "chat.ai_system_prompt_web_guidance"
+    },
+    "values": {
+      "publishedVersion": 6
+    }
+  },
+  {
+    "key": {
+      "handle": "chat.ai_tool_result_security_notice"
+    },
+    "values": {
+      "publishedVersion": 3
+    }
+  },
+  {
+    "key": {
+      "handle": "chat.fragment1"
+    },
+    "values": {
+      "publishedVersion": 160
+    }
+  },
+  {
+    "key": {
+      "handle": "chat.fragment2"
+    },
+    "values": {
+      "publishedVersion": 161
+    }
+  },
+  {
+    "key": {
+      "handle": "chat.fragment3"
+    },
+    "values": {
+      "publishedVersion": 162
+    }
+  },
+  {
+    "key": {
+      "handle": "chat.fragment4"
+    },
+    "values": {
+      "publishedVersion": 163
+    }
+  },
+  {
+    "key": {
+      "handle": "chat.fragment5"
+    },
+    "values": {
+      "publishedVersion": 164
+    }
+  },
+  {
+    "key": {
+      "handle": "chat.fragment6"
+    },
+    "values": {
+      "publishedVersion": 165
+    }
+  },
+  {
+    "key": {
+      "handle": "chat.fragment7"
+    },
+    "values": {
+      "publishedVersion": 166
+    }
+  },
+  {
+    "key": {
+      "handle": "chat.fragment8"
+    },
+    "values": {
+      "publishedVersion": 167
+    }
+  },
+  {
+    "key": {
+      "handle": "chat.fragment9"
+    },
+    "values": {
+      "publishedVersion": 168
+    }
+  },
+  {
+    "key": {
+      "handle": "chat.text1"
+    },
+    "values": {
+      "publishedVersion": 84
+    }
+  },
+  {
+    "key": {
+      "handle": "chat.text2"
+    },
+    "values": {
+      "publishedVersion": 85
+    }
+  },
+  {
+    "key": {
+      "handle": "chat.text3"
+    },
+    "values": {
+      "publishedVersion": 86
+    }
+  },
+  {
+    "key": {
+      "handle": "chat.text4"
+    },
+    "values": {
+      "publishedVersion": 87
+    }
+  },
+  {
+    "key": {
+      "handle": "chat.text5"
+    },
+    "values": {
+      "publishedVersion": 88
+    }
+  },
+  {
+    "key": {
+      "handle": "chat.text6"
+    },
+    "values": {
+      "publishedVersion": 89
+    }
+  },
+  {
+    "key": {
+      "handle": "chat.text7"
+    },
+    "values": {
+      "publishedVersion": 90
+    }
+  },
+  {
+    "key": {
+      "handle": "chat.text8"
+    },
+    "values": {
+      "publishedVersion": 91
+    }
+  },
+  {
+    "key": {
+      "handle": "chat.text9"
+    },
+    "values": {
+      "publishedVersion": 92
+    }
+  },
+  {
+    "key": {
+      "handle": "chat.text10"
+    },
+    "values": {
+      "publishedVersion": 93
+    }
+  },
+  {
+    "key": {
+      "handle": "chat.text11"
+    },
+    "values": {
+      "publishedVersion": 94
+    }
+  },
+  {
+    "key": {
+      "handle": "dvelop.detail1"
+    },
+    "values": {
+      "publishedVersion": 227
+    }
+  },
+  {
+    "key": {
+      "handle": "dvelop.detail2"
+    },
+    "values": {
+      "publishedVersion": 228
+    }
+  },
+  {
+    "key": {
+      "handle": "dvelop.detail3"
+    },
+    "values": {
+      "publishedVersion": 229
+    }
+  },
+  {
+    "key": {
+      "handle": "dvelop.detail4"
+    },
+    "values": {
+      "publishedVersion": 230
+    }
+  },
+  {
+    "key": {
+      "handle": "dvelop.detail5"
+    },
+    "values": {
+      "publishedVersion": 231
+    }
+  },
+  {
+    "key": {
+      "handle": "dvelop.detail6"
+    },
+    "values": {
+      "publishedVersion": 232
+    }
+  },
+  {
+    "key": {
+      "handle": "dvelop.detail7"
+    },
+    "values": {
+      "publishedVersion": 233
+    }
+  },
+  {
+    "key": {
+      "handle": "dvelop.detail8"
+    },
+    "values": {
+      "publishedVersion": 234
+    }
+  },
+  {
+    "key": {
+      "handle": "dvelop.detail9"
+    },
+    "values": {
+      "publishedVersion": 235
+    }
+  },
+  {
+    "key": {
+      "handle": "dvelop.detail10"
+    },
+    "values": {
+      "publishedVersion": 236
+    }
+  },
+  {
+    "key": {
+      "handle": "dvelop.text1"
+    },
+    "values": {
+      "publishedVersion": 133
+    }
+  },
+  {
+    "key": {
+      "handle": "dvelop.text2"
+    },
+    "values": {
+      "publishedVersion": 134
+    }
+  },
+  {
+    "key": {
+      "handle": "dvelop.text3"
+    },
+    "values": {
+      "publishedVersion": 135
+    }
+  },
+  {
+    "key": {
+      "handle": "dvelop.text4"
+    },
+    "values": {
+      "publishedVersion": 136
+    }
+  },
+  {
+    "key": {
+      "handle": "dvelop.text5"
+    },
+    "values": {
+      "publishedVersion": 137
+    }
+  },
+  {
+    "key": {
+      "handle": "dvelop.text6"
+    },
+    "values": {
+      "publishedVersion": 138
+    }
+  },
+  {
+    "key": {
+      "handle": "dvelop.text7"
+    },
+    "values": {
+      "publishedVersion": 139
+    }
+  },
+  {
+    "key": {
+      "handle": "dvelop.text8"
+    },
+    "values": {
+      "publishedVersion": 140
+    }
+  },
+  {
+    "key": {
+      "handle": "dvelop.text9"
+    },
+    "values": {
+      "publishedVersion": 141
+    }
+  },
+  {
+    "key": {
+      "handle": "dvelop.text10"
+    },
+    "values": {
+      "publishedVersion": 142
+    }
+  },
+  {
+    "key": {
+      "handle": "dvelop.text11"
+    },
+    "values": {
+      "publishedVersion": 143
+    }
+  },
+  {
+    "key": {
+      "handle": "dvelop.text12"
+    },
+    "values": {
+      "publishedVersion": 144
+    }
+  },
+  {
+    "key": {
+      "handle": "dvelop.text13"
+    },
+    "values": {
+      "publishedVersion": 145
+    }
+  },
+  {
+    "key": {
+      "handle": "dvelop.text14"
+    },
+    "values": {
+      "publishedVersion": 146
+    }
+  },
+  {
+    "key": {
+      "handle": "dvelop.text15"
+    },
+    "values": {
+      "publishedVersion": 147
+    }
+  },
+  {
+    "key": {
+      "handle": "dvelop.text16"
+    },
+    "values": {
+      "publishedVersion": 148
+    }
+  },
+  {
+    "key": {
+      "handle": "dvelop.text17"
+    },
+    "values": {
+      "publishedVersion": 149
+    }
+  },
+  {
+    "key": {
+      "handle": "dvelop.text18"
+    },
+    "values": {
+      "publishedVersion": 150
+    }
+  },
+  {
+    "key": {
+      "handle": "dvelop.text19"
+    },
+    "values": {
+      "publishedVersion": 151
+    }
+  },
+  {
+    "key": {
+      "handle": "estimate.detail1"
+    },
+    "values": {
+      "publishedVersion": 198
+    }
+  },
+  {
+    "key": {
+      "handle": "estimate.detail2"
+    },
+    "values": {
+      "publishedVersion": 199
+    }
+  },
+  {
+    "key": {
+      "handle": "estimate.detail3"
+    },
+    "values": {
+      "publishedVersion": 200
+    }
+  },
+  {
+    "key": {
+      "handle": "estimate.detail4"
+    },
+    "values": {
+      "publishedVersion": 201
+    }
+  },
+  {
+    "key": {
+      "handle": "estimate.detail5"
+    },
+    "values": {
+      "publishedVersion": 202
+    }
+  },
+  {
+    "key": {
+      "handle": "estimate.detail6"
+    },
+    "values": {
+      "publishedVersion": 203
+    }
+  },
+  {
+    "key": {
+      "handle": "estimate.detail7"
+    },
+    "values": {
+      "publishedVersion": 204
+    }
+  },
+  {
+    "key": {
+      "handle": "estimate.detail8"
+    },
+    "values": {
+      "publishedVersion": 205
+    }
+  },
+  {
+    "key": {
+      "handle": "estimate.detail9"
+    },
+    "values": {
+      "publishedVersion": 206
+    }
+  },
+  {
+    "key": {
+      "handle": "estimate.detail10"
+    },
+    "values": {
+      "publishedVersion": 207
+    }
+  },
+  {
+    "key": {
+      "handle": "estimate.text1"
+    },
+    "values": {
+      "publishedVersion": 124
+    }
+  },
+  {
+    "key": {
+      "handle": "estimate.text2"
+    },
+    "values": {
+      "publishedVersion": 125
+    }
+  },
+  {
+    "key": {
+      "handle": "estimate.text3"
+    },
+    "values": {
+      "publishedVersion": 126
+    }
+  },
+  {
+    "key": {
+      "handle": "estimate.text4"
+    },
+    "values": {
+      "publishedVersion": 127
+    }
+  },
+  {
+    "key": {
+      "handle": "import.fragment1"
+    },
+    "values": {
+      "publishedVersion": 185
+    }
+  },
+  {
+    "key": {
+      "handle": "import.fragment2"
+    },
+    "values": {
+      "publishedVersion": 186
+    }
+  },
+  {
+    "key": {
+      "handle": "import.fragment3"
+    },
+    "values": {
+      "publishedVersion": 187
+    }
+  },
+  {
+    "key": {
+      "handle": "import.fragment4"
+    },
+    "values": {
+      "publishedVersion": 188
+    }
+  },
+  {
+    "key": {
+      "handle": "import.fragment5"
+    },
+    "values": {
+      "publishedVersion": 189
+    }
+  },
+  {
+    "key": {
+      "handle": "import.fragment6"
+    },
+    "values": {
+      "publishedVersion": 190
+    }
+  },
+  {
+    "key": {
+      "handle": "import.fragment7"
+    },
+    "values": {
+      "publishedVersion": 191
+    }
+  },
+  {
+    "key": {
+      "handle": "import.text1"
+    },
+    "values": {
+      "publishedVersion": 113
+    }
+  },
+  {
+    "key": {
+      "handle": "import.text2"
+    },
+    "values": {
+      "publishedVersion": 114
+    }
+  },
+  {
+    "key": {
+      "handle": "import.text3"
+    },
+    "values": {
+      "publishedVersion": 115
+    }
+  },
+  {
+    "key": {
+      "handle": "inbound-email.fragment1"
+    },
+    "values": {
+      "publishedVersion": 192
+    }
+  },
+  {
+    "key": {
+      "handle": "inbound-email.fragment2"
+    },
+    "values": {
+      "publishedVersion": 193
+    }
+  },
+  {
+    "key": {
+      "handle": "inbound-email.fragment3"
+    },
+    "values": {
+      "publishedVersion": 194
+    }
+  },
+  {
+    "key": {
+      "handle": "inbound-email.fragment4"
+    },
+    "values": {
+      "publishedVersion": 195
+    }
+  },
+  {
+    "key": {
+      "handle": "inbound.text1"
+    },
+    "values": {
+      "publishedVersion": 95
+    }
+  },
+  {
+    "key": {
+      "handle": "inbound.text2"
+    },
+    "values": {
+      "publishedVersion": 96
+    }
+  },
+  {
+    "key": {
+      "handle": "inbound.text3"
+    },
+    "values": {
+      "publishedVersion": 97
+    }
+  },
+  {
+    "key": {
+      "handle": "inbound.text4"
+    },
+    "values": {
+      "publishedVersion": 98
+    }
+  },
+  {
+    "key": {
+      "handle": "inbound.text5"
+    },
+    "values": {
+      "publishedVersion": 99
+    }
+  },
+  {
+    "key": {
+      "handle": "inbound.text6"
+    },
+    "values": {
+      "publishedVersion": 100
+    }
+  },
+  {
+    "key": {
+      "handle": "inbound.text7"
+    },
+    "values": {
+      "publishedVersion": 101
+    }
+  },
+  {
+    "key": {
+      "handle": "inbound.text8"
+    },
+    "values": {
+      "publishedVersion": 102
+    }
+  },
+  {
+    "key": {
+      "handle": "inbound.text9"
+    },
+    "values": {
+      "publishedVersion": 103
+    }
+  },
+  {
+    "key": {
+      "handle": "inbound.text10"
+    },
+    "values": {
+      "publishedVersion": 104
+    }
+  },
+  {
+    "key": {
+      "handle": "inbound.text11"
+    },
+    "values": {
+      "publishedVersion": 105
+    }
+  },
+  {
+    "key": {
+      "handle": "inbound.text12"
+    },
+    "values": {
+      "publishedVersion": 106
+    }
+  },
+  {
+    "key": {
+      "handle": "inbound.text13"
+    },
+    "values": {
+      "publishedVersion": 107
+    }
+  },
+  {
+    "key": {
+      "handle": "inbound.text14"
+    },
+    "values": {
+      "publishedVersion": 108
+    }
+  },
+  {
+    "key": {
+      "handle": "inbound.text15"
+    },
+    "values": {
+      "publishedVersion": 109
+    }
+  },
+  {
+    "key": {
+      "handle": "inbound.text16"
+    },
+    "values": {
+      "publishedVersion": 110
+    }
+  },
+  {
+    "key": {
+      "handle": "inbound.text17"
+    },
+    "values": {
+      "publishedVersion": 111
+    }
+  },
+  {
+    "key": {
+      "handle": "inbound.text18"
+    },
+    "values": {
+      "publishedVersion": 112
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.reference-value-repair"
+    },
+    "values": {
+      "publishedVersion": 197
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_tool_descriptions.currentPerson"
+    },
+    "values": {
+      "publishedVersion": 11
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_tool_descriptions.entityCatalog"
+    },
+    "values": {
+      "publishedVersion": 12
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_tool_descriptions.entitySchema"
+    },
+    "values": {
+      "publishedVersion": 13
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_tool_descriptions.entitySearch"
+    },
+    "values": {
+      "publishedVersion": 14
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_tool_descriptions.genericCreate"
+    },
+    "values": {
+      "publishedVersion": 28
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_tool_descriptions.genericDelete"
+    },
+    "values": {
+      "publishedVersion": 30
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_tool_descriptions.genericGet"
+    },
+    "values": {
+      "publishedVersion": 16
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_tool_descriptions.genericList"
+    },
+    "values": {
+      "publishedVersion": 15
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_tool_descriptions.genericTimeline"
+    },
+    "values": {
+      "publishedVersion": 17
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_tool_descriptions.genericUpdate"
+    },
+    "values": {
+      "publishedVersion": 29
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_tool_descriptions.importConfigureBatch"
+    },
+    "values": {
+      "publishedVersion": 26
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_tool_descriptions.importExecuteBatch"
+    },
+    "values": {
+      "publishedVersion": 27
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_tool_descriptions.importGetBatch"
+    },
+    "values": {
+      "publishedVersion": 22
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_tool_descriptions.importListTemplates"
+    },
+    "values": {
+      "publishedVersion": 23
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_tool_descriptions.importMatchExistingRecords"
+    },
+    "values": {
+      "publishedVersion": 25
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_tool_descriptions.importSuggestMapping"
+    },
+    "values": {
+      "publishedVersion": 24
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_tool_descriptions.knowledgeSearch"
+    },
+    "values": {
+      "publishedVersion": 20
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_tool_descriptions.semanticSearch"
+    },
+    "values": {
+      "publishedVersion": 19
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_tool_descriptions.ticketSearch"
+    },
+    "values": {
+      "publishedVersion": 18
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_tool_descriptions.webSearch"
+    },
+    "values": {
+      "publishedVersion": 21
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_untrusted_result_notice"
+    },
+    "values": {
+      "publishedVersion": 31
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_usage_hints.criteriaRepair.0"
+    },
+    "values": {
+      "publishedVersion": 76
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_usage_hints.criteriaRepair.1"
+    },
+    "values": {
+      "publishedVersion": 77
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_usage_hints.criteriaRepair.2"
+    },
+    "values": {
+      "publishedVersion": 78
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_usage_hints.currentPerson.0"
+    },
+    "values": {
+      "publishedVersion": 32
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_usage_hints.currentPerson.1"
+    },
+    "values": {
+      "publishedVersion": 33
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_usage_hints.currentPerson.2"
+    },
+    "values": {
+      "publishedVersion": 34
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_usage_hints.entitySchema.0"
+    },
+    "values": {
+      "publishedVersion": 38
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_usage_hints.entitySchema.1"
+    },
+    "values": {
+      "publishedVersion": 39
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_usage_hints.entitySchema.2"
+    },
+    "values": {
+      "publishedVersion": 40
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_usage_hints.entitySchema.3"
+    },
+    "values": {
+      "publishedVersion": 41
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_usage_hints.entitySchema.4"
+    },
+    "values": {
+      "publishedVersion": 42
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_usage_hints.entitySchema.5"
+    },
+    "values": {
+      "publishedVersion": 43
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_usage_hints.entitySchema.6"
+    },
+    "values": {
+      "publishedVersion": 44
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_usage_hints.entitySchema.7"
+    },
+    "values": {
+      "publishedVersion": 45
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_usage_hints.entitySchema.8"
+    },
+    "values": {
+      "publishedVersion": 46
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_usage_hints.entitySearch.0"
+    },
+    "values": {
+      "publishedVersion": 47
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_usage_hints.entitySearch.1"
+    },
+    "values": {
+      "publishedVersion": 48
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_usage_hints.genericGet.0"
+    },
+    "values": {
+      "publishedVersion": 49
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_usage_hints.genericList.0"
+    },
+    "values": {
+      "publishedVersion": 35
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_usage_hints.genericList.1"
+    },
+    "values": {
+      "publishedVersion": 36
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_usage_hints.genericList.2"
+    },
+    "values": {
+      "publishedVersion": 37
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_usage_hints.importTools.0"
+    },
+    "values": {
+      "publishedVersion": 64
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_usage_hints.importTools.1"
+    },
+    "values": {
+      "publishedVersion": 65
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_usage_hints.importTools.2"
+    },
+    "values": {
+      "publishedVersion": 66
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_usage_hints.importTools.3"
+    },
+    "values": {
+      "publishedVersion": 67
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_usage_hints.importTools.4"
+    },
+    "values": {
+      "publishedVersion": 68
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_usage_hints.importTools.5"
+    },
+    "values": {
+      "publishedVersion": 69
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_usage_hints.knowledgeSearch.0"
+    },
+    "values": {
+      "publishedVersion": 57
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_usage_hints.knowledgeSearch.1"
+    },
+    "values": {
+      "publishedVersion": 58
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_usage_hints.knowledgeSearch.2"
+    },
+    "values": {
+      "publishedVersion": 59
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_usage_hints.mutationRepair.0"
+    },
+    "values": {
+      "publishedVersion": 79
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_usage_hints.mutationRepair.1"
+    },
+    "values": {
+      "publishedVersion": 80
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_usage_hints.mutationRepair.2"
+    },
+    "values": {
+      "publishedVersion": 81
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_usage_hints.mutationRepair.3"
+    },
+    "values": {
+      "publishedVersion": 82
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_usage_hints.mutationRepair.4"
+    },
+    "values": {
+      "publishedVersion": 83
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_usage_hints.semanticSearch.0"
+    },
+    "values": {
+      "publishedVersion": 55
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_usage_hints.semanticSearch.1"
+    },
+    "values": {
+      "publishedVersion": 56
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_usage_hints.ticketSearch.0"
+    },
+    "values": {
+      "publishedVersion": 53
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_usage_hints.ticketSearch.1"
+    },
+    "values": {
+      "publishedVersion": 54
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_usage_hints.toolError.0"
+    },
+    "values": {
+      "publishedVersion": 70
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_usage_hints.toolError.1"
+    },
+    "values": {
+      "publishedVersion": 71
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_usage_hints.toolError.2"
+    },
+    "values": {
+      "publishedVersion": 72
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_usage_hints.toolError.3"
+    },
+    "values": {
+      "publishedVersion": 73
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_usage_hints.toolError.4"
+    },
+    "values": {
+      "publishedVersion": 74
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_usage_hints.toolError.5"
+    },
+    "values": {
+      "publishedVersion": 75
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_usage_hints.userFacingValues.0"
+    },
+    "values": {
+      "publishedVersion": 50
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_usage_hints.userFacingValues.1"
+    },
+    "values": {
+      "publishedVersion": 51
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_usage_hints.userFacingValues.2"
+    },
+    "values": {
+      "publishedVersion": 52
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_usage_hints.webSearch.0"
+    },
+    "values": {
+      "publishedVersion": 60
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_usage_hints.webSearch.1"
+    },
+    "values": {
+      "publishedVersion": 61
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_usage_hints.webSearch.2"
+    },
+    "values": {
+      "publishedVersion": 62
+    }
+  },
+  {
+    "key": {
+      "handle": "mcp.sapling_mcp_usage_hints.webSearch.3"
+    },
+    "values": {
+      "publishedVersion": 63
+    }
+  },
+  {
+    "key": {
+      "handle": "opportunity.detail1"
+    },
+    "values": {
+      "publishedVersion": 208
+    }
+  },
+  {
+    "key": {
+      "handle": "opportunity.detail2"
+    },
+    "values": {
+      "publishedVersion": 209
+    }
+  },
+  {
+    "key": {
+      "handle": "opportunity.detail3"
+    },
+    "values": {
+      "publishedVersion": 210
+    }
+  },
+  {
+    "key": {
+      "handle": "opportunity.detail4"
+    },
+    "values": {
+      "publishedVersion": 211
+    }
+  },
+  {
+    "key": {
+      "handle": "opportunity.detail5"
+    },
+    "values": {
+      "publishedVersion": 212
+    }
+  },
+  {
+    "key": {
+      "handle": "opportunity.detail6"
+    },
+    "values": {
+      "publishedVersion": 213
+    }
+  },
+  {
+    "key": {
+      "handle": "opportunity.detail7"
+    },
+    "values": {
+      "publishedVersion": 214
+    }
+  },
+  {
+    "key": {
+      "handle": "opportunity.detail8"
+    },
+    "values": {
+      "publishedVersion": 215
+    }
+  },
+  {
+    "key": {
+      "handle": "opportunity.detail9"
+    },
+    "values": {
+      "publishedVersion": 216
+    }
+  },
+  {
+    "key": {
+      "handle": "opportunity.detail10"
+    },
+    "values": {
+      "publishedVersion": 217
+    }
+  },
+  {
+    "key": {
+      "handle": "opportunity.text1"
+    },
+    "values": {
+      "publishedVersion": 128
+    }
+  },
+  {
+    "key": {
+      "handle": "opportunity.text2"
+    },
+    "values": {
+      "publishedVersion": 129
+    }
+  },
+  {
+    "key": {
+      "handle": "opportunity.text3"
+    },
+    "values": {
+      "publishedVersion": 130
+    }
+  },
+  {
+    "key": {
+      "handle": "opportunity.text4"
+    },
+    "values": {
+      "publishedVersion": 131
+    }
+  },
+  {
+    "key": {
+      "handle": "opportunity.text5"
+    },
+    "values": {
+      "publishedVersion": 132
+    }
+  },
+  {
+    "key": {
+      "handle": "search.text1"
+    },
+    "values": {
+      "publishedVersion": 152
+    }
+  },
+  {
+    "key": {
+      "handle": "search.text2"
+    },
+    "values": {
+      "publishedVersion": 153
+    }
+  },
+  {
+    "key": {
+      "handle": "search.text3"
+    },
+    "values": {
+      "publishedVersion": 154
+    }
+  },
+  {
+    "key": {
+      "handle": "text-assistance.text1"
+    },
+    "values": {
+      "publishedVersion": 155
+    }
+  },
+  {
+    "key": {
+      "handle": "ticket.detail1"
+    },
+    "values": {
+      "publishedVersion": 218
+    }
+  },
+  {
+    "key": {
+      "handle": "ticket.detail2"
+    },
+    "values": {
+      "publishedVersion": 219
+    }
+  },
+  {
+    "key": {
+      "handle": "ticket.detail3"
+    },
+    "values": {
+      "publishedVersion": 220
+    }
+  },
+  {
+    "key": {
+      "handle": "ticket.detail4"
+    },
+    "values": {
+      "publishedVersion": 221
+    }
+  },
+  {
+    "key": {
+      "handle": "ticket.detail5"
+    },
+    "values": {
+      "publishedVersion": 222
+    }
+  },
+  {
+    "key": {
+      "handle": "ticket.detail6"
+    },
+    "values": {
+      "publishedVersion": 223
+    }
+  },
+  {
+    "key": {
+      "handle": "ticket.detail7"
+    },
+    "values": {
+      "publishedVersion": 224
+    }
+  },
+  {
+    "key": {
+      "handle": "ticket.detail8"
+    },
+    "values": {
+      "publishedVersion": 225
+    }
+  },
+  {
+    "key": {
+      "handle": "ticket.detail9"
+    },
+    "values": {
+      "publishedVersion": 226
+    }
+  },
+  {
+    "key": {
+      "handle": "ticket.text1"
+    },
+    "values": {
+      "publishedVersion": 116
+    }
+  },
+  {
+    "key": {
+      "handle": "ticket.text2"
+    },
+    "values": {
+      "publishedVersion": 117
+    }
+  },
+  {
+    "key": {
+      "handle": "ticket.text3"
+    },
+    "values": {
+      "publishedVersion": 118
+    }
+  },
+  {
+    "key": {
+      "handle": "ticket.text4"
+    },
+    "values": {
+      "publishedVersion": 119
+    }
+  },
+  {
+    "key": {
+      "handle": "ticket.text5"
+    },
+    "values": {
+      "publishedVersion": 120
+    }
+  },
+  {
+    "key": {
+      "handle": "ticket.text6"
+    },
+    "values": {
+      "publishedVersion": 121
+    }
+  },
+  {
+    "key": {
+      "handle": "ticket.text7"
+    },
+    "values": {
+      "publishedVersion": 122
+    }
+  },
+  {
+    "key": {
+      "handle": "ticket.text8"
+    },
+    "values": {
+      "publishedVersion": 123
+    }
+  },
+  {
+    "key": {
+      "handle": "web-search.read-only"
+    },
+    "values": {
+      "publishedVersion": 196
+    }
+  }
+]

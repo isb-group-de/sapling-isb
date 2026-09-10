@@ -1,0 +1,137 @@
+[
+  {
+    "handle": "doctor_engineer",
+    "title": "Dr.-Ing.",
+    "icon": "mdi-cog-outline",
+    "color": "#D84315",
+    "sortOrder": 70,
+    "createdAt": "2026-09-10T10:49:35.464+00:00",
+    "updatedAt": "2026-09-10T10:49:35.464+00:00"
+  },
+  {
+    "handle": "doctor_medical_science",
+    "title": "Dr. rer. medic.",
+    "icon": "mdi-medical-bag",
+    "color": "#C62828",
+    "sortOrder": 150,
+    "createdAt": "2026-09-10T10:49:35.47+00:00",
+    "updatedAt": "2026-09-10T10:49:35.47+00:00"
+  },
+  {
+    "handle": "doctor",
+    "title": "Dr.",
+    "icon": "mdi-school-outline",
+    "color": "#3949AB",
+    "sortOrder": 30,
+    "createdAt": "2026-09-10T10:49:35.461+00:00",
+    "updatedAt": "2026-09-10T10:49:35.461+00:00"
+  },
+  {
+    "handle": "graduate_agricultural_engineer",
+    "title": "Dipl.-Ing. agr.",
+    "icon": "mdi-sprout-outline",
+    "color": "#689F38",
+    "sortOrder": 130,
+    "createdAt": "2026-09-10T10:49:35.468+00:00",
+    "updatedAt": "2026-09-10T10:49:35.468+00:00"
+  },
+  {
+    "handle": "graduate_business_administrator",
+    "title": "Dipl.-Betriebswirt",
+    "icon": "mdi-chart-box-outline",
+    "color": "#00897B",
+    "sortOrder": 60,
+    "createdAt": "2026-09-10T10:49:35.463+00:00",
+    "updatedAt": "2026-09-10T10:49:35.463+00:00"
+  },
+  {
+    "handle": "graduate_business_informatics",
+    "title": "Dipl.-Wirt.-Inf.",
+    "icon": "mdi-monitor-dashboard",
+    "color": "#1565C0",
+    "sortOrder": 140,
+    "createdAt": "2026-09-10T10:49:35.469+00:00",
+    "updatedAt": "2026-09-10T10:49:35.469+00:00"
+  },
+  {
+    "handle": "graduate_businessman",
+    "title": "Dipl.-Kaufmann",
+    "icon": "mdi-briefcase-outline",
+    "color": "#546E7A",
+    "sortOrder": 80,
+    "createdAt": "2026-09-10T10:49:35.464+00:00",
+    "updatedAt": "2026-09-10T10:49:35.464+00:00"
+  },
+  {
+    "handle": "graduate_businesswoman",
+    "title": "Dipl.-Kffrau",
+    "icon": "mdi-briefcase-account-outline",
+    "color": "#8E24AA",
+    "sortOrder": 50,
+    "createdAt": "2026-09-10T10:49:35.462+00:00",
+    "updatedAt": "2026-09-10T10:49:35.462+00:00"
+  },
+  {
+    "handle": "graduate_economist",
+    "title": "Dipl.- Volksw.",
+    "icon": "mdi-finance",
+    "color": "#2E7D32",
+    "sortOrder": 110,
+    "createdAt": "2026-09-10T10:49:35.467+00:00",
+    "updatedAt": "2026-09-10T10:49:35.467+00:00"
+  },
+  {
+    "handle": "graduate_engineer_spaced",
+    "title": "Dipl. Ing.",
+    "icon": "mdi-engine-outline",
+    "color": "#039BE5",
+    "sortOrder": 100,
+    "createdAt": "2026-09-10T10:49:35.466+00:00",
+    "updatedAt": "2026-09-10T10:49:35.466+00:00"
+  },
+  {
+    "handle": "graduate_engineer",
+    "title": "Dipl.-Ing.",
+    "icon": "mdi-hard-hat",
+    "color": "#F4511E",
+    "sortOrder": 40,
+    "createdAt": "2026-09-10T10:49:35.462+00:00",
+    "updatedAt": "2026-09-10T10:49:35.462+00:00"
+  },
+  {
+    "handle": "graduate_industrial_engineer",
+    "title": "Dipl.-Wirtsch.-Ing.",
+    "icon": "mdi-school-outline",
+    "color": "#1976D2",
+    "sortOrder": 10,
+    "createdAt": "2026-09-10T10:49:35.459+00:00",
+    "updatedAt": "2026-09-10T10:49:35.459+00:00"
+  },
+  {
+    "handle": "graduate_social_pedagogue",
+    "title": "Dpl. Soz. Päd.",
+    "icon": "mdi-account-heart-outline",
+    "color": "#D81B60",
+    "sortOrder": 90,
+    "createdAt": "2026-09-10T10:49:35.465+00:00",
+    "updatedAt": "2026-09-10T10:49:35.465+00:00"
+  },
+  {
+    "handle": "pastor",
+    "title": "Pfarrerin",
+    "icon": "mdi-church",
+    "color": "#6D4C41",
+    "sortOrder": 120,
+    "createdAt": "2026-09-10T10:49:35.467+00:00",
+    "updatedAt": "2026-09-10T10:49:35.467+00:00"
+  },
+  {
+    "handle": "professor_doctor",
+    "title": "Prof. Dr.",
+    "icon": "mdi-account-school-outline",
+    "color": "#5E35B1",
+    "sortOrder": 20,
+    "createdAt": "2026-09-10T10:49:35.46+00:00",
+    "updatedAt": "2026-09-10T10:49:35.46+00:00"
+  }
+]

@@ -1,0 +1,38 @@
+[
+  {
+    "handle": "customer",
+    "description": "Kunde",
+    "color": "#03A9F4",
+    "icon": "mdi-account-group-outline",
+    "sortOrder": 40,
+    "createdAt": "2026-09-10T10:49:35.972+00:00",
+    "updatedAt": "2026-09-10T10:49:35.972+00:00"
+  },
+  {
+    "handle": "internal",
+    "description": "Intern",
+    "color": "#3F51B5",
+    "icon": "mdi-shield-account-outline",
+    "sortOrder": 10,
+    "createdAt": "2026-09-10T10:49:35.969+00:00",
+    "updatedAt": "2026-09-10T10:49:35.969+00:00"
+  },
+  {
+    "handle": "sales",
+    "description": "Vertrieb",
+    "color": "#8BC34A",
+    "icon": "mdi-cash-multiple",
+    "sortOrder": 30,
+    "createdAt": "2026-09-10T10:49:35.971+00:00",
+    "updatedAt": "2026-09-10T10:49:35.971+00:00"
+  },
+  {
+    "handle": "support",
+    "description": "Support",
+    "color": "#009688",
+    "icon": "mdi-lifebuoy",
+    "sortOrder": 20,
+    "createdAt": "2026-09-10T10:49:35.97+00:00",
+    "updatedAt": "2026-09-10T10:49:35.97+00:00"
+  }
+]

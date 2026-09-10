@@ -1,0 +1,58 @@
+[
+  {
+    "key": {
+      "handle": 4
+    },
+    "values": {
+      "bodyMarkdown": "Hallo,\n\nIhr Ticket **{{number}}** zu **{{title}}** wurde erfasst.\n\n- Status: {{status.description}}\n- Priorität: {{priority.description}}\n- Start: {{startDate | dateTime}}\n\nWir melden uns, sobald es ein Update gibt."
+    }
+  },
+  {
+    "key": {
+      "handle": 5
+    },
+    "values": {
+      "bodyMarkdown": "Guten Tag,\n\nzu Ihrem Ticket **{{number}}** gibt es ein Update:\n- Titel: {{title}}\n- Status: {{status.description}}\n- Priorität: {{priority.description}}\n- Deadline: {{deadlineDate | dateTime}}\n\nWenn Sie noch Hinweise haben, antworten Sie bitte direkt hier."
+    }
+  },
+  {
+    "key": {
+      "handle": 7
+    },
+    "values": {
+      "bodyMarkdown": "Guten Tag,\n\nIhr Vertragsentwurf **{{title}}** liegt zur Prüfung bereit.\n\n- Beginn: {{startDate | dateTime}}\n- Ende: {{endDate | dateTime}}\n- Unternehmen: {{company.name}}\n\nBitte geben Sie die Freigabe oder Änderungswünsche direkt hier durch."
+    }
+  },
+  {
+    "key": {
+      "handle": 8
+    },
+    "values": {
+      "bodyMarkdown": "Hallo,\n\nder Vertrag **{{title}}** für **{{company.name}}** endet am **{{endDate | dateTime}}**.\n\nBitte teilen Sie uns kurz mit, ob eine Verlängerung oder Anpassung gewünscht ist."
+    }
+  },
+  {
+    "key": {
+      "handle": 12
+    },
+    "values": {
+      "bodyMarkdown": "Hallo,\n\nSie sind zum Termin **{{title}}** eingeladen.\n\n- Beginn: {{startDate | dateTime}}\n- Ende: {{endDate | dateTime}}\n- Teilnehmer: {{participants.email}}\n\nBitte den Termin prüfen und bei Bedarf Rückmeldung geben."
+    }
+  },
+  {
+    "key": {
+      "handle": 13
+    },
+    "values": {
+      "bodyMarkdown": "Guten Tag,\n\nErinnerung an den Termin **{{title}}**.\n\n- Start: {{startDate | dateTime}}\n- Ende: {{endDate | dateTime}}\n- Beschreibung: {{description}}\n\nBei Fragen oder Änderungen antworten Sie bitte direkt hier."
+    }
+  },
+  {
+    "key": {
+      "handle": 25
+    },
+    "values": {
+      "bodyMarkdown": "Hallo,\n\nIhre Abwesenheit **{{title}}** wurde eingetragen.\n\n- Von: {{startDate | dateTime}}\n- Bis: {{endDate | dateTime}}\n- Status: {{status.description}}\n\nBitte den Kalendereintrag kurz prüfen."
+    }
+  }
+]

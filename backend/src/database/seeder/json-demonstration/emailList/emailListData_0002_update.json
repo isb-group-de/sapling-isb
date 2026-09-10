@@ -1,0 +1,42 @@
+[
+  {
+    "key": {
+      "handle": 1
+    },
+    "values": {
+      "mailTemplate": 14
+    }
+  },
+  {
+    "key": {
+      "handle": 2
+    },
+    "values": {
+      "mailTemplate": 16
+    }
+  },
+  {
+    "key": {
+      "handle": 3
+    },
+    "values": {
+      "mailTemplate": 10
+    }
+  },
+  {
+    "key": {
+      "handle": 4
+    },
+    "values": {
+      "mailTemplate": 4
+    }
+  },
+  {
+    "key": {
+      "handle": 5
+    },
+    "values": {
+      "mailTemplate": 1
+    }
+  }
+]

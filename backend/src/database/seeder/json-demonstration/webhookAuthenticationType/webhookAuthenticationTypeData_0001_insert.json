@@ -1,0 +1,10 @@
+[
+  {
+    "handle": "basic",
+    "description": "Basic Auth",
+    "icon": "mdi-lock-check",
+    "color": "#757575",
+    "createdAt": "2026-09-10T10:45:54.67+00:00",
+    "updatedAt": "2026-09-10T10:45:54.67+00:00"
+  }
+]

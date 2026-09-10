@@ -1,0 +1,52 @@
+[
+  {
+    "handle": "active",
+    "title": "Aktiv",
+    "icon": "mdi-play-circle-outline",
+    "color": "#43A047",
+    "sortOrder": 30,
+    "isOpen": true,
+    "createdAt": "2026-09-10T10:49:36.104+00:00",
+    "updatedAt": "2026-09-10T10:49:36.109+00:00"
+  },
+  {
+    "handle": "canceled",
+    "title": "Abgebrochen",
+    "icon": "mdi-close-circle-outline",
+    "color": "#E53935",
+    "sortOrder": 10,
+    "isOpen": false,
+    "createdAt": "2026-09-10T10:49:36.107+00:00",
+    "updatedAt": "2026-09-10T10:49:36.109+00:00"
+  },
+  {
+    "handle": "completed",
+    "title": "Abgeschlossen",
+    "icon": "mdi-check-circle-outline",
+    "color": "#546E7A",
+    "sortOrder": 20,
+    "isOpen": false,
+    "createdAt": "2026-09-10T10:49:36.106+00:00",
+    "updatedAt": "2026-09-10T10:49:36.109+00:00"
+  },
+  {
+    "handle": "paused",
+    "title": "Pausiert",
+    "icon": "mdi-pause-circle-outline",
+    "color": "#F9A825",
+    "sortOrder": 50,
+    "isOpen": true,
+    "createdAt": "2026-09-10T10:49:36.105+00:00",
+    "updatedAt": "2026-09-10T10:49:36.109+00:00"
+  },
+  {
+    "handle": "planned",
+    "title": "Geplant",
+    "icon": "mdi-calendar-clock",
+    "color": "#42A5F5",
+    "sortOrder": 40,
+    "isOpen": true,
+    "createdAt": "2026-09-10T10:49:36.102+00:00",
+    "updatedAt": "2026-09-10T10:49:36.109+00:00"
+  }
+]

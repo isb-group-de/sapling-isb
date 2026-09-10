@@ -1,0 +1,26 @@
+[
+  {
+    "handle": "apikey",
+    "description": "API Key",
+    "icon": "mdi-lock-check",
+    "color": "#ffd600",
+    "createdAt": "2026-09-10T10:49:35.852+00:00",
+    "updatedAt": "2026-09-10T10:49:35.852+00:00"
+  },
+  {
+    "handle": "none",
+    "description": "Ohne Authentifizierung",
+    "icon": "mdi-lock-off",
+    "color": "#43a047",
+    "createdAt": "2026-09-10T10:49:35.851+00:00",
+    "updatedAt": "2026-09-10T10:49:35.851+00:00"
+  },
+  {
+    "handle": "oauth2",
+    "description": "OAuth 2.0",
+    "icon": "mdi-lock-check",
+    "color": "#1976d2",
+    "createdAt": "2026-09-10T10:49:35.853+00:00",
+    "updatedAt": "2026-09-10T10:49:35.853+00:00"
+  }
+]

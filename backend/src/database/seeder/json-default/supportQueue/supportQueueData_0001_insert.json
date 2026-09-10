@@ -1,0 +1,50 @@
+[
+  {
+    "handle": "application_incidents",
+    "title": "Application Incidents",
+    "description": "Störungen und Fehler in Anwendungen und Integrationen.",
+    "icon": "mdi-alert-circle-outline",
+    "color": "#E53935",
+    "isActive": true,
+    "team": "service_desk",
+    "defaultSlaPolicy": "priority",
+    "createdAt": "2026-09-10T10:49:35.596+00:00",
+    "updatedAt": "2026-09-10T10:49:35.596+00:00"
+  },
+  {
+    "handle": "consulting_requests",
+    "title": "Consulting Requests",
+    "description": "Planbare Beratungs- und Serviceanfragen.",
+    "icon": "mdi-account-tie-voice-outline",
+    "color": "#FB8C00",
+    "isActive": true,
+    "team": "consulting",
+    "defaultSlaPolicy": "standard",
+    "createdAt": "2026-09-10T10:49:35.597+00:00",
+    "updatedAt": "2026-09-10T10:49:35.597+00:00"
+  },
+  {
+    "handle": "general_support",
+    "title": "General Support",
+    "description": "Allgemeine eingehende Anfragen und Standard-Support.",
+    "icon": "mdi-inbox-arrow-down-outline",
+    "color": "#1E88E5",
+    "isActive": true,
+    "team": "service_desk",
+    "defaultSlaPolicy": "standard",
+    "createdAt": "2026-09-10T10:49:35.594+00:00",
+    "updatedAt": "2026-09-10T10:49:35.594+00:00"
+  },
+  {
+    "handle": "platform_ops",
+    "title": "Platform Operations",
+    "description": "Kritische Betriebsfälle für Plattform und Infrastruktur.",
+    "icon": "mdi-server-network",
+    "color": "#6D4C41",
+    "isActive": true,
+    "team": "platform",
+    "defaultSlaPolicy": "mission_critical",
+    "createdAt": "2026-09-10T10:49:35.598+00:00",
+    "updatedAt": "2026-09-10T10:49:35.598+00:00"
+  }
+]

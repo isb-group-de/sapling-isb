@@ -1,8 +1,0 @@
-[
-  {
-    "entity": "sharedMailboxContext",
-    "property": "template",
-    "de": "Standard-E-Mail-Vorlage",
-    "en": "Default email template"
-  }
-]

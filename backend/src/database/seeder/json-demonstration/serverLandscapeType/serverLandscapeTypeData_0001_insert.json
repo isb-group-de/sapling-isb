@@ -1,0 +1,34 @@
+[
+  {
+    "handle": "windowsServer2016",
+    "title": "Windows Server 2016",
+    "icon": "mdi-server",
+    "color": "#546E7A",
+    "createdAt": "2026-09-10T10:45:54.631+00:00",
+    "updatedAt": "2026-09-10T10:45:54.632+00:00"
+  },
+  {
+    "handle": "windowsServer2019",
+    "title": "Windows Server 2019",
+    "icon": "mdi-server",
+    "color": "#1976D2",
+    "createdAt": "2026-09-10T10:45:54.633+00:00",
+    "updatedAt": "2026-09-10T10:45:54.633+00:00"
+  },
+  {
+    "handle": "windowsServer2022",
+    "title": "Windows Server 2022",
+    "icon": "mdi-server",
+    "color": "#1565C0",
+    "createdAt": "2026-09-10T10:45:54.634+00:00",
+    "updatedAt": "2026-09-10T10:45:54.634+00:00"
+  },
+  {
+    "handle": "windowsServer2025",
+    "title": "Windows Server 2025",
+    "icon": "mdi-server",
+    "color": "#0D47A1",
+    "createdAt": "2026-09-10T10:45:54.635+00:00",
+    "updatedAt": "2026-09-10T10:45:54.635+00:00"
+  }
+]

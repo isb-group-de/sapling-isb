@@ -1,0 +1,27 @@
+[
+  {
+    "key": {
+      "handle": 1
+    },
+    "values": {
+      "name": "Standardfirma",
+      "street": "Musterstraße 1",
+      "zip": "12345",
+      "city": "Musterstadt",
+      "phone": "+49 123 456 789 0",
+      "email": "info@standardfirma.de",
+      "website": "www.standardfirma.de",
+      "dataPrivacyConsentGiven": true,
+      "dataPrivacyConsentAt": "2026-01-05",
+      "employeeCount": 12,
+      "contractValue": 10250,
+      "annualRecurringRevenue": 5400,
+      "monthlyRecurringRevenue": 450,
+      "industry": "software",
+      "segment": "customer",
+      "size": "medium",
+      "annualRevenueClass": "m_50_250",
+      "churnRiskReason": "stakeholder_change"
+    }
+  }
+]

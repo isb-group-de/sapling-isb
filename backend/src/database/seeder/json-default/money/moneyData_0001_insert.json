@@ -1,0 +1,240 @@
+[
+  {
+    "handle": "AED",
+    "name": "UAE Dirham",
+    "symbol": "د.إ",
+    "createdAt": "2026-09-10T10:49:09.158+00:00",
+    "updatedAt": "2026-09-10T10:49:09.158+00:00"
+  },
+  {
+    "handle": "AUD",
+    "name": "Australian Dollar",
+    "symbol": "$",
+    "createdAt": "2026-09-10T10:49:09.128+00:00",
+    "updatedAt": "2026-09-10T10:49:09.128+00:00"
+  },
+  {
+    "handle": "BRL",
+    "name": "Brazilian Real",
+    "symbol": "R$",
+    "createdAt": "2026-09-10T10:49:09.145+00:00",
+    "updatedAt": "2026-09-10T10:49:09.145+00:00"
+  },
+  {
+    "handle": "CAD",
+    "name": "Canadian Dollar",
+    "symbol": "$",
+    "createdAt": "2026-09-10T10:49:09.129+00:00",
+    "updatedAt": "2026-09-10T10:49:09.129+00:00"
+  },
+  {
+    "handle": "CHF",
+    "name": "Swiss Franc",
+    "symbol": "Fr",
+    "createdAt": "2026-09-10T10:49:09.131+00:00",
+    "updatedAt": "2026-09-10T10:49:09.131+00:00"
+  },
+  {
+    "handle": "CLP",
+    "name": "Chilean Peso",
+    "symbol": "$",
+    "createdAt": "2026-09-10T10:49:09.155+00:00",
+    "updatedAt": "2026-09-10T10:49:09.155+00:00"
+  },
+  {
+    "handle": "CNY",
+    "name": "Chinese Yuan",
+    "symbol": "¥",
+    "createdAt": "2026-09-10T10:49:09.132+00:00",
+    "updatedAt": "2026-09-10T10:49:09.132+00:00"
+  },
+  {
+    "handle": "COP",
+    "name": "Colombian Peso",
+    "symbol": "$",
+    "createdAt": "2026-09-10T10:49:09.159+00:00",
+    "updatedAt": "2026-09-10T10:49:09.159+00:00"
+  },
+  {
+    "handle": "CZK",
+    "name": "Czech Koruna",
+    "symbol": "Kč",
+    "createdAt": "2026-09-10T10:49:09.153+00:00",
+    "updatedAt": "2026-09-10T10:49:09.153+00:00"
+  },
+  {
+    "handle": "DKK",
+    "name": "Danish Krone",
+    "symbol": "kr",
+    "createdAt": "2026-09-10T10:49:09.149+00:00",
+    "updatedAt": "2026-09-10T10:49:09.149+00:00"
+  },
+  {
+    "handle": "EUR",
+    "name": "Euro",
+    "symbol": "€",
+    "createdAt": "2026-09-10T10:49:09.123+00:00",
+    "updatedAt": "2026-09-10T10:49:09.123+00:00"
+  },
+  {
+    "handle": "GBP",
+    "name": "British Pound",
+    "symbol": "£",
+    "createdAt": "2026-09-10T10:49:09.127+00:00",
+    "updatedAt": "2026-09-10T10:49:09.127+00:00"
+  },
+  {
+    "handle": "HKD",
+    "name": "Hong Kong Dollar",
+    "symbol": "$",
+    "createdAt": "2026-09-10T10:49:09.138+00:00",
+    "updatedAt": "2026-09-10T10:49:09.138+00:00"
+  },
+  {
+    "handle": "HUF",
+    "name": "Hungarian Forint",
+    "symbol": "Ft",
+    "createdAt": "2026-09-10T10:49:09.152+00:00",
+    "updatedAt": "2026-09-10T10:49:09.152+00:00"
+  },
+  {
+    "handle": "IDR",
+    "name": "Indonesian Rupiah",
+    "symbol": "Rp",
+    "createdAt": "2026-09-10T10:49:09.151+00:00",
+    "updatedAt": "2026-09-10T10:49:09.151+00:00"
+  },
+  {
+    "handle": "ILS",
+    "name": "Israeli New Shekel",
+    "symbol": "₪",
+    "createdAt": "2026-09-10T10:49:09.154+00:00",
+    "updatedAt": "2026-09-10T10:49:09.154+00:00"
+  },
+  {
+    "handle": "INR",
+    "name": "Indian Rupee",
+    "symbol": "₹",
+    "createdAt": "2026-09-10T10:49:09.144+00:00",
+    "updatedAt": "2026-09-10T10:49:09.144+00:00"
+  },
+  {
+    "handle": "JPY",
+    "name": "Japanese Yen",
+    "symbol": "¥",
+    "createdAt": "2026-09-10T10:49:09.125+00:00",
+    "updatedAt": "2026-09-10T10:49:09.125+00:00"
+  },
+  {
+    "handle": "KRW",
+    "name": "South Korean Won",
+    "symbol": "₩",
+    "createdAt": "2026-09-10T10:49:09.141+00:00",
+    "updatedAt": "2026-09-10T10:49:09.141+00:00"
+  },
+  {
+    "handle": "MXN",
+    "name": "Mexican Peso",
+    "symbol": "$",
+    "createdAt": "2026-09-10T10:49:09.136+00:00",
+    "updatedAt": "2026-09-10T10:49:09.136+00:00"
+  },
+  {
+    "handle": "MYR",
+    "name": "Malaysian Ringgit",
+    "symbol": "RM",
+    "createdAt": "2026-09-10T10:49:09.161+00:00",
+    "updatedAt": "2026-09-10T10:49:09.161+00:00"
+  },
+  {
+    "handle": "NOK",
+    "name": "Norwegian Krone",
+    "symbol": "kr",
+    "createdAt": "2026-09-10T10:49:09.14+00:00",
+    "updatedAt": "2026-09-10T10:49:09.14+00:00"
+  },
+  {
+    "handle": "NZD",
+    "name": "New Zealand Dollar",
+    "symbol": "$",
+    "createdAt": "2026-09-10T10:49:09.135+00:00",
+    "updatedAt": "2026-09-10T10:49:09.135+00:00"
+  },
+  {
+    "handle": "PHP",
+    "name": "Philippine Peso",
+    "symbol": "₱",
+    "createdAt": "2026-09-10T10:49:09.156+00:00",
+    "updatedAt": "2026-09-10T10:49:09.156+00:00"
+  },
+  {
+    "handle": "PLN",
+    "name": "Polish Zloty",
+    "symbol": "zł",
+    "createdAt": "2026-09-10T10:49:09.147+00:00",
+    "updatedAt": "2026-09-10T10:49:09.147+00:00"
+  },
+  {
+    "handle": "RON",
+    "name": "Romanian Leu",
+    "symbol": "lei",
+    "createdAt": "2026-09-10T10:49:09.163+00:00",
+    "updatedAt": "2026-09-10T10:49:09.163+00:00"
+  },
+  {
+    "handle": "RUB",
+    "name": "Russian Ruble",
+    "symbol": "₽",
+    "createdAt": "2026-09-10T10:49:09.143+00:00",
+    "updatedAt": "2026-09-10T10:49:09.143+00:00"
+  },
+  {
+    "handle": "SAR",
+    "name": "Saudi Riyal",
+    "symbol": "ر.س",
+    "createdAt": "2026-09-10T10:49:09.16+00:00",
+    "updatedAt": "2026-09-10T10:49:09.16+00:00"
+  },
+  {
+    "handle": "SEK",
+    "name": "Swedish Krona",
+    "symbol": "kr",
+    "createdAt": "2026-09-10T10:49:09.133+00:00",
+    "updatedAt": "2026-09-10T10:49:09.133+00:00"
+  },
+  {
+    "handle": "SGD",
+    "name": "Singapore Dollar",
+    "symbol": "$",
+    "createdAt": "2026-09-10T10:49:09.137+00:00",
+    "updatedAt": "2026-09-10T10:49:09.137+00:00"
+  },
+  {
+    "handle": "THB",
+    "name": "Thai Baht",
+    "symbol": "฿",
+    "createdAt": "2026-09-10T10:49:09.15+00:00",
+    "updatedAt": "2026-09-10T10:49:09.15+00:00"
+  },
+  {
+    "handle": "TRY",
+    "name": "Turkish Lira",
+    "symbol": "₺",
+    "createdAt": "2026-09-10T10:49:09.142+00:00",
+    "updatedAt": "2026-09-10T10:49:09.142+00:00"
+  },
+  {
+    "handle": "USD",
+    "name": "US Dollar",
+    "symbol": "$",
+    "createdAt": "2026-09-10T10:49:09.12+00:00",
+    "updatedAt": "2026-09-10T10:49:09.12+00:00"
+  },
+  {
+    "handle": "ZAR",
+    "name": "South African Rand",
+    "symbol": "R",
+    "createdAt": "2026-09-10T10:49:09.146+00:00",
+    "updatedAt": "2026-09-10T10:49:09.146+00:00"
+  }
+]

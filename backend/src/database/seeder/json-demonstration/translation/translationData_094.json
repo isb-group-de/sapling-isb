@@ -1,8 +1,0 @@
-[
-  {
-    "entity": "aiChat",
-    "property": "toolActionInvalidFields",
-    "de": "Die Aktion konnte nicht ausgeführt werden. Bitte prüfen Sie: {fields}.",
-    "en": "The action could not be executed. Please check: {fields}."
-  }
-]

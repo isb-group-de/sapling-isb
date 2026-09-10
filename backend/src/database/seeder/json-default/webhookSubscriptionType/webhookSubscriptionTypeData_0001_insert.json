@@ -1,0 +1,66 @@
+[
+  {
+    "handle": "addReference",
+    "description": "Referenz hinzugefügt",
+    "icon": "mdi-link-plus",
+    "color": "#26a69a",
+    "createdAt": "2026-09-10T10:49:35.861+00:00",
+    "updatedAt": "2026-09-10T10:49:35.861+00:00"
+  },
+  {
+    "handle": "afterDelete",
+    "description": "Nach dem Löschen",
+    "icon": "mdi-webhook",
+    "color": "#d32f2f",
+    "createdAt": "2026-09-10T10:49:35.861+00:00",
+    "updatedAt": "2026-09-10T10:49:35.861+00:00"
+  },
+  {
+    "handle": "afterInsert",
+    "description": "Nach dem Einfügen",
+    "icon": "mdi-webhook",
+    "color": "#1976d2",
+    "createdAt": "2026-09-10T10:49:35.857+00:00",
+    "updatedAt": "2026-09-10T10:49:35.857+00:00"
+  },
+  {
+    "handle": "afterUpdate",
+    "description": "Nach dem Bearbeiten",
+    "icon": "mdi-webhook",
+    "color": "#388e3c",
+    "createdAt": "2026-09-10T10:49:35.859+00:00",
+    "updatedAt": "2026-09-10T10:49:35.859+00:00"
+  },
+  {
+    "handle": "beforeDelete",
+    "description": "Vor dem Löschen",
+    "icon": "mdi-webhook",
+    "color": "#ef9a9a",
+    "createdAt": "2026-09-10T10:49:35.86+00:00",
+    "updatedAt": "2026-09-10T10:49:35.86+00:00"
+  },
+  {
+    "handle": "beforeInsert",
+    "description": "Vor dem Einfügen",
+    "icon": "mdi-webhook",
+    "color": "#90caf9",
+    "createdAt": "2026-09-10T10:49:35.856+00:00",
+    "updatedAt": "2026-09-10T10:49:35.856+00:00"
+  },
+  {
+    "handle": "beforeUpdate",
+    "description": "Vor dem Bearbeiten",
+    "icon": "mdi-webhook",
+    "color": "#a5d6a7",
+    "createdAt": "2026-09-10T10:49:35.858+00:00",
+    "updatedAt": "2026-09-10T10:49:35.858+00:00"
+  },
+  {
+    "handle": "deleteReference",
+    "description": "Referenz entfernt",
+    "icon": "mdi-link-variant-remove",
+    "color": "#ff7043",
+    "createdAt": "2026-09-10T10:49:35.862+00:00",
+    "updatedAt": "2026-09-10T10:49:35.862+00:00"
+  }
+]

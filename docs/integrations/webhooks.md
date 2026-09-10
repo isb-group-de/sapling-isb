@@ -25,12 +25,12 @@ backend/src/script/core/script.service.ts
 Seed files:
 
 ```text
-backend/src/database/seeder/json-production/webhookSubscriptionType/
-backend/src/database/seeder/json-production/webhookSubscriptionPayloadType/
-backend/src/database/seeder/json-production/webhookSubscriptionMethod/
-backend/src/database/seeder/json-production/webhookAuthenticationType/
-backend/src/database/seeder/json-production/webhookDeliveryStatus/
-backend/src/database/seeder/json-production/webhookSubscription/
+backend/src/database/seeder/json-default/webhookSubscriptionType/
+backend/src/database/seeder/json-default/webhookSubscriptionPayloadType/
+backend/src/database/seeder/json-default/webhookSubscriptionMethod/
+backend/src/database/seeder/json-default/webhookAuthenticationType/
+backend/src/database/seeder/json-default/webhookDeliveryStatus/
+backend/src/database/seeder/json-default/webhookSubscription/
 ```
 
 ## Subscription Model

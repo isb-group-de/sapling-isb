@@ -1,0 +1,32 @@
+[
+  {
+    "handle": "failed",
+    "description": "Failed",
+    "icon": "mdi-email-remove-outline",
+    "color": "#F44336",
+    "isOpen": false,
+    "sortOrder": 10,
+    "createdAt": "2026-09-10T10:49:36.088+00:00",
+    "updatedAt": "2026-09-10T10:49:36.088+00:00"
+  },
+  {
+    "handle": "pending",
+    "description": "Pending",
+    "icon": "mdi-email-fast-outline",
+    "color": "#FF9800",
+    "isOpen": true,
+    "sortOrder": 20,
+    "createdAt": "2026-09-10T10:49:36.09+00:00",
+    "updatedAt": "2026-09-10T10:49:36.09+00:00"
+  },
+  {
+    "handle": "success",
+    "description": "Success",
+    "icon": "mdi-email-check-outline",
+    "color": "#4CAF50",
+    "isOpen": false,
+    "sortOrder": 30,
+    "createdAt": "2026-09-10T10:49:36.091+00:00",
+    "updatedAt": "2026-09-10T10:49:36.091+00:00"
+  }
+]

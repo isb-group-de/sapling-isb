@@ -1,0 +1,47 @@
+[
+  {
+    "handle": "mission_critical",
+    "title": "Mission Critical",
+    "description": "Enges SLA für geschäftskritische Plattform- und Betriebsfälle.",
+    "firstResponseHours": 1,
+    "resolutionHours": 8,
+    "workWeek": null,
+    "holidayGroup": null,
+    "timeZone": null,
+    "icon": "mdi-fire-alert",
+    "color": "#E53935",
+    "isActive": true,
+    "createdAt": "2026-09-10T10:49:35.59+00:00",
+    "updatedAt": "2026-09-10T10:49:35.59+00:00"
+  },
+  {
+    "handle": "priority",
+    "title": "Priority",
+    "description": "Beschleunigte Bearbeitung für priorisierte Supportfälle.",
+    "firstResponseHours": 4,
+    "resolutionHours": 16,
+    "workWeek": null,
+    "holidayGroup": null,
+    "timeZone": null,
+    "icon": "mdi-timer-alert-outline",
+    "color": "#FB8C00",
+    "isActive": true,
+    "createdAt": "2026-09-10T10:49:35.589+00:00",
+    "updatedAt": "2026-09-10T10:49:35.589+00:00"
+  },
+  {
+    "handle": "standard",
+    "title": "Standard",
+    "description": "Reguläre Reaktions- und Lösungsziele für den Tagesbetrieb.",
+    "firstResponseHours": 8,
+    "resolutionHours": 40,
+    "workWeek": null,
+    "holidayGroup": null,
+    "timeZone": null,
+    "icon": "mdi-timer-sand",
+    "color": "#43A047",
+    "isActive": true,
+    "createdAt": "2026-09-10T10:49:35.587+00:00",
+    "updatedAt": "2026-09-10T10:49:35.587+00:00"
+  }
+]

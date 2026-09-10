@@ -1,0 +1,26 @@
+[
+  {
+    "handle": "high",
+    "description": "Hohe Priorität",
+    "color": "#f44336",
+    "icon": "mdi-chevron-double-up",
+    "createdAt": "2026-09-10T10:49:35.544+00:00",
+    "updatedAt": "2026-09-10T10:49:35.544+00:00"
+  },
+  {
+    "handle": "medium",
+    "description": "Mittlere Priorität",
+    "color": "#ff9800",
+    "icon": "mdi-chevron-up",
+    "createdAt": "2026-09-10T10:49:35.543+00:00",
+    "updatedAt": "2026-09-10T10:49:35.543+00:00"
+  },
+  {
+    "handle": "normal",
+    "description": "Normale Priorität",
+    "color": "#4caf50",
+    "icon": "mdi-chevron-down",
+    "createdAt": "2026-09-10T10:49:35.542+00:00",
+    "updatedAt": "2026-09-10T10:49:35.542+00:00"
+  }
+]

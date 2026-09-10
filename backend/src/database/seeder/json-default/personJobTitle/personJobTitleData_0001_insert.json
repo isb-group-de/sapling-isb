@@ -1,0 +1,56 @@
+[
+  {
+    "handle": "ceo",
+    "title": "Geschäftsführung",
+    "icon": "mdi-account-tie",
+    "color": "#EDE9FE",
+    "sortOrder": 10,
+    "createdAt": "2026-09-10T10:49:35.446+00:00",
+    "updatedAt": "2026-09-10T10:49:35.446+00:00"
+  },
+  {
+    "handle": "cfo",
+    "title": "Finanzleitung",
+    "icon": "mdi-finance",
+    "color": "#CCFBF1",
+    "sortOrder": 20,
+    "createdAt": "2026-09-10T10:49:35.447+00:00",
+    "updatedAt": "2026-09-10T10:49:35.447+00:00"
+  },
+  {
+    "handle": "cto",
+    "title": "Technische Leitung",
+    "icon": "mdi-cog-outline",
+    "color": "#DBEAFE",
+    "sortOrder": 30,
+    "createdAt": "2026-09-10T10:49:35.448+00:00",
+    "updatedAt": "2026-09-10T10:49:35.448+00:00"
+  },
+  {
+    "handle": "head_of_it",
+    "title": "IT-Leitung",
+    "icon": "mdi-laptop",
+    "color": "#BAE6FD",
+    "sortOrder": 40,
+    "createdAt": "2026-09-10T10:49:35.449+00:00",
+    "updatedAt": "2026-09-10T10:49:35.449+00:00"
+  },
+  {
+    "handle": "procurement_manager",
+    "title": "Einkaufsleitung",
+    "icon": "mdi-cart-outline",
+    "color": "#FEF3C7",
+    "sortOrder": 50,
+    "createdAt": "2026-09-10T10:49:35.45+00:00",
+    "updatedAt": "2026-09-10T10:49:35.45+00:00"
+  },
+  {
+    "handle": "project_manager",
+    "title": "Projektleitung",
+    "icon": "mdi-clipboard-check-outline",
+    "color": "#DCFCE7",
+    "sortOrder": 60,
+    "createdAt": "2026-09-10T10:49:35.451+00:00",
+    "updatedAt": "2026-09-10T10:49:35.451+00:00"
+  }
+]

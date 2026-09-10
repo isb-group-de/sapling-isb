@@ -1,0 +1,32 @@
+[
+  {
+    "handle": "failed",
+    "description": "Failed",
+    "icon": "mdi-microsoft-teams",
+    "color": "#F44336",
+    "isOpen": false,
+    "sortOrder": 10,
+    "createdAt": "2026-09-10T10:49:36.127+00:00",
+    "updatedAt": "2026-09-10T10:49:36.129+00:00"
+  },
+  {
+    "handle": "pending",
+    "description": "Pending",
+    "icon": "mdi-microsoft-teams",
+    "color": "#FF9800",
+    "isOpen": true,
+    "sortOrder": 20,
+    "createdAt": "2026-09-10T10:49:36.125+00:00",
+    "updatedAt": "2026-09-10T10:49:36.129+00:00"
+  },
+  {
+    "handle": "success",
+    "description": "Success",
+    "icon": "mdi-microsoft-teams",
+    "color": "#4CAF50",
+    "isOpen": false,
+    "sortOrder": 30,
+    "createdAt": "2026-09-10T10:49:36.126+00:00",
+    "updatedAt": "2026-09-10T10:49:36.129+00:00"
+  }
+]

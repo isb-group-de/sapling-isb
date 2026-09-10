@@ -1,0 +1,18 @@
+[
+  {
+    "key": {
+      "handle": 4
+    },
+    "values": {
+      "starterDashboardTemplates": [1, 4, 7, 10]
+    }
+  },
+  {
+    "key": {
+      "handle": 5
+    },
+    "values": {
+      "starterDashboardTemplates": [1, 4, 7, 10]
+    }
+  }
+]

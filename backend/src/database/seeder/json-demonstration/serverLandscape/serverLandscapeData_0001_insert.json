@@ -1,0 +1,98 @@
+[
+  {
+    "handle": 1,
+    "serverName": "BER-TS-01",
+    "description": "Terminalserver für den Berliner Innendienst.",
+    "allowRemoteAccess": true,
+    "hasInternetAccess": false,
+    "type": "windowsServer2022",
+    "usage": "terminalserver",
+    "company": 2,
+    "createdAt": "2026-09-10T10:45:54.647+00:00",
+    "updatedAt": "2026-09-10T10:45:54.647+00:00"
+  },
+  {
+    "handle": 2,
+    "serverName": "KOE-PORTAL-01",
+    "description": "Portalserver für Partnerzugriffe.",
+    "allowRemoteAccess": false,
+    "hasInternetAccess": true,
+    "type": "windowsServer2019",
+    "usage": "portalserver",
+    "company": 3,
+    "createdAt": "2026-09-10T10:45:54.647+00:00",
+    "updatedAt": "2026-09-10T10:45:54.647+00:00"
+  },
+  {
+    "handle": 3,
+    "serverName": "MUC-DB-01",
+    "description": "SQL-Server für ERP- und Reporting-Datenbanken.",
+    "allowRemoteAccess": false,
+    "hasInternetAccess": false,
+    "type": "windowsServer2022",
+    "usage": "mssqlServer2022",
+    "company": 4,
+    "createdAt": "2026-09-10T10:45:54.647+00:00",
+    "updatedAt": "2026-09-10T10:45:54.647+00:00"
+  },
+  {
+    "handle": 4,
+    "serverName": "HH-API-01",
+    "description": "API-Server für mobile und externe Integrationen.",
+    "allowRemoteAccess": true,
+    "hasInternetAccess": true,
+    "type": "windowsServer2025",
+    "usage": "apiServer",
+    "company": 5,
+    "createdAt": "2026-09-10T10:45:54.647+00:00",
+    "updatedAt": "2026-09-10T10:45:54.647+00:00"
+  },
+  {
+    "handle": 5,
+    "serverName": "NUE-TS-02",
+    "description": "Zusätzlicher Terminalserver für Fachanwendungen.",
+    "allowRemoteAccess": true,
+    "hasInternetAccess": false,
+    "type": "windowsServer2016",
+    "usage": "terminalserver",
+    "company": 8,
+    "createdAt": "2026-09-10T10:45:54.647+00:00",
+    "updatedAt": "2026-09-10T10:45:54.647+00:00"
+  },
+  {
+    "handle": 6,
+    "serverName": "AUG-API-02",
+    "description": "Interner API-Server für Prozessautomatisierung.",
+    "allowRemoteAccess": true,
+    "hasInternetAccess": true,
+    "type": "windowsServer2025",
+    "usage": "apiServer",
+    "company": 12,
+    "createdAt": "2026-09-10T10:45:54.647+00:00",
+    "updatedAt": "2026-09-10T10:45:54.647+00:00"
+  },
+  {
+    "handle": 7,
+    "serverName": "FRA-DB-02",
+    "description": "Reporting- und Archivdatenbank für Fachbereiche.",
+    "allowRemoteAccess": false,
+    "hasInternetAccess": false,
+    "type": "windowsServer2019",
+    "usage": "mssqlServer2019",
+    "company": 18,
+    "createdAt": "2026-09-10T10:45:54.647+00:00",
+    "updatedAt": "2026-09-10T10:45:54.647+00:00"
+  },
+  {
+    "handle": 8,
+    "serverName": "HAM-PORTAL-02",
+    "description": "Kundenportal für externe Self-Service-Prozesse.",
+    "allowRemoteAccess": true,
+    "hasInternetAccess": true,
+    "type": "windowsServer2022",
+    "usage": "portalserver",
+    "company": 21,
+    "createdAt": "2026-09-10T10:45:54.647+00:00",
+    "updatedAt": "2026-09-10T10:45:54.647+00:00"
+  }
+]

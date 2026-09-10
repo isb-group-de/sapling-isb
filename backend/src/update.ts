@@ -5,6 +5,7 @@ import { MikroORM } from '@mikro-orm/core';
 import config from './database/mikro-orm.config';
 import { DatabaseSeeder } from './database/seeder/DatabaseSeeder';
 import { initializeLogger } from './logging/initialize-logger';
+import { prepareDatabaseBaseline } from './database/baseline/adopt-baseline';
 
 type UpdateMode = 'migrate' | 'seed' | 'all';
 
@@ -39,6 +40,7 @@ async function update() {
 
   const orm = await MikroORM.init(config);
   try {
+    await prepareDatabaseBaseline(orm.em.fork(), mode);
     if (mode === 'migrate' || mode === 'all') {
       console.log('Running migrations...');
       await orm.migrator.up();
@@ -56,7 +58,7 @@ async function update() {
     }
   } catch (err) {
     console.error('Update failed:', err);
-    process.exit(1);
+    process.exitCode = 1;
   } finally {
     await orm.close();
   }

@@ -10,8 +10,8 @@ export const GLOBAL_SEARCH_INDEX_ENTITY_HANDLE = 'globalSearchIndex';
 })
 @Index({
   name: 'global_search_index_item_value_trgm_idx',
-  properties: ['normalizedValue'],
-  type: 'gin',
+  expression:
+    'create index "global_search_index_item_value_trgm_idx" on "global_search_index_item" using gin ("normalized_value" gin_trgm_ops)',
 })
 @Entity()
 @Unique({

@@ -1,0 +1,20 @@
+[
+  {
+    "handle": "note-alert",
+    "icon": "mdi-note-alert",
+    "createdAt": "2026-09-10T10:49:35.602+00:00",
+    "updatedAt": "2026-09-10T10:49:35.602+00:00"
+  },
+  {
+    "handle": "note-check",
+    "icon": "mdi-note-check",
+    "createdAt": "2026-09-10T10:49:35.603+00:00",
+    "updatedAt": "2026-09-10T10:49:35.603+00:00"
+  },
+  {
+    "handle": "note-general",
+    "icon": "mdi-note",
+    "createdAt": "2026-09-10T10:49:35.601+00:00",
+    "updatedAt": "2026-09-10T10:49:35.601+00:00"
+  }
+]

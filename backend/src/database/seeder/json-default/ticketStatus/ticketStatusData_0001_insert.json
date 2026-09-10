@@ -1,0 +1,72 @@
+[
+  {
+    "handle": "closed",
+    "description": "Geschlossen",
+    "color": "#4caf50",
+    "icon": "mdi-stop",
+    "isOpen": false,
+    "sortOrder": 10,
+    "createdAt": "2026-09-10T10:49:35.551+00:00",
+    "updatedAt": "2026-09-10T10:49:35.556+00:00"
+  },
+  {
+    "handle": "in_development",
+    "description": "In Entwicklung",
+    "color": "#3f51b5",
+    "icon": "mdi-play",
+    "isOpen": true,
+    "sortOrder": 30,
+    "createdAt": "2026-09-10T10:49:35.55+00:00",
+    "updatedAt": "2026-09-10T10:49:35.556+00:00"
+  },
+  {
+    "handle": "in_progress",
+    "description": "In Bearbeitung",
+    "color": "#2196f3",
+    "icon": "mdi-play",
+    "isOpen": true,
+    "sortOrder": 20,
+    "createdAt": "2026-09-10T10:49:35.549+00:00",
+    "updatedAt": "2026-09-10T10:49:35.556+00:00"
+  },
+  {
+    "handle": "open",
+    "description": "Offen",
+    "color": "#f44336",
+    "icon": "mdi-new-box",
+    "isOpen": true,
+    "sortOrder": 40,
+    "createdAt": "2026-09-10T10:49:35.547+00:00",
+    "updatedAt": "2026-09-10T10:49:35.556+00:00"
+  },
+  {
+    "handle": "waiting_for_customer_feedback",
+    "description": "Warte auf Kundenfeedback",
+    "color": "#f57c00",
+    "icon": "mdi-pause",
+    "isOpen": true,
+    "sortOrder": 50,
+    "createdAt": "2026-09-10T10:49:35.554+00:00",
+    "updatedAt": "2026-09-10T10:49:35.556+00:00"
+  },
+  {
+    "handle": "waiting_for_supplier_feedback",
+    "description": "Warte auf Lieferantenfeedback",
+    "color": "#f57c00",
+    "icon": "mdi-pause",
+    "isOpen": true,
+    "sortOrder": 60,
+    "createdAt": "2026-09-10T10:49:35.553+00:00",
+    "updatedAt": "2026-09-10T10:49:35.556+00:00"
+  },
+  {
+    "handle": "waiting",
+    "description": "Wartend",
+    "color": "#ff9800",
+    "icon": "mdi-pause",
+    "isOpen": true,
+    "sortOrder": 70,
+    "createdAt": "2026-09-10T10:49:35.548+00:00",
+    "updatedAt": "2026-09-10T10:49:35.556+00:00"
+  }
+]

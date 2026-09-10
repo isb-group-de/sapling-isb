@@ -313,9 +313,9 @@ Backend:
 3. Register in `ENTITY_REGISTRY`.
 4. Add migration.
 5. Add seed files:
-   - `entityData_XXX.json`
-   - `entityRouteData_XXX.json`
-   - `translationData_XXX.json`
+   - `entityData_NNNN_insert.json`
+   - `entityRouteData_NNNN_insert.json`
+   - `translationData_NNNN_insert.json`
    - entity-specific reference/demo files
 6. Update permission matrices if access should differ from defaults.
 7. Add script-button controller only if entity-specific actions are needed.

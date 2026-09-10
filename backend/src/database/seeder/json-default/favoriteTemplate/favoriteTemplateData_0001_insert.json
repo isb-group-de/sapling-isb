@@ -1,0 +1,719 @@
+[
+  {
+    "handle": 1,
+    "name": "Meine offenen Tickets",
+    "entity": "ticket",
+    "entityRoute": 26,
+    "filter": {
+      "status": {
+        "handle": "open"
+      },
+      "assigneePerson": {
+        "handle": "{{currentUser.handle}}"
+      }
+    },
+    "isRecommended": true,
+    "createdAt": "2026-09-10T10:49:35.814+00:00",
+    "updatedAt": "2026-09-10T10:49:35.814+00:00"
+  },
+  {
+    "handle": 2,
+    "name": "Meine Tickets in Bearbeitung",
+    "entity": "ticket",
+    "entityRoute": 26,
+    "filter": {
+      "status": {
+        "handle": {
+          "$in": ["in_progress", "in_development"]
+        }
+      },
+      "assigneePerson": {
+        "handle": "{{currentUser.handle}}"
+      }
+    },
+    "isRecommended": true,
+    "createdAt": "2026-09-10T10:49:35.814+00:00",
+    "updatedAt": "2026-09-10T10:49:35.814+00:00"
+  },
+  {
+    "handle": 3,
+    "name": "Meine wartenden Tickets",
+    "entity": "ticket",
+    "entityRoute": 26,
+    "filter": {
+      "status": {
+        "handle": "waiting"
+      },
+      "assigneePerson": {
+        "handle": "{{currentUser.handle}}"
+      }
+    },
+    "isRecommended": true,
+    "createdAt": "2026-09-10T10:49:35.815+00:00",
+    "updatedAt": "2026-09-10T10:49:35.815+00:00"
+  },
+  {
+    "handle": 4,
+    "name": "Meine Tickets mit hoher Priorität",
+    "entity": "ticket",
+    "entityRoute": 26,
+    "filter": {
+      "status": {
+        "handle": {
+          "$nin": ["closed"]
+        }
+      },
+      "priority": {
+        "handle": "high"
+      },
+      "assigneePerson": {
+        "handle": "{{currentUser.handle}}"
+      }
+    },
+    "isRecommended": true,
+    "createdAt": "2026-09-10T10:49:35.815+00:00",
+    "updatedAt": "2026-09-10T10:49:35.815+00:00"
+  },
+  {
+    "handle": 5,
+    "name": "Meine überfälligen Tickets",
+    "entity": "ticket",
+    "entityRoute": 26,
+    "filter": {
+      "status": {
+        "handle": {
+          "$nin": ["closed"]
+        }
+      },
+      "deadlineDate": {
+        "$lt": "{{today.start}}"
+      },
+      "assigneePerson": {
+        "handle": "{{currentUser.handle}}"
+      }
+    },
+    "isRecommended": true,
+    "createdAt": "2026-09-10T10:49:35.816+00:00",
+    "updatedAt": "2026-09-10T10:49:35.816+00:00"
+  },
+  {
+    "handle": 6,
+    "name": "Meine heute fälligen Tickets",
+    "entity": "ticket",
+    "entityRoute": 26,
+    "filter": {
+      "status": {
+        "handle": {
+          "$nin": ["closed"]
+        }
+      },
+      "deadlineDate": {
+        "$lt": "{{tomorrow.start}}",
+        "$gte": "{{today.start}}"
+      },
+      "assigneePerson": {
+        "handle": "{{currentUser.handle}}"
+      }
+    },
+    "isRecommended": true,
+    "createdAt": "2026-09-10T10:49:35.816+00:00",
+    "updatedAt": "2026-09-10T10:49:35.816+00:00"
+  },
+  {
+    "handle": 7,
+    "name": "Eigene erstellte offene Tickets",
+    "entity": "ticket",
+    "entityRoute": 26,
+    "filter": {
+      "status": {
+        "handle": {
+          "$nin": ["closed"]
+        }
+      },
+      "creatorPerson": {
+        "handle": "{{currentUser.handle}}"
+      }
+    },
+    "isRecommended": false,
+    "createdAt": "2026-09-10T10:49:35.817+00:00",
+    "updatedAt": "2026-09-10T10:49:35.817+00:00"
+  },
+  {
+    "handle": 8,
+    "name": "Offene Tickets Service Desk",
+    "entity": "ticket",
+    "entityRoute": 26,
+    "filter": {
+      "status": {
+        "handle": "open"
+      },
+      "supportTeam": {
+        "handle": "service_desk"
+      }
+    },
+    "isRecommended": false,
+    "createdAt": "2026-09-10T10:49:35.817+00:00",
+    "updatedAt": "2026-09-10T10:49:35.817+00:00"
+  },
+  {
+    "handle": 9,
+    "name": "Offene Tickets Platform Operations",
+    "entity": "ticket",
+    "entityRoute": 26,
+    "filter": {
+      "status": {
+        "handle": "open"
+      },
+      "supportTeam": {
+        "handle": "platform"
+      }
+    },
+    "isRecommended": false,
+    "createdAt": "2026-09-10T10:49:35.818+00:00",
+    "updatedAt": "2026-09-10T10:49:35.818+00:00"
+  },
+  {
+    "handle": 10,
+    "name": "Tickets in Queue General Support",
+    "entity": "ticket",
+    "entityRoute": 26,
+    "filter": {
+      "status": {
+        "handle": {
+          "$nin": ["closed"]
+        }
+      },
+      "supportQueue": {
+        "handle": "general_support"
+      }
+    },
+    "isRecommended": false,
+    "createdAt": "2026-09-10T10:49:35.818+00:00",
+    "updatedAt": "2026-09-10T10:49:35.818+00:00"
+  },
+  {
+    "handle": 11,
+    "name": "Tickets in Queue Application Incidents",
+    "entity": "ticket",
+    "entityRoute": 26,
+    "filter": {
+      "status": {
+        "handle": {
+          "$nin": ["closed"]
+        }
+      },
+      "supportQueue": {
+        "handle": "application_incidents"
+      }
+    },
+    "isRecommended": false,
+    "createdAt": "2026-09-10T10:49:35.819+00:00",
+    "updatedAt": "2026-09-10T10:49:35.819+00:00"
+  },
+  {
+    "handle": 12,
+    "name": "Tickets in Queue Consulting Requests",
+    "entity": "ticket",
+    "entityRoute": 26,
+    "filter": {
+      "status": {
+        "handle": {
+          "$nin": ["closed"]
+        }
+      },
+      "supportQueue": {
+        "handle": "consulting_requests"
+      }
+    },
+    "isRecommended": false,
+    "createdAt": "2026-09-10T10:49:35.819+00:00",
+    "updatedAt": "2026-09-10T10:49:35.819+00:00"
+  },
+  {
+    "handle": 13,
+    "name": "Tickets in Queue Platform Operations",
+    "entity": "ticket",
+    "entityRoute": 26,
+    "filter": {
+      "status": {
+        "handle": {
+          "$nin": ["closed"]
+        }
+      },
+      "supportQueue": {
+        "handle": "platform_ops"
+      }
+    },
+    "isRecommended": false,
+    "createdAt": "2026-09-10T10:49:35.819+00:00",
+    "updatedAt": "2026-09-10T10:49:35.819+00:00"
+  },
+  {
+    "handle": 14,
+    "name": "Meine offenen Verkaufschancen",
+    "entity": "salesOpportunity",
+    "entityRoute": 63,
+    "filter": {
+      "isActive": true,
+      "assigneePerson": {
+        "handle": "{{currentUser.handle}}"
+      }
+    },
+    "isRecommended": true,
+    "createdAt": "2026-09-10T10:49:35.82+00:00",
+    "updatedAt": "2026-09-10T10:49:35.82+00:00"
+  },
+  {
+    "handle": 15,
+    "name": "Meine neuen Verkaufschancen",
+    "entity": "salesOpportunity",
+    "entityRoute": 63,
+    "filter": {
+      "type": {
+        "handle": "new"
+      },
+      "isActive": true,
+      "assigneePerson": {
+        "handle": "{{currentUser.handle}}"
+      }
+    },
+    "isRecommended": true,
+    "createdAt": "2026-09-10T10:49:35.82+00:00",
+    "updatedAt": "2026-09-10T10:49:35.82+00:00"
+  },
+  {
+    "handle": 16,
+    "name": "Meine qualifizierten Verkaufschancen",
+    "entity": "salesOpportunity",
+    "entityRoute": 63,
+    "filter": {
+      "type": {
+        "handle": "qualified"
+      },
+      "isActive": true,
+      "assigneePerson": {
+        "handle": "{{currentUser.handle}}"
+      }
+    },
+    "isRecommended": true,
+    "createdAt": "2026-09-10T10:49:35.821+00:00",
+    "updatedAt": "2026-09-10T10:49:35.821+00:00"
+  },
+  {
+    "handle": 17,
+    "name": "Meine Angebote",
+    "entity": "salesOpportunity",
+    "entityRoute": 63,
+    "filter": {
+      "type": {
+        "handle": "proposal"
+      },
+      "isActive": true,
+      "assigneePerson": {
+        "handle": "{{currentUser.handle}}"
+      }
+    },
+    "isRecommended": true,
+    "createdAt": "2026-09-10T10:49:35.822+00:00",
+    "updatedAt": "2026-09-10T10:49:35.822+00:00"
+  },
+  {
+    "handle": 18,
+    "name": "Meine Verhandlungen",
+    "entity": "salesOpportunity",
+    "entityRoute": 63,
+    "filter": {
+      "type": {
+        "handle": "negotiation"
+      },
+      "isActive": true,
+      "assigneePerson": {
+        "handle": "{{currentUser.handle}}"
+      }
+    },
+    "isRecommended": true,
+    "createdAt": "2026-09-10T10:49:35.822+00:00",
+    "updatedAt": "2026-09-10T10:49:35.822+00:00"
+  },
+  {
+    "handle": 19,
+    "name": "Verkaufschancen meines Unternehmens",
+    "entity": "salesOpportunity",
+    "entityRoute": 63,
+    "filter": {
+      "isActive": true,
+      "assigneeCompany": {
+        "handle": "{{currentUser.company.handle}}"
+      }
+    },
+    "isRecommended": false,
+    "createdAt": "2026-09-10T10:49:35.823+00:00",
+    "updatedAt": "2026-09-10T10:49:35.823+00:00"
+  },
+  {
+    "handle": 20,
+    "name": "Meine heutigen Termine",
+    "entity": "event",
+    "entityRoute": null,
+    "filter": {
+      "status": {
+        "handle": {
+          "$nin": ["canceled", "completed"]
+        }
+      },
+      "startDate": {
+        "$lt": "{{tomorrow.start}}",
+        "$gte": "{{today.start}}"
+      },
+      "participants": {
+        "handle": "{{currentUser.handle}}"
+      }
+    },
+    "isRecommended": true,
+    "createdAt": "2026-09-10T10:49:35.823+00:00",
+    "updatedAt": "2026-09-10T10:49:35.823+00:00"
+  },
+  {
+    "handle": 21,
+    "name": "Meine bestätigten Termine heute",
+    "entity": "event",
+    "entityRoute": null,
+    "filter": {
+      "status": {
+        "handle": "confirmed"
+      },
+      "startDate": {
+        "$lt": "{{tomorrow.start}}",
+        "$gte": "{{today.start}}"
+      },
+      "participants": {
+        "handle": "{{currentUser.handle}}"
+      }
+    },
+    "isRecommended": false,
+    "createdAt": "2026-09-10T10:49:35.824+00:00",
+    "updatedAt": "2026-09-10T10:49:35.824+00:00"
+  },
+  {
+    "handle": 22,
+    "name": "Meine morgigen Termine",
+    "entity": "event",
+    "entityRoute": null,
+    "filter": {
+      "status": {
+        "handle": {
+          "$nin": ["canceled", "completed"]
+        }
+      },
+      "startDate": {
+        "$lt": "{{dayAfterTomorrow.start}}",
+        "$gte": "{{tomorrow.start}}"
+      },
+      "participants": {
+        "handle": "{{currentUser.handle}}"
+      }
+    },
+    "isRecommended": false,
+    "createdAt": "2026-09-10T10:49:35.824+00:00",
+    "updatedAt": "2026-09-10T10:49:35.824+00:00"
+  },
+  {
+    "handle": 23,
+    "name": "Meine Termine diese Woche",
+    "entity": "event",
+    "entityRoute": null,
+    "filter": {
+      "status": {
+        "handle": {
+          "$nin": ["canceled", "completed"]
+        }
+      },
+      "startDate": {
+        "$lt": "{{week.end}}",
+        "$gte": "{{week.start}}"
+      },
+      "participants": {
+        "handle": "{{currentUser.handle}}"
+      }
+    },
+    "isRecommended": false,
+    "createdAt": "2026-09-10T10:49:35.825+00:00",
+    "updatedAt": "2026-09-10T10:49:35.825+00:00"
+  },
+  {
+    "handle": 24,
+    "name": "Meine geplanten Termine",
+    "entity": "event",
+    "entityRoute": null,
+    "filter": {
+      "status": {
+        "handle": "scheduled"
+      },
+      "participants": {
+        "handle": "{{currentUser.handle}}"
+      }
+    },
+    "isRecommended": false,
+    "createdAt": "2026-09-10T10:49:35.825+00:00",
+    "updatedAt": "2026-09-10T10:49:35.825+00:00"
+  },
+  {
+    "handle": 25,
+    "name": "Meine Termine diesen Monat",
+    "entity": "event",
+    "entityRoute": null,
+    "filter": {
+      "status": {
+        "handle": {
+          "$nin": ["canceled", "completed"]
+        }
+      },
+      "startDate": {
+        "$lt": "{{month.end}}",
+        "$gte": "{{month.start}}"
+      },
+      "participants": {
+        "handle": "{{currentUser.handle}}"
+      }
+    },
+    "isRecommended": false,
+    "createdAt": "2026-09-10T10:49:35.826+00:00",
+    "updatedAt": "2026-09-10T10:49:35.826+00:00"
+  },
+  {
+    "handle": 26,
+    "name": "Meine erstellten Termine",
+    "entity": "event",
+    "entityRoute": null,
+    "filter": {
+      "status": {
+        "handle": {
+          "$nin": ["canceled"]
+        }
+      },
+      "creatorPerson": {
+        "handle": "{{currentUser.handle}}"
+      }
+    },
+    "isRecommended": false,
+    "createdAt": "2026-09-10T10:49:35.826+00:00",
+    "updatedAt": "2026-09-10T10:49:35.826+00:00"
+  },
+  {
+    "handle": 27,
+    "name": "Aktive Unternehmen",
+    "entity": "company",
+    "entityRoute": 1,
+    "filter": {
+      "isActive": true
+    },
+    "isRecommended": false,
+    "createdAt": "2026-09-10T10:49:35.827+00:00",
+    "updatedAt": "2026-09-10T10:49:35.827+00:00"
+  },
+  {
+    "handle": 28,
+    "name": "Unternehmen mit Website",
+    "entity": "company",
+    "entityRoute": 1,
+    "filter": {
+      "website": {
+        "$ne": null
+      }
+    },
+    "isRecommended": false,
+    "createdAt": "2026-09-10T10:49:35.827+00:00",
+    "updatedAt": "2026-09-10T10:49:35.827+00:00"
+  },
+  {
+    "handle": 29,
+    "name": "Unternehmen mit Telefonnummer",
+    "entity": "company",
+    "entityRoute": 1,
+    "filter": {
+      "phone": {
+        "$ne": null
+      }
+    },
+    "isRecommended": false,
+    "createdAt": "2026-09-10T10:49:35.828+00:00",
+    "updatedAt": "2026-09-10T10:49:35.828+00:00"
+  },
+  {
+    "handle": 30,
+    "name": "Unternehmen ohne Website",
+    "entity": "company",
+    "entityRoute": 1,
+    "filter": {
+      "website": null
+    },
+    "isRecommended": false,
+    "createdAt": "2026-09-10T10:49:35.828+00:00",
+    "updatedAt": "2026-09-10T10:49:35.828+00:00"
+  },
+  {
+    "handle": 31,
+    "name": "Newsletter-fähige Unternehmen",
+    "entity": "company",
+    "entityRoute": 1,
+    "filter": {
+      "isActive": true,
+      "allowNewsletter": true
+    },
+    "isRecommended": false,
+    "createdAt": "2026-09-10T10:49:35.829+00:00",
+    "updatedAt": "2026-09-10T10:49:35.829+00:00"
+  },
+  {
+    "handle": 32,
+    "name": "Aktive Kontakte",
+    "entity": "person",
+    "entityRoute": 6,
+    "filter": {
+      "isActive": true
+    },
+    "isRecommended": false,
+    "createdAt": "2026-09-10T10:49:35.829+00:00",
+    "updatedAt": "2026-09-10T10:49:35.829+00:00"
+  },
+  {
+    "handle": 33,
+    "name": "Kontakte meines Unternehmens",
+    "entity": "person",
+    "entityRoute": 6,
+    "filter": {
+      "company": {
+        "handle": "{{currentUser.company.handle}}"
+      },
+      "isActive": true
+    },
+    "isRecommended": false,
+    "createdAt": "2026-09-10T10:49:35.83+00:00",
+    "updatedAt": "2026-09-10T10:49:35.83+00:00"
+  },
+  {
+    "handle": 34,
+    "name": "Kontakte mit Mobilnummer",
+    "entity": "person",
+    "entityRoute": 6,
+    "filter": {
+      "mobile": {
+        "$ne": null
+      }
+    },
+    "isRecommended": false,
+    "createdAt": "2026-09-10T10:49:35.83+00:00",
+    "updatedAt": "2026-09-10T10:49:35.83+00:00"
+  },
+  {
+    "handle": 35,
+    "name": "Aktive Verträge meines Unternehmens",
+    "entity": "contract",
+    "entityRoute": 9,
+    "filter": {
+      "company": {
+        "handle": "{{currentUser.company.handle}}"
+      },
+      "isActive": true
+    },
+    "isRecommended": false,
+    "createdAt": "2026-09-10T10:49:35.831+00:00",
+    "updatedAt": "2026-09-10T10:49:35.831+00:00"
+  },
+  {
+    "handle": 36,
+    "name": "Verträge mit nächstem Service diese Woche",
+    "entity": "contract",
+    "entityRoute": 9,
+    "filter": {
+      "company": {
+        "handle": "{{currentUser.company.handle}}"
+      },
+      "nextServiceDate": {
+        "$lt": "{{week.end}}",
+        "$gte": "{{week.start}}"
+      }
+    },
+    "isRecommended": false,
+    "createdAt": "2026-09-10T10:49:35.832+00:00",
+    "updatedAt": "2026-09-10T10:49:35.832+00:00"
+  },
+  {
+    "handle": 37,
+    "name": "Verträge meines Unternehmens mit Updateservice",
+    "entity": "contract",
+    "entityRoute": 9,
+    "filter": {
+      "company": {
+        "handle": "{{currentUser.company.handle}}"
+      },
+      "hasUpdateservice": true
+    },
+    "isRecommended": false,
+    "createdAt": "2026-09-10T10:49:35.832+00:00",
+    "updatedAt": "2026-09-10T10:49:35.832+00:00"
+  },
+  {
+    "handle": 38,
+    "name": "Verträge meines Unternehmens mit Enddatum diesen Monat",
+    "entity": "contract",
+    "entityRoute": 9,
+    "filter": {
+      "company": {
+        "handle": "{{currentUser.company.handle}}"
+      },
+      "endDate": {
+        "$lt": "{{month.end}}",
+        "$gte": "{{month.start}}"
+      }
+    },
+    "isRecommended": false,
+    "createdAt": "2026-09-10T10:49:35.833+00:00",
+    "updatedAt": "2026-09-10T10:49:35.833+00:00"
+  },
+  {
+    "handle": 39,
+    "name": "Systeme meines Unternehmens mit Remote Access",
+    "entity": "serverLandscape",
+    "entityRoute": 11,
+    "filter": {
+      "company": {
+        "handle": "{{currentUser.company.handle}}"
+      },
+      "allowRemoteAccess": true
+    },
+    "isRecommended": false,
+    "createdAt": "2026-09-10T10:49:35.833+00:00",
+    "updatedAt": "2026-09-10T10:49:35.833+00:00"
+  },
+  {
+    "handle": 40,
+    "name": "Systeme meines Unternehmens ohne Internetzugang",
+    "entity": "serverLandscape",
+    "entityRoute": 11,
+    "filter": {
+      "company": {
+        "handle": "{{currentUser.company.handle}}"
+      },
+      "hasInternetAccess": false
+    },
+    "isRecommended": false,
+    "createdAt": "2026-09-10T10:49:35.834+00:00",
+    "updatedAt": "2026-09-10T10:49:35.834+00:00"
+  },
+  {
+    "handle": 41,
+    "name": "Systeme meines Unternehmens mit Internetzugang",
+    "entity": "serverLandscape",
+    "entityRoute": 11,
+    "filter": {
+      "company": {
+        "handle": "{{currentUser.company.handle}}"
+      },
+      "hasInternetAccess": true
+    },
+    "isRecommended": false,
+    "createdAt": "2026-09-10T10:49:35.834+00:00",
+    "updatedAt": "2026-09-10T10:49:35.834+00:00"
+  }
+]

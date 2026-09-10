@@ -22,10 +22,9 @@ backend/src/api/current/dto/dashboard-layout.dto.ts
 frontend/src/components/kpi/
 frontend/src/components/dashboard/
 frontend/src/composables/kpi/
-backend/src/database/seeder/json-production/kpi/
-backend/src/database/seeder/json-production/dashboardTemplate/
-backend/src/database/seeder/json-production/favoriteTemplate/
-backend/src/database/seeder/json-demonstration/kpi/
+backend/src/database/seeder/json-default/kpi/
+backend/src/database/seeder/json-default/dashboardTemplate/
+backend/src/database/seeder/json-default/favoriteTemplate/
 ```
 
 ## KPI Model
@@ -57,10 +56,9 @@ Important fields:
 Reference handles are seeded in:
 
 ```text
-backend/src/database/seeder/json-production/kpiType/kpiTypeData_001.json
-backend/src/database/seeder/json-production/kpiType/kpiTypeData_002.json
-backend/src/database/seeder/json-production/kpiAggregation/kpiAggregationData_001.json
-backend/src/database/seeder/json-production/kpiTimeframe/kpiTimeframeData_001.json
+backend/src/database/seeder/json-default/kpiType/kpiTypeData_0001_insert.json
+backend/src/database/seeder/json-default/kpiAggregation/kpiAggregationData_0001_insert.json
+backend/src/database/seeder/json-default/kpiTimeframe/kpiTimeframeData_0001_insert.json
 ```
 
 The demonstration seed files can add richer examples, but the reference handles should stay stable because KPI execution switches on them.
@@ -126,7 +124,7 @@ within 90 days. Its required `aggregation` and `field` values remain persisted
 for compatibility with the shared KPI model but are not evaluated by this
 renderer.
 
-Production and demonstration seed `kpiData_003.json` provide three reusable
+Production and demonstration seed `kpiData_0001_insert.json` provide three reusable
 calendar definitions: the next open appointments, the next confirmed
 appointments, and the next online appointments for the signed-in participant.
 They are intentionally not assigned to a dashboard template automatically.

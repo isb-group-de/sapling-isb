@@ -1,0 +1,202 @@
+[
+  {
+    "key": {
+      "handle": 1
+    },
+    "values": {
+      "competitors": [9, 15]
+    }
+  },
+  {
+    "key": {
+      "handle": 2
+    },
+    "values": {
+      "competitors": [10, 16]
+    }
+  },
+  {
+    "key": {
+      "handle": 3
+    },
+    "values": {
+      "competitors": [11, 17]
+    }
+  },
+  {
+    "key": {
+      "handle": 4
+    },
+    "values": {
+      "competitors": [12, 18]
+    }
+  },
+  {
+    "key": {
+      "handle": 5
+    },
+    "values": {
+      "competitors": [13, 19]
+    }
+  },
+  {
+    "key": {
+      "handle": 6
+    },
+    "values": {
+      "competitors": [14, 20]
+    }
+  },
+  {
+    "key": {
+      "handle": 7
+    },
+    "values": {
+      "competitors": [15, 21]
+    }
+  },
+  {
+    "key": {
+      "handle": 8
+    },
+    "values": {
+      "competitors": [16, 22]
+    }
+  },
+  {
+    "key": {
+      "handle": 9
+    },
+    "values": {
+      "competitors": [17, 23]
+    }
+  },
+  {
+    "key": {
+      "handle": 10
+    },
+    "values": {
+      "competitors": [18, 24]
+    }
+  },
+  {
+    "key": {
+      "handle": 11
+    },
+    "values": {
+      "competitors": [19, 25]
+    }
+  },
+  {
+    "key": {
+      "handle": 12
+    },
+    "values": {
+      "competitors": [20, 26]
+    }
+  },
+  {
+    "key": {
+      "handle": 13
+    },
+    "values": {
+      "competitors": [1, 21]
+    }
+  },
+  {
+    "key": {
+      "handle": 14
+    },
+    "values": {
+      "competitors": [2, 22]
+    }
+  },
+  {
+    "key": {
+      "handle": 15
+    },
+    "values": {
+      "competitors": [3, 23]
+    }
+  },
+  {
+    "key": {
+      "handle": 16
+    },
+    "values": {
+      "competitors": [4, 24]
+    }
+  },
+  {
+    "key": {
+      "handle": 17
+    },
+    "values": {
+      "competitors": [5, 25]
+    }
+  },
+  {
+    "key": {
+      "handle": 18
+    },
+    "values": {
+      "competitors": [6, 26]
+    }
+  },
+  {
+    "key": {
+      "handle": 19
+    },
+    "values": {
+      "competitors": [1, 7]
+    }
+  },
+  {
+    "key": {
+      "handle": 20
+    },
+    "values": {
+      "competitors": [2, 8]
+    }
+  },
+  {
+    "key": {
+      "handle": 21
+    },
+    "values": {
+      "competitors": [9, 15]
+    }
+  },
+  {
+    "key": {
+      "handle": 22
+    },
+    "values": {
+      "competitors": [10, 16]
+    }
+  },
+  {
+    "key": {
+      "handle": 23
+    },
+    "values": {
+      "competitors": [11, 17]
+    }
+  },
+  {
+    "key": {
+      "handle": 24
+    },
+    "values": {
+      "competitors": [12, 18]
+    }
+  },
+  {
+    "key": {
+      "handle": 25
+    },
+    "values": {
+      "competitors": [13, 19]
+    }
+  }
+]

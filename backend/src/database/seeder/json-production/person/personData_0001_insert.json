@@ -1,0 +1,32 @@
+[
+  {
+    "handle": 1,
+    "emailSignatureRotation": true,
+    "defaultEmailSignature": null,
+    "firstName": "System",
+    "lastName": "Administrator",
+    "loginName": "system_admin",
+    "loginPassword": "system_admin",
+    "phone": null,
+    "mobile": null,
+    "email": null,
+    "birthDay": null,
+    "requirePasswordChange": false,
+    "isActive": true,
+    "sendNewsletter": false,
+    "color": "#4CAF50",
+    "company": 1,
+    "salutation": null,
+    "title": null,
+    "jobTitle": null,
+    "jobFunction": null,
+    "decisionRole": null,
+    "type": "sapling",
+    "department": null,
+    "language": "de",
+    "workWeek": 1,
+    "holidayGroup": 1,
+    "createdAt": "2026-09-10T10:49:35.477+00:00",
+    "updatedAt": "2026-09-10T10:49:35.477+00:00"
+  }
+]

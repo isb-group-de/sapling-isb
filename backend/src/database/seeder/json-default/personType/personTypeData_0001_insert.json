@@ -1,0 +1,23 @@
+[
+  {
+    "handle": "azure",
+    "icon": "mdi-microsoft-azure",
+    "color": "#2196F3",
+    "createdAt": "2026-09-10T10:49:35.474+00:00",
+    "updatedAt": "2026-09-10T10:49:35.474+00:00"
+  },
+  {
+    "handle": "google",
+    "icon": "mdi-google",
+    "color": "#FF9800",
+    "createdAt": "2026-09-10T10:49:35.475+00:00",
+    "updatedAt": "2026-09-10T10:49:35.475+00:00"
+  },
+  {
+    "handle": "sapling",
+    "icon": "mdi-tag",
+    "color": "#4CAF50",
+    "createdAt": "2026-09-10T10:49:35.473+00:00",
+    "updatedAt": "2026-09-10T10:49:35.473+00:00"
+  }
+]

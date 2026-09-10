@@ -1,0 +1,46 @@
+[
+  {
+    "handle": "gemini",
+    "title": "Gemini",
+    "icon": "mdi-google",
+    "color": "#4285F4",
+    "credentialTypes": ["geminiApiKey"],
+    "credentials": null,
+    "isActive": true,
+    "createdAt": "2026-09-10T10:49:36.153+00:00",
+    "updatedAt": "2026-09-10T10:49:36.153+00:00"
+  },
+  {
+    "handle": "lmstudio",
+    "title": "LM Studio",
+    "icon": "mdi-desktop-tower-monitor",
+    "color": "#4B6BFB",
+    "credentialTypes": ["lmStudioBaseUrl"],
+    "credentials": null,
+    "isActive": true,
+    "createdAt": "2026-09-10T10:49:36.154+00:00",
+    "updatedAt": "2026-09-10T10:49:36.154+00:00"
+  },
+  {
+    "handle": "ollama",
+    "title": "Ollama",
+    "icon": "mdi-server",
+    "color": "#1F2937",
+    "credentialTypes": ["ollamaBaseUrl"],
+    "credentials": null,
+    "isActive": true,
+    "createdAt": "2026-09-10T10:49:36.155+00:00",
+    "updatedAt": "2026-09-10T10:49:36.155+00:00"
+  },
+  {
+    "handle": "openai",
+    "title": "OpenAI",
+    "icon": "mdi-chat",
+    "color": "#10A37F",
+    "credentialTypes": ["openAiApiKey"],
+    "credentials": null,
+    "isActive": true,
+    "createdAt": "2026-09-10T10:49:36.152+00:00",
+    "updatedAt": "2026-09-10T10:49:36.152+00:00"
+  }
+]

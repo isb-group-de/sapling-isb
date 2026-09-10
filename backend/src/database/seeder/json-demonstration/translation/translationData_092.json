@@ -1,8 +1,0 @@
-[
-  {
-    "entity": "emailInboxSubscription",
-    "property": "inboundEmails",
-    "de": "Eingegangene E-Mails",
-    "en": "Inbound Emails"
-  }
-]

@@ -1,0 +1,52 @@
+[
+  {
+    "handle": "failed",
+    "description": "Failed",
+    "icon": "mdi-alert-circle-outline",
+    "color": "#C62828",
+    "isOpen": false,
+    "sortOrder": 10,
+    "createdAt": "2026-09-10T10:49:36.083+00:00",
+    "updatedAt": "2026-09-10T10:49:36.085+00:00"
+  },
+  {
+    "handle": "manualReview",
+    "description": "Manual review",
+    "icon": "mdi-account-alert-outline",
+    "color": "#EF6C00",
+    "isOpen": true,
+    "sortOrder": 20,
+    "createdAt": "2026-09-10T10:49:36.083+00:00",
+    "updatedAt": "2026-09-10T10:49:36.085+00:00"
+  },
+  {
+    "handle": "pending",
+    "description": "Pending",
+    "icon": "mdi-clock-outline",
+    "color": "#607D8B",
+    "isOpen": true,
+    "sortOrder": 30,
+    "createdAt": "2026-09-10T10:49:36.08+00:00",
+    "updatedAt": "2026-09-10T10:49:36.085+00:00"
+  },
+  {
+    "handle": "processed",
+    "description": "Processed",
+    "icon": "mdi-check-circle-outline",
+    "color": "#2E7D32",
+    "isOpen": false,
+    "sortOrder": 40,
+    "createdAt": "2026-09-10T10:49:36.082+00:00",
+    "updatedAt": "2026-09-10T10:49:36.085+00:00"
+  },
+  {
+    "handle": "processing",
+    "description": "Processing",
+    "icon": "mdi-robot-outline",
+    "color": "#1976D2",
+    "isOpen": true,
+    "sortOrder": 50,
+    "createdAt": "2026-09-10T10:49:36.081+00:00",
+    "updatedAt": "2026-09-10T10:49:36.085+00:00"
+  }
+]

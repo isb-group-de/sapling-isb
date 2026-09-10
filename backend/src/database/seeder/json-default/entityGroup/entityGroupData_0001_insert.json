@@ -1,0 +1,443 @@
+[
+  {
+    "handle": "administration",
+    "icon": "mdi-shield-crown",
+    "isExpanded": false,
+    "sortOrder": 10,
+    "parent": null,
+    "createdAt": "2026-09-10T10:49:34.154+00:00",
+    "updatedAt": "2026-09-10T10:49:34.194+00:00"
+  },
+  {
+    "handle": "ai",
+    "icon": "mdi-robot-industrial",
+    "isExpanded": false,
+    "sortOrder": 70,
+    "parent": null,
+    "createdAt": "2026-09-10T10:49:34.141+00:00",
+    "updatedAt": "2026-09-10T10:49:34.141+00:00"
+  },
+  {
+    "handle": "auditTrail",
+    "icon": "mdi-history",
+    "isExpanded": false,
+    "sortOrder": 10,
+    "parent": null,
+    "createdAt": "2026-09-10T10:49:34.168+00:00",
+    "updatedAt": "2026-09-10T10:49:34.194+00:00"
+  },
+  {
+    "handle": "authentication",
+    "icon": "mdi-book-lock",
+    "isExpanded": false,
+    "sortOrder": 20,
+    "parent": null,
+    "createdAt": "2026-09-10T10:49:34.157+00:00",
+    "updatedAt": "2026-09-10T10:49:34.194+00:00"
+  },
+  {
+    "handle": "automation",
+    "icon": "mdi-state-machine",
+    "isExpanded": false,
+    "sortOrder": 90,
+    "parent": null,
+    "createdAt": "2026-09-10T10:49:34.213+00:00",
+    "updatedAt": "2026-09-10T10:49:34.213+00:00"
+  },
+  {
+    "handle": "chat",
+    "icon": "mdi-forum",
+    "isExpanded": false,
+    "sortOrder": 20,
+    "parent": null,
+    "createdAt": "2026-09-10T10:49:34.159+00:00",
+    "updatedAt": "2026-09-10T10:49:34.194+00:00"
+  },
+  {
+    "handle": "communication",
+    "icon": "mdi-message-text-outline",
+    "isExpanded": false,
+    "sortOrder": 40,
+    "parent": null,
+    "createdAt": "2026-09-10T10:49:34.165+00:00",
+    "updatedAt": "2026-09-10T10:49:34.165+00:00"
+  },
+  {
+    "handle": "company",
+    "icon": "mdi-domain",
+    "isExpanded": false,
+    "sortOrder": 10,
+    "parent": null,
+    "createdAt": "2026-09-10T10:49:34.143+00:00",
+    "updatedAt": "2026-09-10T10:49:34.194+00:00"
+  },
+  {
+    "handle": "contract",
+    "icon": "mdi-file-sign",
+    "isExpanded": false,
+    "sortOrder": 30,
+    "parent": null,
+    "createdAt": "2026-09-10T10:49:34.145+00:00",
+    "updatedAt": "2026-09-10T10:49:34.194+00:00"
+  },
+  {
+    "handle": "document",
+    "icon": "mdi-file-document-multiple",
+    "isExpanded": false,
+    "sortOrder": 20,
+    "parent": null,
+    "createdAt": "2026-09-10T10:49:34.147+00:00",
+    "updatedAt": "2026-09-10T10:49:34.194+00:00"
+  },
+  {
+    "handle": "dvelopCloud",
+    "icon": "mdi-cloud-outline",
+    "isExpanded": false,
+    "sortOrder": 40,
+    "parent": null,
+    "createdAt": "2026-09-10T10:49:34.198+00:00",
+    "updatedAt": "2026-09-10T10:49:34.198+00:00"
+  },
+  {
+    "handle": "effortEstimate",
+    "icon": "mdi-clipboard-text-clock-outline",
+    "isExpanded": false,
+    "sortOrder": 20,
+    "parent": null,
+    "createdAt": "2026-09-10T10:49:34.161+00:00",
+    "updatedAt": "2026-09-10T10:49:34.194+00:00"
+  },
+  {
+    "handle": "emailCampaigns",
+    "icon": "mdi-bullhorn-outline",
+    "isExpanded": false,
+    "sortOrder": 21,
+    "parent": null,
+    "createdAt": "2026-09-10T10:49:34.203+00:00",
+    "updatedAt": "2026-09-10T10:49:34.203+00:00"
+  },
+  {
+    "handle": "emailInbound",
+    "icon": "mdi-email-arrow-left-outline",
+    "isExpanded": false,
+    "sortOrder": 20,
+    "parent": null,
+    "createdAt": "2026-09-10T10:49:34.202+00:00",
+    "updatedAt": "2026-09-10T10:49:34.202+00:00"
+  },
+  {
+    "handle": "emailOutbound",
+    "icon": "mdi-email-arrow-right-outline",
+    "isExpanded": false,
+    "sortOrder": 23,
+    "parent": null,
+    "createdAt": "2026-09-10T10:49:34.206+00:00",
+    "updatedAt": "2026-09-10T10:49:34.206+00:00"
+  },
+  {
+    "handle": "emailSharedAccounts",
+    "icon": "mdi-account-multiple-outline",
+    "isExpanded": false,
+    "sortOrder": 22,
+    "parent": null,
+    "createdAt": "2026-09-10T10:49:34.205+00:00",
+    "updatedAt": "2026-09-10T10:49:34.205+00:00"
+  },
+  {
+    "handle": "event",
+    "icon": "mdi-calendar-star",
+    "isExpanded": false,
+    "sortOrder": 30,
+    "parent": null,
+    "createdAt": "2026-09-10T10:49:34.148+00:00",
+    "updatedAt": "2026-09-10T10:49:34.194+00:00"
+  },
+  {
+    "handle": "import",
+    "icon": "mdi-database-import-outline",
+    "isExpanded": false,
+    "sortOrder": 20,
+    "parent": null,
+    "createdAt": "2026-09-10T10:49:34.163+00:00",
+    "updatedAt": "2026-09-10T10:49:34.194+00:00"
+  },
+  {
+    "handle": "inbox",
+    "icon": "mdi-inbox",
+    "isExpanded": false,
+    "sortOrder": 30,
+    "parent": null,
+    "createdAt": "2026-09-10T10:49:34.16+00:00",
+    "updatedAt": "2026-09-10T10:49:34.194+00:00"
+  },
+  {
+    "handle": "insights",
+    "icon": "mdi-chart-timeline-variant",
+    "isExpanded": false,
+    "sortOrder": 60,
+    "parent": null,
+    "createdAt": "2026-09-10T10:49:34.14+00:00",
+    "updatedAt": "2026-09-10T10:49:34.14+00:00"
+  },
+  {
+    "handle": "internalCase",
+    "icon": "mdi-clipboard-text-outline",
+    "isExpanded": false,
+    "sortOrder": 10,
+    "parent": null,
+    "createdAt": "2026-09-10T10:49:34.173+00:00",
+    "updatedAt": "2026-09-10T10:49:34.194+00:00"
+  },
+  {
+    "handle": "knowledge",
+    "icon": "mdi-lightbulb-on-outline",
+    "isExpanded": false,
+    "sortOrder": 10,
+    "parent": null,
+    "createdAt": "2026-09-10T10:49:34.162+00:00",
+    "updatedAt": "2026-09-10T10:49:34.194+00:00"
+  },
+  {
+    "handle": "knowledgePool",
+    "icon": "mdi-lightbulb-on-outline",
+    "isExpanded": false,
+    "sortOrder": 50,
+    "parent": null,
+    "createdAt": "2026-09-10T10:49:34.166+00:00",
+    "updatedAt": "2026-09-10T10:49:34.166+00:00"
+  },
+  {
+    "handle": "kpi",
+    "icon": "mdi-chart-bar",
+    "isExpanded": false,
+    "sortOrder": 10,
+    "parent": null,
+    "createdAt": "2026-09-10T10:49:34.153+00:00",
+    "updatedAt": "2026-09-10T10:49:34.194+00:00"
+  },
+  {
+    "handle": "landscape",
+    "icon": "mdi-server-network",
+    "isExpanded": false,
+    "sortOrder": 40,
+    "parent": null,
+    "createdAt": "2026-09-10T10:49:34.146+00:00",
+    "updatedAt": "2026-09-10T10:49:34.194+00:00"
+  },
+  {
+    "handle": "localisation",
+    "icon": "mdi-translate-variant",
+    "isExpanded": false,
+    "sortOrder": 30,
+    "parent": null,
+    "createdAt": "2026-09-10T10:49:34.155+00:00",
+    "updatedAt": "2026-09-10T10:49:34.194+00:00"
+  },
+  {
+    "handle": "mails",
+    "icon": "mdi-email",
+    "isExpanded": false,
+    "sortOrder": 20,
+    "parent": null,
+    "createdAt": "2026-09-10T10:49:34.151+00:00",
+    "updatedAt": "2026-09-10T10:49:34.194+00:00"
+  },
+  {
+    "handle": "mcp",
+    "icon": "mdi-wrench-cog",
+    "isExpanded": false,
+    "sortOrder": 30,
+    "parent": null,
+    "createdAt": "2026-09-10T10:49:34.16+00:00",
+    "updatedAt": "2026-09-10T10:49:34.194+00:00"
+  },
+  {
+    "handle": "metadata",
+    "icon": "mdi-cube-outline",
+    "isExpanded": false,
+    "sortOrder": 10,
+    "parent": null,
+    "createdAt": "2026-09-10T10:49:34.169+00:00",
+    "updatedAt": "2026-09-10T10:49:34.194+00:00"
+  },
+  {
+    "handle": "note",
+    "icon": "mdi-note",
+    "isExpanded": false,
+    "sortOrder": 30,
+    "parent": null,
+    "createdAt": "2026-09-10T10:49:34.147+00:00",
+    "updatedAt": "2026-09-10T10:49:34.194+00:00"
+  },
+  {
+    "handle": "office",
+    "icon": "mdi-briefcase-outline",
+    "isExpanded": false,
+    "sortOrder": 35,
+    "parent": null,
+    "createdAt": "2026-09-10T10:49:34.171+00:00",
+    "updatedAt": "2026-09-10T10:49:34.171+00:00"
+  },
+  {
+    "handle": "officeCalendar",
+    "icon": "mdi-calendar-star",
+    "isExpanded": false,
+    "sortOrder": 20,
+    "parent": null,
+    "createdAt": "2026-09-10T10:49:34.174+00:00",
+    "updatedAt": "2026-09-10T10:49:34.194+00:00"
+  },
+  {
+    "handle": "operations",
+    "icon": "mdi-lifebuoy",
+    "isExpanded": false,
+    "sortOrder": 20,
+    "parent": null,
+    "createdAt": "2026-09-10T10:49:34.139+00:00",
+    "updatedAt": "2026-09-10T10:49:34.139+00:00"
+  },
+  {
+    "handle": "person",
+    "icon": "mdi-card-account-details-outline",
+    "isExpanded": false,
+    "sortOrder": 20,
+    "parent": null,
+    "createdAt": "2026-09-10T10:49:34.142+00:00",
+    "updatedAt": "2026-09-10T10:49:34.194+00:00"
+  },
+  {
+    "handle": "platform",
+    "icon": "mdi-layers-triple-outline",
+    "isExpanded": false,
+    "sortOrder": 100,
+    "parent": null,
+    "createdAt": "2026-09-10T10:49:34.142+00:00",
+    "updatedAt": "2026-09-10T10:49:34.142+00:00"
+  },
+  {
+    "handle": "relationship",
+    "icon": "mdi-family-tree",
+    "isExpanded": false,
+    "sortOrder": 30,
+    "parent": null,
+    "createdAt": "2026-09-10T10:49:34.144+00:00",
+    "updatedAt": "2026-09-10T10:49:34.194+00:00"
+  },
+  {
+    "handle": "rightsManagement",
+    "icon": "mdi-shield-account-outline",
+    "isExpanded": false,
+    "sortOrder": 80,
+    "parent": null,
+    "createdAt": "2026-09-10T10:49:34.167+00:00",
+    "updatedAt": "2026-09-10T10:49:34.167+00:00"
+  },
+  {
+    "handle": "sales",
+    "icon": "mdi-cash-multiple",
+    "isExpanded": false,
+    "sortOrder": 10,
+    "parent": null,
+    "createdAt": "2026-09-10T10:49:34.151+00:00",
+    "updatedAt": "2026-09-10T10:49:34.194+00:00"
+  },
+  {
+    "handle": "salesArea",
+    "icon": "mdi-cash-multiple",
+    "isExpanded": false,
+    "sortOrder": 30,
+    "parent": null,
+    "createdAt": "2026-09-10T10:49:34.164+00:00",
+    "updatedAt": "2026-09-10T10:49:34.164+00:00"
+  },
+  {
+    "handle": "salesCalendar",
+    "icon": "mdi-calendar-star",
+    "isExpanded": false,
+    "sortOrder": 25,
+    "parent": null,
+    "createdAt": "2026-09-10T10:49:34.173+00:00",
+    "updatedAt": "2026-09-10T10:49:34.194+00:00"
+  },
+  {
+    "handle": "support",
+    "icon": "mdi-ticket",
+    "isExpanded": false,
+    "sortOrder": 20,
+    "parent": null,
+    "createdAt": "2026-09-10T10:49:34.15+00:00",
+    "updatedAt": "2026-09-10T10:49:34.194+00:00"
+  },
+  {
+    "handle": "system",
+    "icon": "mdi-wrench-cog",
+    "isExpanded": false,
+    "sortOrder": 30,
+    "parent": null,
+    "createdAt": "2026-09-10T10:49:34.158+00:00",
+    "updatedAt": "2026-09-10T10:49:34.194+00:00"
+  },
+  {
+    "handle": "systemOperations",
+    "icon": "mdi-cog-outline",
+    "isExpanded": false,
+    "sortOrder": 90,
+    "parent": null,
+    "createdAt": "2026-09-10T10:49:34.167+00:00",
+    "updatedAt": "2026-09-10T10:49:34.167+00:00"
+  },
+  {
+    "handle": "teams",
+    "icon": "mdi-microsoft-teams",
+    "isExpanded": false,
+    "sortOrder": 10,
+    "parent": null,
+    "createdAt": "2026-09-10T10:49:34.152+00:00",
+    "updatedAt": "2026-09-10T10:49:34.194+00:00"
+  },
+  {
+    "handle": "telemetry",
+    "icon": "mdi-chart-box-outline",
+    "isExpanded": false,
+    "sortOrder": 50,
+    "parent": null,
+    "createdAt": "2026-09-10T10:49:34.21+00:00",
+    "updatedAt": "2026-09-10T10:49:34.21+00:00"
+  },
+  {
+    "handle": "ticket",
+    "icon": "mdi-ticket",
+    "isExpanded": false,
+    "sortOrder": 10,
+    "parent": null,
+    "createdAt": "2026-09-10T10:49:34.149+00:00",
+    "updatedAt": "2026-09-10T10:49:34.194+00:00"
+  },
+  {
+    "handle": "webhook",
+    "icon": "mdi-webhook",
+    "isExpanded": false,
+    "sortOrder": 40,
+    "parent": null,
+    "createdAt": "2026-09-10T10:49:34.156+00:00",
+    "updatedAt": "2026-09-10T10:49:34.194+00:00"
+  },
+  {
+    "handle": "workspace",
+    "icon": "mdi-database-outline",
+    "isExpanded": false,
+    "sortOrder": 10,
+    "parent": null,
+    "createdAt": "2026-09-10T10:49:34.137+00:00",
+    "updatedAt": "2026-09-10T10:49:34.137+00:00"
+  },
+  {
+    "handle": "workspaceTools",
+    "icon": "mdi-view-dashboard-outline",
+    "isExpanded": false,
+    "sortOrder": 20,
+    "parent": null,
+    "createdAt": "2026-09-10T10:49:34.17+00:00",
+    "updatedAt": "2026-09-10T10:49:34.194+00:00"
+  }
+]

@@ -12,7 +12,7 @@ Sapling consists of:
 - optional Redis for BullMQ queues
 - local file storage under `backend/storage`
 - backend logs under `backend/log` or the configured `LOG_OUTPUT_PATH`
-- seed data under `backend/src/database/seeder/json-${DB_DATA_SEEDER}`
+- shared seeds under `backend/src/database/seeder/json-default` plus `json-${DB_DATA_SEEDER}`
 
 ## Core Commands
 
@@ -66,6 +66,7 @@ Minimum backend values to verify:
 - `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`
 - `DB_POOL_MIN`, `DB_POOL_MAX`
 - `DB_DATA_SEEDER`
+- `DB_BASELINE_ADOPT` (default false; one-time existing-database baseline adoption)
 - `SESSION_COOKIE_SECURE`
 - `SESSION_TRUST_PROXY`
 - `REDIS_ENABLED`
@@ -134,11 +135,13 @@ path.
 
 Seeder behavior:
 
-- Seed files are selected from `json-${DB_DATA_SEEDER}`.
+- Seed files come from `json-default` plus `json-${DB_DATA_SEEDER}`, in dependency phases.
 - Successful files are recorded in `seed_script_item`.
 - Already successful files are skipped later.
 - New reference data should be delivered in newly numbered JSON files.
-- Translation seeding can update existing translations by handle/property semantics where the seeder supports it.
+- Four-digit filenames end in `_insert`, `_update` or `_delete`; each file performs only that operation.
+- Translation updates use explicit `entity + property + language` keys.
+- Existing pre-baseline databases require one `orm:deploy` with `DB_BASELINE_ADOPT=true`; see [the baseline adoption procedure](../development/seeding-and-migrations.md#adopt-an-existing-database-once). The procedure preserves application records and atomically replaces only migration/seed tracking. Return the flag to false afterwards.
 
 If a seed file must be rerun intentionally, inspect `seed_script_item` first and decide whether to remove only the matching script marker. Do not broadly truncate seed tracking in an environment with real data.
 
@@ -376,7 +379,7 @@ Do not manually edit production schema unless the migration path is understood a
 Check:
 
 - `DB_DATA_SEEDER`
-- JSON path under `json-production` or `json-demonstration`
+- JSON path under `json-default` and the selected environment folder
 - `seed_script_item`
 - whether the new data was placed in an already executed file
 

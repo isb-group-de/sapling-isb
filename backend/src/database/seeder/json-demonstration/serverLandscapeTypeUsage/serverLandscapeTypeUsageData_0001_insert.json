@@ -1,0 +1,50 @@
+[
+  {
+    "handle": "apiServer",
+    "title": "API-Server",
+    "icon": "mdi-api",
+    "color": "#1E88E5",
+    "createdAt": "2026-09-10T10:45:54.641+00:00",
+    "updatedAt": "2026-09-10T10:45:54.641+00:00"
+  },
+  {
+    "handle": "mssqlServer2017",
+    "title": "MSSQL Server 2017",
+    "icon": "mdi-database",
+    "color": "#43A047",
+    "createdAt": "2026-09-10T10:45:54.644+00:00",
+    "updatedAt": "2026-09-10T10:45:54.644+00:00"
+  },
+  {
+    "handle": "mssqlServer2019",
+    "title": "MSSQL Server 2019",
+    "icon": "mdi-database",
+    "color": "#388E3C",
+    "createdAt": "2026-09-10T10:45:54.643+00:00",
+    "updatedAt": "2026-09-10T10:45:54.643+00:00"
+  },
+  {
+    "handle": "mssqlServer2022",
+    "title": "MSSQL Server 2022",
+    "icon": "mdi-database",
+    "color": "#2E7D32",
+    "createdAt": "2026-09-10T10:45:54.642+00:00",
+    "updatedAt": "2026-09-10T10:45:54.642+00:00"
+  },
+  {
+    "handle": "portalserver",
+    "title": "Portalserver",
+    "icon": "mdi-earth",
+    "color": "#00897B",
+    "createdAt": "2026-09-10T10:45:54.64+00:00",
+    "updatedAt": "2026-09-10T10:45:54.64+00:00"
+  },
+  {
+    "handle": "terminalserver",
+    "title": "Terminalserver",
+    "icon": "mdi-monitor-multiple",
+    "color": "#6A1B9A",
+    "createdAt": "2026-09-10T10:45:54.638+00:00",
+    "updatedAt": "2026-09-10T10:45:54.638+00:00"
+  }
+]

@@ -1,0 +1,50 @@
+[
+  {
+    "handle": "archived",
+    "description": "Archiviert",
+    "color": "#9E9E9E",
+    "icon": "mdi-archive-outline",
+    "sortOrder": 10,
+    "isOpen": false,
+    "isPublished": false,
+    "isArchived": true,
+    "createdAt": "2026-09-10T10:49:35.964+00:00",
+    "updatedAt": "2026-09-10T10:49:35.966+00:00"
+  },
+  {
+    "handle": "draft",
+    "description": "Entwurf",
+    "color": "#607D8B",
+    "icon": "mdi-file-edit-outline",
+    "sortOrder": 20,
+    "isOpen": true,
+    "isPublished": false,
+    "isArchived": false,
+    "createdAt": "2026-09-10T10:49:35.961+00:00",
+    "updatedAt": "2026-09-10T10:49:35.966+00:00"
+  },
+  {
+    "handle": "published",
+    "description": "Veröffentlicht",
+    "color": "#4CAF50",
+    "icon": "mdi-check-decagram-outline",
+    "sortOrder": 40,
+    "isOpen": true,
+    "isPublished": true,
+    "isArchived": false,
+    "createdAt": "2026-09-10T10:49:35.963+00:00",
+    "updatedAt": "2026-09-10T10:49:35.966+00:00"
+  },
+  {
+    "handle": "review",
+    "description": "In Prüfung",
+    "color": "#FF9800",
+    "icon": "mdi-file-search-outline",
+    "sortOrder": 30,
+    "isOpen": true,
+    "isPublished": false,
+    "isArchived": false,
+    "createdAt": "2026-09-10T10:49:35.962+00:00",
+    "updatedAt": "2026-09-10T10:49:35.966+00:00"
+  }
+]

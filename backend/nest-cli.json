@@ -6,15 +6,24 @@
     "deleteOutDir": true,
     "assets": [
       {
+        "include": "database/baseline/**",
+        "exclude": "**/*.ts",
+        "outDir": "dist"
+      },
+      {
+        "include": "database/seeder/json-default/**",
+        "outDir": "dist"
+      },
+      {
+        "include": "database/seeder/seed-order.json",
+        "outDir": "dist"
+      },
+      {
         "include": "database/seeder/json-demonstration/**",
         "outDir": "dist"
       },
       {
         "include": "database/seeder/json-production/**",
-        "outDir": "dist"
-      },
-      {
-        "include": "database/seeder/prompts/**",
         "outDir": "dist"
       }
     ]

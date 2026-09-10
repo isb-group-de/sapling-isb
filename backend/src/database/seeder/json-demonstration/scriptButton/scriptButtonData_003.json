@@ -1,8 +1,0 @@
-[
-  {
-    "name": "synchronizeEmailInbox",
-    "title": "emailInboxSubscription.scriptSynchronize",
-    "entity": "emailInboxSubscription",
-    "isMultiSelect": false
-  }
-]

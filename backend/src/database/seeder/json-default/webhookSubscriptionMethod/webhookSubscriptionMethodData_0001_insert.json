@@ -1,0 +1,34 @@
+[
+  {
+    "handle": "delete",
+    "description": "Löschen",
+    "icon": "mdi-api",
+    "color": "#d32f2f",
+    "createdAt": "2026-09-10T10:49:35.871+00:00",
+    "updatedAt": "2026-09-10T10:49:35.871+00:00"
+  },
+  {
+    "handle": "patch",
+    "description": "Teiländerung",
+    "icon": "mdi-api",
+    "color": "#fbc02d",
+    "createdAt": "2026-09-10T10:49:35.87+00:00",
+    "updatedAt": "2026-09-10T10:49:35.87+00:00"
+  },
+  {
+    "handle": "post",
+    "description": "Anlage",
+    "icon": "mdi-api",
+    "color": "#1976d2",
+    "createdAt": "2026-09-10T10:49:35.868+00:00",
+    "updatedAt": "2026-09-10T10:49:35.868+00:00"
+  },
+  {
+    "handle": "put",
+    "description": "Änderung",
+    "icon": "mdi-api",
+    "color": "#388e3c",
+    "createdAt": "2026-09-10T10:49:35.869+00:00",
+    "updatedAt": "2026-09-10T10:49:35.869+00:00"
+  }
+]

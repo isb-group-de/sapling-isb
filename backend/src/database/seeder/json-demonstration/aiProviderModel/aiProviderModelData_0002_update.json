@@ -1,0 +1,90 @@
+[
+  {
+    "key": {
+      "handle": "gemini-2_5-flash"
+    },
+    "values": {
+      "supportsReasoningSummary": false
+    }
+  },
+  {
+    "key": {
+      "handle": "gemini-2_5-pro"
+    },
+    "values": {
+      "supportsReasoningSummary": false
+    }
+  },
+  {
+    "key": {
+      "handle": "gemini-3_1-pro-preview"
+    },
+    "values": {
+      "supportsReasoningSummary": false
+    }
+  },
+  {
+    "key": {
+      "handle": "gemini-3_5-flash"
+    },
+    "values": {
+      "supportsReasoningSummary": false
+    }
+  },
+  {
+    "key": {
+      "handle": "openai-gpt-5_4-mini"
+    },
+    "values": {
+      "supportsReasoningSummary": false
+    }
+  },
+  {
+    "key": {
+      "handle": "openai-gpt-5_4-nano"
+    },
+    "values": {
+      "supportsReasoningSummary": false
+    }
+  },
+  {
+    "key": {
+      "handle": "openai-gpt-5_4"
+    },
+    "values": {
+      "supportsReasoningSummary": false
+    }
+  },
+  {
+    "key": {
+      "handle": "openai-gpt-5_5"
+    },
+    "values": {
+      "supportsReasoningSummary": false
+    }
+  },
+  {
+    "key": {
+      "handle": "openai-gpt-5_6-luna"
+    },
+    "values": {
+      "supportsReasoningSummary": false
+    }
+  },
+  {
+    "key": {
+      "handle": "openai-gpt-5_6-sol"
+    },
+    "values": {
+      "supportsReasoningSummary": false
+    }
+  },
+  {
+    "key": {
+      "handle": "openai-gpt-5_6-terra"
+    },
+    "values": {
+      "supportsReasoningSummary": false
+    }
+  }
+]

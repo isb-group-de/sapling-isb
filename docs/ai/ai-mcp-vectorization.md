@@ -132,7 +132,7 @@ the same 90vh desktop height and mobile viewport behavior as the entity edit
 dialog. Its responsive chat width stays independent of the wider entity editor.
 
 `AiProviderModelItem.supportsVision` enables image inputs in Songbird. Apply
-`Migration20260909120000` and the new translation seeder, then enable the flag
+the consolidated database baseline and shared translation seeds (which include the former `Migration20260909120000`), then enable the flag
 only for models that support image inputs; existing models default to false.
 The composer offers a paperclip button (also on mobile), clipboard image paste,
 compact filename badges, and removal before sending. A reserved single-line

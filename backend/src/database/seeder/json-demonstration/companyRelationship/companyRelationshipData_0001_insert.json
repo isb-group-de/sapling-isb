@@ -1,0 +1,29 @@
+[
+  {
+    "handle": 1,
+    "description": "Standardfirma betreut Müller & Partner GmbH als IT-Dienstleister.",
+    "sourceCompany": 1,
+    "targetCompany": 2,
+    "type": "serviceProvider",
+    "createdAt": "2026-09-10T10:45:47.404+00:00",
+    "updatedAt": "2026-09-10T10:45:47.404+00:00"
+  },
+  {
+    "handle": 2,
+    "description": "Standardfirma unterstützt Schneider Consulting AG im laufenden Betrieb.",
+    "sourceCompany": 1,
+    "targetCompany": 3,
+    "type": "serviceProvider",
+    "createdAt": "2026-09-10T10:45:47.405+00:00",
+    "updatedAt": "2026-09-10T10:45:47.405+00:00"
+  },
+  {
+    "handle": 3,
+    "description": "Bauer IT Solutions arbeitet mit Standardfirma bei gemeinsamen Projekten zusammen.",
+    "sourceCompany": 4,
+    "targetCompany": 1,
+    "type": "partner",
+    "createdAt": "2026-09-10T10:45:47.405+00:00",
+    "updatedAt": "2026-09-10T10:45:47.405+00:00"
+  }
+]

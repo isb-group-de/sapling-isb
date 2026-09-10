@@ -1,0 +1,42 @@
+[
+  {
+    "handle": 1,
+    "title": "Administrator",
+    "isAdministrator": true,
+    "stage": "global",
+    "createdAt": "2026-09-10T10:49:35.217+00:00",
+    "updatedAt": "2026-09-10T10:49:35.217+00:00"
+  },
+  {
+    "handle": 2,
+    "title": "Support",
+    "isAdministrator": false,
+    "stage": "global",
+    "createdAt": "2026-09-10T10:49:35.218+00:00",
+    "updatedAt": "2026-09-10T10:49:35.218+00:00"
+  },
+  {
+    "handle": 3,
+    "title": "Vertrieb",
+    "isAdministrator": false,
+    "stage": "global",
+    "createdAt": "2026-09-10T10:49:35.218+00:00",
+    "updatedAt": "2026-09-10T10:49:35.218+00:00"
+  },
+  {
+    "handle": 4,
+    "title": "Kunde",
+    "isAdministrator": false,
+    "stage": "company",
+    "createdAt": "2026-09-10T10:49:35.218+00:00",
+    "updatedAt": "2026-09-10T10:49:35.218+00:00"
+  },
+  {
+    "handle": 5,
+    "title": "Dienstleister",
+    "isAdministrator": false,
+    "stage": "person",
+    "createdAt": "2026-09-10T10:49:35.218+00:00",
+    "updatedAt": "2026-09-10T10:49:35.218+00:00"
+  }
+]

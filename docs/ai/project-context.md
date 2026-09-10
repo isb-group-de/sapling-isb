@@ -81,7 +81,7 @@ The handle is the cross-layer identifier used by:
 
 - `/api/generic/:entityHandle`
 - frontend routes such as `/table/ticket`
-- seed folders such as `json-production/ticket`
+- seed folders such as `json-default/ticket`
 - translations such as `{ "entity": "ticket", "property": "title" }`
 - permissions
 - MCP generic tools
@@ -143,7 +143,7 @@ Typical backend work:
    - `translation`
    - permissions if the default matrices need changes
    - entity-specific reference/status/demo data
-5. Add permissions through `PermissionSeeder` matrices when needed.
+5. Add explicit permission seed files and register the entity in `seed-order.json` when it has seed data.
 6. Add tests if behavior is not purely declarative.
 
 Typical frontend work:
@@ -159,7 +159,8 @@ Typical frontend work:
 - Use new numbered seed files for new or changed reference data.
 - Avoid modifying old production seed files unless correcting an error that has not been released.
 - Demonstration seed data can be updated when the goal is better demo realism.
-- Translation seed files can override existing translations because `TranslationSeeder` upserts by `entity + property + language`.
+- Use `json-default` for shared data and environment folders only for differences.
+- Number seeds with four digits and an explicit `_insert`, `_update` or `_delete` suffix. Translation updates use the key `entity + property + language`; there is no upsert.
 
 ## AI And MCP Concepts
 

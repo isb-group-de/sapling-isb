@@ -1,0 +1,47 @@
+[
+  {
+    "handle": "consulting",
+    "title": "Beratung",
+    "icon": "mdi-account-tie",
+    "color": "#5E35B1",
+    "sortOrder": 20,
+    "createdAt": "2026-09-10T10:49:34.089+00:00",
+    "updatedAt": "2026-09-10T10:49:34.089+00:00"
+  },
+  {
+    "handle": "manufacturing",
+    "title": "Industrie & Fertigung",
+    "icon": "mdi-factory",
+    "color": "#455A64",
+    "sortOrder": 30,
+    "createdAt": "2026-09-10T10:49:34.091+00:00",
+    "updatedAt": "2026-09-10T10:49:34.091+00:00"
+  },
+  {
+    "handle": "public_sector",
+    "title": "Öffentlicher Sektor",
+    "icon": "mdi-bank-outline",
+    "color": "#6D4C41",
+    "sortOrder": 50,
+    "createdAt": "2026-09-10T10:49:34.092+00:00",
+    "updatedAt": "2026-09-10T10:49:34.092+00:00"
+  },
+  {
+    "handle": "retail",
+    "title": "Handel",
+    "icon": "mdi-storefront-outline",
+    "color": "#00897B",
+    "sortOrder": 40,
+    "createdAt": "2026-09-10T10:49:34.091+00:00",
+    "updatedAt": "2026-09-10T10:49:34.091+00:00"
+  },
+  {
+    "handle": "software",
+    "title": "Software & IT",
+    "icon": "mdi-laptop",
+    "color": "#1976D2",
+    "sortOrder": 10,
+    "createdAt": "2026-09-10T10:49:34.088+00:00",
+    "updatedAt": "2026-09-10T10:49:34.088+00:00"
+  }
+]

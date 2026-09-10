@@ -1,0 +1,92 @@
+[
+  {
+    "handle": "call",
+    "title": "Telefon",
+    "icon": "mdi-phone",
+    "color": "#3F51B5",
+    "showInDefaultCalendar": false,
+    "createdAt": "2026-09-10T10:49:35.626+00:00",
+    "updatedAt": "2026-09-10T10:49:35.626+00:00"
+  },
+  {
+    "handle": "coordination",
+    "title": "Abstimmung",
+    "icon": "mdi-account-group",
+    "color": "#607D8B",
+    "showInDefaultCalendar": true,
+    "createdAt": "2026-09-10T10:49:35.629+00:00",
+    "updatedAt": "2026-09-10T10:49:35.629+00:00"
+  },
+  {
+    "handle": "installation",
+    "title": "Installation",
+    "icon": "mdi-tools",
+    "color": "#795548",
+    "showInDefaultCalendar": true,
+    "createdAt": "2026-09-10T10:49:35.631+00:00",
+    "updatedAt": "2026-09-10T10:49:35.631+00:00"
+  },
+  {
+    "handle": "mail",
+    "title": "E-Mail",
+    "icon": "mdi-email",
+    "color": "#00BCD4",
+    "showInDefaultCalendar": false,
+    "createdAt": "2026-09-10T10:49:35.632+00:00",
+    "updatedAt": "2026-09-10T10:49:35.632+00:00"
+  },
+  {
+    "handle": "online",
+    "title": "Online",
+    "icon": "mdi-web",
+    "color": "#9C27B0",
+    "showInDefaultCalendar": true,
+    "createdAt": "2026-09-10T10:49:35.625+00:00",
+    "updatedAt": "2026-09-10T10:49:35.625+00:00"
+  },
+  {
+    "handle": "onSite",
+    "title": "Vor Ort",
+    "icon": "mdi-map-marker",
+    "color": "#4CAF50",
+    "showInDefaultCalendar": true,
+    "createdAt": "2026-09-10T10:49:35.624+00:00",
+    "updatedAt": "2026-09-10T10:49:35.624+00:00"
+  },
+  {
+    "handle": "presentation",
+    "title": "Präsentation",
+    "icon": "mdi-presentation",
+    "color": "#2196F3",
+    "showInDefaultCalendar": true,
+    "createdAt": "2026-09-10T10:49:35.628+00:00",
+    "updatedAt": "2026-09-10T10:49:35.628+00:00"
+  },
+  {
+    "handle": "review",
+    "title": "Review",
+    "icon": "mdi-clipboard-check-outline",
+    "color": "#673AB7",
+    "showInDefaultCalendar": true,
+    "createdAt": "2026-09-10T10:49:35.63+00:00",
+    "updatedAt": "2026-09-10T10:49:35.63+00:00"
+  },
+  {
+    "handle": "training",
+    "title": "Schulung",
+    "icon": "mdi-school",
+    "color": "#009688",
+    "showInDefaultCalendar": true,
+    "createdAt": "2026-09-10T10:49:35.629+00:00",
+    "updatedAt": "2026-09-10T10:49:35.629+00:00"
+  },
+  {
+    "handle": "workshop",
+    "title": "Workshop",
+    "icon": "mdi-hammer-wrench",
+    "color": "#FF9800",
+    "showInDefaultCalendar": true,
+    "createdAt": "2026-09-10T10:49:35.627+00:00",
+    "updatedAt": "2026-09-10T10:49:35.627+00:00"
+  }
+]

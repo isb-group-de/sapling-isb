@@ -12,7 +12,7 @@ import {
   getSaplingFormLayout,
   hasSaplingOption,
 } from './global/entity.decorator';
-import translations from '../database/seeder/json-production/translation/translationData_083.json';
+import translations from '../database/seeder/json-default/translation/translationData_0001_insert.json';
 
 describe('Prompt, evaluation and diagnostic field metadata', () => {
   it.each([
@@ -68,11 +68,13 @@ describe('Prompt, evaluation and diagnostic field metadata', () => {
         expect(layout.formVisible).toBe(true);
         expect(layout.width).toBeGreaterThan(0);
         expect(
-          translations.some(
-            (entry) =>
-              `${entry.entity}.${entry.property}` === layout.group &&
-              entry.de &&
-              entry.en,
+          ['de', 'en'].every((language) =>
+            translations.some(
+              (entry) =>
+                `${entry.entity}.${entry.property}` === layout.group &&
+                entry.language === language &&
+                entry.value,
+            ),
           ),
         ).toBe(true);
       }

@@ -1,0 +1,66 @@
+[
+  {
+    "handle": "documentRequest",
+    "title": "Dokumentenanforderung",
+    "icon": "mdi-file-document-edit-outline",
+    "color": "#78909C",
+    "createdAt": "2026-09-10T10:49:35.956+00:00",
+    "updatedAt": "2026-09-10T10:49:35.956+00:00"
+  },
+  {
+    "handle": "facility",
+    "title": "Facility",
+    "icon": "mdi-home-city-outline",
+    "color": "#66BB6A",
+    "createdAt": "2026-09-10T10:49:35.953+00:00",
+    "updatedAt": "2026-09-10T10:49:35.953+00:00"
+  },
+  {
+    "handle": "financeAdministration",
+    "title": "Finanzadministration",
+    "icon": "mdi-cash-register",
+    "color": "#FFA726",
+    "createdAt": "2026-09-10T10:49:35.955+00:00",
+    "updatedAt": "2026-09-10T10:49:35.955+00:00"
+  },
+  {
+    "handle": "hrAdministration",
+    "title": "HR Administration",
+    "icon": "mdi-account-group-outline",
+    "color": "#AB47BC",
+    "createdAt": "2026-09-10T10:49:35.954+00:00",
+    "updatedAt": "2026-09-10T10:49:35.954+00:00"
+  },
+  {
+    "handle": "internalRequest",
+    "title": "Interne Anfrage",
+    "icon": "mdi-message-text-outline",
+    "color": "#5C6BC0",
+    "createdAt": "2026-09-10T10:49:35.95+00:00",
+    "updatedAt": "2026-09-10T10:49:35.95+00:00"
+  },
+  {
+    "handle": "meetingPreparation",
+    "title": "Meeting-Vorbereitung",
+    "icon": "mdi-calendar-edit",
+    "color": "#EC407A",
+    "createdAt": "2026-09-10T10:49:35.957+00:00",
+    "updatedAt": "2026-09-10T10:49:35.957+00:00"
+  },
+  {
+    "handle": "officeAdministration",
+    "title": "Office Administration",
+    "icon": "mdi-briefcase-outline",
+    "color": "#26A69A",
+    "createdAt": "2026-09-10T10:49:35.951+00:00",
+    "updatedAt": "2026-09-10T10:49:35.951+00:00"
+  },
+  {
+    "handle": "procurement",
+    "title": "Beschaffung",
+    "icon": "mdi-cart-outline",
+    "color": "#42A5F5",
+    "createdAt": "2026-09-10T10:49:35.952+00:00",
+    "updatedAt": "2026-09-10T10:49:35.952+00:00"
+  }
+]

@@ -1,0 +1,57 @@
+[
+  {
+    "key": {
+      "handle": 1
+    },
+    "values": {
+      "starterDashboardTemplates": [
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14
+      ],
+      "starterFavoriteTemplates": [1, 5, 6, 14, 20, 23, 27, 32, 35, 39]
+    }
+  },
+  {
+    "key": {
+      "handle": 2
+    },
+    "values": {
+      "starterDashboardTemplates": [1, 3, 7, 9, 11, 12, 13, 14],
+      "starterFavoriteTemplates": [
+        1, 2, 3, 4, 5, 6, 8, 10, 11, 12, 13, 20, 23, 24, 26, 33
+      ]
+    }
+  },
+  {
+    "key": {
+      "handle": 3
+    },
+    "values": {
+      "starterDashboardTemplates": [2, 3, 4, 8, 9, 10, 11, 12, 13, 14],
+      "starterFavoriteTemplates": [
+        14, 15, 16, 17, 18, 19, 20, 23, 25, 27, 32, 33, 35, 38
+      ]
+    }
+  },
+  {
+    "key": {
+      "handle": 4
+    },
+    "values": {
+      "starterDashboardTemplates": [3, 4, 9, 10],
+      "starterFavoriteTemplates": [
+        20, 23, 25, 32, 33, 35, 36, 37, 38, 39, 40, 41
+      ]
+    }
+  },
+  {
+    "key": {
+      "handle": 5
+    },
+    "values": {
+      "starterDashboardTemplates": [1, 3, 4, 7, 9, 10],
+      "starterFavoriteTemplates": [
+        1, 2, 5, 6, 20, 23, 24, 26, 33, 35, 36, 37, 39
+      ]
+    }
+  }
+]

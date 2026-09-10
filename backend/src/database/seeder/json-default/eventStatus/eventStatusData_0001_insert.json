@@ -1,0 +1,38 @@
+[
+  {
+    "handle": "canceled",
+    "description": "Abgebrochen",
+    "color": "#f44336",
+    "isOpen": false,
+    "sortOrder": 10,
+    "createdAt": "2026-09-10T10:49:35.606+00:00",
+    "updatedAt": "2026-09-10T10:49:35.612+00:00"
+  },
+  {
+    "handle": "completed",
+    "description": "Abgeschlossen",
+    "color": "#4caf50",
+    "isOpen": false,
+    "sortOrder": 20,
+    "createdAt": "2026-09-10T10:49:35.609+00:00",
+    "updatedAt": "2026-09-10T10:49:35.612+00:00"
+  },
+  {
+    "handle": "confirmed",
+    "description": "Bestätigt",
+    "color": "#2196f3",
+    "isOpen": true,
+    "sortOrder": 30,
+    "createdAt": "2026-09-10T10:49:35.608+00:00",
+    "updatedAt": "2026-09-10T10:49:35.612+00:00"
+  },
+  {
+    "handle": "scheduled",
+    "description": "Geplant",
+    "color": "#ff9800",
+    "isOpen": true,
+    "sortOrder": 40,
+    "createdAt": "2026-09-10T10:49:35.607+00:00",
+    "updatedAt": "2026-09-10T10:49:35.612+00:00"
+  }
+]

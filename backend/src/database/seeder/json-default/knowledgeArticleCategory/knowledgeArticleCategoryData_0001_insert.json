@@ -1,0 +1,57 @@
+[
+  {
+    "handle": "estimation",
+    "title": "Aufwandsschätzung",
+    "description": "Wissen zu Schätzmustern, Positionen und Risiken.",
+    "icon": "mdi-clipboard-text-clock-outline",
+    "color": "#9C27B0",
+    "sortOrder": 40,
+    "isActive": true,
+    "createdAt": "2026-09-10T10:49:35.978+00:00",
+    "updatedAt": "2026-09-10T10:49:35.978+00:00"
+  },
+  {
+    "handle": "howTo",
+    "title": "Anleitung",
+    "description": "Schrittfolgen und wiederverwendbare Vorgehensweisen.",
+    "icon": "mdi-format-list-checks",
+    "color": "#2196F3",
+    "sortOrder": 20,
+    "isActive": true,
+    "createdAt": "2026-09-10T10:49:35.977+00:00",
+    "updatedAt": "2026-09-10T10:49:35.977+00:00"
+  },
+  {
+    "handle": "implementation",
+    "title": "Umsetzung",
+    "description": "Technische und fachliche Umsetzungsnotizen.",
+    "icon": "mdi-tools",
+    "color": "#795548",
+    "sortOrder": 30,
+    "isActive": true,
+    "createdAt": "2026-09-10T10:49:35.978+00:00",
+    "updatedAt": "2026-09-10T10:49:35.978+00:00"
+  },
+  {
+    "handle": "salesEnablement",
+    "title": "Vertriebswissen",
+    "description": "Argumente, Pain Points und passende Referenzen.",
+    "icon": "mdi-cash-multiple",
+    "color": "#4CAF50",
+    "sortOrder": 50,
+    "isActive": true,
+    "createdAt": "2026-09-10T10:49:35.979+00:00",
+    "updatedAt": "2026-09-10T10:49:35.979+00:00"
+  },
+  {
+    "handle": "troubleshooting",
+    "title": "Fehlerbehebung",
+    "description": "Bekannte Fehlerbilder, Ursachen und Lösungen.",
+    "icon": "mdi-wrench-outline",
+    "color": "#F44336",
+    "sortOrder": 10,
+    "isActive": true,
+    "createdAt": "2026-09-10T10:49:35.975+00:00",
+    "updatedAt": "2026-09-10T10:49:35.975+00:00"
+  }
+]

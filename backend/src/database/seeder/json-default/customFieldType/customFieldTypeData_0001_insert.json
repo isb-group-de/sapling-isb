@@ -1,0 +1,74 @@
+[
+  {
+    "handle": "boolean",
+    "title": "Boolean",
+    "icon": "mdi-toggle-switch-outline",
+    "color": "#2E7D32",
+    "sortOrder": 40,
+    "createdAt": "2026-09-10T10:49:36.267+00:00",
+    "updatedAt": "2026-09-10T10:49:36.267+00:00"
+  },
+  {
+    "handle": "date",
+    "title": "Datum",
+    "icon": "mdi-calendar",
+    "color": "#6A1B9A",
+    "sortOrder": 50,
+    "createdAt": "2026-09-10T10:49:36.268+00:00",
+    "updatedAt": "2026-09-10T10:49:36.268+00:00"
+  },
+  {
+    "handle": "dateTime",
+    "title": "Datum/Zeit",
+    "icon": "mdi-calendar-clock",
+    "color": "#7B1FA2",
+    "sortOrder": 60,
+    "createdAt": "2026-09-10T10:49:36.269+00:00",
+    "updatedAt": "2026-09-10T10:49:36.269+00:00"
+  },
+  {
+    "handle": "longText",
+    "title": "Langtext",
+    "icon": "mdi-text-box-outline",
+    "color": "#546E7A",
+    "sortOrder": 20,
+    "createdAt": "2026-09-10T10:49:36.266+00:00",
+    "updatedAt": "2026-09-10T10:49:36.266+00:00"
+  },
+  {
+    "handle": "multiSelect",
+    "title": "Mehrfachauswahl",
+    "icon": "mdi-format-list-checks",
+    "color": "#D84315",
+    "sortOrder": 80,
+    "createdAt": "2026-09-10T10:49:36.271+00:00",
+    "updatedAt": "2026-09-10T10:49:36.271+00:00"
+  },
+  {
+    "handle": "number",
+    "title": "Zahl",
+    "icon": "mdi-numeric",
+    "color": "#1565C0",
+    "sortOrder": 30,
+    "createdAt": "2026-09-10T10:49:36.267+00:00",
+    "updatedAt": "2026-09-10T10:49:36.267+00:00"
+  },
+  {
+    "handle": "select",
+    "title": "Auswahl",
+    "icon": "mdi-form-select",
+    "color": "#EF6C00",
+    "sortOrder": 70,
+    "createdAt": "2026-09-10T10:49:36.27+00:00",
+    "updatedAt": "2026-09-10T10:49:36.27+00:00"
+  },
+  {
+    "handle": "text",
+    "title": "Text",
+    "icon": "mdi-form-textbox",
+    "color": "#455A64",
+    "sortOrder": 10,
+    "createdAt": "2026-09-10T10:49:36.264+00:00",
+    "updatedAt": "2026-09-10T10:49:36.264+00:00"
+  }
+]

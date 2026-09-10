@@ -27,6 +27,7 @@ const config: Partial<Options> = {
     path: path.join(BASE_DIR, 'dist/database/migration'), // Ordner für kompilierte Migrationen
     pathTs: path.join(BASE_DIR, 'src/database/migration'), // Ordner für TypeScript Migrationen
     snapshotName: '.snapshot-sapling', // Ein gemeinsamer Snapshot für alle Umgebungs-Datenbanknamen
+    snapshotOnMigrate: false, // Nur migration:create schreibt den versionierten Schema-Snapshot
     glob: '!(*.d).{js,ts}', // Suchmuster für Migrationsdateien
     transactional: true, // Jede Migration in einer Transaktion ausführen
     disableForeignKeys: false, // Foreign-Key-Prüfungen während der Migration aktiv lassen

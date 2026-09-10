@@ -1,0 +1,26 @@
+[
+  {
+    "handle": "basic",
+    "title": "Basic",
+    "icon": "mdi-shield-outline",
+    "color": "#78909C",
+    "createdAt": "2026-09-10T10:49:35.65+00:00",
+    "updatedAt": "2026-09-10T10:49:35.65+00:00"
+  },
+  {
+    "handle": "enterprise",
+    "title": "Enterprise",
+    "icon": "mdi-shield-star-outline",
+    "color": "#2E7D32",
+    "createdAt": "2026-09-10T10:49:35.652+00:00",
+    "updatedAt": "2026-09-10T10:49:35.652+00:00"
+  },
+  {
+    "handle": "professional",
+    "title": "Professional",
+    "icon": "mdi-shield-check-outline",
+    "color": "#1E88E5",
+    "createdAt": "2026-09-10T10:49:35.651+00:00",
+    "updatedAt": "2026-09-10T10:49:35.651+00:00"
+  }
+]

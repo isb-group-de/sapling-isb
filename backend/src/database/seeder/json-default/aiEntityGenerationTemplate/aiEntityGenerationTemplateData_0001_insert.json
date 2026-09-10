@@ -1,0 +1,48 @@
+[
+  {
+    "handle": "ticketKnowledgeArticle",
+    "title": "Ticket zu Wissensartikel",
+    "actionName": "aiCreateKnowledgeArticle",
+    "sourceEntity": "ticket",
+    "targetEntity": "knowledgeArticle",
+    "sourceRelations": [
+      "status",
+      "priority",
+      "type",
+      "category",
+      "creatorCompany",
+      "creatorPerson",
+      "assigneeCompany",
+      "assigneePerson",
+      "contract",
+      "contract.products",
+      "salesOpportunity",
+      "effortEstimates"
+    ],
+    "promptMarkdown": "Erstelle aus dem Ticket einen internen Wissensartikel. Schreibe auf Deutsch, wenn der Ticketinhalt deutsch ist. Nutze neutrale, wiederverwendbare Formulierungen und entferne Kundennamen, E-Mail-Adressen, Zugangsdaten, Tokens und andere sensible Details, sofern sie für das technische Verständnis nicht zwingend erforderlich sind. Wenn eine Lösung im Ticket fehlt, markiere den Artikel als Entwurf und formuliere im Feld solutionMarkdown klar, welche Information noch geprüft werden muss. Gib nur Fakten aus dem Ticket wieder und erfinde keine Ursachen, Produkte oder Arbeitsschritte. Tags sollen als kommaseparierte Zeichenkette zur späteren Suche geliefert werden.",
+    "fieldMapping": {
+      "tags": "tags",
+      "title": "title",
+      "summary": "summary",
+      "problemMarkdown": "problemMarkdown",
+      "solutionMarkdown": "solutionMarkdown"
+    },
+    "sourceFieldMapping": {
+      "contract.products.0": "product"
+    },
+    "targetDefaults": {
+      "status": "draft",
+      "category": "troubleshooting",
+      "isActive": true,
+      "visibility": "internal"
+    },
+    "sourceReferenceField": "sourceTicket",
+    "userReferenceField": "authorPerson",
+    "provider": null,
+    "model": null,
+    "isActive": true,
+    "sortOrder": 10,
+    "createdAt": "2026-09-10T10:49:36.211+00:00",
+    "updatedAt": "2026-09-10T10:49:36.211+00:00"
+  }
+]
