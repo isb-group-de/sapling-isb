@@ -119,9 +119,14 @@ function label(tab: WorkspaceTab) {
         ? globalT(`navigation.${name}`)
         : name.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, (letter) => letter.toUpperCase())
   const record = tab.route.query.open ?? tab.route.params.handle
+  // Kanban opens its editor locally, without an `open` query parameter.
+  const localKanbanRecord = record == null && tab.route.name === 'kanban'
   const recordLabel = [...tab.recordLabels.values()].find(
     (item) =>
-      item.entityHandle === entity && item.recordHandle === String(record) && item.label.trim(),
+      item.entityHandle === entity &&
+      item.recordHandle != null &&
+      (localKanbanRecord || item.recordHandle === String(record)) &&
+      item.label.trim(),
   )?.label
   if (recordLabel) return `${title} · ${recordLabel}`
   const pageLabels = [...tab.pageLabels.values()]

@@ -1171,8 +1171,11 @@ the current persisted view. It does not copy unsaved form values. Closing the
 last tab opens the overview. Tabs support arrow keys, Home/End and Delete.
 Record tabs display the saved label from the first `isValue` field, supplied by
 the shared editor context. Labels stay available in inactive panes; unrelated
-nested records do not replace the title. While a record is loading, the tab
-shows its entity title without exposing the raw handle. The compact tab strip
+nested records do not replace the title.
+Kanban tabs also use the shared editor's saved record label when the record is
+opened locally without an `open` URL parameter; closing the editor restores the
+board title. While a record is loading, the tab shows its entity title without
+exposing the raw handle. The compact tab strip
 and workspace have square corners and connect directly to the header.
 Dashboard tabs show the selected dashboard's name. Calendar tabs append the
 visible date range, or a single date in day view, using the calendar's existing

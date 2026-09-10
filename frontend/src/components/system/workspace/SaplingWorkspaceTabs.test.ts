@@ -33,11 +33,15 @@ function setupPage() {
   useWorkspaceLabel(() => pageLabel.value)
   const preferences = useTablePreferences(computed(() => String(route.params.entity)))
   useWorkspaceDirty(() => Boolean(draft.value))
-  useSongbirdRecordContext(() => ({
-    entityHandle: String(route.params.entity),
-    recordHandle: String(route.query.open ?? tab.id),
-    label: route.query.open ? 'Bauer IT Solutions' : tab.id,
-  }))
+  useSongbirdRecordContext(() =>
+    route.name === 'kanban'
+      ? null
+      : {
+          entityHandle: String(route.params.entity),
+          recordHandle: String(route.query.open ?? tab.id),
+          label: route.query.open ? 'Bauer IT Solutions' : tab.id,
+        },
+  )
   function filter(search: string) {
     replaceSaplingTableUrlState(
       { search, page: 1, itemsPerPage: 20, defaultItemsPerPage: 20, sortBy: [], filter: null },
@@ -76,6 +80,7 @@ async function start(path = '/table/company') {
           { path: '', name: 'home', component: Page },
           { path: 'event', name: 'calendar', component: Page },
           { path: 'table/:entity', name: 'table', component: Page },
+          { path: 'kanban/:entity', name: 'kanban', component: Page },
         ],
       },
     ],
@@ -117,6 +122,46 @@ afterEach(() => {
 })
 
 describe('application workspace tabs', () => {
+  it('updates local Kanban record titles and clears them when the editor closes', async () => {
+    const router = await start('/kanban/ticket')
+    const board = states.get(String(router.currentRoute.value.query.workspaceTab))!
+    const editor = Symbol('kanban-editor')
+    board.tab.setRecordLabel(editor, {
+      entityHandle: 'ticket',
+      recordHandle: '42',
+      label: 'Printer offline',
+    })
+    await flushPromises()
+    expect(router.currentRoute.value.query.open).toBeUndefined()
+    expect(wrapper!.get('[role="tab"][aria-selected="true"]').text()).toBe(
+      'Tickets · Printer offline',
+    )
+    board.tab.setRecordLabel(Symbol('nested'), {
+      entityHandle: 'person',
+      recordHandle: '42',
+      label: 'Other record',
+    })
+    await router.push('/table/company')
+    await flushPromises()
+    expect(wrapper!.findAll('[role="tab"]')[0]!.text()).toBe('Tickets · Printer offline')
+    board.tab.setRecordLabel(editor, {
+      entityHandle: 'ticket',
+      recordHandle: '42',
+      label: 'Printer repaired',
+    })
+    await flushPromises()
+    expect(wrapper!.findAll('[role="tab"]')[0]!.text()).toBe('Tickets · Printer repaired')
+    board.tab.setRecordLabel(editor, null)
+    await flushPromises()
+    expect(wrapper!.findAll('[role="tab"]')[0]!.text()).toBe('Tickets')
+    board.tab.setRecordLabel(editor, {
+      entityHandle: 'ticket',
+      recordHandle: null,
+      label: 'Unsaved ticket',
+    })
+    await flushPromises()
+    expect(wrapper!.findAll('[role="tab"]')[0]!.text()).toBe('Tickets')
+  })
   it('confirms discarding stored drafts even before a restored pane has mounted', async () => {
     const router = await start('/table/company?open=42')
     const context = {

@@ -2,7 +2,7 @@
   <component :is="systemComponent" v-if="systemComponent" />
   <v-container
     v-else
-    class="sapling-page-shell sapling-page-shell--panel sapling-page-shell--uniform-inset sapling-system-page"
+    class="sapling-page-shell sapling-page-shell--panel sapling-page-shell--uniform-inset sapling-page-shell--scroll sapling-system-page"
     fluid
   >
     <v-alert v-if="loadFailed" type="error" variant="tonal">

@@ -1,6 +1,6 @@
 <template>
   <v-container
-    class="sapling-page-shell sapling-page-shell--panel sapling-page-shell--uniform-inset sapling-system-page"
+    class="sapling-page-shell sapling-page-shell--panel sapling-page-shell--uniform-inset sapling-page-shell--scroll sapling-system-page"
     fluid
   >
     <template v-if="isLoading">
