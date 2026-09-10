@@ -1,5 +1,8 @@
 <template>
-  <v-container class="sapling-page-shell sapling-page-shell--uniform-inset sapling-dashboard" fluid>
+  <v-container
+    class="sapling-page-shell sapling-page-shell--uniform-inset sapling-page-shell--scroll sapling-dashboard"
+    fluid
+  >
     <template v-if="isLoading || !currentPersonStore.loaded">
       <section class="sapling-dashboard__overview">
         <div class="sapling-dashboard__hero sapling-dashboard__hero--loading glass-panel">

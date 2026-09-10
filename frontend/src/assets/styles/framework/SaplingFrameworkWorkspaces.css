@@ -14,7 +14,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--sapling-gap-md);
-  min-height: auto;
+  min-height: 0;
   padding-bottom: calc(var(--sapling-space-panel-xl) + var(--sapling-gap-sm));
 }
 
