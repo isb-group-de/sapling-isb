@@ -114,6 +114,7 @@
 </template>
 
 <script lang="ts" setup>
+import { isQuietFieldFocus } from '@/utils/fieldFocus'
 // #region Imports
 import SaplingTable from '@/components/table/SaplingTable.vue'
 import SaplingAutocomplete from '@/components/common/SaplingAutocomplete.vue'
@@ -246,8 +247,8 @@ function clearSelection() {
   clearSearch()
 }
 
-function openMenu() {
-  if (!props.disabled) {
+function openMenu(event?: Event) {
+  if (!props.disabled && !isQuietFieldFocus(event)) {
     menuOpen.value = true
   }
 }

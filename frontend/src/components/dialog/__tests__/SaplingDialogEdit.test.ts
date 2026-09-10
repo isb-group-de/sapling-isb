@@ -146,7 +146,8 @@ describe('SaplingDialogEdit', () => {
     const focusSpy = vi.spyOn(HTMLInputElement.prototype, 'focus')
 
     try {
-      mountDialog()
+      const wrapper = mountDialog()
+      wrapper.findComponent({ name: 'VDialog' }).vm.$emit('afterEnter')
 
       const state = dialogHarness.state as ReturnType<typeof createDialogState>
       state.isLoading.value = false

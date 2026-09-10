@@ -871,8 +871,12 @@ ring flush with the visible control.
 Unsaved Information Markdown drafts participate in the same dialog dirty state.
 The Information tab and panel use warning styling, and save or discard persists
 or resets the separate `information` record before the record dialog closes.
-Reference and static-select dropdowns close when keyboard focus leaves their
-field, including Tab navigation, while focus moving into a teleported dropdown
+On opening a create/edit dialog, the first visible editable field receives
+focus once both the opening transition and form loading have finished. This
+initial focus leaves reference dropdowns closed; clicking the field, Arrow Down,
+or returning to it with Tab retains the normal dropdown behavior. All table edit
+entry points share this dialog lifecycle. Reference and static-select dropdowns
+close when focus leaves their field, including Tab navigation, while focus moving into a teleported dropdown
 surface keeps the menu open. Record and relation navigation follows the tablist
 keyboard pattern: arrow keys change tabs, Home selects the record tab, and End
 selects the last available relation.

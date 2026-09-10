@@ -1,6 +1,7 @@
 import { nextTick, ref, watch, type Ref } from 'vue'
 import type { DialogState } from '@/entity/structure'
 import type { SaplingDialogValidationFeedback } from './saplingDialogEdit.types'
+import { focusFieldQuietly } from '@/utils/fieldFocus'
 
 interface DialogFocusProps {
   modelValue: boolean
@@ -27,6 +28,7 @@ export function useSaplingDialogFocusManagement(
 ) {
   const formSurfaceRef = ref<HTMLElement | null>(null)
   const hasFocusedCurrentOpenDialog = ref(false)
+  const hasEntered = ref(false)
 
   function findFirstInvalidFieldShell(): HTMLElement | null {
     const invalidControl = formSurfaceRef.value?.querySelector<HTMLElement>(
@@ -91,19 +93,26 @@ export function useSaplingDialogFocusManagement(
   }
 
   async function focusFirstField(): Promise<void> {
-    if (props.mode === 'readonly' || hasFocusedCurrentOpenDialog.value) return
-    hasFocusedCurrentOpenDialog.value = true
     await nextTick()
+    if (
+      !props.modelValue ||
+      isLoading.value ||
+      !hasEntered.value ||
+      props.mode === 'readonly' ||
+      hasFocusedCurrentOpenDialog.value
+    )
+      return
     const surface = formSurfaceRef.value
     if (!surface) return
 
     const candidates = surface.querySelectorAll<HTMLElement>(
-      'input:not([type=hidden]):not([disabled]):not([readonly]), textarea:not([disabled]):not([readonly])',
+      'input:not([type=hidden]):not([disabled]):not([readonly]), textarea:not([disabled]):not([readonly]), select:not([disabled]), [contenteditable="true"]',
     )
     for (const candidate of Array.from(candidates)) {
       if (candidate.offsetParent === null || candidate.getAttribute('aria-hidden') === 'true')
         continue
-      candidate.focus({ preventScroll: true })
+      focusFieldQuietly(candidate)
+      hasFocusedCurrentOpenDialog.value = true
       if (candidate instanceof HTMLInputElement && candidate.type === 'text') candidate.select?.()
       return
     }
@@ -119,15 +128,28 @@ export function useSaplingDialogFocusManagement(
     },
   )
   watch(
-    () => [props.modelValue, isLoading.value, props.mode] as const,
+    () =>
+      [
+        props.modelValue,
+        isLoading.value,
+        props.mode,
+        hasEntered.value,
+        formSurfaceRef.value,
+      ] as const,
     ([isOpen, loading]) => {
       if (!isOpen) {
         hasFocusedCurrentOpenDialog.value = false
+        hasEntered.value = false
         return
       }
       if (!loading) void focusFirstField()
     },
+    { flush: 'post' },
   )
 
-  return { formSurfaceRef }
+  function onDialogAfterEnter(): void {
+    hasEntered.value = true
+  }
+
+  return { formSurfaceRef, onDialogAfterEnter }
 }

@@ -1,3 +1,4 @@
+import { focusFieldQuietly } from '@/utils/fieldFocus'
 import { flushPromises, mount } from '@vue/test-utils'
 import { createI18n } from 'vue-i18n'
 import { defineComponent, nextTick } from 'vue'
@@ -284,6 +285,32 @@ describe('SaplingFieldSingleSelect reference dialog', () => {
       wrapper.unmount()
     },
   )
+
+  it('keeps initial focus closed but opens on click and subsequent focus', async () => {
+    const wrapper = mountField()
+    document.body.appendChild(wrapper.element)
+    const autocomplete = wrapper.findComponent(VAutocompleteStub)
+    const input = autocomplete.get('input').element as HTMLInputElement
+    input.addEventListener('focus', (event) => autocomplete.vm.$emit('focus', event))
+    try {
+      focusFieldQuietly(input)
+      await nextTick()
+      expect(wrapper.findComponent(SaplingTableStub).exists()).toBe(false)
+      await autocomplete.vm.$emit('mousedown:control', new MouseEvent('mousedown'))
+      expect(wrapper.findComponent(SaplingTableStub).exists()).toBe(true)
+      await wrapper
+        .findComponent({ name: 'SaplingFieldTablePicker' })
+        .vm.$emit('update:modelValue', false)
+      input.blur()
+      input.focus()
+      await nextTick()
+      expect(wrapper.findComponent(SaplingTableStub).exists()).toBe(true)
+    } finally {
+      const element = wrapper.element
+      wrapper.unmount()
+      element.remove()
+    }
+  })
 
   it('accepts fullscreen picker search while the autocomplete is not focused', async () => {
     const wrapper = mountField()

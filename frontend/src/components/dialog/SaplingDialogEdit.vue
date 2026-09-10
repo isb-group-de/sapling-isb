@@ -2,6 +2,7 @@
   <SaplingDialog
     :model-value="modelValue"
     @update:model-value="handleDialogUpdate"
+    @after-enter="onDialogAfterEnter"
     size="3xl"
     :height="SAPLING_DIALOG_HEIGHT.xl"
     persistent
@@ -577,7 +578,7 @@ const {
   visibleTemplateGroups,
 })
 
-const { formSurfaceRef } = useSaplingDialogFocusManagement(props, {
+const { formSurfaceRef, onDialogAfterEnter } = useSaplingDialogFocusManagement(props, {
   activeTab,
   expandedGroupIds,
   isLoading,

@@ -1,4 +1,5 @@
 import { mount } from '@vue/test-utils'
+import { focusFieldQuietly } from '@/utils/fieldFocus'
 import { computed, defineComponent, nextTick } from 'vue'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import SaplingFieldSelect from '../SaplingFieldSelect.vue'
@@ -143,6 +144,32 @@ describe('SaplingFieldSelect', () => {
     onSearchUpdateMock.mockClear()
     tableState.items.value = []
     tableState.search.value = ''
+  })
+
+  it('keeps initial focus closed but opens on click and subsequent focus', async () => {
+    const wrapper = mountSelectField()
+    document.body.appendChild(wrapper.element)
+    const autocomplete = wrapper.findComponent(VAutocompleteStub)
+    const input = autocomplete.get('input').element as HTMLInputElement
+    input.addEventListener('focus', (event) => autocomplete.vm.$emit('focus', event))
+    try {
+      focusFieldQuietly(input)
+      await nextTick()
+      expect(wrapper.findComponent(SaplingTableStub).exists()).toBe(false)
+      await autocomplete.vm.$emit('mousedown:control', new MouseEvent('mousedown'))
+      expect(wrapper.findComponent(SaplingTableStub).exists()).toBe(true)
+      await wrapper
+        .findComponent({ name: 'SaplingFieldTablePicker' })
+        .vm.$emit('update:modelValue', false)
+      input.blur()
+      input.focus()
+      await nextTick()
+      expect(wrapper.findComponent(SaplingTableStub).exists()).toBe(true)
+    } finally {
+      const element = wrapper.element
+      wrapper.unmount()
+      element.remove()
+    }
   })
 
   it('keeps the typed search when a selected chip label is emitted as autocomplete search', async () => {
