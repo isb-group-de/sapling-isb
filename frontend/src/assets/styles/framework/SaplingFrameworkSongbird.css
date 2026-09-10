@@ -149,12 +149,12 @@
 .songbird-docked .sapling-auth-layout__body {
   margin-right: var(--songbird-reserved-width);
 }
-.songbird-docked .songbird-aware-dialog {
+.songbird-docked .songbird-aware-dialog:not(.v-overlay--contained) {
   inset: 0;
   width: 100%;
   max-width: none;
 }
-.songbird-docked .songbird-aware-dialog > .v-overlay__scrim {
+.songbird-docked .songbird-aware-dialog:not(.v-overlay--contained) > .v-overlay__scrim {
   position: fixed;
   inset: 0;
   width: 100%;
@@ -167,7 +167,7 @@
     0 100%
   );
 }
-.songbird-docked .songbird-aware-dialog > .v-overlay__content {
+.songbird-docked .songbird-aware-dialog:not(.v-overlay--contained) > .v-overlay__content {
   left: 0;
   right: var(--songbird-reserved-width);
   margin-inline: auto;

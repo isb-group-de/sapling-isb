@@ -4,6 +4,7 @@ import ApiTemplateService from '@/services/api.template.service'
 import { useTranslationLoader } from '@/composables/generic/useTranslationLoader'
 import { useSaplingMessageCenter } from '@/composables/system/useSaplingMessageCenter'
 import { useCurrentPersonStore } from '@/stores/currentPersonStore'
+import { useWorkspaceLabel } from '@/composables/system/workspaceTabContext'
 import { useSaplingDashboardLayout } from './useSaplingDashboardLayout'
 import type { DashboardWidget } from '@/entity/dashboard-widget.types'
 import { getDashboardWidgets } from './saplingDashboardWidgets'
@@ -68,6 +69,7 @@ export function useSaplingDashboard() {
     'navigation',
   )
   const currentDashboard = computed(() => dashboards.value[activeTab.value] ?? null)
+  useWorkspaceLabel(() => currentDashboard.value?.name)
   const {
     isLayoutEditing,
     isLayoutSaving,

@@ -32,6 +32,7 @@ import {
 } from '@/composables/event/eventCalendarPreferences'
 import { useSaplingCalendarDrag } from '@/composables/event/useSaplingCalendarDrag'
 import { useSaplingCalendarNavigation } from '@/composables/event/useSaplingCalendarNavigation'
+import { useWorkspaceLabel } from '@/composables/system/workspaceTabContext'
 import { useSaplingEventData } from '@/composables/event/useSaplingEventData'
 import { useSaplingEventContextMenu } from '@/composables/event/useSaplingEventContextMenu'
 import { useSaplingEventEditor } from '@/composables/event/useSaplingEventEditor'
@@ -201,6 +202,7 @@ export function useSaplingEvent() {
     createEvent,
     getEventColor,
   })
+  useWorkspaceLabel(() => currentDateRangeLabel.value)
   const {
     getEvents: loadCalendarEvents,
     loadPersistedEvent,

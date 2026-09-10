@@ -2,7 +2,7 @@
   width: 100%;
 }
 
-.sapling-dialog-frame--docked > .v-overlay__content {
+.sapling-dialog-frame--docked:not(.v-overlay--contained) > .v-overlay__content {
   top: var(--sapling-mobile-dialog-top) !important;
   right: 0 !important;
   bottom: 0 !important;
@@ -295,7 +295,8 @@
 }
 
 @media (max-width: 600px) {
-  .sapling-dialog-frame:not(.sapling-dialog-frame--docked) > .v-overlay__content {
+  .sapling-dialog-frame:not(.sapling-dialog-frame--docked):not(.v-overlay--contained)
+    > .v-overlay__content {
     top: var(--sapling-mobile-dialog-top) !important;
     right: 0 !important;
     bottom: 0 !important;

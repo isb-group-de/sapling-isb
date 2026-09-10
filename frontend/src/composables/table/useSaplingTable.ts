@@ -1,6 +1,7 @@
 // #region Imports
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch, type Ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useWorkspaceTab } from '@/composables/system/workspaceTabContext'
 import ApiGenericService from '@/services/api.generic.service'
 import { i18n } from '@/i18n'
 import type { ColumnFilterItem, SaplingTableHeaderItem, SortItem } from '@/entity/structure'
@@ -70,6 +71,7 @@ export function useSaplingTable(
   const temporaryVisibleColumnKeys = ref<string[]>([])
   const route = useRoute()
   const router = useRouter()
+  const workspaceTab = useWorkspaceTab()
   const currentPermissionStore = useCurrentPermissionStore()
   const genericStore = useGenericStore()
   const { pushMessage } = useSaplingMessageCenter()
@@ -168,6 +170,7 @@ export function useSaplingTable(
   // #region Filters and Sorting
   const {
     activeFilter,
+    consumeLocalRouteState,
     getRouteState,
     initialSort,
     routeStateSignature,
@@ -440,6 +443,7 @@ export function useSaplingTable(
   // table. Reinitialize only when the entity or effective table URL state
   // (search, paging, sorting, filters) changes.
   watch([entityHandle, routeStateSignature], () => {
+    if (consumeLocalRouteState()) return
     if (isResettingDefaultWorklist) {
       return
     }
@@ -553,6 +557,7 @@ export function useSaplingTable(
           grouping: behaviorOptions.allowGrouping ? { fields: [], visible: false } : undefined,
         },
         Boolean(isUseQueryParameter),
+        workspaceTab,
       )
     } finally {
       isResettingEntityState.value = false

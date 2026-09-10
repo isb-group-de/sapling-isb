@@ -9,6 +9,7 @@ import type {
 import { songbirdForms, songbirdFormProposals } from '@/composables/system/songbirdFormRegistry'
 import { describeSongbirdFormField, normalizeSongbirdFormValue } from './songbirdFormFields'
 import ApiGenericService from '@/services/api.generic.service'
+import { useWorkspaceTab } from '@/composables/system/workspaceTabContext'
 
 export function useSongbirdForm(options: {
   props: UseSaplingDialogEditProps
@@ -24,9 +25,11 @@ export function useSongbirdForm(options: {
   translate: (key: string) => string
 }) {
   const formId = ref('')
+  const workspaceTab = useWorkspaceTab()
   const snapshots = new Map<string, { baseline: string; context: SongbirdFormContext }>()
   const serialize = () => JSON.stringify(options.form.value)
   const available = () =>
+    workspaceTab?.active !== false &&
     options.props.modelValue &&
     !options.isLoading.value &&
     !options.isSaving.value &&

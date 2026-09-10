@@ -1,4 +1,5 @@
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useWorkspaceTab } from '@/composables/system/workspaceTabContext'
 
 export const SAPLING_TABLE_AUTO_REFRESH_INTERVALS = [1, 5, 10] as const
 
@@ -12,6 +13,8 @@ export function useSaplingTableAutoRefresh(
   refresh: () => void,
   isPaused: () => boolean = () => false,
 ) {
+  const tab = useWorkspaceTab()
+  const paused = () => isPaused() || tab?.active === false
   const autoRefreshIntervalMinutes = ref<SaplingTableAutoRefreshInterval | null>(null)
   const secondsUntilRefresh = ref<number | null>(null)
   let refreshIntervalId: number | null = null
@@ -38,7 +41,7 @@ export function useSaplingTableAutoRefresh(
   }
 
   function runRefresh(): void {
-    if (!isPaused()) {
+    if (!paused()) {
       refresh()
     }
   }
@@ -60,7 +63,7 @@ export function useSaplingTableAutoRefresh(
       intervalMinutes === null ||
       typeof window === 'undefined' ||
       !isDocumentVisible() ||
-      isPaused()
+      paused()
     ) {
       return
     }
@@ -107,7 +110,7 @@ export function useSaplingTableAutoRefresh(
     }
   })
 
-  watch(isPaused, (paused) => {
+  watch(paused, (paused) => {
     if (paused) {
       stopTimer()
       return

@@ -46,12 +46,17 @@ export function getSaplingTableRouteStateSignature(query: LocationQuery, enabled
   return JSON.stringify(readSaplingTableRouteState(query, enabled))
 }
 
-export function replaceSaplingTableUrlState(state: SaplingTableUrlState, enabled: boolean): void {
+export function replaceSaplingTableUrlState(
+  state: SaplingTableUrlState,
+  enabled: boolean,
+  workspace?: { readonly fullPath: string; replaceUrl: (path: string) => void } | null,
+): void {
   if (!enabled || typeof window === 'undefined') {
     return
   }
 
-  const params = new URLSearchParams(window.location.search)
+  const current = new URL(workspace?.fullPath ?? window.location.href, window.location.origin)
+  const params = new URLSearchParams(current.search)
   setOptionalParam(params, 'grouping', state.grouping ? JSON.stringify(state.grouping) : null)
   setOptionalParam(params, 'search', state.search.trim() || null)
   setOptionalParam(params, 'page', state.page > 1 ? String(state.page) : null)
@@ -68,10 +73,11 @@ export function replaceSaplingTableUrlState(state: SaplingTableUrlState, enabled
   )
 
   const queryString = params.toString()
-  const nextUrl = `${window.location.pathname}${queryString ? `?${queryString}` : ''}${window.location.hash}`
-  const currentUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`
+  const nextUrl = `${current.pathname}${queryString ? `?${queryString}` : ''}${current.hash}`
+  const currentUrl = `${current.pathname}${current.search}${current.hash}`
   if (nextUrl !== currentUrl) {
-    window.history.replaceState(window.history.state, '', nextUrl)
+    if (workspace) workspace.replaceUrl(nextUrl)
+    else window.history.replaceState(window.history.state, '', nextUrl)
   }
 }
 

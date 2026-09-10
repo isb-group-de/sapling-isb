@@ -1,6 +1,7 @@
 import { onBeforeUnmount, type Ref } from 'vue'
 import type { AccumulatedPermission, EntityTemplate } from '@/entity/structure'
 import { useCurrentPermissionStore } from '@/stores/currentPermissionStore'
+import { useWorkspaceDirty } from '@/composables/system/workspaceTabContext'
 
 interface DialogInitializationOptions {
   isLoading: Ref<boolean>
@@ -24,6 +25,7 @@ export async function initializeSaplingDialogEdit(
 }
 
 export function useSaplingDialogBeforeUnloadGuard(shouldWarn: () => boolean): void {
+  useWorkspaceDirty(shouldWarn)
   if (typeof window === 'undefined') return
   const onBeforeUnload = (event: BeforeUnloadEvent) => {
     if (!shouldWarn()) return

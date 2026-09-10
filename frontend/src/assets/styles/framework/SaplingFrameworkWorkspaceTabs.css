@@ -1,0 +1,105 @@
+.sapling-workspace {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+  background: var(--sapling-dialog-surface), rgb(var(--v-theme-surface));
+  border: 1px solid var(--sapling-surface-border);
+  border-radius: 0;
+  border-top: 0;
+}
+.sapling-workspace__toolbar {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  gap: var(--sapling-gap-xs);
+  padding: 0 var(--sapling-gap-xs);
+  font-size: 0.8125rem;
+  border-bottom: 1px solid var(--sapling-surface-border);
+}
+.sapling-workspace__tabs {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  gap: var(--sapling-tab-gap);
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+.sapling-workspace__tab {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  max-width: 260px;
+  height: var(--sapling-control-height-compact);
+  border-radius: 0;
+  border: 1px solid transparent;
+}
+.sapling-workspace__tab--active {
+  background: rgba(var(--v-theme-primary), 0.1);
+  border-color: rgba(var(--v-theme-primary), 0.3);
+  color: rgb(var(--v-theme-primary));
+}
+.sapling-workspace__tab--calendar {
+  max-width: none;
+}
+.sapling-workspace__tab > button {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  display: flex;
+  align-items: center;
+  gap: var(--sapling-gap-xs);
+  min-width: 0;
+  height: 100%;
+  padding: 0 var(--sapling-gap-sm);
+  border-radius: 0;
+  font-weight: var(--sapling-tab-font-weight);
+}
+.sapling-workspace__tab > button:hover {
+  background: rgba(var(--v-theme-on-surface), 0.06);
+}
+.sapling-workspace__tab > button:focus-visible {
+  outline: 2px solid rgb(var(--v-theme-primary));
+  outline-offset: -2px;
+}
+.sapling-workspace__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sapling-workspace__dirty {
+  color: rgb(var(--v-theme-warning));
+}
+.sapling-workspace__body,
+.sapling-workspace-pane {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+/* Contained overlays block only their own pane, leaving tabs and Songbird usable. */
+.sapling-workspace-pane .sapling-dialog-frame.v-overlay--contained {
+  position: absolute;
+  inset: 0;
+  max-width: none;
+}
+.sapling-workspace-pane .sapling-dialog-frame.v-overlay--contained > .v-overlay__content {
+  position: relative;
+  inset: auto;
+  width: calc(100% - var(--sapling-space-lg));
+  max-height: calc(100% - var(--sapling-space-lg));
+  margin: var(--sapling-gap-sm);
+}
+.sapling-workspace-pane .sapling-dialog-frame.v-overlay--contained > .v-overlay__scrim {
+  position: absolute;
+  inset: 0;
+  clip-path: none;
+}

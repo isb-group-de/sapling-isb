@@ -336,6 +336,7 @@ import { useI18n } from 'vue-i18n'
 import { useSongbirdForm } from '@/composables/dialog/useSongbirdForm'
 import SongbirdFormProposal from '@/components/system/ai-chat/SongbirdFormProposal.vue'
 import { useSongbirdRecordContext } from '@/composables/system/songbirdPageContext'
+import { useWorkspaceDirty } from '@/composables/system/workspaceTabContext'
 // #region Imports
 import { computed, getCurrentInstance } from 'vue'
 import { DEFAULT_PAGE_SIZE_SMALL } from '@/constants/project.constants'
@@ -601,6 +602,7 @@ const { formSurfaceRef, onDialogAfterEnter } = useSaplingDialogFocusManagement(p
   syncExpandedGroups,
   validationFeedback,
 })
+useWorkspaceDirty(() => props.modelValue && (isDirty.value || isSaving.value))
 const { formId: songbirdFormId, proposals: formProposals } = useSongbirdForm({
   props,
   form,

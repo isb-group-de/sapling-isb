@@ -1,4 +1,4 @@
-import { computed, nextTick, ref } from 'vue'
+import { computed, effectScope, nextTick, ref } from 'vue'
 import { beforeEach, describe, expect, it } from 'vitest'
 import type { EntityTemplate } from '@/entity/structure'
 import { readSaplingDialogDraft } from './saplingDialogDraftStorage'
@@ -8,6 +8,50 @@ describe('useSaplingDialogEditDraft', () => {
   beforeEach(() => {
     window.localStorage.clear()
     window.history.replaceState({}, '', '/table/ticket')
+  })
+
+  it('recovers two edits of the same record independently after their views are destroyed', async () => {
+    function open(route: string) {
+      window.history.replaceState({}, '', route)
+      const scope = effectScope()
+      const form = ref({ title: 'Original' })
+      const draft = scope.run(() =>
+        useSaplingDialogEditDraft({
+          form,
+          templates: computed(() => [{ name: 'title', type: 'string' }] as EntityTemplate[]),
+          mode: computed(() => 'edit'),
+          entity: computed(() => ({ handle: 'ticket' }) as never),
+          item: computed(() => ({ handle: 42, updatedAt: 'v1' })),
+          parent: computed(() => null),
+          parentEntity: computed(() => null),
+          person: computed(() => ({ handle: 7 })),
+          modelValue: computed(() => true),
+          isDirty: computed(() => form.value.title !== 'Original'),
+          isHydratingForm: ref(false),
+        }),
+      )!
+      draft.restoreDraft()
+      return { scope, form, draft }
+    }
+    const first = open('/table/ticket?workspaceTab=one')
+    const second = open('/table/ticket?workspaceTab=two&open=42')
+    first.form.value.title = 'First tab'
+    second.form.value.title = 'Second tab'
+    await nextTick()
+    first.scope.stop()
+    second.scope.stop()
+
+    const recoveredFirst = open('/table/ticket?workspaceTab=one&open=42&search=changed')
+    const recoveredSecond = open('/table/ticket?workspaceTab=two&open=42')
+    expect(recoveredFirst.form.value.title).toBe('First tab')
+    expect(recoveredSecond.form.value.title).toBe('Second tab')
+    await nextTick()
+    recoveredFirst.draft.clearDraft()
+    recoveredFirst.scope.stop()
+    recoveredSecond.scope.stop()
+    const afterClear = open('/table/ticket?workspaceTab=two&open=42')
+    expect(afterClear.form.value.title).toBe('Second tab')
+    afterClear.scope.stop()
   })
 
   it('persists dirty form values and restores them into the same record as dirty changes', async () => {

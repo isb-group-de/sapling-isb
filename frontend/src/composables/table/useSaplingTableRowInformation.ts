@@ -5,6 +5,11 @@ import { useGenericStore } from '@/stores/genericStore'
 import type { InformationItem, SaplingGenericItem } from '@/entity/entity'
 import { useSaplingMessageCenter } from '@/composables/system/useSaplingMessageCenter'
 import {
+  useWorkspaceDirty,
+  useWorkspaceDraftCleanup,
+  useWorkspaceTab,
+} from '@/composables/system/workspaceTabContext'
+import {
   clearSaplingDialogDraft,
   getCurrentDialogDraftRoute,
   normalizeDialogDraftIdentifier,
@@ -30,6 +35,7 @@ export function useSaplingTableRowInformation(
   emit: UseSaplingTableRowInformationEmit,
 ) {
   const genericStore = useGenericStore()
+  const workspaceTab = useWorkspaceTab()
   const currentPersonStore = useCurrentPersonStore()
   const { pushMessage } = useSaplingMessageCenter()
 
@@ -50,6 +56,8 @@ export function useSaplingTableRowInformation(
   const hasExistingRecord = computed(() => currentInformation.value?.handle != null)
   const trimmedContent = computed(() => content.value.trim())
   const isDirty = computed(() => content.value !== (currentInformation.value?.content ?? ''))
+  useWorkspaceDirty(() => props.show && (isDirty.value || isSaving.value))
+  useWorkspaceDraftCleanup(() => clearSaplingDialogDraft('information', activeDraftContext.value))
   const canEdit = computed(
     () =>
       Boolean(informationPermission.value?.allowInsert) ||
@@ -125,7 +133,7 @@ export function useSaplingTableRowInformation(
       return
     }
 
-    const route = getCurrentDialogDraftRoute()
+    const route = workspaceTab?.fullPath ?? getCurrentDialogDraftRoute()
     activeDraftContext.value = null
     isLoading.value = true
     try {
@@ -164,7 +172,9 @@ export function useSaplingTableRowInformation(
     content.value = currentInformation.value?.content ?? ''
   }
 
-  function createDraftContext(route = getCurrentDialogDraftRoute()): SaplingDialogDraftContext {
+  function createDraftContext(
+    route = workspaceTab?.fullPath ?? getCurrentDialogDraftRoute(),
+  ): SaplingDialogDraftContext {
     return {
       route,
       personHandle: normalizeDialogDraftIdentifier(currentPersonStore.person?.handle),
@@ -180,7 +190,8 @@ export function useSaplingTableRowInformation(
   }
 
   function completeDraftSave(): void {
-    const route = activeDraftContext.value?.route ?? getCurrentDialogDraftRoute()
+    const route =
+      activeDraftContext.value?.route ?? workspaceTab?.fullPath ?? getCurrentDialogDraftRoute()
     clearSaplingDialogDraft('information', activeDraftContext.value)
     activeDraftContext.value = createDraftContext(route)
   }
@@ -218,7 +229,7 @@ export function useSaplingTableRowInformation(
         currentInformation.value = updatedInformation
         content.value = currentInformation.value.content ?? trimmedContent.value
         activeDraftContext.value = createDraftContext(
-          activeDraftContext.value?.route ?? getCurrentDialogDraftRoute(),
+          activeDraftContext.value?.route ?? workspaceTab?.fullPath ?? getCurrentDialogDraftRoute(),
         )
         emit('saved')
         closeAfterSave()

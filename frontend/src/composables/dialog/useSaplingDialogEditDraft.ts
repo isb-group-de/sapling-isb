@@ -1,6 +1,7 @@
 import { ref, watch, type ComputedRef, type Ref } from 'vue'
 import type { DialogState, EntityTemplate } from '@/entity/structure'
 import type { EntityItem, SaplingGenericItem } from '@/entity/entity'
+import { useWorkspaceDraftCleanup, useWorkspaceTab } from '@/composables/system/workspaceTabContext'
 import {
   clearSaplingDialogDraft,
   getCurrentDialogDraftRoute,
@@ -25,11 +26,12 @@ interface UseSaplingDialogEditDraftOptions {
 }
 
 export function useSaplingDialogEditDraft(options: UseSaplingDialogEditDraftOptions) {
+  const workspaceTab = useWorkspaceTab()
   const activeContext = ref<SaplingDialogDraftContext | null>(null)
 
   function createContext(): SaplingDialogDraftContext {
     return {
-      route: getCurrentDialogDraftRoute(),
+      route: workspaceTab?.fullPath ?? getCurrentDialogDraftRoute(),
       personHandle: normalizeDialogDraftIdentifier(options.person.value?.handle),
       entityHandle: options.entity.value?.handle ?? '',
       mode: options.mode.value,
@@ -89,6 +91,7 @@ export function useSaplingDialogEditDraft(options: UseSaplingDialogEditDraftOpti
   function clearDraft(): void {
     clearSaplingDialogDraft('edit', activeContext.value ?? createContext())
   }
+  useWorkspaceDraftCleanup(clearDraft)
 
   watch(
     options.form,

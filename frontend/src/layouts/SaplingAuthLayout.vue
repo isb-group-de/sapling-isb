@@ -11,21 +11,7 @@
         <div
           class="sapling-app-layout__content sapling-content sapling-content--app sapling-auth-layout__content"
         >
-          <RouterView v-slot="{ Component }">
-            <Suspense>
-              <component :is="Component" />
-              <template #fallback>
-                <div
-                  class="sapling-page-shell sapling-page-shell--fill sapling-page-shell--uniform-inset sapling-route-loading"
-                >
-                  <v-skeleton-loader
-                    class="sapling-route-loading__surface"
-                    type="article, actions, table"
-                  />
-                </div>
-              </template>
-            </Suspense>
-          </RouterView>
+          <SaplingWorkspaceTabs />
         </div>
       </div>
 
@@ -54,7 +40,7 @@
 
 <script lang="ts" setup>
 import { defineAsyncComponent, onMounted, onUnmounted, ref, watch } from 'vue'
-import { RouterView } from 'vue-router'
+import SaplingWorkspaceTabs from '@/components/system/workspace/SaplingWorkspaceTabs.vue'
 import { useTranslationLoader } from '@/composables/generic/useTranslationLoader'
 import { useSaplingImportJobs } from '@/composables/import/useSaplingImportJobs'
 import SaplingHeader from '@/components/system/SaplingHeader.vue'

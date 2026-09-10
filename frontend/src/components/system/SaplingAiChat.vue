@@ -97,7 +97,7 @@ import { computed, nextTick, onMounted, onUnmounted, watch } from 'vue'
 import { useCurrentPersonStore } from '@/stores/currentPersonStore'
 import { useSaplingAiChat } from '@/composables/system/useSaplingAiChat'
 import { useSongbirdDock } from '@/composables/system/useSongbirdDock'
-import { hasSongbirdRecordDialog } from '@/composables/system/songbirdPageContext'
+import { hasSongbirdGlobalRecordDialog } from '@/composables/system/songbirdPageContext'
 import ApiAiService from '@/services/api.ai.service'
 import { SAPLING_AI_CHAT_PROMPT_EVENT } from '@/utils/saplingScriptResultUtil'
 import type { SaplingAiChatPromptEventDetail } from './ai-chat/saplingAiChat.utils'
@@ -179,12 +179,12 @@ function setWorkInert(inert: boolean) {
     })
 }
 watch(
-  [hasSongbirdRecordDialog, isOpen, fullscreen, hasSaplingAiChatAccess],
+  [hasSongbirdGlobalRecordDialog, isOpen, fullscreen, hasSaplingAiChatAccess],
   () => {
     setWorkInert(
       isOpen.value &&
         hasSaplingAiChatAccess.value &&
-        (fullscreen.value || hasSongbirdRecordDialog.value),
+        (fullscreen.value || hasSongbirdGlobalRecordDialog.value),
     )
   },
   { immediate: true, flush: 'post' },

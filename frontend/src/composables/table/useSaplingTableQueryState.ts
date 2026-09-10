@@ -1,5 +1,6 @@
 import { computed, type ComputedRef, type Ref } from 'vue'
 import { useRoute } from 'vue-router'
+import { useWorkspaceTab } from '@/composables/system/workspaceTabContext'
 import type { ColumnFilterItem, EntityTemplate, SortItem } from '@/entity/structure'
 import { buildTableFilter } from '@/utils/saplingTableUtil'
 import {
@@ -43,6 +44,29 @@ export function useSaplingTableQueryState(options: {
     searchFieldNames,
   } = options
   const behaviorOptions = { searchFieldNames }
+  const workspaceTab = useWorkspaceTab()
+  let locallyWrittenRouteSignature: string | null = null
+  const workspaceUrl = workspaceTab
+    ? {
+        get fullPath() {
+          return workspaceTab.fullPath
+        },
+        replaceUrl(path: string) {
+          const query = Object.fromEntries(new URL(path, window.location.origin).searchParams)
+          locallyWrittenRouteSignature = getSaplingTableRouteStateSignature(
+            query,
+            Boolean(isUseQueryParameter),
+          )
+          workspaceTab.replaceUrl(path)
+        },
+      }
+    : null
+
+  function consumeLocalRouteState() {
+    const matches = locallyWrittenRouteSignature === routeStateSignature.value
+    locallyWrittenRouteSignature = null
+    return matches
+  }
 
   const getRouteState = () => readSaplingTableRouteState(route.query, Boolean(isUseQueryParameter))
   const routeStateSignature = computed(() =>
@@ -145,10 +169,12 @@ export function useSaplingTableQueryState(options: {
         filter: urlFilter.value,
       },
       Boolean(isUseQueryParameter),
+      workspaceUrl,
     )
   }
 
   return {
+    consumeLocalRouteState,
     activeFilter,
     getRouteState,
     initialSort,

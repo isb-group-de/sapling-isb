@@ -1163,6 +1163,68 @@ unreadable fields remain ineligible when restoring a group. Resetting the defaul
 worklist clears grouping. Apply migration `Migration20260908150000` before saving
 worklists with this field.
 
+## Application workspace tabs
+
+The authenticated shell hosts `SaplingWorkspaceTabs`. Navigation opens or
+reactivates application tabs; the tab-plus action opens an independent copy of
+the current persisted view. It does not copy unsaved form values. Closing the
+last tab opens the overview. Tabs support arrow keys, Home/End and Delete.
+Record tabs display the saved label from the first `isValue` field, supplied by
+the shared editor context. Labels stay available in inactive panes; unrelated
+nested records do not replace the title. While a record is loading, the tab
+shows its entity title without exposing the raw handle. The compact tab strip
+and workspace have square corners and connect directly to the header.
+Dashboard tabs show the selected dashboard's name. Calendar tabs append the
+visible date range, or a single date in day view, using the calendar's existing
+range formatter. Views register these reactive labels through
+`useWorkspaceLabel`; labels remain attached to their own inactive pane.
+
+The active URL retains existing paths and query parameters and adds
+`workspaceTab` as an opaque tab identifier. Each visited pane stays mounted and
+provides its own Vue Router route snapshot and scoped navigation adapter. Never
+read or modify `window.location` for state owned by an individual workspace:
+use the injected router or `useWorkspaceTab`. Inactive panes may update their
+own query state but must not navigate the active browser page. Table URL writes
+are tagged as local so their own query watcher does not reset the table while
+the user types. Grouping preferences are shared within a pane, not between
+independent copies of the same entity.
+
+Tab URLs are restored from session storage per person and impersonator. Only
+the selected restored pane mounts; other panes load after activation through
+the normal router guards. A person change recreates pane instances. This
+storage contains navigation state, not a complete draft recovery system;
+existing editor draft recovery remains separate. Up to 30 URLs are restored.
+
+Shared editor drafts use individual `sapling.dialogDrafts.v2.*` local-storage
+entries per person, workspace tab, entity, record, edit/create mode and
+parent/detail context. Route filters and `open` query changes do not change the
+draft identity inside a workspace. Saved record/detail versions are checked
+before recovery; a draft is never automatically applied to a newer server
+version. Matching v1 drafts are migrated lazily, retaining the old entry if the
+new storage write fails. Saving, resetting or discarding affects only the
+matching draft. Closing an application tab confirms any stored draft even when
+its restored pane has not mounted, then clears that tab's drafts for the current
+person. Reloading/unmounting alone does not discard drafts.
+
+This is local form recovery for the first user test version, not server-side
+autosave or a full crash-recovery guarantee. Browser storage must be available;
+the tab list still uses session storage and staged relation operations are not
+part of the generic form-value snapshot. A new-record draft is recovered when
+its create editor is reopened in the same workspace tab.
+
+`SaplingDialog` contains workspace-owned dialogs within the pane and keeps open
+dialog content alive while its tab is hidden. This leaves the tab strip and
+Songbird usable. Shared record editors register dirty state with
+`useWorkspaceDirty`; closing a dirty tab requires confirmation, and browser
+unload warns about unsaved edits. New custom editors should register their dirty
+state too. Shell-level dialogs retain their existing global behavior.
+
+Songbird follows only the active pane's record context. Form proposals cannot
+be captured or applied against an inactive pane. Table auto-refresh and shared
+visibility-aware polling pause for inactive panes. Other feature-specific
+background controllers keep their existing lifecycle and should explicitly
+opt into the workspace activity signal when needed.
+
 ## Songbird side panel
 
 Songbird is hosted by the authenticated shell rather than a modal chat dialog.
@@ -1196,9 +1258,10 @@ The dropdown spans the panel width. Full-area view at 1200px and wider displays
 the history permanently on the left. Response diagnostics are nested in the
 work log; the optional read-aloud icon sits at the right of the action row.
 
-The docked editor keeps its normal maximum width and consumes empty side margins
-before narrowing. Its scrim blocks the entire application, including the header,
-while leaving Songbird interactive. The context label uses the first metadata
+Global docked editors keep their normal maximum width and consume empty side
+margins before narrowing. Their scrim blocks the application while leaving
+Songbird interactive. Workspace-owned editors instead block only their pane,
+leaving the application tab strip and header usable. The context label uses the first metadata
 field marked `isValue` from the saved record; unsaved form values stay private to
 the editor. Songbird surfaces use the same themed background as Sapling dialogs
 in light and dark mode. Read-aloud is available only when a compatible speech

@@ -2,6 +2,7 @@ import { computed, ref, type Ref } from 'vue'
 import type { EntityTemplate } from '@/entity/structure'
 import type { SaplingGenericItem } from '@/entity/entity'
 import { getDateCellState, getDateTimeCellState } from '@/utils/saplingFormatUtil'
+import { useWorkspaceTab } from '@/composables/system/workspaceTabContext'
 
 export interface TablePreferences {
   rowDeadlineFields: string[]
@@ -44,17 +45,26 @@ export function readTablePreferences(entity: string): TablePreferences {
 }
 
 export function useTablePreferences(entity: Ref<string>) {
+  const tab = useWorkspaceTab()
+  const preferences = tab
+    ? ((tab.state.get('tablePreferences') as Map<string, Ref<TablePreferences>> | undefined) ??
+      new Map<string, Ref<TablePreferences>>())
+    : preferencesByEntity
+  tab?.state.set('tablePreferences', preferences)
+  if (!preferences.has(entity.value)) {
+    preferences.set(entity.value, ref(readTablePreferences(entity.value)))
+  }
   return computed({
     get() {
-      if (!preferencesByEntity.has(entity.value)) {
-        preferencesByEntity.set(entity.value, ref(readTablePreferences(entity.value)))
+      if (!preferences.has(entity.value)) {
+        preferences.set(entity.value, ref(readTablePreferences(entity.value)))
       }
-      return preferencesByEntity.get(entity.value)!.value
+      return preferences.get(entity.value)!.value
     },
     set(value: TablePreferences) {
-      const state = preferencesByEntity.get(entity.value)
+      const state = preferences.get(entity.value)
       if (state) state.value = value
-      else preferencesByEntity.set(entity.value, ref(value))
+      else preferences.set(entity.value, ref(value))
       try {
         localStorage.setItem(storageKey(entity.value), JSON.stringify(value))
       } catch {

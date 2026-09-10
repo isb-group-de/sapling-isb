@@ -1,4 +1,5 @@
-import { onBeforeUnmount, onMounted } from 'vue'
+import { onBeforeUnmount, onMounted, watch } from 'vue'
+import { useWorkspaceTab } from './workspaceTabContext'
 
 /**
  * Runs `task` on a fixed interval while the document is visible. When the tab
@@ -7,9 +8,11 @@ import { onBeforeUnmount, onMounted } from 'vue'
  * users leave the app in the background.
  */
 export function useVisibilityAwarePolling(task: () => void | Promise<void>, intervalMs: number) {
+  const workspaceTab = useWorkspaceTab()
   let intervalId: number | undefined
 
   function start() {
+    if (workspaceTab?.active === false) return
     if (intervalId !== undefined) {
       return
     }
@@ -32,13 +35,15 @@ export function useVisibilityAwarePolling(task: () => void | Promise<void>, inte
     if (typeof document === 'undefined') {
       return
     }
-    if (document.visibilityState === 'visible') {
+    if (document.visibilityState === 'visible' && workspaceTab?.active !== false) {
       void task()
       start()
     } else {
       stop()
     }
   }
+
+  watch(() => workspaceTab?.active, onVisibilityChange)
 
   onMounted(() => {
     if (typeof document !== 'undefined') {
