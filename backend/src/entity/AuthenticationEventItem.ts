@@ -24,7 +24,7 @@ export class AuthenticationEventItem {
   handle?: number;
 
   @Sapling(['isReadOnly'])
-  @ManyToOne(() => SystemTelemetryEnvironmentItem)
+  @ManyToOne(() => SystemTelemetryEnvironmentItem, { updateRule: 'cascade' })
   environment!: Rel<SystemTelemetryEnvironmentItem>;
 
   @Sapling(['isReadOnly', 'isPerson'])
@@ -84,6 +84,6 @@ export class AuthenticationEventItem {
     mobileOrder: 400,
     mobileVisible: false,
   })
-  @Property({ type: 'datetime', index: true })
+  @Property({ type: 'datetime', defaultRaw: 'now()', index: true })
   occurredAt: Date = new Date();
 }

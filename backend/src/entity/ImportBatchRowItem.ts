@@ -1,9 +1,22 @@
 import { type Rel } from '@mikro-orm/core';
-import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  Property,
+  Index,
+} from '@mikro-orm/decorators/legacy';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Sapling, SaplingForm } from './global/entity.decorator';
 import { ImportBatchItem } from './ImportBatchItem';
 
+@Index({
+  name: 'import_batch_row_item_batch_handle_row_number_index',
+  properties: ['batch', 'rowNumber'],
+})
+@Index({
+  name: 'import_batch_row_item_batch_handle_status_index',
+  properties: ['batch', 'status'],
+})
 @Entity()
 export class ImportBatchRowItem {
   @ApiProperty()

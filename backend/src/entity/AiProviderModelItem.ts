@@ -1,5 +1,6 @@
 import { Collection, type Rel } from '@mikro-orm/core';
 import {
+  Index,
   Entity,
   ManyToOne,
   OneToMany,
@@ -10,6 +11,10 @@ import { AiChatSessionItem } from './AiChatSessionItem';
 import { AiProviderTypeItem } from './AiProviderTypeItem';
 import { Sapling, SaplingForm } from './global/entity.decorator';
 
+@Index({
+  name: 'ai_provider_model_item_provider_handle_index',
+  properties: ['provider'],
+})
 @Entity()
 export class AiProviderModelItem {
   @ApiPropertyOptional({ default: false })

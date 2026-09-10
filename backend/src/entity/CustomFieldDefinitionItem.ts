@@ -1,5 +1,6 @@
 import { Collection, type Rel } from '@mikro-orm/core';
 import {
+  Index,
   Entity,
   ManyToOne,
   OneToMany,
@@ -15,6 +16,14 @@ import {
 import { CustomFieldValueItem } from './CustomFieldValueItem';
 import { Sapling, SaplingForm } from './global/entity.decorator';
 
+@Index({
+  name: 'custom_field_definition_entity_active_order_key_index',
+  properties: ['entity', 'isActive', 'fieldOrder', 'fieldKey'],
+})
+@Index({
+  name: 'custom_field_definition_item_field_type_handle_index',
+  properties: ['fieldType'],
+})
 @Entity()
 @Unique({ properties: ['entity', 'fieldKey'] })
 export class CustomFieldDefinitionItem {

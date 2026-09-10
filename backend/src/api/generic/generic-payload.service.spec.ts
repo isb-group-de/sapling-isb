@@ -24,14 +24,17 @@ const createTemplateField = (
 });
 
 describe('GenericPayloadService', () => {
-  const defaultTemplate = [
+  const createDefaultTemplate = (
+    referenceName: string,
+    referenceDefault: string,
+  ) => [
     createTemplateField({
       name: 'status',
       isReference: true,
       kind: 'm:1',
-      referenceName: 'effortEstimateStatus',
+      referenceName,
       nullable: true,
-      default: 'open',
+      default: referenceDefault,
     }),
     createTemplateField({ name: 'isActive', type: 'boolean', default: true }),
     createTemplateField({ name: 'count', type: 'number', default: 0 }),
@@ -40,6 +43,7 @@ describe('GenericPayloadService', () => {
     createTemplateField({ name: 'code', defaultRaw: 'gen_random_uuid()' }),
     createTemplateField({ name: 'description', nullable: true, default: null }),
   ];
+  const defaultTemplate = createDefaultTemplate('effortEstimateStatus', 'open');
   const createPayloadService = () =>
     new GenericPayloadService(
       new GenericReferenceService(
@@ -51,23 +55,34 @@ describe('GenericPayloadService', () => {
     );
 
   it.each([
-    {},
-    { status: null },
-    { status: undefined },
-    { status: { handle: null } },
+    ['effortEstimateStatus', 'open'],
+    ['eventStatus', 'scheduled'],
   ])(
-    'preserves the effort estimate status default for an unspecified status: %p',
-    (data) => {
-      expect(
-        createPayloadService().prepareCreatePayload(defaultTemplate, {
-          title: 'Estimate',
-          ...data,
-        }),
-      ).toStrictEqual({ title: 'Estimate' });
+    'materializes the %s reference default when create omits it',
+    (referenceName, referenceDefault) => {
+      for (const data of [
+        {},
+        { status: null },
+        { status: undefined },
+        { status: { handle: null } },
+      ]) {
+        expect(
+          createPayloadService().prepareCreatePayload(
+            createDefaultTemplate(referenceName, referenceDefault),
+            {
+              title: 'New record',
+              ...data,
+            },
+          ),
+        ).toStrictEqual({
+          title: 'New record',
+          status: referenceDefault,
+        });
+      }
     },
   );
 
-  it('preserves scalar and SQL defaults while keeping optional fields without defaults empty', () => {
+  it('materializes reference defaults while preserving scalar and SQL defaults', () => {
     expect(
       createPayloadService().prepareCreatePayload(defaultTemplate, {
         isActive: null,
@@ -77,7 +92,7 @@ describe('GenericPayloadService', () => {
         code: null,
         description: null,
       }),
-    ).toEqual({ description: null });
+    ).toEqual({ status: 'open', description: null });
   });
 
   it('retains explicit create values including false, zero, and empty strings', () => {

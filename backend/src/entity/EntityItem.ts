@@ -1,5 +1,6 @@
 import { Collection } from '@mikro-orm/core';
 import {
+  Index,
   Entity,
   OneToMany,
   ManyToOne,
@@ -40,6 +41,10 @@ import { ScriptButtonItem } from './ScriptButtonItem';
  * @property        {Date}                          createdAt       Date and time when the entity was created
  * @property        {Date}                          updatedAt       Date and time when the entity was last updated
  */
+@Index({
+  name: 'entity_item_group_handle_sort_order_handle_index',
+  properties: ['group', 'order', 'handle'],
+})
 @Entity()
 export class EntityItem {
   // #region Properties: Persisted

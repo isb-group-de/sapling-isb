@@ -1,4 +1,5 @@
 import {
+  Index,
   Entity,
   ManyToOne,
   Property,
@@ -22,6 +23,10 @@ import { type Rel } from '@mikro-orm/core';
  * @property        {Date}          createdAt     Date and time when the translation was created
  * @property        {Date}          updatedAt     Date and time when the translation was last updated
  */
+@Index({
+  name: 'translation_item_language_handle_entity_property_index',
+  properties: ['language', 'entity', 'property'],
+})
 @Entity()
 @Unique({ properties: ['entity', 'property', 'language'] })
 export class TranslationItem {

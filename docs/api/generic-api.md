@@ -182,8 +182,11 @@ Rules:
   rebound to the parent record by the backend before field-permission checks.
 - Required fields come from template metadata.
 - On create, omitted or null values for fields with a declared `default` or
-  `defaultRaw` leave the ORM/database default in effect. For example, an effort
-  estimate created with no status or with `status: null` receives status `open`.
+  `defaultRaw` use that default. Literal reference defaults are materialized by
+  the backend because nullable foreign-key columns may not have a database
+  default; other defaults remain with the ORM/database. For example, an effort
+  estimate created with no status or with `status: null` receives status `open`,
+  and an Event receives status `scheduled`.
   Explicit values, including `false`, `0`, and empty strings, are preserved;
   nullable numeric/unique blank-string normalization still applies. Optional
   fields without a default stay empty. Updates can still explicitly clear a

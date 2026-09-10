@@ -1,5 +1,6 @@
 import { Collection, type Rel } from '@mikro-orm/core';
 import {
+  Index,
   Entity,
   ManyToMany,
   ManyToOne,
@@ -10,6 +11,10 @@ import { AiAgentItem } from './AiAgentItem';
 import { RoleItem } from './RoleItem';
 import { Sapling, SaplingForm } from './global/entity.decorator';
 
+@Index({
+  name: 'ai_agent_memory_item_agent_handle_index',
+  properties: ['agent'],
+})
 @Entity()
 export class AiAgentMemoryItem {
   @ApiProperty()
@@ -74,7 +79,10 @@ export class AiAgentMemoryItem {
   entityScopeHandles?: string[] | null;
 
   @ApiPropertyOptional({ type: () => RoleItem, isArray: true })
-  @ManyToMany(() => RoleItem, undefined, { owner: true })
+  @ManyToMany(() => RoleItem, undefined, {
+    index: true,
+    owner: true,
+  })
   roles: Collection<RoleItem> = new Collection<RoleItem>(this);
 
   @ApiPropertyOptional({ default: true })

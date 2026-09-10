@@ -9,6 +9,10 @@ import { PersonItem } from './PersonItem';
 import { SystemTelemetryEnvironmentItem } from './SystemTelemetryEnvironmentItem';
 import { Sapling, SaplingForm } from './global/entity.decorator';
 
+@Index({
+  name: 'ai_usage_event_person_time_idx',
+  properties: ['person', 'occurredAt'],
+})
 @Entity()
 @Index({ properties: ['occurredAt', 'person'] })
 @Index({ properties: ['provider', 'model', 'occurredAt'] })
@@ -22,7 +26,7 @@ export class AiUsageEventItem {
   handle?: number;
 
   @Sapling(['isReadOnly'])
-  @ManyToOne(() => SystemTelemetryEnvironmentItem)
+  @ManyToOne(() => SystemTelemetryEnvironmentItem, { updateRule: 'cascade' })
   environment!: Rel<SystemTelemetryEnvironmentItem>;
 
   @Sapling(['isReadOnly', 'isSystem'])
@@ -221,6 +225,10 @@ export class AiUsageEventItem {
   occurredAt!: Date;
 
   @Sapling(['isReadOnly', 'isSystem'])
-  @Property({ type: 'datetime', onCreate: () => new Date() })
+  @Property({
+    type: 'datetime',
+    defaultRaw: 'now()',
+    onCreate: () => new Date(),
+  })
   createdAt: Date = new Date();
 }

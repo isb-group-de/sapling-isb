@@ -1,4 +1,9 @@
-import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  Property,
+  Index,
+} from '@mikro-orm/decorators/legacy';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { type Rel } from '@mikro-orm/core';
 import { EntityItem } from './EntityItem';
@@ -9,6 +14,11 @@ import {
   SaplingGenericReference,
 } from './global/entity.decorator';
 
+@Index({
+  name: 'phone_call_item_entity_handle_reference_created_at_index',
+  properties: ['entity', 'reference', 'createdAt'],
+})
+@Index({ name: 'phone_call_item_person_handle_index', properties: ['person'] })
 @Entity()
 export class PhoneCallItem {
   @ApiProperty()

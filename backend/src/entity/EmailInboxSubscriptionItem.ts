@@ -1,5 +1,6 @@
 import { Collection, type Rel } from '@mikro-orm/core';
 import {
+  Index,
   Entity,
   ManyToOne,
   OneToMany,
@@ -16,6 +17,18 @@ import { Sapling, SaplingForm } from './global/entity.decorator';
 export type EmailInboxProcessingMode =
   'ticket' | 'salesOpportunity' | 'officeTask';
 
+@Index({
+  name: 'email_inbox_subscription_due_index',
+  properties: ['isActive', 'lastRunAt'],
+})
+@Index({
+  name: 'email_inbox_subscription_mailbox_index',
+  properties: ['mailbox'],
+})
+@Index({
+  name: 'email_inbox_subscription_person_index',
+  properties: ['processingPerson'],
+})
 @Entity()
 export class EmailInboxSubscriptionItem {
   @ApiProperty()
@@ -56,7 +69,10 @@ export class EmailInboxSubscriptionItem {
     mobileOrder: 100,
     mobileVisible: true,
   })
-  @ManyToOne(() => SharedMailboxItem, { nullable: false })
+  @ManyToOne(() => SharedMailboxItem, {
+    updateRule: 'cascade',
+    nullable: false,
+  })
   mailbox!: Rel<SharedMailboxItem>;
 
   @ApiProperty({ type: () => PersonItem })
@@ -72,7 +88,10 @@ export class EmailInboxSubscriptionItem {
     mobileOrder: 200,
     mobileVisible: false,
   })
-  @ManyToOne(() => PersonItem, { nullable: false })
+  @ManyToOne(() => PersonItem, {
+    updateRule: 'cascade',
+    nullable: false,
+  })
   processingPerson!: Rel<PersonItem>;
 
   /**
@@ -130,7 +149,10 @@ export class EmailInboxSubscriptionItem {
     mobileOrder: 300,
     mobileVisible: false,
   })
-  @ManyToOne(() => AiAgentItem, { nullable: true })
+  @ManyToOne(() => AiAgentItem, {
+    updateRule: 'cascade',
+    nullable: true,
+  })
   agent?: Rel<AiAgentItem> | null;
 
   @ApiProperty({ type: () => EmailInboxProcessingModeItem })
@@ -146,7 +168,10 @@ export class EmailInboxSubscriptionItem {
     mobileOrder: 100,
     mobileVisible: true,
   })
-  @ManyToOne(() => EmailInboxProcessingModeItem, { nullable: false })
+  @ManyToOne(() => EmailInboxProcessingModeItem, {
+    updateRule: 'cascade',
+    nullable: false,
+  })
   processingMode!: Rel<EmailInboxProcessingModeItem>;
 
   @ApiPropertyOptional()

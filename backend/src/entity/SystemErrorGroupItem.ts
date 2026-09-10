@@ -1,5 +1,6 @@
 import { type Rel } from '@mikro-orm/core';
 import {
+  Unique,
   Entity,
   Index,
   ManyToOne,
@@ -8,19 +9,18 @@ import {
 import { SystemTelemetryEnvironmentItem } from './SystemTelemetryEnvironmentItem';
 import { Sapling, SaplingForm } from './global/entity.decorator';
 
-@Entity()
-@Index({
+@Unique({
   name: 'system_error_group_environment_fingerprint_unique',
   properties: ['environment', 'fingerprint'],
-  options: { unique: true },
 })
+@Entity()
 @Index({ properties: ['status', 'lastSeenAt'] })
 export class SystemErrorGroupItem {
   @Property({ primary: true, autoincrement: true })
   handle?: number;
 
   @Sapling(['isReadOnly'])
-  @ManyToOne(() => SystemTelemetryEnvironmentItem)
+  @ManyToOne(() => SystemTelemetryEnvironmentItem, { updateRule: 'cascade' })
   environment!: Rel<SystemTelemetryEnvironmentItem>;
 
   @Sapling(['isReadOnly', 'isValue'])

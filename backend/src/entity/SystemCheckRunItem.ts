@@ -15,7 +15,7 @@ export class SystemCheckRunItem {
   handle?: number;
 
   @Sapling(['isReadOnly'])
-  @ManyToOne(() => SystemTelemetryEnvironmentItem)
+  @ManyToOne(() => SystemTelemetryEnvironmentItem, { updateRule: 'cascade' })
   environment!: Rel<SystemTelemetryEnvironmentItem>;
 
   @Sapling(['isReadOnly', 'isValue'])

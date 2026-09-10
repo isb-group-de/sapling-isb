@@ -31,6 +31,10 @@ import { validateDashboardWidgets } from './dashboard-widget.validation';
  * @property        {Date}                  createdAt   Date and time when the dashboard was created
  * @property        {Date}                  updatedAt   Date and time when the dashboard was last updated
  */
+@Index({
+  name: 'dashboard_item_person_handle_updated_at_index',
+  properties: ['person', 'updatedAt'],
+})
 @Entity()
 @Index({
   name: 'dashboard_item_person_sort_order_index',
@@ -179,7 +183,10 @@ export class DashboardItem {
    * @type {Collection<KpiItem>}
    */
   @ApiPropertyOptional({ type: () => KpiItem, isArray: true })
-  @ManyToMany(() => KpiItem, undefined, { owner: true })
+  @ManyToMany(() => KpiItem, undefined, {
+    index: true,
+    owner: true,
+  })
   kpis: Collection<KpiItem> = new Collection<KpiItem>(this);
   // #endregion
 

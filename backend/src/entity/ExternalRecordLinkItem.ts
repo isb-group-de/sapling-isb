@@ -1,5 +1,6 @@
 import { type Rel } from '@mikro-orm/core';
 import {
+  Index,
   Entity,
   ManyToOne,
   Property,
@@ -15,6 +16,22 @@ import { EntityItem } from './EntityItem';
 import { ImportBatchItem } from './ImportBatchItem';
 import { ImportSourceItem } from './ImportSourceItem';
 
+@Index({
+  name: 'external_record_link_entity_external_key_hash_index',
+  properties: ['entity', 'externalKeyHash'],
+})
+@Index({
+  name: 'external_record_link_item_entity_reference_index',
+  properties: ['entity', 'reference'],
+})
+@Index({
+  name: 'external_record_link_item_first_import_batch_handle_index',
+  properties: ['firstImportBatch'],
+})
+@Index({
+  name: 'external_record_link_item_last_import_batch_handle_index',
+  properties: ['lastImportBatch'],
+})
 @Entity()
 @Unique({ properties: ['source', 'entity', 'externalKeyHash'] })
 export class ExternalRecordLinkItem {

@@ -1,5 +1,6 @@
 import { Collection, type Rel } from '@mikro-orm/core';
 import {
+  Index,
   Entity,
   ManyToOne,
   OneToMany,
@@ -10,6 +11,7 @@ import { Sapling, SaplingForm } from './global/entity.decorator';
 import { TicketItem } from './TicketItem';
 import { TicketTypeItem } from './TicketTypeItem';
 
+@Index({ name: 'ticket_category_item_type_handle_index', properties: ['type'] })
 @Entity()
 export class TicketCategoryItem {
   @ApiProperty()

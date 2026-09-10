@@ -1,4 +1,5 @@
 import {
+  Index,
   Entity,
   ManyToOne,
   Property,
@@ -29,6 +30,7 @@ import { FieldPermissionItem } from './FieldPermissionItem';
  * @property {Date} createdAt - Date and time when the permission item was created.
  * @property {Date} updatedAt - Date and time when the permission item was last updated.
  */
+@Index({ name: 'permission_item_role_handle_index', properties: ['role'] })
 @Entity()
 @Unique({ properties: ['entity', 'role'] })
 export class PermissionItem {

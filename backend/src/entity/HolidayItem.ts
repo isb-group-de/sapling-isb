@@ -1,4 +1,9 @@
-import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  Property,
+  Index,
+} from '@mikro-orm/decorators/legacy';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Sapling, SaplingForm } from './global/entity.decorator';
 import { HolidayGroupItem } from './HolidayGroupItem';
@@ -6,6 +11,7 @@ import { HolidayGroupItem } from './HolidayGroupItem';
 /**
  * Entity representing a public holiday entry for calendar display.
  */
+@Index({ name: 'holiday_item_group_handle_index', properties: ['group'] })
 @Entity()
 export class HolidayItem {
   @ApiProperty()

@@ -1,9 +1,18 @@
-import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  Property,
+  Index,
+} from '@mikro-orm/decorators/legacy';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { type Rel } from '@mikro-orm/core';
 import { EntityItem } from './EntityItem';
 import { Sapling, SaplingForm } from './global/entity.decorator';
 
+@Index({
+  name: 'inbox_template_item_entity_handle_index',
+  properties: ['entity'],
+})
 @Entity()
 export class InboxTemplateItem {
   @ApiProperty()

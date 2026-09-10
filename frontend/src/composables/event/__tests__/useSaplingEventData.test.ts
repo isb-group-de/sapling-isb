@@ -26,6 +26,19 @@ const visibleRange: CalendarDatePair = {
   end: { date: '2026-07-19', year: 2026, month: 7, day: 19, hour: 0, minute: 0 },
 }
 
+const nextVisibleRange: CalendarDatePair = {
+  start: { date: '2026-07-20', year: 2026, month: 7, day: 20, hour: 0, minute: 0 },
+  end: { date: '2026-07-26', year: 2026, month: 7, day: 26, hour: 0, minute: 0 },
+}
+
+function deferred<T>() {
+  let resolve!: (value: T) => void
+  const promise = new Promise<T>((resolvePromise) => {
+    resolve = resolvePromise
+  })
+  return { promise, resolve }
+}
+
 function createHarness() {
   const events = ref<SaplingCalendarEvent[]>([])
   const selectedPeople = ref([7])
@@ -132,6 +145,58 @@ describe('useSaplingEventData', () => {
         ]),
       }),
     )
+  })
+
+  it('keeps the newest range and coalesces identical calendar loads', async () => {
+    const harness = createHarness()
+    const firstEvents = deferred<EventItem[]>()
+    const firstHolidays = deferred<HolidayItem[]>()
+    const latestEvents = deferred<EventItem[]>()
+    const latestHolidays = deferred<HolidayItem[]>()
+    mocks.findAll
+      .mockReturnValueOnce(firstEvents.promise)
+      .mockReturnValueOnce(firstHolidays.promise)
+      .mockReturnValueOnce(latestEvents.promise)
+      .mockReturnValueOnce(latestHolidays.promise)
+
+    const firstLoad = harness.data.getEvents(visibleRange)
+    const firstSignal = mocks.findAll.mock.calls[0]?.[1]?.signal as AbortSignal
+    const latestLoad = harness.data.getEvents(nextVisibleRange)
+    const duplicateLatestLoad = harness.data.getEvents(nextVisibleRange)
+
+    expect(firstSignal.aborted).toBe(true)
+    expect(mocks.findAll).toHaveBeenCalledTimes(4)
+
+    latestEvents.resolve([
+      {
+        handle: 52,
+        title: 'Latest week',
+        startDate: '2026-07-21T09:00:00.000Z',
+        endDate: '2026-07-21T10:00:00.000Z',
+        isAllDay: false,
+        participants: [{ handle: 7 }],
+      } as unknown as EventItem,
+    ])
+    latestHolidays.resolve([])
+    await Promise.all([latestLoad, duplicateLatestLoad])
+
+    expect(harness.events.value.map((item) => item.event?.title)).toEqual(['Latest week'])
+
+    firstEvents.resolve([
+      {
+        handle: 42,
+        title: 'Stale week',
+        startDate: '2026-07-15T09:00:00.000Z',
+        endDate: '2026-07-15T10:00:00.000Z',
+        isAllDay: false,
+        participants: [{ handle: 7 }],
+      } as unknown as EventItem,
+    ])
+    firstHolidays.resolve([])
+    await firstLoad
+
+    expect(harness.calendarDateRange.value).toEqual(nextVisibleRange)
+    expect(harness.events.value.map((item) => item.event?.title)).toEqual(['Latest week'])
   })
 
   it('loads a persisted event by handle and ignores empty handles', async () => {

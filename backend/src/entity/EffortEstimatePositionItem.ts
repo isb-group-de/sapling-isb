@@ -1,5 +1,10 @@
 import { type Rel } from '@mikro-orm/core';
-import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  Property,
+  Index,
+} from '@mikro-orm/decorators/legacy';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { EffortEstimateItem } from './EffortEstimateItem';
 import { EffortEstimatePositionTemplateItem } from './EffortEstimatePositionTemplateItem';
@@ -10,6 +15,14 @@ import {
   SaplingReferenceTemplate,
 } from './global/entity.decorator';
 
+@Index({
+  name: 'effort_estimate_position_item_estimate_handle_index',
+  properties: ['estimate'],
+})
+@Index({
+  name: 'effort_estimate_position_item_template_handle_index',
+  properties: ['template'],
+})
 @Entity()
 export class EffortEstimatePositionItem {
   @ApiProperty()

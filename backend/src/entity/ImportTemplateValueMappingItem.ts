@@ -1,9 +1,18 @@
 import { type Rel } from '@mikro-orm/core';
-import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  Property,
+  Index,
+} from '@mikro-orm/decorators/legacy';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Sapling, SaplingForm } from './global/entity.decorator';
 import { ImportTemplateItem } from './ImportTemplateItem';
 
+@Index({
+  name: 'import_template_value_mapping_item_import_template_handle_index',
+  properties: ['importTemplate'],
+})
 @Entity()
 export class ImportTemplateValueMappingItem {
   @ApiProperty()

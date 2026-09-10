@@ -1,4 +1,5 @@
 import {
+  Index,
   Entity,
   ManyToOne,
   OneToMany,
@@ -19,6 +20,26 @@ import {
   SaplingInlineCollection,
 } from './global/entity.decorator';
 
+@Index({
+  name: 'email_subscription_item_entity_handle_index',
+  properties: ['entity'],
+})
+@Index({
+  name: 'email_subscription_item_sender_mailbox_handle_index',
+  properties: ['senderMailbox'],
+})
+@Index({
+  name: 'email_subscription_item_sender_person_handle_index',
+  properties: ['senderPerson'],
+})
+@Index({
+  name: 'email_subscription_item_template_handle_index',
+  properties: ['template'],
+})
+@Index({
+  name: 'email_subscription_item_type_handle_index',
+  properties: ['type'],
+})
 @Entity()
 export class EmailSubscriptionItem {
   @ApiProperty()
@@ -126,7 +147,10 @@ export class EmailSubscriptionItem {
     mobileOrder: 400,
     mobileVisible: false,
   })
-  @ManyToOne(() => SharedMailboxItem, { nullable: true })
+  @ManyToOne(() => SharedMailboxItem, {
+    deleteRule: 'no action',
+    nullable: true,
+  })
   senderMailbox?: Rel<SharedMailboxItem>;
 
   @ApiPropertyOptional({

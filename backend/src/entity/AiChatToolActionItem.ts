@@ -1,5 +1,10 @@
 import { type Rel } from '@mikro-orm/core';
-import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  Property,
+  Index,
+} from '@mikro-orm/decorators/legacy';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { AiAgentItem } from './AiAgentItem';
 import { AiChatMessageItem } from './AiChatMessageItem';
@@ -7,6 +12,22 @@ import { AiChatSessionItem } from './AiChatSessionItem';
 import { PersonItem } from './PersonItem';
 import { Sapling, SaplingForm } from './global/entity.decorator';
 
+@Index({
+  name: 'ai_chat_tool_action_item_agent_handle_index',
+  properties: ['agent'],
+})
+@Index({
+  name: 'ai_chat_tool_action_item_message_handle_index',
+  properties: ['message'],
+})
+@Index({
+  name: 'ai_chat_tool_action_item_person_handle_index',
+  properties: ['person'],
+})
+@Index({
+  name: 'ai_chat_tool_action_item_session_handle_created_at_index',
+  properties: ['session', 'createdAt'],
+})
 @Entity()
 export class AiChatToolActionItem {
   @ApiProperty()

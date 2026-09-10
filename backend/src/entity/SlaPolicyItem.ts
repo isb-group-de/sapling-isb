@@ -1,5 +1,6 @@
 import { Collection } from '@mikro-orm/core';
 import {
+  Index,
   Entity,
   ManyToOne,
   OneToMany,
@@ -13,6 +14,14 @@ import { TicketItem } from './TicketItem';
 import { HolidayGroupItem } from './HolidayGroupItem';
 import { WorkHourWeekItem } from './WorkHourWeekItem';
 
+@Index({
+  name: 'sla_policy_item_holiday_group_handle_index',
+  properties: ['holidayGroup'],
+})
+@Index({
+  name: 'sla_policy_item_work_week_handle_index',
+  properties: ['workWeek'],
+})
 @Entity()
 export class SlaPolicyItem {
   @ApiProperty()

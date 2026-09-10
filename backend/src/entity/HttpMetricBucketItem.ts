@@ -1,5 +1,6 @@
 import { type Rel } from '@mikro-orm/core';
 import {
+  Unique,
   Entity,
   Index,
   ManyToOne,
@@ -10,8 +11,11 @@ import { PersonItem } from './PersonItem';
 import { SystemTelemetryEnvironmentItem } from './SystemTelemetryEnvironmentItem';
 import { Sapling, SaplingForm } from './global/entity.decorator';
 
-@Entity()
 @Index({
+  name: 'http_metric_bucket_person_idx',
+  properties: ['person', 'bucketStart'],
+})
+@Unique({
   name: 'http_metric_bucket_unique',
   properties: [
     'environment',
@@ -24,8 +28,8 @@ import { Sapling, SaplingForm } from './global/entity.decorator';
     'resourceKey',
     'authKind',
   ],
-  options: { unique: true },
 })
+@Entity()
 @Index({ properties: ['bucketStart', 'person'] })
 @Index({
   name: 'http_metric_bucket_resolution_time_idx',
@@ -40,7 +44,7 @@ export class HttpMetricBucketItem {
   handle?: number;
 
   @Sapling(['isReadOnly'])
-  @ManyToOne(() => SystemTelemetryEnvironmentItem)
+  @ManyToOne(() => SystemTelemetryEnvironmentItem, { updateRule: 'cascade' })
   environment!: Rel<SystemTelemetryEnvironmentItem>;
 
   @Sapling(['isReadOnly', 'isOrderDESC'])
@@ -225,7 +229,7 @@ export class HttpMetricBucketItem {
     mobileOrder: 1100,
     mobileVisible: false,
   })
-  @Property({ type: 'bigint', default: 0 })
+  @Property({ type: 'bigint', defaultRaw: '0' })
   requestBytes: string | number = 0;
 
   @Sapling(['isReadOnly', 'isNumeric'])
@@ -240,7 +244,7 @@ export class HttpMetricBucketItem {
     mobileOrder: 1200,
     mobileVisible: false,
   })
-  @Property({ type: 'bigint', default: 0 })
+  @Property({ type: 'bigint', defaultRaw: '0' })
   responseBytes: string | number = 0;
 
   @Sapling(['isReadOnly', 'isNumeric'])
@@ -285,7 +289,10 @@ export class HttpMetricBucketItem {
     mobileOrder: 1500,
     mobileVisible: false,
   })
-  @Property({ type: 'json' })
+  @Property({
+    type: 'json',
+    defaultRaw: "'[0, 0, 0, 0, 0, 0, 0, 0, 0, 0]'::jsonb",
+  })
   durationHistogram: number[] = Array.from({ length: 10 }, () => 0);
 
   @Sapling(['isReadOnly', 'isNumeric'])
@@ -304,6 +311,10 @@ export class HttpMetricBucketItem {
   impersonatedCount = 0;
 
   @Sapling(['isReadOnly', 'isSystem'])
-  @Property({ type: 'datetime', onCreate: () => new Date() })
+  @Property({
+    type: 'datetime',
+    defaultRaw: 'now()',
+    onCreate: () => new Date(),
+  })
   createdAt: Date = new Date();
 }

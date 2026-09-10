@@ -1,5 +1,6 @@
 import { Collection, type Rel } from '@mikro-orm/core';
 import {
+  Index,
   Entity,
   ManyToOne,
   OneToMany,
@@ -20,6 +21,18 @@ import type {
   AutomationPathStep,
 } from './FieldAutomationItem';
 
+@Index({
+  name: 'inbox_subscription_item_entity_handle_index',
+  properties: ['entity'],
+})
+@Index({
+  name: 'inbox_subscription_item_template_handle_index',
+  properties: ['template'],
+})
+@Index({
+  name: 'inbox_subscription_item_type_handle_index',
+  properties: ['type'],
+})
 @Entity()
 export class InboxSubscriptionItem {
   @ApiProperty()
@@ -105,7 +118,10 @@ export class InboxSubscriptionItem {
     width: 1,
     visible: true,
   })
-  @ManyToOne(() => EntityItem, { nullable: true })
+  @ManyToOne(() => EntityItem, {
+    updateRule: 'cascade',
+    nullable: true,
+  })
   sourceEntity?: Rel<EntityItem> | null;
 
   @ApiPropertyOptional()

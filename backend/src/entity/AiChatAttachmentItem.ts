@@ -1,5 +1,10 @@
 import { type Rel } from '@mikro-orm/core';
-import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  Property,
+  Index,
+} from '@mikro-orm/decorators/legacy';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { AiChatMessageItem } from './AiChatMessageItem';
 import { AiChatSessionItem } from './AiChatSessionItem';
@@ -8,6 +13,26 @@ import { ImportBatchItem } from './ImportBatchItem';
 import { PersonItem } from './PersonItem';
 import { Sapling, SaplingForm } from './global/entity.decorator';
 
+@Index({
+  name: 'ai_chat_attachment_item_document_handle_index',
+  properties: ['document'],
+})
+@Index({
+  name: 'ai_chat_attachment_item_import_batch_handle_index',
+  properties: ['importBatch'],
+})
+@Index({
+  name: 'ai_chat_attachment_item_message_handle_index',
+  properties: ['message'],
+})
+@Index({
+  name: 'ai_chat_attachment_item_person_handle_index',
+  properties: ['person'],
+})
+@Index({
+  name: 'ai_chat_attachment_item_session_handle_handle_index',
+  properties: ['session', 'handle'],
+})
 @Entity()
 export class AiChatAttachmentItem {
   @ApiProperty()

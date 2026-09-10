@@ -1,10 +1,20 @@
 import { type Rel } from '@mikro-orm/core';
-import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  Property,
+  Index,
+} from '@mikro-orm/decorators/legacy';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { PersonItem } from './PersonItem';
 import { SocialMediaTypeItem } from './SocialMediaTypeItem';
 import { Sapling, SaplingForm } from './global/entity.decorator';
 
+@Index({
+  name: 'social_media_item_person_handle_index',
+  properties: ['person'],
+})
+@Index({ name: 'social_media_item_type_handle_index', properties: ['type'] })
 @Entity()
 export class SocialMediaItem {
   @ApiProperty()

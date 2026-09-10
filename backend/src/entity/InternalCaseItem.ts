@@ -1,6 +1,7 @@
 import { EventItem } from './EventItem';
 import { EffortEstimateItem } from './EffortEstimateItem';
 import {
+  Index,
   Entity,
   ManyToOne,
   OneToMany,
@@ -23,6 +24,42 @@ import {
 } from './global/entity.decorator';
 import { SaplingReferenceCreate } from './global/entity-reference-actions.decorator';
 
+@Index({
+  name: 'internal_case_item_category_handle_index',
+  properties: ['category'],
+})
+@Index({
+  name: 'internal_case_item_customer_company_handle_updated_at_index',
+  properties: ['customerCompany', 'updatedAt'],
+})
+@Index({
+  name: 'internal_case_item_customer_person_handle_updated_at_index',
+  properties: ['customerPerson', 'updatedAt'],
+})
+@Index({
+  name: 'internal_case_item_effort_estimate_handle_index',
+  properties: ['effortEstimate'],
+})
+@Index({
+  name: 'internal_case_item_responsible_company_handle_index',
+  properties: ['responsibleCompany'],
+})
+@Index({
+  name: 'internal_case_item_sales_opportunity_handle_updated_at_index',
+  properties: ['salesOpportunity', 'updatedAt'],
+})
+@Index({
+  name: 'internal_case_item_status_handle_index',
+  properties: ['status'],
+})
+@Index({
+  name: 'internal_case_item_ticket_handle_updated_at_index',
+  properties: ['ticket', 'updatedAt'],
+})
+@Index({
+  name: 'internal_case_responsible_prs_status_index',
+  properties: ['responsiblePerson', 'status'],
+})
 @Entity()
 export class InternalCaseItem {
   @ApiPropertyOptional()
@@ -540,6 +577,7 @@ export class InternalCaseItem {
     },
   ])
   @ManyToOne(() => EffortEstimateItem, {
+    updateRule: 'cascade',
     nullable: true,
     deleteRule: 'set null',
   })

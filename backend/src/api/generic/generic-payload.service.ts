@@ -43,14 +43,19 @@ export class GenericPayloadService {
       removeAutoIncrement: true,
     });
 
-    // Explicit nulls suppress ORM/database defaults. On create, treat them as
-    // omitted values for defaulted fields; updates must still allow clearing.
+    // Explicit nulls suppress ORM/database defaults. On create, materialize
+    // literal relation defaults because optional foreign-key columns may not
+    // carry a database default; leave other defaults to the ORM/database.
     for (const field of template) {
       if (
         preparedPayload[field.name] == null &&
         (field.default != null || field.defaultRaw != null)
       ) {
-        delete preparedPayload[field.name];
+        if (field.isReference && field.default != null) {
+          preparedPayload[field.name] = field.default;
+        } else {
+          delete preparedPayload[field.name];
+        }
       }
     }
 

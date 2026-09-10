@@ -1,5 +1,6 @@
 import { Collection } from '@mikro-orm/core';
 import {
+  Index,
   Entity,
   OneToMany,
   ManyToOne,
@@ -31,6 +32,34 @@ import { Sapling, SaplingForm } from './global/entity.decorator';
  * @property        {Date}                  createdAt           Date and time when the work hour week was created
  * @property        {Date}                  updatedAt           Date and time when the work hour week was last updated
  */
+@Index({
+  name: 'work_hour_week_item_friday_handle_index',
+  properties: ['friday'],
+})
+@Index({
+  name: 'work_hour_week_item_monday_handle_index',
+  properties: ['monday'],
+})
+@Index({
+  name: 'work_hour_week_item_saturday_handle_index',
+  properties: ['saturday'],
+})
+@Index({
+  name: 'work_hour_week_item_sunday_handle_index',
+  properties: ['sunday'],
+})
+@Index({
+  name: 'work_hour_week_item_thursday_handle_index',
+  properties: ['thursday'],
+})
+@Index({
+  name: 'work_hour_week_item_tuesday_handle_index',
+  properties: ['tuesday'],
+})
+@Index({
+  name: 'work_hour_week_item_wednesday_handle_index',
+  properties: ['wednesday'],
+})
 @Entity()
 export class WorkHourWeekItem {
   //#region Properties: Persisted

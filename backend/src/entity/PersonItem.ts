@@ -1,6 +1,7 @@
 import { EmailSignatureItem } from './EmailSignatureItem';
 import { Collection, DeferMode } from '@mikro-orm/core';
 import {
+  Index,
   Entity,
   ManyToMany,
   OneToMany,
@@ -85,6 +86,35 @@ import { SharedMailboxGroupItem } from './SharedMailboxGroupItem';
  * @method hashPassword - Hashes the password before saving if not already hashed.
  * @method comparePassword - Compares a plain password with the stored hash.
  */
+@Index({
+  name: 'person_item_company_handle_updated_at_index',
+  properties: ['company', 'updatedAt'],
+})
+@Index({
+  name: 'person_item_decision_role_handle_index',
+  properties: ['decisionRole'],
+})
+@Index({
+  name: 'person_item_department_handle_index',
+  properties: ['department'],
+})
+@Index({
+  name: 'person_item_holiday_group_handle_index',
+  properties: ['holidayGroup'],
+})
+@Index({
+  name: 'person_item_job_function_handle_index',
+  properties: ['jobFunction'],
+})
+@Index({ name: 'person_item_job_title_handle_index', properties: ['jobTitle'] })
+@Index({ name: 'person_item_language_handle_index', properties: ['language'] })
+@Index({
+  name: 'person_item_salutation_handle_index',
+  properties: ['salutation'],
+})
+@Index({ name: 'person_item_title_handle_index', properties: ['title'] })
+@Index({ name: 'person_item_type_handle_index', properties: ['type'] })
+@Index({ name: 'person_item_work_week_handle_index', properties: ['workWeek'] })
 @Entity()
 export class PersonItem {
   @ApiPropertyOptional()
@@ -95,6 +125,7 @@ export class PersonItem {
   @ApiPropertyOptional({ type: () => EmailSignatureItem })
   @Sapling(['isReadOnly', 'isSystem'])
   @ManyToOne(() => EmailSignatureItem, {
+    updateRule: 'cascade',
     nullable: true,
     deleteRule: 'set null',
   })
@@ -614,7 +645,7 @@ export class PersonItem {
    * Events this person is participating in.
    */
   @ApiPropertyOptional({ type: () => EventItem, isArray: true })
-  @ManyToMany(() => EventItem)
+  @ManyToMany(() => EventItem, undefined, { index: true })
   events: Collection<EventItem> = new Collection<EventItem>(this);
 
   /**
@@ -622,7 +653,7 @@ export class PersonItem {
    */
   @ApiPropertyOptional({ type: () => RoleItem, isArray: true })
   @Sapling(['isHideAsReference'])
-  @ManyToMany(() => RoleItem)
+  @ManyToMany(() => RoleItem, undefined, { index: true })
   roles: Collection<RoleItem> = new Collection<RoleItem>(this);
 
   /**

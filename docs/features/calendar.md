@@ -56,6 +56,11 @@ from the calendar display options; the choice is stored with the other local
 calendar preferences. Horizontal scrolling of the column workspace remains
 independent.
 
+Calendar range loading follows latest-request-wins semantics. Navigating again
+while a range is still loading aborts the obsolete request, and a late response
+cannot replace the events for the currently visible range. Identical concurrent
+range requests from side-by-side calendar columns share one load.
+
 ## Time Grid Height
 
 The overflow menu groups calendar layout, display detail, event arrangement,
@@ -130,7 +135,7 @@ Important fields:
 | `onlineMeetingURL`                  | Optional meeting link                                                                           |
 | `type`                              | Appointment type; defaults to `Online` and controls default-calendar behavior                   |
 | `category`                          | Business category combined with the appointment type; defaults to `Intern`                      |
-| `status`                            | Current event status; `EventStatusItem.isOpen` controls the default open-status calendar filter |
+| `status`                            | Current status; defaults to `scheduled`; `isOpen` controls the open-status calendar filter      |
 | `assigneeCompany`, `assigneePerson` | Internal owner                                                                                  |
 | `creatorCompany`, `creatorPerson`   | Creator context                                                                                 |
 | `ticket`                            | Optional ticket relation                                                                        |

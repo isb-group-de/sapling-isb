@@ -1,5 +1,6 @@
 import { type Rel } from '@mikro-orm/core';
 import {
+  Index,
   Entity,
   ManyToOne,
   Property,
@@ -10,6 +11,30 @@ import { EntityItem } from './EntityItem';
 import { CustomFieldDefinitionItem } from './CustomFieldDefinitionItem';
 import { Sapling, SaplingForm } from './global/entity.decorator';
 
+@Index({
+  name: 'custom_field_value_definition_record_reference_index',
+  properties: ['definition', 'recordReference'],
+})
+@Index({
+  name: 'custom_field_value_item_boolean_filter_index',
+  properties: ['entity', 'definition', 'valueBoolean'],
+})
+@Index({
+  name: 'custom_field_value_item_date_filter_index',
+  properties: ['entity', 'definition', 'valueDate'],
+})
+@Index({
+  name: 'custom_field_value_item_datetime_filter_index',
+  properties: ['entity', 'definition', 'valueDateTime'],
+})
+@Index({
+  name: 'custom_field_value_item_number_filter_index',
+  properties: ['entity', 'definition', 'valueNumber'],
+})
+@Index({
+  name: 'custom_field_value_item_string_filter_index',
+  properties: ['entity', 'definition', 'valueString'],
+})
 @Entity()
 @Unique({ properties: ['entity', 'recordReference', 'definition'] })
 export class CustomFieldValueItem {

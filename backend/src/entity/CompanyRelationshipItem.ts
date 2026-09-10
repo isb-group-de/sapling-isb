@@ -1,5 +1,6 @@
 import { type Rel } from '@mikro-orm/core';
 import {
+  Index,
   Entity,
   ManyToOne,
   Property,
@@ -24,6 +25,14 @@ import { Sapling, SaplingForm } from './global/entity.decorator';
  * @property        {Date}                          createdAt       Date and time when the relationship was created
  * @property        {Date}                          updatedAt       Date and time when the relationship was last updated
  */
+@Index({
+  name: 'company_relationship_item_target_company_handle_index',
+  properties: ['targetCompany'],
+})
+@Index({
+  name: 'company_relationship_item_type_handle_index',
+  properties: ['type'],
+})
 @Entity()
 @Unique({ properties: ['sourceCompany', 'targetCompany', 'type'] })
 export class CompanyRelationshipItem {

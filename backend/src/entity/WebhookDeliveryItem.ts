@@ -1,4 +1,9 @@
-import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  Property,
+  Index,
+} from '@mikro-orm/decorators/legacy';
 import { Sapling, SaplingForm } from './global/entity.decorator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { WebhookDeliveryStatusItem } from './WebhookDeliveryStatusItem';
@@ -25,6 +30,14 @@ import { type Rel } from '@mikro-orm/core';
  * @property        {Date}                  createdAt           Date and time when the delivery was created
  * @property        {Date}                  updatedAt           Date and time when the delivery was last updated
  */
+@Index({
+  name: 'webhook_delivery_item_status_handle_next_retry_at_index',
+  properties: ['status', 'nextRetryAt'],
+})
+@Index({
+  name: 'webhook_delivery_item_subscription_handle_index',
+  properties: ['subscription'],
+})
 @Entity()
 export class WebhookDeliveryItem {
   // #region Properties: Relation

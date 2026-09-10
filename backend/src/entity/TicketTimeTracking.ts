@@ -1,4 +1,9 @@
-import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  Property,
+  Index,
+} from '@mikro-orm/decorators/legacy';
 import { PersonItem } from './PersonItem';
 import { TicketItem } from './TicketItem';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
@@ -21,6 +26,14 @@ import { type Rel } from '@mikro-orm/core';
  * @property        {Date}          createdAt     Date and time when the time tracking entry was created
  * @property        {Date}          updatedAt     Date and time when the time tracking entry was last updated
  */
+@Index({
+  name: 'ticket_time_tracking_item_person_handle_index',
+  properties: ['person'],
+})
+@Index({
+  name: 'ticket_time_tracking_item_ticket_handle_created_at_index',
+  properties: ['ticket', 'createdAt'],
+})
 @Entity()
 export class TicketTimeTrackingItem {
   //#region Properties: Persisted

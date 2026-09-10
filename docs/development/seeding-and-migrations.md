@@ -202,6 +202,32 @@ npm run orm:create-migration --prefix backend
 
 Manual migrations are acceptable when carefully scoped and reviewed.
 
+### Migration Baseline And Entity Metadata
+
+MikroORM compares the current entity metadata with the migration snapshot. An
+index, unique constraint, foreign-key name, or foreign-key rule that exists only
+in an old/manual migration is therefore interpreted as obsolete and can be
+dropped by a later generated migration.
+
+The entity classes are the complete schema source of truth. Declare persistent
+indexes with `@Index` or `@Unique`, set `index: true` on an owning
+`@ManyToMany` when its generated pivot table needs the inverse-column index, and
+set non-default `updateRule`/`deleteRule` values directly on relations. A
+TypeScript property initializer is not a database default; add `default` or
+`defaultRaw` to the ORM decorator when inserts outside the application need the
+same value.
+
+Before accepting a generated migration:
+
+1. Review every `drop index`, `drop constraint`, and foreign-key replacement.
+2. Confirm new application defaults are represented as database defaults in the
+   entity metadata, not only as TypeScript property initializers.
+3. Run `npm run orm:create-migration --prefix backend` again. The second run must
+   report `No schema changes detected.` and must not create another migration.
+
+Do not add a persistent index or constraint only to handwritten migration SQL.
+Represent it in entity metadata so later migrations continue to recognize it.
+
 ## Adding A New Entity: Data Checklist
 
 For a normal user-facing entity, consider these seed files:

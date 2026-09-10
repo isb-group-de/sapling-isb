@@ -1,4 +1,9 @@
-import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  Property,
+  Index,
+} from '@mikro-orm/decorators/legacy';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { EntityItem } from './EntityItem';
 import { DocumentTypeItem } from './DocumentTypeItem';
@@ -28,6 +33,12 @@ import { type Rel } from '@mikro-orm/core';
  * @property        {Date}              createdAt   Date and time when the document was created
  * @property        {Date}              updatedAt   Date and time when the document was last updated
  */
+@Index({
+  name: 'document_item_entity_handle_reference_created_at_index',
+  properties: ['entity', 'reference', 'createdAt'],
+})
+@Index({ name: 'document_item_person_handle_index', properties: ['person'] })
+@Index({ name: 'document_item_type_handle_index', properties: ['type'] })
 @Entity()
 export class DocumentItem {
   // #region Properties: Persisted

@@ -1,5 +1,6 @@
 import { Collection, DeferMode, type Rel } from '@mikro-orm/core';
 import {
+  Index,
   Entity,
   ManyToMany,
   ManyToOne,
@@ -65,6 +66,38 @@ import { EMailListItem } from './EMailListItem';
  * @property        {Date}                  createdAt           Date and time when the company was created
  * @property        {Date}                  updatedAt           Date and time when the company was last updated
  */
+@Index({
+  name: 'company_item_account_manager_handle_updated_at_index',
+  properties: ['accountManager', 'updatedAt'],
+})
+@Index({
+  name: 'company_item_annual_revenue_class_handle_index',
+  properties: ['annualRevenueClass'],
+})
+@Index({
+  name: 'company_item_churn_risk_reason_handle_index',
+  properties: ['churnRiskReason'],
+})
+@Index({ name: 'company_item_country_handle_index', properties: ['country'] })
+@Index({
+  name: 'company_item_customer_success_manager_handle_updated_at_index',
+  properties: ['customerSuccessManager', 'updatedAt'],
+})
+@Index({
+  name: 'company_item_holiday_group_handle_index',
+  properties: ['holidayGroup'],
+})
+@Index({ name: 'company_item_industry_handle_index', properties: ['industry'] })
+@Index({ name: 'company_item_segment_handle_index', properties: ['segment'] })
+@Index({
+  name: 'company_item_service_provider_handle_index',
+  properties: ['serviceProvider'],
+})
+@Index({ name: 'company_item_size_handle_index', properties: ['size'] })
+@Index({
+  name: 'company_item_work_week_handle_index',
+  properties: ['workWeek'],
+})
 @Entity()
 export class CompanyItem {
   // #region Properties: Persisted

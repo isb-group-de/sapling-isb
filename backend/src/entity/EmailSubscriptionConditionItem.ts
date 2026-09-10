@@ -1,9 +1,18 @@
-import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  Property,
+  Index,
+} from '@mikro-orm/decorators/legacy';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { type Rel } from '@mikro-orm/core';
 import { EmailSubscriptionItem } from './EmailSubscriptionItem';
 import { Sapling, SaplingForm } from './global/entity.decorator';
 
+@Index({
+  name: 'email_subscription_condition_item_subscription_handle_index',
+  properties: ['subscription'],
+})
 @Entity()
 export class EmailSubscriptionConditionItem {
   @ApiProperty()

@@ -1,5 +1,10 @@
 import { type Rel } from '@mikro-orm/core';
-import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  Property,
+  Index,
+} from '@mikro-orm/decorators/legacy';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { AiAgentItem } from './AiAgentItem';
 import { AiAgentPlaybookItem } from './AiAgentPlaybookItem';
@@ -9,6 +14,27 @@ import { AiChatSessionItem } from './AiChatSessionItem';
 import { PersonItem } from './PersonItem';
 import { Sapling, SaplingForm } from './global/entity.decorator';
 
+@Index({ name: 'ai_agent_run_item_agent_handle_index', properties: ['agent'] })
+@Index({
+  name: 'ai_agent_run_item_agent_version_handle_index',
+  properties: ['agentVersion'],
+})
+@Index({
+  name: 'ai_agent_run_item_message_handle_index',
+  properties: ['message'],
+})
+@Index({
+  name: 'ai_agent_run_item_person_handle_started_at_index',
+  properties: ['person', 'startedAt'],
+})
+@Index({
+  name: 'ai_agent_run_item_playbook_handle_index',
+  properties: ['playbook'],
+})
+@Index({
+  name: 'ai_agent_run_item_session_handle_started_at_index',
+  properties: ['session', 'startedAt'],
+})
 @Entity()
 export class AiAgentRunItem {
   @SaplingForm({

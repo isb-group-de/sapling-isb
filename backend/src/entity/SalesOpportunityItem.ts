@@ -1,5 +1,6 @@
 import { Collection } from '@mikro-orm/core';
 import {
+  Index,
   Entity,
   ManyToMany,
   OneToMany,
@@ -57,6 +58,58 @@ import { SalesOpportunityResultStatusItem } from './SalesOpportunityResultStatus
  * @property {Date} createdAt - Date and time when the sales opportunity was created.
  * @property {Date} updatedAt - Date and time when the sales opportunity was last updated.
  */
+@Index({
+  name: 'sales_opp_assignee_prs_is_active_type_index',
+  properties: ['assigneePerson', 'isActive', 'type'],
+})
+@Index({
+  name: 'sales_opportunity_item_assignee_company_handle_index',
+  properties: ['assigneeCompany'],
+})
+@Index({
+  name: 'sales_opportunity_item_close_date_index',
+  properties: ['closeDate'],
+})
+@Index({
+  name: 'sales_opportunity_item_created_at_index',
+  properties: ['createdAt'],
+})
+@Index({
+  name: 'sales_opportunity_item_creator_company_handle_updated_at_index',
+  properties: ['creatorCompany', 'updatedAt'],
+})
+@Index({
+  name: 'sales_opportunity_item_creator_person_handle_index',
+  properties: ['creatorPerson'],
+})
+@Index({
+  name: 'sales_opportunity_item_forecast_handle_index',
+  properties: ['forecast'],
+})
+@Index({
+  name: 'sales_opportunity_item_is_active_index',
+  properties: ['isActive'],
+})
+@Index({
+  name: 'sales_opportunity_item_loss_reason_handle_index',
+  properties: ['lossReason'],
+})
+@Index({
+  name: 'sales_opportunity_item_result_status_handle_index',
+  properties: ['resultStatus'],
+})
+@Index({
+  name: 'sales_opportunity_item_source_handle_index',
+  properties: ['source'],
+})
+@Index({
+  name: 'sales_opportunity_item_type_handle_index',
+  properties: ['type'],
+})
+@Index({
+  name: 'sales_opportunity_item_updated_at_index',
+  properties: ['updatedAt'],
+})
 @Entity()
 export class SalesOpportunityItem {
   //#region Properties: Persisted
@@ -720,7 +773,7 @@ export class SalesOpportunityItem {
     mobileOrder: 800,
     mobileVisible: false,
   })
-  @ManyToMany(() => CompanyItem)
+  @ManyToMany(() => CompanyItem, undefined, { index: true })
   competitors: Collection<CompanyItem> = new Collection<CompanyItem>(this);
   //#endregion
 

@@ -48,7 +48,7 @@ export class FieldAutomationItem {
     width: 1,
     visible: true,
   })
-  @ManyToOne(() => EntityItem)
+  @ManyToOne(() => EntityItem, { updateRule: 'cascade' })
   sourceEntity!: Rel<EntityItem>;
 
   @ApiProperty({ type: () => EntityItem })
@@ -60,7 +60,7 @@ export class FieldAutomationItem {
     width: 1,
     visible: true,
   })
-  @ManyToOne(() => EntityItem)
+  @ManyToOne(() => EntityItem, { updateRule: 'cascade' })
   targetEntity!: Rel<EntityItem>;
 
   @ApiProperty({ type: () => WebhookSubscriptionTypeItem })
@@ -72,7 +72,10 @@ export class FieldAutomationItem {
     width: 1,
     visible: true,
   })
-  @ManyToOne(() => WebhookSubscriptionTypeItem, { defaultRaw: `'afterUpdate'` })
+  @ManyToOne(() => WebhookSubscriptionTypeItem, {
+    updateRule: 'cascade',
+    defaultRaw: `'afterUpdate'`,
+  })
   operation!: Rel<WebhookSubscriptionTypeItem>;
 
   @ApiPropertyOptional()

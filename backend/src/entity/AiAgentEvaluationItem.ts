@@ -1,10 +1,23 @@
 import { type Rel } from '@mikro-orm/core';
-import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  Property,
+  Index,
+} from '@mikro-orm/decorators/legacy';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { AiAgentItem } from './AiAgentItem';
 import { AiAgentVersionItem } from './AiAgentVersionItem';
 import { Sapling, SaplingForm } from './global/entity.decorator';
 
+@Index({
+  name: 'ai_agent_evaluation_item_agent_handle_index',
+  properties: ['agent'],
+})
+@Index({
+  name: 'ai_agent_evaluation_item_agent_version_handle_index',
+  properties: ['agentVersion'],
+})
 @Entity()
 export class AiAgentEvaluationItem {
   @ApiPropertyOptional()

@@ -1,5 +1,10 @@
 import { type Rel } from '@mikro-orm/core';
-import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  Property,
+  Index,
+} from '@mikro-orm/decorators/legacy';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { EffortEstimateItem } from './EffortEstimateItem';
 import { KnowledgeArticleCategoryItem } from './KnowledgeArticleCategoryItem';
@@ -11,6 +16,42 @@ import { SalesOpportunityItem } from './SalesOpportunityItem';
 import { TicketItem } from './TicketItem';
 import { Sapling, SaplingForm } from './global/entity.decorator';
 
+@Index({
+  name: 'knowledge_article_item_author_person_handle_index',
+  properties: ['authorPerson'],
+})
+@Index({
+  name: 'knowledge_article_item_category_handle_index',
+  properties: ['category'],
+})
+@Index({
+  name: 'knowledge_article_item_product_handle_updated_at_index',
+  properties: ['product', 'updatedAt'],
+})
+@Index({
+  name: 'knowledge_article_item_reviewer_person_handle_index',
+  properties: ['reviewerPerson'],
+})
+@Index({
+  name: 'knowledge_article_item_source_effort_estimate_handle_index',
+  properties: ['sourceEffortEstimate'],
+})
+@Index({
+  name: 'knowledge_article_item_source_sales_opportunity_handle_index',
+  properties: ['sourceSalesOpportunity'],
+})
+@Index({
+  name: 'knowledge_article_item_source_ticket_handle_index',
+  properties: ['sourceTicket'],
+})
+@Index({
+  name: 'knowledge_article_item_status_handle_updated_at_index',
+  properties: ['status', 'updatedAt'],
+})
+@Index({
+  name: 'knowledge_article_item_visibility_handle_index',
+  properties: ['visibility'],
+})
 @Entity()
 export class KnowledgeArticleItem {
   @ApiProperty()

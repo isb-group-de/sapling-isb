@@ -1,5 +1,6 @@
 import { type Rel } from '@mikro-orm/core';
 import {
+  Index,
   Entity,
   ManyToOne,
   Property,
@@ -10,6 +11,14 @@ import { DvelopEntityMappingItem } from './DvelopEntityMappingItem';
 import { DvelopPropertyItem } from './DvelopPropertyItem';
 import { Sapling, SaplingForm } from './global/entity.decorator';
 
+@Index({
+  name: 'dvelop_entity_mapping_property_item_mapping_handle_index',
+  properties: ['mapping'],
+})
+@Index({
+  name: 'dvelop_entity_mapping_property_item_property_handle_index',
+  properties: ['property'],
+})
 @Entity()
 @Unique({ properties: ['mapping', 'property'] })
 export class DvelopEntityMappingPropertyItem {
@@ -29,7 +38,11 @@ export class DvelopEntityMappingPropertyItem {
     mobileOrder: 100,
     mobileVisible: false,
   })
-  @ManyToOne(() => DvelopEntityMappingItem, { nullable: false })
+  @ManyToOne(() => DvelopEntityMappingItem, {
+    updateRule: 'cascade',
+    deleteRule: 'cascade',
+    nullable: false,
+  })
   mapping!: Rel<DvelopEntityMappingItem>;
 
   @ApiProperty({ type: () => DvelopPropertyItem })
@@ -45,7 +58,10 @@ export class DvelopEntityMappingPropertyItem {
     mobileOrder: 200,
     mobileVisible: true,
   })
-  @ManyToOne(() => DvelopPropertyItem, { nullable: false })
+  @ManyToOne(() => DvelopPropertyItem, {
+    updateRule: 'cascade',
+    nullable: false,
+  })
   property!: Rel<DvelopPropertyItem>;
 
   @ApiPropertyOptional()

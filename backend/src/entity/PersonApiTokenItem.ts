@@ -1,5 +1,6 @@
 import { type Rel } from '@mikro-orm/core';
 import {
+  Index,
   BeforeCreate,
   BeforeUpdate,
   Entity,
@@ -33,6 +34,10 @@ const PERSON_API_TOKEN_PREFIX_LENGTH = 10;
  * @property {Date} createdAt Date and time when the token was created.
  * @property {Date} updatedAt Date and time when the token was last updated.
  */
+@Index({
+  name: 'person_api_token_item_person_handle_index',
+  properties: ['person'],
+})
 @Entity()
 export class PersonApiTokenItem {
   //#region Properties: Persisted

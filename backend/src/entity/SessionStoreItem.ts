@@ -1,4 +1,9 @@
-import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  Property,
+  Index,
+} from '@mikro-orm/decorators/legacy';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Sapling, SaplingForm } from './global/entity.decorator';
 import { PersonItem } from './PersonItem';
@@ -7,6 +12,10 @@ import { PersonItem } from './PersonItem';
  * @class SessionStoreItem
  * @summary Persisted express-session entry for durable server-side sessions.
  */
+@Index({
+  name: 'session_store_item_updated_at_index',
+  properties: ['updatedAt'],
+})
 @Entity()
 export class SessionStoreItem {
   // #region Properties: Persisted

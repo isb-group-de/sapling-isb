@@ -1,5 +1,6 @@
 import { Cascade, Collection } from '@mikro-orm/core';
 import {
+  Index,
   Entity,
   ManyToMany,
   OneToMany,
@@ -30,6 +31,7 @@ import { Sapling, SaplingForm } from './global/entity.decorator';
  * @property {Date} createdAt - Date and time when the role was created.
  * @property {Date} updatedAt - Date and time when the role was last updated.
  */
+@Index({ name: 'role_item_stage_handle_index', properties: ['stage'] })
 @Entity()
 export class RoleItem {
   //#region Properties: Persisted
@@ -110,7 +112,10 @@ export class RoleItem {
     mobileOrder: 100,
     mobileVisible: false,
   })
-  @ManyToMany(() => DashboardTemplateItem, undefined, { owner: true })
+  @ManyToMany(() => DashboardTemplateItem, undefined, {
+    index: true,
+    owner: true,
+  })
   starterDashboardTemplates: Collection<DashboardTemplateItem> =
     new Collection<DashboardTemplateItem>(this);
 
@@ -129,7 +134,10 @@ export class RoleItem {
     mobileOrder: 200,
     mobileVisible: false,
   })
-  @ManyToMany(() => FavoriteTemplateItem, undefined, { owner: true })
+  @ManyToMany(() => FavoriteTemplateItem, undefined, {
+    index: true,
+    owner: true,
+  })
   starterFavoriteTemplates: Collection<FavoriteTemplateItem> =
     new Collection<FavoriteTemplateItem>(this);
 

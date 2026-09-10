@@ -1,4 +1,9 @@
-import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  Property,
+  Index,
+} from '@mikro-orm/decorators/legacy';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { type Rel } from '@mikro-orm/core';
 import { EntityItem } from './EntityItem';
@@ -8,6 +13,30 @@ import { TeamsDeliveryStatusItem } from './TeamsDeliveryStatusItem';
 import { TeamsSubscriptionItem } from './TeamsSubscriptionItem';
 import { TeamsTemplateItem } from './TeamsTemplateItem';
 
+@Index({
+  name: 'teams_delivery_item_created_by_handle_index',
+  properties: ['createdBy'],
+})
+@Index({
+  name: 'teams_delivery_item_entity_handle_index',
+  properties: ['entity'],
+})
+@Index({
+  name: 'teams_delivery_item_recipient_person_handle_index',
+  properties: ['recipientPerson'],
+})
+@Index({
+  name: 'teams_delivery_item_status_handle_next_retry_at_index',
+  properties: ['status', 'nextRetryAt'],
+})
+@Index({
+  name: 'teams_delivery_item_subscription_handle_index',
+  properties: ['subscription'],
+})
+@Index({
+  name: 'teams_delivery_item_template_handle_index',
+  properties: ['template'],
+})
 @Entity()
 export class TeamsDeliveryItem {
   @ApiPropertyOptional({

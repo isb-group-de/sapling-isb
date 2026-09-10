@@ -43,7 +43,10 @@ export class EmailSignatureItem {
 
   @ApiProperty({ type: () => PersonItem })
   @Sapling(['isPerson', 'isSystem'])
-  @ManyToOne(() => PersonItem, { deleteRule: 'cascade' })
+  @ManyToOne(() => PersonItem, {
+    updateRule: 'cascade',
+    deleteRule: 'cascade',
+  })
   person!: Rel<PersonItem>;
 
   @ApiPropertyOptional()

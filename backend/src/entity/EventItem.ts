@@ -2,6 +2,7 @@ import { EffortEstimateItem } from './EffortEstimateItem';
 import { InternalCaseItem } from './InternalCaseItem';
 import { Collection } from '@mikro-orm/core';
 import {
+  Index,
   Entity,
   ManyToMany,
   OneToOne,
@@ -56,6 +57,52 @@ import { EventCategoryItem } from './EventCategoryItem';
  * @property        {Date}                  createdAt           Date and time when the event was created
  * @property        {Date}                  updatedAt           Date and time when the event was last updated
  */
+@Index({
+  name: 'event_assignee_prs_status_start_date_index',
+  properties: ['assigneePerson', 'status', 'startDate'],
+})
+@Index({
+  name: 'event_item_assignee_company_handle_index',
+  properties: ['assigneeCompany'],
+})
+@Index({ name: 'event_item_category_handle_index', properties: ['category'] })
+@Index({ name: 'event_item_created_at_index', properties: ['createdAt'] })
+@Index({
+  name: 'event_item_creator_company_handle_index',
+  properties: ['creatorCompany'],
+})
+@Index({
+  name: 'event_item_creator_person_handle_index',
+  properties: ['creatorPerson'],
+})
+@Index({
+  name: 'event_item_effort_estimate_handle_index',
+  properties: ['effortEstimate'],
+})
+@Index({ name: 'event_item_end_date_index', properties: ['endDate'] })
+@Index({
+  name: 'event_item_internal_case_handle_index',
+  properties: ['internalCase'],
+})
+@Index({
+  name: 'event_item_private_creator_index',
+  properties: ['isPrivate', 'creatorPerson'],
+})
+@Index({
+  name: 'event_item_sales_opportunity_handle_start_date_index',
+  properties: ['salesOpportunity', 'startDate'],
+})
+@Index({ name: 'event_item_start_date_index', properties: ['startDate'] })
+@Index({
+  name: 'event_item_status_handle_start_date_end_date_index',
+  properties: ['status', 'startDate', 'endDate'],
+})
+@Index({
+  name: 'event_item_ticket_handle_start_date_index',
+  properties: ['ticket', 'startDate'],
+})
+@Index({ name: 'event_item_type_handle_index', properties: ['type'] })
+@Index({ name: 'event_item_updated_at_index', properties: ['updatedAt'] })
 @Entity()
 export class EventItem {
   // #region Properties: Persisted
@@ -349,6 +396,7 @@ export class EventItem {
     mobileVisible: false,
   })
   @ManyToOne(() => EventCategoryItem, {
+    updateRule: 'cascade',
     nullable: false,
     default: 'internal',
   })
@@ -763,6 +811,7 @@ export class EventItem {
   })
   @ManyToOne(() => EventStatusItem, {
     nullable: true,
+    default: 'scheduled',
     deleteRule: 'set null',
   })
   status?: EventStatusItem | null;
@@ -884,7 +933,11 @@ export class EventItem {
       validate: false,
     },
   ])
-  @ManyToOne(() => InternalCaseItem, { nullable: true, deleteRule: 'set null' })
+  @ManyToOne(() => InternalCaseItem, {
+    updateRule: 'cascade',
+    nullable: true,
+    deleteRule: 'set null',
+  })
   internalCase?: Rel<InternalCaseItem>;
 
   @ApiPropertyOptional({ type: () => EffortEstimateItem })
@@ -938,6 +991,7 @@ export class EventItem {
     },
   ])
   @ManyToOne(() => EffortEstimateItem, {
+    updateRule: 'cascade',
     nullable: true,
     deleteRule: 'set null',
   })

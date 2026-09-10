@@ -18,11 +18,11 @@ export class SystemErrorOccurrenceItem {
   handle?: number;
 
   @Sapling(['isReadOnly'])
-  @ManyToOne(() => SystemErrorGroupItem)
+  @ManyToOne(() => SystemErrorGroupItem, { deleteRule: 'cascade' })
   group!: Rel<SystemErrorGroupItem>;
 
   @Sapling(['isReadOnly'])
-  @ManyToOne(() => SystemTelemetryEnvironmentItem)
+  @ManyToOne(() => SystemTelemetryEnvironmentItem, { updateRule: 'cascade' })
   environment!: Rel<SystemTelemetryEnvironmentItem>;
 
   @Sapling(['isReadOnly'])

@@ -1,9 +1,18 @@
-import { Entity, Property, Unique } from '@mikro-orm/decorators/legacy';
+import { Entity, Property, Unique, Index } from '@mikro-orm/decorators/legacy';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Sapling, SaplingForm } from './global/entity.decorator';
 
 export const GLOBAL_SEARCH_INDEX_ENTITY_HANDLE = 'globalSearchIndex';
 
+@Index({
+  name: 'global_search_index_item_scope_idx',
+  properties: ['entityHandle', 'fieldPath'],
+})
+@Index({
+  name: 'global_search_index_item_value_trgm_idx',
+  properties: ['normalizedValue'],
+  type: 'gin',
+})
 @Entity()
 @Unique({
   properties: ['entityHandle', 'recordHandle', 'fieldPath'],

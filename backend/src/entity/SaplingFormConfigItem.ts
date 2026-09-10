@@ -1,5 +1,10 @@
 import { type Rel } from '@mikro-orm/core';
-import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  Property,
+  Index,
+} from '@mikro-orm/decorators/legacy';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { EntityItem } from './EntityItem';
 import { PersonItem } from './PersonItem';
@@ -48,6 +53,14 @@ export interface SaplingFormConfigPayload {
   metadata?: Record<string, unknown>;
 }
 
+@Index({
+  name: 'sapling_form_config_entity_prs_scope_is_default_index',
+  properties: ['entity', 'person', 'scope', 'isDefault'],
+})
+@Index({
+  name: 'sapling_form_config_item_person_handle_index',
+  properties: ['person'],
+})
 @Entity()
 export class SaplingFormConfigItem {
   @ApiProperty()

@@ -1,4 +1,9 @@
-import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  Property,
+  Index,
+} from '@mikro-orm/decorators/legacy';
 import { Sapling, SaplingForm } from './global/entity.decorator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { EventItem } from './EventItem';
@@ -24,6 +29,14 @@ import { EventDeliveryStatusItem } from './EventDeliveryStatusItem';
  * @property        {Date}                     createdAt           Date and time when the delivery was created
  * @property        {Date}                     updatedAt           Date and time when the delivery was last updated
  */
+@Index({
+  name: 'event_delivery_item_event_handle_index',
+  properties: ['event'],
+})
+@Index({
+  name: 'event_delivery_item_status_handle_event_handle_index',
+  properties: ['status', 'event'],
+})
 @Entity()
 export class EventDeliveryItem {
   @SaplingForm({

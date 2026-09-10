@@ -1,5 +1,6 @@
 import { Collection, type Rel } from '@mikro-orm/core';
 import {
+  Index,
   Entity,
   ManyToOne,
   OneToMany,
@@ -18,6 +19,18 @@ import {
   SaplingForm,
 } from './global/entity.decorator';
 
+@Index({
+  name: 'ai_agent_version_item_agent_handle_index',
+  properties: ['agent'],
+})
+@Index({
+  name: 'ai_agent_version_item_model_handle_index',
+  properties: ['model'],
+})
+@Index({
+  name: 'ai_agent_version_item_provider_handle_index',
+  properties: ['provider'],
+})
 @Entity()
 export class AiAgentVersionItem {
   @ApiProperty()

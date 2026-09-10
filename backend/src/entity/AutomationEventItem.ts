@@ -1,4 +1,5 @@
 import {
+  Index,
   Entity,
   ManyToOne,
   Property,
@@ -20,6 +21,10 @@ export type AutomationOperation =
 export type AutomationEventStatus =
   'pending' | 'processing' | 'completed' | 'failed';
 
+@Index({
+  name: 'automation_event_item_pending_idx',
+  properties: ['status', 'handle'],
+})
 @Entity()
 @Unique({ properties: ['eventId'] })
 export class AutomationEventItem {
@@ -34,7 +39,7 @@ export class AutomationEventItem {
 
   @ApiProperty({ type: () => EntityItem })
   @Sapling(['isEntity', 'isReadOnly'])
-  @ManyToOne(() => EntityItem)
+  @ManyToOne(() => EntityItem, { updateRule: 'cascade' })
   sourceEntity!: Rel<EntityItem>;
 
   @ApiProperty()
@@ -51,7 +56,7 @@ export class AutomationEventItem {
 
   @ApiProperty({ type: () => PersonItem })
   @Sapling(['isPerson', 'isReadOnly'])
-  @ManyToOne(() => PersonItem)
+  @ManyToOne(() => PersonItem, { updateRule: 'cascade' })
   actor!: Rel<PersonItem>;
 
   @ApiProperty()

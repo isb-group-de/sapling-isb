@@ -1,5 +1,6 @@
 import { Collection, type Rel } from '@mikro-orm/core';
 import {
+  Index,
   Entity,
   ManyToOne,
   OneToMany,
@@ -19,6 +20,38 @@ import {
 } from './global/entity.decorator';
 import { AiChatMessageItem } from './AiChatMessageItem';
 
+@Index({
+  name: 'ai_chat_session_context_entity_context_record_updated_at_index',
+  properties: ['contextEntityHandle', 'contextRecordHandle', 'updatedAt'],
+})
+@Index({
+  name: 'ai_chat_session_item_agent_handle_index',
+  properties: ['agent'],
+})
+@Index({
+  name: 'ai_chat_session_item_agent_version_handle_index',
+  properties: ['agentVersion'],
+})
+@Index({
+  name: 'ai_chat_session_item_model_handle_index',
+  properties: ['model'],
+})
+@Index({
+  name: 'ai_chat_session_item_playbook_handle_index',
+  properties: ['playbook'],
+})
+@Index({
+  name: 'ai_chat_session_item_provider_handle_index',
+  properties: ['provider'],
+})
+@Index({
+  name: 'ai_chat_session_item_response_status_index',
+  properties: ['responseStatus'],
+})
+@Index({
+  name: 'ai_chat_session_prs_is_archived_updated_at_index',
+  properties: ['person', 'isArchived', 'updatedAt'],
+})
 @Entity()
 export class AiChatSessionItem {
   @ApiPropertyOptional()

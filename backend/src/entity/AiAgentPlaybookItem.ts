@@ -1,5 +1,6 @@
 import { Collection, type Rel } from '@mikro-orm/core';
 import {
+  Index,
   Entity,
   ManyToOne,
   OneToMany,
@@ -10,6 +11,10 @@ import { AiAgentItem } from './AiAgentItem';
 import { AiAgentRunItem } from './AiAgentRunItem';
 import { Sapling, SaplingForm } from './global/entity.decorator';
 
+@Index({
+  name: 'ai_agent_playbook_item_agent_handle_index',
+  properties: ['agent'],
+})
 @Entity()
 export class AiAgentPlaybookItem {
   @ApiProperty()

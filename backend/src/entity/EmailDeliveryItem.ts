@@ -1,4 +1,9 @@
-import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  Property,
+  Index,
+} from '@mikro-orm/decorators/legacy';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { type Rel } from '@mikro-orm/core';
 import { EmailDeliveryStatusItem } from './EmailDeliveryStatusItem';
@@ -13,6 +18,22 @@ import {
   SaplingGenericReference,
 } from './global/entity.decorator';
 
+@Index({
+  name: 'email_delivery_item_created_by_handle_index',
+  properties: ['createdBy'],
+})
+@Index({
+  name: 'email_delivery_item_entity_handle_index',
+  properties: ['entity'],
+})
+@Index({
+  name: 'email_delivery_item_status_handle_next_retry_at_index',
+  properties: ['status', 'nextRetryAt'],
+})
+@Index({
+  name: 'email_delivery_item_template_handle_index',
+  properties: ['template'],
+})
 @Entity()
 export class EmailDeliveryItem {
   @SaplingForm({
@@ -175,6 +196,7 @@ export class EmailDeliveryItem {
     mobileVisible: false,
   })
   @ManyToOne(() => CompanyItem, {
+    updateRule: 'cascade',
     nullable: true,
     deleteRule: 'set null',
     index: true,
@@ -237,6 +259,7 @@ export class EmailDeliveryItem {
     mobileVisible: false,
   })
   @ManyToOne(() => PersonItem, {
+    updateRule: 'cascade',
     nullable: true,
     deleteRule: 'set null',
     index: true,

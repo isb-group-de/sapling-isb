@@ -1,4 +1,9 @@
-import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  Property,
+  Index,
+} from '@mikro-orm/decorators/legacy';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { type Rel } from '@mikro-orm/core';
 import { CompanyItem } from './CompanyItem';
@@ -23,6 +28,18 @@ import { ServerLandscapeTypeUsageItem } from './ServerLandscapeTypeUsageItem';
  * @property        {Date}                      createdAt           Date and time when the item was created
  * @property        {Date}                      updatedAt           Date and time when the item was last updated
  */
+@Index({
+  name: 'server_landscape_item_company_handle_index',
+  properties: ['company'],
+})
+@Index({
+  name: 'server_landscape_item_type_handle_index',
+  properties: ['type'],
+})
+@Index({
+  name: 'server_landscape_item_usage_handle_index',
+  properties: ['usage'],
+})
 @Entity()
 export class ServerLandscapeItem {
   // #region Properties: Persisted

@@ -1,5 +1,6 @@
 import { Collection, type Rel } from '@mikro-orm/core';
 import {
+  Index,
   Entity,
   ManyToOne,
   OneToMany,
@@ -25,6 +26,10 @@ import { Sapling, SaplingForm } from './global/entity.decorator';
  * @property        {Date}                      createdAt   Date and time when the group was created
  * @property        {Date}                      updatedAt   Date and time when the group was last updated
  */
+@Index({
+  name: 'entity_group_item_parent_handle_index',
+  properties: ['parent'],
+})
 @Entity()
 export class EntityGroupItem {
   // #region Properties: Persisted

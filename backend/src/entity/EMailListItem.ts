@@ -1,5 +1,6 @@
 import { Collection } from '@mikro-orm/core';
 import {
+  Index,
   Entity,
   ManyToMany,
   ManyToOne,
@@ -26,6 +27,10 @@ import { PersonItem } from './PersonItem';
  * @property {Date} createdAt - Date and time when the mail list was created.
  * @property {Date} updatedAt - Date and time when the mail list was last updated.
  */
+@Index({
+  name: 'email_list_item_mail_template_handle_index',
+  properties: ['mailTemplate'],
+})
 @Entity()
 export class EMailListItem {
   // #region Properties: Persisted
@@ -79,14 +84,14 @@ export class EMailListItem {
    * Companies assigned to this mail list (many-to-many).
    */
   @ApiPropertyOptional({ type: () => CompanyItem, isArray: true })
-  @ManyToMany(() => CompanyItem)
+  @ManyToMany(() => CompanyItem, undefined, { index: true })
   companies: Collection<CompanyItem> = new Collection<CompanyItem>(this);
 
   /**
    * Persons assigned to this mail list (many-to-many).
    */
   @ApiPropertyOptional({ type: () => PersonItem, isArray: true })
-  @ManyToMany(() => PersonItem)
+  @ManyToMany(() => PersonItem, undefined, { index: true })
   persons: Collection<PersonItem> = new Collection<PersonItem>(this);
   // #endregion
 

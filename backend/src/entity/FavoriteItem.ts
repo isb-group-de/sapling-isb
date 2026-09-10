@@ -1,4 +1,9 @@
-import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  Property,
+  Index,
+} from '@mikro-orm/decorators/legacy';
 import { PersonItem } from './PersonItem';
 import { EntityItem } from './EntityItem';
 import {
@@ -24,6 +29,15 @@ import { EntityRouteItem } from './EntityRouteItem';
  * @property        {Date}          createdAt   Date and time when the favorite item was created
  * @property        {Date}          updatedAt   Date and time when the favorite item was last updated
  */
+@Index({ name: 'favorite_item_entity_handle_index', properties: ['entity'] })
+@Index({
+  name: 'favorite_item_entity_route_handle_index',
+  properties: ['entityRoute'],
+})
+@Index({
+  name: 'favorite_item_person_handle_entity_handle_index',
+  properties: ['person', 'entity'],
+})
 @Entity()
 export class FavoriteItem {
   // #region Properties: Persisted

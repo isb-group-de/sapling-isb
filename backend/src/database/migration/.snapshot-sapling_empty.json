@@ -3390,13 +3390,15 @@
           "nullable": true,
           "unique": false,
           "length": null,
-          "precision": null,
-          "scale": null,
+          "precision": 32,
+          "scale": 0,
           "default": null,
           "comment": null,
           "collation": null,
-          "enumItems": [],
-          "mappedType": "integer"
+          "enumItems": [
+            "-1"
+          ],
+          "mappedType": "enum"
         },
         "request_payload": {
           "name": "request_payload",
@@ -3605,8 +3607,9 @@
       "checks": [
         {
           "name": "ai_chat_message_item_rating_check",
-          "expression": "rating in (-1, 1)",
-          "definition": "check (rating in (-1, 1))"
+          "expression": "\"rating\" in ('-1')",
+          "definition": "check (\"rating\" in ('-1'))",
+          "columnName": "rating"
         }
       ],
       "triggers": [],
@@ -6055,12 +6058,11 @@
           "name": "immutable_prompt_version",
           "timing": "before",
           "events": [
-            "update",
-            "delete"
+            "delete",
+            "update"
           ],
           "forEach": "row",
-          "body": "",
-          "expression": "create trigger immutable_prompt_version before update or delete on ai_prompt_version_item for each row execute function sapling_immutable_prompt_version();"
+          "body": ""
         }
       ],
       "foreignKeys": {
@@ -16984,7 +16986,7 @@
             "automation_deduplication_key"
           ],
           "composite": false,
-          "constraint": true,
+          "constraint": false,
           "keyName": "email_delivery_item_automation_deduplication_key_unique",
           "primary": false,
           "unique": true
@@ -20831,13 +20833,13 @@
         },
         "follow_up_duration": {
           "name": "follow_up_duration",
-          "type": "time(0)",
+          "type": "time(6)",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
           "unique": false,
-          "length": null,
+          "length": 6,
           "precision": null,
           "scale": null,
           "default": "'00:00:00'",
@@ -20933,13 +20935,13 @@
         },
         "preparation_duration": {
           "name": "preparation_duration",
-          "type": "time(0)",
+          "type": "time(6)",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
           "unique": false,
-          "length": null,
+          "length": 6,
           "precision": null,
           "scale": null,
           "default": "'00:00:00'",
@@ -23966,7 +23968,7 @@
             "auth_kind"
           ],
           "composite": true,
-          "constraint": true,
+          "constraint": false,
           "keyName": "http_metric_bucket_unique",
           "primary": false,
           "unique": true
@@ -40903,7 +40905,7 @@
             "marker"
           ],
           "composite": false,
-          "constraint": true,
+          "constraint": false,
           "keyName": "system_canary_record_item_marker_unique",
           "primary": false,
           "unique": true
@@ -41333,7 +41335,7 @@
             "fingerprint"
           ],
           "composite": true,
-          "constraint": true,
+          "constraint": false,
           "keyName": "system_error_group_environment_fingerprint_unique",
           "primary": false,
           "unique": true
@@ -41999,7 +42001,7 @@
             "dimension_key"
           ],
           "composite": true,
-          "constraint": true,
+          "constraint": false,
           "keyName": "system_metric_bucket_unique",
           "primary": false,
           "unique": true
@@ -42249,7 +42251,7 @@
             "idempotency_key"
           ],
           "composite": false,
-          "constraint": true,
+          "constraint": false,
           "keyName": "system_remediation_execution_item_idempotency_key_unique",
           "primary": false,
           "unique": true
@@ -42717,7 +42719,7 @@
             "boot_id"
           ],
           "composite": false,
-          "constraint": true,
+          "constraint": false,
           "keyName": "system_telemetry_instance_item_boot_id_unique",
           "primary": false,
           "unique": true

@@ -1,5 +1,10 @@
 import { type Rel } from '@mikro-orm/core';
-import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  Property,
+  Index,
+} from '@mikro-orm/decorators/legacy';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { CompanyItem } from './CompanyItem';
 import { AddressTypeItem } from './AddressTypeItem';
@@ -26,6 +31,12 @@ import { Sapling, SaplingForm } from './global/entity.decorator';
  * @property        {Date}              createdAt   Date and time when the address was created
  * @property        {Date}              updatedAt   Date and time when the address was last updated
  */
+@Index({
+  name: 'address_item_company_handle_type_handle_index',
+  properties: ['company', 'type'],
+})
+@Index({ name: 'address_item_country_handle_index', properties: ['country'] })
+@Index({ name: 'address_item_type_handle_index', properties: ['type'] })
 @Entity()
 export class AddressItem {
   // #region Properties: Persisted

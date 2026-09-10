@@ -1,5 +1,6 @@
 import { Collection, type Rel } from '@mikro-orm/core';
 import {
+  Index,
   BeforeCreate,
   BeforeUpdate,
   Entity,
@@ -18,6 +19,10 @@ import { validateDashboardWidgets } from './dashboard-widget.validation';
  * Persisted dashboard template configuration that can either be shared globally
  * or remain private to the creating user.
  */
+@Index({
+  name: 'dashboard_template_item_person_handle_index',
+  properties: ['person'],
+})
 @Entity()
 export class DashboardTemplateItem {
   @ApiProperty()
@@ -140,7 +145,10 @@ export class DashboardTemplateItem {
   }
 
   @ApiPropertyOptional({ type: () => KpiItem, isArray: true })
-  @ManyToMany(() => KpiItem, undefined, { owner: true })
+  @ManyToMany(() => KpiItem, undefined, {
+    index: true,
+    owner: true,
+  })
   kpis: Collection<KpiItem> = new Collection<KpiItem>(this);
 
   @ApiPropertyOptional({ type: 'string', format: 'date-time' })

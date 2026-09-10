@@ -1,4 +1,9 @@
-import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  Property,
+  Index,
+} from '@mikro-orm/decorators/legacy';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { type Rel } from '@mikro-orm/core';
 import { EntityItem } from './EntityItem';
@@ -10,6 +15,10 @@ import { Sapling, SaplingForm } from './global/entity.decorator';
  * @author          Martin Rosbund
  * @summary         Entity representing an entity-scoped client script button, including dispatch metadata, relations, and system fields.
  */
+@Index({
+  name: 'script_button_item_entity_handle_index',
+  properties: ['entity'],
+})
 @Entity()
 export class ScriptButtonItem {
   // #region Properties: Persisted

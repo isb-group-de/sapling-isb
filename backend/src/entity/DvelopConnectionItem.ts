@@ -1,5 +1,6 @@
 import { Collection, type Rel } from '@mikro-orm/core';
 import {
+  Index,
   Entity,
   ManyToOne,
   OneToMany,
@@ -16,6 +17,14 @@ import { DvelopObjectDefinitionItem } from './DvelopObjectDefinitionItem';
 import { DvelopPropertyItem } from './DvelopPropertyItem';
 import { DvelopRepositoryItem } from './DvelopRepositoryItem';
 
+@Index({
+  name: 'dvelop_connection_item_default_object_definition_handle_index',
+  properties: ['defaultObjectDefinition'],
+})
+@Index({
+  name: 'dvelop_connection_item_repository_handle_index',
+  properties: ['repository'],
+})
 @Entity()
 export class DvelopConnectionItem {
   @ApiProperty()
@@ -89,7 +98,10 @@ export class DvelopConnectionItem {
     targetField: 'connection',
     requireParent: true,
   })
-  @ManyToOne(() => DvelopRepositoryItem, { nullable: true })
+  @ManyToOne(() => DvelopRepositoryItem, {
+    updateRule: 'cascade',
+    nullable: true,
+  })
   repository?: Rel<DvelopRepositoryItem>;
 
   @ApiPropertyOptional({
@@ -111,7 +123,10 @@ export class DvelopConnectionItem {
     mobileOrder: 500,
     mobileVisible: false,
   })
-  @ManyToOne(() => DvelopObjectDefinitionItem, { nullable: true })
+  @ManyToOne(() => DvelopObjectDefinitionItem, {
+    updateRule: 'cascade',
+    nullable: true,
+  })
   defaultObjectDefinition?: Rel<DvelopObjectDefinitionItem>;
 
   @ApiPropertyOptional({

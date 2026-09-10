@@ -1,5 +1,6 @@
 import { Collection, type Rel } from '@mikro-orm/core';
 import {
+  Index,
   Entity,
   ManyToOne,
   OneToMany,
@@ -16,6 +17,15 @@ import {
   SaplingGenericReference,
 } from './global/entity.decorator';
 
+@Index({
+  name: 'change_log_entity_reference_created_at_index',
+  properties: ['entity', 'reference', 'createdAt', 'handle'],
+})
+@Index({ name: 'change_log_item_action_handle_index', properties: ['action'] })
+@Index({
+  name: 'change_log_item_person_handle_created_at_index',
+  properties: ['person', 'createdAt'],
+})
 @Entity()
 export class ChangeLogItem {
   @ApiProperty()

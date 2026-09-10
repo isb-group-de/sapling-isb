@@ -2,6 +2,7 @@ import { InternalCaseItem } from './InternalCaseItem';
 import { EventItem } from './EventItem';
 import { Collection, type Rel } from '@mikro-orm/core';
 import {
+  Index,
   Entity,
   ManyToOne,
   OneToMany,
@@ -25,6 +26,34 @@ import {
   SaplingRelatedRecords,
 } from './global/entity-reference-actions.decorator';
 
+@Index({
+  name: 'effort_est_assignee_prs_is_active_status_index',
+  properties: ['assigneePerson', 'isActive', 'status'],
+})
+@Index({
+  name: 'effort_estimate_item_assignee_company_handle_index',
+  properties: ['assigneeCompany'],
+})
+@Index({
+  name: 'effort_estimate_item_creator_company_handle_index',
+  properties: ['creatorCompany'],
+})
+@Index({
+  name: 'effort_estimate_item_creator_person_handle_index',
+  properties: ['creatorPerson'],
+})
+@Index({
+  name: 'effort_estimate_item_sales_opportunity_handle_updated_at_index',
+  properties: ['salesOpportunity', 'updatedAt'],
+})
+@Index({
+  name: 'effort_estimate_item_status_handle_index',
+  properties: ['status'],
+})
+@Index({
+  name: 'effort_estimate_item_ticket_handle_updated_at_index',
+  properties: ['ticket', 'updatedAt'],
+})
 @Entity()
 export class EffortEstimateItem {
   @ApiProperty()

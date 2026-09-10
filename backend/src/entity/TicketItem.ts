@@ -1,5 +1,6 @@
 import { Collection } from '@mikro-orm/core';
 import {
+  Index,
   Entity,
   OneToMany,
   ManyToOne,
@@ -60,6 +61,55 @@ import { InternalCaseItem } from './InternalCaseItem';
  * @property        {Date}                  createdAt           Date and time when the ticket was created
  * @property        {Date}                  updatedAt           Date and time when the ticket was last updated
  */
+@Index({
+  name: 'ticket_assignee_prs_status_deadline_date_index',
+  properties: ['assigneePerson', 'status', 'deadlineDate'],
+})
+@Index({
+  name: 'ticket_item_assignee_company_handle_index',
+  properties: ['assigneeCompany'],
+})
+@Index({ name: 'ticket_item_category_handle_index', properties: ['category'] })
+@Index({
+  name: 'ticket_item_contract_handle_updated_at_index',
+  properties: ['contract', 'updatedAt'],
+})
+@Index({ name: 'ticket_item_created_at_index', properties: ['createdAt'] })
+@Index({
+  name: 'ticket_item_creator_company_handle_updated_at_index',
+  properties: ['creatorCompany', 'updatedAt'],
+})
+@Index({
+  name: 'ticket_item_creator_person_handle_index',
+  properties: ['creatorPerson'],
+})
+@Index({
+  name: 'ticket_item_deadline_date_index',
+  properties: ['deadlineDate'],
+})
+@Index({ name: 'ticket_item_end_date_index', properties: ['endDate'] })
+@Index({ name: 'ticket_item_priority_handle_index', properties: ['priority'] })
+@Index({
+  name: 'ticket_item_sales_opportunity_handle_updated_at_index',
+  properties: ['salesOpportunity', 'updatedAt'],
+})
+@Index({
+  name: 'ticket_item_sla_policy_handle_index',
+  properties: ['slaPolicy'],
+})
+@Index({ name: 'ticket_item_source_handle_index', properties: ['source'] })
+@Index({ name: 'ticket_item_start_date_index', properties: ['startDate'] })
+@Index({ name: 'ticket_item_status_handle_index', properties: ['status'] })
+@Index({
+  name: 'ticket_item_support_queue_handle_index',
+  properties: ['supportQueue'],
+})
+@Index({
+  name: 'ticket_item_support_team_handle_index',
+  properties: ['supportTeam'],
+})
+@Index({ name: 'ticket_item_type_handle_index', properties: ['type'] })
+@Index({ name: 'ticket_item_updated_at_index', properties: ['updatedAt'] })
 @Entity()
 export class TicketItem {
   // #region Group: Basics

@@ -1,4 +1,4 @@
-import { Entity, Property, Unique } from '@mikro-orm/decorators/legacy';
+import { Entity, Property, Unique, Index } from '@mikro-orm/decorators/legacy';
 import {
   ApiHideProperty,
   ApiProperty,
@@ -6,6 +6,14 @@ import {
 } from '@nestjs/swagger';
 import { Sapling } from './global/entity.decorator';
 
+@Index({
+  name: 'ai_vector_document_provider_model_updated_at_index',
+  properties: ['providerHandle', 'modelHandle', 'updatedAt'],
+})
+@Index({
+  name: 'ai_vector_document_source_entity_source_record_updated_idx',
+  properties: ['sourceEntityHandle', 'sourceRecordHandle', 'updatedAt'],
+})
 @Entity()
 @Unique({
   properties: [

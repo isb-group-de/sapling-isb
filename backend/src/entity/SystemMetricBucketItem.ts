@@ -1,5 +1,6 @@
 import { type Rel } from '@mikro-orm/core';
 import {
+  Unique,
   Entity,
   Index,
   ManyToOne,
@@ -8,8 +9,7 @@ import {
 import { SystemTelemetryInstanceItem } from './SystemTelemetryInstanceItem';
 import { Sapling, SaplingForm } from './global/entity.decorator';
 
-@Entity()
-@Index({
+@Unique({
   name: 'system_metric_bucket_unique',
   properties: [
     'instance',
@@ -18,8 +18,8 @@ import { Sapling, SaplingForm } from './global/entity.decorator';
     'metricKey',
     'dimensionKey',
   ],
-  options: { unique: true },
 })
+@Entity()
 @Index({ properties: ['metricKey', 'resolution', 'bucketStart'] })
 @Index({
   name: 'system_metric_bucket_resolution_time_idx',
@@ -41,7 +41,7 @@ export class SystemMetricBucketItem {
     mobileOrder: 100,
     mobileVisible: false,
   })
-  @ManyToOne(() => SystemTelemetryInstanceItem)
+  @ManyToOne(() => SystemTelemetryInstanceItem, { deleteRule: 'cascade' })
   instance!: Rel<SystemTelemetryInstanceItem>;
 
   @Sapling(['isReadOnly', 'isOrderDESC'])
@@ -180,6 +180,10 @@ export class SystemMetricBucketItem {
   last!: number;
 
   @Sapling(['isReadOnly', 'isSystem'])
-  @Property({ type: 'datetime', onCreate: () => new Date() })
+  @Property({
+    type: 'datetime',
+    defaultRaw: 'now()',
+    onCreate: () => new Date(),
+  })
   createdAt: Date = new Date();
 }

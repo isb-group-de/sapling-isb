@@ -1,4 +1,5 @@
 import {
+  Index,
   Entity,
   ManyToOne,
   Property,
@@ -14,6 +15,7 @@ import {
   SaplingGenericReference,
 } from './global/entity.decorator';
 
+@Index({ name: 'information_item_person_handle_index', properties: ['person'] })
 @Entity()
 @Unique({ properties: ['entity', 'reference'] })
 export class InformationItem {

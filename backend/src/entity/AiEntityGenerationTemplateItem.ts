@@ -1,5 +1,10 @@
 import { type Rel } from '@mikro-orm/core';
-import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  Property,
+  Index,
+} from '@mikro-orm/decorators/legacy';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { AiProviderModelItem } from './AiProviderModelItem';
 import { AiProviderTypeItem } from './AiProviderTypeItem';
@@ -10,6 +15,22 @@ import {
   SaplingForm,
 } from './global/entity.decorator';
 
+@Index({
+  name: 'ai_entity_generation_template_item_model_handle_index',
+  properties: ['model'],
+})
+@Index({
+  name: 'ai_entity_generation_template_item_provider_handle_index',
+  properties: ['provider'],
+})
+@Index({
+  name: 'ai_entity_generation_template_item_source_entity_handle_index',
+  properties: ['sourceEntity'],
+})
+@Index({
+  name: 'ai_entity_generation_template_item_target_entity_handle_index',
+  properties: ['targetEntity'],
+})
 @Entity()
 export class AiEntityGenerationTemplateItem {
   @ApiProperty()

@@ -1,5 +1,10 @@
 import { type Rel } from '@mikro-orm/core';
-import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  Property,
+  Index,
+} from '@mikro-orm/decorators/legacy';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { EntityItem } from './EntityItem';
 import {
@@ -12,6 +17,14 @@ import { EntityRouteItem } from './EntityRouteItem';
 /**
  * Persisted template that can be loaded as a personal worklist favorite.
  */
+@Index({
+  name: 'favorite_template_item_entity_handle_index',
+  properties: ['entity'],
+})
+@Index({
+  name: 'favorite_template_item_entity_route_handle_index',
+  properties: ['entityRoute'],
+})
 @Entity()
 export class FavoriteTemplateItem {
   @ApiProperty()

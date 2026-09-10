@@ -1,5 +1,6 @@
 import { Collection, type Rel } from '@mikro-orm/core';
 import {
+  Index,
   Entity,
   ManyToOne,
   OneToMany,
@@ -10,6 +11,10 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { DvelopConnectionItem } from './DvelopConnectionItem';
 import { Sapling, SaplingForm } from './global/entity.decorator';
 
+@Index({
+  name: 'dvelop_repository_item_connection_handle_index',
+  properties: ['connection'],
+})
 @Entity()
 @Unique({ properties: ['connection', 'dvelopId'] })
 export class DvelopRepositoryItem {
@@ -29,7 +34,10 @@ export class DvelopRepositoryItem {
     mobileOrder: 100,
     mobileVisible: false,
   })
-  @ManyToOne(() => DvelopConnectionItem, { nullable: false })
+  @ManyToOne(() => DvelopConnectionItem, {
+    updateRule: 'cascade',
+    nullable: false,
+  })
   connection!: Rel<DvelopConnectionItem>;
 
   @ApiProperty()

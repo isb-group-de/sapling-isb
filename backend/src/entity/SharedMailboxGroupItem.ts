@@ -101,7 +101,7 @@ export class SharedMailboxGroupItem {
   );
 
   @ApiPropertyOptional({ type: () => PersonItem, isArray: true })
-  @ManyToMany(() => PersonItem)
+  @ManyToMany(() => PersonItem, undefined, { index: true })
   persons: Collection<PersonItem> = new Collection<PersonItem>(this);
 
   @ApiPropertyOptional({ type: 'string', format: 'date-time' })

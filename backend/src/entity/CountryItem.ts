@@ -1,5 +1,6 @@
 import { Collection } from '@mikro-orm/core';
 import {
+  Index,
   Entity,
   OneToMany,
   ManyToOne,
@@ -28,6 +29,8 @@ import { type Rel } from '@mikro-orm/core';
  * @property        {Date}              createdAt   Date and time when the country was created
  * @property        {Date}              updatedAt   Date and time when the country was last updated
  */
+@Index({ name: 'country_item_language_handle_index', properties: ['language'] })
+@Index({ name: 'country_item_money_handle_index', properties: ['money'] })
 @Entity()
 export class CountryItem {
   // #region Properties: Persisted

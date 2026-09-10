@@ -1,5 +1,6 @@
 import { Collection } from '@mikro-orm/core';
 import {
+  Index,
   Entity,
   ManyToMany,
   ManyToOne,
@@ -40,6 +41,24 @@ import { type Rel } from '@mikro-orm/core';
  * @property {Date} createdAt - Date and time when the KPI was created.
  * @property {Date} updatedAt - Date and time when the KPI was last updated.
  */
+@Index({
+  name: 'kpi_item_aggregation_handle_index',
+  properties: ['aggregation'],
+})
+@Index({ name: 'kpi_item_relation_handle_index', properties: ['relation'] })
+@Index({
+  name: 'kpi_item_target_entity_handle_type_handle_index',
+  properties: ['targetEntity', 'type'],
+})
+@Index({
+  name: 'kpi_item_timeframe_handle_timeframe_interval_handle_index',
+  properties: ['timeframe', 'timeframeInterval'],
+})
+@Index({
+  name: 'kpi_item_timeframe_interval_handle_index',
+  properties: ['timeframeInterval'],
+})
+@Index({ name: 'kpi_item_type_handle_index', properties: ['type'] })
 @Entity()
 export class KpiItem {
   //#region Properties: Persisted

@@ -15,7 +15,7 @@ export class SystemTelemetryInstanceItem {
   handle!: string;
 
   @Sapling(['isReadOnly'])
-  @ManyToOne(() => SystemTelemetryEnvironmentItem)
+  @ManyToOne(() => SystemTelemetryEnvironmentItem, { updateRule: 'cascade' })
   environment!: Rel<SystemTelemetryEnvironmentItem>;
 
   @Sapling(['isReadOnly', 'isChip'])
@@ -118,12 +118,17 @@ export class SystemTelemetryInstanceItem {
   lifecycleReason?: string | null;
 
   @Sapling(['isReadOnly', 'isSystem'])
-  @Property({ type: 'datetime', onCreate: () => new Date() })
+  @Property({
+    type: 'datetime',
+    defaultRaw: 'now()',
+    onCreate: () => new Date(),
+  })
   createdAt: Date = new Date();
 
   @Sapling(['isReadOnly', 'isSystem'])
   @Property({
     type: 'datetime',
+    defaultRaw: 'now()',
     onCreate: () => new Date(),
     onUpdate: () => new Date(),
   })

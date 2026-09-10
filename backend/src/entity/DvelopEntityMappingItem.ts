@@ -1,5 +1,6 @@
 import { Collection, type Rel } from '@mikro-orm/core';
 import {
+  Index,
   Entity,
   ManyToOne,
   OneToMany,
@@ -17,6 +18,18 @@ import { DvelopObjectDefinitionItem } from './DvelopObjectDefinitionItem';
 import { DvelopEntityMappingSearchCategoryItem } from './DvelopEntityMappingSearchCategoryItem';
 import { DvelopEntityMappingPropertyItem } from './DvelopEntityMappingPropertyItem';
 
+@Index({
+  name: 'dvelop_entity_mapping_item_connection_handle_index',
+  properties: ['connection'],
+})
+@Index({
+  name: 'dvelop_entity_mapping_item_entity_handle_index',
+  properties: ['entity'],
+})
+@Index({
+  name: 'dvelop_entity_mapping_item_object_definition_handle_index',
+  properties: ['objectDefinition'],
+})
 @Entity()
 export class DvelopEntityMappingItem {
   @ApiProperty()
@@ -35,7 +48,10 @@ export class DvelopEntityMappingItem {
     mobileOrder: 100,
     mobileVisible: true,
   })
-  @ManyToOne(() => DvelopConnectionItem, { nullable: false })
+  @ManyToOne(() => DvelopConnectionItem, {
+    updateRule: 'cascade',
+    nullable: false,
+  })
   connection!: Rel<DvelopConnectionItem>;
 
   @ApiProperty({ type: () => EntityItem })
@@ -51,7 +67,10 @@ export class DvelopEntityMappingItem {
     mobileOrder: 200,
     mobileVisible: true,
   })
-  @ManyToOne(() => EntityItem, { nullable: false })
+  @ManyToOne(() => EntityItem, {
+    updateRule: 'cascade',
+    nullable: false,
+  })
   entity!: Rel<EntityItem>;
 
   @ApiPropertyOptional({ type: () => DvelopObjectDefinitionItem })
@@ -71,7 +90,10 @@ export class DvelopEntityMappingItem {
     mobileOrder: 300,
     mobileVisible: false,
   })
-  @ManyToOne(() => DvelopObjectDefinitionItem, { nullable: true })
+  @ManyToOne(() => DvelopObjectDefinitionItem, {
+    updateRule: 'cascade',
+    nullable: true,
+  })
   objectDefinition?: Rel<DvelopObjectDefinitionItem>;
 
   @ApiPropertyOptional({

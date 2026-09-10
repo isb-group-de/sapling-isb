@@ -1,5 +1,6 @@
 import { Collection, type Rel } from '@mikro-orm/core';
 import {
+  Index,
   Entity,
   ManyToOne,
   OneToMany,
@@ -12,6 +13,14 @@ import { DvelopEntityMappingPropertyItem } from './DvelopEntityMappingPropertyIt
 import { DvelopObjectDefinitionItem } from './DvelopObjectDefinitionItem';
 import { Sapling, SaplingForm } from './global/entity.decorator';
 
+@Index({
+  name: 'dvelop_property_item_connection_handle_index',
+  properties: ['connection'],
+})
+@Index({
+  name: 'dvelop_property_item_object_definition_handle_index',
+  properties: ['objectDefinition'],
+})
 @Entity()
 @Unique({ properties: ['connection', 'objectDefinition', 'dvelopId'] })
 export class DvelopPropertyItem {
@@ -31,7 +40,10 @@ export class DvelopPropertyItem {
     mobileOrder: 100,
     mobileVisible: false,
   })
-  @ManyToOne(() => DvelopConnectionItem, { nullable: false })
+  @ManyToOne(() => DvelopConnectionItem, {
+    updateRule: 'cascade',
+    nullable: false,
+  })
   connection!: Rel<DvelopConnectionItem>;
 
   @ApiPropertyOptional({ type: () => DvelopObjectDefinitionItem })
@@ -47,6 +59,7 @@ export class DvelopPropertyItem {
     mobileVisible: false,
   })
   @ManyToOne(() => DvelopObjectDefinitionItem, {
+    updateRule: 'cascade',
     nullable: true,
     deleteRule: 'set null',
   })

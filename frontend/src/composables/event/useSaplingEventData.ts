@@ -98,6 +98,16 @@ interface UseSaplingEventDataOptions {
 
 /** Owns calendar read queries and normalization into visible event records. */
 export function useSaplingEventData(options: UseSaplingEventDataOptions) {
+  let activeCalendarLoad:
+    | {
+        controller: AbortController
+        promise: Promise<void>
+        requestId: number
+        signature: string
+      }
+    | undefined
+  let latestCalendarLoadRequestId = 0
+
   async function loadSelectedPeopleDetails() {
     const selectedHandles = Array.from(
       new Set(options.selectedPeople.value.filter((handle) => Number.isInteger(handle))),
@@ -123,7 +133,7 @@ export function useSaplingEventData(options: UseSaplingEventDataOptions) {
     }
   }
 
-  async function getEvents(nextRange: CalendarDatePair) {
+  function getEvents(nextRange: CalendarDatePair): Promise<void> {
     options.calendarDateRange.value = nextRange
 
     const startDate = parseLocalCalendarDate(nextRange.start.date)
@@ -131,69 +141,145 @@ export function useSaplingEventData(options: UseSaplingEventDataOptions) {
     const endDate = parseLocalCalendarDate(nextRange.end.date)
     endDate.setHours(23, 59, 59, 999)
 
+    const selectedPeople = [...options.selectedPeople.value]
+    const chipFilterClauses = options.buildChipFilterClauses()
     const holidayGroupHandles = options.getSelectedHolidayGroupHandles()
-    const [eventItems, holidayItems] = await Promise.all([
-      ApiGenericService.findAll<EventItem>('event', {
-        relations: EVENT_CALENDAR_RELATIONS,
-        fields: EVENT_CALENDAR_FIELDS,
-        filter: {
-          $and: [
-            { participants: options.selectedPeople.value },
-            ...options.buildChipFilterClauses(),
-            {
-              $or: [
-                {
-                  $and: [
-                    { startDate: { $lte: endDate.toISOString() } },
-                    { endDate: { $gte: startDate.toISOString() } },
-                  ],
-                },
-                {
-                  $and: [{ recurrenceRule: { $ne: null } }, { recurrenceRule: { $ne: '' } }],
-                },
-              ],
-            },
-          ],
-        },
-      }),
-      holidayGroupHandles.length > 0
-        ? ApiGenericService.findAll<HolidayItem>('holiday', {
-            relations: ['group'],
-            fields: HOLIDAY_CALENDAR_FIELDS,
-            filter: {
-              $and: [
-                { group: { $in: holidayGroupHandles } },
-                { startDate: { $lte: endDate.toISOString() } },
-                { endDate: { $gte: startDate.toISOString() } },
-              ],
-            },
-          })
-        : Promise.resolve([] as HolidayItem[]),
-    ])
+    const calendarMode = options.calendarMode.value
+    const calendarType = options.calendarType.value
+    const signature = JSON.stringify({
+      startDate: startDate.toISOString(),
+      endDate: endDate.toISOString(),
+      selectedPeople,
+      chipFilterClauses,
+      holidayGroupHandles,
+      calendarMode,
+      calendarType,
+    })
 
-    options.events.value = filterWorkweekEvents(
-      filterByCalendarMode(
-        [
-          ...eventItems.flatMap((event) =>
-            expandRecurringEvent(event, startDate, endDate).flatMap((calendarEvent) =>
-              addEventBufferPlaceholders(
-                {
-                  ...calendarEvent,
-                  saplingSource: 'event' as const,
-                },
-                {
-                  preparation: i18n.global.t('event.preparationPlaceholder'),
-                  followUp: i18n.global.t('event.followUpPlaceholder'),
-                },
+    if (activeCalendarLoad?.signature === signature) {
+      return activeCalendarLoad.promise
+    }
+
+    activeCalendarLoad?.controller.abort()
+    const controller = new AbortController()
+    const requestId = ++latestCalendarLoadRequestId
+    const promise = loadEvents({
+      startDate,
+      endDate,
+      selectedPeople,
+      chipFilterClauses,
+      holidayGroupHandles,
+      calendarMode,
+      calendarType,
+      controller,
+      requestId,
+    }).finally(() => {
+      if (activeCalendarLoad?.requestId === requestId) {
+        activeCalendarLoad = undefined
+      }
+    })
+
+    activeCalendarLoad = { controller, promise, requestId, signature }
+    return promise
+  }
+
+  async function loadEvents({
+    startDate,
+    endDate,
+    selectedPeople,
+    chipFilterClauses,
+    holidayGroupHandles,
+    calendarMode,
+    calendarType,
+    controller,
+    requestId,
+  }: {
+    startDate: Date
+    endDate: Date
+    selectedPeople: number[]
+    chipFilterClauses: FilterQuery[]
+    holidayGroupHandles: number[]
+    calendarMode: CalendarMode
+    calendarType: CalendarType
+    controller: AbortController
+    requestId: number
+  }) {
+    try {
+      const [eventItems, holidayItems] = await Promise.all([
+        ApiGenericService.findAll<EventItem>('event', {
+          relations: EVENT_CALENDAR_RELATIONS,
+          fields: EVENT_CALENDAR_FIELDS,
+          signal: controller.signal,
+          filter: {
+            $and: [
+              { participants: selectedPeople },
+              ...chipFilterClauses,
+              {
+                $or: [
+                  {
+                    $and: [
+                      { startDate: { $lte: endDate.toISOString() } },
+                      { endDate: { $gte: startDate.toISOString() } },
+                    ],
+                  },
+                  {
+                    $and: [{ recurrenceRule: { $ne: null } }, { recurrenceRule: { $ne: '' } }],
+                  },
+                ],
+              },
+            ],
+          },
+        }),
+        holidayGroupHandles.length > 0
+          ? ApiGenericService.findAll<HolidayItem>('holiday', {
+              relations: ['group'],
+              fields: HOLIDAY_CALENDAR_FIELDS,
+              signal: controller.signal,
+              filter: {
+                $and: [
+                  { group: { $in: holidayGroupHandles } },
+                  { startDate: { $lte: endDate.toISOString() } },
+                  { endDate: { $gte: startDate.toISOString() } },
+                ],
+              },
+            })
+          : Promise.resolve([] as HolidayItem[]),
+      ])
+
+      if (requestId !== latestCalendarLoadRequestId) {
+        return
+      }
+
+      options.events.value = filterWorkweekEvents(
+        filterByCalendarMode(
+          [
+            ...eventItems.flatMap((event) =>
+              expandRecurringEvent(event, startDate, endDate).flatMap((calendarEvent) =>
+                addEventBufferPlaceholders(
+                  {
+                    ...calendarEvent,
+                    saplingSource: 'event' as const,
+                  },
+                  {
+                    preparation: i18n.global.t('event.preparationPlaceholder'),
+                    followUp: i18n.global.t('event.followUpPlaceholder'),
+                  },
+                ),
               ),
             ),
-          ),
-          ...holidayItems.map(toHolidayCalendarEvent),
-        ],
-        options.calendarMode.value,
-      ),
-      options.calendarType.value,
-    )
+            ...holidayItems.map(toHolidayCalendarEvent),
+          ],
+          calendarMode,
+        ),
+        calendarType,
+      )
+    } catch (error) {
+      if (controller.signal.aborted) {
+        return
+      }
+
+      throw error
+    }
   }
 
   async function loadPersistedEvent(handle: EventItem['handle']) {

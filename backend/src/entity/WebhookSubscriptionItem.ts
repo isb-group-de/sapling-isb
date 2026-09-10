@@ -1,5 +1,6 @@
 import { Collection } from '@mikro-orm/core';
 import {
+  Index,
   Entity,
   OneToMany,
   ManyToOne,
@@ -47,6 +48,38 @@ import type {
  * @property        {Date}                  createdAt           Date and time when the subscription was created
  * @property        {Date}                  updatedAt           Date and time when the subscription was last updated
  */
+@Index({
+  name: 'webhook_subscription_item_authentication_api_key_handle_index',
+  properties: ['authenticationApiKey'],
+})
+@Index({
+  name: 'webhook_subscription_item_authentication_basic_handle_index',
+  properties: ['authenticationBasic'],
+})
+@Index({
+  name: 'webhook_subscription_item_authentication_oauth2_handle_index',
+  properties: ['authenticationOAuth2'],
+})
+@Index({
+  name: 'webhook_subscription_item_authentication_type_handle_index',
+  properties: ['authenticationType'],
+})
+@Index({
+  name: 'webhook_subscription_item_entity_handle_index',
+  properties: ['entity'],
+})
+@Index({
+  name: 'webhook_subscription_item_method_handle_index',
+  properties: ['method'],
+})
+@Index({
+  name: 'webhook_subscription_item_payload_type_handle_index',
+  properties: ['payloadType'],
+})
+@Index({
+  name: 'webhook_subscription_item_type_handle_index',
+  properties: ['type'],
+})
 @Entity()
 export class WebhookSubscriptionItem {
   // #region Without group
@@ -225,7 +258,10 @@ export class WebhookSubscriptionItem {
     width: 1,
     visible: true,
   })
-  @ManyToOne(() => EntityItem, { nullable: true })
+  @ManyToOne(() => EntityItem, {
+    updateRule: 'cascade',
+    nullable: true,
+  })
   sourceEntity?: Rel<EntityItem> | null;
 
   @SaplingForm({

@@ -1,5 +1,6 @@
 import { Collection, type Rel } from '@mikro-orm/core';
 import {
+  Index,
   Entity,
   ManyToOne,
   OneToMany,
@@ -26,6 +27,11 @@ import { FavoriteTemplateItem } from './FavoriteTemplateItem';
  * @property        {Date}              createdAt   Date and time when the entity route was created
  * @property        {Date}              updatedAt   Date and time when the entity route was last updated
  */
+@Index({
+  name: 'entity_route_item_entity_handle_route_index',
+  properties: ['entity', 'route'],
+})
+@Index({ name: 'entity_route_item_group_handle_index', properties: ['group'] })
 @Entity()
 export class EntityRouteItem {
   // #region Properties: Persisted

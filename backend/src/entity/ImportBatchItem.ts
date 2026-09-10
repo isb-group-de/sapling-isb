@@ -1,5 +1,6 @@
 import { Collection, type Rel } from '@mikro-orm/core';
 import {
+  Index,
   Entity,
   ManyToOne,
   OneToMany,
@@ -17,6 +18,22 @@ import { ImportSourceItem } from './ImportSourceItem';
 import { ImportBatchRowItem } from './ImportBatchRowItem';
 import { ImportTemplateItem } from './ImportTemplateItem';
 
+@Index({
+  name: 'import_batch_item_created_by_handle_index',
+  properties: ['createdBy'],
+})
+@Index({
+  name: 'import_batch_item_import_template_handle_index',
+  properties: ['importTemplate'],
+})
+@Index({
+  name: 'import_batch_item_source_handle_index',
+  properties: ['source'],
+})
+@Index({
+  name: 'import_batch_item_target_entity_handle_updated_at_index',
+  properties: ['targetEntity', 'updatedAt'],
+})
 @Entity()
 export class ImportBatchItem {
   @ApiProperty()

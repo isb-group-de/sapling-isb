@@ -45,7 +45,7 @@ export class AutomationExecutionItem {
   @ManyToOne(() => AutomationEventItem, { deleteRule: 'cascade' })
   event!: Rel<AutomationEventItem>;
 
-  @ManyToOne(() => EntityItem)
+  @ManyToOne(() => EntityItem, { updateRule: 'cascade' })
   targetEntity!: Rel<EntityItem>;
 
   @SaplingGenericReference({

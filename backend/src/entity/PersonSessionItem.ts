@@ -1,4 +1,9 @@
-import { Entity, OneToOne, Property } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  OneToOne,
+  Property,
+  Index,
+} from '@mikro-orm/decorators/legacy';
 import {
   ApiHideProperty,
   ApiProperty,
@@ -23,6 +28,10 @@ import { EncryptedStringType } from './types/encrypted-string.type';
  * @property {Date} createdAt - Date and time when the session was created.
  * @property {Date} updatedAt - Date and time when the session was last updated.
  */
+@Index({
+  name: 'person_session_item_person_handle_updated_at_index',
+  properties: ['person', 'updatedAt'],
+})
 @Entity()
 export class PersonSessionItem {
   //#region Properties: Persisted

@@ -1,5 +1,10 @@
 import { type Rel } from '@mikro-orm/core';
-import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  Property,
+  Index,
+} from '@mikro-orm/decorators/legacy';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Sapling, SaplingForm } from './global/entity.decorator';
 import { EMailListItem } from './EMailListItem';
@@ -9,6 +14,30 @@ import { MarketingCampaignTypeItem } from './MarketingCampaignTypeItem';
 import { PersonItem } from './PersonItem';
 import { SalesOpportunitySourceItem } from './SalesOpportunitySourceItem';
 
+@Index({
+  name: 'marketing_campaign_item_email_template_handle_index',
+  properties: ['emailTemplate'],
+})
+@Index({
+  name: 'marketing_campaign_item_opportunity_source_handle_index',
+  properties: ['opportunitySource'],
+})
+@Index({
+  name: 'marketing_campaign_item_status_handle_index',
+  properties: ['status'],
+})
+@Index({
+  name: 'marketing_campaign_item_target_list_handle_index',
+  properties: ['targetList'],
+})
+@Index({
+  name: 'marketing_campaign_item_type_handle_index',
+  properties: ['type'],
+})
+@Index({
+  name: 'marketing_campaign_owner_prs_status_index',
+  properties: ['ownerPerson', 'status'],
+})
 @Entity()
 export class MarketingCampaignItem {
   @ApiProperty()

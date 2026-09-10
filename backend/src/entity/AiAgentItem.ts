@@ -1,5 +1,6 @@
 import { Collection, type Rel } from '@mikro-orm/core';
 import {
+  Index,
   Entity,
   ManyToMany,
   ManyToOne,
@@ -23,6 +24,11 @@ import {
   SaplingForm,
 } from './global/entity.decorator';
 
+@Index({ name: 'ai_agent_item_model_handle_index', properties: ['model'] })
+@Index({
+  name: 'ai_agent_item_provider_handle_index',
+  properties: ['provider'],
+})
 @Entity()
 export class AiAgentItem {
   @ApiProperty()
@@ -312,7 +318,10 @@ export class AiAgentItem {
     mobileOrder: 200,
     mobileVisible: false,
   })
-  @ManyToMany(() => RoleItem, undefined, { owner: true })
+  @ManyToMany(() => RoleItem, undefined, {
+    index: true,
+    owner: true,
+  })
   roles: Collection<RoleItem> = new Collection<RoleItem>(this);
 
   @ApiPropertyOptional({ default: true })

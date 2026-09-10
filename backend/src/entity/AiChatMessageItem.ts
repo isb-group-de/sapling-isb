@@ -1,10 +1,28 @@
 import { type Rel } from '@mikro-orm/core';
-import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
+import {
+  Check,
+  Entity,
+  ManyToOne,
+  Property,
+  Index,
+} from '@mikro-orm/decorators/legacy';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { AiChatSessionItem } from './AiChatSessionItem';
 import { PersonItem } from './PersonItem';
 import { Sapling, SaplingForm } from './global/entity.decorator';
 
+@Index({
+  name: 'ai_chat_message_item_person_handle_index',
+  properties: ['person'],
+})
+@Index({
+  name: 'ai_chat_message_item_session_handle_sequence_index',
+  properties: ['session', 'sequence'],
+})
+@Check({
+  name: 'ai_chat_message_item_rating_check',
+  expression: (columns) => `${columns.rating} in (-1, 1)`,
+})
 @Entity()
 export class AiChatMessageItem {
   @ApiProperty()
@@ -290,7 +308,7 @@ export class AiChatMessageItem {
     description:
       'User rating for an assistant response: 1 for positive and -1 for negative',
   })
-  @Property({ nullable: true })
+  @Property({ type: 'integer', nullable: true })
   rating?: number | null;
 
   @ApiPropertyOptional({ type: 'string', format: 'date-time' })

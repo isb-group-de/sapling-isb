@@ -1,5 +1,6 @@
 import { type Rel } from '@mikro-orm/core';
 import {
+  Index,
   Entity,
   ManyToOne,
   Property,
@@ -10,6 +11,14 @@ import { DvelopEntityMappingItem } from './DvelopEntityMappingItem';
 import { DvelopObjectDefinitionItem } from './DvelopObjectDefinitionItem';
 import { Sapling, SaplingForm } from './global/entity.decorator';
 
+@Index({
+  name: 'dvelop_entity_mapping_search_category_item_mapping_handle_index',
+  properties: ['mapping'],
+})
+@Index({
+  name: 'dvelop_entity_mapping_search_category_item_object_definition_ha',
+  properties: ['objectDefinition'],
+})
 @Entity()
 @Unique({ properties: ['mapping', 'objectDefinition'] })
 export class DvelopEntityMappingSearchCategoryItem {
@@ -29,7 +38,11 @@ export class DvelopEntityMappingSearchCategoryItem {
     mobileOrder: 100,
     mobileVisible: false,
   })
-  @ManyToOne(() => DvelopEntityMappingItem, { nullable: false })
+  @ManyToOne(() => DvelopEntityMappingItem, {
+    updateRule: 'cascade',
+    deleteRule: 'cascade',
+    nullable: false,
+  })
   mapping!: Rel<DvelopEntityMappingItem>;
 
   @ApiProperty({ type: () => DvelopObjectDefinitionItem })
@@ -45,7 +58,10 @@ export class DvelopEntityMappingSearchCategoryItem {
     mobileOrder: 200,
     mobileVisible: true,
   })
-  @ManyToOne(() => DvelopObjectDefinitionItem, { nullable: false })
+  @ManyToOne(() => DvelopObjectDefinitionItem, {
+    updateRule: 'cascade',
+    nullable: false,
+  })
   objectDefinition!: Rel<DvelopObjectDefinitionItem>;
 
   @ApiPropertyOptional({ default: 0 })

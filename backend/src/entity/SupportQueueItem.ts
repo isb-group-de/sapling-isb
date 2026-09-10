@@ -1,5 +1,6 @@
 import { Collection, type Rel } from '@mikro-orm/core';
 import {
+  Index,
   Entity,
   ManyToOne,
   OneToMany,
@@ -11,6 +12,11 @@ import { SlaPolicyItem } from './SlaPolicyItem';
 import { SupportTeamItem } from './SupportTeamItem';
 import { TicketItem } from './TicketItem';
 
+@Index({
+  name: 'support_queue_item_default_sla_policy_handle_index',
+  properties: ['defaultSlaPolicy'],
+})
+@Index({ name: 'support_queue_item_team_handle_index', properties: ['team'] })
 @Entity()
 export class SupportQueueItem {
   @ApiProperty()

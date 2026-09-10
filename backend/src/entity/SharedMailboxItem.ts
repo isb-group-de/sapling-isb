@@ -1,10 +1,23 @@
 import { type Rel } from '@mikro-orm/core';
-import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  Property,
+  Index,
+} from '@mikro-orm/decorators/legacy';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Sapling, SaplingForm } from './global/entity.decorator';
 import { PersonTypeItem } from './PersonTypeItem';
 import { SharedMailboxGroupItem } from './SharedMailboxGroupItem';
 
+@Index({
+  name: 'shared_mailbox_item_group_handle_index',
+  properties: ['group'],
+})
+@Index({
+  name: 'shared_mailbox_item_provider_handle_index',
+  properties: ['provider'],
+})
 @Entity()
 export class SharedMailboxItem {
   @ApiProperty()

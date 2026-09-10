@@ -1,5 +1,6 @@
 import { Collection } from '@mikro-orm/core';
 import {
+  Index,
   Entity,
   ManyToMany,
   ManyToOne,
@@ -35,6 +36,26 @@ import { type Rel } from '@mikro-orm/core';
  * @property        {Date}                  createdAt           Date and time when the contract was created
  * @property        {Date}                  updatedAt           Date and time when the contract was last updated
  */
+@Index({
+  name: 'contract_item_company_handle_end_date_index',
+  properties: ['company', 'endDate'],
+})
+@Index({
+  name: 'contract_item_default_support_queue_handle_index',
+  properties: ['defaultSupportQueue'],
+})
+@Index({
+  name: 'contract_item_default_support_team_handle_index',
+  properties: ['defaultSupportTeam'],
+})
+@Index({
+  name: 'contract_item_service_level_handle_index',
+  properties: ['serviceLevel'],
+})
+@Index({
+  name: 'contract_item_sla_policy_handle_index',
+  properties: ['slaPolicy'],
+})
 @Entity()
 export class ContractItem {
   // #region Properties: Persisted
@@ -392,7 +413,7 @@ export class ContractItem {
    * @type {Collection<ProductItem>}
    */
   @ApiPropertyOptional({ type: () => ProductItem, isArray: true })
-  @ManyToMany(() => ProductItem)
+  @ManyToMany(() => ProductItem, undefined, { index: true })
   products: Collection<ProductItem> = new Collection<ProductItem>(this);
   // #endregion
 

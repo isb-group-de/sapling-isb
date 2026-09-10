@@ -24,7 +24,7 @@ export class SystemAlertIncidentItem {
   handle?: number;
 
   @Sapling(['isReadOnly'])
-  @ManyToOne(() => SystemTelemetryEnvironmentItem)
+  @ManyToOne(() => SystemTelemetryEnvironmentItem, { updateRule: 'cascade' })
   environment!: Rel<SystemTelemetryEnvironmentItem>;
 
   @Sapling(['isReadOnly'])
@@ -39,7 +39,7 @@ export class SystemAlertIncidentItem {
     mobileOrder: 100,
     mobileVisible: false,
   })
-  @ManyToOne(() => SystemAlertRuleItem)
+  @ManyToOne(() => SystemAlertRuleItem, { deleteRule: 'restrict' })
   rule!: Rel<SystemAlertRuleItem>;
 
   @Sapling(['isReadOnly', 'isValue'])
@@ -226,12 +226,17 @@ export class SystemAlertIncidentItem {
   resolvedReason?: string | null;
 
   @Sapling(['isReadOnly', 'isSystem'])
-  @Property({ type: 'datetime', onCreate: () => new Date() })
+  @Property({
+    type: 'datetime',
+    defaultRaw: 'now()',
+    onCreate: () => new Date(),
+  })
   createdAt: Date = new Date();
 
   @Sapling(['isReadOnly', 'isSystem'])
   @Property({
     type: 'datetime',
+    defaultRaw: 'now()',
     onCreate: () => new Date(),
     onUpdate: () => new Date(),
   })

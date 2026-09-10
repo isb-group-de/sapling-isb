@@ -1,5 +1,6 @@
 import { Collection, type Rel } from '@mikro-orm/core';
 import {
+  Index,
   Entity,
   ManyToOne,
   OneToMany,
@@ -11,6 +12,14 @@ import { ImportSourceItem } from './ImportSourceItem';
 import { ImportTemplateValueMappingItem } from './ImportTemplateValueMappingItem';
 import { Sapling, SaplingForm } from './global/entity.decorator';
 
+@Index({
+  name: 'import_template_item_source_handle_index',
+  properties: ['source'],
+})
+@Index({
+  name: 'import_template_item_target_entity_handle_index',
+  properties: ['targetEntity'],
+})
 @Entity()
 export class ImportTemplateItem {
   @ApiProperty()

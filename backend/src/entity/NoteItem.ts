@@ -1,4 +1,9 @@
-import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  Property,
+  Index,
+} from '@mikro-orm/decorators/legacy';
 import { PersonItem } from './PersonItem';
 import { NoteGroupItem } from './NoteGroupItem';
 import { Sapling, SaplingForm } from './global/entity.decorator';
@@ -19,6 +24,11 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
  * @property {Date} createdAt - Date and time when the note was created.
  * @property {Date} updatedAt - Date and time when the note was last updated.
  */
+@Index({ name: 'note_item_group_handle_index', properties: ['group'] })
+@Index({
+  name: 'note_item_person_handle_updated_at_index',
+  properties: ['person', 'updatedAt'],
+})
 @Entity()
 export class NoteItem {
   //#region Properties: Persisted

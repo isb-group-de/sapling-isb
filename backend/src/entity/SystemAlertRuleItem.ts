@@ -169,12 +169,17 @@ export class SystemAlertRuleItem {
   isActive = true;
 
   @Sapling(['isReadOnly', 'isSystem'])
-  @Property({ type: 'datetime', onCreate: () => new Date() })
+  @Property({
+    type: 'datetime',
+    defaultRaw: 'now()',
+    onCreate: () => new Date(),
+  })
   createdAt: Date = new Date();
 
   @Sapling(['isReadOnly', 'isSystem'])
   @Property({
     type: 'datetime',
+    defaultRaw: 'now()',
     onCreate: () => new Date(),
     onUpdate: () => new Date(),
   })

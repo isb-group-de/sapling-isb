@@ -1,5 +1,6 @@
 import { type Rel } from '@mikro-orm/core';
 import {
+  Index,
   Entity,
   ManyToOne,
   Property,
@@ -28,6 +29,38 @@ export type InboundEmailLogEntry = {
   details?: Record<string, unknown>;
 };
 
+@Index({
+  name: 'inbound_email_company_received_index',
+  properties: ['company', 'receivedAt'],
+})
+@Index({
+  name: 'inbound_email_conversation_index',
+  properties: ['provider', 'conversationId'],
+})
+@Index({
+  name: 'inbound_email_office_task_received_index',
+  properties: ['officeTask', 'receivedAt'],
+})
+@Index({
+  name: 'inbound_email_person_received_index',
+  properties: ['person', 'receivedAt'],
+})
+@Index({
+  name: 'inbound_email_sales_opportunity_received_index',
+  properties: ['salesOpportunity', 'receivedAt'],
+})
+@Index({
+  name: 'inbound_email_status_received_index',
+  properties: ['status', 'receivedAt'],
+})
+@Index({
+  name: 'inbound_email_subscription_received_index',
+  properties: ['subscription', 'receivedAt'],
+})
+@Index({
+  name: 'inbound_email_ticket_received_index',
+  properties: ['ticket', 'receivedAt'],
+})
 @Entity()
 @Unique({ properties: ['mailbox', 'providerMessageId'] })
 export class InboundEmailItem {
@@ -64,6 +97,7 @@ export class InboundEmailItem {
     mobileVisible: true,
   })
   @ManyToOne(() => InboundEmailStatusItem, {
+    updateRule: 'cascade',
     defaultRaw: `'pending'`,
     nullable: false,
   })
@@ -167,7 +201,10 @@ export class InboundEmailItem {
     mobileOrder: 100,
     mobileVisible: false,
   })
-  @ManyToOne(() => SharedMailboxItem, { nullable: false })
+  @ManyToOne(() => SharedMailboxItem, {
+    updateRule: 'cascade',
+    nullable: false,
+  })
   mailbox!: Rel<SharedMailboxItem>;
 
   @ApiProperty({ type: () => EmailInboxSubscriptionItem })
@@ -182,7 +219,10 @@ export class InboundEmailItem {
     mobileOrder: 200,
     mobileVisible: false,
   })
-  @ManyToOne(() => EmailInboxSubscriptionItem, { nullable: false })
+  @ManyToOne(() => EmailInboxSubscriptionItem, {
+    updateRule: 'cascade',
+    nullable: false,
+  })
   subscription!: Rel<EmailInboxSubscriptionItem>;
 
   @ApiPropertyOptional({ type: () => PersonItem })
@@ -198,7 +238,10 @@ export class InboundEmailItem {
     mobileOrder: 300,
     mobileVisible: false,
   })
-  @ManyToOne(() => PersonItem, { nullable: true })
+  @ManyToOne(() => PersonItem, {
+    updateRule: 'cascade',
+    nullable: true,
+  })
   person?: Rel<PersonItem> | null;
 
   /**
@@ -256,7 +299,10 @@ export class InboundEmailItem {
     mobileOrder: 400,
     mobileVisible: false,
   })
-  @ManyToOne(() => CompanyItem, { nullable: true })
+  @ManyToOne(() => CompanyItem, {
+    updateRule: 'cascade',
+    nullable: true,
+  })
   company?: Rel<CompanyItem> | null;
 
   /**
@@ -313,7 +359,10 @@ export class InboundEmailItem {
     mobileOrder: 500,
     mobileVisible: false,
   })
-  @ManyToOne(() => TicketItem, { nullable: true })
+  @ManyToOne(() => TicketItem, {
+    updateRule: 'cascade',
+    nullable: true,
+  })
   ticket?: Rel<TicketItem> | null;
 
   @ApiPropertyOptional({ type: () => SalesOpportunityItem })
@@ -328,7 +377,10 @@ export class InboundEmailItem {
     mobileOrder: 600,
     mobileVisible: false,
   })
-  @ManyToOne(() => SalesOpportunityItem, { nullable: true })
+  @ManyToOne(() => SalesOpportunityItem, {
+    updateRule: 'cascade',
+    nullable: true,
+  })
   salesOpportunity?: Rel<SalesOpportunityItem> | null;
 
   @ApiPropertyOptional({ type: () => EventItem })
@@ -343,7 +395,10 @@ export class InboundEmailItem {
     mobileOrder: 700,
     mobileVisible: false,
   })
-  @ManyToOne(() => EventItem, { nullable: true })
+  @ManyToOne(() => EventItem, {
+    updateRule: 'cascade',
+    nullable: true,
+  })
   officeTask?: Rel<EventItem> | null;
 
   @ApiPropertyOptional({ type: () => DocumentItem })
@@ -358,7 +413,11 @@ export class InboundEmailItem {
     mobileOrder: 800,
     mobileVisible: false,
   })
-  @ManyToOne(() => DocumentItem, { nullable: true, unique: true })
+  @ManyToOne(() => DocumentItem, {
+    updateRule: 'cascade',
+    nullable: true,
+    unique: true,
+  })
   sourceDocument?: Rel<DocumentItem> | null;
 
   @ApiProperty()
@@ -471,7 +530,10 @@ export class InboundEmailItem {
     mobileOrder: 400,
     mobileVisible: false,
   })
-  @ManyToOne(() => AiAgentItem, { nullable: true })
+  @ManyToOne(() => AiAgentItem, {
+    updateRule: 'cascade',
+    nullable: true,
+  })
   agent?: Rel<AiAgentItem> | null;
 
   @ApiPropertyOptional({ type: () => AiChatSessionItem })
@@ -486,7 +548,10 @@ export class InboundEmailItem {
     mobileOrder: 500,
     mobileVisible: false,
   })
-  @ManyToOne(() => AiChatSessionItem, { nullable: true })
+  @ManyToOne(() => AiChatSessionItem, {
+    updateRule: 'cascade',
+    nullable: true,
+  })
   aiSession?: Rel<AiChatSessionItem> | null;
 
   @ApiPropertyOptional({ type: () => AiChatMessageItem })
@@ -501,7 +566,10 @@ export class InboundEmailItem {
     mobileOrder: 600,
     mobileVisible: false,
   })
-  @ManyToOne(() => AiChatMessageItem, { nullable: true })
+  @ManyToOne(() => AiChatMessageItem, {
+    updateRule: 'cascade',
+    nullable: true,
+  })
   aiMessage?: Rel<AiChatMessageItem> | null;
 
   @ApiPropertyOptional({ type: 'string', format: 'date-time' })

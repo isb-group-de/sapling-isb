@@ -1,5 +1,6 @@
 import { type Rel } from '@mikro-orm/core';
 import {
+  Index,
   Entity,
   ManyToOne,
   Property,
@@ -15,6 +16,14 @@ import {
   SaplingForm,
 } from './global/entity.decorator';
 
+@Index({
+  name: 'shared_mailbox_context_item_mailbox_handle_index',
+  properties: ['mailbox'],
+})
+@Index({
+  name: 'shared_mailbox_context_item_template_handle_index',
+  properties: ['template'],
+})
 @Entity()
 @Unique({ properties: ['entity'] })
 export class SharedMailboxContextItem {
@@ -35,7 +44,10 @@ export class SharedMailboxContextItem {
     mobileOrder: 100,
     mobileVisible: false,
   })
-  @ManyToOne(() => EntityItem, { nullable: false })
+  @ManyToOne(() => EntityItem, {
+    updateRule: 'cascade',
+    nullable: false,
+  })
   entity!: Rel<EntityItem>;
 
   @ApiProperty({ type: () => SharedMailboxItem })
@@ -51,7 +63,10 @@ export class SharedMailboxContextItem {
     mobileOrder: 200,
     mobileVisible: true,
   })
-  @ManyToOne(() => SharedMailboxItem, { nullable: false })
+  @ManyToOne(() => SharedMailboxItem, {
+    updateRule: 'cascade',
+    nullable: false,
+  })
   mailbox!: Rel<SharedMailboxItem>;
 
   @ApiPropertyOptional({ type: () => EmailTemplateItem })
@@ -71,7 +86,10 @@ export class SharedMailboxContextItem {
     mobileOrder: 300,
     mobileVisible: false,
   })
-  @ManyToOne(() => EmailTemplateItem, { nullable: true })
+  @ManyToOne(() => EmailTemplateItem, {
+    updateRule: 'cascade',
+    nullable: true,
+  })
   template?: Rel<EmailTemplateItem>;
 
   @ApiPropertyOptional({ default: true })

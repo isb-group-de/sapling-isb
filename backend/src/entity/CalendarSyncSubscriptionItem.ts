@@ -1,5 +1,6 @@
 import { type Rel } from '@mikro-orm/core';
 import {
+  Index,
   Entity,
   ManyToOne,
   OneToOne,
@@ -19,6 +20,18 @@ export type CalendarClassificationMapping = {
   eventCategoryHandle?: string | null;
 };
 
+@Index({
+  name: 'calendar_sync_subscription_item_default_event_category_handle_i',
+  properties: ['defaultEventCategory'],
+})
+@Index({
+  name: 'calendar_sync_subscription_item_default_event_type_handle_index',
+  properties: ['defaultEventType'],
+})
+@Index({
+  name: 'calendar_sync_subscription_item_is_active_last_run_at_index',
+  properties: ['isActive', 'lastRunAt'],
+})
 @Entity()
 export class CalendarSyncSubscriptionItem {
   @ApiProperty()
@@ -116,6 +129,7 @@ export class CalendarSyncSubscriptionItem {
     mobileVisible: false,
   })
   @ManyToOne(() => EventTypeItem, {
+    updateRule: 'cascade',
     nullable: false,
     default: 'online',
   })
@@ -135,6 +149,7 @@ export class CalendarSyncSubscriptionItem {
     mobileVisible: false,
   })
   @ManyToOne(() => EventCategoryItem, {
+    updateRule: 'cascade',
     nullable: false,
     default: 'internal',
   })

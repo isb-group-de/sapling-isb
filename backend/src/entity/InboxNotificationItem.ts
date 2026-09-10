@@ -1,5 +1,10 @@
 import { type Rel } from '@mikro-orm/core';
-import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  Property,
+  Index,
+} from '@mikro-orm/decorators/legacy';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { EntityItem } from './EntityItem';
 import { InboxSubscriptionItem } from './InboxSubscriptionItem';
@@ -11,6 +16,26 @@ import {
   SaplingGenericReference,
 } from './global/entity.decorator';
 
+@Index({
+  name: 'inbox_notif_recipient_prs_is_read_created_at_index',
+  properties: ['recipientPerson', 'isRead', 'createdAt', 'handle'],
+})
+@Index({
+  name: 'inbox_notification_item_created_by_handle_index',
+  properties: ['createdBy'],
+})
+@Index({
+  name: 'inbox_notification_item_entity_handle_reference_handle_index',
+  properties: ['entity', 'referenceHandle'],
+})
+@Index({
+  name: 'inbox_notification_item_subscription_handle_index',
+  properties: ['subscription'],
+})
+@Index({
+  name: 'inbox_notification_item_template_handle_index',
+  properties: ['template'],
+})
 @Entity()
 export class InboxNotificationItem {
   @ApiProperty()

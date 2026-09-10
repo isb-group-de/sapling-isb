@@ -1,9 +1,15 @@
-import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  Property,
+  Index,
+} from '@mikro-orm/decorators/legacy';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { type Rel } from '@mikro-orm/core';
 import { ChangeLogItem } from './ChangeLogItem';
 import { Sapling, SaplingForm } from './global/entity.decorator';
 
+@Index({ name: 'change_log_detail_item_log_handle_index', properties: ['log'] })
 @Entity()
 export class ChangeLogDetailItem {
   @ApiProperty()
