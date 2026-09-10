@@ -1,6 +1,5 @@
 import { readdirSync, readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import order from './seed-order.json';
 
 export type SeedDataset = 'production' | 'demonstration';
 export type SeedOperation = 'insert' | 'update' | 'delete';
@@ -13,7 +12,6 @@ export type SeedFile = {
   operation: SeedOperation;
   rows: SeedRecord[];
 };
-export type SeedPhase = { entity: string; through?: number; after?: number };
 
 export function seedDataset(value = process.env.DB_DATA_SEEDER): SeedDataset {
   const dataset = value || 'demonstration';
@@ -40,10 +38,19 @@ export function parseSeedName(entity: string, filename: string) {
 export function loadSeedCatalog(
   dataset: SeedDataset,
   root = __dirname,
-  phases: SeedPhase[] = order,
+  order: unknown = JSON.parse(
+    readFileSync(join(root, 'seed-order.json'), 'utf8'),
+  ),
 ): SeedFile[] {
+  if (
+    !Array.isArray(order) ||
+    !order.every((entry): entry is string => typeof entry === 'string')
+  )
+    throw new Error(
+      'seed-order.json must be an array of full relative seed file paths',
+    );
   const files: SeedFile[] = [];
-  for (const scope of ['default', dataset] as const) {
+  for (const scope of ['default', 'production', 'demonstration'] as const) {
     const directory = join(root, `json-${scope}`);
     if (!existsSync(directory)) {
       if (scope === 'default')
@@ -76,30 +83,24 @@ export function loadSeedCatalog(
       }
     }
   }
-  const scheduled: SeedFile[] = [];
-  for (const phase of phases) {
-    scheduled.push(
-      ...files
-        .filter(
-          (file) =>
-            file.entity === phase.entity &&
-            (phase.after === undefined || file.sequence > phase.after) &&
-            (phase.through === undefined || file.sequence <= phase.through),
-        )
-        .sort(
-          (a, b) =>
-            Number(a.scope !== 'default') - Number(b.scope !== 'default') ||
-            a.sequence - b.sequence,
-        ),
-    );
+  const byPath = new Map(files.map((file) => [file.path, file]));
+  const registered = new Set<string>();
+  for (const path of order) {
+    if (registered.has(path))
+      throw new Error(`Duplicate seed-order.json entry: ${path}`);
+    if (!byPath.has(path))
+      throw new Error(
+        `seed-order.json references a missing seed file: ${path}`,
+      );
+    registered.add(path);
   }
-  if (
-    scheduled.length !== files.length ||
-    new Set(scheduled.map((file) => file.path)).size !== files.length
-  ) {
+  const missing = files.filter((file) => !registered.has(file.path));
+  if (missing.length)
     throw new Error(
-      'Every seed file must belong to exactly one phase in seed-order.json',
+      `Seed files missing from seed-order.json: ${missing.map((file) => file.path).join(', ')}`,
     );
-  }
-  return scheduled;
+  return order.flatMap((path) => {
+    const file = byPath.get(path)!;
+    return file.scope === 'default' || file.scope === dataset ? [file] : [];
+  });
 }

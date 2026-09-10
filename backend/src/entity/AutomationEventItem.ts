@@ -56,7 +56,11 @@ export class AutomationEventItem {
 
   @ApiProperty({ type: () => PersonItem })
   @Sapling(['isPerson', 'isReadOnly'])
-  @ManyToOne(() => PersonItem, { updateRule: 'cascade' })
+  @ManyToOne(() => PersonItem, {
+    nullable: false,
+    updateRule: 'cascade',
+    deleteRule: 'cascade',
+  })
   actor!: Rel<PersonItem>;
 
   @ApiProperty()

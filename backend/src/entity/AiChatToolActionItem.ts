@@ -77,7 +77,7 @@ export class AiChatToolActionItem {
     mobileOrder: 300,
     mobileVisible: false,
   })
-  @ManyToOne(() => PersonItem, { nullable: false })
+  @ManyToOne(() => PersonItem, { nullable: false, deleteRule: 'cascade' })
   person!: Rel<PersonItem>;
 
   /**

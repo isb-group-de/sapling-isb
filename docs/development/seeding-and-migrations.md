@@ -17,6 +17,10 @@ backend/src/database/seeder/json-demonstration/
 ```
 
 Shared reference data, permissions and translations belong in `json-default`.
+All UI translations are currently shared. The historical production-only mail and
+message-center keys have been merged into Default, and the stale demo send-countdown
+override was removed. Default describes the current behavior: closing the mail dialog
+during the countdown sends immediately. No environment-specific translation files remain.
 Production contains its service user and actual production-only differences.
 Demonstration contains test users, business records and explicit changes to defaults.
 Omit empty environment folders/files. Do not duplicate shared data in both datasets.
@@ -33,8 +37,8 @@ requires a separate data migration.
 
 Use four digits starting at `0001`. A number identifies one operation within one
 entity folder and scope. Default and environment files can share a number because
-their complete paths differ. For new work, choose the next number above the highest
-existing number for that entity across all three scopes; do not fill historical gaps.
+their complete paths differ. For new work, choose the next number in that folder:
+`0001`, `0002`, `0003`, and so on. Numbers have no dependency or phase meaning.
 Legacy names, unknown operations, zero and duplicate numbers within a folder fail
 validation rather than silently being ignored.
 
@@ -89,18 +93,60 @@ records. Phone normalization, entity hooks and prompt validation still apply.
 
 ## Dependency Order And Tracking
 
-`DatabaseSeeder` uses `seed-order.json` to schedule every file exactly once. Within
-each phase it executes Default before the selected environment, numerically within
-each scope. The baseline's first phases run numbers through `0002`; subsequent
-phases run numbers after `0002`, including deferred relations and future changes.
-The phase ranges are explicit and can be adjusted when a new dependency requires it.
+`backend/src/database/seeder/seed-order.json` is an ordered array of full relative
+file paths. It is the sole execution order; there is no alphabetical sorting,
+numeric phase boundary, automatic dependency resolution or implicit registration.
+The list includes all three scopes. Each run keeps Default and the selected
+environment entries in their listed order and filters out the other environment.
 
-Register new seeded entities in the central entity registry and dependency schedule.
+For example, this excerpt explicitly places a role update after persons exist:
+
+```json
+[
+  "json-default/role/roleData_0001_insert.json",
+  "json-production/person/personData_0001_insert.json",
+  "json-demonstration/person/personData_0001_insert.json",
+  "json-default/role/roleData_0002_update.json"
+]
+```
+
+Every seed file must appear exactly once. Missing registrations, duplicate entries,
+references to missing files and the old phase-object format fail with a concrete
+error. All three scopes are validated, even when only one environment is selected.
+`orm:deploy` validates the catalog before adoption or migrations change the database.
+
+Register new seeded entities in the central entity registry and every new file in the list.
 Check dependencies for both fresh and already initialized databases: languages
 precede translations; roles and entities precede permissions; persons precede their
 dashboard templates. Deferred relation updates run after their referenced rows exist.
 For example, prompt templates are inserted with no active version, versions are
 inserted next, and a later template update sets the published-version reference.
+
+### Adding A Seed File (Including AI Agents)
+
+1. Choose `json-default`, `json-production` or `json-demonstration` and the entity folder.
+2. Use its next four-digit number and the explicit `insert`, `update` or `delete` suffix.
+   Continue with `0002` after `0001`; do not reserve numbers or add empty placeholders.
+3. Add the full path to `seed-order.json` in the same change. Normally append new
+   changes after the existing entries. Order new files by their references and put
+   each environment override after the shared change it overrides. A file number
+   alone never selects its execution position.
+4. Ensure prerequisites exist at that position on a fresh database as well as during
+   an upgrade. When references are cyclic, explicitly place the necessary update
+   after both inserts. Keep each folder's operations in version order in the list.
+5. Run `npm test --prefix backend -- --runInBand src/database/seeder/seed-catalog.spec.ts`
+   and check fresh installation and upgrade behavior for the affected datasets.
+
+After a backend build, `node backend/maintenance/verify-seed-order.cjs` (from the
+repository root) checks both environments on newly created disposable databases:
+fresh seeding, exact tracking order, role/event/prompt links and unchanged records
+on a repeat run. It drops only the databases it created and preserves the source databases.
+
+The list controls order only. Successful tracking still uses the full file path;
+reordering an executed file does not replay it. After release, add files without
+renaming executed files or changing the frozen baseline manifest. This test-stage
+cleanup renumbered the baseline directly; previously adopted test databases must
+be reset, with no compatibility aliases or history-conversion code.
 
 Permissions and role starter assignments are ordinary explicit seed operations.
 There is no automatic permission generation, administrator resynchronization,
@@ -207,3 +253,7 @@ Run backend typecheck, focused seed tests and the database verifier. Also verify
 foreign-key failures, immutable prompts, transaction rollback, malformed selectors,
 sequence advancement, new post-baseline migrations/seeds and repeated adoption.
 Source databases are not replaced by the verifier.
+The original captures predate translation unification: fresh Demo now also receives
+the eight formerly production-only rows and uses the shared send-countdown wording.
+The current `verify-seed-order.cjs` additionally checks that both environments have
+identical translation keys and values. Adoption itself still preserves existing data.

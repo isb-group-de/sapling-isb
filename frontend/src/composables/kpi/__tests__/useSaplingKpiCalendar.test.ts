@@ -11,6 +11,7 @@ function event(overrides: Partial<EventItem>): EventItem {
     isAllDay: false,
     isPrivate: false,
     createOnlineMeeting: false,
+    sendCalendarInvitations: false,
     creatorPerson: {} as never,
     creatorCompany: {} as never,
     transactionHandle: 'test',

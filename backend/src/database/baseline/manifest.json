@@ -2389,7 +2389,7 @@
       "sha256": "81060f9f99e9e9f60663f94033685844d15bb5e2551d1a61ea923b9843b2e7a6"
     },
     {
-      "path": "json-default/aiPromptTemplate/aiPromptTemplateData_0003_update.json",
+      "path": "json-default/aiPromptTemplate/aiPromptTemplateData_0002_update.json",
       "entity": "aiPromptTemplate",
       "sha256": "301d719c9c207290287b8bf07ffcb6a22fc35010c4609ac67aefa60c1bd25ad2"
     },
@@ -2469,7 +2469,7 @@
       "sha256": "18e5e07a5a8b2f73a65955186dfcc0f33721ecca6f8bbd7e096df9a1dcd4db8c"
     },
     {
-      "path": "json-default/dashboardTemplate/dashboardTemplateData_0003_update.json",
+      "path": "json-default/dashboardTemplate/dashboardTemplateData_0002_update.json",
       "entity": "dashboardTemplate",
       "sha256": "aeb682ced5ae4cde569d3e7edc4a0a99d0b25f2a79aa6c85d57f53f90502a057"
     },
@@ -2519,7 +2519,7 @@
       "sha256": "74244d1c08f884ba70e211a38ac0f09b9699a99b7b41f91be07568788ed6734c"
     },
     {
-      "path": "json-default/entityGroup/entityGroupData_0003_update.json",
+      "path": "json-default/entityGroup/entityGroupData_0002_update.json",
       "entity": "entityGroup",
       "sha256": "fcc1f23a5b3e8c025c9bcbdca62852420398aebbccd1e222760578c815084e0a"
     },
@@ -2724,7 +2724,7 @@
       "sha256": "a814056781302ee7f6472d8332c884d3c266fb16ae6d12005458928ce2beb08a"
     },
     {
-      "path": "json-default/role/roleData_0003_update.json",
+      "path": "json-default/role/roleData_0002_update.json",
       "entity": "role",
       "sha256": "a0b9e0b2708e1a040f1418dbd8f90734e32b31488981f414f4f5733a94cd03fe"
     },
@@ -2826,7 +2826,7 @@
     {
       "path": "json-default/translation/translationData_0001_insert.json",
       "entity": "translation",
-      "sha256": "9e1fc92e8016e071913a7bc0d0d27690728f162d606b0ba4146b07ca09931c81"
+      "sha256": "d36a17a042a83eef00d65aed6ea8ad66192439dcaeb3289b0e079598d906866b"
     },
     {
       "path": "json-default/webhookAuthenticationType/webhookAuthenticationTypeData_0001_insert.json",
@@ -2874,12 +2874,12 @@
       "sha256": "90ffdf72e4ae2310409173953c49c14c9d888c6ce55bcf8b3228cfaeb0252868"
     },
     {
-      "path": "json-demonstration/aiAgent/aiAgentData_0002_update.json",
+      "path": "json-demonstration/aiAgent/aiAgentData_0001_update.json",
       "entity": "aiAgent",
       "sha256": "77ade530ce0e257f0fdb927a421895c70d23f6e52757a494ed94cae18144be6a"
     },
     {
-      "path": "json-demonstration/aiProviderModel/aiProviderModelData_0002_update.json",
+      "path": "json-demonstration/aiProviderModel/aiProviderModelData_0001_update.json",
       "entity": "aiProviderModel",
       "sha256": "1a9fb27ef38c06f9b7a818d3a30f00c43db32df6cd50514ca6ce3a54bc1efffe"
     },
@@ -2909,7 +2909,7 @@
       "sha256": "cce186474a28a9bfc04d09cc502ce4efc27babefff77efaa571ce3bde5ff8240"
     },
     {
-      "path": "json-demonstration/contract/contractData_0003_update.json",
+      "path": "json-demonstration/contract/contractData_0002_update.json",
       "entity": "contract",
       "sha256": "c277bbdde8a7d5a6b5528a71d703bad3e3e7c9db2395809dcf2e30d62052ed7b"
     },
@@ -2924,17 +2924,17 @@
       "sha256": "0e15555011011617791a675947ca4a61df0f2e02a2a9e61a4e6db1da22d12219"
     },
     {
-      "path": "json-demonstration/emailList/emailListData_0002_update.json",
+      "path": "json-demonstration/emailList/emailListData_0001_update.json",
       "entity": "emailList",
       "sha256": "aaf1496d4cd59cb002dcc4a36d21f3ec66800666b4673469de756fcc0752289b"
     },
     {
-      "path": "json-demonstration/emailList/emailListData_0003_update.json",
+      "path": "json-demonstration/emailList/emailListData_0002_update.json",
       "entity": "emailList",
       "sha256": "13093c2bca05010bad895e98ed11c499991ed4d300c3163958af92eca456b592"
     },
     {
-      "path": "json-demonstration/emailTemplate/emailTemplateData_0002_update.json",
+      "path": "json-demonstration/emailTemplate/emailTemplateData_0001_update.json",
       "entity": "emailTemplate",
       "sha256": "c81a62a6f7d5be55f2a31458264578805378880768c113f913d28f299f7759ea"
     },
@@ -2944,7 +2944,7 @@
       "sha256": "9159123dac101f3c4abc549112effc21ea151ae37339518a563f2b5b79481613"
     },
     {
-      "path": "json-demonstration/holiday/holidayData_0002_update.json",
+      "path": "json-demonstration/holiday/holidayData_0001_update.json",
       "entity": "holiday",
       "sha256": "acd58186c0734836942988a438844e59a06a9a22cd20cb2caeafeec6d0bc8e9d"
     },
@@ -2994,7 +2994,7 @@
       "sha256": "d4793a54539164ec8da017972791ce500cf1d28b6615fe40c7c08a562d61b7fc"
     },
     {
-      "path": "json-demonstration/person/personData_0003_update.json",
+      "path": "json-demonstration/person/personData_0002_update.json",
       "entity": "person",
       "sha256": "5f8d119d5f819bd990275cf008f7c2fcd80bf01763d99c8ad3f4b5840fb5a6f0"
     },
@@ -3014,7 +3014,7 @@
       "sha256": "0c7271fac53b200dfcee9e7c8fc8aa847292fe557ec4fcecf0040383e5587b04"
     },
     {
-      "path": "json-demonstration/role/roleData_0003_update.json",
+      "path": "json-demonstration/role/roleData_0001_update.json",
       "entity": "role",
       "sha256": "f1ed279b910aa21b539e276b681b7a5db6668dd599bafecada653ce8c0892673"
     },
@@ -3024,7 +3024,7 @@
       "sha256": "64cc00a38473b804c4588385c1d69a179de12d17dad03817979238453efcb976"
     },
     {
-      "path": "json-demonstration/salesOpportunity/salesOpportunityData_0003_update.json",
+      "path": "json-demonstration/salesOpportunity/salesOpportunityData_0002_update.json",
       "entity": "salesOpportunity",
       "sha256": "569ccca8789def8060813c42b12d7b5ec7825303aaa41cdd98a9e2258b66db14"
     },
@@ -3049,7 +3049,7 @@
       "sha256": "8940ed0a6858f4774f51b7c21a2ec70831c1d8203f5e4099ec6c9b322ab2ecab"
     },
     {
-      "path": "json-demonstration/teamsTemplate/teamsTemplateData_0002_update.json",
+      "path": "json-demonstration/teamsTemplate/teamsTemplateData_0001_update.json",
       "entity": "teamsTemplate",
       "sha256": "f056a96122388ab764b20a8425f3258bc6dc5720dbb08fc8028725d1f322d805"
     },
@@ -3057,11 +3057,6 @@
       "path": "json-demonstration/ticket/ticketData_0001_insert.json",
       "entity": "ticket",
       "sha256": "47ce70b171b0d855603b04798f96f413fbaa03d328710f8d9172d68cd82d03ea"
-    },
-    {
-      "path": "json-demonstration/translation/translationData_0002_update.json",
-      "entity": "translation",
-      "sha256": "7a5bceb2e721fe76932a2ae90e96267b32537fb9ee681afcd9f417ef1ee01f91"
     },
     {
       "path": "json-demonstration/webhookAuthenticationType/webhookAuthenticationTypeData_0001_insert.json",
@@ -3074,14 +3069,9 @@
       "sha256": "db71c96aafdb92200963b7ea500c9cef7de64b39a731637c1894309346ac27c9"
     },
     {
-      "path": "json-production/person/personData_0003_update.json",
+      "path": "json-production/person/personData_0002_update.json",
       "entity": "person",
       "sha256": "8872486a21bc44dc7e4031c806da09985cad39cf3598dce43b6f51129bdb0342"
-    },
-    {
-      "path": "json-production/translation/translationData_0001_insert.json",
-      "entity": "translation",
-      "sha256": "fbec134e6446104065371e0ef2e802c965778e2655c9f8886a91aa5a10fe52de"
     }
   ]
 }

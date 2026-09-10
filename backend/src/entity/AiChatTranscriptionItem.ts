@@ -102,7 +102,7 @@ export class AiChatTranscriptionItem {
     mobileOrder: 400,
     mobileVisible: false,
   })
-  @ManyToOne(() => PersonItem, { nullable: false })
+  @ManyToOne(() => PersonItem, { nullable: false, deleteRule: 'cascade' })
   person!: Rel<PersonItem>;
 
   /**

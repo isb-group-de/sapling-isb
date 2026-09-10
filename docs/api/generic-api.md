@@ -370,12 +370,18 @@ DELETE /api/generic/:entityHandle?handle=:handle
 DELETE /api/generic/:entityHandle?handle=:handle&cascadeRelations=persons,events
 ```
 
-Deletion requires `allowDelete` permission for the entity. The impact endpoint
-returns the effective action and owned `1:m` relation groups. Optional visible
-groups have `required: false` and can be selected for an all-or-nothing cascade.
-Groups that the database necessarily removes through `ON DELETE CASCADE` have
-`required: true`; they are returned even when hidden from ordinary relation UI
-so clients can disclose unavoidable side effects. Shared `m:n` targets are
+Deletion requires `allowDelete` permission for the entity. `current/meta`
+publishes each owning relation's `nullable` and `deleteRule` metadata. The
+record-aware impact endpoint resolves that metadata across the inverse `1:m`
+groups and returns the effective action. A group has `required: true` when its
+owning reference is non-nullable or the database necessarily removes it through
+`ON DELETE CASCADE`; clients render such groups selected and disabled. Required
+children without a database cascade are removed recursively through the normal
+generic delete lifecycle in the same transaction. Optional visible groups have
+`required: false` and can be selected for an all-or-nothing cascade; when they
+are not selected, nullable foreign keys use their declared `ON DELETE SET NULL`
+behavior. Required groups are returned even when hidden from ordinary relation
+UI so clients can disclose unavoidable side effects. Shared `m:n` targets are
 never offered for record deletion; their join-table links follow the normal
 ORM/DB relation behavior.
 
@@ -389,6 +395,15 @@ When `cascadeRelations` is supplied, the selected child records are deleted
 before the parent in one transaction. Every child still runs its normal generic
 delete permissions and lifecycle. A failure rolls back the complete operation.
 The response reports `{ "action": "deleted" }`.
+
+Direct database references also encode their lifecycle explicitly. References
+that are only meaningful for one owning record, such as a person's dashboards,
+sessions, credentials, subscriptions and personal AI chats, use `ON DELETE
+CASCADE`. Business and audit history that remains meaningful without the deleted
+person, such as tickets, events, information, phone calls, documents, deliveries,
+imports, change logs and time entries, keeps the record and clears the optional
+person reference through `ON DELETE SET NULL`. New direct person references must
+choose one of these actions instead of relying on the database default.
 
 A synchronized `event` is a deliberate exception. If an Azure/Google reference
 or Event delivery history exists, generic deletion performs a normal Event

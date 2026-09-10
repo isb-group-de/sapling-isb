@@ -62,6 +62,22 @@ function createTransport() {
 }
 
 describe('MailProviderTransportService', () => {
+  it('reports a missing session when the creating person was deleted', async () => {
+    const { service } = createTransport();
+
+    await expect(
+      service.send(
+        {
+          provider: 'azure',
+          requestPayload: {},
+          createdBy: null,
+        } as never,
+        [],
+        {} as never,
+      ),
+    ).rejects.toThrow('mail.sessionNotFound');
+  });
+
   it('sends real Graph inline attachments without replacing the persisted body', async () => {
     const post = jest.fn<(...args: unknown[]) => Promise<undefined>>(
       async () => undefined,

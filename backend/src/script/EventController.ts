@@ -18,6 +18,7 @@ const CALENDAR_PROVIDER_RELEVANT_EVENT_FIELDS = new Set([
   'recurrenceExceptionDates',
   'participants',
   'createOnlineMeeting',
+  'sendCalendarInvitations',
   'type',
   'category',
   'creatorCompany',

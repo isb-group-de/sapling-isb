@@ -124,7 +124,7 @@ export class EmailDeliveryItem {
   @ManyToOne(() => EntityItem, { nullable: false })
   entity!: Rel<EntityItem>;
 
-  @ApiProperty({ type: () => PersonItem })
+  @ApiPropertyOptional({ type: () => PersonItem })
   @Sapling(['isPerson'])
   @SaplingForm({
     order: 300,
@@ -137,8 +137,8 @@ export class EmailDeliveryItem {
     mobileOrder: 300,
     mobileVisible: false,
   })
-  @ManyToOne(() => PersonItem, { nullable: false })
-  createdBy!: Rel<PersonItem>;
+  @ManyToOne(() => PersonItem, { nullable: true, deleteRule: 'set null' })
+  createdBy?: Rel<PersonItem> | null;
 
   /**
    * First name of the person selected in createdBy.

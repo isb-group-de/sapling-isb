@@ -143,7 +143,7 @@ Typical backend work:
    - `translation`
    - permissions if the default matrices need changes
    - entity-specific reference/status/demo data
-5. Add explicit permission seed files and register the entity in `seed-order.json` when it has seed data.
+5. Add explicit permission seed files. Register every new seed file (including translations and permissions) by its full relative path in `backend/src/database/seeder/seed-order.json`. This ordered list controls execution; file numbers simply continue with the next number in each entity/scope folder. Put dependencies before their consumers and environment overrides after shared changes. Follow the seed-file checklist in `docs/development/seeding-and-migrations.md`.
 6. Add tests if behavior is not purely declarative.
 
 Typical frontend work:

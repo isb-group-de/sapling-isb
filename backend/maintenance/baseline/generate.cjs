@@ -168,6 +168,13 @@ function main() {
         row,
       ]),
     );
+    // Translations are shared UI text. Keep the production wording on conflicts
+    // (the demo send-countdown hint was stale), and include keys from either source.
+    if (name === 'translation') {
+      for (const key of new Set([...prod.keys(), ...demo.keys()]))
+        add('default', name, 1, 'insert', prod.get(key) || demo.get(key));
+      continue;
+    }
     for (const key of new Set([...prod.keys(), ...demo.keys()])) {
       const p = prod.get(key),
         d = demo.get(key);
@@ -222,6 +229,37 @@ function main() {
       }
     }
   }
+  // Materialize the historical generator's dependency stages as explicit paths.
+  // Final filenames are consecutive per folder; runtime scheduling never uses numbers.
+  const generatedFiles = [...generated.keys()].map((relative) => ({
+    relative,
+    entity: relative.split('/')[1],
+    scope: relative.split('/')[0],
+    sequence: Number(relative.match(/_(\d{4})_/)[1]),
+  }));
+  const renamed = new Map();
+  const counters = new Map();
+  for (const file of [...generatedFiles].sort((a, b) =>
+    a.relative.localeCompare(b.relative),
+  )) {
+    const folder = `${file.scope}/${file.entity}`;
+    const next = (counters.get(folder) || 0) + 1;
+    counters.set(folder, next);
+    renamed.set(
+      file.relative,
+      file.relative.replace(/_\d{4}_/, `_${String(next).padStart(4, '0')}_`),
+    );
+  }
+  const scopes = ['json-default', 'json-production', 'json-demonstration'];
+  const schedule = generatedFiles
+    .sort(
+      (a, b) =>
+        Number(a.sequence > 2) - Number(b.sequence > 2) ||
+        position.get(a.entity) - position.get(b.entity) ||
+        scopes.indexOf(a.scope) - scopes.indexOf(b.scope) ||
+        a.sequence - b.sequence,
+    )
+    .map((file) => renamed.get(file.relative));
   // Only remove the explicitly scoped seed-data directories; preserve runtime source files.
   for (const scope of ['default', 'production', 'demonstration']) {
     const directory = path.resolve(root, `json-${scope}`);
@@ -232,25 +270,20 @@ function main() {
   }
   const files = [];
   for (const [relative, rows] of generated) {
-    const destination = path.join(root, relative);
+    const finalPath = renamed.get(relative);
+    const destination = path.join(root, finalPath);
     fs.mkdirSync(path.dirname(destination), { recursive: true });
     const content = JSON.stringify(rows, null, 2) + '\n';
     fs.writeFileSync(destination, content);
     files.push({
-      path: relative,
+      path: finalPath,
       entity: relative.split('/')[1],
       sha256: createHash('sha256').update(JSON.stringify(rows)).digest('hex'),
     });
   }
   fs.writeFileSync(
     path.join(root, 'seed-order.json'),
-    JSON.stringify(
-      order
-        .flatMap((entity) => [{ entity, through: 2 }])
-        .concat(order.map((entity) => ({ entity, after: 2 }))),
-      null,
-      2,
-    ) + '\n',
+    JSON.stringify(schedule, null, 2) + '\n',
   );
   const manifest = {
     version: '2026-09-baseline-v1',

@@ -198,6 +198,20 @@ async function main() {
     );
     assertions++;
     const testDir = path.resolve('dist/database/seeder/json-default/language');
+    const orderPath = path.resolve('dist/database/seeder/seed-order.json');
+    const originalOrder = fs.readFileSync(orderPath, 'utf8');
+    const register = (...names) =>
+      fs.writeFileSync(
+        orderPath,
+        JSON.stringify(
+          [
+            ...JSON.parse(originalOrder),
+            ...names.map((name) => `json-default/language/${name}`),
+          ],
+          null,
+          2,
+        ),
+      );
     const first = path.join(testDir, 'languageData_9998_insert.json');
     const last = path.join(testDir, 'languageData_9999_update.json');
     assert.ok(!fs.existsSync(first) && !fs.existsSync(last));
@@ -214,6 +228,7 @@ async function main() {
       JSON.stringify([{ key: {}, values: { name: 'Invalid' } }]),
     );
     try {
+      register(path.basename(first), path.basename(last));
       await assert.rejects(
         new DatabaseSeeder().run(orm.em.fork()),
         (error) =>
@@ -231,6 +246,7 @@ async function main() {
       assert.deepEqual(after, historyBefore);
       assertions += 3;
     } finally {
+      fs.writeFileSync(orderPath, originalOrder);
       fs.unlinkSync(first);
       fs.unlinkSync(last);
     }
@@ -241,6 +257,7 @@ async function main() {
       JSON.stringify([{ handle: '__future_test', name: 'Future' }]),
     );
     try {
+      register(path.basename(newSeed));
       process.env.DB_BASELINE_ADOPT = 'true';
       await prepareDatabaseBaseline(orm.em.fork(), 'all');
       await new DatabaseSeeder().run(orm.em.fork());
@@ -265,6 +282,7 @@ async function main() {
       );
       assertions += 3;
     } finally {
+      fs.writeFileSync(orderPath, originalOrder);
       fs.unlinkSync(newSeed);
     }
     process.env.DB_BASELINE_ADOPT = 'false';

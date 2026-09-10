@@ -243,12 +243,15 @@ export function buildGoogleCalendarEvent(
         [SAPLING_GOOGLE_EVENT_CATEGORY_KEY]: event.category?.handle ?? '',
       },
     },
-    attendees: event.participants?.map((participant) => ({
-      email: participant.email,
-      displayName: `${participant.firstName} ${participant.lastName}`,
-    })),
     ...(location ? { location } : {}),
   };
+
+  if (event.sendCalendarInvitations) {
+    resource.attendees = event.participants?.map((participant) => ({
+      email: participant.email,
+      displayName: `${participant.firstName} ${participant.lastName}`,
+    }));
+  }
 
   if (event.createOnlineMeeting && conferenceRequestId) {
     resource.conferenceData = {
@@ -318,7 +321,11 @@ export function buildGoogleCalendarEventPatch(
   ) {
     copy('recurrence');
   }
-  if (changed.has('participants')) copy('attendees');
+  if (
+    event.sendCalendarInvitations &&
+    (changed.has('participants') || changed.has('sendCalendarInvitations'))
+  )
+    copy('attendees');
   if (changed.has('createOnlineMeeting') && event.createOnlineMeeting) {
     copy('conferenceData');
   }

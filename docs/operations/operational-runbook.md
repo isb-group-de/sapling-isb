@@ -135,7 +135,7 @@ path.
 
 Seeder behavior:
 
-- Seed files come from `json-default` plus `json-${DB_DATA_SEEDER}`, in dependency phases.
+- Seed files come from `json-default` plus `json-${DB_DATA_SEEDER}`, in the explicit file order from `backend/src/database/seeder/seed-order.json`. Every new file must be registered there; numbers have no phase meaning. The catalog is validated before deployment changes history or schema.
 - Successful files are recorded in `seed_script_item`.
 - Already successful files are skipped later.
 - New reference data should be delivered in newly numbered JSON files.

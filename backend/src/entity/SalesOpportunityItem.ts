@@ -533,7 +533,7 @@ export class SalesOpportunityItem {
     mobileVisible: false,
   })
   @SaplingReferenceCreate({ defaults: { company: 'assigneeCompany' } })
-  @ManyToOne(() => PersonItem, { nullable: true })
+  @ManyToOne(() => PersonItem, { nullable: true, deleteRule: 'set null' })
   assigneePerson?: Rel<PersonItem>;
 
   /**
@@ -664,8 +664,8 @@ export class SalesOpportunityItem {
     mobileVisible: false,
   })
   @SaplingReferenceCreate({ defaults: { company: 'creatorCompany' } })
-  @ManyToOne(() => PersonItem, { nullable: false })
-  creatorPerson?: Rel<PersonItem>;
+  @ManyToOne(() => PersonItem, { nullable: true, deleteRule: 'set null' })
+  creatorPerson?: Rel<PersonItem> | null;
 
   /**
    * First name of the person selected in creatorPerson.

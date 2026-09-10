@@ -398,6 +398,7 @@ export class AzureCalendarOperations {
     event.createOnlineMeeting = Boolean(
       graphEvent.isOnlineMeeting || onlineMeetingURL,
     );
+    event.sendCalendarInvitations = (graphEvent.attendees ?? []).length > 0;
     event.status = values.status;
     await replaceCalendarEventParticipants(event, values.participants);
   }

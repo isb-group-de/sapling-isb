@@ -254,7 +254,7 @@ export class InternalCaseItem {
     mobileVisible: false,
   })
   @SaplingReferenceCreate({ defaults: { company: 'customerCompany' } })
-  @ManyToOne(() => PersonItem, { nullable: true })
+  @ManyToOne(() => PersonItem, { nullable: true, deleteRule: 'set null' })
   customerPerson?: Rel<PersonItem>;
 
   /**
@@ -377,7 +377,7 @@ export class InternalCaseItem {
     mobileVisible: false,
   })
   @SaplingReferenceCreate({ defaults: { company: 'responsibleCompany' } })
-  @ManyToOne(() => PersonItem, { nullable: true })
+  @ManyToOne(() => PersonItem, { nullable: true, deleteRule: 'set null' })
   responsiblePerson?: Rel<PersonItem>;
 
   /**

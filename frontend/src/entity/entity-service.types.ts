@@ -302,8 +302,8 @@ export interface TicketTimeTrackingItem extends SaplingGenericItem {
   title: string
   /** Description of the time tracking entry */
   description: string
-  /** Person who performed the work */
-  person: PersonItem
+  /** Person who performed the work, when still available */
+  person?: PersonItem | null
   /** Ticket to which this time entry belongs */
   ticket: TicketItem
   /** Start time of the tracked work interval */

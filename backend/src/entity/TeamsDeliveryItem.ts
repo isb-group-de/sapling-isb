@@ -107,7 +107,7 @@ export class TeamsDeliveryItem {
   @ManyToOne(() => EntityItem, { nullable: false })
   entity!: Rel<EntityItem>;
 
-  @ApiProperty({ type: () => PersonItem })
+  @ApiPropertyOptional({ type: () => PersonItem })
   @Sapling(['isPerson'])
   @SaplingForm({
     order: 300,
@@ -120,8 +120,8 @@ export class TeamsDeliveryItem {
     mobileOrder: 300,
     mobileVisible: false,
   })
-  @ManyToOne(() => PersonItem, { nullable: false })
-  createdBy!: Rel<PersonItem>;
+  @ManyToOne(() => PersonItem, { nullable: true, deleteRule: 'set null' })
+  createdBy?: Rel<PersonItem> | null;
 
   /**
    * First name of the person selected in createdBy.
@@ -178,7 +178,7 @@ export class TeamsDeliveryItem {
     mobileOrder: 400,
     mobileVisible: false,
   })
-  @ManyToOne(() => PersonItem, { nullable: true })
+  @ManyToOne(() => PersonItem, { nullable: true, deleteRule: 'set null' })
   recipientPerson?: Rel<PersonItem>;
 
   /**

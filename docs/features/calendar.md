@@ -128,6 +128,7 @@ Important fields:
 | `isAllDay`                          | Marks all-day events                                                                       |
 | `isPrivate`                         | Limits access to creator and participants; includes private Outlook imports                |
 | `createOnlineMeeting`               | Requests a provider-native Teams or Google Meet link; defaults to `false`                  |
+| `sendCalendarInvitations`           | Explicitly allows Outlook/Google invitations to participants; defaults to `false`          |
 | `recurrenceRule`                    | Optional RRULE string for recurring events                                                 |
 | `recurrenceExceptionDates`          | Original occurrence starts removed from the series and represented by standalone Events    |
 | `preparationDuration`               | Optional preparation block duration in 15-minute increments; defaults to `00:00`           |
@@ -342,6 +343,15 @@ The generated join URL is persisted in `onlineMeetingURL`. Provider-side online
 meeting conversion is effectively one-way, especially in Microsoft Graph, so
 clearing the checkbox does not delete an already generated conference or
 recreate the calendar item.
+
+Sapling participants are internal by default. Outlook and Google receive them as
+provider attendees only when `sendCalendarInvitations` is explicitly enabled.
+This opt-in is independent from both the Event type and meeting-link creation,
+so creating an internal calendar projection cannot contact customers merely
+because they are recorded as participants. Enabling it later sends the current
+participant list; disabling it does not retract invitations that were already
+sent. Imported provider events with attendees retain the opt-in so their normal
+guest update behavior continues.
 
 The Event lifecycle filters internal-only updates before delivery creation.
 Ticket, sales-opportunity, internal ownership, preparation/follow-up,

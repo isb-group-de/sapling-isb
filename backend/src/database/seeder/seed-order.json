@@ -1,962 +1,147 @@
 [
-  {
-    "entity": "language",
-    "through": 2
-  },
-  {
-    "entity": "money",
-    "through": 2
-  },
-  {
-    "entity": "country",
-    "through": 2
-  },
-  {
-    "entity": "aiPromptTemplate",
-    "through": 2
-  },
-  {
-    "entity": "aiPromptVersion",
-    "through": 2
-  },
-  {
-    "entity": "translation",
-    "through": 2
-  },
-  {
-    "entity": "workHour",
-    "through": 2
-  },
-  {
-    "entity": "workHourWeek",
-    "through": 2
-  },
-  {
-    "entity": "holidayGroup",
-    "through": 2
-  },
-  {
-    "entity": "addressType",
-    "through": 2
-  },
-  {
-    "entity": "companyIndustry",
-    "through": 2
-  },
-  {
-    "entity": "companySegment",
-    "through": 2
-  },
-  {
-    "entity": "companySize",
-    "through": 2
-  },
-  {
-    "entity": "companyAnnualRevenueClass",
-    "through": 2
-  },
-  {
-    "entity": "companyChurnRiskReason",
-    "through": 2
-  },
-  {
-    "entity": "company",
-    "through": 2
-  },
-  {
-    "entity": "address",
-    "through": 2
-  },
-  {
-    "entity": "companyRelationshipType",
-    "through": 2
-  },
-  {
-    "entity": "companyRelationship",
-    "through": 2
-  },
-  {
-    "entity": "entityGroup",
-    "through": 2
-  },
-  {
-    "entity": "entity",
-    "through": 2
-  },
-  {
-    "entity": "systemAlertRule",
-    "through": 2
-  },
-  {
-    "entity": "entityRoute",
-    "through": 2
-  },
-  {
-    "entity": "changeLogAction",
-    "through": 2
-  },
-  {
-    "entity": "scriptButton",
-    "through": 2
-  },
-  {
-    "entity": "kpiAggregation",
-    "through": 2
-  },
-  {
-    "entity": "kpiTimeframe",
-    "through": 2
-  },
-  {
-    "entity": "kpiType",
-    "through": 2
-  },
-  {
-    "entity": "kpi",
-    "through": 2
-  },
-  {
-    "entity": "roleStage",
-    "through": 2
-  },
-  {
-    "entity": "role",
-    "through": 2
-  },
-  {
-    "entity": "permission",
-    "through": 2
-  },
-  {
-    "entity": "personDepartment",
-    "through": 2
-  },
-  {
-    "entity": "personDecisionRole",
-    "through": 2
-  },
-  {
-    "entity": "personFunction",
-    "through": 2
-  },
-  {
-    "entity": "personJobTitle",
-    "through": 2
-  },
-  {
-    "entity": "personSalutation",
-    "through": 2
-  },
-  {
-    "entity": "personTitle",
-    "through": 2
-  },
-  {
-    "entity": "personType",
-    "through": 2
-  },
-  {
-    "entity": "person",
-    "through": 2
-  },
-  {
-    "entity": "phoneCall",
-    "through": 2
-  },
-  {
-    "entity": "socialMediaType",
-    "through": 2
-  },
-  {
-    "entity": "socialMedia",
-    "through": 2
-  },
-  {
-    "entity": "ticketPriority",
-    "through": 2
-  },
-  {
-    "entity": "ticketStatus",
-    "through": 2
-  },
-  {
-    "entity": "ticketType",
-    "through": 2
-  },
-  {
-    "entity": "ticketCategory",
-    "through": 2
-  },
-  {
-    "entity": "ticketSource",
-    "through": 2
-  },
-  {
-    "entity": "supportTeam",
-    "through": 2
-  },
-  {
-    "entity": "slaPolicy",
-    "through": 2
-  },
-  {
-    "entity": "supportQueue",
-    "through": 2
-  },
-  {
-    "entity": "noteGroup",
-    "through": 2
-  },
-  {
-    "entity": "eventStatus",
-    "through": 2
-  },
-  {
-    "entity": "eventDeliveryStatus",
-    "through": 2
-  },
-  {
-    "entity": "eventType",
-    "through": 2
-  },
-  {
-    "entity": "eventCategory",
-    "through": 2
-  },
-  {
-    "entity": "holiday",
-    "through": 2
-  },
-  {
-    "entity": "contractService",
-    "through": 2
-  },
-  {
-    "entity": "contract",
-    "through": 2
-  },
-  {
-    "entity": "ticket",
-    "through": 2
-  },
-  {
-    "entity": "event",
-    "through": 2
-  },
-  {
-    "entity": "dashboardTemplate",
-    "through": 2
-  },
-  {
-    "entity": "favoriteTemplate",
-    "through": 2
-  },
-  {
-    "entity": "serverLandscapeType",
-    "through": 2
-  },
-  {
-    "entity": "serverLandscapeTypeUsage",
-    "through": 2
-  },
-  {
-    "entity": "serverLandscape",
-    "through": 2
-  },
-  {
-    "entity": "product",
-    "through": 2
-  },
-  {
-    "entity": "note",
-    "through": 2
-  },
-  {
-    "entity": "webhookAuthenticationType",
-    "through": 2
-  },
-  {
-    "entity": "webhookSubscriptionType",
-    "through": 2
-  },
-  {
-    "entity": "webhookSubscriptionPayloadType",
-    "through": 2
-  },
-  {
-    "entity": "webhookSubscriptionMethod",
-    "through": 2
-  },
-  {
-    "entity": "webhookDeliveryStatus",
-    "through": 2
-  },
-  {
-    "entity": "webhookSubscription",
-    "through": 2
-  },
-  {
-    "entity": "salesOpportunityStage",
-    "through": 2
-  },
-  {
-    "entity": "salesOpportunityForecast",
-    "through": 2
-  },
-  {
-    "entity": "salesOpportunitySource",
-    "through": 2
-  },
-  {
-    "entity": "salesOpportunityLossReason",
-    "through": 2
-  },
-  {
-    "entity": "salesOpportunityResultStatus",
-    "through": 2
-  },
-  {
-    "entity": "salesOpportunity",
-    "through": 2
-  },
-  {
-    "entity": "effortEstimateStatus",
-    "through": 2
-  },
-  {
-    "entity": "effortEstimatePositionTemplate",
-    "through": 2
-  },
-  {
-    "entity": "effortEstimate",
-    "through": 2
-  },
-  {
-    "entity": "effortEstimatePosition",
-    "through": 2
-  },
-  {
-    "entity": "internalCaseStatus",
-    "through": 2
-  },
-  {
-    "entity": "internalCaseCategory",
-    "through": 2
-  },
-  {
-    "entity": "internalCase",
-    "through": 2
-  },
-  {
-    "entity": "knowledgeArticleStatus",
-    "through": 2
-  },
-  {
-    "entity": "knowledgeArticleVisibility",
-    "through": 2
-  },
-  {
-    "entity": "knowledgeArticleCategory",
-    "through": 2
-  },
-  {
-    "entity": "knowledgeArticle",
-    "through": 2
-  },
-  {
-    "entity": "documentType",
-    "through": 2
-  },
-  {
-    "entity": "emailInboxProcessingMode",
-    "through": 2
-  },
-  {
-    "entity": "inboundEmailStatus",
-    "through": 2
-  },
-  {
-    "entity": "emailDeliveryStatus",
-    "through": 2
-  },
-  {
-    "entity": "emailTemplate",
-    "through": 2
-  },
-  {
-    "entity": "emailList",
-    "through": 2
-  },
-  {
-    "entity": "marketingCampaignStatus",
-    "through": 2
-  },
-  {
-    "entity": "marketingCampaignType",
-    "through": 2
-  },
-  {
-    "entity": "marketingCampaign",
-    "through": 2
-  },
-  {
-    "entity": "teamsTemplate",
-    "through": 2
-  },
-  {
-    "entity": "teamsDeliveryStatus",
-    "through": 2
-  },
-  {
-    "entity": "teamsSubscription",
-    "through": 2
-  },
-  {
-    "entity": "teamsDelivery",
-    "through": 2
-  },
-  {
-    "entity": "inboxTemplate",
-    "through": 2
-  },
-  {
-    "entity": "inboxSubscription",
-    "through": 2
-  },
-  {
-    "entity": "inboxNotification",
-    "through": 2
-  },
-  {
-    "entity": "aiChatTranscription",
-    "through": 2
-  },
-  {
-    "entity": "aiProviderType",
-    "through": 2
-  },
-  {
-    "entity": "aiProviderModel",
-    "through": 2
-  },
-  {
-    "entity": "aiEntityGenerationTemplate",
-    "through": 2
-  },
-  {
-    "entity": "mcpServerConfig",
-    "through": 2
-  },
-  {
-    "entity": "importSource",
-    "through": 2
-  },
-  {
-    "entity": "importTemplate",
-    "through": 2
-  },
-  {
-    "entity": "importTemplateValueMapping",
-    "through": 2
-  },
-  {
-    "entity": "aiAgent",
-    "through": 2
-  },
-  {
-    "entity": "aiAgentVersion",
-    "through": 2
-  },
-  {
-    "entity": "aiAgentPlaybook",
-    "through": 2
-  },
-  {
-    "entity": "aiAgentMemory",
-    "through": 2
-  },
-  {
-    "entity": "customFieldType",
-    "through": 2
-  },
-  {
-    "entity": "language",
-    "after": 2
-  },
-  {
-    "entity": "money",
-    "after": 2
-  },
-  {
-    "entity": "country",
-    "after": 2
-  },
-  {
-    "entity": "aiPromptTemplate",
-    "after": 2
-  },
-  {
-    "entity": "aiPromptVersion",
-    "after": 2
-  },
-  {
-    "entity": "translation",
-    "after": 2
-  },
-  {
-    "entity": "workHour",
-    "after": 2
-  },
-  {
-    "entity": "workHourWeek",
-    "after": 2
-  },
-  {
-    "entity": "holidayGroup",
-    "after": 2
-  },
-  {
-    "entity": "addressType",
-    "after": 2
-  },
-  {
-    "entity": "companyIndustry",
-    "after": 2
-  },
-  {
-    "entity": "companySegment",
-    "after": 2
-  },
-  {
-    "entity": "companySize",
-    "after": 2
-  },
-  {
-    "entity": "companyAnnualRevenueClass",
-    "after": 2
-  },
-  {
-    "entity": "companyChurnRiskReason",
-    "after": 2
-  },
-  {
-    "entity": "company",
-    "after": 2
-  },
-  {
-    "entity": "address",
-    "after": 2
-  },
-  {
-    "entity": "companyRelationshipType",
-    "after": 2
-  },
-  {
-    "entity": "companyRelationship",
-    "after": 2
-  },
-  {
-    "entity": "entityGroup",
-    "after": 2
-  },
-  {
-    "entity": "entity",
-    "after": 2
-  },
-  {
-    "entity": "systemAlertRule",
-    "after": 2
-  },
-  {
-    "entity": "entityRoute",
-    "after": 2
-  },
-  {
-    "entity": "changeLogAction",
-    "after": 2
-  },
-  {
-    "entity": "scriptButton",
-    "after": 2
-  },
-  {
-    "entity": "kpiAggregation",
-    "after": 2
-  },
-  {
-    "entity": "kpiTimeframe",
-    "after": 2
-  },
-  {
-    "entity": "kpiType",
-    "after": 2
-  },
-  {
-    "entity": "kpi",
-    "after": 2
-  },
-  {
-    "entity": "roleStage",
-    "after": 2
-  },
-  {
-    "entity": "role",
-    "after": 2
-  },
-  {
-    "entity": "permission",
-    "after": 2
-  },
-  {
-    "entity": "personDepartment",
-    "after": 2
-  },
-  {
-    "entity": "personDecisionRole",
-    "after": 2
-  },
-  {
-    "entity": "personFunction",
-    "after": 2
-  },
-  {
-    "entity": "personJobTitle",
-    "after": 2
-  },
-  {
-    "entity": "personSalutation",
-    "after": 2
-  },
-  {
-    "entity": "personTitle",
-    "after": 2
-  },
-  {
-    "entity": "personType",
-    "after": 2
-  },
-  {
-    "entity": "person",
-    "after": 2
-  },
-  {
-    "entity": "phoneCall",
-    "after": 2
-  },
-  {
-    "entity": "socialMediaType",
-    "after": 2
-  },
-  {
-    "entity": "socialMedia",
-    "after": 2
-  },
-  {
-    "entity": "ticketPriority",
-    "after": 2
-  },
-  {
-    "entity": "ticketStatus",
-    "after": 2
-  },
-  {
-    "entity": "ticketType",
-    "after": 2
-  },
-  {
-    "entity": "ticketCategory",
-    "after": 2
-  },
-  {
-    "entity": "ticketSource",
-    "after": 2
-  },
-  {
-    "entity": "supportTeam",
-    "after": 2
-  },
-  {
-    "entity": "slaPolicy",
-    "after": 2
-  },
-  {
-    "entity": "supportQueue",
-    "after": 2
-  },
-  {
-    "entity": "noteGroup",
-    "after": 2
-  },
-  {
-    "entity": "eventStatus",
-    "after": 2
-  },
-  {
-    "entity": "eventDeliveryStatus",
-    "after": 2
-  },
-  {
-    "entity": "eventType",
-    "after": 2
-  },
-  {
-    "entity": "eventCategory",
-    "after": 2
-  },
-  {
-    "entity": "holiday",
-    "after": 2
-  },
-  {
-    "entity": "contractService",
-    "after": 2
-  },
-  {
-    "entity": "contract",
-    "after": 2
-  },
-  {
-    "entity": "ticket",
-    "after": 2
-  },
-  {
-    "entity": "event",
-    "after": 2
-  },
-  {
-    "entity": "dashboardTemplate",
-    "after": 2
-  },
-  {
-    "entity": "favoriteTemplate",
-    "after": 2
-  },
-  {
-    "entity": "serverLandscapeType",
-    "after": 2
-  },
-  {
-    "entity": "serverLandscapeTypeUsage",
-    "after": 2
-  },
-  {
-    "entity": "serverLandscape",
-    "after": 2
-  },
-  {
-    "entity": "product",
-    "after": 2
-  },
-  {
-    "entity": "note",
-    "after": 2
-  },
-  {
-    "entity": "webhookAuthenticationType",
-    "after": 2
-  },
-  {
-    "entity": "webhookSubscriptionType",
-    "after": 2
-  },
-  {
-    "entity": "webhookSubscriptionPayloadType",
-    "after": 2
-  },
-  {
-    "entity": "webhookSubscriptionMethod",
-    "after": 2
-  },
-  {
-    "entity": "webhookDeliveryStatus",
-    "after": 2
-  },
-  {
-    "entity": "webhookSubscription",
-    "after": 2
-  },
-  {
-    "entity": "salesOpportunityStage",
-    "after": 2
-  },
-  {
-    "entity": "salesOpportunityForecast",
-    "after": 2
-  },
-  {
-    "entity": "salesOpportunitySource",
-    "after": 2
-  },
-  {
-    "entity": "salesOpportunityLossReason",
-    "after": 2
-  },
-  {
-    "entity": "salesOpportunityResultStatus",
-    "after": 2
-  },
-  {
-    "entity": "salesOpportunity",
-    "after": 2
-  },
-  {
-    "entity": "effortEstimateStatus",
-    "after": 2
-  },
-  {
-    "entity": "effortEstimatePositionTemplate",
-    "after": 2
-  },
-  {
-    "entity": "effortEstimate",
-    "after": 2
-  },
-  {
-    "entity": "effortEstimatePosition",
-    "after": 2
-  },
-  {
-    "entity": "internalCaseStatus",
-    "after": 2
-  },
-  {
-    "entity": "internalCaseCategory",
-    "after": 2
-  },
-  {
-    "entity": "internalCase",
-    "after": 2
-  },
-  {
-    "entity": "knowledgeArticleStatus",
-    "after": 2
-  },
-  {
-    "entity": "knowledgeArticleVisibility",
-    "after": 2
-  },
-  {
-    "entity": "knowledgeArticleCategory",
-    "after": 2
-  },
-  {
-    "entity": "knowledgeArticle",
-    "after": 2
-  },
-  {
-    "entity": "documentType",
-    "after": 2
-  },
-  {
-    "entity": "emailInboxProcessingMode",
-    "after": 2
-  },
-  {
-    "entity": "inboundEmailStatus",
-    "after": 2
-  },
-  {
-    "entity": "emailDeliveryStatus",
-    "after": 2
-  },
-  {
-    "entity": "emailTemplate",
-    "after": 2
-  },
-  {
-    "entity": "emailList",
-    "after": 2
-  },
-  {
-    "entity": "marketingCampaignStatus",
-    "after": 2
-  },
-  {
-    "entity": "marketingCampaignType",
-    "after": 2
-  },
-  {
-    "entity": "marketingCampaign",
-    "after": 2
-  },
-  {
-    "entity": "teamsTemplate",
-    "after": 2
-  },
-  {
-    "entity": "teamsDeliveryStatus",
-    "after": 2
-  },
-  {
-    "entity": "teamsSubscription",
-    "after": 2
-  },
-  {
-    "entity": "teamsDelivery",
-    "after": 2
-  },
-  {
-    "entity": "inboxTemplate",
-    "after": 2
-  },
-  {
-    "entity": "inboxSubscription",
-    "after": 2
-  },
-  {
-    "entity": "inboxNotification",
-    "after": 2
-  },
-  {
-    "entity": "aiChatTranscription",
-    "after": 2
-  },
-  {
-    "entity": "aiProviderType",
-    "after": 2
-  },
-  {
-    "entity": "aiProviderModel",
-    "after": 2
-  },
-  {
-    "entity": "aiEntityGenerationTemplate",
-    "after": 2
-  },
-  {
-    "entity": "mcpServerConfig",
-    "after": 2
-  },
-  {
-    "entity": "importSource",
-    "after": 2
-  },
-  {
-    "entity": "importTemplate",
-    "after": 2
-  },
-  {
-    "entity": "importTemplateValueMapping",
-    "after": 2
-  },
-  {
-    "entity": "aiAgent",
-    "after": 2
-  },
-  {
-    "entity": "aiAgentVersion",
-    "after": 2
-  },
-  {
-    "entity": "aiAgentPlaybook",
-    "after": 2
-  },
-  {
-    "entity": "aiAgentMemory",
-    "after": 2
-  },
-  {
-    "entity": "customFieldType",
-    "after": 2
-  }
+  "json-default/language/languageData_0001_insert.json",
+  "json-default/money/moneyData_0001_insert.json",
+  "json-default/country/countryData_0001_insert.json",
+  "json-default/aiPromptTemplate/aiPromptTemplateData_0001_insert.json",
+  "json-default/aiPromptVersion/aiPromptVersionData_0001_insert.json",
+  "json-default/translation/translationData_0001_insert.json",
+  "json-default/workHour/workHourData_0001_insert.json",
+  "json-default/workHourWeek/workHourWeekData_0001_insert.json",
+  "json-default/holidayGroup/holidayGroupData_0001_insert.json",
+  "json-demonstration/holidayGroup/holidayGroupData_0001_insert.json",
+  "json-demonstration/holidayGroup/holidayGroupData_0002_update.json",
+  "json-default/addressType/addressTypeData_0001_insert.json",
+  "json-default/companyIndustry/companyIndustryData_0001_insert.json",
+  "json-default/companySegment/companySegmentData_0001_insert.json",
+  "json-default/companySize/companySizeData_0001_insert.json",
+  "json-default/companyAnnualRevenueClass/companyAnnualRevenueClassData_0001_insert.json",
+  "json-default/companyChurnRiskReason/companyChurnRiskReasonData_0001_insert.json",
+  "json-default/company/companyData_0001_insert.json",
+  "json-demonstration/company/companyData_0001_insert.json",
+  "json-demonstration/company/companyData_0002_update.json",
+  "json-demonstration/address/addressData_0001_insert.json",
+  "json-default/companyRelationshipType/companyRelationshipTypeData_0001_insert.json",
+  "json-demonstration/companyRelationship/companyRelationshipData_0001_insert.json",
+  "json-default/entityGroup/entityGroupData_0001_insert.json",
+  "json-default/entity/entityData_0001_insert.json",
+  "json-default/systemAlertRule/systemAlertRuleData_0001_insert.json",
+  "json-default/entityRoute/entityRouteData_0001_insert.json",
+  "json-default/changeLogAction/changeLogActionData_0001_insert.json",
+  "json-default/scriptButton/scriptButtonData_0001_insert.json",
+  "json-default/kpiAggregation/kpiAggregationData_0001_insert.json",
+  "json-default/kpiTimeframe/kpiTimeframeData_0001_insert.json",
+  "json-default/kpiType/kpiTypeData_0001_insert.json",
+  "json-default/kpi/kpiData_0001_insert.json",
+  "json-default/roleStage/roleStageData_0001_insert.json",
+  "json-default/role/roleData_0001_insert.json",
+  "json-default/permission/permissionData_0001_insert.json",
+  "json-default/personDepartment/personDepartmentData_0001_insert.json",
+  "json-default/personDecisionRole/personDecisionRoleData_0001_insert.json",
+  "json-default/personFunction/personFunctionData_0001_insert.json",
+  "json-default/personJobTitle/personJobTitleData_0001_insert.json",
+  "json-default/personSalutation/personSalutationData_0001_insert.json",
+  "json-default/personTitle/personTitleData_0001_insert.json",
+  "json-default/personType/personTypeData_0001_insert.json",
+  "json-production/person/personData_0001_insert.json",
+  "json-demonstration/person/personData_0001_insert.json",
+  "json-demonstration/phoneCall/phoneCallData_0001_insert.json",
+  "json-default/socialMediaType/socialMediaTypeData_0001_insert.json",
+  "json-demonstration/socialMedia/socialMediaData_0001_insert.json",
+  "json-default/ticketPriority/ticketPriorityData_0001_insert.json",
+  "json-default/ticketStatus/ticketStatusData_0001_insert.json",
+  "json-default/ticketType/ticketTypeData_0001_insert.json",
+  "json-default/ticketCategory/ticketCategoryData_0001_insert.json",
+  "json-default/ticketSource/ticketSourceData_0001_insert.json",
+  "json-default/supportTeam/supportTeamData_0001_insert.json",
+  "json-default/slaPolicy/slaPolicyData_0001_insert.json",
+  "json-default/supportQueue/supportQueueData_0001_insert.json",
+  "json-default/noteGroup/noteGroupData_0001_insert.json",
+  "json-default/eventStatus/eventStatusData_0001_insert.json",
+  "json-default/eventDeliveryStatus/eventDeliveryStatusData_0001_insert.json",
+  "json-default/eventType/eventTypeData_0001_insert.json",
+  "json-default/eventCategory/eventCategoryData_0001_insert.json",
+  "json-default/holiday/holidayData_0001_insert.json",
+  "json-demonstration/holiday/holidayData_0001_update.json",
+  "json-default/contractService/contractServiceData_0001_insert.json",
+  "json-demonstration/contract/contractData_0001_insert.json",
+  "json-demonstration/ticket/ticketData_0001_insert.json",
+  "json-demonstration/event/eventData_0001_insert.json",
+  "json-default/dashboardTemplate/dashboardTemplateData_0001_insert.json",
+  "json-default/favoriteTemplate/favoriteTemplateData_0001_insert.json",
+  "json-demonstration/serverLandscapeType/serverLandscapeTypeData_0001_insert.json",
+  "json-demonstration/serverLandscapeTypeUsage/serverLandscapeTypeUsageData_0001_insert.json",
+  "json-demonstration/serverLandscape/serverLandscapeData_0001_insert.json",
+  "json-default/product/productData_0001_insert.json",
+  "json-demonstration/product/productData_0001_insert.json",
+  "json-demonstration/product/productData_0002_update.json",
+  "json-default/note/noteData_0001_insert.json",
+  "json-demonstration/note/noteData_0001_insert.json",
+  "json-demonstration/note/noteData_0002_update.json",
+  "json-default/webhookAuthenticationType/webhookAuthenticationTypeData_0001_insert.json",
+  "json-demonstration/webhookAuthenticationType/webhookAuthenticationTypeData_0001_insert.json",
+  "json-default/webhookSubscriptionType/webhookSubscriptionTypeData_0001_insert.json",
+  "json-default/webhookSubscriptionPayloadType/webhookSubscriptionPayloadTypeData_0001_insert.json",
+  "json-default/webhookSubscriptionMethod/webhookSubscriptionMethodData_0001_insert.json",
+  "json-default/webhookDeliveryStatus/webhookDeliveryStatusData_0001_insert.json",
+  "json-default/webhookSubscription/webhookSubscriptionData_0001_insert.json",
+  "json-default/salesOpportunityStage/salesOpportunityStageData_0001_insert.json",
+  "json-default/salesOpportunityForecast/salesOpportunityForecastData_0001_insert.json",
+  "json-default/salesOpportunitySource/salesOpportunitySourceData_0001_insert.json",
+  "json-default/salesOpportunityLossReason/salesOpportunityLossReasonData_0001_insert.json",
+  "json-default/salesOpportunityResultStatus/salesOpportunityResultStatusData_0001_insert.json",
+  "json-demonstration/salesOpportunity/salesOpportunityData_0001_insert.json",
+  "json-default/effortEstimateStatus/effortEstimateStatusData_0001_insert.json",
+  "json-default/effortEstimatePositionTemplate/effortEstimatePositionTemplateData_0001_insert.json",
+  "json-demonstration/effortEstimate/effortEstimateData_0001_insert.json",
+  "json-demonstration/effortEstimatePosition/effortEstimatePositionData_0001_insert.json",
+  "json-default/internalCaseStatus/internalCaseStatusData_0001_insert.json",
+  "json-default/internalCaseCategory/internalCaseCategoryData_0001_insert.json",
+  "json-demonstration/internalCase/internalCaseData_0001_insert.json",
+  "json-default/knowledgeArticleStatus/knowledgeArticleStatusData_0001_insert.json",
+  "json-default/knowledgeArticleVisibility/knowledgeArticleVisibilityData_0001_insert.json",
+  "json-default/knowledgeArticleCategory/knowledgeArticleCategoryData_0001_insert.json",
+  "json-default/knowledgeArticle/knowledgeArticleData_0001_insert.json",
+  "json-demonstration/knowledgeArticle/knowledgeArticleData_0001_insert.json",
+  "json-demonstration/knowledgeArticle/knowledgeArticleData_0002_update.json",
+  "json-default/documentType/documentTypeData_0001_insert.json",
+  "json-default/emailInboxProcessingMode/emailInboxProcessingModeData_0001_insert.json",
+  "json-default/inboundEmailStatus/inboundEmailStatusData_0001_insert.json",
+  "json-default/emailDeliveryStatus/emailDeliveryStatusData_0001_insert.json",
+  "json-default/emailTemplate/emailTemplateData_0001_insert.json",
+  "json-demonstration/emailTemplate/emailTemplateData_0001_update.json",
+  "json-default/emailList/emailListData_0001_insert.json",
+  "json-demonstration/emailList/emailListData_0001_update.json",
+  "json-default/marketingCampaignStatus/marketingCampaignStatusData_0001_insert.json",
+  "json-default/marketingCampaignType/marketingCampaignTypeData_0001_insert.json",
+  "json-demonstration/marketingCampaign/marketingCampaignData_0001_insert.json",
+  "json-default/teamsTemplate/teamsTemplateData_0001_insert.json",
+  "json-demonstration/teamsTemplate/teamsTemplateData_0001_update.json",
+  "json-default/teamsDeliveryStatus/teamsDeliveryStatusData_0001_insert.json",
+  "json-default/inboxTemplate/inboxTemplateData_0001_insert.json",
+  "json-default/inboxSubscription/inboxSubscriptionData_0001_insert.json",
+  "json-default/aiProviderType/aiProviderTypeData_0001_insert.json",
+  "json-default/aiProviderModel/aiProviderModelData_0001_insert.json",
+  "json-demonstration/aiProviderModel/aiProviderModelData_0001_update.json",
+  "json-default/aiEntityGenerationTemplate/aiEntityGenerationTemplateData_0001_insert.json",
+  "json-default/importSource/importSourceData_0001_insert.json",
+  "json-default/importTemplate/importTemplateData_0001_insert.json",
+  "json-default/importTemplateValueMapping/importTemplateValueMappingData_0001_insert.json",
+  "json-default/aiAgent/aiAgentData_0001_insert.json",
+  "json-demonstration/aiAgent/aiAgentData_0001_update.json",
+  "json-default/aiAgentVersion/aiAgentVersionData_0001_insert.json",
+  "json-default/aiAgentPlaybook/aiAgentPlaybookData_0001_insert.json",
+  "json-default/aiAgentMemory/aiAgentMemoryData_0001_insert.json",
+  "json-default/customFieldType/customFieldTypeData_0001_insert.json",
+  "json-default/aiPromptTemplate/aiPromptTemplateData_0002_update.json",
+  "json-demonstration/company/companyData_0003_update.json",
+  "json-default/entityGroup/entityGroupData_0002_update.json",
+  "json-default/role/roleData_0002_update.json",
+  "json-demonstration/role/roleData_0001_update.json",
+  "json-production/person/personData_0002_update.json",
+  "json-demonstration/person/personData_0002_update.json",
+  "json-demonstration/contract/contractData_0002_update.json",
+  "json-default/dashboardTemplate/dashboardTemplateData_0002_update.json",
+  "json-demonstration/salesOpportunity/salesOpportunityData_0002_update.json",
+  "json-demonstration/emailList/emailListData_0002_update.json",
+  "json-default/translation/translationData_0002_insert.json"
 ]

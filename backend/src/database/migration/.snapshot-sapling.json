@@ -2424,7 +2424,8 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.person_item"
+          "referencedTableName": "public.person_item",
+          "deleteRule": "cascade"
         },
         "ai_agent_run_item_playbook_handle_foreign": {
           "columnNames": [
@@ -3224,7 +3225,8 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.person_item"
+          "referencedTableName": "public.person_item",
+          "deleteRule": "cascade"
         },
         "ai_chat_attachment_item_session_handle_foreign": {
           "columnNames": [
@@ -3614,7 +3616,8 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.person_item"
+          "referencedTableName": "public.person_item",
+          "deleteRule": "cascade"
         },
         "ai_chat_message_item_session_handle_foreign": {
           "columnNames": [
@@ -3922,7 +3925,8 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.person_item"
+          "referencedTableName": "public.person_item",
+          "deleteRule": "cascade"
         },
         "ai_chat_queued_input_item_session_handle_foreign": {
           "columnNames": [
@@ -4422,7 +4426,8 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.person_item"
+          "referencedTableName": "public.person_item",
+          "deleteRule": "cascade"
         },
         "ai_chat_session_item_playbook_handle_foreign": {
           "columnNames": [
@@ -4800,7 +4805,8 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.person_item"
+          "referencedTableName": "public.person_item",
+          "deleteRule": "cascade"
         },
         "ai_chat_tool_action_item_session_handle_foreign": {
           "columnNames": [
@@ -5247,7 +5253,8 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.person_item"
+          "referencedTableName": "public.person_item",
+          "deleteRule": "cascade"
         },
         "ai_chat_transcription_item_provider_handle_foreign": {
           "columnNames": [
@@ -8105,7 +8112,8 @@
             "handle"
           ],
           "referencedTableName": "public.person_item",
-          "updateRule": "cascade"
+          "updateRule": "cascade",
+          "deleteRule": "cascade"
         },
         "automation_event_item_source_entity_handle_foreign": {
           "columnNames": [
@@ -8783,7 +8791,8 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.person_item"
+          "referencedTableName": "public.person_item",
+          "deleteRule": "cascade"
         }
       },
       "comment": null
@@ -9205,7 +9214,7 @@
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
-          "nullable": false,
+          "nullable": true,
           "unique": false,
           "length": null,
           "precision": null,
@@ -9331,7 +9340,8 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.person_item"
+          "referencedTableName": "public.person_item",
+          "deleteRule": "set null"
         }
       },
       "comment": null
@@ -13117,7 +13127,8 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.person_item"
+          "referencedTableName": "public.person_item",
+          "deleteRule": "cascade"
         }
       },
       "comment": null
@@ -13391,7 +13402,8 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.person_item"
+          "referencedTableName": "public.person_item",
+          "deleteRule": "cascade"
         }
       },
       "comment": null
@@ -13636,7 +13648,7 @@
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
-          "nullable": false,
+          "nullable": true,
           "unique": false,
           "length": null,
           "precision": null,
@@ -13766,7 +13778,8 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.person_item"
+          "referencedTableName": "public.person_item",
+          "deleteRule": "set null"
         },
         "document_item_type_handle_foreign": {
           "columnNames": [
@@ -16637,7 +16650,7 @@
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
-          "nullable": false,
+          "nullable": true,
           "unique": false,
           "length": null,
           "precision": null,
@@ -17077,7 +17090,8 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.person_item"
+          "referencedTableName": "public.person_item",
+          "deleteRule": "set null"
         },
         "email_delivery_item_customer_company_handle_foreign": {
           "columnNames": [
@@ -17875,7 +17889,8 @@
             "handle"
           ],
           "referencedTableName": "public.person_item",
-          "updateRule": "cascade"
+          "updateRule": "cascade",
+          "deleteRule": "cascade"
         }
       },
       "comment": null
@@ -18904,7 +18919,8 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.person_item"
+          "referencedTableName": "public.person_item",
+          "deleteRule": "cascade"
         },
         "email_subscription_item_template_handle_foreign": {
           "columnNames": [
@@ -20761,7 +20777,7 @@
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
-          "nullable": false,
+          "nullable": true,
           "unique": false,
           "length": null,
           "precision": null,
@@ -20992,6 +21008,23 @@
           "collation": null,
           "enumItems": [],
           "mappedType": "integer"
+        },
+        "send_calendar_invitations": {
+          "name": "send_calendar_invitations",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": "false",
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "boolean"
         },
         "start_date": {
           "name": "start_date",
@@ -21334,7 +21367,8 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.person_item"
+          "referencedTableName": "public.person_item",
+          "deleteRule": "set null"
         },
         "event_item_effort_estimate_handle_foreign": {
           "columnNames": [
@@ -24050,7 +24084,7 @@
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
-          "nullable": false,
+          "nullable": true,
           "unique": false,
           "length": null,
           "precision": null,
@@ -24620,7 +24654,8 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.person_item"
+          "referencedTableName": "public.person_item",
+          "deleteRule": "set null"
         },
         "import_batch_item_import_template_handle_foreign": {
           "columnNames": [
@@ -27578,7 +27613,7 @@
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
-          "nullable": false,
+          "nullable": true,
           "unique": false,
           "length": null,
           "precision": null,
@@ -27680,7 +27715,8 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.person_item"
+          "referencedTableName": "public.person_item",
+          "deleteRule": "set null"
         }
       },
       "comment": null
@@ -32395,7 +32431,8 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.person_item"
+          "referencedTableName": "public.person_item",
+          "deleteRule": "cascade"
         }
       },
       "comment": null
@@ -34154,7 +34191,8 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.person_item"
+          "referencedTableName": "public.person_item",
+          "deleteRule": "cascade"
         }
       },
       "comment": null
@@ -34801,7 +34839,7 @@
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
-          "nullable": false,
+          "nullable": true,
           "unique": false,
           "length": null,
           "precision": null,
@@ -34938,7 +34976,8 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.person_item"
+          "referencedTableName": "public.person_item",
+          "deleteRule": "set null"
         }
       },
       "comment": null
@@ -35727,7 +35766,7 @@
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
-          "nullable": false,
+          "nullable": true,
           "unique": false,
           "length": null,
           "precision": null,
@@ -36186,7 +36225,8 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.person_item"
+          "referencedTableName": "public.person_item",
+          "deleteRule": "set null"
         },
         "sales_opportunity_item_forecast_handle_foreign": {
           "columnNames": [
@@ -37292,7 +37332,7 @@
             "handle"
           ],
           "referencedTableName": "public.person_item",
-          "deleteRule": "set null"
+          "deleteRule": "cascade"
         }
       },
       "comment": null
@@ -39537,7 +39577,8 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.person_item"
+          "referencedTableName": "public.person_item",
+          "deleteRule": "cascade"
         },
         "social_media_item_type_handle_foreign": {
           "columnNames": [
@@ -42887,7 +42928,7 @@
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
-          "nullable": false,
+          "nullable": true,
           "unique": false,
           "length": null,
           "precision": null,
@@ -43232,7 +43273,8 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.person_item"
+          "referencedTableName": "public.person_item",
+          "deleteRule": "set null"
         },
         "teams_delivery_item_entity_handle_foreign": {
           "columnNames": [
@@ -44263,7 +44305,7 @@
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
-          "nullable": false,
+          "nullable": true,
           "unique": false,
           "length": null,
           "precision": null,
@@ -44927,7 +44969,8 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.person_item"
+          "referencedTableName": "public.person_item",
+          "deleteRule": "set null"
         },
         "ticket_item_priority_handle_foreign": {
           "columnNames": [
@@ -45510,7 +45553,7 @@
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
-          "nullable": false,
+          "nullable": true,
           "unique": false,
           "length": null,
           "precision": null,
@@ -45635,7 +45678,8 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.person_item"
+          "referencedTableName": "public.person_item",
+          "deleteRule": "set null"
         },
         "ticket_time_tracking_item_ticket_handle_foreign": {
           "columnNames": [
@@ -45646,7 +45690,8 @@
           "referencedColumnNames": [
             "handle"
           ],
-          "referencedTableName": "public.ticket_item"
+          "referencedTableName": "public.ticket_item",
+          "deleteRule": "cascade"
         }
       },
       "comment": null

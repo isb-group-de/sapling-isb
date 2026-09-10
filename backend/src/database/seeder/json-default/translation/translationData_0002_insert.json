@@ -1,0 +1,26 @@
+[
+  {
+    "entity": "event",
+    "property": "sendCalendarInvitations",
+    "value": "Kalendereinladungen senden",
+    "language": "de"
+  },
+  {
+    "entity": "event",
+    "property": "sendCalendarInvitations",
+    "value": "Send calendar invitations",
+    "language": "en"
+  },
+  {
+    "entity": "event",
+    "property": "sendCalendarInvitationsTooltip",
+    "value": "Überträgt die Teilnehmer an Outlook oder Google. Der Kalenderanbieter kann dadurch Einladungen und Terminaktualisierungen versenden.",
+    "language": "de"
+  },
+  {
+    "entity": "event",
+    "property": "sendCalendarInvitationsTooltip",
+    "value": "Shares participants with Outlook or Google, allowing the calendar provider to send invitations and event updates.",
+    "language": "en"
+  }
+]

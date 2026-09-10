@@ -82,7 +82,7 @@ export class ChangeLogItem {
   @ManyToOne(() => EntityItem, { nullable: false })
   entity!: Rel<EntityItem>;
 
-  @ApiProperty({ type: () => PersonItem })
+  @ApiPropertyOptional({ type: () => PersonItem })
   @Sapling(['isPerson', 'isPartner', 'isCurrentPerson'])
   @SaplingForm({
     order: 200,
@@ -95,8 +95,8 @@ export class ChangeLogItem {
     mobileOrder: 200,
     mobileVisible: false,
   })
-  @ManyToOne(() => PersonItem, { nullable: false })
-  person!: Rel<PersonItem>;
+  @ManyToOne(() => PersonItem, { nullable: true, deleteRule: 'set null' })
+  person?: Rel<PersonItem> | null;
 
   /**
    * First name of the person selected in person.

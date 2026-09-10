@@ -241,6 +241,7 @@ export class InboundEmailItem {
   @ManyToOne(() => PersonItem, {
     updateRule: 'cascade',
     nullable: true,
+    deleteRule: 'set null',
   })
   person?: Rel<PersonItem> | null;
 

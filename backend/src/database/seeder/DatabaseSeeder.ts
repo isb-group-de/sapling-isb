@@ -8,7 +8,7 @@ import {
   markFreshBaseline,
 } from '../baseline/baseline-state';
 
-/** Shared defaults followed by the selected environment, in dependency phases. */
+/** Executes shared and selected-environment files in their explicit registered order. */
 export class DatabaseSeeder extends Seeder {
   async run(em: EntityManager): Promise<void> {
     const dataset = seedDataset();

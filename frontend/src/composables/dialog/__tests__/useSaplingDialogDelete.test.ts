@@ -131,6 +131,46 @@ describe('useSaplingDialogDelete', () => {
     })
   })
 
+  it('keeps mandatory Ticket children selected while optional children remain selectable', async () => {
+    mocks.getDeleteImpact.mockResolvedValue({
+      action: 'delete',
+      references: [
+        {
+          name: 'timeTrackings',
+          entityHandle: 'ticketTimeTracking',
+          kind: '1:m',
+          required: true,
+        },
+        { name: 'events', entityHandle: 'event', kind: '1:m', required: false },
+        {
+          name: 'effortEstimates',
+          entityHandle: 'effortEstimate',
+          kind: '1:m',
+          required: false,
+        },
+      ],
+    })
+    const harness = createHarness()
+    harness.modelValue.value = true
+    await nextTick()
+    await nextTick()
+
+    expect(
+      harness.subject.referenceOptions.value
+        .filter(({ required }) => required)
+        .map(({ name }) => name),
+    ).toEqual(['timeTrackings'])
+    expect(
+      harness.subject.referenceOptions.value
+        .filter(({ required }) => !required)
+        .map(({ name }) => name),
+    ).toEqual(['events', 'effortEstimates'])
+    expect(harness.subject.selectedReferenceNames.value).toEqual([])
+
+    harness.subject.selectAllReferences()
+    expect(harness.subject.selectedReferenceNames.value).toEqual(['events', 'effortEstimates'])
+  })
+
   it('switches synchronized Events to the cancellation action', async () => {
     mocks.getDeleteImpact.mockResolvedValue({ action: 'cancel', references: [] })
     const harness = createHarness()

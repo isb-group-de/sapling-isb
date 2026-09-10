@@ -52,7 +52,7 @@ export class SystemRemediationExecutionItem {
   idempotencyKey!: string;
 
   @Sapling(['isReadOnly'])
-  @ManyToOne(() => PersonItem, { nullable: true })
+  @ManyToOne(() => PersonItem, { nullable: true, deleteRule: 'set null' })
   approvedBy?: Rel<PersonItem> | null;
 
   @Sapling(['isReadOnly', 'isSystem'])

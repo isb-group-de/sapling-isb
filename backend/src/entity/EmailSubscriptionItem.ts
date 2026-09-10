@@ -90,7 +90,7 @@ export class EmailSubscriptionItem {
     mobileOrder: 300,
     mobileVisible: false,
   })
-  @ManyToOne(() => PersonItem, { nullable: false })
+  @ManyToOne(() => PersonItem, { nullable: false, deleteRule: 'cascade' })
   senderPerson!: Rel<PersonItem>;
 
   /**

@@ -29,6 +29,27 @@ type TeamsDeliveryTestDouble = {
 };
 
 describe('TeamsGraphDeliveryService', () => {
+  it('reports a missing sender when the creating person was deleted', async () => {
+    const fork = {
+      findOne: jest.fn<() => Promise<unknown>>().mockResolvedValue({
+        handle: 16,
+        attemptCount: 0,
+        createdBy: null,
+        recipientPerson: {
+          loginName: 'recipient@example.com',
+          type: { handle: 'azure' },
+        },
+      }),
+    };
+    const service = new TeamsGraphDeliveryService(
+      { fork: jest.fn(() => fork) } as never,
+    );
+
+    await expect(service.dispatchDelivery(16)).rejects.toThrow(
+      'teams.senderAzureRequired',
+    );
+  });
+
   it('retries with a refreshed token after a graph authentication error', async () => {
     const flush = jest.fn<() => Promise<void>>().mockResolvedValue();
     const delivery: TeamsDeliveryTestDouble = {

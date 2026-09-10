@@ -101,7 +101,7 @@ export interface EventItem extends SaplingGenericItem {
   /** Title of the event */
   title: string
   /** The person who created the event */
-  creatorPerson: PersonItem
+  creatorPerson?: PersonItem | null
   /** The company that created the event */
   creatorCompany: CompanyItem
   /** Unique transaction handle for the event */
@@ -118,6 +118,8 @@ export interface EventItem extends SaplingGenericItem {
   isPrivate: boolean
   /** Whether the connected calendar should create a Teams or Google Meet link */
   createOnlineMeeting: boolean
+  /** Whether participants should receive invitations from the connected calendar */
+  sendCalendarInvitations: boolean
   /** Optional RFC5545 recurrence rule for repeating events */
   recurrenceRule?: string | null
   /** Original occurrence starts that have been detached from the series */

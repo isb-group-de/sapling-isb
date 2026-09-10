@@ -17,7 +17,10 @@ import type {
   GenericDeleteResultDto,
 } from './dto/delete.dto';
 
-type CascadeReference = GenericDeleteReferenceDto & { mappedBy: string };
+type CascadeReference = GenericDeleteReferenceDto & {
+  mappedBy: string;
+  databaseCascade: boolean;
+};
 
 /** Coordinates delete previews and selected child cascades. */
 @Injectable()
@@ -100,6 +103,9 @@ export class GenericDeleteService {
 
     await this.em.transactional(
       async () => {
+        const visitedRecords = new Set<string>([
+          `${entityHandle}:${String(normalizedParentHandle)}`,
+        ]);
         for (const reference of selectedReferences) {
           await this.deleteRelationChildren(
             reference,
@@ -107,6 +113,7 @@ export class GenericDeleteService {
             currentUser,
             transactionalContext,
             postCommitTasks,
+            visitedRecords,
           );
         }
 
@@ -135,6 +142,7 @@ export class GenericDeleteService {
     currentUser: PersonItem,
     scriptContext: ScriptServerContext,
     postCommitTasks: GenericPostCommitTask[],
+    visitedRecords: Set<string>,
   ): Promise<void> {
     const entityClass = this.genericQueryService.getEntityClass(
       reference.entityHandle,
@@ -152,14 +160,48 @@ export class GenericDeleteService {
       );
 
     for (const childHandle of childHandles) {
-      await this.genericEntityMutationService.delete(
+      await this.deleteRecordWithRequiredChildren(
         reference.entityHandle,
         childHandle,
         currentUser,
         scriptContext,
-        { postCommitTasks },
+        postCommitTasks,
+        visitedRecords,
       );
     }
+  }
+
+  private async deleteRecordWithRequiredChildren(
+    entityHandle: string,
+    handle: string | number,
+    currentUser: PersonItem,
+    scriptContext: ScriptServerContext,
+    postCommitTasks: GenericPostCommitTask[],
+    visitedRecords: Set<string>,
+  ): Promise<void> {
+    const recordKey = `${entityHandle}:${String(handle)}`;
+    if (visitedRecords.has(recordKey)) return;
+    visitedRecords.add(recordKey);
+
+    for (const reference of this.getCascadeReferences(entityHandle)) {
+      if (!reference.required || reference.databaseCascade) continue;
+      await this.deleteRelationChildren(
+        reference,
+        this.genericReferenceService.normalizeHandleValue(entityHandle, handle),
+        currentUser,
+        scriptContext,
+        postCommitTasks,
+        visitedRecords,
+      );
+    }
+
+    await this.genericEntityMutationService.delete(
+      entityHandle,
+      handle,
+      currentUser,
+      scriptContext,
+      { postCommitTasks },
+    );
   }
 
   private async assertDeleteAccess(
@@ -196,17 +238,22 @@ export class GenericDeleteService {
     return this.getCascadeReferencesForTemplate(
       this.templateService.getEntityTemplate(entityHandle),
     )
-      .map(({ template, mappedBy }) => ({
-        name: template.name,
-        entityHandle: template.referenceName,
-        kind: '1:m' as const,
-        mappedBy,
-        required: this.hasDatabaseDeleteCascade(
+      .map(({ template, mappedBy }) => {
+        const owningRelation = this.getOwningRelation(
           template.referenceName,
           mappedBy,
-        ),
-        hidden: template.options?.includes('isHideAsReference') ?? false,
-      }))
+        );
+        const databaseCascade = owningRelation?.deleteRule === 'cascade';
+        return {
+          name: template.name,
+          entityHandle: template.referenceName,
+          kind: '1:m' as const,
+          mappedBy,
+          required: databaseCascade || owningRelation?.nullable === false,
+          databaseCascade,
+          hidden: template.options?.includes('isHideAsReference') ?? false,
+        };
+      })
       .filter((reference) => reference.required || !reference.hidden)
       .map((reference) => ({
         name: reference.name,
@@ -214,14 +261,15 @@ export class GenericDeleteService {
         kind: reference.kind,
         mappedBy: reference.mappedBy,
         required: reference.required,
+        databaseCascade: reference.databaseCascade,
       }));
   }
 
-  private hasDatabaseDeleteCascade(
+  private getOwningRelation(
     childEntityHandle: string,
     mappedBy: string,
-  ): boolean {
-    const owningRelation = this.templateService
+  ): EntityTemplateDto | undefined {
+    return this.templateService
       .getEntityTemplate(childEntityHandle)
       .find(
         (field) =>
@@ -229,8 +277,6 @@ export class GenericDeleteService {
           field.isReference &&
           ['m:1', '1:1'].includes(field.kind ?? ''),
       );
-
-    return owningRelation?.deleteRule === 'cascade';
   }
 
   private getCascadeReferencesForTemplate(template: EntityTemplateDto[]) {
@@ -264,9 +310,13 @@ export class GenericDeleteService {
     if (invalidName) {
       throw new BadRequestException('global.invalidDeleteReference');
     }
-    return normalizedNames.map(
+    const mandatoryApplicationCascades = this.getCascadeReferences(
+      entityHandle,
+    ).filter((reference) => reference.required && !reference.databaseCascade);
+    const selectedOptionalCascades = normalizedNames.map(
       (name) => available.get(name) as CascadeReference,
     );
+    return [...mandatoryApplicationCascades, ...selectedOptionalCascades];
   }
 
   private extractHandle(item: unknown): string | number | null {

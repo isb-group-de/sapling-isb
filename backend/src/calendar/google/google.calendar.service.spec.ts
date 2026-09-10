@@ -579,6 +579,7 @@ describe('GoogleCalendarService meeting creation', () => {
       endDate: new Date('2026-09-10T10:00:00.000Z'),
       participants: [],
       createOnlineMeeting: true,
+      sendCalendarInvitations: false,
     } as unknown as EventItem;
     const service = new GoogleCalendarService(
       {} as never,
@@ -597,6 +598,7 @@ describe('GoogleCalendarService meeting creation', () => {
       expect.objectContaining({
         calendarId: 'primary',
         auth: 'access-token',
+        sendUpdates: 'none',
         conferenceDataVersion: 1,
         requestBody: expect.objectContaining({
           conferenceData: {

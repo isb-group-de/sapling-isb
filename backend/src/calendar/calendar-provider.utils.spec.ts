@@ -26,6 +26,7 @@ const createEvent = (): EventItem =>
     endDate: new Date('2026-07-16T09:00:00.000Z'),
     recurrenceRule: 'FREQ=WEEKLY;BYDAY=TH',
     createOnlineMeeting: true,
+    sendCalendarInvitations: true,
     participants: [
       { email: 'ada@example.com', firstName: 'Ada', lastName: 'Lovelace' },
     ],
@@ -77,6 +78,23 @@ describe('calendar provider utilities', () => {
       description: '<p>Agenda</p>',
       attendees: [{ email: 'ada@example.com', displayName: 'Ada Lovelace' }],
       recurrence: ['RRULE:FREQ=WEEKLY;BYDAY=TH'],
+    });
+  });
+
+  it('keeps participants internal until calendar invitations are enabled', () => {
+    const event = {
+      ...createEvent(),
+      sendCalendarInvitations: false,
+    } as EventItem;
+
+    expect(buildAzureCalendarEvent(event)).not.toHaveProperty('attendees');
+    expect(buildGoogleCalendarEvent(event)).not.toHaveProperty('attendees');
+    expect(buildAzureCalendarEventPatch(event, [], ['participants'])).toEqual(
+      {},
+    );
+    expect(buildGoogleCalendarEventPatch(event, [], ['participants'])).toEqual({
+      patch: {},
+      sendUpdates: 'none',
     });
   });
 

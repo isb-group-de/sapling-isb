@@ -793,16 +793,18 @@ actions retain their labels on wide screens before that compact fallback applies
 If none of the existing action components fit, add or extend an action component first and then use it from the dialog. This keeps footer behavior centralized instead of duplicating button layout in each custom dialog.
 
 Generic single-record deletion loads `/generic/:entity/delete-impact` when the
-confirmation dialog opens. A normal record uses one height-stable confirmation
-dialog. When owned `1:m` groups exist, their checkboxes appear directly in a
-scrollable list. Optional groups use a safe unselected default, while database
-delete cascades are shown selected and disabled so unavoidable side effects stay
+confirmation dialog opens. The backend derives it from the same owning relation
+metadata exposed through `current/meta`. A normal record uses one height-stable
+confirmation dialog. When owned `1:m` groups exist, their checkboxes appear
+directly in a scrollable list. Optional groups use a safe unselected default and
+otherwise detach through `SET NULL`. Database cascades and non-nullable child
+references are shown selected and disabled so unavoidable side effects stay
 visible. **Select all** and **Select none** affect optional groups only. The delete
 action passes only the selected optional relation groups rather than individual
 records. Synchronized Events use the same dialog shell but present **Cancel
 event**, because the backend retains the record and changes its status to
 `canceled`. Bulk deletion keeps optional reference cascades unavailable, but
-shows mandatory database cascades from the selected entity as locked choices.
+shows mandatory cascades from the selected entity as locked choices.
 
 ### Shared Tab And Dialog Navigation Contract
 

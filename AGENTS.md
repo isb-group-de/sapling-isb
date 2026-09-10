@@ -35,6 +35,7 @@ Sapling is a metadata-driven CRM/service platform.
 - Use `rg` for search.
 - Keep changes scoped to the requested feature.
 - Do not edit old executed seed files for new reference data; add newly numbered seed files.
+- For every new seed file, use the next four-digit number in its entity/scope folder and add its full relative path to `backend/src/database/seeder/seed-order.json` in the same change. This explicit list controls execution; numbers have no phase meaning. Place prerequisites before consumers and environment overrides after shared changes. Follow `docs/development/seeding-and-migrations.md` and run the seed catalog tests for both datasets.
 - When adding an entity, update entity class, registry, migrations, seeders, translations, routes, and permissions together.
 - Respect generic permissions and security decorators.
 - Treat `backend/.env` as secret-bearing and `frontend/.env` as browser-exposed.

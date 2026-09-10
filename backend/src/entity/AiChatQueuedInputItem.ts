@@ -46,7 +46,7 @@ export class AiChatQueuedInputItem {
     mobileOrder: 200,
     mobileVisible: false,
   })
-  @ManyToOne(() => PersonItem, { nullable: false })
+  @ManyToOne(() => PersonItem, { nullable: false, deleteRule: 'cascade' })
   person!: Rel<PersonItem>;
 
   @ApiProperty({ enum: ['queue', 'steer'] })

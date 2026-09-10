@@ -39,7 +39,7 @@ export class AuthenticationEventItem {
     mobileOrder: 100,
     mobileVisible: false,
   })
-  @ManyToOne(() => PersonItem, { nullable: true })
+  @ManyToOne(() => PersonItem, { nullable: true, deleteRule: 'set null' })
   person?: Rel<PersonItem> | null;
 
   @Sapling(['isReadOnly', 'isValue', 'isChip'])

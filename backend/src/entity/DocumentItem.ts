@@ -169,10 +169,10 @@ export class DocumentItem {
   type!: DocumentTypeItem;
 
   /**
-   * Reference to the person (not null).
+   * Reference to the person that stored the document, when still available.
    * @type {PersonItem}
    */
-  @ApiProperty({ type: () => PersonItem })
+  @ApiPropertyOptional({ type: () => PersonItem })
   @Sapling(['isPerson', 'isPartner', 'isCurrentPerson'])
   @SaplingForm({
     order: 300,
@@ -185,8 +185,8 @@ export class DocumentItem {
     mobileOrder: 300,
     mobileVisible: false,
   })
-  @ManyToOne(() => PersonItem, { nullable: false })
-  person!: Rel<PersonItem>;
+  @ManyToOne(() => PersonItem, { nullable: true, deleteRule: 'set null' })
+  person?: Rel<PersonItem> | null;
 
   /**
    * First name of the person selected in person.

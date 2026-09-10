@@ -91,6 +91,7 @@ export class EmailInboxSubscriptionItem {
   @ManyToOne(() => PersonItem, {
     updateRule: 'cascade',
     nullable: false,
+    deleteRule: 'cascade',
   })
   processingPerson!: Rel<PersonItem>;
 

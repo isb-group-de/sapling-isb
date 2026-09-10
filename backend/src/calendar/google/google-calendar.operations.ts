@@ -369,6 +369,9 @@ export class GoogleCalendarOperations {
       graphEvent.conferenceData?.conferenceSolution ||
       graphEvent.conferenceData?.createRequest,
     );
+    event.sendCalendarInvitations = (graphEvent.attendees ?? []).some(
+      (attendee) => attendee.organizer !== true,
+    );
     event.status = values.status;
     await replaceCalendarEventParticipants(event, values.participants);
   }
@@ -587,7 +590,7 @@ export class GoogleCalendarOperations {
       calendarId: 'primary',
       requestBody: eventResource,
       auth: accessToken,
-      sendUpdates: 'all',
+      sendUpdates: event.sendCalendarInvitations ? 'all' : 'none',
       conferenceDataVersion: 1,
     });
 

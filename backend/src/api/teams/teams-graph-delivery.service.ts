@@ -104,10 +104,11 @@ export class TeamsGraphDeliveryService {
 
     delivery.attemptCount = (delivery.attemptCount ?? 0) + 1;
 
-    const senderLoginName = delivery.createdBy.loginName?.trim();
+    const createdBy = delivery.createdBy;
+    const senderLoginName = createdBy?.loginName?.trim();
     const recipientLoginName = delivery.recipientPerson?.loginName?.trim();
 
-    if (!senderLoginName || delivery.createdBy.type?.handle !== 'azure') {
+    if (!senderLoginName || createdBy?.type?.handle !== 'azure') {
       throw new BadRequestException('teams.senderAzureRequired');
     }
 
@@ -121,7 +122,7 @@ export class TeamsGraphDeliveryService {
     try {
       const accessToken = await this.resolveAzureAccessToken(
         em,
-        delivery.createdBy.session,
+        createdBy.session,
       );
       if (!accessToken) {
         throw new BadRequestException('teams.sessionNotFound');
@@ -357,7 +358,7 @@ export class TeamsGraphDeliveryService {
 
     const refreshedToken = await this.refreshAzureAccessToken(
       em,
-      delivery.createdBy.session,
+      delivery.createdBy?.session,
     );
     if (!refreshedToken) {
       return { delivery: null };

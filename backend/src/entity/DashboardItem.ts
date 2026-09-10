@@ -133,7 +133,7 @@ export class DashboardItem {
     mobileOrder: 100,
     mobileVisible: false,
   })
-  @ManyToOne(() => PersonItem, { nullable: false })
+  @ManyToOne(() => PersonItem, { nullable: false, deleteRule: 'cascade' })
   person!: Rel<PersonItem>;
 
   /**

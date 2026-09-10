@@ -52,7 +52,7 @@ export class AiChatMessageItem {
     mobileOrder: 200,
     mobileVisible: false,
   })
-  @ManyToOne(() => PersonItem, { nullable: false })
+  @ManyToOne(() => PersonItem, { nullable: false, deleteRule: 'cascade' })
   person!: Rel<PersonItem>;
 
   /**

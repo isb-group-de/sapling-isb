@@ -45,6 +45,7 @@ import { EventCategoryItem } from './EventCategoryItem';
  * @property        {Date}                  endDate             End date and time of the event
  * @property        {boolean}               isAllDay            Indicates if the event lasts all day
  * @property        {boolean}               createOnlineMeeting Whether the calendar provider should create a meeting link
+ * @property        {boolean}               sendCalendarInvitations Whether participants should receive provider invitations
  * @property        {string}                onlineMeetingURL    URL for the online meeting (optional)
  * @property        {EventTypeItem}         type                The appointment type of the event
  * @property        {EventCategoryItem}     category            The business category of the event
@@ -252,6 +253,27 @@ export class EventItem {
   })
   @Property({ default: false, nullable: false })
   createOnlineMeeting: boolean = false;
+
+  /**
+   * Explicitly allows the calendar provider to receive Sapling participants
+   * as attendees and send invitations. Internal participation remains
+   * independent from this opt-in.
+   * @type {boolean}
+   */
+  @ApiPropertyOptional({ default: false })
+  @SaplingForm({
+    order: 375,
+    group: 'event.groupBasics',
+    groupOrder: 100,
+    width: 1,
+    visible: true,
+    tableOrder: 375,
+    tableVisible: false,
+    mobileOrder: 375,
+    mobileVisible: false,
+  })
+  @Property({ default: false, nullable: false })
+  sendCalendarInvitations: boolean = false;
 
   /**
    * RFC5545 recurrence rule describing a repeating series (optional).
@@ -509,7 +531,7 @@ export class EventItem {
     mobileVisible: false,
   })
   @SaplingReferenceCreate({ defaults: { company: 'assigneeCompany' } })
-  @ManyToOne(() => PersonItem, { nullable: true })
+  @ManyToOne(() => PersonItem, { nullable: true, deleteRule: 'set null' })
   assigneePerson?: Rel<PersonItem>;
 
   /**
@@ -640,8 +662,8 @@ export class EventItem {
     mobileVisible: false,
   })
   @SaplingReferenceCreate({ defaults: { company: 'creatorCompany' } })
-  @ManyToOne(() => PersonItem, { nullable: false })
-  creatorPerson?: Rel<PersonItem>;
+  @ManyToOne(() => PersonItem, { nullable: true, deleteRule: 'set null' })
+  creatorPerson?: Rel<PersonItem> | null;
 
   /**
    * First name of the person selected in creatorPerson.
@@ -735,8 +757,8 @@ export class EventItem {
       validate: false,
     },
   ])
-  @ManyToOne(() => TicketItem, { nullable: true })
-  ticket?: Rel<TicketItem>;
+  @ManyToOne(() => TicketItem, { nullable: true, deleteRule: 'set null' })
+  ticket?: Rel<TicketItem> | null;
 
   /**
    * Persons participating in this event.

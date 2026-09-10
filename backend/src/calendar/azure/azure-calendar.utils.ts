@@ -499,15 +499,18 @@ export function buildAzureCalendarEvent(
     start: buildAzureDateTime(event.startDate, timeZone),
     end: buildAzureDateTime(event.endDate, timeZone),
     recurrence: buildAzureRecurrence(event.startDate, event.recurrenceRule),
-    attendees: event.participants.map((participant) => ({
+    ...(location ? { location: { displayName: location } } : {}),
+  };
+
+  if (event.sendCalendarInvitations) {
+    eventResource.attendees = event.participants.map((participant) => ({
       emailAddress: {
         address: participant.email,
         name: `${participant.firstName} ${participant.lastName}`,
       },
       type: 'required',
-    })),
-    ...(location ? { location: { displayName: location } } : {}),
-  };
+    }));
+  }
 
   if (categories.length > 0) {
     eventResource.categories = categories;
@@ -556,7 +559,11 @@ export function buildAzureCalendarEventPatch(
   }
   if (changed.has('endDate')) copy('end');
   if (changed.has('recurrenceRule')) copy('recurrence');
-  if (changed.has('participants')) copy('attendees');
+  if (
+    event.sendCalendarInvitations &&
+    (changed.has('participants') || changed.has('sendCalendarInvitations'))
+  )
+    copy('attendees');
   if (
     changed.has('description') ||
     changed.has('creatorCompany') ||

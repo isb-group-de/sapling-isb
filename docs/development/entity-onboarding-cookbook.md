@@ -111,7 +111,7 @@ Set the capability flags intentionally:
 | `canDelete` | Entity can be deleted |
 | `canShow` | Entity can be shown in navigation/UI |
 
-Use demonstration seed files for rich sample records. Put shared reference data and configuration in `json-default`; production holds only its differences. Register newly seeded entities in `seed-order.json` with their dependency phases.
+Use demonstration seed files for rich sample records. Put shared reference data and configuration in `json-default`; production holds only its differences. Register **every new seed file**, including files for existing entities, by its full relative path in `backend/src/database/seeder/seed-order.json`. This list explicitly determines execution order. Numbers are consecutive within each entity/scope folder and have no phase meaning. Put prerequisites before dependent files and environment overrides after their shared changes. See [Adding A Seed File](seeding-and-migrations.md#adding-a-seed-file-including-ai-agents).
 
 ## 5. Add Routes
 

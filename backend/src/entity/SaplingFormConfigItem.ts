@@ -203,7 +203,7 @@ export class SaplingFormConfigItem {
     mobileOrder: 900,
     mobileVisible: false,
   })
-  @ManyToOne(() => PersonItem, { nullable: true })
+  @ManyToOne(() => PersonItem, { nullable: true, deleteRule: 'cascade' })
   person?: Rel<PersonItem>;
 
   /**

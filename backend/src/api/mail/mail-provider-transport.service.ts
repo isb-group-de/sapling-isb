@@ -83,7 +83,7 @@ export class MailProviderTransportService {
       } as EmailDeliveryItem;
       attachments = [...attachments, ...inline.attachments];
     }
-    const session = delivery.createdBy.session;
+    const session = delivery.createdBy?.session;
     if (!session) {
       throw new BadRequestException('mail.sessionNotFound');
     }

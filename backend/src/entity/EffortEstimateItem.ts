@@ -234,7 +234,7 @@ export class EffortEstimateItem {
     mobileVisible: false,
   })
   @SaplingReferenceCreate({ defaults: { company: 'assigneeCompany' } })
-  @ManyToOne(() => PersonItem, { nullable: true })
+  @ManyToOne(() => PersonItem, { nullable: true, deleteRule: 'set null' })
   assigneePerson?: Rel<PersonItem>;
 
   /**
@@ -357,7 +357,7 @@ export class EffortEstimateItem {
     mobileVisible: false,
   })
   @SaplingReferenceCreate({ defaults: { company: 'creatorCompany' } })
-  @ManyToOne(() => PersonItem, { nullable: true })
+  @ManyToOne(() => PersonItem, { nullable: true, deleteRule: 'set null' })
   creatorPerson?: Rel<PersonItem>;
 
   /**
@@ -532,8 +532,8 @@ export class EffortEstimateItem {
       validate: false,
     },
   ])
-  @ManyToOne(() => TicketItem, { nullable: true })
-  ticket?: Rel<TicketItem>;
+  @ManyToOne(() => TicketItem, { nullable: true, deleteRule: 'set null' })
+  ticket?: Rel<TicketItem> | null;
 
   @ApiPropertyOptional({
     type: () => EffortEstimatePositionItem,

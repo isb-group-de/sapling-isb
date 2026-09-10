@@ -98734,5 +98734,69 @@
     "language": "en",
     "createdAt": "2026-09-10T10:49:11.467+00:00",
     "updatedAt": "2026-09-10T10:49:11.467+00:00"
+  },
+  {
+    "entity": "mail",
+    "property": "messageTab",
+    "value": "Nachricht",
+    "language": "de",
+    "createdAt": "2026-09-10T10:49:31.71+00:00",
+    "updatedAt": "2026-09-10T10:49:31.71+00:00"
+  },
+  {
+    "entity": "mail",
+    "property": "messageTab",
+    "value": "Message",
+    "language": "en",
+    "createdAt": "2026-09-10T10:49:31.817+00:00",
+    "updatedAt": "2026-09-10T10:49:31.817+00:00"
+  },
+  {
+    "entity": "mail",
+    "property": "optionsTab",
+    "value": "Signatur & Anhänge",
+    "language": "de",
+    "createdAt": "2026-09-10T10:49:31.71+00:00",
+    "updatedAt": "2026-09-10T10:49:31.71+00:00"
+  },
+  {
+    "entity": "mail",
+    "property": "optionsTab",
+    "value": "Signature & attachments",
+    "language": "en",
+    "createdAt": "2026-09-10T10:49:31.817+00:00",
+    "updatedAt": "2026-09-10T10:49:31.817+00:00"
+  },
+  {
+    "entity": "messageCenter",
+    "property": "emptyText",
+    "value": "Sobald Aktionen, Fehler oder Hinweise auftreten, erscheinen sie hier.",
+    "language": "de",
+    "createdAt": "2026-09-10T10:49:10.828+00:00",
+    "updatedAt": "2026-09-10T10:49:10.828+00:00"
+  },
+  {
+    "entity": "messageCenter",
+    "property": "emptyText",
+    "value": "Actions, errors, and notices will appear here as soon as they occur.",
+    "language": "en",
+    "createdAt": "2026-09-10T10:49:11.481+00:00",
+    "updatedAt": "2026-09-10T10:49:11.481+00:00"
+  },
+  {
+    "entity": "messageCenter",
+    "property": "emptyTitle",
+    "value": "Keine Meldungen",
+    "language": "de",
+    "createdAt": "2026-09-10T10:49:10.828+00:00",
+    "updatedAt": "2026-09-10T10:49:10.828+00:00"
+  },
+  {
+    "entity": "messageCenter",
+    "property": "emptyTitle",
+    "value": "No messages",
+    "language": "en",
+    "createdAt": "2026-09-10T10:49:11.481+00:00",
+    "updatedAt": "2026-09-10T10:49:11.481+00:00"
   }
 ]

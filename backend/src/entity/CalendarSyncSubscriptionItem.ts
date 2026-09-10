@@ -218,7 +218,11 @@ export class CalendarSyncSubscriptionItem {
     mobileOrder: 100,
     mobileVisible: false,
   })
-  @OneToOne(() => PersonItem, { nullable: false, unique: true })
+  @OneToOne(() => PersonItem, {
+    nullable: false,
+    unique: true,
+    deleteRule: 'cascade',
+  })
   person!: Rel<PersonItem>;
 
   @ApiPropertyOptional({ type: 'string', format: 'date-time' })

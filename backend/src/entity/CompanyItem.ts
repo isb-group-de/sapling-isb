@@ -472,6 +472,7 @@ export class CompanyItem {
   })
   @ManyToOne(() => PersonItem, {
     nullable: true,
+    deleteRule: 'set null',
     deferMode: DeferMode.INITIALLY_IMMEDIATE,
   })
   accountManager?: Rel<PersonItem>;
@@ -536,6 +537,7 @@ export class CompanyItem {
   })
   @ManyToOne(() => PersonItem, {
     nullable: true,
+    deleteRule: 'set null',
     deferMode: DeferMode.INITIALLY_IMMEDIATE,
   })
   customerSuccessManager?: Rel<PersonItem>;

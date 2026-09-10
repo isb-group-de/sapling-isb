@@ -88,10 +88,10 @@ export class TicketTimeTrackingItem {
   description!: string;
 
   /**
-   * Person who performed the work.
+   * Person who performed the work, when still available.
    * @type {PersonItem}
    */
-  @ApiProperty({ type: () => PersonItem })
+  @ApiPropertyOptional({ type: () => PersonItem })
   @Sapling(['isPerson', 'isPartner', 'isCurrentPerson'])
   @SaplingForm({
     order: 100,
@@ -104,8 +104,8 @@ export class TicketTimeTrackingItem {
     mobileOrder: 100,
     mobileVisible: false,
   })
-  @ManyToOne(() => PersonItem, { nullable: false })
-  person!: Rel<PersonItem>;
+  @ManyToOne(() => PersonItem, { nullable: true, deleteRule: 'set null' })
+  person?: Rel<PersonItem> | null;
 
   /**
    * Ticket to which this time entry belongs.
@@ -123,7 +123,7 @@ export class TicketTimeTrackingItem {
     mobileOrder: 200,
     mobileVisible: false,
   })
-  @ManyToOne(() => TicketItem, { nullable: false })
+  @ManyToOne(() => TicketItem, { nullable: false, deleteRule: 'cascade' })
   ticket!: Rel<TicketItem>;
   //#endregion
 

@@ -104,7 +104,7 @@ export class HttpMetricBucketItem {
     mobileOrder: 400,
     mobileVisible: false,
   })
-  @ManyToOne(() => PersonItem, { nullable: true })
+  @ManyToOne(() => PersonItem, { nullable: true, deleteRule: 'set null' })
   person?: Rel<PersonItem> | null;
 
   @Sapling(['isReadOnly'])

@@ -204,7 +204,7 @@ export class MarketingCampaignItem {
     mobileOrder: 300,
     mobileVisible: false,
   })
-  @ManyToOne(() => PersonItem, { nullable: true })
+  @ManyToOne(() => PersonItem, { nullable: true, deleteRule: 'set null' })
   ownerPerson?: Rel<PersonItem>;
 
   /**

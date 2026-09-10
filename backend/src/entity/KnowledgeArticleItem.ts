@@ -344,7 +344,7 @@ export class KnowledgeArticleItem {
     mobileOrder: 100,
     mobileVisible: false,
   })
-  @ManyToOne(() => PersonItem, { nullable: true })
+  @ManyToOne(() => PersonItem, { nullable: true, deleteRule: 'set null' })
   authorPerson?: Rel<PersonItem>;
 
   /**
@@ -402,7 +402,7 @@ export class KnowledgeArticleItem {
     mobileOrder: 200,
     mobileVisible: false,
   })
-  @ManyToOne(() => PersonItem, { nullable: true })
+  @ManyToOne(() => PersonItem, { nullable: true, deleteRule: 'set null' })
   reviewerPerson?: Rel<PersonItem>;
 
   /**

@@ -6,6 +6,7 @@ import config from './database/mikro-orm.config';
 import { DatabaseSeeder } from './database/seeder/DatabaseSeeder';
 import { initializeLogger } from './logging/initialize-logger';
 import { prepareDatabaseBaseline } from './database/baseline/adopt-baseline';
+import { loadSeedCatalog, seedDataset } from './database/seeder/seed-catalog';
 
 type UpdateMode = 'migrate' | 'seed' | 'all';
 
@@ -40,6 +41,8 @@ async function update() {
 
   const orm = await MikroORM.init(config);
   try {
+    // Reject incomplete releases before adoption or migrations can change history/schema.
+    if (mode === 'seed' || mode === 'all') loadSeedCatalog(seedDataset());
     await prepareDatabaseBaseline(orm.em.fork(), mode);
     if (mode === 'migrate' || mode === 'all') {
       console.log('Running migrations...');
