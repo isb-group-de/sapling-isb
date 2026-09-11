@@ -59,6 +59,7 @@ export function createRelations(
     templates?: EntityTemplate[]
     permissions?: string[]
     item?: SaplingGenericItem
+    hydratedRelationNames?: string[]
     onPersistedItemUpdated?: (item: SaplingGenericItem) => void
   } = {},
 ) {
@@ -96,6 +97,7 @@ export function createRelations(
     mode: computed(() => mode.value),
     permissions,
     showReference: computed(() => showReference.value),
+    hydratedRelationNames: computed(() => overrides.hydratedRelationNames ?? []),
     templates: computed(() => templates.value),
     t: (key: string) => key,
     getItemHandle: (record?: SaplingGenericItem | null) => {

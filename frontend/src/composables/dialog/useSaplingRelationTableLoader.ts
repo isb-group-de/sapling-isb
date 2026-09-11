@@ -144,16 +144,36 @@ export function useSaplingRelationTableLoader(context: {
     const requestId = (relationTableRequestId.value[template.name] ?? 0) + 1
     relationTableRequestId.value[template.name] = requestId
     relState.isLoading = true
+    // Some specialized editors already loaded the complete collection with the
+    // parent record. Use that authoritative first snapshot while the slower
+    // projected table refresh continues in the background. Later reloads use
+    // the relation filter again so add/remove responses cannot narrow the set.
+    const hydratedRelationItems =
+      relationTableLoaded.value[template.name] === true ? null : getHydratedRelationItems(template)
+
+    if (hydratedRelationItems && relationTableLoaded.value[template.name] !== true) {
+      const limit = relationTableItemsPerPage.value[template.name] || DEFAULT_PAGE_SIZE_SMALL
+      relationTableItems.value[template.name] = hydratedRelationItems.slice(0, limit)
+      relationTableTotal.value[template.name] = hydratedRelationItems.length
+      relationTableLoaded.value[template.name] = true
+    }
 
     try {
+      if (hydratedRelationItems?.length === 0) {
+        return
+      }
+
       // Hidden relation tabs do not need their nested display-label metadata yet.
       await preloadRelationValueReferenceMetadata([template])
       if (relationTableRequestId.value[template.name] !== requestId) return
       const filter: Record<string, unknown> = {}
+      const hydratedRelationHandles = getHydratedRelationHandles(hydratedRelationItems)
       if (options.item.value && (template.mappedBy || template.inversedBy)) {
         const itemHandle = options.getItemHandle(options.item.value)
         const indexKey = template.mappedBy ?? template.inversedBy
-        if (indexKey && itemHandle != null) {
+        if (hydratedRelationHandles) {
+          Object.assign(filter, { handle: { $in: hydratedRelationHandles } })
+        } else if (indexKey && itemHandle != null) {
           Object.assign(filter, getRelationRecordFilter(template, itemHandle))
         }
       }
@@ -191,6 +211,7 @@ export function useSaplingRelationTableLoader(context: {
           page,
           orderBy: buildTableOrderBy(sortBy),
           relations,
+          fields: hydratedRelationHandles ? projectedFields : undefined,
         })
 
         if (relationTableRequestId.value[template.name] !== requestId) {
@@ -232,6 +253,38 @@ export function useSaplingRelationTableLoader(context: {
         relState.isLoading = false
       }
     }
+  }
+
+  function getHydratedRelationItems(template: EntityTemplate): SaplingGenericItem[] | null {
+    if (!options.hydratedRelationNames?.value.includes(template.name)) {
+      return null
+    }
+
+    const value = options.item.value?.[template.name]
+    if (!Array.isArray(value)) {
+      return null
+    }
+
+    return value.flatMap((item) => {
+      if (item && typeof item === 'object') {
+        return [item as SaplingGenericItem]
+      }
+
+      return typeof item === 'string' || typeof item === 'number'
+        ? [{ handle: item } as SaplingGenericItem]
+        : []
+    })
+  }
+
+  function getHydratedRelationHandles(
+    items: SaplingGenericItem[] | null,
+  ): Array<string | number> | null {
+    if (!items || items.length === 0) {
+      return null
+    }
+
+    const handles = items.map((item) => options.getItemHandle(item))
+    return handles.every((handle): handle is string | number => handle != null) ? handles : null
   }
 
   async function hydratePendingRelationItems(

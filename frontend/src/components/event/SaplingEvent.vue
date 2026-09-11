@@ -172,6 +172,7 @@
     :templates="templates"
     :entity="entityEvent"
     :showReference="true"
+    :hydrated-relation-names="['participants']"
     :force-dirty="forceEditDialogDirtyFields.length > 0 || editEvent.event?.handle == null"
     :force-dirty-fields="forceEditDialogDirtyFields"
     @update:modelValue="(val) => (showEditDialog = val)"

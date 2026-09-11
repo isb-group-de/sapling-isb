@@ -101,6 +101,93 @@ describe('useSaplingDialogEditRelations', () => {
     expect(relations.relationTableLoaded.value.notes).toBe(true)
   })
 
+  it('shows a hydrated relation immediately and refreshes it by handle', async () => {
+    const deferred = createDeferred<{
+      data: SaplingGenericItem[]
+      meta: { total: number }
+    }>()
+    apiFindMock.mockReturnValueOnce(deferred.promise)
+    const participants = [
+      { handle: 5, firstName: 'Max' },
+      { handle: 7, firstName: 'Ada' },
+    ]
+    const relations = createRelations({
+      entityHandle: 'event',
+      item: { handle: 42, participants },
+      hydratedRelationNames: ['participants'],
+      permissions: ['note'],
+      templates: [
+        createTemplate({
+          name: 'participants',
+          type: 'Collection<PersonItem>',
+          kind: 'm:n',
+          referenceName: 'note',
+          mappedBy: 'events',
+        }),
+      ],
+    })
+
+    await relations.initializeRelationTables()
+    const loading = relations.ensureRelationTableItems('participants')
+
+    expect(relations.relationTableLoaded.value.participants).toBe(true)
+    expect(relations.relationTableItems.value.participants).toEqual(participants)
+    await Promise.resolve()
+    expect(apiFindMock).toHaveBeenCalledWith(
+      'note',
+      expect.objectContaining({
+        filter: { handle: { $in: [5, 7] } },
+        fields: [],
+      }),
+    )
+
+    deferred.resolve({
+      data: [{ handle: 5, title: 'Max' }],
+      meta: { total: 1 },
+    })
+    await loading
+
+    expect(relations.relationTableItems.value.participants).toEqual([{ handle: 5, title: 'Max' }])
+
+    apiFindMock.mockResolvedValueOnce({ data: participants, meta: { total: 2 } })
+    await relations.loadRelationTableItems(['participants'])
+
+    expect(apiFindMock).toHaveBeenNthCalledWith(
+      2,
+      'note',
+      expect.objectContaining({
+        filter: { events: 42 },
+        fields: undefined,
+      }),
+    )
+  })
+
+  it('does not query an explicitly hydrated empty relation', async () => {
+    const relations = createRelations({
+      entityHandle: 'event',
+      item: { handle: 42, participants: [] },
+      hydratedRelationNames: ['participants'],
+      permissions: ['note'],
+      templates: [
+        createTemplate({
+          name: 'participants',
+          type: 'Collection<PersonItem>',
+          kind: 'm:n',
+          referenceName: 'note',
+          mappedBy: 'events',
+        }),
+      ],
+    })
+
+    await relations.initializeRelationTables()
+    await relations.ensureRelationTableItems('participants')
+
+    expect(apiFindMock).not.toHaveBeenCalled()
+    expect(relations.relationTableItems.value.participants).toEqual([])
+    expect(relations.relationTableTotal.value.participants).toBe(0)
+    expect(relations.relationTableLoaded.value.participants).toBe(true)
+  })
+
   it('uses the referenced entity decorator as the initial relation table sort', async () => {
     const relations = createRelations()
     await relations.initializeRelationTables()

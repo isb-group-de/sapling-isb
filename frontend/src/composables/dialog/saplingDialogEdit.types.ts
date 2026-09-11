@@ -49,6 +49,7 @@ export interface UseSaplingDialogEditProps {
   entity: EntityItem | null
   templates: EntityTemplate[]
   showReference?: boolean
+  hydratedRelationNames?: string[]
 }
 
 export interface SaplingDialogEditProps extends UseSaplingDialogEditProps {

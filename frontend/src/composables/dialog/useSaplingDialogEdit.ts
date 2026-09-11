@@ -137,6 +137,7 @@ export function useSaplingDialogEdit(
     mode: computed(() => props.mode),
     permissions,
     showReference,
+    hydratedRelationNames: computed(() => props.hydratedRelationNames ?? []),
     templates,
     t,
     getItemHandle,

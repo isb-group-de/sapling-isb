@@ -28,6 +28,7 @@ export interface UseSaplingDialogEditRelationsOptions {
   mode: ComputedRef<DialogState>
   permissions: Ref<AccumulatedPermission[] | null>
   showReference: ComputedRef<boolean>
+  hydratedRelationNames?: ComputedRef<string[]>
   templates: ComputedRef<EntityTemplate[]>
   t: (key: string) => string
   getItemHandle: GetItemHandle
