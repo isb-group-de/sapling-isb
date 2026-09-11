@@ -143,5 +143,6 @@
   "json-default/dashboardTemplate/dashboardTemplateData_0002_update.json",
   "json-demonstration/salesOpportunity/salesOpportunityData_0002_update.json",
   "json-demonstration/emailList/emailListData_0002_update.json",
-  "json-default/translation/translationData_0002_insert.json"
+  "json-default/translation/translationData_0002_insert.json",
+  "json-default/translation/translationData_0003_insert.json"
 ]

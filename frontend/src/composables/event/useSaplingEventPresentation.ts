@@ -13,7 +13,6 @@ import {
   type CalendarType,
 } from '@/composables/event/eventDate.utils'
 import {
-  getCalendarEventAccentColor,
   getCalendarEventCategoryColor,
   getCalendarEventHandle,
   getCalendarEventIcon,
@@ -54,7 +53,7 @@ export interface EventAgendaItem {
   onlineMeetingUrl: string | null
   participantNames: string[]
   icon: string
-  accentColor: string
+  typeColor: string
   categoryColor: string
   isOngoing: boolean
   isRecurring: boolean
@@ -182,7 +181,7 @@ export function useSaplingEventPresentation(options: UseSaplingEventPresentation
           onlineMeetingUrl: getCalendarEventOnlineMeetingUrl(event),
           participantNames: getCalendarEventParticipants(event),
           icon: getCalendarEventIcon(event),
-          accentColor: getCalendarEventAccentColor(event, options.getEventColor(event)),
+          typeColor: options.getEventColor(event),
           categoryColor: getCalendarEventCategoryColor(event, options.getEventColor(event)),
           isOngoing: event.start <= now && event.end >= now,
           isRecurring: isRecurringCalendarEvent(event),

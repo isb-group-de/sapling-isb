@@ -93,7 +93,7 @@ describe('useSaplingEventPresentation', () => {
       title: 'Planning',
       onlineMeetingUrl: 'https://teams.example.test/join',
       icon: 'mdi-lifebuoy',
-      accentColor: '#F44336',
+      typeColor: '#336699',
       categoryColor: '#009688',
     })
     expect(harness.presentation.upcomingEvents.value[0]).not.toHaveProperty('description')

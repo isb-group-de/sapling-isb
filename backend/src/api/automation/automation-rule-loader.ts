@@ -3,6 +3,7 @@ import { FieldAutomationItem } from '../../entity/FieldAutomationItem';
 import { InboxSubscriptionItem } from '../../entity/InboxSubscriptionItem';
 import { TeamsSubscriptionItem } from '../../entity/TeamsSubscriptionItem';
 import { WebhookSubscriptionItem } from '../../entity/WebhookSubscriptionItem';
+import { usesDurableAutomationProcessor } from './automation-rule-routing.util';
 
 /** Loads the active, ordered rule configuration once for one source event. */
 export async function loadAutomationRules(
@@ -14,8 +15,11 @@ export async function loadAutomationRules(
     InboxSubscriptionItem,
     {
       isActive: true,
-      sourceEntity: { handle: source },
       type: { handle: operation },
+      $or: [
+        { sourceEntity: { handle: source } },
+        { sourceEntity: null, entity: { handle: source } },
+      ],
     },
     {
       populate: ['sourceEntity', 'entity', 'template', 'type'],
@@ -38,8 +42,11 @@ export async function loadAutomationRules(
     TeamsSubscriptionItem,
     {
       isActive: true,
-      sourceEntity: { handle: source },
       type: { handle: operation },
+      $or: [
+        { sourceEntity: { handle: source } },
+        { sourceEntity: null, entity: { handle: source } },
+      ],
     },
     {
       populate: ['sourceEntity', 'entity', 'template', 'type'],
@@ -50,8 +57,11 @@ export async function loadAutomationRules(
     WebhookSubscriptionItem,
     {
       isActive: true,
-      sourceEntity: { handle: source },
       type: { handle: operation },
+      $or: [
+        { sourceEntity: { handle: source } },
+        { sourceEntity: null, entity: { handle: source } },
+      ],
     },
     {
       populate: ['sourceEntity', 'entity', 'type'],
@@ -59,5 +69,10 @@ export async function loadAutomationRules(
     },
   );
 
-  return { inboxRules, fieldRules, teamsRules, webhookRules };
+  return {
+    inboxRules: inboxRules.filter(usesDurableAutomationProcessor),
+    fieldRules,
+    teamsRules: teamsRules.filter(usesDurableAutomationProcessor),
+    webhookRules: webhookRules.filter(usesDurableAutomationProcessor),
+  };
 }

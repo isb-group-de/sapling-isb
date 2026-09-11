@@ -75,7 +75,9 @@ webhook deliveries also store automation deduplication keys, so a retry cannot
 create or send the same action twice.
 
 Existing subscriptions are backfilled to use their previous entity as source.
-Older seed installations where `sourceEntity` is still empty continue through
-the legacy direct-event path, which avoids duplicate delivery.
+Older installations where `sourceEntity` is still empty and no conditions are
+configured continue through the legacy direct-event path. A conditional
+subscription with no explicit source treats its target entity as the source and
+uses the durable processor, so its conditions are never silently bypassed.
 
 The administrator-only rule graph, incoming dependencies and execution evidence are documented in [Automation Inspection](../development/automation-inspection.md).

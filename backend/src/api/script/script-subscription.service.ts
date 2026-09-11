@@ -10,6 +10,7 @@ import { TeamsService } from '../teams/teams.service.js';
 import { InboxService } from '../inbox/inbox.service.js';
 import type { ScriptServerContext } from '../../script/core/script.interface';
 import { ScriptMethods } from './script.types';
+import { hasAutomationConditions } from '../automation/automation-rule-routing.util';
 
 export class ScriptSubscriptionService {
   constructor(
@@ -30,28 +31,26 @@ export class ScriptSubscriptionService {
     let result: boolean = true;
     try {
       if (method > ScriptMethods.afterRead) {
-        const teamsSubscriptions = await this.em.findAll(
-          TeamsSubscriptionItem,
-          {
+        const teamsSubscriptions = (
+          await this.em.findAll(TeamsSubscriptionItem, {
             where: {
               entity: { handle: entity.handle },
               type: { handle: ScriptMethods[method] },
               isActive: true,
               sourceEntity: null,
             },
-          },
-        );
-        const inboxSubscriptions = await this.em.findAll(
-          InboxSubscriptionItem,
-          {
+          })
+        ).filter((subscription) => !hasAutomationConditions(subscription));
+        const inboxSubscriptions = (
+          await this.em.findAll(InboxSubscriptionItem, {
             where: {
               entity: { handle: entity.handle },
               type: { handle: ScriptMethods[method] },
               isActive: true,
               sourceEntity: null,
             },
-          },
-        );
+          })
+        ).filter((subscription) => !hasAutomationConditions(subscription));
         const subscriptionPayloadItems = Array.isArray(items)
           ? (items as object[])
           : [items];
@@ -157,17 +156,16 @@ export class ScriptSubscriptionService {
     let result = true;
 
     try {
-      const webhookSubscriptions = await this.em.findAll(
-        WebhookSubscriptionItem,
-        {
+      const webhookSubscriptions = (
+        await this.em.findAll(WebhookSubscriptionItem, {
           where: {
             entity: { handle: entity.handle },
             type: { handle: ScriptMethods[method] },
             isActive: true,
             sourceEntity: null,
           },
-        },
-      );
+        })
+      ).filter((subscription) => !hasAutomationConditions(subscription));
 
       if (webhookSubscriptions.length === 0) {
         return true;

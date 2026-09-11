@@ -70,6 +70,9 @@ Minimum backend values to verify:
 - `SESSION_COOKIE_SECURE`
 - `SESSION_TRUST_PROXY`
 - `REDIS_ENABLED`
+- `REDIS_QUEUE_PREFIX` optionally overrides the BullMQ namespace. By default it
+  is derived from the database host, port, and name so workers from another
+  checkout or environment cannot consume this installation's jobs.
 - `LOG_*`
 - `SECURITY_PRINCIPAL_CACHE_TTL_MS`,
   `SECURITY_PRINCIPAL_CACHE_MAX_ENTRIES`

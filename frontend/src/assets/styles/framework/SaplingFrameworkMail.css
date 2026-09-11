@@ -183,6 +183,51 @@
   margin-left: auto;
 }
 
+.sapling-mail-dialog__mention-editor {
+  display: grid;
+  gap: var(--sapling-gap-sm);
+  min-width: 0;
+}
+
+.sapling-mail-dialog__mention-panel {
+  overflow: hidden;
+  border: 1px solid var(--sapling-surface-border-accent-strong);
+  border-radius: var(--sapling-radius-sm);
+  background: var(--sapling-surface-fill);
+}
+
+.sapling-mail-dialog__mention-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sapling-gap-md);
+  padding: var(--sapling-space-md);
+}
+
+.sapling-mail-dialog__mention-header p,
+.sapling-mail-dialog__mention-empty {
+  margin: 0;
+  color: color-mix(in srgb, var(--sapling-surface-text) 68%, transparent);
+  font-size: var(--sapling-text-meta-size);
+}
+
+.sapling-mail-dialog__mention-panel .v-list {
+  max-height: 20rem;
+  overflow: auto;
+  border-top: 1px solid var(--sapling-surface-border);
+}
+
+.sapling-mail-dialog__mention-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--sapling-gap-xs);
+}
+
+.sapling-mail-dialog__mention-empty {
+  padding: 0 var(--sapling-space-md) var(--sapling-space-md);
+}
+
 .sapling-mail-dialog__meta-grid--single {
   grid-template-columns: minmax(0, 1fr);
 }
@@ -256,5 +301,15 @@
 
   .sapling-mail-dialog__sender-badge {
     max-width: 42vw;
+  }
+
+  .sapling-mail-dialog__mention-panel .v-list-item__append {
+    align-self: stretch;
+    margin-inline-start: 0;
+    padding-block: var(--sapling-space-xs);
+  }
+
+  .sapling-mail-dialog__mention-actions {
+    justify-content: flex-start;
   }
 }

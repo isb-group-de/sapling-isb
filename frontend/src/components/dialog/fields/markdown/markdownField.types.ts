@@ -8,9 +8,16 @@ export interface MarkdownTransformResult {
   selectionEnd?: number
 }
 
+export interface MarkdownTextSelection {
+  from: number
+  to: number
+}
+
 export interface MarkdownEditorHandle {
   applySelection(transform: (selectedText: string) => MarkdownTransformResult): string | null
   focus(): void
+  getSelection(): MarkdownTextSelection | null
+  replaceRange(from: number, to: number, text: string): string | null
 }
 
 export type MarkdownToolbarGroupKey = 'structure' | 'text' | 'lists' | 'media' | 'code'

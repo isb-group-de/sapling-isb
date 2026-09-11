@@ -15,7 +15,22 @@
         <div class="songbird-form-proposal__value">{{ displayValue(field.value) }}</div>
       </div>
     </div>
-    <v-alert v-if="state.error" type="warning" density="compact">{{ t(state.error) }}</v-alert>
+    <v-alert v-if="state.error" type="warning" density="compact">
+      {{ t(state.error) }}
+      <div v-if="state.error === 'aiChat.formFieldsChanged'" class="mt-2">
+        <v-btn
+          size="small"
+          color="warning"
+          variant="tonal"
+          prepend-icon="mdi-alert"
+          :loading="state.status === 'applying'"
+          :disabled="!available || !state.selected.length || state.status === 'applying'"
+          @click="applySongbirdFormProposal(state, true)"
+        >
+          {{ t('aiChat.formApplyAnyway') }}
+        </v-btn>
+      </div>
+    </v-alert>
     <p v-if="state.status === 'applied'" role="status">
       {{ t(state.validationFailed ? 'aiChat.formAppliedInvalid' : 'aiChat.formApplied') }}
     </p>

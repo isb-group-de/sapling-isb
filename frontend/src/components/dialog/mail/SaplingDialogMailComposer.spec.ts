@@ -158,6 +158,68 @@ describe('SaplingDialogMailComposer', () => {
     expect(wrapper.emitted('update:bodyMarkdown')).toBeUndefined()
   })
 
+  it('offers matching people after @ and assigns a selection to exactly one recipient field', async () => {
+    const replaceTextRange = vi.fn(() => 'Hallo @Ada Lovelace')
+    const wrapper = mount(SaplingDialogMailComposer, {
+      props: {
+        ...baseProps,
+        toRecipients: ['ada@example.com'],
+        recipientOptions: [
+          {
+            email: 'ada@example.com',
+            name: 'Ada Lovelace',
+            companyName: 'Analytical Engines',
+            departmentName: 'Entwicklung',
+          },
+          {
+            email: 'grace@example.com',
+            name: 'Grace Hopper',
+            companyName: 'Navy',
+            departmentName: 'Research',
+          },
+        ],
+      },
+      global: {
+        plugins: [vuetify, i18n],
+        stubs: {
+          SaplingMarkdownField: defineComponent({
+            emits: ['update:modelValue', 'focus'],
+            setup(_, { expose }) {
+              expose({
+                getTextSelection: () => ({ from: 10, to: 10 }),
+                replaceTextRange,
+              })
+              return () => h('div', { class: 'stub-markdown-field' })
+            },
+          }),
+        },
+      },
+    })
+    const editor = wrapper.findComponent({ ref: 'markdownField' })
+
+    editor.vm.$emit('update:modelValue', 'Hallo @Ada')
+    await nextTick()
+
+    const mentionPanel = wrapper.get('[data-test="mail-mention-panel"]')
+    expect(mentionPanel.text()).toContain('Ada Lovelace')
+    expect(mentionPanel.text()).not.toContain('Grace Hopper')
+
+    const bccButton = mentionPanel
+      .findAll('button')
+      .find((button) => button.text() === 'document.bcc')!
+    await bccButton.trigger('click')
+
+    expect(replaceTextRange).toHaveBeenCalledWith(6, 10, '@Ada Lovelace')
+    const toUpdates = wrapper.emitted('update:toRecipients') ?? []
+    const ccUpdates = wrapper.emitted('update:ccRecipients') ?? []
+    const bccUpdates = wrapper.emitted('update:bccRecipients') ?? []
+    const bodyUpdates = wrapper.emitted('update:bodyMarkdown') ?? []
+    expect(toUpdates[toUpdates.length - 1]).toEqual([[]])
+    expect(ccUpdates[ccUpdates.length - 1]).toEqual([[]])
+    expect(bccUpdates[bccUpdates.length - 1]).toEqual([['ada@example.com']])
+    expect(bodyUpdates[bodyUpdates.length - 1]).toEqual(['Hallo @Ada Lovelace'])
+  })
+
   it('accepts dropped attachments and ignores drops during an upload', async () => {
     const wrapper = mount(SaplingDialogMailComposer, {
       props: { ...baseProps, hasItemHandle: true, canUpload: true },

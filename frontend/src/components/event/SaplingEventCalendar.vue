@@ -161,9 +161,9 @@ import SaplingSurface from '@/components/common/SaplingSurface.vue'
 import SaplingEventTooltipCard from '@/components/event/SaplingEventTooltipCard.vue'
 import { formatDateValue, formatTimeValue } from '@/utils/saplingFormatUtil'
 import {
+  getCalendarEventAccentColor as resolveCalendarEventAccentColor,
   getCalendarEventCategoryColor as resolveCalendarEventCategoryColor,
   getCalendarEventIcon as resolveCalendarEventIcon,
-  getCalendarEventStatusColor as resolveCalendarEventStatusColor,
   type CalendarEventOverlapMode,
 } from '@/composables/event/eventCalendar.utils'
 
@@ -359,7 +359,7 @@ function isBufferEvent(event: CalendarEvent) {
 }
 
 function getEventAccentColor(event: CalendarEvent) {
-  return resolveCalendarEventStatusColor(event, props.getEventColor(event))
+  return resolveCalendarEventAccentColor(event, props.getEventColor(event))
 }
 
 function getEventCategoryColor(event: CalendarEvent) {

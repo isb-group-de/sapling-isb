@@ -15,7 +15,10 @@
         v-for="item in upcomingEvents"
         :key="item.key"
         class="sapling-interactive-list-item sapling-event-agenda-item"
-        v-css-vars="{ '--sapling-calendar-status': item.accentColor }"
+        v-css-vars="{
+          '--sapling-calendar-event-card-color': item.typeColor,
+          '--sapling-calendar-event-category-color': item.categoryColor,
+        }"
         :class="{
           'sapling-interactive-list-item--active': item.isOngoing,
           'sapling-event-agenda-item--active': item.isOngoing,
@@ -26,10 +29,7 @@
         role="button"
         tabindex="0"
       >
-        <div
-          class="sapling-interactive-list-item__icon sapling-event-agenda-item__icon"
-          v-css-vars="{ '--sapling-calendar-accent': item.categoryColor }"
-        >
+        <div class="sapling-interactive-list-item__icon sapling-event-agenda-item__icon">
           <v-icon size="18">{{ item.icon }}</v-icon>
         </div>
 

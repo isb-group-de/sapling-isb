@@ -32,6 +32,7 @@ import {
   lineNumbers as codeMirrorLineNumbers,
 } from '@codemirror/view'
 import { computed, markRaw, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
+import type { MarkdownTextSelection } from '@/components/dialog/fields/markdown/markdownField.types'
 
 interface CodeMirrorTransformResult {
   text: string
@@ -214,6 +215,30 @@ function focus() {
   view.value?.focus()
 }
 
+function getSelection(): MarkdownTextSelection | null {
+  const selection = view.value?.state.selection.main
+  return selection ? { from: selection.from, to: selection.to } : null
+}
+
+function replaceRange(from: number, to: number, text: string): string | null {
+  const instance = view.value
+
+  if (!instance) {
+    return null
+  }
+
+  const start = Math.max(0, Math.min(from, instance.state.doc.length))
+  const end = Math.max(start, Math.min(to, instance.state.doc.length))
+  const cursor = start + text.length
+  instance.dispatch({
+    changes: { from: start, to: end, insert: text },
+    selection: { anchor: cursor, head: cursor },
+    scrollIntoView: true,
+  })
+
+  return instance.state.doc.toString()
+}
+
 function applySelection(
   transform: (selectedText: string) => CodeMirrorTransformResult,
 ): string | null {
@@ -289,5 +314,7 @@ onBeforeUnmount(() => {
 defineExpose({
   applySelection,
   focus,
+  getSelection,
+  replaceRange,
 })
 </script>

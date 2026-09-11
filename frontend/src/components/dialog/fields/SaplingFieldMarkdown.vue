@@ -145,6 +145,8 @@ const {
   toolbarActions,
   updateDraftValue,
   insertTextAtCursor,
+  getTextSelection,
+  replaceTextRange,
   uploadImages,
   insertReferencedImages,
 } = useSaplingMarkdownField({
@@ -189,5 +191,7 @@ async function handleImageSelection(event: Event) {
 
 defineExpose({
   insertTextAtCursor,
+  getTextSelection,
+  replaceTextRange,
 })
 </script>

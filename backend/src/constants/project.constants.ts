@@ -259,6 +259,18 @@ export const DB_PORT: number = parseInt(process.env.DB_PORT || '3306', 10);
 export const DB_USER: string = process.env.DB_USER || '';
 
 /**
+ * Isolates BullMQ jobs by database connection so another Sapling checkout or
+ * an accidentally unconfigured worker cannot consume this installation's jobs.
+ * BullMQ custom prefixes must not contain colons.
+ */
+export const REDIS_QUEUE_PREFIX: string =
+  process.env.REDIS_QUEUE_PREFIX?.trim() ||
+  `sapling-${DB_HOST || 'localhost'}-${DB_PORT}-${DB_NAME}`.replace(
+    /[^a-zA-Z0-9_-]+/g,
+    '-',
+  );
+
+/**
  * @constant {string} DB_PASSWORD
  * Database password. Defaults to empty string.
  */

@@ -3,6 +3,7 @@ import type { EventItem } from '@/entity/entity'
 
 import {
   addEventBufferPlaceholders,
+  getCalendarEventAccentColor,
   getCalendarEventCategoryColor,
   getCalendarEventIcon,
   getCalendarEventOnlineMeetingUrl,
@@ -88,6 +89,7 @@ describe('getCalendarInteractionForcedDirtyFields', () => {
     expect(event.color).toBe('#673AB7')
     expect(getCalendarEventStatusColor(event, '#2196F3')).toBe('#F44336')
     expect(getCalendarEventCategoryColor(event, '#2196F3')).toBe('#009688')
+    expect(getCalendarEventAccentColor(event, '#2196F3')).toBe('#009688')
     expect(getCalendarEventIcon(event)).toBe('mdi-lifebuoy')
   })
 

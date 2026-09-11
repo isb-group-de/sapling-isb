@@ -1,5 +1,19 @@
 import type { MailRecipientOption, MailSenderOption } from './SaplingDialogMail.types'
 
+export type MailRecipientField = 'to' | 'cc' | 'bcc'
+
+export type MailMentionMatch = {
+  from: number
+  to: number
+  query: string
+}
+
+export type MailRecipientLists = {
+  to: string[]
+  cc: string[]
+  bcc: string[]
+}
+
 export function normalizeMailRecipients(value: unknown): string[] {
   if (!Array.isArray(value)) return []
   return value
@@ -37,4 +51,74 @@ export function readMailRecipientValue(value: unknown, seen = new Set<object>())
 
 export function clampMailSelection(value: number, max: number): number {
   return Math.max(0, Math.min(value, max))
+}
+
+export function findMailRecipientMention(
+  value: string,
+  selection: { from: number; to: number },
+): MailMentionMatch | null {
+  if (selection.from !== selection.to) return null
+
+  const cursor = clampMailSelection(selection.from, value.length)
+  const prefix = value.slice(0, cursor)
+  const match = /(^|[\s([{>])@([^\n\r@,;:!?()[\]{}<>]{0,80})$/.exec(prefix)
+  if (!match) return null
+
+  const query = match[2] ?? ''
+  return {
+    from: cursor - query.length - 1,
+    to: cursor,
+    query: query.trim(),
+  }
+}
+
+export function filterMailMentionRecipients(
+  options: MailRecipientOption[],
+  query: string,
+  limit = 8,
+): MailRecipientOption[] {
+  const terms = normalizeMentionSearchText(query).split(/\s+/).filter(Boolean)
+  return options
+    .filter((option) => {
+      const haystack = normalizeMentionSearchText(
+        [option.name, option.email, option.companyName, option.departmentName].join(' '),
+      )
+      return terms.every((term) => haystack.includes(term))
+    })
+    .slice(0, limit)
+}
+
+export function assignMailMentionRecipient(
+  recipients: MailRecipientLists,
+  field: MailRecipientField,
+  email: string,
+): MailRecipientLists {
+  const normalizedEmail = email.trim()
+  const key = normalizedEmail.toLocaleLowerCase()
+  const next: MailRecipientLists = {
+    to: removeRecipient(recipients.to, key),
+    cc: removeRecipient(recipients.cc, key),
+    bcc: removeRecipient(recipients.bcc, key),
+  }
+
+  if (normalizedEmail) next[field].push(normalizedEmail)
+  return next
+}
+
+function removeRecipient(recipients: string[], excludedKey: string): string[] {
+  const distinct = new Map<string, string>()
+  for (const recipient of recipients) {
+    const value = recipient.trim()
+    const key = value.toLocaleLowerCase()
+    if (value && key !== excludedKey && !distinct.has(key)) distinct.set(key, value)
+  }
+  return [...distinct.values()]
+}
+
+function normalizeMentionSearchText(value: string): string {
+  return value
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLocaleLowerCase()
+    .trim()
 }

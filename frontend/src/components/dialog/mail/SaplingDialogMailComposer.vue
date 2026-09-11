@@ -220,17 +220,83 @@
           @update:model-value="handleSubjectUpdate"
         />
 
-        <SaplingMarkdownField
-          ref="markdownField"
-          :entity-handle="entityHandle"
-          :item-handle="itemHandle"
-          :model-value="bodyMarkdown"
-          :label="translate('document.content')"
-          :rows="10"
-          :show-preview="false"
-          @focus="emit('focus-body')"
-          @update:model-value="handleBodyMarkdownUpdate"
-        />
+        <div class="sapling-mail-dialog__mention-editor">
+          <SaplingMarkdownField
+            ref="markdownField"
+            :entity-handle="entityHandle"
+            :item-handle="itemHandle"
+            :model-value="bodyMarkdown"
+            :label="translate('document.content')"
+            :rows="10"
+            :show-preview="false"
+            @focus="handleBodyFocus"
+            @click="handleBodySelectionChange"
+            @keyup="handleBodySelectionChange"
+            @update:model-value="handleBodyMarkdownUpdate"
+          />
+
+          <section
+            v-if="mentionMatch"
+            class="sapling-mail-dialog__mention-panel"
+            data-test="mail-mention-panel"
+            aria-live="polite"
+          >
+            <div class="sapling-mail-dialog__mention-header">
+              <div>
+                <h3 class="sapling-mail-dialog__section-title">
+                  {{ translate('mail.mentionPerson') }}
+                </h3>
+                <p>{{ translate('mail.mentionRecipientHint') }}</p>
+              </div>
+              <v-btn
+                icon="mdi-close"
+                size="x-small"
+                variant="text"
+                :aria-label="translate('global.close')"
+                @click="mentionMatch = null"
+              />
+            </div>
+
+            <v-progress-linear v-if="isLoadingRecipientOptions" indeterminate color="primary" />
+            <v-list v-else-if="mentionResults.length" density="compact" lines="two">
+              <v-list-item
+                v-for="option in mentionResults"
+                :key="option.email"
+                :title="option.name || option.email"
+                :subtitle="buildMentionSubtitle(option)"
+              >
+                <template #append>
+                  <div class="sapling-mail-dialog__mention-actions">
+                    <v-btn
+                      size="x-small"
+                      variant="tonal"
+                      @mousedown.prevent
+                      @click="selectMentionRecipient(option, 'to')"
+                      >{{ translate('document.to') }}</v-btn
+                    >
+                    <v-btn
+                      size="x-small"
+                      variant="text"
+                      @mousedown.prevent
+                      @click="selectMentionRecipient(option, 'cc')"
+                      >{{ translate('document.cc') }}</v-btn
+                    >
+                    <v-btn
+                      size="x-small"
+                      variant="text"
+                      @mousedown.prevent
+                      @click="selectMentionRecipient(option, 'bcc')"
+                      >{{ translate('document.bcc') }}</v-btn
+                    >
+                  </div>
+                </template>
+              </v-list-item>
+            </v-list>
+            <p v-else class="sapling-mail-dialog__mention-empty">
+              {{ translate('mail.mentionNoResults') }}
+            </p>
+          </section>
+        </div>
       </section>
     </div>
 
@@ -356,11 +422,16 @@ import {
   sortMailRecipientOptions,
 } from '@/utils/saplingMailRecipientOptions'
 import {
+  assignMailMentionRecipient,
   buildMailSenderTitle,
   clampMailSelection,
+  filterMailMentionRecipients,
+  findMailRecipientMention,
   getMailRecipientCompanyKey,
   normalizeMailRecipients,
   readMailRecipientValue,
+  type MailMentionMatch,
+  type MailRecipientField,
 } from './saplingMailComposer.utils'
 
 type TextSelectionInput = HTMLInputElement | HTMLTextAreaElement
@@ -371,6 +442,8 @@ type SubjectFieldInstance = {
 
 type MarkdownFieldInstance = InstanceType<typeof SaplingMarkdownField> & {
   insertTextAtCursor?: (text: string) => void
+  getTextSelection?: () => { from: number; to: number }
+  replaceTextRange?: (from: number, to: number, text: string) => string
 }
 
 const props = defineProps<{
@@ -413,6 +486,7 @@ const selectedTemplate = computed(() =>
 )
 const activeTab = ref('message')
 const tabId = useId()
+const mentionMatch = ref<MailMentionMatch | null>(null)
 
 const emit = defineEmits<{
   (event: 'upload-attachments', files: File[]): void
@@ -484,6 +558,12 @@ const recipientItems = computed(() => {
     }
   })
 })
+const mentionResults = computed(() =>
+  filterMailMentionRecipients(
+    sortMailRecipientOptions(props.recipientOptions, locale.value),
+    mentionMatch.value?.query ?? '',
+  ),
+)
 
 function handleTemplateUpdate(value: number | null | undefined) {
   emit('update:templateHandle', value ?? null)
@@ -512,6 +592,56 @@ function handleSubjectUpdate(value: string) {
 
 function handleBodyMarkdownUpdate(value: string) {
   emit('update:bodyMarkdown', value)
+  refreshMention(value)
+}
+
+function handleBodyFocus() {
+  emit('focus-body')
+  handleBodySelectionChange()
+}
+
+function handleBodySelectionChange() {
+  void nextTick(() => refreshMention(props.bodyMarkdown))
+}
+
+function refreshMention(value: string) {
+  const selection = markdownField.value?.getTextSelection?.() ?? {
+    from: value.length,
+    to: value.length,
+  }
+  mentionMatch.value = findMailRecipientMention(value, selection)
+}
+
+function selectMentionRecipient(option: MailRecipientOption, field: MailRecipientField) {
+  const match = mentionMatch.value
+  if (!match) return
+
+  const nextBody = markdownField.value?.replaceTextRange?.(
+    match.from,
+    match.to,
+    `@${option.name.trim() || option.email}`,
+  )
+  if (nextBody != null) emit('update:bodyMarkdown', nextBody)
+
+  const recipients = assignMailMentionRecipient(
+    {
+      to: props.toRecipients,
+      cc: props.ccRecipients,
+      bcc: props.bccRecipients,
+    },
+    field,
+    option.email,
+  )
+  emit('update:toRecipients', recipients.to)
+  emit('update:ccRecipients', recipients.cc)
+  emit('update:bccRecipients', recipients.bcc)
+  if (field === 'cc') ccExpanded.value = true
+  if (field === 'bcc') bccExpanded.value = true
+  mentionMatch.value = null
+}
+
+function buildMentionSubtitle(option: MailRecipientOption): string {
+  return [option.companyName, option.departmentName, option.email].filter(Boolean).join(' · ')
 }
 
 function handleAttachmentUpdate(value: number[]) {

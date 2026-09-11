@@ -1293,9 +1293,11 @@ write-only, generated, readonly and hidden fields, relation tabs, generic
 reference pairs and specialized inline child collections are not exposed as
 ordinary writable proposal fields.
 
-Closing/reopening or saving a form invalidates its old instance. Any draft
-change after submission blocks applying that snapshot; request a new proposal
-instead of overwriting intervening edits. Proposals remain in chat history after
-reload, but a new form instance never silently adopts an old proposal. Local
-apply/dismiss state is shared for the current page lifetime and reset on user
-or impersonation changes.
+Closing/reopening or saving a form invalidates its old instance. Draft changes in
+fields outside the selected proposal no longer block applying it and are preserved.
+If a selected target field changed after submission, normal apply protects the
+manual value and shows a warning with an explicit `Apply anyway` action. That action
+overwrites the selected changed fields; edits made while asynchronous references are
+being resolved remain protected. Proposals remain in chat history after reload, but
+a new form instance never silently adopts an old proposal. Local apply/dismiss state
+is shared for the current page lifetime and reset on user or impersonation changes.

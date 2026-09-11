@@ -233,6 +233,7 @@ describe('AutomationProcessorService', () => {
     } as unknown as AutomationEventItem;
     const rule = {
       handle: 8,
+      sourceEntity: { handle: 'document' },
       entity: { handle: 'document' },
       conditions: [],
       referencePath: [],

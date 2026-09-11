@@ -256,7 +256,7 @@ export function getCalendarEventCategoryColor(event: CalendarEvent, fallbackColo
   return (event.event as EventItem | undefined)?.category?.color || fallbackColor
 }
 
-export const getCalendarEventAccentColor = getCalendarEventStatusColor
+export const getCalendarEventAccentColor = getCalendarEventCategoryColor
 
 export function filterWorkweekEvents(
   calendarEvents: SaplingCalendarEvent[],

@@ -26,8 +26,28 @@ export function useSongbirdForm(options: {
 }) {
   const formId = ref('')
   const workspaceTab = useWorkspaceTab()
-  const snapshots = new Map<string, { baseline: string; context: SongbirdFormContext }>()
-  const serialize = () => JSON.stringify(options.form.value)
+  const snapshots = new Map<
+    string,
+    { baseline: Record<string, unknown>; context: SongbirdFormContext }
+  >()
+  const cloneForm = () => JSON.parse(JSON.stringify(options.form.value)) as Record<string, unknown>
+  const valueFingerprint = (value: unknown) => JSON.stringify(value) ?? 'undefined'
+  const fieldValueKeys = (field: SongbirdFormContext['fields'][number]) =>
+    field.type === 'datetime' ? [`${field.name}_date`, `${field.name}_time`] : [field.name]
+  const changedFields = (
+    baseline: Record<string, unknown>,
+    context: SongbirdFormContext,
+    names: string[],
+  ) =>
+    names.filter((name) => {
+      const field = context.fields.find((item) => item.name === name)
+      return (
+        !field ||
+        fieldValueKeys(field).some(
+          (key) => valueFingerprint(options.form.value[key]) !== valueFingerprint(baseline[key]),
+        )
+      )
+    })
   const available = () =>
     workspaceTab?.active !== false &&
     options.props.modelValue &&
@@ -62,23 +82,29 @@ export function useSongbirdForm(options: {
       mode: options.props.mode === 'create' ? 'create' : 'edit',
       fields: JSON.parse(JSON.stringify(fields.value)),
     }
-    snapshots.set(context.snapshotId, { context, baseline: serialize() })
+    snapshots.set(context.snapshotId, { context, baseline: cloneForm() })
     return context
   }
-  async function apply(proposal: SongbirdFormProposal, names: string[]): Promise<boolean> {
+  async function apply(
+    proposal: SongbirdFormProposal,
+    names: string[],
+    overwriteChanged: boolean,
+  ): Promise<boolean> {
     const snapshot = snapshots.get(proposal.snapshotId)
-    const assertCurrent = () => {
+    if (!snapshot) throw new Error('aiChat.formUnavailable')
+    const assertTarget = () => {
       if (
         !available() ||
-        !snapshot ||
         proposal.formId !== formId.value ||
         proposal.entityHandle !== snapshot.context.entityHandle ||
         proposal.recordHandle !== snapshot.context.recordHandle
       )
         throw new Error('aiChat.formUnavailable')
-      if (serialize() !== snapshot.baseline) throw new Error('aiChat.formChanged')
     }
-    assertCurrent()
+    assertTarget()
+    if (!overwriteChanged && changedFields(snapshot.baseline, snapshot.context, names).length)
+      throw new Error('aiChat.formFieldsChanged')
+    const applyBaseline = cloneForm()
     const updates: { name: string; value: unknown }[] = []
     for (const name of names) {
       const field = fields.value.find((item) => item.name === name)
@@ -130,7 +156,9 @@ export function useSongbirdForm(options: {
       )
         throw new Error('aiChat.formReferenceUnavailable')
     }
-    assertCurrent()
+    assertTarget()
+    if (changedFields(applyBaseline, snapshot.context, names).length)
+      throw new Error('aiChat.formFieldsChanged')
     // Check all permissions again after asynchronous reference hydration.
     if (names.some((name) => !fields.value.some((field) => field.name === name)))
       throw new Error('aiChat.formFieldUnavailable')

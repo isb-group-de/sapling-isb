@@ -1,0 +1,62 @@
+[
+  {
+    "entity": "mail",
+    "property": "mentionPerson",
+    "value": "Person erwähnen",
+    "language": "de"
+  },
+  {
+    "entity": "mail",
+    "property": "mentionPerson",
+    "value": "Mention person",
+    "language": "en"
+  },
+  {
+    "entity": "mail",
+    "property": "mentionRecipientHint",
+    "value": "Person auswählen und direkt als An-, CC- oder BCC-Empfänger übernehmen.",
+    "language": "de"
+  },
+  {
+    "entity": "mail",
+    "property": "mentionRecipientHint",
+    "value": "Select a person and add them directly as a To, CC, or BCC recipient.",
+    "language": "en"
+  },
+  {
+    "entity": "mail",
+    "property": "mentionNoResults",
+    "value": "Keine passende Person mit E-Mail-Adresse gefunden.",
+    "language": "de"
+  },
+  {
+    "entity": "mail",
+    "property": "mentionNoResults",
+    "value": "No matching person with an email address was found.",
+    "language": "en"
+  },
+  {
+    "entity": "aiChat",
+    "property": "formFieldsChanged",
+    "language": "de",
+    "value": "Ausgewählte Felder wurden seit der Anfrage im Formular geändert. Deine Änderungen werden nicht automatisch überschrieben."
+  },
+  {
+    "entity": "aiChat",
+    "property": "formFieldsChanged",
+    "language": "en",
+    "value": "Selected fields changed in the form after this request. Your changes will not be overwritten automatically."
+  },
+  {
+    "entity": "aiChat",
+    "property": "formApplyAnyway",
+    "language": "de",
+    "value": "Trotzdem übernehmen"
+  },
+  {
+    "entity": "aiChat",
+    "property": "formApplyAnyway",
+    "language": "en",
+    "value": "Apply anyway"
+  }
+]

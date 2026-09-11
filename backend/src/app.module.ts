@@ -19,6 +19,7 @@ import {
   REDIS_ENABLED,
   REDIS_PASSWORD,
   REDIS_PORT,
+  REDIS_QUEUE_PREFIX,
   REDIS_SERVER,
   REDIS_USERNAME,
 } from './constants/project.constants';
@@ -70,6 +71,7 @@ import { AutomationModule } from './api/automation/automation.module';
     ...(REDIS_ENABLED
       ? [
           BullModule.forRoot({
+            prefix: REDIS_QUEUE_PREFIX,
             connection: {
               host: REDIS_SERVER,
               port: REDIS_PORT,

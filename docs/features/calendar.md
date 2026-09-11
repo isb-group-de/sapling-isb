@@ -197,6 +197,8 @@ or external calendar entries.
 
 `EventTypeItem.showInDefaultCalendar` is important for delivery. If it is `false`, the event stays in Sapling and is not queued for external default-calendar synchronization. `EventCategoryItem` is independent of delivery behavior and classifies the business context, for example `Support` together with the type `Review`.
 
+In calendar views, the Event type color controls the appointment card surface. The Event category color controls the narrow accent at the card's left edge and the category icon. Today's agenda uses the same mapping with a substantially lighter type-color tint. Event status color does not replace either of these classification colors.
+
 ## Recurrence Contract
 
 Sapling stores recurrence in `EventItem.recurrenceRule` as an RFC5545-like RRULE string. The backend parser accepts rules with or without the `RRULE:` prefix and normalizes the supported parts.

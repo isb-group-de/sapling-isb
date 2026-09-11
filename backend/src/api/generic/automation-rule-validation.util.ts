@@ -22,10 +22,10 @@ export function validateAutomationRuleConfiguration(
   data: Record<string, unknown>,
 ): void {
   if (!automationPaths || !isAutomationRuleEntity(entityHandle)) return;
-  const source = referenceHandle(data.sourceEntity);
   const target = referenceHandle(
     entityHandle === 'fieldAutomation' ? data.targetEntity : data.entity,
   );
+  const source = referenceHandle(data.sourceEntity) || target;
   if (!source || !target) return;
   const path = Array.isArray(data.referencePath)
     ? (data.referencePath as AutomationPathStep[])

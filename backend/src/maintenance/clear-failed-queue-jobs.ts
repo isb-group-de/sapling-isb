@@ -3,6 +3,7 @@ import {
   REDIS_ENABLED,
   REDIS_PASSWORD,
   REDIS_PORT,
+  REDIS_QUEUE_PREFIX,
   REDIS_SERVER,
   REDIS_USERNAME,
 } from '../constants/project.constants';
@@ -22,6 +23,7 @@ async function clearFailedQueueJobs(): Promise<void> {
   const queues = MONITORED_QUEUE_NAMES.map(
     (name) =>
       new Queue(name, {
+        prefix: REDIS_QUEUE_PREFIX,
         connection: {
           host: REDIS_SERVER,
           port: REDIS_PORT,

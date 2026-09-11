@@ -7,7 +7,7 @@
     :placeholder="placeholder"
     :rules="rules"
     :min="0"
-    :max="1000000"
+    :max="10000000"
     :step="10000"
     :prefix="currencySymbol"
     hide-details="auto"

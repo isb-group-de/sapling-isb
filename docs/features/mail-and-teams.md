@@ -264,6 +264,15 @@ Field groups use a consistent compact gap; paired fields stack on small screens.
 The preview remains alongside the editor, with placeholders initially collapsed.
 Draft and send notices retain their full height instead of shrinking in the flex
 layout. Translation seed 086 supplies the tab labels.
+
+While composing, typing `@` in the Markdown body opens a filtered list of the
+same permission- and context-aware person suggestions used by the recipient
+fields. Each suggestion offers **To**, **CC**, and **BCC** directly. Choosing one
+completes the visible `@Name` text and moves the person's email address into
+exactly that recipient field, preventing duplicates across all three fields.
+Because the behavior belongs to the shared composer, it applies equally to a new
+message and a browser-restored draft.
+
 Each user manages private `emailSignature` records through **Mail → Email
 signatures** (`/table/emailSignature`) or the **Email signatures** tab in their
 profile. Both editors use the generic CRUD API. Signatures have a name, Markdown
@@ -284,6 +293,7 @@ The composer explicitly sends `signatureMode: rotation|fixed|none` plus an
 optional `signatureHandle`. In the UI, fixed mode requires a selected active
 signature; `none` remains an explicit API mode for integrations that intentionally
 want an unsigned message.
+
 Rotation selects active included signatures by least recent use, with unused
 signatures first and the handle breaking ties. With no eligible signature the
 message remains unsigned and the composer displays an explanation. Existing

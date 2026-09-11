@@ -12,6 +12,7 @@ import {
 import { useSaplingMarkdownVoiceInput } from '@/composables/fields/useSaplingMarkdownVoiceInput'
 import type {
   MarkdownEditorHandle,
+  MarkdownTextSelection,
   MarkdownTransformResult,
 } from '@/components/dialog/fields/markdown/markdownField.types'
 import {
@@ -225,6 +226,27 @@ export function useSaplingMarkdownField(options: {
       selectionStart: text.length,
       selectionEnd: text.length,
     }))
+  }
+
+  function getTextSelection(): MarkdownTextSelection {
+    return (
+      editor.value?.getSelection?.() ?? {
+        from: draftValue.value.length,
+        to: draftValue.value.length,
+      }
+    )
+  }
+
+  function replaceTextRange(from: number, to: number, text: string): string {
+    const start = Math.max(0, Math.min(from, draftValue.value.length))
+    const end = Math.max(start, Math.min(to, draftValue.value.length))
+    const nextValue =
+      editor.value?.replaceRange?.(start, end, text) ??
+      `${draftValue.value.slice(0, start)}${text}${draftValue.value.slice(end)}`
+
+    updateDraftValue(nextValue)
+    editor.value?.focus()
+    return nextValue
   }
 
   async function uploadImages(files: File[]): Promise<number> {
@@ -533,6 +555,8 @@ export function useSaplingMarkdownField(options: {
     toolbarActions,
     updateDraftValue,
     insertTextAtCursor,
+    getTextSelection,
+    replaceTextRange,
     uploadImages,
     insertReferencedImages,
   }

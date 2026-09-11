@@ -8,6 +8,7 @@ import {
   REDIS_ENABLED,
   REDIS_PASSWORD,
   REDIS_PORT,
+  REDIS_QUEUE_PREFIX,
   REDIS_SERVER,
   REDIS_USERNAME,
 } from '../../../constants/project.constants';
@@ -26,6 +27,7 @@ export class SystemQueueErrorCaptureService
     if (!REDIS_ENABLED) return;
     this.queueEvents = MONITORED_QUEUE_NAMES.map((queueName) => {
       const events = new QueueEvents(queueName, {
+        prefix: REDIS_QUEUE_PREFIX,
         connection: {
           host: REDIS_SERVER,
           port: REDIS_PORT,

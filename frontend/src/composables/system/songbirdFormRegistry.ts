@@ -7,7 +7,11 @@ import type {
 export type SongbirdFormTarget = {
   formId: string
   capture: () => SongbirdFormContext | null
-  apply: (proposal: SongbirdFormProposal, names: string[]) => Promise<boolean>
+  apply: (
+    proposal: SongbirdFormProposal,
+    names: string[],
+    overwriteChanged: boolean,
+  ) => Promise<boolean>
   focus: () => void
   isAvailable: () => boolean
 }
@@ -32,7 +36,10 @@ export function registerSongbirdFormProposal(
   songbirdFormProposals.set(proposal.id, state)
   return state
 }
-export async function applySongbirdFormProposal(state: SongbirdFormProposalState) {
+export async function applySongbirdFormProposal(
+  state: SongbirdFormProposalState,
+  overwriteChanged = false,
+) {
   if (state.status !== 'pending' || !state.selected.length) return
   const target = songbirdForms.get(state.proposal.formId)
   if (!target?.isAvailable()) {
@@ -42,7 +49,11 @@ export async function applySongbirdFormProposal(state: SongbirdFormProposalState
   state.status = 'applying'
   state.error = ''
   try {
-    state.validationFailed = !(await target.apply(state.proposal, [...state.selected]))
+    state.validationFailed = !(await target.apply(
+      state.proposal,
+      [...state.selected],
+      overwriteChanged,
+    ))
     state.status = 'applied'
     target.focus()
   } catch (error) {

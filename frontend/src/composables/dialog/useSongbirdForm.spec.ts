@@ -90,13 +90,31 @@ describe('Songbird form integration', () => {
     expect(state.status).toBe('applied')
     expect(state.validationFailed).toBe(true)
   })
-  it('preserves edits made after submission and rejects stale or closed form targets', async () => {
+  it('applies unchanged target fields while preserving edits in other fields', async () => {
     const test = setup(),
       state = registerSongbirdFormProposal(test.proposal())
     test.form.value.name = 'Manual edit'
+    state.selected = ['phone']
     await applySongbirdFormProposal(state)
-    expect(state.error).toBe('aiChat.formChanged')
+    expect(test.form.value).toEqual({ name: 'Manual edit', phone: '123' })
+    expect(state.error).toBe('')
+    expect(state.status).toBe('applied')
+  })
+  it('preserves changed target fields unless overwrite is explicitly requested', async () => {
+    const test = setup(),
+      state = registerSongbirdFormProposal(test.proposal())
+    test.form.value.name = 'Manual edit'
+    state.selected = ['name']
+    await applySongbirdFormProposal(state)
+    expect(state.error).toBe('aiChat.formFieldsChanged')
     expect(test.updateFormField).not.toHaveBeenCalled()
+    await applySongbirdFormProposal(state, true)
+    expect(test.form.value.name).toBe('Example')
+    expect(state.status).toBe('applied')
+  })
+  it('rejects stale or closed form targets', async () => {
+    const test = setup(),
+      state = registerSongbirdFormProposal(test.proposal())
     test.props.modelValue = false
     await nextTick()
     test.props.modelValue = true
@@ -216,7 +234,7 @@ describe('Songbird form integration', () => {
     test.form.value.phone = 'Manual'
     resolve([{ handle: 'DE' }])
     await applying
-    expect(state.error).toBe('aiChat.formChanged')
+    expect(state.error).toBe('aiChat.formFieldsChanged')
     expect(test.updateFormField).not.toHaveBeenCalled()
   })
 })
