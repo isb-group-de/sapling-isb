@@ -1,9 +1,9 @@
 <template>
   <div class="sapling-stack-sm">
-    <v-alert v-if="failed" type="error" density="compact">
+    <div v-if="failed" class="d-flex align-center ga-2">
       {{ $t('aiChat.widgetLoadFailed') }}
       <v-btn variant="text" @click="load">{{ $t('global.refresh') }}</v-btn>
-    </v-alert>
+    </div>
     <SaplingAutocomplete
       :model-value="model.agentHandle"
       :items="agents"
@@ -37,7 +37,7 @@
       :rules="[available(filteredModels)]"
       @update:model-value="setModel"
     />
-    <v-textarea
+    <SaplingTextarea
       :model-value="model.instruction"
       :label="$t('aiChat.workspaceInstruction')"
       :hint="$t('aiChat.workspaceInstructionHint')"
@@ -53,11 +53,14 @@
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import SaplingAutocomplete from '@/components/common/SaplingAutocomplete.vue'
+import SaplingTextarea from '@/components/common/SaplingTextarea.vue'
+import { useSaplingMessageCenter } from '@/composables/system/useSaplingMessageCenter'
 import ApiAiService from '@/services/api.ai.service'
 import type { AiAgentItem, AiProviderModelItem, AiProviderTypeItem } from '@/entity/entity'
 import type { AiWidget } from '@/components/system/ai-chat/songbirdWorkspaceRegistry'
 const model = defineModel<AiWidget['config']>({ required: true })
 const { t } = useI18n()
+const { pushMessage } = useSaplingMessageCenter()
 const agents = ref<AiAgentItem[]>([])
 const providers = ref<AiProviderTypeItem[]>([])
 const models = ref<AiProviderModelItem[]>([])
@@ -97,6 +100,7 @@ async function load() {
     ])
   } catch {
     failed.value = true
+    pushMessage('error', 'aiChat.widgetLoadFailed', '', 'aiChat')
   } finally {
     loading.value = false
   }

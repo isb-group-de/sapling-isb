@@ -41,9 +41,9 @@ describe('TeamsGraphDeliveryService', () => {
         },
       }),
     };
-    const service = new TeamsGraphDeliveryService(
-      { fork: jest.fn(() => fork) } as never,
-    );
+    const service = new TeamsGraphDeliveryService({
+      fork: jest.fn(() => fork),
+    } as never);
 
     await expect(service.dispatchDelivery(16)).rejects.toThrow(
       'teams.senderAzureRequired',

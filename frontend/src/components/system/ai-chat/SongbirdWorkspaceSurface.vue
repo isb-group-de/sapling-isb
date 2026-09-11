@@ -1,8 +1,5 @@
 <template>
   <div class="songbird-workspace">
-    <v-alert v-if="c.widgetConfigurationError" type="error" density="compact">{{
-      $t('aiChat.widgetConfigurationError')
-    }}</v-alert>
     <SaplingAiChatLoadingState v-if="c.isTranslationLoading" />
     <SaplingAiChatConversation
       :workspace-instruction="
@@ -64,13 +61,22 @@
   </div>
 </template>
 <script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue'
+import { onMounted, onUnmounted, watch } from 'vue'
 import { useSongbirdDock } from '@/composables/system/useSongbirdDock'
+import { useSaplingMessageCenter } from '@/composables/system/useSaplingMessageCenter'
 import type { SongbirdWorkspaceState } from './useSongbirdWorkspace'
 import SaplingAiChatConversation from './SaplingAiChatConversation.vue'
 import SaplingAiChatLoadingState from './SaplingAiChatLoadingState.vue'
 const props = defineProps<{ c: SongbirdWorkspaceState }>()
 const { fullscreen } = useSongbirdDock()
+const { pushMessage } = useSaplingMessageCenter()
+watch(
+  () => props.c.widgetConfigurationError,
+  (hasError) => {
+    if (hasError) pushMessage('error', 'aiChat.widgetConfigurationError', '', 'aiChat')
+  },
+  { immediate: true },
+)
 function returnToWork() {
   if (fullscreen.value) props.c.closePanel()
 }

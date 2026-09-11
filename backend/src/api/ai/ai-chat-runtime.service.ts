@@ -34,15 +34,15 @@ import {
   buildToolResultEnvelope,
   buildToolFailureAssistantMessage,
 } from './prompts/ai.prompts';
+import { AiChatRuntimeOperations } from './ai-chat-runtime.operations';
 import {
-  AiChatRuntimeOperations,
   appendUsageEntry,
   assertNotAborted,
   buildUsagePayload,
   isRecord,
   normalizeAbortError,
   normalizeCallbacks,
-} from './ai-chat-runtime.operations';
+} from './ai-chat-runtime.utils';
 
 export type AiRuntimeToolExecutor = (
   entry: AiToolRegistryEntry,

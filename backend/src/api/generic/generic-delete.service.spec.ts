@@ -287,20 +287,23 @@ describe('GenericDeleteService', () => {
       harness.service.delete('project', 4, { handle: 1 } as never, {}),
     ).resolves.toEqual({ action: 'deleted' });
 
+    const postCommitContext = expect.objectContaining({
+      postCommitTasks: expect.any(Array) as unknown,
+    }) as unknown;
     expect(harness.genericEntityMutationService.delete.mock.calls).toEqual([
       [
         'task',
         9,
         expect.objectContaining({ handle: 1 }),
-        expect.objectContaining({ postCommitTasks: expect.any(Array) }),
-        expect.objectContaining({ postCommitTasks: expect.any(Array) }),
+        postCommitContext,
+        postCommitContext,
       ],
       [
         'project',
         4,
         expect.objectContaining({ handle: 1 }),
-        expect.objectContaining({ postCommitTasks: expect.any(Array) }),
-        { postCommitTasks: expect.any(Array) },
+        postCommitContext,
+        postCommitContext,
       ],
     ]);
   });

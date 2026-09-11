@@ -63,6 +63,7 @@ export type AiChatProgressPayload = {
 export type AiRuntimeStreamCallbacks = {
   onTextDelta: (delta: string) => Promise<void>;
   onReasoningDelta?: (delta: string) => Promise<void>;
+  onToolCallCompleted?: (toolCall: AiExecutedToolCall) => Promise<void>;
   signal?: AbortSignal;
 };
 

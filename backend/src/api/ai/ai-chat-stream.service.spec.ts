@@ -172,6 +172,45 @@ describe('AiChatStreamService persistence lifecycle', () => {
       }),
     );
   });
+
+  it('checkpoints completed tool traces before a later provider failure', async () => {
+    const fixture = createFixture();
+    fixture.chatRuntime.streamOpenAi.mockImplementation(
+      async (...args: unknown[]) => {
+        const callbacks = args[7] as {
+          onToolCallCompleted: (toolCall: unknown) => Promise<void>;
+        };
+        await callbacks.onToolCallCompleted({
+          serverHandle: 0,
+          serverName: 'sapling',
+          toolName: 'generic_list',
+          arguments: { entityHandle: 'ticket' },
+          rawResult: { data: [{ handle: 1 }] },
+        });
+        throw new Error('provider unavailable');
+      },
+    );
+
+    await expect(
+      fixture.service.streamChatMessage(
+        { sessionHandle: 7, content: 'Question' },
+        fixture.person as never,
+        fixture.onEvent,
+      ),
+    ).rejects.toThrow('provider unavailable');
+
+    expect(fixture.assistantMessage).toMatchObject({
+      status: 'failed',
+      toolCalls: [expect.objectContaining({ toolName: 'generic_list' })],
+    });
+    expect(fixture.agentRunLifecycle.completeRun).toHaveBeenCalledWith(
+      expect.any(Object),
+      expect.objectContaining({
+        status: 'failed',
+        toolCalls: [expect.objectContaining({ toolName: 'generic_list' })],
+      }),
+    );
+  });
 });
 
 function createFixture() {

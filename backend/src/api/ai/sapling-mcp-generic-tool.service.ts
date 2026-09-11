@@ -630,7 +630,10 @@ export class SaplingMcpGenericToolService {
         : null;
     const targetValue = this.extractReferenceHandle(record?.[targetFieldName]);
 
-    if (targetValue == null || String(parentValue) !== String(targetValue)) {
+    if (
+      targetValue == null ||
+      !this.areReferenceHandlesEqual(parentValue, targetValue)
+    ) {
       invalidReferences.push({
         fieldName: field.name,
         referenceName: field.referenceName,
@@ -660,6 +663,18 @@ export class SaplingMcpGenericToolService {
     return value && typeof value === 'object' && !Array.isArray(value)
       ? (value as Record<string, unknown>).handle
       : value;
+  }
+
+  private areReferenceHandlesEqual(left: unknown, right: unknown): boolean {
+    const isPrimitiveHandle = (value: unknown): value is string | number =>
+      typeof value === 'string' ||
+      (typeof value === 'number' && Number.isFinite(value));
+
+    return (
+      isPrimitiveHandle(left) &&
+      isPrimitiveHandle(right) &&
+      String(left) === String(right)
+    );
   }
 
   private isValidReferenceHandle(

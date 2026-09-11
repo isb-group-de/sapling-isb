@@ -1,6 +1,7 @@
 import { flushPromises, mount } from '@vue/test-utils'
 import { computed, nextTick, ref } from 'vue'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { createPinia, setActivePinia, type Pinia } from 'pinia'
 
 import SaplingDialogEdit from '../SaplingDialogEdit.vue'
 import { createDialogState } from './SaplingDialogEdit.test-support'
@@ -10,6 +11,7 @@ const dialogHarness = vi.hoisted(() => ({
 }))
 const useTranslationLoaderMock = vi.hoisted(() => vi.fn())
 const getEntityTemplateMock = vi.hoisted(() => vi.fn())
+let pinia: Pinia
 
 vi.mock('vue-i18n', () => ({
   createI18n: () => ({
@@ -74,6 +76,7 @@ function mountDialog(propOverrides: Record<string, unknown> = {}) {
       ...propOverrides,
     },
     global: {
+      plugins: [pinia],
       stubs: {
         VDialog: {
           name: 'VDialog',
@@ -123,6 +126,8 @@ async function settleFocus() {
 
 describe('SaplingDialogEdit', () => {
   beforeEach(() => {
+    pinia = createPinia()
+    setActivePinia(pinia)
     useTranslationLoaderMock.mockReset()
     getEntityTemplateMock.mockReset().mockResolvedValue([])
     useTranslationLoaderMock.mockReturnValue({

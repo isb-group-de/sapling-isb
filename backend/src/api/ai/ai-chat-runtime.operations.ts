@@ -1,4 +1,5 @@
 import type { Content } from '@google/generative-ai';
+import type { ChatCompletionChunk } from 'openai/resources/chat/completions';
 import {
   buildOpenAiImageContent,
   chatMessageImages,
@@ -16,11 +17,13 @@ import type {
   AiToolErrorPayload,
   AiToolRegistryEntry,
 } from './ai.types';
-import { AiChatInterruptedError } from './ai.types';
-import type {
-  AiRuntimeToolExecutor,
-  DeltaHandler,
-} from './ai-chat-runtime.service';
+import type { AiRuntimeToolExecutor } from './ai-chat-runtime.service';
+import {
+  appendUsageEntry,
+  assertNotAborted,
+  buildUsagePayload,
+  isRecord,
+} from './ai-chat-runtime.utils';
 import {
   buildOpenAiResponsesTools,
   buildOpenAiTools,
@@ -36,6 +39,12 @@ import {
   buildToolFailureAssistantMessage,
   serializeToolResultForModel,
 } from './prompts/ai.prompts';
+import {
+  AiToolResultContextBudget,
+  isMissingUserQueryProviderError,
+  OPENAI_COMPATIBLE_CONTINUATION_PROMPT,
+  OPENAI_COMPATIBLE_PARTIAL_RESULT_MESSAGE,
+} from './ai-tool-result-context.utils';
 
 export class AiChatRuntimeOperations {
   constructor(protected readonly mcpService: McpService) {}
@@ -98,6 +107,7 @@ export class AiChatRuntimeOperations {
     })) as Array<Record<string, unknown>>;
     const executedToolCalls: AiExecutedToolCall[] = [];
     const usageEntries: Record<string, unknown>[] = [];
+    const toolResultBudget = new AiToolResultContextBudget();
     let consecutiveUnknownToolIterations = 0;
 
     for (
@@ -186,7 +196,7 @@ export class AiChatRuntimeOperations {
               typeof functionCall.call_id === 'string'
                 ? functionCall.call_id
                 : '',
-            output: serializeToolResultForModel(toolError),
+            output: toolResultBudget.serialize(toolError),
           });
           continue;
         }
@@ -204,13 +214,14 @@ export class AiChatRuntimeOperations {
           options.toolExecutor,
         );
         executedToolCalls.push(execution.trace);
+        await options.callbacks.onToolCallCompleted?.(execution.trace);
         input.push({
           type: 'function_call_output',
           call_id:
             typeof functionCall.call_id === 'string'
               ? functionCall.call_id
               : '',
-          output: serializeToolResultForModel(execution.result.content),
+          output: toolResultBudget.serialize(execution.result.content),
         });
       }
       consecutiveUnknownToolIterations =
@@ -255,7 +266,9 @@ export class AiChatRuntimeOperations {
     );
     const executedToolCalls: AiExecutedToolCall[] = [];
     const usageEntries: Record<string, unknown>[] = [];
+    const toolResultBudget = new AiToolResultContextBudget();
     let consecutiveUnknownToolIterations = 0;
+    let missingUserQueryRecoveryUsed = false;
 
     for (
       let iteration = 0;
@@ -263,23 +276,61 @@ export class AiChatRuntimeOperations {
       iteration += 1
     ) {
       assertNotAborted(options.callbacks.signal);
-      const response = await createOpenAiClient(
-        options.provider,
-      ).chat.completions.create(
-        {
-          model: options.model,
-          messages: messages as never,
-          stream: true,
-          stream_options: { include_usage: true },
-          ...(toolRegistry.length > 0
-            ? {
-                tools: buildOpenAiTools(toolRegistry),
-                tool_choice: 'auto' as const,
-              }
-            : {}),
-        },
-        { signal: options.callbacks.signal },
-      );
+      const createCompletion = (): Promise<
+        AsyncIterable<ChatCompletionChunk>
+      > =>
+        createOpenAiClient(options.provider).chat.completions.create(
+          {
+            model: options.model,
+            messages: messages as never,
+            stream: true,
+            stream_options: { include_usage: true },
+            ...(toolRegistry.length > 0
+              ? {
+                  tools: buildOpenAiTools(toolRegistry),
+                  tool_choice: 'auto' as const,
+                }
+              : {}),
+          },
+          { signal: options.callbacks.signal },
+        ) as Promise<AsyncIterable<ChatCompletionChunk>>;
+      let response: AsyncIterable<ChatCompletionChunk> | undefined;
+      try {
+        response = await createCompletion();
+      } catch (error) {
+        if (
+          options.provider.handle !== 'ollama' ||
+          executedToolCalls.length === 0 ||
+          !isMissingUserQueryProviderError(error)
+        ) {
+          throw error;
+        }
+
+        if (!missingUserQueryRecoveryUsed) {
+          messages.push({
+            role: 'user',
+            content: OPENAI_COMPATIBLE_CONTINUATION_PROMPT,
+          });
+          missingUserQueryRecoveryUsed = true;
+          try {
+            response = await createCompletion();
+          } catch (retryError) {
+            if (!isMissingUserQueryProviderError(retryError)) {
+              throw retryError;
+            }
+          }
+        }
+
+        if (!response) {
+          await options.callbacks.onTextDelta(
+            OPENAI_COMPATIBLE_PARTIAL_RESULT_MESSAGE,
+          );
+          return {
+            toolCalls: executedToolCalls,
+            usagePayload: buildUsagePayload(usageEntries),
+          };
+        }
+      }
       const toolCalls = new Map<
         number,
         { id: string; name: string; arguments: string }
@@ -338,7 +389,7 @@ export class AiChatRuntimeOperations {
           messages.push({
             role: 'tool',
             tool_call_id: call.id,
-            content: serializeToolResultForModel(toolError),
+            content: toolResultBudget.serialize(toolError),
           });
           continue;
         }
@@ -352,10 +403,11 @@ export class AiChatRuntimeOperations {
           options.toolExecutor,
         );
         executedToolCalls.push(execution.trace);
+        await options.callbacks.onToolCallCompleted?.(execution.trace);
         messages.push({
           role: 'tool',
           tool_call_id: call.id,
-          content: serializeToolResultForModel(execution.result.content),
+          content: toolResultBudget.serialize(execution.result.content),
         });
       }
       consecutiveUnknownToolIterations =
@@ -476,82 +528,4 @@ export class AiChatRuntimeOperations {
         : '';
     return `${message.content}${contextPrefix}`;
   }
-}
-
-export function normalizeCallbacks(
-  handler: DeltaHandler,
-): AiRuntimeStreamCallbacks {
-  return typeof handler === 'function' ? { onTextDelta: handler } : handler;
-}
-
-export function assertNotAborted(signal?: AbortSignal): void {
-  if (signal?.aborted) throw new AiChatInterruptedError();
-}
-
-export function normalizeAbortError(
-  error: unknown,
-  signal?: AbortSignal,
-): unknown {
-  return signal?.aborted ? new AiChatInterruptedError() : error;
-}
-
-export function appendUsageEntry(
-  usageEntries: Record<string, unknown>[],
-  usage: unknown,
-): void {
-  if (isRecord(usage)) usageEntries.push({ ...usage });
-}
-
-export function buildUsagePayload(
-  usageEntries: Record<string, unknown>[],
-): Record<string, unknown> | null {
-  if (usageEntries.length === 0) return null;
-  const inputTokens = sumUsageFields(usageEntries, [
-    'inputTokens',
-    'input_tokens',
-    'promptTokens',
-    'promptTokenCount',
-    'prompt_tokens',
-  ]);
-  const outputTokens = sumUsageFields(usageEntries, [
-    'outputTokens',
-    'output_tokens',
-    'completionTokens',
-    'candidatesTokenCount',
-    'completion_tokens',
-  ]);
-  const totalTokens = sumUsageFields(usageEntries, [
-    'totalTokens',
-    'totalTokenCount',
-    'total_tokens',
-  ]);
-  return {
-    entries: usageEntries,
-    ...(inputTokens != null ? { inputTokens } : {}),
-    ...(outputTokens != null ? { outputTokens } : {}),
-    ...(totalTokens != null ? { totalTokens } : {}),
-  };
-}
-
-export function sumUsageFields(
-  usageEntries: Record<string, unknown>[],
-  keys: string[],
-): number | null {
-  let total = 0;
-  let hasValue = false;
-  for (const entry of usageEntries) {
-    for (const key of keys) {
-      const value = entry[key];
-      if (typeof value === 'number' && Number.isFinite(value)) {
-        total += value;
-        hasValue = true;
-        break;
-      }
-    }
-  }
-  return hasValue ? total : null;
-}
-
-export function isRecord(value: unknown): value is Record<string, unknown> {
-  return !!value && typeof value === 'object' && !Array.isArray(value);
 }

@@ -6,7 +6,6 @@ import {
   Injectable,
   forwardRef,
 } from '@nestjs/common';
-import { AI_CHAT_STREAM_CHECKPOINT_INTERVAL_MS } from '../../constants/project.constants';
 import { AiAgentRunItem } from '../../entity/AiAgentRunItem';
 import { AiChatMessageItem } from '../../entity/AiChatMessageItem';
 import { AiChatSessionItem } from '../../entity/AiChatSessionItem';
@@ -39,7 +38,11 @@ import {
   buildAiExecutedToolCallTrace,
   toAiToolCallRunTrace,
 } from './ai-tool-trace.utils';
-import { AiChatInterruptedError, type AiStreamResult } from './ai.types';
+import {
+  AiChatInterruptedError,
+  type AiExecutedToolCall,
+  type AiStreamResult,
+} from './ai.types';
 import {
   buildChatUsagePayload,
   completeProgress,
@@ -54,6 +57,12 @@ import { McpService } from './mcp.service';
 import { assertChatImageSupport } from './ai-chat-images.utils';
 import { completeAiChatSessionResponse } from './ai-chat-session-response.utils';
 import { readFormContext, formProposalDescriptor } from './ai-form-proposal';
+import {
+  buildCompletedToolCallRunContext,
+  createChatRuntimeCallbacks,
+  createResponseCheckpoint,
+  emitChatStreamStarted,
+} from './ai-chat-stream-callbacks.utils';
 
 @Injectable()
 export class AiChatStreamService {
@@ -264,40 +273,20 @@ export class AiChatStreamService {
       );
       await this.chatPersistence.populateChatSession(session);
 
-      await onEvent({
-        type: 'session.upsert',
-        session: sanitizeChatSession(session),
+      await emitChatStreamStarted({
+        onEvent,
+        session,
+        userMessage,
+        assistantMessage,
+        availableTools,
       });
-      await onEvent({
-        type: 'message.user',
-        message: sanitizeChatMessage(userMessage),
-      });
-      await onEvent({
-        type: 'message.assistant',
-        message: sanitizeChatMessage(assistantMessage),
-      });
-      await onEvent({ type: 'mcp.tools', tools: availableTools });
 
       let run: AiAgentRunItem | null = null;
-      let lastCheckpointAt = Date.now();
-      const persistResponseCheckpoint = async (
-        force = false,
-      ): Promise<void> => {
-        const now = Date.now();
-        const checkpointInterval = Number.isFinite(
-          AI_CHAT_STREAM_CHECKPOINT_INTERVAL_MS,
-        )
-          ? Math.max(100, AI_CHAT_STREAM_CHECKPOINT_INTERVAL_MS)
-          : 750;
-
-        if (!force && now - lastCheckpointAt < checkpointInterval) {
-          return;
-        }
-
-        session.responseActivityAt = new Date(now);
-        await this.em.flush();
-        lastCheckpointAt = now;
-      };
+      const completedToolCalls: AiExecutedToolCall[] = [];
+      const persistResponseCheckpoint = createResponseCheckpoint(
+        this.em,
+        session,
+      );
 
       try {
         run = await this.agentRunLifecycle.createRun({
@@ -390,29 +379,15 @@ export class AiChatStreamService {
 
         let streamResult: AiStreamResult;
         const progress = getProgress(assistantMessage);
-        const callbacks = {
+        const callbacks = createChatRuntimeCallbacks({
           signal: options?.signal,
-          onTextDelta: async (delta: string) => {
-            if (!delta) return;
-            assistantMessage.content += delta;
-            await persistResponseCheckpoint();
-            await onEvent({
-              type: 'message.delta',
-              handle: assistantMessage.handle,
-              delta,
-            });
-          },
-          onReasoningDelta: async (delta: string) => {
-            if (!delta) return;
-            progress.reasoningSummary += delta;
-            await persistResponseCheckpoint();
-            await onEvent({
-              type: 'progress.delta',
-              handle: assistantMessage.handle,
-              delta,
-            });
-          },
-        };
+          assistantMessage,
+          progress,
+          completedToolCalls,
+          getRun: () => run,
+          persistResponseCheckpoint,
+          onEvent,
+        });
         const maxToolCallIterations = resolveMaxToolCallIterations(
           runtimeTarget.model,
         );
@@ -593,6 +568,11 @@ export class AiChatStreamService {
         if (run) {
           this.agentRunLifecycle.completeRun(run, {
             status: interrupted ? 'cancelled' : 'failed',
+            responseText: assistantMessage.content,
+            ...buildCompletedToolCallRunContext(
+              completedToolCalls,
+              this.agentRunLifecycle,
+            ),
             errorPayload: {
               error: error instanceof Error ? error.message : 'ai.unknownError',
             },

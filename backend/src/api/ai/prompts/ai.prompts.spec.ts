@@ -72,6 +72,23 @@ describe('AI tool guidance', () => {
     ).toEqual(buildToolResultEnvelope(maliciousData));
   });
 
+  it('keeps oversized tool results valid and explicitly marks truncation', () => {
+    const serialized = serializeToolResultForModel(
+      { data: 'x'.repeat(10_000) },
+      1_000,
+    );
+    const parsed = JSON.parse(serialized) as {
+      data: { truncated: boolean; originalCharacters: number; preview: string };
+    };
+
+    expect(serialized.length).toBeLessThanOrEqual(1_000);
+    expect(parsed.data).toMatchObject({
+      truncated: true,
+      originalCharacters: expect.any(Number),
+    });
+    expect(parsed.data.preview.length).toBeGreaterThan(0);
+  });
+
   it('requires the configured account language for every user-facing answer', () => {
     const user = {
       language: { handle: 'fr', name: 'Français (France)' },

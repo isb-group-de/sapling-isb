@@ -3,7 +3,7 @@
     <strong>{{ t('aiChat.formProposalTitle') }}</strong>
     <p class="text-caption">{{ t('aiChat.formProposalHelp') }}</p>
     <div v-for="field in proposal.fields" :key="field.name" class="songbird-form-proposal__field">
-      <v-checkbox-btn
+      <SaplingCheckbox
         density="compact"
         :model-value="state.selected.includes(field.name)"
         :disabled="state.status !== 'pending' || !available"
@@ -62,6 +62,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import SaplingCheckbox from '@/components/common/SaplingCheckbox.vue'
 import type { SongbirdFormProposal } from '@/composables/system/songbirdForm.types'
 import {
   applySongbirdFormProposal,

@@ -30,7 +30,10 @@ export function buildToolResultEnvelope(data: unknown): {
   };
 }
 
-export function serializeToolResultForModel(data: unknown): string {
+export function serializeToolResultForModel(
+  data: unknown,
+  maxCharacters = Number.POSITIVE_INFINITY,
+): string {
   let normalizedData = data;
 
   if (typeof data === 'string') {
@@ -41,7 +44,33 @@ export function serializeToolResultForModel(data: unknown): string {
     }
   }
 
-  return JSON.stringify(buildToolResultEnvelope(normalizedData));
+  const serialized = JSON.stringify(buildToolResultEnvelope(normalizedData));
+  if (serialized.length <= maxCharacters) {
+    return serialized;
+  }
+
+  const serializedData = JSON.stringify(normalizedData);
+  const truncatedData = {
+    truncated: true,
+    originalCharacters: serialized.length,
+    continuationHint:
+      'Repeat the tool call with narrower filters, a smaller limit, and successive pages when the complete result is required.',
+    preview: '',
+  };
+  const emptyPreview = JSON.stringify(buildToolResultEnvelope(truncatedData));
+  let previewCharacters = Math.max(0, maxCharacters - emptyPreview.length);
+  let truncated: string;
+
+  do {
+    truncatedData.preview = serializedData.slice(0, previewCharacters);
+    truncated = JSON.stringify(buildToolResultEnvelope(truncatedData));
+    previewCharacters = Math.max(
+      0,
+      previewCharacters - Math.max(1, truncated.length - maxCharacters),
+    );
+  } while (truncated.length > maxCharacters && previewCharacters > 0);
+
+  return truncated;
 }
 
 export const AI_SYSTEM_PROMPT_VECTOR_GUIDANCE = () =>

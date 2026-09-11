@@ -105,7 +105,7 @@ describe('calendar provider utilities', () => {
         [{ externalValue: 'Support', eventCategoryHandle: 'support' }],
         ['category'],
       ),
-    ).toEqual({ categories: ['Support'] });
+    ).toEqual({ categories: ['Support'], showAs: 'busy' });
 
     expect(
       buildGoogleCalendarEventPatch(

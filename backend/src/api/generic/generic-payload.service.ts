@@ -52,7 +52,8 @@ export class GenericPayloadService {
         (field.default != null || field.defaultRaw != null)
       ) {
         if (field.isReference && field.default != null) {
-          preparedPayload[field.name] = field.default;
+          const referenceDefault: unknown = field.default;
+          preparedPayload[field.name] = referenceDefault;
         } else {
           delete preparedPayload[field.name];
         }

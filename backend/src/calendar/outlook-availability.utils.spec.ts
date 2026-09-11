@@ -70,10 +70,9 @@ describe('Outlook availability mappings', () => {
 
   it('lets the explicit available checkbox override every mapping', () => {
     expect(
-      resolveOutlookShowAs(
-        { ...event, isOutlookAvailable: true } as EventItem,
-        [{ eventStatusHandle: 'confirmed', showAs: 'busy' }],
-      ),
+      resolveOutlookShowAs({ ...event, isOutlookAvailable: true }, [
+        { eventStatusHandle: 'confirmed', showAs: 'busy' },
+      ]),
     ).toBe('free');
   });
 });

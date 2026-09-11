@@ -124,15 +124,16 @@ describe('SystemAlertService', () => {
 
     await service.evaluate();
 
+    const expectedDiagnosis = expect.objectContaining({
+      personName: 'Example Person',
+      eventTypes: ['loginFailure', 'loginSuccess'],
+    }) as unknown;
     expect(createdIncident).toEqual(
       expect.objectContaining({
         fingerprint: 'roleless-authentication:4810',
         dimensionKey: '4810',
         observedValue: 2,
-        diagnosis: expect.objectContaining({
-          personName: 'Example Person',
-          eventTypes: ['loginFailure', 'loginSuccess'],
-        }),
+        diagnosis: expectedDiagnosis,
       }),
     );
     expect(notifications.notifyOpened).toHaveBeenCalledTimes(1);
