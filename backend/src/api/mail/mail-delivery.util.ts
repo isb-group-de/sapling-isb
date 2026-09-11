@@ -27,8 +27,6 @@ export type ProviderErrorShape = {
 
 const MAIL_EVENT_TITLE_MAX_LENGTH = 128;
 const MAIL_EVENT_TITLE_TRUNCATE_AT = 125;
-const MAIL_EVENT_DESCRIPTION_MAX_LENGTH = 1024;
-const MAIL_EVENT_DESCRIPTION_TRUNCATE_AT = 1021;
 
 function truncateWithEllipsis(
   value: string,
@@ -53,11 +51,7 @@ export function buildMailEventDescription(delivery: EmailDeliveryItem): string {
     ? `Betreff: ${delivery.subject}\n\n`
     : '';
   const body = delivery.bodyMarkdown ?? '';
-  return truncateWithEllipsis(
-    `${subjectLine}${body}`,
-    MAIL_EVENT_DESCRIPTION_MAX_LENGTH,
-    MAIL_EVENT_DESCRIPTION_TRUNCATE_AT,
-  );
+  return `${subjectLine}${body}`;
 }
 
 export function isRecord(value: unknown): value is JsonRecord {

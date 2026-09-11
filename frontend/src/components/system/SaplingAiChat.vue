@@ -6,7 +6,7 @@
   />
   <Teleport to="body">
     <v-btn
-      v-if="hasSaplingAiChatAccess && !isOpen"
+      v-if="hasSaplingAiChatAccess && !isOpen && !isGhostEasterEggActive"
       data-tutorial="songbird"
       class="sapling-button--round sapling-ai-chat-fab"
       color="primary"
@@ -14,6 +14,11 @@
       icon="mdi-bird"
       aria-label="Songbird"
       @click="openSaplingAiChat"
+    />
+    <GhostEasterEgg
+      v-else-if="hasSaplingAiChatAccess && !isOpen"
+      placement="ai-fab"
+      @activate="openSaplingAiChat"
     />
     <aside
       v-if="isOpen && hasSaplingAiChatAccess"
@@ -94,6 +99,8 @@
 </template>
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, watch } from 'vue'
+import GhostEasterEgg from '@/components/easter-egg/GhostEasterEgg.vue'
+import { useGhostEasterEgg } from '@/composables/easter-egg/useGhostEasterEgg'
 import { useCurrentPersonStore } from '@/stores/currentPersonStore'
 import { useSaplingAiChat } from '@/composables/system/useSaplingAiChat'
 import { useSongbirdDock } from '@/composables/system/useSongbirdDock'
@@ -115,6 +122,7 @@ import SongbirdSessionMenu from './ai-chat/SongbirdSessionMenu.vue'
 import SongbirdSessionHistory from './ai-chat/SongbirdSessionHistory.vue'
 const person = useCurrentPersonStore()
 const { isOpen, hasSaplingAiChatAccess, openSaplingAiChat, closeSaplingAiChat } = useSaplingAiChat()
+const { isActive: isGhostEasterEggActive } = useGhostEasterEgg()
 const { width, fullscreen, docked, expanded, setWidth, showSessionSidebar } = useSongbirdDock()
 const c = computed(() => songbirdWorkspaces[songbirdSelection.key]?.state)
 const principal = computed(

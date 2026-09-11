@@ -158,7 +158,7 @@ Provider dispatch supports:
 | Azure    | Sends through Microsoft Graph |
 | Google   | Sends through Gmail API       |
 
-After successful dispatch, Sapling creates a completed `EventItem` of type `mail` as a communication follow-up. Failures are persisted on the delivery record.
+After successful dispatch, Sapling creates a completed `EventItem` of type `mail` as a communication follow-up. Its Markdown description preserves the complete rendered subject and body so the communication history can be reopened without content loss. Failures are persisted on the delivery record.
 
 Persisted email deliveries are also shown in the generic record edit dialog's
 **Emails** tab. The embedded list filters `EmailDeliveryItem` by the current
