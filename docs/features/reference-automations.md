@@ -52,6 +52,13 @@ Redis process the same database-backed events in-process and scan for pending
 work after startup. Interrupted events are reclaimed, and technical failures
 use persisted retry times with exponential backoff.
 
+A person deleting their own person record is the deliberate delete-event
+exception. Automation events require their actor to remain as a person, so no
+`afterDelete` event is written when the source person and actor are identical.
+The deletion still runs the synchronous before/after scripts and completes
+normally. Deletes initiated by a different person continue to emit the durable
+event.
+
 Every background processing scan creates its own MikroORM request context,
 including recovery and calls from both the Redis worker and the in-process
 timer. All participating services share that context. Without it, queue jobs

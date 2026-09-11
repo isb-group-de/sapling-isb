@@ -284,25 +284,25 @@ export class AzureCalendarOperations {
       return 'skipped';
     }
 
-    // Match the exact mailbox item first so provider-native series exceptions
-    // keep their detached Sapling Event. Fall back to iCalUId to converge
-    // organizer and attendee copies whose mailbox ids differ.
+    // Provider-native series exceptions must keep their exact detached Sapling
+    // Event. All other items prefer iCalUId so a legacy mailbox reference does
+    // not claim a calendar-wide id that already belongs to the canonical row.
     const populateOptions = {
       populate: ['event', 'event.participants', 'event.status'],
     } as const;
-    const reference =
-      (await emFork.findOne(
+    const [referenceByHandle, referenceByICalUId] = await Promise.all([
+      emFork.findOne(
         EventAzureItem,
         { referenceHandle },
         populateOptions as never,
-      )) ??
-      (iCalUId
-        ? await emFork.findOne(
-            EventAzureItem,
-            { iCalUId },
-            populateOptions as never,
-          )
-        : null);
+      ),
+      iCalUId
+        ? emFork.findOne(EventAzureItem, { iCalUId }, populateOptions as never)
+        : null,
+    ]);
+    const reference = graphEvent.seriesMasterId
+      ? (referenceByHandle ?? referenceByICalUId)
+      : (referenceByICalUId ?? referenceByHandle);
 
     if (graphEvent.isCancelled === true && !reference) {
       return 'skipped';

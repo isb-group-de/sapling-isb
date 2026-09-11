@@ -379,6 +379,56 @@ describe('AzureCalendarService Outlook import privacy', () => {
     expect(exceptionReference.iCalUId).toBeNull();
   });
 
+  it('prefers the canonical Outlook projection over a conflicting legacy mailbox reference', async () => {
+    const canonicalEvent = new EventItem();
+    canonicalEvent.title = 'Canonical title';
+    canonicalEvent.participants = {
+      removeAll: jest.fn(),
+      add: jest.fn(),
+    } as never;
+    const duplicateEvent = new EventItem();
+    duplicateEvent.title = 'Legacy duplicate';
+    const canonicalReference = {
+      referenceHandle: 'organizer-mailbox-id',
+      iCalUId: 'shared-meeting-uid',
+      event: canonicalEvent,
+    } as EventAzureItem;
+    const legacyReference = {
+      referenceHandle: 'attendee-mailbox-id',
+      iCalUId: null,
+      event: duplicateEvent,
+    } as EventAzureItem;
+    const service = createService();
+
+    await expect(
+      service.upsertImportedEvent(
+        {
+          findOne: jest.fn((_entity, where: Record<string, string>) =>
+            Promise.resolve(
+              where.referenceHandle === 'attendee-mailbox-id'
+                ? legacyReference
+                : where.iCalUId === 'shared-meeting-uid'
+                  ? canonicalReference
+                  : null,
+            ),
+          ),
+          find: jest.fn(() => Promise.resolve([])),
+          persist: jest.fn(),
+        },
+        createGraphEvent({
+          id: 'attendee-mailbox-id',
+          iCalUId: 'shared-meeting-uid',
+          subject: 'Updated title',
+        }),
+        defaults,
+      ),
+    ).resolves.toBe('updated');
+
+    expect(canonicalEvent.title).toBe('Updated title');
+    expect(duplicateEvent.title).toBe('Legacy duplicate');
+    expect(legacyReference.iCalUId).toBeNull();
+  });
+
   it('backfills the calendar-wide id on a legacy mailbox reference', async () => {
     const existingEvent = new EventItem();
     const legacyReference = {

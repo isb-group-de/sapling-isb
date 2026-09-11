@@ -58,10 +58,18 @@ export class AutomationEventService implements OnModuleInit {
     newSnapshot?: Record<string, unknown> | null;
     context?: Record<string, unknown>;
   }): Promise<AutomationEventItem | null> {
+    // Actor-backed events cannot outlive a person who just deleted themself.
+    const actorWasDeleted =
+      options.operation === 'afterDelete' &&
+      options.entityHandle === 'person' &&
+      options.sourceHandle != null &&
+      options.actor?.handle != null &&
+      String(options.sourceHandle) === String(options.actor.handle);
     if (
       EXCLUDED.has(options.entityHandle) ||
       options.sourceHandle == null ||
-      options.actor?.handle == null
+      options.actor?.handle == null ||
+      actorWasDeleted
     )
       return null;
     const sourceEntity = await this.em.findOne(EntityItem, {

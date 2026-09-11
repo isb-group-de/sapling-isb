@@ -12,7 +12,10 @@ Graph `id` values identify mailbox-specific copies and are therefore different
 for the organizer and attendees of the same meeting. `EventAzureItem` keeps the
 Graph `id` in `referenceHandle` for provider updates and stores the shared
 `iCalUId` for import upserts. The database enforces uniqueness for non-null
-`iCalUId` values; legacy projection rows are backfilled on their next import.
+`iCalUId` values. Normal events and series masters prefer an existing canonical
+`iCalUId` projection over a legacy mailbox-specific row, while known recurring
+exceptions keep their exact instance projection. Conflict-free legacy rows are
+backfilled on their next import.
 Google imports apply the equivalent `iCalUID` identity so organizer and attendee
 copies of one Google event also converge on one Sapling Event. Google keeps the
 provider-specific `id` for updates and backfills legacy projection rows during
