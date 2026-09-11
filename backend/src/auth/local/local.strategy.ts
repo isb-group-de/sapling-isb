@@ -42,11 +42,21 @@ export class LocalStrategy extends PassportStrategy(Strategy, 'local') {
     try {
       const user = await this.authService.validate(loginName, loginPassword);
       if (!user) {
-        void this.authenticationTelemetry.record('loginFailure', 'local');
+        void this.authenticationTelemetry.record(
+          'loginFailure',
+          'local',
+          null,
+          loginName,
+        );
       }
       return user;
     } catch (error) {
-      void this.authenticationTelemetry.record('loginFailure', 'local');
+      void this.authenticationTelemetry.record(
+        'loginFailure',
+        'local',
+        null,
+        loginName,
+      );
       throw error;
     }
   }

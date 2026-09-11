@@ -197,6 +197,11 @@ export const MONITORING_METRIC_DEFINITIONS: Record<string, MonitoringMetricDefin
   ),
   'http.activeStreams': metric('HttpActiveStreams', 'Aktive HTTP-Streams', 'Active HTTP streams'),
   'ai.errorRate': metric('AiErrorRate', 'KI-Fehlerrate', 'AI error rate'),
+  'auth.rolelessAttempts': metric(
+    'AuthRolelessAttempts',
+    'Anmeldeversuche ohne Rolle',
+    'Authentication attempts without a role',
+  ),
   'collector.gapSeconds': metric('CollectorGapSeconds', 'Collector-Messlücke', 'Collector gap'),
   'web.lcpMs': metric('WebLcpMs', 'Frontend-Ladezeit (LCP)', 'Frontend load time (LCP)'),
   'web.inpMs': metric('WebInpMs', 'Frontend-Reaktionszeit (INP)', 'Frontend response time (INP)'),

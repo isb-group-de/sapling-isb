@@ -37,10 +37,7 @@ export class SystemAlertNotificationService {
     const handles = admins.map((row) => Number(row.handle));
     if (!reference || handles.length === 0) return;
     const title = `${incident.severity === 'critical' ? 'Critical' : 'Warning'}: ${incident.rule.title}`;
-    const dimension = incident.dimensionKey
-      ? ` (${incident.dimensionKey})`
-      : '';
-    const body = `${incident.rule.title}${dimension}\n\nObserved: ${incident.observedValue.toFixed(2)} · Threshold: ${incident.threshold.toFixed(2)}`;
+    const body = buildNotificationBody(incident);
     for (const personHandle of handles) {
       await em.getConnection().execute(
         `insert into "inbox_notification_item" (
@@ -67,4 +64,39 @@ export class SystemAlertNotificationService {
     }
     this.openTaskEvents.notifyUsers(handles);
   }
+}
+
+function buildNotificationBody(incident: SystemAlertIncidentItem): string {
+  if (incident.rule.metricKey === 'auth.rolelessAttempts') {
+    const diagnosis = incident.diagnosis ?? {};
+    const personName =
+      typeof diagnosis.personName === 'string' && diagnosis.personName.trim()
+        ? diagnosis.personName.trim()
+        : `Person ${incident.dimensionKey}`;
+    const eventTypes = formatList(diagnosis.eventTypes);
+    const providers = formatList(diagnosis.providers);
+    const latestAt =
+      typeof diagnosis.latestAt === 'string' ? diagnosis.latestAt : '';
+    return [
+      'An authentication attempt used an account without any assigned role.',
+      '',
+      `Person: ${personName} (#${incident.dimensionKey})`,
+      `Attempts: ${incident.observedValue.toFixed(0)}`,
+      eventTypes ? `Events: ${eventTypes}` : '',
+      providers ? `Providers: ${providers}` : '',
+      latestAt ? `Latest: ${latestAt}` : '',
+    ]
+      .filter((line, index) => line || index === 1)
+      .join('\n');
+  }
+  const dimension = incident.dimensionKey ? ` (${incident.dimensionKey})` : '';
+  return `${incident.rule.title}${dimension}\n\nObserved: ${incident.observedValue.toFixed(2)} · Threshold: ${incident.threshold.toFixed(2)}`;
+}
+
+function formatList(value: unknown): string {
+  return Array.isArray(value)
+    ? value
+        .filter((entry): entry is string => typeof entry === 'string')
+        .join(', ')
+    : '';
 }

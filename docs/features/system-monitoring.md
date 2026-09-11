@@ -173,6 +173,15 @@ visibility.
 `online` means authenticated activity during the last five minutes. A valid
 session is reported separately. API-token use is never interactive presence.
 
+The active `roleless-authentication` rule opens one warning incident per person
+when a successful login or an attributable failed login occurs for an account
+without any assigned role. Repeated attempts during the same open incident only
+refresh its count and evidence, so administrators receive one inbox notification
+instead of one notification per request. The incident resolves after three clean
+evaluations and can open again for a later attempt. Failed local logins are
+attributed only when the submitted login name matches an existing person;
+unknown login names remain anonymous and do not disclose account existence.
+
 AI usage includes Markdown preparation (`markdown`) and audio transcription
 (`transcription`), both attributed to the initiating person as interactive work.
 Recording followed by Markdown preparation contributes two distinct operations.

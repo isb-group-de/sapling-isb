@@ -25,6 +25,7 @@
   "json-default/entityGroup/entityGroupData_0001_insert.json",
   "json-default/entity/entityData_0001_insert.json",
   "json-default/systemAlertRule/systemAlertRuleData_0001_insert.json",
+  "json-default/systemAlertRule/systemAlertRuleData_0002_insert.json",
   "json-default/entityRoute/entityRouteData_0001_insert.json",
   "json-default/changeLogAction/changeLogActionData_0001_insert.json",
   "json-default/scriptButton/scriptButtonData_0001_insert.json",

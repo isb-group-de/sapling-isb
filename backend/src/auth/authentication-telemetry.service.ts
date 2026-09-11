@@ -18,10 +18,27 @@ export class AuthenticationTelemetryService {
     eventType: 'loginSuccess' | 'loginFailure' | 'logout',
     provider: AuthenticationTelemetryProvider,
     personHandle?: number | null,
+    loginName?: string,
   ): Promise<void> {
     if (!SYSTEM_TELEMETRY_ENABLED) return;
     try {
       const connection = this.em.fork().getConnection();
+      let attributedPersonHandle = personHandle ?? null;
+      if (
+        attributedPersonHandle == null &&
+        eventType === 'loginFailure' &&
+        provider === 'local' &&
+        loginName
+      ) {
+        const matches = (await connection.execute(
+          `select "handle" from "person_item" where "login_name" = ? limit 1`,
+          [loginName],
+        )) as Array<{ handle?: number | string }>;
+        const matchedHandle = Number(matches[0]?.handle);
+        attributedPersonHandle = Number.isSafeInteger(matchedHandle)
+          ? matchedHandle
+          : null;
+      }
       await connection.execute(
         `insert into "system_telemetry_environment_item" ("handle", "name", "kind", "is_archived", "first_seen_at", "last_seen_at")
          values (?, ?, ?, false, now(), now()) on conflict ("handle") do update set "last_seen_at" = now()`,
@@ -31,7 +48,7 @@ export class AuthenticationTelemetryService {
         `insert into "authentication_event_item" (
           "environment_handle", "person_handle", "event_type", "provider", "occurred_at"
         ) values (?, ?, ?, ?, now())`,
-        [SYSTEM_ENVIRONMENT_ID, personHandle ?? null, eventType, provider],
+        [SYSTEM_ENVIRONMENT_ID, attributedPersonHandle, eventType, provider],
       );
     } catch (error) {
       global.log?.error?.('authentication telemetry write failed', error);

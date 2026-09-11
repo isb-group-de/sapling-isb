@@ -13,6 +13,13 @@ import { executeRows } from './sql-query.utils';
 import { SystemTelemetryEnvironmentService } from './system-telemetry-environment.service';
 import { SystemRemediationService } from './system-remediation.service';
 
+type AlertObservation = {
+  dimension: string;
+  value: number;
+  count: number;
+  diagnosis?: Record<string, unknown>;
+};
+
 @Injectable()
 export class SystemAlertService implements OnModuleInit, OnApplicationShutdown {
   private timer?: NodeJS.Timeout;
@@ -211,6 +218,31 @@ export class SystemAlertService implements OnModuleInit, OnApplicationShutdown {
       );
       return normalizeObservations(rows);
     }
+    if (rule.metricKey === 'auth.rolelessAttempts') {
+      const rows = await executeRows(
+        em,
+        `select auth."person_handle"::text as "dimension",
+           count(*)::float8 as "value", count(*)::int as "count",
+           jsonb_build_object(
+             'personHandle', auth."person_handle",
+             'personName', trim(concat_ws(' ', person."first_name", person."last_name")),
+             'eventTypes', jsonb_agg(distinct auth."event_type"),
+             'providers', jsonb_agg(distinct auth."provider"),
+             'latestAt', max(auth."occurred_at")
+           ) as "diagnosis"
+         from "authentication_event_item" auth
+         join "person_item" person on person."handle" = auth."person_handle"
+         where auth."occurred_at" >= ? and auth."environment_handle" = ?
+           and auth."event_type" in ('loginSuccess', 'loginFailure')
+           and not exists (
+             select 1 from "person_item_roles" person_role
+             where person_role."person_item_handle" = auth."person_handle"
+           )
+         group by auth."person_handle", person."first_name", person."last_name"`,
+        [since, this.environment.currentId],
+      );
+      return normalizeObservations(rows);
+    }
     if (rule.metricKey === 'http.p95Ms') {
       const histogram = Array.from(
         { length: 10 },
@@ -279,7 +311,7 @@ export class SystemAlertService implements OnModuleInit, OnApplicationShutdown {
   private async openOrUpdateIncident(
     em: EntityManager,
     rule: SystemAlertRuleItem,
-    observation: { dimension: string; value: number; count: number },
+    observation: AlertObservation,
   ) {
     const fingerprint = `${rule.handle}:${observation.dimension}`;
     let incident = await em.findOne(SystemAlertIncidentItem, {
@@ -312,6 +344,7 @@ export class SystemAlertService implements OnModuleInit, OnApplicationShutdown {
           metricKey: rule.metricKey,
           dimension: observation.dimension,
           count: observation.count,
+          ...observation.diagnosis,
         },
       });
       await em.flush();
@@ -340,6 +373,12 @@ export class SystemAlertService implements OnModuleInit, OnApplicationShutdown {
     incident.threshold = rule.threshold;
     incident.severity = rule.severity;
     incident.healthyEvaluations = 0;
+    incident.diagnosis = {
+      metricKey: rule.metricKey,
+      dimension: observation.dimension,
+      count: observation.count,
+      ...observation.diagnosis,
+    };
     return null;
   }
 }
@@ -374,6 +413,10 @@ function normalizeObservations(rows: unknown) {
       dimension: toDimension(record.dimension),
       value: Number(record.value ?? 0),
       count: Number(record.count ?? 0),
+      diagnosis:
+        typeof record.diagnosis === 'object' && record.diagnosis !== null
+          ? (record.diagnosis as Record<string, unknown>)
+          : {},
     };
   });
 }
