@@ -445,6 +445,11 @@ export function useSaplingEventEditor(options: UseSaplingEventEditorOptions) {
         if (!occurrence.recurrenceOccurrenceStart) {
           return
         }
+        if (!resolvePersistedOccurrence(persistedEvent, occurrence.recurrenceOccurrenceStart)) {
+          await options.refreshVisibleEvents()
+          options.restoreDragSnapshot()
+          return
+        }
         const detachedItem: EventItem = {
           ...persistedEvent,
           handle: undefined,

@@ -251,6 +251,33 @@ describe('useSaplingEventEditor', () => {
     expect(harness.editEvent.value?.start).toBe(laterOccurrence.start)
   })
 
+  it('refreshes instead of editing an occurrence that was detached since the calendar loaded', async () => {
+    const harness = createHarness()
+    harness.loadPersistedEvent.mockResolvedValue(
+      createEventItem({
+        recurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=2',
+        recurrenceExceptionDates: ['2026-07-16T09:00:00.000Z'],
+      }),
+    )
+    const staleOccurrence = {
+      start: new Date('2026-07-16T09:00:00.000Z').getTime(),
+      end: new Date('2026-07-16T10:00:00.000Z').getTime(),
+      event: { handle: 42, recurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=2' },
+      timed: true,
+      isRecurringOccurrence: true,
+      recurrenceOccurrenceStart: '2026-07-16T09:00:00.000Z',
+    } as CalendarEvent
+
+    await harness.editor.openPersistedEventEditor(staleOccurrence, [])
+    await harness.editor.chooseRecurrenceEditOccurrence()
+
+    expect(harness.refreshVisibleEvents).toHaveBeenCalledTimes(1)
+    expect(harness.restoreDragSnapshot).toHaveBeenCalledTimes(1)
+    expect(harness.editor.isDetachingOccurrence.value).toBe(false)
+    expect(harness.showEditDialog.value).toBe(false)
+    expect(mocks.detachEventOccurrence).not.toHaveBeenCalled()
+  })
+
   it('detaches an occurrence through the calendar API when the draft is saved', async () => {
     const harness = createHarness()
     const series = createEventItem({
