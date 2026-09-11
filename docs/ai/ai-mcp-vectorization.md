@@ -497,10 +497,13 @@ The frontend vectorization dialog lets an admin choose:
 Then it calls:
 
 ```text
-POST /api/ai/vectorize
+POST /api/ai/vectorization
 ```
 
-The exact route is implemented in `AiController` and handled by `AiVectorService`.
+The exact route is implemented in `AiVectorizationController` and handled by
+`AiVectorService`. Production Nginx configuration gives this synchronous admin
+operation a one-hour upstream read timeout because local embedding models can
+legitimately need longer than the generic API timeout for large entity sets.
 
 The matching vector index must exist before `semantic_search` returns semantic results.
 
