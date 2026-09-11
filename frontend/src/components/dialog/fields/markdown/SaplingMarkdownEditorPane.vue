@@ -108,6 +108,7 @@
           class="sapling-markdown-editor"
           v-css-vars="{ '--sapling-markdown-editor-height': editorHeight }"
           @focus="emit('focus')"
+          @selection-change="emit('selectionChange', $event)"
           @update:model-value="emit('update:draftValue', $event)"
         />
         <SaplingTextarea
@@ -138,6 +139,7 @@ import { extractClipboardImageFiles } from '@/components/dialog/fields/markdown/
 import type {
   MarkdownEditorHandle,
   MarkdownRule,
+  MarkdownSelectionState,
   MarkdownToolbarAction,
   MarkdownToolbarGroupKey,
 } from '@/components/dialog/fields/markdown/markdownField.types'
@@ -169,6 +171,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   focus: []
+  selectionChange: [value: MarkdownSelectionState]
   'update:draftValue': [value: string]
   prepareWithAi: []
   toggleVoiceInput: []

@@ -32,7 +32,10 @@ import {
   lineNumbers as codeMirrorLineNumbers,
 } from '@codemirror/view'
 import { computed, markRaw, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
-import type { MarkdownTextSelection } from '@/components/dialog/fields/markdown/markdownField.types'
+import type {
+  MarkdownSelectionState,
+  MarkdownTextSelection,
+} from '@/components/dialog/fields/markdown/markdownField.types'
 
 interface CodeMirrorTransformResult {
   text: string
@@ -60,6 +63,7 @@ const props = withDefaults(
 const emit = defineEmits<{
   (event: 'update:modelValue', value: string): void
   (event: 'focus'): void
+  (event: 'selectionChange', value: MarkdownSelectionState): void
 }>()
 
 const host = ref<HTMLElement | null>(null)
@@ -203,6 +207,24 @@ function createEditor() {
 
         if (update.docChanged && !isApplyingExternalValue) {
           emit('update:modelValue', update.state.doc.toString())
+        }
+
+        if (update.docChanged || update.selectionSet || update.focusChanged) {
+          const selection = update.state.selection.main
+          const coordinates = update.view.coordsAtPos(selection.head)
+          emit('selectionChange', {
+            from: selection.from,
+            to: selection.to,
+            value: update.state.doc.toString(),
+            focused: update.view.hasFocus,
+            coordinates: coordinates
+              ? {
+                  left: coordinates.left,
+                  top: coordinates.top,
+                  bottom: coordinates.bottom,
+                }
+              : null,
+          })
         }
       }),
     ],

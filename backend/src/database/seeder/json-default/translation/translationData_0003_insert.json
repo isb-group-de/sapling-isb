@@ -58,5 +58,185 @@
     "property": "formApplyAnyway",
     "language": "en",
     "value": "Apply anyway"
+  },
+  {
+    "entity": "event",
+    "property": "isOutlookAvailable",
+    "value": "In Outlook als verfügbar anzeigen",
+    "language": "de"
+  },
+  {
+    "entity": "event",
+    "property": "isOutlookAvailable",
+    "value": "Show as available in Outlook",
+    "language": "en"
+  },
+  {
+    "entity": "event",
+    "property": "isOutlookAvailableTooltip",
+    "value": "Hat Vorrang vor den persönlichen Outlook-Statuszuordnungen und hält den Zeitraum für Buchungen verfügbar.",
+    "language": "de"
+  },
+  {
+    "entity": "event",
+    "property": "isOutlookAvailableTooltip",
+    "value": "Overrides personal Outlook availability mappings and keeps the time slot available for bookings.",
+    "language": "en"
+  },
+  {
+    "entity": "calendarSyncSubscription",
+    "property": "addAvailabilityMapping",
+    "value": "Outlook-Statuszuordnung hinzufügen",
+    "language": "de"
+  },
+  {
+    "entity": "calendarSyncSubscription",
+    "property": "addAvailabilityMapping",
+    "value": "Add Outlook availability mapping",
+    "language": "en"
+  },
+  {
+    "entity": "calendarSyncSubscription",
+    "property": "eventStatus",
+    "value": "Terminstatus",
+    "language": "de"
+  },
+  {
+    "entity": "calendarSyncSubscription",
+    "property": "eventStatus",
+    "value": "Appointment status",
+    "language": "en"
+  },
+  {
+    "entity": "calendarSyncSubscription",
+    "property": "eventStatusNotFound",
+    "value": "Mindestens ein ausgewählter Terminstatus wurde nicht gefunden.",
+    "language": "de"
+  },
+  {
+    "entity": "calendarSyncSubscription",
+    "property": "eventStatusNotFound",
+    "value": "At least one selected appointment status was not found.",
+    "language": "en"
+  },
+  {
+    "entity": "calendarSyncSubscription",
+    "property": "outlookAvailabilityMapping",
+    "value": "Outlook-Verfügbarkeitsstatus",
+    "language": "de"
+  },
+  {
+    "entity": "calendarSyncSubscription",
+    "property": "outlookAvailabilityMapping",
+    "value": "Outlook availability status",
+    "language": "en"
+  },
+  {
+    "entity": "calendarSyncSubscription",
+    "property": "outlookAvailabilityMappingHint",
+    "value": "Terminstatus, Terminart und Kategorie können einzeln oder kombiniert zugeordnet werden. Die spezifischste passende Zuordnung gewinnt; bei gleicher Spezifität die erste. Die Option „In Outlook als verfügbar anzeigen“ im Termin hat immer Vorrang.",
+    "language": "de"
+  },
+  {
+    "entity": "calendarSyncSubscription",
+    "property": "outlookAvailabilityMappingHint",
+    "value": "Appointment status, type, and category can be mapped separately or in combination. The most specific match wins; the first row wins a tie. The event option “Show as available in Outlook” always takes precedence.",
+    "language": "en"
+  },
+  {
+    "entity": "calendarSyncSubscription",
+    "property": "outlookAvailabilityMappings",
+    "value": "Outlook-Verfügbarkeitszuordnungen",
+    "language": "de"
+  },
+  {
+    "entity": "calendarSyncSubscription",
+    "property": "outlookAvailabilityMappings",
+    "value": "Outlook availability mappings",
+    "language": "en"
+  },
+  {
+    "entity": "calendarSyncSubscription",
+    "property": "outlookShowAs",
+    "value": "In Outlook anzeigen als",
+    "language": "de"
+  },
+  {
+    "entity": "calendarSyncSubscription",
+    "property": "outlookShowAs",
+    "value": "Show as in Outlook",
+    "language": "en"
+  },
+  {
+    "entity": "calendarSyncSubscription",
+    "property": "removeAvailabilityMapping",
+    "value": "Outlook-Statuszuordnung entfernen",
+    "language": "de"
+  },
+  {
+    "entity": "calendarSyncSubscription",
+    "property": "removeAvailabilityMapping",
+    "value": "Remove Outlook availability mapping",
+    "language": "en"
+  },
+  {
+    "entity": "calendarSyncSubscription",
+    "property": "showAsFree",
+    "value": "Verfügbar",
+    "language": "de"
+  },
+  {
+    "entity": "calendarSyncSubscription",
+    "property": "showAsFree",
+    "value": "Free",
+    "language": "en"
+  },
+  {
+    "entity": "calendarSyncSubscription",
+    "property": "showAsTentative",
+    "value": "Mit Vorbehalt",
+    "language": "de"
+  },
+  {
+    "entity": "calendarSyncSubscription",
+    "property": "showAsTentative",
+    "value": "Tentative",
+    "language": "en"
+  },
+  {
+    "entity": "calendarSyncSubscription",
+    "property": "showAsBusy",
+    "value": "Beschäftigt",
+    "language": "de"
+  },
+  {
+    "entity": "calendarSyncSubscription",
+    "property": "showAsBusy",
+    "value": "Busy",
+    "language": "en"
+  },
+  {
+    "entity": "calendarSyncSubscription",
+    "property": "showAsOof",
+    "value": "Abwesend",
+    "language": "de"
+  },
+  {
+    "entity": "calendarSyncSubscription",
+    "property": "showAsOof",
+    "value": "Out of office",
+    "language": "en"
+  },
+  {
+    "entity": "calendarSyncSubscription",
+    "property": "showAsWorkingElsewhere",
+    "value": "Anderswo arbeiten",
+    "language": "de"
+  },
+  {
+    "entity": "calendarSyncSubscription",
+    "property": "showAsWorkingElsewhere",
+    "value": "Working elsewhere",
+    "language": "en"
   }
 ]

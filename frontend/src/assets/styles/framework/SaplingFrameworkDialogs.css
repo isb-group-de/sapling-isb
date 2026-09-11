@@ -423,6 +423,12 @@
   min-width: 0;
 }
 
+.sapling-account-dialog__mapping-row--availability {
+  grid-template-columns:
+    repeat(4, minmax(9rem, 1fr))
+    auto;
+}
+
 .sapling-account-dialog__mapping-add {
   justify-self: start;
 }

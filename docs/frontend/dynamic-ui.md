@@ -203,13 +203,15 @@ not round manually entered decimal values. Decimal separators follow the active
 UI language (for example, `0,5` in German). This also applies to estimated hours
 on effort-estimate positions and their templates.
 
-Use `@SaplingNumeric({ step: 10 })` on an entity property to override the step
-per field; `0.5`, `1`, `10`, and `100` are examples. The template exposes this
-as `numeric.step`. Steps must be finite and positive; integer database columns
-also require a whole-number step. The decorator selects the generic numeric
-renderer even without `isNumeric`. It controls the increment, not a restriction
-to multiples of that increment. Money and percent fields keep their specialized
-renderers. Estimated hours explicitly declare `@SaplingNumeric({ step: 0.5 })`.
+Use `@SaplingNumeric({ min: 0, max: 100, step: 10 })` on an entity property to
+configure its numeric input. Every setting is optional and the template exposes
+the configured values as `numeric.min`, `numeric.max`, and `numeric.step`. Steps
+must be finite and positive, `min` must not exceed `max`, and integer database
+columns require whole-number settings. The decorator selects the generic numeric
+renderer even without `isNumeric`. `step` controls the increment, not a
+restriction to multiples of that increment. Money and percent fields keep their
+specialized renderers and defaults, but honor the same numeric metadata overrides.
+Estimated hours explicitly declare `@SaplingNumeric({ step: 0.5 })`.
 
 Generated forms also treat `isDateStart` and `isDateEnd` as a range contract.
 Markers are paired within their declared form group and the dialog blocks save

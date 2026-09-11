@@ -230,72 +230,83 @@
             :rows="10"
             :show-preview="false"
             @focus="handleBodyFocus"
-            @click="handleBodySelectionChange"
-            @keyup="handleBodySelectionChange"
+            @selection-change="handleBodySelectionChange"
             @update:model-value="handleBodyMarkdownUpdate"
           />
 
-          <section
-            v-if="mentionMatch"
-            class="sapling-mail-dialog__mention-panel"
-            data-test="mail-mention-panel"
-            aria-live="polite"
+          <v-menu
+            :model-value="mentionMenuVisible"
+            :target="mentionTarget"
+            :close-on-content-click="false"
+            location="bottom start"
+            location-strategy="connected"
+            :offset="4"
+            transition="slide-y-transition"
+            @update:model-value="handleMentionMenuVisibility"
           >
-            <div class="sapling-mail-dialog__mention-header">
-              <div>
-                <h3 class="sapling-mail-dialog__section-title">
-                  {{ translate('mail.mentionPerson') }}
-                </h3>
-                <p>{{ translate('mail.mentionRecipientHint') }}</p>
+            <v-card
+              class="sapling-mail-dialog__mention-panel"
+              elevation="12"
+              data-test="mail-mention-panel"
+              aria-live="polite"
+            >
+              <div class="sapling-mail-dialog__mention-header">
+                <div>
+                  <h3 class="sapling-mail-dialog__section-title">
+                    {{ translateMention('mentionPerson') }}
+                  </h3>
+                  <p>{{ translateMention('mentionRecipientHint') }}</p>
+                </div>
+                <v-btn
+                  icon="mdi-close"
+                  size="x-small"
+                  variant="text"
+                  :aria-label="translate('global.close')"
+                  @mousedown.prevent
+                  @click="mentionMatch = null"
+                />
               </div>
-              <v-btn
-                icon="mdi-close"
-                size="x-small"
-                variant="text"
-                :aria-label="translate('global.close')"
-                @click="mentionMatch = null"
-              />
-            </div>
 
-            <v-progress-linear v-if="isLoadingRecipientOptions" indeterminate color="primary" />
-            <v-list v-else-if="mentionResults.length" density="compact" lines="two">
-              <v-list-item
-                v-for="option in mentionResults"
-                :key="option.email"
-                :title="option.name || option.email"
-                :subtitle="buildMentionSubtitle(option)"
-              >
-                <template #append>
-                  <div class="sapling-mail-dialog__mention-actions">
-                    <v-btn
-                      size="x-small"
-                      variant="tonal"
-                      @mousedown.prevent
-                      @click="selectMentionRecipient(option, 'to')"
-                      >{{ translate('document.to') }}</v-btn
-                    >
-                    <v-btn
-                      size="x-small"
-                      variant="text"
-                      @mousedown.prevent
-                      @click="selectMentionRecipient(option, 'cc')"
-                      >{{ translate('document.cc') }}</v-btn
-                    >
-                    <v-btn
-                      size="x-small"
-                      variant="text"
-                      @mousedown.prevent
-                      @click="selectMentionRecipient(option, 'bcc')"
-                      >{{ translate('document.bcc') }}</v-btn
-                    >
-                  </div>
-                </template>
-              </v-list-item>
-            </v-list>
-            <p v-else class="sapling-mail-dialog__mention-empty">
-              {{ translate('mail.mentionNoResults') }}
-            </p>
-          </section>
+              <v-progress-linear v-if="isLoadingRecipientOptions" indeterminate color="primary" />
+              <v-list v-else-if="mentionResults.length" density="compact" lines="two">
+                <v-list-item
+                  v-for="option in mentionResults"
+                  :key="option.email"
+                  :title="option.name || option.email"
+                  :subtitle="buildMentionSubtitle(option)"
+                >
+                  <template #append>
+                    <div class="sapling-mail-dialog__mention-actions">
+                      <v-btn
+                        size="x-small"
+                        variant="tonal"
+                        @mousedown.prevent
+                        @click="selectMentionRecipient(option, 'to')"
+                        >{{ translate('document.to') }}</v-btn
+                      >
+                      <v-btn
+                        size="x-small"
+                        variant="text"
+                        @mousedown.prevent
+                        @click="selectMentionRecipient(option, 'cc')"
+                        >{{ translate('document.cc') }}</v-btn
+                      >
+                      <v-btn
+                        size="x-small"
+                        variant="text"
+                        @mousedown.prevent
+                        @click="selectMentionRecipient(option, 'bcc')"
+                        >{{ translate('document.bcc') }}</v-btn
+                      >
+                    </div>
+                  </template>
+                </v-list-item>
+              </v-list>
+              <p v-else class="sapling-mail-dialog__mention-empty">
+                {{ translateMention('mentionNoResults') }}
+              </p>
+            </v-card>
+          </v-menu>
         </div>
       </section>
     </div>
@@ -409,6 +420,7 @@ import SaplingAutocomplete from '@/components/common/SaplingAutocomplete.vue'
 import SaplingCombobox from '@/components/common/SaplingCombobox.vue'
 import SaplingTextField from '@/components/common/SaplingTextField.vue'
 import SaplingMarkdownField from '@/components/dialog/fields/SaplingFieldMarkdown.vue'
+import type { MarkdownSelectionState } from '@/components/dialog/fields/markdown/markdownField.types'
 import { sortSelectOptions } from '@/utils/saplingSelectOptions'
 import type {
   AttachmentOption,
@@ -442,7 +454,6 @@ type SubjectFieldInstance = {
 
 type MarkdownFieldInstance = InstanceType<typeof SaplingMarkdownField> & {
   insertTextAtCursor?: (text: string) => void
-  getTextSelection?: () => { from: number; to: number }
   replaceTextRange?: (from: number, to: number, text: string) => string
 }
 
@@ -487,6 +498,8 @@ const selectedTemplate = computed(() =>
 const activeTab = ref('message')
 const tabId = useId()
 const mentionMatch = ref<MailMentionMatch | null>(null)
+const mentionTarget = ref<[number, number]>([0, 0])
+const mentionMenuVisible = computed(() => mentionMatch.value != null)
 
 const emit = defineEmits<{
   (event: 'upload-attachments', files: File[]): void
@@ -531,6 +544,20 @@ const subjectSelectionEnd = ref(0)
 const senderFallbackLabel = computed(() =>
   locale.value === 'de' ? 'Keine Absenderadresse hinterlegt' : 'No sender address available',
 )
+const mentionFallbacks = {
+  mentionPerson: {
+    de: 'Person erwähnen',
+    en: 'Mention person',
+  },
+  mentionRecipientHint: {
+    de: 'Direkt als An, CC oder BCC übernehmen.',
+    en: 'Add directly as To, CC, or BCC.',
+  },
+  mentionNoResults: {
+    de: 'Keine passende Person mit E-Mail-Adresse gefunden.',
+    en: 'No matching person with an email address was found.',
+  },
+} as const
 const sortedTemplates = computed(() =>
   sortSelectOptions(props.templates, (template) => template.name),
 )
@@ -592,24 +619,27 @@ function handleSubjectUpdate(value: string) {
 
 function handleBodyMarkdownUpdate(value: string) {
   emit('update:bodyMarkdown', value)
-  refreshMention(value)
 }
 
 function handleBodyFocus() {
   emit('focus-body')
-  handleBodySelectionChange()
 }
 
-function handleBodySelectionChange() {
-  void nextTick(() => refreshMention(props.bodyMarkdown))
-}
+function handleBodySelectionChange(selection: MarkdownSelectionState) {
+  if (!selection.focused) return
 
-function refreshMention(value: string) {
-  const selection = markdownField.value?.getTextSelection?.() ?? {
-    from: value.length,
-    to: value.length,
+  const match = findMailRecipientMention(selection.value, selection)
+  if (!match || !selection.coordinates) {
+    mentionMatch.value = null
+    return
   }
-  mentionMatch.value = findMailRecipientMention(value, selection)
+
+  mentionTarget.value = [selection.coordinates.left, selection.coordinates.bottom]
+  mentionMatch.value = match
+}
+
+function handleMentionMenuVisibility(value: boolean) {
+  if (!value) mentionMatch.value = null
 }
 
 function selectMentionRecipient(option: MailRecipientOption, field: MailRecipientField) {
@@ -642,6 +672,13 @@ function selectMentionRecipient(option: MailRecipientOption, field: MailRecipien
 
 function buildMentionSubtitle(option: MailRecipientOption): string {
   return [option.companyName, option.departmentName, option.email].filter(Boolean).join(' · ')
+}
+
+function translateMention(property: keyof typeof mentionFallbacks): string {
+  const key = `mail.${property}`
+  const translated = props.translate(key)
+  if (translated && translated !== key) return translated
+  return mentionFallbacks[property][locale.value === 'de' ? 'de' : 'en']
 }
 
 function handleAttachmentUpdate(value: number[]) {

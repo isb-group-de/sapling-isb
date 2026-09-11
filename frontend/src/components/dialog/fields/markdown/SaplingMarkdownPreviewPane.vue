@@ -8,19 +8,33 @@
         <span class="sapling-eyebrow sapling-markdown-pane__eyebrow">{{ liveLabel }}</span>
         <h3 class="sapling-section-title sapling-markdown-pane__title">{{ previewTitle }}</h3>
       </div>
-      <v-btn
-        color="primary"
-        variant="tonal"
-        size="small"
-        prepend-icon="mdi-refresh"
-        :disabled="disabled"
-        @click="emit('refresh')"
-      >
-        {{ refreshPreviewLabel }}
-      </v-btn>
+      <div class="sapling-markdown-pane__actions">
+        <v-btn
+          color="primary"
+          variant="tonal"
+          size="small"
+          prepend-icon="mdi-refresh"
+          :disabled="disabled"
+          @click="emit('refresh')"
+        >
+          {{ refreshPreviewLabel }}
+        </v-btn>
+        <v-btn
+          data-test="markdown-copy-preview"
+          class="sapling-markdown-pane__copy-action"
+          color="primary"
+          variant="tonal"
+          size="small"
+          icon="mdi-content-copy"
+          :title="copyLabel"
+          :aria-label="copyLabel"
+          :disabled="!canCopyPreview"
+          @click="copyPreview"
+        />
+      </div>
     </header>
 
-    <div class="sapling-markdown-preview">
+    <div ref="previewElement" class="sapling-markdown-preview">
       <SaplingMarkdownContent v-if="isEnhancedEditorReady" :source="previewValue" />
       <pre v-else class="sapling-markdown-preview__plain">{{ previewValue }}</pre>
     </div>
@@ -28,11 +42,11 @@
 </template>
 
 <script lang="ts" setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import SaplingMarkdownContent from '@/components/common/SaplingMarkdownContent.vue'
 
-defineProps<{
+const props = defineProps<{
   showPreview: boolean
   disabled: boolean
   previewValue: string
@@ -45,6 +59,22 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+const previewElement = ref<HTMLElement | null>(null)
 const liveLabel = computed(() => t('global.live'))
 const previewTitle = computed(() => t('document.preview'))
+const copyLabel = computed(() => t('global.copy'))
+const canCopyPreview = computed(
+  () => props.isEnhancedEditorReady && Boolean(props.previewValue.trim()) && !!navigator.clipboard,
+)
+
+async function copyPreview() {
+  const renderedText = previewElement.value?.innerText || previewElement.value?.textContent || ''
+  if (!renderedText.trim() || !navigator.clipboard) return
+
+  try {
+    await navigator.clipboard.writeText(renderedText.trim())
+  } catch {
+    // Clipboard permissions remain controlled by the browser.
+  }
+}
 </script>

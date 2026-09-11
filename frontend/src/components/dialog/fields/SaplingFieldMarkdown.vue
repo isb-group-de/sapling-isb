@@ -29,6 +29,7 @@
         :image-upload-title="imageUploadTitle"
         :existing-image-title="existingImageTitle"
         @focus="emit('focus')"
+        @selection-change="emit('selectionChange', $event)"
         @prepare-with-ai="prepareWithAi"
         @toggle-voice-input="toggleVoiceInput"
         @upload-image="openImagePicker"
@@ -76,7 +77,10 @@ import SaplingMarkdownImagePicker from '@/components/dialog/fields/markdown/Sapl
 import SaplingMarkdownPreviewPane from '@/components/dialog/fields/markdown/SaplingMarkdownPreviewPane.vue'
 import { useSaplingMarkdownField } from '@/composables/fields/useSaplingMarkdownField'
 import { useTranslationLoader } from '@/composables/generic/useTranslationLoader'
-import type { MarkdownRule } from '@/components/dialog/fields/markdown/markdownField.types'
+import type {
+  MarkdownRule,
+  MarkdownSelectionState,
+} from '@/components/dialog/fields/markdown/markdownField.types'
 
 const props = withDefaults(
   defineProps<{
@@ -105,6 +109,7 @@ const props = withDefaults(
 const emit = defineEmits<{
   (event: 'update:modelValue', value: string): void
   (event: 'focus'): void
+  (event: 'selectionChange', value: MarkdownSelectionState): void
 }>()
 
 const { t } = useI18n()

@@ -70,6 +70,11 @@
   gap: var(--sapling-gap-sm);
 }
 
+.sapling-markdown-pane__copy-action {
+  width: var(--v-btn-height);
+  height: var(--v-btn-height);
+}
+
 .sapling-markdown-pane__eyebrow {
   display: inline-block;
   margin-bottom: var(--sapling-space-3xs);
@@ -194,6 +199,10 @@
   border-radius: var(--sapling-radius-sm);
   background: var(--sapling-surface-fill-soft);
   overflow-x: auto;
+  user-select: text;
+  -webkit-user-select: text;
+  -ms-user-select: text;
+  -moz-user-select: text;
 }
 
 .sapling-markdown-preview__plain {

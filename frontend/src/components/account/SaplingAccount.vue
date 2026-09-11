@@ -315,6 +315,76 @@
                           {{ $t('calendarSyncSubscription.addMapping') }}
                         </v-btn>
                       </div>
+                      <template v-if="calendarSync.provider === 'azure'">
+                        <v-divider />
+                        <div class="sapling-account-dialog__section-heading">
+                          <v-icon color="primary">mdi-calendar-clock-outline</v-icon>
+                          <span>{{
+                            $t('calendarSyncSubscription.outlookAvailabilityMapping')
+                          }}</span>
+                        </div>
+                        <p class="text-body-2 text-medium-emphasis">
+                          {{ $t('calendarSyncSubscription.outlookAvailabilityMappingHint') }}
+                        </p>
+                        <div class="sapling-account-dialog__mapping-list">
+                          <div
+                            v-for="(mapping, index) in calendarSync.outlookAvailabilityMappings"
+                            :key="index"
+                            class="sapling-account-dialog__mapping-row sapling-account-dialog__mapping-row--availability"
+                          >
+                            <SaplingAutocomplete
+                              v-model="mapping.eventStatusHandle"
+                              :items="calendarSyncEventStatusOptions"
+                              :label="$t('calendarSyncSubscription.eventStatus')"
+                              density="comfortable"
+                              variant="outlined"
+                              clearable
+                              hide-details
+                            />
+                            <SaplingAutocomplete
+                              v-model="mapping.eventTypeHandle"
+                              :items="calendarSyncEventTypeOptions"
+                              :label="$t('calendarSyncSubscription.eventType')"
+                              density="comfortable"
+                              variant="outlined"
+                              clearable
+                              hide-details
+                            />
+                            <SaplingAutocomplete
+                              v-model="mapping.eventCategoryHandle"
+                              :items="calendarSyncEventCategoryOptions"
+                              :label="$t('calendarSyncSubscription.eventCategory')"
+                              density="comfortable"
+                              variant="outlined"
+                              clearable
+                              hide-details
+                            />
+                            <SaplingAutocomplete
+                              v-model="mapping.showAs"
+                              :items="outlookShowAsOptions"
+                              :label="$t('calendarSyncSubscription.outlookShowAs')"
+                              density="comfortable"
+                              variant="outlined"
+                              hide-details
+                            />
+                            <v-btn
+                              icon="mdi-delete-outline"
+                              variant="text"
+                              color="error"
+                              :aria-label="$t('calendarSyncSubscription.removeAvailabilityMapping')"
+                              @click="removeOutlookAvailabilityMapping(index)"
+                            />
+                          </div>
+                          <v-btn
+                            variant="tonal"
+                            prepend-icon="mdi-plus"
+                            class="sapling-account-dialog__mapping-add"
+                            @click="addOutlookAvailabilityMapping"
+                          >
+                            {{ $t('calendarSyncSubscription.addAvailabilityMapping') }}
+                          </v-btn>
+                        </div>
+                      </template>
                       <v-list density="compact" class="sapling-account-dialog__sync-list">
                         <v-list-item v-for="detail in calendarSyncDetails" :key="detail.key">
                           <div class="sapling-account-dialog__detail-row">
@@ -480,8 +550,10 @@ const {
   calendarSyncDetails,
   calendarSyncEventTypeOptions,
   calendarSyncEventCategoryOptions,
+  calendarSyncEventStatusOptions,
   googleCalendarColorOptions,
   outlookCalendarCategoryOptions,
+  outlookShowAsOptions,
   isCalendarSyncSaving,
   isOutlookCalendarCategoriesLoading,
   currentLanguage,
@@ -506,6 +578,8 @@ const {
   loadOutlookCalendarCategories,
   addCalendarClassificationMapping,
   removeCalendarClassificationMapping,
+  addOutlookAvailabilityMapping,
+  removeOutlookAvailabilityMapping,
   saveNotificationPreferenceSelection,
   loadCurrentSessions,
   terminateOtherSessions,

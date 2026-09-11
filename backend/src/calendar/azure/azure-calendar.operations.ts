@@ -8,7 +8,10 @@ import {
   AZURE_AD_SCOPE,
   AZURE_AD_TENNANT_ID,
 } from '../../constants/project.constants';
-import { CalendarSyncSubscriptionItem } from '../../entity/CalendarSyncSubscriptionItem';
+import {
+  CalendarSyncSubscriptionItem,
+  type OutlookAvailabilityMapping,
+} from '../../entity/CalendarSyncSubscriptionItem';
 import { EventAzureItem } from '../../entity/EventAzureItem';
 import { stripCalendarContactDetails } from '../calendar-contact.utils';
 import { EventCategoryItem } from '../../entity/EventCategoryItem';
@@ -249,6 +252,21 @@ export class AzureCalendarOperations {
       provider: 'azure',
     });
     return subscription?.classificationMappings ?? [];
+  }
+
+  protected async loadOutlookAvailabilityMappings(
+    emFork: EntityManager,
+    personHandle?: number,
+  ): Promise<OutlookAvailabilityMapping[]> {
+    if (personHandle == null) {
+      return [];
+    }
+
+    const subscription = await emFork.findOne(CalendarSyncSubscriptionItem, {
+      person: { handle: personHandle },
+      provider: 'azure',
+    });
+    return subscription?.outlookAvailabilityMappings ?? [];
   }
 
   protected async upsertImportedEvent(
@@ -633,11 +651,13 @@ export class AzureCalendarOperations {
     emFork: EntityManager,
     classificationMappings?: CalendarClassificationMapping[] | null,
     timeZone?: string,
+    outlookAvailabilityMappings?: OutlookAvailabilityMapping[] | null,
   ): Promise<any> {
     const eventResource = buildAzureCalendarEvent(
       event,
       classificationMappings,
       timeZone,
+      outlookAvailabilityMappings,
     );
 
     // Create event in Azure
@@ -678,12 +698,14 @@ export class AzureCalendarOperations {
     operation?: 'remove-recurrence' | 'detach-occurrence',
     changedFields?: string[],
     timeZone?: string,
+    outlookAvailabilityMappings?: OutlookAvailabilityMapping[] | null,
   ): Promise<any> {
     if (operation === 'remove-recurrence') {
       const resource = buildAzureCalendarEvent(
         event,
         classificationMappings,
         timeZone,
+        outlookAvailabilityMappings,
       );
       return await client.api(`/me/events/${reference.referenceHandle}`).patch({
         start: resource.start,
@@ -697,6 +719,7 @@ export class AzureCalendarOperations {
       classificationMappings,
       changedFields,
       timeZone,
+      outlookAvailabilityMappings,
     );
 
     if (Object.keys(eventResource).length === 0) {
@@ -752,6 +775,7 @@ export class AzureCalendarOperations {
     emFork: EntityManager,
     classificationMappings?: CalendarClassificationMapping[] | null,
     timeZone?: string,
+    outlookAvailabilityMappings?: OutlookAvailabilityMapping[] | null,
   ): Promise<Record<string, unknown>> {
     const occurrenceStart = new Date(occurrenceStartValue);
     if (Number.isNaN(occurrenceStart.getTime())) {
@@ -798,6 +822,7 @@ export class AzureCalendarOperations {
       event,
       classificationMappings,
       timeZone,
+      outlookAvailabilityMappings,
     );
     delete eventResource.recurrence;
     delete eventResource.isOnlineMeeting;

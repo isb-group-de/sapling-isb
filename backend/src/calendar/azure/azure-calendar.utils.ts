@@ -10,6 +10,8 @@ import {
   type CalendarClassificationMapping,
   resolveOutboundCalendarValues,
 } from '../calendar-classification.utils';
+import type { OutlookAvailabilityMapping } from '../../entity/CalendarSyncSubscriptionItem';
+import { resolveOutlookShowAs } from '../outlook-availability.utils';
 
 export type ImportAzureCalendarEventsRange = {
   startDateTime: Date;
@@ -488,6 +490,7 @@ export function buildAzureCalendarEvent(
   event: EventItem,
   classificationMappings?: CalendarClassificationMapping[] | null,
   timeZone?: string,
+  outlookAvailabilityMappings?: OutlookAvailabilityMapping[] | null,
 ): Record<string, unknown> {
   const categories = resolveOutboundCalendarValues(
     event,
@@ -499,6 +502,7 @@ export function buildAzureCalendarEvent(
     start: buildAzureDateTime(event.startDate, timeZone),
     end: buildAzureDateTime(event.endDate, timeZone),
     recurrence: buildAzureRecurrence(event.startDate, event.recurrenceRule),
+    showAs: resolveOutlookShowAs(event, outlookAvailabilityMappings),
     ...(location ? { location: { displayName: location } } : {}),
   };
 
@@ -534,11 +538,13 @@ export function buildAzureCalendarEventPatch(
   classificationMappings?: CalendarClassificationMapping[] | null,
   changedFields?: string[],
   timeZone?: string,
+  outlookAvailabilityMappings?: OutlookAvailabilityMapping[] | null,
 ): Record<string, unknown> {
   const eventResource = buildAzureCalendarEvent(
     event,
     classificationMappings,
     timeZone,
+    outlookAvailabilityMappings,
   );
   if (!changedFields) {
     return eventResource;
@@ -575,6 +581,13 @@ export function buildAzureCalendarEventPatch(
     copy('onlineMeetingProvider');
   }
   if (changed.has('type') || changed.has('category')) copy('categories');
+  if (
+    changed.has('isOutlookAvailable') ||
+    changed.has('status') ||
+    changed.has('type') ||
+    changed.has('category')
+  )
+    copy('showAs');
   if (changed.has('creatorCompany')) copy('location');
 
   return patch;

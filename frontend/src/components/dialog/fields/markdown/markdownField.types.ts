@@ -13,6 +13,18 @@ export interface MarkdownTextSelection {
   to: number
 }
 
+export interface MarkdownSelectionCoordinates {
+  left: number
+  top: number
+  bottom: number
+}
+
+export interface MarkdownSelectionState extends MarkdownTextSelection {
+  value: string
+  focused: boolean
+  coordinates: MarkdownSelectionCoordinates | null
+}
+
 export interface MarkdownEditorHandle {
   applySelection(transform: (selectedText: string) => MarkdownTransformResult): string | null
   focus(): void

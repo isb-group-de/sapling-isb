@@ -3,6 +3,7 @@ import type { AiProviderModelItem, AiProviderTypeItem } from '@/entity/entity'
 import {
   appendMissingOutlookCategoryMappings,
   buildAccountTabs,
+  buildOutlookShowAsOptions,
   calculateAge,
   getCurrentWeekday,
   isSaplingAccountType,
@@ -92,6 +93,16 @@ describe('saplingAccount utils', () => {
         eventTypeHandle: null,
         eventCategoryHandle: null,
       },
+    ])
+  })
+
+  it('offers every Outlook availability value supported by the account mapping', () => {
+    expect(buildOutlookShowAsOptions().map((option) => option.value)).toEqual([
+      'free',
+      'tentative',
+      'busy',
+      'oof',
+      'workingElsewhere',
     ])
   })
 

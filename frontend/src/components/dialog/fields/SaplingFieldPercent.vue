@@ -6,9 +6,9 @@
     :required="required"
     :placeholder="placeholder"
     :rules="rules"
-    :min="0"
-    :max="100"
-    :step="1"
+    :min="min"
+    :max="max"
+    :step="step"
     append-inner="%"
     hide-details="auto"
     autocomplete="off"
@@ -17,14 +17,24 @@
 </template>
 
 <script lang="ts" setup>
-defineProps<{
-  label: string
-  modelValue: number | null
-  disabled?: boolean
-  required?: boolean
-  placeholder?: string
-  rules?: Array<(value: number | null) => boolean | string>
-}>()
+withDefaults(
+  defineProps<{
+    label: string
+    modelValue: number | null
+    disabled?: boolean
+    required?: boolean
+    placeholder?: string
+    rules?: Array<(value: number | null) => boolean | string>
+    min?: number
+    max?: number
+    step?: number
+  }>(),
+  {
+    min: 0,
+    max: 100,
+    step: 1,
+  },
+)
 
 const emit = defineEmits(['update:modelValue'])
 </script>

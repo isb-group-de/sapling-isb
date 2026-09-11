@@ -116,6 +116,8 @@ export interface EventItem extends SaplingGenericItem {
   isAllDay: boolean
   /** Indicates whether the event is visible only to its creator and participants */
   isPrivate: boolean
+  /** Forces the Outlook appointment to be shown as available */
+  isOutlookAvailable: boolean
   /** Whether the connected calendar should create a Teams or Google Meet link */
   createOnlineMeeting: boolean
   /** Whether participants should receive invitations from the connected calendar */

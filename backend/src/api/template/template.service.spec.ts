@@ -28,7 +28,13 @@ jest.mock('../../entity/global/entity.decorator', () => ({
   getSaplingReferenceDependency: jest.fn(() => null),
   getSaplingOptions: jest.fn(() => []),
   getSaplingNumeric: jest.fn((_target: object, name: string) =>
-    name === 'estimatedHours' || name === 'badStep' ? { step: 0.5 } : null,
+    name === 'estimatedHours'
+      ? { min: 0, max: 100, step: 0.5 }
+      : name === 'badStep'
+        ? { step: 0.5 }
+        : name === 'badMin'
+          ? { min: 0.5 }
+          : null,
   ),
   hasSaplingOption: jest.fn(() => false),
 }));
@@ -85,7 +91,7 @@ describe('TemplateService', () => {
     expect(second[0]).toMatchObject({ isInteger: true, numeric: null });
     expect(second[4]).toMatchObject({
       isInteger: false,
-      numeric: { step: 0.5 },
+      numeric: { min: 0, max: 100, step: 0.5 },
     });
     expect(second[1]).toMatchObject({
       name: 'externalHandle',
@@ -146,6 +152,26 @@ describe('TemplateService', () => {
     } as never);
     expect(() => service.getEntityTemplate('numericInteger')).toThrow(
       'must be a whole number',
+    );
+  });
+
+  it('rejects fractional boundary configuration on integer database columns', () => {
+    const service = new TemplateService({
+      getMetadata: () => ({
+        get: () => ({
+          properties: {
+            handle: { name: 'handle', type: 'number', primary: true },
+            badMin: {
+              name: 'badMin',
+              type: 'number',
+              columnTypes: ['smallint'],
+            },
+          },
+        }),
+      }),
+    } as never);
+    expect(() => service.getEntityTemplate('numericInteger')).toThrow(
+      'SaplingNumeric min',
     );
   });
 });

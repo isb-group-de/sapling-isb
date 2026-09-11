@@ -197,7 +197,7 @@ export interface EntityTemplate {
   /** Whether the database column stores whole numbers only */
   isInteger?: boolean
   /** Numeric input configuration from SaplingNumeric */
-  numeric?: { step: number } | null
+  numeric?: { min?: number; max?: number; step?: number } | null
   /** Length of the property (if applicable) */
   length?: number
   /** Default value (can be string, number, boolean, null, or object) */

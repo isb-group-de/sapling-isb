@@ -112,6 +112,11 @@ Common options:
 | `isDateStart` / `isDateEnd` | Start/end date pairing for timelines and generic range validation; paired fields in the same form group require end >= start |
 | `isAutoKey` | Auto-key editor |
 
+Use `@SaplingNumeric({ min, max, step })` to configure the input range and
+increment for plain numeric, money, and percent fields. Each value is optional;
+specialized money and percent renderers retain their existing defaults when an
+override is omitted.
+
 ### `@SaplingForm(...)`
 
 Controls generated edit dialog layout.

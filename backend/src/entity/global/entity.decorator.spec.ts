@@ -31,6 +31,36 @@ describe('entity.decorator', () => {
     },
   );
 
+  it('stores numeric boundaries and step together', () => {
+    class NumericEntity {
+      @SaplingNumeric({ min: -10, max: 25.5, step: 0.5 })
+      amount!: number;
+    }
+
+    expect(getSaplingNumeric(NumericEntity.prototype, 'amount')).toEqual({
+      min: -10,
+      max: 25.5,
+      step: 0.5,
+    });
+  });
+
+  it.each([
+    ['min', Number.NaN],
+    ['min', Number.NEGATIVE_INFINITY],
+    ['max', Number.NaN],
+    ['max', Number.POSITIVE_INFINITY],
+  ] as const)('rejects invalid numeric %s %s', (setting, value) => {
+    expect(() => SaplingNumeric({ [setting]: value })).toThrow(
+      `${setting} must be a finite number`,
+    );
+  });
+
+  it('rejects a numeric minimum greater than its maximum', () => {
+    expect(() => SaplingNumeric({ min: 2, max: 1 })).toThrow(
+      'min must not be greater than max',
+    );
+  });
+
   it.each([0, -1, Number.NaN, Number.POSITIVE_INFINITY])(
     'rejects invalid numeric step %s',
     (step) => {

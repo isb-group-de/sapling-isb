@@ -20,6 +20,7 @@ import {
   SaplingDependsOn,
   SaplingForm,
   SaplingKanban,
+  SaplingNumeric,
 } from './global/entity.decorator';
 import {
   SaplingReferenceCreate,
@@ -193,6 +194,7 @@ export class SalesOpportunityItem {
    */
   @ApiPropertyOptional({ type: 'number' })
   @Sapling(['isMoney', 'isValue'])
+  @SaplingNumeric({ min: 0, max: 10_000_000, step: 10_000 })
   @SaplingForm({
     order: 200,
     group: 'salesOpportunity.groupBasics',

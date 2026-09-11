@@ -76,7 +76,7 @@ const SAPLING_INLINE_COLLECTION_METADATA_KEY = 'sapling:inlineCollection';
  * @property isSystem            Property is a system field
  * @property isPercent           Property is a percentage value
  * @property isMoney             Property is a monetary value
- * @property isNumeric           Property is a plain numeric value with step controls
+ * @property isNumeric           Property is a plain numeric value with range and step controls
  * @property isDuplicateCheck    Property is used for duplicate checking
  * @property isPartner           Property is used for partner filter
  * @property isToday             Property is used for today's date filter

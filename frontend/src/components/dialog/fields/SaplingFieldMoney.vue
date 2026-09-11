@@ -6,9 +6,9 @@
     :required="required"
     :placeholder="placeholder"
     :rules="rules"
-    :min="0"
-    :max="10000000"
-    :step="10000"
+    :min="min"
+    :max="max"
+    :step="step"
     :prefix="currencySymbol"
     hide-details="auto"
     autocomplete="off"
@@ -20,14 +20,24 @@
 import { ref, computed } from 'vue'
 import CookieService from '@/services/cookie.service'
 
-defineProps<{
-  label: string
-  modelValue: number | null
-  disabled?: boolean
-  required?: boolean
-  placeholder?: string
-  rules?: Array<(value: number | null) => boolean | string>
-}>()
+withDefaults(
+  defineProps<{
+    label: string
+    modelValue: number | null
+    disabled?: boolean
+    required?: boolean
+    placeholder?: string
+    rules?: Array<(value: number | null) => boolean | string>
+    min?: number
+    max?: number
+    step?: number
+  }>(),
+  {
+    min: 0,
+    max: 10000000,
+    step: 10000,
+  },
+)
 
 const emit = defineEmits(['update:modelValue'])
 

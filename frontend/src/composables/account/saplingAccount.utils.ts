@@ -4,6 +4,7 @@ import { sortSelectOptions } from '@/utils/saplingSelectOptions'
 import type {
   CalendarClassificationMapping,
   CalendarSyncSubscription,
+  OutlookShowAs,
   OutlookCalendarCategory,
 } from '@/services/api.current.service'
 
@@ -224,6 +225,15 @@ export function buildCalendarSyncRangeOptions(): CalendarSyncOption<CalendarSync
 export function buildCalendarSyncIntervalOptions(): CalendarSyncOption<number>[] {
   return [15, 30, 60, 240].map((value) => ({
     title: i18n.global.t(`calendarSyncSubscription.interval${value}`),
+    value,
+  }))
+}
+
+export function buildOutlookShowAsOptions(): CalendarSyncOption<OutlookShowAs>[] {
+  return (['free', 'tentative', 'busy', 'oof', 'workingElsewhere'] as const).map((value) => ({
+    title: i18n.global.t(
+      `calendarSyncSubscription.showAs${value[0].toUpperCase()}${value.slice(1)}`,
+    ),
     value,
   }))
 }

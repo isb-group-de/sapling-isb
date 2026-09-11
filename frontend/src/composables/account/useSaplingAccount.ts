@@ -8,12 +8,14 @@ import ApiCurrentService, {
   type CalendarSyncSubscription,
   type CurrentSessionDto,
   type OutlookCalendarCategory,
+  type OutlookAvailabilityMapping,
   type TerminateSessionsResult,
 } from '@/services/api.current.service'
 import type {
   AiProviderModelItem,
   AiProviderTypeItem,
   EventCategoryItem,
+  EventStatusItem,
   EventTypeItem,
   WorkHourWeekItem,
 } from '@/entity/entity'
@@ -45,6 +47,7 @@ import {
   buildCalendarSyncDetails,
   buildCalendarSyncIntervalOptions,
   buildCalendarSyncRangeOptions,
+  buildOutlookShowAsOptions,
   createProfileForm,
   formatDateTime,
   getCurrentWeekday,
@@ -76,6 +79,7 @@ export function useSaplingAccount() {
     'calendarSyncSubscription',
     'eventType',
     'eventCategory',
+    'eventStatus',
     'account',
     'navigation',
     'aiChat',
@@ -102,6 +106,7 @@ export function useSaplingAccount() {
   const outlookCalendarCategories = ref<OutlookCalendarCategory[]>([])
   const eventTypes = ref<EventTypeItem[]>([])
   const eventCategories = ref<EventCategoryItem[]>([])
+  const eventStatuses = ref<EventStatusItem[]>([])
   const notificationPreferences = ref<SaplingNotificationPreferences>(
     loadSaplingNotificationPreferences(),
   )
@@ -133,6 +138,7 @@ export function useSaplingAccount() {
 
   const calendarSyncRangeOptions = computed(buildCalendarSyncRangeOptions)
   const calendarSyncIntervalOptions = computed(buildCalendarSyncIntervalOptions)
+  const outlookShowAsOptions = computed(buildOutlookShowAsOptions)
 
   const calendarSyncEventTypeOptions = computed<CalendarSyncOption<string>[]>(() =>
     sortSelectOptions(eventTypes.value, (item) => item.title).map((item) => ({
@@ -144,6 +150,13 @@ export function useSaplingAccount() {
   const calendarSyncEventCategoryOptions = computed<CalendarSyncOption<string>[]>(() =>
     sortSelectOptions(eventCategories.value, (item) => item.title).map((item) => ({
       title: item.title,
+      value: item.handle,
+    })),
+  )
+
+  const calendarSyncEventStatusOptions = computed<CalendarSyncOption<string>[]>(() =>
+    sortSelectOptions(eventStatuses.value, (item) => item.description).map((item) => ({
+      title: item.description,
       value: item.handle,
     })),
   )
@@ -288,12 +301,14 @@ export function useSaplingAccount() {
   }
 
   async function loadCalendarClassificationOptions() {
-    const [typeResponse, categoryResponse] = await Promise.all([
+    const [typeResponse, categoryResponse, statusResponse] = await Promise.all([
       ApiGenericService.findAll<EventTypeItem>('eventType'),
       ApiGenericService.findAll<EventCategoryItem>('eventCategory'),
+      ApiGenericService.findAll<EventStatusItem>('eventStatus'),
     ])
     eventTypes.value = typeResponse
     eventCategories.value = categoryResponse
+    eventStatuses.value = statusResponse
   }
 
   /**
@@ -314,6 +329,7 @@ export function useSaplingAccount() {
         defaultEventTypeHandle: calendarSync.value.defaultEventTypeHandle,
         defaultEventCategoryHandle: calendarSync.value.defaultEventCategoryHandle,
         classificationMappings: calendarSync.value.classificationMappings,
+        outlookAvailabilityMappings: calendarSync.value.outlookAvailabilityMappings,
       })
       pushMessage('success', 'calendarSyncSubscription.saveSuccess', '', 'calendarSyncSubscription')
     } finally {
@@ -359,6 +375,24 @@ export function useSaplingAccount() {
 
   function removeCalendarClassificationMapping(index: number) {
     calendarSync.value?.classificationMappings.splice(index, 1)
+  }
+
+  function addOutlookAvailabilityMapping() {
+    if (!calendarSync.value) {
+      return
+    }
+
+    const mapping: OutlookAvailabilityMapping = {
+      eventStatusHandle: null,
+      eventTypeHandle: null,
+      eventCategoryHandle: null,
+      showAs: 'busy',
+    }
+    calendarSync.value.outlookAvailabilityMappings.push(mapping)
+  }
+
+  function removeOutlookAvailabilityMapping(index: number) {
+    calendarSync.value?.outlookAvailabilityMappings.splice(index, 1)
   }
 
   function saveNotificationPreferenceSelection() {
@@ -554,8 +588,10 @@ export function useSaplingAccount() {
     calendarSyncDetails,
     calendarSyncEventTypeOptions,
     calendarSyncEventCategoryOptions,
+    calendarSyncEventStatusOptions,
     googleCalendarColorOptions,
     outlookCalendarCategoryOptions,
+    outlookShowAsOptions,
     isCalendarSyncSaving,
     isOutlookCalendarCategoriesLoading,
     currentLanguage,
@@ -580,6 +616,8 @@ export function useSaplingAccount() {
     loadOutlookCalendarCategories,
     addCalendarClassificationMapping,
     removeCalendarClassificationMapping,
+    addOutlookAvailabilityMapping,
+    removeOutlookAvailabilityMapping,
     saveNotificationPreferenceSelection,
     loadCurrentSessions,
     terminateOtherSessions,

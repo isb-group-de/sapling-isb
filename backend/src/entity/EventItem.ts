@@ -235,6 +235,26 @@ export class EventItem {
   isPrivate!: boolean;
 
   /**
+   * Forces the Outlook projection to remain available for bookings regardless
+   * of the current user's configured availability mappings.
+   * @type {boolean}
+   */
+  @ApiPropertyOptional({ default: false })
+  @SaplingForm({
+    order: 375,
+    group: 'event.groupSchedule',
+    groupOrder: 300,
+    width: 1,
+    visible: true,
+    tableOrder: 375,
+    tableVisible: false,
+    mobileOrder: 375,
+    mobileVisible: false,
+  })
+  @Property({ default: false, nullable: false })
+  isOutlookAvailable: boolean = false;
+
+  /**
    * Requests creation of a provider-native meeting link (Teams or Google Meet).
    * This is intentionally independent from the event type.
    * @type {boolean}

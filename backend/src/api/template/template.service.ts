@@ -131,9 +131,17 @@ export class TemplateService {
           entityClass.prototype as object,
           prop.name,
         );
-        if (isInteger && numeric && !Number.isInteger(numeric.step)) {
+        const fractionalNumericSetting =
+          isInteger && numeric
+            ? (['min', 'max', 'step'] as const).find(
+                (setting) =>
+                  numeric[setting] !== undefined &&
+                  !Number.isInteger(numeric[setting]),
+              )
+            : undefined;
+        if (fractionalNumericSetting) {
           throw new Error(
-            `SaplingNumeric step for "${entityHandle}.${prop.name}" must be a whole number for an integer column.`,
+            `SaplingNumeric ${fractionalNumericSetting} for "${entityHandle}.${prop.name}" must be a whole number for an integer column.`,
           );
         }
 

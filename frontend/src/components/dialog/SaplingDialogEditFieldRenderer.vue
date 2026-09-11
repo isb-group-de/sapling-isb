@@ -131,6 +131,9 @@
       :required="template.nullable === false"
       :placeholder="defaultPlaceholder"
       :rules="rules"
+      :min="template.numeric?.min"
+      :max="template.numeric?.max"
+      :step="template.numeric?.step"
       @update:model-value="(val: unknown) => updateField(template.name, val)"
     />
     <SaplingFieldMoney
@@ -141,6 +144,9 @@
       :required="template.nullable === false"
       :placeholder="defaultPlaceholder"
       :rules="rules"
+      :min="template.numeric?.min"
+      :max="template.numeric?.max"
+      :step="template.numeric?.step"
       @update:model-value="(val: unknown) => updateField(template.name, val)"
     />
     <SaplingFieldCellDuplicateCheck
@@ -170,6 +176,8 @@
       :required="template.nullable === false"
       :placeholder="defaultPlaceholder"
       :rules="rules"
+      :min="template.numeric?.min"
+      :max="template.numeric?.max"
       :step="numberStep"
       :precision="template.isInteger ? 0 : null"
       @update:model-value="(val: unknown) => updateField(template.name, val)"

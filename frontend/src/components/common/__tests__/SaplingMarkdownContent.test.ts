@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import path from 'node:path'
 import { flushPromises, mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
 import SaplingMarkdownContent from '../SaplingMarkdownContent.vue'
@@ -11,6 +13,30 @@ function mountMarkdown(source: string) {
 }
 
 describe('Markdown image previews', () => {
+  it('keeps preview text selectable inside the non-selectable app shell', () => {
+    const markdownStyles = readFileSync(
+      path.resolve('src/assets/styles/framework/SaplingFrameworkMarkdown.css'),
+      'utf8',
+    )
+    const previewRule = markdownStyles.match(/\.sapling-markdown-preview\s*{(?<body>[^}]*)}/s)
+
+    expect(previewRule?.groups?.body).toMatch(/(?:^|\s)user-select:\s*text;/)
+    expect(previewRule?.groups?.body).toMatch(/-moz-user-select:\s*text;/)
+  })
+
+  it('matches the preview copy action to its button height', () => {
+    const markdownStyles = readFileSync(
+      path.resolve('src/assets/styles/framework/SaplingFrameworkMarkdown.css'),
+      'utf8',
+    )
+    const copyActionRule = markdownStyles.match(
+      /\.sapling-markdown-pane__copy-action\s*{(?<body>[^}]*)}/s,
+    )
+
+    expect(copyActionRule?.groups?.body).toMatch(/width:\s*var\(--v-btn-height\);/)
+    expect(copyActionRule?.groups?.body).toMatch(/height:\s*var\(--v-btn-height\);/)
+  })
+
   it.each([
     '![Screenshot](/image.png)',
     '[![Screenshot](/image.png)](/destination)',

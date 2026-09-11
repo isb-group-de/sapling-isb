@@ -46,6 +46,64 @@ describe('Azure meeting link creation', () => {
   });
 });
 
+describe('Azure Outlook availability', () => {
+  const event = {
+    title: 'Customer appointment',
+    description: 'Details',
+    startDate: new Date('2026-09-10T09:00:00.000Z'),
+    endDate: new Date('2026-09-10T10:00:00.000Z'),
+    participants: [],
+    status: { handle: 'scheduled' },
+    type: { handle: 'onsite' },
+    category: { handle: 'customer' },
+    isOutlookAvailable: false,
+    createOnlineMeeting: false,
+  } as unknown as EventItem;
+
+  const mappings = [
+    { eventStatusHandle: 'scheduled', showAs: 'tentative' as const },
+    {
+      eventStatusHandle: 'scheduled',
+      eventTypeHandle: 'onsite',
+      showAs: 'workingElsewhere' as const,
+    },
+  ];
+
+  it('sends the most specific personal mapping on create', () => {
+    expect(
+      buildAzureCalendarEvent(event, [], undefined, mappings),
+    ).toMatchObject({
+      showAs: 'workingElsewhere',
+    });
+  });
+
+  it('lets the available checkbox override personal mappings', () => {
+    expect(
+      buildAzureCalendarEvent(
+        { ...event, isOutlookAvailable: true } as EventItem,
+        [],
+        undefined,
+        mappings,
+      ),
+    ).toMatchObject({ showAs: 'free' });
+  });
+
+  it('patches showAs only when availability inputs change', () => {
+    expect(
+      buildAzureCalendarEventPatch(event, [], ['status'], undefined, mappings),
+    ).toEqual({ showAs: 'workingElsewhere' });
+    expect(
+      buildAzureCalendarEventPatch(
+        event,
+        [],
+        ['description'],
+        undefined,
+        mappings,
+      ),
+    ).not.toHaveProperty('showAs');
+  });
+});
+
 describe('Azure event time zone serialization', () => {
   const event = {
     title: 'Test',

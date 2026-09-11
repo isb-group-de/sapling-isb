@@ -184,16 +184,15 @@
 }
 
 .sapling-mail-dialog__mention-editor {
-  display: grid;
-  gap: var(--sapling-gap-sm);
   min-width: 0;
 }
 
 .sapling-mail-dialog__mention-panel {
+  width: min(32rem, calc(100vw - 24px));
   overflow: hidden;
   border: 1px solid var(--sapling-surface-border-accent-strong);
   border-radius: var(--sapling-radius-sm);
-  background: var(--sapling-surface-fill);
+  background: rgb(var(--v-theme-surface)) !important;
 }
 
 .sapling-mail-dialog__mention-header {

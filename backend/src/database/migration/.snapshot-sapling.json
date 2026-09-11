@@ -8684,6 +8684,23 @@
           "enumItems": [],
           "mappedType": "integer"
         },
+        "outlook_availability_mappings": {
+          "name": "outlook_availability_mappings",
+          "type": "jsonb",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": "'[]'",
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "json"
+        },
         "person_handle": {
           "name": "person_handle",
           "type": "int",
@@ -20943,6 +20960,23 @@
         },
         "is_all_day": {
           "name": "is_all_day",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": "false",
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "boolean"
+        },
+        "is_outlook_available": {
+          "name": "is_outlook_available",
           "type": "boolean",
           "unsigned": false,
           "autoincrement": false,

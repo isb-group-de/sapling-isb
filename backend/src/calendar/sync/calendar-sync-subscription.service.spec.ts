@@ -14,6 +14,11 @@ import {
   calculateCalendarSyncRange,
   isCalendarSyncSubscriptionDue,
 } from './calendar-sync-subscription.service';
+import { CalendarSyncSubscriptionItem } from '../../entity/CalendarSyncSubscriptionItem';
+import { EventCategoryItem } from '../../entity/EventCategoryItem';
+import { EventStatusItem } from '../../entity/EventStatusItem';
+import { EventTypeItem } from '../../entity/EventTypeItem';
+import { PersonItem } from '../../entity/PersonItem';
 
 describe('calendar sync subscription helpers', () => {
   it('registers automatic imports with the BullMQ job scheduler API', async () => {
@@ -224,5 +229,76 @@ describe('calendar sync subscription helpers', () => {
     );
     expect(subscription.lastError).toBeNull();
     expect(subscription.lastImportedCount).toBe(3);
+  });
+
+  it('stores normalized Outlook availability mappings for the current person', async () => {
+    const person = {
+      handle: 3,
+      isActive: true,
+      type: { handle: 'azure' },
+      session: { handle: 9 },
+    } as unknown as PersonItem;
+    const subscription = Object.assign(new CalendarSyncSubscriptionItem(), {
+      handle: 7,
+      provider: 'azure' as const,
+      person,
+      defaultEventType: { handle: 'online' },
+      defaultEventCategory: { handle: 'internal' },
+    });
+    const em = {
+      fork: () => em,
+      findOne: jest.fn((entity: unknown) =>
+        Promise.resolve(
+          entity === PersonItem
+            ? person
+            : entity === CalendarSyncSubscriptionItem
+              ? subscription
+              : null,
+        ),
+      ),
+      find: jest.fn((entity: unknown) => {
+        if (entity === EventStatusItem) {
+          return Promise.resolve([{ handle: 'scheduled' }]);
+        }
+        if (entity === EventTypeItem) {
+          return Promise.resolve([{ handle: 'onsite' }]);
+        }
+        if (entity === EventCategoryItem) {
+          return Promise.resolve([{ handle: 'customer' }]);
+        }
+        return Promise.resolve([]);
+      }),
+      flush: jest.fn(() => Promise.resolve(undefined)),
+    };
+    const service = new CalendarSyncSubscriptionService(
+      em as never,
+      {} as never,
+      {} as never,
+      {} as never,
+    );
+
+    const result = await service.updateCurrentSubscription(person, {
+      outlookAvailabilityMappings: [
+        {
+          eventStatusHandle: ' scheduled ',
+          eventTypeHandle: 'onsite',
+          eventCategoryHandle: 'customer',
+          showAs: 'workingElsewhere',
+        },
+      ],
+    });
+
+    expect(subscription.outlookAvailabilityMappings).toEqual([
+      {
+        eventStatusHandle: 'scheduled',
+        eventTypeHandle: 'onsite',
+        eventCategoryHandle: 'customer',
+        showAs: 'workingElsewhere',
+      },
+    ]);
+    expect(result.outlookAvailabilityMappings).toEqual(
+      subscription.outlookAvailabilityMappings,
+    );
+    expect(em.flush).toHaveBeenCalledTimes(1);
   });
 });

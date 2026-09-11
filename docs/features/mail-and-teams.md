@@ -265,13 +265,15 @@ The preview remains alongside the editor, with placeholders initially collapsed.
 Draft and send notices retain their full height instead of shrinking in the flex
 layout. Translation seed 086 supplies the tab labels.
 
-While composing, typing `@` in the Markdown body opens a filtered list of the
-same permission- and context-aware person suggestions used by the recipient
-fields. Each suggestion offers **To**, **CC**, and **BCC** directly. Choosing one
-completes the visible `@Name` text and moves the person's email address into
-exactly that recipient field, preventing duplicates across all three fields.
-Because the behavior belongs to the shared composer, it applies equally to a new
-message and a browser-restored draft.
+While composing, typing `@` in the Markdown body opens a cursor-anchored dropdown
+with the same permission- and context-aware person suggestions used by the
+recipient fields. The connected overlay repositions itself near viewport edges,
+so it remains visible without changing the editor layout. Each suggestion offers
+**To**, **CC**, and **BCC** directly. Choosing one completes the visible `@Name`
+text and moves the person's email address into exactly that recipient field,
+preventing duplicates across all three fields. Because the behavior belongs to
+the shared composer, it applies equally to a new message and a browser-restored
+draft.
 
 Each user manages private `emailSignature` records through **Mail → Email
 signatures** (`/table/emailSignature`) or the **Email signatures** tab in their

@@ -105,6 +105,10 @@ export interface SaplingKanbanMetadata {
 }
 
 export interface SaplingNumericMetadata {
+  /** Optional minimum accepted by numeric input controls. */
+  min?: number;
+  /** Optional maximum accepted by numeric input controls. */
+  max?: number;
   /** Positive increment for numeric input controls. */
-  step: number;
+  step?: number;
 }

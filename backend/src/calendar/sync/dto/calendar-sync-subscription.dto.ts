@@ -15,7 +15,9 @@ import { Type } from 'class-transformer';
 import type {
   CalendarSyncProvider,
   CalendarSyncRange,
+  OutlookShowAs,
 } from '../../../entity/CalendarSyncSubscriptionItem';
+import { OUTLOOK_SHOW_AS_VALUES } from '../../outlook-availability.utils';
 
 export class CalendarClassificationMappingDto {
   @ApiProperty()
@@ -34,6 +36,30 @@ export class CalendarClassificationMappingDto {
   @IsString()
   @MaxLength(64)
   eventCategoryHandle?: string | null;
+}
+
+export class OutlookAvailabilityMappingDto {
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(64)
+  eventStatusHandle?: string | null;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(64)
+  eventTypeHandle?: string | null;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(64)
+  eventCategoryHandle?: string | null;
+
+  @ApiProperty({ enum: OUTLOOK_SHOW_AS_VALUES })
+  @IsIn(OUTLOOK_SHOW_AS_VALUES)
+  showAs!: OutlookShowAs;
 }
 
 export class OutlookCalendarCategoryDto {
@@ -74,6 +100,9 @@ export class CalendarSyncSubscriptionDto {
 
   @ApiProperty({ type: () => CalendarClassificationMappingDto, isArray: true })
   classificationMappings!: CalendarClassificationMappingDto[];
+
+  @ApiProperty({ type: () => OutlookAvailabilityMappingDto, isArray: true })
+  outlookAvailabilityMappings!: OutlookAvailabilityMappingDto[];
 
   @ApiPropertyOptional({ type: 'string', format: 'date-time' })
   lastRunAt?: Date | null;
@@ -136,4 +165,14 @@ export class UpdateCalendarSyncSubscriptionDto {
   @ValidateNested({ each: true })
   @Type(() => CalendarClassificationMappingDto)
   classificationMappings?: CalendarClassificationMappingDto[];
+
+  @ApiPropertyOptional({
+    type: () => OutlookAvailabilityMappingDto,
+    isArray: true,
+  })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => OutlookAvailabilityMappingDto)
+  outlookAvailabilityMappings?: OutlookAvailabilityMappingDto[];
 }

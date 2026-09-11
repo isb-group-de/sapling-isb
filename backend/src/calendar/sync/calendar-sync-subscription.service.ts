@@ -23,6 +23,7 @@ import {
 import { PersonItem } from '../../entity/PersonItem';
 import { EventTypeItem } from '../../entity/EventTypeItem';
 import { EventCategoryItem } from '../../entity/EventCategoryItem';
+import { EventStatusItem } from '../../entity/EventStatusItem';
 import {
   CalendarSyncSubscriptionDto,
   OutlookCalendarCategoryDto,
@@ -33,6 +34,7 @@ import {
   DEFAULT_CALENDAR_EVENT_TYPE_HANDLE,
   normalizeCalendarClassificationMappings,
 } from '../calendar-classification.utils';
+import { normalizeOutlookAvailabilityMappings } from '../outlook-availability.utils';
 
 type CalendarSyncRangeWindow = {
   startDateTime: Date;
@@ -231,6 +233,14 @@ export class CalendarSyncSubscriptionService implements OnModuleInit {
       subscription.classificationMappings = mappings;
     }
 
+    if (dto.outlookAvailabilityMappings != null) {
+      const mappings = normalizeOutlookAvailabilityMappings(
+        dto.outlookAvailabilityMappings,
+      );
+      await this.assertOutlookAvailabilityMappings(em, mappings);
+      subscription.outlookAvailabilityMappings = mappings;
+    }
+
     await em.flush();
     return this.toDto(subscription, true, subscription.provider);
   }
@@ -375,6 +385,7 @@ export class CalendarSyncSubscriptionService implements OnModuleInit {
       DEFAULT_CALENDAR_EVENT_CATEGORY_HANDLE,
     );
     created.classificationMappings = [];
+    created.outlookAvailabilityMappings = [];
     created.person = person;
     em.persist(created);
     return created;
@@ -479,6 +490,60 @@ export class CalendarSyncSubscriptionService implements OnModuleInit {
     }
   }
 
+  private async assertOutlookAvailabilityMappings(
+    em: EntityManager,
+    mappings: ReturnType<typeof normalizeOutlookAvailabilityMappings>,
+  ): Promise<void> {
+    const statusHandles = Array.from(
+      new Set(
+        mappings
+          .map((mapping) => mapping.eventStatusHandle)
+          .filter((handle): handle is string => Boolean(handle)),
+      ),
+    );
+    const typeHandles = Array.from(
+      new Set(
+        mappings
+          .map((mapping) => mapping.eventTypeHandle)
+          .filter((handle): handle is string => Boolean(handle)),
+      ),
+    );
+    const categoryHandles = Array.from(
+      new Set(
+        mappings
+          .map((mapping) => mapping.eventCategoryHandle)
+          .filter((handle): handle is string => Boolean(handle)),
+      ),
+    );
+    const [eventStatuses, eventTypes, eventCategories] = await Promise.all([
+      statusHandles.length
+        ? em.find(EventStatusItem, { handle: { $in: statusHandles } })
+        : Promise.resolve([]),
+      typeHandles.length
+        ? em.find(EventTypeItem, { handle: { $in: typeHandles } })
+        : Promise.resolve([]),
+      categoryHandles.length
+        ? em.find(EventCategoryItem, { handle: { $in: categoryHandles } })
+        : Promise.resolve([]),
+    ]);
+
+    if (eventStatuses.length !== statusHandles.length) {
+      throw new BadRequestException(
+        'calendarSyncSubscription.eventStatusNotFound',
+      );
+    }
+    if (eventTypes.length !== typeHandles.length) {
+      throw new BadRequestException(
+        'calendarSyncSubscription.eventTypeNotFound',
+      );
+    }
+    if (eventCategories.length !== categoryHandles.length) {
+      throw new BadRequestException(
+        'calendarSyncSubscription.eventCategoryNotFound',
+      );
+    }
+  }
+
   private toDto(
     subscription: CalendarSyncSubscriptionItem | null,
     isAvailable: boolean,
@@ -500,6 +565,9 @@ export class CalendarSyncSubscriptionService implements OnModuleInit {
         DEFAULT_CALENDAR_EVENT_CATEGORY_HANDLE,
       classificationMappings: normalizeCalendarClassificationMappings(
         subscription?.classificationMappings,
+      ),
+      outlookAvailabilityMappings: normalizeOutlookAvailabilityMappings(
+        subscription?.outlookAvailabilityMappings,
       ),
       lastRunAt: subscription?.lastRunAt ?? null,
       lastSuccessAt: subscription?.lastSuccessAt ?? null,

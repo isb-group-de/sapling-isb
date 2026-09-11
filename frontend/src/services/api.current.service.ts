@@ -25,6 +25,15 @@ export interface CalendarClassificationMapping {
   eventCategoryHandle?: string | null
 }
 
+export type OutlookShowAs = 'free' | 'tentative' | 'busy' | 'oof' | 'workingElsewhere'
+
+export interface OutlookAvailabilityMapping {
+  eventStatusHandle?: string | null
+  eventTypeHandle?: string | null
+  eventCategoryHandle?: string | null
+  showAs: OutlookShowAs
+}
+
 export interface OutlookCalendarCategory {
   displayName: string
   id?: string
@@ -41,6 +50,7 @@ export interface CalendarSyncSubscription {
   defaultEventTypeHandle: string
   defaultEventCategoryHandle: string
   classificationMappings: CalendarClassificationMapping[]
+  outlookAvailabilityMappings: OutlookAvailabilityMapping[]
   lastRunAt?: string | Date | null
   lastSuccessAt?: string | Date | null
   lastError?: string | null
@@ -57,6 +67,7 @@ export interface UpdateCalendarSyncSubscriptionPayload {
   defaultEventTypeHandle: string
   defaultEventCategoryHandle: string
   classificationMappings: CalendarClassificationMapping[]
+  outlookAvailabilityMappings: OutlookAvailabilityMapping[]
 }
 
 export interface CurrentSessionDto {

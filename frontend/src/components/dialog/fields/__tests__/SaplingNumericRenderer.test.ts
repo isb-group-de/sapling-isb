@@ -36,6 +36,45 @@ function mountNumber(template: Partial<EntityTemplate>) {
 
 describe('numeric field metadata', () => {
   it.each([
+    {
+      options: ['isNumeric'] as EntityTemplate['options'],
+      numeric: { min: -5, max: 5, step: 0.5 },
+      expected: { min: -5, max: 5, step: 0.5 },
+    },
+    {
+      options: ['isPercent'] as EntityTemplate['options'],
+      numeric: { min: 10, max: 90, step: 5 },
+      expected: { min: 10, max: 90, step: 5 },
+    },
+    {
+      options: ['isMoney'] as EntityTemplate['options'],
+      numeric: { min: -1000, max: 1000, step: 50 },
+      expected: { min: -1000, max: 1000, step: 50 },
+    },
+  ])('passes numeric range metadata to $options', async ({ expected, ...template }) => {
+    const wrapper = mountNumber(template)
+    await vi.waitFor(() => expect(wrapper.find('input').exists()).toBe(true))
+    expect(wrapper.getComponent({ name: 'VNumberInput' }).props()).toMatchObject(expected)
+    wrapper.unmount()
+  })
+
+  it.each([
+    {
+      options: ['isPercent'] as EntityTemplate['options'],
+      expected: { min: 0, max: 100, step: 1 },
+    },
+    {
+      options: ['isMoney'] as EntityTemplate['options'],
+      expected: { min: 0, max: 10000000, step: 10000 },
+    },
+  ])('keeps the $options renderer defaults without metadata', async ({ expected, ...template }) => {
+    const wrapper = mountNumber(template)
+    await vi.waitFor(() => expect(wrapper.find('input').exists()).toBe(true))
+    expect(wrapper.getComponent({ name: 'VNumberInput' }).props()).toMatchObject(expected)
+    wrapper.unmount()
+  })
+
+  it.each([
     { isInteger: true, numeric: null, expected: 1 },
     { isInteger: false, numeric: null, expected: 0.5 },
     { isInteger: false, numeric: { step: 0.5 }, expected: 0.5 },

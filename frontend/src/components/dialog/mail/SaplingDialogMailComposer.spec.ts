@@ -182,11 +182,17 @@ describe('SaplingDialogMailComposer', () => {
       global: {
         plugins: [vuetify, i18n],
         stubs: {
+          VMenu: defineComponent({
+            name: 'VMenuStub',
+            props: { modelValue: Boolean, target: Array },
+            setup(props, { slots }) {
+              return () => (props.modelValue ? h('div', slots.default?.()) : null)
+            },
+          }),
           SaplingMarkdownField: defineComponent({
-            emits: ['update:modelValue', 'focus'],
+            emits: ['update:modelValue', 'focus', 'selectionChange'],
             setup(_, { expose }) {
               expose({
-                getTextSelection: () => ({ from: 10, to: 10 }),
                 replaceTextRange,
               })
               return () => h('div', { class: 'stub-markdown-field' })
@@ -197,7 +203,13 @@ describe('SaplingDialogMailComposer', () => {
     })
     const editor = wrapper.findComponent({ ref: 'markdownField' })
 
-    editor.vm.$emit('update:modelValue', 'Hallo @Ada')
+    editor.vm.$emit('selectionChange', {
+      from: 10,
+      to: 10,
+      value: 'Hallo @Ada',
+      focused: true,
+      coordinates: { left: 120, top: 200, bottom: 220 },
+    })
     await nextTick()
 
     const mentionPanel = wrapper.get('[data-test="mail-mention-panel"]')
@@ -266,6 +278,7 @@ describe('SaplingDialogMailComposer', () => {
     })
 
     expect(wrapper.exists()).toBe(true)
+    expect(wrapper.get('.sapling-markdown-field').classes()).not.toContain('v-card--link')
   })
 
   it('shows target-company contacts before current-company contacts while chips stay email-only', () => {

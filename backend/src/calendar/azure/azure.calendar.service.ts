@@ -194,10 +194,11 @@ export class AzureCalendarService extends AzureCalendarOperations {
         ],
       },
     );
-    const classificationMappings = await this.loadClassificationMappings(
-      emFork,
-      personHandle,
-    );
+    const [classificationMappings, outlookAvailabilityMappings] =
+      await Promise.all([
+        this.loadClassificationMappings(emFork, personHandle),
+        this.loadOutlookAvailabilityMappings(emFork, personHandle),
+      ]);
 
     if (!event) {
       throw new Error('calendar.eventNotFound');
@@ -247,6 +248,7 @@ export class AzureCalendarService extends AzureCalendarOperations {
           emFork,
           classificationMappings,
           timeZone,
+          outlookAvailabilityMappings,
         );
         seriesReference = await emFork.findOne(EventAzureItem, {
           event: seriesEvent.handle as never,
@@ -263,6 +265,7 @@ export class AzureCalendarService extends AzureCalendarOperations {
         emFork,
         classificationMappings,
         timeZone,
+        outlookAvailabilityMappings,
       );
     }
 
@@ -289,6 +292,7 @@ export class AzureCalendarService extends AzureCalendarOperations {
               operation,
               changedFields,
               timeZone,
+              outlookAvailabilityMappings,
             );
           } catch (error) {
             if (!isAzureNotFoundError(error)) {
@@ -305,6 +309,7 @@ export class AzureCalendarService extends AzureCalendarOperations {
               emFork,
               classificationMappings,
               timeZone,
+              outlookAvailabilityMappings,
             );
           }
         } else {
@@ -314,6 +319,7 @@ export class AzureCalendarService extends AzureCalendarOperations {
             emFork,
             classificationMappings,
             timeZone,
+            outlookAvailabilityMappings,
           );
         }
     }

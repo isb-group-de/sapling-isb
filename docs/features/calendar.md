@@ -130,6 +130,7 @@ Important fields:
 | `startDate`, `endDate`              | Event time range                                                                           |
 | `isAllDay`                          | Marks all-day events                                                                       |
 | `isPrivate`                         | Limits access to creator and participants; includes private Outlook imports                |
+| `isOutlookAvailable`                | Forces the Outlook projection to remain free, overriding personal availability mappings    |
 | `createOnlineMeeting`               | Requests a provider-native Teams or Google Meet link; defaults to `false`                  |
 | `sendCalendarInvitations`           | Explicitly allows Outlook/Google invitations to participants; defaults to `false`          |
 | `recurrenceRule`                    | Optional RRULE string for recurring events                                                 |
@@ -444,6 +445,21 @@ The account dialog also configures fallback type/category values and provider cl
 - Outlook maps its native category names to a Sapling event type, category, or both when the Outlook item is first imported. Later imports update the linked event's provider-owned fields but preserve the event type and category selected in Sapling. The account dialog can load `/me/outlook/masterCategories` and add missing display names as mapping rows; this requires the delegated `MailboxSettings.Read` scope. Matching names are written back to Outlook when Sapling creates or updates the event.
 - Google maps calendar color IDs (`1` through `11`) to a Sapling event type, category, or both. Sapling-created Google events additionally carry the exact handles in private `extendedProperties`, so a later import does not lose the classification even when a color represents only one combined mapping. Existing linked Google events retain their Sapling classification, matching Outlook behavior.
 - Provider items without a matching mapping use the configured defaults.
+
+Outlook users can additionally map a Sapling Event status, type, category, or
+any combination of those fields to Outlook's `showAs` values: `free`,
+`tentative`, `busy`, `oof`, or `workingElsewhere`. The mappings belong to the
+current user's `CalendarSyncSubscriptionItem`, so the same shared Event can use
+different availability rules in different personal Outlook calendars. The
+matching rule with the greatest number of configured criteria wins; equally
+specific rules retain their account-dialog order. With no match, Outlook uses
+`busy`, preserving the previous behavior.
+
+`EventItem.isOutlookAvailable` is an explicit per-Event override. When enabled,
+the Outlook projection always receives `showAs: free` regardless of the current
+user's mappings. Changes to the override, status, type, or category patch
+`showAs` on an existing Outlook item. Other Event edits leave a status changed
+directly in Outlook untouched.
 
 Private Outlook events use the same automatic import path as manual imports, so privacy behavior is identical for both flows.
 

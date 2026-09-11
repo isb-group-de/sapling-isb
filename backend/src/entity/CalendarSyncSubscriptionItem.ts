@@ -19,6 +19,14 @@ export type CalendarClassificationMapping = {
   eventTypeHandle?: string | null;
   eventCategoryHandle?: string | null;
 };
+export type OutlookShowAs =
+  'free' | 'tentative' | 'busy' | 'oof' | 'workingElsewhere';
+export type OutlookAvailabilityMapping = {
+  eventStatusHandle?: string | null;
+  eventTypeHandle?: string | null;
+  eventCategoryHandle?: string | null;
+  showAs: OutlookShowAs;
+};
 
 @Index({
   name: 'calendar_sync_subscription_item_default_event_category_handle_i',
@@ -169,6 +177,21 @@ export class CalendarSyncSubscriptionItem {
   })
   @Property({ type: 'json', nullable: false, defaultRaw: `'[]'::jsonb` })
   classificationMappings: CalendarClassificationMapping[] = [];
+
+  @ApiPropertyOptional({ type: 'array', default: [] })
+  @SaplingForm({
+    order: 700,
+    group: 'calendarSyncSubscription.groupConfiguration',
+    groupOrder: 300,
+    width: 4,
+    visible: false,
+    tableOrder: 700,
+    tableVisible: false,
+    mobileOrder: 700,
+    mobileVisible: false,
+  })
+  @Property({ type: 'json', nullable: false, defaultRaw: `'[]'::jsonb` })
+  outlookAvailabilityMappings: OutlookAvailabilityMapping[] = [];
 
   @ApiPropertyOptional({ type: 'string', format: 'date-time' })
   @Sapling(['isReadOnly', 'isSystem'])
